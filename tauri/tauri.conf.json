@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "keikaku_ui",
+  "productName": "origa",
   "version": "0.1.0",
-  "identifier": "net.uwuwu.keikaku",
+  "identifier": "net.uwuwu.origa",
   "build": {
     "beforeDevCommand": "dx serve --port 1420 --interactive false",
     "devUrl": "http://localhost:1420",
@@ -13,7 +13,7 @@
     "withGlobalTauri": true,
     "windows": [
       {
-        "title": "keikaku_ui",
+        "title": "origa",
         "width": 800,
         "height": 600
       }

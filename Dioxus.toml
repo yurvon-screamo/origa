@@ -1,16 +1,16 @@
 [application]
-name = "keikaku"
+name = "origa"
 default_platform = "web"
 out_dir = "dist"
 asset_dir = "assets"
 
 [web.app]
-title = "Keikaku"
+title = "Origa"
 
 [web.watcher]
 reload_html = true
-watch_path = ["keikaku_ui", "keikaku", "assets"]
+watch_path = ["origa", "origa_ui", "assets"]
 
 [bundle]
-identifier = "new.uwuwu.keikaku"
+identifier = "new.uwuwu.origa"
 publisher = "yurvon_screamo"

@@ -1,9 +1,9 @@
-use keikaku::application::UserRepository;
-use keikaku::domain::{
+use origa::application::UserRepository;
+use origa::domain::{
     User,
     value_objects::{JapaneseLevel, NativeLanguage},
 };
-use keikaku::settings::ApplicationEnvironment;
+use origa::settings::ApplicationEnvironment;
 use tempfile::TempDir;
 
 #[cfg(test)]

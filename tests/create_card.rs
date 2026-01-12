@@ -1,8 +1,8 @@
 #[path = "mod.rs"]
 mod tests;
 
-use keikaku::application::CreateCardUseCase;
-use keikaku::settings::ApplicationEnvironment;
+use origa::application::CreateCardUseCase;
+use origa::settings::ApplicationEnvironment;
 use tests::*;
 
 #[tokio::test]

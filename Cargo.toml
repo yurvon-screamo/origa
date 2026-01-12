@@ -1,5 +1,5 @@
 [workspace]
-members = ["keikaku", "keikaku_ui", "tauri"]
+members = ["origa", "origa_ui", "tauri"]
 resolver = "2"
 
 [workspace.package]
@@ -8,7 +8,7 @@ edition = "2024"
 authors = ["yurvon-screamo <yurvon@ya.ru>"]
 license = "AGPL-3.0"
 license-file = "LICENSE"
-repository = "https://github.com/yurvon-screamo/keikaku"
+repository = "https://github.com/yurvon-screamo/origa"
 readme = "README.md"
 
 [workspace.dependencies]

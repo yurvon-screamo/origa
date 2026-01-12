@@ -1,7 +1,7 @@
 #[path = "mod.rs"]
 mod tests;
 
-use keikaku::{
+use origa::{
     application::use_cases::{CreateCardUseCase, SelectCardsToLearnUseCase},
     domain::{
         study_session::StudySessionItem,
