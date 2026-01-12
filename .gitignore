@@ -1,5 +1,5 @@
 # Rust
-/target/
+**/target
 Cargo.lock
 target
 .fastembed_cache
