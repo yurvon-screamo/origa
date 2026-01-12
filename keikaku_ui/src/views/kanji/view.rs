@@ -3,15 +3,15 @@ use crate::components::button::{Button, ButtonVariant};
 use crate::components::input::Input;
 use crate::domain::KanjiCard;
 use dioxus::prelude::*;
-use keikaku::application::use_cases::get_kanji_info::GetKanjiInfoUseCase;
-use keikaku::domain::{dictionary::KanjiInfo, value_objects::NativeLanguage};
+use keikaku::application::KanjiInfoUseCase;
+use keikaku::domain::{KanjiInfo, NativeLanguage};
 
 pub async fn fetch_kanji_info(query: String) -> Result<Option<KanjiInfo>, String> {
     if query.trim().is_empty() {
         return Ok(None);
     }
 
-    match GetKanjiInfoUseCase::new().execute(&query) {
+    match KanjiInfoUseCase::new().execute(&query) {
         Ok(kanji_info) => Ok(Some(kanji_info)),
         Err(err) => Err(format!("Ошибка получения информации о кандзи: {}", err)),
     }
@@ -42,10 +42,7 @@ pub fn Kanji() -> Element {
 }
 
 #[component]
-fn KanjiContent(
-    initial_kanji_info: Option<keikaku::domain::dictionary::KanjiInfo>,
-    on_search: EventHandler<String>,
-) -> Element {
+fn KanjiContent(initial_kanji_info: Option<KanjiInfo>, on_search: EventHandler<String>) -> Element {
     let query = use_signal(|| "語".to_string());
     let mut loading = use_signal(|| false);
 

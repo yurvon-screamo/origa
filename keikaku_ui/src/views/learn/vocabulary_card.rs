@@ -5,7 +5,7 @@ use crate::domain::{
     AnswerActionButtons, FuriganaText, KanjiCard as DomainKanjiCard, Rating, WordCard,
 };
 use crate::views::learn::learn_session::{LearnCard, LearnStep};
-use keikaku::domain::value_objects::NativeLanguage;
+use keikaku::domain::{KanjiInfo, NativeLanguage};
 
 #[component]
 pub fn VocabularyCardView(
@@ -113,7 +113,7 @@ fn VocabularyAnswerView(
                         // Middle column: Examples
                         VocabularyExamplesSection { card: card.clone(), show_furigana }
                     }
-                
+
                 }
 
                 // Right column: Action buttons
@@ -212,7 +212,7 @@ fn VocabularyExamplesSection(card: LearnCard, show_furigana: bool) -> Element {
 
 #[component]
 fn VocabularyKanjiInfoSection(
-    kanji_info: Vec<keikaku::domain::dictionary::KanjiInfo>,
+    kanji_info: Vec<KanjiInfo>,
     show_furigana: bool,
     native_language: NativeLanguage,
 ) -> Element {

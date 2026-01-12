@@ -2,7 +2,7 @@ use dioxus::prelude::*;
 
 use crate::components::app_ui::{InfoGrid, InfoSection, InfoSectionTone};
 use crate::domain::RadicalCard;
-use keikaku::domain::dictionary::RadicalInfo;
+use keikaku::domain::RadicalInfo;
 
 #[component]
 pub fn RadicalGrid(

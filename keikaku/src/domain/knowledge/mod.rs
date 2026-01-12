@@ -1,19 +1,20 @@
+mod card;
 mod daily_history;
 mod grammar;
 mod kanji;
 mod vocabulary;
 
+pub use card::{Card, StudyCard};
 pub use daily_history::DailyHistoryItem;
 pub use grammar::GrammarRuleCard;
 pub use kanji::{ExampleKanjiWord, KanjiCard};
-pub use vocabulary::VocabularyCard;
+pub use vocabulary::{ExamplePhrase, VocabularyCard};
 
 use std::collections::HashMap;
 
 use crate::domain::{
-    KeikakuError, Rating, Review,
-    review::{MemoryHistory, MemoryState},
-    value_objects::{Answer, Question},
+    KeikakuError, Rating, ReviewLog, grammar::get_rule_by_id, memory::MemoryState,
+    value_objects::NativeLanguage,
 };
 use chrono::{Duration, Utc};
 use rand::seq::SliceRandom;
@@ -77,6 +78,7 @@ impl KnowledgeSet {
                 question: study_card.card().question().text().to_string(),
             });
         }
+
         Ok(study_card)
     }
 
@@ -111,59 +113,94 @@ impl KnowledgeSet {
         cards.iter().map(|(_, card)| card.card().clone()).collect()
     }
 
-    pub fn cards_to_lesson(&self) -> HashMap<Ulid, Card> {
+    pub fn cards_to_lesson(&self, lang: &NativeLanguage) -> HashMap<Ulid, Card> {
         let mut all_cards = self.study_cards.iter().collect::<Vec<_>>();
         all_cards.sort_by_key(|(_, card)| card.memory().next_review_date());
 
-        let mut due_cards: Vec<_> = all_cards
+        let mut priority_cards: Vec<_> = all_cards
             .iter()
             .filter(|(_, card)| {
                 card.memory().is_due()
-                    && (card.memory().is_in_progress() || card.memory().is_known_card())
+                    && (card.memory().is_low_stability() || card.memory().is_high_difficulty())
             })
             .collect();
 
-        let mut priority_cards: Vec<_> = all_cards
-            .iter()
-            .filter(|(_, card)| card.memory().is_due() && card.memory().is_low_stability())
-            .collect();
-
         if priority_cards.len() < NEW_CARDS_LIMIT {
-            let mut new_cards: Vec<_> = all_cards
+            let allowed_new = NEW_CARDS_LIMIT.saturating_sub(priority_cards.len());
+            let new_cards = all_cards
                 .iter()
                 .filter(|(_, card)| card.memory().is_new())
-                .collect();
-
-            let available = NEW_CARDS_LIMIT.saturating_sub(priority_cards.len());
-            new_cards.truncate(available);
+                .take(allowed_new);
 
             priority_cards.extend(new_cards);
         }
 
-        due_cards.sort_by_key(|(_, card)| card.memory().next_review_date());
-        priority_cards.sort_by(|(_, a_card), (_, b_card)| {
-            let reviews_cmp = b_card
-                .memory()
-                .reviews()
-                .len()
-                .cmp(&a_card.memory().reviews().len());
-            if reviews_cmp != std::cmp::Ordering::Equal {
-                return reviews_cmp;
-            }
-
-            a_card
-                .memory()
-                .next_review_date()
-                .cmp(&b_card.memory().next_review_date())
+        let known_cards = all_cards.iter().filter(|(_, card)| {
+            card.memory().is_due()
+                && (card.memory().is_in_progress() || card.memory().is_known_card())
         });
 
-        due_cards.append(&mut priority_cards);
-        due_cards.shuffle(&mut rand::rng());
+        priority_cards.extend(known_cards);
+        priority_cards.shuffle(&mut rand::rng());
 
-        due_cards
+        priority_cards
             .iter()
-            .map(|(card_id, card)| (**card_id, card.card().clone()))
+            .filter_map(|(card_id, card)| self.shuffle_card(lang, card_id, card).ok())
             .collect()
+    }
+
+    fn shuffle_card(
+        &self,
+        lang: &NativeLanguage,
+        card_id: &Ulid,
+        card: &StudyCard,
+    ) -> Result<(Ulid, Card), KeikakuError> {
+        let mut content = card.card().clone();
+
+        if !card.memory().is_known_card() && !card.memory().is_in_progress() {
+            return Ok((*card_id, content));
+        }
+
+        content = match &content {
+            Card::Vocabulary(vocab) => match rand::random_bool(0.5) {
+                false => {
+                    let reverted = vocab.revert()?;
+                    Card::Vocabulary(reverted)
+                }
+                true => {
+                    let mut rules: Vec<_> = self
+                        .study_cards
+                        .values()
+                        .filter_map(|x| match x.card() {
+                            Card::Grammar(grammar_rule_card) => {
+                                let word_part = vocab.part_of_speech().ok()?;
+
+                                if grammar_rule_card.apply_to().contains(&word_part) {
+                                    Some(grammar_rule_card.clone())
+                                } else {
+                                    None
+                                }
+                            }
+                            _ => None,
+                        })
+                        .collect();
+
+                    rules.shuffle(&mut rand::rng());
+
+                    if let Some(rule) = rules.first()
+                        && let Some(rule) = get_rule_by_id(rule.rule_id())
+                    {
+                        let vocab_with_rule = vocab.with_grammar_rule(rule, lang)?;
+                        Card::Vocabulary(vocab_with_rule)
+                    } else {
+                        content
+                    }
+                }
+            },
+            _ => content,
+        };
+
+        Ok((*card_id, content))
     }
 
     pub(crate) fn rate_card(
@@ -174,8 +211,8 @@ impl KnowledgeSet {
         memory_state: MemoryState,
     ) -> Result<(), KeikakuError> {
         if let Some(card) = self.study_cards.get_mut(&card_id) {
-            let review = Review::new(rating, interval);
-            card.memory_history.add_review(memory_state, review);
+            let review = ReviewLog::new(rating, interval);
+            card.add_review(memory_state, review);
             self.update_history();
             Ok(())
         } else {
@@ -285,60 +322,6 @@ impl KnowledgeSet {
                 high_difficulty_words,
             );
             self.lesson_history.push(item);
-        }
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct StudyCard {
-    card_id: Ulid,
-    card: Card,
-    memory_history: MemoryHistory,
-}
-
-impl StudyCard {
-    pub fn new(card: Card) -> Self {
-        Self {
-            card_id: Ulid::new(),
-            card,
-            memory_history: MemoryHistory::default(),
-        }
-    }
-
-    pub fn card_id(&self) -> &Ulid {
-        &self.card_id
-    }
-
-    pub fn card(&self) -> &Card {
-        &self.card
-    }
-
-    pub fn memory(&self) -> &MemoryHistory {
-        &self.memory_history
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub enum Card {
-    Vocabulary(VocabularyCard),
-    Kanji(KanjiCard),
-    Grammar(GrammarRuleCard),
-}
-
-impl Card {
-    fn question(&self) -> &Question {
-        match self {
-            Card::Vocabulary(card) => card.word(),
-            Card::Kanji(card) => card.kanji(),
-            Card::Grammar(card) => card.title(),
-        }
-    }
-
-    fn answer(&self) -> &Answer {
-        match self {
-            Card::Vocabulary(card) => card.meaning(),
-            Card::Kanji(card) => card.description(),
-            Card::Grammar(card) => card.description(),
         }
     }
 }

@@ -4,10 +4,7 @@ use ulid::Ulid;
 
 use keikaku::{
     application::UserRepository,
-    domain::{
-        User,
-        value_objects::{JapaneseLevel, NativeLanguage},
-    },
+    domain::{JapaneseLevel, NativeLanguage, User},
     settings::ApplicationEnvironment,
 };
 
@@ -20,7 +17,13 @@ pub async fn ensure_user(
     username: &str,
 ) -> Result<Ulid, String> {
     let repo = env.get_repository().await.map_err(to_error)?;
-    if let Some(user) = repo.find_by_username(username).await.map_err(to_error)? {
+    if let Some(user) = repo
+        .list()
+        .await
+        .map_err(to_error)?
+        .into_iter()
+        .find(|x| x.username() == username)
+    {
         return Ok(user.id());
     }
     let new_user = User::new(

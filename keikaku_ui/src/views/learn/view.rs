@@ -185,7 +185,7 @@ pub fn Learn() -> Element {
                                 current_index: session_data.current_index,
                                 current_step: session_data.current_step.clone(),
                                 show_furigana: session_data.show_furigana,
-                                native_language: keikaku::domain::value_objects::NativeLanguage::Russian,
+                                native_language: keikaku::domain::NativeLanguage::Russian,
                                 on_next: EventHandler::new({
                                     let next_card = session.next_card.clone();
                                     move |_| next_card()

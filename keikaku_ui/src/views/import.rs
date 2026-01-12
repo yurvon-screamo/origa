@@ -1,18 +1,17 @@
 use dioxus::prelude::*;
+use dioxus_primitives::radio_group::RadioGroup;
 
 use crate::components::app_ui::{Card, LoadingState, Paragraph, Pill, SectionHeader, StateTone};
 use crate::components::button::{Button, ButtonVariant};
-use crate::components::checkbox::Checkbox;
 use crate::components::input::Input;
 use crate::components::switch::{Switch, SwitchThumb};
 use crate::components::tabs::{TabContent, TabList, TabTrigger, Tabs};
 use crate::{DEFAULT_USERNAME, ensure_user, to_error};
-use dioxus_primitives::checkbox::CheckboxState;
-use keikaku::application::use_cases::{
-    import_anki_pack::ExportAnkiPackUseCase, import_jlpt_recommended::ExportJlptRecommendedUseCase,
-    import_migii_pack::ExportMigiiPackUseCase, sync_duolingo_words::SyncDuolingoWordsUseCase,
+use keikaku::application::{
+    ExportAnkiPackUseCase, ExportJlptRecommendedUseCase, ExportMigiiPackUseCase,
+    SyncDuolingoWordsUseCase,
 };
-use keikaku::domain::value_objects::JapaneseLevel;
+use keikaku::domain::JapaneseLevel;
 use keikaku::infrastructure::HttpDuolingoClient;
 use keikaku::settings::ApplicationEnvironment;
 
@@ -165,7 +164,7 @@ fn ImportDuolingoTool() -> Element {
 #[component]
 fn ImportJlptTool() -> Element {
     let levels = ["N5", "N4", "N3", "N2", "N1"];
-    let selected = use_signal(|| vec!["N5".to_string(), "N4".to_string()]);
+    let selected: Signal<Option<String>> = use_signal(|| None);
     let log = use_signal(Vec::<String>::new);
     let status = use_signal(|| OperationStatus::Idle);
 
@@ -190,27 +189,10 @@ fn ImportJlptTool() -> Element {
                 for level in levels {
                     {
                         let level = level.to_string();
-                        let checked = selected().contains(&level);
                         rsx! {
                             label { class: "flex items-center gap-3 cursor-pointer",
-                                Checkbox {
-                                    checked: if checked { CheckboxState::Checked } else { CheckboxState::Unchecked },
-                                    on_checked_change: {
-                                        let mut selected = selected;
-                                        let level = level.clone();
-                                        move |state: CheckboxState| {
-                                            let v: bool = state.into();
-                                            let mut list = selected();
-                                            if v {
-                                                if !list.contains(&level) {
-                                                    list.push(level.clone());
-                                                }
-                                            } else {
-                                                list.retain(|l| l != &level);
-                                            }
-                                            selected.set(list);
-                                        }
-                                    },
+                                RadioGroup {
+                                    value: selected,
                                     disabled: matches!(status(), OperationStatus::Loading),
                                 }
                                 span { class: "text-sm", "Уровень {level}" }
@@ -226,9 +208,9 @@ fn ImportJlptTool() -> Element {
                 Button {
                     variant: ButtonVariant::Primary,
                     class: "w-full",
-                    disabled: matches!(status(), OperationStatus::Loading) || selected().is_empty(),
+                    disabled: matches!(status(), OperationStatus::Loading) || selected().is_none(),
                     onclick: move |_| {
-                        if selected().is_empty() {
+                        if selected().is_none() {
                             return;
                         }
                         let levels = selected();
@@ -236,7 +218,7 @@ fn ImportJlptTool() -> Element {
                         let mut status = status;
                         status.set(OperationStatus::Loading);
                         spawn(async move {
-                            match run_jlpt(levels).await {
+                            match run_jlpt(levels.unwrap_or_default()).await {
                                 Ok(msg) => {
                                     status.set(OperationStatus::Success(msg.clone()));
                                     log.write().push(msg);
@@ -338,12 +320,6 @@ fn ImportAnkiTool() -> Element {
                     class: "w-full",
                     disabled: matches!(status(), OperationStatus::Loading),
                     onclick: {
-                        let file_path = file_path;
-                        let word_tag = word_tag;
-                        let translation_tag = translation_tag;
-                        let dry_run = dry_run;
-                        let log = log;
-                        let status = status;
                         move |_| {
                             let file = file_path();
                             let word = word_tag();
@@ -383,7 +359,7 @@ fn ImportAnkiTool() -> Element {
 
 #[component]
 fn ImportMigiiTool() -> Element {
-    let lessons = use_signal(|| "1,2,3".to_string());
+    let mut lessons = use_signal(|| "1,2,3".to_string());
     let log = use_signal(Vec::<String>::new);
     let status = use_signal(|| OperationStatus::Idle);
 
@@ -405,10 +381,7 @@ fn ImportMigiiTool() -> Element {
                 Input {
                     placeholder: "Напр. 1,2,5",
                     value: lessons(),
-                    oninput: {
-                        let mut lessons = lessons;
-                        move |e: FormEvent| lessons.set(e.value())
-                    },
+                    oninput: move |e: FormEvent| lessons.set(e.value()),
                     disabled: matches!(status(), OperationStatus::Loading),
                 }
             }
@@ -421,11 +394,8 @@ fn ImportMigiiTool() -> Element {
                     class: "w-full",
                     disabled: matches!(status(), OperationStatus::Loading),
                     onclick: {
-                        let lessons_calc = lessons;
-                        let log = log;
-                        let status = status;
                         move |_| {
-                            let lessons_str = lessons_calc();
+                            let lessons_str = lessons();
                             let mut log = log;
                             let mut status = status;
                             status.set(OperationStatus::Loading);
@@ -468,19 +438,15 @@ async fn run_duolingo() -> Result<String, String> {
     ))
 }
 
-async fn run_jlpt(levels: Vec<String>) -> Result<String, String> {
+async fn run_jlpt(level: String) -> Result<String, String> {
     let env = ApplicationEnvironment::get();
     let user_id = ensure_user(env, DEFAULT_USERNAME).await?;
     let repo = env.get_repository().await.map_err(to_error)?;
     let llm = env.get_llm_service(user_id).await.map_err(to_error)?;
 
-    let parsed_levels = levels
-        .into_iter()
-        .map(|l| l.parse::<JapaneseLevel>())
-        .collect::<Result<Vec<_>, _>>()?;
-
+    let parsed_level = level.parse::<JapaneseLevel>()?;
     let res = ExportJlptRecommendedUseCase::new(repo, &llm)
-        .execute(user_id, parsed_levels)
+        .execute(user_id, parsed_level)
         .await
         .map_err(to_error)?;
 

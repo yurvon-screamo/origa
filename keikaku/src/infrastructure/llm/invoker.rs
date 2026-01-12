@@ -1,5 +1,5 @@
 use crate::application::LlmService;
-use crate::domain::error::KeikakuError;
+use crate::domain::KeikakuError;
 
 use super::{GeminiLlm, OpenAiLlm};
 

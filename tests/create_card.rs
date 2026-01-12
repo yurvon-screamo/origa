@@ -1,7 +1,7 @@
 #[path = "mod.rs"]
 mod tests;
 
-use keikaku::application::use_cases::CreateCardUseCase;
+use keikaku::application::CreateCardUseCase;
 use keikaku::settings::ApplicationEnvironment;
 use tests::*;
 

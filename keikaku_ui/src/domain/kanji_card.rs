@@ -2,7 +2,7 @@ use dioxus::prelude::*;
 
 use crate::components::app_ui::{Card, Pill, StateTone};
 use crate::domain::{PopularWordsGrid, RadicalGrid};
-use keikaku::domain::{dictionary::KanjiInfo, value_objects::NativeLanguage};
+use keikaku::domain::{KanjiInfo, NativeLanguage};
 
 #[component]
 pub fn KanjiCard(

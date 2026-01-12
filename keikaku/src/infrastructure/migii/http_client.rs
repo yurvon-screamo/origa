@@ -1,6 +1,6 @@
 use crate::application::{MigiiClient, MigiiMeaning, MigiiWord};
 use crate::domain::KeikakuError;
-use crate::domain::value_objects::{JapaneseLevel, NativeLanguage};
+use crate::domain::{JapaneseLevel, NativeLanguage};
 use async_trait::async_trait;
 use serde::Deserialize;
 

@@ -1,7 +1,5 @@
-use crate::domain::error::KeikakuError;
-use crate::domain::review::MemoryHistory;
-use crate::domain::review::MemoryState;
-use crate::domain::value_objects::Rating;
+use crate::domain::KeikakuError;
+use crate::domain::{MemoryHistory, MemoryState, Rating};
 use chrono::Duration;
 
 pub struct NextReview {
@@ -10,8 +8,8 @@ pub struct NextReview {
 }
 
 pub enum RateMode {
-    Standard,
-    Fixation,
+    StandardLesson,
+    FixationLesson,
 }
 
 pub trait SrsService: Send + Sync {

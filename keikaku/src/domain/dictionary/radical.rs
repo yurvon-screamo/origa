@@ -7,7 +7,7 @@ use crate::domain::{
 };
 
 const RADKFILE_DATA: &str = include_str!("./radicals.json");
-pub static RADICAL_DB: LazyLock<RadicalDatabase> = LazyLock::new(RadicalDatabase::new);
+pub static RADICAL_DICTIONARY: LazyLock<RadicalDatabase> = LazyLock::new(RadicalDatabase::new);
 pub struct RadicalDatabase {
     known_radicals: Vec<char>,
     radical_map: HashMap<char, RadicalInfo>,

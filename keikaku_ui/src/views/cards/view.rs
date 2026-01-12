@@ -1,7 +1,7 @@
 use dioxus::prelude::*;
-use keikaku::application::use_cases::knowledge_set_cards::KnowledgeSetCardsUseCase;
-use keikaku::domain::knowledge::StudyCard;
-use keikaku::domain::value_objects::{Difficulty, Stability};
+use keikaku::application::KnowledgeSetCardsUseCase;
+use keikaku::domain::{Card, ExamplePhrase, StudyCard};
+use keikaku::domain::{Difficulty, ReviewLog, Stability};
 use keikaku::settings::ApplicationEnvironment;
 
 use crate::components::app_ui::ErrorCard;
@@ -169,22 +169,20 @@ fn map_card(card: &StudyCard) -> UiCard {
 
     // Extract data based on card type
     let (question, answer, examples) = match card.card() {
-        keikaku::domain::knowledge::Card::Vocabulary(v) => (
+        Card::Vocabulary(v) => (
             v.word().text().to_string(),
             v.meaning().text().to_string(),
             v.example_phrases()
                 .iter()
-                .map(|ex: &keikaku::domain::value_objects::ExamplePhrase| {
-                    (ex.text().clone(), ex.translation().clone())
-                })
+                .map(|ex: &ExamplePhrase| (ex.text().clone(), ex.translation().clone()))
                 .collect(),
         ),
-        keikaku::domain::knowledge::Card::Kanji(k) => (
+        Card::Kanji(k) => (
             k.kanji().text().to_string(),
             k.description().text().to_string(),
             Vec::new(), // Kanji cards don't have examples in the same format
         ),
-        keikaku::domain::knowledge::Card::Grammar(g) => (
+        Card::Grammar(g) => (
             g.title().text().to_string(),
             g.description().text().to_string(),
             Vec::new(), // Grammar cards don't have examples in the same format
@@ -195,7 +193,7 @@ fn map_card(card: &StudyCard) -> UiCard {
         .memory()
         .reviews()
         .iter()
-        .map(|review: &keikaku::domain::review::Review| ReviewInfo {
+        .map(|review: &ReviewLog| ReviewInfo {
             timestamp: review.timestamp(),
             rating: review.rating(),
             interval: review.interval(),

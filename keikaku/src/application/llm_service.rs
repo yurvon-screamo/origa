@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 
-use crate::domain::error::KeikakuError;
+use crate::domain::KeikakuError;
 
 #[async_trait]
 pub trait LlmService: Send + Sync {

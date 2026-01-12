@@ -1,8 +1,9 @@
+use crate::application::NextReview;
+use crate::application::RateMode;
 use crate::application::SrsService;
-use crate::application::srs_service::{NextReview, RateMode};
-use crate::domain::error::KeikakuError;
-use crate::domain::review::{MemoryHistory, MemoryState};
-use crate::domain::value_objects::{Difficulty, Rating, Stability};
+use crate::domain::KeikakuError;
+use crate::domain::Rating;
+use crate::domain::{Difficulty, MemoryHistory, MemoryState, Stability};
 use chrono::{Duration, Utc};
 use rs_fsrs::{Card as FsrsCard, FSRS, Parameters, Rating as FsrsRating, State as FsrsState};
 
@@ -15,11 +16,11 @@ impl FsrsSrsService {
     pub fn new() -> Result<Self, KeikakuError> {
         let mut short_term_parameters = Parameters::default();
         short_term_parameters.request_retention = 0.95;
+        short_term_parameters.maximum_interval = 24; // TODO: 1 day
         short_term_parameters.enable_fuzz = true;
         short_term_parameters.enable_short_term = false;
 
         let mut long_term_parameters = Parameters::default();
-        long_term_parameters.request_retention = 0.90;
         long_term_parameters.enable_fuzz = true;
         long_term_parameters.enable_short_term = true;
 
@@ -86,14 +87,14 @@ impl SrsService for FsrsSrsService {
         };
 
         let scheduling_info = match mode {
-            RateMode::Fixation => self.short_term_fsrs.next(card, now, fsrs_rating),
-            RateMode::Standard => self.long_term_fsrs.next(card, now, fsrs_rating),
+            RateMode::FixationLesson => self.short_term_fsrs.next(card, now, fsrs_rating),
+            RateMode::StandardLesson => self.long_term_fsrs.next(card, now, fsrs_rating),
         };
 
         let next_review_date = scheduling_info.card.due;
 
         let interval = next_review_date.signed_duration_since(now);
-        let interval = if interval < Duration::zero() {
+        let interval = if interval < Duration::zero() || rating == Rating::Again {
             Duration::zero()
         } else {
             interval

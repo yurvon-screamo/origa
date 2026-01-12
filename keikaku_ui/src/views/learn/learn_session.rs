@@ -1,8 +1,4 @@
-use keikaku::domain::{
-    dictionary::{KanjiInfo, RadicalInfo},
-    knowledge::ExampleKanjiWord,
-    value_objects::{ExamplePhrase, JapaneseLevel},
-};
+use keikaku::domain::{ExampleKanjiWord, ExamplePhrase, JapaneseLevel, KanjiInfo, RadicalInfo};
 
 #[derive(Clone, PartialEq)]
 pub enum SessionState {

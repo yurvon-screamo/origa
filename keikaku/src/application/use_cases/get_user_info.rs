@@ -1,7 +1,7 @@
 use crate::application::user_repository::UserRepository;
-use crate::domain::error::KeikakuError;
-use crate::domain::knowledge::DailyHistoryItem;
-use crate::domain::value_objects::{JapaneseLevel, NativeLanguage};
+use crate::domain::DailyHistoryItem;
+use crate::domain::KeikakuError;
+use crate::domain::{JapaneseLevel, NativeLanguage};
 use ulid::Ulid;
 
 #[derive(Clone, Debug)]

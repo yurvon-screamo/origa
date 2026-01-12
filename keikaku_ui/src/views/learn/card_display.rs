@@ -3,7 +3,7 @@ use dioxus::prelude::*;
 use crate::components::app_ui::{Card, Paragraph};
 use crate::domain::Rating;
 use crate::views::learn::learn_session::CardType;
-use keikaku::domain::value_objects::NativeLanguage;
+use keikaku::domain::NativeLanguage;
 
 #[component]
 pub fn LearnCardDisplay(

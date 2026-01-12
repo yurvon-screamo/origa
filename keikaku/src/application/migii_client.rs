@@ -1,6 +1,5 @@
 use crate::domain::{
-    KeikakuError,
-    value_objects::{JapaneseLevel, NativeLanguage},
+    KeikakuError, {JapaneseLevel, NativeLanguage},
 };
 
 #[derive(Debug, Clone)]

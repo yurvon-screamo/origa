@@ -1,6 +1,6 @@
 use crate::application::user_repository::UserRepository;
-use crate::domain::error::KeikakuError;
-use crate::domain::knowledge::Card;
+use crate::domain::Card;
+use crate::domain::KeikakuError;
 use std::collections::HashMap;
 use ulid::Ulid;
 
@@ -21,6 +21,6 @@ impl<'a, R: UserRepository> SelectCardsToLessonUseCase<'a, R> {
             .await?
             .ok_or(KeikakuError::UserNotFound { user_id })?;
 
-        Ok(user.knowledge_set().cards_to_lesson())
+        Ok(user.knowledge_set().cards_to_lesson(user.native_language()))
     }
 }

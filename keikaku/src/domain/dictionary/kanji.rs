@@ -5,14 +5,15 @@ use serde::{Deserialize, Serialize};
 use crate::domain::{
     KeikakuError,
     dictionary::{
-        radical::{RADICAL_DB, RadicalInfo},
-        vocabulary::VOCABULARY_DB,
+        radical::{RADICAL_DICTIONARY, RadicalInfo},
+        vocabulary::VOCABULARY_DICTIONARY,
     },
     value_objects::{JapaneseLevel, NativeLanguage},
 };
 
 const KANJI_DATA: &str = include_str!("./kanji.json");
-pub static KANJI_DB: LazyLock<KanjiDatabase> = LazyLock::new(KanjiDatabase::new);
+pub static KANJI_DICTIONARY: LazyLock<KanjiDatabase> = LazyLock::new(KanjiDatabase::new);
+
 pub struct KanjiDatabase {
     kanji_map: HashMap<String, KanjiInfo>,
 }
@@ -67,7 +68,7 @@ impl KanjiInfo {
     pub fn radicals(&self) -> Vec<&RadicalInfo> {
         self.radicals
             .iter()
-            .filter_map(|r| RADICAL_DB.get_radical_info(r).ok())
+            .filter_map(|r| RADICAL_DICTIONARY.get_radical_info(r).ok())
             .collect()
     }
 
@@ -82,7 +83,7 @@ impl KanjiInfo {
         self.popular_words
             .iter()
             .map(|word| {
-                let translation = VOCABULARY_DB
+                let translation = VOCABULARY_DICTIONARY
                     .get_translation(word, native_language)
                     .unwrap_or_else(|| "Перевод не найден".to_string());
                 PopularWord::new(word.clone(), translation)
@@ -136,6 +137,13 @@ impl KanjiDatabase {
             .ok_or(KeikakuError::KradfileError {
                 reason: format!("Kanji {} not found in kanji database", kanji),
             })
+    }
+
+    pub fn get_kanji_list(&self, level: &JapaneseLevel) -> Vec<&KanjiInfo> {
+        self.kanji_map
+            .values()
+            .filter(|x| x.jlpt() == level)
+            .collect()
     }
 }
 

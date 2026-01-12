@@ -1,8 +1,8 @@
 use crate::application::SrsService;
 use crate::application::srs_service::{NextReview, RateMode};
 use crate::application::user_repository::UserRepository;
-use crate::domain::error::KeikakuError;
-use crate::domain::value_objects::Rating;
+use crate::domain::KeikakuError;
+use crate::domain::Rating;
 use ulid::Ulid;
 
 #[derive(Clone, Copy)]

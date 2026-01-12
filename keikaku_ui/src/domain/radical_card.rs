@@ -1,7 +1,7 @@
 use dioxus::prelude::*;
 
 use crate::components::app_ui::{Card, Pill, StateTone};
-use keikaku::domain::dictionary::RadicalInfo;
+use keikaku::domain::RadicalInfo;
 
 #[component]
 pub fn RadicalCard(

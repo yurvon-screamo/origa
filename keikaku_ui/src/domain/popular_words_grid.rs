@@ -3,7 +3,7 @@ use dioxus::prelude::*;
 use crate::components::app_ui::{InfoGrid, InfoSection, InfoSectionTone};
 use crate::domain::FuriganaText;
 use crate::domain::PopularWordCard;
-use keikaku::domain::dictionary::PopularWord;
+use keikaku::domain::PopularWord;
 
 #[component]
 pub fn PopularWordsGrid(

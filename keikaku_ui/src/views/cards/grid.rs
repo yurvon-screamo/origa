@@ -151,9 +151,7 @@ fn CardItem(
                             tone: Some(
                                 if card_rc.is_new {
                                     StateTone::Info
-                                } else if card_rc.is_low_stability {
-                                    StateTone::Warning
-                                } else if card_rc.is_high_difficulty {
+                                } else if card_rc.is_low_stability || card_rc.is_high_difficulty {
                                     StateTone::Warning
                                 } else if card_rc.is_learned {
                                     StateTone::Success

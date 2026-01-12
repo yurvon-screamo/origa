@@ -1,6 +1,6 @@
 use crate::application::UserRepository;
+use crate::domain::KeikakuError;
 use crate::domain::LlmSettings;
-use crate::domain::error::KeikakuError;
 use ulid::Ulid;
 
 #[derive(Clone)]

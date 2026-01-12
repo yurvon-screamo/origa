@@ -1,13 +1,12 @@
 use crate::views::learn::learn_session::CardType;
 use chrono::{DateTime, Duration, Utc};
 use dioxus::prelude::*;
-use keikaku::application::UserRepository;
-use keikaku::application::use_cases::{
-    complete_lesson::CompleteLessonUseCase, rate_card::RateCardUseCase,
-    select_cards_to_fixation::SelectCardsToFixationUseCase,
-    select_cards_to_lesson::SelectCardsToLessonUseCase,
+use keikaku::application::{
+    CompleteLessonUseCase, RateCardUseCase, SelectCardsToFixationUseCase,
+    SelectCardsToLessonUseCase,
 };
-use keikaku::domain::knowledge::Card;
+use keikaku::application::{RateMode, UserRepository};
+use keikaku::domain::Card;
 use keikaku::settings::ApplicationEnvironment;
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -264,13 +263,13 @@ fn map_card_to_learn_card(card: Card) -> LearnCard {
             answer: v.meaning().text().to_string(),
             example_phrases: v.example_phrases().to_vec(),
             kanji_info: v
-                .get_kanji_cards(&keikaku::domain::value_objects::JapaneseLevel::N5)
+                .get_kanji_cards(&keikaku::domain::JapaneseLevel::N5)
                 .into_iter()
                 .cloned()
                 .collect(), // TODO: Use proper level
             example_words: vec![],
             radicals: vec![],
-            jlpt_level: keikaku::domain::value_objects::JapaneseLevel::N5, // TODO: Add proper level
+            jlpt_level: keikaku::domain::JapaneseLevel::N5, // TODO: Add proper level
             markdown_description: None,
         },
         Card::Kanji(k) => LearnCard {
@@ -299,7 +298,7 @@ fn map_card_to_learn_card(card: Card) -> LearnCard {
             kanji_info: vec![],
             example_words: vec![],
             radicals: vec![],
-            jlpt_level: keikaku::domain::value_objects::JapaneseLevel::N5, // TODO: Grammar rules don't have JLPT level
+            jlpt_level: keikaku::domain::JapaneseLevel::N5, // TODO: Grammar rules don't have JLPT level
             markdown_description: Some(g.description().text().to_string()),
         },
     }
@@ -314,13 +313,13 @@ fn map_study_item_to_learn_card((card_id, card): (Ulid, Card)) -> LearnCard {
             answer: v.meaning().text().to_string(),
             example_phrases: v.example_phrases().to_vec(),
             kanji_info: v
-                .get_kanji_cards(&keikaku::domain::value_objects::JapaneseLevel::N5)
+                .get_kanji_cards(&keikaku::domain::JapaneseLevel::N5)
                 .into_iter()
                 .cloned()
                 .collect(), // TODO: Use proper level
             example_words: vec![],
             radicals: vec![],
-            jlpt_level: keikaku::domain::value_objects::JapaneseLevel::N5, // TODO: Add proper level
+            jlpt_level: keikaku::domain::JapaneseLevel::N5, // TODO: Add proper level
             markdown_description: None,
         },
         Card::Kanji(k) => LearnCard {
@@ -349,7 +348,7 @@ fn map_study_item_to_learn_card((card_id, card): (Ulid, Card)) -> LearnCard {
             kanji_info: vec![],
             example_words: vec![],
             radicals: vec![],
-            jlpt_level: keikaku::domain::value_objects::JapaneseLevel::N5, // TODO: Grammar rules don't have JLPT level
+            jlpt_level: keikaku::domain::JapaneseLevel::N5, // TODO: Grammar rules don't have JLPT level
             markdown_description: Some(g.description().text().to_string()),
         },
     }
@@ -369,12 +368,7 @@ async fn rate_card_impl(card_id: Ulid, rating: crate::domain::Rating) -> Result<
         crate::domain::Rating::Again => keikaku::domain::Rating::Again,
     };
     rate_usecase
-        .execute(
-            user_id,
-            card_id,
-            keikaku::application::srs_service::RateMode::Standard,
-            domain_rating,
-        )
+        .execute(user_id, card_id, RateMode::StandardLesson, domain_rating)
         .await
         .map_err(to_error)
 }

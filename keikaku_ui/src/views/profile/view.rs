@@ -1,11 +1,11 @@
-use dioxus::prelude::*;
-use dioxus_primitives::toast::{ToastOptions, use_toast};
-use keikaku::application::UserRepository;
-use keikaku::domain::UserSettings;
-
 use crate::components::app_ui::{ErrorCard, SectionHeader};
 use crate::views::profile::SettingsForm;
 use crate::{DEFAULT_USERNAME, ensure_user, to_error};
+use dioxus::prelude::*;
+use dioxus_primitives::toast::{ToastOptions, use_toast};
+use keikaku::application::UserRepository;
+use keikaku::application::{UpdateUserSettingsRequest, UpdateUserSettingsUseCase};
+use keikaku::domain::UserSettings;
 use keikaku::settings::ApplicationEnvironment;
 
 #[component]
@@ -93,10 +93,6 @@ async fn fetch_user_settings() -> Result<UserSettings, String> {
 }
 
 async fn save_user_settings(settings: UserSettings) -> Result<(), String> {
-    use keikaku::application::use_cases::update_user_settings::{
-        UpdateUserSettingsRequest, UpdateUserSettingsUseCase,
-    };
-
     let env = ApplicationEnvironment::get();
     let user_id = ensure_user(env, DEFAULT_USERNAME).await?;
     let repo = env.get_repository().await.map_err(to_error)?;

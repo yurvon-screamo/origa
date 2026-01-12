@@ -1,20 +1,58 @@
+use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
+use ulid::Ulid;
 
 use crate::domain::{
     KeikakuError,
-    grammar::{GrammarRule, verb_forms::to_mashou_form},
+    grammar::{GrammarRule, GrammarRuleContent, GrammarRuleInfo, verb_forms::to_mashou_form},
     tokenizer::PartOfSpeech,
     value_objects::{JapaneseLevel, NativeLanguage},
 };
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct VerbMashouRule;
+pub struct VerbMashouRule {
+    rule: GrammarRuleInfo,
+}
+
+impl Default for VerbMashouRule {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl VerbMashouRule {
+    pub fn new() -> Self {
+        let mut content = HashMap::new();
+        content.insert(
+            NativeLanguage::Russian,
+            GrammarRuleContent {
+                title: "Форма ～ましょう".to_string(),
+                short_description: "Давай сделаем".to_string(),
+                md_description: "".to_string(),
+            },
+        );
+        content.insert(
+            NativeLanguage::English,
+            GrammarRuleContent {
+                title: "Form ～ましょう".to_string(),
+                short_description: "".to_string(),
+                md_description: "".to_string(),
+            },
+        );
+
+        let rule = GrammarRuleInfo::new(
+            Ulid::from_string("01D39ZY06FGSCTVN4T2V9PKHFA").expect("Invalid ID"),
+            JapaneseLevel::N5,
+            vec![PartOfSpeech::Verb],
+            content,
+        );
+
+        Self { rule }
+    }
+}
 
 impl GrammarRule for VerbMashouRule {
-    fn apply_to(&self) -> Vec<PartOfSpeech> {
-        vec![PartOfSpeech::Verb]
-    }
-
     fn format(&self, word: &str, part_of_speech: &PartOfSpeech) -> Result<String, KeikakuError> {
         match part_of_speech {
             PartOfSpeech::Verb => Ok(to_mashou_form(word)),
@@ -24,39 +62,7 @@ impl GrammarRule for VerbMashouRule {
         }
     }
 
-    fn title(&self, lang: &NativeLanguage) -> String {
-        match lang {
-            NativeLanguage::Russian => "Форма ～ましょう",
-            NativeLanguage::English => "Form ～ましょう",
-        }
-        .to_string()
-    }
-
-    fn md_description(&self, lang: &NativeLanguage) -> String {
-        match lang {
-            NativeLanguage::Russian => {
-                r#"# Форма ～ましょう
-
-Форма для предложения или приглашения ("Давайте сделаем").
-
-## Примеры
-- 一緒に行きましょう (Давайте пойдем вместе)
-- 食べましょう (Давайте поедим)"#
-            }
-            NativeLanguage::English => {
-                r#"# Form ～ましょう
-
-Form for suggestion or invitation ("Let's do").
-
-## Examples
-- 一緒に行きましょう (Let's go together)
-- 食べましょう (Let's eat)"#
-            }
-        }
-        .to_string()
-    }
-
-    fn level(&self) -> JapaneseLevel {
-        JapaneseLevel::N5
+    fn info(&self) -> &GrammarRuleInfo {
+        &self.rule
     }
 }
