@@ -5,7 +5,6 @@ use ulid::Ulid;
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum OrigaError {
     UserNotFound { user_id: Ulid },
-    UserNotFoundByUsername { username: String },
     CardNotFound { card_id: Ulid },
     DuplicateCard { question: String },
     InvalidQuestion { reason: String },
@@ -24,7 +23,7 @@ pub enum OrigaError {
     InvalidValues { reason: String },
     TokenizerError { reason: String },
     GrammarFormatError { reason: String },
-    WellKnownSetError { reason: String },
+    WellKnownSetParseError { reason: String },
 }
 
 impl fmt::Display for OrigaError {
@@ -33,9 +32,7 @@ impl fmt::Display for OrigaError {
             OrigaError::UserNotFound { user_id } => {
                 write!(f, "User with id {} not found", user_id)
             }
-            OrigaError::UserNotFoundByUsername { username } => {
-                write!(f, "User with username {} not found", username)
-            }
+
             OrigaError::CardNotFound { card_id } => {
                 write!(f, "Card with id {} not found", card_id)
             }
@@ -90,7 +87,7 @@ impl fmt::Display for OrigaError {
             OrigaError::GrammarFormatError { reason } => {
                 write!(f, "Grammar rule format error: {}", reason)
             }
-            OrigaError::WellKnownSetError { reason } => {
+            OrigaError::WellKnownSetParseError { reason } => {
                 write!(f, "WellKnownSetError: {}", reason)
             }
         }
