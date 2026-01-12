@@ -1,0 +1,37 @@
+[package]
+name = "origa_ui_dx"
+version = "0.1.0"
+authors = ["yurvon-screamo <yurvon@ya.ru>"]
+edition = "2024"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+origa = { path = "../origa" }
+dioxus.workspace = true
+dioxus-heroicons.workspace = true
+tokio.workspace = true
+ulid.workspace = true
+imp.workspace = true
+chrono.workspace = true
+dioxus-primitives.workspace = true
+dioxus-logger.workspace = true
+wasm-bindgen.workspace = true
+wasm-bindgen-futures.workspace = true
+web-sys.workspace = true
+js-sys.workspace = true
+serde.workspace = true
+serde-wasm-bindgen.workspace = true
+getrandom = { version = "0.3.4", features = ["wasm_js"] }
+
+[features]
+default = ["web"]
+# The feature that are only required for the web = ["dioxus/web"] build target should be optional and only enabled in the web = ["dioxus/web"] feature
+web = ["dioxus/web"]
+# The feature that are only required for the desktop = ["dioxus/desktop"] build target should be optional and only enabled in the desktop = ["dioxus/desktop"] feature
+desktop = ["dioxus/desktop"]
+# The feature that are only required for the mobile = ["dioxus/mobile"] build target should be optional and only enabled in the mobile = ["dioxus/mobile"] feature
+mobile = ["dioxus/mobile"]
+
+[target.wasm32-unknown-unknown]
+rustflags = ['--cfg', 'getrandom_backend="wasm_js"']

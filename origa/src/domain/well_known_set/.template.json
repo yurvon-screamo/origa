@@ -1,0 +1,16 @@
+{
+  "level": "N4",
+  "content": {
+    "Russian": {
+      "title": "Название",
+      "description": "Описание."
+    },
+    "English": {
+      "title": "Name",
+      "description": "Description."
+    }
+  },
+  "words": [
+    "word"
+  ]
+}

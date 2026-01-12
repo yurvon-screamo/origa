@@ -1,0 +1,51 @@
+use crate::application::SrsService;
+use crate::application::srs_service::{NextReview, RateMode};
+use crate::application::user_repository::UserRepository;
+use crate::domain::OrigaError;
+use crate::domain::Rating;
+use ulid::Ulid;
+
+#[derive(Clone, Copy)]
+pub struct RateCardUseCase<'a, R: UserRepository, S: SrsService> {
+    repository: &'a R,
+    srs_service: &'a S,
+}
+
+impl<'a, R: UserRepository, S: SrsService> RateCardUseCase<'a, R, S> {
+    pub fn new(repository: &'a R, srs_service: &'a S) -> Self {
+        Self {
+            repository,
+            srs_service,
+        }
+    }
+
+    pub async fn execute(
+        &self,
+        user_id: Ulid,
+        card_id: Ulid,
+        mode: RateMode,
+        rating: Rating,
+    ) -> Result<(), OrigaError> {
+        let mut user = self
+            .repository
+            .find_by_id(user_id)
+            .await?
+            .ok_or(OrigaError::UserNotFound { user_id })?;
+
+        let card = user
+            .knowledge_set()
+            .get_card(card_id)
+            .ok_or(OrigaError::CardNotFound { card_id })?;
+
+        let NextReview {
+            interval,
+            memory_state,
+        } = self.srs_service.rate(mode, rating, card.memory()).await?;
+
+        user.rate_card(card_id, rating, interval, memory_state)?;
+
+        self.repository.save(&user).await?;
+
+        Ok(())
+    }
+}

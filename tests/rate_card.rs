@@ -1,10 +1,10 @@
 #[path = "mod.rs"]
 mod tests;
 
-use keikaku::application::{CreateCardUseCase, RateCardUseCase};
-use keikaku::application::user_repository::UserRepository;
-use keikaku::domain::{Answer, CardContent, Rating};
-use keikaku::settings::ApplicationEnvironment;
+use origa::application::{CreateCardUseCase, RateCardUseCase};
+use origa::application::user_repository::UserRepository;
+use origa::domain::{Answer, CardContent, Rating};
+use origa::settings::ApplicationEnvironment;
 use tests::*;
 
 #[tokio::test]
