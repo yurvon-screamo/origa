@@ -1,13 +1,9 @@
 use chrono::{DateTime, Utc};
 use dioxus::prelude::*;
-use keikaku::domain::knowledge::DailyHistoryItem;
-use keikaku::settings::ApplicationEnvironment;
 use keikaku::{
-    application::use_cases::{
-        get_user_info::{GetUserInfoUseCase, UserProfile},
-        knowledge_set_cards::KnowledgeSetCardsUseCase,
-    },
-    domain::knowledge::StudyCard,
+    application::{GetUserInfoUseCase, KnowledgeSetCardsUseCase, UserProfile},
+    domain::{DailyHistoryItem, StudyCard},
+    settings::ApplicationEnvironment,
 };
 
 use crate::{

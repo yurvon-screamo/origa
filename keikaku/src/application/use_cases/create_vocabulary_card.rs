@@ -1,9 +1,9 @@
 use super::generate_card_content::GenerateCardContentUseCase;
 use crate::application::UserRepository;
-use crate::domain::error::KeikakuError;
-use crate::domain::knowledge::{Card, StudyCard, VocabularyCard};
-use crate::domain::tokenizer::Tokenizer;
-use crate::domain::value_objects::Question;
+use crate::domain::KeikakuError;
+use crate::domain::Question;
+use crate::domain::tokenize_text;
+use crate::domain::{Card, StudyCard, VocabularyCard};
 use tracing::error;
 use ulid::Ulid;
 
@@ -46,8 +46,7 @@ impl<'a, R: UserRepository, L: crate::application::LlmService>
         user: &mut crate::domain::User,
         question_text: String,
     ) -> Result<Vec<StudyCard>, KeikakuError> {
-        let tokenizer = Tokenizer::new()?;
-        let tokens = tokenizer.tokenize(question_text.as_str())?;
+        let tokens = tokenize_text(question_text.as_str())?;
         let mut cards = Vec::new();
 
         for token in tokens {

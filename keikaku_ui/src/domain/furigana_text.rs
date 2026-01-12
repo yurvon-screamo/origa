@@ -1,5 +1,5 @@
 use dioxus::prelude::*;
-use keikaku::domain::japanese::IsJapaneseText;
+use keikaku::domain::JapaneseText;
 
 #[component]
 pub fn FuriganaText(text: String, show_furigana: bool, class: Option<String>) -> Element {

@@ -1,5 +1,5 @@
 use chrono::{DateTime, Duration, Utc};
-use keikaku::domain::value_objects::Rating;
+use keikaku::domain::Rating;
 
 #[derive(Clone, PartialEq)]
 pub struct ReviewInfo {

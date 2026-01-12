@@ -101,14 +101,6 @@ pub fn LlmSettingsForm(settings: LlmSettings, on_change: EventHandler<LlmSetting
     let openai_env_var = use_signal(|| openai_env_var_init);
 
     let update_settings = {
-        let llm_type = llm_type;
-        let gemini_temperature = gemini_temperature;
-        let gemini_model = gemini_model;
-        let openai_temperature = openai_temperature;
-        let openai_model = openai_model;
-        let openai_base_url = openai_base_url;
-        let openai_env_var = openai_env_var;
-        let on_change = on_change;
         move || {
             let new_settings = create_llm_settings(
                 llm_type(),

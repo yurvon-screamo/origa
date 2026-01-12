@@ -1,5 +1,5 @@
 use crate::application::LlmService;
-use crate::domain::error::KeikakuError;
+use crate::domain::KeikakuError;
 use async_trait::async_trait;
 use serde_json::{Value, json};
 use std::env;

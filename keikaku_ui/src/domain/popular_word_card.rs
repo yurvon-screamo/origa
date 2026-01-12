@@ -2,7 +2,7 @@ use dioxus::prelude::*;
 
 use crate::components::app_ui::Card;
 use crate::domain::FuriganaText;
-use keikaku::domain::dictionary::PopularWord;
+use keikaku::domain::PopularWord;
 
 #[component]
 pub fn PopularWordCard(

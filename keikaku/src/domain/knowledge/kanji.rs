@@ -1,7 +1,6 @@
 use crate::domain::{
-    KeikakuError,
-    dictionary::{KANJI_DB, RadicalInfo, VOCABULARY_DB},
-    value_objects::{Answer, JapaneseLevel, NativeLanguage, Question},
+    Answer, JapaneseLevel, KANJI_DICTIONARY, KeikakuError, NativeLanguage, Question, RadicalInfo,
+    VOCABULARY_DICTIONARY,
 };
 use serde::{Deserialize, Serialize};
 
@@ -20,13 +19,13 @@ pub struct ExampleKanjiWord {
 
 impl KanjiCard {
     pub fn new(kanji: String, native_language: &NativeLanguage) -> Result<Self, KeikakuError> {
-        let kanji_info = KANJI_DB.get_kanji_info(&kanji)?;
+        let kanji_info = KANJI_DICTIONARY.get_kanji_info(&kanji)?;
         let description = kanji_info.description();
         let example_words = kanji_info
             .popular_words()
             .iter()
             .map(|word| {
-                let meaning = VOCABULARY_DB
+                let meaning = VOCABULARY_DICTIONARY
                     .get_vocabulary_info(word)
                     .map(|kanji_info| match native_language {
                         NativeLanguage::Russian => kanji_info.russian_translation().to_string(),
@@ -61,21 +60,23 @@ impl KanjiCard {
     }
 
     pub fn jlpt(&self) -> JapaneseLevel {
-        KANJI_DB
+        KANJI_DICTIONARY
             .get_kanji_info(self.kanji.text())
             .map(|kanji_info| kanji_info.jlpt().to_owned())
             .unwrap_or(JapaneseLevel::N1)
     }
 
     pub fn used_in(&self) -> u32 {
-        KANJI_DB
+        KANJI_DICTIONARY
             .get_kanji_info(self.kanji.text())
             .map(|kanji_info| kanji_info.used_in())
             .unwrap_or(0)
     }
 
     pub fn radicals_info(&self) -> Result<Vec<&RadicalInfo>, KeikakuError> {
-        Ok(KANJI_DB.get_kanji_info(self.kanji.text())?.radicals())
+        Ok(KANJI_DICTIONARY
+            .get_kanji_info(self.kanji.text())?
+            .radicals())
     }
 }
 

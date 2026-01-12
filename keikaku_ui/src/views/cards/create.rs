@@ -1,10 +1,11 @@
-use dioxus::prelude::*;
-
 use crate::components::button::{Button, ButtonVariant};
 use crate::components::input::Input;
 use crate::components::sheet::{
     Sheet, SheetContent, SheetFooter, SheetHeader, SheetSide, SheetTitle,
 };
+use crate::{DEFAULT_USERNAME, ensure_user, to_error};
+use dioxus::prelude::*;
+use keikaku::application::CreateVocabularyCardUseCase;
 use keikaku::settings::ApplicationEnvironment;
 
 #[component]
@@ -80,9 +81,6 @@ pub fn CreateModal(
 }
 
 async fn create_card(question: String) -> Result<(), String> {
-    use crate::{DEFAULT_USERNAME, ensure_user, to_error};
-    use keikaku::application::use_cases::create_vocabulary_card::CreateVocabularyCardUseCase;
-
     let env = ApplicationEnvironment::get();
     let repo = env.get_repository().await.map_err(to_error)?;
     let user_id = ensure_user(env, DEFAULT_USERNAME).await?;

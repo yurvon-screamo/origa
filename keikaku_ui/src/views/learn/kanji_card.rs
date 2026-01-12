@@ -3,7 +3,7 @@ use dioxus::prelude::*;
 use crate::components::app_ui::{InfoSection, InfoSectionTone};
 use crate::domain::{AnswerActionButtons, FuriganaText, RadicalGrid, Rating, WordCard};
 use crate::views::learn::learn_session::{LearnCard, LearnStep};
-use keikaku::domain::value_objects::NativeLanguage;
+use keikaku::domain::{NativeLanguage, RadicalInfo};
 
 #[component]
 pub fn KanjiCardView(
@@ -111,7 +111,7 @@ fn KanjiAnswerView(
                         // Middle column: Examples
                         KanjiExamplesSection { card: card.clone(), show_furigana }
                     }
-                
+
                 }
 
                 // Right column: Action buttons
@@ -201,7 +201,7 @@ fn KanjiExamplesSection(card: LearnCard, show_furigana: bool) -> Element {
 }
 
 #[component]
-fn KanjiRadicalsSection(radicals: Vec<keikaku::domain::dictionary::RadicalInfo>) -> Element {
+fn KanjiRadicalsSection(radicals: Vec<RadicalInfo>) -> Element {
     rsx! {
         RadicalGrid { radicals: radicals.clone(), show_kanji_list: true, dense: None }
     }

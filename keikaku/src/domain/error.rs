@@ -24,6 +24,7 @@ pub enum KeikakuError {
     InvalidValues { reason: String },
     TokenizerError { reason: String },
     GrammarFormatError { reason: String },
+    WellKnownSetError { reason: String },
 }
 
 impl fmt::Display for KeikakuError {
@@ -88,6 +89,9 @@ impl fmt::Display for KeikakuError {
             }
             KeikakuError::GrammarFormatError { reason } => {
                 write!(f, "Grammar rule format error: {}", reason)
+            }
+            KeikakuError::WellKnownSetError { reason } => {
+                write!(f, "WellKnownSetError: {}", reason)
             }
         }
     }

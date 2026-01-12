@@ -1,5 +1,5 @@
 use crate::application::{CreateVocabularyCardUseCase, LlmService, UserRepository};
-use crate::domain::error::KeikakuError;
+use crate::domain::KeikakuError;
 use regex::Regex;
 use rusqlite::Connection;
 use serde_json::Value;

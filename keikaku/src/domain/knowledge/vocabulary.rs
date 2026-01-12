@@ -1,6 +1,9 @@
-use crate::domain::dictionary::{KANJI_DB, KanjiInfo};
-use crate::domain::japanese::IsJapanese;
-use crate::domain::value_objects::{Answer, ExamplePhrase, JapaneseLevel, Question};
+use crate::domain::KeikakuError;
+use crate::domain::dictionary::{KANJI_DICTIONARY, KanjiInfo};
+use crate::domain::grammar::GrammarRule;
+use crate::domain::japanese::JapaneseChar;
+use crate::domain::tokenizer::{PartOfSpeech, tokenize_text};
+use crate::domain::{Answer, JapaneseLevel, NativeLanguage, Question};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -36,8 +39,71 @@ impl VocabularyCard {
             .text()
             .chars()
             .filter(|c| c.is_kanji())
-            .filter_map(|c| KANJI_DB.get_kanji_info(&c.to_string()).ok())
+            .filter_map(|c| KANJI_DICTIONARY.get_kanji_info(&c.to_string()).ok())
             .filter(|k| k.jlpt() <= current_level)
             .collect::<Vec<_>>()
+    }
+
+    pub fn part_of_speech(&self) -> Result<PartOfSpeech, KeikakuError> {
+        let tokens = tokenize_text(self.word.text())?;
+        let token = tokens.first().ok_or(KeikakuError::TokenizerError {
+            reason: "Not found token".to_string(),
+        })?;
+        Ok(token.part_of_speech().clone())
+    }
+
+    pub fn with_grammar_rule(
+        &self,
+        rule: &Box<dyn GrammarRule>,
+        lang: &NativeLanguage,
+    ) -> Result<Self, KeikakuError> {
+        let formatted_word = rule.format(self.word.text(), &self.part_of_speech()?)?;
+        let meaning = self.meaning.text();
+        let description = rule.info().content(lang).short_description();
+
+        let meaning = match lang {
+            NativeLanguage::Russian => format!(
+                "Слово: {} с примененной грамматической конструкцией: {}",
+                meaning, description
+            ),
+            NativeLanguage::English => format!(
+                "Word: {} with applyed grammar rule: {}",
+                meaning, description
+            ),
+        };
+
+        Ok(Self {
+            word: Question::new(formatted_word)?,
+            meaning: Answer::new(meaning)?,
+            example_phrases: self.example_phrases.clone(),
+        })
+    }
+
+    pub fn revert(&self) -> Result<Self, KeikakuError> {
+        Ok(Self {
+            word: Question::new(self.meaning.text().to_string())?,
+            meaning: Answer::new(self.word.text().to_string())?,
+            example_phrases: self.example_phrases.clone(),
+        })
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct ExamplePhrase {
+    text: String,
+    translation: String,
+}
+
+impl ExamplePhrase {
+    pub fn new(text: String, translation: String) -> Self {
+        Self { text, translation }
+    }
+
+    pub fn text(&self) -> &String {
+        &self.text
+    }
+
+    pub fn translation(&self) -> &String {
+        &self.translation
     }
 }

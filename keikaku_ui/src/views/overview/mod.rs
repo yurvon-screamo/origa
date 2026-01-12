@@ -1,9 +1,9 @@
 mod chart;
 mod metric;
 mod metric_card;
-mod overview;
+mod page;
 
-pub use overview::Overview;
+pub use page::Overview;
 
 use crate::components::app_ui::ChartDataPoint;
 

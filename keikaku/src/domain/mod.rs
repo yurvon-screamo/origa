@@ -1,26 +1,50 @@
-pub mod dictionary;
-pub mod error;
-pub mod furiganizer;
-pub mod grammar;
-pub mod japanese;
-pub mod knowledge;
-pub mod review;
-pub mod settings;
-pub mod tokenizer;
-pub mod value_objects;
+mod memory;
+pub use memory::{Difficulty, MemoryHistory, MemoryState, Rating, ReviewLog, Stability};
 
-use crate::domain::{
-    knowledge::{Card, KnowledgeSet, StudyCard},
-    review::MemoryState,
-    value_objects::{JapaneseLevel, NativeLanguage},
-};
-use chrono::Duration;
+mod value_objects;
+pub use value_objects::{Answer, JapaneseLevel, NativeLanguage, Question};
+
+mod error;
 pub use error::KeikakuError;
-pub use review::Review;
-use serde::{Deserialize, Serialize};
+
+mod furigana;
+pub use furigana::furiganize_text;
+
+mod japanese;
+pub use japanese::{JapaneseChar, JapaneseText};
+
+mod well_known_set;
+pub use well_known_set::{
+    WellKnownSet, WellKnownSetContent, load_jlpt_n1, load_jlpt_n2, load_jlpt_n3, load_jlpt_n4,
+    load_jlpt_n5,
+};
+
+mod settings;
 pub use settings::{LlmSettings, UserSettings};
+
+mod tokenizer;
+pub use tokenizer::{PartOfSpeech, TokenInfo, tokenize_text};
+
+mod grammar;
+pub use grammar::{
+    GRAMMAR_RULES, GrammarRule, GrammarRuleContent, GrammarRuleInfo, get_rule_by_id,
+};
+
+mod knowledge;
+pub use knowledge::{
+    Card, DailyHistoryItem, ExampleKanjiWord, ExamplePhrase, GrammarRuleCard, KanjiCard,
+    KnowledgeSet, StudyCard, VocabularyCard,
+};
+
+mod dictionary;
+pub use dictionary::{
+    KANJI_DICTIONARY, KanjiInfo, PopularWord, RADICAL_DICTIONARY, RadicalInfo,
+    VOCABULARY_DICTIONARY, VocabularyInfo,
+};
+
+use chrono::Duration;
+use serde::{Deserialize, Serialize};
 use ulid::Ulid;
-pub use value_objects::Rating;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct User {

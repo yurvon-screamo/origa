@@ -1,6 +1,6 @@
 use crate::application::user_repository::UserRepository;
-use crate::domain::error::KeikakuError;
-use crate::domain::knowledge::StudyCard;
+use crate::domain::KeikakuError;
+use crate::domain::StudyCard;
 use ulid::Ulid;
 
 #[derive(Clone)]

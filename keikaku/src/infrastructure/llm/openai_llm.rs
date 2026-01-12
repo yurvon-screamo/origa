@@ -1,5 +1,5 @@
 use crate::application::LlmService;
-use crate::domain::error::KeikakuError;
+use crate::domain::KeikakuError;
 use async_openai_wasm::types::chat::{
     ChatCompletionRequestMessage, CreateChatCompletionRequestArgs,
 };

@@ -1,9 +1,9 @@
 #[path = "mod.rs"]
 mod tests;
 
-use keikaku::application::use_cases::{CreateCardUseCase, DeleteCardUseCase};
+use keikaku::application::{CreateCardUseCase, DeleteCardUseCase};
 use keikaku::application::user_repository::UserRepository;
-use keikaku::domain::value_objects::{Answer, CardContent};
+use keikaku::domain::{Answer, CardContent};
 use keikaku::settings::ApplicationEnvironment;
 use tests::*;
 

@@ -9,7 +9,7 @@ pub fn LearnActive(
     current_index: usize,
     current_step: super::LearnStep,
     show_furigana: bool,
-    native_language: keikaku::domain::value_objects::NativeLanguage,
+    native_language: keikaku::domain::NativeLanguage,
     on_next: EventHandler<()>,
     on_show_answer: EventHandler<()>,
     on_prev: Option<EventHandler<()>>,

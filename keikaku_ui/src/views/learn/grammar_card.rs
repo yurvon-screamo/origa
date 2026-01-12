@@ -2,7 +2,7 @@ use dioxus::prelude::*;
 
 use crate::domain::{AnswerActionButtons, Rating, WordCard};
 use crate::views::learn::learn_session::{LearnCard, LearnStep};
-use keikaku::domain::value_objects::NativeLanguage;
+use keikaku::domain::NativeLanguage;
 
 #[component]
 pub fn GrammarCardView(
@@ -117,7 +117,7 @@ fn GrammarAnswerView(
                         // Middle column: Empty for grammar cards
                         div { class: "space-y-2" }
                     }
-                
+
                 }
 
                 // Right column: Action buttons

@@ -1,5 +1,5 @@
 use crate::application::user_repository::UserRepository;
-use crate::domain::error::KeikakuError;
+use crate::domain::KeikakuError;
 use chrono::Duration;
 use ulid::Ulid;
 

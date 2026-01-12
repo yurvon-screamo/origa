@@ -1,7 +1,8 @@
 use crate::application::LlmService;
-use crate::domain::dictionary::VOCABULARY_DB;
-use crate::domain::error::KeikakuError;
-use crate::domain::value_objects::{Answer, ExamplePhrase, JapaneseLevel, NativeLanguage};
+use crate::domain::ExamplePhrase;
+use crate::domain::KeikakuError;
+use crate::domain::VOCABULARY_DICTIONARY;
+use crate::domain::{Answer, JapaneseLevel, NativeLanguage};
 use serde::Deserialize;
 
 const MAX_RETRIES: usize = 3;
@@ -47,9 +48,12 @@ impl<'a, L: LlmService> GenerateCardContentUseCase<'a, L> {
         question_text: &str,
         native_language: &NativeLanguage,
     ) -> Result<Option<CardContent>, KeikakuError> {
-        if let Some(translation) = VOCABULARY_DB.get_translation(question_text, native_language) {
+        if let Some(translation) =
+            VOCABULARY_DICTIONARY.get_translation(question_text, native_language)
+        {
             let answer = Answer::new(translation)?;
-            if let Some(examples) = VOCABULARY_DB.get_examples(question_text, native_language)
+            if let Some(examples) =
+                VOCABULARY_DICTIONARY.get_examples(question_text, native_language)
                 && !examples.is_empty()
             {
                 return Ok(Some(CardContent { answer, examples }));

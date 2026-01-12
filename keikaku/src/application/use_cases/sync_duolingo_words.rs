@@ -1,5 +1,5 @@
 use crate::application::{CreateVocabularyCardUseCase, DuolingoClient, LlmService, UserRepository};
-use crate::domain::error::KeikakuError;
+use crate::domain::KeikakuError;
 use ulid::Ulid;
 
 pub struct SyncDuolingoWordsResult {

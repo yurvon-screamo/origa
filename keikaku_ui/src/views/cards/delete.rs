@@ -1,7 +1,7 @@
 use dioxus::prelude::*;
 use dioxus_heroicons::{Icon, solid};
 use dioxus_primitives::toast::{ToastOptions, Toasts};
-use keikaku::application::use_cases::delete_card::DeleteCardUseCase;
+use keikaku::application::DeleteCardUseCase;
 use ulid::Ulid;
 
 use crate::components::alert_dialog::{

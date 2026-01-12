@@ -1,7 +1,7 @@
 use crate::application::{
     CreateVocabularyCardUseCase, LlmService, MigiiClient, MigiiWord, UserRepository,
 };
-use crate::domain::error::KeikakuError;
+use crate::domain::KeikakuError;
 use ulid::Ulid;
 
 pub struct ImportMigiiPackResult {

@@ -4,7 +4,7 @@ use crate::{
     components::app_ui::{
         Card, H2, H4, Heatmap, HeatmapDataPoint, Paragraph, Pill, Size, StateTone, Tag,
     },
-    views::overview::overview::{MetricData, OverviewStats},
+    views::overview::page::{MetricData, OverviewStats},
 };
 
 #[component]

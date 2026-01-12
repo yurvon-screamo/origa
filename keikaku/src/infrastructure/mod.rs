@@ -1,8 +1,8 @@
-pub mod duolingo_client;
-pub mod llm;
-pub mod migii;
-pub mod srs;
-pub mod user_repository;
+mod duolingo_client;
+mod llm;
+mod migii;
+mod srs;
+mod user_repository;
 
 pub use duolingo_client::HttpDuolingoClient;
 pub use llm::GeminiLlm;

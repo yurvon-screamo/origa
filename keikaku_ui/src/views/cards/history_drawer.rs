@@ -5,7 +5,7 @@ use crate::{
     components::sheet::{Sheet, SheetContent, SheetFooter, SheetHeader, SheetSide, SheetTitle},
     views::cards::UiCard,
 };
-use keikaku::domain::value_objects::Rating;
+use keikaku::domain::Rating;
 
 #[component]
 pub fn CardHistoryDrawer(

@@ -1,5 +1,6 @@
 use crate::application::{CreateVocabularyCardUseCase, LlmService, UserRepository};
-use crate::domain::{dictionary::JLPT_DB, error::KeikakuError, value_objects::JapaneseLevel};
+use crate::domain::{JapaneseLevel, KeikakuError};
+use crate::domain::{load_jlpt_n1, load_jlpt_n2, load_jlpt_n3, load_jlpt_n4, load_jlpt_n5};
 use ulid::Ulid;
 
 pub struct ImportJlptRecommendedResult {
@@ -21,18 +22,23 @@ impl<'a, R: UserRepository, L: LlmService> ExportJlptRecommendedUseCase<'a, R, L
     pub async fn execute(
         &self,
         user_id: Ulid,
-        levels: Vec<JapaneseLevel>,
+        level: JapaneseLevel,
     ) -> Result<ImportJlptRecommendedResult, KeikakuError> {
         let mut total_created_count = 0;
         let mut total_skipped_words = Vec::new();
 
-        for level in levels {
-            let words = JLPT_DB.get_words_for_level(&level);
-            let (created, skipped) = self.process_words(user_id, words).await?;
+        let words = match level {
+            JapaneseLevel::N5 => load_jlpt_n5(),
+            JapaneseLevel::N4 => load_jlpt_n4(),
+            JapaneseLevel::N3 => load_jlpt_n3(),
+            JapaneseLevel::N2 => load_jlpt_n2(),
+            JapaneseLevel::N1 => load_jlpt_n1(),
+        }?;
 
-            total_created_count += created;
-            total_skipped_words.extend(skipped);
-        }
+        let (created, skipped) = self.process_words(user_id, words.words()).await?;
+
+        total_created_count += created;
+        total_skipped_words.extend(skipped);
 
         Ok(ImportJlptRecommendedResult {
             total_created_count,
@@ -43,7 +49,7 @@ impl<'a, R: UserRepository, L: LlmService> ExportJlptRecommendedUseCase<'a, R, L
     async fn process_words(
         &self,
         user_id: Ulid,
-        words: Vec<String>,
+        words: &[String],
     ) -> Result<(usize, Vec<String>), KeikakuError> {
         let mut created_count = 0;
         let mut skipped_words = Vec::new();
