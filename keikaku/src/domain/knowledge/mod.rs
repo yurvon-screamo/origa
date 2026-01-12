@@ -13,8 +13,7 @@ pub use vocabulary::{ExamplePhrase, VocabularyCard};
 use std::collections::HashMap;
 
 use crate::domain::{
-    KeikakuError, Rating, ReviewLog, grammar::get_rule_by_id, memory::MemoryState,
-    value_objects::NativeLanguage,
+    KeikakuError, Rating, ReviewLog, memory::MemoryState, value_objects::NativeLanguage,
 };
 use chrono::{Duration, Utc};
 use rand::seq::SliceRandom;
@@ -143,64 +142,23 @@ impl KnowledgeSet {
         priority_cards.extend(known_cards);
         priority_cards.shuffle(&mut rand::rng());
 
+        let known_rules: Vec<_> = self
+            .study_cards
+            .values()
+            .filter_map(|x| match x.card() {
+                Card::Grammar(grammar_rule_card) => Some(grammar_rule_card.clone()),
+                _ => None,
+            })
+            .collect();
+
         priority_cards
             .iter()
-            .filter_map(|(card_id, card)| self.shuffle_card(lang, card_id, card).ok())
+            .filter_map(|(card_id, card)| {
+                card.shuffle_card(lang, &known_rules)
+                    .ok()
+                    .map(|c| (**card_id, c))
+            })
             .collect()
-    }
-
-    fn shuffle_card(
-        &self,
-        lang: &NativeLanguage,
-        card_id: &Ulid,
-        card: &StudyCard,
-    ) -> Result<(Ulid, Card), KeikakuError> {
-        let mut content = card.card().clone();
-
-        if !card.memory().is_known_card() && !card.memory().is_in_progress() {
-            return Ok((*card_id, content));
-        }
-
-        content = match &content {
-            Card::Vocabulary(vocab) => match rand::random_bool(0.5) {
-                false => {
-                    let reverted = vocab.revert()?;
-                    Card::Vocabulary(reverted)
-                }
-                true => {
-                    let mut rules: Vec<_> = self
-                        .study_cards
-                        .values()
-                        .filter_map(|x| match x.card() {
-                            Card::Grammar(grammar_rule_card) => {
-                                let word_part = vocab.part_of_speech().ok()?;
-
-                                if grammar_rule_card.apply_to().contains(&word_part) {
-                                    Some(grammar_rule_card.clone())
-                                } else {
-                                    None
-                                }
-                            }
-                            _ => None,
-                        })
-                        .collect();
-
-                    rules.shuffle(&mut rand::rng());
-
-                    if let Some(rule) = rules.first()
-                        && let Some(rule) = get_rule_by_id(rule.rule_id())
-                    {
-                        let vocab_with_rule = vocab.with_grammar_rule(rule, lang)?;
-                        Card::Vocabulary(vocab_with_rule)
-                    } else {
-                        content
-                    }
-                }
-            },
-            _ => content,
-        };
-
-        Ok((*card_id, content))
     }
 
     pub(crate) fn rate_card(

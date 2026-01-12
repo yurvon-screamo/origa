@@ -8,10 +8,10 @@ use crate::components::switch::{Switch, SwitchThumb};
 use crate::components::tabs::{TabContent, TabList, TabTrigger, Tabs};
 use crate::{DEFAULT_USERNAME, ensure_user, to_error};
 use keikaku::application::{
-    ExportAnkiPackUseCase, ExportJlptRecommendedUseCase, ExportMigiiPackUseCase,
+    ExportAnkiPackUseCase, ExportMigiiPackUseCase, ImportWellKnownSetUseCase,
     SyncDuolingoWordsUseCase,
 };
-use keikaku::domain::JapaneseLevel;
+use keikaku::domain::WellKnownSets;
 use keikaku::infrastructure::HttpDuolingoClient;
 use keikaku::settings::ApplicationEnvironment;
 
@@ -438,14 +438,15 @@ async fn run_duolingo() -> Result<String, String> {
     ))
 }
 
-async fn run_jlpt(level: String) -> Result<String, String> {
+async fn run_jlpt(_level: String) -> Result<String, String> {
     let env = ApplicationEnvironment::get();
     let user_id = ensure_user(env, DEFAULT_USERNAME).await?;
     let repo = env.get_repository().await.map_err(to_error)?;
     let llm = env.get_llm_service(user_id).await.map_err(to_error)?;
 
-    let parsed_level = level.parse::<JapaneseLevel>()?;
-    let res = ExportJlptRecommendedUseCase::new(repo, &llm)
+    // TODO!!!!!!!!!!!!!!! WellKnownSets!!!!!!1
+    let parsed_level = WellKnownSets::JlptN5;
+    let res = ImportWellKnownSetUseCase::new(repo, &llm)
         .execute(user_id, parsed_level)
         .await
         .map_err(to_error)?;

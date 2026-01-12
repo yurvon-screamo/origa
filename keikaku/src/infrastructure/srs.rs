@@ -14,15 +14,19 @@ pub struct FsrsSrsService {
 
 impl FsrsSrsService {
     pub fn new() -> Result<Self, KeikakuError> {
-        let mut short_term_parameters = Parameters::default();
-        short_term_parameters.request_retention = 0.95;
-        short_term_parameters.maximum_interval = 24; // TODO: 1 day
-        short_term_parameters.enable_fuzz = true;
-        short_term_parameters.enable_short_term = false;
+        let short_term_parameters = Parameters {
+            request_retention: 0.95,
+            maximum_interval: 24, // TODO CHECK: 1 day
+            enable_fuzz: true,
+            enable_short_term: false,
+            ..Default::default()
+        };
 
-        let mut long_term_parameters = Parameters::default();
-        long_term_parameters.enable_fuzz = true;
-        long_term_parameters.enable_short_term = true;
+        let long_term_parameters = Parameters {
+            enable_fuzz: true,
+            enable_short_term: true,
+            ..Default::default()
+        };
 
         Ok(Self {
             long_term_fsrs: FSRS::new(long_term_parameters),

@@ -1,18 +1,18 @@
 use crate::application::{CreateVocabularyCardUseCase, LlmService, UserRepository};
-use crate::domain::{JapaneseLevel, KeikakuError};
-use crate::domain::{load_jlpt_n1, load_jlpt_n2, load_jlpt_n3, load_jlpt_n4, load_jlpt_n5};
+use crate::domain::KeikakuError;
+use crate::domain::{WellKnownSets, load_well_known_set};
 use ulid::Ulid;
 
-pub struct ImportJlptRecommendedResult {
+pub struct ImportWellKnownSetResult {
     pub total_created_count: usize,
     pub skipped_words: Vec<String>,
 }
 
-pub struct ExportJlptRecommendedUseCase<'a, R: UserRepository, L: LlmService> {
+pub struct ImportWellKnownSetUseCase<'a, R: UserRepository, L: LlmService> {
     create_card_use_case: CreateVocabularyCardUseCase<'a, R, L>,
 }
 
-impl<'a, R: UserRepository, L: LlmService> ExportJlptRecommendedUseCase<'a, R, L> {
+impl<'a, R: UserRepository, L: LlmService> ImportWellKnownSetUseCase<'a, R, L> {
     pub fn new(repository: &'a R, llm_service: &'a L) -> Self {
         Self {
             create_card_use_case: CreateVocabularyCardUseCase::new(repository, llm_service),
@@ -22,25 +22,19 @@ impl<'a, R: UserRepository, L: LlmService> ExportJlptRecommendedUseCase<'a, R, L
     pub async fn execute(
         &self,
         user_id: Ulid,
-        level: JapaneseLevel,
-    ) -> Result<ImportJlptRecommendedResult, KeikakuError> {
+        set: WellKnownSets,
+    ) -> Result<ImportWellKnownSetResult, KeikakuError> {
         let mut total_created_count = 0;
         let mut total_skipped_words = Vec::new();
 
-        let words = match level {
-            JapaneseLevel::N5 => load_jlpt_n5(),
-            JapaneseLevel::N4 => load_jlpt_n4(),
-            JapaneseLevel::N3 => load_jlpt_n3(),
-            JapaneseLevel::N2 => load_jlpt_n2(),
-            JapaneseLevel::N1 => load_jlpt_n1(),
-        }?;
+        let words = load_well_known_set(&set)?;
 
         let (created, skipped) = self.process_words(user_id, words.words()).await?;
 
         total_created_count += created;
         total_skipped_words.extend(skipped);
 
-        Ok(ImportJlptRecommendedResult {
+        Ok(ImportWellKnownSetResult {
             total_created_count,
             skipped_words: total_skipped_words,
         })

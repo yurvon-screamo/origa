@@ -43,13 +43,13 @@ impl<'a, R: UserRepository> GrammarRuleInfoUseCase<'a, R> {
 
         Ok(GRAMMAR_RULES
             .iter()
-            .filter_map(|x| filter_by_level(x, lang, level))
+            .filter_map(|x| filter_by_level(x.as_ref(), lang, level))
             .collect())
     }
 }
 
 fn filter_by_level(
-    x: &Box<dyn GrammarRule>,
+    x: &dyn GrammarRule,
     lang: &NativeLanguage,
     level: &JapaneseLevel,
 ) -> Option<GrammarRuleItem> {
