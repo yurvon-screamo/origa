@@ -57,8 +57,11 @@ pub static GRAMMAR_RULES: LazyLock<Vec<Box<dyn GrammarRule>>> = LazyLock::new(||
     ]
 });
 
-pub fn get_rule_by_id(rule_id: &Ulid) -> Option<&'static Box<dyn GrammarRule>> {
-    GRAMMAR_RULES.iter().find(|x| x.info().rule_id() == rule_id)
+pub fn get_rule_by_id(rule_id: &Ulid) -> Option<&'static dyn GrammarRule> {
+    GRAMMAR_RULES
+        .iter()
+        .find(|x| x.info().rule_id() == rule_id)
+        .map(|x| x.as_ref())
 }
 
 pub trait GrammarRule: Send + Sync {

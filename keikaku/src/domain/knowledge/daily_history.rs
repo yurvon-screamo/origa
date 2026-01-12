@@ -28,16 +28,7 @@ impl DailyHistoryItem {
     pub fn new() -> Self {
         Self {
             timestamp: Utc::now(),
-            avg_stability: None,
-            avg_difficulty: None,
-            total_words: 0,
-            known_words: 0,
-            new_words: 0,
-            in_progress_words: 0,
-            low_stability_words: 0,
-            high_difficulty_words: 0,
-            lessons_completed: 0,
-            total_duration: Duration::zero(),
+            ..Default::default()
         }
     }
 
