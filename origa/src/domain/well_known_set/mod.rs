@@ -31,7 +31,7 @@ pub fn load_well_known_set(set: &WellKnownSets) -> Result<WellKnownSet, OrigaErr
         WellKnownSets::JlptN5 => JLPT_N5_RAW,
     };
 
-    serde_json::from_str(raw).map_err(|e| OrigaError::WellKnownSetError {
+    serde_json::from_str(raw).map_err(|e| OrigaError::WellKnownSetParseError {
         reason: format!("Error parse stored value: {e}"),
     })
 }
