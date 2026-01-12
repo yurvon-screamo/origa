@@ -13,27 +13,24 @@ const JLPT_N3_RAW: &str = include_str!("./jltp_n3.json");
 const JLPT_N4_RAW: &str = include_str!("./jltp_n4.json");
 const JLPT_N5_RAW: &str = include_str!("./jltp_n5.json");
 
-pub fn load_jlpt_n1() -> Result<WellKnownSet, KeikakuError> {
-    load(JLPT_N1_RAW)
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum WellKnownSets {
+    JlptN1,
+    JlptN2,
+    JlptN3,
+    JlptN4,
+    JlptN5,
 }
 
-pub fn load_jlpt_n2() -> Result<WellKnownSet, KeikakuError> {
-    load(JLPT_N2_RAW)
-}
+pub fn load_well_known_set(set: &WellKnownSets) -> Result<WellKnownSet, KeikakuError> {
+    let raw = match set {
+        WellKnownSets::JlptN1 => JLPT_N1_RAW,
+        WellKnownSets::JlptN2 => JLPT_N2_RAW,
+        WellKnownSets::JlptN3 => JLPT_N3_RAW,
+        WellKnownSets::JlptN4 => JLPT_N4_RAW,
+        WellKnownSets::JlptN5 => JLPT_N5_RAW,
+    };
 
-pub fn load_jlpt_n3() -> Result<WellKnownSet, KeikakuError> {
-    load(JLPT_N3_RAW)
-}
-
-pub fn load_jlpt_n4() -> Result<WellKnownSet, KeikakuError> {
-    load(JLPT_N4_RAW)
-}
-
-pub fn load_jlpt_n5() -> Result<WellKnownSet, KeikakuError> {
-    load(JLPT_N5_RAW)
-}
-
-fn load(raw: &str) -> Result<WellKnownSet, KeikakuError> {
     serde_json::from_str(raw).map_err(|e| KeikakuError::WellKnownSetError {
         reason: format!("Error parse stored value: {e}"),
     })

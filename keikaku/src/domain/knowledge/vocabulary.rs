@@ -54,7 +54,7 @@ impl VocabularyCard {
 
     pub fn with_grammar_rule(
         &self,
-        rule: &Box<dyn GrammarRule>,
+        rule: &dyn GrammarRule,
         lang: &NativeLanguage,
     ) -> Result<Self, KeikakuError> {
         let formatted_word = rule.format(self.word.text(), &self.part_of_speech()?)?;
