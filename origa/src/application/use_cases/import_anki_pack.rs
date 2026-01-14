@@ -42,12 +42,11 @@ impl<'a, R: UserRepository, L: LlmService> ExportAnkiPackUseCase<'a, R, L> {
         word_tag: &str,
         translation_tag: Option<&str>,
     ) -> Result<Vec<AnkiCard>, OrigaError> {
-        let bytes =
-            tokio::fs::read(file_path)
-                .await
-                .map_err(|e| OrigaError::RepositoryError {
-                    reason: format!("Failed to read file: {}", e),
-                })?;
+        let bytes = tokio::fs::read(file_path)
+            .await
+            .map_err(|e| OrigaError::RepositoryError {
+                reason: format!("Failed to read file: {}", e),
+            })?;
 
         Self::extract_anki_cards(&bytes[..], word_tag, translation_tag).map_err(|e| {
             OrigaError::RepositoryError {

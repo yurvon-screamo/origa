@@ -144,11 +144,9 @@ fn extract_user_id_from_jwt(jwt_token: &str) -> Result<String, OrigaError> {
             reason: format!("Failed to parse JWT payload: {}", e),
         })?;
 
-    let sub = json
-        .get("sub")
-        .ok_or_else(|| OrigaError::RepositoryError {
-            reason: format!("JWT token does not contain 'sub' field: {}", json),
-        })?;
+    let sub = json.get("sub").ok_or_else(|| OrigaError::RepositoryError {
+        reason: format!("JWT token does not contain 'sub' field: {}", json),
+    })?;
 
     let sub_str = sub
         .as_str()

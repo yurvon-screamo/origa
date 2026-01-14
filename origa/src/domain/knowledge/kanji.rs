@@ -1,5 +1,5 @@
 use crate::domain::{
-    Answer, JapaneseLevel, KANJI_DICTIONARY, OrigaError, NativeLanguage, Question, RadicalInfo,
+    Answer, JapaneseLevel, KANJI_DICTIONARY, NativeLanguage, OrigaError, Question, RadicalInfo,
     VOCABULARY_DICTIONARY,
 };
 use serde::{Deserialize, Serialize};

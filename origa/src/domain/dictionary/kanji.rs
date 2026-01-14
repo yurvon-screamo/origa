@@ -132,11 +132,9 @@ impl KanjiDatabase {
     }
 
     pub fn get_kanji_info(&self, kanji: &str) -> Result<&KanjiInfo, OrigaError> {
-        self.kanji_map
-            .get(kanji)
-            .ok_or(OrigaError::KradfileError {
-                reason: format!("Kanji {} not found in kanji database", kanji),
-            })
+        self.kanji_map.get(kanji).ok_or(OrigaError::KradfileError {
+            reason: format!("Kanji {} not found in kanji database", kanji),
+        })
     }
 
     pub fn get_kanji_list(&self, level: &JapaneseLevel) -> Vec<&KanjiInfo> {
