@@ -95,7 +95,7 @@ impl KnowledgeSet {
         Ok(())
     }
 
-    pub fn cards_to_fixation(&self) -> Vec<Card> {
+    pub fn cards_to_fixation(&self) -> HashMap<Ulid, Card> {
         let mut cards = self
             .study_cards
             .iter()
@@ -109,7 +109,10 @@ impl KnowledgeSet {
 
         cards.truncate(HARD_CARDS_LIMIT);
 
-        cards.iter().map(|(_, card)| card.card().clone()).collect()
+        cards
+            .iter()
+            .map(|(card_id, card)| (*card_id, card.card().clone()))
+            .collect()
     }
 
     pub fn cards_to_lesson(&self, lang: &NativeLanguage) -> HashMap<Ulid, Card> {

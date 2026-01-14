@@ -1,6 +1,7 @@
 use crate::application::user_repository::UserRepository;
 use crate::domain::Card;
 use crate::domain::OrigaError;
+use std::collections::HashMap;
 use ulid::Ulid;
 
 #[derive(Clone)]
@@ -13,7 +14,7 @@ impl<'a, R: UserRepository> SelectCardsToFixationUseCase<'a, R> {
         Self { repository }
     }
 
-    pub async fn execute(&self, user_id: Ulid) -> Result<Vec<Card>, OrigaError> {
+    pub async fn execute(&self, user_id: Ulid) -> Result<HashMap<Ulid, Card>, OrigaError> {
         let user = self
             .repository
             .find_by_id(user_id)
