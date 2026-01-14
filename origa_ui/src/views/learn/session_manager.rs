@@ -25,6 +25,7 @@ pub struct LearnSessionData {
     pub limit: Option<usize>,
     pub session_start_time: DateTime<Utc>,
     pub start_feedback: StartFeedback,
+    pub is_fixation_mode: bool,
 }
 
 impl Default for LearnSessionData {
@@ -37,6 +38,7 @@ impl Default for LearnSessionData {
             limit: None,
             session_start_time: Utc::now(),
             start_feedback: StartFeedback::None,
+            is_fixation_mode: false,
         }
     }
 }
@@ -71,6 +73,7 @@ pub fn use_learn_session() -> LearnSessionSignals {
                             session_data.write().current_index = 0;
                             session_data.write().current_step = LearnStep::Question;
                             session_data.write().session_start_time = Utc::now();
+                            session_data.write().is_fixation_mode = false;
 
                             let env = ApplicationEnvironment::get();
                             if let Ok(repo) = env.get_repository().await
@@ -144,12 +147,13 @@ pub fn use_learn_session() -> LearnSessionSignals {
                         } else {
                             let learn_cards = items
                                 .into_iter()
-                                .map(map_card_to_learn_card)
+                                .map(map_study_item_to_learn_card)
                                 .collect::<Vec<_>>();
                             session_data.write().cards = learn_cards;
                             session_data.write().current_index = 0;
                             session_data.write().current_step = LearnStep::Question;
                             session_data.write().session_start_time = Utc::now();
+                            session_data.write().is_fixation_mode = true;
 
                             let env = ApplicationEnvironment::get();
                             if let Ok(repo) = env.get_repository().await
@@ -182,12 +186,13 @@ pub fn use_learn_session() -> LearnSessionSignals {
                 let current_index = data.current_index;
                 let cards_len = data.cards.len();
                 let card_id = data.cards.get(current_index).map(|c| c.id.clone());
+                let is_fixation_mode = data.is_fixation_mode;
 
                 if let Some(card_id_str) = card_id
                     && let Ok(card_ulid) = ulid::Ulid::from_string(&card_id_str)
                 {
                     // Rate the card
-                    if let Err(e) = rate_card_impl(card_ulid, rating).await {
+                    if let Err(e) = rate_card_impl(card_ulid, rating, is_fixation_mode).await {
                         error!("Failed to rate card: {:?}", e);
                     }
 
@@ -244,7 +249,7 @@ async fn fetch_cards_to_learn() -> Result<HashMap<Ulid, Card>, String> {
         .map_err(to_error)
 }
 
-async fn fetch_high_difficulty_cards() -> Result<Vec<Card>, String> {
+async fn fetch_high_difficulty_cards() -> Result<HashMap<Ulid, Card>, String> {
     let env = ApplicationEnvironment::get();
     let repo = env.get_repository().await.map_err(to_error)?;
     let user_id = ensure_user(env, DEFAULT_USERNAME).await?;
@@ -354,7 +359,11 @@ fn map_study_item_to_learn_card((card_id, card): (Ulid, Card)) -> LearnCard {
     }
 }
 
-async fn rate_card_impl(card_id: Ulid, rating: crate::domain::Rating) -> Result<(), String> {
+async fn rate_card_impl(
+    card_id: Ulid,
+    rating: crate::domain::Rating,
+    is_fixation_mode: bool,
+) -> Result<(), String> {
     let env = ApplicationEnvironment::get();
     let repo = env.get_repository().await.map_err(to_error)?;
     let srs_service = env.get_srs_service().await.map_err(to_error)?;
@@ -367,8 +376,13 @@ async fn rate_card_impl(card_id: Ulid, rating: crate::domain::Rating) -> Result<
         crate::domain::Rating::Hard => origa::domain::Rating::Hard,
         crate::domain::Rating::Again => origa::domain::Rating::Again,
     };
+    let rate_mode = if is_fixation_mode {
+        RateMode::FixationLesson
+    } else {
+        RateMode::StandardLesson
+    };
     rate_usecase
-        .execute(user_id, card_id, RateMode::StandardLesson, domain_rating)
+        .execute(user_id, card_id, rate_mode, domain_rating)
         .await
         .map_err(to_error)
 }
