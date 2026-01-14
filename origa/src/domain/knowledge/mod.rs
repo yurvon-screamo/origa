@@ -111,7 +111,7 @@ impl KnowledgeSet {
 
         cards
             .iter()
-            .map(|(card_id, card)| (*card_id, card.card().clone()))
+            .map(|(card_id, card)| (**card_id, card.card().clone()))
             .collect()
     }
 

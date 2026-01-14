@@ -1,5 +1,5 @@
 use crate::domain::{
-    OrigaError, NativeLanguage, ReviewLog, get_rule_by_id,
+    NativeLanguage, OrigaError, ReviewLog, get_rule_by_id,
     knowledge::{GrammarRuleCard, KanjiCard, VocabularyCard},
     memory::{MemoryHistory, MemoryState},
     value_objects::{Answer, Question},

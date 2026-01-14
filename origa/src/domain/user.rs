@@ -3,8 +3,8 @@ use serde::{Deserialize, Serialize};
 use ulid::Ulid;
 
 use crate::domain::{
-    Card, JapaneseLevel, OrigaError, KnowledgeSet, MemoryState, NativeLanguage, Rating,
-    StudyCard, UserSettings,
+    Card, JapaneseLevel, KnowledgeSet, MemoryState, NativeLanguage, OrigaError, Rating, StudyCard,
+    UserSettings,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

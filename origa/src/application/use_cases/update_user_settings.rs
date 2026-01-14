@@ -1,6 +1,6 @@
 use crate::application::UserRepository;
-use crate::domain::OrigaError;
 use crate::domain::LlmSettings;
+use crate::domain::OrigaError;
 use ulid::Ulid;
 
 #[derive(Clone)]
