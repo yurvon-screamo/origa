@@ -16,7 +16,7 @@ impl FsrsSrsService {
     pub fn new() -> Result<Self, OrigaError> {
         let short_term_parameters = Parameters {
             request_retention: 0.95,
-            maximum_interval: 24, // TODO CHECK: 1 day
+            maximum_interval: 1, // 1 day for short-term learning sessions
             enable_fuzz: true,
             enable_short_term: false,
             ..Default::default()
