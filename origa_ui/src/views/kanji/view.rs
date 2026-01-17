@@ -265,8 +265,8 @@ fn KanjiContent(levels: Vec<(JapaneseLevel, Vec<KanjiReferenceCard>)>) -> Elemen
                                     match create_kanji_cards_batch(kanjis).await {
                                         // Refresh will happen automatically when the resource updates
                                         // Error handling is done in create_kanji_cards_batch
-                                        Ok(count) => {}
-                                        Err(e) => {}
+                                        Ok(_count) => {}
+                                        Err(_e) => {}
                                     }
                                 });
                             },
@@ -293,8 +293,8 @@ fn KanjiContent(levels: Vec<(JapaneseLevel, Vec<KanjiReferenceCard>)>) -> Elemen
                                     match create_kanji_cards_batch(kanjis).await {
                                         // Refresh will happen automatically when the resource updates
                                         // Error handling is done in create_kanji_cards_batch
-                                        Ok(count) => {}
-                                        Err(e) => {}
+                                        Ok(_count) => {}
+                                        Err(_e) => {}
                                     }
                                 });
                             },
