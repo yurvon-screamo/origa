@@ -35,22 +35,30 @@ pub fn Navbar() -> Element {
 
                             NavbarItem {
                                 index: 0usize,
-                                value: "learn".to_string(),
-                                to: Route::Learn {},
+                                value: "vocabulary".to_string(),
+                                to: Route::Vocabulary {},
                                 class: Some("px-3 py-2 rounded-md".to_string()),
                                 active_class: Some("bg-muted".to_string()),
-                                "Учиться"
+                                "Вокабуляр"
                             }
                             NavbarItem {
                                 index: 1usize,
-                                value: "cards".to_string(),
-                                to: Route::Cards {},
+                                value: "kanji-cards".to_string(),
+                                to: Route::KanjiCards {},
                                 class: Some("px-3 py-2 rounded-md".to_string()),
                                 active_class: Some("bg-muted".to_string()),
-                                "Карточки"
+                                "Кандзи"
                             }
                             NavbarItem {
                                 index: 2usize,
+                                value: "grammar".to_string(),
+                                to: Route::Grammar {},
+                                class: Some("px-3 py-2 rounded-md".to_string()),
+                                active_class: Some("bg-muted".to_string()),
+                                "Грамматика"
+                            }
+                            NavbarItem {
+                                index: 3usize,
                                 value: "import".to_string(),
                                 to: Route::Import {},
                                 class: Some("px-3 py-2 rounded-md".to_string()),
@@ -63,10 +71,18 @@ pub fn Navbar() -> Element {
                                 to: Route::Kanji {},
                                 class: Some("px-3 py-2 rounded-md".to_string()),
                                 active_class: Some("bg-muted".to_string()),
-                                "Кандзи"
+                                "Кандзи справочник"
                             }
                             NavbarItem {
                                 index: 5usize,
+                                value: "grammar-reference".to_string(),
+                                to: Route::GrammarReference {},
+                                class: Some("px-3 py-2 rounded-md".to_string()),
+                                active_class: Some("bg-muted".to_string()),
+                                "Грамматика справочник"
+                            }
+                            NavbarItem {
+                                index: 6usize,
                                 value: "profile".to_string(),
                                 to: Route::Profile {},
                                 class: Some("px-3 py-2 rounded-md".to_string()),

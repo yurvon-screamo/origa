@@ -16,7 +16,7 @@ struct KanjiReferenceCard {
 }
 
 #[component]
-pub fn Kanji() -> Element {
+pub fn KanjiCards() -> Element {
     let kanjis_resource = use_resource(fetch_all_kanjis);
 
     match kanjis_resource.read().as_ref() {
