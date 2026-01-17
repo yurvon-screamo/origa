@@ -46,6 +46,7 @@ impl<'a, R: UserRepository, S: SrsService> RateCardUseCase<'a, R, S> {
 
         self.repository.save(&user).await?;
 
+        println!("Finished rating card: {:?}", interval);
         Ok(())
     }
 }

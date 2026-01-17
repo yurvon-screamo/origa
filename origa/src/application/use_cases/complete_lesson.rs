@@ -28,6 +28,7 @@ impl<'a, R: UserRepository> CompleteLessonUseCase<'a, R> {
 
         self.repository.save(&user).await?;
 
+        println!("Finished completing lesson: {:?}", lesson_duration);
         Ok(())
     }
 }

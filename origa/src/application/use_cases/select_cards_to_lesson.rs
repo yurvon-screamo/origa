@@ -21,6 +21,7 @@ impl<'a, R: UserRepository> SelectCardsToLessonUseCase<'a, R> {
             .await?
             .ok_or(OrigaError::UserNotFound { user_id })?;
 
+        println!("Selected cards to lesson");
         Ok(user.knowledge_set().cards_to_lesson(user.native_language()))
     }
 }

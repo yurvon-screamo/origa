@@ -112,12 +112,6 @@ pub fn use_learn_session() -> LearnSessionSignals {
                 state.set(SessionState::Completed);
             }
         }),
-        restart_session: Rc::new(move || {
-            let mut state = state;
-            let mut session_data = session_data;
-            *session_data.write() = LearnSessionData::default();
-            state.set(SessionState::Start);
-        }),
         show_answer: Rc::new(move || {
             let mut session_data = session_data;
             session_data.write().current_step = LearnStep::Answer;
@@ -201,7 +195,6 @@ pub fn use_learn_session() -> LearnSessionSignals {
                     let mut data = session_data.write();
                     data.current_step = LearnStep::Completed;
 
-                    // Auto-advance immediately
                     drop(data);
                     let mut data = session_data.write();
                     if data.current_index + 1 < cards_len {
@@ -212,7 +205,6 @@ pub fn use_learn_session() -> LearnSessionSignals {
                         drop(data);
                         let mut state = state;
                         state.set(SessionState::Completed);
-                        // Complete lesson
                         let session_duration = Utc::now().signed_duration_since(session_start_time);
                         spawn(async move {
                             if let Err(e) = complete_lesson_impl(session_duration).await {
@@ -232,7 +224,6 @@ pub struct LearnSessionSignals {
     pub session_data: Signal<LearnSessionData>,
     pub start_session: Rc<dyn Fn()>,
     pub next_card: Rc<dyn Fn()>,
-    pub restart_session: Rc<dyn Fn()>,
     pub show_answer: Rc<dyn Fn()>,
     pub prev_card: Rc<dyn Fn()>,
     pub rate_card: Rc<dyn Fn(crate::domain::Rating)>,
@@ -257,56 +248,6 @@ async fn fetch_high_difficulty_cards() -> Result<HashMap<Ulid, Card>, String> {
         .execute(user_id)
         .await
         .map_err(to_error)
-}
-
-fn map_card_to_learn_card(card: Card) -> LearnCard {
-    match card {
-        Card::Vocabulary(v) => LearnCard {
-            id: ulid::Ulid::new().to_string(), // Generate a temporary ID
-            card_type: CardType::Vocabulary,
-            question: v.word().text().to_string(),
-            answer: v.meaning().text().to_string(),
-            example_phrases: v.example_phrases().to_vec(),
-            kanji_info: v
-                .get_kanji_cards(&origa::domain::JapaneseLevel::N5)
-                .into_iter()
-                .cloned()
-                .collect(), // TODO: Use proper level
-            example_words: vec![],
-            radicals: vec![],
-            jlpt_level: origa::domain::JapaneseLevel::N5, // TODO: Add proper level
-            markdown_description: None,
-        },
-        Card::Kanji(k) => LearnCard {
-            id: ulid::Ulid::new().to_string(), // Generate a temporary ID
-            card_type: CardType::Kanji,
-            question: k.kanji().text().to_string(),
-            answer: k.description().text().to_string(),
-            example_phrases: vec![],
-            kanji_info: vec![],
-            example_words: k.example_words().to_vec(),
-            radicals: k
-                .radicals_info()
-                .unwrap_or_default()
-                .into_iter()
-                .cloned()
-                .collect(),
-            jlpt_level: k.jlpt(),
-            markdown_description: None,
-        },
-        Card::Grammar(g) => LearnCard {
-            id: ulid::Ulid::new().to_string(), // Generate a temporary ID
-            card_type: CardType::Grammar,
-            question: g.title().text().to_string(),
-            answer: g.description().text().to_string(),
-            example_phrases: vec![],
-            kanji_info: vec![],
-            example_words: vec![],
-            radicals: vec![],
-            jlpt_level: origa::domain::JapaneseLevel::N5, // TODO: Grammar rules don't have JLPT level
-            markdown_description: Some(g.description().text().to_string()),
-        },
-    }
 }
 
 fn map_study_item_to_learn_card((card_id, card): (Ulid, Card)) -> LearnCard {
