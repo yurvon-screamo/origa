@@ -263,12 +263,10 @@ fn KanjiContent(levels: Vec<(JapaneseLevel, Vec<KanjiReferenceCard>)>) -> Elemen
                             on_add_all: move |kanjis| {
                                 spawn(async move {
                                     match create_kanji_cards_batch(kanjis).await {
-                                        Ok(count) => {
-                                            // Refresh will happen automatically when the resource updates
-                                        }
-                                        Err(e) => {
-                                            // Error handling is done in create_kanji_cards_batch
-                                        }
+                                        // Refresh will happen automatically when the resource updates
+                                        // Error handling is done in create_kanji_cards_batch
+                                        Ok(count) => {}
+                                        Err(e) => {}
                                     }
                                 });
                             },
@@ -293,12 +291,10 @@ fn KanjiContent(levels: Vec<(JapaneseLevel, Vec<KanjiReferenceCard>)>) -> Elemen
                             on_add_all: move |kanjis| {
                                 spawn(async move {
                                     match create_kanji_cards_batch(kanjis).await {
-                                        Ok(count) => {
-                                            // Refresh will happen automatically when the resource updates
-                                        }
-                                        Err(e) => {
-                                            // Error handling is done in create_kanji_cards_batch
-                                        }
+                                        // Refresh will happen automatically when the resource updates
+                                        // Error handling is done in create_kanji_cards_batch
+                                        Ok(count) => {}
+                                        Err(e) => {}
                                     }
                                 });
                             },
@@ -328,7 +324,11 @@ fn KanjiLevelSection(
                 if unadded_count > 0 {
                     button {
                         onclick: move |_| {
-                            let to_add: Vec<String> = kanjis_for_button.iter().filter(|k| !k.added).map(|k| k.kanji.clone()).collect();
+                            let to_add: Vec<String> = kanjis_for_button
+                                .iter()
+                                .filter(|k| !k.added)
+                                .map(|k| k.kanji.clone())
+                                .collect();
                             on_add_all.call(to_add);
                         },
                         class: "px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg font-medium hover:bg-blue-700 transition-colors",
@@ -343,10 +343,12 @@ fn KanjiLevelSection(
             } else {
                 div { class: "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3",
                     for kanji in kanjis_for_grid {
-                        let kanji_clone = kanji.clone();
                         KanjiCardCompact {
-                            kanji_info: kanji,
-                            on_click: move |_| on_select.call(kanji_clone.clone()),
+                            kanji_info: kanji.clone(),
+                            on_click: move |_| {
+                                let kanji_clone = kanji.clone();
+                                on_select.call(kanji_clone);
+                            },
                         }
                     }
                 }
