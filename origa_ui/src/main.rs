@@ -9,8 +9,7 @@ use origa::{
 };
 
 use views::{
-    Grammar, GrammarReference, Import, Kanji, KanjiCards, Learn, Navbar, Overview, Profile,
-    Vocabulary,
+    Grammar, GrammarReference, Import, Kanji, Learn, Navbar, Overview, Profile, Vocabulary,
 };
 
 pub const DEFAULT_USERNAME: &str = "yurvon_screamo";
@@ -71,8 +70,6 @@ enum Route {
         Vocabulary {},
         #[route("/kanji")]
         Kanji {},
-        #[route("/kanji-cards")]
-        KanjiCards {},
         #[route("/grammar-reference")]
         GrammarReference {},
         #[route("/grammar")]

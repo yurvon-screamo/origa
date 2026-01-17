@@ -22,8 +22,5 @@ pub use import::Import;
 mod kanji;
 pub use kanji::Kanji;
 
-mod kanji_cards;
-pub use kanji_cards::KanjiCards;
-
 mod profile;
 pub use profile::Profile;
