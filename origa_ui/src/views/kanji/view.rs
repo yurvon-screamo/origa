@@ -1,5 +1,6 @@
 use dioxus::prelude::*;
 use dioxus_heroicons::{IconButton, solid::Shape};
+use dioxus_logger::tracing;
 use origa::application::{CreateKanjiCardUseCase, KanjiListUseCase, KnowledgeSetCardsUseCase};
 use origa::domain::{Card, JapaneseLevel, KanjiInfo, StudyCard};
 
@@ -27,14 +28,21 @@ async fn fetch_user_kanji_set() -> Result<HashSet<String>, String> {
         .await
         .map_err(to_error)?;
 
+    tracing::debug!("User has {} cards total", cards.len());
+
     let kanji_set: HashSet<String> = cards
         .into_iter()
         .filter_map(|card| match card.card() {
-            Card::Kanji(kanji_card) => Some(kanji_card.kanji().text().to_string()),
+            Card::Kanji(kanji_card) => {
+                let kanji_str = kanji_card.kanji().text().to_string();
+                tracing::debug!("Found kanji card: '{}'", kanji_str);
+                Some(kanji_str)
+            }
             _ => None,
         })
         .collect();
 
+    tracing::debug!("User has {} kanji cards", kanji_set.len());
     Ok(kanji_set)
 }
 
@@ -49,27 +57,42 @@ async fn fetch_all_kanjis() -> Result<Vec<KanjiReferenceCard>, String> {
     ] {
         let kanjis = KanjiListUseCase::new().execute(level).map_err(to_error)?;
         for kanji in kanjis {
+            let kanji_str = kanji.kanji().to_string();
+            tracing::debug!(
+                "Dictionary kanji: '{}' (char: {})",
+                kanji_str,
+                kanji.kanji()
+            );
             all_kanjis.push(KanjiReferenceCard {
-                kanji: kanji.kanji().to_string(),
+                kanji: kanji_str,
                 info: kanji,
                 added: false,
             });
         }
     }
+    tracing::debug!("Total kanji in dictionary: {}", all_kanjis.len());
     Ok(all_kanjis)
 }
 
 async fn create_single_kanji_card(kanji: String) -> Result<(), String> {
+    tracing::debug!("Attempting to create kanji card for: '{}'", kanji);
     let env = ApplicationEnvironment::get();
     let repo = env.get_repository().await.map_err(to_error)?;
     let user_id = ensure_user(env, DEFAULT_USERNAME).await?;
 
-    CreateKanjiCardUseCase::new(repo)
-        .execute(user_id, vec![kanji])
+    match CreateKanjiCardUseCase::new(repo)
+        .execute(user_id, vec![kanji.clone()])
         .await
-        .map_err(to_error)?;
-
-    Ok(())
+    {
+        Ok(cards) => {
+            tracing::debug!("Successfully created {} kanji cards", cards.len());
+            Ok(())
+        }
+        Err(e) => {
+            tracing::error!("Failed to create kanji card '{}': {}", kanji, e);
+            Err(e)
+        }
+    }
 }
 
 #[component]
@@ -211,9 +234,7 @@ fn KanjiContent(levels: Vec<(JapaneseLevel, Vec<KanjiReferenceCard>)>) -> Elemen
             };
             rsx! {
                 div { class: "bg-bg min-h-screen text-text-main px-6 py-8 space-y-6",
-                    H2 { "Кандзи справочник" }
-
-                    for (level, level_kanjis) in updated_levels {
+                    for (level , level_kanjis) in updated_levels {
                         KanjiLevelSection {
                             level: level.to_string(),
                             kanjis: level_kanjis,
@@ -231,9 +252,7 @@ fn KanjiContent(levels: Vec<(JapaneseLevel, Vec<KanjiReferenceCard>)>) -> Elemen
         _ => {
             rsx! {
                 div { class: "bg-bg min-h-screen text-text-main px-6 py-8 space-y-6",
-                    H2 { "Кандзи справочник" }
-
-                    for (level, level_kanjis) in updated_levels {
+                    for (level , level_kanjis) in updated_levels {
                         KanjiLevelSection {
                             level: level.to_string(),
                             kanjis: level_kanjis,
@@ -256,7 +275,9 @@ fn KanjiLevelSection(
         div { class: "space-y-4",
             h3 { class: "text-2xl font-bold text-slate-800", "JLPT {level}" }
             if kanjis.is_empty() {
-                div { class: "text-slate-500 italic", "Нет кандзи для этого уровня" }
+                div { class: "text-slate-500 italic",
+                    "Нет кандзи для этого уровня"
+                }
             } else {
                 div { class: "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3",
                     for kanji in kanjis {
@@ -283,7 +304,7 @@ fn KanjiCardCompact(kanji_info: KanjiReferenceCard, on_click: EventHandler<()>) 
                     if kanji_info.added {
                         IconButton {
                             class: "p-0.5 text-green-600".to_string(),
-                            icon: Shape::CheckCircle
+                            icon: Shape::CheckCircle,
                         }
                     }
                 }
@@ -344,11 +365,13 @@ fn KanjiDetailDrawer(kanji: KanjiReferenceCard, on_close: EventHandler<()>) -> E
                     SheetHeader {
                         SheetTitle { id: "kanji-detail-title",
                             div { class: "flex items-center gap-3",
-                                div { class: "text-5xl font-bold text-slate-800", "{kanji_char_for_display}" }
+                                div { class: "text-5xl font-bold text-slate-800",
+                                    "{kanji_char_for_display}"
+                                }
                                 if *added.read() {
                                     IconButton {
                                         class: "p-1 text-green-600".to_string(),
-                                        icon: Shape::CheckCircle
+                                        icon: Shape::CheckCircle,
                                     }
                                 }
                             }
@@ -393,7 +416,11 @@ fn KanjiDetailDrawer(kanji: KanjiReferenceCard, on_close: EventHandler<()>) -> E
                                 disabled: loading(),
                                 onclick: handle_add,
                                 class: "w-full px-4 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed",
-                                if loading() { "Добавление..." } else { "Добавить в карточки" }
+                                if loading() {
+                                    "Добавление..."
+                                } else {
+                                    "Добавить в карточки"
+                                }
                             }
                         }
                     }
