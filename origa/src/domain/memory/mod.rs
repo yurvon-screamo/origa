@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 
 const LOW_STABILITY_THRESHOLD: f64 = 2.0;
 const KNOWN_CARD_STABILITY_THRESHOLD: f64 = 10.0;
-const HIGH_DIFFICULTY_THRESHOLD: f64 = 1.75;
+const HIGH_DIFFICULTY_THRESHOLD: f64 = 4.0;
 
 #[derive(Debug, Clone, PartialEq, PartialOrd, Serialize, Deserialize)]
 pub struct MemoryHistory {
