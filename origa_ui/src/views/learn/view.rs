@@ -18,68 +18,65 @@ pub fn Learn() -> Element {
             match e.code() {
                 Code::Space => {
                     // Space - show answer on Question.
-                    let session_data = (session.session_data)();
-                    if session_data.current_step == super::LearnStep::Question {
-                        e.prevent_default();
-                        (session.show_answer)();
-                    }
-                }
-                Code::Backspace => {
-                    // Backspace - вернуться к предыдущей карточке
-                    let session_data = (session.session_data)();
-                    let is_first_card = session_data.current_index == 0;
-                    let can_go_prev =
-                        !is_first_card && session_data.current_step == super::LearnStep::Answer;
-                    if can_go_prev {
-                        e.prevent_default();
-                        (session.prev_card)();
+                    let current_state = (session.state)();
+                    if matches!(current_state, SessionState::Active) {
+                        let session_data = (session.session_data)();
+                        if session_data.current_step == super::LearnStep::Question {
+                            e.prevent_default();
+                            (session.show_answer)();
+                        }
                     }
                 }
                 Code::KeyS => {
                     // S - пропустить карточку
-                    e.prevent_default();
-                    (session.next_card)();
-                }
-                Code::KeyQ => {
-                    // Q - выйти из сессии
-                    e.prevent_default();
-                    let session_duration = Utc::now()
-                        .signed_duration_since((session.session_data)().session_start_time);
-                    spawn(async move {
-                        let _ = complete_lesson_impl(session_duration).await;
-                    });
-                    (session.restart_session)();
+                    let current_state = (session.state)();
+                    if matches!(current_state, SessionState::Active) {
+                        e.prevent_default();
+                        (session.next_card)();
+                    }
                 }
                 Code::Digit1 => {
                     // 1 - оценить как "Легко"
-                    e.prevent_default();
-                    let session_data = (session.session_data)();
-                    if session_data.current_step == super::LearnStep::Answer {
-                        (session.rate_card)(crate::domain::Rating::Easy);
+                    let current_state = (session.state)();
+                    if matches!(current_state, SessionState::Active) {
+                        e.prevent_default();
+                        let session_data = (session.session_data)();
+                        if session_data.current_step == super::LearnStep::Answer {
+                            (session.rate_card)(crate::domain::Rating::Easy);
+                        }
                     }
                 }
                 Code::Digit2 => {
                     // 2 - оценить как "Хорошо"
-                    e.prevent_default();
-                    let session_data = (session.session_data)();
-                    if session_data.current_step == super::LearnStep::Answer {
-                        (session.rate_card)(crate::domain::Rating::Good);
+                    let current_state = (session.state)();
+                    if matches!(current_state, SessionState::Active) {
+                        e.prevent_default();
+                        let session_data = (session.session_data)();
+                        if session_data.current_step == super::LearnStep::Answer {
+                            (session.rate_card)(crate::domain::Rating::Good);
+                        }
                     }
                 }
                 Code::Digit3 => {
                     // 3 - оценить как "Сложно"
-                    e.prevent_default();
-                    let session_data = (session.session_data)();
-                    if session_data.current_step == super::LearnStep::Answer {
-                        (session.rate_card)(crate::domain::Rating::Hard);
+                    let current_state = (session.state)();
+                    if matches!(current_state, SessionState::Active) {
+                        e.prevent_default();
+                        let session_data = (session.session_data)();
+                        if session_data.current_step == super::LearnStep::Answer {
+                            (session.rate_card)(crate::domain::Rating::Hard);
+                        }
                     }
                 }
                 Code::Digit4 => {
                     // 4 - оценить как "Снова"
-                    e.prevent_default();
-                    let session_data = (session.session_data)();
-                    if session_data.current_step == super::LearnStep::Answer {
-                        (session.rate_card)(crate::domain::Rating::Again);
+                    let current_state = (session.state)();
+                    if matches!(current_state, SessionState::Active) {
+                        e.prevent_default();
+                        let session_data = (session.session_data)();
+                        if session_data.current_step == super::LearnStep::Answer {
+                            (session.rate_card)(crate::domain::Rating::Again);
+                        }
                     }
                 }
                 _ => {}
@@ -88,7 +85,9 @@ pub fn Learn() -> Element {
     };
 
     // Автоматический фокус при смене состояния
+    let session_state = session.state;
     use_effect(move || {
+        let _ = session_state(); // Track state changes
         let eval = eval(
             r#"
             setTimeout(() => {
@@ -103,7 +102,6 @@ pub fn Learn() -> Element {
     });
 
     let show_start_view = matches!((session.state)(), SessionState::Start);
-
     rsx! {
         div {
             class: "bg-bg min-h-screen text-text-main px-2 py-2 space-y-3 focus:outline-none",
@@ -163,61 +161,66 @@ pub fn Learn() -> Element {
                     }
                 }
             }
-            {
-                match (session.state)() {
-                    SessionState::Loading => {
-                        rsx! {
-                            div { class: "flex items-center justify-center py-12",
-                                LoadingState { message: Some("Загрузка карточек...".to_string()) }
-                            }
+
+            match (session.state)() {
+                SessionState::Loading => {
+                    rsx! {
+                        div { class: "flex items-center justify-center py-12",
+                            LoadingState { message: Some("Загрузка карточек...".to_string()) }
                         }
                     }
-                    SessionState::Active => {
-                        let session_data = (session.session_data)();
-                        let current_card = session_data
-                            .cards
-                            .get(session_data.current_index)
-                            .cloned();
-                        rsx! {
-                            LearnActive {
-                                current_card,
-                                total_cards: session_data.cards.len(),
-                                current_index: session_data.current_index,
-                                current_step: session_data.current_step.clone(),
-                                show_furigana: session_data.show_furigana,
-                                native_language: origa::domain::NativeLanguage::Russian,
-                                on_next: EventHandler::new({
-                                    let next_card = session.next_card.clone();
-                                    move |_| next_card()
-                                }),
-                                on_show_answer: move |_| (session.show_answer)(),
-                                on_prev: Some(EventHandler::new(move |_| (session.prev_card)())),
-                                on_rate: EventHandler::new(move |rating: crate::domain::Rating| (session.rate_card)(rating)),
-                                on_skip: EventHandler::new({
-                                    let next_card = session.next_card.clone();
-                                    move |_| next_card()
-                                }),
-                                on_quit: move |_| {
+                }
+                SessionState::Active => {
+                    let session_data = (session.session_data)();
+                    let current_card = session_data
+                        .cards
+                        .get(session_data.current_index)
+                        .cloned();
+                    // Clone session parts before using in closures to avoid partial move
+                    let rate_card = session.rate_card.clone();
+                    let show_answer = session.show_answer.clone();
+                    let prev_card = session.prev_card.clone();
+                    let session_for_quit = session.clone();
+                    rsx! {
+                        LearnActive {
+                            current_card,
+                            total_cards: session_data.cards.len(),
+                            current_index: session_data.current_index,
+                            current_step: session_data.current_step.clone(),
+                            show_furigana: session_data.show_furigana,
+                            native_language: origa::domain::NativeLanguage::Russian,
+                            on_next: EventHandler::new({
+                                let next_card = session.next_card.clone();
+                                move |_| next_card()
+                            }),
+                            on_show_answer: move |_| (show_answer)(),
+                            on_prev: Some(EventHandler::new(move |_| (prev_card)())),
+                            on_rate: EventHandler::new(move |rating: crate::domain::Rating| (rate_card)(rating)),
+                            on_skip: EventHandler::new({
+                                let next_card = session.next_card.clone();
+                                move |_| next_card()
+                            }),
+                            on_quit: move |_| {
+                                let current_state = (session_for_quit.state)();
+                                if matches!(current_state, SessionState::Active) {
                                     let session_duration = Utc::now()
-                                        .signed_duration_since((session.session_data)().session_start_time);
+                                        .signed_duration_since(
+                                            (session_for_quit.session_data)().session_start_time,
+                                        );
+                                    let mut state_signal = session_for_quit.state;
                                     spawn(async move {
                                         let _ = complete_lesson_impl(session_duration).await;
+                                        state_signal.set(SessionState::Start);
                                     });
-                                    (session.restart_session)();
-                                },
-                            }
+                                }
+                            },
                         }
                     }
-                    SessionState::Completed => {
-                        // Automatically restart session when completed
-                        let session_clone = session.clone();
-                        spawn(async move {
-                            (session_clone.restart_session)();
-                        });
-                        rsx! {}
-                    }
-                    _ => rsx! {},
                 }
+                SessionState::Completed => {
+                    rsx! {}
+                }
+                _ => rsx! {},
             }
         }
     }

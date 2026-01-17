@@ -21,6 +21,7 @@ impl<'a, R: UserRepository> SelectCardsToFixationUseCase<'a, R> {
             .await?
             .ok_or(OrigaError::UserNotFound { user_id })?;
 
+        println!("Selected cards to fixation");
         Ok(user.knowledge_set().cards_to_fixation())
     }
 }
