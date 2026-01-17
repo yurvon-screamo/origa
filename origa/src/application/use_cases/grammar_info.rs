@@ -9,13 +9,13 @@ use crate::{
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct GrammarRuleItem {
-    rule_id: Ulid,
-    level: JapaneseLevel,
-    apply_to: Vec<PartOfSpeech>,
+    pub rule_id: Ulid,
+    pub level: JapaneseLevel,
+    pub apply_to: Vec<PartOfSpeech>,
 
-    title: String,
-    short_description: String,
-    md_description: String,
+    pub title: String,
+    pub short_description: String,
+    pub md_description: String,
 }
 
 #[derive(Clone)]

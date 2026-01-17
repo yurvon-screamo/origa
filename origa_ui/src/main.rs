@@ -8,7 +8,10 @@ use origa::{
     settings::ApplicationEnvironment,
 };
 
-use views::{Cards, Import, Kanji, Learn, Navbar, Overview, Profile};
+use views::{
+    Grammar, GrammarReference, Import, Kanji, KanjiCards, Learn, Navbar, Overview, Profile,
+    Vocabulary,
+};
 
 pub const DEFAULT_USERNAME: &str = "yurvon_screamo";
 
@@ -64,12 +67,18 @@ enum Route {
         Learn {},
         #[route("/import")]
         Import {},
-        #[route("/overview")]
-        Overview {},
-        #[route("/cards")]
-        Cards {},
+        #[route("/vocabulary")]
+        Vocabulary {},
         #[route("/kanji")]
         Kanji {},
+        #[route("/kanji-cards")]
+        KanjiCards {},
+        #[route("/grammar-reference")]
+        GrammarReference {},
+        #[route("/grammar")]
+        Grammar {},
+        #[route("/overview")]
+        Overview {},
         #[route("/profile")]
         Profile {},
 }
