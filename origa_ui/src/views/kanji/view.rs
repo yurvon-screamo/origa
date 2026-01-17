@@ -95,6 +95,27 @@ async fn create_single_kanji_card(kanji: String) -> Result<(), String> {
     }
 }
 
+async fn create_kanji_cards_batch(kanjis: Vec<String>) -> Result<usize, String> {
+    tracing::debug!("Attempting to create {} kanji cards", kanjis.len());
+    let env = ApplicationEnvironment::get();
+    let repo = env.get_repository().await.map_err(to_error)?;
+    let user_id = ensure_user(env, DEFAULT_USERNAME).await?;
+
+    match CreateKanjiCardUseCase::new(repo)
+        .execute(user_id, kanjis)
+        .await
+    {
+        Ok(cards) => {
+            tracing::debug!("Successfully created {} kanji cards", cards.len());
+            Ok(cards.len())
+        }
+        Err(e) => {
+            tracing::error!("Failed to create kanji cards: {}", e);
+            Err(e.to_string())
+        }
+    }
+}
+
 #[component]
 pub fn Kanji() -> Element {
     let kanjis_resource = use_resource(fetch_all_kanjis);
@@ -239,6 +260,18 @@ fn KanjiContent(levels: Vec<(JapaneseLevel, Vec<KanjiReferenceCard>)>) -> Elemen
                             level: level.to_string(),
                             kanjis: level_kanjis,
                             on_select: move |k| selected_kanji.set(Some(k)),
+                            on_add_all: move |kanjis| {
+                                spawn(async move {
+                                    match create_kanji_cards_batch(kanjis).await {
+                                        Ok(count) => {
+                                            // Refresh will happen automatically when the resource updates
+                                        }
+                                        Err(e) => {
+                                            // Error handling is done in create_kanji_cards_batch
+                                        }
+                                    }
+                                });
+                            },
                         }
                     }
                 }
@@ -257,6 +290,18 @@ fn KanjiContent(levels: Vec<(JapaneseLevel, Vec<KanjiReferenceCard>)>) -> Elemen
                             level: level.to_string(),
                             kanjis: level_kanjis,
                             on_select: move |k| selected_kanji.set(Some(k)),
+                            on_add_all: move |kanjis| {
+                                spawn(async move {
+                                    match create_kanji_cards_batch(kanjis).await {
+                                        Ok(count) => {
+                                            // Refresh will happen automatically when the resource updates
+                                        }
+                                        Err(e) => {
+                                            // Error handling is done in create_kanji_cards_batch
+                                        }
+                                    }
+                                });
+                            },
                         }
                     }
                 }
@@ -270,20 +315,38 @@ fn KanjiLevelSection(
     level: String,
     kanjis: Vec<KanjiReferenceCard>,
     on_select: EventHandler<KanjiReferenceCard>,
+    on_add_all: EventHandler<Vec<String>>,
 ) -> Element {
+    let unadded_count = kanjis.iter().filter(|k| !k.added).count();
+    let kanjis_for_button = kanjis.clone();
+    let kanjis_for_grid = kanjis.clone();
+
     rsx! {
         div { class: "space-y-4",
-            h3 { class: "text-2xl font-bold text-slate-800", "JLPT {level}" }
-            if kanjis.is_empty() {
+            div { class: "flex items-center justify-between",
+                h3 { class: "text-2xl font-bold text-slate-800", "JLPT {level}" }
+                if unadded_count > 0 {
+                    button {
+                        onclick: move |_| {
+                            let to_add: Vec<String> = kanjis_for_button.iter().filter(|k| !k.added).map(|k| k.kanji.clone()).collect();
+                            on_add_all.call(to_add);
+                        },
+                        class: "px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg font-medium hover:bg-blue-700 transition-colors",
+                        "+ Добавить все ({unadded_count})"
+                    }
+                }
+            }
+            if kanjis_for_grid.is_empty() {
                 div { class: "text-slate-500 italic",
                     "Нет кандзи для этого уровня"
                 }
             } else {
                 div { class: "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3",
-                    for kanji in kanjis {
+                    for kanji in kanjis_for_grid {
+                        let kanji_clone = kanji.clone();
                         KanjiCardCompact {
-                            kanji_info: kanji.clone(),
-                            on_click: move || on_select.call(kanji.clone()),
+                            kanji_info: kanji,
+                            on_click: move |_| on_select.call(kanji_clone.clone()),
                         }
                     }
                 }
