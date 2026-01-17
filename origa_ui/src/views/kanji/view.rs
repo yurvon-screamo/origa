@@ -2,9 +2,9 @@ use dioxus::prelude::*;
 use dioxus_heroicons::{IconButton, solid::Shape};
 use dioxus_logger::tracing;
 use origa::application::{CreateKanjiCardUseCase, KanjiListUseCase, KnowledgeSetCardsUseCase};
-use origa::domain::{Card, JapaneseLevel, KanjiInfo, StudyCard};
+use origa::domain::{Card, JapaneseLevel, KanjiInfo};
 
-use crate::components::app_ui::{Card as UiCard, H2};
+use crate::components::app_ui::Card as UiCard;
 use crate::components::sheet::{Sheet, SheetContent, SheetHeader, SheetSide, SheetTitle};
 use crate::{DEFAULT_USERNAME, ensure_user, to_error};
 use dioxus_primitives::toast::{ToastOptions, use_toast};
@@ -90,16 +90,16 @@ async fn create_single_kanji_card(kanji: String) -> Result<(), String> {
         }
         Err(e) => {
             tracing::error!("Failed to create kanji card '{}': {}", kanji, e);
-            Err(e)
+            Err(e.to_string())
         }
     }
 }
 
 #[component]
 pub fn Kanji() -> Element {
-    let mut kanjis_resource = use_resource(fetch_all_kanjis);
+    let kanjis_resource = use_resource(fetch_all_kanjis);
     let user_kanjis = use_resource(fetch_user_kanji_set);
-    let toast = use_toast();
+    let _toast = use_toast();
 
     match (kanjis_resource.read().as_ref(), user_kanjis.read().as_ref()) {
         (Some(Ok(kanjis)), Some(Ok(user_kanji_set))) => {
@@ -188,7 +188,7 @@ pub fn Kanji() -> Element {
 #[component]
 fn KanjiContent(levels: Vec<(JapaneseLevel, Vec<KanjiReferenceCard>)>) -> Element {
     let mut selected_kanji = use_signal(|| None::<KanjiReferenceCard>);
-    let mut refresh_trigger = use_signal(|| 0i32);
+    let refresh_trigger = use_signal(|| 0i32);
 
     let user_kanjis = use_resource(move || async move {
         let _ = refresh_trigger();
@@ -318,8 +318,8 @@ fn KanjiCardCompact(kanji_info: KanjiReferenceCard, on_click: EventHandler<()>) 
 fn KanjiDetailDrawer(kanji: KanjiReferenceCard, on_close: EventHandler<()>) -> Element {
     let kanji_char = kanji.kanji.clone();
     let kanji_char_for_display = kanji.kanji.clone();
-    let mut added = use_signal(|| kanji.added);
-    let mut loading = use_signal(|| false);
+    let added = use_signal(|| kanji.added);
+    let loading = use_signal(|| false);
     let toast = use_toast();
     let info = kanji.info.clone();
 
@@ -327,7 +327,7 @@ fn KanjiDetailDrawer(kanji: KanjiReferenceCard, on_close: EventHandler<()>) -> E
         let kanji_clone = kanji_char.clone();
         let mut added = added;
         let mut loading = loading;
-        let toast = toast.clone();
+        let toast = toast;
 
         loading.set(true);
         spawn(async move {

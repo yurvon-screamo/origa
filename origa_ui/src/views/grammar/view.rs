@@ -86,11 +86,11 @@ fn CardsContent(cards_data: ProcessedCardsData, on_refresh: EventHandler<()>) ->
             crate::components::app_ui::SectionHeader {
                 title: "Грамматика".to_string(),
                 subtitle: Some(
-                    "Управление грамматическими карточками".to_string(),
+                    "Управление грамматическими карточками"
+                        .to_string(),
                 ),
                 actions: Some(rsx! {
-                    dioxus_router::Link {
-                        to: crate::Route::Learn {},
+                    dioxus_router::Link { to: crate::Route::Learn {},
                         crate::components::button::Button {
                             variant: crate::components::button::ButtonVariant::Outline,
                             class: "w-auto px-6",

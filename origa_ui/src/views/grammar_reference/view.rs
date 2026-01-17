@@ -1,8 +1,6 @@
 use dioxus::prelude::*;
 use origa::application::{CreateGrammarCardUseCase, GrammarRuleInfoUseCase, UserRepository};
-use origa::domain::{
-    GrammarRuleContent, GrammarRuleInfo, JapaneseLevel, NativeLanguage, get_rule_by_id,
-};
+use origa::domain::{GrammarRuleContent, GrammarRuleInfo, JapaneseLevel, get_rule_by_id};
 use origa::settings::ApplicationEnvironment;
 use std::collections::HashMap;
 
@@ -28,9 +26,7 @@ pub fn GrammarReference() -> Element {
     match rules_resource.read().as_ref() {
         Some(Ok(rules)) => {
             rsx! {
-                GrammarReferenceContent {
-                    rules: rules.clone(),
-                }
+                GrammarReferenceContent { rules: rules.clone() }
             }
         }
         Some(Err(err)) => {
@@ -54,7 +50,14 @@ fn GrammarReferenceContent(rules: Vec<GrammarRuleForSelection>) -> Element {
         div { class: "bg-bg min-h-screen text-text-main px-6 py-8 space-y-6",
             H2 { "Грамматика справочник" }
 
-            for level in &[JapaneseLevel::N5, JapaneseLevel::N4, JapaneseLevel::N3, JapaneseLevel::N2, JapaneseLevel::N1] {
+            for level in &[
+                JapaneseLevel::N5,
+                JapaneseLevel::N4,
+                JapaneseLevel::N3,
+                JapaneseLevel::N2,
+                JapaneseLevel::N1,
+            ]
+            {
                 GrammarLevelSection {
                     level: level.to_string(),
                     rules: rules.iter().filter(|r| r.level == *level).cloned().collect(),
@@ -70,7 +73,9 @@ fn GrammarLevelSection(level: String, rules: Vec<GrammarRuleForSelection>) -> El
         div { class: "space-y-4",
             h3 { class: "text-2xl font-bold text-slate-800 mb-4", "JLPT {level}" }
             if rules.is_empty() {
-                div { class: "text-slate-500 italic", "Нет правил для этого уровня" }
+                div { class: "text-slate-500 italic",
+                    "Нет правил для этого уровня"
+                }
             } else {
                 div { class: "grid grid-cols-1 md:grid-cols-2 gap-4",
                     for rule in rules {
@@ -85,7 +90,7 @@ fn GrammarLevelSection(level: String, rules: Vec<GrammarRuleForSelection>) -> El
 #[component]
 fn GrammarReferenceCard(rule: GrammarRuleForSelection) -> Element {
     let added = use_signal(|| false);
-    let mut loading = use_signal(|| false);
+    let loading = use_signal(|| false);
     let toast = use_toast();
 
     rsx! {
@@ -102,18 +107,26 @@ fn GrammarReferenceCard(rule: GrammarRuleForSelection) -> Element {
                         let rule_id = rule.rule_id;
                         let mut added = added;
                         let mut loading = loading;
-                        let toast = toast.clone();
+                        let toast = toast;
                         loading.set(true);
                         spawn(async move {
                             match create_single_grammar_card(rule_id).await {
                                 Ok(_) => {
                                     added.set(true);
-                                    toast.success("Карточка создана".to_string(), ToastOptions::new());
+                                    toast
+                                        .success(
+                                            "Карточка создана".to_string(),
+                                            ToastOptions::new(),
+                                        );
                                 }
                                 Err(e) => {
                                     if e.contains("DuplicateCard") {
                                         added.set(true);
-                                        toast.info("Карточка уже существует".to_string(), ToastOptions::new());
+                                        toast
+                                            .info(
+                                                "Карточка уже существует".to_string(),
+                                                ToastOptions::new(),
+                                            );
                                     } else {
                                         toast.error(e, ToastOptions::new());
                                     }
@@ -122,24 +135,25 @@ fn GrammarReferenceCard(rule: GrammarRuleForSelection) -> Element {
                             loading.set(false);
                         });
                     },
-                    if added() { "Добавлено" } else { "Добавить" }
+                    if added() {
+                        "Добавлено"
+                    } else {
+                        "Добавить"
+                    }
                 }
             }
 
             if added() {
                 div { class: "mt-4 p-4 bg-slate-50 rounded-lg border border-slate-200",
-                    h5 { class: "text-sm font-semibold text-slate-700 mb-2", "Подробное описание" }
+                    h5 { class: "text-sm font-semibold text-slate-700 mb-2",
+                        "Подробное описание"
+                    }
                     div { class: "text-sm text-slate-600 prose prose-sm max-w-none",
                         "{rule.md_description}"
                     }
                 }
             } else {
-                Button {
-                    variant: ButtonVariant::Ghost,
-                    onclick: move |_| {
-                    },
-                    "Подробнее..."
-                }
+                Button { variant: ButtonVariant::Ghost, onclick: move |_| {}, "Подробнее..." }
             }
         }
     }
@@ -194,7 +208,7 @@ async fn create_single_grammar_card(rule_id: Ulid) -> Result<(), String> {
 
     if let Some(grammar_rule) = get_rule_by_id(&rule_id) {
         let info = grammar_rule.info();
-        let content = info.content(&lang);
+        let content = info.content(lang);
 
         let mut content_map = HashMap::new();
         content_map.insert(
