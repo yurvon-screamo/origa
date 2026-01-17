@@ -174,7 +174,6 @@ impl KnowledgeSet {
         if let Some(card) = self.study_cards.get_mut(&card_id) {
             let review = ReviewLog::new(rating, interval);
             card.add_review(memory_state, review);
-            self.update_history();
             Ok(())
         } else {
             Err(OrigaError::CardNotFound { card_id })
@@ -182,10 +181,10 @@ impl KnowledgeSet {
     }
 
     pub(crate) fn add_lesson_duration(&mut self, lesson_duration: Duration) {
-        self.lesson_history
-            .last_mut()
-            .unwrap()
-            .add_lesson_duration(lesson_duration);
+        self.update_history();
+        if let Some(last_item) = self.lesson_history.last_mut() {
+            last_item.add_lesson_duration(lesson_duration);
+        }
     }
 
     fn update_history(&mut self) {
