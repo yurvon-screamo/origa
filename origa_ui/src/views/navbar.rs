@@ -20,17 +20,17 @@ pub fn Navbar() -> Element {
                                 to: Route::Learn {},
                                 class: "flex items-center gap-3",
                                 Avatar { class: "h-10 w-10",
-                                    AvatarImage { src: NAVBAR_LOGO, alt: "Origa" }
+                                    AvatarImage { src: NAVBAR_LOGO, alt: "オリガ" }
                                     AvatarFallback { "K" }
                                 }
                                 span { class: "text-2xl font-bold bg-clip-text text-transparent bg-rainbow-vibrant",
-                                    "Origa"
+                                    "オリガ"
                                 }
                             }
                         }
 
                         DxNavbar {
-                            aria_label: "Origa navigation",
+                            aria_label: "オリガ navigation",
                             class: "flex items-center gap-2",
 
                             NavbarItem {
@@ -39,7 +39,15 @@ pub fn Navbar() -> Element {
                                 to: Route::Vocabulary {},
                                 class: Some("px-3 py-2 rounded-md".to_string()),
                                 active_class: Some("bg-muted".to_string()),
-                                "Вокабуляр"
+                                "Слова"
+                            }
+                            NavbarItem {
+                                index: 3usize,
+                                value: "kanji".to_string(),
+                                to: Route::Kanji {},
+                                class: Some("px-3 py-2 rounded-md".to_string()),
+                                active_class: Some("bg-muted".to_string()),
+                                "Кандзи"
                             }
                             NavbarItem {
                                 index: 1usize,
@@ -50,28 +58,20 @@ pub fn Navbar() -> Element {
                                 "Грамматика"
                             }
                             NavbarItem {
-                                index: 2usize,
-                                value: "import".to_string(),
-                                to: Route::Import {},
-                                class: Some("px-3 py-2 rounded-md".to_string()),
-                                active_class: Some("bg-muted".to_string()),
-                                "Импорт"
-                            }
-                            NavbarItem {
-                                index: 3usize,
-                                value: "kanji".to_string(),
-                                to: Route::Kanji {},
-                                class: Some("px-3 py-2 rounded-md".to_string()),
-                                active_class: Some("bg-muted".to_string()),
-                                "Кандзи справочник"
-                            }
-                            NavbarItem {
                                 index: 4usize,
                                 value: "grammar-reference".to_string(),
                                 to: Route::GrammarReference {},
                                 class: Some("px-3 py-2 rounded-md".to_string()),
                                 active_class: Some("bg-muted".to_string()),
                                 "Грамматика справочник"
+                            }
+                            NavbarItem {
+                                index: 2usize,
+                                value: "import".to_string(),
+                                to: Route::Import {},
+                                class: Some("px-3 py-2 rounded-md".to_string()),
+                                active_class: Some("bg-muted".to_string()),
+                                "Импорт"
                             }
                             NavbarItem {
                                 index: 5usize,
