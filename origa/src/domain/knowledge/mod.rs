@@ -82,11 +82,11 @@ impl KnowledgeSet {
     }
 
     fn validate_unique_card(&self, card: &Card) -> Result<(), OrigaError> {
-        if self
-            .study_cards
-            .values()
-            .any(|c| c.card().question() == card.question())
-        {
+        if self.study_cards.values().any(|c| match c.card() {
+            Card::Vocabulary(vocabulary_card) => card.question() == vocabulary_card.word(),
+            Card::Kanji(kanji_card) => card.question() == kanji_card.kanji(),
+            Card::Grammar(grammar_rule_card) => card.question() == grammar_rule_card.title(),
+        }) {
             return Err(OrigaError::DuplicateCard {
                 question: card.question().text().to_string(),
             });
