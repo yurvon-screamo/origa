@@ -113,7 +113,6 @@ fn VocabularyAnswerView(
                         // Middle column: Examples
                         VocabularyExamplesSection { card: card.clone(), show_furigana }
                     }
-
                 }
 
                 // Right column: Action buttons

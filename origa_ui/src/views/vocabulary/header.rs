@@ -14,7 +14,8 @@ pub fn CardsHeader(
         SectionHeader {
             title: "Вокабуляр".to_string(),
             subtitle: Some(
-                "Управление вокабулярными карточками".to_string(),
+                "Управление вокабулярными карточками"
+                    .to_string(),
             ),
             actions: Some(rsx! {
                 Link { to: Route::Learn {},
