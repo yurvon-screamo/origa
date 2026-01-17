@@ -22,7 +22,7 @@ pub fn GrammarCreateModal(
     loading: bool,
 ) -> Element {
     let mut selected_level = use_signal(|| JapaneseLevel::N5);
-    let mut selected_rules = use_signal(Vec::<Ulid>::new);
+    let selected_rules = use_signal(Vec::<Ulid>::new);
     let rules_resource = use_resource(move || fetch_rules(selected_level()));
 
     rsx! {
@@ -49,7 +49,11 @@ pub fn GrammarCreateModal(
                                 }
                             },
                             placeholder: "Выберите уровень...",
-                            SelectTrigger { aria_label: "Уровень JLPT", width: "100%", SelectValue {} }
+                            SelectTrigger {
+                                aria_label: "Уровень JLPT",
+                                width: "100%",
+                                SelectValue {}
+                            }
                             SelectList { aria_label: "Уровень JLPT",
                                 SelectOption::<JapaneseLevel> { index: 0usize, value: JapaneseLevel::N5,
                                     "N5"
@@ -114,16 +118,12 @@ pub fn GrammarCreateModal(
                         }
                         Some(Err(err)) => {
                             rsx! {
-                                div { class: "text-center py-8 text-red-500",
-                                    "Ошибка: {err}"
-                                }
+                                div { class: "text-center py-8 text-red-500", "Ошибка: {err}" }
                             }
                         }
                         None => {
                             rsx! {
-                                div { class: "text-center py-8 text-slate-500",
-                                    "Загрузка правил..."
-                                }
+                                div { class: "text-center py-8 text-slate-500", "Загрузка правил..." }
                             }
                         }
                     }
@@ -145,7 +145,8 @@ pub fn GrammarCreateModal(
                             spawn(async move {
                                 match create_grammar_cards(rule_ids).await {
                                     Ok(count) => {
-                                        on_success.call(format!("Создано {} карточек", count));
+                                        on_success
+                                            .call(format!("Создано {} карточек", count));
                                     }
                                     Err(e) => {
                                         on_error.call(format!("Ошибка: {}", e));
@@ -153,7 +154,13 @@ pub fn GrammarCreateModal(
                                 }
                             });
                         },
-                        { if loading { "Создание...".to_string() } else { format!("Создать ({} шт)", selected_rules().len()) } }
+                        {
+                            if loading {
+                                "Создание...".to_string()
+                            } else {
+                                format!("Создать ({} шт)", selected_rules().len())
+                            }
+                        }
                     }
                 }
             }
@@ -211,7 +218,7 @@ async fn create_grammar_cards(rule_ids: Vec<Ulid>) -> Result<usize, String> {
     for rule_id in rule_ids {
         if let Some(grammar_rule) = get_rule_by_id(&rule_id) {
             let info = grammar_rule.info();
-            let content = info.content(&lang);
+            let content = info.content(lang);
 
             let mut content_map = HashMap::new();
             content_map.insert(

@@ -111,7 +111,6 @@ fn KanjiAnswerView(
                         // Middle column: Examples
                         KanjiExamplesSection { card: card.clone(), show_furigana }
                     }
-
                 }
 
                 // Right column: Action buttons

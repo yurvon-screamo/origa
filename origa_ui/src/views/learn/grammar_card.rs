@@ -117,7 +117,6 @@ fn GrammarAnswerView(
                         // Middle column: Empty for grammar cards
                         div { class: "space-y-2" }
                     }
-
                 }
 
                 // Right column: Action buttons
