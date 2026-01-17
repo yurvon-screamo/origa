@@ -1,7 +1,7 @@
 mod dictionary;
 mod error;
 mod furigana;
-mod grammar;
+pub mod grammar;
 mod japanese;
 mod knowledge;
 mod memory;
