@@ -196,8 +196,6 @@ impl KnowledgeSet {
     }
 
     fn update_history(&mut self) {
-        println!("Updating history");
-
         let mut avg_stability = 0.0;
         let mut avg_difficulty = 0.0;
         let mut total_words = 0;
@@ -216,30 +214,7 @@ impl KnowledgeSet {
             in_progress_words += memory.is_in_progress() as usize;
             low_stability_words += memory.is_low_stability() as usize;
             high_difficulty_words += memory.is_high_difficulty() as usize;
-
-            println!(
-                "Updating history: stability: {}, difficulty: {}, is_known_card: {}, is_new: {}, is_in_progress: {}, is_low_stability: {}, is_high_difficulty: {}",
-                memory.stability().map(|x| x.value()).unwrap_or(0.0),
-                memory.difficulty().map(|x| x.value()).unwrap_or(0.0),
-                memory.is_known_card(),
-                memory.is_new(),
-                memory.is_in_progress(),
-                memory.is_low_stability(),
-                memory.is_high_difficulty()
-            );
         }
-
-        println!(
-            "Updating history: avg_stability: {}, avg_difficulty: {}, total_words: {}, known_words: {}, new_words: {}, in_progress_words: {}, low_stability_words: {}, high_difficulty_words: {}",
-            avg_stability,
-            avg_difficulty,
-            total_words,
-            known_words,
-            new_words,
-            in_progress_words,
-            low_stability_words,
-            high_difficulty_words
-        );
 
         avg_stability /= total_words as f64;
         avg_difficulty /= total_words as f64;
@@ -247,14 +222,11 @@ impl KnowledgeSet {
         let now = Utc::now();
         let today = now.date_naive();
 
-        println!("Updating history: today: {}", today);
-
         if let Some(existing_item) = self
             .lesson_history
             .iter_mut()
             .find(|item| item.timestamp().date_naive() == today)
         {
-            println!("Updating history: existing_item: {:?}", existing_item);
             existing_item.update(
                 avg_stability,
                 avg_difficulty,
@@ -266,9 +238,7 @@ impl KnowledgeSet {
                 high_difficulty_words,
             );
         } else {
-            println!("Updating history: no existing item");
             let mut item = DailyHistoryItem::new();
-            println!("Updating history: new_item: {:?}", item);
             item.update(
                 avg_stability,
                 avg_difficulty,
@@ -281,10 +251,5 @@ impl KnowledgeSet {
             );
             self.lesson_history.push(item);
         }
-
-        println!(
-            "Updating history: lesson_history: {:?}",
-            self.lesson_history
-        );
     }
 }
