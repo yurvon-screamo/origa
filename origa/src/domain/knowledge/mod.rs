@@ -181,6 +181,7 @@ impl KnowledgeSet {
         if let Some(card) = self.study_cards.get_mut(&card_id) {
             let review = ReviewLog::new(rating, interval);
             card.add_review(memory_state, review);
+            self.update_history();
             Ok(())
         } else {
             Err(OrigaError::CardNotFound { card_id })
@@ -188,75 +189,35 @@ impl KnowledgeSet {
     }
 
     pub(crate) fn add_lesson_duration(&mut self, lesson_duration: Duration) {
-        self.update_history();
         if let Some(last_item) = self.lesson_history.last_mut() {
             last_item.add_lesson_duration(lesson_duration);
         }
+        self.update_history();
     }
 
     fn update_history(&mut self) {
-        let stability_cards: Vec<_> = self
-            .study_cards
-            .values()
-            .filter_map(|card| card.memory().stability())
-            .collect();
+        let mut avg_stability = 0.0;
+        let mut avg_difficulty = 0.0;
+        let mut total_words = 0;
+        let mut known_words = 0;
+        let mut new_words = 0;
+        let mut in_progress_words = 0;
+        let mut low_stability_words = 0;
+        let mut high_difficulty_words = 0;
 
-        let avg_stability = if stability_cards.is_empty() {
-            None
-        } else {
-            Some(
-                stability_cards
-                    .iter()
-                    .map(|stability| stability.value())
-                    .sum::<f64>()
-                    / stability_cards.len() as f64,
-            )
-        };
+        for memory in self.study_cards.values().map(|x| x.memory()) {
+            avg_stability += memory.stability().map(|x| x.value()).unwrap_or(0.0);
+            avg_difficulty += memory.difficulty().map(|x| x.value()).unwrap_or(0.0);
+            total_words += 1;
+            known_words += memory.is_known_card() as usize;
+            new_words += memory.is_new() as usize;
+            in_progress_words += memory.is_in_progress() as usize;
+            low_stability_words += memory.is_low_stability() as usize;
+            high_difficulty_words += memory.is_high_difficulty() as usize;
+        }
 
-        let difficulty_cards: Vec<_> = self
-            .study_cards
-            .values()
-            .filter_map(|card| card.memory().difficulty())
-            .collect();
-
-        let avg_difficulty = if difficulty_cards.is_empty() {
-            None
-        } else {
-            Some(
-                difficulty_cards
-                    .iter()
-                    .map(|difficulty| difficulty.value())
-                    .sum::<f64>()
-                    / difficulty_cards.len() as f64,
-            )
-        };
-
-        let total_words = self.study_cards.len();
-        let known_words = self
-            .study_cards
-            .values()
-            .filter(|card| card.memory().is_known_card())
-            .count();
-        let new_words = self
-            .study_cards
-            .values()
-            .filter(|card| card.memory().is_new())
-            .count();
-        let in_progress_words = self
-            .study_cards
-            .values()
-            .filter(|card| card.memory().is_in_progress())
-            .count();
-        let low_stability_words = self
-            .study_cards
-            .values()
-            .filter(|card| card.memory().is_low_stability())
-            .count();
-        let high_difficulty_words = self
-            .study_cards
-            .values()
-            .filter(|card| card.memory().is_high_difficulty())
-            .count();
+        avg_stability /= total_words as f64;
+        avg_difficulty /= total_words as f64;
 
         let now = Utc::now();
         let today = now.date_naive();

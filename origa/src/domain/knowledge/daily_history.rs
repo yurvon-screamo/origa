@@ -74,8 +74,8 @@ impl DailyHistoryItem {
 
     pub fn update(
         &mut self,
-        avg_stability: Option<f64>,
-        avg_difficulty: Option<f64>,
+        avg_stability: f64,
+        avg_difficulty: f64,
         total_words: usize,
         known_words: usize,
         new_words: usize,
@@ -83,8 +83,8 @@ impl DailyHistoryItem {
         low_stability_words: usize,
         high_difficulty_words: usize,
     ) {
-        self.avg_stability = avg_stability;
-        self.avg_difficulty = avg_difficulty;
+        self.avg_stability = Some(avg_stability);
+        self.avg_difficulty = Some(avg_difficulty);
         self.total_words = total_words;
         self.known_words = known_words;
         self.new_words = new_words;
