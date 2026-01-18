@@ -22,6 +22,7 @@ use ulid::Ulid;
 
 const NEW_CARDS_LIMIT: usize = 7;
 const HARD_CARDS_LIMIT: usize = 15;
+const MAX_DAYS_INTERVAL_THRESHOLD: i64 = 10;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct KnowledgeSet {
@@ -107,7 +108,8 @@ impl KnowledgeSet {
             .study_cards
             .iter()
             .filter(|(_, card)| {
-                card.memory().is_low_stability() || card.memory().is_high_difficulty()
+                card.memory().latest_interval().num_days() <= MAX_DAYS_INTERVAL_THRESHOLD
+                    && (card.memory().is_low_stability() || card.memory().is_high_difficulty())
             })
             .collect::<Vec<_>>();
 

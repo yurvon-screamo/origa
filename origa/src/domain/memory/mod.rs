@@ -4,7 +4,7 @@ pub use value::{Difficulty, MemoryState, Rating, ReviewLog, Stability};
 
 use std::collections::VecDeque;
 
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, TimeDelta, Utc};
 use serde::{Deserialize, Serialize};
 
 const LOW_STABILITY_THRESHOLD: f64 = 2.0;
@@ -33,6 +33,13 @@ impl MemoryHistory {
 
     pub fn memory_state(&self) -> Option<&MemoryState> {
         self.current_state.as_ref()
+    }
+
+    pub fn latest_interval(&self) -> TimeDelta {
+        self.reviews
+            .back()
+            .map(|x| x.interval())
+            .unwrap_or(TimeDelta::zero())
     }
 
     pub fn stability(&self) -> Option<&Stability> {
