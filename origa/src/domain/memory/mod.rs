@@ -7,9 +7,9 @@ use std::collections::VecDeque;
 use chrono::{DateTime, TimeDelta, Utc};
 use serde::{Deserialize, Serialize};
 
-const LOW_STABILITY_THRESHOLD: f64 = 2.0;
 const KNOWN_CARD_STABILITY_THRESHOLD: f64 = 10.0;
-const HIGH_DIFFICULTY_THRESHOLD: f64 = 4.0;
+const HIGH_DIFFICULTY_THRESHOLD: f64 = 5.0;
+const MAX_DAYS_INTERVAL_THRESHOLD: i64 = 10;
 
 #[derive(Debug, Clone, PartialEq, PartialOrd, Serialize, Deserialize)]
 pub struct MemoryHistory {
@@ -79,18 +79,13 @@ impl MemoryHistory {
         self.current_state.is_none()
     }
 
-    /// Карта которая имеет низкую стабильность
-    pub fn is_low_stability(&self) -> bool {
-        self.stability()
-            .map(|stability| stability.value() < LOW_STABILITY_THRESHOLD)
-            .unwrap_or(false)
-    }
-
     /// Карта которая имеет высокую сложность
     pub fn is_high_difficulty(&self) -> bool {
-        self.difficulty()
-            .map(|difficulty| difficulty.value() >= HIGH_DIFFICULTY_THRESHOLD)
-            .unwrap_or(false)
+        self.latest_interval().num_days() <= MAX_DAYS_INTERVAL_THRESHOLD
+            && self
+                .difficulty()
+                .map(|difficulty| difficulty.value() >= HIGH_DIFFICULTY_THRESHOLD)
+                .unwrap_or(false)
     }
 
     /// Карта которая уже изучена до стабильного уровня
@@ -103,9 +98,6 @@ impl MemoryHistory {
 
     /// Карта которая еще не была изучена до стабильного уровня, но уже начала изучаться
     pub fn is_in_progress(&self) -> bool {
-        !self.is_known_card()
-            && !self.is_high_difficulty()
-            && !self.is_low_stability()
-            && !self.is_new()
+        !self.is_known_card() && !self.is_high_difficulty() && !self.is_new()
     }
 }

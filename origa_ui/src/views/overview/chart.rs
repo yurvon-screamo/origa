@@ -41,12 +41,6 @@ pub fn OverviewChartsComponent(charts: OverviewCharts) -> Element {
                     delay: Some("500".to_string()),
                 }
                 Chart {
-                    title: "Низкая стабильность".to_string(),
-                    data: charts.low_stability_words_data,
-                    color: Some("#ec4899".to_string()), // pink-500
-                    delay: Some("600".to_string()),
-                }
-                Chart {
                     title: "Высокая сложность".to_string(),
                     data: charts.high_difficulty_words_data,
                     color: Some("#f59e0b".to_string()), // amber-500

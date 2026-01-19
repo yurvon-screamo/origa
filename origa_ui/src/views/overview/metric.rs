@@ -87,12 +87,6 @@ fn build_card_status_metrics(stats: &OverviewStats) -> Vec<MetricData> {
             StateTone::Neutral,
         ),
         (
-            "Низкая стабильность".to_string(),
-            stats.low_stability_cards.to_string(),
-            "Карточки, требующие особого внимания".to_string(),
-            StateTone::Warning,
-        ),
-        (
             "Высокая сложность".to_string(),
             stats.high_difficulty_cards.to_string(),
             "Карточки, вызывающие сложности".to_string(),

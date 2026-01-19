@@ -15,7 +15,7 @@ pub fn CardHistoryDrawer(
 ) -> Element {
     rsx! {
         Sheet { open, on_open_change,
-            SheetContent { side: SheetSide::Right, class: "w-[60%]",
+            SheetContent { side: SheetSide::Right, class: "w-[90%]",
                 SheetHeader {
                     SheetTitle { "История рейтингов карточки" }
                 }

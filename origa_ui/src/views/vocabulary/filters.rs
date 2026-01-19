@@ -16,7 +16,6 @@ pub fn CardsFilters(
     let status_value = match filter_status() {
         FilterStatus::All => "all",
         FilterStatus::New => "new",
-        FilterStatus::LowStability => "low_stability",
         FilterStatus::HighDifficulty => "high_difficulty",
         FilterStatus::InProgress => "in_progress",
         FilterStatus::Learned => "learned",
@@ -53,7 +52,6 @@ pub fn CardsFilters(
                                     .set(
                                         match v.as_str() {
                                             "new" => FilterStatus::New,
-                                            "low_stability" => FilterStatus::LowStability,
                                             "high_difficulty" => FilterStatus::HighDifficulty,
                                             "in_progress" => FilterStatus::InProgress,
                                             "learned" => FilterStatus::Learned,
@@ -71,12 +69,6 @@ pub fn CardsFilters(
                             }
                             SelectOption::<String> { index: 1usize, value: "new".to_string(),
                                 "Новые"
-                                SelectItemIndicator {}
-                            }
-                            SelectOption::<String> {
-                                index: 2usize,
-                                value: "low_stability".to_string(),
-                                "Низкая стабильность"
                                 SelectItemIndicator {}
                             }
                             SelectOption::<String> {

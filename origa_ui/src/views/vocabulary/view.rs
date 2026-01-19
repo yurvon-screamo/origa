@@ -206,7 +206,6 @@ fn map_card(card: &StudyCard) -> UiCard {
         is_new: card.memory().is_new(),
         is_in_progress: card.memory().is_in_progress(),
         is_learned: card.memory().is_known_card(),
-        is_low_stability: card.memory().is_low_stability(),
         is_high_difficulty: card.memory().is_high_difficulty(),
         reviews,
     }
@@ -254,7 +253,6 @@ fn filter_and_sort_cards(
             let matches_status = match filter_status {
                 FilterStatus::All => true,
                 FilterStatus::New => c.is_new,
-                FilterStatus::LowStability => c.is_low_stability,
                 FilterStatus::HighDifficulty => c.is_high_difficulty,
                 FilterStatus::InProgress => c.is_in_progress,
                 FilterStatus::Learned => c.is_learned,
