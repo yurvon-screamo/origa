@@ -52,12 +52,11 @@ impl<'a, L: LlmService> GenerateCardContentUseCase<'a, L> {
             VOCABULARY_DICTIONARY.get_translation(question_text, native_language)
         {
             let answer = Answer::new(translation)?;
-            if let Some(examples) =
-                VOCABULARY_DICTIONARY.get_examples(question_text, native_language)
-                && !examples.is_empty()
-            {
-                return Ok(Some(CardContent { answer, examples }));
-            }
+            // TODO: EXAMPLES!!
+            return Ok(Some(CardContent {
+                answer,
+                examples: vec![],
+            }));
         }
 
         Ok(None)

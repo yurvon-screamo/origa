@@ -1,5 +1,4 @@
 use dioxus::prelude::*;
-use dioxus_primitives::radio_group::RadioGroup;
 
 use crate::components::app_ui::{Card, LoadingState, Paragraph, Pill, SectionHeader, StateTone};
 use crate::components::button::{Button, ButtonVariant};
@@ -8,8 +7,8 @@ use crate::components::switch::{Switch, SwitchThumb};
 use crate::components::tabs::{TabContent, TabList, TabTrigger, Tabs};
 use crate::{DEFAULT_USERNAME, ensure_user, to_error};
 use origa::application::{
-    ExportAnkiPackUseCase, ExportMigiiPackUseCase, ImportWellKnownSetUseCase,
-    SyncDuolingoWordsUseCase,
+    ExportAnkiPackUseCase, ImportWellKnownSetUseCase, ListWellKnownSetsUseCase,
+    SyncDuolingoWordsUseCase, WellKnownSetInfo,
 };
 use origa::domain::WellKnownSets;
 use origa::infrastructure::HttpDuolingoClient;
@@ -63,17 +62,15 @@ pub fn Import() -> Element {
                 on_value_change: move |value| active_tab.set(value),
                 default_value: "duolingo".to_string(),
 
-                TabList { class: "grid w-full grid-cols-5",
+                TabList { class: "grid w-full grid-cols-3",
                     TabTrigger { value: "duolingo".to_string(), index: 0usize, "Duolingo" }
-                    TabTrigger { value: "jlpt".to_string(), index: 1usize, "JLPT" }
-                    TabTrigger { value: "anki".to_string(), index: 2usize, "Anki" }
-                    TabTrigger { value: "migii".to_string(), index: 3usize, "Migii" }
+                    TabTrigger { value: "anki".to_string(), index: 1usize, "Anki" }
+                    TabTrigger { value: "well_known".to_string(), index: 2usize, "Well Known" }
                 }
 
                 TabContent { value: "duolingo".to_string(), index: 0usize, ImportDuolingoTool {} }
-                TabContent { value: "jlpt".to_string(), index: 1usize, ImportJlptTool {} }
-                TabContent { value: "anki".to_string(), index: 2usize, ImportAnkiTool {} }
-                TabContent { value: "migii".to_string(), index: 3usize, ImportMigiiTool {} }
+                TabContent { value: "anki".to_string(), index: 1usize, ImportAnkiTool {} }
+                TabContent { value: "well_known".to_string(), index: 2usize, ImportWellKnownTool {} }
             }
         }
     }
@@ -153,85 +150,6 @@ fn ImportDuolingoTool() -> Element {
                         });
                     },
                     "Синхронизировать"
-                }
-            }
-
-            LogsCard { log }
-        }
-    }
-}
-
-#[component]
-fn ImportJlptTool() -> Element {
-    let levels = ["N5", "N4", "N3", "N2", "N1"];
-    let selected: Signal<Option<String>> = use_signal(|| None);
-    let log = use_signal(Vec::<String>::new);
-    let status = use_signal(|| OperationStatus::Idle);
-
-    rsx! {
-        Card { class: Some("space-y-4".to_string()),
-            div { class: "flex items-center justify-between",
-                ToolHeader {
-                    title: "JLPT импорт",
-                    subtitle: "Импорт слов для указанных уровней JLPT",
-                }
-                Pill {
-                    text: status().to_pill_text(),
-                    tone: Some(status().to_tone()),
-                }
-            }
-
-            Paragraph { class: Some("text-sm text-slate-600".to_string()),
-                "Отметьте уровни для генерации карточек."
-            }
-
-            div { class: "grid grid-cols-1 md:grid-cols-2 gap-3",
-                for level in levels {
-                    {
-                        let level = level.to_string();
-                        rsx! {
-                            label { class: "flex items-center gap-3 cursor-pointer",
-                                RadioGroup {
-                                    value: selected,
-                                    disabled: matches!(status(), OperationStatus::Loading),
-                                }
-                                span { class: "text-sm", "Уровень {level}" }
-                            }
-                        }
-                    }
-                }
-            }
-
-            if matches!(status(), OperationStatus::Loading) {
-                LoadingState { message: Some("Создание пачки JLPT...".to_string()) }
-            } else {
-                Button {
-                    variant: ButtonVariant::Primary,
-                    class: "w-full",
-                    disabled: matches!(status(), OperationStatus::Loading) || selected().is_none(),
-                    onclick: move |_| {
-                        if selected().is_none() {
-                            return;
-                        }
-                        let levels = selected();
-                        let mut log = log;
-                        let mut status = status;
-                        status.set(OperationStatus::Loading);
-                        spawn(async move {
-                            match run_jlpt(levels.unwrap_or_default()).await {
-                                Ok(msg) => {
-                                    status.set(OperationStatus::Success(msg.clone()));
-                                    log.write().push(msg);
-                                }
-                                Err(e) => {
-                                    let error_msg = format!("Ошибка: {e}");
-                                    status.set(OperationStatus::Error(e.to_string()));
-                                    log.write().push(error_msg);
-                                }
-                            }
-                        });
-                    },
-                    "Создать пачку"
                 }
             }
 
@@ -358,17 +276,32 @@ fn ImportAnkiTool() -> Element {
 }
 
 #[component]
-fn ImportMigiiTool() -> Element {
-    let mut lessons = use_signal(|| "1,2,3".to_string());
+fn ImportWellKnownTool() -> Element {
+    let sets: Signal<Option<Vec<WellKnownSetInfo>>> = use_signal(|| None);
+    let mut selected: Signal<Option<WellKnownSets>> = use_signal(|| None);
     let log = use_signal(Vec::<String>::new);
     let status = use_signal(|| OperationStatus::Idle);
+
+    use_effect(move || {
+        let mut sets = sets;
+        spawn(async move {
+            match load_well_known_sets().await {
+                Ok(loaded_sets) => {
+                    sets.set(Some(loaded_sets));
+                }
+                Err(_) => {
+                    // Failed to load sets
+                }
+            }
+        });
+    });
 
     rsx! {
         Card { class: Some("space-y-4".to_string()),
             div { class: "flex items-center justify-between",
                 ToolHeader {
-                    title: "Migii импорт",
-                    subtitle: "Импорт слов из указанных уроков Migii",
+                    title: "Well Known Sets импорт",
+                    subtitle: "Импорт слов из известных наборов (JLPT, Migii)",
                 }
                 Pill {
                     text: status().to_pill_text(),
@@ -376,43 +309,72 @@ fn ImportMigiiTool() -> Element {
                 }
             }
 
+            Paragraph { class: Some("text-sm text-slate-600".to_string()),
+                "Выберите набор для импорта."
+            }
+
             div { class: "space-y-2",
-                label { class: "text-sm font-medium", "УРОКИ" }
-                Input {
-                    placeholder: "Напр. 1,2,5",
-                    value: lessons(),
-                    oninput: move |e: FormEvent| lessons.set(e.value()),
-                    disabled: matches!(status(), OperationStatus::Loading),
+                label { class: "text-sm font-medium", "НАБОР" }
+                if let Some(sets_list) = sets() {
+                    select {
+                        class: "w-full p-2 border border-slate-300 rounded-lg",
+                        disabled: matches!(status(), OperationStatus::Loading),
+                        onchange: move |e: FormEvent| {
+                            let value = e.value();
+                            if value.is_empty() {
+                                selected.set(None);
+                                return;
+                            }
+                            let index: usize = match value.parse() {
+                                Ok(idx) => idx,
+                                Err(_) => return,
+                            };
+                            if let Some(info) = sets_list.get(index) {
+                                selected.set(Some(info.set));
+                            }
+                        },
+                        option { value: "", "Выберите набор..." }
+                        for (idx , info) in sets_list.iter().enumerate() {
+                            option {
+                                value: idx.to_string(),
+                                selected: selected().map(|s| s == info.set).unwrap_or(false),
+                                "{info.title}"
+                            }
+                        }
+                    }
+                } else {
+                    LoadingState { message: Some("Загрузка наборов...".to_string()) }
                 }
             }
 
             if matches!(status(), OperationStatus::Loading) {
-                LoadingState { message: Some("Импорт из Migii...".to_string()) }
+                LoadingState { message: Some("Импорт набора...".to_string()) }
             } else {
                 Button {
                     variant: ButtonVariant::Primary,
                     class: "w-full",
-                    disabled: matches!(status(), OperationStatus::Loading),
-                    onclick: {
-                        move |_| {
-                            let lessons_str = lessons();
-                            let mut log = log;
-                            let mut status = status;
-                            status.set(OperationStatus::Loading);
-                            spawn(async move {
-                                match run_migii(lessons_str).await {
-                                    Ok(msg) => {
-                                        status.set(OperationStatus::Success(msg.clone()));
-                                        log.write().push(msg);
-                                    }
-                                    Err(e) => {
-                                        let error_msg = format!("Ошибка: {e}");
-                                        status.set(OperationStatus::Error(e.to_string()));
-                                        log.write().push(error_msg);
-                                    }
-                                }
-                            });
+                    disabled: matches!(status(), OperationStatus::Loading) || selected().is_none(),
+                    onclick: move |_| {
+                        if selected().is_none() {
+                            return;
                         }
+                        let set = selected().unwrap();
+                        let mut log = log;
+                        let mut status = status;
+                        status.set(OperationStatus::Loading);
+                        spawn(async move {
+                            match run_well_known_set(set).await {
+                                Ok(msg) => {
+                                    status.set(OperationStatus::Success(msg.clone()));
+                                    log.write().push(msg);
+                                }
+                                Err(e) => {
+                                    let error_msg = format!("Ошибка: {e}");
+                                    status.set(OperationStatus::Error(e.to_string()));
+                                    log.write().push(error_msg);
+                                }
+                            }
+                        });
                     },
                     "Импортировать"
                 }
@@ -421,6 +383,14 @@ fn ImportMigiiTool() -> Element {
             LogsCard { log }
         }
     }
+}
+
+async fn load_well_known_sets() -> Result<Vec<WellKnownSetInfo>, String> {
+    let env = ApplicationEnvironment::get();
+    let user_id = ensure_user(env, DEFAULT_USERNAME).await?;
+    let repo = env.get_repository().await.map_err(to_error)?;
+    let use_case = ListWellKnownSetsUseCase::new(repo);
+    use_case.execute(user_id).await.map_err(to_error)
 }
 
 async fn run_duolingo() -> Result<String, String> {
@@ -433,26 +403,6 @@ async fn run_duolingo() -> Result<String, String> {
     let res = use_case.execute(user_id).await.map_err(to_error)?;
     Ok(format!(
         "Duolingo: создано {}, пропущено {}",
-        res.total_created_count,
-        res.skipped_words.len()
-    ))
-}
-
-async fn run_jlpt(_level: String) -> Result<String, String> {
-    let env = ApplicationEnvironment::get();
-    let user_id = ensure_user(env, DEFAULT_USERNAME).await?;
-    let repo = env.get_repository().await.map_err(to_error)?;
-    let llm = env.get_llm_service(user_id).await.map_err(to_error)?;
-
-    // TODO!!!!!!!!!!!!!!! WellKnownSets!!!!!!1
-    let parsed_level = WellKnownSets::JlptN5;
-    let res = ImportWellKnownSetUseCase::new(repo, &llm)
-        .execute(user_id, parsed_level)
-        .await
-        .map_err(to_error)?;
-
-    Ok(format!(
-        "JLPT: создано {}, пропущено {}",
         res.total_created_count,
         res.skipped_words.len()
     ))
@@ -497,28 +447,19 @@ async fn run_anki(
     ))
 }
 
-async fn run_migii(lessons: String) -> Result<String, String> {
+async fn run_well_known_set(set: WellKnownSets) -> Result<String, String> {
     let env = ApplicationEnvironment::get();
     let user_id = ensure_user(env, DEFAULT_USERNAME).await?;
     let repo = env.get_repository().await.map_err(to_error)?;
     let llm = env.get_llm_service(user_id).await.map_err(to_error)?;
-    let migii_client = env.get_migii_client().await.map_err(to_error)?;
 
-    let lesson_numbers: Vec<u32> = lessons
-        .split(',')
-        .filter_map(|s| s.trim().parse::<u32>().ok())
-        .collect();
-    if lesson_numbers.is_empty() {
-        return Err("Укажите хотя бы один номер урока".to_string());
-    }
-
-    let res = ExportMigiiPackUseCase::new(repo, &llm, migii_client)
-        .execute(user_id, lesson_numbers)
+    let res = ImportWellKnownSetUseCase::new(repo, &llm)
+        .execute(user_id, set)
         .await
         .map_err(to_error)?;
 
     Ok(format!(
-        "Migii: создано {}, пропущено {}",
+        "Well Known Set: создано {}, пропущено {}",
         res.total_created_count,
         res.skipped_words.len()
     ))
