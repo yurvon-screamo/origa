@@ -2,11 +2,7 @@ use std::{collections::HashMap, sync::LazyLock};
 
 use serde::{Deserialize, Serialize};
 
-use crate::domain::{
-    dictionary::kanji::parse_jlpt_level,
-    knowledge::ExamplePhrase,
-    value_objects::{JapaneseLevel, NativeLanguage},
-};
+use crate::domain::value_objects::NativeLanguage;
 
 pub static VOCABULARY_DICTIONARY: LazyLock<VocabularyDatabase> =
     LazyLock::new(VocabularyDatabase::new);
@@ -14,20 +10,13 @@ pub static VOCABULARY_DICTIONARY: LazyLock<VocabularyDatabase> =
 #[derive(Debug, Clone)]
 pub struct VocabularyInfo {
     word: String,
-    level: JapaneseLevel,
     russian_translation: String,
     english_translation: String,
-    russian_examples: Vec<ExamplePhrase>,
-    english_examples: Vec<ExamplePhrase>,
 }
 
 impl VocabularyInfo {
     pub fn word(&self) -> &str {
         &self.word
-    }
-
-    pub fn level(&self) -> &JapaneseLevel {
-        &self.level
     }
 
     pub fn russian_translation(&self) -> &str {
@@ -36,14 +25,6 @@ impl VocabularyInfo {
 
     pub fn english_translation(&self) -> &str {
         &self.english_translation
-    }
-
-    pub fn russian_examples(&self) -> &[ExamplePhrase] {
-        &self.russian_examples
-    }
-
-    pub fn english_examples(&self) -> &[ExamplePhrase] {
-        &self.english_examples
     }
 }
 
@@ -72,73 +53,58 @@ impl Default for VocabularyDatabase {
     }
 }
 
-static N5_PART1_STR: &str = include_str!("vocabulary/n5_part1.json");
-static N5_PART2_STR: &str = include_str!("vocabulary/n5_part2.json");
-static N5_PART3_STR: &str = include_str!("vocabulary/n5_part3.json");
-static N4_PART1_STR: &str = include_str!("vocabulary/n4_part1.json");
-static N4_PART2_STR: &str = include_str!("vocabulary/n4_part2.json");
-static N3_PART1_STR: &str = include_str!("vocabulary/n3_part1.json");
-static N3_PART2_STR: &str = include_str!("vocabulary/n3_part2.json");
-static N2_PART1_STR: &str = include_str!("vocabulary/n2_part1.json");
-static N2_PART2_STR: &str = include_str!("vocabulary/n2_part2.json");
-static N1_PART1_STR: &str = include_str!("vocabulary/n1_part1.json");
-static N1_PART2_STR: &str = include_str!("vocabulary/n1_part2.json");
-static N1_PART3_STR: &str = include_str!("vocabulary/n1_part3.json");
-static N1_PART4_STR: &str = include_str!("vocabulary/n1_part4.json");
+static CHUNK_01_STR: &str = include_str!("vocabulary/chunk_01.json");
+static CHUNK_02_STR: &str = include_str!("vocabulary/chunk_02.json");
+static CHUNK_03_STR: &str = include_str!("vocabulary/chunk_03.json");
+static CHUNK_04_STR: &str = include_str!("vocabulary/chunk_04.json");
+static CHUNK_05_STR: &str = include_str!("vocabulary/chunk_05.json");
+static CHUNK_06_STR: &str = include_str!("vocabulary/chunk_06.json");
+static CHUNK_07_STR: &str = include_str!("vocabulary/chunk_07.json");
+static CHUNK_08_STR: &str = include_str!("vocabulary/chunk_08.json");
+static CHUNK_09_STR: &str = include_str!("vocabulary/chunk_09.json");
+static CHUNK_10_STR: &str = include_str!("vocabulary/chunk_10.json");
 
 impl VocabularyDatabase {
     pub fn new() -> Self {
         let vocabulary_data: HashMap<_, _> = serde_json::from_str::<
             HashMap<String, VocabularyEntryStoredType>,
-        >(N1_PART1_STR)
+        >(CHUNK_01_STR)
         .unwrap()
         .into_iter()
         .chain(
-            serde_json::from_str::<HashMap<String, VocabularyEntryStoredType>>(N1_PART2_STR)
+            serde_json::from_str::<HashMap<String, VocabularyEntryStoredType>>(CHUNK_02_STR)
                 .unwrap(),
         )
         .chain(
-            serde_json::from_str::<HashMap<String, VocabularyEntryStoredType>>(N1_PART3_STR)
+            serde_json::from_str::<HashMap<String, VocabularyEntryStoredType>>(CHUNK_03_STR)
                 .unwrap(),
         )
         .chain(
-            serde_json::from_str::<HashMap<String, VocabularyEntryStoredType>>(N1_PART4_STR)
+            serde_json::from_str::<HashMap<String, VocabularyEntryStoredType>>(CHUNK_04_STR)
                 .unwrap(),
         )
         .chain(
-            serde_json::from_str::<HashMap<String, VocabularyEntryStoredType>>(N2_PART1_STR)
+            serde_json::from_str::<HashMap<String, VocabularyEntryStoredType>>(CHUNK_05_STR)
                 .unwrap(),
         )
         .chain(
-            serde_json::from_str::<HashMap<String, VocabularyEntryStoredType>>(N2_PART2_STR)
+            serde_json::from_str::<HashMap<String, VocabularyEntryStoredType>>(CHUNK_06_STR)
                 .unwrap(),
         )
         .chain(
-            serde_json::from_str::<HashMap<String, VocabularyEntryStoredType>>(N3_PART1_STR)
+            serde_json::from_str::<HashMap<String, VocabularyEntryStoredType>>(CHUNK_07_STR)
                 .unwrap(),
         )
         .chain(
-            serde_json::from_str::<HashMap<String, VocabularyEntryStoredType>>(N3_PART2_STR)
+            serde_json::from_str::<HashMap<String, VocabularyEntryStoredType>>(CHUNK_08_STR)
                 .unwrap(),
         )
         .chain(
-            serde_json::from_str::<HashMap<String, VocabularyEntryStoredType>>(N4_PART1_STR)
+            serde_json::from_str::<HashMap<String, VocabularyEntryStoredType>>(CHUNK_09_STR)
                 .unwrap(),
         )
         .chain(
-            serde_json::from_str::<HashMap<String, VocabularyEntryStoredType>>(N4_PART2_STR)
-                .unwrap(),
-        )
-        .chain(
-            serde_json::from_str::<HashMap<String, VocabularyEntryStoredType>>(N5_PART1_STR)
-                .unwrap(),
-        )
-        .chain(
-            serde_json::from_str::<HashMap<String, VocabularyEntryStoredType>>(N5_PART2_STR)
-                .unwrap(),
-        )
-        .chain(
-            serde_json::from_str::<HashMap<String, VocabularyEntryStoredType>>(N5_PART3_STR)
+            serde_json::from_str::<HashMap<String, VocabularyEntryStoredType>>(CHUNK_10_STR)
                 .unwrap(),
         )
         .collect();
@@ -146,27 +112,12 @@ impl VocabularyDatabase {
         let vocabulary_map = vocabulary_data
             .into_iter()
             .map(|(word, entry)| {
-                let level = parse_jlpt_level(&entry.level);
-                let russian_examples = entry
-                    .russian_examples
-                    .into_iter()
-                    .map(|e| ExamplePhrase::new(e.text, e.translation))
-                    .collect();
-                let english_examples = entry
-                    .english_examples
-                    .into_iter()
-                    .map(|e| ExamplePhrase::new(e.text, e.translation))
-                    .collect();
-
                 (
                     word.clone(),
                     VocabularyInfo {
                         word,
-                        level,
                         russian_translation: entry.russian_translation,
                         english_translation: entry.english_translation,
-                        russian_examples,
-                        english_examples,
                     },
                 )
             })
@@ -181,19 +132,6 @@ impl VocabularyDatabase {
             .map(|info| match native_language {
                 NativeLanguage::Russian => info.russian_translation.clone(),
                 NativeLanguage::English => info.english_translation.clone(),
-            })
-    }
-
-    pub fn get_examples(
-        &self,
-        word: &str,
-        native_language: &NativeLanguage,
-    ) -> Option<Vec<ExamplePhrase>> {
-        self.vocabulary_map
-            .get(word)
-            .map(|info| match native_language {
-                NativeLanguage::Russian => info.russian_examples.clone(),
-                NativeLanguage::English => info.english_examples.clone(),
             })
     }
 
