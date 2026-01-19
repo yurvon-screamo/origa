@@ -144,11 +144,11 @@ fn CardItem(
 
                     div { class: "grid grid-cols-2 gap-1 text-xs",
                         Pill {
-                            text: if card_rc.is_new { "Новая".to_string() } else if card_rc.is_low_stability { "Низкая стаб.".to_string() } else if card_rc.is_high_difficulty { "Высокая сложн.".to_string() } else if card_rc.is_learned { "Изучено".to_string() } else if card_rc.is_in_progress { "В процессе".to_string() } else { "???".to_string() },
+                            text: if card_rc.is_new { "Новая".to_string() } else if card_rc.is_high_difficulty { "Высокая сложн.".to_string() } else if card_rc.is_learned { "Изучено".to_string() } else if card_rc.is_in_progress { "В процессе".to_string() } else { "???".to_string() },
                             tone: Some(
                                 if card_rc.is_new {
                                     StateTone::Info
-                                } else if card_rc.is_low_stability || card_rc.is_high_difficulty {
+                                } else if card_rc.is_high_difficulty {
                                     StateTone::Warning
                                 } else if card_rc.is_learned {
                                     StateTone::Success

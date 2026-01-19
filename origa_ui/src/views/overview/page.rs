@@ -105,14 +105,6 @@ fn build_charts(lesson_history: &[DailyHistoryItem]) -> OverviewCharts {
         })
         .collect();
 
-    let low_stability_words_data = lesson_history
-        .iter()
-        .map(|item| ChartDataPoint {
-            label: format_date(item.timestamp()),
-            value: item.low_stability_words() as f64,
-        })
-        .collect();
-
     let high_difficulty_words_data = lesson_history
         .iter()
         .map(|item| ChartDataPoint {
@@ -127,7 +119,6 @@ fn build_charts(lesson_history: &[DailyHistoryItem]) -> OverviewCharts {
         new_words_data,
         learned_words_data,
         in_progress_words_data,
-        low_stability_words_data,
         high_difficulty_words_data,
     }
 }
@@ -164,10 +155,6 @@ fn calculate_stats(cards: &[StudyCard]) -> OverviewStats {
         .iter()
         .filter(|card| card.memory().is_known_card())
         .count();
-    let low_stability_cards = cards
-        .iter()
-        .filter(|card| card.memory().is_low_stability())
-        .count();
     let high_difficulty_cards = cards
         .iter()
         .filter(|card| card.memory().is_high_difficulty())
@@ -179,7 +166,6 @@ fn calculate_stats(cards: &[StudyCard]) -> OverviewStats {
         new_cards,
         learning_cards,
         known_cards,
-        low_stability_cards,
         high_difficulty_cards,
     }
 }
@@ -191,7 +177,6 @@ pub struct OverviewStats {
     pub new_cards: usize,
     pub learning_cards: usize,
     pub known_cards: usize,
-    pub low_stability_cards: usize,
     pub high_difficulty_cards: usize,
 }
 

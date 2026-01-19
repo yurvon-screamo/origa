@@ -22,7 +22,6 @@ use ulid::Ulid;
 
 const NEW_CARDS_LIMIT: usize = 7;
 const HARD_CARDS_LIMIT: usize = 15;
-const MAX_DAYS_INTERVAL_THRESHOLD: i64 = 10;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct KnowledgeSet {
@@ -107,10 +106,7 @@ impl KnowledgeSet {
         let mut cards = self
             .study_cards
             .iter()
-            .filter(|(_, card)| {
-                card.memory().latest_interval().num_days() <= MAX_DAYS_INTERVAL_THRESHOLD
-                    && (card.memory().is_low_stability() || card.memory().is_high_difficulty())
-            })
+            .filter(|(_, card)| card.memory().is_high_difficulty())
             .collect::<Vec<_>>();
 
         cards.sort_by_key(|(_, card)| card.memory().next_review_date());
@@ -130,10 +126,7 @@ impl KnowledgeSet {
 
         let mut priority_cards: Vec<_> = all_cards
             .iter()
-            .filter(|(_, card)| {
-                card.memory().is_due()
-                    && (card.memory().is_low_stability() || card.memory().is_high_difficulty())
-            })
+            .filter(|(_, card)| card.memory().is_due() && card.memory().is_high_difficulty())
             .collect();
 
         if priority_cards.len() < NEW_CARDS_LIMIT {
@@ -204,7 +197,6 @@ impl KnowledgeSet {
         let mut known_words = 0;
         let mut new_words = 0;
         let mut in_progress_words = 0;
-        let mut low_stability_words = 0;
         let mut high_difficulty_words = 0;
 
         for memory in self.study_cards.values().map(|x| x.memory()) {
@@ -214,7 +206,6 @@ impl KnowledgeSet {
             known_words += memory.is_known_card() as usize;
             new_words += memory.is_new() as usize;
             in_progress_words += memory.is_in_progress() as usize;
-            low_stability_words += memory.is_low_stability() as usize;
             high_difficulty_words += memory.is_high_difficulty() as usize;
         }
 
@@ -236,7 +227,6 @@ impl KnowledgeSet {
                 known_words,
                 new_words,
                 in_progress_words,
-                low_stability_words,
                 high_difficulty_words,
             );
         } else {
@@ -248,7 +238,6 @@ impl KnowledgeSet {
                 known_words,
                 new_words,
                 in_progress_words,
-                low_stability_words,
                 high_difficulty_words,
             );
             self.lesson_history.push(item);

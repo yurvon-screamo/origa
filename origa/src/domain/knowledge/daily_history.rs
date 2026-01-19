@@ -11,7 +11,6 @@ pub struct DailyHistoryItem {
     new_words: usize,
     known_words: usize,
     in_progress_words: usize,
-    low_stability_words: usize,
     high_difficulty_words: usize,
     lessons_completed: usize,
 
@@ -34,7 +33,6 @@ impl DailyHistoryItem {
             new_words: 0,
             known_words: 0,
             in_progress_words: 0,
-            low_stability_words: 0,
             high_difficulty_words: 0,
             lessons_completed: 0,
             total_duration: Duration::zero(),
@@ -69,10 +67,6 @@ impl DailyHistoryItem {
         self.in_progress_words
     }
 
-    pub fn low_stability_words(&self) -> usize {
-        self.low_stability_words
-    }
-
     pub fn high_difficulty_words(&self) -> usize {
         self.high_difficulty_words
     }
@@ -89,7 +83,6 @@ impl DailyHistoryItem {
         known_words: usize,
         new_words: usize,
         in_progress_words: usize,
-        low_stability_words: usize,
         high_difficulty_words: usize,
     ) {
         self.avg_stability = Some(avg_stability);
@@ -98,7 +91,6 @@ impl DailyHistoryItem {
         self.known_words = known_words;
         self.new_words = new_words;
         self.in_progress_words = in_progress_words;
-        self.low_stability_words = low_stability_words;
         self.high_difficulty_words = high_difficulty_words;
         self.lessons_completed += 1;
     }
