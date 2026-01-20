@@ -2,7 +2,7 @@ use std::sync::LazyLock;
 
 use serde::{Deserialize, Serialize};
 
-use crate::domain::OrigaError;
+use crate::domain::{OrigaError, filter_japanese_text};
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct TokenInfo {
@@ -139,11 +139,13 @@ static TOKENIZER: LazyLock<lindera::tokenizer::Tokenizer> = LazyLock::new(|| {
 });
 
 pub fn tokenize_text(text: &str) -> Result<Vec<TokenInfo>, OrigaError> {
-    let mut tokens = TOKENIZER
-        .tokenize(text)
-        .map_err(|e| OrigaError::TokenizerError {
-            reason: e.to_string(),
-        })?;
+    let filtered_text = filter_japanese_text(text);
+    let mut tokens =
+        TOKENIZER
+            .tokenize(&filtered_text)
+            .map_err(|e| OrigaError::TokenizerError {
+                reason: e.to_string(),
+            })?;
 
     let token_infos = tokens
         .iter_mut()
