@@ -1,5 +1,5 @@
 [workspace]
-members = ["origa", "origa_ui", "tauri"]
+members = ["origa", "origa_ui", "tauri", "tokenizer"]
 resolver = "2"
 
 [workspace.package]

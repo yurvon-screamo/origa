@@ -64,3 +64,22 @@ impl JapaneseText for str {
         self.chars().any(|c| c.is_kanji())
     }
 }
+
+pub fn filter_japanese_text(text: &str) -> String {
+    text.chars()
+        .map(|c| {
+            if c.is_japanese() || is_cjk_punctuation(c) {
+                c
+            } else {
+                ' '
+            }
+        })
+        .collect::<String>()
+        .split_whitespace()
+        .collect::<Vec<&str>>()
+        .join(" ")
+}
+
+fn is_cjk_punctuation(c: char) -> bool {
+    ('\u{3000}'..='\u{303F}').contains(&c)
+}
