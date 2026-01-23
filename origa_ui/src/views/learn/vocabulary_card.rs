@@ -2,7 +2,7 @@ use dioxus::prelude::*;
 
 use crate::components::app_ui::{InfoSection, InfoSectionTone};
 use crate::domain::{
-    AnswerActionButtons, FuriganaText, KanjiCard as DomainKanjiCard, Rating, WordCard,
+    AnswerActionButtons, FormattedTranslation, FuriganaText, KanjiCard as DomainKanjiCard, Rating,
 };
 use crate::views::learn::learn_session::{LearnCard, LearnStep};
 use origa::domain::{KanjiInfo, NativeLanguage};
@@ -55,7 +55,13 @@ fn VocabularyQuestionView(
                         div { class: "text-xs text-slate-500 uppercase tracking-wide font-semibold",
                             "Вопрос"
                         }
-                        WordCard { text: question, show_furigana, class: None }
+                        div { class: "p-4 bg-gradient-to-br from-slate-50 to-slate-100 border-2 border-slate-200 rounded-2xl shadow-sm min-h-[120px] flex flex-col justify-center",
+                            FormattedTranslation {
+                                text: question.clone(),
+                                class: Some("text-4xl md:text-5xl font-bold".to_string()),
+                                show_furigana,
+                            }
+                        }
                     }
                 }
 
@@ -84,10 +90,12 @@ fn VocabularyAnswerView(
                         div { class: "text-xs text-slate-500 uppercase tracking-wide font-semibold",
                             "Вопрос"
                         }
-                        WordCard {
-                            text: card.question.clone(),
-                            show_furigana,
-                            class: None,
+                        div { class: "p-4 bg-gradient-to-br from-slate-50 to-slate-100 border-2 border-slate-200 rounded-2xl shadow-sm min-h-[120px] flex flex-col justify-center",
+                            FormattedTranslation {
+                                text: card.question.clone(),
+                                class: Some("text-4xl md:text-5xl font-bold".to_string()),
+                                show_furigana,
+                            }
                         }
                     }
 
@@ -100,11 +108,11 @@ fn VocabularyAnswerView(
                                 div { class: "text-xs text-slate-500 uppercase tracking-wide font-semibold",
                                     "Ответ"
                                 }
-                                div { class: "relative",
-                                    WordCard {
+                                div { class: "relative p-4 bg-gradient-to-br from-slate-50 to-slate-100 border-2 border-slate-200 rounded-2xl shadow-sm min-h-[120px] flex flex-col justify-center",
+                                    FormattedTranslation {
                                         text: card.answer.clone(),
-                                        show_furigana,
                                         class: Some("text-lg md:text-xl".to_string()),
+                                        show_furigana,
                                     }
                                 }
                             }
@@ -147,10 +155,12 @@ fn VocabularyCompletedView(
             div { class: "grid grid-cols-1 lg:grid-cols-3 gap-6",
                 // Left column: Answer
                 div { class: "lg:col-span-2 space-y-2",
-                    WordCard {
-                        text: card.answer.clone(),
-                        show_furigana,
-                        class: None,
+                    div { class: "p-4 bg-gradient-to-br from-slate-50 to-slate-100 border-2 border-slate-200 rounded-2xl shadow-sm min-h-[120px] flex flex-col justify-center",
+                        FormattedTranslation {
+                            text: card.answer.clone(),
+                            class: None,
+                            show_furigana,
+                        }
                     }
                 }
 
