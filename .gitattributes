@@ -167,3 +167,6 @@ origa/src/domain/well_known_set/n2/migii_n2_23.json filter=lfs diff=lfs merge=lf
 origa/src/domain/well_known_set/n3/migii_n3_22.json filter=lfs diff=lfs merge=lfs -text
 origa/src/domain/dictionary/kanji.json filter=lfs diff=lfs merge=lfs -text
 origa/src/domain/dictionary/radicals.json filter=lfs diff=lfs merge=lfs -text
+origa/src/domain/dictionary/kanji_frames filter=lfs diff=lfs merge=lfs -text
+origa/src/domain/dictionary/kanji_animations/ filter=lfs diff=lfs merge=lfs -text
+origa/src/domain/dictionary/vocabulary/ filter=lfs diff=lfs merge=lfs -text
