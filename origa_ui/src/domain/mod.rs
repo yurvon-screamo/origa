@@ -25,3 +25,6 @@ pub use popular_word_card::PopularWordCard;
 
 mod popular_words_grid;
 pub use popular_words_grid::PopularWordsGrid;
+
+mod formatted_translation;
+pub use formatted_translation::FormattedTranslation;
