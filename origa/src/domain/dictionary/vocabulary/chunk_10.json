@@ -17818,5 +17818,509 @@
   "風化": {
     "russian_translation": "- выветривание  \n- эфлоресценция  \n\n> 1) (геол.) выветривание  \n> 2) (хим.) эфлоресценция",
     "english_translation": "- weathering  \n- fading (of memories)  \n- efflorescence"
+  },
+  "あさって": {
+    "russian_translation": "- послезавтра",
+    "english_translation": "- the day after tomorrow"
+  },
+  "あそこ": {
+    "russian_translation": "- там (далеко от говорящего)",
+    "english_translation": "- over there  \n- that place"
+  },
+  "あちら": {
+    "russian_translation": "- там, та сторона (вежливо)",
+    "english_translation": "- over there  \n- that direction"
+  },
+  "あっち": {
+    "russian_translation": "- там, вон туда (разг.)",
+    "english_translation": "- over there (colloquial)"
+  },
+  "あなた": {
+    "russian_translation": "- вы, ты (вежливо или нейтрально)",
+    "english_translation": "- you (polite/neutral)"
+  },
+  "あびる": {
+    "russian_translation": "- принимать душ/ванну",
+    "english_translation": "- to bathe  \n- to shower"
+  },
+  "あまり": {
+    "russian_translation": "- не очень  \n- слишком  \n- остаток",
+    "english_translation": "- not very  \n- too much  \n- remainder"
+  },
+  "ある": {
+    "russian_translation": "- быть  \n- существовать (неодушевлённое)",
+    "english_translation": "- to be  \n- to exist (inanimate)"
+  },
+  "いい": {
+    "russian_translation": "- хороший  \n- ладно",
+    "english_translation": "- good  \n- fine"
+  },
+  "いかが": {
+    "russian_translation": "- как насчёт  \n- как дела (вежливо)",
+    "english_translation": "- how about  \n- how is"
+  },
+  "いくつ": {
+    "russian_translation": "- сколько (штук)",
+    "english_translation": "- how many (objects)"
+  },
+  "いくら": {
+    "russian_translation": "- сколько (цена)",
+    "english_translation": "- how much (price)"
+  },
+  "いす": {
+    "russian_translation": "- стул",
+    "english_translation": "- chair"
+  },
+  "いちばん": {
+    "russian_translation": "- самый  \n- первый  \n- номер один",
+    "english_translation": "- most  \n- number one  \n- first"
+  },
+  "いつ": {
+    "russian_translation": "- когда",
+    "english_translation": "- when"
+  },
+  "いつも": {
+    "russian_translation": "- всегда",
+    "english_translation": "- always"
+  },
+  "いろいろ": {
+    "russian_translation": "- различный  \n- разнообразный",
+    "english_translation": "- various  \n- all sorts of"
+  },
+  "ええ": {
+    "russian_translation": "- да (разг.)  \n- хорошо",
+    "english_translation": "- yes (casual)  \n- well"
+  },
+  "おいしい": {
+    "russian_translation": "- вкусный",
+    "english_translation": "- delicious  \n- tasty"
+  },
+  "おなか": {
+    "russian_translation": "- живот",
+    "english_translation": "- stomach  \n- belly"
+  },
+  "おばあさん": {
+    "russian_translation": "- бабушка",
+    "english_translation": "- grandmother"
+  },
+  "おまわりさん": {
+    "russian_translation": "- полицейский (разг.)",
+    "english_translation": "- police officer (colloquial)"
+  },
+  "おもしろい": {
+    "russian_translation": "- интересный  \n- забавный",
+    "english_translation": "- interesting  \n- funny"
+  },
+  "お弁当": {
+    "russian_translation": "- бенто  \n- обед в коробке",
+    "english_translation": "- boxed lunch  \n- bento"
+  },
+  "お皿": {
+    "russian_translation": "- тарелка",
+    "english_translation": "- plate  \n- dish"
+  },
+  "お菓子": {
+    "russian_translation": "- сладости  \n- закуски",
+    "english_translation": "- sweets  \n- snacks"
+  },
+  "お風呂": {
+    "russian_translation": "- ванна  \n- баня",
+    "english_translation": "- bath"
+  },
+  "かかる": {
+    "russian_translation": "- занимать (время)  \n- стоить",
+    "english_translation": "- to take (time)  \n- to cost"
+  },
+  "かぎ": {
+    "russian_translation": "- ключ",
+    "english_translation": "- key"
+  },
+  "かける": {
+    "russian_translation": "- вешать  \n- звонить  \n- надевать (очки)",
+    "english_translation": "- to hang  \n- to call  \n- to wear (glasses)"
+  },
+  "かばん": {
+    "russian_translation": "- сумка  \n- портфель",
+    "english_translation": "- bag"
+  },
+  "かわいい": {
+    "russian_translation": "- милый  \n- прелестный",
+    "english_translation": "- cute  \n- adorable"
+  },
+  "きらきら": {
+    "russian_translation": "- сверкающий  \n- блестящий",
+    "english_translation": "- sparkling  \n- glittering"
+  },
+  "きれい": {
+    "russian_translation": "- красивый  \n- чистый",
+    "english_translation": "- beautiful  \n- clean"
+  },
+  "くすり": {
+    "russian_translation": "- лекарство",
+    "english_translation": "- medicine  \n- drug"
+  },
+  "ください": {
+    "russian_translation": "- пожалуйста  \n- дайте",
+    "english_translation": "- please give me"
+  },
+  "こう": {
+    "russian_translation": "- так  \n- таким образом",
+    "english_translation": "- like this  \n- this way"
+  },
+  "ここ": {
+    "russian_translation": "- здесь",
+    "english_translation": "- here"
+  },
+  "こちら": {
+    "russian_translation": "- сюда, здесь (вежливо)",
+    "english_translation": "- this way  \n- here (polite)"
+  },
+  "こっち": {
+    "russian_translation": "- сюда (разг.)",
+    "english_translation": "- this way (colloquial)"
+  },
+  "この": {
+    "russian_translation": "- этот",
+    "english_translation": "- this"
+  },
+  "しかし": {
+    "russian_translation": "- однако",
+    "english_translation": "- however"
+  },
+  "しょうゆ": {
+    "russian_translation": "- соевый соус",
+    "english_translation": "- soy sauce"
+  },
+  "しょっぱい": {
+    "russian_translation": "- солёный",
+    "english_translation": "- salty"
+  },
+  "すぐに": {
+    "russian_translation": "- сразу",
+    "english_translation": "- immediately"
+  },
+  "する": {
+    "russian_translation": "- делать",
+    "english_translation": "- to do"
+  },
+  "せっけん": {
+    "russian_translation": "- мыло",
+    "english_translation": "- soap"
+  },
+  "そうして": {
+    "russian_translation": "- и затем",
+    "english_translation": "- and then"
+  },
+  "そこ": {
+    "russian_translation": "- там",
+    "english_translation": "- there"
+  },
+  "そして": {
+    "russian_translation": "- и",
+    "english_translation": "- and"
+  },
+  "そちら": {
+    "russian_translation": "- туда (вежливо)",
+    "english_translation": "- that way (polite)"
+  },
+  "そっち": {
+    "russian_translation": "- туда (разг.)",
+    "english_translation": "- that way (colloquial)"
+  },
+  "その": {
+    "russian_translation": "- тот",
+    "english_translation": "- that"
+  },
+  "そば": {
+    "russian_translation": "- рядом  \n- лапша соба",
+    "english_translation": "- near  \n- soba noodles"
+  },
+  "それから": {
+    "russian_translation": "- затем",
+    "english_translation": "- then  \n- after that"
+  },
+  "それでは": {
+    "russian_translation": "- ну тогда  \n- в таком случае",
+    "english_translation": "- well then  \n- in that case"
+  },
+  "たいへん": {
+    "russian_translation": "- очень  \n- большая проблема",
+    "english_translation": "- very  \n- great trouble"
+  },
+  "たくさん": {
+    "russian_translation": "- много",
+    "english_translation": "- a lot  \n- many"
+  },
+  "たて": {
+    "russian_translation": "- вертикальный  \n- высота",
+    "english_translation": "- vertical  \n- height"
+  },
+  "たばこ": {
+    "russian_translation": "- сигарета  \n- табак",
+    "english_translation": "- cigarette  \n- tobacco"
+  },
+  "たぶん": {
+    "russian_translation": "- вероятно",
+    "english_translation": "- probably"
+  },
+  "だんだん": {
+    "russian_translation": "- постепенно",
+    "english_translation": "- gradually"
+  },
+  "ちか": {
+    "russian_translation": "- подземный",
+    "english_translation": "- underground"
+  },
+  "ちゃわん": {
+    "russian_translation": "- чашка  \n- миска",
+    "english_translation": "- teacup  \n- bowl"
+  },
+  "ちょうど": {
+    "russian_translation": "- точно  \n- как раз",
+    "english_translation": "- exactly  \n- just"
+  },
+  "ちょっと": {
+    "russian_translation": "- немного  \n- подожди",
+    "english_translation": "- a little  \n- wait a moment"
+  },
+  "つける": {
+    "russian_translation": "- прикреплять  \n- включать",
+    "english_translation": "- to attach  \n- to turn on"
+  },
+  "つまらない": {
+    "russian_translation": "- скучный",
+    "english_translation": "- boring"
+  },
+  "できる": {
+    "russian_translation": "- мочь  \n- получаться",
+    "english_translation": "- can  \n- to be able to"
+  },
+  "とても": {
+    "russian_translation": "- очень",
+    "english_translation": "- very"
+  },
+  "どうして": {
+    "russian_translation": "- почему",
+    "english_translation": "- why"
+  },
+  "どうぞ": {
+    "russian_translation": "- пожалуйста (угощайтесь)",
+    "english_translation": "- please, here you are"
+  },
+  "どこ": {
+    "russian_translation": "- где",
+    "english_translation": "- where"
+  },
+  "どちら": {
+    "russian_translation": "- куда  \n- который (вежливо)",
+    "english_translation": "- which way  \n- which one (polite)"
+  },
+  "どっち": {
+    "russian_translation": "- куда  \n- который (разг.)",
+    "english_translation": "- which way  \n- which one (colloquial)"
+  },
+  "どなた": {
+    "russian_translation": "- кто (вежливо)",
+    "english_translation": "- who (polite)"
+  },
+  "どの": {
+    "russian_translation": "- какой",
+    "english_translation": "- which"
+  },
+  "どれ": {
+    "russian_translation": "- который",
+    "english_translation": "- which one"
+  },
+  "なぜ": {
+    "russian_translation": "- почему (формально)",
+    "english_translation": "- why (formal)"
+  },
+  "など": {
+    "russian_translation": "- и т.д., такие как",
+    "english_translation": "- etc., such as"
+  },
+  "なる": {
+    "russian_translation": "- становиться",
+    "english_translation": "- to become"
+  },
+  "はく": {
+    "russian_translation": "- надевать (обувь)  \n- рвать",
+    "english_translation": "- to wear (shoes)  \n- to vomit"
+  },
+  "はし": {
+    "russian_translation": "- палочки для еды  \n- мост  \n- конец",
+    "english_translation": "- chopsticks  \n- bridge  \n- end"
+  },
+  "びき": {
+    "russian_translation": "- скидка (разг.)  \n- счётчик для животных",
+    "english_translation": "- discount (colloquial)  \n- counter for animals"
+  },
+  "ふろ": {
+    "russian_translation": "- ванна",
+    "english_translation": "- bath"
+  },
+  "ほか": {
+    "russian_translation": "- другой  \n- кроме",
+    "english_translation": "- other  \n- besides"
+  },
+  "ほんとう": {
+    "russian_translation": "- прада  \n- действительно",
+    "english_translation": "- true  \n- really"
+  },
+  "まずい": {
+    "russian_translation": "- невкусный  \n- неловкий",
+    "english_translation": "- bad taste  \n- awkward"
+  },
+  "また": {
+    "russian_translation": "- снова",
+    "english_translation": "- again"
+  },
+  "まだ": {
+    "russian_translation": "- ещё  \n- ещё нет",
+    "english_translation": "- still  \n- not yet"
+  },
+  "まっすぐ": {
+    "russian_translation": "- прямо",
+    "english_translation": "- straight"
+  },
+  "みんな": {
+    "russian_translation": "- все",
+    "english_translation": "- everyone"
+  },
+  "やる": {
+    "russian_translation": "- делать (разг.)  \n- давать (животным)",
+    "english_translation": "- to do (colloquial)  \n- to give (to animals)"
+  },
+  "ゆき": {
+    "russian_translation": "- снег",
+    "english_translation": "- snow"
+  },
+  "よい": {
+    "russian_translation": "- хороший (формально)",
+    "english_translation": "- good (formal)"
+  },
+  "よく": {
+    "russian_translation": "- часто  \n- хорошо",
+    "english_translation": "- often  \n- well"
+  },
+  "より": {
+    "russian_translation": "- чем  \n- от",
+    "english_translation": "- than  \n- from"
+  },
+  "りっぱ": {
+    "russian_translation": "- великолепный",
+    "english_translation": "- splendid  \n- fine"
+  },
+  "アニソン": {
+    "russian_translation": "- аниме-песня",
+    "english_translation": "- anime song"
+  },
+  "カレー": {
+    "russian_translation": "- карри",
+    "english_translation": "- curry"
+  },
+  "キログラム": {
+    "russian_translation": "- килограмм",
+    "english_translation": "- kilogram"
+  },
+  "キロメートル": {
+    "russian_translation": "- километр",
+    "english_translation": "- kilometer"
+  },
+  "グラム": {
+    "russian_translation": "- грамм",
+    "english_translation": "- gram"
+  },
+  "コーヒー": {
+    "russian_translation": "- кофе",
+    "english_translation": "- coffee"
+  },
+  "ゼロ": {
+    "russian_translation": "- ноль",
+    "english_translation": "- zero"
+  },
+  "チャーハン": {
+    "russian_translation": "- жареный рис (по-китайски)",
+    "english_translation": "- fried rice (Chinese style)"
+  },
+  "ニューヨーク": {
+    "russian_translation": "- Нью-Йорк",
+    "english_translation": "- New York"
+  },
+  "パン": {
+    "russian_translation": "- хлеб",
+    "english_translation": "- bread"
+  },
+  "ページ": {
+    "russian_translation": "- страница",
+    "english_translation": "- page"
+  },
+  "メートル": {
+    "russian_translation": "- метр",
+    "english_translation": "- meter"
+  },
+  "ラジオカセット": {
+    "russian_translation": "- радио-кассетный магнитофон",
+    "english_translation": "- radio cassette player"
+  },
+  "ワイシャツ": {
+    "russian_translation": "- рубашка (мужская, деловая)",
+    "english_translation": "- dress shirt"
+  },
+  "不味い": {
+    "russian_translation": "- невкусный",
+    "english_translation": "- bad taste"
+  },
+  "八千": {
+    "russian_translation": "- восемь тысяч",
+    "english_translation": "- eight thousand"
+  },
+  "分かれる": {
+    "russian_translation": "- разделяться  \n- расходиться",
+    "english_translation": "- to separate  \n- to diverge"
+  },
+  "土曜": {
+    "russian_translation": "- суббота",
+    "english_translation": "- Saturday"
+  },
+  "撮る": {
+    "russian_translation": "- фотографировать",
+    "english_translation": "- to take a photo"
+  },
+  "昼ご飯": {
+    "russian_translation": "- обед",
+    "english_translation": "- lunch"
+  },
+  "昼御飯": {
+    "russian_translation": "- обед (формально)",
+    "english_translation": "- lunch (formal)"
+  },
+  "晩御飯": {
+    "russian_translation": "- ужин (формально)",
+    "english_translation": "- dinner (formal)"
+  },
+  "朝ご飯": {
+    "russian_translation": "- завтрак",
+    "english_translation": "- breakfast"
+  },
+  "朝御飯": {
+    "russian_translation": "- завтрак (формально)",
+    "english_translation": "- breakfast (formal)"
+  },
+  "水曜": {
+    "russian_translation": "- среда",
+    "english_translation": "- Wednesday"
+  },
+  "無くす": {
+    "russian_translation": "- терять",
+    "english_translation": "- to lose"
+  },
+  "真ん中": {
+    "russian_translation": "- середина",
+    "english_translation": "- middle"
+  },
+  "返る": {
+    "russian_translation": "- возвращаться (о деньгах, вещи)",
+    "english_translation": "- to be returned  \n- to revert"
   }
 }
