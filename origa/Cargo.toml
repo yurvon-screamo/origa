@@ -2,6 +2,10 @@
 name = "origa"
 version.workspace = true
 edition.workspace = true
+authors.workspace = true
+license-file.workspace = true
+repository.workspace = true
+readme.workspace = true
 
 [dependencies]
 
@@ -43,4 +47,4 @@ lindera.workspace = true
 rstest.workspace = true
 
 [target.wasm32-unknown-unknown]
-rustflags = ['--cfg', 'getrandom_backend="wasm_js"']
+rustflags = ["--cfg", 'getrandom_backend="wasm_js"']

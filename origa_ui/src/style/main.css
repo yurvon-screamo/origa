@@ -1,0 +1,202 @@
+/* Main CSS file for Origa app */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.mobile-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+.main-content {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 60px; /* Space for bottom nav */
+}
+
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-around;
+  background: var(--thaw-bg-color);
+  border-top: 1px solid var(--thaw-border-color);
+  padding: 8px 0;
+  z-index: 1000;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4px 8px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 60px;
+}
+
+.nav-item:hover {
+  background: var(--thaw-bg-color-hover);
+}
+
+.nav-item span {
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+@media (min-width: 769px) {
+  .bottom-nav {
+    display: none;
+  }
+  
+  .main-content {
+    padding-bottom: 0;
+  }
+}
+
+/* Card styles */
+.vocabulary-card .word-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+
+.vocabulary-card .reading {
+  font-size: 14px;
+  color: var(--thaw-text-color-secondary);
+}
+
+.vocabulary-card .meaning {
+  margin: 12px 0;
+}
+
+.vocabulary-card .card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.kanji-card {
+  text-align: center;
+}
+
+.kanji-card .kanji-character h1 {
+  font-size: 48px;
+  margin: 0;
+  color: var(--thaw-text-color-primary);
+}
+
+.kanji-card .kanji-info {
+  text-align: left;
+  margin: 16px 0;
+}
+
+.kanji-card .kanji-info p {
+  margin: 4px 0;
+  font-size: 14px;
+}
+
+.learn-page .lesson-card {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.learn-page .card-content {
+  text-align: center;
+}
+
+.learn-page .question {
+  margin-bottom: 20px;
+}
+
+.learn-page .answer {
+  text-align: left;
+  margin: 20px 0;
+}
+
+.learn-page .rating-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.learn-page .actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.furigana {
+  color: var(--thaw-text-color-secondary);
+  font-size: 14px;
+}
+
+.example {
+  background: var(--thaw-bg-color-secondary);
+  padding: 12px;
+  border-radius: 8px;
+  margin-top: 12px;
+}
+
+.example p {
+  margin: 4px 0;
+}
+
+.translation {
+  color: var(--thaw-text-color-secondary);
+  font-style: italic;
+}
+
+/* Loading and error states */
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+}
+
+.error-message {
+  padding: 16px;
+  background: var(--thaw-error-color-bg);
+  border: 1px solid var(--thaw-error-color-border);
+  border-radius: 4px;
+  color: var(--thaw-error-color-text);
+  margin: 16px;
+}
+
+/* Responsive cards */
+@media (max-width: 768px) {
+  .vocabulary-card,
+  .kanji-card,
+  .grammar-card {
+    margin: 8px;
+  }
+  
+  .learn-page .rating-buttons {
+    flex-wrap: wrap;
+  }
+  
+  .kanji-card .kanji-character h1 {
+    font-size: 36px;
+  }
+}

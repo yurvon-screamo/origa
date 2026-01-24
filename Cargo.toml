@@ -1,12 +1,11 @@
 [workspace]
-members = ["origa", "origa_ui", "tauri", "tokenizer"]
+members = ["origa", "tokenizer", "origa_ui", "tauri"]
 resolver = "2"
 
 [workspace.package]
 version = "0.1.0"
 edition = "2024"
 authors = ["yurvon-screamo <yurvon@ya.ru>"]
-license = "AGPL-3.0"
 license-file = "LICENSE"
 repository = "https://github.com/yurvon-screamo/origa"
 readme = "README.md"
@@ -53,18 +52,29 @@ getrandom = { version = "0.3.4", features = ["wasm_js"] }
 rs-fsrs = "1.2"
 lindera = { version = "1.4", features = ["embedded-unidic"] }
 
-# UI
-dioxus = { version = "0.7", features = ["router"] }
-dioxus-heroicons = "0.4"
-dioxus-primitives = { git = "https://github.com/DioxusLabs/components", version = "0.0.1", default-features = false, features = [
-    "router",
-] }
-dioxus-logger = "0.7"
-wasm-bindgen = "0.2"
-wasm-bindgen-futures = "0.4"
-web-sys = "0.3"
-js-sys = "0.3"
-serde-wasm-bindgen = "0.6"
+# Origa workspace crates
+origa = { path = "./origa" }
+tokenizer = { path = "./tokenizer" }
+
+# Utility
+lazy_static = "1.4"
 
 # Testing
 rstest = "0.26"
+
+leptos = { version = "0.7.8", features = ["csr"] }
+leptos_meta = { version = "0.7", features = ["csr"] }
+leptos_router = { version = "0.7" }
+leptos-use = "0.18"
+thaw = { version = "0.4", features = ["csr"] }
+icondata = "0.7"
+wasm-bindgen = "0.2"
+wasm-bindgen-futures = "0.4"
+js-sys = "0.3"
+serde-wasm-bindgen = "0.6"
+console_error_panic_hook = "0.1"
+
+# Tauri
+tauri = { version = "2", features = [] }
+tauri-plugin-opener = "2"
+tauri-build = { version = "2", features = [] } # UI
