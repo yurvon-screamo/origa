@@ -1,8 +1,8 @@
 use leptos::*;
-use leptos_router::*;
+use leptos_router::components::{Route, Router, Routes};
+use leptos_router::path;
 use thaw::*;
 
-use crate::components::layout::*;
 use crate::views::*;
 
 #[component]
@@ -10,16 +10,16 @@ pub fn app() -> impl IntoView {
     view! {
         <ConfigProvider>
             <Router>
-                <Routes>
-                    <Route path="/" view=Overview />
-                    <Route path="/learn" view=Learn />
-                    <Route path="/import" view=Import />
-                    <Route path="/vocabulary" view=Vocabulary />
-                    <Route path="/kanji" view=Kanji />
-                    <Route path="/grammar-reference" view=GrammarReference />
-                    <Route path="/grammar" view=Grammar />
-                    <Route path="/overview" view=Overview />
-                    <Route path="/profile" view=Profile />
+                <Routes fallback=|| "Not found.">
+                    <Route path=path!("/") view=Overview />
+                    <Route path=path!("/learn") view=Learn />
+                    <Route path=path!("/import") view=Import />
+                    <Route path=path!("/vocabulary") view=Vocabulary />
+                    <Route path=path!("/kanji") view=Kanji />
+                    <Route path=path!("/grammar-reference") view=GrammarReference />
+                    <Route path=path!("/grammar") view=Grammar />
+                    <Route path=path!("/overview") view=Overview />
+                    <Route path=path!("/profile") view=Profile />
                 </Routes>
             </Router>
         </ConfigProvider>

@@ -14,7 +14,7 @@ pub async fn invoke_tauri_command<T: serde::de::DeserializeOwned>(
 ) -> Result<T, String> {
     let args_js = serde_wasm_bindgen::to_value(&args)
         .map_err(|e| format!("Failed to serialize args: {}", e))?;
-    
+
     let result = invoke(command, args_js).await;
     serde_wasm_bindgen::from_value(result)
         .map_err(|e| format!("Failed to deserialize result: {}", e))
