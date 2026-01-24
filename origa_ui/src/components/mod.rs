@@ -1,7 +1,6 @@
 // Components
-pub mod cards;
-pub mod common;
-pub mod layout;
+mod mobile_layout;
+mod responsive_grid;
 
-pub use common::*;
-pub use layout::*;
+pub use mobile_layout::*;
+pub use responsive_grid::*;

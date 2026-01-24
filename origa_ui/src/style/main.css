@@ -24,7 +24,8 @@ body {
 .main-content {
   flex: 1;
   overflow-y: auto;
-  padding-bottom: 60px; /* Space for bottom nav */
+  padding-bottom: 60px;
+  /* Space for bottom nav */
 }
 
 .bottom-nav {
@@ -65,7 +66,7 @@ body {
   .bottom-nav {
     display: none;
   }
-  
+
   .main-content {
     padding-bottom: 0;
   }
@@ -186,16 +187,17 @@ body {
 
 /* Responsive cards */
 @media (max-width: 768px) {
+
   .vocabulary-card,
   .kanji-card,
   .grammar-card {
     margin: 8px;
   }
-  
+
   .learn-page .rating-buttons {
     flex-wrap: wrap;
   }
-  
+
   .kanji-card .kanji-character h1 {
     font-size: 36px;
   }

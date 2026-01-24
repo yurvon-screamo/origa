@@ -5,35 +5,33 @@ This document provides guidelines for agentic coding assistants working in this 
 ## Project Overview
 
 Origa is a Japanese language learning application built with Rust, using:
-- **Dioxus 0.7** for cross-platform UI (web, desktop, mobile)
+
+- **Leptos 0.7** for reactive web UI with CSR (Client-Side Rendering)
+- **Thaw 0.4** for UI component library
 - **Tauri 2** for native desktop application wrapper
 - **SQLite** with rusqlite for data persistence
 - **FSRS** (Free Spaced Repetition Scheduler) algorithm for spaced repetition learning
 - **Tokio** for async runtime
 
 Workspace structure:
+
 - `origa/` - Core domain and application logic library
-- `origa_ui/` - Dioxus UI library with Tauri bindings
+- `origa_ui/` - Leptos UI library with Tauri bindings
+- `tokenizer/` - Japanese text tokenization service
 - `tauri/` - Tauri desktop application binary
 
 ## Build Commands
 
 ```sh
-# Install Dioxus CLI
-cargo install dioxus-cli --locked
-
 # Web development (hot reload)
-cd origa && dx serve
+cd origa_ui && cargo trunk watch
 
 # Desktop development
-cd origa && dx serve --desktop
-
-# Android development
-cd origa && dx serve --android
+cd tauri && cargo tauri dev
 
 # Release builds
-cd origa && dx bundle --desktop --release
-cd origa && dx bundle --android --release --target aarch64-linux-android
+cd origa_ui && cargo trunk build --release
+cd tauri && cargo tauri build
 
 # Build all workspace crates
 cargo build --workspace
@@ -46,6 +44,11 @@ cargo test -p origa create_card_use_case_should_create_card_and_save_to_database
 cargo test -p origa rate_card_use_case_should_add_review_and_update_schedule
 cargo test --test create_card
 cargo test --test rate_card
+
+# Lint and format
+cargo clippy --workspace -- -D warnings
+cargo fmt --check --all
+cargo fmt --all
 ```
 
 ## Code Style Guidelines
@@ -88,30 +91,7 @@ use origa::domain::{User, Card};
 
 ### Error Handling
 
-```rust
-// Define errors as an enum with Display and Error traits
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub enum OrigaError {
-    UserNotFound { user_id: Ulid },
-    CardNotFound { card_id: Ulid },
-    RepositoryError { reason: String },
-    LlmError { reason: String },
-}
-
-impl fmt::Display for OrigaError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            OrigaError::UserNotFound { user_id } => {
-                write!(f, "User with id {} not found", user_id)
-            }
-            // ... other variants
-        }
-    }
-}
-
-impl std::error::Error for OrigaError {}
-```
-
+- Define errors as enums with Display and Error traits
 - Use `thiserror` for simpler error definitions when appropriate
 - Propagate errors with `?` operator
 - Include context in error messages (what failed, why, what values)
@@ -119,86 +99,21 @@ impl std::error::Error for OrigaError {}
 
 ### Async/Await Patterns
 
-```rust
-// Prefer Result<T, E> over Option for async operations
-async fn get_user(&self, id: Ulid) -> Result<Option<User>, RepositoryError> {
-    // Implementation
-}
-
-// Use tokio::spawn for parallel operations when appropriate
-let tasks: Vec<_> = users
-    .into_iter()
-    .map(|u| tokio::spawn(process_user(u)))
-    .collect();
-
-let results: Vec<_> = join_all(tasks).await;
-```
-
+- Prefer Result<T, E> over Option for async operations
+- Use tokio::spawn for parallel operations when appropriate
 - Use `async-trait` for trait methods that need to be async
 - Avoid blocking in async code; use async equivalents
 - Handle errors explicitly; don't silently ignore them
 
-### Dioxus 0.7 Specific Guidelines
+### Leptos 0.7 Specific Guidelines
 
-```rust
-// Components are functions with #[component] attribute
-#[component]
-fn CardView(card: ReadOnlySignal<Card>) -> Element {
-    let mut show_details = use_signal(|| false);
-
-    rsx! {
-        div {
-            class: "card",
-            onclick: move |_| show_details.toggle(),
-            if *show_details.read() {
-                CardDetails { card }
-            }
-        }
-    }
-}
-
-// Use Signals for reactive state
-let mut count = use_signal(|| 0);
-let doubled = use_memo(move || count() * 2);
-
-// Props must be owned values, implement Clone + PartialEq
-#[props]
-struct CardProps {
-    card: Card,
-    #[props(default)]
-    show_back: bool,
-}
-```
-
-- Never use `cx`, `Scope`, or `use_state` from Dioxus 0.5/0.6
-- Use `use_signal`, `use_memo`, `use_resource` for state management
-- Components receive props as function arguments, not through context
-- Wrap props in `ReadOnlySignal` for reactive parent-to-child data flow
-- Use `asset!` macro for asset paths: `src: asset!("/assets/image.png")`
+- Use `create_signal`, `create_memo`, `create_resource` for state management
+- Components are functions with `#[component]` attribute receiving props as arguments
+- Use `view!` macro for UI rendering
+- Access signal values with `.get()` and set with `.set()`
+- Props must implement Clone + IntoView
 
 ### Testing
-
-```rust
-#[tokio::test]
-async fn test_name() {
-    // Arrange
-    setup_test_environment().await;
-    let repository = create_test_repository().await;
-
-    // Act
-    let result = do_something(&repository).await;
-
-    // Assert
-    assert!(result.is_ok());
-}
-
-#[cfg(test)]
-pub async fn create_test_repository() {
-    let temp_dir = TempDir::new().unwrap();
-    let db_path = temp_dir.path().join("test_db");
-    let _ = ApplicationEnvironment::from_database_path(db_path);
-}
-```
 
 - Use `rstest` for parameterized tests when needed
 - Keep tests isolated; use temporary directories for database tests
@@ -207,43 +122,11 @@ pub async fn create_test_repository() {
 
 ### Database (rusqlite)
 
-```rust
-// Use transactions for multi-statement operations
-let tx = conn.transaction()?;
-tx.execute("INSERT INTO cards (...)", params)?;
-
-// Bind parameters by position with ? placeholders
-conn.execute(
-    "SELECT * FROM cards WHERE id = ?",
-    params![card_id],
-)?
-```
-
 - Use transactions for atomic operations
-- Bind all user inputs to prevent SQL injection
+- Bind all user inputs to prevent SQL injection with ? placeholders
 - Use blob types for serialized structures when appropriate
 
 ### Type Design
-
-```rust
-// Use newtype pattern for type safety
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct CardId(Ulid);
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct Answer(String);
-
-impl Answer {
-    pub fn new(s: String) -> Result<Self, OrigaError> {
-        if s.trim().is_empty() {
-            return Err(OrigaError::InvalidAnswer {
-                reason: "Answer cannot be empty".to_string(),
-            });
-        }
-        Ok(Self(s))
-    }
-}
-```
 
 - Create wrapper types for domain concepts (CardId, UserId)
 - Validate in constructors; return errors for invalid states
@@ -251,41 +134,14 @@ impl Answer {
 
 ### File Organization
 
-```
-origa/src/
-├── lib.rs              # crate root, exports
-├── domain/             # core business logic
-│   ├── mod.rs
-│   ├── knowledge/      # Card types, vocabulary, kanji
-│   ├── memory/         # FSRS memory state
-│   └── value_objects/  # Question, Answer, etc.
-├── application/        # use cases, services
-│   ├── use_cases/      # business operations
-│   ├── user_repository.rs
-│   └── srs_service.rs
-├── infrastructure/     # external integrations
-│   ├── user_repository.rs
-│   ├── llm/            # OpenAI, Gemini clients
-│   └── duolingo_client.rs
-└── settings.rs         # application configuration
-
-origa_ui/src/
-├── main.rs             # Dioxus app entry
-├── components/         # reusable UI components
-├── views/              # page-level components
-│   ├── cards/
-│   ├── profile/
-│   └── import/
-└── domain/             # UI-specific domain types
-```
-
 - Keep domain logic separate from infrastructure
 - Use case files should be small (~50-100 lines) and focused
 - Extract reusable UI components to `components/`
+- Keep module structure flat where possible: `origa/src/domain/`, `origa/src/application/`
 
 ## Key Dependencies
 
-- `dioxus = "0.7"` - UI framework with router
+- `leptos = "0.7"` - UI framework with router
 - `tokio = { version = "1.48", features = ["rt", "macros", "time"] }` - Async runtime
 - `rusqlite = { version = "0.38", features = ["bundled"] }` - SQLite with bundled build
 - `rs-fsrs = "1.2"` - Spaced repetition algorithm
@@ -298,27 +154,18 @@ origa_ui/src/
 
 1. **Debug logging**: Use `tracing::info!`, `tracing::debug!` macros
 2. **Database inspection**: SQLite files are in user config directory; use `sqlite3` CLI to inspect
-3. **Web development**: Run `dx serve` in `origa/` directory for hot reload
+3. **Web development**: Run `cargo leptos watch` in `origa_ui/` directory for hot reload
 4. **Desktop**: Build with Tauri for native window, tray icon, menu bar integration
-5. **State management**: Use Dioxus signals for local state, context provider for global state
+5. **State management**: Use Leptos signals for local state, context provider for global state
 
 ## Common Operations
 
-```sh
-# Add new dependency to workspace
-# Edit root Cargo.toml [workspace.dependencies]
+- Add new dependencies to root Cargo.toml [workspace.dependencies]
+- Create use cases in `origa/src/application/use_cases/` and add to mod.rs
+- Add UI views in `origa_ui/src/views/` and routes in main.rs
 
-# Generate new use case
-# Create file origa/src/application/use_cases/my_use_case.rs
-# Add to origa/src/application/use_cases.rs with pub mod my_use_case;
+## Leptos Resources
 
-# Add new UI view
-# Create origa_ui/src/views/my_view.rs with component
-# Add route in origa_ui/src/main.rs Route enum
-```
-
-## Dioxus Resources
-
-- Official docs: https://dioxuslabs.com/learn/0.7
-- Router: https://dioxuslabs.com/learn/0.7/reference/router
-- State management: https://dioxuslabs.com/learn/0.7/reference/state
+- Official docs: <https://book.leptos.dev/>
+- Router: <https://book.leptos.dev/view/09_router.html>
+- State management: <https://book.leptos.dev/view/02_reactivity.html>
