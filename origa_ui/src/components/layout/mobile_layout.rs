@@ -1,6 +1,5 @@
 use leptos::children::Children;
 use leptos::prelude::*;
-use leptos_router::components::Outlet;
 use leptos_router::hooks::{use_location, use_navigate};
 use thaw::*;
 
@@ -13,7 +12,6 @@ pub fn MobileLayout(children: Children) -> impl IntoView {
             </div>
 
             <main class="main-content">
-                <Outlet />
                 {children()}
             </main>
 

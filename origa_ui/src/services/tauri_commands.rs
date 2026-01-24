@@ -6,12 +6,23 @@ use wasm_bindgen::prelude::*;
 extern "C" {
     #[wasm_bindgen(js_namespace = ["window", "__TAURI__", "core"])]
     async fn invoke(cmd: &str, args: JsValue) -> JsValue;
+
+    #[wasm_bindgen(js_namespace = ["window"])]
+    static __TAURI__: JsValue;
+}
+
+fn is_tauri_available() -> bool {
+    !__TAURI__.is_undefined()
 }
 
 pub async fn invoke_tauri_command<T: serde::de::DeserializeOwned>(
     command: &str,
     args: impl serde::Serialize,
 ) -> Result<T, String> {
+    if !is_tauri_available() {
+        return get_mock_data(command);
+    }
+
     let args_js = serde_wasm_bindgen::to_value(&args)
         .map_err(|e| format!("Failed to serialize args: {}", e))?;
 
@@ -20,11 +31,74 @@ pub async fn invoke_tauri_command<T: serde::de::DeserializeOwned>(
         .map_err(|e| format!("Failed to deserialize result: {}", e))
 }
 
+fn get_mock_data<T: serde::de::DeserializeOwned>(command: &str) -> Result<T, String> {
+    match command {
+        "get_user_info" => {
+            let mock_user = UserInfo {
+                id: "mock_user_123".to_string(),
+                name: "Пользователь".to_string(),
+                study_streak: 5,
+                cards_learned: 42,
+            };
+            serde_wasm_bindgen::from_value(serde_wasm_bindgen::to_value(&mock_user).unwrap())
+                .map_err(|e| format!("Mock data error: {}", e))
+        }
+        "select_cards_to_lesson" => {
+            let mock_cards = vec![
+                LessonCard {
+                    id: "card1".to_string(),
+                    question: "こんにちは".to_string(),
+                    answer: "Привет".to_string(),
+                    furigana: None,
+                    example: Some(ExampleData {
+                        text: "こんにちは、元気ですか？".to_string(),
+                        translation: "Привет, как дела?".to_string(),
+                    }),
+                },
+                LessonCard {
+                    id: "card2".to_string(),
+                    question: "ありがとう".to_string(),
+                    answer: "Спасибо".to_string(),
+                    furigana: None,
+                    example: None,
+                },
+            ];
+            serde_wasm_bindgen::from_value(serde_wasm_bindgen::to_value(&mock_cards).unwrap())
+                .map_err(|e| format!("Mock data error: {}", e))
+        }
+        "get_vocabulary_cards" => {
+            let mock_vocab = vec![VocabularyCard {
+                id: "vocab1".to_string(),
+                word: "学校".to_string(),
+                reading: "がっこう".to_string(),
+                meaning: "школа".to_string(),
+                difficulty: 3,
+                status: "learning".to_string(),
+            }];
+            serde_wasm_bindgen::from_value(serde_wasm_bindgen::to_value(&mock_vocab).unwrap())
+                .map_err(|e| format!("Mock data error: {}", e))
+        }
+        "get_kanji_list" => {
+            let mock_kanji = vec![KanjiInfo {
+                character: "学".to_string(),
+                readings: vec!["がく".to_string(), "まな".to_string()],
+                meanings: vec!["учиться".to_string(), "изучать".to_string()],
+                strokes: 8,
+                jlpt: "N5".to_string(),
+                added: false,
+            }];
+            serde_wasm_bindgen::from_value(serde_wasm_bindgen::to_value(&mock_kanji).unwrap())
+                .map_err(|e| format!("Mock data error: {}", e))
+        }
+        _ => Err(format!("Mock for command '{}' not implemented", command)),
+    }
+}
+
 // User info types
 #[derive(Serialize)]
 pub struct GetUserInfoArgs {}
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UserInfo {
     pub id: String,
     pub name: String,
@@ -42,13 +116,13 @@ pub struct SelectCardsToLessonArgs {
     pub count: i32,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExampleData {
     pub text: String,
     pub translation: String,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LessonCard {
     pub id: String,
     pub question: String,
@@ -78,7 +152,7 @@ pub struct GetVocabularyCardsArgs {
     pub filter: String,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct VocabularyCard {
     pub id: String,
     pub word: String,
@@ -98,7 +172,7 @@ pub struct GetKanjiListArgs {
     pub jlpt_level: String,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct KanjiInfo {
     pub character: String,
     pub readings: Vec<String>,

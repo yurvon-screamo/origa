@@ -19,5 +19,3 @@ serde-wasm-bindgen.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 console_error_panic_hook.workspace = true
-
-# leptos-use = { workspace = true } # Temporarily commented due to compatibility issues
