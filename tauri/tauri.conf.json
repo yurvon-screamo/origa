@@ -1,21 +1,26 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "origa",
+  "productName": "origa_ui",
   "version": "0.1.0",
-  "identifier": "net.uwuwu.origa",
+  "identifier": "net.uwuwu.origa_ui",
   "build": {
-    "beforeDevCommand": "dx serve --port 1420 --interactive false",
+    "beforeDevCommand": "trunk serve --port 1420",
     "devUrl": "http://localhost:1420",
-    "beforeBuildCommand": "dx bundle --release",
-    "frontendDist": "../dist/public"
+    "beforeBuildCommand": "trunk build --release",
+    "frontendDist": "../dist"
   },
   "app": {
     "withGlobalTauri": true,
     "windows": [
       {
-        "title": "origa",
-        "width": 800,
-        "height": 600
+        "title": "Origa - Japanese Learning",
+        "width": 390,
+        "height": 844,
+        "minWidth": 320,
+        "minHeight": 568,
+        "resizable": true,
+        "fullscreen": false,
+        "titleBarStyle": "Overlay"
       }
     ],
     "security": {
