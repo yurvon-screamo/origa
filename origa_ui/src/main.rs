@@ -1,5 +1,6 @@
 use app::*;
-use leptos::{prelude::*, *};
+use leptos::prelude::*;
+use thaw::*;
 
 mod app;
 mod components;
@@ -11,7 +12,9 @@ fn main() {
     console_error_panic_hook::set_once();
     mount_to_body(|| {
         view! {
-            <App/>
+            <ConfigProvider>
+                <App/>
+            </ConfigProvider>
         }
     })
 }
