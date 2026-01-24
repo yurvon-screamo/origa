@@ -1,9 +1,0 @@
-[build]
-target = "./index.html"
-
-[watch]
-ignore = ["./tauri"]
-
-[serve]
-port = 1420
-open = false

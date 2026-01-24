@@ -7,12 +7,12 @@ extern "C" {
     #[wasm_bindgen(js_namespace = ["window", "__TAURI__", "core"])]
     async fn invoke(cmd: &str, args: JsValue) -> JsValue;
 
-    #[wasm_bindgen(js_namespace = ["window"])]
+    #[wasm_bindgen(js_namespace = ["window"], thread_local_v2)]
     static __TAURI__: JsValue;
 }
 
 fn is_tauri_available() -> bool {
-    !__TAURI__.is_undefined()
+    __TAURI__.with(|tauri| !tauri.is_undefined())
 }
 
 pub async fn invoke_tauri_command<T: serde::de::DeserializeOwned>(
