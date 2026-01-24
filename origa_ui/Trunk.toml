@@ -1,0 +1,12 @@
+[build]
+target = "index.html"
+release = false
+
+[watch]
+paths = ["src"]
+
+[serve]
+address = "127.0.0.1"
+port = 1420
+open = false
+no_autoreload = false
