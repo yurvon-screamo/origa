@@ -64,16 +64,25 @@ rstest = "0.26"
 
 # UI
 leptos = { version = "0.7", features = ["csr"] }
+leptos_meta = { version = "0.7" }
 leptos_router = { version = "0.7" }
-thaw = { version = "0.4", features = ["csr"] }
-icondata = "0.7"
-wasm-bindgen = "0.2"
-wasm-bindgen-futures = "0.4"
-js-sys = "0.3"
-serde-wasm-bindgen = "0.6"
+console_log = "1"
+log = "0.4"
 console_error_panic_hook = "0.1"
+thaw = { version = "0.4", features = ["csr"] }
 
 # Tauri
 tauri = { version = "2", features = [] }
 tauri-plugin-opener = "2"
 tauri-build = { version = "2", features = [] }
+
+# Dev Dependencies
+wasm-bindgen = "0.2"
+wasm-bindgen-test = "0.3"
+web-sys = { version = "0.3", features = ["Document", "Window"] }
+
+[profile.release]
+opt-level = 'z'
+lto = true
+codegen-units = 1
+panic = "abort"
