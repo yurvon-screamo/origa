@@ -12,11 +12,14 @@ pub enum RateMode {
     FixationLesson,
 }
 
+use async_trait::async_trait;
+
+#[async_trait]
 pub trait SrsService: Send + Sync {
-    fn rate(
+    async fn rate(
         &self,
         mode: RateMode,
         rating: Rating,
         memory_history: &MemoryHistory,
-    ) -> impl Future<Output = Result<NextReview, OrigaError>> + Send;
+    ) -> Result<NextReview, OrigaError>;
 }

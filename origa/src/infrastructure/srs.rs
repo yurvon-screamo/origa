@@ -35,6 +35,7 @@ impl FsrsSrsService {
     }
 }
 
+#[async_trait::async_trait]
 impl SrsService for FsrsSrsService {
     async fn rate(
         &self,

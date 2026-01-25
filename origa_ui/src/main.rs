@@ -1,20 +1,13 @@
-use app::*;
 use leptos::prelude::*;
-use thaw::*;
-
-mod app;
-mod components;
-mod hooks;
-mod services;
-mod views;
+use origa_ui_source::App;
 
 fn main() {
+    _ = console_log::init_with_level(log::Level::Debug);
     console_error_panic_hook::set_once();
+
     mount_to_body(|| {
         view! {
-            <ConfigProvider>
-                <App/>
-            </ConfigProvider>
+            <App />
         }
     })
 }
