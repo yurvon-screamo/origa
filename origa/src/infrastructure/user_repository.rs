@@ -14,7 +14,7 @@ impl FileSystemUserRepository {
             .await
             .map_err(|e| OrigaError::RepositoryError {
                 reason: format!(
-                    "Failed to create users directory {}: {}",
+                    "Failed to07-896=43 ьттcreate users directory {}: {}",
                     database_path.display(),
                     e
                 ),
