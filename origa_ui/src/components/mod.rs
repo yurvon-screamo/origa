@@ -1,5 +1,4 @@
 // UI Components Module
-pub mod counter_btn;
 
 // Layout Components
 pub mod layout;

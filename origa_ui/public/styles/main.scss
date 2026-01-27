@@ -349,24 +349,3 @@ img {
   opacity: 0;
   transition: opacity 0.3s ease;
 }
-
-/* Thaw UI component overrides */
-.thaw-button {
-  min-height: var(--min-touch-target) !important;
-  border-radius: var(--radius-sm) !important;
-  font-weight: var(--font-weight-semibold) !important;
-}
-
-.thaw-input {
-  min-height: var(--min-touch-target) !important;
-  border-radius: var(--radius-sm) !important;
-}
-
-/* Apply Cloud Dancer theme to Thaw components */
-.thaw-config-provider {
-  --thaw-color-primary: var(--color-primary);
-  --thaw-color-secondary: var(--color-secondary);
-  --thaw-color-background: var(--color-bg-primary);
-  --thaw-color-surface: var(--color-bg-surface);
-  --thaw-color-border: var(--color-border);
-}
