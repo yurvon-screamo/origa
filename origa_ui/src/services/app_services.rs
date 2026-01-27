@@ -4,6 +4,7 @@ use crate::services::study_service::StudyService;
 use crate::services::user_service::UserService;
 use crate::services::vocabulary_service::VocabularyService;
 use leptos::prelude::*;
+use origa::settings::ApplicationEnvironment;
 
 #[derive(Clone)]
 pub struct AppServices {
@@ -24,11 +25,21 @@ impl AppServices {
             user_service: UserService::new(),
         }
     }
+
+    /// Получить репозиторий из ApplicationEnvironment
+    /// Используется сервисами для доступа к репозиторию
+    pub async fn get_repository(
+        &self,
+    ) -> Result<&'static origa::infrastructure::FirebaseUserRepository, origa::domain::OrigaError>
+    {
+        ApplicationEnvironment::get().get_repository().await
+    }
 }
 
 // Provide context for services
 #[component]
 pub fn ServicesProvider(services: AppServices, children: Children) -> impl IntoView {
+    provide_context(services.clone());
     provide_context(services.kanji_service);
     provide_context(services.vocabulary_service);
     provide_context(services.grammar_service);

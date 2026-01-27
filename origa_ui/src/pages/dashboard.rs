@@ -47,11 +47,19 @@ pub fn Dashboard() -> impl IntoView {
             .unwrap_or_else(|| "Изучающий".to_string())
     });
 
+    let avatar_url = Signal::derive(move || {
+        profile_resource
+            .get()
+            .flatten()
+            .and_then(|p| p.avatar_url.clone())
+    });
+
     view! {
         <AppLayout active_tab="dashboard".to_string()>
             <PageHeader
                 title=Signal::derive(move || format!("Привет, {}!", username.get()))
                 subtitle="Готовы продолжить обучение?".to_string()
+                avatar_url=avatar_url
             />
 
             // Study Action Buttons

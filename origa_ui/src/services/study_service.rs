@@ -1,7 +1,14 @@
 use crate::components::interactive::flash_card::{
     GrammarCard, KanjiCard, StudyCard, StudyCardWrapper, VocabCard, VocabExample,
 };
-use origa::domain::{Card, OrigaError, Rating};
+use chrono::Duration;
+use origa::application::srs_service::RateMode;
+use origa::application::{
+    CompleteLessonUseCase, KnowledgeSetCardsUseCase, RateCardUseCase, SelectCardsToFixationUseCase,
+    SelectCardsToLessonUseCase,
+};
+use origa::domain::{Card, OrigaError, Rating, StudyCard as DomainStudyCard};
+use origa::settings::ApplicationEnvironment;
 use ulid::Ulid;
 
 #[derive(Clone)]
@@ -15,122 +22,153 @@ impl StudyService {
     /// Получить карточки для урока
     pub async fn get_lesson_cards(
         &self,
-        _user_id: Ulid,
+        user_id: Ulid,
     ) -> Result<Vec<StudyCardWrapper>, OrigaError> {
-        // TODO: Интегрировать SelectCardsToLessonUseCase когда будет repository
-        // let use_case = SelectCardsToLessonUseCase::new(repository);
-        // let cards = use_case.execute(user_id).await?;
-        // self.convert_cards_to_wrappers(cards)
+        let repository = ApplicationEnvironment::get().get_repository().await?;
+        let use_case = SelectCardsToLessonUseCase::new(repository);
+        let cards_map = use_case.execute(user_id).await?;
 
-        // Временно возвращаем mock данные
-        Ok(self.create_mock_cards())
+        // Получить все StudyCard для доступа к memory_history
+        let knowledge_use_case = KnowledgeSetCardsUseCase::new(repository);
+        let all_study_cards = knowledge_use_case.execute(user_id).await?;
+
+        // Конвертировать в StudyCardWrapper
+        self.convert_cards_to_wrappers(cards_map, &all_study_cards)
     }
 
     /// Получить карточки для закрепления
     pub async fn get_fixation_cards(
         &self,
-        _user_id: Ulid,
+        user_id: Ulid,
     ) -> Result<Vec<StudyCardWrapper>, OrigaError> {
-        // TODO: Интегрировать SelectCardsToFixationUseCase когда будет repository
-        // let use_case = SelectCardsToFixationUseCase::new(repository);
-        // let cards = use_case.execute(user_id).await?;
-        // self.convert_cards_to_wrappers(cards)
+        let repository = ApplicationEnvironment::get().get_repository().await?;
+        let use_case = SelectCardsToFixationUseCase::new(repository);
+        let cards_map = use_case.execute(user_id).await?;
 
-        Ok(self.create_mock_cards())
+        // Получить все StudyCard для доступа к memory_history
+        let knowledge_use_case = KnowledgeSetCardsUseCase::new(repository);
+        let all_study_cards = knowledge_use_case.execute(user_id).await?;
+
+        // Конвертировать в StudyCardWrapper
+        self.convert_cards_to_wrappers(cards_map, &all_study_cards)
     }
 
     /// Оценить карточку
     pub async fn rate_card(
         &self,
-        _user_id: Ulid,
-        _card_id: Ulid,
-        _rating: Rating,
-        _is_fixation: bool,
+        user_id: Ulid,
+        card_id: Ulid,
+        rating: Rating,
+        is_fixation: bool,
     ) -> Result<(), OrigaError> {
-        // TODO: Интегрировать RateCardUseCase когда будет repository и srs_service
-        // let mode = if is_fixation { RateMode::Fixation } else { RateMode::Lesson };
-        // let use_case = RateCardUseCase::new(repository, srs_service);
-        // use_case.execute(user_id, card_id, mode, rating).await
-
-        Ok(())
+        let repository = ApplicationEnvironment::get().get_repository().await?;
+        let srs_service = ApplicationEnvironment::get().get_srs_service().await?;
+        let mode = if is_fixation {
+            RateMode::FixationLesson
+        } else {
+            RateMode::StandardLesson
+        };
+        let use_case = RateCardUseCase::new(repository, srs_service);
+        use_case.execute(user_id, card_id, mode, rating).await
     }
 
     /// Завершить урок
     pub async fn complete_lesson(
         &self,
-        _user_id: Ulid,
-        _duration_seconds: u64,
+        user_id: Ulid,
+        duration_seconds: u64,
     ) -> Result<(), OrigaError> {
-        // TODO: Интегрировать CompleteLessonUseCase когда будет repository
-        // let use_case = CompleteLessonUseCase::new(repository);
-        // use_case.execute(user_id, duration_seconds).await
-
-        Ok(())
+        let repository = ApplicationEnvironment::get().get_repository().await?;
+        let use_case = CompleteLessonUseCase::new(repository);
+        let duration = Duration::seconds(duration_seconds as i64);
+        use_case.execute(user_id, duration).await
     }
 
-    fn convert_card_to_wrapper(&self, card: &Card) -> StudyCardWrapper {
+    /// Конвертировать HashMap<Ulid, Card> в Vec<StudyCardWrapper>
+    fn convert_cards_to_wrappers(
+        &self,
+        cards_map: std::collections::HashMap<Ulid, Card>,
+        all_study_cards: &[DomainStudyCard],
+    ) -> Result<Vec<StudyCardWrapper>, OrigaError> {
+        let mut wrappers = Vec::new();
+
+        for (card_id, card) in cards_map {
+            // Найти соответствующий StudyCard для получения memory_history
+            let study_card = all_study_cards.iter().find(|sc| sc.card_id() == &card_id);
+
+            // Конвертировать Card в StudyCardWrapper
+            let wrapper = self.convert_card_to_wrapper(card_id, &card, study_card);
+            wrappers.push(wrapper);
+        }
+
+        Ok(wrappers)
+    }
+
+    fn convert_card_to_wrapper(
+        &self,
+        card_id: Ulid,
+        card: &Card,
+        _study_card: Option<&DomainStudyCard>,
+    ) -> StudyCardWrapper {
         match card {
-            Card::Vocabulary(vocab) => StudyCardWrapper {
-                card: StudyCard::Vocab(VocabCard {
-                    japanese: vocab.word().text().to_string(),
-                    reading: "".to_string(), // TODO: Extract reading from word if available
-                    translation: vocab.meaning().text().to_string(),
-                    examples: vocab
-                        .example_phrases()
-                        .iter()
-                        .map(|ex| VocabExample {
-                            japanese: ex.text().to_string(),
-                            reading: "".to_string(), // TODO: Extract reading if available
-                            translation: ex.translation().to_string(),
-                        })
-                        .collect(),
-                }),
-            },
+            Card::Vocabulary(vocab) => {
+                // Получить reading через tokenizer
+                let reading = origa::domain::tokenize_text(vocab.word().text())
+                    .ok()
+                    .and_then(|tokens| tokens.first().cloned())
+                    .map(|token| token.phonological_surface_form().to_string())
+                    .unwrap_or_default();
+
+                StudyCardWrapper {
+                    card_id,
+                    card: StudyCard::Vocab(VocabCard {
+                        japanese: vocab.word().text().to_string(),
+                        reading,
+                        translation: vocab.meaning().text().to_string(),
+                        examples: vocab
+                            .example_phrases()
+                            .iter()
+                            .map(|ex| {
+                                let ex_reading = origa::domain::tokenize_text(ex.text())
+                                    .ok()
+                                    .and_then(|tokens| tokens.first().cloned())
+                                    .map(|token| token.phonological_surface_form().to_string())
+                                    .unwrap_or_default();
+                                VocabExample {
+                                    japanese: ex.text().to_string(),
+                                    reading: ex_reading,
+                                    translation: ex.translation().to_string(),
+                                }
+                            })
+                            .collect(),
+                    }),
+                }
+            }
             Card::Kanji(kanji) => StudyCardWrapper {
+                card_id,
                 card: StudyCard::Kanji(KanjiCard {
                     character: kanji.kanji().text().to_string(),
-                    stroke_count: 0,
+                    stroke_count: 0, // Not available
                     meanings: vec![kanji.description().text().to_string()],
-                    onyomi: vec![],
-                    kunyomi: vec![],
-                    radicals: vec![],
+                    onyomi: vec![],   // Not available
+                    kunyomi: vec![],  // Not available
+                    radicals: vec![], // Not available
                 }),
             },
             Card::Grammar(grammar) => StudyCardWrapper {
+                card_id,
                 card: StudyCard::Grammar(GrammarCard {
                     pattern: grammar.title().text().to_string(),
                     meaning: grammar.description().text().to_string(),
-                    attachment_rules: "".to_string(),
-                    examples: vec![],
+                    attachment_rules: grammar
+                        .apply_to()
+                        .iter()
+                        .map(|pos| format!("{:?}", pos))
+                        .collect::<Vec<_>>()
+                        .join(", "),
+                    examples: vec![], // Not available in GrammarRuleCard
                 }),
             },
         }
-    }
-
-    fn create_mock_cards(&self) -> Vec<StudyCardWrapper> {
-        vec![
-            StudyCardWrapper {
-                card: StudyCard::Vocab(VocabCard {
-                    japanese: "本".to_string(),
-                    reading: "ほん".to_string(),
-                    translation: "книга".to_string(),
-                    examples: vec![VocabExample {
-                        japanese: "本を読みます".to_string(),
-                        reading: "ほんをよみます".to_string(),
-                        translation: "Я читаю книгу".to_string(),
-                    }],
-                }),
-            },
-            StudyCardWrapper {
-                card: StudyCard::Kanji(KanjiCard {
-                    character: "日".to_string(),
-                    stroke_count: 4,
-                    meanings: vec!["день".to_string(), "солнце".to_string()],
-                    onyomi: vec!["ニチ".to_string()],
-                    kunyomi: vec!["ひ".to_string()],
-                    radicals: vec![],
-                }),
-            },
-        ]
     }
 }
