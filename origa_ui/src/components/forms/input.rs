@@ -106,8 +106,7 @@ pub fn Input(
                             />
                         </div>
                     }
-                })}
-            {error_msg.map(|err| view! { <div class="input-error">{err}</div> })}
+                })} {error_msg.map(|err| view! { <div class="input-error">{err}</div> })}
         </div>
     }
 }

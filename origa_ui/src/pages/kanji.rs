@@ -180,7 +180,8 @@ pub fn Kanji() -> impl IntoView {
     });
 
     view! {
-        <AppLayout active_tab="kanji".to_string()>
+        <AppLayout active_tab="kanji"
+            .to_string()>
             {move || {
                 if let Some(detail) = selected_kanji_detail.get() {
                     view! {
@@ -191,109 +192,111 @@ pub fn Kanji() -> impl IntoView {
                             on_back=handle_back_from_detail
                         />
                     }
-                    .into_any()
+                        .into_any()
                 } else {
                     view! {
                         <PageHeader
                             title="Кандзи".to_string()
-                            subtitle="Изучите японские иероглифы".to_string()
+                            subtitle="Изучите японские иероглифы"
+                                .to_string()
                         />
 
-            // Search Bar
-            <SearchBar
-                placeholder="Поиск кандзи или значения"
-                value=search_query
-                on_change=handle_search
-            />
+                        // Search Bar
+                        <SearchBar
+                            placeholder="Поиск кандзи или значения"
+                            value=search_query
+                            on_change=handle_search
+                        />
 
-            // JLPT Level Filter
-            <div class="section">
-                <JlptLevelFilter
-                    selected_level=selected_level
-                    on_select=handle_level_select
-                    show_counts=true
-                />
-            </div>
+                        // JLPT Level Filter
+                        <div class="section">
+                            <JlptLevelFilter
+                                selected_level=selected_level
+                                on_select=handle_level_select
+                                show_counts=true
+                            />
+                        </div>
 
-            // Kanji List
-            <div class="section">
-                <div class="section-header">
-                    <div>
-                        <h2 class="section-title">Список кандзи</h2>
-                        <p class="section-subtitle">
-                            {move || {
-                                let level = selected_level.get();
-                                let count = filtered_kanji.get().len();
-                                format!("{} кандзи уровня {}", count, level)
-                            }}
-                        </p>
-                    </div>
-                </div>
+                        // Kanji List
+                        <div class="section">
+                            <div class="section-header">
+                                <div>
+                                    <h2 class="section-title">Список кандзи</h2>
+                                    <p class="section-subtitle">
+                                        {move || {
+                                            let level = selected_level.get();
+                                            let count = filtered_kanji.get().len();
+                                            format!("{} кандзи уровня {}", count, level)
+                                        }}
+                                    </p>
+                                </div>
+                            </div>
 
-                <div class="kanji-grid">
-                    <For
-                        each=move || filtered_kanji.get()
-                        key=|kanji| kanji.id.clone()
-                        children=move |kanji| {
-                            let card_data: KanjiCardData = kanji.into();
-                            view! {
-                                <KanjiCard
-                                    card=card_data
-                                    on_add=handle_add_kanji
-                                    on_remove=handle_remove_kanji
-                                    on_tap=handle_kanji_tap
+                            <div class="kanji-grid">
+                                <For
+                                    each=move || filtered_kanji.get()
+                                    key=|kanji| kanji.id.clone()
+                                    children=move |kanji| {
+                                        let card_data: KanjiCardData = kanji.into();
+                                        view! {
+                                            <KanjiCard
+                                                card=card_data
+                                                on_add=handle_add_kanji
+                                                on_remove=handle_remove_kanji
+                                                on_tap=handle_kanji_tap
+                                            />
+                                        }
+                                    }
                                 />
-                            }
-                        }
-                    />
-                </div>
+                            </div>
 
-                // Loading state
-                <Show when=move || is_loading.get()>
-                    <div class="loading-state">
-                        <div class="spinner"></div>
-                        <p class="loading-text">Загрузка кандзи...</p>
-                    </div>
-                </Show>
+                            // Loading state
+                            <Show when=move || is_loading.get()>
+                                <div class="loading-state">
+                                    <div class="spinner"></div>
+                                    <p class="loading-text">Загрузка кандзи...</p>
+                                </div>
+                            </Show>
 
-                // Error state
-                <Show when=move || error.get().is_some()>
-                    <div class="error-state">
-                        <div class="error-icon">{"⚠"}</div>
-                        <h3 class="error-title">Ошибка загрузки</h3>
-                        <p class="error-description">
-                            {move || error.get().clone().unwrap_or_default()}
-                        </p>
-                    </div>
-                </Show>
+                            // Error state
+                            <Show when=move || error.get().is_some()>
+                                <div class="error-state">
+                                    <div class="error-icon">{"⚠"}</div>
+                                    <h3 class="error-title">Ошибка загрузки</h3>
+                                    <p class="error-description">
+                                        {move || error.get().clone().unwrap_or_default()}
+                                    </p>
+                                </div>
+                            </Show>
 
-                // Empty state
-                <Show when=move || {
-                    !is_loading.get() && error.get().is_none() && filtered_kanji.get().is_empty()
-                }>
-                    <div class="empty-state">
-                        <div class="empty-icon">{"🈁"}</div>
-                        <h3 class="empty-title">Кандзи не найдены</h3>
-                        <p class="empty-description">
-                            {move || {
-                                if search_query.get().is_empty() {
-                                    format!(
-                                        "В уровне {} пока нет кандзи",
-                                        selected_level.get(),
-                                    )
-                                } else {
-                                    format!(
-                                        "По запросу \"{}\" ничего не найдено",
-                                        search_query.get(),
-                                    )
-                                }
-                            }}
-                        </p>
-                    </div>
-                </Show>
-            </div>
+                            // Empty state
+                            <Show when=move || {
+                                !is_loading.get() && error.get().is_none()
+                                    && filtered_kanji.get().is_empty()
+                            }>
+                                <div class="empty-state">
+                                    <div class="empty-icon">{"🈁"}</div>
+                                    <h3 class="empty-title">Кандзи не найдены</h3>
+                                    <p class="empty-description">
+                                        {move || {
+                                            if search_query.get().is_empty() {
+                                                format!(
+                                                    "В уровне {} пока нет кандзи",
+                                                    selected_level.get(),
+                                                )
+                                            } else {
+                                                format!(
+                                                    "По запросу \"{}\" ничего не найдено",
+                                                    search_query.get(),
+                                                )
+                                            }
+                                        }}
+                                    </p>
+                                </div>
+                            </Show>
+                        </div>
                     }
-                    .into_any()
+                        .into_any()
                 }
             }}
         </AppLayout>

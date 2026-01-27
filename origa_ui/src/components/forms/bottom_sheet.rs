@@ -22,10 +22,10 @@ pub fn BottomSheet(
     // Use leptos-use on_click_outside for cleaner outside click handling
     let content_ref = NodeRef::<leptos::html::Div>::new();
     let _ = on_click_outside(content_ref, move |_| {
-        if show.get() {
-            if let Some(handler) = on_close {
-                handler.run(());
-            }
+        if show.get()
+            && let Some(handler) = on_close
+        {
+            handler.run(());
         }
     });
 
@@ -37,11 +37,7 @@ pub fn BottomSheet(
 
     view! {
         <div class=move || {
-            if show.get() {
-                "modal-overlay modal-visible"
-            } else {
-                "modal-overlay modal-hidden"
-            }
+            if show.get() { "modal-overlay modal-visible" } else { "modal-overlay modal-hidden" }
         }>
             <div
                 node_ref=content_ref
@@ -93,10 +89,10 @@ pub fn Modal(
     // Use leptos-use on_click_outside for cleaner outside click handling
     let content_ref = NodeRef::<leptos::html::Div>::new();
     let _ = on_click_outside(content_ref, move |_| {
-        if show.get() {
-            if let Some(handler) = on_close {
-                handler.run(());
-            }
+        if show.get()
+            && let Some(handler) = on_close
+        {
+            handler.run(());
         }
     });
 
@@ -108,11 +104,7 @@ pub fn Modal(
 
     view! {
         <div class=move || {
-            if show.get() {
-                "modal-overlay modal-visible"
-            } else {
-                "modal-overlay modal-hidden"
-            }
+            if show.get() { "modal-overlay modal-visible" } else { "modal-overlay modal-hidden" }
         }>
             <div node_ref=content_ref class=format!("modal-content {}", size_class)>
                 {title_text

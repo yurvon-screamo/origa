@@ -51,7 +51,11 @@ pub fn ProgressBar(
             <div class="progress-bar-wrapper">
                 <div
                     class="progress-bar"
-                    style=format!("--progress: {}%; --color: {}", progress_percent.get(), progress_color)
+                    style=format!(
+                        "--progress: {}%; --color: {}",
+                        progress_percent.get(),
+                        progress_color,
+                    )
                 >
                     <div class="progress-fill"></div>
                     <div class="progress-pulse"></div>
@@ -97,39 +101,31 @@ pub fn CircularProgress(
 
     view! {
         <div class=format!("circular-progress {}", size_class)>
-            <svg
-                width=size_pixels
-                height=size_pixels
-                viewBox="0 0 120 120"
-                class="progress-svg"
-            >
-                <circle
-                    cx="60"
-                    cy="60"
-                    r="54"
-                    fill="none"
-                    stroke="#e0ddd6"
-                    stroke-width={stroke}
-                />
+            <svg width=size_pixels height=size_pixels viewBox="0 0 120 120" class="progress-svg">
+                <circle cx="60" cy="60" r="54" fill="none" stroke="#e0ddd6" stroke-width=stroke />
 
                 <circle
                     cx="60"
                     cy="60"
                     r="54"
                     fill="none"
-                    stroke={progress_color}
-                    stroke-width={stroke}
+                    stroke=progress_color
+                    stroke-width=stroke
                     stroke-linecap="round"
                     stroke-dasharray="339.292"
-                    stroke-dashoffset={move || dash_offset.get()}
+                    stroke-dashoffset=move || dash_offset.get()
                     class="progress-circle"
-                    style=move || format!("--progress: {}%; --color: {}", progress_percent.get(), progress_color)
+                    style=move || {
+                        format!(
+                            "--progress: {}%; --color: {}",
+                            progress_percent.get(),
+                            progress_color,
+                        )
+                    }
                 />
             </svg>
 
-            <div class="circular-text">
-                {move || format!("{:.0}%", progress_percent.get())}
-            </div>
+            <div class="circular-text">{move || format!("{:.0}%", progress_percent.get())}</div>
         </div>
     }
 }
@@ -147,29 +143,31 @@ pub fn StepIndicator(
             <div class="step-info">
                 <span class="step-text">Шаг</span>
                 <span class="step-current">
-                    {move || {
-                        current.get().map(|v| v + 1).unwrap_or(0)
-                    }}
+                    {move || { current.get().map(|v| v + 1).unwrap_or(0) }}
                 </span>
                 <span class="step-total">" из "{total_steps}</span>
             </div>
 
             <div class="step-dots">
-                {(1..=total_steps.min(10)).map(move |step| {
-                    let current_step = current.get().map(|v| v + 1).unwrap_or(0) as u32;
-                    let is_completed = step <= current_step;
-                    let is_current_step = step == current_step;
-                    view! {
-                        <div
-                            class=move || format!(
-                                "step-dot {} {}",
-                                if is_completed { "completed" } else { "" },
-                                if is_current_step && active.get() { "active" } else { "" }
-                            )
-                            title=format!("Шаг {} из {}", step, total_steps)
-                        ></div>
-                    }
-                }).collect_view()}
+                {(1..=total_steps.min(10))
+                    .map(move |step| {
+                        let current_step = current.get().map(|v| v + 1).unwrap_or(0) as u32;
+                        let is_completed = step <= current_step;
+                        let is_current_step = step == current_step;
+                        view! {
+                            <div
+                                class=move || {
+                                    format!(
+                                        "step-dot {} {}",
+                                        if is_completed { "completed" } else { "" },
+                                        if is_current_step && active.get() { "active" } else { "" },
+                                    )
+                                }
+                                title=format!("Шаг {} из {}", step, total_steps)
+                            ></div>
+                        }
+                    })
+                    .collect_view()}
             </div>
         </div>
     }
