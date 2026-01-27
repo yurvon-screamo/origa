@@ -1,7 +1,6 @@
 use leptos::prelude::*;
 use leptos_meta::*;
 use leptos_router::{components::*, path};
-use thaw::*;
 
 // Modules
 mod components;
@@ -11,7 +10,6 @@ mod services;
 // Top-Level pages
 use crate::pages::dashboard::Dashboard;
 use crate::pages::grammar::Grammar;
-use crate::pages::home::Home;
 use crate::pages::kanji::Kanji;
 use crate::pages::study::StudySession;
 use crate::pages::vocabulary::Vocabulary;
@@ -38,29 +36,27 @@ pub fn App() -> impl IntoView {
         />
         <Meta name="theme-color" content="#4a6fa5" />
 
-        <ConfigProvider>
-            <ServicesProvider services=AppServices::new()>
-                <Router>
-                    <Routes fallback=|| view! { NotFound }>
-                        <Route path=path!("/") view=Home />
-                        <Route path=path!("/dashboard") view=Dashboard />
-                        <Route path=path!("/vocabulary") view=Vocabulary />
-                        <Route path=path!("/kanji") view=Kanji />
-                        <Route path=path!("/grammar") view=Grammar />
-                        <Route path=path!("/study") view=StudySession />
-                        <Route
-                            path=path!("/profile")
-                            view=|| {
-                                view! {
-                                    <div class="mobile-container">
-                                        "Профиль - В разработке"
-                                    </div>
-                                }
+        <ServicesProvider services=AppServices::new()>
+            <Router>
+                <Routes fallback=|| view! { NotFound }>
+                    <Route path=path!("/") view=Dashboard />
+                    <Route path=path!("/dashboard") view=Dashboard />
+                    <Route path=path!("/vocabulary") view=Vocabulary />
+                    <Route path=path!("/kanji") view=Kanji />
+                    <Route path=path!("/grammar") view=Grammar />
+                    <Route path=path!("/study") view=StudySession />
+                    <Route
+                        path=path!("/profile")
+                        view=|| {
+                            view! {
+                                <div class="mobile-container">
+                                    "Профиль - В разработке"
+                                </div>
                             }
-                        />
-                    </Routes>
-                </Router>
-            </ServicesProvider>
-        </ConfigProvider>
+                        }
+                    />
+                </Routes>
+            </Router>
+        </ServicesProvider>
     }
 }
