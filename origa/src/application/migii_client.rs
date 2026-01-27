@@ -1,3 +1,5 @@
+use async_trait::async_trait;
+
 use crate::domain::{
     OrigaError, {JapaneseLevel, NativeLanguage},
 };
@@ -14,7 +16,7 @@ pub struct MigiiMeaning {
     pub mean: String,
 }
 
-#[async_trait::async_trait]
+#[async_trait(?Send)]
 pub trait MigiiClient: Send + Sync {
     async fn get_words(
         &self,

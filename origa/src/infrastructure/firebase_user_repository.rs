@@ -1,7 +1,9 @@
 use crate::application::UserRepository;
 use crate::domain::{OrigaError, User};
+use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::time::Duration;
 use ulid::Ulid;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -52,12 +54,12 @@ impl FirebaseUserRepository {
         database_id: Option<String>,
         access_token: String,
     ) -> Result<Self, OrigaError> {
-        let client = reqwest::Client::builder()
-            .timeout(std::time::Duration::from_secs(30))
-            .build()
-            .map_err(|e| OrigaError::RepositoryError {
-                reason: format!("Failed to create HTTP client: {}", e),
-            })?;
+        let client =
+            reqwest::Client::builder()
+                .build()
+                .map_err(|e| OrigaError::RepositoryError {
+                    reason: format!("Failed to create HTTP client: {}", e),
+                })?;
 
         Ok(Self {
             project_id,
@@ -173,11 +175,11 @@ impl FirebaseUserRepository {
     }
 }
 
-#[async_trait::async_trait]
+#[async_trait(?Send)]
 impl UserRepository for FirebaseUserRepository {
     async fn list(&self) -> Result<Vec<User>, OrigaError> {
         let url = self.collection_url();
-        let request = self.client.get(&url);
+        let request = self.client.get(&url).timeout(Duration::from_secs(30));
 
         let response: FirestoreListResponse = self.make_authenticated_request(request).await?;
 
@@ -235,7 +237,11 @@ impl UserRepository for FirebaseUserRepository {
         let url = self.document_url(user.id());
         let document = self.user_to_firestore_document(user)?;
 
-        let request = self.client.patch(&url).json(&document);
+        let request = self
+            .client
+            .patch(&url)
+            .json(&document)
+            .timeout(Duration::from_secs(30));
         let _response: FirestoreDocument = self.make_authenticated_request(request).await?;
 
         Ok(())
@@ -243,7 +249,7 @@ impl UserRepository for FirebaseUserRepository {
 
     async fn delete(&self, user_id: Ulid) -> Result<(), OrigaError> {
         let url = self.document_url(user_id);
-        let request = self.client.delete(&url);
+        let request = self.client.delete(&url).timeout(Duration::from_secs(30));
 
         let response = request
             .header("Authorization", format!("Bearer {}", self.access_token))

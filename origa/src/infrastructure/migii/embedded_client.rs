@@ -50,7 +50,7 @@ impl Default for EmbeddedMigiiClient {
     }
 }
 
-#[async_trait]
+#[async_trait(?Send)]
 impl MigiiClient for EmbeddedMigiiClient {
     async fn get_words(
         &self,

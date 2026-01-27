@@ -1,3 +1,5 @@
+use async_trait::async_trait;
+
 use crate::application::LlmService;
 use crate::domain::OrigaError;
 
@@ -9,7 +11,7 @@ pub enum LlmServiceInvoker {
     Gemini(GeminiLlm),
 }
 
-#[async_trait::async_trait]
+#[async_trait(?Send)]
 impl LlmService for LlmServiceInvoker {
     async fn generate_text(&self, question: &str) -> Result<String, OrigaError> {
         match self {

@@ -45,8 +45,6 @@ pub fn CreateVocabularyModal(
     let handle_create = move |_| {
         let japanese = japanese_text.get();
         let trans = translation.get();
-        let read = reading.get();
-        let note = notes.get();
 
         // Validation
         if japanese.trim().is_empty() {
@@ -63,41 +61,27 @@ pub fn CreateVocabularyModal(
         let data = CreateVocabularyData {
             japanese: japanese.trim().to_string(),
             translation: trans.trim().to_string(),
-            reading: if read.trim().is_empty() {
-                None
-            } else {
-                Some(read.trim().to_string())
-            },
-            notes: if note.trim().is_empty() {
-                None
-            } else {
-                Some(note.trim().to_string())
-            },
         };
 
         set_is_submitting.set(true);
         set_error.set(None);
 
-        // Simulate async creation
-        let timeout = gloo_timers::callback::Timeout::new(1000, move || {
-            set_is_submitting.set(false);
+        set_is_submitting.set(false);
 
-            if let Some(handler) = on_create {
-                handler.run(data.clone());
-            }
+        if let Some(handler) = on_create {
+            handler.run(data.clone());
+        }
 
-            // Close modal
-            if let Some(handler) = on_close {
-                handler.run(());
-            }
-            // Reset form
-            set_japanese_text.set("".to_string());
-            set_translation.set("".to_string());
-            set_reading.set("".to_string());
-            set_notes.set("".to_string());
-            set_error.set(None);
-        });
-        timeout.forget();
+        // Close modal
+        if let Some(handler) = on_close {
+            handler.run(());
+        }
+        // Reset form
+        set_japanese_text.set("".to_string());
+        set_translation.set("".to_string());
+        set_reading.set("".to_string());
+        set_notes.set("".to_string());
+        set_error.set(None);
     };
 
     let is_form_valid = Signal::derive(move || {
@@ -197,11 +181,8 @@ pub fn CreateVocabularyModal(
 pub struct CreateVocabularyData {
     pub japanese: String,
     pub translation: String,
-    pub reading: Option<String>,
-    pub notes: Option<String>,
 }
 
-// Component for displaying vocabulary creation tips
 #[component]
 pub fn VocabularyCreationTips() -> impl IntoView {
     view! {

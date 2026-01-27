@@ -1,13 +1,12 @@
 /* Origa UI - Main SCSS Entry Point */
 /* Cloud Dancer Theme - Mobile-First Japanese Learning App */
 
-/* Import all SCSS modules in correct order */
-@import './cloud_dancer';
-@import './mobile';
-@import './components';
-@import './layout';
-@import './animations';
-@import './responsive';
+@use './cloud_dancer';
+@use './mobile';
+@use './components';
+@use './layout';
+@use './animations';
+@use './responsive';
 
 /* ========== Base Setup ========== */
 *,

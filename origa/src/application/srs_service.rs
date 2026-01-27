@@ -14,7 +14,7 @@ pub enum RateMode {
 
 use async_trait::async_trait;
 
-#[async_trait]
+#[async_trait(?Send)]
 pub trait SrsService: Send + Sync {
     async fn rate(
         &self,
