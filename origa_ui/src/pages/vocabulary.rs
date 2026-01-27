@@ -1,10 +1,11 @@
-use crate::components::cards::vocab_card::{CardStatus, VocabCard, VocabularyCardData};
+use crate::components::cards::vocab_card::{CardStatus, VocabCard};
 use crate::components::forms::create_vocab_modal::{CreateVocabularyData, CreateVocabularyModal};
 use crate::components::forms::search_bar::{FilterChip, FilterChips, SearchBar};
 use crate::components::interactive::floating_button::{FabVariant, FloatingActionButton};
 use crate::components::layout::app_layout::{AppLayout, PageHeader};
 use crate::services::vocabulary_service::VocabularyService;
 use leptos::prelude::*;
+use leptos::task::spawn_local;
 
 #[component]
 pub fn Vocabulary() -> impl IntoView {
@@ -32,12 +33,7 @@ pub fn Vocabulary() -> impl IntoView {
         }
     });
 
-    let vocabulary_list = Signal::derive(move || {
-        vocabulary_resource
-            .get()
-            .map(|r| r.clone())
-            .unwrap_or_default()
-    });
+    let vocabulary_list = Signal::derive(move || vocabulary_resource.get().unwrap_or_default());
 
     // Динамические filter chips
     let filter_chips = Signal::derive({
@@ -103,21 +99,38 @@ pub fn Vocabulary() -> impl IntoView {
         set_show_create_modal.set(false);
     });
 
-    let handle_create_word = Callback::new(move |data: CreateVocabularyData| {
-        // TODO: Integrate with CreateVocabularyCardUseCase
-        println!("Creating word: {} -> {}", data.japanese, data.translation);
-        // Here we would call the actual use case
-    });
+    let handle_create_word = {
+        let vocabulary_service = vocabulary_service.clone();
+        Callback::new(move |data: CreateVocabularyData| {
+            let service = vocabulary_service.clone();
+            let user_id = ulid::Ulid::new(); // TODO: получить реальный user_id
+            spawn_local(async move {
+                let _ = service
+                    .create_vocabulary(user_id, data.japanese, data.translation)
+                    .await;
+                // TODO: Обновить список карточек после создания
+            });
+        })
+    };
 
     let handle_edit = Callback::new(|card_id: String| {
         // TODO: Edit word
         println!("Edit word: {}", card_id);
     });
 
-    let handle_delete = Callback::new(|card_id: String| {
-        // TODO: Delete word
-        println!("Delete word: {}", card_id);
-    });
+    let handle_delete = {
+        let vocabulary_service = vocabulary_service.clone();
+        Callback::new(move |card_id: String| {
+            let service = vocabulary_service.clone();
+            let user_id = ulid::Ulid::new(); // TODO: получить реальный user_id
+            if let Ok(card_id_ulid) = card_id.parse::<ulid::Ulid>() {
+                spawn_local(async move {
+                    let _ = service.delete_vocabulary(user_id, card_id_ulid).await;
+                    // TODO: Обновить список карточек после удаления
+                });
+            }
+        })
+    };
 
     let handle_card_tap = Callback::new(|card_id: String| {
         // TODO: Navigate to word details
@@ -202,59 +215,4 @@ pub fn Vocabulary() -> impl IntoView {
             />
         </AppLayout>
     }
-}
-
-fn create_mocks() -> Vec<VocabularyCardData> {
-    vec![
-        VocabularyCardData {
-            id: "1".to_string(),
-            japanese: "本".to_string(),
-            reading: "ほん".to_string(),
-            translation: "книга".to_string(),
-            status: CardStatus::InProgress,
-            difficulty: 45,
-            stability: 60,
-            next_review: chrono::Local::now().date_naive() + chrono::Duration::days(2),
-        },
-        VocabularyCardData {
-            id: "2".to_string(),
-            japanese: "食べる".to_string(),
-            reading: "たべる".to_string(),
-            translation: "есть, кушать".to_string(),
-            status: CardStatus::Mastered,
-            difficulty: 20,
-            stability: 85,
-            next_review: chrono::Local::now().date_naive() + chrono::Duration::days(7),
-        },
-        VocabularyCardData {
-            id: "3".to_string(),
-            japanese: "勉強".to_string(),
-            reading: "べんきょう".to_string(),
-            translation: "учиться".to_string(),
-            status: CardStatus::Difficult,
-            difficulty: 75,
-            stability: 30,
-            next_review: chrono::Local::now().date_naive() + chrono::Duration::days(1),
-        },
-        VocabularyCardData {
-            id: "4".to_string(),
-            japanese: "学校".to_string(),
-            reading: "がっこう".to_string(),
-            translation: "школа".to_string(),
-            status: CardStatus::New,
-            difficulty: 50,
-            stability: 50,
-            next_review: chrono::Local::now().date_naive(),
-        },
-        VocabularyCardData {
-            id: "5".to_string(),
-            japanese: "友達".to_string(),
-            reading: "ともだち".to_string(),
-            translation: "друг".to_string(),
-            status: CardStatus::InProgress,
-            difficulty: 35,
-            stability: 70,
-            next_review: chrono::Local::now().date_naive() + chrono::Duration::days(3),
-        },
-    ]
 }

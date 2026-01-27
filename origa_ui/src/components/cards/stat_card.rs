@@ -73,7 +73,7 @@ pub fn StudyButton(
     #[prop(into, optional)] count: Option<Signal<u32>>,
     #[prop(optional)] on_click: Option<Callback<()>>,
 ) -> impl IntoView {
-    let count_clone = count.clone();
+    let count_clone = count;
     let subtitle = Signal::derive(move || {
         let count_val = count_clone.as_ref().map(|c| c.get()).unwrap_or(0);
         match button_type {

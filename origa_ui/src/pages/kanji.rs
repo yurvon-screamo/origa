@@ -34,11 +34,17 @@ pub fn Kanji() -> impl IntoView {
 
     // Load kanji data when level changes
     let kanji_service_for_load = kanji_service.clone();
+    let set_is_loading_clone = set_is_loading;
+    let set_error_clone = set_error;
+    let set_kanji_data_clone = set_kanji_data;
     let load_kanji = Action::new(move |level: &JapaneseLevel| {
         let service = kanji_service_for_load.clone();
         let user = user_id;
         let level = *level;
-        async move {
+        let set_is_loading = set_is_loading_clone;
+        let set_error = set_error_clone;
+        let set_kanji_data = set_kanji_data_clone;
+        spawn_local(async move {
             set_is_loading.set(true);
             set_error.set(None);
 
@@ -52,7 +58,8 @@ pub fn Kanji() -> impl IntoView {
                     set_is_loading.set(false);
                 }
             }
-        }
+        });
+        async {}
     });
 
     // Load initial kanji data
@@ -107,9 +114,10 @@ pub fn Kanji() -> impl IntoView {
         if let Some(kanji) = kanji_data {
             let service = kanji_service_for_handle.clone();
             let level = selected_level.get();
+            let user_id = ulid::Ulid::new(); // TODO: получить реальный user_id
             spawn_local(async move {
                 match service
-                    .add_kanji_to_knowledge_set(kanji.character.clone())
+                    .add_kanji_to_knowledge_set(user_id, kanji.character.clone())
                     .await
                 {
                     Ok(()) => {
@@ -124,17 +132,17 @@ pub fn Kanji() -> impl IntoView {
         }
     });
 
-    let kanji_service_for_handle = kanji_service.clone();
+    let kanji_service_for_handle2 = kanji_service.clone();
     let handle_remove_kanji = Callback::new(move |kanji_id: String| {
         // Find kanji data by id
         let kanji_data = kanji_data.get().iter().find(|k| k.id == kanji_id).cloned();
         if let Some(kanji) = kanji_data {
-            let service = kanji_service_for_handle.clone();
-            let user = user_id;
+            let service = kanji_service_for_handle2.clone();
+            let user_id_local = ulid::Ulid::new(); // TODO: получить реальный user_id
             let level = selected_level.get();
             spawn_local(async move {
                 match service
-                    .remove_kanji_from_knowledge_set(user, kanji.character.clone())
+                    .remove_kanji_from_knowledge_set(user_id_local, kanji.character.clone())
                     .await
                 {
                     Ok(()) => {
@@ -213,7 +221,6 @@ pub fn Kanji() -> impl IntoView {
                             <JlptLevelFilter
                                 selected_level=selected_level
                                 on_select=handle_level_select
-                                show_counts=true
                             />
                         </div>
 

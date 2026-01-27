@@ -1,30 +1,90 @@
 use crate::components::cards::grammar_card::{GrammarCard, GrammarCardData, GrammarExample};
 use crate::components::cards::vocab_card::CardStatus;
 use crate::components::forms::jlpt_level_filter::JlptLevelFilter;
-use crate::components::forms::search_bar::SearchBar;
+use crate::components::forms::search_bar::{FilterChip, FilterChips, SearchBar};
 use crate::components::layout::app_layout::{AppLayout, PageHeader};
+use crate::services::grammar_service::GrammarService;
 use leptos::prelude::*;
+use leptos::task::spawn_local;
 use origa::domain::JapaneseLevel;
+use ulid::Ulid;
 
 #[component]
 pub fn Grammar() -> impl IntoView {
+    // Get service from context
+    let grammar_service = use_context::<GrammarService>().expect("GrammarService not provided");
+
+    // User ID - in a real app, this would come from auth context
+    let user_id = Ulid::new();
+
     // Search and filter state
     let (search_query, set_search_query) = signal("".to_string());
+    let (selected_filter, set_selected_filter) = signal("all".to_string());
     let (selected_level, set_selected_level) = signal(JapaneseLevel::N5);
 
-    // Mock data - will be replaced with real data from use cases
-    let mock_grammar = create_mocks();
+    // Load grammar data
+    let grammar_resource = LocalResource::new({
+        let service = grammar_service.clone();
+        let user_id_local = user_id;
+        move || {
+            let service = service.clone();
+            let level = selected_level.get();
+            async move {
+                service
+                    .get_grammar_by_level(level, user_id_local)
+                    .await
+                    .unwrap_or_default()
+            }
+        }
+    });
 
-    // Filter grammar based on search and JLPT level
+    let grammar_list = Signal::derive(move || grammar_resource.get().unwrap_or_default());
+
+    // Динамические filter chips
+    let filter_chips = Signal::derive(move || {
+        let cards = grammar_list.get();
+        let total = cards.len();
+        let new = cards.iter().filter(|c| c.status == CardStatus::New).count();
+        let difficult = cards
+            .iter()
+            .filter(|c| c.status == CardStatus::Difficult)
+            .count();
+        let in_progress = cards
+            .iter()
+            .filter(|c| c.status == CardStatus::InProgress)
+            .count();
+        let mastered = cards
+            .iter()
+            .filter(|c| c.status == CardStatus::Mastered)
+            .count();
+
+        vec![
+            FilterChip::new("all", "Все", "📚").with_count(total as u32),
+            FilterChip::new("new", "Новые", "🆕").with_count(new as u32),
+            FilterChip::new("difficult", "Сложные", "😰").with_count(difficult as u32),
+            FilterChip::new("in_progress", "В процессе", "📖").with_count(in_progress as u32),
+            FilterChip::new("mastered", "Изученные", "✅").with_count(mastered as u32),
+        ]
+    });
+
+    // Filter grammar based on search and filter
     let filtered_grammar = Signal::derive(move || {
-        let level = selected_level.get();
+        let filter = selected_filter.get();
         let search = search_query.get().to_lowercase();
 
-        mock_grammar
+        grammar_list
+            .get()
             .iter()
             .filter(|grammar| {
-                // Apply JLPT level filter
-                let level_match = grammar.jlpt_level == level;
+                // Apply status filter
+                let status_match = match filter.as_str() {
+                    "all" => true,
+                    "new" => grammar.status == CardStatus::New,
+                    "difficult" => grammar.status == CardStatus::Difficult,
+                    "in_progress" => grammar.status == CardStatus::InProgress,
+                    "mastered" => grammar.status == CardStatus::Mastered,
+                    _ => true,
+                };
 
                 // Apply search filter
                 let search_match = search.is_empty()
@@ -36,7 +96,7 @@ pub fn Grammar() -> impl IntoView {
                             || e.translation.to_lowercase().contains(&search)
                     });
 
-                level_match && search_match
+                status_match && search_match
             })
             .cloned()
             .collect::<Vec<_>>()
@@ -46,19 +106,43 @@ pub fn Grammar() -> impl IntoView {
         set_search_query.set(query);
     });
 
+    let handle_filter = Callback::new(move |filter: String| {
+        set_selected_filter.set(filter);
+    });
+
     let handle_level_select = Callback::new(move |level: JapaneseLevel| {
         set_selected_level.set(level);
     });
 
-    let handle_add_grammar = Callback::new(|grammar_id: String| {
-        // TODO: Add grammar rule to user's knowledge set
-        println!("Add grammar: {}", grammar_id);
-    });
+    let handle_add_grammar = {
+        let grammar_service = grammar_service.clone();
+        Callback::new(move |grammar_id: String| {
+            let service = grammar_service.clone();
+            let user_id = ulid::Ulid::new(); // TODO: получить реальный user_id
+            if let Ok(rule_id) = grammar_id.parse::<ulid::Ulid>() {
+                spawn_local(async move {
+                    let _ = service.add_grammar_to_knowledge_set(user_id, rule_id).await;
+                    // TODO: Обновить список грамматики после добавления
+                });
+            }
+        })
+    };
 
-    let handle_remove_grammar = Callback::new(|grammar_id: String| {
-        // TODO: Remove grammar rule from user's knowledge set
-        println!("Remove grammar: {}", grammar_id);
-    });
+    let handle_remove_grammar = {
+        let grammar_service = grammar_service.clone();
+        Callback::new(move |grammar_id: String| {
+            let service = grammar_service.clone();
+            let user_id = ulid::Ulid::new(); // TODO: получить реальный user_id
+            if let Ok(rule_id) = grammar_id.parse::<ulid::Ulid>() {
+                spawn_local(async move {
+                    let _ = service
+                        .remove_grammar_from_knowledge_set(user_id, rule_id)
+                        .await;
+                    // TODO: Обновить список грамматики после удаления
+                });
+            }
+        })
+    };
 
     let handle_grammar_tap = Callback::new(|grammar_id: String| {
         // TODO: Navigate to grammar rule details
@@ -80,12 +164,16 @@ pub fn Grammar() -> impl IntoView {
                 on_change=handle_search
             />
 
+            // Category Filter Chips
+            <div class="section">
+                <FilterChips chips=filter_chips selected=selected_filter on_select=handle_filter />
+            </div>
+
             // JLPT Level Filter
             <div class="section">
                 <JlptLevelFilter
                     selected_level=selected_level
                     on_select=handle_level_select
-                    show_counts=true
                 />
             </div>
 
@@ -151,121 +239,4 @@ pub fn Grammar() -> impl IntoView {
             </div>
         </AppLayout>
     }
-}
-
-fn create_mocks() -> Vec<GrammarCardData> {
-    vec![
-        GrammarCardData {
-            id: "grammar_1".to_string(),
-            pattern: "～てあげる".to_string(),
-            meaning: "Действовать от имени кого-либо / делать что-то для кого-либо".to_string(),
-            attachment_rules: "Глагол в форме て + 下さる".to_string(),
-            difficulty: 25,
-            difficulty_text: "Легко".to_string(),
-            stability: 0,
-            jlpt_level: JapaneseLevel::N5,
-            examples: vec![
-                GrammarExample {
-                    grammar: "～てあげる".to_string(),
-                    sentence: "先生に本を貸してあげる。".to_string(),
-                    translation: "Даю книгу учителю".to_string(),
-                    romaji: "Sensei ni hon o kashite ageru.".to_string(),
-                },
-                GrammarExample {
-                    grammar: "～てあげる".to_string(),
-                    sentence: "友達に本を貸してあげる。".to_string(),
-                    translation: "Даю книгу друзьям".to_string(),
-                    romaji: "Tomodachi ni hon o kashite ageru.".to_string(),
-                },
-            ],
-            status: CardStatus::New,
-            next_review: chrono::Local::now().date_naive(),
-            is_in_knowledge_set: false,
-        },
-        GrammarCardData {
-            id: "grammar_2".to_string(),
-            pattern: "～から".to_string(),
-            meaning: "От / из (указание на источник или начало действия)".to_string(),
-            attachment_rules: "Существительное + から".to_string(),
-            difficulty: 35,
-            difficulty_text: "Средне".to_string(),
-            stability: 50,
-            jlpt_level: JapaneseLevel::N5,
-            examples: vec![
-                GrammarExample {
-                    grammar: "～から".to_string(),
-                    sentence: "10時から勉強します。".to_string(),
-                    translation: "Буду учиться с 10 часов".to_string(),
-                    romaji: "Juuji kara benkyou shimasu.".to_string(),
-                },
-                GrammarExample {
-                    grammar: "～から".to_string(),
-                    sentence: "会社から帰ります。".to_string(),
-                    translation: "Возвращаюсь с работы".to_string(),
-                    romaji: "Kaisha kara kaerimasu.".to_string(),
-                },
-            ],
-            status: CardStatus::InProgress,
-            next_review: chrono::Local::now().date_naive() + chrono::Duration::days(2),
-            is_in_knowledge_set: true,
-        },
-        GrammarCardData {
-            id: "grammar_3".to_string(),
-            pattern: "～なければならない".to_string(),
-            meaning: "Если не А, то не Б (необходимость)".to_string(),
-            attachment_rules: "Глагол в отрицательной форме (未然形) + なければ + ならない"
-                .to_string(),
-            difficulty: 60,
-            difficulty_text: "Сложно".to_string(),
-            stability: 30,
-            jlpt_level: JapaneseLevel::N4,
-            examples: vec![GrammarExample {
-                grammar: "～なければならない".to_string(),
-                sentence: "お金がなければ買えません。".to_string(),
-                translation: "Если нет денег, не могу купить".to_string(),
-                romaji: "Okane ga nakereba kaemasen.".to_string(),
-            }],
-            status: CardStatus::Difficult,
-            next_review: chrono::Local::now().date_naive() + chrono::Duration::days(1),
-            is_in_knowledge_set: true,
-        },
-        GrammarCardData {
-            id: "grammar_4".to_string(),
-            pattern: "～はずにはいられない".to_string(),
-            meaning: "Невозможно не сделать что-то (негативная логика)".to_string(),
-            attachment_rules: "Глагол в форме はず + には + いられない".to_string(),
-            difficulty: 75,
-            difficulty_text: "Очень сложно".to_string(),
-            stability: 80,
-            jlpt_level: JapaneseLevel::N3,
-            examples: vec![GrammarExample {
-                grammar: "～はずにはいられない".to_string(),
-                sentence: "これは信じがたいはずにはいられないことだ。".to_string(),
-                translation: "Это то, что невозможно не поверить".to_string(),
-                romaji: "Kore wa shinjigatai hazu ni wa irarenai koto da.".to_string(),
-            }],
-            status: CardStatus::Mastered,
-            next_review: chrono::Local::now().date_naive() + chrono::Duration::days(7),
-            is_in_knowledge_set: true,
-        },
-        GrammarCardData {
-            id: "grammar_5".to_string(),
-            pattern: "～ざるを得ない".to_string(),
-            meaning: "Не может сделать что-то, даже если захочет (невозможность)".to_string(),
-            attachment_rules: "Глагол в.Dictionary-форме + ざるを得ない".to_string(),
-            difficulty: 85,
-            difficulty_text: "Экспертно".to_string(),
-            stability: 0,
-            jlpt_level: JapaneseLevel::N2,
-            examples: vec![GrammarExample {
-                grammar: "～ざるを得ない".to_string(),
-                sentence: "今から出ても間に合わざるを得ない。".to_string(),
-                translation: "Если выйду сейчас, не успею".to_string(),
-                romaji: "Ima kara detemo ma ni awazaru o enai.".to_string(),
-            }],
-            status: CardStatus::New,
-            next_review: chrono::Local::now().date_naive(),
-            is_in_knowledge_set: false,
-        },
-    ]
 }

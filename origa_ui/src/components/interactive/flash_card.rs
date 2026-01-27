@@ -362,10 +362,10 @@ pub enum StudyCard {
 
 #[derive(Clone)]
 pub struct StudyCardWrapper {
+    pub card_id: ulid::Ulid,
     pub card: StudyCard,
 }
 
-// Mock data types (will be replaced with real data)
 #[derive(Clone)]
 pub struct VocabCard {
     pub japanese: String,

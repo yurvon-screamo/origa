@@ -17,6 +17,7 @@ mod rate_card;
 mod select_cards_to_fixation;
 mod select_cards_to_lesson;
 mod sync_duolingo_words;
+mod update_user_profile;
 mod update_user_settings;
 
 pub use complete_lesson::*;
@@ -38,4 +39,5 @@ pub use rate_card::*;
 pub use select_cards_to_fixation::*;
 pub use select_cards_to_lesson::*;
 pub use sync_duolingo_words::*;
+pub use update_user_profile::*;
 pub use update_user_settings::*;

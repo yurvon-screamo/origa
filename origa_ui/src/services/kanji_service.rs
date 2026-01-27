@@ -1,8 +1,13 @@
 use crate::components::cards::kanji_card::RadicalInfo;
 use crate::components::cards::kanji_detail::{ExampleInfo, KanjiDetailData};
+use crate::components::cards::vocab_card::CardStatus;
 use leptos::prelude::*;
-use origa::application::{KanjiInfoUseCase, KanjiListUseCase};
-use origa::domain::{Card, JapaneseLevel, OrigaError};
+use origa::application::{
+    CreateKanjiCardUseCase, DeleteCardUseCase, KanjiInfoUseCase, KanjiListUseCase,
+    KnowledgeSetCardsUseCase,
+};
+use origa::domain::{Card, JapaneseLevel, OrigaError, StudyCard};
+use origa::settings::ApplicationEnvironment;
 use std::collections::HashMap;
 use ulid::Ulid;
 
@@ -17,15 +22,22 @@ impl KanjiService {
     pub async fn get_kanji_by_level(
         &self,
         level: JapaneseLevel,
-        _user_id: Ulid,
+        user_id: Ulid,
     ) -> Result<Vec<KanjiListData>, OrigaError> {
         // Get kanji list for the specified JLPT level
         let use_case = KanjiListUseCase::new();
         let kanji_list = use_case.execute(&level)?;
 
         // Get user's existing cards to determine if kanji is already added
-        // TODO: Implement when KnowledgeSetCardsUseCase is available
-        let empty_user_cards: HashMap<Ulid, Card> = HashMap::new();
+        let repository = ApplicationEnvironment::get().get_repository().await?;
+        let knowledge_use_case = KnowledgeSetCardsUseCase::new(repository);
+        let user_study_cards = knowledge_use_case.execute(user_id).await?;
+
+        // Convert StudyCard to HashMap<Ulid, Card> for easier lookup
+        let user_cards: HashMap<Ulid, Card> = user_study_cards
+            .iter()
+            .map(|study_card| (*study_card.card_id(), study_card.card().clone()))
+            .collect();
 
         // Convert to UI data structure
         let kanji_data = kanji_list
@@ -33,7 +45,7 @@ impl KanjiService {
             .enumerate()
             .map(|(index, kanji_info)| {
                 let kanji_char = kanji_info.kanji().to_string();
-                let is_in_knowledge_set = empty_user_cards.values().any(|card| {
+                let is_in_knowledge_set = user_cards.values().any(|card| {
                     matches!(card, Card::Kanji(kanji_card) if kanji_card.kanji().text() == kanji_char)
                 });
 
@@ -53,10 +65,10 @@ impl KanjiService {
                             meaning: r.name().to_string(),
                         })
                         .collect(),
-                    status: self.determine_card_status(&kanji_char, &empty_user_cards),
-                    difficulty: self.calculate_difficulty(&kanji_info),
-                    stability: self.calculate_stability(&kanji_info, &empty_user_cards),
-                    next_review: self.calculate_next_review(&kanji_char, &empty_user_cards),
+                    status: self.determine_card_status(&kanji_char, &user_cards, &user_study_cards),
+                    difficulty: self.calculate_difficulty(&kanji_info, &user_cards),
+                    stability: self.calculate_stability(&kanji_info, &user_cards, &user_study_cards),
+                    next_review: self.calculate_next_review(&kanji_char, &user_cards, &user_study_cards),
                     is_in_knowledge_set,
                 }
             })
@@ -65,11 +77,14 @@ impl KanjiService {
         Ok(kanji_data)
     }
 
-    pub async fn add_kanji_to_knowledge_set(&self, kanji: String) -> Result<(), OrigaError> {
-        // Create a new kanji card in the user's knowledge set
-        // TODO: Implement create_kanji_card_use_case
-        // let new_cards = self.create_kanji_card_use_case.execute(user_id, kanji.clone()).await?;
-        let new_cards: Vec<Card> = vec![];
+    pub async fn add_kanji_to_knowledge_set(
+        &self,
+        user_id: Ulid,
+        kanji: String,
+    ) -> Result<(), OrigaError> {
+        let repository = ApplicationEnvironment::get().get_repository().await?;
+        let use_case = CreateKanjiCardUseCase::new(repository);
+        let new_cards = use_case.execute(user_id, vec![kanji.clone()]).await?;
 
         // Return success if cards were created
         if !new_cards.is_empty() {
@@ -81,13 +96,30 @@ impl KanjiService {
 
     pub async fn remove_kanji_from_knowledge_set(
         &self,
-        _user_id: Ulid,
-        _kanji: String,
+        user_id: Ulid,
+        kanji: String,
     ) -> Result<(), OrigaError> {
-        // TODO: Implement when KnowledgeSetCardsUseCase and DeleteCardUseCase are available
-        Err(OrigaError::RepositoryError {
-            reason: "Not implemented yet".to_string(),
-        })
+        // First, find the card ID for this kanji
+        let repository = ApplicationEnvironment::get().get_repository().await?;
+        let knowledge_use_case = KnowledgeSetCardsUseCase::new(repository);
+        let user_study_cards = knowledge_use_case.execute(user_id).await?;
+
+        // Find the card ID for this kanji
+        if let Some(study_card) = user_study_cards.iter().find(|sc| {
+            if let Card::Kanji(kanji_card) = sc.card() {
+                kanji_card.kanji().text() == kanji
+            } else {
+                false
+            }
+        }) {
+            let card_id = *study_card.card_id();
+            let delete_use_case = DeleteCardUseCase::new(repository);
+            delete_use_case.execute(user_id, card_id).await
+        } else {
+            Err(OrigaError::RepositoryError {
+                reason: format!("Kanji {} not found in knowledge set", kanji),
+            })
+        }
     }
 
     pub async fn get_user_kanji_by_level(
@@ -106,15 +138,22 @@ impl KanjiService {
     pub async fn get_kanji_detail(
         &self,
         kanji_char: String,
-        _user_id: Ulid,
+        user_id: Ulid,
     ) -> Result<KanjiDetailData, OrigaError> {
         // Get kanji info from use case
         let use_case = KanjiInfoUseCase::new();
         let kanji_info = use_case.execute(&kanji_char)?;
 
         // Get user's existing cards to determine if kanji is already added
-        // TODO: Implement when KnowledgeSetCardsUseCase is available
-        let empty_user_cards: HashMap<Ulid, Card> = HashMap::new();
+        let repository = ApplicationEnvironment::get().get_repository().await?;
+        let knowledge_use_case = KnowledgeSetCardsUseCase::new(repository);
+        let user_study_cards = knowledge_use_case.execute(user_id).await?;
+
+        // Convert StudyCard to HashMap<Ulid, Card> for easier lookup
+        let user_cards: HashMap<Ulid, Card> = user_study_cards
+            .iter()
+            .map(|study_card| (*study_card.card_id(), study_card.card().clone()))
+            .collect();
 
         // Convert to KanjiDetailData
         let radicals = kanji_info
@@ -149,7 +188,7 @@ impl KanjiService {
             .filter(|s| !s.is_empty())
             .collect();
 
-        let is_in_knowledge_set = empty_user_cards.values().any(|card| {
+        let is_in_knowledge_set = user_cards.values().any(|card| {
             matches!(card, Card::Kanji(kanji_card) if kanji_card.kanji().text() == kanji_char)
         });
 
@@ -168,10 +207,10 @@ impl KanjiService {
             kunyomi: vec![], // Not available in KanjiInfo
             radicals,
             examples,
-            status: self.determine_card_status(&kanji_char, &empty_user_cards),
-            difficulty: self.calculate_difficulty(&kanji_info),
-            stability: self.calculate_stability(&kanji_info, &empty_user_cards),
-            next_review: self.calculate_next_review(&kanji_char, &empty_user_cards),
+            status: self.determine_card_status(&kanji_char, &user_cards, &user_study_cards),
+            difficulty: self.calculate_difficulty(&kanji_info, &user_cards),
+            stability: self.calculate_stability(&kanji_info, &user_cards, &user_study_cards),
+            next_review: self.calculate_next_review(&kanji_char, &user_cards, &user_study_cards),
             is_in_knowledge_set,
             mnemonic_hint: format!(
                 "Кандзи {} часто используется в словах: {}",
@@ -195,21 +234,39 @@ impl KanjiService {
     fn determine_card_status(
         &self,
         kanji: &str,
-        user_cards: &HashMap<Ulid, Card>,
-    ) -> crate::components::cards::vocab_card::CardStatus {
-        if let Some(_card) = user_cards.values().find(
-            |card| matches!(card, Card::Kanji(kanji_card) if kanji_card.kanji().text() == kanji),
-        ) {
+        _user_cards: &HashMap<Ulid, Card>,
+        user_study_cards: &[StudyCard],
+    ) -> CardStatus {
+        if let Some(study_card) = user_study_cards.iter().find(|sc| {
+            if let Card::Kanji(kanji_card) = sc.card() {
+                kanji_card.kanji().text() == kanji
+            } else {
+                false
+            }
+        }) {
             // Map memory state to UI status
-            // This would depend on the actual memory state from the card
-            // For now, return a status based on some logic
-            crate::components::cards::vocab_card::CardStatus::InProgress
+            let memory = study_card.memory();
+            if memory.is_new() {
+                CardStatus::New
+            } else if memory.is_high_difficulty() {
+                CardStatus::Difficult
+            } else if memory.is_known_card() {
+                CardStatus::Mastered
+            } else if memory.is_in_progress() {
+                CardStatus::InProgress
+            } else {
+                CardStatus::New
+            }
         } else {
-            crate::components::cards::vocab_card::CardStatus::New
+            CardStatus::New
         }
     }
 
-    fn calculate_difficulty(&self, kanji_info: &origa::domain::KanjiInfo) -> u32 {
+    fn calculate_difficulty(
+        &self,
+        kanji_info: &origa::domain::KanjiInfo,
+        _user_cards: &HashMap<Ulid, Card>,
+    ) -> u32 {
         // Calculate difficulty based on JLPT level and usage frequency
         // Use used_in as a proxy for complexity (more common kanji = easier)
         // Higher used_in means more common, so lower difficulty
@@ -228,17 +285,24 @@ impl KanjiService {
     fn calculate_stability(
         &self,
         kanji_info: &origa::domain::KanjiInfo,
-        user_cards: &HashMap<Ulid, Card>,
+        _user_cards: &HashMap<Ulid, Card>,
+        user_study_cards: &[StudyCard],
     ) -> u32 {
-        // Calculate stability based on how many times the kanji has been reviewed
-        // This is a simplified version
+        // Calculate stability based on memory state
         let kanji_char = kanji_info.kanji().to_string();
-        if user_cards.values().any(|card| {
-            matches!(&card, Card::Kanji(kanji_card) if kanji_card.kanji().text() == kanji_char)
+        if let Some(study_card) = user_study_cards.iter().find(|sc| {
+            if let Card::Kanji(kanji_card) = sc.card() {
+                kanji_card.kanji().text() == kanji_char
+            } else {
+                false
+            }
         }) {
-            // If the user has this kanji, calculate stability based on review history
-            // For now, return a moderate stability
-            50
+            // Get stability from memory state
+            study_card
+                .memory()
+                .stability()
+                .map(|s| (s.value() * 100.0) as u32)
+                .unwrap_or(0)
         } else {
             // If user doesn't have this kanji, stability is 0
             0
@@ -248,20 +312,25 @@ impl KanjiService {
     fn calculate_next_review(
         &self,
         kanji: &str,
-        user_cards: &HashMap<Ulid, Card>,
-    ) -> chrono::NaiveDate {
+        _user_cards: &HashMap<Ulid, Card>,
+        user_study_cards: &[StudyCard],
+    ) -> chrono::NaiveDateTime {
         // Calculate next review date based on memory state
-        use chrono::Local;
-
-        if let Some(_card) = user_cards.values().find(
-            |card| matches!(card, Card::Kanji(kanji_card) if kanji_card.kanji().text() == kanji),
-        ) {
-            // Calculate next review based on the card's memory state
-            // This is a simplified calculation
-            Local::now().date_naive() + chrono::Duration::days(3)
+        if let Some(study_card) = user_study_cards.iter().find(|sc| {
+            if let Card::Kanji(kanji_card) = sc.card() {
+                kanji_card.kanji().text() == kanji
+            } else {
+                false
+            }
+        }) {
+            study_card
+                .memory()
+                .next_review_date()
+                .map(|dt| dt.naive_utc())
+                .unwrap_or_else(|| chrono::Utc::now().naive_utc())
         } else {
             // If not in knowledge set, next review is today
-            Local::now().date_naive()
+            chrono::Utc::now().naive_utc()
         }
     }
 }
@@ -281,7 +350,7 @@ pub struct KanjiListData {
     pub status: crate::components::cards::vocab_card::CardStatus,
     pub difficulty: u32,
     pub stability: u32,
-    pub next_review: chrono::NaiveDate,
+    pub next_review: chrono::NaiveDateTime,
     pub is_in_knowledge_set: bool,
 }
 
