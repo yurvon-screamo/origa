@@ -219,9 +219,7 @@ img {
     text-decoration: underline;
   }
 
-  .no-print {
-    display: none !important;
-  }
+  /* .no-print removed - not used in codebase */
 }
 
 /* ========== Focus Management ========== */
@@ -316,27 +314,10 @@ img {
 }
 
 /* ========== Performance Optimizations ========== */
-.gpu-accelerated {
-  transform: translateZ(0);
-  backface-visibility: hidden;
-  perspective: 1000px;
-}
-
-.smooth-scroll {
-  scroll-behavior: smooth;
-}
+/* .gpu-accelerated, .smooth-scroll removed - not used in codebase */
 
 /* ========== Debugging Utilities ========== */
-.debug * {
-  outline: 1px solid rgba(255, 0, 0, 0.3) !important;
-}
-
-.debug-grid {
-  background-image:
-    linear-gradient(rgba(255, 0, 0, 0.1) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 0, 0, 0.1) 1px, transparent 1px);
-  background-size: 20px 20px;
-}
+/* .debug, .debug-grid removed - not used in codebase */
 
 /* ========== Leptos Specific ========== */
 /* Hide Leptos hydration loading styles */

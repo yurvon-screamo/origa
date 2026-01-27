@@ -55,24 +55,7 @@
     /* Hide bottom tab bar */
   }
 
-  /* Create desktop sidebar placeholder */
-  .desktop-nav-placeholder {
-    display: block;
-    width: 280px;
-    height: 100vh;
-    background: var(--color-bg-surface);
-    border-right: 1px solid var(--color-border);
-    position: fixed;
-    left: 0;
-    top: 0;
-    padding: var(--space-lg);
-  }
-
-  .desktop-main {
-    margin-left: 280px;
-    min-height: 100vh;
-    padding: var(--space-xl);
-  }
+  /* Desktop sidebar placeholder removed - not used in codebase */
 
   /* ========== Component Adjustments ========== */
   .floating-button {
@@ -113,20 +96,7 @@
   }
 
   /* ========== Tablet-specific Features ========== */
-  .tablet-grid {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: var(--space-lg);
-  }
-
-  .tablet-sidebar {
-    background: var(--color-bg-surface);
-    border-radius: var(--radius-md);
-    padding: var(--space-lg);
-    height: fit-content;
-    position: sticky;
-    top: var(--space-lg);
-  }
+  /* .tablet-grid and .tablet-sidebar removed - not used in codebase */
 }
 
 /* Desktop (≥ 1024px) */
@@ -153,14 +123,7 @@
     font-size: var(--font-size-5xl);
   }
 
-  .desktop-main {
-    margin-left: 320px;
-    /* Larger sidebar */
-  }
-
-  .desktop-nav-placeholder {
-    width: 320px;
-  }
+  /* Desktop navigation classes removed - not used in codebase */
 
   /* ========== Grid Systems ========== */
   .grid-cols-lg-1 {
@@ -204,41 +167,7 @@
   }
 
   /* Desktop navigation */
-  .desktop-sidebar {
-    width: 320px;
-    padding: var(--space-xl);
-  }
-
-  /* Rich layouts */
-  .desktop-layout-2col {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: var(--space-xl);
-    align-items: start;
-  }
-
-  .desktop-layout-3col {
-    display: grid;
-    grid-template-columns: 1fr 2fr 1fr;
-    gap: var(--space-xl);
-    align-items: start;
-  }
-
-  /* ========== Advanced Features ========== */
-  .sticky-sidebar {
-    position: sticky;
-    top: var(--space-xl);
-    height: fit-content;
-  }
-
-  .desktop-wide-modal {
-    max-width: 800px;
-  }
-
-  .desktop-full-modal {
-    max-width: 1200px;
-    width: 90vw;
-  }
+  /* .desktop-sidebar, .desktop-layout-2col, .desktop-layout-3col, .sticky-sidebar, .desktop-wide-modal, .desktop-full-modal removed - not used in codebase */
 }
 
 /* Large Desktop (≥ 1280px) */
@@ -257,14 +186,7 @@
   }
 
   /* ========== Layout Changes ========== */
-  .desktop-main {
-    margin-left: 280px;
-    /* Back to smaller sidebar for ultra-wide */
-  }
-
-  .desktop-nav-placeholder {
-    width: 280px;
-  }
+  /* Desktop navigation classes removed - not used in codebase */
 
   /* ========== Grid Systems ========== */
   .grid-cols-xl-2 {
@@ -301,13 +223,7 @@
   }
 
   /* ========== Layout Changes ========== */
-  .desktop-layout-2col {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .desktop-layout-3col {
-    grid-template-columns: 1fr 1fr 1fr;
-  }
+  /* Desktop layout classes removed - not used in codebase */
 
   /* Grid auto-fit for large screens */
   .grid-auto-fit {
@@ -316,72 +232,7 @@
 }
 
 /* ========== Special Responsive Components ========== */
-
-/* Responsive sidebar */
-@media (min-width: 768px) {
-  .responsive-sidebar {
-    display: block;
-    position: fixed;
-    left: 0;
-    top: 0;
-    width: 280px;
-    height: 100vh;
-    background: var(--color-bg-surface);
-    border-right: 1px solid var(--color-border);
-    padding: var(--space-lg);
-    overflow-y: auto;
-    z-index: var(--z-fixed);
-  }
-
-  .responsive-content {
-    margin-left: 280px;
-    min-height: 100vh;
-    padding: var(--space-lg);
-  }
-}
-
-@media (min-width: 1024px) {
-  .responsive-sidebar {
-    width: 320px;
-    padding: var(--space-xl);
-  }
-
-  .responsive-content {
-    margin-left: 320px;
-    padding: var(--space-xl);
-  }
-}
-
-/* Responsive grid that adapts to screen size */
-.responsive-grid {
-  display: grid;
-  gap: var(--space-md);
-  grid-template-columns: 1fr;
-}
-
-@media (min-width: 640px) {
-  .responsive-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (min-width: 768px) {
-  .responsive-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@media (min-width: 1024px) {
-  .responsive-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-
-@media (min-width: 1280px) {
-  .responsive-grid {
-    grid-template-columns: repeat(5, 1fr);
-  }
-}
+/* .responsive-sidebar, .responsive-content, .responsive-grid removed - not used in codebase */
 
 /* ========== Print Styles ========== */
 @media print {
@@ -424,22 +275,8 @@
 @media (prefers-reduced-motion: reduce) {
 
   .tab-bar,
-  .floating-button,
-  .responsive-sidebar {
+  .floating-button {
     position: static;
     transform: none;
-  }
-
-  .responsive-content {
-    margin-left: 0;
-  }
-
-  /* Use display: none instead of fixed positioning for reduced motion */
-  .responsive-sidebar {
-    display: none;
-  }
-
-  .responsive-sidebar.visible {
-    display: block;
   }
 }

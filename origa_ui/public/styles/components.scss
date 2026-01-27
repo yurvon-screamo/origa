@@ -39,11 +39,7 @@
   margin: 0;
 }
 
-.card-subtitle {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-tertiary);
-  margin: 0;
-}
+/* .card-subtitle removed - not used in codebase */
 
 .card-content {
   color: var(--color-text-secondary);
@@ -128,16 +124,7 @@
   transform: translateY(-1px);
 }
 
-.button-danger {
-  background: var(--color-error);
-  color: var(--color-error-text);
-  border: 2px solid transparent;
-}
-
-.button-danger:hover:not(:disabled) {
-  background: var(--color-error-hover);
-  transform: translateY(-1px);
-}
+/* .button-danger removed - not used in codebase */
 
 /* Button Sizes */
 .button-small {
@@ -296,12 +283,7 @@
   transform: scale(0.95);
 }
 
-/* Separator */
-.separator {
-  height: 1px;
-  background: var(--color-divider);
-  margin: var(--space-md) 0;
-}
+/* .separator removed - not used in codebase */
 
 /* Loading Spinner */
 .spinner {
@@ -812,20 +794,7 @@
   right: var(--space-lg);
 }
 
-.floating-bottom-left {
-  bottom: var(--space-lg);
-  left: var(--space-lg);
-}
-
-.floating-top-right {
-  top: var(--space-lg);
-  right: var(--space-lg);
-}
-
-.floating-top-left {
-  top: var(--space-lg);
-  left: var(--space-lg);
-}
+/* .floating-bottom-left, .floating-top-right, .floating-top-left removed - not used in codebase */
 
 .floating-icon {
   font-size: var(--font-size-xl);
@@ -2592,25 +2561,7 @@
   transform: translateY(-1px);
 }
 
-/* Study Time */
-.study-time {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: var(--space-sm);
-  margin-top: var(--space-xs);
-}
-
-.time-label {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-tertiary);
-}
-
-.time-value {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-bold);
-  color: var(--color-primary);
-}
+/* Study Time classes removed - not used in codebase */
 
 /* Rating Buttons */
 .rating-buttons {
@@ -2932,105 +2883,7 @@
 }
 
 /* ========== Session Progress ========== */
-
-.session-progress {
-  background: var(--color-bg-surface);
-  border-radius: var(--radius-md);
-  padding: var(--space-md);
-  margin-bottom: var(--space-lg);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
-}
-
-.progress-main {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.progress-text {
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text-primary);
-  margin-bottom: var(--space-xs);
-}
-
-.progress-value {
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-bold);
-  color: var(--color-primary);
-}
-
-.progress-bar-container {
-  flex: 1;
-}
-
-.progress-bar-wrapper {
-  width: 100%;
-  height: 12px;
-  background: var(--color-border);
-  border-radius: var(--radius-full);
-  overflow: hidden;
-}
-
-.progress-pulse {
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(74, 111, 165, 0.1), transparent);
-  animation: progressPulse 2s linear infinite;
-}
-
-/* ========== Streak Indicators ========== */
-
-.streak-indicator {
-  display: flex;
-  justify-content: space-between;
-  padding: var(--space-sm);
-  background: var(--color-info-bg);
-  border-radius: var(--radius-sm);
-  border-left: 3px solid var(--color-info);
-  margin-bottom: var(--space-md);
-}
-
-.streak-icon {
-  font-size: var(--font-size-lg);
-  color: var(--color-info);
-}
-
-.streak-text {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
-  font-weight: var(--font-weight-medium);
-}
-
-.rewards-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-sm);
-  margin-top: var(--space-sm);
-}
-
-.reward-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-xs);
-  padding: var(--space-sm);
-  background: var(--color-bg-surface);
-  border-radius: var(--radius-sm);
-}
-
-.reward-day {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
-  font-weight: var(--font-weight-medium);
-}
-
-.reward-bonus {
-  color: var(--color-primary);
-  font-weight: var(--font-weight-bold);
-}
+/* .session-progress, .progress-main, .progress-bar-container, .streak-indicator, .rewards-grid, .study-time removed - not used in codebase */
 
 /* ========== Study Settings ========== */
 
@@ -3177,26 +3030,7 @@
 }
 
 /* ========== Navigation Button Enhancement ========== */
-
-.next-button-enhanced {
-  position: relative;
-  overflow: hidden;
-}
-
-.next-button-enhanced::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, var(--color-primary), var(--color-primary));
-  transition: left var(--duration-slow) var(--ease-out);
-}
-
-.next-button-enhanced:hover::before {
-  left: 100%;
-}
+/* .next-button-enhanced removed - not used in codebase */
 
 /* ========== Loading Animation ========== */
 
