@@ -17,6 +17,10 @@ console_log.workspace = true
 log.workspace = true
 console_error_panic_hook.workspace = true
 thaw.workspace = true
+ulid.workspace = true
+chrono.workspace = true
+web-sys = { version = "0.3", features = ["console"] }
+gloo-timers = "0.3"
 
 [dev-dependencies]
 wasm-bindgen.workspace = true

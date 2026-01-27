@@ -1,62 +1,84 @@
-use leptos::prelude::*;
 use crate::components::forms::chip_group::ChipGroup;
+use leptos::prelude::*;
+use origa::domain::JapaneseLevel;
 
 #[component]
-pub function JlptLevelFilter(
-    #[prop(into, optional)] selected_level: Option<Signal<JlptLevel>>,
-    #[prop(into, optional)] on_select: Option<Callback<JlptLevel>>,
+pub fn JlptLevelFilter(
+    #[prop(into, optional)] selected_level: Option<Signal<JapaneseLevel>>,
+    #[prop(into, optional)] on_select: Option<Callback<JapaneseLevel>>,
     #[prop(into, optional)] show_counts: Option<bool>,
 ) -> impl IntoView {
-    let selected = selected_level.unwrap_or_else(|| create_signal(JlptLevel::N5));
+    let (selected_read, selected_write) = selected_level
+        .map(|s| {
+            let (read, write) = signal(s.get());
+            (read, write)
+        })
+        .unwrap_or_else(|| signal(JapaneseLevel::N5));
     let with_counts = show_counts.unwrap_or(true);
-    
-    let handle_select = move |level: JlptLevel| {
+
+    let handle_select = Callback::new(move |level: JapaneseLevel| {
         if let Some(handler) = on_select {
             handler.run(level);
         }
-    };
-    
-    // Mock counts - will be replaced with real data
-    let level_counts = create_mocks();
-    
-    let chips = Signal::derive(move || {
-        JlptLevel::ALL_LEVELS.iter().map(|&level| {
-            crate::components::forms::chip_group::ChipItem {
-                id: level.to_string(),
-                label: level.to_string(),
-                count: if with_counts { level_counts.get(&level).copied() } else { None },
-                active: selected() == level,
-                color: level_to_color(level),
-            }
-        }).collect::<Vec<_>>()
     });
-    
+
+    // TODO: Mock counts - will be replaced with real data
+    let level_counts = create_mocks();
+    let level_counts_for_signal = level_counts.clone();
+    let level_counts_for_progress = level_counts;
+
+    let chips = Signal::derive(move || {
+        [
+            JapaneseLevel::N5,
+            JapaneseLevel::N4,
+            JapaneseLevel::N3,
+            JapaneseLevel::N2,
+            JapaneseLevel::N1,
+        ]
+        .iter()
+        .map(|&level| crate::components::forms::chip_group::ChipItem {
+            id: level.code().to_string(),
+            label: level.code().to_string(),
+            count: if with_counts {
+                level_counts_for_signal.get(&level).copied()
+            } else {
+                None
+            },
+            active: selected_read.get() == level,
+            color: get_jlpt_color(&level),
+            icon: None,
+            class: None,
+        })
+        .collect::<Vec<_>>()
+    });
+
     view! {
         <div class="jlpt-filter">
             <div class="filter-header">
                 <h3 class="filter-title">Уровень JLPT</h3>
-                <p class="filter-subtitle">Выберите уровень сложности кандзи</p>
+                <p class="filter-subtitle">
+                    Выберите уровень сложности кандзи
+                </p>
             </div>
-            
-            <ChipGroup 
+
+            <ChipGroup
                 chips=chips
-                on_select=Callback::new(move |chip_id| {
-                    if let Ok(level) = JlptLevel::from_str(&chip_id) {
-                        handle_select(level);
+                on_select=Callback::new(move |chip_id: String| {
+                    if let Ok(level) = chip_id.parse::<JapaneseLevel>() {
+                        selected_write.set(level);
+                        handle_select.run(level);
                     }
-                }) />
-            
+                })
+            />
+
             // Progress indicator for selected level
             <div class="level-progress">
                 <div class="progress-text">
-                    "Уровень " 
-                    {move || selected().to_string()}
-                    " • "
+                    "Уровень " {move || selected_read.get().code().to_string()} " • "
                     {move || {
-                        let level = selected();
-                        level_counts.get(&level).unwrap_or(&0)
-                    }}
-                    " кандзи"
+                        let level = selected_read.get();
+                        level_counts_for_progress.get(&level).copied().unwrap_or(0)
+                    }} " кандзи"
                 </div>
                 <div class="progress-bar">
                     <div class="progress-fill" style="width: 25%"></div>
@@ -66,86 +88,22 @@ pub function JlptLevelFilter(
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Debug)]
-pub enum JlptLevel {
-    N5,
-    N4,
-    N3,
-    N2,
-    N1,
-}
-
-impl JlptLevel {
-    pub const ALL_LEVELS: [JlptLevel; 5] = [
-        JlptLevel::N5,
-        JlptLevel::N4,
-        JlptLevel::N3,
-        JlptLevel::N2,
-        JlptLevel::N1,
-    ];
-    
-    pub fn to_string(&self) -> &'static str {
-        match self {
-            JlptLevel::N5 => "N5",
-            JlptLevel::N4 => "N4",
-            JlptLevel::N3 => "N3",
-            JlptLevel::N2 => "N2",
-            JlptLevel::N1 => "N1",
-        }
-    }
-    
-    pub fn description(&self) -> &'static str {
-        match self {
-            JlptLevel::N5 => "Базовый уровень (самый простой)",
-            JlptLevel::N4 => "Начальный уровень",
-            JlptLevel::N3 => "Средний уровень",
-            JlptLevel::N2 => "Продвинутый уровень",
-            JlptLevel::N1 => "Экспертный уровень (самый сложный)",
-        }
-    }
-    
-    pub fn difficulty_color(&self) -> &'static str {
-        match self {
-            JlptLevel::N5 => "#5a8c5a",  // Green
-            JlptLevel::N4 => "#66a182",  // Light green
-            JlptLevel::N3 => "#b08d57",  // Yellow
-            JlptLevel::N2 => "#b85450",  // Light red
-            JlptLevel::N1 => "#8b2635",  // Dark red
-        }
-    }
-}
-
-impl std::fmt::Display for JlptLevel {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.to_string())
-    }
-}
-
-impl std::str::FromStr for JlptLevel {
-    type Err = ();
-    
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "N5" => Ok(JlptLevel::N5),
-            "N4" => Ok(JlptLevel::N4),
-            "N3" => Ok(JlptLevel::N3),
-            "N2" => Ok(JlptLevel::N2),
-            "N1" => Ok(JlptLevel::N1),
-            _ => Err(()),
-        }
-    }
-}
-
-fn level_to_color(level: JlptLevel) -> &'static str {
-    level.difficulty_color()
-}
-
-fn create_mocks() -> std::collections::HashMap<JlptLevel, u32> {
+fn create_mocks() -> std::collections::HashMap<JapaneseLevel, u32> {
     let mut counts = std::collections::HashMap::new();
-    counts.insert(JlptLevel::N5, 103);
-    counts.insert(JlptLevel::N4, 181);
-    counts.insert(JlptLevel::N3, 369);
-    counts.insert(JlptLevel::N2, 374);
-    counts.insert(JlptLevel::N1, 1235);
+    counts.insert(JapaneseLevel::N5, 103);
+    counts.insert(JapaneseLevel::N4, 181);
+    counts.insert(JapaneseLevel::N3, 369);
+    counts.insert(JapaneseLevel::N2, 374);
+    counts.insert(JapaneseLevel::N1, 1235);
     counts
+}
+
+fn get_jlpt_color(level: &JapaneseLevel) -> &'static str {
+    match level {
+        JapaneseLevel::N5 => "#5a8c5a",
+        JapaneseLevel::N4 => "#66a182",
+        JapaneseLevel::N3 => "#b08d57",
+        JapaneseLevel::N2 => "#b85450",
+        JapaneseLevel::N1 => "#8b2635",
+    }
 }

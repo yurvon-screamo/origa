@@ -1,5 +1,5 @@
-use leptos::prelude::*;
 use crate::services::kanji_service::KanjiService;
+use leptos::prelude::*;
 
 #[derive(Clone)]
 pub struct AppServices {
@@ -7,17 +7,16 @@ pub struct AppServices {
 }
 
 impl AppServices {
-    pub fn new(kanji_service: KanjiService) -> Self {
-        Self { kanji_service }
+    pub fn new() -> Self {
+        Self {
+            kanji_service: KanjiService::new(),
+        }
     }
 }
 
 // Provide context for services
 #[component]
-pub fn ServicesProvider(
-    services: AppServices,
-    children: Children,
-) -> impl IntoView {
+pub fn ServicesProvider(services: AppServices, children: Children) -> impl IntoView {
     provide_context(services.kanji_service);
     children()
 }

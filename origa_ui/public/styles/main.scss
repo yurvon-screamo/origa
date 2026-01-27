@@ -1,13 +1,13 @@
-/* Origa UI - Main CSS Entry Point */
+/* Origa UI - Main SCSS Entry Point */
 /* Cloud Dancer Theme - Mobile-First Japanese Learning App */
 
-/* Import all CSS modules in correct order */
-@import './cloud_dancer.css';
-@import './mobile.css';
-@import './components.css';
-@import './layout.css';
-@import './animations.css';
-@import './responsive.css';
+/* Import all SCSS modules in correct order */
+@import './cloud_dancer';
+@import './mobile';
+@import './components';
+@import './layout';
+@import './animations';
+@import './responsive';
 
 /* ========== Base Setup ========== */
 *,
@@ -26,6 +26,7 @@ html {
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
   -webkit-tap-highlight-color: transparent;
   overflow-x: hidden;
 }
@@ -40,7 +41,12 @@ body {
 }
 
 /* ========== Typography Base ========== */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   margin: 0;
   font-weight: var(--font-weight-semibold);
   line-height: var(--line-height-tight);
@@ -118,7 +124,8 @@ button:focus-visible {
 }
 
 /* ========== Lists ========== */
-ul, ol {
+ul,
+ol {
   padding-left: var(--space-lg);
   margin: 0;
 }
@@ -207,12 +214,12 @@ img {
     box-shadow: none !important;
     text-shadow: none !important;
   }
-  
+
   a,
   a:visited {
     text-decoration: underline;
   }
-  
+
   .no-print {
     display: none !important;
   }
@@ -288,11 +295,11 @@ img {
     --color-text-primary: #000000;
     --color-bg-primary: #ffffff;
   }
-  
+
   .card {
     border-width: 2px;
   }
-  
+
   .button {
     border-width: 2px;
   }
@@ -326,7 +333,7 @@ img {
 }
 
 .debug-grid {
-  background-image: 
+  background-image:
     linear-gradient(rgba(255, 0, 0, 0.1) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 0, 0, 0.1) 1px, transparent 1px);
   background-size: 20px 20px;

@@ -1,7 +1,7 @@
 use leptos::prelude::*;
 
 #[component]
-pub function BottomSheet(
+pub fn BottomSheet(
     show: Signal<bool>,
     #[prop(into, optional)] title: Option<String>,
     #[prop(into, optional)] subtitle: Option<String>,
@@ -9,101 +9,133 @@ pub function BottomSheet(
     #[prop(into, optional)] on_close: Option<Callback<()>>,
     children: Children,
 ) -> impl IntoView {
-    let handle_backdrop_click = move |_| {
+    let max_height_style = max_height.unwrap_or_else(|| "80vh".to_string());
+
+    // Extract all optional values before view! macro
+    let title_text = title;
+    let subtitle_text = subtitle;
+
+    // Call children() once outside the reactive closure
+    let children_view = children();
+
+    let handle_overlay_click = move |_| {
         if let Some(handler) = on_close {
             handler.run(());
         }
     };
-    
-    let max_height_class = max_height.unwrap_or_else(|| "80vh".to_string());
-    
+
+    let handle_close_click = move |_| {
+        if let Some(handler) = on_close {
+            handler.run(());
+        }
+    };
+
     view! {
-        <Show when=show>
-            <div class="modal-overlay" on:click=handle_backdrop_click>
-                <div 
-                    class="modal-content bottom-sheet"
-                    style=format!("max-height: {}", max_height_class)
-                    on:click=move |ev| ev.stop_propagation()
-                >
-                    <Show when=move || title.is_some()>
-                        <div class="modal-header">
-                            <div class="modal-title-section">
-                                <h2 class="modal-title">{move || title.clone().unwrap_or_default()}</h2>
-                                {move || subtitle.map(|sub| view! {
-                                    <p class="modal-subtitle">{sub}</p>
-                                })}
+        <div
+            class=move || {
+                if show.get() {
+                    "modal-overlay modal-visible"
+                } else {
+                    "modal-overlay modal-hidden"
+                }
+            }
+            on:click=handle_overlay_click
+        >
+            <div
+                class="modal-content bottom-sheet"
+                style=format!("max-height: {}", max_height_style)
+                on:click=move |ev| ev.stop_propagation()
+            >
+                {title_text
+                    .map(|t| {
+                        let sub = subtitle_text.clone();
+                        view! {
+                            <div class="modal-header">
+                                <div class="modal-title-section">
+                                    <h2 class="modal-title">{t}</h2>
+                                    {sub.map(|s| view! { <p class="modal-subtitle">{s}</p> })}
+                                </div>
+                                <button
+                                    class="icon-button modal-close-btn"
+                                    on:click=handle_close_click
+                                    aria-label="Закрыть"
+                                >
+                                    "✕"
+                                </button>
                             </div>
-                            <button 
-                                class="icon-button modal-close-btn"
-                                on:click=move |_| {
-                                    if let Some(handler) = on_close {
-                                        handler.run(());
-                                    }
-                                }
-                                aria-label="Закрыть"
-                            >
-                                "✕"
-                            </button>
-                        </div>
-                    </Show>
-                    
-                    <div class="modal-body bottom-sheet-body">
-                        {children()}
-                    </div>
-                </div>
+                        }
+                    })}
+
+                <div class="modal-body bottom-sheet-body">{children_view}</div>
             </div>
-        </Show>
+        </div>
     }
 }
 
 #[component]
-pub function Modal(
+pub fn Modal(
     show: Signal<bool>,
     #[prop(into, optional)] title: Option<String>,
     #[prop(into, optional)] size: Option<ModalSize>,
     #[prop(into, optional)] on_close: Option<Callback<()>>,
     children: Children,
 ) -> impl IntoView {
-    let handle_backdrop_click = move |_| {
+    let size_class = size.unwrap_or(ModalSize::Medium).to_class();
+
+    // Extract title before view! macro
+    let title_text = title;
+
+    // Call children() once outside the reactive closure
+    let children_view = children();
+
+    let handle_overlay_click = move |_| {
         if let Some(handler) = on_close {
             handler.run(());
         }
     };
-    
-    let size_class = size.unwrap_or(ModalSize::Medium).to_class();
-    
+
+    let handle_close_click = move |_| {
+        if let Some(handler) = on_close {
+            handler.run(());
+        }
+    };
+
     view! {
-        <Show when=show>
-            <div class="modal-overlay" on:click=handle_backdrop_click>
-                <div 
-                    class=format!("modal-content {}", size_class)
-                    on:click=move |ev| ev.stop_propagation()
-                >
-                    <Show when=move || title.is_some()>
-                        <div class="modal-header">
-                            <div class="modal-title-section">
-                                <h2 class="modal-title">{move || title.clone().unwrap_or_default()}</h2>
+        <div
+            class=move || {
+                if show.get() {
+                    "modal-overlay modal-visible"
+                } else {
+                    "modal-overlay modal-hidden"
+                }
+            }
+            on:click=handle_overlay_click
+        >
+            <div
+                class=format!("modal-content {}", size_class)
+                on:click=move |ev| ev.stop_propagation()
+            >
+                {title_text
+                    .map(|t| {
+                        view! {
+                            <div class="modal-header">
+                                <div class="modal-title-section">
+                                    <h2 class="modal-title">{t}</h2>
+                                </div>
+                                <button
+                                    class="icon-button modal-close-btn"
+                                    on:click=handle_close_click
+                                    aria-label="Закрыть"
+                                >
+                                    "✕"
+                                </button>
                             </div>
-                            <button 
-                                class="icon-button modal-close-btn"
-                                on:click=move |_| {
-                                    if let Some(handler) = on_close {
-                                        handler.run(());
-                                    }
-                                }
-                                aria-label="Закрыть"
-                            >
-                                "✕"
-                            </button>
-                        </div>
-                    </Show>
-                    
-                    <div class="modal-body">
-                        {children()}
-                    </div>
-                </div>
+                        }
+                    })}
+
+                <div class="modal-body">{children_view}</div>
             </div>
-        </Show>
+        </div>
     }
 }
 
