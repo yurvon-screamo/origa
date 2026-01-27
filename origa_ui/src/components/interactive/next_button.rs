@@ -14,32 +14,31 @@ pub fn NextButton(
             on_click.unwrap().run(());
         }
     };
-    
+
     let button_label = label.unwrap_or_else(|| "Далее".to_string());
-    
+    let button_label_for_aria = button_label.clone();
+
     view! {
-        <button 
+        <button
             class=format!(
                 "next-button {} {} {}",
                 if is_disabled { "next-disabled" } else { "" },
                 button_variant.to_class(),
-                if is_disabled { "next-loading" } else { "" }
+                if is_disabled { "next-loading" } else { "" },
             )
             on:click=handle_click
             disabled=is_disabled
-            aria-label=button_label.clone()
+            aria-label=button_label_for_aria
         >
-            <span class="next-icon">→</span>
+            <span class="next-icon">{"→"}</span>
             <span class="next-text">{button_label}</span>
-            {is_disabled.then(|| view! {
-                <span class="loading-spinner"></span>
-            })}
+            {is_disabled.then(|| view! { <span class="loading-spinner"></span> })}
         </button>
     }
 }
 
 #[component]
-pub function SkipButton(
+pub fn SkipButton(
     #[prop(into, optional)] label: Option<String>,
     #[prop(into, optional)] on_click: Option<Callback<()>>,
     #[prop(into, optional)] disabled: Option<bool>,
@@ -50,28 +49,30 @@ pub function SkipButton(
             on_click.unwrap().run(());
         }
     };
-    
+
     let button_label = label.unwrap_or_else(|| "Пропустить".to_string());
-    
+    let button_label_for_aria = button_label.clone();
+
     view! {
-        <button 
+        <button
             class=format!(
                 "skip-button {} {}",
                 if is_disabled { "skip-disabled" } else { "" },
-                if is_disabled { "skip-loading" } else { "" }
+                if is_disabled { "skip-loading" } else { "" },
             )
             on:click=handle_click
             disabled=is_disabled
-            aria-label=button_label.clone()
+            aria-label=button_label_for_aria
         >
-            <span class="skip-icon">⏭</span>
+            <span class="skip-icon">{"⏭"}</span>
             <span class="skip-text">{button_label}</span>
         </button>
     }
 }
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Default)]
 pub enum NextVariant {
+    #[default]
     Primary,
     Secondary,
     Success,
@@ -86,11 +87,5 @@ impl NextVariant {
             NextVariant::Success => "next-success",
             NextVariant::Warning => "next-warning",
         }
-    }
-}
-
-impl Default for NextVariant {
-    fn default() -> Self {
-        NextVariant::Primary
     }
 }

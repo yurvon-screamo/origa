@@ -1,59 +1,7 @@
 use leptos::prelude::*;
 
 #[component]
-pub fn FloatingButton(
-    #[prop(into, optional)] icon: Option<String>,
-    #[prop(into, optional)] label: Option<String>,
-    #[prop(into, optional)] on_click: Option<Callback<()>>,
-    #[prop(into, optional)] small: Option<bool>,
-    #[prop(into, optional)] position: Option<FloatingPosition>,
-) -> impl IntoView {
-    let is_small = small.unwrap_or(false);
-    let position = position.unwrap_or(FloatingPosition::BottomRight);
-    let handle_click = move |_| {
-        if let Some(handler) = on_click {
-            handler.run(());
-        }
-    };
-    
-    let position_class = position.to_class();
-    let size_class = if is_small { "floating-button-small" } else { "" };
-    
-    view! {
-        <button 
-            class=format!("floating-button {} {}", position_class, size_class)
-            on:click=handle_click
-            aria-label=label.clone().unwrap_or_else(|| "Действие".to_string())
-        >
-            <span class="floating-icon">{icon.unwrap_or_else(|| "+".to_string())}</span>
-            {label.map(|lbl| view! {
-                <span class="floating-label">{lbl}</span>
-            })}
-        </button>
-    }
-}
-
-#[derive(Clone, Copy, PartialEq)]
-pub enum FloatingPosition {
-    BottomRight,
-    BottomLeft,
-    TopRight,
-    TopLeft,
-}
-
-impl FloatingPosition {
-    pub fn to_class(&self) -> &'static str {
-        match self {
-            FloatingPosition::BottomRight => "floating-bottom-right",
-            FloatingPosition::BottomLeft => "floating-bottom-left", 
-            FloatingPosition::TopRight => "floating-top-right",
-            FloatingPosition::TopLeft => "floating-top-left",
-        }
-    }
-}
-
-#[component]
-pub function FloatingActionButton(
+pub fn FloatingActionButton(
     #[prop(into, optional)] icon: Option<String>,
     #[prop(into, optional)] label: Option<String>,
     #[prop(into, optional)] on_click: Option<Callback<()>>,
@@ -66,14 +14,15 @@ pub function FloatingActionButton(
             handler.run(());
         }
     };
-    
+
     let variant_class = variant.to_class();
-    
+    let label_str = label.clone().unwrap_or_else(|| "Действие".to_string());
+
     view! {
-        <button 
+        <button
             class=format!("fab {}", variant_class)
             on:click=handle_click
-            aria-label=label.clone().unwrap_or_else(|| "Действие".to_string())
+            aria-label=label_str
         >
             <span class="fab-icon">{icon_str}</span>
             {label.map(|lbl| view! {

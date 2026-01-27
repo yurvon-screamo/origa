@@ -1,28 +1,36 @@
 use leptos::prelude::*;
 
 #[component]
-pub function Input(
+pub fn Input(
     #[prop(into, optional)] label: Option<String>,
     #[prop(into, optional)] placeholder: Option<String>,
     #[prop(into, optional)] value: Option<Signal<String>>,
     #[prop(into, optional)] on_change: Option<Callback<String>>,
     #[prop(into, optional)] on_input: Option<Callback<String>>,
-    #[prop(into, optional)] type: Option<InputType>,
+    #[prop(into, optional)] input_type: Option<InputType>,
     #[prop(into, optional)] error: Option<String>,
     #[prop(into, optional)] disabled: Option<bool>,
     #[prop(into, optional)] required: Option<bool>,
     #[prop(into, optional)] maxlength: Option<u32>,
     #[prop(into, optional)] multiline: Option<bool>,
+    #[prop(into, optional)] rows: Option<u32>,
 ) -> impl IntoView {
-    let input_value = value.unwrap_or_else(|| create_signal("".to_string()));
-    let input_type = type.unwrap_or(InputType::Text);
+    let (input_value, set_input_value) = value
+        .map(|s| {
+            // Create a local signal that syncs with the provided signal
+            let (read, write) = signal(s.get());
+            (read, write)
+        })
+        .unwrap_or_else(|| signal(String::new()));
+    let input_type = input_type.unwrap_or(InputType::Text);
     let is_disabled = disabled.unwrap_or(false);
     let is_required = required.unwrap_or(false);
     let is_multiline = multiline.unwrap_or(false);
     let error_msg = error;
-    
+
     let handle_input = move |ev| {
         let new_value = event_target_value(&ev);
+        set_input_value.set(new_value.clone());
         if let Some(handler) = on_input {
             handler.run(new_value.clone());
         }
@@ -30,73 +38,82 @@ pub function Input(
             handler.run(new_value);
         }
     };
-    
-    let has_error = Signal::derive(move || error_msg.as_ref().map(|_| true).unwrap_or(false));
-    
+
+    let error_msg_clone = error_msg.clone();
+    let has_error = Signal::derive(move || error_msg_clone.is_some());
+
+    let input_type_str = match input_type {
+        InputType::Text => "text",
+        InputType::Email => "email",
+        InputType::Password => "password",
+        InputType::Number => "number",
+        InputType::Tel => "tel",
+        InputType::Url => "url",
+    };
+    let placeholder_val = placeholder.unwrap_or_default();
+    let rows_val = rows.unwrap_or(4);
+
     view! {
         <div class="input-group">
-            <Show when=move || label.is_some()>
-                <label class="input-label">
-                    {move || label.clone().unwrap_or_default()}
-                    {move || is_required.then(|| view! {
-                        <span class="input-required">*</span>
-                    })}
-                </label>
-            </Show>
-            
-            {move || if is_multiline {
-                view! {
-                    <textarea 
-                        class=format!(
-                            "input {}",
-                            if has_error() { "input-error" } else { "" }
-                        )
-                        placeholder=placeholder.unwrap_or_default()
-                        prop:value=input_value
-                        on:input=handle_input
-                        disabled=is_disabled
-                        maxlength=maxlength
-                        rows=4
-                    />
-                }
-            } else {
-                let input_type_str = match input_type {
-                    InputType::Text => "text",
-                    InputType::Email => "email",
-                    InputType::Password => "password",
-                    InputType::Number => "number",
-                    InputType::Tel => "tel",
-                    InputType::Url => "url",
-                };
-                
-                view! {
-                    <input 
-                        class=format!(
-                            "input {}",
-                            if has_error() { "input-error" } else { "" }
-                        )
-                        type=input_type_str
-                        placeholder=placeholder.unwrap_or_default()
-                        prop:value=input_value
-                        on:input=handle_input
-                        disabled=is_disabled
-                        required=is_required
-                        maxlength=maxlength
-                    />
-                }
-            }}
-            
-            <Show when=move || error_msg.is_some()>
-                <div class="input-error">
-                    {move || error_msg.clone().unwrap_or_default()}
-                </div>
-            </Show>
+            {label
+                .map(|lbl| {
+                    view! {
+                        <label class="input-label">
+                            {lbl}
+                            {is_required.then(|| view! { <span class="input-required">*</span> })}
+                        </label>
+                    }
+                })}
+            {(!is_multiline)
+                .then(|| {
+                    view! {
+                        <div>
+                            <input
+                                class=move || {
+                                    format!(
+                                        "input {}",
+                                        if has_error.get() { "input-error" } else { "" },
+                                    )
+                                }
+                                type=input_type_str
+                                placeholder=placeholder_val.clone()
+                                prop:value=move || input_value.get()
+                                on:input=handle_input
+                                disabled=is_disabled
+                                required=is_required
+                                maxlength=maxlength
+                            />
+                        </div>
+                    }
+                })}
+            {is_multiline
+                .then(|| {
+                    view! {
+                        <div>
+                            <textarea
+                                class=move || {
+                                    format!(
+                                        "input {}",
+                                        if has_error.get() { "input-error" } else { "" },
+                                    )
+                                }
+                                placeholder=placeholder_val.clone()
+                                prop:value=move || input_value.get()
+                                on:input=handle_input
+                                disabled=is_disabled
+                                maxlength=maxlength
+                                rows=rows_val
+                            />
+                        </div>
+                    }
+                })}
+            {error_msg.map(|err| view! { <div class="input-error">{err}</div> })}
         </div>
     }
 }
 
 #[component]
-pub function Textarea(
+pub fn Textarea(
     #[prop(into, optional)] label: Option<String>,
     #[prop(into, optional)] placeholder: Option<String>,
     #[prop(into, optional)] value: Option<Signal<String>>,
@@ -105,30 +122,53 @@ pub function Textarea(
     #[prop(into, optional)] disabled: Option<bool>,
     #[prop(into, optional)] rows: Option<u32>,
 ) -> impl IntoView {
-    Input(
-        label=label,
-        placeholder=placeholder,
-        value=value,
-        on_change=on_change,
-        error=error,
-        disabled=disabled,
-        multiline=true,
-        rows=rows.unwrap_or(4),
-    )
+    let (input_value, set_input_value) = value
+        .map(|s| {
+            let (read, write) = signal(s.get());
+            (read, write)
+        })
+        .unwrap_or_else(|| signal(String::new()));
+    let is_disabled = disabled.unwrap_or(false);
+    let error_clone = error.clone();
+    let has_error = Signal::derive(move || error_clone.is_some());
+    let placeholder_val = placeholder.unwrap_or_default();
+    let rows_val = rows.unwrap_or(4);
+
+    let handle_input = move |ev| {
+        let new_value = event_target_value(&ev);
+        set_input_value.set(new_value.clone());
+        if let Some(handler) = on_change {
+            handler.run(new_value);
+        }
+    };
+
+    view! {
+        <div class="input-group">
+            {label.map(|lbl| view! { <label class="input-label">{lbl}</label> })}
+            <div>
+                <textarea
+                    class=move || {
+                        format!("input {}", if has_error.get() { "input-error" } else { "" })
+                    }
+                    placeholder=placeholder_val
+                    prop:value=move || input_value.get()
+                    on:input=handle_input
+                    disabled=is_disabled
+                    rows=rows_val
+                />
+            </div>
+            {error.map(|err| view! { <div class="input-error">{err}</div> })}
+        </div>
+    }
 }
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Default)]
 pub enum InputType {
+    #[default]
     Text,
     Email,
     Password,
     Number,
     Tel,
     Url,
-}
-
-impl Default for InputType {
-    fn default() -> Self {
-        InputType::Text
-    }
 }

@@ -4,7 +4,7 @@ pub mod counter_btn;
 // Layout Components
 pub mod layout;
 
-// Card Components  
+// Card Components
 pub mod cards;
 
 // Interactive Components
@@ -12,6 +12,3 @@ pub mod interactive;
 
 // Form Components
 pub mod forms;
-
-// Navigation Components
-pub mod navigation;

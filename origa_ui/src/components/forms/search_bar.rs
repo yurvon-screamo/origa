@@ -8,43 +8,54 @@ pub fn SearchBar(
     #[prop(into, optional)] on_clear: Option<Callback<()>>,
 ) -> impl IntoView {
     let placeholder_text = placeholder.unwrap_or_else(|| "Поиск...".to_string());
-    let search_value = value.unwrap_or_else(|| create_signal("".to_string()));
-    
+    let (search_value, set_search_value) = value
+        .map(|s| {
+            // Create a local signal that syncs with the provided signal
+            let (read, write) = signal(s.get());
+            (read, write)
+        })
+        .unwrap_or_else(|| signal("".to_string()));
+
     let handle_input = move |ev| {
         let new_value = event_target_value(&ev);
+        set_search_value.set(new_value.clone());
         if let Some(on_change) = on_change {
             on_change.run(new_value);
         }
     };
-    
+
     let handle_clear = move |_| {
+        set_search_value.set("".to_string());
         if let Some(on_clear) = on_clear {
             on_clear.run(());
         }
     };
-    
+
     let is_empty = Signal::derive(move || search_value.get().is_empty());
-    
+
     view! {
         <div class="search-bar">
             <div class="search-input-container">
-                <span class="search-icon">🔍</span>
-                <input 
+                <span class="search-icon">{"🔍"}</span>
+                <input
                     type="text"
                     class="search-input"
                     placeholder=placeholder_text
-                    prop:value=search_value
+                    prop:value=move || search_value.get()
                     on:input=handle_input
                 />
-                {move || !is_empty().then(|| view! {
-                    <button 
-                        class="search-clear-btn"
-                        on:click=handle_clear
-                        aria-label="Очистить поиск"
-                    >
-                        "✕"
-                    </button>
-                })}
+                {(!is_empty.get())
+                    .then(|| {
+                        view! {
+                            <button
+                                class="search-clear-btn"
+                                on:click=handle_clear
+                                aria-label="Очистить поиск"
+                            >
+                                "✕"
+                            </button>
+                        }
+                    })}
             </div>
         </div>
     }
@@ -56,36 +67,47 @@ pub fn FilterChips(
     #[prop(into, optional)] selected: Option<Signal<String>>,
     #[prop(into, optional)] on_select: Option<Callback<String>>,
 ) -> impl IntoView {
-    let selected_chip = selected.unwrap_or_else(|| create_signal("all".to_string()));
-    
-    let handle_chip_click = move |chip_value: String| {
+    let (selected_chip_read, _selected_chip_write) = selected
+        .map(|s| {
+            let (read, write) = signal(s.get());
+            (read, write)
+        })
+        .unwrap_or_else(|| signal("all".to_string()));
+    let selected_chip = selected_chip_read;
+
+    let handle_chip_click = Callback::new(move |chip_value: String| {
         if let Some(on_select) = on_select {
             on_select.run(chip_value);
         }
-    };
-    
+    });
+
     view! {
         <div class="filter-chips">
             <For
-                each=chips
+                each=move || chips.get()
                 key=|chip| chip.value.clone()
                 children=move |chip| {
-                    let is_active = Signal::derive(move || selected_chip.get() == chip.value);
                     let chip_value = chip.value.clone();
-                    
+                    let chip_value_for_signal = chip.value.clone();
+                    let chip_icon = chip.icon;
+                    let chip_label = chip.label.clone();
+                    let chip_count = chip.count;
+                    let is_active = Signal::derive(move || {
+                        selected_chip.get() == chip_value_for_signal
+                    });
+                    // Clone all fields before using them in closures
+
                     view! {
-                        <button 
-                            class=format!(
-                                "chip {}",
-                                if is_active() { "chip-active" } else { "" }
-                            )
-                            on:click=move |_| handle_chip_click(chip_value.clone())
+                        <button
+                            class=move || {
+                                format!("chip {}", if is_active.get() { "chip-active" } else { "" })
+                            }
+                            on:click=move |_| handle_chip_click.run(chip_value.clone())
                         >
-                            <span class="chip-icon">{chip.icon}</span>
-                            <span class="chip-label">{chip.label}</span>
-                            {chip.count.map(|count| view! {
-                                <span class="chip-count">{count}</span>
-                            })}
+                            <span class="chip-icon">{chip_icon}</span>
+                            <span class="chip-label">{chip_label}</span>
+                            {chip_count
+                                .map(|count| view! { <span class="chip-count">{count}</span> })}
                         </button>
                     }
                 }
@@ -111,7 +133,7 @@ impl FilterChip {
             count: None,
         }
     }
-    
+
     pub fn with_count(mut self, count: u32) -> Self {
         self.count = Some(count);
         self
