@@ -1,6 +1,7 @@
 use crate::components::cards::kanji_card::RadicalInfo;
+use crate::components::cards::kanji_detail::{ExampleInfo, KanjiDetailData};
 use leptos::prelude::*;
-use origa::application::KanjiListUseCase;
+use origa::application::{KanjiInfoUseCase, KanjiListUseCase};
 use origa::domain::{Card, JapaneseLevel, OrigaError};
 use std::collections::HashMap;
 use ulid::Ulid;
@@ -50,7 +51,6 @@ impl KanjiService {
                         .map(|r| RadicalInfo {
                             character: r.radical().to_string(),
                             meaning: r.name().to_string(),
-                            strokes: r.stroke_count() as u8,
                         })
                         .collect(),
                     status: self.determine_card_status(&kanji_char, &empty_user_cards),
@@ -101,6 +101,95 @@ impl KanjiService {
         // TODO: Get user's cards when KnowledgeSetCardsUseCase is available
         // For now, return kanji without user-specific status
         Ok(all_kanji)
+    }
+
+    pub async fn get_kanji_detail(
+        &self,
+        kanji_char: String,
+        _user_id: Ulid,
+    ) -> Result<KanjiDetailData, OrigaError> {
+        // Get kanji info from use case
+        let use_case = KanjiInfoUseCase::new();
+        let kanji_info = use_case.execute(&kanji_char)?;
+
+        // Get user's existing cards to determine if kanji is already added
+        // TODO: Implement when KnowledgeSetCardsUseCase is available
+        let empty_user_cards: HashMap<Ulid, Card> = HashMap::new();
+
+        // Convert to KanjiDetailData
+        let radicals = kanji_info
+            .radicals()
+            .into_iter()
+            .map(|r| crate::components::cards::kanji_detail::RadicalDetail {
+                character: r.radical().to_string(),
+                meaning: r.name().to_string(),
+                stroke_count: 0,          // Not available in RadicalInfo
+                position: "".to_string(), // Not available
+            })
+            .collect();
+
+        // Convert popular words to examples
+        let examples = kanji_info
+            .popular_words()
+            .iter()
+            .take(5) // Limit to 5 examples
+            .map(|word| ExampleInfo {
+                kanji: word.clone(),
+                reading: "".to_string(), // Not available
+                meaning: "".to_string(), // Not available
+                romaji: "".to_string(),  // Not available
+            })
+            .collect();
+
+        // Split description into meanings (assuming comma-separated)
+        let meanings: Vec<String> = kanji_info
+            .description()
+            .split(',')
+            .map(|s| s.trim().to_string())
+            .filter(|s| !s.is_empty())
+            .collect();
+
+        let is_in_knowledge_set = empty_user_cards.values().any(|card| {
+            matches!(card, Card::Kanji(kanji_card) if kanji_card.kanji().text() == kanji_char)
+        });
+
+        Ok(KanjiDetailData {
+            id: format!("kanji_{}", kanji_char),
+            character: kanji_char.clone(),
+            stroke_count: 0, // Not available in KanjiInfo
+            grade_level: format!("JLPT {}", kanji_info.jlpt()),
+            jlpt_level: kanji_info.jlpt().clone(),
+            meanings: if meanings.is_empty() {
+                vec![kanji_info.description().to_string()]
+            } else {
+                meanings
+            },
+            onyomi: vec![],  // Not available in KanjiInfo
+            kunyomi: vec![], // Not available in KanjiInfo
+            radicals,
+            examples,
+            status: self.determine_card_status(&kanji_char, &empty_user_cards),
+            difficulty: self.calculate_difficulty(&kanji_info),
+            stability: self.calculate_stability(&kanji_info, &empty_user_cards),
+            next_review: self.calculate_next_review(&kanji_char, &empty_user_cards),
+            is_in_knowledge_set,
+            mnemonic_hint: format!(
+                "Кандзи {} часто используется в словах: {}",
+                kanji_char,
+                kanji_info
+                    .popular_words()
+                    .iter()
+                    .take(3)
+                    .map(|s| s.as_str())
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            ),
+            stroke_order_hint: format!(
+                "Порядок черт для {}: слева направо, сверху вниз",
+                kanji_char
+            ),
+            related_kanji: vec![], // Not available
+        })
     }
 
     fn determine_card_status(

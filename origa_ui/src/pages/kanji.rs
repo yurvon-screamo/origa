@@ -1,4 +1,5 @@
 use crate::components::cards::kanji_card::{KanjiCard, KanjiCardData};
+use crate::components::cards::kanji_detail::{KanjiDetail, KanjiDetailData};
 use crate::components::forms::jlpt_level_filter::JlptLevelFilter;
 use crate::components::forms::search_bar::SearchBar;
 use crate::components::layout::app_layout::{AppLayout, PageHeader};
@@ -26,6 +27,10 @@ pub fn Kanji() -> impl IntoView {
 
     // Kanji data from service
     let (kanji_data, set_kanji_data) = signal(Vec::<KanjiListData>::new());
+
+    // Detail view state
+    let (selected_kanji_detail, set_selected_kanji_detail) = signal(None::<KanjiDetailData>);
+    let (_is_loading_detail, set_is_loading_detail) = signal(false);
 
     // Load kanji data when level changes
     let kanji_service_for_load = kanji_service.clone();
@@ -144,16 +149,55 @@ pub fn Kanji() -> impl IntoView {
         }
     });
 
-    let handle_kanji_tap = Callback::new(move |_kanji_id: String| {
-        // TODO: Navigate to kanji details - this would open a detail page/modal
+    let kanji_service_for_detail = kanji_service.clone();
+    let handle_kanji_tap = Callback::new(move |kanji_id: String| {
+        // Find kanji character by id
+        let kanji_data = kanji_data.get();
+        if let Some(kanji) = kanji_data.iter().find(|k| k.id == kanji_id) {
+            let service = kanji_service_for_detail.clone();
+            let user = user_id;
+            let kanji_char = kanji.character.clone();
+            set_is_loading_detail.set(true);
+            set_selected_kanji_detail.set(None);
+
+            spawn_local(async move {
+                match service.get_kanji_detail(kanji_char, user).await {
+                    Ok(detail) => {
+                        set_selected_kanji_detail.set(Some(detail));
+                        set_is_loading_detail.set(false);
+                    }
+                    Err(e) => {
+                        set_error.set(Some(format!("Ошибка загрузки деталей: {}", e)));
+                        set_is_loading_detail.set(false);
+                    }
+                }
+            });
+        }
+    });
+
+    let handle_back_from_detail = Callback::new(move |_| {
+        set_selected_kanji_detail.set(None);
     });
 
     view! {
         <AppLayout active_tab="kanji".to_string()>
-            <PageHeader
-                title="Кандзи".to_string()
-                subtitle="Изучите японские иероглифы".to_string()
-            />
+            {move || {
+                if let Some(detail) = selected_kanji_detail.get() {
+                    view! {
+                        <KanjiDetail
+                            kanji=detail
+                            on_add=handle_add_kanji
+                            on_remove=handle_remove_kanji
+                            on_back=handle_back_from_detail
+                        />
+                    }
+                    .into_any()
+                } else {
+                    view! {
+                        <PageHeader
+                            title="Кандзи".to_string()
+                            subtitle="Изучите японские иероглифы".to_string()
+                        />
 
             // Search Bar
             <SearchBar
@@ -248,6 +292,10 @@ pub fn Kanji() -> impl IntoView {
                     </div>
                 </Show>
             </div>
+                    }
+                    .into_any()
+                }
+            }}
         </AppLayout>
     }
 }

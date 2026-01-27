@@ -29,35 +29,6 @@ pub fn BaseCard(
 }
 
 #[component]
-pub fn CardHeader(
-    title: String,
-    #[prop(optional)] subtitle: Option<String>,
-    #[prop(optional)] actions: Option<Children>,
-) -> impl IntoView {
-    view! {
-        <div class="card-header">
-            <div>
-                <h3 class="card-title">{title}</h3>
-                {subtitle.map(|sub| view! { <p class="card-subtitle">{sub}</p> })}
-            </div>
-
-            {actions
-                .map(|actions_children| {
-                    view! { <div class="flex gap-sm">{actions_children()}</div> }
-                })}
-        </div>
-    }
-}
-
-#[component]
-pub fn CardContent(
-    #[prop(into, optional)] _class: Option<String>,
-    children: Children,
-) -> impl IntoView {
-    view! { <div class="card-content">{children()}</div> }
-}
-
-#[component]
 pub fn CardActions(
     #[prop(into, optional)] _class: Option<String>,
     children: Children,
