@@ -190,7 +190,7 @@ pub struct GrammarCardData {
     pub jlpt_level: JapaneseLevel,
     pub examples: Vec<GrammarExample>,
     pub status: crate::components::cards::vocab_card::CardStatus,
-    pub next_review: chrono::NaiveDate,
+    pub next_review: chrono::NaiveDateTime,
     pub is_in_knowledge_set: bool,
 }
 
@@ -224,9 +224,9 @@ fn get_stability_color(stability: u32) -> &'static str {
     }
 }
 
-fn format_date(date: chrono::NaiveDate) -> String {
+fn format_date(date: chrono::NaiveDateTime) -> String {
     let today = chrono::Local::now().date_naive();
-    let days_diff = (date - today).num_days();
+    let days_diff = (date.date() - today).num_days();
 
     match days_diff {
         0 => "Сегодня".to_string(),

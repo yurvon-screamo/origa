@@ -1,26 +1,71 @@
 use crate::components::layout::app_layout::{AppLayout, PageHeader};
 use crate::services::user_service::UserService;
 use leptos::prelude::*;
-use origa::domain::JapaneseLevel;
+use leptos::task::spawn_local;
+use origa::domain::{JapaneseLevel, NativeLanguage};
 
 #[component]
 pub fn Profile() -> impl IntoView {
     let user_service = use_context::<UserService>().expect("UserService not provided");
+    let user_id = ulid::Ulid::new(); // TODO: получить реальный user_id
 
     let profile_resource = LocalResource::new({
         let service = user_service.clone();
+        let user_id_local = user_id;
         move || {
             let service = service.clone();
-            async move {
-                let user_id = ulid::Ulid::new();
-                service.get_user_profile(user_id).await.ok()
-            }
+            async move { service.get_user_profile(user_id_local).await.ok() }
         }
     });
 
     let profile = Signal::derive(move || profile_resource.get().flatten());
 
-    let (selected_level, set_selected_level) = signal(JapaneseLevel::N5);
+    // Инициализировать selected_level из профиля
+    let (selected_level, set_selected_level_signal) = signal(JapaneseLevel::N5);
+
+    // Обновить selected_level когда профиль загрузится
+    Effect::new(move |_| {
+        if let Some(p) = profile.get() {
+            set_selected_level_signal.set(p.current_level);
+        }
+    });
+
+    // Обработчик изменения уровня JLPT с сохранением
+    let handle_level_change = Callback::new({
+        let user_service = user_service.clone();
+        let user_id_local = user_id;
+        let set_level = set_selected_level_signal;
+        move |level: JapaneseLevel| {
+            set_level.set(level);
+            let service = user_service.clone();
+            spawn_local(async move {
+                let _ = service.update_japanese_level(user_id_local, level).await;
+            });
+        }
+    });
+
+    // Инициализировать selected_language из профиля
+    let (selected_language, set_selected_language) = signal("ru".to_string());
+
+    // Обработчик изменения языка интерфейса
+    let handle_language_change = {
+        let user_service = user_service.clone();
+        let user_id_local = user_id;
+        Callback::new(move |lang: String| {
+            set_selected_language.set(lang.clone());
+            let language = match lang.as_str() {
+                "ru" => NativeLanguage::Russian,
+                "en" => NativeLanguage::English,
+                _ => NativeLanguage::Russian,
+            };
+            let service = user_service.clone();
+            spawn_local(async move {
+                let _ = service
+                    .update_native_language(user_id_local, language)
+                    .await;
+            });
+        })
+    };
 
     let handle_logout = move |_| {
         // TODO: Реализовать logout
@@ -59,6 +104,7 @@ pub fn Profile() -> impl IntoView {
                         .into_iter()
                         .map(|level| {
                             let level_clone = level;
+                            let _handle_level = handle_level_change;
                             view! {
                                 <button
                                     class=move || {
@@ -68,7 +114,7 @@ pub fn Profile() -> impl IntoView {
                                             "jlpt-button"
                                         }
                                     }
-                                    on:click=move |_| set_selected_level.set(level_clone)
+                                    on:click=move |_| handle_level_change.run(level_clone)
                                 >
                                     {level.to_string()}
                                 </button>
@@ -94,7 +140,14 @@ pub fn Profile() -> impl IntoView {
                 <h3 class="section-title">Настройки</h3>
                 <div class="settings-item">
                     <span>Язык интерфейса</span>
-                    <select class="settings-select">
+                    <select
+                        class="settings-select"
+                        prop:value=move || selected_language.get()
+                        on:change=move |ev| {
+                            let value = event_target_value(&ev);
+                            handle_language_change.run(value);
+                        }
+                    >
                         <option value="ru">Русский</option>
                         <option value="en">English</option>
                     </select>

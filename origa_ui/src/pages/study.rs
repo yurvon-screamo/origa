@@ -4,11 +4,12 @@ use crate::components::interactive::flash_card::{
 };
 use crate::components::interactive::navigation::{StudyNavigation, StudySettings};
 use crate::components::interactive::next_button::NextButton;
-use crate::components::interactive::progress_bar::{CircularProgress, CircularSize, StepIndicator};
+use crate::components::interactive::progress_bar::StepIndicator;
 use crate::components::interactive::rating_buttons::RatingButtons;
 use crate::services::study_service::StudyService;
 use codee::string::JsonSerdeCodec;
 use leptos::prelude::*;
+use leptos::task::spawn_local;
 use leptos_use::storage::use_local_storage;
 use origa::domain::Rating;
 
@@ -39,8 +40,9 @@ pub fn StudySession() -> impl IntoView {
         .map(|href| href.contains("fixation"))
         .unwrap_or(false);
 
+    let study_service_clone = study_service.clone();
     let cards_resource = LocalResource::new(move || {
-        let service = study_service.clone();
+        let service = study_service_clone.clone();
         async move {
             let user_id = ulid::Ulid::new(); // TODO: получить реальный user_id
             if is_fixation {
@@ -54,8 +56,7 @@ pub fn StudySession() -> impl IntoView {
         }
     });
 
-    let study_cards =
-        Signal::derive(move || cards_resource.get().map(|r| r.clone()).unwrap_or_default());
+    let study_cards = Signal::derive(move || cards_resource.get().unwrap_or_default());
 
     let total_cards = Signal::derive(move || study_cards.get().len());
     let current_card =
@@ -74,10 +75,28 @@ pub fn StudySession() -> impl IntoView {
         }
     });
 
-    let handle_rate = Callback::new(move |rating: Rating| {
-        set_selected_rating.set(rating);
-        set_show_rating_result.set(true);
-    });
+    let handle_rate = {
+        let study_service = study_service.clone();
+        let current_card = current_card;
+        let (is_fixation_signal, _) = signal(is_fixation);
+        Callback::new(move |rating: Rating| {
+            set_selected_rating.set(rating);
+            set_show_rating_result.set(true);
+
+            // Сохранить оценку через сервис
+            if let Some(card) = current_card.get() {
+                let service = study_service.clone();
+                let card_id = card.card_id;
+                let user_id = ulid::Ulid::new(); // TODO: получить реальный user_id
+                let is_fixation_local = is_fixation_signal.get();
+                spawn_local(async move {
+                    let _ = service
+                        .rate_card(user_id, card_id, rating, is_fixation_local)
+                        .await;
+                });
+            }
+        })
+    };
 
     let handle_next = Callback::new(move |_| {
         let total = total_cards.get();
@@ -91,12 +110,30 @@ pub fn StudySession() -> impl IntoView {
         }
     });
 
-    let handle_complete_session = Callback::new(move |_| {
-        // Navigate to completion screen or dashboard
-        if let Some(window) = web_sys::window() {
-            let _ = window.location().set_href("/dashboard");
-        }
-    });
+    // Трекинг времени начала сессии
+    let (session_start_time, _) = signal(chrono::Utc::now().timestamp());
+
+    let handle_complete_session = {
+        let study_service = study_service.clone();
+        Callback::new(move |_| {
+            // Вычислить длительность сессии
+            let start = session_start_time.get();
+            let end = chrono::Utc::now().timestamp();
+            let duration_seconds = (end - start) as u64;
+
+            // Сохранить завершение сессии
+            let service = study_service.clone();
+            let user_id = ulid::Ulid::new(); // TODO: получить реальный user_id
+            spawn_local(async move {
+                let _ = service.complete_lesson(user_id, duration_seconds).await;
+            });
+
+            // Navigate to completion screen or dashboard
+            if let Some(window) = web_sys::window() {
+                let _ = window.location().set_href("/dashboard");
+            }
+        })
+    };
 
     let handle_show_settings = Callback::new(move |_| {
         set_show_settings.update(|s| *s = !*s);
@@ -307,50 +344,4 @@ pub fn StudySession() -> impl IntoView {
             </Show>
         </div>
     }
-}
-
-fn create_study_mocks() -> Vec<StudyCardWrapper> {
-    vec![
-        StudyCardWrapper {
-            card: StudyCard::Vocab(VocabCard {
-                japanese: "本".to_string(),
-                reading: "ほん".to_string(),
-                translation: "книга".to_string(),
-                examples: vec![
-                    crate::components::interactive::flash_card::VocabExample {
-                        japanese: "本を読みます".to_string(),
-                        reading: "ほんをよみます".to_string(),
-                        translation: "Я читаю книгу".to_string(),
-                    },
-                    crate::components::interactive::flash_card::VocabExample {
-                        japanese: "本を買います".to_string(),
-                        reading: "ほんをかいます".to_string(),
-                        translation: "Я покупаю книгу".to_string(),
-                    },
-                ],
-            }),
-        },
-        StudyCardWrapper {
-            card: StudyCard::Kanji(KanjiCard {
-                character: "日".to_string(),
-                stroke_count: 4,
-                meanings: vec!["день".to_string(), "солнце".to_string()],
-                onyomi: vec!["ニチ".to_string()],
-                kunyomi: vec!["ひ".to_string()],
-                radicals: vec![],
-            }),
-        },
-        StudyCardWrapper {
-            card: StudyCard::Grammar(GrammarCard {
-                pattern: "～てあげる".to_string(),
-                meaning: "Действовать от имени кого-либо".to_string(),
-                attachment_rules: "Глагол в форме て + 下さる".to_string(),
-                examples: vec![crate::components::interactive::flash_card::GrammarExample {
-                    grammar: "～てあげる".to_string(),
-                    sentence: "先生に本を貸してあげる。".to_string(),
-                    translation: "Даю книгу учителю".to_string(),
-                }],
-            }),
-        },
-    ]
 }
