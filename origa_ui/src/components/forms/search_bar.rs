@@ -1,4 +1,5 @@
 use leptos::prelude::*;
+use leptos_use::watch_debounced;
 
 #[component]
 pub fn SearchBar(
@@ -6,8 +7,13 @@ pub fn SearchBar(
     #[prop(into, optional)] value: Option<Signal<String>>,
     #[prop(into, optional)] on_change: Option<Callback<String>>,
     #[prop(into, optional)] on_clear: Option<Callback<()>>,
+    /// Debounce delay in milliseconds (default: 300ms)
+    #[prop(into, optional)]
+    debounce_ms: Option<f64>,
 ) -> impl IntoView {
     let placeholder_text = placeholder.unwrap_or_else(|| "Поиск...".to_string());
+    let debounce_delay = debounce_ms.unwrap_or(300.0);
+
     let (search_value, set_search_value) = value
         .map(|s| {
             // Create a local signal that syncs with the provided signal
@@ -16,16 +22,26 @@ pub fn SearchBar(
         })
         .unwrap_or_else(|| signal("".to_string()));
 
+    // Use leptos-use watch_debounced for better search performance
+    // This watches the search_value signal and triggers callback after debounce delay
+    let _ = watch_debounced(
+        move || search_value.get(),
+        move |new_value, _, _| {
+            if let Some(on_change) = on_change {
+                on_change.run(new_value.clone());
+            }
+        },
+        debounce_delay,
+    );
+
     let handle_input = move |ev| {
         let new_value = event_target_value(&ev);
-        set_search_value.set(new_value.clone());
-        if let Some(on_change) = on_change {
-            on_change.run(new_value);
-        }
+        set_search_value.set(new_value);
     };
 
     let handle_clear = move |_| {
         set_search_value.set("".to_string());
+        // Clear callback will be triggered by watch_debounced
         if let Some(on_clear) = on_clear {
             on_clear.run(());
         }

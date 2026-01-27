@@ -1,4 +1,5 @@
 use leptos::prelude::*;
+use leptos_use::on_click_outside;
 
 #[component]
 pub fn BottomSheet(
@@ -18,11 +19,15 @@ pub fn BottomSheet(
     // Call children() once outside the reactive closure
     let children_view = children();
 
-    let handle_overlay_click = move |_| {
-        if let Some(handler) = on_close {
-            handler.run(());
+    // Use leptos-use on_click_outside for cleaner outside click handling
+    let content_ref = NodeRef::<leptos::html::Div>::new();
+    let _ = on_click_outside(content_ref, move |_| {
+        if show.get() {
+            if let Some(handler) = on_close {
+                handler.run(());
+            }
         }
-    };
+    });
 
     let handle_close_click = move |_| {
         if let Some(handler) = on_close {
@@ -31,20 +36,17 @@ pub fn BottomSheet(
     };
 
     view! {
-        <div
-            class=move || {
-                if show.get() {
-                    "modal-overlay modal-visible"
-                } else {
-                    "modal-overlay modal-hidden"
-                }
+        <div class=move || {
+            if show.get() {
+                "modal-overlay modal-visible"
+            } else {
+                "modal-overlay modal-hidden"
             }
-            on:click=handle_overlay_click
-        >
+        }>
             <div
+                node_ref=content_ref
                 class="modal-content bottom-sheet"
                 style=format!("max-height: {}", max_height_style)
-                on:click=move |ev| ev.stop_propagation()
             >
                 {title_text
                     .map(|t| {
@@ -88,11 +90,15 @@ pub fn Modal(
     // Call children() once outside the reactive closure
     let children_view = children();
 
-    let handle_overlay_click = move |_| {
-        if let Some(handler) = on_close {
-            handler.run(());
+    // Use leptos-use on_click_outside for cleaner outside click handling
+    let content_ref = NodeRef::<leptos::html::Div>::new();
+    let _ = on_click_outside(content_ref, move |_| {
+        if show.get() {
+            if let Some(handler) = on_close {
+                handler.run(());
+            }
         }
-    };
+    });
 
     let handle_close_click = move |_| {
         if let Some(handler) = on_close {
@@ -101,20 +107,14 @@ pub fn Modal(
     };
 
     view! {
-        <div
-            class=move || {
-                if show.get() {
-                    "modal-overlay modal-visible"
-                } else {
-                    "modal-overlay modal-hidden"
-                }
+        <div class=move || {
+            if show.get() {
+                "modal-overlay modal-visible"
+            } else {
+                "modal-overlay modal-hidden"
             }
-            on:click=handle_overlay_click
-        >
-            <div
-                class=format!("modal-content {}", size_class)
-                on:click=move |ev| ev.stop_propagation()
-            >
+        }>
+            <div node_ref=content_ref class=format!("modal-content {}", size_class)>
                 {title_text
                     .map(|t| {
                         view! {
