@@ -1091,15 +1091,6 @@
   box-shadow: 0 0 0 var(--focus-offset) rgba(184, 84, 80, 0.2);
 }
 
-/* Textarea Specific */
-.input[type="textarea"],
-textarea.input {
-  resize: vertical;
-  min-height: 100px;
-  line-height: var(--line-height-relaxed);
-  font-family: var(--font-family-sans);
-}
-
 /* Input Error Message */
 .input-error {
   font-size: var(--font-size-xs);
