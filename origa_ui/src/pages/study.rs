@@ -6,6 +6,7 @@ use crate::components::interactive::navigation::{StudyNavigation, StudySettings}
 use crate::components::interactive::next_button::NextButton;
 use crate::components::interactive::progress_bar::{CircularProgress, CircularSize, StepIndicator};
 use crate::components::interactive::rating_buttons::RatingButtons;
+use crate::services::study_service::StudyService;
 use codee::string::JsonSerdeCodec;
 use leptos::prelude::*;
 use leptos_use::storage::use_local_storage;
@@ -29,10 +30,36 @@ pub fn StudySession() -> impl IntoView {
         use_local_storage::<bool, JsonSerdeCodec>("origa_show_answers");
     let (show_settings, set_show_settings) = signal(false);
 
-    // Mock data - will be replaced with real data from use cases
-    let study_cards = create_study_mocks();
-    let total_cards = study_cards.len();
-    let current_card = Signal::derive(move || study_cards.get(current_card_index.get()).cloned());
+    // Получить сервис из контекста
+    let study_service = use_context::<StudyService>().expect("StudyService not provided");
+
+    // Создать resource для загрузки карточек
+    let is_fixation = web_sys::window()
+        .and_then(|w| w.location().href().ok())
+        .map(|href| href.contains("fixation"))
+        .unwrap_or(false);
+
+    let cards_resource = LocalResource::new(move || {
+        let service = study_service.clone();
+        async move {
+            let user_id = ulid::Ulid::new(); // TODO: получить реальный user_id
+            if is_fixation {
+                service
+                    .get_fixation_cards(user_id)
+                    .await
+                    .unwrap_or_default()
+            } else {
+                service.get_lesson_cards(user_id).await.unwrap_or_default()
+            }
+        }
+    });
+
+    let study_cards =
+        Signal::derive(move || cards_resource.get().map(|r| r.clone()).unwrap_or_default());
+
+    let total_cards = Signal::derive(move || study_cards.get().len());
+    let current_card =
+        Signal::derive(move || study_cards.get().get(current_card_index.get()).cloned());
 
     // Actions
     let handle_back = move |_| {
@@ -42,17 +69,19 @@ pub fn StudySession() -> impl IntoView {
     };
 
     let handle_flip = Callback::new(move |_| {
-        set_show_answer.update(|shown| *shown = !*shown);
+        if !show_answer.get() {
+            set_show_answer.set(true);
+        }
     });
 
     let handle_rate = Callback::new(move |rating: Rating| {
         set_selected_rating.set(rating);
-        set_show_answer.set(true);
-        set_show_rating_result.set(false);
+        set_show_rating_result.set(true);
     });
 
     let handle_next = Callback::new(move |_| {
-        if current_card_index.get() < total_cards - 1 {
+        let total = total_cards.get();
+        if current_card_index.get() < total - 1 {
             set_current_card_index.set(current_card_index.get() + 1);
             set_show_answer.set(false);
             set_show_rating_result.set(false);
@@ -96,22 +125,31 @@ pub fn StudySession() -> impl IntoView {
                     <h1 class="session-title">{session_type}</h1>
                     <StepIndicator
                         current=Signal::derive(move || Some(current_card_index.get()))
-                        total=total_cards as u32
+                        total=total_cards.get() as u32
                         active=Signal::derive(move || !is_completed.get())
                     />
                 </div>
 
                 <div class="progress-section">
-                    <CircularProgress
-                        size=CircularSize::Small
-                        percentage=Signal::derive(move || {
-                            if total_cards == 0 {
-                                0.0
-                            } else {
-                                ((current_card_index.get() + 1) as f32 / total_cards as f32) * 100.0
-                            }
-                        })
-                    />
+                    <div class="linear-progress-container">
+                        <span class="progress-text">
+                            {move || format!("{} / {}", current_card_index.get() + 1, total_cards.get())}
+                        </span>
+                        <div class="linear-progress-bar">
+                            <div
+                                class="linear-progress-fill"
+                                style=move || {
+                                    let total = total_cards.get();
+                                    let percent = if total == 0 {
+                                        0.0
+                                    } else {
+                                        ((current_card_index.get() + 1) as f32 / total as f32) * 100.0
+                                    };
+                                    format!("width: {}%", percent)
+                                }
+                            />
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -125,15 +163,15 @@ pub fn StudySession() -> impl IntoView {
                 </div>
 
                 <div class="action-section">
-                    <Show when=move || !show_answer.get()>
+                    <Show when=move || show_answer.get() && !show_rating_result.get()>
                         <RatingButtons
                             on_rate=handle_rate
-                            show_result=show_rating_result.get()
+                            show_result=false
                             selected_rating=selected_rating.get()
                         />
                     </Show>
 
-                    <Show when=move || show_answer.get()>
+                    <Show when=move || show_rating_result.get()>
                         <div class="next-button-section">
                             <NextButton on_click=handle_next />
                         </div>
@@ -166,7 +204,7 @@ pub fn StudySession() -> impl IntoView {
             // Study Navigation
             <StudyNavigation
                 show_next=!is_completed.get() && !show_answer.get()
-                    && current_card_index.get() < total_cards - 1
+                    && current_card_index.get() < total_cards.get() - 1
                 show_skip=false
                 next_disabled=show_answer.get() || is_completed.get()
                 audio_enabled=audio_enabled.get()
@@ -232,17 +270,17 @@ pub fn StudySession() -> impl IntoView {
                         <div class="completion-icon">{"🎉"}</div>
                         <h2 class="completion-title">Сессия завершена!</h2>
                         <p class="completion-subtitle">
-                            Отличная работа! Вы изучили {total_cards}
+                            Отличная работа! Вы изучили {move || total_cards.get()}
                             карточек
                         </p>
                         <div class="completion-stats">
                             <div class="stat-item">
                                 <span class="stat-label">Изучено:</span>
-                                <span class="stat-value">{total_cards}</span>
+                                <span class="stat-value">{move || total_cards.get()}</span>
                             </div>
                             <div class="stat-item">
                                 <span class="stat-label">Время:</span>
-                                <span class="stat-value">~{total_cards * 2}мин</span>
+                                <span class="stat-value">{move || format!("~{}мин", total_cards.get() * 2)}</span>
                             </div>
                         </div>
                     </div>

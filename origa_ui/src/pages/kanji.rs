@@ -196,7 +196,7 @@ pub fn Kanji() -> impl IntoView {
                 } else {
                     view! {
                         <PageHeader
-                            title="Кандзи".to_string()
+                            title=Signal::derive(|| "Кандзи".to_string())
                             subtitle="Изучите японские иероглифы"
                                 .to_string()
                         />
