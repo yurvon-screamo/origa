@@ -158,7 +158,7 @@ impl KanjiService {
             character: kanji_char.clone(),
             stroke_count: 0, // Not available in KanjiInfo
             grade_level: format!("JLPT {}", kanji_info.jlpt()),
-            jlpt_level: kanji_info.jlpt().clone(),
+            jlpt_level: *kanji_info.jlpt(),
             meanings: if meanings.is_empty() {
                 vec![kanji_info.description().to_string()]
             } else {
@@ -233,9 +233,9 @@ impl KanjiService {
         // Calculate stability based on how many times the kanji has been reviewed
         // This is a simplified version
         let kanji_char = kanji_info.kanji().to_string();
-        if user_cards.values().find(|card| {
-            matches!(card, Card::Kanji(kanji_card) if kanji_card.kanji().text() == kanji_char)
-        }).is_some() {
+        if user_cards.values().any(|card| {
+            matches!(&card, Card::Kanji(kanji_card) if kanji_card.kanji().text() == kanji_char)
+        }) {
             // If the user has this kanji, calculate stability based on review history
             // For now, return a moderate stability
             50
