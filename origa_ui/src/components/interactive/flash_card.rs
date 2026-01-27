@@ -1,4 +1,5 @@
 use leptos::prelude::*;
+use leptos_use::use_timeout_fn;
 
 #[component]
 pub fn FlashCard(
@@ -91,21 +92,25 @@ fn VocabCardContent(vocab: VocabCard) -> impl IntoView {
     let (is_playing, set_is_playing) = signal(false);
     let vocab_reading = vocab.reading.clone();
     let vocab_japanese = vocab.japanese.clone();
+    let vocab_japanese_for_log = vocab_japanese.clone();
+
+    // Use leptos-use timeout for audio completion simulation
+    let audio_timeout = use_timeout_fn(
+        move |_: ()| {
+            set_is_playing.set(false);
+            web_sys::console::log_1(
+                &format!("Audio completed for: {}", vocab_japanese_for_log).into(),
+            );
+        },
+        2000.0,
+    );
 
     let handle_audio = move |_| {
         set_is_playing.set(true);
         // In a real app, this would play actual audio
         web_sys::console::log_1(&format!("Playing audio for: {}", vocab_japanese.clone()).into());
-
-        // Simulate audio completion
-        let vocab_japanese_clone = vocab_japanese.clone();
-        let timeout = gloo_timers::callback::Timeout::new(2000, move || {
-            set_is_playing.set(false);
-            web_sys::console::log_1(
-                &format!("Audio completed for: {}", vocab_japanese_clone).into(),
-            );
-        });
-        timeout.forget();
+        // Start the timeout to simulate audio completion
+        (audio_timeout.start)(());
     };
 
     view! {
