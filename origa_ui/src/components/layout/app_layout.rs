@@ -55,8 +55,7 @@ pub fn PageHeader(
                                 "←"
                             </button>
                         }
-                    })}
-                <div class="flex flex-col">
+                    })} <div class="flex flex-col">
                     <h1 class="page-title">{title}</h1>
                     {subtitle.map(|sub| view! { <p class="page-subtitle">{sub}</p> })}
                 </div>

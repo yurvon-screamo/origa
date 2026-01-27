@@ -19,15 +19,9 @@ pub fn FloatingActionButton(
     let label_str = label.clone().unwrap_or_else(|| "Действие".to_string());
 
     view! {
-        <button
-            class=format!("fab {}", variant_class)
-            on:click=handle_click
-            aria-label=label_str
-        >
+        <button class=format!("fab {}", variant_class) on:click=handle_click aria-label=label_str>
             <span class="fab-icon">{icon_str}</span>
-            {label.map(|lbl| view! {
-                <span class="fab-label">{lbl}</span>
-            })}
+            {label.map(|lbl| view! { <span class="fab-label">{lbl}</span> })}
         </button>
     }
 }
