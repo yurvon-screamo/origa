@@ -112,56 +112,6 @@ pub fn Input(
     }
 }
 
-#[component]
-pub fn Textarea(
-    #[prop(into, optional)] label: Option<String>,
-    #[prop(into, optional)] placeholder: Option<String>,
-    #[prop(into, optional)] value: Option<Signal<String>>,
-    #[prop(into, optional)] on_change: Option<Callback<String>>,
-    #[prop(into, optional)] error: Option<String>,
-    #[prop(into, optional)] disabled: Option<bool>,
-    #[prop(into, optional)] rows: Option<u32>,
-) -> impl IntoView {
-    let (input_value, set_input_value) = value
-        .map(|s| {
-            let (read, write) = signal(s.get());
-            (read, write)
-        })
-        .unwrap_or_else(|| signal(String::new()));
-    let is_disabled = disabled.unwrap_or(false);
-    let error_clone = error.clone();
-    let has_error = Signal::derive(move || error_clone.is_some());
-    let placeholder_val = placeholder.unwrap_or_default();
-    let rows_val = rows.unwrap_or(4);
-
-    let handle_input = move |ev| {
-        let new_value = event_target_value(&ev);
-        set_input_value.set(new_value.clone());
-        if let Some(handler) = on_change {
-            handler.run(new_value);
-        }
-    };
-
-    view! {
-        <div class="input-group">
-            {label.map(|lbl| view! { <label class="input-label">{lbl}</label> })}
-            <div>
-                <textarea
-                    class=move || {
-                        format!("input {}", if has_error.get() { "input-error" } else { "" })
-                    }
-                    placeholder=placeholder_val
-                    prop:value=move || input_value.get()
-                    on:input=handle_input
-                    disabled=is_disabled
-                    rows=rows_val
-                />
-            </div>
-            {error.map(|err| view! { <div class="input-error">{err}</div> })}
-        </div>
-    }
-}
-
 #[derive(Clone, Copy, PartialEq, Default)]
 pub enum InputType {
     #[default]

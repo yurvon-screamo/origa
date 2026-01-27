@@ -213,7 +213,6 @@ pub struct KanjiCardData {
 pub struct RadicalInfo {
     pub character: String,
     pub meaning: String,
-    pub strokes: u8,
 }
 
 fn get_jlpt_color(level: &JapaneseLevel) -> &'static str {
