@@ -26,7 +26,7 @@ Workspace structure:
 # Web development (hot reload)
 cd origa_ui && cargo trunk watch
 
-# Desktop development
+# Desktop development  
 cd tauri && cargo tauri dev
 
 # Release builds
@@ -39,16 +39,30 @@ cargo build --workspace
 # Run all tests
 cargo test --workspace
 
-# Run a single test
+# Run single tests by name
+cargo test create_card_use_case_should_create_card_and_save_to_database
+cargo test rate_card_use_case_should_add_review_and_update_schedule
 cargo test -p origa create_card_use_case_should_create_card_and_save_to_database
-cargo test -p origa rate_card_use_case_should_add_review_and_update_schedule
+
+# Run integration tests
 cargo test --test create_card
 cargo test --test rate_card
+cargo test --test delete_card
+cargo test --test edit_card
+cargo test --test start_study_session
+
+# Run tests with filters
+cargo test --workspace card
+cargo test --workspace use_case
+cargo test --workspace should_
 
 # Lint and format
 cargo clippy --workspace -- -D warnings
 cargo fmt --check --all
 cargo fmt --all
+
+# Documentation
+cargo doc --workspace --no-deps --open
 ```
 
 ## Code Style Guidelines
@@ -116,9 +130,11 @@ use origa::domain::{User, Card};
 ### Testing
 
 - Use `rstest` for parameterized tests when needed
+- Use `#[tokio::test]` for async tests
 - Keep tests isolated; use temporary directories for database tests
 - Use descriptive test names: `should_create_card_and_persist_to_database`
 - Group test utilities in `tests/mod.rs`
+- Test utilities available: `create_test_repository()`, `create_test_user()`
 
 ### Database (rusqlite)
 
@@ -145,7 +161,7 @@ use origa::domain::{User, Card};
 - `tokio = { version = "1.48", features = ["rt", "macros", "time"] }` - Async runtime
 - `rusqlite = { version = "0.38", features = ["bundled"] }` - SQLite with bundled build
 - `rs-fsrs = "1.2"` - Spaced repetition algorithm
-- `lindera = { version = "1.4", features = ["embedded-unidic"] }` - Japanese tokenizer
+- `lindera = { version = "2.0", features = ["embed-unidic"] }` - Japanese tokenizer
 - `async-openai-wasm` - OpenAI API client (WASM compatible)
 - `dioxus-heroicons` - Icon components
 - `rstest` - Testing framework
@@ -154,7 +170,7 @@ use origa::domain::{User, Card};
 
 1. **Debug logging**: Use `tracing::info!`, `tracing::debug!` macros
 2. **Database inspection**: SQLite files are in user config directory; use `sqlite3` CLI to inspect
-3. **Web development**: Run `cargo leptos watch` in `origa_ui/` directory for hot reload
+3. **Web development**: Run `cargo trunk watch` in `origa_ui/` directory for hot reload
 4. **Desktop**: Build with Tauri for native window, tray icon, menu bar integration
 5. **State management**: Use Leptos signals for local state, context provider for global state
 
@@ -162,7 +178,8 @@ use origa::domain::{User, Card};
 
 - Add new dependencies to root Cargo.toml [workspace.dependencies]
 - Create use cases in `origa/src/application/use_cases/` and add to mod.rs
-- Add UI views in `origa_ui/src/views/` and routes in main.rs
+- Add UI views in `origa_ui/src/pages/` and routes in main.rs
+- Add UI components in `origa_ui/src/components/`
 
 ## Leptos Resources
 

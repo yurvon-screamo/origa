@@ -1,0 +1,64 @@
+use leptos::prelude::*;
+use crate::components::layout::tab_bar::TabBar;
+
+#[component]
+pub fn AppLayout(
+    children: Children,
+    #[prop(optional)] active_tab: Option<String>,
+) -> impl IntoView {
+    let current_tab = Signal::derive(move || {
+        active_tab.unwrap_or_else(|| "dashboard".to_string())
+    });
+    
+    view! {
+        <div class="mobile-container">
+            <main class="page">
+                {children()}
+            </main>
+            
+            // Bottom tab navigation (mobile only)
+            <TabBar active_tab=current_tab />
+        </div>
+    }
+}
+
+#[component]
+pub fn PageHeader(
+    title: String,
+    #[prop(optional)] subtitle: Option<String>,
+    #[prop(optional)] show_back: Option<bool>,
+    #[prop(optional)] back_action: Option<Callback<()>>,
+) -> impl IntoView {
+    let navigate = leptos_router::use_navigate();
+    
+    let handle_back = move || {
+        if let Some(action) = back_action {
+            action.run(());
+        } else if show_back.unwrap_or(false) {
+            navigate("/", Default::default());
+        }
+    };
+    
+    view! {
+        <header class="page-header">
+            <div class="flex items-center">
+                {show_back.unwrap_or(false).then(|| view! {
+                    <button 
+                        class="icon-button me-3"
+                        on:click=move |_| handle_back()
+                        aria-label="Назад"
+                    >
+                        "←"
+                    </button>
+                })}
+                
+                <div class="flex flex-col">
+                    <h1 class="page-title">{title}</h1>
+                    {subtitle.map(|sub| view! {
+                        <p class="page-subtitle">{sub}</p>
+                    })}
+                </div>
+            </div>
+        </header>
+    }
+}
