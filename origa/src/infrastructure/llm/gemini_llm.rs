@@ -82,7 +82,7 @@ impl GeminiLlm {
     }
 }
 
-#[async_trait]
+#[async_trait(?Send)]
 impl LlmService for GeminiLlm {
     async fn generate_text(&self, question: &str) -> Result<String, OrigaError> {
         self.make_request(question).await

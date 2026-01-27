@@ -30,7 +30,7 @@ impl FileSystemUserRepository {
     }
 }
 
-#[async_trait::async_trait]
+#[async_trait(?Send)]
 impl UserRepository for FileSystemUserRepository {
     async fn list(&self) -> Result<Vec<User>, OrigaError> {
         let mut users = vec![];
