@@ -66,6 +66,8 @@ rstest = "0.26"
 leptos = { version = "0.8", features = ["csr"] }
 leptos_meta = { version = "0.8" }
 leptos_router = { version = "0.8" }
+leptos-use = { version = "0.18" }
+codee = { version = "0.3", features = ["json_serde"] }
 console_log = "1"
 log = "0.4"
 console_error_panic_hook = "0.1"

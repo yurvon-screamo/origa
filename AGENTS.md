@@ -6,7 +6,8 @@ This document provides guidelines for agentic coding assistants working in this 
 
 Origa is a Japanese language learning application built with Rust, using:
 
-- **Leptos 0.7** for reactive web UI with CSR (Client-Side Rendering)
+- **Leptos 0.8** for reactive web UI with CSR (Client-Side Rendering)
+- **leptos-use 0.18** for essential Leptos utilities (storage, debounce, timeouts, click outside, etc.)
 - **Thaw 0.4** for UI component library
 - **Tauri 2** for native desktop application wrapper
 - **SQLite** with rusqlite for data persistence
@@ -119,11 +120,160 @@ use origa::domain::{User, Card};
 - Avoid blocking in async code; use async equivalents
 - Handle errors explicitly; don't silently ignore them
 
-### Leptos 0.7 Specific Guidelines
+### Leptos-Use Integration
+
+**leptos-use** is a collection of essential Leptos utilities inspired by React-Use/VueUse. It provides reactive hooks for common browser APIs and UI patterns.
+
+#### Available Utilities
+
+The project uses the following leptos-use utilities:
+
+- **`use_local_storage`** - Reactive localStorage with automatic persistence (used for study settings)
+- **`use_timeout_fn`** - Wrapper for `setTimeout` with controls (used for audio playback simulation)
+- **`on_click_outside`** - Listen for clicks outside an element (used in modals and bottom sheets)
+- **`watch_debounced`** - Debounced version of `watch` (used in search bars for performance)
+
+#### Usage Examples
+
+**✅ CORRECT: Using `use_local_storage` for persistent settings**
+
+```rust
+use codee::string::JsonSerdeCodec;
+use leptos_use::storage::use_local_storage;
+
+#[component]
+pub fn StudySession() -> impl IntoView {
+    // Settings persist across browser sessions
+    let (audio_enabled, set_audio_enabled, _) =
+        use_local_storage::<bool, JsonSerdeCodec>("origa_audio_enabled");
+    let (auto_advance, set_auto_advance, _) =
+        use_local_storage::<bool, JsonSerdeCodec>("origa_auto_advance");
+    
+    // Use signals normally - they sync with localStorage automatically
+    view! {
+        <button on:click=move |_| set_audio_enabled.set(!audio_enabled.get())>
+            {move || if audio_enabled.get() { "🔊" } else { "🔇" }}
+        </button>
+    }
+}
+```
+
+**✅ CORRECT: Using `use_timeout_fn` for delayed actions**
+
+```rust
+use leptos_use::use_timeout_fn;
+
+#[component]
+pub fn AudioButton() -> impl IntoView {
+    let (is_playing, set_is_playing) = signal(false);
+    
+    let audio_timeout = use_timeout_fn(
+        move |_: ()| {
+            set_is_playing.set(false);
+        },
+        2000.0,  // 2 seconds
+    );
+    
+    let handle_play = move |_| {
+        set_is_playing.set(true);
+        (audio_timeout.start)(());  // Start timeout
+    };
+    
+    view! {
+        <button on:click=handle_play disabled=is_playing.get()>
+            {move || if is_playing.get() { "⏸" } else { "🔊" }}
+        </button>
+    }
+}
+```
+
+**✅ CORRECT: Using `on_click_outside` for modals**
+
+```rust
+use leptos_use::on_click_outside;
+
+#[component]
+pub fn Modal(
+    show: Signal<bool>,
+    #[prop(into, optional)] on_close: Option<Callback<()>>,
+    children: Children,
+) -> impl IntoView {
+    let content_ref = NodeRef::<leptos::html::Div>::new();
+    
+    // Automatically close when clicking outside
+    let _ = on_click_outside(content_ref, move |_| {
+        if show.get() {
+            if let Some(handler) = on_close {
+                handler.run(());
+            }
+        }
+    });
+    
+    view! {
+        <div class=move || if show.get() { "modal-visible" } else { "modal-hidden" }>
+            <div node_ref=content_ref class="modal-content">
+                {children()}
+            </div>
+        </div>
+    }
+}
+```
+
+**✅ CORRECT: Using `watch_debounced` for search performance**
+
+```rust
+use leptos_use::watch_debounced;
+
+#[component]
+pub fn SearchBar(
+    #[prop(into, optional)] on_change: Option<Callback<String>>,
+) -> impl IntoView {
+    let (search_value, set_search_value) = signal("".to_string());
+    
+    // Debounce search callback to avoid excessive filtering
+    let _ = watch_debounced(
+        move || search_value.get(),
+        move |new_value, _, _| {
+            if let Some(on_change) = on_change {
+                on_change.run(new_value.clone());
+            }
+        },
+        300.0,  // 300ms debounce delay
+    );
+    
+    view! {
+        <input
+            type="text"
+            prop:value=move || search_value.get()
+            on:input=move |ev| set_search_value.set(event_target_value(&ev))
+        />
+    }
+}
+```
+
+#### When to Use leptos-use
+
+- ✅ **Use** for localStorage/sessionStorage persistence
+- ✅ **Use** for debouncing/throttling reactive updates
+- ✅ **Use** for timeout/interval management
+- ✅ **Use** for click-outside detection
+- ✅ **Use** for window/document access (SSR-safe)
+- ❌ **Don't use** for simple state that doesn't need persistence or special behavior
+- ❌ **Don't use** when Leptos built-ins (`signal`, `create_memo`, etc.) are sufficient
+
+#### Reference Examples
+
+See these files for leptos-use patterns:
+- `origa_ui/src/pages/study.rs` - **`use_local_storage` for persistent settings**
+- `origa_ui/src/components/interactive/flash_card.rs` - **`use_timeout_fn` for audio simulation**
+- `origa_ui/src/components/forms/bottom_sheet.rs` - **`on_click_outside` for modal closing**
+- `origa_ui/src/components/forms/search_bar.rs` - **`watch_debounced` for search performance**
+
+### Leptos 0.8 Specific Guidelines
 
 #### Basic Patterns
 
-- Use `signal()`, `create_memo`, `create_resource` for state management (note: Leptos 0.7 uses `signal()` not `create_signal`)
+- Use `signal()`, `create_memo`, `create_resource` for state management (note: Leptos 0.8 uses `signal()` not `create_signal`)
 - Components are functions with `#[component]` attribute receiving props as arguments
 - Use `view!` macro for UI rendering
 - Access signal values with `.get()` and set with `.set()`
@@ -218,7 +368,7 @@ view! {
 **❌ WRONG: Cannot call components as functions with multiple arguments**
 
 ```rust
-// This DOES NOT WORK in Leptos 0.7
+// This DOES NOT WORK in Leptos 0.8
 MyComponent(
     label,
     value,
@@ -416,7 +566,7 @@ view! {
 
 #### Callback and Signal Types are Copy
 
-**Important**: In Leptos 0.7, `Callback<T>`, `Signal<T>`, `ReadSignal<T>`, and `WriteSignal<T>` implement `Copy`.
+**Important**: In Leptos 0.8, `Callback<T>`, `Signal<T>`, `ReadSignal<T>`, and `WriteSignal<T>` implement `Copy`.
 
 **✅ CORRECT: No need to clone**
 
@@ -748,7 +898,9 @@ See these files for correct patterns:
 
 ## Key Dependencies
 
-- `leptos = "0.7"` - UI framework with router
+- `leptos = "0.8"` - UI framework with router
+- `leptos-use = "0.18"` - Collection of essential Leptos utilities (storage, debounce, timeouts, etc.)
+- `codee = { version = "0.3", features = ["json_serde"] }` - Codec support for leptos-use storage
 - `tokio = { version = "1.48", features = ["rt", "macros", "time"] }` - Async runtime
 - `rusqlite = { version = "0.38", features = ["bundled"] }` - SQLite with bundled build
 - `rs-fsrs = "1.2"` - Spaced repetition algorithm
@@ -777,3 +929,5 @@ See these files for correct patterns:
 - Official docs: <https://book.leptos.dev/>
 - Router: <https://book.leptos.dev/view/09_router.html>
 - State management: <https://book.leptos.dev/view/02_reactivity.html>
+- leptos-use docs: <https://leptos-use.rs/> - Essential utilities for Leptos
+- leptos-use functions: <https://leptos-use.rs/functions.html> - Complete API reference

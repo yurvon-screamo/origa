@@ -6,7 +6,9 @@ use crate::components::interactive::navigation::{StudyNavigation, StudySettings}
 use crate::components::interactive::next_button::NextButton;
 use crate::components::interactive::progress_bar::{CircularProgress, CircularSize, StepIndicator};
 use crate::components::interactive::rating_buttons::RatingButtons;
+use codee::string::JsonSerdeCodec;
 use leptos::prelude::*;
+use leptos_use::storage::use_local_storage;
 use origa::domain::Rating;
 
 #[component]
@@ -18,10 +20,13 @@ pub fn StudySession() -> impl IntoView {
     let (is_completed, set_is_completed) = signal(false);
     let (show_rating_result, set_show_rating_result) = signal(false);
 
-    // Settings state
-    let (audio_enabled, set_audio_enabled) = signal(true);
-    let (auto_advance, set_auto_advance) = signal(false);
-    let (show_answers, set_show_answers) = signal(false);
+    // Settings state - persisted with use_local_storage from leptos-use
+    let (audio_enabled, set_audio_enabled, _) =
+        use_local_storage::<bool, JsonSerdeCodec>("origa_audio_enabled");
+    let (auto_advance, set_auto_advance, _) =
+        use_local_storage::<bool, JsonSerdeCodec>("origa_auto_advance");
+    let (show_answers, set_show_answers, _) =
+        use_local_storage::<bool, JsonSerdeCodec>("origa_show_answers");
     let (show_settings, set_show_settings) = signal(false);
 
     // Mock data - will be replaced with real data from use cases
