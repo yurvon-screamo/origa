@@ -167,126 +167,10 @@
 }
 
 /* ========== Animation Utility Classes ========== */
-
-/* Entrance Classes */
-.animate-slide-up {
-  animation: slideUp var(--duration-normal) var(--ease-out);
-}
-
-.animate-slide-down {
-  animation: slideDown var(--duration-normal) var(--ease-out);
-}
-
-.animate-slide-left {
-  animation: slideLeft var(--duration-normal) var(--ease-out);
-}
-
-.animate-slide-right {
-  animation: slideRight var(--duration-normal) var(--ease-out);
-}
-
-.animate-fade-in {
-  animation: fadeIn var(--duration-normal) var(--ease-out);
-}
-
-.animate-fade-out {
-  animation: fadeOut var(--duration-normal) var(--ease-out);
-}
-
-.animate-scale-in {
-  animation: scaleIn var(--duration-fast) var(--ease-out);
-}
-
-.animate-bounce {
-  animation: bounce var(--duration-slow) var(--ease-bounce);
-}
-
-.animate-pulse {
-  animation: pulse var(--duration-slow) var(--ease-in-out) infinite;
-}
-
-.animate-shake {
-  animation: shake var(--duration-normal) var(--ease-in-out);
-}
+/* Note: Animation utility classes removed - not used in codebase */
 
 /* ========== Card Animations ========== */
-
-/* Card Flip Animation */
-.card-flip-container {
-  perspective: 1000px;
-  width: 100%;
-  height: 100%;
-}
-
-.card-flip {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  transform-style: preserve-3d;
-  transition: transform var(--duration-slow) var(--ease-out);
-  will-change: transform;
-  transform: translateZ(0);
-  backface-visibility: hidden;
-}
-
-.card-flip.flipped {
-  transform: rotateY(180deg);
-}
-
-.card-face {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  backface-visibility: hidden;
-  border-radius: var(--radius-md);
-  background: var(--color-bg-surface);
-  border: 1px solid var(--color-border);
-  box-shadow: var(--shadow-md);
-}
-
-.card-face-front {
-  z-index: 2;
-  transform: rotateY(0deg);
-}
-
-.card-face-back {
-  transform: rotateY(180deg);
-}
-
-/* Swipe Animation */
-.swipe-card {
-  position: absolute;
-  width: calc(100% - var(--space-lg));
-  height: 100%;
-  left: var(--space-md);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
-  transition: transform var(--duration-fast) var(--ease-out);
-  cursor: grab;
-  transform: translateZ(0);
-  will-change: transform;
-  backface-visibility: hidden;
-}
-
-.swipe-card.dragging {
-  cursor: grabbing;
-  transition: none;
-  z-index: var(--z-raised);
-}
-
-.swipe-card.swipe-left {
-  transform: translateX(-150%) rotate(-20deg);
-  opacity: 0;
-}
-
-.swipe-card.swipe-right {
-  transform: translateX(150%) rotate(20deg);
-  opacity: 0;
-}
-
-.swipe-card.return-to-center {
-  transition: transform var(--duration-normal) var(--ease-bounce);
-}
+/* Note: Card flip and swipe animations removed - not used in codebase */
 
 /* ========== Button Animations ========== */
 
@@ -506,23 +390,7 @@
 }
 
 /* ========== Loading States ========== */
-
-.skeleton {
-  background: linear-gradient(90deg, var(--color-bg-surface) 25%, var(--color-bg-surface-variant) 50%, var(--color-bg-surface) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-  border-radius: var(--radius-sm);
-}
-
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-
-  100% {
-    background-position: 200% 0;
-  }
-}
+/* Note: Skeleton loader removed - not used in codebase */
 
 .loading-spinner {
   width: 24px;
@@ -535,14 +403,7 @@
 }
 
 /* ========== Error and Success Animations ========== */
-
-.error-shake {
-  animation: shake var(--duration-normal) var(--ease-in-out);
-}
-
-.success-bounce {
-  animation: bounce var(--duration-normal) var(--ease-bounce);
-}
+/* Note: Error and success animation classes removed - not used in codebase */
 
 /* ========== Reduced Motion Support ========== */
 @media (prefers-reduced-motion: reduce) {
@@ -556,13 +417,5 @@
     scroll-behavior: auto !important;
   }
 
-  .animate-slide-up,
-  .animate-slide-down,
-  .animate-slide-left,
-  .animate-slide-right,
-  .animate-scale-in,
-  .animate-bounce,
-  .animate-pulse {
-    animation: none !important;
-  }
+  /* Animation utility classes removed */
 }
