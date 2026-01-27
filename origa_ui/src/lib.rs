@@ -11,6 +11,7 @@ mod services;
 use crate::pages::dashboard::Dashboard;
 use crate::pages::grammar::Grammar;
 use crate::pages::kanji::Kanji;
+use crate::pages::profile::Profile;
 use crate::pages::study::StudySession;
 use crate::pages::vocabulary::Vocabulary;
 use crate::services::app_services::{AppServices, ServicesProvider};
@@ -45,16 +46,7 @@ pub fn App() -> impl IntoView {
                     <Route path=path!("/kanji") view=Kanji />
                     <Route path=path!("/grammar") view=Grammar />
                     <Route path=path!("/study") view=StudySession />
-                    <Route
-                        path=path!("/profile")
-                        view=|| {
-                            view! {
-                                <div class="mobile-container">
-                                    "Профиль - В разработке"
-                                </div>
-                            }
-                        }
-                    />
+                    <Route path=path!("/profile") view=Profile />
                 </Routes>
             </Router>
         </ServicesProvider>

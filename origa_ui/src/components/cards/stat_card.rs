@@ -4,7 +4,7 @@ use leptos::prelude::*;
 #[component]
 pub fn StatCard(
     title: String,
-    value: String,
+    #[prop(into)] value: Signal<String>,
     #[prop(optional)] trend: Option<String>,
     #[prop(optional)] show_history: Option<bool>,
     #[prop(optional)] highlight: Option<bool>,
@@ -43,7 +43,7 @@ pub fn StatCard(
                         })}
                 </div>
 
-                <div class="stat-value">{value}</div>
+                <div class="stat-value">{move || value.get()}</div>
 
                 {trend
                     .map(|trend_val| {
@@ -70,26 +70,32 @@ pub fn StatCard(
 #[component]
 pub fn StudyButton(
     button_type: StudyButtonType,
-    #[prop(optional)] count: Option<u32>,
+    #[prop(into, optional)] count: Option<Signal<u32>>,
     #[prop(optional)] on_click: Option<Callback<()>>,
 ) -> impl IntoView {
-    let (title, subtitle, icon, color_class) = match button_type {
-        StudyButtonType::Lesson => (
-            "Урок",
-            count
-                .map(|c| format!("{} новых карточек", c))
-                .unwrap_or_else(|| "Начать изучение".to_string()),
-            "📚",
-            "button-primary",
-        ),
-        StudyButtonType::Fixation => (
-            "Закрепление",
-            count
-                .map(|c| format!("{} карточек к повторению", c))
-                .unwrap_or_else(|| "Повторить".to_string()),
-            "🔄",
-            "button-secondary",
-        ),
+    let count_clone = count.clone();
+    let subtitle = Signal::derive(move || {
+        let count_val = count_clone.as_ref().map(|c| c.get()).unwrap_or(0);
+        match button_type {
+            StudyButtonType::Lesson => {
+                if count_val > 0 {
+                    format!("{} новых карточек", count_val)
+                } else {
+                    "Начать изучение".to_string()
+                }
+            }
+            StudyButtonType::Fixation => {
+                if count_val > 0 {
+                    format!("{} карточек к повторению", count_val)
+                } else {
+                    "Повторить".to_string()
+                }
+            }
+        }
+    });
+    let (title, icon, color_class) = match button_type {
+        StudyButtonType::Lesson => ("Урок", "📚", "button-primary"),
+        StudyButtonType::Fixation => ("Закрепление", "🔄", "button-secondary"),
     };
 
     let handle_click = move |_| {
@@ -106,7 +112,7 @@ pub fn StudyButton(
             <span class="study-button-icon">{icon}</span>
             <div class="study-button-content">
                 <div class="study-button-title">{title}</div>
-                <div class="study-button-subtitle">{subtitle}</div>
+                <div class="study-button-subtitle">{move || subtitle.get()}</div>
             </div>
         </button>
     }

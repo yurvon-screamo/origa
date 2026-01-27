@@ -26,6 +26,19 @@ pub fn FlashCard(
                     )
                     on:click=handle_flip
                 >
+                    <div class="card-type-indicator">
+                        {move || {
+                            let card_type = match card.get() {
+                                Some(wrapper) => match &wrapper.card {
+                                    StudyCard::Vocab(_) => "📚 Слово",
+                                    StudyCard::Kanji(_) => "🈁 Кандзи",
+                                    StudyCard::Grammar(_) => "📝 Грамматика",
+                                },
+                                None => "",
+                            };
+                            card_type
+                        }}
+                    </div>
                     <div class="flash-card-face flash-card-front">
                         {move || {
                             let result: leptos::prelude::AnyView = card

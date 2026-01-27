@@ -68,7 +68,7 @@ pub fn Grammar() -> impl IntoView {
     view! {
         <AppLayout active_tab="grammar".to_string()>
             <PageHeader
-                title="Грамматика".to_string()
+                title=Signal::derive(|| "Грамматика".to_string())
                 subtitle="Изучите японские грамматические конструкции"
                     .to_string()
             />
@@ -162,6 +162,7 @@ fn create_mocks() -> Vec<GrammarCardData> {
             attachment_rules: "Глагол в форме て + 下さる".to_string(),
             difficulty: 25,
             difficulty_text: "Легко".to_string(),
+            stability: 0,
             jlpt_level: JapaneseLevel::N5,
             examples: vec![
                 GrammarExample {
@@ -188,6 +189,7 @@ fn create_mocks() -> Vec<GrammarCardData> {
             attachment_rules: "Существительное + から".to_string(),
             difficulty: 35,
             difficulty_text: "Средне".to_string(),
+            stability: 50,
             jlpt_level: JapaneseLevel::N5,
             examples: vec![
                 GrammarExample {
@@ -215,6 +217,7 @@ fn create_mocks() -> Vec<GrammarCardData> {
                 .to_string(),
             difficulty: 60,
             difficulty_text: "Сложно".to_string(),
+            stability: 30,
             jlpt_level: JapaneseLevel::N4,
             examples: vec![GrammarExample {
                 grammar: "～なければならない".to_string(),
@@ -233,6 +236,7 @@ fn create_mocks() -> Vec<GrammarCardData> {
             attachment_rules: "Глагол в форме はず + には + いられない".to_string(),
             difficulty: 75,
             difficulty_text: "Очень сложно".to_string(),
+            stability: 80,
             jlpt_level: JapaneseLevel::N3,
             examples: vec![GrammarExample {
                 grammar: "～はずにはいられない".to_string(),
@@ -251,6 +255,7 @@ fn create_mocks() -> Vec<GrammarCardData> {
             attachment_rules: "Глагол в.Dictionary-форме + ざるを得ない".to_string(),
             difficulty: 85,
             difficulty_text: "Экспертно".to_string(),
+            stability: 0,
             jlpt_level: JapaneseLevel::N2,
             examples: vec![GrammarExample {
                 grammar: "～ざるを得ない".to_string(),

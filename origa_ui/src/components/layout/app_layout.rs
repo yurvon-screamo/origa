@@ -25,7 +25,7 @@ pub fn AppLayout(
 
 #[component]
 pub fn PageHeader(
-    title: String,
+    #[prop(into)] title: Signal<String>,
     #[prop(optional)] subtitle: Option<String>,
     #[prop(optional)] show_back: Option<bool>,
     #[prop(optional)] back_action: Option<Callback<()>>,
@@ -55,8 +55,8 @@ pub fn PageHeader(
                                 "←"
                             </button>
                         }
-                    })} <div class="flex flex-col">
-                    <h1 class="page-title">{title}</h1>
+                    })}                 <div class="flex flex-col">
+                    <h1 class="page-title">{move || title.get()}</h1>
                     {subtitle.map(|sub| view! { <p class="page-subtitle">{sub}</p> })}
                 </div>
             </div>

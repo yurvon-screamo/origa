@@ -75,6 +75,23 @@ pub fn GrammarCard(
                         <span class="difficulty-text">{card.difficulty_text}</span>
                     </div>
                 </div>
+
+                <div class="detail-section">
+                    <h5 class="detail-heading">Стабильность:</h5>
+                    <div class="difficulty-display">
+                        <div
+                            class="progress-bar stability"
+                            style=format!(
+                                "--progress: {}%; --color: {}",
+                                card.stability,
+                                get_stability_color(card.stability)
+                            )
+                        >
+                            <div class="progress-fill"></div>
+                        </div>
+                        <span class="difficulty-text">{format!("{}%", card.stability)}</span>
+                    </div>
+                </div>
             </div>
 
             <div class="grammar-examples">
@@ -169,6 +186,7 @@ pub struct GrammarCardData {
     pub attachment_rules: String,
     pub difficulty: u32,
     pub difficulty_text: String,
+    pub stability: u32,
     pub jlpt_level: JapaneseLevel,
     pub examples: Vec<GrammarExample>,
     pub status: crate::components::cards::vocab_card::CardStatus,
@@ -193,6 +211,17 @@ fn render_difficulty_stars(difficulty: u32) -> String {
         _ => "⭐⭐⭐⭐⭐",
     };
     stars.to_string()
+}
+
+fn get_stability_color(stability: u32) -> &'static str {
+    match stability {
+        0..=20 => "#b85450",   // Red - Low
+        21..=40 => "#b08d57",  // Yellow
+        41..=60 => "#4a6fa5",  // Blue
+        61..=80 => "#66a182",  // Light green
+        81..=100 => "#5a8c5a", // Green - High
+        _ => "#666666",        // Gray
+    }
 }
 
 fn format_date(date: chrono::NaiveDate) -> String {

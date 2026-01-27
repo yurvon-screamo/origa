@@ -3,6 +3,7 @@ use crate::components::forms::create_vocab_modal::{CreateVocabularyData, CreateV
 use crate::components::forms::search_bar::{FilterChip, FilterChips, SearchBar};
 use crate::components::interactive::floating_button::{FabVariant, FloatingActionButton};
 use crate::components::layout::app_layout::{AppLayout, PageHeader};
+use crate::services::vocabulary_service::VocabularyService;
 use leptos::prelude::*;
 
 #[component]
@@ -14,19 +15,45 @@ pub fn Vocabulary() -> impl IntoView {
     // Modal state
     let (show_create_modal, set_show_create_modal) = signal(false);
 
-    // Mock data - will be replaced with real data from use cases
-    let mock_vocabulary = create_mocks();
+    let vocabulary_service =
+        use_context::<VocabularyService>().expect("VocabularyService not provided");
 
-    // Filter chips data
-    let filter_chips = Signal::derive(move || {
-        let chips = vec![
-            FilterChip::new("all", "Все", "📚").with_count(156),
-            FilterChip::new("new", "Новые", "🆕").with_count(33),
-            FilterChip::new("difficult", "Сложные", "😰").with_count(12),
-            FilterChip::new("in_progress", "В процессе", "📖").with_count(34),
-            FilterChip::new("mastered", "Изученные", "✅").with_count(89),
-        ];
-        chips
+    let vocabulary_resource = LocalResource::new({
+        let service = vocabulary_service.clone();
+        move || {
+            let service = service.clone();
+            async move {
+                let user_id = ulid::Ulid::new(); // TODO: получить реальный user_id
+                service
+                    .get_user_vocabulary(user_id)
+                    .await
+                    .unwrap_or_default()
+            }
+        }
+    });
+
+    let vocabulary_list = Signal::derive(move || {
+        vocabulary_resource
+            .get()
+            .map(|r| r.clone())
+            .unwrap_or_default()
+    });
+
+    // Динамические filter chips
+    let filter_chips = Signal::derive({
+        let service = vocabulary_service.clone();
+        move || {
+            let cards = vocabulary_list.get();
+            let stats = service.get_vocabulary_stats(&cards);
+            vec![
+                FilterChip::new("all", "Все", "📚").with_count(stats.total as u32),
+                FilterChip::new("new", "Новые", "🆕").with_count(stats.new as u32),
+                FilterChip::new("difficult", "Сложные", "😰").with_count(stats.difficult as u32),
+                FilterChip::new("in_progress", "В процессе", "📖")
+                    .with_count(stats.in_progress as u32),
+                FilterChip::new("mastered", "Изученные", "✅").with_count(stats.mastered as u32),
+            ]
+        }
     });
 
     // Filter vocabulary based on search and filter
@@ -34,7 +61,8 @@ pub fn Vocabulary() -> impl IntoView {
         let filter = selected_filter.get();
         let search = search_query.get().to_lowercase();
 
-        mock_vocabulary
+        vocabulary_list
+            .get()
             .iter()
             .filter(|vocab| {
                 // Apply status filter
@@ -99,7 +127,7 @@ pub fn Vocabulary() -> impl IntoView {
     view! {
         <AppLayout active_tab="vocabulary".to_string()>
             <PageHeader
-                title="Слова".to_string()
+                title=Signal::derive(|| "Слова".to_string())
                 subtitle="Ваш словарный запас".to_string()
             />
 
