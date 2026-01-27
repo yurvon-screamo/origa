@@ -86,7 +86,6 @@ impl Default for HttpDuolingoClient {
 impl HttpDuolingoClient {
     pub fn new() -> Self {
         let client = reqwest::Client::builder()
-            .timeout(Duration::from_secs(30))
             .build()
             .expect("Failed to create HTTP client");
 
@@ -94,7 +93,7 @@ impl HttpDuolingoClient {
     }
 }
 
-#[async_trait]
+#[async_trait(?Send)]
 impl DuolingoClient for HttpDuolingoClient {
     async fn get_words(&self, jwt_token: &str) -> Result<Vec<DuolingoWord>, OrigaError> {
         let user_id = extract_user_id_from_jwt(jwt_token)?;
@@ -173,6 +172,7 @@ async fn get_user_profile(
 
     let response = client
         .get(&url)
+        .timeout(Duration::from_secs(30))
         .header("authorization", format!("Bearer {}", jwt_token))
         .header("User-Agent", "curl/8.16.0")
         .header("Accept", "*/*")

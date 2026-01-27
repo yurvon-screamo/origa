@@ -12,19 +12,14 @@ readme.workspace = true
 # System
 tokio.workspace = true
 async-trait.workspace = true
-futures.workspace = true
-indicatif.workspace = true
 base64.workspace = true
 toml.workspace = true
 tempfile.workspace = true
 serde_json.workspace = true
 reqwest.workspace = true
-ordered-float.workspace = true
 zip.workspace = true
 rusqlite.workspace = true
 regex.workspace = true
-libz-sys.workspace = true
-flate2.workspace = true
 rand.workspace = true
 getrandom = { version = "0.2.16", features = ["js"] }
 
@@ -45,5 +40,3 @@ lindera.workspace = true
 
 [dev-dependencies]
 rstest.workspace = true
-
-

@@ -35,7 +35,7 @@ impl HttpMigiiClient {
     }
 }
 
-#[async_trait]
+#[async_trait(?Send)]
 impl MigiiClient for HttpMigiiClient {
     async fn get_words(
         &self,

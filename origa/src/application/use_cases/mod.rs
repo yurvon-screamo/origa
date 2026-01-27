@@ -6,7 +6,8 @@ mod delete_card;
 mod generate_card_content;
 mod get_user_info;
 mod grammar_info;
-mod import_anki_pack;
+// TODO: Implement import_anki_pack
+// mod import_anki_pack;
 mod import_well_known_set;
 mod kanji_info;
 mod kanji_list;
@@ -26,7 +27,8 @@ pub use delete_card::*;
 pub use generate_card_content::*;
 pub use get_user_info::*;
 pub use grammar_info::*;
-pub use import_anki_pack::*;
+// TODO: Implement import_anki_pack
+// pub use import_anki_pack::*;
 pub use import_well_known_set::*;
 pub use kanji_info::*;
 pub use kanji_list::*;

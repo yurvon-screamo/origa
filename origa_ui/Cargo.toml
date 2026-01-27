@@ -21,7 +21,6 @@ console_error_panic_hook.workspace = true
 ulid.workspace = true
 chrono.workspace = true
 web-sys.workspace = true
-gloo-timers.workspace = true
 
 [dev-dependencies]
 wasm-bindgen.workspace = true
