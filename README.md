@@ -22,7 +22,6 @@ Builded with Rust only.
 * Learning grammar with FSRS algorithm
 * Learning kanji with FSRS algorithm
 * Generation of translation for the flashcards
-* Generation of examples for flashcards
 * Generation of furigana for the text
 * Extraction kanji from the flashcards
 * Show radicals for the kanji

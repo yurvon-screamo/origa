@@ -273,12 +273,6 @@ pub struct VocabCard {
 }
 
 #[derive(Clone)]
-pub struct VocabExample {
-    pub japanese: String,
-    pub translation: String,
-}
-
-#[derive(Clone)]
 pub struct KanjiCard {
     pub character: String,
     pub meanings: Vec<String>,
