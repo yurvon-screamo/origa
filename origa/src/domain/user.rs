@@ -4,7 +4,6 @@ use ulid::Ulid;
 
 use crate::domain::{
     Card, JapaneseLevel, KnowledgeSet, MemoryState, NativeLanguage, OrigaError, Rating, StudyCard,
-    UserSettings,
     score_content::{ScoreContentResult, score_content},
 };
 
@@ -14,7 +13,8 @@ pub struct User {
     username: String,
     native_language: NativeLanguage,
     current_japanese_level: JapaneseLevel,
-    settings: UserSettings,
+    duolingo_jwt_token: Option<String>,
+    telegram_user_id: Option<u64>,
     knowledge_set: KnowledgeSet,
 }
 
@@ -30,7 +30,8 @@ impl User {
             knowledge_set: KnowledgeSet::new(),
             current_japanese_level,
             native_language,
-            settings: UserSettings::empty(),
+            duolingo_jwt_token: None,
+            telegram_user_id: None,
         }
     }
 
@@ -46,20 +47,36 @@ impl User {
         &self.current_japanese_level
     }
 
+    pub fn set_current_japanese_level(&mut self, current_japanese_level: JapaneseLevel) {
+        self.current_japanese_level = current_japanese_level
+    }
+
     pub fn native_language(&self) -> &NativeLanguage {
         &self.native_language
+    }
+
+    pub fn set_native_language(&mut self, native_language: NativeLanguage) {
+        self.native_language = native_language
     }
 
     pub fn knowledge_set(&self) -> &KnowledgeSet {
         &self.knowledge_set
     }
 
-    pub fn settings(&self) -> &UserSettings {
-        &self.settings
+    pub fn duolingo_jwt_token(&self) -> Option<&str> {
+        self.duolingo_jwt_token.as_deref()
     }
 
-    pub fn settings_mut(&mut self) -> &mut UserSettings {
-        &mut self.settings
+    pub fn set_duolingo_jwt_token(&mut self, token: Option<String>) {
+        self.duolingo_jwt_token = token;
+    }
+
+    pub fn telegram_user_id(&self) -> Option<&u64> {
+        self.telegram_user_id.as_ref()
+    }
+
+    pub fn set_telegram_user_id(&mut self, telegram_user_id: Option<u64>) {
+        self.telegram_user_id = telegram_user_id;
     }
 
     pub fn rate_card(

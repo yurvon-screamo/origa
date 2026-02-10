@@ -199,7 +199,7 @@ impl UserRepository for FirebaseUserRepository {
 
         let user = users
             .into_iter()
-            .find(|x| x.settings().telegram_user_id() == Some(telegram_id));
+            .find(|x| x.telegram_user_id() == Some(telegram_id));
 
         Ok(user)
     }

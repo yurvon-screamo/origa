@@ -107,22 +107,22 @@ impl UserRepository for FileSystemUserRepository {
 
         let user = users
             .into_iter()
-            .find(|x| x.settings().telegram_user_id() == Some(telegram_id));
+            .find(|x| x.telegram_user_id() == Some(telegram_id));
 
         Ok(user)
     }
 
-    async fn save(&self, _user: &User) -> Result<(), OrigaError> {
-        // let file_path = self.user_file_path(user.id());
-        // let json = serde_json::to_string_pretty(user).map_err(|e| OrigaError::RepositoryError {
-        //     reason: format!("Failed to serialize user: {}", e),
-        // })?;
+    async fn save(&self, user: &User) -> Result<(), OrigaError> {
+        let file_path = self.user_file_path(user.id());
+        let json = serde_json::to_string_pretty(user).map_err(|e| OrigaError::RepositoryError {
+            reason: format!("Failed to serialize user: {}", e),
+        })?;
 
-        // // fs::write(&file_path, json)
-        //     .await
-        //     .map_err(|e| OrigaError::RepositoryError {
-        //         reason: format!("Failed to write user file {}: {}", file_path.display(), e),
-        //     })?;
+        fs::write(&file_path, json)
+            .await
+            .map_err(|e| OrigaError::RepositoryError {
+                reason: format!("Failed to write user file {}: {}", file_path.display(), e),
+            })?;
 
         Ok(())
     }

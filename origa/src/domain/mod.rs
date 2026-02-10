@@ -6,7 +6,6 @@ mod japanese;
 mod knowledge;
 mod memory;
 mod score_content;
-mod settings;
 mod tokenizer;
 mod user;
 mod value_objects;
@@ -26,7 +25,6 @@ pub use knowledge::{
 };
 pub use memory::{Difficulty, MemoryHistory, MemoryState, Rating, ReviewLog, Stability};
 pub use score_content::ScoreContentResult;
-pub use settings::UserSettings;
 pub use tokenizer::{PartOfSpeech, TokenInfo, tokenize_text};
 pub use user::User;
 pub use value_objects::{Answer, JapaneseLevel, NativeLanguage, Question};

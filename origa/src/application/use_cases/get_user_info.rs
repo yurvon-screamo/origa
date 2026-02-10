@@ -11,6 +11,8 @@ pub struct UserProfile {
     pub current_japanese_level: JapaneseLevel,
     pub native_language: NativeLanguage,
     pub lesson_history: Vec<DailyHistoryItem>,
+    pub duolingo_jwt_token: Option<String>,
+    pub telegram_user_id: Option<u64>,
 }
 
 #[derive(Clone)]
@@ -36,6 +38,8 @@ impl<'a, R: UserRepository> GetUserInfoUseCase<'a, R> {
             current_japanese_level: *user.current_japanese_level(),
             native_language: user.native_language().clone(),
             lesson_history: user.knowledge_set().lesson_history().to_vec(),
+            duolingo_jwt_token: user.duolingo_jwt_token().map(|x| x.to_string()),
+            telegram_user_id: user.telegram_user_id().copied(),
         })
     }
 }
