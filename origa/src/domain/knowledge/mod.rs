@@ -8,7 +8,7 @@ pub use card::{Card, StudyCard};
 pub use daily_history::DailyHistoryItem;
 pub use grammar::GrammarRuleCard;
 pub use kanji::{ExampleKanjiWord, KanjiCard};
-pub use vocabulary::{ExamplePhrase, VocabularyCard};
+pub use vocabulary::VocabularyCard;
 
 use std::collections::HashMap;
 

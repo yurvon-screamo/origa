@@ -20,8 +20,8 @@ pub use furigana::furiganize_text;
 pub use grammar::{GRAMMAR_RULES, GrammarRule, GrammarRuleContent, get_rule_by_id};
 pub use japanese::{JapaneseChar, JapaneseText, filter_japanese_text};
 pub use knowledge::{
-    Card, DailyHistoryItem, ExampleKanjiWord, ExamplePhrase, GrammarRuleCard, KanjiCard,
-    KnowledgeSet, StudyCard, VocabularyCard,
+    Card, DailyHistoryItem, ExampleKanjiWord, GrammarRuleCard, KanjiCard, KnowledgeSet, StudyCard,
+    VocabularyCard,
 };
 pub use memory::{Difficulty, MemoryHistory, MemoryState, Rating, ReviewLog, Stability};
 pub use score_content::ScoreContentResult;
