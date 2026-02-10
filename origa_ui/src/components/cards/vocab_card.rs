@@ -41,7 +41,6 @@ pub fn VocabCard(
             <div class="vocab-header">
                 <div class="vocab-japanese">
                     <span class="japanese-character">{card.japanese}</span>
-                    <span class="japanese-reading">{card.reading}</span>
                 </div>
                 <StatusBadge status=card.status />
             </div>
@@ -125,7 +124,6 @@ pub fn StatusBadge(status: CardStatus) -> impl IntoView {
 pub struct VocabularyCardData {
     pub id: String,
     pub japanese: String,
-    pub reading: String,
     pub translation: String,
     pub status: CardStatus,
     pub difficulty: u32,

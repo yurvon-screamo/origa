@@ -24,7 +24,9 @@ impl StudyService {
         &self,
         user_id: Ulid,
     ) -> Result<Vec<StudyCardWrapper>, OrigaError> {
-        let repository = ApplicationEnvironment::get().get_repository().await?;
+        let repository = ApplicationEnvironment::get()
+            .get_firebase_repository()
+            .await?;
         let use_case = SelectCardsToLessonUseCase::new(repository);
         let cards_map = use_case.execute(user_id).await?;
 
@@ -41,7 +43,9 @@ impl StudyService {
         &self,
         user_id: Ulid,
     ) -> Result<Vec<StudyCardWrapper>, OrigaError> {
-        let repository = ApplicationEnvironment::get().get_repository().await?;
+        let repository = ApplicationEnvironment::get()
+            .get_firebase_repository()
+            .await?;
         let use_case = SelectCardsToFixationUseCase::new(repository);
         let cards_map = use_case.execute(user_id).await?;
 
@@ -61,7 +65,9 @@ impl StudyService {
         rating: Rating,
         is_fixation: bool,
     ) -> Result<(), OrigaError> {
-        let repository = ApplicationEnvironment::get().get_repository().await?;
+        let repository = ApplicationEnvironment::get()
+            .get_firebase_repository()
+            .await?;
         let srs_service = ApplicationEnvironment::get().get_srs_service().await?;
         let mode = if is_fixation {
             RateMode::FixationLesson
@@ -78,7 +84,9 @@ impl StudyService {
         user_id: Ulid,
         duration_seconds: u64,
     ) -> Result<(), OrigaError> {
-        let repository = ApplicationEnvironment::get().get_repository().await?;
+        let repository = ApplicationEnvironment::get()
+            .get_firebase_repository()
+            .await?;
         let use_case = CompleteLessonUseCase::new(repository);
         let duration = Duration::seconds(duration_seconds as i64);
         use_case.execute(user_id, duration).await
@@ -111,48 +119,27 @@ impl StudyService {
         _study_card: Option<&DomainStudyCard>,
     ) -> StudyCardWrapper {
         match card {
-            Card::Vocabulary(vocab) => {
-                // Получить reading через tokenizer
-                let reading = origa::domain::tokenize_text(vocab.word().text())
-                    .ok()
-                    .and_then(|tokens| tokens.first().cloned())
-                    .map(|token| token.phonological_surface_form().to_string())
-                    .unwrap_or_default();
-
-                StudyCardWrapper {
-                    card_id,
-                    card: StudyCard::Vocab(VocabCard {
-                        japanese: vocab.word().text().to_string(),
-                        reading,
-                        translation: vocab.meaning().text().to_string(),
-                        examples: vocab
-                            .example_phrases()
-                            .iter()
-                            .map(|ex| {
-                                let ex_reading = origa::domain::tokenize_text(ex.text())
-                                    .ok()
-                                    .and_then(|tokens| tokens.first().cloned())
-                                    .map(|token| token.phonological_surface_form().to_string())
-                                    .unwrap_or_default();
-                                VocabExample {
-                                    japanese: ex.text().to_string(),
-                                    reading: ex_reading,
-                                    translation: ex.translation().to_string(),
-                                }
-                            })
-                            .collect(),
-                    }),
-                }
-            }
+            Card::Vocabulary(vocab) => StudyCardWrapper {
+                card_id,
+                card: StudyCard::Vocab(VocabCard {
+                    japanese: vocab.word().text().to_string(),
+                    translation: vocab.meaning().text().to_string(),
+                    examples: vocab
+                        .example_phrases()
+                        .iter()
+                        .map(|ex| VocabExample {
+                            japanese: ex.text().to_string(),
+                            translation: ex.translation().to_string(),
+                        })
+                        .collect(),
+                }),
+            },
             Card::Kanji(kanji) => StudyCardWrapper {
                 card_id,
                 card: StudyCard::Kanji(KanjiCard {
                     character: kanji.kanji().text().to_string(),
-                    stroke_count: 0, // Not available
                     meanings: vec![kanji.description().text().to_string()],
-                    onyomi: vec![],   // Not available
-                    kunyomi: vec![],  // Not available
-                    radicals: vec![], // Not available
+                    radicals: vec![], // TODO: Get from kanji domain
                 }),
             },
             Card::Grammar(grammar) => StudyCardWrapper {
@@ -166,7 +153,6 @@ impl StudyService {
                         .map(|pos| format!("{:?}", pos))
                         .collect::<Vec<_>>()
                         .join(", "),
-                    examples: vec![], // Not available in GrammarRuleCard
                 }),
             },
         }

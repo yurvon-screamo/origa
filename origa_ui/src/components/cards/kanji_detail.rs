@@ -74,10 +74,6 @@ pub fn KanjiDetail(
                         >
                             {kanji.jlpt_level.to_string()}
                         </div>
-                        <div class="stroke-info">
-                            <span class="stroke-count">{kanji.stroke_count}черт</span>
-                            <span class="grade-level">{kanji.grade_level}</span>
-                        </div>
                     </div>
                 </div>
             </BaseCard>
@@ -102,58 +98,6 @@ pub fn KanjiDetail(
                 </div>
             </BaseCard>
 
-            // Readings section
-            <div class="readings-grid">
-                <BaseCard>
-                    <h3 class="subsection-heading">Onyomi (китайское чтение)</h3>
-                    <div class="readings-detail">
-                        {kanji
-                            .onyomi
-                            .iter()
-                            .enumerate()
-                            .map(|(i, reading)| {
-                                let romaji = reading.romaji.clone();
-                                let hiragana = reading.hiragana.clone();
-                                view! {
-                                    <div class="reading-detail-item">
-                                        <span class="reading-number">{i + 1}.</span>
-                                        <span class="reading-romaji">{romaji}</span>
-                                        <span class="reading-japanese">{hiragana}</span>
-                                    </div>
-                                }
-                            })
-                            .collect_view()}
-                    </div>
-                </BaseCard>
-
-                <BaseCard>
-                    <h3 class="subsection-heading">Kunyomi (японское чтение)</h3>
-                    <div class="readings-detail">
-                        {kanji
-                            .kunyomi
-                            .iter()
-                            .enumerate()
-                            .map(|(i, reading)| {
-                                let romaji = reading.romaji.clone();
-                                let hiragana = reading.hiragana.clone();
-                                let okurigana = reading.okurigana.clone();
-                                view! {
-                                    <div class="reading-detail-item">
-                                        <span class="reading-number">{i + 1}.</span>
-                                        <span class="reading-romaji">{romaji}</span>
-                                        <span class="reading-japanese">{hiragana}</span>
-                                        {okurigana
-                                            .map(|ok| {
-                                                view! { <span class="reading-okurigana">{ok}</span> }
-                                            })}
-                                    </div>
-                                }
-                            })
-                            .collect_view()}
-                    </div>
-                </BaseCard>
-            </div>
-
             // Radicals section
             <BaseCard>
                 <h2 class="section-heading">Радикалы</h2>
@@ -164,17 +108,11 @@ pub fn KanjiDetail(
                         .map(|radical| {
                             let character = radical.character.clone();
                             let meaning = radical.meaning.clone();
-                            let position = radical.position.clone();
-                            let stroke_count = radical.stroke_count;
                             view! {
                                 <div class="radical-detail-item">
                                     <div class="radical-display">
                                         <span class="radical-char">{character}</span>
                                         <span class="radical-meaning">{meaning}</span>
-                                    </div>
-                                    <div class="radical-meta">
-                                        <span class="radical-stroke">{stroke_count}черт</span>
-                                        <span class="radical-position">{position}</span>
                                     </div>
                                 </div>
                             }
@@ -192,17 +130,13 @@ pub fn KanjiDetail(
                         .iter()
                         .map(|example| {
                             let kanji = example.kanji.clone();
-                            let reading = example.reading.clone();
                             let meaning = example.meaning.clone();
-                            let romaji = example.romaji.clone();
                             view! {
                                 <div class="example-item">
                                     <div class="example-japanese">
                                         <span class="example-kanji">{kanji}</span>
-                                        <span class="example-reading">{reading}</span>
                                     </div>
                                     <div class="example-meaning">{meaning}</div>
-                                    <div class="example-romaji">{romaji}</div>
                                 </div>
                             }
                         })
@@ -260,45 +194,6 @@ pub fn KanjiDetail(
                 </BaseCard>
             </Show>
 
-            // Study hints
-            <BaseCard>
-                <h2 class="section-heading">Советы по изучению</h2>
-                <div class="study-hints">
-                    <div class="hint-item">
-                        <span class="hint-icon">{"💡"}</span>
-                        <div class="hint-content">
-                            <h4 class="hint-title">Мнемоника</h4>
-                            <p class="hint-text">{kanji.mnemonic_hint}</p>
-                        </div>
-                    </div>
-
-                    <div class="hint-item">
-                        <span class="hint-icon">{"✏"}</span>
-                        <div class="hint-content">
-                            <h4 class="hint-title">Порядок черт</h4>
-                            <p class="hint-text">{kanji.stroke_order_hint}</p>
-                        </div>
-                    </div>
-
-                    <div class="hint-item">
-                        <span class="hint-icon">{"🔗"}</span>
-                        <div class="hint-content">
-                            <h4 class="hint-title">Связанные кандзи</h4>
-                            <div class="related-kanji">
-                                {kanji
-                                    .related_kanji
-                                    .iter()
-                                    .map(|related| {
-                                        view! {
-                                            <span class="related-char">{related.clone()}</span>
-                                        }
-                                    })
-                                    .collect_view()}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </BaseCard>
         </div>
     }
 }
@@ -307,12 +202,8 @@ pub fn KanjiDetail(
 pub struct KanjiDetailData {
     pub id: String,
     pub character: String,
-    pub stroke_count: u8,
-    pub grade_level: String,
     pub jlpt_level: JapaneseLevel,
     pub meanings: Vec<String>,
-    pub onyomi: Vec<ReadingInfo>,
-    pub kunyomi: Vec<ReadingInfo>,
     pub radicals: Vec<RadicalDetail>,
     pub examples: Vec<ExampleInfo>,
     pub status: crate::components::cards::vocab_card::CardStatus,
@@ -320,32 +211,18 @@ pub struct KanjiDetailData {
     pub stability: u32,
     pub next_review: chrono::NaiveDateTime,
     pub is_in_knowledge_set: bool,
-    pub mnemonic_hint: String,
-    pub stroke_order_hint: String,
-    pub related_kanji: Vec<String>,
-}
-
-#[derive(Clone)]
-pub struct ReadingInfo {
-    pub romaji: String,
-    pub hiragana: String,
-    pub okurigana: Option<String>,
 }
 
 #[derive(Clone)]
 pub struct RadicalDetail {
     pub character: String,
     pub meaning: String,
-    pub stroke_count: u8,
-    pub position: String,
 }
 
 #[derive(Clone)]
 pub struct ExampleInfo {
     pub kanji: String,
-    pub reading: String,
     pub meaning: String,
-    pub romaji: String,
 }
 
 fn get_jlpt_color(level: &JapaneseLevel) -> &'static str {

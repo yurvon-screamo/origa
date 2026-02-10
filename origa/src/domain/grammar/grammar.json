@@ -1,0 +1,30 @@
+{
+    "grammar": [
+        {
+            "rule_id": "01D39ZY06FGSCTVN4T2V9PKHFA",
+            "level": "N5",
+            "content": {
+                "Russian": {
+                    "title": "Форма ～ましょう",
+                    "short_description": "Давай сделаем",
+                    "md_description": ""
+                },
+                "English": {
+                    "title": "Form ～ましょう",
+                    "short_description": "Давай сделаем",
+                    "md_description": ""
+                }
+            },
+            "format_map": {
+                "Verb": [
+                    {
+                        "VerbToMainView": {},
+                        "AddPostfix": {
+                            "postfix": "ましょう"
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}

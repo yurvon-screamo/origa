@@ -68,7 +68,7 @@ impl OpenAiLlm {
     }
 }
 
-#[async_trait(?Send)]
+#[async_trait]
 impl LlmService for OpenAiLlm {
     async fn generate_text(&self, question: &str) -> Result<String, OrigaError> {
         self.make_request(question).await

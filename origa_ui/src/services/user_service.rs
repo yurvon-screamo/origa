@@ -27,7 +27,9 @@ impl UserService {
 
     /// Получить профиль пользователя
     pub async fn get_user_profile(&self, user_id: Ulid) -> Result<UserProfileData, OrigaError> {
-        let repository = ApplicationEnvironment::get().get_repository().await?;
+        let repository = ApplicationEnvironment::get()
+            .get_firebase_repository()
+            .await?;
         let use_case = GetUserInfoUseCase::new(repository);
         let profile = use_case.execute(user_id).await?;
 
@@ -41,7 +43,9 @@ impl UserService {
 
     /// Получить статистику для dashboard
     pub async fn get_dashboard_stats(&self, user_id: Ulid) -> Result<DashboardStats, OrigaError> {
-        let repository = ApplicationEnvironment::get().get_repository().await?;
+        let repository = ApplicationEnvironment::get()
+            .get_firebase_repository()
+            .await?;
 
         // Получить все карточки пользователя
         let knowledge_use_case = KnowledgeSetCardsUseCase::new(repository);
@@ -53,6 +57,7 @@ impl UserService {
         let mut new_cards = 0;
         let mut difficult = 0;
 
+        // TODO: get from domain
         for study_card in &all_cards {
             let memory = study_card.memory();
             if memory.is_known_card() {
@@ -90,7 +95,9 @@ impl UserService {
         user_id: Ulid,
         level: JapaneseLevel,
     ) -> Result<(), OrigaError> {
-        let repository = ApplicationEnvironment::get().get_repository().await?;
+        let repository = ApplicationEnvironment::get()
+            .get_firebase_repository()
+            .await?;
         let use_case = UpdateUserProfileUseCase::new(repository);
         let request = UpdateUserProfileRequest {
             current_japanese_level: Some(level),
@@ -105,7 +112,9 @@ impl UserService {
         user_id: Ulid,
         language: NativeLanguage,
     ) -> Result<(), OrigaError> {
-        let repository = ApplicationEnvironment::get().get_repository().await?;
+        let repository = ApplicationEnvironment::get()
+            .get_firebase_repository()
+            .await?;
         let use_case = UpdateUserProfileUseCase::new(repository);
         let request = UpdateUserProfileRequest {
             current_japanese_level: None,

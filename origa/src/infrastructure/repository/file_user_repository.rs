@@ -1,5 +1,6 @@
 use crate::application::UserRepository;
 use crate::domain::{OrigaError, User};
+use async_trait::async_trait;
 use std::path::PathBuf;
 use tokio::fs;
 use ulid::Ulid;
@@ -30,7 +31,7 @@ impl FileSystemUserRepository {
     }
 }
 
-#[async_trait(?Send)]
+#[async_trait()]
 impl UserRepository for FileSystemUserRepository {
     async fn list(&self) -> Result<Vec<User>, OrigaError> {
         let mut users = vec![];
@@ -101,17 +102,27 @@ impl UserRepository for FileSystemUserRepository {
         Ok(Some(user))
     }
 
-    async fn save(&self, user: &User) -> Result<(), OrigaError> {
-        let file_path = self.user_file_path(user.id());
-        let json = serde_json::to_string_pretty(user).map_err(|e| OrigaError::RepositoryError {
-            reason: format!("Failed to serialize user: {}", e),
-        })?;
+    async fn find_by_telegram_id(&self, telegram_id: &u64) -> Result<Option<User>, OrigaError> {
+        let users = self.list().await?;
 
-        fs::write(&file_path, json)
-            .await
-            .map_err(|e| OrigaError::RepositoryError {
-                reason: format!("Failed to write user file {}: {}", file_path.display(), e),
-            })?;
+        let user = users
+            .into_iter()
+            .find(|x| x.settings().telegram_user_id() == Some(telegram_id));
+
+        Ok(user)
+    }
+
+    async fn save(&self, _user: &User) -> Result<(), OrigaError> {
+        // let file_path = self.user_file_path(user.id());
+        // let json = serde_json::to_string_pretty(user).map_err(|e| OrigaError::RepositoryError {
+        //     reason: format!("Failed to serialize user: {}", e),
+        // })?;
+
+        // // fs::write(&file_path, json)
+        //     .await
+        //     .map_err(|e| OrigaError::RepositoryError {
+        //         reason: format!("Failed to write user file {}: {}", file_path.display(), e),
+        //     })?;
 
         Ok(())
     }

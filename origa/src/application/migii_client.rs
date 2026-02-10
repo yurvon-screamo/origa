@@ -1,8 +1,6 @@
 use async_trait::async_trait;
 
-use crate::domain::{
-    OrigaError, {JapaneseLevel, NativeLanguage},
-};
+use crate::domain::{JapaneseLevel, OrigaError};
 
 #[derive(Debug, Clone)]
 pub struct MigiiWord {
@@ -16,11 +14,10 @@ pub struct MigiiMeaning {
     pub mean: String,
 }
 
-#[async_trait(?Send)]
+#[async_trait]
 pub trait MigiiClient: Send + Sync {
     async fn get_words(
         &self,
-        native_lang: &NativeLanguage,
         level: &JapaneseLevel,
         lesson: u32,
     ) -> Result<Vec<MigiiWord>, OrigaError>;

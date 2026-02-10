@@ -35,7 +35,7 @@ impl TokenInfo {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum PartOfSpeech {
     Verb,        // Глагол
     Noun,        // Существительное

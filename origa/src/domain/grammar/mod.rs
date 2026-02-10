@@ -1,104 +1,59 @@
-mod adjective_naru;
-mod adjective_past;
-mod nda;
-mod verb_forms;
-mod verb_hou_ga_ii;
-mod verb_mada_te_inai;
-mod verb_masenka;
-mod verb_mashou;
-mod verb_mashouka;
-mod verb_naide_kudasai;
-mod verb_ni_iku;
-mod verb_sugiru;
-mod verb_ta_koto_ga_aru;
-mod verb_tai;
-mod verb_tari;
-mod verb_te_iru;
-mod verb_te_kudasai;
-mod verb_te_wa_ikemasen;
-mod verb_tsumori;
+mod forms_adjective;
+mod forms_verb;
+mod store;
 
-use std::{collections::HashMap, sync::LazyLock};
+pub use store::{GRAMMAR_RULES, get_rule_by_id};
+
+use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 use ulid::Ulid;
 
 use crate::domain::{
     OrigaError,
-    grammar::verb_mashou::VerbMashouRule,
+    grammar::{
+        forms_adjective::adjective_remove_postfix,
+        forms_verb::{to_main_view, to_te_form},
+    },
     tokenizer::PartOfSpeech,
     value_objects::{JapaneseLevel, NativeLanguage},
 };
 
-pub static GRAMMAR_RULES: LazyLock<Vec<Box<dyn GrammarRule>>> = LazyLock::new(|| {
-    vec![
-        // // Существующие правила
-        // Box::new(んだRule {}),
-        // Box::new(AdjectivePastRule {}),
-        // // Глагольные формы
-        // Box::new(VerbMasenkaRule {}),
-        Box::new(VerbMashouRule::new()),
-        // Box::new(VerbMashoukaRule {}),
-        // Box::new(VerbTeKudasaiRule {}),
-        // Box::new(VerbTeWaIkemasenRule {}),
-        // Box::new(VerbTeIruRule {}),
-        // Box::new(VerbNiIkuRule {}),
-        // Box::new(VerbNaideKudasaiRule {}),
-        // Box::new(VerbMadaTeInaiRule {}),
-        // Box::new(VerbTaiRule {}),
-        // Box::new(VerbTariRule {}),
-        // Box::new(VerbTaKotoGaAruRule {}),
-        // Box::new(VerbSugiruRule {}),
-        // Box::new(VerbHouGaIiRule {}),
-        // // Конструкции с прилагательными
-        // Box::new(AdjectiveNaruRule {}),
-        // // Конструкции намерения
-        // Box::new(ConstructionTsumoriRule {}),
-    ]
-});
-
-pub fn get_rule_by_id(rule_id: &Ulid) -> Option<&'static dyn GrammarRule> {
-    GRAMMAR_RULES
-        .iter()
-        .find(|x| x.info().rule_id() == rule_id)
-        .map(|x| x.as_ref())
-}
-
-pub trait GrammarRule: Send + Sync {
-    fn info(&self) -> &GrammarRuleInfo;
-    fn format(&self, word: &str, part_of_speech: &PartOfSpeech) -> Result<String, OrigaError>;
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct GrammarRuleInfo {
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GrammarRule {
     rule_id: Ulid,
     level: JapaneseLevel,
-    apply_to: Vec<PartOfSpeech>,
     content: HashMap<NativeLanguage, GrammarRuleContent>,
+    format_map: HashMap<PartOfSpeech, Vec<FormatAction>>,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GrammarRuleContent {
     title: String,
     short_description: String,
     md_description: String,
 }
 
-impl GrammarRuleInfo {
-    pub fn new(
-        rule_id: Ulid,
-        level: JapaneseLevel,
-        apply_to: Vec<PartOfSpeech>,
-        content: HashMap<NativeLanguage, GrammarRuleContent>,
-    ) -> Self {
-        Self {
-            rule_id,
-            level,
-            apply_to,
-            content,
-        }
-    }
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum FormatAction {
+    AdjectiveRemovePostfix,
 
+    VerbToTeForm,
+    VerbToMainView,
+
+    ReplacePostfix {
+        old_postfix: String,
+        new_postfix: String,
+    },
+    AddPostfix {
+        postfix: String,
+    },
+    RemovePostfix {
+        postfix: String,
+    },
+}
+
+impl GrammarRule {
     pub fn rule_id(&self) -> &Ulid {
         &self.rule_id
     }
@@ -107,12 +62,45 @@ impl GrammarRuleInfo {
         &self.level
     }
 
-    pub fn apply_to(&self) -> &[PartOfSpeech] {
-        &self.apply_to
-    }
-
     pub fn content(&self, lang: &NativeLanguage) -> &GrammarRuleContent {
         &self.content[lang]
+    }
+
+    pub fn apply_to(&self) -> Vec<PartOfSpeech> {
+        self.format_map.keys().cloned().collect()
+    }
+
+    pub fn format(
+        &self,
+        source_word: &str,
+        part_of_speech: &PartOfSpeech,
+    ) -> Result<String, OrigaError> {
+        let rules = self
+            .format_map
+            .get(part_of_speech)
+            .ok_or(OrigaError::GrammarFormatError {
+                reason: "Not supported part of speech".to_string(),
+            })?;
+
+        let result = rules
+            .iter()
+            .try_fold(source_word.to_string(), |word, rule| match rule {
+                FormatAction::AdjectiveRemovePostfix => {
+                    adjective_remove_postfix(&word, part_of_speech)
+                }
+                FormatAction::VerbToTeForm => Ok(to_te_form(&word)),
+                FormatAction::VerbToMainView => Ok(to_main_view(&word)),
+                FormatAction::AddPostfix { postfix } => Ok(word + postfix),
+                FormatAction::ReplacePostfix {
+                    old_postfix,
+                    new_postfix,
+                } => Ok(word.trim_end_matches(old_postfix).to_string() + new_postfix),
+                FormatAction::RemovePostfix { postfix } => {
+                    Ok(word.trim_end_matches(postfix).to_string())
+                }
+            })?;
+
+        Ok(result)
     }
 }
 

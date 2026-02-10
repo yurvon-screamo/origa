@@ -175,7 +175,7 @@ impl FirebaseUserRepository {
     }
 }
 
-#[async_trait(?Send)]
+#[async_trait]
 impl UserRepository for FirebaseUserRepository {
     async fn list(&self) -> Result<Vec<User>, OrigaError> {
         let url = self.collection_url();
@@ -192,6 +192,16 @@ impl UserRepository for FirebaseUserRepository {
         }
 
         Ok(users)
+    }
+
+    async fn find_by_telegram_id(&self, telegram_id: &u64) -> Result<Option<User>, OrigaError> {
+        let users = self.list().await?;
+
+        let user = users
+            .into_iter()
+            .find(|x| x.settings().telegram_user_id() == Some(telegram_id));
+
+        Ok(user)
     }
 
     async fn find_by_id(&self, user_id: Ulid) -> Result<Option<User>, OrigaError> {
@@ -242,7 +252,9 @@ impl UserRepository for FirebaseUserRepository {
             .patch(&url)
             .json(&document)
             .timeout(Duration::from_secs(30));
-        let _response: FirestoreDocument = self.make_authenticated_request(request).await?;
+
+        let response: FirestoreDocument = self.make_authenticated_request(request).await?;
+        dbg!(response);
 
         Ok(())
     }

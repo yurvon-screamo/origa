@@ -1,9 +1,8 @@
-use crate::domain::OrigaError;
 use crate::domain::dictionary::{KANJI_DICTIONARY, KanjiInfo};
-use crate::domain::grammar::GrammarRule;
 use crate::domain::japanese::JapaneseChar;
 use crate::domain::tokenizer::{PartOfSpeech, tokenize_text};
 use crate::domain::{Answer, JapaneseLevel, NativeLanguage, Question};
+use crate::domain::{GrammarRule, OrigaError};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -54,12 +53,12 @@ impl VocabularyCard {
 
     pub fn with_grammar_rule(
         &self,
-        rule: &dyn GrammarRule,
+        rule: &GrammarRule,
         lang: &NativeLanguage,
     ) -> Result<Self, OrigaError> {
         let formatted_word = rule.format(self.word.text(), &self.part_of_speech()?)?;
         let meaning = self.meaning.text();
-        let description = rule.info().content(lang).short_description();
+        let description = rule.content(lang).short_description();
 
         let meaning = match lang {
             NativeLanguage::Russian => format!(
