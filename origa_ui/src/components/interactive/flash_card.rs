@@ -103,7 +103,6 @@ fn render_answer_content(card: &StudyCard) -> leptos::prelude::AnyView {
 #[component]
 fn VocabCardContent(vocab: VocabCard) -> impl IntoView {
     let (is_playing, set_is_playing) = signal(false);
-    let vocab_reading = vocab.reading.clone();
     let vocab_japanese = vocab.japanese.clone();
     let vocab_japanese_for_log = vocab_japanese.clone();
 
@@ -129,7 +128,6 @@ fn VocabCardContent(vocab: VocabCard) -> impl IntoView {
     view! {
         <div class="vocab-flash-front">
             <div class="flash-character">{vocab.japanese}</div>
-            <div class="flash-reading">{vocab_reading}</div>
             <button
                 class="audio-button"
                 on:click=handle_audio
@@ -159,7 +157,6 @@ fn VocabAnswerContent(vocab: VocabCard) -> impl IntoView {
         <div class="vocab-flash-back">
             <div class="answer-header">
                 <h4 class="answer-title">{vocab.japanese}</h4>
-                <span class="answer-reading">{vocab.reading}</span>
             </div>
 
             <div class="answer-translation">
@@ -182,13 +179,11 @@ fn VocabAnswerContent(vocab: VocabCard) -> impl IntoView {
                                             .iter()
                                             .map(|example| {
                                                 let jp = example.japanese.clone();
-                                                let rd = example.reading.clone();
                                                 let tr = example.translation.clone();
                                                 view! {
                                                     <div class="example-item">
                                                         <div class="example-japanese">
                                                             <span class="example-text">{jp}</span>
-                                                            <span class="example-reading">{rd}</span>
                                                         </div>
                                                         <div class="example-translation">{tr}</div>
                                                     </div>
@@ -210,7 +205,6 @@ fn KanjiCardContent(kanji: KanjiCard) -> impl IntoView {
     view! {
         <div class="kanji-flash-front">
             <div class="flash-character">{kanji.character}</div>
-            <div class="flash-stroke-count">{kanji.stroke_count}черт</div>
         </div>
     }
 }
@@ -233,34 +227,6 @@ fn KanjiAnswerContent(kanji: KanjiCard) -> impl IntoView {
                             view! { <span class="meaning-item">{meaning.clone()}</span> }
                         })
                         .collect_view()}
-                </div>
-            </div>
-
-            <div class="answer-readings">
-                <div class="readings-section">
-                    <h6 class="readings-title">Onyomi:</h6>
-                    <div class="readings-list">
-                        {kanji
-                            .onyomi
-                            .iter()
-                            .map(|reading| {
-                                view! { <span class="reading-item">{reading.clone()}</span> }
-                            })
-                            .collect_view()}
-                    </div>
-                </div>
-
-                <div class="readings-section">
-                    <h6 class="readings-title">Kunyomi:</h6>
-                    <div class="readings-list">
-                        {kanji
-                            .kunyomi
-                            .iter()
-                            .map(|reading| {
-                                view! { <span class="reading-item">{reading.clone()}</span> }
-                            })
-                            .collect_view()}
-                    </div>
                 </div>
             </div>
 
@@ -314,40 +280,6 @@ fn GrammarAnswerContent(grammar: GrammarCard) -> impl IntoView {
                 <p class="attachment-text">{grammar.attachment_rules}</p>
             </div>
 
-            {move || {
-                let examples = grammar.examples.clone();
-                let examples_for_check = examples.clone();
-                view! {
-                    {(!examples_for_check.is_empty())
-                        .then(|| {
-                            let examples_for_iter = examples;
-                            view! {
-                                <div class="examples-section">
-                                    <h6 class="examples-title">Примеры:</h6>
-                                    <div class="examples-list">
-                                        {examples_for_iter
-                                            .iter()
-                                            .map(|example| {
-                                                let gr = example.grammar.clone();
-                                                let st = example.sentence.clone();
-                                                let tr = example.translation.clone();
-                                                view! {
-                                                    <div class="example-item">
-                                                        <div class="example-japanese">
-                                                            <span class="example-grammar">{gr}</span>
-                                                            <span class="example-sentence">{st}</span>
-                                                        </div>
-                                                        <div class="example-translation">{tr}</div>
-                                                    </div>
-                                                }
-                                            })
-                                            .collect_view()}
-                                    </div>
-                                </div>
-                            }
-                        })}
-                }
-            }}
         </div>
     }
 }
@@ -369,7 +301,6 @@ pub struct StudyCardWrapper {
 #[derive(Clone)]
 pub struct VocabCard {
     pub japanese: String,
-    pub reading: String,
     pub translation: String,
     pub examples: Vec<VocabExample>,
 }
@@ -377,17 +308,13 @@ pub struct VocabCard {
 #[derive(Clone)]
 pub struct VocabExample {
     pub japanese: String,
-    pub reading: String,
     pub translation: String,
 }
 
 #[derive(Clone)]
 pub struct KanjiCard {
     pub character: String,
-    pub stroke_count: u8,
     pub meanings: Vec<String>,
-    pub onyomi: Vec<String>,
-    pub kunyomi: Vec<String>,
     pub radicals: Vec<RadicalInfo>,
 }
 
@@ -402,7 +329,6 @@ pub struct GrammarCard {
     pub pattern: String,
     pub meaning: String,
     pub attachment_rules: String,
-    pub examples: Vec<GrammarExample>,
 }
 
 #[derive(Clone)]

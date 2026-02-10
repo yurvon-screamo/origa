@@ -1,4 +1,4 @@
-use crate::components::cards::grammar_card::{GrammarCard, GrammarCardData, GrammarExample};
+use crate::components::cards::grammar_card::GrammarCard;
 use crate::components::cards::vocab_card::CardStatus;
 use crate::components::forms::jlpt_level_filter::JlptLevelFilter;
 use crate::components::forms::search_bar::{FilterChip, FilterChips, SearchBar};
@@ -89,12 +89,7 @@ pub fn Grammar() -> impl IntoView {
                 // Apply search filter
                 let search_match = search.is_empty()
                     || grammar.pattern.to_lowercase().contains(&search)
-                    || grammar.meaning.to_lowercase().contains(&search)
-                    || grammar.examples.iter().any(|e| {
-                        e.grammar.to_lowercase().contains(&search)
-                            || e.sentence.to_lowercase().contains(&search)
-                            || e.translation.to_lowercase().contains(&search)
-                    });
+                    || grammar.meaning.to_lowercase().contains(&search);
 
                 status_match && search_match
             })

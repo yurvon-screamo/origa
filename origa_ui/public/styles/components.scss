@@ -656,13 +656,6 @@
   line-height: var(--line-height-tight);
 }
 
-.japanese-reading {
-  font-family: var(--font-family-japanese);
-  font-size: var(--font-size-sm);
-  color: var(--color-text-tertiary);
-  font-style: italic;
-}
-
 .vocab-body {
   margin-bottom: var(--space-md);
 }
@@ -1373,27 +1366,14 @@
   margin-bottom: var(--space-md);
 }
 
-.reading-section {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-xs);
-}
-
-.reading-title {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  color: var(--color-text-secondary);
-  margin-bottom: var(--space-xs);
-}
-
 .readings-list {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-xs);
 }
 
-.readings-list.onyomi .reading-item,
-.readings-list.kunyomi .reading-item {
+.readings-list.onyomi,
+.readings-list.kunyomi {
   background: var(--color-info-bg);
   color: var(--color-info);
   font-family: var(--font-family-japanese);
@@ -1402,7 +1382,7 @@
   border-radius: var(--radius-sm);
 }
 
-.readings-list.kunyomi .reading-item {
+.readings-list.kunyomi {
   background: var(--color-secondary-bg);
   color: var(--color-secondary);
 }
@@ -1642,20 +1622,6 @@
   min-width: 20px;
 }
 
-.reading-romaji {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-tertiary);
-  font-style: italic;
-  min-width: 80px;
-}
-
-.reading-japanese {
-  font-family: var(--font-family-japanese);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-medium);
-  color: var(--color-text-primary);
-}
-
 .reading-okurigana {
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
@@ -1727,12 +1693,6 @@
 .example-meaning {
   color: var(--color-text-primary);
   margin-bottom: var(--space-xs);
-}
-
-.example-romaji {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-tertiary);
-  font-style: italic;
 }
 
 /* Progress detail */
@@ -3248,12 +3208,6 @@
   font-size: var(--font-size-base);
   color: var(--color-text-primary);
   margin-bottom: var(--space-xs);
-}
-
-.example-romaji {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-tertiary);
-  font-style: italic;
 }
 
 .grammar-progress {

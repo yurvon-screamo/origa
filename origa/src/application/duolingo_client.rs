@@ -8,7 +8,7 @@ pub struct DuolingoWord {
     pub translations: Vec<String>,
 }
 
-#[async_trait(?Send)]
+#[async_trait]
 pub trait DuolingoClient: Send + Sync {
     async fn get_words(&self, jwt_token: &str) -> Result<Vec<DuolingoWord>, OrigaError>;
 }

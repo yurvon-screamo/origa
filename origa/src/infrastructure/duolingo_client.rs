@@ -93,7 +93,7 @@ impl HttpDuolingoClient {
     }
 }
 
-#[async_trait(?Send)]
+#[async_trait]
 impl DuolingoClient for HttpDuolingoClient {
     async fn get_words(&self, jwt_token: &str) -> Result<Vec<DuolingoWord>, OrigaError> {
         let user_id = extract_user_id_from_jwt(jwt_token)?;

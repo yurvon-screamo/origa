@@ -74,7 +74,6 @@ pub fn Vocabulary() -> impl IntoView {
                 // Apply search filter
                 let search_match = search.is_empty()
                     || vocab.japanese.to_lowercase().contains(&search)
-                    || vocab.reading.to_lowercase().contains(&search)
                     || vocab.translation.to_lowercase().contains(&search);
 
                 status_match && search_match
@@ -105,10 +104,8 @@ pub fn Vocabulary() -> impl IntoView {
             let service = vocabulary_service.clone();
             let user_id = ulid::Ulid::new(); // TODO: получить реальный user_id
             spawn_local(async move {
-                let _ = service
-                    .create_vocabulary(user_id, data.japanese, data.translation)
-                    .await;
-                // TODO: Обновить список карточек после создания
+                let _ = service.create_vocabulary(user_id, data.japanese).await;
+                // TODO: Обновить список карточек после создания и показать ошибку
             });
         })
     };

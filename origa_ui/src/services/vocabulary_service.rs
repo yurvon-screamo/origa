@@ -2,7 +2,6 @@ use crate::components::cards::vocab_card::{CardStatus, VocabularyCardData};
 use origa::application::{
     CreateVocabularyCardUseCase, DeleteCardUseCase, KnowledgeSetCardsUseCase,
 };
-use origa::domain::tokenize_text;
 use origa::domain::{Card, OrigaError, StudyCard};
 use origa::settings::ApplicationEnvironment;
 use ulid::Ulid;
@@ -20,7 +19,9 @@ impl VocabularyService {
         &self,
         user_id: Ulid,
     ) -> Result<Vec<VocabularyCardData>, OrigaError> {
-        let repository = ApplicationEnvironment::get().get_repository().await?;
+        let repository = ApplicationEnvironment::get()
+            .get_firebase_repository()
+            .await?;
         let use_case = KnowledgeSetCardsUseCase::new(repository);
         let cards = use_case.execute(user_id).await?;
 
@@ -44,24 +45,24 @@ impl VocabularyService {
         &self,
         user_id: Ulid,
         japanese: String,
-        _translation: String,
     ) -> Result<Vec<StudyCard>, OrigaError> {
-        let repository = ApplicationEnvironment::get().get_repository().await?;
+        let repository = ApplicationEnvironment::get()
+            .get_firebase_repository()
+            .await?;
         let llm_service = ApplicationEnvironment::get()
             .get_llm_service(user_id)
             .await?;
 
-        // Используем блок для управления lifetime
+        let use_case = CreateVocabularyCardUseCase::new(repository, &llm_service);
 
-        {
-            let use_case = CreateVocabularyCardUseCase::new(repository, &llm_service);
-            use_case.execute(user_id, japanese).await
-        }
+        use_case.execute(user_id, japanese).await
     }
 
     /// Удалить карточку
     pub async fn delete_vocabulary(&self, user_id: Ulid, card_id: Ulid) -> Result<(), OrigaError> {
-        let repository = ApplicationEnvironment::get().get_repository().await?;
+        let repository = ApplicationEnvironment::get()
+            .get_firebase_repository()
+            .await?;
         let use_case = DeleteCardUseCase::new(repository);
         use_case.execute(user_id, card_id).await
     }
@@ -93,20 +94,11 @@ impl VocabularyService {
         // Извлечь данные из Card::Vocabulary
         if let Card::Vocabulary(vocab) = study_card.card() {
             let japanese = vocab.word().text().to_string();
-
-            // Получить reading через tokenizer
-            let reading = tokenize_text(&japanese)
-                .ok()
-                .and_then(|tokens| tokens.first().cloned())
-                .map(|token| token.phonological_surface_form().to_string())
-                .unwrap_or_default();
-
             let translation = vocab.meaning().text().to_string();
 
             VocabularyCardData {
                 id: card_id.to_string(),
                 japanese,
-                reading,
                 translation,
                 status,
                 difficulty,
@@ -118,7 +110,6 @@ impl VocabularyService {
             VocabularyCardData {
                 id: card_id.to_string(),
                 japanese: String::new(),
-                reading: String::new(),
                 translation: String::new(),
                 status,
                 difficulty,

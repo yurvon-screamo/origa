@@ -43,23 +43,22 @@ impl<'a, R: UserRepository> GrammarRuleInfoUseCase<'a, R> {
 
         Ok(GRAMMAR_RULES
             .iter()
-            .filter_map(|x| filter_by_level(x.as_ref(), lang, level))
+            .filter_map(|rule| filter_by_level(rule, lang, level))
             .collect())
     }
 }
 
 fn filter_by_level(
-    x: &dyn GrammarRule,
+    rule: &GrammarRule,
     lang: &NativeLanguage,
     level: &JapaneseLevel,
 ) -> Option<GrammarRuleItem> {
-    let info = x.info();
-    if info.level() == level {
-        let content = info.content(lang);
+    if rule.level() == level {
+        let content = rule.content(lang);
         Some(GrammarRuleItem {
-            rule_id: *info.rule_id(),
-            level: *info.level(),
-            apply_to: info.apply_to().to_vec(),
+            rule_id: *rule.rule_id(),
+            level: *rule.level(),
+            apply_to: rule.apply_to().to_vec(),
             title: content.title().to_string(),
             short_description: content.short_description().to_string(),
             md_description: content.md_description().to_string(),

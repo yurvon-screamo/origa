@@ -5,6 +5,7 @@ use ulid::Ulid;
 use crate::domain::{
     Card, JapaneseLevel, KnowledgeSet, MemoryState, NativeLanguage, OrigaError, Rating, StudyCard,
     UserSettings,
+    score_content::{ScoreContentResult, score_content},
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -83,5 +84,9 @@ impl User {
 
     pub fn create_card(&mut self, card: Card) -> Result<StudyCard, OrigaError> {
         self.knowledge_set.create_card(card)
+    }
+
+    pub fn score_content(&self, content: &str) -> Result<ScoreContentResult, OrigaError> {
+        score_content(content, self.knowledge_set().study_cards())
     }
 }

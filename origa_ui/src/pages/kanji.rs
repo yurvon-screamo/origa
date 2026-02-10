@@ -82,14 +82,6 @@ pub fn Kanji() -> impl IntoView {
                         .meanings
                         .iter()
                         .any(|m| m.to_lowercase().contains(&search))
-                    || kanji
-                        .onyomi
-                        .iter()
-                        .any(|o| o.to_lowercase().contains(&search))
-                    || kanji
-                        .kunyomi
-                        .iter()
-                        .any(|k| k.to_lowercase().contains(&search))
                     || kanji.radicals.iter().any(|r| {
                         r.character.to_lowercase().contains(&search)
                             || r.meaning.to_lowercase().contains(&search)

@@ -1,9 +1,9 @@
 use crate::components::cards::grammar_card::GrammarCardData;
 use crate::components::cards::vocab_card::CardStatus;
 use origa::application::{
-    CreateGrammarCardUseCase, DeleteCardUseCase, GrammarRuleInfoUseCase, KnowledgeSetCardsUseCase,
+    CreateGrammarCardUseCase, DeleteGrammarCardUseCase, GrammarRuleInfoUseCase,
+    KnowledgeSetCardsUseCase,
 };
-use origa::domain::grammar::get_rule_by_id;
 use origa::domain::{Card, JapaneseLevel, OrigaError, StudyCard};
 use origa::settings::ApplicationEnvironment;
 use ulid::Ulid;
@@ -22,7 +22,9 @@ impl GrammarService {
         level: JapaneseLevel,
         user_id: Ulid,
     ) -> Result<Vec<GrammarCardData>, OrigaError> {
-        let repository = ApplicationEnvironment::get().get_repository().await?;
+        let repository = ApplicationEnvironment::get()
+            .get_firebase_repository()
+            .await?;
 
         // Получить доступные правила грамматики для уровня
         let grammar_use_case = GrammarRuleInfoUseCase::new(repository);
@@ -107,7 +109,6 @@ impl GrammarService {
                 difficulty_text: self.get_difficulty_text(level),
                 stability,
                 jlpt_level: *level,
-                examples: vec![], // Examples не хранятся в GrammarRuleCard
                 status,
                 next_review,
                 is_in_knowledge_set: true,
@@ -123,7 +124,6 @@ impl GrammarService {
                 difficulty_text: self.get_difficulty_text(level),
                 stability,
                 jlpt_level: *level,
-                examples: vec![],
                 status,
                 next_review,
                 is_in_knowledge_set: true,
@@ -151,7 +151,6 @@ impl GrammarService {
             difficulty_text: self.get_difficulty_text(level),
             stability: 0, // Новые карточки имеют stability 0
             jlpt_level: rule_item.level,
-            examples: vec![], // Examples не доступны в GrammarRuleItem
             status: CardStatus::New,
             next_review: chrono::Utc::now().naive_utc(),
             is_in_knowledge_set: false,
@@ -179,16 +178,12 @@ impl GrammarService {
         user_id: Ulid,
         rule_id: Ulid,
     ) -> Result<(), OrigaError> {
-        let repository = ApplicationEnvironment::get().get_repository().await?;
+        let repository = ApplicationEnvironment::get()
+            .get_firebase_repository()
+            .await?;
 
-        // Получить GrammarRuleInfo из rule_id
-        let rule = get_rule_by_id(&rule_id).ok_or_else(|| OrigaError::RepositoryError {
-            reason: format!("Grammar rule {} not found", rule_id),
-        })?;
-
-        let rule_info = rule.info().clone();
         let use_case = CreateGrammarCardUseCase::new(repository);
-        use_case.execute(user_id, vec![rule_info]).await?;
+        use_case.execute(user_id, vec![rule_id]).await?;
 
         Ok(())
     }
@@ -199,37 +194,19 @@ impl GrammarService {
         user_id: Ulid,
         rule_id: Ulid,
     ) -> Result<(), OrigaError> {
-        let repository = ApplicationEnvironment::get().get_repository().await?;
+        let repository = ApplicationEnvironment::get()
+            .get_firebase_repository()
+            .await?;
 
-        // Найти card_id по rule_id
-        let knowledge_use_case = KnowledgeSetCardsUseCase::new(repository);
-        let user_study_cards = knowledge_use_case.execute(user_id).await?;
+        let use_case = DeleteGrammarCardUseCase::new(repository);
+        use_case.execute(user_id, rule_id).await?;
 
-        if let Some(study_card) = user_study_cards.iter().find(|sc| {
-            if let Card::Grammar(grammar_card) = sc.card() {
-                grammar_card.rule_id() == &rule_id
-            } else {
-                false
-            }
-        }) {
-            let card_id = *study_card.card_id();
-            let delete_use_case = DeleteCardUseCase::new(repository);
-            delete_use_case.execute(user_id, card_id).await
-        } else {
-            Err(OrigaError::RepositoryError {
-                reason: format!("Grammar rule {} not found in knowledge set", rule_id),
-            })
-        }
+        Ok(())
     }
 
-    fn calculate_difficulty(&self, level: &JapaneseLevel) -> u32 {
-        match level {
-            JapaneseLevel::N5 => 20,
-            JapaneseLevel::N4 => 35,
-            JapaneseLevel::N3 => 50,
-            JapaneseLevel::N2 => 70,
-            JapaneseLevel::N1 => 85,
-        }
+    fn calculate_difficulty(&self, _level: &JapaneseLevel) -> u32 {
+        // TODO: get from user_study_cards
+        10
     }
 
     fn get_difficulty_text(&self, level: &JapaneseLevel) -> String {

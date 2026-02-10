@@ -5,6 +5,7 @@ pub mod grammar;
 mod japanese;
 mod knowledge;
 mod memory;
+mod score_content;
 mod settings;
 mod tokenizer;
 mod user;
@@ -17,15 +18,14 @@ pub use dictionary::{
 };
 pub use error::OrigaError;
 pub use furigana::furiganize_text;
-pub use grammar::{
-    GRAMMAR_RULES, GrammarRule, GrammarRuleContent, GrammarRuleInfo, get_rule_by_id,
-};
+pub use grammar::{GRAMMAR_RULES, GrammarRule, GrammarRuleContent, get_rule_by_id};
 pub use japanese::{JapaneseChar, JapaneseText, filter_japanese_text};
 pub use knowledge::{
     Card, DailyHistoryItem, ExampleKanjiWord, ExamplePhrase, GrammarRuleCard, KanjiCard,
     KnowledgeSet, StudyCard, VocabularyCard,
 };
 pub use memory::{Difficulty, MemoryHistory, MemoryState, Rating, ReviewLog, Stability};
+pub use score_content::ScoreContentResult;
 pub use settings::{LlmSettings, UserSettings};
 pub use tokenizer::{PartOfSpeech, TokenInfo, tokenize_text};
 pub use user::User;

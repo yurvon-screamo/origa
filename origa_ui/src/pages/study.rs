@@ -1,7 +1,4 @@
 use crate::components::interactive::flash_card::FlashCard;
-use crate::components::interactive::flash_card::{
-    GrammarCard, KanjiCard, StudyCard, StudyCardWrapper, VocabCard,
-};
 use crate::components::interactive::navigation::{StudyNavigation, StudySettings};
 use crate::components::interactive::next_button::NextButton;
 use crate::components::interactive::progress_bar::StepIndicator;

@@ -45,7 +45,6 @@ pub fn KanjiCard(
             <div class="kanji-header">
                 <div class="kanji-character-section">
                     <span class="kanji-character">{card.character}</span>
-                    <span class="kanji-stroke-count">{card.stroke_count}черт</span>
                 </div>
 
                 <div class="kanji-meta">
@@ -69,34 +68,6 @@ pub fn KanjiCard(
                             view! { <span class="meaning-item">{meaning.clone()}</span> }
                         })
                         .collect_view()}
-                </div>
-            </div>
-
-            <div class="kanji-readings">
-                <div class="reading-section">
-                    <h5 class="reading-title">Onyomi:</h5>
-                    <div class="readings-list onyomi">
-                        {card
-                            .onyomi
-                            .iter()
-                            .map(|reading| {
-                                view! { <span class="reading-item">{reading.clone()}</span> }
-                            })
-                            .collect_view()}
-                    </div>
-                </div>
-
-                <div class="reading-section">
-                    <h5 class="reading-title">Kunyomi:</h5>
-                    <div class="readings-list kunyomi">
-                        {card
-                            .kunyomi
-                            .iter()
-                            .map(|reading| {
-                                view! { <span class="reading-item">{reading.clone()}</span> }
-                            })
-                            .collect_view()}
-                    </div>
                 </div>
             </div>
 
@@ -196,11 +167,8 @@ pub fn KanjiCard(
 pub struct KanjiCardData {
     pub id: String,
     pub character: String,
-    pub stroke_count: u8,
     pub jlpt_level: origa::domain::JapaneseLevel,
     pub meanings: Vec<String>,
-    pub onyomi: Vec<String>,
-    pub kunyomi: Vec<String>,
     pub radicals: Vec<RadicalInfo>,
     pub status: crate::components::cards::vocab_card::CardStatus,
     pub difficulty: u32,

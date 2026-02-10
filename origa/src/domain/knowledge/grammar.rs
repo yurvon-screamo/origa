@@ -1,6 +1,6 @@
 use crate::domain::{
     OrigaError,
-    grammar::GrammarRuleInfo,
+    grammar::GrammarRule,
     tokenizer::PartOfSpeech,
     value_objects::{Answer, NativeLanguage, Question},
 };
@@ -16,7 +16,7 @@ pub struct GrammarRuleCard {
 }
 
 impl GrammarRuleCard {
-    pub fn new(rule_info: GrammarRuleInfo, lang: &NativeLanguage) -> Result<Self, OrigaError> {
+    pub fn new(rule_info: &GrammarRule, lang: &NativeLanguage) -> Result<Self, OrigaError> {
         Ok(Self {
             rule_id: rule_info.rule_id().to_owned(),
             title: Question::new(rule_info.content(lang).title().to_string())?,
