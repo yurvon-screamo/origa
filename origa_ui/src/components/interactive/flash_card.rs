@@ -164,38 +164,6 @@ fn VocabAnswerContent(vocab: VocabCard) -> impl IntoView {
                 <p class="translation-text">{vocab.translation}</p>
             </div>
 
-            {move || {
-                let examples = vocab.examples.clone();
-                let examples_for_check = examples.clone();
-                view! {
-                    {(!examples_for_check.is_empty())
-                        .then(|| {
-                            let examples_for_iter = examples;
-                            view! {
-                                <div class="examples-section">
-                                    <h6 class="examples-title">Примеры:</h6>
-                                    <div class="examples-list">
-                                        {examples_for_iter
-                                            .iter()
-                                            .map(|example| {
-                                                let jp = example.japanese.clone();
-                                                let tr = example.translation.clone();
-                                                view! {
-                                                    <div class="example-item">
-                                                        <div class="example-japanese">
-                                                            <span class="example-text">{jp}</span>
-                                                        </div>
-                                                        <div class="example-translation">{tr}</div>
-                                                    </div>
-                                                }
-                                            })
-                                            .collect_view()}
-                                    </div>
-                                </div>
-                            }
-                        })}
-                }
-            }}
         </div>
     }
 }
@@ -302,7 +270,6 @@ pub struct StudyCardWrapper {
 pub struct VocabCard {
     pub japanese: String,
     pub translation: String,
-    pub examples: Vec<VocabExample>,
 }
 
 #[derive(Clone)]
@@ -329,11 +296,4 @@ pub struct GrammarCard {
     pub pattern: String,
     pub meaning: String,
     pub attachment_rules: String,
-}
-
-#[derive(Clone)]
-pub struct GrammarExample {
-    pub grammar: String,
-    pub sentence: String,
-    pub translation: String,
 }

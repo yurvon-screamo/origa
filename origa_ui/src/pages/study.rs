@@ -41,14 +41,10 @@ pub fn StudySession() -> impl IntoView {
     let cards_resource = LocalResource::new(move || {
         let service = study_service_clone.clone();
         async move {
-            let user_id = ulid::Ulid::new(); // TODO: получить реальный user_id
             if is_fixation {
-                service
-                    .get_fixation_cards(user_id)
-                    .await
-                    .unwrap_or_default()
+                service.get_fixation_cards().await.unwrap_or_default()
             } else {
-                service.get_lesson_cards(user_id).await.unwrap_or_default()
+                service.get_lesson_cards().await.unwrap_or_default()
             }
         }
     });
@@ -74,7 +70,6 @@ pub fn StudySession() -> impl IntoView {
 
     let handle_rate = {
         let study_service = study_service.clone();
-        let current_card = current_card;
         let (is_fixation_signal, _) = signal(is_fixation);
         Callback::new(move |rating: Rating| {
             set_selected_rating.set(rating);
@@ -84,12 +79,9 @@ pub fn StudySession() -> impl IntoView {
             if let Some(card) = current_card.get() {
                 let service = study_service.clone();
                 let card_id = card.card_id;
-                let user_id = ulid::Ulid::new(); // TODO: получить реальный user_id
                 let is_fixation_local = is_fixation_signal.get();
                 spawn_local(async move {
-                    let _ = service
-                        .rate_card(user_id, card_id, rating, is_fixation_local)
-                        .await;
+                    let _ = service.rate_card(card_id, rating, is_fixation_local).await;
                 });
             }
         })
@@ -120,9 +112,8 @@ pub fn StudySession() -> impl IntoView {
 
             // Сохранить завершение сессии
             let service = study_service.clone();
-            let user_id = ulid::Ulid::new(); // TODO: получить реальный user_id
             spawn_local(async move {
-                let _ = service.complete_lesson(user_id, duration_seconds).await;
+                let _ = service.complete_lesson(duration_seconds).await;
             });
 
             // Navigate to completion screen or dashboard

@@ -4,6 +4,7 @@ use crate::services::study_service::StudyService;
 use crate::services::user_service::UserService;
 use crate::services::vocabulary_service::VocabularyService;
 use leptos::prelude::*;
+use ulid::Ulid;
 
 #[derive(Clone)]
 pub struct AppServices {
@@ -26,8 +27,17 @@ impl AppServices {
     }
 }
 
+#[derive(Clone)]
+pub struct AuthContext {
+    pub user_id: Ulid,
+}
+
 #[component]
 pub fn ServicesProvider(services: AppServices, children: Children) -> impl IntoView {
+    provide_context(AuthContext {
+        // TODO: получить реальный user_id
+        user_id: ulid::Ulid::new(),
+    });
     provide_context(services.clone());
     provide_context(services.kanji_service);
     provide_context(services.vocabulary_service);
@@ -35,4 +45,10 @@ pub fn ServicesProvider(services: AppServices, children: Children) -> impl IntoV
     provide_context(services.study_service);
     provide_context(services.user_service);
     children()
+}
+
+pub fn current_user_id() -> Ulid {
+    use_context::<AuthContext>()
+        .expect("AuthContext not provided")
+        .user_id
 }

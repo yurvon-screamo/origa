@@ -26,7 +26,7 @@ pub use knowledge::{
 };
 pub use memory::{Difficulty, MemoryHistory, MemoryState, Rating, ReviewLog, Stability};
 pub use score_content::ScoreContentResult;
-pub use settings::{LlmSettings, UserSettings};
+pub use settings::UserSettings;
 pub use tokenizer::{PartOfSpeech, TokenInfo, tokenize_text};
 pub use user::User;
 pub use value_objects::{Answer, JapaneseLevel, NativeLanguage, Question};

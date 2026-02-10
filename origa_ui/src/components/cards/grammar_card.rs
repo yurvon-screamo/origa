@@ -161,13 +161,6 @@ pub struct GrammarCardData {
     pub is_in_knowledge_set: bool,
 }
 
-#[derive(Clone)]
-pub struct GrammarExample {
-    pub grammar: String,
-    pub sentence: String,
-    pub translation: String,
-}
-
 fn render_difficulty_stars(difficulty: u32) -> String {
     let stars = match difficulty {
         0..=20 => "⭐",

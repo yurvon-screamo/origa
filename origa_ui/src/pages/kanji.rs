@@ -7,15 +7,11 @@ use crate::services::kanji_service::{KanjiListData, KanjiService};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::domain::JapaneseLevel;
-use ulid::Ulid;
 
 #[component]
 pub fn Kanji() -> impl IntoView {
     // Get kanji service from context
     let kanji_service = expect_context::<KanjiService>();
-
-    // User ID - in a real app, this would come from auth context
-    let user_id = Ulid::new();
 
     // Search and filter state
     let (search_query, set_search_query) = signal("".to_string());
@@ -39,7 +35,6 @@ pub fn Kanji() -> impl IntoView {
     let set_kanji_data_clone = set_kanji_data;
     let load_kanji = Action::new(move |level: &JapaneseLevel| {
         let service = kanji_service_for_load.clone();
-        let user = user_id;
         let level = *level;
         let set_is_loading = set_is_loading_clone;
         let set_error = set_error_clone;
@@ -48,7 +43,7 @@ pub fn Kanji() -> impl IntoView {
             set_is_loading.set(true);
             set_error.set(None);
 
-            match service.get_user_kanji_by_level(user, level).await {
+            match service.get_user_kanji_by_level(level).await {
                 Ok(kanji) => {
                     set_kanji_data.set(kanji);
                     set_is_loading.set(false);
@@ -106,10 +101,9 @@ pub fn Kanji() -> impl IntoView {
         if let Some(kanji) = kanji_data {
             let service = kanji_service_for_handle.clone();
             let level = selected_level.get();
-            let user_id = ulid::Ulid::new(); // TODO: получить реальный user_id
             spawn_local(async move {
                 match service
-                    .add_kanji_to_knowledge_set(user_id, kanji.character.clone())
+                    .add_kanji_to_knowledge_set(kanji.character.clone())
                     .await
                 {
                     Ok(()) => {
@@ -130,11 +124,10 @@ pub fn Kanji() -> impl IntoView {
         let kanji_data = kanji_data.get().iter().find(|k| k.id == kanji_id).cloned();
         if let Some(kanji) = kanji_data {
             let service = kanji_service_for_handle2.clone();
-            let user_id_local = ulid::Ulid::new(); // TODO: получить реальный user_id
             let level = selected_level.get();
             spawn_local(async move {
                 match service
-                    .remove_kanji_from_knowledge_set(user_id_local, kanji.character.clone())
+                    .remove_kanji_from_knowledge_set(kanji.character.clone())
                     .await
                 {
                     Ok(()) => {
@@ -155,13 +148,12 @@ pub fn Kanji() -> impl IntoView {
         let kanji_data = kanji_data.get();
         if let Some(kanji) = kanji_data.iter().find(|k| k.id == kanji_id) {
             let service = kanji_service_for_detail.clone();
-            let user = user_id;
             let kanji_char = kanji.character.clone();
             set_is_loading_detail.set(true);
             set_selected_kanji_detail.set(None);
 
             spawn_local(async move {
-                match service.get_kanji_detail(kanji_char, user).await {
+                match service.get_kanji_detail(kanji_char).await {
                     Ok(detail) => {
                         set_selected_kanji_detail.set(Some(detail));
                         set_is_loading_detail.set(false);

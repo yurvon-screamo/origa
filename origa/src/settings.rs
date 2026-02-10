@@ -1,13 +1,24 @@
 use std::path::PathBuf;
 use std::sync::{Arc, LazyLock};
 
-use crate::application::UserRepository;
-use crate::domain::{LlmSettings, OrigaError};
+use crate::domain::OrigaError;
 use crate::infrastructure::{
-    FileSystemUserRepository, FirebaseUserRepository, FsrsSrsService, GeminiLlm, LlmServiceInvoker,
-    OpenAiLlm,
+    FileSystemUserRepository, FirebaseUserRepository, FsrsSrsService, LlmServiceInvoker, OpenAiLlm,
 };
+use serde::{Deserialize, Serialize};
 use tokio::sync::OnceCell;
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
+pub enum LlmSettings {
+    #[default]
+    None,
+    OpenAi {
+        temperature: f32,
+        model: String,
+        base_url: String,
+        env_var_name: String,
+    },
+}
 
 static SETTINGS: LazyLock<ApplicationEnvironment> = LazyLock::new(|| ApplicationEnvironment {
     lazy_firebase_repository: Arc::new(OnceCell::new()),
@@ -61,23 +72,9 @@ impl ApplicationEnvironment {
 
     pub async fn get_llm_service(
         &self,
-        user_id: ulid::Ulid,
+        llm_settings: &LlmSettings,
     ) -> Result<LlmServiceInvoker, OrigaError> {
-        let repository = self.get_firebase_repository().await?;
-        let user = repository
-            .find_by_id(user_id)
-            .await?
-            .ok_or(OrigaError::UserNotFound { user_id })?;
-        let llm_settings = user.settings().llm();
-
         let service = match llm_settings {
-            LlmSettings::Gemini { temperature, model } => {
-                LlmServiceInvoker::Gemini(GeminiLlm::new(*temperature, model.clone()).map_err(
-                    |e| OrigaError::SettingsError {
-                        reason: e.to_string(),
-                    },
-                )?)
-            }
             LlmSettings::OpenAi {
                 temperature,
                 model,

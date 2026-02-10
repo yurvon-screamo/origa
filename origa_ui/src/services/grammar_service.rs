@@ -1,5 +1,6 @@
 use crate::components::cards::grammar_card::GrammarCardData;
 use crate::components::cards::vocab_card::CardStatus;
+use crate::services::app_services::current_user_id;
 use origa::application::{
     CreateGrammarCardUseCase, DeleteGrammarCardUseCase, GrammarRuleInfoUseCase,
     KnowledgeSetCardsUseCase,
@@ -20,8 +21,8 @@ impl GrammarService {
     pub async fn get_grammar_by_level(
         &self,
         level: JapaneseLevel,
-        user_id: Ulid,
     ) -> Result<Vec<GrammarCardData>, OrigaError> {
+        let user_id = current_user_id();
         let repository = ApplicationEnvironment::get()
             .get_firebase_repository()
             .await?;
@@ -82,7 +83,7 @@ impl GrammarService {
         let difficulty = memory
             .difficulty()
             .map(|d| (d.value() * 100.0) as u32)
-            .unwrap_or_else(|| self.calculate_difficulty(level));
+            .unwrap_or_else(|| self.calculate_difficulty());
         let stability = memory
             .stability()
             .map(|s| (s.value() * 100.0) as u32)
@@ -147,7 +148,7 @@ impl GrammarService {
                 .map(|pos| format!("{:?}", pos))
                 .collect::<Vec<_>>()
                 .join(", "),
-            difficulty: self.calculate_difficulty(level),
+            difficulty: self.calculate_difficulty(),
             difficulty_text: self.get_difficulty_text(level),
             stability: 0, // Новые карточки имеют stability 0
             jlpt_level: rule_item.level,
@@ -173,11 +174,8 @@ impl GrammarService {
     }
 
     /// Добавить грамматику в knowledge set
-    pub async fn add_grammar_to_knowledge_set(
-        &self,
-        user_id: Ulid,
-        rule_id: Ulid,
-    ) -> Result<(), OrigaError> {
+    pub async fn add_grammar_to_knowledge_set(&self, rule_id: Ulid) -> Result<(), OrigaError> {
+        let user_id = current_user_id();
         let repository = ApplicationEnvironment::get()
             .get_firebase_repository()
             .await?;
@@ -189,11 +187,8 @@ impl GrammarService {
     }
 
     /// Удалить грамматику из knowledge set
-    pub async fn remove_grammar_from_knowledge_set(
-        &self,
-        user_id: Ulid,
-        rule_id: Ulid,
-    ) -> Result<(), OrigaError> {
+    pub async fn remove_grammar_from_knowledge_set(&self, rule_id: Ulid) -> Result<(), OrigaError> {
+        let user_id = current_user_id();
         let repository = ApplicationEnvironment::get()
             .get_firebase_repository()
             .await?;
@@ -204,7 +199,7 @@ impl GrammarService {
         Ok(())
     }
 
-    fn calculate_difficulty(&self, _level: &JapaneseLevel) -> u32 {
+    fn calculate_difficulty(&self) -> u32 {
         // TODO: get from user_study_cards
         10
     }

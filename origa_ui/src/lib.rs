@@ -24,11 +24,7 @@ pub fn App() -> impl IntoView {
 
     view! {
         <Html attr:lang="ru" attr:dir="ltr" attr:data-theme="light" />
-
-        // sets the document title
         <Title text="オリガ" />
-
-        // injects metadata in the <head> of the page
         <Meta charset="UTF-8" />
         <Meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <Meta
