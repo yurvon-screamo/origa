@@ -7,15 +7,11 @@ use crate::services::grammar_service::GrammarService;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::domain::JapaneseLevel;
-use ulid::Ulid;
 
 #[component]
 pub fn Grammar() -> impl IntoView {
     // Get service from context
     let grammar_service = use_context::<GrammarService>().expect("GrammarService not provided");
-
-    // User ID - in a real app, this would come from auth context
-    let user_id = Ulid::new();
 
     // Search and filter state
     let (search_query, set_search_query) = signal("".to_string());
@@ -25,13 +21,12 @@ pub fn Grammar() -> impl IntoView {
     // Load grammar data
     let grammar_resource = LocalResource::new({
         let service = grammar_service.clone();
-        let user_id_local = user_id;
         move || {
             let service = service.clone();
             let level = selected_level.get();
             async move {
                 service
-                    .get_grammar_by_level(level, user_id_local)
+                    .get_grammar_by_level(level)
                     .await
                     .unwrap_or_default()
             }
@@ -113,10 +108,9 @@ pub fn Grammar() -> impl IntoView {
         let grammar_service = grammar_service.clone();
         Callback::new(move |grammar_id: String| {
             let service = grammar_service.clone();
-            let user_id = ulid::Ulid::new(); // TODO: получить реальный user_id
             if let Ok(rule_id) = grammar_id.parse::<ulid::Ulid>() {
                 spawn_local(async move {
-                    let _ = service.add_grammar_to_knowledge_set(user_id, rule_id).await;
+                    let _ = service.add_grammar_to_knowledge_set(rule_id).await;
                     // TODO: Обновить список грамматики после добавления
                 });
             }
@@ -127,12 +121,9 @@ pub fn Grammar() -> impl IntoView {
         let grammar_service = grammar_service.clone();
         Callback::new(move |grammar_id: String| {
             let service = grammar_service.clone();
-            let user_id = ulid::Ulid::new(); // TODO: получить реальный user_id
             if let Ok(rule_id) = grammar_id.parse::<ulid::Ulid>() {
                 spawn_local(async move {
-                    let _ = service
-                        .remove_grammar_from_knowledge_set(user_id, rule_id)
-                        .await;
+                    let _ = service.remove_grammar_from_knowledge_set(rule_id).await;
                     // TODO: Обновить список грамматики после удаления
                 });
             }

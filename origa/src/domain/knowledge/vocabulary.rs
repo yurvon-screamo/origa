@@ -9,16 +9,11 @@ use serde::{Deserialize, Serialize};
 pub struct VocabularyCard {
     word: Question,
     meaning: Answer,
-    example_phrases: Vec<ExamplePhrase>,
 }
 
 impl VocabularyCard {
-    pub fn new(word: Question, meaning: Answer, example_phrases: Vec<ExamplePhrase>) -> Self {
-        Self {
-            word,
-            meaning,
-            example_phrases,
-        }
+    pub fn new(word: Question, meaning: Answer) -> Self {
+        Self { word, meaning }
     }
 
     pub fn word(&self) -> &Question {
@@ -27,10 +22,6 @@ impl VocabularyCard {
 
     pub fn meaning(&self) -> &Answer {
         &self.meaning
-    }
-
-    pub fn example_phrases(&self) -> &[ExamplePhrase] {
-        &self.example_phrases
     }
 
     pub fn get_kanji_cards(&self, current_level: &JapaneseLevel) -> Vec<&KanjiInfo> {
@@ -74,7 +65,6 @@ impl VocabularyCard {
         Ok(Self {
             word: Question::new(formatted_word)?,
             meaning: Answer::new(meaning)?,
-            example_phrases: self.example_phrases.clone(),
         })
     }
 
@@ -82,7 +72,6 @@ impl VocabularyCard {
         Ok(Self {
             word: Question::new(self.meaning.text().to_string())?,
             meaning: Answer::new(self.word.text().to_string())?,
-            example_phrases: self.example_phrases.clone(),
         })
     }
 }

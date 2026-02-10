@@ -65,7 +65,7 @@ impl<'a, R: UserRepository, L: crate::application::LlmService>
                 )
                 .await?;
 
-            let vocabulary_card = VocabularyCard::new(question, content.answer, content.examples);
+            let vocabulary_card = VocabularyCard::new(question, content.answer);
             let card = Card::Vocabulary(vocabulary_card);
 
             let card_result = user.create_card(card);

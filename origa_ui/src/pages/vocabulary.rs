@@ -23,13 +23,7 @@ pub fn Vocabulary() -> impl IntoView {
         let service = vocabulary_service.clone();
         move || {
             let service = service.clone();
-            async move {
-                let user_id = ulid::Ulid::new(); // TODO: получить реальный user_id
-                service
-                    .get_user_vocabulary(user_id)
-                    .await
-                    .unwrap_or_default()
-            }
+            async move { service.get_user_vocabulary().await.unwrap_or_default() }
         }
     });
 
@@ -102,9 +96,8 @@ pub fn Vocabulary() -> impl IntoView {
         let vocabulary_service = vocabulary_service.clone();
         Callback::new(move |data: CreateVocabularyData| {
             let service = vocabulary_service.clone();
-            let user_id = ulid::Ulid::new(); // TODO: получить реальный user_id
             spawn_local(async move {
-                let _ = service.create_vocabulary(user_id, data.japanese).await;
+                let _ = service.create_vocabulary(data.japanese).await;
                 // TODO: Обновить список карточек после создания и показать ошибку
             });
         })
@@ -119,10 +112,9 @@ pub fn Vocabulary() -> impl IntoView {
         let vocabulary_service = vocabulary_service.clone();
         Callback::new(move |card_id: String| {
             let service = vocabulary_service.clone();
-            let user_id = ulid::Ulid::new(); // TODO: получить реальный user_id
             if let Ok(card_id_ulid) = card_id.parse::<ulid::Ulid>() {
                 spawn_local(async move {
-                    let _ = service.delete_vocabulary(user_id, card_id_ulid).await;
+                    let _ = service.delete_vocabulary(card_id_ulid).await;
                     // TODO: Обновить список карточек после удаления
                 });
             }

@@ -1,5 +1,4 @@
 use crate::application::LlmService;
-use crate::domain::ExamplePhrase;
 use crate::domain::OrigaError;
 use crate::domain::VOCABULARY_DICTIONARY;
 use crate::domain::{Answer, JapaneseLevel, NativeLanguage};
@@ -15,13 +14,11 @@ pub struct GenerateCardContentUseCase<'a, L: LlmService> {
 #[derive(Debug, Deserialize)]
 struct LlmResponse {
     translation: String,
-    examples: Vec<ExamplePhrase>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct CardContent {
     pub answer: Answer,
-    pub examples: Vec<ExamplePhrase>,
 }
 
 impl<'a, L: LlmService> GenerateCardContentUseCase<'a, L> {
@@ -52,11 +49,7 @@ impl<'a, L: LlmService> GenerateCardContentUseCase<'a, L> {
             VOCABULARY_DICTIONARY.get_translation(question_text, native_language)
         {
             let answer = Answer::new(translation)?;
-            // TODO: EXAMPLES!!
-            return Ok(Some(CardContent {
-                answer,
-                examples: vec![],
-            }));
+            return Ok(Some(CardContent { answer }));
         }
 
         Ok(None)
@@ -106,10 +99,7 @@ impl<'a, L: LlmService> GenerateCardContentUseCase<'a, L> {
         let response_cleaned = clean_json_response(response);
         let llm_response = parse_json_response(&response_cleaned, attempt)?;
         let answer = validate_and_create_answer(&llm_response.translation, attempt)?;
-        Ok(CardContent {
-            answer,
-            examples: llm_response.examples,
-        })
+        Ok(CardContent { answer })
     }
 }
 

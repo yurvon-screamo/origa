@@ -4,7 +4,8 @@ use origa::application::{
 };
 use origa::domain::{JapaneseLevel, NativeLanguage, OrigaError};
 use origa::settings::ApplicationEnvironment;
-use ulid::Ulid;
+
+use crate::services::app_services::current_user_id;
 
 #[derive(Clone)]
 pub struct UserService;
@@ -26,7 +27,8 @@ impl UserService {
     }
 
     /// Получить профиль пользователя
-    pub async fn get_user_profile(&self, user_id: Ulid) -> Result<UserProfileData, OrigaError> {
+    pub async fn get_user_profile(&self) -> Result<UserProfileData, OrigaError> {
+        let user_id = current_user_id();
         let repository = ApplicationEnvironment::get()
             .get_firebase_repository()
             .await?;
@@ -35,14 +37,13 @@ impl UserService {
 
         Ok(UserProfileData {
             username: profile.username,
-            email: format!("{}@origa.local", profile.id), // Email не хранится в User
             current_level: profile.current_japanese_level,
-            avatar_url: None, // Avatar не хранится в User
         })
     }
 
     /// Получить статистику для dashboard
-    pub async fn get_dashboard_stats(&self, user_id: Ulid) -> Result<DashboardStats, OrigaError> {
+    pub async fn get_dashboard_stats(&self) -> Result<DashboardStats, OrigaError> {
+        let user_id = current_user_id();
         let repository = ApplicationEnvironment::get()
             .get_firebase_repository()
             .await?;
@@ -90,11 +91,8 @@ impl UserService {
     }
 
     /// Обновить уровень JLPT пользователя
-    pub async fn update_japanese_level(
-        &self,
-        user_id: Ulid,
-        level: JapaneseLevel,
-    ) -> Result<(), OrigaError> {
+    pub async fn update_japanese_level(&self, level: JapaneseLevel) -> Result<(), OrigaError> {
+        let user_id = current_user_id();
         let repository = ApplicationEnvironment::get()
             .get_firebase_repository()
             .await?;
@@ -107,11 +105,8 @@ impl UserService {
     }
 
     /// Обновить язык интерфейса пользователя
-    pub async fn update_native_language(
-        &self,
-        user_id: Ulid,
-        language: NativeLanguage,
-    ) -> Result<(), OrigaError> {
+    pub async fn update_native_language(&self, language: NativeLanguage) -> Result<(), OrigaError> {
+        let user_id = current_user_id();
         let repository = ApplicationEnvironment::get()
             .get_firebase_repository()
             .await?;
@@ -127,7 +122,5 @@ impl UserService {
 #[derive(Clone, Debug)]
 pub struct UserProfileData {
     pub username: String,
-    pub email: String,
     pub current_level: JapaneseLevel,
-    pub avatar_url: Option<String>,
 }

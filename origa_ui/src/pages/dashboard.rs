@@ -11,10 +11,7 @@ pub fn Dashboard() -> impl IntoView {
         let service = user_service.clone();
         move || {
             let service = service.clone();
-            async move {
-                let user_id = ulid::Ulid::new(); // TODO: получить реальный user_id
-                service.get_dashboard_stats(user_id).await.ok()
-            }
+            async move { service.get_dashboard_stats().await.ok() }
         }
     });
 
@@ -32,10 +29,7 @@ pub fn Dashboard() -> impl IntoView {
         let service = user_service.clone();
         move || {
             let service = service.clone();
-            async move {
-                let user_id = ulid::Ulid::new(); // TODO: получить реальный user_id
-                service.get_user_profile(user_id).await.ok()
-            }
+            async move { service.get_user_profile().await.ok() }
         }
     });
 
@@ -47,19 +41,11 @@ pub fn Dashboard() -> impl IntoView {
             .unwrap_or_else(|| "Изучающий".to_string())
     });
 
-    let avatar_url = Signal::derive(move || {
-        profile_resource
-            .get()
-            .flatten()
-            .and_then(|p| p.avatar_url.clone())
-    });
-
     view! {
         <AppLayout active_tab="dashboard".to_string()>
             <PageHeader
                 title=Signal::derive(move || format!("Привет, {}!", username.get()))
                 subtitle="Готовы продолжить обучение?".to_string()
-                avatar_url=avatar_url
             />
 
             // Study Action Buttons
