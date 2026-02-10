@@ -26,7 +26,7 @@ pub fn App() -> impl IntoView {
         <Html attr:lang="ru" attr:dir="ltr" attr:data-theme="light" />
 
         // sets the document title
-        <Title text="Origa - Изучение японского языка" />
+        <Title text="オリガ" />
 
         // injects metadata in the <head> of the page
         <Meta charset="UTF-8" />

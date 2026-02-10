@@ -94,38 +94,6 @@ pub fn GrammarCard(
                 </div>
             </div>
 
-            <div class="grammar-examples">
-                <h5 class="examples-heading">Примеры использования:</h5>
-                <div class="examples-list">
-                    {card
-                        .examples
-                        .iter()
-                        .enumerate()
-                        .map(|(i, example)| {
-                            view! {
-                                <div class="example-item">
-                                    <div class="example-number">{i + 1}.</div>
-                                    <div class="example-content">
-                                        <div class="example-japanese">
-                                            <span class="example-grammar">
-                                                {example.grammar.clone()}
-                                            </span>
-                                            <span class="example-sentence">
-                                                {example.sentence.clone()}
-                                            </span>
-                                        </div>
-                                        <div class="example-translation">
-                                            {example.translation.clone()}
-                                        </div>
-                                        <div class="example-romaji">{example.romaji.clone()}</div>
-                                    </div>
-                                </div>
-                            }
-                        })
-                        .collect_view()}
-                </div>
-            </div>
-
             {is_added
                 .then(|| {
                     view! {
@@ -188,7 +156,6 @@ pub struct GrammarCardData {
     pub difficulty_text: String,
     pub stability: u32,
     pub jlpt_level: JapaneseLevel,
-    pub examples: Vec<GrammarExample>,
     pub status: crate::components::cards::vocab_card::CardStatus,
     pub next_review: chrono::NaiveDateTime,
     pub is_in_knowledge_set: bool,
@@ -199,7 +166,6 @@ pub struct GrammarExample {
     pub grammar: String,
     pub sentence: String,
     pub translation: String,
-    pub romaji: String,
 }
 
 fn render_difficulty_stars(difficulty: u32) -> String {

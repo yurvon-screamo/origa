@@ -46,8 +46,8 @@ impl<'a, R: UserRepository, L: crate::application::LlmService>
         user: &mut crate::domain::User,
         question_text: String,
     ) -> Result<Vec<StudyCard>, OrigaError> {
-        let tokens = tokenize_text(question_text.as_str())?;
         let mut cards = Vec::new();
+        let tokens = tokenize_text(question_text.as_str())?;
 
         for token in tokens {
             if !token.part_of_speech().is_vocabulary_word() {

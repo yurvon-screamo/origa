@@ -1,6 +1,6 @@
 use crate::application::UserRepository;
-use crate::domain::GrammarRuleInfo;
 use crate::domain::OrigaError;
+use crate::domain::get_rule_by_id;
 use crate::domain::{Card, GrammarRuleCard, StudyCard};
 use ulid::Ulid;
 
@@ -17,7 +17,7 @@ impl<'a, R: UserRepository> CreateGrammarCardUseCase<'a, R> {
     pub async fn execute(
         &self,
         user_id: Ulid,
-        rules: Vec<GrammarRuleInfo>,
+        rule_ids: Vec<Ulid>,
     ) -> Result<Vec<StudyCard>, OrigaError> {
         let mut user = self
             .repository
@@ -26,7 +26,10 @@ impl<'a, R: UserRepository> CreateGrammarCardUseCase<'a, R> {
             .ok_or(OrigaError::UserNotFound { user_id })?;
 
         let mut cards = vec![];
-        for rule in rules {
+        for id in rule_ids {
+            let rule = get_rule_by_id(&id).ok_or_else(|| OrigaError::RepositoryError {
+                reason: format!("Grammar rule {} not found", id),
+            })?;
             let card = Card::Grammar(GrammarRuleCard::new(rule, user.native_language())?);
             let created = user.create_card(card)?;
             cards.push(created);

@@ -11,7 +11,7 @@ pub enum LlmServiceInvoker {
     Gemini(GeminiLlm),
 }
 
-#[async_trait(?Send)]
+#[async_trait]
 impl LlmService for LlmServiceInvoker {
     async fn generate_text(&self, question: &str) -> Result<String, OrigaError> {
         match self {
