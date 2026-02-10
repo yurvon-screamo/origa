@@ -264,6 +264,7 @@ pub fn SearchBar(
 #### Reference Examples
 
 See these files for leptos-use patterns:
+
 - `origa_ui/src/pages/study.rs` - **`use_local_storage` for persistent settings**
 - `origa_ui/src/components/interactive/flash_card.rs` - **`use_timeout_fn` for audio simulation**
 - `origa_ui/src/components/forms/bottom_sheet.rs` - **`on_click_outside` for modal closing**
@@ -395,7 +396,7 @@ pub fn Wrapper(
 }
 ```
 
-2. **Duplicate the component logic** (preferred for simple cases):
+1. **Duplicate the component logic** (preferred for simple cases):
 
 ```rust
 #[component]
@@ -453,7 +454,8 @@ pub fn BottomSheet(
 }
 ```
 
-**Why this works**: 
+**Why this works**:
+
 - `children()` is called once when the component initializes
 - The result is stored in a variable and reused
 - CSS classes control visibility instead of conditional DOM rendering
@@ -654,7 +656,8 @@ view! {
 }
 ```
 
-**Rule of thumb**: 
+**Rule of thumb**:
+
 - Use closures (`move |_| { ... }`) for HTML element event handlers (`on:click`, `on:input`, etc.)
 - Use `Callback<T>` for component props that expect callbacks
 - When using `Callback` in component props, invoke with `.run()` inside event handlers
@@ -690,6 +693,7 @@ view! {
 ```
 
 **When to use parentheses**: Only when needed for operator precedence or complex expressions:
+
 ```rust
 total=(total_cards as u32 + offset)  // ✅ Needed for precedence
 ```
@@ -824,6 +828,7 @@ if let ((Some(c), Some(t))) = (current, total) {  // ❌ Unnecessary nested pare
 ```
 
 **Common type suffixes**:
+
 - `u32` - unsigned 32-bit integer
 - `i32` - signed 32-bit integer  
 - `u64`, `i64` - 64-bit integers
@@ -860,6 +865,7 @@ When using `For` component, clone ALL fields you'll need BEFORE using them in cl
 #### Reference Examples
 
 See these files for correct patterns:
+
 - `origa_ui/src/components/forms/bottom_sheet.rs` - **correct `children()` usage with CSS-visibility pattern** (PREFERRED)
 - `origa_ui/src/components/layout/app_layout.rs` - using .map() and .then()
 - `origa_ui/src/components/layout/tab_bar.rs` - component calling in view!
@@ -895,27 +901,6 @@ See these files for correct patterns:
 - Use case files should be small (~50-100 lines) and focused
 - Extract reusable UI components to `components/`
 - Keep module structure flat where possible: `origa/src/domain/`, `origa/src/application/`
-
-## Key Dependencies
-
-- `leptos = "0.8"` - UI framework with router
-- `leptos-use = "0.18"` - Collection of essential Leptos utilities (storage, debounce, timeouts, etc.)
-- `codee = { version = "0.3", features = ["json_serde"] }` - Codec support for leptos-use storage
-- `tokio = { version = "1.48", features = ["rt", "macros", "time"] }` - Async runtime
-- `rusqlite = { version = "0.38", features = ["bundled"] }` - SQLite with bundled build
-- `rs-fsrs = "1.2"` - Spaced repetition algorithm
-- `lindera = { version = "2.0", features = ["embed-unidic"] }` - Japanese tokenizer
-- `async-openai-wasm` - OpenAI API client (WASM compatible)
-- `dioxus-heroicons` - Icon components
-- `rstest` - Testing framework
-
-## Development Tips
-
-1. **Debug logging**: Use `tracing::info!`, `tracing::debug!` macros
-2. **Database inspection**: SQLite files are in user config directory; use `sqlite3` CLI to inspect
-3. **Web development**: Run `cargo trunk watch` in `origa_ui/` directory for hot reload
-4. **Desktop**: Build with Tauri for native window, tray icon, menu bar integration
-5. **State management**: Use Leptos signals for local state, context provider for global state
 
 ## Common Operations
 
