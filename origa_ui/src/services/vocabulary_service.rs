@@ -1,9 +1,10 @@
 use crate::components::cards::vocab_card::{CardStatus, VocabularyCardData};
+use crate::services::app_services::current_user_id;
 use origa::application::{
     CreateVocabularyCardUseCase, DeleteCardUseCase, KnowledgeSetCardsUseCase,
 };
 use origa::domain::{Card, OrigaError, StudyCard};
-use origa::settings::ApplicationEnvironment;
+use origa::settings::{ApplicationEnvironment, LlmSettings};
 use ulid::Ulid;
 
 #[derive(Clone)]
@@ -15,10 +16,8 @@ impl VocabularyService {
     }
 
     /// Получить все vocabulary карточки пользователя
-    pub async fn get_user_vocabulary(
-        &self,
-        user_id: Ulid,
-    ) -> Result<Vec<VocabularyCardData>, OrigaError> {
+    pub async fn get_user_vocabulary(&self) -> Result<Vec<VocabularyCardData>, OrigaError> {
+        let user_id = current_user_id();
         let repository = ApplicationEnvironment::get()
             .get_firebase_repository()
             .await?;
@@ -41,16 +40,14 @@ impl VocabularyService {
     }
 
     /// Создать новую vocabulary карточку
-    pub async fn create_vocabulary(
-        &self,
-        user_id: Ulid,
-        japanese: String,
-    ) -> Result<Vec<StudyCard>, OrigaError> {
+    pub async fn create_vocabulary(&self, japanese: String) -> Result<Vec<StudyCard>, OrigaError> {
+        let user_id = current_user_id();
+        let llm_settings = LlmSettings::None; // TODO: get real llm client 
         let repository = ApplicationEnvironment::get()
             .get_firebase_repository()
             .await?;
         let llm_service = ApplicationEnvironment::get()
-            .get_llm_service(user_id)
+            .get_llm_service(&llm_settings)
             .await?;
 
         let use_case = CreateVocabularyCardUseCase::new(repository, &llm_service);
@@ -59,7 +56,8 @@ impl VocabularyService {
     }
 
     /// Удалить карточку
-    pub async fn delete_vocabulary(&self, user_id: Ulid, card_id: Ulid) -> Result<(), OrigaError> {
+    pub async fn delete_vocabulary(&self, card_id: Ulid) -> Result<(), OrigaError> {
+        let user_id = current_user_id();
         let repository = ApplicationEnvironment::get()
             .get_firebase_repository()
             .await?;

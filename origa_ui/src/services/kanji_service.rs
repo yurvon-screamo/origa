@@ -1,6 +1,7 @@
 use crate::components::cards::kanji_card::RadicalInfo;
 use crate::components::cards::kanji_detail::{ExampleInfo, KanjiDetailData};
 use crate::components::cards::vocab_card::CardStatus;
+use crate::services::app_services::current_user_id;
 use origa::application::{
     CreateKanjiCardUseCase, DeleteKanjiCardUseCase, KanjiInfoUseCase, KanjiListUseCase,
     KnowledgeSetCardsUseCase,
@@ -21,9 +22,9 @@ impl KanjiService {
     pub async fn get_kanji_by_level(
         &self,
         level: JapaneseLevel,
-        user_id: Ulid,
     ) -> Result<Vec<KanjiListData>, OrigaError> {
         // Get kanji list for the specified JLPT level
+        let user_id = current_user_id();
         let use_case = KanjiListUseCase::new();
         let kanji_list = use_case.execute(&level)?;
 
@@ -75,11 +76,8 @@ impl KanjiService {
         Ok(kanji_data)
     }
 
-    pub async fn add_kanji_to_knowledge_set(
-        &self,
-        user_id: Ulid,
-        kanji: String,
-    ) -> Result<(), OrigaError> {
+    pub async fn add_kanji_to_knowledge_set(&self, kanji: String) -> Result<(), OrigaError> {
+        let user_id = current_user_id();
         let repository = ApplicationEnvironment::get()
             .get_firebase_repository()
             .await?;
@@ -94,11 +92,8 @@ impl KanjiService {
         }
     }
 
-    pub async fn remove_kanji_from_knowledge_set(
-        &self,
-        user_id: Ulid,
-        kanji: String,
-    ) -> Result<(), OrigaError> {
+    pub async fn remove_kanji_from_knowledge_set(&self, kanji: String) -> Result<(), OrigaError> {
+        let user_id = current_user_id();
         let repository = ApplicationEnvironment::get()
             .get_firebase_repository()
             .await?;
@@ -111,11 +106,10 @@ impl KanjiService {
 
     pub async fn get_user_kanji_by_level(
         &self,
-        user_id: Ulid,
         level: JapaneseLevel,
     ) -> Result<Vec<KanjiListData>, OrigaError> {
         // Get all kanji for the level
-        let all_kanji = self.get_kanji_by_level(level, user_id).await?;
+        let all_kanji = self.get_kanji_by_level(level).await?;
 
         // TODO: Get user's cards when KnowledgeSetCardsUseCase is available
         // For now, return kanji without user-specific status
@@ -125,9 +119,9 @@ impl KanjiService {
     pub async fn get_kanji_detail(
         &self,
         kanji_char: String,
-        user_id: Ulid,
     ) -> Result<KanjiDetailData, OrigaError> {
         // Get kanji info from use case
+        let user_id = current_user_id();
         let use_case = KanjiInfoUseCase::new();
         let kanji_info = use_case.execute(&kanji_char)?;
 

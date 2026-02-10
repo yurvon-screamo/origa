@@ -29,7 +29,6 @@ pub fn PageHeader(
     #[prop(optional)] subtitle: Option<String>,
     #[prop(optional)] show_back: Option<bool>,
     #[prop(optional)] back_action: Option<Callback<()>>,
-    #[prop(optional)] avatar_url: Option<Signal<Option<String>>>,
 ) -> impl IntoView {
     let handle_back = move |_| {
         if let Some(action) = back_action {
@@ -57,28 +56,7 @@ pub fn PageHeader(
                             </button>
                         }
                     })}
-                {avatar_url.map(|avatar_signal| {
-                    view! {
-                        <div class="avatar-container me-3">
-                            {move || {
-                                match avatar_signal.get() {
-                                    Some(url) => view! {
-                                        <img
-                                            src=url.clone()
-                                            alt="Avatar"
-                                            class="avatar-image"
-                                        />
-                                    }
-                                    .into_any(),
-                                    None => view! {
-                                        <div class="avatar-placeholder">{"👤"}</div>
-                                    }
-                                    .into_any(),
-                                }
-                            }}
-                        </div>
-                    }
-                })}
+
                 <div class="flex flex-col">
                     <h1 class="page-title">{move || title.get()}</h1>
                     {subtitle.map(|sub| view! { <p class="page-subtitle">{sub}</p> })}

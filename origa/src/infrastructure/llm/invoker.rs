@@ -3,12 +3,11 @@ use async_trait::async_trait;
 use crate::application::LlmService;
 use crate::domain::OrigaError;
 
-use super::{GeminiLlm, OpenAiLlm};
+use super::OpenAiLlm;
 
 pub enum LlmServiceInvoker {
     None,
     OpenAi(OpenAiLlm),
-    Gemini(GeminiLlm),
 }
 
 #[async_trait]
@@ -19,7 +18,6 @@ impl LlmService for LlmServiceInvoker {
                 reason: "Please set LLM settings in your profile".to_string(),
             }),
             LlmServiceInvoker::OpenAi(service) => service.generate_text(question).await,
-            LlmServiceInvoker::Gemini(service) => service.generate_text(question).await,
         }
     }
 }

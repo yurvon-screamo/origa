@@ -7,14 +7,12 @@ use origa::domain::{JapaneseLevel, NativeLanguage};
 #[component]
 pub fn Profile() -> impl IntoView {
     let user_service = use_context::<UserService>().expect("UserService not provided");
-    let user_id = ulid::Ulid::new(); // TODO: получить реальный user_id
 
     let profile_resource = LocalResource::new({
         let service = user_service.clone();
-        let user_id_local = user_id;
         move || {
             let service = service.clone();
-            async move { service.get_user_profile(user_id_local).await.ok() }
+            async move { service.get_user_profile().await.ok() }
         }
     });
 
@@ -33,13 +31,12 @@ pub fn Profile() -> impl IntoView {
     // Обработчик изменения уровня JLPT с сохранением
     let handle_level_change = Callback::new({
         let user_service = user_service.clone();
-        let user_id_local = user_id;
         let set_level = set_selected_level_signal;
         move |level: JapaneseLevel| {
             set_level.set(level);
             let service = user_service.clone();
             spawn_local(async move {
-                let _ = service.update_japanese_level(user_id_local, level).await;
+                let _ = service.update_japanese_level(level).await;
             });
         }
     });
@@ -50,7 +47,6 @@ pub fn Profile() -> impl IntoView {
     // Обработчик изменения языка интерфейса
     let handle_language_change = {
         let user_service = user_service.clone();
-        let user_id_local = user_id;
         Callback::new(move |lang: String| {
             set_selected_language.set(lang.clone());
             let language = match lang.as_str() {
@@ -60,9 +56,7 @@ pub fn Profile() -> impl IntoView {
             };
             let service = user_service.clone();
             spawn_local(async move {
-                let _ = service
-                    .update_native_language(user_id_local, language)
-                    .await;
+                let _ = service.update_native_language(language).await;
             });
         })
     };
@@ -90,9 +84,6 @@ pub fn Profile() -> impl IntoView {
                         <h2 class="profile-name">
                             {move || profile.get().map(|p| p.username).unwrap_or_default()}
                         </h2>
-                        <p class="profile-email">
-                            {move || profile.get().map(|p| p.email).unwrap_or_default()}
-                        </p>
                     </div>
                 </div>
             </div>
