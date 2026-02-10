@@ -29,18 +29,10 @@ impl VocabularyInfo {
 }
 
 #[derive(Serialize, Deserialize)]
-struct ExamplePhraseStoredType {
-    text: String,
-    translation: String,
-}
-
-#[derive(Serialize, Deserialize)]
 struct VocabularyEntryStoredType {
     level: String,
     russian_translation: String,
     english_translation: String,
-    russian_examples: Vec<ExamplePhraseStoredType>,
-    english_examples: Vec<ExamplePhraseStoredType>,
 }
 
 pub struct VocabularyDatabase {

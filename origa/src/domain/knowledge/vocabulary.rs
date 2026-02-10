@@ -75,23 +75,3 @@ impl VocabularyCard {
         })
     }
 }
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct ExamplePhrase {
-    text: String,
-    translation: String,
-}
-
-impl ExamplePhrase {
-    pub fn new(text: String, translation: String) -> Self {
-        Self { text, translation }
-    }
-
-    pub fn text(&self) -> &String {
-        &self.text
-    }
-
-    pub fn translation(&self) -> &String {
-        &self.translation
-    }
-}
