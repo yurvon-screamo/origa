@@ -1,6 +1,6 @@
 use origa::application::{
     GetUserInfoUseCase, KnowledgeSetCardsUseCase, SelectCardsToFixationUseCase,
-    SelectCardsToLessonUseCase, UpdateUserProfileRequest, UpdateUserProfileUseCase,
+    SelectCardsToLessonUseCase, UpdateUserProfileUseCase,
 };
 use origa::domain::{JapaneseLevel, NativeLanguage, OrigaError};
 use origa::settings::ApplicationEnvironment;
@@ -38,6 +38,9 @@ impl UserService {
         Ok(UserProfileData {
             username: profile.username,
             current_level: profile.current_japanese_level,
+            native_language: profile.native_language,
+            duolingo_jwt_token: profile.duolingo_jwt_token,
+            telegram_user_id: profile.telegram_user_id,
         })
     }
 
@@ -92,30 +95,50 @@ impl UserService {
 
     /// Обновить уровень JLPT пользователя
     pub async fn update_japanese_level(&self, level: JapaneseLevel) -> Result<(), OrigaError> {
-        let user_id = current_user_id();
-        let repository = ApplicationEnvironment::get()
-            .get_firebase_repository()
-            .await?;
-        let use_case = UpdateUserProfileUseCase::new(repository);
-        let request = UpdateUserProfileRequest {
-            current_japanese_level: Some(level),
-            native_language: None,
-        };
-        use_case.execute(user_id, request).await
+        let user = self.get_user_profile().await?;
+        self.update_profile(
+            level,
+            user.native_language,
+            user.duolingo_jwt_token,
+            user.telegram_user_id,
+        )
+        .await
     }
 
     /// Обновить язык интерфейса пользователя
     pub async fn update_native_language(&self, language: NativeLanguage) -> Result<(), OrigaError> {
+        let user = self.get_user_profile().await?;
+        self.update_profile(
+            user.current_level,
+            language,
+            user.duolingo_jwt_token,
+            user.telegram_user_id,
+        )
+        .await
+    }
+
+    async fn update_profile(
+        &self,
+        current_japanese_level: JapaneseLevel,
+        native_language: NativeLanguage,
+        duolingo_jwt_token: Option<String>,
+        telegram_user_id: Option<u64>,
+    ) -> Result<(), OrigaError> {
         let user_id = current_user_id();
         let repository = ApplicationEnvironment::get()
             .get_firebase_repository()
             .await?;
         let use_case = UpdateUserProfileUseCase::new(repository);
-        let request = UpdateUserProfileRequest {
-            current_japanese_level: None,
-            native_language: Some(language),
-        };
-        use_case.execute(user_id, request).await
+
+        use_case
+            .execute(
+                user_id,
+                current_japanese_level,
+                native_language,
+                duolingo_jwt_token,
+                telegram_user_id,
+            )
+            .await
     }
 }
 
@@ -123,4 +146,7 @@ impl UserService {
 pub struct UserProfileData {
     pub username: String,
     pub current_level: JapaneseLevel,
+    pub native_language: NativeLanguage,
+    pub duolingo_jwt_token: Option<String>,
+    pub telegram_user_id: Option<u64>,
 }

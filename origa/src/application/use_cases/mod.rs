@@ -21,7 +21,6 @@ mod select_cards_to_fixation;
 mod select_cards_to_lesson;
 mod sync_duolingo_words;
 mod update_user_profile;
-mod update_user_settings;
 
 pub use complete_lesson::CompleteLessonUseCase;
 pub use create_grammar_card::CreateGrammarCardUseCase;
@@ -45,5 +44,4 @@ pub use rate_card::RateCardUseCase;
 pub use select_cards_to_fixation::SelectCardsToFixationUseCase;
 pub use select_cards_to_lesson::SelectCardsToLessonUseCase;
 pub use sync_duolingo_words::{SyncDuolingoWordsResult, SyncDuolingoWordsUseCase};
-pub use update_user_profile::{UpdateUserProfileRequest, UpdateUserProfileUseCase};
-pub use update_user_settings::{UpdateUserSettingsRequest, UpdateUserSettingsUseCase};
+pub use update_user_profile::UpdateUserProfileUseCase;
