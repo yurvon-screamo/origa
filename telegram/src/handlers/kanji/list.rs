@@ -1,7 +1,8 @@
 use super::{format_date, format_kanji_entry};
 use crate::handlers::OrigaDialogue;
+use crate::repository::OrigaServiceProvider;
 use crate::telegram_domain::SessionData;
-use origa::application::{KanjiListUseCase, KnowledgeSetCardsUseCase};
+use origa::application::KanjiListUseCase;
 use origa::domain::{Card, JapaneseLevel, KanjiInfo};
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -17,8 +18,9 @@ pub async fn handle_kanji_list(
 ) -> teloxide::requests::ResponseResult<()> {
     let level = "all".to_string();
     let chat_id = msg.chat.id;
+    let provider = OrigaServiceProvider::instance();
 
-    let kanji_review_dates = fetch_kanji_review_dates(session.user_id).await?;
+    let kanji_review_dates = fetch_kanji_review_dates(session.user_id, provider).await?;
 
     let kanji_list = get_kanji_by_level(&level);
     let total_pages = (kanji_list.len() + items_per_page - 1) / items_per_page.max(1);
@@ -74,14 +76,11 @@ pub fn get_kanji_by_level(level: &str) -> Vec<KanjiInfo> {
     }
 }
 
-pub async fn fetch_kanji_review_dates(
+async fn fetch_kanji_review_dates(
     user_id: ulid::Ulid,
+    provider: &OrigaServiceProvider,
 ) -> Result<HashMap<String, String>, teloxide::RequestError> {
-    let repository = crate::repository::build_repository()
-        .await
-        .map_err(|e| teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string()))))?;
-
-    let use_case = KnowledgeSetCardsUseCase::new(&repository);
+    let use_case = provider.knowledge_set_cards_use_case();
     let cards = use_case
         .execute(user_id)
         .await
@@ -210,7 +209,8 @@ pub async fn handle_kanji_list_by_level(
     items_per_page: usize,
     user_id: ulid::Ulid,
 ) -> teloxide::requests::ResponseResult<()> {
-    let kanji_review_dates = fetch_kanji_review_dates(user_id).await?;
+    let provider = OrigaServiceProvider::instance();
+    let kanji_review_dates = fetch_kanji_review_dates(user_id, provider).await?;
 
     let kanji_list = get_kanji_by_level(level);
     let total_pages = (kanji_list.len() + items_per_page - 1) / items_per_page.max(1);

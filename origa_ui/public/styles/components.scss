@@ -1372,21 +1372,6 @@
   gap: var(--space-xs);
 }
 
-.readings-list.onyomi,
-.readings-list.kunyomi {
-  background: var(--color-info-bg);
-  color: var(--color-info);
-  font-family: var(--font-family-japanese);
-  font-size: var(--font-size-sm);
-  padding: var(--space-xs) var(--space-sm);
-  border-radius: var(--radius-sm);
-}
-
-.readings-list.kunyomi {
-  background: var(--color-secondary-bg);
-  color: var(--color-secondary);
-}
-
 .kanji-radicals {
   margin-bottom: var(--space-md);
 }

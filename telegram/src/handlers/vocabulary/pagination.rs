@@ -1,3 +1,4 @@
+use crate::repository::OrigaServiceProvider;
 use crate::telegram_domain::DialogueState;
 use crate::telegram_domain::SessionData;
 use teloxide::prelude::*;
@@ -15,12 +16,10 @@ pub async fn handle_filter_change(
         .unwrap_or("all")
         .to_string();
 
-    let repository = crate::repository::build_repository().await.map_err(|e| {
-        teloxide::RequestError::Io(std::sync::Arc::new(std::io::Error::other(e.to_string())))
-    })?;
+    let provider = OrigaServiceProvider::instance();
 
     let cards = crate::handlers::vocabulary::list::fetch_vocabulary_cards_for_page_change(
-        &repository,
+        provider,
         session.user_id,
     )
     .await?;
@@ -90,12 +89,10 @@ pub async fn handle_page_change(
         _ => "all".to_string(),
     };
 
-    let repository = crate::repository::build_repository().await.map_err(|e| {
-        teloxide::RequestError::Io(std::sync::Arc::new(std::io::Error::other(e.to_string())))
-    })?;
+    let provider = OrigaServiceProvider::instance();
 
     let cards = crate::handlers::vocabulary::list::fetch_vocabulary_cards_for_page_change(
-        &repository,
+        provider,
         session.user_id,
     )
     .await?;

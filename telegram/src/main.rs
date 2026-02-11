@@ -14,42 +14,11 @@ use handlers::{
     main_menu_handler, profile_handler, start_handler,
     vocabulary::vocabulary_list_handler,
 };
-use origa::{application::UserRepository, infrastructure::FileSystemUserRepository};
-use std::path::PathBuf;
-use telegram_domain::{DialogueState, SessionData};
+use repository::OrigaServiceProvider;
+use telegram_domain::DialogueState;
 use teloxide::dispatching::dialogue::{self, InMemStorage};
 use teloxide::prelude::*;
 use tracing::info;
-
-async fn build_repository() -> Result<FileSystemUserRepository, origa::domain::OrigaError> {
-    let path = PathBuf::from("./data/users");
-    FileSystemUserRepository::new(path).await
-}
-
-async fn find_or_create_session(
-    repository: &FileSystemUserRepository,
-    telegram_id: u64,
-    username: &str,
-) -> Result<SessionData, origa::domain::OrigaError> {
-    if let Some(user) = repository.find_by_telegram_id(&telegram_id).await? {
-        return Ok(SessionData {
-            user_id: user.id(),
-            username: username.to_string(),
-        });
-    }
-
-    let user = origa::domain::User::new(
-        username.to_string(),
-        origa::domain::JapaneseLevel::N5,
-        origa::domain::NativeLanguage::Russian,
-    );
-    repository.save(&user).await?;
-
-    Ok(SessionData {
-        user_id: ulid::Ulid::new(),
-        username: username.to_string(),
-    })
-}
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -139,21 +108,16 @@ async fn vocabulary_endpoint(
     (page, items_per_page, filter): (usize, usize, String),
 ) -> ResponseResult<()> {
     let telegram_id = msg.chat.id.0 as u64;
-    let repository = build_repository().await.map_err(|e| {
-        teloxide::RequestError::Io(std::sync::Arc::new(std::io::Error::other(e.to_string())))
-    })?;
-
     let username = msg
         .from
         .as_ref()
         .map(|u| u.first_name.as_str())
         .unwrap_or("User");
 
-    let session = find_or_create_session(&repository, telegram_id, username)
-        .await
-        .map_err(|e| {
-            teloxide::RequestError::Io(std::sync::Arc::new(std::io::Error::other(e.to_string())))
-        })?;
+    let provider = OrigaServiceProvider::instance();
+    let session = provider
+        .get_or_create_session(telegram_id, username)
+        .await?;
 
     vocabulary_list_handler(bot, msg, dialogue, (page, items_per_page, filter), session).await
 }
@@ -165,21 +129,16 @@ async fn add_from_text_endpoint(
     pending_words: Vec<String>,
 ) -> ResponseResult<()> {
     let telegram_id = msg.chat.id.0 as u64;
-    let repository = build_repository().await.map_err(|e| {
-        teloxide::RequestError::Io(std::sync::Arc::new(std::io::Error::other(e.to_string())))
-    })?;
-
     let username = msg
         .from
         .as_ref()
         .map(|u| u.first_name.as_str())
         .unwrap_or("User");
 
-    let session = find_or_create_session(&repository, telegram_id, username)
-        .await
-        .map_err(|e| {
-            teloxide::RequestError::Io(std::sync::Arc::new(std::io::Error::other(e.to_string())))
-        })?;
+    let provider = OrigaServiceProvider::instance();
+    let session = provider
+        .get_or_create_session(telegram_id, username)
+        .await?;
 
     add_from_text_handler(bot, msg, dialogue, pending_words, session).await
 }
@@ -191,21 +150,16 @@ async fn kanji_endpoint(
     (_level, page, items_per_page): (String, usize, usize),
 ) -> ResponseResult<()> {
     let telegram_id = msg.chat.id.0 as u64;
-    let repository = build_repository().await.map_err(|e| {
-        teloxide::RequestError::Io(std::sync::Arc::new(std::io::Error::other(e.to_string())))
-    })?;
-
     let username = msg
         .from
         .as_ref()
         .map(|u| u.first_name.as_str())
         .unwrap_or("User");
 
-    let session = find_or_create_session(&repository, telegram_id, username)
-        .await
-        .map_err(|e| {
-            teloxide::RequestError::Io(std::sync::Arc::new(std::io::Error::other(e.to_string())))
-        })?;
+    let provider = OrigaServiceProvider::instance();
+    let session = provider
+        .get_or_create_session(telegram_id, username)
+        .await?;
 
     handle_kanji_list(bot, msg, dialogue, (page, items_per_page), session).await
 }
@@ -217,21 +171,16 @@ async fn grammar_endpoint(
     (page, items_per_page): (usize, usize),
 ) -> ResponseResult<()> {
     let telegram_id = msg.chat.id.0 as u64;
-    let repository = build_repository().await.map_err(|e| {
-        teloxide::RequestError::Io(std::sync::Arc::new(std::io::Error::other(e.to_string())))
-    })?;
-
     let username = msg
         .from
         .as_ref()
         .map(|u| u.first_name.as_str())
         .unwrap_or("User");
 
-    let session = find_or_create_session(&repository, telegram_id, username)
-        .await
-        .map_err(|e| {
-            teloxide::RequestError::Io(std::sync::Arc::new(std::io::Error::other(e.to_string())))
-        })?;
+    let provider = OrigaServiceProvider::instance();
+    let session = provider
+        .get_or_create_session(telegram_id, username)
+        .await?;
 
     grammar_list_handler(bot, msg, dialogue, (page, items_per_page), session).await
 }
@@ -250,21 +199,16 @@ async fn lesson_endpoint(
     ),
 ) -> ResponseResult<()> {
     let telegram_id = msg.chat.id.0 as u64;
-    let repository = build_repository().await.map_err(|e| {
-        teloxide::RequestError::Io(std::sync::Arc::new(std::io::Error::other(e.to_string())))
-    })?;
-
     let username = msg
         .from
         .as_ref()
         .map(|u| u.first_name.as_str())
         .unwrap_or("User");
 
-    let session = find_or_create_session(&repository, telegram_id, username)
-        .await
-        .map_err(|e| {
-            teloxide::RequestError::Io(std::sync::Arc::new(std::io::Error::other(e.to_string())))
-        })?;
+    let provider = OrigaServiceProvider::instance();
+    let session = provider
+        .get_or_create_session(telegram_id, username)
+        .await?;
 
     match mode {
         telegram_domain::state::LessonMode::Lesson => {
@@ -302,21 +246,16 @@ async fn vocabulary_search_endpoint(
     (page, items_per_page, stored_query): (usize, usize, String),
 ) -> ResponseResult<()> {
     let telegram_id = msg.chat.id.0 as u64;
-    let repository = build_repository().await.map_err(|e| {
-        teloxide::RequestError::Io(std::sync::Arc::new(std::io::Error::other(e.to_string())))
-    })?;
-
     let username = msg
         .from
         .as_ref()
         .map(|u| u.first_name.as_str())
         .unwrap_or("User");
 
-    let session = find_or_create_session(&repository, telegram_id, username)
-        .await
-        .map_err(|e| {
-            teloxide::RequestError::Io(std::sync::Arc::new(std::io::Error::other(e.to_string())))
-        })?;
+    let provider = OrigaServiceProvider::instance();
+    let session = provider
+        .get_or_create_session(telegram_id, username)
+        .await?;
 
     let search_query = msg.text().unwrap_or(&stored_query);
 

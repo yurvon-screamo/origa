@@ -1,6 +1,6 @@
 use crate::handlers::vocabulary::list::fetch_vocabulary_cards;
+use crate::repository::OrigaServiceProvider;
 use crate::telegram_domain::SessionData;
-use chrono::{Datelike, TimeDelta};
 use teloxide::prelude::*;
 use teloxide::types::InlineKeyboardMarkup;
 use ulid::Ulid;
@@ -18,11 +18,9 @@ pub async fn handle_show_detail(
         return respond(());
     };
 
-    let repository = crate::repository::build_repository().await.map_err(|e| {
-        teloxide::RequestError::Io(std::sync::Arc::new(std::io::Error::other(e.to_string())))
-    })?;
+    let provider = OrigaServiceProvider::instance();
 
-    let cards = fetch_vocabulary_cards(&repository, session.user_id).await?;
+    let cards = fetch_vocabulary_cards(provider, session.user_id).await?;
     let Some((_, card)) = cards.iter().find(|(id, _)| *id == card_id) else {
         bot.send_message(chat_id, "Карточка не найдена.").await?;
         return respond(());
@@ -50,64 +48,48 @@ fn format_card_detail(card: &origa::domain::StudyCard) -> String {
     };
 
     let memory = card.memory();
-
-    let meaning = match card.card() {
-        origa::domain::Card::Vocabulary(v) => v.meaning().text().to_string(),
-        _ => String::from("-"),
-    };
-
     let next_review = memory
         .next_review_date()
-        .map(format_date)
-        .unwrap_or_else(|| "сегодня".to_string());
+        .map(|d| {
+            let now = chrono::Utc::now();
+            let diff = d.signed_duration_since(now);
+            if diff.num_days() > 0 {
+                format!("через {} дн.", diff.num_days())
+            } else if diff.num_hours() > 0 {
+                format!("через {} ч.", diff.num_hours())
+            } else {
+                "сегодня".to_string()
+            }
+        })
+        .unwrap_or("нет данных".to_string());
 
+    let reviews_count = memory.reviews().len();
     let difficulty = memory
         .difficulty()
         .map(|d| format!("{:.1}", d.value()))
         .unwrap_or_else(|| "-".to_string());
-
     let stability = memory
         .stability()
-        .map(|s| format!("{:.1}", s.value()))
+        .map(|s| format!("{:.0} дней", s.value()))
         .unwrap_or_else(|| "-".to_string());
 
-    let reviews_count = memory.reviews().len();
-
-    let status = if memory.is_new() {
-        "Новая"
-    } else if memory.is_high_difficulty() {
-        "Сложная"
-    } else if memory.is_known_card() {
-        "Изучена"
-    } else if memory.is_in_progress() {
-        "В процессе"
-    } else {
-        "Неизвестно"
-    };
-
     format!(
-        "{}\\n\\n<b>Перевод:</b> {}\\n\\n<b>Статус:</b> {}\\n<b>Повтор:</b> {}\\n<b>Сложность:</b> {}\\n<b>Стабильность:</b> {}\\n<b>Всего повторений:</b> {}",
-        card_info, meaning, status, next_review, difficulty, stability, reviews_count
+        r#"{} 📚 Детали карточки
+
+<b>Слово:</b> {}
+<b>Перевод:</b> {}
+
+📊 Память:
+• Следующий повтор: {}
+• Кол-во повторов: {}
+• Стабильность: {}
+• Сложность: {}"#,
+        card_info,
+        card.card().question().text(),
+        card.card().answer().text(),
+        next_review,
+        reviews_count,
+        stability,
+        difficulty
     )
-}
-
-fn format_date(date: &chrono::DateTime<chrono::Utc>) -> String {
-    let now = chrono::Utc::now();
-    let today = now.date_naive();
-    let date_naive = date.date_naive();
-
-    if date_naive == today {
-        "сегодня".to_string()
-    } else if date_naive == today + TimeDelta::days(1) {
-        "завтра".to_string()
-    } else if date_naive < today {
-        "просрочено".to_string()
-    } else {
-        format!(
-            "{}.{}.{}",
-            date_naive.day(),
-            date_naive.month(),
-            date_naive.year()
-        )
-    }
 }
