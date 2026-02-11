@@ -19,6 +19,7 @@ impl<'a, R: UserRepository> UpdateUserProfileUseCase<'a, R> {
         native_language: NativeLanguage,
         duolingo_jwt_token: Option<String>,
         telegram_user_id: Option<u64>,
+        reminders_enabled: bool,
     ) -> Result<(), OrigaError> {
         let mut user = self
             .repository
@@ -30,6 +31,7 @@ impl<'a, R: UserRepository> UpdateUserProfileUseCase<'a, R> {
         user.set_native_language(native_language);
         user.set_duolingo_jwt_token(duolingo_jwt_token);
         user.set_telegram_user_id(telegram_user_id);
+        user.set_reminders_enabled(reminders_enabled);
 
         self.repository.save(&user).await?;
 
