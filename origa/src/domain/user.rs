@@ -16,6 +16,7 @@ pub struct User {
     duolingo_jwt_token: Option<String>,
     telegram_user_id: Option<u64>,
     knowledge_set: KnowledgeSet,
+    reminders_enabled: bool,
 }
 
 impl User {
@@ -32,6 +33,7 @@ impl User {
             native_language,
             duolingo_jwt_token: None,
             telegram_user_id: None,
+            reminders_enabled: true,
         }
     }
 
@@ -77,6 +79,14 @@ impl User {
 
     pub fn set_telegram_user_id(&mut self, telegram_user_id: Option<u64>) {
         self.telegram_user_id = telegram_user_id;
+    }
+
+    pub fn reminders_enabled(&self) -> bool {
+        self.reminders_enabled
+    }
+
+    pub fn set_reminders_enabled(&mut self, reminders_enabled: bool) {
+        self.reminders_enabled = reminders_enabled;
     }
 
     pub fn rate_card(

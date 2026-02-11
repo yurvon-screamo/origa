@@ -13,6 +13,7 @@ pub struct UserProfile {
     pub lesson_history: Vec<DailyHistoryItem>,
     pub duolingo_jwt_token: Option<String>,
     pub telegram_user_id: Option<u64>,
+    pub reminders_enabled: bool,
 }
 
 #[derive(Clone)]
@@ -40,6 +41,7 @@ impl<'a, R: UserRepository> GetUserInfoUseCase<'a, R> {
             lesson_history: user.knowledge_set().lesson_history().to_vec(),
             duolingo_jwt_token: user.duolingo_jwt_token().map(|x| x.to_string()),
             telegram_user_id: user.telegram_user_id().copied(),
+            reminders_enabled: user.reminders_enabled(),
         })
     }
 }

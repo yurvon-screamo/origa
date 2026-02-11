@@ -1,0 +1,206 @@
+use crate::handlers::OrigaDialogue;
+use crate::telegram_domain::{DialogueState, SessionData};
+use chrono::{Datelike, TimeDelta};
+use origa::application::{KnowledgeSetCardsUseCase, UserRepository};
+use origa::domain::{Card, GRAMMAR_RULES, NativeLanguage};
+use std::collections::HashMap;
+use std::sync::Arc;
+use teloxide::prelude::*;
+use teloxide::types::{InlineKeyboardButton, InlineKeyboardMarkup};
+use ulid::Ulid;
+
+pub fn format_date(date: &chrono::DateTime<chrono::Utc>) -> String {
+    let now = chrono::Utc::now();
+    let today = now.date_naive();
+    let date_naive = date.date_naive();
+
+    if date_naive == today {
+        "сегодня".to_string()
+    } else if date_naive == today + TimeDelta::days(1) {
+        "завтра".to_string()
+    } else if date_naive == today + TimeDelta::days(2) {
+        "послезавтра".to_string()
+    } else if date_naive < today {
+        "просрочено".to_string()
+    } else {
+        format!(
+            "{}.{}.{}",
+            date_naive.day(),
+            date_naive.month(),
+            date_naive.year()
+        )
+    }
+}
+
+pub fn grammar_list_keyboard(
+    page: usize,
+    items_per_page: usize,
+    review_dates: &HashMap<Ulid, String>,
+) -> InlineKeyboardMarkup {
+    let total_rules = GRAMMAR_RULES.len();
+    let total_pages = total_rules.div_ceil(items_per_page);
+    let start = page * items_per_page;
+    let end = (start + items_per_page).min(total_rules);
+
+    let mut rows: Vec<Vec<InlineKeyboardButton>> = vec![];
+
+    rows.push(vec![InlineKeyboardButton::callback(
+        "🔍 Поиск",
+        "grammar_search",
+    )]);
+
+    for i in start..end {
+        let rule = &GRAMMAR_RULES[i];
+        let content = rule.content(&NativeLanguage::Russian);
+        let title = content.title();
+        let rule_id = rule.rule_id();
+
+        let button_text = if let Some(review_date) = review_dates.get(rule_id) {
+            format!("✅ {}\nПовтор: {}", title, review_date)
+        } else {
+            title.to_string()
+        };
+
+        rows.push(vec![InlineKeyboardButton::callback(
+            button_text,
+            format!("grammar_detail_{}", rule_id),
+        )]);
+    }
+
+    rows.extend(build_navigation_buttons(page, total_pages));
+    rows.push(vec![InlineKeyboardButton::callback(
+        "🏠 Главная",
+        "menu_home",
+    )]);
+
+    InlineKeyboardMarkup::new(rows)
+}
+
+fn build_navigation_buttons(page: usize, total_pages: usize) -> Option<Vec<InlineKeyboardButton>> {
+    let mut nav_buttons = vec![];
+
+    if page > 0 {
+        nav_buttons.push(InlineKeyboardButton::callback(
+            "⬅️ Назад",
+            format!("grammar_page_{}", page - 1),
+        ));
+    }
+
+    nav_buttons.push(InlineKeyboardButton::callback(
+        format!("{}/{}", page + 1, total_pages),
+        "grammar_current_page",
+    ));
+
+    if page < total_pages - 1 {
+        nav_buttons.push(InlineKeyboardButton::callback(
+            "Далее ➡️",
+            format!("grammar_page_{}", page + 1),
+        ));
+    }
+
+    if nav_buttons.is_empty() {
+        None
+    } else {
+        Some(nav_buttons)
+    }
+}
+
+pub async fn get_grammar_review_dates(
+    telegram_id: u64,
+) -> Result<HashMap<Ulid, String>, teloxide::RequestError> {
+    let repository = super::build_repository()
+        .await
+        .map_err(|e| teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string()))))?;
+
+    let user = repository
+        .find_by_telegram_id(&telegram_id)
+        .await
+        .map_err(|e| teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string()))))?
+        .ok_or_else(|| {
+            teloxide::RequestError::Io(Arc::new(std::io::Error::other("User not found")))
+        })?;
+
+    let use_case = KnowledgeSetCardsUseCase::new(&repository);
+    let cards = use_case
+        .execute(user.id())
+        .await
+        .map_err(|e| teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string()))))?;
+
+    Ok(cards
+        .into_iter()
+        .filter_map(|sc| {
+            if let Card::Grammar(grammar_card) = sc.card() {
+                let rule_id = *grammar_card.rule_id();
+                let next_review = sc
+                    .memory()
+                    .next_review_date()
+                    .map(format_date)
+                    .unwrap_or_else(|| "сегодня".to_string());
+                Some((rule_id, next_review))
+            } else {
+                None
+            }
+        })
+        .collect())
+}
+
+pub async fn get_added_grammar_rule_ids(
+    telegram_id: u64,
+) -> Result<Vec<Ulid>, teloxide::RequestError> {
+    let repository = super::build_repository()
+        .await
+        .map_err(|e| teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string()))))?;
+
+    let user = repository
+        .find_by_telegram_id(&telegram_id)
+        .await
+        .map_err(|e| teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string()))))?
+        .ok_or_else(|| {
+            teloxide::RequestError::Io(Arc::new(std::io::Error::other("User not found")))
+        })?;
+
+    let use_case = KnowledgeSetCardsUseCase::new(&repository);
+    let cards = use_case
+        .execute(user.id())
+        .await
+        .map_err(|e| teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string()))))?
+        .into_iter()
+        .filter_map(|sc| match sc.card() {
+            Card::Grammar(grammar_card) => Some(*grammar_card.rule_id()),
+            _ => None,
+        })
+        .collect();
+
+    Ok(cards)
+}
+
+pub async fn grammar_list_handler(
+    bot: Bot,
+    msg: Message,
+    dialogue: OrigaDialogue,
+    (page, items_per_page): (usize, usize),
+    _session: SessionData,
+) -> ResponseResult<()> {
+    let telegram_id = msg.chat.id.0 as u64;
+    let _repository = super::build_repository()
+        .await
+        .map_err(|e| teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string()))))?;
+
+    let review_dates = get_grammar_review_dates(telegram_id).await?;
+    let text = "📖 Грамматика\n\nВыберите правило для просмотра:".to_string();
+    let keyboard = grammar_list_keyboard(page, items_per_page, &review_dates);
+
+    bot.send_message(msg.chat.id, text)
+        .reply_markup(keyboard)
+        .await?;
+
+    dialogue
+        .update(DialogueState::GrammarList {
+            page,
+            items_per_page,
+        })
+        .await
+        .map_err(|e| teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string()))))?;
+
+    respond(())
+}

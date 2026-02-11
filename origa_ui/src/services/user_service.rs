@@ -137,6 +137,7 @@ impl UserService {
                 native_language,
                 duolingo_jwt_token,
                 telegram_user_id,
+                false, // TODO: add reminders_enabled to UI
             )
             .await
     }
