@@ -191,14 +191,7 @@ async fn lesson_endpoint(
     bot: Bot,
     msg: Message,
     dialogue: handlers::OrigaDialogue,
-    (mode, _card_ids, _current_index, _showing_answer, _new_count, _review_count): (
-        LessonMode,
-        Vec<ulid::Ulid>,
-        usize,
-        bool,
-        usize,
-        usize,
-    ),
+    mode: LessonMode,
 ) -> ResponseResult<()> {
     let telegram_id = msg.chat.id.0 as u64;
     let username = msg
