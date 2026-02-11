@@ -98,7 +98,7 @@ async fn handle_filter(
     dialogue: crate::handlers::OrigaDialogue,
     session: SessionData,
 ) -> ResponseResult<()> {
-    let provider = OrigaServiceProvider::instance();
+    let provider = OrigaServiceProvider::instance().await;
 
     let cards = crate::handlers::vocabulary::list::fetch_vocabulary_cards_for_page_change(
         provider,
@@ -162,7 +162,7 @@ async fn handle_page(
         _ => "all".to_string(),
     };
 
-    let provider = OrigaServiceProvider::instance();
+    let provider = OrigaServiceProvider::instance().await;
 
     let cards = crate::handlers::vocabulary::list::fetch_vocabulary_cards_for_page_change(
         provider,
@@ -218,7 +218,7 @@ async fn handle_detail(
     card_id: ulid::Ulid,
     session: SessionData,
 ) -> ResponseResult<()> {
-    let provider = OrigaServiceProvider::instance();
+    let provider = OrigaServiceProvider::instance().await;
     let cards =
         crate::handlers::vocabulary::list::fetch_vocabulary_cards(provider, session.user_id)
             .await?;
@@ -332,7 +332,7 @@ async fn handle_confirm_delete_typed(
     dialogue: crate::handlers::OrigaDialogue,
     session: SessionData,
 ) -> ResponseResult<()> {
-    let provider = OrigaServiceProvider::instance();
+    let provider = OrigaServiceProvider::instance().await;
 
     let use_case = provider.delete_card_use_case();
     match use_case.execute(session.user_id, card_id).await {
@@ -413,7 +413,7 @@ async fn handle_search_page(
     query: &str,
     dialogue: crate::handlers::OrigaDialogue,
 ) -> ResponseResult<()> {
-    let provider = OrigaServiceProvider::instance();
+    let provider = OrigaServiceProvider::instance().await;
 
     let cards =
         crate::handlers::vocabulary::list::fetch_vocabulary_cards(provider, Ulid::new()).await?;
@@ -513,7 +513,7 @@ async fn handle_main_menu(
         bot,
         chat_id,
         &session.username,
-        OrigaServiceProvider::instance(),
+        OrigaServiceProvider::instance().await,
         session.user_id,
         None,
     )
@@ -534,7 +534,7 @@ pub async fn handle_vocabulary_search(
     _page: usize,
     items_per_page: usize,
 ) -> ResponseResult<()> {
-    let provider = OrigaServiceProvider::instance();
+    let provider = OrigaServiceProvider::instance().await;
 
     let cards =
         crate::handlers::vocabulary::list::fetch_vocabulary_cards(provider, session.user_id)

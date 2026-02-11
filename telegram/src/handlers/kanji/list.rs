@@ -15,7 +15,7 @@ pub async fn handle_kanji_list(
     session: SessionData,
 ) -> teloxide::requests::ResponseResult<()> {
     let chat_id = msg.chat.id;
-    let provider = OrigaServiceProvider::instance();
+    let provider = OrigaServiceProvider::instance().await;
 
     let kanji_review_dates = fetch_kanji_review_dates(session.user_id, provider).await?;
 
@@ -64,7 +64,7 @@ pub fn get_kanji_by_level(level: Option<&JapaneseLevel>) -> Vec<KanjiInfo> {
     }
 }
 
-async fn fetch_kanji_review_dates(
+pub async fn fetch_kanji_review_dates(
     user_id: ulid::Ulid,
     provider: &OrigaServiceProvider,
 ) -> Result<HashMap<String, String>, teloxide::RequestError> {
@@ -208,7 +208,7 @@ pub async fn handle_kanji_list_by_level(
     items_per_page: usize,
     user_id: ulid::Ulid,
 ) -> teloxide::requests::ResponseResult<()> {
-    let provider = OrigaServiceProvider::instance();
+    let provider = OrigaServiceProvider::instance().await;
     let kanji_review_dates = fetch_kanji_review_dates(user_id, provider).await?;
 
     let kanji_list = get_kanji_by_level(level);

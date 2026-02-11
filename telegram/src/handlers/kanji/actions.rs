@@ -11,7 +11,7 @@ pub async fn handle_kanji_add(
     kanji_char: &str,
     user_id: ulid::Ulid,
 ) -> teloxide::requests::ResponseResult<()> {
-    let provider = OrigaServiceProvider::instance();
+    let provider = OrigaServiceProvider::instance().await;
     let use_case = provider.create_kanji_card_use_case();
 
     match use_case
@@ -48,7 +48,7 @@ pub async fn handle_kanji_delete(
     kanji_char: &str,
     user_id: ulid::Ulid,
 ) -> teloxide::requests::ResponseResult<()> {
-    let provider = OrigaServiceProvider::instance();
+    let provider = OrigaServiceProvider::instance().await;
     let delete_use_case = provider.delete_kanji_card_use_case();
 
     delete_use_case
