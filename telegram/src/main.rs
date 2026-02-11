@@ -116,7 +116,7 @@ async fn vocabulary_endpoint(
         .map(|u| u.first_name.as_str())
         .unwrap_or("User");
 
-    let provider = OrigaServiceProvider::instance();
+    let provider = OrigaServiceProvider::instance().await;
     let session = provider
         .get_or_create_session(telegram_id, username)
         .await?;
@@ -136,7 +136,7 @@ async fn add_from_text_endpoint(
 async fn kanji_endpoint(
     bot: Bot,
     msg: Message,
-    (page, items_per_page): (usize, usize),
+    (_level, page, items_per_page): (Option<origa::domain::JapaneseLevel>, usize, usize),
 ) -> ResponseResult<()> {
     let telegram_id = msg.chat.id.0 as u64;
     let username = msg
@@ -145,7 +145,7 @@ async fn kanji_endpoint(
         .map(|u| u.first_name.as_str())
         .unwrap_or("User");
 
-    let provider = OrigaServiceProvider::instance();
+    let provider = OrigaServiceProvider::instance().await;
     let session = provider
         .get_or_create_session(telegram_id, username)
         .await?;
@@ -166,7 +166,7 @@ async fn grammar_endpoint(
         .map(|u| u.first_name.as_str())
         .unwrap_or("User");
 
-    let provider = OrigaServiceProvider::instance();
+    let provider = OrigaServiceProvider::instance().await;
     let session = provider
         .get_or_create_session(telegram_id, username)
         .await?;
@@ -178,7 +178,14 @@ async fn lesson_endpoint(
     bot: Bot,
     msg: Message,
     dialogue: handlers::OrigaDialogue,
-    mode: LessonMode,
+    (mode, _card_ids, _current_index, _showing_answer, _new_count, _review_count): (
+        LessonMode,
+        Vec<ulid::Ulid>,
+        usize,
+        bool,
+        usize,
+        usize,
+    ),
 ) -> ResponseResult<()> {
     let telegram_id = msg.chat.id.0 as u64;
     let username = msg
@@ -187,7 +194,7 @@ async fn lesson_endpoint(
         .map(|u| u.first_name.as_str())
         .unwrap_or("User");
 
-    let provider = OrigaServiceProvider::instance();
+    let provider = OrigaServiceProvider::instance().await;
     let session = provider
         .get_or_create_session(telegram_id, username)
         .await?;
@@ -204,8 +211,7 @@ async fn profile_endpoint(
     msg: Message,
     current_view: dialogue::ProfileView,
 ) -> ResponseResult<()> {
-    let state = DialogueState::Profile { current_view };
-    profile_handler(bot, msg, state).await
+    profile_handler(bot, msg, DialogueState::Profile { current_view }).await
 }
 
 async fn duolingo_connect_endpoint(
@@ -229,7 +235,7 @@ async fn vocabulary_search_endpoint(
         .map(|u| u.first_name.as_str())
         .unwrap_or("User");
 
-    let provider = OrigaServiceProvider::instance();
+    let provider = OrigaServiceProvider::instance().await;
     let session = provider
         .get_or_create_session(telegram_id, username)
         .await?;

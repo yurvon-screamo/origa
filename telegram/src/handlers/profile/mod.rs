@@ -17,7 +17,7 @@ pub async fn profile_handler(
     state: crate::dialogue::DialogueState,
 ) -> ResponseResult<()> {
     let telegram_id = msg.chat.id.0 as u64;
-    let provider = OrigaServiceProvider::instance();
+    let provider = OrigaServiceProvider::instance().await;
 
     if let crate::dialogue::DialogueState::Profile { current_view } = state {
         match current_view {
@@ -34,7 +34,7 @@ pub async fn profile_handler(
     respond(())
 }
 
-async fn load_user_profile(
+pub async fn load_user_profile(
     provider: &'static OrigaServiceProvider,
     telegram_id: u64,
 ) -> ResponseResult<(UserProfile, Ulid)> {
@@ -93,7 +93,7 @@ async fn show_profile_main(
     respond(())
 }
 
-fn profile_main_keyboard() -> InlineKeyboardMarkup {
+pub fn profile_main_keyboard() -> InlineKeyboardMarkup {
     let buttons: Vec<Vec<InlineKeyboardButton>> = vec![
         vec![InlineKeyboardButton::callback(
             "Изменить уровень JLPT ➡️",
@@ -144,7 +144,7 @@ async fn show_profile_settings(
     respond(())
 }
 
-fn settings_keyboard(reminders_enabled: bool) -> InlineKeyboardMarkup {
+pub fn settings_keyboard(reminders_enabled: bool) -> InlineKeyboardMarkup {
     let button_text = if reminders_enabled {
         "🔔 Напоминания: Вкл"
     } else {
@@ -294,7 +294,7 @@ pub async fn profile_callback_handler(
                             e.to_string(),
                         )))
                     })?;
-                let provider = OrigaServiceProvider::instance();
+                let provider = OrigaServiceProvider::instance().await;
                 show_profile_settings(bot, chat_id, chat_id.0 as u64, provider).await?;
             }
         }
@@ -322,7 +322,7 @@ pub async fn profile_callback_handler(
                         )))
                     })?;
                 let telegram_id = chat_id.0 as u64;
-                let provider = OrigaServiceProvider::instance();
+                let provider = OrigaServiceProvider::instance().await;
                 show_profile_main(bot, chat_id, telegram_id, provider).await?;
             }
         }
@@ -344,7 +344,7 @@ async fn handle_jlpt_selection(
 ) -> ResponseResult<()> {
     if let Some(chat_id) = q.message.as_ref().map(|m| m.chat().id) {
         let telegram_id = chat_id.0 as u64;
-        let provider = OrigaServiceProvider::instance();
+        let provider = OrigaServiceProvider::instance().await;
 
         let (current_profile, user_id) = match load_user_profile(provider, telegram_id).await {
             Ok(p) => p,
@@ -390,7 +390,7 @@ async fn handle_reminders_toggle(
 ) -> ResponseResult<()> {
     if let Some(chat_id) = q.message.as_ref().map(|m| m.chat().id) {
         let telegram_id = chat_id.0 as u64;
-        let provider = OrigaServiceProvider::instance();
+        let provider = OrigaServiceProvider::instance().await;
 
         let (current_profile, user_id) = match load_user_profile(provider, telegram_id).await {
             Ok(p) => p,
@@ -452,7 +452,7 @@ pub async fn confirm_exit_handler(
     dialogue: &OrigaDialogue,
 ) -> ResponseResult<()> {
     if let Some(chat_id) = q.message.as_ref().map(|m| m.chat().id) {
-        let provider = OrigaServiceProvider::instance();
+        let provider = OrigaServiceProvider::instance().await;
         let telegram_id = chat_id.0 as u64;
 
         if let Ok(Some(user)) = provider
@@ -495,7 +495,7 @@ pub async fn handle_duolingo_token(
     }
 
     let telegram_id = msg.chat.id.0 as u64;
-    let provider = OrigaServiceProvider::instance();
+    let provider = OrigaServiceProvider::instance().await;
 
     let session = match provider.get_or_create_session(telegram_id, "User").await {
         Ok(s) => s,

@@ -14,7 +14,7 @@ pub async fn vocabulary_list_handler(
     (page, items_per_page, filter): (usize, usize, String),
     session: SessionData,
 ) -> ResponseResult<()> {
-    let provider = OrigaServiceProvider::instance();
+    let provider = OrigaServiceProvider::instance().await;
 
     let cards = fetch_vocabulary_cards(provider, session.user_id).await?;
     let filtered_cards = apply_filter(&cards, &filter);
@@ -65,7 +65,7 @@ pub async fn fetch_vocabulary_cards(
         .collect())
 }
 
-fn apply_filter(
+pub fn apply_filter(
     cards: &[(Ulid, origa::domain::StudyCard)],
     filter: &str,
 ) -> Vec<(Ulid, origa::domain::StudyCard)> {
@@ -82,7 +82,7 @@ fn apply_filter(
         .collect()
 }
 
-fn build_vocabulary_text(
+pub fn build_vocabulary_text(
     total_cards: usize,
     filter: &str,
     page_cards: &[(Ulid, origa::domain::StudyCard)],
