@@ -1,21 +1,27 @@
 use crate::bot::messaging::send_history;
 use crate::bot::{keyboard::reply_keyboard, messaging::send_main_menu_with_stats};
-use crate::repository::OrigaServiceProvider;
-use crate::telegram_domain::DialogueState;
-use lesson::{handle_lesson_callback, start_fixation, start_lesson};
+use crate::dialogue::{self, DialogueState, ProfileView};
+use crate::service::OrigaServiceProvider;
+use callbacks::CallbackData;
+use lesson::handle_lesson_callback;
+use lesson::start_fixation;
+use lesson::start_lesson;
 use std::sync::Arc;
 use teloxide::prelude::*;
 use teloxide::{dispatching::dialogue::InMemStorage, utils::command::BotCommands};
 
 pub mod add_from_text;
+pub mod callbacks;
 pub mod grammar;
 pub mod kanji;
 pub mod lesson;
+pub mod menu;
 pub mod profile;
 pub mod vocabulary;
 
 pub use profile::{handle_duolingo_token, profile_handler};
 
+pub use dialogue::SessionData;
 pub type OrigaDialogue =
     teloxide::dispatching::dialogue::Dialogue<DialogueState, InMemStorage<DialogueState>>;
 
@@ -29,7 +35,7 @@ pub enum Command {
 }
 
 pub async fn help_handler(bot: Bot, msg: Message) -> ResponseResult<()> {
-    let text = "/start - Запустить бота\\n/help - Показать эту справку";
+    let text = "/start - Запустить бота\n/help - Показать эту справку";
     bot.send_message(msg.chat.id, text).await?;
     respond(())
 }
@@ -105,7 +111,7 @@ pub async fn main_menu_handler(
             "🈷 Кандзи" => {
                 dialogue
                     .update(DialogueState::KanjiList {
-                        level: "all".to_string(),
+                        level: None,
                         page: 0,
                         items_per_page: 6,
                     })
@@ -128,7 +134,7 @@ pub async fn main_menu_handler(
             "👤 Профиль" => {
                 dialogue
                     .update(DialogueState::Profile {
-                        current_view: "main".to_string(),
+                        current_view: ProfileView::Main,
                     })
                     .await
                     .map_err(|e| {
@@ -138,7 +144,7 @@ pub async fn main_menu_handler(
             "⚙️ Настройки" => {
                 dialogue
                     .update(DialogueState::Profile {
-                        current_view: "settings".to_string(),
+                        current_view: ProfileView::Settings,
                     })
                     .await
                     .map_err(|e| {
@@ -186,101 +192,106 @@ pub async fn callback_handler(
 ) -> ResponseResult<()> {
     bot.answer_callback_query(q.id.clone()).await?;
 
-    if let Some(data) = q.data.clone()
-        && let Some(message) = &q.message
-    {
-        let chat_id = message.chat().id;
-        let telegram_id = chat_id.0 as u64;
-        let username = q.from.first_name.as_str();
-        let provider = OrigaServiceProvider::instance();
-        let session = provider
-            .get_or_create_session(telegram_id, username)
-            .await?;
+    let Some(data) = q.data.clone() else {
+        return respond(());
+    };
+    let Some(message) = &q.message else {
+        return respond(());
+    };
 
-        match data.as_str() {
-            d if d.starts_with("rating_")
-                || d == "next_card"
-                || d == "abort_lesson"
-                || d == "back_to_main" =>
-            {
-                handle_lesson_callback(bot, q, dialogue, session).await?;
-            }
-            "show_history"
-            | "history_known"
-            | "history_in_progress"
-            | "history_new"
-            | "history_hard" => {
-                send_history(&bot, chat_id, session.user_id, provider)
-                    .await
-                    .map_err(|e| {
-                        teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string())))
-                    })?;
-            }
-            d if d.starts_with("text_") => {
-                let current_state = dialogue.get().await.ok().flatten();
-                let pending_words = match current_state {
-                    Some(DialogueState::AddFromText { pending_words }) => pending_words,
-                    _ => vec![],
-                };
+    let chat_id = message.chat().id;
+    let telegram_id = chat_id.0 as u64;
+    let username = q.from.first_name.as_str();
+    let provider = OrigaServiceProvider::instance();
+    let session = provider
+        .get_or_create_session(telegram_id, username)
+        .await?;
 
-                add_from_text::add_from_text_callback_handler(
-                    bot,
-                    q,
-                    dialogue,
-                    pending_words,
-                    session,
-                )
-                .await?;
-            }
-            d if d.starts_with("profile_") || d.starts_with("jlpt_set_") => {
-                if d == "profile_confirm_exit" {
-                    profile::confirm_exit_handler(&bot, &q, &dialogue).await?;
-                } else {
-                    profile::profile_callback_handler(&bot, &q, d, &dialogue).await?;
-                }
-            }
-            d if d.starts_with("vocab_") || d == "menu_vocabulary" => {
-                if d == "menu_vocabulary" {
-                    dialogue
-                        .update(DialogueState::VocabularyList {
-                            page: 0,
-                            items_per_page: 6,
-                            filter: "all".to_string(),
-                        })
-                        .await
-                        .map_err(|e| {
-                            teloxide::RequestError::Io(Arc::new(std::io::Error::other(
-                                e.to_string(),
-                            )))
-                        })?;
-                }
+    let Some(callback) = CallbackData::try_from_json(&data) else {
+        return respond(());
+    };
 
-                vocabulary::vocabulary_callback_handler(bot, q, dialogue, session).await?;
-            }
-            d if d.starts_with("grammar_") || d == "menu_grammar" => {
-                grammar::grammar_callback_handler(bot, q, dialogue, session).await?;
-            }
-            d if d.starts_with("kanji_") || d == "menu_kanji" => {
-                if d == "menu_kanji" {
-                    dialogue
-                        .update(DialogueState::KanjiList {
-                            level: "all".to_string(),
-                            page: 0,
-                            items_per_page: 6,
-                        })
-                        .await
-                        .map_err(|e| {
-                            teloxide::RequestError::Io(Arc::new(std::io::Error::other(
-                                e.to_string(),
-                            )))
-                        })?;
-                }
+    handle_typed_callback(bot, q, dialogue, session, callback).await
+}
 
-                kanji::handle_kanji_callback(bot, d.to_string(), chat_id, dialogue, session)
-                    .await?;
-            }
-            _ => {}
+async fn handle_typed_callback(
+    bot: Bot,
+    q: CallbackQuery,
+    dialogue: OrigaDialogue,
+    session: SessionData,
+    callback: CallbackData,
+) -> ResponseResult<()> {
+    match callback {
+        CallbackData::AddFromText(_cb) => {
+            add_from_text::add_from_text_callback_handler(bot, q, dialogue, session).await?;
         }
+        CallbackData::Lesson(_cb) => {
+            handle_lesson_callback(bot, q, dialogue, session).await?;
+        }
+        CallbackData::Profile(cb) => {
+            profile::profile_callback_handler(&bot, &q, cb, &dialogue).await?;
+        }
+        CallbackData::Vocabulary(_cb) => {
+            vocabulary::vocabulary_callback_handler(bot, q, dialogue, session).await?;
+        }
+        CallbackData::Kanji(_cb) => {
+            kanji::kanji_callback_handler(bot, q, dialogue, session).await?;
+        }
+        CallbackData::Grammar(_cb) => {
+            grammar::grammar_callback_handler(bot, q, dialogue, session).await?;
+        }
+        CallbackData::Menu(cb) => {
+            handle_menu_callback(&bot, &q, dialogue, session, cb).await?;
+        }
+    }
+    respond(())
+}
+
+async fn handle_menu_callback(
+    bot: &Bot,
+    q: &CallbackQuery,
+    _dialogue: OrigaDialogue,
+    session: SessionData,
+    callback: menu::MenuCallback,
+) -> ResponseResult<()> {
+    let chat_id = q.message.as_ref().map(|m| m.chat().id);
+
+    match callback {
+        menu::MenuCallback::MainMenu => {
+            if let Some(chat_id) = chat_id {
+                crate::bot::messaging::send_main_menu_with_stats(
+                    bot,
+                    chat_id,
+                    &session.username,
+                    OrigaServiceProvider::instance(),
+                    session.user_id,
+                    None,
+                )
+                .await
+                .map_err(|e| {
+                    teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string())))
+                })?;
+            }
+        }
+        menu::MenuCallback::HistoryKnown
+        | menu::MenuCallback::HistoryInProgress
+        | menu::MenuCallback::HistoryNew
+        | menu::MenuCallback::HistoryHard
+        | menu::MenuCallback::ShowHistory => {
+            if let Some(chat_id) = chat_id {
+                send_history(
+                    bot,
+                    chat_id,
+                    session.user_id,
+                    OrigaServiceProvider::instance(),
+                )
+                .await
+                .map_err(|e| {
+                    teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string())))
+                })?;
+            }
+        }
+        _ => {}
     }
     respond(())
 }

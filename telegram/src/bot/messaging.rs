@@ -1,6 +1,6 @@
 use crate::bot::keyboard::{history_keyboard, main_menu_keyboard_with_stats};
 use crate::bot::statistics::{get_progress_history, get_user_statistics};
-use crate::repository::OrigaServiceProvider;
+use crate::service::OrigaServiceProvider;
 use anyhow::Result;
 use teloxide::prelude::*;
 use teloxide::types::{ChatId, ReplyMarkup};

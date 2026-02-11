@@ -13,7 +13,7 @@ use std::sync::{Arc, LazyLock};
 use teloxide::RequestError;
 use tokio::sync::RwLock;
 
-use crate::telegram_domain::SessionData;
+use crate::dialogue::SessionData;
 
 struct OrigaServiceProviderInner {
     repository: Arc<FileSystemUserRepository>,

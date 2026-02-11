@@ -1,3 +1,4 @@
+use super::KanjiCallback;
 use origa::domain::{KANJI_DICTIONARY, KanjiInfo};
 use teloxide::payloads::SendMessageSetters;
 use teloxide::prelude::Requester;
@@ -18,17 +19,23 @@ pub async fn handle_kanji_detail(
         vec![
             teloxide::types::InlineKeyboardButton::callback(
                 "Добавить",
-                format!("kanji_add_{}", kanji_char),
+                KanjiCallback::Add {
+                    kanji: kanji_char.to_string(),
+                }
+                .to_json(),
             ),
-            teloxide::types::InlineKeyboardButton::callback("Назад", "kanji_back_to_list"),
+            teloxide::types::InlineKeyboardButton::callback(
+                "Назад",
+                KanjiCallback::BackToList.to_json(),
+            ),
         ],
         vec![teloxide::types::InlineKeyboardButton::callback(
             "+ Добавить из списка",
-            "kanji_add_new",
+            KanjiCallback::AddNew.to_json(),
         )],
         vec![teloxide::types::InlineKeyboardButton::callback(
             "🏠 Главная",
-            "menu_home",
+            KanjiCallback::MainMenu.to_json(),
         )],
     ]);
 

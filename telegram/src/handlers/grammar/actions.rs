@@ -1,7 +1,6 @@
+use crate::dialogue::{DialogueState, SessionData};
 use crate::handlers::OrigaDialogue;
-use crate::repository::OrigaServiceProvider;
-use crate::telegram_domain::{DialogueState, SessionData};
-use std::sync::Arc;
+use crate::service::OrigaServiceProvider;
 use teloxide::prelude::*;
 use teloxide::types::ChatId;
 use ulid::Ulid;
@@ -12,11 +11,10 @@ use super::grammar_list_keyboard;
 pub async fn handle_grammar_add(
     bot: &Bot,
     chat_id: ChatId,
-    data: &str,
+    rule_id: Ulid,
     dialogue: OrigaDialogue,
     session: SessionData,
 ) -> ResponseResult<()> {
-    let rule_id = parse_rule_id(data)?;
     let provider = OrigaServiceProvider::instance();
 
     let use_case = provider.create_grammar_card_use_case();
@@ -39,11 +37,10 @@ pub async fn handle_grammar_add(
 pub async fn handle_grammar_delete(
     bot: &Bot,
     chat_id: ChatId,
-    data: &str,
+    rule_id: Ulid,
     dialogue: OrigaDialogue,
     session: SessionData,
 ) -> ResponseResult<()> {
-    let rule_id = parse_rule_id(data)?;
     let provider = OrigaServiceProvider::instance();
 
     let use_case = provider.delete_grammar_card_use_case();
@@ -102,20 +99,6 @@ pub async fn handle_grammar_search(
     .await?;
 
     respond(())
-}
-
-fn parse_rule_id(data: &str) -> Result<Ulid, teloxide::RequestError> {
-    let prefix = if data.starts_with("grammar_add_") {
-        "grammar_add_"
-    } else {
-        "grammar_delete_"
-    };
-
-    data.strip_prefix(prefix)
-        .and_then(|s| s.parse().ok())
-        .ok_or_else(|| {
-            teloxide::RequestError::Io(Arc::new(std::io::Error::other("Invalid rule ID")))
-        })
 }
 
 async fn send_grammar_list(

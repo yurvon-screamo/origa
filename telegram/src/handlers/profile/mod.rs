@@ -1,30 +1,62 @@
+mod callbacks;
+
+pub use callbacks::ProfileCallback;
+
+use crate::dialogue::ProfileView;
 use crate::handlers::OrigaDialogue;
-use crate::repository::OrigaServiceProvider;
-use origa::application::UserRepository;
+use crate::service::OrigaServiceProvider;
+use origa::application::{UserProfile, UserRepository};
 use origa::domain::JapaneseLevel;
 use teloxide::prelude::*;
 use teloxide::types::{ChatId, InlineKeyboardButton, InlineKeyboardMarkup};
+use ulid::Ulid;
 
 pub async fn profile_handler(
     bot: Bot,
     msg: Message,
-    dialogue: OrigaDialogue,
-    state: crate::telegram_domain::DialogueState,
+    state: crate::dialogue::DialogueState,
 ) -> ResponseResult<()> {
     let telegram_id = msg.chat.id.0 as u64;
     let provider = OrigaServiceProvider::instance();
 
-    if let crate::telegram_domain::DialogueState::Profile { current_view } = state {
-        match current_view.as_str() {
-            "main" => show_profile_main(&bot, msg.chat.id, telegram_id, provider).await?,
-            "settings" => show_profile_settings(&bot, msg.chat.id, telegram_id, provider).await?,
-            "jlpt_select" => show_jlpt_selector(&bot, msg.chat.id).await?,
-            "duolingo_connect" => show_duolingo_connect(&bot, msg.chat.id, &dialogue).await?,
-            _ => show_profile_main(&bot, msg.chat.id, telegram_id, provider).await?,
+    if let crate::dialogue::DialogueState::Profile { current_view } = state {
+        match current_view {
+            ProfileView::Main => {
+                show_profile_main(&bot, msg.chat.id, telegram_id, provider).await?
+            }
+            ProfileView::Settings => {
+                show_profile_settings(&bot, msg.chat.id, telegram_id, provider).await?
+            }
+            ProfileView::JlptSelect => show_jlpt_selector(&bot, msg.chat.id).await?,
         }
     }
 
     respond(())
+}
+
+async fn load_user_profile(
+    provider: &'static OrigaServiceProvider,
+    telegram_id: u64,
+) -> ResponseResult<(UserProfile, Ulid)> {
+    let session = provider
+        .get_or_create_session(telegram_id, "User")
+        .await
+        .map_err(|_| {
+            teloxide::RequestError::Io(std::sync::Arc::new(std::io::Error::other(
+                "Failed to create session",
+            )))
+        })?;
+
+    let use_case = provider.get_user_info_use_case();
+    use_case
+        .execute(session.user_id)
+        .await
+        .map(|p| (p, session.user_id))
+        .map_err(|_| {
+            teloxide::RequestError::Io(std::sync::Arc::new(std::io::Error::other(
+                "Failed to load profile",
+            )))
+        })
 }
 
 async fn show_profile_main(
@@ -33,16 +65,7 @@ async fn show_profile_main(
     telegram_id: u64,
     provider: &'static OrigaServiceProvider,
 ) -> ResponseResult<()> {
-    let session = match provider.get_or_create_session(telegram_id, "User").await {
-        Ok(s) => s,
-        Err(_) => {
-            bot.send_message(chat_id, "Ошибка загрузки профиля").await?;
-            return respond(());
-        }
-    };
-
-    let use_case = provider.get_user_info_use_case();
-    let profile = match use_case.execute(session.user_id).await {
+    let (profile, _) = match load_user_profile(provider, telegram_id).await {
         Ok(p) => p,
         Err(_) => {
             bot.send_message(chat_id, "Ошибка загрузки профиля").await?;
@@ -74,17 +97,20 @@ fn profile_main_keyboard() -> InlineKeyboardMarkup {
     let buttons: Vec<Vec<InlineKeyboardButton>> = vec![
         vec![InlineKeyboardButton::callback(
             "Изменить уровень JLPT ➡️",
-            "profile_jlpt",
+            ProfileCallback::JlptSelect.to_json(),
         )],
         vec![InlineKeyboardButton::callback(
             "🔗 Подключить Duolingo",
-            "profile_duolingo",
+            ProfileCallback::DuolingoConnect.to_json(),
         )],
         vec![InlineKeyboardButton::callback(
             "⚙️ Настройки",
-            "profile_settings",
+            ProfileCallback::Settings.to_json(),
         )],
-        vec![InlineKeyboardButton::callback("🚪 Выйти", "profile_exit")],
+        vec![InlineKeyboardButton::callback(
+            "🚪 Выйти",
+            ProfileCallback::Exit.to_json(),
+        )],
     ];
     InlineKeyboardMarkup::new(buttons)
 }
@@ -95,17 +121,7 @@ async fn show_profile_settings(
     telegram_id: u64,
     provider: &'static OrigaServiceProvider,
 ) -> ResponseResult<()> {
-    let session = match provider.get_or_create_session(telegram_id, "User").await {
-        Ok(s) => s,
-        Err(_) => {
-            bot.send_message(chat_id, "Ошибка загрузки настроек")
-                .await?;
-            return respond(());
-        }
-    };
-
-    let use_case = provider.get_user_info_use_case();
-    let profile = match use_case.execute(session.user_id).await {
+    let (profile, _) = match load_user_profile(provider, telegram_id).await {
         Ok(p) => p,
         Err(_) => {
             bot.send_message(chat_id, "Ошибка загрузки настроек")
@@ -138,9 +154,12 @@ fn settings_keyboard(reminders_enabled: bool) -> InlineKeyboardMarkup {
     let buttons: Vec<Vec<InlineKeyboardButton>> = vec![
         vec![InlineKeyboardButton::callback(
             button_text,
-            "profile_reminders",
+            ProfileCallback::RemindersToggle.to_json(),
         )],
-        vec![InlineKeyboardButton::callback("🔙 Назад", "profile_back")],
+        vec![InlineKeyboardButton::callback(
+            "🔙 Назад",
+            ProfileCallback::Back.to_json(),
+        )],
     ];
     InlineKeyboardMarkup::new(buttons)
 }
@@ -158,15 +177,48 @@ async fn show_jlpt_selector(bot: &Bot, chat_id: ChatId) -> ResponseResult<()> {
 fn jlpt_selector_keyboard() -> InlineKeyboardMarkup {
     let buttons: Vec<Vec<InlineKeyboardButton>> = vec![
         vec![
-            InlineKeyboardButton::callback("N5", "jlpt_set_N5"),
-            InlineKeyboardButton::callback("N4", "jlpt_set_N4"),
+            InlineKeyboardButton::callback(
+                "N5",
+                ProfileCallback::JlptSet {
+                    level: JapaneseLevel::N5,
+                }
+                .to_json(),
+            ),
+            InlineKeyboardButton::callback(
+                "N4",
+                ProfileCallback::JlptSet {
+                    level: JapaneseLevel::N4,
+                }
+                .to_json(),
+            ),
         ],
         vec![
-            InlineKeyboardButton::callback("N3", "jlpt_set_N3"),
-            InlineKeyboardButton::callback("N2", "jlpt_set_N2"),
+            InlineKeyboardButton::callback(
+                "N3",
+                ProfileCallback::JlptSet {
+                    level: JapaneseLevel::N3,
+                }
+                .to_json(),
+            ),
+            InlineKeyboardButton::callback(
+                "N2",
+                ProfileCallback::JlptSet {
+                    level: JapaneseLevel::N2,
+                }
+                .to_json(),
+            ),
         ],
-        vec![InlineKeyboardButton::callback("N1", "jlpt_set_N1")],
-        vec![InlineKeyboardButton::callback("🔙 Назад", "profile_back")],
+        vec![InlineKeyboardButton::callback(
+            "N1",
+            ProfileCallback::JlptSet {
+                level: JapaneseLevel::N1,
+            }
+            .to_json(),
+        )],
+        vec![InlineKeyboardButton::callback(
+            "🔙 Назад",
+            ProfileCallback::Back.to_json(),
+        )],
     ];
     InlineKeyboardMarkup::new(buttons)
 }
@@ -176,13 +228,13 @@ async fn show_duolingo_connect(
     chat_id: ChatId,
     dialogue: &OrigaDialogue,
 ) -> ResponseResult<()> {
-    use crate::telegram_domain::DialogueState;
+    use crate::dialogue::DialogueState;
 
     let text = "🔗 Подключение Duolingo\n\nДля подключения аккаунта Duolingo, пожалуйста, отправьте ваш токен авторизации (JWT token).\n\nПолучить токен можно через инструменты разработчика в браузере.\n\nОтправьте токен в следующем сообщении:";
 
     let keyboard = InlineKeyboardMarkup::new(vec![vec![InlineKeyboardButton::callback(
         "🔙 Назад",
-        "profile_back",
+        ProfileCallback::Back.to_json(),
     )]]);
 
     bot.send_message(chat_id, text)
@@ -202,49 +254,84 @@ async fn show_duolingo_connect(
 pub async fn profile_callback_handler(
     bot: &Bot,
     q: &CallbackQuery,
-    data: &str,
+    callback: ProfileCallback,
     dialogue: &OrigaDialogue,
 ) -> ResponseResult<()> {
     let chat_id = q.message.as_ref().map(|m| m.chat().id);
 
-    match data {
-        "profile_jlpt" => {
+    match callback {
+        ProfileCallback::JlptSelect => {
             if let Some(chat_id) = chat_id {
+                use crate::dialogue::DialogueState;
+                dialogue
+                    .update(DialogueState::Profile {
+                        current_view: ProfileView::JlptSelect,
+                    })
+                    .await
+                    .map_err(|e| {
+                        teloxide::RequestError::Io(std::sync::Arc::new(std::io::Error::other(
+                            e.to_string(),
+                        )))
+                    })?;
                 show_jlpt_selector(bot, chat_id).await?;
             }
         }
-        "profile_duolingo" => {
+        ProfileCallback::DuolingoConnect => {
             if let Some(chat_id) = chat_id {
                 show_duolingo_connect(bot, chat_id, dialogue).await?;
             }
         }
-        "profile_settings" => {
+        ProfileCallback::Settings => {
             if let Some(chat_id) = chat_id {
+                use crate::dialogue::DialogueState;
+                dialogue
+                    .update(DialogueState::Profile {
+                        current_view: ProfileView::Settings,
+                    })
+                    .await
+                    .map_err(|e| {
+                        teloxide::RequestError::Io(std::sync::Arc::new(std::io::Error::other(
+                            e.to_string(),
+                        )))
+                    })?;
                 let provider = OrigaServiceProvider::instance();
                 show_profile_settings(bot, chat_id, chat_id.0 as u64, provider).await?;
             }
         }
-        "profile_reminders" => {
+        ProfileCallback::RemindersToggle => {
             if let Some(_chat_id) = chat_id {
                 handle_reminders_toggle(bot, q, dialogue).await?;
             }
         }
-        "profile_exit" => {
+        ProfileCallback::Exit => {
             if let Some(chat_id) = chat_id {
                 handle_exit(bot, chat_id, dialogue).await?;
             }
         }
-        "profile_back" => {
+        ProfileCallback::Back => {
             if let Some(chat_id) = chat_id {
+                use crate::dialogue::DialogueState;
+                dialogue
+                    .update(DialogueState::Profile {
+                        current_view: ProfileView::Main,
+                    })
+                    .await
+                    .map_err(|e| {
+                        teloxide::RequestError::Io(std::sync::Arc::new(std::io::Error::other(
+                            e.to_string(),
+                        )))
+                    })?;
                 let telegram_id = chat_id.0 as u64;
                 let provider = OrigaServiceProvider::instance();
                 show_profile_main(bot, chat_id, telegram_id, provider).await?;
             }
         }
-        data if data.starts_with("jlpt_set_") => {
-            handle_jlpt_selection(bot, q, data, dialogue).await?;
+        ProfileCallback::JlptSet { level } => {
+            handle_jlpt_selection(bot, q, level).await?;
         }
-        _ => {}
+        ProfileCallback::ConfirmExit => {
+            confirm_exit_handler(bot, q, dialogue).await?;
+        }
     }
 
     respond(())
@@ -253,38 +340,13 @@ pub async fn profile_callback_handler(
 async fn handle_jlpt_selection(
     bot: &Bot,
     q: &CallbackQuery,
-    data: &str,
-    _dialogue: &OrigaDialogue,
+    level: JapaneseLevel,
 ) -> ResponseResult<()> {
-    let level_str = &data["jlpt_set_".len()..];
-    let level = match level_str {
-        "N5" => JapaneseLevel::N5,
-        "N4" => JapaneseLevel::N4,
-        "N3" => JapaneseLevel::N3,
-        "N2" => JapaneseLevel::N2,
-        "N1" => JapaneseLevel::N1,
-        _ => return respond(()),
-    };
-
     if let Some(chat_id) = q.message.as_ref().map(|m| m.chat().id) {
         let telegram_id = chat_id.0 as u64;
         let provider = OrigaServiceProvider::instance();
 
-        let session = match provider.get_or_create_session(telegram_id, "User").await {
-            Ok(s) => s,
-            Err(_) => {
-                bot.send_message(chat_id, "Ошибка обновления уровня")
-                    .await?;
-                return respond(());
-            }
-        };
-
-        let update_use_case = provider.update_user_profile_use_case();
-        let current_profile = match provider
-            .get_user_info_use_case()
-            .execute(session.user_id)
-            .await
-        {
+        let (current_profile, user_id) = match load_user_profile(provider, telegram_id).await {
             Ok(p) => p,
             Err(_) => {
                 bot.send_message(chat_id, "Ошибка обновления уровня")
@@ -293,9 +355,11 @@ async fn handle_jlpt_selection(
             }
         };
 
+        let update_use_case = provider.update_user_profile_use_case();
+
         match update_use_case
             .execute(
-                session.user_id,
+                user_id,
                 level,
                 current_profile.native_language,
                 current_profile.duolingo_jwt_token,
@@ -328,21 +392,7 @@ async fn handle_reminders_toggle(
         let telegram_id = chat_id.0 as u64;
         let provider = OrigaServiceProvider::instance();
 
-        let session = match provider.get_or_create_session(telegram_id, "User").await {
-            Ok(s) => s,
-            Err(_) => {
-                bot.send_message(chat_id, "Ошибка обновления настроек")
-                    .await?;
-                return respond(());
-            }
-        };
-
-        let update_use_case = provider.update_user_profile_use_case();
-        let current_profile = match provider
-            .get_user_info_use_case()
-            .execute(session.user_id)
-            .await
-        {
+        let (current_profile, user_id) = match load_user_profile(provider, telegram_id).await {
             Ok(p) => p,
             Err(_) => {
                 bot.send_message(chat_id, "Ошибка обновления настроек")
@@ -352,10 +402,11 @@ async fn handle_reminders_toggle(
         };
 
         let new_state = !current_profile.reminders_enabled;
+        let update_use_case = provider.update_user_profile_use_case();
 
         match update_use_case
             .execute(
-                session.user_id,
+                user_id,
                 current_profile.current_japanese_level,
                 current_profile.native_language,
                 current_profile.duolingo_jwt_token,
@@ -384,8 +435,8 @@ async fn handle_exit(bot: &Bot, chat_id: ChatId, _dialogue: &OrigaDialogue) -> R
     let text = "Вы уверены, что хотите удалить все данные? Это действие нельзя отменить.";
 
     let keyboard = InlineKeyboardMarkup::new(vec![vec![
-        InlineKeyboardButton::callback("✅ Да, удалить", "profile_confirm_exit"),
-        InlineKeyboardButton::callback("❌ Отмена", "profile_back"),
+        InlineKeyboardButton::callback("✅ Да, удалить", ProfileCallback::ConfirmExit.to_json()),
+        InlineKeyboardButton::callback("❌ Отмена", ProfileCallback::Back.to_json()),
     ]]);
 
     bot.send_message(chat_id, text)
