@@ -1,6 +1,8 @@
+mod callbacks;
+
 use crate::bot::messaging::send_main_menu_with_stats;
-use crate::repository::OrigaServiceProvider;
-use crate::telegram_domain::{DialogueState, LessonMode, SessionData};
+use crate::dialogue::{DialogueState, LessonMode, SessionData};
+use crate::service::OrigaServiceProvider;
 use chrono::Duration;
 use origa::application::srs_service::RateMode;
 use origa::domain::{Card, Rating};
@@ -10,6 +12,8 @@ use teloxide::payloads::SendMessageSetters;
 use teloxide::prelude::*;
 use teloxide::types::{ChatId, InlineKeyboardButton, InlineKeyboardMarkup};
 use ulid::Ulid;
+
+pub use callbacks::LessonCallback;
 
 pub async fn start_lesson(
     bot: Bot,
@@ -36,11 +40,8 @@ pub async fn start_lesson(
     };
 
     if cards.is_empty() {
-        bot.send_message(
-            msg.chat.id,
-            "Нет карточек для урока. Добавьте новые слова или подождите повторения.",
-        )
-        .await?;
+        bot.send_message(msg.chat.id, LessonCallback::NO_CARDS)
+            .await?;
         return respond(());
     }
 
@@ -60,8 +61,12 @@ pub async fn start_lesson(
         .map_err(|e| teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string()))))?;
 
     let lesson_start_text = format!(
-        "🎯 Урок начат\\nКарточек: {}\\nПрогресс: 0/{}",
-        total_cards, total_cards
+        "{}\\n{}: {}\\n{}: 0/{}",
+        LessonCallback::LESSON_STARTED,
+        LessonCallback::CARDS,
+        total_cards,
+        LessonCallback::PROGRESS,
+        total_cards
     );
 
     bot.send_message(msg.chat.id, lesson_start_text).await?;
@@ -105,7 +110,7 @@ pub async fn start_fixation(
     };
 
     if cards.is_empty() {
-        bot.send_message(msg.chat.id, "Нет сложных карточек для закрепления.")
+        bot.send_message(msg.chat.id, LessonCallback::NO_FIXATION_CARDS)
             .await?;
         return respond(());
     }
@@ -126,8 +131,12 @@ pub async fn start_fixation(
         .map_err(|e| teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string()))))?;
 
     let lesson_start_text = format!(
-        "🔒 Закрепление начато\\nКарточек: {}\\nПрогресс: 0/{}",
-        total_cards, total_cards
+        "{}\\n{}: {}\\n{}: 0/{}",
+        LessonCallback::FIXATION_STARTED,
+        LessonCallback::CARDS,
+        total_cards,
+        LessonCallback::PROGRESS,
+        total_cards
     );
 
     bot.send_message(msg.chat.id, lesson_start_text).await?;
@@ -152,6 +161,8 @@ pub async fn handle_lesson_callback(
     dialogue: crate::handlers::OrigaDialogue,
     session: SessionData,
 ) -> ResponseResult<()> {
+    bot.answer_callback_query(q.id.clone()).await?;
+
     let Some(data) = q.data else {
         return respond(());
     };
@@ -160,17 +171,21 @@ pub async fn handle_lesson_callback(
     };
     let chat_id = message.chat().id;
 
-    match data.as_str() {
-        d if d.starts_with("rating_") => {
-            handle_rating(&bot, chat_id, d, dialogue, session).await?;
+    let Some(callback) = LessonCallback::try_from_json(&data) else {
+        return respond(());
+    };
+
+    match callback {
+        LessonCallback::Rating { rating } => {
+            handle_rating(&bot, chat_id, rating, dialogue, session).await?;
         }
-        "next_card" => {
+        LessonCallback::NextCard => {
             handle_next_card(&bot, chat_id, dialogue, session).await?;
         }
-        "abort_lesson" => {
+        LessonCallback::AbortLesson => {
             handle_abort_lesson(&bot, chat_id, dialogue, session).await?;
         }
-        "back_to_main" => {
+        LessonCallback::BackToMain => {
             let provider = OrigaServiceProvider::instance();
 
             send_main_menu_with_stats(
@@ -189,7 +204,6 @@ pub async fn handle_lesson_callback(
                 teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string())))
             })?;
         }
-        _ => {}
     }
 
     respond(())
@@ -198,18 +212,10 @@ pub async fn handle_lesson_callback(
 async fn handle_rating(
     bot: &Bot,
     chat_id: ChatId,
-    data: &str,
+    rating: Rating,
     dialogue: crate::handlers::OrigaDialogue,
     session: SessionData,
 ) -> ResponseResult<()> {
-    let rating = match data {
-        "rating_again" => Rating::Again,
-        "rating_hard" => Rating::Hard,
-        "rating_good" => Rating::Good,
-        "rating_easy" => Rating::Easy,
-        _ => return respond(()),
-    };
-
     let provider = OrigaServiceProvider::instance();
 
     let current_state = dialogue.get().await.ok().flatten();
@@ -265,13 +271,13 @@ async fn handle_rating(
 
             let answer_text = format_card_back(card);
             let mut keyboard_rows = vec![vec![InlineKeyboardButton::callback(
-                "Далее ➡️",
-                "next_card",
+                LessonCallback::NEXT_CARD,
+                LessonCallback::NextCard.to_json(),
             )]];
 
             keyboard_rows.push(vec![InlineKeyboardButton::callback(
-                "Прервать",
-                "abort_lesson",
+                LessonCallback::ABORT_LESSON,
+                LessonCallback::AbortLesson.to_json(),
             )]);
 
             bot.send_message(chat_id, answer_text)
@@ -360,7 +366,12 @@ async fn handle_next_card(
 
             bot.send_message(
                 chat_id,
-                format!("Карточка {}/{}", next_index + 1, total_cards),
+                format!(
+                    "{} {}/{}",
+                    LessonCallback::CARD,
+                    next_index + 1,
+                    total_cards
+                ),
             )
             .await?;
 
@@ -394,7 +405,8 @@ async fn handle_abort_lesson(
     dialogue: crate::handlers::OrigaDialogue,
     session: SessionData,
 ) -> ResponseResult<()> {
-    bot.send_message(chat_id, "Урок прерван.").await?;
+    bot.send_message(chat_id, LessonCallback::LESSON_ABORTED)
+        .await?;
 
     let provider = OrigaServiceProvider::instance();
 
@@ -425,18 +437,23 @@ async fn show_lesson_complete(
     mode: LessonMode,
 ) -> ResponseResult<()> {
     let mode_text = match mode {
-        LessonMode::Lesson => "🎉 Урок завершён!",
-        LessonMode::Fixation => "🎉 Закрепление завершено!",
+        LessonMode::Lesson => LessonCallback::LESSON_COMPLETE,
+        LessonMode::Fixation => LessonCallback::FIXATION_COMPLETE,
     };
 
     let text = format!(
-        "{}\\nНовых: {} | Повторено: {}\\n\\n🏠 На главную",
-        mode_text, new_count, review_count
+        "{}\\n{}: {} | {}: {}\\n\\n{}",
+        mode_text,
+        LessonCallback::NEW,
+        new_count,
+        LessonCallback::REVIEWED,
+        review_count,
+        LessonCallback::BACK_TO_MAIN
     );
 
     let keyboard = InlineKeyboardMarkup::new(vec![vec![InlineKeyboardButton::callback(
-        "🏠 На главную",
-        "back_to_main",
+        LessonCallback::BACK_TO_MAIN,
+        LessonCallback::BackToMain.to_json(),
     )]]);
 
     bot.send_message(chat_id, text)
@@ -466,17 +483,27 @@ fn format_card_back(card: &Card) -> String {
     match card {
         Card::Vocabulary(_) => {
             format!(
-                "<b>{}</b>\\n\\n<b>Перевод:</b> {}\\n\\n<b>Примеры:</b>\\n日本語を勉強しています。\\n(Изучаю японский язык.)",
-                question, answer
+                "<b>{}</b>\\n\\n<b>{}:</b> {}\\n\\n<b>{}:</b>\\n{}",
+                question,
+                LessonCallback::TRANSLATION,
+                answer,
+                LessonCallback::EXAMPLES,
+                LessonCallback::EXAMPLE_SENTENCE
             )
         }
         Card::Kanji(_) => {
-            format!("<b>{}</b>\\n\\n<b>Значения:</b> {}", question, answer)
+            format!(
+                "<b>{}</b>\\n\\n<b>{}:</b> {}",
+                question,
+                LessonCallback::MEANINGS,
+                answer
+            )
         }
         Card::Grammar(grammar) => {
             format!(
-                "<b>{}</b>\\n\\n<b>Кратко:</b> {}",
+                "<b>{}</b>\\n\\n<b>{}:</b> {}",
                 grammar.title().text(),
+                LessonCallback::BRIEFLY,
                 answer
             )
         }
@@ -484,10 +511,15 @@ fn format_card_back(card: &Card) -> String {
 }
 
 fn lesson_rating_keyboard() -> InlineKeyboardMarkup {
-    InlineKeyboardMarkup::new(vec![vec![
-        InlineKeyboardButton::callback("Не знаю ❌", "rating_again"),
-        InlineKeyboardButton::callback("Плохо 😐", "rating_hard"),
-        InlineKeyboardButton::callback("Знаю ✅", "rating_good"),
-        InlineKeyboardButton::callback("Идеально 🌟", "rating_easy"),
-    ]])
+    let ratings = [Rating::Again, Rating::Hard, Rating::Good, Rating::Easy];
+    let buttons: Vec<_> = ratings
+        .into_iter()
+        .map(|rating| {
+            InlineKeyboardButton::callback(
+                LessonCallback::rating_button_text(rating),
+                LessonCallback::Rating { rating }.to_json(),
+            )
+        })
+        .collect();
+    InlineKeyboardMarkup::new(vec![buttons])
 }

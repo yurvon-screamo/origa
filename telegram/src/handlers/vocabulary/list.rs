@@ -1,5 +1,6 @@
-use crate::repository::OrigaServiceProvider;
-use crate::telegram_domain::{DialogueState, SessionData};
+use crate::dialogue::{DialogueState, SessionData};
+use crate::handlers::vocabulary::VocabularyCallback;
+use crate::service::OrigaServiceProvider;
 use chrono::{Datelike, TimeDelta};
 use teloxide::payloads::SendMessageSetters;
 use teloxide::prelude::*;
@@ -210,7 +211,10 @@ pub fn build_vocabulary_keyboard(
             };
             teloxide::types::InlineKeyboardButton::callback(
                 label_text,
-                format!("vocab_filter_{}", value),
+                VocabularyCallback::Filter {
+                    filter: value.to_string(),
+                }
+                .to_json(),
             )
         })
         .collect();
@@ -218,23 +222,23 @@ pub fn build_vocabulary_keyboard(
 
     rows.push(vec![teloxide::types::InlineKeyboardButton::callback(
         "🔍 Поиск",
-        "vocab_search",
+        VocabularyCallback::Search.to_json(),
     )]);
 
     rows.push(vec![teloxide::types::InlineKeyboardButton::callback(
         "+ Добавить из текста",
-        "vocab_add_from_text",
+        VocabularyCallback::AddFromText.to_json(),
     )]);
 
     for (card_id, _) in page_cards {
         rows.push(vec![
             teloxide::types::InlineKeyboardButton::callback(
                 "Подробнее",
-                format!("vocab_detail_{}", card_id),
+                VocabularyCallback::Detail { card_id: *card_id }.to_json(),
             ),
             teloxide::types::InlineKeyboardButton::callback(
                 "Удалить 🗑️",
-                format!("vocab_delete_{}", card_id),
+                VocabularyCallback::Delete { card_id: *card_id }.to_json(),
             ),
         ]);
     }
@@ -245,19 +249,25 @@ pub fn build_vocabulary_keyboard(
         if current_page > 0 {
             pagination_row.push(teloxide::types::InlineKeyboardButton::callback(
                 "⬅️ Назад",
-                format!("vocab_page_{}", current_page - 1),
+                VocabularyCallback::Page {
+                    page: current_page - 1,
+                }
+                .to_json(),
             ));
         }
 
         pagination_row.push(teloxide::types::InlineKeyboardButton::callback(
             format!("{}/{}", current_page + 1, total_pages),
-            "vocab_page_current",
+            VocabularyCallback::PageCurrent.to_json(),
         ));
 
         if current_page < total_pages - 1 {
             pagination_row.push(teloxide::types::InlineKeyboardButton::callback(
                 "Далее ➡️",
-                format!("vocab_page_{}", current_page + 1),
+                VocabularyCallback::Page {
+                    page: current_page + 1,
+                }
+                .to_json(),
             ));
         }
 

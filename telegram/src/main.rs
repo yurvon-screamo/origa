@@ -1,8 +1,9 @@
 mod bot;
+mod dialogue;
 mod handlers;
-mod repository;
-mod telegram_domain;
+mod service;
 
+use dialogue::{DialogueState, LessonMode};
 use handlers::{
     Command,
     add_from_text::add_from_text_handler,
@@ -14,19 +15,18 @@ use handlers::{
     main_menu_handler, profile_handler, start_handler,
     vocabulary::vocabulary_list_handler,
 };
-use repository::OrigaServiceProvider;
-use telegram_domain::DialogueState;
-use teloxide::dispatching::dialogue::{self, InMemStorage};
+use service::OrigaServiceProvider;
+use teloxide::dispatching::dialogue::{InMemStorage, enter};
 use teloxide::prelude::*;
 use tracing::info;
 
-use crate::telegram_domain::LessonMode;
+use crate::handlers::vocabulary::callback::handle_vocabulary_search;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt().init();
 
-    let bot = Bot::new(std::env::var("TELOXIDE_TOKEN").unwrap());
+    let bot = Bot::new(std::env::var("ORIGA_TELOXIDE_TOKEN").unwrap());
     info!("Starting Origa Telegram bot...");
     tokio::fs::create_dir_all("./data").await?;
 
@@ -89,7 +89,7 @@ async fn main() -> anyhow::Result<()> {
 
     let callback_query_handler = Update::filter_callback_query().endpoint(callback_handler);
 
-    let handler = dialogue::enter::<Update, InMemStorage<DialogueState>, DialogueState, _>()
+    let handler = enter::<Update, InMemStorage<DialogueState>, DialogueState, _>()
         .branch(message_handler)
         .branch(callback_query_handler);
 
@@ -130,26 +130,13 @@ async fn add_from_text_endpoint(
     dialogue: handlers::OrigaDialogue,
     pending_words: Vec<String>,
 ) -> ResponseResult<()> {
-    let telegram_id = msg.chat.id.0 as u64;
-    let username = msg
-        .from
-        .as_ref()
-        .map(|u| u.first_name.as_str())
-        .unwrap_or("User");
-
-    let provider = OrigaServiceProvider::instance();
-    let session = provider
-        .get_or_create_session(telegram_id, username)
-        .await?;
-
-    add_from_text_handler(bot, msg, dialogue, pending_words, session).await
+    add_from_text_handler(bot, msg, dialogue, pending_words).await
 }
 
 async fn kanji_endpoint(
     bot: Bot,
     msg: Message,
-    dialogue: handlers::OrigaDialogue,
-    (_level, page, items_per_page): (String, usize, usize),
+    (page, items_per_page): (usize, usize),
 ) -> ResponseResult<()> {
     let telegram_id = msg.chat.id.0 as u64;
     let username = msg
@@ -163,7 +150,7 @@ async fn kanji_endpoint(
         .get_or_create_session(telegram_id, username)
         .await?;
 
-    handle_kanji_list(bot, msg, dialogue, (page, items_per_page), session).await
+    handle_kanji_list(bot, msg, (page, items_per_page), session).await
 }
 
 async fn grammar_endpoint(
@@ -215,11 +202,10 @@ async fn lesson_endpoint(
 async fn profile_endpoint(
     bot: Bot,
     msg: Message,
-    dialogue: handlers::OrigaDialogue,
-    current_view: String,
+    current_view: dialogue::ProfileView,
 ) -> ResponseResult<()> {
     let state = DialogueState::Profile { current_view };
-    profile_handler(bot, msg, dialogue, state).await
+    profile_handler(bot, msg, state).await
 }
 
 async fn duolingo_connect_endpoint(
@@ -250,7 +236,7 @@ async fn vocabulary_search_endpoint(
 
     let search_query = msg.text().unwrap_or(&stored_query);
 
-    handlers::vocabulary::search::handle_vocabulary_search(
+    handle_vocabulary_search(
         &bot,
         msg.chat.id,
         &dialogue,

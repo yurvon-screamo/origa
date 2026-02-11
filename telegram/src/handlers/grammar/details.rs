@@ -1,5 +1,5 @@
+use crate::dialogue::{DialogueState, SessionData};
 use crate::handlers::OrigaDialogue;
-use crate::telegram_domain::{DialogueState, SessionData};
 use origa::domain::{NativeLanguage, get_rule_by_id};
 use std::sync::Arc;
 use teloxide::prelude::*;
@@ -7,6 +7,7 @@ use teloxide::types::{ChatId, InlineKeyboardButton, InlineKeyboardMarkup};
 use ulid::Ulid;
 
 use super::callback::message_id;
+use super::callbacks::GrammarCallback;
 use super::get_added_grammar_rule_ids;
 use super::get_grammar_review_dates;
 use super::grammar_list_keyboard;
@@ -15,14 +16,20 @@ pub fn grammar_detail_keyboard(rule_id: &Ulid, is_added: bool) -> InlineKeyboard
     let mut rows: Vec<Vec<InlineKeyboardButton>> = vec![];
 
     let action_button = if is_added {
-        InlineKeyboardButton::callback("❌ Удалить", format!("grammar_delete_{}", rule_id))
+        InlineKeyboardButton::callback(
+            "❌ Удалить",
+            GrammarCallback::Delete { rule_id: *rule_id }.to_json(),
+        )
     } else {
-        InlineKeyboardButton::callback("➕ Добавить", format!("grammar_add_{}", rule_id))
+        InlineKeyboardButton::callback(
+            "➕ Добавить",
+            GrammarCallback::Add { rule_id: *rule_id }.to_json(),
+        )
     };
 
     rows.push(vec![action_button]);
     rows.push(vec![
-        InlineKeyboardButton::callback("⬅️ Назад", "grammar_back_to_list"),
+        InlineKeyboardButton::callback("⬅️ Назад", GrammarCallback::BackToList.to_json()),
         InlineKeyboardButton::callback("🏠 Главная", "menu_home"),
     ]);
 
@@ -50,10 +57,9 @@ pub fn format_grammar_detail_text(rule_id: &Ulid) -> Result<String, teloxide::Re
 pub async fn handle_grammar_detail(
     bot: &Bot,
     chat_id: ChatId,
-    data: &str,
+    rule_id: Ulid,
     session: SessionData,
 ) -> ResponseResult<()> {
-    let rule_id = parse_rule_id(data)?;
     let added_rule_ids = get_added_grammar_rule_ids(&session).await?;
     let is_added = added_rule_ids.contains(&rule_id);
 
@@ -70,11 +76,10 @@ pub async fn handle_grammar_detail(
 pub async fn handle_grammar_page(
     bot: &Bot,
     chat_id: ChatId,
-    data: &str,
+    page: usize,
     dialogue: OrigaDialogue,
     session: SessionData,
 ) -> ResponseResult<()> {
-    let page = parse_page(data);
     let items_per_page = 6;
 
     let review_dates = get_grammar_review_dates(&session).await?;
@@ -94,18 +99,4 @@ pub async fn handle_grammar_page(
         .map_err(|e| teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string()))))?;
 
     respond(())
-}
-
-fn parse_rule_id(data: &str) -> Result<Ulid, teloxide::RequestError> {
-    data.strip_prefix("grammar_detail_")
-        .and_then(|s| s.parse().ok())
-        .ok_or_else(|| {
-            teloxide::RequestError::Io(Arc::new(std::io::Error::other("Invalid rule ID")))
-        })
-}
-
-fn parse_page(data: &str) -> usize {
-    data.strip_prefix("grammar_page_")
-        .and_then(|s| s.parse().ok())
-        .unwrap_or(0)
 }

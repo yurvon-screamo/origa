@@ -1,4 +1,5 @@
-use crate::repository::OrigaServiceProvider;
+use super::KanjiCallback;
+use crate::service::OrigaServiceProvider;
 use origa::domain::{KANJI_DICTIONARY, KanjiInfo};
 use std::sync::Arc;
 use teloxide::payloads::SendMessageSetters;
@@ -48,7 +49,6 @@ pub async fn handle_kanji_delete(
     user_id: ulid::Ulid,
 ) -> teloxide::requests::ResponseResult<()> {
     let provider = OrigaServiceProvider::instance();
-    let _cards_use_case = provider.knowledge_set_cards_use_case();
     let delete_use_case = provider.delete_kanji_card_use_case();
 
     delete_use_case
@@ -72,7 +72,10 @@ pub async fn handle_kanji_add_new(
     let text = "🔍 Введите кандзи для поиска и добавления:\n\nНапример: 日 или 日本".to_string();
 
     let keyboard = teloxide::types::InlineKeyboardMarkup::new(vec![vec![
-        teloxide::types::InlineKeyboardButton::callback("🏠 Главная", "menu_home"),
+        teloxide::types::InlineKeyboardButton::callback(
+            "🏠 Главная",
+            KanjiCallback::MainMenu.to_json(),
+        ),
     ]]);
 
     bot.send_message(chat_id, text)
@@ -140,7 +143,10 @@ pub async fn handle_kanji_search(
         let kanji_char = kanji.kanji().to_string();
         rows.push(vec![teloxide::types::InlineKeyboardButton::callback(
             format!("Добавить \'{}\'", kanji_char),
-            format!("kanji_add_{}", kanji_char),
+            KanjiCallback::Add {
+                kanji: kanji_char.clone(),
+            }
+            .to_json(),
         )]);
     }
 
@@ -148,13 +154,21 @@ pub async fn handle_kanji_search(
     if current_page > 0 {
         nav_row.push(teloxide::types::InlineKeyboardButton::callback(
             "⬅️",
-            format!("kanji_search_page_{}_{}", current_page - 1, query),
+            KanjiCallback::Search {
+                query: query.to_string(),
+                page: current_page - 1,
+            }
+            .to_json(),
         ));
     }
     if current_page + 1 < total_pages {
         nav_row.push(teloxide::types::InlineKeyboardButton::callback(
             "➡️",
-            format!("kanji_search_page_{}_{}", current_page + 1, query),
+            KanjiCallback::Search {
+                query: query.to_string(),
+                page: current_page + 1,
+            }
+            .to_json(),
         ));
     }
     if !nav_row.is_empty() {
@@ -163,7 +177,7 @@ pub async fn handle_kanji_search(
 
     rows.push(vec![teloxide::types::InlineKeyboardButton::callback(
         "🏠 Главная",
-        "menu_home",
+        KanjiCallback::MainMenu.to_json(),
     )]);
 
     let keyboard = teloxide::types::InlineKeyboardMarkup::new(rows);

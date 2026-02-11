@@ -1,4 +1,4 @@
-use crate::repository::OrigaServiceProvider;
+use crate::service::OrigaServiceProvider;
 use chrono::{Duration, Utc};
 
 pub struct UserStatistics {
@@ -8,6 +8,12 @@ pub struct UserStatistics {
     pub due_today: usize,
     pub new: usize,
     pub hard: usize,
+}
+
+impl Default for UserStatistics {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl UserStatistics {

@@ -1,6 +1,7 @@
+use super::callbacks::GrammarCallback;
+use crate::dialogue::{DialogueState, SessionData};
 use crate::handlers::OrigaDialogue;
-use crate::repository::OrigaServiceProvider;
-use crate::telegram_domain::{DialogueState, SessionData};
+use crate::service::OrigaServiceProvider;
 use chrono::{Datelike, TimeDelta};
 use origa::domain::{Card, GRAMMAR_RULES, NativeLanguage};
 use std::collections::HashMap;
@@ -46,7 +47,7 @@ pub fn grammar_list_keyboard(
 
     rows.push(vec![InlineKeyboardButton::callback(
         "🔍 Поиск",
-        "grammar_search",
+        GrammarCallback::Search.to_json(),
     )]);
 
     for i in start..end {
@@ -63,7 +64,7 @@ pub fn grammar_list_keyboard(
 
         rows.push(vec![InlineKeyboardButton::callback(
             button_text,
-            format!("grammar_detail_{}", rule_id),
+            GrammarCallback::Detail { rule_id: *rule_id }.to_json(),
         )]);
     }
 
@@ -82,19 +83,19 @@ fn build_navigation_buttons(page: usize, total_pages: usize) -> Option<Vec<Inlin
     if page > 0 {
         nav_buttons.push(InlineKeyboardButton::callback(
             "⬅️ Назад",
-            format!("grammar_page_{}", page - 1),
+            GrammarCallback::Page { page: page - 1 }.to_json(),
         ));
     }
 
     nav_buttons.push(InlineKeyboardButton::callback(
         format!("{}/{}", page + 1, total_pages),
-        "grammar_current_page",
+        GrammarCallback::CurrentPage.to_json(),
     ));
 
     if page < total_pages - 1 {
         nav_buttons.push(InlineKeyboardButton::callback(
             "Далее ➡️",
-            format!("grammar_page_{}", page + 1),
+            GrammarCallback::Page { page: page + 1 }.to_json(),
         ));
     }
 
