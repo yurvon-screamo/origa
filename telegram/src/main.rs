@@ -20,6 +20,8 @@ use teloxide::dispatching::dialogue::{self, InMemStorage};
 use teloxide::prelude::*;
 use tracing::info;
 
+use crate::telegram_domain::LessonMode;
+
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt().init();
@@ -190,7 +192,7 @@ async fn lesson_endpoint(
     msg: Message,
     dialogue: handlers::OrigaDialogue,
     (mode, _card_ids, _current_index, _showing_answer, _new_count, _review_count): (
-        telegram_domain::state::LessonMode,
+        LessonMode,
         Vec<ulid::Ulid>,
         usize,
         bool,
@@ -211,12 +213,8 @@ async fn lesson_endpoint(
         .await?;
 
     match mode {
-        telegram_domain::state::LessonMode::Lesson => {
-            start_lesson(bot, msg, dialogue, session).await?
-        }
-        telegram_domain::state::LessonMode::Fixation => {
-            start_fixation(bot, msg, dialogue, session).await?
-        }
+        LessonMode::Lesson => start_lesson(bot, msg, dialogue, session).await?,
+        LessonMode::Fixation => start_fixation(bot, msg, dialogue, session).await?,
     }
     respond(())
 }
