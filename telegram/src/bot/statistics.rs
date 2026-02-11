@@ -1,7 +1,5 @@
+use crate::repository::OrigaServiceProvider;
 use chrono::{Duration, Utc};
-use origa::{
-    application::use_cases::KnowledgeSetCardsUseCase, infrastructure::FileSystemUserRepository,
-};
 
 pub struct UserStatistics {
     pub total: usize,
@@ -26,10 +24,10 @@ impl UserStatistics {
 }
 
 pub async fn get_user_statistics(
-    repository: &FileSystemUserRepository,
+    provider: &OrigaServiceProvider,
     user_id: ulid::Ulid,
 ) -> Result<UserStatistics, origa::domain::OrigaError> {
-    let use_case = KnowledgeSetCardsUseCase::new(repository);
+    let use_case = provider.knowledge_set_cards_use_case();
     let cards = use_case.execute(user_id).await?;
 
     let mut stats = UserStatistics::new();
@@ -57,10 +55,10 @@ pub async fn get_user_statistics(
 
 pub async fn get_progress_history(
     user_id: ulid::Ulid,
-    repository: &FileSystemUserRepository,
+    provider: &OrigaServiceProvider,
     metric: &str,
 ) -> Result<String, origa::domain::OrigaError> {
-    let use_case = KnowledgeSetCardsUseCase::new(repository);
+    let use_case = provider.knowledge_set_cards_use_case();
     let cards = use_case.execute(user_id).await?;
 
     let now = Utc::now();
@@ -101,7 +99,7 @@ pub async fn get_progress_history(
 
     let mut text = format!(r#"История "{}":"#, metric_name);
     for (day_label, count) in &counts_by_day {
-        text.push_str(&format!("{}: {}\n", day_label, count));
+        text.push_str(&format!("{}: {}\\n", day_label, count));
     }
 
     Ok(text)

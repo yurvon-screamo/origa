@@ -1,7 +1,6 @@
+use crate::repository::OrigaServiceProvider;
 use crate::telegram_domain::{DialogueState, SessionData};
 use chrono::{Datelike, TimeDelta};
-use origa::application::KnowledgeSetCardsUseCase;
-use origa::infrastructure::FileSystemUserRepository;
 use teloxide::payloads::SendMessageSetters;
 use teloxide::prelude::*;
 use teloxide::types::InlineKeyboardMarkup;
@@ -14,11 +13,9 @@ pub async fn vocabulary_list_handler(
     (page, items_per_page, filter): (usize, usize, String),
     session: SessionData,
 ) -> ResponseResult<()> {
-    let repository = crate::repository::build_repository().await.map_err(|e| {
-        teloxide::RequestError::Io(std::sync::Arc::new(std::io::Error::other(e.to_string())))
-    })?;
+    let provider = OrigaServiceProvider::instance();
 
-    let cards = fetch_vocabulary_cards(&repository, session.user_id).await?;
+    let cards = fetch_vocabulary_cards(provider, session.user_id).await?;
     let filtered_cards = apply_filter(&cards, &filter);
 
     let total_cards = cards.len();
@@ -52,10 +49,10 @@ pub async fn vocabulary_list_handler(
 }
 
 pub async fn fetch_vocabulary_cards(
-    repository: &FileSystemUserRepository,
+    provider: &OrigaServiceProvider,
     user_id: Ulid,
 ) -> Result<Vec<(Ulid, origa::domain::StudyCard)>, teloxide::RequestError> {
-    let use_case = KnowledgeSetCardsUseCase::new(repository);
+    let use_case = provider.knowledge_set_cards_use_case();
     let cards = use_case.execute(user_id).await.map_err(|e| {
         teloxide::RequestError::Io(std::sync::Arc::new(std::io::Error::other(e.to_string())))
     })?;
@@ -271,10 +268,10 @@ pub fn build_vocabulary_keyboard(
 }
 
 pub async fn fetch_vocabulary_cards_for_page_change(
-    repository: &FileSystemUserRepository,
+    provider: &OrigaServiceProvider,
     user_id: Ulid,
 ) -> Result<Vec<(Ulid, origa::domain::StudyCard)>, teloxide::RequestError> {
-    fetch_vocabulary_cards(repository, user_id).await
+    fetch_vocabulary_cards(provider, user_id).await
 }
 
 pub fn apply_filter_cards(

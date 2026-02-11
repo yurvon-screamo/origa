@@ -1,7 +1,7 @@
 use crate::handlers::OrigaDialogue;
+use crate::repository::OrigaServiceProvider;
 use crate::telegram_domain::{DialogueState, SessionData};
 use chrono::{Datelike, TimeDelta};
-use origa::application::{KnowledgeSetCardsUseCase, UserRepository};
 use origa::domain::{Card, GRAMMAR_RULES, NativeLanguage};
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -106,23 +106,12 @@ fn build_navigation_buttons(page: usize, total_pages: usize) -> Option<Vec<Inlin
 }
 
 pub async fn get_grammar_review_dates(
-    telegram_id: u64,
+    session: &SessionData,
 ) -> Result<HashMap<Ulid, String>, teloxide::RequestError> {
-    let repository = super::build_repository()
-        .await
-        .map_err(|e| teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string()))))?;
-
-    let user = repository
-        .find_by_telegram_id(&telegram_id)
-        .await
-        .map_err(|e| teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string()))))?
-        .ok_or_else(|| {
-            teloxide::RequestError::Io(Arc::new(std::io::Error::other("User not found")))
-        })?;
-
-    let use_case = KnowledgeSetCardsUseCase::new(&repository);
+    let provider = OrigaServiceProvider::instance();
+    let use_case = provider.knowledge_set_cards_use_case();
     let cards = use_case
-        .execute(user.id())
+        .execute(session.user_id)
         .await
         .map_err(|e| teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string()))))?;
 
@@ -145,23 +134,12 @@ pub async fn get_grammar_review_dates(
 }
 
 pub async fn get_added_grammar_rule_ids(
-    telegram_id: u64,
+    session: &SessionData,
 ) -> Result<Vec<Ulid>, teloxide::RequestError> {
-    let repository = super::build_repository()
-        .await
-        .map_err(|e| teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string()))))?;
-
-    let user = repository
-        .find_by_telegram_id(&telegram_id)
-        .await
-        .map_err(|e| teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string()))))?
-        .ok_or_else(|| {
-            teloxide::RequestError::Io(Arc::new(std::io::Error::other("User not found")))
-        })?;
-
-    let use_case = KnowledgeSetCardsUseCase::new(&repository);
+    let provider = OrigaServiceProvider::instance();
+    let use_case = provider.knowledge_set_cards_use_case();
     let cards = use_case
-        .execute(user.id())
+        .execute(session.user_id)
         .await
         .map_err(|e| teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string()))))?
         .into_iter()
@@ -179,14 +157,9 @@ pub async fn grammar_list_handler(
     msg: Message,
     dialogue: OrigaDialogue,
     (page, items_per_page): (usize, usize),
-    _session: SessionData,
+    session: SessionData,
 ) -> ResponseResult<()> {
-    let telegram_id = msg.chat.id.0 as u64;
-    let _repository = super::build_repository()
-        .await
-        .map_err(|e| teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string()))))?;
-
-    let review_dates = get_grammar_review_dates(telegram_id).await?;
+    let review_dates = get_grammar_review_dates(&session).await?;
     let text = "📖 Грамматика\n\nВыберите правило для просмотра:".to_string();
     let keyboard = grammar_list_keyboard(page, items_per_page, &review_dates);
 

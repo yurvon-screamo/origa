@@ -1,5 +1,5 @@
 use crate::handlers::OrigaDialogue;
-use crate::telegram_domain::DialogueState;
+use crate::telegram_domain::{DialogueState, SessionData};
 use origa::domain::{NativeLanguage, get_rule_by_id};
 use std::sync::Arc;
 use teloxide::prelude::*;
@@ -37,12 +37,12 @@ pub fn format_grammar_detail_text(rule_id: &Ulid) -> Result<String, teloxide::Re
     let content = rule.content(&NativeLanguage::Russian);
 
     let mut text = format!(
-        "{}\\n\\nКратко: {}\\n",
+        "{}\n\nКратко: {}\n",
         content.title(),
         content.short_description()
     );
 
-    text.push_str("\\nПовтор: послезавтра");
+    text.push_str("\nПовтор: послезавтра");
 
     Ok(text)
 }
@@ -51,13 +51,10 @@ pub async fn handle_grammar_detail(
     bot: &Bot,
     chat_id: ChatId,
     data: &str,
-    telegram_id: u64,
+    session: SessionData,
 ) -> ResponseResult<()> {
     let rule_id = parse_rule_id(data)?;
-    let _repository = super::build_repository()
-        .await
-        .map_err(|e| teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string()))))?;
-    let added_rule_ids = get_added_grammar_rule_ids(telegram_id).await?;
+    let added_rule_ids = get_added_grammar_rule_ids(&session).await?;
     let is_added = added_rule_ids.contains(&rule_id);
 
     let text = format_grammar_detail_text(&rule_id)?;
@@ -75,17 +72,13 @@ pub async fn handle_grammar_page(
     chat_id: ChatId,
     data: &str,
     dialogue: OrigaDialogue,
+    session: SessionData,
 ) -> ResponseResult<()> {
     let page = parse_page(data);
     let items_per_page = 6;
 
-    let telegram_id = chat_id.0 as u64;
-    let _repository = super::build_repository()
-        .await
-        .map_err(|e| teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string()))))?;
-
-    let review_dates = get_grammar_review_dates(telegram_id).await?;
-    let text = "📖 Грамматика\\n\\nВыберите правило для просмотра:".to_string();
+    let review_dates = get_grammar_review_dates(&session).await?;
+    let text = "📖 Грамматика\n\nВыберите правило для просмотра:".to_string();
     let keyboard = grammar_list_keyboard(page, items_per_page, &review_dates);
 
     bot.edit_message_text(chat_id, message_id(bot, chat_id).await?, text)

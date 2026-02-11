@@ -1,4 +1,5 @@
 use crate::handlers::vocabulary::list::fetch_vocabulary_cards;
+use crate::repository::OrigaServiceProvider;
 use crate::telegram_domain::{DialogueState, SessionData};
 use teloxide::prelude::*;
 use teloxide::types::{ChatId, InlineKeyboardMarkup, MessageId};
@@ -13,11 +14,9 @@ pub async fn handle_vocabulary_search(
     _page: usize,
     items_per_page: usize,
 ) -> ResponseResult<()> {
-    let repository = crate::repository::build_repository().await.map_err(|e| {
-        teloxide::RequestError::Io(std::sync::Arc::new(std::io::Error::other(e.to_string())))
-    })?;
+    let provider = OrigaServiceProvider::instance();
 
-    let cards = fetch_vocabulary_cards(&repository, session.user_id).await?;
+    let cards = fetch_vocabulary_cards(provider, session.user_id).await?;
     let query_lower = search_query.to_lowercase();
 
     let filtered_cards: Vec<_> = cards
@@ -89,11 +88,9 @@ pub async fn handle_search_page_change(
 
     let query = parts[4..].join("_");
 
-    let repository = crate::repository::build_repository().await.map_err(|e| {
-        teloxide::RequestError::Io(std::sync::Arc::new(std::io::Error::other(e.to_string())))
-    })?;
+    let provider = OrigaServiceProvider::instance();
 
-    let cards = fetch_vocabulary_cards(&repository, Ulid::new()).await?;
+    let cards = fetch_vocabulary_cards(provider, Ulid::new()).await?;
     let query_lower = query.to_lowercase();
 
     let filtered_cards: Vec<_> = cards

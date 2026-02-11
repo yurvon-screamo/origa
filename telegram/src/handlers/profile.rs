@@ -1,36 +1,9 @@
 use crate::handlers::OrigaDialogue;
-use crate::repository::build_repository;
-use crate::telegram_domain::SessionData;
-use origa::application::{GetUserInfoUseCase, UpdateUserProfileUseCase, UserRepository};
-use origa::domain::{JapaneseLevel, NativeLanguage};
-use origa::infrastructure::FileSystemUserRepository;
+use crate::repository::OrigaServiceProvider;
+use origa::application::UserRepository;
+use origa::domain::JapaneseLevel;
 use teloxide::prelude::*;
 use teloxide::types::{ChatId, InlineKeyboardButton, InlineKeyboardMarkup};
-
-async fn find_or_create_session(
-    repository: &FileSystemUserRepository,
-    telegram_id: u64,
-    username: &str,
-) -> Result<SessionData, origa::domain::OrigaError> {
-    if let Some(user) = repository.find_by_telegram_id(&telegram_id).await? {
-        return Ok(SessionData {
-            user_id: user.id(),
-            username: username.to_string(),
-        });
-    }
-
-    let user = origa::domain::User::new(
-        username.to_string(),
-        JapaneseLevel::N5,
-        NativeLanguage::Russian,
-    );
-    repository.save(&user).await?;
-
-    Ok(SessionData {
-        user_id: ulid::Ulid::new(),
-        username: username.to_string(),
-    })
-}
 
 pub async fn profile_handler(
     bot: Bot,
@@ -39,17 +12,15 @@ pub async fn profile_handler(
     state: crate::telegram_domain::DialogueState,
 ) -> ResponseResult<()> {
     let telegram_id = msg.chat.id.0 as u64;
-    let repository = build_repository().await.unwrap();
+    let provider = OrigaServiceProvider::instance();
 
     if let crate::telegram_domain::DialogueState::Profile { current_view } = state {
         match current_view.as_str() {
-            "main" => show_profile_main(&bot, msg.chat.id, telegram_id, &repository).await?,
-            "settings" => {
-                show_profile_settings(&bot, msg.chat.id, telegram_id, &repository).await?
-            }
+            "main" => show_profile_main(&bot, msg.chat.id, telegram_id, provider).await?,
+            "settings" => show_profile_settings(&bot, msg.chat.id, telegram_id, provider).await?,
             "jlpt_select" => show_jlpt_selector(&bot, msg.chat.id).await?,
             "duolingo_connect" => show_duolingo_connect(&bot, msg.chat.id, &dialogue).await?,
-            _ => show_profile_main(&bot, msg.chat.id, telegram_id, &repository).await?,
+            _ => show_profile_main(&bot, msg.chat.id, telegram_id, provider).await?,
         }
     }
 
@@ -60,9 +31,9 @@ async fn show_profile_main(
     bot: &Bot,
     chat_id: ChatId,
     telegram_id: u64,
-    repository: &FileSystemUserRepository,
+    provider: &'static OrigaServiceProvider,
 ) -> ResponseResult<()> {
-    let session = match find_or_create_session(repository, telegram_id, "User").await {
+    let session = match provider.get_or_create_session(telegram_id, "User").await {
         Ok(s) => s,
         Err(_) => {
             bot.send_message(chat_id, "Ошибка загрузки профиля").await?;
@@ -70,7 +41,7 @@ async fn show_profile_main(
         }
     };
 
-    let use_case = GetUserInfoUseCase::new(repository);
+    let use_case = provider.get_user_info_use_case();
     let profile = match use_case.execute(session.user_id).await {
         Ok(p) => p,
         Err(_) => {
@@ -122,9 +93,9 @@ async fn show_profile_settings(
     bot: &Bot,
     chat_id: ChatId,
     telegram_id: u64,
-    repository: &FileSystemUserRepository,
+    provider: &'static OrigaServiceProvider,
 ) -> ResponseResult<()> {
-    let session = match find_or_create_session(repository, telegram_id, "User").await {
+    let session = match provider.get_or_create_session(telegram_id, "User").await {
         Ok(s) => s,
         Err(_) => {
             bot.send_message(chat_id, "Ошибка загрузки настроек")
@@ -133,7 +104,7 @@ async fn show_profile_settings(
         }
     };
 
-    let use_case = GetUserInfoUseCase::new(repository);
+    let use_case = provider.get_user_info_use_case();
     let profile = match use_case.execute(session.user_id).await {
         Ok(p) => p,
         Err(_) => {
@@ -249,8 +220,8 @@ pub async fn profile_callback_handler(
         }
         "profile_settings" => {
             if let Some(chat_id) = chat_id {
-                let repository = build_repository().await.unwrap();
-                show_profile_settings(bot, chat_id, chat_id.0 as u64, &repository).await?;
+                let provider = OrigaServiceProvider::instance();
+                show_profile_settings(bot, chat_id, chat_id.0 as u64, provider).await?;
             }
         }
         "profile_reminders" => {
@@ -266,8 +237,8 @@ pub async fn profile_callback_handler(
         "profile_back" => {
             if let Some(chat_id) = chat_id {
                 let telegram_id = chat_id.0 as u64;
-                let repository = build_repository().await.unwrap();
-                show_profile_main(bot, chat_id, telegram_id, &repository).await?;
+                let provider = OrigaServiceProvider::instance();
+                show_profile_main(bot, chat_id, telegram_id, provider).await?;
             }
         }
         data if data.starts_with("jlpt_set_") => {
@@ -297,16 +268,9 @@ async fn handle_jlpt_selection(
 
     if let Some(chat_id) = q.message.as_ref().map(|m| m.chat().id) {
         let telegram_id = chat_id.0 as u64;
-        let repository = match build_repository().await {
-            Ok(r) => r,
-            Err(_) => {
-                bot.send_message(chat_id, "Ошибка обновления уровня")
-                    .await?;
-                return respond(());
-            }
-        };
+        let provider = OrigaServiceProvider::instance();
 
-        let session = match find_or_create_session(&repository, telegram_id, "User").await {
+        let session = match provider.get_or_create_session(telegram_id, "User").await {
             Ok(s) => s,
             Err(_) => {
                 bot.send_message(chat_id, "Ошибка обновления уровня")
@@ -315,8 +279,9 @@ async fn handle_jlpt_selection(
             }
         };
 
-        let use_case = UpdateUserProfileUseCase::new(&repository);
-        let current_profile = match GetUserInfoUseCase::new(&repository)
+        let update_use_case = provider.update_user_profile_use_case();
+        let current_profile = match provider
+            .get_user_info_use_case()
             .execute(session.user_id)
             .await
         {
@@ -328,7 +293,7 @@ async fn handle_jlpt_selection(
             }
         };
 
-        match use_case
+        match update_use_case
             .execute(
                 session.user_id,
                 level,
@@ -342,7 +307,7 @@ async fn handle_jlpt_selection(
             Ok(_) => {
                 bot.send_message(chat_id, format!("Уровень JLPT изменен на {}", level.code()))
                     .await?;
-                show_profile_main(bot, chat_id, telegram_id, &repository).await?;
+                show_profile_main(bot, chat_id, telegram_id, provider).await?;
             }
             Err(_) => {
                 bot.send_message(chat_id, "Ошибка обновления уровня")
@@ -361,16 +326,9 @@ async fn handle_reminders_toggle(
 ) -> ResponseResult<()> {
     if let Some(chat_id) = q.message.as_ref().map(|m| m.chat().id) {
         let telegram_id = chat_id.0 as u64;
-        let repository = match build_repository().await {
-            Ok(r) => r,
-            Err(_) => {
-                bot.send_message(chat_id, "Ошибка обновления настроек")
-                    .await?;
-                return respond(());
-            }
-        };
+        let provider = OrigaServiceProvider::instance();
 
-        let session = match find_or_create_session(&repository, telegram_id, "User").await {
+        let session = match provider.get_or_create_session(telegram_id, "User").await {
             Ok(s) => s,
             Err(_) => {
                 bot.send_message(chat_id, "Ошибка обновления настроек")
@@ -379,8 +337,9 @@ async fn handle_reminders_toggle(
             }
         };
 
-        let use_case = UpdateUserProfileUseCase::new(&repository);
-        let current_profile = match GetUserInfoUseCase::new(&repository)
+        let update_use_case = provider.update_user_profile_use_case();
+        let current_profile = match provider
+            .get_user_info_use_case()
             .execute(session.user_id)
             .await
         {
@@ -394,7 +353,7 @@ async fn handle_reminders_toggle(
 
         let new_state = !current_profile.reminders_enabled;
 
-        match use_case
+        match update_use_case
             .execute(
                 session.user_id,
                 current_profile.current_japanese_level,
@@ -409,7 +368,7 @@ async fn handle_reminders_toggle(
                 let status_text = if new_state { "Вкл" } else { "Выкл" };
                 bot.send_message(chat_id, format!("🔔 Напоминания: {}", status_text))
                     .await?;
-                show_profile_settings(bot, chat_id, telegram_id, &repository).await?;
+                show_profile_settings(bot, chat_id, telegram_id, provider).await?;
             }
             Err(_) => {
                 bot.send_message(chat_id, "Ошибка обновления настроек")
@@ -442,18 +401,15 @@ pub async fn confirm_exit_handler(
     dialogue: &OrigaDialogue,
 ) -> ResponseResult<()> {
     if let Some(chat_id) = q.message.as_ref().map(|m| m.chat().id) {
-        let repository = match build_repository().await {
-            Ok(r) => r,
-            Err(_) => {
-                bot.send_message(chat_id, "Ошибка удаления данных").await?;
-                return respond(());
-            }
-        };
-
+        let provider = OrigaServiceProvider::instance();
         let telegram_id = chat_id.0 as u64;
 
-        if let Ok(Some(user)) = repository.find_by_telegram_id(&telegram_id).await {
-            match repository.delete(user.id()).await {
+        if let Ok(Some(user)) = provider
+            .repository()
+            .find_by_telegram_id(&telegram_id)
+            .await
+        {
+            match provider.repository().delete(user.id()).await {
                 Ok(_) => {
                     bot.send_message(chat_id, "Ваши данные удалены. До свидания! 👋")
                         .await?;
@@ -488,16 +444,9 @@ pub async fn handle_duolingo_token(
     }
 
     let telegram_id = msg.chat.id.0 as u64;
-    let repository = match build_repository().await {
-        Ok(r) => r,
-        Err(_) => {
-            bot.send_message(msg.chat.id, "❌ Ошибка подключения к базе данных")
-                .await?;
-            return respond(());
-        }
-    };
+    let provider = OrigaServiceProvider::instance();
 
-    let session = match find_or_create_session(&repository, telegram_id, "User").await {
+    let session = match provider.get_or_create_session(telegram_id, "User").await {
         Ok(s) => s,
         Err(_) => {
             bot.send_message(msg.chat.id, "❌ Ошибка загрузки профиля")
@@ -506,8 +455,9 @@ pub async fn handle_duolingo_token(
         }
     };
 
-    let use_case = UpdateUserProfileUseCase::new(&repository);
-    let current_profile = match GetUserInfoUseCase::new(&repository)
+    let update_use_case = provider.update_user_profile_use_case();
+    let current_profile = match provider
+        .get_user_info_use_case()
         .execute(session.user_id)
         .await
     {
@@ -519,7 +469,7 @@ pub async fn handle_duolingo_token(
         }
     };
 
-    match use_case
+    match update_use_case
         .execute(
             session.user_id,
             current_profile.current_japanese_level,
