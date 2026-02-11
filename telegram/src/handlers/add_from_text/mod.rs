@@ -231,7 +231,7 @@ pub async fn add_from_text_callback_handler(
                 )
                 .await?;
 
-                let provider = OrigaServiceProvider::instance();
+                let provider = OrigaServiceProvider::instance().await;
                 let use_case = provider.create_vocabulary_card_use_case();
 
                 let mut added_count = 0;

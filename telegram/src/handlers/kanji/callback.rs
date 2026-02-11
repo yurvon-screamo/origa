@@ -77,7 +77,7 @@ pub async fn kanji_callback_handler(
                 .await?;
         }
         Some(KanjiCallback::MainMenu) => {
-            let provider = OrigaServiceProvider::instance();
+            let provider = OrigaServiceProvider::instance().await;
             send_main_menu_with_stats(
                 &bot,
                 chat_id,

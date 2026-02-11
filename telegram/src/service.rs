@@ -9,9 +9,9 @@ use origa::domain::{JapaneseLevel, NativeLanguage};
 use origa::infrastructure::{FileSystemUserRepository, FsrsSrsService, LlmServiceInvoker};
 use std::collections::HashMap;
 use std::path::PathBuf;
-use std::sync::{Arc, LazyLock};
+use std::sync::Arc;
 use teloxide::RequestError;
-use tokio::sync::RwLock;
+use tokio::sync::{OnceCell, RwLock};
 
 use crate::dialogue::SessionData;
 
@@ -22,32 +22,34 @@ struct OrigaServiceProviderInner {
     session_cache: Arc<RwLock<HashMap<u64, SessionData>>>,
 }
 
-static INSTANCE: LazyLock<OrigaServiceProvider> = LazyLock::new(|| {
-    let users_dir = PathBuf::from("./data/users");
-
-    let repository = tokio::runtime::Handle::current()
-        .block_on(FileSystemUserRepository::new(users_dir))
-        .expect("Failed to create repository");
-
-    let srs_service = FsrsSrsService::new().expect("Failed to create SRS service");
-
-    let inner = OrigaServiceProviderInner {
-        repository: Arc::new(repository),
-        llm_service: Arc::new(LlmServiceInvoker::None),
-        srs_service: Arc::new(srs_service),
-        session_cache: Arc::new(RwLock::new(HashMap::new())),
-    };
-
-    OrigaServiceProvider { inner }
-});
+static INSTANCE: OnceCell<OrigaServiceProvider> = OnceCell::const_new();
 
 pub struct OrigaServiceProvider {
     inner: OrigaServiceProviderInner,
 }
 
 impl OrigaServiceProvider {
-    pub fn instance() -> &'static Self {
-        &INSTANCE
+    pub async fn instance() -> &'static Self {
+        INSTANCE
+            .get_or_init(|| async {
+                let users_dir = PathBuf::from("./data/users");
+
+                let repository = FileSystemUserRepository::new(users_dir)
+                    .await
+                    .expect("Failed to create repository");
+
+                let srs_service = FsrsSrsService::new().expect("Failed to create SRS service");
+
+                let inner = OrigaServiceProviderInner {
+                    repository: Arc::new(repository),
+                    llm_service: Arc::new(LlmServiceInvoker::None),
+                    srs_service: Arc::new(srs_service),
+                    session_cache: Arc::new(RwLock::new(HashMap::new())),
+                };
+
+                OrigaServiceProvider { inner }
+            })
+            .await
     }
 
     pub fn repository(&self) -> &Arc<FileSystemUserRepository> {

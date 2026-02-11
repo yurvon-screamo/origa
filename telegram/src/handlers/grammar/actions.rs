@@ -15,7 +15,7 @@ pub async fn handle_grammar_add(
     dialogue: OrigaDialogue,
     session: SessionData,
 ) -> ResponseResult<()> {
-    let provider = OrigaServiceProvider::instance();
+    let provider = OrigaServiceProvider::instance().await;
 
     let use_case = provider.create_grammar_card_use_case();
     match use_case.execute(session.user_id, vec![rule_id]).await {
@@ -41,7 +41,7 @@ pub async fn handle_grammar_delete(
     dialogue: OrigaDialogue,
     session: SessionData,
 ) -> ResponseResult<()> {
-    let provider = OrigaServiceProvider::instance();
+    let provider = OrigaServiceProvider::instance().await;
 
     let use_case = provider.delete_grammar_card_use_case();
     match use_case.execute(session.user_id, rule_id).await {

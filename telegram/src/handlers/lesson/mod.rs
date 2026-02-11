@@ -22,7 +22,7 @@ pub async fn start_lesson(
     session: SessionData,
 ) -> ResponseResult<()> {
     let telegram_id = msg.chat.id.0 as u64;
-    let provider = OrigaServiceProvider::instance();
+    let provider = OrigaServiceProvider::instance().await;
     let session = provider
         .get_or_create_session(telegram_id, &session.username)
         .await?;
@@ -92,7 +92,7 @@ pub async fn start_fixation(
     session: SessionData,
 ) -> ResponseResult<()> {
     let telegram_id = msg.chat.id.0 as u64;
-    let provider = OrigaServiceProvider::instance();
+    let provider = OrigaServiceProvider::instance().await;
     let session = provider
         .get_or_create_session(telegram_id, &session.username)
         .await?;
@@ -186,7 +186,7 @@ pub async fn handle_lesson_callback(
             handle_abort_lesson(&bot, chat_id, dialogue, session).await?;
         }
         LessonCallback::BackToMain => {
-            let provider = OrigaServiceProvider::instance();
+            let provider = OrigaServiceProvider::instance().await;
 
             send_main_menu_with_stats(
                 &bot,
@@ -216,7 +216,7 @@ async fn handle_rating(
     dialogue: crate::handlers::OrigaDialogue,
     session: SessionData,
 ) -> ResponseResult<()> {
-    let provider = OrigaServiceProvider::instance();
+    let provider = OrigaServiceProvider::instance().await;
 
     let current_state = dialogue.get().await.ok().flatten();
     if let Some(DialogueState::Lesson {
@@ -310,7 +310,7 @@ async fn handle_next_card(
     dialogue: crate::handlers::OrigaDialogue,
     session: SessionData,
 ) -> ResponseResult<()> {
-    let provider = OrigaServiceProvider::instance();
+    let provider = OrigaServiceProvider::instance().await;
 
     let current_state = dialogue.get().await.ok().flatten();
     if let Some(DialogueState::Lesson {
@@ -408,7 +408,7 @@ async fn handle_abort_lesson(
     bot.send_message(chat_id, LessonCallback::LESSON_ABORTED)
         .await?;
 
-    let provider = OrigaServiceProvider::instance();
+    let provider = OrigaServiceProvider::instance().await;
 
     send_main_menu_with_stats(
         bot,
@@ -462,7 +462,7 @@ async fn show_lesson_complete(
     respond(())
 }
 
-fn format_card_front(card: &Card) -> String {
+pub fn format_card_front(card: &Card) -> String {
     let question = card.question().text();
     match card {
         Card::Vocabulary(_) => {
@@ -510,7 +510,7 @@ fn format_card_back(card: &Card) -> String {
     }
 }
 
-fn lesson_rating_keyboard() -> InlineKeyboardMarkup {
+pub fn lesson_rating_keyboard() -> InlineKeyboardMarkup {
     let ratings = [Rating::Again, Rating::Hard, Rating::Good, Rating::Easy];
     let buttons: Vec<_> = ratings
         .into_iter()

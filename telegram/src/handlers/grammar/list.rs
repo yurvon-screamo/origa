@@ -109,7 +109,7 @@ fn build_navigation_buttons(page: usize, total_pages: usize) -> Option<Vec<Inlin
 pub async fn get_grammar_review_dates(
     session: &SessionData,
 ) -> Result<HashMap<Ulid, String>, teloxide::RequestError> {
-    let provider = OrigaServiceProvider::instance();
+    let provider = OrigaServiceProvider::instance().await;
     let use_case = provider.knowledge_set_cards_use_case();
     let cards = use_case
         .execute(session.user_id)
@@ -137,7 +137,7 @@ pub async fn get_grammar_review_dates(
 pub async fn get_added_grammar_rule_ids(
     session: &SessionData,
 ) -> Result<Vec<Ulid>, teloxide::RequestError> {
-    let provider = OrigaServiceProvider::instance();
+    let provider = OrigaServiceProvider::instance().await;
     let use_case = provider.knowledge_set_cards_use_case();
     let cards = use_case
         .execute(session.user_id)

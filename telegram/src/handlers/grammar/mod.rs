@@ -2,7 +2,7 @@ mod actions;
 mod callback;
 mod callbacks;
 mod details;
-mod list;
+pub mod list;
 
 pub use callback::grammar_callback_handler;
 pub use callbacks::GrammarCallback;
