@@ -1,3 +1,4 @@
+use origa::domain::JapaneseLevel;
 use ulid::Ulid;
 
 #[derive(Clone, Default)]
@@ -29,7 +30,7 @@ pub enum DialogueState {
         query: String,
     },
     KanjiList {
-        level: String,
+        level: Option<JapaneseLevel>,
         page: usize,
         items_per_page: usize,
     },
@@ -38,12 +39,20 @@ pub enum DialogueState {
         items_per_page: usize,
     },
     Profile {
-        current_view: String,
+        current_view: ProfileView,
     },
     DuolingoConnect,
     AddFromText {
         pending_words: Vec<String>,
     },
+}
+
+#[derive(Clone, Copy, Default, PartialEq)]
+pub enum ProfileView {
+    #[default]
+    Main,
+    Settings,
+    JlptSelect,
 }
 
 #[derive(Clone, Copy, PartialEq)]

@@ -1,7 +1,6 @@
-use super::{format_date, format_kanji_entry};
-use crate::handlers::OrigaDialogue;
-use crate::repository::OrigaServiceProvider;
-use crate::telegram_domain::SessionData;
+use super::{KanjiCallback, format_date, format_kanji_entry};
+use crate::dialogue::SessionData;
+use crate::service::OrigaServiceProvider;
 use origa::application::KanjiListUseCase;
 use origa::domain::{Card, JapaneseLevel, KanjiInfo};
 use std::collections::HashMap;
@@ -12,17 +11,15 @@ use teloxide::prelude::Requester;
 pub async fn handle_kanji_list(
     bot: teloxide::Bot,
     msg: teloxide::types::Message,
-    _dialogue: OrigaDialogue,
     (page, items_per_page): (usize, usize),
     session: SessionData,
 ) -> teloxide::requests::ResponseResult<()> {
-    let level = "all".to_string();
     let chat_id = msg.chat.id;
     let provider = OrigaServiceProvider::instance();
 
     let kanji_review_dates = fetch_kanji_review_dates(session.user_id, provider).await?;
 
-    let kanji_list = get_kanji_by_level(&level);
+    let kanji_list = get_kanji_by_level(None);
     let total_pages = (kanji_list.len() + items_per_page - 1) / items_per_page.max(1);
     let current_page = page.min(total_pages.saturating_sub(1));
 
@@ -34,16 +31,11 @@ pub async fn handle_kanji_list(
         page_kanji,
         current_page,
         total_pages,
-        &level,
+        None,
         &kanji_review_dates,
     );
-    let keyboard = build_kanji_list_keyboard(
-        page_kanji,
-        current_page,
-        total_pages,
-        &level,
-        &kanji_review_dates,
-    );
+    let keyboard =
+        build_kanji_list_keyboard(page_kanji, current_page, total_pages, &kanji_review_dates);
 
     bot.send_message(chat_id, text)
         .parse_mode(teloxide::types::ParseMode::Html)
@@ -53,10 +45,12 @@ pub async fn handle_kanji_list(
     teloxide::respond(())
 }
 
-pub fn get_kanji_by_level(level: &str) -> Vec<KanjiInfo> {
+pub fn get_kanji_by_level(level: Option<&JapaneseLevel>) -> Vec<KanjiInfo> {
     let use_case = KanjiListUseCase::new();
 
-    if level.eq_ignore_ascii_case("all") {
+    if let Some(level) = level {
+        use_case.execute(level).unwrap_or_default()
+    } else {
         vec![
             JapaneseLevel::N5,
             JapaneseLevel::N4,
@@ -67,12 +61,6 @@ pub fn get_kanji_by_level(level: &str) -> Vec<KanjiInfo> {
         .into_iter()
         .flat_map(|lvl| use_case.execute(&lvl).unwrap_or_default())
         .collect::<Vec<_>>()
-    } else {
-        level
-            .parse::<JapaneseLevel>()
-            .ok()
-            .map(|lvl| use_case.execute(&lvl).unwrap_or_default())
-            .unwrap_or_default()
     }
 }
 
@@ -105,10 +93,13 @@ pub fn build_kanji_list_text(
     kanji_list: &[KanjiInfo],
     page: usize,
     total_pages: usize,
-    level: &str,
+    level: Option<&JapaneseLevel>,
     review_dates: &HashMap<String, String>,
 ) -> String {
-    let mut text = format!("🈷 <b>Кандзи</b> — Уровень: {}\n\n", level.to_uppercase());
+    let mut text = format!(
+        "🈷 <b>Кандзи</b> — Уровень: {}\n\n",
+        level.map(|l| l.code()).unwrap_or("Все")
+    );
 
     for (idx, kanji) in kanji_list.iter().enumerate() {
         text.push_str(&format_kanji_entry(kanji, idx, page));
@@ -129,7 +120,6 @@ pub fn build_kanji_list_keyboard(
     kanji_list: &[KanjiInfo],
     page: usize,
     total_pages: usize,
-    level: &str,
     review_dates: &HashMap<String, String>,
 ) -> teloxide::types::InlineKeyboardMarkup {
     let mut rows: Vec<Vec<teloxide::types::InlineKeyboardButton>> = vec![];
@@ -149,19 +139,28 @@ pub fn build_kanji_list_keyboard(
         let action_button = if is_studying {
             teloxide::types::InlineKeyboardButton::callback(
                 "Удалить",
-                format!("kanji_delete_{}", kanji_char),
+                KanjiCallback::Delete {
+                    kanji: kanji_char.clone(),
+                }
+                .to_json(),
             )
         } else {
             teloxide::types::InlineKeyboardButton::callback(
                 "Добавить",
-                format!("kanji_add_{}", kanji_char),
+                KanjiCallback::Add {
+                    kanji: kanji_char.clone(),
+                }
+                .to_json(),
             )
         };
 
         rows.push(vec![
             teloxide::types::InlineKeyboardButton::callback(
                 "Подробнее",
-                format!("kanji_detail_{}", kanji_char),
+                KanjiCallback::Detail {
+                    kanji: kanji_char.clone(),
+                }
+                .to_json(),
             ),
             action_button,
         ]);
@@ -171,17 +170,17 @@ pub fn build_kanji_list_keyboard(
     if page > 0 {
         nav_row.push(teloxide::types::InlineKeyboardButton::callback(
             "⬅️ Назад",
-            format!("kanji_page_{}_{}", page - 1, level),
+            KanjiCallback::Page { page: page - 1 }.to_json(),
         ));
     }
     nav_row.push(teloxide::types::InlineKeyboardButton::callback(
         format!("{}/{}", page + 1, total_pages.max(1)),
-        "kanji_current_page",
+        KanjiCallback::PageCurrent.to_json(),
     ));
     if page + 1 < total_pages {
         nav_row.push(teloxide::types::InlineKeyboardButton::callback(
             "Далее ➡️",
-            format!("kanji_page_{}_{}", page + 1, level),
+            KanjiCallback::Page { page: page + 1 }.to_json(),
         ));
     }
     if !nav_row.is_empty() {
@@ -190,12 +189,12 @@ pub fn build_kanji_list_keyboard(
 
     rows.push(vec![teloxide::types::InlineKeyboardButton::callback(
         "+ Добавить кандзи",
-        "kanji_add_new",
+        KanjiCallback::AddNew.to_json(),
     )]);
 
     rows.push(vec![teloxide::types::InlineKeyboardButton::callback(
         "🏠 Главная",
-        "menu_home",
+        KanjiCallback::MainMenu.to_json(),
     )]);
 
     teloxide::types::InlineKeyboardMarkup::new(rows)
@@ -204,7 +203,7 @@ pub fn build_kanji_list_keyboard(
 pub async fn handle_kanji_list_by_level(
     bot: &teloxide::Bot,
     chat_id: teloxide::types::ChatId,
-    level: &str,
+    level: Option<&JapaneseLevel>,
     page: usize,
     items_per_page: usize,
     user_id: ulid::Ulid,
@@ -227,13 +226,8 @@ pub async fn handle_kanji_list_by_level(
         level,
         &kanji_review_dates,
     );
-    let keyboard = build_kanji_list_keyboard(
-        page_kanji,
-        current_page,
-        total_pages,
-        level,
-        &kanji_review_dates,
-    );
+    let keyboard =
+        build_kanji_list_keyboard(page_kanji, current_page, total_pages, &kanji_review_dates);
 
     bot.send_message(chat_id, text)
         .parse_mode(teloxide::types::ParseMode::Html)
