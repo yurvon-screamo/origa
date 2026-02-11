@@ -1,4 +1,3 @@
-use super::{extract_kunyomi, extract_onyomi};
 use origa::domain::{KANJI_DICTIONARY, KanjiInfo};
 use teloxide::payloads::SendMessageSetters;
 use teloxide::prelude::Requester;
@@ -49,16 +48,6 @@ pub fn build_kanji_detail_text(kanji: &KanjiInfo) -> String {
         kanji.used_in()
     ));
     text.push_str(&format!("📝 Значения: {}\n", kanji.description()));
-
-    let onyomi = extract_onyomi(kanji.description());
-    let kunyomi = extract_kunyomi(kanji.description());
-
-    if !onyomi.is_empty() {
-        text.push_str(&format!("\n🔊 Онъёми: {}\n", onyomi.join(", ")));
-    }
-    if !kunyomi.is_empty() {
-        text.push_str(&format!("🔉 Кунъёми: {}\n", kunyomi.join(", ")));
-    }
 
     let radicals: Vec<String> = kanji
         .radicals()

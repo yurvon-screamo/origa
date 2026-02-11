@@ -1,13 +1,11 @@
 use crate::handlers::OrigaDialogue;
-use crate::telegram_domain::DialogueState;
-use origa::application::{CreateGrammarCardUseCase, UserRepository};
-use origa::domain::Card;
+use crate::repository::OrigaServiceProvider;
+use crate::telegram_domain::{DialogueState, SessionData};
 use std::sync::Arc;
 use teloxide::prelude::*;
 use teloxide::types::ChatId;
 use ulid::Ulid;
 
-use super::build_repository;
 use super::get_grammar_review_dates;
 use super::grammar_list_keyboard;
 
@@ -15,24 +13,14 @@ pub async fn handle_grammar_add(
     bot: &Bot,
     chat_id: ChatId,
     data: &str,
-    telegram_id: u64,
     dialogue: OrigaDialogue,
+    session: SessionData,
 ) -> ResponseResult<()> {
     let rule_id = parse_rule_id(data)?;
-    let repository = super::build_repository()
-        .await
-        .map_err(|e| teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string()))))?;
+    let provider = OrigaServiceProvider::instance();
 
-    let user = repository
-        .find_by_telegram_id(&telegram_id)
-        .await
-        .map_err(|e| teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string()))))?
-        .ok_or_else(|| {
-            teloxide::RequestError::Io(Arc::new(std::io::Error::other("User not found")))
-        })?;
-
-    let use_case = CreateGrammarCardUseCase::new(&repository);
-    match use_case.execute(user.id(), vec![rule_id]).await {
+    let use_case = provider.create_grammar_card_use_case();
+    match use_case.execute(session.user_id, vec![rule_id]).await {
         Ok(_) => {
             bot.send_message(chat_id, "✅ Правило добавлено в ваш набор!")
                 .await?;
@@ -43,7 +31,7 @@ pub async fn handle_grammar_add(
         }
     }
 
-    send_grammar_list(bot, chat_id, dialogue, telegram_id).await?;
+    send_grammar_list(bot, chat_id, dialogue, &session).await?;
 
     respond(())
 }
@@ -52,24 +40,25 @@ pub async fn handle_grammar_delete(
     bot: &Bot,
     chat_id: ChatId,
     data: &str,
-    telegram_id: u64,
     dialogue: OrigaDialogue,
+    session: SessionData,
 ) -> ResponseResult<()> {
     let rule_id = parse_rule_id(data)?;
-    let repository = build_repository()
-        .await
-        .map_err(|e| teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string()))))?;
+    let provider = OrigaServiceProvider::instance();
 
-    let user = repository
-        .find_by_telegram_id(&telegram_id)
-        .await
-        .map_err(|e| teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string()))))?
-        .ok_or_else(|| {
-            teloxide::RequestError::Io(Arc::new(std::io::Error::other("User not found")))
-        })?;
+    let use_case = provider.delete_grammar_card_use_case();
+    match use_case.execute(session.user_id, rule_id).await {
+        Ok(_) => {
+            bot.send_message(chat_id, "✅ Правило удалено из вашего набора!")
+                .await?;
+        }
+        Err(e) => {
+            bot.send_message(chat_id, format!("❌ Ошибка: {}", e))
+                .await?;
+        }
+    }
 
-    delete_card_if_exists(bot, chat_id, user, &rule_id).await?;
-    send_grammar_list(bot, chat_id, dialogue, telegram_id).await?;
+    send_grammar_list(bot, chat_id, dialogue, &session).await?;
 
     respond(())
 }
@@ -78,6 +67,7 @@ pub async fn handle_grammar_back_to_list(
     bot: &Bot,
     chat_id: ChatId,
     dialogue: OrigaDialogue,
+    session: SessionData,
 ) -> ResponseResult<()> {
     let state = dialogue.get().await.ok().flatten().unwrap_or_default();
     let (page, items_per_page) = match state {
@@ -88,12 +78,7 @@ pub async fn handle_grammar_back_to_list(
         _ => (0, 6),
     };
 
-    let telegram_id = chat_id.0 as u64;
-    let _repository = build_repository()
-        .await
-        .map_err(|e| teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string()))))?;
-
-    let review_dates = get_grammar_review_dates(telegram_id).await?;
+    let review_dates = get_grammar_review_dates(&session).await?;
     let text = "📖 Грамматика\n\nВыберите правило для просмотра:".to_string();
     let keyboard = grammar_list_keyboard(page, items_per_page, &review_dates);
 
@@ -133,57 +118,11 @@ fn parse_rule_id(data: &str) -> Result<Ulid, teloxide::RequestError> {
         })
 }
 
-async fn delete_card_if_exists(
-    bot: &Bot,
-    chat_id: ChatId,
-    user: origa::domain::User,
-    rule_id: &Ulid,
-) -> Result<(), teloxide::RequestError> {
-    match user
-        .knowledge_set()
-        .study_cards()
-        .values()
-        .find(|sc| matches!(sc.card(), Card::Grammar(g) if g.rule_id() == rule_id))
-    {
-        Some(study_card) => {
-            let card_id = *study_card.card_id();
-            let mut user = user;
-            match user.delete_card(card_id) {
-                Ok(_) => {
-                    let repository = build_repository().await.map_err(|e| {
-                        teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string())))
-                    })?;
-                    match repository.save(&user).await {
-                        Ok(_) => {
-                            bot.send_message(chat_id, "✅ Правило удалено из вашего набора!")
-                                .await?;
-                        }
-                        Err(e) => {
-                            bot.send_message(chat_id, format!("❌ Ошибка сохранения: {}", e))
-                                .await?;
-                        }
-                    }
-                }
-                Err(e) => {
-                    bot.send_message(chat_id, format!("❌ Ошибка удаления: {}", e))
-                        .await?;
-                }
-            }
-        }
-        None => {
-            bot.send_message(chat_id, "❌ Правило не найдено в вашем наборе")
-                .await?;
-        }
-    }
-
-    Ok(())
-}
-
 async fn send_grammar_list(
     bot: &Bot,
     chat_id: ChatId,
     dialogue: OrigaDialogue,
-    telegram_id: u64,
+    session: &SessionData,
 ) -> Result<(), teloxide::RequestError> {
     let state = dialogue.get().await.ok().flatten().unwrap_or_default();
     if let DialogueState::GrammarList {
@@ -191,7 +130,7 @@ async fn send_grammar_list(
         items_per_page,
     } = state
     {
-        let review_dates = get_grammar_review_dates(telegram_id).await?;
+        let review_dates = get_grammar_review_dates(session).await?;
         let text = "📖 Грамматика\n\nВыберите правило для просмотра:".to_string();
         let keyboard = grammar_list_keyboard(page, items_per_page, &review_dates);
         bot.send_message(chat_id, text)

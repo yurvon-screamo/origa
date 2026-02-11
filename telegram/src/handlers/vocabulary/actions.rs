@@ -1,3 +1,4 @@
+use crate::repository::OrigaServiceProvider;
 use crate::telegram_domain::DialogueState;
 use crate::telegram_domain::SessionData;
 use teloxide::prelude::*;
@@ -48,11 +49,9 @@ pub async fn handle_confirm_delete(
         return respond(());
     };
 
-    let repository = crate::repository::build_repository().await.map_err(|e| {
-        teloxide::RequestError::Io(std::sync::Arc::new(std::io::Error::other(e.to_string())))
-    })?;
+    let provider = OrigaServiceProvider::instance();
 
-    let use_case = origa::application::use_cases::DeleteCardUseCase::new(&repository);
+    let use_case = provider.delete_card_use_case();
     match use_case.execute(session.user_id, card_id).await {
         Ok(_) => {
             bot.edit_message_text(chat_id, message_id, "✅ Карточка удалена.")
@@ -67,7 +66,7 @@ pub async fn handle_confirm_delete(
             };
 
             let cards = crate::handlers::vocabulary::list::fetch_vocabulary_cards_for_page_change(
-                &repository,
+                provider,
                 session.user_id,
             )
             .await?;

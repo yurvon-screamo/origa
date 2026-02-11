@@ -1,6 +1,6 @@
-use crate::repository::build_repository;
-use origa::application::{CreateKanjiCardUseCase, DeleteCardUseCase, KnowledgeSetCardsUseCase};
-use origa::domain::{Card, KANJI_DICTIONARY, KanjiInfo};
+use crate::repository::OrigaServiceProvider;
+use origa::domain::{KANJI_DICTIONARY, KanjiInfo};
+use std::sync::Arc;
 use teloxide::payloads::SendMessageSetters;
 use teloxide::prelude::Requester;
 
@@ -10,16 +10,8 @@ pub async fn handle_kanji_add(
     kanji_char: &str,
     user_id: ulid::Ulid,
 ) -> teloxide::requests::ResponseResult<()> {
-    let repository = match build_repository().await {
-        Ok(repo) => repo,
-        Err(_) => {
-            bot.send_message(chat_id, "❌ Ошибка при подключении к базе данных")
-                .await?;
-            return teloxide::respond(());
-        }
-    };
-
-    let use_case = CreateKanjiCardUseCase::new(&repository);
+    let provider = OrigaServiceProvider::instance();
+    let use_case = provider.create_kanji_card_use_case();
 
     match use_case
         .execute(user_id, vec![kanji_char.to_string()])
@@ -30,7 +22,7 @@ pub async fn handle_kanji_add(
                 bot.send_message(chat_id, "❌ Не удалось добавить кандзи")
                     .await?;
             } else {
-                let msg = format!("✅ Кандзи '{}' добавлено в изучаемые", kanji_char);
+                let msg = format!("✅ Кандзи \'{}\' добавлено в изучаемые", kanji_char);
                 bot.send_message(chat_id, msg).await?;
             }
         }
@@ -38,7 +30,7 @@ pub async fn handle_kanji_add(
             bot.send_message(
                 chat_id,
                 format!(
-                    "⚠️ Кандзи '{}' уже добавлено или произошла ошибка",
+                    "⚠️ Кандзи \'{}\' уже добавлено или произошла ошибка",
                     kanji_char
                 ),
             )
@@ -55,62 +47,20 @@ pub async fn handle_kanji_delete(
     kanji_char: &str,
     user_id: ulid::Ulid,
 ) -> teloxide::requests::ResponseResult<()> {
-    let repository = match build_repository().await {
-        Ok(repo) => repo,
-        Err(_) => {
-            bot.send_message(chat_id, "❌ Ошибка при подключении к базе данных")
-                .await?;
-            return teloxide::respond(());
-        }
-    };
+    let provider = OrigaServiceProvider::instance();
+    let _cards_use_case = provider.knowledge_set_cards_use_case();
+    let delete_use_case = provider.delete_kanji_card_use_case();
 
-    let use_case = KnowledgeSetCardsUseCase::new(&repository);
-    let delete_use_case = DeleteCardUseCase::new(&repository);
+    delete_use_case
+        .execute(user_id, kanji_char.to_string())
+        .await
+        .map_err(|e| teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string()))))?;
 
-    match use_case.execute(user_id).await {
-        Ok(cards) => {
-            let kanji_card = cards.iter().find(|c| {
-                if let Card::Kanji(k) = c.card() {
-                    k.kanji().text() == kanji_char
-                } else {
-                    false
-                }
-            });
-
-            match kanji_card {
-                Some(card) => {
-                    if delete_use_case
-                        .execute(user_id, *card.card_id())
-                        .await
-                        .is_err()
-                    {
-                        bot.send_message(
-                            chat_id,
-                            format!("❌ Ошибка при удалении кандзи '{}'", kanji_char),
-                        )
-                        .await?;
-                    } else {
-                        bot.send_message(
-                            chat_id,
-                            format!("✅ Кандзи '{}' удалено из изучаемых", kanji_char),
-                        )
-                        .await?;
-                    }
-                }
-                None => {
-                    bot.send_message(
-                        chat_id,
-                        format!("❌ Кандзи '{}' не найдено в вашем наборе", kanji_char),
-                    )
-                    .await?;
-                }
-            }
-        }
-        Err(_) => {
-            bot.send_message(chat_id, "❌ Ошибка при получении списка кандзи")
-                .await?;
-        }
-    }
+    bot.send_message(
+        chat_id,
+        format!("✅ Кандзи \'{}\' удалено из изучаемых", kanji_char),
+    )
+    .await?;
 
     teloxide::respond(())
 }
@@ -156,7 +106,7 @@ pub async fn handle_kanji_search(
     if found_kanji.is_empty() {
         bot.send_message(
             chat_id,
-            format!("❌ Кандзи '{}' не найдены в словаре", query),
+            format!("❌ Кандзи \'{}\' не найдены в словаре", query),
         )
         .await?;
         return teloxide::respond(());
@@ -171,7 +121,7 @@ pub async fn handle_kanji_search(
     let page_kanji = &found_kanji[start..end];
 
     let mut text = format!(
-        "🔍 Результаты поиска для '{}'\n\n",
+        "🔍 Результаты поиска для \'{}\'\n\n",
         search_chars.iter().collect::<String>()
     );
     for (idx, kanji) in page_kanji.iter().enumerate() {
@@ -189,7 +139,7 @@ pub async fn handle_kanji_search(
     for kanji in page_kanji {
         let kanji_char = kanji.kanji().to_string();
         rows.push(vec![teloxide::types::InlineKeyboardButton::callback(
-            format!("Добавить '{}'", kanji_char),
+            format!("Добавить \'{}\'", kanji_char),
             format!("kanji_add_{}", kanji_char),
         )]);
     }

@@ -1,15 +1,10 @@
 use crate::bot::messaging::send_main_menu_with_stats;
-use crate::repository::build_repository;
+use crate::repository::OrigaServiceProvider;
 use crate::telegram_domain::state::LessonMode;
 use crate::telegram_domain::{DialogueState, SessionData};
 use chrono::Duration;
 use origa::application::srs_service::RateMode;
-use origa::application::{
-    CompleteLessonUseCase, RateCardUseCase, SelectCardsToFixationUseCase,
-    SelectCardsToLessonUseCase,
-};
 use origa::domain::{Card, Rating};
-use origa::infrastructure::FsrsSrsService;
 use std::collections::HashMap;
 use std::sync::Arc;
 use teloxide::payloads::SendMessageSetters;
@@ -23,11 +18,13 @@ pub async fn start_lesson(
     dialogue: crate::handlers::OrigaDialogue,
     session: SessionData,
 ) -> ResponseResult<()> {
-    let repository = build_repository()
-        .await
-        .map_err(|e| teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string()))))?;
+    let telegram_id = msg.chat.id.0 as u64;
+    let provider = OrigaServiceProvider::instance();
+    let session = provider
+        .get_or_create_session(telegram_id, &session.username)
+        .await?;
 
-    let use_case = SelectCardsToLessonUseCase::new(&repository);
+    let use_case = provider.select_cards_to_lesson_use_case();
     let cards_result = use_case.execute(session.user_id).await;
 
     let cards: HashMap<Ulid, Card> = match cards_result {
@@ -90,11 +87,13 @@ pub async fn start_fixation(
     dialogue: crate::handlers::OrigaDialogue,
     session: SessionData,
 ) -> ResponseResult<()> {
-    let repository = build_repository()
-        .await
-        .map_err(|e| teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string()))))?;
+    let telegram_id = msg.chat.id.0 as u64;
+    let provider = OrigaServiceProvider::instance();
+    let session = provider
+        .get_or_create_session(telegram_id, &session.username)
+        .await?;
 
-    let use_case = SelectCardsToFixationUseCase::new(&repository);
+    let use_case = provider.select_cards_to_fixation_use_case();
     let cards_result = use_case.execute(session.user_id).await;
 
     let cards: HashMap<Ulid, Card> = match cards_result {
@@ -173,15 +172,13 @@ pub async fn handle_lesson_callback(
             handle_abort_lesson(&bot, chat_id, dialogue, session).await?;
         }
         "back_to_main" => {
-            let repository = build_repository().await.map_err(|e| {
-                teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string())))
-            })?;
+            let provider = OrigaServiceProvider::instance();
 
             send_main_menu_with_stats(
                 &bot,
                 chat_id,
                 &session.username,
-                &repository,
+                provider,
                 session.user_id,
                 None,
             )
@@ -214,9 +211,7 @@ async fn handle_rating(
         _ => return respond(()),
     };
 
-    let repository = build_repository()
-        .await
-        .map_err(|e| teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string()))))?;
+    let provider = OrigaServiceProvider::instance();
 
     let current_state = dialogue.get().await.ok().flatten();
     if let Some(DialogueState::Lesson {
@@ -229,12 +224,14 @@ async fn handle_rating(
     {
         let cards_result = match mode {
             LessonMode::Lesson => {
-                SelectCardsToLessonUseCase::new(&repository)
+                provider
+                    .select_cards_to_lesson_use_case()
                     .execute(session.user_id)
                     .await
             }
             LessonMode::Fixation => {
-                SelectCardsToFixationUseCase::new(&repository)
+                provider
+                    .select_cards_to_fixation_use_case()
                     .execute(session.user_id)
                     .await
             }
@@ -249,11 +246,7 @@ async fn handle_rating(
         if let Some(card_id) = card_id
             && let Some(card) = cards.get(card_id)
         {
-            let srs_service = FsrsSrsService::new().map_err(|e| {
-                teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string())))
-            })?;
-
-            let rate_use_case = RateCardUseCase::new(&repository, &srs_service);
+            let rate_use_case = provider.rate_card_use_case();
 
             let _ = rate_use_case
                 .execute(session.user_id, *card_id, RateMode::StandardLesson, rating)
@@ -312,6 +305,8 @@ async fn handle_next_card(
     dialogue: crate::handlers::OrigaDialogue,
     session: SessionData,
 ) -> ResponseResult<()> {
+    let provider = OrigaServiceProvider::instance();
+
     let current_state = dialogue.get().await.ok().flatten();
     if let Some(DialogueState::Lesson {
         current_index,
@@ -321,18 +316,16 @@ async fn handle_next_card(
         ..
     }) = current_state
     {
-        let repository = build_repository().await.map_err(|e| {
-            teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string())))
-        })?;
-
         let cards_result = match mode {
             LessonMode::Lesson => {
-                SelectCardsToLessonUseCase::new(&repository)
+                provider
+                    .select_cards_to_lesson_use_case()
                     .execute(session.user_id)
                     .await
             }
             LessonMode::Fixation => {
-                SelectCardsToFixationUseCase::new(&repository)
+                provider
+                    .select_cards_to_fixation_use_case()
                     .execute(session.user_id)
                     .await
             }
@@ -349,7 +342,7 @@ async fn handle_next_card(
         if next_index >= total_cards {
             show_lesson_complete(bot, chat_id, new_count, review_count, mode).await?;
 
-            let complete_use_case = CompleteLessonUseCase::new(&repository);
+            let complete_use_case = provider.complete_lesson_use_case();
             let _ = complete_use_case
                 .execute(session.user_id, Duration::seconds(0))
                 .await;
@@ -404,15 +397,13 @@ async fn handle_abort_lesson(
 ) -> ResponseResult<()> {
     bot.send_message(chat_id, "Урок прерван.").await?;
 
-    let repository = build_repository()
-        .await
-        .map_err(|e| teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string()))))?;
+    let provider = OrigaServiceProvider::instance();
 
     send_main_menu_with_stats(
         bot,
         chat_id,
         &session.username,
-        &repository,
+        provider,
         session.user_id,
         None,
     )

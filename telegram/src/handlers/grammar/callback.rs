@@ -1,4 +1,5 @@
 use crate::handlers::OrigaDialogue;
+use crate::telegram_domain::SessionData;
 use std::sync::Arc;
 use teloxide::prelude::*;
 use teloxide::types::{MaybeInaccessibleMessage, UpdateKind};
@@ -12,6 +13,7 @@ pub async fn grammar_callback_handler(
     bot: Bot,
     q: CallbackQuery,
     dialogue: OrigaDialogue,
+    session: SessionData,
 ) -> ResponseResult<()> {
     bot.answer_callback_query(q.id.clone()).await?;
 
@@ -24,23 +26,22 @@ pub async fn grammar_callback_handler(
     };
 
     let chat_id = message.chat().id;
-    let telegram_id = chat_id.0 as u64;
 
     match data.as_str() {
         d if d.starts_with("grammar_page_") => {
-            handle_grammar_page(&bot, chat_id, d, dialogue).await?;
+            handle_grammar_page(&bot, chat_id, d, dialogue, session.clone()).await?;
         }
         d if d.starts_with("grammar_detail_") => {
-            handle_grammar_detail(&bot, chat_id, d, telegram_id).await?;
+            handle_grammar_detail(&bot, chat_id, d, session.clone()).await?;
         }
         d if d.starts_with("grammar_add_") => {
-            handle_grammar_add(&bot, chat_id, d, telegram_id, dialogue).await?;
+            handle_grammar_add(&bot, chat_id, d, dialogue, session.clone()).await?;
         }
         d if d.starts_with("grammar_delete_") => {
-            handle_grammar_delete(&bot, chat_id, d, telegram_id, dialogue).await?;
+            handle_grammar_delete(&bot, chat_id, d, dialogue, session.clone()).await?;
         }
         "grammar_back_to_list" => {
-            handle_grammar_back_to_list(&bot, chat_id, dialogue).await?;
+            handle_grammar_back_to_list(&bot, chat_id, dialogue, session).await?;
         }
         "grammar_current_page" => {}
         "grammar_search" => {

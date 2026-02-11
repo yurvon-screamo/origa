@@ -1,9 +1,7 @@
 use crate::bot::messaging::send_main_menu_with_stats;
-use crate::repository::build_repository;
+use crate::repository::OrigaServiceProvider;
 use crate::telegram_domain::{DialogueState, SessionData};
-use origa::application::CreateVocabularyCardUseCase;
 use origa::domain::tokenize_text;
-use origa::infrastructure::LlmServiceInvoker;
 use std::sync::Arc;
 use teloxide::prelude::*;
 use teloxide::types::{ChatId, InlineKeyboardButton, InlineKeyboardMarkup, MessageId};
@@ -257,16 +255,8 @@ async fn handle_confirm_addition(
     )
     .await?;
 
-    let repository = match build_repository().await {
-        Ok(repo) => repo,
-        Err(e) => {
-            bot.send_message(chat_id, format!("Ошибка: {}", e)).await?;
-            return respond(());
-        }
-    };
-
-    let llm_service = LlmServiceInvoker::None;
-    let use_case = CreateVocabularyCardUseCase::new(&repository, &llm_service);
+    let provider = OrigaServiceProvider::instance();
+    let use_case = provider.create_vocabulary_card_use_case();
 
     let mut added_count = 0;
     for word in &pending_words {
@@ -290,15 +280,11 @@ async fn handle_confirm_addition(
 
     tokio::time::sleep(tokio::time::Duration::from_millis(500)).await;
 
-    let repository = build_repository()
-        .await
-        .map_err(|e| teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string()))))?;
-
     send_main_menu_with_stats(
         bot,
         chat_id,
         &session.username,
-        &repository,
+        provider,
         session.user_id,
         None,
     )
