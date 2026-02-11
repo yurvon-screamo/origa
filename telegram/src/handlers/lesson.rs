@@ -1,7 +1,6 @@
 use crate::bot::messaging::send_main_menu_with_stats;
 use crate::repository::OrigaServiceProvider;
-use crate::telegram_domain::state::LessonMode;
-use crate::telegram_domain::{DialogueState, SessionData};
+use crate::telegram_domain::{DialogueState, LessonMode, SessionData};
 use chrono::Duration;
 use origa::application::srs_service::RateMode;
 use origa::domain::{Card, Rating};
