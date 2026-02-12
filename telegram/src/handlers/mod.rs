@@ -14,7 +14,7 @@ pub mod menu_callback;
 pub mod profile;
 pub mod vocabulary;
 
-pub use common_handlers::{callback_handler, help_handler, start_handler, Command};
+pub use common_handlers::{Command, callback_handler, help_handler, start_handler};
 pub use extractors::{
     chat_id_from_msg, handle_common_text, telegram_id_from_msg, username_from_msg,
 };
