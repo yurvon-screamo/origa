@@ -97,12 +97,12 @@ pub fn build_vocabulary_text(
         _ => "Все",
     };
 
-    let mut text = format!("📚 Слова (всего: {})\\n", total_cards);
-    text.push_str(&format!("Фильтр: {}\\n\\n", filter_name));
+    let mut text = format!("📚 Слова (всего: {})\n", total_cards);
+    text.push_str(&format!("Фильтр: {}\n\n", filter_name));
 
     if total_pages > 0 {
         text.push_str(&format!(
-            "Страница {}/{}\\n\\n",
+            "Страница {}/{}\n\n",
             current_page + 1,
             total_pages
         ));
@@ -159,7 +159,7 @@ fn format_card_entry(num: usize, card: &origa::domain::StudyCard) -> String {
     };
 
     format!(
-        "<b>{}.</b> {}\\n   Повтор: {}\\n   Сложность: {} | Стабильность: {}\\n   Теги: {}",
+        "<b>{}.</b> {}\n   Повтор: {}\n   Сложность: {} | Стабильность: {}\n   Теги: {}",
         num, card_info, next_review, difficulty, stability, status
     )
 }

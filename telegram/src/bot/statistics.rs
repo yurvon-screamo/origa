@@ -105,7 +105,7 @@ pub async fn get_progress_history(
 
     let mut text = format!(r#"История "{}":"#, metric_name);
     for (day_label, count) in &counts_by_day {
-        text.push_str(&format!("{}: {}\\n", day_label, count));
+        text.push_str(&format!("{}: {}\n", day_label, count));
     }
 
     Ok(text)
