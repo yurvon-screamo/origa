@@ -1,6 +1,8 @@
 use super::callbacks::GrammarCallback;
 use crate::dialogue::{DialogueState, SessionData};
 use crate::handlers::OrigaDialogue;
+use crate::handlers::callbacks::CallbackData;
+use crate::handlers::menu::MenuCallback;
 use crate::service::OrigaServiceProvider;
 use chrono::{Datelike, TimeDelta};
 use origa::domain::{Card, GRAMMAR_RULES, NativeLanguage};
@@ -47,7 +49,7 @@ pub fn grammar_list_keyboard(
 
     rows.push(vec![InlineKeyboardButton::callback(
         "🔍 Поиск",
-        GrammarCallback::Search.to_json(),
+        CallbackData::Grammar(GrammarCallback::Search).to_json(),
     )]);
 
     for i in start..end {
@@ -64,14 +66,14 @@ pub fn grammar_list_keyboard(
 
         rows.push(vec![InlineKeyboardButton::callback(
             button_text,
-            GrammarCallback::Detail { rule_id: *rule_id }.to_json(),
+            CallbackData::Grammar(GrammarCallback::Detail { rule_id: *rule_id }).to_json(),
         )]);
     }
 
     rows.extend(build_navigation_buttons(page, total_pages));
     rows.push(vec![InlineKeyboardButton::callback(
         "🏠 Главная",
-        "menu_home",
+        CallbackData::Menu(MenuCallback::MainMenu).to_json(),
     )]);
 
     InlineKeyboardMarkup::new(rows)
@@ -83,19 +85,19 @@ fn build_navigation_buttons(page: usize, total_pages: usize) -> Option<Vec<Inlin
     if page > 0 {
         nav_buttons.push(InlineKeyboardButton::callback(
             "⬅️ Назад",
-            GrammarCallback::Page { page: page - 1 }.to_json(),
+            CallbackData::Grammar(GrammarCallback::Page { page: page - 1 }).to_json(),
         ));
     }
 
     nav_buttons.push(InlineKeyboardButton::callback(
         format!("{}/{}", page + 1, total_pages),
-        GrammarCallback::CurrentPage.to_json(),
+        CallbackData::Grammar(GrammarCallback::CurrentPage).to_json(),
     ));
 
     if page < total_pages - 1 {
         nav_buttons.push(InlineKeyboardButton::callback(
             "Далее ➡️",
-            GrammarCallback::Page { page: page + 1 }.to_json(),
+            CallbackData::Grammar(GrammarCallback::Page { page: page + 1 }).to_json(),
         ));
     }
 

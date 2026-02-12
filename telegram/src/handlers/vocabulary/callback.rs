@@ -1,4 +1,5 @@
 use crate::dialogue::{DialogueState, SessionData};
+use crate::handlers::callbacks::CallbackData;
 use crate::handlers::vocabulary::VocabularyCallback;
 use crate::service::OrigaServiceProvider;
 use teloxide::prelude::*;
@@ -231,7 +232,7 @@ async fn handle_detail(
     let keyboard = teloxide::types::InlineKeyboardMarkup::new(vec![vec![
         teloxide::types::InlineKeyboardButton::callback(
             "🔙 Назад к списку",
-            VocabularyCallback::PageCurrent.to_json(),
+            CallbackData::Vocabulary(VocabularyCallback::PageCurrent).to_json(),
         ),
     ]]);
 
@@ -305,11 +306,11 @@ async fn handle_delete_request_typed(
     let keyboard = teloxide::types::InlineKeyboardMarkup::new(vec![vec![
         teloxide::types::InlineKeyboardButton::callback(
             "✅ Да, удалить",
-            VocabularyCallback::ConfirmDelete { card_id }.to_json(),
+            CallbackData::Vocabulary(VocabularyCallback::ConfirmDelete { card_id }).to_json(),
         ),
         teloxide::types::InlineKeyboardButton::callback(
             "❌ Отмена",
-            VocabularyCallback::CancelDelete.to_json(),
+            CallbackData::Vocabulary(VocabularyCallback::CancelDelete).to_json(),
         ),
     ]]);
 
@@ -635,11 +636,11 @@ pub fn build_search_results_keyboard(
         rows.push(vec![
             teloxide::types::InlineKeyboardButton::callback(
                 "Подробнее",
-                VocabularyCallback::Detail { card_id: *card_id }.to_json(),
+                CallbackData::Vocabulary(VocabularyCallback::Detail { card_id: *card_id }).to_json(),
             ),
             teloxide::types::InlineKeyboardButton::callback(
                 "Удалить 🗑️",
-                VocabularyCallback::Delete { card_id: *card_id }.to_json(),
+                CallbackData::Vocabulary(VocabularyCallback::Delete { card_id: *card_id }).to_json(),
             ),
         ]);
     }
@@ -650,26 +651,26 @@ pub fn build_search_results_keyboard(
         if current_page > 0 {
             pagination_row.push(teloxide::types::InlineKeyboardButton::callback(
                 "⬅️ Назад",
-                VocabularyCallback::SearchPage {
+                CallbackData::Vocabulary(VocabularyCallback::SearchPage {
                     page: current_page - 1,
                     query: query.to_string(),
-                }
+                })
                 .to_json(),
             ));
         }
 
         pagination_row.push(teloxide::types::InlineKeyboardButton::callback(
             format!("{}/{}", current_page + 1, total_pages),
-            VocabularyCallback::SearchCurrent.to_json(),
+            CallbackData::Vocabulary(VocabularyCallback::SearchCurrent).to_json(),
         ));
 
         if current_page < total_pages - 1 {
             pagination_row.push(teloxide::types::InlineKeyboardButton::callback(
                 "Далее ➡️",
-                VocabularyCallback::SearchPage {
+                CallbackData::Vocabulary(VocabularyCallback::SearchPage {
                     page: current_page + 1,
                     query: query.to_string(),
-                }
+                })
                 .to_json(),
             ));
         }
@@ -679,7 +680,7 @@ pub fn build_search_results_keyboard(
 
     rows.push(vec![teloxide::types::InlineKeyboardButton::callback(
         "🔙 Назад к списку",
-        VocabularyCallback::Page { page: 0 }.to_json(),
+        CallbackData::Vocabulary(VocabularyCallback::Page { page: 0 }).to_json(),
     )]);
 
     teloxide::types::InlineKeyboardMarkup::new(rows)

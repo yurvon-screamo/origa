@@ -1,3 +1,4 @@
+use crate::handlers::callbacks::CallbackData;
 use crate::handlers::menu::MenuCallback;
 use teloxide::types::{InlineKeyboardButton, InlineKeyboardMarkup, KeyboardButton, KeyboardMarkup};
 
@@ -25,33 +26,57 @@ pub fn main_menu_keyboard_with_stats() -> InlineKeyboardMarkup {
     let rows = vec![
         vec![InlineKeyboardButton::callback(
             "📜 История изучения",
-            MenuCallback::HistoryKnown.to_json(),
+            CallbackData::Menu(MenuCallback::HistoryKnown).to_json(),
         )],
         vec![InlineKeyboardButton::callback(
             "📜 История в процессе",
-            MenuCallback::HistoryInProgress.to_json(),
+            CallbackData::Menu(MenuCallback::HistoryInProgress).to_json(),
         )],
         vec![InlineKeyboardButton::callback(
             "📜 История новых",
-            MenuCallback::HistoryNew.to_json(),
+            CallbackData::Menu(MenuCallback::HistoryNew).to_json(),
         )],
         vec![InlineKeyboardButton::callback(
             "📜 История сложных",
-            MenuCallback::HistoryHard.to_json(),
+            CallbackData::Menu(MenuCallback::HistoryHard).to_json(),
         )],
         vec![
-            InlineKeyboardButton::callback("🎯 Урок", MenuCallback::Lesson.to_json()),
-            InlineKeyboardButton::callback("🔒 Закрепление", MenuCallback::Fixation.to_json()),
+            InlineKeyboardButton::callback(
+                "🎯 Урок",
+                CallbackData::Menu(MenuCallback::Lesson).to_json(),
+            ),
+            InlineKeyboardButton::callback(
+                "🔒 Закрепление",
+                CallbackData::Menu(MenuCallback::Fixation).to_json(),
+            ),
         ],
         vec![
-            InlineKeyboardButton::callback("📚 Слова", MenuCallback::Vocabulary.to_json()),
-            InlineKeyboardButton::callback("🈷 Кандзи", MenuCallback::Kanji.to_json()),
-            InlineKeyboardButton::callback("📖 Грамматика", MenuCallback::Grammar.to_json()),
+            InlineKeyboardButton::callback(
+                "📚 Слова",
+                CallbackData::Menu(MenuCallback::Vocabulary).to_json(),
+            ),
+            InlineKeyboardButton::callback(
+                "🈷 Кандзи",
+                CallbackData::Menu(MenuCallback::Kanji).to_json(),
+            ),
+            InlineKeyboardButton::callback(
+                "📖 Грамматика",
+                CallbackData::Menu(MenuCallback::Grammar).to_json(),
+            ),
         ],
         vec![
-            InlineKeyboardButton::callback("👤 Профиль", MenuCallback::Profile.to_json()),
-            InlineKeyboardButton::callback("⚙️ Настройки", MenuCallback::Settings.to_json()),
-            InlineKeyboardButton::callback("🏠 Главная", MenuCallback::MainMenu.to_json()),
+            InlineKeyboardButton::callback(
+                "👤 Профиль",
+                CallbackData::Menu(MenuCallback::Profile).to_json(),
+            ),
+            InlineKeyboardButton::callback(
+                "⚙️ Настройки",
+                CallbackData::Menu(MenuCallback::Settings).to_json(),
+            ),
+            InlineKeyboardButton::callback(
+                "🏠 Главная",
+                CallbackData::Menu(MenuCallback::MainMenu).to_json(),
+            ),
         ],
     ];
 
@@ -61,7 +86,7 @@ pub fn main_menu_keyboard_with_stats() -> InlineKeyboardMarkup {
 pub fn history_keyboard() -> InlineKeyboardMarkup {
     let keyboard = vec![vec![InlineKeyboardButton::callback(
         "История 📜",
-        MenuCallback::ShowHistory.to_json(),
+        CallbackData::Menu(MenuCallback::ShowHistory).to_json(),
     )]];
     InlineKeyboardMarkup::new(keyboard)
 }

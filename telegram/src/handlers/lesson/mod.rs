@@ -2,6 +2,7 @@ mod callbacks;
 
 use crate::bot::messaging::send_main_menu_with_stats;
 use crate::dialogue::{DialogueState, LessonMode, SessionData};
+use crate::handlers::callbacks::CallbackData;
 use crate::service::OrigaServiceProvider;
 use chrono::Duration;
 use origa::application::srs_service::RateMode;
@@ -272,12 +273,12 @@ async fn handle_rating(
             let answer_text = format_card_back(card);
             let mut keyboard_rows = vec![vec![InlineKeyboardButton::callback(
                 LessonCallback::NEXT_CARD,
-                LessonCallback::NextCard.to_json(),
+                CallbackData::Lesson(LessonCallback::NextCard).to_json(),
             )]];
 
             keyboard_rows.push(vec![InlineKeyboardButton::callback(
                 LessonCallback::ABORT_LESSON,
-                LessonCallback::AbortLesson.to_json(),
+                CallbackData::Lesson(LessonCallback::AbortLesson).to_json(),
             )]);
 
             bot.send_message(chat_id, answer_text)
@@ -453,7 +454,7 @@ async fn show_lesson_complete(
 
     let keyboard = InlineKeyboardMarkup::new(vec![vec![InlineKeyboardButton::callback(
         LessonCallback::BACK_TO_MAIN,
-        LessonCallback::BackToMain.to_json(),
+        CallbackData::Lesson(LessonCallback::BackToMain).to_json(),
     )]]);
 
     bot.send_message(chat_id, text)
@@ -517,7 +518,7 @@ pub fn lesson_rating_keyboard() -> InlineKeyboardMarkup {
         .map(|rating| {
             InlineKeyboardButton::callback(
                 LessonCallback::rating_button_text(rating),
-                LessonCallback::Rating { rating }.to_json(),
+                CallbackData::Lesson(LessonCallback::Rating { rating }).to_json(),
             )
         })
         .collect();

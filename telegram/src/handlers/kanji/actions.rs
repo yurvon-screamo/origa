@@ -1,4 +1,5 @@
 use super::KanjiCallback;
+use crate::handlers::callbacks::CallbackData;
 use crate::service::OrigaServiceProvider;
 use origa::domain::{KANJI_DICTIONARY, KanjiInfo};
 use std::sync::Arc;
@@ -74,7 +75,7 @@ pub async fn handle_kanji_add_new(
     let keyboard = teloxide::types::InlineKeyboardMarkup::new(vec![vec![
         teloxide::types::InlineKeyboardButton::callback(
             "🏠 Главная",
-            KanjiCallback::MainMenu.to_json(),
+            CallbackData::Kanji(KanjiCallback::MainMenu).to_json(),
         ),
     ]]);
 
@@ -143,9 +144,9 @@ pub async fn handle_kanji_search(
         let kanji_char = kanji.kanji().to_string();
         rows.push(vec![teloxide::types::InlineKeyboardButton::callback(
             format!("Добавить \'{}\'", kanji_char),
-            KanjiCallback::Add {
+            CallbackData::Kanji(KanjiCallback::Add {
                 kanji: kanji_char.clone(),
-            }
+            })
             .to_json(),
         )]);
     }
@@ -154,20 +155,20 @@ pub async fn handle_kanji_search(
     if current_page > 0 {
         nav_row.push(teloxide::types::InlineKeyboardButton::callback(
             "⬅️",
-            KanjiCallback::Search {
+            CallbackData::Kanji(KanjiCallback::Search {
                 query: query.to_string(),
                 page: current_page - 1,
-            }
+            })
             .to_json(),
         ));
     }
     if current_page + 1 < total_pages {
         nav_row.push(teloxide::types::InlineKeyboardButton::callback(
             "➡️",
-            KanjiCallback::Search {
+            CallbackData::Kanji(KanjiCallback::Search {
                 query: query.to_string(),
                 page: current_page + 1,
-            }
+            })
             .to_json(),
         ));
     }
@@ -177,7 +178,7 @@ pub async fn handle_kanji_search(
 
     rows.push(vec![teloxide::types::InlineKeyboardButton::callback(
         "🏠 Главная",
-        KanjiCallback::MainMenu.to_json(),
+        CallbackData::Kanji(KanjiCallback::MainMenu).to_json(),
     )]);
 
     let keyboard = teloxide::types::InlineKeyboardMarkup::new(rows);
