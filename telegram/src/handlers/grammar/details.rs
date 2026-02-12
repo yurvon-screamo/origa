@@ -1,5 +1,7 @@
 use crate::dialogue::{DialogueState, SessionData};
 use crate::handlers::OrigaDialogue;
+use crate::handlers::callbacks::CallbackData;
+use crate::handlers::menu::MenuCallback;
 use origa::domain::{NativeLanguage, get_rule_by_id};
 use std::sync::Arc;
 use teloxide::prelude::*;
@@ -18,19 +20,19 @@ pub fn grammar_detail_keyboard(rule_id: &Ulid, is_added: bool) -> InlineKeyboard
     let action_button = if is_added {
         InlineKeyboardButton::callback(
             "❌ Удалить",
-            GrammarCallback::Delete { rule_id: *rule_id }.to_json(),
+            CallbackData::Grammar(GrammarCallback::Delete { rule_id: *rule_id }).to_json(),
         )
     } else {
         InlineKeyboardButton::callback(
             "➕ Добавить",
-            GrammarCallback::Add { rule_id: *rule_id }.to_json(),
+            CallbackData::Grammar(GrammarCallback::Add { rule_id: *rule_id }).to_json(),
         )
     };
 
     rows.push(vec![action_button]);
     rows.push(vec![
-        InlineKeyboardButton::callback("⬅️ Назад", GrammarCallback::BackToList.to_json()),
-        InlineKeyboardButton::callback("🏠 Главная", "menu_home"),
+        InlineKeyboardButton::callback("⬅️ Назад", CallbackData::Grammar(GrammarCallback::BackToList).to_json()),
+        InlineKeyboardButton::callback("🏠 Главная", CallbackData::Menu(MenuCallback::MainMenu).to_json()),
     ]);
 
     InlineKeyboardMarkup::new(rows)

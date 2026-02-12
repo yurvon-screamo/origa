@@ -35,6 +35,10 @@ pub enum CallbackData {
 }
 
 impl CallbackData {
+    pub fn to_json(&self) -> String {
+        serde_json::to_string(self).expect("Failed to serialize callback data")
+    }
+
     pub fn from_json(json: &str) -> Result<Self, serde_json::Error> {
         serde_json::from_str(json)
     }

@@ -1,5 +1,6 @@
 use super::{KanjiCallback, format_date, format_kanji_entry};
 use crate::dialogue::SessionData;
+use crate::handlers::callbacks::CallbackData;
 use crate::service::OrigaServiceProvider;
 use origa::application::KanjiListUseCase;
 use origa::domain::{Card, JapaneseLevel, KanjiInfo};
@@ -139,17 +140,17 @@ pub fn build_kanji_list_keyboard(
         let action_button = if is_studying {
             teloxide::types::InlineKeyboardButton::callback(
                 "Удалить",
-                KanjiCallback::Delete {
+                CallbackData::Kanji(KanjiCallback::Delete {
                     kanji: kanji_char.clone(),
-                }
+                })
                 .to_json(),
             )
         } else {
             teloxide::types::InlineKeyboardButton::callback(
                 "Добавить",
-                KanjiCallback::Add {
+                CallbackData::Kanji(KanjiCallback::Add {
                     kanji: kanji_char.clone(),
-                }
+                })
                 .to_json(),
             )
         };
@@ -157,9 +158,9 @@ pub fn build_kanji_list_keyboard(
         rows.push(vec![
             teloxide::types::InlineKeyboardButton::callback(
                 "Подробнее",
-                KanjiCallback::Detail {
+                CallbackData::Kanji(KanjiCallback::Detail {
                     kanji: kanji_char.clone(),
-                }
+                })
                 .to_json(),
             ),
             action_button,
@@ -170,17 +171,17 @@ pub fn build_kanji_list_keyboard(
     if page > 0 {
         nav_row.push(teloxide::types::InlineKeyboardButton::callback(
             "⬅️ Назад",
-            KanjiCallback::Page { page: page - 1 }.to_json(),
+            CallbackData::Kanji(KanjiCallback::Page { page: page - 1 }).to_json(),
         ));
     }
     nav_row.push(teloxide::types::InlineKeyboardButton::callback(
         format!("{}/{}", page + 1, total_pages.max(1)),
-        KanjiCallback::PageCurrent.to_json(),
+        CallbackData::Kanji(KanjiCallback::PageCurrent).to_json(),
     ));
     if page + 1 < total_pages {
         nav_row.push(teloxide::types::InlineKeyboardButton::callback(
             "Далее ➡️",
-            KanjiCallback::Page { page: page + 1 }.to_json(),
+            CallbackData::Kanji(KanjiCallback::Page { page: page + 1 }).to_json(),
         ));
     }
     if !nav_row.is_empty() {
@@ -189,12 +190,12 @@ pub fn build_kanji_list_keyboard(
 
     rows.push(vec![teloxide::types::InlineKeyboardButton::callback(
         "+ Добавить кандзи",
-        KanjiCallback::AddNew.to_json(),
+        CallbackData::Kanji(KanjiCallback::AddNew).to_json(),
     )]);
 
     rows.push(vec![teloxide::types::InlineKeyboardButton::callback(
         "🏠 Главная",
-        KanjiCallback::MainMenu.to_json(),
+        CallbackData::Kanji(KanjiCallback::MainMenu).to_json(),
     )]);
 
     teloxide::types::InlineKeyboardMarkup::new(rows)
