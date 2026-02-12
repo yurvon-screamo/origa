@@ -22,7 +22,7 @@ pub enum Command {
 }
 
 pub async fn help_handler(bot: Bot, msg: Message) -> ResponseResult<()> {
-    let text = "/start - Запустить бота\\n/help - Показать эту справку";
+    let text = "/start - Запустить бота\n/help - Показать эту справку";
     bot.send_message(msg.chat.id, text).await?;
     respond(())
 }
