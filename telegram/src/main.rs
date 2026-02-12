@@ -4,16 +4,16 @@ mod handlers;
 mod service;
 
 use dialogue::{DialogueState, LessonMode};
+use handlers::endpoint_with_common_text;
 use handlers::{
-    Command,
+    Command, OrigaDialogue,
     add_from_text::add_from_text_handler,
     callback_handler, chat_id_from_msg, grammar_list_handler, handle_duolingo_token,
     handle_kanji_list, handle_vocabulary_search, help_handler,
     lesson::{start_fixation, start_lesson},
-    main_menu_handler, OrigaDialogue, profile_handler, start_handler,
-    telegram_id_from_msg, username_from_msg, vocabulary_list_handler,
+    main_menu_handler, profile_handler, start_handler, telegram_id_from_msg, username_from_msg,
+    vocabulary_list_handler,
 };
-use handlers::endpoint_with_common_text;
 use service::OrigaServiceProvider;
 use teloxide::dispatching::dialogue::{InMemStorage, enter};
 use teloxide::prelude::*;
