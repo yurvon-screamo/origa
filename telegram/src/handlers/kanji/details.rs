@@ -1,4 +1,6 @@
 use super::KanjiCallback;
+use crate::handlers::callbacks::CallbackData;
+use crate::handlers::menu::MenuCallback;
 use origa::domain::{KANJI_DICTIONARY, KanjiInfo};
 use teloxide::payloads::SendMessageSetters;
 use teloxide::prelude::Requester;
@@ -19,23 +21,23 @@ pub async fn handle_kanji_detail(
         vec![
             teloxide::types::InlineKeyboardButton::callback(
                 "Добавить",
-                KanjiCallback::Add {
+                CallbackData::Kanji(KanjiCallback::Add {
                     kanji: kanji_char.to_string(),
-                }
+                })
                 .to_json(),
             ),
             teloxide::types::InlineKeyboardButton::callback(
                 "Назад",
-                KanjiCallback::BackToList.to_json(),
+                CallbackData::Kanji(KanjiCallback::BackToList).to_json(),
             ),
         ],
         vec![teloxide::types::InlineKeyboardButton::callback(
             "+ Добавить из списка",
-            KanjiCallback::AddNew.to_json(),
+            CallbackData::Kanji(KanjiCallback::AddNew).to_json(),
         )],
         vec![teloxide::types::InlineKeyboardButton::callback(
             "🏠 Главная",
-            KanjiCallback::MainMenu.to_json(),
+            CallbackData::Kanji(KanjiCallback::MainMenu).to_json(),
         )],
     ]);
 

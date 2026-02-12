@@ -3,6 +3,7 @@ pub mod callbacks;
 use crate::bot::messaging::send_main_menu_with_stats;
 use crate::dialogue::{DialogueState, SessionData};
 use crate::handlers::add_from_text::callbacks::AddFromTextCallback;
+use crate::handlers::callbacks::CallbackData;
 use crate::service::OrigaServiceProvider;
 use origa::domain::tokenize_text;
 use std::sync::Arc;
@@ -150,18 +151,18 @@ fn build_word_selection_keyboard(words: &[String], selected: &[String]) -> Inlin
         let callback_data = AddFromTextCallback::Toggle { word: word.clone() };
         rows.push(vec![InlineKeyboardButton::callback(
             label,
-            callback_data.to_json(),
+            CallbackData::AddFromText(callback_data).to_json(),
         )]);
     }
 
     rows.push(vec![InlineKeyboardButton::callback(
         "✅ Добавить выбранные",
-        AddFromTextCallback::Confirm.to_json(),
+        CallbackData::AddFromText(AddFromTextCallback::Confirm).to_json(),
     )]);
 
     rows.push(vec![InlineKeyboardButton::callback(
         "❌ Отмена",
-        AddFromTextCallback::Cancel.to_json(),
+        CallbackData::AddFromText(AddFromTextCallback::Cancel).to_json(),
     )]);
 
     InlineKeyboardMarkup::new(rows)

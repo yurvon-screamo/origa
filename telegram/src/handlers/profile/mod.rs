@@ -3,6 +3,7 @@ mod callbacks;
 pub use callbacks::ProfileCallback;
 
 use crate::dialogue::ProfileView;
+use crate::handlers::callbacks::CallbackData;
 use crate::handlers::OrigaDialogue;
 use crate::service::OrigaServiceProvider;
 use origa::application::{UserProfile, UserRepository};
@@ -97,19 +98,19 @@ pub fn profile_main_keyboard() -> InlineKeyboardMarkup {
     let buttons: Vec<Vec<InlineKeyboardButton>> = vec![
         vec![InlineKeyboardButton::callback(
             "Изменить уровень JLPT ➡️",
-            ProfileCallback::JlptSelect.to_json(),
+            CallbackData::Profile(ProfileCallback::JlptSelect).to_json(),
         )],
         vec![InlineKeyboardButton::callback(
             "🔗 Подключить Duolingo",
-            ProfileCallback::DuolingoConnect.to_json(),
+            CallbackData::Profile(ProfileCallback::DuolingoConnect).to_json(),
         )],
         vec![InlineKeyboardButton::callback(
             "⚙️ Настройки",
-            ProfileCallback::Settings.to_json(),
+            CallbackData::Profile(ProfileCallback::Settings).to_json(),
         )],
         vec![InlineKeyboardButton::callback(
             "🚪 Выйти",
-            ProfileCallback::Exit.to_json(),
+            CallbackData::Profile(ProfileCallback::Exit).to_json(),
         )],
     ];
     InlineKeyboardMarkup::new(buttons)
@@ -154,11 +155,11 @@ pub fn settings_keyboard(reminders_enabled: bool) -> InlineKeyboardMarkup {
     let buttons: Vec<Vec<InlineKeyboardButton>> = vec![
         vec![InlineKeyboardButton::callback(
             button_text,
-            ProfileCallback::RemindersToggle.to_json(),
+            CallbackData::Profile(ProfileCallback::RemindersToggle).to_json(),
         )],
         vec![InlineKeyboardButton::callback(
             "🔙 Назад",
-            ProfileCallback::Back.to_json(),
+            CallbackData::Profile(ProfileCallback::Back).to_json(),
         )],
     ];
     InlineKeyboardMarkup::new(buttons)
@@ -179,45 +180,45 @@ fn jlpt_selector_keyboard() -> InlineKeyboardMarkup {
         vec![
             InlineKeyboardButton::callback(
                 "N5",
-                ProfileCallback::JlptSet {
+                CallbackData::Profile(ProfileCallback::JlptSet {
                     level: JapaneseLevel::N5,
-                }
+                })
                 .to_json(),
             ),
             InlineKeyboardButton::callback(
                 "N4",
-                ProfileCallback::JlptSet {
+                CallbackData::Profile(ProfileCallback::JlptSet {
                     level: JapaneseLevel::N4,
-                }
+                })
                 .to_json(),
             ),
         ],
         vec![
             InlineKeyboardButton::callback(
                 "N3",
-                ProfileCallback::JlptSet {
+                CallbackData::Profile(ProfileCallback::JlptSet {
                     level: JapaneseLevel::N3,
-                }
+                })
                 .to_json(),
             ),
             InlineKeyboardButton::callback(
                 "N2",
-                ProfileCallback::JlptSet {
+                CallbackData::Profile(ProfileCallback::JlptSet {
                     level: JapaneseLevel::N2,
-                }
+                })
                 .to_json(),
             ),
         ],
         vec![InlineKeyboardButton::callback(
             "N1",
-            ProfileCallback::JlptSet {
+            CallbackData::Profile(ProfileCallback::JlptSet {
                 level: JapaneseLevel::N1,
-            }
+            })
             .to_json(),
         )],
         vec![InlineKeyboardButton::callback(
             "🔙 Назад",
-            ProfileCallback::Back.to_json(),
+            CallbackData::Profile(ProfileCallback::Back).to_json(),
         )],
     ];
     InlineKeyboardMarkup::new(buttons)
@@ -234,7 +235,7 @@ async fn show_duolingo_connect(
 
     let keyboard = InlineKeyboardMarkup::new(vec![vec![InlineKeyboardButton::callback(
         "🔙 Назад",
-        ProfileCallback::Back.to_json(),
+        CallbackData::Profile(ProfileCallback::Back).to_json(),
     )]]);
 
     bot.send_message(chat_id, text)
@@ -435,8 +436,8 @@ async fn handle_exit(bot: &Bot, chat_id: ChatId, _dialogue: &OrigaDialogue) -> R
     let text = "Вы уверены, что хотите удалить все данные? Это действие нельзя отменить.";
 
     let keyboard = InlineKeyboardMarkup::new(vec![vec![
-        InlineKeyboardButton::callback("✅ Да, удалить", ProfileCallback::ConfirmExit.to_json()),
-        InlineKeyboardButton::callback("❌ Отмена", ProfileCallback::Back.to_json()),
+        InlineKeyboardButton::callback("✅ Да, удалить", CallbackData::Profile(ProfileCallback::ConfirmExit).to_json()),
+        InlineKeyboardButton::callback("❌ Отмена", CallbackData::Profile(ProfileCallback::Back).to_json()),
     ]]);
 
     bot.send_message(chat_id, text)
