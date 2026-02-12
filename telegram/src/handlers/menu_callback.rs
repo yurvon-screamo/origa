@@ -262,7 +262,7 @@ async fn handle_menu_grammar(
         };
 
         let review_dates = grammar::list::get_grammar_review_dates(&session).await?;
-        let text = "📖 Грамматика\\n\\nВыберите правило для просмотра:".to_string();
+        let text = "📖 Грамматика\n\nВыберите правило для просмотра:".to_string();
         let keyboard = grammar::list::grammar_list_keyboard(page, items_per_page, &review_dates);
 
         bot.edit_message_text(chat_id, q.message.as_ref().unwrap().id(), text)
@@ -310,7 +310,7 @@ async fn handle_menu_profile(
         };
 
         let text = format!(
-            "👤 Профиль\\n\\nИмя: {}\\n\\nЦелевой уровень JLPT: {}\\n\\n🔗 Duolingo: {}",
+            "👤 Профиль\n\nИмя: {}\n\nЦелевой уровень JLPT: {}\n\n🔗 Duolingo: {}",
             profile.username,
             profile.current_japanese_level.code(),
             duolingo_status
@@ -358,7 +358,7 @@ async fn handle_menu_settings(
         } else {
             "Выкл"
         };
-        let text = format!("⚙️ Настройки\\n\\n• Напоминания: {}", reminders_status);
+        let text = format!("⚙️ Настройки\n\n• Напоминания: {}", reminders_status);
 
         bot.edit_message_text(chat_id, q.message.as_ref().unwrap().id(), text)
             .reply_markup(profile::settings_keyboard(profile.reminders_enabled))
@@ -420,7 +420,7 @@ async fn handle_menu_lesson(
             })?;
 
         let lesson_start_text = format!(
-            "{}\\\\n{}: {}\\\\n{}: 0/{}",
+            "{}\\\n{}: {}\\\n{}: 0/{}",
             lesson::LessonCallback::LESSON_STARTED,
             lesson::LessonCallback::CARDS,
             total_cards,
@@ -488,7 +488,7 @@ async fn handle_menu_fixation(
             })?;
 
         let lesson_start_text = format!(
-            "{}\\\\n{}: {}\\\\n{}: 0/{}",
+            "{}\\\n{}: {}\\\n{}: 0/{}",
             lesson::LessonCallback::FIXATION_STARTED,
             lesson::LessonCallback::CARDS,
             total_cards,

@@ -61,7 +61,7 @@ pub async fn start_lesson(
         .map_err(|e| teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string()))))?;
 
     let lesson_start_text = format!(
-        "{}\\n{}: {}\\n{}: 0/{}",
+        "{}\n{}: {}\n{}: 0/{}",
         LessonCallback::LESSON_STARTED,
         LessonCallback::CARDS,
         total_cards,
@@ -131,7 +131,7 @@ pub async fn start_fixation(
         .map_err(|e| teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string()))))?;
 
     let lesson_start_text = format!(
-        "{}\\n{}: {}\\n{}: 0/{}",
+        "{}\n{}: {}\n{}: 0/{}",
         LessonCallback::FIXATION_STARTED,
         LessonCallback::CARDS,
         total_cards,
@@ -442,7 +442,7 @@ async fn show_lesson_complete(
     };
 
     let text = format!(
-        "{}\\n{}: {} | {}: {}\\n\\n{}",
+        "{}\n{}: {} | {}: {}\n\n{}",
         mode_text,
         LessonCallback::NEW,
         new_count,
@@ -483,7 +483,7 @@ fn format_card_back(card: &Card) -> String {
     match card {
         Card::Vocabulary(_) => {
             format!(
-                "<b>{}</b>\\n\\n<b>{}:</b> {}\\n\\n<b>{}:</b>\\n{}",
+                "<b>{}</b>\n\n<b>{}:</b> {}\n\n<b>{}:</b>\n{}",
                 question,
                 LessonCallback::TRANSLATION,
                 answer,
@@ -493,7 +493,7 @@ fn format_card_back(card: &Card) -> String {
         }
         Card::Kanji(_) => {
             format!(
-                "<b>{}</b>\\n\\n<b>{}:</b> {}",
+                "<b>{}</b>\n\n<b>{}:</b> {}",
                 question,
                 LessonCallback::MEANINGS,
                 answer
@@ -501,7 +501,7 @@ fn format_card_back(card: &Card) -> String {
         }
         Card::Grammar(grammar) => {
             format!(
-                "<b>{}</b>\\n\\n<b>{}:</b> {}",
+                "<b>{}</b>\n\n<b>{}:</b> {}",
                 grammar.title().text(),
                 LessonCallback::BRIEFLY,
                 answer

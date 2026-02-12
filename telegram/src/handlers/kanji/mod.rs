@@ -12,8 +12,8 @@ pub use list::handle_kanji_list;
 use origa::domain::KanjiInfo;
 
 pub fn format_kanji_entry(kanji: &KanjiInfo, idx: usize, page: usize) -> String {
-    let mut text = format!("{}. <b>{}</b>\\n", page * 6 + idx + 1, kanji.kanji());
-    text.push_str(&format!("   Значения: {}\\n", kanji.description()));
+    let mut text = format!("{}. <b>{}</b>\n", page * 6 + idx + 1, kanji.kanji());
+    text.push_str(&format!("   Значения: {}\n", kanji.description()));
 
     let radicals: Vec<String> = kanji
         .radicals()
@@ -21,7 +21,7 @@ pub fn format_kanji_entry(kanji: &KanjiInfo, idx: usize, page: usize) -> String 
         .map(|r| r.name().to_string())
         .collect();
     if !radicals.is_empty() {
-        text.push_str(&format!("   Радикал: {}\\n", radicals.join(", ")));
+        text.push_str(&format!("   Радикал: {}\n", radicals.join(", ")));
     }
 
     text.push('\n');
