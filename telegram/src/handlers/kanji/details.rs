@@ -1,6 +1,6 @@
 use super::KanjiCallback;
+use crate::formatters::format_japanese_text;
 use crate::handlers::callbacks::CallbackData;
-use crate::handlers::menu::MenuCallback;
 use origa::domain::{KANJI_DICTIONARY, KanjiInfo};
 use teloxide::payloads::SendMessageSetters;
 use teloxide::prelude::Requester;
@@ -56,7 +56,7 @@ pub fn build_kanji_detail_text(kanji: &KanjiInfo) -> String {
         "🔢 Используется в словах: {}\n\n",
         kanji.used_in()
     ));
-    text.push_str(&format!("📝 Значения: {}\n", kanji.description()));
+    text.push_str(&format!("📝 Значения: {}\n", format_japanese_text(kanji.description())));
 
     let radicals: Vec<String> = kanji
         .radicals()
@@ -70,7 +70,7 @@ pub fn build_kanji_detail_text(kanji: &KanjiInfo) -> String {
     if !kanji.popular_words().is_empty() {
         text.push_str("\n📖 Популярные слова:\n");
         for word in kanji.popular_words().iter().take(5) {
-            text.push_str(&format!("  • {}\n", word));
+            text.push_str(&format!("  • {}\n", format_japanese_text(word)));
         }
     }
 

@@ -2,6 +2,7 @@ pub mod callbacks;
 
 use crate::bot::messaging::send_main_menu_with_stats;
 use crate::dialogue::{DialogueState, SessionData};
+use crate::formatters::format_japanese_text;
 use crate::handlers::add_from_text::callbacks::AddFromTextCallback;
 use crate::handlers::callbacks::CallbackData;
 use crate::service::OrigaServiceProvider;
@@ -143,10 +144,11 @@ fn build_word_selection_keyboard(words: &[String], selected: &[String]) -> Inlin
 
     for word in words.iter().take(10) {
         let is_selected = selected.contains(word);
+        let word_with_furigana = format_japanese_text(word);
         let label = if is_selected {
-            format!("☑️ {}", word)
+            format!("☑️ {}", word_with_furigana)
         } else {
-            format!("⬜ {}", word)
+            format!("⬜ {}", word_with_furigana)
         };
         let callback_data = AddFromTextCallback::Toggle { word: word.clone() };
         rows.push(vec![InlineKeyboardButton::callback(

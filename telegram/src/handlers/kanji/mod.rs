@@ -9,11 +9,12 @@ pub use callbacks::KanjiCallback;
 use chrono::Datelike;
 pub use list::handle_kanji_list;
 
+use crate::formatters::format_japanese_text;
 use origa::domain::KanjiInfo;
 
 pub fn format_kanji_entry(kanji: &KanjiInfo, idx: usize, page: usize) -> String {
     let mut text = format!("{}. <b>{}</b>\n", page * 6 + idx + 1, kanji.kanji());
-    text.push_str(&format!("   Значения: {}\n", kanji.description()));
+    text.push_str(&format!("   Значения: {}\n", format_japanese_text(kanji.description())));
 
     let radicals: Vec<String> = kanji
         .radicals()

@@ -90,3 +90,28 @@ pub fn history_keyboard() -> InlineKeyboardMarkup {
     )]];
     InlineKeyboardMarkup::new(keyboard)
 }
+
+pub fn lesson_keyboard() -> KeyboardMarkup {
+    let buttons: Vec<Vec<KeyboardButton>> = vec![
+        vec![
+            KeyboardButton::new("Не знаю ❌"),
+            KeyboardButton::new("Плохо 😐"),
+            KeyboardButton::new("Знаю ✅"),
+            KeyboardButton::new("Идеально 🌟"),
+        ],
+        vec![
+            KeyboardButton::new("🏠 На главную"),
+        ],
+    ];
+    KeyboardMarkup::new(buttons)
+}
+
+pub fn lesson_answer_keyboard() -> KeyboardMarkup {
+    let buttons: Vec<Vec<KeyboardButton>> = vec![
+        vec![
+            KeyboardButton::new("Далее ➡️"),
+            KeyboardButton::new("🏠 На главную"),
+        ],
+    ];
+    KeyboardMarkup::new(buttons)
+}

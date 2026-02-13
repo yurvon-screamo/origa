@@ -1,4 +1,4 @@
-use crate::bot::keyboard::reply_keyboard;
+use crate::bot::keyboard::{lesson_keyboard, reply_keyboard};
 use crate::bot::messaging::send_history;
 use crate::bot::messaging::send_main_menu_with_stats;
 use crate::dialogue::{DialogueState, LessonMode, ProfileView};
@@ -15,6 +15,7 @@ use origa::domain::Card;
 use std::collections::HashMap;
 use std::sync::Arc;
 use teloxide::prelude::*;
+use teloxide::types::ReplyMarkup;
 use ulid::Ulid;
 
 pub async fn handle_menu_callback(
@@ -420,7 +421,7 @@ async fn handle_menu_lesson(
             })?;
 
         let lesson_start_text = format!(
-            "{}\\\n{}: {}\\\n{}: 0/{}",
+            "{}\n{}: {}\n{}: 0/{}",
             lesson::LessonCallback::LESSON_STARTED,
             lesson::LessonCallback::CARDS,
             total_cards,
@@ -434,7 +435,7 @@ async fn handle_menu_lesson(
             && let Some(first_card) = cards.get(first_card_id)
         {
             let card_text = lesson::format_card_front(first_card);
-            let keyboard = lesson::lesson_rating_keyboard();
+            let keyboard = ReplyMarkup::Keyboard(lesson_keyboard());
             bot.send_message(chat_id, card_text)
                 .parse_mode(teloxide::types::ParseMode::Html)
                 .reply_markup(keyboard)
@@ -488,7 +489,7 @@ async fn handle_menu_fixation(
             })?;
 
         let lesson_start_text = format!(
-            "{}\\\n{}: {}\\\n{}: 0/{}",
+            "{}\n{}: {}\n{}: 0/{}",
             lesson::LessonCallback::FIXATION_STARTED,
             lesson::LessonCallback::CARDS,
             total_cards,
@@ -502,7 +503,7 @@ async fn handle_menu_fixation(
             && let Some(first_card) = cards.get(first_card_id)
         {
             let card_text = lesson::format_card_front(first_card);
-            let keyboard = lesson::lesson_rating_keyboard();
+            let keyboard = ReplyMarkup::Keyboard(lesson_keyboard());
             bot.send_message(chat_id, card_text)
                 .parse_mode(teloxide::types::ParseMode::Html)
                 .reply_markup(keyboard)

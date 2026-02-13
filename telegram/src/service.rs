@@ -86,6 +86,7 @@ impl OrigaServiceProvider {
                     username.to_string(),
                     JapaneseLevel::N5,
                     NativeLanguage::Russian,
+                    Some(telegram_id),
                 );
 
                 self.inner.repository.save(&user).await.map_err(|e| {

@@ -297,6 +297,7 @@ mod tests {
             "testuser".to_string(),
             JapaneseLevel::N5,
             NativeLanguage::English,
+            None,
         );
 
         let repo =

@@ -1,4 +1,5 @@
 use crate::dialogue::{DialogueState, SessionData};
+use crate::formatters::format_japanese_text;
 use crate::handlers::callbacks::CallbackData;
 use crate::handlers::vocabulary::VocabularyCallback;
 use crate::service::OrigaServiceProvider;
@@ -246,7 +247,7 @@ async fn handle_detail(
 
 fn format_card_detail(card: &origa::domain::StudyCard) -> String {
     let card_info = match card.card() {
-        origa::domain::Card::Vocabulary(v) => format!("<b>{}</b>", v.word().text()),
+        origa::domain::Card::Vocabulary(v) => format!("<b>{}</b>", format_japanese_text(v.word().text())),
         _ => String::from("Неизвестный тип карточки"),
     };
 
@@ -288,8 +289,8 @@ fn format_card_detail(card: &origa::domain::StudyCard) -> String {
 • Стабильность: {}
 • Сложность: {}"#,
         card_info,
-        card.card().question().text(),
-        card.card().answer().text(),
+        format_japanese_text(card.card().question().text()),
+        format_japanese_text(card.card().answer().text()),
         next_review,
         reviews_count,
         stability,
@@ -616,8 +617,8 @@ fn format_search_card_entry(num: usize, card: &origa::domain::StudyCard) -> Stri
             format!(
                 "<b>{}.</b> {} — {}",
                 num,
-                v.word().text(),
-                v.meaning().text()
+                format_japanese_text(v.word().text()),
+                format_japanese_text(v.meaning().text())
             )
         }
         _ => String::from("Неизвестный тип карточки"),
@@ -636,11 +637,13 @@ pub fn build_search_results_keyboard(
         rows.push(vec![
             teloxide::types::InlineKeyboardButton::callback(
                 "Подробнее",
-                CallbackData::Vocabulary(VocabularyCallback::Detail { card_id: *card_id }).to_json(),
+                CallbackData::Vocabulary(VocabularyCallback::Detail { card_id: *card_id })
+                    .to_json(),
             ),
             teloxide::types::InlineKeyboardButton::callback(
                 "Удалить 🗑️",
-                CallbackData::Vocabulary(VocabularyCallback::Delete { card_id: *card_id }).to_json(),
+                CallbackData::Vocabulary(VocabularyCallback::Delete { card_id: *card_id })
+                    .to_json(),
             ),
         ]);
     }
