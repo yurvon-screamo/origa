@@ -1,8 +1,9 @@
 mod callbacks;
 
+use crate::bot::keyboard::{lesson_answer_keyboard, lesson_keyboard, reply_keyboard};
 use crate::bot::messaging::send_main_menu_with_stats;
 use crate::dialogue::{DialogueState, LessonMode, SessionData};
-use crate::handlers::callbacks::CallbackData;
+use crate::formatters::format_japanese_text;
 use crate::service::OrigaServiceProvider;
 use chrono::Duration;
 use origa::application::srs_service::RateMode;
@@ -11,10 +12,85 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use teloxide::payloads::SendMessageSetters;
 use teloxide::prelude::*;
-use teloxide::types::{ChatId, InlineKeyboardButton, InlineKeyboardMarkup};
+use teloxide::types::{ChatId, Message, ReplyMarkup};
 use ulid::Ulid;
 
 pub use callbacks::LessonCallback;
+
+pub async fn handle_lesson_text(
+    bot: Bot,
+    msg: Message,
+    dialogue: crate::handlers::OrigaDialogue,
+    session: SessionData,
+    showing_answer: bool,
+) -> ResponseResult<()> {
+    let chat_id = msg.chat.id;
+
+    if let Some(text) = msg.text() {
+        if showing_answer {
+            match text {
+                LessonCallback::NEXT_CARD => {
+                    handle_next_card(&bot, chat_id, dialogue, session).await?;
+                }
+                LessonCallback::BACK_TO_MAIN => {
+                    let provider = OrigaServiceProvider::instance().await;
+                    send_main_menu_with_stats(
+                        &bot,
+                        chat_id,
+                        &session.username,
+                        provider,
+                        session.user_id,
+                        Some(ReplyMarkup::Keyboard(reply_keyboard())),
+                    )
+                    .await
+                    .map_err(|e| {
+                        teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string())))
+                    })?;
+                    dialogue.exit().await.map_err(|e| {
+                        teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string())))
+                    })?;
+                }
+                _ => {}
+            }
+        } else {
+            match text {
+                LessonCallback::RATING_AGAIN => {
+                    handle_rating(&bot, chat_id, Rating::Again, dialogue, session).await?;
+                }
+                LessonCallback::RATING_HARD => {
+                    handle_rating(&bot, chat_id, Rating::Hard, dialogue, session).await?;
+                }
+                LessonCallback::RATING_GOOD => {
+                    handle_rating(&bot, chat_id, Rating::Good, dialogue, session).await?;
+                }
+                LessonCallback::RATING_EASY => {
+                    handle_rating(&bot, chat_id, Rating::Easy, dialogue, session).await?;
+                }
+                LessonCallback::BACK_TO_MAIN => {
+                    let provider = OrigaServiceProvider::instance().await;
+                    send_main_menu_with_stats(
+                        &bot,
+                        chat_id,
+                        &session.username,
+                        provider,
+                        session.user_id,
+                        Some(ReplyMarkup::Keyboard(reply_keyboard())),
+                    )
+                    .await
+                    .map_err(|e| {
+                        teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string())))
+                    })?;
+                    dialogue.exit().await.map_err(|e| {
+                        teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string())))
+                    })?;
+                }
+                _ => {}
+            }
+        }
+    }
+
+    respond(())
+}
 
 pub async fn start_lesson(
     bot: Bot,
@@ -76,7 +152,7 @@ pub async fn start_lesson(
         && let Some(first_card) = cards.get(first_card_id)
     {
         let card_text = format_card_front(first_card);
-        let keyboard = lesson_rating_keyboard();
+        let keyboard = ReplyMarkup::Keyboard(lesson_keyboard());
         bot.send_message(msg.chat.id, card_text)
             .parse_mode(teloxide::types::ParseMode::Html)
             .reply_markup(keyboard)
@@ -146,7 +222,7 @@ pub async fn start_fixation(
         && let Some(first_card) = cards.get(first_card_id)
     {
         let card_text = format_card_front(first_card);
-        let keyboard = lesson_rating_keyboard();
+        let keyboard = ReplyMarkup::Keyboard(lesson_keyboard());
         bot.send_message(msg.chat.id, card_text)
             .parse_mode(teloxide::types::ParseMode::Html)
             .reply_markup(keyboard)
@@ -182,9 +258,6 @@ pub async fn handle_lesson_callback(
         }
         LessonCallback::NextCard => {
             handle_next_card(&bot, chat_id, dialogue, session).await?;
-        }
-        LessonCallback::AbortLesson => {
-            handle_abort_lesson(&bot, chat_id, dialogue, session).await?;
         }
         LessonCallback::BackToMain => {
             let provider = OrigaServiceProvider::instance().await;
@@ -225,6 +298,7 @@ async fn handle_rating(
         mut new_count,
         mut review_count,
         mode,
+        card_ids,
         ..
     }) = current_state
     {
@@ -248,7 +322,7 @@ async fn handle_rating(
             Err(_) => return respond(()),
         };
 
-        let card_id = cards.keys().nth(current_index);
+        let card_id = card_ids.get(current_index);
         if let Some(card_id) = card_id
             && let Some(card) = cards.get(card_id)
         {
@@ -271,25 +345,17 @@ async fn handle_rating(
             }
 
             let answer_text = format_card_back(card);
-            let mut keyboard_rows = vec![vec![InlineKeyboardButton::callback(
-                LessonCallback::NEXT_CARD,
-                CallbackData::Lesson(LessonCallback::NextCard).to_json(),
-            )]];
-
-            keyboard_rows.push(vec![InlineKeyboardButton::callback(
-                LessonCallback::ABORT_LESSON,
-                CallbackData::Lesson(LessonCallback::AbortLesson).to_json(),
-            )]);
+            let keyboard = ReplyMarkup::Keyboard(lesson_answer_keyboard());
 
             bot.send_message(chat_id, answer_text)
                 .parse_mode(teloxide::types::ParseMode::Html)
-                .reply_markup(InlineKeyboardMarkup::new(keyboard_rows))
+                .reply_markup(keyboard)
                 .await?;
 
             dialogue
                 .update(DialogueState::Lesson {
                     mode,
-                    card_ids: cards.keys().cloned().collect(),
+                    card_ids,
                     current_index,
                     showing_answer: true,
                     new_count,
@@ -319,6 +385,7 @@ async fn handle_next_card(
         new_count,
         review_count,
         mode,
+        card_ids,
         ..
     }) = current_state
     {
@@ -342,7 +409,7 @@ async fn handle_next_card(
             Err(_) => return respond(()),
         };
 
-        let total_cards = cards.len();
+        let total_cards = card_ids.len();
         let next_index = current_index + 1;
 
         if next_index >= total_cards {
@@ -359,11 +426,11 @@ async fn handle_next_card(
             return respond(());
         }
 
-        if let Some(card_id) = cards.keys().nth(next_index)
+        if let Some(card_id) = card_ids.get(next_index)
             && let Some(card) = cards.get(card_id)
         {
             let card_text = format_card_front(card);
-            let keyboard = lesson_rating_keyboard();
+            let keyboard = ReplyMarkup::Keyboard(lesson_keyboard());
 
             bot.send_message(
                 chat_id,
@@ -384,7 +451,7 @@ async fn handle_next_card(
             dialogue
                 .update(DialogueState::Lesson {
                     mode,
-                    card_ids: cards.keys().cloned().collect(),
+                    card_ids,
                     current_index: next_index,
                     showing_answer: false,
                     new_count,
@@ -396,36 +463,6 @@ async fn handle_next_card(
                 })?;
         }
     }
-
-    respond(())
-}
-
-async fn handle_abort_lesson(
-    bot: &Bot,
-    chat_id: ChatId,
-    dialogue: crate::handlers::OrigaDialogue,
-    session: SessionData,
-) -> ResponseResult<()> {
-    bot.send_message(chat_id, LessonCallback::LESSON_ABORTED)
-        .await?;
-
-    let provider = OrigaServiceProvider::instance().await;
-
-    send_main_menu_with_stats(
-        bot,
-        chat_id,
-        &session.username,
-        provider,
-        session.user_id,
-        None,
-    )
-    .await
-    .map_err(|e| teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string()))))?;
-
-    dialogue
-        .exit()
-        .await
-        .map_err(|e| teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string()))))?;
 
     respond(())
 }
@@ -452,19 +489,14 @@ async fn show_lesson_complete(
         LessonCallback::BACK_TO_MAIN
     );
 
-    let keyboard = InlineKeyboardMarkup::new(vec![vec![InlineKeyboardButton::callback(
-        LessonCallback::BACK_TO_MAIN,
-        CallbackData::Lesson(LessonCallback::BackToMain).to_json(),
-    )]]);
-
     bot.send_message(chat_id, text)
-        .reply_markup(keyboard)
+        .reply_markup(ReplyMarkup::Keyboard(reply_keyboard()))
         .await?;
     respond(())
 }
 
 pub fn format_card_front(card: &Card) -> String {
-    let question = card.question().text();
+    let question = format_japanese_text(card.question().text());
     match card {
         Card::Vocabulary(_) => {
             format!("<b>{}</b>", question)
@@ -473,23 +505,21 @@ pub fn format_card_front(card: &Card) -> String {
             format!("<b>{}</b>", question)
         }
         Card::Grammar(grammar) => {
-            format!("<b>{}</b>", grammar.title().text())
+            format!("<b>{}</b>", format_japanese_text(grammar.title().text()))
         }
     }
 }
 
 fn format_card_back(card: &Card) -> String {
-    let question = card.question().text();
-    let answer = card.answer().text();
+    let question = format_japanese_text(card.question().text());
+    let answer = format_japanese_text(card.answer().text());
     match card {
         Card::Vocabulary(_) => {
             format!(
-                "<b>{}</b>\n\n<b>{}:</b> {}\n\n<b>{}:</b>\n{}",
+                "<b>{}</b>\n\n<b>{}:</b> {}",
                 question,
                 LessonCallback::TRANSLATION,
                 answer,
-                LessonCallback::EXAMPLES,
-                LessonCallback::EXAMPLE_SENTENCE
             )
         }
         Card::Kanji(_) => {
@@ -503,24 +533,10 @@ fn format_card_back(card: &Card) -> String {
         Card::Grammar(grammar) => {
             format!(
                 "<b>{}</b>\n\n<b>{}:</b> {}",
-                grammar.title().text(),
+                format_japanese_text(grammar.title().text()),
                 LessonCallback::BRIEFLY,
                 answer
             )
         }
     }
-}
-
-pub fn lesson_rating_keyboard() -> InlineKeyboardMarkup {
-    let ratings = [Rating::Again, Rating::Hard, Rating::Good, Rating::Easy];
-    let buttons: Vec<_> = ratings
-        .into_iter()
-        .map(|rating| {
-            InlineKeyboardButton::callback(
-                LessonCallback::rating_button_text(rating),
-                CallbackData::Lesson(LessonCallback::Rating { rating }).to_json(),
-            )
-        })
-        .collect();
-    InlineKeyboardMarkup::new(vec![buttons])
 }

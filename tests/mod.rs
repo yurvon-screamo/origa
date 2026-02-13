@@ -24,7 +24,7 @@ pub async fn create_test_user() -> User {
         "test_user".to_string(),
         JapaneseLevel::N5,
         NativeLanguage::Russian,
-        10,
+        None,
     );
     repository.save(&user).await.unwrap();
     user

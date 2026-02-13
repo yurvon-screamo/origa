@@ -31,8 +31,14 @@ pub fn grammar_detail_keyboard(rule_id: &Ulid, is_added: bool) -> InlineKeyboard
 
     rows.push(vec![action_button]);
     rows.push(vec![
-        InlineKeyboardButton::callback("⬅️ Назад", CallbackData::Grammar(GrammarCallback::BackToList).to_json()),
-        InlineKeyboardButton::callback("🏠 Главная", CallbackData::Menu(MenuCallback::MainMenu).to_json()),
+        InlineKeyboardButton::callback(
+            "⬅️ Назад",
+            CallbackData::Grammar(GrammarCallback::BackToList).to_json(),
+        ),
+        InlineKeyboardButton::callback(
+            "🏠 Главная",
+            CallbackData::Menu(MenuCallback::MainMenu).to_json(),
+        ),
     ]);
 
     InlineKeyboardMarkup::new(rows)
