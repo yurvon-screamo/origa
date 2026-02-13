@@ -1,6 +1,6 @@
 mod callbacks;
 
-use crate::bot::keyboard::{lesson_answer_keyboard, lesson_keyboard, reply_keyboard};
+use crate::bot::keyboard::{lesson_keyboard, lesson_rating_keyboard, reply_keyboard};
 use crate::bot::messaging::send_main_menu_with_stats;
 use crate::dialogue::{DialogueState, LessonMode, SessionData};
 use crate::formatters::format_japanese_text;
@@ -29,8 +29,17 @@ pub async fn handle_lesson_text(
     if let Some(text) = msg.text() {
         if showing_answer {
             match text {
-                LessonCallback::NEXT_CARD => {
-                    handle_next_card(&bot, chat_id, dialogue, session).await?;
+                LessonCallback::RATING_AGAIN => {
+                    handle_rating(&bot, chat_id, Rating::Again, dialogue, session).await?;
+                }
+                LessonCallback::RATING_HARD => {
+                    handle_rating(&bot, chat_id, Rating::Hard, dialogue, session).await?;
+                }
+                LessonCallback::RATING_GOOD => {
+                    handle_rating(&bot, chat_id, Rating::Good, dialogue, session).await?;
+                }
+                LessonCallback::RATING_EASY => {
+                    handle_rating(&bot, chat_id, Rating::Easy, dialogue, session).await?;
                 }
                 LessonCallback::BACK_TO_MAIN => {
                     let provider = OrigaServiceProvider::instance().await;
@@ -54,17 +63,8 @@ pub async fn handle_lesson_text(
             }
         } else {
             match text {
-                LessonCallback::RATING_AGAIN => {
-                    handle_rating(&bot, chat_id, Rating::Again, dialogue, session).await?;
-                }
-                LessonCallback::RATING_HARD => {
-                    handle_rating(&bot, chat_id, Rating::Hard, dialogue, session).await?;
-                }
-                LessonCallback::RATING_GOOD => {
-                    handle_rating(&bot, chat_id, Rating::Good, dialogue, session).await?;
-                }
-                LessonCallback::RATING_EASY => {
-                    handle_rating(&bot, chat_id, Rating::Easy, dialogue, session).await?;
+                LessonCallback::SHOW_ANSWER => {
+                    handle_show_answer(&bot, chat_id, dialogue, session).await?;
                 }
                 LessonCallback::BACK_TO_MAIN => {
                     let provider = OrigaServiceProvider::instance().await;
@@ -256,9 +256,6 @@ pub async fn handle_lesson_callback(
         LessonCallback::Rating { rating } => {
             handle_rating(&bot, chat_id, rating, dialogue, session).await?;
         }
-        LessonCallback::NextCard => {
-            handle_next_card(&bot, chat_id, dialogue, session).await?;
-        }
         LessonCallback::BackToMain => {
             let provider = OrigaServiceProvider::instance().await;
 
@@ -277,6 +274,75 @@ pub async fn handle_lesson_callback(
             dialogue.exit().await.map_err(|e| {
                 teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string())))
             })?;
+        }
+    }
+
+    respond(())
+}
+
+async fn handle_show_answer(
+    bot: &Bot,
+    chat_id: ChatId,
+    dialogue: crate::handlers::OrigaDialogue,
+    session: SessionData,
+) -> ResponseResult<()> {
+    let provider = OrigaServiceProvider::instance().await;
+
+    let current_state = dialogue.get().await.ok().flatten();
+    if let Some(DialogueState::Lesson {
+        current_index,
+        new_count,
+        review_count,
+        mode,
+        card_ids,
+        ..
+    }) = current_state
+    {
+        let cards_result = match mode {
+            LessonMode::Lesson => {
+                provider
+                    .select_cards_to_lesson_use_case()
+                    .execute(session.user_id)
+                    .await
+            }
+            LessonMode::Fixation => {
+                provider
+                    .select_cards_to_fixation_use_case()
+                    .execute(session.user_id)
+                    .await
+            }
+        };
+
+        let cards: HashMap<Ulid, Card> = match cards_result {
+            Ok(c) => c,
+            Err(_) => return respond(()),
+        };
+
+        let card_id = card_ids.get(current_index);
+        if let Some(card_id) = card_id
+            && let Some(card) = cards.get(card_id)
+        {
+            let answer_text = format_card_back(card);
+            let keyboard = ReplyMarkup::Keyboard(lesson_rating_keyboard());
+
+            bot.send_message(chat_id, answer_text)
+                .parse_mode(teloxide::types::ParseMode::Html)
+                .reply_markup(keyboard)
+                .await?;
+
+            dialogue
+                .update(DialogueState::Lesson {
+                    mode,
+                    card_ids,
+                    current_index,
+                    showing_answer: true,
+                    new_count,
+                    review_count,
+                })
+                .await
+                .map_err(|e| {
+                    teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string())))
+                })?;
         }
     }
 
@@ -344,123 +410,59 @@ async fn handle_rating(
                 review_count += 1;
             }
 
-            let answer_text = format_card_back(card);
-            let keyboard = ReplyMarkup::Keyboard(lesson_answer_keyboard());
+            let total_cards = card_ids.len();
+            let next_index = current_index + 1;
 
-            bot.send_message(chat_id, answer_text)
-                .parse_mode(teloxide::types::ParseMode::Html)
-                .reply_markup(keyboard)
-                .await?;
+            if next_index >= total_cards {
+                show_lesson_complete(bot, chat_id, new_count, review_count, mode).await?;
 
-            dialogue
-                .update(DialogueState::Lesson {
-                    mode,
-                    card_ids,
-                    current_index,
-                    showing_answer: true,
-                    new_count,
-                    review_count,
-                })
-                .await
-                .map_err(|e| {
+                let complete_use_case = provider.complete_lesson_use_case();
+                let _ = complete_use_case
+                    .execute(session.user_id, Duration::seconds(0))
+                    .await;
+
+                dialogue.exit().await.map_err(|e| {
                     teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string())))
                 })?;
-        }
-    }
-
-    respond(())
-}
-
-async fn handle_next_card(
-    bot: &Bot,
-    chat_id: ChatId,
-    dialogue: crate::handlers::OrigaDialogue,
-    session: SessionData,
-) -> ResponseResult<()> {
-    let provider = OrigaServiceProvider::instance().await;
-
-    let current_state = dialogue.get().await.ok().flatten();
-    if let Some(DialogueState::Lesson {
-        current_index,
-        new_count,
-        review_count,
-        mode,
-        card_ids,
-        ..
-    }) = current_state
-    {
-        let cards_result = match mode {
-            LessonMode::Lesson => {
-                provider
-                    .select_cards_to_lesson_use_case()
-                    .execute(session.user_id)
-                    .await
+                return respond(());
             }
-            LessonMode::Fixation => {
-                provider
-                    .select_cards_to_fixation_use_case()
-                    .execute(session.user_id)
-                    .await
-            }
-        };
 
-        let cards: HashMap<Ulid, Card> = match cards_result {
-            Ok(c) => c,
-            Err(_) => return respond(()),
-        };
+            if let Some(next_card_id) = card_ids.get(next_index)
+                && let Some(next_card) = cards.get(next_card_id)
+            {
+                let card_text = format_card_front(next_card);
+                let keyboard = ReplyMarkup::Keyboard(lesson_keyboard());
 
-        let total_cards = card_ids.len();
-        let next_index = current_index + 1;
-
-        if next_index >= total_cards {
-            show_lesson_complete(bot, chat_id, new_count, review_count, mode).await?;
-
-            let complete_use_case = provider.complete_lesson_use_case();
-            let _ = complete_use_case
-                .execute(session.user_id, Duration::seconds(0))
-                .await;
-
-            dialogue.exit().await.map_err(|e| {
-                teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string())))
-            })?;
-            return respond(());
-        }
-
-        if let Some(card_id) = card_ids.get(next_index)
-            && let Some(card) = cards.get(card_id)
-        {
-            let card_text = format_card_front(card);
-            let keyboard = ReplyMarkup::Keyboard(lesson_keyboard());
-
-            bot.send_message(
-                chat_id,
-                format!(
-                    "{} {}/{}",
-                    LessonCallback::CARD,
-                    next_index + 1,
-                    total_cards
-                ),
-            )
-            .await?;
-
-            bot.send_message(chat_id, card_text)
-                .parse_mode(teloxide::types::ParseMode::Html)
-                .reply_markup(keyboard)
+                bot.send_message(
+                    chat_id,
+                    format!(
+                        "{} {}/{}",
+                        LessonCallback::CARD,
+                        next_index + 1,
+                        total_cards
+                    ),
+                )
                 .await?;
 
-            dialogue
-                .update(DialogueState::Lesson {
-                    mode,
-                    card_ids,
-                    current_index: next_index,
-                    showing_answer: false,
-                    new_count,
-                    review_count,
-                })
-                .await
-                .map_err(|e| {
-                    teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string())))
-                })?;
+                bot.send_message(chat_id, card_text)
+                    .parse_mode(teloxide::types::ParseMode::Html)
+                    .reply_markup(keyboard)
+                    .await?;
+
+                dialogue
+                    .update(DialogueState::Lesson {
+                        mode,
+                        card_ids,
+                        current_index: next_index,
+                        showing_answer: false,
+                        new_count,
+                        review_count,
+                    })
+                    .await
+                    .map_err(|e| {
+                        teloxide::RequestError::Io(Arc::new(std::io::Error::other(e.to_string())))
+                    })?;
+            }
         }
     }
 
