@@ -7,9 +7,6 @@ pub enum LessonCallback {
     #[serde(rename = "rating")]
     Rating { rating: Rating },
 
-    #[serde(rename = "next_card")]
-    NextCard,
-
     #[serde(rename = "back_to_main")]
     BackToMain,
 }
@@ -23,7 +20,7 @@ impl LessonCallback {
         Self::from_json(json).ok()
     }
 
-    pub const NEXT_CARD: &str = "Далее ➡️";
+    pub const SHOW_ANSWER: &str = "👁 Показать ответ";
     pub const BACK_TO_MAIN: &str = "🏠 На главную";
     pub const RATING_AGAIN: &str = "Не знаю ❌";
     pub const RATING_HARD: &str = "Плохо 😐";
