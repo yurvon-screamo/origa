@@ -1,0 +1,2195 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Le Style — Complete UI Kit</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&display=swap"
+        rel="stylesheet">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        :root {
+            --bg-cream: #F7F4EE;
+            --bg-paper: #FDFBF7;
+            --bg-aged: #EDE8DD;
+            --bg-warm: #F0EBE1;
+            --fg-black: #1A1915;
+            --fg-muted: #6B665A;
+            --fg-light: #9A9590;
+            --accent-olive: #3D4535;
+            --accent-terracotta: #A65D3F;
+            --accent-gold: #8B7355;
+            --accent-sage: #6B7B5E;
+            --border-light: #D4CFC3;
+            --border-dark: #1A1915;
+            --success: #4A6B4A;
+            --warning: #A67C3F;
+            --error: #8B4545;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Mono', monospace;
+            background-color: var(--bg-cream);
+            color: var(--fg-black);
+            line-height: 1.6;
+        }
+
+        .font-serif {
+            font-family: 'Cormorant Garamond', serif;
+        }
+
+        .font-mono {
+            font-family: 'DM Mono', monospace;
+        }
+
+        /* Paper texture */
+        .paper-texture::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+            opacity: 0.03;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Base button */
+        .btn {
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            padding: 14px 28px;
+            border: 1px solid var(--border-dark);
+            background: var(--bg-paper);
+            color: var(--fg-black);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            inset: 3px;
+            border: 1px solid var(--border-dark);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .btn:hover::before {
+            opacity: 1;
+        }
+
+        .btn:hover {
+            background: var(--fg-black);
+            color: var(--bg-paper);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-filled {
+            background: var(--fg-black);
+            color: var(--bg-paper);
+        }
+
+        .btn-filled:hover {
+            background: var(--bg-paper);
+            color: var(--fg-black);
+        }
+
+        .btn-olive {
+            border-color: var(--accent-olive);
+            background: var(--accent-olive);
+            color: var(--bg-paper);
+        }
+
+        .btn-olive:hover {
+            background: var(--bg-paper);
+            color: var(--accent-olive);
+        }
+
+        .btn-olive::before {
+            border-color: var(--accent-olive);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            border-color: transparent;
+        }
+
+        .btn-ghost:hover {
+            background: var(--bg-paper);
+            color: var(--fg-black);
+            border-color: var(--border-dark);
+        }
+
+        .btn-ghost::before {
+            display: none;
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 9px;
+        }
+
+        .btn-lg {
+            padding: 18px 36px;
+            font-size: 12px;
+        }
+
+        /* Input */
+        .input-field {
+            font-family: 'DM Mono', monospace;
+            font-size: 12px;
+            letter-spacing: 0.05em;
+            padding: 12px 16px;
+            border: 1px solid var(--border-dark);
+            background: var(--bg-paper);
+            color: var(--fg-black);
+            width: 100%;
+            transition: all 0.2s ease;
+        }
+
+        .input-field:focus {
+            outline: none;
+            box-shadow: 4px 4px 0 var(--border-dark);
+        }
+
+        .input-field::placeholder {
+            color: var(--fg-muted);
+            text-transform: uppercase;
+            font-size: 10px;
+            letter-spacing: 0.1em;
+        }
+
+        .input-field:disabled {
+            background: var(--bg-aged);
+            color: var(--fg-muted);
+            cursor: not-allowed;
+        }
+
+        /* Card */
+        .card {
+            background: var(--bg-paper);
+            border: 1px solid var(--border-dark);
+            padding: 24px;
+            position: relative;
+        }
+
+        .card-shadow::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            right: -6px;
+            width: 100%;
+            height: 100%;
+            border: 1px solid var(--border-dark);
+            z-index: -1;
+            background: var(--bg-aged);
+        }
+
+        /* Tag */
+        .tag {
+            font-family: 'DM Mono', monospace;
+            font-size: 9px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            padding: 6px 12px;
+            border: 1px solid var(--border-dark);
+            background: var(--bg-paper);
+            display: inline-block;
+        }
+
+        .tag-filled {
+            background: var(--fg-black);
+            color: var(--bg-paper);
+        }
+
+        .tag-olive {
+            background: var(--accent-olive);
+            color: var(--bg-paper);
+            border-color: var(--accent-olive);
+        }
+
+        .tag-terracotta {
+            background: var(--accent-terracotta);
+            color: var(--bg-paper);
+            border-color: var(--accent-terracotta);
+        }
+
+        /* Checkbox */
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+        }
+
+        .checkbox-container input {
+            display: none;
+        }
+
+        .checkbox-box {
+            width: 20px;
+            height: 20px;
+            border: 1px solid var(--border-dark);
+            position: relative;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+
+        .checkbox-container input:checked+.checkbox-box::after {
+            content: '';
+            position: absolute;
+            inset: 4px;
+            background: var(--fg-black);
+        }
+
+        .checkbox-container:hover .checkbox-box {
+            background: var(--bg-aged);
+        }
+
+        /* Radio */
+        .radio-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+        }
+
+        .radio-container input {
+            display: none;
+        }
+
+        .radio-box {
+            width: 20px;
+            height: 20px;
+            border: 1px solid var(--border-dark);
+            border-radius: 50%;
+            position: relative;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+
+        .radio-container input:checked+.radio-box::after {
+            content: '';
+            position: absolute;
+            inset: 4px;
+            background: var(--fg-black);
+            border-radius: 50%;
+        }
+
+        .radio-container:hover .radio-box {
+            background: var(--bg-aged);
+        }
+
+        /* Toggle */
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+        }
+
+        .toggle-container input {
+            display: none;
+        }
+
+        .toggle-track {
+            width: 44px;
+            height: 24px;
+            border: 1px solid var(--border-dark);
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-track::after {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border: 1px solid var(--border-dark);
+            background: var(--bg-paper);
+            top: 3px;
+            left: 3px;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-container input:checked+.toggle-track {
+            background: var(--fg-black);
+        }
+
+        .toggle-container input:checked+.toggle-track::after {
+            left: 23px;
+            background: var(--bg-paper);
+        }
+
+        /* Divider */
+        .divider {
+            height: 1px;
+            background: var(--border-dark);
+        }
+
+        .divider-double {
+            height: 3px;
+            background: transparent;
+            border-top: 1px solid var(--border-dark);
+            border-bottom: 1px solid var(--border-dark);
+        }
+
+        /* Number badge */
+        .number-badge {
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            width: 28px;
+            height: 28px;
+            border: 1px solid var(--border-dark);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Badge */
+        .badge {
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 0.05em;
+            padding: 2px 8px;
+            border: 1px solid var(--border-dark);
+            background: var(--bg-paper);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 20px;
+        }
+
+        /* Label frame */
+        .label-frame {
+            border: 1px solid var(--border-dark);
+            padding: 20px;
+            position: relative;
+            background: var(--bg-paper);
+        }
+
+        .label-frame::before {
+            content: '';
+            position: absolute;
+            inset: 4px;
+            border: 1px solid var(--border-dark);
+            pointer-events: none;
+        }
+
+        /* Stamp */
+        .stamp {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 11px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            padding: 8px 16px;
+            border: 2px solid var(--accent-terracotta);
+            color: var(--accent-terracotta);
+            transform: rotate(-3deg);
+            display: inline-block;
+            position: relative;
+        }
+
+        .stamp::before {
+            content: '';
+            position: absolute;
+            inset: 2px;
+            border: 1px solid var(--accent-terracotta);
+        }
+
+        /* Animations */
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .animate-in {
+            animation: fadeUp 0.6s ease forwards;
+        }
+
+        .delay-1 {
+            animation-delay: 0.1s;
+        }
+
+        .delay-2 {
+            animation-delay: 0.2s;
+        }
+
+        .delay-3 {
+            animation-delay: 0.3s;
+        }
+
+        .delay-4 {
+            animation-delay: 0.4s;
+        }
+
+        .delay-5 {
+            animation-delay: 0.5s;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .animate-in {
+                animation: none;
+                opacity: 1;
+            }
+        }
+
+        /* Modal */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(26, 25, 21, 0.6);
+            z-index: 100;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-backdrop.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.95);
+            background: var(--bg-paper);
+            border: 1px solid var(--border-dark);
+            padding: 32px;
+            max-width: 480px;
+            width: 90%;
+            z-index: 101;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-content.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .modal-content::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            right: -8px;
+            width: 100%;
+            height: 100%;
+            border: 1px solid var(--border-dark);
+            z-index: -1;
+            background: var(--bg-aged);
+        }
+
+        /* Dropdown */
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown-trigger {
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            padding: 12px 40px 12px 16px;
+            border: 1px solid var(--border-dark);
+            background: var(--bg-paper);
+            color: var(--fg-black);
+            cursor: pointer;
+            width: 100%;
+            text-align: left;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .dropdown-trigger::after {
+            content: '';
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-top: 4px solid var(--fg-black);
+            transition: transform 0.2s ease;
+        }
+
+        .dropdown.active .dropdown-trigger::after {
+            transform: translateY(-50%) rotate(180deg);
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            right: 0;
+            background: var(--bg-paper);
+            border: 1px solid var(--border-dark);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.2s ease;
+            z-index: 50;
+        }
+
+        .dropdown.active .dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-item {
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-item:hover {
+            background: var(--fg-black);
+            color: var(--bg-paper);
+        }
+
+        /* Alert */
+        .alert {
+            border: 1px solid var(--border-dark);
+            padding: 16px 20px;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            background: var(--bg-paper);
+        }
+
+        .alert-success {
+            border-left: 4px solid var(--success);
+        }
+
+        .alert-warning {
+            border-left: 4px solid var(--warning);
+        }
+
+        .alert-error {
+            border-left: 4px solid var(--error);
+        }
+
+        .alert-info {
+            border-left: 4px solid var(--fg-black);
+        }
+
+        /* Progress */
+        .progress-track {
+            height: 8px;
+            border: 1px solid var(--border-dark);
+            background: var(--bg-aged);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--fg-black);
+            transition: width 0.5s ease;
+        }
+
+        /* Stepper */
+        .stepper {
+            display: flex;
+            align-items: center;
+            gap: 0;
+        }
+
+        .stepper-step {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stepper-number {
+            width: 32px;
+            height: 32px;
+            border: 1px solid var(--border-dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'DM Mono', monospace;
+            font-size: 12px;
+            background: var(--bg-paper);
+            transition: all 0.3s ease;
+        }
+
+        .stepper-step.active .stepper-number {
+            background: var(--fg-black);
+            color: var(--bg-paper);
+        }
+
+        .stepper-step.completed .stepper-number {
+            background: var(--accent-olive);
+            border-color: var(--accent-olive);
+            color: var(--bg-paper);
+        }
+
+        .stepper-label {
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--fg-muted);
+        }
+
+        .stepper-step.active .stepper-label,
+        .stepper-step.completed .stepper-label {
+            color: var(--fg-black);
+        }
+
+        .stepper-line {
+            width: 60px;
+            height: 1px;
+            background: var(--border-dark);
+            margin: 0 16px;
+            opacity: 0.3;
+        }
+
+        .stepper-step.completed+.stepper-line {
+            opacity: 1;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-dark);
+        }
+
+        .tab {
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            padding: 12px 24px;
+            cursor: pointer;
+            position: relative;
+            color: var(--fg-muted);
+            transition: all 0.2s ease;
+            background: transparent;
+            border: none;
+        }
+
+        .tab::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--fg-black);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .tab:hover {
+            color: var(--fg-black);
+        }
+
+        .tab.active {
+            color: var(--fg-black);
+        }
+
+        .tab.active::after {
+            transform: scaleX(1);
+        }
+
+        /* Tooltip */
+        .tooltip-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip {
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--fg-black);
+            color: var(--bg-paper);
+            padding: 8px 12px;
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+            z-index: 50;
+        }
+
+        .tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: var(--fg-black);
+        }
+
+        .tooltip-container:hover .tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Accordion */
+        .accordion-item {
+            border: 1px solid var(--border-dark);
+            border-bottom: none;
+        }
+
+        .accordion-item:last-child {
+            border-bottom: 1px solid var(--border-dark);
+        }
+
+        .accordion-header {
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            background: var(--bg-paper);
+            transition: all 0.2s ease;
+        }
+
+        .accordion-header:hover {
+            background: var(--bg-aged);
+        }
+
+        .accordion-icon {
+            width: 20px;
+            height: 20px;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .accordion-icon::before,
+        .accordion-icon::after {
+            content: '';
+            position: absolute;
+            background: var(--fg-black);
+            transition: all 0.3s ease;
+        }
+
+        .accordion-icon::before {
+            width: 100%;
+            height: 1px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .accordion-icon::after {
+            width: 1px;
+            height: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .accordion-item.active .accordion-icon::after {
+            transform: translateX(-50%) rotate(90deg);
+            opacity: 0;
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            background: var(--bg-aged);
+        }
+
+        .accordion-item.active .accordion-content {
+            max-height: 200px;
+        }
+
+        .accordion-body {
+            padding: 20px;
+        }
+
+        /* Table */
+        .table-container {
+            border: 1px solid var(--border-dark);
+            overflow: hidden;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th {
+            font-family: 'DM Mono', monospace;
+            font-size: 9px;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            text-align: left;
+            padding: 12px 16px;
+            background: var(--bg-aged);
+            border-bottom: 1px solid var(--border-dark);
+            font-weight: 400;
+        }
+
+        .table td {
+            font-family: 'DM Mono', monospace;
+            font-size: 12px;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .table tr:hover td {
+            background: var(--bg-warm);
+        }
+
+        /* Avatar */
+        .avatar {
+            width: 48px;
+            height: 48px;
+            border: 1px solid var(--border-dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'DM Mono', monospace;
+            font-size: 12px;
+            letter-spacing: 0.05em;
+            background: var(--bg-paper);
+        }
+
+        .avatar-sm {
+            width: 32px;
+            height: 32px;
+            font-size: 10px;
+        }
+
+        .avatar-lg {
+            width: 64px;
+            height: 64px;
+            font-size: 14px;
+        }
+
+        .avatar-group {
+            display: flex;
+        }
+
+        .avatar-group .avatar {
+            margin-left: -12px;
+        }
+
+        .avatar-group .avatar:first-child {
+            margin-left: 0;
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .pagination-btn {
+            width: 40px;
+            height: 40px;
+            border: 1px solid var(--border-dark);
+            background: var(--bg-paper);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'DM Mono', monospace;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .pagination-btn:hover {
+            background: var(--fg-black);
+            color: var(--bg-paper);
+        }
+
+        .pagination-btn.active {
+            background: var(--fg-black);
+            color: var(--bg-paper);
+        }
+
+        .pagination-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        /* Breadcrumbs */
+        .breadcrumbs {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .breadcrumbs a {
+            color: var(--fg-muted);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .breadcrumbs a:hover {
+            color: var(--fg-black);
+        }
+
+        .breadcrumbs span {
+            color: var(--fg-black);
+        }
+
+        /* Search */
+        .search-container {
+            position: relative;
+        }
+
+        .search-input {
+            font-family: 'DM Mono', monospace;
+            font-size: 12px;
+            padding: 12px 16px 12px 44px;
+            border: 1px solid var(--border-dark);
+            background: var(--bg-paper);
+            width: 100%;
+            transition: all 0.2s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            box-shadow: 4px 4px 0 var(--border-dark);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Skeleton */
+        .skeleton {
+            background: linear-gradient(90deg, var(--bg-aged) 25%, var(--bg-warm) 50%, var(--bg-aged) 75%);
+            background-size: 200% 100%;
+            animation: skeleton-loading 1.5s infinite;
+        }
+
+        @keyframes skeleton-loading {
+            0% {
+                background-position: 200% 0;
+            }
+
+            100% {
+                background-position: -200% 0;
+            }
+        }
+
+        /* Navbar */
+        .navbar {
+            border-bottom: 1px solid var(--border-dark);
+            background: var(--bg-paper);
+            padding: 16px 0;
+        }
+
+        /* Footer */
+        .footer {
+            border-top: 1px solid var(--border-dark);
+            background: var(--bg-paper);
+        }
+    </style>
+</head>
+
+<body class="min-h-screen paper-texture">
+
+    <!-- Demo Navbar -->
+    <nav class="navbar sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-6 flex items-center justify-between">
+            <a href="#" class="font-serif text-2xl">Le Style</a>
+
+            <div class="hidden md:flex items-center gap-8">
+                <a href="#"
+                    class="font-mono text-xs tracking-widest uppercase hover:text-[var(--accent-terracotta)] transition-colors">Collection</a>
+                <a href="#"
+                    class="font-mono text-xs tracking-widest uppercase hover:text-[var(--accent-terracotta)] transition-colors">About</a>
+                <a href="#"
+                    class="font-mono text-xs tracking-widest uppercase hover:text-[var(--accent-terracotta)] transition-colors">Journal</a>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <button class="btn btn-ghost btn-sm">Sign In</button>
+                <button class="btn btn-sm btn-filled">Cart (3)</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-6xl mx-auto px-6 py-16 relative z-10">
+
+        <!-- Hero Header -->
+        <header class="mb-24 animate-in" style="opacity: 0;">
+            <div class="flex items-center gap-4 mb-8">
+                <div class="divider flex-1"></div>
+                <span class="font-mono text-xs tracking-widest text-[var(--fg-muted)]">COMPLETE UI SYSTEM</span>
+                <div class="divider flex-1"></div>
+            </div>
+
+            <h1 class="font-serif text-6xl md:text-8xl font-light tracking-tight text-center mb-4">
+                Golden Set
+            </h1>
+
+            <p class="font-mono text-xs tracking-widest text-center text-[var(--fg-muted)] uppercase max-w-xl mx-auto">
+                A comprehensive collection of interface components inspired by artisan craftsmanship and vintage
+                apothecary aesthetics
+            </p>
+        </header>
+
+        <!-- Section: Navigation Components -->
+        <section class="mb-20 animate-in delay-1" style="opacity: 0;">
+            <div class="flex items-center gap-4 mb-8">
+                <span class="number-badge">01</span>
+                <h2 class="font-serif text-3xl font-light">Navigation</h2>
+                <div class="divider flex-1"></div>
+            </div>
+
+            <div class="grid gap-8">
+                <!-- Breadcrumbs -->
+                <div class="card">
+                    <span
+                        class="font-mono text-[10px] tracking-widest text-[var(--fg-muted)] uppercase block mb-4">Breadcrumbs</span>
+                    <div class="breadcrumbs">
+                        <a href="#">Home</a>
+                        <span>/</span>
+                        <a href="#">Collection</a>
+                        <span>/</span>
+                        <span>Signature Series</span>
+                    </div>
+                </div>
+
+                <!-- Tabs -->
+                <div class="card">
+                    <span
+                        class="font-mono text-[10px] tracking-widest text-[var(--fg-muted)] uppercase block mb-4">Tabs</span>
+                    <div class="tabs mb-6">
+                        <button class="tab active" data-tab="description">Description</button>
+                        <button class="tab" data-tab="ingredients">Ingredients</button>
+                        <button class="tab" data-tab="reviews">Reviews</button>
+                        <button class="tab" data-tab="shipping">Shipping</button>
+                    </div>
+                    <div id="tab-content" class="font-mono text-sm text-[var(--fg-muted)]">
+                        A carefully composed unisex fragrance with woody notes and a touch of spice.
+                    </div>
+                </div>
+
+                <!-- Stepper -->
+                <div class="card">
+                    <span
+                        class="font-mono text-[10px] tracking-widest text-[var(--fg-muted)] uppercase block mb-6">Stepper</span>
+                    <div class="stepper">
+                        <div class="stepper-step completed">
+                            <div class="stepper-number">1</div>
+                            <span class="stepper-label hidden md:block">Cart</span>
+                        </div>
+                        <div class="stepper-line"></div>
+                        <div class="stepper-step active">
+                            <div class="stepper-number">2</div>
+                            <span class="stepper-label hidden md:block">Shipping</span>
+                        </div>
+                        <div class="stepper-line"></div>
+                        <div class="stepper-step">
+                            <div class="stepper-number">3</div>
+                            <span class="stepper-label hidden md:block">Payment</span>
+                        </div>
+                        <div class="stepper-line"></div>
+                        <div class="stepper-step">
+                            <div class="stepper-number">4</div>
+                            <span class="stepper-label hidden md:block">Confirm</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                <div class="card">
+                    <span
+                        class="font-mono text-[10px] tracking-widest text-[var(--fg-muted)] uppercase block mb-4">Pagination</span>
+                    <div class="flex justify-between items-center">
+                        <div class="pagination">
+                            <button class="pagination-btn" disabled>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="1.5">
+                                    <path d="M15 18l-6-6 6-6" />
+                                </svg>
+                            </button>
+                            <button class="pagination-btn active">1</button>
+                            <button class="pagination-btn">2</button>
+                            <button class="pagination-btn">3</button>
+                            <button class="pagination-btn">...</button>
+                            <button class="pagination-btn">12</button>
+                            <button class="pagination-btn">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="1.5">
+                                    <path d="M9 18l6-6-6-6" />
+                                </svg>
+                            </button>
+                        </div>
+                        <span class="font-mono text-xs text-[var(--fg-muted)]">Showing 1-12 of 144 items</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Form Controls -->
+        <section class="mb-20 animate-in delay-2" style="opacity: 0;">
+            <div class="flex items-center gap-4 mb-8">
+                <span class="number-badge">02</span>
+                <h2 class="font-serif text-3xl font-light">Form Controls</h2>
+                <div class="divider flex-1"></div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                <!-- Inputs -->
+                <div class="card">
+                    <span
+                        class="font-mono text-[10px] tracking-widest text-[var(--fg-muted)] uppercase block mb-6">Input
+                        Fields</span>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label
+                                class="font-mono text-[9px] tracking-widest text-[var(--fg-muted)] uppercase block mb-2">Default</label>
+                            <input type="text" class="input-field" placeholder="Enter text">
+                        </div>
+
+                        <div>
+                            <label
+                                class="font-mono text-[9px] tracking-widest text-[var(--fg-muted)] uppercase block mb-2">With
+                                Value</label>
+                            <input type="text" class="input-field" value="Santal 33">
+                        </div>
+
+                        <div>
+                            <label
+                                class="font-mono text-[9px] tracking-widest text-[var(--fg-muted)] uppercase block mb-2">Disabled</label>
+                            <input type="text" class="input-field" value="Cannot edit" disabled>
+                        </div>
+
+                        <div>
+                            <label
+                                class="font-mono text-[9px] tracking-widest text-[var(--fg-muted)] uppercase block mb-2">Textarea</label>
+                            <textarea class="input-field resize-none" rows="3"
+                                placeholder="Additional notes..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Search -->
+                <div class="card">
+                    <span
+                        class="font-mono text-[10px] tracking-widest text-[var(--fg-muted)] uppercase block mb-6">Search</span>
+
+                    <div class="search-container mb-6">
+                        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.5">
+                            <circle cx="11" cy="11" r="8" />
+                            <path d="M21 21l-4.35-4.35" />
+                        </svg>
+                        <input type="text" class="search-input" placeholder="Search products...">
+                    </div>
+
+                    <span
+                        class="font-mono text-[10px] tracking-widest text-[var(--fg-muted)] uppercase block mb-4">Dropdown</span>
+                    <div class="dropdown" id="dropdown-1">
+                        <button class="dropdown-trigger" type="button">
+                            Select Size
+                        </button>
+                        <div class="dropdown-menu">
+                            <div class="dropdown-item" data-value="50ml">50ml — $195</div>
+                            <div class="dropdown-item" data-value="100ml">100ml — $320</div>
+                            <div class="dropdown-item" data-value="200ml">200ml — $450</div>
+                            <div class="dropdown-item" data-value="500ml">500ml — $850</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Checkboxes & Radios -->
+                <div class="card">
+                    <span
+                        class="font-mono text-[10px] tracking-widest text-[var(--fg-muted)] uppercase block mb-6">Checkboxes</span>
+
+                    <div class="space-y-4">
+                        <label class="checkbox-container font-mono text-xs tracking-wider">
+                            <input type="checkbox" checked>
+                            <span class="checkbox-box"></span>
+                            <span>Include gift wrapping</span>
+                        </label>
+
+                        <label class="checkbox-container font-mono text-xs tracking-wider">
+                            <input type="checkbox">
+                            <span class="checkbox-box"></span>
+                            <span>Add personalized message</span>
+                        </label>
+
+                        <label class="checkbox-container font-mono text-xs tracking-wider">
+                            <input type="checkbox" disabled>
+                            <span class="checkbox-box"></span>
+                            <span style="color: var(--fg-muted)">Out of stock option</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Radio & Toggle -->
+                <div class="card">
+                    <span
+                        class="font-mono text-[10px] tracking-widest text-[var(--fg-muted)] uppercase block mb-6">Radio
+                        Buttons</span>
+
+                    <div class="space-y-4 mb-8">
+                        <label class="radio-container font-mono text-xs tracking-wider">
+                            <input type="radio" name="size" checked>
+                            <span class="radio-box"></span>
+                            <span>Standard Delivery (3-5 days)</span>
+                        </label>
+
+                        <label class="radio-container font-mono text-xs tracking-wider">
+                            <input type="radio" name="size">
+                            <span class="radio-box"></span>
+                            <span>Express Delivery (1-2 days)</span>
+                        </label>
+
+                        <label class="radio-container font-mono text-xs tracking-wider">
+                            <input type="radio" name="size">
+                            <span class="radio-box"></span>
+                            <span>Same Day Delivery</span>
+                        </label>
+                    </div>
+
+                    <span
+                        class="font-mono text-[10px] tracking-widest text-[var(--fg-muted)] uppercase block mb-4">Toggles</span>
+
+                    <div class="space-y-4">
+                        <label class="toggle-container font-mono text-xs tracking-wider">
+                            <input type="checkbox" checked>
+                            <span class="toggle-track"></span>
+                            <span>Email notifications</span>
+                        </label>
+
+                        <label class="toggle-container font-mono text-xs tracking-wider">
+                            <input type="checkbox">
+                            <span class="toggle-track"></span>
+                            <span>SMS updates</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Buttons -->
+        <section class="mb-20 animate-in delay-3" style="opacity: 0;">
+            <div class="flex items-center gap-4 mb-8">
+                <span class="number-badge">03</span>
+                <h2 class="font-serif text-3xl font-light">Buttons</h2>
+                <div class="divider flex-1"></div>
+            </div>
+
+            <div class="grid gap-8">
+                <div class="card">
+                    <span
+                        class="font-mono text-[10px] tracking-widest text-[var(--fg-muted)] uppercase block mb-6">Button
+                        Variants</span>
+
+                    <div class="flex flex-wrap gap-4 items-end">
+                        <button class="btn">Default</button>
+                        <button class="btn btn-filled">Filled</button>
+                        <button class="btn btn-olive">Olive</button>
+                        <button class="btn btn-ghost">Ghost</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <span
+                        class="font-mono text-[10px] tracking-widest text-[var(--fg-muted)] uppercase block mb-6">Button
+                        Sizes</span>
+
+                    <div class="flex flex-wrap gap-4 items-center">
+                        <button class="btn btn-sm">Small</button>
+                        <button class="btn">Default</button>
+                        <button class="btn btn-lg">Large</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <span
+                        class="font-mono text-[10px] tracking-widest text-[var(--fg-muted)] uppercase block mb-6">Button
+                        States</span>
+
+                    <div class="flex flex-wrap gap-4 items-center">
+                        <button class="btn" disabled style="opacity: 0.4; cursor: not-allowed;">Disabled</button>
+                        <button class="btn btn-filled">
+                            <span class="flex items-center gap-2">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="1.5">
+                                    <path d="M20 12H4M20 12l-6-6m6 6l-6 6" />
+                                </svg>
+                                With Icon
+                            </span>
+                        </button>
+                        <button class="btn" style="border-style: dashed;">Dashed Border</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Cards & Containers -->
+        <section class="mb-20 animate-in delay-4" style="opacity: 0;">
+            <div class="flex items-center gap-4 mb-8">
+                <span class="number-badge">04</span>
+                <h2 class="font-serif text-3xl font-light">Cards & Containers</h2>
+                <div class="divider flex-1"></div>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6 mb-8">
+                <!-- Basic Card -->
+                <div class="card">
+                    <span class="font-mono text-[9px] tracking-widest text-[var(--fg-muted)] uppercase">Basic
+                        Card</span>
+                    <h3 class="font-serif text-xl mt-2 mb-2">Simple Container</h3>
+                    <p class="font-mono text-xs text-[var(--fg-muted)] leading-relaxed">
+                        A minimal card with clean borders and subtle shadow depth on hover.
+                    </p>
+                </div>
+
+                <!-- Shadow Card -->
+                <div class="card card-shadow">
+                    <span class="font-mono text-[9px] tracking-widest text-[var(--fg-muted)] uppercase">Shadow
+                        Card</span>
+                    <h3 class="font-serif text-xl mt-2 mb-2">With Depth</h3>
+                    <p class="font-mono text-xs text-[var(--fg-muted)] leading-relaxed">
+                        Adds visual weight with an offset shadow effect behind the card.
+                    </p>
+                </div>
+
+                <!-- Label Frame -->
+                <div class="label-frame">
+                    <span class="font-mono text-[9px] tracking-widest text-[var(--fg-muted)] uppercase">Label
+                        Frame</span>
+                    <h3 class="font-serif text-xl mt-2 mb-2">Double Border</h3>
+                    <p class="font-mono text-xs text-[var(--fg-muted)] leading-relaxed">
+                        An elegant double border treatment for special content.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Product Card -->
+            <div class="card mb-8">
+                <span class="font-mono text-[10px] tracking-widest text-[var(--fg-muted)] uppercase block mb-6">Product
+                    Card</span>
+
+                <div class="grid md:grid-cols-4 gap-6">
+                    <div class="border border-[var(--border-dark)] bg-[var(--bg-paper)]">
+                        <div class="border-b border-[var(--border-dark)] p-3 flex justify-between">
+                            <span class="font-mono text-[9px] tracking-widest">REF. 016</span>
+                            <span class="font-mono text-[9px] tracking-widest text-[var(--fg-muted)]">100ML</span>
+                        </div>
+                        <div class="p-8 text-center">
+                            <p class="font-serif text-xl mb-1">Santal 33</p>
+                            <p class="font-mono text-[10px] tracking-widest text-[var(--fg-muted)]">AUSTRALIAN
+                                SANDALWOOD</p>
+                            <p class="font-mono text-sm mt-4">$320.00</p>
+                        </div>
+                        <div class="border-t border-[var(--border-dark)] p-3 flex justify-between">
+                            <span class="font-mono text-[9px] tracking-widest text-[var(--fg-muted)]">UNISEX</span>
+                            <button
+                                class="font-mono text-[9px] tracking-widest hover:text-[var(--accent-terracotta)] transition-colors">ADD</button>
+                        </div>
+                    </div>
+
+                    <div class="border border-[var(--border-dark)] bg-[var(--bg-paper)]">
+                        <div class="border-b border-[var(--border-dark)] p-3 flex justify-between">
+                            <span class="font-mono text-[9px] tracking-widest">REF. 033</span>
+                            <span class="font-mono text-[9px] tracking-widest text-[var(--fg-muted)]">50ML</span>
+                        </div>
+                        <div class="p-8 text-center">
+                            <p class="font-serif text-xl mb-1">Another 13</p>
+                            <p class="font-mono text-[10px] tracking-widest text-[var(--fg-muted)]">AMBJOUANAN MUSK</p>
+                            <p class="font-mono text-sm mt-4">$195.00</p>
+                        </div>
+                        <div class="border-t border-[var(--border-dark)] p-3 flex justify-between">
+                            <span class="font-mono text-[9px] tracking-widest text-[var(--fg-muted)]">UNISEX</span>
+                            <button
+                                class="font-mono text-[9px] tracking-widest hover:text-[var(--accent-terracotta)] transition-colors">ADD</button>
+                        </div>
+                    </div>
+
+                    <div class="border border-[var(--border-dark)] bg-[var(--bg-paper)]">
+                        <div class="border-b border-[var(--border-dark)] p-3 flex justify-between">
+                            <span class="font-mono text-[9px] tracking-widest">REF. 044</span>
+                            <span class="font-mono text-[9px] tracking-widest text-[var(--fg-muted)]">100ML</span>
+                        </div>
+                        <div class="p-8 text-center">
+                            <p class="font-serif text-xl mb-1">Rose 31</p>
+                            <p class="font-mono text-[10px] tracking-widest text-[var(--fg-muted)]">CENTIFOLIA ROSE</p>
+                            <p class="font-mono text-sm mt-4">$280.00</p>
+                        </div>
+                        <div class="border-t border-[var(--border-dark)] p-3 flex justify-between">
+                            <span class="font-mono text-[9px] tracking-widest text-[var(--fg-muted)]">UNISEX</span>
+                            <button
+                                class="font-mono text-[9px] tracking-widest hover:text-[var(--accent-terracotta)] transition-colors">ADD</button>
+                        </div>
+                    </div>
+
+                    <div class="border border-[var(--border-dark)] bg-[var(--bg-paper)]">
+                        <div class="border-b border-[var(--border-dark)] p-3 flex justify-between">
+                            <span class="font-mono text-[9px] tracking-widest">REF. 019</span>
+                            <span class="font-mono text-[9px] tracking-widest text-[var(--fg-muted)]">200ML</span>
+                        </div>
+                        <div class="p-8 text-center">
+                            <p class="font-serif text-xl mb-1">Bergamote 22</p>
+                            <p class="font-mono text-[10px] tracking-widest text-[var(--fg-muted)]">CALABRIAN BERGAMOT
+                            </p>
+                            <p class="font-mono text-sm mt-4">$380.00</p>
+                        </div>
+                        <div class="border-t border-[var(--border-dark)] p-3 flex justify-between">
+                            <span class="font-mono text-[9px] tracking-widest text-[var(--fg-muted)]">UNISEX</span>
+                            <button
+                                class="font-mono text-[9px] tracking-widest hover:text-[var(--accent-terracotta)] transition-colors">ADD</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Avatars -->
+            <div class="card">
+                <span
+                    class="font-mono text-[10px] tracking-widest text-[var(--fg-muted)] uppercase block mb-6">Avatars</span>
+
+                <div class="flex items-end gap-8">
+                    <div class="text-center">
+                        <div class="avatar-sm mb-2">JD</div>
+                        <span class="font-mono text-[9px] text-[var(--fg-muted)]">Small</span>
+                    </div>
+                    <div class="text-center">
+                        <div class="avatar mb-2">AB</div>
+                        <span class="font-mono text-[9px] text-[var(--fg-muted)]">Default</span>
+                    </div>
+                    <div class="text-center">
+                        <div class="avatar-lg mb-2">MK</div>
+                        <span class="font-mono text-[9px] text-[var(--fg-muted)]">Large</span>
+                    </div>
+                    <div class="text-center">
+                        <div class="avatar-group mb-2">
+                            <div class="avatar">JD</div>
+                            <div class="avatar">AB</div>
+                            <div class="avatar">MK</div>
+                            <div class="avatar">+5</div>
+                        </div>
+                        <span class="font-mono text-[9px] text-[var(--fg-muted)]">Group</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Feedback -->
+        <section class="mb-20 animate-in delay-5" style="opacity: 0;">
+            <div class="flex items-center gap-4 mb-8">
+                <span class="number-badge">05</span>
+                <h2 class="font-serif text-3xl font-light">Feedback</h2>
+                <div class="divider flex-1"></div>
+            </div>
+
+            <div class="grid gap-6 mb-8">
+                <!-- Alerts -->
+                <div class="card">
+                    <span
+                        class="font-mono text-[10px] tracking-widest text-[var(--fg-muted)] uppercase block mb-6">Alerts</span>
+
+                    <div class="space-y-4">
+                        <div class="alert alert-success">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--success)"
+                                stroke-width="1.5">
+                                <path d="M20 6L9 17l-5-5" />
+                            </svg>
+                            <div>
+                                <p class="font-mono text-xs tracking-wider">Order Confirmed</p>
+                                <p class="font-mono text-[10px] text-[var(--fg-muted)] mt-1">Your order has been
+                                    successfully placed.</p>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-warning">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--warning)"
+                                stroke-width="1.5">
+                                <path d="M12 9v4m0 4h.01M12 3l9 18H3L12 3z" />
+                            </svg>
+                            <div>
+                                <p class="font-mono text-xs tracking-wider">Limited Stock</p>
+                                <p class="font-mono text-[10px] text-[var(--fg-muted)] mt-1">Only 3 items remaining in
+                                    stock.</p>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-error">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--error)"
+                                stroke-width="1.5">
+                                <circle cx="12" cy="12" r="10" />
+                                <path d="M15 9l-6 6m0-6l6 6" />
+                            </svg>
+                            <div>
+                                <p class="font-mono text-xs tracking-wider">Payment Failed</p>
+                                <p class="font-mono text-[10px] text-[var(--fg-muted)] mt-1">Please check your payment
+                                    details and try again.</p>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--fg-black)"
+                                stroke-width="1.5">
+                                <circle cx="12" cy="12" r="10" />
+                                <path d="M12 16v-4m0-4h.01" />
+                            </svg>
+                            <div>
+                                <p class="font-mono text-xs tracking-wider">New Collection Available</p>
+                                <p class="font-mono text-[10px] text-[var(--fg-muted)] mt-1">Discover our latest artisan
+                                    fragrances.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progress -->
+                <div class="card">
+                    <span
+                        class="font-mono text-[10px] tracking-widest text-[var(--fg-muted)] uppercase block mb-6">Progress</span>
+
+                    <div class="space-y-6">
+                        <div>
+                            <div class="flex justify-between mb-2">
+                                <span class="font-mono text-[10px] tracking-widest">CHECKOUT PROGRESS</span>
+                                <span class="font-mono text-[10px]">25%</span>
+                            </div>
+                            <div class="progress-track">
+                                <div class="progress-fill" style="width: 25%"></div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between mb-2">
+                                <span class="font-mono text-[10px] tracking-widest">PROFILE COMPLETION</span>
+                                <span class="font-mono text-[10px]">60%</span>
+                            </div>
+                            <div class="progress-track">
+                                <div class="progress-fill" style="width: 60%"></div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between mb-2">
+                                <span class="font-mono text-[10px] tracking-widest">UPLOAD STATUS</span>
+                                <span class="font-mono text-[10px]">90%</span>
+                            </div>
+                            <div class="progress-track">
+                                <div class="progress-fill" style="width: 90%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tooltips -->
+                <div class="card">
+                    <span
+                        class="font-mono text-[10px] tracking-widest text-[var(--fg-muted)] uppercase block mb-6">Tooltips</span>
+
+                    <div class="flex gap-8 justify-center">
+                        <div class="tooltip-container">
+                            <button class="btn btn-sm">Hover Me</button>
+                            <div class="tooltip">Action description</div>
+                        </div>
+
+                        <div class="tooltip-container">
+                            <button class="btn btn-filled btn-sm">Information</button>
+                            <div class="tooltip">Click to proceed</div>
+                        </div>
+
+                        <div class="tooltip-container">
+                            <span class="tag">With Tooltip</span>
+                            <div class="tooltip">Label details here</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Data Display -->
+        <section class="mb-20">
+            <div class="flex items-center gap-4 mb-8">
+                <span class="number-badge">06</span>
+                <h2 class="font-serif text-3xl font-light">Data Display</h2>
+                <div class="divider flex-1"></div>
+            </div>
+
+            <!-- Table -->
+            <div class="card mb-8">
+                <span
+                    class="font-mono text-[10px] tracking-widest text-[var(--fg-muted)] uppercase block mb-6">Table</span>
+
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Reference</th>
+                                <th>Product</th>
+                                <th>Size</th>
+                                <th>Price</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>016-A</td>
+                                <td>Santal 33</td>
+                                <td>100ml</td>
+                                <td>$320.00</td>
+                                <td><span class="tag tag-olive">In Stock</span></td>
+                            </tr>
+                            <tr>
+                                <td>033-B</td>
+                                <td>Another 13</td>
+                                <td>50ml</td>
+                                <td>$195.00</td>
+                                <td><span class="tag tag-olive">In Stock</span></td>
+                            </tr>
+                            <tr>
+                                <td>044-A</td>
+                                <td>Rose 31</td>
+                                <td>100ml</td>
+                                <td>$280.00</td>
+                                <td><span class="tag tag-terracotta">Low Stock</span></td>
+                            </tr>
+                            <tr>
+                                <td>019-C</td>
+                                <td>Bergamote 22</td>
+                                <td>200ml</td>
+                                <td>$380.00</td>
+                                <td><span class="tag">Sold Out</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Skeleton -->
+            <div class="card">
+                <span class="font-mono text-[10px] tracking-widest text-[var(--fg-muted)] uppercase block mb-6">Loading
+                    Skeleton</span>
+
+                <div class="space-y-4">
+                    <div class="flex gap-4 items-center">
+                        <div class="skeleton w-12 h-12" style="border: 1px solid var(--border-light);"></div>
+                        <div class="flex-1 space-y-2">
+                            <div class="skeleton h-4 w-3/4" style="border: 1px solid var(--border-light);"></div>
+                            <div class="skeleton h-3 w-1/2" style="border: 1px solid var(--border-light);"></div>
+                        </div>
+                    </div>
+                    <div class="skeleton h-20" style="border: 1px solid var(--border-light);"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Overlays -->
+        <section class="mb-20">
+            <div class="flex items-center gap-4 mb-8">
+                <span class="number-badge">07</span>
+                <h2 class="font-serif text-3xl font-light">Overlays</h2>
+                <div class="divider flex-1"></div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                <!-- Modal Trigger -->
+                <div class="card">
+                    <span
+                        class="font-mono text-[10px] tracking-widest text-[var(--fg-muted)] uppercase block mb-6">Modal
+                        Dialog</span>
+
+                    <button class="btn btn-filled" onclick="openModal()">Open Modal</button>
+                </div>
+
+                <!-- Accordion -->
+                <div class="card">
+                    <span
+                        class="font-mono text-[10px] tracking-widest text-[var(--fg-muted)] uppercase block mb-6">Accordion</span>
+
+                    <div class="accordion-item">
+                        <div class="accordion-header" onclick="toggleAccordion(this)">
+                            <span class="font-mono text-xs tracking-wider">SHIPPING INFORMATION</span>
+                            <span class="accordion-icon"></span>
+                        </div>
+                        <div class="accordion-content">
+                            <div class="accordion-body font-mono text-xs text-[var(--fg-muted)]">
+                                We offer complimentary standard shipping on all orders over $150. Express and same-day
+                                delivery options available in select areas.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item active">
+                        <div class="accordion-header" onclick="toggleAccordion(this)">
+                            <span class="font-mono text-xs tracking-wider">RETURN POLICY</span>
+                            <span class="accordion-icon"></span>
+                        </div>
+                        <div class="accordion-content">
+                            <div class="accordion-body font-mono text-xs text-[var(--fg-muted)]">
+                                Returns accepted within 30 days of purchase. Items must be unopened and in original
+                                packaging.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <div class="accordion-header" onclick="toggleAccordion(this)">
+                            <span class="font-mono text-xs tracking-wider">INGREDIENTS</span>
+                            <span class="accordion-icon"></span>
+                        </div>
+                        <div class="accordion-content">
+                            <div class="accordion-body font-mono text-xs text-[var(--fg-muted)]">
+                                Sandalwood, cedarwood, cardamom, iris, violet, amber, leather. No parabens, phthalates,
+                                or animal-derived ingredients.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Labels & Stamps -->
+        <section class="mb-20">
+            <div class="flex items-center gap-4 mb-8">
+                <span class="number-badge">08</span>
+                <h2 class="font-serif text-3xl font-light">Labels & Stamps</h2>
+                <div class="divider flex-1"></div>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+                <!-- Tags -->
+                <div class="card">
+                    <span
+                        class="font-mono text-[10px] tracking-widest text-[var(--fg-muted)] uppercase block mb-6">Tags</span>
+
+                    <div class="flex flex-wrap gap-2">
+                        <span class="tag">Default</span>
+                        <span class="tag tag-filled">Filled</span>
+                        <span class="tag tag-olive">Olive</span>
+                        <span class="tag tag-terracotta">Terracotta</span>
+                    </div>
+                </div>
+
+                <!-- Badges -->
+                <div class="card">
+                    <span
+                        class="font-mono text-[10px] tracking-widest text-[var(--fg-muted)] uppercase block mb-6">Badges</span>
+
+                    <div class="flex items-center gap-4">
+                        <button class="btn btn-sm relative">
+                            Cart
+                            <span class="badge" style="position: absolute; top: -8px; right: -8px;">3</span>
+                        </button>
+                        <button class="btn btn-sm relative">
+                            Notifications
+                            <span class="badge"
+                                style="position: absolute; top: -8px; right: -8px; background: var(--accent-terracotta); color: white; border-color: var(--accent-terracotta);">12</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Stamp -->
+                <div class="card flex items-center justify-center bg-[var(--bg-aged)]">
+                    <div class="stamp">Limited Edition</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Pricing -->
+        <section class="mb-20">
+            <div class="flex items-center gap-4 mb-8">
+                <span class="number-badge">09</span>
+                <h2 class="font-serif text-3xl font-light">Pricing</h2>
+                <div class="divider flex-1"></div>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+                <!-- Basic -->
+                <div class="card text-center">
+                    <span class="font-mono text-[9px] tracking-widest text-[var(--fg-muted)]">DISCOVERY</span>
+                    <p class="font-serif text-4xl mt-4 mb-1">$45</p>
+                    <p class="font-mono text-[10px] text-[var(--fg-muted)] mb-6">per month</p>
+                    <div class="divider mb-6"></div>
+                    <ul class="text-left space-y-3 mb-6">
+                        <li class="font-mono text-xs flex items-center gap-2">
+                            <span style="color: var(--success);">+</span> 3 Samples per month
+                        </li>
+                        <li class="font-mono text-xs flex items-center gap-2">
+                            <span style="color: var(--success);">+</span> Free shipping
+                        </li>
+                        <li class="font-mono text-xs flex items-center gap-2">
+                            <span style="color: var(--success);">+</span> Member pricing
+                        </li>
+                    </ul>
+                    <button class="btn w-full">Subscribe</button>
+                </div>
+
+                <!-- Popular -->
+                <div class="card card-shadow text-center relative">
+                    <div class="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                        <span class="tag tag-terracotta">Most Popular</span>
+                    </div>
+                    <span class="font-mono text-[9px] tracking-widest text-[var(--fg-muted)]">CONNOISSEUR</span>
+                    <p class="font-serif text-4xl mt-4 mb-1">$125</p>
+                    <p class="font-mono text-[10px] text-[var(--fg-muted)] mb-6">per month</p>
+                    <div class="divider mb-6"></div>
+                    <ul class="text-left space-y-3 mb-6">
+                        <li class="font-mono text-xs flex items-center gap-2">
+                            <span style="color: var(--success);">+</span> 2 Full bottles per month
+                        </li>
+                        <li class="font-mono text-xs flex items-center gap-2">
+                            <span style="color: var(--success);">+</span> Priority shipping
+                        </li>
+                        <li class="font-mono text-xs flex items-center gap-2">
+                            <span style="color: var(--success);">+</span> Exclusive releases
+                        </li>
+                        <li class="font-mono text-xs flex items-center gap-2">
+                            <span style="color: var(--success);">+</span> Personal consultation
+                        </li>
+                    </ul>
+                    <button class="btn btn-filled w-full">Subscribe</button>
+                </div>
+
+                <!-- Premium -->
+                <div class="card text-center">
+                    <span class="font-mono text-[9px] tracking-widest text-[var(--fg-muted)]">COLLECTOR</span>
+                    <p class="font-serif text-4xl mt-4 mb-1">$350</p>
+                    <p class="font-mono text-[10px] text-[var(--fg-muted)] mb-6">per month</p>
+                    <div class="divider mb-6"></div>
+                    <ul class="text-left space-y-3 mb-6">
+                        <li class="font-mono text-xs flex items-center gap-2">
+                            <span style="color: var(--success);">+</span> 4 Full bottles per month
+                        </li>
+                        <li class="font-mono text-xs flex items-center gap-2">
+                            <span style="color: var(--success);">+</span> Same-day delivery
+                        </li>
+                        <li class="font-mono text-xs flex items-center gap-2">
+                            <span style="color: var(--success);">+</span> VIP events access
+                        </li>
+                        <li class="font-mono text-xs flex items-center gap-2">
+                            <span style="color: var(--success);">+</span> Custom formulation
+                        </li>
+                    </ul>
+                    <button class="btn w-full">Subscribe</button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal -->
+    <div class="modal-backdrop" id="modal-backdrop" onclick="closeModal()"></div>
+    <div class="modal-content" id="modal-content">
+        <div class="flex justify-between items-start mb-6">
+            <div>
+                <span class="font-mono text-[9px] tracking-widest text-[var(--fg-muted)]">MODAL DIALOG</span>
+                <h3 class="font-serif text-2xl mt-1">Confirm Action</h3>
+            </div>
+            <button onclick="closeModal()"
+                class="text-[var(--fg-muted)] hover:text-[var(--fg-black)] transition-colors">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M18 6L6 18M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <p class="font-mono text-sm text-[var(--fg-muted)] mb-6">
+            Are you sure you want to proceed with this action? This will add the item to your collection and charge your
+            saved payment method.
+        </p>
+
+        <div class="divider mb-6"></div>
+
+        <div class="flex gap-4 justify-end">
+            <button class="btn" onclick="closeModal()">Cancel</button>
+            <button class="btn btn-filled" onclick="closeModal()">Confirm</button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer py-16 mt-24">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="grid md:grid-cols-4 gap-12 mb-12">
+                <div>
+                    <h4 class="font-serif text-2xl mb-4">Le Style</h4>
+                    <p class="font-mono text-[10px] tracking-widest text-[var(--fg-muted)] leading-relaxed">
+                        A complete design system inspired by artisan craftsmanship and timeless aesthetics.
+                    </p>
+                </div>
+
+                <div>
+                    <p class="font-mono text-[9px] tracking-widest text-[var(--fg-muted)] uppercase mb-4">Collection</p>
+                    <ul class="space-y-2">
+                        <li><a href="#"
+                                class="font-mono text-xs hover:text-[var(--accent-terracotta)] transition-colors">All
+                                Products</a></li>
+                        <li><a href="#"
+                                class="font-mono text-xs hover:text-[var(--accent-terracotta)] transition-colors">New
+                                Arrivals</a></li>
+                        <li><a href="#"
+                                class="font-mono text-xs hover:text-[var(--accent-terracotta)] transition-colors">Bestsellers</a>
+                        </li>
+                        <li><a href="#"
+                                class="font-mono text-xs hover:text-[var(--accent-terracotta)] transition-colors">Gift
+                                Sets</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <p class="font-mono text-[9px] tracking-widest text-[var(--fg-muted)] uppercase mb-4">Company</p>
+                    <ul class="space-y-2">
+                        <li><a href="#"
+                                class="font-mono text-xs hover:text-[var(--accent-terracotta)] transition-colors">About
+                                Us</a></li>
+                        <li><a href="#"
+                                class="font-mono text-xs hover:text-[var(--accent-terracotta)] transition-colors">Careers</a>
+                        </li>
+                        <li><a href="#"
+                                class="font-mono text-xs hover:text-[var(--accent-terracotta)] transition-colors">Press</a>
+                        </li>
+                        <li><a href="#"
+                                class="font-mono text-xs hover:text-[var(--accent-terracotta)] transition-colors">Contact</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div>
+                    <p class="font-mono text-[9px] tracking-widest text-[var(--fg-muted)] uppercase mb-4">Newsletter</p>
+                    <div class="search-container">
+                        <input type="email" class="search-input" style="padding-left: 16px;" placeholder="Your email">
+                    </div>
+                    <button class="btn btn-sm w-full mt-3">Subscribe</button>
+                </div>
+            </div>
+
+            <div class="divider mb-8"></div>
+
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <p class="font-mono text-[9px] tracking-widest text-[var(--fg-muted)]">
+                    MMXXIV LE STYLE DESIGN SYSTEM
+                </p>
+                <div class="flex gap-6">
+                    <a href="#"
+                        class="font-mono text-[9px] tracking-widest text-[var(--fg-muted)] hover:text-[var(--fg-black)] transition-colors">Privacy</a>
+                    <a href="#"
+                        class="font-mono text-[9px] tracking-widest text-[var(--fg-muted)] hover:text-[var(--fg-black)] transition-colors">Terms</a>
+                    <a href="#"
+                        class="font-mono text-[9px] tracking-widest text-[var(--fg-muted)] hover:text-[var(--fg-black)] transition-colors">Cookies</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize all elements first
+        const modalBackdrop = document.getElementById('modal-backdrop');
+        const modalContent = document.getElementById('modal-content');
+
+        // Modal functions
+        function openModal() {
+            if (modalBackdrop && modalContent) {
+                modalBackdrop.classList.add('active');
+                modalContent.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closeModal() {
+            if (modalBackdrop && modalContent) {
+                modalBackdrop.classList.remove('active');
+                modalContent.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        }
+
+        // Close modal on Escape
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        // Dropdown functionality
+        document.querySelectorAll('.dropdown').forEach(function (dropdown) {
+            const trigger = dropdown.querySelector('.dropdown-trigger');
+            const items = dropdown.querySelectorAll('.dropdown-item');
+
+            if (trigger) {
+                trigger.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    document.querySelectorAll('.dropdown').forEach(function (d) {
+                        if (d !== dropdown) d.classList.remove('active');
+                    });
+                    dropdown.classList.toggle('active');
+                });
+            }
+
+            items.forEach(function (item) {
+                item.addEventListener('click', function () {
+                    const value = this.getAttribute('data-value');
+                    const text = this.textContent;
+                    if (trigger) {
+                        trigger.textContent = text;
+                    }
+                    dropdown.classList.remove('active');
+                });
+            });
+        });
+
+        // Close dropdowns on outside click
+        document.addEventListener('click', function () {
+            document.querySelectorAll('.dropdown').forEach(function (d) {
+                d.classList.remove('active');
+            });
+        });
+
+        // Accordion functionality
+        function toggleAccordion(header) {
+            const item = header.parentElement;
+            const wasActive = item.classList.contains('active');
+
+            // Close all in same parent
+            item.parentElement.querySelectorAll('.accordion-item').forEach(function (acc) {
+                acc.classList.remove('active');
+            });
+
+            // Toggle current
+            if (!wasActive) {
+                item.classList.add('active');
+            }
+        }
+
+        // Tabs functionality
+        const tabs = document.querySelectorAll('.tab');
+        const tabContent = document.getElementById('tab-content');
+
+        const tabContents = {
+            description: 'A carefully composed unisex fragrance with woody notes and a touch of spice.',
+            ingredients: 'Sandalwood, cedarwood, cardamom, iris, violet, amber, leather. Formulated without parabens.',
+            reviews: '4.9 stars from 847 reviews. "The perfect everyday signature scent." — Marie L.',
+            shipping: 'Complimentary standard shipping on orders over $150. Express delivery available.'
+        };
+
+        tabs.forEach(function (tab) {
+            tab.addEventListener('click', function () {
+                tabs.forEach(function (t) { t.classList.remove('active'); });
+                this.classList.add('active');
+
+                const tabId = this.getAttribute('data-tab');
+                if (tabContent && tabContents[tabId]) {
+                    tabContent.textContent = tabContents[tabId];
+                }
+            });
+        });
+
+        // Pagination
+        document.querySelectorAll('.pagination-btn:not(:disabled)').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                if (!this.textContent.includes('...')) {
+                    document.querySelectorAll('.pagination-btn').forEach(function (b) {
+                        b.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                }
+            });
+        });
+
+        // Intersection Observer for animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.animate-in').forEach(function (el) {
+            observer.observe(el);
+        });
+    </script>
+
+</body>
+
+</html>
