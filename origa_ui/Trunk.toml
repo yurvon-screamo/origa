@@ -20,7 +20,7 @@ inject_scripts = true
 # Require Cargo.lock is up to date
 # locked = false
 # Control minification
-# minify = "never" # can be one of: never, on_release, always
+minify = "on_release" # can be one of: never, on_release, always
 # Allow disabling sub-resource integrity (SRI)
 # no_sri = false
 # An optional cargo profile to use
