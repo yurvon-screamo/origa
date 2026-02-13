@@ -3,8 +3,8 @@ mod callbacks;
 pub use callbacks::ProfileCallback;
 
 use crate::dialogue::ProfileView;
-use crate::handlers::callbacks::CallbackData;
 use crate::handlers::OrigaDialogue;
+use crate::handlers::callbacks::CallbackData;
 use crate::service::OrigaServiceProvider;
 use origa::application::{UserProfile, UserRepository};
 use origa::domain::JapaneseLevel;
@@ -436,8 +436,14 @@ async fn handle_exit(bot: &Bot, chat_id: ChatId, _dialogue: &OrigaDialogue) -> R
     let text = "Вы уверены, что хотите удалить все данные? Это действие нельзя отменить.";
 
     let keyboard = InlineKeyboardMarkup::new(vec![vec![
-        InlineKeyboardButton::callback("✅ Да, удалить", CallbackData::Profile(ProfileCallback::ConfirmExit).to_json()),
-        InlineKeyboardButton::callback("❌ Отмена", CallbackData::Profile(ProfileCallback::Back).to_json()),
+        InlineKeyboardButton::callback(
+            "✅ Да, удалить",
+            CallbackData::Profile(ProfileCallback::ConfirmExit).to_json(),
+        ),
+        InlineKeyboardButton::callback(
+            "❌ Отмена",
+            CallbackData::Profile(ProfileCallback::Back).to_json(),
+        ),
     ]]);
 
     bot.send_message(chat_id, text)

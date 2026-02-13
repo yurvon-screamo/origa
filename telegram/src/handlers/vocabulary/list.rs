@@ -1,4 +1,5 @@
 use crate::dialogue::{DialogueState, SessionData};
+use crate::formatters::format_japanese_text;
 use crate::handlers::callbacks::CallbackData;
 use crate::handlers::vocabulary::VocabularyCallback;
 use crate::service::OrigaServiceProvider;
@@ -125,7 +126,7 @@ pub fn build_vocabulary_text(
 fn format_card_entry(num: usize, card: &origa::domain::StudyCard) -> String {
     let card_info = match card.card() {
         origa::domain::Card::Vocabulary(v) => {
-            format!("{} — {}", v.word().text(), v.meaning().text())
+            format!("{} — {}", format_japanese_text(v.word().text()), format_japanese_text(v.meaning().text()))
         }
         _ => String::from("Неизвестный тип карточки"),
     };

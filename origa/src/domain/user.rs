@@ -24,6 +24,7 @@ impl User {
         username: String,
         current_japanese_level: JapaneseLevel,
         native_language: NativeLanguage,
+        telegram_user_id: Option<u64>,
     ) -> Self {
         Self {
             id: Ulid::new(),
@@ -32,7 +33,7 @@ impl User {
             current_japanese_level,
             native_language,
             duolingo_jwt_token: None,
-            telegram_user_id: None,
+            telegram_user_id,
             reminders_enabled: true,
         }
     }

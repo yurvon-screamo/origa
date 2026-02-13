@@ -1,5 +1,6 @@
 mod bot;
 mod dialogue;
+mod formatters;
 mod handlers;
 mod service;
 
@@ -10,7 +11,6 @@ use handlers::{
     add_from_text::add_from_text_handler,
     callback_handler, chat_id_from_msg, grammar_list_handler, handle_duolingo_token,
     handle_kanji_list, handle_vocabulary_search, help_handler,
-    lesson::{start_fixation, start_lesson},
     main_menu_handler, profile_handler, start_handler, telegram_id_from_msg, username_from_msg,
     vocabulary_list_handler,
 };
@@ -176,7 +176,7 @@ async fn lesson_endpoint(
     bot: Bot,
     msg: Message,
     dialogue: OrigaDialogue,
-    (mode, _card_ids, _current_index, _showing_answer, _new_count, _review_count): (
+    (_mode, _card_ids, _current_index, showing_answer, _new_count, _review_count): (
         LessonMode,
         Vec<ulid::Ulid>,
         usize,
@@ -194,10 +194,10 @@ async fn lesson_endpoint(
             .get_or_create_session(telegram_id, username)
             .await?;
 
-        match mode {
-            LessonMode::Lesson => start_lesson(bot, msg, dialogue, session).await?,
-            LessonMode::Fixation => start_fixation(bot, msg, dialogue, session).await?,
-        }
+        handlers::lesson::handle_lesson_text(
+            bot, msg, dialogue, session, showing_answer,
+        ).await?;
+
         respond(())
     })
     .await

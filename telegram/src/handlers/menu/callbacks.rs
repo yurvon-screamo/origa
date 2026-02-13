@@ -42,28 +42,3 @@ pub enum MenuCallback {
     #[serde(rename = "show_history")]
     ShowHistory,
 }
-
-impl MenuCallback {
-    pub fn to_json(&self) -> String {
-        serde_json::to_string(self).expect("Failed to serialize callback data")
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_serialize_main_menu() {
-        let callback = MenuCallback::MainMenu;
-        let json = callback.to_json();
-        assert!(json.contains(r#""kind":"menu_home""#));
-    }
-
-    #[test]
-    fn test_serialize_history_known() {
-        let callback = MenuCallback::HistoryKnown;
-        let json = callback.to_json();
-        assert!(json.contains(r#""kind":"history_known""#));
-    }
-}
