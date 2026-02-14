@@ -1,4 +1,5 @@
 use crate::repository::InMemoryUserRepository;
+use crate::ui_components::{Button, ButtonVariant, Input, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos_router::hooks::use_navigate;
@@ -7,16 +8,17 @@ use origa::domain::User;
 #[component]
 pub fn LoginForm(username: RwSignal<String>, error: RwSignal<Option<String>>) -> impl IntoView {
     view! {
-        <div class="space-y-6">
+        <div class="space-y-5">
             <div>
-                <label class="font-mono text-[10px] tracking-widest text-[var(--fg-muted)] uppercase block mb-2">
+                <Text size=TextSize::Small variant=TypographyVariant::Muted uppercase=true tracking_widest=true class="block mb-2">
                     "Имя пользователя"
-                </label>
-                <input
-                    type="text"
-                    placeholder="Введите имя"
+                </Text>
+                <Input
                     value=username
-                    class="w-full px-4 py-3 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-none font-mono text-sm focus:outline-none focus:border-[var(--accent-olive)]"
+                    placeholder="Введите имя"
+                    on_change=Callback::new(move |ev: leptos::ev::Event| {
+                        username.set(event_target_value(&ev));
+                    })
                     on:keydown=move |ev: leptos::ev::KeyboardEvent| {
                         if ev.key() == "Enter" {
                             handle_login(username, error);
@@ -28,19 +30,21 @@ pub fn LoginForm(username: RwSignal<String>, error: RwSignal<Option<String>>) ->
             {move || {
                 error.get().map(|err| {
                     view! {
-                        <div class="p-4 bg-red-50 border border-red-200 text-red-700 font-mono text-xs">
+                        <div class="p-3 bg-red-950/20 border border-red-900/30 text-red-400 font-mono text-xs">
                             {err}
                         </div>
                     }
                 })
             }}
 
-            <button
-                on:click=move |_| handle_login(username, error)
-                class="w-full px-6 py-3 bg-[var(--accent-olive)] text-[var(--bg-primary)] font-mono text-xs tracking-widest uppercase hover:opacity-90 transition-opacity"
+            <Button
+                variant=ButtonVariant::Olive
+                on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
+                    handle_login(username, error);
+                })
             >
                 "Войти"
-            </button>
+            </Button>
         </div>
     }
 }
@@ -53,14 +57,14 @@ fn handle_login(username: RwSignal<String>, error: RwSignal<Option<String>>) {
         error.set(None);
 
         let repo = use_context::<InMemoryUserRepository>().expect("UserRepository not provided");
+        let current_user =
+            use_context::<RwSignal<Option<User>>>().expect("current_user context not provided");
+        let navigate = use_navigate();
 
         spawn_local(async move {
             match repo.find_or_create_user(name) {
                 Ok(user) => {
-                    let current_user = use_context::<RwSignal<Option<User>>>()
-                        .expect("current_user context not provided");
                     current_user.set(Some(user));
-                    let navigate = use_navigate();
                     navigate("/home", Default::default());
                 }
                 Err(e) => {

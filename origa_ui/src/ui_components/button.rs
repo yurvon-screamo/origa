@@ -1,5 +1,5 @@
+use leptos::ev::MouseEvent;
 use leptos::prelude::*;
-use web_sys::MouseEvent;
 
 #[derive(Clone, Copy, PartialEq, Default, Debug)]
 pub enum ButtonVariant {
