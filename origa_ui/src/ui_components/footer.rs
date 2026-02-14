@@ -1,6 +1,6 @@
-use crate::components::button::{Button, ButtonVariant};
-use crate::components::divider::Divider;
-use crate::components::search::Search;
+use crate::ui_components::button::{Button, ButtonVariant};
+use crate::ui_components::divider::Divider;
+use crate::ui_components::search::Search;
 use leptos::prelude::*;
 
 #[derive(Clone, Debug)]

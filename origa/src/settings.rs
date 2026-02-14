@@ -2,11 +2,12 @@ use std::path::PathBuf;
 use std::sync::{Arc, LazyLock};
 
 use crate::domain::OrigaError;
-use crate::infrastructure::{
-    FileSystemUserRepository, FirebaseUserRepository, FsrsSrsService, LlmServiceInvoker, OpenAiLlm,
-};
+use crate::infrastructure::{FirebaseUserRepository, FsrsSrsService, LlmServiceInvoker, OpenAiLlm};
 use serde::{Deserialize, Serialize};
 use tokio::sync::OnceCell;
+
+#[cfg(not(target_arch = "wasm32"))]
+use crate::infrastructure::FileSystemUserRepository;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
 pub enum LlmSettings {
@@ -22,14 +23,18 @@ pub enum LlmSettings {
 
 static SETTINGS: LazyLock<ApplicationEnvironment> = LazyLock::new(|| ApplicationEnvironment {
     lazy_firebase_repository: Arc::new(OnceCell::new()),
-    lazy_file_repository: Arc::new(OnceCell::new()),
     lazy_srs_service: Arc::new(OnceCell::new()),
+
+    #[cfg(not(target_arch = "wasm32"))]
+    lazy_file_repository: Arc::new(OnceCell::new()),
 });
 
 pub struct ApplicationEnvironment {
     lazy_firebase_repository: Arc<OnceCell<FirebaseUserRepository>>,
-    lazy_file_repository: Arc<OnceCell<FileSystemUserRepository>>,
     lazy_srs_service: Arc<OnceCell<FsrsSrsService>>,
+
+    #[cfg(not(target_arch = "wasm32"))]
+    lazy_file_repository: Arc<OnceCell<FileSystemUserRepository>>,
 }
 
 fn expand_tilde() -> PathBuf {
@@ -58,6 +63,7 @@ impl ApplicationEnvironment {
             .await
     }
 
+    #[cfg(not(target_arch = "wasm32"))]
     pub async fn get_file_repository(&self) -> Result<&FileSystemUserRepository, OrigaError> {
         self.lazy_file_repository
             .get_or_try_init(|| async {
