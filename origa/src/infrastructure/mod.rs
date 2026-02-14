@@ -7,5 +7,8 @@ mod srs;
 pub use duolingo_client::HttpDuolingoClient;
 pub use llm::LlmServiceInvoker;
 pub use llm::OpenAiLlm;
-pub use repository::{FileSystemUserRepository, FirebaseUserRepository};
+pub use repository::FirebaseUserRepository;
 pub use srs::FsrsSrsService;
+
+#[cfg(not(target_arch = "wasm32"))]
+pub use repository::FileSystemUserRepository;

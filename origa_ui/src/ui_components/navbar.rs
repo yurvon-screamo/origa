@@ -1,4 +1,4 @@
-use crate::components::button::{Button, ButtonSize, ButtonVariant};
+use crate::ui_components::button::{Button, ButtonSize, ButtonVariant};
 use leptos::either::*;
 use leptos::prelude::*;
 
