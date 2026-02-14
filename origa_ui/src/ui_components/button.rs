@@ -23,7 +23,7 @@ pub fn Button(
     #[prop(optional)] variant: ButtonVariant,
     #[prop(optional)] size: ButtonSize,
     #[prop(optional, into)] class: String,
-    #[prop(optional)] disabled: bool,
+    #[prop(optional, into)] disabled: bool,
     #[prop(optional)] on_click: Option<Callback<MouseEvent>>,
     children: Children,
 ) -> impl IntoView {

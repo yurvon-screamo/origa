@@ -1,4 +1,3 @@
-use leptos::prelude::*;
 use origa::domain::{Answer, Card, JapaneseLevel, NativeLanguage, Question, User};
 
 pub fn create_demo_user() -> User {
