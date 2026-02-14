@@ -4,7 +4,6 @@ use async_openai_wasm::types::chat::{
     ChatCompletionRequestMessage, CreateChatCompletionRequestArgs,
 };
 use async_openai_wasm::{Client, config::OpenAIConfig};
-use async_trait::async_trait;
 use std::sync::Arc;
 
 pub struct OpenAiLlm {
@@ -68,7 +67,6 @@ impl OpenAiLlm {
     }
 }
 
-#[async_trait]
 impl LlmService for OpenAiLlm {
     async fn generate_text(&self, question: &str) -> Result<String, OrigaError> {
         self.make_request(question).await

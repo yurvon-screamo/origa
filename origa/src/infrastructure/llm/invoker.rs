@@ -1,5 +1,3 @@
-use async_trait::async_trait;
-
 use crate::application::LlmService;
 use crate::domain::OrigaError;
 
@@ -10,7 +8,6 @@ pub enum LlmServiceInvoker {
     OpenAi(OpenAiLlm),
 }
 
-#[async_trait]
 impl LlmService for LlmServiceInvoker {
     async fn generate_text(&self, question: &str) -> Result<String, OrigaError> {
         match self {

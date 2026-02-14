@@ -1,13 +1,14 @@
 use crate::domain::{OrigaError, User};
-use async_trait::async_trait;
+use std::future::Future;
 use ulid::Ulid;
 
-#[async_trait]
-pub trait UserRepository: Send + Sync {
-    async fn list(&self) -> Result<Vec<User>, OrigaError>;
-    async fn find_by_id(&self, user_id: Ulid) -> Result<Option<User>, OrigaError>;
-    async fn find_by_telegram_id(&self, telegram_id: &u64) -> Result<Option<User>, OrigaError>;
-
-    async fn save(&self, user: &User) -> Result<(), OrigaError>;
-    async fn delete(&self, user_id: Ulid) -> Result<(), OrigaError>;
+pub trait UserRepository {
+    fn list(&self) -> impl Future<Output = Result<Vec<User>, OrigaError>>;
+    fn find_by_id(&self, user_id: Ulid) -> impl Future<Output = Result<Option<User>, OrigaError>>;
+    fn find_by_telegram_id(
+        &self,
+        telegram_id: &u64,
+    ) -> impl Future<Output = Result<Option<User>, OrigaError>>;
+    fn save(&self, user: &User) -> impl Future<Output = Result<(), OrigaError>>;
+    fn delete(&self, user_id: Ulid) -> impl Future<Output = Result<(), OrigaError>>;
 }

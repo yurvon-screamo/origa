@@ -37,6 +37,7 @@ pub struct ApplicationEnvironment {
     lazy_file_repository: Arc<OnceCell<FileSystemUserRepository>>,
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 fn expand_tilde() -> PathBuf {
     if std::env::var("ANDROID_DATA").is_ok() {
         PathBuf::from(format!("/data/data/{}/files", "net.uwuwu.origa"))

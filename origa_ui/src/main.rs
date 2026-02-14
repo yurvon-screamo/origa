@@ -1,7 +1,7 @@
 mod app;
-mod ui_components;
-mod routes;
 mod repository;
+mod routes;
+mod ui_components;
 
 use app::*;
 use leptos::prelude::*;

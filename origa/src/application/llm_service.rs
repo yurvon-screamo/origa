@@ -1,8 +1,6 @@
-use async_trait::async_trait;
-
 use crate::domain::OrigaError;
+use std::future::Future;
 
-#[async_trait]
-pub trait LlmService: Send + Sync {
-    async fn generate_text(&self, question: &str) -> Result<String, OrigaError>;
+pub trait LlmService {
+    fn generate_text(&self, question: &str) -> impl Future<Output = Result<String, OrigaError>>;
 }
