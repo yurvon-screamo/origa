@@ -29,7 +29,7 @@ body {
     color: var(--fg-black);
     line-height: 1.6;
     margin: 0;
-    padding: 0;
+    padding: 1.5rem 1rem;
 }
 
 .font-serif {
