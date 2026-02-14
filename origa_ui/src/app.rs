@@ -2,7 +2,6 @@ use crate::demo_data::create_demo_user;
 use crate::repository::InMemoryUserRepository;
 use crate::routes::AppRoutes;
 use leptos::prelude::*;
-use origa::domain::User;
 
 #[component]
 pub fn App() -> impl IntoView {
