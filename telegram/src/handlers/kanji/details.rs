@@ -56,7 +56,10 @@ pub fn build_kanji_detail_text(kanji: &KanjiInfo) -> String {
         "🔢 Используется в словах: {}\n\n",
         kanji.used_in()
     ));
-    text.push_str(&format!("📝 Значения: {}\n", format_japanese_text(kanji.description())));
+    text.push_str(&format!(
+        "📝 Значения: {}\n",
+        format_japanese_text(kanji.description())
+    ));
 
     let radicals: Vec<String> = kanji
         .radicals()
