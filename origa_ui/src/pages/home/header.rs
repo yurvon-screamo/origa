@@ -27,6 +27,15 @@ pub fn HomeHeader(current_user: RwSignal<Option<User>>) -> impl IntoView {
                                         <Button
                                             variant=ButtonVariant::Ghost
                                             on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
+                                                let navigate = use_navigate();
+                                                navigate("/profile", Default::default());
+                                            })
+                                        >
+                                            "Профиль"
+                                        </Button>
+                                        <Button
+                                            variant=ButtonVariant::Ghost
+                                            on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
                                                 let current_user = use_context::<RwSignal<Option<User>>>()
                                                     .expect("current_user context not provided");
                                                 current_user.set(None);
