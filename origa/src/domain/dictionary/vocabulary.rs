@@ -30,7 +30,8 @@ impl VocabularyInfo {
 
 #[derive(Serialize, Deserialize)]
 struct VocabularyEntryStoredType {
-    level: String,
+    #[serde(default)]
+    level: Option<String>,
     russian_translation: String,
     english_translation: String,
 }
