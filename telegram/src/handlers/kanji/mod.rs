@@ -14,7 +14,10 @@ use origa::domain::KanjiInfo;
 
 pub fn format_kanji_entry(kanji: &KanjiInfo, idx: usize, page: usize) -> String {
     let mut text = format!("{}. <b>{}</b>\n", page * 6 + idx + 1, kanji.kanji());
-    text.push_str(&format!("   Значения: {}\n", format_japanese_text(kanji.description())));
+    text.push_str(&format!(
+        "   Значения: {}\n",
+        format_japanese_text(kanji.description())
+    ));
 
     let radicals: Vec<String> = kanji
         .radicals()

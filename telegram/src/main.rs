@@ -7,12 +7,10 @@ mod service;
 use dialogue::{DialogueState, LessonMode};
 use handlers::endpoint_with_common_text;
 use handlers::{
-    Command, OrigaDialogue,
-    add_from_text::add_from_text_handler,
-    callback_handler, chat_id_from_msg, grammar_list_handler, handle_duolingo_token,
-    handle_kanji_list, handle_vocabulary_search, help_handler,
-    main_menu_handler, profile_handler, start_handler, telegram_id_from_msg, username_from_msg,
-    vocabulary_list_handler,
+    Command, OrigaDialogue, add_from_text::add_from_text_handler, callback_handler,
+    chat_id_from_msg, grammar_list_handler, handle_duolingo_token, handle_kanji_list,
+    handle_vocabulary_search, help_handler, main_menu_handler, profile_handler, start_handler,
+    telegram_id_from_msg, username_from_msg, vocabulary_list_handler,
 };
 use service::OrigaServiceProvider;
 use teloxide::dispatching::dialogue::{InMemStorage, enter};
@@ -194,9 +192,7 @@ async fn lesson_endpoint(
             .get_or_create_session(telegram_id, username)
             .await?;
 
-        handlers::lesson::handle_lesson_text(
-            bot, msg, dialogue, session, showing_answer,
-        ).await?;
+        handlers::lesson::handle_lesson_text(bot, msg, dialogue, session, showing_answer).await?;
 
         respond(())
     })
