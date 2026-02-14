@@ -1,4 +1,4 @@
-use crate::pages::{Home, Login};
+use crate::pages::{Home, Login, Profile};
 use leptos::prelude::*;
 use leptos_router::components::*;
 use leptos_router::path;
@@ -11,6 +11,7 @@ pub fn AppRoutes() -> impl IntoView {
                 <Route path=path!("/") view=Login />
                 <Route path=path!("login") view=Login />
                 <Route path=path!("home") view=Home />
+                <Route path=path!("profile") view=Profile />
             </Routes>
         </main>
     }
