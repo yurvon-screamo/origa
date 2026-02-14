@@ -1,3 +1,4 @@
+use crate::ui_components::{Card, DisplayText, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 
 #[component]
@@ -6,52 +7,52 @@ pub fn HomeContent() -> impl IntoView {
         <main class="flex-1">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="bg-[var(--bg-secondary)] border border-[var(--border-color)] p-6">
-                        <h2 class="font-mono text-xs tracking-widest text-[var(--fg-muted)] uppercase mb-4">
+                    <Card class="p-6">
+                        <Text size=TextSize::Small variant=TypographyVariant::Muted uppercase=true tracking_widest=true class="mb-4">
                             "Канжи"
-                        </h2>
-                        <p class="font-serif text-2xl font-light mb-2">
+                        </Text>
+                        <DisplayText class="mb-2">
                             "1,245"
-                        </p>
-                        <p class="font-mono text-xs text-[var(--fg-muted)]">
+                        </DisplayText>
+                        <Text size=TextSize::Small variant=TypographyVariant::Muted>
                             "изученных символов"
-                        </p>
-                    </div>
+                        </Text>
+                    </Card>
 
-                    <div class="bg-[var(--bg-secondary)] border border-[var(--border-color)] p-6">
-                        <h2 class="font-mono text-xs tracking-widest text-[var(--fg-muted)] uppercase mb-4">
+                    <Card class="p-6">
+                        <Text size=TextSize::Small variant=TypographyVariant::Muted uppercase=true tracking_widest=true class="mb-4">
                             "Слова"
-                        </h2>
-                        <p class="font-serif text-2xl font-light mb-2">
+                        </Text>
+                        <DisplayText class="mb-2">
                             "3,821"
-                        </p>
-                        <p class="font-mono text-xs text-[var(--fg-muted)]">
+                        </DisplayText>
+                        <Text size=TextSize::Small variant=TypographyVariant::Muted>
                             "в словаре"
-                        </p>
-                    </div>
+                        </Text>
+                    </Card>
 
-                    <div class="bg-[var(--bg-secondary)] border border-[var(--border-color)] p-6">
-                        <h2 class="font-mono text-xs tracking-widest text-[var(--fg-muted)] uppercase mb-4">
+                    <Card class="p-6">
+                        <Text size=TextSize::Small variant=TypographyVariant::Muted uppercase=true tracking_widest=true class="mb-4">
                             "Уровень"
-                        </h2>
-                        <p class="font-serif text-2xl font-light mb-2">
+                        </Text>
+                        <DisplayText class="mb-2">
                             "N5"
-                        </p>
-                        <p class="font-mono text-xs text-[var(--fg-muted)]">
+                        </DisplayText>
+                        <Text size=TextSize::Small variant=TypographyVariant::Muted>
                             "текущий прогресс"
-                        </p>
-                    </div>
+                        </Text>
+                    </Card>
                 </div>
 
                 <div class="mt-12">
-                    <h2 class="font-mono text-xs tracking-widest text-[var(--fg-muted)] uppercase mb-6">
+                    <Text size=TextSize::Small variant=TypographyVariant::Muted uppercase=true tracking_widest=true class="mb-6">
                         "Сегодня"
-                    </h2>
-                    <div class="bg-[var(--bg-secondary)] border border-[var(--border-color)] p-6">
-                        <p class="font-mono text-sm text-[var(--fg-muted)]">
+                    </Text>
+                    <Card class="p-6">
+                        <Text size=TextSize::Default variant=TypographyVariant::Muted>
                             "Начните изучение японского языка"
-                        </p>
-                    </div>
+                        </Text>
+                    </Card>
                 </div>
             </div>
         </main>

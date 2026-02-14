@@ -1,4 +1,5 @@
 use leptos::either::Either;
+use leptos::ev::Event;
 use leptos::prelude::*;
 
 #[component]
@@ -8,7 +9,7 @@ pub fn Input(
     #[prop(optional)] disabled: bool,
     #[prop(optional)] rows: Option<usize>,
     #[prop(optional, into)] class: String,
-    #[prop(optional)] on_change: Option<Callback<leptos::ev::Event>>,
+    #[prop(optional)] on_change: Option<Callback<Event>>,
 ) -> impl IntoView {
     let base_class = "input-field";
     let textarea_class = "resize-none";

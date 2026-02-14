@@ -19,6 +19,6 @@ js-sys.workspace = true
 serde.workspace = true
 serde-wasm-bindgen.workspace = true
 console_error_panic_hook.workspace = true
-web-sys = { workspace = true, features = ["Node", "Element"] }
+web-sys.workspace = true
 origa.workspace = true
 ulid.workspace = true
