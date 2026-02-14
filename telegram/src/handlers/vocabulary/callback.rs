@@ -247,7 +247,9 @@ async fn handle_detail(
 
 fn format_card_detail(card: &origa::domain::StudyCard) -> String {
     let card_info = match card.card() {
-        origa::domain::Card::Vocabulary(v) => format!("<b>{}</b>", format_japanese_text(v.word().text())),
+        origa::domain::Card::Vocabulary(v) => {
+            format!("<b>{}</b>", format_japanese_text(v.word().text()))
+        }
         _ => String::from("Неизвестный тип карточки"),
     };
 

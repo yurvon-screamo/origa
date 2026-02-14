@@ -6,6 +6,10 @@ target
 .fastembed_cache
 data
 
+# Node
+package-lock.json
+node_modules
+
 # IDE
 .vscode/
 .idea/
