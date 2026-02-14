@@ -21,3 +21,4 @@ serde-wasm-bindgen.workspace = true
 console_error_panic_hook.workspace = true
 web-sys = { workspace = true, features = ["Node", "Element"] }
 origa.workspace = true
+ulid.workspace = true

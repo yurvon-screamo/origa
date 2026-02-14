@@ -1,10 +1,10 @@
-use async_trait::async_trait;
 use origa::application::user_repository::UserRepository;
 use origa::domain::{OrigaError, User};
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use ulid::Ulid;
 
+#[derive(Clone)]
 pub struct InMemoryUserRepository {
     users: Arc<Mutex<HashMap<Ulid, User>>>,
     username_index: Arc<Mutex<HashMap<String, Ulid>>>,
@@ -26,18 +26,16 @@ impl InMemoryUserRepository {
                     reason: format!("Lock error: {}", e),
                 })?;
 
-        if let Some(user_id) = username_index.get(&username) {
-            if let Some(user) = self
+        if let Some(user_id) = username_index.get(&username)
+            && let Some(user) = self
                 .users
                 .lock()
                 .map_err(|e| OrigaError::RepositoryError {
                     reason: format!("Lock error: {}", e),
                 })?
                 .get(user_id)
-            {
-                let user: User = user.clone();
-                return Ok(user);
-            }
+        {
+            return Ok(user.clone());
         }
 
         let user = User::new(
@@ -62,7 +60,6 @@ impl InMemoryUserRepository {
     }
 }
 
-#[async_trait(?Send)]
 impl UserRepository for InMemoryUserRepository {
     async fn list(&self) -> Result<Vec<User>, OrigaError> {
         let users = self.users.lock().map_err(|e| OrigaError::RepositoryError {
@@ -84,10 +81,8 @@ impl UserRepository for InMemoryUserRepository {
         })?;
 
         for user in users.values() {
-            let user_telegram_id: Option<u64> = user.telegram_user_id().copied();
-            if user_telegram_id == Some(*telegram_id) {
-                let user: User = user.clone();
-                return Ok(Some(user));
+            if user.telegram_user_id() == Some(telegram_id) {
+                return Ok(Some(user.clone()));
             }
         }
         Ok(None)
