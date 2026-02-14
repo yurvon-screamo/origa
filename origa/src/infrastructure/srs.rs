@@ -4,7 +4,6 @@ use crate::application::SrsService;
 use crate::domain::OrigaError;
 use crate::domain::Rating;
 use crate::domain::{Difficulty, MemoryHistory, MemoryState, Stability};
-use async_trait::async_trait;
 use chrono::{Duration, Utc};
 use rs_fsrs::{Card as FsrsCard, FSRS, Parameters, Rating as FsrsRating, State as FsrsState};
 
@@ -36,7 +35,6 @@ impl FsrsSrsService {
     }
 }
 
-#[async_trait]
 impl SrsService for FsrsSrsService {
     async fn rate(
         &self,

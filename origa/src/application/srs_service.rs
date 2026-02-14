@@ -1,6 +1,7 @@
 use crate::domain::OrigaError;
 use crate::domain::{MemoryHistory, MemoryState, Rating};
 use chrono::Duration;
+use std::future::Future;
 
 pub struct NextReview {
     pub interval: Duration,
@@ -12,14 +13,11 @@ pub enum RateMode {
     FixationLesson,
 }
 
-use async_trait::async_trait;
-
-#[async_trait]
-pub trait SrsService: Send + Sync {
-    async fn rate(
+pub trait SrsService {
+    fn rate(
         &self,
         mode: RateMode,
         rating: Rating,
         memory_history: &MemoryHistory,
-    ) -> Result<NextReview, OrigaError>;
+    ) -> impl Future<Output = Result<NextReview, OrigaError>>;
 }

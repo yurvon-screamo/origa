@@ -1,6 +1,5 @@
 use crate::application::{DuolingoClient, DuolingoWord};
 use crate::domain::OrigaError;
-use async_trait::async_trait;
 use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -93,7 +92,6 @@ impl HttpDuolingoClient {
     }
 }
 
-#[async_trait]
 impl DuolingoClient for HttpDuolingoClient {
     async fn get_words(&self, jwt_token: &str) -> Result<Vec<DuolingoWord>, OrigaError> {
         let user_id = extract_user_id_from_jwt(jwt_token)?;

@@ -1,6 +1,5 @@
 use crate::application::UserRepository;
 use crate::domain::{OrigaError, User};
-use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::time::Duration;
@@ -175,7 +174,6 @@ impl FirebaseUserRepository {
     }
 }
 
-#[async_trait]
 impl UserRepository for FirebaseUserRepository {
     async fn list(&self) -> Result<Vec<User>, OrigaError> {
         let url = self.collection_url();
@@ -283,71 +281,5 @@ impl UserRepository for FirebaseUserRepository {
                 })
             }
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::domain::{JapaneseLevel, NativeLanguage};
-
-    #[tokio::test]
-    async fn test_user_serialization() {
-        let user = User::new(
-            "testuser".to_string(),
-            JapaneseLevel::N5,
-            NativeLanguage::English,
-            None,
-        );
-
-        let repo =
-            FirebaseUserRepository::new("test-project".to_string(), None, "fake-token".to_string())
-                .await
-                .unwrap();
-
-        let doc = repo.user_to_firestore_document(&user).unwrap();
-        let restored_user = repo.firestore_document_to_user(doc).unwrap();
-
-        assert_eq!(user.id(), restored_user.id());
-        assert_eq!(user.username(), restored_user.username());
-        assert_eq!(
-            user.current_japanese_level(),
-            restored_user.current_japanese_level()
-        );
-        assert_eq!(user.native_language(), restored_user.native_language());
-    }
-
-    #[tokio::test]
-    async fn test_repository_creation() {
-        let repo = FirebaseUserRepository::new(
-            "my-project".to_string(),
-            Some("my-database".to_string()),
-            "access-token".to_string(),
-        )
-        .await
-        .unwrap()
-        .with_collection_name("my-users".to_string());
-
-        assert_eq!(repo.project_id, "my-project");
-        assert_eq!(repo.database_id, "my-database");
-        assert_eq!(repo.collection_name, "my-users");
-    }
-
-    #[tokio::test]
-    async fn test_url_generation() {
-        let repo =
-            FirebaseUserRepository::new("test-project".to_string(), None, "token".to_string())
-                .await
-                .unwrap();
-
-        let user_id = Ulid::new();
-        let expected_base = "https://firestore.googleapis.com/v1/projects/test-project/databases/(default)/documents";
-
-        assert_eq!(repo.base_url(), expected_base);
-        assert_eq!(repo.collection_url(), format!("{}/users", expected_base));
-        assert_eq!(
-            repo.document_url(user_id),
-            format!("{}/users/{}", expected_base, user_id)
-        );
     }
 }

@@ -1,6 +1,5 @@
-use async_trait::async_trait;
-
 use crate::domain::OrigaError;
+use std::future::Future;
 
 #[derive(Debug, Clone)]
 pub struct DuolingoWord {
@@ -8,7 +7,9 @@ pub struct DuolingoWord {
     pub translations: Vec<String>,
 }
 
-#[async_trait]
-pub trait DuolingoClient: Send + Sync {
-    async fn get_words(&self, jwt_token: &str) -> Result<Vec<DuolingoWord>, OrigaError>;
+pub trait DuolingoClient {
+    fn get_words(
+        &self,
+        jwt_token: &str,
+    ) -> impl Future<Output = Result<Vec<DuolingoWord>, OrigaError>>;
 }

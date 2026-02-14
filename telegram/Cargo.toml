@@ -16,7 +16,6 @@ serde.workspace = true
 serde_json.workspace = true
 ulid.workspace = true
 chrono.workspace = true
-async-trait.workspace = true
 
 anyhow = "1.0"
 once_cell = "1.21"

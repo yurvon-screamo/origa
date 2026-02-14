@@ -1,6 +1,5 @@
 use crate::application::UserRepository;
 use crate::domain::{OrigaError, User};
-use async_trait::async_trait;
 use std::path::PathBuf;
 use tokio::fs;
 use ulid::Ulid;
@@ -31,7 +30,6 @@ impl FileSystemUserRepository {
     }
 }
 
-#[async_trait()]
 impl UserRepository for FileSystemUserRepository {
     async fn list(&self) -> Result<Vec<User>, OrigaError> {
         let mut users = vec![];
