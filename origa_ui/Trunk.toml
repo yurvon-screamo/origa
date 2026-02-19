@@ -3,4 +3,4 @@ target = "./index.html"
 
 [serve]
 port = 1420
-open = true
+open = false

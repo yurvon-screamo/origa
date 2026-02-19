@@ -1,46 +1,59 @@
+use super::{ActionButtons, IntegrationsCard, PersonalDataCard, SettingsCard};
 use crate::repository::InMemoryUserRepository;
-use crate::ui_components::{
-    Button, ButtonVariant, Card, Heading, HeadingLevel, Input, Text, TextSize, Toggle,
-};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::application::use_cases::{GetUserInfoUseCase, UpdateUserProfileUseCase};
-use origa::domain::{JapaneseLevel, NativeLanguage, User};
+use origa::domain::User;
+use origa::domain::{JapaneseLevel, NativeLanguage};
 
 #[component]
 pub fn ProfileContent() -> impl IntoView {
     let current_user =
         use_context::<RwSignal<Option<User>>>().expect("current_user context not provided");
+
     let repository =
         use_context::<InMemoryUserRepository>().expect("repository context not provided");
 
-    let user_name = RwSignal::new(current_user.with(|u| {
-        u.as_ref()
-            .map(|u| u.username().to_string())
-            .unwrap_or_default()
-    }));
-    let japanese_level = current_user.with(|u| {
-        u.as_ref()
-            .map(|u| *u.current_japanese_level())
-            .unwrap_or(JapaneseLevel::N5)
+    let user_name = Memo::new(move |_| {
+        current_user.with(|u| {
+            u.as_ref()
+                .map(|u| u.username().to_string())
+                .unwrap_or_default()
+        })
     });
-    let native_language = current_user.with(|u| {
-        u.as_ref()
-            .map(|u| u.native_language().clone())
-            .unwrap_or(NativeLanguage::Russian)
+    let japanese_level = Memo::new(move |_| {
+        current_user.with(|u| {
+            u.as_ref()
+                .map(|u| *u.current_japanese_level())
+                .unwrap_or(JapaneseLevel::N5)
+        })
     });
-    let reminders_enabled =
-        current_user.with(|u| u.as_ref().map(|u| u.reminders_enabled()).unwrap_or(true));
-    let duolingo_token = current_user.with(|u| {
-        u.as_ref()
-            .map(|u| u.duolingo_jwt_token().map(|t| t.to_string()))
-            .unwrap_or(None)
+    let native_language = Memo::new(move |_| {
+        current_user.with(|u| {
+            u.as_ref()
+                .map(|u| u.native_language().clone())
+                .unwrap_or(NativeLanguage::Russian)
+        })
+    });
+    let reminders_enabled = Memo::new(move |_| {
+        current_user.with(|u| u.as_ref().map(|u| u.reminders_enabled()).unwrap_or(true))
+    });
+    let duolingo_token = Memo::new(move |_| {
+        current_user.with(|u| {
+            u.as_ref()
+                .map(|u| u.duolingo_jwt_token().map(|t| t.to_string()))
+                .unwrap_or(None)
+        })
     });
 
-    let selected_level = RwSignal::new(japanese_level);
-    let selected_language = RwSignal::new(native_language);
-    let reminders = RwSignal::new(reminders_enabled);
-    let duolingo_input = RwSignal::new(duolingo_token.unwrap_or_default());
+    let selected_level = RwSignal::new(japanese_level.get_untracked());
+    let selected_language = RwSignal::new(native_language.get_untracked());
+    let reminders = RwSignal::new(reminders_enabled.get_untracked());
+    let duolingo_input = RwSignal::new(duolingo_token.get_untracked().unwrap_or_default());
+
+    let _ = Memo::new(move |_| {
+        duolingo_input.set(duolingo_token.get().unwrap_or_default());
+    });
     let is_saving = RwSignal::new(false);
 
     let save_profile = Callback::new(move |_| {
@@ -94,134 +107,20 @@ pub fn ProfileContent() -> impl IntoView {
     });
 
     view! {
-        <Card>
-            <div class="space-y-6">
-                <Heading level={HeadingLevel::H2}>
-                    "Личные данные"
-                </Heading>
+        <PersonalDataCard
+            user_name={move || user_name.get()}
+            selected_level={selected_level}
+            selected_language={selected_language}
+        />
 
-                <div class="space-y-4">
-                    <div>
-                        <Text size={TextSize::Large}>
-                            "Имя пользователя"
-                        </Text>
-                        <Input
-                            value={user_name}
-                            disabled={true}
-                        />
-                    </div>
+        <IntegrationsCard duolingo_input={duolingo_input} />
 
-                    <div>
-                        <Text size={TextSize::Large}>
-                            "Целевой уровень JLPT"
-                        </Text>
-                        <div class="flex space-x-2 mt-2">
-                            {LEVELS.iter().map(|level| {
-                                let level_for_select = *level;
-                                let level_for_click = *level;
-                                let level_for_display = *level;
-                                let is_selected = move || selected_level.get() == level_for_select;
-                                view! {
-                                    <Button
-                                        variant={if is_selected() { ButtonVariant::Olive } else { ButtonVariant::Default }}
-                                        on_click={Callback::new(move |_| selected_level.set(level_for_click))}
-                                    >
-                                        {format!("{:?}", level_for_display)}
-                                    </Button>
-                                }
-                            }).collect::<Vec<_>>()}
-                        </div>
-                    </div>
+        <SettingsCard reminders={reminders} />
 
-                    <div>
-                        <Text size={TextSize::Large}>
-                            "Язык интерфейса"
-                        </Text>
-                        <div class="flex space-x-2 mt-2">
-                            {LANGUAGES.iter().map(|lang| {
-                                let lang_for_select = lang.clone();
-                                let lang_for_click = lang.clone();
-                                let lang_for_display = lang.clone();
-                                let is_selected = move || selected_language.get() == lang_for_select;
-                                view! {
-                                    <Button
-                                        variant={if is_selected() { ButtonVariant::Olive } else { ButtonVariant::Default }}
-                                        on_click={Callback::new(move |_| selected_language.set(lang_for_click.clone()))}
-                                    >
-                                        {format!("{:?}", lang_for_display)}
-                                    </Button>
-                                }
-                            }).collect::<Vec<_>>()}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </Card>
-
-        <Card>
-            <div class="space-y-4">
-                <Heading level={HeadingLevel::H2}>
-                    "Интеграции"
-                </Heading>
-
-                <div class="space-y-4">
-                    <div>
-                        <Text size={TextSize::Large}>
-                            "Duolingo JWT Token"
-                        </Text>
-                        <Input
-                            value={duolingo_input}
-                        />
-                    </div>
-                </div>
-            </div>
-        </Card>
-
-        <Card>
-            <div class="space-y-4">
-                <Heading level={HeadingLevel::H2}>
-                    "Настройки приложения"
-                </Heading>
-
-                <div class="flex items-center justify-between">
-                    <Text size={TextSize::Large}>
-                        "Напоминания"
-                    </Text>
-                    <Toggle
-                        checked={Signal::derive(move || reminders.get())}
-                        on_change={Callback::new(move |_| {
-                            reminders.update(|r| *r = !*r);
-                        })}
-                    />
-                </div>
-            </div>
-        </Card>
-
-        <div class="flex space-x-4">
-            <Button
-                variant={ButtonVariant::Filled}
-                on_click={save_profile}
-                disabled={false}
-            >
-                {move || if is_saving.get() { "Сохранение..." } else { "Сохранить изменения" }}
-            </Button>
-
-            <Button
-                variant={ButtonVariant::Ghost}
-                on_click={logout}
-            >
-                "Выйти из аккаунта"
-            </Button>
-        </div>
+        <ActionButtons
+            on_save={save_profile}
+            on_logout={logout}
+            is_saving={Signal::derive(move || is_saving.get())}
+        />
     }
 }
-
-const LEVELS: &[JapaneseLevel] = &[
-    JapaneseLevel::N5,
-    JapaneseLevel::N4,
-    JapaneseLevel::N3,
-    JapaneseLevel::N2,
-    JapaneseLevel::N1,
-];
-
-const LANGUAGES: &[NativeLanguage] = &[NativeLanguage::Russian, NativeLanguage::English];

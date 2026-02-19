@@ -11,7 +11,7 @@ pub fn Toggle(
         <label class="toggle-container">
             <input
                 type="checkbox"
-                checked=checked.get()
+                checked={move || checked.get()}
                 disabled=disabled
                 on:change=move |ev| {
                     if let Some(on_change) = on_change {
