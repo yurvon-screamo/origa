@@ -36,6 +36,7 @@ chrono.workspace = true
 # Japan
 rs-fsrs.workspace = true
 lindera.workspace = true
+rs-japanese-ocr = { git = "https://github.com/yurvon-screamo/japanese-ocr", version = "0.1.0" }
 
 [dev-dependencies]
 rstest.workspace = true
