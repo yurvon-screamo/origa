@@ -1,0 +1,1253 @@
+Ты — лучший в мире преподаватель японского языка для русскоязычных и англоязычных студентов (JLPT N5–N1). Ты объясняешь грамматику так понятно, что даже абсолютный новичок всё схватывает с первого раза. Твои объяснения всегда дружелюбные, живые, структурированные и максимально полезные.
+
+**Задача:**
+Тебе дан JSON. Для каждого объекта в поле `content` заполни `md_description` для **Russian** и **English**. НЕ ПРОПУСКАЙ ЭЛЕМЕНТЫ В МАССИВЕ.
+
+**Жёсткие требования:**
+
+> НИКОГДА НЕ ИСПОЛЬЗУЙ РОМАДЗИ, ИСПОЛЬЗУЙ ТОЛЬКО КАНДЗИ.
+
+1. Язык описания
+   - `"Russian"` → пиши ТОЛЬКО на естественном, живом русском языке.
+   - `"English"` → пиши ТОЛЬКО на естественном, живом английском языке (natural English, без machine-translation feel).
+
+2. Содержание (обязательно включи всё):
+   - Что это за граматическое правило, зачем оно нужно, когда и с кем используется (уровень вежливости, контекст).
+   - Полное правило образования.
+   - Таблица спряжения (при необходимости).
+   - 2–4 качественных примера в реальных предложениях + перевод на язык описания.
+   - Сравнение с неформальной (dictionary/plain) формой (при необходимости).
+   - Распространённые ошибки студентов + как их избежать (при необходимости).
+   - Полезные нюансы и лайфхаки (при необходимости).
+
+3. Markdown — используй на 100%:
+   - Заголовки ## и ###
+   - **жирный** и *курсив*
+   - `код` для японских форм (например `食べます`)
+   - Таблицы (обязательно для спряжения)
+   - Нумерованные и маркированные списки
+   - Блоки кода ``` для полных примеров предложений
+   - > Цитаты для важных замечаний и предупреждений
+   - --- горизонтальные разделители
+   - Эмодзи можно, но очень умеренно и только там, где они действительно помогают
+
+{
+    "grammar": [
+        {
+            "rule_id": "01J5N5MASU00000000000001",
+            "level": "N5",
+            "content": {
+                "Russian": {
+                    "title": "Форма ～ます",
+                    "short_description": "Вежливая форма настоящего времени",
+                    "md_description": "## Форма ～ます — Вежливое настоящее/будущее время\n\n### Что это и зачем нужно?\n\n`～ます` — **вежливая форма глагола** для настоящего и будущего времени. Используется с незнакомыми, коллегами, старшими — везде, где нужна вежливость.\n\n> ⚠️ В японском нет отдельного будущего времени — контекст определяет значение.\n\n---\n\n### Правило образования\n\n| Группа | Словарная форма | Форма ～ます |\n|--------|----------------|------------|\n| Группа 1 (う-глаголы) | 書く | `書きます` |\n| | 飲む | `飲みます` |\n| | 話す | `話します` |\n| | 買う | `買います` |\n| Группа 2 (る-глаголы) | 食べる | `食べます` |\n| | 見る | `見ます` |\n| Группа 3 (неправильные) | する | `します` |\n| | くる | `来ます` |\n\n**Правило группы 1:** замени последний звук ряда う на ряд い, добавь `ます`.\n**Правило группы 2:** убери る, добавь `ます`.\n\n---\n\n### Таблица форм (пример: 食べる)\n\n| Форма | Японский | Значение |\n|-------|----------|----------|\n| Наст./будущее (+) | `食べます` | ем / буду есть |\n| Отрицание | `食べません` | не ем |\n| Прошедшее (+) | `食べました` | ел |\n| Прошедшее (-) | `食べませんでした` | не ел |\n\n---\n\n### Примеры\n\n```\n毎朝コーヒーを飲みます。\nКаждое утро я пью кофе.\n```\n\n```\n明日東京へ行きます。\nЗавтра я еду в Токио.\n```\n\n```\n私は日本語を勉強します。\nЯ изучаю японский язык.\n```\n\n```\n彼女は音楽を聞きます。\nОна слушает музыку.\n```\n\n---\n\n### Сравнение с простой формой\n\n| Контекст | Вежливая | Простая |\n|----------|---------|---------|\n| На работе, с незнакомыми | `食べます` ✅ | `食べる` ❌ |\n| С друзьями | Оба варианта OK | `食べる` ✅ |\n\n---\n\n### Частые ошибки\n\n- ❌ `来ます` читать как `くます` — правильно `きます`\n- ❌ Путать группы глаголов (особенно글아글아 る-глаголы, похожие на группу 2)\n- ✅ `する → します` и `くる → 来ます` — выучи отдельно как исключения\n\n---\n\n### 💡 Лайфхак\n\nЕсли слышишь `～ます` в конце глагола — ты в вежливом разговоре. Это маркер «официального» японского."
+                },
+                "English": {
+                    "title": "Form ～ます",
+                    "short_description": "Polite present tense form",
+                    "md_description": "## Form ～ます — Polite Present/Future Tense\n\n### What is it?\n\n`～ます` is the **polite verb form** for present and future tense. It's the standard form for conversations with strangers, coworkers, teachers, or anyone you want to show respect to.\n\n> ⚠️ Japanese has no separate future tense — context tells you whether the action is happening now or later.\n\n---\n\n### Formation rules\n\n| Group | Dictionary Form | ～ます Form |\n|-------|----------------|-----------|\n| Group 1 (u-verbs) | 書く | `書きます` |\n| | 飲む | `飲みます` |\n| | 話す | `話します` |\n| | 買う | `買います` |\n| Group 2 (ru-verbs) | 食べる | `食べます` |\n| | 見る | `見ます` |\n| Group 3 (irregular) | する | `します` |\n| | くる | `来ます` |\n\n**Group 1:** shift the final u-row sound to i-row, add `ます`.\n**Group 2:** drop る, add `ます`.\n\n---\n\n### Conjugation table (食べる)\n\n| Form | Japanese | Meaning |\n|------|----------|---------|\n| Present/Future (+) | `食べます` | eat / will eat |\n| Negative | `食べません` | don't eat |\n| Past (+) | `食べました` | ate |\n| Past (-) | `食べませんでした` | didn't eat |\n\n---\n\n### Examples\n\n```\n毎朝コーヒーを飲みます。\nI drink coffee every morning.\n```\n\n```\n明日東京へ行きます。\nI'm going to Tokyo tomorrow.\n```\n\n```\n私は日本語を勉強します。\nI study Japanese.\n```\n\n```\n彼女は音楽を聞きます。\nShe listens to music.\n```\n\n---\n\n### Polite vs. plain form\n\n| Context | Polite | Plain |\n|---------|--------|-------|\n| Work, strangers | `食べます` ✅ | `食べる` ❌ |\n| Close friends | Both fine | `食べる` ✅ |\n\n---\n\n### Common mistakes\n\n- ❌ Reading `来ます` as `くます` — it's `きます`\n- ❌ Misidentifying verb groups (some る-ending verbs are Group 1!)\n- ✅ Memorize `する → します` and `くる → 来ます` as standalone exceptions\n\n---\n\n### 💡 Pro tip\n\nWhenever you hear `～ます` at the end of a verb, you're in polite territory. The more ます forms you use, the more formal and respectful your speech sounds."
+                }
+            },
+            "format_map": {
+                "Verb": [
+                    {
+                        "VerbToMasu": {}
+                    }
+                ]
+            }
+        },
+        {
+            "rule_id": "01J5N5MASEN0000000000002",
+            "level": "N5",
+            "content": {
+                "Russian": {
+                    "title": "Форма ～ません",
+                    "short_description": "Вежливое отрицание настоящего времени",
+                    "md_description": "## Форма ～ません — Вежливое отрицание (настоящее/будущее)\n\n### Что это?\n\n`～ません` — **вежливая отрицательная форма** глагола. Образуется напрямую из `～ます` простой заменой окончания.\n\n---\n\n### Правило образования\n\n```\n～ます → ～ません\n食べます → 食べません\n飲みます → 飲みません\n行きます → 行きません\nします → しません\n来ます → 来ません\n```\n\n---\n\n### Примеры\n\n```\nお酒を飲みません。\nЯ не пью алкоголь.\n```\n\n```\n明日は来ません。\nЗавтра я не приду.\n```\n\n```\n肉を食べません。菜食主義者です。\nЯ не ем мясо. Я вегетарианец.\n```\n\n```\nあまり日本語が話せません。\nЯ почти не говорю по-японски.\n```\n\n---\n\n### Полная таблица вежливых форм\n\n| | (+) | (-) |\n|-|-----|-----|\n| Настоящее | `食べます` | `食べません` |\n| Прошедшее | `食べました` | `食べませんでした` |\n\n---\n\n### Частые ошибки\n\n- ❌ Путать `～ません` (факт отрицания) с `～ないでください` (просьба не делать)\n- ✅ `～ません` — просто «не делаю», без дополнительных значений\n\n---\n\n### 💡 Нюанс\n\nВ разговоре с друзьями используй простую форму: `食べない` (не ем). `～ません` — для вежливых ситуаций."
+                },
+                "English": {
+                    "title": "Form ～ません",
+                    "short_description": "Polite present negative form",
+                    "md_description": "## Form ～ません — Polite Negative (Present/Future)\n\n### What is it?\n\n`～ません` is the **polite negative form** of verbs. It's formed directly from `～ます` by swapping the ending.\n\n---\n\n### Formation\n\n```\n～ます → ～ません\n食べます → 食べません (don't eat)\n飲みます → 飲みません (don't drink)\n行きます → 行きません (don't go)\nします → しません (don't do)\n来ます → 来ません (won't come)\n```\n\n---\n\n### Examples\n\n```\nお酒を飲みません。\nI don't drink alcohol.\n```\n\n```\n明日は来ません。\nI won't come tomorrow.\n```\n\n```\n肉を食べません。菜食主義者です。\nI don't eat meat. I'm a vegetarian.\n```\n\n```\nあまり日本語が話せません。\nI can't really speak Japanese.\n```\n\n---\n\n### Polite verb paradigm\n\n| | Affirmative | Negative |\n|-|------------|---------|\n| Present | `食べます` | `食べません` |\n| Past | `食べました` | `食べませんでした` |\n\n---\n\n### Common mistakes\n\n- ❌ Confusing `～ません` (factual negation) with `～ないでください` (please don't)\n- ✅ `～ません` simply states something doesn't happen\n\n---\n\n### 💡 Tip\n\nWith friends, swap `食べません` for `食べない`. Reserve `～ません` for any polite or formal setting."
+                }
+            },
+            "format_map": {
+                "Verb": [
+                    {
+                        "VerbToMasen": {}
+                    }
+                ]
+            }
+        },
+        {
+            "rule_id": "01J5N5MASHITA000000000003",
+            "level": "N5",
+            "content": {
+                "Russian": {
+                    "title": "Форма ～ました",
+                    "short_description": "Вежливая форма прошедшего времени",
+                    "md_description": "## Форма ～ました — Вежливое прошедшее время\n\n### Что это?\n\n`～ました` — **вежливое прошедшее время**. Используется для описания завершённых действий в любом вежливом контексте.\n\n---\n\n### Правило образования\n\n```\n～ます → ～ました\n食べます → 食べました (поел)\n行きます → 行きました (пошёл)\n飲みます → 飲みました (выпил)\nします → しました (сделал)\n来ます → 来ました (пришёл)\n```\n\n---\n\n### Примеры\n\n```\n昨日映画を見ました。\nВчера я посмотрел фильм.\n```\n\n```\n先週京都へ行きました。\nНа прошлой неделе я ездил в Киото.\n```\n\n```\n朝ご飯を食べました。\nЯ позавтракал.\n```\n\n```\n宿題をしました。\nЯ сделал домашнее задание.\n```\n\n---\n\n### Таблица времён\n\n| Время | (+) | (-) |\n|-------|-----|-----|\n| Настоящее | `食べます` | `食べません` |\n| Прошедшее | `食べました` | `食べませんでした` |\n\n---\n\n### 💡 Ключевой момент\n\nВ японском прошедшее время не изменяется по лицам: `食べました` = «я/ты/он/они ел(и)». Субъект понятен из контекста."
+                },
+                "English": {
+                    "title": "Form ～ました",
+                    "short_description": "Polite past tense form",
+                    "md_description": "## Form ～ました — Polite Past Tense\n\n### What is it?\n\n`～ました` is the **polite past tense form** — used to talk about completed actions in any formal or semi-formal situation.\n\n---\n\n### Formation\n\n```\n～ます → ～ました\n食べます → 食べました (ate)\n行きます → 行きました (went)\n飲みます → 飲みました (drank)\nします → しました (did)\n来ます → 来ました (came)\n```\n\n---\n\n### Examples\n\n```\n昨日映画を見ました。\nI watched a movie yesterday.\n```\n\n```\n先週京都へ行きました。\nI went to Kyoto last week.\n```\n\n```\n朝ご飯を食べました。\nI ate breakfast.\n```\n\n```\n宿題をしました。\nI did my homework.\n```\n\n---\n\n### Tense overview\n\n| Tense | Affirmative | Negative |\n|-------|------------|---------|\n| Present | `食べます` | `食べません` |\n| Past | `食べました` | `食べませんでした` |\n\n---\n\n### 💡 Key insight\n\nJapanese past tense doesn't change for person or number — `食べました` works for I, you, he, she, they. Context does the rest."
+                }
+            },
+            "format_map": {
+                "Verb": [
+                    {
+                        "VerbToMashita": {}
+                    }
+                ]
+            }
+        },
+        {
+            "rule_id": "01J5N5MASENDESHITA0000004",
+            "level": "N5",
+            "content": {
+                "Russian": {
+                    "title": "Форма ～ませんでした",
+                    "short_description": "Вежливое отрицание прошедшего времени",
+                    "md_description": "## Форма ～ませんでした — Вежливое отрицание прошедшего\n\n### Что это?\n\n`～ませんでした` — **вежливое прошедшее отрицание**: «не делал», «не ел», «не пришёл».\n\n---\n\n### Правило образования\n\n```\n～ません + でした → ～ませんでした\n食べません → 食べませんでした\n行きません → 行きませんでした\nしません → しませんでした\n来ません → 来ませんでした\n```\n\n---\n\n### Примеры\n\n```\n昨日学校へ行きませんでした。\nВчера я не ходил в школу.\n```\n\n```\n朝ご飯を食べませんでした。\nЯ не завтракал.\n```\n\n```\n宿題をしませんでした。\nЯ не сделал домашнее задание.\n```\n\n```\n先週彼女に会いませんでした。\nНа прошлой неделе я не виделся с ней.\n```\n\n---\n\n### Полная парадигма\n\n| | (+) | (-) |\n|-|-----|-----|\n| Настоящее | `食べます` | `食べません` |\n| Прошедшее | `食べました` | `食べませんでした` |\n\n---\n\n### 💡 В разговорной речи\n\n`食べませんでした` → `食べなかった` (с друзьями). `～ませんでした` — для вежливых ситуаций."
+                },
+                "English": {
+                    "title": "Form ～ませんでした",
+                    "short_description": "Polite past negative form",
+                    "md_description": "## Form ～ませんでした — Polite Past Negative\n\n### What is it?\n\n`～ませんでした` completes the four-way polite verb paradigm — it expresses \"didn't do\" in a polite register.\n\n---\n\n### Formation\n\n```\n～ません + でした → ～ませんでした\n食べません → 食べませんでした (didn't eat)\n行きません → 行きませんでした (didn't go)\nしません → しませんでした (didn't do)\n来ません → 来ませんでした (didn't come)\n```\n\n---\n\n### Examples\n\n```\n昨日学校へ行きませんでした。\nI didn't go to school yesterday.\n```\n\n```\n朝ご飯を食べませんでした。\nI didn't eat breakfast.\n```\n\n```\n宿題をしませんでした。\nI didn't do my homework.\n```\n\n```\n先週彼女に会いませんでした。\nI didn't see her last week.\n```\n\n---\n\n### Complete polite paradigm\n\n| | Affirmative | Negative |\n|-|------------|---------|\n| Present | `食べます` | `食べません` |\n| Past | `食べました` | `食べませんでした` |\n\n---\n\n### 💡 Casual equivalent\n\n`食べませんでした` → `食べなかった` with friends. Use `～ませんでした` in any polite situation."
+                }
+            },
+            "format_map": {
+                "Verb": [
+                    {
+                        "VerbToMasenDeshita": {}
+                    }
+                ]
+            }
+        },
+        {
+            "rule_id": "01J5N5MASENKA000000000005",
+            "level": "N5",
+            "content": {
+                "Russian": {
+                    "title": "Форма ～ませんか",
+                    "short_description": "Вежливое приглашение",
+                    "md_description": "## Форма ～ませんか — Вежливое приглашение\n\n### Что это?\n\n`～ませんか` — **вежливое приглашение или предложение**: «Не хотите ли...?» Мягче и вежливее, чем `～ましょう`.\n\n---\n\n### Правило образования\n\n```\n[основа ます\n] + ませんか\n食べます → 食べませんか\n行きます → 行きませんか\n飲みます → 飲みませんか\n```\n\n---\n\n### Примеры\n\n```\n一緒に昼ご飯を食べませんか。\nНе хотите ли пообедать вместе?\n```\n\n```\n映画を見に行きませんか。\nНе хотите ли сходить в кино?\n```\n\n```\nコーヒーでも飲みませんか。\nМожет, выпьем по чашке кофе?\n```\n\n```\n週末テニスをしませんか。\nМожет, поиграем в теннис в выходные?\n```\n\n---\n\n### Сравнение трёх форм предложения\n\n| Форма | Оттенок |\n|-------|---------|\n| `行きましょう` | «Пошли!» (энергично) |\n| `行きませんか` | «Не хотите ли?» (мягко, вежливо) |\n| `行きましょうか` | «Может, пойдём?» (деликатно) |\n\n---\n\n### 💡 Лайфхак\n\n`コーヒーでも飲みませんか` — `でも` добавляет непринуждённость: «или что-нибудь». Этот паттерн очень естественен по-японски."
+                },
+                "English": {
+                    "title": "Form ～ませんか",
+                    "short_description": "Polite invitation",
+                    "md_description": "## Form ～ませんか — Polite Invitation\n\n### What is it?\n\n`～ませんか` is a polite way to **invite or suggest** an activity — \"Would you like to...?\" It's softer than `～ましょう` and shows consideration for the other person.\n\n---\n\n### Formation\n\n```\n[ます-stem\n] + ませんか\n食べます → 食べませんか\n行きます → 行きませんか\n飲みます → 飲みませんか\n```\n\n---\n\n### Examples\n\n```\n一緒に昼ご飯を食べませんか。\nWould you like to have lunch together?\n```\n\n```\n映画を見に行きませんか。\nWould you like to go see a movie?\n```\n\n```\nコーヒーでも飲みませんか。\nHow about grabbing some coffee?\n```\n\n```\n週末テニスをしませんか。\nWould you like to play tennis this weekend?\n```\n\n---\n\n### Comparison of suggestion forms\n\n| Form | Nuance |\n|------|--------|\n| `行きましょう` | \"Let's go!\" (assertive) |\n| `行きませんか` | \"Would you like to go?\" (polite invite) |\n| `行きましょうか` | \"Shall we go?\" (soft, considerate) |\n\n---\n\n### 💡 Tip\n\nAdding `でも` after a noun (e.g., `コーヒーでも`) gives the invitation a casual, low-pressure feel — like \"some coffee or something.\" Very natural in Japanese."
+                }
+            },
+            "format_map": {
+                "Verb": [
+                    {
+                        "VerbToMasen": {}
+                    },
+                    {
+                        "AddPostfix": {
+                            "postfix": "か"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "rule_id": "01J5N5MASHOU000000000006",
+            "level": "N5",
+            "content": {
+                "Russian": {
+                    "title": "Форма ～ましょう",
+                    "short_description": "Давайте сделаем",
+                    "md_description": "## Форма ～ましょう — «Давайте!»\n\n### Что это?\n\n`～ましょう` — **волюнтивная вежливая форма**: активное и энергичное «Давайте сделаем!» Выражает совместное решение или предложение.\n\n---\n\n### Правило образования\n\n```\n[основа ます\n] + ましょう\n食べます → 食べましょう\n行きます → 行きましょう\n始めます → 始めましょう\n```\n\n---\n\n### Примеры\n\n```\nさあ、始めましょう！\nНу что, начнём!\n```\n\n```\n一緒に歩きましょう。\nПойдём пешком вместе.\n```\n\n```\nでは、食べましょう。\nНу что ж, давайте есть.\n```\n\n```\n早く寝ましょう。\nЛожимся-ка спать пораньше.\n```\n\n---\n\n### Когда использовать\n\n| Ситуация | Форма |\n|----------|-------|\n| Активное предложение | `行きましょう！` |\n| Вежливое приглашение | `行きませんか？` |\n| Мягкое «Может, пойдём?» | `行きましょうか？` |\n\n---\n\n### 💡 Нюанс\n\n`ましょう` может выражать и личное решение вслух: `よし、やりましょう！` — «Ладно, сделаю!». Это придаёт речи энергию и решительность."
+                },
+                "English": {
+                    "title": "Form ～ましょう",
+                    "short_description": "Let's do",
+                    "md_description": "## Form ～ましょう — \"Let's!\"\n\n### What is it?\n\n`～ましょう` is the **polite volitional form** — an enthusiastic \"Let's do this!\" It expresses a shared decision or energetic suggestion.\n\n---\n\n### Formation\n\n```\n[ます-stem\n] + ましょう\n食べます → 食べましょう (Let's eat!)\n行きます → 行きましょう (Let's go!)\n始めます → 始めましょう (Let's start!)\n```\n\n---\n\n### Examples\n\n```\nさあ、始めましょう！\nAlright, let's get started!\n```\n\n```\n一緒に歩きましょう。\nLet's walk together.\n```\n\n```\nでは、食べましょう。\nWell then, let's eat.\n```\n\n```\n早く寝ましょう。\nLet's go to bed early.\n```\n\n---\n\n### When to use which form\n\n| Situation | Form |\n|-----------|------|\n| Energetic joint suggestion | `行きましょう！` |\n| Polite invitation | `行きませんか？` |\n| Soft \"shall we?\" | `行きましょうか？` |\n\n---\n\n### 💡 Tip\n\n`ましょう` can also voice personal resolve aloud: `よし、やりましょう！` = \"Alright, I'll do it!\" It adds energy and decisiveness to your speech."
+                }
+            },
+            "format_map": {
+                "Verb": [
+                    {
+                        "VerbToMashou": {}
+                    }
+                ]
+            }
+        },
+        {
+            "rule_id": "01J5N5MASHOUKA000000000007",
+            "level": "N5",
+            "content": {
+                "Russian": {
+                    "title": "Форма ～ましょうか",
+                    "short_description": "Давайте сделаем?",
+                    "md_description": "## Форма ～ましょうか — Мягкое предложение / Предложение помощи\n\n### Что это?\n\n`～ましょうか` — мягкое «Может, сделаем?» или «Вам помочь?». Вопросительная частица `か` делает `ましょう` деликатнее.\n\n---\n\n### Правило образования\n\n```\n[основа ます\n] + ましょうか\n手伝います → 手伝いましょうか\n持ちます → 持ちましょうか\n```\n\n---\n\n### Два значения\n\n**1. Мягкое совместное предложение:**\n```\nそろそろ帰りましょうか。\nМожет, уже пойдём домой?\n```\n\n**2. Предложение помощи:**\n```\n荷物を持ちましょうか。\nДавайте я помогу с сумками?\n```\n\n```\nドアを開けましょうか。\nОткрыть вам дверь?\n```\n\n```\nタクシーを呼びましょうか。\nВызвать такси?\n```\n\n---\n\n### Три формы сравнения\n\n| Форма | Оттенок |\n|-------|---------|\n| `行きましょう` | Энергичное «Пошли!» |\n| `行きませんか` | «Не хотите ли?» |\n| `行きましょうか` | «Может, пойдём?» (мягко) |\n\n---\n\n### 💡 Культурный нюанс\n\nВ Японии предлагать помощь через `～ましょうか` — очень вежливо. Ты помогаешь, не навязываясь."
+                },
+                "English": {
+                    "title": "Form ～ましょうか",
+                    "short_description": "Shall we do?",
+                    "md_description": "## Form ～ましょうか — \"Shall We?\" / \"Shall I?\"\n\n### What is it?\n\n`～ましょうか` adds `か` to `ましょう`, creating a **gentle suggestion or offer of help**. It can mean \"Shall we...?\" (joint action) or \"Shall I help you...?\"\n\n---\n\n### Formation\n\n```\n[ます-stem\n] + ましょうか\n手伝います → 手伝いましょうか (Shall I help?)\n持ちます → 持ちましょうか (Shall I carry it?)\n```\n\n---\n\n### Two main uses\n\n**1. Gentle joint suggestion:**\n```\nそろそろ帰りましょうか。\nShall we start heading home?\n```\n\n**2. Offering help:**\n```\n荷物を持ちましょうか。\nShall I carry your bags?\n```\n\n```\nドアを開けましょうか。\nShall I open the door for you?\n```\n\n```\nタクシーを呼びましょうか。\nShall I call a taxi?\n```\n\n---\n\n### Three-way comparison\n\n| Form | Nuance |\n|------|--------|\n| `行きましょう` | \"Let's go!\" (assertive) |\n| `行きませんか` | \"Would you like to go?\" |\n| `行きましょうか` | \"Shall we go?\" (soft) |\n\n---\n\n### 💡 Cultural tip\n\nOffering help with `～ましょうか` is the quintessentially Japanese way to be helpful without being pushy — like holding the elevator door open."
+                }
+            },
+            "format_map": {
+                "Verb": [
+                    {
+                        "VerbToMashou": {}
+                    },
+                    {
+                        "AddPostfix": {
+                            "postfix": "か"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "rule_id": "01J5N5IDESU00000000000008",
+            "level": "N5",
+            "content": {
+                "Russian": {
+                    "title": "И-прилагательное + です",
+                    "short_description": "Вежливая форма и-прилагательного",
+                    "md_description": "## И-прилагательное + です\n\n### Что такое и-прилагательные?\n\n**И-прилагательные** заканчиваются на `い` в словарной форме: `高い`, `寒い`, `面白い`. Они изменяются сами, а `です` лишь добавляет вежливость.\n\n> ⚠️ `です` после и-прилагательного — не связка, а вежливый маркер. Не меняй `い` перед `です`!\n\n---\n\n### Правило\n\n```\n[и-прилагательное\n] + です\n高い → 高いです (дорого)\n寒い → 寒いです (холодно)\n面白い → 面白いです (интересно)\n```\n\n---\n\n### Полная таблица спряжения\n\n| Форма | Японский | Значение |\n|-------|----------|----------|\n| Наст. (+) | `高いです` | дорого |\n| Наст. (-) | `高くないです` | не дорого |\n| Прошед. (+) | `高かったです` | было дорого |\n| Прошед. (-) | `高くなかったです` | не было дорого |\n\n---\n\n### Примеры\n\n```\nこの映画は面白いです。\nЭтот фильм интересный.\n```\n\n```\n今日は寒いですね。\nСегодня холодно, правда?\n```\n\n```\nこのケーキはおいしいです！\nЭтот торт вкусный!\n```\n\n---\n\n### ⚠️ Исключение: `いい` → при спряжении становится `よい`\n\n| Форма | Правильно |\n|-------|-----------|\n| Настоящее | `いいです` |\n| Отрицание | `よくないです` ✅ (не `いくないです` ❌) |\n| Прошедшее | `よかったです` ✅ (не `いかったです` ❌) |\n\n---\n\n### 💡 Лайфхак\n\nИ-прилагательное несёт всё значение само по себе. `です` — просто «вежливое пальто»."
+                },
+                "English": {
+                    "title": "I-adjective + です",
+                    "short_description": "Polite i-adjective form",
+                    "md_description": "## I-adjective + です — Polite Form\n\n### What are i-adjectives?\n\n**I-adjectives** end in `い` in their dictionary form: `高い` (expensive), `寒い` (cold), `面白い` (interesting). They conjugate independently — `です` only adds politeness.\n\n> ⚠️ `です` after an i-adjective is just a politeness marker, not a copula. Never change the `い` before `です`.\n\n---\n\n### Formation\n\n```\n[i-adjective\n] + です\n高い → 高いです (it's expensive)\n寒い → 寒いです (it's cold)\n面白い → 面白いです (it's interesting)\n```\n\n---\n\n### Full conjugation table\n\n| Form | Japanese | Meaning |\n|------|----------|---------|\n| Present (+) | `高いです` | it's expensive |\n| Present (-) | `高くないです` | it's not expensive |\n| Past (+) | `高かったです` | it was expensive |\n| Past (-) | `高くなかったです` | it wasn't expensive |\n\n---\n\n### Examples\n\n```\nこの映画は面白いです。\nThis movie is interesting.\n```\n\n```\n今日は寒いですね。\nIt's cold today, isn't it?\n```\n\n```\nこのケーキはおいしいです！\nThis cake is delicious!\n```\n\n---\n\n### ⚠️ Exception: `いい` shifts to `よい` when conjugated\n\n| Form | Correct |\n|------|---------|\n| Present | `いいです` |\n| Negative | `よくないです` ✅ (NOT `いくないです` ❌) |\n| Past | `よかったです` ✅ (NOT `いかったです` ❌) |\n\n---\n\n### 💡 Key insight\n\nI-adjectives carry the full meaning on their own. `です` is just a polite \"coat\" draped over the adjective."
+                }
+            },
+            "format_map": {
+                "IAdjective": [
+                    {
+                        "AddPostfix": {
+                            "postfix": "です"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "rule_id": "01J5N5IKUNAIDESU0000000009",
+            "level": "N5",
+            "content": {
+                "Russian": {
+                    "title": "И-прилагательное: отрицание ～くないです",
+                    "short_description": "Отрицательная форма и-прилагательного",
+                    "md_description": "## И-прилагательное: отрицание ～くないです\n\n### Правило образования\n\n1. Убери `い`\n2. Добавь `くない` (+ `です` для вежливости)\n\n```\n高い → 高 + くないです → 高くないです\n寒い → 寒くないです\n面白い → 面白くないです\n```\n\n**Более формальный вариант:** `～くありません`\n`高くありません` = `高くないです` (чуть официальнее)\n\n---\n\n### Примеры\n\n```\nこのレストランは高くないです。\nЭтот ресторан не дорогой.\n```\n\n```\n今日は寒くないです。暖かいです。\nСегодня не холодно. Тепло.\n```\n\n```\nこの仕事は難しくないです。\nЭта работа не сложная.\n```\n\n```\n彼の話は面白くないです。\nЕго рассказ неинтересный.\n```\n\n---\n\n### Исключение: `いい → よくない`\n\n```\n✅ よくないです (плохо / нехорошо)\n❌ いくないです\n```\n\n---\n\n### Полная таблица\n\n| Время | (+) | (-) |\n|-------|-----|-----|\n| Настоящее | `高いです` | `高くないです` |\n| Прошедшее | `高かったです` | `高くなかったです` |\n\n---\n\n### ⚠️ Самая частая ошибка\n\n❌ `高いじゃないです` — это паттерн существительных и на-прилагательных!\n✅ Для и-прилагательных всегда `～くない`."
+                },
+                "English": {
+                    "title": "I-adjective negative: ～くないです",
+                    "short_description": "Negative i-adjective form",
+                    "md_description": "## I-adjective Negative: ～くないです\n\n### Formation\n\n1. Drop the final `い`\n2. Add `くない` (+ `です` for politeness)\n\n```\n高い → 高くないです (not expensive)\n寒い → 寒くないです (not cold)\n面白い → 面白くないです (not interesting)\n```\n\n**More formal:** `～くありません`\n`高くありません` = `高くないです` (slightly more formal)\n\n---\n\n### Examples\n\n```\nこのレストランは高くないです。\nThis restaurant isn't expensive.\n```\n\n```\n今日は寒くないです。暖かいです。\nIt's not cold today. It's warm.\n```\n\n```\nこの仕事は難しくないです。\nThis job isn't difficult.\n```\n\n```\n彼の話は面白くないです。\nHis story isn't interesting.\n```\n\n---\n\n### Exception: `いい → よくない`\n\n```\n✅ よくないです (not good)\n❌ いくないです\n```\n\n---\n\n### Full table\n\n| Tense | Affirmative | Negative |\n|-------|------------|---------|\n| Present | `高いです` | `高くないです` |\n| Past | `高かったです` | `高くなかったです` |\n\n---\n\n### ⚠️ Most common mistake\n\n❌ `高いじゃないです` — that's the noun/na-adjective pattern!\n✅ For i-adjectives, always use `～くない`."
+                }
+            },
+            "format_map": {
+                "IAdjective": [
+                    {
+                        "AdjectiveToKunai": {}
+                    },
+                    {
+                        "AddPostfix": {
+                            "postfix": "です"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "rule_id": "01J5N5NAJAARIMASEN000010",
+            "level": "N5",
+            "content": {
+                "Russian": {
+                    "title": "На-прилагательное: отрицание ～じゃありません",
+                    "short_description": "Отрицательная форма на-прилагательного",
+                    "md_description": "## На-прилагательное: отрицание ～じゃありません\n\n### Что такое на-прилагательные?\n\n**На-прилагательные** перед существительным принимают `な`: `静かな部屋`. Они спрягаются через `です`/`じゃ` — как существительные.\n\n---\n\n### Правило образования\n\n```\n[на-прилагательное\n] + じゃありません\n静か → 静かじゃありません (не тихо)\n有名 → 有名じゃありません (не знаменит)\n便利 → 便利じゃありません (неудобно)\n```\n\n**Более формально:** `ではありません`\n\n---\n\n### Примеры\n\n```\nこの部屋は静かじゃありません。\nЭта комната не тихая.\n```\n\n```\n彼は有名じゃありません。\nОн не знаменитый.\n```\n\n```\nこの場所は便利じゃありません。\nЭто место неудобное.\n```\n\n```\nあの映画は好きじゃありません。\nТот фильм мне не нравится.\n```\n\n---\n\n### Полная таблица спряжения\n\n| Форма | Японский |\n|-------|----------|\n| Наст. (+) | `静かです` |\n| Наст. (-) | `静かじゃありません` |\n| Прошед. (+) | `静かでした` |\n| Прошед. (-) | `静かじゃありませんでした` |\n\n---\n\n### 💡 Нюанс\n\n`じゃ` = разговорная форма `では`. В письменной речи используй `ではありません`."
+                },
+                "English": {
+                    "title": "Na-adjective negative: ～じゃありません",
+                    "short_description": "Negative na-adjective form",
+                    "md_description": "## Na-adjective Negative: ～じゃありません\n\n### What are na-adjectives?\n\n**Na-adjectives** take `な` before nouns: `静かな部屋`. They conjugate like nouns — using `です` and its variants.\n\n---\n\n### Formation\n\n```\n[na-adjective\n] + じゃありません\n静か → 静かじゃありません (not quiet)\n有名 → 有名じゃありません (not famous)\n便利 → 便利じゃありません (not convenient)\n```\n\n**More formal:** `ではありません`\n\n---\n\n### Examples\n\n```\nこの部屋は静かじゃありません。\nThis room isn't quiet.\n```\n\n```\n彼は有名じゃありません。\nHe's not famous.\n```\n\n```\nこの場所は便利じゃありません。\nThis place isn't convenient.\n```\n\n```\nあの映画は好きじゃありません。\nI don't like that movie.\n```\n\n---\n\n### Full conjugation table\n\n| Form | Japanese |\n|------|----------|\n| Present (+) | `静かです` |\n| Present (-) | `静かじゃありません` |\n| Past (+) | `静かでした` |\n| Past (-) | `静かじゃありませんでした` |\n\n---\n\n### 💡 Tip\n\n`じゃ` is a casual contraction of `では`. In formal writing, use `ではありません`."
+                }
+            },
+            "format_map": {
+                "NaAdjective": [
+                    {
+                        "AddPostfix": {
+                            "postfix": "じゃありません"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "rule_id": "01J5N5IKATTADESU0000000011",
+            "level": "N5",
+            "content": {
+                "Russian": {
+                    "title": "И-прилагательное: прошедшее ～かったです",
+                    "short_description": "Прошедшее время и-прилагательного",
+                    "md_description": "## И-прилагательное: прошедшее ～かったです\n\n### Правило образования\n\n1. Убери `い`\n2. Добавь `かったです`\n\n```\n高い → 高かったです (было дорого)\n寒い → 寒かったです (было холодно)\n面白い → 面白かったです (было интересно)\n楽しい → 楽しかったです (было весело)\n```\n\n---\n\n### Примеры\n\n```\n昨日は寒かったです。\nВчера было холодно.\n```\n\n```\nそのパーティーは楽しかったです。\nТа вечеринка была весёлой.\n```\n\n```\n試験は難しかったです。\nЭкзамен был сложным.\n```\n\n```\n子供の頃、この映画が怖かったです。\nВ детстве этот фильм казался мне страшным.\n```\n\n---\n\n### Исключение: `いい → よかった`\n\n```\n✅ よかったです！(Как хорошо! / Ура!)\n❌ いかったです\n```\n\n`よかった！` — одно из самых частых слов в японском, означает «Хорошо!», «Слава богу!»\n\n---\n\n### Полная таблица\n\n| Форма | (+) | (-) |\n|-------|-----|-----|\n| Настоящее | `高いです` | `高くないです` |\n| Прошедшее | `高かったです` | `高くなかったです` |\n\n---\n\n### 💡 Запомни\n\n`かった` — суффикс прошедшего. Приклеивается к корню (без `い`). Одна формула для всех и-прилагательных, кроме `いい`."
+                },
+                "English": {
+                    "title": "I-adjective past: ～かったです",
+                    "short_description": "Past tense i-adjective form",
+                    "md_description": "## I-adjective Past Tense: ～かったです\n\n### Formation\n\n1. Drop the `い`\n2. Add `かったです`\n\n```\n高い → 高かったです (was expensive)\n寒い → 寒かったです (was cold)\n面白い → 面白かったです (was interesting)\n楽しい → 楽しかったです (was fun)\n```\n\n---\n\n### Examples\n\n```\n昨日は寒かったです。\nIt was cold yesterday.\n```\n\n```\nそのパーティーは楽しかったです。\nThat party was a lot of fun.\n```\n\n```\n試験は難しかったです。\nThe exam was difficult.\n```\n\n```\n子供の頃、この映画が怖かったです。\nThis movie was scary when I was a kid.\n```\n\n---\n\n### Exception: `いい → よかった`\n\n```\n✅ よかったです！(That's great! / What a relief!)\n❌ いかったです\n```\n\n`よかった！` is one of the most frequently used expressions in Japanese — expressing relief, happiness, or satisfaction.\n\n---\n\n### Full table\n\n| Form | Affirmative | Negative |\n|------|------------|---------|\n| Present | `高いです` | `高くないです` |\n| Past | `高かったです` | `高くなかったです` |\n\n---\n\n### 💡 Memory trick\n\n`かった` is the past suffix — it attaches to the adjective stem (drop `い`). One formula works for all i-adjectives except `いい → よかった`."
+                }
+            },
+            "format_map": {
+                "IAdjective": [
+                    {
+                        "AdjectiveToKatta": {}
+                    },
+                    {
+                        "AddPostfix": {
+                            "postfix": "です"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "rule_id": "01J5N5NADESHITA00000000012",
+            "level": "N5",
+            "content": {
+                "Russian": {
+                    "title": "На-прилагательное: прошедшее ～でした",
+                    "short_description": "Прошедшее время на-прилагательного",
+                    "md_description": "## На-прилагательное: прошедшее ～でした\n\n### Правило образования\n\nКак и существительные, на-прилагательные используют `でした` для прошедшего:\n\n```\n[на-прилагательное\n] + でした\n静か → 静かでした (было тихо)\n有名 → 有名でした (был знаменит)\n便利 → 便利でした (было удобно)\n```\n\n---\n\n### Примеры\n\n```\nあの映画は素敵でした。\nТот фильм был замечательным.\n```\n\n```\n昨日の天気は最悪でした。\nВчерашняя погода была ужасной.\n```\n\n```\n子供の頃、彼女はとても元気でした。\nВ детстве она была очень энергичной.\n```\n\n```\nその場所は有名でしたが、今は誰も来ません。\nТо место было знаменитым, но теперь никто не приходит.\n```\n\n---\n\n### Отрицание в прошедшем\n\n```\n静かじゃありませんでした (не было тихо)\n```\n\n---\n\n### Полная таблица\n\n| Форма | Японский |\n|-------|----------|\n| Наст. (+) | `静かです` |\n| Наст. (-) | `静かじゃありません` |\n| Прошед. (+) | `静かでした` |\n| Прошед. (-) | `静かじゃありませんでした` |\n\n---\n\n### 💡 Сравнение с и-прилагательными\n\n| | И-прилагательное | На-прилагательное |\n|-|-----------------|-----------------|\n| Прошедшее (+) | `高かったです` | `静かでした` |\n| Прошедшее (-) | `高くなかったです` | `静かじゃありませんでした` |"
+                },
+                "English": {
+                    "title": "Na-adjective past: ～でした",
+                    "short_description": "Past tense na-adjective form",
+                    "md_description": "## Na-adjective Past Tense: ～でした\n\n### Formation\n\nNa-adjectives use `でした` in the past tense — exactly like nouns:\n\n```\n[na-adjective\n] + でした\n静か → 静かでした (was quiet)\n有名 → 有名でした (was famous)\n便利 → 便利でした (was convenient)\n```\n\n---\n\n### Examples\n\n```\nあの映画は素敵でした。\nThat movie was wonderful.\n```\n\n```\n昨日の天気は最悪でした。\nThe weather yesterday was terrible.\n```\n\n```\n子供の頃、彼女はとても元気でした。\nShe was very energetic when she was a child.\n```\n\n```\nその場所は有名でしたが、今は誰も来ません。\nThat place used to be famous, but no one comes anymore.\n```\n\n---\n\n### Past negative\n\n```\n静かじゃありませんでした (wasn't quiet)\n```\n\n---\n\n### Full conjugation table\n\n| Form | Japanese |\n|------|----------|\n| Present (+) | `静かです` |\n| Present (-) | `静かじゃありません` |\n| Past (+) | `静かでした` |\n| Past (-) | `静かじゃありませんでした` |\n\n---\n\n### 💡 Comparison with i-adjectives\n\n| | I-adjective | Na-adjective |\n|-|------------|-------------|\n| Past (+) | `高かったです` | `静かでした` |\n| Past (-) | `高くなかったです` | `静かじゃありませんでした` |"
+                }
+            },
+            "format_map": {
+                "NaAdjective": [
+                    {
+                        "AddPostfix": {
+                            "postfix": "でした"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "rule_id": "01J5N5TAIDESU0000000000013",
+            "level": "N5",
+            "content": {
+                "Russian": {
+                    "title": "Форма ～たいです",
+                    "short_description": "Хочу сделать",
+                    "md_description": "## Форма ～たいです — «Хочу сделать»\n\n### Что это?\n\n`～たいです` выражает **личное желание сделать что-то**. Присоединяется к основе ます-формы.\n\n> ⚠️ Используется только для желаний самого говорящего (я). Для третьих лиц используй `～たがっている`.\n\n---\n\n### Правило образования\n\n```\n[основа ます\n] + たいです\n食べます → 食べたいです (хочу поесть)\n行きます → 行きたいです (хочу пойти)\n見ます → 見たいです (хочу посмотреть)\n```\n\n---\n\n### Примеры\n\n```\n寿司を食べたいです。\nХочу поесть суши.\n```\n\n```\n日本へ行きたいです。\nХочу поехать в Японию.\n```\n\n```\n新しいパソコンを買いたいです。\nХочу купить новый компьютер.\n```\n\n```\n早く家に帰りたいです。\nХочу поскорее вернуться домой.\n```\n\n---\n\n### Спряжение ～たい (ведёт себя как い-прилагательное!)\n\n| Форма | Японский |\n|-------|----------|\n| Настоящее (+) | `食べたいです` |\n| Настоящее (-) | `食べたくないです` |\n| Прошедшее (+) | `食べたかったです` |\n| Прошедшее (-) | `食べたくなかったです` |\n\n---\n\n### Желание о предмете: `欲しいです`\n\nДля предметов (существительных) используй `欲しい`, а не `たい`:\n```\n✅ 新しい車が欲しいです。 (Хочу новую машину.)\n❌ 新しい車を買いたいです。 → Это тоже OK (но другое значение: «хочу купить»)\n```\n\n---\n\n### ⚠️ Частица после объекта: が или を?\n\nС `～たい` объект чаще маркируется **が**, но **を** тоже допустимо:\n```\n寿司が食べたい。(более естественно)\n寿司を食べたい。(тоже правильно)\n```\n\n---\n\n### 💡 Для третьих лиц\n\n```\n彼は日本へ行きたがっています。(правильно для «он хочет»)\n```\n`～たがっている` = очевидно хочет (по внешним признакам)."
+                },
+                "English": {
+                    "title": "Form ～たいです",
+                    "short_description": "Want to do",
+                    "md_description": "## Form ～たいです — \"Want to do\"\n\n### What is it?\n\n`～たいです` expresses **personal desire to do something**. It attaches to the ます-stem of a verb.\n\n> ⚠️ Only use this for your own desires. For third-person wants, use `～たがっている`.\n\n---\n\n### Formation\n\n```\n[ます-stem\n] + たいです\n食べます → 食べたいです (want to eat)\n行きます → 行きたいです (want to go)\n見ます → 見たいです (want to see)\n```\n\n---\n\n### Examples\n\n```\n寿司を食べたいです。\nI want to eat sushi.\n```\n\n```\n日本へ行きたいです。\nI want to go to Japan.\n```\n\n```\n新しいパソコンを買いたいです。\nI want to buy a new computer.\n```\n\n```\n早く家に帰りたいです。\nI want to go home soon.\n```\n\n---\n\n### Conjugation (～たい behaves like an i-adjective!)\n\n| Form | Japanese |\n|------|----------|\n| Present (+) | `食べたいです` |\n| Present (-) | `食べたくないです` |\n| Past (+) | `食べたかったです` |\n| Past (-) | `食べたくなかったです` |\n\n---\n\n### Object particle: が or を?\n\nWith `～たい`, the object can take either **が** or **を**:\n```\n寿司が食べたい。(more natural/emphatic)\n寿司を食べたい。(also correct)\n```\n\n---\n\n### For third-person desires\n\n```\n彼は日本へ行きたがっています。\nHe seems to want to go to Japan. (based on what you observe)\n```\n\n`～たがっている` expresses visible desire in others."
+                }
+            },
+            "format_map": {
+                "Verb": [
+                    {
+                        "VerbToTai": {}
+                    },
+                    {
+                        "AddPostfix": {
+                            "postfix": "です"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "rule_id": "01J5N5TEKUDASAI00000000014",
+            "level": "N5",
+            "content": {
+                "Russian": {
+                    "title": "Форма ～てください",
+                    "short_description": "Пожалуйста, сделайте",
+                    "md_description": "## Форма ～てください — «Пожалуйста, сделайте»\n\n### Что это?\n\n`～てください` — **вежливая просьба или инструкция**. Используется повсеместно: в классе, на работе, в магазине. Звучит вежливо, но не слишком мягко — это прямая просьба.\n\n---\n\n### Правило образования\n\nНужна て-форма глагола + `ください`.\n\n| Глагол | て-форма | ～てください |\n|--------|---------|------------|\n| 食べる | 食べて | `食べてください` |\n| 書く | 書いて | `書いてください` |\n| 話す | 話して | `話してください` |\n| 来る | 来て | `来てください` |\n| する | して | `してください` |\n| 飲む | 飲んで | `飲んでください` |\n\n---\n\n### Краткое руководство по て-форме группы 1\n\n| Окончание | Изменение |\n|-----------|-----------|\n| く | いて (書く → 書いて) |\n| ぐ | いで (泳ぐ → 泳いで) |\n| す | して (話す → 話して) |\n| つ、る、う | って (待つ → 待って) |\n| む、ぬ、ぶ | んで (飲む → 飲んで) |\n\n---\n\n### Примеры\n\n```\nここに名前を書いてください。\nПожалуйста, напишите ваше имя здесь.\n```\n\n```\n静かにしてください。\nПожалуйста, тишина.\n```\n\n```\nもう一度言ってください。\nПожалуйста, повторите ещё раз.\n```\n\n```\nこの薬を飲んでください。\nПожалуйста, примите это лекарство.\n```\n\n---\n\n### Степени вежливости просьб\n\n| Уровень вежливости | Форма |\n|-------------------|-------|\n| Нейтральный | `～てください` |\n| Более вежливый | `～ていただけますか` |\n| Очень вежливый | `～ていただけませんか` |\n| Грубый (приказ) | `～て` (голая て-форма) |\n\n---\n\n### 💡 Лайфхак\n\nВ разговоре с друзьями голая て-форма (`食べて！`) — нормальная просьба. `ください` делает её вежливой."
+                },
+                "English": {
+                    "title": "Form ～てください",
+                    "short_description": "Please do",
+                    "md_description": "## Form ～てください — \"Please do\"\n\n### What is it?\n\n`～てください` is a **polite request or instruction** — the go-to form for asking someone to do something politely. It's direct but respectful.\n\n---\n\n### Formation\n\nYou need the て-form of the verb + `ください`.\n\n| Verb | て-form | ～てください |\n|------|---------|-----------|\n| 食べる | 食べて | `食べてください` |\n| 書く | 書いて | `書いてください` |\n| 話す | 話して | `話してください` |\n| 来る | 来て | `来てください` |\n| する | して | `してください` |\n| 飲む | 飲んで | `飲んでください` |\n\n---\n\n### て-form rules for Group 1 verbs\n\n| Ending | Change |\n|--------|--------|\n| く | いて (書く → 書いて) |\n| ぐ | いで (泳ぐ → 泳いで) |\n| す | して (話す → 話して) |\n| つ、る、う | って (待つ → 待って) |\n| む、ぬ、ぶ | んで (飲む → 飲んで) |\n\n---\n\n### Examples\n\n```\nここに名前を書いてください。\nPlease write your name here.\n```\n\n```\n静かにしてください。\nPlease be quiet.\n```\n\n```\nもう一度言ってください。\nPlease say that again.\n```\n\n```\nこの薬を飲んでください。\nPlease take this medicine.\n```\n\n---\n\n### Politeness scale for requests\n\n| Level | Form |\n|-------|------|\n| Neutral polite | `～てください` |\n| More polite | `～ていただけますか` |\n| Very polite | `～ていただけませんか` |\n| Casual (friends) | `～て` (bare て-form) |\n\n---\n\n### 💡 Tip\n\nAmong friends, the bare て-form (`食べて！`) is a perfectly normal request. `ください` elevates it to polite territory."
+                }
+            },
+            "format_map": {
+                "Verb": [
+                    {
+                        "VerbToTeForm": {}
+                    },
+                    {
+                        "AddPostfix": {
+                            "postfix": "ください"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "rule_id": "01J5N5TEIMASU0000000000015",
+            "level": "N5",
+            "content": {
+                "Russian": {
+                    "title": "Форма ～ています",
+                    "short_description": "Делаю сейчас / Сделано",
+                    "md_description": "## Форма ～ています — Длящееся действие / Состояние\n\n### Что это?\n\n`～ています` — одна из самых важных и универсальных форм японского. Имеет **два главных значения**:\n\n1. **Действие в процессе** (сейчас делаю)\n2. **Результирующее состояние** (результат завершённого действия)\n\n---\n\n### Правило образования\n\n```\n[て-форма глагола\n] + います\n食べる → 食べています (ем / сейчас ем)\n飲む → 飲んでいます (пью / сейчас пью)\n結婚する → 結婚しています (женат/замужем)\n```\n\n---\n\n### Значение 1: Действие в процессе (для активных глаголов)\n\n```\n今、ご飯を食べています。\nСейчас я ем.\n```\n\n```\n彼は電話で話しています。\nОн сейчас разговаривает по телефону.\n```\n\n```\n雨が降っています。\nИдёт дождь.\n```\n\n---\n\n### Значение 2: Состояние (для стативных глаголов)\n\nДля глаголов, выражающих **изменение состояния** (`結婚する`, `知る`, `死ぬ`), `～ている` указывает на **результирующее состояние**:\n\n```\n結婚しています。\nЯ женат / замужем. (= состояние после свадьбы)\n```\n\n```\n彼のことを知っています。\nЯ знаю его. (= знание как состояние)\n```\n\n```\nその犬は死んでいます。\nТа собака мертва. (= состояние смерти)\n```\n\n---\n\n### Значение 3: Повторяющиеся действия / Профессия\n\n```\n私は東京に住んでいます。\nЯ живу в Токио.\n```\n\n```\n彼女は病院で働いています。\nОна работает в больнице.\n```\n\n---\n\n### ⚠️ Частая ошибка\n\n```\n❌ 私は結婚しました。(я женился — только описание события)\n✅ 私は結婚しています。(я женат — текущее состояние)\n```\n\n---\n\n### 💡 Разговорное сокращение\n\n`～ています` → `～てる` в разговоре:\n```\n食べています → 食べてる\n```"
+                },
+                "English": {
+                    "title": "Form ～ています",
+                    "short_description": "Doing now / Have done",
+                    "md_description": "## Form ～ています — Progressive / Resultant State\n\n### What is it?\n\n`～ています` is one of the most important forms in Japanese. It has **two main meanings**:\n\n1. **Ongoing action** (something is happening right now)\n2. **Resultant state** (the lasting result of a completed action)\n\n---\n\n### Formation\n\n```\n[て-form\n] + います\n食べる → 食べています (am eating)\n飲む → 飲んでいます (am drinking)\n結婚する → 結婚しています (am married)\n```\n\n---\n\n### Meaning 1: Ongoing action (active verbs)\n\n```\n今、ご飯を食べています。\nI'm eating right now.\n```\n\n```\n彼は電話で話しています。\nHe's talking on the phone.\n```\n\n```\n雨が降っています。\nIt's raining.\n```\n\n---\n\n### Meaning 2: Resultant state (change-of-state verbs)\n\nFor verbs that describe **a change of state** (`結婚する`, `知る`, `死ぬ`), `～ている` describes the **state that resulted**:\n\n```\n結婚しています。\nI am married. (= the state resulting from getting married)\n```\n\n```\n彼のことを知っています。\nI know him. (= knowledge as a state)\n```\n\n```\nその犬は死んでいます。\nThat dog is dead. (= the state of death)\n```\n\n---\n\n### Meaning 3: Habitual actions / occupation\n\n```\n私は東京に住んでいます。\nI live in Tokyo.\n```\n\n```\n彼女は病院で働いています。\nShe works at a hospital.\n```\n\n---\n\n### ⚠️ Common mistake\n\n```\n❌ 私は結婚しました。(describes the wedding event)\n✅ 私は結婚しています。(describes current marital status)\n```\n\n---\n\n### 💡 Casual shortening\n\n`～ています` → `～てる` in casual speech:\n```\n食べています → 食べてる\n```"
+                }
+            },
+            "format_map": {
+                "Verb": [
+                    {
+                        "VerbToTeForm": {}
+                    },
+                    {
+                        "AddPostfix": {
+                            "postfix": "います"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "rule_id": "01J5N5TEIRU000000000000016",
+            "level": "N5",
+            "content": {
+                "Russian": {
+                    "title": "Форма ～ている",
+                    "short_description": "Делаю / Сделано (нейтральная)",
+                    "md_description": "## Форма ～ている — Нейтральная форма\n\n### Что это?\n\n`～ている` — **нейтральная (простая) форма** конструкции `～ています`. Используется в неформальном общении: с друзьями, семьёй, в дневнике.\n\n---\n\n### Правило образования\n\n```\n[て-форма\n] + いる\n食べる → 食べている\n飲む → 飲んでいる\n住む → 住んでいる\n```\n\n---\n\n### Примеры\n\n```\n今、何してる？\nЧто ты сейчас делаешь?\n```\n\n```\n彼女は音楽を聞いている。\nОна слушает музыку.\n```\n\n```\n私は大阪に住んでいる。\nЯ живу в Осаке.\n```\n\n```\n彼はもう寝ている。\nОн уже спит.\n```\n\n---\n\n### Сравнение вежливой и нейтральной форм\n\n| Контекст | Вежливая | Нейтральная |\n|----------|---------|------------|\n| С начальником | `食べています` ✅ | `食べている` ❌ |\n| С другом | Оба варианта OK | `食べている` ✅ |\n\n---\n\n### Разговорное сокращение\n\n`～ている` → `～てる`:\n```\n食べている → 食べてる\n住んでいる → 住んでる\n```\n\n---\n\n### 💡 Нюанс\n\nВ письменном японском (эссе, литература) используй `～ている` без вежливого `います`. В разговоре часто сокращают до `～てる`."
+                },
+                "English": {
+                    "title": "Form ～ている",
+                    "short_description": "Doing / Have done (neutral)",
+                    "md_description": "## Form ～ている — Plain/Neutral Form\n\n### What is it?\n\n`～ている` is the **plain (informal) form** of `～ています`. Use it with friends, family, or in writing — anywhere a casual register is appropriate.\n\n---\n\n### Formation\n\n```\n[て-form\n] + いる\n食べる → 食べている (eating / in a state of having eaten)\n飲む → 飲んでいる (drinking)\n住む → 住んでいる (living somewhere)\n```\n\n---\n\n### Examples\n\n```\n今、何してる？\nWhat are you doing right now?\n```\n\n```\n彼女は音楽を聞いている。\nShe's listening to music.\n```\n\n```\n私は大阪に住んでいる。\nI live in Osaka.\n```\n\n```\n彼はもう寝ている。\nHe's already asleep.\n```\n\n---\n\n### Polite vs. plain comparison\n\n| Context | Polite | Plain |\n|---------|--------|-------|\n| Boss/strangers | `食べています` ✅ | `食べている` ❌ |\n| Friends | Both fine | `食べている` ✅ |\n\n---\n\n### Casual contraction\n\n`～ている` → `～てる` in real conversation:\n```\n食べている → 食べてる\n住んでいる → 住んでる\n```\n\n---\n\n### 💡 Tip\n\nIn formal writing (essays, literature), use `～ている` without the polite `います`. In speech, contracting to `～てる` is extremely common and natural."
+                }
+            },
+            "format_map": {
+                "Verb": [
+                    {
+                        "VerbToTeForm": {}
+                    },
+                    {
+                        "AddPostfix": {
+                            "postfix": "いる"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "rule_id": "01J5N5IKUTE00000000000017",
+            "level": "N5",
+            "content": {
+                "Russian": {
+                    "title": "И-прилагательное: соединительная ～くて",
+                    "short_description": "Соединительная форма и-прилагательного",
+                    "md_description": "## И-прилагательное: соединительная форма ～くて\n\n### Что это?\n\n`～くて` — **соединительная (て) форма и-прилагательного**. Используется для:\n1. Перечисления нескольких прилагательных\n2. Выражения причины (потому что)\n\n---\n\n### Правило образования\n\n```\n[и-прилагательное\n] → убрать い + くて\n高い → 高くて\n面白い → 面白くて\nおいしい → おいしくて\n```\n\n---\n\n### Использование 1: Перечисление\n\n```\nこの料理はおいしくて、安いです。\nЭто блюдо вкусное и дешёвое.\n```\n\n```\n彼女は優しくて、頭がいいです。\nОна добрая и умная.\n```\n\n---\n\n### Использование 2: Причина\n\n```\n頭が痛くて、学校を休みました。\nУ меня болела голова, поэтому я пропустил школу.\n```\n\n```\n忙しくて、電話できませんでした。\nБыл занят и не мог позвонить.\n```\n\n---\n\n### Исключение: `いい → よくて`\n\n```\n✅ この映画はよくて、もう一度見たいです。\n❌ いくて\n```\n\n---\n\n### Сравнение て-форм прилагательных\n\n| Тип | Словарная форма | て-форма |\n|-----|----------------|---------|\n| И-прилагательное | 高い | `高くて` |\n| На-прилагательное | 静か | `静かで` |\n\n---\n\n### 💡 Нюанс\n\nПорядок прилагательных через `くて` не выражает временну́ю последовательность — это просто перечисление или причина."
+                },
+                "English": {
+                    "title": "I-adjective te-form: ～くて",
+                    "short_description": "Te-form of i-adjective",
+                    "md_description": "## I-adjective Te-form: ～くて\n\n### What is it?\n\n`～くて` is the **te-form of i-adjectives**, used to:\n1. List multiple adjectives\n2. Express a reason or cause\n\n---\n\n### Formation\n\n```\n[i-adjective\n] → drop い + くて\n高い → 高くて\n面白い → 面白くて\nおいしい → おいしくて\n```\n\n---\n\n### Use 1: Listing adjectives\n\n```\nこの料理はおいしくて、安いです。\nThis dish is delicious and cheap.\n```\n\n```\n彼女は優しくて、頭がいいです。\nShe's kind and smart.\n```\n\n---\n\n### Use 2: Expressing reason\n\n```\n頭が痛くて、学校を休みました。\nI had a headache, so I missed school.\n```\n\n```\n忙しくて、電話できませんでした。\nI was busy and couldn't call.\n```\n\n---\n\n### Exception: `いい → よくて`\n\n```\n✅ この映画はよくて、もう一度見たいです。\n❌ いくて\n```\n\n---\n\n### Te-form comparison\n\n| Type | Dictionary form | Te-form |\n|------|----------------|---------|\n| I-adjective | 高い | `高くて` |\n| Na-adjective | 静か | `静かで` |\n\n---\n\n### 💡 Key point\n\nWhen listing adjectives with `くて`, the order doesn't imply temporal sequence — it's just enumeration or causal connection."
+                }
+            },
+            "format_map": {
+                "IAdjective": [
+                    {
+                        "AdjectiveToKute": {}
+                    }
+                ]
+            }
+        },
+        {
+            "rule_id": "01J5N5NADE0000000000000018",
+            "level": "N5",
+            "content": {
+                "Russian": {
+                    "title": "На-прилагательное: соединительная ～で",
+                    "short_description": "Соединительная форма на-прилагательного",
+                    "md_description": "## На-прилагательное: соединительная форма ～で\n\n### Что это?\n\n`～で` — **те-форма на-прилагательного**. Используется для перечисления качеств или выражения причины. Образована так же, как `です` → `で`.\n\n---\n\n### Правило образования\n\n```\n[на-прилагательное\n] + で\n静か → 静かで\n有名 → 有名で\n便利 → 便利で\n```\n\n---\n\n### Использование 1: Перечисление\n\n```\n彼女は親切で、真面目です。\nОна добросердечная и серьёзная.\n```\n\n```\nこの街は静かで、きれいです。\nЭтот город тихий и красивый.\n```\n\n---\n\n### Использование 2: Причина\n\n```\n病気で、学校を休みました。\nЯ был болен, поэтому пропустил школу.\n```\n\n```\nこの店は有名で、いつも混んでいます。\nЭтот магазин знаменит, поэтому всегда переполнен.\n```\n\n---\n\n### Сравнение те-форм прилагательных\n\n| Тип | Словарная форма | て-форма |\n|-----|----------------|---------|\n| И-прилагательное | 高い | `高くて` |\n| На-прилагательное | 静か | `静かで` |\n\n---\n\n### ⚠️ Не путай с частицей で\n\n`で` как те-форма `な` прилагательного ≠ частица で (место/средство).\nКонтекст всегда уточняет значение.\n\n---\n\n### 💡 Лайфхак\n\n`静かで` и `静かな` — разные функции одного слова:\n- `静かな部屋` (модификатор существительного)\n- `部屋は静かで、快適です` (соединительная форма в предложении)"
+                },
+                "English": {
+                    "title": "Na-adjective te-form: ～で",
+                    "short_description": "Te-form of na-adjective",
+                    "md_description": "## Na-adjective Te-form: ～で\n\n### What is it?\n\n`～で` is the **te-form of na-adjectives** — used to list qualities or express a cause/reason. It's derived the same way as `です` → `で`.\n\n---\n\n### Formation\n\n```\n[na-adjective\n] + で\n静か → 静かで\n有名 → 有名で\n便利 → 便利で\n```\n\n---\n\n### Use 1: Listing qualities\n\n```\n彼女は親切で、真面目です。\nShe's kind and hardworking.\n```\n\n```\nこの街は静かで、きれいです。\nThis city is quiet and beautiful.\n```\n\n---\n\n### Use 2: Expressing reason\n\n```\n病気で、学校を休みました。\nI was sick, so I missed school.\n```\n\n```\nこの店は有名で、いつも混んでいます。\nThis shop is famous, so it's always crowded.\n```\n\n---\n\n### Te-form comparison\n\n| Type | Dictionary form | Te-form |\n|------|----------------|---------|\n| I-adjective | 高い | `高くて` |\n| Na-adjective | 静か | `静かで` |\n\n---\n\n### ⚠️ Don't confuse with particle で\n\n`で` as te-form of na-adjective ≠ particle で (location/means). Context always clarifies.\n\n---\n\n### 💡 Tip\n\n`静かで` and `静かな` are two functions of the same word:\n- `静かな部屋` (noun modifier)\n- `部屋は静かで、快適です` (te-form linking clauses)"
+                }
+            },
+            "format_map": {
+                "NaAdjective": [
+                    {
+                        "AdjectiveToDe": {}
+                    }
+                ]
+            }
+        },
+        {
+            "rule_id": "01J5N5NAIDEKUDASAI0000000019",
+            "level": "N5",
+            "content": {
+                "Russian": {
+                    "title": "Форма ～ないでください",
+                    "short_description": "Пожалуйста, не делайте",
+                    "md_description": "## Форма ～ないでください — «Пожалуйста, не делайте»\n\n### Что это?\n\n`～ないでください` — **вежливая просьба воздержаться от действия**. Используется на табличках, в инструкциях, в вежливом разговоре.\n\n---\n\n### Правило образования\n\n```\n[словарная форма\n] → отрицательная форма (ない) + でください\n食べる → 食べない → 食べないでください\n撮る → 撮らない → 撮らないでください\n入る → 入らない → 入らないでください\n```\n\n**Для группы 1:** у → わ/か/さ/た/な/ま/ら + ない\n**Для группы 2:** убрать る + ない\n**Для группы 3:** しない / 来ない\n\n---\n\n### Примеры\n\n```\nここで写真を撮らないでください。\nПожалуйста, не фотографируйте здесь.\n```\n\n```\n廊下を走らないでください。\nПожалуйста, не бегайте по коридору.\n```\n\n```\nタバコを吸わないでください。\nПожалуйста, не курите.\n```\n\n```\n遅刻しないでください。\nПожалуйста, не опаздывайте.\n```\n\n---\n\n### Степени вежливости запретов\n\n| Уровень | Форма | Контекст |\n|---------|-------|---------|\n| Очень вежливо | `～ないようにしてください` | Официальный |\n| Вежливо | `～ないでください` | Стандарт |\n| Нейтрально | `～ないで` (с другом) | Разговор |\n| Запрет (жёстко) | `～てはいけません` | Правила |\n\n---\n\n### 💡 Лайфхак\n\nТаблички в Японии часто используют `～ないでください` или `～禁止`. Умея читать эту форму, ты всегда поймёшь, что запрещено."
+                },
+                "English": {
+                    "title": "Form ～ないでください",
+                    "short_description": "Please don't do",
+                    "md_description": "## Form ～ないでください — \"Please don't\"\n\n### What is it?\n\n`～ないでください` is a **polite negative request** — asking someone to refrain from doing something. You'll see it on signs, in instructions, and hear it in polite conversation.\n\n---\n\n### Formation\n\n```\n[dictionary form\n] → negative (ない) + でください\n食べる → 食べない → 食べないでください (please don't eat)\n撮る → 撮らない → 撮らないでください (please don't take photos)\n入る → 入らない → 入らないでください (please don't enter)\n```\n\n---\n\n### Examples\n\n```\nここで写真を撮らないでください。\nPlease don't take photos here.\n```\n\n```\n廊下を走らないでください。\nPlease don't run in the hallway.\n```\n\n```\nタバコを吸わないでください。\nPlease don't smoke.\n```\n\n```\n遅刻しないでください。\nPlease don't be late.\n```\n\n---\n\n### Politeness scale for prohibitions\n\n| Level | Form | Context |\n|-------|------|---------|\n| Very polite | `～ないようにしてください` | Official notices |\n| Polite | `～ないでください` | Standard |\n| Casual | `～ないで` | With friends |\n| Hard prohibition | `～てはいけません` | Rules/regulations |\n\n---\n\n### 💡 Tip\n\nJapanese signs and public notices use `～ないでください` constantly. Recognizing this form means you'll always know what's off-limits."
+                }
+            },
+            "format_map": {
+                "Verb": [
+                    {
+                        "VerbToNai": {}
+                    },
+                    {
+                        "AddPostfix": {
+                            "postfix": "でください"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "rule_id": "01J5N5NAKEREBANARIMASEN20",
+            "level": "N5",
+            "content": {
+                "Russian": {
+                    "title": "Форма ～なければなりません",
+                    "short_description": "Нужно сделать / Должен",
+                    "md_description": "## Форма ～なければなりません — «Должен / Обязан»\n\n### Что это?\n\n`～なければなりません` выражает **обязанность или необходимость**: «должен», «обязан», «нужно». Это вежливая форма для любого контекста.\n\n---\n\n### Правило образования\n\n```\n[словарная форма\n] → отрицательная форма без い + ければなりません\n食べる → 食べなければなりません\n行く → 行かなければなりません\nする → しなければなりません\n来る → 来なければなりません\n```\n\nФормально: `Vない形` → убери `い` → добавь `ければなりません`\n\n---\n\n### Примеры\n\n```\n薬を飲まなければなりません。\nМне нужно принять лекарство.\n```\n\n```\n明日早く起きなければなりません。\nЗавтра мне нужно встать рано.\n```\n\n```\n宿題を出さなければなりません。\nНужно сдать домашнее задание.\n```\n\n```\n毎日練習しなければなりません。\nНужно практиковаться каждый день.\n```\n\n---\n\n### Разговорные сокращения\n\n```\n～なければなりません\n→ ～なければいけません (чуть мягче)\n→ ～なきゃいけない (разговорное)\n→ ～なきゃ (очень разговорное)\n```\n\n```\n行かなきゃ！(Надо идти!)\n```\n\n---\n\n### Сравнение с ～なくてもいいです\n\n| Форма | Значение |\n|-------|---------|\n| `行かなければなりません` | Должен идти |\n| `行かなくてもいいです` | Не обязан идти |\n\n---\n\n### ⚠️ Частая ошибка\n\n❌ `行かなければならない` слишком длинно для разговора → используй `行かなきゃ`\n✅ В официальных ситуациях (письмо, эссе) — полная форма уместна."
+                },
+                "English": {
+                    "title": "Form ～なければなりません",
+                    "short_description": "Must do / Have to do",
+                    "md_description": "## Form ～なければなりません — \"Must\" / \"Have to\"\n\n### What is it?\n\n`～なければなりません` expresses **obligation or necessity** — \"must do,\"\"have to do.\" It's the polite standard for formal and semi-formal situations.\n\n---\n\n### Formation\n\n```\n[dictionary form\n] → negative (ない) → drop い + ければなりません\n食べる → 食べなければなりません (must eat)\n行く → 行かなければなりません (must go)\nする → しなければなりません (must do)\n来る → 来なければなりません (must come)\n```\n\n---\n\n### Examples\n\n```\n薬を飲まなければなりません。\nI have to take my medicine.\n```\n\n```\n明日早く起きなければなりません。\nI have to wake up early tomorrow.\n```\n\n```\n宿題を出さなければなりません。\nI have to submit my homework.\n```\n\n```\n毎日練習しなければなりません。\nI have to practice every day.\n```\n\n---\n\n### Casual contractions\n\n```\n～なければなりません\n→ ～なければいけません (slightly softer)\n→ ～なきゃいけない (casual)\n→ ～なきゃ (very casual)\n```\n\n```\n行かなきゃ！(Gotta go!)\n```\n\n---\n\n### Contrast with ～なくてもいいです\n\n| Form | Meaning |\n|------|---------|\n| `行かなければなりません` | Must go |\n| `行かなくてもいいです` | Don't have to go |\n\n---\n\n### 💡 Tip\n\nIn actual conversation, the full form feels stiff. Use `～なきゃ` or `～なきゃいけない` with friends. Save the full form for essays, formal letters, or careful speech."
+                }
+            },
+            "format_map": {
+                "Verb": [
+                    {
+                        "VerbToNai": {}
+                    },
+                    {
+                        "AddPostfix": {
+                            "postfix": "ければなりません"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "rule_id": "01J5N5NAKUTEMOIIDESU000021",
+            "level": "N5",
+            "content": {
+                "Russian": {
+                    "title": "Форма ～なくてもいいです",
+                    "short_description": "Можно не делать",
+                    "md_description": "## Форма ～なくてもいいです — «Не обязан / Можно не делать»\n\n### Что это?\n\n`～なくてもいいです` выражает **отсутствие обязательства**: «можно не делать», «не нужно делать». Противоположность `～なければなりません`.\n\n---\n\n### Правило образования\n\n```\n[словарная форма\n] → ない-форма → убрать い → くてもいいです\n食べる → 食べなくてもいいです (можно не есть)\n行く → 行かなくてもいいです (можно не идти)\nする → しなくてもいいです (можно не делать)\n```\n\n---\n\n### Примеры\n\n```\n今日は学校に行かなくてもいいです。\nСегодня можно не ходить в школу.\n```\n\n```\n全部食べなくてもいいですよ。\nНе обязательно есть всё.\n```\n\n```\nスーツを着なくてもいいです。\nМожно не надевать костюм.\n```\n\n```\n急がなくてもいいです。\nМожно не торопиться.\n```\n\n---\n\n### Сравнение форм обязанности\n\n| Форма | Значение |\n|-------|---------|\n| `行かなければなりません` | Обязан идти |\n| `行かなくてもいいです` | Не обязан идти |\n| `行ってはいけません` | Нельзя идти (запрет) |\n\n---\n\n### Разговорные варианты\n\n```\n行かなくていい (нейтральнее)\n行かなくていいよ (с другом)\n```\n\n---\n\n### 💡 Нюанс\n\n`よ` в конце (`行かなくてもいいですよ`) добавляет дружелюбный, успокаивающий тон: «Не беспокойся, не нужно!»"
+                },
+                "English": {
+                    "title": "Form ～なくてもいいです",
+                    "short_description": "Don't have to do",
+                    "md_description": "## Form ～なくてもいいです — \"Don't have to\"\n\n### What is it?\n\n`～なくてもいいです` expresses **lack of obligation** — \"you don't have to,\"\"it's okay not to.\" It's the opposite of `～なければなりません`.\n\n---\n\n### Formation\n\n```\n[dictionary form\n] → ない-form → drop い + くてもいいです\n食べる → 食べなくてもいいです (don't have to eat)\n行く → 行かなくてもいいです (don't have to go)\nする → しなくてもいいです (don't have to do)\n```\n\n---\n\n### Examples\n\n```\n今日は学校に行かなくてもいいです。\nYou don't have to go to school today.\n```\n\n```\n全部食べなくてもいいですよ。\nYou don't have to eat everything.\n```\n\n```\nスーツを着なくてもいいです。\nYou don't have to wear a suit.\n```\n\n```\n急がなくてもいいです。\nThere's no need to rush.\n```\n\n---\n\n### Obligation comparison\n\n| Form | Meaning |\n|------|---------|\n| `行かなければなりません` | Must go |\n| `行かなくてもいいです` | Don't have to go |\n| `行ってはいけません` | Must not go (prohibition) |\n\n---\n\n### Casual variants\n\n```\n行かなくていい (more neutral)\n行かなくていいよ (with friends)\n```\n\n---\n\n### 💡 Tip\n\nAdding `よ` at the end (`行かなくてもいいですよ`) makes it reassuring and friendly — like saying \"Don't worry about it!\"."
+                }
+            },
+            "format_map": {
+                "Verb": [
+                    {
+                        "VerbToNai": {}
+                    },
+                    {
+                        "AddPostfix": {
+                            "postfix": "くてもいいです"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "rule_id": "01J5N5TAKOTOARIMASU00022",
+            "level": "N5",
+            "content": {
+                "Russian": {
+                    "title": "Форма ～たことがあります",
+                    "short_description": "Имею опыт делать",
+                    "md_description": "## Форма ～たことがあります — «Доводилось / Имею опыт»\n\n### Что это?\n\n`～たことがあります` описывает **жизненный опыт**: «когда-либо в жизни делал». Это не недавнее действие — это факт из биографии.\n\n---\n\n### Правило образования\n\n```\n[た-форма глагола\n] + ことがあります\n食べる → 食べた → 食べたことがあります\n行く → 行った → 行ったことがあります\n見る → 見た → 見たことがあります\n```\n\n---\n\n### Примеры\n\n```\n日本へ行ったことがあります。\nЯ бывал в Японии.\n```\n\n```\n富士山に登ったことがあります。\nЯ поднимался на гору Фудзи.\n```\n\n```\n納豆を食べたことがありますか。\nВы когда-нибудь пробовали натто?\n```\n\n```\nスカイダイビングをしたことがあります。\nЯ прыгал с парашютом.\n```\n\n---\n\n### Отрицание опыта\n\n```\n日本へ行ったことがありません。\nЯ никогда не был в Японии.\n```\n\n---\n\n### ⚠️ Разница с прошедшим временем\n\n| Форма | Значение | Пример |\n|-------|---------|--------|\n| `行きました` | Конкретное прошлое | «Я пошёл (туда-то)» |\n| `行ったことがあります` | Жизненный опыт | «Я когда-то бывал» |\n\n---\n\n### 💡 Контекст\n\nЧасто используется с такими словами как `一度` (один раз), `何度か` (несколько раз), `一度も～ない` (ни разу).\n\n```\n一度も外国に行ったことがありません。\nЯ ни разу не был за границей.\n```"
+                },
+                "English": {
+                    "title": "Form ～たことがあります",
+                    "short_description": "Have done before",
+                    "md_description": "## Form ～たことがあります — \"Have ever done\"\n\n### What is it?\n\n`～たことがあります` expresses **life experience** — something you've done at least once in your life. It's not about a recent or specific past action, but about whether an experience has occurred at all.\n\n---\n\n### Formation\n\n```\n[ta-form\n] + ことがあります\n食べる → 食べた → 食べたことがあります (have eaten before)\n行く → 行った → 行ったことがあります (have been before)\n見る → 見た → 見たことがあります (have seen before)\n```\n\n---\n\n### Examples\n\n```\n日本へ行ったことがあります。\nI've been to Japan before.\n```\n\n```\n富士山に登ったことがあります。\nI've climbed Mt. Fuji.\n```\n\n```\n納豆を食べたことがありますか。\nHave you ever eaten natto?\n```\n\n```\nスカイダイビングをしたことがあります。\nI've gone skydiving.\n```\n\n---\n\n### Negative experience\n\n```\n日本へ行ったことがありません。\nI've never been to Japan.\n```\n\n---\n\n### Contrast with simple past\n\n| Form | Meaning | Example |\n|------|---------|---------|\n| `行きました` | Specific past event | \"I went (somewhere specific)\" |\n| `行ったことがあります` | Life experience | \"I've been there at some point\" |\n\n---\n\n### 💡 Context tip\n\nPair with frequency words for natural use:\n```\n一度も外国に行ったことがありません。\nI've never been abroad — not even once.\n```"
+                }
+            },
+            "format_map": {
+                "Verb": [
+                    {
+                        "VerbToTa": {}
+                    },
+                    {
+                        "AddPostfix": {
+                            "postfix": "ことがあります"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "rule_id": "01J5N5IKUNARIMASU000000023",
+            "level": "N5",
+            "content": {
+                "Russian": {
+                    "title": "И-прилагательное: ～くなります",
+                    "short_description": "Становится (и-прилагательное)",
+                    "md_description": "## И-прилагательное: ～くなります — «Становится»\n\n### Что это?\n\n`～くなります` выражает **изменение качества** для и-прилагательных: «становится + прилагательное».\n\n---\n\n### Правило образования\n\n```\n[и-прилагательное\n] → убрать い + くなります\n暑い → 暑くなります (становится жарко)\n難しい → 難しくなります (становится сложнее)\n上手 → (не и-прилагательное! используй になる)\n```\n\n---\n\n### Примеры\n\n```\n春になると、暖かくなります。\nКогда наступает весна, становится теплее.\n```\n\n```\n日本語の勉強が楽しくなりました。\nИзучение японского стало увлекательным.\n```\n\n```\n運動して、健康になりたいです。\nХочу заниматься спортом и стать здоровее.\n```\n\n```\n練習するほど、上手くなります。\nЧем больше практикуешься, тем лучше становишься.\n```\n\n---\n\n### Сравнение с な-прилагательными\n\n| Тип | Правило | Пример |\n|-----|---------|--------|\n| И-прилагательное | ～くなります | `暑くなります` |\n| На-прилагательное | ～になります | `静かになります` |\n| Существительное | ～になります | `先生になります` |\n\n---\n\n### 💡 Нюанс\n\n`～くなる` описывает **постепенное изменение**. Если изменение произошло мгновенно, в японском используют другие формы. `なる` — один из самых полезных глаголов языка."
+                },
+                "English": {
+                    "title": "I-adjective: ～くなります",
+                    "short_description": "Becomes (i-adjective)",
+                    "md_description": "## I-adjective: ～くなります — \"Becomes\"\n\n### What is it?\n\n`～くなります` expresses a **change in quality** for i-adjectives — \"becomes [adjective].\"\n\n---\n\n### Formation\n\n```\n[i-adjective\n] → drop い + くなります\n暑い → 暑くなります (becomes hot)\n難しい → 難しくなります (becomes difficult)\n早い → 早くなります (becomes fast/early)\n```\n\n---\n\n### Examples\n\n```\n春になると、暖かくなります。\nWhen spring comes, it gets warmer.\n```\n\n```\n日本語の勉強が楽しくなりました。\nStudying Japanese has become enjoyable.\n```\n\n```\n運動して、健康になりたいです。\nI want to exercise and become healthier.\n```\n\n```\n練習するほど、上手くなります。\nThe more you practice, the better you become.\n```\n\n---\n\n### Comparison with na-adjectives and nouns\n\n| Type | Pattern | Example |\n|------|---------|---------|\n| I-adjective | ～くなります | `暑くなります` |\n| Na-adjective | ～になります | `静かになります` |\n| Noun | ～になります | `先生になります` |\n\n---\n\n### 💡 Tip\n\n`～くなる` describes **gradual change**. `なる` (to become) is one of the most versatile and frequently used verbs in Japanese — master it early."
+                }
+            },
+            "format_map": {
+                "IAdjective": [
+                    {
+                        "AdjectiveToKu": {}
+                    },
+                    {
+                        "AddPostfix": {
+                            "postfix": "なります"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "rule_id": "01J5N5NANARIMASU0000000024",
+            "level": "N5",
+            "content": {
+                "Russian": {
+                    "title": "На-прилагательное: ～になります",
+                    "short_description": "Становится (на-прилагательное)",
+                    "md_description": "## На-прилагательное: ～になります — «Становится»\n\n### Что это?\n\n`～になります` выражает **изменение состояния** для на-прилагательных и существительных.\n\n---\n\n### Правило образования\n\n```\n[на-прилагательное\n] + になります\n静か → 静かになります (становится тихим)\n有名 → 有名になります (становится знаменитым)\n便利 → 便利になります (становится удобным)\n```\n\n---\n\n### Примеры\n\n```\n夜になると、静かになります。\nКогда наступает ночь, становится тихо.\n```\n\n```\n彼は有名になりました。\nОн стал знаменитым.\n```\n\n```\n駅が近くなって、便利になりました。\nСтанция стала ближе, и стало удобнее.\n```\n\n```\n将来、医者になりたいです。\nВ будущем я хочу стать врачом.\n```\n\n---\n\n### Сравнение\n\n| Тип | Правило | Пример |\n|-----|---------|--------|\n| И-прилагательное | ～くなります | `暑くなります` |\n| На-прилагательное | ～になります | `静かになります` |\n| Существительное | ～になります | `医者になります` |\n\n---\n\n### 💡 Важная деталь\n\n`になります` используется и для существительных (`医者になる` = «стать врачом»), и для на-прилагательных — одна и та же форма. Это упрощает изучение!"
+                },
+                "English": {
+                    "title": "Na-adjective: ～になります",
+                    "short_description": "Becomes (na-adjective)",
+                    "md_description": "## Na-adjective: ～になります — \"Becomes\"\n\n### What is it?\n\n`～になります` expresses a **change of state** for na-adjectives (and nouns).\n\n---\n\n### Formation\n\n```\n[na-adjective\n] + になります\n静か → 静かになります (becomes quiet)\n有名 → 有名になります (becomes famous)\n便利 → 便利になります (becomes convenient)\n```\n\n---\n\n### Examples\n\n```\n夜になると、静かになります。\nWhen night comes, it gets quiet.\n```\n\n```\n彼は有名になりました。\nHe became famous.\n```\n\n```\n駅が近くなって、便利になりました。\nThe station got closer and things became more convenient.\n```\n\n```\n将来、医者になりたいです。\nI want to become a doctor in the future.\n```\n\n---\n\n### Comparison table\n\n| Type | Pattern | Example |\n|------|---------|---------|\n| I-adjective | ～くなります | `暑くなります` |\n| Na-adjective | ～になります | `静かになります` |\n| Noun | ～になります | `医者になります` |\n\n---\n\n### 💡 Key point\n\n`になります` works for both na-adjectives and nouns — the same pattern covers both, which makes things easier to remember."
+                }
+            },
+            "format_map": {
+                "NaAdjective": [
+                    {
+                        "AddPostfix": {
+                            "postfix": "になります"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "rule_id": "01J5N5TARA000000000000025",
+            "level": "N5",
+            "content": {
+                "Russian": {
+                    "title": "Форма ～たら",
+                    "short_description": "Если / Когда (условная форма)",
+                    "md_description": "## Форма ～たら — Условие «Если / Когда»\n\n### Что это?\n\n`～たら` — **условная форма**, которая выражает «если» или «когда». Это самая универсальная условная форма японского — подходит для реальных, гипотетических и темпоральных условий.\n\n---\n\n### Правило образования\n\n```\n[た-форма\n] + ら\n食べた → 食べたら (если/когда поешь)\n行った → 行ったら (если/когда пойдёшь)\nした → したら (если/когда сделаешь)\n来た → 来たら (если/когда придёшь)\n```\n\n**Для прилагательных:**\n```\n高かった → 高かったら (если/когда дорого)\n静かだった → 静かだったら (если тихо)\n```\n\n---\n\n### Примеры\n\n```\n家に帰ったら、電話してください。\nКогда вернёшься домой, позвони.\n```\n\n```\n雨が降ったら、傘を持っていきます。\nЕсли пойдёт дождь, возьму зонт.\n```\n\n```\nお金があったら、旅行したいです。\nЕсли бы были деньги, хотел бы путешествовать.\n```\n\n```\n春になったら、花見をしましょう。\nКогда наступит весна, пойдём любоваться цветами.\n```\n\n---\n\n### Сравнение условных форм\n\n| Форма | Оттенок |\n|-------|---------|\n| `～たら` | Универсальная, после завершения условия |\n| `～ば` | Логическое условие (если А, то Б) |\n| `～と` | Автоматическое следствие |\n| `～なら` | «Если это так, то...» |\n\n---\n\n### 💡 Лайфхак\n\n`～たら` — самая безопасная условная форма для начинающих: она подходит практически для любого контекста. Освой её первой!"
+                },
+                "English": {
+                    "title": "Form ～たら",
+                    "short_description": "If / When (conditional form)",
+                    "md_description": "## Form ～たら — \"If/When\" Conditional\n\n### What is it?\n\n`～たら` is the most **versatile conditional form** in Japanese, expressing \"if\" or \"when.\" It works for real conditions, hypotheticals, and temporal sequences alike.\n\n---\n\n### Formation\n\n```\n[ta-form\n] + ら\n食べた → 食べたら (if/when you eat)\n行った → 行ったら (if/when you go)\nした → したら (if/when you do)\n来た → 来たら (if/when you come)\n```\n\n**For adjectives:**\n```\n高かった → 高かったら (if it's expensive)\n静かだった → 静かだったら (if it's quiet)\n```\n\n---\n\n### Examples\n\n```\n家に帰ったら、電話してください。\nWhen you get home, please call me.\n```\n\n```\n雨が降ったら、傘を持っていきます。\nIf it rains, I'll bring an umbrella.\n```\n\n```\nお金があったら、旅行したいです。\nIf I had money, I'd want to travel.\n```\n\n```\n春になったら、花見をしましょう。\nWhen spring comes, let's go flower viewing.\n```\n\n---\n\n### Conditional comparison\n\n| Form | Nuance |\n|------|--------|\n| `～たら` | Universal — after condition is met |\n| `～ば` | Logical condition (if A then B) |\n| `～と` | Automatic result |\n| `～なら` | \"If that's the case, then...\" |\n\n---\n\n### 💡 Beginner tip\n\n`～たら` is the safest conditional to reach for first — it works in almost any context. Master it before moving on to the others."
+                }
+            },
+            "format_map": {
+                "Verb": [
+                    {
+                        "VerbToTara": {}
+                    }
+                ]
+            }
+        },
+        {
+            "rule_id": "01J5N4BA00000000000000001",
+            "level": "N4",
+            "content": {
+                "Russian": {
+                    "title": "Условная форма ～ば",
+                    "short_description": "Если бы (условная форма)",
+                    "md_description": "## Условная форма ～ば — «Если»\n\n### Что это?\n\n`～ば` — **логическая условная форма**: «если А, то Б». Используется для гипотетических, советов и обобщений. Часто встречается в пословицах и устойчивых выражениях.\n\n---\n\n### Правило образования\n\n**Глаголы группы 1:** последний звук у-ряда → え-ряд + ば\n```\n飲む → 飲めば\n書く → 書けば\n話す → 話せば\n```\n\n**Глаголы группы 2:** убрать る, добавить れば\n```\n食べる → 食べれば\n見る → 見れば\n```\n\n**Группа 3:**\n```\nする → すれば\n来る → 来れば\n```\n\n**И-прилагательные:** убрать い + ければ\n```\n高い → 高ければ\n```\n\n**На-прилагательные/существительные:** + であれば (или なら)\n```\n静か → 静かであれば\n```\n\n---\n\n### Примеры\n\n```\n練習すれば、上手になります。\nЕсли будешь практиковаться, станешь лучше.\n```\n\n```\n早く起きれば、間に合います。\nЕсли встанешь рано, успеешь.\n```\n\n```\nお金があれば、旅行します。\nЕсли есть деньги, путешествую.\n```\n\n```\n薬を飲めば、治ります。\nЕсли примешь лекарство, выздоровеешь.\n```\n\n---\n\n### Ограничение\n\n`～ば` **не используется**, когда следствие зависит от воли другого человека или является просьбой/командой в главной клаузе:\n```\n❌ 来ればいいのに。(неудобная конструкция)\n✅ 来たらいいのに。\n```\n\n---\n\n### Устойчивые выражения с ～ば\n\n- `よければ` — если хочешь / если не против\n- `～ばよかった` — надо было (сожаление)\n- `どうすれば` — что нужно сделать, чтобы..."
+                },
+                "English": {
+                    "title": "Conditional form ～ば",
+                    "short_description": "If (conditional form)",
+                    "md_description": "## Conditional Form ～ば — \"If\"\n\n### What is it?\n\n`～ば` is a **logical conditional** — \"if A, then B.\" It's commonly used for hypotheticals, advice, proverbs, and general truths.\n\n---\n\n### Formation\n\n**Group 1 verbs:** change u-row to e-row + ば\n```\n飲む → 飲めば (if you drink)\n書く → 書けば (if you write)\n話す → 話せば (if you speak)\n```\n\n**Group 2 verbs:** drop る + れば\n```\n食べる → 食べれば (if you eat)\n見る → 見れば (if you see)\n```\n\n**Group 3:**\n```\nする → すれば\n来る → 来れば\n```\n\n**I-adjectives:** drop い + ければ\n```\n高い → 高ければ (if it's expensive)\n```\n\n---\n\n### Examples\n\n```\n練習すれば、上手になります。\nIf you practice, you'll get better.\n```\n\n```\n早く起きれば、間に合います。\nIf you wake up early, you'll make it.\n```\n\n```\nお金があれば、旅行します。\nIf I have money, I travel.\n```\n\n```\n薬を飲めば、治ります。\nIf you take the medicine, you'll recover.\n```\n\n---\n\n### Limitation\n\n`～ば` doesn't work well when the main clause contains a command, request, or the action of another person. In those cases, use `～たら` instead.\n\n---\n\n### Useful fixed expressions\n\n- `よければ` — if you'd like / if you don't mind\n- `～ばよかった` — I should have... (regret)\n- `どうすれば` — what should I do to...?"
+                }
+            },
+            "format_map": {
+                "Verb": [
+                    {
+                        "VerbToBa": {}
+                    }
+                ]
+            }
+        },
+        {
+            "rule_id": "01J5N4YOU0000000000000002",
+            "level": "N4",
+            "content": {
+                "Russian": {
+                    "title": "Волюнтивная форма ～よう",
+                    "short_description": "Давайте сделаем (простая форма)",
+                    "md_description": "## Волюнтивная форма ～よう — «Давайте» (простая форма)\n\n### Что это?\n\n`～よう` — **простая (нейтральная) волюнтивная форма**: «Давай», «Пошли», «Сделаем». Это аналог `～ましょう` в разговорной/письменной речи.\n\n---\n\n### Правило образования\n\n**Группа 1:** последний звук у-ряда → お-ряд + う\n```\n飲む → 飲もう\n書く → 書こう\n話す → 話そう\n行く → 行こう\n```\n\n**Группа 2:** убрать る + よう\n```\n食べる → 食べよう\n見る → 見よう\n起きる → 起きよう\n```\n\n**Группа 3:**\n```\nする → しよう\n来る → 来よう\n```\n\n---\n\n### Примеры\n\n```\nさあ、行こう！\nПошли!\n```\n\n```\n今夜は外で食べよう。\nСегодня вечером поедим вне дома.\n```\n\n```\n明日から頑張ろう！\nС завтрашнего дня будем стараться!\n```\n\n```\n一緒に映画を見よう。\nДавай вместе посмотрим фильм.\n```\n\n---\n\n### Использование: ～ようとする\n\n`～よう` + `とする` = «пытаться сделать»:\n```\n起きようとしたが、眠かった。\nПытался встать, но хотелось спать.\n```\n\n---\n\n### Сравнение с ～ましょう\n\n| Форма | Уровень вежливости |\n|-------|------------------|\n| `食べましょう` | Вежливый |\n| `食べよう` | Нейтральный (простой) |\n\n---\n\n### 💡 Лайфхак\n\nВ разговоре с друзьями и в личном монологе (`よし、やろう！` = «Ладно, сделаем!») используй `～よう`. Это естественнее, чем `～ましょう`."
+                },
+                "English": {
+                    "title": "Volitional form ～よう",
+                    "short_description": "Let's do (plain form)",
+                    "md_description": "## Volitional Form ～よう — \"Let's\" (Plain Form)\n\n### What is it?\n\n`～よう` is the **plain volitional form** — the casual equivalent of `～ましょう`. Use it with friends, in inner monologue, or when expressing intent.\n\n---\n\n### Formation\n\n**Group 1:** change u-row to o-row + う\n```\n飲む → 飲もう (let's drink)\n書く → 書こう (let's write)\n行く → 行こう (let's go)\n```\n\n**Group 2:** drop る + よう\n```\n食べる → 食べよう (let's eat)\n見る → 見よう (let's watch)\n```\n\n**Group 3:**\n```\nする → しよう (let's do)\n来る → 来よう (let's come)\n```\n\n---\n\n### Examples\n\n```\nさあ、行こう！\nLet's go!\n```\n\n```\n今夜は外で食べよう。\nLet's eat out tonight.\n```\n\n```\n明日から頑張ろう！\nLet's give it our best from tomorrow!\n```\n\n```\n一緒に映画を見よう。\nLet's watch a movie together.\n```\n\n---\n\n### Extended use: ～ようとする\n\n`～よう` + `とする` = \"try to do / be about to do\":\n```\n起きようとしたが、眠かった。\nI tried to get up, but I was sleepy.\n```\n\n---\n\n### Comparison\n\n| Form | Register |\n|------|---------|\n| `食べましょう` | Polite |\n| `食べよう` | Plain/casual |\n\n---\n\n### 💡 Tip\n\nUse `～よう` with friends and in inner speech (`よし、やろう！` = \"Alright, let's do this!\"). It sounds more natural than `～ましょう` in casual contexts."
+                }
+            },
+            "format_map": {
+                "Verb": [
+                    {
+                        "VerbToYou": {}
+                    }
+                ]
+            }
+        },
+        {
+            "rule_id": "01J5N4POTENTIAL00000000003",
+            "level": "N4",
+            "content": {
+                "Russian": {
+                    "title": "Потенциальная форма",
+                    "short_description": "Могу сделать",
+                    "md_description": "## Потенциальная форма — «Могу сделать»\n\n### Что это?\n\n**Потенциальная форма** выражает **возможность или способность** сделать что-то: «могу», «умею», «удаётся».\n\n---\n\n### Правило образования\n\n**Группа 1:** у-ряд → え-ряд + る\n```\n飲む → 飲める (могу пить)\n書く → 書ける (могу писать)\n話す → 話せる (могу говорить)\n読む → 読める (могу читать)\n```\n\n**Группа 2:** убрать る + られる\n```\n食べる → 食べられる (могу есть)\n見る → 見られる (могу видеть)\n起きる → 起きられる (могу встать)\n```\n\n> 💡 В разговорной речи группа 2 часто сокращается:\n> `食べられる` → `食べれる` (разговорное, т.н. «ра抜き言葉»)\n\n**Группа 3:**\n```\nする → できる\n来る → 来られる (разг: 来れる)\n```\n\n---\n\n### Примеры\n\n```\n日本語が話せます。\nЯ умею говорить по-японски.\n```\n\n```\nこの漢字が読めません。\nЯ не могу прочитать этот кандзи.\n```\n\n```\n明日、来られますか。\nВы сможете прийти завтра?\n```\n\n```\n辛い食べ物が食べられます。\nЯ могу есть острую еду.\n```\n\n---\n\n### Частица: が или を?\n\nС потенциальной формой объект обычно маркируется **が**, но **を** тоже возможно:\n```\n日本語が話せる。(чаще)\n日本語を話せる。(тоже OK)\n```\n\n---\n\n### Сравнение с ～ことができる\n\n| Форма | Стиль |\n|-------|-------|\n| `話せます` | Более разговорный |\n| `話すことができます` | Более формальный/письменный |\n\n---\n\n### 💡 Лайфхак\n\n`できる` (от する) используется и самостоятельно как «мочь», «быть в состоянии», «получаться»:\n```\nそれができます。(Это я могу.)\n```"
+                },
+                "English": {
+                    "title": "Potential form",
+                    "short_description": "Can do",
+                    "md_description": "## Potential Form — \"Can do\"\n\n### What is it?\n\nThe **potential form** expresses **ability or possibility** — \"can,\"\"be able to,\"\"manage to.\"\n\n---\n\n### Formation\n\n**Group 1:** u-row → e-row + る\n```\n飲む → 飲める (can drink)\n書く → 書ける (can write)\n話す → 話せる (can speak)\n```\n\n**Group 2:** drop る + られる\n```\n食べる → 食べられる (can eat)\n見る → 見られる (can see)\n起きる → 起きられる (can wake up)\n```\n\n> 💡 In casual speech, Group 2 often drops ら:\n> `食べられる` → `食べれる` (colloquial — called ら抜き言葉)\n\n**Group 3:**\n```\nする → できる\n来る → 来られる (casual: 来れる)\n```\n\n---\n\n### Examples\n\n```\n日本語が話せます。\nI can speak Japanese.\n```\n\n```\nこの漢字が読めません。\nI can't read this kanji.\n```\n\n```\n明日、来られますか。\nCan you come tomorrow?\n```\n\n```\n辛い食べ物が食べられます。\nI can eat spicy food.\n```\n\n---\n\n### Object particle: が or を?\n\nWith potential forms, the object typically takes **が**, though **を** is also acceptable:\n```\n日本語が話せる。(more common)\n日本語を話せる。(also correct)\n```\n\n---\n\n### Comparison with ～ことができる\n\n| Form | Style |\n|------|-------|\n| `話せます` | Conversational |\n| `話すことができます` | Formal/written |\n\n---\n\n### 💡 Tip\n\n`できる` (from する) also works independently as \"can\" or \"be able to\":\n```\nそれができます。(I can do that.)\n```"
+                }
+            },
+            "format_map": {
+                "Verb": [
+                    {
+                        "VerbToPotential": {}
+                    }
+                ]
+            }
+        },
+        {
+            "rule_id": "01J5N4PASSIVE000000000000004",
+            "level": "N4",
+            "content": {
+                "Russian": {
+                    "title": "Пассивная форма",
+                    "short_description": "Было сделано (пассив)",
+                    "md_description": "## Пассивная форма — Страдательный залог\n\n### Что это?\n\n**Пассивная форма** выражает, что **субъект подвергается действию** кого-то или чего-то. В японском пассив часто выражает **неприятность или неудобство** (т.н. «страдательный пассив», 迷惑の受け身).\n\n---\n\n### Правило образования\n\n**Группа 1:** у-ряд → あ-ряд + れる\n```\n飲む → 飲まれる\n書く → 書かれる\n話す → 話される\n```\n\n**Группа 2:** убрать る + られる\n```\n食べる → 食べられる\n見る → 見られる\n```\n\n**Группа 3:**\n```\nする → される\n来る → 来られる\n```\n\n---\n\n### Структура предложения\n\n```\n[Субъект (が/は)\n] + [агент (に)\n] + [Vпасс\n]\n私はの先生に褒められました。\nМеня похвалил учитель.\n```\n\n---\n\n### Примеры\n\n**Нейтральный пассив:**\n```\nこの小説は夏目漱石によって書かれました。\nЭтот роман был написан Нацумэ Сосэки.\n```\n\n**Страдательный пассив (неприятность):**\n```\n雨に降られました。\nМеня застал дождь. (нежелательно)\n```\n\n```\n電車の中で足を踏まれました。\nВ вагоне мне наступили на ногу.\n```\n\n```\n財布を盗まれました。\nУ меня украли кошелёк.\n```\n\n---\n\n### Особенность японского пассива\n\nВ японском пассиве даже **непереходные глаголы** могут стоять в пассиве с ощущением «пострадал от действия»:\n```\n友達に来られて、困りました。\nКо мне пришёл друг, и это меня смутило / создало неудобство.\n```\n\n---\n\n### 💡 Нюанс\n\nНе путай пассив группы 2 (`食べられる`) с потенциальной формой — они совпадают! Контекст разграничивает их."
+                },
+                "English": {
+                    "title": "Passive form",
+                    "short_description": "Was done (passive)",
+                    "md_description": "## Passive Form — Passive Voice\n\n### What is it?\n\nThe **passive form** expresses that **the subject is receiving an action**. Japanese passive also commonly expresses that the subject was **negatively affected** by an action — the \"suffering passive\" (迷惑の受け身).\n\n---\n\n### Formation\n\n**Group 1:** u-row → a-row + れる\n```\n飲む → 飲まれる (be drunk)\n書く → 書かれる (be written)\n話す → 話される (be spoken)\n```\n\n**Group 2:** drop る + られる\n```\n食べる → 食べられる (be eaten)\n見る → 見られる (be seen)\n```\n\n**Group 3:**\n```\nする → される (be done)\n来る → 来られる (have someone come)\n```\n\n---\n\n### Sentence structure\n\n```\n[Subject (が/は)\n] + [agent (に)\n] + [passive verb\n]\n私は先生に褒められました。\nI was praised by my teacher.\n```\n\n---\n\n### Examples\n\n**Neutral passive:**\n```\nこの小説は夏目漱石によって書かれました。\nThis novel was written by Natsume Soseki.\n```\n\n**Suffering passive (negative nuance):**\n```\n雨に降られました。\nI got caught in the rain. (unwanted)\n```\n\n```\n電車の中で足を踏まれました。\nSomeone stepped on my foot in the train.\n```\n\n```\n財布を盗まれました。\nMy wallet was stolen.\n```\n\n---\n\n### Unique Japanese feature\n\nEven **intransitive verbs** can appear in passive to express that something inconvenient happened:\n```\n友達に来られて、困りました。\nA friend came over and it put me in a difficult spot.\n```\n\n---\n\n### ⚠️ Watch out\n\nGroup 2 passive (`食べられる`) looks identical to the potential form. Context tells them apart."
+                }
+            },
+            "format_map": {
+                "Verb": [
+                    {
+                        "VerbToPassive": {}
+                    }
+                ]
+            }
+        },
+        {
+            "rule_id": "01J5N4CAUSATIVE0000000000005",
+            "level": "N4",
+            "content": {
+                "Russian": {
+                    "title": "Причинная форма",
+                    "short_description": "Заставить сделать",
+                    "md_description": "## Причинная форма — «Заставить / Позволить сделать»\n\n### Что это?\n\n**Причинная (каузативная) форма** выражает, что кто-то **заставляет** или **позволяет** другому сделать что-то.\n\n---\n\n### Правило образования\n\n**Группа 1:** у-ряд → あ-ряд + せる\n```\n飲む → 飲ませる (заставить пить)\n書く → 書かせる (заставить писать)\n話す → 話させる (заставить говорить)\n```\n\n**Группа 2:** убрать る + させる\n```\n食べる → 食べさせる (заставить есть)\n見る → 見させる (заставить смотреть)\n```\n\n**Группа 3:**\n```\nする → させる\n来る → 来させる\n```\n\n---\n\n### Структура\n\n```\n[Заставитель\n] は/が [Объект\n] を/に [Vкауз\n]\n先生は学生に漢字を書かせました。\nУчитель заставил студентов написать кандзи.\n```\n\n---\n\n### Примеры\n\n**Заставляет (принуждение):**\n```\n母は私に野菜を食べさせました。\nМама заставила меня есть овощи.\n```\n\n**Позволяет (разрешение):**\n```\n先生は学生を早く帰らせました。\nУчитель позволил студентам уйти пораньше.\n```\n\n**«Я хочу сделать» (сам):**\n```\nやらせてください！\nПозвольте мне сделать это!\n```\n\n---\n\n### Каузативно-пассивная форма\n\n`飲む → 飲まされる` (быть вынужденным пить):\n```\n上司に残業させられました。\nНачальник заставил меня работать сверхурочно.\n```\n\n---\n\n### 💡 Нюанс\n\nКогда объект неодушевлён или это эмоция — используй を:\n```\n彼女は私を心配させます。(она меня беспокоит)\n```"
+                },
+                "English": {
+                    "title": "Causative form",
+                    "short_description": "Make someone do",
+                    "md_description": "## Causative Form — \"Make/Let Someone Do\"\n\n### What is it?\n\nThe **causative form** expresses that someone **makes** or **lets** another person do something.\n\n---\n\n### Formation\n\n**Group 1:** u-row → a-row + せる\n```\n飲む → 飲ませる (make drink)\n書く → 書かせる (make write)\n話す → 話させる (make speak)\n```\n\n**Group 2:** drop る + させる\n```\n食べる → 食べさせる (make eat)\n見る → 見させる (make watch)\n```\n\n**Group 3:**\n```\nする → させる (make do)\n来る → 来させる (make come)\n```\n\n---\n\n### Sentence structure\n\n```\n[Causer\n] は/が [Person\n] を/に [causative verb\n]\n先生は学生に漢字を書かせました。\nThe teacher made the students write kanji.\n```\n\n---\n\n### Examples\n\n**Making (compulsion):**\n```\n母は私に野菜を食べさせました。\nMy mom made me eat vegetables.\n```\n\n**Letting (permission):**\n```\n先生は学生を早く帰らせました。\nThe teacher let the students go home early.\n```\n\n**First-person intent:**\n```\nやらせてください！\nPlease let me do it!\n```\n\n---\n\n### Causative-passive\n\n`飲む → 飲まされる` (be forced to drink):\n```\n上司に残業させられました。\nMy boss made me work overtime.\n```\n\n---\n\n### 💡 Tip\n\nWhen something causes an emotion or a non-volitional state, use `を`:\n```\n彼女は私を心配させます。(She makes me worry.)\n```"
+                }
+            },
+            "format_map": {
+                "Verb": [
+                    {
+                        "VerbToCausative": {}
+                    }
+                ]
+            }
+        },
+        {
+            "rule_id": "01J5N4IMPERATIVE000000000006",
+            "level": "N4",
+            "content": {
+                "Russian": {
+                    "title": "Повелительная форма",
+                    "short_description": "Сделайте! (приказ)",
+                    "md_description": "## Повелительная форма — Прямой приказ\n\n### Что это?\n\n**Повелительная форма** — самая прямая и резкая форма японских глаголов. Используется в **военных командах, мужской речи (грубой), манге/аниме, спорте**. В повседневной вежливой речи её избегают.\n\n---\n\n### Правило образования\n\n**Группа 1:** у-ряд → え-ряд\n```\n飲む → 飲め (пей!)\n書く → 書け (пиши!)\n話す → 話せ (говори!)\n```\n\n**Группа 2:** убрать る + ろ (или よ)\n```\n食べる → 食べろ / 食べよ\n見る → 見ろ / 見よ\n```\n\n**Группа 3:**\n```\nする → しろ / せよ\n来る → 来い\n```\n\n---\n\n### Примеры\n\n```\n早く起きろ！\nВставай быстрее!\n```\n\n```\n静かにしろ！\nЗаткнись! / Тихо!\n```\n\n```\n頑張れ！\nДавай! / Не сдавайся!\n```\n\n```\n来い！\nИди сюда!\n```\n\n---\n\n### Отрицательный приказ (запрет)\n\n```\n[словарная форма\n] + な\n食べるな！ (Не ешь! / Нельзя есть!)\n来るな！ (Не приходи!)\n```\n\n---\n\n### Когда НЕ использовать\n\n- ❌ С незнакомыми людьми (крайне грубо)\n- ❌ На работе (неуважительно)\n- ✅ В спортивных кричалках: `頑張れ！`\n- ✅ В литературе/аниме\n\n---\n\n### 💡 Для «мягкого» приказа\n\nИспользуй `～てください` или `～てくれ` (грубее, но не команда):\n```\nちょっと待ってくれ。(Подожди немного.)\n```"
+                },
+                "English": {
+                    "title": "Imperative form",
+                    "short_description": "Do! (command)",
+                    "md_description": "## Imperative Form — Direct Commands\n\n### What is it?\n\nThe **imperative form** is the most blunt command form in Japanese. It's used in **military orders, masculine rough speech, manga/anime, sports cheers**. In everyday polite conversation, it's avoided entirely.\n\n---\n\n### Formation\n\n**Group 1:** u-row → e-row\n```\n飲む → 飲め (drink!)\n書く → 書け (write!)\n話す → 話せ (speak!)\n```\n\n**Group 2:** drop る + ろ (or よ)\n```\n食べる → 食べろ / 食べよ (eat!)\n見る → 見ろ / 見よ (watch!)\n```\n\n**Group 3:**\n```\nする → しろ / せよ (do!)\n来る → 来い (come!)\n```\n\n---\n\n### Examples\n\n```\n早く起きろ！\nGet up already!\n```\n\n```\n静かにしろ！\nShut up! / Be quiet!\n```\n\n```\n頑張れ！\nGo for it! / Don't give up!\n```\n\n```\n来い！\nCome here!\n```\n\n---\n\n### Negative imperative (prohibition)\n\n```\n[dictionary form\n] + な\n食べるな！ (Don't eat!)\n来るな！ (Don't come!)\n```\n\n---\n\n### When NOT to use it\n\n- ❌ With strangers (extremely rude)\n- ❌ In the workplace\n- ✅ Sports cheers: `頑張れ！`\n- ✅ Fiction, manga, anime\n\n---\n\n### 💡 For softer commands\n\nUse `～てください` or `～てくれ` (blunt but not a command):\n```\nちょっと待ってくれ。(Wait a sec.)\n```"
+                }
+            },
+            "format_map": {
+                "Verb": [
+                    {
+                        "VerbToImperative": {}
+                    }
+                ]
+            }
+        },
+        {
+            "rule_id": "01J5N4SUGIRU0000000000000007",
+            "level": "N4",
+            "content": {
+                "Russian": {
+                    "title": "Форма ～すぎる",
+                    "short_description": "Слишком много делать",
+                    "md_description": "## Форма ～すぎる — «Слишком»\n\n### Что это?\n\n`～すぎる` выражает **избыток** — «слишком много», «чрезмерно». Работает с глаголами и прилагательными.\n\n---\n\n### Правило образования\n\n**Глаголы:** основа ます + すぎる\n```\n食べます → 食べすぎる (есть слишком много)\n飲みます → 飲みすぎる (пить слишком много)\n働きます → 働きすぎる (работать слишком много)\n```\n\n**И-прилагательные:** убрать い + すぎる\n```\n高い → 高すぎる (слишком дорого)\n難しい → 難しすぎる (слишком сложно)\n```\n\n**На-прилагательные:** + すぎる\n```\n静か → 静かすぎる (слишком тихо)\n```\n\n---\n\n### Примеры\n\n```\n昨日食べすぎて、お腹が痛いです。\nВчера я переел, и теперь болит живот.\n```\n\n```\nこのバッグは高すぎます。\nЭта сумка слишком дорогая.\n```\n\n```\n日本語は難しすぎて、諦めそうです。\nЯпонский слишком сложный — уже хочется сдаться.\n```\n\n```\n飲みすぎないでください。\nПожалуйста, не перепивайте.\n```\n\n---\n\n### ～すぎる как существительное\n\n`～すぎ` (без る) можно использовать как существительное:\n```\n食べすぎはよくないです。(Переедание — нехорошо.)\n```\n\n---\n\n### 💡 Лайфхак\n\n`すぎる` всегда несёт **отрицательную коннотацию**: это «перебор». Даже что-то хорошее в `すぎる` становится проблемой:\n```\n優しすぎる。(слишком добрый → это уже недостаток)\n```"
+                },
+                "English": {
+                    "title": "Form ～すぎる",
+                    "short_description": "Do too much",
+                    "md_description": "## Form ～すぎる — \"Too much\" / \"Excessively\"\n\n### What is it?\n\n`～すぎる` expresses **excess** — doing or being something too much or too extremely.\n\n---\n\n### Formation\n\n**Verbs:** ます-stem + すぎる\n```\n食べます → 食べすぎる (eat too much)\n飲みます → 飲みすぎる (drink too much)\n働きます → 働きすぎる (work too much)\n```\n\n**I-adjectives:** drop い + すぎる\n```\n高い → 高すぎる (too expensive)\n難しい → 難しすぎる (too difficult)\n```\n\n**Na-adjectives:** + すぎる\n```\n静か → 静かすぎる (too quiet)\n```\n\n---\n\n### Examples\n\n```\n昨日食べすぎて、お腹が痛いです。\nI ate too much yesterday and my stomach hurts.\n```\n\n```\nこのバッグは高すぎます。\nThis bag is too expensive.\n```\n\n```\n日本語は難しすぎて、諦めそうです。\nJapanese is so difficult I feel like giving up.\n```\n\n```\n飲みすぎないでください。\nPlease don't drink too much.\n```\n\n---\n\n### ～すぎ as a noun\n\nDrop る to use as a noun:\n```\n食べすぎはよくないです。(Overeating is not good.)\n```\n\n---\n\n### 💡 Key nuance\n\n`すぎる` always carries a **negative connotation** — even good qualities become a flaw when excessive:\n```\n優しすぎる。(Too kind → that's a problem!)\n```"
+                }
+            },
+            "format_map": {
+                "Verb": [
+                    {
+                        "VerbToSugiru": {}
+                    }
+                ]
+            }
+        },
+        {
+            "rule_id": "01J5N4SOU001000000000000008",
+            "level": "N4",
+            "content": {
+                "Russian": {
+                    "title": "Форма ～そう (глагол)",
+                    "short_description": "Похоже, что скоро произойдёт",
+                    "md_description": "## Форма ～そう (глагол) — «Вот-вот / Похоже»\n\n### Что это?\n\n`～そう` после глагола выражает **непосредственную вероятность события** на основе визуальных признаков: «вот-вот произойдёт», «похоже, что».\n\n---\n\n### Правило образования\n\n```\n[основа ます\n] + そう (+ です для вежливости)\n降ります → 降りそうです (похоже, скоро пойдёт дождь)\n泣きます → 泣きそうです (вот-вот заплачет)\n倒れます → 倒れそうです (вот-вот упадёт)\n```\n\n---\n\n### Примеры\n\n```\n空が暗くなってきた。雨が降りそうです。\nНебо потемнело. Похоже, пойдёт дождь.\n```\n\n```\n彼女は泣きそうな顔をしています。\nУ неё такое выражение лица, будто она вот-вот заплачет.\n```\n\n```\nこのケーキ、おいしそう！\nЭтот торт выглядит вкусно!\n```\n\n```\n子供が転びそうです。\nРебёнок вот-вот упадёт.\n```\n\n---\n\n### Разница: ～そう (вид) vs. ～そうです (слух)\n\n| Форма | Значение | Пример |\n|-------|---------|--------|\n| `雨が降りそうです` | Видно по небу, что пойдёт дождь | (собственное наблюдение) |\n| `雨が降るそうです` | Слышал, что пойдёт дождь | (чужие слова) |\n\n---\n\n### ⚠️ Исключения\n\n```\nよさそう (от いい — хорошо выглядит) ← не いそう!\nなさそう (от ない — похоже, нет) ← не なそう!\n```\n\n---\n\n### 💡 Лайфхак\n\nЗапомни формулу: **основа ます + そう** = «по виду / по ощущению». Это твоё личное впечатление, а не чужая информация."
+                },
+                "English": {
+                    "title": "Form ～そう (verb)",
+                    "short_description": "Looks like it will happen",
+                    "md_description": "## Form ～そう (verb) — \"Looks like it's about to happen\"\n\n### What is it?\n\n`～そう` after a verb expresses that **something is about to happen** based on visible evidence — an imminent event you can see coming.\n\n---\n\n### Formation\n\n```\n[ます-stem\n] + そう (+ です for politeness)\n降ります → 降りそうです (looks like rain is coming)\n泣きます → 泣きそうです (looks like they'll cry)\n倒れます → 倒れそうです (looks like they'll fall)\n```\n\n---\n\n### Examples\n\n```\n空が暗くなってきた。雨が降りそうです。\nThe sky has gotten dark. It looks like it's going to rain.\n```\n\n```\n彼女は泣きそうな顔をしています。\nShe looks like she's about to cry.\n```\n\n```\nこのケーキ、おいしそう！\nThis cake looks delicious!\n```\n\n```\n子供が転びそうです。\nThe child looks like they're about to fall.\n```\n\n---\n\n### Key distinction: ～そう (appearance) vs. ～そうです (hearsay)\n\n| Form | Meaning |\n|------|---------|\n| `雨が降りそうです` | It looks like rain (I can see the clouds) |\n| `雨が降るそうです` | I heard it's going to rain (someone told me) |\n\n---\n\n### ⚠️ Irregular forms\n\n```\nよさそう (from いい — looks good) ← NOT いそう!\nなさそう (from ない — doesn't seem to exist) ← NOT なそう!\n```\n\n---\n\n### 💡 Key formula\n\n**ます-stem + そう** = your personal visual impression. It's what you see, not what you heard."
+                }
+            },
+            "format_map": {
+                "Verb": [
+                    {
+                        "VerbToMasu": {}
+                    },
+                    {
+                        "RemovePostfix": {
+                            "postfix": "ます"
+                        }
+                    },
+                    {
+                        "AddPostfix": {
+                            "postfix": "そう"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "rule_id": "01J5N4SOU002000000000000009",
+            "level": "N4",
+            "content": {
+                "Russian": {
+                    "title": "Форма ～そう (и-прилагательное)",
+                    "short_description": "Похоже на...",
+                    "md_description": "## Форма ～そう (и-прилагательное) — «Выглядит как...»\n\n### Что это?\n\n`～そう` после прилагательного выражает **впечатление по виду**: «выглядит/кажется + прилагательное». Твоё субъективное наблюдение.\n\n---\n\n### Правило образования\n\n**И-прилагательное:** убрать い + そう\n```\nおいしい → おいしそう (выглядит вкусно)\n難しい → 難しそう (выглядит сложно)\n重い → 重そう (выглядит тяжело)\n```\n\n**На-прилагательное:** + そう\n```\n元気 → 元気そう (выглядит бодрым)\n便利 → 便利そう (выглядит удобным)\n```\n\n---\n\n### Примеры\n\n```\nこのケーキはおいしそうです。\nЭтот торт выглядит вкусно.\n```\n\n```\n彼は元気そうです。\nОн выглядит бодрым.\n```\n\n```\nあの荷物は重そうですね。\nТот багаж выглядит тяжёлым, правда?\n```\n\n```\nこの問題は難しそうだ。\nЭта задача выглядит сложной.\n```\n\n---\n\n### Модификатор существительного\n\n`～そうな + существительное`:\n```\nおいしそうなケーキ (торт, который выглядит вкусным)\n```\n\n---\n\n### ⚠️ Исключение\n\n```\nいい → よさそう (не いそう!)\nない → なさそう (не なそう!)\n```\n\n---\n\n### 💡 Разница с ～ようだ\n\n| Форма | Нюанс |\n|-------|-------|\n| `おいしそう` | По виду/запаху кажется вкусным |\n| `おいしいようだ` | На основе информации/опыта |"
+                },
+                "English": {
+                    "title": "Form ～そう (i-adjective)",
+                    "short_description": "Looks like...",
+                    "md_description": "## Form ～そう (i-adjective) — \"Looks/Seems...\"\n\n### What is it?\n\n`～そう` after an adjective expresses a **visual or sensory impression** — \"looks like,\"\"seems like,\" based on what you directly observe.\n\n---\n\n### Formation\n\n**I-adjectives:** drop い + そう\n```\nおいしい → おいしそう (looks delicious)\n難しい → 難しそう (looks difficult)\n重い → 重そう (looks heavy)\n```\n\n**Na-adjectives:** + そう\n```\n元気 → 元気そう (looks energetic/healthy)\n便利 → 便利そう (looks convenient)\n```\n\n---\n\n### Examples\n\n```\nこのケーキはおいしそうです。\nThis cake looks delicious.\n```\n\n```\n彼は元気そうです。\nHe looks well.\n```\n\n```\nあの荷物は重そうですね。\nThat luggage looks heavy, doesn't it?\n```\n\n```\nこの問題は難しそうだ。\nThis problem looks difficult.\n```\n\n---\n\n### As a noun modifier\n\n`～そうな + noun`:\n```\nおいしそうなケーキ (a cake that looks delicious)\n```\n\n---\n\n### ⚠️ Exceptions\n\n```\nいい → よさそう (looks good) — NOT いそう!\nない → なさそう (seems like there isn't) — NOT なそう!\n```\n\n---\n\n### Contrast with ～ようだ\n\n| Form | Nuance |\n|------|--------|\n| `おいしそう` | Visual/sensory impression |\n| `おいしいようだ` | Based on evidence or reasoning |"
+                }
+            },
+            "format_map": {
+                "IAdjective": [
+                    {
+                        "AdjectiveRemovePostfix": {}
+                    },
+                    {
+                        "AddPostfix": {
+                            "postfix": "そう"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "rule_id": "01J5N4YOUDA0000000000000010",
+            "level": "N4",
+            "content": {
+                "Russian": {
+                    "title": "Форма ～ようだ",
+                    "short_description": "Похоже на / Как будто",
+                    "md_description": "## Форма ～ようだ — «Похоже / Кажется»\n\n### Что это?\n\n`～ようだ` выражает **умозаключение или предположение на основе имеющихся данных**: «похоже, что», «судя по всему». Формальнее, чем `～そう`.\n\n---\n\n### Правило образования\n\n| Тип | Правило | Пример |\n|-----|---------|--------|\n| Глагол (словарная форма) | + ようだ | `行くようだ` |\n| И-прилагательное | + ようだ | `高いようだ` |\n| На-прилагательное | + なようだ | `静かなようだ` |\n| Существительное | + のようだ | `先生のようだ` |\n\n---\n\n### Примеры\n\n```\n彼は疲れているようだ。\nСудя по всему, он устал.\n```\n\n```\n試験は難しかったようです。\nПо всей видимости, экзамен был сложным.\n```\n\n```\n外は雨のようですね。\nСудя по звуку, снаружи идёт дождь.\n```\n\n```\n彼女は学生のようです。\nПохоже, она студентка.\n```\n\n---\n\n### Сравнительное значение: ～ように\n\n`のように` = «как», «подобно»:\n```\n彼は魚のように泳ぎます。\nОн плавает как рыба.\n```\n\n---\n\n### Три схожие формы\n\n| Форма | Основа | Нюанс |\n|-------|--------|-------|\n| `～そうだ` | Визуальное впечатление | Вижу и думаю |\n| `～ようだ` | Обдуманный вывод | Анализирую данные |\n| `～らしい` | Слухи/типичность | По чужим словам |\n\n---\n\n### 💡 Лайфхак\n\n`ようだ` в письменном японском часто встречается в форме `ようです` (вежливо) или `ような気がする` (более субъективно)."
+                },
+                "English": {
+                    "title": "Form ～ようだ",
+                    "short_description": "Seems like / As if",
+                    "md_description": "## Form ～ようだ — \"It seems like\" / \"It appears that\"\n\n### What is it?\n\n`～ようだ` expresses a **reasoned conclusion** based on available evidence — \"it seems like,\"\"apparently,\"\"it appears that.\" More analytical than `～そう`.\n\n---\n\n### Formation\n\n| Type | Rule | Example |\n|------|------|---------|\n| Verb (plain form) | + ようだ | `行くようだ` |\n| I-adjective | + ようだ | `高いようだ` |\n| Na-adjective | + なようだ | `静かなようだ` |\n| Noun | + のようだ | `先生のようだ` |\n\n---\n\n### Examples\n\n```\n彼は疲れているようだ。\nHe seems to be tired.\n```\n\n```\n試験は難しかったようです。\nThe exam seems to have been difficult.\n```\n\n```\n外は雨のようですね。\nIt sounds like it's raining outside.\n```\n\n```\n彼女は学生のようです。\nShe seems to be a student.\n```\n\n---\n\n### Comparative use: ～ように\n\n`のように` = \"like,\"\"similar to\":\n```\n彼は魚のように泳ぎます。\nHe swims like a fish.\n```\n\n---\n\n### Three related forms compared\n\n| Form | Basis | Nuance |\n|------|-------|--------|\n| `～そうだ` | Visual impression | \"I can see it\" |\n| `～ようだ` | Reasoned inference | \"Based on evidence...\" |\n| `～らしい` | Hearsay/typicality | \"I heard / typical of\" |\n\n---\n\n### 💡 Tip\n\nIn polite speech, `ようだ` becomes `ようです`. The softer `ような気がする` adds even more personal tentativeness."
+                }
+            },
+            "format_map": {
+                "Verb": [
+                    {
+                        "VerbToTa": {}
+                    },
+                    {
+                        "AddPostfix": {
+                            "postfix": "ようだ"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "rule_id": "01J5N4NIKUI0000000000000011",
+            "level": "N4",
+            "content": {
+                "Russian": {
+                    "title": "Форма ～にくい",
+                    "short_description": "Трудно сделать",
+                    "md_description": "## Форма ～にくい — «Трудно / Неудобно делать»\n\n### Что это?\n\n`～にくい` выражает, что действие **трудно выполнить** или **неудобно** — по природе вещей, а не из-за отсутствия умений.\n\n---\n\n### Правило образования\n\n```\n[основа ます\n] + にくい\n書きます → 書きにくい (неудобно писать)\n読みます → 読みにくい (трудно читать)\n使います → 使いにくい (неудобно использовать)\n食べます → 食べにくい (неудобно есть)\n```\n\n---\n\n### Примеры\n\n```\nこのペンは書きにくいです。\nЭтой ручкой неудобно писать.\n```\n\n```\nあの先生の話は聞きにくいです。\nЭтого учителя трудно слушать (напр. говорит тихо).\n```\n\n```\nこの道は歩きにくいです。\nПо этой дороге неудобно ходить.\n```\n\n```\n硬い肉は食べにくいです。\nЖёсткое мясо трудно жевать.\n```\n\n---\n\n### ～にくい ведёт себя как и-прилагательное!\n\n```\n書きにくいです (трудно)\n書きにくくないです (не трудно)\n書きにくかったです (было трудно)\n```\n\n---\n\n### Сравнение ～にくい vs. ～やすい\n\n| Форма | Значение |\n|-------|---------|\n| `書きにくい` | Трудно писать |\n| `書きやすい` | Легко писать |\n\n---\n\n### 💡 Нюанс\n\n`～にくい` — это объективная трудность вещи/ситуации, а не субъективная неспособность человека. Сравни: «эта ручка неудобная» vs. «я не умею писать»."
+                },
+                "English": {
+                    "title": "Form ～にくい",
+                    "short_description": "Hard to do",
+                    "md_description": "## Form ～にくい — \"Hard to do\" / \"Difficult to do\"\n\n### What is it?\n\n`～にくい` expresses that an action is **naturally difficult or inconvenient** — usually due to the nature of the thing, not the person's lack of skill.\n\n---\n\n### Formation\n\n```\n[ます-stem\n] + にくい\n書きます → 書きにくい (hard to write with)\n読みます → 読みにくい (hard to read)\n使います → 使いにくい (inconvenient to use)\n食べます → 食べにくい (hard to eat)\n```\n\n---\n\n### Examples\n\n```\nこのペンは書きにくいです。\nThis pen is hard to write with.\n```\n\n```\nあの先生の話は聞きにくいです。\nThat teacher is hard to listen to (e.g., speaks quietly).\n```\n\n```\nこの道は歩きにくいです。\nThis road is difficult to walk on.\n```\n\n```\n硬い肉は食べにくいです。\nTough meat is hard to chew.\n```\n\n---\n\n### ～にくい conjugates like an i-adjective\n\n```\n書きにくいです (hard)\n書きにくくないです (not hard)\n書きにくかったです (was hard)\n```\n\n---\n\n### Contrast: ～にくい vs. ～やすい\n\n| Form | Meaning |\n|------|---------|\n| `書きにくい` | Hard to write |\n| `書きやすい` | Easy to write |\n\n---\n\n### 💡 Key distinction\n\n`～にくい` is about **the inherent difficulty** of the object/situation — not about your personal inability to do something."
+                }
+            },
+            "format_map": {
+                "Verb": [
+                    {
+                        "VerbToMasu": {}
+                    },
+                    {
+                        "RemovePostfix": {
+                            "postfix": "ます"
+                        }
+                    },
+                    {
+                        "AddPostfix": {
+                            "postfix": "にくい"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "rule_id": "01J5N4YASUI0000000000000012",
+            "level": "N4",
+            "content": {
+                "Russian": {
+                    "title": "Форма ～やすい",
+                    "short_description": "Легко сделать",
+                    "md_description": "## Форма ～やすい — «Легко / Удобно делать»\n\n### Что это?\n\n`～やすい` выражает, что действие **легко выполнить или что что-то удобно** по природе вещей.\n\n---\n\n### Правило образования\n\n```\n[основа ます\n] + やすい\n書きます → 書きやすい (удобно писать)\n使います → 使いやすい (удобно использовать)\n食べます → 食べやすい (удобно есть)\n理解します → 理解しやすい (легко понять)\n```\n\n---\n\n### Примеры\n\n```\nこのペンは書きやすいです。\nЭтой ручкой удобно писать.\n```\n\n```\nこの教科書はわかりやすいです。\nЭтот учебник понятный (легко понять).\n```\n\n```\nこの料理は食べやすいです。\nЭто блюдо удобно есть.\n```\n\n```\n彼の説明は聞きやすいです。\nЕго объяснения легко слушать (понятно говорит).\n```\n\n---\n\n### ～やすい как и-прилагательное\n\n```\n使いやすいです (удобный)\n使いやすくないです (неудобный)\n使いやすかったです (был удобным)\n```\n\n---\n\n### Полезные пары\n\n| (-) | (+) |\n|-----|-----|\n| `書きにくい` | `書きやすい` |\n| `わかりにくい` | `わかりやすい` |\n| `使いにくい` | `使いやすい` |\n\n---\n\n### 💡 Лайфхак\n\n`わかりやすい` (понятный, доступный) — одно из самых полезных слов для отзывов об учебниках, объяснениях, инструкциях. Запомни его!"
+                },
+                "English": {
+                    "title": "Form ～やすい",
+                    "short_description": "Easy to do",
+                    "md_description": "## Form ～やすい — \"Easy to do\" / \"Convenient\"\n\n### What is it?\n\n`～やすい` expresses that something is **easy or convenient to do** by nature — the positive counterpart of `～にくい`.\n\n---\n\n### Formation\n\n```\n[ます-stem\n] + やすい\n書きます → 書きやすい (easy to write)\n使います → 使いやすい (easy to use)\n食べます → 食べやすい (easy to eat)\n理解します → 理解しやすい (easy to understand)\n```\n\n---\n\n### Examples\n\n```\nこのペンは書きやすいです。\nThis pen is easy to write with.\n```\n\n```\nこの教科書はわかりやすいです。\nThis textbook is easy to understand.\n```\n\n```\nこの料理は食べやすいです。\nThis dish is easy to eat.\n```\n\n```\n彼の説明は聞きやすいです。\nHis explanations are easy to follow.\n```\n\n---\n\n### Conjugates like an i-adjective\n\n```\n使いやすいです (easy to use)\n使いやすくないです (not easy to use)\n使いやすかったです (was easy to use)\n```\n\n---\n\n### Useful pairs\n\n| Difficult | Easy |\n|-----------|------|\n| `書きにくい` | `書きやすい` |\n| `わかりにくい` | `わかりやすい` |\n| `使いにくい` | `使いやすい` |\n\n---\n\n### 💡 Tip\n\n`わかりやすい` (easy to understand / clear) is one of the most useful vocabulary words for reviews, explanations, and instructions. Learn it!"
+                }
+            },
+            "format_map": {
+                "Verb": [
+                    {
+                        "VerbToMasu": {}
+                    },
+                    {
+                        "RemovePostfix": {
+                            "postfix": "ます"
+                        }
+                    },
+                    {
+                        "AddPostfix": {
+                            "postfix": "やすい"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "rule_id": "01J5N4TEAGERA00000000000013",
+            "level": "N4",
+            "content": {
+                "Russian": {
+                    "title": "Форма ～てあげる",
+                    "short_description": "Сделать для кого-то",
+                    "md_description": "## Форма ～てあげる — «Сделать для кого-то» (даю)\n\n### Что это?\n\n`～てあげる` — конструкция «давать действие»: **я делаю что-то для другого человека** (из себя — вовне). Выражает благодеяние.\n\n---\n\n### Правило образования\n\n```\n[て-форма\n] + あげる\n教える → 教えてあげる (объяснить для кого-то)\n手伝う → 手伝ってあげる (помочь кому-то)\n持つ → 持ってあげる (подержать для кого-то)\n```\n\n---\n\n### Примеры\n\n```\n友達に日本語を教えてあげました。\nЯ объяснил другу японский.\n```\n\n```\n重い荷物を持ってあげましょうか。\nДавайте я возьму тяжёлый багаж (для вас).\n```\n\n```\n彼女にケーキを作ってあげました。\nЯ испёк для неё торт.\n```\n\n---\n\n### Три вектора благодеяния\n\n| Форма | Направление | Значение |\n|-------|------------|---------|\n| `～てあげる` | Я → другой | Я делаю для тебя/него |\n| `～てくれる` | Другой → я | Ты/он делает для меня |\n| `～てもらう` | Я ← другой | Я получаю действие от тебя |\n\n---\n\n### ⚠️ Культурный нюанс\n\n`～てあげる` с незнакомыми или старшими может звучать снисходительно! Лучше использовать `～ましょうか` или `～ていただけますか`. С близкими людьми — нормально."
+                },
+                "English": {
+                    "title": "Form ～てあげる",
+                    "short_description": "Do for someone",
+                    "md_description": "## Form ～てあげる — \"Do for someone\" (giving action)\n\n### What is it?\n\n`～てあげる` expresses **doing something for another person** — the action flows from you outward. It's about giving a favor.\n\n---\n\n### Formation\n\n```\n[て-form\n] + あげる\n教える → 教えてあげる (teach for someone)\n手伝う → 手伝ってあげる (help someone)\n持つ → 持ってあげる (carry for someone)\n```\n\n---\n\n### Examples\n\n```\n友達に日本語を教えてあげました。\nI taught my friend Japanese.\n```\n\n```\n重い荷物を持ってあげましょうか。\nShall I carry your heavy bags?\n```\n\n```\n彼女にケーキを作ってあげました。\nI made a cake for her.\n```\n\n---\n\n### The three giving/receiving patterns\n\n| Form | Direction | Meaning |\n|------|-----------|---------|\n| `～てあげる` | I → other | I do for you/them |\n| `～てくれる` | Other → I | You/they do for me |\n| `～てもらう` | I ← other | I receive the action from you |\n\n---\n\n### ⚠️ Cultural warning\n\nUsing `～てあげる` with strangers or superiors can sound condescending — like you're doing them a big favor. Use `～ましょうか` or `～ていただけますか` instead. With close friends and family, it's completely natural."
+                }
+            },
+            "format_map": {
+                "Verb": [
+                    {
+                        "VerbToTeForm": {}
+                    },
+                    {
+                        "AddPostfix": {
+                            "postfix": "あげる"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "rule_id": "01J5N4TEKURERU0000000000014",
+            "level": "N4",
+            "content": {
+                "Russian": {
+                    "title": "Форма ～てくれる",
+                    "short_description": "Кто-то делает для меня",
+                    "md_description": "## Форма ～てくれる — «Кто-то делает для меня»\n\n### Что это?\n\n`～てくれる` выражает, что **другой человек делает что-то для меня** (или для «моей стороны»). Направление действия — от другого ко мне.\n\n---\n\n### Правило образования\n\n```\n[て-форма\n] + くれる\n教える → 教えてくれる (объяснить для меня)\n助ける → 助けてくれる (помочь мне)\n持つ → 持ってくれる (подержать для меня)\n```\n\n---\n\n### Примеры\n\n```\n先生が漢字を教えてくれました。\nУчитель объяснил мне кандзи.\n```\n\n```\n友達が引っ越しを手伝ってくれました。\nДруг помог мне с переездом.\n```\n\n```\n彼がドアを開けてくれました。\nОн открыл мне дверь.\n```\n\n```\nお父さんが自転車を買ってくれました。\nПапа купил мне велосипед.\n```\n\n---\n\n### Просьба через `～てくれる`\n\nВ повелительном + вопросительном:\n```\nちょっと待ってくれる？(Подождёшь немного? — неформально)\nちょっと待ってくれますか？(Подождёте? — вежливее)\n```\n\n---\n\n### Вежливая форма\n\n```\n～てくれる → ～てくれます (вежливо)\n～てくれる → ～てくださる (очень вежливо, когда старший делает для тебя)\n```\n\n---\n\n### 💡 Различие агентов\n\n| | Кто делает | Для кого |\n|-|-----------|---------|\n| `あげる` | Я | Другой |\n| `くれる` | Другой | Я (или моя сторона) |\n| `もらう` | Я | — (получаю от другого) |"
+                },
+                "English": {
+                    "title": "Form ～てくれる",
+                    "short_description": "Someone does for me",
+                    "md_description": "## Form ～てくれる — \"Someone does for me\"\n\n### What is it?\n\n`～てくれる` expresses that **another person does something for me** (or for my side). The action flows toward the speaker.\n\n---\n\n### Formation\n\n```\n[て-form\n] + くれる\n教える → 教えてくれる (teach for me)\n助ける → 助けてくれる (help me)\n持つ → 持ってくれる (carry for me)\n```\n\n---\n\n### Examples\n\n```\n先生が漢字を教えてくれました。\nMy teacher taught me kanji.\n```\n\n```\n友達が引っ越しを手伝ってくれました。\nMy friend helped me move.\n```\n\n```\n彼がドアを開けてくれました。\nHe opened the door for me.\n```\n\n```\nお父さんが自転車を買ってくれました。\nMy dad bought me a bicycle.\n```\n\n---\n\n### Making requests with ～てくれる\n\n```\nちょっと待ってくれる？(Can you wait a sec? — casual)\nちょっと待ってくれますか？(Could you wait a moment? — polite)\n```\n\n---\n\n### Honorific upgrade\n\n```\n～てくれる → ～てくださる (when a superior does something for you)\n```\n\n---\n\n### The three-way system\n\n| | Who acts | For whom |\n|-|---------|---------|\n| `あげる` | I | Other person |\n| `くれる` | Other person | Me |\n| `もらう` | I (receive) | From other |"
+                }
+            },
+            "format_map": {
+                "Verb": [
+                    {
+                        "VerbToTeForm": {}
+                    },
+                    {
+                        "AddPostfix": {
+                            "postfix": "くれる"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "rule_id": "01J5N4TEMORAU0000000000015",
+            "level": "N4",
+            "content": {
+                "Russian": {
+                    "title": "Форма ～てもらう",
+                    "short_description": "Попросить сделать",
+                    "md_description": "## Форма ～てもらう — «Получить действие / Попросить сделать»\n\n### Что это?\n\n`～てもらう` выражает, что **я получаю действие от кого-то** — я инициирую или прошу об этом. Фокус на выгоде для говорящего.\n\n---\n\n### Правило образования\n\n```\n[て-форма\n] + もらう\n教える → 教えてもらう (попросить объяснить)\n直す → 直してもらう (попросить починить)\n書く → 書いてもらう (попросить написать)\n```\n\n---\n\n### Примеры\n\n```\n友達に日本語を教えてもらいました。\nЯ попросил друга объяснить мне японский.\n```\n\n```\n医者に薬を処方してもらいました。\nВрач выписал мне лекарство (я получил рецепт).\n```\n\n```\n彼に荷物を持ってもらいました。\nЯ попросил его нести багаж.\n```\n\n---\n\n### Просьба через ～てもらえませんか\n\n`～てもらえませんか` = «Не могли бы вы сделать для меня?» (вежливая просьба):\n```\n写真を撮ってもらえませんか。\nНе могли бы вы сфотографировать меня?\n```\n\n---\n\n### Сравнение системы дарения\n\n| Форма | Значение |\n|-------|---------|\n| `教えてあげました` | Я объяснил другому |\n| `教えてくれました` | Другой объяснил мне |\n| `教えてもらいました` | Я получил объяснение от другого |\n\n---\n\n### 💡 Нюанс\n\n`してもらう` и `してくれる` похожи, но:\n- `くれる` — акцент на добровольном действии другого\n- `もらう` — акцент на том, что я инициировал/получил"
+                },
+                "English": {
+                    "title": "Form ～てもらう",
+                    "short_description": "Get someone to do",
+                    "md_description": "## Form ～てもらう — \"Have someone do\" / \"Get someone to do\"\n\n### What is it?\n\n`～てもらう` expresses **receiving an action from someone** — the speaker initiates or benefits from the action. The focus is on the speaker's gain.\n\n---\n\n### Formation\n\n```\n[て-form\n] + もらう\n教える → 教えてもらう (have someone teach me)\n直す → 直してもらう (have something fixed)\n書く → 書いてもらう (have someone write)\n```\n\n---\n\n### Examples\n\n```\n友達に日本語を教えてもらいました。\nI had my friend teach me Japanese.\n```\n\n```\n医者に薬を処方してもらいました。\nI had the doctor prescribe me medicine.\n```\n\n```\n彼に荷物を持ってもらいました。\nI had him carry my bags.\n```\n\n---\n\n### Polite request with ～てもらえませんか\n\n```\n写真を撮ってもらえませんか。\nCould you take a photo for me?\n```\n\n---\n\n### The three-way giving/receiving system\n\n| Form | Meaning |\n|------|---------|\n| `教えてあげました` | I taught (someone else) |\n| `教えてくれました` | Someone taught me |\n| `教えてもらいました` | I received teaching from someone |\n\n---\n\n### 💡 Subtle difference\n\n`くれる` focuses on the other person's voluntary action.\n`もらう` focuses on the speaker having initiated or received the benefit."
+                }
+            },
+            "format_map": {
+                "Verb": [
+                    {
+                        "VerbToTeForm": {}
+                    },
+                    {
+                        "AddPostfix": {
+                            "postfix": "もらう"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "rule_id": "01J5N4TEARU0000000000000016",
+            "level": "N4",
+            "content": {
+                "Russian": {
+                    "title": "Форма ～てある",
+                    "short_description": "Сделано / Подготовлено",
+                    "md_description": "## Форма ～てある — «Сделано / Подготовлено»\n\n### Что это?\n\n`～てある` выражает **результат намеренного действия**: кто-то специально что-то сделал, и результат виден. В отличие от `～ている` (просто состояние), `～てある` подчёркивает, что действие было намеренным.\n\n---\n\n### Правило образования\n\n```\n[て-форма переходного глагола\n] + ある\n開ける → 開けてある (открыто — кто-то специально открыл)\n書く → 書いてある (написано — кто-то написал)\n準備する → 準備してある (подготовлено)\n```\n\n> ⚠️ Только с **переходными глаголами** (теми, у которых есть объект)!\n\n---\n\n### Примеры\n\n```\n黒板に名前が書いてあります。\nНа доске написано имя (кто-то написал специально).\n```\n\n```\nドアが開けてあります。\nДверь открыта (кто-то специально открыл).\n```\n\n```\n旅行の準備がしてあります。\nВсё подготовлено к поездке.\n```\n\n```\nテーブルの上に花が飾ってあります。\nНа столе стоят цветы (кто-то поставил специально).\n```\n\n---\n\n### Сравнение: ～てある vs. ～ている\n\n| Форма | Акцент | Пример |\n|-------|--------|--------|\n| `ドアが開いている` | Состояние (открыто) | Нейтрально |\n| `ドアが開けてある` | Намеренное действие | Кто-то открыл специально |\n\n---\n\n### 💡 Лайфхак\n\n`～てある` часто используется, чтобы сказать «уже сделано, не беспокойся»:\n```\nもう予約してあります。(Уже забронировано.)\n```"
+                },
+                "English": {
+                    "title": "Form ～てある",
+                    "short_description": "Done / Prepared",
+                    "md_description": "## Form ～てある — \"Has been done\" / \"Is prepared\"\n\n### What is it?\n\n`～てある` expresses the **result of an intentional action** — someone deliberately did something, and its effect is still visible. Unlike `～ている` (neutral state), `～てある` emphasizes purposeful preparation.\n\n---\n\n### Formation\n\n```\n[て-form of transitive verb\n] + ある\n開ける → 開けてある (is open — someone opened it)\n書く → 書いてある (is written — someone wrote it)\n準備する → 準備してある (is prepared)\n```\n\n> ⚠️ Only works with **transitive verbs** (verbs that take a direct object)!\n\n---\n\n### Examples\n\n```\n黒板に名前が書いてあります。\nA name is written on the blackboard (someone wrote it there).\n```\n\n```\nドアが開けてあります。\nThe door is open (someone opened it on purpose).\n```\n\n```\n旅行の準備がしてあります。\nThe preparations for the trip have been made.\n```\n\n```\nテーブルの上に花が飾ってあります。\nFlowers are arranged on the table (someone placed them there).\n```\n\n---\n\n### Contrast: ～てある vs. ～ている\n\n| Form | Focus | Example |\n|------|-------|---------|\n| `ドアが開いている` | State (it's open) | Neutral |\n| `ドアが開けてある` | Intentional action | Someone opened it deliberately |\n\n---\n\n### 💡 Tip\n\n`～てある` is perfect for saying \"it's already taken care of\":\n```\nもう予約してあります。(The reservation has already been made.)\n```"
+                }
+            },
+            "format_map": {
+                "Verb": [
+                    {
+                        "VerbToTeForm": {}
+                    },
+                    {
+                        "AddPostfix": {
+                            "postfix": "ある"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "rule_id": "01J5N4TEOKU0000000000000017",
+            "level": "N4",
+            "content": {
+                "Russian": {
+                    "title": "Форма ～ておく",
+                    "short_description": "Сделать заранее",
+                    "md_description": "## Форма ～ておく — «Сделать заранее / Про запас»\n\n### Что это?\n\n`～ておく` выражает **подготовительное действие**: сделать что-то заранее с определённой целью или «на всякий случай».\n\n---\n\n### Правило образования\n\n```\n[て-форма\n] + おく\n準備する → 準備しておく (подготовиться заранее)\n読む → 読んでおく (прочитать заранее)\n調べる → 調べておく (выяснить заранее)\n```\n\n---\n\n### Примеры\n\n```\n旅行の前にホテルを予約しておきます。\nПеред поездкой забронирую отель заранее.\n```\n\n```\n試験のために単語を覚えておきました。\nК экзамену я заранее выучил слова.\n```\n\n```\n冷蔵庫に食べ物を入れておいてください。\nПожалуйста, положи еду в холодильник (на потом).\n```\n\n```\n会議の前に資料を読んでおいてください。\nПожалуйста, прочитайте материалы до встречи.\n```\n\n---\n\n### Разговорное сокращение: ～とく\n\n```\n読んでおく → 読んどく\n準備しておく → 準備しとく\n```\n\n---\n\n### Сравнение: ～てある vs. ～ておく\n\n| Форма | Акцент |\n|-------|--------|\n| `読んでおく` | Действие (процесс подготовки) |\n| `読んである` | Результат (уже прочитано) |\n\n---\n\n### 💡 Типичные контексты\n\n- Перед экзаменом: `勉強しておく`\n- Перед поездкой: `荷物を準備しておく`\n- «На всякий случай»: `メモしておく` (записать на всякий случай)"
+                },
+                "English": {
+                    "title": "Form ～ておく",
+                    "short_description": "Do in advance",
+                    "md_description": "## Form ～ておく — \"Do in advance\" / \"Prepare ahead\"\n\n### What is it?\n\n`～ておく` expresses **doing something in preparation** for a future event — \"do it ahead of time\" or \"do it just in case.\"\n\n---\n\n### Formation\n\n```\n[て-form\n] + おく\n準備する → 準備しておく (prepare in advance)\n読む → 読んでおく (read ahead of time)\n調べる → 調べておく (look into beforehand)\n```\n\n---\n\n### Examples\n\n```\n旅行の前にホテルを予約しておきます。\nI'll book the hotel in advance before the trip.\n```\n\n```\n試験のために単語を覚えておきました。\nI memorized vocabulary in advance for the exam.\n```\n\n```\n冷蔵庫に食べ物を入れておいてください。\nPlease put some food in the fridge (for later).\n```\n\n```\n会議の前に資料を読んでおいてください。\nPlease read the materials before the meeting.\n```\n\n---\n\n### Casual contraction: ～とく\n\n```\n読んでおく → 読んどく\n準備しておく → 準備しとく\n```\n\n---\n\n### Contrast: ～ておく vs. ～てある\n\n| Form | Focus |\n|------|-------|\n| `読んでおく` | The act of preparing |\n| `読んである` | The result (it's already read) |\n\n---\n\n### 💡 Common contexts\n\n- Before an exam: `勉強しておく` (study ahead)\n- Before a trip: `荷物を準備しておく` (pack in advance)\n- Just in case: `メモしておく` (write it down to be safe)"
+                }
+            },
+            "format_map": {
+                "Verb": [
+                    {
+                        "VerbToTeForm": {}
+                    },
+                    {
+                        "AddPostfix": {
+                            "postfix": "おく"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "rule_id": "01J5N4TESHIMAU0000000000018",
+            "level": "N4",
+            "content": {
+                "Russian": {
+                    "title": "Форма ～てしまう",
+                    "short_description": "Сделать полностью / Случайно",
+                    "md_description": "## Форма ～てしまう — «Уже сделал / К сожалению»\n\n### Что это?\n\n`～てしまう` имеет два главных значения:\n1. **Завершённость** — «полностью сделал», «уже сделал»\n2. **Сожаление/нежелательность** — «нечаянно сделал», «к сожалению произошло»\n\n---\n\n### Правило образования\n\n```\n[て-форма\n] + しまう\n食べる → 食べてしまう (всё съел / к сожалению съел)\n忘れる → 忘れてしまう (совсем забыл / к сожалению забыл)\n壊す → 壊してしまう (сломал окончательно)\n```\n\n---\n\n### Примеры: Завершённость\n\n```\n宿題をしてしまいました。\nЯ уже сделал домашнее задание (полностью).\n```\n\n```\nその本を読んでしまいました。\nЯ уже дочитал эту книгу.\n```\n\n---\n\n### Примеры: Сожаление\n\n```\n財布を忘れてしまいました。\nК сожалению, я забыл кошелёк.\n```\n\n```\n大切なデータを消してしまいました。\nЯ нечаянно удалил важные данные.\n```\n\n```\nケーキを全部食べてしまった。\n(К стыду своему) съел весь торт.\n```\n\n---\n\n### Разговорные сокращения: ～ちゃう / ～じゃう\n\n```\n食べてしまう → 食べちゃう\n飲んでしまう → 飲んじゃう\n```\n\n---\n\n### 💡 Как понять значение?\n\n- Нейтральный контекст → **завершённость**\n- Нежелательный результат → **сожаление/случайность**\n- В японском часто оба значения совпадают: «уже сделал — и теперь ничего не поделаешь»."
+                },
+                "English": {
+                    "title": "Form ～てしまう",
+                    "short_description": "Do completely / By mistake",
+                    "md_description": "## Form ～てしまう — \"Completely done\" / \"Ended up doing\"\n\n### What is it?\n\n`～てしまう` carries two main nuances:\n1. **Completion** — \"finished doing,\"\"it's all done\"\n2. **Regret/unintended result** — \"accidentally did,\"\"ended up doing (and now I feel bad)\"\n\n---\n\n### Formation\n\n```\n[て-form\n] + しまう\n食べる → 食べてしまう (ate it all / accidentally ate it)\n忘れる → 忘れてしまう (completely forgot / unfortunately forgot)\n壊す → 壊してしまう (broke it completely)\n```\n\n---\n\n### Examples: Completion\n\n```\n宿題をしてしまいました。\nI've already finished my homework.\n```\n\n```\nその本を読んでしまいました。\nI've already read the whole book.\n```\n\n---\n\n### Examples: Regret\n\n```\n財布を忘れてしまいました。\nI accidentally left my wallet behind.\n```\n\n```\n大切なデータを消してしまいました。\nI accidentally deleted important data.\n```\n\n```\nケーキを全部食べてしまった。\nI went and ate all the cake (oops).\n```\n\n---\n\n### Casual contractions: ～ちゃう / ～じゃう\n\n```\n食べてしまう → 食べちゃう\n飲んでしまう → 飲んじゃう\n```\n\n---\n\n### 💡 How to tell the meanings apart?\n\n- Neutral context → **completion**\n- Undesirable result → **regret**\n- Often both overlap — \"it's done and there's no going back\" — which is precisely the nuance the form carries."
+                }
+            },
+            "format_map": {
+                "Verb": [
+                    {
+                        "VerbToTeForm": {}
+                    },
+                    {
+                        "AddPostfix": {
+                            "postfix": "しまう"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "rule_id": "01J5N4TEHOSHII0000000000019",
+            "level": "N4",
+            "content": {
+                "Russian": {
+                    "title": "Форма ～てほしい",
+                    "short_description": "Хочу, чтобы сделали",
+                    "md_description": "## Форма ～てほしい — «Хочу, чтобы ты сделал»\n\n### Что это?\n\n`～てほしい` выражает **желание, чтобы другой человек сделал что-то**: «хочу, чтобы ты...», «мне бы хотелось, чтобы...».\n\n---\n\n### Правило образования\n\n```\n[て-форма\n] + ほしい\n来る → 来てほしい (хочу, чтобы пришёл)\n手伝う → 手伝ってほしい (хочу, чтобы помог)\n止める → 止めてほしい (хочу, чтобы остановился)\n```\n\n---\n\n### Примеры\n\n```\nもっと練習してほしいです。\nХочу, чтобы вы больше практиковались.\n```\n\n```\n早く来てほしいです。\nХочу, чтобы ты пришёл пораньше.\n```\n\n```\nタバコをやめてほしいです。\nХочу, чтобы ты бросил курить.\n```\n\n```\n正直に話してほしかったです。\nХотел(а) бы, чтобы ты говорил(а) честно.\n```\n\n---\n\n### Структура\n\n```\n[Субъект\n] に + [て-форма\n] + ほしい\n友達に来てほしい。(Хочу, чтобы друг пришёл.)\n```\n\n---\n\n### Отрицание: ～てほしくない / ～ないでほしい\n\n```\n行ってほしくないです。(Не хочу, чтобы ты шёл.)\n行かないでほしいです。(Хочу, чтобы ты не шёл.)\n```\n\n---\n\n### ⚠️ Осторожно с вежливостью\n\n`～てほしい` может звучать как давление. В более вежливых ситуациях используй `～ていただけますか`."
+                },
+                "English": {
+                    "title": "Form ～てほしい",
+                    "short_description": "Want someone to do",
+                    "md_description": "## Form ～てほしい — \"Want someone to do\"\n\n### What is it?\n\n`～てほしい` expresses **wanting another person to do something** — \"I want you to...,\"\"I'd like you to...\"\n\n---\n\n### Formation\n\n```\n[て-form\n] + ほしい\n来る → 来てほしい (want you to come)\n手伝う → 手伝ってほしい (want you to help)\n止める → 止めてほしい (want you to stop)\n```\n\n---\n\n### Examples\n\n```\nもっと練習してほしいです。\nI want you to practice more.\n```\n\n```\n早く来てほしいです。\nI want you to come early.\n```\n\n```\nタバコをやめてほしいです。\nI want you to quit smoking.\n```\n\n```\n正直に話してほしかったです。\nI wished you had been honest with me.\n```\n\n---\n\n### Sentence structure\n\n```\n[person\n] に + [て-form\n] + ほしい\n友達に来てほしい。(I want my friend to come.)\n```\n\n---\n\n### Negative forms\n\n```\n行ってほしくないです。(I don't want you to go.)\n行かないでほしいです。(I want you to not go.)\n```\n\n---\n\n### ⚠️ Politeness note\n\n`～てほしい` can sound pressuring. In formal contexts, opt for `～ていただけますか` instead."
+                }
+            },
+            "format_map": {
+                "Verb": [
+                    {
+                        "VerbToTeForm": {}
+                    },
+                    {
+                        "AddPostfix": {
+                            "postfix": "ほしい"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "rule_id": "01J5N4NARU0000000000000020",
+            "level": "N4",
+            "content": {
+                "Russian": {
+                    "title": "Форма ～になる",
+                    "short_description": "Становится (глагол)",
+                    "md_description": "## Форма ～になる — «Становиться»\n\n### Что это?\n\n`～になる` выражает **изменение состояния**: «становиться чем-то / кем-то». Используется с существительными и на-прилагательными.\n\n---\n\n### Правило образования\n\n```\n[существительное/な-прилагательное\n] + になる\n先生 → 先生になる (стать учителем)\n有名 → 有名になる (стать знаменитым)\n便利 → 便利になる (стать удобным)\n```\n\n> Для и-прилагательных: `～くなる` (см. отдельную статью)\n\n---\n\n### Примеры\n\n```\n将来、医者になりたいです。\nВ будущем хочу стать врачом.\n```\n\n```\n彼は有名な作家になりました。\nОн стал знаменитым писателем.\n```\n\n```\n秋になると、葉が赤くなります。\nКогда наступает осень, листья краснеют.\n```\n\n```\nこの街は便利になりましたね。\nЭтот город стал удобнее, правда?\n```\n\n---\n\n### С и-прилагательными используй ～くなる\n\n| Тип | Форма | Пример |\n|-----|-------|--------|\n| Существительное | ～になる | `先生になる` |\n| На-прилагательное | ～になる | `有名になる` |\n| И-прилагательное | ～くなる | `暑くなる` |\n\n---\n\n### 💡 Одно из самых нужных слов\n\n`なる` = «становиться» — фундаментальный глагол. В сочетании с `ようになる`, `ことになる`, `ことにする` образует множество важных конструкций."
+                },
+                "English": {
+                    "title": "Form ～になる",
+                    "short_description": "Becomes (verb)",
+                    "md_description": "## Form ～になる — \"Become\"\n\n### What is it?\n\n`～になる` expresses a **change of state** — \"become something/someone.\" Used with nouns and na-adjectives.\n\n---\n\n### Formation\n\n```\n[noun/na-adjective\n] + になる\n先生 → 先生になる (become a teacher)\n有名 → 有名になる (become famous)\n便利 → 便利になる (become convenient)\n```\n\n> For i-adjectives: use `～くなる` (separate entry)\n\n---\n\n### Examples\n\n```\n将来、医者になりたいです。\nI want to become a doctor in the future.\n```\n\n```\n彼は有名な作家になりました。\nHe became a famous author.\n```\n\n```\n秋になると、葉が赤くなります。\nWhen autumn comes, the leaves turn red.\n```\n\n```\nこの街は便利になりましたね。\nThis city has become more convenient, hasn't it?\n```\n\n---\n\n### Adjective comparison\n\n| Type | Form | Example |\n|------|------|---------|\n| Noun | ～になる | `先生になる` |\n| Na-adjective | ～になる | `有名になる` |\n| I-adjective | ～くなる | `暑くなる` |\n\n---\n\n### 💡 Key verb to master\n\n`なる` (to become) is foundational — it combines with `ように`, `こと`, and many other patterns to create essential grammar structures."
+                }
+            },
+            "format_map": {
+                "Verb": [
+                    {
+                        "VerbToNai": {}
+                    },
+                    {
+                        "AddPostfix": {
+                            "postfix": "になる"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "rule_id": "01J5N3YOUWOSURU0000000001",
+            "level": "N3",
+            "content": {
+                "Russian": {
+                    "title": "Форма ～ようにする",
+                    "short_description": "Стараться сделать",
+                    "md_description": "## Форма ～ようにする — «Стараться / Следить за тем, чтобы»\n\n### Что это?\n\n`～ようにする` выражает **намеренные усилия** или привычку: «стараюсь делать», «слежу за тем, чтобы». Акцент на сознательном усилии.\n\n---\n\n### Правило образования\n\n```\n[словарная форма / ない-форма\n] + ようにする\n食べる → 食べるようにする (стараться есть)\n起きる → 早く起きるようにする (стараться вставать рано)\n食べない → 甘いものを食べないようにする (стараться не есть сладкое)\n```\n\n---\n\n### Примеры\n\n```\n毎日運動するようにしています。\nЯ стараюсь заниматься спортом каждый день.\n```\n\n```\n塩を取りすぎないようにしています。\nСтараюсь не есть слишком много соли.\n```\n\n```\n早く寝るようにしてください。\nПожалуйста, старайтесь ложиться спать пораньше.\n```\n\n```\n英語で話すようにしています。\nСтараюсь говорить по-английски.\n```\n\n---\n\n### Сравнение: ～ようにする vs. ～ようになる\n\n| Форма | Значение |\n|-------|---------|\n| `食べるようにする` | Стараюсь есть (активное усилие) |\n| `食べるようになる` | Начал есть (изменение, результат) |\n\n---\n\n### 💡 Типичное использование\n\n`～ようにしています` (форма `～ている`) = «Я взял за правило», «У меня это уже привычка»:\n```\n毎朝野菜を食べるようにしています。\nЯ взял за правило есть овощи каждое утро.\n```"
+                },
+                "English": {
+                    "title": "Form ～ようにする",
+                    "short_description": "Try to do / Make effort to",
+                    "md_description": "## Form ～ようにする — \"Make an effort to\" / \"Try to\"\n\n### What is it?\n\n`～ようにする` expresses **deliberate effort or habitual intention** — \"I make a point of doing,\"\"I try to make sure.\" The emphasis is on conscious effort.\n\n---\n\n### Formation\n\n```\n[plain form / ない-form\n] + ようにする\n食べる → 食べるようにする (try to eat)\n早く起きる → 早く起きるようにする (try to wake up early)\n食べない → 甘いものを食べないようにする (try not to eat sweets)\n```\n\n---\n\n### Examples\n\n```\n毎日運動するようにしています。\nI make a point of exercising every day.\n```\n\n```\n塩を取りすぎないようにしています。\nI try not to consume too much salt.\n```\n\n```\n早く寝るようにしてください。\nPlease try to go to bed early.\n```\n\n```\n英語で話すようにしています。\nI try to speak in English.\n```\n\n---\n\n### Contrast: ～ようにする vs. ～ようになる\n\n| Form | Meaning |\n|------|---------|\n| `食べるようにする` | Actively try to eat (effort) |\n| `食べるようになる` | Came to eat (gradual change, result) |\n\n---\n\n### 💡 In practice\n\n`～ようにしています` (with ～ている) = \"It's become a habit\" or \"I've made it a rule\":\n```\n毎朝野菜を食べるようにしています。\nI've made it a rule to eat vegetables every morning.\n```"
+                }
+            },
+            "format_map": {
+                "Verb": [
+                    {
+                        "VerbToNai": {}
+                    },
+                    {
+                        "AddPostfix": {
+                            "postfix": "ようにする"
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}

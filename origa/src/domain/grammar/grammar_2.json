@@ -1,0 +1,684 @@
+{
+    "grammar": [
+        {
+            "rule_id": "01J5N5REFPARTICLEHE00000000036",
+            "level": "N5",
+            "content": {
+                "Russian": {
+                    "title": "Частица へ (направление)",
+                    "short_description": "Указание направления движения",
+                    "md_description": "場所へ行きます - Иду в (место). Частица へ указывает направление."
+                },
+                "English": {
+                    "title": "Particle へ (direction)",
+                    "short_description": "Indicating direction of movement",
+                    "md_description": "場所へ行きます - Going to (place). Particle へ indicates direction."
+                }
+            },
+            "format_map": null
+        },
+        {
+            "rule_id": "01J5N5REFPARTICLEDE00000000037",
+            "level": "N5",
+            "content": {
+                "Russian": {
+                    "title": "Частица で (средство)",
+                    "short_description": "Указание средства или транспорта",
+                    "md_description": "乗り物で行きます - Еду на (транспорте). Частица で указывает средство."
+                },
+                "English": {
+                    "title": "Particle で (means)",
+                    "short_description": "Indicating means or transport",
+                    "md_description": "乗り物で行きます - Going by (transport). Particle で indicates means."
+                }
+            },
+            "format_map": null
+        },
+        {
+            "rule_id": "01J5N5REFPARTICLETO00000000038",
+            "level": "N5",
+            "content": {
+                "Russian": {
+                    "title": "Частица と (с кем)",
+                    "short_description": "Указание компаньона",
+                    "md_description": "人と行きます - Иду с (человеком). Частица と указывает с кем делается действие."
+                },
+                "English": {
+                    "title": "Particle と (with)",
+                    "short_description": "Indicating companion",
+                    "md_description": "人と行きます - Going with (person). Particle と indicates with whom."
+                }
+            },
+            "format_map": null
+        },
+        {
+            "rule_id": "01J5N5REFKARA_MADE00000000039",
+            "level": "N5",
+            "content": {
+                "Russian": {
+                    "title": "Частицы から/まで (от/до)",
+                    "short_description": "Указание временного или пространственного диапазона",
+                    "md_description": "AからBまで - от A до B. Используется для времени и места."
+                },
+                "English": {
+                    "title": "Particles から/まで (from/until)",
+                    "short_description": "Indicating time or space range",
+                    "md_description": "AからBまで - from A to B. Used for time and place."
+                }
+            },
+            "format_map": null
+        },
+        {
+            "rule_id": "01J5N5REFSUUKI_JIKAN0000000040",
+            "level": "N5",
+            "content": {
+                "Russian": {
+                    "title": "Время: 〜時〜分です",
+                    "short_description": "Выражение времени",
+                    "md_description": "X時Y分です - Сейчас X часов Y минут. Для выражения времени."
+                },
+                "English": {
+                    "title": "Time: 〜時〜分です",
+                    "short_description": "Expressing time",
+                    "md_description": "X時Y分です - It's X o'clock Y minutes. For telling time."
+                }
+            },
+            "format_map": null
+        },
+        {
+            "rule_id": "01J5N5REFYOUBI00000000000000041",
+            "level": "N5",
+            "content": {
+                "Russian": {
+                    "title": "Дни недели: 〜は〜曜日です",
+                    "short_description": "Выражение дней недели",
+                    "md_description": "今日は月曜日です - Сегодня понедельник. Для выражения дней недели."
+                },
+                "English": {
+                    "title": "Days of week: 〜は〜曜日です",
+                    "short_description": "Expressing days of week",
+                    "md_description": "今日は月曜日です - Today is Monday. For expressing days of week."
+                }
+            },
+            "format_map": null
+        },
+        {
+            "rule_id": "01J5N5REFSUKI_KIRAI000000000042",
+            "level": "N5",
+            "content": {
+                "Russian": {
+                    "title": "好き/嫌い (нравится/не нравится)",
+                    "short_description": "Выражение предпочтений",
+                    "md_description": "Nが好きです/嫌いです - Нравится/не нравится N. На-прилагательные для предпочтений."
+                },
+                "English": {
+                    "title": "好き/嫌い (like/dislike)",
+                    "short_description": "Expressing preferences",
+                    "md_description": "Nが好きです/嫌いです - Like/dislike N. Na-adjectives for preferences."
+                }
+            },
+            "format_map": null
+        },
+        {
+            "rule_id": "01J5N5REFKARA_REASON00000000043",
+            "level": "N5",
+            "content": {
+                "Russian": {
+                    "title": "Частица から (причина)",
+                    "short_description": "Выражение причины",
+                    "md_description": "理由から〜 - Из-за причины... Частица から указывает причину."
+                },
+                "English": {
+                    "title": "Particle から (reason)",
+                    "short_description": "Expressing reason",
+                    "md_description": "理由から〜 - Because of reason... Particle から indicates reason."
+                }
+            },
+            "format_map": null
+        },
+        {
+            "rule_id": "01J5N5REFARIMASU_IMASU000000044",
+            "level": "N5",
+            "content": {
+                "Russian": {
+                    "title": "あります/います (существование)",
+                    "short_description": "Выражение существования одушевлённых/неодушевлённых",
+                    "md_description": "Nがあります/います - Есть N. あります для неодушевлённых, います для одушевлённых."
+                },
+                "English": {
+                    "title": "あります/います (existence)",
+                    "short_description": "Expressing existence of inanimate/animate",
+                    "md_description": "Nがあります/います - There is N. あります for inanimate, います for animate."
+                }
+            },
+            "format_map": null
+        },
+        {
+            "rule_id": "01J5N5REFHOUSHII0000000000000045",
+            "level": "N5",
+            "content": {
+                "Russian": {
+                    "title": "欲しい (хочу предмет)",
+                    "short_description": "Выражение желания иметь предмет",
+                    "md_description": "Nが欲しいです - Хочу N. Для выражения желания иметь что-то."
+                },
+                "English": {
+                    "title": "欲しい (want object)",
+                    "short_description": "Expressing desire for an object",
+                    "md_description": "Nが欲しいです - I want N. For expressing desire to have something."
+                }
+            },
+            "format_map": null
+        },
+        {
+            "rule_id": "01J5N5REFTARI_TARI00000000000046",
+            "level": "N5",
+            "content": {
+                "Russian": {
+                    "title": "〜たり、〜たりします",
+                    "short_description": "Перечисление действий",
+                    "md_description": "Vたり、Vたりします - Делаю то V, то V. Для неполного перечисления действий."
+                },
+                "English": {
+                    "title": "〜たり、〜たりします",
+                    "short_description": "Listing actions",
+                    "md_description": "Vたり、Vたりします - Do things like V and V. For partial listing of actions."
+                }
+            },
+            "format_map": null
+        },
+        {
+            "rule_id": "01J5N5REFTOMOimasu00000000000047",
+            "level": "N5",
+            "content": {
+                "Russian": {
+                    "title": "〜と思います (мнение/предположение)",
+                    "short_description": "Выражение мнения или предположения",
+                    "md_description": "普通体と思います - Думаю, что... Для выражения мнения или предположения."
+                },
+                "English": {
+                    "title": "〜と思います (opinion/conjecture)",
+                    "short_description": "Expressing opinion or conjecture",
+                    "md_description": "普通体と思います - I think that... For expressing opinion or conjecture."
+                }
+            },
+            "format_map": null
+        },
+        {
+            "rule_id": "01J5N4REFNDESKA000000000000048",
+            "level": "N4",
+            "content": {
+                "Russian": {
+                    "title": "〜んですか (объяснение)",
+                    "short_description": "Вопрос с запросом объяснения",
+                    "md_description": "普通体んですか - Почему...? Вопрос с запросом объяснения."
+                },
+                "English": {
+                    "title": "〜んですか (explanation)",
+                    "short_description": "Question requesting explanation",
+                    "md_description": "普通体んですか - Why...? Question requesting explanation."
+                }
+            },
+            "format_map": null
+        },
+        {
+            "rule_id": "01J5N4REFNAGARA0000000000000049",
+            "level": "N4",
+            "content": {
+                "Russian": {
+                    "title": "〜ながら (одновременность)",
+                    "short_description": "Одновременное выполнение двух действий",
+                    "md_description": "Vながら - Делая что-то, одновременно делаю другое. Одновременные действия."
+                },
+                "English": {
+                    "title": "〜ながら (simultaneous)",
+                    "short_description": "Doing two actions simultaneously",
+                    "md_description": "Vながら - Doing something while doing another. Simultaneous actions."
+                }
+            },
+            "format_map": null
+        },
+        {
+            "rule_id": "01J5N4REFSHI_SHI0000000000000050",
+            "level": "N4",
+            "content": {
+                "Russian": {
+                    "title": "〜し、〜し、〜 (перечисление)",
+                    "short_description": "Перечисление причин или свойств",
+                    "md_description": "普通体し、普通体し - И то, и это... Перечисление причин или свойств."
+                },
+                "English": {
+                    "title": "〜し、〜し、〜 (listing)",
+                    "short_description": "Listing reasons or characteristics",
+                    "md_description": "普通体し、普通体し - And this, and that... Listing reasons or characteristics."
+                }
+            },
+            "format_map": null
+        },
+        {
+            "rule_id": "01J5N4REFTSUMORI00000000000000051",
+            "level": "N4",
+            "content": {
+                "Russian": {
+                    "title": "〜つもりです (намерение)",
+                    "short_description": "Выражение намерения",
+                    "md_description": "普通体つもりです - Собираюсь... Выражение намерения сделать что-то."
+                },
+                "English": {
+                    "title": "〜つもりです (intention)",
+                    "short_description": "Expressing intention",
+                    "md_description": "普通体つもりです - I intend to... Expressing intention to do something."
+                }
+            },
+            "format_map": null
+        },
+        {
+            "rule_id": "01J5N4REFYOTEI00000000000000000052",
+            "level": "N4",
+            "content": {
+                "Russian": {
+                    "title": "〜予定です (план)",
+                    "short_description": "Выражение запланированного действия",
+                    "md_description": "普通体予定です - Планирую... Выражение запланированного действия."
+                },
+                "English": {
+                    "title": "〜予定です (plan)",
+                    "short_description": "Expressing planned action",
+                    "md_description": "普通体予定です - I plan to... Expressing planned action."
+                }
+            },
+            "format_map": null
+        },
+        {
+            "rule_id": "01J5N4REFHOUGAIIDESU000000000053",
+            "level": "N4",
+            "content": {
+                "Russian": {
+                    "title": "〜ほうがいいです (совет)",
+                    "short_description": "Выражение совета",
+                    "md_description": "普通体ほうがいいです - Лучше бы... Выражение совета или рекомендации."
+                },
+                "English": {
+                    "title": "〜ほうがいいです (advice)",
+                    "short_description": "Expressing advice",
+                    "md_description": "普通体ほうがいいです - You'd better... Expressing advice or recommendation."
+                }
+            },
+            "format_map": null
+        },
+        {
+            "rule_id": "01J5N4REFKAMOSHIRENAI00000000054",
+            "level": "N4",
+            "content": {
+                "Russian": {
+                    "title": "〜かもしれません (возможность)",
+                    "short_description": "Выражение возможности",
+                    "md_description": "普通体かもしれません - Возможно, что... Выражение неуверенности."
+                },
+                "English": {
+                    "title": "〜かもしれません (possibility)",
+                    "short_description": "Expressing possibility",
+                    "md_description": "普通体かもしれません - Might be... Expressing uncertainty."
+                }
+            },
+            "format_map": null
+        },
+        {
+            "rule_id": "01J5N4REFNODE000000000000000055",
+            "level": "N4",
+            "content": {
+                "Russian": {
+                    "title": "〜ので (причина/основание)",
+                    "short_description": "Выражение вежливой причины",
+                    "md_description": "普通体ので - Так как... Более вежливый вариант выражения причины."
+                },
+                "English": {
+                    "title": "〜ので (reason/basis)",
+                    "short_description": "Expressing polite reason",
+                    "md_description": "普通体ので - Because... More polite way to express reason."
+                }
+            },
+            "format_map": null
+        },
+        {
+            "rule_id": "01J5N4REFKADOUKA00000000000000056",
+            "level": "N4",
+            "content": {
+                "Russian": {
+                    "title": "〜かどうか (вопрос в предложении)",
+                    "short_description": "Встраивание вопроса в предложение",
+                    "md_description": "普通体かどうか - ...или нет. Встраивание вопроса в предложение."
+                },
+                "English": {
+                    "title": "〜かどうか (embedded question)",
+                    "short_description": "Embedding question in sentence",
+                    "md_description": "普通体かどうか - ...or not. Embedding question in sentence."
+                }
+            },
+            "format_map": null
+        },
+        {
+            "rule_id": "01J5N4REFTAME000000000000000000057",
+            "level": "N4",
+            "content": {
+                "Russian": {
+                    "title": "〜ために (цель/причина)",
+                    "short_description": "Выражение цели или причины",
+                    "md_description": "普通体ために - Для того, чтобы... Выражение цели или причины."
+                },
+                "English": {
+                    "title": "〜ために (purpose/reason)",
+                    "short_description": "Expressing purpose or reason",
+                    "md_description": "普通体ために - In order to... Expressing purpose or reason."
+                }
+            },
+            "format_map": null
+        },
+        {
+            "rule_id": "01J5N4REFYOUNINARU000000000000058",
+            "level": "N4",
+            "content": {
+                "Russian": {
+                    "title": "〜ようになります (изменение)",
+                    "short_description": "Выражение постепенного изменения",
+                    "md_description": "普通体ようになります - Становится возможным... Выражение изменения состояния."
+                },
+                "English": {
+                    "title": "〜ようになります (change)",
+                    "short_description": "Expressing gradual change",
+                    "md_description": "普通体ようになります - Become able to... Expressing change of state."
+                }
+            },
+            "format_map": null
+        },
+        {
+            "rule_id": "01J5N4REFYOUNISURU000000000000059",
+            "level": "N4",
+            "content": {
+                "Russian": {
+                    "title": "〜ようにしています (привычка)",
+                    "short_description": "Выражение привычки или усилия",
+                    "md_description": "普通体ようにしています - Стараюсь делать... Выражение привычки или усилия."
+                },
+                "English": {
+                    "title": "〜ようにしています (habit)",
+                    "short_description": "Expressing habit or effort",
+                    "md_description": "普通体ようにしています - Make effort to... Expressing habit or effort."
+                }
+            },
+            "format_map": null
+        },
+        {
+            "rule_id": "01J5N4REFTOKORODESU000000000000060",
+            "level": "N4",
+            "content": {
+                "Russian": {
+                    "title": "〜ところです (состояние действия)",
+                    "short_description": "Выражение стадии действия",
+                    "md_description": "普通体ところです - Как раз... Выражение стадии выполнения действия."
+                },
+                "English": {
+                    "title": "〜ところです (action state)",
+                    "short_description": "Expressing stage of action",
+                    "md_description": "普通体ところです - Just about to... Expressing stage of action."
+                }
+            },
+            "format_map": null
+        },
+        {
+            "rule_id": "01J5N4REFHAZUDESU000000000000000061",
+            "level": "N4",
+            "content": {
+                "Russian": {
+                    "title": "〜はずです (ожидание)",
+                    "short_description": "Выражение логического ожидания",
+                    "md_description": "普通体はずです - Должно быть... Выражение логического ожидания."
+                },
+                "English": {
+                    "title": "〜はずです (expectation)",
+                    "short_description": "Expressing logical expectation",
+                    "md_description": "普通体はずです - Should be... Expressing logical expectation."
+                }
+            },
+            "format_map": null
+        },
+        {
+            "rule_id": "01J5N4REFTOKA0000000000000000000062",
+            "level": "N4",
+            "content": {
+                "Russian": {
+                    "title": "〜とか (примеры)",
+                    "short_description": "Перечисление примеров",
+                    "md_description": "普通体とか - Например... Перечисление примеров из ряда."
+                },
+                "English": {
+                    "title": "〜とか (examples)",
+                    "short_description": "Listing examples",
+                    "md_description": "普通体とか - Like... Listing examples from a series."
+                }
+            },
+            "format_map": null
+        },
+        {
+            "rule_id": "01J5N3REFTOMORAE0000000000000063",
+            "level": "N3",
+            "content": {
+                "Russian": {
+                    "title": "〜てもらえませんか (просьба)",
+                    "short_description": "Вежливая просьба",
+                    "md_description": "Vてもらえませんか - Не могли бы вы... Вежливая просьба."
+                },
+                "English": {
+                    "title": "〜てもらえませんか (request)",
+                    "short_description": "Polite request",
+                    "md_description": "Vてもらえませんか - Could you please... Polite request."
+                }
+            },
+            "format_map": null
+        },
+        {
+            "rule_id": "01J5N3REFNOYOUNI0000000000000064",
+            "level": "N3",
+            "content": {
+                "Russian": {
+                    "title": "〜のように (подобие)",
+                    "short_description": "Выражение подобия",
+                    "md_description": "普通体のように - Как... Выражение подобия или примера."
+                },
+                "English": {
+                    "title": "〜のように (similarity)",
+                    "short_description": "Expressing similarity",
+                    "md_description": "普通体のように - Like... Expressing similarity or example."
+                }
+            },
+            "format_map": null
+        },
+        {
+            "rule_id": "01J5N3REFKOTOWO0000000000000000065",
+            "level": "N3",
+            "content": {
+                "Russian": {
+                    "title": "〜ことを (вопрос о факте)",
+                    "short_description": "Вопрос о факте или действии",
+                    "md_description": "普通体ことを - О том, что... Вопрос о факте или действии."
+                },
+                "English": {
+                    "title": "〜ことを (fact question)",
+                    "short_description": "Question about fact or action",
+                    "md_description": "普通体ことを - About the fact that... Question about fact or action."
+                }
+            },
+            "format_map": null
+        },
+        {
+            "rule_id": "01J5N3REFWO_TOIU000000000000000066",
+            "level": "N3",
+            "content": {
+                "Russian": {
+                    "title": "〜を〜と言う (название)",
+                    "short_description": "Выражение названия",
+                    "md_description": "AをBと言う - А называют B. Выражение названия чего-либо."
+                },
+                "English": {
+                    "title": "〜を〜と言う (naming)",
+                    "short_description": "Expressing name",
+                    "md_description": "AをBと言う - A is called B. Expressing name of something."
+                }
+            },
+            "format_map": null
+        },
+        {
+            "rule_id": "01J5N3REFDONNANITEMO00000000000067",
+            "level": "N3",
+            "content": {
+                "Russian": {
+                    "title": "どんなに〜ても (усиление)",
+                    "short_description": "Усилительная конструкция",
+                    "md_description": "どんなに普通体ても - Как бы ни... Усилительная конструкция."
+                },
+                "English": {
+                    "title": "どんなに〜ても (emphasis)",
+                    "short_description": "Emphatic construction",
+                    "md_description": "どんなに普通体ても - No matter how... Emphatic construction."
+                }
+            },
+            "format_map": null
+        },
+        {
+            "rule_id": "01J5N3REFKOTONISURU000000000000068",
+            "level": "N3",
+            "content": {
+                "Russian": {
+                    "title": "〜ことにする (решение)",
+                    "short_description": "Выражение решения",
+                    "md_description": "普通体ことにする - Решил... Выражение принятого решения."
+                },
+                "English": {
+                    "title": "〜ことにする (decision)",
+                    "short_description": "Expressing decision",
+                    "md_description": "普通体ことにする - Decide to... Expressing decision made."
+                }
+            },
+            "format_map": null
+        },
+        {
+            "rule_id": "01J5N3REFKOTONINARU000000000000069",
+            "level": "N3",
+            "content": {
+                "Russian": {
+                    "title": "〜ことになる (решение извне)",
+                    "short_description": "Выражение решения извне",
+                    "md_description": "普通体ことになる - Было решено... Выражение решения принятого извне."
+                },
+                "English": {
+                    "title": "〜ことになる (external decision)",
+                    "short_description": "Expressing external decision",
+                    "md_description": "普通体ことになる - It has been decided... Expressing externally made decision."
+                }
+            },
+            "format_map": null
+        },
+        {
+            "rule_id": "01J5N3REFTEHOSHII00000000000000070",
+            "level": "N3",
+            "content": {
+                "Russian": {
+                    "title": "〜てほしい (желание)",
+                    "short_description": "Выражение желания к другому",
+                    "md_description": "Vてほしい - Хочу, чтобы (кто-то)... Выражение желания к другому человеку."
+                },
+                "English": {
+                    "title": "〜てほしい (desire)",
+                    "short_description": "Expressing desire toward other",
+                    "md_description": "Vてほしい - Want someone to... Expressing desire toward another person."
+                }
+            },
+            "format_map": null
+        },
+        {
+            "rule_id": "01J5N3REFTOIUKOTO0000000000000071",
+            "level": "N3",
+            "content": {
+                "Russian": {
+                    "title": "〜ということだ (слухи/объяснение)",
+                    "short_description": "Выражение слухов или объяснения",
+                    "md_description": "普通体ということだ - Говорят, что... Выражение слухов или объяснения."
+                },
+                "English": {
+                    "title": "〜ということだ (hearsay/explanation)",
+                    "short_description": "Expressing hearsay or explanation",
+                    "md_description": "普通体ということだ - They say that... Expressing hearsay or explanation."
+                }
+            },
+            "format_map": null
+        },
+        {
+            "rule_id": "01J5N3REFDEARU000000000000000000072",
+            "level": "N3",
+            "content": {
+                "Russian": {
+                    "title": "〜である (письменная форма)",
+                    "short_description": "Письменная форма связки",
+                    "md_description": "普通体である - Является... Письменная форма связки です/だ."
+                },
+                "English": {
+                    "title": "〜である (written form)",
+                    "short_description": "Written form of copula",
+                    "md_description": "普通体である - Is... Written form of です/だ copula."
+                }
+            },
+            "format_map": null
+        },
+        {
+            "rule_id": "01J5N3REFTOUTOSURU0000000000000073",
+            "level": "N3",
+            "content": {
+                "Russian": {
+                    "title": "〜とする (предположение)",
+                    "short_description": "Выражение предположения",
+                    "md_description": "普通体とする - Предположим, что... Выражение гипотетической ситуации."
+                },
+                "English": {
+                    "title": "〜とする (assumption)",
+                    "short_description": "Expressing assumption",
+                    "md_description": "普通体とする - Suppose that... Expressing hypothetical situation."
+                }
+            },
+            "format_map": null
+        },
+        {
+            "rule_id": "01J5N3REFNANJIYANAI000000000000074",
+            "level": "N3",
+            "content": {
+                "Russian": {
+                    "title": "〜んじゃない? (разговорное предположение)",
+                    "short_description": "Разговорное предположение",
+                    "md_description": "普通体んじゃない? - Не... ли? Разговорное выражение предположения."
+                },
+                "English": {
+                    "title": "〜んじゃない? (casual conjecture)",
+                    "short_description": "Casual conjecture",
+                    "md_description": "普通体んじゃない? - Isn't it...? Casual expression of conjecture."
+                }
+            },
+            "format_map": null
+        },
+        {
+            "rule_id": "01J5N3REFTSUMORIWANAI0000000000075",
+            "level": "N3",
+            "content": {
+                "Russian": {
+                    "title": "〜つもりはない (отсутствие намерения)",
+                    "short_description": "Выражение отсутствия намерения",
+                    "md_description": "普通体つもりはない - Не собираюсь... Выражение отсутствия намерения."
+                },
+                "English": {
+                    "title": "〜つもりはない (no intention)",
+                    "short_description": "Expressing no intention",
+                    "md_description": "普通体つもりはない - Have no intention to... Expressing lack of intention."
+                }
+            },
+            "format_map": null
+        }
+    ]
+}

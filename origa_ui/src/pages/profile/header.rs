@@ -12,7 +12,7 @@ pub fn ProfileHeader() -> impl IntoView {
     view! {
         <div class="flex flex-col items-center space-y-4">
             {move || user_info().map(|username| {
-                let text = format!("Профиль пользователя {}", username);
+                let text = format!("Профиль {}", username);
                 view! {
                     <>
                         <Heading level=HeadingLevel::H1>

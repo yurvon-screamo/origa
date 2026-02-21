@@ -15,19 +15,20 @@ impl Default for PageLayoutVariant {
 
 #[component]
 pub fn PageLayout(
-    #[prop(optional)] variant: PageLayoutVariant,
-    #[prop(optional, into, default = "max-w-7xl mx-auto".to_string())] container_class: String,
+    #[prop(optional, into)] variant: Signal<PageLayoutVariant>,
+    #[prop(optional, into, default = "max-w-7xl mx-auto".to_string().into())]
+    container_class: Signal<String>,
     children: Children,
 ) -> impl IntoView {
-    let base_classes = match variant {
-        PageLayoutVariant::Centered => "min-h-screen flex items-center justify-center",
-        PageLayoutVariant::Full => "min-h-screen",
-        PageLayoutVariant::Compact => "min-h-[calc(100vh-4rem)]",
-    };
-
     view! {
-        <div class={base_classes}>
-            <div class={container_class}>
+        <div class=move || {
+            match variant.get() {
+                PageLayoutVariant::Centered => "min-h-screen flex items-center justify-center",
+                PageLayoutVariant::Full => "min-h-screen",
+                PageLayoutVariant::Compact => "min-h-[calc(100vh-4rem)]",
+            }
+        }>
+            <div class=move || container_class.get()>
                 {children()}
             </div>
         </div>
@@ -48,15 +49,18 @@ impl Default for CardLayoutSize {
 }
 
 #[component]
-pub fn CardLayout(#[prop(optional)] size: CardLayoutSize, children: Children) -> impl IntoView {
-    let size_class = match size {
-        CardLayoutSize::Small => "max-w-sm w-full",
-        CardLayoutSize::Medium => "max-w-md w-full",
-        CardLayoutSize::Large => "max-w-lg w-full",
-    };
-
+pub fn CardLayout(
+    #[prop(optional, into)] size: Signal<CardLayoutSize>,
+    children: Children,
+) -> impl IntoView {
     view! {
-        <div class={size_class}>
+        <div class=move || {
+            match size.get() {
+                CardLayoutSize::Small => "max-w-sm w-full",
+                CardLayoutSize::Medium => "max-w-md w-full",
+                CardLayoutSize::Large => "max-w-lg w-full",
+            }
+        }>
             <div class="bg-[var(--bg-primary)] border border-[var(--border-color)] p-8">
                 {children()}
             </div>

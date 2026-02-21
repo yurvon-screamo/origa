@@ -22,7 +22,7 @@ pub fn LevelSelector(selected_level: RwSignal<JapaneseLevel>) -> impl IntoView {
                     let is_selected = move || selected_level.get() == level_for_selector;
                     view! {
                         <Button
-                            variant={if is_selected() { ButtonVariant::Olive } else { ButtonVariant::Default }}
+                            variant=move || if is_selected() { ButtonVariant::Olive } else { ButtonVariant::Default }
                             on_click={Callback::new(move |_| selected_level.set(level_for_selector.clone()))}
                         >
                             {format!("{:?}", level)}

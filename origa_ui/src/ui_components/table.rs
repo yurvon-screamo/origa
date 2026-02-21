@@ -13,8 +13,8 @@ pub struct TableRow {
 
 #[component]
 pub fn Table(
-    #[prop(into)] headers: Vec<TableHeader>,
-    #[prop(into)] rows: Vec<TableRow>,
+    #[prop(optional, into)] headers: Signal<Vec<TableHeader>>,
+    #[prop(optional, into)] rows: Signal<Vec<TableRow>>,
 ) -> impl IntoView {
     view! {
         <div class="table-container">
@@ -22,7 +22,7 @@ pub fn Table(
                 <thead>
                     <tr>
                         <For
-                            each=move || headers.clone()
+                            each=move || headers.get()
                             key=|header| header.label.clone()
                             children=move |header| {
                                 view! {
@@ -34,13 +34,14 @@ pub fn Table(
                 </thead>
                 <tbody>
                     <For
-                        each=move || rows.clone()
+                        each=move || rows.get()
                         key=|row| row.id.clone()
                         children=move |row| {
+                            let cells = row.cells.clone();
                             view! {
                                 <tr>
                                     <For
-                                        each=move || row.cells.clone()
+                                        each=move || cells.clone()
                                         key=|cell| cell.clone()
                                         children=move |cell| {
                                             view! {

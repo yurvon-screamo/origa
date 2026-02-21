@@ -1,8 +1,8 @@
 use leptos::prelude::*;
 
 #[component]
-pub fn Stamp(#[prop(optional, into)] text: String) -> impl IntoView {
+pub fn Stamp(#[prop(optional, into)] text: Signal<String>) -> impl IntoView {
     view! {
-        <div class="stamp">{text}</div>
+        <div class="stamp">{move || text.get()}</div>
     }
 }

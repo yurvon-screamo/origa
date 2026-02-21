@@ -1,11 +1,12 @@
 use leptos::prelude::*;
 
 #[component]
-pub fn LabelFrame(#[prop(optional, into)] class: String, children: Children) -> impl IntoView {
-    let full_class = format!("label-frame {}", class);
-
+pub fn LabelFrame(
+    #[prop(optional, into)] class: Signal<String>,
+    children: Children,
+) -> impl IntoView {
     view! {
-        <div class=full_class>
+        <div class=move || format!("label-frame {}", class.get())>
             {children()}
         </div>
     }
