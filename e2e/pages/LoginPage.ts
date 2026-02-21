@@ -17,6 +17,11 @@ export class LoginPage {
     await this.page.goto('/');
   }
 
+  async expectVisible() {
+    await expect(this.usernameInput).toBeVisible();
+    await expect(this.loginButton).toBeVisible();
+  }
+
   async login(username: string) {
     await this.usernameInput.fill(username);
     await this.loginButton.click();
