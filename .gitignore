@@ -10,6 +10,13 @@ data
 package-lock.json
 node_modules
 
+# Playwright / E2E Tests
+test-results/
+playwright-report/
+playwright/.cache/
+.blob-report/
+.trace/
+
 # IDE
 .vscode/
 .idea/

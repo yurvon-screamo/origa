@@ -21,9 +21,9 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: 'cd origa_ui && trunk serve --port 8080',
+    command: 'cd origa_ui && trunk serve --port 8080 --color never',
     url: 'http://localhost:8080',
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: true,
     timeout: 120 * 1000,
   },
 });
