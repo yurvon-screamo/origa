@@ -17,26 +17,27 @@ pub struct FooterSection {
 
 #[component]
 pub fn Footer(
-    #[prop(into)] brand: String,
-    #[prop(into)] sections: Vec<FooterSection>,
-    #[prop(into)] description: String,
-    #[prop(optional, into)] newsletter_placeholder: String,
+    #[prop(optional, into)] brand: Signal<String>,
+    #[prop(optional, into)] sections: Signal<Vec<FooterSection>>,
+    #[prop(optional, into)] description: Signal<String>,
+    #[prop(optional, into)] newsletter_placeholder: Signal<String>,
 ) -> impl IntoView {
     view! {
         <footer class="footer py-16 mt-24">
             <div class="max-w-6xl mx-auto px-6">
                 <div class="grid md:grid-cols-4 gap-12 mb-12">
                     <div>
-                        <h4 class="font-serif text-2xl mb-4">{brand}</h4>
+                        <h4 class="font-serif text-2xl mb-4">{move || brand.get()}</h4>
                         <p class="font-mono text-[10px] tracking-widest text-[var(--fg-muted)] leading-relaxed">
-                            {description}
+                            {move || description.get()}
                         </p>
                     </div>
 
                     <For
-                        each=move || sections.clone()
+                        each=move || sections.get()
                         key=|section| section.title.clone()
                         children=move |section| {
+                            let links = section.links.clone();
                             view! {
                                 <div>
                                     <p class="font-mono text-[9px] tracking-widest text-[var(--fg-muted)] uppercase mb-4">
@@ -44,7 +45,7 @@ pub fn Footer(
                                     </p>
                                     <ul class="space-y-2">
                                         <For
-                                            each=move || section.links.clone()
+                                            each=move || links.clone()
                                             key=|link| link.label.clone()
                                             children=move |link| {
                                                 view! {
@@ -68,7 +69,7 @@ pub fn Footer(
                     <div>
                         <p class="font-mono text-[9px] tracking-widest text-[var(--fg-muted)] uppercase mb-4">"Newsletter"</p>
                         <Search
-                            placeholder=newsletter_placeholder
+                            placeholder=move || newsletter_placeholder.get()
                             class="!pl-4"
                             value=RwSignal::new(String::new())
                         />

@@ -11,24 +11,23 @@ pub enum AlertType {
 
 #[component]
 pub fn Alert(
-    #[prop(optional)] alert_type: AlertType,
-    #[prop(optional, into)] title: String,
-    #[prop(optional, into)] message: String,
-    #[prop(optional, into)] class: String,
+    #[prop(optional, into)] alert_type: Signal<AlertType>,
+    #[prop(optional, into)] title: Signal<String>,
+    #[prop(optional, into)] message: Signal<String>,
+    #[prop(optional, into)] class: Signal<String>,
 ) -> impl IntoView {
-    let alert_class = match alert_type {
-        AlertType::Info => "alert-info",
-        AlertType::Success => "alert-success",
-        AlertType::Warning => "alert-warning",
-        AlertType::Error => "alert-error",
-    };
-
-    let full_class = format!("alert {} {}", alert_class, class);
-
     view! {
-        <div class=full_class>
+        <div class=move || {
+            let alert_class = match alert_type.get() {
+                AlertType::Info => "alert-info",
+                AlertType::Success => "alert-success",
+                AlertType::Warning => "alert-warning",
+                AlertType::Error => "alert-error",
+            };
+            format!("alert {} {}", alert_class, class.get())
+        }>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                {match alert_type {
+                {move || match alert_type.get() {
                     AlertType::Success => view! {
                         <path d="M20 6L9 17l-5-5" />
                     }.into_any(),
@@ -46,8 +45,8 @@ pub fn Alert(
                 }}
             </svg>
             <div>
-                <p class="font-mono text-xs tracking-wider">{title}</p>
-                <p class="font-mono text-[10px] text-[var(--fg-muted)] mt-1">{message}</p>
+                <p class="font-mono text-xs tracking-wider">{move || title.get()}</p>
+                <p class="font-mono text-[10px] text-[var(--fg-muted)] mt-1">{move || message.get()}</p>
             </div>
         </div>
     }

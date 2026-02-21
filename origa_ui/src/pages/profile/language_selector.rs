@@ -17,7 +17,7 @@ pub fn LanguageSelector(selected_language: RwSignal<NativeLanguage>) -> impl Int
                     let is_selected = move || selected_language.get() == lang_for_closure;
                     view! {
                         <Button
-                            variant={if is_selected() { ButtonVariant::Olive } else { ButtonVariant::Default }}
+                            variant=move || if is_selected() { ButtonVariant::Olive } else { ButtonVariant::Default }
                             on_click={Callback::new(move |_| selected_language.set(lang_for_selector.clone()))}
                         >
                             {format!("{:?}", lang)}

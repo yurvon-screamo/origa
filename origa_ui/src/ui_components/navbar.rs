@@ -10,19 +10,19 @@ pub struct NavItem {
 
 #[component]
 pub fn Navbar(
-    #[prop(into)] brand: String,
-    #[prop(into)] items: Vec<NavItem>,
+    #[prop(optional, into)] brand: Signal<String>,
+    #[prop(optional, into)] items: Signal<Vec<NavItem>>,
     #[prop(into)] cart_count: RwSignal<u32>,
     #[prop(optional)] on_sign_in: Option<Callback<leptos::ev::MouseEvent>>,
 ) -> impl IntoView {
     view! {
         <nav class="navbar sticky top-0 z-50">
             <div class="max-w-6xl mx-auto px-6 flex items-center justify-between">
-                <a href="#" class="font-serif text-2xl">{brand}</a>
+                <a href="#" class="font-serif text-2xl">{move || brand.get()}</a>
 
                 <div class="hidden md:flex items-center gap-8">
                     <For
-                        each=move || items.clone()
+                        each=move || items.get()
                         key=|item| item.label.clone()
                         children=move |item| {
                             view! {

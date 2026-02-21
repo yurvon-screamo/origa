@@ -5,7 +5,7 @@ use leptos_use::use_event_listener;
 pub fn Modal(
     #[prop(optional)] is_open: RwSignal<bool>,
     #[prop(optional)] on_close: Option<Callback<leptos::ev::MouseEvent>>,
-    #[prop(optional, into)] title: String,
+    #[prop(optional, into)] title: Signal<String>,
     children: ChildrenFn,
 ) -> impl IntoView {
     let close_modal = move |ev: leptos::ev::MouseEvent| {
@@ -25,7 +25,6 @@ pub fn Modal(
         },
     );
 
-    let title = title.clone();
     view! {
         <Show when=move || is_open.get()>
             <>
@@ -37,7 +36,7 @@ pub fn Modal(
                     <div class="flex justify-between items-start mb-6">
                         <div>
                             <span class="font-mono text-[9px] tracking-widest text-[var(--fg-muted)]">"MODAL DIALOG"</span>
-                            <h3 class="font-serif text-2xl mt-1">{title.clone()}</h3>
+                            <h3 class="font-serif text-2xl mt-1">{move || title.get()}</h3>
                         </div>
                         <button
                             on:click=close_modal

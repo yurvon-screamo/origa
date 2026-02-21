@@ -3,7 +3,7 @@ use leptos::prelude::*;
 #[component]
 pub fn Pagination(
     #[prop(optional)] current_page: RwSignal<usize>,
-    #[prop(default = 1)] total_pages: usize,
+    #[prop(optional, into)] total_pages: Signal<usize>,
 ) -> impl IntoView {
     let handle_page_change = move |page: usize| {
         current_page.set(page);
@@ -11,23 +11,24 @@ pub fn Pagination(
 
     let pages = move || {
         let current = current_page.get();
+        let total = total_pages.get();
         let mut result = vec![];
 
         if current > 1 {
             result.push((0, "←".to_string()));
         }
 
-        for i in 1..=total_pages.min(5) {
+        for i in 1..=total.min(5) {
             result.push((i, i.to_string()));
         }
 
-        if total_pages > 5 {
+        if total > 5 {
             result.push((0, "...".to_string()));
-            result.push((total_pages, total_pages.to_string()));
+            result.push((total, total.to_string()));
         }
 
-        if current < total_pages {
-            result.push((total_pages + 1, "→".to_string()));
+        if current < total {
+            result.push((total + 1, "→".to_string()));
         }
 
         result
@@ -37,16 +38,16 @@ pub fn Pagination(
         <div class="pagination">
             <For
                 each=move || pages()
-                key=|(idx, _)| *idx
+                key=|(idx, label)| format!("{}-{}", idx, label)
                 children=move |(idx, label)| {
                     let is_current = move || current_page.get() == idx;
-                    let is_disabled = move || idx == 0 || idx > total_pages;
+                    let is_disabled = move || idx == 0 || idx > total_pages.get();
                     view! {
                         <button
-                            class=format!("pagination-btn {}", if is_current() { "active" } else { "" })
-                            disabled=is_disabled()
+                            class=move || format!("pagination-btn {}", if is_current() { "active" } else { "" })
+                            disabled=move || is_disabled()
                             on:click=move |_| {
-                                if idx > 0 && idx <= total_pages {
+                                if idx > 0 && idx <= total_pages.get() {
                                     handle_page_change(idx);
                                 }
                             }

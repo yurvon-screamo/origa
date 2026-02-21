@@ -2,23 +2,23 @@ use leptos::prelude::*;
 
 #[component]
 pub fn Radio(
-    #[prop(optional, into)] name: String,
-    #[prop(optional, into)] value: String,
+    #[prop(optional, into)] name: Signal<String>,
+    #[prop(optional, into)] value: Signal<String>,
     #[prop(into)] checked: Signal<bool>,
-    #[prop(optional)] disabled: bool,
-    #[prop(optional, into)] label: String,
+    #[prop(optional, into)] disabled: Signal<bool>,
+    #[prop(optional, into)] label: Signal<String>,
 ) -> impl IntoView {
     view! {
         <label class="radio-container">
             <input
                 type="radio"
-                name=name
-                value=value
-                checked=checked.get()
-                disabled=disabled
+                name=move || name.get()
+                value=move || value.get()
+                checked=move || checked.get()
+                disabled=move || disabled.get()
             />
             <span class="radio-box"></span>
-            <span>{label}</span>
+            <span>{move || label.get()}</span>
         </label>
     }
 }

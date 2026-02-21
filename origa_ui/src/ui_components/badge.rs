@@ -1,12 +1,12 @@
 use leptos::prelude::*;
 
 #[component]
-pub fn Badge(#[prop(optional, into)] class: String, children: Children) -> impl IntoView {
-    let base_class = "badge";
-    let full_class = format!("{} {}", base_class, class);
-
+pub fn Badge(
+    #[prop(optional, into)] class: Signal<String>,
+    children: Children,
+) -> impl IntoView {
     view! {
-        <span class=full_class>
+        <span class=move || format!("badge {}", class.get())>
             {children()}
         </span>
     }

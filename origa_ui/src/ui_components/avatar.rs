@@ -10,21 +10,20 @@ pub enum AvatarSize {
 
 #[component]
 pub fn Avatar(
-    #[prop(optional)] size: AvatarSize,
-    #[prop(optional, into)] initials: String,
-    #[prop(optional, into)] class: String,
+    #[prop(optional, into)] size: Signal<AvatarSize>,
+    #[prop(optional, into)] initials: Signal<String>,
+    #[prop(optional, into)] class: Signal<String>,
 ) -> impl IntoView {
-    let size_class = match size {
-        AvatarSize::Default => "avatar",
-        AvatarSize::Small => "avatar-sm",
-        AvatarSize::Large => "avatar-lg",
-    };
-
-    let full_class = format!("{} {}", size_class, class);
-
     view! {
-        <div class=full_class>
-            {initials}
+        <div class=move || {
+            let size_class = match size.get() {
+                AvatarSize::Default => "avatar",
+                AvatarSize::Small => "avatar-sm",
+                AvatarSize::Large => "avatar-lg",
+            };
+            format!("{} {}", size_class, class.get())
+        }>
+            {move || initials.get()}
         </div>
     }
 }
