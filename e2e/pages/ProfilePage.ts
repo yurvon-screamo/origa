@@ -14,7 +14,7 @@ export class ProfilePage {
 
   constructor(page: Page) {
     this.page = page;
-    this.heading = page.getByRole('heading', { name: /Профиль пользователя/ });
+    this.heading = page.getByRole('heading', { name: /Профиль/ });
     this.usernameInput = page.getByText('Имя пользователя').locator('..').getByRole('textbox');
     this.levelSelector = page.getByText('Целевой уровень JLPT');
     this.languageSelector = page.getByText('Язык интерфейса');

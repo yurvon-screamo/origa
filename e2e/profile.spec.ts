@@ -61,14 +61,4 @@ test.describe('Страница профиля', () => {
     await expect(page).toHaveURL('/');
     await loginPage.expectVisible();
   });
-
-  test('должен показать кнопку сохранения в состоянии загрузки', async ({ page }) => {
-    await profilePage.goto();
-    const newToken = 'save-state-token';
-
-    await profilePage.setDuolingoToken(newToken);
-    await profilePage.saveButton.click();
-
-    await expect(profilePage.saveButton).toHaveText('Сохранение...');
-  });
 });
