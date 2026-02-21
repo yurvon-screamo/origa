@@ -10,9 +10,9 @@ pub struct DropdownItem {
 
 #[component]
 pub fn Dropdown(
-    #[prop(into)] options: Vec<DropdownItem>,
+    #[prop(optional, into)] options: Signal<Vec<DropdownItem>>,
     #[prop(optional)] selected: RwSignal<String>,
-    #[prop(optional, into)] placeholder: String,
+    #[prop(optional, into)] placeholder: Signal<String>,
 ) -> impl IntoView {
     let (is_open, set_is_open) = signal(false);
     let dropdown_ref = NodeRef::<leptos::html::Div>::new();
@@ -45,21 +45,19 @@ pub fn Dropdown(
 
     let _ = use_event_listener(document(), leptos::ev::click, close_on_outside);
 
-    let display_text = {
-        let options = options.clone();
-        move || {
-            let sel = selected.get();
-            options
-                .iter()
-                .find(|opt| opt.value == sel)
-                .map(|opt| opt.label.clone())
-                .unwrap_or_else(|| placeholder.clone())
-        }
+    let display_text = move || {
+        let sel = selected.get();
+        options
+            .get()
+            .iter()
+            .find(|opt| opt.value == sel)
+            .map(|opt| opt.label.clone())
+            .unwrap_or_else(|| placeholder.get())
     };
 
     view! {
         <div
-            class=format!("dropdown {}", if is_open.get() { "active" } else { "" })
+            class=move || format!("dropdown {}", if is_open.get() { "active" } else { "" })
             node_ref=dropdown_ref
         >
             <button
@@ -67,11 +65,11 @@ pub fn Dropdown(
                 type="button"
                 on:click=toggle_dropdown
             >
-                {display_text()}
+                {display_text}
             </button>
             <div class="dropdown-menu">
                 <For
-                    each=move || options.clone()
+                    each=move || options.get()
                     key=|item| item.value.clone()
                     children=move |item| {
                         let item_clone = item.clone();

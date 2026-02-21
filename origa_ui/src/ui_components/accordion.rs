@@ -1,7 +1,10 @@
 use leptos::prelude::*;
 
 #[component]
-pub fn AccordionItem(#[prop(optional, into)] header: String, children: Children) -> impl IntoView {
+pub fn AccordionItem(
+    #[prop(optional, into)] header: Signal<String>,
+    children: Children,
+) -> impl IntoView {
     let (is_open, set_is_open) = signal(false);
 
     let toggle = move |_| {
@@ -9,12 +12,12 @@ pub fn AccordionItem(#[prop(optional, into)] header: String, children: Children)
     };
 
     view! {
-        <div class=format!("accordion-item {}", if is_open.get() { "active" } else { "" })>
+        <div class=move || format!("accordion-item {}", if is_open.get() { "active" } else { "" })>
             <div
                 class="accordion-header"
                 on:click=toggle
             >
-                <span class="font-mono text-xs tracking-wider">{header}</span>
+                <span class="font-mono text-xs tracking-wider">{move || header.get()}</span>
                 <span class="accordion-icon"></span>
             </div>
             <div

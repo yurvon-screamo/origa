@@ -21,30 +21,30 @@ pub enum TypographyVariant {
 
 #[component]
 pub fn Heading(
-    #[prop(optional)] level: HeadingLevel,
-    #[prop(optional)] variant: TypographyVariant,
-    #[prop(optional, into)] class: String,
+    #[prop(optional, into)] level: Signal<HeadingLevel>,
+    #[prop(optional, into)] variant: Signal<TypographyVariant>,
+    #[prop(optional, into)] class: Signal<String>,
     children: Children,
 ) -> impl IntoView {
-    let variant_class = match variant {
-        TypographyVariant::Primary => "text-[var(--fg-primary)]",
-        TypographyVariant::Muted => "text-[var(--fg-muted)]",
-        TypographyVariant::Olive => "text-[var(--accent-olive)]",
-    };
-
-    let size_class = match level {
-        HeadingLevel::H1 => "text-5xl",
-        HeadingLevel::H2 => "text-2xl",
-        HeadingLevel::H3 => "text-xl",
-        HeadingLevel::H4 => "text-lg",
-        HeadingLevel::H5 => "text-base",
-        HeadingLevel::H6 => "text-sm",
-    };
-
-    let full_class = format!("font-serif font-light tracking-tight {} {} {}", size_class, variant_class, class);
-
     view! {
-        <h1 class=full_class>
+        <h1 class=move || {
+            let variant_class = match variant.get() {
+                TypographyVariant::Primary => "text-[var(--fg-primary)]",
+                TypographyVariant::Muted => "text-[var(--fg-muted)]",
+                TypographyVariant::Olive => "text-[var(--accent-olive)]",
+            };
+
+            let size_class = match level.get() {
+                HeadingLevel::H1 => "text-5xl",
+                HeadingLevel::H2 => "text-2xl",
+                HeadingLevel::H3 => "text-xl",
+                HeadingLevel::H4 => "text-lg",
+                HeadingLevel::H5 => "text-base",
+                HeadingLevel::H6 => "text-sm",
+            };
+
+            format!("font-serif font-light tracking-tight {} {} {}", size_class, variant_class, class.get())
+        }>
             {children()}
         </h1>
     }
@@ -60,32 +60,32 @@ pub enum TextSize {
 
 #[component]
 pub fn Text(
-    #[prop(optional)] size: TextSize,
-    #[prop(optional)] variant: TypographyVariant,
-    #[prop(optional)] uppercase: bool,
-    #[prop(optional)] tracking_widest: bool,
-    #[prop(optional, into)] class: String,
+    #[prop(optional, into)] size: Signal<TextSize>,
+    #[prop(optional, into)] variant: Signal<TypographyVariant>,
+    #[prop(optional, into)] uppercase: Signal<bool>,
+    #[prop(optional, into)] tracking_widest: Signal<bool>,
+    #[prop(optional, into)] class: Signal<String>,
     children: Children,
 ) -> impl IntoView {
-    let size_class = match size {
-        TextSize::Default => "text-sm",
-        TextSize::Small => "text-xs",
-        TextSize::Large => "text-base",
-    };
-
-    let variant_class = match variant {
-        TypographyVariant::Primary => "text-[var(--fg-primary)]",
-        TypographyVariant::Muted => "text-[var(--fg-muted)]",
-        TypographyVariant::Olive => "text-[var(--accent-olive)]",
-    };
-
-    let uppercase_class = if uppercase { "uppercase" } else { "" };
-    let tracking_class = if tracking_widest { "tracking-widest" } else { "" };
-
-    let full_class = format!("font-mono {} {} {} {} {}", size_class, variant_class, uppercase_class, tracking_class, class);
-
     view! {
-        <p class=full_class>
+        <p class=move || {
+            let size_class = match size.get() {
+                TextSize::Default => "text-sm",
+                TextSize::Small => "text-xs",
+                TextSize::Large => "text-base",
+            };
+
+            let variant_class = match variant.get() {
+                TypographyVariant::Primary => "text-[var(--fg-primary)]",
+                TypographyVariant::Muted => "text-[var(--fg-muted)]",
+                TypographyVariant::Olive => "text-[var(--accent-olive)]",
+            };
+
+            let uppercase_class = if uppercase.get() { "uppercase" } else { "" };
+            let tracking_class = if tracking_widest.get() { "tracking-widest" } else { "" };
+
+            format!("font-mono {} {} {} {} {}", size_class, variant_class, uppercase_class, tracking_class, class.get())
+        }>
             {children()}
         </p>
     }
@@ -93,12 +93,11 @@ pub fn Text(
 
 #[component]
 pub fn DisplayText(
-    #[prop(optional, into)] class: String,
+    #[prop(optional, into)] class: Signal<String>,
     children: Children,
 ) -> impl IntoView {
-    let full_class = format!("font-serif text-4xl font-light text-[var(--fg-primary)] {}", class);
     view! {
-        <p class=full_class>
+        <p class=move || format!("font-serif text-4xl font-light text-[var(--fg-primary)] {}", class.get())>
             {children()}
         </p>
     }

@@ -9,17 +9,16 @@ pub enum DividerVariant {
 
 #[component]
 pub fn Divider(
-    #[prop(optional)] variant: DividerVariant,
-    #[prop(optional, into)] class: String,
+    #[prop(optional, into)] variant: Signal<DividerVariant>,
+    #[prop(optional, into)] class: Signal<String>,
 ) -> impl IntoView {
-    let divider_class = match variant {
-        DividerVariant::Single => "divider",
-        DividerVariant::Double => "divider-double",
-    };
-
-    let full_class = format!("{} {}", divider_class, class);
-
     view! {
-        <div class=full_class></div>
+        <div class=move || {
+            let divider_class = match variant.get() {
+                DividerVariant::Single => "divider",
+                DividerVariant::Double => "divider-double",
+            };
+            format!("{} {}", divider_class, class.get())
+        }></div>
     }
 }

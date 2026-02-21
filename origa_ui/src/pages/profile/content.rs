@@ -107,20 +107,22 @@ pub fn ProfileContent() -> impl IntoView {
     });
 
     view! {
-        <PersonalDataCard
-            user_name={move || user_name.get()}
-            selected_level={selected_level}
-            selected_language={selected_language}
-        />
+        <div class="space-y-4">
+            <PersonalDataCard
+                user_name={move || user_name.get()}
+                selected_level={selected_level}
+                selected_language={selected_language}
+            />
 
-        <IntegrationsCard duolingo_input={duolingo_input} />
+            <IntegrationsCard duolingo_input={duolingo_input} />
 
-        <SettingsCard reminders={reminders} />
+            <SettingsCard reminders={reminders} />
 
-        <ActionButtons
-            on_save={save_profile}
-            on_logout={logout}
-            is_saving={Signal::derive(move || is_saving.get())}
-        />
+            <ActionButtons
+                on_save={save_profile}
+                on_logout={logout}
+                is_saving={Signal::derive(move || is_saving.get())}
+            />
+        </div>
     }
 }

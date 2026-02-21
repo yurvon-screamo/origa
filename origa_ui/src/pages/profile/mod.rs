@@ -25,8 +25,10 @@ use leptos::prelude::*;
 pub fn Profile() -> impl IntoView {
     view! {
         <PageLayout variant={PageLayoutVariant::Centered}>
-            <ProfileHeader />
-            <ProfileContent />
+            <div class="w-full max-w-md space-y-2 py-2">
+                <ProfileHeader />
+                <ProfileContent />
+            </div>
         </PageLayout>
     }
 }

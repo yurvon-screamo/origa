@@ -20,32 +20,30 @@ pub enum ButtonSize {
 
 #[component]
 pub fn Button(
-    #[prop(optional)] variant: ButtonVariant,
-    #[prop(optional)] size: ButtonSize,
-    #[prop(optional, into)] class: String,
-    #[prop(optional)] disabled: Signal<bool>,
+    #[prop(optional, into)] variant: Signal<ButtonVariant>,
+    #[prop(optional, into)] size: Signal<ButtonSize>,
+    #[prop(optional, into)] class: Signal<String>,
+    #[prop(optional, into)] disabled: Signal<bool>,
     #[prop(optional)] on_click: Option<Callback<MouseEvent>>,
     children: Children,
 ) -> impl IntoView {
-    let variant_classes = match variant {
-        ButtonVariant::Default => "",
-        ButtonVariant::Filled => "btn-filled",
-        ButtonVariant::Olive => "btn-olive",
-        ButtonVariant::Ghost => "btn-ghost",
-    };
-
-    let size_classes = match size {
-        ButtonSize::Default => "",
-        ButtonSize::Small => "btn-sm",
-        ButtonSize::Large => "btn-lg",
-    };
-
-    let classes = format!("btn {} {} {}", variant_classes, size_classes, class);
-
     view! {
         <button
-            class=classes
-            disabled=disabled
+            class=move || {
+                let v = match variant.get() {
+                    ButtonVariant::Default => "",
+                    ButtonVariant::Filled => "btn-filled",
+                    ButtonVariant::Olive => "btn-olive",
+                    ButtonVariant::Ghost => "btn-ghost",
+                };
+                let s = match size.get() {
+                    ButtonSize::Default => "",
+                    ButtonSize::Small => "btn-sm",
+                    ButtonSize::Large => "btn-lg",
+                };
+                format!("btn {} {} {}", v, s, class.get())
+            }
+            disabled=move || disabled.get()
             on:click=move |ev| {
                 if let Some(on_click) = on_click {
                     on_click.run(ev);

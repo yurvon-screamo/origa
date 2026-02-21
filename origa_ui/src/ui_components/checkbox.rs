@@ -3,21 +3,19 @@ use leptos::prelude::*;
 #[component]
 pub fn Checkbox(
     #[prop(into)] checked: Signal<bool>,
-    #[prop(optional)] disabled: bool,
-    #[prop(optional, into)] label: String,
-    #[prop(optional, into)] class: String,
+    #[prop(optional, into)] disabled: Signal<bool>,
+    #[prop(optional, into)] label: Signal<String>,
+    #[prop(optional, into)] class: Signal<String>,
 ) -> impl IntoView {
-    let full_class = format!("checkbox-container {}", class);
-
     view! {
-        <label class=full_class>
+        <label class=move || format!("checkbox-container {}", class.get())>
             <input
                 type="checkbox"
-                checked=checked.get()
-                disabled=disabled
+                checked=move || checked.get()
+                disabled=move || disabled.get()
             />
             <span class="checkbox-box"></span>
-            <span>{label}</span>
+            <span>{move || label.get()}</span>
         </label>
     }
 }

@@ -4,7 +4,7 @@ use leptos::prelude::*;
 pub fn ProgressBar(
     #[prop(optional)] value: RwSignal<u32>,
     #[prop(default = 100)] max: u32,
-    #[prop(optional, into)] label: String,
+    #[prop(optional, into)] label: Signal<String>,
 ) -> impl IntoView {
     let percentage = move || {
         let v = value.get();
@@ -15,7 +15,7 @@ pub fn ProgressBar(
     view! {
         <div>
             <div class="flex justify-between mb-2">
-                <span class="font-mono text-[10px] tracking-widest">{label}</span>
+                <span class="font-mono text-[10px] tracking-widest">{move || label.get()}</span>
                 <span class="font-mono text-[10px]">{move || format!("{}%", percentage() as u32)}</span>
             </div>
             <div class="progress-track">
