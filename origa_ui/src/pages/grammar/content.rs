@@ -1,6 +1,6 @@
 use super::filter::Filter;
 use super::filter_btn::FilterBtn;
-use super::vocabulary_card_item::{CardStatus, VocabularyCardItem};
+use super::grammar_card_item::{CardStatus, GrammarCardItem};
 use crate::ui_components::{Input, Text, TextSize, TypographyVariant};
 use leptos::either::Either;
 use leptos::prelude::*;
@@ -16,7 +16,7 @@ struct CardCounts {
 }
 
 #[component]
-pub fn WordsContent() -> impl IntoView {
+pub fn GrammarContent() -> impl IntoView {
     let current_user =
         use_context::<RwSignal<Option<User>>>().expect("current_user context not provided");
 
@@ -30,7 +30,7 @@ pub fn WordsContent() -> impl IntoView {
                 user.knowledge_set()
                     .study_cards()
                     .iter()
-                    .filter(|(_, card)| matches!(card.card(), Card::Vocabulary(_)))
+                    .filter(|(_, card)| matches!(card.card(), Card::Grammar(_)))
                     .map(|(_, card)| card.clone())
                     .collect::<Vec<_>>()
             })
@@ -46,9 +46,9 @@ pub fn WordsContent() -> impl IntoView {
             .into_iter()
             .filter(|card| {
                 let matches_search = query.is_empty() || {
-                    let word = card.card().question().text().to_lowercase();
-                    let meaning = card.card().answer().text().to_lowercase();
-                    word.contains(&query) || meaning.contains(&query)
+                    let title = card.card().question().text().to_lowercase();
+                    let description = card.card().answer().text().to_lowercase();
+                    title.contains(&query) || description.contains(&query)
                 };
                 let matches_filter = current_filter.matches(CardStatus::from_study_card(card));
                 matches_search && matches_filter
@@ -91,7 +91,7 @@ pub fn WordsContent() -> impl IntoView {
                     if cards.is_empty() {
                         Either::Left(view! {
                             <Text size=TextSize::Default variant=TypographyVariant::Muted>
-                                "Слов не найдено"
+                                "Грамматических конструкций не найдено"
                             </Text>
                         })
                     } else {
@@ -100,7 +100,7 @@ pub fn WordsContent() -> impl IntoView {
                                 each=move || filtered_cards.get()
                                 key=|card| *card.card_id()
                                 children=move |card| {
-                                    view! { <VocabularyCardItem study_card=card /> }
+                                    view! { <GrammarCardItem study_card=card /> }
                                 }
                             />
                         })

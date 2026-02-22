@@ -20,48 +20,58 @@ pub fn AddWordModal(is_open: RwSignal<bool>) -> impl IntoView {
         use_context::<InMemoryUserRepository>().expect("repository context not provided");
     let llm_service = use_context::<LlmServiceInvoker>().expect("llm_service context not provided");
 
-    let on_add = StoredValue::new(Callback::new(move |_: leptos::ev::MouseEvent| {
-        let word = new_word.get().trim().to_string();
+    let on_add = {
+        let current_user = current_user;
+        let repository = repository.clone();
+        let is_loading = is_loading;
+        let new_word = new_word;
+        let is_open = is_open;
+        let llm_service = llm_service.clone();
+        let error_message = error_message;
 
-        if word.is_empty() {
-            return;
-        }
+        Callback::new(move |_: leptos::ev::MouseEvent| {
+            let word = new_word.get().trim().to_string();
 
-        let user_id = current_user.with(|u| u.as_ref().map(|u| u.id())).unwrap();
-        let repository_clone = repository.clone();
-        let current_user_signal = current_user;
-        let is_loading_signal = is_loading;
-        let new_word_signal = new_word;
-        let is_open_signal = is_open;
-        let llm_service_clone = llm_service.clone();
-
-        is_loading.set(true);
-        error_message.set(None);
-
-        let error_signal = error_message;
-
-        spawn_local(async move {
-            let use_case = CreateVocabularyCardUseCase::new(&repository_clone, &llm_service_clone);
-
-            match use_case.execute(user_id, word.clone()).await {
-                Ok(_) => {
-                    is_loading_signal.set(false);
-                    update_current_user(repository_clone, current_user_signal);
-                    new_word_signal.set(String::new());
-                    is_open_signal.set(false);
-                }
-                Err(e) => {
-                    is_loading_signal.set(false);
-                    error_signal.set(Some(e.to_string()));
-                }
+            if word.is_empty() {
+                return;
             }
-        });
-    }));
 
-    let on_cancel = StoredValue::new(Callback::new(move |_: leptos::ev::MouseEvent| {
+            let user_id = current_user.with(|u| u.as_ref().map(|u| u.id())).unwrap();
+            let repository_clone = repository.clone();
+            let current_user_signal = current_user;
+            let is_loading_signal = is_loading;
+            let new_word_signal = new_word;
+            let is_open_signal = is_open;
+            let llm_service_clone = llm_service.clone();
+            let error_signal = error_message;
+
+            is_loading_signal.set(true);
+            error_signal.set(None);
+
+            spawn_local(async move {
+                let use_case =
+                    CreateVocabularyCardUseCase::new(&repository_clone, &llm_service_clone);
+
+                match use_case.execute(user_id, word.clone()).await {
+                    Ok(_) => {
+                        is_loading_signal.set(false);
+                        update_current_user(repository_clone, current_user_signal);
+                        new_word_signal.set(String::new());
+                        is_open_signal.set(false);
+                    }
+                    Err(e) => {
+                        is_loading_signal.set(false);
+                        error_signal.set(Some(e.to_string()));
+                    }
+                }
+            });
+        })
+    };
+
+    let on_cancel = Callback::new(move |_: leptos::ev::MouseEvent| {
         error_message.set(None);
         is_open.set(false);
-    }));
+    });
 
     view! {
         <Modal
@@ -84,7 +94,7 @@ pub fn AddWordModal(is_open: RwSignal<bool>) -> impl IntoView {
                 {move || {
                     error_message.get().map(|msg| view! {
                         <Alert
-                            alert_type=Signal::from(AlertType::Error)
+                            alert_type=Signal::derive(|| AlertType::Error)
                             title=Signal::derive(|| "Ошибка".to_string())
                             message=Signal::derive(move || msg.clone())
                         />
@@ -93,14 +103,14 @@ pub fn AddWordModal(is_open: RwSignal<bool>) -> impl IntoView {
                 <div class="flex gap-2 justify-end">
                     <Button
                         variant=ButtonVariant::Ghost
-                        on_click=on_cancel.get_value()
+                        on_click=on_cancel
                     >
                         "Отмена"
                     </Button>
                     <Button
                         variant=ButtonVariant::Olive
                         disabled=Signal::derive(move || is_loading.get())
-                        on_click=on_add.get_value()
+                        on_click=on_add
                     >
                         {move || if is_loading.get() { "Создание..." } else { "Добавить" }}
                     </Button>
