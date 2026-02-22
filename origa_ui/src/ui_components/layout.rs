@@ -1,16 +1,11 @@
 use leptos::prelude::*;
 
-#[derive(Clone, Copy, PartialEq, Debug)]
+#[derive(Clone, Copy, PartialEq, Debug, Default)]
 pub enum PageLayoutVariant {
+    #[default]
     Centered,
     Full,
     Compact,
-}
-
-impl Default for PageLayoutVariant {
-    fn default() -> Self {
-        Self::Centered
-    }
 }
 
 #[component]
@@ -35,17 +30,12 @@ pub fn PageLayout(
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Debug)]
+#[derive(Clone, Copy, PartialEq, Debug, Default)]
 pub enum CardLayoutSize {
     Small,
+    #[default]
     Medium,
     Large,
-}
-
-impl Default for CardLayoutSize {
-    fn default() -> Self {
-        Self::Medium
-    }
 }
 
 #[component]

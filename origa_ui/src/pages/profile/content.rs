@@ -60,12 +60,12 @@ pub fn ProfileContent() -> impl IntoView {
     let save_profile = Callback::new(move |_| {
         let user_id = current_user.with(|u| u.as_ref().map(|u| u.id())).unwrap();
         let repository = repository.clone();
-        let current_user = current_user.clone();
+        let current_user = current_user;
         let level = selected_level.get();
         let language = selected_language.get();
         let reminders_enabled = reminders.get();
         let token = duolingo_input.get();
-        let is_saving = is_saving.clone();
+        let is_saving = is_saving;
 
         is_saving.set(true);
 
@@ -85,7 +85,7 @@ pub fn ProfileContent() -> impl IntoView {
 
             is_saving.set(false);
 
-            if let Ok(_) = result {
+            if result.is_ok() {
                 update_current_user(repository, current_user);
             }
         });

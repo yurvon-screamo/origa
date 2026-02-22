@@ -15,10 +15,10 @@ pub fn update_current_user(
         if let Some(user) = current_user.get_untracked() {
             let user_id = user.id();
             let use_case = GetUserInfoUseCase::new(&repository);
-            if let Ok(_) = use_case.execute(user_id).await {
-                if let Ok(updated_user) = repository.find_by_id(user_id).await {
-                    current_user.set(updated_user);
-                }
+            if let Ok(_) = use_case.execute(user_id).await
+                && let Ok(updated_user) = repository.find_by_id(user_id).await
+            {
+                current_user.set(updated_user);
             }
         }
     });
