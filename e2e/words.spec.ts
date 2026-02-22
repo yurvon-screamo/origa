@@ -21,24 +21,29 @@ test.describe('Страница слов', () => {
 
   test('должен отобразить список карточек слов', async ({ page }) => {
     await wordsPage.goto();
+    await page.waitForSelector('.card', { timeout: 5000 });
     await wordsPage.expectNotEmpty();
   });
 
   test('должен фильтровать слова по ключевому слову', async ({ page }) => {
     await wordsPage.goto();
+    await page.waitForSelector('.card', { timeout: 5000 });
 
     const initialCount = await wordsPage.getCardsCount();
+    expect(initialCount).toBeGreaterThan(0);
 
     await wordsPage.search('Кошка');
     await wordsPage.expectCardVisible('猫');
 
     await wordsPage.clearSearch();
+    await page.waitForTimeout(100);
     const finalCount = await wordsPage.getCardsCount();
     expect(finalCount).toBe(initialCount);
   });
 
   test('должен фильтровать слова по переводу', async ({ page }) => {
     await wordsPage.goto();
+    await page.waitForSelector('.card', { timeout: 5000 });
 
     await wordsPage.search('Собака');
     await wordsPage.expectCardVisible('犬');
