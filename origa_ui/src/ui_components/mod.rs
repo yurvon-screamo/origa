@@ -29,7 +29,7 @@ mod tooltip;
 mod typography;
 
 pub use accordion::AccordionItem;
-pub use alert::Alert;
+pub use alert::{Alert, AlertType};
 pub use avatar::{Avatar, AvatarSize};
 pub use badge::Badge;
 pub use breadcrumbs::Breadcrumbs;

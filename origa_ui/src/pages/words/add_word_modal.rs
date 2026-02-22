@@ -1,7 +1,7 @@
 use crate::app::update_current_user;
 use crate::repository::InMemoryUserRepository;
 use crate::ui_components::{
-    Button, ButtonVariant, Input, Modal, Text, TextSize, TypographyVariant,
+    Alert, AlertType, Button, ButtonVariant, Input, Modal, Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
 use leptos::task::spawn_local;
@@ -13,6 +13,7 @@ use origa::infrastructure::LlmServiceInvoker;
 pub fn AddWordModal(is_open: RwSignal<bool>) -> impl IntoView {
     let new_word = RwSignal::new(String::new());
     let is_loading = RwSignal::new(false);
+    let error_message = RwSignal::new(None::<String>);
     let current_user =
         use_context::<RwSignal<Option<User>>>().expect("current_user context not provided");
     let repository =
@@ -35,21 +36,30 @@ pub fn AddWordModal(is_open: RwSignal<bool>) -> impl IntoView {
         let llm_service_clone = llm_service.clone();
 
         is_loading.set(true);
+        error_message.set(None);
+
+        let error_signal = error_message.clone();
 
         spawn_local(async move {
             let use_case = CreateVocabularyCardUseCase::new(&repository_clone, &llm_service_clone);
 
-            let _ = use_case.execute(user_id, word.clone()).await;
-
-            is_loading_signal.set(false);
-            update_current_user(repository_clone, current_user_signal);
-
-            new_word_signal.set(String::new());
-            is_open_signal.set(false);
+            match use_case.execute(user_id, word.clone()).await {
+                Ok(_) => {
+                    is_loading_signal.set(false);
+                    update_current_user(repository_clone, current_user_signal);
+                    new_word_signal.set(String::new());
+                    is_open_signal.set(false);
+                }
+                Err(e) => {
+                    is_loading_signal.set(false);
+                    error_signal.set(Some(e.to_string()));
+                }
+            }
         });
     }));
 
     let on_cancel = StoredValue::new(Callback::new(move |_: leptos::ev::MouseEvent| {
+        error_message.set(None);
         is_open.set(false);
     }));
 
@@ -71,6 +81,15 @@ pub fn AddWordModal(is_open: RwSignal<bool>) -> impl IntoView {
                 <Text size=TextSize::Small variant=TypographyVariant::Muted>
                     "Перевод будет сгенерирован автоматически"
                 </Text>
+                {move || {
+                    error_message.get().map(|msg| view! {
+                        <Alert
+                            alert_type=Signal::from(AlertType::Error)
+                            title=Signal::derive(|| "Ошибка".to_string())
+                            message=Signal::derive(move || msg.clone())
+                        />
+                    })
+                }}
                 <div class="flex gap-2 justify-end">
                     <Button
                         variant=ButtonVariant::Ghost
