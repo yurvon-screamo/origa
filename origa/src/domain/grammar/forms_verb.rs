@@ -271,10 +271,6 @@ pub fn to_nai_form(word: &str) -> String {
     word.to_string()
 }
 
-pub fn to_dictionary_form(word: &str) -> String {
-    word.to_string()
-}
-
 pub fn to_tara_form(word: &str) -> String {
     if word == "する" {
         return "したら".to_string();
