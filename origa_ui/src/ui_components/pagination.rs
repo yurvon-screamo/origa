@@ -45,7 +45,7 @@ pub fn Pagination(
                     view! {
                         <button
                             class=move || format!("pagination-btn {}", if is_current() { "active" } else { "" })
-                            disabled=move || is_disabled()
+                            disabled=is_disabled
                             on:click=move |_| {
                                 if idx > 0 && idx <= total_pages.get() {
                                     handle_page_change(idx);

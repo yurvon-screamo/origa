@@ -29,16 +29,16 @@ pub fn AddWordModal(is_open: RwSignal<bool>) -> impl IntoView {
 
         let user_id = current_user.with(|u| u.as_ref().map(|u| u.id())).unwrap();
         let repository_clone = repository.clone();
-        let current_user_signal = current_user.clone();
-        let is_loading_signal = is_loading.clone();
-        let new_word_signal = new_word.clone();
-        let is_open_signal = is_open.clone();
+        let current_user_signal = current_user;
+        let is_loading_signal = is_loading;
+        let new_word_signal = new_word;
+        let is_open_signal = is_open;
         let llm_service_clone = llm_service.clone();
 
         is_loading.set(true);
         error_message.set(None);
 
-        let error_signal = error_message.clone();
+        let error_signal = error_message;
 
         spawn_local(async move {
             let use_case = CreateVocabularyCardUseCase::new(&repository_clone, &llm_service_clone);
