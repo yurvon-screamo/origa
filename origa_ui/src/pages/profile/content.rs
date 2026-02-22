@@ -42,32 +42,42 @@ pub fn ProfileContent() -> impl IntoView {
     let duolingo_token = Memo::new(move |_| {
         current_user.with(|u| {
             u.as_ref()
-                .map(|u| u.duolingo_jwt_token().map(|t| t.to_string()))
-                .unwrap_or(None)
+                .and_then(|u| u.duolingo_jwt_token().map(|t| t.to_string()))
+                .unwrap_or_default()
         })
     });
 
     let selected_level = RwSignal::new(japanese_level.get_untracked());
     let selected_language = RwSignal::new(native_language.get_untracked());
     let reminders = RwSignal::new(reminders_enabled.get_untracked());
-    let duolingo_input = RwSignal::new(duolingo_token.get_untracked().unwrap_or_default());
+    let duolingo_input = RwSignal::new(duolingo_token.get_untracked());
 
-    let _ = Memo::new(move |_| {
-        duolingo_input.set(duolingo_token.get().unwrap_or_default());
+    Effect::new(move |_| {
+        selected_level.set(japanese_level.get());
     });
+    Effect::new(move |_| {
+        selected_language.set(native_language.get());
+    });
+    Effect::new(move |_| {
+        reminders.set(reminders_enabled.get());
+    });
+    Effect::new(move |_| {
+        duolingo_input.set(duolingo_token.get());
+    });
+
     let is_saving = RwSignal::new(false);
 
     let save_profile = Callback::new(move |_| {
         let user_id = current_user.with(|u| u.as_ref().map(|u| u.id())).unwrap();
         let repository = repository.clone();
-        let current_user = current_user;
+        let current_user_signal = current_user;
         let level = selected_level.get();
         let language = selected_language.get();
         let reminders_enabled = reminders.get();
         let token = duolingo_input.get();
-        let is_saving = is_saving;
+        let is_saving_signal = is_saving;
 
-        is_saving.set(true);
+        is_saving_signal.set(true);
 
         spawn_local(async move {
             let use_case = UpdateUserProfileUseCase::new(&repository);
@@ -83,10 +93,10 @@ pub fn ProfileContent() -> impl IntoView {
                 )
                 .await;
 
-            is_saving.set(false);
+            is_saving_signal.set(false);
 
             if result.is_ok() {
-                update_current_user(repository, current_user);
+                update_current_user(repository, current_user_signal);
             }
         });
     });
