@@ -547,7 +547,7 @@ pub fn to_imperative_form(word: &str) -> String {
     if classify_verb(word) == VerbGroup::Ichidan {
         let mut result = word.to_string();
         result.pop();
-        result.push_str("ろ");
+        result.push('ろ');
         return result;
     }
 
@@ -649,7 +649,7 @@ pub fn to_zu_form(word: &str) -> String {
     if classify_verb(word) == VerbGroup::Ichidan {
         let mut result = word.to_string();
         result.pop();
-        result.push_str("ず");
+        result.push('ず');
         return result;
     }
 
