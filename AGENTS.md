@@ -35,66 +35,8 @@ Workspace structure:
 
 - Prefer Result<T, E> over Option for async operations
 - Use tokio::spawn for parallel operations when appropriate
-- Use `async-trait` for trait methods that need to be async
 - Avoid blocking in async code; use async equivalents
 - Handle errors explicitly; don't silently ignore them
-
-## Leptos Architecture
-
-### Reactive System
-
-Leptos uses fine-grained reactivity without virtual DOM. UI nodes are directly subscribed to signals, enabling minimal DOM updates. Core reactive primitives:
-
-- **Signals** (`create_signal`, `RwSignal`): Reactive state sources with getter/setter pattern
-- **Effects** (`create_effect`): Reactive code that runs when dependencies change
-- **Memos** (`create_memo`): Computed derived values with caching
-- **Resources** (`create_resource`): Async data with loading/error states
-
-**Critical Rule**: Never destructure signal values outside tracking scopes (`view!`, `create_effect`). Always use closures `move || signal.get()` for reactivity.
-
-### Component Model
-
-Leptos components are setup functions that execute **once**, not re-render functions. Key principles:
-
-- Annotate with `#[component]`
-- Props use attributes: `#[prop(into)]`, `#[prop(optional)]`, `#[prop(default)]`
-- `view!` macro returns UI tree
-- Dynamic content in `view!` must be closures for reactivity
-- Use `Show`, `For`, `Suspense`, `Transition` for reactive control flow
-
-### Isomorphic Application
-
-Code runs on both server (SSR) and client (CSR/Hydrate):
-
-- Compile to WebAssembly for client, native code for server
-- Use `cfg!(feature = "hydrate")` or `cfg!(target_family = "wasm")` for platform-specific code
-- Effects typically don't run on server during SSR
-
-### State Management Patterns
-
-- **Local**: `create_signal` within component
-- **Prop Drilling**: Acceptable for shallow trees
-- **Context API**: Preferred for global state (`provide_context`, `use_context`)
-- **Global**: Top-level or lazy static initialization (use caution in WebAssembly)
-
-### Navigation
-
-Use `<A>` component instead of `<a>` for client-side navigation. Hooks: `use_params()`, `use_query()`, `use_navigate()`.
-
-### Error Handling
-
-- Server functions return `Result<T, ServerFnError>`
-- Wrap error-prone components in `<ErrorBoundary>` with fallback
-- Resources provide `.error()` signal for async error handling
-
-### Common Pitfalls
-
-- Almost all closures in `view!`/`create_effect` require `move ||`
-- Clone signals before moving into closures
-- Pass signals (ReadSignal) to child components, not values, for reactivity
-- Use `NodeRef` for imperative DOM access, prefer declarative when possible
-- Avoid panic-prone code directly in views
-- Use `ErrorBoundary` for error handling
 
 ## UI Component Library (origa_ui)
 
@@ -158,3 +100,5 @@ use crate::ui_components::{Button, ButtonVariant, Input, Heading, HeadingLevel};
 - Typography: `font-serif` for headings, `font-mono` for code/data
 - Spacing: Tailwind utility classes (e.g., `space-y-5`, `mb-4`, `p-6`)
 - Responsive: `sm:`, `md:`, `lg:` prefixes for breakpoints
+
+Full css config placed in `origa_ui/input.css` file.
