@@ -13,6 +13,7 @@ export class WordsPage {
   readonly filterLearned: Locator;
   readonly vocabularyCards: Locator;
   readonly emptyMessage: Locator;
+  readonly modal: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -27,6 +28,7 @@ export class WordsPage {
     this.filterLearned = page.getByRole('button', { name: /Изученные/ });
     this.vocabularyCards = page.locator('.card');
     this.emptyMessage = page.getByText('Слов не найдено');
+    this.modal = page.locator('.modal-content');
   }
 
   async goto() {
@@ -68,7 +70,7 @@ export class WordsPage {
   }
 
   async getCardsCount(): Promise<number> {
-    return await this.vocabularyCards.count();
+    return await this.page.locator('.card').count();
   }
 
   async hasCards(): Promise<boolean> {

@@ -10,9 +10,9 @@ export class HomePage {
 
   constructor(page: Page) {
     this.page = page;
-    this.kanjiCard = page.getByText('Канжи').locator('..').locator('..');
-    this.wordsCard = page.getByText('Слова').locator('..').locator('..');
-    this.levelCard = page.getByText('Уровень').locator('..').locator('..');
+    this.kanjiCard = page.locator('.card').filter({ hasText: 'Канжи' });
+    this.wordsCard = page.locator('.card').filter({ hasText: 'в словаре' });
+    this.levelCard = page.locator('.card').filter({ hasText: 'Уровень' });
     this.todaySection = page.getByText('Сегодня');
     this.todayCard = page.getByText('Начните изучение японского языка');
   }
