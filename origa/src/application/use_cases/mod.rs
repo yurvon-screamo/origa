@@ -36,7 +36,7 @@ pub use score_content::ScoreContentUseCase;
 // TODO: Implement import_anki_pack
 // pub use import_anki_pack::*;
 pub use import_well_known_set::{ImportWellKnownSetResult, ImportWellKnownSetUseCase};
-pub use kanji_info::KanjiInfoUseCase;
+pub use kanji_info::{KanjiInfoListUseCase, KanjiInfoUseCase, KanjiItemInfo};
 pub use kanji_list::KanjiListUseCase;
 pub use knowledge_set_cards::KnowledgeSetCardsUseCase;
 pub use list_well_known_sets::{ListWellKnownSetsUseCase, WellKnownSetInfo};
