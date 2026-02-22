@@ -1,8 +1,9 @@
 use super::{ActionButtons, IntegrationsCard, PersonalDataCard, SettingsCard};
+use crate::app::update_current_user;
 use crate::repository::InMemoryUserRepository;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use origa::application::use_cases::{GetUserInfoUseCase, UpdateUserProfileUseCase};
+use origa::application::UpdateUserProfileUseCase;
 use origa::domain::User;
 use origa::domain::{JapaneseLevel, NativeLanguage};
 
@@ -85,17 +86,7 @@ pub fn ProfileContent() -> impl IntoView {
             is_saving.set(false);
 
             if let Ok(_) = result {
-                let get_use_case = GetUserInfoUseCase::new(&repository);
-                if let Ok(profile) = get_use_case.execute(user_id).await {
-                    current_user.update(|u| {
-                        if let Some(user) = u {
-                            user.set_current_japanese_level(profile.current_japanese_level);
-                            user.set_native_language(profile.native_language.clone());
-                            user.set_reminders_enabled(profile.reminders_enabled);
-                            user.set_duolingo_jwt_token(profile.duolingo_jwt_token);
-                        }
-                    });
-                }
+                update_current_user(repository, current_user);
             }
         });
     });

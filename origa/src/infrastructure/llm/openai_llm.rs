@@ -6,6 +6,7 @@ use async_openai_wasm::types::chat::{
 use async_openai_wasm::{Client, config::OpenAIConfig};
 use std::sync::Arc;
 
+#[derive(Clone)]
 pub struct OpenAiLlm {
     client: Arc<Client<OpenAIConfig>>,
     model: String,
