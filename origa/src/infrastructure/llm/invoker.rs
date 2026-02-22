@@ -3,6 +3,7 @@ use crate::domain::OrigaError;
 
 use super::OpenAiLlm;
 
+#[derive(Clone)]
 pub enum LlmServiceInvoker {
     None,
     OpenAi(OpenAiLlm),
