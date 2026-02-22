@@ -25,6 +25,8 @@ pub fn Modal(
         },
     );
 
+    let children = StoredValue::new(children);
+
     view! {
         <Show when=move || is_open.get()>
             <>
@@ -47,7 +49,7 @@ pub fn Modal(
                             </svg>
                         </button>
                     </div>
-                    {children()}
+                    {move || children.with_value(|c| c())}
                 </div>
             </>
         </Show>
