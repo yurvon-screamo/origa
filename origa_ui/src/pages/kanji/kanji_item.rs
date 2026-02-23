@@ -1,4 +1,4 @@
-use crate::ui_components::{Text, TextSize, TypographyVariant};
+use crate::ui_components::{FuriganaText, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 use origa::application::KanjiItemInfo;
 use std::collections::HashSet;
@@ -41,7 +41,7 @@ pub fn KanjiItem(
                 <span class="text-2xl font-serif">{kanji_info.kanji}</span>
                 <div class="flex-1">
                     <Text size=TextSize::Small variant=TypographyVariant::Primary>
-                        {kanji_info.description.clone()}
+                        <FuriganaText text=kanji_info.description.clone()/>
                     </Text>
                     {move || {
                         if !radicals_str.is_empty() {

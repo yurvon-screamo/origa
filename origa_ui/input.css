@@ -1038,3 +1038,22 @@ body {
 		transform: translateY(0);
 	}
 }
+
+.furigana-text {
+	display: inline;
+}
+
+.furigana-ruby {
+	font-family: "Cormorant Garamond", serif;
+	ruby-align: center;
+}
+
+.furigana-rt {
+	font-family: "DM Mono", monospace;
+	font-size: 0.5em;
+	color: var(--fg-muted);
+}
+
+.furigana-plain {
+	font-family: "Cormorant Garamond", serif;
+}
