@@ -6,10 +6,11 @@ dotenv.config({ path: path.resolve(__dirname, "e2e", ".env") });
 
 export default defineConfig({
 	testDir: "./e2e",
-	fullyParallel: true,
+	fullyParallel: false,
 	forbidOnly: !!process.env.CI,
 	retries: process.env.CI ? 2 : 0,
-	workers: process.env.CI ? 1 : undefined,
+	workers: 2,
+	timeout: 60000,
 	reporter: "html",
 	use: {
 		baseURL: "http://localhost:8080",
@@ -25,7 +26,7 @@ export default defineConfig({
 	],
 
 	webServer: {
-		command: "cd origa_ui && trunk serve --port 8080 --color never",
+		command: "cd origa_ui && trunk serve --port 8080",
 		url: "http://localhost:8080",
 		reuseExistingServer: true,
 		timeout: 120 * 1000,

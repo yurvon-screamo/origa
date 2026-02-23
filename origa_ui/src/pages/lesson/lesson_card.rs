@@ -1,6 +1,6 @@
 use crate::ui_components::{
-    Button, ButtonVariant, Card, Heading, HeadingLevel, Tag, TagVariant, Text, TextSize,
-    TypographyVariant,
+    Button, ButtonVariant, Card, FuriganaText, Heading, HeadingLevel, Tag, TagVariant, Text,
+    TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
 use origa::domain::Card as DomainCard;
@@ -74,7 +74,7 @@ pub fn LessonCard(
                 <Show when=move || !show_answer>
                     <div class="text-center">
                         <Heading level=HeadingLevel::H2 class="mb-4">
-                            {question.get_value()}
+                            <FuriganaText text=question.get_value()/>
                         </Heading>
 
                         <Button
@@ -89,7 +89,7 @@ pub fn LessonCard(
                 <Show when=move || show_answer>
                     <div class="text-center">
                         <Heading level=HeadingLevel::H3 class="mb-2">
-                            {question.get_value()}
+                            <FuriganaText text=question.get_value()/>
                         </Heading>
 
                         <Show when=move || radicals.get_value().is_some()>
@@ -105,7 +105,7 @@ pub fn LessonCard(
                                 "Ответ:"
                             </Text>
                             <Text size=TextSize::Large variant=TypographyVariant::Primary>
-                                {answer.get_value()}
+                                <FuriganaText text=answer.get_value()/>
                             </Text>
                         </div>
                     </div>

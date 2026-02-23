@@ -16,7 +16,7 @@ pub use dictionary::{
     VOCABULARY_DICTIONARY, VocabularyInfo,
 };
 pub use error::OrigaError;
-pub use furigana::furiganize_text;
+pub use furigana::{FuriganaSegment, furiganize_segments, furiganize_text, furiganize_text_html};
 pub use grammar::{GRAMMAR_RULES, GrammarRule, GrammarRuleContent, get_rule_by_id};
 pub use japanese::{JapaneseChar, JapaneseText, filter_japanese_text};
 pub use knowledge::{

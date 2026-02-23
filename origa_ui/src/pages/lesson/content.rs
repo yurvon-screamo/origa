@@ -1,12 +1,13 @@
 use super::complete_screen::LessonCompleteScreen;
 use super::lesson_card_container::LessonCardContainer;
 use super::lesson_progress_view::LessonProgressView;
-use super::lesson_state::{LessonContext, LessonState};
+use super::lesson_state::{LessonContext, LessonMode, LessonState};
 use crate::repository::SupabaseUserRepository;
 use crate::ui_components::{Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use origa::application::use_cases::SelectCardsToLessonUseCase;
+use leptos_router::hooks::use_query_map;
+use origa::application::use_cases::{SelectCardsToFixationUseCase, SelectCardsToLessonUseCase};
 use origa::domain::User;
 use ulid::Ulid;
 
@@ -17,6 +18,12 @@ pub fn LessonContent() -> impl IntoView {
     let repository =
         use_context::<SupabaseUserRepository>().expect("repository context not provided");
 
+    let query = use_query_map();
+    let mode = match query.read().get("mode").as_deref() {
+        Some("fixation") => LessonMode::Fixation,
+        _ => LessonMode::Lesson,
+    };
+
     let lesson_state = RwSignal::new(LessonState::default());
     let is_loading = RwSignal::new(true);
     let is_completed = RwSignal::new(false);
@@ -26,6 +33,7 @@ pub fn LessonContent() -> impl IntoView {
         repository: repository.clone(),
         lesson_state,
         is_completed,
+        mode,
     };
     provide_context(lesson_ctx);
 
@@ -34,12 +42,22 @@ pub fn LessonContent() -> impl IntoView {
         if let Some(user) = user {
             let user_id = user.id();
             let repo = repository.clone();
+            let current_mode = mode;
             spawn_local(async move {
                 is_loading.set(true);
 
-                let use_case = SelectCardsToLessonUseCase::new(&repo);
+                let cards = match current_mode {
+                    LessonMode::Lesson => {
+                        let use_case = SelectCardsToLessonUseCase::new(&repo);
+                        use_case.execute(user_id).await
+                    }
+                    LessonMode::Fixation => {
+                        let use_case = SelectCardsToFixationUseCase::new(&repo);
+                        use_case.execute(user_id).await
+                    }
+                };
 
-                match use_case.execute(user_id).await {
+                match cards {
                     Ok(cards) => {
                         let card_ids: Vec<Ulid> = cards.keys().cloned().collect();
                         if cards.is_empty() {

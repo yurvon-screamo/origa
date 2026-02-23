@@ -56,11 +56,18 @@ pub fn HomeContent() -> impl IntoView {
                             <Text size=TextSize::Default variant=TypographyVariant::Muted class="mb-4">
                                 "Начните изучение японского языка"
                             </Text>
-                            <A href="/lesson">
-                                <Button variant=Signal::derive(|| ButtonVariant::Filled)>
-                                    "Начать урок"
-                                </Button>
-                            </A>
+                            <div class="flex gap-4">
+                                <A href="/lesson">
+                                    <Button variant=Signal::derive(|| ButtonVariant::Filled)>
+                                        "Начать урок"
+                                    </Button>
+                                </A>
+                                <A href="/lesson?mode=fixation">
+                                    <Button variant=Signal::derive(|| ButtonVariant::Olive)>
+                                        "Закрепление"
+                                    </Button>
+                                </A>
+                            </div>
                         </div>
                     </Card>
                 </div>

@@ -100,14 +100,18 @@ pub fn ProfileContent() -> impl IntoView {
     });
 
     let client_for_logout = client.clone();
+    let navigate = leptos_router::hooks::use_navigate();
+    let navigate_for_logout = navigate.clone();
+    let navigate_for_delete = navigate.clone();
+
     let logout = Callback::new(move |_| {
         let client_clone = client_for_logout.clone();
         let current_user_clone = current_user;
+        let nav = navigate_for_logout.clone();
         spawn_local(async move {
             let _ = client_clone.logout().await;
             current_user_clone.set(None);
-            let navigate = leptos_router::hooks::use_navigate();
-            navigate("/", Default::default());
+            nav("/", Default::default());
         });
     });
 
@@ -116,6 +120,7 @@ pub fn ProfileContent() -> impl IntoView {
         let client_clone = client_for_delete.clone();
         let current_user_clone = current_user;
         let is_deleting_signal = is_deleting;
+        let nav = navigate_for_delete.clone();
 
         is_deleting_signal.set(true);
 
@@ -123,8 +128,7 @@ pub fn ProfileContent() -> impl IntoView {
             match client_clone.delete_account().await {
                 Ok(()) => {
                     current_user_clone.set(None);
-                    let navigate = leptos_router::hooks::use_navigate();
-                    navigate("/", Default::default());
+                    nav("/", Default::default());
                 }
                 Err(e) => {
                     is_deleting_signal.set(false);
