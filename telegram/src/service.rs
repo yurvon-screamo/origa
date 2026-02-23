@@ -6,7 +6,7 @@ use origa::application::use_cases::{
     SelectCardsToFixationUseCase, SelectCardsToLessonUseCase, UpdateUserProfileUseCase,
 };
 use origa::domain::{JapaneseLevel, NativeLanguage};
-use origa::infrastructure::{FileSystemUserRepository, FsrsSrsService, LlmServiceInvoker};
+use origa::infrastructure::{FsrsSrsService, LlmServiceInvoker};
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -14,6 +14,7 @@ use teloxide::RequestError;
 use tokio::sync::{OnceCell, RwLock};
 
 use crate::dialogue::SessionData;
+use crate::repository::FileSystemUserRepository;
 
 struct OrigaServiceProviderInner {
     repository: Arc<FileSystemUserRepository>,

@@ -9,8 +9,14 @@ pub fn Input(
     #[prop(optional, into)] disabled: Signal<bool>,
     #[prop(optional, into)] rows: Signal<Option<usize>>,
     #[prop(optional, into)] class: Signal<String>,
+    #[prop(optional, into)] input_type: Signal<String>,
     #[prop(optional)] on_change: Option<Callback<Event>>,
+    #[prop(optional)] on_keydown: Option<Callback<leptos::ev::KeyboardEvent>>,
 ) -> impl IntoView {
+    let input_type = move || {
+        let t = input_type.get();
+        if t.is_empty() { "text".to_string() } else { t }
+    };
     let full_class = move || {
         let base_class = "input-field";
         let textarea_class = "resize-none";
@@ -35,12 +41,17 @@ pub fn Input(
                             on_change.run(ev);
                         }
                     }
+                    on:keydown=move |ev| {
+                        if let Some(on_keydown) = on_keydown {
+                            on_keydown.run(ev);
+                        }
+                    }
                 />
             })
         } else {
             Either::Right(view! {
                 <input
-                    type="text"
+                    type=input_type
                     class=full_class
                     placeholder=move || placeholder.get()
                     disabled=move || disabled.get()
@@ -48,6 +59,11 @@ pub fn Input(
                     on:change=move |ev| {
                         if let Some(on_change) = on_change {
                             on_change.run(ev);
+                        }
+                    }
+                    on:keydown=move |ev| {
+                        if let Some(on_keydown) = on_keydown {
+                            on_keydown.run(ev);
                         }
                     }
                 />
