@@ -1,25 +1,58 @@
+pub mod email_input;
+pub mod error_message;
 pub mod form;
 pub mod header;
+pub mod password_input;
 
-pub use form::LoginForm;
+pub use form::{EmailConfirmationForm, LoginForm, RegisterForm};
 pub use header::LoginHeader;
 
 use crate::ui_components::{CardLayout, CardLayoutSize, PageLayout, PageLayoutVariant};
 use leptos::prelude::*;
 
+#[derive(Clone, Copy, PartialEq)]
+pub enum LoginMode {
+    Login,
+    Register,
+    EmailNotConfirmed,
+}
+
 #[component]
 pub fn Login() -> impl IntoView {
-    let username = RwSignal::new(String::new());
+    let email = RwSignal::new(String::new());
+    let password = RwSignal::new(String::new());
     let error = RwSignal::new(None::<String>);
+    let mode = RwSignal::new(LoginMode::Login);
 
     view! {
         <PageLayout variant=PageLayoutVariant::Centered>
             <CardLayout size=CardLayoutSize::Medium>
                 <LoginHeader />
-                <LoginForm
-                    username=username
-                    error=error
-                />
+                {move || match mode.get() {
+                    LoginMode::Login => view! {
+                        <LoginForm
+                            email=email
+                            password=password
+                            error=error
+                            mode=mode
+                        />
+                    }.into_any(),
+                    LoginMode::Register => view! {
+                        <RegisterForm
+                            email=email
+                            password=password
+                            error=error
+                            mode=mode
+                        />
+                    }.into_any(),
+                    LoginMode::EmailNotConfirmed => view! {
+                        <EmailConfirmationForm
+                            email=email
+                            error=error
+                            mode=mode
+                        />
+                    }.into_any(),
+                }}
             </CardLayout>
         </PageLayout>
     }

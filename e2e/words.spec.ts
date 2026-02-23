@@ -1,84 +1,64 @@
-import { test, expect } from '@playwright/test';
-import { LoginPage, WordsPage } from './pages';
+import { expect, test } from "@playwright/test";
+import { LoginPage, ProfilePage, WordsPage } from "./pages";
 
-test.describe('Страница слов', () => {
-  let loginPage: LoginPage;
-  let wordsPage: WordsPage;
+const CONFIRMED_TEST_EMAIL = process.env.E2E_TEST_EMAIL;
+const CONFIRMED_TEST_PASSWORD = process.env.E2E_TEST_PASSWORD;
 
-  test.beforeEach(async ({ page }) => {
-    loginPage = new LoginPage(page);
-    wordsPage = new WordsPage(page);
+test.describe("Страница слов", () => {
+	let loginPage: LoginPage;
+	let wordsPage: WordsPage;
+	let _profilePage: ProfilePage;
 
-    await loginPage.goto();
-    await loginPage.loginAndNavigate('demo');
-  });
+	test.beforeEach(async ({ page }) => {
+		loginPage = new LoginPage(page);
+		wordsPage = new WordsPage(page);
+		_profilePage = new ProfilePage(page);
 
-  test('должен отобразить все элементы страницы слов', async ({ page }) => {
-    await wordsPage.goto();
-    await wordsPage.expectVisible();
-    await wordsPage.expectFiltersVisible();
-  });
+		// Login with pre-confirmed test user
+		await loginPage.goto();
+		await loginPage.login(CONFIRMED_TEST_EMAIL!, CONFIRMED_TEST_PASSWORD!);
+		await page.waitForURL("/home");
+	});
 
-  test('должен отобразить список карточек слов', async ({ page }) => {
-    await wordsPage.goto();
-    await page.waitForSelector('.card', { timeout: 5000 });
-    await wordsPage.expectNotEmpty();
-  });
+	test("должен отобразить все элементы страницы слов", async ({ page }) => {
+		await wordsPage.goto();
+		await wordsPage.expectVisible();
+		await wordsPage.expectFiltersVisible();
+	});
 
-  test('должен фильтровать слова по ключевому слову', async ({ page }) => {
-    await wordsPage.goto();
-    await page.waitForSelector('.card', { timeout: 5000 });
+	test("должен отобразить список карточек слов (пустой для нового пользователя)", async ({
+		page,
+	}) => {
+		await wordsPage.goto();
+		// New user has no words - expect empty state
+		await wordsPage.expectEmptyState();
+	});
 
-    const initialCount = await wordsPage.getCardsCount();
-    expect(initialCount).toBeGreaterThan(0);
+	test("должен показать пустое состояние при отсутствии результатов", async ({
+		page,
+	}) => {
+		await wordsPage.goto();
 
-    await wordsPage.search('Кошка');
-    await wordsPage.expectCardVisible('猫');
+		await wordsPage.search("несуществующееслово12345");
+		await wordsPage.expectEmptyState();
+	});
 
-    await wordsPage.clearSearch();
-    await page.waitForTimeout(100);
-    const finalCount = await wordsPage.getCardsCount();
-    expect(finalCount).toBe(initialCount);
-  });
+	test("должен переключаться между фильтрами", async ({ page }) => {
+		await wordsPage.goto();
 
-  test('должен фильтровать слова по переводу', async ({ page }) => {
-    await wordsPage.goto();
-    await page.waitForSelector('.card', { timeout: 5000 });
+		await wordsPage.clickFilter("new");
+		await wordsPage.expectFilterActive("new");
 
-    await wordsPage.search('Собака');
-    await wordsPage.expectCardVisible('犬');
-  });
+		await wordsPage.clickFilter("hard");
+		await wordsPage.expectFilterActive("hard");
 
-  test('должен показать пустое состояние при отсутствии результатов', async ({ page }) => {
-    await wordsPage.goto();
+		await wordsPage.clickFilter("all");
+		await wordsPage.expectFilterActive("all");
+	});
 
-    await wordsPage.search('несуществующееслово12345');
-    await wordsPage.expectEmptyState();
-  });
-
-  test('должен переключаться между фильтрами', async ({ page }) => {
-    await wordsPage.goto();
-
-    await wordsPage.clickFilter('new');
-    await wordsPage.expectFilterActive('new');
-
-    await wordsPage.clickFilter('hard');
-    await wordsPage.expectFilterActive('hard');
-
-    await wordsPage.clickFilter('all');
-    await wordsPage.expectFilterActive('all');
-  });
-
-  test('должен отображать счетчики в фильтрах', async ({ page }) => {
-    await wordsPage.goto();
-
-    const allCount = await wordsPage.getFilterCount('all');
-    expect(allCount).toBeGreaterThan(0);
-  });
-
-  test('должен вернуться на главную страницу', async ({ page }) => {
-    await wordsPage.goto();
-    await wordsPage.goBack();
-    await expect(page).toHaveURL('/home');
-  });
+	test("должен вернуться на главную страницу", async ({ page }) => {
+		await wordsPage.goto();
+		await wordsPage.goBack();
+		await expect(page).toHaveURL("/home");
+	});
 });

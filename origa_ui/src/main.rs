@@ -1,5 +1,4 @@
 mod app;
-mod demo_data;
 mod pages;
 mod repository;
 mod routes;

@@ -10,6 +10,7 @@ use crate::domain::{
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct User {
     id: Ulid,
+    email: String,
     username: String,
     native_language: NativeLanguage,
     current_japanese_level: JapaneseLevel,
@@ -21,14 +22,15 @@ pub struct User {
 
 impl User {
     pub fn new(
-        username: String,
+        email: String,
         current_japanese_level: JapaneseLevel,
         native_language: NativeLanguage,
         telegram_user_id: Option<u64>,
     ) -> Self {
         Self {
             id: Ulid::new(),
-            username,
+            username: email.clone(),
+            email,
             knowledge_set: KnowledgeSet::new(),
             current_japanese_level,
             native_language,
@@ -38,12 +40,44 @@ impl User {
         }
     }
 
+    pub fn from_row(
+        id: Ulid,
+        email: String,
+        username: String,
+        current_japanese_level: JapaneseLevel,
+        native_language: NativeLanguage,
+        duolingo_jwt_token: Option<String>,
+        telegram_user_id: Option<u64>,
+        reminders_enabled: bool,
+        knowledge_set: KnowledgeSet,
+    ) -> Self {
+        Self {
+            id,
+            email,
+            username,
+            current_japanese_level,
+            native_language,
+            duolingo_jwt_token,
+            telegram_user_id,
+            reminders_enabled,
+            knowledge_set,
+        }
+    }
+
     pub fn id(&self) -> Ulid {
         self.id
     }
 
+    pub fn email(&self) -> &str {
+        &self.email
+    }
+
     pub fn username(&self) -> &str {
         &self.username
+    }
+
+    pub fn set_username(&mut self, username: String) {
+        self.username = username;
     }
 
     pub fn current_japanese_level(&self) -> &JapaneseLevel {

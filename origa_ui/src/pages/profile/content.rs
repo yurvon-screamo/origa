@@ -1,19 +1,15 @@
 use super::{ActionButtons, IntegrationsCard, PersonalDataCard, SettingsCard};
-use crate::app::update_current_user;
-use crate::repository::InMemoryUserRepository;
+use crate::app::{AuthContext, update_current_user};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::application::UpdateUserProfileUseCase;
-use origa::domain::User;
 use origa::domain::{JapaneseLevel, NativeLanguage};
 
 #[component]
 pub fn ProfileContent() -> impl IntoView {
-    let current_user =
-        use_context::<RwSignal<Option<User>>>().expect("current_user context not provided");
-
-    let repository =
-        use_context::<InMemoryUserRepository>().expect("repository context not provided");
+    let ctx = use_context::<AuthContext>().expect("AuthContext not provided");
+    let current_user = ctx.current_user;
+    let client = ctx.client.clone();
 
     let user_name = Memo::new(move |_| {
         current_user.with(|u| {
@@ -66,6 +62,8 @@ pub fn ProfileContent() -> impl IntoView {
     });
 
     let is_saving = RwSignal::new(false);
+    let is_deleting = RwSignal::new(false);
+    let repository = ctx.repository.clone();
 
     let save_profile = Callback::new(move |_| {
         let user_id = current_user.with(|u| u.as_ref().map(|u| u.id())).unwrap();
@@ -101,10 +99,39 @@ pub fn ProfileContent() -> impl IntoView {
         });
     });
 
+    let client_for_logout = client.clone();
     let logout = Callback::new(move |_| {
-        current_user.set(None);
-        let navigate = leptos_router::hooks::use_navigate();
-        navigate("/", Default::default());
+        let client_clone = client_for_logout.clone();
+        let current_user_clone = current_user;
+        spawn_local(async move {
+            let _ = client_clone.logout().await;
+            current_user_clone.set(None);
+            let navigate = leptos_router::hooks::use_navigate();
+            navigate("/", Default::default());
+        });
+    });
+
+    let client_for_delete = client.clone();
+    let delete_account = Callback::new(move |_| {
+        let client_clone = client_for_delete.clone();
+        let current_user_clone = current_user;
+        let is_deleting_signal = is_deleting;
+
+        is_deleting_signal.set(true);
+
+        spawn_local(async move {
+            match client_clone.delete_account().await {
+                Ok(()) => {
+                    current_user_clone.set(None);
+                    let navigate = leptos_router::hooks::use_navigate();
+                    navigate("/", Default::default());
+                }
+                Err(e) => {
+                    is_deleting_signal.set(false);
+                    web_sys::console::error_1(&format!("Failed to delete account: {}", e).into());
+                }
+            }
+        });
     });
 
     view! {
@@ -122,7 +149,9 @@ pub fn ProfileContent() -> impl IntoView {
             <ActionButtons
                 on_save={save_profile}
                 on_logout={logout}
+                on_delete_account={delete_account}
                 is_saving={Signal::derive(move || is_saving.get())}
+                is_deleting={Signal::derive(move || is_deleting.get())}
             />
         </div>
     }

@@ -102,6 +102,30 @@ impl FromStr for JapaneseLevel {
     }
 }
 
+impl From<i32> for JapaneseLevel {
+    fn from(value: i32) -> Self {
+        match value {
+            1 => JapaneseLevel::N1,
+            2 => JapaneseLevel::N2,
+            3 => JapaneseLevel::N3,
+            4 => JapaneseLevel::N4,
+            _ => JapaneseLevel::N5,
+        }
+    }
+}
+
+impl From<JapaneseLevel> for i32 {
+    fn from(level: JapaneseLevel) -> Self {
+        match level {
+            JapaneseLevel::N1 => 1,
+            JapaneseLevel::N2 => 2,
+            JapaneseLevel::N3 => 3,
+            JapaneseLevel::N4 => 4,
+            JapaneseLevel::N5 => 5,
+        }
+    }
+}
+
 #[derive(Hash, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum NativeLanguage {
     English,
@@ -120,5 +144,23 @@ impl NativeLanguage {
 impl fmt::Display for NativeLanguage {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.as_str())
+    }
+}
+
+impl From<i32> for NativeLanguage {
+    fn from(value: i32) -> Self {
+        match value {
+            0 => NativeLanguage::English,
+            _ => NativeLanguage::Russian,
+        }
+    }
+}
+
+impl From<NativeLanguage> for i32 {
+    fn from(lang: NativeLanguage) -> Self {
+        match lang {
+            NativeLanguage::English => 0,
+            NativeLanguage::Russian => 1,
+        }
     }
 }
