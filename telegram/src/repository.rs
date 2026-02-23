@@ -1,5 +1,7 @@
-use crate::application::UserRepository;
-use crate::domain::{OrigaError, User};
+use origa::{
+    application::UserRepository,
+    domain::{OrigaError, User},
+};
 use std::path::PathBuf;
 use tokio::fs;
 use ulid::Ulid;
@@ -14,7 +16,7 @@ impl FileSystemUserRepository {
             .await
             .map_err(|e| OrigaError::RepositoryError {
                 reason: format!(
-                    "Failed to07-896=43 ьттcreate users directory {}: {}",
+                    "Failed to create users directory {}: {}",
                     database_path.display(),
                     e
                 ),
@@ -100,14 +102,16 @@ impl UserRepository for FileSystemUserRepository {
         Ok(Some(user))
     }
 
+    async fn find_by_email(&self, email: &str) -> Result<Option<User>, OrigaError> {
+        let users = self.list().await?;
+        Ok(users.into_iter().find(|x| x.email() == email))
+    }
+
     async fn find_by_telegram_id(&self, telegram_id: &u64) -> Result<Option<User>, OrigaError> {
         let users = self.list().await?;
-
-        let user = users
+        Ok(users
             .into_iter()
-            .find(|x| x.telegram_user_id() == Some(telegram_id));
-
-        Ok(user)
+            .find(|x| x.telegram_user_id() == Some(telegram_id)))
     }
 
     async fn save(&self, user: &User) -> Result<(), OrigaError> {

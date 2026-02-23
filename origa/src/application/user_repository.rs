@@ -5,6 +5,7 @@ use ulid::Ulid;
 pub trait UserRepository {
     fn list(&self) -> impl Future<Output = Result<Vec<User>, OrigaError>>;
     fn find_by_id(&self, user_id: Ulid) -> impl Future<Output = Result<Option<User>, OrigaError>>;
+    fn find_by_email(&self, email: &str) -> impl Future<Output = Result<Option<User>, OrigaError>>;
     fn find_by_telegram_id(
         &self,
         telegram_id: &u64,

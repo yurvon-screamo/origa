@@ -1,13 +1,9 @@
-use std::path::PathBuf;
 use std::sync::{Arc, LazyLock};
 
 use crate::domain::OrigaError;
-use crate::infrastructure::{FirebaseUserRepository, FsrsSrsService, LlmServiceInvoker, OpenAiLlm};
+use crate::infrastructure::{FsrsSrsService, LlmServiceInvoker, OpenAiLlm};
 use serde::{Deserialize, Serialize};
 use tokio::sync::OnceCell;
-
-#[cfg(not(target_arch = "wasm32"))]
-use crate::infrastructure::FileSystemUserRepository;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
 pub enum LlmSettings {
@@ -22,61 +18,14 @@ pub enum LlmSettings {
 }
 
 static SETTINGS: LazyLock<ApplicationEnvironment> = LazyLock::new(|| ApplicationEnvironment {
-    lazy_firebase_repository: Arc::new(OnceCell::new()),
     lazy_srs_service: Arc::new(OnceCell::new()),
-
-    #[cfg(not(target_arch = "wasm32"))]
-    lazy_file_repository: Arc::new(OnceCell::new()),
 });
 
 pub struct ApplicationEnvironment {
-    lazy_firebase_repository: Arc<OnceCell<FirebaseUserRepository>>,
     lazy_srs_service: Arc<OnceCell<FsrsSrsService>>,
-
-    #[cfg(not(target_arch = "wasm32"))]
-    lazy_file_repository: Arc<OnceCell<FileSystemUserRepository>>,
-}
-
-#[cfg(not(target_arch = "wasm32"))]
-fn expand_tilde() -> PathBuf {
-    if std::env::var("ANDROID_DATA").is_ok() {
-        PathBuf::from(format!("/data/data/{}/files", "net.uwuwu.origa"))
-    } else {
-        let home = std::env::var("HOME")
-            .or_else(|_| std::env::var("USERPROFILE")) // Windows
-            .unwrap_or_else(|_| "~".to_string());
-
-        PathBuf::from(&home).join(".origa")
-    }
 }
 
 impl ApplicationEnvironment {
-    pub async fn get_firebase_repository(&self) -> Result<&FirebaseUserRepository, OrigaError> {
-        self.lazy_firebase_repository
-            .get_or_try_init(|| async {
-                // TODO: Get project id, database id, and access token from environment variables
-                FirebaseUserRepository::new("origa-43210".to_string(), None, "".to_string())
-                    .await
-                    .map_err(|e| OrigaError::SettingsError {
-                        reason: e.to_string(),
-                    })
-            })
-            .await
-    }
-
-    #[cfg(not(target_arch = "wasm32"))]
-    pub async fn get_file_repository(&self) -> Result<&FileSystemUserRepository, OrigaError> {
-        self.lazy_file_repository
-            .get_or_try_init(|| async {
-                FileSystemUserRepository::new(expand_tilde())
-                    .await
-                    .map_err(|e| OrigaError::SettingsError {
-                        reason: e.to_string(),
-                    })
-            })
-            .await
-    }
-
     pub async fn get_llm_service(
         &self,
         llm_settings: &LlmSettings,

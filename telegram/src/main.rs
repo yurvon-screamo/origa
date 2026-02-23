@@ -2,6 +2,7 @@ mod bot;
 mod dialogue;
 mod formatters;
 mod handlers;
+mod repository;
 mod service;
 
 use dialogue::{DialogueState, LessonMode};
