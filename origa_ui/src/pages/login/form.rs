@@ -3,7 +3,7 @@ use super::email_input::EmailInput;
 use super::error_message::ErrorMessage;
 use super::password_input::PasswordInput;
 use crate::app::AuthContext;
-use crate::ui_components::{Button, ButtonVariant};
+use crate::ui_components::{Alert, AlertType, Button, ButtonVariant};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos_router::hooks::use_navigate;
@@ -138,20 +138,25 @@ pub fn EmailConfirmationForm(
 
     view! {
         <div class="space-y-5">
-            <div class="p-4 bg-blue-950/20 border border-blue-900/30 text-blue-400 text-sm">
-                <p class="mb-2">"Письмо для подтверждения отправлено на:"</p>
-                <p class="font-mono font-bold">{move || email.get()}</p>
-                <p class="mt-3 text-blue-300">"Проверьте почту и перейдите по ссылке в письме для завершения регистрации."</p>
-            </div>
+            <Alert
+                alert_type=AlertType::Info
+                title="Регистрация"
+                message=move || format!(
+                    "Письмо для подтверждения отправлено на: {}. Проверьте почту и перейдите по ссылке в письме для завершения регистрации.",
+                    email.get()
+                )
+            />
 
             {move || error.get().map(|err| view! { <ErrorMessage message=err /> })}
 
             {move || {
                 if resend_success.get() {
                     view! {
-                        <div class="p-3 bg-green-950/20 border border-green-900/30 text-green-400 text-sm">
-                            "Письмо отправлено повторно!"
-                        </div>
+                        <Alert
+                            alert_type=AlertType::Success
+                            title="Отправлено"
+                            message="Письмо отправлено повторно!"
+                        />
                     }.into_any()
                 } else {
                     view! { <div class="hidden"></div> }.into_any()

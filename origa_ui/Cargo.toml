@@ -23,6 +23,7 @@ console_error_panic_hook.workspace = true
 web-sys.workspace = true
 origa.workspace = true
 ulid.workspace = true
+chrono.workspace = true
 gloo-storage.workspace = true
 urlencoding.workspace = true
 reqwest.workspace = true
