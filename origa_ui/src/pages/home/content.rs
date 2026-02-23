@@ -1,5 +1,8 @@
-use crate::ui_components::{Card, DisplayText, Text, TextSize, TypographyVariant};
+use crate::ui_components::{
+    Button, ButtonVariant, Card, DisplayText, Text, TextSize, TypographyVariant,
+};
 use leptos::prelude::*;
+use leptos_router::components::A;
 
 #[component]
 pub fn HomeContent() -> impl IntoView {
@@ -46,12 +49,19 @@ pub fn HomeContent() -> impl IntoView {
 
                 <div class="mt-12">
                     <Text size=TextSize::Small variant=TypographyVariant::Muted uppercase=true tracking_widest=true class="mb-6">
-                        "Сегодня"
+                        "Обучение"
                     </Text>
                     <Card class="p-6">
-                        <Text size=TextSize::Default variant=TypographyVariant::Muted>
-                            "Начните изучение японского языка"
-                        </Text>
+                        <div class="flex flex-col items-center">
+                            <Text size=TextSize::Default variant=TypographyVariant::Muted class="mb-4">
+                                "Начните изучение японского языка"
+                            </Text>
+                            <A href="/lesson">
+                                <Button variant=Signal::derive(|| ButtonVariant::Filled)>
+                                    "Начать урок"
+                                </Button>
+                            </A>
+                        </div>
                     </Card>
                 </div>
             </div>

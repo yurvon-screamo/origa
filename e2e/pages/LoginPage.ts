@@ -27,8 +27,8 @@ export class LoginPage {
 		this.switchToLoginLink = page.getByRole("button", {
 			name: "Уже есть аккаунт? Войти",
 		});
-		this.errorMessage = page.locator(".bg-red-950\\/20");
-		this.emailConfirmationCard = page.locator(".bg-blue-950\\/20");
+		this.errorMessage = page.locator(".alert-error");
+		this.emailConfirmationCard = page.locator(".alert-info");
 		this.resendEmailButton = page.getByRole("button", {
 			name: "Отправить письмо повторно",
 		});
