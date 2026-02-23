@@ -1,5 +1,5 @@
 use crate::ui_components::{
-    Card, Heading, HeadingLevel, Tag, TagVariant, Text, TextSize, TypographyVariant,
+    Card, FuriganaText, Heading, HeadingLevel, Tag, TagVariant, Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
 use origa::domain::{Card as DomainCard, StudyCard};
@@ -101,7 +101,7 @@ pub fn KanjiCardItem(study_card: StudyCard) -> impl IntoView {
                     <div class="flex items-center gap-3 mb-2">
                         <span class="text-3xl font-serif">{kanji_char}</span>
                         <Heading level=HeadingLevel::H4 class=Signal::derive(|| "flex-1".to_string())>
-                            {description.clone()}
+                            <FuriganaText text=description.clone()/>
                         </Heading>
                         <Tag variant=Signal::derive(move || status.tag_variant())>
                             {status.label()}

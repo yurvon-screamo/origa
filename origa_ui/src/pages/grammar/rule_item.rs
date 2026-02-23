@@ -1,4 +1,4 @@
-use crate::ui_components::{Text, TextSize, TypographyVariant};
+use crate::ui_components::{FuriganaText, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 use origa::application::GrammarRuleItem;
 use std::collections::HashSet;
@@ -27,7 +27,7 @@ pub fn RuleItem(rule: GrammarRuleItem, selected_ids: RwSignal<HashSet<Ulid>>) ->
             )
             on:click=on_click
         >
-            <div class="font-bold text-sm">{rule.title}</div>
+            <div class="font-bold text-sm"><FuriganaText text=rule.title/></div>
             <Text size=TextSize::Small variant=TypographyVariant::Muted>
                 {rule.short_description}
             </Text>
