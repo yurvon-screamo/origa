@@ -35,10 +35,10 @@ export class LessonPage {
 		this.showAnswerButton = page.getByRole("button", { name: "Показать ответ" });
 		this.answerSection = page.locator("text=Ответ:");
 		this.ratingButtons = page.locator(".grid.grid-cols-4");
-		this.againButton = page.getByRole("button", { name: "Не знаю", exact: true });
-		this.hardButton = page.getByRole("button", { name: "Плохо", exact: true });
-		this.goodButton = page.getByRole("button", { name: "Знаю", exact: true });
-		this.easyButton = page.getByRole("button", { name: "Идеально", exact: true });
+		this.againButton = page.getByRole("button", { name: /^Не знаю/ });
+		this.hardButton = page.getByRole("button", { name: /^Плохо/ });
+		this.goodButton = page.getByRole("button", { name: /^Знаю/ });
+		this.easyButton = page.getByRole("button", { name: /^Идеально/ });
 		this.completeScreen = page.locator("text=Урок завершён!");
 		this.completeTitle = page.locator("text=Урок завершён!");
 		this.homeButton = page.getByRole("button", { name: "На главную" });

@@ -1,50 +1,152 @@
-use crate::ui_components::{
-    Button, ButtonVariant, Card, DisplayText, Text, TextSize, TypographyVariant,
-};
+use super::{HistoryModal, StatCard, StatMetric};
+use crate::repository::SupabaseUserRepository;
+use crate::ui_components::{Button, ButtonVariant, Card, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
+use leptos::task::spawn_local;
 use leptos_router::components::A;
+use origa::application::GetUserInfoUseCase;
+use origa::domain::{DailyHistoryItem, User};
+
+#[derive(Clone, Default)]
+struct HomeStats {
+    total_cards: usize,
+    learned: usize,
+    in_progress: usize,
+    new: usize,
+    high_difficulty: usize,
+    weekly_delta: usize,
+}
+
+fn format_number(n: usize) -> String {
+    if n >= 1000 {
+        format!("{:.1}k", n as f64 / 1000.0)
+    } else {
+        n.to_string()
+    }
+}
+
+fn calculate_stats(history: &[DailyHistoryItem]) -> HomeStats {
+    if history.is_empty() {
+        return HomeStats::default();
+    }
+
+    let last = history.last().unwrap();
+    let weekly_delta = if history.len() >= 2 {
+        let prev = &history[history.len() - 2];
+        last.total_words().saturating_sub(prev.total_words())
+    } else {
+        0
+    };
+
+    HomeStats {
+        total_cards: last.total_words(),
+        learned: last.known_words(),
+        in_progress: last.in_progress_words(),
+        new: last.new_words(),
+        high_difficulty: last.high_difficulty_words(),
+        weekly_delta,
+    }
+}
 
 #[component]
 pub fn HomeContent() -> impl IntoView {
+    let current_user =
+        use_context::<RwSignal<Option<User>>>().expect("current_user context not provided");
+    let repository =
+        use_context::<SupabaseUserRepository>().expect("repository context not provided");
+
+    let stats = RwSignal::new(None::<HomeStats>);
+    let history = RwSignal::new(Vec::<DailyHistoryItem>::new());
+    let history_open = RwSignal::new(false);
+    let selected_metric = RwSignal::new(StatMetric::TotalCards);
+
+    Effect::new(move |_| {
+        let user = current_user.get();
+        if let Some(user) = user {
+            let user_id = user.id();
+            let repo = repository.clone();
+            spawn_local(async move {
+                let use_case = GetUserInfoUseCase::new(&repo);
+                match use_case.execute(user_id).await {
+                    Ok(profile) => {
+                        history.set(profile.lesson_history.clone());
+                        stats.set(Some(calculate_stats(&profile.lesson_history)));
+                    }
+                    Err(_) => {
+                        stats.set(Some(HomeStats::default()));
+                    }
+                }
+            });
+        }
+    });
+
+    let total_cards = Signal::derive(move || format_number(stats.get().map(|s| s.total_cards).unwrap_or(0)));
+    let learned = Signal::derive(move || format_number(stats.get().map(|s| s.learned).unwrap_or(0)));
+    let in_progress = Signal::derive(move || format_number(stats.get().map(|s| s.in_progress).unwrap_or(0)));
+    let new_cards = Signal::derive(move || format_number(stats.get().map(|s| s.new).unwrap_or(0)));
+    let high_difficulty = Signal::derive(move || format_number(stats.get().map(|s| s.high_difficulty).unwrap_or(0)));
+
+    let weekly_delta_text = Signal::derive(move || {
+        stats.get()
+            .filter(|s| s.weekly_delta > 0)
+            .map(|s| format!("+{}", s.weekly_delta))
+            .unwrap_or_default()
+    });
+
+    let open_history = |metric: StatMetric| {
+        Callback::new(move |_: ()| {
+            selected_metric.set(metric);
+            history_open.set(true);
+        })
+    };
+
+    let close_history = Callback::new(move |_: ()| {
+        history_open.set(false);
+    });
+
     view! {
         <main class="flex-1">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <Card class="p-6">
-                        <Text size=TextSize::Small variant=TypographyVariant::Muted uppercase=true tracking_widest=true class="mb-4">
-                            "Канжи"
-                        </Text>
-                        <DisplayText class="mb-2">
-                            "1,245"
-                        </DisplayText>
-                        <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                            "изученных символов"
-                        </Text>
-                    </Card>
+                <Text size=TextSize::Small variant=TypographyVariant::Muted uppercase=true tracking_widest=true class="mb-6">
+                    "Статистика"
+                </Text>
 
-                    <Card class="p-6">
-                        <Text size=TextSize::Small variant=TypographyVariant::Muted uppercase=true tracking_widest=true class="mb-4">
-                            "Слова"
-                        </Text>
-                        <DisplayText class="mb-2">
-                            "3,821"
-                        </DisplayText>
-                        <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                            "в словаре"
-                        </Text>
-                    </Card>
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                    <StatCard
+                        title=Signal::derive(|| "Total Cards".to_string())
+                        value=total_cards
+                        subtitle=Signal::derive(|| "в базе".to_string())
+                        delta=weekly_delta_text
+                        on_history=open_history(StatMetric::TotalCards)
+                    />
 
-                    <Card class="p-6">
-                        <Text size=TextSize::Small variant=TypographyVariant::Muted uppercase=true tracking_widest=true class="mb-4">
-                            "Уровень"
-                        </Text>
-                        <DisplayText class="mb-2">
-                            "N5"
-                        </DisplayText>
-                        <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                            "текущий прогресс"
-                        </Text>
-                    </Card>
+                    <StatCard
+                        title=Signal::derive(|| "Learned".to_string())
+                        value=learned
+                        subtitle=Signal::derive(|| "изучено".to_string())
+                        on_history=open_history(StatMetric::Learned)
+                    />
+
+                    <StatCard
+                        title=Signal::derive(|| "In Progress".to_string())
+                        value=in_progress
+                        subtitle=Signal::derive(|| "в процессе".to_string())
+                        on_history=open_history(StatMetric::InProgress)
+                    />
+
+                    <StatCard
+                        title=Signal::derive(|| "New".to_string())
+                        value=new_cards
+                        subtitle=Signal::derive(|| "новых".to_string())
+                        on_history=open_history(StatMetric::New)
+                    />
+
+                    <StatCard
+                        title=Signal::derive(|| "Сложные слова".to_string())
+                        value=high_difficulty
+                        subtitle=Signal::derive(|| "требуют внимания".to_string())
+                        on_history=open_history(StatMetric::HighDifficulty)
+                    />
                 </div>
 
                 <div class="mt-12">
@@ -72,6 +174,13 @@ pub fn HomeContent() -> impl IntoView {
                     </Card>
                 </div>
             </div>
+
+            <HistoryModal
+                is_open=Signal::derive(move || history_open.get())
+                metric=Signal::derive(move || selected_metric.get())
+                history=Signal::derive(move || history.get())
+                on_close=close_history
+            />
         </main>
     }
 }
