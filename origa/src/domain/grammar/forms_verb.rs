@@ -5,9 +5,25 @@ pub enum VerbGroup {
     Irregular,
 }
 
+const ICHIDAN_SHORT_VERBS: &[&str] = &[
+    "見る", "居る", "着る", "似る", "煮る", "射る", "鋳る", "寝る", "経る", "蹴る", "乾る",
+];
+
+const GODAN_IRU_ERU_VERBS: &[&str] = &[
+    "要る", "入る", "減る", "茂る", "耽る", "喋る", "遮る", "罵る", "悟る",
+];
+
 pub fn classify_verb(word: &str) -> VerbGroup {
     if word == "する" || word == "くる" || word == "来る" {
         return VerbGroup::Irregular;
+    }
+
+    if ICHIDAN_SHORT_VERBS.contains(&word) {
+        return VerbGroup::Ichidan;
+    }
+
+    if GODAN_IRU_ERU_VERBS.contains(&word) {
+        return VerbGroup::Godan;
     }
 
     let chars: Vec<char> = word.chars().collect();
@@ -19,7 +35,13 @@ pub fn classify_verb(word: &str) -> VerbGroup {
 
     if last_char == 'る' && chars.len() >= 2 {
         let second_last = chars[chars.len() - 2];
-        if matches!(second_last, 'い' | 'え') {
+        let i_row = [
+            'い', 'き', 'ぎ', 'し', 'じ', 'ち', 'ぢ', 'に', 'ひ', 'び', 'ぴ', 'み', 'り',
+        ];
+        let e_row = [
+            'え', 'け', 'げ', 'せ', 'ぜ', 'て', 'で', 'ね', 'へ', 'べ', 'ぺ', 'め', 'れ',
+        ];
+        if i_row.contains(&second_last) || e_row.contains(&second_last) {
             return VerbGroup::Ichidan;
         }
     }
@@ -33,6 +55,9 @@ pub fn to_te_form(word: &str) -> String {
     }
     if word == "くる" || word == "来る" {
         return "きて".to_string();
+    }
+    if word == "行く" {
+        return "行って".to_string();
     }
 
     let chars: Vec<char> = word.chars().collect();
@@ -171,6 +196,9 @@ pub fn to_ta_form(word: &str) -> String {
     }
     if word == "くる" || word == "来る" {
         return "きた".to_string();
+    }
+    if word == "行く" {
+        return "行った".to_string();
     }
 
     let chars: Vec<char> = word.chars().collect();
@@ -863,5 +891,36 @@ mod tests {
         assert_eq!(to_zu_form("行く"), "行かず");
         assert_eq!(to_zu_form("食べる"), "食べず");
         assert_eq!(to_zu_form("する"), "せず");
+    }
+
+    #[test]
+    fn test_godan_iru_eru_exceptions() {
+        assert_eq!(classify_verb("要る"), VerbGroup::Godan);
+        assert_eq!(classify_verb("入る"), VerbGroup::Godan);
+        assert_eq!(classify_verb("減る"), VerbGroup::Godan);
+        assert_eq!(classify_verb("茂る"), VerbGroup::Godan);
+        assert_eq!(classify_verb("喋る"), VerbGroup::Godan);
+        assert_eq!(classify_verb("遮る"), VerbGroup::Godan);
+        assert_eq!(classify_verb("悟る"), VerbGroup::Godan);
+    }
+
+    #[test]
+    fn test_ichidan_short_verbs() {
+        assert_eq!(classify_verb("見る"), VerbGroup::Ichidan);
+        assert_eq!(classify_verb("居る"), VerbGroup::Ichidan);
+        assert_eq!(classify_verb("着る"), VerbGroup::Ichidan);
+        assert_eq!(classify_verb("寝る"), VerbGroup::Ichidan);
+        assert_eq!(classify_verb("経る"), VerbGroup::Ichidan);
+        assert_eq!(classify_verb("蹴る"), VerbGroup::Ichidan);
+    }
+
+    #[test]
+    fn test_godan_exceptions_conjugation() {
+        assert_eq!(to_te_form("要る"), "要って");
+        assert_eq!(to_masu_form("要る"), "要ります");
+        assert_eq!(to_te_form("入る"), "入って");
+        assert_eq!(to_masu_form("入る"), "入ります");
+        assert_eq!(to_te_form("喋る"), "喋って");
+        assert_eq!(to_masu_form("喋る"), "喋ります");
     }
 }

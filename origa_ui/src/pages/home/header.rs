@@ -1,4 +1,4 @@
-use crate::ui_components::{Button, ButtonVariant, DisplayText};
+use crate::ui_components::{Avatar, Button, ButtonVariant, DisplayText};
 use leptos::prelude::*;
 use leptos_router::hooks::use_navigate;
 use origa::domain::User;
@@ -9,21 +9,35 @@ pub fn HomeHeader(current_user: RwSignal<Option<User>>) -> impl IntoView {
         <header class="border-b border-[var(--border-color)] bg-[var(--bg-primary)]">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between items-center h-16">
-                    <div class="flex items-center">
-                        <DisplayText class="font-serif text-2xl font-light tracking-tight">
-                            "オリガ"
-                        </DisplayText>
+                    <div class="flex items-center space-x-4">
+                        {move || {
+                            current_user.get().map(|user| {
+                                let initials = user.username()
+                                    .split_whitespace()
+                                    .filter_map(|word| word.chars().next())
+                                    .take(2)
+                                    .collect::<String>()
+                                    .to_uppercase();
+                                let greeting = format!("Привет, {}!", user.username());
+                                let initials_clone = initials.clone();
+                                view! {
+                                    <Avatar initials=Signal::derive(move || initials_clone.clone()) />
+                                    <DisplayText class="font-serif text-2xl font-light tracking-tight">
+                                        "オリガ"
+                                    </DisplayText>
+                                    <span class="font-mono text-sm text-[var(--fg-muted)]">
+                                        {greeting}
+                                    </span>
+                                }
+                            })
+                        }}
                     </div>
 
                     <div class="flex items-center space-x-4">
                         {move || {
-                            current_user.get().map(|user| {
-                                let username = user.username().to_string();
+                            current_user.get().map(|_| {
                                 view! {
                                     <div class="flex items-center space-x-4">
-                                        <span class="font-mono text-sm text-[var(--fg-muted)]">
-                                            {username}
-                                        </span>
                                         <Button
                                             variant=ButtonVariant::Ghost
                                             on_click=Callback::new(move |_: leptos::ev::MouseEvent| {

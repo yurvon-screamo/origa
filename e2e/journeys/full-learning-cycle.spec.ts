@@ -122,8 +122,8 @@ test.describe("UJ1: Полный цикл обучения", () => {
 			await page.waitForURL("/home");
 			await homePage.expectVisible();
 
-			const kanjiCount = await homePage.getKanjiCount();
-			expect(parseInt(kanjiCount.replace(",", ""), 10)).toBeGreaterThanOrEqual(0);
+			const totalCards = await homePage.getTotalCards();
+			expect(parseInt(totalCards.replace(",", ""), 10)).toBeGreaterThanOrEqual(0);
 		});
 	});
 });

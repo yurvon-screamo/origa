@@ -2,25 +2,39 @@ import { expect, type Locator, type Page } from "@playwright/test";
 
 export class HomePage {
 	readonly page: Page;
-	readonly kanjiCard: Locator;
-	readonly wordsCard: Locator;
-	readonly levelCard: Locator;
-	readonly todaySection: Locator;
-	readonly todayCard: Locator;
+	readonly avatar: Locator;
+	readonly greeting: Locator;
+	readonly totalCardsCard: Locator;
+	readonly learnedCard: Locator;
+	readonly inProgressCard: Locator;
+	readonly newCard: Locator;
+	readonly highDifficultyCard: Locator;
+	readonly historyButton: Locator;
 	readonly startLessonButton: Locator;
-	readonly fixationSection: Locator;
 	readonly fixationButton: Locator;
+	readonly tabBar: Locator;
+	readonly tabBarHome: Locator;
+	readonly tabBarWords: Locator;
+	readonly tabBarKanji: Locator;
+	readonly tabBarGrammar: Locator;
 
 	constructor(page: Page) {
 		this.page = page;
-		this.kanjiCard = page.locator(".card").filter({ hasText: "Канжи" });
-		this.wordsCard = page.locator(".card").filter({ hasText: "в словаре" });
-		this.levelCard = page.locator(".card").filter({ hasText: "Уровень" });
-		this.todaySection = page.getByText("Сегодня");
-		this.todayCard = page.getByText("Начните изучение японского языка");
+		this.avatar = page.locator(".avatar");
+		this.greeting = page.locator("text=/Привет,/");
+		this.totalCardsCard = page.locator(".card").filter({ hasText: "Total Cards" });
+		this.learnedCard = page.locator(".card").filter({ hasText: "Learned" });
+		this.inProgressCard = page.locator(".card").filter({ hasText: "In Progress" });
+		this.newCard = page.locator(".card").filter({ hasText: "New" });
+		this.highDifficultyCard = page.locator(".card").filter({ hasText: "Сложные слова" });
+		this.historyButton = page.getByRole("button", { name: "История" }).first();
 		this.startLessonButton = page.getByRole("button", { name: /Начать урок|Урок/ });
-		this.fixationSection = page.locator("text=/Закрепление|Сложные/i");
 		this.fixationButton = page.getByRole("button", { name: /Закрепление|Закрепить/ });
+		this.tabBar = page.locator(".tab-bar, nav[role='tablist'], [data-testid='tab-bar']").first();
+		this.tabBarHome = page.getByRole("button", { name: "Главная" }).or(page.getByText("Главная"));
+		this.tabBarWords = page.getByRole("button", { name: "Слова" }).or(page.getByText("Слова"));
+		this.tabBarKanji = page.getByRole("button", { name: "Кандзи" }).or(page.getByText("Кандзи"));
+		this.tabBarGrammar = page.getByRole("button", { name: "Грамматика" }).or(page.getByText("Грамматика"));
 	}
 
 	async goto() {
@@ -28,38 +42,64 @@ export class HomePage {
 	}
 
 	async expectVisible() {
-		await expect(this.kanjiCard).toBeVisible();
-		await expect(this.wordsCard).toBeVisible();
-		await expect(this.levelCard).toBeVisible();
+		await expect(this.totalCardsCard).toBeVisible();
+		await expect(this.learnedCard).toBeVisible();
+		await expect(this.inProgressCard).toBeVisible();
+		await expect(this.newCard).toBeVisible();
+		await expect(this.highDifficultyCard).toBeVisible();
+		await expect(this.startLessonButton).toBeVisible();
 	}
 
-	async getKanjiCount(): Promise<string> {
-		const card = this.kanjiCard;
-		const text = await card.textContent();
+	async getTotalCards(): Promise<string> {
+		const text = await this.totalCardsCard.textContent();
 		return text?.match(/[\d,]+/)?.[0] || "";
 	}
 
-	async getWordsCount(): Promise<string> {
-		const card = this.wordsCard;
-		const text = await card.textContent();
+	async getLearned(): Promise<string> {
+		const text = await this.learnedCard.textContent();
 		return text?.match(/[\d,]+/)?.[0] || "";
 	}
 
-	async getLevel(): Promise<string> {
-		const card = this.levelCard;
-		const text = await card.textContent();
-		return text?.match(/N\d+/)?.[0] || "";
+	async getInProgress(): Promise<string> {
+		const text = await this.inProgressCard.textContent();
+		return text?.match(/[\d,]+/)?.[0] || "";
 	}
 
-	async hasFixationSection(): Promise<boolean> {
-		return await this.fixationSection.isVisible({ timeout: 2000 }).catch(() => false);
+	async getNew(): Promise<string> {
+		const text = await this.newCard.textContent();
+		return text?.match(/[\d,]+/)?.[0] || "";
+	}
+
+	async getHighDifficulty(): Promise<string> {
+		const text = await this.highDifficultyCard.textContent();
+		return text?.match(/[\d,]+/)?.[0] || "";
+	}
+
+	async clickHistory() {
+		await this.historyButton.click();
+	}
+
+	async navigateToWords() {
+		await this.tabBarWords.click();
+	}
+
+	async navigateToKanji() {
+		await this.tabBarKanji.click();
+	}
+
+	async navigateToGrammar() {
+		await this.tabBarGrammar.click();
+	}
+
+	async startLesson() {
+		await this.startLessonButton.click();
 	}
 
 	async startFixation() {
 		await this.fixationButton.click();
 	}
 
-	async startLesson() {
-		await this.startLessonButton.click();
+	async hasFixationSection(): Promise<boolean> {
+		return await this.fixationButton.isVisible({ timeout: 2000 }).catch(() => false);
 	}
 }
