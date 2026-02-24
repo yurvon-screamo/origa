@@ -22,8 +22,8 @@ use leptos::prelude::*;
 #[component]
 pub fn Kanji() -> impl IntoView {
     view! {
-        <PageLayout variant=PageLayoutVariant::Centered>
-            <CardLayout size=CardLayoutSize::Medium>
+        <PageLayout variant=PageLayoutVariant::Full>
+            <CardLayout size=CardLayoutSize::Adaptive class="px-4 py-8">
                 <KanjiHeader />
                 <KanjiContent />
             </CardLayout>

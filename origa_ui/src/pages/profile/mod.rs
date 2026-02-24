@@ -18,17 +18,17 @@ pub use level_selector::LevelSelector;
 pub use personal_data_card::PersonalDataCard;
 pub use settings_card::SettingsCard;
 
-use crate::ui_components::{PageLayout, PageLayoutVariant};
+use crate::ui_components::{CardLayout, CardLayoutSize, PageLayout, PageLayoutVariant};
 use leptos::prelude::*;
 
 #[component]
 pub fn Profile() -> impl IntoView {
     view! {
-        <PageLayout variant={PageLayoutVariant::Centered}>
-            <div class="w-full max-w-md space-y-2 py-2">
+        <PageLayout variant=PageLayoutVariant::Full>
+            <CardLayout size=CardLayoutSize::Adaptive class="px-4 py-8">
                 <ProfileHeader />
                 <ProfileContent />
-            </div>
+            </CardLayout>
         </PageLayout>
     }
 }
