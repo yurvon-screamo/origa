@@ -139,24 +139,24 @@ pub fn ProfileContent() -> impl IntoView {
     });
 
     view! {
-        <div class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <PersonalDataCard
                 user_name={user_name}
                 selected_level={selected_level}
                 selected_language={selected_language}
             />
 
-            <IntegrationsCard duolingo_input={duolingo_input} />
-
-            <SettingsCard reminders={reminders} />
-
-            <ActionButtons
-                on_save={save_profile}
-                on_logout={logout}
-                on_delete_account={delete_account}
-                is_saving={Signal::derive(move || is_saving.get())}
-                is_deleting={Signal::derive(move || is_deleting.get())}
-            />
+            <div class="space-y-4">
+                <IntegrationsCard duolingo_input={duolingo_input} />
+                <SettingsCard reminders={reminders} />
+                <ActionButtons
+                    on_save={save_profile}
+                    on_logout={logout}
+                    on_delete_account={delete_account}
+                    is_saving={Signal::derive(move || is_saving.get())}
+                    is_deleting={Signal::derive(move || is_deleting.get())}
+                />
+            </div>
         </div>
     }
 }
