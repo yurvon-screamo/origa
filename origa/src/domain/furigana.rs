@@ -1,7 +1,7 @@
 use crate::domain::{
+    OrigaError,
     japanese::{JapaneseChar, JapaneseText},
     tokenizer::tokenize_text,
-    OrigaError,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -153,12 +153,16 @@ mod tests {
     fn should_furiganize_mixed_japanese_and_ascii() {
         let segments = furiganize_segments("hello食べ物world").unwrap();
         assert!(!segments.is_empty());
-        assert!(segments
-            .iter()
-            .any(|s| s.text() == "hello" && !s.has_reading()));
-        assert!(segments
-            .iter()
-            .any(|s| s.text() == "world" && !s.has_reading()));
+        assert!(
+            segments
+                .iter()
+                .any(|s| s.text() == "hello" && !s.has_reading())
+        );
+        assert!(
+            segments
+                .iter()
+                .any(|s| s.text() == "world" && !s.has_reading())
+        );
     }
 
     #[test]

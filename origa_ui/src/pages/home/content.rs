@@ -80,14 +80,19 @@ pub fn HomeContent() -> impl IntoView {
         }
     });
 
-    let total_cards = Signal::derive(move || format_number(stats.get().map(|s| s.total_cards).unwrap_or(0)));
-    let learned = Signal::derive(move || format_number(stats.get().map(|s| s.learned).unwrap_or(0)));
-    let in_progress = Signal::derive(move || format_number(stats.get().map(|s| s.in_progress).unwrap_or(0)));
+    let total_cards =
+        Signal::derive(move || format_number(stats.get().map(|s| s.total_cards).unwrap_or(0)));
+    let learned =
+        Signal::derive(move || format_number(stats.get().map(|s| s.learned).unwrap_or(0)));
+    let in_progress =
+        Signal::derive(move || format_number(stats.get().map(|s| s.in_progress).unwrap_or(0)));
     let new_cards = Signal::derive(move || format_number(stats.get().map(|s| s.new).unwrap_or(0)));
-    let high_difficulty = Signal::derive(move || format_number(stats.get().map(|s| s.high_difficulty).unwrap_or(0)));
+    let high_difficulty =
+        Signal::derive(move || format_number(stats.get().map(|s| s.high_difficulty).unwrap_or(0)));
 
     let weekly_delta_text = Signal::derive(move || {
-        stats.get()
+        stats
+            .get()
             .filter(|s| s.weekly_delta > 0)
             .map(|s| format!("+{}", s.weekly_delta))
             .unwrap_or_default()
