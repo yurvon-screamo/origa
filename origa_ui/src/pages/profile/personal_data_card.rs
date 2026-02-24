@@ -5,14 +5,14 @@ use origa::domain::{JapaneseLevel, NativeLanguage};
 
 #[component]
 pub fn PersonalDataCard(
-    user_name: impl Fn() -> String + 'static,
+    user_name: Memo<String>,
     selected_level: RwSignal<JapaneseLevel>,
     selected_language: RwSignal<NativeLanguage>,
 ) -> impl IntoView {
-    let user_name_signal = RwSignal::new(user_name());
+    let user_name_signal = RwSignal::new(user_name.get_untracked());
 
     Effect::new(move |_| {
-        user_name_signal.set(user_name());
+        user_name_signal.set(user_name.get());
     });
 
     view! {
