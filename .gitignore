@@ -23,6 +23,7 @@ playwright/.cache/
 *.swp
 *.swo
 *~
+nul
 
 # OS
 .DS_Store
