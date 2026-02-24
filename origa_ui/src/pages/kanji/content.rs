@@ -85,14 +85,16 @@ pub fn KanjiContent() -> impl IntoView {
                 <FilterBtn filter=Filter::Learned count=move || counts.get().learned active=filter />
             </div>
 
-            <div class="space-y-2">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {move || {
                     let cards = filtered_cards.get();
                     if cards.is_empty() {
                         Either::Left(view! {
-                            <Text size=TextSize::Default variant=TypographyVariant::Muted>
-                                "Кандзи не найдено"
-                            </Text>
+                            <div class="col-span-full">
+                                <Text size=TextSize::Default variant=TypographyVariant::Muted>
+                                    "Кандзи не найдено"
+                                </Text>
+                            </div>
                         })
                     } else {
                         Either::Right(view! {

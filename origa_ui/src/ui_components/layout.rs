@@ -33,23 +33,27 @@ pub fn PageLayout(
 #[derive(Clone, Copy, PartialEq, Debug, Default)]
 pub enum CardLayoutSize {
     Small,
-    #[default]
     Medium,
     Large,
+    #[default]
+    Adaptive,
 }
 
 #[component]
 pub fn CardLayout(
     #[prop(optional, into)] size: Signal<CardLayoutSize>,
+    #[prop(optional, into)] class: Signal<String>,
     children: Children,
 ) -> impl IntoView {
     view! {
         <div class=move || {
-            match size.get() {
-                CardLayoutSize::Small => "max-w-sm w-full",
-                CardLayoutSize::Medium => "max-w-md w-full",
-                CardLayoutSize::Large => "max-w-lg w-full",
-            }
+            let base = match size.get() {
+                CardLayoutSize::Small => "max-w-sm w-full mx-auto",
+                CardLayoutSize::Medium => "max-w-md w-full mx-auto",
+                CardLayoutSize::Large => "max-w-lg w-full mx-auto",
+                CardLayoutSize::Adaptive => "w-full max-w-full lg:max-w-7xl mx-auto",
+            };
+            format!("{} {}", base, class.get())
         }>
             <div class="bg-[var(--bg-primary)] border border-[var(--border-color)] p-8">
                 {children()}
