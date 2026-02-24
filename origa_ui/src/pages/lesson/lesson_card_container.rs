@@ -1,19 +1,20 @@
 use super::lesson_card::LessonCard;
 use super::lesson_state::LessonContext;
 use super::rating_buttons_view::RatingButtonsView;
-use leptos::prelude::*;
 use leptos::ev::KeyboardEvent;
-use origa::domain::Rating;
+use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::application::srs_service::RateMode;
 use origa::application::use_cases::{CompleteLessonUseCase, RateCardUseCase};
+use origa::domain::Rating;
 use origa::domain::User;
 use origa::infrastructure::FsrsSrsService;
 
 #[component]
 pub fn LessonCardContainer() -> impl IntoView {
     let lesson_ctx = use_context::<LessonContext>().expect("lesson context");
-    let current_user = use_context::<RwSignal<Option<User>>>().expect("current_user context not provided");
+    let current_user =
+        use_context::<RwSignal<Option<User>>>().expect("current_user context not provided");
     let lesson_state = lesson_ctx.lesson_state;
 
     let show_answer = move || {
@@ -26,7 +27,7 @@ pub fn LessonCardContainer() -> impl IntoView {
         let lesson_state = lesson_state;
         let current_user = current_user;
         let lesson_ctx = lesson_ctx.clone();
-        
+
         Callback::new(move |rating: Rating| {
             let user = current_user.get();
             let state = lesson_state.get();
@@ -81,13 +82,13 @@ pub fn LessonCardContainer() -> impl IntoView {
     };
 
     let handle_keydown = {
-        let on_rate_callback = on_rate_callback.clone();
+        let on_rate_callback = on_rate_callback;
         let lesson_ctx = lesson_ctx.clone();
-        
+
         move |ev: KeyboardEvent| {
             let key = ev.key();
             let state = lesson_state.get();
-            
+
             if lesson_ctx.is_completed.get() {
                 return;
             }
