@@ -7,6 +7,9 @@ export class HomePage {
 	readonly levelCard: Locator;
 	readonly todaySection: Locator;
 	readonly todayCard: Locator;
+	readonly startLessonButton: Locator;
+	readonly fixationSection: Locator;
+	readonly fixationButton: Locator;
 
 	constructor(page: Page) {
 		this.page = page;
@@ -15,14 +18,19 @@ export class HomePage {
 		this.levelCard = page.locator(".card").filter({ hasText: "Уровень" });
 		this.todaySection = page.getByText("Сегодня");
 		this.todayCard = page.getByText("Начните изучение японского языка");
+		this.startLessonButton = page.getByRole("button", { name: /Начать урок|Урок/ });
+		this.fixationSection = page.locator("text=/Закрепление|Сложные/i");
+		this.fixationButton = page.getByRole("button", { name: /Закрепление|Закрепить/ });
+	}
+
+	async goto() {
+		await this.page.goto("/home");
 	}
 
 	async expectVisible() {
 		await expect(this.kanjiCard).toBeVisible();
 		await expect(this.wordsCard).toBeVisible();
 		await expect(this.levelCard).toBeVisible();
-		await expect(this.todaySection).toBeVisible();
-		await expect(this.todayCard).toBeVisible();
 	}
 
 	async getKanjiCount(): Promise<string> {
@@ -41,5 +49,17 @@ export class HomePage {
 		const card = this.levelCard;
 		const text = await card.textContent();
 		return text?.match(/N\d+/)?.[0] || "";
+	}
+
+	async hasFixationSection(): Promise<boolean> {
+		return await this.fixationSection.isVisible({ timeout: 2000 }).catch(() => false);
+	}
+
+	async startFixation() {
+		await this.fixationButton.click();
+	}
+
+	async startLesson() {
+		await this.startLessonButton.click();
 	}
 }

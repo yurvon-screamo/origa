@@ -1,21 +1,46 @@
-# E2E Test Configuration
+# E2E Tests
+
+## Test Structure
+
+```
+e2e/
+├── fixtures/
+│   └── test-helpers.ts      # Shared utilities for tests
+├── journeys/                # User Journey tests
+│   ├── full-learning-cycle.spec.ts
+│   ├── content-creation.spec.ts
+│   ├── lesson-ratings.spec.ts
+│   ├── fixation-mode.spec.ts
+│   ├── profile-management.spec.ts
+│   ├── auth-validation.spec.ts
+│   └── search-filters.spec.ts
+├── pages/                   # Page Objects
+│   ├── LoginPage.ts
+│   ├── HomePage.ts
+│   ├── KanjiPage.ts
+│   ├── WordsPage.ts
+│   ├── GrammarPage.ts
+│   ├── LessonPage.ts
+│   └── ProfilePage.ts
+└── TEST_MODEL.md            # Test documentation
+```
 
 ## Required Environment Variables
 
-For tests that require a confirmed user (profile, grammar, kanji, words), set:
+Set these in `e2e/.env`:
 
-```bash
-export E2E_TEST_EMAIL="your-confirmed-test@email.com"
-export E2E_TEST_PASSWORD="YourTestPassword123!"
+```
+E2E_TEST_EMAIL=your-confirmed-test@email.com
+E2E_TEST_PASSWORD=YourTestPassword123!
 ```
 
 ## Creating a Confirmed Test User
 
-1. Go to Supabase Dashboard: <https://supabase.com/dashboard>
-2. Navigate to your project → Authentication → Users
+1. Go to Supabase Dashboard
+2. Navigate to Authentication → Users
 3. Click "Add user" → "Create new user"
-4. Enter email and password (e.g., `e2e-test@origa.app` / `TestPass123!`)
-5. **Important:** Check "Auto Confirm User" to skip email verification
+4. Enter email and password
+5. Check "Auto Confirm User"
 6. Click "Create user"
 
 ## Running Tests
@@ -24,11 +49,14 @@ export E2E_TEST_PASSWORD="YourTestPassword123!"
 npx playwright test
 ```
 
-## Test Accounts
+Run specific test file:
 
-### For Development/CI
+```bash
+npx playwright test journeys/full-learning-cycle.spec.ts
+```
 
-- Email: `e2e-test@origa.app`
-- Password: `TestPass123!`
+Run with UI:
 
-This account should be created with "Auto Confirm User" enabled in Supabase.
+```bash
+npx playwright test --ui
+```
