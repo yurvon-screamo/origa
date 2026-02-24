@@ -74,14 +74,19 @@ pub fn LessonCard(
                 <Show when=move || !show_answer>
                     <div class="text-center">
                         <Heading level=HeadingLevel::H2 class="mb-4">
-                            <FuriganaText text=question.get_value()/>
+                            <Show when=move || card_type == CardType::Kanji>
+                                {question.get_value()}
+                            </Show>
+                            <Show when=move || card_type != CardType::Kanji>
+                                <FuriganaText text=question.get_value()/>
+                            </Show>
                         </Heading>
 
                         <Button
                             variant=Signal::derive(|| ButtonVariant::Filled)
                             on_click=Callback::new(move |_| on_show_answer.run(()))
                         >
-                            "Показать ответ"
+                            "Показать ответ [Пробел]"
                         </Button>
                     </div>
                 </Show>
@@ -89,7 +94,12 @@ pub fn LessonCard(
                 <Show when=move || show_answer>
                     <div class="text-center">
                         <Heading level=HeadingLevel::H3 class="mb-2">
-                            <FuriganaText text=question.get_value()/>
+                            <Show when=move || card_type == CardType::Kanji>
+                                {question.get_value()}
+                            </Show>
+                            <Show when=move || card_type != CardType::Kanji>
+                                <FuriganaText text=question.get_value()/>
+                            </Show>
                         </Heading>
 
                         <Show when=move || radicals.get_value().is_some()>
@@ -105,7 +115,12 @@ pub fn LessonCard(
                                 "Ответ:"
                             </Text>
                             <Text size=TextSize::Large variant=TypographyVariant::Primary>
-                                <FuriganaText text=answer.get_value()/>
+                                <Show when=move || card_type == CardType::Kanji>
+                                    {answer.get_value()}
+                                </Show>
+                                <Show when=move || card_type != CardType::Kanji>
+                                    <FuriganaText text=answer.get_value()/>
+                                </Show>
                             </Text>
                         </div>
                     </div>

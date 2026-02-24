@@ -11,7 +11,7 @@ pub fn RatingButtons(on_rate: Callback<Rating>) -> impl IntoView {
                 class=Signal::derive(|| "".to_string())
                 on_click=Callback::new(move |_| on_rate.run(Rating::Again))
             >
-                "Не знаю"
+                "Не знаю [1]"
             </Button>
 
             <Button
@@ -19,7 +19,7 @@ pub fn RatingButtons(on_rate: Callback<Rating>) -> impl IntoView {
                 class=Signal::derive(|| "".to_string())
                 on_click=Callback::new(move |_| on_rate.run(Rating::Hard))
             >
-                "Плохо"
+                "Плохо [2]"
             </Button>
 
             <Button
@@ -27,7 +27,7 @@ pub fn RatingButtons(on_rate: Callback<Rating>) -> impl IntoView {
                 class=Signal::derive(|| "".to_string())
                 on_click=Callback::new(move |_| on_rate.run(Rating::Good))
             >
-                "Знаю"
+                "Знаю [3]"
             </Button>
 
             <Button
@@ -35,7 +35,7 @@ pub fn RatingButtons(on_rate: Callback<Rating>) -> impl IntoView {
                 class=Signal::derive(|| "".to_string())
                 on_click=Callback::new(move |_| on_rate.run(Rating::Easy))
             >
-                "Идеально"
+                "Идеально [4]"
             </Button>
         </div>
     }

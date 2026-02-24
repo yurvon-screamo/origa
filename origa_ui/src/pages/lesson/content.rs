@@ -1,4 +1,5 @@
 use super::complete_screen::LessonCompleteScreen;
+use super::header::LessonHeader;
 use super::lesson_card_container::LessonCardContainer;
 use super::lesson_progress_view::LessonProgressView;
 use super::lesson_state::{LessonContext, LessonMode, LessonState};
@@ -84,6 +85,8 @@ pub fn LessonContent() -> impl IntoView {
     });
 
     view! {
+        <LessonHeader />
+
         <Show when=move || is_loading.get()>
             <div class="text-center py-8">
                 <Text size=TextSize::Default variant=TypographyVariant::Muted>
