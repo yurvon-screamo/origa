@@ -151,11 +151,40 @@ export class KanjiPage {
 	}
 
 	async selectKanji(kanjiChar: string) {
-		await this.modal
-			.locator(".border")
-			.filter({ hasText: kanjiChar })
-			.first()
-			.click();
+		const kanjiItem = this.modal.locator("div.border").filter({
+			has: this.page.locator(`span.text-2xl:has-text("${kanjiChar}")`)
+		}).first();
+		await kanjiItem.waitFor({ state: "visible", timeout: 3000 });
+		await kanjiItem.click();
+	}
+
+	async selectFirstKanji(): Promise<boolean> {
+		const firstKanji = this.modal.locator("div.border").first();
+		const isVisible = await firstKanji.isVisible({ timeout: 2000 }).catch(() => false);
+		if (isVisible) {
+			await firstKanji.click();
+			return true;
+		}
+		return false;
+	}
+
+	async selectMultipleKanji(count: number): Promise<number> {
+		const kanjiItems = this.modal.locator("div.border");
+		const total = await kanjiItems.count();
+		const toSelect = Math.min(count, total);
+		
+		for (let i = 0; i < toSelect; i++) {
+			const item = kanjiItems.nth(i);
+			await item.click();
+			await this.page.waitForTimeout(100);
+		}
+		
+		return toSelect;
+	}
+
+	async hasAvailableKanji(): Promise<boolean> {
+		const firstKanji = this.modal.locator("div.border").first();
+		return await firstKanji.isVisible({ timeout: 2000 }).catch(() => false);
 	}
 
 	async confirmAdd() {

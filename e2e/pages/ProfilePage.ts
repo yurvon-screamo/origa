@@ -74,7 +74,13 @@ export class ProfilePage {
 	}
 
 	async toggleReminders() {
+		const checkbox = this.remindersCheckbox;
+		const currentState = await checkbox.isChecked();
+		
 		await this.remindersToggle.click();
+		await this.page.waitForTimeout(300);
+		
+		await expect(checkbox).toBeChecked({ checked: !currentState });
 	}
 
 	async expectRemindersEnabled(enabled: boolean) {

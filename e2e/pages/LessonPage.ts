@@ -50,6 +50,10 @@ export class LessonPage {
 		await this.page.goto("/lesson");
 	}
 
+	async gotoFixation() {
+		await this.page.goto("/lesson?mode=fixation");
+	}
+
 	async expectVisible() {
 		await expect(this.header).toBeVisible();
 	}
