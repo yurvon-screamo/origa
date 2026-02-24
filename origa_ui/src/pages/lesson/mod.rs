@@ -10,7 +10,6 @@ mod rating_buttons;
 mod rating_buttons_view;
 
 pub use content::LessonContent;
-pub use header::LessonHeader;
 
 use crate::ui_components::{CardLayout, CardLayoutSize, PageLayout, PageLayoutVariant};
 use leptos::prelude::*;
@@ -20,7 +19,6 @@ pub fn Lesson() -> impl IntoView {
     view! {
         <PageLayout variant=PageLayoutVariant::Centered>
             <CardLayout size=CardLayoutSize::Medium>
-                <LessonHeader />
                 <LessonContent />
             </CardLayout>
         </PageLayout>
