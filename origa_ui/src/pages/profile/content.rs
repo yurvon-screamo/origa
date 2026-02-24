@@ -141,7 +141,7 @@ pub fn ProfileContent() -> impl IntoView {
     view! {
         <div class="space-y-4">
             <PersonalDataCard
-                user_name={move || user_name.get()}
+                user_name={user_name}
                 selected_level={selected_level}
                 selected_language={selected_language}
             />
