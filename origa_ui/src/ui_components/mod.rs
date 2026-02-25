@@ -37,7 +37,7 @@ pub use button::{Button, ButtonVariant};
 pub use card::Card;
 pub use furigana::FuriganaText;
 pub use input::Input;
-pub use kanji_animation::{KanjiWritingSection};
+pub use kanji_animation::KanjiWritingSection;
 pub use layout::{CardLayout, CardLayoutSize, PageLayout, PageLayoutVariant};
 pub use modal::Modal;
 pub use tab_button::{TabButton, TabButtonState};

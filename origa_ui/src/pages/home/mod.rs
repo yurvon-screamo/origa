@@ -8,7 +8,6 @@ pub use content::HomeContent;
 pub use header::HomeHeader;
 pub use history_modal::{HistoryModal, StatMetric};
 pub use stat_card::StatCard;
-pub use tab_bar::TabBar;
 
 use crate::ui_components::{PageLayout, PageLayoutVariant};
 use leptos::prelude::*;

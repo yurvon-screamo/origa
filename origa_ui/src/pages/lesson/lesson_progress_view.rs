@@ -7,9 +7,9 @@ pub fn LessonProgressView() -> impl IntoView {
     let lesson_state = use_context::<LessonContext>()
         .expect("lesson context")
         .lesson_state;
-    let state = lesson_state.get();
-    let total = state.card_ids.len();
-    let current = state.current_index + 1;
+
+    let current = Signal::derive(move || lesson_state.get().current_index + 1);
+    let total = Signal::derive(move || lesson_state.get().card_ids.len());
 
     view! {
         <LessonProgress current=current total=total />

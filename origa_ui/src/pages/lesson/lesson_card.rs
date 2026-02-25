@@ -78,24 +78,17 @@ pub fn LessonCard(
             <div class="flex-1 flex flex-col justify-center">
                 <Show when=move || !show_answer>
                     <div class="text-center">
-                        <Heading level=HeadingLevel::H2 class="mb-4">
-                            <Show when=move || card_type == CardType::Kanji>
-                                {question.get_value()}
-                            </Show>
-                            <Show when=move || card_type != CardType::Kanji>
+                        <Show when=move || card_type != CardType::Kanji>
+                            <Heading level=HeadingLevel::H2 class="mb-4">
                                 <FuriganaText text=question.get_value()/>
-                            </Show>
-                        </Heading>
+                            </Heading>
+                        </Show>
 
                         <Show when=move || kanji_for_animation.get_value().is_some()>
                             {move || {
-                                if let Some(kanji) = kanji_for_animation.get_value() {
-                                    Some(view! {
+                                kanji_for_animation.get_value().map(|kanji| view! {
                                         <KanjiWritingSection kanji=kanji show_frames=false />
                                     })
-                                } else {
-                                    None
-                                }
                             }}
                         </Show>
 
@@ -110,30 +103,23 @@ pub fn LessonCard(
 
                 <Show when=move || show_answer>
                     <div class="text-center">
-                        <Heading level=HeadingLevel::H3 class="mb-2">
-                            <Show when=move || card_type == CardType::Kanji>
-                                {question.get_value()}
-                            </Show>
-                            <Show when=move || card_type != CardType::Kanji>
+                        <Show when=move || card_type != CardType::Kanji>
+                            <Heading level=HeadingLevel::H3 class="mb-2">
                                 <FuriganaText text=question.get_value()/>
-                            </Show>
-                        </Heading>
+                            </Heading>
+                        </Show>
 
                         <Show when=move || kanji_for_animation.get_value().is_some()>
                             {move || {
-                                if let Some(kanji) = kanji_for_animation.get_value() {
-                                    Some(view! {
+                                kanji_for_animation.get_value().map(|kanji| view! {
                                         <KanjiWritingSection kanji=kanji show_frames=true />
                                     })
-                                } else {
-                                    None
-                                }
                             }}
                         </Show>
 
                         <Show when=move || radicals.get_value().is_some()>
-                            <div class="mb-4">
-                                <Text size=TextSize::Small variant=TypographyVariant::Muted>
+                            <div class="my-6">
+                                <Text size=TextSize::Default variant=TypographyVariant::Muted>
                                     {format!("Радикалы: {}", radicals.get_value().unwrap_or_default())}
                                 </Text>
                             </div>
