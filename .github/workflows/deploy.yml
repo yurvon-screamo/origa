@@ -43,7 +43,7 @@ jobs:
 
       - name: Build Leptos app
         working-directory: origa_ui
-        run: trunk build --release
+        run: trunk build --release --no-wasm-opt
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
