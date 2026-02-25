@@ -1,4 +1,4 @@
-use super::client::SupabaseClient;
+use super::client::{AuthError, SupabaseClient};
 use crate::repository::session::get_session;
 use origa::application::user_repository::UserRepository;
 use origa::domain::{JapaneseLevel, KnowledgeSet, NativeLanguage, OrigaError, User};
@@ -12,6 +12,18 @@ pub struct SupabaseUserRepository {
     client: SupabaseClient,
     table_name: String,
     user_cache: Arc<RwLock<HashMap<String, User>>>,
+}
+
+fn map_auth_error(e: AuthError) -> OrigaError {
+    match e {
+        AuthError::SessionExpired => OrigaError::SessionExpired,
+        AuthError::NetworkError(msg) => OrigaError::RepositoryError {
+            reason: format!("Network error: {}", msg),
+        },
+        AuthError::ApiError(msg) => OrigaError::RepositoryError {
+            reason: format!("API error: {}", msg),
+        },
+    }
 }
 
 impl SupabaseUserRepository {
@@ -30,19 +42,17 @@ impl SupabaseUserRepository {
 
         let res = self
             .client
-            .request(
+            .request_with_auth_refresh(
                 Method::GET,
                 &format!(
                     "/rest/v1/{}?auth_user_id=eq.{}&select=*",
                     self.table_name, session.user_id
                 ),
-                Some(&session.access_token),
+                None,
+                None,
             )
-            .send()
             .await
-            .map_err(|e| OrigaError::RepositoryError {
-                reason: format!("Failed to find current user: {}", e),
-            })?;
+            .map_err(map_auth_error)?;
 
         if res.status().is_success() {
             let rows: Vec<UserRow> = res.json().await.map_err(|e| OrigaError::RepositoryError {
@@ -148,25 +158,22 @@ impl UserRepository for SupabaseUserRepository {
         })?;
 
         let existing = self.find_current().await?;
+        let body = user_to_json(user, &session.user_id);
 
         if existing.is_some() {
             let res = self
                 .client
-                .request(
+                .request_with_auth_refresh(
                     Method::PATCH,
                     &format!(
                         "/rest/v1/{}?auth_user_id=eq.{}",
                         self.table_name, session.user_id
                     ),
-                    Some(&session.access_token),
+                    Some(&body),
+                    Some(&[("Prefer", "return=minimal")]),
                 )
-                .header("Prefer", "return=minimal")
-                .json(&user_to_json(user, &session.user_id))
-                .send()
                 .await
-                .map_err(|e| OrigaError::RepositoryError {
-                    reason: format!("Network error: {}", e),
-                })?;
+                .map_err(map_auth_error)?;
 
             if !res.status().is_success() {
                 let error_text = res.text().await.unwrap_or_default();
@@ -177,18 +184,14 @@ impl UserRepository for SupabaseUserRepository {
         } else {
             let res = self
                 .client
-                .request(
+                .request_with_auth_refresh(
                     Method::POST,
                     &format!("/rest/v1/{}", self.table_name),
-                    Some(&session.access_token),
+                    Some(&body),
+                    Some(&[("Prefer", "return=minimal")]),
                 )
-                .header("Prefer", "return=minimal")
-                .json(&user_to_json(user, &session.user_id))
-                .send()
                 .await
-                .map_err(|e| OrigaError::RepositoryError {
-                    reason: format!("Network error: {}", e),
-                })?;
+                .map_err(map_auth_error)?;
 
             if !res.status().is_success() {
                 let error_text = res.text().await.unwrap_or_default();
@@ -212,19 +215,17 @@ impl UserRepository for SupabaseUserRepository {
 
         let res = self
             .client
-            .request(
+            .request_with_auth_refresh(
                 Method::DELETE,
                 &format!(
                     "/rest/v1/{}?auth_user_id=eq.{}",
                     self.table_name, session.user_id
                 ),
-                Some(&session.access_token),
+                None,
+                None,
             )
-            .send()
             .await
-            .map_err(|e| OrigaError::RepositoryError {
-                reason: format!("Network error: {}", e),
-            })?;
+            .map_err(map_auth_error)?;
 
         if !res.status().is_success() {
             let error_text = res.text().await.unwrap_or_default();
