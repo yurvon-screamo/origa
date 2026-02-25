@@ -46,7 +46,7 @@ impl SupabaseUserRepository {
                 Method::GET,
                 &format!(
                     "/rest/v1/{}?auth_user_id=eq.{}&select=*",
-                    self.table_name, session.user_id
+                    self.table_name, session.auth_user_id
                 ),
                 None,
                 None,
@@ -81,8 +81,8 @@ impl Default for SupabaseUserRepository {
 #[derive(serde::Deserialize)]
 struct UserRow {
     id: i64,
-    auth_user_id: String,
     username: String,
+    email: String,
     native_language: i32,
     current_japanese_level: i32,
     duolingo_jwt_token: Option<String>,
@@ -97,7 +97,7 @@ impl UserRow {
 
         User::from_row(
             ulid,
-            self.auth_user_id.clone(),
+            self.email.clone(),
             self.username.clone(),
             JapaneseLevel::from(self.current_japanese_level),
             NativeLanguage::from(self.native_language),
@@ -120,6 +120,7 @@ fn user_to_json(user: &User, auth_user_id: &str) -> serde_json::Value {
     serde_json::json!({
         "auth_user_id": auth_user_id,
         "username": user.username(),
+        "email": user.email(),
         "native_language": i32::from(user.native_language().clone()),
         "current_japanese_level": i32::from(*user.current_japanese_level()),
         "duolingo_jwt_token": user.duolingo_jwt_token(),
@@ -158,7 +159,7 @@ impl UserRepository for SupabaseUserRepository {
         })?;
 
         let existing = self.find_current().await?;
-        let body = user_to_json(user, &session.user_id);
+        let body = user_to_json(user, &session.auth_user_id);
 
         if existing.is_some() {
             let res = self
@@ -167,7 +168,7 @@ impl UserRepository for SupabaseUserRepository {
                     Method::PATCH,
                     &format!(
                         "/rest/v1/{}?auth_user_id=eq.{}",
-                        self.table_name, session.user_id
+                        self.table_name, session.auth_user_id
                     ),
                     Some(&body),
                     Some(&[("Prefer", "return=minimal")]),
@@ -219,7 +220,7 @@ impl UserRepository for SupabaseUserRepository {
                 Method::DELETE,
                 &format!(
                     "/rest/v1/{}?auth_user_id=eq.{}",
-                    self.table_name, session.user_id
+                    self.table_name, session.auth_user_id
                 ),
                 None,
                 None,

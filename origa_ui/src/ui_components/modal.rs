@@ -37,7 +37,6 @@ pub fn Modal(
                 <div class="modal-content">
                     <div class="flex justify-between items-start mb-6">
                         <div>
-                            <span class="font-mono text-[9px] tracking-widest text-[var(--fg-muted)]">"MODAL DIALOG"</span>
                             <h3 class="font-serif text-2xl mt-1">{move || title.get()}</h3>
                         </div>
                         <button

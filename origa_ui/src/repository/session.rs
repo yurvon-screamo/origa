@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 pub struct SupabaseSession {
     pub access_token: String,
     pub refresh_token: String,
-    pub user_id: String,
+    pub auth_user_id: String,
     pub email: String,
     pub expires_at: u64,
 }

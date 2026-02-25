@@ -2,9 +2,8 @@ use super::session::{SupabaseSession, SupabaseUser};
 use crate::repository::session::{clear_session, get_session, set_session};
 use base64::{self, Engine};
 use reqwest::{
-    Client, Method, RequestBuilder,
+    Client, Method, RequestBuilder, StatusCode,
     header::{HeaderMap, HeaderValue},
-    StatusCode,
 };
 use serde_json::Value;
 
@@ -84,7 +83,11 @@ impl SupabaseClient {
 
     pub async fn refresh_session(&self, refresh_token: &str) -> Result<SupabaseSession, AuthError> {
         let res = self
-            .request(Method::POST, "/auth/v1/token?grant_type=refresh_token", None)
+            .request(
+                Method::POST,
+                "/auth/v1/token?grant_type=refresh_token",
+                None,
+            )
             .json(&serde_json::json!({
                 "refresh_token": refresh_token,
             }))
@@ -116,7 +119,7 @@ impl SupabaseClient {
             .and_then(|t| t.as_i64())
             .unwrap_or(3600) as u64;
 
-        let (user_id, user_email) = Self::decode_jwt_payload(&access_token)
+        let (auth_user_id, user_email) = Self::decode_jwt_payload(&access_token)
             .unwrap_or_else(|| (String::new(), String::new()));
 
         let now = Self::current_timestamp();
@@ -125,7 +128,7 @@ impl SupabaseClient {
         let session = SupabaseSession {
             access_token,
             refresh_token: new_refresh_token,
-            user_id,
+            auth_user_id,
             email: user_email,
             expires_at,
         };
@@ -150,7 +153,13 @@ impl SupabaseClient {
         };
 
         let res = self
-            .build_request(method.clone(), url, &session.access_token, body, extra_headers)
+            .build_request(
+                method.clone(),
+                url,
+                &session.access_token,
+                body,
+                extra_headers,
+            )
             .send()
             .await
             .map_err(|e| AuthError::NetworkError(e.to_string()))?;
@@ -291,7 +300,7 @@ impl SupabaseClient {
             let session = SupabaseSession {
                 access_token,
                 refresh_token,
-                user_id,
+                auth_user_id: user_id,
                 email: user_email,
                 expires_at,
             };
@@ -340,7 +349,7 @@ impl SupabaseClient {
         let res = self
             .request(
                 Method::DELETE,
-                &format!("/rest/v1/user?auth_user_id=eq.{}", session.user_id),
+                &format!("/rest/v1/user?auth_user_id=eq.{}", session.auth_user_id),
                 Some(&session.access_token),
             )
             .send()

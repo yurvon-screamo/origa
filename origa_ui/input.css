@@ -1077,7 +1077,7 @@ body {
 .kanji-animation-svg path:not(.bg) {
 	stroke-dasharray: 1000;
 	stroke-dashoffset: 1000;
-	animation: kanji-draw 2s ease forwards;
+	animation: kanji-draw 0.4s linear forwards;
 }
 
 .kanji-animation-svg path.bg {
@@ -1121,7 +1121,7 @@ body {
 
 .kanji-writing-grid {
 	display: flex;
-	gap: 16px;
+	gap: 32px;
 	flex-wrap: wrap;
 	justify-content: center;
 }
@@ -1196,4 +1196,119 @@ body {
 	color: var(--accent-olive);
 	padding: 4px 8px;
 	border: 1px solid var(--accent-olive);
+}
+
+.markdown-text {
+	font-family: "DM Mono", monospace;
+	color: var(--fg-black);
+	line-height: 1.6;
+}
+
+.markdown-text h1,
+.markdown-text h2,
+.markdown-text h3,
+.markdown-text h4,
+.markdown-text h5,
+.markdown-text h6 {
+	font-family: "Cormorant Garamond", serif;
+	font-weight: 500;
+	margin: 0.5em 0;
+	color: var(--fg-black);
+}
+
+.markdown-text h1 { font-size: 1.5em; }
+.markdown-text h2 { font-size: 1.25em; }
+.markdown-text h3 { font-size: 1.1em; }
+.markdown-text h4 { font-size: 1em; }
+.markdown-text h5 { font-size: 0.9em; }
+.markdown-text h6 { font-size: 0.8em; }
+
+.markdown-text p {
+	margin: 0.5em 0;
+}
+
+.markdown-text strong {
+	font-weight: 600;
+}
+
+.markdown-text em {
+	font-style: italic;
+}
+
+.markdown-text ul,
+.markdown-text ol {
+	margin: 0.5em 0;
+	padding-left: 1.5em;
+}
+
+.markdown-text li {
+	margin: 0.25em 0;
+}
+
+.markdown-text code {
+	font-family: "DM Mono", monospace;
+	font-size: 0.9em;
+	background: var(--bg-aged);
+	padding: 0.1em 0.3em;
+}
+
+.markdown-text pre {
+	background: var(--bg-aged);
+	padding: 0.75em;
+	overflow-x: auto;
+	margin: 0.5em 0;
+}
+
+.markdown-text pre code {
+	background: none;
+	padding: 0;
+}
+
+.markdown-text a {
+	color: var(--accent-olive);
+	text-decoration: underline;
+}
+
+.markdown-text a:hover {
+	color: var(--accent-terracotta);
+}
+
+.markdown-text blockquote {
+	border-left: 2px solid var(--border-dark);
+	padding-left: 1em;
+	margin: 0.5em 0;
+	color: var(--fg-muted);
+	font-style: italic;
+}
+
+.markdown-text hr {
+	border: none;
+	border-top: 1px solid var(--border-light);
+	margin: 1em 0;
+}
+
+.markdown-text table {
+	border-collapse: collapse;
+	width: 100%;
+	margin: 0.5em 0;
+}
+
+.markdown-text th,
+.markdown-text td {
+	border: 1px solid var(--border-light);
+	padding: 0.5em;
+	text-align: left;
+}
+
+.markdown-text th {
+	background: var(--bg-aged);
+	font-weight: 500;
+}
+
+.prose-xs {
+	font-size: 10px;
+}
+
+.prose-sm {
+	font-size: 12px;
 }

@@ -106,14 +106,6 @@ pub fn HistoryModal(
                         </Text>
                     }.into_any()
                 }}
-                <div class="flex justify-end pt-4">
-                    <Button
-                        variant=ButtonVariant::Olive
-                        on_click=on_close_click
-                    >
-                        "Закрыть"
-                    </Button>
-                </div>
             </div>
         </Modal>
     }
