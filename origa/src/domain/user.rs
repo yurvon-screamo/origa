@@ -29,7 +29,7 @@ impl User {
     ) -> Self {
         Self {
             id: Ulid::new(),
-            username: email.clone(),
+            username: email.split('@').next().unwrap_or(&email).to_string(),
             email,
             knowledge_set: KnowledgeSet::new(),
             current_japanese_level,

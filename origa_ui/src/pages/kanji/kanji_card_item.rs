@@ -1,6 +1,5 @@
 use crate::ui_components::{
-    Card, FuriganaText, Heading, HeadingLevel, KanjiWritingSection, Tag, TagVariant, Text,
-    TextSize, TypographyVariant,
+    Card, KanjiWritingSection, MarkdownText, Tag, TagVariant, Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
 use origa::domain::{Card as DomainCard, StudyCard};
@@ -103,9 +102,9 @@ pub fn KanjiCardItem(study_card: StudyCard) -> impl IntoView {
                 <div class="flex-1">
                     <div class="flex items-center gap-3 mb-2">
                         <span class="text-3xl font-serif">{kanji_char.clone()}</span>
-                        <Heading level=HeadingLevel::H4 class=Signal::derive(|| "flex-1".to_string())>
-                            <FuriganaText text=description.clone()/>
-                        </Heading>
+                        <div class=Signal::derive(|| "flex-1".to_string())>
+                            <MarkdownText content=Signal::derive(move || description.clone())/>
+                        </div>
                         <Tag variant=Signal::derive(move || status.tag_variant())>
                             {status.label()}
                         </Tag>
@@ -123,10 +122,11 @@ pub fn KanjiCardItem(study_card: StudyCard) -> impl IntoView {
                     }}
                     {move || {
                         if !example_words.is_empty() {
+                            let examples = example_words.clone();
                             view! {
-                                <Text size=TextSize::Small variant=TypographyVariant::Muted class=Signal::derive(|| "mb-1".to_string())>
-                                    {format!("Примеры: {}", example_words)}
-                                </Text>
+                                <div class=Signal::derive(|| "mb-1".to_string())>
+                                    <MarkdownText content=Signal::derive(move || format!("**Примеры:** {}", examples))/>
+                                </div>
                             }.into_any()
                         } else {
                             ().into_any()

@@ -1,4 +1,4 @@
-use crate::ui_components::{FuriganaText, Text, TextSize, TypographyVariant};
+use crate::ui_components::{MarkdownText, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 use origa::application::KanjiItemInfo;
 use std::collections::HashSet;
@@ -15,6 +15,7 @@ pub fn KanjiItem(
     let is_selected = Memo::new(move |_| selected_kanji.get().contains(&kanji_str_for_memo));
 
     let radicals_str = kanji_info.radicals.iter().collect::<String>();
+    let description = kanji_info.description.clone();
 
     view! {
         <div
@@ -40,9 +41,7 @@ pub fn KanjiItem(
             <div class="flex items-center gap-3">
                 <span class="text-2xl font-serif">{kanji_info.kanji}</span>
                 <div class="flex-1">
-                    <Text size=TextSize::Small variant=TypographyVariant::Primary>
-                        <FuriganaText text=kanji_info.description.clone()/>
-                    </Text>
+                    <MarkdownText content=Signal::derive(move || description.clone())/>
                     {move || {
                         if !radicals_str.is_empty() {
                             view! {
