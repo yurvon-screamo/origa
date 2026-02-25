@@ -1,6 +1,6 @@
 use crate::ui_components::{
-    Button, ButtonVariant, Card, FuriganaText, Heading, HeadingLevel, KanjiWritingSection, Tag,
-    TagVariant, Text, TextSize, TypographyVariant,
+    Button, ButtonVariant, Card, FuriganaText, Heading, HeadingLevel, KanjiWritingSection,
+    MarkdownText, Tag, TagVariant, Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
 use origa::domain::Card as DomainCard;
@@ -129,14 +129,7 @@ pub fn LessonCard(
                             <Text size=TextSize::Default variant=TypographyVariant::Muted class="mb-2">
                                 "Ответ:"
                             </Text>
-                            <Text size=TextSize::Large variant=TypographyVariant::Primary>
-                                <Show when=move || card_type == CardType::Kanji>
-                                    {answer.get_value()}
-                                </Show>
-                                <Show when=move || card_type != CardType::Kanji>
-                                    <FuriganaText text=answer.get_value()/>
-                                </Show>
-                            </Text>
+                            <MarkdownText content=Signal::derive(move || answer.get_value())/>
                         </div>
                     </div>
                 </Show>

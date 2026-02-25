@@ -1,5 +1,5 @@
 use super::types::SetInfo;
-use crate::ui_components::{Button, ButtonVariant};
+use crate::ui_components::{Button, ButtonVariant, MarkdownText};
 use leptos::prelude::*;
 use origa::domain::WellKnownSets;
 
@@ -9,13 +9,14 @@ pub fn SetCard(
     is_importing: bool,
     on_import: Callback<WellKnownSets>,
 ) -> impl IntoView {
+    let description = set_info.description.clone();
     view! {
         <div class="set-card">
             <div class="set-card-title">
                 {set_info.title.clone()}
             </div>
             <div class="set-card-description">
-                {set_info.description.clone()}
+                <MarkdownText content=Signal::derive(move || description.clone())/>
             </div>
             <div class="set-card-footer">
                 <span class="set-card-count">

@@ -63,6 +63,8 @@ rstest = "0.26"
 
 # UI
 leptos = { version = "0.8", features = ["csr"] }
+pulldown-cmark = "0.12"
+ammonia = "4"
 leptos_meta = { version = "0.8" }
 leptos_router = { version = "0.8" }
 leptos-use = { version = "0.18" }
