@@ -23,8 +23,8 @@ test.describe("UJ1: Полный цикл обучения", () => {
 			await homePage.expectVisible();
 		});
 
-		await test.step("Шаг 2-3: Переход на страницу кандзи и открытие модального окна", async () => {
-			await kanjiPage.goto();
+		await test.step("Шаг 2-3: Переход на вкладку Кандзи и открытие модального окна", async () => {
+			await homePage.navigateToKanji();
 			await kanjiPage.expectVisible();
 			await kanjiPage.clickAddButton();
 			await kanjiPage.expectModalVisible();
@@ -66,7 +66,9 @@ test.describe("UJ1: Полный цикл обучения", () => {
 		});
 
 		await test.step("Шаг 8-10: Переход на урок и прохождение карточек", async () => {
-			await lessonPage.goto();
+			await homePage.goto();
+			await homePage.expectVisible();
+			await homePage.startLesson();
 			await page.waitForTimeout(2000);
 
 			const maxIterations = 50;
@@ -112,14 +114,13 @@ test.describe("UJ1: Полный цикл обучения", () => {
 			}
 		});
 
-		await test.step("Шаг 12-13: Возврат на главную и проверка счётчика", async () => {
+		await test.step("Шаг 12-14: Возврат на главную и проверка счётчика", async () => {
 			const hasHomeButton = await lessonPage.homeButton.isVisible({ timeout: 1000 }).catch(() => false);
 			if (hasHomeButton) {
 				await lessonPage.goHome();
 			} else {
 				await page.goto("/home");
 			}
-			await page.waitForURL("/home");
 			await homePage.expectVisible();
 
 			const totalCards = await homePage.getTotalCards();

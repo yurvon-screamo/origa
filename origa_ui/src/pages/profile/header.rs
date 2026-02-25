@@ -1,4 +1,4 @@
-use crate::ui_components::{Heading, HeadingLevel};
+use crate::ui_components::{Button, ButtonVariant, Heading, HeadingLevel};
 use leptos::prelude::*;
 use origa::domain::User;
 

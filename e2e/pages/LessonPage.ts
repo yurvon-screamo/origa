@@ -3,7 +3,6 @@ import { expect, Locator, Page } from "@playwright/test";
 export class LessonPage {
 	readonly page: Page;
 	readonly header: Locator;
-	readonly backButton: Locator;
 	readonly progressBar: Locator;
 	readonly progressText: Locator;
 	readonly cardType: Locator;
@@ -24,13 +23,9 @@ export class LessonPage {
 	constructor(page: Page) {
 		this.page = page;
 		this.header = page.locator("h1", { hasText: "Урок" });
-		this.backButton = page.getByRole("button", { name: "Назад" });
-		// Progress can be shown as "Прогресс" text with a fraction like "1/2"
 		this.progressBar = page.locator("text=Прогресс");
 		this.progressText = page.locator("text=/\\d+\\/\\d+/");
-		// Card type can be "Слово", "Кандзи", etc.
 		this.cardType = page.locator("text=/^(Слово|Кандзи|Грамматика)$/");
-		// Question is the main card heading (can be h1, h2, or h3)
 		this.question = page.locator("h1, h2, h3").first();
 		this.showAnswerButton = page.getByRole("button", { name: "Показать ответ" });
 		this.answerSection = page.locator("text=Ответ:");
@@ -41,7 +36,9 @@ export class LessonPage {
 		this.easyButton = page.getByRole("button", { name: /^Идеально/ });
 		this.completeScreen = page.locator("text=Урок завершён!");
 		this.completeTitle = page.locator("text=Урок завершён!");
-		this.homeButton = page.getByRole("button", { name: "На главную" });
+		this.homeButton = page.getByRole("button", { name: "На главную" }).or(
+			page.getByRole("link", { name: "На главную" })
+		);
 		this.loadingText = page.locator("text=Загрузка урока...");
 		this.emptyStateText = page.locator("text=Нет карточек для изучения");
 	}
@@ -55,7 +52,7 @@ export class LessonPage {
 	}
 
 	async expectVisible() {
-		await expect(this.header).toBeVisible();
+		await expect(this.header).toBeVisible({ timeout: 10000 });
 	}
 
 	async expectLoading() {
@@ -67,20 +64,17 @@ export class LessonPage {
 	}
 
 	async expectProgressBarVisible() {
-		// Progress can be shown as "Прогресс" text or as a progress bar
 		const hasProgressText = await this.progressBar.isVisible().catch(() => false);
 		const hasProgressFraction = await this.progressText.isVisible().catch(() => false);
 		expect(hasProgressText || hasProgressFraction).toBe(true);
 	}
 
 	async expectCardVisible() {
-		// Question and show answer button should be visible
 		await expect(this.question).toBeVisible();
 		await expect(this.showAnswerButton).toBeVisible();
 	}
 
 	async showAnswer() {
-		// Check if answer is already shown
 		const answerVisible = await this.answerSection.isVisible().catch(() => false);
 		if (!answerVisible) {
 			await this.showAnswerButton.click();
@@ -118,10 +112,6 @@ export class LessonPage {
 
 	async goHome() {
 		await this.homeButton.click();
-	}
-
-	async goBack() {
-		await this.backButton.click();
 	}
 
 	async getProgressText(): Promise<string> {

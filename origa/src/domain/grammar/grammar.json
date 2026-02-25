@@ -1,7 +1,7 @@
 {
 	"grammar": [
 		{
-			"rule_id": "01J5N5MASU00000000000001",
+			"rule_id": "01KJ9AVWBGC2BT0DMFPDYYFEWB",
 			"level": "N5",
 			"content": {
 				"Russian": {
@@ -24,7 +24,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N5MASEN0000000000002",
+			"rule_id": "01KJ9AVWBG78GHSKKD8W1YHJB3",
 			"level": "N5",
 			"content": {
 				"Russian": {
@@ -47,7 +47,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N5MASHITA000000000003",
+			"rule_id": "01KJ9AVWBG1AAJZXRGA499R44W",
 			"level": "N5",
 			"content": {
 				"Russian": {
@@ -70,7 +70,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N5MASENDESHITA0000004",
+			"rule_id": "01KJ9AVWBG865E0F72RYM7F34B",
 			"level": "N5",
 			"content": {
 				"Russian": {
@@ -93,7 +93,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N5MASENKA000000000005",
+			"rule_id": "01KJ9AVWBGAC15EY9WNCBTJ6G3",
 			"level": "N5",
 			"content": {
 				"Russian": {
@@ -121,7 +121,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N5MASHOU000000000006",
+			"rule_id": "01KJ9AVWBG5RJ25W1S3FS0GRMX",
 			"level": "N5",
 			"content": {
 				"Russian": {
@@ -144,7 +144,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N5MASHOUKA000000000007",
+			"rule_id": "01KJ9AVWBG0WV4B20A1ZXN7QJC",
 			"level": "N5",
 			"content": {
 				"Russian": {
@@ -172,7 +172,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N5IDESU00000000000008",
+			"rule_id": "01KJ9AVWBGHESCK3GX4BHV08XX",
 			"level": "N5",
 			"content": {
 				"Russian": {
@@ -197,7 +197,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N5IKUNAIDESU0000000009",
+			"rule_id": "01KJ9AVWBG7XJCFXM9DW2EE2SM",
 			"level": "N5",
 			"content": {
 				"Russian": {
@@ -225,7 +225,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N5NAJAARIMASEN000010",
+			"rule_id": "01KJ9AVWBGX4W5744M5BXSKP6A",
 			"level": "N5",
 			"content": {
 				"Russian": {
@@ -250,7 +250,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N5IKATTADESU0000000011",
+			"rule_id": "01KJ9AVWBG7C4FB0XESVBCDZHD",
 			"level": "N5",
 			"content": {
 				"Russian": {
@@ -278,7 +278,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N5NADESHITA00000000012",
+			"rule_id": "01KJ9AVWBGZ20KJ1BN47X9H0TW",
 			"level": "N5",
 			"content": {
 				"Russian": {
@@ -303,7 +303,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N5TAIDESU0000000000013",
+			"rule_id": "01KJ9AVWBG98WNJP63SJS7FDH7",
 			"level": "N5",
 			"content": {
 				"Russian": {
@@ -331,7 +331,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N5TEKUDASAI00000000014",
+			"rule_id": "01KJ9AVWBGW9JTQNV2RXVNVWXR",
 			"level": "N5",
 			"content": {
 				"Russian": {
@@ -359,7 +359,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N5TEIMASU0000000000015",
+			"rule_id": "01KJ9AVWBGPNP4JV3Q5BZD0438",
 			"level": "N5",
 			"content": {
 				"Russian": {
@@ -387,7 +387,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N5TEIRU000000000000016",
+			"rule_id": "01KJ9AVWBG09Z0M7YDBMG49XW0",
 			"level": "N5",
 			"content": {
 				"Russian": {
@@ -415,7 +415,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N5IKUTE00000000000017",
+			"rule_id": "01KJ9AVWBGWDMKQDGZSQMNWFBD",
 			"level": "N5",
 			"content": {
 				"Russian": {
@@ -438,7 +438,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N5NADE0000000000000018",
+			"rule_id": "01KJ9AVWBGNPWNHFW7PDXP6948",
 			"level": "N5",
 			"content": {
 				"Russian": {
@@ -461,7 +461,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N5NAIDEKUDASAI0000000019",
+			"rule_id": "01KJ9AVWBG3AXBN81QVFJ6WY48",
 			"level": "N5",
 			"content": {
 				"Russian": {
@@ -489,7 +489,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N5NAKEREBANARIMASEN20",
+			"rule_id": "01KJ9AVWBGX9GDGJAG7NZPYYTT",
 			"level": "N5",
 			"content": {
 				"Russian": {
@@ -517,7 +517,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N5NAKUTEMOIIDESU000021",
+			"rule_id": "01KJ9AVWBG7YBGGNVCSK4KNYFQ",
 			"level": "N5",
 			"content": {
 				"Russian": {
@@ -545,7 +545,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N5TAKOTOARIMASU00022",
+			"rule_id": "01KJ9AVWBGJYDGZVV6WQVRAY6V",
 			"level": "N5",
 			"content": {
 				"Russian": {
@@ -573,7 +573,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N5IKUNARIMASU000000023",
+			"rule_id": "01KJ9AVWBGTTC6NAK3J2PK8Y0X",
 			"level": "N5",
 			"content": {
 				"Russian": {
@@ -601,7 +601,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N5NANARIMASU0000000024",
+			"rule_id": "01KJ9AVWBGJQ1FYDP4SN11DQ7S",
 			"level": "N5",
 			"content": {
 				"Russian": {
@@ -626,7 +626,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N5TARA000000000000025",
+			"rule_id": "01KJ9AVWBGCPZAKT227X0WVHJ3",
 			"level": "N5",
 			"content": {
 				"Russian": {
@@ -649,7 +649,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N4BA00000000000000001",
+			"rule_id": "01KJ9AVWBGD9Z8V2JKA30E0C8G",
 			"level": "N4",
 			"content": {
 				"Russian": {
@@ -672,7 +672,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N4YOU0000000000000002",
+			"rule_id": "01KJ9AVWBGA832MZRHZT4Q7XY3",
 			"level": "N4",
 			"content": {
 				"Russian": {
@@ -695,7 +695,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N4POTENTIAL00000000003",
+			"rule_id": "01KJ9AVWBG9HM3YKKXQ5G1NAK2",
 			"level": "N4",
 			"content": {
 				"Russian": {
@@ -718,7 +718,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N4PASSIVE000000000000004",
+			"rule_id": "01KJ9AVWBGQ10681YJYPEKRH03",
 			"level": "N4",
 			"content": {
 				"Russian": {
@@ -741,7 +741,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N4CAUSATIVE0000000000005",
+			"rule_id": "01KJ9AVWBGR0ENRRS3V4V09P1P",
 			"level": "N4",
 			"content": {
 				"Russian": {
@@ -764,7 +764,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N4IMPERATIVE000000000006",
+			"rule_id": "01KJ9AVWBGMTXQAQEGYYK34RP5",
 			"level": "N4",
 			"content": {
 				"Russian": {
@@ -787,7 +787,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N4SUGIRU0000000000000007",
+			"rule_id": "01KJ9AVWBG97DSVXSY7D2T664G",
 			"level": "N4",
 			"content": {
 				"Russian": {
@@ -810,7 +810,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N4SOU001000000000000008",
+			"rule_id": "01KJ9AVWBGFF2BG6K8DT7DES01",
 			"level": "N4",
 			"content": {
 				"Russian": {
@@ -843,7 +843,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N4SOU002000000000000009",
+			"rule_id": "01KJ9AVWBGQYT1EG7C67EXM06C",
 			"level": "N4",
 			"content": {
 				"Russian": {
@@ -871,7 +871,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N4YOUDA0000000000000010",
+			"rule_id": "01KJ9AVWBGJ1D19F84M3Y44YZT",
 			"level": "N4",
 			"content": {
 				"Russian": {
@@ -899,7 +899,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N4NIKUI0000000000000011",
+			"rule_id": "01KJ9AVWBGJ741SE2S89DTQW2B",
 			"level": "N4",
 			"content": {
 				"Russian": {
@@ -932,7 +932,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N4YASUI0000000000000012",
+			"rule_id": "01KJ9AVWBG771B7QTTX4NFWHBS",
 			"level": "N4",
 			"content": {
 				"Russian": {
@@ -965,7 +965,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N4TEAGERA00000000000013",
+			"rule_id": "01KJ9AVWBG9RSGGG62CN70ZM7X",
 			"level": "N4",
 			"content": {
 				"Russian": {
@@ -993,7 +993,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N4TEKURERU0000000000014",
+			"rule_id": "01KJ9AVWBGBQ7068WKR3Q5TT4D",
 			"level": "N4",
 			"content": {
 				"Russian": {
@@ -1021,7 +1021,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N4TEMORAU0000000000015",
+			"rule_id": "01KJ9AVWBG2ZZGZMN2BVRB0JQD",
 			"level": "N4",
 			"content": {
 				"Russian": {
@@ -1049,7 +1049,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N4TEARU0000000000000016",
+			"rule_id": "01KJ9AVWBG814VP4J8VCWDCESK",
 			"level": "N4",
 			"content": {
 				"Russian": {
@@ -1077,7 +1077,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N4TEOKU0000000000000017",
+			"rule_id": "01KJ9AVWBGP65XDYDD6GXDTMT1",
 			"level": "N4",
 			"content": {
 				"Russian": {
@@ -1105,7 +1105,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N4TESHIMAU0000000000018",
+			"rule_id": "01KJ9AVWBG811CV28NPX9YZ7T9",
 			"level": "N4",
 			"content": {
 				"Russian": {
@@ -1133,7 +1133,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N4TEHOSHII0000000000019",
+			"rule_id": "01KJ9AVWBGZVHJQRGRDRJSXTZ8",
 			"level": "N4",
 			"content": {
 				"Russian": {
@@ -1161,7 +1161,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N4NARU0000000000000020",
+			"rule_id": "01KJ9AVWBGEWZCRTBSMJ43PXG4",
 			"level": "N4",
 			"content": {
 				"Russian": {
@@ -1189,7 +1189,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N5REFPARTICLEHE00000000036",
+			"rule_id": "01KJ9AVWBGFWCFKW1E70FQ496X",
 			"level": "N5",
 			"content": {
 				"Russian": {
@@ -1206,7 +1206,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N5REFPARTICLEDE00000000037",
+			"rule_id": "01KJ9AVWBG20X0Y3M4FVKZ2NVD",
 			"level": "N5",
 			"content": {
 				"Russian": {
@@ -1223,7 +1223,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N5REFPARTICLETO00000000038",
+			"rule_id": "01KJ9AVWBG46YNK3419ZC1HQQ2",
 			"level": "N5",
 			"content": {
 				"Russian": {
@@ -1240,7 +1240,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N5REFKARA_MADE00000000039",
+			"rule_id": "01KJ9AVWBG5ZJ8RJP7G4VFZ404",
 			"level": "N5",
 			"content": {
 				"Russian": {
@@ -1257,7 +1257,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N5REFSUUKI_JIKAN0000000040",
+			"rule_id": "01KJ9AVWBGMYHHTHFDQF8X5ZPE",
 			"level": "N5",
 			"content": {
 				"Russian": {
@@ -1274,7 +1274,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N5REFYOUBI00000000000000041",
+			"rule_id": "01KJ9AVWBGV3B40Y3Y9ETDESWY",
 			"level": "N5",
 			"content": {
 				"Russian": {
@@ -1291,7 +1291,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N5REFSUKI_KIRAI000000000042",
+			"rule_id": "01KJ9AVWBG6T7JZNW5WADN646C",
 			"level": "N5",
 			"content": {
 				"Russian": {
@@ -1308,7 +1308,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N5REFKARA_REASON00000000043",
+			"rule_id": "01KJ9AVWBGVJBC53X1VJ58DZPR",
 			"level": "N5",
 			"content": {
 				"Russian": {
@@ -1325,7 +1325,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N5REFARIMASU_IMASU000000044",
+			"rule_id": "01KJ9AVWBG5ADJTHS8DGRNJQKQ",
 			"level": "N5",
 			"content": {
 				"Russian": {
@@ -1342,7 +1342,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N5REFHOUSHII0000000000000045",
+			"rule_id": "01KJ9AVWBGYDSNCRW92CGVB2CC",
 			"level": "N5",
 			"content": {
 				"Russian": {
@@ -1359,7 +1359,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N5REFTARI_TARI00000000000046",
+			"rule_id": "01KJ9AVWBGPA7SRRPGH61JGBEX",
 			"level": "N5",
 			"content": {
 				"Russian": {
@@ -1376,7 +1376,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N5REFTOMOimasu00000000000047",
+			"rule_id": "01KJ9AVWBGVD1DFK3XMBPAA431",
 			"level": "N5",
 			"content": {
 				"Russian": {
@@ -1393,7 +1393,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N4REFNDESKA000000000000048",
+			"rule_id": "01KJ9AVWBGSRGC0C7R5RPBZH8T",
 			"level": "N4",
 			"content": {
 				"Russian": {
@@ -1410,7 +1410,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N4REFNAGARA0000000000000049",
+			"rule_id": "01KJ9AVWBGHZCTY04D73A8SAQP",
 			"level": "N4",
 			"content": {
 				"Russian": {
@@ -1427,7 +1427,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N4REFSHI_SHI0000000000000050",
+			"rule_id": "01KJ9AVWBG2H3V2K6TCY57GJVT",
 			"level": "N4",
 			"content": {
 				"Russian": {
@@ -1444,7 +1444,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N4REFTSUMORI00000000000000051",
+			"rule_id": "01KJ9AVWBG0PEPBNN1S72H79NW",
 			"level": "N4",
 			"content": {
 				"Russian": {
@@ -1461,7 +1461,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N4REFYOTEI00000000000000000052",
+			"rule_id": "01KJ9AVWBG7X71FKKQJQJ7BSFM",
 			"level": "N4",
 			"content": {
 				"Russian": {
@@ -1478,7 +1478,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N4REFHOUGAIIDESU000000000053",
+			"rule_id": "01KJ9AVWBGSF7G7F8ZSTYCZ10T",
 			"level": "N4",
 			"content": {
 				"Russian": {
@@ -1495,7 +1495,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N4REFKAMOSHIRENAI00000000054",
+			"rule_id": "01KJ9AVWBGJ1Z4A8GJNH5H20CM",
 			"level": "N4",
 			"content": {
 				"Russian": {
@@ -1512,7 +1512,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N4REFNODE000000000000000055",
+			"rule_id": "01KJ9AVWBGYNPKWZ86NG2KQ41B",
 			"level": "N4",
 			"content": {
 				"Russian": {
@@ -1529,7 +1529,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N4REFKADOUKA00000000000000056",
+			"rule_id": "01KJ9AVWBG031VR3SNR4NMR285",
 			"level": "N4",
 			"content": {
 				"Russian": {
@@ -1546,7 +1546,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N4REFTAME000000000000000000057",
+			"rule_id": "01KJ9AVWBGQ62KXPM59REB0ZYX",
 			"level": "N4",
 			"content": {
 				"Russian": {
@@ -1563,7 +1563,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N4REFYOUNINARU000000000000058",
+			"rule_id": "01KJ9AVWBG67G8WPV96DEP04FA",
 			"level": "N4",
 			"content": {
 				"Russian": {
@@ -1580,7 +1580,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N4REFYOUNISURU000000000000059",
+			"rule_id": "01KJ9AVWBGPGTJJYHZ6WTDT5H1",
 			"level": "N4",
 			"content": {
 				"Russian": {
@@ -1597,7 +1597,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N4REFTOKORODESU000000000000060",
+			"rule_id": "01KJ9AVWBG9QC65NT7BZ3N1T0A",
 			"level": "N4",
 			"content": {
 				"Russian": {
@@ -1614,7 +1614,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N4REFHAZUDESU000000000000000061",
+			"rule_id": "01KJ9AVWBGHTQPFJ1EQJFMR9FC",
 			"level": "N4",
 			"content": {
 				"Russian": {
@@ -1631,7 +1631,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N4REFTOKA0000000000000000000062",
+			"rule_id": "01KJ9AVWBGDK91HTDXBWGV7X3B",
 			"level": "N4",
 			"content": {
 				"Russian": {
@@ -1648,7 +1648,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N3REFTOMORAE0000000000000063",
+			"rule_id": "01KJ9AVWBGFE668BX4F2VC5CJR",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -1665,7 +1665,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N3REFNOYOUNI0000000000000064",
+			"rule_id": "01KJ9AVWBG7KFYNM8TEY3KT1JK",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -1682,7 +1682,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N3REFKOTOWO0000000000000000065",
+			"rule_id": "01KJ9AVWBGPV12NSDGN47EAZ9K",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -1699,7 +1699,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N3REFWO_TOIU000000000000000066",
+			"rule_id": "01KJ9AVWBGTSXQSK62SDAZZXZR",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -1716,7 +1716,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N3REFDONNANITEMO00000000000067",
+			"rule_id": "01KJ9AVWBG6V2BKWG9WJQ54C85",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -1733,7 +1733,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N3REFKOTONISURU000000000000068",
+			"rule_id": "01KJ9AVWBGXCPVDQBTMECSZQ72",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -1750,7 +1750,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N3REFKOTONINARU000000000000069",
+			"rule_id": "01KJ9AVWBGHF2PJAE5P59SWPT8",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -1767,7 +1767,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N3REFTOIUKOTO0000000000000071",
+			"rule_id": "01KJ9AVWBGGXF7SDJNXDAZHH8E",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -1784,7 +1784,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N3REFDEARU000000000000000000072",
+			"rule_id": "01KJ9AVWBG317W6VV18G0QTWZH",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -1801,7 +1801,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N3REFTOUTOSURU0000000000000073",
+			"rule_id": "01KJ9AVWBG83EH1Y7R0TTTR568",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -1818,7 +1818,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N3REFNANJIYANAI000000000000074",
+			"rule_id": "01KJ9AVWBGZ8EZAG1PG1MH45CQ",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -1835,7 +1835,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N3REFTSUMORIWANAI0000000000075",
+			"rule_id": "01KJ9AVWBG01EM2XVANADX55J9",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -1852,7 +1852,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N3REFNAKUTENARANAI000000000076",
+			"rule_id": "01KJ9AVWBG11ENPCF7FVZR30YX",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -1869,7 +1869,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N3REFAIDAMADE000000000000000077",
+			"rule_id": "01KJ9AVWBGED20ER6E23F50V28",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -1886,7 +1886,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N3REFNITOTTE0000000000000000078",
+			"rule_id": "01KJ9AVWBGVK5YGVWDA6SCKSHJ",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -1903,7 +1903,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N3REFTOWA0000000000000000000079",
+			"rule_id": "01KJ9AVWBG8H783STMJJDPTWGB",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -1920,7 +1920,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N3REFOITE000000000000000000080",
+			"rule_id": "01KJ9AVWBG835G2MHS07G9GT69",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -1937,7 +1937,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N3REFNIMOTOMAZU000000000000081",
+			"rule_id": "01KJ9AVWBG1XSV288P0NM11KS7",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -1954,7 +1954,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N3REFTOTOMONI00000000000000082",
+			"rule_id": "01KJ9AVWBGAWB4GVEP81Q348Y0",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -1971,7 +1971,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N3REFHAZUDA0000000000000000083",
+			"rule_id": "01KJ9AVWBGRNBA62G26TCTSZXH",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -1988,7 +1988,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N3REFTEKURUTEIKU00000000000085",
+			"rule_id": "01KJ9AVWBGSNDNXW7X4Q75KJ08",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -2005,7 +2005,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N3REFTARADOU000000000000000086",
+			"rule_id": "01KJ9AVWBG50TS33M3TSD8J4HS",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -2022,7 +2022,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N3REFTOSHITE0000000000000000087",
+			"rule_id": "01KJ9AVWBGS8YZV069APMJCHRE",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -2039,7 +2039,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N3REFYORIHOUGA00000000000000088",
+			"rule_id": "01KJ9AVWBGJ969Y9RVE2VZZTG6",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -2056,7 +2056,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N3REFTEMO_KAMAWANAI00000000090",
+			"rule_id": "01KJ9AVWBG2XQDKZTA4ARPRM6H",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -2073,7 +2073,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N3REFHODONAI00000000000000000091",
+			"rule_id": "01KJ9AVWBGKN0BF2YMEP7KEEFA",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -2090,7 +2090,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N3REFWAKEDA000000000000000000092",
+			"rule_id": "01KJ9AVWBGWN20VYECX99D1TCR",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -2107,7 +2107,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N3REFWAKEWANAI00000000000000093",
+			"rule_id": "01KJ9AVWBGB5RZHM53ZGXS3W1G",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -2124,7 +2124,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N3REFDEWANAIKA0000000000000094",
+			"rule_id": "01KJ9AVWBG384RRPVYNPB4J5PB",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -2141,7 +2141,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N3REFNODA0000000000000000000095",
+			"rule_id": "01KJ9AVWBGH44YANH2V1D1ZE13",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -2158,7 +2158,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N3REFNISITAGAU00000000000000096",
+			"rule_id": "01KJ9AVWBG2Y77ZXRFAA3YBB9W",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -2175,7 +2175,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N3REFNIMIRARERU00000000000000097",
+			"rule_id": "01KJ9AVWBGS1NCCF9QHWN9FZQB",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -2192,7 +2192,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N3REFKANEGANEGASURU00000000098",
+			"rule_id": "01KJ9AVWBGEABGADSZAQN1PA21",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -2209,7 +2209,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N3REFTENARANAI000000000000000100",
+			"rule_id": "01KJ9AVWBGC0VE3J37KHSDREPF",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -2226,7 +2226,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N3REFSHIKA0000000000000000000102",
+			"rule_id": "01KJ9AVWBGN97660NACHBBS5K6",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -2243,7 +2243,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N5TEMOIIDESUKA00000000103",
+			"rule_id": "01KJ9AVWBGVR0JTGDY5XWX9PK1",
 			"level": "N5",
 			"content": {
 				"Russian": {
@@ -2271,7 +2271,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N5TEWAIKEMASEN000000000104",
+			"rule_id": "01KJ9AVWBGZ1PFSCEFC9AD0ZN2",
 			"level": "N5",
 			"content": {
 				"Russian": {
@@ -2299,7 +2299,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N5YORIHOU000000000000000105",
+			"rule_id": "01KJ9AVWBG9FBT19P248ZR0ZTC",
 			"level": "N5",
 			"content": {
 				"Russian": {
@@ -2316,7 +2316,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N5TEKARA00000000000000000106",
+			"rule_id": "01KJ9AVWBGPRSG0H64T7RZW2Q7",
 			"level": "N5",
 			"content": {
 				"Russian": {
@@ -2344,7 +2344,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N5TOTOSU00000000000000000107",
+			"rule_id": "01KJ9AVWBG2SD904TX2M070JED",
 			"level": "N5",
 			"content": {
 				"Russian": {
@@ -2361,7 +2361,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N5TEMOMO000000000000000000108",
+			"rule_id": "01KJ9AVWBGRV8CV64ATK1V3TR8",
 			"level": "N5",
 			"content": {
 				"Russian": {
@@ -2389,7 +2389,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N4TEITADAKEMASENKA000000109",
+			"rule_id": "01KJ9AVWBGA4HSXYWVMG7NR4ME",
 			"level": "N4",
 			"content": {
 				"Russian": {
@@ -2417,7 +2417,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N4TEMIMASU0000000000000000110",
+			"rule_id": "01KJ9AVWBGFBKS9X966H4QKR9S",
 			"level": "N4",
 			"content": {
 				"Russian": {
@@ -2445,7 +2445,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N4TABAKARI0000000000000000111",
+			"rule_id": "01KJ9AVWBGD0V3KZS246V9XAQG",
 			"level": "N4",
 			"content": {
 				"Russian": {
@@ -2473,7 +2473,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N4SODESUSO00000000000000000112",
+			"rule_id": "01KJ9AVWBG6J7651BJJ48JYSD3",
 			"level": "N4",
 			"content": {
 				"Russian": {
@@ -2490,7 +2490,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N4BAIDESU00000000000000000113",
+			"rule_id": "01KJ9AVWBGQWFRK39F6BVDVAGS",
 			"level": "N4",
 			"content": {
 				"Russian": {
@@ -2507,7 +2507,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N4ATODE000000000000000000114",
+			"rule_id": "01KJ9AVWBGS3QGQBDEMTKHTDDP",
 			"level": "N4",
 			"content": {
 				"Russian": {
@@ -2524,7 +2524,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N3CHAU0000000000000000000115",
+			"rule_id": "01KJ9AVWBGB5B6CAJE1A2P39MN",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -2547,7 +2547,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N3TOKU0000000000000000000116",
+			"rule_id": "01KJ9AVWBGAJA156CXB13MGY2Y",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -2570,7 +2570,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N3TERU0000000000000000000117",
+			"rule_id": "01KJ9AVWBGMPGCDGNH3RST0PXP",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -2593,7 +2593,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N3KOTO0000000000000003",
+			"rule_id": "01KJ9AVWBHE66V8N0M0QMC4FH0",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -2621,7 +2621,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N3NO0000000000000000004",
+			"rule_id": "01KJ9AVWBHT321YW1PS6W1644B",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -2649,7 +2649,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N3KOTODEKIRU0000000005",
+			"rule_id": "01KJ9AVWBHREWZFFJGA82D8DQ7",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -2677,7 +2677,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N3BAII00000000000000006",
+			"rule_id": "01KJ9AVWBH42D4GD52RS1BC50N",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -2705,7 +2705,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N3NAKEREBAI000000000007",
+			"rule_id": "01KJ9AVWBHJZ36Z01ACB085C5Z",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -2733,7 +2733,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N3TARAII000000000000008",
+			"rule_id": "01KJ9AVWBHAKD2K0QG650B03HR",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -2761,7 +2761,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N3TOKI000000000000000009",
+			"rule_id": "01KJ9AVWBHWBK2EDJ7E05X3W6N",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -2789,7 +2789,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N3MADE00000000000000011",
+			"rule_id": "01KJ9AVWBH60WPD8P7R0ZQ6CDX",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -2817,7 +2817,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N3MADENI0000000000000012",
+			"rule_id": "01KJ9AVWBH0J4W9BH97H4QETJB",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -2845,7 +2845,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N3TARI000000000000000014",
+			"rule_id": "01KJ9AVWBH8MJRMP75BNZ452WT",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -2873,7 +2873,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N3NAIFU00000000000000015",
+			"rule_id": "01KJ9AVWBHY3YYAR1A1165J9RN",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -2901,7 +2901,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N3KOTOARU00000000000016",
+			"rule_id": "01KJ9AVWBHVS3YAE3S9S8BCAMC",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -2929,7 +2929,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N3YOUNI0000000000000017",
+			"rule_id": "01KJ9AVWBHRT3WP2WRC12K40CY",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -2957,7 +2957,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N3YOUNIIU000000000000018",
+			"rule_id": "01KJ9AVWBHDTTZ8QCZY4JV6DNM",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -2985,7 +2985,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N3TEDAMARANAI000000019",
+			"rule_id": "01KJ9AVWBHPBKJBT82VNRW3XDJ",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -3013,7 +3013,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N3TEKANANAI000000000020",
+			"rule_id": "01KJ9AVWBH2MX6C4KYR7F8CBZH",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -3041,7 +3041,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N3COMPOUNDDASU000000021",
+			"rule_id": "01KJ9AVWBHFWZ27CCQ7KTMEAKR",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -3069,7 +3069,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N3COMPOUNDHAJIMERU000022",
+			"rule_id": "01KJ9AVWBHRFYSHYC7SYYVPDYH",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -3097,7 +3097,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N3COMPOUNDOWARU000000023",
+			"rule_id": "01KJ9AVWBHQTYR03M31868R08D",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -3125,7 +3125,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N3COMPOUNDTSUZUKERU0024",
+			"rule_id": "01KJ9AVWBHZ4XDBVBBB4PJC18C",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -3153,7 +3153,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N3COMPOUNDWASURERU000025",
+			"rule_id": "01KJ9AVWBHNND4VKPG4VKB4DMC",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -3181,7 +3181,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N3COMPOUNDAU000000000026",
+			"rule_id": "01KJ9AVWBHATEBZQ77Z5FBXHCP",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -3209,7 +3209,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N3COMPOUNDKAERU0000000027",
+			"rule_id": "01KJ9AVWBHWREH4Z4FER3BM22B",
 			"level": "N3",
 			"content": {
 				"Russian": {
@@ -3237,7 +3237,7 @@
 			}
 		},
 		{
-			"rule_id": "01J5N5REFNOUWADESU00000028",
+			"rule_id": "01KJ9AVWBHB682Y403GNC8A5EG",
 			"level": "N5",
 			"content": {
 				"Russian": {
@@ -3254,7 +3254,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N5REFWAJAARIMASEN00029",
+			"rule_id": "01KJ9AVWBH97AQPCCN72986XC2",
 			"level": "N5",
 			"content": {
 				"Russian": {
@@ -3271,7 +3271,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N5REFWADESKA0000000030",
+			"rule_id": "01KJ9AVWBHHQZVVB94N9K0XATS",
 			"level": "N5",
 			"content": {
 				"Russian": {
@@ -3288,7 +3288,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N5REFNOBELONGING0000031",
+			"rule_id": "01KJ9AVWBH2KVQY4Y97N3JHWSD",
 			"level": "N5",
 			"content": {
 				"Russian": {
@@ -3305,7 +3305,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N5REFMODESU000000000032",
+			"rule_id": "01KJ9AVWBH1FCFM51BM2AXZ0C2",
 			"level": "N5",
 			"content": {
 				"Russian": {
@@ -3322,7 +3322,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N5REFKORESOREARE00000033",
+			"rule_id": "01KJ9AVWBHBPCR5J7CVA8JK8KF",
 			"level": "N5",
 			"content": {
 				"Russian": {
@@ -3339,7 +3339,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N5REFKONOSONOANO00000034",
+			"rule_id": "01KJ9AVWBHJJSFC592FJPGMBQM",
 			"level": "N5",
 			"content": {
 				"Russian": {
@@ -3356,7 +3356,7 @@
 			"format_map": null
 		},
 		{
-			"rule_id": "01J5N5REFKOKOWABASHODESU000035",
+			"rule_id": "01KJ9AVWBHYS1J2P938B40R0EJ",
 			"level": "N5",
 			"content": {
 				"Russian": {
