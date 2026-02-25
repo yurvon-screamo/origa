@@ -4,11 +4,13 @@ use base64::{self, Engine};
 use reqwest::{
     Client, Method, RequestBuilder,
     header::{HeaderMap, HeaderValue},
+    StatusCode,
 };
 use serde_json::Value;
 
 const SUPABASE_URL: &str = "https://evttbadnaklzjnxhwqad.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY: &str = "sb_publishable_SScoXTXJy1tQFVJr2_9mXQ_77Q3aetA";
+const REFRESH_THRESHOLD_SECONDS: u64 = 300;
 
 #[derive(Clone)]
 pub struct SupabaseClient {
@@ -16,6 +18,25 @@ pub struct SupabaseClient {
     base_url: String,
     api_key: String,
 }
+
+#[derive(Debug)]
+pub enum AuthError {
+    SessionExpired,
+    NetworkError(String),
+    ApiError(String),
+}
+
+impl std::fmt::Display for AuthError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            AuthError::SessionExpired => write!(f, "Session expired, please login again"),
+            AuthError::NetworkError(e) => write!(f, "Network error: {}", e),
+            AuthError::ApiError(e) => write!(f, "API error: {}", e),
+        }
+    }
+}
+
+impl std::error::Error for AuthError {}
 
 impl SupabaseClient {
     pub fn new() -> Self {
@@ -47,6 +68,124 @@ impl SupabaseClient {
 
         if let Some(auth_token) = auth_token {
             request = request.header("Authorization", format!("Bearer {}", auth_token));
+        }
+
+        request
+    }
+
+    fn current_timestamp() -> u64 {
+        chrono::Utc::now().timestamp() as u64
+    }
+
+    fn should_refresh(expires_at: u64) -> bool {
+        let now = Self::current_timestamp();
+        now.saturating_add(REFRESH_THRESHOLD_SECONDS) >= expires_at
+    }
+
+    pub async fn refresh_session(&self, refresh_token: &str) -> Result<SupabaseSession, AuthError> {
+        let res = self
+            .request(Method::POST, "/auth/v1/token?grant_type=refresh_token", None)
+            .json(&serde_json::json!({
+                "refresh_token": refresh_token,
+            }))
+            .send()
+            .await
+            .map_err(|e| AuthError::NetworkError(e.to_string()))?;
+
+        if !res.status().is_success() {
+            return Err(AuthError::SessionExpired);
+        }
+
+        let json: Value = res
+            .json()
+            .await
+            .map_err(|e| AuthError::ApiError(format!("Failed to parse response: {}", e)))?;
+
+        let access_token = json
+            .get("access_token")
+            .and_then(|t| t.as_str())
+            .unwrap_or_default()
+            .to_string();
+        let new_refresh_token = json
+            .get("refresh_token")
+            .and_then(|t| t.as_str())
+            .unwrap_or_default()
+            .to_string();
+        let expires_in = json
+            .get("expires_in")
+            .and_then(|t| t.as_i64())
+            .unwrap_or(3600) as u64;
+
+        let (user_id, user_email) = Self::decode_jwt_payload(&access_token)
+            .unwrap_or_else(|| (String::new(), String::new()));
+
+        let now = Self::current_timestamp();
+        let expires_at = now.saturating_add(expires_in);
+
+        let session = SupabaseSession {
+            access_token,
+            refresh_token: new_refresh_token,
+            user_id,
+            email: user_email,
+            expires_at,
+        };
+
+        set_session(&session).map_err(|e| AuthError::ApiError(e))?;
+        Ok(session)
+    }
+
+    pub async fn request_with_auth_refresh(
+        &self,
+        method: Method,
+        url: &str,
+        body: Option<&Value>,
+        extra_headers: Option<&[(&str, &str)]>,
+    ) -> Result<reqwest::Response, AuthError> {
+        let session = get_session().ok_or(AuthError::SessionExpired)?;
+
+        let session = if Self::should_refresh(session.expires_at) {
+            self.refresh_session(&session.refresh_token).await?
+        } else {
+            session
+        };
+
+        let res = self
+            .build_request(method.clone(), url, &session.access_token, body, extra_headers)
+            .send()
+            .await
+            .map_err(|e| AuthError::NetworkError(e.to_string()))?;
+
+        if res.status() == StatusCode::UNAUTHORIZED {
+            let session = get_session().ok_or(AuthError::SessionExpired)?;
+            let refreshed = self.refresh_session(&session.refresh_token).await?;
+
+            self.build_request(method, url, &refreshed.access_token, body, extra_headers)
+                .send()
+                .await
+                .map_err(|e| AuthError::NetworkError(e.to_string()))
+        } else {
+            Ok(res)
+        }
+    }
+
+    fn build_request(
+        &self,
+        method: Method,
+        url: &str,
+        auth_token: &str,
+        body: Option<&Value>,
+        extra_headers: Option<&[(&str, &str)]>,
+    ) -> RequestBuilder {
+        let mut request = self.request(method, url, Some(auth_token));
+
+        if let Some(json_body) = body {
+            request = request.json(json_body);
+        }
+
+        if let Some(headers) = extra_headers {
+            for (key, value) in headers {
+                request = request.header(*key, *value);
+            }
         }
 
         request
@@ -138,15 +277,23 @@ impl SupabaseClient {
                 .and_then(|t| t.as_str())
                 .unwrap_or_default()
                 .to_string();
+            let expires_in = json
+                .get("expires_in")
+                .and_then(|t| t.as_i64())
+                .unwrap_or(3600) as u64;
 
             let (user_id, user_email) = Self::decode_jwt_payload(&access_token)
                 .unwrap_or_else(|| (String::new(), email.to_string()));
+
+            let now = Self::current_timestamp();
+            let expires_at = now.saturating_add(expires_in);
 
             let session = SupabaseSession {
                 access_token,
                 refresh_token,
                 user_id,
                 email: user_email,
+                expires_at,
             };
 
             set_session(&session).map_err(|e| format!("Failed to set session: {}", e))?;

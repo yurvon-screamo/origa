@@ -4,5 +4,5 @@ mod session;
 mod supabase_repository;
 
 pub use client::SupabaseClient;
-pub use session::get_session;
+pub use session::{clear_session, get_session};
 pub use supabase_repository::SupabaseUserRepository;
