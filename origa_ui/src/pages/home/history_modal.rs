@@ -1,4 +1,6 @@
-use crate::ui_components::{Button, ButtonVariant, Modal, Text, TextSize, TypographyVariant};
+use crate::ui_components::{
+    Button, ButtonVariant, LineChart, Modal, Text, TextSize, TypographyVariant,
+};
 use chrono::TimeZone;
 use leptos::prelude::*;
 use origa::domain::DailyHistoryItem;
@@ -54,11 +56,22 @@ pub fn HistoryModal(
 
     let recent_history = move || {
         let mut items: Vec<_> = history.get();
-        items.sort_by(|a, b| b.timestamp().cmp(&a.timestamp()));
+        items.sort_by(|a, b| a.timestamp().cmp(&b.timestamp()));
         items.into_iter().take(7).collect::<Vec<_>>()
     };
 
     let has_data = move || !recent_history().is_empty();
+
+    let chart_data = Signal::derive(move || {
+        recent_history()
+            .into_iter()
+            .map(|item| {
+                let date_str = format_date(item.timestamp());
+                let value = get_metric_value(&item, metric.get()) as f64;
+                (date_str, value)
+            })
+            .collect::<Vec<_>>()
+    });
 
     let on_close_click = Callback::new(move |_: leptos::ev::MouseEvent| {
         on_close.run(());
@@ -74,33 +87,12 @@ pub fn HistoryModal(
             <div class="space-y-4">
                 {move || if has_data() {
                     view! {
-                        <div class="space-y-2">
-                            {move || {
-                                recent_history()
-                                    .into_iter()
-                                    .map(|item| {
-                                        let date_str = format_date(item.timestamp());
-                                        let value = get_metric_value(&item, metric.get());
-                                        view! {
-                                            <div class="flex justify-between items-center py-2 border-b border-[var(--border-color)] last:border-b-0">
-                                                <Text
-                                                    size=TextSize::Default
-                                                    variant=TypographyVariant::Muted
-                                                >
-                                                    {date_str}
-                                                </Text>
-                                                <Text
-                                                    size=TextSize::Default
-                                                    variant=TypographyVariant::Primary
-                                                    class=Signal::derive(|| "font-semibold".to_string())
-                                                >
-                                                    {value}
-                                                </Text>
-                                            </div>
-                                        }
-                                    })
-                                    .collect::<Vec<_>>()
-                            }}
+                        <div class="flex justify-center">
+                            <LineChart
+                                data=chart_data
+                                width=380
+                                height=180
+                            />
                         </div>
                     }.into_any()
                 } else {

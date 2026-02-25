@@ -24,6 +24,7 @@ pub enum OrigaError {
     TokenizerError { reason: String },
     GrammarFormatError { reason: String },
     WellKnownSetParseError { reason: String },
+    SessionExpired,
 }
 
 impl fmt::Display for OrigaError {
@@ -89,6 +90,9 @@ impl fmt::Display for OrigaError {
             }
             OrigaError::WellKnownSetParseError { reason } => {
                 write!(f, "WellKnownSetError: {}", reason)
+            }
+            OrigaError::SessionExpired => {
+                write!(f, "Session expired, please login again")
             }
         }
     }

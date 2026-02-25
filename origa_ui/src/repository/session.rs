@@ -7,6 +7,7 @@ pub struct SupabaseSession {
     pub refresh_token: String,
     pub user_id: String,
     pub email: String,
+    pub expires_at: u64,
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug)]

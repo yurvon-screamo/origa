@@ -1,10 +1,10 @@
 use crate::repository::get_session;
-use crate::repository::{SupabaseClient, SupabaseUserRepository};
+use crate::repository::{clear_session, SupabaseClient, SupabaseUserRepository};
 use crate::routes::AppRoutes;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::application::{GetUserInfoUseCase, UserRepository};
-use origa::domain::User;
+use origa::domain::{OrigaError, User};
 use origa::infrastructure::LlmServiceInvoker;
 
 #[derive(Clone)]
@@ -28,10 +28,18 @@ impl AuthContext {
     }
 
     pub async fn init_session(&self) {
-        if let Some(session) = get_session()
-            && let Ok(Some(user)) = self.repository.find_by_email(&session.email).await
-        {
-            self.current_user.set(Some(user));
+        if let Some(session) = get_session() {
+            match self.repository.find_by_email(&session.email).await {
+                Ok(Some(user)) => {
+                    self.current_user.set(Some(user));
+                }
+                Ok(None) => {}
+                Err(OrigaError::SessionExpired) => {
+                    clear_session();
+                    self.current_user.set(None);
+                }
+                Err(_) => {}
+            }
         }
     }
 }
@@ -50,10 +58,20 @@ pub fn update_current_user(
         if let Some(user) = current_user.get_untracked() {
             let user_id = user.id();
             let use_case = GetUserInfoUseCase::new(&repository);
-            if use_case.execute(user_id).await.is_ok()
-                && let Ok(updated_user) = repository.find_by_email(user.email()).await
-            {
-                current_user.set(updated_user);
+            match use_case.execute(user_id).await {
+                Ok(_) => {
+                    if let Ok(updated_user) = repository.find_by_email(user.email()).await {
+                        match updated_user {
+                            Some(u) => current_user.set(Some(u)),
+                            None => {}
+                        }
+                    }
+                }
+                Err(OrigaError::SessionExpired) => {
+                    clear_session();
+                    current_user.set(None);
+                }
+                Err(_) => {}
             }
         }
     });

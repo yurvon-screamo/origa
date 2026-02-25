@@ -1,5 +1,8 @@
 use leptos::prelude::*;
 
+#[cfg(target_arch = "wasm32")]
+use leptos::wasm_bindgen::*;
+
 #[derive(Clone, Copy, PartialEq, Default)]
 pub enum KanjiViewMode {
     #[default]

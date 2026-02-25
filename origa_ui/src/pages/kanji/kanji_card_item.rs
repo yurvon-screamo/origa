@@ -141,7 +141,7 @@ pub fn KanjiCardItem(study_card: StudyCard) -> impl IntoView {
                     </Text>
                 </div>
             </div>
-            <KanjiWritingSection kanji=kanji_for_animation.get_value() show_frames=true />
+            <KanjiWritingSection kanji=kanji_for_animation.get_value() show_frames=false />
         </Card>
     }
 }
