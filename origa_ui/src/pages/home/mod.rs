@@ -22,9 +22,11 @@ pub fn Home() -> impl IntoView {
     view! {
         <PageLayout variant=PageLayoutVariant::Full>
             <div class="min-h-screen flex flex-col pb-16">
+                // TODO: hide for mobile
                 <HomeHeader current_user />
                 <HomeContent />
-                <TabBar />
+                // TODO: return for mobile
+                // <TabBar />
             </div>
         </PageLayout>
     }

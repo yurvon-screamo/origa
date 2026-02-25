@@ -26,3 +26,13 @@ pub static GRAMMAR_RULES: LazyLock<Vec<GrammarRule>> = LazyLock::new(
 pub fn get_rule_by_id(rule_id: &Ulid) -> Option<&'static GrammarRule> {
     GRAMMAR_RULES.iter().find(|x| x.rule_id() == rule_id)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn grammar_rules_should_be_loaded() {
+        assert!(!GRAMMAR_RULES.is_empty());
+    }
+}

@@ -12,22 +12,13 @@ pub fn HomeHeader(current_user: RwSignal<Option<User>>) -> impl IntoView {
                     <div class="flex items-center space-x-4">
                         {move || {
                             current_user.get().map(|user| {
-                                let initials = user.username()
-                                    .split_whitespace()
-                                    .filter_map(|word| word.chars().next())
-                                    .take(2)
-                                    .collect::<String>()
-                                    .to_uppercase();
-                                let greeting = format!("Привет, {}!", user.username());
+                                let initials = user.username().to_uppercase();
                                 let initials_clone = initials.clone();
                                 view! {
-                                    <Avatar initials=Signal::derive(move || initials_clone.clone()) />
                                     <DisplayText class="font-serif text-2xl font-light tracking-tight">
                                         "オリガ"
                                     </DisplayText>
-                                    <span class="font-mono text-sm text-[var(--fg-muted)]">
-                                        {greeting}
-                                    </span>
+                                    <Avatar initials=Signal::derive(move || initials_clone.clone()) />
                                 }
                             })
                         }}

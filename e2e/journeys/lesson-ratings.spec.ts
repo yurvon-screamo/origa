@@ -23,7 +23,7 @@ test.describe("UJ3: Прохождение урока с разными оцен
 
 	test("пользователь оценивает карточки разными оценками", async ({ page }) => {
 		await test.step("Подготовка: добавление кандзи для урока", async () => {
-			await kanjiPage.goto();
+			await homePage.navigateToKanji();
 			await kanjiPage.expectVisible();
 
 			await kanjiPage.clickAddButton();
@@ -65,7 +65,8 @@ test.describe("UJ3: Прохождение урока с разными оцен
 		});
 
 		await test.step("Прохождение урока с разными оценками", async () => {
-			await lessonPage.goto();
+			await homePage.goto();
+			await homePage.startLesson();
 			await page.waitForTimeout(2000);
 
 			const ratings = ["easy", "again", "hard", "good"] as const;

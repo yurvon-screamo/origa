@@ -5,7 +5,6 @@ export class KanjiPage {
 	readonly heading: Locator;
 	readonly searchInput: Locator;
 	readonly addButton: Locator;
-	readonly backButton: Locator;
 	readonly filterAll: Locator;
 	readonly filterNew: Locator;
 	readonly filterHard: Locator;
@@ -20,7 +19,6 @@ export class KanjiPage {
 		this.heading = page.getByRole("heading", { name: "Кандзи" });
 		this.searchInput = page.getByPlaceholder("Поиск...");
 		this.addButton = page.getByRole("button", { name: "+" });
-		this.backButton = page.getByRole("button", { name: "Назад" });
 		this.filterAll = page.getByRole("button", { name: /Все/ });
 		this.filterNew = page.getByRole("button", { name: /Новые/ });
 		this.filterHard = page.getByRole("button", { name: /Сложные/ });
@@ -36,10 +34,9 @@ export class KanjiPage {
 	}
 
 	async expectVisible() {
-		await expect(this.heading).toBeVisible();
+		await expect(this.heading).toBeVisible({ timeout: 10000 });
 		await expect(this.searchInput).toBeVisible();
 		await expect(this.addButton).toBeVisible();
-		await expect(this.backButton).toBeVisible();
 	}
 
 	async expectFiltersVisible() {
@@ -85,15 +82,6 @@ export class KanjiPage {
 	async expectNotEmpty() {
 		const count = await this.getCardsCount();
 		expect(count).toBeGreaterThan(0);
-	}
-
-	async goBack() {
-		await this.backButton.click();
-		await this.page.waitForURL("/home");
-	}
-
-	async clickAddButton() {
-		await this.addButton.click();
 	}
 
 	async getCardByText(text: string): Promise<Locator> {

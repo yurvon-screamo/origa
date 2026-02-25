@@ -1,15 +1,17 @@
 import { expect, test } from "@playwright/test";
-import { GrammarPage, KanjiPage, LoginPage, WordsPage } from "../pages";
+import { GrammarPage, HomePage, KanjiPage, LoginPage, WordsPage } from "../pages";
 import { CONFIRMED_TEST_EMAIL, CONFIRMED_TEST_PASSWORD } from "../fixtures/test-helpers";
 
 test.describe("UJ2: Добавление разных типов контента", () => {
 	let loginPage: LoginPage;
+	let homePage: HomePage;
 	let kanjiPage: KanjiPage;
 	let wordsPage: WordsPage;
 	let grammarPage: GrammarPage;
 
 	test.beforeEach(async ({ page }) => {
 		loginPage = new LoginPage(page);
+		homePage = new HomePage(page);
 		kanjiPage = new KanjiPage(page);
 		wordsPage = new WordsPage(page);
 		grammarPage = new GrammarPage(page);
@@ -21,7 +23,7 @@ test.describe("UJ2: Добавление разных типов контент�
 
 	test("пользователь может добавить кандзи, слова и грамматику", async ({ page }) => {
 		await test.step("Добавление кандзи уровня N5", async () => {
-			await kanjiPage.goto();
+			await homePage.navigateToKanji();
 			await kanjiPage.expectVisible();
 
 			await kanjiPage.clickAddButton();
@@ -57,13 +59,13 @@ test.describe("UJ2: Добавление разных типов контент�
 		});
 
 		await test.step("Проверка страницы слов", async () => {
-			await wordsPage.goto();
+			await homePage.navigateToWords();
 			await wordsPage.expectVisible();
 			await wordsPage.expectFiltersVisible();
 		});
 
 		await test.step("Проверка страницы грамматики", async () => {
-			await grammarPage.goto();
+			await homePage.navigateToGrammar();
 			await grammarPage.expectVisible();
 
 			await grammarPage.clickAddButton();
@@ -86,15 +88,15 @@ test.describe("UJ2: Добавление разных типов контент�
 		});
 
 		await test.step("Проверка фильтров на каждой странице", async () => {
-			await kanjiPage.goto();
+			await homePage.navigateToKanji();
 			await kanjiPage.expectFiltersVisible();
 			const allCount = await kanjiPage.getFilterCount("all");
 			expect(allCount).toBeGreaterThanOrEqual(0);
 
-			await wordsPage.goto();
+			await homePage.navigateToWords();
 			await wordsPage.expectFiltersVisible();
 
-			await grammarPage.goto();
+			await homePage.navigateToGrammar();
 			await grammarPage.expectFiltersVisible();
 		});
 	});

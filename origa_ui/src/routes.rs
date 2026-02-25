@@ -1,4 +1,4 @@
-use crate::pages::{Grammar, Home, Kanji, Lesson, Login, Profile, Words};
+use crate::pages::{Grammar, Home, Kanji, Lesson, Login, Profile, Sets, Words};
 use leptos::prelude::*;
 use leptos_router::components::*;
 use leptos_router::path;
@@ -16,6 +16,7 @@ pub fn AppRoutes() -> impl IntoView {
                 <Route path=path!("grammar") view=Grammar />
                 <Route path=path!("kanji") view=Kanji />
                 <Route path=path!("lesson") view=Lesson />
+                <Route path=path!("sets") view=Sets />
             </Routes>
         </main>
     }

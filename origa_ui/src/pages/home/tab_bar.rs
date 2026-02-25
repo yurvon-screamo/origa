@@ -10,6 +10,7 @@ pub fn TabBar() -> impl IntoView {
     let is_home_active = move || location.pathname.get() == "/home";
     let is_words_active = move || location.pathname.get() == "/words";
     let is_kanji_active = move || location.pathname.get() == "/kanji";
+    let is_sets_active = move || location.pathname.get() == "/sets";
     let is_grammar_active = move || location.pathname.get() == "/grammar";
 
     let navigate_home = {
@@ -30,6 +31,13 @@ pub fn TabBar() -> impl IntoView {
         let navigate = navigate.clone();
         Callback::new(move |_: ()| {
             navigate("/kanji", Default::default());
+        })
+    };
+
+    let navigate_sets = {
+        let navigate = navigate.clone();
+        Callback::new(move |_: ()| {
+            navigate("/sets", Default::default());
         })
     };
 
@@ -62,6 +70,13 @@ pub fn TabBar() -> impl IntoView {
                     label=Signal::stored("Кандзи".to_string())
                     state=Signal::derive(move || if is_kanji_active() { TabButtonState::Active } else { TabButtonState::Inactive })
                     on_click=navigate_kanji
+                />
+
+                <TabButton
+                    icon=Signal::stored('\u{1F4DA}'.to_string())
+                    label=Signal::stored("Наборы".to_string())
+                    state=Signal::derive(move || if is_sets_active() { TabButtonState::Active } else { TabButtonState::Inactive })
+                    on_click=navigate_sets
                 />
 
                 <TabButton

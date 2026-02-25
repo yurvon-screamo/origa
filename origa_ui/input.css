@@ -1057,3 +1057,139 @@ body {
 .furigana-plain {
 	font-family: "Cormorant Garamond", serif;
 }
+
+.kanji-animation-container {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 8px;
+}
+
+.kanji-animation-svg {
+	width: 109px;
+	height: 109px;
+}
+
+.kanji-animation-svg path:not(.bg) {
+	stroke-dasharray: 1000;
+	stroke-dashoffset: 1000;
+	animation: kanji-draw 2s ease forwards;
+}
+
+.kanji-animation-svg path.bg {
+	stroke: var(--fg-light);
+	stroke-width: 0.5;
+}
+
+@keyframes kanji-draw {
+	to {
+		stroke-dashoffset: 0;
+	}
+}
+
+.kanji-frames-svg {
+	max-width: 100%;
+	height: auto;
+}
+
+.kanji-frames-svg path.active {
+	stroke: var(--fg-black);
+}
+
+.kanji-frames-svg path.not.active {
+	stroke: var(--fg-light);
+}
+
+.kanji-writing-section {
+	border-top: 1px solid var(--border-light);
+	padding-top: 16px;
+	margin-top: 16px;
+}
+
+.kanji-writing-title {
+	font-family: "DM Mono", monospace;
+	font-size: 10px;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--fg-muted);
+	margin-bottom: 12px;
+}
+
+.kanji-writing-grid {
+	display: flex;
+	gap: 16px;
+	flex-wrap: wrap;
+	justify-content: center;
+}
+
+.sets-page {
+	padding: 24px 0;
+}
+
+.sets-group {
+	margin-bottom: 32px;
+}
+
+.sets-group-title {
+	font-family: "Cormorant Garamond", serif;
+	font-size: 18px;
+	font-weight: 500;
+	margin-bottom: 16px;
+	padding-bottom: 8px;
+	border-bottom: 1px solid var(--border-light);
+}
+
+.sets-list {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+	gap: 12px;
+}
+
+.set-card {
+	border: 1px solid var(--border-dark);
+	padding: 16px;
+	background: var(--bg-paper);
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	transition: all 0.2s ease;
+}
+
+.set-card:hover {
+	background: var(--bg-aged);
+}
+
+.set-card-title {
+	font-family: "DM Mono", monospace;
+	font-size: 12px;
+	letter-spacing: 0.05em;
+}
+
+.set-card-description {
+	font-family: "DM Mono", monospace;
+	font-size: 10px;
+	color: var(--fg-muted);
+}
+
+.set-card-footer {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-top: 8px;
+}
+
+.set-card-count {
+	font-family: "DM Mono", monospace;
+	font-size: 10px;
+	color: var(--fg-muted);
+}
+
+.set-imported {
+	font-family: "DM Mono", monospace;
+	font-size: 9px;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--accent-olive);
+	padding: 4px 8px;
+	border: 1px solid var(--accent-olive);
+}
