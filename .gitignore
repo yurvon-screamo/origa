@@ -1,7 +1,6 @@
 # Rust
 **/target
 **/dist
-Cargo.lock
 target
 .fastembed_cache
 data
