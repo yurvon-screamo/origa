@@ -1,10 +1,6 @@
 [build]
 target = "./index.html"
-release = true
 
 [serve]
 port = 1420
 open = false
-
-[tools]
-wasm_opt = "version_125"
