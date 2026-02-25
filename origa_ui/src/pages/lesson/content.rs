@@ -20,7 +20,7 @@ pub fn LessonContent() -> impl IntoView {
         use_context::<SupabaseUserRepository>().expect("repository context not provided");
 
     let query = use_query_map();
-    let mode = match query.read().get("mode").as_deref() {
+    let mode = match query.read_untracked().get("mode").as_deref() {
         Some("fixation") => LessonMode::Fixation,
         _ => LessonMode::Lesson,
     };

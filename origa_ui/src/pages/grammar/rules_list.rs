@@ -20,7 +20,7 @@ pub fn RulesList(
     }
 
     view! {
-        <div class="space-y-2">
+        <div class="space-y-2 max-h-64 overflow-y-auto">
             <For
                 each=move || rules.clone()
                 key=|rule| rule.rule_id

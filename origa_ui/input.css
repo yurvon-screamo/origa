@@ -229,6 +229,7 @@ body {
 	align-items: center;
 	gap: 12px;
 	cursor: pointer;
+	-webkit-user-select: none;
 	user-select: none;
 }
 
@@ -245,7 +246,7 @@ body {
 	transition: all 0.2s ease;
 }
 
-.checkbox-container input:checked + .checkbox-box::after {
+.checkbox-container input:checked+.checkbox-box::after {
 	content: "";
 	position: absolute;
 	inset: 4px;
@@ -261,6 +262,7 @@ body {
 	align-items: center;
 	gap: 12px;
 	cursor: pointer;
+	-webkit-user-select: none;
 	user-select: none;
 }
 
@@ -278,7 +280,7 @@ body {
 	transition: all 0.2s ease;
 }
 
-.radio-container input:checked + .radio-box::after {
+.radio-container input:checked+.radio-box::after {
 	content: "";
 	position: absolute;
 	inset: 4px;
@@ -295,6 +297,7 @@ body {
 	align-items: center;
 	gap: 12px;
 	cursor: pointer;
+	-webkit-user-select: none;
 	user-select: none;
 }
 
@@ -322,11 +325,11 @@ body {
 	transition: all 0.3s ease;
 }
 
-.toggle-container input:checked + .toggle-track {
+.toggle-container input:checked+.toggle-track {
 	background: var(--fg-black);
 }
 
-.toggle-container input:checked + .toggle-track::after {
+.toggle-container input:checked+.toggle-track::after {
 	left: 23px;
 	background: var(--bg-paper);
 }
@@ -673,7 +676,7 @@ body {
 	opacity: 0.3;
 }
 
-.stepper-step.completed + .stepper-line {
+.stepper-step.completed+.stepper-line {
 	opacity: 1;
 }
 
@@ -868,7 +871,7 @@ body {
 }
 
 .avatar {
-	width: 48px;
+	min-width: 48px;
 	height: 48px;
 	border: 1px solid var(--border-dark);
 	display: flex;
@@ -878,18 +881,21 @@ body {
 	font-size: 12px;
 	letter-spacing: 0.05em;
 	background: var(--bg-paper);
+	padding: 0 12px;
 }
 
 .avatar-sm {
-	width: 32px;
+	min-width: 32px;
 	height: 32px;
 	font-size: 10px;
+	padding: 0 8px;
 }
 
 .avatar-lg {
-	width: 64px;
+	min-width: 64px;
 	height: 64px;
 	font-size: 14px;
+	padding: 0 16px;
 }
 
 .avatar-group {
@@ -992,12 +998,10 @@ body {
 }
 
 .skeleton {
-	background: linear-gradient(
-		90deg,
-		var(--bg-aged) 25%,
-		var(--bg-warm) 50%,
-		var(--bg-aged) 75%
-	);
+	background: linear-gradient(90deg,
+			var(--bg-aged) 25%,
+			var(--bg-warm) 50%,
+			var(--bg-aged) 75%);
 	background-size: 200% 100%;
 	animation: skeleton-loading 1.5s infinite;
 }

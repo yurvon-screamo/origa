@@ -1,12 +1,13 @@
 use leptos::prelude::*;
 
 #[component]
-pub fn LessonProgress(current: usize, total: usize) -> impl IntoView {
+pub fn LessonProgress(current: Signal<usize>, total: Signal<usize>) -> impl IntoView {
     let percentage = move || {
-        if total == 0 {
+        let t = total.get();
+        if t == 0 {
             0.0
         } else {
-            (current as f64 / total as f64 * 100.0).min(100.0)
+            (current.get() as f64 / t as f64 * 100.0).min(100.0)
         }
     };
 
@@ -17,7 +18,7 @@ pub fn LessonProgress(current: usize, total: usize) -> impl IntoView {
                     "Прогресс"
                 </span>
                 <span class="font-mono text-[10px]">
-                    {move || format!("{}/{}", current, total)}
+                    {move || format!("{}/{}", current.get(), total.get())}
                 </span>
             </div>
             <div class="progress-track">
