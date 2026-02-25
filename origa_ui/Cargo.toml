@@ -7,8 +7,6 @@ license-file.workspace = true
 repository.workspace = true
 readme.workspace = true
 
-[lib]
-crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 leptos.workspace = true
