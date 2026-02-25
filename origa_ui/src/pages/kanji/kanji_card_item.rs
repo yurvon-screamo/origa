@@ -1,5 +1,6 @@
 use crate::ui_components::{
-    Card, FuriganaText, Heading, HeadingLevel, Tag, TagVariant, Text, TextSize, TypographyVariant,
+    Card, FuriganaText, Heading, HeadingLevel, KanjiWritingSection, Tag, TagVariant, Text,
+    TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
 use origa::domain::{Card as DomainCard, StudyCard};
@@ -50,6 +51,7 @@ impl CardStatus {
 pub fn KanjiCardItem(study_card: StudyCard) -> impl IntoView {
     let card = study_card.card();
     let memory = study_card.memory();
+    let expanded = RwSignal::new(false);
 
     let (kanji_char, description, radicals, example_words) = match card {
         DomainCard::Kanji(kanji_card) => {
@@ -94,12 +96,17 @@ pub fn KanjiCardItem(study_card: StudyCard) -> impl IntoView {
         .map(|d| d.format("%d.%m.%Y").to_string())
         .unwrap_or("-".to_string());
 
+    let kanji_for_animation = StoredValue::new(kanji_char.clone());
+
     view! {
-        <Card class=Signal::derive(|| "p-4".to_string())>
-            <div class="flex justify-between items-start">
+        <Card class=Signal::derive(|| "p-4 cursor-pointer".to_string())>
+            <div
+                class="flex justify-between items-start"
+                on:click=move |_| expanded.update(|e| *e = !*e)
+            >
                 <div class="flex-1">
                     <div class="flex items-center gap-3 mb-2">
-                        <span class="text-3xl font-serif">{kanji_char}</span>
+                        <span class="text-3xl font-serif">{kanji_char.clone()}</span>
                         <Heading level=HeadingLevel::H4 class=Signal::derive(|| "flex-1".to_string())>
                             <FuriganaText text=description.clone()/>
                         </Heading>
@@ -137,7 +144,13 @@ pub fn KanjiCardItem(study_card: StudyCard) -> impl IntoView {
                         {format!("Повтор: {} | Слож: {} | Стаб: {}", next_review, difficulty, stability)}
                     </Text>
                 </div>
+                <div class="ml-2 text-xs text-[var(--fg-muted)]">
+                    {move || if expanded.get() { "▲" } else { "▼" }}
+                </div>
             </div>
+            <Show when=move || expanded.get()>
+                <KanjiWritingSection kanji=kanji_for_animation.get_value() show_frames=true />
+            </Show>
         </Card>
     }
 }

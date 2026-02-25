@@ -1,6 +1,6 @@
 use crate::ui_components::{
-    Button, ButtonVariant, Card, FuriganaText, Heading, HeadingLevel, Tag, TagVariant, Text,
-    TextSize, TypographyVariant,
+    Button, ButtonVariant, Card, FuriganaText, Heading, HeadingLevel, KanjiWritingSection, Tag,
+    TagVariant, Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
 use origa::domain::Card as DomainCard;
@@ -62,6 +62,11 @@ pub fn LessonCard(
     };
     let radicals = StoredValue::new(radicals);
 
+    let kanji_for_animation = StoredValue::new(match &card {
+        DomainCard::Kanji(_) => Some(card.question().text().to_string()),
+        _ => None,
+    });
+
     view! {
         <Card class=Signal::derive(|| "p-6 min-h-[300px] flex flex-col".to_string()) shadow=Signal::derive(|| true)>
             <div class="flex items-center gap-2 mb-4">
@@ -82,6 +87,18 @@ pub fn LessonCard(
                             </Show>
                         </Heading>
 
+                        <Show when=move || kanji_for_animation.get_value().is_some()>
+                            {move || {
+                                if let Some(kanji) = kanji_for_animation.get_value() {
+                                    Some(view! {
+                                        <KanjiWritingSection kanji=kanji show_frames=false />
+                                    })
+                                } else {
+                                    None
+                                }
+                            }}
+                        </Show>
+
                         <Button
                             variant=Signal::derive(|| ButtonVariant::Filled)
                             on_click=Callback::new(move |_| on_show_answer.run(()))
@@ -101,6 +118,18 @@ pub fn LessonCard(
                                 <FuriganaText text=question.get_value()/>
                             </Show>
                         </Heading>
+
+                        <Show when=move || kanji_for_animation.get_value().is_some()>
+                            {move || {
+                                if let Some(kanji) = kanji_for_animation.get_value() {
+                                    Some(view! {
+                                        <KanjiWritingSection kanji=kanji show_frames=true />
+                                    })
+                                } else {
+                                    None
+                                }
+                            }}
+                        </Show>
 
                         <Show when=move || radicals.get_value().is_some()>
                             <div class="mb-4">
