@@ -51,7 +51,6 @@ impl CardStatus {
 pub fn KanjiCardItem(study_card: StudyCard) -> impl IntoView {
     let card = study_card.card();
     let memory = study_card.memory();
-    let expanded = RwSignal::new(false);
 
     let (kanji_char, description, radicals, example_words) = match card {
         DomainCard::Kanji(kanji_card) => {
@@ -99,11 +98,8 @@ pub fn KanjiCardItem(study_card: StudyCard) -> impl IntoView {
     let kanji_for_animation = StoredValue::new(kanji_char.clone());
 
     view! {
-        <Card class=Signal::derive(|| "p-4 cursor-pointer".to_string())>
-            <div
-                class="flex justify-between items-start"
-                on:click=move |_| expanded.update(|e| *e = !*e)
-            >
+        <Card class=Signal::derive(|| "p-4".to_string())>
+            <div class="flex justify-between items-start">
                 <div class="flex-1">
                     <div class="flex items-center gap-3 mb-2">
                         <span class="text-3xl font-serif">{kanji_char.clone()}</span>
@@ -144,13 +140,8 @@ pub fn KanjiCardItem(study_card: StudyCard) -> impl IntoView {
                         {format!("Повтор: {} | Слож: {} | Стаб: {}", next_review, difficulty, stability)}
                     </Text>
                 </div>
-                <div class="ml-2 text-xs text-[var(--fg-muted)]">
-                    {move || if expanded.get() { "▲" } else { "▼" }}
-                </div>
             </div>
-            <Show when=move || expanded.get()>
-                <KanjiWritingSection kanji=kanji_for_animation.get_value() show_frames=true />
-            </Show>
+            <KanjiWritingSection kanji=kanji_for_animation.get_value() show_frames=true />
         </Card>
     }
 }
