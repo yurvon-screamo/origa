@@ -1,5 +1,5 @@
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::Arc;
+use std::sync::OnceLock;
 use ulid::Ulid;
 
 use origa::{
@@ -9,10 +9,23 @@ use origa::{
 
 use super::{FileSystemUserRepository, SupabaseUserRepository};
 
+static SYNCED: OnceLock<AtomicBool> = OnceLock::new();
+
+fn is_synced() -> bool {
+    SYNCED
+        .get_or_init(|| AtomicBool::new(false))
+        .load(Ordering::Relaxed)
+}
+
+fn set_synced(value: bool) {
+    SYNCED
+        .get_or_init(|| AtomicBool::new(false))
+        .store(value, Ordering::Relaxed);
+}
+
 pub struct HybridUserRepository {
     local: FileSystemUserRepository,
     remote: SupabaseUserRepository,
-    synced: Arc<AtomicBool>,
 }
 
 impl HybridUserRepository {
@@ -21,7 +34,6 @@ impl HybridUserRepository {
         Ok(Self {
             local,
             remote: SupabaseUserRepository::new(),
-            synced: Arc::new(AtomicBool::new(false)),
         })
     }
 }
@@ -75,7 +87,7 @@ impl UserRepository for HybridUserRepository {
 
 impl HybridUserRepository {
     async fn sync_if_needed(&self) {
-        if self.synced.load(Ordering::Relaxed) {
+        if is_synced() {
             return;
         }
 
@@ -89,7 +101,7 @@ impl HybridUserRepository {
             } else {
                 let _ = self.local.save(&remote_user).await;
             }
-            self.synced.store(true, Ordering::Relaxed);
+            set_synced(true);
         }
     }
 }
