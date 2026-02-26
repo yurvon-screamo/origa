@@ -1093,6 +1093,13 @@ body {
 
 .kanji-frames-svg {
 	max-width: 100%;
+	width: 100%;
+	height: auto;
+}
+
+.kanji-frames-svg svg {
+	max-width: 100%;
+	width: 100%;
 	height: auto;
 }
 
@@ -1124,6 +1131,8 @@ body {
 	gap: 32px;
 	flex-wrap: wrap;
 	justify-content: center;
+	max-width: 100%;
+	overflow: hidden;
 }
 
 .sets-page {

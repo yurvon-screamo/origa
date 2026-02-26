@@ -6,7 +6,7 @@ pub fn EmailInput(value: RwSignal<String>, on_enter: Callback<()>) -> impl IntoV
     view! {
         <div>
             <Text size=TextSize::Small variant=TypographyVariant::Muted uppercase=true tracking_widest=true class="block mb-2">
-                "Email"
+                "Почта"
             </Text>
             <Input
                 value=value

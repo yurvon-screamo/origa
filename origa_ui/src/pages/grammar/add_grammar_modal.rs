@@ -5,7 +5,7 @@ use super::error_alert::ErrorAlert;
 use super::level_selector::LevelSelector;
 use super::rules_list::RulesList;
 use super::selected_count::SelectedCount;
-use crate::ui_components::{Modal, Text, TextSize, TypographyVariant};
+use crate::ui_components::{Modal, Search, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 use origa::domain::JapaneseLevel;
 
@@ -43,6 +43,11 @@ pub fn AddGrammarModal(is_open: RwSignal<bool>) -> impl IntoView {
                     on_select={let state = state.clone(); Callback::new(move |level| state.select_level(level))}
                 />
 
+                <Search
+                    value=state.search_query
+                    placeholder=Signal::derive(|| "Поиск правила...".to_string())
+                />
+
                 <div>
                     <Text size=TextSize::Small variant=TypographyVariant::Muted class=Signal::derive(|| "mb-2".to_string())>
                         "Доступные правила"
@@ -62,6 +67,7 @@ pub fn AddGrammarModal(is_open: RwSignal<bool>) -> impl IntoView {
                                 <RulesList
                                     rules=rules
                                     selected_ids=state.selected_rule_ids
+                                    search_query=state.search_query
                                 />
                             }.into_any()
                         }

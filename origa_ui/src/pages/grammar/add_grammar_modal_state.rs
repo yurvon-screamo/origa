@@ -2,7 +2,7 @@ use crate::repository::SupabaseUserRepository;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::application::{GrammarRuleInfoUseCase, GrammarRuleItem};
-use origa::domain::{JapaneseLevel, User};
+use origa::domain::{Card, JapaneseLevel, User};
 use std::collections::HashSet;
 use ulid::Ulid;
 
@@ -16,6 +16,7 @@ pub struct ModalState {
     pub error_message: RwSignal<Option<String>>,
     pub current_user: RwSignal<Option<User>>,
     pub repository: SupabaseUserRepository,
+    pub search_query: RwSignal<String>,
 }
 
 impl ModalState {
@@ -45,6 +46,7 @@ impl ModalState {
             error_message: RwSignal::new(None),
             current_user,
             repository,
+            search_query: RwSignal::new(String::new()),
         }
     }
 
@@ -53,6 +55,22 @@ impl ModalState {
             .current_user
             .with(|u| u.as_ref().map(|u| u.id()))
             .unwrap();
+        let existing_rule_ids: HashSet<Ulid> = self
+            .current_user
+            .with(|u| {
+                u.as_ref()
+                    .map(|u| {
+                        u.knowledge_set()
+                            .study_cards()
+                            .values()
+                            .filter_map(|sc| match sc.card() {
+                                Card::Grammar(g) => Some(*g.rule_id()),
+                                _ => None,
+                            })
+                            .collect()
+                    })
+                    .unwrap_or_default()
+            });
         let level = self.selected_level.get();
         let repository = self.repository.clone();
         let available_rules = self.available_rules;
@@ -64,7 +82,7 @@ impl ModalState {
 
         spawn_local(async move {
             let use_case = GrammarRuleInfoUseCase::new(&repository);
-            match use_case.execute(user_id, &level).await {
+            match use_case.execute(user_id, &level, &existing_rule_ids).await {
                 Ok(rules) => {
                     available_rules.set(rules);
                     is_loading.set(false);
