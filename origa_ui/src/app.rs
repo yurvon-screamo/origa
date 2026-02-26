@@ -1,5 +1,5 @@
 use crate::repository::get_session;
-use crate::repository::{clear_session, SupabaseClient, SupabaseUserRepository};
+use crate::repository::{SupabaseClient, SupabaseUserRepository, clear_session};
 use crate::routes::AppRoutes;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
@@ -61,9 +61,8 @@ pub fn update_current_user(
             match use_case.execute(user_id).await {
                 Ok(_) => {
                     if let Ok(updated_user) = repository.find_by_email(user.email()).await {
-                        match updated_user {
-                            Some(u) => current_user.set(Some(u)),
-                            None => {}
+                        if let Some(u) = updated_user {
+                            current_user.set(Some(u))
                         }
                     }
                 }

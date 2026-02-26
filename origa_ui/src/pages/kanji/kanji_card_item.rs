@@ -1,5 +1,6 @@
 use crate::ui_components::{
-    Card, KanjiWritingSection, MarkdownText, Tag, TagVariant, Text, TextSize, TypographyVariant,
+    Card, KanjiViewMode, KanjiWritingSection, MarkdownText, Tag, TagVariant, Text, TextSize,
+    TypographyVariant,
 };
 use leptos::prelude::*;
 use origa::domain::{Card as DomainCard, StudyCard};
@@ -141,7 +142,7 @@ pub fn KanjiCardItem(study_card: StudyCard) -> impl IntoView {
                     </Text>
                 </div>
             </div>
-            <KanjiWritingSection kanji=kanji_for_animation.get_value() show_frames=false />
+            <KanjiWritingSection kanji=kanji_for_animation.get_value() mode=KanjiViewMode::Frames />
         </Card>
     }
 }

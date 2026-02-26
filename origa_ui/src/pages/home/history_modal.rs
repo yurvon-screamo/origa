@@ -1,6 +1,4 @@
-use crate::ui_components::{
-    Button, ButtonVariant, LineChart, Modal, Text, TextSize, TypographyVariant,
-};
+use crate::ui_components::{LineChart, Modal, Text, TextSize, TypographyVariant};
 use chrono::TimeZone;
 use leptos::prelude::*;
 use origa::domain::DailyHistoryItem;
@@ -56,7 +54,7 @@ pub fn HistoryModal(
 
     let recent_history = move || {
         let mut items: Vec<_> = history.get();
-        items.sort_by(|a, b| a.timestamp().cmp(&b.timestamp()));
+        items.sort_by_key(|a| a.timestamp());
         items.into_iter().take(7).collect::<Vec<_>>()
     };
 
@@ -73,7 +71,7 @@ pub fn HistoryModal(
             .collect::<Vec<_>>()
     });
 
-    let on_close_click = Callback::new(move |_: leptos::ev::MouseEvent| {
+    let _on_close_click = Callback::new(move |_: leptos::ev::MouseEvent| {
         on_close.run(());
     });
 
