@@ -3,8 +3,8 @@ use serde::{Deserialize, Serialize};
 use ulid::Ulid;
 
 use crate::domain::{
-    score_content::{score_content, ScoreContentResult},
     Card, JapaneseLevel, KnowledgeSet, MemoryState, NativeLanguage, OrigaError, Rating, StudyCard,
+    score_content::{ScoreContentResult, score_content},
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -18,6 +18,8 @@ pub struct User {
     telegram_user_id: Option<u64>,
     knowledge_set: KnowledgeSet,
     reminders_enabled: bool,
+
+    #[serde(default)]
     updated_at: DateTime<Utc>,
 }
 
