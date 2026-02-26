@@ -24,6 +24,7 @@ pub fn Button(
     #[prop(optional, into)] size: Signal<ButtonSize>,
     #[prop(optional, into)] class: Signal<String>,
     #[prop(optional, into)] disabled: Signal<bool>,
+    #[prop(optional, into)] loading: Signal<bool>,
     #[prop(optional)] on_click: Option<Callback<MouseEvent>>,
     children: Children,
 ) -> impl IntoView {
@@ -41,16 +42,22 @@ pub fn Button(
                     ButtonSize::Small => "btn-sm",
                     ButtonSize::Large => "btn-lg",
                 };
-                format!("btn {} {} {}", v, s, class.get())
+                let loading_class = if loading.get() { "btn-loading" } else { "" };
+                format!("btn {} {} {} {}", v, s, class.get(), loading_class)
             }
-            disabled=move || disabled.get()
+            disabled=move || disabled.get() || loading.get()
             on:click=move |ev| {
                 if let Some(on_click) = on_click {
                     on_click.run(ev);
                 }
             }
         >
-            {children()}
+            <Show when=move || loading.get()>
+                <span class="btn-spinner"></span>
+            </Show>
+            <span class=move || if loading.get() { "btn-text btn-text-hidden" } else { "btn-text" }>
+                {children()}
+            </span>
         </button>
     }
 }

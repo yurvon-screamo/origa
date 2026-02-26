@@ -1,6 +1,7 @@
 use crate::repository::get_session;
 use crate::repository::{SupabaseClient, SupabaseUserRepository, clear_session};
 use crate::routes::AppRoutes;
+use crate::ui_components::LoadingOverlay;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::application::{GetUserInfoUseCase, UserRepository};
@@ -12,6 +13,7 @@ pub struct AuthContext {
     pub client: SupabaseClient,
     pub repository: SupabaseUserRepository,
     pub current_user: RwSignal<Option<User>>,
+    pub is_session_loading: RwSignal<bool>,
 }
 
 impl AuthContext {
@@ -19,11 +21,13 @@ impl AuthContext {
         let client = SupabaseClient::new();
         let repository = SupabaseUserRepository::new();
         let current_user = RwSignal::new(None);
+        let is_session_loading = RwSignal::new(true);
 
         Self {
             client,
             repository,
             current_user,
+            is_session_loading,
         }
     }
 
@@ -41,6 +45,7 @@ impl AuthContext {
                 Err(_) => {}
             }
         }
+        self.is_session_loading.set(false);
     }
 }
 
@@ -91,6 +96,9 @@ pub fn App() -> impl IntoView {
     });
 
     view! {
+        <Show when=move || auth_context.is_session_loading.get()>
+            <LoadingOverlay />
+        </Show>
         <AppRoutes />
     }
 }

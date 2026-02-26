@@ -1,6 +1,6 @@
 use super::{HistoryModal, StatCard, StatMetric};
 use crate::repository::SupabaseUserRepository;
-use crate::ui_components::{Button, ButtonVariant, Card, Text, TextSize, TypographyVariant};
+use crate::ui_components::{Button, ButtonVariant, Card, Skeleton, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos_router::components::A;
@@ -59,6 +59,7 @@ pub fn HomeContent() -> impl IntoView {
     let history = RwSignal::new(Vec::<DailyHistoryItem>::new());
     let history_open = RwSignal::new(false);
     let selected_metric = RwSignal::new(StatMetric::TotalCards);
+    let is_loading = RwSignal::new(true);
 
     Effect::new(move |_| {
         let user = current_user.get();
@@ -71,9 +72,11 @@ pub fn HomeContent() -> impl IntoView {
                     Ok(profile) => {
                         history.set(profile.lesson_history.clone());
                         stats.set(Some(calculate_stats(&profile.lesson_history)));
+                        is_loading.set(false);
                     }
                     Err(_) => {
                         stats.set(Some(HomeStats::default()));
+                        is_loading.set(false);
                     }
                 }
             });
@@ -98,7 +101,7 @@ pub fn HomeContent() -> impl IntoView {
             .unwrap_or_default()
     });
 
-    let open_history = |metric: StatMetric| {
+    let open_history = move |metric: StatMetric| {
         Callback::new(move |_: ()| {
             selected_metric.set(metric);
             history_open.set(true);
@@ -117,41 +120,73 @@ pub fn HomeContent() -> impl IntoView {
                 </Text>
 
                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-                    <StatCard
-                        title=Signal::derive(|| "Всего карточек".to_string())
-                        value=total_cards
-                        subtitle=Signal::derive(|| "в базе".to_string())
-                        delta=weekly_delta_text
-                        on_history=open_history(StatMetric::TotalCards)
-                    />
+                    <Show
+                        when=move || !is_loading.get()
+                        fallback=move || {
+                            view! {
+                                {(0..5).map(|_| view! {
+                                    <Card class=Signal::derive(|| "p-6".to_string())>
+                                        <Skeleton
+                                            width=Signal::derive(|| Some("60%".to_string()))
+                                            height=Signal::derive(|| Some("12px".to_string()))
+                                            class=Signal::derive(|| "mb-4".to_string())
+                                        />
+                                        <Skeleton
+                                            width=Signal::derive(|| Some("50%".to_string()))
+                                            height=Signal::derive(|| Some("32px".to_string()))
+                                            class=Signal::derive(|| "mb-2".to_string())
+                                        />
+                                        <Skeleton
+                                            width=Signal::derive(|| Some("70%".to_string()))
+                                            height=Signal::derive(|| Some("12px".to_string()))
+                                            class=Signal::derive(|| "mb-4".to_string())
+                                        />
+                                        <Skeleton
+                                            width=Signal::derive(|| Some("80px".to_string()))
+                                            height=Signal::derive(|| Some("36px".to_string()))
+                                            class=Signal::derive(|| String::new())
+                                        />
+                                    </Card>
+                                }).collect::<Vec<_>>()}
+                            }
+                        }
+                    >
+                        <StatCard
+                            title=Signal::derive(|| "Всего карточек".to_string())
+                            value=total_cards
+                            subtitle=Signal::derive(|| "в базе".to_string())
+                            delta=weekly_delta_text
+                            on_history=open_history(StatMetric::TotalCards)
+                        />
 
-                    <StatCard
-                        title=Signal::derive(|| "Изучено".to_string())
-                        value=learned
-                        subtitle=Signal::derive(|| "карточек".to_string())
-                        on_history=open_history(StatMetric::Learned)
-                    />
+                        <StatCard
+                            title=Signal::derive(|| "Изучено".to_string())
+                            value=learned
+                            subtitle=Signal::derive(|| "карточек".to_string())
+                            on_history=open_history(StatMetric::Learned)
+                        />
 
-                    <StatCard
-                        title=Signal::derive(|| "В процессе".to_string())
-                        value=in_progress
-                        subtitle=Signal::derive(|| "изучения".to_string())
-                        on_history=open_history(StatMetric::InProgress)
-                    />
+                        <StatCard
+                            title=Signal::derive(|| "В процессе".to_string())
+                            value=in_progress
+                            subtitle=Signal::derive(|| "изучения".to_string())
+                            on_history=open_history(StatMetric::InProgress)
+                        />
 
-                    <StatCard
-                        title=Signal::derive(|| "Новые".to_string())
-                        value=new_cards
-                        subtitle=Signal::derive(|| "карточек".to_string())
-                        on_history=open_history(StatMetric::New)
-                    />
+                        <StatCard
+                            title=Signal::derive(|| "Новые".to_string())
+                            value=new_cards
+                            subtitle=Signal::derive(|| "карточек".to_string())
+                            on_history=open_history(StatMetric::New)
+                        />
 
-                    <StatCard
-                        title=Signal::derive(|| "Сложные слова".to_string())
-                        value=high_difficulty
-                        subtitle=Signal::derive(|| "требуют внимания".to_string())
-                        on_history=open_history(StatMetric::HighDifficulty)
-                    />
+                        <StatCard
+                            title=Signal::derive(|| "Сложные слова".to_string())
+                            value=high_difficulty
+                            subtitle=Signal::derive(|| "требуют внимания".to_string())
+                            on_history=open_history(StatMetric::HighDifficulty)
+                        />
+                    </Show>
                 </div>
 
                 <div class="mt-12">

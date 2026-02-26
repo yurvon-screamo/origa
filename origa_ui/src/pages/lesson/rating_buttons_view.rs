@@ -3,8 +3,11 @@ use leptos::prelude::*;
 use origa::domain::Rating;
 
 #[component]
-pub fn RatingButtonsView(on_rate: Callback<Rating>) -> impl IntoView {
+pub fn RatingButtonsView(
+    on_rate: Callback<Rating>,
+    #[prop(optional, into)] disabled: Signal<bool>,
+) -> impl IntoView {
     view! {
-        <RatingButtons on_rate />
+        <RatingButtons on_rate disabled />
     }
 }

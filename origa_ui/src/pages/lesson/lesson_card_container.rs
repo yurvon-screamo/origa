@@ -9,6 +9,7 @@ use origa::application::use_cases::{CompleteLessonUseCase, RateCardUseCase};
 use origa::domain::Rating;
 use origa::domain::User;
 use origa::infrastructure::FsrsSrsService;
+use ulid::Ulid;
 
 #[component]
 pub fn LessonCardContainer() -> impl IntoView {
@@ -16,6 +17,7 @@ pub fn LessonCardContainer() -> impl IntoView {
     let current_user =
         use_context::<RwSignal<Option<User>>>().expect("current_user context not provided");
     let lesson_state = lesson_ctx.lesson_state;
+    let is_rating = RwSignal::new(None::<Ulid>);
 
     let show_answer = move || {
         lesson_state.update(|state| {
@@ -27,6 +29,7 @@ pub fn LessonCardContainer() -> impl IntoView {
         let lesson_state = lesson_state;
         let current_user = current_user;
         let lesson_ctx = lesson_ctx.clone();
+        let is_rating = is_rating;
 
         Callback::new(move |rating: Rating| {
             let user = current_user.get();
@@ -34,16 +37,19 @@ pub fn LessonCardContainer() -> impl IntoView {
 
             if let (Some(user), Some(card_id)) = (user, state.card_ids.get(state.current_index)) {
                 let card_id = *card_id;
+                is_rating.set(Some(card_id));
                 let user_id = user.id();
                 let repo = lesson_ctx.repository.clone();
                 let lesson_state = lesson_state;
                 let is_completed = lesson_ctx.is_completed;
+                let is_rating = is_rating;
 
                 spawn_local(async move {
                     let srs_service = match FsrsSrsService::new() {
                         Ok(s) => s,
                         Err(e) => {
                             web_sys::console::log_1(&format!("SRS error: {}", e).into());
+                            is_rating.set(None);
                             return;
                         }
                     };
@@ -76,6 +82,8 @@ pub fn LessonCardContainer() -> impl IntoView {
                             state.showing_answer = false;
                         }
                     });
+
+                    is_rating.set(None);
                 });
             }
         })
@@ -84,12 +92,13 @@ pub fn LessonCardContainer() -> impl IntoView {
     let handle_keydown = {
         let on_rate_callback = on_rate_callback;
         let lesson_ctx = lesson_ctx.clone();
+        let is_rating = is_rating;
 
         move |ev: KeyboardEvent| {
             let key = ev.key();
             let state = lesson_state.get();
 
-            if lesson_ctx.is_completed.get() {
+            if lesson_ctx.is_completed.get() || is_rating.get().is_some() {
                 return;
             }
 
@@ -134,7 +143,10 @@ pub fn LessonCardContainer() -> impl IntoView {
                 />
 
                 <Show when=move || lesson_state.get().showing_answer>
-                    <RatingButtonsView on_rate=on_rate_callback />
+                    <RatingButtonsView
+                        on_rate=on_rate_callback
+                        disabled=Signal::derive(move || is_rating.get().is_some())
+                    />
                 </Show>
             </Show>
         </div>

@@ -2,7 +2,7 @@ use super::actions::create_import_action;
 use super::sets_level_group::SetsLevelGroup;
 use super::types::{JlptLevel, SetInfo, classify_set};
 use crate::repository::SupabaseUserRepository;
-use crate::ui_components::{Text, TextSize};
+use crate::ui_components::{Spinner, Text, TextSize};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::application::ListWellKnownSetsUseCase;
@@ -18,6 +18,7 @@ pub fn SetsContent() -> impl IntoView {
     let sets: RwSignal<Vec<SetInfo>> = RwSignal::new(Vec::new());
     let importing: RwSignal<Option<WellKnownSets>> = RwSignal::new(None);
     let import_result: RwSignal<Option<String>> = RwSignal::new(None);
+    let is_loading: RwSignal<bool> = RwSignal::new(true);
 
     let repository_for_load = repository.clone();
     let current_user_for_load = current_user;
@@ -45,6 +46,7 @@ pub fn SetsContent() -> impl IntoView {
                     })
                     .collect();
                 sets_for_load.set(set_list);
+                is_loading.set(false);
             }
         }
     });
@@ -66,11 +68,18 @@ pub fn SetsContent() -> impl IntoView {
                     </Text>
                 </div>
             </Show>
-            <SetsLevelGroup level=JlptLevel::N5 sets=sets importing=importing on_import=on_import />
-            <SetsLevelGroup level=JlptLevel::N4 sets=sets importing=importing on_import=on_import />
-            <SetsLevelGroup level=JlptLevel::N3 sets=sets importing=importing on_import=on_import />
-            <SetsLevelGroup level=JlptLevel::N2 sets=sets importing=importing on_import=on_import />
-            <SetsLevelGroup level=JlptLevel::N1 sets=sets importing=importing on_import=on_import />
+            <Show when=move || is_loading.get()>
+                <div class="flex justify-center py-8">
+                    <Spinner />
+                </div>
+            </Show>
+            <Show when=move || !is_loading.get()>
+                <SetsLevelGroup level=JlptLevel::N5 sets=sets importing=importing on_import=on_import />
+                <SetsLevelGroup level=JlptLevel::N4 sets=sets importing=importing on_import=on_import />
+                <SetsLevelGroup level=JlptLevel::N3 sets=sets importing=importing on_import=on_import />
+                <SetsLevelGroup level=JlptLevel::N2 sets=sets importing=importing on_import=on_import />
+                <SetsLevelGroup level=JlptLevel::N1 sets=sets importing=importing on_import=on_import />
+            </Show>
         </div>
     }
 }

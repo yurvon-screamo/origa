@@ -1321,3 +1321,64 @@ body {
 .prose-sm {
 	font-size: 12px;
 }
+
+.spinner {
+	width: 24px;
+	height: 24px;
+	border: 2px solid var(--border-light);
+	border-top-color: var(--fg-black);
+	border-radius: 50%;
+	animation: spinner-rotate 0.8s linear infinite;
+}
+
+@keyframes spinner-rotate {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+.loading-overlay {
+	position: fixed;
+	inset: 0;
+	background: rgba(253, 251, 247, 0.9);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 16px;
+	z-index: 200;
+}
+
+.loading-overlay-message {
+	font-family: "DM Mono", monospace;
+	font-size: 11px;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--fg-muted);
+}
+
+.btn-loading {
+	position: relative;
+	pointer-events: none;
+}
+
+.btn-spinner {
+	display: inline-block;
+	width: 14px;
+	height: 14px;
+	border: 2px solid var(--border-light);
+	border-top-color: currentColor;
+	border-radius: 50%;
+	animation: spinner-rotate 0.8s linear infinite;
+	position: absolute;
+	left: 50%;
+	transform: translateX(-50%);
+}
+
+.btn-text {
+	transition: opacity 0.2s ease;
+}
+
+.btn-text-hidden {
+	opacity: 0;
+}
