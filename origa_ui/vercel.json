@@ -1,6 +1,12 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "version": 2,
+  "buildCommand": null,
+  "outputDirectory": "dist",
   "rewrites": [
-    { "source": "/((?!api/|assets/|pkg/|favicon.ico).*)", "destination": "/index.html" }
+    {
+      "source": "/((?!api/|assets/|pkg/|favicon.ico).*)",
+      "destination": "/index.html"
+    }
   ]
 }
