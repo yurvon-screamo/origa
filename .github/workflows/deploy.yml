@@ -43,11 +43,11 @@ jobs:
         run: curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
 
       - name: Install Trunk
-        run: cargo binstall trunk --no-confirm
+        run: cargo binstall trunk --no-confirm --force
 
       - name: Build Leptos app
         working-directory: origa_ui
-        run: trunk build --release
+        run: ~/.cargo/bin/trunk build --release
 
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
