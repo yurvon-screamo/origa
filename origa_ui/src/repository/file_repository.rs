@@ -121,7 +121,7 @@ impl UserRepository for FileSystemUserRepository {
 
     async fn save(&self, user: &User) -> Result<(), OrigaError> {
         let file_path = self.user_file_path(user.id());
-        let json = serde_json::to_string_pretty(user).map_err(|e| OrigaError::RepositoryError {
+        let json = serde_json::to_string_pretty(&user).map_err(|e| OrigaError::RepositoryError {
             reason: format!("Failed to serialize user: {}", e),
         })?;
 
