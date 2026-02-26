@@ -9,26 +9,45 @@ use ulid::Ulid;
 pub fn RulesList(
     rules: Vec<GrammarRuleItem>,
     selected_ids: RwSignal<HashSet<Ulid>>,
+    search_query: RwSignal<String>,
 ) -> impl IntoView {
-    if rules.is_empty() {
-        return view! {
-            <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                "Нет правил для выбранного уровня"
-            </Text>
+    let filtered_rules = move || {
+        let query = search_query.get().to_lowercase();
+        if query.is_empty() {
+            return rules.clone();
         }
-        .into_any();
-    }
+        rules
+            .iter()
+            .filter(|rule| {
+                rule.title.to_lowercase().contains(&query)
+                    || rule.short_description.to_lowercase().contains(&query)
+            })
+            .cloned()
+            .collect::<Vec<_>>()
+    };
 
     view! {
         <div class="space-y-2 max-h-64 overflow-y-auto">
-            <For
-                each=move || rules.clone()
-                key=|rule| rule.rule_id
-                children=move |rule| {
-                    view! { <RuleItem rule=rule selected_ids=selected_ids /> }
+            {move || {
+                let filtered = filtered_rules();
+                if filtered.is_empty() {
+                    view! {
+                        <Text size=TextSize::Small variant=TypographyVariant::Muted>
+                            "Нет правил для выбранного уровня"
+                        </Text>
+                    }.into_any()
+                } else {
+                    view! {
+                        <For
+                            each=move || filtered.clone()
+                            key=|rule| rule.rule_id
+                            children=move |rule| {
+                                view! { <RuleItem rule=rule selected_ids=selected_ids /> }
+                            }
+                        />
+                    }.into_any()
                 }
-            />
+            }}
         </div>
     }
-    .into_any()
 }

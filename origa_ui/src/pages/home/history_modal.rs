@@ -15,10 +15,10 @@ pub enum StatMetric {
 impl StatMetric {
     pub fn title(&self) -> &'static str {
         match self {
-            StatMetric::TotalCards => "Total Cards",
-            StatMetric::Learned => "Learned",
-            StatMetric::InProgress => "In Progress",
-            StatMetric::New => "New",
+            StatMetric::TotalCards => "Всего карточек",
+            StatMetric::Learned => "Изучено",
+            StatMetric::InProgress => "В процессе",
+            StatMetric::New => "Новые",
             StatMetric::HighDifficulty => "Сложные слова",
         }
     }

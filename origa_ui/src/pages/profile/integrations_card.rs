@@ -13,7 +13,7 @@ pub fn IntegrationsCard(duolingo_input: RwSignal<String>) -> impl IntoView {
 
                 <div class="space-y-4">
                     <LabeledInput
-                        label="Duolingo JWT Token".to_string()
+                        label="Duolingo JWT токен".to_string()
                         value={duolingo_input}
                     />
                 </div>

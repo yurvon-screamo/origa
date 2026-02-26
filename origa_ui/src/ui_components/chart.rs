@@ -123,7 +123,7 @@ pub fn LineChart(
                 children=move |(y, value)| {
                     view! {
                         <text
-                            x=PADDING - 8
+                            x=PADDING - 20
                             y=y
                             text_anchor="end"
                             dominant_baseline="middle"
