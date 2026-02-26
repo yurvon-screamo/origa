@@ -151,20 +151,31 @@ pub fn LessonCard(
                         </Show>
 
                         <Show when=move || example_words.get_value().is_some()>
-                            <div class="my-6 text-left">
-                                <Text size=TextSize::Default variant=TypographyVariant::Muted class="mb-2">
+                            <div class="my-6">
+                                <Text size=TextSize::Default variant=TypographyVariant::Muted class="mb-3 block text-left">
                                     "Примеры слов:"
                                 </Text>
-                                {move || {
-                                    example_words.get_value().map(|examples| {
-                                        let content = examples
-                                            .iter()
-                                            .map(|(word, meaning)| format!("- **{}** — {}", word, meaning))
-                                            .collect::<Vec<_>>()
-                                            .join("\n");
-                                        view! { <MarkdownText content=Signal::derive(move || content.clone())/> }
-                                    })
-                                }}
+                                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-left">
+                                    {move || {
+                                        example_words.get_value().map(|examples| {
+                                            examples
+                                                .into_iter()
+                                                .map(|(word, meaning)| {
+                                                    view! {
+                                                        <div class="p-2 bg-[var(--bg-secondary)] rounded">
+                                                            <Text size=TextSize::Default class="font-bold">
+                                                                {word}
+                                                            </Text>
+                                                            <Text size=TextSize::Small variant=TypographyVariant::Muted>
+                                                                {meaning}
+                                                            </Text>
+                                                        </div>
+                                                    }
+                                                })
+                                                .collect::<Vec<_>>()
+                                        })
+                                    }}
+                                </div>
                             </div>
                         </Show>
 

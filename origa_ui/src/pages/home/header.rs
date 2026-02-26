@@ -60,6 +60,15 @@ pub fn HomeHeader(current_user: RwSignal<Option<User>>) -> impl IntoView {
                                             variant=ButtonVariant::Ghost
                                             on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
                                                 let navigate = use_navigate();
+                                                navigate("/sets", Default::default());
+                                            })
+                                        >
+                                            "Колоды"
+                                        </Button>
+                                        <Button
+                                            variant=ButtonVariant::Ghost
+                                            on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
+                                                let navigate = use_navigate();
                                                 navigate("/profile", Default::default());
                                             })
                                         >

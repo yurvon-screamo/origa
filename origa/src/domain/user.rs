@@ -1,10 +1,10 @@
-use chrono::Duration;
+use chrono::{DateTime, Duration, Utc};
 use serde::{Deserialize, Serialize};
 use ulid::Ulid;
 
 use crate::domain::{
+    score_content::{score_content, ScoreContentResult},
     Card, JapaneseLevel, KnowledgeSet, MemoryState, NativeLanguage, OrigaError, Rating, StudyCard,
-    score_content::{ScoreContentResult, score_content},
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -18,6 +18,7 @@ pub struct User {
     telegram_user_id: Option<u64>,
     knowledge_set: KnowledgeSet,
     reminders_enabled: bool,
+    updated_at: DateTime<Utc>,
 }
 
 impl User {
@@ -37,6 +38,7 @@ impl User {
             duolingo_jwt_token: None,
             telegram_user_id,
             reminders_enabled: true,
+            updated_at: Utc::now(),
         }
     }
 
@@ -50,6 +52,7 @@ impl User {
         telegram_user_id: Option<u64>,
         reminders_enabled: bool,
         knowledge_set: KnowledgeSet,
+        updated_at: DateTime<Utc>,
     ) -> Self {
         Self {
             id,
@@ -61,6 +64,7 @@ impl User {
             telegram_user_id,
             reminders_enabled,
             knowledge_set,
+            updated_at,
         }
     }
 
@@ -73,6 +77,7 @@ impl User {
         self.telegram_user_id = new_values.telegram_user_id.clone();
         self.reminders_enabled = new_values.reminders_enabled;
         self.knowledge_set.merge(&new_values.knowledge_set);
+        self.touch();
     }
 
     pub fn id(&self) -> Ulid {
@@ -133,6 +138,14 @@ impl User {
 
     pub fn set_reminders_enabled(&mut self, reminders_enabled: bool) {
         self.reminders_enabled = reminders_enabled;
+    }
+
+    pub fn updated_at(&self) -> &DateTime<Utc> {
+        &self.updated_at
+    }
+
+    pub fn touch(&mut self) {
+        self.updated_at = Utc::now();
     }
 
     pub fn rate_card(
