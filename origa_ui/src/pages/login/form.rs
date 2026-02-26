@@ -54,8 +54,10 @@ pub fn LoginForm(
     error: RwSignal<Option<String>>,
     mode: RwSignal<LoginMode>,
 ) -> impl IntoView {
+    let is_loading = RwSignal::new(false);
+
     let on_submit = Callback::new(move |()| {
-        handle_login(email, password, error, mode);
+        handle_login(email, password, error, mode, is_loading);
     });
 
     view! {
@@ -66,7 +68,11 @@ pub fn LoginForm(
             {move || error.get().map(|err| view! { <ErrorMessage message=err /> })}
 
             <div class="flex gap-3">
-                <Button variant=ButtonVariant::Olive on_click=Callback::new(move |_: leptos::ev::MouseEvent| on_submit.run(()))>
+                <Button
+                    variant=ButtonVariant::Olive
+                    loading=Signal::derive(move || is_loading.get())
+                    on_click=Callback::new(move |_: leptos::ev::MouseEvent| on_submit.run(()))
+                >
                     "Войти"
                 </Button>
             </div>
@@ -94,8 +100,10 @@ pub fn RegisterForm(
     error: RwSignal<Option<String>>,
     mode: RwSignal<LoginMode>,
 ) -> impl IntoView {
+    let is_loading = RwSignal::new(false);
+
     let on_submit = Callback::new(move |()| {
-        handle_register(email, password, error, mode);
+        handle_register(email, password, error, mode, is_loading);
     });
 
     view! {
@@ -106,7 +114,11 @@ pub fn RegisterForm(
             {move || error.get().map(|err| view! { <ErrorMessage message=err /> })}
 
             <div class="flex gap-3">
-                <Button variant=ButtonVariant::Olive on_click=Callback::new(move |_: leptos::ev::MouseEvent| on_submit.run(()))>
+                <Button
+                    variant=ButtonVariant::Olive
+                    loading=Signal::derive(move || is_loading.get())
+                    on_click=Callback::new(move |_: leptos::ev::MouseEvent| on_submit.run(()))
+                >
                     "Зарегистрироваться"
                 </Button>
             </div>
@@ -134,6 +146,7 @@ pub fn EmailConfirmationForm(
     mode: RwSignal<LoginMode>,
 ) -> impl IntoView {
     let resend_success = RwSignal::new(false);
+    let is_loading = RwSignal::new(false);
     let ctx = use_context::<AuthContext>().expect("AuthContext not provided");
 
     view! {
@@ -166,18 +179,22 @@ pub fn EmailConfirmationForm(
             <div class="flex flex-col gap-3">
                 <Button
                     variant=ButtonVariant::Olive
+                    loading=Signal::derive(move || is_loading.get())
                     on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
                         let email_val = email.get();
                         let ctx = ctx.clone();
                         resend_success.set(false);
                         error.set(None);
+                        is_loading.set(true);
 
                         spawn_local(async move {
                             match ctx.client.resend_confirmation_email(&email_val).await {
                                 Ok(()) => {
+                                    is_loading.set(false);
                                     resend_success.set(true);
                                 }
                                 Err(e) => {
+                                    is_loading.set(false);
                                     error.set(Some(e));
                                 }
                             }
@@ -234,6 +251,7 @@ fn handle_login(
     password: RwSignal<String>,
     error: RwSignal<Option<String>>,
     mode: RwSignal<LoginMode>,
+    is_loading: RwSignal<bool>,
 ) {
     let email_val = email.get();
     let password_val = password.get();
@@ -244,6 +262,7 @@ fn handle_login(
     }
 
     error.set(None);
+    is_loading.set(true);
 
     let ctx = use_context::<AuthContext>().expect("AuthContext not provided");
     let navigate = use_navigate();
@@ -255,9 +274,13 @@ fn handle_login(
                     ctx.current_user.set(Some(user));
                     navigate("/home", Default::default());
                 }
-                Err(e) => error.set(Some(e)),
+                Err(e) => {
+                    is_loading.set(false);
+                    error.set(Some(e));
+                }
             },
             Err(e) => {
+                is_loading.set(false);
                 if is_email_not_confirmed_error(&e) {
                     error.set(None);
                     mode.set(LoginMode::EmailNotConfirmed);
@@ -274,6 +297,7 @@ fn handle_register(
     password: RwSignal<String>,
     error: RwSignal<Option<String>>,
     mode: RwSignal<LoginMode>,
+    is_loading: RwSignal<bool>,
 ) {
     let email_val = email.get();
     let password_val = password.get();
@@ -284,15 +308,18 @@ fn handle_register(
     }
 
     error.set(None);
+    is_loading.set(true);
 
     let ctx = use_context::<AuthContext>().expect("AuthContext not provided");
 
     spawn_local(async move {
         match ctx.client.register(&email_val, &password_val).await {
             Ok(_user) => {
+                is_loading.set(false);
                 mode.set(LoginMode::EmailNotConfirmed);
             }
             Err(e) => {
+                is_loading.set(false);
                 if is_email_not_confirmed_error(&e) {
                     mode.set(LoginMode::EmailNotConfirmed);
                 } else {

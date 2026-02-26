@@ -63,6 +63,7 @@ pub fn ProfileContent() -> impl IntoView {
 
     let is_saving = RwSignal::new(false);
     let is_deleting = RwSignal::new(false);
+    let is_logging_out = RwSignal::new(false);
     let repository = ctx.repository.clone();
 
     let save_profile = Callback::new(move |_| {
@@ -108,6 +109,10 @@ pub fn ProfileContent() -> impl IntoView {
         let client_clone = client_for_logout.clone();
         let current_user_clone = current_user;
         let nav = navigate_for_logout.clone();
+        let is_logging_out_signal = is_logging_out;
+
+        is_logging_out_signal.set(true);
+
         spawn_local(async move {
             let _ = client_clone.logout().await;
             current_user_clone.set(None);
@@ -155,6 +160,7 @@ pub fn ProfileContent() -> impl IntoView {
                     on_delete_account={delete_account}
                     is_saving={Signal::derive(move || is_saving.get())}
                     is_deleting={Signal::derive(move || is_deleting.get())}
+                    is_logging_out={Signal::derive(move || is_logging_out.get())}
                 />
             </div>
         </div>
