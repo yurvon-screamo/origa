@@ -26,7 +26,6 @@ pub struct LessonState {
     pub card_ids: Vec<Ulid>,
     pub current_index: usize,
     pub showing_answer: bool,
-    pub new_count: usize,
     pub review_count: usize,
 }
 

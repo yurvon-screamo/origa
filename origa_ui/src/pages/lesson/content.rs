@@ -58,6 +58,8 @@ pub fn LessonContent() -> impl IntoView {
                     }
                 };
 
+                web_sys::console::log_1(&format!("Cards len: {}", cards.iter().count()).into());
+
                 match cards {
                     Ok(cards) => {
                         let card_ids: Vec<Ulid> = cards.keys().cloned().collect();
@@ -69,7 +71,6 @@ pub fn LessonContent() -> impl IntoView {
                                 card_ids,
                                 current_index: 0,
                                 showing_answer: false,
-                                new_count: 0,
                                 review_count: 0,
                             });
                         }
@@ -105,7 +106,6 @@ pub fn LessonContent() -> impl IntoView {
 
         <Show when=move || is_completed.get()>
             <LessonCompleteScreen
-                new_count=lesson_state.get().new_count
                 review_count=lesson_state.get().review_count
             />
         </Show>
