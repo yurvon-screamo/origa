@@ -1,0 +1,27 @@
+{
+  "name": "オリガ - Origa",
+  "short_name": "Origa",
+  "description": "Japanese language learning application",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#faf7f2",
+  "theme_color": "#708238",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/public/logo-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/public/logo-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "productivity"],
+  "lang": "ru",
+  "dir": "ltr"
+}
