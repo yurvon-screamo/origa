@@ -129,7 +129,7 @@ pub fn KanjiAnimation(kanji: String, #[prop(optional)] mode: KanjiViewMode) -> i
 }
 
 #[component]
-pub fn KanjiWritingSection(kanji: String, #[prop(optional)] show_frames: bool) -> impl IntoView {
+pub fn KanjiWritingSection(kanji: String, #[prop(optional)] mode: KanjiViewMode) -> impl IntoView {
     view! {
         <div class="kanji-writing-section">
             <div class="kanji-writing-title">
@@ -138,18 +138,8 @@ pub fn KanjiWritingSection(kanji: String, #[prop(optional)] show_frames: bool) -
             <div class="kanji-writing-grid">
                 <KanjiAnimation
                     kanji={kanji.clone()}
-                    mode={KanjiViewMode::Animation}
+                    mode={mode}
                 />
-                {move || if show_frames {
-                    Some(view! {
-                        <KanjiAnimation
-                            kanji={kanji.clone()}
-                            mode={KanjiViewMode::Frames}
-                        />
-                    })
-                } else {
-                    None
-                }}
             </div>
         </div>
     }
