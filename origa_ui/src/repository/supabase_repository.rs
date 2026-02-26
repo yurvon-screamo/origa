@@ -1,5 +1,6 @@
 use super::client::{AuthError, SupabaseClient};
 use crate::repository::session::get_session;
+use chrono::{DateTime, Utc};
 use origa::application::user_repository::UserRepository;
 use origa::domain::{JapaneseLevel, KnowledgeSet, NativeLanguage, OrigaError, User};
 use reqwest::Method;
@@ -89,6 +90,7 @@ struct UserRow {
     telegram_user_id: Option<i64>,
     reminders_enabled: bool,
     knowledge_set: KnowledgeSet,
+    updated_at: DateTime<Utc>,
 }
 
 impl UserRow {
@@ -105,6 +107,7 @@ impl UserRow {
             self.telegram_user_id.map(|id| id as u64),
             self.reminders_enabled,
             self.knowledge_set.clone(),
+            self.updated_at,
         )
     }
 }
@@ -127,6 +130,7 @@ fn user_to_json(user: &User, auth_user_id: &str) -> serde_json::Value {
         "telegram_user_id": user.telegram_user_id().copied().map(|id| id as i64),
         "reminders_enabled": user.reminders_enabled(),
         "knowledge_set": user.knowledge_set(),
+        "updated_at": user.updated_at(),
     })
 }
 
