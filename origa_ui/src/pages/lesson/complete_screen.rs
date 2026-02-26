@@ -5,7 +5,7 @@ use leptos::prelude::*;
 use leptos_router::components::A;
 
 #[component]
-pub fn LessonCompleteScreen(new_count: usize, review_count: usize) -> impl IntoView {
+pub fn LessonCompleteScreen(review_count: usize) -> impl IntoView {
     view! {
         <div class="text-center py-8">
             <DisplayText class="mb-4">
@@ -13,15 +13,7 @@ pub fn LessonCompleteScreen(new_count: usize, review_count: usize) -> impl IntoV
             </DisplayText>
 
             <Card class=Signal::derive(|| "p-6 mb-6".to_string())>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <Text size=TextSize::Small variant=TypographyVariant::Muted uppercase=true>
-                            "Новых"
-                        </Text>
-                        <DisplayText>
-                            {new_count}
-                        </DisplayText>
-                    </div>
+                <div class="grid grid-cols-1 gap-4">
                     <div>
                         <Text size=TextSize::Small variant=TypographyVariant::Muted uppercase=true>
                             "Повторено"

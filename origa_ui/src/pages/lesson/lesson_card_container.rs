@@ -48,7 +48,7 @@ pub fn LessonCardContainer() -> impl IntoView {
                     let srs_service = match FsrsSrsService::new() {
                         Ok(s) => s,
                         Err(e) => {
-                            web_sys::console::log_1(&format!("SRS error: {}", e).into());
+                            web_sys::console::error_1(&format!("SRS error: {}", e).into());
                             is_rating.set(None);
                             return;
                         }
