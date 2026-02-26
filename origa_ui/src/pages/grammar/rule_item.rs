@@ -22,12 +22,16 @@ pub fn RuleItem(rule: GrammarRuleItem, selected_ids: RwSignal<HashSet<Ulid>>) ->
     view! {
         <div
             class=move || format!(
-                "p-3 border cursor-pointer mb-2 {}",
-                if is_selected() { "border-olive bg-warm" } else { "border-dark bg-paper" }
+                "p-3 border cursor-pointer mb-2 transition-all {}",
+                if is_selected() {
+                    "border-[var(--accent-olive)] bg-[var(--bg-warm)] shadow-[2px_2px_0_var(--accent-olive)]"
+                } else {
+                    "border-[var(--border-dark)] bg-[var(--bg-paper)]"
+                }
             )
             on:click=on_click
         >
-            <div class="font-bold text-sm"><FuriganaText text=rule.title/></div>
+            <div class="font-bold text-sm font-mono"><FuriganaText text=rule.title/></div>
             <Text size=TextSize::Small variant=TypographyVariant::Muted>
                 {rule.short_description}
             </Text>

@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use ulid::Ulid;
 
 use crate::{
@@ -32,6 +33,7 @@ impl<'a, R: UserRepository> GrammarRuleInfoUseCase<'a, R> {
         &self,
         user_id: Ulid,
         level: &JapaneseLevel,
+        existing_rule_ids: &HashSet<Ulid>,
     ) -> Result<Vec<GrammarRuleItem>, OrigaError> {
         let user = self
             .repository
@@ -44,6 +46,7 @@ impl<'a, R: UserRepository> GrammarRuleInfoUseCase<'a, R> {
         Ok(GRAMMAR_RULES
             .iter()
             .filter_map(|rule| filter_by_level(rule, lang, level))
+            .filter(|item| !existing_rule_ids.contains(&item.rule_id))
             .collect())
     }
 }

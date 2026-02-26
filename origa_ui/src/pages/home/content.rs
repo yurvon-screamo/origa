@@ -118,7 +118,7 @@ pub fn HomeContent() -> impl IntoView {
 
                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
                     <StatCard
-                        title=Signal::derive(|| "Total Cards".to_string())
+                        title=Signal::derive(|| "Всего карточек".to_string())
                         value=total_cards
                         subtitle=Signal::derive(|| "в базе".to_string())
                         delta=weekly_delta_text
@@ -126,23 +126,23 @@ pub fn HomeContent() -> impl IntoView {
                     />
 
                     <StatCard
-                        title=Signal::derive(|| "Learned".to_string())
+                        title=Signal::derive(|| "Изучено".to_string())
                         value=learned
-                        subtitle=Signal::derive(|| "изучено".to_string())
+                        subtitle=Signal::derive(|| "карточек".to_string())
                         on_history=open_history(StatMetric::Learned)
                     />
 
                     <StatCard
-                        title=Signal::derive(|| "In Progress".to_string())
+                        title=Signal::derive(|| "В процессе".to_string())
                         value=in_progress
-                        subtitle=Signal::derive(|| "в процессе".to_string())
+                        subtitle=Signal::derive(|| "изучения".to_string())
                         on_history=open_history(StatMetric::InProgress)
                     />
 
                     <StatCard
-                        title=Signal::derive(|| "New".to_string())
+                        title=Signal::derive(|| "Новые".to_string())
                         value=new_cards
-                        subtitle=Signal::derive(|| "новых".to_string())
+                        subtitle=Signal::derive(|| "карточек".to_string())
                         on_history=open_history(StatMetric::New)
                     />
 

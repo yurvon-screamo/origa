@@ -44,6 +44,7 @@ pub use kanji_animation::{KanjiViewMode, KanjiWritingSection};
 pub use layout::{CardLayout, CardLayoutSize, PageLayout, PageLayoutVariant};
 pub use markdown::MarkdownText;
 pub use modal::Modal;
+pub use search::Search;
 pub use tab_button::{TabButton, TabButtonState};
 pub use tag::{Tag, TagVariant};
 pub use toggle::Toggle;
