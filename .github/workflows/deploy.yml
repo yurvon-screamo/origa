@@ -56,6 +56,10 @@ jobs:
         working-directory: origa_ui
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
 
+      - name: Build Vercel Output
+        working-directory: origa_ui
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+
       - name: Deploy to Vercel
-        working-directory: origa_ui/dist
-        run: vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }}
+        working-directory: origa_ui
+        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
