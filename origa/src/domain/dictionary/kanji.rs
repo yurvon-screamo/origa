@@ -3,12 +3,12 @@ use std::{collections::HashMap, sync::LazyLock};
 use serde::{Deserialize, Serialize};
 
 use crate::domain::{
-    OrigaError,
     dictionary::{
-        radical::{RADICAL_DICTIONARY, RadicalInfo},
+        radical::{RadicalInfo, RADICAL_DICTIONARY},
         vocabulary::VOCABULARY_DICTIONARY,
     },
     value_objects::{JapaneseLevel, NativeLanguage},
+    OrigaError,
 };
 
 const KANJI_DATA: &str = include_str!("./kanji.json");
@@ -100,7 +100,8 @@ impl Default for KanjiDatabase {
 
 impl KanjiDatabase {
     pub fn new() -> Self {
-        let kanji_db: KanjiDatabaseStoredType = serde_json::from_str(KANJI_DATA).unwrap();
+        let kanji_db: KanjiDatabaseStoredType = serde_json::from_str(KANJI_DATA)
+            .expect("Failed to parse kanji.json - ensure Git LFS files are pulled");
 
         let kanji_map = kanji_db
             .kanji
