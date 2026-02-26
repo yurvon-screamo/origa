@@ -1,6 +1,6 @@
 use ammonia::clean;
 use leptos::prelude::*;
-use pulldown_cmark::{html, Options, Parser};
+use pulldown_cmark::{Options, Parser, html};
 
 #[derive(Clone, Copy, PartialEq, Default, Debug)]
 pub enum MarkdownVariant {

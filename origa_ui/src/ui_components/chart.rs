@@ -159,7 +159,7 @@ pub fn LineChart(
                 }
             />
             <polyline
-                points=move || polyline_points()
+                points=polyline_points
                 fill="none"
                 stroke="var(--accent-olive)"
                 stroke-width="2"

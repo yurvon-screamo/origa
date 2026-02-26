@@ -1,6 +1,6 @@
 use crate::ui_components::{
-    Button, ButtonVariant, Card, FuriganaText, Heading, HeadingLevel, KanjiWritingSection,
-    MarkdownText, Tag, TagVariant, Text, TextSize, TypographyVariant,
+    Button, ButtonVariant, Card, FuriganaText, Heading, HeadingLevel, KanjiViewMode,
+    KanjiWritingSection, MarkdownText, Tag, TagVariant, Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
 use origa::domain::Card as DomainCard;
@@ -87,7 +87,7 @@ pub fn LessonCard(
                         <Show when=move || kanji_for_animation.get_value().is_some()>
                             {move || {
                                 kanji_for_animation.get_value().map(|kanji| view! {
-                                        <KanjiWritingSection kanji=kanji show_frames=false />
+                                        <KanjiWritingSection kanji=kanji mode=KanjiViewMode::Animation />
                                     })
                             }}
                         </Show>
@@ -112,7 +112,7 @@ pub fn LessonCard(
                         <Show when=move || kanji_for_animation.get_value().is_some()>
                             {move || {
                                 kanji_for_animation.get_value().map(|kanji| view! {
-                                        <KanjiWritingSection kanji=kanji show_frames=true />
+                                        <KanjiWritingSection kanji=kanji mode=KanjiViewMode::Frames />
                                     })
                             }}
                         </Show>

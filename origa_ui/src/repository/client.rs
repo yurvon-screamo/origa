@@ -133,7 +133,7 @@ impl SupabaseClient {
             expires_at,
         };
 
-        set_session(&session).map_err(|e| AuthError::ApiError(e))?;
+        set_session(&session).map_err(AuthError::ApiError)?;
         Ok(session)
     }
 
