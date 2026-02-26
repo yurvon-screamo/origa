@@ -1,5 +1,5 @@
 use crate::ui_components::{
-    Button, ButtonVariant, Card, FuriganaText, Heading, HeadingLevel, KanjiViewMode,
+    Button, ButtonVariant, Card, DisplayText, FuriganaText, Heading, HeadingLevel, KanjiViewMode,
     KanjiWritingSection, MarkdownText, Tag, TagVariant, Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
@@ -62,6 +62,23 @@ pub fn LessonCard(
     };
     let radicals = StoredValue::new(radicals);
 
+    let example_words: Option<Vec<(String, String)>> = match &card {
+        DomainCard::Kanji(kanji) => {
+            let examples: Vec<_> = kanji
+                .example_words()
+                .iter()
+                .map(|e| (e.word().to_string(), e.meaning().to_string()))
+                .collect();
+            if examples.is_empty() {
+                None
+            } else {
+                Some(examples)
+            }
+        }
+        _ => None,
+    };
+    let example_words = StoredValue::new(example_words);
+
     let kanji_for_animation = StoredValue::new(match &card {
         DomainCard::Kanji(_) => Some(card.question().text().to_string()),
         _ => None,
@@ -86,9 +103,17 @@ pub fn LessonCard(
 
                         <Show when=move || kanji_for_animation.get_value().is_some()>
                             {move || {
-                                kanji_for_animation.get_value().map(|kanji| view! {
+                                kanji_for_animation.get_value().map(|kanji| {
+                                    let kanji_text = kanji.clone();
+                                    view! {
+                                        <div class="mb-6">
+                                            <DisplayText>
+                                                {kanji_text}
+                                            </DisplayText>
+                                        </div>
                                         <KanjiWritingSection kanji=kanji mode=KanjiViewMode::Animation />
-                                    })
+                                    }
+                                })
                             }}
                         </Show>
 
@@ -112,8 +137,8 @@ pub fn LessonCard(
                         <Show when=move || kanji_for_animation.get_value().is_some()>
                             {move || {
                                 kanji_for_animation.get_value().map(|kanji| view! {
-                                        <KanjiWritingSection kanji=kanji mode=KanjiViewMode::Frames />
-                                    })
+                                    <KanjiWritingSection kanji=kanji mode=KanjiViewMode::Frames />
+                                })
                             }}
                         </Show>
 
@@ -122,6 +147,24 @@ pub fn LessonCard(
                                 <Text size=TextSize::Default variant=TypographyVariant::Muted>
                                     {format!("Радикалы: {}", radicals.get_value().unwrap_or_default())}
                                 </Text>
+                            </div>
+                        </Show>
+
+                        <Show when=move || example_words.get_value().is_some()>
+                            <div class="my-6 text-left">
+                                <Text size=TextSize::Default variant=TypographyVariant::Muted class="mb-2">
+                                    "Примеры слов:"
+                                </Text>
+                                {move || {
+                                    example_words.get_value().map(|examples| {
+                                        let content = examples
+                                            .iter()
+                                            .map(|(word, meaning)| format!("- **{}** — {}", word, meaning))
+                                            .collect::<Vec<_>>()
+                                            .join("\n");
+                                        view! { <MarkdownText content=Signal::derive(move || content.clone())/> }
+                                    })
+                                }}
                             </div>
                         </Show>
 

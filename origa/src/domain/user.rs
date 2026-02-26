@@ -64,6 +64,17 @@ impl User {
         }
     }
 
+    pub fn merge(&mut self, new_values: &User) {
+        self.email = new_values.email.clone();
+        self.username = new_values.username.clone();
+        self.native_language = new_values.native_language.clone();
+        self.current_japanese_level = new_values.current_japanese_level.clone();
+        self.duolingo_jwt_token = new_values.duolingo_jwt_token.clone();
+        self.telegram_user_id = new_values.telegram_user_id.clone();
+        self.reminders_enabled = new_values.reminders_enabled;
+        self.knowledge_set.merge(&new_values.knowledge_set);
+    }
+
     pub fn id(&self) -> Ulid {
         self.id
     }

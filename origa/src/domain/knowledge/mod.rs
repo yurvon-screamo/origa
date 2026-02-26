@@ -43,6 +43,29 @@ impl KnowledgeSet {
         }
     }
 
+    pub fn merge(&mut self, new_values: &KnowledgeSet) {
+        for (id, study_card) in &new_values.study_cards {
+            if !self.study_cards.contains_key(id)
+                && self.validate_unique_card(study_card.card()).is_ok()
+            {
+                self.study_cards.insert(*id, study_card.clone());
+            }
+        }
+
+        for item in &new_values.lesson_history {
+            let date = item.timestamp().date_naive();
+            if !self
+                .lesson_history
+                .iter()
+                .any(|h| h.timestamp().date_naive() == date)
+            {
+                self.lesson_history.push(item.clone());
+            }
+        }
+
+        self.lesson_history.sort_by_key(|h| h.timestamp());
+    }
+
     pub fn get_card(&self, card_id: Ulid) -> Option<&StudyCard> {
         self.study_cards.get(&card_id)
     }
