@@ -65,3 +65,10 @@ jobs:
       - name: Deploy to Vercel
         working-directory: origa_ui
         run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy origa_ui/dist --project-name=origa --branch=master --commit-dirty=true
