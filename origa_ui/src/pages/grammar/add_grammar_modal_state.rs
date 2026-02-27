@@ -1,4 +1,4 @@
-use crate::repository::SupabaseUserRepository;
+use crate::repository::HybridUserRepository;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::application::{GrammarRuleInfoUseCase, GrammarRuleItem};
@@ -15,7 +15,7 @@ pub struct ModalState {
     pub is_creating: RwSignal<bool>,
     pub error_message: RwSignal<Option<String>>,
     pub current_user: RwSignal<Option<User>>,
-    pub repository: SupabaseUserRepository,
+    pub repository: HybridUserRepository,
     pub search_query: RwSignal<String>,
 }
 
@@ -24,7 +24,7 @@ impl ModalState {
         let current_user =
             use_context::<RwSignal<Option<User>>>().expect("current_user context not provided");
         let repository =
-            use_context::<SupabaseUserRepository>().expect("repository context not provided");
+            use_context::<HybridUserRepository>().expect("repository context not provided");
 
         let selected_rule_ids = RwSignal::new(HashSet::new());
 
@@ -55,22 +55,20 @@ impl ModalState {
             .current_user
             .with(|u| u.as_ref().map(|u| u.id()))
             .unwrap();
-        let existing_rule_ids: HashSet<Ulid> = self
-            .current_user
-            .with(|u| {
-                u.as_ref()
-                    .map(|u| {
-                        u.knowledge_set()
-                            .study_cards()
-                            .values()
-                            .filter_map(|sc| match sc.card() {
-                                Card::Grammar(g) => Some(*g.rule_id()),
-                                _ => None,
-                            })
-                            .collect()
-                    })
-                    .unwrap_or_default()
-            });
+        let existing_rule_ids: HashSet<Ulid> = self.current_user.with(|u| {
+            u.as_ref()
+                .map(|u| {
+                    u.knowledge_set()
+                        .study_cards()
+                        .values()
+                        .filter_map(|sc| match sc.card() {
+                            Card::Grammar(g) => Some(*g.rule_id()),
+                            _ => None,
+                        })
+                        .collect()
+                })
+                .unwrap_or_default()
+        });
         let level = self.selected_level.get();
         let repository = self.repository.clone();
         let available_rules = self.available_rules;

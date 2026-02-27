@@ -36,7 +36,7 @@ impl<'a, R: UserRepository, L: crate::application::LlmService>
 
         let cards = self.create(&mut user, question_text).await?;
 
-        self.repository.save(&user).await?;
+        self.repository.save_sync(&user).await?;
 
         Ok(cards)
     }

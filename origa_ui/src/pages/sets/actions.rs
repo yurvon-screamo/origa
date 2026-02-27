@@ -1,12 +1,12 @@
 use crate::app::update_current_user;
-use crate::repository::SupabaseUserRepository;
+use crate::repository::HybridUserRepository;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::application::ImportWellKnownSetUseCase;
 use origa::domain::{User, WellKnownSets};
 
 pub fn create_import_action(
-    repository: SupabaseUserRepository,
+    repository: HybridUserRepository,
     llm_service: origa::infrastructure::LlmServiceInvoker,
     current_user: RwSignal<Option<User>>,
     importing: RwSignal<Option<WellKnownSets>>,

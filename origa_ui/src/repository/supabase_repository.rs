@@ -135,11 +135,6 @@ fn user_to_json(user: &User, auth_user_id: &str) -> serde_json::Value {
 }
 
 impl UserRepository for SupabaseUserRepository {
-    async fn list(&self) -> Result<Vec<User>, OrigaError> {
-        let user = self.find_current().await?;
-        Ok(user.map(|u| vec![u]).unwrap_or_default())
-    }
-
     async fn find_by_id(&self, _user_id: Ulid) -> Result<Option<User>, OrigaError> {
         self.find_current().await
     }

@@ -1,5 +1,5 @@
 use crate::repository::get_session;
-use crate::repository::{SupabaseClient, SupabaseUserRepository, clear_session};
+use crate::repository::{HybridUserRepository, SupabaseClient, clear_session};
 use crate::routes::AppRoutes;
 use crate::ui_components::LoadingOverlay;
 use leptos::prelude::*;
@@ -11,23 +11,18 @@ use origa::infrastructure::LlmServiceInvoker;
 #[derive(Clone)]
 pub struct AuthContext {
     pub client: SupabaseClient,
-    pub repository: SupabaseUserRepository,
+    pub repository: HybridUserRepository,
     pub current_user: RwSignal<Option<User>>,
     pub is_session_loading: RwSignal<bool>,
 }
 
 impl AuthContext {
     pub fn new() -> Self {
-        let client = SupabaseClient::new();
-        let repository = SupabaseUserRepository::new();
-        let current_user = RwSignal::new(None);
-        let is_session_loading = RwSignal::new(true);
-
         Self {
-            client,
-            repository,
-            current_user,
-            is_session_loading,
+            client: SupabaseClient::new(),
+            repository: HybridUserRepository::new(),
+            current_user: RwSignal::new(None),
+            is_session_loading: RwSignal::new(true),
         }
     }
 
@@ -55,20 +50,17 @@ impl Default for AuthContext {
     }
 }
 
-pub fn update_current_user(
-    repository: SupabaseUserRepository,
-    current_user: RwSignal<Option<User>>,
-) {
+pub fn update_current_user(repository: HybridUserRepository, current_user: RwSignal<Option<User>>) {
     spawn_local(async move {
         if let Some(user) = current_user.get_untracked() {
             let user_id = user.id();
             let use_case = GetUserInfoUseCase::new(&repository);
             match use_case.execute(user_id).await {
                 Ok(_) => {
-                    if let Ok(updated_user) = repository.find_by_email(user.email()).await {
-                        if let Some(u) = updated_user {
-                            current_user.set(Some(u))
-                        }
+                    if let Ok(updated_user) = repository.find_by_email(user.email()).await
+                        && let Some(u) = updated_user
+                    {
+                        current_user.set(Some(u))
                     }
                 }
                 Err(OrigaError::SessionExpired) => {

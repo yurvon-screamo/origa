@@ -36,7 +36,7 @@ mod typography;
 
 pub use alert::{Alert, AlertType};
 pub use avatar::Avatar;
-pub use button::{Button, ButtonSize, ButtonVariant};
+pub use button::{Button, ButtonVariant};
 pub use card::Card;
 pub use chart::LineChart;
 pub use furigana::FuriganaText;
@@ -44,7 +44,7 @@ pub use input::Input;
 pub use kanji_animation::{KanjiViewMode, KanjiWritingSection};
 pub use layout::{CardLayout, CardLayoutSize, PageLayout, PageLayoutVariant};
 pub use loading::{LoadingOverlay, Spinner};
-pub use markdown::MarkdownText;
+pub use markdown::{MarkdownText, MarkdownVariant};
 pub use modal::Modal;
 pub use search::Search;
 pub use skeleton::Skeleton;

@@ -1,6 +1,7 @@
 use crate::ui_components::{
     Button, ButtonVariant, Card, DisplayText, FuriganaText, Heading, HeadingLevel, KanjiViewMode,
-    KanjiWritingSection, MarkdownText, Tag, TagVariant, Text, TextSize, TypographyVariant,
+    KanjiWritingSection, MarkdownText, MarkdownVariant, Tag, TagVariant, Text, TextSize,
+    TypographyVariant,
 };
 use leptos::prelude::*;
 use origa::domain::Card as DomainCard;
@@ -134,6 +135,13 @@ pub fn LessonCard(
                             </Heading>
                         </Show>
 
+                        <div class="border-t border-[var(--border-light)] pt-4 mt-4">
+                            <Text size=TextSize::Default variant=TypographyVariant::Muted class="mb-2">
+                                "Ответ:"
+                            </Text>
+                            <MarkdownText content=Signal::derive(move || answer.get_value())/>
+                        </div>
+
                         <Show when=move || kanji_for_animation.get_value().is_some()>
                             {move || {
                                 kanji_for_animation.get_value().map(|kanji| view! {
@@ -161,14 +169,17 @@ pub fn LessonCard(
                                             examples
                                                 .into_iter()
                                                 .map(|(word, meaning)| {
+                                                    let meaning = StoredValue::new(meaning);
                                                     view! {
                                                         <div class="p-2 bg-[var(--bg-secondary)] rounded">
                                                             <Text size=TextSize::Default class="font-bold">
-                                                                {word}
+                                                                <FuriganaText text=word />
                                                             </Text>
-                                                            <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                                                                {meaning}
-                                                            </Text>
+                                                            <MarkdownText
+                                                                content=Signal::derive(move || meaning.get_value())
+                                                                variant=MarkdownVariant::Compact
+                                                                class="text-[var(--fg-muted)]"
+                                                            />
                                                         </div>
                                                     }
                                                 })
@@ -179,12 +190,6 @@ pub fn LessonCard(
                             </div>
                         </Show>
 
-                        <div class="border-t border-[var(--border-light)] pt-4 mt-4">
-                            <Text size=TextSize::Default variant=TypographyVariant::Muted class="mb-2">
-                                "Ответ:"
-                            </Text>
-                            <MarkdownText content=Signal::derive(move || answer.get_value())/>
-                        </div>
                     </div>
                 </Show>
             </div>
