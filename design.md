@@ -67,7 +67,7 @@
 
 ## Процесс обучения
 
-> Используемые юзкейсы - complete_lesson, select_cards_to_fixation, select_cards_to_lesson, rate_card.
+> Используемые юзкейсы - select_cards_to_fixation, select_cards_to_lesson, rate_card.
 
 Прогресс-бар: Отображение текущей позиции в уроке (например, 12 / 42) и визуальная шкала.
 

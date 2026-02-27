@@ -162,10 +162,6 @@ impl User {
         Ok(())
     }
 
-    pub fn add_lesson_duration(&mut self, lesson_duration: Duration) {
-        self.knowledge_set.add_lesson_duration(lesson_duration);
-    }
-
     pub fn delete_card(&mut self, card_id: Ulid) -> Result<(), OrigaError> {
         self.knowledge_set.delete_card(card_id)
     }

@@ -44,6 +44,9 @@ fn add_animation_delays(svg_html: &str, stroke_time: f32) -> (String, usize) {
 
 #[component]
 pub fn KanjiAnimation(kanji: String, #[prop(optional)] mode: KanjiViewMode) -> impl IntoView {
+    #[cfg(target_arch = "wasm32")]
+    let (iteration, set_iteration) = signal(0);
+    #[cfg(not(target_arch = "wasm32"))]
     let (iteration, _set_iteration) = signal(0);
 
     let encoded = urlencoding::encode(&kanji);
@@ -85,6 +88,8 @@ pub fn KanjiAnimation(kanji: String, #[prop(optional)] mode: KanjiViewMode) -> i
 
     #[cfg(target_arch = "wasm32")]
     Effect::new(move |_| {
+        use std::time::Duration;
+
         let iter = iteration.get();
         if iter % 2 != 0 {
             set_timeout(

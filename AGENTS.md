@@ -12,7 +12,6 @@ Workspace structure:
 - `origa_ui/` - Leptos UI library with Tauri bindings
 - `tokenizer/` - Japanese text tokenization service
 - `tauri/` - Tauri desktop application binary
-- `telegram/` - Telegram desktop application binary
 
 ## Code Style Guidelines
 
