@@ -1,10 +1,7 @@
 use std::io::Read;
 
-use crate::domain::is_dictionary_loaded;
 use flate2::read::DeflateDecoder;
-
-use crate::domain::OrigaError;
-use crate::domain::tokenizer::{DICTIONARY_DATA, DictionaryData, TOKENIZER};
+use origa::domain::{DictionaryData, OrigaError, init_dictionary, is_dictionary_loaded};
 
 fn decompress(data: Vec<u8>) -> Result<Vec<u8>, OrigaError> {
     let mut decoder = DeflateDecoder::new(&data[..]);
@@ -23,9 +20,10 @@ pub async fn load_dictionary() -> Result<(), OrigaError> {
         return Ok(());
     }
 
-    use reqwest::Client;
+    use leptos::wasm_bindgen::JsCast;
+    use wasm_bindgen_futures::JsFuture;
 
-    let base_url = "/dictionaries/unidic/";
+    let base_url = "/public/dictionaries/unidic/";
     let files = [
         ("char_def", "char_def.bin"),
         ("matrix", "matrix.mtx"),
@@ -37,7 +35,9 @@ pub async fn load_dictionary() -> Result<(), OrigaError> {
         ("metadata", "metadata.json"),
     ];
 
-    let client = Client::new();
+    let window = web_sys::window().ok_or_else(|| OrigaError::TokenizerError {
+        reason: "No window found".to_string(),
+    })?;
     let mut data = DictionaryData {
         char_def: Vec::new(),
         matrix: Vec::new(),
@@ -51,27 +51,40 @@ pub async fn load_dictionary() -> Result<(), OrigaError> {
 
     for (field, filename) in &files {
         let url = format!("{}{}", base_url, filename);
-        let response = client
-            .get(&url)
-            .send()
+        let resp_value = JsFuture::from(window.fetch_with_str(&url))
             .await
             .map_err(|e| OrigaError::TokenizerError {
-                reason: format!("Failed to fetch {}: {}", filename, e),
+                reason: format!("Failed to fetch {}: {:?}", filename, e),
             })?;
 
-        if !response.status().is_success() {
+        let resp: web_sys::Response =
+            resp_value
+                .dyn_into()
+                .map_err(|e| OrigaError::TokenizerError {
+                    reason: format!("Failed to cast response for {}: {:?}", filename, e),
+                })?;
+
+        if !resp.ok() {
             return Err(OrigaError::TokenizerError {
-                reason: format!("Failed to fetch {}: HTTP {}", filename, response.status()),
+                reason: format!("Failed to fetch {}: HTTP {}", filename, resp.status()),
             });
         }
 
-        let bytes = response
-            .bytes()
-            .await
+        let array_buffer_promise = resp
+            .array_buffer()
             .map_err(|e| OrigaError::TokenizerError {
-                reason: format!("Failed to read {}: {}", filename, e),
-            })?
-            .to_vec();
+                reason: format!("Failed to get array buffer for {}: {:?}", filename, e),
+            })?;
+
+        let array_buffer_value =
+            JsFuture::from(array_buffer_promise)
+                .await
+                .map_err(|e| OrigaError::TokenizerError {
+                    reason: format!("Failed to await array buffer for {}: {:?}", filename, e),
+                })?;
+
+        let array_buffer = js_sys::ArrayBuffer::from(array_buffer_value);
+        let bytes = js_sys::Uint8Array::new(&array_buffer).to_vec();
 
         let decompressed = if *field == "metadata" {
             bytes
@@ -92,8 +105,7 @@ pub async fn load_dictionary() -> Result<(), OrigaError> {
         }
     }
 
-    let _ = DICTIONARY_DATA.get_or_init(|| data);
-    init_tokenizer()
+    init_dictionary(data)
 }
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -102,16 +114,15 @@ pub fn load_dictionary() -> Result<(), OrigaError> {
         return Ok(());
     }
 
-    use std::fs;
-    use std::path::PathBuf;
+    use std::{env, fs, path::PathBuf};
 
-    let dict_dir = if let Ok(out_dir) = std::env::var("OUT_DIR") {
+    let dict_dir = if let Ok(out_dir) = env::var("OUT_DIR") {
         let out_dict = PathBuf::from(out_dir).join("lindera-unidic");
         if out_dict.exists() {
             out_dict
         } else {
             let manifest_dir =
-                std::env::var("CARGO_MANIFEST_DIR").map_err(|_| OrigaError::TokenizerError {
+                env::var("CARGO_MANIFEST_DIR").map_err(|_| OrigaError::TokenizerError {
                     reason: "CARGO_MANIFEST_DIR not set".to_string(),
                 })?;
             PathBuf::from(manifest_dir)
@@ -126,7 +137,7 @@ pub fn load_dictionary() -> Result<(), OrigaError> {
         }
     } else {
         let manifest_dir =
-            std::env::var("CARGO_MANIFEST_DIR").map_err(|_| OrigaError::TokenizerError {
+            env::var("CARGO_MANIFEST_DIR").map_err(|_| OrigaError::TokenizerError {
                 reason: "CARGO_MANIFEST_DIR not set".to_string(),
             })?;
         PathBuf::from(manifest_dir)
@@ -163,61 +174,5 @@ pub fn load_dictionary() -> Result<(), OrigaError> {
         metadata: read_file("metadata.json")?,
     };
 
-    let _ = DICTIONARY_DATA.get_or_init(|| data);
-    init_tokenizer()
-}
-
-fn init_tokenizer() -> Result<(), OrigaError> {
-    let data = DICTIONARY_DATA.get().ok_or(OrigaError::TokenizerError {
-        reason: "Dictionary data not loaded".to_string(),
-    })?;
-
-    let metadata = lindera_dictionary::dictionary::metadata::Metadata::load(&data.metadata)
-        .map_err(|e| OrigaError::TokenizerError {
-            reason: format!("Failed to load metadata: {}", e),
-        })?;
-
-    let prefix_dictionary =
-        lindera_dictionary::dictionary::prefix_dictionary::PrefixDictionary::load(
-            data.dict_da.clone(),
-            data.dict_vals.clone(),
-            data.words_idx.clone(),
-            data.words.clone(),
-            true,
-        );
-
-    let connection_cost_matrix =
-        lindera_dictionary::dictionary::connection_cost_matrix::ConnectionCostMatrix::load(
-            data.matrix.clone(),
-        );
-
-    let character_definition =
-        lindera_dictionary::dictionary::character_definition::CharacterDefinition::load(
-            &data.char_def,
-        )
-        .map_err(|e| OrigaError::TokenizerError {
-            reason: format!("Failed to load character definition: {}", e),
-        })?;
-
-    let unknown_dictionary =
-        lindera_dictionary::dictionary::unknown_dictionary::UnknownDictionary::load(&data.unk)
-            .map_err(|e| OrigaError::TokenizerError {
-                reason: format!("Failed to load unknown dictionary: {}", e),
-            })?;
-
-    let dictionary = lindera_dictionary::dictionary::Dictionary {
-        prefix_dictionary,
-        connection_cost_matrix,
-        character_definition,
-        unknown_dictionary,
-        metadata,
-    };
-
-    let segmenter =
-        lindera::segmenter::Segmenter::new(lindera::mode::Mode::Normal, dictionary, None);
-
-    let tokenizer = lindera::tokenizer::Tokenizer::new(segmenter);
-
-    let _ = TOKENIZER.get_or_init(|| tokenizer);
-    Ok(())
+    init_dictionary(data)
 }

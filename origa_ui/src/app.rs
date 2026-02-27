@@ -1,3 +1,4 @@
+use crate::dictionary::load_dictionary;
 use crate::repository::get_session;
 use crate::repository::{HybridUserRepository, SupabaseClient, clear_session};
 use crate::routes::AppRoutes;
@@ -5,7 +6,6 @@ use crate::ui_components::LoadingOverlay;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::application::{GetUserInfoUseCase, UserRepository};
-use origa::domain::load_dictionary;
 use origa::domain::{OrigaError, User};
 use origa::infrastructure::LlmServiceInvoker;
 

@@ -3,11 +3,6 @@ use std::fs;
 use std::path::Path;
 
 fn main() {
-    if env::var("CARGO_CFG_TARGET_ARCH").unwrap_or_default() == "wasm32" {
-        println!("cargo:warning=Skipping dictionary build for WASM target");
-        return;
-    }
-
     if env::var("LINDERA_DICTIONARIES_PATH").is_ok() || env::var("LINDERA_CACHE").is_ok() {
         println!("cargo:warning=Using external dictionary path, skipping build");
         return;
@@ -16,9 +11,6 @@ fn main() {
     let out_dir = env::var("OUT_DIR").unwrap();
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
     let public_dict_dir = Path::new(&manifest_dir)
-        .parent()
-        .unwrap()
-        .join("origa_ui")
         .join("public")
         .join("dictionaries")
         .join("unidic");
