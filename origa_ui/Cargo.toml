@@ -33,6 +33,12 @@ pulldown-cmark.workspace = true
 ammonia.workspace = true
 console_log.workspace = true
 log.workspace = true
+flate2 = "1.0"
+
+[build-dependencies]
+tokio = { version = "1.48", features = ["rt-multi-thread", "macros"] }
+lindera-dictionary = { version = "2.2", features = ["build_rs"] }
+serde_json = "1.0"
 
 [package.metadata.leptos]
 site-root = "target/site"
