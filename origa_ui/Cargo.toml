@@ -28,7 +28,7 @@ gloo-storage.workspace = true
 urlencoding.workspace = true
 reqwest.workspace = true
 base64.workspace = true
-tokio-fs-ext.workspace = true
+idb.workspace = true
 pulldown-cmark.workspace = true
 ammonia.workspace = true
 

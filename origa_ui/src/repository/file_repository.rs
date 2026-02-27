@@ -1,11 +1,61 @@
+use idb::{Database, DatabaseEvent, Factory, ObjectStoreParams, TransactionMode};
 use origa::{
     application::UserRepository,
     domain::{OrigaError, User},
 };
-use std::path::PathBuf;
-use tokio_fs_ext as fs;
+use serde_wasm_bindgen;
 use ulid::Ulid;
+use wasm_bindgen::JsValue;
 use web_sys::console;
+
+const DB_NAME: &str = "origa";
+const DB_VERSION: u32 = 1;
+const STORE_NAME: &str = "users";
+
+fn user_key(user_id: Ulid) -> String {
+    format!("user:{}", user_id)
+}
+
+async fn open_database() -> Result<Database, OrigaError> {
+    let factory = Factory::new().map_err(|e| {
+        let reason = format!("Failed to create IndexedDB factory: {:?}", e);
+        console::error_1(&reason.clone().into());
+        OrigaError::RepositoryError { reason }
+    })?;
+
+    let mut open_request = factory.open(DB_NAME, Some(DB_VERSION)).map_err(|e| {
+        let reason = format!("Failed to open IndexedDB: {:?}", e);
+        console::error_1(&reason.clone().into());
+        OrigaError::RepositoryError { reason }
+    })?;
+
+    open_request.on_upgrade_needed(|event| {
+        let database = match event.database() {
+            Ok(db) => db,
+            Err(e) => {
+                console::error_1(&format!("Failed to get database: {:?}", e).into());
+                return;
+            }
+        };
+
+        if database.store_names().iter().any(|n| n == STORE_NAME) {
+            return;
+        }
+
+        let store_params = ObjectStoreParams::new();
+
+        match database.create_object_store(STORE_NAME, store_params) {
+            Ok(_) => console::info_1(&"Object store 'users' created".into()),
+            Err(e) => console::error_1(&format!("Failed to create object store: {:?}", e).into()),
+        }
+    });
+
+    open_request.await.map_err(|e| {
+        let reason = format!("Failed to initialize IndexedDB: {:?}", e);
+        console::error_1(&reason.clone().into());
+        OrigaError::RepositoryError { reason }
+    })
+}
 
 #[derive(Clone)]
 pub struct FileSystemUserRepository {}
@@ -15,41 +65,42 @@ impl FileSystemUserRepository {
         Self {}
     }
 
-    fn user_file_path(&self, user_id: Ulid) -> PathBuf {
-        PathBuf::from(format!("{}.json", user_id))
-    }
+    async fn list_users(&self) -> Result<Vec<User>, OrigaError> {
+        let db = open_database().await?;
 
-    async fn list(&self) -> Result<Vec<User>, OrigaError> {
-        let mut users = vec![];
-        let mut entries = fs::read_dir(".").await.map_err(|e| {
-            let reason = format!("Failed to read users directory: {}", e);
+        let transaction = db
+            .transaction(&[STORE_NAME], TransactionMode::ReadOnly)
+            .map_err(|e| {
+                let reason = format!("Failed to create transaction: {:?}", e);
+                console::error_1(&reason.clone().into());
+                OrigaError::RepositoryError { reason }
+            })?;
+
+        let store = transaction.object_store(STORE_NAME).map_err(|e| {
+            let reason = format!("Failed to get object store: {:?}", e);
             console::error_1(&reason.clone().into());
             OrigaError::RepositoryError { reason }
         })?;
 
-        while let Some(entry) = entries.next_entry().await.map_err(|e| {
-            let reason = format!("Failed to read directory entry: {}", e);
+        let request = store.get_all(None, None).map_err(|e| {
+            let reason = format!("Failed to create get_all request: {:?}", e);
             console::error_1(&reason.clone().into());
             OrigaError::RepositoryError { reason }
-        })? {
-            let path = entry.path();
-            if path.extension().and_then(|s| s.to_str()) != Some("json") {
-                console::warn_1(&format!("Skipping non-json file: {}", path.display()).into());
-                continue;
-            }
+        })?;
 
-            let content = fs::read_to_string(&path).await.map_err(|e| {
-                let reason = format!("Failed to read user file {}: {}", path.display(), e);
+        let all_values: Vec<JsValue> = request.await.map_err(|e| {
+            let reason = format!("Failed to get all users: {:?}", e);
+            console::error_1(&reason.clone().into());
+            OrigaError::RepositoryError { reason }
+        })?;
+
+        let mut users = vec![];
+        for value in all_values {
+            let user: User = serde_wasm_bindgen::from_value(value).map_err(|e| {
+                let reason = format!("Failed to deserialize user: {:?}", e);
                 console::error_1(&reason.clone().into());
                 OrigaError::RepositoryError { reason }
             })?;
-
-            let user: User = serde_json::from_str(&content).map_err(|e| {
-                let reason = format!("Failed to deserialize user {}: {}", path.display(), e);
-                console::error_1(&reason.clone().into());
-                OrigaError::RepositoryError { reason }
-            })?;
-
             users.push(user);
         }
 
@@ -59,84 +110,134 @@ impl FileSystemUserRepository {
 
 impl UserRepository for FileSystemUserRepository {
     async fn find_by_id(&self, user_id: Ulid) -> Result<Option<User>, OrigaError> {
-        console::info_1(&format!("Id: {}", user_id).into());
+        let db = open_database().await?;
 
-        let file_path = self.user_file_path(user_id);
-        console::info_1(&format!("file_path: {}", file_path.display()).into());
+        let transaction = db
+            .transaction(&[STORE_NAME], TransactionMode::ReadOnly)
+            .map_err(|e| {
+                let reason = format!("Failed to create transaction: {:?}", e);
+                console::error_1(&reason.clone().into());
+                OrigaError::RepositoryError { reason }
+            })?;
 
-        if !file_path.exists() {
-            console::warn_1(&format!("User file not found: {}", file_path.display()).into());
-            return Ok(None);
+        let store = transaction.object_store(STORE_NAME).map_err(|e| {
+            let reason = format!("Failed to get object store: {:?}", e);
+            console::error_1(&reason.clone().into());
+            OrigaError::RepositoryError { reason }
+        })?;
+
+        let key = JsValue::from_str(&user_key(user_id));
+        let request = store.get(key).map_err(|e| {
+            let reason = format!("Failed to create get request: {:?}", e);
+            console::error_1(&reason.clone().into());
+            OrigaError::RepositoryError { reason }
+        })?;
+
+        let value: Option<JsValue> = request.await.map_err(|e| {
+            let reason = format!("Failed to get user: {:?}", e);
+            console::error_1(&reason.clone().into());
+            OrigaError::RepositoryError { reason }
+        })?;
+
+        match value {
+            Some(v) => {
+                let user: User = serde_wasm_bindgen::from_value(v).map_err(|e| {
+                    let reason = format!("Failed to deserialize user: {:?}", e);
+                    console::error_1(&reason.clone().into());
+                    OrigaError::RepositoryError { reason }
+                })?;
+                Ok(Some(user))
+            }
+            None => {
+                console::warn_1(&format!("User not found: {}", user_id).into());
+                Ok(None)
+            }
         }
-
-        let content = fs::read_to_string(&file_path).await.map_err(|e| {
-            let reason = format!("Failed to read user file {}: {}", file_path.display(), e);
-            console::error_1(&reason.clone().into());
-            OrigaError::RepositoryError { reason }
-        })?;
-
-        let user: User = serde_json::from_str(&content).map_err(|e| {
-            let reason = format!("Failed to deserialize user {}: {}", file_path.display(), e);
-            console::error_1(&reason.clone().into());
-            OrigaError::RepositoryError { reason }
-        })?;
-
-        console::info_1(&format!("User: {:#?}", user).into());
-        Ok(Some(user))
     }
 
     async fn find_by_email(&self, email: &str) -> Result<Option<User>, OrigaError> {
-        console::info_1(&format!("Email: {}", email).into());
-
-        let users = self.list().await?;
+        let users = self.list_users().await?;
         Ok(users.into_iter().find(|x| x.email() == email))
     }
 
     async fn find_by_telegram_id(&self, telegram_id: &u64) -> Result<Option<User>, OrigaError> {
-        let users = self.list().await?;
+        let users = self.list_users().await?;
         Ok(users
             .into_iter()
             .find(|x| x.telegram_user_id() == Some(telegram_id)))
     }
 
     async fn save(&self, user: &User) -> Result<(), OrigaError> {
-        let file_path = self.user_file_path(user.id());
-        console::info_1(&format!("Save file_path: {}", file_path.display()).into());
+        let db = open_database().await?;
 
-        let json = serde_json::to_string_pretty(&user).map_err(|e| {
-            let reason = format!("Failed to serialize user: {}", e);
+        let transaction = db
+            .transaction(&[STORE_NAME], TransactionMode::ReadWrite)
+            .map_err(|e| {
+                let reason = format!("Failed to create transaction: {:?}", e);
+                console::error_1(&reason.clone().into());
+                OrigaError::RepositoryError { reason }
+            })?;
+
+        let store = transaction.object_store(STORE_NAME).map_err(|e| {
+            let reason = format!("Failed to get object store: {:?}", e);
             console::error_1(&reason.clone().into());
             OrigaError::RepositoryError { reason }
         })?;
 
-        fs::write(&file_path, json).await.map_err(|e| {
-            let reason = format!("Failed to write user file {}: {}", file_path.display(), e);
+        let key = user_key(user.id());
+        let value = serde_wasm_bindgen::to_value(user).map_err(|e| {
+            let reason = format!("Failed to serialize user: {:?}", e);
             console::error_1(&reason.clone().into());
             OrigaError::RepositoryError { reason }
         })?;
 
-        console::info_1(&format!("Saved file_path: {}", file_path.display()).into());
+        let request = store
+            .put(&value, Some(&JsValue::from_str(&key)))
+            .map_err(|e| {
+                let reason = format!("Failed to create put request: {:?}", e);
+                console::error_1(&reason.clone().into());
+                OrigaError::RepositoryError { reason }
+            })?;
+
+        request.await.map_err(|e| {
+            let reason = format!("Failed to save user: {:?}", e);
+            console::error_1(&reason.clone().into());
+            OrigaError::RepositoryError { reason }
+        })?;
+
         Ok(())
     }
 
     async fn delete(&self, user_id: Ulid) -> Result<(), OrigaError> {
-        let file_path = self.user_file_path(user_id);
+        let db = open_database().await?;
 
-        if file_path.exists() {
-            fs::remove_file(&file_path).await.map_err(|e| {
-                let reason = format!("Failed to delete user file {}: {}", file_path.display(), e);
+        let transaction = db
+            .transaction(&[STORE_NAME], TransactionMode::ReadWrite)
+            .map_err(|e| {
+                let reason = format!("Failed to create transaction: {:?}", e);
                 console::error_1(&reason.clone().into());
                 OrigaError::RepositoryError { reason }
             })?;
-        } else {
-            console::warn_1(
-                &format!(
-                    "Attempted to delete non-existent user file: {}",
-                    file_path.display()
-                )
-                .into(),
-            );
-        }
+
+        let store = transaction.object_store(STORE_NAME).map_err(|e| {
+            let reason = format!("Failed to get object store: {:?}", e);
+            console::error_1(&reason.clone().into());
+            OrigaError::RepositoryError { reason }
+        })?;
+
+        let key = JsValue::from_str(&user_key(user_id));
+
+        let request = store.delete(key).map_err(|e| {
+            let reason = format!("Failed to create delete request: {:?}", e);
+            console::error_1(&reason.clone().into());
+            OrigaError::RepositoryError { reason }
+        })?;
+
+        request.await.map_err(|e| {
+            let reason = format!("Failed to delete user: {:?}", e);
+            console::error_1(&reason.clone().into());
+            OrigaError::RepositoryError { reason }
+        })?;
 
         Ok(())
     }
