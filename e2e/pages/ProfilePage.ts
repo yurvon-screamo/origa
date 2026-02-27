@@ -25,7 +25,7 @@ export class ProfilePage {
 		this.levelSelector = page.getByText("Целевой уровень JLPT");
 		this.languageSelector = page.getByText("Язык интерфейса");
 		this.duolingoTokenInput = page
-			.getByText("Duolingo JWT Token")
+			.getByText("Duolingo JWT токен")
 			.locator("..")
 			.getByRole("textbox");
 		this.remindersToggle = page.locator(".toggle-container");

@@ -3,7 +3,6 @@ use origa::{
     application::UserRepository,
     domain::{OrigaError, User},
 };
-use serde_wasm_bindgen;
 use ulid::Ulid;
 use wasm_bindgen::JsValue;
 use web_sys::console;

@@ -2,7 +2,6 @@ pub mod content;
 pub mod header;
 pub mod history_modal;
 pub mod stat_card;
-pub mod tab_bar;
 
 pub use content::HomeContent;
 pub use header::HomeHeader;
@@ -21,11 +20,8 @@ pub fn Home() -> impl IntoView {
     view! {
         <PageLayout variant=PageLayoutVariant::Full>
             <div class="min-h-screen flex flex-col pb-16">
-                // TODO: hide for mobile
                 <HomeHeader current_user />
                 <HomeContent />
-                // TODO: return for mobile
-                // <TabBar />
             </div>
         </PageLayout>
     }

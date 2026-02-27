@@ -1,12 +1,12 @@
 mod dictionary;
 mod error;
 mod furigana;
-pub mod grammar;
+mod grammar;
 mod japanese;
 mod knowledge;
 mod memory;
 mod score_content;
-pub mod tokenizer;
+mod tokenizer;
 mod user;
 mod value_objects;
 mod well_known_set;
@@ -25,7 +25,9 @@ pub use knowledge::{
 };
 pub use memory::{Difficulty, MemoryHistory, MemoryState, Rating, ReviewLog, Stability};
 pub use score_content::ScoreContentResult;
-pub use tokenizer::{PartOfSpeech, TokenInfo, is_dictionary_loaded, load_dictionary, tokenize_text};
+pub use tokenizer::{
+    PartOfSpeech, TokenInfo, is_dictionary_loaded, load_dictionary, tokenize_text,
+};
 pub use user::User;
 pub use value_objects::{Answer, JapaneseLevel, NativeLanguage, Question};
 pub use well_known_set::{WellKnownSet, WellKnownSetContent, WellKnownSets, load_well_known_set};

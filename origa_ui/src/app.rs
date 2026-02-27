@@ -5,9 +5,9 @@ use crate::ui_components::LoadingOverlay;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::application::{GetUserInfoUseCase, UserRepository};
+use origa::domain::load_dictionary;
 use origa::domain::{OrigaError, User};
 use origa::infrastructure::LlmServiceInvoker;
-use origa::load_dictionary;
 
 #[derive(Clone)]
 pub struct AuthContext {
@@ -48,13 +48,20 @@ impl AuthContext {
 
     pub async fn init_dictionary(&self) {
         #[cfg(target_arch = "wasm32")]
-        if let Err(e) = load_dictionary().await {
-            log::error!("Failed to load dictionary: {}", e);
+        {
+            use web_sys::console;
+            if let Err(e) = load_dictionary().await {
+                console::error_1(&format!("Failed to load dictionary: {}", e).into());
+            } else {
+                console::log_1(&"Dictionary loaded".into());
+            }
         }
+
         #[cfg(not(target_arch = "wasm32"))]
         if let Err(e) = load_dictionary() {
             log::error!("Failed to load dictionary: {}", e);
         }
+
         self.is_dictionary_loading.set(false);
     }
 }
