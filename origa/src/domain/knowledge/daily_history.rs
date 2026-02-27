@@ -1,4 +1,4 @@
-use chrono::{DateTime, Duration, Utc};
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -13,8 +13,6 @@ pub struct DailyHistoryItem {
     in_progress_words: usize,
     high_difficulty_words: usize,
     lessons_completed: usize,
-
-    total_duration: Duration,
 }
 
 impl Default for DailyHistoryItem {
@@ -35,7 +33,6 @@ impl DailyHistoryItem {
             in_progress_words: 0,
             high_difficulty_words: 0,
             lessons_completed: 0,
-            total_duration: Duration::zero(),
         }
     }
 
@@ -71,10 +68,6 @@ impl DailyHistoryItem {
         self.high_difficulty_words
     }
 
-    pub fn total_duration(&self) -> Duration {
-        self.total_duration
-    }
-
     pub fn update(
         &mut self,
         avg_stability: f64,
@@ -93,9 +86,5 @@ impl DailyHistoryItem {
         self.in_progress_words = in_progress_words;
         self.high_difficulty_words = high_difficulty_words;
         self.lessons_completed += 1;
-    }
-
-    pub fn add_lesson_duration(&mut self, lesson_duration: Duration) {
-        self.total_duration += lesson_duration;
     }
 }
