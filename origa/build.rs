@@ -103,7 +103,7 @@ fn main() {
     });
 
     let built_dict_dir = Path::new(&out_dir).join("lindera-unidic");
-    
+
     let files_to_copy = [
         "char_def.bin",
         "matrix.mtx",
@@ -119,7 +119,7 @@ fn main() {
         let src = built_dict_dir.join(file);
         let dst = public_dict_dir.join(file);
         if src.exists() {
-            fs::copy(&src, &dst).expect(&format!("Failed to copy {}", file));
+            fs::copy(&src, &dst).unwrap_or_else(|_| panic!("Failed to copy {}", file));
             println!("cargo:warning=Copied {}", file);
         } else {
             panic!("Dictionary file not found: {}", src.display());

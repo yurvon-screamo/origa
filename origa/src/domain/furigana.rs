@@ -1,7 +1,7 @@
 use crate::domain::{
+    OrigaError,
     japanese::{JapaneseChar, JapaneseText},
     tokenizer::tokenize_text,
-    OrigaError,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -103,12 +103,13 @@ pub fn furiganize_text(text: &str) -> Result<String, OrigaError> {
 
 #[cfg(test)]
 mod tests {
+
     use super::*;
     use crate::domain::{is_dictionary_loaded, load_dictionary};
 
     fn ensure_dictionary() {
         if !is_dictionary_loaded() {
-            let _ = load_dictionary();
+            load_dictionary().expect("Failed to load dictionary");
         }
     }
 
@@ -164,12 +165,16 @@ mod tests {
         ensure_dictionary();
         let segments = furiganize_segments("hello食べ物world").unwrap();
         assert!(!segments.is_empty());
-        assert!(segments
-            .iter()
-            .any(|s| s.text() == "hello" && !s.has_reading()));
-        assert!(segments
-            .iter()
-            .any(|s| s.text() == "world" && !s.has_reading()));
+        assert!(
+            segments
+                .iter()
+                .any(|s| s.text() == "hello" && !s.has_reading())
+        );
+        assert!(
+            segments
+                .iter()
+                .any(|s| s.text() == "world" && !s.has_reading())
+        );
     }
 
     #[test]
