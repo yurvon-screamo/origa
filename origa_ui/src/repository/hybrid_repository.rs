@@ -6,6 +6,7 @@ use origa::{
     application::UserRepository,
     domain::{OrigaError, User},
 };
+use web_sys::console;
 
 use crate::repository::file_repository::FileSystemUserRepository;
 use crate::repository::supabase_repository::SupabaseUserRepository;
@@ -99,13 +100,31 @@ impl HybridUserRepository {
 
         if let Ok(Some(remote_user)) = self.remote.find_current().await {
             if let Ok(Some(local_user)) = self.local.find_by_id(remote_user.id()).await {
-                if remote_user.updated_at() > local_user.updated_at() {
+                if remote_user.updated_at() != local_user.updated_at() {
                     let mut merged = local_user;
                     merged.merge(&remote_user);
-                    let _ = self.local.save(&merged).await;
+
+                    match self.local.save(&merged).await {
+                        Ok(_) => console::info_1(&"Local user updated from remote".into()),
+                        Err(e) => console::error_1(
+                            &format!("Failed to update local user: {:?}", e).into(),
+                        ),
+                    }
+
+                    match self.remote.save(&merged).await {
+                        Ok(_) => console::info_1(&"Remove user updated".into()),
+                        Err(e) => console::error_1(
+                            &format!("Failed to update remove user: {:?}", e).into(),
+                        ),
+                    }
                 }
             } else {
-                let _ = self.local.save(&remote_user).await;
+                match self.local.save(&remote_user).await {
+                    Ok(_) => console::info_1(&"Remote user saved to local storage".into()),
+                    Err(e) => console::error_1(
+                        &format!("Failed to save remote user to local storage: {:?}", e).into(),
+                    ),
+                }
             }
             set_synced(true);
         }
