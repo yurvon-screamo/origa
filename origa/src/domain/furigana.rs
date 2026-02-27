@@ -103,14 +103,64 @@ pub fn furiganize_text(text: &str) -> Result<String, OrigaError> {
 
 #[cfg(test)]
 mod tests {
+    use std::{env, fs, io::Read, path::PathBuf};
+
+    use flate2::read::DeflateDecoder;
 
     use super::*;
-    use crate::domain::{is_dictionary_loaded, load_dictionary};
+    use crate::domain::{DictionaryData, init_dictionary, is_dictionary_loaded};
+
+    fn decompress(data: Vec<u8>) -> Vec<u8> {
+        let mut decoder = DeflateDecoder::new(&data[..]);
+        let mut decompressed = Vec::new();
+        decoder.read_to_end(&mut decompressed).unwrap();
+        decompressed
+    }
 
     fn ensure_dictionary() {
-        if !is_dictionary_loaded() {
-            load_dictionary().expect("Failed to load dictionary");
+        if is_dictionary_loaded() {
+            return;
         }
+
+        let dict_dir = if let Ok(out_dir) = env::var("OUT_DIR") {
+            let out_dict = PathBuf::from(out_dir).join("lindera-unidic");
+            if out_dict.exists() {
+                out_dict
+            } else {
+                let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
+                PathBuf::from(manifest_dir)
+                    .parent()
+                    .unwrap()
+                    .join("origa_ui")
+                    .join("public")
+                    .join("dictionaries")
+                    .join("unidic")
+            }
+        } else {
+            let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
+            PathBuf::from(manifest_dir)
+                .parent()
+                .unwrap()
+                .join("origa_ui")
+                .join("public")
+                .join("dictionaries")
+                .join("unidic")
+        };
+
+        let read_file = |name: &str| fs::read(dict_dir.join(name)).unwrap();
+
+        let data = DictionaryData {
+            char_def: decompress(read_file("char_def.bin")),
+            matrix: decompress(read_file("matrix.mtx")),
+            dict_da: decompress(read_file("dict.da")),
+            dict_vals: decompress(read_file("dict.vals")),
+            unk: decompress(read_file("unk.bin")),
+            words_idx: decompress(read_file("dict.wordsidx")),
+            words: decompress(read_file("dict.words")),
+            metadata: read_file("metadata.json"),
+        };
+
+        init_dictionary(data).unwrap();
     }
 
     #[test]
