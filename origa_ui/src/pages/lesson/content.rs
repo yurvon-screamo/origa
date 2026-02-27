@@ -29,16 +29,19 @@ pub fn LessonContent() -> impl IntoView {
     let is_loading = RwSignal::new(true);
     let is_completed = RwSignal::new(false);
     let error_message = RwSignal::new(None::<String>);
+    let reload_trigger = RwSignal::new(0u32);
 
     let lesson_ctx = LessonContext {
         repository: repository.clone(),
         lesson_state,
         is_completed,
         mode,
+        reload_trigger,
     };
     provide_context(lesson_ctx);
 
     Effect::new(move |_| {
+        reload_trigger.get();
         let user = current_user.get();
         if let Some(user) = user {
             let user_id = user.id();

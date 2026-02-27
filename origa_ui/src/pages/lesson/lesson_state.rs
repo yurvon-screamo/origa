@@ -35,4 +35,5 @@ pub struct LessonContext {
     pub lesson_state: RwSignal<LessonState>,
     pub is_completed: RwSignal<bool>,
     pub mode: LessonMode,
+    pub reload_trigger: RwSignal<u32>,
 }

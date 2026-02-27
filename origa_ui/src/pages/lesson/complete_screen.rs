@@ -1,3 +1,4 @@
+use super::lesson_state::LessonContext;
 use crate::ui_components::{
     Button, ButtonVariant, Card, DisplayText, Text, TextSize, TypographyVariant,
 };
@@ -8,23 +9,25 @@ use leptos_use::use_event_listener;
 #[component]
 pub fn LessonCompleteScreen(is_completed: RwSignal<bool>, review_count: usize) -> impl IntoView {
     let navigate = use_navigate();
+    let lesson_ctx = use_context::<LessonContext>().expect("lesson context");
 
-    let navigate_next_lesson = {
-        let navigate = navigate.clone();
+    let go_next_lesson = {
+        let lesson_ctx = lesson_ctx.clone();
         Callback::new(move |_: ()| {
-            navigate("/lesson", Default::default());
+            lesson_ctx.is_completed.set(false);
+            lesson_ctx.reload_trigger.update(|t| *t += 1);
         })
     };
 
-    let navigate_home = {
+    let go_home = {
         let navigate = navigate.clone();
         Callback::new(move |_: ()| {
             navigate("/home", Default::default());
         })
     };
 
-    let navigate_kb_next = navigate.clone();
-    let navigate_kb_home = navigate;
+    let kb_lesson_ctx = lesson_ctx.clone();
+    let kb_navigate = navigate;
     let _ = use_event_listener(document(), leptos::ev::keydown, move |ev| {
         if !is_completed.get() {
             return;
@@ -35,10 +38,11 @@ pub fn LessonCompleteScreen(is_completed: RwSignal<bool>, review_count: usize) -
                 if ev.key() == " " {
                     ev.prevent_default();
                 }
-                navigate_kb_next("/lesson", Default::default());
+                kb_lesson_ctx.is_completed.set(false);
+                kb_lesson_ctx.reload_trigger.update(|t| *t += 1);
             }
             "Escape" => {
-                navigate_kb_home("/home", Default::default());
+                kb_navigate("/home", Default::default());
             }
             _ => {}
         }
@@ -63,19 +67,19 @@ pub fn LessonCompleteScreen(is_completed: RwSignal<bool>, review_count: usize) -
                 <Button
                     variant=Signal::derive(|| ButtonVariant::Filled)
                     on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
-                        navigate_next_lesson.run(());
+                        go_next_lesson.run(());
                     })
                 >
-                    "Следующий урок"
+                    "Следующий урок [Enter]"
                 </Button>
 
                 <Button
                     variant=Signal::derive(|| ButtonVariant::Ghost)
                     on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
-                        navigate_home.run(());
+                        go_home.run(());
                     })
                 >
-                    "На главную"
+                    "На главную [Esc]"
                 </Button>
             </div>
         </div>
