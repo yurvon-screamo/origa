@@ -106,6 +106,7 @@ pub fn LessonContent() -> impl IntoView {
 
         <Show when=move || is_completed.get()>
             <LessonCompleteScreen
+                is_completed
                 review_count=lesson_state.get().review_count
             />
         </Show>
