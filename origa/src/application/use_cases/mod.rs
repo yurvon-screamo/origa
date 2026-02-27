@@ -1,4 +1,3 @@
-mod complete_lesson;
 mod create_grammar_card;
 mod create_kanji_card;
 mod create_vocabulary_card;
@@ -22,7 +21,6 @@ mod select_cards_to_lesson;
 mod sync_duolingo_words;
 mod update_user_profile;
 
-pub use complete_lesson::CompleteLessonUseCase;
 pub use create_grammar_card::CreateGrammarCardUseCase;
 pub use create_kanji_card::CreateKanjiCardUseCase;
 pub use create_vocabulary_card::CreateVocabularyCardUseCase;

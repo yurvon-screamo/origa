@@ -206,13 +206,6 @@ impl KnowledgeSet {
         }
     }
 
-    pub(crate) fn add_lesson_duration(&mut self, lesson_duration: Duration) {
-        if let Some(last_item) = self.lesson_history.last_mut() {
-            last_item.add_lesson_duration(lesson_duration);
-        }
-        self.update_history();
-    }
-
     fn update_history(&mut self) {
         let mut avg_stability = 0.0;
         let mut avg_difficulty = 0.0;

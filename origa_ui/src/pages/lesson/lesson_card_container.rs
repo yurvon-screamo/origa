@@ -5,7 +5,7 @@ use leptos::ev::KeyboardEvent;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::application::srs_service::RateMode;
-use origa::application::use_cases::{CompleteLessonUseCase, RateCardUseCase};
+use origa::application::use_cases::RateCardUseCase;
 use origa::domain::Rating;
 use origa::domain::User;
 use origa::infrastructure::FsrsSrsService;
@@ -67,15 +67,6 @@ pub fn LessonCardContainer() -> impl IntoView {
                         state.review_count += 1;
 
                         if next_index >= total {
-                            let repo = repo.clone();
-
-                            spawn_local(async move {
-                                let use_case = CompleteLessonUseCase::new(&repo);
-                                let _ = use_case
-                                    .execute(user_id, chrono::Duration::seconds(0))
-                                    .await;
-                            });
-
                             is_completed.set(true);
                         } else {
                             state.current_index = next_index;
