@@ -66,6 +66,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
+RUN mkdir -p /var/lib/nginx/body /var/lib/nginx/fastcgi /var/lib/nginx/proxy /var/lib/nginx/scgi /var/lib/nginx/uwsgi \
+    && chown -R www-data:www-data /var/lib/nginx \
+    && mkdir -p /var/log/nginx /var/run \
+    && chown -R www-data:www-data /var/log/nginx
+
 COPY origa_ui/nginx.conf /etc/nginx/nginx.conf
 
 COPY --from=builder /dist /usr/share/nginx/html
