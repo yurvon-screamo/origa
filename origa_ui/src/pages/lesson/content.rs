@@ -3,7 +3,7 @@ use super::header::LessonHeader;
 use super::lesson_card_container::LessonCardContainer;
 use super::lesson_progress_view::LessonProgressView;
 use super::lesson_state::{LessonContext, LessonMode, LessonState};
-use crate::repository::SupabaseUserRepository;
+use crate::repository::HybridUserRepository;
 use crate::ui_components::{Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
@@ -17,7 +17,7 @@ pub fn LessonContent() -> impl IntoView {
     let current_user =
         use_context::<RwSignal<Option<User>>>().expect("current_user context not provided");
     let repository =
-        use_context::<SupabaseUserRepository>().expect("repository context not provided");
+        use_context::<HybridUserRepository>().expect("repository context not provided");
 
     let query = use_query_map();
     let mode = match query.read_untracked().get("mode").as_deref() {

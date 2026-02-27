@@ -1,5 +1,5 @@
 use crate::app::update_current_user;
-use crate::repository::SupabaseUserRepository;
+use crate::repository::HybridUserRepository;
 use crate::ui_components::{
     Alert, AlertType, Button, ButtonVariant, Input, Modal, Text, TextSize, TypographyVariant,
 };
@@ -17,7 +17,7 @@ pub fn AddWordModal(is_open: RwSignal<bool>) -> impl IntoView {
     let current_user =
         use_context::<RwSignal<Option<User>>>().expect("current_user context not provided");
     let repository =
-        use_context::<SupabaseUserRepository>().expect("repository context not provided");
+        use_context::<HybridUserRepository>().expect("repository context not provided");
     let llm_service = use_context::<LlmServiceInvoker>().expect("llm_service context not provided");
 
     let on_add = {

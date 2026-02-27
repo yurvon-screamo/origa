@@ -1,6 +1,8 @@
 use super::{HistoryModal, StatCard, StatMetric};
-use crate::repository::SupabaseUserRepository;
-use crate::ui_components::{Button, ButtonVariant, Card, Skeleton, Text, TextSize, TypographyVariant};
+use crate::repository::HybridUserRepository;
+use crate::ui_components::{
+    Button, ButtonVariant, Card, Skeleton, Text, TextSize, TypographyVariant,
+};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos_router::components::A;
@@ -53,7 +55,7 @@ pub fn HomeContent() -> impl IntoView {
     let current_user =
         use_context::<RwSignal<Option<User>>>().expect("current_user context not provided");
     let repository =
-        use_context::<SupabaseUserRepository>().expect("repository context not provided");
+        use_context::<HybridUserRepository>().expect("repository context not provided");
 
     let stats = RwSignal::new(None::<HomeStats>);
     let history = RwSignal::new(Vec::<DailyHistoryItem>::new());
@@ -144,7 +146,7 @@ pub fn HomeContent() -> impl IntoView {
                                         <Skeleton
                                             width=Signal::derive(|| Some("80px".to_string()))
                                             height=Signal::derive(|| Some("36px".to_string()))
-                                            class=Signal::derive(|| String::new())
+                                            class=Signal::derive(String::new)
                                         />
                                     </Card>
                                 }).collect::<Vec<_>>()}

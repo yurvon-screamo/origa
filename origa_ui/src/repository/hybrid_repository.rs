@@ -1,5 +1,5 @@
-use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::OnceLock;
+use std::sync::atomic::{AtomicBool, Ordering};
 use ulid::Ulid;
 
 use origa::{
@@ -7,7 +7,8 @@ use origa::{
     domain::{OrigaError, User},
 };
 
-use super::{FileSystemUserRepository, SupabaseUserRepository};
+use crate::repository::file_repository::FileSystemUserRepository;
+use crate::repository::supabase_repository::SupabaseUserRepository;
 
 static SYNCED: OnceLock<AtomicBool> = OnceLock::new();
 
@@ -23,27 +24,22 @@ fn set_synced(value: bool) {
         .store(value, Ordering::Relaxed);
 }
 
+#[derive(Clone)]
 pub struct HybridUserRepository {
     local: FileSystemUserRepository,
     remote: SupabaseUserRepository,
 }
 
 impl HybridUserRepository {
-    pub async fn new() -> Result<Self, OrigaError> {
-        let local = FileSystemUserRepository::new().await?;
-        Ok(Self {
-            local,
+    pub fn new() -> Self {
+        Self {
+            local: FileSystemUserRepository::new(),
             remote: SupabaseUserRepository::new(),
-        })
+        }
     }
 }
 
 impl UserRepository for HybridUserRepository {
-    async fn list(&self) -> Result<Vec<User>, OrigaError> {
-        self.sync_if_needed().await;
-        self.local.list().await
-    }
-
     async fn find_by_id(&self, user_id: Ulid) -> Result<Option<User>, OrigaError> {
         self.sync_if_needed().await;
         self.local.find_by_id(user_id).await
@@ -69,6 +65,16 @@ impl UserRepository for HybridUserRepository {
         wasm_bindgen_futures::spawn_local(async move {
             let _ = remote.save(&user_clone).await;
         });
+
+        Ok(())
+    }
+
+    async fn save_sync(&self, user: &User) -> Result<(), OrigaError> {
+        let mut user_clone = user.clone();
+        user_clone.touch();
+
+        self.local.save(&user_clone).await?;
+        self.remote.save(&user_clone).await?;
 
         Ok(())
     }

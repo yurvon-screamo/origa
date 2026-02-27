@@ -1,5 +1,4 @@
 use leptos::prelude::*;
-use std::time::Duration;
 
 #[derive(Clone, Copy, PartialEq, Default)]
 pub enum KanjiViewMode {
@@ -45,7 +44,7 @@ fn add_animation_delays(svg_html: &str, stroke_time: f32) -> (String, usize) {
 
 #[component]
 pub fn KanjiAnimation(kanji: String, #[prop(optional)] mode: KanjiViewMode) -> impl IntoView {
-    let (iteration, set_iteration) = signal(0);
+    let (iteration, _set_iteration) = signal(0);
 
     let encoded = urlencoding::encode(&kanji);
     let svg_path = match mode {

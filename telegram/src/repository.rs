@@ -30,9 +30,7 @@ impl FileSystemUserRepository {
     fn user_file_path(&self, user_id: Ulid) -> PathBuf {
         self.users_dir.join(format!("{}.json", user_id))
     }
-}
 
-impl UserRepository for FileSystemUserRepository {
     async fn list(&self) -> Result<Vec<User>, OrigaError> {
         let mut users = vec![];
         let mut entries =
@@ -80,7 +78,9 @@ impl UserRepository for FileSystemUserRepository {
 
         Ok(users)
     }
+}
 
+impl UserRepository for FileSystemUserRepository {
     async fn find_by_id(&self, user_id: Ulid) -> Result<Option<User>, OrigaError> {
         let file_path = self.user_file_path(user_id);
         if !file_path.exists() {
