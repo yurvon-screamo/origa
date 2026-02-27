@@ -39,6 +39,10 @@ export class KanjiPage {
 		await expect(this.addButton).toBeVisible();
 	}
 
+	async clickAddButton() {
+		await this.addButton.click();
+	}
+
 	async expectFiltersVisible() {
 		await expect(this.filterAll).toBeVisible();
 		await expect(this.filterNew).toBeVisible();
