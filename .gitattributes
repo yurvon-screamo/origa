@@ -7,3 +7,6 @@ origa/src/domain/**/*.svg filter=lfs diff=lfs merge=lfs -text
 
 origa_ui/public/*.svg filter=lfs diff=lfs merge=lfs -text
 origa_ui/public/**/*.svg filter=lfs diff=lfs merge=lfs -text
+
+# Dictionaries
+origa_ui/public/dictionaries/unidic/** filter=lfs diff=lfs merge=lfs
