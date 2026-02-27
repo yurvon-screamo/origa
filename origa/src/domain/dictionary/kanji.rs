@@ -3,12 +3,12 @@ use std::{collections::HashMap, sync::LazyLock};
 use serde::{Deserialize, Serialize};
 
 use crate::domain::{
+    OrigaError,
     dictionary::{
-        radical::{RadicalInfo, RADICAL_DICTIONARY},
+        radical::{RADICAL_DICTIONARY, RadicalInfo},
         vocabulary::VOCABULARY_DICTIONARY,
     },
     value_objects::{JapaneseLevel, NativeLanguage},
-    OrigaError,
 };
 
 const KANJI_DATA: &str = include_str!("./kanji.json");

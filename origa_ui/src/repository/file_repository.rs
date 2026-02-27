@@ -6,39 +6,39 @@ use std::path::PathBuf;
 use tokio_fs_ext as fs;
 use ulid::Ulid;
 
-// TODO: Заготовка на будущее для хранения данных в файловой системе, пока не трогаем
-
 const DATABASE_PATH: &str = "~/.origa";
 
+#[derive(Clone)]
 pub struct FileSystemUserRepository {
     users_dir: PathBuf,
 }
 
 impl FileSystemUserRepository {
-    pub async fn new() -> Result<Self, OrigaError> {
-        let database_path = PathBuf::from(DATABASE_PATH);
-        fs::create_dir_all(&database_path)
+    pub fn new() -> Self {
+        Self {
+            users_dir: PathBuf::from(DATABASE_PATH),
+        }
+    }
+
+    async fn ensure_dir(&self) -> Result<(), OrigaError> {
+        fs::create_dir_all(&self.users_dir)
             .await
             .map_err(|e| OrigaError::RepositoryError {
                 reason: format!(
                     "Failed to create database directory {}: {}",
-                    database_path.display(),
+                    self.users_dir.display(),
                     e
                 ),
-            })?;
-
-        Ok(Self {
-            users_dir: database_path,
-        })
+            })
     }
 
     fn user_file_path(&self, user_id: Ulid) -> PathBuf {
         self.users_dir.join(format!("{}.json", user_id))
     }
-}
 
-impl UserRepository for FileSystemUserRepository {
     async fn list(&self) -> Result<Vec<User>, OrigaError> {
+        self.ensure_dir().await?;
+
         let mut users = vec![];
         let mut entries =
             fs::read_dir(&self.users_dir)
@@ -85,7 +85,9 @@ impl UserRepository for FileSystemUserRepository {
 
         Ok(users)
     }
+}
 
+impl UserRepository for FileSystemUserRepository {
     async fn find_by_id(&self, user_id: Ulid) -> Result<Option<User>, OrigaError> {
         let file_path = self.user_file_path(user_id);
         if !file_path.exists() {
@@ -120,10 +122,13 @@ impl UserRepository for FileSystemUserRepository {
     }
 
     async fn save(&self, user: &User) -> Result<(), OrigaError> {
+        self.ensure_dir().await?;
+
         let file_path = self.user_file_path(user.id());
-        let json = serde_json::to_string_pretty(&user).map_err(|e| OrigaError::RepositoryError {
-            reason: format!("Failed to serialize user: {}", e),
-        })?;
+        let json =
+            serde_json::to_string_pretty(&user).map_err(|e| OrigaError::RepositoryError {
+                reason: format!("Failed to serialize user: {}", e),
+            })?;
 
         fs::write(&file_path, json)
             .await

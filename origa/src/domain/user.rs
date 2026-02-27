@@ -74,9 +74,9 @@ impl User {
         self.email = new_values.email.clone();
         self.username = new_values.username.clone();
         self.native_language = new_values.native_language.clone();
-        self.current_japanese_level = new_values.current_japanese_level.clone();
+        self.current_japanese_level = new_values.current_japanese_level;
         self.duolingo_jwt_token = new_values.duolingo_jwt_token.clone();
-        self.telegram_user_id = new_values.telegram_user_id.clone();
+        self.telegram_user_id = new_values.telegram_user_id;
         self.reminders_enabled = new_values.reminders_enabled;
         self.knowledge_set.merge(&new_values.knowledge_set);
         self.touch();

@@ -1,7 +1,7 @@
 use super::actions::create_import_action;
 use super::sets_level_group::SetsLevelGroup;
 use super::types::{JlptLevel, SetInfo, classify_set};
-use crate::repository::SupabaseUserRepository;
+use crate::repository::HybridUserRepository;
 use crate::ui_components::{Spinner, Text, TextSize};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
@@ -11,7 +11,7 @@ use origa::domain::{User, WellKnownSets};
 #[component]
 pub fn SetsContent() -> impl IntoView {
     let current_user = use_context::<RwSignal<Option<User>>>().expect("current_user context");
-    let repository = use_context::<SupabaseUserRepository>().expect("repository context");
+    let repository = use_context::<HybridUserRepository>().expect("repository context");
     let llm_service =
         use_context::<origa::infrastructure::LlmServiceInvoker>().expect("llm_service context");
 

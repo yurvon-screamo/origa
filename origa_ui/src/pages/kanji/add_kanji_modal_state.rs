@@ -1,4 +1,4 @@
-use crate::repository::SupabaseUserRepository;
+use crate::repository::HybridUserRepository;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::application::{KanjiInfoListUseCase, KanjiItemInfo};
@@ -14,7 +14,7 @@ pub struct ModalState {
     pub is_creating: RwSignal<bool>,
     pub error_message: RwSignal<Option<String>>,
     pub current_user: RwSignal<Option<User>>,
-    pub repository: SupabaseUserRepository,
+    pub repository: HybridUserRepository,
 }
 
 impl ModalState {
@@ -22,7 +22,7 @@ impl ModalState {
         let current_user =
             use_context::<RwSignal<Option<User>>>().expect("current_user context not provided");
         let repository =
-            use_context::<SupabaseUserRepository>().expect("repository context not provided");
+            use_context::<HybridUserRepository>().expect("repository context not provided");
 
         let selected_kanji = RwSignal::new(HashSet::new());
 

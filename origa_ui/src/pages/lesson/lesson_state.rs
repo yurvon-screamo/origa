@@ -1,4 +1,4 @@
-use crate::repository::SupabaseUserRepository;
+use crate::repository::HybridUserRepository;
 use leptos::prelude::*;
 use origa::domain::Card;
 use std::collections::HashMap;
@@ -31,7 +31,7 @@ pub struct LessonState {
 
 #[derive(Clone)]
 pub struct LessonContext {
-    pub repository: SupabaseUserRepository,
+    pub repository: HybridUserRepository,
     pub lesson_state: RwSignal<LessonState>,
     pub is_completed: RwSignal<bool>,
     pub mode: LessonMode,
