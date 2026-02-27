@@ -15,7 +15,7 @@ pub fn HomeHeader(current_user: RwSignal<Option<User>>) -> impl IntoView {
                                 let initials = user.username().to_uppercase();
                                 let initials_clone = initials.clone();
                                 view! {
-                                    <DisplayText class="font-serif text-2xl font-light tracking-tight">
+                                    <DisplayText class="font-serif text-2xl font-light tracking-tight whitespace-nowrap">
                                         "オリガ"
                                     </DisplayText>
                                     <Avatar initials=Signal::derive(move || initials_clone.clone()) />

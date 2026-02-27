@@ -5,7 +5,7 @@ use leptos::prelude::*;
 pub fn LoginHeader() -> impl IntoView {
     view! {
         <div class="text-center mb-10">
-            <Heading level=HeadingLevel::H1 variant=TypographyVariant::Primary class="mb-3">
+            <Heading level=HeadingLevel::H1 variant=TypographyVariant::Primary class="mb-3 whitespace-nowrap">
                 "オリガ"
             </Heading>
             <Text size=TextSize::Small variant=TypographyVariant::Muted uppercase=true tracking_widest=true>
