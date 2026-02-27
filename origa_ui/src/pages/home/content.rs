@@ -121,12 +121,12 @@ pub fn HomeContent() -> impl IntoView {
                     "Статистика"
                 </Text>
 
-                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
                     <Show
                         when=move || !is_loading.get()
                         fallback=move || {
                             view! {
-                                {(0..5).map(|_| view! {
+                                {(0..6).map(|_| view! {
                                     <Card class=Signal::derive(|| "p-6".to_string())>
                                         <Skeleton
                                             width=Signal::derive(|| Some("60%".to_string()))
@@ -153,6 +153,24 @@ pub fn HomeContent() -> impl IntoView {
                             }
                         }
                     >
+                        <Card class=Signal::derive(|| "p-6 flex flex-col justify-between".to_string())>
+                            <Text size=TextSize::Small variant=TypographyVariant::Muted class="mb-3">
+                                "Обучение"
+                            </Text>
+                            <div class="flex flex-col gap-2">
+                                <A href="/lesson">
+                                    <Button variant=Signal::derive(|| ButtonVariant::Filled) class="w-full">
+                                        "Начать урок"
+                                    </Button>
+                                </A>
+                                <A href="/lesson?mode=fixation">
+                                    <Button variant=Signal::derive(|| ButtonVariant::Olive) class="w-full">
+                                        "Закрепление"
+                                    </Button>
+                                </A>
+                            </div>
+                        </Card>
+
                         <StatCard
                             title=Signal::derive(|| "Всего карточек".to_string())
                             value=total_cards
@@ -189,31 +207,6 @@ pub fn HomeContent() -> impl IntoView {
                             on_history=open_history(StatMetric::HighDifficulty)
                         />
                     </Show>
-                </div>
-
-                <div class="mt-12">
-                    <Text size=TextSize::Small variant=TypographyVariant::Muted uppercase=true tracking_widest=true class="mb-6">
-                        "Обучение"
-                    </Text>
-                    <Card class="p-6">
-                        <div class="flex flex-col items-center">
-                            <Text size=TextSize::Default variant=TypographyVariant::Muted class="mb-4">
-                                "Начните изучение японского языка"
-                            </Text>
-                            <div class="flex gap-4">
-                                <A href="/lesson">
-                                    <Button variant=Signal::derive(|| ButtonVariant::Filled)>
-                                        "Начать урок"
-                                    </Button>
-                                </A>
-                                <A href="/lesson?mode=fixation">
-                                    <Button variant=Signal::derive(|| ButtonVariant::Olive)>
-                                        "Закрепление"
-                                    </Button>
-                                </A>
-                            </div>
-                        </div>
-                    </Card>
                 </div>
             </div>
 

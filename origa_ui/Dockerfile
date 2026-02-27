@@ -3,24 +3,28 @@
 ARG RUST_VERSION=1.88
 ARG TRUNK_VERSION=0.21.14
 
-FROM rust:${RUST_VERSION}-slim AS builder
+FROM ubuntu:22.04 AS builder
 
+ARG RUST_VERSION
 ARG TRUNK_VERSION
 
+ENV DEBIAN_FRONTEND=noninteractive
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    protobuf-compiler \
     curl \
+    ca-certificates \
+    protobuf-compiler \
     pkg-config \
     libssl-dev \
-    ca-certificates \
+    build-essential \
     clang \
     lld \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /app
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain ${RUST_VERSION}
+ENV PATH="/root/.cargo/bin:${PATH}"
 
-ENV CC=clang
-ENV CFLAGS="-std=c11"
+WORKDIR /app
 
 RUN rustup target add wasm32-unknown-unknown
 
@@ -54,23 +58,26 @@ RUN --mount=type=cache,target=/root/.cargo/registry \
 
 RUN cp -r origa_ui/dist /dist
 
-FROM nginx:alpine
+FROM debian:bookworm-slim
 
-RUN apk add --no-cache tzdata && \
-    rm -rf /var/cache/apk/*
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    nginx \
+    tzdata \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY origa_ui/nginx.conf /etc/nginx/nginx.conf
 
 COPY --from=builder /dist /usr/share/nginx/html
 
-RUN chown -R nginx:nginx /usr/share/nginx/html && \
+RUN chown -R www-data:www-data /usr/share/nginx/html && \
     chmod -R 755 /usr/share/nginx/html
 
 EXPOSE 80
 
-USER nginx
+USER www-data
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost/ || exit 1
+    CMD curl -f http://localhost/ || exit 1
 
 CMD ["nginx", "-g", "daemon off;"]
