@@ -1,7 +1,7 @@
 use crate::domain::{
-    OrigaError,
     japanese::{JapaneseChar, JapaneseText},
     tokenizer::tokenize_text,
+    OrigaError,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -104,6 +104,13 @@ pub fn furiganize_text(text: &str) -> Result<String, OrigaError> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::domain::{is_dictionary_loaded, load_dictionary};
+
+    fn ensure_dictionary() {
+        if !is_dictionary_loaded() {
+            let _ = load_dictionary();
+        }
+    }
 
     #[test]
     fn should_create_segment_with_reading() {
@@ -123,6 +130,7 @@ mod tests {
 
     #[test]
     fn should_furiganize_kanji_word_with_reading() {
+        ensure_dictionary();
         let segments = furiganize_segments("食べ物").unwrap();
         assert!(!segments.is_empty());
         assert!(segments.iter().any(|s| s.has_reading()));
@@ -130,6 +138,7 @@ mod tests {
 
     #[test]
     fn should_furiganize_hiragana_without_reading() {
+        ensure_dictionary();
         let segments = furiganize_segments("たべもの").unwrap();
         assert!(!segments.is_empty());
         assert!(segments.iter().all(|s| !s.has_reading()));
@@ -137,6 +146,7 @@ mod tests {
 
     #[test]
     fn should_furiganize_mixed_text() {
+        ensure_dictionary();
         let segments = furiganize_segments("食べます").unwrap();
         assert!(!segments.is_empty());
     }
@@ -151,18 +161,15 @@ mod tests {
 
     #[test]
     fn should_furiganize_mixed_japanese_and_ascii() {
+        ensure_dictionary();
         let segments = furiganize_segments("hello食べ物world").unwrap();
         assert!(!segments.is_empty());
-        assert!(
-            segments
-                .iter()
-                .any(|s| s.text() == "hello" && !s.has_reading())
-        );
-        assert!(
-            segments
-                .iter()
-                .any(|s| s.text() == "world" && !s.has_reading())
-        );
+        assert!(segments
+            .iter()
+            .any(|s| s.text() == "hello" && !s.has_reading()));
+        assert!(segments
+            .iter()
+            .any(|s| s.text() == "world" && !s.has_reading()));
     }
 
     #[test]
@@ -194,6 +201,7 @@ mod tests {
 
     #[test]
     fn should_furiganize_text_backwards_compatible() {
+        ensure_dictionary();
         let result = furiganize_text("食べ物").unwrap();
         assert!(result.contains("<ruby>"));
         assert!(result.contains("<rt>"));
