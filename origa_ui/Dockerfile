@@ -14,9 +14,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libssl-dev \
     ca-certificates \
     clang \
+    lld \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
+
+ENV CC=clang
+ENV CFLAGS="-std=c11"
 
 RUN rustup target add wasm32-unknown-unknown
 
