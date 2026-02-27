@@ -56,7 +56,7 @@ tokenizer = { path = "./tokenizer" }
 
 # Utility
 lazy_static = "1.4"
-tokio-fs-ext = { version = "0.7", features = ["tracing"] }
+idb = "0.6"
 
 # Testing
 rstest = "0.26"
