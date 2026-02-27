@@ -764,6 +764,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "console_log"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "be8aed40e4edbf4d3b4431ab260b63fdc40f5780a4766824329ea0f1eefe3c0f"
+dependencies = [
+ "log",
+ "web-sys",
+]
+
+[[package]]
 name = "const-str"
 version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2963,12 +2973,7 @@ dependencies = [
  "csv",
  "daachorse",
  "kanaria",
- "lindera-cc-cedict",
  "lindera-dictionary",
- "lindera-ipadic",
- "lindera-ipadic-neologd",
- "lindera-ko-dic",
- "lindera-unidic",
  "log",
  "once_cell",
  "percent-encoding",
@@ -2982,22 +2987,6 @@ dependencies = [
  "unicode-normalization",
  "unicode-segmentation",
  "url",
-]
-
-[[package]]
-name = "lindera-cc-cedict"
-version = "2.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "880215201bc84ee05f7d2316b5208b17e9f68350f07444d8f3bc9498f860a7b6"
-dependencies = [
- "anyhow",
- "byteorder",
- "csv",
- "lindera-dictionary",
- "once_cell",
- "rkyv",
- "serde_json",
- "tokio",
 ]
 
 [[package]]
@@ -3031,70 +3020,6 @@ dependencies = [
  "strum_macros",
  "tar",
  "thiserror 2.0.18",
- "tokio",
-]
-
-[[package]]
-name = "lindera-ipadic"
-version = "2.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "230940a008229feec880d542c337f47e7ecf10aa5823c8ddcfcaac856c575fb8"
-dependencies = [
- "anyhow",
- "byteorder",
- "csv",
- "lindera-dictionary",
- "once_cell",
- "rkyv",
- "serde_json",
- "tokio",
-]
-
-[[package]]
-name = "lindera-ipadic-neologd"
-version = "2.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dd6647edaf723ff7e0db8ff62af1013b51c55cf9a5a6d29e2e632efce3302f9e"
-dependencies = [
- "anyhow",
- "byteorder",
- "csv",
- "lindera-dictionary",
- "once_cell",
- "rkyv",
- "serde_json",
- "tokio",
-]
-
-[[package]]
-name = "lindera-ko-dic"
-version = "2.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e9682c84cb1bb0f3cb5f7c5f3994a7ab788992ef0868b40d00e994932ebb6229"
-dependencies = [
- "anyhow",
- "byteorder",
- "csv",
- "lindera-dictionary",
- "once_cell",
- "rkyv",
- "serde_json",
- "tokio",
-]
-
-[[package]]
-name = "lindera-unidic"
-version = "2.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "24b5f6aa0fc946c667cbf1f83f2db3b58233b66a7a66e5dae551f430708f6a54"
-dependencies = [
- "anyhow",
- "byteorder",
- "csv",
- "lindera-dictionary",
- "once_cell",
- "rkyv",
- "serde_json",
  "tokio",
 ]
 
@@ -3725,8 +3650,10 @@ dependencies = [
  "async-openai-wasm",
  "base64 0.22.1",
  "chrono",
+ "flate2",
  "getrandom 0.2.17",
  "lindera",
+ "lindera-dictionary",
  "rand 0.9.2",
  "regex",
  "reqwest 0.13.2",
@@ -3750,6 +3677,7 @@ dependencies = [
  "base64 0.22.1",
  "chrono",
  "console_error_panic_hook",
+ "console_log",
  "gloo-storage",
  "idb",
  "js-sys",
@@ -3757,6 +3685,7 @@ dependencies = [
  "leptos-use",
  "leptos_meta",
  "leptos_router",
+ "log",
  "origa",
  "pulldown-cmark",
  "reqwest 0.13.2",

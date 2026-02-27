@@ -7,6 +7,7 @@ use leptos::task::spawn_local;
 use origa::application::{GetUserInfoUseCase, UserRepository};
 use origa::domain::{OrigaError, User};
 use origa::infrastructure::LlmServiceInvoker;
+use origa::load_dictionary;
 
 #[derive(Clone)]
 pub struct AuthContext {
@@ -14,6 +15,7 @@ pub struct AuthContext {
     pub repository: HybridUserRepository,
     pub current_user: RwSignal<Option<User>>,
     pub is_session_loading: RwSignal<bool>,
+    pub is_dictionary_loading: RwSignal<bool>,
 }
 
 impl AuthContext {
@@ -23,6 +25,7 @@ impl AuthContext {
             repository: HybridUserRepository::new(),
             current_user: RwSignal::new(None),
             is_session_loading: RwSignal::new(true),
+            is_dictionary_loading: RwSignal::new(true),
         }
     }
 
@@ -41,6 +44,18 @@ impl AuthContext {
             }
         }
         self.is_session_loading.set(false);
+    }
+
+    pub async fn init_dictionary(&self) {
+        #[cfg(target_arch = "wasm32")]
+        if let Err(e) = load_dictionary().await {
+            log::error!("Failed to load dictionary: {}", e);
+        }
+        #[cfg(not(target_arch = "wasm32"))]
+        if let Err(e) = load_dictionary() {
+            log::error!("Failed to load dictionary: {}", e);
+        }
+        self.is_dictionary_loading.set(false);
     }
 }
 
@@ -84,11 +99,16 @@ pub fn App() -> impl IntoView {
 
     let ctx = auth_context.clone();
     spawn_local(async move {
+        ctx.init_dictionary().await;
+    });
+
+    let ctx = auth_context.clone();
+    spawn_local(async move {
         ctx.init_session().await;
     });
 
     view! {
-        <Show when=move || auth_context.is_session_loading.get()>
+        <Show when=move || auth_context.is_session_loading.get() || auth_context.is_dictionary_loading.get()>
             <LoadingOverlay />
         </Show>
         <AppRoutes />
