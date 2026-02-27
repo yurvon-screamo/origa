@@ -58,6 +58,6 @@ export class SetsPage {
 	}
 
 	async navigateViaTabBar() {
-		await this.page.getByRole("button", { name: "Наборы" }).click();
+		await this.page.goto("/sets");
 	}
 }

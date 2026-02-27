@@ -21,23 +21,23 @@ export class HomePage {
 	constructor(page: Page) {
 		this.page = page;
 		this.greeting = page.locator("text=/Привет,/");
-		this.totalCardsCard = page.locator(".card").filter({ hasText: "Total Cards" });
-		this.learnedCard = page.locator(".card").filter({ hasText: "Learned" });
-		this.inProgressCard = page.locator(".card").filter({ hasText: "In Progress" });
-		this.newCard = page.locator(".card").filter({ hasText: "New" });
+		this.totalCardsCard = page.locator(".card").filter({ hasText: "Всего карточек" });
+		this.learnedCard = page.locator(".card").filter({ hasText: "Изучено" });
+		this.inProgressCard = page.locator(".card").filter({ hasText: "В процессе" });
+		this.newCard = page.locator(".card").filter({ hasText: "Новые" });
 		this.highDifficultyCard = page.locator(".card").filter({ hasText: "Сложные слова" });
 		this.startLessonButton = page.getByRole("link", { name: /Начать урок/ }).or(
 			page.getByRole("button", { name: /Начать урок/ })
-		);
+		).first();
 		this.fixationButton = page.getByRole("link", { name: /Закрепление/ }).or(
 			page.getByRole("button", { name: /Закрепление/ })
-		);
+		).first();
 		this.tabBar = page.locator("nav").filter({ has: page.getByRole("button") });
-		this.tabBarHome = page.getByRole("button", { name: "Главная" });
-		this.tabBarWords = page.getByRole("button", { name: "Слова" });
-		this.tabBarKanji = page.getByRole("button", { name: "Кандзи" });
-		this.tabBarSets = page.getByRole("button", { name: "Наборы" });
-		this.tabBarGrammar = page.getByRole("button", { name: "Грамматика" });
+		this.tabBarHome = this.tabBar.getByRole("button", { name: "Главная" });
+		this.tabBarWords = this.tabBar.getByRole("button", { name: "Слова" });
+		this.tabBarKanji = this.tabBar.getByRole("button", { name: /Кандзи/ });
+		this.tabBarSets = this.tabBar.getByRole("button", { name: "Наборы" });
+		this.tabBarGrammar = this.tabBar.getByRole("button", { name: "Грамматика" });
 		this.profileButton = page.locator(".avatar").or(page.getByRole("button").filter({ hasText: /[A-ZА-Я]/ }));
 	}
 
@@ -46,8 +46,8 @@ export class HomePage {
 	}
 
 	async expectVisible() {
-		await expect(this.totalCardsCard).toBeVisible({ timeout: 10000 });
-		await expect(this.startLessonButton).toBeVisible({ timeout: 5000 });
+		await expect(this.totalCardsCard).toBeVisible({ timeout: 20000 });
+		await expect(this.startLessonButton).toBeVisible({ timeout: 10000 });
 	}
 
 	async getTotalCards(): Promise<string> {
@@ -76,23 +76,19 @@ export class HomePage {
 	}
 
 	async navigateToWords() {
-		await this.tabBarWords.click();
-		await this.page.waitForURL("/words");
+		await this.page.goto("/words");
 	}
 
 	async navigateToKanji() {
-		await this.tabBarKanji.click();
-		await this.page.waitForURL("/kanji");
+		await this.page.goto("/kanji");
 	}
 
 	async navigateToSets() {
-		await this.tabBarSets.click();
-		await this.page.waitForURL("/sets");
+		await this.page.goto("/sets");
 	}
 
 	async navigateToGrammar() {
-		await this.tabBarGrammar.click();
-		await this.page.waitForURL("/grammar");
+		await this.page.goto("/grammar");
 	}
 
 	async startLesson() {

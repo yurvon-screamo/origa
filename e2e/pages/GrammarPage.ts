@@ -130,6 +130,10 @@ export class GrammarPage {
 		await expect(this.modal).toBeVisible();
 	}
 
+	async clickAddButton() {
+		await this.addButton.click();
+	}
+
 	async expectModalNotVisible() {
 		await expect(this.modal).not.toBeVisible();
 	}
