@@ -1,7 +1,15 @@
 {
 	"e1fafdce94f72b6efc4c4f825bc87b67": {
 		"skill_id": "e1fafdce94f72b6efc4c4f825bc87b67",
-		"words": ["です", "と", "みず", "ごはん", "すし", "ください", "おちゃ"]
+		"words": [
+			"です",
+			"と",
+			"みず",
+			"ごはん",
+			"すし",
+			"ください",
+			"おちゃ"
+		]
 	},
 	"dd63dfe2af1fbc549a48679192a9d0d9": {
 		"skill_id": "dd63dfe2af1fbc549a48679192a9d0d9",

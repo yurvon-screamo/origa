@@ -48,7 +48,6 @@ pub use markdown::{MarkdownText, MarkdownVariant};
 pub use modal::Modal;
 pub use search::Search;
 pub use skeleton::Skeleton;
-pub use tab_button::{TabButton, TabButtonState};
 pub use tag::{Tag, TagVariant};
 pub use toggle::Toggle;
 pub use typography::{DisplayText, Heading, HeadingLevel, Text, TextSize, TypographyVariant};

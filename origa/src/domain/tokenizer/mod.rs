@@ -1,9 +1,7 @@
-mod loader;
 mod part_of_speech;
 
 use std::sync::OnceLock;
 
-pub use loader::load_dictionary;
 pub use part_of_speech::PartOfSpeech;
 
 use crate::domain::OrigaError;
@@ -39,15 +37,15 @@ impl TokenInfo {
     }
 }
 
-struct DictionaryData {
-    char_def: Vec<u8>,
-    matrix: Vec<u8>,
-    dict_da: Vec<u8>,
-    dict_vals: Vec<u8>,
-    unk: Vec<u8>,
-    words_idx: Vec<u8>,
-    words: Vec<u8>,
-    metadata: Vec<u8>,
+pub struct DictionaryData {
+    pub char_def: Vec<u8>,
+    pub matrix: Vec<u8>,
+    pub dict_da: Vec<u8>,
+    pub dict_vals: Vec<u8>,
+    pub unk: Vec<u8>,
+    pub words_idx: Vec<u8>,
+    pub words: Vec<u8>,
+    pub metadata: Vec<u8>,
 }
 
 static DICTIONARY_DATA: OnceLock<DictionaryData> = OnceLock::new();
@@ -57,9 +55,69 @@ pub fn is_dictionary_loaded() -> bool {
     TOKENIZER.get().is_some()
 }
 
+pub fn init_dictionary(data: DictionaryData) -> Result<(), OrigaError> {
+    let _ = DICTIONARY_DATA.get_or_init(|| data);
+    init_tokenizer()
+}
+
+fn init_tokenizer() -> Result<(), OrigaError> {
+    let data = DICTIONARY_DATA.get().ok_or(OrigaError::TokenizerError {
+        reason: "Dictionary data not loaded".to_string(),
+    })?;
+
+    let metadata = lindera_dictionary::dictionary::metadata::Metadata::load(&data.metadata)
+        .map_err(|e| OrigaError::TokenizerError {
+            reason: format!("Failed to load metadata: {}", e),
+        })?;
+
+    let prefix_dictionary =
+        lindera_dictionary::dictionary::prefix_dictionary::PrefixDictionary::load(
+            data.dict_da.clone(),
+            data.dict_vals.clone(),
+            data.words_idx.clone(),
+            data.words.clone(),
+            true,
+        );
+
+    let connection_cost_matrix =
+        lindera_dictionary::dictionary::connection_cost_matrix::ConnectionCostMatrix::load(
+            data.matrix.clone(),
+        );
+
+    let character_definition =
+        lindera_dictionary::dictionary::character_definition::CharacterDefinition::load(
+            &data.char_def,
+        )
+        .map_err(|e| OrigaError::TokenizerError {
+            reason: format!("Failed to load character definition: {}", e),
+        })?;
+
+    let unknown_dictionary =
+        lindera_dictionary::dictionary::unknown_dictionary::UnknownDictionary::load(&data.unk)
+            .map_err(|e| OrigaError::TokenizerError {
+                reason: format!("Failed to load unknown dictionary: {}", e),
+            })?;
+
+    let dictionary = lindera_dictionary::dictionary::Dictionary {
+        prefix_dictionary,
+        connection_cost_matrix,
+        character_definition,
+        unknown_dictionary,
+        metadata,
+    };
+
+    let segmenter =
+        lindera::segmenter::Segmenter::new(lindera::mode::Mode::Normal, dictionary, None);
+
+    let tokenizer = lindera::tokenizer::Tokenizer::new(segmenter);
+
+    let _ = TOKENIZER.get_or_init(|| tokenizer);
+    Ok(())
+}
+
 pub fn tokenize_text(text: &str) -> Result<Vec<TokenInfo>, OrigaError> {
     let tokenizer = TOKENIZER.get().ok_or(OrigaError::TokenizerError {
-        reason: "Dictionary not loaded. Call load_dictionary() first.".to_string(),
+        reason: "Dictionary not loaded. Call init_dictionary() first.".to_string(),
     })?;
 
     let filtered_text = crate::domain::filter_japanese_text(text);
@@ -99,13 +157,47 @@ pub fn tokenize_text(text: &str) -> Result<Vec<TokenInfo>, OrigaError> {
 
 #[cfg(test)]
 mod tests {
-    use crate::domain::tokenizer::loader::load_dictionary;
-
     use super::*;
 
     fn ensure_dictionary() {
         if !is_dictionary_loaded() {
-            let _ = load_dictionary();
+            let data = create_test_dictionary_data();
+            let _ = init_dictionary(data);
+        }
+    }
+
+    fn create_test_dictionary_data() -> DictionaryData {
+        use flate2::read::DeflateDecoder;
+        use std::fs;
+        use std::io::Read;
+
+        let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
+        let dict_dir = std::path::PathBuf::from(manifest_dir)
+            .parent()
+            .unwrap()
+            .join("origa_ui")
+            .join("public")
+            .join("dictionaries")
+            .join("unidic");
+
+        let decompress = |data: Vec<u8>| -> Vec<u8> {
+            let mut decoder = DeflateDecoder::new(&data[..]);
+            let mut decompressed = Vec::new();
+            decoder.read_to_end(&mut decompressed).unwrap();
+            decompressed
+        };
+
+        let read_file = |name: &str| fs::read(dict_dir.join(name)).unwrap();
+
+        DictionaryData {
+            char_def: decompress(read_file("char_def.bin")),
+            matrix: decompress(read_file("matrix.mtx")),
+            dict_da: decompress(read_file("dict.da")),
+            dict_vals: decompress(read_file("dict.vals")),
+            unk: decompress(read_file("unk.bin")),
+            words_idx: decompress(read_file("dict.wordsidx")),
+            words: decompress(read_file("dict.words")),
+            metadata: read_file("metadata.json"),
         }
     }
 

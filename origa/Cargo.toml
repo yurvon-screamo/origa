@@ -38,10 +38,5 @@ lindera.workspace = true
 lindera-dictionary.workspace = true
 flate2 = "1.0"
 
-[build-dependencies]
-tokio = { version = "1.48", features = ["rt-multi-thread", "macros"] }
-lindera-dictionary = { version = "2.2", features = ["build_rs"] }
-serde_json = "1.0"
-
 [dev-dependencies]
 rstest.workspace = true
