@@ -1,0 +1,16 @@
+target/
+dist/
+node_modules/
+.git/
+.github/
+.vercel/
+*.log
+.env*
+*.md
+tests/
+e2e/
+playwright-report/
+test-results/
+.vscode/
+.idea/
+*.toml.bak
