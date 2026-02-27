@@ -47,7 +47,8 @@ rand = "0.9"
 
 # Japan
 rs-fsrs = "1.2"
-lindera = { version = "2.2", features = ["embed-unidic"] }
+lindera = { version = "2.2", default-features = false }
+lindera-dictionary = { version = "2.2" }
 
 # Origa workspace crates
 origa = { path = "./origa" }
