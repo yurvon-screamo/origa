@@ -20,9 +20,11 @@ pub enum OrigaError {
     FuriganaError { reason: String },
     TranslationError { reason: String },
     KradfileError { reason: String },
+    VocabularyParseError { reason: String },
     InvalidValues { reason: String },
     TokenizerError { reason: String },
     GrammarFormatError { reason: String },
+    GrammarParseError { reason: String },
     WellKnownSetParseError { reason: String },
     SessionExpired,
 }
@@ -79,6 +81,9 @@ impl fmt::Display for OrigaError {
             OrigaError::KradfileError { reason } => {
                 write!(f, "Kradfile error: {}", reason)
             }
+            OrigaError::VocabularyParseError { reason } => {
+                write!(f, "Vocabulary parse error: {}", reason)
+            }
             OrigaError::InvalidValues { reason } => {
                 write!(f, "Invalid values: {}", reason)
             }
@@ -87,6 +92,9 @@ impl fmt::Display for OrigaError {
             }
             OrigaError::GrammarFormatError { reason } => {
                 write!(f, "Grammar rule format error: {}", reason)
+            }
+            OrigaError::GrammarParseError { reason } => {
+                write!(f, "Grammar parse error: {}", reason)
             }
             OrigaError::WellKnownSetParseError { reason } => {
                 write!(f, "WellKnownSetError: {}", reason)

@@ -7,9 +7,10 @@ use origa::domain::WellKnownSets;
 pub fn SetCard(
     set_info: SetInfo,
     is_importing: bool,
-    on_import: Callback<WellKnownSets>,
+    on_import: Callback<(WellKnownSets, String)>,
 ) -> impl IntoView {
     let description = set_info.description.clone();
+    let title = set_info.title.clone();
     view! {
         <div class="set-card">
             <div class="set-card-title">
@@ -26,8 +27,9 @@ pub fn SetCard(
                     variant=Signal::derive(|| ButtonVariant::Filled)
                     on_click=Callback::new({
                         let set = set_info.set;
+                        let title = title;
                         let on_import = on_import;
-                        move |_| on_import.run(set)
+                        move |_| on_import.run((set, title.clone()))
                     })
                     disabled=is_importing
                 >

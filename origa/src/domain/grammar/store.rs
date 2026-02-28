@@ -1,30 +1,43 @@
-use std::sync::LazyLock;
+use std::sync::OnceLock;
 
 use serde::Deserialize;
-use tracing::error;
 use ulid::Ulid;
 
-use crate::domain::GrammarRule;
+use crate::domain::{GrammarRule, OrigaError};
 
-const GRAMMAR_DATA: &str = include_str!("./grammar.json");
+pub static GRAMMAR_RULES: OnceLock<Vec<GrammarRule>> = OnceLock::new();
 
 #[derive(Deserialize)]
 struct GrammarStoreValue {
     grammar: Vec<GrammarRule>,
 }
 
-pub static GRAMMAR_RULES: LazyLock<Vec<GrammarRule>> = LazyLock::new(
-    || match serde_json::from_str::<GrammarStoreValue>(GRAMMAR_DATA) {
-        Ok(content) => content.grammar,
-        Err(e) => {
-            error!("Failed to parse grammar.json: {}", e);
-            panic!("Failed to parse grammar.json: {}", e);
-        }
-    },
-);
+pub struct GrammarData {
+    pub grammar_json: String,
+}
+
+pub fn init_grammar_rules(data: GrammarData) -> Result<(), OrigaError> {
+    let content: GrammarStoreValue =
+        serde_json::from_str(&data.grammar_json).map_err(|e| OrigaError::GrammarParseError {
+            reason: format!("Failed to parse grammar.json: {}", e),
+        })?;
+    let _ = GRAMMAR_RULES.set(content.grammar);
+    Ok(())
+}
+
+pub fn is_grammar_loaded() -> bool {
+    GRAMMAR_RULES.get().is_some()
+}
 
 pub fn get_rule_by_id(rule_id: &Ulid) -> Option<&'static GrammarRule> {
-    GRAMMAR_RULES.iter().find(|x| x.rule_id() == rule_id)
+    GRAMMAR_RULES.get()?.iter().find(|x| x.rule_id() == rule_id)
+}
+
+pub fn iter_grammar_rules() -> impl Iterator<Item = &'static GrammarRule> {
+    GRAMMAR_RULES
+        .get()
+        .into_iter()
+        .flat_map(|rules| rules.iter())
 }
 
 #[cfg(test)]
@@ -32,7 +45,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn grammar_rules_should_be_loaded() {
-        assert!(!GRAMMAR_RULES.is_empty());
+    fn grammar_rules_should_not_be_loaded_before_init() {
+        assert!(!is_grammar_loaded());
     }
 }

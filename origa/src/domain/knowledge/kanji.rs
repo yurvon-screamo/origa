@@ -1,6 +1,7 @@
 use crate::domain::{
-    Answer, JapaneseLevel, KANJI_DICTIONARY, NativeLanguage, OrigaError, Question, RadicalInfo,
-    VOCABULARY_DICTIONARY,
+    dictionary::{get_kanji_info, get_radical_info, get_translation, RadicalInfo},
+    value_objects::{JapaneseLevel, NativeLanguage},
+    Answer, OrigaError, Question,
 };
 use serde::{Deserialize, Serialize};
 
@@ -19,19 +20,13 @@ pub struct ExampleKanjiWord {
 
 impl KanjiCard {
     pub fn new(kanji: String, native_language: &NativeLanguage) -> Result<Self, OrigaError> {
-        let kanji_info = KANJI_DICTIONARY.get_kanji_info(&kanji)?;
+        let kanji_info = get_kanji_info(&kanji)?;
         let description = kanji_info.description();
         let example_words = kanji_info
             .popular_words()
             .iter()
             .map(|word| {
-                let meaning = VOCABULARY_DICTIONARY
-                    .get_vocabulary_info(word)
-                    .map(|kanji_info| match native_language {
-                        NativeLanguage::Russian => kanji_info.russian_translation().to_string(),
-                        NativeLanguage::English => kanji_info.english_translation().to_string(),
-                    })
-                    .unwrap_or_default();
+                let meaning = get_translation(word, native_language).unwrap_or_default();
 
                 ExampleKanjiWord {
                     word: word.clone(),
@@ -60,23 +55,24 @@ impl KanjiCard {
     }
 
     pub fn jlpt(&self) -> JapaneseLevel {
-        KANJI_DICTIONARY
-            .get_kanji_info(self.kanji.text())
+        get_kanji_info(self.kanji.text())
             .map(|kanji_info| kanji_info.jlpt().to_owned())
             .unwrap_or(JapaneseLevel::N1)
     }
 
     pub fn used_in(&self) -> u32 {
-        KANJI_DICTIONARY
-            .get_kanji_info(self.kanji.text())
+        get_kanji_info(self.kanji.text())
             .map(|kanji_info| kanji_info.used_in())
             .unwrap_or(0)
     }
 
-    pub fn radicals_info(&self) -> Result<Vec<&RadicalInfo>, OrigaError> {
-        Ok(KANJI_DICTIONARY
-            .get_kanji_info(self.kanji.text())?
-            .radicals())
+    pub fn radicals_info(&self) -> Result<Vec<&'static RadicalInfo>, OrigaError> {
+        let kanji_info = get_kanji_info(self.kanji.text())?;
+        kanji_info
+            .radicals_chars()
+            .iter()
+            .map(|&r| get_radical_info(r))
+            .collect()
     }
 }
 
