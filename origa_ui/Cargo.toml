@@ -10,6 +10,8 @@ readme.workspace = true
 
 [dependencies]
 leptos.workspace = true
+leptos_icons.workspace = true
+icondata.workspace = true
 leptos-use.workspace = true
 leptos_router.workspace = true
 leptos_meta.workspace = true
