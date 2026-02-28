@@ -4,8 +4,8 @@ use std::sync::OnceLock;
 use serde::{Deserialize, Serialize};
 
 use crate::domain::{
-    value_objects::{JapaneseLevel, NativeLanguage},
     OrigaError,
+    value_objects::{JapaneseLevel, NativeLanguage},
 };
 
 pub static WELL_KNOWN_SETS: OnceLock<HashMap<WellKnownSets, WellKnownSet>> = OnceLock::new();

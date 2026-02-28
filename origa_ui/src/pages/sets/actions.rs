@@ -23,7 +23,10 @@ pub fn create_import_action(
         let title_for_state = title.clone();
         spawn_local(async move {
             if let Some(user) = current_user.get_untracked() {
-                importing.set(Some(ImportState { set, title: title_for_state }));
+                importing.set(Some(ImportState {
+                    set,
+                    title: title_for_state,
+                }));
                 import_result.set(None);
                 let use_case = ImportWellKnownSetUseCase::new(&repo, &llm);
                 match use_case.execute(user.id(), set).await {

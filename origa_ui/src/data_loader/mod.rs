@@ -1,4 +1,3 @@
-use futures::future::join_all;
 use origa::domain::{
     GrammarData, KanjiData, OrigaError, RadicalData, VocabularyChunkData, WellKnownSetData,
     init_grammar_rules, init_kanji_dictionary, init_radical_dictionary, init_vocabulary_dictionary,
@@ -20,18 +19,12 @@ pub async fn load_all_data() -> Result<(), OrigaError> {
         return Ok(());
     }
 
-    let (vocab_result, radical_result) = futures::join!(
-        load_vocabulary(),
-        load_radical()
-    );
+    let (vocab_result, radical_result) = futures::join!(load_vocabulary(), load_radical());
     vocab_result?;
     radical_result?;
 
-    let (kanji_result, grammar_result, wks_result) = futures::join!(
-        load_kanji(),
-        load_grammar(),
-        load_well_known_sets()
-    );
+    let (kanji_result, grammar_result, wks_result) =
+        futures::join!(load_kanji(), load_grammar(), load_well_known_sets());
     kanji_result?;
     grammar_result?;
     wks_result?;
@@ -90,9 +83,7 @@ pub async fn load_vocabulary() -> Result<(), OrigaError> {
     }
 
     let chunk_futures: Vec<_> = (1..=10)
-        .map(|i| {
-            fetch_text(format!("domain/dictionary/vocabulary/chunk_{:02}.json", i))
-        })
+        .map(|i| fetch_text(format!("domain/dictionary/vocabulary/chunk_{:02}.json", i)))
         .collect();
 
     let chunks = join_all(chunk_futures).await;
@@ -169,19 +160,34 @@ pub async fn load_well_known_sets() -> Result<(), OrigaError> {
     fetch_futures.push(fetch_text("domain/well_known_set/jltp_n5.json".to_string()));
 
     for i in 1..=20 {
-        fetch_futures.push(fetch_text(format!("domain/well_known_set/migii/n5/migii_n5_{}.json", i)));
+        fetch_futures.push(fetch_text(format!(
+            "domain/well_known_set/migii/n5/migii_n5_{}.json",
+            i
+        )));
     }
     for i in 1..=11 {
-        fetch_futures.push(fetch_text(format!("domain/well_known_set/migii/n4/migii_n4_{}.json", i)));
+        fetch_futures.push(fetch_text(format!(
+            "domain/well_known_set/migii/n4/migii_n4_{}.json",
+            i
+        )));
     }
     for i in 1..=31 {
-        fetch_futures.push(fetch_text(format!("domain/well_known_set/migii/n3/migii_n3_{}.json", i)));
+        fetch_futures.push(fetch_text(format!(
+            "domain/well_known_set/migii/n3/migii_n3_{}.json",
+            i
+        )));
     }
     for i in 1..=31 {
-        fetch_futures.push(fetch_text(format!("domain/well_known_set/migii/n2/migii_n2_{}.json", i)));
+        fetch_futures.push(fetch_text(format!(
+            "domain/well_known_set/migii/n2/migii_n2_{}.json",
+            i
+        )));
     }
     for i in 1..=56 {
-        fetch_futures.push(fetch_text(format!("domain/well_known_set/migii/n1/migii_n1_{}.json", i)));
+        fetch_futures.push(fetch_text(format!(
+            "domain/well_known_set/migii/n1/migii_n1_{}.json",
+            i
+        )));
     }
 
     let results = join_all(fetch_futures).await;
