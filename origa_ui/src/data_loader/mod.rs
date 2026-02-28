@@ -1,3 +1,4 @@
+use futures::future::join_all;
 use origa::domain::{
     GrammarData, KanjiData, OrigaError, RadicalData, VocabularyChunkData, WellKnownSetData,
     init_grammar_rules, init_kanji_dictionary, init_radical_dictionary, init_vocabulary_dictionary,
@@ -19,11 +20,21 @@ pub async fn load_all_data() -> Result<(), OrigaError> {
         return Ok(());
     }
 
-    load_vocabulary().await?;
-    load_radical().await?;
-    load_kanji().await?;
-    load_grammar().await?;
-    load_well_known_sets().await?;
+    let (vocab_result, radical_result) = futures::join!(
+        load_vocabulary(),
+        load_radical()
+    );
+    vocab_result?;
+    radical_result?;
+
+    let (kanji_result, grammar_result, wks_result) = futures::join!(
+        load_kanji(),
+        load_grammar(),
+        load_well_known_sets()
+    );
+    kanji_result?;
+    grammar_result?;
+    wks_result?;
 
     log::info!("All data loaded successfully");
     Ok(())
@@ -33,11 +44,9 @@ pub async fn load_all_data() -> Result<(), OrigaError> {
 async fn fetch_text(url: &str) -> Result<String, OrigaError> {
     use leptos::wasm_bindgen::JsCast;
     use wasm_bindgen_futures::JsFuture;
-    use web_sys::console;
 
     let url = format!("/public/{}", url);
 
-    console::log_1(&format!("Fetching text from {}", url).into());
     let window = web_sys::window().ok_or_else(|| OrigaError::TokenizerError {
         reason: "No window found".to_string(),
     })?;
@@ -80,12 +89,15 @@ pub async fn load_vocabulary() -> Result<(), OrigaError> {
         return Ok(());
     }
 
-    let mut chunks = Vec::with_capacity(10);
-    for i in 1..=10 {
-        let url = format!("domain/dictionary/vocabulary/chunk_{:02}.json", i);
-        let json = fetch_text(&url).await?;
-        chunks.push(json);
-    }
+    let chunk_futures: Vec<_> = (1..=10)
+        .map(|i| {
+            let url = format!("domain/dictionary/vocabulary/chunk_{:02}.json", i);
+            fetch_text(&url)
+        })
+        .collect();
+
+    let chunks = join_all(chunk_futures).await;
+    let chunks: Vec<String> = chunks.into_iter().collect::<Result<Vec<_>, _>>()?;
 
     let data = VocabularyChunkData {
         chunk_01: chunks[0].clone(),
@@ -137,7 +149,7 @@ pub async fn load_grammar() -> Result<(), OrigaError> {
         return Ok(());
     }
 
-    let json = fetch_text("/domain/grammar/grammar.json").await?;
+    let json = fetch_text("domain/grammar/grammar.json").await?;
     init_grammar_rules(GrammarData { grammar_json: json })?;
     log::info!("Grammar loaded");
     Ok(())
@@ -149,53 +161,44 @@ pub async fn load_well_known_sets() -> Result<(), OrigaError> {
         return Ok(());
     }
 
-    let jlpt_n1 = fetch_text("/domain/well_known_set/jltp_n1.json").await?;
-    let jlpt_n2 = fetch_text("/domain/well_known_set/jltp_n2.json").await?;
-    let jlpt_n3 = fetch_text("/domain/well_known_set/jltp_n3.json").await?;
-    let jlpt_n4 = fetch_text("/domain/well_known_set/jltp_n4.json").await?;
-    let jlpt_n5 = fetch_text("/domain/well_known_set/jltp_n5.json").await?;
+    let mut fetch_futures = Vec::new();
 
-    let mut migii_n5 = Vec::new();
+    fetch_futures.push(fetch_text("domain/well_known_set/jltp_n1.json"));
+    fetch_futures.push(fetch_text("domain/well_known_set/jltp_n2.json"));
+    fetch_futures.push(fetch_text("domain/well_known_set/jltp_n3.json"));
+    fetch_futures.push(fetch_text("domain/well_known_set/jltp_n4.json"));
+    fetch_futures.push(fetch_text("domain/well_known_set/jltp_n5.json"));
+
     for i in 1..=20 {
-        let url = format!("/domain/well_known_set/migii/n5/migii_n5_{}.json", i);
-        migii_n5.push(fetch_text(&url).await?);
+        fetch_futures.push(fetch_text(&format!("domain/well_known_set/migii/n5/migii_n5_{}.json", i)));
     }
-
-    let mut migii_n4 = Vec::new();
     for i in 1..=11 {
-        let url = format!("/domain/well_known_set/migii/n4/migii_n4_{}.json", i);
-        migii_n4.push(fetch_text(&url).await?);
+        fetch_futures.push(fetch_text(&format!("domain/well_known_set/migii/n4/migii_n4_{}.json", i)));
     }
-
-    let mut migii_n3 = Vec::new();
     for i in 1..=31 {
-        let url = format!("/domain/well_known_set/migii/n3/migii_n3_{}.json", i);
-        migii_n3.push(fetch_text(&url).await?);
+        fetch_futures.push(fetch_text(&format!("domain/well_known_set/migii/n3/migii_n3_{}.json", i)));
     }
-
-    let mut migii_n2 = Vec::new();
     for i in 1..=31 {
-        let url = format!("/domain/well_known_set/migii/n2/migii_n2_{}.json", i);
-        migii_n2.push(fetch_text(&url).await?);
+        fetch_futures.push(fetch_text(&format!("domain/well_known_set/migii/n2/migii_n2_{}.json", i)));
     }
-
-    let mut migii_n1 = Vec::new();
     for i in 1..=56 {
-        let url = format!("/domain/well_known_set/migii/n1/migii_n1_{}.json", i);
-        migii_n1.push(fetch_text(&url).await?);
+        fetch_futures.push(fetch_text(&format!("domain/well_known_set/migii/n1/migii_n1_{}.json", i)));
     }
+
+    let results = join_all(fetch_futures).await;
+    let all_jsons: Vec<String> = results.into_iter().collect::<Result<Vec<_>, _>>()?;
 
     let data = WellKnownSetData {
-        jlpt_n1,
-        jlpt_n2,
-        jlpt_n3,
-        jlpt_n4,
-        jlpt_n5,
-        migii_n5,
-        migii_n4,
-        migii_n3,
-        migii_n2,
-        migii_n1,
+        jlpt_n1: all_jsons[0].clone(),
+        jlpt_n2: all_jsons[1].clone(),
+        jlpt_n3: all_jsons[2].clone(),
+        jlpt_n4: all_jsons[3].clone(),
+        jlpt_n5: all_jsons[4].clone(),
+        migii_n5: all_jsons[5..25].to_vec(),
+        migii_n4: all_jsons[25..36].to_vec(),
+        migii_n3: all_jsons[36..67].to_vec(),
+        migii_n2: all_jsons[67..98].to_vec(),
+        migii_n1: all_jsons[98..154].to_vec(),
     };
 
     init_well_known_sets(data)?;
