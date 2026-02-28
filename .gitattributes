@@ -2,9 +2,8 @@
 words/duolingo_words.json filter=lfs diff=lfs merge=lfs -text
 
 # Domain - all JSON and SVG files in LFS
-origa/src/domain/**/*.json filter=lfs diff=lfs merge=lfs -text
-origa/src/domain/**/*.svg filter=lfs diff=lfs merge=lfs -text
-
+origa_ui/public/domain/**/*.json filter=lfs diff=lfs merge=lfs -text
+origa_ui/public/domain/**/*.svg filter=lfs diff=lfs merge=lfs -text
 origa_ui/public/*.svg filter=lfs diff=lfs merge=lfs -text
 origa_ui/public/**/*.svg filter=lfs diff=lfs merge=lfs -text
 
