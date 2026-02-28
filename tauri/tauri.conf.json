@@ -4,10 +4,10 @@
 	"version": "0.1.0",
 	"identifier": "net.uwuwu.origa",
 	"build": {
-		"beforeDevCommand": "trunk serve",
+		"beforeDevCommand": "cd origa_ui && trunk serve",
 		"devUrl": "http://localhost:1420",
-		"beforeBuildCommand": "trunk build",
-		"frontendDist": "../dist"
+		"beforeBuildCommand": "cd origa_ui && trunk build",
+		"frontendDist": "../origa_ui/dist"
 	},
 	"app": {
 		"withGlobalTauri": true,
