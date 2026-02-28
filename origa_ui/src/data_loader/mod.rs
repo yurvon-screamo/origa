@@ -33,20 +33,27 @@ pub async fn load_all_data() -> Result<(), OrigaError> {
 async fn fetch_text(url: &str) -> Result<String, OrigaError> {
     use leptos::wasm_bindgen::JsCast;
     use wasm_bindgen_futures::JsFuture;
+    use web_sys::console;
 
+    let url = format!("/public/{}", url);
+
+    console::log_1(&format!("Fetching text from {}", url).into());
     let window = web_sys::window().ok_or_else(|| OrigaError::TokenizerError {
         reason: "No window found".to_string(),
     })?;
 
-    let resp_value = JsFuture::from(window.fetch_with_str(url))
+    let resp_value = JsFuture::from(window.fetch_with_str(&url))
         .await
         .map_err(|e| OrigaError::TokenizerError {
             reason: format!("Failed to fetch {}: {:?}", url, e),
         })?;
 
-    let resp: web_sys::Response = resp_value.dyn_into().map_err(|e| OrigaError::TokenizerError {
-        reason: format!("Failed to cast response for {}: {:?}", url, e),
-    })?;
+    let resp: web_sys::Response =
+        resp_value
+            .dyn_into()
+            .map_err(|e| OrigaError::TokenizerError {
+                reason: format!("Failed to cast response for {}: {:?}", url, e),
+            })?;
 
     if !resp.ok() {
         return Err(OrigaError::TokenizerError {
@@ -75,7 +82,7 @@ pub async fn load_vocabulary() -> Result<(), OrigaError> {
 
     let mut chunks = Vec::with_capacity(10);
     for i in 1..=10 {
-        let url = format!("/data/dictionary/vocabulary/chunk_{:02}.json", i);
+        let url = format!("data/dictionary/vocabulary/chunk_{:02}.json", i);
         let json = fetch_text(&url).await?;
         chunks.push(json);
     }
@@ -104,8 +111,10 @@ pub async fn load_radical() -> Result<(), OrigaError> {
         return Ok(());
     }
 
-    let json = fetch_text("/data/dictionary/radicals.json").await?;
-    init_radical_dictionary(RadicalData { radicals_json: json })?;
+    let json = fetch_text("data/dictionary/radicals.json").await?;
+    init_radical_dictionary(RadicalData {
+        radicals_json: json,
+    })?;
     log::info!("Radicals loaded");
     Ok(())
 }
@@ -116,7 +125,7 @@ pub async fn load_kanji() -> Result<(), OrigaError> {
         return Ok(());
     }
 
-    let json = fetch_text("/data/dictionary/kanji.json").await?;
+    let json = fetch_text("data/dictionary/kanji.json").await?;
     init_kanji_dictionary(KanjiData { kanji_json: json })?;
     log::info!("Kanji loaded");
     Ok(())
@@ -218,9 +227,7 @@ fn read_json_file(path: &str) -> Result<String, OrigaError> {
         reason: "CARGO_MANIFEST_DIR not set".to_string(),
     })?;
 
-    let full_path = PathBuf::from(manifest_dir)
-        .join("public")
-        .join(path);
+    let full_path = PathBuf::from(manifest_dir).join("public").join(path);
 
     fs::read_to_string(&full_path).map_err(|e| OrigaError::TokenizerError {
         reason: format!("Failed to read {}: {}", full_path.display(), e),
@@ -265,7 +272,9 @@ pub fn load_radical() -> Result<(), OrigaError> {
     }
 
     let json = read_json_file("data/dictionary/radicals.json")?;
-    init_radical_dictionary(RadicalData { radicals_json: json })?;
+    init_radical_dictionary(RadicalData {
+        radicals_json: json,
+    })?;
     log::info!("Radicals loaded");
     Ok(())
 }
