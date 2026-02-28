@@ -30,22 +30,18 @@ jobs:
           lfs: true
 
       - name: Install build dependencies
-        run: |
-          apt-get update && apt-get install -y nodejs nsis clang lld llvm
-          curl -fsSL https://bun.sh/install | bash
-          echo "$HOME/.bun/bin" >> $GITHUB_PATH
+        run: apt-get update && apt-get install -y nsis clang lld llvm
 
       - name: Setup Rust targets
-        run: rustup target add x86_64-pc-windows-msvc
+        run: rustup target add x86_64-pc-windows-msvc wasm32-unknown-unknown
 
       - name: Install cargo-xwin
         run: cargo install --locked cargo-xwin
 
-      - name: Install Trunk
-        run: cargo install trunk
-
-      - name: Install Tauri CLI
-        run: cargo install tauri-cli --locked
+      - name: Install cargo-binstall
+        run: |
+          curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
+          cargo binstall trunk tauri-cli --no-confirm --force
 
       - name: Build frontend
         working-directory: origa_ui
@@ -86,7 +82,7 @@ jobs:
       - name: Setup Rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: x86_64-unknown-linux-gnu
+          targets: x86_64-unknown-linux-gnu,wasm32-unknown-unknown
 
       - name: Cache Cargo
         uses: Swatinem/rust-cache@v2
@@ -94,11 +90,10 @@ jobs:
           cache-all-crates: true
           save-if: ${{ github.ref == 'refs/heads/master' }}
 
-      - name: Install Trunk
-        run: cargo install trunk
-
-      - name: Install Tauri CLI
-        run: cargo install tauri-cli --locked
+      - name: Install cargo-binstall
+        run: |
+          curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
+          cargo binstall trunk tauri-cli --no-confirm --force
 
       - name: Build frontend
         working-directory: origa_ui
@@ -136,19 +131,13 @@ jobs:
         with:
           lfs: true
 
-      - name: Install dependencies
-        run: |
-          curl -fsSL https://bun.sh/install | bash
-          echo "$HOME/.bun/bin" >> $GITHUB_PATH
-
       - name: Setup Rust targets
-        run: rustup target add x86_64-apple-darwin aarch64-apple-darwin
+        run: rustup target add x86_64-apple-darwin aarch64-apple-darwin wasm32-unknown-unknown
 
-      - name: Install Trunk
-        run: cargo install trunk
-
-      - name: Install Tauri CLI
-        run: cargo install tauri-cli --locked
+      - name: Install cargo-binstall
+        run: |
+          curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
+          cargo binstall trunk tauri-cli --no-confirm --force
 
       - name: Build frontend
         working-directory: origa_ui
