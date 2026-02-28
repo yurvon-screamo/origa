@@ -1,5 +1,17 @@
 use origa::domain::WellKnownSets;
 
+#[derive(Clone, Debug, PartialEq)]
+pub struct ImportState {
+    pub set: WellKnownSets,
+    pub title: String,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct ImportResult {
+    pub is_success: bool,
+    pub message: String,
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum SetType {
     Jlpt,

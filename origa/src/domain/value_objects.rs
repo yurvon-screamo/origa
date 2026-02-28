@@ -79,6 +79,10 @@ impl JapaneseLevel {
             JapaneseLevel::N1 => "N1",
         }
     }
+
+    pub fn from_str_or_default(s: &str) -> Self {
+        s.parse().unwrap_or(JapaneseLevel::N1)
+    }
 }
 
 impl fmt::Display for JapaneseLevel {

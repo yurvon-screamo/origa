@@ -1,6 +1,6 @@
 use crate::application::LlmService;
+use crate::domain::get_translation;
 use crate::domain::OrigaError;
-use crate::domain::VOCABULARY_DICTIONARY;
 use crate::domain::{Answer, JapaneseLevel, NativeLanguage};
 use serde::Deserialize;
 
@@ -45,9 +45,7 @@ impl<'a, L: LlmService> GenerateCardContentUseCase<'a, L> {
         question_text: &str,
         native_language: &NativeLanguage,
     ) -> Result<Option<CardContent>, OrigaError> {
-        if let Some(translation) =
-            VOCABULARY_DICTIONARY.get_translation(question_text, native_language)
-        {
+        if let Some(translation) = get_translation(question_text, native_language) {
             let answer = Answer::new(translation)?;
             return Ok(Some(CardContent { answer }));
         }

@@ -2,7 +2,7 @@ use ammonia::clean;
 use ego_tree::NodeRef;
 use leptos::prelude::*;
 use origa::domain::furiganize_text;
-use pulldown_cmark::{html, Options, Parser};
+use pulldown_cmark::{Options, Parser, html};
 use scraper::{Html, Node};
 
 #[derive(Clone, Copy, PartialEq, Default, Debug)]
@@ -24,7 +24,7 @@ fn render_markdown(content: &str) -> String {
     clean(&html_output)
 }
 
-const SKIP_TAGS: &[&str] = &["code", "pre", "ruby", "rt", "rp"];
+const SKIP_TAGS: &[&str] = &["pre", "ruby", "rt", "rp"];
 
 fn add_furigana_to_html(html: &str) -> String {
     let document = Html::parse_document(html);

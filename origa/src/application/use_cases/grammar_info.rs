@@ -4,7 +4,7 @@ use ulid::Ulid;
 use crate::{
     application::UserRepository,
     domain::{
-        OrigaError, PartOfSpeech, {GRAMMAR_RULES, GrammarRule}, {JapaneseLevel, NativeLanguage},
+        iter_grammar_rules, OrigaError, PartOfSpeech, GrammarRule, JapaneseLevel, NativeLanguage,
     },
 };
 
@@ -43,8 +43,7 @@ impl<'a, R: UserRepository> GrammarRuleInfoUseCase<'a, R> {
 
         let lang = user.native_language();
 
-        Ok(GRAMMAR_RULES
-            .iter()
+        Ok(iter_grammar_rules()
             .filter_map(|rule| filter_by_level(rule, lang, level))
             .filter(|item| !existing_rule_ids.contains(&item.rule_id))
             .collect())

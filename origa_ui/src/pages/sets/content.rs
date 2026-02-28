@@ -1,12 +1,12 @@
 use super::actions::create_import_action;
 use super::sets_level_group::SetsLevelGroup;
-use super::types::{JlptLevel, SetInfo, classify_set};
+use super::types::{ImportResult, ImportState, JlptLevel, SetInfo, classify_set};
 use crate::repository::HybridUserRepository;
-use crate::ui_components::{Spinner, Text, TextSize};
+use crate::ui_components::{Alert, AlertType, LoadingOverlay, Spinner};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::application::ListWellKnownSetsUseCase;
-use origa::domain::{User, WellKnownSets};
+use origa::domain::User;
 
 #[component]
 pub fn SetsContent() -> impl IntoView {
@@ -16,8 +16,8 @@ pub fn SetsContent() -> impl IntoView {
         use_context::<origa::infrastructure::LlmServiceInvoker>().expect("llm_service context");
 
     let sets: RwSignal<Vec<SetInfo>> = RwSignal::new(Vec::new());
-    let importing: RwSignal<Option<WellKnownSets>> = RwSignal::new(None);
-    let import_result: RwSignal<Option<String>> = RwSignal::new(None);
+    let importing: RwSignal<Option<ImportState>> = RwSignal::new(None);
+    let import_result: RwSignal<Option<ImportResult>> = RwSignal::new(None);
     let is_loading: RwSignal<bool> = RwSignal::new(true);
 
     let repository_for_load = repository.clone();
@@ -61,11 +61,35 @@ pub fn SetsContent() -> impl IntoView {
 
     view! {
         <div class="sets-page">
+            <Show when=move || importing.get().is_some()>
+                <LoadingOverlay
+                    message=Signal::derive(move || {
+                        importing.get()
+                            .map(|s| format!("Импорт: {}...", s.title))
+                            .unwrap_or_default()
+                    })
+                />
+            </Show>
             <Show when=move || import_result.get().is_some()>
-                <div class="mb-4 p-4 border border-[var(--border-dark)] bg-[var(--bg-paper)]">
-                    <Text size=TextSize::Default>
-                        {move || import_result.get().unwrap_or_default()}
-                    </Text>
+                <div class="mb-4">
+                    <Alert
+                        alert_type=Signal::derive(move || {
+                            import_result.get()
+                                .map(|r| if r.is_success { AlertType::Success } else { AlertType::Error })
+                                .unwrap_or(AlertType::Info)
+                        })
+                        title=Signal::derive(move || {
+                            import_result.get()
+                                .map(|r| if r.is_success { "Импорт завершён" } else { "Ошибка импорта" })
+                                .unwrap_or_default()
+                                .to_string()
+                        })
+                        message=Signal::derive(move || {
+                            import_result.get()
+                                .map(|r| r.message)
+                                .unwrap_or_default()
+                        })
+                    />
                 </div>
             </Show>
             <Show when=move || is_loading.get()>

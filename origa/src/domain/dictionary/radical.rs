@@ -1,13 +1,34 @@
-use std::{collections::HashMap, sync::LazyLock};
+use std::{collections::HashMap, sync::OnceLock};
 
 use serde::{Deserialize, Serialize};
 
-use crate::domain::{
-    OrigaError, dictionary::kanji::parse_jlpt_level, value_objects::JapaneseLevel,
-};
+use crate::domain::{value_objects::JapaneseLevel, OrigaError};
 
-const RADKFILE_DATA: &str = include_str!("./radicals.json");
-pub static RADICAL_DICTIONARY: LazyLock<RadicalDatabase> = LazyLock::new(RadicalDatabase::new);
+pub static RADICAL_DICTIONARY: OnceLock<RadicalDatabase> = OnceLock::new();
+
+pub struct RadicalData {
+    pub radicals_json: String,
+}
+
+pub fn init_radical_dictionary(data: RadicalData) -> Result<(), OrigaError> {
+    let db = RadicalDatabase::from_json(&data.radicals_json)?;
+    let _ = RADICAL_DICTIONARY.set(db);
+    Ok(())
+}
+
+pub fn is_radical_loaded() -> bool {
+    RADICAL_DICTIONARY.get().is_some()
+}
+
+pub fn get_radical_info(radical: char) -> Result<&'static RadicalInfo, OrigaError> {
+    RADICAL_DICTIONARY
+        .get()
+        .ok_or(OrigaError::KradfileError {
+            reason: "Radical dictionary not loaded".to_string(),
+        })?
+        .get_radical_info(&radical)
+}
+
 pub struct RadicalDatabase {
     known_radicals: Vec<char>,
     radical_map: HashMap<char, RadicalInfo>,
@@ -49,21 +70,18 @@ impl RadicalInfo {
     }
 }
 
-impl Default for RadicalDatabase {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 impl RadicalDatabase {
-    pub fn new() -> Self {
-        let radkfile: RadkfilStoredType = serde_json::from_str(RADKFILE_DATA).unwrap();
+    fn from_json(json: &str) -> Result<Self, OrigaError> {
+        let radkfile: RadkfilStoredType =
+            serde_json::from_str(json).map_err(|e| OrigaError::KradfileError {
+                reason: format!("Failed to parse radicals.json: {}", e),
+            })?;
         let radical_map = radkfile
             .radicals
             .into_iter()
             .map(|(k, v)| {
                 let radical_char = k.chars().next().unwrap();
-                let jlpt = parse_jlpt_level(&v.jlpt);
+                let jlpt = JapaneseLevel::from_str_or_default(&v.jlpt);
                 let kanji = v
                     .kanji
                     .into_iter()
@@ -86,10 +104,10 @@ impl RadicalDatabase {
 
         let known_radicals: Vec<_> = radical_map.keys().copied().collect();
 
-        Self {
+        Ok(Self {
             known_radicals,
             radical_map,
-        }
+        })
     }
 
     pub fn get_radical_info(&self, radical: &char) -> Result<&RadicalInfo, OrigaError> {

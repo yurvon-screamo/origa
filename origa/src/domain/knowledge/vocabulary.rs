@@ -1,6 +1,6 @@
-use crate::domain::dictionary::{KANJI_DICTIONARY, KanjiInfo};
+use crate::domain::dictionary::{get_kanji_info, KanjiInfo};
 use crate::domain::japanese::JapaneseChar;
-use crate::domain::tokenizer::{PartOfSpeech, tokenize_text};
+use crate::domain::tokenizer::{tokenize_text, PartOfSpeech};
 use crate::domain::{Answer, JapaneseLevel, NativeLanguage, Question};
 use crate::domain::{GrammarRule, OrigaError};
 use serde::{Deserialize, Serialize};
@@ -29,8 +29,8 @@ impl VocabularyCard {
             .text()
             .chars()
             .filter(|c| c.is_kanji())
-            .filter_map(|c| KANJI_DICTIONARY.get_kanji_info(&c.to_string()).ok())
-            .filter(|k| k.jlpt() <= current_level)
+            .filter_map(|c| get_kanji_info(&c.to_string()).ok())
+            .filter(|k: &&KanjiInfo| k.jlpt() <= current_level)
             .collect::<Vec<_>>()
     }
 
