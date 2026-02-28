@@ -180,3 +180,61 @@ jobs:
           name: macos-build
           path: Origa-macos-arm64.zip
           retention-days: 7
+
+  release:
+    name: Update Latest Release
+    needs: [build-windows, build-linux, build-macos]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download Windows artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-build
+          path: artifacts/windows
+
+      - name: Download Linux artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-build
+          path: artifacts/linux
+
+      - name: Download macOS artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-build
+          path: artifacts/macos
+
+      - name: Prepare release assets
+        run: |
+          mkdir -p release
+          find artifacts -name "*.exe" -exec mv {} release/ \;
+          find artifacts -name "*.msi" -exec mv {} release/ \;
+          find artifacts -name "*.AppImage" -exec mv {} release/ \;
+          find artifacts -name "*.deb" -exec mv {} release/ \;
+          find artifacts -name "*.zip" -exec mv {} release/ \;
+          ls -la release/
+
+      - name: Update latest release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: Latest Build
+          body: |
+            Автоматическая сборка от ${{ github.sha }}
+            
+            ## Windows
+            - `origa_*_x64-setup.exe` - NSIS инсталлятор
+            - `origa_*_x64_en-US.msi` - MSI инсталлятор
+            
+            ## Linux
+            - `*.AppImage` - Portable версия
+            - `*.deb` - Debian/Ubuntu пакет
+            
+            ## macOS
+            - `Origa-macos-arm64.zip` - Apple Silicon
+          files: release/*
+          prerelease: false
+          draft: false
