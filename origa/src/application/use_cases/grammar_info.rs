@@ -4,7 +4,7 @@ use ulid::Ulid;
 use crate::{
     application::UserRepository,
     domain::{
-        iter_grammar_rules, OrigaError, PartOfSpeech, GrammarRule, JapaneseLevel, NativeLanguage,
+        GrammarRule, JapaneseLevel, NativeLanguage, OrigaError, PartOfSpeech, iter_grammar_rules,
     },
 };
 

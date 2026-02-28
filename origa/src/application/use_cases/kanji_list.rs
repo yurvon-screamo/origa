@@ -1,4 +1,4 @@
-use crate::domain::{get_kanji_list, JapaneseLevel, KanjiInfo, OrigaError};
+use crate::domain::{JapaneseLevel, KanjiInfo, OrigaError, get_kanji_list};
 
 pub struct KanjiListUseCase;
 

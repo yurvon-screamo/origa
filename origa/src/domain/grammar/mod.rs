@@ -3,8 +3,8 @@ mod forms_verb;
 mod store;
 
 pub use store::{
-    get_rule_by_id, init_grammar_rules, is_grammar_loaded, iter_grammar_rules, GrammarData,
-    GRAMMAR_RULES,
+    GRAMMAR_RULES, GrammarData, get_rule_by_id, init_grammar_rules, is_grammar_loaded,
+    iter_grammar_rules,
 };
 
 use std::collections::HashMap;
@@ -13,6 +13,7 @@ use serde::{Deserialize, Serialize};
 use ulid::Ulid;
 
 use crate::domain::{
+    OrigaError, PartOfSpeech,
     grammar::{
         forms_adjective::{
             adjective_remove_postfix, to_de_form, to_garu_form, to_katta_form, to_kereba_form,
@@ -30,7 +31,6 @@ use crate::domain::{
         },
     },
     value_objects::{JapaneseLevel, NativeLanguage},
-    OrigaError, PartOfSpeech,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
