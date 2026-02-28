@@ -1,5 +1,6 @@
 mod accordion;
 mod alert;
+mod audio_buttons;
 mod avatar;
 mod badge;
 mod breadcrumbs;
@@ -30,11 +31,13 @@ mod tab_button;
 mod table;
 mod tabs;
 mod tag;
+mod text_to_speech;
 mod toggle;
 mod tooltip;
 mod typography;
 
 pub use alert::{Alert, AlertType};
+pub use audio_buttons::AudioButtons;
 pub use avatar::Avatar;
 pub use button::{Button, ButtonVariant};
 pub use card::Card;
@@ -49,5 +52,6 @@ pub use modal::Modal;
 pub use search::Search;
 pub use skeleton::Skeleton;
 pub use tag::{Tag, TagVariant};
+pub use text_to_speech::{get_reading_from_text, is_speech_supported, speak_text, stop_speech};
 pub use toggle::Toggle;
 pub use typography::{DisplayText, Heading, HeadingLevel, Text, TextSize, TypographyVariant};

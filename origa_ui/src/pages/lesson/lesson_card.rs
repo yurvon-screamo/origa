@@ -1,10 +1,12 @@
 use crate::ui_components::{
-    Button, ButtonVariant, Card, DisplayText, FuriganaText, Heading, HeadingLevel, KanjiViewMode,
-    KanjiWritingSection, MarkdownText, MarkdownVariant, Tag, TagVariant, Text, TextSize,
-    TypographyVariant,
+    get_reading_from_text, is_speech_supported, speak_text, AudioButtons, Button, ButtonVariant,
+    Card, DisplayText, FuriganaText, Heading, HeadingLevel, KanjiViewMode, KanjiWritingSection,
+    MarkdownText, MarkdownVariant, Tag, TagVariant, Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
 use origa::domain::Card as DomainCard;
+
+use super::lesson_state::LessonContext;
 
 #[derive(Clone, Copy, PartialEq, Default, Debug)]
 pub enum CardType {
@@ -85,6 +87,20 @@ pub fn LessonCard(
         _ => None,
     });
 
+    let lesson_ctx = use_context::<LessonContext>();
+    let question_text = question.get_value();
+
+    Effect::new(move |_| {
+        let is_muted = lesson_ctx
+            .as_ref()
+            .map(|ctx| ctx.is_muted.get())
+            .unwrap_or(false);
+        if !show_answer && card_type != CardType::Kanji && is_speech_supported() && !is_muted {
+            let reading = get_reading_from_text(&question_text);
+            let _ = speak_text(&reading, 1.0);
+        }
+    });
+
     view! {
         <Card class=Signal::derive(|| "p-6 min-h-[300px] flex flex-col".to_string()) shadow=Signal::derive(|| true)>
             <div class="flex items-center gap-2 mb-4">
@@ -97,9 +113,15 @@ pub fn LessonCard(
                 <Show when=move || !show_answer>
                     <div class="text-center">
                         <Show when=move || card_type != CardType::Kanji>
-                            <Heading level=HeadingLevel::H2 class="mb-4">
-                                <FuriganaText text=question.get_value()/>
-                            </Heading>
+                            <div class="flex items-center justify-center gap-2 mb-4">
+                                <Heading level=HeadingLevel::H2>
+                                    <FuriganaText text=question.get_value()/>
+                                </Heading>
+                                <AudioButtons
+                                    text=question.get_value()
+                                    class=Signal::derive(|| "".to_string())
+                                />
+                            </div>
                         </Show>
 
                         <Show when=move || kanji_for_animation.get_value().is_some()>
