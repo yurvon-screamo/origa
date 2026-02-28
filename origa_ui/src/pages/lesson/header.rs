@@ -1,6 +1,7 @@
 use super::lesson_state::LessonContext;
 use crate::ui_components::{Button, ButtonVariant};
 use leptos::prelude::*;
+use leptos_icons::Icon;
 use leptos_router::components::A;
 
 #[component]
@@ -23,10 +24,14 @@ pub fn LessonHeader() -> impl IntoView {
                 {lesson_ctx.mode.title()}
             </h1>
             <button
-                class="btn btn-ghost btn-sm px-3 py-2 text-lg"
+                class="btn btn-ghost px-3 py-2"
                 on:click=move |_| toggle_mute()
             >
-                {move || if is_muted.get() { "🔇" } else { "🔊" }}
+                {move || if is_muted.get() {
+                    view! { <Icon icon=icondata::LuVolumeX width="1.25em" height="1.25em" /> }.into_any()
+                } else {
+                    view! { <Icon icon=icondata::LuVolume2 width="1.25em" height="1.25em" /> }.into_any()
+                }}
             </button>
         </div>
     }

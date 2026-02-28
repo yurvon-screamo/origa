@@ -63,6 +63,8 @@ rstest = "0.26"
 
 # UI
 leptos = { version = "0.8", default-features = false, features = ["csr"] }
+leptos_icons = "0.7"
+icondata = "0.7"
 pulldown-cmark = "0.12"
 ammonia = "4"
 scraper = "0.22"

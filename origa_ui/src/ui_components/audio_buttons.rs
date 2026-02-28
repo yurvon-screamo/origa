@@ -1,4 +1,5 @@
 use leptos::prelude::*;
+use leptos_icons::Icon;
 
 use crate::ui_components::{get_reading_from_text, is_speech_supported, speak_text};
 
@@ -11,9 +12,9 @@ pub fn AudioButtons(
     let text_slow = text.clone();
 
     view! {
-        <div class=move || format!("flex gap-1 {}", class.get())>
+        <div class=move || format!("flex gap-2 {}", class.get())>
             <button
-                class="btn btn-ghost btn-sm px-2 py-1 text-base"
+                class="btn btn-ghost px-2 py-1"
                 on:click=move |_| {
                     let reading = get_reading_from_text(&text_normal);
                     if is_speech_supported() {
@@ -22,10 +23,10 @@ pub fn AudioButtons(
                 }
                 disabled=move || !is_speech_supported()
             >
-                "🔊"
+                <Icon icon=icondata::LuVolume2 width="1.25em" height="1.25em" />
             </button>
             <button
-                class="btn btn-ghost btn-sm px-2 py-1 text-base"
+                class="btn btn-ghost px-2 py-1"
                 on:click=move |_| {
                     let reading = get_reading_from_text(&text_slow);
                     if is_speech_supported() {
@@ -34,7 +35,7 @@ pub fn AudioButtons(
                 }
                 disabled=move || !is_speech_supported()
             >
-                "🐌"
+                <Icon icon=icondata::LuClock width="1.25em" height="1.25em" />
             </button>
         </div>
     }
