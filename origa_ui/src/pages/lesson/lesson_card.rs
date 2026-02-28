@@ -103,24 +103,26 @@ pub fn LessonCard(
 
     view! {
         <Card class=Signal::derive(|| "p-6 min-h-[300px] flex flex-col".to_string()) shadow=Signal::derive(|| true)>
-            <div class="flex items-center gap-2 mb-4">
+            <div class="flex items-center justify-between mb-4">
                 <Tag variant=Signal::derive(move || card_type.tag_variant())>
                     {card_type.label()}
                 </Tag>
+                <Show when=move || card_type != CardType::Kanji>
+                    <AudioButtons
+                        text=question.get_value()
+                        class=Signal::derive(|| "".to_string())
+                    />
+                </Show>
             </div>
 
             <div class="flex-1 flex flex-col justify-center">
                 <Show when=move || !show_answer>
                     <div class="text-center">
                         <Show when=move || card_type != CardType::Kanji>
-                            <div class="flex items-center justify-center gap-2 mb-4">
+                            <div class="mb-4">
                                 <Heading level=HeadingLevel::H2>
                                     <FuriganaText text=question.get_value()/>
                                 </Heading>
-                                <AudioButtons
-                                    text=question.get_value()
-                                    class=Signal::derive(|| "".to_string())
-                                />
                             </div>
                         </Show>
 
