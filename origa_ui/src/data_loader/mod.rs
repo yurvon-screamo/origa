@@ -41,11 +41,11 @@ pub async fn load_all_data() -> Result<(), OrigaError> {
 }
 
 #[cfg(target_arch = "wasm32")]
-async fn fetch_text(url: &str) -> Result<String, OrigaError> {
+async fn fetch_text(url: impl Into<String>) -> Result<String, OrigaError> {
     use leptos::wasm_bindgen::JsCast;
     use wasm_bindgen_futures::JsFuture;
 
-    let url = format!("/public/{}", url);
+    let url = format!("/public/{}", url.into());
 
     let window = web_sys::window().ok_or_else(|| OrigaError::TokenizerError {
         reason: "No window found".to_string(),
@@ -91,8 +91,7 @@ pub async fn load_vocabulary() -> Result<(), OrigaError> {
 
     let chunk_futures: Vec<_> = (1..=10)
         .map(|i| {
-            let url = format!("domain/dictionary/vocabulary/chunk_{:02}.json", i);
-            fetch_text(&url)
+            fetch_text(format!("domain/dictionary/vocabulary/chunk_{:02}.json", i))
         })
         .collect();
 
@@ -161,28 +160,28 @@ pub async fn load_well_known_sets() -> Result<(), OrigaError> {
         return Ok(());
     }
 
-    let mut fetch_futures = Vec::new();
+    let mut fetch_futures: Vec<_> = Vec::new();
 
-    fetch_futures.push(fetch_text("domain/well_known_set/jltp_n1.json"));
-    fetch_futures.push(fetch_text("domain/well_known_set/jltp_n2.json"));
-    fetch_futures.push(fetch_text("domain/well_known_set/jltp_n3.json"));
-    fetch_futures.push(fetch_text("domain/well_known_set/jltp_n4.json"));
-    fetch_futures.push(fetch_text("domain/well_known_set/jltp_n5.json"));
+    fetch_futures.push(fetch_text("domain/well_known_set/jltp_n1.json".to_string()));
+    fetch_futures.push(fetch_text("domain/well_known_set/jltp_n2.json".to_string()));
+    fetch_futures.push(fetch_text("domain/well_known_set/jltp_n3.json".to_string()));
+    fetch_futures.push(fetch_text("domain/well_known_set/jltp_n4.json".to_string()));
+    fetch_futures.push(fetch_text("domain/well_known_set/jltp_n5.json".to_string()));
 
     for i in 1..=20 {
-        fetch_futures.push(fetch_text(&format!("domain/well_known_set/migii/n5/migii_n5_{}.json", i)));
+        fetch_futures.push(fetch_text(format!("domain/well_known_set/migii/n5/migii_n5_{}.json", i)));
     }
     for i in 1..=11 {
-        fetch_futures.push(fetch_text(&format!("domain/well_known_set/migii/n4/migii_n4_{}.json", i)));
+        fetch_futures.push(fetch_text(format!("domain/well_known_set/migii/n4/migii_n4_{}.json", i)));
     }
     for i in 1..=31 {
-        fetch_futures.push(fetch_text(&format!("domain/well_known_set/migii/n3/migii_n3_{}.json", i)));
+        fetch_futures.push(fetch_text(format!("domain/well_known_set/migii/n3/migii_n3_{}.json", i)));
     }
     for i in 1..=31 {
-        fetch_futures.push(fetch_text(&format!("domain/well_known_set/migii/n2/migii_n2_{}.json", i)));
+        fetch_futures.push(fetch_text(format!("domain/well_known_set/migii/n2/migii_n2_{}.json", i)));
     }
     for i in 1..=56 {
-        fetch_futures.push(fetch_text(&format!("domain/well_known_set/migii/n1/migii_n1_{}.json", i)));
+        fetch_futures.push(fetch_text(format!("domain/well_known_set/migii/n1/migii_n1_{}.json", i)));
     }
 
     let results = join_all(fetch_futures).await;
