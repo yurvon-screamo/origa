@@ -30,6 +30,7 @@ pub fn LessonContent() -> impl IntoView {
     let is_completed = RwSignal::new(false);
     let error_message = RwSignal::new(None::<String>);
     let reload_trigger = RwSignal::new(0u32);
+    let is_muted = RwSignal::new(false);
 
     let lesson_ctx = LessonContext {
         repository: repository.clone(),
@@ -37,6 +38,7 @@ pub fn LessonContent() -> impl IntoView {
         is_completed,
         mode,
         reload_trigger,
+        is_muted,
     };
     provide_context(lesson_ctx);
 
