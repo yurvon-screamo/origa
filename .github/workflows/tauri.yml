@@ -19,12 +19,17 @@ jobs:
       contents: write
 
     steps:
+      - name: Install git-lfs
+        run: |
+          apt-get update && apt-get install -y git git-lfs
+          git lfs install
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           lfs: true
 
-      - name: Install dependencies
+      - name: Install build dependencies
         run: |
           apt-get update && apt-get install -y nodejs nsis clang lld llvm
           curl -fsSL https://bun.sh/install | bash
@@ -121,6 +126,11 @@ jobs:
       contents: write
 
     steps:
+      - name: Install git-lfs
+        run: |
+          apt-get update && apt-get install -y git git-lfs zip
+          git lfs install
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
@@ -128,7 +138,6 @@ jobs:
 
       - name: Install dependencies
         run: |
-          apt-get update && apt-get install -y nodejs zip
           curl -fsSL https://bun.sh/install | bash
           echo "$HOME/.bun/bin" >> $GITHUB_PATH
 
@@ -154,9 +163,6 @@ jobs:
           mkdir -p Origa.app/Contents/MacOS
           mkdir -p Origa.app/Contents/Resources
           cp tauri/target/aarch64-apple-darwin/release/origa Origa.app/Contents/MacOS/origa
-          cat > Origa.app/Contents/Info.plist << 'EOF'
-          chmod +x Origa.app/Contents/MacOS/origa
-          zip -r Origa-macos-arm64.zip Origa.app
           cat > Origa.app/Contents/Info.plist << 'EOF'
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
