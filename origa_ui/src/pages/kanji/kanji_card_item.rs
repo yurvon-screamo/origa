@@ -100,10 +100,10 @@ pub fn KanjiCardItem(study_card: StudyCard) -> impl IntoView {
     view! {
         <Card class=Signal::derive(|| "p-4".to_string())>
             <div class="flex justify-between items-start">
-                <div class="flex-1">
+                <div class="min-w-0 flex-1">
                     <div class="flex items-center gap-3 mb-2">
                         <span class="text-3xl font-serif">{kanji_char.clone()}</span>
-                        <div class=Signal::derive(|| "flex-1".to_string())>
+                        <div class="min-w-0 flex-1">
                             <MarkdownText content=Signal::derive(move || description.clone())/>
                         </div>
                         <Tag variant=Signal::derive(move || status.tag_variant())>

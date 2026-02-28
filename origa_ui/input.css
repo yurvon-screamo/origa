@@ -59,7 +59,7 @@ body {
 	font-size: 11px;
 	letter-spacing: 0.15em;
 	text-transform: uppercase;
-	padding: 14px 28px;
+	padding: 10px 20px;
 	border: 1px solid var(--border-dark);
 	background: var(--bg-paper);
 	color: var(--fg-black);
@@ -67,6 +67,12 @@ body {
 	transition: all 0.2s ease;
 	position: relative;
 	display: inline-block;
+}
+
+@media (min-width: 640px) {
+	.btn {
+		padding: 14px 28px;
+	}
 }
 
 .btn::before {
@@ -138,8 +144,14 @@ body {
 }
 
 .btn-sm {
-	padding: 8px 16px;
+	padding: 6px 12px;
 	font-size: 9px;
+}
+
+@media (min-width: 640px) {
+	.btn-sm {
+		padding: 8px 16px;
+	}
 }
 
 .btn-lg {
@@ -1211,6 +1223,9 @@ body {
 	font-family: "DM Mono", monospace;
 	color: var(--fg-black);
 	line-height: 1.6;
+	overflow-wrap: break-word;
+	word-break: break-word;
+	min-width: 0;
 }
 
 .markdown-text h1,
