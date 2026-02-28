@@ -3699,6 +3699,7 @@ dependencies = [
  "console_log",
  "ego-tree",
  "flate2",
+ "futures",
  "gloo-storage",
  "idb",
  "js-sys",
