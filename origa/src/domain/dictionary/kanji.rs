@@ -1,18 +1,43 @@
-use std::{collections::HashMap, sync::LazyLock};
+use std::{collections::HashMap, sync::OnceLock};
 
 use serde::{Deserialize, Serialize};
 
 use crate::domain::{
-    OrigaError,
-    dictionary::{
-        radical::{RADICAL_DICTIONARY, RadicalInfo},
-        vocabulary::VOCABULARY_DICTIONARY,
-    },
     value_objects::{JapaneseLevel, NativeLanguage},
+    OrigaError,
 };
 
-const KANJI_DATA: &str = include_str!("./kanji.json");
-pub static KANJI_DICTIONARY: LazyLock<KanjiDatabase> = LazyLock::new(KanjiDatabase::new);
+pub static KANJI_DICTIONARY: OnceLock<KanjiDatabase> = OnceLock::new();
+
+pub struct KanjiData {
+    pub kanji_json: String,
+}
+
+pub fn init_kanji_dictionary(data: KanjiData) -> Result<(), OrigaError> {
+    let db = KanjiDatabase::from_json(&data.kanji_json)?;
+    let _ = KANJI_DICTIONARY.set(db);
+    Ok(())
+}
+
+pub fn is_kanji_loaded() -> bool {
+    KANJI_DICTIONARY.get().is_some()
+}
+
+pub fn get_kanji_info(kanji: &str) -> Result<&'static KanjiInfo, OrigaError> {
+    KANJI_DICTIONARY
+        .get()
+        .ok_or(OrigaError::KradfileError {
+            reason: "Kanji dictionary not loaded".to_string(),
+        })?
+        .get_kanji_info(kanji)
+}
+
+pub fn get_kanji_list(level: &JapaneseLevel) -> Vec<&'static KanjiInfo> {
+    KANJI_DICTIONARY
+        .get()
+        .map(|db| db.get_kanji_list(level))
+        .unwrap_or_default()
+}
 
 pub struct KanjiDatabase {
     kanji_map: HashMap<String, KanjiInfo>,
@@ -65,11 +90,8 @@ impl KanjiInfo {
         &self.description
     }
 
-    pub fn radicals(&self) -> Vec<&RadicalInfo> {
-        self.radicals
-            .iter()
-            .filter_map(|r| RADICAL_DICTIONARY.get_radical_info(r).ok())
-            .collect()
+    pub fn radicals_chars(&self) -> &[char] {
+        &self.radicals
     }
 
     pub fn popular_words(&self) -> &[String] {
@@ -80,11 +102,14 @@ impl KanjiInfo {
         &self,
         native_language: &NativeLanguage,
     ) -> Vec<PopularWord> {
+        use crate::domain::dictionary::vocabulary::VOCABULARY_DICTIONARY;
+
         self.popular_words
             .iter()
             .map(|word| {
                 let translation = VOCABULARY_DICTIONARY
-                    .get_translation(word, native_language)
+                    .get()
+                    .and_then(|db| db.get_translation(word, native_language))
                     .unwrap_or_else(|| "Перевод не найден".to_string());
                 PopularWord::new(word.clone(), translation)
             })
@@ -92,22 +117,18 @@ impl KanjiInfo {
     }
 }
 
-impl Default for KanjiDatabase {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 impl KanjiDatabase {
-    pub fn new() -> Self {
-        let kanji_db: KanjiDatabaseStoredType = serde_json::from_str(KANJI_DATA)
-            .expect("Failed to parse kanji.json - ensure Git LFS files are pulled");
+    fn from_json(json: &str) -> Result<Self, OrigaError> {
+        let kanji_db: KanjiDatabaseStoredType =
+            serde_json::from_str(json).map_err(|e| OrigaError::KradfileError {
+                reason: format!("Failed to parse kanji.json: {}", e),
+            })?;
 
         let kanji_map = kanji_db
             .kanji
             .into_iter()
             .map(|k| {
-                let jlpt = parse_jlpt_level(&k.jlpt);
+                let jlpt = JapaneseLevel::from_str_or_default(&k.jlpt);
                 let kanji_char = k.kanji.chars().next().unwrap();
                 let radicals = k
                     .radicals
@@ -129,7 +150,7 @@ impl KanjiDatabase {
             })
             .collect::<HashMap<String, KanjiInfo>>();
 
-        Self { kanji_map }
+        Ok(Self { kanji_map })
     }
 
     pub fn get_kanji_info(&self, kanji: &str) -> Result<&KanjiInfo, OrigaError> {
@@ -159,15 +180,4 @@ struct KanjiStoredType {
 #[derive(Serialize, Deserialize)]
 struct KanjiDatabaseStoredType {
     kanji: Vec<KanjiStoredType>,
-}
-
-pub(crate) fn parse_jlpt_level(s: &str) -> JapaneseLevel {
-    match s {
-        "N5" => JapaneseLevel::N5,
-        "N4" => JapaneseLevel::N4,
-        "N3" => JapaneseLevel::N3,
-        "N2" => JapaneseLevel::N2,
-        "N1" => JapaneseLevel::N1,
-        _ => JapaneseLevel::N1,
-    }
 }

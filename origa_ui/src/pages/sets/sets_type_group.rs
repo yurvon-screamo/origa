@@ -3,14 +3,14 @@ use leptos::prelude::*;
 use origa::domain::WellKnownSets;
 
 use super::set_card::SetCard;
-use super::types::{SetInfo, SetType};
+use super::types::{ImportState, SetInfo, SetType};
 
 #[component]
 pub fn SetsTypeGroup(
     set_type: SetType,
     sets_for_level: Memo<Vec<SetInfo>>,
-    importing: RwSignal<Option<WellKnownSets>>,
-    on_import: Callback<WellKnownSets>,
+    importing: RwSignal<Option<ImportState>>,
+    on_import: Callback<(WellKnownSets, String)>,
 ) -> impl IntoView {
     let sets_for_type = Memo::new(move |_| {
         sets_for_level
@@ -36,7 +36,11 @@ pub fn SetsTypeGroup(
                         key=|s| format!("{:?}", s.set)
                         children=move |set_info| {
                             let is_importing =
-                                Memo::new(move |_| importing.get() == Some(set_info.set));
+                                Memo::new(move |_| {
+                                    importing.get()
+                                        .map(|state| state.set == set_info.set)
+                                        .unwrap_or(false)
+                                });
 
                             view! {
                                 <SetCard

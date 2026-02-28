@@ -1,3 +1,4 @@
+use crate::data_loader::load_all_data;
 use crate::dictionary::load_dictionary;
 use crate::repository::get_session;
 use crate::repository::{HybridUserRepository, SupabaseClient, clear_session};
@@ -53,13 +54,23 @@ impl AuthContext {
             if let Err(e) = load_dictionary().await {
                 console::error_1(&format!("Failed to load dictionary: {}", e).into());
             } else {
-                console::log_1(&"Dictionary loaded".into());
+                console::log_1(&"Unidic dictionary loaded".into());
+            }
+            if let Err(e) = load_all_data().await {
+                console::error_1(&format!("Failed to load data: {:?}", e).into());
+            } else {
+                console::log_1(&"All data loaded".into());
             }
         }
 
         #[cfg(not(target_arch = "wasm32"))]
-        if let Err(e) = load_dictionary() {
-            log::error!("Failed to load dictionary: {}", e);
+        {
+            if let Err(e) = load_dictionary() {
+                log::error!("Failed to load dictionary: {}", e);
+            }
+            if let Err(e) = load_all_data() {
+                log::error!("Failed to load data: {:?}", e);
+            }
         }
 
         self.is_dictionary_loading.set(false);
