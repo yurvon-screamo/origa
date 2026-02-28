@@ -1,5 +1,6 @@
 pub mod app;
-pub mod dictionary;
+pub mod data_loader;
+mod dictionary;
 mod pages;
 mod repository;
 mod routes;

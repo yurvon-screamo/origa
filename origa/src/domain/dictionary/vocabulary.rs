@@ -1,11 +1,10 @@
-use std::{collections::HashMap, sync::LazyLock};
+use std::{collections::HashMap, sync::OnceLock};
 
 use serde::{Deserialize, Serialize};
 
-use crate::domain::value_objects::NativeLanguage;
+use crate::domain::{value_objects::NativeLanguage, OrigaError};
 
-pub static VOCABULARY_DICTIONARY: LazyLock<VocabularyDatabase> =
-    LazyLock::new(VocabularyDatabase::new);
+pub static VOCABULARY_DICTIONARY: OnceLock<VocabularyDatabase> = OnceLock::new();
 
 #[derive(Debug, Clone)]
 pub struct VocabularyInfo {
@@ -40,67 +39,57 @@ pub struct VocabularyDatabase {
     vocabulary_map: HashMap<String, VocabularyInfo>,
 }
 
-impl Default for VocabularyDatabase {
-    fn default() -> Self {
-        Self::new()
-    }
+pub struct VocabularyChunkData {
+    pub chunk_01: String,
+    pub chunk_02: String,
+    pub chunk_03: String,
+    pub chunk_04: String,
+    pub chunk_05: String,
+    pub chunk_06: String,
+    pub chunk_07: String,
+    pub chunk_08: String,
+    pub chunk_09: String,
+    pub chunk_10: String,
 }
 
-static CHUNK_01_STR: &str = include_str!("vocabulary/chunk_01.json");
-static CHUNK_02_STR: &str = include_str!("vocabulary/chunk_02.json");
-static CHUNK_03_STR: &str = include_str!("vocabulary/chunk_03.json");
-static CHUNK_04_STR: &str = include_str!("vocabulary/chunk_04.json");
-static CHUNK_05_STR: &str = include_str!("vocabulary/chunk_05.json");
-static CHUNK_06_STR: &str = include_str!("vocabulary/chunk_06.json");
-static CHUNK_07_STR: &str = include_str!("vocabulary/chunk_07.json");
-static CHUNK_08_STR: &str = include_str!("vocabulary/chunk_08.json");
-static CHUNK_09_STR: &str = include_str!("vocabulary/chunk_09.json");
-static CHUNK_10_STR: &str = include_str!("vocabulary/chunk_10.json");
+pub fn init_vocabulary_dictionary(data: VocabularyChunkData) -> Result<(), OrigaError> {
+    let db = VocabularyDatabase::from_chunks(data)?;
+    let _ = VOCABULARY_DICTIONARY.set(db);
+    Ok(())
+}
+
+pub fn is_vocabulary_loaded() -> bool {
+    VOCABULARY_DICTIONARY.get().is_some()
+}
+
+pub fn get_translation(word: &str, native_language: &NativeLanguage) -> Option<String> {
+    VOCABULARY_DICTIONARY
+        .get()
+        .and_then(|db| db.get_translation(word, native_language))
+}
 
 impl VocabularyDatabase {
-    pub fn new() -> Self {
-        let vocabulary_data: HashMap<_, _> = serde_json::from_str::<
-            HashMap<String, VocabularyEntryStoredType>,
-        >(CHUNK_01_STR)
-        .unwrap()
-        .into_iter()
-        .chain(
-            serde_json::from_str::<HashMap<String, VocabularyEntryStoredType>>(CHUNK_02_STR)
-                .unwrap(),
-        )
-        .chain(
-            serde_json::from_str::<HashMap<String, VocabularyEntryStoredType>>(CHUNK_03_STR)
-                .unwrap(),
-        )
-        .chain(
-            serde_json::from_str::<HashMap<String, VocabularyEntryStoredType>>(CHUNK_04_STR)
-                .unwrap(),
-        )
-        .chain(
-            serde_json::from_str::<HashMap<String, VocabularyEntryStoredType>>(CHUNK_05_STR)
-                .unwrap(),
-        )
-        .chain(
-            serde_json::from_str::<HashMap<String, VocabularyEntryStoredType>>(CHUNK_06_STR)
-                .unwrap(),
-        )
-        .chain(
-            serde_json::from_str::<HashMap<String, VocabularyEntryStoredType>>(CHUNK_07_STR)
-                .unwrap(),
-        )
-        .chain(
-            serde_json::from_str::<HashMap<String, VocabularyEntryStoredType>>(CHUNK_08_STR)
-                .unwrap(),
-        )
-        .chain(
-            serde_json::from_str::<HashMap<String, VocabularyEntryStoredType>>(CHUNK_09_STR)
-                .unwrap(),
-        )
-        .chain(
-            serde_json::from_str::<HashMap<String, VocabularyEntryStoredType>>(CHUNK_10_STR)
-                .unwrap(),
-        )
-        .collect();
+    fn from_chunks(data: VocabularyChunkData) -> Result<Self, OrigaError> {
+        let parse_chunk = |json: &str, chunk_name: &str| {
+            serde_json::from_str::<HashMap<String, VocabularyEntryStoredType>>(json).map_err(|e| {
+                OrigaError::VocabularyParseError {
+                    reason: format!("Failed to parse {}: {}", chunk_name, e),
+                }
+            })
+        };
+
+        let vocabulary_data: HashMap<_, _> = parse_chunk(&data.chunk_01, "chunk_01")?
+            .into_iter()
+            .chain(parse_chunk(&data.chunk_02, "chunk_02")?)
+            .chain(parse_chunk(&data.chunk_03, "chunk_03")?)
+            .chain(parse_chunk(&data.chunk_04, "chunk_04")?)
+            .chain(parse_chunk(&data.chunk_05, "chunk_05")?)
+            .chain(parse_chunk(&data.chunk_06, "chunk_06")?)
+            .chain(parse_chunk(&data.chunk_07, "chunk_07")?)
+            .chain(parse_chunk(&data.chunk_08, "chunk_08")?)
+            .chain(parse_chunk(&data.chunk_09, "chunk_09")?)
+            .chain(parse_chunk(&data.chunk_10, "chunk_10")?)
+            .collect();
 
         let vocabulary_map = vocabulary_data
             .into_iter()
@@ -116,7 +105,7 @@ impl VocabularyDatabase {
             })
             .collect::<HashMap<String, VocabularyInfo>>();
 
-        Self { vocabulary_map }
+        Ok(Self { vocabulary_map })
     }
 
     pub fn get_translation(&self, word: &str, native_language: &NativeLanguage) -> Option<String> {

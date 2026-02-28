@@ -1,4 +1,4 @@
-use crate::domain::{JapaneseLevel, KANJI_DICTIONARY, KanjiInfo, OrigaError};
+use crate::domain::{get_kanji_list, JapaneseLevel, KanjiInfo, OrigaError};
 
 pub struct KanjiListUseCase;
 
@@ -14,9 +14,8 @@ impl KanjiListUseCase {
     }
 
     pub fn execute(&self, level: &JapaneseLevel) -> Result<Vec<KanjiInfo>, OrigaError> {
-        Ok(KANJI_DICTIONARY
-            .get_kanji_list(level)
-            .iter()
+        Ok(get_kanji_list(level)
+            .into_iter()
             .map(|x| (*x).clone())
             .collect())
     }

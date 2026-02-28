@@ -2,7 +2,7 @@ use ulid::Ulid;
 
 use crate::{
     application::UserRepository,
-    domain::{Card, JapaneseLevel, KANJI_DICTIONARY, KanjiInfo, OrigaError},
+    domain::{get_kanji_info, get_kanji_list, Card, JapaneseLevel, KanjiInfo, OrigaError},
 };
 
 pub struct KanjiInfoUseCase;
@@ -19,7 +19,7 @@ impl KanjiInfoUseCase {
     }
 
     pub fn execute(&self, kanji: &str) -> Result<KanjiInfo, OrigaError> {
-        Ok(KANJI_DICTIONARY.get_kanji_info(kanji)?.to_owned())
+        Ok(get_kanji_info(kanji)?.to_owned())
     }
 }
 
@@ -66,15 +66,18 @@ impl<'a, R: UserRepository> KanjiInfoListUseCase<'a, R> {
             })
             .collect();
 
-        Ok(KANJI_DICTIONARY
-            .get_kanji_list(level)
-            .iter()
+        Ok(get_kanji_list(level)
+            .into_iter()
             .filter(|kanji_info| !learned_kanji.contains(&kanji_info.kanji().to_string()))
             .map(|kanji_info| KanjiItemInfo {
                 kanji: kanji_info.kanji(),
                 level: *kanji_info.jlpt(),
                 description: kanji_info.description().to_string(),
-                radicals: kanji_info.radicals().iter().map(|r| r.radical()).collect(),
+                radicals: kanji_info
+                    .radicals_chars()
+                    .iter()
+                    .copied()
+                    .collect(),
                 popular_words: kanji_info.popular_words().to_vec(),
             })
             .collect())
