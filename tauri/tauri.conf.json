@@ -1,12 +1,11 @@
 {
 	"$schema": "https://schema.tauri.app/config/2",
-	"productName": "origa_ui",
+	"productName": "origa",
 	"version": "0.1.0",
 	"identifier": "net.uwuwu.origa",
 	"build": {
-		"beforeDevCommand": "cd origa_ui && trunk serve",
+		"beforeDevCommand": "cd ../origa_ui && trunk serve",
 		"devUrl": "http://localhost:1420",
-		"beforeBuildCommand": "cd origa_ui && trunk build",
 		"frontendDist": "../origa_ui/dist"
 	},
 	"app": {
