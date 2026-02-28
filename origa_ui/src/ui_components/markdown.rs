@@ -1,6 +1,9 @@
 use ammonia::clean;
+use ego_tree::NodeRef;
 use leptos::prelude::*;
-use pulldown_cmark::{Options, Parser, html};
+use origa::domain::furiganize_text;
+use pulldown_cmark::{html, Options, Parser};
+use scraper::{Html, Node};
 
 #[derive(Clone, Copy, PartialEq, Default, Debug)]
 pub enum MarkdownVariant {
@@ -21,13 +24,71 @@ fn render_markdown(content: &str) -> String {
     clean(&html_output)
 }
 
+const SKIP_TAGS: &[&str] = &["code", "pre", "ruby", "rt", "rp"];
+
+fn add_furigana_to_html(html: &str) -> String {
+    let document = Html::parse_document(html);
+    let mut result = String::new();
+
+    fn process_node(node_ref: NodeRef<'_, Node>, output: &mut String, in_skip: bool) {
+        match node_ref.value() {
+            Node::Text(text) => {
+                let text_str: &str = text;
+                if in_skip {
+                    output.push_str(text_str);
+                } else {
+                    match furiganize_text(text_str) {
+                        Ok(furigana) => output.push_str(&furigana),
+                        Err(_) => output.push_str(text_str),
+                    }
+                }
+            }
+            Node::Element(elem) => {
+                let tag = elem.name();
+                let should_skip = in_skip || SKIP_TAGS.contains(&tag);
+
+                output.push_str(&format!("<{}", tag));
+                for (name, value) in elem.attrs() {
+                    output.push_str(&format!(" {}=\"{}\"", name, value));
+                }
+                output.push('>');
+
+                for child in node_ref.children() {
+                    process_node(child, output, should_skip);
+                }
+
+                output.push_str(&format!("</{}>", tag));
+            }
+            _ => {
+                for child in node_ref.children() {
+                    process_node(child, output, in_skip);
+                }
+            }
+        }
+    }
+
+    for node_ref in document.tree.root().children() {
+        process_node(node_ref, &mut result, false);
+    }
+
+    result
+}
+
 #[component]
 pub fn MarkdownText(
     #[prop(into)] content: Signal<String>,
     #[prop(optional, into)] variant: Signal<MarkdownVariant>,
     #[prop(optional, into)] class: Signal<String>,
+    #[prop(optional, default = true)] furigana: bool,
 ) -> impl IntoView {
-    let html_content = Memo::new(move |_| render_markdown(&content.get()));
+    let html_content = Memo::new(move |_| {
+        let rendered = render_markdown(&content.get());
+        if furigana {
+            add_furigana_to_html(&rendered)
+        } else {
+            rendered
+        }
+    });
 
     view! {
         <div class=move || {
@@ -113,5 +174,65 @@ mod tests {
     fn test_empty_input() {
         let output = render_markdown("");
         assert!(output.is_empty());
+    }
+
+    #[test]
+    fn test_add_furigana_preserves_html_structure() {
+        let html = "<p>Hello world</p>";
+        let output = add_furigana_to_html(html);
+        assert!(output.contains("<p>"));
+        assert!(output.contains("</p>"));
+        assert!(output.contains("Hello"));
+        assert!(output.contains("world"));
+    }
+
+    #[test]
+    fn test_add_furigana_skips_code_tag() {
+        let html = "<code>test</code>";
+        let output = add_furigana_to_html(html);
+        assert!(output.contains("<code>test</code>"));
+    }
+
+    #[test]
+    fn test_add_furigana_skips_pre_tag() {
+        let html = "<pre>test</pre>";
+        let output = add_furigana_to_html(html);
+        assert!(output.contains("<pre>test</pre>"));
+    }
+
+    #[test]
+    fn test_add_furigana_skips_ruby_tag() {
+        let html = "<ruby>食<rt>しょく</rt></ruby>";
+        let output = add_furigana_to_html(html);
+        assert!(output.contains("<ruby>"));
+        assert!(output.contains("<rt>"));
+    }
+
+    #[test]
+    fn test_add_furigana_preserves_links() {
+        let html = "<a href=\"https://example.com\">link</a>";
+        let output = add_furigana_to_html(html);
+        assert!(output.contains("href=\"https://example.com\""));
+        assert!(output.contains(">link</a>"));
+    }
+
+    #[test]
+    fn test_add_furigana_nested_elements() {
+        let html = "<div><p>text</p></div>";
+        let output = add_furigana_to_html(html);
+        assert!(output.contains("<div>"));
+        assert!(output.contains("<p>"));
+        assert!(output.contains("text"));
+        assert!(output.contains("</p>"));
+        assert!(output.contains("</div>"));
+    }
+
+    #[test]
+    fn test_add_furigana_code_inside_p() {
+        let html = "<p>text <code>code</code> more</p>";
+        let output = add_furigana_to_html(html);
+        assert!(output.contains("text"));
+        assert!(output.contains("<code>code</code>"));
+        assert!(output.contains("more"));
     }
 }

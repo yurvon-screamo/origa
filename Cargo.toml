@@ -65,6 +65,8 @@ rstest = "0.26"
 leptos = { version = "0.8", default-features = false, features = ["csr"] }
 pulldown-cmark = "0.12"
 ammonia = "4"
+scraper = "0.22"
+ego-tree = "0.10"
 leptos_meta = { version = "0.8" }
 leptos_router = { version = "0.8" }
 leptos-use = { version = "0.18" }
