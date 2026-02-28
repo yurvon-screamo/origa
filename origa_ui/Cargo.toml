@@ -36,6 +36,7 @@ ego-tree.workspace = true
 console_log.workspace = true
 log.workspace = true
 flate2 = "1.0"
+futures = "0.3"
 
 [build-dependencies]
 tokio = { version = "1.48", features = ["rt-multi-thread", "macros"] }
