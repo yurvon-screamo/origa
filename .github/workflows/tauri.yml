@@ -35,13 +35,10 @@ jobs:
       - name: Setup Rust targets
         run: rustup target add x86_64-pc-windows-msvc wasm32-unknown-unknown
 
-      - name: Install cargo-xwin
-        run: cargo install --locked cargo-xwin
-
       - name: Install cargo-binstall
         run: |
           curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
-          cargo binstall trunk tauri-cli --no-confirm --force
+          cargo binstall trunk tauri-cli cargo-xwin --no-confirm --force
 
       - name: Build frontend
         working-directory: origa_ui
