@@ -82,7 +82,7 @@ pub async fn load_vocabulary() -> Result<(), OrigaError> {
 
     let mut chunks = Vec::with_capacity(10);
     for i in 1..=10 {
-        let url = format!("data/dictionary/vocabulary/chunk_{:02}.json", i);
+        let url = format!("domain/dictionary/vocabulary/chunk_{:02}.json", i);
         let json = fetch_text(&url).await?;
         chunks.push(json);
     }
@@ -111,7 +111,7 @@ pub async fn load_radical() -> Result<(), OrigaError> {
         return Ok(());
     }
 
-    let json = fetch_text("data/dictionary/radicals.json").await?;
+    let json = fetch_text("domain/dictionary/radicals.json").await?;
     init_radical_dictionary(RadicalData {
         radicals_json: json,
     })?;
@@ -125,7 +125,7 @@ pub async fn load_kanji() -> Result<(), OrigaError> {
         return Ok(());
     }
 
-    let json = fetch_text("data/dictionary/kanji.json").await?;
+    let json = fetch_text("domain/dictionary/kanji.json").await?;
     init_kanji_dictionary(KanjiData { kanji_json: json })?;
     log::info!("Kanji loaded");
     Ok(())
@@ -137,7 +137,7 @@ pub async fn load_grammar() -> Result<(), OrigaError> {
         return Ok(());
     }
 
-    let json = fetch_text("/data/grammar/grammar.json").await?;
+    let json = fetch_text("/domain/grammar/grammar.json").await?;
     init_grammar_rules(GrammarData { grammar_json: json })?;
     log::info!("Grammar loaded");
     Ok(())
@@ -149,39 +149,39 @@ pub async fn load_well_known_sets() -> Result<(), OrigaError> {
         return Ok(());
     }
 
-    let jlpt_n1 = fetch_text("/data/well_known_set/jltp_n1.json").await?;
-    let jlpt_n2 = fetch_text("/data/well_known_set/jltp_n2.json").await?;
-    let jlpt_n3 = fetch_text("/data/well_known_set/jltp_n3.json").await?;
-    let jlpt_n4 = fetch_text("/data/well_known_set/jltp_n4.json").await?;
-    let jlpt_n5 = fetch_text("/data/well_known_set/jltp_n5.json").await?;
+    let jlpt_n1 = fetch_text("/domain/well_known_set/jltp_n1.json").await?;
+    let jlpt_n2 = fetch_text("/domain/well_known_set/jltp_n2.json").await?;
+    let jlpt_n3 = fetch_text("/domain/well_known_set/jltp_n3.json").await?;
+    let jlpt_n4 = fetch_text("/domain/well_known_set/jltp_n4.json").await?;
+    let jlpt_n5 = fetch_text("/domain/well_known_set/jltp_n5.json").await?;
 
     let mut migii_n5 = Vec::new();
     for i in 1..=20 {
-        let url = format!("/data/well_known_set/migii/n5/migii_n5_{}.json", i);
+        let url = format!("/domain/well_known_set/migii/n5/migii_n5_{}.json", i);
         migii_n5.push(fetch_text(&url).await?);
     }
 
     let mut migii_n4 = Vec::new();
     for i in 1..=11 {
-        let url = format!("/data/well_known_set/migii/n4/migii_n4_{}.json", i);
+        let url = format!("/domain/well_known_set/migii/n4/migii_n4_{}.json", i);
         migii_n4.push(fetch_text(&url).await?);
     }
 
     let mut migii_n3 = Vec::new();
     for i in 1..=31 {
-        let url = format!("/data/well_known_set/migii/n3/migii_n3_{}.json", i);
+        let url = format!("/domain/well_known_set/migii/n3/migii_n3_{}.json", i);
         migii_n3.push(fetch_text(&url).await?);
     }
 
     let mut migii_n2 = Vec::new();
     for i in 1..=31 {
-        let url = format!("/data/well_known_set/migii/n2/migii_n2_{}.json", i);
+        let url = format!("/domain/well_known_set/migii/n2/migii_n2_{}.json", i);
         migii_n2.push(fetch_text(&url).await?);
     }
 
     let mut migii_n1 = Vec::new();
     for i in 1..=56 {
-        let url = format!("/data/well_known_set/migii/n1/migii_n1_{}.json", i);
+        let url = format!("/domain/well_known_set/migii/n1/migii_n1_{}.json", i);
         migii_n1.push(fetch_text(&url).await?);
     }
 
@@ -242,7 +242,7 @@ pub fn load_vocabulary() -> Result<(), OrigaError> {
 
     let mut chunks = Vec::with_capacity(10);
     for i in 1..=10 {
-        let path = format!("data/dictionary/vocabulary/chunk_{:02}.json", i);
+        let path = format!("domain/dictionary/vocabulary/chunk_{:02}.json", i);
         let json = read_json_file(&path)?;
         chunks.push(json);
     }
@@ -271,7 +271,7 @@ pub fn load_radical() -> Result<(), OrigaError> {
         return Ok(());
     }
 
-    let json = read_json_file("data/dictionary/radicals.json")?;
+    let json = read_json_file("domain/dictionary/radicals.json")?;
     init_radical_dictionary(RadicalData {
         radicals_json: json,
     })?;
@@ -285,7 +285,7 @@ pub fn load_kanji() -> Result<(), OrigaError> {
         return Ok(());
     }
 
-    let json = read_json_file("data/dictionary/kanji.json")?;
+    let json = read_json_file("domain/dictionary/kanji.json")?;
     init_kanji_dictionary(KanjiData { kanji_json: json })?;
     log::info!("Kanji loaded");
     Ok(())
@@ -297,7 +297,7 @@ pub fn load_grammar() -> Result<(), OrigaError> {
         return Ok(());
     }
 
-    let json = read_json_file("data/grammar/grammar.json")?;
+    let json = read_json_file("domain/grammar/grammar.json")?;
     init_grammar_rules(GrammarData { grammar_json: json })?;
     log::info!("Grammar loaded");
     Ok(())
@@ -309,39 +309,39 @@ pub fn load_well_known_sets() -> Result<(), OrigaError> {
         return Ok(());
     }
 
-    let jlpt_n1 = read_json_file("data/well_known_set/jltp_n1.json")?;
-    let jlpt_n2 = read_json_file("data/well_known_set/jltp_n2.json")?;
-    let jlpt_n3 = read_json_file("data/well_known_set/jltp_n3.json")?;
-    let jlpt_n4 = read_json_file("data/well_known_set/jltp_n4.json")?;
-    let jlpt_n5 = read_json_file("data/well_known_set/jltp_n5.json")?;
+    let jlpt_n1 = read_json_file("domain/well_known_set/jltp_n1.json")?;
+    let jlpt_n2 = read_json_file("domain/well_known_set/jltp_n2.json")?;
+    let jlpt_n3 = read_json_file("domain/well_known_set/jltp_n3.json")?;
+    let jlpt_n4 = read_json_file("domain/well_known_set/jltp_n4.json")?;
+    let jlpt_n5 = read_json_file("domain/well_known_set/jltp_n5.json")?;
 
     let mut migii_n5 = Vec::new();
     for i in 1..=20 {
-        let path = format!("data/well_known_set/migii/n5/migii_n5_{}.json", i);
+        let path = format!("domain/well_known_set/migii/n5/migii_n5_{}.json", i);
         migii_n5.push(read_json_file(&path)?);
     }
 
     let mut migii_n4 = Vec::new();
     for i in 1..=11 {
-        let path = format!("data/well_known_set/migii/n4/migii_n4_{}.json", i);
+        let path = format!("domain/well_known_set/migii/n4/migii_n4_{}.json", i);
         migii_n4.push(read_json_file(&path)?);
     }
 
     let mut migii_n3 = Vec::new();
     for i in 1..=31 {
-        let path = format!("data/well_known_set/migii/n3/migii_n3_{}.json", i);
+        let path = format!("domain/well_known_set/migii/n3/migii_n3_{}.json", i);
         migii_n3.push(read_json_file(&path)?);
     }
 
     let mut migii_n2 = Vec::new();
     for i in 1..=31 {
-        let path = format!("data/well_known_set/migii/n2/migii_n2_{}.json", i);
+        let path = format!("domain/well_known_set/migii/n2/migii_n2_{}.json", i);
         migii_n2.push(read_json_file(&path)?);
     }
 
     let mut migii_n1 = Vec::new();
     for i in 1..=56 {
-        let path = format!("data/well_known_set/migii/n1/migii_n1_{}.json", i);
+        let path = format!("domain/well_known_set/migii/n1/migii_n1_{}.json", i);
         migii_n1.push(read_json_file(&path)?);
     }
 
