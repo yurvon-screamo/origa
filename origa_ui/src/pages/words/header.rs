@@ -13,7 +13,7 @@ pub fn WordsHeader() -> impl IntoView {
             <Heading level=HeadingLevel::H1>
                 "Слова"
             </Heading>
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2 sm:gap-4">
                 <Button
                     variant=ButtonVariant::Ghost
                     on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
