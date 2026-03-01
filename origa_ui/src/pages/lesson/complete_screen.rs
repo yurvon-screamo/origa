@@ -70,7 +70,7 @@ pub fn LessonCompleteScreen(is_completed: RwSignal<bool>, review_count: usize) -
                         go_next_lesson.run(());
                     })
                 >
-                    "Следующий урок [Enter]"
+                    "Следующий урок" <span class="hidden sm:inline">"[Enter]"</span>
                 </Button>
 
                 <Button
@@ -79,7 +79,7 @@ pub fn LessonCompleteScreen(is_completed: RwSignal<bool>, review_count: usize) -
                         go_home.run(());
                     })
                 >
-                    "На главную [Esc]"
+                    "На главную" <span class="hidden sm:inline">"[Esc]"</span>
                 </Button>
             </div>
         </div>
