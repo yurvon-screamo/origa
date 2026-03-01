@@ -17,10 +17,10 @@ pub fn WordsHeader() -> impl IntoView {
                 <Button
                     variant=ButtonVariant::Ghost
                     on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
-                        navigate("/home", Default::default());
+                        navigate("/sets", Default::default());
                     })
                 >
-                    "Назад"
+                    "Колоды"
                 </Button>
                 <Button
                     variant=ButtonVariant::Olive
