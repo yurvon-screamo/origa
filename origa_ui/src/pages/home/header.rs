@@ -18,7 +18,15 @@ pub fn HomeHeader(current_user: RwSignal<Option<User>>) -> impl IntoView {
                                     <DisplayText class="font-serif text-2xl font-light tracking-tight whitespace-nowrap">
                                         "オリガ"
                                     </DisplayText>
-                                    <Avatar initials=Signal::derive(move || initials_clone.clone()) />
+                                    <Button
+                                        variant=ButtonVariant::Ghost
+                                        on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
+                                            let navigate = use_navigate();
+                                            navigate("/profile", Default::default());
+                                        })
+                                    >
+                                        <Avatar initials=Signal::derive(move || initials_clone.clone()) />
+                                    </Button>
                                 }
                             })
                         }}
@@ -55,36 +63,6 @@ pub fn HomeHeader(current_user: RwSignal<Option<User>>) -> impl IntoView {
                                             })
                                         >
                                             "Кандзи"
-                                        </Button>
-                                        <Button
-                                            variant=ButtonVariant::Ghost
-                                            on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
-                                                let navigate = use_navigate();
-                                                navigate("/sets", Default::default());
-                                            })
-                                        >
-                                            "Колоды"
-                                        </Button>
-                                        <Button
-                                            variant=ButtonVariant::Ghost
-                                            on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
-                                                let navigate = use_navigate();
-                                                navigate("/profile", Default::default());
-                                            })
-                                        >
-                                            "Профиль"
-                                        </Button>
-                                        <Button
-                                            variant=ButtonVariant::Ghost
-                                            on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
-                                                let current_user = use_context::<RwSignal<Option<User>>>()
-                                                    .expect("current_user context not provided");
-                                                current_user.set(None);
-                                                let navigate = use_navigate();
-                                                navigate("/", Default::default());
-                                            })
-                                        >
-                                            "Выйти"
                                         </Button>
                                     </div>
                                 }
