@@ -20,9 +20,7 @@ pub fn LessonHeader() -> impl IntoView {
                     "Назад"
                 </Button>
             </A>
-            <h1 class="font-serif text-2xl font-light tracking-tight">
-                {lesson_ctx.mode.title()}
-            </h1>
+
             <button
                 class="btn btn-ghost px-3 py-2"
                 on:click=move |_| toggle_mute()
