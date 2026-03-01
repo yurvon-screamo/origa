@@ -1,6 +1,6 @@
 use crate::ui_components::{
-    Card, KanjiViewMode, KanjiWritingSection, MarkdownText, Tag, TagVariant, Text, TextSize,
-    TypographyVariant,
+    Card, CollapsibleDescription, KanjiViewMode, KanjiWritingSection, MarkdownText, Tag,
+    TagVariant, Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
 use origa::domain::{Card as DomainCard, StudyCard};
@@ -104,7 +104,9 @@ pub fn KanjiCardItem(study_card: StudyCard) -> impl IntoView {
                     <div class="flex items-center gap-3 mb-2">
                         <span class="text-3xl font-serif">{kanji_char.clone()}</span>
                         <div class="min-w-0 flex-1">
-                            <MarkdownText content=Signal::derive(move || description.clone())/>
+                            <CollapsibleDescription>
+                                <MarkdownText content=Signal::derive(move || description.clone())/>
+                            </CollapsibleDescription>
                         </div>
                         <Tag variant=Signal::derive(move || status.tag_variant())>
                             {status.label()}
@@ -126,7 +128,9 @@ pub fn KanjiCardItem(study_card: StudyCard) -> impl IntoView {
                             let examples = example_words.clone();
                             view! {
                                 <div class=Signal::derive(|| "mb-1".to_string())>
-                                    <MarkdownText content=Signal::derive(move || format!("**Примеры:** {}", examples))/>
+                                    <CollapsibleDescription>
+                                        <MarkdownText content=Signal::derive(move || format!("**Примеры:** {}", examples))/>
+                                    </CollapsibleDescription>
                                 </div>
                             }.into_any()
                         } else {

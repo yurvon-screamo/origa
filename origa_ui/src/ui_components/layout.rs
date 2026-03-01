@@ -55,7 +55,7 @@ pub fn CardLayout(
             };
             format!("{} {}", base, class.get())
         }>
-            <div class="bg-[var(--bg-primary)] border border-[var(--border-color)] p-8">
+            <div class="bg-[var(--bg-primary)] border border-[var(--border-color)] p-4 sm:p-6 lg:p-8">
                 {children()}
             </div>
         </div>
