@@ -15,7 +15,7 @@ pub fn RatingButtons(
                 disabled
                 on_click=Callback::new(move |_| on_rate.run(Rating::Again))
             >
-                "Не знаю [1]"
+                "Не знаю" <span class="hidden sm:inline">"[1]"</span>
             </Button>
 
             <Button
@@ -24,7 +24,7 @@ pub fn RatingButtons(
                 disabled
                 on_click=Callback::new(move |_| on_rate.run(Rating::Hard))
             >
-                "Плохо [2]"
+                "Плохо" <span class="hidden sm:inline">"[2]"</span>
             </Button>
 
             <Button
@@ -33,7 +33,7 @@ pub fn RatingButtons(
                 disabled
                 on_click=Callback::new(move |_| on_rate.run(Rating::Good))
             >
-                "Знаю [3]"
+                "Знаю" <span class="hidden sm:inline">"[3]"</span>
             </Button>
 
             <Button
@@ -42,7 +42,7 @@ pub fn RatingButtons(
                 disabled
                 on_click=Callback::new(move |_| on_rate.run(Rating::Easy))
             >
-                "Идеально [4]"
+                "Идеально" <span class="hidden sm:inline">"[4]"</span>
             </Button>
         </div>
     }
