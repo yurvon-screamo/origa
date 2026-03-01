@@ -101,14 +101,23 @@ jobs:
       - name: Initialize Tauri Android
         if: matrix.platform == 'android'
         working-directory: tauri
-        run: cargo tauri android init --ci
+        run: |
+          echo "NDK_HOME=$NDK_HOME"
+          echo "ANDROID_NDK_ROOT=$ANDROID_NDK_ROOT"
+          ls -la $NDK_HOME || true
+          cargo tauri android init --ci
         env:
           NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+          ANDROID_NDK_ROOT: ${{ steps.setup-ndk.outputs.ndk-path }}
 
       - name: Build Tauri Android APK
         if: matrix.platform == 'android'
         working-directory: tauri
-        run: cargo tauri android build --apk --ci
+        run: |
+          echo "NDK_HOME=$NDK_HOME"
+          echo "ANDROID_NDK_ROOT=$ANDROID_NDK_ROOT"
+          cargo tauri --version
+          cargo tauri android build --apk --ci 2>&1 || (echo "Build failed"; cat gen/android/.tauri/error.log 2>/dev/null || true; exit 1)
         env:
           NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
           ANDROID_NDK_ROOT: ${{ steps.setup-ndk.outputs.ndk-path }}
