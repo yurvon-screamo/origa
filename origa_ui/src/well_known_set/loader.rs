@@ -25,7 +25,7 @@ fn parse_well_known_set(json: &str, id: &str) -> Result<WellKnownSet, OrigaError
             reason: format!("Error parsing {}: {}", id, e),
         })?;
 
-    WellKnownSet::new(data.level, data.words)
+    Ok(WellKnownSet::new(data.level, data.words))
 }
 
 #[derive(Clone)]

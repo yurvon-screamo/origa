@@ -63,6 +63,10 @@ pub struct WellKnownSet {
 }
 
 impl WellKnownSet {
+    pub fn new(level: JapaneseLevel, words: Vec<String>) -> Self {
+        Self { level, words }
+    }
+
     pub fn words(&self) -> &[String] {
         &self.words
     }
@@ -73,9 +77,6 @@ impl WellKnownSet {
 }
 
 pub trait WellKnownSetLoader {
-    fn load_meta_list(
-        &self,
-    ) -> impl Future<Output = Result<Vec<WellKnownSetMeta>, OrigaError>> + Send;
-    fn load_set(&self, id: String)
-        -> impl Future<Output = Result<WellKnownSet, OrigaError>> + Send;
+    fn load_meta_list(&self) -> impl Future<Output = Result<Vec<WellKnownSetMeta>, OrigaError>>;
+    fn load_set(&self, id: String) -> impl Future<Output = Result<WellKnownSet, OrigaError>>;
 }
