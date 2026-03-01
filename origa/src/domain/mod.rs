@@ -9,7 +9,6 @@ mod score_content;
 mod tokenizer;
 mod user;
 mod value_objects;
-mod well_known_set;
 
 pub use dictionary::{
     KANJI_DICTIONARY, KanjiData, KanjiInfo, PopularWord, RADICAL_DICTIONARY, RadicalData,
@@ -35,7 +34,3 @@ pub use tokenizer::{
 };
 pub use user::User;
 pub use value_objects::{Answer, JapaneseLevel, NativeLanguage, Question};
-pub use well_known_set::{
-    WellKnownSet, WellKnownSetContent, WellKnownSetData, WellKnownSets, init_well_known_sets,
-    is_well_known_sets_loaded, load_well_known_set,
-};
