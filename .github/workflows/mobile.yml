@@ -70,19 +70,13 @@ jobs:
         if: matrix.platform == 'android'
         uses: android-actions/setup-android@v3
 
-      - name: Install Android NDK
+      - name: Setup Android NDK
         if: matrix.platform == 'android'
-        run: |
-          sdkmanager "ndk;27.0.12077973"
-          echo "ANDROID_NDK_ROOT=$ANDROID_HOME/ndk/27.0.12077973" >> $GITHUB_ENV
-          echo "NDK_HOME=$ANDROID_HOME/ndk/27.0.12077973" >> $GITHUB_ENV
-
-      - name: Debug NDK
-        if: matrix.platform == 'android'
-        run: |
-          echo "ANDROID_HOME=$ANDROID_HOME"
-          echo "ANDROID_NDK_ROOT=$ANDROID_NDK_ROOT"
-          ls -la $ANDROID_HOME/ndk/ || true
+        uses: nttld/setup-ndk@v1
+        id: setup-ndk
+        with:
+          ndk-version: r27c
+          cache: true
 
       - name: Cache Gradle
         if: matrix.platform == 'android'
@@ -108,16 +102,16 @@ jobs:
         if: matrix.platform == 'android'
         working-directory: tauri
         run: cargo tauri android init --ci
+        env:
+          NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
 
       - name: Build Tauri Android APK
         if: matrix.platform == 'android'
         working-directory: tauri
-        run: |
-          echo "NDK_HOME=$NDK_HOME"
-          echo "ANDROID_NDK_ROOT=$ANDROID_NDK_ROOT"
-          cargo tauri android build --apk --ci -v
+        run: cargo tauri android build --apk --ci
         env:
-          NDK_HOME: ${{ env.NDK_HOME }}
+          NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+          ANDROID_NDK_ROOT: ${{ steps.setup-ndk.outputs.ndk-path }}
 
       - name: Initialize Tauri iOS
         if: matrix.platform == 'ios'
