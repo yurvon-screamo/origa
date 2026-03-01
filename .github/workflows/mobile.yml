@@ -75,8 +75,8 @@ jobs:
         uses: nttld/setup-ndk@v1
         id: setup-ndk
         with:
-          ndk-version: r27c
-          cache: true
+          ndk-version: r25b
+          local-cache: true
 
       - name: Cache Gradle
         if: matrix.platform == 'android'
@@ -114,10 +114,13 @@ jobs:
         if: matrix.platform == 'android'
         working-directory: tauri
         run: |
+          echo "=== Debug info ==="
           echo "NDK_HOME=$NDK_HOME"
           echo "ANDROID_NDK_ROOT=$ANDROID_NDK_ROOT"
-          cargo tauri --version
-          cargo tauri android build --apk --ci 2>&1 || (echo "Build failed"; cat gen/android/.tauri/error.log 2>/dev/null || true; exit 1)
+          echo "=== NDK content ==="
+          ls -la $NDK_HOME || echo "NDK_HOME not accessible"
+          echo "=== Start build ==="
+          cargo tauri android build 2>&1 || (echo "Build failed with exit code $?"; exit 1)
         env:
           NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
           ANDROID_NDK_ROOT: ${{ steps.setup-ndk.outputs.ndk-path }}
