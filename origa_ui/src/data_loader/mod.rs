@@ -1,3 +1,4 @@
+use futures::future::join_all;
 use origa::domain::{
     GrammarData, KanjiData, OrigaError, RadicalData, VocabularyChunkData, init_grammar_rules,
     init_kanji_dictionary, init_radical_dictionary, init_vocabulary_dictionary, is_grammar_loaded,
