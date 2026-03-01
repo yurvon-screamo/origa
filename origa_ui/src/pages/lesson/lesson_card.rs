@@ -146,7 +146,7 @@ pub fn LessonCard(
                             variant=Signal::derive(|| ButtonVariant::Filled)
                             on_click=Callback::new(move |_| on_show_answer.run(()))
                         >
-                            "Показать ответ [Пробел]"
+                            "Показать ответ" <span class="hidden sm:inline">"[Пробел]"</span>
                         </Button>
                     </div>
                 </Show>
