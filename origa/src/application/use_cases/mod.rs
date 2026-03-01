@@ -1,3 +1,5 @@
+mod analyze_text_for_cards;
+mod create_cards_from_analysis;
 mod create_grammar_card;
 mod create_kanji_card;
 mod create_vocabulary_card;
@@ -21,6 +23,10 @@ mod select_cards_to_lesson;
 mod sync_duolingo_words;
 mod update_user_profile;
 
+pub use analyze_text_for_cards::{AnalyzeTextForCardsUseCase, AnalyzeTextResult, AnalyzedWord};
+pub use create_cards_from_analysis::{
+    CreateCardsFromAnalysisResult, CreateCardsFromAnalysisUseCase, WordToCreate,
+};
 pub use create_grammar_card::CreateGrammarCardUseCase;
 pub use create_kanji_card::CreateKanjiCardUseCase;
 pub use create_vocabulary_card::CreateVocabularyCardUseCase;

@@ -8,25 +8,13 @@ pub fn CollapsibleDescription(
     children: Children,
 ) -> impl IntoView {
     let is_expanded = RwSignal::new(!default_collapsed);
-    let show_button = RwSignal::new(false);
-    let content_ref = NodeRef::new();
-
-    Effect::new(move |_| {
-        if let Some(el) = content_ref.get() {
-            let is_overflowing = el.scroll_height() > el.client_height();
-            show_button.set(is_overflowing);
-        }
-    });
 
     view! {
         <div>
-            <div
-                node_ref=content_ref
-                class=move || if is_expanded.get() { "" } else { "line-clamp-3" }
-            >
+            <div class=move || if is_expanded.get() { "" } else { "line-clamp-3" }>
                 {children()}
             </div>
-            <div class=move || if show_button.get() { "mt-2" } else { "hidden" }>
+            <div class="mt-2">
                 <Button
                     variant=ButtonVariant::Ghost
                     on_click=Callback::new(move |_: MouseEvent| {
