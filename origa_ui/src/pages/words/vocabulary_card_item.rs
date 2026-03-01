@@ -1,6 +1,6 @@
 use crate::ui_components::{
-    Card, FuriganaText, Heading, HeadingLevel, MarkdownText, Tag, TagVariant, Text, TextSize,
-    TypographyVariant,
+    Card, CollapsibleDescription, FuriganaText, Heading, HeadingLevel, MarkdownText, Tag,
+    TagVariant, Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
 use origa::domain::{Card as DomainCard, StudyCard};
@@ -87,7 +87,9 @@ pub fn VocabularyCardItem(study_card: StudyCard) -> impl IntoView {
                             {status.label()}
                         </Tag>
                     </div>
-                    <MarkdownText content=Signal::derive(move || meaning.clone())/>
+                    <CollapsibleDescription>
+                        <MarkdownText content=Signal::derive(move || meaning.clone())/>
+                    </CollapsibleDescription>
                     <Text
                         size=TextSize::Small
                         variant=TypographyVariant::Muted
