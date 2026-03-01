@@ -14,7 +14,7 @@ pub fn SetsHeader() -> impl IntoView {
             <Button
                 variant=ButtonVariant::Ghost
                 on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
-                    navigate("/home", Default::default());
+                    navigate("/words", Default::default());
                 })
             >
                 "Назад"

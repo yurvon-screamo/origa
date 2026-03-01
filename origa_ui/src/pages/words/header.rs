@@ -6,6 +6,7 @@ use leptos_router::hooks::use_navigate;
 #[component]
 pub fn WordsHeader() -> impl IntoView {
     let navigate = use_navigate();
+    let navigate_clone = navigate.clone();
     let is_modal_open = RwSignal::new(false);
 
     view! {
@@ -17,7 +18,15 @@ pub fn WordsHeader() -> impl IntoView {
                 <Button
                     variant=ButtonVariant::Ghost
                     on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
-                        navigate("/sets", Default::default());
+                        navigate("/home", Default::default());
+                    })
+                >
+                    "Назад"
+                </Button>
+                <Button
+                    variant=ButtonVariant::Ghost
+                    on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
+                        navigate_clone("/sets", Default::default());
                     })
                 >
                     "Колоды"
