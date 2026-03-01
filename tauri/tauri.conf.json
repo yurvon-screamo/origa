@@ -30,6 +30,13 @@
 			"icons/128x128@2x.png",
 			"icons/icon.icns",
 			"icons/icon.ico"
-		]
+		],
+		"android": {
+			"minSdkVersion": 24
+		},
+		"iOS": {
+			"minimumSystemVersion": "14.0",
+			"developmentTeam": "YOUR_TEAM_ID"
+		}
 	}
 }
