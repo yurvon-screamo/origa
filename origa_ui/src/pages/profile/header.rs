@@ -12,7 +12,7 @@ pub fn ProfileHeader() -> impl IntoView {
     let user_info = move || current_user.get().map(|user| user.username().to_string());
 
     view! {
-        <div class="flex justify-between items-center mb-6">
+        <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
             <div class="flex flex-col items-center space-y-4 flex-1">
                 {move || user_info().map(|username| {
                     let text = format!("Профиль {}", username);

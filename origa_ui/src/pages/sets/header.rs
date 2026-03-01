@@ -7,7 +7,7 @@ pub fn SetsHeader() -> impl IntoView {
     let navigate = use_navigate();
 
     view! {
-        <div class="flex justify-between items-center mb-6">
+        <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
             <Heading level=HeadingLevel::H2>
                 "Наборы для изучения"
             </Heading>

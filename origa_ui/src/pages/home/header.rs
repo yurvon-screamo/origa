@@ -8,7 +8,7 @@ pub fn HomeHeader(current_user: RwSignal<Option<User>>) -> impl IntoView {
     view! {
         <header class="border-b border-[var(--border-color)] bg-[var(--bg-primary)]">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between items-center h-16">
+                <div class="flex flex-wrap justify-between items-center min-h-16 gap-4">
                     <div class="flex items-center space-x-4">
                         {move || {
                             current_user.get().map(|user| {
@@ -28,7 +28,7 @@ pub fn HomeHeader(current_user: RwSignal<Option<User>>) -> impl IntoView {
                         {move || {
                             current_user.get().map(|_| {
                                 view! {
-                                    <div class="flex items-center space-x-4">
+                    <div class="flex flex-wrap items-center gap-4">
                                         <Button
                                             variant=ButtonVariant::Ghost
                                             on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
