@@ -1,16 +1,16 @@
 use crate::ui_components::{Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
-use origa::domain::WellKnownSets;
+use origa::application::SetType;
 
 use super::set_card::SetCard;
-use super::types::{ImportState, SetInfo, SetType};
+use super::types::{ImportState, SetInfo};
 
 #[component]
 pub fn SetsTypeGroup(
     set_type: SetType,
     sets_for_level: Memo<Vec<SetInfo>>,
     importing: RwSignal<Option<ImportState>>,
-    on_import: Callback<(WellKnownSets, String)>,
+    on_import: Callback<(String, String)>,
 ) -> impl IntoView {
     let sets_for_type = Memo::new(move |_| {
         sets_for_level
@@ -33,12 +33,13 @@ pub fn SetsTypeGroup(
                 <div class="sets-list">
                     <For
                         each=move || sets_for_type.get()
-                        key=|s| format!("{:?}", s.set)
+                        key=|s| s.set_id.clone()
                         children=move |set_info| {
+                            let set_id = set_info.set_id.clone();
                             let is_importing =
                                 Memo::new(move |_| {
                                     importing.get()
-                                        .map(|state| state.set == set_info.set)
+                                        .map(|state| state.set_id == set_id)
                                         .unwrap_or(false)
                                 });
 

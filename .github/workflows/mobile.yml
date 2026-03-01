@@ -17,8 +17,9 @@ jobs:
         include:
           - platform: android
             os: ubuntu-22.04
-          - platform: ios
-            os: macos-15
+          # TODO: Add iOS build support
+          # - platform: ios
+          # os: macos-15
 
     runs-on: ${{ matrix.os }}
 

@@ -1,12 +1,13 @@
 use super::actions::create_import_action;
 use super::sets_level_group::SetsLevelGroup;
-use super::types::{ImportResult, ImportState, JlptLevel, SetInfo, classify_set};
+use super::types::{ImportResult, ImportState, SetInfo};
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{Alert, AlertType, LoadingOverlay, Spinner};
+use crate::well_known_set::WellKnownSetLoaderImpl;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::application::ListWellKnownSetsUseCase;
-use origa::domain::User;
+use origa::domain::{JapaneseLevel, User};
 
 #[component]
 pub fn SetsContent() -> impl IntoView {
@@ -20,34 +21,25 @@ pub fn SetsContent() -> impl IntoView {
     let import_result: RwSignal<Option<ImportResult>> = RwSignal::new(None);
     let is_loading: RwSignal<bool> = RwSignal::new(true);
 
-    let repository_for_load = repository.clone();
-    let current_user_for_load = current_user;
     let sets_for_load = sets;
+    let loader = WellKnownSetLoaderImpl::new();
 
     spawn_local(async move {
-        if let Some(user) = current_user_for_load.get_untracked() {
-            let use_case = ListWellKnownSetsUseCase::new(&repository_for_load);
-            if let Ok(set_infos) = use_case.execute(user.id()).await {
-                let set_list: Vec<SetInfo> = set_infos
-                    .into_iter()
-                    .map(|info| {
-                        let (set_type, level) = classify_set(&info.set);
-                        let word_count = origa::domain::load_well_known_set(&info.set)
-                            .map(|s| s.words().len())
-                            .unwrap_or(0);
-                        SetInfo {
-                            set: info.set,
-                            title: info.title,
-                            description: info.description,
-                            word_count,
-                            set_type,
-                            level,
-                        }
-                    })
-                    .collect();
-                sets_for_load.set(set_list);
-                is_loading.set(false);
-            }
+        let use_case = ListWellKnownSetsUseCase::new(&loader);
+        if let Ok(set_infos) = use_case.execute().await {
+            let set_list: Vec<SetInfo> = set_infos
+                .into_iter()
+                .map(|info| SetInfo {
+                    set_id: info.meta.id,
+                    title: info.meta.title_ru,
+                    description: info.meta.desc_ru,
+                    word_count: info.word_count,
+                    set_type: info.meta.set_type,
+                    level: info.meta.level,
+                })
+                .collect();
+            sets_for_load.set(set_list);
+            is_loading.set(false);
         }
     });
 
@@ -98,11 +90,11 @@ pub fn SetsContent() -> impl IntoView {
                 </div>
             </Show>
             <Show when=move || !is_loading.get()>
-                <SetsLevelGroup level=JlptLevel::N5 sets=sets importing=importing on_import=on_import />
-                <SetsLevelGroup level=JlptLevel::N4 sets=sets importing=importing on_import=on_import />
-                <SetsLevelGroup level=JlptLevel::N3 sets=sets importing=importing on_import=on_import />
-                <SetsLevelGroup level=JlptLevel::N2 sets=sets importing=importing on_import=on_import />
-                <SetsLevelGroup level=JlptLevel::N1 sets=sets importing=importing on_import=on_import />
+                <SetsLevelGroup level=JapaneseLevel::N5 sets=sets importing=importing on_import=on_import />
+                <SetsLevelGroup level=JapaneseLevel::N4 sets=sets importing=importing on_import=on_import />
+                <SetsLevelGroup level=JapaneseLevel::N3 sets=sets importing=importing on_import=on_import />
+                <SetsLevelGroup level=JapaneseLevel::N2 sets=sets importing=importing on_import=on_import />
+                <SetsLevelGroup level=JapaneseLevel::N1 sets=sets importing=importing on_import=on_import />
             </Show>
         </div>
     }
