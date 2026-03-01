@@ -1,14 +1,15 @@
 use super::sets_type_group::SetsTypeGroup;
-use super::types::{ImportState, JlptLevel, SetInfo, SetType};
+use super::types::{ImportState, SetInfo};
 use leptos::prelude::*;
-use origa::domain::WellKnownSets;
+use origa::application::SetType;
+use origa::domain::JapaneseLevel;
 
 #[component]
 pub fn SetsLevelGroup(
-    level: JlptLevel,
+    level: JapaneseLevel,
     sets: RwSignal<Vec<SetInfo>>,
     importing: RwSignal<Option<ImportState>>,
-    on_import: Callback<(WellKnownSets, String)>,
+    on_import: Callback<(String, String)>,
 ) -> impl IntoView {
     let sets_for_level = Memo::new(move |_| {
         sets.get()
@@ -21,7 +22,7 @@ pub fn SetsLevelGroup(
         <Show when=move || !sets_for_level.get().is_empty()>
             <div class="sets-group">
                 <div class="sets-group-title">
-                    {format!("Уровень {}", level.label())}
+                    {format!("Уровень {}", level.code())}
                 </div>
                 <SetsTypeGroup
                     set_type=SetType::Jlpt

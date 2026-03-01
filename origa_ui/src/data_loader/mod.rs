@@ -1,17 +1,11 @@
-use futures::future::join_all;
 use origa::domain::{
-    GrammarData, KanjiData, OrigaError, RadicalData, VocabularyChunkData, WellKnownSetData,
-    init_grammar_rules, init_kanji_dictionary, init_radical_dictionary, init_vocabulary_dictionary,
-    init_well_known_sets, is_grammar_loaded, is_kanji_loaded, is_radical_loaded,
-    is_vocabulary_loaded, is_well_known_sets_loaded,
+    GrammarData, KanjiData, OrigaError, RadicalData, VocabularyChunkData, init_grammar_rules,
+    init_kanji_dictionary, init_radical_dictionary, init_vocabulary_dictionary, is_grammar_loaded,
+    is_kanji_loaded, is_radical_loaded, is_vocabulary_loaded,
 };
 
 pub fn is_all_data_loaded() -> bool {
-    is_vocabulary_loaded()
-        && is_radical_loaded()
-        && is_kanji_loaded()
-        && is_grammar_loaded()
-        && is_well_known_sets_loaded()
+    is_vocabulary_loaded() && is_radical_loaded() && is_kanji_loaded() && is_grammar_loaded()
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -24,11 +18,9 @@ pub async fn load_all_data() -> Result<(), OrigaError> {
     vocab_result?;
     radical_result?;
 
-    let (kanji_result, grammar_result, wks_result) =
-        futures::join!(load_kanji(), load_grammar(), load_well_known_sets());
+    let (kanji_result, grammar_result) = futures::join!(load_kanji(), load_grammar());
     kanji_result?;
     grammar_result?;
-    wks_result?;
 
     log::info!("All data loaded successfully");
     Ok(())
@@ -146,72 +138,6 @@ pub async fn load_grammar() -> Result<(), OrigaError> {
     Ok(())
 }
 
-#[cfg(target_arch = "wasm32")]
-pub async fn load_well_known_sets() -> Result<(), OrigaError> {
-    if is_well_known_sets_loaded() {
-        return Ok(());
-    }
-
-    let mut fetch_futures: Vec<_> = Vec::new();
-
-    fetch_futures.push(fetch_text("domain/well_known_set/jltp_n1.json".to_string()));
-    fetch_futures.push(fetch_text("domain/well_known_set/jltp_n2.json".to_string()));
-    fetch_futures.push(fetch_text("domain/well_known_set/jltp_n3.json".to_string()));
-    fetch_futures.push(fetch_text("domain/well_known_set/jltp_n4.json".to_string()));
-    fetch_futures.push(fetch_text("domain/well_known_set/jltp_n5.json".to_string()));
-
-    for i in 1..=20 {
-        fetch_futures.push(fetch_text(format!(
-            "domain/well_known_set/migii/n5/migii_n5_{}.json",
-            i
-        )));
-    }
-    for i in 1..=11 {
-        fetch_futures.push(fetch_text(format!(
-            "domain/well_known_set/migii/n4/migii_n4_{}.json",
-            i
-        )));
-    }
-    for i in 1..=31 {
-        fetch_futures.push(fetch_text(format!(
-            "domain/well_known_set/migii/n3/migii_n3_{}.json",
-            i
-        )));
-    }
-    for i in 1..=31 {
-        fetch_futures.push(fetch_text(format!(
-            "domain/well_known_set/migii/n2/migii_n2_{}.json",
-            i
-        )));
-    }
-    for i in 1..=56 {
-        fetch_futures.push(fetch_text(format!(
-            "domain/well_known_set/migii/n1/migii_n1_{}.json",
-            i
-        )));
-    }
-
-    let results = join_all(fetch_futures).await;
-    let all_jsons: Vec<String> = results.into_iter().collect::<Result<Vec<_>, _>>()?;
-
-    let data = WellKnownSetData {
-        jlpt_n1: all_jsons[0].clone(),
-        jlpt_n2: all_jsons[1].clone(),
-        jlpt_n3: all_jsons[2].clone(),
-        jlpt_n4: all_jsons[3].clone(),
-        jlpt_n5: all_jsons[4].clone(),
-        migii_n5: all_jsons[5..25].to_vec(),
-        migii_n4: all_jsons[25..36].to_vec(),
-        migii_n3: all_jsons[36..67].to_vec(),
-        migii_n2: all_jsons[67..98].to_vec(),
-        migii_n1: all_jsons[98..154].to_vec(),
-    };
-
-    init_well_known_sets(data)?;
-    log::info!("Well-known sets loaded");
-    Ok(())
-}
-
 #[cfg(not(target_arch = "wasm32"))]
 pub fn load_all_data() -> Result<(), OrigaError> {
     if is_all_data_loaded() {
@@ -222,7 +148,6 @@ pub fn load_all_data() -> Result<(), OrigaError> {
     load_radical()?;
     load_kanji()?;
     load_grammar()?;
-    load_well_known_sets()?;
 
     log::info!("All data loaded successfully");
     Ok(())
@@ -309,65 +234,5 @@ pub fn load_grammar() -> Result<(), OrigaError> {
     let json = read_json_file("domain/grammar/grammar.json")?;
     init_grammar_rules(GrammarData { grammar_json: json })?;
     log::info!("Grammar loaded");
-    Ok(())
-}
-
-#[cfg(not(target_arch = "wasm32"))]
-pub fn load_well_known_sets() -> Result<(), OrigaError> {
-    if is_well_known_sets_loaded() {
-        return Ok(());
-    }
-
-    let jlpt_n1 = read_json_file("domain/well_known_set/jltp_n1.json")?;
-    let jlpt_n2 = read_json_file("domain/well_known_set/jltp_n2.json")?;
-    let jlpt_n3 = read_json_file("domain/well_known_set/jltp_n3.json")?;
-    let jlpt_n4 = read_json_file("domain/well_known_set/jltp_n4.json")?;
-    let jlpt_n5 = read_json_file("domain/well_known_set/jltp_n5.json")?;
-
-    let mut migii_n5 = Vec::new();
-    for i in 1..=20 {
-        let path = format!("domain/well_known_set/migii/n5/migii_n5_{}.json", i);
-        migii_n5.push(read_json_file(&path)?);
-    }
-
-    let mut migii_n4 = Vec::new();
-    for i in 1..=11 {
-        let path = format!("domain/well_known_set/migii/n4/migii_n4_{}.json", i);
-        migii_n4.push(read_json_file(&path)?);
-    }
-
-    let mut migii_n3 = Vec::new();
-    for i in 1..=31 {
-        let path = format!("domain/well_known_set/migii/n3/migii_n3_{}.json", i);
-        migii_n3.push(read_json_file(&path)?);
-    }
-
-    let mut migii_n2 = Vec::new();
-    for i in 1..=31 {
-        let path = format!("domain/well_known_set/migii/n2/migii_n2_{}.json", i);
-        migii_n2.push(read_json_file(&path)?);
-    }
-
-    let mut migii_n1 = Vec::new();
-    for i in 1..=56 {
-        let path = format!("domain/well_known_set/migii/n1/migii_n1_{}.json", i);
-        migii_n1.push(read_json_file(&path)?);
-    }
-
-    let data = WellKnownSetData {
-        jlpt_n1,
-        jlpt_n2,
-        jlpt_n3,
-        jlpt_n4,
-        jlpt_n5,
-        migii_n5,
-        migii_n4,
-        migii_n3,
-        migii_n2,
-        migii_n1,
-    };
-
-    init_well_known_sets(data)?;
-    log::info!("Well-known sets loaded");
     Ok(())
 }

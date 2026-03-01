@@ -1,6 +1,7 @@
-use crate::application::{CreateVocabularyCardUseCase, LlmService, UserRepository};
+use crate::application::{
+    CreateVocabularyCardUseCase, LlmService, UserRepository, WellKnownSetLoader,
+};
 use crate::domain::OrigaError;
-use crate::domain::{WellKnownSets, load_well_known_set};
 use ulid::Ulid;
 
 pub struct ImportWellKnownSetResult {
@@ -8,28 +9,32 @@ pub struct ImportWellKnownSetResult {
     pub skipped_words: Vec<String>,
 }
 
-pub struct ImportWellKnownSetUseCase<'a, R: UserRepository, L: LlmService> {
+pub struct ImportWellKnownSetUseCase<'a, R: UserRepository, L: LlmService, W: WellKnownSetLoader> {
     create_card_use_case: CreateVocabularyCardUseCase<'a, R, L>,
+    loader: &'a W,
 }
 
-impl<'a, R: UserRepository, L: LlmService> ImportWellKnownSetUseCase<'a, R, L> {
-    pub fn new(repository: &'a R, llm_service: &'a L) -> Self {
+impl<'a, R: UserRepository, L: LlmService, W: WellKnownSetLoader>
+    ImportWellKnownSetUseCase<'a, R, L, W>
+{
+    pub fn new(repository: &'a R, llm_service: &'a L, loader: &'a W) -> Self {
         Self {
             create_card_use_case: CreateVocabularyCardUseCase::new(repository, llm_service),
+            loader,
         }
     }
 
     pub async fn execute(
         &self,
         user_id: Ulid,
-        set: WellKnownSets,
+        set_id: String,
     ) -> Result<ImportWellKnownSetResult, OrigaError> {
         let mut total_created_count = 0;
         let mut total_skipped_words = Vec::new();
 
-        let words = load_well_known_set(&set)?;
+        let set = self.loader.load_set(set_id).await?;
 
-        let (created, skipped) = self.process_words(user_id, words.words()).await?;
+        let (created, skipped) = self.process_words(user_id, set.words()).await?;
 
         total_created_count += created;
         total_skipped_words.extend(skipped);
@@ -48,7 +53,7 @@ impl<'a, R: UserRepository, L: LlmService> ImportWellKnownSetUseCase<'a, R, L> {
         let mut created_count = 0;
         let mut skipped_words = Vec::new();
 
-        let question = words.join(";").clone();
+        let question = words.join(";");
 
         match self
             .create_card_use_case
