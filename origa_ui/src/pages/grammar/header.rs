@@ -9,7 +9,7 @@ pub fn GrammarHeader() -> impl IntoView {
     let is_modal_open = RwSignal::new(false);
 
     view! {
-        <div class="flex justify-between items-center mb-6">
+        <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
             <Heading level=HeadingLevel::H1>
                 "Грамматика"
             </Heading>
