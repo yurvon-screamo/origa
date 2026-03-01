@@ -48,24 +48,24 @@ impl<'a, R: UserRepository, L: LlmService> ImportWellKnownSetUseCase<'a, R, L> {
         let mut created_count = 0;
         let mut skipped_words = Vec::new();
 
-        for word in words {
-            let question = word.clone();
+        let question = words.join(";").clone();
 
-            match self
-                .create_card_use_case
-                .execute(user_id, question.clone())
-                .await
-            {
-                Ok(_) => {
-                    created_count += 1;
+        match self
+            .create_card_use_case
+            .execute(user_id, question.clone())
+            .await
+        {
+            Ok(cards) => {
+                for word in words {
+                    if !cards.iter().any(|c| c.card().question().text() == word) {
+                        skipped_words.push(word.clone());
+                    }
                 }
-                Err(OrigaError::DuplicateCard { .. }) => {
-                    skipped_words.push(question);
-                }
-                Err(e) => {
-                    tracing::error!("Failed to create card for word {}: {}", question, e);
-                    skipped_words.push(question);
-                }
+                created_count += cards.len();
+            }
+            Err(e) => {
+                tracing::error!("Failed to create cards for words {}: {}", question, e);
+                skipped_words.extend(words.to_vec());
             }
         }
 
