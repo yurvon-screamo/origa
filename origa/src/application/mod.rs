@@ -12,5 +12,4 @@ pub use use_cases::*;
 pub use user_repository::UserRepository;
 pub use well_known_set::{
     SetType, WellKnownSet, WellKnownSetLoader, WellKnownSetMeta, id_to_path,
-    parse_well_known_meta_list, parse_well_known_set,
 };
