@@ -10,6 +10,4 @@ pub use llm_service::LlmService;
 pub use srs_service::{NextReview, RateMode, SrsService};
 pub use use_cases::*;
 pub use user_repository::UserRepository;
-pub use well_known_set::{
-    SetType, WellKnownSet, WellKnownSetLoader, WellKnownSetMeta, id_to_path,
-};
+pub use well_known_set::{SetType, WellKnownSet, WellKnownSetLoader, WellKnownSetMeta, id_to_path};
