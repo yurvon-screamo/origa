@@ -1,8 +1,8 @@
 use crate::ui_components::{
-    Card, CollapsibleDescription, KanjiViewMode, KanjiWritingSection, MarkdownText, Tag,
-    TagVariant, Text, TextSize, TypographyVariant,
+    Button, ButtonVariant, Card, KanjiViewMode, KanjiWritingSection, MarkdownText, Tag, TagVariant,
+    Text, TextSize, TypographyVariant,
 };
-use leptos::prelude::*;
+use leptos::{ev::MouseEvent, prelude::*};
 use origa::domain::{Card as DomainCard, StudyCard};
 
 #[derive(Clone, Copy, PartialEq, Default)]
@@ -96,6 +96,8 @@ pub fn KanjiCardItem(study_card: StudyCard) -> impl IntoView {
         .unwrap_or("-".to_string());
 
     let kanji_for_animation = StoredValue::new(kanji_char.clone());
+    let is_expanded = RwSignal::new(false);
+    let has_examples = !example_words.is_empty();
 
     view! {
         <Card class=Signal::derive(|| "p-4".to_string())>
@@ -104,9 +106,7 @@ pub fn KanjiCardItem(study_card: StudyCard) -> impl IntoView {
                     <div class="flex items-center gap-3 mb-2">
                         <span class="text-3xl font-serif">{kanji_char.clone()}</span>
                         <div class="min-w-0 flex-1">
-                            <CollapsibleDescription>
-                                <MarkdownText content=Signal::derive(move || description.clone())/>
-                            </CollapsibleDescription>
+                            <MarkdownText content=Signal::derive(move || description.clone())/>
                         </div>
                         <Tag variant=Signal::derive(move || status.tag_variant())>
                             {status.label()}
@@ -124,13 +124,11 @@ pub fn KanjiCardItem(study_card: StudyCard) -> impl IntoView {
                         }
                     }}
                     {move || {
-                        if !example_words.is_empty() {
+                        if has_examples && is_expanded.get() {
                             let examples = example_words.clone();
                             view! {
                                 <div class=Signal::derive(|| "mb-1".to_string())>
-                                    <CollapsibleDescription>
-                                        <MarkdownText content=Signal::derive(move || format!("**Примеры:** {}", examples))/>
-                                    </CollapsibleDescription>
+                                    <MarkdownText content=Signal::derive(move || format!("**Примеры:** {}", examples))/>
                                 </div>
                             }.into_any()
                         } else {
@@ -144,9 +142,29 @@ pub fn KanjiCardItem(study_card: StudyCard) -> impl IntoView {
                     >
                         {format!("Повтор: {} | Слож: {} | Стаб: {}", next_review, difficulty, stability)}
                     </Text>
+                    <Show when=move || has_examples>
+                        <div class="mt-2 flex items-center gap-3">
+                            <Button
+                                variant=ButtonVariant::Ghost
+                                on_click=Callback::new(move |_: MouseEvent| {
+                                    is_expanded.update(|v| *v = !*v);
+                                })
+                            >
+                                {move || if is_expanded.get() { "Свернуть" } else { "Развернуть" }}
+                            </Button>
+                        </div>
+                    </Show>
                 </div>
             </div>
-            <KanjiWritingSection kanji=kanji_for_animation.get_value() mode=KanjiViewMode::Frames />
+            {move || {
+                if is_expanded.get() {
+                    view! {
+                        <KanjiWritingSection kanji=kanji_for_animation.get_value() mode=KanjiViewMode::Frames />
+                    }.into_any()
+                } else {
+                    ().into_any()
+                }
+            }}
         </Card>
     }
 }
