@@ -160,12 +160,12 @@ pub fn HomeContent() -> impl IntoView {
                             <div class="flex flex-col gap-2">
                                 <A href="/lesson">
                                     <Button variant=Signal::derive(|| ButtonVariant::Filled) class="w-full">
-                                        "Начать урок"
+                                        "Урок"
                                     </Button>
                                 </A>
                                 <A href="/lesson?mode=fixation">
                                     <Button variant=Signal::derive(|| ButtonVariant::Olive) class="w-full">
-                                        "Закрепление"
+                                        "Сложные"
                                     </Button>
                                 </A>
                             </div>
