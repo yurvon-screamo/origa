@@ -1,9 +1,10 @@
 use crate::app::update_current_user;
 use crate::repository::HybridUserRepository;
+use crate::well_known_set::WellKnownSetLoaderImpl;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::application::ImportWellKnownSetUseCase;
-use origa::domain::{User, WellKnownSets};
+use origa::domain::User;
 
 use super::types::{ImportResult, ImportState};
 
@@ -13,8 +14,8 @@ pub fn create_import_action(
     current_user: RwSignal<Option<User>>,
     importing: RwSignal<Option<ImportState>>,
     import_result: RwSignal<Option<ImportResult>>,
-) -> Callback<(WellKnownSets, String)> {
-    Callback::new(move |(set, title): (WellKnownSets, String)| {
+) -> Callback<(String, String)> {
+    Callback::new(move |(set_id, title): (String, String)| {
         let repo = repository.clone();
         let llm = llm_service.clone();
         let current_user = current_user;
@@ -24,12 +25,13 @@ pub fn create_import_action(
         spawn_local(async move {
             if let Some(user) = current_user.get_untracked() {
                 importing.set(Some(ImportState {
-                    set,
+                    set_id: set_id.clone(),
                     title: title_for_state,
                 }));
                 import_result.set(None);
-                let use_case = ImportWellKnownSetUseCase::new(&repo, &llm);
-                match use_case.execute(user.id(), set).await {
+                let loader = WellKnownSetLoaderImpl::new();
+                let use_case = ImportWellKnownSetUseCase::new(&repo, &llm, &loader);
+                match use_case.execute(user.id(), set_id).await {
                     Ok(result) => {
                         import_result.set(Some(ImportResult {
                             is_success: true,
