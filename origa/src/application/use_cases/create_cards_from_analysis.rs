@@ -14,7 +14,8 @@ pub struct CreateCardsFromAnalysisResult {
     pub failed_words: Vec<(String, String)>,
 }
 
-pub struct CreateCardsFromAnalysisUseCase<'a, R: UserRepository, L: crate::application::LlmService> {
+pub struct CreateCardsFromAnalysisUseCase<'a, R: UserRepository, L: crate::application::LlmService>
+{
     repository: &'a R,
     generate_content_use_case: GenerateCardContentUseCase<'a, L>,
 }
@@ -71,7 +72,7 @@ impl<'a, R: UserRepository, L: crate::application::LlmService>
         word: &WordToCreate,
     ) -> Result<StudyCard, OrigaError> {
         let question = Question::new(word.base_form.clone())?;
-        
+
         let content = self
             .generate_content_use_case
             .generate_content(

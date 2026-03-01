@@ -1,6 +1,6 @@
 use leptos::wasm_bindgen::JsCast;
 use origa::domain::furiganize_segments;
-use web_sys::{window, SpeechSynthesisUtterance, SpeechSynthesisVoice};
+use web_sys::{SpeechSynthesisUtterance, SpeechSynthesisVoice, window};
 
 pub fn is_speech_supported() -> bool {
     window().and_then(|w| w.speech_synthesis().ok()).is_some()

@@ -1,5 +1,5 @@
 use origa::{
-    application::{id_to_path, WellKnownSet, WellKnownSetLoader, WellKnownSetMeta},
+    application::{WellKnownSet, WellKnownSetLoader, WellKnownSetMeta, id_to_path},
     domain::{JapaneseLevel, OrigaError},
 };
 use serde::Deserialize;
