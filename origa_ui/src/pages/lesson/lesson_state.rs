@@ -11,15 +11,6 @@ pub enum LessonMode {
     Fixation,
 }
 
-impl LessonMode {
-    pub fn title(&self) -> &'static str {
-        match self {
-            LessonMode::Lesson => "Урок",
-            LessonMode::Fixation => "Закрепление",
-        }
-    }
-}
-
 #[derive(Clone, PartialEq, Default)]
 pub struct LessonState {
     pub cards: HashMap<Ulid, Card>,
