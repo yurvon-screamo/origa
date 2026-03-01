@@ -1,4 +1,3 @@
-use futures::future::join_all;
 use origa::domain::{
     GrammarData, KanjiData, OrigaError, RadicalData, VocabularyChunkData, init_grammar_rules,
     init_kanji_dictionary, init_radical_dictionary, init_vocabulary_dictionary, is_grammar_loaded,
@@ -72,6 +71,8 @@ async fn fetch_text(url: impl Into<String>) -> Result<String, OrigaError> {
 
 #[cfg(target_arch = "wasm32")]
 pub async fn load_vocabulary() -> Result<(), OrigaError> {
+    use futures::future::join_all;
+
     if is_vocabulary_loaded() {
         return Ok(());
     }

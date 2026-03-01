@@ -31,7 +31,11 @@ impl<'a, R: UserRepository> AnalyzeTextForCardsUseCase<'a, R> {
         Self { repository }
     }
 
-    pub async fn execute(&self, user_id: Ulid, text: String) -> Result<AnalyzeTextResult, OrigaError> {
+    pub async fn execute(
+        &self,
+        user_id: Ulid,
+        text: String,
+    ) -> Result<AnalyzeTextResult, OrigaError> {
         let user = self
             .repository
             .find_by_id(user_id)
@@ -39,7 +43,7 @@ impl<'a, R: UserRepository> AnalyzeTextForCardsUseCase<'a, R> {
             .ok_or(OrigaError::UserNotFound { user_id })?;
 
         let tokens = tokenize_text(text.as_str())?;
-        
+
         let mut words: Vec<AnalyzedWord> = Vec::new();
         let mut seen_words = std::collections::HashSet::new();
 
@@ -49,7 +53,7 @@ impl<'a, R: UserRepository> AnalyzeTextForCardsUseCase<'a, R> {
             }
 
             let word_text = token.orthographic_base_form().to_string();
-            
+
             if seen_words.contains(&word_text) {
                 continue;
             }
@@ -81,10 +85,10 @@ impl<'a, R: UserRepository> AnalyzeTextForCardsUseCase<'a, R> {
 
     fn check_if_known(&self, user: &crate::domain::User, word: &str) -> (bool, Option<String>) {
         for study_card in user.knowledge_set().study_cards().values() {
-            if let crate::domain::Card::Vocabulary(vocab_card) = study_card.card() {
-                if vocab_card.word().text() == word {
-                    return (true, Some(vocab_card.meaning().text().to_string()));
-                }
+            if let crate::domain::Card::Vocabulary(vocab_card) = study_card.card()
+                && vocab_card.word().text() == word
+            {
+                return (true, Some(vocab_card.meaning().text().to_string()));
             }
         }
         (false, None)
