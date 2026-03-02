@@ -1,5 +1,6 @@
 use crate::application::user_repository::UserRepository;
 use crate::domain::{Card, OrigaError};
+use tracing::{debug, info};
 use ulid::Ulid;
 
 #[derive(Clone)]
@@ -13,6 +14,8 @@ impl<'a, R: UserRepository> DeleteKanjiCardUseCase<'a, R> {
     }
 
     pub async fn execute(&self, user_id: Ulid, kanji: String) -> Result<(), OrigaError> {
+        debug!(user_id = %user_id, card_id = %kanji, "Deleting kanji card");
+
         let mut user = self
             .repository
             .find_by_id(user_id)
@@ -29,6 +32,7 @@ impl<'a, R: UserRepository> DeleteKanjiCardUseCase<'a, R> {
             }
         }) {
             user.delete_card(card_id)?;
+            info!(card_id = %card_id, "Kanji card deleted");
         } else {
             Err(OrigaError::RepositoryError {
                 reason: format!("Kanji rule {} not found in knowledge set", kanji),

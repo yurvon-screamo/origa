@@ -1,6 +1,7 @@
 use super::generate_card_content::GenerateCardContentUseCase;
 use crate::application::UserRepository;
 use crate::domain::{Card, OrigaError, Question, StudyCard, VocabularyCard};
+use tracing::{debug, info};
 use ulid::Ulid;
 
 #[derive(Debug, Clone)]
@@ -35,6 +36,8 @@ impl<'a, R: UserRepository, L: crate::application::LlmService>
         user_id: Ulid,
         words: Vec<WordToCreate>,
     ) -> Result<CreateCardsFromAnalysisResult, OrigaError> {
+        debug!(user_id = %user_id, word_count = words.len(), "Creating cards from analysis");
+
         let mut user = self
             .repository
             .find_by_id(user_id)
@@ -58,6 +61,13 @@ impl<'a, R: UserRepository, L: crate::application::LlmService>
         }
 
         self.repository.save_sync(&user).await?;
+
+        info!(
+            created_count = created_cards.len(),
+            skipped_count = skipped_words.len(),
+            failed_count = failed_words.len(),
+            "Cards from analysis created"
+        );
 
         Ok(CreateCardsFromAnalysisResult {
             created_cards,

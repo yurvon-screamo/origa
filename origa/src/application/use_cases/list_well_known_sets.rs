@@ -1,3 +1,5 @@
+use tracing::{debug, info};
+
 use crate::application::{WellKnownSetLoader, WellKnownSetMeta};
 use crate::domain::OrigaError;
 
@@ -23,13 +25,16 @@ impl<'a, L: WellKnownSetLoader> ListWellKnownSetsUseCase<'a, L> {
     }
 
     pub async fn execute(&self) -> Result<Vec<WellKnownSetInfo>, OrigaError> {
+        debug!("Listing well-known sets");
+
         let meta_list = self.loader.load_meta_list().await?;
 
-        let result = meta_list
+        let result: Vec<WellKnownSetInfo> = meta_list
             .into_iter()
             .map(|meta| WellKnownSetInfo::new(meta, None))
             .collect();
 
+        info!(count = result.len(), "Well-known sets listed");
         Ok(result)
     }
 }
