@@ -2,12 +2,21 @@ use super::actions::create_import_action;
 use super::sets_level_group::SetsLevelGroup;
 use super::types::{ImportResult, ImportState, SetInfo};
 use crate::repository::HybridUserRepository;
-use crate::ui_components::{Alert, AlertType, LoadingOverlay, Spinner};
+use crate::ui_components::{LoadingOverlay, Spinner, ToastContainer, ToastData, ToastType};
 use crate::well_known_set::WellKnownSetLoaderImpl;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::application::ListWellKnownSetsUseCase;
 use origa::domain::{JapaneseLevel, User};
+
+static mut TOAST_COUNTER: usize = 0;
+
+fn next_toast_id() -> usize {
+    unsafe {
+        TOAST_COUNTER += 1;
+        TOAST_COUNTER
+    }
+}
 
 #[component]
 pub fn SetsContent() -> impl IntoView {
@@ -18,7 +27,7 @@ pub fn SetsContent() -> impl IntoView {
 
     let sets: RwSignal<Vec<SetInfo>> = RwSignal::new(Vec::new());
     let importing: RwSignal<Option<ImportState>> = RwSignal::new(None);
-    let import_result: RwSignal<Option<ImportResult>> = RwSignal::new(None);
+    let toasts: RwSignal<Vec<ToastData>> = RwSignal::new(Vec::new());
     let is_loading: RwSignal<bool> = RwSignal::new(true);
 
     let sets_for_load = sets;
@@ -43,12 +52,32 @@ pub fn SetsContent() -> impl IntoView {
         }
     });
 
+    let toasts_signal = toasts;
     let on_import = create_import_action(
         repository.clone(),
         llm_service.clone(),
         current_user,
         importing,
-        import_result,
+        Callback::new(move |result: ImportResult| {
+            let toast_type = if result.is_success {
+                ToastType::Success
+            } else {
+                ToastType::Error
+            };
+            let title = if result.is_success {
+                "Импорт завершён"
+            } else {
+                "Ошибка импорта"
+            };
+            toasts_signal.update(|t| {
+                t.push(ToastData {
+                    id: next_toast_id(),
+                    toast_type,
+                    title: title.to_string(),
+                    message: result.message,
+                });
+            });
+        }),
     );
 
     view! {
@@ -62,28 +91,6 @@ pub fn SetsContent() -> impl IntoView {
                     })
                 />
             </Show>
-            <Show when=move || import_result.get().is_some()>
-                <div class="mb-4">
-                    <Alert
-                        alert_type=Signal::derive(move || {
-                            import_result.get()
-                                .map(|r| if r.is_success { AlertType::Success } else { AlertType::Error })
-                                .unwrap_or(AlertType::Info)
-                        })
-                        title=Signal::derive(move || {
-                            import_result.get()
-                                .map(|r| if r.is_success { "Импорт завершён" } else { "Ошибка импорта" })
-                                .unwrap_or_default()
-                                .to_string()
-                        })
-                        message=Signal::derive(move || {
-                            import_result.get()
-                                .map(|r| r.message)
-                                .unwrap_or_default()
-                        })
-                    />
-                </div>
-            </Show>
             <Show when=move || is_loading.get()>
                 <div class="flex justify-center py-8">
                     <Spinner />
@@ -96,6 +103,7 @@ pub fn SetsContent() -> impl IntoView {
                 <SetsLevelGroup level=JapaneseLevel::N2 sets=sets importing=importing on_import=on_import />
                 <SetsLevelGroup level=JapaneseLevel::N1 sets=sets importing=importing on_import=on_import />
             </Show>
+            <ToastContainer toasts=toasts duration_ms=5000 />
         </div>
     }
 }
