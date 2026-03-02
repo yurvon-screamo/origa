@@ -3927,6 +3927,7 @@ dependencies = [
  "flate2",
  "futures",
  "gloo-storage",
+ "gloo-timers",
  "icondata",
  "idb",
  "js-sys",
