@@ -148,7 +148,7 @@ jobs:
         run: |
           mkdir -p Origa.app/Contents/MacOS
           mkdir -p Origa.app/Contents/Resources
-          cp target/aarch64-apple-darwin/release/tauri Origa.app/Contents/MacOS/origa
+          cp target/aarch64-apple-darwin/release/origa-app Origa.app/Contents/MacOS/origa
           cat > Origa.app/Contents/Info.plist << 'EOF'
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -224,15 +224,15 @@ jobs:
           name: Latest Build
           body: |
             Автоматическая сборка от ${{ github.sha }}
-            
+
             ## Windows
             - `origa_*_x64-setup.exe` - NSIS инсталлятор
             - `origa_*_x64_en-US.msi` - MSI инсталлятор
-            
+
             ## Linux
             - `*.AppImage` - Portable версия
             - `*.deb` - Debian/Ubuntu пакет
-            
+
             ## macOS
             - `Origa-macos-arm64.zip` - Apple Silicon
           files: release/*
