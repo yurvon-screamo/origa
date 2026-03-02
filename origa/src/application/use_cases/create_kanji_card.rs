@@ -1,6 +1,7 @@
 use crate::application::UserRepository;
 use crate::domain::OrigaError;
 use crate::domain::{Card, KanjiCard, StudyCard};
+use tracing::{debug, info};
 use ulid::Ulid;
 
 #[derive(Clone)]
@@ -26,8 +27,10 @@ impl<'a, R: UserRepository> CreateKanjiCardUseCase<'a, R> {
 
         let mut cards = vec![];
         for kanji in kanjies {
-            let card = Card::Kanji(KanjiCard::new(kanji, user.native_language())?);
+            debug!(user_id = %user_id, kanji = %kanji, "Creating kanji card");
+            let card = Card::Kanji(KanjiCard::new(kanji.clone(), user.native_language())?);
             let created = user.create_card(card)?;
+            info!(kanji = %kanji, "Kanji card created");
             cards.push(created);
         }
 

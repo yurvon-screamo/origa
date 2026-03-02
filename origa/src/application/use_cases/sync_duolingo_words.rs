@@ -1,5 +1,6 @@
 use crate::application::{CreateVocabularyCardUseCase, DuolingoClient, LlmService, UserRepository};
 use crate::domain::OrigaError;
+use tracing::{debug, info};
 use ulid::Ulid;
 
 pub struct SyncDuolingoWordsResult {
@@ -25,6 +26,8 @@ impl<'a, R: UserRepository, L: LlmService, D: DuolingoClient>
     }
 
     pub async fn execute(&self, user_id: Ulid) -> Result<SyncDuolingoWordsResult, OrigaError> {
+        debug!(user_id = %user_id, "Syncing Duolingo words");
+
         let user = self
             .repository
             .find_by_id(user_id)
@@ -38,6 +41,7 @@ impl<'a, R: UserRepository, L: LlmService, D: DuolingoClient>
             })?;
 
         let words = self.duolingo_client.get_words(jwt_token).await?;
+        info!(word_count = words.len(), "Fetched words from Duolingo");
 
         let mut total_created_count = 0;
         let mut skipped_words = Vec::new();
@@ -62,6 +66,12 @@ impl<'a, R: UserRepository, L: LlmService, D: DuolingoClient>
                 }
             }
         }
+
+        info!(
+            total_created_count = total_created_count,
+            skipped_count = skipped_words.len(),
+            "Duolingo sync completed"
+        );
 
         Ok(SyncDuolingoWordsResult {
             total_created_count,

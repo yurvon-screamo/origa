@@ -2,6 +2,7 @@ use crate::application::{
     CreateVocabularyCardUseCase, LlmService, UserRepository, WellKnownSetLoader,
 };
 use crate::domain::OrigaError;
+use tracing::{debug, info};
 use ulid::Ulid;
 
 pub struct ImportWellKnownSetResult {
@@ -29,15 +30,24 @@ impl<'a, R: UserRepository, L: LlmService, W: WellKnownSetLoader>
         user_id: Ulid,
         set_id: String,
     ) -> Result<ImportWellKnownSetResult, OrigaError> {
+        debug!(user_id = %user_id, set_id = %set_id, "Importing well-known set");
+
         let mut total_created_count = 0;
         let mut total_skipped_words = Vec::new();
 
-        let set = self.loader.load_set(set_id).await?;
+        let set = self.loader.load_set(set_id.clone()).await?;
+        info!(word_count = set.words().len(), "Well-known set loaded");
 
         let (created, skipped) = self.process_words(user_id, set.words()).await?;
 
         total_created_count += created;
         total_skipped_words.extend(skipped);
+
+        info!(
+            total_created_count = total_created_count,
+            skipped_count = total_skipped_words.len(),
+            "Well-known set import completed"
+        );
 
         Ok(ImportWellKnownSetResult {
             total_created_count,

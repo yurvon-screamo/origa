@@ -1,3 +1,4 @@
+use tracing::{debug, info};
 use ulid::Ulid;
 
 use crate::{
@@ -19,7 +20,10 @@ impl KanjiInfoUseCase {
     }
 
     pub fn execute(&self, kanji: &str) -> Result<KanjiInfo, OrigaError> {
-        Ok(get_kanji_info(kanji)?.to_owned())
+        debug!(kanji = %kanji, "Getting kanji info");
+        let result = get_kanji_info(kanji)?.to_owned();
+        info!(kanji = %kanji, "Kanji info retrieved");
+        Ok(result)
     }
 }
 
@@ -47,6 +51,8 @@ impl<'a, R: UserRepository> KanjiInfoListUseCase<'a, R> {
         user_id: Ulid,
         level: &JapaneseLevel,
     ) -> Result<Vec<KanjiItemInfo>, OrigaError> {
+        debug!(user_id = %user_id, level = ?level, "Getting kanji info list");
+
         let user = self
             .repository
             .find_by_id(user_id)
@@ -66,7 +72,7 @@ impl<'a, R: UserRepository> KanjiInfoListUseCase<'a, R> {
             })
             .collect();
 
-        Ok(get_kanji_list(level)
+        let result: Vec<KanjiItemInfo> = get_kanji_list(level)
             .into_iter()
             .filter(|kanji_info| !learned_kanji.contains(&kanji_info.kanji().to_string()))
             .map(|kanji_info| KanjiItemInfo {
@@ -76,6 +82,9 @@ impl<'a, R: UserRepository> KanjiInfoListUseCase<'a, R> {
                 radicals: kanji_info.radicals_chars().to_vec(),
                 popular_words: kanji_info.popular_words().to_vec(),
             })
-            .collect())
+            .collect();
+
+        info!(count = result.len(), "Kanji info list retrieved");
+        Ok(result)
     }
 }

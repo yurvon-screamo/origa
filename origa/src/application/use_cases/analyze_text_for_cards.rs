@@ -1,6 +1,7 @@
 use crate::application::UserRepository;
 use crate::domain::{OrigaError, PartOfSpeech, tokenize_text};
 use serde::{Deserialize, Serialize};
+use tracing::{debug, info};
 use ulid::Ulid;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -36,6 +37,12 @@ impl<'a, R: UserRepository> AnalyzeTextForCardsUseCase<'a, R> {
         user_id: Ulid,
         text: String,
     ) -> Result<AnalyzeTextResult, OrigaError> {
+        debug!(
+            user_id = %user_id,
+            text_length = text.len(),
+            "Analyzing text for cards"
+        );
+
         let user = self
             .repository
             .find_by_id(user_id)
@@ -43,6 +50,8 @@ impl<'a, R: UserRepository> AnalyzeTextForCardsUseCase<'a, R> {
             .ok_or(OrigaError::UserNotFound { user_id })?;
 
         let tokens = tokenize_text(text.as_str())?;
+
+        debug!(token_count = tokens.len(), "Tokenized text");
 
         let mut words: Vec<AnalyzedWord> = Vec::new();
         let mut seen_words = std::collections::HashSet::new();
@@ -74,6 +83,8 @@ impl<'a, R: UserRepository> AnalyzeTextForCardsUseCase<'a, R> {
         let total_found = words.len();
         let known_count = words.iter().filter(|w| w.is_known).count();
         let new_count = total_found - known_count;
+
+        info!(total_found, known_count, new_count, "Text analyzed");
 
         Ok(AnalyzeTextResult {
             words,

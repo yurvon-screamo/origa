@@ -1,5 +1,6 @@
 use crate::application::UserRepository;
 use crate::domain::{JapaneseLevel, NativeLanguage, OrigaError};
+use tracing::{debug, info};
 use ulid::Ulid;
 
 #[derive(Clone)]
@@ -21,6 +22,8 @@ impl<'a, R: UserRepository> UpdateUserProfileUseCase<'a, R> {
         telegram_user_id: Option<u64>,
         reminders_enabled: bool,
     ) -> Result<(), OrigaError> {
+        debug!(user_id = %user_id, "Updating user profile");
+
         let mut user = self
             .repository
             .find_by_id(user_id)
@@ -35,6 +38,7 @@ impl<'a, R: UserRepository> UpdateUserProfileUseCase<'a, R> {
 
         self.repository.save(&user).await?;
 
+        info!(user_id = %user_id, "User profile updated");
         Ok(())
     }
 }
