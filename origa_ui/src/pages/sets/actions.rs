@@ -3,7 +3,7 @@ use crate::repository::HybridUserRepository;
 use crate::well_known_set::WellKnownSetLoaderImpl;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use log::{info, error};
+use log::{error, info};
 use origa::application::ImportWellKnownSetUseCase;
 use origa::domain::User;
 

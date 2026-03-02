@@ -1,3 +1,5 @@
+use tracing::{debug, info};
+
 use crate::domain::{JapaneseLevel, KanjiInfo, OrigaError, get_kanji_list};
 
 pub struct KanjiListUseCase;
@@ -14,9 +16,14 @@ impl KanjiListUseCase {
     }
 
     pub fn execute(&self, level: &JapaneseLevel) -> Result<Vec<KanjiInfo>, OrigaError> {
-        Ok(get_kanji_list(level)
+        debug!(level = ?level, "Getting kanji list");
+
+        let result: Vec<KanjiInfo> = get_kanji_list(level)
             .into_iter()
             .map(|x| (*x).clone())
-            .collect())
+            .collect();
+
+        info!(count = result.len(), "Kanji list retrieved");
+        Ok(result)
     }
 }

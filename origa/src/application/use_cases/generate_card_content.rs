@@ -3,6 +3,7 @@ use crate::domain::OrigaError;
 use crate::domain::get_translation;
 use crate::domain::{Answer, JapaneseLevel, NativeLanguage};
 use serde::Deserialize;
+use tracing::{debug, info};
 
 const MAX_RETRIES: usize = 3;
 
@@ -32,7 +33,14 @@ impl<'a, L: LlmService> GenerateCardContentUseCase<'a, L> {
         native_language: &NativeLanguage,
         japanese_level: &JapaneseLevel,
     ) -> Result<CardContent, OrigaError> {
+        debug!(question_text, "Generating card content");
+
         if let Some(result) = self.try_get_from_dictionary(question_text, native_language)? {
+            info!(
+                question_text,
+                source = "dictionary",
+                "Card content generated"
+            );
             return Ok(result);
         }
 
@@ -45,6 +53,8 @@ impl<'a, L: LlmService> GenerateCardContentUseCase<'a, L> {
         question_text: &str,
         native_language: &NativeLanguage,
     ) -> Result<Option<CardContent>, OrigaError> {
+        debug!(question_text, "Checking dictionary for word");
+
         if let Some(translation) = get_translation(question_text, native_language) {
             let answer = Answer::new(translation)?;
             return Ok(Some(CardContent { answer }));
@@ -63,9 +73,12 @@ impl<'a, L: LlmService> GenerateCardContentUseCase<'a, L> {
         let mut last_error = None;
 
         for attempt in 1..=MAX_RETRIES {
+            debug!(question_text, attempt, "Generating content with LLM");
+
             match self.llm_service.generate_text(&prompt).await {
                 Ok(response) => match self.process_llm_response(&response, attempt) {
                     Ok(result) => {
+                        info!(question_text, source = "llm", "Card content generated");
                         return Ok(result);
                     }
                     Err(e) => {

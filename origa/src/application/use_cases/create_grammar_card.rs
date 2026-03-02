@@ -2,6 +2,7 @@ use crate::application::UserRepository;
 use crate::domain::OrigaError;
 use crate::domain::get_rule_by_id;
 use crate::domain::{Card, GrammarRuleCard, StudyCard};
+use tracing::{debug, info};
 use ulid::Ulid;
 
 #[derive(Clone)]
@@ -19,6 +20,8 @@ impl<'a, R: UserRepository> CreateGrammarCardUseCase<'a, R> {
         user_id: Ulid,
         rule_ids: Vec<Ulid>,
     ) -> Result<Vec<StudyCard>, OrigaError> {
+        debug!(user_id = %user_id, "Creating grammar card");
+
         let mut user = self
             .repository
             .find_by_id(user_id)
@@ -32,6 +35,7 @@ impl<'a, R: UserRepository> CreateGrammarCardUseCase<'a, R> {
             })?;
             let card = Card::Grammar(GrammarRuleCard::new(rule, user.native_language())?);
             let created = user.create_card(card)?;
+            info!(card_id = %created.card_id(), "Grammar card created");
             cards.push(created);
         }
 

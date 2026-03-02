@@ -1,4 +1,5 @@
 use std::collections::HashSet;
+use tracing::{debug, info};
 use ulid::Ulid;
 
 use crate::{
@@ -35,6 +36,8 @@ impl<'a, R: UserRepository> GrammarRuleInfoUseCase<'a, R> {
         level: &JapaneseLevel,
         existing_rule_ids: &HashSet<Ulid>,
     ) -> Result<Vec<GrammarRuleItem>, OrigaError> {
+        debug!(user_id = %user_id, level = ?level, "Getting grammar info");
+
         let user = self
             .repository
             .find_by_id(user_id)
@@ -43,10 +46,13 @@ impl<'a, R: UserRepository> GrammarRuleInfoUseCase<'a, R> {
 
         let lang = user.native_language();
 
-        Ok(iter_grammar_rules()
+        let result: Vec<GrammarRuleItem> = iter_grammar_rules()
             .filter_map(|rule| filter_by_level(rule, lang, level))
             .filter(|item| !existing_rule_ids.contains(&item.rule_id))
-            .collect())
+            .collect();
+
+        info!(count = result.len(), "Grammar info retrieved");
+        Ok(result)
     }
 }
 

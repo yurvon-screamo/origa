@@ -1,8 +1,10 @@
+use tracing::{debug, info};
+use ulid::Ulid;
+
 use crate::application::user_repository::UserRepository;
 use crate::domain::DailyHistoryItem;
 use crate::domain::OrigaError;
 use crate::domain::{JapaneseLevel, NativeLanguage};
-use ulid::Ulid;
 
 #[derive(Clone, Debug)]
 pub struct UserProfile {
@@ -27,11 +29,15 @@ impl<'a, R: UserRepository> GetUserInfoUseCase<'a, R> {
     }
 
     pub async fn execute(&self, user_id: Ulid) -> Result<UserProfile, OrigaError> {
+        debug!(user_id = %user_id, "Getting user info");
+
         let user = self
             .repository
             .find_by_id(user_id)
             .await?
             .ok_or(OrigaError::UserNotFound { user_id })?;
+
+        info!(user_id = %user_id, "User info retrieved successfully");
 
         Ok(UserProfile {
             id: user.id(),

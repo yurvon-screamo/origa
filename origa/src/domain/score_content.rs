@@ -12,6 +12,24 @@ pub struct ScoreContentResult {
     known_kanji: Vec<String>,
 }
 
+impl ScoreContentResult {
+    pub fn known_words(&self) -> &[String] {
+        &self.known_words
+    }
+
+    pub fn unknown_words(&self) -> &[String] {
+        &self.unknown_words
+    }
+
+    pub fn known_kanji(&self) -> &[String] {
+        &self.known_kanji
+    }
+
+    pub fn unknown_kanji(&self) -> &[String] {
+        &self.unknown_kanji
+    }
+}
+
 pub fn score_content(
     content: &str,
     cards: &HashMap<Ulid, StudyCard>,
