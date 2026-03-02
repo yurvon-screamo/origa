@@ -1,5 +1,6 @@
 use crate::application::user_repository::UserRepository;
 use crate::domain::OrigaError;
+use tracing::{debug, info};
 use ulid::Ulid;
 
 #[derive(Clone)]
@@ -13,6 +14,8 @@ impl<'a, R: UserRepository> DeleteCardUseCase<'a, R> {
     }
 
     pub async fn execute(&self, user_id: Ulid, card_id: Ulid) -> Result<(), OrigaError> {
+        debug!(user_id = %user_id, card_id = %card_id, "Deleting card");
+
         let mut user = self
             .repository
             .find_by_id(user_id)
@@ -23,6 +26,7 @@ impl<'a, R: UserRepository> DeleteCardUseCase<'a, R> {
 
         self.repository.save(&user).await?;
 
+        info!(card_id = %card_id, "Card deleted");
         Ok(())
     }
 }

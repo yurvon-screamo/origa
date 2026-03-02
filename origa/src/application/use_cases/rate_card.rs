@@ -3,6 +3,7 @@ use crate::application::srs_service::{NextReview, RateMode};
 use crate::application::user_repository::UserRepository;
 use crate::domain::OrigaError;
 use crate::domain::Rating;
+use tracing::{debug, info};
 use ulid::Ulid;
 
 #[derive(Clone, Copy)]
@@ -26,6 +27,14 @@ impl<'a, R: UserRepository, S: SrsService> RateCardUseCase<'a, R, S> {
         mode: RateMode,
         rating: Rating,
     ) -> Result<(), OrigaError> {
+        debug!(
+            user_id = %user_id,
+            card_id = %card_id,
+            mode = ?mode,
+            rating = ?rating,
+            "Rating card"
+        );
+
         let mut user = self
             .repository
             .find_by_id(user_id)
@@ -46,7 +55,7 @@ impl<'a, R: UserRepository, S: SrsService> RateCardUseCase<'a, R, S> {
 
         self.repository.save(&user).await?;
 
-        println!("Finished rating card: {:?}", interval);
+        info!(card_id = %card_id, interval = ?interval, "Card rated");
         Ok(())
     }
 }

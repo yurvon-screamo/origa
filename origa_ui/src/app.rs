@@ -9,6 +9,7 @@ use leptos::task::spawn_local;
 use origa::application::{GetUserInfoUseCase, UserRepository};
 use origa::domain::{OrigaError, User};
 use origa::infrastructure::LlmServiceInvoker;
+use tracing::{error, info};
 
 #[derive(Clone)]
 pub struct AuthContext {
@@ -50,26 +51,25 @@ impl AuthContext {
     pub async fn init_dictionary(&self) {
         #[cfg(target_arch = "wasm32")]
         {
-            use web_sys::console;
             if let Err(e) = load_dictionary().await {
-                console::error_1(&format!("Failed to load dictionary: {}", e).into());
+                error!("Failed to load dictionary: {}", e);
             } else {
-                console::log_1(&"Unidic dictionary loaded".into());
+                info!("Unidic dictionary loaded");
             }
             if let Err(e) = load_all_data().await {
-                console::error_1(&format!("Failed to load data: {:?}", e).into());
+                error!("Failed to load data: {:?}", e);
             } else {
-                console::log_1(&"All data loaded".into());
+                info!("All data loaded");
             }
         }
 
         #[cfg(not(target_arch = "wasm32"))]
         {
             if let Err(e) = load_dictionary() {
-                log::error!("Failed to load dictionary: {}", e);
+                error!("Failed to load dictionary: {}", e);
             }
             if let Err(e) = load_all_data() {
-                log::error!("Failed to load data: {:?}", e);
+                error!("Failed to load data: {:?}", e);
             }
         }
 

@@ -8,6 +8,7 @@ pub struct NextReview {
     pub memory_state: MemoryState,
 }
 
+#[derive(Debug)]
 pub enum RateMode {
     StandardLesson,
     FixationLesson,

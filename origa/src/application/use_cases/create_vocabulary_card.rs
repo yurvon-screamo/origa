@@ -4,7 +4,7 @@ use crate::domain::OrigaError;
 use crate::domain::Question;
 use crate::domain::tokenize_text;
 use crate::domain::{Card, StudyCard, VocabularyCard};
-use tracing::error;
+use tracing::{debug, error, info, warn};
 use ulid::Ulid;
 
 #[derive(Clone)]
@@ -46,6 +46,13 @@ impl<'a, R: UserRepository, L: crate::application::LlmService>
         user: &mut crate::domain::User,
         question_text: String,
     ) -> Result<Vec<StudyCard>, OrigaError> {
+        let user_id = user.id();
+        debug!(
+            user_id = %user_id,
+            question_text = %question_text,
+            "Creating vocabulary card"
+        );
+
         let mut cards = Vec::new();
         let tokens = tokenize_text(question_text.as_str())?;
 
@@ -72,8 +79,19 @@ impl<'a, R: UserRepository, L: crate::application::LlmService>
 
             if let Ok(card) = card_result {
                 cards.push(card);
+                info!(
+                    user_id = %user_id,
+                    word_count = cards.len(),
+                    "Vocabulary card created"
+                );
             } else {
-                error!("Failed to create card: {}", card_result.err().unwrap());
+                let err = card_result.err().unwrap();
+                warn!(
+                    user_id = %user_id,
+                    error = %err,
+                    "Card already exists, skipping"
+                );
+                error!("Failed to create card: {}", err);
             }
         }
 
