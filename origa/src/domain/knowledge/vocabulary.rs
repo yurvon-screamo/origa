@@ -1,6 +1,6 @@
-use crate::domain::dictionary::{KanjiInfo, get_kanji_info};
+use crate::domain::dictionary::{get_kanji_info, KanjiInfo};
 use crate::domain::japanese::JapaneseChar;
-use crate::domain::tokenizer::{PartOfSpeech, tokenize_text};
+use crate::domain::tokenizer::{tokenize_text, PartOfSpeech};
 use crate::domain::{Answer, JapaneseLevel, NativeLanguage, Question};
 use crate::domain::{GrammarRule, OrigaError};
 use serde::{Deserialize, Serialize};
