@@ -5,9 +5,9 @@ mod jlpt_content_loader;
 mod session;
 mod supabase_repository;
 
-pub use client::SupabaseClient;
+pub use client::{OAuthProvider, SupabaseClient};
 pub use hybrid_repository::HybridUserRepository;
 pub use jlpt_content_loader::{
     get_jlpt_content, load_jlpt_content, recalculate_user_jlpt_progress,
 };
-pub use session::{clear_session, get_session};
+pub use session::{clear_session, get_session, set_session};

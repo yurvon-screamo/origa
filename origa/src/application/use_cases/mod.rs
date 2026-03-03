@@ -40,7 +40,9 @@ pub use grammar_info::{GrammarRuleInfoUseCase, GrammarRuleItem};
 pub use score_content::ScoreContentUseCase;
 // TODO: Implement import_anki_pack
 // pub use import_anki_pack::*;
-pub use import_well_known_set::{ImportWellKnownSetResult, ImportWellKnownSetUseCase, SetPreviewResult, SetPreviewWord};
+pub use import_well_known_set::{
+    ImportWellKnownSetResult, ImportWellKnownSetUseCase, SetPreviewResult, SetPreviewWord,
+};
 pub use kanji_info::{KanjiInfoListUseCase, KanjiInfoUseCase, KanjiItemInfo};
 pub use kanji_list::KanjiListUseCase;
 pub use knowledge_set_cards::KnowledgeSetCardsUseCase;

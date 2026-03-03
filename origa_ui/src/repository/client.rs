@@ -10,6 +10,22 @@ use serde_json::Value;
 const SUPABASE_URL: &str = "https://evttbadnaklzjnxhwqad.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY: &str = "sb_publishable_SScoXTXJy1tQFVJr2_9mXQ_77Q3aetA";
 const REFRESH_THRESHOLD_SECONDS: u64 = 300;
+const OAUTH_REDIRECT_URI: &str = "origa://auth/callback";
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum OAuthProvider {
+    Google,
+    Yandex,
+}
+
+impl OAuthProvider {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            OAuthProvider::Google => "google",
+            OAuthProvider::Yandex => "keycloak",
+        }
+    }
+}
 
 #[derive(Clone)]
 pub struct SupabaseClient {
@@ -313,6 +329,110 @@ impl SupabaseClient {
         }
     }
 
+    pub fn get_oauth_url(provider: &str) -> String {
+        format!(
+            "{}/auth/v1/authorize?provider={}&redirect_to={}&scopes=email%20profile",
+            SUPABASE_URL, provider, OAUTH_REDIRECT_URI
+        )
+    }
+
+    pub async fn exchange_code_for_session(&self, code: &str) -> Result<SupabaseSession, String> {
+        let res = self
+            .request(Method::POST, "/auth/v1/token?grant_type=pkce", None)
+            .json(&serde_json::json!({
+                "auth_code": code,
+            }))
+            .send()
+            .await
+            .map_err(|e| format!("Network error: {}", e))?;
+
+        if res.status().is_success() {
+            let json: Value = res
+                .json()
+                .await
+                .map_err(|e| format!("Failed to parse response: {}", e))?;
+
+            let access_token = json
+                .get("access_token")
+                .and_then(|t| t.as_str())
+                .unwrap_or_default()
+                .to_string();
+            let refresh_token = json
+                .get("refresh_token")
+                .and_then(|t| t.as_str())
+                .unwrap_or_default()
+                .to_string();
+            let expires_in = json
+                .get("expires_in")
+                .and_then(|t| t.as_i64())
+                .unwrap_or(3600) as u64;
+
+            let (user_id, user_email) = Self::decode_jwt_payload(&access_token)
+                .unwrap_or_else(|| (String::new(), String::new()));
+
+            let now = Self::current_timestamp();
+            let expires_at = now.saturating_add(expires_in);
+
+            let session = SupabaseSession {
+                access_token,
+                refresh_token,
+                auth_user_id: user_id,
+                email: user_email,
+                expires_at,
+            };
+
+            set_session(&session).map_err(|e| format!("Failed to set session: {}", e))?;
+            Ok(session)
+        } else {
+            let error_text = res.text().await.unwrap_or_default();
+            Err(Self::parse_supabase_error(&error_text))
+        }
+    }
+
+    pub fn parse_tokens_from_url(url_fragment: &str) -> Result<SupabaseSession, String> {
+        let fragment = url_fragment.strip_prefix('#').unwrap_or(url_fragment);
+
+        let params: std::collections::HashMap<&str, &str> = fragment
+            .split('&')
+            .filter_map(|pair| {
+                let mut parts = pair.split('=');
+                let key = parts.next()?;
+                let value = parts.next()?;
+                Some((key, value))
+            })
+            .collect();
+
+        let access_token =
+            urlencoding_decode(params.get("access_token").copied().unwrap_or_default());
+        let refresh_token =
+            urlencoding_decode(params.get("refresh_token").copied().unwrap_or_default());
+        let expires_in: u64 = params
+            .get("expires_in")
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(3600);
+
+        if access_token.is_empty() {
+            return Err("No access_token found in URL fragment".to_string());
+        }
+
+        let (user_id, user_email) = Self::decode_jwt_payload(&access_token)
+            .unwrap_or_else(|| (String::new(), String::new()));
+
+        let now = Self::current_timestamp();
+        let expires_at = now.saturating_add(expires_in);
+
+        let session = SupabaseSession {
+            access_token,
+            refresh_token,
+            auth_user_id: user_id,
+            email: user_email,
+            expires_at,
+        };
+
+        set_session(&session).map_err(|e| format!("Failed to set session: {}", e))?;
+        Ok(session)
+    }
+
     pub async fn resend_confirmation_email(&self, email: &str) -> Result<(), String> {
         let res = self
             .request(Method::POST, "/auth/v1/resend", None)
@@ -370,4 +490,26 @@ impl Default for SupabaseClient {
     fn default() -> Self {
         Self::new()
     }
+}
+
+fn urlencoding_decode(s: &str) -> String {
+    let mut result = String::with_capacity(s.len());
+    let mut chars = s.chars().peekable();
+
+    while let Some(c) = chars.next() {
+        if c == '%' {
+            let hex: String = chars.by_ref().take(2).collect();
+            if let Ok(byte) = u8::from_str_radix(&hex, 16) {
+                result.push(byte as char);
+            } else {
+                result.push('%');
+                result.push_str(&hex);
+            }
+        } else if c == '+' {
+            result.push(' ');
+        } else {
+            result.push(c);
+        }
+    }
+    result
 }
