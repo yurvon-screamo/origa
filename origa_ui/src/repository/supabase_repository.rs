@@ -2,7 +2,7 @@ use super::client::{AuthError, SupabaseClient};
 use crate::repository::session::get_session;
 use chrono::{DateTime, Utc};
 use origa::application::user_repository::UserRepository;
-use origa::domain::{JapaneseLevel, KnowledgeSet, NativeLanguage, OrigaError, User};
+use origa::domain::{JapaneseLevel, JlptProgress, KnowledgeSet, NativeLanguage, OrigaError, User};
 use reqwest::Method;
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
@@ -85,7 +85,9 @@ struct UserRow {
     username: String,
     email: String,
     native_language: i32,
-    current_japanese_level: i32,
+    #[serde(default)]
+    jlpt_progress: Option<JlptProgress>,
+    current_japanese_level: Option<i32>,
     duolingo_jwt_token: Option<String>,
     telegram_user_id: Option<i64>,
     reminders_enabled: bool,
@@ -97,11 +99,13 @@ impl UserRow {
     fn to_user(&self) -> User {
         let ulid = supabase_id_to_ulid(self.id);
 
+        let jlpt_progress = self.jlpt_progress.clone().unwrap_or_else(JlptProgress::new);
+
         User::from_row(
             ulid,
             self.email.clone(),
             self.username.clone(),
-            JapaneseLevel::from(self.current_japanese_level),
+            jlpt_progress,
             NativeLanguage::from(self.native_language),
             self.duolingo_jwt_token.clone(),
             self.telegram_user_id.map(|id| id as u64),
@@ -125,7 +129,8 @@ fn user_to_json(user: &User, auth_user_id: &str) -> serde_json::Value {
         "username": user.username(),
         "email": user.email(),
         "native_language": i32::from(user.native_language().clone()),
-        "current_japanese_level": i32::from(*user.current_japanese_level()),
+        "current_japanese_level": i32::from(user.current_japanese_level()),
+        "jlpt_progress": user.jlpt_progress(),
         "duolingo_jwt_token": user.duolingo_jwt_token(),
         "telegram_user_id": user.telegram_user_id().copied().map(|id| id as i64),
         "reminders_enabled": user.reminders_enabled(),

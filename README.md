@@ -21,6 +21,8 @@ Builded with Rust only.
 * Learning vocabulary with FSRS algorithm
 * Learning grammar with FSRS algorithm
 * Learning kanji with FSRS algorithm
+* Automatic JLPT level detection based on learned content (kanji, vocabulary, grammar)
+* Visual progress tracking for each JLPT level (N5-N1) with detailed breakdown
 * Generation of translation for the flashcards
 * Generation of furigana for the text
 * Extraction kanji from the flashcards

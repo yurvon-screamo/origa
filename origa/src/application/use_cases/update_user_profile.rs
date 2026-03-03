@@ -1,5 +1,5 @@
 use crate::application::UserRepository;
-use crate::domain::{JapaneseLevel, NativeLanguage, OrigaError};
+use crate::domain::{NativeLanguage, OrigaError};
 use tracing::{debug, info};
 use ulid::Ulid;
 
@@ -16,7 +16,6 @@ impl<'a, R: UserRepository> UpdateUserProfileUseCase<'a, R> {
     pub async fn execute(
         &self,
         user_id: Ulid,
-        current_japanese_level: JapaneseLevel,
         native_language: NativeLanguage,
         duolingo_jwt_token: Option<String>,
         telegram_user_id: Option<u64>,
@@ -30,7 +29,6 @@ impl<'a, R: UserRepository> UpdateUserProfileUseCase<'a, R> {
             .await?
             .ok_or(OrigaError::UserNotFound { user_id })?;
 
-        user.set_current_japanese_level(current_japanese_level);
         user.set_native_language(native_language);
         user.set_duolingo_jwt_token(duolingo_jwt_token);
         user.set_telegram_user_id(telegram_user_id);

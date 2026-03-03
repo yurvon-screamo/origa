@@ -3,6 +3,7 @@ mod error;
 mod furigana;
 mod grammar;
 mod japanese;
+mod jlpt_progress;
 mod knowledge;
 mod memory;
 mod score_content;
@@ -34,3 +35,5 @@ pub use tokenizer::{
 };
 pub use user::User;
 pub use value_objects::{Answer, JapaneseLevel, NativeLanguage, Question};
+pub use jlpt_progress::{CategoryProgress, JlptProgress, LevelProgressDetail};
+

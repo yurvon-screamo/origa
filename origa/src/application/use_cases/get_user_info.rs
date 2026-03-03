@@ -42,7 +42,7 @@ impl<'a, R: UserRepository> GetUserInfoUseCase<'a, R> {
         Ok(UserProfile {
             id: user.id(),
             username: user.username().to_string(),
-            current_japanese_level: *user.current_japanese_level(),
+            current_japanese_level: user.current_japanese_level(),
             native_language: user.native_language().clone(),
             lesson_history: user.knowledge_set().lesson_history().to_vec(),
             duolingo_jwt_token: user.duolingo_jwt_token().map(|x| x.to_string()),

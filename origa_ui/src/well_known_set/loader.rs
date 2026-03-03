@@ -1,5 +1,5 @@
 use origa::{
-    application::{WellKnownSet, WellKnownSetLoader, WellKnownSetMeta, id_to_path},
+    application::{WellKnownSet, WellKnownSetLoader, WellKnownSetMeta},
     domain::{JapaneseLevel, OrigaError},
 };
 use serde::Deserialize;
@@ -154,4 +154,15 @@ fn read_text_file(path: &str) -> Result<String, OrigaError> {
     fs::read_to_string(&full_path).map_err(|e| OrigaError::WellKnownSetParseError {
         reason: format!("Failed to read {}: {}", full_path.display(), e),
     })
+}
+
+fn id_to_path(id: &str) -> String {
+    if let Some(level) = id.strip_prefix("jlpt_") {
+        format!("domain/well_known_set/jltp_{}.json", level)
+    } else if let Some(rest) = id.strip_prefix("migii_") {
+        let level = rest.split('_').next().unwrap_or("");
+        format!("domain/well_known_set/migii/{}/{}.json", level, id)
+    } else {
+        format!("domain/well_known_set/{}.json", id)
+    }
 }

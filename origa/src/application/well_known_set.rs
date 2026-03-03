@@ -8,6 +8,7 @@ use crate::domain::{JapaneseLevel, NativeLanguage, OrigaError};
 pub enum SetType {
     Jlpt,
     Migii,
+    SpyFamily,
 }
 
 impl SetType {
@@ -15,6 +16,7 @@ impl SetType {
         match self {
             SetType::Jlpt => "JLPT",
             SetType::Migii => "Migii",
+            SetType::SpyFamily => "SpyFamily",
         }
     }
 }
@@ -43,17 +45,6 @@ impl WellKnownSetMeta {
             NativeLanguage::Russian => &self.desc_ru,
             NativeLanguage::English => &self.desc_en,
         }
-    }
-}
-
-pub fn id_to_path(id: &str) -> String {
-    if let Some(level) = id.strip_prefix("jlpt_") {
-        format!("domain/well_known_set/jltp_{}.json", level)
-    } else if let Some(rest) = id.strip_prefix("migii_") {
-        let level = rest.split('_').next().unwrap_or("");
-        format!("domain/well_known_set/migii/{}/{}.json", level, id)
-    } else {
-        format!("domain/well_known_set/{}.json", id)
     }
 }
 

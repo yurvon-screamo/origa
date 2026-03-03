@@ -64,6 +64,13 @@ def main():
                 set_id = f"migii_{level_id}_{i}"
                 meta_list.append(extract_meta(data, set_id, "Migii"))
 
+    spy_family_dir = BASE_DIR / "spy_family"
+    if spy_family_dir.exists():
+        for path in sorted(spy_family_dir.glob("*.json")):
+            data = load_json(path)
+            set_id = path.stem
+            meta_list.append(extract_meta(data, set_id, "SpyFamily"))
+
     meta_list.sort(key=lambda x: x["id"])
 
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
