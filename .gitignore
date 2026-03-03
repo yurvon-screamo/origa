@@ -45,3 +45,6 @@ concatenated_*
 
 # Cache
 .cache/
+
+# UniDic dictionary (built by build.rs)
+origa_ui/public/dictionaries/unidic/
