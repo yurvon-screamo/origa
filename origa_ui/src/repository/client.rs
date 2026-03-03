@@ -336,6 +336,13 @@ impl SupabaseClient {
         )
     }
 
+    pub fn get_oauth_url_with_redirect(provider: &str, redirect_uri: &str) -> String {
+        format!(
+            "{}/auth/v1/authorize?provider={}&redirect_to={}&scopes=email%20profile",
+            SUPABASE_URL, provider, redirect_uri
+        )
+    }
+
     pub async fn exchange_code_for_session(&self, code: &str) -> Result<SupabaseSession, String> {
         let res = self
             .request(Method::POST, "/auth/v1/token?grant_type=pkce", None)
