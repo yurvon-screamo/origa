@@ -1,8 +1,8 @@
 use crate::domain::{
-    NativeLanguage, OrigaError, Rating, ReviewLog, get_rule_by_id,
     knowledge::{GrammarRuleCard, KanjiCard, VocabularyCard},
     memory::{MemoryHistory, MemoryState},
     value_objects::{Answer, Question},
+    Rating, ReviewLog,
 };
 use rand::seq::SliceRandom;
 use serde::{Deserialize, Serialize};
@@ -46,6 +46,10 @@ impl StudyCard {
         self.is_favorite
     }
 
+    pub fn is_new(&self) -> bool {
+        self.memory_history.is_new()
+    }
+
     pub(crate) fn add_review(&mut self, memory_state: MemoryState, review: ReviewLog) {
         self.memory_history.add_review(memory_state, review);
     }
@@ -76,47 +80,8 @@ impl StudyCard {
         }
     }
 
-    pub fn shuffle_card(
-        &self,
-        lang: &NativeLanguage,
-        known_grammars: &[GrammarRuleCard],
-    ) -> Result<Card, OrigaError> {
-        let mut content = self.card().clone();
-
-        if !self.memory().is_known_card() && !self.memory().is_in_progress() {
-            return Ok(content);
-        }
-
-        content = match &content {
-            Card::Vocabulary(vocab) => match rand::random_bool(0.5) {
-                false => {
-                    let reverted = vocab.revert()?;
-                    Card::Vocabulary(reverted)
-                }
-                true => {
-                    let word_part = vocab.part_of_speech()?;
-
-                    let mut rules: Vec<_> = known_grammars
-                        .iter()
-                        .filter(|g| g.apply_to().contains(&word_part))
-                        .collect();
-
-                    rules.shuffle(&mut rand::rng());
-
-                    if let Some(rule) = rules.first()
-                        && let Some(rule) = get_rule_by_id(rule.rule_id())
-                    {
-                        let vocab_with_rule = vocab.with_grammar_rule(rule, lang)?;
-                        Card::Vocabulary(vocab_with_rule)
-                    } else {
-                        content
-                    }
-                }
-            },
-            _ => content,
-        };
-
-        Ok(content)
+    pub fn shuffle_card(&self) -> Card {
+        self.card.clone()
     }
 }
 
@@ -223,17 +188,26 @@ impl QuizCard {
 pub enum LessonCardView {
     Normal(Card),
     Quiz(QuizCard),
+    Reversed(Card),
+    GrammarMutated(Card),
 }
 
 impl LessonCardView {
     pub fn card(&self) -> &Card {
         match self {
-            LessonCardView::Normal(card) => card,
+            LessonCardView::Normal(card)
+            | LessonCardView::Reversed(card)
+            | LessonCardView::GrammarMutated(card) => card,
             LessonCardView::Quiz(quiz) => quiz.card(),
         }
     }
 
     pub fn generate_quiz(original_card: Card, same_type_cards: &[Card]) -> Self {
+        match &original_card {
+            Card::Grammar(_) => return LessonCardView::Normal(original_card),
+            Card::Vocabulary(_) | Card::Kanji(_) => {}
+        }
+
         let correct_answer = original_card.answer().text().to_string();
 
         let mut distractors: Vec<String> = same_type_cards

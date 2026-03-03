@@ -1,8 +1,8 @@
 use crate::domain::{
-    OrigaError,
     grammar::GrammarRule,
     tokenizer::PartOfSpeech,
     value_objects::{Answer, NativeLanguage, Question},
+    OrigaError,
 };
 use serde::{Deserialize, Serialize};
 use ulid::Ulid;
@@ -39,5 +39,18 @@ impl GrammarRuleCard {
 
     pub fn apply_to(&self) -> &[PartOfSpeech] {
         &self.apply_to
+    }
+}
+
+impl GrammarRuleCard {
+    #[cfg(test)]
+    pub fn new_test(title: String, apply_to: Vec<PartOfSpeech>) -> Self {
+        use ulid::Ulid;
+        Self {
+            rule_id: Ulid::new(),
+            title: Question::new(title).unwrap(),
+            description: Answer::new("Test description".to_string()).unwrap(),
+            apply_to,
+        }
     }
 }
