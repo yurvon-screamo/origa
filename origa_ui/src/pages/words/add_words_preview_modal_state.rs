@@ -2,7 +2,8 @@ use crate::repository::HybridUserRepository;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::application::{
-    AnalyzeTextForCardsUseCase, AnalyzedWord, CreateCardsFromAnalysisUseCase, CreateCardsFromAnalysisResult, WordToCreate,
+    AnalyzeTextForCardsUseCase, AnalyzedWord, CreateCardsFromAnalysisResult,
+    CreateCardsFromAnalysisUseCase, WordToCreate,
 };
 use origa::domain::User;
 use origa::infrastructure::LlmServiceInvoker;

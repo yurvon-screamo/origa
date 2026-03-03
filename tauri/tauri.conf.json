@@ -33,5 +33,10 @@
 		],
 		"android": {},
 		"iOS": {}
+	},
+	"plugins": {
+		"deep-link": {
+			"schemes": ["origa"]
+		}
 	}
 }

@@ -9,7 +9,7 @@ use leptos::task::spawn_local;
 use origa::application::{GetUserInfoUseCase, UserRepository};
 use origa::domain::{OrigaError, User};
 use origa::infrastructure::LlmServiceInvoker;
-use tracing::{error, info};
+use tracing::{error, info, warn};
 
 #[derive(Clone)]
 pub struct AuthContext {
@@ -106,6 +106,84 @@ pub fn update_current_user(repository: HybridUserRepository, current_user: RwSig
     });
 }
 
+#[cfg(target_arch = "wasm32")]
+fn setup_oauth_listener(ctx: AuthContext) {
+    use crate::pages::login::auth_handlers::handle_oauth_callback;
+    use leptos::wasm_bindgen::JsCast;
+    use leptos::wasm_bindgen::prelude::*;
+
+    let ctx_clone = ctx.clone();
+    let callback = Closure::<dyn Fn(String)>::new(move |url: String| {
+        info!("Deep link received: {}", url);
+        if let Some(fragment) = url.split('#').nth(1) {
+            let ctx = ctx_clone.clone();
+            spawn_local(async move {
+                match handle_oauth_callback(fragment, &ctx).await {
+                    Ok(user) => {
+                        ctx.current_user.set(Some(user));
+                        if let Some(window) = web_sys::window() {
+                            let _ = window.location().set_href("/home");
+                        }
+                    }
+                    Err(e) => {
+                        error!("OAuth callback error: {}", e);
+                    }
+                }
+            });
+        }
+    });
+
+    if let Some(window) = web_sys::window() {
+        let tauri = js_sys::Reflect::get(&window, &JsValue::from_str("__TAURI__")).ok();
+        if let Some(tauri_obj) = tauri {
+            if let Ok(event_mod) = js_sys::Reflect::get(&tauri_obj, &JsValue::from_str("event")) {
+                if let Ok(listen_fn) =
+                    js_sys::Reflect::get(&event_mod, &JsValue::from_str("listen"))
+                {
+                    if let Ok(listen_fn) = listen_fn.dyn_into::<js_sys::Function>() {
+                        let event_name = JsValue::from_str("deep-link-received");
+                        let handler = callback.as_ref().clone();
+                        let _ = listen_fn.call2(&JsValue::UNDEFINED, &event_name, &handler);
+                        callback.forget();
+                        info!("Tauri deep-link listener registered");
+                        return;
+                    }
+                }
+            }
+        }
+    }
+
+    warn!("Tauri not available, skipping deep-link listener registration");
+    callback.forget();
+}
+
+#[cfg(target_arch = "wasm32")]
+fn check_url_oauth_callback(ctx: &AuthContext) {
+    use crate::pages::login::auth_handlers::handle_oauth_callback;
+
+    if let Some(window) = web_sys::window() {
+        if let Ok(hash) = window.location().hash() {
+            if hash.contains("access_token=") {
+                let fragment = hash.trim_start_matches('#');
+                let ctx_clone = ctx.clone();
+                spawn_local(async move {
+                    match handle_oauth_callback(fragment, &ctx_clone).await {
+                        Ok(user) => {
+                            ctx_clone.current_user.set(Some(user));
+                            if let Some(window) = web_sys::window() {
+                                let _ = window.location().set_href("/home");
+                            }
+                        }
+                        Err(e) => {
+                            error!("URL OAuth callback error: {}", e);
+                        }
+                    }
+                });
+            }
+        }
+    }
+}
+
 #[component]
 pub fn App() -> impl IntoView {
     let auth_context = AuthContext::new();
@@ -114,6 +192,12 @@ pub fn App() -> impl IntoView {
     provide_context(LlmServiceInvoker::None);
     provide_context(auth_context.current_user);
     provide_context(auth_context.clone());
+
+    #[cfg(target_arch = "wasm32")]
+    {
+        check_url_oauth_callback(&auth_context);
+        setup_oauth_listener(auth_context.clone());
+    }
 
     let ctx = auth_context.clone();
     spawn_local(async move {
