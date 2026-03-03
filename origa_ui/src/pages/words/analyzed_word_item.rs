@@ -1,6 +1,4 @@
-use crate::ui_components::{
-    Card, Checkbox, FuriganaText, Heading, HeadingLevel, MarkdownText, Tag, TagVariant,
-};
+use crate::ui_components::{Checkbox, FuriganaText, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 use origa::application::AnalyzedWord;
 use std::collections::HashSet;
@@ -12,52 +10,39 @@ pub fn AnalyzedWordItem(
     on_toggle: Callback<()>,
 ) -> impl IntoView {
     let base_form = analyzed_word.base_form.clone();
-
     let is_selected = Memo::new(move |_| selected_words.get().contains(&base_form));
 
-    let tag_variant = Signal::derive(move || {
-        if analyzed_word.is_known {
-            TagVariant::Olive
-        } else {
-            TagVariant::Default
-        }
-    });
+    let status_class = if analyzed_word.is_known {
+        "text-sm text-green-600"
+    } else {
+        "text-sm text-gray-500"
+    };
 
-    let tag_text = Signal::derive(move || {
-        if analyzed_word.is_known {
-            "Известно".to_string()
-        } else {
-            "Новое".to_string()
-        }
-    });
+    let status_text = if analyzed_word.is_known {
+        "Изв."
+    } else {
+        "Нов."
+    };
 
     view! {
-        <div class="flex items-start gap-3 p-3 border bg-[var(--bg-paper)]">
-            <Checkbox
-                checked=Signal::derive(move || is_selected.get())
-                on_change=Callback::new(move |_| {
-                    on_toggle.run(());
+        <div class="flex justify-between items-center py-1 px-2 rounded bg-[var(--bg-secondary)]">
+            <div class="flex items-center gap-2">
+                <Checkbox
+                    checked=Signal::derive(move || is_selected.get())
+                    on_change=Callback::new(move |_| on_toggle.run(()))
+                />
+                <FuriganaText text=analyzed_word.base_form.clone()/>
+                <span class=status_class>{status_text}</span>
+            </div>
+            {move || {
+                analyzed_word.known_meaning.clone().map(|meaning| {
+                    view! {
+                        <Text size=TextSize::Small variant=TypographyVariant::Muted>
+                            {meaning}
+                        </Text>
+                    }
                 })
-            />
-            <Card class=Signal::derive(String::new)>
-                <div class="flex flex-col gap-2">
-                    <div class="flex items-center gap-2">
-                        <Heading level=HeadingLevel::H4>
-                            <FuriganaText text=analyzed_word.base_form.clone()/>
-                        </Heading>
-                        <Tag variant=tag_variant>
-                            {tag_text}
-                        </Tag>
-                    </div>
-                    {move || {
-                        analyzed_word.known_meaning.clone().map(|meaning| {
-                            view! {
-                                <MarkdownText content=Signal::derive(move || meaning.clone())/>
-                            }
-                        })
-                    }}
-                </div>
-            </Card>
+            }}
         </div>
     }
 }
