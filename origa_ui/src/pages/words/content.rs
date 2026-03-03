@@ -1,6 +1,5 @@
-use super::filter::Filter;
-use super::filter_btn::FilterBtn;
-use super::vocabulary_card_item::{CardStatus, VocabularyCardItem};
+use super::super::shared::{CardCounts, CardStatus, Filter, FilterBtn};
+use super::vocabulary_card_item::VocabularyCardItem;
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{Input, Text, TextSize, TypographyVariant};
 use leptos::either::Either;
@@ -9,15 +8,6 @@ use leptos::task::spawn_local;
 use origa::application::use_cases::ToggleFavoriteUseCase;
 use origa::domain::{Card, User};
 use ulid::Ulid;
-
-#[derive(Clone, Copy, PartialEq, Default)]
-struct CardCounts {
-    total: usize,
-    new: usize,
-    hard: usize,
-    in_progress: usize,
-    learned: usize,
-}
 
 #[component]
 pub fn WordsContent() -> impl IntoView {

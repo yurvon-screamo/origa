@@ -1,14 +1,22 @@
 pub mod content;
 pub mod header;
 pub mod history_modal;
+pub mod home_skeleton;
+pub mod home_stats;
 pub mod jlpt_progress_card;
+pub mod lesson_buttons_card;
 pub mod stat_card;
+pub mod stats_grid;
 
 pub use content::HomeContent;
 pub use header::HomeHeader;
 pub use history_modal::{HistoryModal, StatMetric};
+pub use home_skeleton::{HomeSkeleton, JlptSkeleton};
+pub use home_stats::{HomeStats, calculate_stats, format_number};
 pub use jlpt_progress_card::JlptProgressCard;
+pub use lesson_buttons_card::LessonButtonsCard;
 pub use stat_card::StatCard;
+pub use stats_grid::StatsGrid;
 
 use crate::ui_components::{PageLayout, PageLayoutVariant};
 use leptos::prelude::*;
