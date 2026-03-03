@@ -131,7 +131,9 @@ pub fn LessonCardContainer() -> impl IntoView {
             }
 
             let is_quiz = matches!(
-                state.cards.get(state.card_ids.get(state.current_index).unwrap()),
+                state
+                    .cards
+                    .get(state.card_ids.get(state.current_index).unwrap()),
                 Some(LessonCardView::Quiz(_))
             );
 

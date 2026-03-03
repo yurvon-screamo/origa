@@ -34,13 +34,23 @@ pub fn create_import_action(
                 match use_case.execute(user.id(), set_id).await {
                     Ok(result) => {
                         info!(
-                            "Import completed: created={}, skipped={}",
+                            "Import completed: created={}, skipped={}, errors={}",
                             result.total_created_count,
-                            result.skipped_words.len()
+                            result.skipped_words.len(),
+                            result.errors.len()
                         );
+                        let message = if result.errors.is_empty() {
+                            format!("Импортировано {} слов", result.total_created_count)
+                        } else {
+                            format!(
+                                "Импортировано {} слов. Ошибки: {}",
+                                result.total_created_count,
+                                result.errors.join("; ")
+                            )
+                        };
                         on_result.run(ImportResult {
-                            is_success: true,
-                            message: format!("Импортировано {} слов", result.total_created_count),
+                            is_success: result.errors.is_empty(),
+                            message,
                         });
                         update_current_user(repo.clone(), current_user);
                     }
