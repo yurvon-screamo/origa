@@ -2,7 +2,7 @@ use ammonia::clean;
 use ego_tree::NodeRef;
 use leptos::prelude::*;
 use origa::domain::furiganize_text;
-use pulldown_cmark::{Options, Parser, html};
+use pulldown_cmark::{html, Options, Parser};
 use scraper::{Html, Node};
 
 #[derive(Clone, Copy, PartialEq, Default, Debug)]
@@ -10,6 +10,7 @@ pub enum MarkdownVariant {
     #[default]
     Default,
     Compact,
+    Large,
 }
 
 fn render_markdown(content: &str) -> String {
@@ -95,6 +96,7 @@ pub fn MarkdownText(
             let variant_class = match variant.get() {
                 MarkdownVariant::Default => "prose prose-sm",
                 MarkdownVariant::Compact => "prose prose-xs",
+                MarkdownVariant::Large => "prose prose-lg",
             };
             format!("markdown-text {} {}", variant_class, class.get())
         }>
