@@ -1,9 +1,10 @@
 use crate::ui_components::{
-    Card, CollapsibleDescription, FuriganaText, Heading, HeadingLevel, MarkdownText, Tag,
-    TagVariant, Text, TextSize, TypographyVariant,
+    Card, CollapsibleDescription, FavoriteButton, FuriganaText, Heading, HeadingLevel,
+    MarkdownText, Tag, TagVariant, Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
 use origa::domain::{Card as DomainCard, StudyCard};
+use ulid::Ulid;
 
 #[derive(Clone, Copy, PartialEq, Default)]
 pub enum CardStatus {
@@ -48,8 +49,10 @@ impl CardStatus {
 }
 
 #[component]
-pub fn GrammarCardItem(study_card: StudyCard) -> impl IntoView {
+pub fn GrammarCardItem(study_card: StudyCard, on_toggle_favorite: Callback<Ulid>) -> impl IntoView {
     let card = study_card.card();
+    let card_id = *study_card.card_id();
+    let is_favorite = study_card.is_favorite();
     let memory = study_card.memory();
 
     let (title, description) = match card {
@@ -86,6 +89,10 @@ pub fn GrammarCardItem(study_card: StudyCard) -> impl IntoView {
                         <Tag variant=Signal::derive(move || status.tag_variant())>
                             {status.label()}
                         </Tag>
+                        <FavoriteButton
+                            is_favorite=Signal::derive(move || is_favorite)
+                            on_click=Callback::new(move |_| on_toggle_favorite.run(card_id))
+                        />
                     </div>
                     <CollapsibleDescription>
                         <MarkdownText content=Signal::derive(move || description.clone())/>

@@ -3,7 +3,7 @@ use crate::app::{AuthContext, update_current_user};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::application::UpdateUserProfileUseCase;
-use origa::domain::{JapaneseLevel, NativeLanguage};
+use origa::domain::NativeLanguage;
 
 #[component]
 pub fn ProfileContent() -> impl IntoView {
@@ -16,13 +16,6 @@ pub fn ProfileContent() -> impl IntoView {
             u.as_ref()
                 .map(|u| u.username().to_string())
                 .unwrap_or_default()
-        })
-    });
-    let japanese_level = Memo::new(move |_| {
-        current_user.with(|u| {
-            u.as_ref()
-                .map(|u| *u.current_japanese_level())
-                .unwrap_or(JapaneseLevel::N5)
         })
     });
     let native_language = Memo::new(move |_| {
@@ -43,14 +36,10 @@ pub fn ProfileContent() -> impl IntoView {
         })
     });
 
-    let selected_level = RwSignal::new(japanese_level.get_untracked());
     let selected_language = RwSignal::new(native_language.get_untracked());
     let reminders = RwSignal::new(reminders_enabled.get_untracked());
     let duolingo_input = RwSignal::new(duolingo_token.get_untracked());
 
-    Effect::new(move |_| {
-        selected_level.set(japanese_level.get());
-    });
     Effect::new(move |_| {
         selected_language.set(native_language.get());
     });
@@ -70,7 +59,6 @@ pub fn ProfileContent() -> impl IntoView {
         let user_id = current_user.with(|u| u.as_ref().map(|u| u.id())).unwrap();
         let repository = repository.clone();
         let current_user_signal = current_user;
-        let level = selected_level.get();
         let language = selected_language.get();
         let reminders_enabled = reminders.get();
         let token = duolingo_input.get();
@@ -84,7 +72,6 @@ pub fn ProfileContent() -> impl IntoView {
             let result = use_case
                 .execute(
                     user_id,
-                    level,
                     language,
                     if token.is_empty() { None } else { Some(token) },
                     None,
@@ -147,7 +134,6 @@ pub fn ProfileContent() -> impl IntoView {
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <PersonalDataCard
                 user_name={user_name}
-                selected_level={selected_level}
                 selected_language={selected_language}
             />
 

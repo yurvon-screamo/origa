@@ -9,6 +9,7 @@ use origa::{
 use web_sys::console;
 
 use crate::repository::file_repository::FileSystemUserRepository;
+use crate::repository::jlpt_content_loader::recalculate_user_jlpt_progress;
 use crate::repository::supabase_repository::SupabaseUserRepository;
 
 static SYNCED: OnceLock<AtomicBool> = OnceLock::new();
@@ -59,6 +60,7 @@ impl UserRepository for HybridUserRepository {
     async fn save(&self, user: &User) -> Result<(), OrigaError> {
         let mut user_clone = user.clone();
         user_clone.touch();
+        recalculate_user_jlpt_progress(&mut user_clone);
 
         self.local.save(&user_clone).await?;
 
@@ -73,6 +75,7 @@ impl UserRepository for HybridUserRepository {
     async fn save_sync(&self, user: &User) -> Result<(), OrigaError> {
         let mut user_clone = user.clone();
         user_clone.touch();
+        recalculate_user_jlpt_progress(&mut user_clone);
 
         self.local.save(&user_clone).await?;
         self.remote.save(&user_clone).await?;

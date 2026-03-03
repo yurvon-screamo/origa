@@ -20,6 +20,7 @@ regex.workspace = true
 rand.workspace = true
 tokio.workspace = true
 getrandom = { version = "0.2.16", features = ["js"] }
+thiserror.workspace = true
 
 # Logging
 tracing.workspace = true

@@ -1384,5 +1384,113 @@
     "title_en": "Migii N5 Lesson 9",
     "desc_ru": "Словарный запас из урока 9 уровня N5 от Migii.",
     "desc_en": "Vocabulary from lesson 9 of N5 level by Migii."
+  },
+  {
+    "id": "spy_family_s01_e01",
+    "set_type": "SpyFamily",
+    "level": "N3",
+    "title_ru": "SPY x FAMILY - S01 E01",
+    "title_en": "SPY x FAMILY - S01 E01",
+    "desc_ru": "Слова для просмотра к SPY x FAMILY первого эпизода первого сезона",
+    "desc_en": "Words for watching SPY x FAMILY first episode of the first season"
+  },
+  {
+    "id": "spy_family_s01_e02",
+    "set_type": "SpyFamily",
+    "level": "N3",
+    "title_ru": "SPY x FAMILY - S01 E02",
+    "title_en": "SPY x FAMILY - S01 E02",
+    "desc_ru": "Слова для просмотра к SPY x FAMILY второго эпизода первого сезона",
+    "desc_en": "Words for watching SPY x FAMILY second episode of the first season"
+  },
+  {
+    "id": "spy_family_s01_e03",
+    "set_type": "SpyFamily",
+    "level": "N3",
+    "title_ru": "SPY x FAMILY - S01 E03",
+    "title_en": "SPY x FAMILY - S01 E03",
+    "desc_ru": "Слова для просмотра к SPY x FAMILY третьего эпизода первого сезона",
+    "desc_en": "Words for watching SPY x FAMILY third episode of the first season"
+  },
+  {
+    "id": "spy_family_s01_e04",
+    "set_type": "SpyFamily",
+    "level": "N3",
+    "title_ru": "SPY x FAMILY - S01 E04",
+    "title_en": "SPY x FAMILY - S01 E04",
+    "desc_ru": "Слова для просмотра к SPY x FAMILY четвертого эпизода первого сезона",
+    "desc_en": "Words for watching SPY x FAMILY fourth episode of the first season"
+  },
+  {
+    "id": "spy_family_s01_e05",
+    "set_type": "SpyFamily",
+    "level": "N3",
+    "title_ru": "SPY x FAMILY - S01 E05",
+    "title_en": "SPY x FAMILY - S01 E05",
+    "desc_ru": "Слова для просмотра к SPY x FAMILY пятого эпизода первого сезона",
+    "desc_en": "Words for watching SPY x FAMILY fifth episode of the first season"
+  },
+  {
+    "id": "spy_family_s01_e06",
+    "set_type": "SpyFamily",
+    "level": "N3",
+    "title_ru": "SPY x FAMILY - S01 E06",
+    "title_en": "SPY x FAMILY - S01 E06",
+    "desc_ru": "Слова для просмотра к SPY x FAMILY шестого эпизода первого сезона",
+    "desc_en": "Words for watching SPY x FAMILY sixth episode of the first season"
+  },
+  {
+    "id": "spy_family_s01_e07",
+    "set_type": "SpyFamily",
+    "level": "N3",
+    "title_ru": "SPY x FAMILY - S01 E07",
+    "title_en": "SPY x FAMILY - S01 E07",
+    "desc_ru": "Слова для просмотра к SPY x FAMILY седьмого эпизода первого сезона",
+    "desc_en": "Words for watching SPY x FAMILY seventh episode of the first season"
+  },
+  {
+    "id": "spy_family_s01_e08",
+    "set_type": "SpyFamily",
+    "level": "N3",
+    "title_ru": "SPY x FAMILY - S01 E08",
+    "title_en": "SPY x FAMILY - S01 E08",
+    "desc_ru": "Слова для просмотра к SPY x FAMILY восьмого эпизода первого сезона",
+    "desc_en": "Words for watching SPY x FAMILY eighth episode of the first season"
+  },
+  {
+    "id": "spy_family_s01_e09",
+    "set_type": "SpyFamily",
+    "level": "N3",
+    "title_ru": "SPY x FAMILY - S01 E09",
+    "title_en": "SPY x FAMILY - S01 E09",
+    "desc_ru": "Слова для просмотра к SPY x FAMILY девятого эпизода первого сезона",
+    "desc_en": "Words for watching SPY x FAMILY ninth episode of the first season"
+  },
+  {
+    "id": "spy_family_s01_e10",
+    "set_type": "SpyFamily",
+    "level": "N3",
+    "title_ru": "SPY x FAMILY - S01 E10",
+    "title_en": "SPY x FAMILY - S01 E10",
+    "desc_ru": "Слова для просмотра к SPY x FAMILY десятого эпизода первого сезона",
+    "desc_en": "Words for watching SPY x FAMILY tenth episode of the first season"
+  },
+  {
+    "id": "spy_family_s01_e11",
+    "set_type": "SpyFamily",
+    "level": "N3",
+    "title_ru": "SPY x FAMILY - S01 E11",
+    "title_en": "SPY x FAMILY - S01 E11",
+    "desc_ru": "Слова для просмотра к SPY x FAMILY одиннадцатого эпизода первого сезона",
+    "desc_en": "Words for watching SPY x FAMILY eleventh episode of the first season"
+  },
+  {
+    "id": "spy_family_s01_e12",
+    "set_type": "SpyFamily",
+    "level": "N3",
+    "title_ru": "SPY x FAMILY - S01 E12",
+    "title_en": "SPY x FAMILY - S01 E12",
+    "desc_ru": "Слова для просмотра к SPY x FAMILY двенадцатого эпизода первого сезона",
+    "desc_en": "Words for watching SPY x FAMILY twelfth episode of the first season"
   }
 ]

@@ -224,12 +224,7 @@ async fn get_or_create_profile(ctx: &AuthContext, email: &str) -> Result<User, S
     match ctx.repository.find_by_email(email).await {
         Ok(Some(user)) => Ok(user),
         Ok(None) => {
-            let new_user = User::new(
-                email.to_string(),
-                JapaneseLevel::N5,
-                NativeLanguage::Russian,
-                None,
-            );
+            let new_user = User::new(email.to_string(), NativeLanguage::Russian, None);
 
             ctx.repository
                 .save(&new_user)
