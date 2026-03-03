@@ -36,11 +36,15 @@ fn open_oauth_url(provider: OAuthProvider) {
     let is_tauri = js_sys::Reflect::get(&window, &JsValue::from_str("__TAURI__")).is_ok();
 
     let url = if is_tauri {
+        web_sys::console::log_1(&"OAuth: Tauri mode".into());
         SupabaseClient::get_oauth_url(provider.as_str())
     } else {
         let base_url = window.location().origin().unwrap_or_default();
         let redirect_uri = format!("{}/login", base_url);
-        SupabaseClient::get_oauth_url_with_redirect(provider.as_str(), &redirect_uri)
+        web_sys::console::log_1(&format!("OAuth: Web mode, redirect_uri={}", redirect_uri).into());
+        let url = SupabaseClient::get_oauth_url_with_redirect(provider.as_str(), &redirect_uri);
+        web_sys::console::log_1(&format!("OAuth: Generated URL={}", url).into());
+        url
     };
 
     let _ = window.location().set_href(&url);
