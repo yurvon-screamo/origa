@@ -2,6 +2,7 @@ use super::LoginMode;
 use super::auth_handlers::handle_register;
 use super::email_input::EmailInput;
 use super::error_message::ErrorMessage;
+use super::oauth_buttons::OAuthButtons;
 use super::password_input::PasswordInput;
 use crate::ui_components::{Button, ButtonVariant};
 use leptos::prelude::*;
@@ -35,6 +36,17 @@ pub fn RegisterForm(
                     "Зарегистрироваться"
                 </Button>
             </div>
+
+            <div class="relative">
+                <div class="absolute inset-0 flex items-center">
+                    <div class="w-full border-t border-[var(--border-color)]"></div>
+                </div>
+                <div class="relative flex justify-center text-sm">
+                    <span class="px-2 bg-[var(--bg-primary)] text-[var(--fg-muted)]">"или"</span>
+                </div>
+            </div>
+
+            <OAuthButtons />
 
             <div class="text-center">
                 <button

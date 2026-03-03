@@ -4,6 +4,7 @@ pub mod email_input;
 pub mod error_message;
 pub mod header;
 pub mod login_form;
+pub mod oauth_buttons;
 pub mod password_input;
 pub mod register_form;
 pub mod validation;
@@ -11,6 +12,7 @@ pub mod validation;
 pub use email_confirmation_form::EmailConfirmationForm;
 pub use header::LoginHeader;
 pub use login_form::LoginForm;
+pub use oauth_buttons::OAuthButtons;
 pub use register_form::RegisterForm;
 
 use crate::app::AuthContext;
