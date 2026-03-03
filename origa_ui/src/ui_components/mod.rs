@@ -45,6 +45,7 @@ pub use avatar::Avatar;
 pub use button::{Button, ButtonVariant};
 pub use card::Card;
 pub use chart::LineChart;
+pub use checkbox::Checkbox;
 pub use collapsible::CollapsibleDescription;
 pub use favorite_button::FavoriteButton;
 pub use furigana::FuriganaText;
