@@ -1,7 +1,5 @@
 mod add_word_modal;
 mod content;
-mod filter;
-mod filter_btn;
 mod header;
 mod vocabulary_card_item;
 

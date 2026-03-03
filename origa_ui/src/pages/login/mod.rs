@@ -1,11 +1,17 @@
+pub mod auth_handlers;
+pub mod email_confirmation_form;
 pub mod email_input;
 pub mod error_message;
-pub mod form;
 pub mod header;
+pub mod login_form;
 pub mod password_input;
+pub mod register_form;
+pub mod validation;
 
-pub use form::{EmailConfirmationForm, LoginForm, RegisterForm};
+pub use email_confirmation_form::EmailConfirmationForm;
 pub use header::LoginHeader;
+pub use login_form::LoginForm;
+pub use register_form::RegisterForm;
 
 use crate::app::AuthContext;
 use crate::ui_components::{CardLayout, CardLayoutSize, PageLayout, PageLayoutVariant};

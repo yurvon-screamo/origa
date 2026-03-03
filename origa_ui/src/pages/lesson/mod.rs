@@ -1,12 +1,24 @@
+mod card_type;
 mod complete_screen;
 mod content;
 mod header;
+mod kanji_card_details;
+mod keyboard_handler;
 mod lesson_card;
+mod lesson_card_answer;
 mod lesson_card_container;
+mod lesson_card_header;
+mod lesson_card_question;
 mod lesson_progress;
 mod lesson_progress_view;
 mod lesson_state;
+mod on_quiz_select;
+mod on_rate;
 mod quiz_card;
+mod quiz_card_header;
+mod quiz_options;
+mod quiz_result;
+mod quiz_result_display;
 mod rating_buttons;
 mod rating_buttons_view;
 

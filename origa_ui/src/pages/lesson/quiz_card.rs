@@ -1,39 +1,15 @@
 use crate::ui_components::{
-    AudioButtons, Card, DisplayText, FuriganaText, Heading, HeadingLevel, KanjiViewMode,
-    KanjiWritingSection, MarkdownText, MarkdownVariant, Tag, TagVariant, Text, TextSize,
-    TypographyVariant, get_reading_from_text, is_speech_supported, speak_text,
+    Card, DisplayText, FuriganaText, Heading, HeadingLevel, KanjiViewMode, KanjiWritingSection,
+    Text, TextSize, TypographyVariant, get_reading_from_text, is_speech_supported, speak_text,
 };
 use leptos::prelude::*;
-use origa::domain::{Card as DomainCard, QuizCard, QuizOption};
+use origa::domain::{Card as DomainCard, QuizCard};
 
-use super::lesson_card::CardType;
-
-#[derive(Clone, Copy, PartialEq, Default, Debug)]
-pub enum QuizResult {
-    #[default]
-    None,
-    Correct,
-    Incorrect,
-}
-
-impl QuizResult {
-    pub fn option_class(&self, is_correct: bool) -> &'static str {
-        match (self, is_correct) {
-            (QuizResult::None, _) => {
-                "bg-[var(--bg-paper)] hover:bg-[var(--bg-aged)] border-[var(--border-dark)]"
-            }
-            (QuizResult::Correct, true) | (QuizResult::Incorrect, true) => {
-                "bg-[var(--bg-warm)] border-[var(--success)] text-[var(--success)]"
-            }
-            (QuizResult::Correct, false) => {
-                "bg-[var(--bg-paper)] border-[var(--border-light)] opacity-50"
-            }
-            (QuizResult::Incorrect, false) => {
-                "bg-[var(--bg-warm)] border-[var(--error)] text-[var(--error)]"
-            }
-        }
-    }
-}
+use super::card_type::CardType;
+use super::quiz_card_header::QuizCardHeader;
+use super::quiz_options::QuizOptions;
+use super::quiz_result::QuizResult;
+use super::quiz_result_display::QuizResultDisplay;
 
 #[component]
 pub fn QuizCardView(
@@ -45,17 +21,18 @@ pub fn QuizCardView(
     let card = quiz_card.card().clone();
     let card_type = CardType::from(&card);
     let question = StoredValue::new(card.question().text().to_string());
-    let options: StoredValue<Vec<QuizOption>> = StoredValue::new(quiz_card.options().to_vec());
+    let options: StoredValue<Vec<origa::domain::QuizOption>> =
+        StoredValue::new(quiz_card.options().to_vec());
 
     let quiz_result = move || {
         if let Some(selected) = selected_option {
             let opts = options.get_value();
             if let Some(opt) = opts.get(selected) {
-                if opt.is_correct() {
-                    return QuizResult::Correct;
+                return if opt.is_correct() {
+                    QuizResult::Correct
                 } else {
-                    return QuizResult::Incorrect;
-                }
+                    QuizResult::Incorrect
+                };
             }
         }
         QuizResult::None
@@ -66,7 +43,7 @@ pub fn QuizCardView(
         _ => None,
     });
 
-    let lesson_ctx = use_context::<crate::pages::lesson::lesson_state::LessonContext>();
+    let lesson_ctx = use_context::<super::lesson_state::LessonContext>();
     let question_text = question.get_value();
 
     Effect::new(move |_| {
@@ -82,22 +59,10 @@ pub fn QuizCardView(
 
     view! {
         <Card class=Signal::derive(|| "p-6 min-h-[300px] flex flex-col".to_string()) shadow=Signal::derive(|| true)>
-            <div class="flex items-center justify-between mb-4">
-                <div class="flex items-center gap-2">
-                    <Tag variant=Signal::derive(move || card_type.tag_variant())>
-                        {card_type.label()}
-                    </Tag>
-                    <Tag variant=Signal::derive(move || TagVariant::Filled)>
-                        "Тест"
-                    </Tag>
-                </div>
-                <Show when=move || card_type != CardType::Kanji>
-                    <AudioButtons
-                        text=question.get_value()
-                        class=Signal::derive(|| "".to_string())
-                    />
-                </Show>
-            </div>
+            <QuizCardHeader
+                card_type=card_type
+                question_text=question.get_value()
+            />
 
             <div class="flex-1 flex flex-col justify-center">
                 <div class="text-center mb-6">
@@ -130,70 +95,16 @@ pub fn QuizCardView(
                     </Text>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {move || {
-                        let opts = options.get_value();
-                        let current_result = quiz_result();
-                        opts.into_iter()
-                            .enumerate()
-                            .map(|(index, option): (usize, QuizOption)| {
-                                let is_correct = option.is_correct();
-                                let is_selected = selected_option == Some(index);
-                                let base_class = "p-4 rounded-lg border-2 text-left transition-all cursor-pointer relative";
-                                let disabled_class = if show_result { "pointer-events-none" } else { "" };
-                                let result_class = current_result.option_class(is_correct);
-                                let selected_ring = if is_selected && !show_result { "ring-2 ring-[var(--accent-olive)]" } else { "" };
-
-                                let class = format!("{} {} {} {}", base_class, disabled_class, result_class, selected_ring);
-                                let key_hint = format!("[{}]", index + 1);
-
-                                let key_hint_clone = key_hint.clone();
-                                let option_text = option.text().to_string();
-                                view! {
-                                    <button
-                                        class=class
-                                        on:click=move |_| {
-                                            if !show_result {
-                                                on_select_option.run(index);
-                                            }
-                                        }
-                                    >
-                                        <div class="flex items-start justify-between gap-2">
-                                            <Text size=TextSize::Default>
-                                                <MarkdownText
-                                                    content=Signal::derive(move || option_text.clone())
-                                                    variant=MarkdownVariant::Compact
-                                                />
-                                            </Text>
-                                            <Show when=move || !show_result>
-                                                <span class="text-[var(--fg-muted)] text-xs font-mono shrink-0">
-                                                    {key_hint_clone.clone()}
-                                                </span>
-                                            </Show>
-                                        </div>
-                                    </button>
-                                }
-                            })
-                            .collect::<Vec<_>>()
-                    }}
-                </div>
+                <QuizOptions
+                    options=options.get_value()
+                    selected_option=selected_option
+                    show_result=show_result
+                    quiz_result=quiz_result()
+                    on_select_option=on_select_option
+                />
 
                 <Show when=move || show_result>
-                    <div class="mt-6 text-center">
-                        <Text size=TextSize::Default class=move || {
-                            match quiz_result() {
-                                QuizResult::Correct => "text-[var(--success)] font-bold".to_string(),
-                                QuizResult::Incorrect => "text-[var(--error)] font-bold".to_string(),
-                                QuizResult::None => "".to_string(),
-                            }
-                        }>
-                            {move || match quiz_result() {
-                                QuizResult::Correct => "✓ Правильно!",
-                                QuizResult::Incorrect => "✗ Неверно",
-                                QuizResult::None => "",
-                            }}
-                        </Text>
-                    </div>
+                    <QuizResultDisplay quiz_result=quiz_result() />
                 </Show>
             </div>
         </Card>
