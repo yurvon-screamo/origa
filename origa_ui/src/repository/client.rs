@@ -337,9 +337,10 @@ impl SupabaseClient {
     }
 
     pub fn get_oauth_url_with_redirect(provider: &str, redirect_uri: &str) -> String {
+        let encoded = urlencoding::encode(redirect_uri);
         format!(
             "{}/auth/v1/authorize?provider={}&redirect_to={}&scopes=email%20profile",
-            SUPABASE_URL, provider, redirect_uri
+            SUPABASE_URL, provider, encoded
         )
     }
 
