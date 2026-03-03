@@ -68,6 +68,7 @@ impl DailyHistoryItem {
         self.high_difficulty_words
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn update(
         &mut self,
         avg_stability: f64,

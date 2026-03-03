@@ -4,7 +4,7 @@ mod grammar;
 mod kanji;
 mod vocabulary;
 
-pub use card::{Card, StudyCard};
+pub use card::{Card, CardType, LessonCardView, QuizCard, QuizOption, StudyCard};
 pub use daily_history::DailyHistoryItem;
 pub use grammar::GrammarRuleCard;
 pub use kanji::{ExampleKanjiWord, KanjiCard};
@@ -125,7 +125,7 @@ impl KnowledgeSet {
         Ok(())
     }
 
-    pub fn cards_to_fixation(&self) -> HashMap<Ulid, Card> {
+    pub fn cards_to_fixation(&self) -> HashMap<Ulid, LessonCardView> {
         let mut cards = self
             .study_cards
             .iter()
@@ -137,13 +137,28 @@ impl KnowledgeSet {
 
         cards.truncate(HARD_CARDS_LIMIT);
 
+        let cards_by_type: HashMap<CardType, Vec<Card>> = {
+            let mut map: HashMap<CardType, Vec<Card>> = HashMap::new();
+            for study_card in self.study_cards.values() {
+                let card_type = CardType::from(study_card.card());
+                map.entry(card_type)
+                    .or_default()
+                    .push(study_card.card().clone());
+            }
+            map
+        };
+
         cards
             .iter()
-            .map(|(card_id, card)| (**card_id, card.card().clone()))
+            .map(|(card_id, card)| {
+                let card = card.card().clone();
+                let view = Self::apply_view(card, &cards_by_type);
+                (**card_id, view)
+            })
             .collect()
     }
 
-    pub fn cards_to_lesson(&self, lang: &NativeLanguage) -> HashMap<Ulid, Card> {
+    pub fn cards_to_lesson(&self, lang: &NativeLanguage) -> HashMap<Ulid, LessonCardView> {
         let mut all_cards = self.study_cards.iter().collect::<Vec<_>>();
         all_cards.sort_by_key(|(_, card)| card.memory().next_review_date());
 
@@ -184,26 +199,53 @@ impl KnowledgeSet {
             })
             .collect();
 
+        let cards_by_type: HashMap<CardType, Vec<Card>> = {
+            let mut map: HashMap<CardType, Vec<Card>> = HashMap::new();
+            for study_card in self.study_cards.values() {
+                let card_type = CardType::from(study_card.card());
+                map.entry(card_type)
+                    .or_default()
+                    .push(study_card.card().clone());
+            }
+            map
+        };
+
         let mut result: Vec<_> = favorite_cards
             .iter()
             .filter_map(|(card_id, card)| {
-                card.shuffle_card(lang, &known_rules)
-                    .ok()
-                    .map(|c| (**card_id, c))
+                card.shuffle_card(lang, &known_rules).ok().map(|c| {
+                    let view = Self::apply_view(c, &cards_by_type);
+                    (**card_id, view)
+                })
             })
             .collect();
 
         let priority_shuffled: Vec<_> = priority_cards
             .iter()
             .filter_map(|(card_id, card)| {
-                card.shuffle_card(lang, &known_rules)
-                    .ok()
-                    .map(|c| (**card_id, c))
+                card.shuffle_card(lang, &known_rules).ok().map(|c| {
+                    let view = Self::apply_view(c, &cards_by_type);
+                    (**card_id, view)
+                })
             })
             .collect();
 
         result.extend(priority_shuffled);
         result.into_iter().collect()
+    }
+
+    fn apply_view(card: Card, cards_by_type: &HashMap<CardType, Vec<Card>>) -> LessonCardView {
+        let card_type = CardType::from(&card);
+
+        if card_type != CardType::Grammar && rand::random_bool(0.5) {
+            let same_type_cards = cards_by_type
+                .get(&card_type)
+                .map(|v| v.as_slice())
+                .unwrap_or(&[]);
+            LessonCardView::generate_quiz(card, same_type_cards)
+        } else {
+            LessonCardView::Normal(card)
+        }
     }
 
     pub(crate) fn rate_card(
@@ -224,7 +266,7 @@ impl KnowledgeSet {
         }
     }
 
-    pub fn toggle_favorite(&mut self, card_id: Ulid) -> Result<(), OrigaError> {
+    pub(crate) fn toggle_favorite(&mut self, card_id: Ulid) -> Result<(), OrigaError> {
         if let Some(card) = self.study_cards.get_mut(&card_id) {
             card.toggle_favorite();
             Ok(())

@@ -132,7 +132,8 @@ pub fn tokenize_text(text: &str) -> Result<Vec<TokenInfo>, OrigaError> {
         .iter_mut()
         .map(|token| {
             let lexeme = token.get("lexeme").unwrap_or_default();
-            let orthographic_base_form = if let Some((japanese, _english)) = lexeme.split_once('-') {
+            let orthographic_base_form = if let Some((japanese, _english)) = lexeme.split_once('-')
+            {
                 japanese.to_string()
             } else {
                 lexeme.to_string()
@@ -145,7 +146,10 @@ pub fn tokenize_text(text: &str) -> Result<Vec<TokenInfo>, OrigaError> {
                 .unwrap_or(PartOfSpeech::Unspecified);
 
             // Force symbol POS if base form is just a symbol
-            if orthographic_base_form == "*" || orthographic_base_form == "×" || orthographic_base_form == "•" {
+            if orthographic_base_form == "*"
+                || orthographic_base_form == "×"
+                || orthographic_base_form == "•"
+            {
                 part_of_speech = PartOfSpeech::Symbol;
             }
 
@@ -307,7 +311,12 @@ mod tests {
         for token in tokens {
             let base = token.orthographic_base_form();
             if base == "*" || base == "×" {
-                assert!(!token.part_of_speech().is_vocabulary_word(), "Symbol '{}' (POS {:?}) should not be a vocabulary word", base, token.part_of_speech());
+                assert!(
+                    !token.part_of_speech().is_vocabulary_word(),
+                    "Symbol '{}' (POS {:?}) should not be a vocabulary word",
+                    base,
+                    token.part_of_speech()
+                );
                 assert_eq!(token.part_of_speech(), &PartOfSpeech::Symbol);
             }
         }
