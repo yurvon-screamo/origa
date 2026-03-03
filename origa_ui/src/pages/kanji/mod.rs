@@ -4,8 +4,6 @@ mod add_kanji_modal_handlers;
 mod add_kanji_modal_state;
 mod content;
 mod error_alert;
-mod filter;
-mod filter_btn;
 mod header;
 mod kanji_card_item;
 mod kanji_item;

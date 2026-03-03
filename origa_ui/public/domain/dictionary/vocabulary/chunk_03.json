@@ -25,7 +25,7 @@
   },
   "切り捨てる": {
     "russian_translation": "- зарубить  \n- убить  \n- опускать  \n- сокращать",
-    "english_translation": "- to cut down  \n- to slay  \n- to truncate  \n- to round down  \n- to round off  \n- to omit  \n- to discard  \n- to cast away  \n- to cut off and throw away  \n- to abandon  \n- to disregard  \n- to drop  \n- to ignore  \n- to round down  \n- to cut (someone) down  \n- to slay"
+    "english_translation": "- to cut down  \n- to slay  \n- to truncate  \n- to round down  \n- to round off  \n- to omit  \n- to discard  \n- to cast away  \n- to cut off and throw away  \n- to abandon  \n- to disregard  \n- to drop  \n- to ignore  \n- to cut (someone) down  "
   },
   "刃物三昧": {
     "russian_translation": "- поножовщина",
@@ -85,7 +85,7 @@
   },
   "冷え込む": {
     "russian_translation": "- становиться всё холоднее  \n- промерзать  \n- замерзать",
-    "english_translation": "- get much colder  \n- deepen (cold)  \n- feel cold (of the body)  \n- be chilled to the bones  \n- worsen (of relations, economic conditions, etc.)  \n- get very cold  \n- get much colder  \n- feel very cold (of the body)  \n- be chilled to the bone  \n- decline"
+    "english_translation": "- get much colder  \n- deepen (cold)  \n- feel cold (of the body)  \n- be chilled to the bones  \n- worsen (of relations, economic conditions, etc.)  \n- get very cold  \n- feel very cold (of the body)  \n- be chilled to the bone  \n- decline"
   },
   "原板": {
     "russian_translation": "- негатив",
@@ -1417,7 +1417,7 @@
   },
   "作成": {
     "russian_translation": "- составлять (план и т. п.)\n- оформлять (документ)\n- выведение (новой породы)",
-    "english_translation": "- drawing up  \n- preparing  \n- writing  \n- framing  \n- making  \n- producing  \n- creating  \n- creation  \n- making (a report, plan, contract, etc.)  \n- drawing up  \n- writing out  \n- preparing  \n- creating (a file, website, account, etc.)"
+    "english_translation": "- drawing up  \n- preparing  \n- writing  \n- framing  \n- making  \n- producing  \n- creating  \n- creation  \n- making (a report, plan, contract, etc.)  \n- writing out  \n- creating (a file, website, account, etc.)"
   },
   "叡感": {
     "russian_translation": "- высочайшее одобрение",
@@ -1441,7 +1441,7 @@
   },
   "分極": {
     "russian_translation": "- поляризация",
-    "english_translation": "- polarization (light, radio waves)  \n- polarisation  \n- (electric) polarization  \n- polarisation  \n- (magnetic) polarization  \n- magnetization"
+    "english_translation": "- polarization (light, radio waves)  \n- polarisation  \n- (electric) polarization  \n- (magnetic) polarization  \n- magnetization"
   },
   "取紛れる": {
     "russian_translation": "- быть поглощённым (чем-л.)  \n- завертеться, захлопотаться (из-за чего-л.)  \n- быть в расстройстве (замешательстве)",
@@ -2069,7 +2069,7 @@
   },
   "出づ": {
     "russian_translation": "- выйти",
-    "english_translation": "- to leave  \n- to exit  \n- to go out  \n- to come out  \n- to get out  \n- to leave (on a journey)  \n- to depart  \n- to start out  \n- to set out  \n- to move forward  \n- to come to  \n- to get to  \n- to lead to  \n- to reach  \n- to appear  \n- to come out  \n- to emerge  \n- to surface  \n- to come forth  \n- to turn up  \n- to be found  \n- to be detected  \n- to be discovered  \n- to be exposed  \n- to show  \n- to be exhibited  \n- to be on display  \n- to appear (in print)  \n- to be published  \n- to be announced  \n- to be issued  \n- to be listed  \n- to come out  \n- to attend  \n- to participate  \n- to take part  \n- to enter (an event)  \n- to play in  \n- to perform  \n- to be stated  \n- to be expressed  \n- to come up  \n- to be brought up  \n- to be raised  \n- to sell  \n- to exceed  \n- to go over  \n- to stick out  \n- to protrude  \n- to break out  \n- to occur  \n- to start  \n- to originate  \n- to be produced  \n- to come from  \n- to be derived from  \n- to be given  \n- to get  \n- to receive  \n- to be offered  \n- to be provided"
+    "english_translation": "- to leave  \n- to exit  \n- to go out  \n- to come out  \n- to get out  \n- to leave (on a journey)  \n- to depart  \n- to start out  \n- to set out  \n- to move forward  \n- to come to  \n- to get to  \n- to lead to  \n- to reach  \n- to appear  \n- to emerge  \n- to surface  \n- to come forth  \n- to turn up  \n- to be found  \n- to be detected  \n- to be discovered  \n- to be exposed  \n- to show  \n- to be exhibited  \n- to be on display  \n- to appear (in print)  \n- to be published  \n- to be announced  \n- to be issued  \n- to be listed  \n- to attend  \n- to participate  \n- to take part  \n- to enter (an event)  \n- to play in  \n- to perform  \n- to be stated  \n- to be expressed  \n- to come up  \n- to be brought up  \n- to be raised  \n- to sell  \n- to exceed  \n- to go over  \n- to stick out  \n- to protrude  \n- to break out  \n- to occur  \n- to start  \n- to originate  \n- to be produced  \n- to come from  \n- to be derived from  \n- to be given  \n- to get  \n- to receive  \n- to be offered  \n- to be provided"
   },
   "剝取る": {
     "russian_translation": "- отрывать, срывать  \n- лишать (напр. права, власти)",
@@ -2337,7 +2337,7 @@
   },
   "入る": {
     "russian_translation": "- входить  \n- вступать  \n- впадать (о реке)  \n- заходить  \n- закатываться  \n- влезать  \n- забираться  \n- попадать (куда-л. о ком-л.)  \n- проникать  \n- проходить  \n- помещаться  \n- получаться (о доходах)  \n- (о времени)",
-    "english_translation": "- to get in  \n- to go in  \n- to come in  \n- to flow into  \n- to set  \n- to set in  \n- to enter  \n- to go into  \n- to break into  \n- to join  \n- to enroll  \n- to contain  \n- to hold  \n- to accommodate  \n- to have (an income of)  \n- to get turned on  \n- to start functioning  \n- to start working  \n- to get  \n- to obtain  \n- to receive  \n- to score  \n- to arrive  \n- to join (a club, company, etc.)  \n- to enter (a university, the army, etc.)  \n- to enroll (in)  \n- to go into (e.g. politics)  \n- to get into  \n- to be contained (in)  \n- to be included (in)  \n- to be inside (e.g. a box)  \n- to come under (a heading)  \n- to belong (in a category)  \n- to (be able to) fit (in a container, building, etc.)  \n- to be (able to be) held  \n- to be (able to be) accommodated  \n- to be introduced  \n- to be brought in  \n- to be installed  \n- to be received  \n- to be obtained  \n- to be scored (of points)  \n- to be won (of votes)  \n- to turn on  \n- to start functioning  \n- to start working"
+    "english_translation": "- to get in  \n- to go in  \n- to come in  \n- to flow into  \n- to set  \n- to set in  \n- to enter  \n- to go into  \n- to break into  \n- to join  \n- to enroll  \n- to contain  \n- to hold  \n- to accommodate  \n- to have (an income of)  \n- to get turned on  \n- to start functioning  \n- to start working  \n- to get  \n- to obtain  \n- to receive  \n- to score  \n- to arrive  \n- to join (a club, company, etc.)  \n- to enter (a university, the army, etc.)  \n- to enroll (in)  \n- to go into (e.g. politics)  \n- to get into  \n- to be contained (in)  \n- to be included (in)  \n- to be inside (e.g. a box)  \n- to come under (a heading)  \n- to belong (in a category)  \n- to (be able to) fit (in a container, building, etc.)  \n- to be (able to be) held  \n- to be (able to be) accommodated  \n- to be introduced  \n- to be brought in  \n- to be installed  \n- to be received  \n- to be obtained  \n- to be scored (of points)  \n- to be won (of votes)  \n- to turn on  "
   },
   "冷涼": {
     "russian_translation": "- прохлада",
@@ -2464,7 +2464,7 @@
     "english_translation": "- dramatic literature"
   },
   "切り替える": {
-    "russian_translation": "- изменять, переменять  \n- переключать  \n- возобновлять  \n- разменивать, обменивать  \n- конвертировать  \n- переключать",
+    "russian_translation": "- изменять, переменять  \n- переключать  \n- возобновлять  \n- разменивать, обменивать  \n- конвертировать  ",
     "english_translation": "- to change  \n- to exchange  \n- to convert  \n- to renew  \n- to throw a switch  \n- to replace  \n- to switch over  \n- to switch  \n- to change over"
   },
   "僧庵": {
@@ -2733,7 +2733,7 @@
   },
   "分岐点": {
     "russian_translation": "- развилка  \n- перекрёсток  \n- узловой пункт  \n- распутье",
-    "english_translation": "- junction  \n- crossroads  \n- division point  \n- parting of ways  \n- fork  \n- diverging point  \n- turning point  \n- crossroads"
+    "english_translation": "- junction  \n- crossroads  \n- division point  \n- parting of ways  \n- fork  \n- diverging point  \n- turning point  "
   },
   "億劫": {
     "russian_translation": "- тягостный  \n- обременительный  \n- докучный",
@@ -2776,7 +2776,7 @@
     "english_translation": "- to pierce  \n- to stab  \n- to prick  \n- to stick  \n- to thrust  \n- to sting  \n- to bite  \n- to sew  \n- to stitch  \n- to embroider  \n- to pole (a boat)  \n- to catch (with a limed pole)  \n- to put (a runner) out  \n- to pick off"
   },
   "切り換える": {
-    "russian_translation": "- изменять, переменять  \n- переключать  \n- возобновлять  \n- разменивать, обменивать  \n- конвертировать  \n- переключать",
+    "russian_translation": "- изменять, переменять  \n- переключать  \n- возобновлять  \n- разменивать, обменивать  \n- конвертировать  ",
     "english_translation": "- to change  \n- to exchange  \n- to convert  \n- to renew  \n- to throw a switch  \n- to replace  \n- to switch over"
   },
   "受け取": {
@@ -4640,7 +4640,7 @@
     "english_translation": "- alien tax  \n- landing tax"
   },
   "凹地": {
-    "russian_translation": "- углубление  \n- впадина  \n- выбоина  \n- лощина  \n- низина  \n- (геол.) депрессия  \n- низменность  \n- низина  \n- впадина",
+    "russian_translation": "- углубление  \n- впадина  \n- выбоина  \n- лощина  \n- низина  \n- (геол.) депрессия  \n- низменность  ",
     "english_translation": "- hollow  \n- low ground  \n- basin  \n- pit  \n- dip  \n- depression"
   },
   "取りたてる": {
@@ -5952,7 +5952,7 @@
     "english_translation": "- coworker"
   },
   "何方": {
-    "russian_translation": "- где?\n- где-то\n- откуда?\n- где?\n- куда?\n- откуда родом г-н Н.?\n- что?\n- который (из двух)\n- что-нибудь (из двух)\n- и тот и другой, любой\n- ни то ни другое\n- ни тот ни другой\n- кто?\n- кто?\n- все, каждый (из вас)\n- никто\n- некто, кто-то\n- чей?",
+    "russian_translation": "- где?\n- где-то\n- откуда?\n- куда?\n- откуда родом г-н Н.?\n- что?\n- который (из двух)\n- что-нибудь (из двух)\n- и тот и другой, любой\n- ни то ни другое\n- ни тот ни другой\n- кто?\n- все, каждый (из вас)\n- никто\n- некто, кто-то\n- чей?",
     "english_translation": "- which way  \n- which direction  \n- where  \n- which one (esp. of two alternatives)  \n- who"
   },
   "半開国": {
@@ -5964,7 +5964,7 @@
     "english_translation": "- pedestal"
   },
   "去る": {
-    "russian_translation": "- уходить  \n- оставлять  \n- покидать  \n- проходить  \n- уходить  \n- удалять  \n- счищать  \n- отстоять  \n- прошлый",
+    "russian_translation": "- уходить  \n- оставлять  \n- покидать  \n- проходить  \n- удалять  \n- счищать  \n- отстоять  \n- прошлый",
     "english_translation": "- to leave  \n- to go away  \n- to pass  \n- to elapse  \n- to be distant  \n- to send away  \n- to drive off  \n- to divorce  \n- to do completely  \n- last"
   },
   "剣": {
@@ -6592,7 +6592,7 @@
     "english_translation": "- to stay long  \n- to hang around  \n- to hang out  \n- to frequent  \n- to be immersed (in water) for a long time  \n- to soak"
   },
   "休む": {
-    "russian_translation": "- отдыхать  \n- устраивать перерыв  \n- не работать  \n- быть закрытым (о предприятии, школе)  \n- ложиться спать  \n- прекращать работу  \n- пропускать занятия  \n- быть закрытым (о предприятии, школе)",
+    "russian_translation": "- отдыхать  \n- устраивать перерыв  \n- не работать  \n- быть закрытым (о предприятии, школе)  \n- ложиться спать  \n- прекращать работу  \n- пропускать занятия  ",
     "english_translation": "- to be absent, to take a day off  \n- to rest, to have a break  \n- to go to bed, to (lie down to) sleep, to turn in, to retire  \n- to stop doing some ongoing activity for a time, to suspend business"
   },
   "受領証": {
@@ -7369,7 +7369,7 @@
   },
   "切れる": {
     "russian_translation": "- хорошо резать, быть острым  \n- быть порезанным (пораненным)  \n- рваться, разрываться, обрываться (о нитках, проводе и т. п.), разъединяться (о телефоне), прерываться (о связи)  \n- порвать отношения (с кем-л.)  \n- износиться, порваться  \n- кончаться  \n- недоставать, прерываться (о связи)",
-    "english_translation": "- to break  \n- to snap  \n- to be cut  \n- to split  \n- to crack  \n- to be injured  \n- to wear out  \n- to be worn out  \n- to burst  \n- to collapse  \n- to wear off  \n- to stop working  \n- to go dead  \n- to expire (time limit, etc.)  \n- to run out  \n- to become due  \n- to run out (of stock, etc.)  \n- to be exhausted  \n- to be used up  \n- to be sold out  \n- to be out of  \n- to be broken off (e.g. of a relationship)  \n- to break up  \n- to have severed ties  \n- to be cut off  \n- to be disconnected  \n- to cut well  \n- to be sharp  \n- to be sharp-minded  \n- to be keen  \n- to be shrewd  \n- to be quick-witted  \n- to be able  \n- to be short of  \n- to drop under (a certain figure)  \n- to beat (e.g. a record time)  \n- to dry off  \n- to curve  \n- to veer  \n- to shuffle (cards)  \n- to get angry  \n- to snap  \n- to blow one's top  \n- to lose one's temper  \n- to flip  \n- to be able to do completely"
+    "english_translation": "- to break  \n- to snap  \n- to be cut  \n- to split  \n- to crack  \n- to be injured  \n- to wear out  \n- to be worn out  \n- to burst  \n- to collapse  \n- to wear off  \n- to stop working  \n- to go dead  \n- to expire (time limit, etc.)  \n- to run out  \n- to become due  \n- to run out (of stock, etc.)  \n- to be exhausted  \n- to be used up  \n- to be sold out  \n- to be out of  \n- to be broken off (e.g. of a relationship)  \n- to break up  \n- to have severed ties  \n- to be cut off  \n- to be disconnected  \n- to cut well  \n- to be sharp  \n- to be sharp-minded  \n- to be keen  \n- to be shrewd  \n- to be quick-witted  \n- to be able  \n- to be short of  \n- to drop under (a certain figure)  \n- to beat (e.g. a record time)  \n- to dry off  \n- to curve  \n- to veer  \n- to shuffle (cards)  \n- to get angry  \n- to blow one's top  \n- to lose one's temper  \n- to flip  \n- to be able to do completely"
   },
   "勝手気まま": {
     "russian_translation": "- своенравие  \n- собственные удобства",
@@ -8024,7 +8024,7 @@
     "english_translation": "- frozen assets"
   },
   "切りかえる": {
-    "russian_translation": "- изменять, переменять  \n- переключать  \n- возобновлять  \n- разменивать, обменивать  \n- конвертировать  \n- переключать",
+    "russian_translation": "- изменять, переменять  \n- переключать  \n- возобновлять  \n- разменивать, обменивать  \n- конвертировать  ",
     "english_translation": "- to change  \n- to exchange  \n- to convert  \n- to renew  \n- to throw a switch  \n- to replace  \n- to switch over"
   },
   "併合": {
@@ -8189,7 +8189,7 @@
   },
   "共同": {
     "russian_translation": "- сотрудничество  \n- содружество  \n- согласие  \n- совместные действия  \n- союз  \n- объединение  \n- товарищество",
-    "english_translation": "- doing together (as equals)  \n- sharing  \n- common (land, etc.)  \n- joint (statement, etc.)  \n- cooperation  \n- co-operation  \n- collaboration  \n- association  \n- partnership  \n- acting in unison  \n- community  \n- communal use  \n- common possession  \n- sharing  \n> Kyodo News (abbr)"
+    "english_translation": "- doing together (as equals)  \n- sharing  \n- common (land, etc.)  \n- joint (statement, etc.)  \n- cooperation  \n- co-operation  \n- collaboration  \n- association  \n- partnership  \n- acting in unison  \n- community  \n- communal use  \n- common possession  \n> Kyodo News (abbr)"
   },
   "依る": {
     "russian_translation": "- зависеть  \n- основываться (на чём-л.)  \n- быть вызванным чем-л.  \n- применять (что-л.), прибегать (к чему-л.)  \n- занимать (позиции и т. п.)  \n- укрепляться (на какой-л. позиции)",
@@ -8316,7 +8316,7 @@
     "english_translation": "- to tell someone's fortune  \n- to forecast  \n- to predict  \n- to divine"
   },
   "切替": {
-    "russian_translation": "- изменение, перемена  \n- переключение  \n- размен, обмен  \n- конверсия  \n- переключение",
+    "russian_translation": "- изменение, перемена  \n- переключение  \n- размен, обмен  \n- конверсия  ",
     "english_translation": "- exchange  \n- conversion  \n- replacement  \n- switching  \n- switchover"
   },
   "卑属": {
@@ -8344,7 +8344,7 @@
     "english_translation": "- handyman  \n- utility man  \n- odd-job man"
   },
   "切換え": {
-    "russian_translation": "- изменение, перемена  \n- переключение  \n- размен, обмен  \n- конверсия  \n- переключение",
+    "russian_translation": "- изменение, перемена  \n- переключение  \n- размен, обмен  \n- конверсия  ",
     "english_translation": "- exchange  \n- conversion  \n- replacement  \n- switching  \n- switchover"
   },
   "南風": {
@@ -8460,7 +8460,7 @@
     "english_translation": "- boldness  \n- hardihood  \n- courage  \n- valour  \n- valor"
   },
   "切替え": {
-    "russian_translation": "- изменение, перемена  \n- переключение  \n- размен, обмен  \n- конверсия  \n- переключение",
+    "russian_translation": "- изменение, перемена  \n- переключение  \n- размен, обмен  \n- конверсия  ",
     "english_translation": "- exchange  \n- conversion  \n- replacement  \n- switching  \n- switchover"
   },
   "便益": {
@@ -8772,7 +8772,7 @@
     "english_translation": "- to hum (a tune)  \n- to sing to oneself  \n- to croon"
   },
   "傾き": {
-    "russian_translation": "- уклон, наклон  \n- склон  \n- покатость  \n- крен (судна)  \n- наклонное положение  \n- склонность, наклонность  \n- предрасположение (к чему-л.)  \n- стремление, тенденция  \n- предрасположение (к чему-л.)",
+    "russian_translation": "- уклон, наклон  \n- склон  \n- покатость  \n- крен (судна)  \n- наклонное положение  \n- склонность, наклонность  \n- предрасположение (к чему-л.)  \n- стремление, тенденция  ",
     "english_translation": "- slope\n- inclination\n- list\n- tendency\n- trend\n- bent\n- disposition\n- bias"
   },
   "切り出す": {
@@ -9300,7 +9300,7 @@
     "english_translation": "- biography  \n- life story"
   },
   "係り": {
-    "russian_translation": "- ведающий (чем-л.)  \n- служащий  \n- отношение, касательство  \n- ведение  \n- ответственный (за что-л. порученное)  \n- лечащий (о враче)  \n- быть ответственным (за какое-л. дело, поручение)  \n- лицо, ведающее (чем-л.)  \n- ответственный (за что-л. порученное)",
+    "russian_translation": "- ведающий (чем-л.)  \n- служащий  \n- отношение, касательство  \n- ведение  \n- ответственный (за что-л. порученное)  \n- лечащий (о враче)  \n- быть ответственным (за какое-л. дело, поручение)  \n- лицо, ведающее (чем-л.)  ",
     "english_translation": "- charge  \n- duty  \n- person in charge  \n- official  \n- clerk  \n- connection  \n- linking"
   },
   "受渡日": {
@@ -10193,7 +10193,7 @@
   },
   "区切る": {
     "russian_translation": "- расставлять знаки препинания  \n- делить на абзацы  \n- разделять на части  \n- отделять  \n- разграничивать  \n- перегораживать",
-    "english_translation": "- to demarcate  \n- to delimit  \n- to divide (an area)  \n- to mark off  \n- to cut off  \n- to punctuate  \n- to put an end to (e.g. a sentence)  \n- to insert pauses or breaks (e.g. when reading aloud)  \n- to divide  \n- to separate  \n- to partition  \n- to punctuate  \n- to mark off (with a comma)  \n- to insert pauses (between words or phrases when reading aloud)  \n- to space one's words"
+    "english_translation": "- to demarcate  \n- to delimit  \n- to divide (an area)  \n- to mark off  \n- to cut off  \n- to punctuate  \n- to put an end to (e.g. a sentence)  \n- to insert pauses or breaks (e.g. when reading aloud)  \n- to divide  \n- to separate  \n- to partition  \n- to mark off (with a comma)  \n- to insert pauses (between words or phrases when reading aloud)  \n- to space one's words"
   },
   "出窓": {
     "russian_translation": "- выступающее наружу окно  \n- фонарь  \n- эркер",
@@ -10404,7 +10404,7 @@
     "english_translation": "- negotiation  \n- agreement  \n- entente  \n- understanding"
   },
   "傷つく": {
-    "russian_translation": "- быть раненным  \n- получить рану (ранение)  \n- ушибить  \n- ушибить",
+    "russian_translation": "- быть раненным  \n- получить рану (ранение)  \n- ушибить  ",
     "english_translation": "- to be wounded  \n- to get injured  \n- to get hurt feelings  \n- to get damaged  \n- to get chipped  \n- to get scratched"
   },
   "借越し": {
@@ -10449,7 +10449,7 @@
   },
   "古ぼける": {
     "russian_translation": "- выглядеть старым (поношенным)",
-    "english_translation": "- to look old  \n- to become musty  \n- to wear out  \n- to become time-worn  \n- to become worn out  \n- to become old and grubby  \n- to become musty"
+    "english_translation": "- to look old  \n- to become musty  \n- to wear out  \n- to become time-worn  \n- to become worn out  \n- to become old and grubby  "
   },
   "兎欠": {
     "russian_translation": "- заячья губа",
@@ -10493,7 +10493,7 @@
   },
   "単位": {
     "russian_translation": "- единица",
-    "english_translation": "- unit  \n- denomination  \n- credit (in school)  \n- in units of  \n- in amounts of  \n- unit (e.g. meters, grams, etc.)  \n- denomination  \n- unit (i.e. one comprised of many)  \n- group  \n- whole  \n- point  \n- by the  \n- in groups of  \n- in amounts of  \n- each  \n- by  \n- every"
+    "english_translation": "- unit  \n- denomination  \n- credit (in school)  \n- in units of  \n- in amounts of  \n- unit (e.g. meters, grams, etc.)  \n- unit (i.e. one comprised of many)  \n- group  \n- whole  \n- point  \n- by the  \n- in groups of  \n- each  \n- by  \n- every"
   },
   "参": {
     "russian_translation": "- три",
@@ -10804,7 +10804,7 @@
     "english_translation": "- civil war"
   },
   "切替える": {
-    "russian_translation": "- изменять, переменять  \n- переключать  \n- возобновлять  \n- разменивать, обменивать  \n- конвертировать  \n- переключать",
+    "russian_translation": "- изменять, переменять  \n- переключать  \n- возобновлять  \n- разменивать, обменивать  \n- конвертировать  ",
     "english_translation": "- to change  \n- to exchange  \n- to convert  \n- to renew  \n- to throw a switch  \n- to replace  \n- to switch over"
   },
   "冷や奴": {
@@ -11504,7 +11504,7 @@
     "english_translation": "- sophistry"
   },
   "全身": {
-    "russian_translation": "- по всему телу  \n- во всём организме  \n- всё тело  \n- весь организм  \n- (фото) во весь рост  \n- (мед.) органический, конституциональный  \n- {～的} по всему телу  \n- во всём организме  \n- всё тело  \n- весь организм",
+    "russian_translation": "- по всему телу  \n- во всём организме  \n- всё тело  \n- весь организм  \n- (фото) во весь рост  \n- (мед.) органический, конституциональный  \n- {～的} по всему телу  ",
     "english_translation": "- whole (body)  \n- full-length (e.g. portrait)  \n- systemic"
   },
   "双務契約": {
@@ -13389,7 +13389,7 @@
   },
   "刈り上げる": {
     "russian_translation": "- убрать полностью (урожай)  \n- обстричь (волосы)",
-    "english_translation": "- to reap completely  \n- to trim up (the hair)  \n- to dress up  \n- to harvest all of (a crop)  \n- to reap completely  \n- to finish cutting (e.g. weeds)  \n- to taper (hair) at the back  \n- to cut hair so that it gradually gets shorter at the back of the head"
+    "english_translation": "- to reap completely  \n- to trim up (the hair)  \n- to dress up  \n- to harvest all of (a crop)  \n- to finish cutting (e.g. weeds)  \n- to taper (hair) at the back  \n- to cut hair so that it gradually gets shorter at the back of the head"
   },
   "何故": {
     "russian_translation": "- по какой причине  \n- почему  \n- отчего  \n- зачем",
@@ -13597,7 +13597,7 @@
   },
   "初": {
     "russian_translation": "- первый  \n- новый  \n- начало  \n- впервые  \n- в первый раз  \n- наивный  \n- неискушённый",
-    "english_translation": "- innocent  \n- naive  \n- unsophisticated  \n- inexperienced  \n- green  \n- wet behind the ears  \n- first  \n- new  \n- inexperienced (in life experience)  \n- unsophisticated  \n- green  \n- wet behind the ears  \n- inexperienced (in love)  \n- simple"
+    "english_translation": "- innocent  \n- naive  \n- unsophisticated  \n- inexperienced  \n- green  \n- wet behind the ears  \n- first  \n- new  \n- inexperienced (in life experience)  \n- inexperienced (in love)  \n- simple"
   },
   "叉銃": {
     "russian_translation": "- составлять винтовки в козлы",
@@ -14293,7 +14293,7 @@
   },
   "優遇": {
     "russian_translation": "- тепло принимать  \n- сердечно приветствовать  \n- хорошо обращаться (с кем-л.)  \n- хорошо оплачивать (кого-л.)  \n- тёплый приём  \n- тёплое приветствие",
-    "english_translation": "- favorable treatment  \n- favorable treatment  \n- hospitality  \n- warm reception  \n- good treatment  \n- hearty welcome"
+    "english_translation": "- favorable treatment  \n- hospitality  \n- warm reception  \n- good treatment  \n- hearty welcome"
   },
   "利比利亜": {
     "russian_translation": "Либерия",
@@ -14524,7 +14524,7 @@
     "english_translation": "- financially scraping by  \n- meagre existence  \n- hand to mouth existence  \n- living one's life without plan  \n- living life day-by-day  \n- taking life one day at a time"
   },
   "切換える": {
-    "russian_translation": "- изменять, переменять  \n- переключать  \n- возобновлять  \n- разменивать, обменивать  \n- конвертировать  \n- переключать",
+    "russian_translation": "- изменять, переменять  \n- переключать  \n- возобновлять  \n- разменивать, обменивать  \n- конвертировать  ",
     "english_translation": "- to change  \n- to exchange  \n- to convert  \n- to renew  \n- to throw a switch  \n- to replace  \n- to switch over"
   },
   "前部": {
@@ -15061,7 +15061,7 @@
   },
   "収める": {
     "russian_translation": "- получать, приобретать  \n- вносить, уплачивать  \n- убирать, помещать (куда-л.)  \n- поставлять (напр. продукты)  \n- приносить в дар (в храм)  \n- собирать",
-    "english_translation": "- to dedicate  \n- to make an offering  \n- to pay (fees)  \n- to supply  \n- to store  \n- to finish  \n- to bring to a close  \n- to restore (something to its place)  \n- to achieve (e.g. a result)  \n- to put (into)  \n- to put away (in)  \n- to put back (in)  \n- to keep (in)  \n- to store (in)  \n- to restore (to its place)  \n- to include (in an anthology, catalogue, etc.)  \n- to contain  \n- to publish (in)  \n- to capture (on film)  \n- to achieve (results, success, etc.)  \n- to obtain  \n- to get  \n- to gain  \n- to win  \n- to make (a profit)  \n- to pay (fees, taxes, etc.)  \n- to deliver  \n- to supply  \n- to accept (a gift or money)  \n- to keep (within a limit)  \n- to offer (to a shrine, deity, etc.)  \n- to subdue  \n- to suppress  \n- to settle  \n- to conclude  \n- to wind up"
+    "english_translation": "- to dedicate  \n- to make an offering  \n- to pay (fees)  \n- to supply  \n- to store  \n- to finish  \n- to bring to a close  \n- to restore (something to its place)  \n- to achieve (e.g. a result)  \n- to put (into)  \n- to put away (in)  \n- to put back (in)  \n- to keep (in)  \n- to store (in)  \n- to restore (to its place)  \n- to include (in an anthology, catalogue, etc.)  \n- to contain  \n- to publish (in)  \n- to capture (on film)  \n- to achieve (results, success, etc.)  \n- to obtain  \n- to get  \n- to gain  \n- to win  \n- to make (a profit)  \n- to pay (fees, taxes, etc.)  \n- to deliver  \n- to accept (a gift or money)  \n- to keep (within a limit)  \n- to offer (to a shrine, deity, etc.)  \n- to subdue  \n- to suppress  \n- to settle  \n- to conclude  \n- to wind up"
   },
   "体温": {
     "russian_translation": "- температура тела",
@@ -15464,7 +15464,7 @@
     "english_translation": "- television set  \n- TV set"
   },
   "切り換え": {
-    "russian_translation": "- изменение, перемена  \n- переключение  \n- размен, обмен  \n- конверсия  \n- переключение",
+    "russian_translation": "- изменение, перемена  \n- переключение  \n- размен, обмен  \n- конверсия  ",
     "english_translation": "- exchange  \n- conversion  \n- replacement  \n- switching  \n- switchover"
   },
   "代代": {
@@ -15572,7 +15572,7 @@
     "english_translation": "- hands-off  \n- indifferent  \n- spectatorial"
   },
   "切り替え": {
-    "russian_translation": "- изменение, перемена  \n- переключение  \n- размен, обмен  \n- конверсия  \n- переключение",
+    "russian_translation": "- изменение, перемена  \n- переключение  \n- размен, обмен  \n- конверсия  ",
     "english_translation": "- exchange  \n- conversion  \n- replacement  \n- switching  \n- switchover"
   },
   "優婉": {
@@ -15657,7 +15657,7 @@
   },
   "僕": {
     "russian_translation": "- я (мужчина о себе)",
-    "english_translation": "- servant  \n- manservant  \n- menial  \n- I  \n- me  \n- you  \n- retainer  \n- you"
+    "english_translation": "- servant  \n- manservant  \n- menial  \n- I  \n- me  \n- you  \n- retainer  "
   },
   "再縁": {
     "russian_translation": "- повторное объединение",
@@ -16684,7 +16684,7 @@
     "english_translation": "- cleverness  \n- skill  \n- tact  \n- clever person (in a particular field)  \n- skillful person (skilful)"
   },
   "加入": {
-    "russian_translation": "- присоединение  \n- участие  \n- принимать участие  \n- участвовать  \n- абонироваться  \n- вступать в организацию  \n- присоединяться  \n- вступать в организацию",
+    "russian_translation": "- присоединение  \n- участие  \n- принимать участие  \n- участвовать  \n- абонироваться  \n- вступать в организацию  \n- присоединяться  ",
     "english_translation": "- joining (a club, organization, etc.)\n- becoming a member\n- entry\n- admission\n- subscription\n- affiliation\n- signing (e.g. a treaty)\n- taking out (insurance)"
   },
   "出好き": {
@@ -17125,7 +17125,7 @@
   },
   "伝わる": {
     "russian_translation": "- передаваться  \n- переходить  \n- двигаться вдоль (чego-l.)  \n- быть занесённым (в Японию из другой страны)",
-    "english_translation": "- to be handed down  \n- to be introduced  \n- to be transmitted  \n- to be circulated  \n- to go along  \n- to walk along  \n- to spread (of a rumour, news, etc.)  \n- to travel  \n- to circulate  \n- to go around  \n- to be passed around  \n- to become known  \n- to be handed down (from generation to generation)  \n- to be passed down  \n- to be introduced (to a country, region, etc.)  \n- to be brought  \n- to come  \n- to be conveyed (of a feeling, impression, etc.)  \n- to be felt  \n- to come across  \n- to travel (of sound, electricity, etc.)  \n- to propagate  \n- to be conducted  \n- to be transmitted  \n- to go along  \n- to move along"
+    "english_translation": "- to be handed down  \n- to be introduced  \n- to be transmitted  \n- to be circulated  \n- to go along  \n- to walk along  \n- to spread (of a rumour, news, etc.)  \n- to travel  \n- to circulate  \n- to go around  \n- to be passed around  \n- to become known  \n- to be handed down (from generation to generation)  \n- to be passed down  \n- to be introduced (to a country, region, etc.)  \n- to be brought  \n- to come  \n- to be conveyed (of a feeling, impression, etc.)  \n- to be felt  \n- to come across  \n- to travel (of sound, electricity, etc.)  \n- to propagate  \n- to be conducted  \n- to move along"
   },
   "分地": {
     "russian_translation": "- земельный надел (при разделе земли)",
@@ -17812,7 +17812,7 @@
     "english_translation": "- prepayment"
   },
   "八つ当り": {
-    "russian_translation": "- ругать всех кругом, ворчать на всё  \n- нападать (на кого-л.) ни с того ни с сего  \n- без разбору, кого попало  \n- ругать всех кругом, ворчать на всё",
+    "russian_translation": "- ругать всех кругом, ворчать на всё  \n- нападать (на кого-л.) ни с того ни с сего  \n- без разбору, кого попало  ",
     "english_translation": "- venting one's anger on someone or something  \n- taking out one's anger on"
   },
   "会計年度": {
@@ -19517,7 +19517,7 @@
   },
   "代": {
     "russian_translation": "- свет, мир  \n- люди, публика, общество  \n- жизнь  \n- век, времена, эпоха  \n- правление, царствование  \n- поколение  \n- годы",
-    "english_translation": "- life\n- lifetime\n- age\n- era\n- period\n- epoch\n- generation\n- reign\n- rule\n- charge\n- cost\n- price\n- (school) year\n- cohort\n- reign\n- proxy application company\n- pronoun\n- substitution\n- material\n- margin\n- area required for something\n- shiro (unit of land area equal to one-fiftieth of a tan; approx. 19.83 m²)"
+    "english_translation": "- life\n- lifetime\n- age\n- era\n- period\n- epoch\n- generation\n- reign\n- rule\n- charge\n- cost\n- price\n- (school) year\n- cohort\n- proxy application company\n- pronoun\n- substitution\n- material\n- margin\n- area required for something\n- shiro (unit of land area equal to one-fiftieth of a tan; approx. 19.83 m²)"
   },
   "住う": {
     "russian_translation": "- жить  \n- проживать  \n- обитать",
@@ -19745,7 +19745,7 @@
   },
   "内港": {
     "russian_translation": "- внутренний порт  \n- внутренняя гавань  \n- внутренний рейд",
-    "english_translation": "- inner harbour  \n- inner harbour"
+    "english_translation": "- inner harbour  "
   },
   "八百屋": {
     "russian_translation": "- овощная лавка, зеленная  \n- зеленщик",
@@ -19837,7 +19837,7 @@
   },
   "企て": {
     "russian_translation": "- план, проект\n- замысел, затея\n- попытка\n- предприятие\n- интрига, козни",
-    "english_translation": "- plan\n- attempt\n- undertaking\n- project\n- plot\n- scheme\n- scheme"
+    "english_translation": "- plan\n- attempt\n- undertaking\n- project\n- plot\n- scheme"
   },
   "前前": {
     "russian_translation": "- давным-давно  \n- задолго до",
@@ -20785,7 +20785,7 @@
   },
   "兼": {
     "russian_translation": "- и  \n- одновременно  \n- в одно и то же время",
-    "english_translation": "- cum  \n- holding both roles  \n- concurrently  \n- at the same time  \n- in addition to  \n- at the same time"
+    "english_translation": "- cum  \n- holding both roles  \n- concurrently  \n- at the same time  \n- in addition to  "
   },
   "八荒": {
     "russian_translation": "- восемь сторон страны (по восьми направлениям: север, северо-запад, запад и т. д.)  \n- восемь сторон мира",
@@ -21473,7 +21473,7 @@
   },
   "何条": {
     "russian_translation": "- как?  \n- каким образом?",
-    "english_translation": "- what street?  \n- what article?  \n- how can?  \n- cannot possibly  \n- there is no way  \n- what clause  \n- what section  \n- which street  \n- how can (one possibly do ...)  \n- there is no way"
+    "english_translation": "- what street?  \n- what article?  \n- how can?  \n- cannot possibly  \n- there is no way  \n- what clause  \n- what section  \n- which street  \n- how can (one possibly do ...)  "
   },
   "厳封": {
     "russian_translation": "- герметически закрывать  \n- плотно запечатывать",
@@ -21649,7 +21649,7 @@
   },
   "凭れ掛かる": {
     "russian_translation": "- зависеть, висеть",
-    "english_translation": "- to lean on  \n- to recline on  \n- to rely on  \n- to depend on  \n- to lean (on, against)  \n- to rest (against)  \n- to recline  \n- to rely on (someone)  \n- to depend on"
+    "english_translation": "- to lean on  \n- to recline on  \n- to rely on  \n- to depend on  \n- to lean (on, against)  \n- to rest (against)  \n- to recline  \n- to rely on (someone)  "
   },
   "先代": {
     "russian_translation": "- предшественник  \n- былые поколения  \n- былые времена",
@@ -21688,7 +21688,7 @@
     "english_translation": "- respectfully  \n- private secretary"
   },
   "叢生": {
-    "russian_translation": "- пышно разрастаться  \n- разрастание пучками (гроздьями)  \n- густая поросль  \n- заросли  \n- пышный, растущий пучками (гроздьями)  \n- пышно разрастаться",
+    "russian_translation": "- пышно разрастаться  \n- разрастание пучками (гроздьями)  \n- густая поросль  \n- заросли  \n- пышный, растущий пучками (гроздьями)  ",
     "english_translation": "- dense growth  \n- thick growth  \n- gregarious growth  \n- growing in clusters"
   },
   "反数": {
@@ -22048,7 +22048,7 @@
     "english_translation": "- to conform to  \n- to agree with  \n- to be adapted to  \n- to be based on"
   },
   "切換": {
-    "russian_translation": "- изменение, перемена  \n- переключение  \n- размен, обмен  \n- конверсия  \n- переключение",
+    "russian_translation": "- изменение, перемена  \n- переключение  \n- размен, обмен  \n- конверсия  ",
     "english_translation": "- exchange  \n- conversion  \n- replacement  \n- switching  \n- switchover"
   },
   "傷心": {
@@ -22125,11 +22125,11 @@
   },
   "剥奪": {
     "russian_translation": "- лишать (прав)  \n- снимать (с должности)  \n- лишение (прав и т. п.)",
-    "english_translation": "- stripping (of rights, office, etc.)\n- deprivation\n- divestiture\n- forfeit\n- revocation  \n- stripping (of rights, rank, etc.)  \n- deprivation  \n- forfeit  \n- revocation  \n- divestiture"
+    "english_translation": "- stripping (of rights, office, etc.)\n- deprivation\n- divestiture\n- forfeit\n- revocation  \n- stripping (of rights, rank, etc.)  "
   },
   "側": {
     "russian_translation": "- рядом  \n- около  \n- возле  \n- сторона  \n- бок  \n- шеренга  \n- наряду с  \n- одновременно с  \n- окружающие",
-    "english_translation": "- side (of something, or taking someone's side)  \n- part  \n- edge  \n- beside  \n- besides  \n- nearby  \n- while (doing)  \n- in addition to  \n- at the same time  \n- near  \n- close  \n- vicinity  \n- proximity  \n- neighbourhood  \n- neighborhood  \n- as soon as  \n- right after  \n- third person  \n- (place) near by  \n- (place) close by  \n- (place) right next to  \n- the side (of something)  \n- beside  \n- vicinity  \n- proximity  \n- neighbourhood"
+    "english_translation": "- side (of something, or taking someone's side)  \n- part  \n- edge  \n- beside  \n- besides  \n- nearby  \n- while (doing)  \n- in addition to  \n- at the same time  \n- near  \n- close  \n- vicinity  \n- proximity  \n- neighbourhood  \n- neighborhood  \n- as soon as  \n- right after  \n- third person  \n- (place) near by  \n- (place) close by  \n- (place) right next to  \n- the side (of something)  "
   },
   "何番め": {
     "russian_translation": "- который? (по счёту)",
@@ -22160,7 +22160,7 @@
     "english_translation": "- capacity  \n- accommodation"
   },
   "古言": {
-    "russian_translation": "- старая поговорка  \n> (кн.) пословица  \n\n- старая поговорка",
+    "russian_translation": "- старая поговорка  \n> (кн.) пословица  \n",
     "english_translation": "- obsolete word  \n- old proverb  \n- old saying  \n- old expression  \n- old language  \n- archaic word"
   },
   "初鰹": {
@@ -22316,7 +22316,7 @@
     "english_translation": "- historical fact"
   },
   "制する": {
-    "russian_translation": "- управлять (чем-л.)\n- держать под своим контролем (что-л.)\n- сдерживать, обуздывать\n- устанавливать\n- держать под своим контролем (что-л.)",
+    "russian_translation": "- управлять (чем-л.)\n- держать под своим контролем (что-л.)\n- сдерживать, обуздывать\n- устанавливать",
     "english_translation": "- to hold back (e.g. emotions)  \n- to rein in (e.g. a horse, unruly people)  \n- to bridle  \n- to get the better of  \n- to control  \n- to command"
   },
   "危殆": {
@@ -24009,7 +24009,7 @@
   },
   "千秋楽": {
     "russian_translation": "- тысяча осенних радостей  \n- закрытие сезона  \n- закрыться (о театре)",
-    "english_translation": "- concluding festivities  \n- concluding program  \n- concluding programme  \n- final day of a tournament  \n- final day of a performance  \n- closing date  \n- final show  \n- final day of a tournament"
+    "english_translation": "- concluding festivities  \n- concluding program  \n- concluding programme  \n- final day of a tournament  \n- final day of a performance  \n- closing date  \n- final show  "
   },
   "加冠": {
     "russian_translation": "- церемония надевания головного убора на юношу в знак достижения им зрелости",
@@ -25841,7 +25841,7 @@
   },
   "伸び悩む": {
     "russian_translation": "- не обнаруживать тенденции к росту",
-    "english_translation": "- to be sluggish (business)  \n- to make little progress  \n- to not grow as much as expected  \n- to be sluggish  \n- to make little progress  \n- to show little growth  \n- to fail to improve  \n- to level off  \n- to not grow as much as expected"
+    "english_translation": "- to be sluggish (business)  \n- to make little progress  \n- to not grow as much as expected  \n- to be sluggish  \n- to show little growth  \n- to fail to improve  \n- to level off  "
   },
   "友党": {
     "russian_translation": "- дружественная партия",
@@ -26061,7 +26061,7 @@
   },
   "刷り込む": {
     "russian_translation": "- делать надпись (узор) по трафарету  \n- делать вставку  \n- иллюстрировать",
-    "english_translation": "- to insert (an illustration)  \n- to stencil (a pattern)  \n- to print on  \n- to instill (thought, impression, etc.)  \n- to imprint (e.g. on one's subconscious)  \n- to print (on)  \n- to insert (an illustration)  \n- to stencil (a pattern)  \n- to instill (a thought, impression, etc.)  \n- to imprint (e.g. on one's subconscious)"
+    "english_translation": "- to insert (an illustration)  \n- to stencil (a pattern)  \n- to print on  \n- to instill (thought, impression, etc.)  \n- to imprint (e.g. on one's subconscious)  \n- to print (on)  \n- to instill (a thought, impression, etc.)  "
   },
   "刺激的": {
     "russian_translation": "- потрясающий  \n- волнующий  \n- сенсационный",
@@ -26196,7 +26196,7 @@
     "english_translation": "- congeniality  \n- satisfaction  \n- gratification"
   },
   "側線": {
-    "russian_translation": "- запасной путь  \n- разъезд  \n- ветка  \n- боковая линия  \n- ветка",
+    "russian_translation": "- запасной путь  \n- разъезд  \n- ветка  \n- боковая линия  ",
     "english_translation": "- sidetrack  \n- siding  \n- lateral line (of a fish)"
   },
   "卑下自慢": {
@@ -26276,7 +26276,7 @@
     "english_translation": "- under separate cover  \n- accompanying letter"
   },
   "凋落": {
-    "russian_translation": "- увядание  \n- вянуть, блёкнуть  \n- упадок  \n- приходить в упадок  \n- вянуть, блёкнуть",
+    "russian_translation": "- увядание  \n- вянуть, блёкнуть  \n- упадок  \n- приходить в упадок  ",
     "english_translation": "- decline  \n- fall  \n- decay  \n- withering"
   },
   "僧家": {
@@ -27536,7 +27536,7 @@
     "english_translation": "- to freeze  \n- to be frozen over  \n- to congeal  \n- to freeze over  \n- to become frozen"
   },
   "何": {
-    "russian_translation": "- что  \n- что?  \n- ну  \n- что-нибудь  \n- что бы то ни было  \n- почему  \n- что, если  \n- что, как  \n- что, в чем дело  \n- что, какое  \n- что, в чем дело  \n- что, как  \n- да ну!",
+    "russian_translation": "- что  \n- что?  \n- ну  \n- что-нибудь  \n- что бы то ни было  \n- почему  \n- что, если  \n- что, как  \n- что, в чем дело  \n- что, какое  \n- да ну!",
     "english_translation": "- what  \n- you-know-what  \n- that thing  \n- whatsit  \n- whachamacallit  \n- what's-his-name  \n- what's-her-name  \n- not at all  \n- not in the slightest  \n- what?  \n- huh?  \n- hey!  \n- oh, no (it's fine)  \n- why (it's nothing)  \n- oh (certainly not)  \n- how many  \n- many  \n- a lot of  \n- several  \n- a few  \n- some"
   },
   "取り散らす": {
@@ -27584,7 +27584,7 @@
     "english_translation": "- children  \n- juvenile"
   },
   "公": {
-    "russian_translation": "- ты  \n- господин  \n- государь  \n- официальный  \n- формальный  \n- общественный  \n- публичный  \n- открытый  \n- гласный  \n- объявлять  \n- предавать гласности  \n- доводить до всеобщего сведения  \n- публиковать  \n- общественный",
+    "russian_translation": "- ты  \n- господин  \n- государь  \n- официальный  \n- формальный  \n- общественный  \n- публичный  \n- открытый  \n- гласный  \n- объявлять  \n- предавать гласности  \n- доводить до всеобщего сведения  \n- публиковать  ",
     "english_translation": "- public matter  \n- governmental matter  \n- prince  \n- duke  \n- lord  \n- sir  \n- familiar or derogatory suffix  \n- you, buddy, pal  \n- monarch  \n- ruler  \n- sovereign  \n- official  \n- governmental  \n- formal  \n- public (use, matter, forum, etc.)  \n- common  \n- being public knowledge  \n- being out in the open  \n- exposure to public view  \n- public affair  \n- government matter  \n- the state  \n- the government  \n- the public"
   },
   "勝越し": {
@@ -27993,7 +27993,7 @@
   },
   "低級": {
     "russian_translation": "- низкопробный  \n- низкого уровня  \n- низшего разбора",
-    "english_translation": "- low grade  \n- vulgar  \n- low class  \n- cheap  \n- low level  \n- low-grade  \n- low-class  \n- low-quality  \n- cheap"
+    "english_translation": "- low grade  \n- vulgar  \n- low class  \n- cheap  \n- low level  \n- low-grade  \n- low-class  \n- low-quality  "
   },
   "再注": {
     "russian_translation": "- повторное указание",
@@ -28488,7 +28488,7 @@
     "english_translation": "- quick-witted and agile  \n- keen and nimble"
   },
   "加速度": {
-    "russian_translation": "- ускорение  \n- с растущей (возрастающей) скоростью  \n- в нарастающем темпе  \n- ускоряющийся  \n- в нарастающем темпе  \n- ускоряющийся",
+    "russian_translation": "- ускорение  \n- с растущей (возрастающей) скоростью  \n- в нарастающем темпе  \n- ускоряющийся  ",
     "english_translation": "- acceleration"
   },
   "作りかえる": {
@@ -28860,7 +28860,7 @@
     "english_translation": "- assistant teacher  \n- junior teacher"
   },
   "八丈": {
-    "russian_translation": "- восемь дзё (丈)  \n- остров Хатидзёдзима  \n> (сокр.)  \n\n- восемь дзё (丈)  \n> (сокр.)",
+    "russian_translation": "- восемь дзё (丈)  \n- остров Хатидзёдзима  \n> (сокр.)  \n",
     "english_translation": "- plain-woven silk cloth produced on Hachijo Island  \n- striped"
   },
   "全能": {
@@ -28877,7 +28877,7 @@
   },
   "克己": {
     "russian_translation": "- владение собой  \n- самообуздание  \n- сила духа  \n- моральная стойкость",
-    "english_translation": "- self denial  \n- self control  \n- self control  \n- self mastery  \n- self restraint  \n- self denial"
+    "english_translation": "- self denial  \n- self control  \n- self mastery  \n- self restraint  "
   },
   "助成": {
     "russian_translation": "- помогать  \n- содействовать  \n- способствовать  \n- делать вклад  \n- помощь  \n- поощрение",
@@ -29053,7 +29053,7 @@
   },
   "切り離す": {
     "russian_translation": "- отрезать  \n- отрывать  \n- отделять  \n- разрезать",
-    "english_translation": "- to detach  \n- to decapitate  \n- to cut loose  \n- to let loose  \n- to dismember  \n- to cut off (from)  \n- to separate  \n- to detach  \n- to sever  \n- to uncouple"
+    "english_translation": "- to detach  \n- to decapitate  \n- to cut loose  \n- to let loose  \n- to dismember  \n- to cut off (from)  \n- to separate  \n- to sever  \n- to uncouple"
   },
   "口出し": {
     "russian_translation": "- вмешиваться  \n- совать свой нос (куда-л.)",
@@ -29072,7 +29072,7 @@
     "english_translation": "- strutting  \n- sticking out the chest"
   },
   "内情": {
-    "russian_translation": "- внутреннее положение  \n- фактическое (истинное) положение  \n- внутренняя сторона дела  \n- подлинные обстоятельства  \n- внутренняя сторона дела",
+    "russian_translation": "- внутреннее положение  \n- фактическое (истинное) положение  \n- внутренняя сторона дела  \n- подлинные обстоятельства  ",
     "english_translation": "- internal conditions  \n- true state of affairs"
   },
   "内謁": {
@@ -29208,7 +29208,7 @@
     "english_translation": "- red ocher  \n- ochre"
   },
   "凧あげ": {
-    "russian_translation": "- запуск змея  \n- запуск змея",
+    "russian_translation": "- запуск змея  ",
     "english_translation": "- kite flying"
   },
   "出来上がる": {
@@ -30273,7 +30273,7 @@
   },
   "剥ぎ取る": {
     "russian_translation": "- отрывать, срывать  \n- лишать (напр. права, власти)",
-    "english_translation": "- tear off  \n- strip  \n- rob  \n- tear off  \n- strip off  \n- rip off  \n- scrape off  \n- rob (someone) of (clothes)  \n- divest (someone) of (powers, rank, etc.)"
+    "english_translation": "- tear off  \n- strip  \n- rob  \n- strip off  \n- rip off  \n- scrape off  \n- rob (someone) of (clothes)  \n- divest (someone) of (powers, rank, etc.)"
   },
   "収縮": {
     "russian_translation": "- сжиматься  \n- сужаться  \n- уменьшаться  \n- сокращаться  \n- сжатие  \n- сужение  \n- уменьшение",
@@ -30745,7 +30745,7 @@
   },
   "凝り固まる": {
     "russian_translation": "- затвердевать  \n- свёртываться  \n- быть фанатиком",
-    "english_translation": "- to coagulate  \n- to curdle  \n- to clot  \n- to stiffen  \n- to become stiff  \n- to congeal  \n- to harden  \n- to be fanatical  \n- to be obsessed  \n- to be obsessed with  \n- to be bigoted  \n- to be fixated  \n- to be bigoted about  \n- to be obsessed with"
+    "english_translation": "- to coagulate  \n- to curdle  \n- to clot  \n- to stiffen  \n- to become stiff  \n- to congeal  \n- to harden  \n- to be fanatical  \n- to be obsessed  \n- to be obsessed with  \n- to be bigoted  \n- to be fixated  \n- to be bigoted about  "
   },
   "候": {
     "russian_translation": "- быть (глагол-суффикс)  \n- сезон  \n- погода",
@@ -31765,7 +31765,7 @@
   },
   "取り次ぐ": {
     "russian_translation": "- посредничать  \n- встречать посетителя  \n- докладывать о посетителе  \n- передавать (сообщение)",
-    "english_translation": "- to act as an agent for  \n- to intermediate  \n- to announce (someone's arrival)  \n- to answer (the door, the phone)  \n- to receive (a guest at reception)  \n- to usher in (a guest)  \n- to convey (a message)  \n- to pass on (a message, thoughts, etc.)  \n- to convey  \n- to transmit  \n- to relay  \n- to tell  \n- to inform (of a visitor, phone call, etc.)  \n- to announce (a visitor)  \n- to answer (the door or phone on someone's behalf)  \n- to usher in (a guest)  \n- to act as an agent (between a manufacturer, wholesaler, etc. and retailers)  \n- to act as an intermediary  \n- to handle (goods; for a company)"
+    "english_translation": "- to act as an agent for  \n- to intermediate  \n- to announce (someone's arrival)  \n- to answer (the door, the phone)  \n- to receive (a guest at reception)  \n- to usher in (a guest)  \n- to convey (a message)  \n- to pass on (a message, thoughts, etc.)  \n- to convey  \n- to transmit  \n- to relay  \n- to tell  \n- to inform (of a visitor, phone call, etc.)  \n- to announce (a visitor)  \n- to answer (the door or phone on someone's behalf)  \n- to act as an agent (between a manufacturer, wholesaler, etc. and retailers)  \n- to act as an intermediary  \n- to handle (goods; for a company)"
   },
   "内祝い": {
     "russian_translation": "- домашнее празднество  \n- подарок по случаю домашнего празднества",
@@ -32036,7 +32036,7 @@
     "english_translation": "- creditor"
   },
   "即座": {
-    "russian_translation": "- немедленный  \n- быстрый  \n- импровизированный  \n- без подготовки  \n- тут же  \n- немедленно  \n- экспромтом  \n- без подготовки",
+    "russian_translation": "- немедленный  \n- быстрый  \n- импровизированный  \n- без подготовки  \n- тут же  \n- немедленно  \n- экспромтом  ",
     "english_translation": "- immediate  \n- right there on the spot  \n- impromptu  \n- instant  \n- instantaneous"
   },
   "出版社": {
@@ -32548,7 +32548,7 @@
     "english_translation": "- attendance at a funeral"
   },
   "何所": {
-    "russian_translation": "- где?  \n- какое место?  \n- в каком месте?  \n- откуда?  \n- куда?  \n- везде  \n- нигде  \n- где…?  \n- где-нибудь  \n- где-то  \n- кое-где  \n- по всему  \n- где?  \n- какое место?  \n- в каком месте?  \n- откуда?  \n- куда?  \n- везде  \n- нигде  \n- где…?  \n- где-нибудь  \n- где-то  \n- кое-где  \n- (ср.) где-то, где-до, где-всё, где-никогда, где-тоже, где-сюда, где-ничего",
+    "russian_translation": "- где?  \n- какое место?  \n- в каком месте?  \n- откуда?  \n- куда?  \n- везде  \n- нигде  \n- где…?  \n- где-нибудь  \n- где-то  \n- кое-где  \n- по всему  \n- (ср.) где-то, где-до, где-всё, где-никогда, где-тоже, где-сюда, где-ничего",
     "english_translation": "- where, what place  \n- how much (long, far), what extent"
   },
   "入漁料": {
@@ -32932,7 +32932,7 @@
     "english_translation": "- low shoes  \n- shoes  \n- informal riding shoes without an ankle strap"
   },
   "但": {
-    "russian_translation": "- даром, бесплатно  \n- даровой, бесплатный  \n- только, лишь  \n- обычный, простой, даровой, бесплатный, обычный, простой  \n- напрасно, зря, даром, попусту; тщетно  \n- только, просто  \n- только, лишь",
+    "russian_translation": "- даром, бесплатно  \n- даровой, бесплатный  \n- только, лишь  \n- обычный, простой, даровой, бесплатный, обычный, простой  \n- напрасно, зря, даром, попусту; тщетно  \n- только, просто  ",
     "english_translation": "- ordinary  \n- common  \n- usual  \n- free of charge  \n- unaffected, as is, safe  \n- only  \n- merely  \n- just  \n- simply  \n- but  \n- however  \n- nevertheless"
   },
   "別盃": {
@@ -33297,7 +33297,7 @@
   },
   "個": {
     "russian_translation": "- штука  \n- частное, индивидуальное",
-    "english_translation": "- counter for the ichi-ni-san counting system (usu. directly preceding the item being counted)  \n- a noun read using its on-yomi  \n- counter for the hito-futa-mi counting system (forming hitotsu, futatsu, mitsu, and misoji, yasoji, etc.)  \n- counter for articles  \n- counter for military units  \n- individual  \n- counter for (small) things or pieces  \n- counter for military units  \n- an individual  \n- one person"
+    "english_translation": "- counter for the ichi-ni-san counting system (usu. directly preceding the item being counted)  \n- a noun read using its on-yomi  \n- counter for the hito-futa-mi counting system (forming hitotsu, futatsu, mitsu, and misoji, yasoji, etc.)  \n- counter for articles  \n- counter for military units  \n- individual  \n- counter for (small) things or pieces  \n- an individual  \n- one person"
   },
   "労働市場": {
     "russian_translation": "- рынок труда  \n- спрос и предложение труда",
@@ -33444,8 +33444,8 @@
     "english_translation": "- to cut  \n- to cut through  \n- to perform (surgery)  \n- to sever (connections, ties)  \n- to turn off (e.g. the light)  \n- to terminate (e.g. a conversation)  \n- to hang up (the phone)  \n- to disconnect  \n- to punch (a ticket)  \n- to tear off (a stub)  \n- to open (something sealed)  \n- to start  \n- to set (a limit)  \n- to do (something) in less or within a certain time  \n- to issue (cheques, vouchers, etc.)  \n- to reduce  \n- to decrease  \n- to discount  \n- to shake off (water, etc.)  \n- to let drip-dry  \n- to let drain  \n- to cross  \n- to traverse  \n- to criticize sharply  \n- to act decisively  \n- to do (something noticeable)  \n- to go first  \n- to make (certain facial expressions, in kabuki)  \n- to turn (vehicle, steering wheel, etc.)  \n- to curl (a ball)  \n- to bend  \n- to shuffle (cards)  \n- to discard a tile  \n- to dismiss  \n- to sack  \n- to let go  \n- to expel  \n- to excommunicate  \n- to dig (a groove)  \n- to cut (a stencil, on a mimeograph)  \n- to trump  \n- to cut (the connection between two groups"
   },
   "前": {
-    "russian_translation": "- прежний  \n- бывший  \n- первенство  \n- впереди  \n- первым  \n- раньше  \n- перед (чем-л.)  \n- до (чего-л.)  \n- заранее  \n- дальше  \n- далее  \n- будущее  \n- дальнейшее  \n- конечный пункт  \n- продолжение  \n- окончание  \n- остальное  \n- другая сторона  \n- порция  \n- прежняя судимость  \n- передний  \n- прошлый  \n- прошлое  \n- до (чего-л.)  \n- перед (чем-л.)",
-    "english_translation": "- previous  \n- prior  \n- former  \n- first  \n- earlier  \n- before  \n- preceding  \n- tip  \n- end  \n- nozzle  \n- head  \n- front  \n- ahead  \n- future  \n- destination  \n- other party  \n- last (immediately preceding)  \n- pre-  \n- in front  \n- before (e.g. the house)  \n- ago  \n- minutes to (the hour)  \n- point (e.g. pencil)  \n- front (e.g. seat)  \n- portion  \n- helping  \n- front of the body  \n- privates  \n- private parts  \n- criminal record  \n- previous conviction  \n- prior"
+    "russian_translation": "- прежний  \n- бывший  \n- первенство  \n- впереди  \n- первым  \n- раньше  \n- перед (чем-л.)  \n- до (чего-л.)  \n- заранее  \n- дальше  \n- далее  \n- будущее  \n- дальнейшее  \n- конечный пункт  \n- продолжение  \n- окончание  \n- остальное  \n- другая сторона  \n- порция  \n- прежняя судимость  \n- передний  \n- прошлый  \n- прошлое  ",
+    "english_translation": "- previous  \n- prior  \n- former  \n- first  \n- earlier  \n- before  \n- preceding  \n- tip  \n- end  \n- nozzle  \n- head  \n- front  \n- ahead  \n- future  \n- destination  \n- other party  \n- last (immediately preceding)  \n- pre-  \n- in front  \n- before (e.g. the house)  \n- ago  \n- minutes to (the hour)  \n- point (e.g. pencil)  \n- front (e.g. seat)  \n- portion  \n- helping  \n- front of the body  \n- privates  \n- private parts  \n- criminal record  \n- previous conviction  "
   },
   "割り安": {
     "russian_translation": "- сравнительно дешёвый  \n- умеренный (о цене)",
@@ -34112,7 +34112,7 @@
     "english_translation": "- advance party"
   },
   "俗見": {
-    "russian_translation": "- широко распространённый взгляд, мнение  \n- широко распространённый взгляд, мнение",
+    "russian_translation": "- широко распространённый взгляд, мнение  ",
     "english_translation": "- popular view  \n- laymen's opinion"
   },
   "反社会的": {
@@ -34440,7 +34440,7 @@
     "english_translation": "- seer  \n- pioneer  \n- leading spirit  \n- enlightened person"
   },
   "切り変える": {
-    "russian_translation": "- изменять, переменять  \n- переключать  \n- возобновлять  \n- разменивать, обменивать  \n- конвертировать  \n- переключать",
+    "russian_translation": "- изменять, переменять  \n- переключать  \n- возобновлять  \n- разменивать, обменивать  \n- конвертировать  ",
     "english_translation": "- to change  \n- to exchange  \n- to convert  \n- to renew  \n- to throw a switch  \n- to replace  \n- to switch over"
   },
   "入りこむ": {
@@ -34845,7 +34845,7 @@
   },
   "取れる": {
     "russian_translation": "- добываться  \n- получаться  \n- ловиться  \n- выходить (о снимке)  \n- отрываться; отламываться  \n- сходить (о пятне)  \n- проходить (перен.)",
-    "english_translation": "- to come off  \n- to be removed  \n- to disappear  \n- to be caught  \n- to be harvested  \n- to be interpreted (as)  \n- to be taken (as)  \n- to be attained  \n- to be obtainable  \n- to be able to get  \n- to be able to obtain  \n- to be able to secure  \n- to be able to win  \n- to be able to catch  \n- to go away  \n- to disappear  \n- to come out  \n- to come off  \n- to be removed  \n- to be picked  \n- to be produced  \n- to be extracted  \n- to be understood (as)  \n- to be read (as)  \n- to be achieved"
+    "english_translation": "- to come off  \n- to be removed  \n- to disappear  \n- to be caught  \n- to be harvested  \n- to be interpreted (as)  \n- to be taken (as)  \n- to be attained  \n- to be obtainable  \n- to be able to get  \n- to be able to obtain  \n- to be able to secure  \n- to be able to win  \n- to be able to catch  \n- to go away  \n- to come out  \n- to be picked  \n- to be produced  \n- to be extracted  \n- to be understood (as)  \n- to be read (as)  \n- to be achieved"
   },
   "凝着力": {
     "russian_translation": "- сила сцепления",
@@ -35309,7 +35309,7 @@
   },
   "包む": {
     "russian_translation": "- завёртывать  \n- обёртывать  \n- заворачивать  \n- покрывать  \n- окутывать  \n- окружать  \n- осаждать  \n- скрывать",
-    "english_translation": "- to wrap up  \n- to tuck in  \n- to pack  \n- to do up  \n- to cover with  \n- to dress in  \n- to conceal  \n- to hide  \n- to be engulfed in  \n- to be enveloped by  \n- to wrap up  \n- to bundle  \n- to cover  \n- to envelop  \n- to shroud  \n- to engulf  \n- to conceal (a feeling)  \n- to hide  \n- to give (money in an envelope; as a wedding gift, funeral offering, etc.)  \n- to wrap up (in)  \n- to roll up (in)  \n- to tuck (up)"
+    "english_translation": "- to wrap up  \n- to tuck in  \n- to pack  \n- to do up  \n- to cover with  \n- to dress in  \n- to conceal  \n- to hide  \n- to be engulfed in  \n- to be enveloped by  \n- to bundle  \n- to cover  \n- to envelop  \n- to shroud  \n- to engulf  \n- to conceal (a feeling)  \n- to give (money in an envelope; as a wedding gift, funeral offering, etc.)  \n- to wrap up (in)  \n- to roll up (in)  \n- to tuck (up)"
   },
   "先議": {
     "russian_translation": "- предварительное обсуждение  \n> (рассмотрение)",
@@ -36061,7 +36061,7 @@
   },
   "便": {
     "russian_translation": "- случай, оказия  \n- почта (доставка), рейс (самолёта)  \n- удобство, быть удобным для (кого-чего-л.), делать удобным, облегчать  \n- вид сообщения  \n- стул, иметь стул, испражнения, кал, средство, способ",
-    "english_translation": "- something to rely on  \n- aid  \n- clue  \n- way  \n- means  \n- someone to rely on  \n- relative  \n- reminder  \n- memento  \n- flight  \n- trip  \n- service  \n- mail  \n- post  \n- letter  \n- opportunity  \n- chance  \n- convenience  \n- service  \n- facility  \n- accommodation  \n- excreta  \n- excrement  \n- stool"
+    "english_translation": "- something to rely on  \n- aid  \n- clue  \n- way  \n- means  \n- someone to rely on  \n- relative  \n- reminder  \n- memento  \n- flight  \n- trip  \n- service  \n- mail  \n- post  \n- letter  \n- opportunity  \n- chance  \n- convenience  \n- facility  \n- accommodation  \n- excreta  \n- excrement  \n- stool"
   },
   "口達者": {
     "russian_translation": "- кути мэме",
@@ -36401,7 +36401,7 @@
   },
   "口にする": {
     "russian_translation": "- брать (класть) в рот  \n- есть, пить  \n- говорить (о чём-л.), упоминать (что-л.)",
-    "english_translation": "- to taste  \n- to eat  \n- to drink  \n- to speak of  \n- to refer to  \n- to say  \n- to put into words  \n- to refer to"
+    "english_translation": "- to taste  \n- to eat  \n- to drink  \n- to speak of  \n- to refer to  \n- to say  \n- to put into words  "
   },
   "再婚": {
     "russian_translation": "- второй брак  \n- вновь вступать в брак (жениться, выходить замуж)",
@@ -36469,7 +36469,7 @@
   },
   "体": {
     "russian_translation": "- тело  \n- телосложение  \n- фигура  \n- здоровье  \n- субстанция  \n- реальность  \n- стиль (письма, языка)  \n- внешний вид  \n- состояние (чего-л.)",
-    "english_translation": "- body  \n- torso  \n- trunk  \n- build  \n- physique  \n- constitution  \n- health  \n- corpse  \n- dead body  \n- shape  \n- form  \n- style  \n- substance  \n- identity  \n- reality  \n- field  \n- counter for humanoid forms (e.g. dolls, statues, corpses, etc.)  \n- typeface  \n- type  \n- appearance  \n- air  \n- condition  \n- state  \n- form  \n- body  \n- physique  \n- posture  \n- shape  \n- form  \n- style  \n- substance  \n- identity  \n- reality  \n- field  \n- counter for humanoid forms (e.g. dolls, statues, corpses, etc.)  \n- typeface  \n- type"
+    "english_translation": "- body  \n- torso  \n- trunk  \n- build  \n- physique  \n- constitution  \n- health  \n- corpse  \n- dead body  \n- shape  \n- form  \n- style  \n- substance  \n- identity  \n- reality  \n- field  \n- counter for humanoid forms (e.g. dolls, statues, corpses, etc.)  \n- typeface  \n- type  \n- appearance  \n- air  \n- condition  \n- state  \n- posture  "
   },
   "傑士": {
     "russian_translation": "- выдающийся человек",
@@ -36477,7 +36477,7 @@
   },
   "係属": {
     "russian_translation": "- ещё не законченный  \n- ещё не рассмотренный судом",
-    "english_translation": "- relationship  \n- connection  \n- affiliation  \n- pendency  \n- association  \n- relation  \n- connection"
+    "english_translation": "- relationship  \n- connection  \n- affiliation  \n- pendency  \n- association  \n- relation  "
   },
   "受けつける": {
     "russian_translation": "- принимать",
@@ -36709,7 +36709,7 @@
   },
   "以上": {
     "russian_translation": "- вышеуказанное  \n- свыше, сверх, более, чем  \n- раз, поскольку  \n- (служебное слово, указывающее на конец изложения)",
-    "english_translation": "- not less than  \n- beyond  \n- further  \n- more than  \n- above  \n- above-mentioned  \n- the above-mentioned  \n- the aforementioned  \n- the foregoing  \n- since  \n- seeing that  \n- now that  \n- once  \n- that's all  \n- the end  \n- and more  \n- and upwards  \n- or more  \n- beyond (e.g. one's expectations)  \n- more than  \n- further than"
+    "english_translation": "- not less than  \n- beyond  \n- further  \n- more than  \n- above  \n- above-mentioned  \n- the above-mentioned  \n- the aforementioned  \n- the foregoing  \n- since  \n- seeing that  \n- now that  \n- once  \n- that's all  \n- the end  \n- and more  \n- and upwards  \n- or more  \n- beyond (e.g. one's expectations)  \n- further than"
   },
   "副総裁": {
     "russian_translation": "- вице-президент",
@@ -37008,7 +37008,7 @@
     "english_translation": "- to rest  \n- to suspend  \n- to give relief"
   },
   "初号": {
-    "russian_translation": "- первый номер (журнала и т. п.)  \n- первый номер (журнала и т. п.)",
+    "russian_translation": "- первый номер (журнала и т. п.)  ",
     "english_translation": "- first number  \n- No. 1 type"
   },
   "使い頃": {
@@ -37180,7 +37180,7 @@
     "english_translation": "- source of supply"
   },
   "凝結": {
-    "russian_translation": "- сгущаться  \n- конденсироваться  \n- свёртываться  \n- затвердевать  \n- застывать  \n- замерзать  \n- переход в жидкое состояние  \n- сгущение  \n- конденсация  \n- свёртывание  \n- затвердение  \n- застывание  \n- замерзание  \n- переход в жидкое состояние",
+    "russian_translation": "- сгущаться  \n- конденсироваться  \n- свёртываться  \n- затвердевать  \n- застывать  \n- замерзать  \n- переход в жидкое состояние  \n- сгущение  \n- конденсация  \n- свёртывание  \n- затвердение  \n- застывание  \n- замерзание  ",
     "english_translation": "- coagulation  \n- freezing  \n- solidification  \n- curdling  \n- setting  \n- congealing  \n- condensation"
   },
   "南々西": {
@@ -37428,7 +37428,7 @@
     "english_translation": "- to put someone to work  \n- to make someone work  \n- to use  \n- to apply  \n- to exert  \n- to exercise (restraint, one's imagination, one's brain, etc.)"
   },
   "只": {
-    "russian_translation": "- даром, бесплатно  \n- даровой, бесплатный  \n- только, лишь  \n- обычный, простой  \n- напрасно, зря, даром, попусту; тщетно  \n- только, просто  \n- только, лишь (противит. союз)  \n- даром, бесплатно (нареч.)  \n- только, просто (нареч.)  \n- только, лишь (нареч.)  \n- только, просто (нареч.)  \n- только, лишь (противит. союз)  \n- напрасно, зря, даром, попусту (нареч.)  \n- обычный, простой (нареч.)",
+    "russian_translation": "- даром, бесплатно  \n- даровой, бесплатный  \n- только, лишь  \n- обычный, простой  \n- напрасно, зря, даром, попусту; тщетно  \n- только, просто  \n- только, лишь (противит. союз)  \n- даром, бесплатно (нареч.)  \n- только, просто (нареч.)  \n- только, лишь (нареч.)  \n- напрасно, зря, даром, попусту (нареч.)  \n- обычный, простой (нареч.)",
     "english_translation": "- ordinary  \n- common  \n- usual  \n- free of charge  \n- unaffected  \n- as is  \n- safe  \n- only  \n- merely  \n- just  \n- simply  \n- but  \n- however  \n- nevertheless"
   },
   "叩き斬る": {
@@ -38012,7 +38012,7 @@
     "english_translation": "- uneven distribution  \n- unfair distribution  \n- maldistribution"
   },
   "八つあたり": {
-    "russian_translation": "- ругать всех кругом, ворчать на всё  \n- нападать (на кого-л.) ни с того ни с сего  \n- без разбору, кого попало  \n- ругать всех кругом, ворчать на всё",
+    "russian_translation": "- ругать всех кругом, ворчать на всё  \n- нападать (на кого-л.) ни с того ни с сего  \n- без разбору, кого попало  ",
     "english_translation": "- venting one's anger  \n- taking out one's anger"
   },
   "体裁": {
@@ -38368,7 +38368,7 @@
     "english_translation": "- gift for close relatives or friends (given on the occasion of a family celebration)  \n- family celebration  \n- private celebration"
   },
   "偉力": {
-    "russian_translation": "- большая сила  \n- мощь  \n- могущество  \n- мощный  \n- могущественный  \n- сила  \n- мощь  \n- мощность  \n- влияние  \n- сильный  \n- влиятельный",
+    "russian_translation": "- большая сила  \n- мощь  \n- могущество  \n- мощный  \n- могущественный  \n- сила  \n- мощность  \n- влияние  \n- сильный  \n- влиятельный",
     "english_translation": "- power  \n- might  \n- authority  \n- influence"
   },
   "円圧機": {
@@ -38729,7 +38729,7 @@
   },
   "冷やか": {
     "russian_translation": "- хладнокровный  \n- холодный  \n- ледяной",
-    "english_translation": "- cold  \n- chilly  \n- cool  \n- cold (attitude, stare, etc.)  \n- frigid  \n- indifferent  \n- distant  \n- surly  \n- curt  \n- composed  \n- cool  \n- calm"
+    "english_translation": "- cold  \n- chilly  \n- cool  \n- cold (attitude, stare, etc.)  \n- frigid  \n- indifferent  \n- distant  \n- surly  \n- curt  \n- composed  \n- calm"
   },
   "余震": {
     "russian_translation": "- толчки  \n> следующие после главного толчка (при землетрясении)",

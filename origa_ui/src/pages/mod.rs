@@ -5,6 +5,7 @@ pub mod lesson;
 pub mod login;
 pub mod profile;
 pub mod sets;
+pub mod shared;
 pub mod words;
 
 pub use grammar::Grammar;

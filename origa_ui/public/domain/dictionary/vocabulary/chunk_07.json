@@ -465,7 +465,7 @@
   },
   "科白": {
     "russian_translation": "- речь на сцене  \n- словесная часть игры актёра  \n- исполнение, игра",
-    "english_translation": "- speech  \n- words  \n- one's lines  \n- remarks  \n- actions and words (of an actor)  \n- one's lines"
+    "english_translation": "- speech  \n- words  \n- one's lines  \n- remarks  \n- actions and words (of an actor)  "
   },
   "漕寄せる": {
     "russian_translation": "- подплывать  \n- подгребать",
@@ -1109,7 +1109,7 @@
   },
   "湯通し": {
     "russian_translation": "- декатирование  \n- декатировка",
-    "english_translation": "- soaking fabric in lukewarm water (to soften and remove starch)\n- desizing\n- moistening with steam\n- blanching (food)\n- parboiling food\n- soaking (fabric) in lukewarm water (to soften and remove starch)\n- desizing\n- moistening with steam\n- blanching (food)\n- parboiling"
+    "english_translation": "- soaking fabric in lukewarm water (to soften and remove starch)\n- desizing\n- moistening with steam\n- blanching (food)\n- parboiling food\n- soaking (fabric) in lukewarm water (to soften and remove starch)\n- parboiling"
   },
   "目が回る": {
     "russian_translation": "- чувствовать головокружение",
@@ -1940,7 +1940,7 @@
     "english_translation": "- Poaceae  \n- Gramineae  \n- family of flowering plants"
   },
   "無理": {
-    "russian_translation": "- насильственный  \n- нерезонный, необоснованный  \n- несправедливый  \n- непосильный  \n- чрезмерный  \n- невозможный  \n- несправедливый  \n- обоснованно, резонно  \n- вполне допустимо  \n- поступать неблагоразумно  \n- перенапрягаться  \n- чересчур потратиться  \n- иррациональный",
+    "russian_translation": "- насильственный  \n- нерезонный, необоснованный  \n- несправедливый  \n- непосильный  \n- чрезмерный  \n- невозможный  \n- обоснованно, резонно  \n- вполне допустимо  \n- поступать неблагоразумно  \n- перенапрягаться  \n- чересчур потратиться  \n- иррациональный",
     "english_translation": "- unreasonable  \n- unnatural  \n- unjustifiable  \n- impossible  \n- forcible  \n- forced  \n- compulsory  \n- excessive (work, etc.)  \n- immoderate  \n- to work too hard  \n- to try too hard  \n- no way  \n- not a chance  \n- never  \n- dream on  \n- irrational"
   },
   "炎炎": {
@@ -2449,7 +2449,7 @@
   },
   "焼き付ける": {
     "russian_translation": "- глазуровать  \n- наносить поливу (глазурь, рисунок)  \n- выжигать  \n- сваривать  \n- печатать",
-    "english_translation": "- to bake  \n- to plate  \n- to print  \n- to fire (e.g. pottery)  \n- to stain  \n- to burn into one's memory  \n- to sear into one's consciousness  \n- to bake (a design onto ceramic)  \n- to fire (on)  \n- to stain (glass)  \n- to burn into one's memory  \n- to sear into  \n- to impress (on one's mind)  \n- to imprint  \n- to print (from a negative)  \n- to brand  \n- to fuse together (metals)"
+    "english_translation": "- to bake  \n- to plate  \n- to print  \n- to fire (e.g. pottery)  \n- to stain  \n- to burn into one's memory  \n- to sear into one's consciousness  \n- to bake (a design onto ceramic)  \n- to fire (on)  \n- to stain (glass)  \n- to sear into  \n- to impress (on one's mind)  \n- to imprint  \n- to print (from a negative)  \n- to brand  \n- to fuse together (metals)"
   },
   "特異質": {
     "russian_translation": "- идиосинкразия  \n- аллергия",
@@ -3281,7 +3281,7 @@
   },
   "称える": {
     "russian_translation": "- восхвалять  \n- превозносить  \n- осыпать хвалой",
-    "english_translation": "- to extol  \n- to give praise  \n- to praise  \n- to extol  \n- to hail  \n- to laud  \n- to celebrate  \n- to call (by a name)  \n- to name"
+    "english_translation": "- to extol  \n- to give praise  \n- to praise  \n- to hail  \n- to laud  \n- to celebrate  \n- to call (by a name)  \n- to name"
   },
   "着こなす": {
     "russian_translation": "- уметь одеваться к лицу",
@@ -3613,7 +3613,7 @@
   },
   "空蝉": {
     "russian_translation": "- сброшенная кожица цикады",
-    "english_translation": "- man of this world  \n- real world  \n- temporal things  \n- cast-off cicada shell  \n- cicada  \n- one's present existence  \n- this mortal frame  \n- this world  \n- this life  \n- temporal things  \n- cast-off cicada shell  \n- cicada"
+    "english_translation": "- man of this world  \n- real world  \n- temporal things  \n- cast-off cicada shell  \n- cicada  \n- one's present existence  \n- this mortal frame  \n- this world  \n- this life  "
   },
   "狎れる": {
     "russian_translation": "- становиться фамильярным (развязным)",
@@ -4569,7 +4569,7 @@
   },
   "移す": {
     "russian_translation": "- перемещать  \n- переносить  \n- отправлять  \n- переводить  \n- направлять  \n- переливать  \n- пересаживать  \n- заражать",
-    "english_translation": "- to change  \n- to swap  \n- to substitute  \n- to transfer  \n- to change the object of one's interest or focus  \n- to spend or take time  \n- to infect  \n- to permeate something with the smell or colour of something  \n- to move on to the next or different stage of (a plan, etc.)  \n- to transfer (to a different place, group, etc.)  \n- to change  \n- to swap  \n- to substitute  \n- to move to the next stage (of a plan, etc.)  \n- to divert (one's attention)  \n- to spend (time)  \n- to let (time) pass  \n- to infect  \n- to permeate something (with a color, smell, etc.)"
+    "english_translation": "- to change  \n- to swap  \n- to substitute  \n- to transfer  \n- to change the object of one's interest or focus  \n- to spend or take time  \n- to infect  \n- to permeate something with the smell or colour of something  \n- to move on to the next or different stage of (a plan, etc.)  \n- to transfer (to a different place, group, etc.)  \n- to move to the next stage (of a plan, etc.)  \n- to divert (one's attention)  \n- to spend (time)  \n- to let (time) pass  \n- to permeate something (with a color, smell, etc.)"
   },
   "笑む": {
     "russian_translation": "- улыбаться  \n- расцветать  \n- лопаться",
@@ -4901,7 +4901,7 @@
   },
   "焦がれる": {
     "russian_translation": "- сгорать от любви  \n- страстно томиться, тосковать (по ком-л.)  \n- быть опалённым солнцем  \n- сильно загореть",
-    "english_translation": "- to yearn for  \n- to be in love with  \n- to long for  \n- to yearn for  \n- to love ardently  \n- to do eagerly  \n- to do with restless anticipation"
+    "english_translation": "- to yearn for  \n- to be in love with  \n- to long for  \n- to love ardently  \n- to do eagerly  \n- to do with restless anticipation"
   },
   "種蒔き": {
     "russian_translation": "- посев  \n- сеять",
@@ -6236,8 +6236,8 @@
     "english_translation": "- private property  \n- personal belongings  \n- personal effects"
   },
   "焚く": {
-    "russian_translation": "- жечь, сжигать  \n- поджигать  \n- обжигать  \n- раскалять  \n- обжигать  \n- опаливать  \n- жарить, печь  \n- печатать (фото)  \n- завидовать  \n- ревновать  \n- разводить (огонь)  \n- топить (печь)  \n- жечь (топливо)",
-    "english_translation": "- to burn  \n- to kindle  \n- to light (a fire)  \n- to make (a fire)  \n- to heat (a bath)  \n- to light (a stove)  \n- to stoke (a boiler)  \n- to use (a camera flash)  \n- to roast  \n- to broil  \n- to grill  \n- to bake  \n- to toast  \n- to barbecue  \n- to heat  \n- to heat up  \n- to make (charcoal, pottery, bricks, etc.)  \n- to bake  \n- to fire  \n- to burn  \n- to tan (i.e. suntan)  \n- to burn  \n- to print (a photo)  \n- to burn (an optical disc)  \n- to be jealous of  \n- to be envious of  \n- to envy"
+    "russian_translation": "- жечь, сжигать  \n- поджигать  \n- обжигать  \n- раскалять  \n- опаливать  \n- жарить, печь  \n- печатать (фото)  \n- завидовать  \n- ревновать  \n- разводить (огонь)  \n- топить (печь)  \n- жечь (топливо)",
+    "english_translation": "- to burn  \n- to kindle  \n- to light (a fire)  \n- to make (a fire)  \n- to heat (a bath)  \n- to light (a stove)  \n- to stoke (a boiler)  \n- to use (a camera flash)  \n- to roast  \n- to broil  \n- to grill  \n- to bake  \n- to toast  \n- to barbecue  \n- to heat  \n- to heat up  \n- to make (charcoal, pottery, bricks, etc.)  \n- to fire  \n- to tan (i.e. suntan)  \n- to print (a photo)  \n- to burn (an optical disc)  \n- to be jealous of  \n- to be envious of  \n- to envy"
   },
   "煩わしい": {
     "russian_translation": "- обременительный  \n- хлопотный  \n- запутанный  \n- сложный",
@@ -6520,7 +6520,7 @@
     "english_translation": "- outbreak  \n- occurrence"
   },
   "硬い": {
-    "russian_translation": "- твёрдый  \n- крепкий  \n- тугой  \n- тесный  \n- твёрдый  \n- непоколебимый  \n- серьёзный  \n- порядочный",
+    "russian_translation": "- твёрдый  \n- крепкий  \n- тугой  \n- тесный  \n- непоколебимый  \n- серьёзный  \n- порядочный",
     "english_translation": "- hard  \n- solid  \n- tough  \n- stiff  \n- tight  \n- wooden  \n- unpolished (e.g. writing)  \n- strong  \n- firm (not viscous or easily moved)  \n- safe  \n- steady  \n- honest  \n- steadfast  \n- obstinate  \n- stubborn  \n- bookish  \n- formal  \n- stuffy"
   },
   "焼なまし": {
@@ -6749,7 +6749,7 @@
   },
   "発揚": {
     "russian_translation": "- поднимать  \n- повышать  \n- усиливать  \n- подъём  \n- усиление",
-    "english_translation": "- exalting  \n- raising  \n- enhancing  \n- rousing up  \n- exaltation  \n- elevation  \n- promotion  \n- enhancement  \n- raising"
+    "english_translation": "- exalting  \n- raising  \n- enhancing  \n- rousing up  \n- exaltation  \n- elevation  \n- promotion  \n- enhancement  "
   },
   "競泳者": {
     "russian_translation": "- участник соревнований по плаванию  \n- пловец  \n- пловчиха",
@@ -7005,7 +7005,7 @@
   },
   "瑞穂の国": {
     "russian_translation": "- страна рисовых колосьев",
-    "english_translation": "- Japan  \n- the Land of Abundant Rice  \n- the Land of Verdant Rice Plants  \n- the Land of Abundant Rice"
+    "english_translation": "- Japan  \n- the Land of Abundant Rice  \n- the Land of Verdant Rice Plants  "
   },
   "熱戦": {
     "russian_translation": "- ожесточённый бой  \n- горячая схватка",
@@ -7089,7 +7089,7 @@
   },
   "牽く": {
     "russian_translation": "- тянуть  \n- тащить  \n- волочить  \n- дёргать  \n- притягивать  \n- привлекать  \n- вести  \n- проводить  \n- цитировать  \n- отводить  \n- вычитать  \n- уступать (в цене)  \n- стянуть  \n- стащить (украсть)",
-    "english_translation": "- to pull  \n- to tug  \n- to lead (e.g. a horse)  \n- to draw (attention, sympathy, etc.)  \n- to attract (e.g. interest)  \n- to draw back (e.g. one's hand)  \n- to draw in (one's chin, stomach, etc.)  \n- to pull in  \n- to draw (a card, mahjong tile, etc.)  \n- to draw (a line, plan, etc.)  \n- to catch (a cold)  \n- to play (a stringed or keyboard instrument)  \n- to look up (in a dictionary, phone book, etc.)  \n- to consult  \n- to check  \n- to haul  \n- to pull (vehicles)  \n- to subtract  \n- to deduct  \n- to recede  \n- to ebb  \n- to fade  \n- to descend from  \n- to inherit (a characteristic)  \n- to quote  \n- to cite  \n- to raise (as evidence)  \n- to lay on (electricity, gas, etc.)  \n- to install (e.g. a telephone)  \n- to supply (e.g. water)  \n- to hold (e.g. a note)  \n- to apply (e.g. lipstick)  \n- to oil (e.g. a pan)  \n- to wax (e.g. a floor)  \n- to move back  \n- to draw back  \n- to recede  \n- to lessen  \n-"
+    "english_translation": "- to pull  \n- to tug  \n- to lead (e.g. a horse)  \n- to draw (attention, sympathy, etc.)  \n- to attract (e.g. interest)  \n- to draw back (e.g. one's hand)  \n- to draw in (one's chin, stomach, etc.)  \n- to pull in  \n- to draw (a card, mahjong tile, etc.)  \n- to draw (a line, plan, etc.)  \n- to catch (a cold)  \n- to play (a stringed or keyboard instrument)  \n- to look up (in a dictionary, phone book, etc.)  \n- to consult  \n- to check  \n- to haul  \n- to pull (vehicles)  \n- to subtract  \n- to deduct  \n- to recede  \n- to ebb  \n- to fade  \n- to descend from  \n- to inherit (a characteristic)  \n- to quote  \n- to cite  \n- to raise (as evidence)  \n- to lay on (electricity, gas, etc.)  \n- to install (e.g. a telephone)  \n- to supply (e.g. water)  \n- to hold (e.g. a note)  \n- to apply (e.g. lipstick)  \n- to oil (e.g. a pan)  \n- to wax (e.g. a floor)  \n- to move back  \n- to draw back  \n- to lessen  \n-"
   },
   "焼け火箸": {
     "russian_translation": "- раскалённые щипцы",
@@ -7464,7 +7464,7 @@
     "english_translation": "- determined  \n- steadfast  \n- unswerving  \n- unshakable"
   },
   "片手": {
-    "russian_translation": "- однорукий  \n- одна рука  \n- однорукий  \n> (арго торговцев) пять, пятьдесят, пятьсот (и т. д.)",
+    "russian_translation": "- однорукий  \n- одна рука  \n> (арго торговцев) пять, пятьдесят, пятьсот (и т. д.)",
     "english_translation": "- one hand"
   },
   "立ち行く": {
@@ -8392,8 +8392,8 @@
     "english_translation": "- eyesight  \n- seeing  \n- seeing (with the naked eye)  \n- observation  \n- visual inspection"
   },
   "燬く": {
-    "russian_translation": "- жечь, сжигать  \n- поджигать  \n- обжигать  \n- раскалять  \n- обжигать  \n- опаливать  \n- жарить, печь  \n- печатать (фото)  \n- завидовать  \n- ревновать",
-    "english_translation": "- to burn  \n- to roast  \n- to broil  \n- to grill  \n- to bake  \n- to toast  \n- to barbecue  \n- to heat  \n- to heat up  \n- to make (charcoal, pottery, bricks, etc.)  \n- to fire  \n- to burn  \n- to tan (i.e. suntan)  \n- to burn  \n- to print (a photo)  \n- to burn (an optical disc)  \n- to be jealous of  \n- to be envious of  \n- to envy"
+    "russian_translation": "- жечь, сжигать  \n- поджигать  \n- обжигать  \n- раскалять  \n- опаливать  \n- жарить, печь  \n- печатать (фото)  \n- завидовать  \n- ревновать",
+    "english_translation": "- to burn  \n- to roast  \n- to broil  \n- to grill  \n- to bake  \n- to toast  \n- to barbecue  \n- to heat  \n- to heat up  \n- to make (charcoal, pottery, bricks, etc.)  \n- to fire  \n- to tan (i.e. suntan)  \n- to print (a photo)  \n- to burn (an optical disc)  \n- to be jealous of  \n- to be envious of  \n- to envy"
   },
   "盞": {
     "russian_translation": "- чашечка для сакэ  \n- бокал  \n- рюмка",
@@ -9181,7 +9181,7 @@
   },
   "穴": {
     "russian_translation": "- отверстие  \n- дыра  \n- прореха  \n- щель  \n- скважина  \n- ушко (иголки)  \n- пора (в коже)  \n- вентиль (духового инструмента)  \n- яма  \n- впадина  \n- углубление  \n- рытвина  \n- воронка (от бомбы)  \n- лунка  \n- пещера  \n- грот  \n- нора  \n- берлога  \n- укрытие  \n- убежище  \n- шахта  \n- копь  \n- шурф  \n- недостача  \n- дефицит  \n- недостаток  \n- дефект  \n- промах",
-    "english_translation": "- hole  \n- opening  \n- perforation  \n- pit  \n- hollow  \n- burrow  \n- den  \n- lair  \n- holt  \n- deficit  \n- shortage  \n- missing person  \n- vacancy  \n- flaw  \n- well-kept secret place  \n- upset victory  \n- theater pit  \n- hiding place  \n- hideout  \n- underbelly  \n- ass  \n- arse  \n- buttocks  \n- rear  \n- end  \n- acupuncture point  \n- notch  \n- orifice  \n- cavity  \n- gap  \n- financial hole  \n- loss  \n- weak point  \n- loophole  \n- long shot  \n- dark horse  \n- partitioned box  \n- flaw  \n- fault  \n- defect"
+    "english_translation": "- hole  \n- opening  \n- perforation  \n- pit  \n- hollow  \n- burrow  \n- den  \n- lair  \n- holt  \n- deficit  \n- shortage  \n- missing person  \n- vacancy  \n- flaw  \n- well-kept secret place  \n- upset victory  \n- theater pit  \n- hiding place  \n- hideout  \n- underbelly  \n- ass  \n- arse  \n- buttocks  \n- rear  \n- end  \n- acupuncture point  \n- notch  \n- orifice  \n- cavity  \n- gap  \n- financial hole  \n- loss  \n- weak point  \n- loophole  \n- long shot  \n- dark horse  \n- partitioned box  \n- fault  \n- defect"
   },
   "漏えい": {
     "russian_translation": "- протекать, давать течь  \n- просачиваться  \n- течь  \n- утечка  \n- разглашение  \n- быть разглашённым  \n- раскрыться",
@@ -10013,7 +10013,7 @@
   },
   "知らぬ顔": {
     "russian_translation": "- неизвестное выражение",
-    "english_translation": "- pretending not to know  \n- feigning ignorance  \n- pretending not to know  \n- pretending not to recognize (someone)  \n- ignoring  \n- unconcerned air  \n- indifference  \n- nonchalance"
+    "english_translation": "- pretending not to know  \n- feigning ignorance  \n- pretending not to recognize (someone)  \n- ignoring  \n- unconcerned air  \n- indifference  \n- nonchalance"
   },
   "立ち呑み": {
     "russian_translation": "- пить стоя",
@@ -11109,7 +11109,7 @@
   },
   "生み": {
     "russian_translation": "- роды  \n> (связ.) роды, родной (о родителях и детях)",
-    "english_translation": "- production  \n- bringing into the world  \n- physical birth  \n- birth  \n- giving birth  \n- creating  \n- bringing into the world"
+    "english_translation": "- production  \n- bringing into the world  \n- physical birth  \n- birth  \n- giving birth  \n- creating  "
   },
   "熬る": {
     "russian_translation": "- жарить  \n- сушить",
@@ -11897,7 +11897,7 @@
   },
   "煮": {
     "russian_translation": "- варка  \n- приготовление (пищи)",
-    "english_translation": "- simmered with  \n- cooked with  \n- boiling  \n- boiled dish  \n- simmered with  \n- cooked with  \n- boiling  \n- boiled dish"
+    "english_translation": "- simmered with  \n- cooked with  \n- boiling  \n- boiled dish  "
   },
   "物貰い": {
     "russian_translation": "- нищий, попрошайка  \n- ячмень (на глазу)",
@@ -13208,7 +13208,7 @@
     "english_translation": "- emergency food distribution  \n- cooked rice"
   },
   "潰滅": {
-    "russian_translation": "- разрушаться  \n- разваливаться  \n- быть разрушенным (уничтоженным)  \n- погибать  \n- полное уничтожение  \n- гибель  \n- разгром  \n- развал  \n- распад  \n- уничтожение  \n- гибель",
+    "russian_translation": "- разрушаться  \n- разваливаться  \n- быть разрушенным (уничтоженным)  \n- погибать  \n- полное уничтожение  \n- гибель  \n- разгром  \n- развал  \n- распад  \n- уничтожение  ",
     "english_translation": "- destruction  \n- annihilation  \n- devastation  \n- catastrophe"
   },
   "示教": {
@@ -13452,7 +13452,7 @@
     "english_translation": "- brief history"
   },
   "無茶苦茶": {
-    "russian_translation": "- беспорядок  \n- неразбериха  \n- мешанина  \n- беспорядочный  \n- безалаберный  \n- перевёрнутый вверх дном  \n- беспорядочно  \n- в беспорядке  \n- как попало  \n- вверх дном  \n- бессмысленный  \n- сумбурный  \n- вздорный  \n- непомерный  \n- безумный  \n- безумно  \n- слепо  \n- бессмысленный  \n- сумбурный  \n- вздорный  \n- беспорядочный  \n- безалаберный  \n- перевёрнутый вверх дном  \n- беспорядочно  \n- в беспорядке  \n- как попало  \n- вверх дном  \n- безумно  \n- слепо",
+    "russian_translation": "- беспорядок  \n- неразбериха  \n- мешанина  \n- беспорядочный  \n- безалаберный  \n- перевёрнутый вверх дном  \n- беспорядочно  \n- в беспорядке  \n- как попало  \n- вверх дном  \n- бессмысленный  \n- сумбурный  \n- вздорный  \n- непомерный  \n- безумный  \n- безумно  \n- слепо  ",
     "english_translation": "- nonsensical  \n- unreasonable  \n- absurd  \n- unrealistic  \n- awfully  \n- extremely  \n- to excess  \n- senseless  \n- reckless  \n- disorder  \n- confusion  \n- being jumbled  \n- being mixed up  \n- very  \n- excessively"
   },
   "牢番": {
@@ -13720,7 +13720,7 @@
     "english_translation": "- to be harmonious  \n- to get on well  \n- to be intimate or close"
   },
   "矛盾": {
-    "russian_translation": "- противоречие  \n- быть в противоречии (с чем-л.)  \n- противоречить (чему-л.)  \n- противоречивый  \n- последовательный, лишённый противоречий  \n- находиться в противоречии (с чем-л.)  \n- противоречие  \n- быть в противоречии (с чем-л.)  \n- противоречить (чему-л.)  \n- противоречивый  \n- последовательный, лишённый противоречий",
+    "russian_translation": "- противоречие  \n- быть в противоречии (с чем-л.)  \n- противоречить (чему-л.)  \n- противоречивый  \n- последовательный, лишённый противоречий  \n- находиться в противоречии (с чем-л.)  ",
     "english_translation": "- contradiction  \n- inconsistency"
   },
   "秒": {
@@ -14261,7 +14261,7 @@
   },
   "焦れったい": {
     "russian_translation": "- досадно  \n- раздражает",
-    "english_translation": "- vexing  \n- irritating  \n- impatient  \n- annoying  \n- frustrating  \n- vexing"
+    "english_translation": "- vexing  \n- irritating  \n- impatient  \n- annoying  \n- frustrating  "
   },
   "産気付く": {
     "russian_translation": "- почувствовать родовые схватки",
@@ -14384,7 +14384,7 @@
     "english_translation": "- type of stew, usu. fish or vegetables in a mild broth  \n- fish grilled unseasoned and then simmered slowly in soy and mirin broth"
   },
   "破家": {
-    "russian_translation": "- дурак  \n- дурень  \n- глупец  \n- простофиля  \n- морочить  \n- водить за нос  \n- ни во что не ставить  \n- насмехаться  \n- издеваться  \n- глупость  \n- чепуха  \n- глупый  \n- дурацкий  \n- ужасно  \n- чертовски  \n- потерять чувствительность  \n- утратить свои свойства  \n- глупый  \n- дурацкий",
+    "russian_translation": "- дурак  \n- дурень  \n- глупец  \n- простофиля  \n- морочить  \n- водить за нос  \n- ни во что не ставить  \n- насмехаться  \n- издеваться  \n- глупость  \n- чепуха  \n- глупый  \n- дурацкий  \n- ужасно  \n- чертовски  \n- потерять чувствительность  \n- утратить свои свойства  ",
     "english_translation": "- idiot  \n- moron  \n- fool  \n- trivial matter  \n- folly  \n- absurdity  \n- stupid  \n- foolish  \n- dull  \n- absurd  \n- ridiculous  \n- fervent enthusiast  \n- nut  \n- person singularly obsessed with something  \n- Mactra chinensis"
   },
   "異端者": {
@@ -15297,7 +15297,7 @@
   },
   "畑違い": {
     "russian_translation": "- иная (не данного лица) область (деятельности)  \n- не своё поприще",
-    "english_translation": "- out of one's line  \n- outside one's field  \n- out of one's line  \n- from a different mother"
+    "english_translation": "- out of one's line  \n- outside one's field  \n- from a different mother"
   },
   "現業庁": {
     "russian_translation": "- оперативное управление  \n> (название управлений некоторых государственных предприятий, напр. типографий, монетного двора)",
@@ -15501,7 +15501,7 @@
   },
   "牝": {
     "russian_translation": "- самка",
-    "english_translation": "- female  \n- smaller (of the two), weaker  \n- woman  \n- wife  \n- female (animal, plant)  \n- female (animal, plant)"
+    "english_translation": "- female  \n- smaller (of the two), weaker  \n- woman  \n- wife  \n- female (animal, plant)  "
   },
   "相容れる": {
     "russian_translation": "- совмещаться  \n- согласоваться",
@@ -16457,7 +16457,7 @@
   },
   "用無し": {
     "russian_translation": "- свободный, незанятый  \n- не иметь работы  \n- ненужный",
-    "english_translation": "- idle  \n- useless  \n- unnecessary  \n- unneeded  \n- unwanted  \n- having nothing to do  \n- unoccupied  \n- idle"
+    "english_translation": "- idle  \n- useless  \n- unnecessary  \n- unneeded  \n- unwanted  \n- having nothing to do  \n- unoccupied  "
   },
   "生贄": {
     "russian_translation": "- жертва",
@@ -17853,7 +17853,7 @@
   },
   "無形": {
     "russian_translation": "- нематериальный  \n- невещественный  \n- бесплотный  \n- бестелесный  \n- духовный  \n- моральный  \n- отвлечённый  \n- абстрактный  \n- морально  \n- в моральном отношении",
-    "english_translation": "- abstract  \n- immaterial  \n- moral  \n- spiritual  \n- intangible  \n- formless  \n- incorporeal  \n- intangible  \n- abstract  \n- moral  \n- spiritual"
+    "english_translation": "- abstract  \n- immaterial  \n- moral  \n- spiritual  \n- intangible  \n- formless  \n- incorporeal  "
   },
   "空頼み": {
     "russian_translation": "- напрасная (пустая) надежда  \n- напрасно надеяться",
@@ -18165,7 +18165,7 @@
   },
   "焼き尽くす": {
     "russian_translation": "- сжигать дотла",
-    "english_translation": "- to thoroughly burn  \n- to burn to nothing  \n- to burn completely  \n- to consume (by fire)  \n- to burn to nothing  \n- to burn to the ground  \n- to reduce to ashes"
+    "english_translation": "- to thoroughly burn  \n- to burn to nothing  \n- to burn completely  \n- to consume (by fire)  \n- to burn to the ground  \n- to reduce to ashes"
   },
   "留置き": {
     "russian_translation": "- задержание  \n- арест  \n- до востребования",
@@ -18341,7 +18341,7 @@
   },
   "異形": {
     "russian_translation": "- странный  \n- причудливый  \n- диковинный  \n- фантастический",
-    "english_translation": "- atypical appearance  \n- atypicality  \n- heteromorphy  \n- fantastic  \n- grotesque  \n- strange-looking  \n- suspicious-looking  \n- variant  \n- variant form  \n- heteromorphism  \n- heteromorphy"
+    "english_translation": "- atypical appearance  \n- atypicality  \n- heteromorphy  \n- fantastic  \n- grotesque  \n- strange-looking  \n- suspicious-looking  \n- variant  \n- variant form  \n- heteromorphism  "
   },
   "祝砲": {
     "russian_translation": "- артиллерийский салют",
@@ -19389,7 +19389,7 @@
   },
   "生薬": {
     "russian_translation": "- лекарственные растения  \n- составные части лекарства (ещё не соединённые вместе)  \n- настойка (трав)",
-    "english_translation": "- natural drugs  \n- natural remedy  \n- herbal medicine  \n- crude drugs  \n- galenical  \n- crude drug  \n- natural drug  \n- galenical"
+    "english_translation": "- natural drugs  \n- natural remedy  \n- herbal medicine  \n- crude drugs  \n- galenical  \n- crude drug  \n- natural drug  "
   },
   "火気": {
     "russian_translation": "- огонь  \n- пламя  \n- жар",
@@ -21024,7 +21024,7 @@
     "english_translation": "- sad  \n- melancholy"
   },
   "無期限": {
-    "russian_translation": "- бессрочный  \n- бессрочно  \n- без указания срока, на неопределённый период  \n- {～に} бессрочно  \n- {～の} бессрочный  \n- {～に} бессрочно  \n- {～[の]} бессрочный",
+    "russian_translation": "- бессрочный  \n- бессрочно  \n- без указания срока, на неопределённый период  \n- {～に} бессрочно  \n- {～の} бессрочный  \n- {～[の]} бессрочный",
     "english_translation": "- indefinite"
   },
   "生体学": {
@@ -21341,7 +21341,7 @@
   },
   "痩せる": {
     "russian_translation": "- худеть  \n- истощаться",
-    "english_translation": "- to become thin  \n- to lose weight  \n- to reduce (one's) weight  \n- to slim  \n- to become barren  \n- to be infertile  \n- to be sterile  \n- to become impoverished (of soil)  \n- to become sterile  \n- to become infertile  \n- to become barren"
+    "english_translation": "- to become thin  \n- to lose weight  \n- to reduce (one's) weight  \n- to slim  \n- to become barren  \n- to be infertile  \n- to be sterile  \n- to become impoverished (of soil)  \n- to become sterile  \n- to become infertile  "
   },
   "瞬ぐ": {
     "russian_translation": "- мигать  \n- моргать",
@@ -22413,7 +22413,7 @@
   },
   "立ち上がる": {
     "russian_translation": "- вставать, подниматься  \n- приниматься (за что-л.)",
-    "english_translation": "- to stand up  \n- to get up  \n- to rise  \n- to recover  \n- to take action  \n- to start  \n- to make the initial charge  \n- to start up  \n- to boot up  \n- to stand up (to one's feet)  \n- to recover  \n- to regain one's energy  \n- to rise (against)  \n- to start (doing)  \n- to rise (from a crouch)  \n- to make the initial charge  \n- to be established  \n- to be set up  \n- to be formed  \n- to be created  \n- to rise (of steam, smoke, etc.)"
+    "english_translation": "- to stand up  \n- to get up  \n- to rise  \n- to recover  \n- to take action  \n- to start  \n- to make the initial charge  \n- to start up  \n- to boot up  \n- to stand up (to one's feet)  \n- to regain one's energy  \n- to rise (against)  \n- to start (doing)  \n- to rise (from a crouch)  \n- to be established  \n- to be set up  \n- to be formed  \n- to be created  \n- to rise (of steam, smoke, etc.)"
   },
   "突き刺す": {
     "russian_translation": "- втыкать  \n- вонзать  \n- протыкать",
@@ -23532,7 +23532,7 @@
     "english_translation": "- lye  \n- harsh taste  \n- bitter taste  \n- alkaline taste  \n- astringency  \n- scum (on a soup, broth etc.)  \n- (excessive) self-assertiveness  \n- strong individuality  \n- strong idiosyncrasy"
   },
   "焼く": {
-    "russian_translation": "- жечь, сжигать  \n- поджигать  \n- обжигать  \n- раскалять  \n- обжигать  \n- опаливать  \n- жарить, печь  \n- (фото) печатать  \n- завидовать  \n- ревновать",
+    "russian_translation": "- жечь, сжигать  \n- поджигать  \n- обжигать  \n- раскалять  \n- опаливать  \n- жарить, печь  \n- (фото) печатать  \n- завидовать  \n- ревновать",
     "english_translation": "- to burn  \n- to roast  \n- to broil  \n- to grill  \n- to bake  \n- to toast  \n- to barbecue  \n- to heat  \n- to heat up  \n- to make (charcoal, pottery, bricks, etc.)  \n- to fire  \n- to tan (i.e. suntan)  \n- to print (a photo)  \n- to burn (an optical disc)  \n- to be jealous of  \n- to be envious of  \n- to envy"
   },
   "無価": {
@@ -24312,7 +24312,7 @@
     "english_translation": "- gravel"
   },
   "生産性": {
-    "russian_translation": "- производительность  \n> (как качество; ср.) сеи-сан-кёрицу и сеи-сан-риё  \n\n- производительность  \n> (как качество; ср.) сеи-сан-кёрицу и сеи-сан-риё",
+    "russian_translation": "- производительность  \n> (как качество; ср.) сеи-сан-кёрицу и сеи-сан-риё  \n",
     "english_translation": "- productivity"
   },
   "漬物屋": {
@@ -24377,7 +24377,7 @@
   },
   "皮付き": {
     "russian_translation": "- неочищенный  \n- неободранный  \n- с кожей  \n- с шелухой  \n- в скорлупе  \n- с корой",
-    "english_translation": "- unskinned  \n- unhusked  \n- in the skin  \n- with the skin on  \n- unpeeled  \n- unpeeled"
+    "english_translation": "- unskinned  \n- unhusked  \n- in the skin  \n- with the skin on  \n- unpeeled  "
   },
   "神聖": {
     "russian_translation": "- святой  \n- священный  \n- святость",
@@ -24456,7 +24456,7 @@
     "english_translation": "- eye discharge  \n- eye mucus  \n- sleep"
   },
   "無精": {
-    "russian_translation": "- ленивый  \n- тяжёлый на подъём  \n- лениться  \n- неопрятный  \n- тяжёлый на подъём  \n- неопрятный  \n- тяжёлый на подъём  \n- лениться",
+    "russian_translation": "- ленивый  \n- тяжёлый на подъём  \n- лениться  \n- неопрятный  ",
     "english_translation": "- indolence  \n- laziness  \n- sloth"
   },
   "焼鈍": {
@@ -24752,7 +24752,7 @@
     "english_translation": "- gallant  \n- heroic  \n- brave  \n- brisk and efficient  \n- diligent  \n- devoted  \n- spirited"
   },
   "煙たがる": {
-    "russian_translation": "- быть чувствительным к дыму, не переносить дыма  \n- чувствовать себя стеснённым (неловко) в (чьём-л.) присутствии  \n- держаться (с кем-л.) напочтительном расстоянии  \n- сторониться (кого-л.)  \n- держаться (с кем-л.) напочтительном расстоянии",
+    "russian_translation": "- быть чувствительным к дыму, не переносить дыма  \n- чувствовать себя стеснённым (неловко) в (чьём-л.) присутствии  \n- держаться (с кем-л.) напочтительном расстоянии  \n- сторониться (кого-л.)  ",
     "english_translation": "- to be sensitive to smoke  \n- to dislike the company of (someone)  \n- to consider (someone) a burden or nuisance"
   },
   "碧眼": {
@@ -24817,7 +24817,7 @@
   },
   "潤う": {
     "russian_translation": "- увлажняться  \n- сыреть  \n- извлекать выгоду  \n- богатеть  \n- процветать",
-    "english_translation": "- to be moist  \n- to be damp  \n- to get wet  \n- to be watered  \n- to profit by  \n- to receive benefits  \n- to receive favors  \n- to become rich  \n- to become at ease financially  \n- to become moist  \n- to be moistened  \n- to become damp  \n- to get wet  \n- to profit  \n- to benefit  \n- to become prosperous  \n- to flourish  \n- to be made rich  \n- to be refreshed (of one's mind)  \n- to be enriched (of one's heart)"
+    "english_translation": "- to be moist  \n- to be damp  \n- to get wet  \n- to be watered  \n- to profit by  \n- to receive benefits  \n- to receive favors  \n- to become rich  \n- to become at ease financially  \n- to become moist  \n- to be moistened  \n- to become damp  \n- to profit  \n- to benefit  \n- to become prosperous  \n- to flourish  \n- to be made rich  \n- to be refreshed (of one's mind)  \n- to be enriched (of one's heart)"
   },
   "祭日": {
     "russian_translation": "- праздник  \n- праздничный день  \n- храмовый праздник",
@@ -25392,7 +25392,7 @@
     "english_translation": "- candying  \n- boiling in sugar (esp. fruit)"
   },
   "稚けない": {
-    "russian_translation": "- младенческий  \n- детский  \n- ребяческий  \n- незрелый  \n- зелёный  \n- неопытный  \n- младенческий",
+    "russian_translation": "- младенческий  \n- детский  \n- ребяческий  \n- незрелый  \n- зелёный  \n- неопытный  ",
     "english_translation": "- very young  \n- little"
   },
   "無味無臭無色": {
@@ -26220,7 +26220,7 @@
     "english_translation": "- to hunt (animals)  \n- to search (for a criminal)  \n- to go looking for (flowers, etc.)  \n- to gather (mushrooms)  \n- to pick (berries)"
   },
   "甘い": {
-    "russian_translation": "- сладкий  \n- недосоленный  \n- недостаточно крепкий  \n- слабый  \n- гнущийся  \n- мягкий  \n- мягкий (о характере)  \n- вкусный  \n- искусный  \n- ловкий  \n- удачный  \n- хороший  \n- успешный  \n- выгодный  \n- умелый  \n- ловкий  \n- искусный",
+    "russian_translation": "- сладкий  \n- недосоленный  \n- недостаточно крепкий  \n- слабый  \n- гнущийся  \n- мягкий  \n- мягкий (о характере)  \n- вкусный  \n- искусный  \n- ловкий  \n- удачный  \n- хороший  \n- успешный  \n- выгодный  \n- умелый  ",
     "english_translation": "- sweet-tasting  \n- sweet  \n- sugary  \n- sugared  \n- fragrant  \n- sweet (music)  \n- lightly salted  \n- light in salt  \n- not spicy  \n- naive  \n- overly optimistic  \n- soft on  \n- generous  \n- indulgent  \n- easy-going  \n- lenient  \n- half-hearted  \n- not finished properly  \n- insufficient  \n- not satisfactory  \n- inadequate  \n- loose  \n- mild  \n- tempting  \n- enticing  \n- luring  \n- skillful  \n- skilful  \n- clever  \n- expert  \n- wise  \n- successful  \n- delicious  \n- appetizing  \n- appetising  \n- tasty  \n- fortunate  \n- splendid  \n- promising"
   },
   "物慾": {
@@ -26540,7 +26540,7 @@
     "english_translation": "- lacking opposition or competition"
   },
   "片手落ち": {
-    "russian_translation": "- пристрастность  \n- несправедливость к одной из сторон  \n- односторонний подход  \n- предубеждённый против (кого-л.)  \n- настроенный в пользу (кого-л.)  \n- пристрастный  \n- настроенный в пользу (кого-л.)",
+    "russian_translation": "- пристрастность  \n- несправедливость к одной из сторон  \n- односторонний подход  \n- предубеждённый против (кого-л.)  \n- настроенный в пользу (кого-л.)  \n- пристрастный  ",
     "english_translation": "- one-sided  \n- partial  \n- unfair"
   },
   "社交服": {
@@ -27849,7 +27849,7 @@
   },
   "疾い": {
     "russian_translation": "- быстрый  \n- ранний",
-    "english_translation": "- fast  \n- quick  \n- hasty  \n- brisk  \n- early  \n- premature  \n- too soon  \n- not yet  \n- too early  \n- easy  \n- simple  \n- quick"
+    "english_translation": "- fast  \n- quick  \n- hasty  \n- brisk  \n- early  \n- premature  \n- too soon  \n- not yet  \n- too early  \n- easy  \n- simple  "
   },
   "疊": {
     "russian_translation": "- татами  \n> соломенный мат стандартного размера, несколько больше 1,5 кв. м, очень плотный, служит для настилки полов",
@@ -29776,7 +29776,7 @@
     "english_translation": "- focus  \n- focal point  \n- point at issue  \n- central point"
   },
   "漂う": {
-    "russian_translation": "- плыть (носиться) по волнам (по воде)  \n- дрейфовать  \n- плыть в воздухе  \n- дрейфовать",
+    "russian_translation": "- плыть (носиться) по волнам (по воде)  \n- дрейфовать  \n- плыть в воздухе  ",
     "english_translation": "- to drift  \n- to float  \n- to waft (e.g. a scent)  \n- to hang in the air  \n- to be in the air (e.g. a feeling or mood)  \n- to wander  \n- to walk around aimlessly  \n- to be unsteady  \n- to be unstable  \n- to falter  \n- to flinch  \n- to wince  \n- to live in unreliable circumstances"
   },
   "牽制球": {
@@ -29801,7 +29801,7 @@
   },
   "示す": {
     "russian_translation": "- указывать  \n- показывать  \n- обозначать",
-    "english_translation": "- to show  \n- to demonstrate  \n- to tell  \n- to exemplify  \n- to make apparent  \n- to point out  \n- to indicate  \n- to show  \n- to represent  \n- to signify  \n- to display"
+    "english_translation": "- to show  \n- to demonstrate  \n- to tell  \n- to exemplify  \n- to make apparent  \n- to point out  \n- to indicate  \n- to represent  \n- to signify  \n- to display"
   },
   "睨めっこ": {
     "russian_translation": "- нервный взгляд",
@@ -30405,7 +30405,7 @@
   },
   "目の当たり": {
     "russian_translation": "- перед глазами  \n- на глазах  \n- в глаза  \n- прямо в лицо  \n- открыто",
-    "english_translation": "- just before one's eyes  \n- in one's presence  \n- personally  \n- before one's eyes  \n- up close  \n- personally"
+    "english_translation": "- just before one's eyes  \n- in one's presence  \n- personally  \n- before one's eyes  \n- up close  "
   },
   "癇癪持ち": {
     "russian_translation": "- вспыльчивый  \n> раздражительный, неуравновешенный человек",
@@ -31209,7 +31209,7 @@
   },
   "礼拝": {
     "russian_translation": "- поклоняться  \n- моление, поклонение (божеству или как божеству)",
-    "english_translation": "- worship (esp. Christian)  \n- adoration  \n- divine service  \n- worship (esp. Buddhist and Shinto)  \n- worship (esp. Christian)  \n- church service"
+    "english_translation": "- worship (esp. Christian)  \n- adoration  \n- divine service  \n- worship (esp. Buddhist and Shinto)  \n- church service"
   },
   "皇祚": {
     "russian_translation": "- престол",
@@ -31345,7 +31345,7 @@
   },
   "碌すっぽ": {
     "russian_translation": "- лук (разг.)",
-    "english_translation": "- not enough  \n- insufficiently  \n- unsatisfactorily  \n- not well  \n- not properly  \n- not enough  \n- not sufficiently  \n- not satisfactorily"
+    "english_translation": "- not enough  \n- insufficiently  \n- unsatisfactorily  \n- not well  \n- not properly  \n- not sufficiently  \n- not satisfactorily"
   },
   "空将": {
     "russian_translation": "- генерал-лейтенант авиации",
@@ -31629,7 +31629,7 @@
   },
   "種物": {
     "russian_translation": "- семена  \n- танэмоно (а) кушанье из гречихи или гречневой лапши с приправами; б) строганый лёд с фруктовым соком",
-    "english_translation": "- seed  \n- type of noodle dish  \n- shaved ice with fruit syrup  \n- grain  \n- noodle dish with various ingredients added  \n- shaved ice with fruit syrup"
+    "english_translation": "- seed  \n- type of noodle dish  \n- shaved ice with fruit syrup  \n- grain  \n- noodle dish with various ingredients added  "
   },
   "無理難題": {
     "russian_translation": "- необоснованное требование",
@@ -34108,7 +34108,7 @@
     "english_translation": "- gonorrhea  \n- gonorrhoea"
   },
   "窮する": {
-    "russian_translation": "- испытывать недостаток (в чём-л.)  \n- нуждаться (в чём-л.)  \n- затрудняться (в чём-л.)  \n- быть в трудном положении  \n- нуждаться (в чём-л.)",
+    "russian_translation": "- испытывать недостаток (в чём-л.)  \n- нуждаться (в чём-л.)  \n- затрудняться (в чём-л.)  \n- быть в трудном положении  ",
     "english_translation": "- to be hard pressed  \n- to be at a loss  \n- to become poor  \n- to be reduced to poverty  \n- to be puzzled  \n- to be perplexed  \n- to be at one's wit's end  \n- to be in a dilemma  \n- to not know what to do, say, etc  \n- to be pressed for  \n- to be pinched for"
   },
   "硯石": {
@@ -34816,7 +34816,7 @@
     "english_translation": "- agency  \n- official dealership  \n- distributor"
   },
   "男気": {
-    "russian_translation": "- благородный дух  \n- благородство  \n- рыцарство  \n- мужественный, рыцарский  \n- храбрый, рыцарский дух  \n- рыцарство",
+    "russian_translation": "- благородный дух  \n- благородство  \n- рыцарство  \n- мужественный, рыцарский  \n- храбрый, рыцарский дух  ",
     "english_translation": "- male presence  \n- chivalrous spirit  \n- chivalry"
   },
   "神仏": {
@@ -35004,7 +35004,7 @@
     "english_translation": "- brief note  \n- brief letter  \n- brief message"
   },
   "端": {
-    "russian_translation": "- остаток  \n- излишек  \n- дробь  \n- обрывки  \n- осколки  \n- жена  \n- жениться  \n- брать в жёны  \n- приправа  \n- гарнир  \n- фронтон двухскатной крыши  \n- край  \n- конец  \n- начало  \n- источник  \n- рядом  \n- около  \n- возле  \n- сторона  \n- почин  \n- мыс  \n- штекер  \n- клочок  \n- разг.  \n- начало  \n- конец  \n- угол  \n- обрывок",
+    "russian_translation": "- остаток  \n- излишек  \n- дробь  \n- обрывки  \n- осколки  \n- жена  \n- жениться  \n- брать в жёны  \n- приправа  \n- гарнир  \n- фронтон двухскатной крыши  \n- край  \n- конец  \n- начало  \n- источник  \n- рядом  \n- около  \n- возле  \n- сторона  \n- почин  \n- мыс  \n- штекер  \n- клочок  \n- разг.  \n- угол  \n- обрывок",
     "english_translation": "- end  \n- tip  \n- point  \n- edge  \n- margin  \n- beginning  \n- start  \n- first  \n- odds and ends  \n- scrap  \n- odd bit  \n- least  \n- fraction  \n- odd sum  \n- odd money  \n- small change  \n- low class female servant  \n- gable wall  \n- gable  \n- origin  \n- variable measure of fabric (28.8 cm in width)  \n- for kimonos: at least 10 m in length  \n- for haori: at least 7.27 m in length  \n- for other clothes: at least 6.06 m in length  \n- extremity"
   },
   "社会劇": {
@@ -35013,7 +35013,7 @@
   },
   "盤": {
     "russian_translation": "- тарелка  \n- блюдо  \n- блюдце  \n- чашка  \n- поднос  \n- плоское блюдо  \n- доска  \n- диск",
-    "english_translation": "- plate  \n- dish  \n- platter  \n- disc  \n- serving  \n- helping  \n- course  \n- tray  \n- shallow bowl  \n- grid  \n- board  \n- phonograph record  \n- disc  \n- disk  \n- clock face  \n- panel"
+    "english_translation": "- plate  \n- dish  \n- platter  \n- disc  \n- serving  \n- helping  \n- course  \n- tray  \n- shallow bowl  \n- grid  \n- board  \n- phonograph record  \n- disk  \n- clock face  \n- panel"
   },
   "立止る": {
     "russian_translation": "- останавливаться",
@@ -35736,7 +35736,7 @@
     "english_translation": "- indefinite strike"
   },
   "異状": {
-    "russian_translation": "- ненормальность  \n- расстройство  \n- перемена (к худшему)  \n- выход из строя  \n- недомогание  \n- ненормальный, неправильный  \n- повреждённый  \n- поражённый болезнью  \n- расстроенный  \n- не в порядке  \n- имеющий дефект, испорченный  \n- расстроенный",
+    "russian_translation": "- ненормальность  \n- расстройство  \n- перемена (к худшему)  \n- выход из строя  \n- недомогание  \n- ненормальный, неправильный  \n- повреждённый  \n- поражённый болезнью  \n- расстроенный  \n- не в порядке  \n- имеющий дефект, испорченный  ",
     "english_translation": "- something wrong  \n- accident  \n- change  \n- abnormality  \n- aberration  \n- something unusual  \n- disorder  \n- trouble"
   },
   "石灰": {
@@ -36188,7 +36188,7 @@
     "english_translation": "- scarlet"
   },
   "潰す": {
-    "russian_translation": "- давить, раздавливать  \n- расплющивать  \n- разминать  \n- разрушать, ломать  \n- портить (перен.)  \n- тратить попусту  \n- сдавать на лом (в переплавку)  \n- переплавлять  \n- резать (скот, птицу)  \n- портить (перен.)",
+    "russian_translation": "- давить, раздавливать  \n- расплющивать  \n- разминать  \n- разрушать, ломать  \n- портить (перен.)  \n- тратить попусту  \n- сдавать на лом (в переплавку)  \n- переплавлять  \n- резать (скот, птицу)  ",
     "english_translation": "- to smash  \n- to crush  \n- to flatten  \n- to shut down  \n- to put out of business  \n- to force (a company) to close up shop  \n- to wreck  \n- to break  \n- to block  \n- to thwart  \n- to butcher  \n- to slaughter  \n- to kill (livestock, for food)  \n- to kill (time)  \n- to while away (the time)  \n- to use up (one's time)  \n- to waste (e.g. talents)"
   },
   "生残": {
@@ -38317,7 +38317,7 @@
   },
   "猫かぶり": {
     "russian_translation": "- лицемерие, притворство  \n- притворная невинность  \n- жеманство  \n- лицемер  \n- притворщик  \n- волк в овечьей шкуре  \n- жеманница",
-    "english_translation": "- feigned innocence or naivete  \n- beguiling innocence  \n- wolf in sheep's clothing  \n- feigned innocence  \n- feigned gentleness  \n- fake modesty  \n- put-on  \n- wolf in sheep's clothing  \n- feigned ignorance  \n- playing dumb"
+    "english_translation": "- feigned innocence or naivete  \n- beguiling innocence  \n- wolf in sheep's clothing  \n- feigned innocence  \n- feigned gentleness  \n- fake modesty  \n- put-on  \n- feigned ignorance  \n- playing dumb"
   },
   "畏れ入る": {
     "russian_translation": "- быть тронутым (благодарным), чувствовать себя обязанным  \n- быть смущённым (сконфуженным), чувствовать себя неловко, растеряться  \n- быть удивлённым (изумлённым)  \n- признавать свою вину",
@@ -38389,7 +38389,7 @@
   },
   "滅茶": {
     "russian_translation": "- нелепый  \n- несообразный",
-    "english_translation": "- absurd  \n- ridiculous  \n- nonsense  \n- excessive  \n- extreme  \n- very  \n- extremely  \n- excessively  \n- extremely  \n- very  \n- really  \n- super  \n- so"
+    "english_translation": "- absurd  \n- ridiculous  \n- nonsense  \n- excessive  \n- extreme  \n- very  \n- extremely  \n- excessively  \n- really  \n- super  \n- so"
   },
   "禰宜": {
     "russian_translation": "- синтоистский жрец",
@@ -39152,7 +39152,7 @@
     "english_translation": "- rice-planting song  \n- rice planters' song"
   },
   "番い": {
-    "russian_translation": "- пара  \n> (самец и самка), спаривать  \n\n- пара",
+    "russian_translation": "- пара  \n> (самец и самка), спаривать  \n",
     "english_translation": "- pair (esp. of mated animals)  \n- brace  \n- couple  \n- (anatomical) joint"
   },
   "無題": {
@@ -39221,7 +39221,7 @@
   },
   "穂先": {
     "russian_translation": "- верхушка колоса  \n- остриё пики (меча)",
-    "english_translation": "- ear (e.g. of wheat)  \n- tip (e.g. of brush or spear)  \n- spearhead  \n- tip of an ear (of wheat, etc.)  \n- point  \n- spearhead"
+    "english_translation": "- ear (e.g. of wheat)  \n- tip (e.g. of brush or spear)  \n- spearhead  \n- tip of an ear (of wheat, etc.)  \n- point  "
   },
   "積重なる": {
     "russian_translation": "- громоздиться  \n- нагромождаться",
@@ -39596,7 +39596,7 @@
     "english_translation": "- private (non-governmental) school (college, university)"
   },
   "溯及": {
-    "russian_translation": "- иметь обратную силу  \n- ретроактивность  \n- обратное действие  \n- ретроспективно  \n- иметь обратную силу  \n- имеющий обратную силу",
+    "russian_translation": "- иметь обратную силу  \n- ретроактивность  \n- обратное действие  \n- ретроспективно  \n- имеющий обратную силу",
     "english_translation": "- tracing back  \n- retroactivity"
   },
   "発熱": {
@@ -39753,7 +39753,7 @@
   },
   "知る": {
     "russian_translation": "- знать  \n- узнавать  \n- знакомиться  \n- понять; заметить; почувствовать  \n- судить; догадываться",
-    "english_translation": "- to be aware of  \n- to know  \n- to be conscious of  \n- to cognize  \n- to cognise  \n- to notice  \n- to feel  \n- to understand  \n- to comprehend  \n- to grasp  \n- to remember  \n- to be acquainted with (a procedure)  \n- to experience  \n- to go through  \n- to learn  \n- to be acquainted with (a person)  \n- to get to know  \n- to concern  \n- to know (of)  \n- to be conscious (of)  \n- to learn (of)  \n- to discover  \n- to sense  \n- to feel  \n- to realize  \n- to appreciate  \n- to be familiar with  \n- to be acquainted with  \n- to have to do with  \n- to be concerned with  \n- to be one's concern  \n- to be one's responsibility"
+    "english_translation": "- to be aware of  \n- to know  \n- to be conscious of  \n- to cognize  \n- to cognise  \n- to notice  \n- to feel  \n- to understand  \n- to comprehend  \n- to grasp  \n- to remember  \n- to be acquainted with (a procedure)  \n- to experience  \n- to go through  \n- to learn  \n- to be acquainted with (a person)  \n- to get to know  \n- to concern  \n- to know (of)  \n- to be conscious (of)  \n- to learn (of)  \n- to discover  \n- to sense  \n- to realize  \n- to appreciate  \n- to be familiar with  \n- to be acquainted with  \n- to have to do with  \n- to be concerned with  \n- to be one's concern  \n- to be one's responsibility"
   },
   "玄関番": {
     "russian_translation": "- швейцар  \n- портье  \n- привратник  \n> исполнять обязанности привратника",
@@ -39997,6 +39997,6 @@
   },
   "真皮": {
     "russian_translation": "- кожаный  \n- настоящая кожа (не искусственная)",
-    "english_translation": "- true (inner) skin  \n- corium  \n- derma  \n- cutis  \n- dermis  \n- dermis  \n- corium  \n- cutis  \n- true skin"
+    "english_translation": "- true (inner) skin  \n- corium  \n- derma  \n- cutis  \n- dermis  \n- true skin"
   }
 }
