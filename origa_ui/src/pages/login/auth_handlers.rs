@@ -1,6 +1,7 @@
 use super::LoginMode;
 use super::validation::validate_credentials;
 use crate::app::AuthContext;
+use crate::repository::{OAuthProvider, SupabaseClient, set_session};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos_router::hooks::use_navigate;
@@ -114,4 +115,18 @@ pub fn handle_register(
             }
         }
     });
+}
+
+pub async fn handle_oauth_callback(url_fragment: &str, ctx: &AuthContext) -> Result<User, String> {
+    let session = SupabaseClient::parse_tokens_from_url(url_fragment)?;
+    set_session(&session).map_err(|e| format!("Не удалось сохранить сессию: {}", e))?;
+    get_or_create_profile(ctx, &session.email).await
+}
+
+pub fn handle_oauth_login(provider: OAuthProvider) {
+    let url = SupabaseClient::get_oauth_url(provider.as_str());
+
+    if let Some(window) = web_sys::window() {
+        let _ = window.location().set_href(&url);
+    }
 }
