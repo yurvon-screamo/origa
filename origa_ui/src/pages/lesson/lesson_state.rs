@@ -1,6 +1,6 @@
 use crate::repository::HybridUserRepository;
 use leptos::prelude::*;
-use origa::domain::Card;
+use origa::domain::LessonCardView;
 use std::collections::HashMap;
 use ulid::Ulid;
 
@@ -13,11 +13,12 @@ pub enum LessonMode {
 
 #[derive(Clone, PartialEq, Default)]
 pub struct LessonState {
-    pub cards: HashMap<Ulid, Card>,
+    pub cards: HashMap<Ulid, LessonCardView>,
     pub card_ids: Vec<Ulid>,
     pub current_index: usize,
     pub showing_answer: bool,
     pub review_count: usize,
+    pub selected_quiz_option: Option<usize>,
 }
 
 #[derive(Clone)]

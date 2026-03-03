@@ -1,5 +1,5 @@
 use crate::application::user_repository::UserRepository;
-use crate::domain::Card;
+use crate::domain::LessonCardView;
 use crate::domain::OrigaError;
 use std::collections::HashMap;
 use tracing::{debug, info};
@@ -15,7 +15,10 @@ impl<'a, R: UserRepository> SelectCardsToFixationUseCase<'a, R> {
         Self { repository }
     }
 
-    pub async fn execute(&self, user_id: Ulid) -> Result<HashMap<Ulid, Card>, OrigaError> {
+    pub async fn execute(
+        &self,
+        user_id: Ulid,
+    ) -> Result<HashMap<Ulid, LessonCardView>, OrigaError> {
         debug!(user_id = %user_id, "Selecting cards to fixation");
 
         let user = self

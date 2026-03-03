@@ -6,6 +6,7 @@ mod lesson_card_container;
 mod lesson_progress;
 mod lesson_progress_view;
 mod lesson_state;
+mod quiz_card;
 mod rating_buttons;
 mod rating_buttons_view;
 
