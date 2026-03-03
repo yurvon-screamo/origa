@@ -1,6 +1,8 @@
 use clap::Parser;
 use flate2::read::DeflateDecoder;
-use origa::domain::{init_dictionary, is_dictionary_loaded, tokenize_text, DictionaryData, OrigaError};
+use origa::domain::{
+    DictionaryData, OrigaError, init_dictionary, is_dictionary_loaded, tokenize_text,
+};
 use std::collections::HashSet;
 use std::fs;
 use std::io::Read;
@@ -37,12 +39,12 @@ pub fn load_dictionary() -> Result<(), OrigaError> {
     // Attempt to find dictionary in origa_ui/public/dictionaries/unidic
     let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap_or_else(|_| ".".to_string());
     let mut dict_dir = PathBuf::from(manifest_dir);
-    
+
     // If we're in tokenizer/ directory, go up to root
     if dict_dir.ends_with("tokenizer") {
         dict_dir.pop();
     }
-    
+
     dict_dir = dict_dir
         .join("origa_ui")
         .join("public")

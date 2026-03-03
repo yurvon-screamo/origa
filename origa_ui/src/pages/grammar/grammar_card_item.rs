@@ -82,7 +82,7 @@ pub fn GrammarCardItem(study_card: StudyCard, on_toggle_favorite: Callback<Ulid>
         <Card class=Signal::derive(|| "p-4".to_string())>
             <div class="flex justify-between items-start">
                 <div class="min-w-0 flex-1">
-                    <div class="flex items-center gap-2 mb-2">
+                    <div class="flex items-center gap-3 mb-2">
                         <Heading level=HeadingLevel::H4>
                             <FuriganaText text=title.clone()/>
                         </Heading>
