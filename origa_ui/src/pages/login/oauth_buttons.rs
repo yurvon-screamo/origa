@@ -33,7 +33,10 @@ pub fn OAuthButtons() -> impl IntoView {
 
 fn open_oauth_url(provider: OAuthProvider) {
     let window = web_sys::window().expect("window not available");
-    let is_tauri = js_sys::Reflect::get(&window, &JsValue::from_str("__TAURI__")).is_ok();
+
+    // Check if running in Tauri (has __TAURI__ AND is not http/https protocol)
+    let is_tauri = js_sys::Reflect::get(&window, &JsValue::from_str("__TAURI__")).is_ok()
+        && window.location().protocol().unwrap_or_default() == "tauri:";
 
     let url = if is_tauri {
         web_sys::console::log_1(&"OAuth: Tauri mode".into());
