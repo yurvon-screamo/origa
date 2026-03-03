@@ -765,4 +765,180 @@ mod tests {
         assert!(result.contains_key(study1.card_id()));
         assert!(!result.contains_key(study2.card_id()));
     }
+
+    #[test]
+    fn handle_favorite_rating_easy_increases_streak() {
+        let mut knowledge_set = KnowledgeSet::new();
+        let card = create_vocab_card("猫", "кошка");
+        let mut study_card = knowledge_set.create_card(card).unwrap();
+
+        let memory = create_memory_state();
+        study_card.add_review(
+            memory.clone(),
+            ReviewLog::new(Rating::Good, Duration::days(1)),
+        );
+        study_card.toggle_favorite();
+
+        assert_eq!(study_card.perfect_streak_since_known(), 0);
+        study_card.handle_favorite_rating(Rating::Easy);
+        assert_eq!(study_card.perfect_streak_since_known(), 1);
+    }
+
+    #[test]
+    fn handle_favorite_rating_good_does_not_change_streak() {
+        let mut knowledge_set = KnowledgeSet::new();
+        let card = create_vocab_card("猫", "кошка");
+        let mut study_card = knowledge_set.create_card(card).unwrap();
+
+        let memory = create_memory_state();
+        study_card.add_review(
+            memory.clone(),
+            ReviewLog::new(Rating::Good, Duration::days(1)),
+        );
+        study_card.toggle_favorite();
+
+        study_card.handle_favorite_rating(Rating::Easy);
+        assert_eq!(study_card.perfect_streak_since_known(), 1);
+
+        study_card.handle_favorite_rating(Rating::Good);
+        assert_eq!(study_card.perfect_streak_since_known(), 1);
+    }
+
+    #[test]
+    fn handle_favorite_rating_hard_resets_streak() {
+        let mut knowledge_set = KnowledgeSet::new();
+        let card = create_vocab_card("猫", "кошка");
+        let mut study_card = knowledge_set.create_card(card).unwrap();
+
+        let memory = create_memory_state();
+        study_card.add_review(
+            memory.clone(),
+            ReviewLog::new(Rating::Good, Duration::days(1)),
+        );
+        study_card.toggle_favorite();
+
+        study_card.handle_favorite_rating(Rating::Easy);
+        assert_eq!(study_card.perfect_streak_since_known(), 1);
+
+        study_card.handle_favorite_rating(Rating::Hard);
+        assert_eq!(study_card.perfect_streak_since_known(), 0);
+    }
+
+    #[test]
+    fn handle_favorite_rating_again_resets_streak() {
+        let mut knowledge_set = KnowledgeSet::new();
+        let card = create_vocab_card("猫", "кошка");
+        let mut study_card = knowledge_set.create_card(card).unwrap();
+
+        let memory = create_memory_state();
+        study_card.add_review(
+            memory.clone(),
+            ReviewLog::new(Rating::Good, Duration::days(1)),
+        );
+        study_card.toggle_favorite();
+
+        study_card.handle_favorite_rating(Rating::Easy);
+        assert_eq!(study_card.perfect_streak_since_known(), 1);
+
+        study_card.handle_favorite_rating(Rating::Again);
+        assert_eq!(study_card.perfect_streak_since_known(), 0);
+    }
+
+    #[test]
+    fn handle_favorite_rating_five_easy_removes_favorite() {
+        let mut knowledge_set = KnowledgeSet::new();
+        let card = create_vocab_card("猫", "кошка");
+        let mut study_card = knowledge_set.create_card(card).unwrap();
+
+        let memory = create_memory_state();
+        study_card.add_review(
+            memory.clone(),
+            ReviewLog::new(Rating::Good, Duration::days(1)),
+        );
+        study_card.toggle_favorite();
+
+        assert!(study_card.is_favorite());
+
+        for _ in 0..4 {
+            study_card.handle_favorite_rating(Rating::Easy);
+            assert!(study_card.is_favorite());
+        }
+
+        study_card.handle_favorite_rating(Rating::Easy);
+        assert!(!study_card.is_favorite());
+        assert_eq!(study_card.perfect_streak_since_known(), 0);
+    }
+
+    #[test]
+    fn handle_favorite_rating_good_does_not_interrupt_accumulation() {
+        let mut knowledge_set = KnowledgeSet::new();
+        let card = create_vocab_card("猫", "кошка");
+        let mut study_card = knowledge_set.create_card(card).unwrap();
+
+        let memory = create_memory_state();
+        study_card.add_review(
+            memory.clone(),
+            ReviewLog::new(Rating::Good, Duration::days(1)),
+        );
+        study_card.toggle_favorite();
+
+        study_card.handle_favorite_rating(Rating::Easy);
+        assert_eq!(study_card.perfect_streak_since_known(), 1);
+
+        study_card.handle_favorite_rating(Rating::Good);
+        assert_eq!(study_card.perfect_streak_since_known(), 1);
+
+        study_card.handle_favorite_rating(Rating::Easy);
+        assert_eq!(study_card.perfect_streak_since_known(), 2);
+
+        study_card.handle_favorite_rating(Rating::Good);
+        assert_eq!(study_card.perfect_streak_since_known(), 2);
+
+        study_card.handle_favorite_rating(Rating::Easy);
+        assert_eq!(study_card.perfect_streak_since_known(), 3);
+
+        study_card.handle_favorite_rating(Rating::Good);
+        assert_eq!(study_card.perfect_streak_since_known(), 3);
+
+        study_card.handle_favorite_rating(Rating::Easy);
+        assert_eq!(study_card.perfect_streak_since_known(), 4);
+
+        study_card.handle_favorite_rating(Rating::Good);
+        assert_eq!(study_card.perfect_streak_since_known(), 4);
+
+        study_card.handle_favorite_rating(Rating::Easy);
+        assert!(!study_card.is_favorite());
+    }
+
+    #[test]
+    fn handle_favorite_rating_non_favorited_does_nothing() {
+        let mut knowledge_set = KnowledgeSet::new();
+        let card = create_vocab_card("猫", "кошка");
+        let mut study_card = knowledge_set.create_card(card).unwrap();
+
+        let memory = create_memory_state();
+        study_card.add_review(
+            memory.clone(),
+            ReviewLog::new(Rating::Good, Duration::days(1)),
+        );
+
+        assert!(!study_card.is_favorite());
+
+        let initial_streak = study_card.perfect_streak_since_known();
+        study_card.handle_favorite_rating(Rating::Easy);
+        assert_eq!(study_card.perfect_streak_since_known(), initial_streak);
+    }
+
+    #[test]
+    fn handle_favorite_rating_unknown_card_does_nothing() {
+        let mut knowledge_set = KnowledgeSet::new();
+        let card = create_vocab_card("猫", "кошка");
+        let mut study_card = knowledge_set.create_card(card).unwrap();
+
+        study_card.toggle_favorite();
+
+        let initial_streak = study_card.perfect_streak_since_known();
+        study_card.handle_favorite_rating(Rating::Easy);
+        assert_eq!(study_card.perfect_streak_since_known(), initial_streak);
+    }
 }
