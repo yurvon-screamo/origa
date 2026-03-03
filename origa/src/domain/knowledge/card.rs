@@ -50,6 +50,10 @@ impl StudyCard {
         self.memory_history.is_new()
     }
 
+    pub fn perfect_streak_since_known(&self) -> u8 {
+        self.perfect_streak_since_known
+    }
+
     pub(crate) fn add_review(&mut self, memory_state: MemoryState, review: ReviewLog) {
         self.memory_history.add_review(memory_state, review);
     }
@@ -74,7 +78,8 @@ impl StudyCard {
                     self.perfect_streak_since_known = 0;
                 }
             }
-            _ => {
+            Rating::Good => {}
+            Rating::Hard | Rating::Again => {
                 self.perfect_streak_since_known = 0;
             }
         }
