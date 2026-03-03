@@ -116,9 +116,10 @@ fn setup_oauth_listener(ctx: AuthContext) {
     let callback = Closure::<dyn Fn(String)>::new(move |url: String| {
         info!("Deep link received: {}", url);
         if let Some(fragment) = url.split('#').nth(1) {
+            let fragment = fragment.to_string();
             let ctx = ctx_clone.clone();
             spawn_local(async move {
-                match handle_oauth_callback(fragment, &ctx).await {
+                match handle_oauth_callback(&fragment, &ctx).await {
                     Ok(user) => {
                         ctx.current_user.set(Some(user));
                         if let Some(window) = web_sys::window() {
@@ -164,10 +165,10 @@ fn check_url_oauth_callback(ctx: &AuthContext) {
     if let Some(window) = web_sys::window() {
         if let Ok(hash) = window.location().hash() {
             if hash.contains("access_token=") {
-                let fragment = hash.trim_start_matches('#');
+                let fragment = hash.trim_start_matches('#').to_string();
                 let ctx_clone = ctx.clone();
                 spawn_local(async move {
-                    match handle_oauth_callback(fragment, &ctx_clone).await {
+                    match handle_oauth_callback(&fragment, &ctx_clone).await {
                         Ok(user) => {
                             ctx_clone.current_user.set(Some(user));
                             if let Some(window) = web_sys::window() {
