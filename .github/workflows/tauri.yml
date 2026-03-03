@@ -112,6 +112,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Install build dependencies
+        run: apt-get update && apt-get install -y zip
+
       - name: Setup Rust targets
         run: rustup target add x86_64-apple-darwin aarch64-apple-darwin wasm32-unknown-unknown
 
