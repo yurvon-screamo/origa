@@ -1,4 +1,4 @@
-use super::{HistoryModal, StatCard, StatMetric};
+use super::{HistoryModal, JlptProgressCard, StatCard, StatMetric};
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{
     Button, ButtonVariant, Card, Skeleton, Text, TextSize, TypographyVariant,
@@ -7,7 +7,7 @@ use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos_router::components::A;
 use origa::application::GetUserInfoUseCase;
-use origa::domain::{DailyHistoryItem, User};
+use origa::domain::{DailyHistoryItem, JlptProgress, User};
 
 #[derive(Clone, Default)]
 struct HomeStats {
@@ -62,11 +62,14 @@ pub fn HomeContent() -> impl IntoView {
     let history_open = RwSignal::new(false);
     let selected_metric = RwSignal::new(StatMetric::TotalCards);
     let is_loading = RwSignal::new(true);
+    let jlpt_progress = RwSignal::new(JlptProgress::new());
 
     Effect::new(move |_| {
         let user = current_user.get();
         if let Some(user) = user {
             let user_id = user.id();
+            let jlpt = user.jlpt_progress().clone();
+            jlpt_progress.set(jlpt);
             let repo = repository.clone();
             spawn_local(async move {
                 let use_case = GetUserInfoUseCase::new(&repo);
@@ -120,6 +123,13 @@ pub fn HomeContent() -> impl IntoView {
                 <Text size=TextSize::Small variant=TypographyVariant::Muted uppercase=true tracking_widest=true class="mb-6">
                     "Статистика"
                 </Text>
+
+                <Show
+                    when=move || !is_loading.get()
+                    fallback=move || view! { <Skeleton width=Signal::derive(|| Some("100%".to_string())) height=Signal::derive(|| Some("200px".to_string())) class=Signal::derive(|| "mb-6".to_string()) /> }
+                >
+                    <JlptProgressCard jlpt_progress=Signal::derive(move || jlpt_progress.get()) />
+                </Show>
 
                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
                     <Show

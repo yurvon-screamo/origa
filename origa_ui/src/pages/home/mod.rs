@@ -1,11 +1,13 @@
 pub mod content;
 pub mod header;
 pub mod history_modal;
+pub mod jlpt_progress_card;
 pub mod stat_card;
 
 pub use content::HomeContent;
 pub use header::HomeHeader;
 pub use history_modal::{HistoryModal, StatMetric};
+pub use jlpt_progress_card::JlptProgressCard;
 pub use stat_card::StatCard;
 
 use crate::ui_components::{PageLayout, PageLayoutVariant};

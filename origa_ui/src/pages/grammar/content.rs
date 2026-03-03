@@ -1,10 +1,14 @@
 use super::filter::Filter;
 use super::filter_btn::FilterBtn;
 use super::grammar_card_item::{CardStatus, GrammarCardItem};
+use crate::repository::HybridUserRepository;
 use crate::ui_components::{Input, Text, TextSize, TypographyVariant};
 use leptos::either::Either;
 use leptos::prelude::*;
+use leptos::task::spawn_local;
+use origa::application::use_cases::ToggleFavoriteUseCase;
 use origa::domain::{Card, User};
+use ulid::Ulid;
 
 #[derive(Clone, Copy, PartialEq, Default)]
 struct CardCounts {
@@ -22,6 +26,34 @@ pub fn GrammarContent() -> impl IntoView {
 
     let search = RwSignal::new(String::new());
     let filter = RwSignal::new(Filter::All);
+
+    let repository =
+        use_context::<HybridUserRepository>().expect("repository context not provided");
+
+    let on_toggle_favorite = {
+        let current_user = current_user;
+        let repository = repository.clone();
+
+        Callback::new(move |card_id: Ulid| {
+            let user = current_user.get();
+            let repo = repository.clone();
+            let current_user_clone = current_user;
+
+            if let Some(user) = user {
+                let user_id = user.id();
+                spawn_local(async move {
+                    let use_case = ToggleFavoriteUseCase::new(&repo);
+                    if use_case.execute(user_id, card_id).await.is_ok() {
+                        current_user_clone.update(|u| {
+                            if let Some(user) = u {
+                                let _ = user.toggle_favorite(card_id);
+                            }
+                        });
+                    }
+                });
+            }
+        })
+    };
 
     let all_cards = Memo::new(move |_| {
         current_user
@@ -102,7 +134,12 @@ pub fn GrammarContent() -> impl IntoView {
                                 each=move || filtered_cards.get()
                                 key=|card| *card.card_id()
                                 children=move |card| {
-                                    view! { <GrammarCardItem study_card=card /> }
+                                    view! {
+                                        <GrammarCardItem
+                                            study_card=card
+                                            on_toggle_favorite=on_toggle_favorite
+                                        />
+                                    }
                                 }
                             />
                         })

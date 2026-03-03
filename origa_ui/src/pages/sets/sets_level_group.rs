@@ -36,6 +36,12 @@ pub fn SetsLevelGroup(
                     importing=importing
                     on_import=on_import
                 />
+                <SetsTypeGroup
+                    set_type=SetType::SpyFamily
+                    sets_for_level=sets_for_level
+                    importing=importing
+                    on_import=on_import
+                />
             </div>
         </Show>
     }

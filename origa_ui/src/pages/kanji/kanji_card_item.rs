@@ -1,9 +1,10 @@
 use crate::ui_components::{
-    Button, ButtonVariant, Card, KanjiViewMode, KanjiWritingSection, MarkdownText, Tag, TagVariant,
-    Text, TextSize, TypographyVariant,
+    Button, ButtonVariant, Card, FavoriteButton, KanjiViewMode, KanjiWritingSection, MarkdownText,
+    Tag, TagVariant, Text, TextSize, TypographyVariant,
 };
 use leptos::{ev::MouseEvent, prelude::*};
 use origa::domain::{Card as DomainCard, StudyCard};
+use ulid::Ulid;
 
 #[derive(Clone, Copy, PartialEq, Default)]
 pub enum CardStatus {
@@ -48,8 +49,10 @@ impl CardStatus {
 }
 
 #[component]
-pub fn KanjiCardItem(study_card: StudyCard) -> impl IntoView {
+pub fn KanjiCardItem(study_card: StudyCard, on_toggle_favorite: Callback<Ulid>) -> impl IntoView {
     let card = study_card.card();
+    let card_id = *study_card.card_id();
+    let is_favorite = study_card.is_favorite();
     let memory = study_card.memory();
 
     let (kanji_char, description, radicals, example_words) = match card {
@@ -111,6 +114,10 @@ pub fn KanjiCardItem(study_card: StudyCard) -> impl IntoView {
                         <Tag variant=Signal::derive(move || status.tag_variant())>
                             {status.label()}
                         </Tag>
+                        <FavoriteButton
+                            is_favorite=Signal::derive(move || is_favorite)
+                            on_click=Callback::new(move |_| on_toggle_favorite.run(card_id))
+                        />
                     </div>
                     {move || {
                         if !radicals.is_empty() {

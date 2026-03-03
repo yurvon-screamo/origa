@@ -101,3 +101,59 @@ use crate::ui_components::{Button, ButtonVariant, Input, Heading, HeadingLevel};
 - Responsive: `sm:`, `md:`, `lg:` prefixes for breakpoints
 
 Full css config placed in `origa_ui/input.css` file.
+
+## JLPT Progress System
+
+### Architecture
+
+The JLPT progress system automatically tracks user progress across all five JLPT levels (N5-N1) based on learned content:
+
+- **Domain Layer** (`origa/src/domain/jlpt_progress.rs`): Core models for progress tracking
+  - `JlptProgress`: Main progress container with level-by-level breakdown
+  - `LevelProgressDetail`: Progress for a single JLPT level (kanji, words, grammar)
+  - `CategoryProgress`: Progress for a single category (learned/total count)
+
+- **Application Layer** (`origa/src/application/jlpt_content_loader.rs`): Content loader
+  - Loads JLPT content from JSON files (kanji, vocabulary, grammar)
+  - Groups content by JLPT levels for progress calculation
+
+- **UI Layer** (`origa_ui/src/pages/home/jlpt_progress_card.rs`): Progress visualization
+  - Displays current JLPT level with overall progress percentage
+  - Shows detailed breakdown by category (kanji, words, grammar)
+
+### Automatic Level Detection
+
+User's current JLPT level is determined automatically:
+
+1. **New users**: Start at N5 by default
+2. **Level progression**: When average progress across all three categories (kanji, words, grammar) reaches 90%, user advances to next level
+3. **Maximum level**: N1 is the highest level (no further progression)
+
+### Progress Recalculation
+
+Progress is recalculated automatically when:
+- User adds a new study card
+- User updates an existing card
+- User removes a card
+
+Implementation in `origa_ui/src/repository/`:
+- `JlptContent` is cached globally via `OnceLock`
+- `recalculate_user_jlpt_progress()` is called during `save()` operations
+- Content is loaded at application startup
+
+### Usage in User Model
+
+```rust
+// User model has jlpt_progress field
+let user = User::new(email, username, native_language);
+
+// Get current level (automatically determined)
+let level = user.current_japanese_level(); // Returns JapaneseLevel (N5-N1)
+
+// Access progress details
+let progress = user.jlpt_progress();
+let n5_detail = progress.level_progress(JapaneseLevel::N5);
+
+// Manual recalculation (if needed)
+user.recalculate_jlpt_progress(&jlpt_content);
+```

@@ -1,5 +1,5 @@
 use crate::domain::{
-    NativeLanguage, OrigaError, ReviewLog, get_rule_by_id,
+    NativeLanguage, OrigaError, Rating, ReviewLog, get_rule_by_id,
     knowledge::{GrammarRuleCard, KanjiCard, VocabularyCard},
     memory::{MemoryHistory, MemoryState},
     value_objects::{Answer, Question},
@@ -13,6 +13,10 @@ pub struct StudyCard {
     card_id: Ulid,
     card: Card,
     memory_history: MemoryHistory,
+    #[serde(default)]
+    is_favorite: bool,
+    #[serde(default)]
+    perfect_streak_since_known: u8,
 }
 
 impl StudyCard {
@@ -21,6 +25,8 @@ impl StudyCard {
             card_id: Ulid::new(),
             card,
             memory_history: MemoryHistory::default(),
+            is_favorite: false,
+            perfect_streak_since_known: 0,
         }
     }
 
@@ -36,8 +42,38 @@ impl StudyCard {
         &self.memory_history
     }
 
+    pub fn is_favorite(&self) -> bool {
+        self.is_favorite
+    }
+
     pub(crate) fn add_review(&mut self, memory_state: MemoryState, review: ReviewLog) {
         self.memory_history.add_review(memory_state, review);
+    }
+
+    pub(crate) fn toggle_favorite(&mut self) {
+        self.is_favorite = !self.is_favorite;
+        if !self.is_favorite {
+            self.perfect_streak_since_known = 0;
+        }
+    }
+
+    pub(crate) fn handle_favorite_rating(&mut self, rating: Rating) {
+        if !self.is_favorite || !self.memory_history.is_known_card() {
+            return;
+        }
+
+        match rating {
+            Rating::Easy => {
+                self.perfect_streak_since_known += 1;
+                if self.perfect_streak_since_known >= 5 {
+                    self.is_favorite = false;
+                    self.perfect_streak_since_known = 0;
+                }
+            }
+            _ => {
+                self.perfect_streak_since_known = 0;
+            }
+        }
     }
 
     pub fn shuffle_card(
@@ -105,6 +141,14 @@ impl Card {
             Card::Vocabulary(card) => card.meaning(),
             Card::Kanji(card) => card.description(),
             Card::Grammar(card) => card.description(),
+        }
+    }
+
+    pub fn content_key(&self) -> String {
+        match self {
+            Card::Vocabulary(card) => card.word().text().to_string(),
+            Card::Kanji(card) => card.kanji().text().to_string(),
+            Card::Grammar(card) => card.rule_id().to_string(),
         }
     }
 }

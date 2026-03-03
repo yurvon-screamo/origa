@@ -4,6 +4,8 @@ use origa::domain::{
     is_kanji_loaded, is_radical_loaded, is_vocabulary_loaded,
 };
 
+use crate::repository::load_jlpt_content;
+
 pub fn is_all_data_loaded() -> bool {
     is_vocabulary_loaded() && is_radical_loaded() && is_kanji_loaded() && is_grammar_loaded()
 }
@@ -21,6 +23,8 @@ pub async fn load_all_data() -> Result<(), OrigaError> {
     let (kanji_result, grammar_result) = futures::join!(load_kanji(), load_grammar());
     kanji_result?;
     grammar_result?;
+
+    load_jlpt_content().await?;
 
     log::info!("All data loaded successfully");
     Ok(())
@@ -150,6 +154,7 @@ pub fn load_all_data() -> Result<(), OrigaError> {
     load_radical()?;
     load_kanji()?;
     load_grammar()?;
+    load_jlpt_content()?;
 
     log::info!("All data loaded successfully");
     Ok(())

@@ -130,25 +130,41 @@ pub fn tokenize_text(text: &str) -> Result<Vec<TokenInfo>, OrigaError> {
 
     let token_infos = tokens
         .iter_mut()
-        .map(|token| TokenInfo {
-            orthographic_base_form: token.get("lexeme").unwrap_or_default().to_string(),
-            phonological_base_form: token
-                .get("phonological_base_form")
-                .unwrap_or_default()
-                .to_string(),
-            orthographic_surface_form: token
-                .get("orthographic_surface_form")
-                .unwrap_or_default()
-                .to_string(),
-            phonological_surface_form: token
-                .get("phonological_surface_form")
-                .unwrap_or_default()
-                .to_string(),
-            part_of_speech: token
+        .map(|token| {
+            let lexeme = token.get("lexeme").unwrap_or_default();
+            let orthographic_base_form = if let Some((japanese, _english)) = lexeme.split_once('-') {
+                japanese.to_string()
+            } else {
+                lexeme.to_string()
+            };
+
+            let mut part_of_speech: PartOfSpeech = token
                 .get("part_of_speech")
                 .unwrap_or_default()
                 .parse()
-                .unwrap_or(PartOfSpeech::Unspecified),
+                .unwrap_or(PartOfSpeech::Unspecified);
+
+            // Force symbol POS if base form is just a symbol
+            if orthographic_base_form == "*" || orthographic_base_form == "×" || orthographic_base_form == "•" {
+                part_of_speech = PartOfSpeech::Symbol;
+            }
+
+            TokenInfo {
+                orthographic_base_form,
+                phonological_base_form: token
+                    .get("phonological_base_form")
+                    .unwrap_or_default()
+                    .to_string(),
+                orthographic_surface_form: token
+                    .get("orthographic_surface_form")
+                    .unwrap_or_default()
+                    .to_string(),
+                phonological_surface_form: token
+                    .get("phonological_surface_form")
+                    .unwrap_or_default()
+                    .to_string(),
+                part_of_speech,
+            }
         })
         .collect();
 
@@ -271,5 +287,29 @@ mod tests {
         assert_eq!(tokens.len(), 2);
         assert_eq!(tokens[0].orthographic_surface_form, "たべ");
         assert_eq!(tokens[0].phonological_surface_form, "タベ");
+    }
+
+    #[test]
+    fn should_clean_katakana_base_form() {
+        ensure_dictionary();
+        let tokens = tokenize_text("アニメ").unwrap();
+        assert_eq!(tokens.len(), 1);
+        // UniDic typically returns "アニメ-animation" for lexeme
+        // Our modification should have stripped "-animation"
+        assert_eq!(tokens[0].orthographic_base_form, "アニメ");
+    }
+
+    #[test]
+    fn should_ignore_junk_symbols_as_vocabulary() {
+        ensure_dictionary();
+        // Symbols like * and x should be forced to Symbol POS
+        let tokens = tokenize_text("アーニャ*ダミアン×ヨル").unwrap();
+        for token in tokens {
+            let base = token.orthographic_base_form();
+            if base == "*" || base == "×" {
+                assert!(!token.part_of_speech().is_vocabulary_word(), "Symbol '{}' (POS {:?}) should not be a vocabulary word", base, token.part_of_speech());
+                assert_eq!(token.part_of_speech(), &PartOfSpeech::Symbol);
+            }
+        }
     }
 }
