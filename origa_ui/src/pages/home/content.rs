@@ -1,54 +1,11 @@
-use super::{HistoryModal, JlptProgressCard, StatCard, StatMetric};
+use super::{HistoryModal, HomeSkeleton, JlptProgressCard, JlptSkeleton, StatMetric, StatsGrid};
+use super::{HomeStats, calculate_stats, format_number};
 use crate::repository::HybridUserRepository;
-use crate::ui_components::{
-    Button, ButtonVariant, Card, Skeleton, Text, TextSize, TypographyVariant,
-};
+use crate::ui_components::{Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use leptos_router::components::A;
 use origa::application::GetUserInfoUseCase;
 use origa::domain::{DailyHistoryItem, JlptProgress, User};
-
-#[derive(Clone, Default)]
-struct HomeStats {
-    total_cards: usize,
-    learned: usize,
-    in_progress: usize,
-    new: usize,
-    high_difficulty: usize,
-    weekly_delta: usize,
-}
-
-fn format_number(n: usize) -> String {
-    if n >= 1000 {
-        format!("{:.1}k", n as f64 / 1000.0)
-    } else {
-        n.to_string()
-    }
-}
-
-fn calculate_stats(history: &[DailyHistoryItem]) -> HomeStats {
-    if history.is_empty() {
-        return HomeStats::default();
-    }
-
-    let last = history.last().unwrap();
-    let weekly_delta = if history.len() >= 2 {
-        let prev = &history[history.len() - 2];
-        last.total_words().saturating_sub(prev.total_words())
-    } else {
-        0
-    };
-
-    HomeStats {
-        total_cards: last.total_words(),
-        learned: last.known_words(),
-        in_progress: last.in_progress_words(),
-        new: last.new_words(),
-        high_difficulty: last.high_difficulty_words(),
-        weekly_delta,
-    }
-}
 
 #[component]
 pub fn HomeContent() -> impl IntoView {
@@ -126,98 +83,25 @@ pub fn HomeContent() -> impl IntoView {
 
                 <Show
                     when=move || !is_loading.get()
-                    fallback=move || view! { <Skeleton width=Signal::derive(|| Some("100%".to_string())) height=Signal::derive(|| Some("200px".to_string())) class=Signal::derive(|| "mb-6".to_string()) /> }
+                    fallback=move || view! { <JlptSkeleton /> }
                 >
                     <JlptProgressCard jlpt_progress=Signal::derive(move || jlpt_progress.get()) />
                 </Show>
 
-                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-                    <Show
-                        when=move || !is_loading.get()
-                        fallback=move || {
-                            view! {
-                                {(0..6).map(|_| view! {
-                                    <Card class=Signal::derive(|| "p-6".to_string())>
-                                        <Skeleton
-                                            width=Signal::derive(|| Some("60%".to_string()))
-                                            height=Signal::derive(|| Some("12px".to_string()))
-                                            class=Signal::derive(|| "mb-4".to_string())
-                                        />
-                                        <Skeleton
-                                            width=Signal::derive(|| Some("50%".to_string()))
-                                            height=Signal::derive(|| Some("32px".to_string()))
-                                            class=Signal::derive(|| "mb-2".to_string())
-                                        />
-                                        <Skeleton
-                                            width=Signal::derive(|| Some("70%".to_string()))
-                                            height=Signal::derive(|| Some("12px".to_string()))
-                                            class=Signal::derive(|| "mb-4".to_string())
-                                        />
-                                        <Skeleton
-                                            width=Signal::derive(|| Some("80px".to_string()))
-                                            height=Signal::derive(|| Some("36px".to_string()))
-                                            class=Signal::derive(String::new)
-                                        />
-                                    </Card>
-                                }).collect::<Vec<_>>()}
-                            }
-                        }
-                    >
-                        <Card class=Signal::derive(|| "p-6 flex flex-col justify-between".to_string())>
-                            <Text size=TextSize::Small variant=TypographyVariant::Muted class="mb-3">
-                                "Обучение"
-                            </Text>
-                            <div class="flex flex-col gap-2">
-                                <A href="/lesson">
-                                    <Button variant=Signal::derive(|| ButtonVariant::Filled) class="w-full">
-                                        "Урок"
-                                    </Button>
-                                </A>
-                                <A href="/lesson?mode=fixation">
-                                    <Button variant=Signal::derive(|| ButtonVariant::Olive) class="w-full">
-                                        "Сложные"
-                                    </Button>
-                                </A>
-                            </div>
-                        </Card>
-
-                        <StatCard
-                            title=Signal::derive(|| "Всего карточек".to_string())
-                            value=total_cards
-                            subtitle=Signal::derive(|| "в базе".to_string())
-                            delta=weekly_delta_text
-                            on_history=open_history(StatMetric::TotalCards)
-                        />
-
-                        <StatCard
-                            title=Signal::derive(|| "Изучено".to_string())
-                            value=learned
-                            subtitle=Signal::derive(|| "карточек".to_string())
-                            on_history=open_history(StatMetric::Learned)
-                        />
-
-                        <StatCard
-                            title=Signal::derive(|| "В процессе".to_string())
-                            value=in_progress
-                            subtitle=Signal::derive(|| "изучения".to_string())
-                            on_history=open_history(StatMetric::InProgress)
-                        />
-
-                        <StatCard
-                            title=Signal::derive(|| "Новые".to_string())
-                            value=new_cards
-                            subtitle=Signal::derive(|| "карточек".to_string())
-                            on_history=open_history(StatMetric::New)
-                        />
-
-                        <StatCard
-                            title=Signal::derive(|| "Сложные слова".to_string())
-                            value=high_difficulty
-                            subtitle=Signal::derive(|| "требуют внимания".to_string())
-                            on_history=open_history(StatMetric::HighDifficulty)
-                        />
-                    </Show>
-                </div>
+                <Show
+                    when=move || !is_loading.get()
+                    fallback=move || view! { <HomeSkeleton /> }
+                >
+                    <StatsGrid
+                        total_cards=total_cards
+                        learned=learned
+                        in_progress=in_progress
+                        new_cards=new_cards
+                        high_difficulty=high_difficulty
+                        weekly_delta_text=weekly_delta_text
+                        open_history=open_history
+                    />
+                </Show>
             </div>
 
             <HistoryModal

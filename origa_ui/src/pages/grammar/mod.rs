@@ -4,8 +4,6 @@ mod add_grammar_modal_handlers;
 mod add_grammar_modal_state;
 mod content;
 mod error_alert;
-mod filter;
-mod filter_btn;
 mod grammar_card_item;
 mod header;
 mod level_selector;

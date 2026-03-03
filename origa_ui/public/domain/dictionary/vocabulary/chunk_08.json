@@ -60,12 +60,12 @@
     "english_translation": "- the highest good"
   },
   "経済": {
-    "russian_translation": "- экономика  \n- народное хозяйство  \n- финансовый  \n- экономичность  \n- экономия  \n- экономный  \n- экономичный  \n- быть экономным  \n- народное хозяйство",
+    "russian_translation": "- экономика  \n- народное хозяйство  \n- финансовый  \n- экономичность  \n- экономия  \n- экономный  \n- экономичный  \n- быть экономным  ",
     "english_translation": "- economy  \n- economics  \n- finance  \n- finances  \n- financial circumstances  \n- being economical  \n- thrift"
   },
   "蒼々": {
     "russian_translation": "- свежий, ярко-зелёный (о зелени)",
-    "english_translation": "- verdant  \n- fresh and green  \n- bright green  \n- lush  \n- blue (sky, ocean, etc.)  \n- fresh and green (of vegetation)  \n- verdant  \n- lush  \n- greying (hair)  \n- aged"
+    "english_translation": "- verdant  \n- fresh and green  \n- bright green  \n- lush  \n- blue (sky, ocean, etc.)  \n- fresh and green (of vegetation)  \n- greying (hair)  \n- aged"
   },
   "臺無し": {
     "russian_translation": "- потерять всякое значение; стать ничем  \n- испортить; уничтожить; разрушить; свести на нет; угробить (план и т. п.)  \n- испортиться; лопнуть (о планах, надеждах)",
@@ -1145,7 +1145,7 @@
   },
   "蟠る": {
     "russian_translation": "- лежать, свернувшись кольцом (о змее)\n- извиваться (о корнях)\n- быть укоренившимся (перен.)\n- таиться (глубоко)",
-    "english_translation": "- to lurk  \n- to hover in the background  \n- to be coiled up  \n- to stretch tortuously  \n- to be harboured (of negative feelings or thoughts)  \n- to be rooted in one's mind  \n- to lurk  \n- to coil  \n- to curl around  \n- to become tangled (e.g. of roots)"
+    "english_translation": "- to lurk  \n- to hover in the background  \n- to be coiled up  \n- to stretch tortuously  \n- to be harboured (of negative feelings or thoughts)  \n- to be rooted in one's mind  \n- to coil  \n- to curl around  \n- to become tangled (e.g. of roots)"
   },
   "継ぎ合せる": {
     "russian_translation": "- соединять (скреплять) вместе  \n- сращивать, связывать (концы)  \n- сшивать  \n- склеивать  \n- подгонять, плотно прилаживать",
@@ -4445,7 +4445,7 @@
   },
   "行旅": {
     "russian_translation": "- путешествие  \n- путник",
-    "english_translation": "- traveling  \n- traveling  \n- traveler  \n- traveler"
+    "english_translation": "- traveling  \n- traveler  "
   },
   "蒙古語": {
     "russian_translation": "- монгольский язык",
@@ -4792,7 +4792,7 @@
     "english_translation": "- representative"
   },
   "粗探し": {
-    "russian_translation": "- придираться  \n- придирчивость  \n- придирчиво  \n- мелко  \n- придираться",
+    "russian_translation": "- придираться  \n- придирчивость  \n- придирчиво  \n- мелко  ",
     "english_translation": "- finding fault  \n- being picky"
   },
   "製粉機": {
@@ -4813,7 +4813,7 @@
   },
   "薔薇色": {
     "russian_translation": "- розовый цвет",
-    "english_translation": "- rose-color  \n- rose-color  \n- bright (e.g. life, future, prospects)  \n- cheerful  \n- rosy"
+    "english_translation": "- rose-color  \n- bright (e.g. life, future, prospects)  \n- cheerful  \n- rosy"
   },
   "繰り出し梯子": {
     "russian_translation": "- выдвижная лестница",
@@ -5769,7 +5769,7 @@
   },
   "色": {
     "russian_translation": "- цвет, окраска  \n- оттенок, тон  \n- краска  \n- цвет лица (кожи)  \n- выражение лица  \n- общий облик  \n- личное обаяние  \n- сорт  \n- любовные дела  \n- чувственные наслаждения  \n- роман  \n- возлюбленный, возлюбленная",
-    "english_translation": "- color  \n- color, color  \n- hue  \n- tint  \n- tinge  \n- shade  \n- complexion  \n- skin color  \n- skin color  \n- look (on one's face)  \n- expression  \n- appearance  \n- air  \n- feeling  \n- personality  \n- character  \n- tone (of one's voice, etc.)  \n- tune  \n- sound  \n- ring  \n- love  \n- lust  \n- sensuality  \n- love affair  \n- lover  \n- paramour  \n- beauty  \n- sexiness  \n- physical appeal  \n- kind  \n- type  \n- variety  \n- rupa (form)  \n- visible objects (i.e. color and form)"
+    "english_translation": "- color  \n- color, color  \n- hue  \n- tint  \n- tinge  \n- shade  \n- complexion  \n- skin color  \n- look (on one's face)  \n- expression  \n- appearance  \n- air  \n- feeling  \n- personality  \n- character  \n- tone (of one's voice, etc.)  \n- tune  \n- sound  \n- ring  \n- love  \n- lust  \n- sensuality  \n- love affair  \n- lover  \n- paramour  \n- beauty  \n- sexiness  \n- physical appeal  \n- kind  \n- type  \n- variety  \n- rupa (form)  \n- visible objects (i.e. color and form)"
   },
   "綜括": {
     "russian_translation": "- суммировать  \n- обобщать  \n- резюмировать  \n- синтез  \n- конспективное изложение  \n- резюме  \n- всеобъемлющий  \n- всеохватывающий  \n- общий  \n- обобщающий  \n- резюмирующий  \n- в общем  \n- в целом",
@@ -7004,7 +7004,7 @@
     "english_translation": "- to tie  \n- to restrain  \n- to confine  \n- to bind  \n- to fasten"
   },
   "組合せ": {
-    "russian_translation": "- сочетание  \n- подбор  \n- комбинация  \n- жеребьёвка  \n- составление таблицы соревнований  \n- сочетание",
+    "russian_translation": "- сочетание  \n- подбор  \n- комбинация  \n- жеребьёвка  \n- составление таблицы соревнований  ",
     "english_translation": "- combination  \n- assortment  \n- set  \n- matching (in a contest)  \n- pairing"
   },
   "背中": {
@@ -7416,7 +7416,7 @@
     "english_translation": "- spinning wheel"
   },
   "翔ぶ": {
-    "russian_translation": "- прыгать  \n- скакать  \n- перепрыгивать  \n- перескакивать  \n- летать  \n- пролетать  \n- улетать  \n- порхать  \n- лететь  \n- мчаться  \n- отвлекаться  \n- перескакивать",
+    "russian_translation": "- прыгать  \n- скакать  \n- перепрыгивать  \n- перескакивать  \n- летать  \n- пролетать  \n- улетать  \n- порхать  \n- лететь  \n- мчаться  \n- отвлекаться  ",
     "english_translation": "- to fly  \n- to soar  \n- to jump  \n- to leap  \n- to spring  \n- to bound  \n- to hop  \n- to spatter  \n- to scatter  \n- to splash  \n- to fly (e.g. of sparks)  \n- to hurry  \n- to rush  \n- to flee  \n- to run off  \n- to escape  \n- to disappear  \n- to vanish  \n- to fade  \n- to thin out  \n- to break off  \n- to come off  \n- to fall off  \n- to blow (of a fuse)  \n- to be sent out (of an order)  \n- to fly (of false rumours, catcalls, etc.)  \n- to come flying (of a punch, kick, etc.)  \n- to be missing (of a page, stitch, etc.)  \n- to skip  \n- to jump (e.g. of a conversation)"
   },
   "紋日": {
@@ -8133,7 +8133,7 @@
   },
   "西部劇": {
     "russian_translation": "- ковбойский фильм",
-    "english_translation": "- western (film genre)  \n- western (film genre)"
+    "english_translation": "- western (film genre)  "
   },
   "総理": {
     "russian_translation": "- президент  \n- глава  \n- лидер  \n- премьер",
@@ -8712,7 +8712,7 @@
     "english_translation": "- silk goods"
   },
   "罪作り": {
-    "russian_translation": "- грешный  \n- греховный  \n- грехопадение  \n- грех  \n- совершать грех  \n- грешить  \n- поступать жестоко (бессердечно)  \n- грешный  \n- греховный  \n- грешник",
+    "russian_translation": "- грешный  \n- греховный  \n- грехопадение  \n- грех  \n- совершать грех  \n- грешить  \n- поступать жестоко (бессердечно)  \n- грешник",
     "english_translation": "- deceitful  \n- cruel"
   },
   "累減": {
@@ -10069,7 +10069,7 @@
   },
   "被せる": {
     "russian_translation": "- покрывать, накрывать (чем-л.)\n- надевать (на голову)\n- лить (что-л.), поливать (чем-л.)\n- сваливать (вину, ответственность и т. п.)",
-    "english_translation": "- to cover (with something)  \n- to put on (e.g. on someone else's head)  \n- to plate something (with a metal)  \n- to pour or dash a liquid (on something)  \n- to charge (a person with a guilt)  \n- to cover (with something)  \n- to put on (e.g. someone's head)  \n- to pour liquid (on something)  \n- to dash liquid (over something)  \n- to plate (something) with metal  \n- to cover (with a dental crown)  \n- to add (e.g. music to a video)  \n- to include (into something)  \n- to speak (over someone else)  \n- to put the blame (on someone)  \n- to place the responsibility (on someone)"
+    "english_translation": "- to cover (with something)  \n- to put on (e.g. on someone else's head)  \n- to plate something (with a metal)  \n- to pour or dash a liquid (on something)  \n- to charge (a person with a guilt)  \n- to put on (e.g. someone's head)  \n- to pour liquid (on something)  \n- to dash liquid (over something)  \n- to plate (something) with metal  \n- to cover (with a dental crown)  \n- to add (e.g. music to a video)  \n- to include (into something)  \n- to speak (over someone else)  \n- to put the blame (on someone)  \n- to place the responsibility (on someone)"
   },
   "腹癒せ": {
     "russian_translation": "- месть  \n- отплата  \n- из чувства мести  \n- отвести душу  \n- отомстить  \n- отплатить  \n- излить гнев  \n- свести счёты",
@@ -14233,7 +14233,7 @@
   },
   "行き会う": {
     "russian_translation": "- встретиться  \n- повстречаться  \n- гармонировать  \n- идти",
-    "english_translation": "- to meet somebody by chance  \n- to happen upon  \n- to meet someone by chance  \n- to happen upon"
+    "english_translation": "- to meet somebody by chance  \n- to happen upon  \n- to meet someone by chance  "
   },
   "耐え難い": {
     "russian_translation": "- невыносимый  \n- нестерпимый",
@@ -14265,7 +14265,7 @@
   },
   "肌触り": {
     "russian_translation": "- ощущение на ощупь",
-    "english_translation": "- the touch of  \n- feel of  \n- texture  \n- feel  \n- touch  \n- texture  \n- manner (with others)"
+    "english_translation": "- the touch of  \n- feel of  \n- texture  \n- feel  \n- touch  \n- manner (with others)"
   },
   "融通念仏宗": {
     "russian_translation": "- секта Юдзу-нэмбуцу",
@@ -14281,7 +14281,7 @@
   },
   "締め": {
     "russian_translation": "- итог  \n- запечатано",
-    "english_translation": "- tie up  \n- bind  \n- fastening  \n- tightening  \n- sum  \n- total amount  \n- total  \n- judo choking (strangling) techniques  \n- last meal eaten when going restaurant hopping  \n- completion  \n- conclusion  \n- rounding off  \n- counter for bundles  \n- counter for faggots  \n- counter for bundles of 2000 sheets of paper  \n- end mark  \n- closure mark  \n- tying up  \n- binding  \n- fastening  \n- tightening  \n- total  \n- sum  \n- conclusion (e.g. of a gathering)  \n- end  \n- finish  \n- rounding off  \n- final meal after a drinking party  \n- dish made after eating a hot pot by adding rice or noodles to the leftover broth  \n- deadline  \n- closing  \n- cut-off  \n- choking technique (in judo)  \n- stranglehold"
+    "english_translation": "- tie up  \n- bind  \n- fastening  \n- tightening  \n- sum  \n- total amount  \n- total  \n- judo choking (strangling) techniques  \n- last meal eaten when going restaurant hopping  \n- completion  \n- conclusion  \n- rounding off  \n- counter for bundles  \n- counter for faggots  \n- counter for bundles of 2000 sheets of paper  \n- end mark  \n- closure mark  \n- tying up  \n- binding  \n- conclusion (e.g. of a gathering)  \n- end  \n- finish  \n- final meal after a drinking party  \n- dish made after eating a hot pot by adding rice or noodles to the leftover broth  \n- deadline  \n- closing  \n- cut-off  \n- choking technique (in judo)  \n- stranglehold"
   },
   "美い": {
     "russian_translation": "- вкусный  \n- искусный, ловкий, удачный  \n- хороший; успешный; выгодный, умелый, ловкий, искусный",
@@ -14673,7 +14673,7 @@
   },
   "緋": {
     "russian_translation": "- красный свет  \n- пунцовый  \n- красный цвет  \n- стать красным",
-    "english_translation": "- red  \n- crimson  \n- scarlet  \n- red-containing colour (e.g. brown, pink, orange)  \n- red light (traffic)  \n- red ink (i.e. in finance or proof-reading), (in) the red  \n- complete, total, perfect, obvious  \n- red 5-point card  \n- scarlet  \n- crimson  \n- cardinal red"
+    "english_translation": "- red  \n- crimson  \n- scarlet  \n- red-containing colour (e.g. brown, pink, orange)  \n- red light (traffic)  \n- red ink (i.e. in finance or proof-reading), (in) the red  \n- complete, total, perfect, obvious  \n- red 5-point card  \n- cardinal red"
   },
   "舞踏病": {
     "russian_translation": "- виттова пляска  \n- хорея",
@@ -14937,7 +14937,7 @@
   },
   "芸人": {
     "russian_translation": "- актёр  \n- исполнитель  \n- талантливый человек",
-    "english_translation": "- entertainer (esp. in a traditional art)\n- performer\n- artiste\n- talented person\n- accomplished person\n- TV comedian\n- performer (esp. of a traditional art)\n- entertainer\n- talented person\n- accomplished person"
+    "english_translation": "- entertainer (esp. in a traditional art)\n- performer\n- artiste\n- talented person\n- accomplished person\n- TV comedian\n- performer (esp. of a traditional art)\n- entertainer"
   },
   "至上権": {
     "russian_translation": "- верховная власть  \n- высшее право",
@@ -16324,12 +16324,12 @@
     "english_translation": "- petrol filling station  \n- gasoline filling station  \n- gas station  \n- petrol station  \n- filling station  \n- service station  \n- fuel depot"
   },
   "裏手": {
-    "russian_translation": "- с задней стороны  \n- задняя сторона  \n- с задней стороны  \n- задняя сторона",
+    "russian_translation": "- с задней стороны  \n- задняя сторона  ",
     "english_translation": "- back  \n- rear  \n- behind"
   },
   "細身": {
     "russian_translation": "- тонкий и гибкий  \n- тонкое лезвие",
-    "english_translation": "- narrow  \n- thin  \n- slender  \n- narrow (blade)  \n- slender (figure, build)  \n- thin"
+    "english_translation": "- narrow  \n- thin  \n- slender  \n- narrow (blade)  \n- slender (figure, build)  "
   },
   "筧": {
     "russian_translation": "- наземная водопроводная труба  \n- жёлоб",
@@ -16437,7 +16437,7 @@
   },
   "行き着く": {
     "russian_translation": "- прибывать  \n- добираться (куда-л.)",
-    "english_translation": "- to arrive at  \n- to end up  \n- to reach  \n- to come to a head  \n- to reach a conclusion  \n- to culminate  \n- to end up"
+    "english_translation": "- to arrive at  \n- to end up  \n- to reach  \n- to come to a head  \n- to reach a conclusion  \n- to culminate  "
   },
   "膝下": {
     "russian_translation": "- у колен  \n- вблизи (кого-л.)  \n- у (чьих-л.) ног  \n- под (родительским) кровом",
@@ -16749,7 +16749,7 @@
   },
   "結びつける": {
     "russian_translation": "- связывать  \n- привязывать",
-    "english_translation": "- to combine  \n- to join  \n- to tie on  \n- to attach with a knot  \n- to bind  \n- to tie  \n- to fasten  \n- to attach  \n- to connect (one thing with another)  \n- to link  \n- to bring together  \n- to combine  \n- to associate"
+    "english_translation": "- to combine  \n- to join  \n- to tie on  \n- to attach with a knot  \n- to bind  \n- to tie  \n- to fasten  \n- to attach  \n- to connect (one thing with another)  \n- to link  \n- to bring together  \n- to associate"
   },
   "蛙股": {
     "russian_translation": "- раздвоённый вилообразный предмет  \n- шпилька  \n> (название резного украшения на крыше яп. дома.)",
@@ -16868,7 +16868,7 @@
     "english_translation": "- plum blossom viewing"
   },
   "約する": {
-    "russian_translation": "- настраивание  \n- настраивание",
+    "russian_translation": "- настраивание  ",
     "english_translation": "- to promise  \n- to abridge  \n- to simplify  \n- to shorten  \n- to reduce"
   },
   "裁ち": {
@@ -18344,7 +18344,7 @@
     "english_translation": "- depilatory"
   },
   "縦": {
-    "russian_translation": "- в длину  \n- вдоль  \n- от головы до хвоста  \n- от носа до кормы  \n- вертикальный  \n- отвесный  \n- перпендикулярный  \n- продольный  \n- длина  \n- высота  \n- рост  \n- вертикальный, отвесный  \n- перпендикулярный  \n- продольный  \n- в длину  \n- от носа до кормы  \n- основа (ткани)  \n- как вздумается  \n- как угодно  \n- по произволу  \n- делать (поступать) как заблагорассудится (по-своему)  \n- своевольный  \n- произвольный  \n- деспотический  \n- по-своему",
+    "russian_translation": "- в длину  \n- вдоль  \n- от головы до хвоста  \n- от носа до кормы  \n- вертикальный  \n- отвесный  \n- перпендикулярный  \n- продольный  \n- длина  \n- высота  \n- рост  \n- вертикальный, отвесный  \n- основа (ткани)  \n- как вздумается  \n- как угодно  \n- по произволу  \n- делать (поступать) как заблагорассудится (по-своему)  \n- своевольный  \n- произвольный  \n- деспотический  \n- по-своему",
     "english_translation": "- selfish  \n- self-indulgent  \n- arbitrary  \n- even if  \n- the vertical  \n- height  \n- front-to-back  \n- length  \n- north-to-south  \n- vertical (relationship)  \n- hierarchy  \n- (weaving) warp"
   },
   "見出す": {
@@ -18517,7 +18517,7 @@
   },
   "箱詰め": {
     "russian_translation": "- упакованный в ящик  \n- укладывать (упаковывать) в ящики",
-    "english_translation": "- boxing  \n- packing into a box  \n- something packed into a box  \n- packing into a box  \n- boxing (up)  \n- thing packed in a box"
+    "english_translation": "- boxing  \n- packing into a box  \n- something packed into a box  \n- boxing (up)  \n- thing packed in a box"
   },
   "翼桁": {
     "russian_translation": "- рангоут",
@@ -18797,7 +18797,7 @@
   },
   "行る": {
     "russian_translation": "- давать  \n- дарить  \n- девать  \n- посылать  \n- пускать  \n- делать  \n- исполнять  \n- проводить  \n- заниматься  \n- играть  \n- есть  \n- пить  \n- вести  \n- держать  \n- устраивать",
-    "english_translation": "- to do  \n- to undertake  \n- to perform  \n- to play (a game)  \n- to study  \n- to send  \n- to dispatch  \n- to despatch  \n- to put  \n- to move  \n- to turn (one's head, glance, etc.)  \n- to give (esp. to someone of equal or lower status)  \n- to let have  \n- to present  \n- to bestow  \n- to confer  \n- to make (a vehicle) go faster  \n- to run (a business)  \n- to keep  \n- to be engaged in  \n- to practice (law, medicine, etc.)  \n- to practise  \n- to have (food, drink, etc.)  \n- to eat  \n- to drink  \n- to smoke  \n- to hold (a performance)  \n- to perform  \n- to show  \n- to ease (one's mind)  \n- to harm  \n- to injure  \n- to kill  \n- to have sex with  \n- to live  \n- to get by  \n- to get along  \n- to do ... completely  \n- to do ... broadly  \n- to do ... to a great distance  \n- to do ... for (someone of equal or lower status)  \n- to do ... to (sometimes with negative nuance)  \n- to make active efforts to ..."
+    "english_translation": "- to do  \n- to undertake  \n- to perform  \n- to play (a game)  \n- to study  \n- to send  \n- to dispatch  \n- to despatch  \n- to put  \n- to move  \n- to turn (one's head, glance, etc.)  \n- to give (esp. to someone of equal or lower status)  \n- to let have  \n- to present  \n- to bestow  \n- to confer  \n- to make (a vehicle) go faster  \n- to run (a business)  \n- to keep  \n- to be engaged in  \n- to practice (law, medicine, etc.)  \n- to practise  \n- to have (food, drink, etc.)  \n- to eat  \n- to drink  \n- to smoke  \n- to hold (a performance)  \n- to show  \n- to ease (one's mind)  \n- to harm  \n- to injure  \n- to kill  \n- to have sex with  \n- to live  \n- to get by  \n- to get along  \n- to do ... completely  \n- to do ... broadly  \n- to do ... to a great distance  \n- to do ... for (someone of equal or lower status)  \n- to do ... to (sometimes with negative nuance)  \n- to make active efforts to ..."
   },
   "網目": {
     "russian_translation": "- петля (в вязанье)  \n- ячея сети",
@@ -19425,7 +19425,7 @@
   },
   "肥える": {
     "russian_translation": "- толстеть  \n- жиреть  \n- становиться плодородной (о земле)",
-    "english_translation": "- to grow fat  \n- to gain weight  \n- to put on weight  \n- to grow fertile  \n- to be refined (palate)  \n- to be discerning (eye, ear)  \n- to become rich  \n- to become successful  \n- to grow fat  \n- to gain weight  \n- to put on weight  \n- to grow fertile (of soil)  \n- to be discerning (of one's palate, eye, ear, etc.)  \n- to be discriminating  \n- to be refined  \n- to become wealthy"
+    "english_translation": "- to grow fat  \n- to gain weight  \n- to put on weight  \n- to grow fertile  \n- to be refined (palate)  \n- to be discerning (eye, ear)  \n- to become rich  \n- to become successful  \n- to grow fertile (of soil)  \n- to be discerning (of one's palate, eye, ear, etc.)  \n- to be discriminating  \n- to be refined  \n- to become wealthy"
   },
   "艦船": {
     "russian_translation": "- военные и другие суда  \n- суда  \n- корабли",
@@ -19593,7 +19593,7 @@
   },
   "粟立つ": {
     "russian_translation": "- покрываться гусиной кожей (от холода, страха и т. п.)  \n- пениться, покрываться гусиной кожей (от холода, страха и т. п.)",
-    "english_translation": "- to have gooseflesh  \n- to get goosebumps  \n- to have gooseflesh"
+    "english_translation": "- to have gooseflesh  \n- to get goosebumps  "
   },
   "自由民権論": {
     "russian_translation": "учение о свободе и правах народа",
@@ -20209,7 +20209,7 @@
   },
   "襤褸": {
     "russian_translation": "- тряпьё  \n- лохмотья",
-    "english_translation": "- rag  \n- scrap  \n- tattered clothes  \n- fault  \n- defect  \n- run-down  \n- shabby  \n- junky  \n- old cloth  \n- rags  \n- worn-out  \n- ragged  \n- tattered  \n- tattered clothes  \n- ragged clothes  \n- rag"
+    "english_translation": "- rag  \n- scrap  \n- tattered clothes  \n- fault  \n- defect  \n- run-down  \n- shabby  \n- junky  \n- old cloth  \n- rags  \n- worn-out  \n- ragged  \n- tattered  \n- ragged clothes  "
   },
   "舵棒": {
     "russian_translation": "- оглобля",
@@ -20276,7 +20276,7 @@
     "english_translation": "- to be conceited"
   },
   "纏う": {
-    "russian_translation": "- накинуть на себя  \n- укутаться  \n- накинуть на себя",
+    "russian_translation": "- накинуть на себя  \n- укутаться  ",
     "english_translation": "- to put on  \n- to wear  \n- to be clad in  \n- to be dressed in  \n- to be wrapped in"
   },
   "糖衣": {
@@ -21133,7 +21133,7 @@
   },
   "解す": {
     "russian_translation": "- развязывать  \n- откреплять  \n- отвязывать  \n- распарывать  \n- расшивать (книгу)  \n- распускать (волосы)  \n- распутывать (напр. узел)",
-    "english_translation": "- to unravel  \n- to untie  \n- to untangle  \n- to loosen  \n- to break into small pieces (of fish, meat, etc.)  \n- to relax  \n- to ease  \n- to understand  \n- to comprehend  \n- to appreciate  \n- to interpret  \n- to disentangle  \n- to pick apart  \n- to flake (a fish)  \n- to relieve  \n- to ease  \n- to relax"
+    "english_translation": "- to unravel  \n- to untie  \n- to untangle  \n- to loosen  \n- to break into small pieces (of fish, meat, etc.)  \n- to relax  \n- to ease  \n- to understand  \n- to comprehend  \n- to appreciate  \n- to interpret  \n- to disentangle  \n- to pick apart  \n- to flake (a fish)  \n- to relieve  "
   },
   "脳炎": {
     "russian_translation": "- энцефалит  \n- воспаление мозга",
@@ -23777,7 +23777,7 @@
   },
   "若輩": {
     "russian_translation": "- молодой человек, молодёжь  \n- неопытный по молодости; зелёный юнец, молокосос",
-    "english_translation": "- young person  \n- inexperienced person  \n- novice  \n- youngster  \n- greenhorn  \n- greenhorn"
+    "english_translation": "- young person  \n- inexperienced person  \n- novice  \n- youngster  \n- greenhorn  "
   },
   "筋向こう": {
     "russian_translation": "- наискось  \n- по диагонали",
@@ -26133,7 +26133,7 @@
   },
   "葉牡丹": {
     "russian_translation": "- листовая роза",
-    "english_translation": "- ornamental kale (Brassica oleracea var. acephala)  \n- ornamental kale (Brassica oleracea var. acephala)"
+    "english_translation": "- ornamental kale (Brassica oleracea var. acephala)  "
   },
   "虎": {
     "russian_translation": "- тигр  \n- пьяница  \n- пьянчужка",
@@ -26453,7 +26453,7 @@
   },
   "紅": {
     "russian_translation": "- алый  \n- тёмно-красный  \n- красный цвет  \n- губная помада  \n- румяна  \n- красный лак (для ногтей)  \n- красный (напр. о коммунистах)  \n- стать красным  \n- красный шёлк",
-    "english_translation": "- deep red  \n- crimson  \n- rouge  \n- lipstick  \n- red  \n- crimson  \n- scarlet  \n- red-containing colour (e.g. brown, pink, orange)  \n- Red (i.e. communist)  \n- red light (traffic)  \n- red ink (i.e. in finance or proof-reading)  \n- (in) the red  \n- complete  \n- total  \n- perfect  \n- obvious  \n- red 5-point card  \n- red silk lining"
+    "english_translation": "- deep red  \n- crimson  \n- rouge  \n- lipstick  \n- red  \n- scarlet  \n- red-containing colour (e.g. brown, pink, orange)  \n- Red (i.e. communist)  \n- red light (traffic)  \n- red ink (i.e. in finance or proof-reading)  \n- (in) the red  \n- complete  \n- total  \n- perfect  \n- obvious  \n- red 5-point card  \n- red silk lining"
   },
   "紅毛": {
     "russian_translation": "- рыжие волосы  \n> ((букв.) красные)",
@@ -29089,7 +29089,7 @@
   },
   "表徴": {
     "russian_translation": "- наглядный симптом  \n- внешний признак (знак)",
-    "english_translation": "- appearing on the surface  \n- symbol, sign  \n- distinguishing mark, diagnostic character  \n- outward sign, symbol (of something abstract)  \n- emblem  \n- distinguishing mark, diagnostic character"
+    "english_translation": "- appearing on the surface  \n- symbol, sign  \n- distinguishing mark, diagnostic character  \n- outward sign, symbol (of something abstract)  \n- emblem  "
   },
   "肩代り": {
     "russian_translation": "- передавать, уступать  \n- переводить на (чьё-л.) имя  \n- сменяющиеся носильщики (несущие что-л. на плечах)  \n- перекладывание бремени на чужие плечи  \n- передача, уступка",
@@ -29356,7 +29356,7 @@
     "english_translation": "- bullying  \n- teasing"
   },
   "縮写": {
-    "russian_translation": "- делать уменьшенную копию  \n- уменьшенная копия  \n- в уменьшенном размере (формате, масштабе)  \n- делать уменьшенную копию",
+    "russian_translation": "- делать уменьшенную копию  \n- уменьшенная копия  \n- в уменьшенном размере (формате, масштабе)  ",
     "english_translation": "- reduced copy  \n- reproduction in miniature"
   },
   "純文学": {
@@ -29472,7 +29472,7 @@
     "english_translation": "- box  \n- case  \n- chest  \n- package  \n- pack  \n- crate  \n- car (of a train, etc.)  \n- shamisen case  \n- shamisen  \n- public building  \n- community building  \n- man who carries a geisha's shamisen  \n- receptacle for human waste  \n- feces  \n- counter for boxes (or boxed objects)"
   },
   "組み合わせ": {
-    "russian_translation": "- сочетание  \n- подбор  \n- комбинация  \n- жеребьёвка  \n- составление таблицы соревнований  \n- сочетание",
+    "russian_translation": "- сочетание  \n- подбор  \n- комбинация  \n- жеребьёвка  \n- составление таблицы соревнований  ",
     "english_translation": "- combination  \n- assortment  \n- set  \n- matching (in a contest)  \n- pairing"
   },
   "色合い": {
@@ -29749,7 +29749,7 @@
   },
   "緊密": {
     "russian_translation": "- тесный  \n- плотный  \n- напряжённый",
-    "english_translation": "- rigor  \n- rigor  \n- closeness  \n- compactness  \n- tightly knit"
+    "english_translation": "- rigor  \n- closeness  \n- compactness  \n- tightly knit"
   },
   "縫い包み": {
     "russian_translation": "- тряпичная кукла",
@@ -30113,7 +30113,7 @@
   },
   "終う": {
     "russian_translation": "- кончать  \n- заканчивать  \n- прятать  \n- убирать  \n- закрывать  \n- свёртывать",
-    "english_translation": "- to finish  \n- to stop  \n- to end  \n- to put an end to  \n- to bring to a close  \n- to close (a business, etc.)  \n- to close down  \n- to shut down  \n- to shut up  \n- to put away  \n- to put back  \n- to keep  \n- to store  \n- to do completely  \n- to finish  \n- to do accidentally  \n- to do without meaning to  \n- to happen to do"
+    "english_translation": "- to finish  \n- to stop  \n- to end  \n- to put an end to  \n- to bring to a close  \n- to close (a business, etc.)  \n- to close down  \n- to shut down  \n- to shut up  \n- to put away  \n- to put back  \n- to keep  \n- to store  \n- to do completely  \n- to do accidentally  \n- to do without meaning to  \n- to happen to do"
   },
   "覚書き": {
     "russian_translation": "- заметка  \n- памятная записка  \n- меморандум  \n- нота  \n- протокол",
@@ -30833,7 +30833,7 @@
   },
   "糸瓜": {
     "russian_translation": "- луффа  \n> (бот.) Luffa cylindrica (Roem.)",
-    "english_translation": "- sponge gourd (Luffa aegyptiaca)  \n- Egyptian cucumber  \n- Vietnamese luffa  \n- dishrag gourd  \n- loofah  \n- loofah  \n- vegetable sponge  \n- something useless  \n- dishcloth gourd  \n- bath sponge  \n- luffa  \n- worthless thing  \n- insignificant thing"
+    "english_translation": "- sponge gourd (Luffa aegyptiaca)  \n- Egyptian cucumber  \n- Vietnamese luffa  \n- dishrag gourd  \n- loofah  \n- vegetable sponge  \n- something useless  \n- dishcloth gourd  \n- bath sponge  \n- luffa  \n- worthless thing  \n- insignificant thing"
   },
   "薪割り": {
     "russian_translation": "- колка дров  \n- топор колун",
@@ -31376,7 +31376,7 @@
     "english_translation": "- to become thin  \n- to fade  \n- to grow pale"
   },
   "組合わせ": {
-    "russian_translation": "- сочетание  \n- подбор  \n- комбинация  \n- жеребьёвка  \n- составление таблицы соревнований  \n- сочетание",
+    "russian_translation": "- сочетание  \n- подбор  \n- комбинация  \n- жеребьёвка  \n- составление таблицы соревнований  ",
     "english_translation": "- combination  \n- assortment  \n- set  \n- matching (in a contest)  \n- pairing"
   },
   "給": {
@@ -31388,7 +31388,7 @@
     "english_translation": "- chandler  \n- candlemaker"
   },
   "肆": {
-    "russian_translation": "- четыре  \n- четыре  \n- как вздумается  \n- как угодно  \n- по произволу  \n- делать (поступать) как заблагорассудится  \n- своевольный  \n- произвольный  \n- деспотический",
+    "russian_translation": "- четыре  \n- как вздумается  \n- как угодно  \n- по произволу  \n- делать (поступать) как заблагорассудится  \n- своевольный  \n- произвольный  \n- деспотический",
     "english_translation": "- four  \n- selfish  \n- self-indulgent  \n- arbitrary"
   },
   "総称": {
@@ -31480,7 +31480,7 @@
     "english_translation": "- sea mark  \n- seamark  \n- beacon"
   },
   "組み合せ": {
-    "russian_translation": "- сочетание  \n- подбор  \n- комбинация  \n- жеребьёвка  \n- составление таблицы соревнований  \n- сочетание",
+    "russian_translation": "- сочетание  \n- подбор  \n- комбинация  \n- жеребьёвка  \n- составление таблицы соревнований  ",
     "english_translation": "- combination  \n- assortment  \n- set  \n- matching (in a contest)  \n- pairing"
   },
   "締高": {
@@ -31509,7 +31509,7 @@
   },
   "色糸": {
     "russian_translation": "- цветные нитки  \n- мулине",
-    "english_translation": "- colored thread  \n- colored thread"
+    "english_translation": "- colored thread  "
   },
   "複製": {
     "russian_translation": "- воспроизведение  \n- перепечатка  \n- репродукция",
@@ -31736,7 +31736,7 @@
     "english_translation": "- bract (leaf)  \n- straw-wrapped item, bundle of straw (containing a food item, etc.)  \n- local produce, souvenir, present, gift"
   },
   "総角": {
-    "russian_translation": "- трёхпетельный бант  \n> (название старинной детской причёски), (уст.)  \n\n- трёхпетельный бант  \n> (уст.)",
+    "russian_translation": "- трёхпетельный бант  \n> (название старинной детской причёски), (уст.)  \n\n> (уст.)",
     "english_translation": "- old-fashioned boys' hairstyle  \n- Meiji period women's hairstyle  \n- constricted tagelus (Sinonovacula constricta), Chinese razor clam  \n- bachelor  \n- single man  \n- unmarried man"
   },
   "紅楼": {
@@ -32129,7 +32129,7 @@
   },
   "苦塩": {
     "russian_translation": "- соляной раствор  \n- маточный раствор (в солеварнях)",
-    "english_translation": "- bittern  \n- concentrated solution of salts (esp. magnesium chloride) left over after the crystallization of seawater or brine  \n- bittern"
+    "english_translation": "- bittern  \n- concentrated solution of salts (esp. magnesium chloride) left over after the crystallization of seawater or brine  "
   },
   "蘭": {
     "russian_translation": "- бег  \n- пробег  \n- представление  \n- демонстрация  \n- орхидеи",
@@ -32636,7 +32636,7 @@
     "english_translation": "- fatal wound"
   },
   "臨床": {
-    "russian_translation": "- клинический  \n- клинический",
+    "russian_translation": "- клинический  ",
     "english_translation": "- clinical (e.g. pathology, physiology)  \n- clinical (e.g. pathology, training, trial)"
   },
   "葛湯": {
@@ -33324,7 +33324,7 @@
     "english_translation": "- roughly woven fence  \n- short roughly woven fence  \n- divider between boxes (i.e. for box seats) in a theatre, etc."
   },
   "腸": {
-    "russian_translation": "- кишки  \n- внутренности  \n- потроха (животного)  \n- семяносец (в тыкве, дыне и т. п.)  \n- сердце  \n- характер  \n- кишечник  \n- брюшной  \n- внутренности",
+    "russian_translation": "- кишки  \n- внутренности  \n- потроха (животного)  \n- семяносец (в тыкве, дыне и т. п.)  \n- сердце  \n- характер  \n- кишечник  \n- брюшной  ",
     "english_translation": "- guts  \n- bowels  \n- intestines  \n- intestine  \n- bowel  \n- entrails  \n- placenta (of a pumpkin, melon, etc.)  \n- fibrous pulp  \n- seed cavity  \n- heart  \n- spirit"
   },
   "薄茶色": {
@@ -33560,7 +33560,7 @@
     "english_translation": "- art studies  \n- science of art"
   },
   "見当違い": {
-    "russian_translation": "- ошибочный, неправильный  \n- не относящийся к делу, неуместный  \n- неправильное представление  \n- заблуждение  \n- просчитываться, составлять себе неправильное (ошибочное) суждение  \n- неверно истолковывать  \n- неправильное представление",
+    "russian_translation": "- ошибочный, неправильный  \n- не относящийся к делу, неуместный  \n- неправильное представление  \n- заблуждение  \n- просчитываться, составлять себе неправильное (ошибочное) суждение  \n- неверно истолковывать  ",
     "english_translation": "- wrong (guess or estimate)  \n- misdirected  \n- irrelevant  \n- off the point"
   },
   "要項": {
@@ -34225,7 +34225,7 @@
   },
   "脱腸帯": {
     "russian_translation": "- бандаж (при грыже)",
-    "english_translation": "- hernia truss  \n- hernia belt  \n- truss  \n- hernia belt"
+    "english_translation": "- hernia truss  \n- hernia belt  \n- truss  "
   },
   "練塀": {
     "russian_translation": "- глинобитная ограда",
@@ -34441,7 +34441,7 @@
   },
   "縁": {
     "russian_translation": "- связь, отношение, родство, знакомство  \n- причина, основание, значение  \n- способ, средство  \n- край, кромка, окаймление, кайма, ободок, рамка, оправа, поля, рубец, обочина, опушка  \n- имеющий связь, связанный (с кем-л.)  \n- сообщают (говорят), что…  \n- борт, лимб (солнца, луны)",
-    "english_translation": "- connection (to a person, place, etc.)\n- relation, affinity\n- reason, significance, cause\n- something to rely on, aid, clue, way, means\n- someone to rely on, relative\n- reminder, memento\n- edge (of a river, woods, etc.), shoulder (of a road)\n- rim, brim, hem, margin, fringe, selvage\n- fabric border (of a tatami mat, etc.), edging\n- fate, destiny (esp. as a mysterious force that binds two people together)\n- relationship (e.g. between two people), bond, link, connection\n- family ties, affinity\n- opportunity, chance (to meet someone and start a relationship)\n- pratyaya (indirect conditions, as opposed to direct causes)\n- narrow open-air veranda\n- rim, brim, edge, brink\n- something to rely on, aid, clue, way, means\n- edge (of a river, woods, etc.), shoulder (of a road), rim, brim, hem, margin, fringe, selvage, fabric border (of a tatami mat, etc.), edging"
+    "english_translation": "- connection (to a person, place, etc.)\n- relation, affinity\n- reason, significance, cause\n- something to rely on, aid, clue, way, means\n- someone to rely on, relative\n- reminder, memento\n- edge (of a river, woods, etc.), shoulder (of a road)\n- rim, brim, hem, margin, fringe, selvage\n- fabric border (of a tatami mat, etc.), edging\n- fate, destiny (esp. as a mysterious force that binds two people together)\n- relationship (e.g. between two people), bond, link, connection\n- family ties, affinity\n- opportunity, chance (to meet someone and start a relationship)\n- pratyaya (indirect conditions, as opposed to direct causes)\n- narrow open-air veranda\n- rim, brim, edge, brink\n- edge (of a river, woods, etc.), shoulder (of a road), rim, brim, hem, margin, fringe, selvage, fabric border (of a tatami mat, etc.), edging"
   },
   "薩摩汁": {
     "russian_translation": "- сацумский суп (из тушёного мяса, овощей и др.)",
@@ -35524,7 +35524,7 @@
     "english_translation": "- point worthy of note  \n- highlight  \n- high point  \n- main attraction  \n- thing to note  \n- good prospects for the future  \n- promise  \n- good point  \n- part worth seeing  \n- good scene  \n- signs of promise  \n- good prospects (for the future)"
   },
   "美男子": {
-    "russian_translation": "- красавец-мужчина  \n- красавец-мужчина",
+    "russian_translation": "- красавец-мужчина  ",
     "english_translation": "- handsome man"
   },
   "衾": {
@@ -36161,7 +36161,7 @@
   },
   "蔵う": {
     "russian_translation": "- кончать, заканчивать  \n- прятать, убирать (куда-л.)  \n- закрывать (магазин, контору)  \n- свёртывать (дело)",
-    "english_translation": "- to finish  \n- to stop  \n- to end  \n- to put an end to  \n- to bring to a close  \n- to close (a business, etc.)  \n- to close down  \n- to shut down  \n- to shut up  \n- to put away  \n- to put back  \n- to keep  \n- to store  \n- to do completely  \n- to finish  \n- to do accidentally  \n- to do without meaning to  \n- to happen to do"
+    "english_translation": "- to finish  \n- to stop  \n- to end  \n- to put an end to  \n- to bring to a close  \n- to close (a business, etc.)  \n- to close down  \n- to shut down  \n- to shut up  \n- to put away  \n- to put back  \n- to keep  \n- to store  \n- to do completely  \n- to do accidentally  \n- to do without meaning to  \n- to happen to do"
   },
   "裏背戸": {
     "russian_translation": "- задняя дверь  \n- чёрный ход",
@@ -36348,7 +36348,7 @@
     "english_translation": "- tea-growing district  \n- tea-producing center  \n- rest area serving tea (esp. at a temple or shrine)  \n- tea house"
   },
   "観望": {
-    "russian_translation": "- наблюдение  \n- наблюдение",
+    "russian_translation": "- наблюдение  ",
     "english_translation": "- observation  \n- watching (developments)  \n- looking out (into the distance)"
   },
   "素封家": {
@@ -38073,7 +38073,7 @@
   },
   "行けない": {
     "russian_translation": "- нельзя, не следует  \n- плохо, дурно  \n- надо  \n- плохой, скверный  \n- негодный, испорченный  \n- опасаясь",
-    "english_translation": "- wrong  \n- not good  \n- of no use  \n- hopeless  \n- past hope  \n- must not do  \n- bad  \n- wrong  \n- naughty  \n- must not  \n- should not  \n- ought not to  \n- useless  \n- no good  \n- beyond hope  \n- unfortunate  \n- a shame  \n- a pity  \n- unable to drink (alcohol)  \n- so as not to  \n- so that  \n- in case  \n- for fear that  \n- lest"
+    "english_translation": "- wrong  \n- not good  \n- of no use  \n- hopeless  \n- past hope  \n- must not do  \n- bad  \n- naughty  \n- must not  \n- should not  \n- ought not to  \n- useless  \n- no good  \n- beyond hope  \n- unfortunate  \n- a shame  \n- a pity  \n- unable to drink (alcohol)  \n- so as not to  \n- so that  \n- in case  \n- for fear that  \n- lest"
   },
   "自著": {
     "russian_translation": "- собственное сочинение  \n- собственный труд",
@@ -39101,7 +39101,7 @@
   },
   "色鉛筆": {
     "russian_translation": "цветной карандаш",
-    "english_translation": "- colored pencil  \n- colored pencil"
+    "english_translation": "- colored pencil  "
   },
   "締め切る": {
     "russian_translation": "- закрывать (счёт и т. п.)\n- прекращать (подписку, приём заявок и т. п.)\n- закрывать, запирать",
@@ -39384,7 +39384,7 @@
     "english_translation": "- spine  \n- backbone  \n- spinal column"
   },
   "褥": {
-    "russian_translation": "- подушка (для сидения)  \n- тюфяк  \n- подстилка  \n> (уст.) соломенная подстилка  \n\n- подушка (для сидения)  \n- тюфяк  \n- подстилка  \n> (уст.) соломенная подстилка",
+    "russian_translation": "- подушка (для сидения)  \n- тюфяк  \n- подстилка  \n> (уст.) соломенная подстилка  \n",
     "english_translation": "- cushion  \n- pillow  \n- mattress"
   },
   "自然休会": {
