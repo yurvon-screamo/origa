@@ -13,8 +13,8 @@ pub use vocabulary::VocabularyCard;
 use std::collections::HashMap;
 
 use crate::domain::{
-    get_rule_by_id, memory::MemoryState, value_objects::NativeLanguage, OrigaError, Rating,
-    ReviewLog,
+    OrigaError, Rating, ReviewLog, get_rule_by_id, memory::MemoryState,
+    value_objects::NativeLanguage,
 };
 use chrono::{Duration, Utc};
 use rand::seq::SliceRandom;

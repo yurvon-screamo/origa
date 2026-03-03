@@ -1,34 +1,20 @@
-use super::actions::create_import_action;
+use super::import_set_preview_modal::ImportSetPreviewModal;
 use super::sets_level_group::SetsLevelGroup;
-use super::types::{ImportResult, ImportState, SetInfo};
-use crate::repository::HybridUserRepository;
-use crate::ui_components::{LoadingOverlay, Spinner, ToastContainer, ToastData, ToastType};
+use super::types::SetInfo;
+use crate::ui_components::Spinner;
 use crate::well_known_set::WellKnownSetLoaderImpl;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::application::ListWellKnownSetsUseCase;
-use origa::domain::{JapaneseLevel, User};
-
-static mut TOAST_COUNTER: usize = 0;
-
-fn next_toast_id() -> usize {
-    unsafe {
-        TOAST_COUNTER += 1;
-        TOAST_COUNTER
-    }
-}
+use origa::domain::JapaneseLevel;
 
 #[component]
 pub fn SetsContent() -> impl IntoView {
-    let current_user = use_context::<RwSignal<Option<User>>>().expect("current_user context");
-    let repository = use_context::<HybridUserRepository>().expect("repository context");
-    let llm_service =
-        use_context::<origa::infrastructure::LlmServiceInvoker>().expect("llm_service context");
-
     let sets: RwSignal<Vec<SetInfo>> = RwSignal::new(Vec::new());
-    let importing: RwSignal<Option<ImportState>> = RwSignal::new(None);
-    let toasts: RwSignal<Vec<ToastData>> = RwSignal::new(Vec::new());
     let is_loading: RwSignal<bool> = RwSignal::new(true);
+    let preview_modal_open = RwSignal::new(false);
+    let preview_set_id = RwSignal::new(String::new());
+    let preview_set_title = RwSignal::new(String::new());
 
     let sets_for_load = sets;
     let loader = WellKnownSetLoaderImpl::new();
@@ -52,58 +38,32 @@ pub fn SetsContent() -> impl IntoView {
         }
     });
 
-    let toasts_signal = toasts;
-    let on_import = create_import_action(
-        repository.clone(),
-        llm_service.clone(),
-        current_user,
-        importing,
-        Callback::new(move |result: ImportResult| {
-            let toast_type = if result.is_success {
-                ToastType::Success
-            } else {
-                ToastType::Error
-            };
-            let title = if result.is_success {
-                "Импорт завершён"
-            } else {
-                "Ошибка импорта"
-            };
-            toasts_signal.update(|t| {
-                t.push(ToastData {
-                    id: next_toast_id(),
-                    toast_type,
-                    title: title.to_string(),
-                    message: result.message,
-                });
-            });
-        }),
-    );
+    let on_import = Callback::new(move |(set_id, title): (String, String)| {
+        preview_set_id.set(set_id);
+        preview_set_title.set(title);
+        preview_modal_open.set(true);
+    });
 
     view! {
         <div class="sets-page">
-            <Show when=move || importing.get().is_some()>
-                <LoadingOverlay
-                    message=Signal::derive(move || {
-                        importing.get()
-                            .map(|s| format!("Импорт: {}...", s.title))
-                            .unwrap_or_default()
-                    })
-                />
-            </Show>
             <Show when=move || is_loading.get()>
                 <div class="flex justify-center py-8">
                     <Spinner />
                 </div>
             </Show>
             <Show when=move || !is_loading.get()>
-                <SetsLevelGroup level=JapaneseLevel::N5 sets=sets importing=importing on_import=on_import />
-                <SetsLevelGroup level=JapaneseLevel::N4 sets=sets importing=importing on_import=on_import />
-                <SetsLevelGroup level=JapaneseLevel::N3 sets=sets importing=importing on_import=on_import />
-                <SetsLevelGroup level=JapaneseLevel::N2 sets=sets importing=importing on_import=on_import />
-                <SetsLevelGroup level=JapaneseLevel::N1 sets=sets importing=importing on_import=on_import />
+                <SetsLevelGroup level=JapaneseLevel::N5 sets=sets on_import=on_import />
+                <SetsLevelGroup level=JapaneseLevel::N4 sets=sets on_import=on_import />
+                <SetsLevelGroup level=JapaneseLevel::N3 sets=sets on_import=on_import />
+                <SetsLevelGroup level=JapaneseLevel::N2 sets=sets on_import=on_import />
+                <SetsLevelGroup level=JapaneseLevel::N1 sets=sets on_import=on_import />
             </Show>
-            <ToastContainer toasts=toasts duration_ms=5000 />
+            <ImportSetPreviewModal
+                is_open=preview_modal_open
+                set_id=Signal::derive(move || preview_set_id.get())
+                set_title=Signal::derive(move || preview_set_title.get())
+                on_import_result=Callback::new(move |_| {})
+            />
         </div>
     }
 }

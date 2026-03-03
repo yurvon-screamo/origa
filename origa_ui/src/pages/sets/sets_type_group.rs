@@ -3,13 +3,12 @@ use leptos::prelude::*;
 use origa::application::SetType;
 
 use super::set_card::SetCard;
-use super::types::{ImportState, SetInfo};
+use super::types::SetInfo;
 
 #[component]
 pub fn SetsTypeGroup(
     set_type: SetType,
     sets_for_level: Memo<Vec<SetInfo>>,
-    importing: RwSignal<Option<ImportState>>,
     on_import: Callback<(String, String)>,
 ) -> impl IntoView {
     let sets_for_type = Memo::new(move |_| {
@@ -35,18 +34,9 @@ pub fn SetsTypeGroup(
                         each=move || sets_for_type.get()
                         key=|s| s.set_id.clone()
                         children=move |set_info| {
-                            let set_id = set_info.set_id.clone();
-                            let is_importing =
-                                Memo::new(move |_| {
-                                    importing.get()
-                                        .map(|state| state.set_id == set_id)
-                                        .unwrap_or(false)
-                                });
-
                             view! {
                                 <SetCard
                                     set_info=set_info
-                                    is_importing=is_importing.get()
                                     on_import=on_import
                                 />
                             }

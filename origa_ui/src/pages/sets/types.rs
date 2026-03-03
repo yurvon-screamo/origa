@@ -1,15 +1,3 @@
-#[derive(Clone, Debug, PartialEq)]
-pub struct ImportState {
-    pub set_id: String,
-    pub title: String,
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub struct ImportResult {
-    pub is_success: bool,
-    pub message: String,
-}
-
 #[derive(Clone, PartialEq)]
 pub struct SetInfo {
     pub set_id: String,
