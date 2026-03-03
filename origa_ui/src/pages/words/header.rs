@@ -1,4 +1,4 @@
-use super::add_word_modal::AddWordModal;
+use super::add_words_preview_modal::AddWordsPreviewModal;
 use crate::ui_components::{Button, ButtonVariant, Heading, HeadingLevel};
 use leptos::prelude::*;
 use leptos_router::hooks::use_navigate;
@@ -42,6 +42,6 @@ pub fn WordsHeader() -> impl IntoView {
             </div>
         </div>
 
-        <AddWordModal is_open=is_modal_open />
+        <AddWordsPreviewModal is_open=is_modal_open />
     }
 }

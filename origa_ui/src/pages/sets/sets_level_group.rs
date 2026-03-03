@@ -1,5 +1,5 @@
 use super::sets_type_group::SetsTypeGroup;
-use super::types::{ImportState, SetInfo};
+use super::types::SetInfo;
 use leptos::prelude::*;
 use origa::application::SetType;
 use origa::domain::JapaneseLevel;
@@ -8,7 +8,6 @@ use origa::domain::JapaneseLevel;
 pub fn SetsLevelGroup(
     level: JapaneseLevel,
     sets: RwSignal<Vec<SetInfo>>,
-    importing: RwSignal<Option<ImportState>>,
     on_import: Callback<(String, String)>,
 ) -> impl IntoView {
     let sets_for_level = Memo::new(move |_| {
@@ -27,19 +26,16 @@ pub fn SetsLevelGroup(
                 <SetsTypeGroup
                     set_type=SetType::Jlpt
                     sets_for_level=sets_for_level
-                    importing=importing
                     on_import=on_import
                 />
                 <SetsTypeGroup
                     set_type=SetType::Migii
                     sets_for_level=sets_for_level
-                    importing=importing
                     on_import=on_import
                 />
                 <SetsTypeGroup
                     set_type=SetType::SpyFamily
                     sets_for_level=sets_for_level
-                    importing=importing
                     on_import=on_import
                 />
             </div>

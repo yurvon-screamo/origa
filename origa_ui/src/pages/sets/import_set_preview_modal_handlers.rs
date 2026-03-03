@@ -1,0 +1,113 @@
+use crate::app::update_current_user;
+use crate::repository::HybridUserRepository;
+use crate::ui_components::{ToastData, ToastType};
+use leptos::ev::MouseEvent;
+use leptos::prelude::*;
+use leptos::task::spawn_local;
+use origa::domain::User;
+
+use super::import_set_preview_modal_state::ImportPreviewModalState;
+
+pub struct ImportResult {
+    pub is_success: bool,
+    pub message: String,
+}
+
+pub struct ImportPreviewHandlers {
+    pub on_word_toggle: Callback<String>,
+    pub on_import: Callback<()>,
+    pub on_cancel: Callback<MouseEvent>,
+}
+
+pub fn create_import_preview_handlers(
+    state: ImportPreviewModalState,
+    is_open: RwSignal<bool>,
+    current_user: RwSignal<Option<User>>,
+    repository: HybridUserRepository,
+    toasts: RwSignal<Vec<ToastData>>,
+    on_import_result: Callback<ImportResult>,
+) -> ImportPreviewHandlers {
+    let state_clone = state.clone();
+    let on_word_toggle = Callback::new(move |word: String| {
+        state_clone.toggle_word(word);
+    });
+
+    let state_clone = state.clone();
+    let is_open_clone = is_open;
+    let current_user_clone = current_user;
+    let repository_clone = repository;
+    let toasts_clone = toasts;
+    let on_import_result_clone = on_import_result;
+    let on_import = Callback::new(move |_: ()| {
+        let selected = state_clone.selected_words.get();
+        if selected.is_empty() {
+            return;
+        }
+
+        let state = state_clone.clone();
+        let is_open = is_open_clone;
+        let current_user = current_user_clone;
+        let repository = repository_clone.clone();
+        let toasts = toasts_clone;
+        let on_import_result = on_import_result_clone;
+
+        state.is_importing.set(true);
+
+        spawn_local(async move {
+            match state.import_selected().await {
+                Ok(_) => {
+                    state.is_importing.set(false);
+                    update_current_user(repository, current_user);
+                    state.reset();
+                    is_open.set(false);
+
+                    let count = selected.len();
+                    let message = format!("Успешно импортировано {} слов", count);
+                    on_import_result.run(ImportResult {
+                        is_success: true,
+                        message: message.clone(),
+                    });
+                    let toast_id = toasts.get().len();
+                    toasts.update(|t| {
+                        t.push(ToastData {
+                            id: toast_id,
+                            title: "Успех".to_string(),
+                            message,
+                            toast_type: ToastType::Success,
+                        });
+                    });
+                }
+                Err(e) => {
+                    state.is_importing.set(false);
+                    state.error_message.set(Some(e.clone()));
+                    on_import_result.run(ImportResult {
+                        is_success: false,
+                        message: e.clone(),
+                    });
+                    let toast_id = toasts.get().len();
+                    toasts.update(|t| {
+                        t.push(ToastData {
+                            id: toast_id,
+                            title: "Ошибка".to_string(),
+                            message: e,
+                            toast_type: ToastType::Error,
+                        });
+                    });
+                }
+            }
+        });
+    });
+
+    let state_clone = state.clone();
+    let is_open_clone = is_open;
+    let on_cancel = Callback::new(move |_: MouseEvent| {
+        state_clone.reset();
+        is_open_clone.set(false);
+    });
+
+    ImportPreviewHandlers {
+        on_word_toggle,
+        on_import,
+        on_cancel,
+    }
+}

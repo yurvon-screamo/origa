@@ -3,11 +3,7 @@ use crate::ui_components::{Button, ButtonVariant, MarkdownText};
 use leptos::prelude::*;
 
 #[component]
-pub fn SetCard(
-    set_info: SetInfo,
-    is_importing: bool,
-    on_import: Callback<(String, String)>,
-) -> impl IntoView {
+pub fn SetCard(set_info: SetInfo, on_import: Callback<(String, String)>) -> impl IntoView {
     let description = set_info.description.clone();
     let title = set_info.title.clone();
     view! {
@@ -30,9 +26,8 @@ pub fn SetCard(
                         let on_import = on_import;
                         move |_| on_import.run((set_id.clone(), title.clone()))
                     })
-                    disabled=is_importing
                 >
-                    {move || if is_importing { "Импорт..." } else { "Импорт" }}
+                    "Импорт"
                 </Button>
             </div>
         </div>
