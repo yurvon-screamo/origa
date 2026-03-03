@@ -15,10 +15,10 @@ fn rating_color(rating: Rating) -> &'static str {
 
 fn rating_label(rating: Rating) -> &'static str {
     match rating {
-        Rating::Easy => "Easy",
-        Rating::Good => "Good",
-        Rating::Hard => "Hard",
-        Rating::Again => "Again",
+        Rating::Easy => "Легко",
+        Rating::Good => "Хорошо",
+        Rating::Hard => "Сложно",
+        Rating::Again => "Снова",
     }
 }
 
