@@ -15,8 +15,8 @@ pub fn create_on_rate_callback(
     is_rating: RwSignal<Option<Ulid>>,
 ) -> Callback<Rating> {
     Callback::new(move |rating: Rating| {
-        let user = current_user.get();
-        let state = lesson_state.get();
+        let user = current_user.get_untracked();
+        let state = lesson_state.get_untracked();
 
         if let (Some(user), Some(card_id)) = (user, state.card_ids.get(state.current_index)) {
             let card_id = *card_id;
