@@ -70,13 +70,19 @@ OAuthProvider::Yandex => "keycloak"
 
 ## Supabase URL Configuration
 
-Не забудьте добавить deep link в разрешённые redirect URLs:
+Не забудьте добавить redirect URLs:
 
 1. Supabase Dashboard → **Authentication** → **URL Configuration**
 2. Добавьте в **Redirect URLs**:
-   ```
-   origa://auth/callback
-   ```
+   - Для desktop (Tauri):
+     ```
+     origa://auth/callback
+     ```
+   - Для веб-версии:
+     ```
+     http://localhost:1420/login
+     https://your-domain.com/login
+     ```
 3. Сохраните изменения
 
 ## Testing OAuth Flow
@@ -93,6 +99,22 @@ OAuthProvider::Yandex => "keycloak"
    origa://auth/callback#access_token=test
    ```
 4. Приложение должно открыться и обработать deep link
+
+### Web Version
+
+Для веб-версии OAuth работает через редирект:
+
+1. Пользователь кликает "Войти через Google/Yandex"
+2. Происходит редирект на Supabase OAuth
+3. После авторизации пользователь возвращается на `/login#access_token=...`
+4. Приложение парсит токены из URL hash и создаёт сессию
+5. Редирект на `/home`
+
+Для тестирования локально:
+```bash
+cd origa_ui && trunk serve
+# Откройте http://localhost:1420/login#access_token=test
+```
 
 ### Development Mode
 
@@ -120,7 +142,12 @@ OAuthProvider::Yandex => "keycloak"
 
 ### OAuth callback не обрабатывается
 - Проверьте URL в Supabase Dashboard → Authentication → URL Configuration
-- Убедитесь, что `origa://auth/callback` добавлен в список
+- Убедитесь, что `origa://auth/callback` (desktop) или `/login` (web) добавлены в список
+
+### Web version: OAuth не работает
+- Проверьте, что redirect URL `{origin}/login` добавлен в Supabase
+- Откройте DevTools → Network, проверьте запрос к Supabase OAuth
+- Проверьте консоль на ошибки при парсинге токенов
 
 ### Yandex OAuth возвращает ошибку
 - Проверьте правильность Client ID и Client Secret
