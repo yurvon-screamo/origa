@@ -13,8 +13,8 @@ pub use vocabulary::VocabularyCard;
 use std::collections::HashMap;
 
 use crate::domain::{
-    OrigaError, Rating, ReviewLog, get_rule_by_id, memory::MemoryState,
-    value_objects::NativeLanguage,
+    get_rule_by_id, memory::MemoryState, value_objects::NativeLanguage, OrigaError, Rating,
+    ReviewLog,
 };
 use chrono::{Duration, Utc};
 use rand::seq::SliceRandom;
@@ -459,6 +459,14 @@ mod tests {
         )
     }
 
+    fn create_known_memory_state() -> MemoryState {
+        MemoryState::new(
+            crate::domain::memory::Stability::new(15.0).unwrap(),
+            crate::domain::memory::Difficulty::new(2.0).unwrap(),
+            chrono::Utc::now(),
+        )
+    }
+
     #[test]
     fn generate_quiz_returns_normal_for_grammar() {
         let grammar = create_grammar_card("Test Rule", vec![]);
@@ -772,7 +780,7 @@ mod tests {
         let card = create_vocab_card("猫", "кошка");
         let mut study_card = knowledge_set.create_card(card).unwrap();
 
-        let memory = create_memory_state();
+        let memory = create_known_memory_state();
         study_card.add_review(
             memory.clone(),
             ReviewLog::new(Rating::Good, Duration::days(1)),
@@ -790,7 +798,7 @@ mod tests {
         let card = create_vocab_card("猫", "кошка");
         let mut study_card = knowledge_set.create_card(card).unwrap();
 
-        let memory = create_memory_state();
+        let memory = create_known_memory_state();
         study_card.add_review(
             memory.clone(),
             ReviewLog::new(Rating::Good, Duration::days(1)),
@@ -810,7 +818,7 @@ mod tests {
         let card = create_vocab_card("猫", "кошка");
         let mut study_card = knowledge_set.create_card(card).unwrap();
 
-        let memory = create_memory_state();
+        let memory = create_known_memory_state();
         study_card.add_review(
             memory.clone(),
             ReviewLog::new(Rating::Good, Duration::days(1)),
@@ -830,7 +838,7 @@ mod tests {
         let card = create_vocab_card("猫", "кошка");
         let mut study_card = knowledge_set.create_card(card).unwrap();
 
-        let memory = create_memory_state();
+        let memory = create_known_memory_state();
         study_card.add_review(
             memory.clone(),
             ReviewLog::new(Rating::Good, Duration::days(1)),
@@ -850,7 +858,7 @@ mod tests {
         let card = create_vocab_card("猫", "кошка");
         let mut study_card = knowledge_set.create_card(card).unwrap();
 
-        let memory = create_memory_state();
+        let memory = create_known_memory_state();
         study_card.add_review(
             memory.clone(),
             ReviewLog::new(Rating::Good, Duration::days(1)),
@@ -875,7 +883,7 @@ mod tests {
         let card = create_vocab_card("猫", "кошка");
         let mut study_card = knowledge_set.create_card(card).unwrap();
 
-        let memory = create_memory_state();
+        let memory = create_known_memory_state();
         study_card.add_review(
             memory.clone(),
             ReviewLog::new(Rating::Good, Duration::days(1)),
@@ -916,7 +924,7 @@ mod tests {
         let card = create_vocab_card("猫", "кошка");
         let mut study_card = knowledge_set.create_card(card).unwrap();
 
-        let memory = create_memory_state();
+        let memory = create_known_memory_state();
         study_card.add_review(
             memory.clone(),
             ReviewLog::new(Rating::Good, Duration::days(1)),
