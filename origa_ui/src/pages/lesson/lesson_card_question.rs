@@ -1,6 +1,6 @@
 use crate::ui_components::{
-    Button, ButtonVariant, DisplayText, FuriganaText, Heading, HeadingLevel, KanjiViewMode,
-    KanjiWritingSection,
+    Button, ButtonVariant, DisplayText, Heading, HeadingLevel, KanjiViewMode, KanjiWritingSection,
+    MarkdownText,
 };
 use leptos::prelude::*;
 
@@ -18,7 +18,7 @@ pub fn LessonCardQuestion(
             <Show when=move || kanji_stored.get_value().is_none()>
                 <div class="mb-4">
                     <Heading level=HeadingLevel::H2>
-                        <FuriganaText text=question.get_value()/>
+                        <MarkdownText content=Signal::derive(move || question.get_value())/>
                     </Heading>
                 </div>
             </Show>
