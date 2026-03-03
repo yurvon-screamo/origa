@@ -147,3 +147,18 @@ jobs:
         with:
           name: ios-app
           path: tauri/gen/apple/**/*.app
+
+  release:
+    name: Update Latest Release
+    needs: [build]
+    uses: ./.github/workflows/reusable-release.yml
+    with:
+      tag-name: latest
+      release-name: Latest Build
+      body: |
+        Автоматическая сборка от ${{ github.sha }}
+
+        ## Android
+        - `*.apk` - Android App Package
+    permissions:
+      contents: write
