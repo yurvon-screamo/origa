@@ -1,6 +1,6 @@
 use crate::ui_components::{
-    Button, ButtonVariant, FuriganaText, Heading, HeadingLevel, MarkdownText, Text, TextSize,
-    TypographyVariant,
+    Button, ButtonVariant, FuriganaText, Heading, HeadingLevel, MarkdownText, MarkdownVariant,
+    Text, TextSize, TypographyVariant,
 };
 use leptos::{ev::MouseEvent, prelude::*};
 
@@ -32,7 +32,10 @@ pub fn LessonCardAnswer(
                 <Text size=TextSize::Default variant=TypographyVariant::Muted class="mb-2">
                     "Ответ:"
                 </Text>
-                <MarkdownText content=Signal::derive(move || answer.get_value())/>
+                <MarkdownText
+                    content=Signal::derive(move || answer.get_value())
+                    variant=Signal::derive(|| MarkdownVariant::Large)
+                />
             </div>
 
             <Show when=move || needs_collapse.get()>
