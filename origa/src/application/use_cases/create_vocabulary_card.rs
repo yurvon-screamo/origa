@@ -23,6 +23,10 @@ impl<'a, R: UserRepository, L: crate::application::LlmService>
         }
     }
 
+    pub fn repository(&self) -> &'a R {
+        self.repository
+    }
+
     pub async fn execute(
         &self,
         user_id: Ulid,
