@@ -1,0 +1,48 @@
+name: Reusable Release
+
+on:
+  workflow_call:
+    inputs:
+      release-name:
+        description: "Name of the release"
+        default: "Latest Build"
+        type: string
+      tag-name:
+        description: "Tag for the release"
+        default: "latest"
+        type: string
+      body:
+        description: "Release body text"
+        default: "Автоматическая сборка"
+        type: string
+
+jobs:
+  release:
+    name: Create/Update Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Prepare release assets
+        run: |
+          mkdir -p release_assets
+          # Move all files from all artifact subdirectories to release_assets/
+          find artifacts -type f -exec mv {} release_assets/ \;
+          echo "Release assets content:"
+          ls -la release_assets/
+
+      - name: Update latest release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.tag-name }}
+          name: ${{ inputs.release-name }}
+          body: ${{ inputs.body }}
+          files: release_assets/*
+          prerelease: false
+          draft: false
+          make_latest: true
