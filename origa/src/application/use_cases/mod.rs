@@ -21,6 +21,7 @@ mod rate_card;
 mod select_cards_to_fixation;
 mod select_cards_to_lesson;
 mod sync_duolingo_words;
+mod toggle_favorite;
 mod update_user_profile;
 
 pub use analyze_text_for_cards::{AnalyzeTextForCardsUseCase, AnalyzeTextResult, AnalyzedWord};
@@ -48,4 +49,5 @@ pub use rate_card::RateCardUseCase;
 pub use select_cards_to_fixation::SelectCardsToFixationUseCase;
 pub use select_cards_to_lesson::SelectCardsToLessonUseCase;
 pub use sync_duolingo_words::{SyncDuolingoWordsResult, SyncDuolingoWordsUseCase};
+pub use toggle_favorite::ToggleFavoriteUseCase;
 pub use update_user_profile::UpdateUserProfileUseCase;

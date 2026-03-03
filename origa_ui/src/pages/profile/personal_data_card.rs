@@ -1,12 +1,11 @@
-use super::{LabeledInput, LanguageSelector, LevelSelector};
+use super::{LabeledInput, LanguageSelector};
 use crate::ui_components::{Card, Heading, HeadingLevel, Text, TextSize};
 use leptos::prelude::*;
-use origa::domain::{JapaneseLevel, NativeLanguage};
+use origa::domain::NativeLanguage;
 
 #[component]
 pub fn PersonalDataCard(
     user_name: Memo<String>,
-    selected_level: RwSignal<JapaneseLevel>,
     selected_language: RwSignal<NativeLanguage>,
 ) -> impl IntoView {
     let user_name_signal = RwSignal::new(user_name.get_untracked());
@@ -28,13 +27,6 @@ pub fn PersonalDataCard(
                         value={user_name_signal}
                         disabled={true}
                     />
-
-                    <div>
-                        <Text size={TextSize::Large}>
-                            "Целевой уровень JLPT"
-                        </Text>
-                        <LevelSelector selected_level={selected_level} />
-                    </div>
 
                     <div>
                         <Text size={TextSize::Large}>

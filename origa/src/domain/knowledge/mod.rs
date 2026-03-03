@@ -147,6 +147,11 @@ impl KnowledgeSet {
         let mut all_cards = self.study_cards.iter().collect::<Vec<_>>();
         all_cards.sort_by_key(|(_, card)| card.memory().next_review_date());
 
+        let favorite_cards: Vec<_> = all_cards
+            .iter()
+            .filter(|(_, card)| card.is_favorite())
+            .collect();
+
         let mut priority_cards: Vec<_> = all_cards
             .iter()
             .filter(|(_, card)| card.memory().is_due() && card.memory().is_high_difficulty())
@@ -179,14 +184,26 @@ impl KnowledgeSet {
             })
             .collect();
 
-        priority_cards
+        let mut result: Vec<_> = favorite_cards
             .iter()
             .filter_map(|(card_id, card)| {
                 card.shuffle_card(lang, &known_rules)
                     .ok()
                     .map(|c| (**card_id, c))
             })
-            .collect()
+            .collect();
+
+        let priority_shuffled: Vec<_> = priority_cards
+            .iter()
+            .filter_map(|(card_id, card)| {
+                card.shuffle_card(lang, &known_rules)
+                    .ok()
+                    .map(|c| (**card_id, c))
+            })
+            .collect();
+
+        result.extend(priority_shuffled);
+        result.into_iter().collect()
     }
 
     pub(crate) fn rate_card(
@@ -199,7 +216,17 @@ impl KnowledgeSet {
         if let Some(card) = self.study_cards.get_mut(&card_id) {
             let review = ReviewLog::new(rating, interval);
             card.add_review(memory_state, review);
+            card.handle_favorite_rating(rating);
             self.update_history();
+            Ok(())
+        } else {
+            Err(OrigaError::CardNotFound { card_id })
+        }
+    }
+
+    pub fn toggle_favorite(&mut self, card_id: Ulid) -> Result<(), OrigaError> {
+        if let Some(card) = self.study_cards.get_mut(&card_id) {
+            card.toggle_favorite();
             Ok(())
         } else {
             Err(OrigaError::CardNotFound { card_id })

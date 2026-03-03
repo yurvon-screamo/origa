@@ -68,7 +68,7 @@ impl<'a, R: UserRepository, L: crate::application::LlmService>
                 .generate_content(
                     question_text,
                     user.native_language(),
-                    user.current_japanese_level(),
+                    &user.current_japanese_level(),
                 )
                 .await?;
 
