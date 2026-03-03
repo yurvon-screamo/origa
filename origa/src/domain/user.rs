@@ -6,9 +6,9 @@ use ulid::Ulid;
 
 use crate::application::jlpt_content_loader::JlptContent;
 use crate::domain::{
-    score_content::{score_content, ScoreContentResult},
     Card, JapaneseLevel, JlptProgress, KnowledgeSet, MemoryState, NativeLanguage, OrigaError,
     Rating, StudyCard,
+    score_content::{ScoreContentResult, score_content},
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -47,6 +47,7 @@ impl User {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn from_row(
         id: Ulid,
         email: String,
@@ -260,8 +261,8 @@ impl User {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::domain::value_objects::{Answer, Question};
     use crate::domain::VocabularyCard;
+    use crate::domain::value_objects::{Answer, Question};
 
     fn create_test_vocab_card(word: &str) -> Card {
         Card::Vocabulary(VocabularyCard::new(

@@ -52,7 +52,10 @@ pub fn LessonContent() -> impl IntoView {
             spawn_local(async move {
                 is_loading.set(true);
 
-                let cards = match current_mode {
+                let cards: Result<
+                    std::collections::HashMap<ulid::Ulid, origa::domain::LessonCardView>,
+                    _,
+                > = match current_mode {
                     LessonMode::Lesson => {
                         let use_case = SelectCardsToLessonUseCase::new(&repo);
                         use_case.execute(user_id).await
@@ -77,6 +80,7 @@ pub fn LessonContent() -> impl IntoView {
                                 current_index: 0,
                                 showing_answer: false,
                                 review_count: 0,
+                                selected_quiz_option: None,
                             });
                         }
                     }
