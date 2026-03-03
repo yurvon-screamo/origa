@@ -81,7 +81,7 @@ pub async fn load_vocabulary() -> Result<(), OrigaError> {
         return Ok(());
     }
 
-    let chunk_futures: Vec<_> = (1..=10)
+    let chunk_futures: Vec<_> = (1..=11)
         .map(|i| fetch_text(format!("domain/dictionary/vocabulary/chunk_{:02}.json", i)))
         .collect();
 
@@ -99,6 +99,7 @@ pub async fn load_vocabulary() -> Result<(), OrigaError> {
         chunk_08: chunks[7].clone(),
         chunk_09: chunks[8].clone(),
         chunk_10: chunks[9].clone(),
+        chunk_11: chunks[10].clone(),
     };
 
     init_vocabulary_dictionary(data)?;
@@ -182,7 +183,7 @@ pub fn load_vocabulary() -> Result<(), OrigaError> {
     }
 
     let mut chunks = Vec::with_capacity(10);
-    for i in 1..=10 {
+    for i in 1..=11 {
         let path = format!("domain/dictionary/vocabulary/chunk_{:02}.json", i);
         let json = read_json_file(&path)?;
         chunks.push(json);
@@ -199,6 +200,7 @@ pub fn load_vocabulary() -> Result<(), OrigaError> {
         chunk_08: chunks[7].clone(),
         chunk_09: chunks[8].clone(),
         chunk_10: chunks[9].clone(),
+        chunk_11: chunks[10].clone(),
     };
 
     init_vocabulary_dictionary(data)?;

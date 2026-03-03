@@ -50,6 +50,7 @@ pub struct VocabularyChunkData {
     pub chunk_08: String,
     pub chunk_09: String,
     pub chunk_10: String,
+    pub chunk_11: String,
 }
 
 pub fn init_vocabulary_dictionary(data: VocabularyChunkData) -> Result<(), OrigaError> {
@@ -89,6 +90,7 @@ impl VocabularyDatabase {
             .chain(parse_chunk(&data.chunk_08, "chunk_08")?)
             .chain(parse_chunk(&data.chunk_09, "chunk_09")?)
             .chain(parse_chunk(&data.chunk_10, "chunk_10")?)
+            .chain(parse_chunk(&data.chunk_11, "chunk_11")?)
             .collect();
 
         let vocabulary_map = vocabulary_data

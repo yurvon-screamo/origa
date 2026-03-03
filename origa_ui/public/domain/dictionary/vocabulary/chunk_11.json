@@ -1,0 +1,2494 @@
+{
+  "スグル": {
+    "russian_translation": "- Сугуру (имя)",
+    "english_translation": "- Suguru (name)"
+  },
+  "ステラ": {
+    "russian_translation": "- Стелла (имя)\n- звезда",
+    "english_translation": "- Stella (name)\n- star"
+  },
+  "スパ": {
+    "russian_translation": "- спа\n- курорт",
+    "english_translation": "- spa\n- resort"
+  },
+  "スペクター": {
+    "russian_translation": "- спектатор\n- призрак",
+    "english_translation": "- spectator\n- specter"
+  },
+  "スペック": {
+    "russian_translation": "- спецификация\n- характеристики",
+    "english_translation": "- spec\n- specifications"
+  },
+  "スライダー": {
+    "russian_translation": "- слайдер\n- ползунок",
+    "english_translation": "- slider\n- slideshow"
+  },
+  "スワン": {
+    "russian_translation": "- лебедь\n- Свон (имя)",
+    "english_translation": "- swan\n- Swan (name)"
+  },
+  "セオドア": {
+    "russian_translation": "- Теодор (имя)",
+    "english_translation": "- Theodore (name)"
+  },
+  "セキュリティー": {
+    "russian_translation": "- безопасность\n- охрана",
+    "english_translation": "- security\n- safety"
+  },
+  "セシル": {
+    "russian_translation": "- Сесил (имя)",
+    "english_translation": "- Cecil (name)"
+  },
+  "セト": {
+    "russian_translation": "- Сето (имя)\n- Сет (бог)",
+    "english_translation": "- Seto (name)\n- Set (god)"
+  },
+  "セラー": {
+    "russian_translation": "- продавец\n- сельдерей",
+    "english_translation": "- seller\n- celery"
+  },
+  "セーフ": {
+    "russian_translation": "- сейф\n- безопасно",
+    "english_translation": "- safe\n- safety"
+  },
+  "ゼミ": {
+    "russian_translation": "- семинар\n- учебный кружок",
+    "english_translation": "- seminar\n- study group"
+  },
+  "ゼン": {
+    "russian_translation": "- Дзен\n- все",
+    "english_translation": "- Zen\n- all"
+  },
+  "ソテー": {
+    "russian_translation": "- соте (блюдо)\n- жаркое",
+    "english_translation": "- sauté\n- fried dish"
+  },
+  "タイセイ": {
+    "russian_translation": "- Тайсей (имя)\n- система",
+    "english_translation": "- Taisei (name)\n- system"
+  },
+  "タイミング": {
+    "russian_translation": "- тайминг\n- время",
+    "english_translation": "- timing\n- moment"
+  },
+  "タダシ": {
+    "russian_translation": "- Тадаши (имя)\n- правильный",
+    "english_translation": "- Tadashi (name)\n- correct"
+  },
+  "タニア": {
+    "russian_translation": "- Таня (имя)",
+    "english_translation": "- Tania (name)"
+  },
+  "ダイニング": {
+    "russian_translation": "- столовая\n- обеденная зона",
+    "english_translation": "- dining\n- dining room"
+  },
+  "ダイレクト": {
+    "russian_translation": "- прямой\n- напрямую",
+    "english_translation": "- direct\n- directly"
+  },
+  "ダウン": {
+    "russian_translation": "- вниз\n- пух",
+    "english_translation": "- down\n- down feather"
+  },
+  "ダディー": {
+    "russian_translation": "- папочка\n- папа",
+    "english_translation": "- daddy\n- dad"
+  },
+  "ダミアン": {
+    "russian_translation": "- Дамиан (имя)",
+    "english_translation": "- Damian (name)"
+  },
+  "ダルク": {
+    "russian_translation": "- Дарк (имя)\n- темный",
+    "english_translation": "- Dark (name)\n- dark"
+  },
+  "ダンプ": {
+    "russian_translation": "- самосвал\n- дамп",
+    "english_translation": "- dump truck\n- dump"
+  },
+  "ダース": {
+    "russian_translation": "- дюжина\n- Дарт (имя)",
+    "english_translation": "- dozen\n- Darth (name)"
+  },
+  "ダーリン": {
+    "russian_translation": "- дорогой\n- darling",
+    "english_translation": "- darling\n- dear"
+  },
+  "チャレンジ": {
+    "russian_translation": "- вызов\n- испытание",
+    "english_translation": "- challenge\n- trial"
+  },
+  "チーター": {
+    "russian_translation": "- гепард\n- читер",
+    "english_translation": "- cheetah\n- cheater"
+  },
+  "ティアラ": {
+    "russian_translation": "- тиара\n- диадема",
+    "english_translation": "- tiara\n- diadem"
+  },
+  "ティッシュ": {
+    "russian_translation": "- салфетки\n- ткань",
+    "english_translation": "- tissue\n- paper napkins"
+  },
+  "テイ": {
+    "russian_translation": "- Тей (имя)\n- стиль",
+    "english_translation": "- Tay (name)\n- style"
+  },
+  "テレックス": {
+    "russian_translation": "- телекс\n- телетайп",
+    "english_translation": "- telex\n- teleprinter"
+  },
+  "テント": {
+    "russian_translation": "- палатка\n- тент",
+    "english_translation": "- tent\n- canopy"
+  },
+  "テンプレート": {
+    "russian_translation": "- шаблон\n- образец",
+    "english_translation": "- template\n- pattern"
+  },
+  "デズモンド": {
+    "russian_translation": "- Дезмонд (имя)",
+    "english_translation": "- Desmond (name)"
+  },
+  "デモンストレーション": {
+    "russian_translation": "- демонстрация\n- показ",
+    "english_translation": "- demonstration\n- show"
+  },
+  "デリバリー": {
+    "russian_translation": "- доставка\n- подача",
+    "english_translation": "- delivery\n- supply"
+  },
+  "トネ": {
+    "russian_translation": "- Тоне (река/имя)",
+    "english_translation": "- Tone (river/name)"
+  },
+  "トレス": {
+    "russian_translation": "- трассировка\n- след",
+    "english_translation": "- trace\n- track"
+  },
+  "ドッジ": {
+    "russian_translation": "- додж (уклонение)\n- Додж (имя)",
+    "english_translation": "- dodge\n- Dodge (name)"
+  },
+  "ドノバン": {
+    "russian_translation": "- Донован (имя)",
+    "english_translation": "- Donovan (name)"
+  },
+  "ドミニク": {
+    "russian_translation": "- Доминик (имя)",
+    "english_translation": "- Dominic (name)"
+  },
+  "ドライバー": {
+    "russian_translation": "- водитель\n- отвертка",
+    "english_translation": "- driver\n- screwdriver"
+  },
+  "ドライブ": {
+    "russian_translation": "- поездка\n- диск",
+    "english_translation": "- drive\n- disk"
+  },
+  "ドンマイ": {
+    "russian_translation": "- донмай (не парься)\n- не волнуйся",
+    "english_translation": "- don't mind\n- no worries"
+  },
+  "ナカ": {
+    "russian_translation": "- Нака (имя)\n- внутри",
+    "english_translation": "- Naka (name)\n- inside"
+  },
+  "ナッツ": {
+    "russian_translation": "- орехи\n- гайки",
+    "english_translation": "- nuts\n- hardware"
+  },
+  "ナレーション": {
+    "russian_translation": "- narration\n- закадровый голос",
+    "english_translation": "- narration\n- voiceover"
+  },
+  "ナンキョク": {
+    "russian_translation": "- Антарктика\n- Южный полюс",
+    "english_translation": "- Antarctic\n- South Pole"
+  },
+  "ネネ": {
+    "russian_translation": "- Нене (имя)",
+    "english_translation": "- Nene (name)"
+  },
+  "ハグ": {
+    "russian_translation": "- объятия\n- hug",
+    "english_translation": "- hug\n- embrace"
+  },
+  "ハニー": {
+    "russian_translation": "- мед\n- дорогой",
+    "english_translation": "- honey\n- dear"
+  },
+  "ハワード": {
+    "russian_translation": "- Говард (имя)",
+    "english_translation": "- Howard (name)"
+  },
+  "ハンドラー": {
+    "russian_translation": "- обработчик\n- куратор",
+    "english_translation": "- handler\n- manager"
+  },
+  "ハンドル": {
+    "russian_translation": "- руль\n- ручка",
+    "english_translation": "- handle\n- steering wheel"
+  },
+  "ハンバーグ": {
+    "russian_translation": "- гамбургер (котлета)\n- hamburg steak",
+    "english_translation": "- hamburger steak\n- meat patty"
+  },
+  "バイ": {
+    "russian_translation": "- бай (пока)\n- покупка",
+    "english_translation": "- bye\n- buy"
+  },
+  "バイト代": {
+    "russian_translation": "- оплата подработки\n- зарплата за часть занятости",
+    "english_translation": "- part-time pay\n- freelance fee"
+  },
+  "バリントン": {
+    "russian_translation": "- Баррингтон (имя/место)",
+    "english_translation": "- Barrington (name/place)"
+  },
+  "バーグ": {
+    "russian_translation": "- бургер\n- Берг (имя)",
+    "english_translation": "- burger\n- Berg (name)"
+  },
+  "バーンズ": {
+    "russian_translation": "- Барнс (имя)",
+    "english_translation": "- Burns (name)"
+  },
+  "パワー": {
+    "russian_translation": "- сила\n- мощность",
+    "english_translation": "- power\n- strength"
+  },
+  "ヒロシ": {
+    "russian_translation": "- Хироси (имя)",
+    "english_translation": "- Hiroshi (name)"
+  },
+  "ビンゴ": {
+    "russian_translation": "- бинго\n- точно",
+    "english_translation": "- bingo\n- exactly"
+  },
+  "ファックス": {
+    "russian_translation": "- факс\n- факсимиле",
+    "english_translation": "- fax\n- facsimile"
+  },
+  "ファミリー": {
+    "russian_translation": "- семья\n- семейный",
+    "english_translation": "- family\n- household"
+  },
+  "ファルコン": {
+    "russian_translation": "- сокол\n- Falcon",
+    "english_translation": "- falcon\n- hawk"
+  },
+  "フィジカル": {
+    "russian_translation": "- физический\n- телесный",
+    "english_translation": "- physical\n- bodily"
+  },
+  "フウ": {
+    "russian_translation": "- Фу (имя)\n- ветер",
+    "english_translation": "- Fu (name)\n- wind"
+  },
+  "フェイン": {
+    "russian_translation": "- Фейн (имя)\n- увядать",
+    "english_translation": "- Fain (name)\n- fade"
+  },
+  "フェラ": {
+    "russian_translation": "- феллацио (сленг)",
+    "english_translation": "- fellatio (slang)"
+  },
+  "フェリー": {
+    "russian_translation": "- паром\n- переправа",
+    "english_translation": "- ferry\n- boat"
+  },
+  "フェーズ": {
+    "russian_translation": "- фаза\n- этап",
+    "english_translation": "- phase\n- stage"
+  },
+  "フォロー": {
+    "russian_translation": "- следовать\n- поддержка",
+    "english_translation": "- follow\n- support"
+  },
+  "フォー": {
+    "russian_translation": "- четыре\n- фо (суп)",
+    "english_translation": "- four\n- pho (soup)"
+  },
+  "フォージャー": {
+    "russian_translation": "- Форджер (имя)\n- подделка",
+    "english_translation": "- Forger (name)\n- forgery"
+  },
+  "フォーマル": {
+    "russian_translation": "- формальный\n- официальный",
+    "english_translation": "- formal\n- official"
+  },
+  "フォーメーション": {
+    "russian_translation": "- формация\n- построение",
+    "english_translation": "- formation\n- arrangement"
+  },
+  "フク": {
+    "russian_translation": "- Фуку (имя)\n- удача",
+    "english_translation": "- Fuku (name)\n- luck"
+  },
+  "フランキー": {
+    "russian_translation": "- Фрэнки (имя)",
+    "english_translation": "- Frankie (name)"
+  },
+  "フランクリン": {
+    "russian_translation": "- Франклин (имя)",
+    "english_translation": "- Franklin (name)"
+  },
+  "ブティック": {
+    "russian_translation": "- бутик\n- магазин",
+    "english_translation": "- boutique\n- shop"
+  },
+  "ブラン": {
+    "russian_translation": "- Бран (имя)\n- отруби",
+    "english_translation": "- Bran (name)\n- bran"
+  },
+  "ブリリアント": {
+    "russian_translation": "- бриллиант\n- блестящий",
+    "english_translation": "- brilliant\n- diamond"
+  },
+  "ブリーフィング": {
+    "russian_translation": "- брифинг\n- инструктаж",
+    "english_translation": "- briefing\n- instruction"
+  },
+  "ブレナン": {
+    "russian_translation": "- Бреннан (имя)",
+    "english_translation": "- Brennan (name)"
+  },
+  "ブーツ": {
+    "russian_translation": "- ботинки\n- сапоги",
+    "english_translation": "- boots\n- footwear"
+  },
+  "プレッシャー": {
+    "russian_translation": "- давление\n- нажим",
+    "english_translation": "- pressure\n- stress"
+  },
+  "ヘイワード": {
+    "russian_translation": "- Хейворд (имя)",
+    "english_translation": "- Hayward (name)"
+  },
+  "ヘンダーソン": {
+    "russian_translation": "- Хендерсон (имя)",
+    "english_translation": "- Henderson (name)"
+  },
+  "ヘンリー": {
+    "russian_translation": "- Генри (имя)",
+    "english_translation": "- Henry (name)"
+  },
+  "ベイ": {
+    "russian_translation": "- залив\n- бэй",
+    "english_translation": "- bay\n- gulf"
+  },
+  "ベスタ": {
+    "russian_translation": "- Веста (имя/богиня)",
+    "english_translation": "- Vesta (name/goddess)"
+  },
+  "ベッキー": {
+    "russian_translation": "- Бекки (имя)",
+    "english_translation": "- Becky (name)"
+  },
+  "ベネディクト": {
+    "russian_translation": "- Бенедикт (имя)",
+    "english_translation": "- Benedict (name)"
+  },
+  "ペペ": {
+    "russian_translation": "- Пепе (имя)",
+    "english_translation": "- Pepe (name)"
+  },
+  "ペンギン": {
+    "russian_translation": "- пингвин",
+    "english_translation": "- penguin"
+  },
+  "ペント": {
+    "russian_translation": "- пент (имя)\n- пентагон",
+    "english_translation": "- Pent (name)\n- pentagon"
+  },
+  "ペー": {
+    "russian_translation": "- Пэ (звук)\n- страница",
+    "english_translation": "- Pe (sound)\n- page"
+  },
+  "ホイッスル": {
+    "russian_translation": "- свисток\n- свист",
+    "english_translation": "- whistle\n- whistling"
+  },
+  "ホッキョク": {
+    "russian_translation": "- Арктика\n- Северный полюс",
+    "english_translation": "- Arctic\n- North Pole"
+  },
+  "ホメオスタシス": {
+    "russian_translation": "- гомеостаз\n- саморегуляция",
+    "english_translation": "- homeostasis\n- self-regulation"
+  },
+  "ホリ": {
+    "russian_translation": "- Хори (имя)\n- копать",
+    "english_translation": "- Hori (name)\n- dig"
+  },
+  "ホーミング": {
+    "russian_translation": "- наведение\n- хоуминг",
+    "english_translation": "- homing\n- guidance"
+  },
+  "ボキャブラリー": {
+    "russian_translation": "- словарный запас\n- лексика",
+    "english_translation": "- vocabulary\n- lexicon"
+  },
+  "ボビー": {
+    "russian_translation": "- Бобби (имя)",
+    "english_translation": "- Bobby (name)"
+  },
+  "ボランティア": {
+    "russian_translation": "- волонтер\n- доброволец",
+    "english_translation": "- volunteer\n- helper"
+  },
+  "ポルチーニ": {
+    "russian_translation": "- порчини (гриб)\n- белый гриб",
+    "english_translation": "- porcini\n- mushroom"
+  },
+  "ポンプ": {
+    "russian_translation": "- насос\n- помпа",
+    "english_translation": "- pump\n- machinery"
+  },
+  "ポーポー": {
+    "russian_translation": "- пароход (звук)\n- Попо (имя)",
+    "english_translation": "- choo-choo (train)\n- Popo (name)"
+  },
+  "マサヨシ": {
+    "russian_translation": "- Масаёси (имя)",
+    "english_translation": "- Masayoshi (name)"
+  },
+  "マックス": {
+    "russian_translation": "- максимум\n- Макс (имя)",
+    "english_translation": "- max\n- maximum"
+  },
+  "マフラー": {
+    "russian_translation": "- шарф\n- глушитель",
+    "english_translation": "- muffler\n- scarf"
+  },
+  "マリネ": {
+    "russian_translation": "- маринад\n- маринованное",
+    "english_translation": "- marinade\n- marinated"
+  },
+  "マルカム": {
+    "russian_translation": "- Малкольм (имя)",
+    "english_translation": "- Malcolm (name)"
+  },
+  "マン": {
+    "russian_translation": "- человек\n- ман",
+    "english_translation": "- man\n- human"
+  },
+  "マードック": {
+    "russian_translation": "- Мёрдок (имя)",
+    "english_translation": "- Murdoch (name)"
+  },
+  "マーン": {
+    "russian_translation": "- Ман (имя)\n- лунный",
+    "english_translation": "- Mann (name)\n- moon"
+  },
+  "ミタライ": {
+    "russian_translation": "- Митарай (имя)",
+    "english_translation": "- Mitarai (name)"
+  },
+  "ミニゲーム": {
+    "russian_translation": "- мини-игра",
+    "english_translation": "- mini-game"
+  },
+  "ミリー": {
+    "russian_translation": "- Милли (имя)",
+    "english_translation": "- Milly (name)"
+  },
+  "メンタル": {
+    "russian_translation": "- ментальный\n- психический",
+    "english_translation": "- mental\n- psychological"
+  },
+  "モチベーション": {
+    "russian_translation": "- мотивация\n- побуждение",
+    "english_translation": "- motivation\n- drive"
+  },
+  "モリ": {
+    "russian_translation": "- Мори (имя)\n- лес",
+    "english_translation": "- Mori (name)\n- forest"
+  },
+  "モールス": {
+    "russian_translation": "- Морзе (код)",
+    "english_translation": "- Morse (code)"
+  },
+  "ユアンヤン": {
+    "russian_translation": "- Юань Ян (имя)",
+    "english_translation": "- Yuan Yang (name)"
+  },
+  "ユキ": {
+    "russian_translation": "- Юки (имя)\n- снег",
+    "english_translation": "- Yuki (name)\n- snow"
+  },
+  "ユーリ": {
+    "russian_translation": "- Юрий (имя)\n- Юри",
+    "english_translation": "- Yuri (name)"
+  },
+  "ヨル": {
+    "russian_translation": "- Йор (имя)\n- ночь",
+    "english_translation": "- Yor (name)\n- night"
+  },
+  "ヨーロッパ": {
+    "russian_translation": "- Европа",
+    "english_translation": "- Europe"
+  },
+  "ライアー": {
+    "russian_translation": "- лжец\n- лиар",
+    "english_translation": "- liar\n- deceiver"
+  },
+  "ライネック": {
+    "russian_translation": "- Райнек (имя)",
+    "english_translation": "- Ryneck (name)"
+  },
+  "ラウンジ": {
+    "russian_translation": "- лаундж\n- гостиная",
+    "english_translation": "- lounge\n- waiting room"
+  },
+  "ラッキー": {
+    "russian_translation": "- удачливый\n- счастливчик",
+    "english_translation": "- lucky\n- fortunate"
+  },
+  "ラッセル": {
+    "russian_translation": "- Рассел (имя)",
+    "english_translation": "- Russell (name)"
+  },
+  "リア": {
+    "russian_translation": "- Лия (имя)\n- задняя часть",
+    "english_translation": "- Lia (name)\n- rear"
+  },
+  "リスキー": {
+    "russian_translation": "- рискованный\n- опасный",
+    "english_translation": "- risky\n- dangerous"
+  },
+  "リビング": {
+    "russian_translation": "- гостиная\n- жизнь",
+    "english_translation": "- living\n- living room"
+  },
+  "リョウ": {
+    "russian_translation": "- Рё (имя)\n- количество",
+    "english_translation": "- Ryo (name)\n- amount"
+  },
+  "リント": {
+    "russian_translation": "- ворс\n- пыль",
+    "english_translation": "- lint\n- fluff"
+  },
+  "ル": {
+    "russian_translation": "- Ру (слог)\n- путь",
+    "english_translation": "- Ru (syllable)\n- path"
+  },
+  "レシピ": {
+    "russian_translation": "- рецепт\n- инструкция",
+    "english_translation": "- recipe\n- instruction"
+  },
+  "レジャー": {
+    "russian_translation": "- досуг\n- отдых",
+    "english_translation": "- leisure\n- recreation"
+  },
+  "レバー": {
+    "russian_translation": "- печень\n- рычаг",
+    "english_translation": "- liver\n- lever"
+  },
+  "レブ": {
+    "russian_translation": "- Реб (имя)\n- леб (сленг)",
+    "english_translation": "- Reb (name)\n- Leb (slang)"
+  },
+  "レン": {
+    "russian_translation": "- Рен (имя)\n- лотос",
+    "english_translation": "- Ren (name)\n- lotus"
+  },
+  "レンジャー": {
+    "russian_translation": "- рейнджер\n- егерь",
+    "english_translation": "- ranger\n- ranger"
+  },
+  "レンタカー": {
+    "russian_translation": "- прокат автомобилей\n- арендованная машина",
+    "english_translation": "- rental car\n- car hire"
+  },
+  "ロイ": {
+    "russian_translation": "- Рой (имя)",
+    "english_translation": "- Roy (name)"
+  },
+  "ロイド": {
+    "russian_translation": "- Ллойд (имя)",
+    "english_translation": "- Lloyd (name)"
+  },
+  "ロイヤル": {
+    "russian_translation": "- королевский\n- рояль",
+    "english_translation": "- royal\n- kingly"
+  },
+  "ロッシュ": {
+    "russian_translation": "- Рош (имя/компания)",
+    "english_translation": "- Roche (name/company)"
+  },
+  "ロッテ": {
+    "russian_translation": "- Лотте (компания/имя)",
+    "english_translation": "- Lotte (company/name)"
+  },
+  "ロバート": {
+    "russian_translation": "- Роберт (имя)",
+    "english_translation": "- Robert (name)"
+  },
+  "ローマ": {
+    "russian_translation": "- Рим\n- Рома (имя)",
+    "english_translation": "- Rome\n- Roma (name)"
+  },
+  "ワイズ": {
+    "russian_translation": "- Вайз (имя)\n- мудрый",
+    "english_translation": "- Wise (name)\n- wise"
+  },
+  "ワタル": {
+    "russian_translation": "- Ватару (имя)\n- переходить",
+    "english_translation": "- Wataru (name)\n- cross"
+  },
+  "ワトキンス": {
+    "russian_translation": "- Уоткинс (имя)",
+    "english_translation": "- Watkins (name)"
+  },
+  "一人息子": {
+    "russian_translation": "- единственный сын",
+    "english_translation": "- only son"
+  },
+  "一押し": {
+    "russian_translation": "- рекомендация\n- фаворит",
+    "english_translation": "- recommendation\n- favorite"
+  },
+  "一昨": {
+    "russian_translation": "- позавчера",
+    "english_translation": "- day before yesterday"
+  },
+  "一概": {
+    "russian_translation": "- однозначно\n- вообще",
+    "english_translation": "- uniformly\n- necessarily"
+  },
+  "三味": {
+    "russian_translation": "- три вкуса\n- сямисэн (муз.)",
+    "english_translation": "- three tastes\n- shamisen"
+  },
+  "上乗せ": {
+    "russian_translation": "- надбавка\n- добавление",
+    "english_translation": "- surcharge\n- addition"
+  },
+  "下取り": {
+    "russian_translation": "- trade-in\n- обмен старого на новое",
+    "english_translation": "- trade-in\n- exchange"
+  },
+  "下吏": {
+    "russian_translation": "- мелкий чиновник\n- низший служащий",
+    "english_translation": "- minor official\n- low-ranking clerk"
+  },
+  "下手糞": {
+    "russian_translation": "- неумеха\n- плохой игрок",
+    "english_translation": "- unskilled person\n- bad player"
+  },
+  "不可欠": {
+    "russian_translation": "- необходимый\n- незаменимый",
+    "english_translation": "- indispensable\n- essential"
+  },
+  "丸切り": {
+    "russian_translation": "- округление\n- отрезание",
+    "english_translation": "- rounding off\n- cutting off"
+  },
+  "主導": {
+    "russian_translation": "- руководство\n- лидерство",
+    "english_translation": "- leadership\n- initiative"
+  },
+  "乗り乗り": {
+    "russian_translation": "- с удовольствием\n- охотно",
+    "english_translation": "- willingly\n- enthusiastically"
+  },
+  "五入": {
+    "russian_translation": "- пять штук в наборе",
+    "english_translation": "- five pieces per pack"
+  },
+  "些とも": {
+    "russian_translation": "- ничуть\n- немного",
+    "english_translation": "- at all\n- a little"
+  },
+  "亜科": {
+    "russian_translation": "- подсемейство (биол.)",
+    "english_translation": "- subfamily (biology)"
+  },
+  "亡くす": {
+    "russian_translation": "- терять\n- лишаться",
+    "english_translation": "- to lose\n- to be bereaved"
+  },
+  "亡くなる": {
+    "russian_translation": "- умереть\n- скончаться",
+    "english_translation": "- to pass away\n- to die"
+  },
+  "人脈": {
+    "russian_translation": "- связи\n- нетворкинг",
+    "english_translation": "- connections\n- network"
+  },
+  "介護": {
+    "russian_translation": "- уход\n- забота (о пожилых)",
+    "english_translation": "- nursing care\n- caregiving"
+  },
+  "仕切り直す": {
+    "russian_translation": "- начать заново\n- перегруппироваться",
+    "english_translation": "- start over\n- regroup"
+  },
+  "仕方無い": {
+    "russian_translation": "- ничего не поделаешь\n- неизбежно",
+    "english_translation": "- can't be helped\n- unavoidable"
+  },
+  "仕立て上げる": {
+    "russian_translation": "- сшить\n- подготовить",
+    "english_translation": "- to tailor\n- to prepare"
+  },
+  "仲睦まじい": {
+    "russian_translation": "- дружный\n- любящий",
+    "english_translation": "- loving\n- affectionate"
+  },
+  "任す": {
+    "russian_translation": "- поручать\n- доверять",
+    "english_translation": "- to entrust\n- to leave to"
+  },
+  "住": {
+    "russian_translation": "- жить\n- residence",
+    "english_translation": "- live\n- residence"
+  },
+  "体勢": {
+    "russian_translation": "- позиция\n- postura",
+    "english_translation": "- posture\n- position"
+  },
+  "何々": {
+    "russian_translation": "- то-то и то-то\n- такое-то",
+    "english_translation": "- so-and-so\n- etc."
+  },
+  "佚": {
+    "russian_translation": "- потерянный\n- рассеянный",
+    "english_translation": "- lost\n- scattered"
+  },
+  "修行": {
+    "russian_translation": "- тренировка\n- аскеза",
+    "english_translation": "- training\n- ascetic practice"
+  },
+  "優美": {
+    "russian_translation": "- изящный\n- грациозный",
+    "english_translation": "- graceful\n- elegant"
+  },
+  "先達て": {
+    "russian_translation": "- ранее\n- прежде",
+    "english_translation": "- previously\n- before"
+  },
+  "兎に角": {
+    "russian_translation": "- во всяком случае\n- так или иначе",
+    "english_translation": "- anyway\n- anyhow"
+  },
+  "兎も角": {
+    "russian_translation": "- во всяком случае\n- оставив в стороне",
+    "english_translation": "- anyway\n- leaving aside"
+  },
+  "兎角": {
+    "russian_translation": "- во всяком случае\n- anyhow",
+    "english_translation": "- anyway\n- anyhow"
+  },
+  "共働き": {
+    "russian_translation": "- работающая пара\n- оба работают",
+    "english_translation": "- dual-income couple\n- both working"
+  },
+  "共和": {
+    "russian_translation": "- республика\n- гармония",
+    "english_translation": "- republic\n- harmony"
+  },
+  "内科": {
+    "russian_translation": "- внутренняя медицина\n- терапия",
+    "english_translation": "- internal medicine\n- department of internal medicine"
+  },
+  "写る ": {
+    "russian_translation": "- фотографироваться, отражаться",
+    "english_translation": "- to be photographed, to be reflected"
+  },
+  "冬用 ": {
+    "russian_translation": "- зимний, для зимы",
+    "english_translation": "- for winter use, winter-type"
+  },
+  "冷暖房 ": {
+    "russian_translation": "- отопление и кондиционирование",
+    "english_translation": "- heating and cooling"
+  },
+  "凛と ": {
+    "russian_translation": "- холодно, бодро, строго",
+    "english_translation": "- briskly, coldly, sternly"
+  },
+  "出でる ": {
+    "russian_translation": "- выходить (арх./диал.)",
+    "english_translation": "- to exit (archaic/dialect)"
+  },
+  "出臍 ": {
+    "russian_translation": "- выпуклый пупок",
+    "english_translation": "- protruding navel"
+  },
+  "出題 ": {
+    "russian_translation": "- постановка вопроса, задача",
+    "english_translation": "- problem setting, question"
+  },
+  "初動 ": {
+    "russian_translation": "- начальное движение, старт",
+    "english_translation": "- initial movement, start"
+  },
+  "前妻 ": {
+    "russian_translation": "- бывшая жена",
+    "english_translation": "- ex-wife"
+  },
+  "前置き ": {
+    "russian_translation": "- предисловие, вступление",
+    "english_translation": "- preface, introduction"
+  },
+  "割と ": {
+    "russian_translation": "- сравнительно, довольно",
+    "english_translation": "- relatively, fairly"
+  },
+  "加点 ": {
+    "russian_translation": "- добавление очков, баллов",
+    "english_translation": "- adding points, scoring"
+  },
+  "助 ": {
+    "russian_translation": "- помощь, помощник (суф.)",
+    "english_translation": "- help, assistant (suffix)"
+  },
+  "努める ": {
+    "russian_translation": "- стараться, стремиться",
+    "english_translation": "- to endeavor, to strive"
+  },
+  "危うい ": {
+    "russian_translation": "- опасный, рискованный",
+    "english_translation": "- dangerous, risky"
+  },
+  "原っぱ ": {
+    "russian_translation": "- открытое поле, пустырь",
+    "english_translation": "- open field, wasteland"
+  },
+  "原典 ": {
+    "russian_translation": "- оригинальный текст, источник",
+    "english_translation": "- original text, source"
+  },
+  "原産 ": {
+    "russian_translation": "- производство, происхождение",
+    "english_translation": "- production, origin"
+  },
+  "反らし ": {
+    "russian_translation": "- отворачивание, отклонение",
+    "english_translation": "- turning away, deviation"
+  },
+  "取り換え ": {
+    "russian_translation": "- замена, обмен",
+    "english_translation": "- replacement, exchange"
+  },
+  "取り混ぜる ": {
+    "russian_translation": "- смешивать, добавлять",
+    "english_translation": "- to mix in, to add"
+  },
+  "受話 ": {
+    "russian_translation": "- получение сообщения, телефонный звонок",
+    "english_translation": "- receiving a call, message"
+  },
+  "右往 ": {
+    "russian_translation": "- движение вправо (часто в идиоме)",
+    "english_translation": "- going right (often in idiom)"
+  },
+  "右端 ": {
+    "russian_translation": "- правый край",
+    "english_translation": "- right end, right edge"
+  },
+  "叶える ": {
+    "russian_translation": "- исполнять (желание), осуществлять",
+    "english_translation": "- to grant, to fulfill"
+  },
+  "同 ": {
+    "russian_translation": "- тот же, одинаковый",
+    "english_translation": "- same, identical"
+  },
+  "同士 ": {
+    "russian_translation": "- товарищи, взаимно",
+    "english_translation": "- comrades, mutual"
+  },
+  "同相 ": {
+    "russian_translation": "- одинаковая фаза, синфазный",
+    "english_translation": "- same phase, in-phase"
+  },
+  "吹き飛ぶ ": {
+    "russian_translation": "- улетать, сдуваться",
+    "english_translation": "- to blow away, to fly off"
+  },
+  "呉々 ": {
+    "russian_translation": "- внимательно, тщательно (устар.)",
+    "english_translation": "- carefully, thoroughly (archaic)"
+  },
+  "味わい ": {
+    "russian_translation": "- вкус, ощущение",
+    "english_translation": "- taste, flavor, feeling"
+  },
+  "味わわす ": {
+    "russian_translation": "- давать пробовать, заставлять испытать",
+    "english_translation": "- to let taste, to make experience"
+  },
+  "喋り ": {
+    "russian_translation": "- разговор, болтовня",
+    "english_translation": "- talk, chat"
+  },
+  "噛み切る ": {
+    "russian_translation": "- откусывать, перекусывать",
+    "english_translation": "- to bite off, to cut with teeth"
+  },
+  "四捨 ": {
+    "russian_translation": "- отбрасывание (четырёх)",
+    "english_translation": "- dropping (four)"
+  },
+  "坊 ": {
+    "russian_translation": "- монах, парень (суф.)",
+    "english_translation": "- monk, boy (suffix)"
+  },
+  "埋め込む ": {
+    "russian_translation": "- встраивать, внедрять",
+    "english_translation": "- to embed, to implant"
+  },
+  "域外 ": {
+    "russian_translation": "- за пределами зоны, вне области",
+    "english_translation": "- outside the zone, extraregional"
+  },
+  "堅 ": {
+    "russian_translation": "- твердый, строгий",
+    "english_translation": "- hard, strict, solid"
+  },
+  "売人 ": {
+    "russian_translation": "- продавец, торговец (наркотиками)",
+    "english_translation": "- seller, dealer"
+  },
+  "外野 ": {
+    "russian_translation": "- аутфилд (бейсбол), посторонние",
+    "english_translation": "- outfield, outsiders"
+  },
+  "大きめ ": {
+    "russian_translation": "- довольно большой",
+    "english_translation": "- fairly large, somewhat big"
+  },
+  "失点 ": {
+    "russian_translation": "- пропущенный гол/очко",
+    "english_translation": "- lost point, conceded goal"
+  },
+  "失調 ": {
+    "russian_translation": "- дисбаланс, расстройство",
+    "english_translation": "- imbalance, disorder"
+  },
+  "奥の手 ": {
+    "russian_translation": "- секретный прием, козырь",
+    "english_translation": "- secret trick, trump card"
+  },
+  "奪い去る ": {
+    "russian_translation": "- отнимать, уносить",
+    "english_translation": "- to snatch away, to carry off"
+  },
+  "奮闘 ": {
+    "russian_translation": "- упорная борьба, старание",
+    "english_translation": "- hard struggle, effort"
+  },
+  "姉弟 ": {
+    "russian_translation": "- старшая сестра и младший брат",
+    "english_translation": "- older sister and younger brother"
+  },
+  "婚活 ": {
+    "russian_translation": "- поиск партнера для брака",
+    "english_translation": "- marriage hunting, partner search"
+  },
+  "子作り ": {
+    "russian_translation": "- зачатие ребенка",
+    "english_translation": "- making babies, conception"
+  },
+  "子育て ": {
+    "russian_translation": "- воспитание детей",
+    "english_translation": "- child rearing, parenting"
+  },
+  "子連れ ": {
+    "russian_translation": "- с детьми, сопровождаемый ребенком",
+    "english_translation": "- with children, accompanied by child"
+  },
+  "存知 ": {
+    "russian_translation": "- знание, ведение (вежл.)",
+    "english_translation": "- knowledge, knowing (polite)"
+  },
+  "定休 ": {
+    "russian_translation": "- регулярный выходной",
+    "english_translation": "- regular holiday, closed day"
+  },
+  "容易い ": {
+    "russian_translation": "- легкий, простой",
+    "english_translation": "- easy, simple"
+  },
+  "寮長 ": {
+    "russian_translation": "- начальник общежития",
+    "english_translation": "- dormitory head, dorm manager"
+  },
+  "対辺 ": {
+    "russian_translation": "- противоположная сторона",
+    "english_translation": "- opposite side"
+  },
+  "封じ込める ": {
+    "russian_translation": "- запечатывать, сдерживать",
+    "english_translation": "- to seal in, to contain"
+  },
+  "屎尿 ": {
+    "russian_translation": "- экскременты и моча",
+    "english_translation": "- excrement and urine"
+  },
+  "左往 ": {
+    "russian_translation": "- движение влево (часто в идиоме)",
+    "english_translation": "- going left (often in idiom)"
+  },
+  "巨 ": {
+    "russian_translation": "- огромный, гигантский",
+    "english_translation": "- giant, huge"
+  },
+  "差さる ": {
+    "russian_translation": "- вставляться, разниться (диал.)",
+    "english_translation": "- to insert, to differ (dialect)"
+  },
+  "差し出し ": {
+    "russian_translation": "- предъявление, подача",
+    "english_translation": "- submission, presentation"
+  },
+  "干し ": {
+    "russian_translation": "- сушение, вяление",
+    "english_translation": "- drying, desiccation"
+  },
+  "幾 ": {
+    "russian_translation": "- сколько, несколько",
+    "english_translation": "- how many, some"
+  },
+  "店長 ": {
+    "russian_translation": "- управляющий магазином",
+    "english_translation": "- store manager, shop master"
+  },
+  "座学 ": {
+    "russian_translation": "- теоретическое обучение",
+    "english_translation": "- classroom learning, theory"
+  },
+  "庶務 ": {
+    "russian_translation": "- общие дела, административная работа",
+    "english_translation": "- general affairs, clerical work"
+  },
+  "延いては ": {
+    "russian_translation": "- в конечном счете,进而",
+    "english_translation": "- consequently, furthermore"
+  },
+  "弄くり回す ": {
+    "russian_translation": "- вертеть, манипулировать",
+    "english_translation": "- to manipulate, to fiddle with"
+  },
+  "引っ手繰り ": {
+    "russian_translation": "- подтаскивание, притягивание",
+    "english_translation": "- pulling in, dragging"
+  },
+  "張本 ": {
+    "russian_translation": "- главная причина, виновник",
+    "english_translation": "- main cause, culprit"
+  },
+  "当院 ": {
+    "russian_translation": "- наша больница",
+    "english_translation": "- this hospital, our hospital"
+  },
+  "当館 ": {
+    "russian_translation": "- наше здание/учреждение",
+    "english_translation": "- this building, our facility"
+  },
+  "役職 ": {
+    "russian_translation": "- должность, пост",
+    "english_translation": "- position, post"
+  },
+  "待ち合わせ ": {
+    "russian_translation": "- встреча, rendezvous",
+    "english_translation": "- meeting, rendezvous"
+  },
+  "待ち遠 ": {
+    "russian_translation": "- нетерпеливое ожидание",
+    "english_translation": "- impatient waiting, longing"
+  },
+  "御 ": {
+    "russian_translation": "- почетная приставка",
+    "english_translation": "- honorific prefix"
+  },
+  "心成し ": {
+    "russian_translation": "- формирование духа (редко)",
+    "english_translation": "- spiritual formation (rare)"
+  },
+  "心肺 ": {
+    "russian_translation": "- сердце и легкие",
+    "english_translation": "- heart and lungs"
+  },
+  "必修 ": {
+    "russian_translation": "- обязательный предмет",
+    "english_translation": "- compulsory subject"
+  },
+  "必殺 ": {
+    "russian_translation": "- смертельный, убийственный",
+    "english_translation": "- deadly, sure-kill"
+  },
+  "必需 ": {
+    "russian_translation": "- необходимый, обязательный",
+    "english_translation": "- essential, necessary"
+  },
+  "思い掛ける ": {
+    "russian_translation": "- неожиданно думать/встречать",
+    "english_translation": "- to think unexpectedly, to encounter"
+  },
+  "怪童 ": {
+    "russian_translation": "- странный ребенок, вундеркинд",
+    "english_translation": "- strange child, prodigy"
+  },
+  "恵まれる ": {
+    "russian_translation": "- быть благословленным, иметь достаток",
+    "english_translation": "- to be blessed, to be endowed"
+  },
+  "扇風 ": {
+    "russian_translation": "- вентиляция, обдув",
+    "english_translation": "- ventilation, fan wind"
+  },
+  "手っ取り ": {
+    "russian_translation": "- быстрый способ, легкость",
+    "english_translation": "- quick way, ease"
+  },
+  "打ち ": {
+    "russian_translation": "- удар, стрельба, префикс",
+    "english_translation": "- hit, strike, prefix"
+  },
+  "扠 ": {
+    "russian_translation": "- вилка, инструмент (редко)",
+    "english_translation": "- fork, tool (rare)"
+  },
+  "投足 ": {
+    "russian_translation": "- бросок ногой (редко)",
+    "english_translation": "- foot throw (rare)"
+  },
+  "拍 ": {
+    "russian_translation": "- ритм, такт, аплодисменты",
+    "english_translation": "- beat, rhythm, clap"
+  },
+  "挫け掛ける ": {
+    "russian_translation": "- почти сдаться, начать падать духом",
+    "english_translation": "- about to give up, starting to lose heart"
+  },
+  "採寸 ": {
+    "russian_translation": "- снятие мерок",
+    "english_translation": "- taking measurements"
+  },
+  "撒く ": {
+    "russian_translation": "- разбрасывать, рассыпать",
+    "english_translation": "- to scatter, to撒く"
+  },
+  "擂り ": {
+    "russian_translation": "- терка, растирание",
+    "english_translation": "- grating, grinding"
+  },
+  "支え合う ": {
+    "russian_translation": "- поддерживать друг друга",
+    "english_translation": "- to support each other"
+  },
+  "攻手 ": {
+    "russian_translation": "- атакующий игрок",
+    "english_translation": "- attacker, offensive player"
+  },
+  "政財界 ": {
+    "russian_translation": "- политические и финансовые круги",
+    "english_translation": "- political and financial circles"
+  },
+  "敵方 ": {
+    "russian_translation": "- противник, вражеская сторона",
+    "english_translation": "- enemy, opposing side"
+  },
+  "文房 ": {
+    "russian_translation": "- кабинет, письменные принадлежности",
+    "english_translation": "- study, writing supplies"
+  },
+  "方程 ": {
+    "russian_translation": "- уравнение",
+    "english_translation": "- equation"
+  },
+  "於く ": {
+    "russian_translation": "- класть (арх./диал.)",
+    "english_translation": "- to put (archaic/dialect)"
+  },
+  "施錠 ": {
+    "russian_translation": "- запирание на замок",
+    "english_translation": "- locking"
+  },
+  "旺盛 ": {
+    "russian_translation": "- энергичный, бурный",
+    "english_translation": "- vigorous, booming"
+  },
+  "映え ": {
+    "russian_translation": "- отражение, эффект (сленг)",
+    "english_translation": "- reflection, effect (slang)"
+  },
+  "映す ": {
+    "russian_translation": "- отражать, проецировать",
+    "english_translation": "- to reflect, to project"
+  },
+  "時点 ": {
+    "russian_translation": "- момент времени",
+    "english_translation": "- point in time"
+  },
+  "普段 ": {
+    "russian_translation": "- обычно, в обычное время",
+    "english_translation": "- usually, ordinary times"
+  },
+  "最速 ": {
+    "russian_translation": "- быстрейший",
+    "english_translation": "- fastest"
+  },
+  "有り ": {
+    "russian_translation": "- наличие, существование",
+    "english_translation": "- existence, having"
+  },
+  "望遠 ": {
+    "russian_translation": "- телеобъектив, дальний вид",
+    "english_translation": "- telephoto, long range"
+  },
+  "未だ未だ ": {
+    "russian_translation": "- ещё нет, пока нет",
+    "english_translation": "- not yet, still not"
+  },
+  "本編 ": {
+    "russian_translation": "- основная часть, главный выпуск",
+    "english_translation": "- main part, main edition"
+  },
+  "来日 ": {
+    "russian_translation": "- прибытие в Японию",
+    "english_translation": "- visit to Japan"
+  },
+  "来院 ": {
+    "russian_translation": "- визит в больницу/учреждение",
+    "english_translation": "- visit to hospital/facility"
+  },
+  "東国 ": {
+    "russian_translation": "- восточная страна",
+    "english_translation": "- eastern country"
+  },
+  "染み染み ": {
+    "russian_translation": "- глубоко, проникновенно",
+    "english_translation": "- deeply, penetratively"
+  },
+  "案の定 ": {
+    "russian_translation": "- как и ожидалось",
+    "english_translation": "- as expected"
+  },
+  "極まり悪い ": {
+    "russian_translation": "- крайне плохо",
+    "english_translation": "- extremely bad"
+  },
+  "正念 ": {
+    "russian_translation": "- правильная мысль, дзен-практика",
+    "english_translation": "- right thought, zen practice"
+  },
+  "正攻 ": {
+    "russian_translation": "- прямая атака",
+    "english_translation": "- frontal attack"
+  },
+  "残弾 ": {
+    "russian_translation": "- оставшиеся патроны",
+    "english_translation": "- remaining bullets"
+  },
+  "殴り掛かる ": {
+    "russian_translation": "- набрасываться с кулаками",
+    "english_translation": "- to attack with fists"
+  },
+  "殴り飛ばす ": {
+    "russian_translation": "- избить и отбросить",
+    "english_translation": "- to beat and knock away"
+  },
+  "殺し屋 ": {
+    "russian_translation": "- наемный убийца",
+    "english_translation": "- hitman, killer"
+  },
+  "殻 ": {
+    "russian_translation": "- оболочка, скорлупа",
+    "english_translation": "- shell, husk"
+  },
+  "毒針 ": {
+    "russian_translation": "- ядовитое жало",
+    "english_translation": "- poison needle/sting"
+  },
+  "民宿 ": {
+    "russian_translation": "- частный пансионат",
+    "english_translation": "- minshuku, private inn"
+  },
+  "気付く ": {
+    "russian_translation": "- замечать, осознавать",
+    "english_translation": "- to notice, to realize"
+  },
+  "気安い ": {
+    "russian_translation": "- дешевый, простой (о цене/нраве)",
+    "english_translation": "- cheap, easygoing"
+  },
+  "水族 ": {
+    "russian_translation": "- водные организмы",
+    "english_translation": "- aquatic life"
+  },
+  "汚れ仕事 ": {
+    "russian_translation": "- грязная работа",
+    "english_translation": "- dirty work"
+  },
+  "浚い ": {
+    "russian_translation": "- углубление (дна), черпание",
+    "english_translation": "- dredging, scooping"
+  },
+  "湯飲み ": {
+    "russian_translation": "- чашка для чая",
+    "english_translation": "- teacup"
+  },
+  "満帆 ": {
+    "russian_translation": "- все паруса подняты (успех)",
+    "english_translation": "- full sail (success)"
+  },
+  "溺水 ": {
+    "russian_translation": "- утопление",
+    "english_translation": "- drowning"
+  },
+  "漢和 ": {
+    "russian_translation": "- китайско-японский",
+    "english_translation": "- Chinese-Japanese"
+  },
+  "漸と ": {
+    "russian_translation": "- постепенно, наконец",
+    "english_translation": "- gradually, finally"
+  },
+  "潜り抜ける ": {
+    "russian_translation": "- проходить сквозь, нырять",
+    "english_translation": "- to pass through, to dive through"
+  },
+  "炒める ": {
+    "russian_translation": "- жарить, обжаривать",
+    "english_translation": "- to fry, to stir-fry"
+  },
+  "無い無い ": {
+    "russian_translation": "- нет-нет, невозможно",
+    "english_translation": "- no-no, impossible"
+  },
+  "無くなる ": {
+    "russian_translation": "- исчезать, заканчиваться",
+    "english_translation": "- to disappear, to run out"
+  },
+  "焼き上がる ": {
+    "russian_translation": "- прожариваться, завершаться",
+    "english_translation": "- to be baked, to be completed"
+  },
+  "照れる ": {
+    "russian_translation": "- стесняться, смущаться",
+    "english_translation": "- to be shy, to be embarrassed"
+  },
+  "熱中 ": {
+    "russian_translation": "- увлечение, фанатизм",
+    "english_translation": "- enthusiasm, obsession"
+  },
+  "燥ぎ声 ": {
+    "russian_translation": "- шумный голос, крик",
+    "english_translation": "- noisy voice, shout"
+  },
+  "片付け ": {
+    "russian_translation": "- уборка, завершение",
+    "english_translation": "- cleaning up, finishing"
+  },
+  "特訓 ": {
+    "russian_translation": "- специальная тренировка",
+    "english_translation": "- special training"
+  },
+  "率 ": {
+    "russian_translation": "- коэффициент, лидерство",
+    "english_translation": "- rate, ratio, leadership"
+  },
+  "王女 ": {
+    "russian_translation": "- принцесса",
+    "english_translation": "- princess"
+  },
+  "球筋 ": {
+    "russian_translation": "- траектория мяча",
+    "english_translation": "- ball trajectory"
+  },
+  "甘ちょろい ": {
+    "russian_translation": "- сладкий, наивный (сленг)",
+    "english_translation": "- sweet, naive (slang)"
+  },
+  "生き生き ": {
+    "russian_translation": "- оживленно, энергично",
+    "english_translation": "- lively, vividly"
+  },
+  "産休 ": {
+    "russian_translation": "- декретный отпуск",
+    "english_translation": "- maternity leave"
+  },
+  "申し入れる ": {
+    "russian_translation": "- предлагать, вносить предложение",
+    "english_translation": "- to propose, to submit"
+  },
+  "町角 ": {
+    "russian_translation": "- угол улицы",
+    "english_translation": "- street corner"
+  },
+  "略す ": {
+    "russian_translation": "- сокращать, опускать",
+    "english_translation": "- to abbreviate, to omit"
+  },
+  "番線 ": {
+    "russian_translation": "- путь (на станции), номер",
+    "english_translation": "- track (station), number"
+  },
+  "疑似 ": {
+    "russian_translation": "- псевдо-, ложный",
+    "english_translation": "- pseudo-, false"
+  },
+  "病欠 ": {
+    "russian_translation": "- пропуск по болезни",
+    "english_translation": "- sick leave, absence"
+  },
+  "登下校 ": {
+    "russian_translation": "- путь в школу и обратно",
+    "english_translation": "- going to and from school"
+  },
+  "目安 ": {
+    "russian_translation": "- ориентир, стандарт",
+    "english_translation": "- guideline, standard"
+  },
+  "目線 ": {
+    "russian_translation": "- линия взгляда, уровень",
+    "english_translation": "- line of sight, level"
+  },
+  "眉唾 ": {
+    "russian_translation": "- сомнительный (выражение)",
+    "english_translation": "- doubtful (expression)"
+  },
+  "真ん前 ": {
+    "russian_translation": "- прямо перед",
+    "english_translation": "- right in front"
+  },
+  "短足 ": {
+    "russian_translation": "- короткие ноги",
+    "english_translation": "- short legs"
+  },
+  "秘孔 ": {
+    "russian_translation": "- секретная точка (акупунктура)",
+    "english_translation": "- secret point (acupuncture)"
+  },
+  "程遠い ": {
+    "russian_translation": "- далекий от...",
+    "english_translation": "- far from..."
+  },
+  "第 ": {
+    "russian_translation": "- номер, порядок",
+    "english_translation": "- number, order"
+  },
+  "筋トレ ": {
+    "russian_translation": "- силовая тренировка",
+    "english_translation": "- muscle training, workout"
+  },
+  "箇月 ": {
+    "russian_translation": "- месяцев (счет)",
+    "english_translation": "- months (counter)"
+  },
+  "粉塗れ ": {
+    "russian_translation": "- покрытый порошком/пылью",
+    "english_translation": "- covered in powder/dust"
+  },
+  "紙切れ ": {
+    "russian_translation": "- обрывок бумаги",
+    "english_translation": "- scrap of paper"
+  },
+  "結び付き ": {
+    "russian_translation": "- связь, соединение",
+    "english_translation": "- connection, binding"
+  },
+  "練度 ": {
+    "russian_translation": "- уровень мастерства",
+    "english_translation": "- level of skill, proficiency"
+  },
+  "繋げる ": {
+    "russian_translation": "- связывать, соединять",
+    "english_translation": "- to connect, to link"
+  },
+  "織り成す ": {
+    "russian_translation": "- создавать, ткать (историю)",
+    "english_translation": "- to weave, to create"
+  },
+  "纏め ": {
+    "russian_translation": "- подведение итогов, сбор",
+    "english_translation": "- summary, gathering"
+  },
+  "美容 ": {
+    "russian_translation": "- красота, косметология",
+    "english_translation": "- beauty, cosmetology"
+  },
+  "耳鼻 ": {
+    "russian_translation": "- ухо и нос (ЛОР)",
+    "english_translation": "- ear and nose (ENT)"
+  },
+  "育む ": {
+    "russian_translation": "- воспитывать, растить",
+    "english_translation": "- to nurture, to raise"
+  },
+  "自演 ": {
+    "russian_translation": "- инсценировка, самоисполнение",
+    "english_translation": "- staging, self-performance"
+  },
+  "茶色い ": {
+    "russian_translation": "- коричневый",
+    "english_translation": "- brown"
+  },
+  "被験 ": {
+    "russian_translation": "- подвергание тесту",
+    "english_translation": "- subject to test"
+  },
+  "製 ": {
+    "russian_translation": "- продукт, изготовление",
+    "english_translation": "- made, product"
+  },
+  "西側 ": {
+    "russian_translation": "- западная сторона",
+    "english_translation": "- west side"
+  },
+  "見直し ": {
+    "russian_translation": "- пересмотр, переоценка",
+    "english_translation": "- review, reassessment"
+  },
+  "見窄らしい ": {
+    "russian_translation": "- жалкий, неприглядный",
+    "english_translation": "- shabby, miserable"
+  },
+  "訳有り ": {
+    "russian_translation": "- есть причина, особый случай",
+    "english_translation": "- has reason, special case"
+  },
+  "貴校 ": {
+    "russian_translation": "- ваша школа (вежл.)",
+    "english_translation": "- your school (polite)"
+  },
+  "躱す ": {
+    "russian_translation": "- уклоняться, избегать",
+    "english_translation": "- to dodge, to avoid"
+  },
+  "軽率 ": {
+    "russian_translation": "- легкомысленный",
+    "english_translation": "- rash, frivolous"
+  },
+  "輪尾 ": {
+    "russian_translation": "- (редко) хвост колеса",
+    "english_translation": "- (rare) wheel tail"
+  },
+  "農産 ": {
+    "russian_translation": "- сельскохозяйственная продукция",
+    "english_translation": "- agricultural products"
+  },
+  "返り血 ": {
+    "russian_translation": "- брызги крови",
+    "english_translation": "- blood splatter"
+  },
+  "退かす ": {
+    "russian_translation": "- отодвигать, убирать",
+    "english_translation": "- to move away, to clear"
+  },
+  "逃れる ": {
+    "russian_translation": "- избегать, спасаться",
+    "english_translation": "- to escape, to avoid"
+  },
+  "速 ": {
+    "russian_translation": "- быстрый, скорость",
+    "english_translation": "- fast, speed"
+  },
+  "速攻 ": {
+    "russian_translation": "- быстрая атака",
+    "english_translation": "- quick attack"
+  },
+  "逢瀬 ": {
+    "russian_translation": "- свидание, встреча",
+    "english_translation": "- meeting, rendezvous"
+  },
+  "遊園 ": {
+    "russian_translation": "- парк, сад",
+    "english_translation": "- park, garden"
+  },
+  "過疎 ": {
+    "russian_translation": "- депопуляция, редкое население",
+    "english_translation": "- depopulation, sparse"
+  },
+  "違和 ": {
+    "russian_translation": "- дискомфорт, странность",
+    "english_translation": "- discomfort, strangeness"
+  },
+  "遣っ付ける ": {
+    "russian_translation": "- посылать, отправлять (разг.)",
+    "english_translation": "- to send (colloquial)"
+  },
+  "遣る気 ": {
+    "russian_translation": "- желание делать",
+    "english_translation": "- willingness to do"
+  },
+  "遣わす ": {
+    "russian_translation": "- посылать, заставлять делать",
+    "english_translation": "- to send, to make do"
+  },
+  "部首 ": {
+    "russian_translation": "- радикал (иероглиф)",
+    "english_translation": "- radical (kanji)"
+  },
+  "針子 ": {
+    "russian_translation": "- рабочий на иглах",
+    "english_translation": "- needle worker"
+  },
+  "録画 ": {
+    "russian_translation": "- видеозапись",
+    "english_translation": "- video recording"
+  },
+  "難度 ": {
+    "russian_translation": "- уровень сложности",
+    "english_translation": "- difficulty level"
+  },
+  "雪崩 ": {
+    "russian_translation": "- лавина",
+    "english_translation": "- avalanche"
+  },
+  "頑固 ": {
+    "russian_translation": "- упрямый",
+    "english_translation": "- stubborn"
+  },
+  "頻り ": {
+    "russian_translation": "- часто, постоянно",
+    "english_translation": "- frequently, constantly"
+  },
+  "顕微 ": {
+    "russian_translation": "- микроскопический",
+    "english_translation": "- microscopic"
+  },
+  "飛び級 ": {
+    "russian_translation": "- прыжок через класс",
+    "english_translation": "- skipping a grade"
+  },
+  "食いしん坊 ": {
+    "russian_translation": "- обжора",
+    "english_translation": "- glutton"
+  },
+  "食材 ": {
+    "russian_translation": "- пищевые ингредиенты",
+    "english_translation": "- food ingredients"
+  },
+  "餌遣り ": {
+    "russian_translation": "- кормление",
+    "english_translation": "- feeding"
+  },
+  "館内 ": {
+    "russian_translation": "- внутри здания",
+    "english_translation": "- inside the building"
+  },
+  "首飾り ": {
+    "russian_translation": "- ожерелье",
+    "english_translation": "- necklace"
+  },
+  "香辛 ": {
+    "russian_translation": "- ароматный и пряный",
+    "english_translation": "- aromatic and spicy"
+  },
+  "魔弾 ": {
+    "russian_translation": "- магическая пуля",
+    "english_translation": "- magic bullet"
+  },
+  "黄昏る ": {
+    "russian_translation": "- быть в сумерках, быть в замешательстве",
+    "english_translation": "- to be twilight, to be dazed"
+  },
+  "鼻高 ": {
+    "russian_translation": "- высокий нос, гордый",
+    "english_translation": "- high nose, proud"
+  },
+  "あからさま": {
+    "russian_translation": "- очевидный\n- явный",
+    "english_translation": "- blatant\n- obvious"
+  },
+  "あくどい": {
+    "russian_translation": "- жирный\n- навязчивый",
+    "english_translation": "- greasy\n- insistent"
+  },
+  "あらゆる": {
+    "russian_translation": "- всевозможный\n- всякий",
+    "english_translation": "- all kinds of\n- every"
+  },
+  "いけメン": {
+    "russian_translation": "- красавчик\n-イケмен",
+    "english_translation": "- ikemen\n- handsome guy"
+  },
+  "いちゃいちゃ": {
+    "russian_translation": "- нежности\n- воркование",
+    "english_translation": "- lovey-dovey\n- cuddling"
+  },
+  "うい": {
+    "russian_translation": "- да (сленг)\n- согласие",
+    "english_translation": "- yes (casual)\n- agreement"
+  },
+  "うら": {
+    "russian_translation": "- спина\n- обратная сторона",
+    "english_translation": "- back\n- reverse side"
+  },
+  "うんこ": {
+    "russian_translation": "- какашка\n- экскременты",
+    "english_translation": "- poop\n- excrement"
+  },
+  "えぐい": {
+    "russian_translation": "- жесткий\n- ужасный",
+    "english_translation": "- intense\n- gruesome"
+  },
+  "お手上げ": {
+    "russian_translation": "- сдаюсь\n- беспомощный",
+    "english_translation": "- give up\n- helpless"
+  },
+  "かっこう": {
+    "russian_translation": "- внешний вид\n- форма",
+    "english_translation": "- appearance\n- shape"
+  },
+  "かっと": {
+    "russian_translation": "- вспышка (гнева)\n- резко",
+    "english_translation": "- flash (of anger)\n- suddenly"
+  },
+  "からかう": {
+    "russian_translation": "- дразнить\n- подшучивать",
+    "english_translation": "- tease\n- make fun of"
+  },
+  "かんな": {
+    "russian_translation": "- рубанок\n- Кана (имя)",
+    "english_translation": "- plane (tool)\n- Kanna (name)"
+  },
+  "があん": {
+    "russian_translation": "- звук удара\n- грохот",
+    "english_translation": "- sound of impact\n- roar"
+  },
+  "がっ": {
+    "russian_translation": "- звук хватания\n- резко",
+    "english_translation": "- sound of grabbing\n- abruptly"
+  },
+  "がつん": {
+    "russian_translation": "- звук удара\n- бац",
+    "english_translation": "- sound of hit\n- thud"
+  },
+  "がれ": {
+    "russian_translation": "- обломки\n- щебень",
+    "english_translation": "- debris\n- rubble"
+  },
+  "きざ": {
+    "russian_translation": "- щеголь\n- франт",
+    "english_translation": "- dandy\n- fop"
+  },
+  "きもい": {
+    "russian_translation": "- противно\n- мерзко",
+    "english_translation": "- gross\n- disgusting"
+  },
+  "ぎゅっ": {
+    "russian_translation": "- крепкое объятие\n- сжатие",
+    "english_translation": "- tight hug\n- squeeze"
+  },
+  "くどい": {
+    "russian_translation": "- навязчивый\n- приторный",
+    "english_translation": "- persistent\n- cloying"
+  },
+  "ぐあ": {
+    "russian_translation": "- звук дискомфорта\n- кхм",
+    "english_translation": "- sound of discomfort\n- ugh"
+  },
+  "ぐぐ": {
+    "russian_translation": "- звук усилия\n- натужно",
+    "english_translation": "- sound of effort\n- strenuously"
+  },
+  "ぐっ": {
+    "russian_translation": "- звук подавления\n- тихо",
+    "english_translation": "- sound of suppression\n- quietly"
+  },
+  "ぐわ": {
+    "russian_translation": "- звук удара\n- вау",
+    "english_translation": "- sound of impact\n- wow"
+  },
+  "けけ": {
+    "russian_translation": "- смех\n- хихиканье",
+    "english_translation": "- laughter\n- giggling"
+  },
+  "げっぷ": {
+    "russian_translation": "- отрыжка\n- бельч",
+    "english_translation": "- burp\n- belch"
+  },
+  "こだわり": {
+    "russian_translation": "- приверженность\n- пунктик",
+    "english_translation": "- commitment\n- particularity"
+  },
+  "こだわる": {
+    "russian_translation": "- настаивать\n- зацикливаться",
+    "english_translation": "- insist\n- obsess over"
+  },
+  "こつ": {
+    "russian_translation": "- секрет\n- навык",
+    "english_translation": "- trick\n- skill"
+  },
+  "これみよがし": {
+    "russian_translation": "- напоказ\n- демонстративно",
+    "english_translation": "- openly\n- demonstratively"
+  },
+  "ごとん": {
+    "russian_translation": "- звук падения\n- стук",
+    "english_translation": "- sound of falling\n- clatter"
+  },
+  "ごにょごにょ": {
+    "russian_translation": "- бормотание\n- невнятно",
+    "english_translation": "- muttering\n- indistinctly"
+  },
+  "ごまかす": {
+    "russian_translation": "- обманывать\n- скрывать",
+    "english_translation": "- deceive\n- hide"
+  },
+  "ごりごり": {
+    "russian_translation": "- скрип\n- усердно",
+    "english_translation": "- grinding sound\n- diligently"
+  },
+  "さっ": {
+    "russian_translation": "- звук движения\n- быстро",
+    "english_translation": "- sound of movement\n- quickly"
+  },
+  "さっき": {
+    "russian_translation": "- недавно\n- чуть раньше",
+    "english_translation": "- recently\n- a while ago"
+  },
+  "さん付け": {
+    "russian_translation": "- суффикс -сан\n- уважение",
+    "english_translation": "- san suffix\n- respect"
+  },
+  "ざっ": {
+    "russian_translation": "- звук шума\n- грубо",
+    "english_translation": "- sound of noise\n- roughly"
+  },
+  "しつこい": {
+    "russian_translation": "- настойчивый\n- надоедливый",
+    "english_translation": "- persistent\n- annoying"
+  },
+  "しなやか": {
+    "russian_translation": "- гибкий\n- эластичный",
+    "english_translation": "- flexible\n- supple"
+  },
+  "しゃがむ": {
+    "russian_translation": "- приседать\n- корчиться",
+    "english_translation": "- squat\n- crouch"
+  },
+  "しゅっ": {
+    "russian_translation": "- звук выхода\n- шип",
+    "english_translation": "- sound of exiting\n- hiss"
+  },
+  "しょっぴく": {
+    "russian_translation": "- арестовать\n- схватить",
+    "english_translation": "- arrest\n- catch"
+  },
+  "しょぼい": {
+    "russian_translation": "- унылый\n- слабый",
+    "english_translation": "- gloomy\n- weak"
+  },
+  "しれっと": {
+    "russian_translation": "- невозмутимо\n- спокойно",
+    "english_translation": "- calmly\n- nonchalantly"
+  },
+  "じっと": {
+    "russian_translation": "- неподвижно\n- пристально",
+    "english_translation": "- still\n- intently"
+  },
+  "じゃんけん": {
+    "russian_translation": "- камень-ножницы-бумага\n- жребий",
+    "english_translation": "- rock-paper-scissors\n- lot"
+  },
+  "じゃーん": {
+    "russian_translation": "- фанфары\n- появление",
+    "english_translation": "- fanfare\n- reveal"
+  },
+  "すう": {
+    "russian_translation": "- звук вдоха\n- всасывание",
+    "english_translation": "- sound of inhaling\n- suction"
+  },
+  "すっ": {
+    "russian_translation": "- звук исчезновения\n- быстро",
+    "english_translation": "- sound of disappearing\n- swiftly"
+  },
+  "すっぽんぽん": {
+    "russian_translation": "- совершенно голый\n- без одежды",
+    "english_translation": "- stark naked\n- without clothes"
+  },
+  "すっぽ抜ける": {
+    "russian_translation": "- выскользнуть\n- пропустить",
+    "english_translation": "- slip out\n- skip"
+  },
+  "ずたずた": {
+    "russian_translation": "- в клочья\n- разорванный",
+    "english_translation": "- to pieces\n- torn"
+  },
+  "ずらす": {
+    "russian_translation": "- сдвигать\n- переносить",
+    "english_translation": "- shift\n- postpone"
+  },
+  "ずれる": {
+    "russian_translation": "- смещаться\n- опаздывать",
+    "english_translation": "- shift\n- be late"
+  },
+  "たたた": {
+    "russian_translation": "- звук бега\n- топот",
+    "english_translation": "- sound of running\n- tapping"
+  },
+  "だっ": {
+    "russian_translation": "- звук удара\n- резко",
+    "english_translation": "- sound of hit\n- abruptly"
+  },
+  "だらし無い": {
+    "russian_translation": "- неряшливый\n- безвольный",
+    "english_translation": "- sloppy\n- weak-willed"
+  },
+  "ちぎる": {
+    "russian_translation": "- рвать\n- отрывать",
+    "english_translation": "- tear\n- rip off"
+  },
+  "ちび": {
+    "russian_translation": "- малыш\n- коротышка",
+    "english_translation": "- little one\n- shorty"
+  },
+  "ちゃっちゃ": {
+    "russian_translation": "- быстро\n- ловко",
+    "english_translation": "- quickly\n- skillfully"
+  },
+  "ちゅっ": {
+    "russian_translation": "- звук поцелуя\n- чмок",
+    "english_translation": "- sound of kiss\n- smooch"
+  },
+  "ちょい": {
+    "russian_translation": "- немного\n- чуть-чуть",
+    "english_translation": "- a little\n- slightly"
+  },
+  "ちょちょ": {
+    "russian_translation": "- быстро поправлять\n- ловко",
+    "english_translation": "- fix quickly\n- skillfully"
+  },
+  "ちら": {
+    "russian_translation": "- мельком\n- взгляд",
+    "english_translation": "- glance\n- glimpse"
+  },
+  "ちんけ": {
+    "russian_translation": "- дешевый\n- ничтожный",
+    "english_translation": "- cheap\n- trivial"
+  },
+  "つんでれ": {
+    "russian_translation": "- цундере\n- холодная снаружи",
+    "english_translation": "- tsundere\n- cold outside"
+  },
+  "てまえ": {
+    "russian_translation": "- ты (грубо)\n- перед собой",
+    "english_translation": "- you (rude)\n- before oneself"
+  },
+  "ともあれ": {
+    "russian_translation": "- так или иначе\n- в любом случае",
+    "english_translation": "- anyway\n- in any case"
+  },
+  "とん": {
+    "russian_translation": "- звук удара\n- тон",
+    "english_translation": "- sound of hit\n- ton"
+  },
+  "とんだ": {
+    "russian_translation": "- неожиданный\n- непредвиденный",
+    "english_translation": "- unexpected\n- unforeseen"
+  },
+  "とんでも": {
+    "russian_translation": "- никоим образом\n- ничего подобного",
+    "english_translation": "- by no means\n- nothing like that"
+  },
+  "とんと": {
+    "russian_translation": "- совсем не\n- никогда",
+    "english_translation": "- not at all\n- never"
+  },
+  "にやける": {
+    "russian_translation": "- ухмыляться\n- скалиться",
+    "english_translation": "- grin\n- smirk"
+  },
+  "ぬっ": {
+    "russian_translation": "- звук появления\n- внезапно",
+    "english_translation": "- sound of appearing\n- suddenly"
+  },
+  "はしたない": {
+    "russian_translation": "- неприличный\n- недостойный",
+    "english_translation": "- indecent\n- unworthy"
+  },
+  "ばっくれる": {
+    "russian_translation": "- сбежать\n- отвертеться",
+    "english_translation": "- run away\n- evade"
+  },
+  "ばつ一": {
+    "russian_translation": "- разведенный\n- один крестик",
+    "english_translation": "- divorced\n- one cross"
+  },
+  "ばてる": {
+    "russian_translation": "- уставать\n- изнемогать",
+    "english_translation": "- get tired\n- exhaust"
+  },
+  "ばらばら": {
+    "russian_translation": "- разрозненно\n- вразнобой",
+    "english_translation": "- scattered\n- separately"
+  },
+  "ばん": {
+    "russian_translation": "- звук удара\n- бан",
+    "english_translation": "- sound of hit\n- ban"
+  },
+  "ばーん": {
+    "russian_translation": "- бабах\n- звук выстрела",
+    "english_translation": "- bang\n- sound of shot"
+  },
+  "ぱあ": {
+    "russian_translation": "- звук открытия\n- пусто",
+    "english_translation": "- sound of opening\n- empty"
+  },
+  "ぱしゅ": {
+    "russian_translation": "- звук шипения\n- пшш",
+    "english_translation": "- sound of hissing\n- pshh"
+  },
+  "ぱっ": {
+    "russian_translation": "- звук хлопка\n- внезапно",
+    "english_translation": "- sound of clap\n- suddenly"
+  },
+  "ひら": {
+    "russian_translation": "- плоский\n- лист",
+    "english_translation": "- flat\n- sheet"
+  },
+  "びしばし": {
+    "russian_translation": "- резко\n- строго",
+    "english_translation": "- sharply\n- strictly"
+  },
+  "びっくり": {
+    "russian_translation": "- удивление\n- испуг",
+    "english_translation": "- surprise\n- shock"
+  },
+  "びびる": {
+    "russian_translation": "- бояться\n- трусить",
+    "english_translation": "- be scared\n- chicken out"
+  },
+  "ぴい": {
+    "russian_translation": "- звук сигнала\n- пик",
+    "english_translation": "- sound of beep\n- peek"
+  },
+  "ぴん": {
+    "russian_translation": "- звук натяжения\n- пин",
+    "english_translation": "- sound of tension\n- pin"
+  },
+  "ふざける": {
+    "russian_translation": "- дурачиться\n- шутить",
+    "english_translation": "- fool around\n- joke"
+  },
+  "ふっ": {
+    "russian_translation": "- звук выдоха\n- ф",
+    "english_translation": "- sound of exhale\n- f"
+  },
+  "ふと": {
+    "russian_translation": "- вдруг\n- случайно",
+    "english_translation": "- suddenly\n- accidentally"
+  },
+  "ぶす": {
+    "russian_translation": "- дуться\n- кислая мина",
+    "english_translation": "- sulk\n- sour face"
+  },
+  "ぶつける": {
+    "russian_translation": "- сталкивать\n- бросать",
+    "english_translation": "- collide\n- throw"
+  },
+  "ぶわ": {
+    "russian_translation": "- звук вспышки\n- вау",
+    "english_translation": "- sound of burst\n- wow"
+  },
+  "ぷぷ": {
+    "russian_translation": "- смех\n- пфф",
+    "english_translation": "- laughter\n- pff"
+  },
+  "へらへら": {
+    "russian_translation": "- ухмылка\n- легкомысленно",
+    "english_translation": "- grin\n- frivolously"
+  },
+  "ぺっ": {
+    "russian_translation": "- звук плевка\n- фу",
+    "english_translation": "- sound of spit\n- ugh"
+  },
+  "ほったらかし": {
+    "russian_translation": "- брошенный\n- без присмотра",
+    "english_translation": "- neglected\n- left alone"
+  },
+  "まぐれ": {
+    "russian_translation": "- случайность\n- удача",
+    "english_translation": "- chance\n- luck"
+  },
+  "まごつく": {
+    "russian_translation": "- растеряться\n- замешкаться",
+    "english_translation": "- get confused\n- hesitate"
+  },
+  "まさか": {
+    "russian_translation": "- неужели\n- невозможно",
+    "english_translation": "- could it be\n- impossible"
+  },
+  "まじ": {
+    "russian_translation": "- серьезно\n- реально",
+    "english_translation": "- seriously\n- really"
+  },
+  "まちまち": {
+    "russian_translation": "- разный\n- неодинаковый",
+    "english_translation": "- varied\n- uneven"
+  },
+  "みたい": {
+    "russian_translation": "- как будто\n- хочу смотреть",
+    "english_translation": "- like\n- want to see"
+  },
+  "みっともない": {
+    "russian_translation": "- неприличный\n- позорный",
+    "english_translation": "- indecent\n- shameful"
+  },
+  "むにゅ": {
+    "russian_translation": "- звук мягкости\n- мягко",
+    "english_translation": "- sound of softness\n- softly"
+  },
+  "むん": {
+    "russian_translation": "- звук усилия\n- мн",
+    "english_translation": "- sound of effort\n- mn"
+  },
+  "めっきり": {
+    "russian_translation": "- заметно\n- резко",
+    "english_translation": "- noticeably\n- sharply"
+  },
+  "めでたい": {
+    "russian_translation": "- праздничный\n- радостный",
+    "english_translation": "- celebratory\n- joyful"
+  },
+  "めんどい": {
+    "russian_translation": "- хлопотный\n- ленивый",
+    "english_translation": "- troublesome\n- lazy"
+  },
+  "もがく": {
+    "russian_translation": "- барахтаться\n-挣扎",
+    "english_translation": "- struggle\n- writhing"
+  },
+  "もやもや": {
+    "russian_translation": "- неясный\n- туманный",
+    "english_translation": "- unclear\n- foggy"
+  },
+  "やばい": {
+    "russian_translation": "- опасно\n- круто",
+    "english_translation": "- dangerous\n- awesome"
+  },
+  "ゆらゆら": {
+    "russian_translation": "- качаться\n- колебаться",
+    "english_translation": "- sway\n- fluctuate"
+  },
+  "よろ": {
+    "russian_translation": "- привет (сленг)\n- пожалуйста",
+    "english_translation": "- hi (slang)\n- please"
+  },
+  "らん": {
+    "russian_translation": "- беспорядок\n- ран",
+    "english_translation": "- chaos\n- ran"
+  },
+  "るんるん": {
+    "russian_translation": "- радостно\n- напевая",
+    "english_translation": "- joyfully\n- humming"
+  },
+  "わし": {
+    "russian_translation": "- я (старик)\n- орел",
+    "english_translation": "- I (old man)\n- eagle"
+  },
+  "アウト": {
+    "russian_translation": "- аут\n- вне игры",
+    "english_translation": "- out\n- out of game"
+  },
+  "アジア": {
+    "russian_translation": "- Азия",
+    "english_translation": "- Asia"
+  },
+  "アフリカ": {
+    "russian_translation": "- Африка",
+    "english_translation": "- Africa"
+  },
+  "アメリカ": {
+    "russian_translation": "- Америка",
+    "english_translation": "- America"
+  },
+  "アメージング": {
+    "russian_translation": "- удивительный",
+    "english_translation": "- amazing"
+  },
+  "アユミ": {
+    "russian_translation": "- Аюми (имя)",
+    "english_translation": "- Ayumi (name)"
+  },
+  "アラブ": {
+    "russian_translation": "- Араб",
+    "english_translation": "- Arab"
+  },
+  "アラーム": {
+    "russian_translation": "- будильник\n- сигнал",
+    "english_translation": "- alarm\n- signal"
+  },
+  "アルカリ": {
+    "russian_translation": "- щелочь\n- алкали",
+    "english_translation": "- alkali\n- alkaline"
+  },
+  "アンド": {
+    "russian_translation": "- и (союз)",
+    "english_translation": "- and"
+  },
+  "アーニャ": {
+    "russian_translation": "- Аня (имя)",
+    "english_translation": "- Anya (name)"
+  },
+  "イエッサー": {
+    "russian_translation": "- Йессер (имя/сленг)",
+    "english_translation": "- Yesser (name/slang)"
+  },
+  "イズミ": {
+    "russian_translation": "- Изуми (имя)",
+    "english_translation": "- Izumi (name)"
+  },
+  "イラ": {
+    "russian_translation": "- раздражение\n- Ира",
+    "english_translation": "- irritation\n- Ira"
+  },
+  "イン": {
+    "russian_translation": "- в\n- вход",
+    "english_translation": "- in\n- entrance"
+  },
+  "イーデン": {
+    "russian_translation": "- Эдем",
+    "english_translation": "- Eden"
+  },
+  "ウィリアム": {
+    "russian_translation": "- Уильям",
+    "english_translation": "- William"
+  },
+  "ウィリアムズ": {
+    "russian_translation": "- Уильямс",
+    "english_translation": "- Williams"
+  },
+  "ウィンザー": {
+    "russian_translation": "- Виндзор",
+    "english_translation": "- Windsor"
+  },
+  "ウエー": {
+    "russian_translation": "- звук тошноты\n- уэ",
+    "english_translation": "- sound of nausea\n- ue"
+  },
+  "ウォルター": {
+    "russian_translation": "- Уолтер",
+    "english_translation": "- Walter"
+  },
+  "エスパー": {
+    "russian_translation": "- эспер (экстрасенс)",
+    "english_translation": "- esper (psychic)"
+  },
+  "エッジ": {
+    "russian_translation": "- край\n- лезвие",
+    "english_translation": "- edge\n- blade"
+  },
+  "エドガー": {
+    "russian_translation": "- Эдгар",
+    "english_translation": "- Edgar"
+  },
+  "エバンズ": {
+    "russian_translation": "- Эванс",
+    "english_translation": "- Evans"
+  },
+  "エミール": {
+    "russian_translation": "- Эмиль",
+    "english_translation": "- Emil"
+  },
+  "エルマン": {
+    "russian_translation": "- Эльман",
+    "english_translation": "- Elman"
+  },
+  "エロい": {
+    "russian_translation": "- эротичный\n- пошлый",
+    "english_translation": "- erotic\n- lewd"
+  },
+  "オオイタ": {
+    "russian_translation": "- Оита (город)",
+    "english_translation": "- Oita (city)"
+  },
+  "オオヤ": {
+    "russian_translation": "- Ооя (имя/место)",
+    "english_translation": "- Ooya (name/place)"
+  },
+  "オブ": {
+    "russian_translation": "- из (предлог)",
+    "english_translation": "- of"
+  },
+  "オムライス": {
+    "russian_translation": "- омурасу (омлет с рисом)",
+    "english_translation": "- omurice (omelet rice)"
+  },
+  "オリエンテーション": {
+    "russian_translation": "- ориентация\n- собрание",
+    "english_translation": "- orientation\n- meeting"
+  },
+  "オン": {
+    "russian_translation": "- включено\n- на",
+    "english_translation": "- on"
+  },
+  "オーケー": {
+    "russian_translation": "- хорошо\n- окей",
+    "english_translation": "- okay\n- OK"
+  },
+  "オーバーコート": {
+    "russian_translation": "- пальто",
+    "english_translation": "- overcoat"
+  },
+  "カミラ": {
+    "russian_translation": "- Камила",
+    "english_translation": "- Camilla"
+  },
+  "カルパティア": {
+    "russian_translation": "- Карпатия",
+    "english_translation": "- Carpathia"
+  },
+  "カレン": {
+    "russian_translation": "- Карен",
+    "english_translation": "- Karen"
+  },
+  "カンサイ": {
+    "russian_translation": "- Кансай (регион)",
+    "english_translation": "- Kansai (region)"
+  },
+  "ガス": {
+    "russian_translation": "- газ",
+    "english_translation": "- gas"
+  },
+  "ガラス": {
+    "russian_translation": "- стекло",
+    "english_translation": "- glass"
+  },
+  "キシ": {
+    "russian_translation": "- звук скрипа\n- Киси",
+    "english_translation": "- sound of creak\n- Kishi"
+  },
+  "キャラ": {
+    "russian_translation": "- персонаж\n- характер",
+    "english_translation": "- character"
+  },
+  "キャリア": {
+    "russian_translation": "- карьера\n- носитель",
+    "english_translation": "- career\n- carrier"
+  },
+  "キン": {
+    "russian_translation": "- золото (сленг)\n- Кин",
+    "english_translation": "- gold (slang)\n- Kin"
+  },
+  "クライン": {
+    "russian_translation": "- Кляйн",
+    "english_translation": "- Klein"
+  },
+  "クリア": {
+    "russian_translation": "- ясно\n- очистка",
+    "english_translation": "- clear\n- clearance"
+  },
+  "グエン": {
+    "russian_translation": "- Нгуен (фамилия)",
+    "english_translation": "- Nguyen (surname)"
+  },
+  "グッド": {
+    "russian_translation": "- хорошо",
+    "english_translation": "- good"
+  },
+  "グレース": {
+    "russian_translation": "- Грейс",
+    "english_translation": "- Grace"
+  },
+  "グロい": {
+    "russian_translation": "- жуткий\n- кровавый",
+    "english_translation": "- gruesome\n- gory"
+  },
+  "ケン": {
+    "russian_translation": "- Кен (имя)",
+    "english_translation": "- Ken (name)"
+  },
+  "ゲット": {
+    "russian_translation": "- получить\n- достать",
+    "english_translation": "- get\n- obtain"
+  },
+  "コスメ": {
+    "russian_translation": "- косметика",
+    "english_translation": "- cosmetics"
+  },
+  "コマーシャル": {
+    "russian_translation": "- реклама\n- коммерческий",
+    "english_translation": "- commercial\n- advertisement"
+  },
+  "コンクリート": {
+    "russian_translation": "- бетон",
+    "english_translation": "- concrete"
+  },
+  "コーディネート": {
+    "russian_translation": "- координация\n- outfit",
+    "english_translation": "- coordination\n- outfit"
+  },
+  "ゴム": {
+    "russian_translation": "- резина\n- презерватив",
+    "english_translation": "- rubber\n- condom"
+  },
+  "サイレンサー": {
+    "russian_translation": "- глушитель",
+    "english_translation": "- silencer"
+  },
+  "サトコ": {
+    "russian_translation": "- Сатоко (имя)",
+    "english_translation": "- Satoko (name)"
+  },
+  "サー": {
+    "russian_translation": "- сэр\n- звук",
+    "english_translation": "- sir\n- sound"
+  },
+  "シスコン": {
+    "russian_translation": "- сискон (комплекс сестры)",
+    "english_translation": "- siscon (sister complex)"
+  },
+  "シッター": {
+    "russian_translation": "- няня\n- сиделка",
+    "english_translation": "- sitter\n- babysitter"
+  },
+  "シャロン": {
+    "russian_translation": "- Шэрон",
+    "english_translation": "- Sharon"
+  },
+  "シャーウッド": {
+    "russian_translation": "- Шервуд",
+    "english_translation": "- Sherwood"
+  },
+  "シュウ": {
+    "russian_translation": "- Шу (имя)\n- сбор",
+    "english_translation": "- Shu (name)\n- collection"
+  },
+  "シルビア": {
+    "russian_translation": "- Сильвия",
+    "english_translation": "- Silvia"
+  },
+  "シン": {
+    "russian_translation": "- Син (имя)\n- правда",
+    "english_translation": "- Shin (name)\n- truth"
+  },
+  "ジェシカ": {
+    "russian_translation": "- Джессика",
+    "english_translation": "- Jessica"
+  },
+  "ジェシー": {
+    "russian_translation": "- Джесси",
+    "english_translation": "- Jessie"
+  },
+  "ジト": {
+    "russian_translation": "- взгляд исподлобья",
+    "english_translation": "- glaring look"
+  },
+  "ジョニー": {
+    "russian_translation": "- Джонни",
+    "english_translation": "- Johnny"
+  },
+  "ジョン": {
+    "russian_translation": "- Джон",
+    "english_translation": "- John"
+  },
+  "ジーパン": {
+    "russian_translation": "- джинсы",
+    "english_translation": "- jeans"
+  },
+  "スカラー": {
+    "russian_translation": "- ученый\n- стипендиат",
+    "english_translation": "- scholar"
+  }
+}
