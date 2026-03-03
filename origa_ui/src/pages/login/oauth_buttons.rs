@@ -1,5 +1,6 @@
 use crate::repository::{OAuthProvider, SupabaseClient};
 use leptos::prelude::*;
+use leptos::wasm_bindgen::JsValue;
 
 #[component]
 pub fn OAuthButtons() -> impl IntoView {
@@ -31,10 +32,18 @@ pub fn OAuthButtons() -> impl IntoView {
 }
 
 fn open_oauth_url(provider: OAuthProvider) {
-    let url = SupabaseClient::get_oauth_url(provider.as_str());
-    let _ = web_sys::window()
-        .expect("window not available")
-        .open_with_url(&url);
+    let window = web_sys::window().expect("window not available");
+    let is_tauri = js_sys::Reflect::get(&window, &JsValue::from_str("__TAURI__")).is_ok();
+
+    let url = if is_tauri {
+        SupabaseClient::get_oauth_url(provider.as_str())
+    } else {
+        let base_url = window.location().origin().unwrap_or_default();
+        let redirect_uri = format!("{}/login", base_url);
+        SupabaseClient::get_oauth_url_with_redirect(provider.as_str(), &redirect_uri)
+    };
+
+    let _ = window.location().set_href(&url);
 }
 
 #[component]
