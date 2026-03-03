@@ -1350,6 +1350,10 @@ body {
 	font-size: 12px;
 }
 
+.prose-lg {
+	font-size: 16px;
+}
+
 .spinner {
 	width: 24px;
 	height: 24px;
