@@ -1,7 +1,7 @@
 use crate::domain::{
-    Answer, OrigaError, Question,
-    dictionary::{RadicalInfo, get_kanji_info, get_radical_info, get_translation},
+    dictionary::{get_kanji_info, get_radical_info, get_translation, RadicalInfo},
     value_objects::{JapaneseLevel, NativeLanguage},
+    Answer, OrigaError, Question,
 };
 use serde::{Deserialize, Serialize};
 
@@ -83,5 +83,16 @@ impl ExampleKanjiWord {
 
     pub fn meaning(&self) -> &str {
         &self.meaning
+    }
+}
+
+impl KanjiCard {
+    #[cfg(test)]
+    pub fn new_test(kanji: String, description: String) -> Self {
+        Self {
+            kanji: Question::new(kanji).unwrap(),
+            description: Answer::new(description).unwrap(),
+            example_words: vec![],
+        }
     }
 }
