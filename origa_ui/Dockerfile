@@ -85,8 +85,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /dist /app/public
-COPY Caddyfile /app/Caddyfile
-COPY entrypoint.sh /app/entrypoint.sh
+COPY origa_ui/Caddyfile /app/Caddyfile
+COPY origa_ui/entrypoint.sh /app/entrypoint.sh
 
 RUN chmod +x /app/entrypoint.sh && \
     chown -R trailbase:trailbase /app
