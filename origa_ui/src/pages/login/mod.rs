@@ -12,7 +12,6 @@ pub mod validation;
 pub use email_confirmation_form::EmailConfirmationForm;
 pub use header::LoginHeader;
 pub use login_form::LoginForm;
-pub use oauth_buttons::OAuthButtons;
 pub use register_form::RegisterForm;
 
 use crate::app::AuthContext;

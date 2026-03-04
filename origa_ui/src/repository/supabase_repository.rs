@@ -2,7 +2,7 @@ use super::client::{AuthError, SupabaseClient};
 use crate::repository::session::get_session;
 use chrono::{DateTime, Utc};
 use origa::application::user_repository::UserRepository;
-use origa::domain::{JapaneseLevel, JlptProgress, KnowledgeSet, NativeLanguage, OrigaError, User};
+use origa::domain::{JlptProgress, KnowledgeSet, NativeLanguage, OrigaError, User};
 use reqwest::Method;
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
@@ -99,7 +99,7 @@ impl UserRow {
     fn to_user(&self) -> User {
         let ulid = supabase_id_to_ulid(self.id);
 
-        let jlpt_progress = self.jlpt_progress.clone().unwrap_or_else(JlptProgress::new);
+        let jlpt_progress = self.jlpt_progress.clone().unwrap_or_default();
 
         User::from_row(
             ulid,

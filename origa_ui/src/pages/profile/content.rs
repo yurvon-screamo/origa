@@ -123,12 +123,12 @@ pub fn ProfileContent() -> impl IntoView {
 
             match client_clone.delete_account().await {
                 Ok(()) => {
-                    if let Some(uid) = user_id {
-                        if let Err(e) = repository_clone.delete(uid).await {
-                            web_sys::console::error_1(
-                                &format!("Failed to delete local data: {}", e).into(),
-                            );
-                        }
+                    if let Some(uid) = user_id
+                        && let Err(e) = repository_clone.delete(uid).await
+                    {
+                        web_sys::console::error_1(
+                            &format!("Failed to delete local data: {}", e).into(),
+                        );
                     }
                     current_user_clone.set(None);
                     nav("/", Default::default());

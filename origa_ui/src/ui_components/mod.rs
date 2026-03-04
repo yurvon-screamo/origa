@@ -63,6 +63,6 @@ pub use search::Search;
 pub use skeleton::Skeleton;
 pub use tag::{Tag, TagVariant};
 pub use text_to_speech::{get_reading_from_text, is_speech_supported, speak_text};
-pub use toast::{Toast, ToastContainer, ToastData, ToastType};
+pub use toast::{ToastContainer, ToastData, ToastType};
 pub use toggle::Toggle;
 pub use typography::{DisplayText, Heading, HeadingLevel, Text, TextSize, TypographyVariant};
