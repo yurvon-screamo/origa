@@ -1,9 +1,9 @@
 use crate::ui_components::{
-    Card, DisplayText, FuriganaText, Heading, HeadingLevel, KanjiViewMode, KanjiWritingSection,
-    Text, TextSize, TypographyVariant, get_reading_from_text, is_speech_supported, speak_text,
+    get_reading_from_text, is_speech_supported, speak_text, Card, DisplayText, FuriganaText,
+    Heading, HeadingLevel, KanjiViewMode, KanjiWritingSection, Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
-use origa::domain::{Card as DomainCard, QuizCard};
+use origa::domain::{Card as DomainCard, QuizCard, User};
 
 use super::card_type::CardType;
 use super::quiz_card_header::QuizCardHeader;
@@ -18,6 +18,15 @@ pub fn QuizCardView(
     selected_option: Option<usize>,
     on_select_option: Callback<usize>,
 ) -> impl IntoView {
+    let current_user = use_context::<RwSignal<Option<User>>>().expect("current_user context");
+
+    let known_kanji = Memo::new(move |_| {
+        current_user
+            .get()
+            .map(|u| u.knowledge_set().get_known_kanji())
+            .unwrap_or_default()
+    });
+
     let card = quiz_card.card().clone();
     let card_type = CardType::from(&card);
     let question = StoredValue::new(card.question().text().to_string());
@@ -69,7 +78,7 @@ pub fn QuizCardView(
                     <Show when=move || card_type != CardType::Kanji>
                         <div class="mb-4">
                             <Heading level=HeadingLevel::H2>
-                                <FuriganaText text=question.get_value()/>
+                                <FuriganaText text=question.get_value() known_kanji=known_kanji.get()/>
                             </Heading>
                         </div>
                     </Show>

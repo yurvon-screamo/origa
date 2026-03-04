@@ -10,7 +10,7 @@ pub use grammar::GrammarRuleCard;
 pub use kanji::{ExampleKanjiWord, KanjiCard};
 pub use vocabulary::VocabularyCard;
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use crate::domain::{
     get_rule_by_id, memory::MemoryState, value_objects::NativeLanguage, OrigaError, Rating,
@@ -93,6 +93,18 @@ impl KnowledgeSet {
 
     pub fn lesson_history(&self) -> &[DailyHistoryItem] {
         &self.lesson_history
+    }
+
+    pub fn get_known_kanji(&self) -> HashSet<String> {
+        self.study_cards
+            .values()
+            .filter_map(|study_card| match study_card.card() {
+                Card::Kanji(kanji_card) if study_card.memory().is_known_card() => {
+                    Some(kanji_card.kanji().text().to_string())
+                }
+                _ => None,
+            })
+            .collect()
     }
 
     pub fn delete_card(&mut self, card_id: Ulid) -> Result<(), OrigaError> {
