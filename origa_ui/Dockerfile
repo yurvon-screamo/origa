@@ -54,6 +54,7 @@ COPY origa_ui ./origa_ui
 RUN --mount=type=cache,target=/root/.cargo/registry \
     --mount=type=cache,target=/app/target \
     --mount=type=cache,target=/root/.cache/trunk \
+    cargo clean -p origa_ui && \
     cd origa_ui && trunk build --release --dist dist
 
 RUN cp -r origa_ui/dist /dist
