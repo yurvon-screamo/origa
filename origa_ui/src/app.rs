@@ -141,27 +141,38 @@ fn setup_oauth_listener(ctx: AuthContext) {
 }
 
 fn check_url_oauth_callback(ctx: &AuthContext) {
-    use crate::pages::login::auth_handlers::handle_oauth_callback;
+    use crate::pages::login::auth_handlers::get_or_create_profile;
+    use crate::repository::TrailBaseClient;
 
-    if let Some(window) = web_sys::window()
-        && let Ok(hash) = window.location().hash()
-        && hash.contains("access_token=")
-    {
-        let fragment = hash.trim_start_matches('#').to_string();
-        let ctx_clone = ctx.clone();
-        spawn_local(async move {
-            match handle_oauth_callback(&fragment, &ctx_clone).await {
-                Ok(user) => {
-                    ctx_clone.current_user.set(Some(user));
-                    if let Some(window) = web_sys::window() {
-                        let _ = window.location().set_href("/home");
-                    }
-                }
-                Err(e) => {
-                    error!("URL OAuth callback error: {}", e);
+    let path = web_sys::window()
+        .and_then(|w| w.location().pathname().ok())
+        .unwrap_or_default();
+
+    if path == "/login" {
+        match TrailBaseClient::get_session_from_cookies() {
+            Ok(session) => {
+                if !session.email.is_empty() {
+                    let ctx_clone = ctx.clone();
+                    let email = session.email.clone();
+                    spawn_local(async move {
+                        match get_or_create_profile(&ctx_clone, &email).await {
+                            Ok(user) => {
+                                ctx_clone.current_user.set(Some(user));
+                                if let Some(window) = web_sys::window() {
+                                    let _ = window.location().set_href("/home");
+                                }
+                            }
+                            Err(e) => {
+                                error!("Failed to create profile: {}", e);
+                            }
+                        }
+                    });
                 }
             }
-        });
+            Err(e) => {
+                info!("No session in cookies: {}", e);
+            }
+        }
     }
 }
 
