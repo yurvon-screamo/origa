@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize, de::DeserializeOwned};
 use std::collections::HashMap;
 use thiserror::Error;
 
-const TRAILBASE_URL: &str = "https://trailbase.uwuwu.net";
+const TRAILBASE_URL: &str = "https://trailbase-production-97b6.up.railway.app/";
 const REFRESH_THRESHOLD_SECONDS: u64 = 300;
 
 #[derive(Debug, Deserialize)]
@@ -102,12 +102,6 @@ struct AuthTokenResponse {
     auth_token: String,
     refresh_token: Option<String>,
     csrf_token: Option<String>,
-}
-
-#[derive(Debug, Deserialize)]
-struct UserResponse {
-    sub: String,
-    email: String,
 }
 
 impl TrailBaseClient {
