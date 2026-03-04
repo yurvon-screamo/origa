@@ -1,6 +1,6 @@
 use crate::ui_components::{
-    Button, ButtonVariant, DisplayText, Heading, HeadingLevel, KanjiViewMode, KanjiWritingSection,
-    MarkdownText, MarkdownVariant,
+    Button, ButtonVariant, DisplayText, FuriganaText, Heading, HeadingLevel, KanjiViewMode,
+    KanjiWritingSection, MarkdownText, MarkdownVariant,
 };
 use leptos::prelude::*;
 
@@ -8,6 +8,7 @@ use leptos::prelude::*;
 pub fn LessonCardQuestion(
     question_text: String,
     kanji: Option<String>,
+    is_reversed: bool,
     on_show_answer: Callback<()>,
 ) -> impl IntoView {
     let question = StoredValue::new(question_text);
@@ -18,10 +19,17 @@ pub fn LessonCardQuestion(
             <Show when=move || kanji_stored.get_value().is_none()>
                 <div class="mb-4">
                     <Heading level=HeadingLevel::H2>
-                        <MarkdownText
-                            content=Signal::derive(move || question.get_value())
-                            variant=Signal::derive(|| MarkdownVariant::Large)
-                        />
+                        <Show
+                            when=move || is_reversed
+                            fallback=move || {
+                                view! { <FuriganaText text=question.get_value()/> }
+                            }
+                        >
+                            <MarkdownText
+                                content=Signal::derive(move || question.get_value())
+                                variant=Signal::derive(|| MarkdownVariant::Large)
+                            />
+                        </Show>
                     </Heading>
                 </div>
             </Show>

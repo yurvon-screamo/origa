@@ -45,7 +45,7 @@ pub fn StatsGrid(
             />
 
             <StatCard
-                title=Signal::derive(|| "Сложные слова".to_string())
+                title=Signal::derive(|| "Сложные".to_string())
                 value=high_difficulty
                 subtitle=Signal::derive(|| "требуют внимания".to_string())
                 on_history=open_history(StatMetric::HighDifficulty)
