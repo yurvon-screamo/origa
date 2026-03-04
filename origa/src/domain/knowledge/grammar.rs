@@ -1,8 +1,8 @@
 use crate::domain::{
+    OrigaError,
     grammar::GrammarRule,
     tokenizer::PartOfSpeech,
     value_objects::{Answer, NativeLanguage, Question},
-    OrigaError,
 };
 use serde::{Deserialize, Serialize};
 use ulid::Ulid;
