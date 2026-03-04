@@ -86,4 +86,14 @@ impl ModalState {
         self.error_message.set(None);
         self.selected_kanji.set(HashSet::new());
     }
+
+    pub fn select_all(&self) {
+        let all_kanji: HashSet<String> = self
+            .available_kanji
+            .get()
+            .iter()
+            .map(|k| k.kanji.clone())
+            .collect();
+        self.selected_kanji.set(all_kanji);
+    }
 }
