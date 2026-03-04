@@ -53,9 +53,6 @@ pub async fn load_jlpt_content() -> Result<(), OrigaError> {
 }
 
 async fn load_content() -> Result<JlptContent, OrigaError> {
-    use leptos::wasm_bindgen::JsCast;
-    use wasm_bindgen_futures::JsFuture;
-
     let mut content = JlptContent::new();
 
     load_kanji(&mut content).await?;
