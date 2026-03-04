@@ -1,37 +1,18 @@
 pub mod auth_handlers;
-pub mod email_confirmation_form;
 pub mod email_input;
 pub mod error_message;
 pub mod header;
-pub mod login_form;
 pub mod oauth_buttons;
-pub mod password_input;
-pub mod register_form;
-pub mod validation;
 
-pub use email_confirmation_form::EmailConfirmationForm;
 pub use header::LoginHeader;
-pub use login_form::LoginForm;
-pub use register_form::RegisterForm;
 
 use crate::app::AuthContext;
 use crate::ui_components::{CardLayout, CardLayoutSize, PageLayout, PageLayoutVariant};
 use leptos::prelude::*;
 use leptos_router::hooks::use_navigate;
 
-#[derive(Clone, Copy, PartialEq)]
-pub enum LoginMode {
-    Login,
-    Register,
-    EmailNotConfirmed,
-}
-
 #[component]
 pub fn Login() -> impl IntoView {
-    let email = RwSignal::new(String::new());
-    let password = RwSignal::new(String::new());
-    let error = RwSignal::new(None::<String>);
-    let mode = RwSignal::new(LoginMode::Login);
     let auth_ctx = use_context::<AuthContext>().expect("AuthContext not provided");
     let navigate = use_navigate();
 
@@ -45,31 +26,9 @@ pub fn Login() -> impl IntoView {
         <PageLayout variant=PageLayoutVariant::Full>
             <CardLayout size=CardLayoutSize::Adaptive class="px-4 py-8">
                 <LoginHeader />
-                {move || match mode.get() {
-                    LoginMode::Login => view! {
-                        <LoginForm
-                            email=email
-                            password=password
-                            error=error
-                            mode=mode
-                        />
-                    }.into_any(),
-                    LoginMode::Register => view! {
-                        <RegisterForm
-                            email=email
-                            password=password
-                            error=error
-                            mode=mode
-                        />
-                    }.into_any(),
-                    LoginMode::EmailNotConfirmed => view! {
-                        <EmailConfirmationForm
-                            email=email
-                            error=error
-                            mode=mode
-                        />
-                    }.into_any(),
-                }}
+                <div class="space-y-6">
+                    <oauth_buttons::OAuthButtons />
+                </div>
             </CardLayout>
         </PageLayout>
     }

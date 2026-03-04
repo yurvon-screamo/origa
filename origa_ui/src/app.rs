@@ -1,7 +1,7 @@
 use crate::data_loader::load_all_data;
 use crate::dictionary::load_dictionary;
 use crate::repository::get_session;
-use crate::repository::{HybridUserRepository, SupabaseClient, clear_session};
+use crate::repository::{HybridUserRepository, TrailBaseClient, clear_session};
 use crate::routes::AppRoutes;
 use crate::ui_components::LoadingOverlay;
 use leptos::prelude::*;
@@ -13,7 +13,7 @@ use tracing::{error, info, warn};
 
 #[derive(Clone)]
 pub struct AuthContext {
-    pub client: SupabaseClient,
+    pub client: TrailBaseClient,
     pub repository: HybridUserRepository,
     pub current_user: RwSignal<Option<User>>,
     pub is_session_loading: RwSignal<bool>,
@@ -23,7 +23,7 @@ pub struct AuthContext {
 impl AuthContext {
     pub fn new() -> Self {
         Self {
-            client: SupabaseClient::new(),
+            client: TrailBaseClient::new(),
             repository: HybridUserRepository::new(),
             current_user: RwSignal::new(None),
             is_session_loading: RwSignal::new(true),

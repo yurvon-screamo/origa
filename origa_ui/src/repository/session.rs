@@ -2,27 +2,28 @@ use gloo_storage::{LocalStorage, Storage};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
-pub struct SupabaseSession {
-    pub access_token: String,
+pub struct TrailBaseSession {
+    pub auth_token: String,
     pub refresh_token: String,
-    pub auth_user_id: String,
     pub email: String,
+    pub auth_user_id: String,
+    pub record_id: Option<i64>,
     pub expires_at: u64,
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
-pub struct SupabaseUser {
-    pub id: String,
+pub struct TrailBaseUser {
+    pub sub: String,
     pub email: String,
 }
 
-const SESSION_KEY: &str = "supabase_session";
+const SESSION_KEY: &str = "trailbase_session";
 
-pub fn get_session() -> Option<SupabaseSession> {
+pub fn get_session() -> Option<TrailBaseSession> {
     LocalStorage::get(SESSION_KEY).ok()
 }
 
-pub fn set_session(session: &SupabaseSession) -> Result<(), String> {
+pub fn set_session(session: &TrailBaseSession) -> Result<(), String> {
     LocalStorage::set(SESSION_KEY, session).map_err(|e| format!("Failed to set session: {}", e))
 }
 
