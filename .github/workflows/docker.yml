@@ -59,3 +59,15 @@ jobs:
                   trap 'docker stop test-container 2>/dev/null; docker rm test-container 2>/dev/null' EXIT
                   sleep 5
                   curl --retry 10 --retry-delay 1 --retry-all-errors --fail http://localhost:4000/api/healthcheck
+
+    deploy-to-railway:
+        name: Deploy to Railway
+        needs: build-and-push
+        runs-on: ubuntu-latest
+        container: ghcr.io/railwayapp/cli:latest
+        env:
+            RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+            RAILWAY_SERVICE_ID: ${{ secrets.RAILWAY_SERVICE_ID }}
+        steps:
+            - name: Trigger Railway redeploy
+              run: railway redeploy -y --service ${{ env.RAILWAY_SERVICE_ID }}
