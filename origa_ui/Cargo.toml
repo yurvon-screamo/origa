@@ -27,8 +27,8 @@ origa.workspace = true
 ulid.workspace = true
 chrono.workspace = true
 gloo-storage.workspace = true
+gloo-net.workspace = true
 urlencoding.workspace = true
-reqwest.workspace = true
 base64.workspace = true
 idb.workspace = true
 pulldown-cmark.workspace = true
@@ -43,6 +43,7 @@ tracing-subscriber.workspace = true
 flate2 = "1.0"
 futures = "0.3"
 gloo-timers = "0.3"
+thiserror = "2.0"
 
 [build-dependencies]
 tokio = { version = "1.48", features = ["rt-multi-thread", "macros"] }

@@ -1,4 +1,4 @@
-use crate::repository::{OAuthProvider, SupabaseClient};
+use crate::repository::{OAuthProvider, TrailBaseClient};
 use leptos::prelude::*;
 use leptos::wasm_bindgen::JsValue;
 
@@ -34,21 +34,21 @@ pub fn OAuthButtons() -> impl IntoView {
 fn open_oauth_url(provider: OAuthProvider) {
     let window = web_sys::window().expect("window not available");
 
-    // Check if running in Tauri (has __TAURI__ AND is not http/https protocol)
     let is_tauri = js_sys::Reflect::get(&window, &JsValue::from_str("__TAURI__")).is_ok()
         && window.location().protocol().unwrap_or_default() == "tauri:";
 
-    let url = if is_tauri {
+    let redirect_uri = if is_tauri {
         web_sys::console::log_1(&"OAuth: Tauri mode".into());
-        SupabaseClient::get_oauth_url(provider.as_str())
+        "origa://auth/callback".to_string()
     } else {
         let base_url = window.location().origin().unwrap_or_default();
-        let redirect_uri = format!("{}/login", base_url);
-        web_sys::console::log_1(&format!("OAuth: Web mode, redirect_uri={}", redirect_uri).into());
-        let url = SupabaseClient::get_oauth_url_with_redirect(provider.as_str(), &redirect_uri);
-        web_sys::console::log_1(&format!("OAuth: Generated URL={}", url).into());
-        url
+        let redirect = format!("{}/login", base_url);
+        web_sys::console::log_1(&format!("OAuth: Web mode, redirect_uri={}", redirect).into());
+        redirect
     };
+
+    let url = TrailBaseClient::get_oauth_url(provider.as_str(), &redirect_uri);
+    web_sys::console::log_1(&format!("OAuth: Generated URL={}", url).into());
 
     let _ = window.location().set_href(&url);
 }
