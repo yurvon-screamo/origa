@@ -1,9 +1,9 @@
 # syntax=docker/dockerfile:1.4
 
-ARG RUST_VERSION=1.88
+ARG RUST_VERSION=1.93
 ARG TRUNK_VERSION=0.21.14
 
-FROM ubuntu:22.04 AS builder
+FROM ubuntu:24.04 AS builder
 
 ARG RUST_VERSION
 ARG TRUNK_VERSION
@@ -32,23 +32,22 @@ RUN curl -fsSL https://github.com/trunk-rs/trunk/releases/download/v${TRUNK_VERS
     | tar -xzf - -C /usr/local/bin
 
 COPY Cargo.toml Cargo.lock ./
-COPY origa/Cargo.toml ./origa/
 COPY tokenizer/Cargo.toml ./tokenizer/
-COPY origa_ui/Cargo.toml ./origa_ui/
 COPY tauri/Cargo.toml ./tauri/
+COPY origa/Cargo.toml ./origa/
+COPY origa_ui/Cargo.toml ./origa_ui/
 
 RUN mkdir -p origa/src && echo "pub fn dummy() {}" > origa/src/lib.rs
-RUN mkdir -p tokenizer/src && echo "pub fn dummy() {}" > tokenizer/src/lib.rs
 RUN mkdir -p origa_ui/src && echo "pub fn dummy() {}" > origa_ui/src/lib.rs
+RUN mkdir -p tokenizer/src && echo "pub fn dummy() {}" > tokenizer/src/lib.rs
 RUN mkdir -p tauri/src && echo "pub fn dummy() {}" > tauri/src/lib.rs
 
 RUN --mount=type=cache,target=/root/.cargo/registry \
     --mount=type=cache,target=/app/target \
-    cargo build --release -p origa_ui && \
-    rm -rf origa/src tokenizer/src origa_ui/src
+    cargo build --release -p origa_ui --target wasm32-unknown-unknown && \
+    rm -rf origa origa_ui
 
 COPY origa ./origa
-COPY tokenizer ./tokenizer
 COPY origa_ui ./origa_ui
 
 RUN rm -rf origa_ui/public/dictionaries/unidic
@@ -56,7 +55,8 @@ RUN rm -rf origa_ui/public/dictionaries/unidic
 RUN --mount=type=cache,target=/root/.cargo/registry \
     --mount=type=cache,target=/app/target \
     cargo clean -p origa -p origa_ui && \
-    cargo build --release -p origa -p origa_ui
+    cargo build --release -p origa --target wasm32-unknown-unknown && \
+    cargo build --release -p origa_ui --target wasm32-unknown-unknown
 
 RUN --mount=type=cache,target=/root/.cargo/registry \
     --mount=type=cache,target=/app/target \
