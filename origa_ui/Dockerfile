@@ -65,32 +65,20 @@ RUN --mount=type=cache,target=/root/.cargo/registry \
 
 RUN cp -r origa_ui/dist /dist
 
-FROM debian:bookworm-slim
+FROM trailbase/trailbase:0.24.2
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    nginx \
-    tzdata \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+USER root
+WORKDIR /app
 
-RUN mkdir -p /var/lib/nginx/body /var/lib/nginx/fastcgi /var/lib/nginx/proxy /var/lib/nginx/scgi /var/lib/nginx/uwsgi \
-    && chown -R www-data:www-data /var/lib/nginx \
-    && mkdir -p /var/log/nginx /tmp \
-    && chown -R www-data:www-data /var/log/nginx \
-    && chown -R www-data:www-data /tmp
+COPY --from=builder /dist /app/public
 
-COPY origa_ui/nginx.conf /etc/nginx/nginx.conf
+RUN chown -R trailbase:trailbase /app/public
 
-COPY --from=builder /dist /usr/share/nginx/html
+USER trailbase
 
-RUN chown -R www-data:www-data /usr/share/nginx/html && \
-    chmod -R 755 /usr/share/nginx/html
-
-EXPOSE 8080
-
-USER www-data
+EXPOSE 4000
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8080/ || exit 1
+    CMD curl --fail http://localhost:4000/api/healthcheck || exit 1
 
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["/app/trail", "run", "--address", "0.0.0.0:4000", "--public-dir", "/app/public", "--spa"]
