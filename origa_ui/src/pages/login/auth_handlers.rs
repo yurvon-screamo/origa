@@ -27,11 +27,11 @@ pub async fn get_or_create_profile(ctx: &AuthContext, email: &str) -> Result<Use
 pub async fn handle_oauth_callback(url_fragment: &str, ctx: &AuthContext) -> Result<User, String> {
     let session = TrailBaseClient::parse_tokens_from_url(url_fragment)?;
     set_session(&session).map_err(|e| format!("Не удалось сохранить сессию: {}", e))?;
-    
+
     if session.email.is_empty() {
         return Err("Email не найден в токене авторизации. Попробуйте войти снова.".to_string());
     }
-    
+
     get_or_create_profile(ctx, &session.email).await
 }
 
