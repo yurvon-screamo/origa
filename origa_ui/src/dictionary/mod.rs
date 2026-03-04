@@ -14,7 +14,6 @@ fn decompress(data: Vec<u8>) -> Result<Vec<u8>, OrigaError> {
     Ok(decompressed)
 }
 
-#[cfg(target_arch = "wasm32")]
 pub async fn load_dictionary() -> Result<(), OrigaError> {
     if is_dictionary_loaded() {
         return Ok(());
@@ -104,75 +103,6 @@ pub async fn load_dictionary() -> Result<(), OrigaError> {
             _ => {}
         }
     }
-
-    init_dictionary(data)
-}
-
-#[cfg(not(target_arch = "wasm32"))]
-pub fn load_dictionary() -> Result<(), OrigaError> {
-    if is_dictionary_loaded() {
-        return Ok(());
-    }
-
-    use std::{env, fs, path::PathBuf};
-
-    let dict_dir = if let Ok(out_dir) = env::var("OUT_DIR") {
-        let out_dict = PathBuf::from(out_dir).join("lindera-unidic");
-        if out_dict.exists() {
-            out_dict
-        } else {
-            let manifest_dir =
-                env::var("CARGO_MANIFEST_DIR").map_err(|_| OrigaError::TokenizerError {
-                    reason: "CARGO_MANIFEST_DIR not set".to_string(),
-                })?;
-            PathBuf::from(manifest_dir)
-                .parent()
-                .ok_or_else(|| OrigaError::TokenizerError {
-                    reason: "Cannot find parent directory".to_string(),
-                })?
-                .join("origa_ui")
-                .join("public")
-                .join("dictionaries")
-                .join("unidic")
-        }
-    } else {
-        let manifest_dir =
-            env::var("CARGO_MANIFEST_DIR").map_err(|_| OrigaError::TokenizerError {
-                reason: "CARGO_MANIFEST_DIR not set".to_string(),
-            })?;
-        PathBuf::from(manifest_dir)
-            .parent()
-            .ok_or_else(|| OrigaError::TokenizerError {
-                reason: "Cannot find parent directory".to_string(),
-            })?
-            .join("origa_ui")
-            .join("public")
-            .join("dictionaries")
-            .join("unidic")
-    };
-
-    if !dict_dir.exists() {
-        return Err(OrigaError::TokenizerError {
-            reason: format!("Dictionary directory not found: {}", dict_dir.display()),
-        });
-    }
-
-    let read_file = |name: &str| -> Result<Vec<u8>, OrigaError> {
-        fs::read(dict_dir.join(name)).map_err(|e| OrigaError::TokenizerError {
-            reason: format!("Failed to read {}: {}", name, e),
-        })
-    };
-
-    let data = DictionaryData {
-        char_def: decompress(read_file("char_def.bin")?)?,
-        matrix: decompress(read_file("matrix.mtx")?)?,
-        dict_da: decompress(read_file("dict.da")?)?,
-        dict_vals: decompress(read_file("dict.vals")?)?,
-        unk: decompress(read_file("unk.bin")?)?,
-        words_idx: decompress(read_file("dict.wordsidx")?)?,
-        words: decompress(read_file("dict.words")?)?,
-        metadata: read_file("metadata.json")?,
-    };
 
     init_dictionary(data)
 }

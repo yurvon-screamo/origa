@@ -1,8 +1,5 @@
-#[cfg(target_arch = "wasm32")]
 use tracing::Level;
-#[cfg(target_arch = "wasm32")]
-use tracing_subscriber::{Registry, layer::SubscriberExt};
-#[cfg(target_arch = "wasm32")]
+use tracing_subscriber::{layer::SubscriberExt, Registry};
 use tracing_wasm::{ConsoleConfig, WASMLayer, WASMLayerConfigBuilder};
 
 pub mod app;
@@ -14,7 +11,6 @@ mod routes;
 mod ui_components;
 pub mod well_known_set;
 
-#[cfg(target_arch = "wasm32")]
 pub fn init_tracing() {
     if tracing::dispatcher::has_been_set() {
         return;

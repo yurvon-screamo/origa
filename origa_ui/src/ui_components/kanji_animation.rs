@@ -44,10 +44,7 @@ fn add_animation_delays(svg_html: &str, stroke_time: f32) -> (String, usize) {
 
 #[component]
 pub fn KanjiAnimation(kanji: String, #[prop(optional)] mode: KanjiViewMode) -> impl IntoView {
-    #[cfg(target_arch = "wasm32")]
     let (iteration, set_iteration) = signal(0);
-    #[cfg(not(target_arch = "wasm32"))]
-    let (iteration, _set_iteration) = signal(0);
 
     let encoded = urlencoding::encode(&kanji);
     let svg_path = match mode {
@@ -64,29 +61,20 @@ pub fn KanjiAnimation(kanji: String, #[prop(optional)] mode: KanjiViewMode) -> i
         let path = svg_path.clone();
 
         async move {
-            #[cfg(target_arch = "wasm32")]
-            {
-                use leptos::wasm_bindgen::JsCast;
-                use wasm_bindgen_futures::JsFuture;
+            use leptos::wasm_bindgen::JsCast;
+            use wasm_bindgen_futures::JsFuture;
 
-                let window = web_sys::window()?;
-                let resp = JsFuture::from(window.fetch_with_str(&path)).await.ok()?;
-                let text = JsFuture::from(resp.dyn_into::<web_sys::Response>().ok()?.text().ok()?)
-                    .await
-                    .ok()?;
-                text.as_string()
-            }
-            #[cfg(not(target_arch = "wasm32"))]
-            {
-                let _ = path;
-                None
-            }
+            let window = web_sys::window()?;
+            let resp = JsFuture::from(window.fetch_with_str(&path)).await.ok()?;
+            let text = JsFuture::from(resp.dyn_into::<web_sys::Response>().ok()?.text().ok()?)
+                .await
+                .ok()?;
+            text.as_string()
         }
     });
 
     let stroke_time = 0.4f32;
 
-    #[cfg(target_arch = "wasm32")]
     Effect::new(move |_| {
         use std::time::Duration;
 
