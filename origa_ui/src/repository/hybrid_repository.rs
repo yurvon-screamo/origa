@@ -10,7 +10,7 @@ use web_sys::console;
 
 use crate::repository::file_repository::FileSystemUserRepository;
 use crate::repository::jlpt_content_loader::recalculate_user_jlpt_progress;
-use crate::repository::supabase_repository::SupabaseUserRepository;
+use crate::repository::trailbase_repository::TrailBaseUserRepository;
 
 static SYNCED: OnceLock<AtomicBool> = OnceLock::new();
 
@@ -29,14 +29,14 @@ fn set_synced(value: bool) {
 #[derive(Clone)]
 pub struct HybridUserRepository {
     local: FileSystemUserRepository,
-    remote: SupabaseUserRepository,
+    remote: TrailBaseUserRepository,
 }
 
 impl HybridUserRepository {
     pub fn new() -> Self {
         Self {
             local: FileSystemUserRepository::new(),
-            remote: SupabaseUserRepository::new(),
+            remote: TrailBaseUserRepository::new(),
         }
     }
 }
@@ -101,7 +101,7 @@ impl HybridUserRepository {
             return;
         }
 
-        if let Ok(Some(remote_user)) = self.remote.find_current().await {
+        if let Ok(Some((remote_user, _record_id))) = self.remote.find_current().await {
             if let Ok(Some(local_user)) = self.local.find_by_id(remote_user.id()).await {
                 if remote_user.updated_at() != local_user.updated_at() {
                     let mut merged = local_user;

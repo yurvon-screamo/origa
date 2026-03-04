@@ -81,6 +81,7 @@ console_log = "1"
 log = "0.4"
 console_error_panic_hook = "0.1"
 gloo-storage = "0.3"
+gloo-net = { version = "0.6", default-features = false, features = ["http", "json"] }
 urlencoding = "2.1"
 
 # Tauri

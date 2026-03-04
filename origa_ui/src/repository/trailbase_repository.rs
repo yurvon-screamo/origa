@@ -1,16 +1,15 @@
-use super::client::{AuthError, SupabaseClient};
-use crate::repository::session::get_session;
+use super::trailbase_client::{AuthError, TrailBaseClient};
+use crate::repository::session::{get_session, set_session, TrailBaseSession};
 use chrono::{DateTime, Utc};
 use origa::application::user_repository::UserRepository;
 use origa::domain::{JlptProgress, KnowledgeSet, NativeLanguage, OrigaError, User};
-use reqwest::Method;
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 use ulid::Ulid;
 
 #[derive(Clone)]
-pub struct SupabaseUserRepository {
-    client: SupabaseClient,
+pub struct TrailBaseUserRepository {
+    client: TrailBaseClient,
     table_name: String,
     user_cache: Arc<RwLock<HashMap<String, User>>>,
 }
@@ -27,61 +26,61 @@ fn map_auth_error(e: AuthError) -> OrigaError {
     }
 }
 
-impl SupabaseUserRepository {
+impl TrailBaseUserRepository {
     pub fn new() -> Self {
         Self {
-            client: SupabaseClient::new(),
+            client: TrailBaseClient::new(),
             table_name: "user".to_string(),
             user_cache: Arc::new(RwLock::new(HashMap::new())),
         }
     }
 
-    pub async fn find_current(&self) -> Result<Option<User>, OrigaError> {
+    pub async fn find_current(&self) -> Result<Option<(User, i64)>, OrigaError> {
         let session = get_session().ok_or_else(|| OrigaError::RepositoryError {
             reason: "Not authenticated".to_string(),
         })?;
 
-        let res = self
-            .client
-            .request_with_auth_refresh(
-                Method::GET,
-                &format!(
-                    "/rest/v1/{}?auth_user_id=eq.{}&select=*",
-                    self.table_name, session.auth_user_id
-                ),
-                None,
-                None,
-            )
+        if session.email.is_empty() {
+            return Err(OrigaError::RepositoryError {
+                reason: "Email not found in session. Please re-login.".to_string(),
+            });
+        }
+
+        let api = self.client.records(&self.table_name);
+        
+        let records: Vec<UserRow> = api
+            .list_filtered(&format!("email=eq.{}", session.email))
             .await
             .map_err(map_auth_error)?;
 
-        if res.status().is_success() {
-            let rows: Vec<UserRow> = res.json().await.map_err(|e| OrigaError::RepositoryError {
-                reason: format!("Failed to parse response: {}", e),
+        if let Some(row) = records.into_iter().next() {
+            let record_id = row.id.ok_or_else(|| OrigaError::RepositoryError {
+                reason: "Record ID missing from database row".to_string(),
             })?;
-
-            if let Some(row) = rows.first() {
-                let user = row.to_user();
-                if let Ok(mut cache) = self.user_cache.write() {
-                    cache.insert(session.email.clone(), user.clone());
-                }
-                return Ok(Some(user));
+            let user = row.to_user();
+            
+            if let Ok(mut cache) = self.user_cache.write() {
+                cache.insert(session.email.clone(), user.clone());
             }
+            
+            return Ok(Some((user, record_id)));
         }
 
         Ok(None)
     }
 }
 
-impl Default for SupabaseUserRepository {
+impl Default for TrailBaseUserRepository {
     fn default() -> Self {
         Self::new()
     }
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Deserialize, serde::Serialize, Debug)]
 struct UserRow {
-    id: i64,
+    #[serde(default)]
+    id: Option<i64>,
+    auth_user_id: String,
     username: String,
     email: String,
     native_language: i32,
@@ -90,14 +89,14 @@ struct UserRow {
     current_japanese_level: Option<i32>,
     duolingo_jwt_token: Option<String>,
     telegram_user_id: Option<i64>,
-    reminders_enabled: bool,
+    reminders_enabled: i32,
     knowledge_set: KnowledgeSet,
     updated_at: DateTime<Utc>,
 }
 
 impl UserRow {
     fn to_user(&self) -> User {
-        let ulid = supabase_id_to_ulid(self.id);
+        let ulid = uuid_to_ulid(&self.auth_user_id);
 
         let jlpt_progress = self.jlpt_progress.clone().unwrap_or_default();
 
@@ -109,17 +108,29 @@ impl UserRow {
             NativeLanguage::from(self.native_language),
             self.duolingo_jwt_token.clone(),
             self.telegram_user_id.map(|id| id as u64),
-            self.reminders_enabled,
+            self.reminders_enabled != 0,
             self.knowledge_set.clone(),
             self.updated_at,
         )
     }
 }
 
-fn supabase_id_to_ulid(id: i64) -> Ulid {
+fn uuid_to_ulid(uuid_str: &str) -> Ulid {
+    let uuid_bytes = uuid_str
+        .replace('-', "")
+        .as_bytes()
+        .chunks(2)
+        .filter_map(|chunk| {
+            let hex = std::str::from_utf8(chunk).ok()?;
+            u8::from_str_radix(hex, 16).ok()
+        })
+        .collect::<Vec<_>>();
+
     let mut bytes = [0u8; 16];
-    let id_bytes = id.to_be_bytes();
-    bytes[8..16].copy_from_slice(&id_bytes);
+    if uuid_bytes.len() == 16 {
+        bytes.copy_from_slice(&uuid_bytes);
+    }
+
     Ulid::from_bytes(bytes)
 }
 
@@ -133,15 +144,15 @@ fn user_to_json(user: &User, auth_user_id: &str) -> serde_json::Value {
         "jlpt_progress": user.jlpt_progress(),
         "duolingo_jwt_token": user.duolingo_jwt_token(),
         "telegram_user_id": user.telegram_user_id().copied().map(|id| id as i64),
-        "reminders_enabled": user.reminders_enabled(),
+        "reminders_enabled": if user.reminders_enabled() { 1 } else { 0 },
         "knowledge_set": user.knowledge_set(),
         "updated_at": user.updated_at(),
     })
 }
 
-impl UserRepository for SupabaseUserRepository {
+impl UserRepository for TrailBaseUserRepository {
     async fn find_by_id(&self, _user_id: Ulid) -> Result<Option<User>, OrigaError> {
-        self.find_current().await
+        self.find_current().await.map(|opt| opt.map(|(user, _)| user))
     }
 
     async fn find_by_email(&self, email: &str) -> Result<Option<User>, OrigaError> {
@@ -150,60 +161,42 @@ impl UserRepository for SupabaseUserRepository {
         {
             return Ok(Some(user.clone()));
         }
-        self.find_current().await
+        self.find_current().await.map(|opt| opt.map(|(user, _)| user))
     }
 
     async fn find_by_telegram_id(&self, _telegram_id: &u64) -> Result<Option<User>, OrigaError> {
-        self.find_current().await
+        self.find_current().await.map(|opt| opt.map(|(user, _)| user))
     }
 
     async fn save(&self, user: &User) -> Result<(), OrigaError> {
         let session = get_session().ok_or_else(|| OrigaError::RepositoryError {
             reason: "Not authenticated".to_string(),
         })?;
+        
+        if session.email.is_empty() {
+            return Err(OrigaError::RepositoryError {
+                reason: "Email not found in session. Please re-login.".to_string(),
+            });
+        }
 
-        let existing = self.find_current().await?;
+        let api = self.client.records(&self.table_name);
         let body = user_to_json(user, &session.auth_user_id);
 
-        if existing.is_some() {
-            let res = self
-                .client
-                .request_with_auth_refresh(
-                    Method::PATCH,
-                    &format!(
-                        "/rest/v1/{}?auth_user_id=eq.{}",
-                        self.table_name, session.auth_user_id
-                    ),
-                    Some(&body),
-                    Some(&[("Prefer", "return=minimal")]),
-                )
-                .await
-                .map_err(map_auth_error)?;
-
-            if !res.status().is_success() {
-                let error_text = res.text().await.unwrap_or_default();
-                return Err(OrigaError::RepositoryError {
-                    reason: format!("Failed to update user: {}", error_text),
-                });
-            }
+        if let Some((_, record_id)) = self.find_current().await? {
+            api.update(&record_id.to_string(), &body).await.map_err(map_auth_error)?;
         } else {
-            let res = self
-                .client
-                .request_with_auth_refresh(
-                    Method::POST,
-                    &format!("/rest/v1/{}", self.table_name),
-                    Some(&body),
-                    Some(&[("Prefer", "return=minimal")]),
-                )
-                .await
-                .map_err(map_auth_error)?;
-
-            if !res.status().is_success() {
-                let error_text = res.text().await.unwrap_or_default();
-                return Err(OrigaError::RepositoryError {
-                    reason: format!("Failed to create user: {}", error_text),
-                });
-            }
+            let created_id = api.create(&body).await.map_err(map_auth_error)?;
+            let record_id: i64 = created_id.parse().map_err(|_| OrigaError::RepositoryError {
+                reason: "Invalid record ID returned from create".to_string(),
+            })?;
+            
+            let updated_session = TrailBaseSession {
+                record_id: Some(record_id),
+                ..session.clone()
+            };
+            set_session(&updated_session).map_err(|e| OrigaError::RepositoryError {
+                reason: format!("Failed to update session: {}", e),
+            })?;
         }
 
         if let Ok(mut cache) = self.user_cache.write() {
@@ -214,29 +207,14 @@ impl UserRepository for SupabaseUserRepository {
     }
 
     async fn delete(&self, _user_id: Ulid) -> Result<(), OrigaError> {
-        let session = get_session().ok_or_else(|| OrigaError::RepositoryError {
+        let _session = get_session().ok_or_else(|| OrigaError::RepositoryError {
             reason: "Not authenticated".to_string(),
         })?;
 
-        let res = self
-            .client
-            .request_with_auth_refresh(
-                Method::DELETE,
-                &format!(
-                    "/rest/v1/{}?auth_user_id=eq.{}",
-                    self.table_name, session.auth_user_id
-                ),
-                None,
-                None,
-            )
-            .await
-            .map_err(map_auth_error)?;
-
-        if !res.status().is_success() {
-            let error_text = res.text().await.unwrap_or_default();
-            return Err(OrigaError::RepositoryError {
-                reason: format!("Failed to delete user: {}", error_text),
-            });
+        let api = self.client.records(&self.table_name);
+        
+        if let Some((_, record_id)) = self.find_current().await? {
+            api.delete(&record_id.to_string()).await.map_err(map_auth_error)?;
         }
 
         if let Ok(mut cache) = self.user_cache.write() {

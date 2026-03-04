@@ -296,3 +296,55 @@ Progress is recalculated automatically when:
 - Run `cargo test -p <crate>` after modifying logic
 - Run `npm test` for e2e tests after UI changes
 - Use existing components from `ui_components/` instead of creating custom HTML
+
+## TrailBase Backend
+
+### Configuration
+
+TrailBase is used as the backend service for authentication and data storage.
+
+- **URL**: `https://trailbase.uwuwu.net`
+- **Admin Panel**: `https://trailbase.uwuwu.net/_/admin/`
+- **Auth Providers**: Google, Yandex (Keycloak)
+
+### Architecture
+
+The application uses a hybrid repository pattern:
+
+- **TrailBaseClient** (`origa_ui/src/repository/trailbase_client.rs`): WASM-compatible HTTP client using `gloo-net`
+- **TrailBaseUserRepository** (`origa_ui/src/repository/trailbase_repository.rs`): UserRepository implementation via TrailBase Record API
+- **HybridUserRepository** (`origa_ui/src/repository/hybrid_repository.rs`): Syncs data between local storage and TrailBase
+
+### Authentication
+
+- **OAuth-only**: Email/password authentication has been removed
+- **Supported Providers**: Google, Yandex (via Keycloak)
+- **Token Management**: JWT auth tokens with automatic refresh
+- **Session Storage**: Browser localStorage via `gloo-storage`
+
+### Database Schema
+
+The `user` table schema is defined in `trailbase_schema.sql`:
+
+```sql
+CREATE TABLE user (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    auth_user_id TEXT UNIQUE NOT NULL,
+    username TEXT NOT NULL,
+    email TEXT NOT NULL,
+    native_language INTEGER NOT NULL DEFAULT 0,
+    jlpt_progress TEXT CHECK(json_valid(jlpt_progress)),
+    current_japanese_level INTEGER,
+    duolingo_jwt_token TEXT,
+    telegram_user_id INTEGER,
+    reminders_enabled INTEGER NOT NULL DEFAULT 0,
+    knowledge_set TEXT NOT NULL DEFAULT 'Default',
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+) STRICT;
+```
+
+### Setup Instructions
+
+1. Execute `trailbase_schema.sql` in TrailBase SQL Editor
+2. Configure OAuth providers in TrailBase admin panel
+3. Update `TRAILBASE_URL` constant in `trailbase_client.rs` if needed
