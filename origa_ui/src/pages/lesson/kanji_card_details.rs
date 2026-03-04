@@ -3,6 +3,7 @@ use crate::ui_components::{
     TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
+use origa::domain::User;
 
 #[component]
 pub fn KanjiCardDetails(
@@ -11,6 +12,15 @@ pub fn KanjiCardDetails(
     example_words: Option<Vec<(String, String)>>,
     show_details: bool,
 ) -> impl IntoView {
+    let current_user = use_context::<RwSignal<Option<User>>>().expect("current_user context");
+
+    let known_kanji = Memo::new(move |_| {
+        current_user
+            .get()
+            .map(|u| u.knowledge_set().get_known_kanji())
+            .unwrap_or_default()
+    });
+
     let kanji_stored = StoredValue::new(kanji);
     let radicals_stored = StoredValue::new(radicals);
     let examples_stored = StoredValue::new(example_words);
@@ -42,12 +52,13 @@ pub fn KanjiCardDetails(
                                         view! {
                                             <div class="p-2 bg-[var(--bg-secondary)] rounded">
                                                 <Text size=TextSize::Default class="font-bold">
-                                                    <FuriganaText text=word />
+                                                    <FuriganaText text=word known_kanji=known_kanji.get()/>
                                                 </Text>
                                                 <MarkdownText
                                                     content=Signal::derive(move || meaning_stored.get_value())
                                                     variant=MarkdownVariant::Compact
                                                     class="text-[var(--fg-muted)]"
+                                                    known_kanji=known_kanji.get()
                                                 />
                                             </div>
                                         }

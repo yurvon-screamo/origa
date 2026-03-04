@@ -1087,6 +1087,15 @@ body {
 	font-family: "Cormorant Garamond", serif;
 }
 
+.furigana-hidden .furigana-rt {
+	opacity: 0;
+	transition: opacity 0.2s ease;
+}
+
+.furigana-hidden:hover .furigana-rt {
+	opacity: 1;
+}
+
 .kanji-animation-container {
 	display: flex;
 	flex-direction: column;

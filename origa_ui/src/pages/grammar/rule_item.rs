@@ -1,11 +1,21 @@
 use crate::ui_components::{FuriganaText, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 use origa::application::GrammarRuleItem;
+use origa::domain::User;
 use std::collections::HashSet;
 use ulid::Ulid;
 
 #[component]
 pub fn RuleItem(rule: GrammarRuleItem, selected_ids: RwSignal<HashSet<Ulid>>) -> impl IntoView {
+    let current_user = use_context::<RwSignal<Option<User>>>().expect("current_user context");
+
+    let known_kanji = Memo::new(move |_| {
+        current_user
+            .get()
+            .map(|u| u.knowledge_set().get_known_kanji())
+            .unwrap_or_default()
+    });
+
     let rule_id = rule.rule_id;
     let is_selected = move || selected_ids.get().contains(&rule_id);
 
@@ -31,7 +41,7 @@ pub fn RuleItem(rule: GrammarRuleItem, selected_ids: RwSignal<HashSet<Ulid>>) ->
             )
             on:click=on_click
         >
-            <div class="font-bold text-sm font-mono"><FuriganaText text=rule.title/></div>
+            <div class="font-bold text-sm font-mono"><FuriganaText text=rule.title known_kanji=known_kanji.get()/></div>
             <Text size=TextSize::Small variant=TypographyVariant::Muted>
                 {rule.short_description}
             </Text>
