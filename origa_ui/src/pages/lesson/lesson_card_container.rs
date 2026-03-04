@@ -5,7 +5,6 @@ use super::on_quiz_select::create_on_quiz_select;
 use super::on_rate::create_on_rate_callback;
 use super::quiz_card::QuizCardView;
 use super::rating_buttons_view::RatingButtonsView;
-use crate::ui_components::{Tag, TagVariant};
 use leptos::prelude::*;
 use origa::domain::LessonCardView;
 use origa::domain::User;
@@ -65,29 +64,13 @@ pub fn LessonCardContainer() -> impl IntoView {
                                 LessonCardView::Normal(card)
                                 | LessonCardView::Reversed(card)
                                 | LessonCardView::GrammarMutated(card) => {
-                                    let show_grammar_badge = matches!(card_view, LessonCardView::GrammarMutated(_));
-                                    let show_reversed_badge = matches!(card_view, LessonCardView::Reversed(_));
+                                    let is_reversed = matches!(card_view, LessonCardView::Reversed(_));
                                     let card = card.clone();
 
                                     Some(view! {
-                                        <Show when=move || show_grammar_badge>
-                                            <div class="flex justify-center mb-3">
-                                                <Tag variant=Signal::derive(|| TagVariant::Olive)>
-                                                    "Grammar Applied"
-                                                </Tag>
-                                            </div>
-                                        </Show>
-
-                                        <Show when=move || show_reversed_badge>
-                                            <div class="flex justify-center mb-3">
-                                                <Tag variant=Signal::derive(|| TagVariant::Olive)>
-                                                    "Reversed"
-                                                </Tag>
-                                            </div>
-                                        </Show>
-
                                         <LessonCard
                                             card=card
+                                            is_reversed=is_reversed
                                             show_answer=lesson_state.get().showing_answer
                                             on_show_answer=Callback::new(move |_| show_answer())
                                         />

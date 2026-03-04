@@ -19,7 +19,7 @@ impl StatMetric {
             StatMetric::Learned => "Изучено",
             StatMetric::InProgress => "В процессе",
             StatMetric::New => "Новые",
-            StatMetric::HighDifficulty => "Сложные слова",
+            StatMetric::HighDifficulty => "Сложные",
         }
     }
 }

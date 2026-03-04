@@ -13,6 +13,7 @@ use super::lesson_state::LessonContext;
 pub fn LessonCard(
     card: DomainCard,
     show_answer: bool,
+    is_reversed: bool,
     on_show_answer: Callback<()>,
 ) -> impl IntoView {
     let card_type = CardType::from(&card);
@@ -94,6 +95,7 @@ pub fn LessonCard(
                     <LessonCardQuestion
                         question_text=question.get_value()
                         kanji=kanji_stored.get_value()
+                        is_reversed=is_reversed
                         on_show_answer=on_show_answer
                     />
                 </Show>
@@ -107,6 +109,7 @@ pub fn LessonCard(
                         content_ref=content_ref
                         on_toggle=on_toggle
                         is_kanji=card_type == CardType::Kanji
+                        is_reversed=is_reversed
                     />
 
                     <Show when=move || card_type == CardType::Kanji && is_expanded.get()>
