@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize, de::DeserializeOwned};
 use std::collections::HashMap;
 use thiserror::Error;
 
-const TRAILBASE_URL: &str = "https://trailbase-production-97b6.up.railway.app/";
+const TRAILBASE_URL: &str = "https://trailbase-production-97b6.up.railway.app";
 const REFRESH_THRESHOLD_SECONDS: u64 = 300;
 
 #[derive(Debug, Deserialize)]
