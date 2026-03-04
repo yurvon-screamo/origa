@@ -1,5 +1,5 @@
 use super::trailbase_client::{AuthError, TrailBaseClient};
-use crate::repository::session::{get_session, set_session, TrailBaseSession};
+use crate::repository::session::{TrailBaseSession, get_session, set_session};
 use chrono::{DateTime, Utc};
 use origa::application::user_repository::UserRepository;
 use origa::domain::{JlptProgress, KnowledgeSet, NativeLanguage, OrigaError, User};
@@ -47,7 +47,7 @@ impl TrailBaseUserRepository {
         }
 
         let api = self.client.records(&self.table_name);
-        
+
         let records: Vec<UserRow> = api
             .list_filtered(&format!("email=eq.{}", session.email))
             .await
@@ -58,11 +58,11 @@ impl TrailBaseUserRepository {
                 reason: "Record ID missing from database row".to_string(),
             })?;
             let user = row.to_user();
-            
+
             if let Ok(mut cache) = self.user_cache.write() {
                 cache.insert(session.email.clone(), user.clone());
             }
-            
+
             return Ok(Some((user, record_id)));
         }
 
@@ -152,7 +152,9 @@ fn user_to_json(user: &User, auth_user_id: &str) -> serde_json::Value {
 
 impl UserRepository for TrailBaseUserRepository {
     async fn find_by_id(&self, _user_id: Ulid) -> Result<Option<User>, OrigaError> {
-        self.find_current().await.map(|opt| opt.map(|(user, _)| user))
+        self.find_current()
+            .await
+            .map(|opt| opt.map(|(user, _)| user))
     }
 
     async fn find_by_email(&self, email: &str) -> Result<Option<User>, OrigaError> {
@@ -161,18 +163,22 @@ impl UserRepository for TrailBaseUserRepository {
         {
             return Ok(Some(user.clone()));
         }
-        self.find_current().await.map(|opt| opt.map(|(user, _)| user))
+        self.find_current()
+            .await
+            .map(|opt| opt.map(|(user, _)| user))
     }
 
     async fn find_by_telegram_id(&self, _telegram_id: &u64) -> Result<Option<User>, OrigaError> {
-        self.find_current().await.map(|opt| opt.map(|(user, _)| user))
+        self.find_current()
+            .await
+            .map(|opt| opt.map(|(user, _)| user))
     }
 
     async fn save(&self, user: &User) -> Result<(), OrigaError> {
         let session = get_session().ok_or_else(|| OrigaError::RepositoryError {
             reason: "Not authenticated".to_string(),
         })?;
-        
+
         if session.email.is_empty() {
             return Err(OrigaError::RepositoryError {
                 reason: "Email not found in session. Please re-login.".to_string(),
@@ -183,13 +189,17 @@ impl UserRepository for TrailBaseUserRepository {
         let body = user_to_json(user, &session.auth_user_id);
 
         if let Some((_, record_id)) = self.find_current().await? {
-            api.update(&record_id.to_string(), &body).await.map_err(map_auth_error)?;
+            api.update(&record_id.to_string(), &body)
+                .await
+                .map_err(map_auth_error)?;
         } else {
             let created_id = api.create(&body).await.map_err(map_auth_error)?;
-            let record_id: i64 = created_id.parse().map_err(|_| OrigaError::RepositoryError {
-                reason: "Invalid record ID returned from create".to_string(),
-            })?;
-            
+            let record_id: i64 = created_id
+                .parse()
+                .map_err(|_| OrigaError::RepositoryError {
+                    reason: "Invalid record ID returned from create".to_string(),
+                })?;
+
             let updated_session = TrailBaseSession {
                 record_id: Some(record_id),
                 ..session.clone()
@@ -212,9 +222,11 @@ impl UserRepository for TrailBaseUserRepository {
         })?;
 
         let api = self.client.records(&self.table_name);
-        
+
         if let Some((_, record_id)) = self.find_current().await? {
-            api.delete(&record_id.to_string()).await.map_err(map_auth_error)?;
+            api.delete(&record_id.to_string())
+                .await
+                .map_err(map_auth_error)?;
         }
 
         if let Ok(mut cache) = self.user_cache.write() {

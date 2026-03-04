@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 use leptos::prelude::*;
-use origa::domain::{furiganize_segments, FuriganaSegment};
+use origa::domain::{FuriganaSegment, furiganize_segments};
 
 #[component]
 pub fn FuriganaText(
