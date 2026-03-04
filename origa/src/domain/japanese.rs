@@ -1,5 +1,3 @@
-use crate::domain::{OrigaError, furigana::furiganize_text};
-
 pub trait JapaneseChar {
     fn is_japanese(&self) -> bool;
     fn is_hiragana(&self) -> bool;
@@ -11,10 +9,6 @@ pub trait JapaneseText {
     fn is_japanese(&self) -> bool;
     fn contains_japanese(&self) -> bool;
     fn contains_kanji(&self) -> bool;
-
-    fn has_furigana(&self) -> Result<bool, OrigaError>;
-    fn as_furigana(&self) -> Result<String, OrigaError>;
-    fn equals_by_reading(&self, other: &Self) -> Result<bool, OrigaError>;
 }
 
 impl JapaneseChar for char {
@@ -44,20 +38,6 @@ impl JapaneseText for str {
 
     fn contains_japanese(&self) -> bool {
         self.chars().any(|c| c.is_japanese())
-    }
-
-    fn as_furigana(&self) -> Result<String, OrigaError> {
-        furiganize_text(self)
-    }
-
-    fn has_furigana(&self) -> Result<bool, OrigaError> {
-        self.as_furigana().map(|furigana| furigana != self)
-    }
-
-    fn equals_by_reading(&self, other: &Self) -> Result<bool, OrigaError> {
-        let left = self.as_furigana()?;
-        let right = other.as_furigana()?;
-        Ok(left == right)
     }
 
     fn contains_kanji(&self) -> bool {

@@ -1,8 +1,10 @@
+use std::collections::HashSet;
+
 use ammonia::clean;
 use ego_tree::NodeRef;
 use leptos::prelude::*;
 use origa::domain::furiganize_text;
-use pulldown_cmark::{Options, Parser, html};
+use pulldown_cmark::{html, Options, Parser};
 use scraper::{Html, Node};
 
 #[derive(Clone, Copy, PartialEq, Default, Debug)]
@@ -27,18 +29,23 @@ fn render_markdown(content: &str) -> String {
 
 const SKIP_TAGS: &[&str] = &["pre", "ruby", "rt", "rp"];
 
-fn add_furigana_to_html(html: &str) -> String {
+fn add_furigana_to_html(html: &str, known_kanji: &HashSet<String>) -> String {
     let document = Html::parse_document(html);
     let mut result = String::new();
 
-    fn process_node(node_ref: NodeRef<'_, Node>, output: &mut String, in_skip: bool) {
+    fn process_node(
+        node_ref: NodeRef<'_, Node>,
+        output: &mut String,
+        in_skip: bool,
+        known_kanji: &HashSet<String>,
+    ) {
         match node_ref.value() {
             Node::Text(text) => {
                 let text_str: &str = text;
                 if in_skip {
                     output.push_str(text_str);
                 } else {
-                    match furiganize_text(text_str) {
+                    match furiganize_text(text_str, known_kanji) {
                         Ok(furigana) => output.push_str(&furigana),
                         Err(_) => output.push_str(text_str),
                     }
@@ -55,21 +62,21 @@ fn add_furigana_to_html(html: &str) -> String {
                 output.push('>');
 
                 for child in node_ref.children() {
-                    process_node(child, output, should_skip);
+                    process_node(child, output, should_skip, known_kanji);
                 }
 
                 output.push_str(&format!("</{}>", tag));
             }
             _ => {
                 for child in node_ref.children() {
-                    process_node(child, output, in_skip);
+                    process_node(child, output, in_skip, known_kanji);
                 }
             }
         }
     }
 
     for node_ref in document.tree.root().children() {
-        process_node(node_ref, &mut result, false);
+        process_node(node_ref, &mut result, false, known_kanji);
     }
 
     result
@@ -78,6 +85,7 @@ fn add_furigana_to_html(html: &str) -> String {
 #[component]
 pub fn MarkdownText(
     #[prop(into)] content: Signal<String>,
+    known_kanji: HashSet<String>,
     #[prop(optional, into)] variant: Signal<MarkdownVariant>,
     #[prop(optional, into)] class: Signal<String>,
     #[prop(optional, default = true)] furigana: bool,
@@ -85,7 +93,7 @@ pub fn MarkdownText(
     let html_content = Memo::new(move |_| {
         let rendered = render_markdown(&content.get());
         if furigana {
-            add_furigana_to_html(&rendered)
+            add_furigana_to_html(&rendered, &known_kanji)
         } else {
             rendered
         }
@@ -181,7 +189,8 @@ mod tests {
     #[test]
     fn test_add_furigana_preserves_html_structure() {
         let html = "<p>Hello world</p>";
-        let output = add_furigana_to_html(html);
+        let known_kanji = HashSet::new();
+        let output = add_furigana_to_html(html, &known_kanji);
         assert!(output.contains("<p>"));
         assert!(output.contains("</p>"));
         assert!(output.contains("Hello"));
@@ -191,21 +200,24 @@ mod tests {
     #[test]
     fn test_add_furigana_skips_code_tag() {
         let html = "<code>test</code>";
-        let output = add_furigana_to_html(html);
+        let known_kanji = HashSet::new();
+        let output = add_furigana_to_html(html, &known_kanji);
         assert!(output.contains("<code>test</code>"));
     }
 
     #[test]
     fn test_add_furigana_skips_pre_tag() {
         let html = "<pre>test</pre>";
-        let output = add_furigana_to_html(html);
+        let known_kanji = HashSet::new();
+        let output = add_furigana_to_html(html, &known_kanji);
         assert!(output.contains("<pre>test</pre>"));
     }
 
     #[test]
     fn test_add_furigana_skips_ruby_tag() {
         let html = "<ruby>食<rt>しょく</rt></ruby>";
-        let output = add_furigana_to_html(html);
+        let known_kanji = HashSet::new();
+        let output = add_furigana_to_html(html, &known_kanji);
         assert!(output.contains("<ruby>"));
         assert!(output.contains("<rt>"));
     }
@@ -213,7 +225,8 @@ mod tests {
     #[test]
     fn test_add_furigana_preserves_links() {
         let html = "<a href=\"https://example.com\">link</a>";
-        let output = add_furigana_to_html(html);
+        let known_kanji = HashSet::new();
+        let output = add_furigana_to_html(html, &known_kanji);
         assert!(output.contains("href=\"https://example.com\""));
         assert!(output.contains(">link</a>"));
     }
@@ -221,7 +234,8 @@ mod tests {
     #[test]
     fn test_add_furigana_nested_elements() {
         let html = "<div><p>text</p></div>";
-        let output = add_furigana_to_html(html);
+        let known_kanji = HashSet::new();
+        let output = add_furigana_to_html(html, &known_kanji);
         assert!(output.contains("<div>"));
         assert!(output.contains("<p>"));
         assert!(output.contains("text"));
@@ -232,7 +246,8 @@ mod tests {
     #[test]
     fn test_add_furigana_code_inside_p() {
         let html = "<p>text <code>code</code> more</p>";
-        let output = add_furigana_to_html(html);
+        let known_kanji = HashSet::new();
+        let output = add_furigana_to_html(html, &known_kanji);
         assert!(output.contains("text"));
         assert!(output.contains("<code>code</code>"));
         assert!(output.contains("more"));

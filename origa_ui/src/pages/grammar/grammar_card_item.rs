@@ -4,11 +4,20 @@ use crate::ui_components::{
     HeadingLevel, HistoryButton, MarkdownText, Tag, Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
-use origa::domain::{Card as DomainCard, StudyCard};
+use origa::domain::{Card as DomainCard, StudyCard, User};
 use ulid::Ulid;
 
 #[component]
 pub fn GrammarCardItem(study_card: StudyCard, on_toggle_favorite: Callback<Ulid>) -> impl IntoView {
+    let current_user = use_context::<RwSignal<Option<User>>>().expect("current_user context");
+
+    let known_kanji = Memo::new(move |_| {
+        current_user
+            .get()
+            .map(|u| u.knowledge_set().get_known_kanji())
+            .unwrap_or_default()
+    });
+
     let card = study_card.card();
     let card_id = *study_card.card_id();
     let is_favorite = study_card.is_favorite();
@@ -46,7 +55,7 @@ pub fn GrammarCardItem(study_card: StudyCard, on_toggle_favorite: Callback<Ulid>
                 <div class="min-w-0 flex-1">
                     <div class="flex items-center gap-3 mb-2">
                         <Heading level=HeadingLevel::H4>
-                            <FuriganaText text=title.clone()/>
+                            <FuriganaText text=title.clone() known_kanji=known_kanji.get()/>
                         </Heading>
                         <Tag variant=Signal::derive(move || status.tag_variant())>
                             {status.label()}
@@ -58,7 +67,7 @@ pub fn GrammarCardItem(study_card: StudyCard, on_toggle_favorite: Callback<Ulid>
                         <HistoryButton on_click=Callback::new(move |_| is_history_open.set(true)) />
                     </div>
                     <CollapsibleDescription>
-                        <MarkdownText content=Signal::derive(move || description.clone())/>
+                        <MarkdownText content=Signal::derive(move || description.clone()) known_kanji=known_kanji.get()/>
                     </CollapsibleDescription>
 
                     <Text

@@ -1,18 +1,25 @@
+use std::collections::HashSet;
+
 use crate::domain::{
-    OrigaError,
     japanese::{JapaneseChar, JapaneseText},
     tokenizer::tokenize_text,
+    OrigaError,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FuriganaSegment {
     text: String,
     reading: Option<String>,
+    is_known: bool,
 }
 
 impl FuriganaSegment {
-    pub fn new(text: String, reading: Option<String>) -> Self {
-        Self { text, reading }
+    pub fn new(text: String, reading: Option<String>, is_known: bool) -> Self {
+        Self {
+            text,
+            reading,
+            is_known,
+        }
     }
 
     pub fn text(&self) -> &str {
@@ -26,9 +33,16 @@ impl FuriganaSegment {
     pub fn has_reading(&self) -> bool {
         self.reading.is_some()
     }
+
+    pub fn is_known(&self) -> bool {
+        self.is_known
+    }
 }
 
-pub fn furiganize_segments(text: &str) -> Result<Vec<FuriganaSegment>, OrigaError> {
+pub fn furiganize_segments(
+    text: &str,
+    known_kanji: &HashSet<String>,
+) -> Result<Vec<FuriganaSegment>, OrigaError> {
     let mut segments = Vec::new();
     let mut current_segment = String::new();
     let mut is_current_japanese = false;
@@ -43,9 +57,12 @@ pub fn furiganize_segments(text: &str) -> Result<Vec<FuriganaSegment>, OrigaErro
             current_segment.push(ch);
         } else {
             if is_current_japanese {
-                segments.extend(furiganize_clear_japanese_segments(&current_segment)?);
+                segments.extend(furiganize_clear_japanese_segments(
+                    &current_segment,
+                    known_kanji,
+                )?);
             } else {
-                segments.push(FuriganaSegment::new(current_segment.clone(), None));
+                segments.push(FuriganaSegment::new(current_segment.clone(), None, false));
             }
             current_segment.clear();
             current_segment.push(ch);
@@ -55,27 +72,42 @@ pub fn furiganize_segments(text: &str) -> Result<Vec<FuriganaSegment>, OrigaErro
 
     if !current_segment.is_empty() {
         if is_current_japanese {
-            segments.extend(furiganize_clear_japanese_segments(&current_segment)?);
+            segments.extend(furiganize_clear_japanese_segments(
+                &current_segment,
+                known_kanji,
+            )?);
         } else {
-            segments.push(FuriganaSegment::new(current_segment, None));
+            segments.push(FuriganaSegment::new(current_segment, None, false));
         }
     }
 
     Ok(segments)
 }
 
-fn furiganize_clear_japanese_segments(text: &str) -> Result<Vec<FuriganaSegment>, OrigaError> {
+fn furiganize_clear_japanese_segments(
+    text: &str,
+    known_kanji: &HashSet<String>,
+) -> Result<Vec<FuriganaSegment>, OrigaError> {
     let tokens = tokenize_text(text)?;
     let mut segments = Vec::new();
 
     for token in tokens {
-        let segment = if token.orthographic_surface_form().contains_kanji() {
+        let surface = token.orthographic_surface_form();
+        let contains_kanji = surface.contains_kanji();
+
+        let segment = if contains_kanji {
+            let has_known_kanji = surface
+                .chars()
+                .filter(|c| c.is_kanji())
+                .all(|c| known_kanji.contains(&c.to_string()));
+
             FuriganaSegment::new(
-                token.orthographic_surface_form().to_string(),
+                surface.to_string(),
                 Some(token.phonological_surface_form().to_string()),
+                has_known_kanji,
             )
         } else {
-            FuriganaSegment::new(token.orthographic_surface_form().to_string(), None)
+            FuriganaSegment::new(surface.to_string(), None, false)
         };
         segments.push(segment);
     }
@@ -87,17 +119,20 @@ pub fn furiganize_text_html(segments: &[FuriganaSegment]) -> String {
     segments
         .iter()
         .map(|seg| match &seg.reading {
-            Some(reading) => format!(
-                "<ruby>{}<rp>(</rp><rt>{}</rt><rp>)</rp></ruby>",
-                seg.text, reading
-            ),
+            Some(reading) => {
+                let class = if seg.is_known { "furigana-hidden" } else { "" };
+                format!(
+                    "<ruby class=\"{}\">{}<rp>(</rp><rt class=\"furigana-rt\">{}</rt><rp>)</rp></ruby>",
+                    class, seg.text, reading
+                )
+            }
             None => seg.text.clone(),
         })
         .collect()
 }
 
-pub fn furiganize_text(text: &str) -> Result<String, OrigaError> {
-    let segments = furiganize_segments(text)?;
+pub fn furiganize_text(text: &str, known_kanji: &HashSet<String>) -> Result<String, OrigaError> {
+    let segments = furiganize_segments(text, known_kanji)?;
     Ok(furiganize_text_html(&segments))
 }
 
@@ -108,7 +143,7 @@ mod tests {
     use flate2::read::DeflateDecoder;
 
     use super::*;
-    use crate::domain::{DictionaryData, init_dictionary, is_dictionary_loaded};
+    use crate::domain::{init_dictionary, is_dictionary_loaded, DictionaryData};
 
     fn decompress(data: Vec<u8>) -> Vec<u8> {
         let mut decoder = DeflateDecoder::new(&data[..]);
@@ -165,24 +200,32 @@ mod tests {
 
     #[test]
     fn should_create_segment_with_reading() {
-        let segment = FuriganaSegment::new("食べ".to_string(), Some("タベ".to_string()));
+        let segment = FuriganaSegment::new("食べ".to_string(), Some("タベ".to_string()), false);
         assert_eq!(segment.text(), "食べ");
         assert_eq!(segment.reading(), Some("タベ"));
         assert!(segment.has_reading());
+        assert!(!segment.is_known());
     }
 
     #[test]
     fn should_create_segment_without_reading() {
-        let segment = FuriganaSegment::new("たべ".to_string(), None);
+        let segment = FuriganaSegment::new("たべ".to_string(), None, false);
         assert_eq!(segment.text(), "たべ");
         assert_eq!(segment.reading(), None);
         assert!(!segment.has_reading());
     }
 
     #[test]
+    fn should_create_segment_with_known_kanji() {
+        let segment = FuriganaSegment::new("食".to_string(), Some("ショク".to_string()), true);
+        assert!(segment.is_known());
+    }
+
+    #[test]
     fn should_furiganize_kanji_word_with_reading() {
         ensure_dictionary();
-        let segments = furiganize_segments("食べ物").unwrap();
+        let known_kanji = HashSet::new();
+        let segments = furiganize_segments("食べ物", &known_kanji).unwrap();
         assert!(!segments.is_empty());
         assert!(segments.iter().any(|s| s.has_reading()));
     }
@@ -190,7 +233,8 @@ mod tests {
     #[test]
     fn should_furiganize_hiragana_without_reading() {
         ensure_dictionary();
-        let segments = furiganize_segments("たべもの").unwrap();
+        let known_kanji = HashSet::new();
+        let segments = furiganize_segments("たべもの", &known_kanji).unwrap();
         assert!(!segments.is_empty());
         assert!(segments.iter().all(|s| !s.has_reading()));
     }
@@ -198,13 +242,15 @@ mod tests {
     #[test]
     fn should_furiganize_mixed_text() {
         ensure_dictionary();
-        let segments = furiganize_segments("食べます").unwrap();
+        let known_kanji = HashSet::new();
+        let segments = furiganize_segments("食べます", &known_kanji).unwrap();
         assert!(!segments.is_empty());
     }
 
     #[test]
     fn should_furiganize_non_japanese_text() {
-        let segments = furiganize_segments("hello").unwrap();
+        let known_kanji = HashSet::new();
+        let segments = furiganize_segments("hello", &known_kanji).unwrap();
         assert_eq!(segments.len(), 1);
         assert_eq!(segments[0].text(), "hello");
         assert!(!segments[0].has_reading());
@@ -213,18 +259,15 @@ mod tests {
     #[test]
     fn should_furiganize_mixed_japanese_and_ascii() {
         ensure_dictionary();
-        let segments = furiganize_segments("hello食べ物world").unwrap();
+        let known_kanji = HashSet::new();
+        let segments = furiganize_segments("hello食べ物world", &known_kanji).unwrap();
         assert!(!segments.is_empty());
-        assert!(
-            segments
-                .iter()
-                .any(|s| s.text() == "hello" && !s.has_reading())
-        );
-        assert!(
-            segments
-                .iter()
-                .any(|s| s.text() == "world" && !s.has_reading())
-        );
+        assert!(segments
+            .iter()
+            .any(|s| s.text() == "hello" && !s.has_reading()));
+        assert!(segments
+            .iter()
+            .any(|s| s.text() == "world" && !s.has_reading()));
     }
 
     #[test]
@@ -232,14 +275,18 @@ mod tests {
         let segments = vec![FuriganaSegment::new(
             "食".to_string(),
             Some("ショク".to_string()),
+            false,
         )];
         let html = furiganize_text_html(&segments);
-        assert_eq!(html, "<ruby>食<rp>(</rp><rt>ショク</rt><rp>)</rp></ruby>");
+        assert_eq!(
+            html,
+            "<ruby class=\"\">食<rp>(</rp><rt class=\"furigana-rt\">ショク</rt><rp>)</rp></ruby>"
+        );
     }
 
     #[test]
     fn should_generate_html_for_segment_without_reading() {
-        let segments = vec![FuriganaSegment::new("たべ".to_string(), None)];
+        let segments = vec![FuriganaSegment::new("たべ".to_string(), None, false)];
         let html = furiganize_text_html(&segments);
         assert_eq!(html, "たべ");
     }
@@ -247,18 +294,81 @@ mod tests {
     #[test]
     fn should_generate_html_for_mixed_segments() {
         let segments = vec![
-            FuriganaSegment::new("食".to_string(), Some("ショク".to_string())),
-            FuriganaSegment::new("べ".to_string(), None),
+            FuriganaSegment::new("食".to_string(), Some("ショク".to_string()), false),
+            FuriganaSegment::new("べ".to_string(), None, false),
         ];
         let html = furiganize_text_html(&segments);
-        assert_eq!(html, "<ruby>食<rp>(</rp><rt>ショク</rt><rp>)</rp></ruby>べ");
+        assert_eq!(
+            html,
+            "<ruby class=\"\">食<rp>(</rp><rt class=\"furigana-rt\">ショク</rt><rp>)</rp></ruby>べ"
+        );
+    }
+
+    #[test]
+    fn should_generate_html_with_hidden_furigana_for_known_kanji() {
+        let segments = vec![FuriganaSegment::new(
+            "食".to_string(),
+            Some("ショク".to_string()),
+            true,
+        )];
+        let html = furiganize_text_html(&segments);
+        assert_eq!(
+            html,
+            "<ruby class=\"furigana-hidden\">食<rp>(</rp><rt class=\"furigana-rt\">ショク</rt><rp>)</rp></ruby>"
+        );
     }
 
     #[test]
     fn should_furiganize_text_backwards_compatible() {
         ensure_dictionary();
-        let result = furiganize_text("食べ物").unwrap();
-        assert!(result.contains("<ruby>"));
-        assert!(result.contains("<rt>"));
+        let known_kanji = HashSet::new();
+        let result = furiganize_text("食べ物", &known_kanji).unwrap();
+        assert!(result.contains("<ruby"));
+        assert!(result.contains("<rt class=\"furigana-rt\">"));
+    }
+
+    #[test]
+    fn should_show_furigana_when_only_partial_kanji_known() {
+        ensure_dictionary();
+        let mut known_kanji = HashSet::new();
+        known_kanji.insert("食".to_string());
+
+        let segments = furiganize_segments("食べ物", &known_kanji).unwrap();
+
+        let food_segment = segments.iter().find(|s| s.text() == "食べ物");
+        assert!(food_segment.is_some());
+        let segment = food_segment.unwrap();
+        assert!(segment.has_reading());
+        assert!(!segment.is_known());
+    }
+
+    #[test]
+    fn should_show_furigana_when_no_kanji_known() {
+        ensure_dictionary();
+        let known_kanji = HashSet::new();
+
+        let segments = furiganize_segments("食べ物", &known_kanji).unwrap();
+
+        let food_segment = segments.iter().find(|s| s.text() == "食べ物");
+        assert!(food_segment.is_some());
+        let segment = food_segment.unwrap();
+        assert!(segment.has_reading());
+        assert!(!segment.is_known());
+    }
+
+    #[test]
+    fn should_hide_furigana_when_all_kanji_known() {
+        ensure_dictionary();
+        let mut known_kanji = HashSet::new();
+        known_kanji.insert("食".to_string());
+        known_kanji.insert("物".to_string());
+
+        let segments = furiganize_segments("食べ物", &known_kanji).unwrap();
+
+        let food_segment = segments.iter().find(|s| s.text() == "食べ物");
+        assert!(food_segment.is_some());
+        let segment = food_segment.unwrap();
+        assert!(segment.has_reading());
+        assert!(segment.is_known());
     }
 }
