@@ -13,6 +13,7 @@ pub fn LessonCardAnswer(
     content_ref: NodeRef<leptos::html::Div>,
     on_toggle: Callback<()>,
     is_kanji: bool,
+    is_reversed: bool,
 ) -> impl IntoView {
     let question = StoredValue::new(question_text);
     let answer = StoredValue::new(answer_text);
@@ -21,7 +22,17 @@ pub fn LessonCardAnswer(
         <div class="text-center">
             <Show when=move || !is_kanji>
                 <Heading level=HeadingLevel::H3 class="mb-2">
-                    <FuriganaText text=question.get_value()/>
+                    <Show
+                        when=move || is_reversed
+                        fallback=move || {
+                            view! { <FuriganaText text=question.get_value()/> }
+                        }
+                    >
+                        <MarkdownText
+                            content=Signal::derive(move || question.get_value())
+                            variant=Signal::derive(|| MarkdownVariant::Large)
+                        />
+                    </Show>
                 </Heading>
             </Show>
 
@@ -32,10 +43,19 @@ pub fn LessonCardAnswer(
                 <Text size=TextSize::Default variant=TypographyVariant::Muted class="mb-2">
                     "Ответ:"
                 </Text>
-                <MarkdownText
-                    content=Signal::derive(move || answer.get_value())
-                    variant=Signal::derive(|| MarkdownVariant::Large)
-                />
+                <Show
+                    when=move || is_reversed
+                    fallback=move || {
+                        view! {
+                            <MarkdownText
+                                content=Signal::derive(move || answer.get_value())
+                                variant=Signal::derive(|| MarkdownVariant::Large)
+                            />
+                        }
+                    }
+                >
+                    <FuriganaText text=answer.get_value()/>
+                </Show>
             </div>
 
             <Show when=move || needs_collapse.get()>
