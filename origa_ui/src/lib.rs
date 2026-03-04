@@ -1,5 +1,5 @@
 use tracing::Level;
-use tracing_subscriber::{layer::SubscriberExt, Registry};
+use tracing_subscriber::{Registry, layer::SubscriberExt};
 use tracing_wasm::{ConsoleConfig, WASMLayer, WASMLayerConfigBuilder};
 
 pub mod app;

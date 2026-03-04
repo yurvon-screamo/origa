@@ -44,7 +44,7 @@ mod typography;
 pub use alert::{Alert, AlertType};
 pub use audio_buttons::AudioButtons;
 pub use avatar::Avatar;
-pub use button::{Button, ButtonVariant};
+pub use button::{Button, ButtonSize, ButtonVariant};
 pub use card::Card;
 pub use card_history_modal::CardHistoryModal;
 pub use chart::LineChart;
