@@ -77,7 +77,7 @@ impl OAuthProvider {
     pub fn as_str(&self) -> &'static str {
         match self {
             OAuthProvider::Google => "google",
-            OAuthProvider::Yandex => "openid_connect",
+            OAuthProvider::Yandex => "oidc0",
         }
     }
 }
@@ -186,7 +186,7 @@ impl TrailBaseClient {
     pub fn get_oauth_url(provider: &str, redirect_uri: &str) -> String {
         let encoded = urlencoding::encode(redirect_uri);
         format!(
-            "{}/api/auth/v1/authorize?provider={}&redirect_to={}",
+            "{}/api/auth/v1/oauth/{}/login?redirect_uri={}",
             TRAILBASE_URL, provider, encoded
         )
     }
