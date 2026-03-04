@@ -68,8 +68,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN mkdir -p /var/lib/nginx/body /var/lib/nginx/fastcgi /var/lib/nginx/proxy /var/lib/nginx/scgi /var/lib/nginx/uwsgi \
     && chown -R www-data:www-data /var/lib/nginx \
-    && mkdir -p /var/log/nginx /var/run \
-    && chown -R www-data:www-data /var/log/nginx
+    && mkdir -p /var/log/nginx /tmp \
+    && chown -R www-data:www-data /var/log/nginx \
+    && chown -R www-data:www-data /tmp
 
 COPY origa_ui/nginx.conf /etc/nginx/nginx.conf
 
@@ -78,11 +79,11 @@ COPY --from=builder /dist /usr/share/nginx/html
 RUN chown -R www-data:www-data /usr/share/nginx/html && \
     chmod -R 755 /usr/share/nginx/html
 
-EXPOSE 80
+EXPOSE 8080
 
 USER www-data
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost/ || exit 1
+    CMD curl -f http://localhost:8080/ || exit 1
 
 CMD ["nginx", "-g", "daemon off;"]
