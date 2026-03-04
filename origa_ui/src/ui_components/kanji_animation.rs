@@ -84,18 +84,18 @@ pub fn KanjiAnimation(kanji: String, #[prop(optional)] mode: KanjiViewMode) -> i
                 move || set_iteration.update(|n| *n += 1),
                 Duration::from_millis(1500),
             );
-        } else if let Some(Some(svg_html)) = svg_content.get() {
-            if matches!(mode, KanjiViewMode::Animation) {
-                let bg_count = svg_html.matches("class=\"bg\"").count();
-                let path_count = svg_html.matches("<path").count();
-                let strokes = path_count.saturating_sub(bg_count).max(1);
-                let total_duration = strokes as f32 * stroke_time + 0.5;
+        } else if let Some(Some(svg_html)) = svg_content.get()
+            && matches!(mode, KanjiViewMode::Animation)
+        {
+            let bg_count = svg_html.matches("class=\"bg\"").count();
+            let path_count = svg_html.matches("<path").count();
+            let strokes = path_count.saturating_sub(bg_count).max(1);
+            let total_duration = strokes as f32 * stroke_time + 0.5;
 
-                set_timeout(
-                    move || set_iteration.update(|n| *n += 1),
-                    Duration::from_secs_f32(total_duration),
-                );
-            }
+            set_timeout(
+                move || set_iteration.update(|n| *n += 1),
+                Duration::from_secs_f32(total_duration),
+            );
         }
     });
 

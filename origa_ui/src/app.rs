@@ -122,21 +122,17 @@ fn setup_oauth_listener(ctx: AuthContext) {
 
     if let Some(window) = web_sys::window() {
         let tauri = js_sys::Reflect::get(&window, &JsValue::from_str("__TAURI__")).ok();
-        if let Some(tauri_obj) = tauri {
-            if let Ok(event_mod) = js_sys::Reflect::get(&tauri_obj, &JsValue::from_str("event")) {
-                if let Ok(listen_fn) =
-                    js_sys::Reflect::get(&event_mod, &JsValue::from_str("listen"))
-                {
-                    if let Ok(listen_fn) = listen_fn.dyn_into::<js_sys::Function>() {
-                        let event_name = JsValue::from_str("deep-link-received");
-                        let handler = callback.as_ref().clone();
-                        let _ = listen_fn.call2(&JsValue::UNDEFINED, &event_name, &handler);
-                        callback.forget();
-                        info!("Tauri deep-link listener registered");
-                        return;
-                    }
-                }
-            }
+        if let Some(tauri_obj) = tauri
+            && let Ok(event_mod) = js_sys::Reflect::get(&tauri_obj, &JsValue::from_str("event"))
+            && let Ok(listen_fn) = js_sys::Reflect::get(&event_mod, &JsValue::from_str("listen"))
+            && let Ok(listen_fn) = listen_fn.dyn_into::<js_sys::Function>()
+        {
+            let event_name = JsValue::from_str("deep-link-received");
+            let handler = callback.as_ref().clone();
+            let _ = listen_fn.call2(&JsValue::UNDEFINED, &event_name, &handler);
+            callback.forget();
+            info!("Tauri deep-link listener registered");
+            return;
         }
     }
 
@@ -147,26 +143,25 @@ fn setup_oauth_listener(ctx: AuthContext) {
 fn check_url_oauth_callback(ctx: &AuthContext) {
     use crate::pages::login::auth_handlers::handle_oauth_callback;
 
-    if let Some(window) = web_sys::window() {
-        if let Ok(hash) = window.location().hash() {
-            if hash.contains("access_token=") {
-                let fragment = hash.trim_start_matches('#').to_string();
-                let ctx_clone = ctx.clone();
-                spawn_local(async move {
-                    match handle_oauth_callback(&fragment, &ctx_clone).await {
-                        Ok(user) => {
-                            ctx_clone.current_user.set(Some(user));
-                            if let Some(window) = web_sys::window() {
-                                let _ = window.location().set_href("/home");
-                            }
-                        }
-                        Err(e) => {
-                            error!("URL OAuth callback error: {}", e);
-                        }
+    if let Some(window) = web_sys::window()
+        && let Ok(hash) = window.location().hash()
+        && hash.contains("access_token=")
+    {
+        let fragment = hash.trim_start_matches('#').to_string();
+        let ctx_clone = ctx.clone();
+        spawn_local(async move {
+            match handle_oauth_callback(&fragment, &ctx_clone).await {
+                Ok(user) => {
+                    ctx_clone.current_user.set(Some(user));
+                    if let Some(window) = web_sys::window() {
+                        let _ = window.location().set_href("/home");
                     }
-                });
+                }
+                Err(e) => {
+                    error!("URL OAuth callback error: {}", e);
+                }
             }
-        }
+        });
     }
 }
 

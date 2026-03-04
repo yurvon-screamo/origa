@@ -35,7 +35,7 @@ pub fn AddWordsPreviewModal(is_open: RwSignal<bool>) -> impl IntoView {
                                 input_text=input_text
                                 is_analyzing=is_analyzing
                                 error_message=error_message
-                                on_analyze=handlers.on_analyze.clone()
+                                on_analyze=handlers.on_analyze
                             />
                         }.into_any()
                     } else {
@@ -44,9 +44,9 @@ pub fn AddWordsPreviewModal(is_open: RwSignal<bool>) -> impl IntoView {
                                 analyzed_words=words
                                 selected_words=selected_words
                                 is_creating=is_creating
-                                on_word_toggle=handlers.on_word_toggle.clone()
-                                on_cancel=handlers.on_cancel.clone()
-                                on_create=handlers.on_create.clone()
+                                on_word_toggle=handlers.on_word_toggle
+                                on_cancel=handlers.on_cancel
+                                on_create=handlers.on_create
                             />
                         }.into_any()
                     }
