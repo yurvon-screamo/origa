@@ -1,5 +1,5 @@
 use leptos::wasm_bindgen::JsCast;
-use origa::domain::furiganize_segments;
+use origa::domain::{filter_japanese_text, furiganize_segments};
 use web_sys::{SpeechSynthesisUtterance, SpeechSynthesisVoice, window};
 
 pub fn is_speech_supported() -> bool {
@@ -7,6 +7,9 @@ pub fn is_speech_supported() -> bool {
 }
 
 pub fn speak_text(text: &str, rate: f32) -> Result<(), String> {
+    if text.is_empty() {
+        return Ok(());
+    }
     let window = window().ok_or("Window not available")?;
     let synthesis = window
         .speech_synthesis()
@@ -27,7 +30,11 @@ pub fn speak_text(text: &str, rate: f32) -> Result<(), String> {
 }
 
 pub fn get_reading_from_text(text: &str) -> String {
-    furiganize_segments(text)
+    let filtered_text = filter_japanese_text(text);
+    if filtered_text.is_empty() {
+        return "".to_string();
+    }
+    furiganize_segments(&filtered_text)
         .map(|segments| {
             segments
                 .iter()
@@ -38,7 +45,7 @@ pub fn get_reading_from_text(text: &str) -> String {
                 })
                 .collect::<String>()
         })
-        .unwrap_or_else(|_| text.to_string())
+        .unwrap_or_else(|_| filtered_text)
 }
 
 fn get_japanese_voice(synthesis: &web_sys::SpeechSynthesis) -> Option<SpeechSynthesisVoice> {
