@@ -103,4 +103,19 @@ impl ModalState {
         self.error_message.set(None);
         self.selected_rule_ids.set(HashSet::new());
     }
+
+    pub fn select_all(&self) {
+        let query = self.search_query.get().to_lowercase();
+        let rules = self.available_rules.get();
+        let filtered_ids: HashSet<Ulid> = rules
+            .iter()
+            .filter(|rule| {
+                query.is_empty()
+                    || rule.title.to_lowercase().contains(&query)
+                    || rule.short_description.to_lowercase().contains(&query)
+            })
+            .map(|rule| rule.rule_id)
+            .collect();
+        self.selected_rule_ids.set(filtered_ids);
+    }
 }
