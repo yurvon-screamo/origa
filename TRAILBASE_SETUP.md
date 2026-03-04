@@ -8,26 +8,6 @@
 2. Перейдите в SQL Editor: `/_/admin/editor`
 3. Выполните SQL из файла `trailbase_schema.sql`:
 
-```sql
-CREATE TABLE user (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    auth_user_id TEXT UNIQUE NOT NULL,
-    username TEXT NOT NULL,
-    email TEXT NOT NULL,
-    native_language INTEGER NOT NULL DEFAULT 0,
-    jlpt_progress TEXT CHECK(json_valid(jlpt_progress)),
-    current_japanese_level INTEGER,
-    duolingo_jwt_token TEXT,
-    telegram_user_id INTEGER,
-    reminders_enabled INTEGER NOT NULL DEFAULT 0,
-    knowledge_set TEXT NOT NULL DEFAULT 'Default',
-    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-) STRICT;
-
-CREATE INDEX idx_user_auth_user_id ON user(auth_user_id);
-CREATE INDEX idx_user_email ON user(email);
-```
-
 ### 2. Настройка OAuth провайдеров
 
 1. В Admin Panel перейдите в раздел **Auth** → **Providers**
