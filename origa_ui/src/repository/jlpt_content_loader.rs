@@ -3,7 +3,6 @@ use std::sync::OnceLock;
 use origa::application::JlptContent;
 use origa::domain::{JapaneseLevel, OrigaError};
 use serde::Deserialize;
-#[cfg(target_arch = "wasm32")]
 use web_sys::console;
 
 static JLPT_CONTENT: OnceLock<JlptContent> = OnceLock::new();
@@ -41,34 +40,31 @@ pub fn get_jlpt_content() -> Option<&'static JlptContent> {
     JLPT_CONTENT.get()
 }
 
-#[cfg(target_arch = "wasm32")]
 pub async fn load_jlpt_content() -> Result<(), OrigaError> {
     if JLPT_CONTENT.get().is_some() {
         return Ok(());
     }
 
-    let content = load_content_wasm().await?;
+    let content = load_content().await?;
 
     let _ = JLPT_CONTENT.set(content);
     console::info_1(&"JLPT content loaded".into());
     Ok(())
 }
 
-#[cfg(target_arch = "wasm32")]
-async fn load_content_wasm() -> Result<JlptContent, OrigaError> {
+async fn load_content() -> Result<JlptContent, OrigaError> {
     use leptos::wasm_bindgen::JsCast;
     use wasm_bindgen_futures::JsFuture;
 
     let mut content = JlptContent::new();
 
-    load_kanji_wasm(&mut content).await?;
-    load_words_wasm(&mut content).await?;
-    load_grammar_wasm(&mut content).await?;
+    load_kanji(&mut content).await?;
+    load_words(&mut content).await?;
+    load_grammar(&mut content).await?;
 
     Ok(content)
 }
 
-#[cfg(target_arch = "wasm32")]
 async fn fetch_text(url: &str) -> Result<String, OrigaError> {
     use leptos::wasm_bindgen::JsCast;
     use wasm_bindgen_futures::JsFuture;
@@ -109,8 +105,7 @@ async fn fetch_text(url: &str) -> Result<String, OrigaError> {
     })
 }
 
-#[cfg(target_arch = "wasm32")]
-async fn load_kanji_wasm(content: &mut JlptContent) -> Result<(), OrigaError> {
+async fn load_kanji(content: &mut JlptContent) -> Result<(), OrigaError> {
     let json = fetch_text("/public/domain/dictionary/kanji.json").await?;
     let data: KanjiDictionary =
         serde_json::from_str(&json).map_err(|e| OrigaError::RepositoryError {
@@ -130,8 +125,7 @@ async fn load_kanji_wasm(content: &mut JlptContent) -> Result<(), OrigaError> {
     Ok(())
 }
 
-#[cfg(target_arch = "wasm32")]
-async fn load_words_wasm(content: &mut JlptContent) -> Result<(), OrigaError> {
+async fn load_words(content: &mut JlptContent) -> Result<(), OrigaError> {
     let levels = [
         (JapaneseLevel::N5, "jltp_n5.json"),
         (JapaneseLevel::N4, "jltp_n4.json"),
@@ -161,8 +155,7 @@ async fn load_words_wasm(content: &mut JlptContent) -> Result<(), OrigaError> {
     Ok(())
 }
 
-#[cfg(target_arch = "wasm32")]
-async fn load_grammar_wasm(content: &mut JlptContent) -> Result<(), OrigaError> {
+async fn load_grammar(content: &mut JlptContent) -> Result<(), OrigaError> {
     let json = fetch_text("/public/domain/grammar/grammar.json").await?;
     let data: GrammarDictionary =
         serde_json::from_str(&json).map_err(|e| OrigaError::RepositoryError {
@@ -179,21 +172,6 @@ async fn load_grammar_wasm(content: &mut JlptContent) -> Result<(), OrigaError> 
         }
     }
 
-    Ok(())
-}
-
-#[cfg(not(target_arch = "wasm32"))]
-pub fn load_jlpt_content() -> Result<(), OrigaError> {
-    if JLPT_CONTENT.get().is_some() {
-        return Ok(());
-    }
-
-    let content =
-        origa::application::JlptContentLoader::load().map_err(|e| OrigaError::RepositoryError {
-            reason: format!("Failed to load JLPT content: {}", e),
-        })?;
-
-    let _ = JLPT_CONTENT.set(content);
     Ok(())
 }
 
