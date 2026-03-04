@@ -5,10 +5,12 @@ use super::on_quiz_select::create_on_quiz_select;
 use super::on_rate::create_on_rate_callback;
 use super::quiz_card::QuizCardView;
 use super::rating_buttons_view::RatingButtonsView;
+use leptos::ev::HTMLElement;
 use leptos::prelude::*;
 use origa::domain::LessonCardView;
 use origa::domain::User;
 use ulid::Ulid;
+use wasm_bindgen::JsCast;
 
 #[component]
 pub fn LessonCardContainer() -> impl IntoView {
