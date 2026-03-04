@@ -1,5 +1,6 @@
 use crate::ui_components::{Checkbox, FuriganaText, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
+use origa::domain::User;
 use std::collections::HashSet;
 
 #[component]
@@ -10,6 +11,15 @@ pub fn SetWordItem(
     selected_words: RwSignal<HashSet<String>>,
     on_toggle: Callback<()>,
 ) -> impl IntoView {
+    let current_user = use_context::<RwSignal<Option<User>>>().expect("current_user context");
+
+    let known_kanji = Memo::new(move |_| {
+        current_user
+            .get()
+            .map(|u| u.knowledge_set().get_known_kanji())
+            .unwrap_or_default()
+    });
+
     let word_for_memo = word.clone();
     let is_selected = Memo::new(move |_| selected_words.get().contains(&word_for_memo));
 
@@ -28,7 +38,7 @@ pub fn SetWordItem(
                     checked=Signal::derive(move || is_selected.get())
                     on_change=Callback::new(move |_| on_toggle.run(()))
                 />
-                <FuriganaText text=word.clone()/>
+                <FuriganaText text=word.clone() known_kanji=known_kanji.get()/>
                 <span class=status_class>{status_text}</span>
             </div>
             {move || {

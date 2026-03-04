@@ -3,6 +3,7 @@ use crate::ui_components::{
     Text, TextSize, TypographyVariant,
 };
 use leptos::{ev::MouseEvent, prelude::*};
+use origa::domain::User;
 
 #[component]
 pub fn LessonCardAnswer(
@@ -15,6 +16,15 @@ pub fn LessonCardAnswer(
     is_kanji: bool,
     is_reversed: bool,
 ) -> impl IntoView {
+    let current_user = use_context::<RwSignal<Option<User>>>().expect("current_user context");
+
+    let known_kanji = Memo::new(move |_| {
+        current_user
+            .get()
+            .map(|u| u.knowledge_set().get_known_kanji())
+            .unwrap_or_default()
+    });
+
     let question = StoredValue::new(question_text);
     let answer = StoredValue::new(answer_text);
 
@@ -25,12 +35,13 @@ pub fn LessonCardAnswer(
                     <Show
                         when=move || is_reversed
                         fallback=move || {
-                            view! { <FuriganaText text=question.get_value()/> }
+                            view! { <FuriganaText text=question.get_value() known_kanji=known_kanji.get()/> }
                         }
                     >
                         <MarkdownText
                             content=Signal::derive(move || question.get_value())
                             variant=Signal::derive(|| MarkdownVariant::Large)
+                            known_kanji=known_kanji.get()
                         />
                     </Show>
                 </Heading>
@@ -50,11 +61,12 @@ pub fn LessonCardAnswer(
                             <MarkdownText
                                 content=Signal::derive(move || answer.get_value())
                                 variant=Signal::derive(|| MarkdownVariant::Large)
+                                known_kanji=known_kanji.get()
                             />
                         }
                     }
                 >
-                    <FuriganaText text=answer.get_value()/>
+                    <FuriganaText text=answer.get_value() known_kanji=known_kanji.get()/>
                 </Show>
             </div>
 

@@ -1,6 +1,7 @@
 use crate::ui_components::{MarkdownText, MarkdownVariant, Text, TextSize};
 use leptos::prelude::*;
 use origa::domain::QuizOption;
+use origa::domain::User;
 
 use super::quiz_result::QuizResult;
 
@@ -12,6 +13,14 @@ pub fn QuizOptions(
     quiz_result: QuizResult,
     on_select_option: Callback<usize>,
 ) -> impl IntoView {
+    let current_user = use_context::<RwSignal<Option<User>>>().expect("current_user context");
+
+    let known_kanji = Memo::new(move |_| {
+        current_user
+            .get()
+            .map(|u| u.knowledge_set().get_known_kanji())
+            .unwrap_or_default()
+    });
     view! {
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {move || {
@@ -48,6 +57,7 @@ pub fn QuizOptions(
                                         <MarkdownText
                                             content=Signal::derive(move || option_text.clone())
                                             variant=MarkdownVariant::Compact
+                                            known_kanji=known_kanji.get()
                                         />
                                     </Text>
                                     <Show when=move || !show_result>

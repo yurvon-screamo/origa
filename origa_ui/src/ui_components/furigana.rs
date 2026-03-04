@@ -1,12 +1,15 @@
+use std::collections::HashSet;
+
 use leptos::prelude::*;
-use origa::domain::{FuriganaSegment, furiganize_segments};
+use origa::domain::{furiganize_segments, FuriganaSegment};
 
 #[component]
 pub fn FuriganaText(
     #[prop(into)] text: String,
+    known_kanji: HashSet<String>,
     #[prop(optional, into, default = String::new().into())] class: Signal<String>,
 ) -> impl IntoView {
-    let segments = move || furiganize_segments(&text).unwrap_or_else(|_| vec![]);
+    let segments = move || furiganize_segments(&text, &known_kanji).unwrap_or_else(|_| vec![]);
 
     view! {
         <span class=move || format!("furigana-text {}", class.get())>
@@ -18,24 +21,32 @@ pub fn FuriganaText(
                 {move || {
                     let text = segment.text().to_string();
                     let reading = segment.reading().map(|r| r.to_string());
-                    render_segment(text, reading)
+                    let is_known = segment.is_known();
+                    render_segment(text, reading, is_known)
                 }}
             </For>
         </span>
     }
 }
 
-fn render_segment(text: String, reading: Option<String>) -> impl IntoView {
+fn render_segment(text: String, reading: Option<String>, is_known: bool) -> impl IntoView {
     match reading {
-        Some(reading) => view! {
-            <ruby class="furigana-ruby">
-                {text}
-                <rp>"("</rp>
-                <rt class="furigana-rt">{reading}</rt>
-                <rp>")"</rp>
-            </ruby>
+        Some(reading) => {
+            let class = if is_known {
+                "furigana-hidden furigana-ruby"
+            } else {
+                "furigana-ruby"
+            };
+            view! {
+                <ruby class=class>
+                    {text}
+                    <rp>"("</rp>
+                    <rt class="furigana-rt">{reading}</rt>
+                    <rp>")"</rp>
+                </ruby>
+            }
+            .into_any()
         }
-        .into_any(),
         None => view! {
             <span class="furigana-plain">{text}</span>
         }

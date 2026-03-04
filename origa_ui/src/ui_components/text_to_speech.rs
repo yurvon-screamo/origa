@@ -1,6 +1,8 @@
+use std::collections::HashSet;
+
 use leptos::wasm_bindgen::JsCast;
 use origa::domain::{filter_japanese_text, furiganize_segments};
-use web_sys::{SpeechSynthesisUtterance, SpeechSynthesisVoice, window};
+use web_sys::{window, SpeechSynthesisUtterance, SpeechSynthesisVoice};
 
 pub fn is_speech_supported() -> bool {
     window().and_then(|w| w.speech_synthesis().ok()).is_some()
@@ -30,11 +32,15 @@ pub fn speak_text(text: &str, rate: f32) -> Result<(), String> {
 }
 
 pub fn get_reading_from_text(text: &str) -> String {
+    get_reading_from_text_with_known_kanji(text, &HashSet::new())
+}
+
+pub fn get_reading_from_text_with_known_kanji(text: &str, known_kanji: &HashSet<String>) -> String {
     let filtered_text = filter_japanese_text(text);
     if filtered_text.is_empty() {
         return "".to_string();
     }
-    furiganize_segments(&filtered_text)
+    furiganize_segments(&filtered_text, known_kanji)
         .map(|segments| {
             segments
                 .iter()
