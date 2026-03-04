@@ -37,4 +37,4 @@ Builded with Rust only.
 
 ## License
 
-Application is licensed under [AGPL-3.0](./LICENSE).
+Application is licensed under [Business Source License 1.1](./LICENSE).
