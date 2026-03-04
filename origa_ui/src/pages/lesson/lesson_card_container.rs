@@ -5,12 +5,10 @@ use super::on_quiz_select::create_on_quiz_select;
 use super::on_rate::create_on_rate_callback;
 use super::quiz_card::QuizCardView;
 use super::rating_buttons_view::RatingButtonsView;
-use leptos::ev::HTMLElement;
 use leptos::prelude::*;
 use origa::domain::LessonCardView;
 use origa::domain::User;
 use ulid::Ulid;
-use wasm_bindgen::JsCast;
 
 #[component]
 pub fn LessonCardContainer() -> impl IntoView {
@@ -56,8 +54,16 @@ pub fn LessonCardContainer() -> impl IntoView {
             .unwrap_or(false)
     });
 
+    let container_ref = NodeRef::<leptos::html::Div>::new();
+
+    Effect::new(move |_| {
+        if let Some(el) = container_ref.get() {
+            let _ = el.focus();
+        }
+    });
+
     view! {
-        <div class="outline-none" tabindex="0" on:keydown=handle_keydown>
+        <div class="outline-none" tabindex="0" node_ref=container_ref on:keydown=handle_keydown>
             <Show when=move || current_card_view.get().is_some()>
                 <Show when=move || !is_quiz_mode.get()>
                     {move || {
