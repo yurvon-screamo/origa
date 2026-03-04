@@ -68,8 +68,35 @@ impl DailyHistoryItem {
         self.high_difficulty_words
     }
 
+    pub fn lessons_completed(&self) -> usize {
+        self.lessons_completed
+    }
+
     #[allow(clippy::too_many_arguments)]
     pub fn update(
+        &mut self,
+        avg_stability: f64,
+        avg_difficulty: f64,
+        total_words: usize,
+        known_words: usize,
+        new_words: usize,
+        in_progress_words: usize,
+        high_difficulty_words: usize,
+    ) {
+        self.update_stats(
+            avg_stability,
+            avg_difficulty,
+            total_words,
+            known_words,
+            new_words,
+            in_progress_words,
+            high_difficulty_words,
+        );
+        self.lessons_completed += 1;
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub fn update_stats(
         &mut self,
         avg_stability: f64,
         avg_difficulty: f64,
@@ -86,6 +113,5 @@ impl DailyHistoryItem {
         self.new_words = new_words;
         self.in_progress_words = in_progress_words;
         self.high_difficulty_words = high_difficulty_words;
-        self.lessons_completed += 1;
     }
 }
