@@ -5,7 +5,9 @@ use super::error_alert::ErrorAlert;
 use super::level_selector::LevelSelector;
 use super::rules_list::RulesList;
 use super::selected_count::SelectedCount;
-use crate::ui_components::{Modal, Search, Text, TextSize, TypographyVariant};
+use crate::ui_components::{
+    Button, ButtonSize, ButtonVariant, Modal, Search, Text, TextSize, TypographyVariant,
+};
 use leptos::prelude::*;
 use origa::domain::JapaneseLevel;
 
@@ -49,9 +51,21 @@ pub fn AddGrammarModal(is_open: RwSignal<bool>) -> impl IntoView {
                 />
 
                 <div>
-                    <Text size=TextSize::Small variant=TypographyVariant::Muted class=Signal::derive(|| "mb-2".to_string())>
-                        "Доступные правила"
-                    </Text>
+                    <div class="flex items-center justify-between mb-2">
+                        <Text size=TextSize::Small variant=TypographyVariant::Muted>
+                            "Доступные правила"
+                        </Text>
+                        <Button
+                            variant=Signal::derive(|| ButtonVariant::Ghost)
+                            size=Signal::derive(|| ButtonSize::Small)
+                            on_click=Callback::new({
+                                let state = state.clone();
+                                move |_| state.select_all()
+                            })
+                        >
+                            "Выделить все"
+                        </Button>
+                    </div>
                     {move || {
                         let is_loading = state.is_loading_rules.get();
                         let rules = state.available_rules.get();

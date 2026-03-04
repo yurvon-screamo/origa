@@ -92,7 +92,7 @@ impl ModalState {
             .available_kanji
             .get()
             .iter()
-            .map(|k| k.kanji.clone())
+            .map(|k| k.kanji.to_string())
             .collect();
         self.selected_kanji.set(all_kanji);
     }

@@ -1,9 +1,9 @@
+use super::LoginMode;
 use super::auth_handlers::handle_login;
 use super::email_input::EmailInput;
 use super::error_message::ErrorMessage;
 use super::oauth_buttons::OAuthButtons;
 use super::password_input::PasswordInput;
-use super::LoginMode;
 use crate::ui_components::{Button, ButtonVariant};
 use leptos::prelude::*;
 
