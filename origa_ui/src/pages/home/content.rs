@@ -59,9 +59,8 @@ pub fn HomeContent() -> impl IntoView {
         Signal::derive(move || format_delta(stats.get().map(|s| s.total_cards_delta).unwrap_or(0)));
     let learned_delta =
         Signal::derive(move || format_delta(stats.get().map(|s| s.learned_delta).unwrap_or(0)));
-    let in_progress_delta = Signal::derive(move || {
-        format_delta(stats.get().map(|s| s.in_progress_delta).unwrap_or(0))
-    });
+    let in_progress_delta =
+        Signal::derive(move || format_delta(stats.get().map(|s| s.in_progress_delta).unwrap_or(0)));
     let new_delta =
         Signal::derive(move || format_delta(stats.get().map(|s| s.new_delta).unwrap_or(0)));
     let high_difficulty_delta = Signal::derive(move || {
