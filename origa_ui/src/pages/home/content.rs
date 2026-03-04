@@ -1,5 +1,5 @@
 use super::{HistoryModal, HomeSkeleton, JlptProgressCard, JlptSkeleton, StatMetric, StatsGrid};
-use super::{HomeStats, calculate_stats, format_number};
+use super::{HomeStats, calculate_stats, format_delta, format_number};
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
@@ -55,12 +55,17 @@ pub fn HomeContent() -> impl IntoView {
     let high_difficulty =
         Signal::derive(move || format_number(stats.get().map(|s| s.high_difficulty).unwrap_or(0)));
 
-    let weekly_delta_text = Signal::derive(move || {
-        stats
-            .get()
-            .filter(|s| s.weekly_delta > 0)
-            .map(|s| format!("+{}", s.weekly_delta))
-            .unwrap_or_default()
+    let total_cards_delta =
+        Signal::derive(move || format_delta(stats.get().map(|s| s.total_cards_delta).unwrap_or(0)));
+    let learned_delta =
+        Signal::derive(move || format_delta(stats.get().map(|s| s.learned_delta).unwrap_or(0)));
+    let in_progress_delta = Signal::derive(move || {
+        format_delta(stats.get().map(|s| s.in_progress_delta).unwrap_or(0))
+    });
+    let new_delta =
+        Signal::derive(move || format_delta(stats.get().map(|s| s.new_delta).unwrap_or(0)));
+    let high_difficulty_delta = Signal::derive(move || {
+        format_delta(stats.get().map(|s| s.high_difficulty_delta).unwrap_or(0))
     });
 
     let open_history = move |metric: StatMetric| {
@@ -94,11 +99,15 @@ pub fn HomeContent() -> impl IntoView {
                 >
                     <StatsGrid
                         total_cards=total_cards
+                        total_cards_delta=total_cards_delta
                         learned=learned
+                        learned_delta=learned_delta
                         in_progress=in_progress
+                        in_progress_delta=in_progress_delta
                         new_cards=new_cards
+                        new_delta=new_delta
                         high_difficulty=high_difficulty
-                        weekly_delta_text=weekly_delta_text
+                        high_difficulty_delta=high_difficulty_delta
                         open_history=open_history
                     />
                 </Show>
