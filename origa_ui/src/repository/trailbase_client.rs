@@ -1,6 +1,6 @@
-use crate::repository::session::{set_session, TrailBaseSession};
+use crate::repository::session::{TrailBaseSession, set_session};
 use gloo_net::http::{Method, Request, Response};
-use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use serde::{Deserialize, Serialize, de::DeserializeOwned};
 use std::collections::HashMap;
 use thiserror::Error;
 
@@ -18,7 +18,7 @@ fn decode_jwt_claims(token: &str) -> Result<JwtClaims, String> {
     if parts.len() != 3 {
         return Err("Invalid JWT format".to_string());
     }
-    
+
     let payload = parts[1];
     let padding_len = (4 - payload.len() % 4) % 4;
     let padded = if padding_len > 0 {
@@ -30,41 +30,40 @@ fn decode_jwt_claims(token: &str) -> Result<JwtClaims, String> {
     } else {
         payload.to_string()
     };
-    
+
     let decoded = base64_decode(&padded)?;
-    let json_str = String::from_utf8(decoded)
-        .map_err(|e| format!("Invalid UTF-8 in JWT payload: {}", e))?;
-    
-    serde_json::from_str(&json_str)
-        .map_err(|e| format!("Failed to parse JWT claims: {}", e))
+    let json_str =
+        String::from_utf8(decoded).map_err(|e| format!("Invalid UTF-8 in JWT payload: {}", e))?;
+
+    serde_json::from_str(&json_str).map_err(|e| format!("Failed to parse JWT claims: {}", e))
 }
 
 fn base64_decode(input: &str) -> Result<Vec<u8>, String> {
     let input = input.replace('-', "+").replace('_', "/");
     let chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-    
+
     let mut result = Vec::new();
     let chars_vec: Vec<char> = chars.chars().collect();
-    
+
     let clean_input: String = input.chars().filter(|c| *c != '=').collect();
-    
+
     for chunk in clean_input.as_bytes().chunks(4) {
         let mut acc: u32 = 0;
         let mut bits = 0;
-        
+
         for &byte in chunk {
             if let Some(pos) = chars_vec.iter().position(|&c| c == byte as char) {
                 acc = (acc << 6) | pos as u32;
                 bits += 6;
             }
         }
-        
+
         while bits >= 8 {
             bits -= 8;
             result.push((acc >> bits) as u8);
         }
     }
-    
+
     Ok(result)
 }
 
@@ -78,7 +77,7 @@ impl OAuthProvider {
     pub fn as_str(&self) -> &'static str {
         match self {
             OAuthProvider::Google => "google",
-            OAuthProvider::Yandex => "keycloak",
+            OAuthProvider::Yandex => "openid_connect",
         }
     }
 }
@@ -146,7 +145,12 @@ impl TrailBaseClient {
             Method::PUT => Request::put(&url),
             Method::DELETE => Request::delete(&url),
             Method::PATCH => Request::patch(&url),
-            _ => return Err(AuthError::ApiError(format!("Unsupported HTTP method: {:?}", method))),
+            _ => {
+                return Err(AuthError::ApiError(format!(
+                    "Unsupported HTTP method: {:?}",
+                    method
+                )));
+            }
         };
 
         let request_builder = if let Some(h) = headers {
@@ -200,7 +204,7 @@ impl TrailBaseClient {
     ) -> Result<TrailBaseSession, AuthError> {
         let claims = decode_jwt_claims(auth_token)
             .map_err(|e| AuthError::ApiError(format!("Failed to decode JWT: {}", e)))?;
-        
+
         let now = Self::current_timestamp();
         let expires_at = now.saturating_add(3600);
 
@@ -237,7 +241,7 @@ impl TrailBaseClient {
         if auth_token.is_empty() {
             return Err("No auth_token found in URL fragment".to_string());
         }
-        
+
         let claims = decode_jwt_claims(&auth_token)?;
 
         let now = Self::current_timestamp();
@@ -256,7 +260,10 @@ impl TrailBaseClient {
         Ok(session)
     }
 
-    pub async fn refresh_session(&self, refresh_token: &str) -> Result<TrailBaseSession, AuthError> {
+    pub async fn refresh_session(
+        &self,
+        refresh_token: &str,
+    ) -> Result<TrailBaseSession, AuthError> {
         #[derive(Serialize)]
         struct RefreshRequest<'a> {
             refresh_token: &'a str,
@@ -321,7 +328,9 @@ impl TrailBaseClient {
         headers.insert("Authorization".to_string(), auth_header);
         headers.insert("Content-Type".to_string(), "application/json".to_string());
 
-        let response = self.fetch(path, method.clone(), body, Some(headers)).await?;
+        let response = self
+            .fetch(path, method.clone(), body, Some(headers))
+            .await?;
 
         if response.status() == 401 {
             let session = get_session().ok_or(AuthError::SessionExpired)?;
@@ -362,24 +371,28 @@ impl TrailBaseClient {
         use crate::repository::session::get_session;
 
         let session = get_session().ok_or("Not authenticated")?;
-        
+
         let api = self.records("user");
-        
+
         if let Some(record_id) = session.record_id {
-            api.delete(&record_id.to_string()).await.map_err(|e| e.to_string())?;
+            api.delete(&record_id.to_string())
+                .await
+                .map_err(|e| e.to_string())?;
         } else {
             let records: Vec<serde_json::Value> = api
                 .list_filtered(&format!("email=eq.{}", session.email))
                 .await
                 .map_err(|e| e.to_string())?;
-            
+
             if let Some(record) = records.first() {
                 if let Some(id) = record.get("id").and_then(|v| v.as_i64()) {
-                    api.delete(&id.to_string()).await.map_err(|e| e.to_string())?;
+                    api.delete(&id.to_string())
+                        .await
+                        .map_err(|e| e.to_string())?;
                 }
             }
         }
-        
+
         self.logout().await
     }
 
@@ -406,7 +419,10 @@ pub struct RecordApi {
 impl RecordApi {
     pub async fn list<T: DeserializeOwned>(&self) -> Result<Vec<T>, AuthError> {
         let path = format!("/api/records/v1/{}", self.table_name);
-        let response = self.client.request_with_auth(&path, Method::GET, None::<&()>).await?;
+        let response = self
+            .client
+            .request_with_auth(&path, Method::GET, None::<&()>)
+            .await?;
 
         #[derive(Deserialize)]
         struct ListResponse<T> {
@@ -417,9 +433,15 @@ impl RecordApi {
         Ok(list.records)
     }
 
-    pub async fn list_filtered<T: DeserializeOwned>(&self, filter: &str) -> Result<Vec<T>, AuthError> {
+    pub async fn list_filtered<T: DeserializeOwned>(
+        &self,
+        filter: &str,
+    ) -> Result<Vec<T>, AuthError> {
         let path = format!("/api/records/v1/{}?{}", self.table_name, filter);
-        let response = self.client.request_with_auth(&path, Method::GET, None::<&()>).await?;
+        let response = self
+            .client
+            .request_with_auth(&path, Method::GET, None::<&()>)
+            .await?;
 
         #[derive(Deserialize)]
         struct ListResponse<T> {
@@ -432,11 +454,17 @@ impl RecordApi {
 
     pub async fn read<T: DeserializeOwned>(&self, id: &str) -> Result<T, AuthError> {
         let path = format!("/api/records/v1/{}/{}", self.table_name, id);
-        let response = self.client.request_with_auth(&path, Method::GET, None::<&()>).await?;
+        let response = self
+            .client
+            .request_with_auth(&path, Method::GET, None::<&()>)
+            .await?;
         TrailBaseClient::json(response).await
     }
 
-    pub async fn create<T: Serialize + std::fmt::Debug>(&self, record: &T) -> Result<String, AuthError> {
+    pub async fn create<T: Serialize + std::fmt::Debug>(
+        &self,
+        record: &T,
+    ) -> Result<String, AuthError> {
         let path = format!("/api/records/v1/{}", self.table_name);
         let response = self
             .client
@@ -448,7 +476,10 @@ impl RecordApi {
                 .text()
                 .await
                 .unwrap_or_else(|_| "Unknown error".to_string());
-            return Err(AuthError::ApiError(format!("Failed to create record: {}", error_text)));
+            return Err(AuthError::ApiError(format!(
+                "Failed to create record: {}",
+                error_text
+            )));
         }
 
         #[derive(Deserialize)]
@@ -476,7 +507,10 @@ impl RecordApi {
                 .text()
                 .await
                 .unwrap_or_else(|_| "Unknown error".to_string());
-            return Err(AuthError::ApiError(format!("Failed to update record: {}", error_text)));
+            return Err(AuthError::ApiError(format!(
+                "Failed to update record: {}",
+                error_text
+            )));
         }
 
         Ok(())
@@ -494,7 +528,10 @@ impl RecordApi {
                 .text()
                 .await
                 .unwrap_or_else(|_| "Unknown error".to_string());
-            return Err(AuthError::ApiError(format!("Failed to delete record: {}", error_text)));
+            return Err(AuthError::ApiError(format!(
+                "Failed to delete record: {}",
+                error_text
+            )));
         }
 
         Ok(())
