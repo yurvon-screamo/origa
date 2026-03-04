@@ -51,4 +51,11 @@ jobs:
                   labels: ${{ steps.meta.outputs.labels }}
                   cache-from: type=gha
                   cache-to: type=gha,mode=max
-                  provenance: false # Disabled to avoid attestation image bloat
+                  provenance: false
+
+            - name: Test Docker image
+              run: |
+                  docker run -d --name test-container -p 4000:4000 ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+                  trap 'docker stop test-container 2>/dev/null; docker rm test-container 2>/dev/null' EXIT
+                  sleep 5
+                  curl --retry 10 --retry-delay 1 --retry-all-errors --fail http://localhost:4000/api/healthcheck
