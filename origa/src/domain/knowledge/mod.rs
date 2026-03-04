@@ -13,8 +13,8 @@ pub use vocabulary::VocabularyCard;
 use std::collections::HashMap;
 
 use crate::domain::{
-    OrigaError, Rating, ReviewLog, get_rule_by_id, memory::MemoryState,
-    value_objects::NativeLanguage,
+    get_rule_by_id, memory::MemoryState, value_objects::NativeLanguage, OrigaError, Rating,
+    ReviewLog,
 };
 use chrono::{Duration, Utc};
 use rand::seq::SliceRandom;
@@ -118,6 +118,7 @@ impl KnowledgeSet {
             });
         }
 
+        self.recalculate_daily_stats();
         Ok(study_card)
     }
 
@@ -410,6 +411,64 @@ impl KnowledgeSet {
         } else {
             let mut item = DailyHistoryItem::new();
             item.update(
+                avg_stability,
+                avg_difficulty,
+                total_words,
+                known_words,
+                new_words,
+                in_progress_words,
+                high_difficulty_words,
+            );
+            self.lesson_history.push(item);
+        }
+    }
+
+    fn recalculate_daily_stats(&mut self) {
+        let mut avg_stability = 0.0;
+        let mut avg_difficulty = 0.0;
+        let mut total_words = 0;
+        let mut known_words = 0;
+        let mut new_words = 0;
+        let mut in_progress_words = 0;
+        let mut high_difficulty_words = 0;
+
+        for memory in self.study_cards.values().map(|x| x.memory()) {
+            avg_stability += memory.stability().map(|x| x.value()).unwrap_or(0.0);
+            avg_difficulty += memory.difficulty().map(|x| x.value()).unwrap_or(0.0);
+            total_words += 1;
+            known_words += memory.is_known_card() as usize;
+            new_words += memory.is_new() as usize;
+            in_progress_words += memory.is_in_progress() as usize;
+            high_difficulty_words += memory.is_high_difficulty() as usize;
+        }
+
+        if total_words == 0 {
+            return;
+        }
+
+        avg_stability /= total_words as f64;
+        avg_difficulty /= total_words as f64;
+
+        let now = Utc::now();
+        let today = now.date_naive();
+
+        if let Some(existing_item) = self
+            .lesson_history
+            .iter_mut()
+            .find(|item| item.timestamp().date_naive() == today)
+        {
+            existing_item.update_stats(
+                avg_stability,
+                avg_difficulty,
+                total_words,
+                known_words,
+                new_words,
+                in_progress_words,
+                high_difficulty_words,
+            );
+        } else {
+            let mut item = DailyHistoryItem::new();
+            item.update_stats(
                 avg_stability,
                 avg_difficulty,
                 total_words,
@@ -948,5 +1007,51 @@ mod tests {
         let initial_streak = study_card.perfect_streak_since_known();
         study_card.handle_favorite_rating(Rating::Easy);
         assert_eq!(study_card.perfect_streak_since_known(), initial_streak);
+    }
+
+    #[test]
+    fn create_card_updates_daily_stats() {
+        let mut knowledge_set = KnowledgeSet::new();
+
+        assert!(knowledge_set.lesson_history().is_empty());
+
+        let card1 = create_vocab_card("猫", "кошка");
+        knowledge_set.create_card(card1).unwrap();
+
+        assert_eq!(knowledge_set.lesson_history().len(), 1);
+        let history_item = &knowledge_set.lesson_history()[0];
+        assert_eq!(history_item.total_words(), 1);
+        assert_eq!(history_item.new_words(), 1);
+        assert_eq!(history_item.known_words(), 0);
+        assert_eq!(history_item.lessons_completed(), 0);
+
+        let card2 = create_vocab_card("犬", "собака");
+        knowledge_set.create_card(card2).unwrap();
+
+        assert_eq!(knowledge_set.lesson_history().len(), 1);
+        let history_item = &knowledge_set.lesson_history()[0];
+        assert_eq!(history_item.total_words(), 2);
+        assert_eq!(history_item.new_words(), 2);
+        assert_eq!(history_item.lessons_completed(), 0);
+    }
+
+    #[test]
+    fn rate_card_increments_lessons_completed() {
+        let mut knowledge_set = KnowledgeSet::new();
+        let card = create_vocab_card("猫", "кошка");
+        let study_card = knowledge_set.create_card(card).unwrap();
+
+        let memory = create_memory_state();
+        knowledge_set
+            .rate_card(
+                *study_card.card_id(),
+                Rating::Good,
+                chrono::Duration::days(1),
+                memory,
+            )
+            .unwrap();
+
+        let history_item = &knowledge_set.lesson_history()[0];
+        assert_eq!(history_item.lessons_completed(), 1);
     }
 }
