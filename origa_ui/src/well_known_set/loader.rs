@@ -43,7 +43,6 @@ impl Default for WellKnownSetLoaderImpl {
     }
 }
 
-#[cfg(target_arch = "wasm32")]
 impl WellKnownSetLoader for WellKnownSetLoaderImpl {
     async fn load_meta_list(&self) -> Result<Vec<WellKnownSetMeta>, OrigaError> {
         if let Some(cached) = META_CACHE.get() {
@@ -68,32 +67,6 @@ impl WellKnownSetLoader for WellKnownSetLoaderImpl {
     }
 }
 
-#[cfg(not(target_arch = "wasm32"))]
-impl WellKnownSetLoader for WellKnownSetLoaderImpl {
-    async fn load_meta_list(&self) -> Result<Vec<WellKnownSetMeta>, OrigaError> {
-        if let Some(cached) = META_CACHE.get() {
-            return Ok(cached.clone());
-        }
-        let json = read_text_file("domain/well_known_set/well_known_sets_meta.json")?;
-        let meta_list = parse_well_known_meta_list(&json)?;
-        let _ = META_CACHE.set(meta_list.clone());
-        Ok(meta_list)
-    }
-
-    async fn load_set(&self, id: String) -> Result<WellKnownSet, OrigaError> {
-        let meta_list = self.load_meta_list().await?;
-        let _meta = meta_list.iter().find(|m| m.id == id).ok_or_else(|| {
-            OrigaError::WellKnownSetParseError {
-                reason: format!("Set not found: {}", id),
-            }
-        })?;
-        let path = id_to_path(&id);
-        let json = read_text_file(&path)?;
-        parse_well_known_set(&json, &id)
-    }
-}
-
-#[cfg(target_arch = "wasm32")]
 async fn fetch_text(url: &str) -> Result<String, OrigaError> {
     use leptos::wasm_bindgen::JsCast;
     use wasm_bindgen_futures::JsFuture;
@@ -138,22 +111,6 @@ async fn fetch_text(url: &str) -> Result<String, OrigaError> {
         .ok_or_else(|| OrigaError::WellKnownSetParseError {
             reason: format!("Response is not a string for {}", url),
         })
-}
-
-#[cfg(not(target_arch = "wasm32"))]
-fn read_text_file(path: &str) -> Result<String, OrigaError> {
-    use std::{env, fs, path::PathBuf};
-
-    let manifest_dir =
-        env::var("CARGO_MANIFEST_DIR").map_err(|_| OrigaError::WellKnownSetParseError {
-            reason: "CARGO_MANIFEST_DIR not set".to_string(),
-        })?;
-
-    let full_path = PathBuf::from(manifest_dir).join("public").join(path);
-
-    fs::read_to_string(&full_path).map_err(|e| OrigaError::WellKnownSetParseError {
-        reason: format!("Failed to read {}: {}", full_path.display(), e),
-    })
 }
 
 fn id_to_path(id: &str) -> String {

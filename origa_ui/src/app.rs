@@ -49,28 +49,15 @@ impl AuthContext {
     }
 
     pub async fn init_dictionary(&self) {
-        #[cfg(target_arch = "wasm32")]
-        {
-            if let Err(e) = load_dictionary().await {
-                error!("Failed to load dictionary: {}", e);
-            } else {
-                info!("Unidic dictionary loaded");
-            }
-            if let Err(e) = load_all_data().await {
-                error!("Failed to load data: {:?}", e);
-            } else {
-                info!("All data loaded");
-            }
+        if let Err(e) = load_dictionary().await {
+            error!("Failed to load dictionary: {}", e);
+        } else {
+            info!("Unidic dictionary loaded");
         }
-
-        #[cfg(not(target_arch = "wasm32"))]
-        {
-            if let Err(e) = load_dictionary() {
-                error!("Failed to load dictionary: {}", e);
-            }
-            if let Err(e) = load_all_data() {
-                error!("Failed to load data: {:?}", e);
-            }
+        if let Err(e) = load_all_data().await {
+            error!("Failed to load data: {:?}", e);
+        } else {
+            info!("All data loaded");
         }
 
         self.is_dictionary_loading.set(false);
@@ -106,7 +93,6 @@ pub fn update_current_user(repository: HybridUserRepository, current_user: RwSig
     });
 }
 
-#[cfg(target_arch = "wasm32")]
 fn setup_oauth_listener(ctx: AuthContext) {
     use crate::pages::login::auth_handlers::handle_oauth_callback;
     use leptos::wasm_bindgen::JsCast;
@@ -158,7 +144,6 @@ fn setup_oauth_listener(ctx: AuthContext) {
     callback.forget();
 }
 
-#[cfg(target_arch = "wasm32")]
 fn check_url_oauth_callback(ctx: &AuthContext) {
     use crate::pages::login::auth_handlers::handle_oauth_callback;
 
@@ -194,11 +179,8 @@ pub fn App() -> impl IntoView {
     provide_context(auth_context.current_user);
     provide_context(auth_context.clone());
 
-    #[cfg(target_arch = "wasm32")]
-    {
-        check_url_oauth_callback(&auth_context);
-        setup_oauth_listener(auth_context.clone());
-    }
+    check_url_oauth_callback(&auth_context);
+    setup_oauth_listener(auth_context.clone());
 
     let ctx = auth_context.clone();
     spawn_local(async move {
