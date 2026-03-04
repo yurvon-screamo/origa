@@ -143,34 +143,49 @@ fn setup_oauth_listener(ctx: AuthContext) {
 fn check_url_oauth_callback(ctx: &AuthContext) {
     use crate::pages::login::auth_handlers::get_or_create_profile;
     use crate::repository::TrailBaseClient;
+    use gloo_storage::{LocalStorage, Storage};
 
     let path = web_sys::window()
         .and_then(|w| w.location().pathname().ok())
         .unwrap_or_default();
 
     if path == "/login" {
-        match TrailBaseClient::get_session_from_cookies() {
-            Ok(session) => {
-                if !session.email.is_empty() {
-                    let ctx_clone = ctx.clone();
-                    let email = session.email.clone();
-                    spawn_local(async move {
-                        match get_or_create_profile(&ctx_clone, &email).await {
-                            Ok(user) => {
-                                ctx_clone.current_user.set(Some(user));
-                                if let Some(window) = web_sys::window() {
-                                    let _ = window.location().set_href("/home");
+        let search = web_sys::window()
+            .and_then(|w| w.location().search().ok())
+            .unwrap_or_default();
+
+        if let Some(code) = search.strip_prefix("?code=") {
+            let code = code.split('&').next().unwrap_or(code).to_string();
+
+            let verifier: Option<String> = LocalStorage::get("pkce_verifier").ok();
+            LocalStorage::delete("pkce_verifier");
+
+            if let Some(verifier) = verifier {
+                let ctx_clone = ctx.clone();
+                spawn_local(async move {
+                    let client = TrailBaseClient::new();
+                    match client.exchange_auth_code_for_session(&code, &verifier).await {
+                        Ok(session) => {
+                            if !session.email.is_empty() {
+                                let email = session.email.clone();
+                                match get_or_create_profile(&ctx_clone, &email).await {
+                                    Ok(user) => {
+                                        ctx_clone.current_user.set(Some(user));
+                                        if let Some(window) = web_sys::window() {
+                                            let _ = window.location().set_href("/home");
+                                        }
+                                    }
+                                    Err(e) => {
+                                        error!("Failed to create profile: {}", e);
+                                    }
                                 }
                             }
-                            Err(e) => {
-                                error!("Failed to create profile: {}", e);
-                            }
                         }
-                    });
-                }
-            }
-            Err(e) => {
-                info!("No session in cookies: {}", e);
+                        Err(e) => {
+                            error!("Failed to exchange auth code: {:?}", e);
+                        }
+                    }
+                });
             }
         }
     }

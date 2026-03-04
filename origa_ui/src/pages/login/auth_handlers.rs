@@ -36,8 +36,16 @@ pub async fn handle_oauth_callback(url_fragment: &str, ctx: &AuthContext) -> Res
 }
 
 pub fn handle_oauth_login(provider: OAuthProvider) {
+    use gloo_storage::{LocalStorage, Storage};
+
     let redirect_uri = "origa://auth/callback";
-    let url = TrailBaseClient::get_oauth_url(provider.as_str(), redirect_uri);
+
+    let verifier = TrailBaseClient::generate_pkce_verifier();
+    let challenge = TrailBaseClient::generate_pkce_challenge(&verifier);
+
+    LocalStorage::set("pkce_verifier", &verifier).ok();
+
+    let url = TrailBaseClient::get_oauth_url(provider.as_str(), redirect_uri, &challenge);
 
     if let Some(window) = web_sys::window() {
         let _ = window.location().set_href(&url);
