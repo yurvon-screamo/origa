@@ -1,9 +1,9 @@
-use super::LoginMode;
 use super::auth_handlers::handle_register;
 use super::email_input::EmailInput;
 use super::error_message::ErrorMessage;
 use super::oauth_buttons::OAuthButtons;
 use super::password_input::PasswordInput;
+use super::LoginMode;
 use crate::ui_components::{Button, ButtonVariant};
 use leptos::prelude::*;
 
@@ -37,7 +37,7 @@ pub fn RegisterForm(
                 </Button>
             </div>
 
-            <div class="relative my-4">
+            <div class="relative py-4">
                 <div class="absolute inset-0 flex items-center">
                     <div class="w-full border-t border-[var(--border-color)]"></div>
                 </div>
