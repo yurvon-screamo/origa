@@ -2,7 +2,7 @@ use super::{ActionButtons, IntegrationsCard, PersonalDataCard, SettingsCard};
 use crate::app::{AuthContext, update_current_user};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use origa::application::UpdateUserProfileUseCase;
+use origa::application::{UpdateUserProfileUseCase, UserRepository};
 use origa::domain::NativeLanguage;
 
 #[component]
@@ -108,8 +108,10 @@ pub fn ProfileContent() -> impl IntoView {
     });
 
     let client_for_delete = client.clone();
+    let repository_for_delete = ctx.repository.clone();
     let delete_account = Callback::new(move |_| {
         let client_clone = client_for_delete.clone();
+        let repository_clone = repository_for_delete.clone();
         let current_user_clone = current_user;
         let is_deleting_signal = is_deleting;
         let nav = navigate_for_delete.clone();
@@ -117,8 +119,17 @@ pub fn ProfileContent() -> impl IntoView {
         is_deleting_signal.set(true);
 
         spawn_local(async move {
+            let user_id = current_user_clone.with(|u| u.as_ref().map(|u| u.id()));
+
             match client_clone.delete_account().await {
                 Ok(()) => {
+                    if let Some(uid) = user_id {
+                        if let Err(e) = repository_clone.delete(uid).await {
+                            web_sys::console::error_1(
+                                &format!("Failed to delete local data: {}", e).into(),
+                            );
+                        }
+                    }
                     current_user_clone.set(None);
                     nav("/", Default::default());
                 }
