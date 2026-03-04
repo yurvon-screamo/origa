@@ -4,31 +4,35 @@ Licensor: yurvon-screamo
 
 Licensed Work: Origa - Japanese JLPT preparation application
                (The software project located at https://github.com/yurvon-screamo/origa,
-                including all source code, documentation, assets and related materials
-                under this repository, excluding any third-party dependencies or
-                separately licensed content.)
+                including all source code, documentation, assets, CRDT logic,
+                Leptos UI, tokenizer, words database, Tauri integration and
+                related materials under this repository, excluding any
+                third-party dependencies or separately licensed content.)
 
-Additional Use Grant: You may make production use of the Licensed Work, and create,
-                      distribute, sell or otherwise commercially exploit derivative
-                      works or modified versions of the Licensed Work,
-                      provided that such use, distribution, sale or exploitation
-                      does NOT involve creating, offering, or competing with
-                      a Japanese language learning application focused on JLPT
-                      preparation (N5–N1 levels), flashcards, spaced repetition
-                      systems (SRS/FSRS), gamified learning interfaces similar to
-                      Duolingo-style UX, or any substantially similar product or service
-                      targeted at JLPT exam takers or Japanese learners.
+Additional Use Grant: The Licensed Work may be used solely for personal,
+                      educational, non-commercial, or internal evaluation
+                      purposes (including study, personal modification,
+                      non-profit educational projects, or hobby use).
 
-                      Personal, educational, non-commercial, or internal use
-                      (including by individuals, students, teachers, hobbyists,
-                      or small non-competing projects) is always permitted.
+                      ANY commercial use, production use, distribution for
+                      profit, sale, offering as a paid or freemium product,
+                      creation of derivative works intended for commercial
+                      exploitation, monetization through ads/subscriptions,
+                      or use in any Japanese language learning application
+                      (JLPT preparation, flashcards, SRS/FSRS, gamified
+                      learning, or any substantially similar product) is
+                      STRICTLY PROHIBITED.
 
-                      Any other production or commercial use requires a separate
-                      commercial license from the Licensor.
+                      ONLY the Licensor (yurvon-screamo) is permitted to
+                      engage in any form of commercial activity related to
+                      the Licensed Work or its derivatives.
 
-Change Date: The earlier of (i) four (4) years after the date this version of the
-             Licensed Work is first publicly distributed under this License, or
-             (ii) a date specified by the Licensor in a future release.
+                      Any other commercial or production use requires a
+                      separate commercial license agreement from the Licensor.
+
+Change Date: The earlier of (i) four (4) years after the date this version of
+             the Licensed Work is first publicly distributed under this License,
+             or (ii) a date specified by the Licensor in a future release.
 
 Change License: Apache License, Version 2.0
                 (or any later version at Licensor's discretion)
