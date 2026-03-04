@@ -54,7 +54,10 @@ RUN rm -rf origa_ui/public/dictionaries/unidic
 
 RUN --mount=type=cache,target=/root/.cargo/registry \
     --mount=type=cache,target=/app/target \
-    cargo clean -p origa -p origa_ui && \
+    rm -rf /app/target/wasm32-unknown-unknown/release/.fingerprint/origa* && \
+    rm -rf /app/target/wasm32-unknown-unknown/release/deps/origa* && \
+    rm -rf /app/target/wasm32-unknown-unknown/release/deps/liboriga* && \
+    rm -rf /app/target/wasm32-unknown-unknown/release/build/origa* && \
     cargo build --release -p origa --target wasm32-unknown-unknown && \
     cargo build --release -p origa_ui --target wasm32-unknown-unknown
 
