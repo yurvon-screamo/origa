@@ -73,9 +73,23 @@ FROM trailbase/trailbase:0.24.2
 USER root
 WORKDIR /app
 
-COPY --from=builder /dist /app/public
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    debian-keyring \
+    debian-archive-keyring \
+    apt-transport-https \
+    curl \
+    && curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg \
+    && curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | tee /etc/apt/sources.list.d/caddy-stable.list \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends caddy \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN chown -R trailbase:trailbase /app/public
+COPY --from=builder /dist /app/public
+COPY Caddyfile /app/Caddyfile
+COPY entrypoint.sh /app/entrypoint.sh
+
+RUN chmod +x /app/entrypoint.sh && \
+    chown -R trailbase:trailbase /app
 
 USER trailbase
 
@@ -84,4 +98,4 @@ EXPOSE 4000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD curl --fail http://localhost:4000/api/healthcheck || exit 1
 
-CMD ["/app/trail", "run", "--address", "0.0.0.0:4000", "--public-dir", "/app/public", "--spa"]
+CMD ["/app/entrypoint.sh"]
