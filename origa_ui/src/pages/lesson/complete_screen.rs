@@ -70,7 +70,7 @@ pub fn LessonCompleteScreen(is_completed: RwSignal<bool>, review_count: usize) -
                         go_next_lesson.run(());
                     })
                 >
-                    "Следующий урок" <span class="hidden sm:inline">"[Space]"</span>
+                    "Следующий урок" <span class="hidden sm:inline">"[Пробел]"</span>
                 </Button>
 
                 <Button
