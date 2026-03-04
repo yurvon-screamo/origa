@@ -32,6 +32,9 @@ pub fn OAuthButtons() -> impl IntoView {
 }
 
 fn open_oauth_url(provider: OAuthProvider) {
+    use crate::repository::TrailBaseClient;
+    use gloo_storage::{LocalStorage, Storage};
+
     let window = web_sys::window().expect("window not available");
 
     let is_tauri = js_sys::Reflect::get(&window, &JsValue::from_str("__TAURI__")).is_ok()
@@ -47,7 +50,12 @@ fn open_oauth_url(provider: OAuthProvider) {
         redirect
     };
 
-    let url = TrailBaseClient::get_oauth_url(provider.as_str(), &redirect_uri);
+    let verifier = TrailBaseClient::generate_pkce_verifier();
+    let challenge = TrailBaseClient::generate_pkce_challenge(&verifier);
+
+    LocalStorage::set("pkce_verifier", &verifier).ok();
+
+    let url = TrailBaseClient::get_oauth_url(provider.as_str(), &redirect_uri, &challenge);
     web_sys::console::log_1(&format!("OAuth: Generated URL={}", url).into());
 
     let _ = window.location().set_href(&url);

@@ -1,6 +1,8 @@
 use crate::repository::session::{TrailBaseSession, set_session};
+use base64::{Engine as _, engine::general_purpose::URL_SAFE_NO_PAD};
 use gloo_net::http::{Method, Request, Response};
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
+use sha2::{Digest, Sha256};
 use std::collections::HashMap;
 use thiserror::Error;
 
@@ -183,12 +185,84 @@ impl TrailBaseClient {
             .map_err(|e| AuthError::ApiError(format!("Failed to parse response: {}", e)))
     }
 
-    pub fn get_oauth_url(provider: &str, redirect_uri: &str) -> String {
-        let encoded = urlencoding::encode(redirect_uri);
+    pub fn generate_pkce_verifier() -> String {
+        use rand::Rng;
+        const CHARSET: &[u8] =
+            b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~";
+        let mut rng = rand::rng();
+        (0..64)
+            .map(|_| {
+                let idx = rng.random_range(0..CHARSET.len());
+                CHARSET[idx] as char
+            })
+            .collect()
+    }
+
+    pub fn generate_pkce_challenge(verifier: &str) -> String {
+        let mut hasher = Sha256::new();
+        hasher.update(verifier.as_bytes());
+        let result = hasher.finalize();
+        URL_SAFE_NO_PAD.encode(result)
+    }
+
+    pub fn get_oauth_url(provider: &str, redirect_uri: &str, pkce_challenge: &str) -> String {
+        let encoded_redirect = urlencoding::encode(redirect_uri);
+        let encoded_challenge = urlencoding::encode(pkce_challenge);
         format!(
-            "{}/api/auth/v1/oauth/{}/login?redirect_uri={}",
-            TRAILBASE_URL, provider, encoded
+            "{}/api/auth/v1/oauth/{}/login?redirect_uri={}&response_type=code&pkce_code_challenge={}",
+            TRAILBASE_URL, provider, encoded_redirect, encoded_challenge
         )
+    }
+
+    pub async fn exchange_auth_code_for_session(
+        &self,
+        code: &str,
+        pkce_verifier: &str,
+    ) -> Result<TrailBaseSession, AuthError> {
+        #[derive(Serialize)]
+        struct TokenRequest<'a> {
+            code: &'a str,
+            pkce_code_verifier: &'a str,
+        }
+
+        let response = self
+            .fetch(
+                "/api/auth/v1/token",
+                Method::POST,
+                Some(&TokenRequest {
+                    code,
+                    pkce_code_verifier: pkce_verifier,
+                }),
+                None,
+            )
+            .await?;
+
+        if !response.ok() {
+            return Err(AuthError::ApiError(format!(
+                "Token exchange failed: {}",
+                response.status_text()
+            )));
+        }
+
+        let token_response: AuthTokenResponse = Self::json(response).await?;
+
+        let claims = decode_jwt_claims(&token_response.auth_token)
+            .map_err(|e| AuthError::ApiError(format!("Failed to decode JWT: {}", e)))?;
+
+        let now = Self::current_timestamp();
+        let expires_at = now.saturating_add(3600);
+
+        let session = TrailBaseSession {
+            auth_token: token_response.auth_token,
+            refresh_token: token_response.refresh_token.unwrap_or_default(),
+            email: claims.email.clone().unwrap_or_default(),
+            auth_user_id: claims.sub.clone(),
+            record_id: None,
+            expires_at,
+        };
+
+        set_session(&session).map_err(AuthError::ApiError)?;
+        Ok(session)
     }
 
     pub async fn exchange_code_for_session(
@@ -218,10 +292,11 @@ impl TrailBaseClient {
     pub fn get_session_from_cookies() -> Result<TrailBaseSession, String> {
         let window = web_sys::window().ok_or("Window not available")?;
         let document = window.document().ok_or("Document not available")?;
-        
-        let cookie_value = js_sys::Reflect::get(&document, &wasm_bindgen::JsValue::from_str("cookie"))
-            .map_err(|e| format!("Failed to get cookies: {:?}", e))?;
-        
+
+        let cookie_value =
+            js_sys::Reflect::get(&document, &wasm_bindgen::JsValue::from_str("cookie"))
+                .map_err(|e| format!("Failed to get cookies: {:?}", e))?;
+
         let cookies = cookie_value.as_string().unwrap_or_default();
 
         let cookie_map: HashMap<&str, &str> = cookies
@@ -235,8 +310,14 @@ impl TrailBaseClient {
             })
             .collect();
 
-        let auth_token = cookie_map.get("auth_token").map(|s: &&str| s.to_string()).unwrap_or_default();
-        let refresh_token = cookie_map.get("refresh_token").map(|s: &&str| s.to_string()).unwrap_or_default();
+        let auth_token = cookie_map
+            .get("auth_token")
+            .map(|s: &&str| s.to_string())
+            .unwrap_or_default();
+        let refresh_token = cookie_map
+            .get("refresh_token")
+            .map(|s: &&str| s.to_string())
+            .unwrap_or_default();
 
         if auth_token.is_empty() {
             return Err("No auth_token found in cookies".to_string());
