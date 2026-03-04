@@ -33,7 +33,7 @@ pub fn LessonCardContainer() -> impl IntoView {
         lesson_ctx.clone(),
         is_rating,
         on_rate_callback,
-        on_quiz_select.clone(),
+        on_quiz_select,
         lesson_state,
         show_answer,
     );

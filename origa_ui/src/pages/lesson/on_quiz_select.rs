@@ -28,7 +28,7 @@ pub fn create_on_quiz_select(
                 Rating::Hard
             };
 
-            let on_rate_clone = on_rate_callback.clone();
+            let on_rate_clone = on_rate_callback;
             spawn_local(async move {
                 gloo_timers::future::TimeoutFuture::new(1500).await;
                 on_rate_clone.run(rating);
