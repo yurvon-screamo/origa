@@ -117,6 +117,7 @@ web-sys = { version = "0.3", features = [
     "WorkerNavigator",
     "File",
     "Blob",
+    "BlobPropertyBag",
     "Document",
     "Window",
     "Node",
@@ -125,6 +126,10 @@ web-sys = { version = "0.3", features = [
     "SpeechSynthesis",
     "SpeechSynthesisUtterance",
     "SpeechSynthesisVoice",
+    "Cache",
+    "CacheStorage",
+    "Response",
+    "ResponseInit",
 ] }
 
 
