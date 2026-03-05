@@ -84,13 +84,12 @@ struct UserRow {
     username: String,
     email: String,
     native_language: i32,
-    #[serde(default)]
-    jlpt_progress: Option<JlptProgress>,
+    jlpt_progress: Option<String>,
     current_japanese_level: Option<i32>,
     duolingo_jwt_token: Option<String>,
     telegram_user_id: Option<i64>,
     reminders_enabled: i32,
-    knowledge_set: KnowledgeSet,
+    knowledge_set: Option<String>,
     updated_at: DateTime<Utc>,
 }
 
@@ -98,7 +97,15 @@ impl UserRow {
     fn to_user(&self) -> User {
         let ulid = uuid_to_ulid(&self.auth_user_id);
 
-        let jlpt_progress = self.jlpt_progress.clone().unwrap_or_default();
+        let jlpt_progress = self.jlpt_progress
+            .as_ref()
+            .and_then(|s| serde_json::from_str(s).ok())
+            .unwrap_or_default();
+
+        let knowledge_set = self.knowledge_set
+            .as_ref()
+            .and_then(|s| serde_json::from_str(s).ok())
+            .unwrap_or_default();
 
         User::from_row(
             ulid,
@@ -109,7 +116,7 @@ impl UserRow {
             self.duolingo_jwt_token.clone(),
             self.telegram_user_id.map(|id| id as u64),
             self.reminders_enabled != 0,
-            self.knowledge_set.clone(),
+            knowledge_set,
             self.updated_at,
         )
     }
