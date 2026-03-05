@@ -3,6 +3,8 @@ use std::io::Read;
 use flate2::read::DeflateDecoder;
 use origa::domain::{DictionaryData, OrigaError, init_dictionary, is_dictionary_loaded};
 
+use crate::repository::{get_cached_dictionary, save_dictionary_to_cache};
+
 fn decompress(data: Vec<u8>) -> Result<Vec<u8>, OrigaError> {
     let mut decoder = DeflateDecoder::new(&data[..]);
     let mut decompressed = Vec::new();
@@ -67,6 +69,30 @@ pub async fn load_dictionary() -> Result<(), OrigaError> {
         return Ok(());
     }
 
+    match get_cached_dictionary().await {
+        Ok(Some(data)) => {
+            init_dictionary(data)?;
+            return Ok(());
+        }
+        Ok(None) => {}
+        Err(e) => {
+            web_sys::console::warn_1(&format!("Cache read failed, loading from network: {:?}", e).into());
+        }
+    }
+
+    let data = load_dictionary_from_network().await?;
+    let data_clone = data.clone();
+    
+    init_dictionary(data)?;
+    
+    if let Err(e) = save_dictionary_to_cache(&data_clone).await {
+        web_sys::console::warn_1(&format!("Failed to cache dictionary: {:?}", e).into());
+    }
+
+    Ok(())
+}
+
+async fn load_dictionary_from_network() -> Result<DictionaryData, OrigaError> {
     use futures::future::join_all;
 
     let base_url = "/public/dictionaries/unidic/";
@@ -118,5 +144,5 @@ pub async fn load_dictionary() -> Result<(), OrigaError> {
         }
     }
 
-    init_dictionary(data)
+    Ok(data)
 }

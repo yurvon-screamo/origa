@@ -37,6 +37,7 @@ impl TokenInfo {
     }
 }
 
+#[derive(Clone, serde::Serialize, serde::Deserialize)]
 pub struct DictionaryData {
     pub char_def: Vec<u8>,
     pub matrix: Vec<u8>,
