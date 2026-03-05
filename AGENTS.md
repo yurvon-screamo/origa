@@ -1,6 +1,6 @@
 # AGENTS.md
 
-This document provides guidelines for agentic coding assistants working in this repository.
+Guidelines for agentic coding assistants working in this repository.
 
 ## Project Overview
 
@@ -15,124 +15,65 @@ Workspace structure:
 
 ## Build Commands
 
-### Rust
-
 ```bash
-# Build entire workspace
-cargo build
-
-# Build specific crate
-cargo build -p origa
-cargo build -p origa_ui
-
-# Build for release
-cargo build --release
-
-# Check compilation (faster than build)
-cargo check
-```
-
-### UI (Trunk)
-
-```bash
-# Development server
-cd origa_ui && trunk serve --port 8080
-
-# Build for production
-cd origa_ui && trunk build --release
-```
-
-### Tauri Desktop App
-
-```bash
-cd tauri && cargo tauri dev
+cargo build                    # Build entire workspace
+cargo build -p origa           # Build specific crate
+cargo build --release          # Release build
+cargo check                    # Check compilation (faster)
+cd origa_ui && trunk serve --port 8080    # Dev server
+cd tauri && cargo tauri dev    # Tauri development
 ```
 
 ## Test Commands
 
-### Unit Tests (Rust)
-
 ```bash
-# Run all tests
-cargo test
-
-# Run tests for specific crate
-cargo test -p origa
-
-# Run single test by name
-cargo test test_name
-
-# Run single test in specific module
-cargo test -p origa -- mod::test_name
-
-# Run tests with output
-cargo test -- --nocapture
-
-# Run specific test file pattern
-cargo test --test integration_tests
-```
-
-### E2E Tests (Playwright)
-
-```bash
-# Run all e2e tests
-npm test
-
-# Run specific test file
-npx playwright test journeys/full-learning-cycle.spec.ts
-
-# Run with UI mode
-npm run test:ui
-
-# Run in headed mode
-npm run test:headed
-
-# Debug mode
-npm run test:debug
+cargo test                     # All tests
+cargo test -p origa            # Tests for specific crate
+cargo test test_name           # Single test by name
+cargo test -p origa -- mod::test_name  # Test in specific module
+cargo test -- --nocapture      # With output
+npm test                       # All e2e tests
+npx playwright test journeys/full-learning-cycle.spec.ts  # Single file
+npm run test:ui                # Playwright UI mode
 ```
 
 ## Code Style Guidelines
 
 ### General Principles
 
-- Write concise, focused functions under 50 lines when possible
+- Write concise functions under 50 lines
 - Use early returns to reduce nesting
-- Prefer composition over inheritance (Rust idiomatic)
-- Avoid unnecessary clones; use references or Arc/Rc where appropriate
+- Prefer composition over inheritance
+- Avoid unnecessary clones; use references or Arc/Rc
 
 ### Imports Organization
 
-Group imports in this order, separated by blank lines:
+Group imports in order, separated by blank lines: 1) `std`, 2) external crates, 3) workspace crates.
 
 ```rust
-use std::collections::HashMap;                          // 1. std
-use chrono::{DateTime, Utc};                            // 2. External crates
-use serde::{Deserialize, Serialize};                    // 2. External crates (continued)
+use std::collections::HashMap;
+use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
 use ulid::Ulid;
 
-use crate::application::jlpt_content_loader::JlptContent;  // 3. Workspace crates
-use crate::domain::{Card, JapaneseLevel, OrigaError};      // 3. Workspace crates (continued)
+use crate::application::jlpt_content_loader::JlptContent;
+use crate::domain::{Card, JapaneseLevel, OrigaError};
 ```
-
-- Use `use` with braces for multiple items from same crate
-- Import types directly, not their modules
-- Use `crate::` for internal imports, not `super::` when possible
 
 ### Naming Conventions
 
-- **Types**: PascalCase (`User`, `KnowledgeSet`, `JlptProgress`)
-- **Functions/Methods**: snake_case (`create_card`, `recalculate_jlpt_progress`)
+- **Types**: PascalCase (`User`, `JlptProgress`)
+- **Functions/Methods**: snake_case (`create_card`, `recalculate_progress`)
 - **Variables**: snake_case (`user_id`, `memory_state`)
 - **Constants**: SCREAMING_SNAKE_CASE (`KANJI_DICTIONARY`)
-- **Modules**: snake_case (`jlpt_progress`, `value_objects`)
-- **Files**: snake_case (`user.rs`, `jlpt_progress.rs`)
+- **Modules/Files**: snake_case (`jlpt_progress.rs`)
 
 ### Type Design
 
 - Use newtype pattern for domain primitives (`Question`, `Answer`)
 - Prefer enums over bools for state (`JapaneseLevel::N5` not `level: u8`)
-- Use `Option<T>` for optional values, never use sentinel values
-- Use `Result<T, E>` for fallible operations with specific error types
+- Use `Option<T>` for optional values, never sentinel values
+- Use `Result<T, E>` for fallible operations
 
 ```rust
 pub struct Question(String);
@@ -151,10 +92,10 @@ impl Question {
 
 ### Error Handling
 
-- Use `thiserror` for error definitions (already in workspace)
+- Use `thiserror` for error definitions
 - Define errors as enums with context in variants
 - Propagate errors with `?` operator
-- Never use `unwrap()` in production code; use `expect()` with clear message only in tests
+- Never use `unwrap()` in production; use `expect()` only in tests
 
 ```rust
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -162,189 +103,54 @@ pub enum OrigaError {
     UserNotFound { user_id: Ulid },
     CardNotFound { card_id: Ulid },
     InvalidQuestion { reason: String },
-    RepositoryError { reason: String },
 }
-
-impl fmt::Display for OrigaError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            OrigaError::UserNotFound { user_id } => {
-                write!(f, "User with id {} not found", user_id)
-            }
-        }
-    }
-}
-
-impl std::error::Error for OrigaError {}
 ```
 
 ### Async/Await Patterns
 
 - Prefer `Result<T, E>` over `Option` for async operations
-- Use `tokio::spawn` for parallel operations when appropriate
-- Avoid blocking in async code; use async equivalents
-- Handle errors explicitly; don't silently ignore them
+- Use `tokio::spawn` for parallel operations
+- Avoid blocking in async code; handle errors explicitly
 
 ### Testing
 
-- Use `rstest` for parameterized tests (already in workspace dev-deps)
+- Use `rstest` for parameterized tests
 - Place unit tests in same file with `#[cfg(test)] mod tests`
-- Test names should describe behavior: `user_new_creates_default_jlpt_progress`
-- Use helper functions for common test setup
-
-```rust
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use rstest::rstest;
-
-    fn create_test_vocab_card(word: &str) -> Card {
-        Card::Vocabulary(VocabularyCard::new(
-            Question::new(word.to_string()).unwrap(),
-            Answer::new("meaning".to_string()).unwrap(),
-        ))
-    }
-
-    #[test]
-    fn user_new_creates_default_jlpt_progress() {
-        let user = User::new("test@example.com".to_string(), NativeLanguage::Russian, None);
-        assert_eq!(user.current_japanese_level(), JapaneseLevel::N5);
-    }
-}
-```
+- Test names describe behavior: `user_new_creates_default_jlpt_progress`
 
 ## UI Component Library (origa_ui)
 
-### Architecture Philosophy
-
-The UI library provides reusable, styled components for consistent design across the application. **Always prefer library components over custom implementations**.
-
-### Library Structure
+**Always prefer library components over custom implementations.**
 
 Located in `origa_ui/src/ui_components/`:
 
-- **Layout Components**: `PageLayout`, `CardLayout`
-- **Form Components**: `Input`, `Button`, `Checkbox`, `Toggle`, `Radio`
+- **Layout**: `PageLayout`, `CardLayout`
+- **Forms**: `Input`, `Button`, `Checkbox`, `Toggle`, `Radio`
 - **Typography**: `Heading`, `Text`, `DisplayText`
-- **Container Components**: `Card`, `Divider`, `Avatar`, `Badge`
-- **Feedback Components**: `Alert`, `Modal`, `Toast`, `Tooltip`
+- **Containers**: `Card`, `Divider`, `Avatar`, `Badge`
+- **Feedback**: `Alert`, `Modal`, `Toast`, `Tooltip`
 - **Navigation**: `Navbar`, `Breadcrumbs`, `Pagination`, `Tabs`
 
-### Component Props
-
-Components use enum-based props for type safety:
-
-```rust
-#[component]
-pub fn Button(
-    #[prop(optional)] variant: ButtonVariant,
-    #[prop(optional)] size: ButtonSize,
-    #[prop(optional)] on_click: Option<Callback<MouseEvent>>,
-    children: Children,
-) -> impl IntoView
-```
-
-### Event Handling
-
-- Callbacks use `Callback<T>` type from `leptos::prelude`
-- Event types from `leptos::ev` module (e.g., `MouseEvent`, `Event`, `KeyboardEvent`)
-- Pass callbacks directly: `on_click=Callback::new(|_| ...)`
-
-### Export Policy
-
-All components are exported via `pub use` in `ui_components/mod.rs`:
-
-```rust
-use crate::ui_components::{Button, ButtonVariant, Input, Heading, HeadingLevel};
-```
+Components use enum-based props with `#[prop(optional)]`. Callbacks use `Callback<T>` from `leptos::prelude`, event types from `leptos::ev`.
 
 ### Design System
 
-- Colors use CSS variables: `--accent-olive`, `--bg-primary`, `--fg-muted`, `--border-color`
-- Typography: `font-serif` for headings, `font-mono` for code/data
-- Spacing: Tailwind utility classes (e.g., `space-y-5`, `mb-4`, `p-6`)
-- Responsive: `sm:`, `md:`, `lg:` prefixes for breakpoints
-
-Full CSS config placed in `origa_ui/input.css` file.
-
-## JLPT Progress System
-
-### Architecture
-
-The JLPT progress system automatically tracks user progress across all five JLPT levels (N5-N1):
-
-- **Domain Layer** (`origa/src/domain/jlpt_progress.rs`): Core models
-- **Application Layer** (`origa/src/application/jlpt_content_loader.rs`): Content loader
-- **UI Layer** (`origa_ui/src/pages/home/jlpt_progress_card.rs`): Progress visualization
-
-### Automatic Level Detection
-
-1. **New users**: Start at N5 by default
-2. **Level progression**: When average progress reaches 90%, advance to next level
-3. **Maximum level**: N1 is the highest level
-
-### Progress Recalculation
-
-Progress is recalculated automatically when:
-- User adds a new study card
-- User updates an existing card
-- User removes a card
-
-## Important Reminders
-
-- Run `cargo check` after making changes to verify compilation
-- Run `cargo test -p <crate>` after modifying logic
-- Run `npm test` for e2e tests after UI changes
-- Use existing components from `ui_components/` instead of creating custom HTML
+- Colors: CSS variables (`--accent-olive`, `--bg-primary`, `--fg-muted`)
+- Typography: `font-serif` for headings, `font-mono` for code
+- Spacing: Tailwind utilities (`space-y-5`, `mb-4`, `p-6`)
+- Responsive: `sm:`, `md:`, `lg:` breakpoints
 
 ## TrailBase Backend
 
-### Configuration
-
-TrailBase is used as the backend service for authentication and data storage.
-
 - **URL**: `https://trailbase.uwuwu.net`
-- **Admin Panel**: `https://trailbase.uwuwu.net/_/admin/`
-- **Auth Providers**: Google, Yandex (Keycloak)
+- **Auth**: OAuth-only (Google, Yandex via Keycloak)
+- `TrailBaseClient` - WASM-compatible HTTP client
+- `TrailBaseUserRepository` - Record API implementation
+- `HybridUserRepository` - Syncs local storage with TrailBase
 
-### Architecture
+## Important Reminders
 
-The application uses a hybrid repository pattern:
-
-- **TrailBaseClient** (`origa_ui/src/repository/trailbase_client.rs`): WASM-compatible HTTP client using `gloo-net`
-- **TrailBaseUserRepository** (`origa_ui/src/repository/trailbase_repository.rs`): UserRepository implementation via TrailBase Record API
-- **HybridUserRepository** (`origa_ui/src/repository/hybrid_repository.rs`): Syncs data between local storage and TrailBase
-
-### Authentication
-
-- **OAuth-only**: Email/password authentication has been removed
-- **Supported Providers**: Google, Yandex (via Keycloak)
-- **Token Management**: JWT auth tokens with automatic refresh
-- **Session Storage**: Browser localStorage via `gloo-storage`
-
-### Database Schema
-
-The `user` table schema is defined in `trailbase_schema.sql`:
-
-```sql
-CREATE TABLE user (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    auth_user_id TEXT UNIQUE NOT NULL,
-    username TEXT NOT NULL,
-    email TEXT NOT NULL,
-    native_language INTEGER NOT NULL DEFAULT 0,
-    jlpt_progress TEXT CHECK(json_valid(jlpt_progress)),
-    current_japanese_level INTEGER,
-    duolingo_jwt_token TEXT,
-    telegram_user_id INTEGER,
-    reminders_enabled INTEGER NOT NULL DEFAULT 0,
-    knowledge_set TEXT NOT NULL DEFAULT 'Default',
-    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-) STRICT;
-```
-
-### Setup Instructions
-
-1. Execute `trailbase_schema.sql` in TrailBase SQL Editor
-2. Configure OAuth providers in TrailBase admin panel
-3. Update `TRAILBASE_URL` constant in `trailbase_client.rs` if needed
+- Run `cargo check` after changes to verify compilation
+- Run `cargo test -p <crate>` after modifying logic
+- Run `npm test` for e2e tests after UI changes
+- Use existing `ui_components/` instead of custom HTML
