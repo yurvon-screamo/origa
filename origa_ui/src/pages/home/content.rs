@@ -25,8 +25,6 @@ pub fn HomeContent() -> impl IntoView {
         let user = current_user.get();
         if let Some(user) = user {
             let user_id = user.id();
-            let jlpt = user.jlpt_progress().clone();
-            jlpt_progress.set(jlpt);
             let repo = repository.clone();
             spawn_local(async move {
                 let use_case = GetUserInfoUseCase::new(&repo);
@@ -34,6 +32,7 @@ pub fn HomeContent() -> impl IntoView {
                     Ok(profile) => {
                         history.set(profile.lesson_history.clone());
                         stats.set(Some(calculate_stats(&profile.lesson_history)));
+                        jlpt_progress.set(profile.jlpt_progress);
                         is_loading.set(false);
                     }
                     Err(_) => {

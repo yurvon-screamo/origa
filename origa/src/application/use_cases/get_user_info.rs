@@ -3,6 +3,7 @@ use ulid::Ulid;
 
 use crate::application::user_repository::UserRepository;
 use crate::domain::DailyHistoryItem;
+use crate::domain::JlptProgress;
 use crate::domain::OrigaError;
 use crate::domain::{JapaneseLevel, NativeLanguage};
 
@@ -12,6 +13,7 @@ pub struct UserProfile {
     pub username: String,
     pub current_japanese_level: JapaneseLevel,
     pub native_language: NativeLanguage,
+    pub jlpt_progress: JlptProgress,
     pub lesson_history: Vec<DailyHistoryItem>,
     pub duolingo_jwt_token: Option<String>,
     pub telegram_user_id: Option<u64>,
@@ -44,6 +46,7 @@ impl<'a, R: UserRepository> GetUserInfoUseCase<'a, R> {
             username: user.username().to_string(),
             current_japanese_level: user.current_japanese_level(),
             native_language: user.native_language().clone(),
+            jlpt_progress: user.jlpt_progress().clone(),
             lesson_history: user.knowledge_set().lesson_history().to_vec(),
             duolingo_jwt_token: user.duolingo_jwt_token().map(|x| x.to_string()),
             telegram_user_id: user.telegram_user_id().copied(),
