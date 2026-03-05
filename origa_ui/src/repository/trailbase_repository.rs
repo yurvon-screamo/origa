@@ -2,7 +2,7 @@ use super::trailbase_client::{AuthError, TrailBaseClient};
 use crate::repository::session::{TrailBaseSession, get_session, set_session};
 use chrono::{DateTime, Utc};
 use origa::application::user_repository::UserRepository;
-use origa::domain::{JlptProgress, KnowledgeSet, NativeLanguage, OrigaError, User};
+use origa::domain::{NativeLanguage, OrigaError, User};
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 use ulid::Ulid;
@@ -86,7 +86,6 @@ struct UserRow {
     native_language: i32,
     jlpt_progress: Option<String>,
     current_japanese_level: Option<i32>,
-    duolingo_jwt_token: Option<String>,
     telegram_user_id: Option<i64>,
     reminders_enabled: i32,
     knowledge_set: Option<String>,
@@ -113,7 +112,6 @@ impl UserRow {
             self.username.clone(),
             jlpt_progress,
             NativeLanguage::from(self.native_language),
-            self.duolingo_jwt_token.clone(),
             self.telegram_user_id.map(|id| id as u64),
             self.reminders_enabled != 0,
             knowledge_set,
@@ -152,7 +150,6 @@ fn user_to_json(user: &User, auth_user_id: &str) -> serde_json::Value {
         "native_language": i32::from(user.native_language().clone()),
         "current_japanese_level": i32::from(user.current_japanese_level()),
         "jlpt_progress": jlpt_progress_json,
-        "duolingo_jwt_token": user.duolingo_jwt_token(),
         "telegram_user_id": user.telegram_user_id().copied().map(|id| id as i64),
         "reminders_enabled": if user.reminders_enabled() { 1 } else { 0 },
         "knowledge_set": knowledge_set_json,
