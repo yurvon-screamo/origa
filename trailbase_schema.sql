@@ -12,7 +12,7 @@ CREATE TABLE user (
     duolingo_jwt_token TEXT,
     telegram_user_id INTEGER,
     reminders_enabled INTEGER NOT NULL DEFAULT 0,
-    knowledge_set TEXT NOT NULL DEFAULT 'Default',
+    knowledge_set TEXT CHECK(json_valid(knowledge_set)) NOT NULL DEFAULT '{"study_cards":{},"lesson_history":[]}',
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) STRICT;
 
