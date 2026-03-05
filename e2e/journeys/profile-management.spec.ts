@@ -26,12 +26,6 @@ test.describe("UJ5: Работа с профилем", () => {
 			await profilePage.expectHeadingContains(emailPrefix);
 		});
 
-		await test.step("Изменение Duolingo токена", async () => {
-			const newToken = `test-token-${Date.now()}`;
-			await profilePage.setDuolingoToken(newToken);
-			await profilePage.expectDuolingoToken(newToken);
-		});
-
 		await test.step("Переключение напоминаний", async () => {
 			const initialState = await page.locator('.toggle-container input[type="checkbox"]').isChecked();
 			await profilePage.toggleReminders();

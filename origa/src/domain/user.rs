@@ -6,9 +6,9 @@ use ulid::Ulid;
 
 use crate::application::jlpt_content_loader::JlptContent;
 use crate::domain::{
+    score_content::{score_content, ScoreContentResult},
     Card, JapaneseLevel, JlptProgress, KnowledgeSet, MemoryState, NativeLanguage, OrigaError,
     Rating, StudyCard,
-    score_content::{ScoreContentResult, score_content},
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -18,7 +18,6 @@ pub struct User {
     username: String,
     native_language: NativeLanguage,
     jlpt_progress: JlptProgress,
-    duolingo_jwt_token: Option<String>,
     telegram_user_id: Option<u64>,
     knowledge_set: KnowledgeSet,
     reminders_enabled: bool,
@@ -40,7 +39,6 @@ impl User {
             knowledge_set: KnowledgeSet::new(),
             jlpt_progress: JlptProgress::new(),
             native_language,
-            duolingo_jwt_token: None,
             telegram_user_id,
             reminders_enabled: true,
             updated_at: Utc::now(),
@@ -54,7 +52,6 @@ impl User {
         username: String,
         jlpt_progress: JlptProgress,
         native_language: NativeLanguage,
-        duolingo_jwt_token: Option<String>,
         telegram_user_id: Option<u64>,
         reminders_enabled: bool,
         knowledge_set: KnowledgeSet,
@@ -66,7 +63,6 @@ impl User {
             username,
             jlpt_progress,
             native_language,
-            duolingo_jwt_token,
             telegram_user_id,
             reminders_enabled,
             knowledge_set,
@@ -79,7 +75,6 @@ impl User {
         self.username = new_values.username.clone();
         self.native_language = new_values.native_language.clone();
         self.jlpt_progress = new_values.jlpt_progress.clone();
-        self.duolingo_jwt_token = new_values.duolingo_jwt_token.clone();
         self.telegram_user_id = new_values.telegram_user_id;
         self.reminders_enabled = new_values.reminders_enabled;
         self.knowledge_set.merge(&new_values.knowledge_set);
@@ -120,14 +115,6 @@ impl User {
 
     pub fn knowledge_set(&self) -> &KnowledgeSet {
         &self.knowledge_set
-    }
-
-    pub fn duolingo_jwt_token(&self) -> Option<&str> {
-        self.duolingo_jwt_token.as_deref()
-    }
-
-    pub fn set_duolingo_jwt_token(&mut self, token: Option<String>) {
-        self.duolingo_jwt_token = token;
     }
 
     pub fn telegram_user_id(&self) -> Option<&u64> {
@@ -261,8 +248,8 @@ impl User {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::domain::VocabularyCard;
     use crate::domain::value_objects::{Answer, Question};
+    use crate::domain::VocabularyCard;
 
     fn create_test_vocab_card(word: &str) -> Card {
         Card::Vocabulary(VocabularyCard::new(
