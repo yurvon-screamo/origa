@@ -71,6 +71,13 @@ def main():
             set_id = path.stem
             meta_list.append(extract_meta(data, set_id, "SpyFamily"))
 
+    duolingo_dir = BASE_DIR / "duolingo"
+    if duolingo_dir.exists():
+        for path in sorted(duolingo_dir.rglob("*.json")):
+            data = load_json(path)
+            set_id = f"duolingo_{path.parent.name}_{path.stem}"
+            meta_list.append(extract_meta(data, set_id, "Duolingo"))
+
     meta_list.sort(key=lambda x: x["id"])
 
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
