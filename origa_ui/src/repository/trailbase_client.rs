@@ -507,7 +507,7 @@ impl TrailBaseClient {
                 .map_err(|e| e.to_string())?;
         } else {
             let records: Vec<serde_json::Value> = api
-                .list_filtered(&format!("email=eq.{}", session.email))
+                .list_filtered("email", &session.email)
                 .await
                 .map_err(|e| e.to_string())?;
 
@@ -562,9 +562,15 @@ impl RecordApi {
 
     pub async fn list_filtered<T: DeserializeOwned>(
         &self,
-        filter: &str,
+        column: &str,
+        value: &str,
     ) -> Result<Vec<T>, AuthError> {
-        let path = format!("/api/records/v1/{}?{}", self.table_name, filter);
+        let path = format!(
+            "/api/records/v1/{}?filter[{}]={}",
+            self.table_name,
+            urlencoding::encode(column),
+            urlencoding::encode(value)
+        );
         let response = self
             .client
             .request_with_auth(&path, Method::GET, None::<&()>)
