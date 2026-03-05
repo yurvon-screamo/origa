@@ -566,7 +566,7 @@ impl RecordApi {
         value: &str,
     ) -> Result<Vec<T>, AuthError> {
         let path = format!(
-            "/api/records/v1/{}?filter[{}]={}",
+            "/api/records/v1/{}?filter[{}][$eq]={}",
             self.table_name,
             urlencoding::encode(column),
             urlencoding::encode(value)
