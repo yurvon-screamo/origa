@@ -49,12 +49,14 @@ impl AuthContext {
     }
 
     pub async fn init_dictionary(&self) {
-        if let Err(e) = load_dictionary().await {
+        let (dict_result, data_result) = futures::join!(load_dictionary(), load_all_data());
+        
+        if let Err(e) = dict_result {
             error!("Failed to load dictionary: {}", e);
         } else {
             info!("Unidic dictionary loaded");
         }
-        if let Err(e) = load_all_data().await {
+        if let Err(e) = data_result {
             error!("Failed to load data: {:?}", e);
         } else {
             info!("All data loaded");

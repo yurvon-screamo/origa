@@ -14,13 +14,60 @@ fn decompress(data: Vec<u8>) -> Result<Vec<u8>, OrigaError> {
     Ok(decompressed)
 }
 
+async fn fetch_file(
+    window: &web_sys::Window,
+    base_url: &str,
+    filename: &str,
+    field: &str,
+) -> Result<(String, Vec<u8>), OrigaError> {
+    use leptos::wasm_bindgen::JsCast;
+    use wasm_bindgen_futures::JsFuture;
+
+    let url = format!("{}{}", base_url, filename);
+    let resp_value = JsFuture::from(window.fetch_with_str(&url))
+        .await
+        .map_err(|e| OrigaError::TokenizerError {
+            reason: format!("Failed to fetch {}: {:?}", filename, e),
+        })?;
+
+    let resp: web_sys::Response = resp_value.dyn_into().map_err(|e| OrigaError::TokenizerError {
+        reason: format!("Failed to cast response for {}: {:?}", filename, e),
+    })?;
+
+    if !resp.ok() {
+        return Err(OrigaError::TokenizerError {
+            reason: format!("Failed to fetch {}: HTTP {}", filename, resp.status()),
+        });
+    }
+
+    let array_buffer_promise = resp.array_buffer().map_err(|e| OrigaError::TokenizerError {
+        reason: format!("Failed to get array buffer for {}: {:?}", filename, e),
+    })?;
+
+    let array_buffer_value = JsFuture::from(array_buffer_promise)
+        .await
+        .map_err(|e| OrigaError::TokenizerError {
+            reason: format!("Failed to await array buffer for {}: {:?}", filename, e),
+        })?;
+
+    let array_buffer = js_sys::ArrayBuffer::from(array_buffer_value);
+    let bytes = js_sys::Uint8Array::new(&array_buffer).to_vec();
+
+    let decompressed = if field == "metadata" {
+        bytes
+    } else {
+        decompress(bytes)?
+    };
+
+    Ok((field.to_string(), decompressed))
+}
+
 pub async fn load_dictionary() -> Result<(), OrigaError> {
     if is_dictionary_loaded() {
         return Ok(());
     }
 
-    use leptos::wasm_bindgen::JsCast;
-    use wasm_bindgen_futures::JsFuture;
+    use futures::future::join_all;
 
     let base_url = "/public/dictionaries/unidic/";
     let files = [
@@ -37,6 +84,15 @@ pub async fn load_dictionary() -> Result<(), OrigaError> {
     let window = web_sys::window().ok_or_else(|| OrigaError::TokenizerError {
         reason: "No window found".to_string(),
     })?;
+
+    let fetch_futures: Vec<_> = files
+        .iter()
+        .map(|(field, filename)| fetch_file(&window, base_url, filename, field))
+        .collect();
+
+    let results = join_all(fetch_futures).await;
+    let results: Vec<_> = results.into_iter().collect::<Result<Vec<_>, _>>()?;
+
     let mut data = DictionaryData {
         char_def: Vec::new(),
         matrix: Vec::new(),
@@ -48,50 +104,8 @@ pub async fn load_dictionary() -> Result<(), OrigaError> {
         metadata: Vec::new(),
     };
 
-    for (field, filename) in &files {
-        let url = format!("{}{}", base_url, filename);
-        let resp_value = JsFuture::from(window.fetch_with_str(&url))
-            .await
-            .map_err(|e| OrigaError::TokenizerError {
-                reason: format!("Failed to fetch {}: {:?}", filename, e),
-            })?;
-
-        let resp: web_sys::Response =
-            resp_value
-                .dyn_into()
-                .map_err(|e| OrigaError::TokenizerError {
-                    reason: format!("Failed to cast response for {}: {:?}", filename, e),
-                })?;
-
-        if !resp.ok() {
-            return Err(OrigaError::TokenizerError {
-                reason: format!("Failed to fetch {}: HTTP {}", filename, resp.status()),
-            });
-        }
-
-        let array_buffer_promise = resp
-            .array_buffer()
-            .map_err(|e| OrigaError::TokenizerError {
-                reason: format!("Failed to get array buffer for {}: {:?}", filename, e),
-            })?;
-
-        let array_buffer_value =
-            JsFuture::from(array_buffer_promise)
-                .await
-                .map_err(|e| OrigaError::TokenizerError {
-                    reason: format!("Failed to await array buffer for {}: {:?}", filename, e),
-                })?;
-
-        let array_buffer = js_sys::ArrayBuffer::from(array_buffer_value);
-        let bytes = js_sys::Uint8Array::new(&array_buffer).to_vec();
-
-        let decompressed = if *field == "metadata" {
-            bytes
-        } else {
-            decompress(bytes)?
-        };
-
-        match *field {
+    for (field, decompressed) in results {
+        match field.as_str() {
             "char_def" => data.char_def = decompressed,
             "matrix" => data.matrix = decompressed,
             "dict_da" => data.dict_da = decompressed,
