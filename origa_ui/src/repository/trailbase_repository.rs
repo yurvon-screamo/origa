@@ -49,7 +49,7 @@ impl TrailBaseUserRepository {
         let api = self.client.records(&self.table_name);
 
         let records: Vec<UserRow> = api
-            .list_filtered(&format!("email=eq.{}", session.email))
+            .list_filtered("email", &session.email)
             .await
             .map_err(map_auth_error)?;
 
