@@ -221,7 +221,7 @@ impl TrailBaseClient {
     ) -> Result<TrailBaseSession, AuthError> {
         #[derive(Serialize)]
         struct TokenRequest<'a> {
-            code: &'a str,
+            authorization_code: &'a str,
             pkce_code_verifier: &'a str,
         }
 
@@ -230,7 +230,7 @@ impl TrailBaseClient {
                 "/api/auth/v1/token",
                 Method::POST,
                 Some(&TokenRequest {
-                    code,
+                    authorization_code: code,
                     pkce_code_verifier: pkce_verifier,
                 }),
                 None,
