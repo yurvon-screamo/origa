@@ -136,25 +136,21 @@ fn uuid_to_ulid(uuid_str: &str) -> Ulid {
 
 fn user_to_json(user: &User, auth_user_id: &str) -> serde_json::Value {
     let jlpt_progress_json = serde_json::to_string(user.jlpt_progress()).unwrap_or_else(|_| "null".to_string());
+    let knowledge_set_json = serde_json::to_string(user.knowledge_set()).unwrap_or_else(|_| "{\"study_cards\":{},\"lesson_history\":[]}".to_string());
     
-    let mut map = serde_json::Map::new();
-    map.insert("auth_user_id".to_string(), serde_json::json!(auth_user_id));
-    map.insert("username".to_string(), serde_json::json!(user.username()));
-    map.insert("email".to_string(), serde_json::json!(user.email()));
-    map.insert("native_language".to_string(), serde_json::json!(i32::from(user.native_language().clone())));
-    map.insert("current_japanese_level".to_string(), serde_json::json!(i32::from(user.current_japanese_level())));
-    map.insert("jlpt_progress".to_string(), serde_json::json!(jlpt_progress_json));
-    map.insert("reminders_enabled".to_string(), serde_json::json!(if user.reminders_enabled() { 1 } else { 0 }));
-    map.insert("knowledge_set".to_string(), serde_json::json!(user.knowledge_set()));
-    
-    if let Some(token) = user.duolingo_jwt_token() {
-        map.insert("duolingo_jwt_token".to_string(), serde_json::json!(token));
-    }
-    if let Some(id) = user.telegram_user_id().copied() {
-        map.insert("telegram_user_id".to_string(), serde_json::json!(id as i64));
-    }
-    
-    serde_json::Value::Object(map)
+    serde_json::json!({
+        "auth_user_id": auth_user_id,
+        "username": user.username(),
+        "email": user.email(),
+        "native_language": i32::from(user.native_language().clone()),
+        "current_japanese_level": i32::from(user.current_japanese_level()),
+        "jlpt_progress": jlpt_progress_json,
+        "duolingo_jwt_token": user.duolingo_jwt_token(),
+        "telegram_user_id": user.telegram_user_id().copied().map(|id| id as i64),
+        "reminders_enabled": if user.reminders_enabled() { 1 } else { 0 },
+        "knowledge_set": knowledge_set_json,
+        "updated_at": user.updated_at().to_rfc3339(),
+    })
 }
 
 impl UserRepository for TrailBaseUserRepository {
@@ -195,19 +191,12 @@ impl UserRepository for TrailBaseUserRepository {
         let api = self.client.records(&self.table_name);
         let body = user_to_json(user, &session.auth_user_id);
 
-        web_sys::console::log_1(&format!("Saving user, body: {}", serde_json::to_string(&body).unwrap_or_default()).into());
-
         if let Some((_, record_id)) = self.find_current().await? {
-            web_sys::console::log_1(&format!("Updating existing record: {}", record_id).into());
             api.update(&record_id.to_string(), &body)
                 .await
                 .map_err(map_auth_error)?;
         } else {
-            web_sys::console::log_1(&"Creating new record".into());
-            let created_id = api.create(&body).await.map_err(|e| {
-                web_sys::console::log_1(&format!("Create error: {:?}", e).into());
-                map_auth_error(e)
-            })?;
+            let created_id = api.create(&body).await.map_err(map_auth_error)?;
             let record_id: i64 = created_id
                 .parse()
                 .map_err(|_| OrigaError::RepositoryError {
