@@ -15,15 +15,18 @@ pub async fn load_all_data() -> Result<(), OrigaError> {
         return Ok(());
     }
 
-    let (vocab_result, radical_result) = futures::join!(load_vocabulary(), load_radical());
+    let (vocab_result, radical_result, kanji_result, grammar_result, jlpt_result) = futures::join!(
+        load_vocabulary(),
+        load_radical(),
+        load_kanji(),
+        load_grammar(),
+        load_jlpt_content()
+    );
     vocab_result?;
     radical_result?;
-
-    let (kanji_result, grammar_result) = futures::join!(load_kanji(), load_grammar());
     kanji_result?;
     grammar_result?;
-
-    load_jlpt_content().await?;
+    jlpt_result?;
 
     log::info!("All data loaded successfully");
     Ok(())
