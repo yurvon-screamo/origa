@@ -135,18 +135,20 @@ fn uuid_to_ulid(uuid_str: &str) -> Ulid {
 }
 
 fn user_to_json(user: &User, auth_user_id: &str) -> serde_json::Value {
+    let jlpt_progress_json = serde_json::to_string(user.jlpt_progress()).unwrap_or_else(|_| "null".to_string());
+    
     serde_json::json!({
         "auth_user_id": auth_user_id,
         "username": user.username(),
         "email": user.email(),
         "native_language": i32::from(user.native_language().clone()),
         "current_japanese_level": i32::from(user.current_japanese_level()),
-        "jlpt_progress": user.jlpt_progress(),
+        "jlpt_progress": jlpt_progress_json,
         "duolingo_jwt_token": user.duolingo_jwt_token(),
         "telegram_user_id": user.telegram_user_id().copied().map(|id| id as i64),
         "reminders_enabled": if user.reminders_enabled() { 1 } else { 0 },
         "knowledge_set": user.knowledge_set(),
-        "updated_at": user.updated_at(),
+        "updated_at": user.updated_at().to_rfc3339(),
     })
 }
 
