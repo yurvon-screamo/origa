@@ -208,9 +208,16 @@ impl TrailBaseClient {
     pub fn get_oauth_url(provider: &str, redirect_uri: &str, pkce_challenge: &str) -> String {
         let encoded_redirect = urlencoding::encode(redirect_uri);
         let encoded_challenge = urlencoding::encode(pkce_challenge);
+        
+        let scope = if provider == "oidc0" {
+            "&scope=login:email%20login:info"
+        } else {
+            ""
+        };
+
         format!(
-            "{}/api/auth/v1/oauth/{}/login?redirect_uri={}&response_type=code&pkce_code_challenge={}",
-            TRAILBASE_URL, provider, encoded_redirect, encoded_challenge
+            "{}/api/auth/v1/oauth/{}/login?redirect_uri={}&response_type=code&pkce_code_challenge={}{}",
+            TRAILBASE_URL, provider, encoded_redirect, encoded_challenge, scope
         )
     }
 
