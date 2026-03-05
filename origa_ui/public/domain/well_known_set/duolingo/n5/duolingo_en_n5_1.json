@@ -1,0 +1,22 @@
+{
+	"level": "N5",
+	"content": {
+		"Russian": {
+			"title": "Duolingo (EN) - Section 1 Unit 1",
+			"description": "Слова из модуля: order food"
+		},
+		"English": {
+			"title": "Duolingo (EN) - Section 1 Unit 1",
+			"description": "Words from section/unit: order food"
+		}
+	},
+	"words": [
+		"です",
+		"と",
+		"みず",
+		"ごはん",
+		"すし",
+		"ください",
+		"おちゃ"
+	]
+}
