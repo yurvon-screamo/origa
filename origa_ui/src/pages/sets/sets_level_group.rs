@@ -38,6 +38,11 @@ pub fn SetsLevelGroup(
                     sets_for_level=sets_for_level
                     on_import=on_import
                 />
+                <SetsTypeGroup
+                    set_type=SetType::Duolingo
+                    sets_for_level=sets_for_level
+                    on_import=on_import
+                />
             </div>
         </Show>
     }

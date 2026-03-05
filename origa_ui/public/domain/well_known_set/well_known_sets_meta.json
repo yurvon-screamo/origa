@@ -1,5 +1,4064 @@
 [
   {
+    "id": "duolingo_n3_duolingo_en_n3_1",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 5 Unit 1",
+    "title_en": "Duolingo (EN) - Section 5 Unit 1",
+    "desc_ru": "Слова из модуля: express possibilities",
+    "desc_en": "Words from section/unit: express possibilities"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_10",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 5 Unit 10",
+    "title_en": "Duolingo (EN) - Section 5 Unit 10",
+    "desc_ru": "Слова из модуля: discuss the outdoors",
+    "desc_en": "Words from section/unit: discuss the outdoors"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_11",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 5 Unit 11",
+    "title_en": "Duolingo (EN) - Section 5 Unit 11",
+    "desc_ru": "Слова из модуля: suggest activities",
+    "desc_en": "Words from section/unit: suggest activities"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_12",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 5 Unit 12",
+    "title_en": "Duolingo (EN) - Section 5 Unit 12",
+    "desc_ru": "Слова из модуля: express opinions",
+    "desc_en": "Words from section/unit: express opinions"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_13",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 5 Unit 13",
+    "title_en": "Duolingo (EN) - Section 5 Unit 13",
+    "desc_ru": "Слова из модуля: get around an airport",
+    "desc_en": "Words from section/unit: get around an airport"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_14",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 5 Unit 14",
+    "title_en": "Duolingo (EN) - Section 5 Unit 14",
+    "desc_ru": "Слова из модуля: talk about school",
+    "desc_en": "Words from section/unit: talk about school"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_15",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 5 Unit 15",
+    "title_en": "Duolingo (EN) - Section 5 Unit 15",
+    "desc_ru": "Слова из модуля: discuss religion",
+    "desc_en": "Words from section/unit: discuss religion"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_16",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 5 Unit 16",
+    "title_en": "Duolingo (EN) - Section 5 Unit 16",
+    "desc_ru": "Слова из модуля: talk about opinions",
+    "desc_en": "Words from section/unit: talk about opinions"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_17",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 5 Unit 17",
+    "title_en": "Duolingo (EN) - Section 5 Unit 17",
+    "desc_ru": "Слова из модуля: describe health issues",
+    "desc_en": "Words from section/unit: describe health issues"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_18",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 5 Unit 18",
+    "title_en": "Duolingo (EN) - Section 5 Unit 18",
+    "desc_ru": "Слова из модуля: identify seafood",
+    "desc_en": "Words from section/unit: identify seafood"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_19",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 5 Unit 19",
+    "title_en": "Duolingo (EN) - Section 5 Unit 19",
+    "desc_ru": "Слова из модуля: discuss society",
+    "desc_en": "Words from section/unit: discuss society"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_2",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 5 Unit 2",
+    "title_en": "Duolingo (EN) - Section 5 Unit 2",
+    "desc_ru": "Слова из модуля: discuss cooking",
+    "desc_en": "Words from section/unit: discuss cooking"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_20",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 5 Unit 20",
+    "title_en": "Duolingo (EN) - Section 5 Unit 20",
+    "desc_ru": "Слова из модуля: talk about your day",
+    "desc_en": "Words from section/unit: talk about your day"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_21",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 5 Unit 21",
+    "title_en": "Duolingo (EN) - Section 5 Unit 21",
+    "desc_ru": "Слова из модуля: express feelings",
+    "desc_en": "Words from section/unit: express feelings"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_22",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 5 Unit 22",
+    "title_en": "Duolingo (EN) - Section 5 Unit 22",
+    "desc_ru": "Слова из модуля: discuss politics",
+    "desc_en": "Words from section/unit: discuss politics"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_23",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 5 Unit 23",
+    "title_en": "Duolingo (EN) - Section 5 Unit 23",
+    "desc_ru": "Слова из модуля: talk about creative arts",
+    "desc_en": "Words from section/unit: talk about creative arts"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_24",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 5 Unit 24",
+    "title_en": "Duolingo (EN) - Section 5 Unit 24",
+    "desc_ru": "Слова из модуля: use the passive form",
+    "desc_en": "Words from section/unit: use the passive form"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_25",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 5 Unit 25",
+    "title_en": "Duolingo (EN) - Section 5 Unit 25",
+    "desc_ru": "Слова из модуля: talk about geography",
+    "desc_en": "Words from section/unit: talk about geography"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_26",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 5 Unit 26",
+    "title_en": "Duolingo (EN) - Section 5 Unit 26",
+    "desc_ru": "Слова из модуля: discuss the law",
+    "desc_en": "Words from section/unit: discuss the law"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_27",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 5 Unit 27",
+    "title_en": "Duolingo (EN) - Section 5 Unit 27",
+    "desc_ru": "Слова из модуля: talk about weather",
+    "desc_en": "Words from section/unit: talk about weather"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_28",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 5 Unit 28",
+    "title_en": "Duolingo (EN) - Section 5 Unit 28",
+    "desc_ru": "Слова из модуля: make plans",
+    "desc_en": "Words from section/unit: make plans"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_29",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 5 Unit 29",
+    "title_en": "Duolingo (EN) - Section 5 Unit 29",
+    "desc_ru": "Слова из модуля: talk about cooking",
+    "desc_en": "Words from section/unit: talk about cooking"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_3",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 5 Unit 3",
+    "title_en": "Duolingo (EN) - Section 5 Unit 3",
+    "desc_ru": "Слова из модуля: talk about common items",
+    "desc_en": "Words from section/unit: talk about common items"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_30",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 5 Unit 30",
+    "title_en": "Duolingo (EN) - Section 5 Unit 30",
+    "desc_ru": "Слова из модуля: discuss conflict",
+    "desc_en": "Words from section/unit: discuss conflict"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_31",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 5 Unit 31",
+    "title_en": "Duolingo (EN) - Section 5 Unit 31",
+    "desc_ru": "Слова из модуля: talk about disasters",
+    "desc_en": "Words from section/unit: talk about disasters"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_32",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 5 Unit 32",
+    "title_en": "Duolingo (EN) - Section 5 Unit 32",
+    "desc_ru": "Слова из модуля: discuss laws",
+    "desc_en": "Words from section/unit: discuss laws"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_33",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 5 Unit 33",
+    "title_en": "Duolingo (EN) - Section 5 Unit 33",
+    "desc_ru": "Слова из модуля: talk about your home",
+    "desc_en": "Words from section/unit: talk about your home"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_34",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 5 Unit 34",
+    "title_en": "Duolingo (EN) - Section 5 Unit 34",
+    "desc_ru": "Слова из модуля: use commands",
+    "desc_en": "Words from section/unit: use commands"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_35",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 5 Unit 35",
+    "title_en": "Duolingo (EN) - Section 5 Unit 35",
+    "desc_ru": "Слова из модуля: schedule plans",
+    "desc_en": "Words from section/unit: schedule plans"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_36",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 5 Unit 36",
+    "title_en": "Duolingo (EN) - Section 5 Unit 36",
+    "desc_ru": "Слова из модуля: use polite language",
+    "desc_en": "Words from section/unit: use polite language"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_37",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 5 Unit 37",
+    "title_en": "Duolingo (EN) - Section 5 Unit 37",
+    "desc_ru": "Слова из модуля: talk about a work day",
+    "desc_en": "Words from section/unit: talk about a work day"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_38",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 5 Unit 38",
+    "title_en": "Duolingo (EN) - Section 5 Unit 38",
+    "desc_ru": "Слова из модуля: discuss geography",
+    "desc_en": "Words from section/unit: discuss geography"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_39",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 5 Unit 39",
+    "title_en": "Duolingo (EN) - Section 5 Unit 39",
+    "desc_ru": "Слова из модуля: talk about money",
+    "desc_en": "Words from section/unit: talk about money"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_4",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 5 Unit 4",
+    "title_en": "Duolingo (EN) - Section 5 Unit 4",
+    "desc_ru": "Слова из модуля: discuss possibilities",
+    "desc_en": "Words from section/unit: discuss possibilities"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_40",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 5 Unit 40",
+    "title_en": "Duolingo (EN) - Section 5 Unit 40",
+    "desc_ru": "Слова из модуля: discuss politics",
+    "desc_en": "Words from section/unit: discuss politics"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_41",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 5 Unit 41",
+    "title_en": "Duolingo (EN) - Section 5 Unit 41",
+    "desc_ru": "Слова из модуля: describe health issues",
+    "desc_en": "Words from section/unit: describe health issues"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_42",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 5 Unit 42",
+    "title_en": "Duolingo (EN) - Section 5 Unit 42",
+    "desc_ru": "Слова из модуля: check in to a hotel",
+    "desc_en": "Words from section/unit: check in to a hotel"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_43",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 5 Unit 43",
+    "title_en": "Duolingo (EN) - Section 5 Unit 43",
+    "desc_ru": "Слова из модуля: talk about the news",
+    "desc_en": "Words from section/unit: talk about the news"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_44",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 5 Unit 44",
+    "title_en": "Duolingo (EN) - Section 5 Unit 44",
+    "desc_ru": "Слова из модуля: discuss conflict",
+    "desc_en": "Words from section/unit: discuss conflict"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_45",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 5 Unit 45",
+    "title_en": "Duolingo (EN) - Section 5 Unit 45",
+    "desc_ru": "Слова из модуля: talk about transportation",
+    "desc_en": "Words from section/unit: talk about transportation"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_46",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 5 Unit 46",
+    "title_en": "Duolingo (EN) - Section 5 Unit 46",
+    "desc_ru": "Слова из модуля: talk about exercise",
+    "desc_en": "Words from section/unit: talk about exercise"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_47",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 5 Unit 47",
+    "title_en": "Duolingo (EN) - Section 5 Unit 47",
+    "desc_ru": "Слова из модуля: discuss fairy tales",
+    "desc_en": "Words from section/unit: discuss fairy tales"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_48",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 5 Unit 48",
+    "title_en": "Duolingo (EN) - Section 5 Unit 48",
+    "desc_ru": "Слова из модуля: talk about technology",
+    "desc_en": "Words from section/unit: talk about technology"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_49",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 5 Unit 49",
+    "title_en": "Duolingo (EN) - Section 5 Unit 49",
+    "desc_ru": "Слова из модуля: express ideas",
+    "desc_en": "Words from section/unit: express ideas"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_5",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 5 Unit 5",
+    "title_en": "Duolingo (EN) - Section 5 Unit 5",
+    "desc_ru": "Слова из модуля: get emergency help",
+    "desc_en": "Words from section/unit: get emergency help"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_50",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 5 Unit 50",
+    "title_en": "Duolingo (EN) - Section 5 Unit 50",
+    "desc_ru": "Слова из модуля: talk about celebrations",
+    "desc_en": "Words from section/unit: talk about celebrations"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_51",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 6 Unit 1",
+    "title_en": "Duolingo (EN) - Section 6 Unit 1",
+    "desc_ru": "Слова из модуля: describe a hospital visit",
+    "desc_en": "Words from section/unit: describe a hospital visit"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_52",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 6 Unit 2",
+    "title_en": "Duolingo (EN) - Section 6 Unit 2",
+    "desc_ru": "Слова из модуля: discuss cooking",
+    "desc_en": "Words from section/unit: discuss cooking"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_53",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 6 Unit 3",
+    "title_en": "Duolingo (EN) - Section 6 Unit 3",
+    "desc_ru": "Слова из модуля: ride a train or bus",
+    "desc_en": "Words from section/unit: ride a train or bus"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_54",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 6 Unit 4",
+    "title_en": "Duolingo (EN) - Section 6 Unit 4",
+    "desc_ru": "Слова из модуля: discuss business",
+    "desc_en": "Words from section/unit: discuss business"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_55",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 6 Unit 5",
+    "title_en": "Duolingo (EN) - Section 6 Unit 5",
+    "desc_ru": "Слова из модуля: describe people's jobs",
+    "desc_en": "Words from section/unit: describe people's jobs"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_56",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 6 Unit 6",
+    "title_en": "Duolingo (EN) - Section 6 Unit 6",
+    "desc_ru": "Слова из модуля: talk about chores",
+    "desc_en": "Words from section/unit: talk about chores"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_57",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 6 Unit 7",
+    "title_en": "Duolingo (EN) - Section 6 Unit 7",
+    "desc_ru": "Слова из модуля: discuss the news",
+    "desc_en": "Words from section/unit: discuss the news"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_58",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 6 Unit 8",
+    "title_en": "Duolingo (EN) - Section 6 Unit 8",
+    "desc_ru": "Слова из модуля: express your feelings",
+    "desc_en": "Words from section/unit: express your feelings"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_59",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 6 Unit 9",
+    "title_en": "Duolingo (EN) - Section 6 Unit 9",
+    "desc_ru": "Слова из модуля: use commands",
+    "desc_en": "Words from section/unit: use commands"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_6",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 5 Unit 6",
+    "title_en": "Duolingo (EN) - Section 5 Unit 6",
+    "desc_ru": "Слова из модуля: take public transit",
+    "desc_en": "Words from section/unit: take public transit"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_60",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 6 Unit 10",
+    "title_en": "Duolingo (EN) - Section 6 Unit 10",
+    "desc_ru": "Слова из модуля: describe the outdoors",
+    "desc_en": "Words from section/unit: describe the outdoors"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_61",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 6 Unit 11",
+    "title_en": "Duolingo (EN) - Section 6 Unit 11",
+    "desc_ru": "Слова из модуля: talk about animals",
+    "desc_en": "Words from section/unit: talk about animals"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_62",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 6 Unit 12",
+    "title_en": "Duolingo (EN) - Section 6 Unit 12",
+    "desc_ru": "Слова из модуля: discuss space",
+    "desc_en": "Words from section/unit: discuss space"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_63",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 6 Unit 13",
+    "title_en": "Duolingo (EN) - Section 6 Unit 13",
+    "desc_ru": "Слова из модуля: use casual language",
+    "desc_en": "Words from section/unit: use casual language"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_64",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 6 Unit 14",
+    "title_en": "Duolingo (EN) - Section 6 Unit 14",
+    "desc_ru": "Слова из модуля: discuss religion",
+    "desc_en": "Words from section/unit: discuss religion"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_65",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 6 Unit 15",
+    "title_en": "Duolingo (EN) - Section 6 Unit 15",
+    "desc_ru": "Слова из модуля: express desires",
+    "desc_en": "Words from section/unit: express desires"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_66",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 6 Unit 16",
+    "title_en": "Duolingo (EN) - Section 6 Unit 16",
+    "desc_ru": "Слова из модуля: talk to a hair stylist",
+    "desc_en": "Words from section/unit: talk to a hair stylist"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_67",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 6 Unit 17",
+    "title_en": "Duolingo (EN) - Section 6 Unit 17",
+    "desc_ru": "Слова из модуля: talk to a dentist",
+    "desc_en": "Words from section/unit: talk to a dentist"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_68",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 6 Unit 18",
+    "title_en": "Duolingo (EN) - Section 6 Unit 18",
+    "desc_ru": "Слова из модуля: describe home appliances",
+    "desc_en": "Words from section/unit: describe home appliances"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_69",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 6 Unit 19",
+    "title_en": "Duolingo (EN) - Section 6 Unit 19",
+    "desc_ru": "Слова из модуля: follow a cooking recipe",
+    "desc_en": "Words from section/unit: follow a cooking recipe"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_7",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 5 Unit 7",
+    "title_en": "Duolingo (EN) - Section 5 Unit 7",
+    "desc_ru": "Слова из модуля: talk about education",
+    "desc_en": "Words from section/unit: talk about education"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_70",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 6 Unit 20",
+    "title_en": "Duolingo (EN) - Section 6 Unit 20",
+    "desc_ru": "Слова из модуля: talk about work",
+    "desc_en": "Words from section/unit: talk about work"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_71",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 6 Unit 21",
+    "title_en": "Duolingo (EN) - Section 6 Unit 21",
+    "desc_ru": "Слова из модуля: discuss relationships",
+    "desc_en": "Words from section/unit: discuss relationships"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_72",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 6 Unit 22",
+    "title_en": "Duolingo (EN) - Section 6 Unit 22",
+    "desc_ru": "Слова из модуля: talk about school",
+    "desc_en": "Words from section/unit: talk about school"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_73",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 6 Unit 23",
+    "title_en": "Duolingo (EN) - Section 6 Unit 23",
+    "desc_ru": "Слова из модуля: discuss medical treatment",
+    "desc_en": "Words from section/unit: discuss medical treatment"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_74",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 6 Unit 24",
+    "title_en": "Duolingo (EN) - Section 6 Unit 24",
+    "desc_ru": "Слова из модуля: talk about science",
+    "desc_en": "Words from section/unit: talk about science"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_75",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 6 Unit 25",
+    "title_en": "Duolingo (EN) - Section 6 Unit 25",
+    "desc_ru": "Слова из модуля: discuss creative arts",
+    "desc_en": "Words from section/unit: discuss creative arts"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_76",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 6 Unit 26",
+    "title_en": "Duolingo (EN) - Section 6 Unit 26",
+    "desc_ru": "Слова из модуля: express thoughts",
+    "desc_en": "Words from section/unit: express thoughts"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_77",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 6 Unit 27",
+    "title_en": "Duolingo (EN) - Section 6 Unit 27",
+    "desc_ru": "Слова из модуля: talk about history",
+    "desc_en": "Words from section/unit: talk about history"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_78",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 6 Unit 28",
+    "title_en": "Duolingo (EN) - Section 6 Unit 28",
+    "desc_ru": "Слова из модуля: discuss food and drink",
+    "desc_en": "Words from section/unit: discuss food and drink"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_79",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 6 Unit 29",
+    "title_en": "Duolingo (EN) - Section 6 Unit 29",
+    "desc_ru": "Слова из модуля: talk about nature",
+    "desc_en": "Words from section/unit: talk about nature"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_8",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 5 Unit 8",
+    "title_en": "Duolingo (EN) - Section 5 Unit 8",
+    "desc_ru": "Слова из модуля: discuss work",
+    "desc_en": "Words from section/unit: discuss work"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_80",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 6 Unit 30",
+    "title_en": "Duolingo (EN) - Section 6 Unit 30",
+    "desc_ru": "Слова из модуля: discuss fiction",
+    "desc_en": "Words from section/unit: discuss fiction"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_81",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 6 Unit 31",
+    "title_en": "Duolingo (EN) - Section 6 Unit 31",
+    "desc_ru": "Слова из модуля: use casual language",
+    "desc_en": "Words from section/unit: use casual language"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_82",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 6 Unit 32",
+    "title_en": "Duolingo (EN) - Section 6 Unit 32",
+    "desc_ru": "Слова из модуля: discuss life on a farm",
+    "desc_en": "Words from section/unit: discuss life on a farm"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_83",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 6 Unit 33",
+    "title_en": "Duolingo (EN) - Section 6 Unit 33",
+    "desc_ru": "Слова из модуля: use polite language",
+    "desc_en": "Words from section/unit: use polite language"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_84",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 6 Unit 34",
+    "title_en": "Duolingo (EN) - Section 6 Unit 34",
+    "desc_ru": "Слова из модуля: talk about languages",
+    "desc_en": "Words from section/unit: talk about languages"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_85",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 6 Unit 35",
+    "title_en": "Duolingo (EN) - Section 6 Unit 35",
+    "desc_ru": "Слова из модуля: say how you feel",
+    "desc_en": "Words from section/unit: say how you feel"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_86",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 6 Unit 36",
+    "title_en": "Duolingo (EN) - Section 6 Unit 36",
+    "desc_ru": "Слова из модуля: discuss science",
+    "desc_en": "Words from section/unit: discuss science"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_87",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 6 Unit 37",
+    "title_en": "Duolingo (EN) - Section 6 Unit 37",
+    "desc_ru": "Слова из модуля: talk about business",
+    "desc_en": "Words from section/unit: talk about business"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_88",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 6 Unit 38",
+    "title_en": "Duolingo (EN) - Section 6 Unit 38",
+    "desc_ru": "Слова из модуля: share opinions",
+    "desc_en": "Words from section/unit: share opinions"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_89",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 6 Unit 39",
+    "title_en": "Duolingo (EN) - Section 6 Unit 39",
+    "desc_ru": "Слова из модуля: discuss nature",
+    "desc_en": "Words from section/unit: discuss nature"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_9",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 5 Unit 9",
+    "title_en": "Duolingo (EN) - Section 5 Unit 9",
+    "desc_ru": "Слова из модуля: use numbers",
+    "desc_en": "Words from section/unit: use numbers"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_90",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 6 Unit 40",
+    "title_en": "Duolingo (EN) - Section 6 Unit 40",
+    "desc_ru": "Слова из модуля: talk about the news",
+    "desc_en": "Words from section/unit: talk about the news"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_91",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 6 Unit 41",
+    "title_en": "Duolingo (EN) - Section 6 Unit 41",
+    "desc_ru": "Слова из модуля: express feelings",
+    "desc_en": "Words from section/unit: express feelings"
+  },
+  {
+    "id": "duolingo_n3_duolingo_en_n3_92",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (EN) - Section 6 Unit 42",
+    "title_en": "Duolingo (EN) - Section 6 Unit 42",
+    "desc_ru": "Слова из модуля: talk about seasons",
+    "desc_en": "Words from section/unit: talk about seasons"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_1",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 5 Раздел 1",
+    "title_en": "Duolingo (RU) - Модуль 5 Раздел 1",
+    "desc_ru": "Слова из модуля: Команда: Спроси о командных правилах",
+    "desc_en": "Words from module: Команда: Спроси о командных правилах"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_10",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 5 Раздел 10",
+    "title_en": "Duolingo (RU) - Модуль 5 Раздел 10",
+    "desc_ru": "Слова из модуля: Фестиваль: Расскажи о фестивале",
+    "desc_en": "Words from module: Фестиваль: Расскажи о фестивале"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_100",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 6 Раздел 48",
+    "title_en": "Duolingo (RU) - Модуль 6 Раздел 48",
+    "desc_ru": "Слова из модуля: Жизнь: Обсуди новые занятия",
+    "desc_en": "Words from module: Жизнь: Обсуди новые занятия"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_11",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 5 Раздел 11",
+    "title_en": "Duolingo (RU) - Модуль 5 Раздел 11",
+    "desc_ru": "Слова из модуля: Друзья: Расскажи о своих друзьях",
+    "desc_en": "Words from module: Друзья: Расскажи о своих друзьях"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_12",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 5 Раздел 12",
+    "title_en": "Duolingo (RU) - Модуль 5 Раздел 12",
+    "desc_ru": "Слова из модуля: Вещи: Спроси, где это лежит",
+    "desc_en": "Words from module: Вещи: Спроси, где это лежит"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_13",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 5 Раздел 13",
+    "title_en": "Duolingo (RU) - Модуль 5 Раздел 13",
+    "desc_ru": "Слова из модуля: Друзья: Расскажи о друге",
+    "desc_en": "Words from module: Друзья: Расскажи о друге"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_14",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 5 Раздел 14",
+    "title_en": "Duolingo (RU) - Модуль 5 Раздел 14",
+    "desc_ru": "Слова из модуля: Будни: Расскажи о событии",
+    "desc_en": "Words from module: Будни: Расскажи о событии"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_15",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 5 Раздел 15",
+    "title_en": "Duolingo (RU) - Модуль 5 Раздел 15",
+    "desc_ru": "Слова из модуля: Общение: Обсуди результаты опроса",
+    "desc_en": "Words from module: Общение: Обсуди результаты опроса"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_16",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 5 Раздел 16",
+    "title_en": "Duolingo (RU) - Модуль 5 Раздел 16",
+    "desc_ru": "Слова из модуля: Клубы: Расскажи о своём клубе",
+    "desc_en": "Words from module: Клубы: Расскажи о своём клубе"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_17",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 5 Раздел 17",
+    "title_en": "Duolingo (RU) - Модуль 5 Раздел 17",
+    "desc_ru": "Слова из модуля: События: Сообщи о возвращении",
+    "desc_en": "Words from module: События: Сообщи о возвращении"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_18",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 5 Раздел 18",
+    "title_en": "Duolingo (RU) - Модуль 5 Раздел 18",
+    "desc_ru": "Слова из модуля: Няня: Представься детям",
+    "desc_en": "Words from module: Няня: Представься детям"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_19",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 5 Раздел 19",
+    "title_en": "Duolingo (RU) - Модуль 5 Раздел 19",
+    "desc_ru": "Слова из модуля: Продукты: Опиши любимую еду",
+    "desc_en": "Words from module: Продукты: Опиши любимую еду"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_2",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 5 Раздел 2",
+    "title_en": "Duolingo (RU) - Модуль 5 Раздел 2",
+    "desc_ru": "Слова из модуля: Повседнев: Обсуди планы на поездку",
+    "desc_en": "Words from module: Повседнев: Обсуди планы на поездку"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_20",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 5 Раздел 20",
+    "title_en": "Duolingo (RU) - Модуль 5 Раздел 20",
+    "desc_ru": "Слова из модуля: Дом: Опиши свой дом",
+    "desc_en": "Words from module: Дом: Опиши свой дом"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_21",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 5 Раздел 21",
+    "title_en": "Duolingo (RU) - Модуль 5 Раздел 21",
+    "desc_ru": "Слова из модуля: Город: Опиши свой город",
+    "desc_en": "Words from module: Город: Опиши свой город"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_22",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 5 Раздел 22",
+    "title_en": "Duolingo (RU) - Модуль 5 Раздел 22",
+    "desc_ru": "Слова из модуля: Лагерь: Опиши свой лагерь",
+    "desc_en": "Words from module: Лагерь: Опиши свой лагерь"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_23",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 5 Раздел 23",
+    "title_en": "Duolingo (RU) - Модуль 5 Раздел 23",
+    "desc_ru": "Слова из модуля: Работа: Опиши путь на работу",
+    "desc_en": "Words from module: Работа: Опиши путь на работу"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_24",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 5 Раздел 24",
+    "title_en": "Duolingo (RU) - Модуль 5 Раздел 24",
+    "desc_ru": "Слова из модуля: Семья: Опиши свою семью",
+    "desc_en": "Words from module: Семья: Опиши свою семью"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_25",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 5 Раздел 25",
+    "title_en": "Duolingo (RU) - Модуль 5 Раздел 25",
+    "desc_ru": "Слова из модуля: Правила: Спроси о распорядке дня",
+    "desc_en": "Words from module: Правила: Спроси о распорядке дня"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_26",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 5 Раздел 26",
+    "title_en": "Duolingo (RU) - Модуль 5 Раздел 26",
+    "desc_ru": "Слова из модуля: Зоопарк: Расскажи о животных",
+    "desc_en": "Words from module: Зоопарк: Расскажи о животных"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_27",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 5 Раздел 27",
+    "title_en": "Duolingo (RU) - Модуль 5 Раздел 27",
+    "desc_ru": "Слова из модуля: Обычное: Погуляй по парку",
+    "desc_en": "Words from module: Обычное: Погуляй по парку"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_28",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 5 Раздел 28",
+    "title_en": "Duolingo (RU) - Модуль 5 Раздел 28",
+    "desc_ru": "Слова из модуля: Офис: Обсуди работу в команде",
+    "desc_en": "Words from module: Офис: Обсуди работу в команде"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_29",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 5 Раздел 29",
+    "title_en": "Duolingo (RU) - Модуль 5 Раздел 29",
+    "desc_ru": "Слова из модуля: Быт: Используй новые слова",
+    "desc_en": "Words from module: Быт: Используй новые слова"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_3",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 5 Раздел 3",
+    "title_en": "Duolingo (RU) - Модуль 5 Раздел 3",
+    "desc_ru": "Слова из модуля: Группа: Опиши умения группы",
+    "desc_en": "Words from module: Группа: Опиши умения группы"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_30",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 5 Раздел 30",
+    "title_en": "Duolingo (RU) - Модуль 5 Раздел 30",
+    "desc_ru": "Слова из модуля: Клиника: Обсуди условия в клинике",
+    "desc_en": "Words from module: Клиника: Обсуди условия в клинике"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_31",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 5 Раздел 31",
+    "title_en": "Duolingo (RU) - Модуль 5 Раздел 31",
+    "desc_ru": "Слова из модуля: Город: Узнай о транспорте в городе",
+    "desc_en": "Words from module: Город: Узнай о транспорте в городе"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_32",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 5 Раздел 32",
+    "title_en": "Duolingo (RU) - Модуль 5 Раздел 32",
+    "desc_ru": "Слова из модуля: Цели: Определи свои цели",
+    "desc_en": "Words from module: Цели: Определи свои цели"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_33",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 5 Раздел 33",
+    "title_en": "Duolingo (RU) - Модуль 5 Раздел 33",
+    "desc_ru": "Слова из модуля: Проект: Расскажи о подготовке к поездке",
+    "desc_en": "Words from module: Проект: Расскажи о подготовке к поездке"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_34",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 5 Раздел 34",
+    "title_en": "Duolingo (RU) - Модуль 5 Раздел 34",
+    "desc_ru": "Слова из модуля: Друзья: Расскажи о друзьях",
+    "desc_en": "Words from module: Друзья: Расскажи о друзьях"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_35",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 5 Раздел 35",
+    "title_en": "Duolingo (RU) - Модуль 5 Раздел 35",
+    "desc_ru": "Слова из модуля: Кухня: Расскажи о любимом блюде",
+    "desc_en": "Words from module: Кухня: Расскажи о любимом блюде"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_36",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 5 Раздел 36",
+    "title_en": "Duolingo (RU) - Модуль 5 Раздел 36",
+    "desc_ru": "Слова из модуля: Подготовка: Обсуди планы на случай ЧС",
+    "desc_en": "Words from module: Подготовка: Обсуди планы на случай ЧС"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_37",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 5 Раздел 37",
+    "title_en": "Duolingo (RU) - Модуль 5 Раздел 37",
+    "desc_ru": "Слова из модуля: Опыт: Расскажи о своём опыте",
+    "desc_en": "Words from module: Опыт: Расскажи о своём опыте"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_38",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 5 Раздел 38",
+    "title_en": "Duolingo (RU) - Модуль 5 Раздел 38",
+    "desc_ru": "Слова из модуля: Семья: Опиши привычки семьи",
+    "desc_en": "Words from module: Семья: Опиши привычки семьи"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_39",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 5 Раздел 39",
+    "title_en": "Duolingo (RU) - Модуль 5 Раздел 39",
+    "desc_ru": "Слова из модуля: Дом: Расскажи о террасе",
+    "desc_en": "Words from module: Дом: Расскажи о террасе"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_4",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 5 Раздел 4",
+    "title_en": "Duolingo (RU) - Модуль 5 Раздел 4",
+    "desc_ru": "Слова из модуля: Досуг: Расскажи о своем досуге",
+    "desc_en": "Words from module: Досуг: Расскажи о своем досуге"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_40",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 5 Раздел 40",
+    "title_en": "Duolingo (RU) - Модуль 5 Раздел 40",
+    "desc_ru": "Слова из модуля: Школа: Расскажи о школьных заданиях",
+    "desc_en": "Words from module: Школа: Расскажи о школьных заданиях"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_41",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 5 Раздел 41",
+    "title_en": "Duolingo (RU) - Модуль 5 Раздел 41",
+    "desc_ru": "Слова из модуля: улица: Опиши маршрут до кафе",
+    "desc_en": "Words from module: улица: Опиши маршрут до кафе"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_42",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 5 Раздел 42",
+    "title_en": "Duolingo (RU) - Модуль 5 Раздел 42",
+    "desc_ru": "Слова из модуля: Темы: Расскажи о любимой теме",
+    "desc_en": "Words from module: Темы: Расскажи о любимой теме"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_43",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 5 Раздел 43",
+    "title_en": "Duolingo (RU) - Модуль 5 Раздел 43",
+    "desc_ru": "Слова из модуля: Классика: Объясни свой выбор музыки",
+    "desc_en": "Words from module: Классика: Объясни свой выбор музыки"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_44",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 5 Раздел 44",
+    "title_en": "Duolingo (RU) - Модуль 5 Раздел 44",
+    "desc_ru": "Слова из модуля: Привычки: Расскажи о своих привычках",
+    "desc_en": "Words from module: Привычки: Расскажи о своих привычках"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_45",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 5 Раздел 45",
+    "title_en": "Duolingo (RU) - Модуль 5 Раздел 45",
+    "desc_ru": "Слова из модуля: Клубы: Объясни правила клуба",
+    "desc_en": "Words from module: Клубы: Объясни правила клуба"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_46",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 5 Раздел 46",
+    "title_en": "Duolingo (RU) - Модуль 5 Раздел 46",
+    "desc_ru": "Слова из модуля: Обычаи: Расскажи о зимних обычаях",
+    "desc_en": "Words from module: Обычаи: Расскажи о зимних обычаях"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_47",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 5 Раздел 47",
+    "title_en": "Duolingo (RU) - Модуль 5 Раздел 47",
+    "desc_ru": "Слова из модуля: Встреча: Представь гостя",
+    "desc_en": "Words from module: Встреча: Представь гостя"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_48",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 5 Раздел 48",
+    "title_en": "Duolingo (RU) - Модуль 5 Раздел 48",
+    "desc_ru": "Слова из модуля: Работа: Объясни новую услугу",
+    "desc_en": "Words from module: Работа: Объясни новую услугу"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_49",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 5 Раздел 49",
+    "title_en": "Duolingo (RU) - Модуль 5 Раздел 49",
+    "desc_ru": "Слова из модуля: Музей: Опиши картину",
+    "desc_en": "Words from module: Музей: Опиши картину"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_5",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 5 Раздел 5",
+    "title_en": "Duolingo (RU) - Модуль 5 Раздел 5",
+    "desc_ru": "Слова из модуля: Праздник: Расскажи о празднике",
+    "desc_en": "Words from module: Праздник: Расскажи о празднике"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_50",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 5 Раздел 50",
+    "title_en": "Duolingo (RU) - Модуль 5 Раздел 50",
+    "desc_ru": "Слова из модуля: Удобства: Объясни где ждать поезд",
+    "desc_en": "Words from module: Удобства: Объясни где ждать поезд"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_51",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 5 Раздел 51",
+    "title_en": "Duolingo (RU) - Модуль 5 Раздел 51",
+    "desc_ru": "Слова из модуля: Правила: Объясни местные правила",
+    "desc_en": "Words from module: Правила: Объясни местные правила"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_52",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 5 Раздел 52",
+    "title_en": "Duolingo (RU) - Модуль 5 Раздел 52",
+    "desc_ru": "Слова из модуля: События: Опиши праздник",
+    "desc_en": "Words from module: События: Опиши праздник"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_53",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 6 Раздел 1",
+    "title_en": "Duolingo (RU) - Модуль 6 Раздел 1",
+    "desc_ru": "Слова из модуля: Офис: Опиши опыт работы",
+    "desc_en": "Words from module: Офис: Опиши опыт работы"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_54",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 6 Раздел 2",
+    "title_en": "Duolingo (RU) - Модуль 6 Раздел 2",
+    "desc_ru": "Слова из модуля: События: Опиши детали события",
+    "desc_en": "Words from module: События: Опиши детали события"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_55",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 6 Раздел 3",
+    "title_en": "Duolingo (RU) - Модуль 6 Раздел 3",
+    "desc_ru": "Слова из модуля: Кафе: Спроси о столике",
+    "desc_en": "Words from module: Кафе: Спроси о столике"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_56",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 6 Раздел 4",
+    "title_en": "Duolingo (RU) - Модуль 6 Раздел 4",
+    "desc_ru": "Слова из модуля: План: Расскажи о своих планах",
+    "desc_en": "Words from module: План: Расскажи о своих планах"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_57",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 6 Раздел 5",
+    "title_en": "Duolingo (RU) - Модуль 6 Раздел 5",
+    "desc_ru": "Слова из модуля: Фильмы: Расскажи о фильме",
+    "desc_en": "Words from module: Фильмы: Расскажи о фильме"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_58",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 6 Раздел 6",
+    "title_en": "Duolingo (RU) - Модуль 6 Раздел 6",
+    "desc_ru": "Слова из модуля: Места: Спроси дорогу в университете",
+    "desc_en": "Words from module: Места: Спроси дорогу в университете"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_59",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 6 Раздел 7",
+    "title_en": "Duolingo (RU) - Модуль 6 Раздел 7",
+    "desc_ru": "Слова из модуля: Награды: Опиши желаемую награду",
+    "desc_en": "Words from module: Награды: Опиши желаемую награду"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_6",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 5 Раздел 6",
+    "title_en": "Duolingo (RU) - Модуль 5 Раздел 6",
+    "desc_ru": "Слова из модуля: Быт: Опиши порядок в квартире",
+    "desc_en": "Words from module: Быт: Опиши порядок в квартире"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_60",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 6 Раздел 8",
+    "title_en": "Duolingo (RU) - Модуль 6 Раздел 8",
+    "desc_ru": "Слова из модуля: Инновации: Опиши новую технологию",
+    "desc_en": "Words from module: Инновации: Опиши новую технологию"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_61",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 6 Раздел 9",
+    "title_en": "Duolingo (RU) - Модуль 6 Раздел 9",
+    "desc_ru": "Слова из модуля: Покупки: Опиши свои покупки",
+    "desc_en": "Words from module: Покупки: Опиши свои покупки"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_62",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 6 Раздел 10",
+    "title_en": "Duolingo (RU) - Модуль 6 Раздел 10",
+    "desc_ru": "Слова из модуля: Места: Опиши красивые места",
+    "desc_en": "Words from module: Места: Опиши красивые места"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_63",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 6 Раздел 11",
+    "title_en": "Duolingo (RU) - Модуль 6 Раздел 11",
+    "desc_ru": "Слова из модуля: Культура: Расскажи о традициях",
+    "desc_en": "Words from module: Культура: Расскажи о традициях"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_64",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 6 Раздел 12",
+    "title_en": "Duolingo (RU) - Модуль 6 Раздел 12",
+    "desc_ru": "Слова из модуля: Правила: Спроси о новых правилах",
+    "desc_en": "Words from module: Правила: Спроси о новых правилах"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_65",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 6 Раздел 13",
+    "title_en": "Duolingo (RU) - Модуль 6 Раздел 13",
+    "desc_ru": "Слова из модуля: Темы: Опиши порядок уборки",
+    "desc_en": "Words from module: Темы: Опиши порядок уборки"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_66",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 6 Раздел 14",
+    "title_en": "Duolingo (RU) - Модуль 6 Раздел 14",
+    "desc_ru": "Слова из модуля: Природа: Задай вопрос о растениях",
+    "desc_en": "Words from module: Природа: Задай вопрос о растениях"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_67",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 6 Раздел 15",
+    "title_en": "Duolingo (RU) - Модуль 6 Раздел 15",
+    "desc_ru": "Слова из модуля: Свадьба: Опиши подготовку к свадьбе",
+    "desc_en": "Words from module: Свадьба: Опиши подготовку к свадьбе"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_68",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 6 Раздел 16",
+    "title_en": "Duolingo (RU) - Модуль 6 Раздел 16",
+    "desc_ru": "Слова из модуля: Впечатления: Спроси мнение о стране",
+    "desc_en": "Words from module: Впечатления: Спроси мнение о стране"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_69",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 6 Раздел 17",
+    "title_en": "Duolingo (RU) - Модуль 6 Раздел 17",
+    "desc_ru": "Слова из модуля: Внешний вид: Опиши причёску",
+    "desc_en": "Words from module: Внешний вид: Опиши причёску"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_7",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 5 Раздел 7",
+    "title_en": "Duolingo (RU) - Модуль 5 Раздел 7",
+    "desc_ru": "Слова из модуля: Изменения: Расскажи об изменениях",
+    "desc_en": "Words from module: Изменения: Расскажи об изменениях"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_70",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 6 Раздел 18",
+    "title_en": "Duolingo (RU) - Модуль 6 Раздел 18",
+    "desc_ru": "Слова из модуля: Подарки: Обсуди варианты подарка",
+    "desc_en": "Words from module: Подарки: Обсуди варианты подарка"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_71",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 6 Раздел 19",
+    "title_en": "Duolingo (RU) - Модуль 6 Раздел 19",
+    "desc_ru": "Слова из модуля: Новости: Расскажи новость",
+    "desc_en": "Words from module: Новости: Расскажи новость"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_72",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 6 Раздел 20",
+    "title_en": "Duolingo (RU) - Модуль 6 Раздел 20",
+    "desc_ru": "Слова из модуля: Блюда: Опиши любимые блюда",
+    "desc_en": "Words from module: Блюда: Опиши любимые блюда"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_73",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 6 Раздел 21",
+    "title_en": "Duolingo (RU) - Модуль 6 Раздел 21",
+    "desc_ru": "Слова из модуля: Одежда: Опиши свою одежду",
+    "desc_en": "Words from module: Одежда: Опиши свою одежду"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_74",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 6 Раздел 22",
+    "title_en": "Duolingo (RU) - Модуль 6 Раздел 22",
+    "desc_ru": "Слова из модуля: Безопасность: Узнай важные правила",
+    "desc_en": "Words from module: Безопасность: Узнай важные правила"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_75",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 6 Раздел 23",
+    "title_en": "Duolingo (RU) - Модуль 6 Раздел 23",
+    "desc_ru": "Слова из модуля: Популярность: Скажи своё мнение",
+    "desc_en": "Words from module: Популярность: Скажи своё мнение"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_76",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 6 Раздел 24",
+    "title_en": "Duolingo (RU) - Модуль 6 Раздел 24",
+    "desc_ru": "Слова из модуля: Семья: Опиши свою семью",
+    "desc_en": "Words from module: Семья: Опиши свою семью"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_77",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 6 Раздел 25",
+    "title_en": "Duolingo (RU) - Модуль 6 Раздел 25",
+    "desc_ru": "Слова из модуля: Заметки: Опиши жизнь в квартире",
+    "desc_en": "Words from module: Заметки: Опиши жизнь в квартире"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_78",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 6 Раздел 26",
+    "title_en": "Duolingo (RU) - Модуль 6 Раздел 26",
+    "desc_ru": "Слова из модуля: Соревнования: Спроси о команде",
+    "desc_en": "Words from module: Соревнования: Спроси о команде"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_79",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 6 Раздел 27",
+    "title_en": "Duolingo (RU) - Модуль 6 Раздел 27",
+    "desc_ru": "Слова из модуля: Причины: Объясни причину изменений",
+    "desc_en": "Words from module: Причины: Объясни причину изменений"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_8",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 5 Раздел 8",
+    "title_en": "Duolingo (RU) - Модуль 5 Раздел 8",
+    "desc_ru": "Слова из модуля: Жизнь: Расскажи о ежедневных делах",
+    "desc_en": "Words from module: Жизнь: Расскажи о ежедневных делах"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_80",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 6 Раздел 28",
+    "title_en": "Duolingo (RU) - Модуль 6 Раздел 28",
+    "desc_ru": "Слова из модуля: Здоровье: Расскажи о тренировке",
+    "desc_en": "Words from module: Здоровье: Расскажи о тренировке"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_81",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 6 Раздел 29",
+    "title_en": "Duolingo (RU) - Модуль 6 Раздел 29",
+    "desc_ru": "Слова из модуля: Событие: Выбери мероприятие",
+    "desc_en": "Words from module: Событие: Выбери мероприятие"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_82",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 6 Раздел 30",
+    "title_en": "Duolingo (RU) - Модуль 6 Раздел 30",
+    "desc_ru": "Слова из модуля: Город: Расскажи о своем городе",
+    "desc_en": "Words from module: Город: Расскажи о своем городе"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_83",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 6 Раздел 31",
+    "title_en": "Duolingo (RU) - Модуль 6 Раздел 31",
+    "desc_ru": "Слова из модуля: Знания: Опиши трудные моменты",
+    "desc_en": "Words from module: Знания: Опиши трудные моменты"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_84",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 6 Раздел 32",
+    "title_en": "Duolingo (RU) - Модуль 6 Раздел 32",
+    "desc_ru": "Слова из модуля: Встреча: Делись обязанностями",
+    "desc_en": "Words from module: Встреча: Делись обязанностями"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_85",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 6 Раздел 33",
+    "title_en": "Duolingo (RU) - Модуль 6 Раздел 33",
+    "desc_ru": "Слова из модуля: Характер: Обсуди качества человека",
+    "desc_en": "Words from module: Характер: Обсуди качества человека"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_86",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 6 Раздел 34",
+    "title_en": "Duolingo (RU) - Модуль 6 Раздел 34",
+    "desc_ru": "Слова из модуля: места: Опиши любимое место",
+    "desc_en": "Words from module: места: Опиши любимое место"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_87",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 6 Раздел 35",
+    "title_en": "Duolingo (RU) - Модуль 6 Раздел 35",
+    "desc_ru": "Слова из модуля: Личности: Опиши образ жизни",
+    "desc_en": "Words from module: Личности: Опиши образ жизни"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_88",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 6 Раздел 36",
+    "title_en": "Duolingo (RU) - Модуль 6 Раздел 36",
+    "desc_ru": "Слова из модуля: Музей: Опиши экспонаты",
+    "desc_en": "Words from module: Музей: Опиши экспонаты"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_89",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 6 Раздел 37",
+    "title_en": "Duolingo (RU) - Модуль 6 Раздел 37",
+    "desc_ru": "Слова из модуля: Места: Опиши известные места",
+    "desc_en": "Words from module: Места: Опиши известные места"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_9",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 5 Раздел 9",
+    "title_en": "Duolingo (RU) - Модуль 5 Раздел 9",
+    "desc_ru": "Слова из модуля: Опыты: Попробуй новое",
+    "desc_en": "Words from module: Опыты: Попробуй новое"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_90",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 6 Раздел 38",
+    "title_en": "Duolingo (RU) - Модуль 6 Раздел 38",
+    "desc_ru": "Слова из модуля: Документы: Спроси о документах",
+    "desc_en": "Words from module: Документы: Спроси о документах"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_91",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 6 Раздел 39",
+    "title_en": "Duolingo (RU) - Модуль 6 Раздел 39",
+    "desc_ru": "Слова из модуля: События: Расскажи о событии",
+    "desc_en": "Words from module: События: Расскажи о событии"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_92",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 6 Раздел 40",
+    "title_en": "Duolingo (RU) - Модуль 6 Раздел 40",
+    "desc_ru": "Слова из модуля: Соседи: Расскажи о новых соседях",
+    "desc_en": "Words from module: Соседи: Расскажи о новых соседях"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_93",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 6 Раздел 41",
+    "title_en": "Duolingo (RU) - Модуль 6 Раздел 41",
+    "desc_ru": "Слова из модуля: Кафе: Спроси о правилах кафе",
+    "desc_en": "Words from module: Кафе: Спроси о правилах кафе"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_94",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 6 Раздел 42",
+    "title_en": "Duolingo (RU) - Модуль 6 Раздел 42",
+    "desc_ru": "Слова из модуля: Центр: Опиши работу центра",
+    "desc_en": "Words from module: Центр: Опиши работу центра"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_95",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 6 Раздел 43",
+    "title_en": "Duolingo (RU) - Модуль 6 Раздел 43",
+    "desc_ru": "Слова из модуля: Питомцы: Расскажи о своём питомце",
+    "desc_en": "Words from module: Питомцы: Расскажи о своём питомце"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_96",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 6 Раздел 44",
+    "title_en": "Duolingo (RU) - Модуль 6 Раздел 44",
+    "desc_ru": "Слова из модуля: Темы: Ищи нужные слова",
+    "desc_en": "Words from module: Темы: Ищи нужные слова"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_97",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 6 Раздел 45",
+    "title_en": "Duolingo (RU) - Модуль 6 Раздел 45",
+    "desc_ru": "Слова из модуля: Учёба: Обсуди мнение группы",
+    "desc_en": "Words from module: Учёба: Обсуди мнение группы"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_98",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 6 Раздел 46",
+    "title_en": "Duolingo (RU) - Модуль 6 Раздел 46",
+    "desc_ru": "Слова из модуля: Быт: Расскажи о покупках",
+    "desc_en": "Words from module: Быт: Расскажи о покупках"
+  },
+  {
+    "id": "duolingo_n3_duolingo_ru_n3_99",
+    "set_type": "Duolingo",
+    "level": "N3",
+    "title_ru": "Duolingo (RU) - Модуль 6 Раздел 47",
+    "title_en": "Duolingo (RU) - Модуль 6 Раздел 47",
+    "desc_ru": "Слова из модуля: Дом: Опиши вещи на кухне",
+    "desc_en": "Words from module: Дом: Опиши вещи на кухне"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_1",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 1",
+    "title_en": "Duolingo (EN) - Section 4 Unit 1",
+    "desc_ru": "Слова из модуля: use past tense negative adjectives",
+    "desc_en": "Words from section/unit: use past tense negative adjectives"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_10",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 10",
+    "title_en": "Duolingo (EN) - Section 4 Unit 10",
+    "desc_ru": "Слова из модуля: buy stationery",
+    "desc_en": "Words from section/unit: buy stationery"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_11",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 11",
+    "title_en": "Duolingo (EN) - Section 4 Unit 11",
+    "desc_ru": "Слова из модуля: communicate at a store",
+    "desc_en": "Words from section/unit: communicate at a store"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_12",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 12",
+    "title_en": "Duolingo (EN) - Section 4 Unit 12",
+    "desc_ru": "Слова из модуля: discuss a meal",
+    "desc_en": "Words from section/unit: discuss a meal"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_13",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 13",
+    "title_en": "Duolingo (EN) - Section 4 Unit 13",
+    "desc_ru": "Слова из модуля: talk about your day",
+    "desc_en": "Words from section/unit: talk about your day"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_14",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 14",
+    "title_en": "Duolingo (EN) - Section 4 Unit 14",
+    "desc_ru": "Слова из модуля: describe your home",
+    "desc_en": "Words from section/unit: describe your home"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_15",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 15",
+    "title_en": "Duolingo (EN) - Section 4 Unit 15",
+    "desc_ru": "Слова из модуля: talk about yourself",
+    "desc_en": "Words from section/unit: talk about yourself"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_16",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 16",
+    "title_en": "Duolingo (EN) - Section 4 Unit 16",
+    "desc_ru": "Слова из модуля: talk about your family",
+    "desc_en": "Words from section/unit: talk about your family"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_17",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 17",
+    "title_en": "Duolingo (EN) - Section 4 Unit 17",
+    "desc_ru": "Слова из модуля: ask about food",
+    "desc_en": "Words from section/unit: ask about food"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_18",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 18",
+    "title_en": "Duolingo (EN) - Section 4 Unit 18",
+    "desc_ru": "Слова из модуля: talk about your schedule",
+    "desc_en": "Words from section/unit: talk about your schedule"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_19",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 19",
+    "title_en": "Duolingo (EN) - Section 4 Unit 19",
+    "desc_ru": "Слова из модуля: say where things are",
+    "desc_en": "Words from section/unit: say where things are"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_2",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 2",
+    "title_en": "Duolingo (EN) - Section 4 Unit 2",
+    "desc_ru": "Слова из модуля: describe health habits",
+    "desc_en": "Words from section/unit: describe health habits"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_20",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 20",
+    "title_en": "Duolingo (EN) - Section 4 Unit 20",
+    "desc_ru": "Слова из модуля: make requests",
+    "desc_en": "Words from section/unit: make requests"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_21",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 21",
+    "title_en": "Duolingo (EN) - Section 4 Unit 21",
+    "desc_ru": "Слова из модуля: talk about hobbies",
+    "desc_en": "Words from section/unit: talk about hobbies"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_22",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 22",
+    "title_en": "Duolingo (EN) - Section 4 Unit 22",
+    "desc_ru": "Слова из модуля: describe extended family",
+    "desc_en": "Words from section/unit: describe extended family"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_23",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 23",
+    "title_en": "Duolingo (EN) - Section 4 Unit 23",
+    "desc_ru": "Слова из модуля: take public transit",
+    "desc_en": "Words from section/unit: take public transit"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_24",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 24",
+    "title_en": "Duolingo (EN) - Section 4 Unit 24",
+    "desc_ru": "Слова из модуля: talk about clothes",
+    "desc_en": "Words from section/unit: talk about clothes"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_25",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 25",
+    "title_en": "Duolingo (EN) - Section 4 Unit 25",
+    "desc_ru": "Слова из модуля: describe your hobbies",
+    "desc_en": "Words from section/unit: describe your hobbies"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_26",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 26",
+    "title_en": "Duolingo (EN) - Section 4 Unit 26",
+    "desc_ru": "Слова из модуля: discuss weather",
+    "desc_en": "Words from section/unit: discuss weather"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_27",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 27",
+    "title_en": "Duolingo (EN) - Section 4 Unit 27",
+    "desc_ru": "Слова из модуля: talk about food and drink",
+    "desc_en": "Words from section/unit: talk about food and drink"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_28",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 28",
+    "title_en": "Duolingo (EN) - Section 4 Unit 28",
+    "desc_ru": "Слова из модуля: get directions",
+    "desc_en": "Words from section/unit: get directions"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_29",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 29",
+    "title_en": "Duolingo (EN) - Section 4 Unit 29",
+    "desc_ru": "Слова из модуля: discuss food you like",
+    "desc_en": "Words from section/unit: discuss food you like"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_3",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 3",
+    "title_en": "Duolingo (EN) - Section 4 Unit 3",
+    "desc_ru": "Слова из модуля: suggest things to do at the beach",
+    "desc_en": "Words from section/unit: suggest things to do at the beach"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_30",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 30",
+    "title_en": "Duolingo (EN) - Section 4 Unit 30",
+    "desc_ru": "Слова из модуля: express days and times",
+    "desc_en": "Words from section/unit: express days and times"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_31",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 31",
+    "title_en": "Duolingo (EN) - Section 4 Unit 31",
+    "desc_ru": "Слова из модуля: shop for common items",
+    "desc_en": "Words from section/unit: shop for common items"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_32",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 32",
+    "title_en": "Duolingo (EN) - Section 4 Unit 32",
+    "desc_ru": "Слова из модуля: discuss relationships",
+    "desc_en": "Words from section/unit: discuss relationships"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_33",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 33",
+    "title_en": "Duolingo (EN) - Section 4 Unit 33",
+    "desc_ru": "Слова из модуля: talk about weather",
+    "desc_en": "Words from section/unit: talk about weather"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_34",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 34",
+    "title_en": "Duolingo (EN) - Section 4 Unit 34",
+    "desc_ru": "Слова из модуля: discuss belongings",
+    "desc_en": "Words from section/unit: discuss belongings"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_35",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 35",
+    "title_en": "Duolingo (EN) - Section 4 Unit 35",
+    "desc_ru": "Слова из модуля: describe nature",
+    "desc_en": "Words from section/unit: describe nature"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_36",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 36",
+    "title_en": "Duolingo (EN) - Section 4 Unit 36",
+    "desc_ru": "Слова из модуля: talk about school",
+    "desc_en": "Words from section/unit: talk about school"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_37",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 37",
+    "title_en": "Duolingo (EN) - Section 4 Unit 37",
+    "desc_ru": "Слова из модуля: shop at a convenience store",
+    "desc_en": "Words from section/unit: shop at a convenience store"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_38",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 38",
+    "title_en": "Duolingo (EN) - Section 4 Unit 38",
+    "desc_ru": "Слова из модуля: talk about class",
+    "desc_en": "Words from section/unit: talk about class"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_39",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 39",
+    "title_en": "Duolingo (EN) - Section 4 Unit 39",
+    "desc_ru": "Слова из модуля: express how you feel",
+    "desc_en": "Words from section/unit: express how you feel"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_4",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 4",
+    "title_en": "Duolingo (EN) - Section 4 Unit 4",
+    "desc_ru": "Слова из модуля: discuss what to eat",
+    "desc_en": "Words from section/unit: discuss what to eat"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_40",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 40",
+    "title_en": "Duolingo (EN) - Section 4 Unit 40",
+    "desc_ru": "Слова из модуля: get around a building",
+    "desc_en": "Words from section/unit: get around a building"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_41",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 41",
+    "title_en": "Duolingo (EN) - Section 4 Unit 41",
+    "desc_ru": "Слова из модуля: describe belongings",
+    "desc_en": "Words from section/unit: describe belongings"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_42",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 42",
+    "title_en": "Duolingo (EN) - Section 4 Unit 42",
+    "desc_ru": "Слова из модуля: shop for groceries",
+    "desc_en": "Words from section/unit: shop for groceries"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_43",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 43",
+    "title_en": "Duolingo (EN) - Section 4 Unit 43",
+    "desc_ru": "Слова из модуля: describe clothes",
+    "desc_en": "Words from section/unit: describe clothes"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_44",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 44",
+    "title_en": "Duolingo (EN) - Section 4 Unit 44",
+    "desc_ru": "Слова из модуля: discuss interests",
+    "desc_en": "Words from section/unit: discuss interests"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_45",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 45",
+    "title_en": "Duolingo (EN) - Section 4 Unit 45",
+    "desc_ru": "Слова из модуля: talk about class",
+    "desc_en": "Words from section/unit: talk about class"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_46",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 46",
+    "title_en": "Duolingo (EN) - Section 4 Unit 46",
+    "desc_ru": "Слова из модуля: discuss health",
+    "desc_en": "Words from section/unit: discuss health"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_47",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 47",
+    "title_en": "Duolingo (EN) - Section 4 Unit 47",
+    "desc_ru": "Слова из модуля: talk about travel",
+    "desc_en": "Words from section/unit: talk about travel"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_48",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 48",
+    "title_en": "Duolingo (EN) - Section 4 Unit 48",
+    "desc_ru": "Слова из модуля: use the past tense",
+    "desc_en": "Words from section/unit: use the past tense"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_49",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 49",
+    "title_en": "Duolingo (EN) - Section 4 Unit 49",
+    "desc_ru": "Слова из модуля: talk about mail",
+    "desc_en": "Words from section/unit: talk about mail"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_5",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 5",
+    "title_en": "Duolingo (EN) - Section 4 Unit 5",
+    "desc_ru": "Слова из модуля: describe a wedding",
+    "desc_en": "Words from section/unit: describe a wedding"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_50",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 50",
+    "title_en": "Duolingo (EN) - Section 4 Unit 50",
+    "desc_ru": "Слова из модуля: talk about games",
+    "desc_en": "Words from section/unit: talk about games"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_51",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 51",
+    "title_en": "Duolingo (EN) - Section 4 Unit 51",
+    "desc_ru": "Слова из модуля: describe a city",
+    "desc_en": "Words from section/unit: describe a city"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_52",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 52",
+    "title_en": "Duolingo (EN) - Section 4 Unit 52",
+    "desc_ru": "Слова из модуля: talk about sports",
+    "desc_en": "Words from section/unit: talk about sports"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_53",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 53",
+    "title_en": "Duolingo (EN) - Section 4 Unit 53",
+    "desc_ru": "Слова из модуля: say what you can do",
+    "desc_en": "Words from section/unit: say what you can do"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_54",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 54",
+    "title_en": "Duolingo (EN) - Section 4 Unit 54",
+    "desc_ru": "Слова из модуля: ask for and offer help",
+    "desc_en": "Words from section/unit: ask for and offer help"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_55",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 55",
+    "title_en": "Duolingo (EN) - Section 4 Unit 55",
+    "desc_ru": "Слова из модуля: talk about money",
+    "desc_en": "Words from section/unit: talk about money"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_56",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 56",
+    "title_en": "Duolingo (EN) - Section 4 Unit 56",
+    "desc_ru": "Слова из модуля: describe the outdoors",
+    "desc_en": "Words from section/unit: describe the outdoors"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_57",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 57",
+    "title_en": "Duolingo (EN) - Section 4 Unit 57",
+    "desc_ru": "Слова из модуля: express what you can do",
+    "desc_en": "Words from section/unit: express what you can do"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_58",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 58",
+    "title_en": "Duolingo (EN) - Section 4 Unit 58",
+    "desc_ru": "Слова из модуля: talk about restaurant food",
+    "desc_en": "Words from section/unit: talk about restaurant food"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_59",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 59",
+    "title_en": "Duolingo (EN) - Section 4 Unit 59",
+    "desc_ru": "Слова из модуля: discuss nature",
+    "desc_en": "Words from section/unit: discuss nature"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_6",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 6",
+    "title_en": "Duolingo (EN) - Section 4 Unit 6",
+    "desc_ru": "Слова из модуля: make plans to go out",
+    "desc_en": "Words from section/unit: make plans to go out"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_60",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 60",
+    "title_en": "Duolingo (EN) - Section 4 Unit 60",
+    "desc_ru": "Слова из модуля: describe common objects",
+    "desc_en": "Words from section/unit: describe common objects"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_7",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 7",
+    "title_en": "Duolingo (EN) - Section 4 Unit 7",
+    "desc_ru": "Слова из модуля: connect two adjectives",
+    "desc_en": "Words from section/unit: connect two adjectives"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_8",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 8",
+    "title_en": "Duolingo (EN) - Section 4 Unit 8",
+    "desc_ru": "Слова из модуля: talk about classes at university",
+    "desc_en": "Words from section/unit: talk about classes at university"
+  },
+  {
+    "id": "duolingo_n4_duolingo_en_n4_9",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (EN) - Section 4 Unit 9",
+    "title_en": "Duolingo (EN) - Section 4 Unit 9",
+    "desc_ru": "Слова из модуля: describe a recent date",
+    "desc_en": "Words from section/unit: describe a recent date"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_1",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 1",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 1",
+    "desc_ru": "Слова из модуля: Обсудите покупку мебели к новоселью",
+    "desc_en": "Words from module: Обсудите покупку мебели к новоселью"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_10",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 10",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 10",
+    "desc_ru": "Слова из модуля: Сотрудничайте с коллегами в проектах",
+    "desc_en": "Words from module: Сотрудничайте с коллегами в проектах"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_11",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 11",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 11",
+    "desc_ru": "Слова из модуля: Планируйте лыжный поход",
+    "desc_en": "Words from module: Планируйте лыжный поход"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_12",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 12",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 12",
+    "desc_ru": "Слова из модуля: Обсудите любимые жанры кино",
+    "desc_en": "Words from module: Обсудите любимые жанры кино"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_13",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 13",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 13",
+    "desc_ru": "Слова из модуля: Исследуйте достопримечательности Фукуоки",
+    "desc_en": "Words from module: Исследуйте достопримечательности Фукуоки"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_14",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 14",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 14",
+    "desc_ru": "Слова из модуля: Заказывайте кофе в книжном магазине",
+    "desc_en": "Words from module: Заказывайте кофе в книжном магазине"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_15",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 15",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 15",
+    "desc_ru": "Слова из модуля: Посетите семейную свадьбу",
+    "desc_en": "Words from module: Посетите семейную свадьбу"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_16",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 16",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 16",
+    "desc_ru": "Слова из модуля: Сравните предложения по отелям",
+    "desc_en": "Words from module: Сравните предложения по отелям"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_17",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 17",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 17",
+    "desc_ru": "Слова из модуля: Вежливо обсудите задержки встреч",
+    "desc_en": "Words from module: Вежливо обсудите задержки встреч"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_18",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 18",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 18",
+    "desc_ru": "Слова из модуля: Обсудите подготовку к экзаменам",
+    "desc_en": "Words from module: Обсудите подготовку к экзаменам"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_19",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 19",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 19",
+    "desc_ru": "Слова из модуля: Совершайте видеозвонок",
+    "desc_en": "Words from module: Совершайте видеозвонок"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_2",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 2",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 2",
+    "desc_ru": "Слова из модуля: Планируйте сюрприз-вечеринку",
+    "desc_en": "Words from module: Планируйте сюрприз-вечеринку"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_20",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 20",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 20",
+    "desc_ru": "Слова из модуля: Обсудите спорт и активности",
+    "desc_en": "Words from module: Обсудите спорт и активности"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_21",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 21",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 21",
+    "desc_ru": "Слова из модуля: Обсудите японские новогодние обычаи",
+    "desc_en": "Words from module: Обсудите японские новогодние обычаи"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_22",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 22",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 22",
+    "desc_ru": "Слова из модуля: Координируйте поездку за границу",
+    "desc_en": "Words from module: Координируйте поездку за границу"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_23",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 23",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 23",
+    "desc_ru": "Слова из модуля: Открывайте счёт в банке",
+    "desc_en": "Words from module: Открывайте счёт в банке"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_24",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 24",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 24",
+    "desc_ru": "Слова из модуля: Обсудите процесс академ. исследования",
+    "desc_en": "Words from module: Обсудите процесс академ. исследования"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_25",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 25",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 25",
+    "desc_ru": "Слова из модуля: Устраивайте барбекю-вечеринку",
+    "desc_en": "Words from module: Устраивайте барбекю-вечеринку"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_26",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 26",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 26",
+    "desc_ru": "Слова из модуля: Обсудите пищевые потребности",
+    "desc_en": "Words from module: Обсудите пищевые потребности"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_27",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 27",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 27",
+    "desc_ru": "Слова из модуля: Обсудите место преступления",
+    "desc_en": "Words from module: Обсудите место преступления"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_28",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 28",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 28",
+    "desc_ru": "Слова из модуля: Организуйте деловую встречу",
+    "desc_en": "Words from module: Организуйте деловую встречу"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_29",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 29",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 29",
+    "desc_ru": "Слова из модуля: Встречайтесь со старыми друзьями",
+    "desc_en": "Words from module: Встречайтесь со старыми друзьями"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_3",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 3",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 3",
+    "desc_ru": "Слова из модуля: Обсудите командировку",
+    "desc_en": "Words from module: Обсудите командировку"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_30",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 30",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 30",
+    "desc_ru": "Слова из модуля: Обсудите традиции культурных фестивалей",
+    "desc_en": "Words from module: Обсудите традиции культурных фестивалей"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_31",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 31",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 31",
+    "desc_ru": "Слова из модуля: Обсудите здоровый образ жизни",
+    "desc_en": "Words from module: Обсудите здоровый образ жизни"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_32",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 32",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 32",
+    "desc_ru": "Слова из модуля: Адаптируйтесь к культурным различиям",
+    "desc_en": "Words from module: Адаптируйтесь к культурным различиям"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_33",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 33",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 33",
+    "desc_ru": "Слова из модуля: Организовывайте экскурсию по городу",
+    "desc_en": "Words from module: Организовывайте экскурсию по городу"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_34",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 34",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 34",
+    "desc_ru": "Слова из модуля: Обсудите культурные традиции",
+    "desc_en": "Words from module: Обсудите культурные традиции"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_35",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 35",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 35",
+    "desc_ru": "Слова из модуля: Организуйте праздничный школьный магазин",
+    "desc_en": "Words from module: Организуйте праздничный школьный магазин"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_36",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 36",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 36",
+    "desc_ru": "Слова из модуля: Организовывайте пикник",
+    "desc_en": "Words from module: Организовывайте пикник"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_37",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 37",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 37",
+    "desc_ru": "Слова из модуля: Обсудите бизнес на конференции",
+    "desc_en": "Words from module: Обсудите бизнес на конференции"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_38",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 38",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 38",
+    "desc_ru": "Слова из модуля: Поделитесь разочарованием",
+    "desc_en": "Words from module: Поделитесь разочарованием"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_39",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 39",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 39",
+    "desc_ru": "Слова из модуля: Обсудите развлечения в игровом центре",
+    "desc_en": "Words from module: Обсудите развлечения в игровом центре"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_4",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 4",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 4",
+    "desc_ru": "Слова из модуля: Опишите бизнес своей семьи",
+    "desc_en": "Words from module: Опишите бизнес своей семьи"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_40",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 40",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 40",
+    "desc_ru": "Слова из модуля: Обсудите опыт учебы за границей",
+    "desc_en": "Words from module: Обсудите опыт учебы за границей"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_41",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 41",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 41",
+    "desc_ru": "Слова из модуля: Устраивайте игровой вечер",
+    "desc_en": "Words from module: Устраивайте игровой вечер"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_42",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 42",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 42",
+    "desc_ru": "Слова из модуля: Обсудите услуги по ремонту электроники",
+    "desc_en": "Words from module: Обсудите услуги по ремонту электроники"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_43",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 43",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 43",
+    "desc_ru": "Слова из модуля: Обсудите здоровье с врачом",
+    "desc_en": "Words from module: Обсудите здоровье с врачом"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_44",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 44",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 44",
+    "desc_ru": "Слова из модуля: Поделитесь новостями о достижениях",
+    "desc_en": "Words from module: Поделитесь новостями о достижениях"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_45",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 45",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 45",
+    "desc_ru": "Слова из модуля: Наслаждайтесь караоке с друзьями",
+    "desc_en": "Words from module: Наслаждайтесь караоке с друзьями"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_46",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 46",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 46",
+    "desc_ru": "Слова из модуля: Обсудите здоровые привычки",
+    "desc_en": "Words from module: Обсудите здоровые привычки"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_47",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 47",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 47",
+    "desc_ru": "Слова из модуля: Ориентируйтесь с помощью приложений ",
+    "desc_en": "Words from module: Ориентируйтесь с помощью приложений "
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_48",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 48",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 48",
+    "desc_ru": "Слова из модуля: Изучите \"kendo\" для снятия стресса",
+    "desc_en": "Words from module: Изучите \"kendo\" для снятия стресса"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_49",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 49",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 49",
+    "desc_ru": "Слова из модуля: Обсудите жизнь с соседями по квартире",
+    "desc_en": "Words from module: Обсудите жизнь с соседями по квартире"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_5",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 5",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 5",
+    "desc_ru": "Слова из модуля: Участвуйте в фотоконкурсе",
+    "desc_en": "Words from module: Участвуйте в фотоконкурсе"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_50",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 50",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 50",
+    "desc_ru": "Слова из модуля: Обсудите симптомы с профессионалами",
+    "desc_en": "Words from module: Обсудите симптомы с профессионалами"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_51",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 51",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 51",
+    "desc_ru": "Слова из модуля: Обсудите традиции Золотой недели",
+    "desc_en": "Words from module: Обсудите традиции Золотой недели"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_52",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 52",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 52",
+    "desc_ru": "Слова из модуля: Покупайте одежду и аксессуары",
+    "desc_en": "Words from module: Покупайте одежду и аксессуары"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_53",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 53",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 53",
+    "desc_ru": "Слова из модуля: Участвовуйте в мероприятии по уборке",
+    "desc_en": "Words from module: Участвовуйте в мероприятии по уборке"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_54",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 54",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 54",
+    "desc_ru": "Слова из модуля: Поделитесь детскими воспоминаниями",
+    "desc_en": "Words from module: Поделитесь детскими воспоминаниями"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_55",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 55",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 55",
+    "desc_ru": "Слова из модуля: Ориентируйтесь в японском офисе",
+    "desc_en": "Words from module: Ориентируйтесь в японском офисе"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_56",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 56",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 56",
+    "desc_ru": "Слова из модуля: Обсудите особенности видеоигр",
+    "desc_en": "Words from module: Обсудите особенности видеоигр"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_57",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 57",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 57",
+    "desc_ru": "Слова из модуля: Обсудите местные правила утилизации",
+    "desc_en": "Words from module: Обсудите местные правила утилизации"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_58",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 58",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 58",
+    "desc_ru": "Слова из модуля: Обсудите будущие стремления и личность",
+    "desc_en": "Words from module: Обсудите будущие стремления и личность"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_59",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 59",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 59",
+    "desc_ru": "Слова из модуля: Планируйте поездку в Японию",
+    "desc_en": "Words from module: Планируйте поездку в Японию"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_6",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 6",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 6",
+    "desc_ru": "Слова из модуля: Управляйте соцсетями",
+    "desc_en": "Words from module: Управляйте соцсетями"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_60",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 60",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 60",
+    "desc_ru": "Слова из модуля: Обсудить здоровье и его профилактику",
+    "desc_en": "Words from module: Обсудить здоровье и его профилактику"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_7",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 7",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 7",
+    "desc_ru": "Слова из модуля: Планируйте отдых на улице",
+    "desc_en": "Words from module: Планируйте отдых на улице"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_8",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 8",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 8",
+    "desc_ru": "Слова из модуля: Заказывайте еду в ресторане",
+    "desc_en": "Words from module: Заказывайте еду в ресторане"
+  },
+  {
+    "id": "duolingo_n4_duolingo_ru_n4_9",
+    "set_type": "Duolingo",
+    "level": "N4",
+    "title_ru": "Duolingo (RU) - Модуль 4 Раздел 9",
+    "title_en": "Duolingo (RU) - Модуль 4 Раздел 9",
+    "desc_ru": "Слова из модуля: Покупайте в комиссионном магазине",
+    "desc_en": "Words from module: Покупайте в комиссионном магазине"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_1",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 1 Unit 1",
+    "title_en": "Duolingo (EN) - Section 1 Unit 1",
+    "desc_ru": "Слова из модуля: order food",
+    "desc_en": "Words from section/unit: order food"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_10",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 2 Unit 1",
+    "title_en": "Duolingo (EN) - Section 2 Unit 1",
+    "desc_ru": "Слова из модуля: get help when traveling",
+    "desc_en": "Words from section/unit: get help when traveling"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_11",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 2 Unit 2",
+    "title_en": "Duolingo (EN) - Section 2 Unit 2",
+    "desc_ru": "Слова из модуля: get to know people",
+    "desc_en": "Words from section/unit: get to know people"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_12",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 2 Unit 3",
+    "title_en": "Duolingo (EN) - Section 2 Unit 3",
+    "desc_ru": "Слова из модуля: describe your family",
+    "desc_en": "Words from section/unit: describe your family"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_13",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 2 Unit 4",
+    "title_en": "Duolingo (EN) - Section 2 Unit 4",
+    "desc_ru": "Слова из модуля: talk about hobbies",
+    "desc_en": "Words from section/unit: talk about hobbies"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_14",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 2 Unit 5",
+    "title_en": "Duolingo (EN) - Section 2 Unit 5",
+    "desc_ru": "Слова из модуля: describe eating habits",
+    "desc_en": "Words from section/unit: describe eating habits"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_15",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 2 Unit 6",
+    "title_en": "Duolingo (EN) - Section 2 Unit 6",
+    "desc_ru": "Слова из модуля: shop for clothes",
+    "desc_en": "Words from section/unit: shop for clothes"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_16",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 2 Unit 7",
+    "title_en": "Duolingo (EN) - Section 2 Unit 7",
+    "desc_ru": "Слова из модуля: order food and drink",
+    "desc_en": "Words from section/unit: order food and drink"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_17",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 2 Unit 8",
+    "title_en": "Duolingo (EN) - Section 2 Unit 8",
+    "desc_ru": "Слова из модуля: use present tense verbs",
+    "desc_en": "Words from section/unit: use present tense verbs"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_18",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 2 Unit 9",
+    "title_en": "Duolingo (EN) - Section 2 Unit 9",
+    "desc_ru": "Слова из модуля: get around a station",
+    "desc_en": "Words from section/unit: get around a station"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_19",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 2 Unit 10",
+    "title_en": "Duolingo (EN) - Section 2 Unit 10",
+    "desc_ru": "Слова из модуля: describe your routine",
+    "desc_en": "Words from section/unit: describe your routine"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_2",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 1 Unit 2",
+    "title_en": "Duolingo (EN) - Section 1 Unit 2",
+    "desc_ru": "Слова из модуля: describe people",
+    "desc_en": "Words from section/unit: describe people"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_20",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 2 Unit 11",
+    "title_en": "Duolingo (EN) - Section 2 Unit 11",
+    "desc_ru": "Слова из модуля: talk about interests",
+    "desc_en": "Words from section/unit: talk about interests"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_21",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 2 Unit 12",
+    "title_en": "Duolingo (EN) - Section 2 Unit 12",
+    "desc_ru": "Слова из модуля: describe your home",
+    "desc_en": "Words from section/unit: describe your home"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_22",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 2 Unit 13",
+    "title_en": "Duolingo (EN) - Section 2 Unit 13",
+    "desc_ru": "Слова из модуля: take public transit",
+    "desc_en": "Words from section/unit: take public transit"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_23",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 2 Unit 14",
+    "title_en": "Duolingo (EN) - Section 2 Unit 14",
+    "desc_ru": "Слова из модуля: use na-adjectives",
+    "desc_en": "Words from section/unit: use na-adjectives"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_24",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 2 Unit 15",
+    "title_en": "Duolingo (EN) - Section 2 Unit 15",
+    "desc_ru": "Слова из модуля: get emergency help",
+    "desc_en": "Words from section/unit: get emergency help"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_25",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 2 Unit 16",
+    "title_en": "Duolingo (EN) - Section 2 Unit 16",
+    "desc_ru": "Слова из модуля: talk about weather",
+    "desc_en": "Words from section/unit: talk about weather"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_26",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 2 Unit 17",
+    "title_en": "Duolingo (EN) - Section 2 Unit 17",
+    "desc_ru": "Слова из модуля: describe your family",
+    "desc_en": "Words from section/unit: describe your family"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_27",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 2 Unit 18",
+    "title_en": "Duolingo (EN) - Section 2 Unit 18",
+    "desc_ru": "Слова из модуля: discuss chores",
+    "desc_en": "Words from section/unit: discuss chores"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_28",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 2 Unit 19",
+    "title_en": "Duolingo (EN) - Section 2 Unit 19",
+    "desc_ru": "Слова из модуля: say what you want to do",
+    "desc_en": "Words from section/unit: say what you want to do"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_29",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 2 Unit 20",
+    "title_en": "Duolingo (EN) - Section 2 Unit 20",
+    "desc_ru": "Слова из модуля: discuss a family visit",
+    "desc_en": "Words from section/unit: discuss a family visit"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_3",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 1 Unit 3",
+    "title_en": "Duolingo (EN) - Section 1 Unit 3",
+    "desc_ru": "Слова из модуля: introduce yourself",
+    "desc_en": "Words from section/unit: introduce yourself"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_30",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 2 Unit 21",
+    "title_en": "Duolingo (EN) - Section 2 Unit 21",
+    "desc_ru": "Слова из модуля: order pastries",
+    "desc_en": "Words from section/unit: order pastries"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_31",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 2 Unit 22",
+    "title_en": "Duolingo (EN) - Section 2 Unit 22",
+    "desc_ru": "Слова из модуля: use negative verbs",
+    "desc_en": "Words from section/unit: use negative verbs"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_32",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 2 Unit 23",
+    "title_en": "Duolingo (EN) - Section 2 Unit 23",
+    "desc_ru": "Слова из модуля: discuss classes",
+    "desc_en": "Words from section/unit: discuss classes"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_33",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 2 Unit 24",
+    "title_en": "Duolingo (EN) - Section 2 Unit 24",
+    "desc_ru": "Слова из модуля: talk about jobs",
+    "desc_en": "Words from section/unit: talk about jobs"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_34",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 2 Unit 25",
+    "title_en": "Duolingo (EN) - Section 2 Unit 25",
+    "desc_ru": "Слова из модуля: get around a theme park",
+    "desc_en": "Words from section/unit: get around a theme park"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_35",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 2 Unit 26",
+    "title_en": "Duolingo (EN) - Section 2 Unit 26",
+    "desc_ru": "Слова из модуля: discuss media",
+    "desc_en": "Words from section/unit: discuss media"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_36",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 2 Unit 27",
+    "title_en": "Duolingo (EN) - Section 2 Unit 27",
+    "desc_ru": "Слова из модуля: communicate at work",
+    "desc_en": "Words from section/unit: communicate at work"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_37",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 2 Unit 28",
+    "title_en": "Duolingo (EN) - Section 2 Unit 28",
+    "desc_ru": "Слова из модуля: talk about hobbies",
+    "desc_en": "Words from section/unit: talk about hobbies"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_38",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 2 Unit 29",
+    "title_en": "Duolingo (EN) - Section 2 Unit 29",
+    "desc_ru": "Слова из модуля: discuss seasonal events",
+    "desc_en": "Words from section/unit: discuss seasonal events"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_39",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 2 Unit 30",
+    "title_en": "Duolingo (EN) - Section 2 Unit 30",
+    "desc_ru": "Слова из модуля: talk about date plans",
+    "desc_en": "Words from section/unit: talk about date plans"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_4",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 1 Unit 4",
+    "title_en": "Duolingo (EN) - Section 1 Unit 4",
+    "desc_ru": "Слова из модуля: order food and drink",
+    "desc_en": "Words from section/unit: order food and drink"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_40",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 3 Unit 1",
+    "title_en": "Duolingo (EN) - Section 3 Unit 1",
+    "desc_ru": "Слова из модуля: take public transport",
+    "desc_en": "Words from section/unit: take public transport"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_41",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 3 Unit 2",
+    "title_en": "Duolingo (EN) - Section 3 Unit 2",
+    "desc_ru": "Слова из модуля: discuss college life",
+    "desc_en": "Words from section/unit: discuss college life"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_42",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 3 Unit 3",
+    "title_en": "Duolingo (EN) - Section 3 Unit 3",
+    "desc_ru": "Слова из модуля: count animals",
+    "desc_en": "Words from section/unit: count animals"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_43",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 3 Unit 4",
+    "title_en": "Duolingo (EN) - Section 3 Unit 4",
+    "desc_ru": "Слова из модуля: discuss outdoor activities",
+    "desc_en": "Words from section/unit: discuss outdoor activities"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_44",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 3 Unit 5",
+    "title_en": "Duolingo (EN) - Section 3 Unit 5",
+    "desc_ru": "Слова из модуля: eat in a restaurant",
+    "desc_en": "Words from section/unit: eat in a restaurant"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_45",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 3 Unit 6",
+    "title_en": "Duolingo (EN) - Section 3 Unit 6",
+    "desc_ru": "Слова из модуля: communicate at a hotel",
+    "desc_en": "Words from section/unit: communicate at a hotel"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_46",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 3 Unit 7",
+    "title_en": "Duolingo (EN) - Section 3 Unit 7",
+    "desc_ru": "Слова из модуля: use past tense verbs",
+    "desc_en": "Words from section/unit: use past tense verbs"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_47",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 3 Unit 8",
+    "title_en": "Duolingo (EN) - Section 3 Unit 8",
+    "desc_ru": "Слова из модуля: make transit plans",
+    "desc_en": "Words from section/unit: make transit plans"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_48",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 3 Unit 9",
+    "title_en": "Duolingo (EN) - Section 3 Unit 9",
+    "desc_ru": "Слова из модуля: shop for electronics",
+    "desc_en": "Words from section/unit: shop for electronics"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_49",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 3 Unit 10",
+    "title_en": "Duolingo (EN) - Section 3 Unit 10",
+    "desc_ru": "Слова из модуля: express what you want to do at a concert",
+    "desc_en": "Words from section/unit: express what you want to do at a concert"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_5",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 1 Unit 5",
+    "title_en": "Duolingo (EN) - Section 1 Unit 5",
+    "desc_ru": "Слова из модуля: talk about countries",
+    "desc_en": "Words from section/unit: talk about countries"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_50",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 3 Unit 11",
+    "title_en": "Duolingo (EN) - Section 3 Unit 11",
+    "desc_ru": "Слова из модуля: talk about a college town",
+    "desc_en": "Words from section/unit: talk about a college town"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_51",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 3 Unit 12",
+    "title_en": "Duolingo (EN) - Section 3 Unit 12",
+    "desc_ru": "Слова из модуля: shop for clothes",
+    "desc_en": "Words from section/unit: shop for clothes"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_52",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 3 Unit 13",
+    "title_en": "Duolingo (EN) - Section 3 Unit 13",
+    "desc_ru": "Слова из модуля: use negative adjectives",
+    "desc_en": "Words from section/unit: use negative adjectives"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_53",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 3 Unit 14",
+    "title_en": "Duolingo (EN) - Section 3 Unit 14",
+    "desc_ru": "Слова из модуля: make plans for a party",
+    "desc_en": "Words from section/unit: make plans for a party"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_54",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 3 Unit 15",
+    "title_en": "Duolingo (EN) - Section 3 Unit 15",
+    "desc_ru": "Слова из модуля: describe what you don't want to do",
+    "desc_en": "Words from section/unit: describe what you don't want to do"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_55",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 3 Unit 16",
+    "title_en": "Duolingo (EN) - Section 3 Unit 16",
+    "desc_ru": "Слова из модуля: arrange to meet up",
+    "desc_en": "Words from section/unit: arrange to meet up"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_56",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 3 Unit 17",
+    "title_en": "Duolingo (EN) - Section 3 Unit 17",
+    "desc_ru": "Слова из модуля: use the past tense",
+    "desc_en": "Words from section/unit: use the past tense"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_57",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 3 Unit 18",
+    "title_en": "Duolingo (EN) - Section 3 Unit 18",
+    "desc_ru": "Слова из модуля: make plans to go to a festival",
+    "desc_en": "Words from section/unit: make plans to go to a festival"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_58",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 3 Unit 19",
+    "title_en": "Duolingo (EN) - Section 3 Unit 19",
+    "desc_ru": "Слова из модуля: describe what you see in the zoo",
+    "desc_en": "Words from section/unit: describe what you see in the zoo"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_59",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 3 Unit 20",
+    "title_en": "Duolingo (EN) - Section 3 Unit 20",
+    "desc_ru": "Слова из модуля: use past tense negative verbs",
+    "desc_en": "Words from section/unit: use past tense negative verbs"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_6",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 1 Unit 6",
+    "title_en": "Duolingo (EN) - Section 1 Unit 6",
+    "desc_ru": "Слова из модуля: ask for directions",
+    "desc_en": "Words from section/unit: ask for directions"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_60",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 3 Unit 21",
+    "title_en": "Duolingo (EN) - Section 3 Unit 21",
+    "desc_ru": "Слова из модуля: discuss work issues",
+    "desc_en": "Words from section/unit: discuss work issues"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_61",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 3 Unit 22",
+    "title_en": "Duolingo (EN) - Section 3 Unit 22",
+    "desc_ru": "Слова из модуля: talk about gifts you gave or received",
+    "desc_en": "Words from section/unit: talk about gifts you gave or received"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_62",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 3 Unit 23",
+    "title_en": "Duolingo (EN) - Section 3 Unit 23",
+    "desc_ru": "Слова из модуля: share travel experiences",
+    "desc_en": "Words from section/unit: share travel experiences"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_63",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 3 Unit 24",
+    "title_en": "Duolingo (EN) - Section 3 Unit 24",
+    "desc_ru": "Слова из модуля: buy clothes",
+    "desc_en": "Words from section/unit: buy clothes"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_64",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 3 Unit 25",
+    "title_en": "Duolingo (EN) - Section 3 Unit 25",
+    "desc_ru": "Слова из модуля: describe a day at college",
+    "desc_en": "Words from section/unit: describe a day at college"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_65",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 3 Unit 26",
+    "title_en": "Duolingo (EN) - Section 3 Unit 26",
+    "desc_ru": "Слова из модуля: cook with someone",
+    "desc_en": "Words from section/unit: cook with someone"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_66",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 3 Unit 27",
+    "title_en": "Duolingo (EN) - Section 3 Unit 27",
+    "desc_ru": "Слова из модуля: use past tense adjectives",
+    "desc_en": "Words from section/unit: use past tense adjectives"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_67",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 3 Unit 28",
+    "title_en": "Duolingo (EN) - Section 3 Unit 28",
+    "desc_ru": "Слова из модуля: describe health issues",
+    "desc_en": "Words from section/unit: describe health issues"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_68",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 3 Unit 29",
+    "title_en": "Duolingo (EN) - Section 3 Unit 29",
+    "desc_ru": "Слова из модуля: complain about a hotel",
+    "desc_en": "Words from section/unit: complain about a hotel"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_69",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 3 Unit 30",
+    "title_en": "Duolingo (EN) - Section 3 Unit 30",
+    "desc_ru": "Слова из модуля: talk about your childhood",
+    "desc_en": "Words from section/unit: talk about your childhood"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_7",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 1 Unit 7",
+    "title_en": "Duolingo (EN) - Section 1 Unit 7",
+    "desc_ru": "Слова из модуля: describe belongings",
+    "desc_en": "Words from section/unit: describe belongings"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_8",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 1 Unit 8",
+    "title_en": "Duolingo (EN) - Section 1 Unit 8",
+    "desc_ru": "Слова из модуля: talk about neighbors",
+    "desc_en": "Words from section/unit: talk about neighbors"
+  },
+  {
+    "id": "duolingo_n5_duolingo_en_n5_9",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (EN) - Section 1 Unit 9",
+    "title_en": "Duolingo (EN) - Section 1 Unit 9",
+    "desc_ru": "Слова из модуля: tell time",
+    "desc_en": "Words from section/unit: tell time"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_1",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 1 Раздел 1",
+    "title_en": "Duolingo (RU) - Модуль 1 Раздел 1",
+    "desc_ru": "Слова из модуля: Заказывайте еду и напитки",
+    "desc_en": "Words from module: Заказывайте еду и напитки"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_10",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 1 Раздел 10",
+    "title_en": "Duolingo (RU) - Модуль 1 Раздел 10",
+    "desc_ru": "Слова из модуля: Находите места и вещи для поездки",
+    "desc_en": "Words from module: Находите места и вещи для поездки"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_11",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 2 Раздел 1",
+    "title_en": "Duolingo (RU) - Модуль 2 Раздел 1",
+    "desc_ru": "Слова из модуля: Представьтесь и опишите, где живете",
+    "desc_en": "Words from module: Представьтесь и опишите, где живете"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_12",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 2 Раздел 2",
+    "title_en": "Duolingo (RU) - Модуль 2 Раздел 2",
+    "desc_ru": "Слова из модуля: Глаголы настоящего времени для привычек",
+    "desc_en": "Words from module: Глаголы настоящего времени для привычек"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_13",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 2 Раздел 3",
+    "title_en": "Duolingo (RU) - Модуль 2 Раздел 3",
+    "desc_ru": "Слова из модуля: Обсудите свои пищевые привычки",
+    "desc_en": "Words from module: Обсудите свои пищевые привычки"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_14",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 2 Раздел 4",
+    "title_en": "Duolingo (RU) - Модуль 2 Раздел 4",
+    "desc_ru": "Слова из модуля: Покупайте одежду",
+    "desc_en": "Words from module: Покупайте одежду"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_15",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 2 Раздел 5",
+    "title_en": "Duolingo (RU) - Модуль 2 Раздел 5",
+    "desc_ru": "Слова из модуля: Представьтесь и представьте других",
+    "desc_en": "Words from module: Представьтесь и представьте других"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_16",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 2 Раздел 6",
+    "title_en": "Duolingo (RU) - Модуль 2 Раздел 6",
+    "desc_ru": "Слова из модуля: Используйте глаголы для будущего времени",
+    "desc_en": "Words from module: Используйте глаголы для будущего времени"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_17",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 2 Раздел 7",
+    "title_en": "Duolingo (RU) - Модуль 2 Раздел 7",
+    "desc_ru": "Слова из модуля: Узнайте детали поездки",
+    "desc_en": "Words from module: Узнайте детали поездки"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_18",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 2 Раздел 8",
+    "title_en": "Duolingo (RU) - Модуль 2 Раздел 8",
+    "desc_ru": "Слова из модуля: Обсуждайте занятия на выходных",
+    "desc_en": "Words from module: Обсуждайте занятия на выходных"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_19",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 2 Раздел 9",
+    "title_en": "Duolingo (RU) - Модуль 2 Раздел 9",
+    "desc_ru": "Слова из модуля: Обсуждайте времена года и погоду",
+    "desc_en": "Words from module: Обсуждайте времена года и погоду"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_2",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 1 Раздел 2",
+    "title_en": "Duolingo (RU) - Модуль 1 Раздел 2",
+    "desc_ru": "Слова из модуля: Используйте прилагательные для описания",
+    "desc_en": "Words from module: Используйте прилагательные для описания"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_20",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 2 Раздел 10",
+    "title_en": "Duolingo (RU) - Модуль 2 Раздел 10",
+    "desc_ru": "Слова из модуля: Заказывайте еду и напитки",
+    "desc_en": "Words from module: Заказывайте еду и напитки"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_21",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 2 Раздел 11",
+    "title_en": "Duolingo (RU) - Модуль 2 Раздел 11",
+    "desc_ru": "Слова из модуля: Заказывайте выпечку",
+    "desc_en": "Words from module: Заказывайте выпечку"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_22",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 2 Раздел 12",
+    "title_en": "Duolingo (RU) - Модуль 2 Раздел 12",
+    "desc_ru": "Слова из модуля: Ориентируйтесь на станции",
+    "desc_en": "Words from module: Ориентируйтесь на станции"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_23",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 2 Раздел 13",
+    "title_en": "Duolingo (RU) - Модуль 2 Раздел 13",
+    "desc_ru": "Слова из модуля: Притяжательные с неодушевленными",
+    "desc_en": "Words from module: Притяжательные с неодушевленными"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_24",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 2 Раздел 14",
+    "title_en": "Duolingo (RU) - Модуль 2 Раздел 14",
+    "desc_ru": "Слова из модуля: Говорите о своей семье",
+    "desc_en": "Words from module: Говорите о своей семье"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_25",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 2 Раздел 15",
+    "title_en": "Duolingo (RU) - Модуль 2 Раздел 15",
+    "desc_ru": "Слова из модуля: Действуйте в чрезвычайных ситуациях",
+    "desc_en": "Words from module: Действуйте в чрезвычайных ситуациях"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_26",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 2 Раздел 16",
+    "title_en": "Duolingo (RU) - Модуль 2 Раздел 16",
+    "desc_ru": "Слова из модуля: Исследуйте новые места",
+    "desc_en": "Words from module: Исследуйте новые места"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_27",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 2 Раздел 17",
+    "title_en": "Duolingo (RU) - Модуль 2 Раздел 17",
+    "desc_ru": "Слова из модуля: Планируйте свидание",
+    "desc_en": "Words from module: Планируйте свидание"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_28",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 2 Раздел 18",
+    "title_en": "Duolingo (RU) - Модуль 2 Раздел 18",
+    "desc_ru": "Слова из модуля: Используйте форму намерения",
+    "desc_en": "Words from module: Используйте форму намерения"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_29",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 2 Раздел 19",
+    "title_en": "Duolingo (RU) - Модуль 2 Раздел 19",
+    "desc_ru": "Слова из модуля: Покупайте и готовьте еду",
+    "desc_en": "Words from module: Покупайте и готовьте еду"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_3",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 1 Раздел 3",
+    "title_en": "Duolingo (RU) - Модуль 1 Раздел 3",
+    "desc_ru": "Слова из модуля: Здоровайтесь и прощайтесь",
+    "desc_en": "Words from module: Здоровайтесь и прощайтесь"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_30",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 2 Раздел 20",
+    "title_en": "Duolingo (RU) - Модуль 2 Раздел 20",
+    "desc_ru": "Слова из модуля: Непрошедшие глаголы отрицания",
+    "desc_en": "Words from module: Непрошедшие глаголы отрицания"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_31",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 2 Раздел 21",
+    "title_en": "Duolingo (RU) - Модуль 2 Раздел 21",
+    "desc_ru": "Слова из модуля: Обсудите рабочие графики",
+    "desc_en": "Words from module: Обсудите рабочие графики"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_32",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 2 Раздел 22",
+    "title_en": "Duolingo (RU) - Модуль 2 Раздел 22",
+    "desc_ru": "Слова из модуля: Найдите дорогу на день рождения",
+    "desc_en": "Words from module: Найдите дорогу на день рождения"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_33",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 2 Раздел 23",
+    "title_en": "Duolingo (RU) - Модуль 2 Раздел 23",
+    "desc_ru": "Слова из модуля: Обсуждайте мероприятия",
+    "desc_en": "Words from module: Обсуждайте мероприятия"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_34",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 2 Раздел 24",
+    "title_en": "Duolingo (RU) - Модуль 2 Раздел 24",
+    "desc_ru": "Слова из модуля: Представьтесь и говорите о студенчестве",
+    "desc_en": "Words from module: Представьтесь и говорите о студенчестве"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_35",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 2 Раздел 25",
+    "title_en": "Duolingo (RU) - Модуль 2 Раздел 25",
+    "desc_ru": "Слова из модуля: Используйте фразы частоты и количества",
+    "desc_en": "Words from module: Используйте фразы частоты и количества"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_36",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 2 Раздел 26",
+    "title_en": "Duolingo (RU) - Модуль 2 Раздел 26",
+    "desc_ru": "Слова из модуля: Обсуждайте занятия",
+    "desc_en": "Words from module: Обсуждайте занятия"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_37",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 2 Раздел 27",
+    "title_en": "Duolingo (RU) - Модуль 2 Раздел 27",
+    "desc_ru": "Слова из модуля: Обсудите свои хобби",
+    "desc_en": "Words from module: Обсудите свои хобби"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_38",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 2 Раздел 28",
+    "title_en": "Duolingo (RU) - Модуль 2 Раздел 28",
+    "desc_ru": "Слова из модуля: Используйте конструкции места",
+    "desc_en": "Words from module: Используйте конструкции места"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_39",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 2 Раздел 29",
+    "title_en": "Duolingo (RU) - Модуль 2 Раздел 29",
+    "desc_ru": "Слова из модуля: Заселитесь и ориентируйтесь в отеле",
+    "desc_en": "Words from module: Заселитесь и ориентируйтесь в отеле"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_4",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 1 Раздел 4",
+    "title_en": "Duolingo (RU) - Модуль 1 Раздел 4",
+    "desc_ru": "Слова из модуля: Говорите о еде",
+    "desc_en": "Words from module: Говорите о еде"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_40",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 2 Раздел 30",
+    "title_en": "Duolingo (RU) - Модуль 2 Раздел 30",
+    "desc_ru": "Слова из модуля: Найдите продукты в магазине",
+    "desc_en": "Words from module: Найдите продукты в магазине"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_41",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 3 Раздел 1",
+    "title_en": "Duolingo (RU) - Модуль 3 Раздел 1",
+    "desc_ru": "Слова из модуля: Договоритесь о встрече с друзьями",
+    "desc_en": "Words from module: Договоритесь о встрече с друзьями"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_42",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 3 Раздел 2",
+    "title_en": "Duolingo (RU) - Модуль 3 Раздел 2",
+    "desc_ru": "Слова из модуля: Обратитесь за медицинской помощью",
+    "desc_en": "Words from module: Обратитесь за медицинской помощью"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_43",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 3 Раздел 3",
+    "title_en": "Duolingo (RU) - Модуль 3 Раздел 3",
+    "desc_ru": "Слова из модуля: Наслаждайтесь кафе с животными",
+    "desc_en": "Words from module: Наслаждайтесь кафе с животными"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_44",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 3 Раздел 4",
+    "title_en": "Duolingo (RU) - Модуль 3 Раздел 4",
+    "desc_ru": "Слова из модуля: Посетите зоопарк",
+    "desc_en": "Words from module: Посетите зоопарк"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_45",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 3 Раздел 5",
+    "title_en": "Duolingo (RU) - Модуль 3 Раздел 5",
+    "desc_ru": "Слова из модуля: Используйте глаголы в прошедшем времени",
+    "desc_en": "Words from module: Используйте глаголы в прошедшем времени"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_46",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 3 Раздел 6",
+    "title_en": "Duolingo (RU) - Модуль 3 Раздел 6",
+    "desc_ru": "Слова из модуля: Покупайте электронику",
+    "desc_en": "Words from module: Покупайте электронику"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_47",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 3 Раздел 7",
+    "title_en": "Duolingo (RU) - Модуль 3 Раздел 7",
+    "desc_ru": "Слова из модуля: Посетите концерт",
+    "desc_en": "Words from module: Посетите концерт"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_48",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 3 Раздел 8",
+    "title_en": "Duolingo (RU) - Модуль 3 Раздел 8",
+    "desc_ru": "Слова из модуля: Прилагательные утверждения и отрицания",
+    "desc_en": "Words from module: Прилагательные утверждения и отрицания"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_49",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 3 Раздел 9",
+    "title_en": "Duolingo (RU) - Модуль 3 Раздел 9",
+    "desc_ru": "Слова из модуля: Оцените квартиру",
+    "desc_en": "Words from module: Оцените квартиру"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_5",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 1 Раздел 5",
+    "title_en": "Duolingo (RU) - Модуль 1 Раздел 5",
+    "desc_ru": "Слова из модуля: Говорите о странах и национальностях",
+    "desc_en": "Words from module: Говорите о странах и национальностях"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_50",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 3 Раздел 10",
+    "title_en": "Duolingo (RU) - Модуль 3 Раздел 10",
+    "desc_ru": "Слова из модуля: Выразите недовольство на работе",
+    "desc_en": "Words from module: Выразите недовольство на работе"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_51",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 3 Раздел 11",
+    "title_en": "Duolingo (RU) - Модуль 3 Раздел 11",
+    "desc_ru": "Слова из модуля: Устройте день отдыха",
+    "desc_en": "Words from module: Устройте день отдыха"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_52",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 3 Раздел 12",
+    "title_en": "Duolingo (RU) - Модуль 3 Раздел 12",
+    "desc_ru": "Слова из модуля: Планируйте и идите на ханами",
+    "desc_en": "Words from module: Планируйте и идите на ханами"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_53",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 3 Раздел 13",
+    "title_en": "Duolingo (RU) - Модуль 3 Раздел 13",
+    "desc_ru": "Слова из модуля: Организуйте поездку на Окинаву",
+    "desc_en": "Words from module: Организуйте поездку на Окинаву"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_54",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 3 Раздел 14",
+    "title_en": "Duolingo (RU) - Модуль 3 Раздел 14",
+    "desc_ru": "Слова из модуля: Обсудите опыт круиза",
+    "desc_en": "Words from module: Обсудите опыт круиза"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_55",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 3 Раздел 15",
+    "title_en": "Duolingo (RU) - Модуль 3 Раздел 15",
+    "desc_ru": "Слова из модуля: Опишите путешествие",
+    "desc_en": "Words from module: Опишите путешествие"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_56",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 3 Раздел 16",
+    "title_en": "Duolingo (RU) - Модуль 3 Раздел 16",
+    "desc_ru": "Слова из модуля: Отрицательные глаголы прошедшего времени",
+    "desc_en": "Words from module: Отрицательные глаголы прошедшего времени"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_57",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 3 Раздел 17",
+    "title_en": "Duolingo (RU) - Модуль 3 Раздел 17",
+    "desc_ru": "Слова из модуля: Посетите новоселье",
+    "desc_en": "Words from module: Посетите новоселье"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_58",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 3 Раздел 18",
+    "title_en": "Duolingo (RU) - Модуль 3 Раздел 18",
+    "desc_ru": "Слова из модуля: Выразите недовольство в поездке",
+    "desc_en": "Words from module: Выразите недовольство в поездке"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_59",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 3 Раздел 19",
+    "title_en": "Duolingo (RU) - Модуль 3 Раздел 19",
+    "desc_ru": "Слова из модуля: Поделитесь разочарованием от свидания",
+    "desc_en": "Words from module: Поделитесь разочарованием от свидания"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_6",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 1 Раздел 6",
+    "title_en": "Duolingo (RU) - Модуль 1 Раздел 6",
+    "desc_ru": "Слова из модуля: Стройте отрицания и отвечайте на вопросы",
+    "desc_en": "Words from module: Стройте отрицания и отвечайте на вопросы"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_60",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 3 Раздел 20",
+    "title_en": "Duolingo (RU) - Модуль 3 Раздел 20",
+    "desc_ru": "Слова из модуля: Посетите свадьбу",
+    "desc_en": "Words from module: Посетите свадьбу"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_61",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 3 Раздел 21",
+    "title_en": "Duolingo (RU) - Модуль 3 Раздел 21",
+    "desc_ru": "Слова из модуля: Соединяйте два прилагательных",
+    "desc_en": "Words from module: Соединяйте два прилагательных"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_62",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 3 Раздел 22",
+    "title_en": "Duolingo (RU) - Модуль 3 Раздел 22",
+    "desc_ru": "Слова из модуля: Возвращайте или обменивайте товары",
+    "desc_en": "Words from module: Возвращайте или обменивайте товары"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_63",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 3 Раздел 23",
+    "title_en": "Duolingo (RU) - Модуль 3 Раздел 23",
+    "desc_ru": "Слова из модуля: Покупайте вещи для путешествий",
+    "desc_en": "Words from module: Покупайте вещи для путешествий"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_64",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 3 Раздел 24",
+    "title_en": "Duolingo (RU) - Модуль 3 Раздел 24",
+    "desc_ru": "Слова из модуля: Планируйте летние занятия",
+    "desc_en": "Words from module: Планируйте летние занятия"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_65",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 3 Раздел 25",
+    "title_en": "Duolingo (RU) - Модуль 3 Раздел 25",
+    "desc_ru": "Слова из модуля: Общайтесь на работе",
+    "desc_en": "Words from module: Общайтесь на работе"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_66",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 3 Раздел 26",
+    "title_en": "Duolingo (RU) - Модуль 3 Раздел 26",
+    "desc_ru": "Слова из модуля: Используйте глаголы дарения и получения",
+    "desc_en": "Words from module: Используйте глаголы дарения и получения"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_67",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 3 Раздел 27",
+    "title_en": "Duolingo (RU) - Модуль 3 Раздел 27",
+    "desc_ru": "Слова из модуля: Обсудите свое здоровье",
+    "desc_en": "Words from module: Обсудите свое здоровье"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_68",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 3 Раздел 28",
+    "title_en": "Duolingo (RU) - Модуль 3 Раздел 28",
+    "desc_ru": "Слова из модуля: Обсудите свои увлечения",
+    "desc_en": "Words from module: Обсудите свои увлечения"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_69",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 3 Раздел 29",
+    "title_en": "Duolingo (RU) - Модуль 3 Раздел 29",
+    "desc_ru": "Слова из модуля: Обсудите свои занятия",
+    "desc_en": "Words from module: Обсудите свои занятия"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_7",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 1 Раздел 7",
+    "title_en": "Duolingo (RU) - Модуль 1 Раздел 7",
+    "desc_ru": "Слова из модуля: Расскажите о своих вещах",
+    "desc_en": "Words from module: Расскажите о своих вещах"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_70",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 3 Раздел 30",
+    "title_en": "Duolingo (RU) - Модуль 3 Раздел 30",
+    "desc_ru": "Слова из модуля: Отправьте посылку на почте",
+    "desc_en": "Words from module: Отправьте посылку на почте"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_8",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 1 Раздел 8",
+    "title_en": "Duolingo (RU) - Модуль 1 Раздел 8",
+    "desc_ru": "Слова из модуля: Опишите своих друзей",
+    "desc_en": "Words from module: Опишите своих друзей"
+  },
+  {
+    "id": "duolingo_n5_duolingo_ru_n5_9",
+    "set_type": "Duolingo",
+    "level": "N5",
+    "title_ru": "Duolingo (RU) - Модуль 1 Раздел 9",
+    "title_en": "Duolingo (RU) - Модуль 1 Раздел 9",
+    "desc_ru": "Слова из модуля: Говорите время",
+    "desc_en": "Words from module: Говорите время"
+  },
+  {
     "id": "jlpt_n1",
     "set_type": "Jlpt",
     "level": "N1",
