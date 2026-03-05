@@ -1,174 +1,131 @@
-use idb::{Database, DatabaseEvent, Factory, ObjectStoreParams, TransactionMode};
 use origa::domain::{DictionaryData, OrigaError};
-use wasm_bindgen::JsValue;
-use web_sys::console;
+use wasm_bindgen::JsCast;
+use wasm_bindgen_futures::JsFuture;
 
-const DB_NAME: &str = "origa_dictionary";
-const DB_VERSION: u32 = 1;
-const STORE_NAME: &str = "dictionary_cache";
-const CACHE_KEY: &str = "unidic_data";
-const VERSION_KEY: &str = "version";
-
-pub const DICTIONARY_VERSION: &str = env!("CARGO_PKG_VERSION");
-
-async fn open_database() -> Result<Database, OrigaError> {
-    let factory = Factory::new().map_err(|e| {
-        let reason = format!("Failed to create IndexedDB factory: {:?}", e);
-        console::error_1(&reason.clone().into());
-        OrigaError::RepositoryError { reason }
-    })?;
-
-    let mut open_request = factory.open(DB_NAME, Some(DB_VERSION)).map_err(|e| {
-        let reason = format!("Failed to open IndexedDB: {:?}", e);
-        console::error_1(&reason.clone().into());
-        OrigaError::RepositoryError { reason }
-    })?;
-
-    open_request.on_upgrade_needed(|event| {
-        let database = match event.database() {
-            Ok(db) => db,
-            Err(e) => {
-                console::error_1(&format!("Failed to get database: {:?}", e).into());
-                return;
-            }
-        };
-
-        if database.store_names().iter().any(|n| n == STORE_NAME) {
-            return;
-        }
-
-        let store_params = ObjectStoreParams::new();
-
-        match database.create_object_store(STORE_NAME, store_params) {
-            Ok(_) => console::info_1(&"Object store 'dictionary_cache' created".into()),
-            Err(e) => console::error_1(&format!("Failed to create object store: {:?}", e).into()),
-        }
-    });
-
-    open_request.await.map_err(|e| {
-        let reason = format!("Failed to initialize IndexedDB: {:?}", e);
-        console::error_1(&reason.clone().into());
-        OrigaError::RepositoryError { reason }
-    })
-}
+const CACHE_NAME: &str = "origa-dictionary-v1";
+const DATA_URL: &str = "/public/dictionaries/unidic/cache/dictionary-data";
 
 pub async fn get_cached_dictionary() -> Result<Option<DictionaryData>, OrigaError> {
-    let db = open_database().await?;
+    let window = web_sys::window().ok_or_else(|| OrigaError::RepositoryError {
+        reason: "No window found".to_string(),
+    })?;
 
-    let transaction = db
-        .transaction(&[STORE_NAME], TransactionMode::ReadOnly)
-        .map_err(|e| {
-            let reason = format!("Failed to create transaction: {:?}", e);
-            console::error_1(&reason.clone().into());
-            OrigaError::RepositoryError { reason }
+    let caches = js_sys::Reflect::get(&window, &wasm_bindgen::JsValue::from_str("caches"))
+        .map_err(|e| OrigaError::RepositoryError {
+            reason: format!("Cache API not available: {:?}", e),
         })?;
 
-    let store = transaction.object_store(STORE_NAME).map_err(|e| {
-        let reason = format!("Failed to get object store: {:?}", e);
-        console::error_1(&reason.clone().into());
-        OrigaError::RepositoryError { reason }
+    let caches: web_sys::CacheStorage = caches.dyn_into().map_err(|e| OrigaError::RepositoryError {
+        reason: format!("Failed to cast CacheStorage: {:?}", e),
     })?;
 
-    let version_key = JsValue::from_str(VERSION_KEY);
-    let version_request = store.get(version_key).map_err(|e| {
-        let reason = format!("Failed to create get version request: {:?}", e);
-        console::error_1(&reason.clone().into());
-        OrigaError::RepositoryError { reason }
-    })?;
+    let cache_promise = caches.open(CACHE_NAME);
+    let cache: web_sys::Cache = JsFuture::from(cache_promise)
+        .await
+        .map_err(|e| OrigaError::RepositoryError {
+            reason: format!("Failed to open cache: {:?}", e),
+        })?
+        .into();
 
-    let cached_version: Option<JsValue> = version_request.await.map_err(|e| {
-        let reason = format!("Failed to get version: {:?}", e);
-        console::error_1(&reason.clone().into());
-        OrigaError::RepositoryError { reason }
-    })?;
+    let match_promise = cache.match_with_str(DATA_URL);
+    let response_option = JsFuture::from(match_promise)
+        .await
+        .map_err(|e| OrigaError::RepositoryError {
+            reason: format!("Failed to check cache: {:?}", e),
+        })?;
 
-    let version_matches = cached_version
-        .and_then(|v| v.as_string())
-        .map(|v| v == DICTIONARY_VERSION)
-        .unwrap_or(false);
-
-    if !version_matches {
-        console::info_1(&"Dictionary version mismatch, will reload".into());
+    if response_option.is_undefined() || response_option.is_null() {
         return Ok(None);
     }
 
-    let data_key = JsValue::from_str(CACHE_KEY);
-    let data_request = store.get(data_key).map_err(|e| {
-        let reason = format!("Failed to create get data request: {:?}", e);
-        console::error_1(&reason.clone().into());
-        OrigaError::RepositoryError { reason }
+    let response: web_sys::Response = response_option.dyn_into().map_err(|e| OrigaError::RepositoryError {
+        reason: format!("Failed to cast Response: {:?}", e),
     })?;
 
-    let value: Option<JsValue> = data_request.await.map_err(|e| {
-        let reason = format!("Failed to get dictionary data: {:?}", e);
-        console::error_1(&reason.clone().into());
-        OrigaError::RepositoryError { reason }
-    })?;
-
-    match value {
-        Some(v) => {
-            let data: DictionaryData = serde_wasm_bindgen::from_value(v).map_err(|e| {
-                let reason = format!("Failed to deserialize dictionary data: {:?}", e);
-                console::error_1(&reason.clone().into());
-                OrigaError::RepositoryError { reason }
-            })?;
-            console::info_1(&"Dictionary loaded from cache".into());
-            Ok(Some(data))
-        }
-        None => {
-            console::info_1(&"No cached dictionary found".into());
-            Ok(None)
-        }
+    if !response.ok() {
+        return Ok(None);
     }
+
+    let array_buffer_promise = response.array_buffer().map_err(|e| OrigaError::RepositoryError {
+        reason: format!("Failed to get array buffer: {:?}", e),
+    })?;
+
+    let array_buffer = JsFuture::from(array_buffer_promise)
+        .await
+        .map_err(|e| OrigaError::RepositoryError {
+            reason: format!("Failed to read array buffer: {:?}", e),
+        })?;
+
+    let uint8_array = js_sys::Uint8Array::new(&array_buffer);
+    let bytes = uint8_array.to_vec();
+
+    let data: DictionaryData = bincode::deserialize(&bytes).map_err(|e| OrigaError::RepositoryError {
+        reason: format!("Failed to deserialize dictionary: {:?}", e),
+    })?;
+
+    web_sys::console::info_1(&"Dictionary loaded from Cache API".into());
+    Ok(Some(data))
 }
 
 pub async fn save_dictionary_to_cache(data: &DictionaryData) -> Result<(), OrigaError> {
-    let db = open_database().await?;
+    let window = web_sys::window().ok_or_else(|| OrigaError::RepositoryError {
+        reason: "No window found".to_string(),
+    })?;
 
-    let transaction = db
-        .transaction(&[STORE_NAME], TransactionMode::ReadWrite)
-        .map_err(|e| {
-            let reason = format!("Failed to create transaction: {:?}", e);
-            console::error_1(&reason.clone().into());
-            OrigaError::RepositoryError { reason }
+    let caches = js_sys::Reflect::get(&window, &wasm_bindgen::JsValue::from_str("caches"))
+        .map_err(|e| OrigaError::RepositoryError {
+            reason: format!("Cache API not available: {:?}", e),
         })?;
 
-    let store = transaction.object_store(STORE_NAME).map_err(|e| {
-        let reason = format!("Failed to get object store: {:?}", e);
-        console::error_1(&reason.clone().into());
-        OrigaError::RepositoryError { reason }
+    let caches: web_sys::CacheStorage = caches.dyn_into().map_err(|e| OrigaError::RepositoryError {
+        reason: format!("Failed to cast CacheStorage: {:?}", e),
     })?;
 
-    let version_value = JsValue::from_str(DICTIONARY_VERSION);
-    let version_request = store.put(&version_value, Some(&JsValue::from_str(VERSION_KEY))).map_err(|e| {
-        let reason = format!("Failed to create put version request: {:?}", e);
-        console::error_1(&reason.clone().into());
-        OrigaError::RepositoryError { reason }
-    })?;
-    version_request.await.map_err(|e| {
-        let reason = format!("Failed to save version: {:?}", e);
-        console::error_1(&reason.clone().into());
-        OrigaError::RepositoryError { reason }
+    let cache_promise = caches.open(CACHE_NAME);
+    let cache: web_sys::Cache = JsFuture::from(cache_promise)
+        .await
+        .map_err(|e| OrigaError::RepositoryError {
+            reason: format!("Failed to open cache: {:?}", e),
+        })?
+        .into();
+
+    let bytes = bincode::serialize(data).map_err(|e| OrigaError::RepositoryError {
+        reason: format!("Failed to serialize dictionary: {:?}", e),
     })?;
 
-    let data_value = serde_wasm_bindgen::to_value(data).map_err(|e| {
-        let reason = format!("Failed to serialize dictionary data: {:?}", e);
-        console::error_1(&reason.clone().into());
-        OrigaError::RepositoryError { reason }
+    let array_buffer = js_sys::ArrayBuffer::new(bytes.len() as u32);
+    let view = js_sys::Uint8Array::new(&array_buffer);
+    view.copy_from(&bytes);
+
+    let response_init = web_sys::ResponseInit::new();
+    response_init.set_status(200);
+    response_init.set_status_text("OK");
+    
+    let blob_property_bag = web_sys::BlobPropertyBag::new();
+    blob_property_bag.set_type("application/octet-stream");
+    
+    let blob_parts = js_sys::Array::new();
+    blob_parts.push(&array_buffer);
+    
+    let blob = web_sys::Blob::new_with_buffer_source_sequence_and_options(
+        &blob_parts,
+        &blob_property_bag,
+    ).map_err(|e| OrigaError::RepositoryError {
+        reason: format!("Failed to create blob: {:?}", e),
     })?;
 
-    let data_request = store.put(&data_value, Some(&JsValue::from_str(CACHE_KEY))).map_err(|e| {
-        let reason = format!("Failed to create put data request: {:?}", e);
-        console::error_1(&reason.clone().into());
-        OrigaError::RepositoryError { reason }
-    })?;
+    let response = web_sys::Response::new_with_opt_blob_and_init(Some(&blob), &response_init)
+        .map_err(|e| OrigaError::RepositoryError {
+            reason: format!("Failed to create response: {:?}", e),
+        })?;
 
-    data_request.await.map_err(|e| {
-        let reason = format!("Failed to save dictionary data: {:?}", e);
-        console::error_1(&reason.clone().into());
-        OrigaError::RepositoryError { reason }
-    })?;
+    let put_promise = cache.put_with_str(DATA_URL, &response);
+    JsFuture::from(put_promise)
+        .await
+        .map_err(|e| OrigaError::RepositoryError {
+            reason: format!("Failed to save to cache: {:?}", e),
+        })?;
 
-    console::info_1(&"Dictionary saved to cache".into());
+    web_sys::console::info_1(&"Dictionary saved to Cache API".into());
     Ok(())
 }
