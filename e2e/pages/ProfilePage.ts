@@ -6,7 +6,6 @@ export class ProfilePage {
 	readonly usernameInput: Locator;
 	readonly levelSelector: Locator;
 	readonly languageSelector: Locator;
-	readonly duolingoTokenInput: Locator;
 	readonly remindersToggle: Locator;
 	readonly remindersCheckbox: Locator;
 	readonly saveButton: Locator;
@@ -24,10 +23,6 @@ export class ProfilePage {
 			.getByRole("textbox");
 		this.levelSelector = page.getByText("Целевой уровень JLPT");
 		this.languageSelector = page.getByText("Язык интерфейса");
-		this.duolingoTokenInput = page
-			.getByText("Duolingo JWT токен")
-			.locator("..")
-			.getByRole("textbox");
 		this.remindersToggle = page.locator(".toggle-container");
 		this.remindersCheckbox = page.locator(
 			'.toggle-container input[type="checkbox"]',
@@ -50,7 +45,6 @@ export class ProfilePage {
 		await expect(this.usernameInput).toBeVisible();
 		await expect(this.levelSelector).toBeVisible();
 		await expect(this.languageSelector).toBeVisible();
-		await expect(this.duolingoTokenInput).toBeVisible();
 		await expect(this.remindersToggle).toBeVisible();
 		await expect(this.saveButton).toBeVisible();
 		await expect(this.logoutButton).toBeVisible();
@@ -63,14 +57,6 @@ export class ProfilePage {
 
 	async expectUsername(username: string) {
 		await expect(this.usernameInput).toHaveValue(username);
-	}
-
-	async setDuolingoToken(token: string) {
-		await this.duolingoTokenInput.fill(token);
-	}
-
-	async expectDuolingoToken(token: string) {
-		await expect(this.duolingoTokenInput).toHaveValue(token);
 	}
 
 	async toggleReminders() {

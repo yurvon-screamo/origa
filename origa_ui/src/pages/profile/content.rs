@@ -28,26 +28,15 @@ pub fn ProfileContent() -> impl IntoView {
     let reminders_enabled = Memo::new(move |_| {
         current_user.with(|u| u.as_ref().map(|u| u.reminders_enabled()).unwrap_or(true))
     });
-    let duolingo_token = Memo::new(move |_| {
-        current_user.with(|u| {
-            u.as_ref()
-                .and_then(|u| u.duolingo_jwt_token().map(|t| t.to_string()))
-                .unwrap_or_default()
-        })
-    });
 
     let selected_language = RwSignal::new(native_language.get_untracked());
     let reminders = RwSignal::new(reminders_enabled.get_untracked());
-    let duolingo_input = RwSignal::new(duolingo_token.get_untracked());
 
     Effect::new(move |_| {
         selected_language.set(native_language.get());
     });
     Effect::new(move |_| {
         reminders.set(reminders_enabled.get());
-    });
-    Effect::new(move |_| {
-        duolingo_input.set(duolingo_token.get());
     });
 
     let is_saving = RwSignal::new(false);
@@ -61,7 +50,6 @@ pub fn ProfileContent() -> impl IntoView {
         let current_user_signal = current_user;
         let language = selected_language.get();
         let reminders_enabled = reminders.get();
-        let token = duolingo_input.get();
         let is_saving_signal = is_saving;
 
         is_saving_signal.set(true);
@@ -73,7 +61,6 @@ pub fn ProfileContent() -> impl IntoView {
                 .execute(
                     user_id,
                     language,
-                    if token.is_empty() { None } else { Some(token) },
                     None,
                     reminders_enabled,
                 )
@@ -149,7 +136,7 @@ pub fn ProfileContent() -> impl IntoView {
             />
 
             <div class="space-y-4">
-                <IntegrationsCard duolingo_input={duolingo_input} />
+                <IntegrationsCard />
                 <SettingsCard reminders={reminders} />
                 <ActionButtons
                     on_save={save_profile}
