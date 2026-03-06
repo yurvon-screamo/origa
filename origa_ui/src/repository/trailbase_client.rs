@@ -6,7 +6,7 @@ use sha2::{Digest, Sha256};
 use std::collections::HashMap;
 use thiserror::Error;
 
-const TRAILBASE_URL: &str = "https://trailbase-production-97b6.up.railway.app";
+const TRAILBASE_URL: &str = "https://origa-app.up.railway.app";
 const REFRESH_THRESHOLD_SECONDS: u64 = 300;
 
 #[derive(Debug, Deserialize)]
