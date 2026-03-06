@@ -32,9 +32,12 @@ async fn fetch_file(
             reason: format!("Failed to fetch {}: {:?}", filename, e),
         })?;
 
-    let resp: web_sys::Response = resp_value.dyn_into().map_err(|e| OrigaError::TokenizerError {
-        reason: format!("Failed to cast response for {}: {:?}", filename, e),
-    })?;
+    let resp: web_sys::Response =
+        resp_value
+            .dyn_into()
+            .map_err(|e| OrigaError::TokenizerError {
+                reason: format!("Failed to cast response for {}: {:?}", filename, e),
+            })?;
 
     if !resp.ok() {
         return Err(OrigaError::TokenizerError {
@@ -42,15 +45,18 @@ async fn fetch_file(
         });
     }
 
-    let array_buffer_promise = resp.array_buffer().map_err(|e| OrigaError::TokenizerError {
-        reason: format!("Failed to get array buffer for {}: {:?}", filename, e),
-    })?;
-
-    let array_buffer_value = JsFuture::from(array_buffer_promise)
-        .await
+    let array_buffer_promise = resp
+        .array_buffer()
         .map_err(|e| OrigaError::TokenizerError {
-            reason: format!("Failed to await array buffer for {}: {:?}", filename, e),
+            reason: format!("Failed to get array buffer for {}: {:?}", filename, e),
         })?;
+
+    let array_buffer_value =
+        JsFuture::from(array_buffer_promise)
+            .await
+            .map_err(|e| OrigaError::TokenizerError {
+                reason: format!("Failed to await array buffer for {}: {:?}", filename, e),
+            })?;
 
     let array_buffer = js_sys::ArrayBuffer::from(array_buffer_value);
     let bytes = js_sys::Uint8Array::new(&array_buffer).to_vec();
@@ -76,15 +82,17 @@ pub async fn load_dictionary() -> Result<(), OrigaError> {
         }
         Ok(None) => {}
         Err(e) => {
-            web_sys::console::warn_1(&format!("Cache read failed, loading from network: {:?}", e).into());
+            web_sys::console::warn_1(
+                &format!("Cache read failed, loading from network: {:?}", e).into(),
+            );
         }
     }
 
     let data = load_dictionary_from_network().await?;
     let data_clone = data.clone();
-    
+
     init_dictionary(data)?;
-    
+
     if let Err(e) = save_dictionary_to_cache(&data_clone).await {
         web_sys::console::warn_1(&format!("Failed to cache dictionary: {:?}", e).into());
     }
