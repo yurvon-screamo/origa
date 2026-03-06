@@ -42,9 +42,6 @@ pub fn KanjiCardDetails(
                         <Text size=TextSize::Default variant=TypographyVariant::Muted>
                             "音読み"
                         </Text>
-                        <span class="text-xs px-1.5 py-0.5 bg-[var(--bg-secondary)] rounded text-[var(--fg-muted)]">
-                            "カタカナ"
-                        </span>
                     </div>
                     <div class="flex gap-2 flex-wrap justify-center">
                         <For
@@ -52,7 +49,7 @@ pub fn KanjiCardDetails(
                             key=|reading| reading.clone()
                             children=move |reading| {
                                 view! {
-                                    <span class="inline-block px-3 py-1.5 bg-[var(--bg-secondary)] rounded-md text-sm font-bold">
+                                    <span class="inline-block px-3 py-1.5 bg-[var(--bg-secondary)] rounded-md text-sm">
                                         {reading}
                                     </span>
                                 }
@@ -68,9 +65,6 @@ pub fn KanjiCardDetails(
                         <Text size=TextSize::Default variant=TypographyVariant::Muted>
                             "訓読み"
                         </Text>
-                        <span class="text-xs px-1.5 py-0.5 bg-[var(--bg-secondary)] rounded text-[var(--fg-muted)]">
-                            "ひらがな"
-                        </span>
                     </div>
                     <div class="flex gap-2 flex-wrap justify-center">
                         <For
@@ -78,7 +72,7 @@ pub fn KanjiCardDetails(
                             key=|reading| reading.clone()
                             children=move |reading| {
                                 view! {
-                                    <span class="inline-block px-3 py-1.5 bg-[var(--bg-secondary)] rounded-md text-sm font-bold">
+                                    <span class="inline-block px-3 py-1.5 bg-[var(--bg-secondary)] rounded-md text-sm">
                                         {reading}
                                     </span>
                                 }
