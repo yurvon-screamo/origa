@@ -81,9 +81,6 @@ pub fn LessonCardAnswer(
                                     <Text size=TextSize::Default variant=TypographyVariant::Muted>
                                         "音読み"
                                     </Text>
-                                    <span class="text-xs px-1.5 py-0.5 bg-[var(--bg-secondary)] rounded text-[var(--fg-muted)]">
-                                        "カタカナ"
-                                    </span>
                                 </div>
                                 {on_readings_stored
                                     .get_value()
@@ -91,7 +88,7 @@ pub fn LessonCardAnswer(
                                     .iter()
                                     .map(|reading| {
                                         view! {
-                                            <span class="inline-block px-2 py-1 bg-[var(--bg-secondary)] rounded text-sm font-bold">
+                                            <span class="inline-block px-2 py-1 bg-[var(--bg-secondary)] rounded text-sm">
                                                 {reading.clone()}
                                             </span>
                                         }
@@ -106,9 +103,6 @@ pub fn LessonCardAnswer(
                                     <Text size=TextSize::Default variant=TypographyVariant::Muted>
                                         "訓読み"
                                     </Text>
-                                    <span class="text-xs px-1.5 py-0.5 bg-[var(--bg-secondary)] rounded text-[var(--fg-muted)]">
-                                        "ひらがな"
-                                    </span>
                                 </div>
                                 {kun_readings_stored
                                     .get_value()
@@ -116,7 +110,7 @@ pub fn LessonCardAnswer(
                                     .iter()
                                     .map(|reading| {
                                         view! {
-                                            <span class="inline-block px-2 py-1 bg-[var(--bg-secondary)] rounded text-sm font-bold">
+                                            <span class="inline-block px-2 py-1 bg-[var(--bg-secondary)] rounded text-sm">
                                                 {reading.clone()}
                                             </span>
                                         }
