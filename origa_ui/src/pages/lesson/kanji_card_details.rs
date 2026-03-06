@@ -1,6 +1,6 @@
 use crate::ui_components::{
-    FuriganaText, KanjiViewMode, KanjiWritingSection, MarkdownText, MarkdownVariant, Text,
-    TextSize, TypographyVariant,
+    FuriganaText, KanjiViewMode, KanjiWritingSection, MarkdownText, MarkdownVariant, ReadingGroup,
+    Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
 use origa::domain::User;
@@ -29,58 +29,14 @@ pub fn KanjiCardDetails(
     let on_readings_stored = StoredValue::new(on_readings);
     let kun_readings_stored = StoredValue::new(kun_readings);
 
-    let on_readings_list = move || on_readings_stored.get_value().unwrap_or_default();
-    let kun_readings_list = move || kun_readings_stored.get_value().unwrap_or_default();
-
     view! {
         <Show when=move || show_details>
             <KanjiWritingSection kanji=kanji_stored.get_value() mode=KanjiViewMode::Frames />
 
-            <Show when=move || on_readings_stored.get_value().is_some()>
-                <div class="my-6">
-                    <div class="flex gap-2 items-center justify-center mb-3">
-                        <Text size=TextSize::Default variant=TypographyVariant::Muted>
-                            "音読み"
-                        </Text>
-                    </div>
-                    <div class="flex gap-2 flex-wrap justify-center">
-                        <For
-                            each=on_readings_list
-                            key=|reading| reading.clone()
-                            children=move |reading| {
-                                view! {
-                                    <span class="inline-block px-3 py-1.5 bg-[var(--bg-secondary)] rounded-md text-sm">
-                                        {reading}
-                                    </span>
-                                }
-                            }
-                        />
-                    </div>
-                </div>
-            </Show>
-
-            <Show when=move || kun_readings_stored.get_value().is_some()>
-                <div class="my-6">
-                    <div class="flex gap-2 items-center justify-center mb-3">
-                        <Text size=TextSize::Default variant=TypographyVariant::Muted>
-                            "訓読み"
-                        </Text>
-                    </div>
-                    <div class="flex gap-2 flex-wrap justify-center">
-                        <For
-                            each=kun_readings_list
-                            key=|reading| reading.clone()
-                            children=move |reading| {
-                                view! {
-                                    <span class="inline-block px-3 py-1.5 bg-[var(--bg-secondary)] rounded-md text-sm">
-                                        {reading}
-                                    </span>
-                                }
-                            }
-                        />
-                    </div>
-                </div>
-            </Show>
+            <div class="my-6 space-y-6">
+                <ReadingGroup label="音読み" readings=on_readings_stored />
+                <ReadingGroup label="訓読み" readings=kun_readings_stored />
+            </div>
 
             <Show when=move || radicals_stored.get_value().is_some()>
                 <div class="my-6">
