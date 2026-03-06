@@ -1,6 +1,6 @@
 use crate::ui_components::{
     Button, ButtonVariant, FuriganaText, Heading, HeadingLevel, MarkdownText, MarkdownVariant,
-    Text, TextSize, TypographyVariant,
+    ReadingGroup, Text, TextSize, TypographyVariant,
 };
 use leptos::{ev::MouseEvent, prelude::*};
 use origa::domain::User;
@@ -74,50 +74,9 @@ pub fn LessonCardAnswer(
                 </Show>
 
                 <Show when=move || is_kanji>
-                    <div class="mt-4 space-y-3">
-                        <Show when=move || on_readings_stored.get_value().is_some()>
-                            <div class="flex gap-2 items-center justify-center flex-wrap">
-                                <div class="flex gap-1.5 items-center">
-                                    <Text size=TextSize::Default variant=TypographyVariant::Muted>
-                                        "音読み"
-                                    </Text>
-                                </div>
-                                {on_readings_stored
-                                    .get_value()
-                                    .unwrap_or_default()
-                                    .iter()
-                                    .map(|reading| {
-                                        view! {
-                                            <span class="inline-block px-2 py-1 bg-[var(--bg-secondary)] rounded text-sm">
-                                                {reading.clone()}
-                                            </span>
-                                        }
-                                    })
-                                    .collect::<Vec<_>>()}
-                            </div>
-                        </Show>
-
-                        <Show when=move || kun_readings_stored.get_value().is_some()>
-                            <div class="flex gap-2 items-center justify-center flex-wrap">
-                                <div class="flex gap-1.5 items-center">
-                                    <Text size=TextSize::Default variant=TypographyVariant::Muted>
-                                        "訓読み"
-                                    </Text>
-                                </div>
-                                {kun_readings_stored
-                                    .get_value()
-                                    .unwrap_or_default()
-                                    .iter()
-                                    .map(|reading| {
-                                        view! {
-                                            <span class="inline-block px-2 py-1 bg-[var(--bg-secondary)] rounded text-sm">
-                                                {reading.clone()}
-                                            </span>
-                                        }
-                                    })
-                                    .collect::<Vec<_>>()}
-                            </div>
-                        </Show>
+                    <div class="mt-4 space-y-4">
+                        <ReadingGroup label="音読み" readings=on_readings_stored />
+                        <ReadingGroup label="訓読み" readings=kun_readings_stored />
                     </div>
                 </Show>
             </div>
