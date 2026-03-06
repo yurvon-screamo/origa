@@ -58,12 +58,7 @@ pub fn ProfileContent() -> impl IntoView {
             let use_case = UpdateUserProfileUseCase::new(&repository);
 
             let result = use_case
-                .execute(
-                    user_id,
-                    language,
-                    None,
-                    reminders_enabled,
-                )
+                .execute(user_id, language, None, reminders_enabled)
                 .await;
 
             is_saving_signal.set(false);

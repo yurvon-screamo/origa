@@ -96,12 +96,14 @@ impl UserRow {
     fn to_user(&self) -> User {
         let ulid = uuid_to_ulid(&self.auth_user_id);
 
-        let jlpt_progress = self.jlpt_progress
+        let jlpt_progress = self
+            .jlpt_progress
             .as_ref()
             .and_then(|s| serde_json::from_str(s).ok())
             .unwrap_or_default();
 
-        let knowledge_set = self.knowledge_set
+        let knowledge_set = self
+            .knowledge_set
             .as_ref()
             .and_then(|s| serde_json::from_str(s).ok())
             .unwrap_or_default();
@@ -140,9 +142,11 @@ fn uuid_to_ulid(uuid_str: &str) -> Ulid {
 }
 
 fn user_to_json(user: &User, auth_user_id: &str) -> serde_json::Value {
-    let jlpt_progress_json = serde_json::to_string(user.jlpt_progress()).unwrap_or_else(|_| "null".to_string());
-    let knowledge_set_json = serde_json::to_string(user.knowledge_set()).unwrap_or_else(|_| "{\"study_cards\":{},\"lesson_history\":[]}".to_string());
-    
+    let jlpt_progress_json =
+        serde_json::to_string(user.jlpt_progress()).unwrap_or_else(|_| "null".to_string());
+    let knowledge_set_json = serde_json::to_string(user.knowledge_set())
+        .unwrap_or_else(|_| "{\"study_cards\":{},\"lesson_history\":[]}".to_string());
+
     serde_json::json!({
         "auth_user_id": auth_user_id,
         "username": user.username(),
