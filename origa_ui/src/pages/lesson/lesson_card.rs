@@ -48,6 +48,32 @@ pub fn LessonCard(
     };
     let examples_stored = StoredValue::new(example_words);
 
+    let on_readings: Option<Vec<String>> = match &card {
+        DomainCard::Kanji(kanji) => {
+            let readings = kanji.on_readings().to_vec();
+            if readings.is_empty() {
+                None
+            } else {
+                Some(readings)
+            }
+        }
+        _ => None,
+    };
+    let on_readings_stored = StoredValue::new(on_readings);
+
+    let kun_readings: Option<Vec<String>> = match &card {
+        DomainCard::Kanji(kanji) => {
+            let readings = kanji.kun_readings().to_vec();
+            if readings.is_empty() {
+                None
+            } else {
+                Some(readings)
+            }
+        }
+        _ => None,
+    };
+    let kun_readings_stored = StoredValue::new(kun_readings);
+
     let kanji_for_animation: Option<String> = match &card {
         DomainCard::Kanji(_) => Some(card.question().text().to_string()),
         _ => None,
@@ -110,6 +136,8 @@ pub fn LessonCard(
                         on_toggle=on_toggle
                         is_kanji=card_type == CardType::Kanji
                         is_reversed=is_reversed
+                        on_readings=on_readings_stored.get_value()
+                        kun_readings=kun_readings_stored.get_value()
                     />
 
                     <Show when=move || card_type == CardType::Kanji && is_expanded.get()>
@@ -121,6 +149,8 @@ pub fn LessonCard(
                                         radicals=radicals_stored.get_value()
                                         example_words=examples_stored.get_value()
                                         show_details=is_expanded.get()
+                                        on_readings=on_readings_stored.get_value()
+                                        kun_readings=kun_readings_stored.get_value()
                                     />
                                 }
                             })
