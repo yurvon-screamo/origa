@@ -1,6 +1,6 @@
 use crate::ui_components::{
-    Button, ButtonVariant, FuriganaText, Heading, HeadingLevel, MarkdownText, MarkdownVariant,
-    ReadingGroup, Text, TextSize, TypographyVariant,
+    Button, ButtonVariant, FuriganaText, Heading, HeadingLevel, KanjiViewMode, KanjiWritingSection,
+    MarkdownText, MarkdownVariant, ReadingGroup, Text, TextSize, TypographyVariant,
 };
 use leptos::{ev::MouseEvent, prelude::*};
 use origa::domain::User;
@@ -55,30 +55,42 @@ pub fn LessonCardAnswer(
                 node_ref=content_ref
                 class=move || if is_expanded.get() { "border-t border-[var(--border-light)] pt-4 mt-4" } else { "border-t border-[var(--border-light)] pt-4 mt-4 line-clamp-3" }
             >
-                <Text size=TextSize::Default variant=TypographyVariant::Muted class="mb-2">
-                    "Ответ:"
-                </Text>
-                <Show
-                    when=move || is_reversed
-                    fallback=move || {
-                        view! {
-                            <MarkdownText
-                                content=Signal::derive(move || answer.get_value())
-                                variant=Signal::derive(|| MarkdownVariant::Large)
-                                known_kanji=known_kanji.get()
-                            />
-                        }
-                    }
-                >
-                    <FuriganaText text=answer.get_value() known_kanji=known_kanji.get()/>
-                </Show>
-
-                <Show when=move || is_kanji>
-                    <div class="mt-4 space-y-3 max-w-max mx-auto">
-                        <ReadingGroup label="音読み" readings=on_readings_stored />
-                        <ReadingGroup label="訓読み" readings=kun_readings_stored />
+                <div class="max-w-max mx-auto space-y-4">
+                    <div class="flex gap-4 items-baseline text-left">
+                        <div class="w-16 shrink-0">
+                            <Text size=TextSize::Default variant=TypographyVariant::Muted>
+                                "Ответ:"
+                            </Text>
+                        </div>
+                        <Show
+                            when=move || is_reversed
+                            fallback=move || {
+                                view! {
+                                    <MarkdownText
+                                        content=Signal::derive(move || answer.get_value())
+                                        variant=Signal::derive(|| MarkdownVariant::Large)
+                                        known_kanji=known_kanji.get()
+                                    />
+                                }
+                            }
+                        >
+                            <FuriganaText text=answer.get_value() known_kanji=known_kanji.get()/>
+                        </Show>
                     </div>
-                </Show>
+
+                    <Show when=move || is_kanji>
+                        <div class="space-y-4">
+                            <KanjiWritingSection
+                                kanji=question.get_value()
+                                mode=KanjiViewMode::Frames
+                            />
+                            <div class="space-y-3">
+                                <ReadingGroup label="音読み" readings=on_readings_stored />
+                                <ReadingGroup label="訓読み" readings=kun_readings_stored />
+                            </div>
+                        </div>
+                    </Show>
+                </div>
             </div>
 
             <Show when=move || needs_collapse.get()>
