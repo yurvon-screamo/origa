@@ -74,7 +74,7 @@ pub fn LessonCardAnswer(
                 </Show>
 
                 <Show when=move || is_kanji>
-                    <div class="mt-4 space-y-4">
+                    <div class="mt-4 space-y-3 max-w-max mx-auto">
                         <ReadingGroup label="音読み" readings=on_readings_stored />
                         <ReadingGroup label="訓読み" readings=kun_readings_stored />
                     </div>
