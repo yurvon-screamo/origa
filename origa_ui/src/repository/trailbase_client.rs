@@ -208,7 +208,7 @@ impl TrailBaseClient {
     pub fn get_oauth_url(provider: &str, redirect_uri: &str, pkce_challenge: &str) -> String {
         let encoded_redirect = urlencoding::encode(redirect_uri);
         let encoded_challenge = urlencoding::encode(pkce_challenge);
-        
+
         let scope = if provider == "oidc0" {
             "&scope=login:email%20login:info"
         } else {
@@ -310,9 +310,8 @@ impl TrailBaseClient {
             .split(';')
             .filter_map(|cookie: &str| {
                 let cookie = cookie.trim();
-                let mut parts = cookie.splitn(2, '=');
-                let key = parts.next()?;
-                let value = parts.next()?;
+                let (key, value) = cookie.split_once('=')?;
+
                 Some((key, value))
             })
             .collect();

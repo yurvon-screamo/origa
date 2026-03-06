@@ -1,4 +1,4 @@
-use crate::repository::{OAuthProvider, TrailBaseClient};
+use crate::repository::OAuthProvider;
 use leptos::prelude::*;
 use leptos::wasm_bindgen::JsValue;
 
