@@ -80,13 +80,20 @@ pub fn LessonCardAnswer(
 
                     <Show when=move || is_kanji>
                         <div class="space-y-4">
-                            <KanjiWritingSection
-                                kanji=question.get_value()
-                                mode=KanjiViewMode::Frames
-                            />
                             <div class="space-y-3">
                                 <ReadingGroup label="音読み" readings=on_readings_stored />
                                 <ReadingGroup label="訓読み" readings=kun_readings_stored />
+                            </div>
+                            <div class="flex gap-4 items-start text-left">
+                                <div class="w-16 shrink-0">
+                                    <Text size=TextSize::Default variant=TypographyVariant::Muted>
+                                        "Написание"
+                                    </Text>
+                                </div>
+                                <KanjiWritingSection
+                                    kanji=question.get_value()
+                                    mode=KanjiViewMode::Frames
+                                />
                             </div>
                         </div>
                     </Show>
