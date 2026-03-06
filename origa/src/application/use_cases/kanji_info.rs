@@ -34,6 +34,8 @@ pub struct KanjiItemInfo {
     pub description: String,
     pub radicals: Vec<char>,
     pub popular_words: Vec<String>,
+    pub on_readings: Vec<String>,
+    pub kun_readings: Vec<String>,
 }
 
 #[derive(Clone)]
@@ -81,6 +83,8 @@ impl<'a, R: UserRepository> KanjiInfoListUseCase<'a, R> {
                 description: kanji_info.description().to_string(),
                 radicals: kanji_info.radicals_chars().to_vec(),
                 popular_words: kanji_info.popular_words().to_vec(),
+                on_readings: kanji_info.on_readings().to_vec(),
+                kun_readings: kanji_info.kun_readings().to_vec(),
             })
             .collect();
 
