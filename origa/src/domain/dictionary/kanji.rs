@@ -3,8 +3,8 @@ use std::{collections::HashMap, sync::OnceLock};
 use serde::{Deserialize, Serialize};
 
 use crate::domain::{
-    OrigaError,
     value_objects::{JapaneseLevel, NativeLanguage},
+    OrigaError,
 };
 
 pub static KANJI_DICTIONARY: OnceLock<KanjiDatabase> = OnceLock::new();
@@ -71,6 +71,8 @@ pub struct KanjiInfo {
     description: String,
     radicals: Vec<char>,
     popular_words: Vec<String>,
+    on_readings: Vec<String>,
+    kun_readings: Vec<String>,
 }
 
 impl KanjiInfo {
@@ -96,6 +98,14 @@ impl KanjiInfo {
 
     pub fn popular_words(&self) -> &[String] {
         &self.popular_words
+    }
+
+    pub fn on_readings(&self) -> &[String] {
+        &self.on_readings
+    }
+
+    pub fn kun_readings(&self) -> &[String] {
+        &self.kun_readings
     }
 
     pub fn popular_words_with_translations(
@@ -145,6 +155,8 @@ impl KanjiDatabase {
                         description: k.description,
                         radicals,
                         popular_words: k.popular_words,
+                        on_readings: k.on_readings,
+                        kun_readings: k.kun_readings,
                     },
                 )
             })
@@ -175,6 +187,10 @@ struct KanjiStoredType {
     description: String,
     radicals: Vec<String>,
     popular_words: Vec<String>,
+    #[serde(default)]
+    on_readings: Vec<String>,
+    #[serde(default)]
+    kun_readings: Vec<String>,
 }
 
 #[derive(Serialize, Deserialize)]

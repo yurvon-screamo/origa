@@ -10,6 +10,8 @@ pub struct KanjiCard {
     kanji: Question,
     description: Answer,
     example_words: Vec<ExampleKanjiWord>,
+    on_readings: Vec<String>,
+    kun_readings: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -35,10 +37,15 @@ impl KanjiCard {
             })
             .collect();
 
+        let on_readings = kanji_info.on_readings().to_vec();
+        let kun_readings = kanji_info.kun_readings().to_vec();
+
         Ok(Self {
             kanji: Question::new(kanji.to_string())?,
             description: Answer::new(description.to_string())?,
             example_words,
+            on_readings,
+            kun_readings,
         })
     }
 
@@ -74,6 +81,14 @@ impl KanjiCard {
             .map(|&r| get_radical_info(r))
             .collect()
     }
+
+    pub fn on_readings(&self) -> &[String] {
+        &self.on_readings
+    }
+
+    pub fn kun_readings(&self) -> &[String] {
+        &self.kun_readings
+    }
 }
 
 impl ExampleKanjiWord {
@@ -93,6 +108,8 @@ impl KanjiCard {
             kanji: Question::new(kanji).unwrap(),
             description: Answer::new(description).unwrap(),
             example_words: vec![],
+            on_readings: vec![],
+            kun_readings: vec![],
         }
     }
 }

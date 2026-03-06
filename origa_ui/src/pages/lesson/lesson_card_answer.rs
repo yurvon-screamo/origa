@@ -15,6 +15,8 @@ pub fn LessonCardAnswer(
     on_toggle: Callback<()>,
     is_kanji: bool,
     is_reversed: bool,
+    on_readings: Option<Vec<String>>,
+    kun_readings: Option<Vec<String>>,
 ) -> impl IntoView {
     let current_user = use_context::<RwSignal<Option<User>>>().expect("current_user context");
 
@@ -27,6 +29,8 @@ pub fn LessonCardAnswer(
 
     let question = StoredValue::new(question_text);
     let answer = StoredValue::new(answer_text);
+    let on_readings_stored = StoredValue::new(on_readings);
+    let kun_readings_stored = StoredValue::new(kun_readings);
 
     view! {
         <div class="text-center">
@@ -67,6 +71,50 @@ pub fn LessonCardAnswer(
                     }
                 >
                     <FuriganaText text=answer.get_value() known_kanji=known_kanji.get()/>
+                </Show>
+
+                <Show when=move || is_kanji>
+                    <div class="mt-4 space-y-2">
+                        <Show when=move || on_readings_stored.get_value().is_some()>
+                            <div class="flex gap-2 items-center justify-center flex-wrap">
+                                <Text size=TextSize::Default variant=TypographyVariant::Muted>
+                                    "ОН:"
+                                </Text>
+                                {on_readings_stored
+                                    .get_value()
+                                    .unwrap_or_default()
+                                    .iter()
+                                    .map(|reading| {
+                                        view! {
+                                            <span class="inline-block px-2 py-1 bg-[var(--bg-secondary)] rounded text-sm font-bold">
+                                                {reading.clone()}
+                                            </span>
+                                        }
+                                    })
+                                    .collect::<Vec<_>>()}
+                            </div>
+                        </Show>
+
+                        <Show when=move || kun_readings_stored.get_value().is_some()>
+                            <div class="flex gap-2 items-center justify-center flex-wrap">
+                                <Text size=TextSize::Default variant=TypographyVariant::Muted>
+                                    "KUN:"
+                                </Text>
+                                {kun_readings_stored
+                                    .get_value()
+                                    .unwrap_or_default()
+                                    .iter()
+                                    .map(|reading| {
+                                        view! {
+                                            <span class="inline-block px-2 py-1 bg-[var(--bg-secondary)] rounded text-sm font-bold">
+                                                {reading.clone()}
+                                            </span>
+                                        }
+                                    })
+                                    .collect::<Vec<_>>()}
+                            </div>
+                        </Show>
+                    </div>
                 </Show>
             </div>
 
