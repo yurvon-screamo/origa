@@ -33,7 +33,7 @@ pub fn KanjiCardDetails(
         <Show when=move || show_details>
             <KanjiWritingSection kanji=kanji_stored.get_value() mode=KanjiViewMode::Frames />
 
-            <div class="my-6 space-y-6">
+            <div class="my-6 space-y-4 max-w-max mx-auto">
                 <ReadingGroup label="音読み" readings=on_readings_stored />
                 <ReadingGroup label="訓読み" readings=kun_readings_stored />
             </div>
