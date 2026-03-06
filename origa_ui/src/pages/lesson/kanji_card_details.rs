@@ -31,8 +31,6 @@ pub fn KanjiCardDetails(
 
     view! {
         <Show when=move || show_details>
-            <KanjiWritingSection kanji=kanji_stored.get_value() mode=KanjiViewMode::Frames />
-
             <div class="my-6 space-y-4 max-w-max mx-auto">
                 <ReadingGroup label="音読み" readings=on_readings_stored />
                 <ReadingGroup label="訓読み" readings=kun_readings_stored />
@@ -49,6 +47,18 @@ pub fn KanjiCardDetails(
                         </Text>
                     </div>
                 </Show>
+
+                <div class="flex gap-4 items-start text-left">
+                    <div class="w-16 shrink-0">
+                        <Text size=TextSize::Default variant=TypographyVariant::Muted>
+                            "Написание"
+                        </Text>
+                    </div>
+                    <KanjiWritingSection
+                        kanji=kanji_stored.get_value()
+                        mode=KanjiViewMode::Frames
+                    />
+                </div>
             </div>
 
             <Show when=move || examples_stored.get_value().is_some()>
