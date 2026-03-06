@@ -50,7 +50,7 @@ impl AuthContext {
 
     pub async fn init_dictionary(&self) {
         let (dict_result, data_result) = futures::join!(load_dictionary(), load_all_data());
-        
+
         if let Err(e) = dict_result {
             error!("Failed to load dictionary: {}", e);
         } else {
@@ -166,7 +166,10 @@ fn check_url_oauth_callback(ctx: &AuthContext) {
                 let ctx_clone = ctx.clone();
                 spawn_local(async move {
                     let client = TrailBaseClient::new();
-                    match client.exchange_auth_code_for_session(&code, &verifier).await {
+                    match client
+                        .exchange_auth_code_for_session(&code, &verifier)
+                        .await
+                    {
                         Ok(session) => {
                             if !session.email.is_empty() {
                                 let email = session.email.clone();

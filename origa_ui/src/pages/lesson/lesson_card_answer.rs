@@ -74,12 +74,17 @@ pub fn LessonCardAnswer(
                 </Show>
 
                 <Show when=move || is_kanji>
-                    <div class="mt-4 space-y-2">
+                    <div class="mt-4 space-y-3">
                         <Show when=move || on_readings_stored.get_value().is_some()>
                             <div class="flex gap-2 items-center justify-center flex-wrap">
-                                <Text size=TextSize::Default variant=TypographyVariant::Muted>
-                                    "ОН:"
-                                </Text>
+                                <div class="flex gap-1.5 items-center">
+                                    <Text size=TextSize::Default variant=TypographyVariant::Muted>
+                                        "音読み"
+                                    </Text>
+                                    <span class="text-xs px-1.5 py-0.5 bg-[var(--bg-secondary)] rounded text-[var(--fg-muted)]">
+                                        "カタカナ"
+                                    </span>
+                                </div>
                                 {on_readings_stored
                                     .get_value()
                                     .unwrap_or_default()
@@ -97,9 +102,14 @@ pub fn LessonCardAnswer(
 
                         <Show when=move || kun_readings_stored.get_value().is_some()>
                             <div class="flex gap-2 items-center justify-center flex-wrap">
-                                <Text size=TextSize::Default variant=TypographyVariant::Muted>
-                                    "KUN:"
-                                </Text>
+                                <div class="flex gap-1.5 items-center">
+                                    <Text size=TextSize::Default variant=TypographyVariant::Muted>
+                                        "訓読み"
+                                    </Text>
+                                    <span class="text-xs px-1.5 py-0.5 bg-[var(--bg-secondary)] rounded text-[var(--fg-muted)]">
+                                        "ひらがな"
+                                    </span>
+                                </div>
                                 {kun_readings_stored
                                     .get_value()
                                     .unwrap_or_default()

@@ -38,10 +38,13 @@ pub fn KanjiCardDetails(
 
             <Show when=move || on_readings_stored.get_value().is_some()>
                 <div class="my-6">
-                    <div class="flex gap-6 items-center justify-center mb-2">
+                    <div class="flex gap-2 items-center justify-center mb-3">
                         <Text size=TextSize::Default variant=TypographyVariant::Muted>
-                            "ОН:"
+                            "音読み"
                         </Text>
+                        <span class="text-xs px-1.5 py-0.5 bg-[var(--bg-secondary)] rounded text-[var(--fg-muted)]">
+                            "カタカナ"
+                        </span>
                     </div>
                     <div class="flex gap-2 flex-wrap justify-center">
                         <For
@@ -49,7 +52,7 @@ pub fn KanjiCardDetails(
                             key=|reading| reading.clone()
                             children=move |reading| {
                                 view! {
-                                    <span class="inline-block px-2 py-1 bg-[var(--bg-secondary)] rounded text-sm font-bold">
+                                    <span class="inline-block px-3 py-1.5 bg-[var(--bg-secondary)] rounded-md text-sm font-bold">
                                         {reading}
                                     </span>
                                 }
@@ -61,10 +64,13 @@ pub fn KanjiCardDetails(
 
             <Show when=move || kun_readings_stored.get_value().is_some()>
                 <div class="my-6">
-                    <div class="flex gap-6 items-center justify-center mb-2">
+                    <div class="flex gap-2 items-center justify-center mb-3">
                         <Text size=TextSize::Default variant=TypographyVariant::Muted>
-                            "KUN:"
+                            "訓読み"
                         </Text>
+                        <span class="text-xs px-1.5 py-0.5 bg-[var(--bg-secondary)] rounded text-[var(--fg-muted)]">
+                            "ひらがな"
+                        </span>
                     </div>
                     <div class="flex gap-2 flex-wrap justify-center">
                         <For
@@ -72,7 +78,7 @@ pub fn KanjiCardDetails(
                             key=|reading| reading.clone()
                             children=move |reading| {
                                 view! {
-                                    <span class="inline-block px-2 py-1 bg-[var(--bg-secondary)] rounded text-sm font-bold">
+                                    <span class="inline-block px-3 py-1.5 bg-[var(--bg-secondary)] rounded-md text-sm font-bold">
                                         {reading}
                                     </span>
                                 }
