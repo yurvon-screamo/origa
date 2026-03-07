@@ -6,6 +6,7 @@ use candle_onnx::simple_eval;
 use image::{DynamicImage, imageops::FilterType};
 use prost::Message;
 use tokenizers::Tokenizer;
+use tracing::{debug, info};
 
 use crate::domain::OrigaError;
 
@@ -37,23 +38,28 @@ impl JapaneseOCRModel {
         decoder_bytes: Vec<u8>,
         tokenizer_bytes: Vec<u8>,
     ) -> Result<Self, OrigaError> {
+        info!("Initializing Japanese OCR model");
         let device = Device::Cpu;
 
+        debug!("Loading tokenizer");
         let tokenizer =
             Tokenizer::from_bytes(&tokenizer_bytes).map_err(|e| OrigaError::OcrError {
                 reason: format!("Failed to load tokenizer: {}", e),
             })?;
 
+        debug!("Decoding encoder ModelProto");
         let encoder =
             ModelProto::decode(encoder_bytes.as_slice()).map_err(|e| OrigaError::OcrError {
                 reason: format!("Failed to decode encoder: {}", e),
             })?;
 
+        debug!("Decoding decoder ModelProto");
         let decoder =
             ModelProto::decode(decoder_bytes.as_slice()).map_err(|e| OrigaError::OcrError {
                 reason: format!("Failed to decode decoder: {}", e),
             })?;
 
+        info!("Japanese OCR model initialized successfully");
         Ok(Self {
             encoder,
             decoder,
@@ -67,11 +73,13 @@ impl JapaneseOCRModel {
     }
 
     pub fn run(&mut self, img: &DynamicImage) -> Result<String, OrigaError> {
+        info!("Running OCR on image");
         let pixel_values = self.preprocess_image(img)?;
 
         let mut encoder_inputs: HashMap<String, Tensor> = HashMap::new();
         encoder_inputs.insert("pixel_values".to_string(), pixel_values);
 
+        debug!("Executing encoder");
         let encoder_outputs =
             simple_eval(&self.encoder, encoder_inputs).map_err(|e| OrigaError::OcrError {
                 reason: format!("Candle error: {}", e),
@@ -95,7 +103,9 @@ impl JapaneseOCRModel {
 
         let mut input_ids = vec![bos_token_id as i64];
 
-        for _ in 0..MAX_SEQ_LEN {
+        for i in 0..MAX_SEQ_LEN {
+            debug!(iteration = i, "Starting decoder iteration");
+
             let input_tensor = Tensor::from_slice(&input_ids, (1, input_ids.len()), &self.device)
                 .map_err(|e| OrigaError::OcrError {
                 reason: format!("Candle error: {}", e),
@@ -135,6 +145,7 @@ impl JapaneseOCRModel {
                 })?;
 
             if next_token == eos_token_id {
+                debug!("EOS token reached at iteration {}", i);
                 break;
             }
 
@@ -151,10 +162,18 @@ impl JapaneseOCRModel {
                 reason: format!("Failed to decode: {}", e),
             })?;
 
-        Ok(decoded.replace(' ', ""))
+        let result = decoded.replace(' ', "");
+        info!(result = %result, "OCR completed");
+        Ok(result)
     }
 
     fn preprocess_image(&self, img: &DynamicImage) -> Result<Tensor, OrigaError> {
+        let (orig_w, orig_h) = (img.width(), img.height());
+        debug!(
+            width = orig_w,
+            height = orig_h,
+            "Preprocessing image for OCR"
+        );
         let resized = img.resize_exact(IMAGE_RESIZE_W, IMAGE_RESIZE_H, FilterType::Nearest);
         let rgb = resized.to_rgb8();
         let (width, height) = rgb.dimensions();
