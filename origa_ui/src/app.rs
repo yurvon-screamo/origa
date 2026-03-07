@@ -138,7 +138,6 @@ fn setup_oauth_listener(ctx: AuthContext) {
         }
     }
 
-    warn!("Tauri not available, skipping deep-link listener registration");
     callback.forget();
 }
 

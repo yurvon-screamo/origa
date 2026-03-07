@@ -3,10 +3,10 @@ use tracing::{debug, info};
 use ulid::Ulid;
 
 use crate::{
-    traits::UserRepository,
     domain::{
         GrammarRule, JapaneseLevel, NativeLanguage, OrigaError, PartOfSpeech, iter_grammar_rules,
     },
+    traits::UserRepository,
 };
 
 #[derive(Debug, Clone, PartialEq)]

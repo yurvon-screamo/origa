@@ -1,7 +1,7 @@
 use tracing::{debug, info};
 
-use crate::traits::{WellKnownSetLoader, WellKnownSetMeta};
 use crate::domain::OrigaError;
+use crate::traits::{WellKnownSetLoader, WellKnownSetMeta};
 
 #[derive(Debug, Clone)]
 pub struct WellKnownSetInfo {

@@ -25,11 +25,16 @@ pub fn Button(
     #[prop(optional, into)] class: Signal<String>,
     #[prop(optional, into)] disabled: Signal<bool>,
     #[prop(optional, into)] loading: Signal<bool>,
+    #[prop(optional, into)] button_type: Signal<String>,
     #[prop(optional)] on_click: Option<Callback<MouseEvent>>,
     children: Children,
 ) -> impl IntoView {
     view! {
         <button
+            type=move || {
+                let t = button_type.get();
+                if t.is_empty() { "button".to_string() } else { t }
+            }
             class=move || {
                 let v = match variant.get() {
                     ButtonVariant::Default => "",
