@@ -7,5 +7,4 @@ port = 1420
 open = false
 
 [tools]
-wasm_opt = true
 wasm_opt_flags = ["-O4", "--enable-simd"]
