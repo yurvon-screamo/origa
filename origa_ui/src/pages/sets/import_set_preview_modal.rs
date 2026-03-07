@@ -6,7 +6,6 @@ use crate::ui_components::{
 use leptos::prelude::*;
 
 use super::import_set_preview_modal_handlers::create_import_preview_handlers;
-use super::import_set_preview_modal_handlers::ImportResult;
 use super::import_set_preview_modal_state::ImportPreviewModalState;
 
 #[component]
@@ -14,7 +13,7 @@ pub fn ImportSetPreviewModal(
     is_open: RwSignal<bool>,
     set_id: Signal<String>,
     set_title: Signal<String>,
-    on_import_result: Callback<ImportResult>,
+    on_import_result: Callback<()>,
 ) -> impl IntoView {
     let state = ImportPreviewModalState::new();
     let current_user = state.current_user;
