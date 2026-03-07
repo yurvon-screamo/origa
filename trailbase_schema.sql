@@ -3,7 +3,7 @@
 
 CREATE TABLE user (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    trailbase_id TEXT UNIQUE NOT NULL,
+    trailbase_id BLOB UNIQUE NOT NULL,
     username TEXT NOT NULL,
     email TEXT NOT NULL,
     native_language INTEGER NOT NULL DEFAULT 0,
