@@ -28,6 +28,7 @@ pub enum OrigaError {
     WellKnownSetParseError { reason: String },
     SessionExpired,
     DictionaryNotFound { reason: String },
+    OcrError { reason: String },
 }
 
 impl fmt::Display for OrigaError {
@@ -105,6 +106,9 @@ impl fmt::Display for OrigaError {
             }
             OrigaError::DictionaryNotFound { reason } => {
                 write!(f, "Dictionary not found: {}", reason)
+            }
+            OrigaError::OcrError { reason } => {
+                write!(f, "OCR error: {}", reason)
             }
         }
     }
