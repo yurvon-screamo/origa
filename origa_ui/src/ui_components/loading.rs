@@ -9,7 +9,7 @@ pub fn Spinner(#[prop(optional, into)] class: Signal<String>) -> impl IntoView {
 
 #[component]
 pub fn LoadingOverlay(
-    #[prop(optional, into)] message: Signal<String>,
+    #[prop(into)] message: Signal<String>,
     #[prop(optional, into)] class: Signal<String>,
 ) -> impl IntoView {
     view! {
