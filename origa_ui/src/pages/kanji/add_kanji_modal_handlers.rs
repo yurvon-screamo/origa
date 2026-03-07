@@ -2,7 +2,7 @@ use super::add_kanji_modal_state::ModalState;
 use crate::app::update_current_user;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use origa::application::CreateKanjiCardUseCase;
+use origa::use_cases::CreateKanjiCardUseCase;
 
 pub struct ModalHandlers {
     pub on_cancel: Callback<leptos::ev::MouseEvent>,

@@ -1,7 +1,7 @@
 use super::rule_item::RuleItem;
 use crate::ui_components::{Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
-use origa::application::GrammarRuleItem;
+use origa::use_cases::GrammarRuleItem;
 use std::collections::HashSet;
 use ulid::Ulid;
 

@@ -1,7 +1,7 @@
 use crate::ui_components::{Checkbox, FuriganaText, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
-use origa::application::AnalyzedWord;
 use origa::domain::User;
+use origa::use_cases::AnalyzedWord;
 use std::collections::HashSet;
 
 #[component]

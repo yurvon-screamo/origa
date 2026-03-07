@@ -3,10 +3,12 @@ mod error;
 mod furigana;
 mod grammar;
 mod japanese;
+mod jlpt_content;
 mod jlpt_progress;
 mod knowledge;
 mod memory;
 mod score_content;
+mod srs;
 mod tokenizer;
 mod user;
 mod value_objects;
@@ -24,6 +26,7 @@ pub use grammar::{
     init_grammar_rules, is_grammar_loaded, iter_grammar_rules,
 };
 pub use japanese::{JapaneseChar, JapaneseText, filter_japanese_text};
+pub use jlpt_content::{JlptContent, JlptContentError};
 pub use jlpt_progress::{CategoryProgress, JlptProgress, LevelProgressDetail};
 pub use knowledge::{
     Card, CardType, DailyHistoryItem, ExampleKanjiWord, GrammarRuleCard, KanjiCard, KnowledgeSet,
@@ -31,6 +34,7 @@ pub use knowledge::{
 };
 pub use memory::{Difficulty, MemoryHistory, MemoryState, Rating, ReviewLog, Stability};
 pub use score_content::ScoreContentResult;
+pub use srs::RateMode;
 pub use tokenizer::{
     DictionaryData, PartOfSpeech, TokenInfo, init_dictionary, is_dictionary_loaded, tokenize_text,
 };

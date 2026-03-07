@@ -5,8 +5,8 @@ use crate::ui_components::{Input, Text, TextSize, TypographyVariant};
 use leptos::either::Either;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use origa::application::use_cases::ToggleFavoriteUseCase;
 use origa::domain::{Card, User};
+use origa::use_cases::ToggleFavoriteUseCase;
 use ulid::Ulid;
 
 #[component]

@@ -1,7 +1,7 @@
 use crate::app::AuthContext;
 use crate::repository::{OAuthProvider, TrailBaseClient, set_session};
-use origa::application::UserRepository;
 use origa::domain::{NativeLanguage, User};
+use origa::traits::UserRepository;
 
 pub async fn get_or_create_profile(ctx: &AuthContext, email: &str) -> Result<User, String> {
     match ctx.repository.find_by_email(email).await {

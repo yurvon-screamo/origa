@@ -1,6 +1,6 @@
 use origa::{
-    application::{WellKnownSet, WellKnownSetLoader, WellKnownSetMeta},
     domain::{JapaneseLevel, OrigaError},
+    traits::{WellKnownSet, WellKnownSetLoader, WellKnownSetMeta},
 };
 use serde::Deserialize;
 use std::sync::OnceLock;
