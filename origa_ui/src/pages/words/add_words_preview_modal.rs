@@ -41,12 +41,26 @@ pub fn AddWordsPreviewModal(is_open: RwSignal<bool>) -> impl IntoView {
 
     Effect::new({
         let input_mode = input_mode;
+        let active_tab = active_tab;
         move || {
             let tab = active_tab.get();
             input_mode.set(if tab == "image" {
                 InputMode::Image
             } else {
                 InputMode::Text
+            });
+        }
+    });
+
+    Effect::new({
+        let input_mode = input_mode;
+        let active_tab = active_tab;
+        move || {
+            let mode = input_mode.get();
+            active_tab.set(if mode == InputMode::Image {
+                "image".to_string()
+            } else {
+                "text".to_string()
             });
         }
     });
