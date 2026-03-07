@@ -9,7 +9,7 @@ use leptos::task::spawn_local;
 use origa::domain::{OrigaError, User};
 use origa::traits::UserRepository;
 use origa::use_cases::GetUserInfoUseCase;
-use tracing::{error, info, warn};
+use tracing::{error, info};
 
 #[derive(Clone)]
 pub struct AuthContext {

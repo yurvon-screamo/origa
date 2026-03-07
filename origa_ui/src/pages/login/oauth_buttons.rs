@@ -41,12 +41,12 @@ fn open_oauth_url(provider: OAuthProvider) {
         && window.location().protocol().unwrap_or_default() == "tauri:";
 
     let redirect_uri = if is_tauri {
-        web_sys::console::log_1(&"OAuth: Tauri mode".into());
+        tracing::info!("OAuth: Tauri mode");
         "origa://auth/callback".to_string()
     } else {
         let base_url = window.location().origin().unwrap_or_default();
         let redirect = format!("{}/login", base_url);
-        web_sys::console::log_1(&format!("OAuth: Web mode, redirect_uri={}", redirect).into());
+        tracing::info!("OAuth: Web mode, redirect_uri={}", redirect);
         redirect
     };
 
@@ -56,7 +56,7 @@ fn open_oauth_url(provider: OAuthProvider) {
     LocalStorage::set("pkce_verifier", &verifier).ok();
 
     let url = TrailBaseClient::get_oauth_url(provider.as_str(), &redirect_uri, &challenge);
-    web_sys::console::log_1(&format!("OAuth: Generated URL={}", url).into());
+    tracing::info!("OAuth: Generated URL={}", url);
 
     let _ = window.location().set_href(&url);
 }

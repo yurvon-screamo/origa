@@ -42,7 +42,7 @@ pub fn SetCard(set_info: SetInfo, on_import: Callback<(String, String)>) -> impl
                     <SetCardButton
                         set_id=set_id_for_callback.clone()
                         title=title_for_callback.clone()
-                        on_import=on_import.clone()
+                        on_import=on_import
                     />
                 </Show>
             </div>
