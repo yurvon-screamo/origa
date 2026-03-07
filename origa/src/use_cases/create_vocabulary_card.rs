@@ -1,9 +1,9 @@
 use super::generate_card_content::GenerateCardContentUseCase;
-use crate::traits::UserRepository;
 use crate::domain::OrigaError;
 use crate::domain::Question;
 use crate::domain::tokenize_text;
 use crate::domain::{Card, StudyCard, VocabularyCard};
+use crate::traits::UserRepository;
 use tracing::{debug, error, info, warn};
 use ulid::Ulid;
 

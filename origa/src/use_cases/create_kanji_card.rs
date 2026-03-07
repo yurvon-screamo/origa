@@ -1,6 +1,6 @@
-use crate::traits::UserRepository;
 use crate::domain::OrigaError;
 use crate::domain::{Card, KanjiCard, StudyCard};
+use crate::traits::UserRepository;
 use tracing::{debug, info};
 use ulid::Ulid;
 
