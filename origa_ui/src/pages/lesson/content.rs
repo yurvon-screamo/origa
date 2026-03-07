@@ -4,7 +4,7 @@ use super::lesson_card_container::LessonCardContainer;
 use super::lesson_progress_view::LessonProgressView;
 use super::lesson_state::{LessonContext, LessonMode, LessonState};
 use crate::repository::HybridUserRepository;
-use crate::ui_components::{Text, TextSize, TypographyVariant};
+use crate::ui_components::{Spinner, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos_router::hooks::use_query_map;
@@ -98,9 +98,10 @@ pub fn LessonContent() -> impl IntoView {
         <LessonHeader />
 
         <Show when=move || is_loading.get()>
-            <div class="text-center py-8">
+            <div class="flex flex-col items-center py-8 gap-4">
+                <Spinner />
                 <Text size=TextSize::Default variant=TypographyVariant::Muted>
-                    "Загрузка урока..."
+                    "Подготовка карточек для урока..."
                 </Text>
             </div>
         </Show>

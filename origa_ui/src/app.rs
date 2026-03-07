@@ -216,9 +216,25 @@ pub fn App() -> impl IntoView {
         ctx.init_session().await;
     });
 
+    let loading_message = Signal::derive(move || {
+        let session = auth_context.is_session_loading.get();
+        let dict = auth_context.is_dictionary_loading.get();
+
+        if session && dict {
+            "Проверка авторизации и загрузка словаря...".to_string()
+        } else if session {
+            "Проверка авторизации...".to_string()
+        } else if dict {
+            "Загрузка словаря Unidic (при первом запуске может занять несколько минут)..."
+                .to_string()
+        } else {
+            "".to_string()
+        }
+    });
+
     view! {
         <Show when=move || auth_context.is_session_loading.get() || auth_context.is_dictionary_loading.get()>
-            <LoadingOverlay />
+            <LoadingOverlay message=loading_message />
         </Show>
         <AppRoutes />
     }

@@ -1,7 +1,7 @@
 use super::import_set_preview_modal::ImportSetPreviewModal;
 use super::sets_level_group::SetsLevelGroup;
 use super::types::SetInfo;
-use crate::ui_components::Spinner;
+use crate::ui_components::{Spinner, Text, TextSize, TypographyVariant};
 use crate::well_known_set::WellKnownSetLoaderImpl;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
@@ -69,8 +69,11 @@ pub fn SetsContent() -> impl IntoView {
     view! {
         <div class="sets-page">
             <Show when=move || is_loading.get()>
-                <div class="flex justify-center py-8">
+                <div class="flex flex-col items-center py-8 gap-4">
                     <Spinner />
+                    <Text size=TextSize::Small variant=TypographyVariant::Muted>
+                        "Загрузка списков слов..."
+                    </Text>
                 </div>
             </Show>
             <Show when=move || !is_loading.get()>
