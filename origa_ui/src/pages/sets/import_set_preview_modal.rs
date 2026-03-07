@@ -1,7 +1,7 @@
 use crate::pages::sets::set_word_item::SetWordItem;
 use crate::ui_components::{
-    Alert, AlertType, Button, ButtonVariant, Modal, Text, TextSize, ToastContainer, ToastData,
-    TypographyVariant,
+    Alert, AlertType, Button, ButtonVariant, Modal, Spinner, Text, TextSize, ToastContainer,
+    ToastData, TypographyVariant,
 };
 use leptos::prelude::*;
 
@@ -55,13 +55,7 @@ pub fn ImportSetPreviewModal(
                     let words = set_words.get();
                     let is_loading = is_loading_preview.get();
 
-                    if is_loading {
-                        view! {
-                            <Text size=TextSize::Default variant=TypographyVariant::Muted>
-                                "Загрузка списка слов..."
-                            </Text>
-                        }.into_any()
-                    } else if let Some(error) = error_message.get() {
+                    if let Some(error) = error_message.get() {
                         view! {
                             <Alert
                                 alert_type=Signal::derive(|| AlertType::Error)
@@ -69,11 +63,14 @@ pub fn ImportSetPreviewModal(
                                 message=Signal::derive(move || error.clone())
                             />
                         }.into_any()
-                    } else if words.is_empty() {
+                    } else if is_loading || words.is_empty() {
                         view! {
-                            <Text size=TextSize::Default variant=TypographyVariant::Muted>
-                                "Загрузка списка слов..."
-                            </Text>
+                            <div class="flex flex-col items-center py-4 gap-3">
+                                <Spinner />
+                                <Text size=TextSize::Default variant=TypographyVariant::Muted>
+                                    "Загрузка списка слов..."
+                                </Text>
+                            </div>
                         }.into_any()
                     } else {
                         let known_count = words.iter().filter(|(_, _, known)| *known).count();

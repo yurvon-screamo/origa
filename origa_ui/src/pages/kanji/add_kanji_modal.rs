@@ -6,7 +6,7 @@ use super::kanji_list::KanjiList;
 use super::level_selector::LevelSelector;
 use super::selected_count::SelectedCount;
 use crate::ui_components::{
-    Button, ButtonSize, ButtonVariant, Modal, Text, TextSize, TypographyVariant,
+    Button, ButtonSize, ButtonVariant, Modal, Spinner, Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
 use origa::domain::JapaneseLevel;
@@ -67,9 +67,12 @@ pub fn AddKanjiModal(is_open: RwSignal<bool>) -> impl IntoView {
 
                         if is_loading {
                             view! {
-                                <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                                    "Загрузка..."
-                                </Text>
+                                <div class="flex flex-col items-center py-4 gap-3">
+                                    <Spinner />
+                                    <Text size=TextSize::Small variant=TypographyVariant::Muted>
+                                        "Поиск иероглифов..."
+                                    </Text>
+                                </div>
                             }.into_any()
                         } else {
                             view! {
