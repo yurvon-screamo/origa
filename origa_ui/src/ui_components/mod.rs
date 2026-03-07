@@ -51,6 +51,7 @@ pub use card_history_modal::CardHistoryModal;
 pub use chart::LineChart;
 pub use checkbox::Checkbox;
 pub use collapsible::CollapsibleDescription;
+pub use divider::{Divider, DividerVariant};
 pub use favorite_button::FavoriteButton;
 pub use furigana::FuriganaText;
 pub use history_button::HistoryButton;

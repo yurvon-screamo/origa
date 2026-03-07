@@ -34,3 +34,21 @@ pub async fn handle_oauth_callback(url_fragment: &str, ctx: &AuthContext) -> Res
 
     get_or_create_profile(ctx, &session.email).await
 }
+
+pub async fn handle_email_password_login(
+    ctx: &AuthContext,
+    email: &str,
+    password: &str,
+) -> Result<User, String> {
+    let client = TrailBaseClient::new();
+    let session = client
+        .login_with_email_password(email, password)
+        .await
+        .map_err(|e| format!("Не удалось войти: {}", e))?;
+
+    if session.email.is_empty() {
+        return Err("Email не найден в токене авторизации".to_string());
+    }
+
+    get_or_create_profile(ctx, &session.email).await
+}

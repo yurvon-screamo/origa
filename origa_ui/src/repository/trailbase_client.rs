@@ -221,6 +221,54 @@ impl TrailBaseClient {
         )
     }
 
+    pub async fn login_with_email_password(
+        &self,
+        email: &str,
+        password: &str,
+    ) -> Result<TrailBaseSession, AuthError> {
+        #[derive(Serialize)]
+        struct LoginRequest<'a> {
+            email: &'a str,
+            password: &'a str,
+        }
+
+        let response = self
+            .fetch(
+                "/api/auth/v1/login",
+                Method::POST,
+                Some(&LoginRequest { email, password }),
+                None,
+            )
+            .await?;
+
+        if !response.ok() {
+            return Err(AuthError::ApiError(format!(
+                "Login failed: {}",
+                response.status_text()
+            )));
+        }
+
+        let token_response: AuthTokenResponse = Self::json(response).await?;
+
+        let claims = decode_jwt_claims(&token_response.auth_token)
+            .map_err(|e| AuthError::ApiError(format!("Failed to decode JWT: {}", e)))?;
+
+        let now = Self::current_timestamp();
+        let expires_at = now.saturating_add(3600);
+
+        let session = TrailBaseSession {
+            auth_token: token_response.auth_token,
+            refresh_token: token_response.refresh_token.unwrap_or_default(),
+            email: claims.email.clone().unwrap_or_default(),
+            trailbase_id: claims.sub.clone(),
+            record_id: None,
+            expires_at,
+        };
+
+        set_session(&session).map_err(AuthError::ApiError)?;
+        Ok(session)
+    }
+
     pub async fn exchange_auth_code_for_session(
         &self,
         code: &str,

@@ -7,7 +7,6 @@ license-file.workspace = true
 repository.workspace = true
 readme.workspace = true
 
-
 [dependencies]
 leptos.workspace = true
 leptos_icons.workspace = true
@@ -35,22 +34,20 @@ pulldown-cmark.workspace = true
 ammonia.workspace = true
 scraper.workspace = true
 ego-tree.workspace = true
-console_log.workspace = true
-log.workspace = true
 tracing.workspace = true
 tracing-wasm.workspace = true
 tracing-subscriber.workspace = true
-flate2 = "1.0"
-futures = "0.3"
-gloo-timers = "0.3"
+flate2.workspace = true
+futures.workspace = true
+gloo-timers.workspace = true
 image.workspace = true
-thiserror = "2.0"
+thiserror.workspace = true
 sha2.workspace = true
 rand.workspace = true
-bincode = "1.3"
-candle-core = { workspace = true, default-features = false }
-candle-onnx = { workspace = true, default-features = false }
-tokenizers = { workspace = true, default-features = false, features = ["unstable_wasm"] }
+bincode.workspace = true
+candle-core.workspace = true
+candle-onnx.workspace = true
+tokenizers.workspace = true
 prost.workspace = true
 
 [build-dependencies]

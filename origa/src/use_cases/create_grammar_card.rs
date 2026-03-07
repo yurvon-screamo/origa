@@ -1,7 +1,7 @@
-use crate::traits::UserRepository;
 use crate::domain::OrigaError;
 use crate::domain::get_rule_by_id;
 use crate::domain::{Card, GrammarRuleCard, StudyCard};
+use crate::traits::UserRepository;
 use tracing::{debug, info};
 use ulid::Ulid;
 

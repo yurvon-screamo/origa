@@ -28,7 +28,7 @@ pub async fn load_all_data() -> Result<(), OrigaError> {
     grammar_result?;
     jlpt_result?;
 
-    log::info!("All data loaded successfully");
+    tracing::info!("All data loaded successfully");
     Ok(())
 }
 
@@ -103,7 +103,7 @@ pub async fn load_vocabulary() -> Result<(), OrigaError> {
     };
 
     init_vocabulary_dictionary(data)?;
-    log::info!("Vocabulary loaded");
+    tracing::info!("Vocabulary loaded");
     Ok(())
 }
 
@@ -116,7 +116,7 @@ pub async fn load_radical() -> Result<(), OrigaError> {
     init_radical_dictionary(RadicalData {
         radicals_json: json,
     })?;
-    log::info!("Radicals loaded");
+    tracing::info!("Radicals loaded");
     Ok(())
 }
 
@@ -127,7 +127,7 @@ pub async fn load_kanji() -> Result<(), OrigaError> {
 
     let json = fetch_text("domain/dictionary/kanji.json").await?;
     init_kanji_dictionary(KanjiData { kanji_json: json })?;
-    log::info!("Kanji loaded");
+    tracing::info!("Kanji loaded");
     Ok(())
 }
 
@@ -138,6 +138,6 @@ pub async fn load_grammar() -> Result<(), OrigaError> {
 
     let json = fetch_text("domain/grammar/grammar.json").await?;
     init_grammar_rules(GrammarData { grammar_json: json })?;
-    log::info!("Grammar loaded");
+    tracing::info!("Grammar loaded");
     Ok(())
 }
