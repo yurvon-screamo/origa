@@ -15,31 +15,57 @@ pub fn SetCard(set_info: SetInfo, on_import: Callback<(String, String)>) -> impl
     });
 
     let description = set_info.description.clone();
-    let title = set_info.title.clone();
+    let title_for_display = set_info.title.clone();
+    let is_imported = set_info.is_imported;
+    let word_count = set_info.word_count;
+    let set_id_for_callback = set_info.set_id.clone();
+    let title_for_callback = set_info.title.clone();
+
     view! {
         <div class="set-card">
             <div class="set-card-title">
-                {set_info.title.clone()}
+                {title_for_display.clone()}
+                <Show when=move || is_imported>
+                    <span class="ml-2 px-2 py-1 text-xs bg-green-100 text-green-800 rounded">
+                        "Импортирован"
+                    </span>
+                </Show>
             </div>
             <div class="set-card-description">
                 <MarkdownText content=Signal::derive(move || description.clone()) known_kanji=known_kanji.get()/>
             </div>
             <div class="set-card-footer">
                 <span class="set-card-count">
-                    {set_info.word_count.map(|c| format!("{} слов", c)).unwrap_or_default()}
+                    {word_count.map(|c| format!("{} слов", c)).unwrap_or_default()}
                 </span>
-                <Button
-                    variant=Signal::derive(|| ButtonVariant::Filled)
-                    on_click=Callback::new({
-                        let set_id = set_info.set_id;
-                        let title = title;
-                        let on_import = on_import;
-                        move |_| on_import.run((set_id.clone(), title.clone()))
-                    })
-                >
-                    "Импорт"
-                </Button>
+                <Show when=move || !is_imported>
+                    <SetCardButton
+                        set_id=set_id_for_callback.clone()
+                        title=title_for_callback.clone()
+                        on_import=on_import.clone()
+                    />
+                </Show>
             </div>
         </div>
+    }
+}
+
+#[component]
+fn SetCardButton(
+    set_id: String,
+    title: String,
+    on_import: Callback<(String, String)>,
+) -> impl IntoView {
+    view! {
+        <Button
+            variant=Signal::derive(|| ButtonVariant::Filled)
+            on_click=Callback::new({
+                let set_id = set_id;
+                let title = title;
+                move |_| on_import.run((set_id.clone(), title.clone()))
+            })
+        >
+            "Импорт"
+        </Button>
     }
 }

@@ -6,7 +6,7 @@ use crate::well_known_set::WellKnownSetLoaderImpl;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::application::ListWellKnownSetsUseCase;
-use origa::domain::JapaneseLevel;
+use origa::domain::{JapaneseLevel, User};
 
 #[component]
 pub fn SetsContent() -> impl IntoView {
@@ -15,27 +15,49 @@ pub fn SetsContent() -> impl IntoView {
     let preview_modal_open = RwSignal::new(false);
     let preview_set_id = RwSignal::new(String::new());
     let preview_set_title = RwSignal::new(String::new());
+    let current_user = use_context::<RwSignal<Option<User>>>().expect("current_user context");
 
-    let sets_for_load = sets;
     let loader = WellKnownSetLoaderImpl::new();
+    let sets_for_load = sets;
+    let user_for_load = current_user;
 
     spawn_local(async move {
         let use_case = ListWellKnownSetsUseCase::new(&loader);
         if let Ok(set_infos) = use_case.execute().await {
             let set_list: Vec<SetInfo> = set_infos
                 .into_iter()
-                .map(|info| SetInfo {
-                    set_id: info.meta.id,
-                    title: info.meta.title_ru,
-                    description: info.meta.desc_ru,
-                    word_count: info.word_count,
-                    set_type: info.meta.set_type,
-                    level: info.meta.level,
+                .map(|info| {
+                    let is_imported = user_for_load
+                        .get()
+                        .map(|u| u.is_set_imported(&info.meta.id))
+                        .unwrap_or(false);
+
+                    SetInfo {
+                        set_id: info.meta.id,
+                        title: info.meta.title_ru,
+                        description: info.meta.desc_ru,
+                        word_count: info.word_count,
+                        set_type: info.meta.set_type,
+                        level: info.meta.level,
+                        is_imported,
+                    }
                 })
                 .collect();
             sets_for_load.set(set_list);
             is_loading.set(false);
         }
+    });
+
+    let sets_for_update = sets;
+    Effect::new(move |_| {
+        let user = current_user.get();
+        sets_for_update.update(|set_list| {
+            if let Some(u) = user {
+                for set in set_list.iter_mut() {
+                    set.is_imported = u.is_set_imported(&set.set_id);
+                }
+            }
+        });
     });
 
     let on_import = Callback::new(move |(set_id, title): (String, String)| {
