@@ -2,8 +2,8 @@ use tracing::{debug, info};
 use ulid::Ulid;
 
 use crate::{
-    traits::UserRepository,
     domain::{Card, JapaneseLevel, KanjiInfo, OrigaError, get_kanji_info, get_kanji_list},
+    traits::UserRepository,
 };
 
 pub struct KanjiInfoUseCase;

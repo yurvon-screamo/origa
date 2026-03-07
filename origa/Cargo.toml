@@ -10,23 +10,16 @@ readme.workspace = true
 [dependencies]
 
 # System
-base64.workspace = true
-toml.workspace = true
 tempfile.workspace = true
 serde_json.workspace = true
-reqwest.workspace = true
 zip.workspace = true
 regex.workspace = true
 rand.workspace = true
 tokio.workspace = true
-getrandom = { version = "0.2.16", features = ["js"] }
 thiserror.workspace = true
 
 # Logging
 tracing.workspace = true
-
-# OpenAI
-async-openai-wasm.workspace = true
 
 # Domain
 ulid.workspace = true
@@ -37,12 +30,12 @@ chrono.workspace = true
 rs-fsrs.workspace = true
 lindera.workspace = true
 lindera-dictionary.workspace = true
-flate2 = "1.0"
+flate2.workspace = true
 
 # OCR
-candle-core = { workspace = true, default-features = false }
-candle-onnx = { workspace = true, default-features = false }
-tokenizers = { workspace = true, default-features = false, features = ["unstable_wasm"] }
+candle-core.workspace = true
+candle-onnx.workspace = true
+tokenizers.workspace = true
 prost.workspace = true
 image.workspace = true
 

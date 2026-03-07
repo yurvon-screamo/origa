@@ -1,11 +1,22 @@
 use crate::ui_components::{Input, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 
-const MIN_PASSWORD_LENGTH: usize = 8;
-
 #[component]
-pub fn PasswordInput(value: RwSignal<String>, on_enter: Callback<()>) -> impl IntoView {
+pub fn PasswordInput(
+    value: RwSignal<String>,
+    #[prop(optional, into)] autocomplete: Signal<String>,
+    #[prop(optional, into)] id: Signal<String>,
+    #[prop(optional, into)] name: Signal<String>,
+) -> impl IntoView {
     let show_password = RwSignal::new(false);
+    let autocomplete_val = move || {
+        let a = autocomplete.get();
+        if a.is_empty() {
+            "current-password".to_string()
+        } else {
+            a
+        }
+    };
 
     view! {
         <div>
@@ -16,14 +27,11 @@ pub fn PasswordInput(value: RwSignal<String>, on_enter: Callback<()>) -> impl In
                 <Input
                     value=value
                     input_type=move || if show_password.get() { "text" } else { "password" }
-                    placeholder=Signal::derive(|| format!("Минимум {} символов", MIN_PASSWORD_LENGTH))
+                    autocomplete=Signal::derive(autocomplete_val)
+                    id=id
+                    name=name
                     on_change=Callback::new(move |ev: leptos::ev::Event| {
                         value.set(event_target_value(&ev));
-                    })
-                    on_keydown=Callback::new(move |ev: leptos::ev::KeyboardEvent| {
-                        if ev.key() == "Enter" {
-                            on_enter.run(());
-                        }
                     })
                 />
                 <button
