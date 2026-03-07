@@ -6,7 +6,7 @@ pub struct TrailBaseSession {
     pub auth_token: String,
     pub refresh_token: String,
     pub email: String,
-    pub auth_user_id: String,
+    pub trailbase_id: String,
     pub record_id: Option<i64>,
     pub expires_at: u64,
 }
