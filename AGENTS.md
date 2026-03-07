@@ -4,37 +4,47 @@ Guidelines for agentic coding assistants working in this repository.
 
 ## Project Overview
 
-Origa is a Japanese language learning application built with Rust.
+Origa is a Japanese language learning application built with Rust using FSRS algorithm for spaced repetition.
 
 Workspace structure:
-
 - `origa/` - Core domain and application logic library
-- `origa_ui/` - Leptos UI library with Tauri bindings
+- `origa_ui/` - Leptos UI library with Tauri bindings (WASM)
 - `tokenizer/` - Japanese text tokenization service
 - `tauri/` - Tauri desktop application binary
+
+Architecture: Domain-driven with traits for repositories, use cases for business logic.
 
 ## Build Commands
 
 ```bash
-cargo build                    # Build entire workspace
-cargo build -p origa           # Build specific crate
-cargo build --release          # Release build
-cargo check                    # Check compilation (faster)
-cd origa_ui && trunk serve --port 8080    # Dev server
-cd tauri && cargo tauri dev    # Tauri development
+cargo build                        # Build entire workspace
+cargo build -p origa               # Build specific crate
+cargo build --release              # Release build
+cargo check                        # Check compilation (faster)
+cargo clippy -- -D warnings        # Lint with clippy
+cargo fmt -- --check               # Check formatting
+```
+
+## Development Commands
+
+```bash
+cd origa_ui && trunk serve --port 8080    # Frontend dev server
+cd tauri && cargo tauri dev               # Tauri development
 ```
 
 ## Test Commands
 
 ```bash
-cargo test                     # All tests
-cargo test -p origa            # Tests for specific crate
-cargo test test_name           # Single test by name
-cargo test -p origa -- mod::test_name  # Test in specific module
-cargo test -- --nocapture      # With output
-npm test                       # All e2e tests
+cargo test                              # All unit tests
+cargo test -p origa                     # Tests for specific crate
+cargo test test_name                    # Single test by name
+cargo test -p origa -- mod::test_name   # Test in specific module
+cargo test -- --nocapture               # With output
+cargo test --target wasm32-unknown-unknown  # WASM tests (origa_ui)
+
+npm test                                # All e2e tests
 npx playwright test journeys/full-learning-cycle.spec.ts  # Single file
-npm run test:ui                # Playwright UI mode
+npm run test:ui                         # Playwright UI mode
 ```
 
 ## Code Style Guidelines
@@ -45,18 +55,20 @@ npm run test:ui                # Playwright UI mode
 - Use early returns to reduce nesting
 - Prefer composition over inheritance
 - Avoid unnecessary clones; use references or Arc/Rc
+- No comments unless absolutely necessary
 
 ### Imports Organization
 
-Group imports in order, separated by blank lines: 1) `std`, 2) external crates, 3) workspace crates.
+Group imports in order, separated by blank lines: 1) `std`, 2) external crates, 3) workspace/internal crates.
 
 ```rust
 use std::collections::HashMap;
+
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use ulid::Ulid;
 
-use crate::traits::jlpt_content_loader::JlptContent;
+use crate::traits::user_repository::UserRepository;
 use crate::domain::{Card, JapaneseLevel, OrigaError};
 ```
 
@@ -108,9 +120,21 @@ pub enum OrigaError {
 
 ### Async/Await Patterns
 
-- Prefer `Result<T, E>` over `Option` for async operations
+- Use `impl Future<Output = Result<T, E>>` in trait definitions
 - Use `tokio::spawn` for parallel operations
 - Avoid blocking in async code; handle errors explicitly
+
+```rust
+pub trait UserRepository {
+    fn find_by_id(&self, user_id: Ulid) -> impl Future<Output = Result<Option<User>, OrigaError>>;
+    fn save(&self, user: &User) -> impl Future<Output = Result<(), OrigaError>>;
+}
+```
+
+### Logging
+
+- Use `tracing` crate with macros: `debug!`, `info!`, `warn!`, `error!`
+- Include structured fields: `debug!(user_id = %user_id, "Processing user")`
 
 ### Testing
 
@@ -123,7 +147,6 @@ pub enum OrigaError {
 **Always prefer library components over custom implementations.**
 
 Located in `origa_ui/src/ui_components/`:
-
 - **Layout**: `PageLayout`, `CardLayout`
 - **Forms**: `Input`, `Button`, `Checkbox`, `Toggle`, `Radio`
 - **Typography**: `Heading`, `Text`, `DisplayText`
@@ -131,7 +154,33 @@ Located in `origa_ui/src/ui_components/`:
 - **Feedback**: `Alert`, `Modal`, `Toast`, `Tooltip`
 - **Navigation**: `Navbar`, `Breadcrumbs`, `Pagination`, `Tabs`
 
-Components use enum-based props with `#[prop(optional)]`. Callbacks use `Callback<T>` from `leptos::prelude`, event types from `leptos::ev`.
+### Leptos Component Pattern
+
+Components use enum-based props with `#[prop(optional)]`. Callbacks use `Callback<T>` from `leptos::prelude`.
+
+```rust
+#[component]
+pub fn Button(
+    #[prop(optional, into)] variant: Signal<ButtonVariant>,
+    #[prop(optional, into)] disabled: Signal<bool>,
+    #[prop(optional)] on_click: Option<Callback<MouseEvent>>,
+    children: Children,
+) -> impl IntoView {
+    view! {
+        <button
+            class="btn"
+            disabled=move || disabled.get()
+            on:click=move |ev| {
+                if let Some(on_click) = on_click {
+                    on_click.run(ev);
+                }
+            }
+        >
+            {children()}
+        </button>
+    }
+}
+```
 
 ### Design System
 
@@ -154,3 +203,4 @@ Components use enum-based props with `#[prop(optional)]`. Callbacks use `Callbac
 - Run `cargo test -p <crate>` after modifying logic
 - Run `npm test` for e2e tests after UI changes
 - Use existing `ui_components/` instead of custom HTML
+- Run `cargo clippy` before committing
