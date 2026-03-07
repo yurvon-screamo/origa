@@ -5,6 +5,7 @@ use tracing_wasm::{ConsoleConfig, WASMLayer, WASMLayerConfigBuilder};
 pub mod app;
 pub mod data_loader;
 mod dictionary;
+mod ocr_model_loader;
 mod pages;
 mod repository;
 mod routes;

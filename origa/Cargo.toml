@@ -39,5 +39,12 @@ lindera.workspace = true
 lindera-dictionary.workspace = true
 flate2 = "1.0"
 
+# OCR
+candle-core = { workspace = true, default-features = false }
+candle-onnx = { workspace = true, default-features = false }
+tokenizers = { workspace = true, default-features = false, features = ["unstable_wasm"] }
+prost.workspace = true
+image.workspace = true
+
 [dev-dependencies]
 rstest.workspace = true
