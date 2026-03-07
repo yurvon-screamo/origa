@@ -51,7 +51,7 @@ pub fn Login() -> impl IntoView {
                         navigate("/home", Default::default());
                     }
                     Err(e) => {
-                        web_sys::console::error_1(&format!("Login error: {}", e).into());
+                        tracing::error!("Login error: {}", e);
                     }
                 }
             });

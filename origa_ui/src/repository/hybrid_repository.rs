@@ -6,7 +6,6 @@ use origa::{
     domain::{OrigaError, User},
     traits::UserRepository,
 };
-use web_sys::console;
 
 use crate::repository::file_repository::FileSystemUserRepository;
 use crate::repository::jlpt_content_loader::recalculate_user_jlpt_progress;
@@ -108,25 +107,25 @@ impl HybridUserRepository {
                     merged.merge(&remote_user);
 
                     match self.local.save(&merged).await {
-                        Ok(_) => console::info_1(&"Local user updated from remote".into()),
-                        Err(e) => console::error_1(
-                            &format!("Failed to update local user: {:?}", e).into(),
-                        ),
+                        Ok(_) => tracing::info!("Local user updated from remote"),
+                        Err(e) => {
+                            tracing::error!("Failed to update local user: {:?}", e)
+                        }
                     }
 
                     match self.remote.save(&merged).await {
-                        Ok(_) => console::info_1(&"Remove user updated".into()),
-                        Err(e) => console::error_1(
-                            &format!("Failed to update remove user: {:?}", e).into(),
-                        ),
+                        Ok(_) => tracing::info!("Remove user updated"),
+                        Err(e) => {
+                            tracing::error!("Failed to update remove user: {:?}", e)
+                        }
                     }
                 }
             } else {
                 match self.local.save(&remote_user).await {
-                    Ok(_) => console::info_1(&"Remote user saved to local storage".into()),
-                    Err(e) => console::error_1(
-                        &format!("Failed to save remote user to local storage: {:?}", e).into(),
-                    ),
+                    Ok(_) => tracing::info!("Remote user saved to local storage"),
+                    Err(e) => {
+                        tracing::error!("Failed to save remote user to local storage: {:?}", e)
+                    }
                 }
             }
             set_synced(true);

@@ -3,7 +3,6 @@ use std::sync::OnceLock;
 use origa::domain::JlptContent;
 use origa::domain::{JapaneseLevel, OrigaError};
 use serde::Deserialize;
-use web_sys::console;
 
 static JLPT_CONTENT: OnceLock<JlptContent> = OnceLock::new();
 
@@ -44,7 +43,7 @@ pub async fn load_jlpt_content() -> Result<(), OrigaError> {
     let content = load_content().await?;
 
     let _ = JLPT_CONTENT.set(content);
-    console::info_1(&"JLPT content loaded".into());
+    tracing::info!("JLPT content loaded");
     Ok(())
 }
 
@@ -140,7 +139,7 @@ async fn load_words(content: &mut JlptContent) -> Result<(), OrigaError> {
                 }
             }
             Err(e) => {
-                console::warn_1(&format!("Warning: skipping {}: {}", path, e).into());
+                tracing::warn!("Warning: skipping {}: {}", path, e);
             }
         }
     }
