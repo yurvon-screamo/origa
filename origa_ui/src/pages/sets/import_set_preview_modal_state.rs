@@ -19,6 +19,7 @@ pub struct ImportPreviewModalState {
     pub repository: HybridUserRepository,
     pub llm_service: LlmServiceInvoker,
     pub well_known_loader: WellKnownSetLoaderImpl,
+    pub set_id: RwSignal<String>,
 }
 
 impl ImportPreviewModalState {
@@ -42,6 +43,7 @@ impl ImportPreviewModalState {
             repository,
             llm_service,
             well_known_loader,
+            set_id: RwSignal::new(String::new()),
         }
     }
 
@@ -58,6 +60,8 @@ impl ImportPreviewModalState {
         let is_loading_preview = self.is_loading_preview;
         let error = self.error_message;
 
+        set_words.set(Vec::new());
+        selected_words.set(HashSet::new());
         is_loading_preview.set(true);
         error.set(None);
 
@@ -117,13 +121,15 @@ impl ImportPreviewModalState {
         let llm_service = self.llm_service.clone();
         let is_importing = self.is_importing;
         let error = self.error_message;
+        let set_id = self.set_id.get();
+        let set_id_opt = if set_id.is_empty() { None } else { Some(set_id) };
 
         async move {
             is_importing.set(true);
             error.set(None);
 
             let use_case = CreateCardsFromAnalysisUseCase::new(&repository, &llm_service);
-            match use_case.execute(user_id, words_to_create).await {
+            match use_case.execute(user_id, words_to_create, set_id_opt).await {
                 Ok(result) => {
                     is_importing.set(false);
                     Ok(result)
@@ -135,6 +141,10 @@ impl ImportPreviewModalState {
                 }
             }
         }
+    }
+
+    pub fn set_set_id(&self, id: String) {
+        self.set_id.set(id);
     }
 }
 

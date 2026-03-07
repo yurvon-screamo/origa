@@ -6,4 +6,5 @@ pub struct SetInfo {
     pub word_count: Option<usize>,
     pub set_type: origa::application::SetType,
     pub level: origa::domain::JapaneseLevel,
+    pub is_imported: bool,
 }
