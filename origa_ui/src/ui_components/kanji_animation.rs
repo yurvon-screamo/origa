@@ -124,9 +124,6 @@ pub fn KanjiAnimation(kanji: String, #[prop(optional)] mode: KanjiViewMode) -> i
 pub fn KanjiWritingSection(kanji: String, #[prop(optional)] mode: KanjiViewMode) -> impl IntoView {
     view! {
         <div class="kanji-writing-section">
-            <div class="kanji-writing-title">
-                "Написание"
-            </div>
             <div class="kanji-writing-grid">
                 <KanjiAnimation
                     kanji={kanji.clone()}
