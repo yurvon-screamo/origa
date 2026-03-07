@@ -1,10 +1,10 @@
 use js_sys::Uint8Array;
 use origa::domain::OrigaError;
 use origa::ocr::{ModelConfig, ModelFiles};
+use tracing::{debug, info};
 use wasm_bindgen::JsCast;
 use wasm_bindgen_futures::JsFuture;
 use web_sys::{Cache, Request, RequestInit, RequestMode, Response, Window};
-use tracing::{debug, info};
 
 pub struct ModelLoader {
     config: ModelConfig,
@@ -24,10 +24,16 @@ impl ModelLoader {
         let cache = self.get_or_create_cache(&window).await?;
 
         if self.is_model_cached(&cache).await? {
-            info!("Model {} found in cache, loading...", self.config.model_name);
+            info!(
+                "Model {} found in cache, loading...",
+                self.config.model_name
+            );
             self.load_from_cache(&cache).await
         } else {
-            info!("Model {} not found in cache, downloading...", self.config.model_name);
+            info!(
+                "Model {} not found in cache, downloading...",
+                self.config.model_name
+            );
             self.download_and_cache_model(&cache).await
         }
     }
