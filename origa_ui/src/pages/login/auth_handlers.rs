@@ -1,5 +1,5 @@
 use crate::app::AuthContext;
-use crate::repository::{OAuthProvider, TrailBaseClient, set_session};
+use crate::repository::{TrailBaseClient, set_session};
 use origa::domain::{NativeLanguage, User};
 use origa::traits::UserRepository;
 
@@ -33,21 +33,4 @@ pub async fn handle_oauth_callback(url_fragment: &str, ctx: &AuthContext) -> Res
     }
 
     get_or_create_profile(ctx, &session.email).await
-}
-
-pub fn handle_oauth_login(provider: OAuthProvider) {
-    use gloo_storage::{LocalStorage, Storage};
-
-    let redirect_uri = "origa://auth/callback";
-
-    let verifier = TrailBaseClient::generate_pkce_verifier();
-    let challenge = TrailBaseClient::generate_pkce_challenge(&verifier);
-
-    LocalStorage::set("pkce_verifier", &verifier).ok();
-
-    let url = TrailBaseClient::get_oauth_url(provider.as_str(), redirect_uri, &challenge);
-
-    if let Some(window) = web_sys::window() {
-        let _ = window.location().set_href(&url);
-    }
 }
