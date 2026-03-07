@@ -8,11 +8,6 @@ use origa::domain::User;
 
 use super::import_set_preview_modal_state::ImportPreviewModalState;
 
-pub struct ImportResult {
-    pub is_success: bool,
-    pub message: String,
-}
-
 pub struct ImportPreviewHandlers {
     pub on_word_toggle: Callback<String>,
     pub on_import: Callback<()>,
@@ -25,7 +20,7 @@ pub fn create_import_preview_handlers(
     current_user: RwSignal<Option<User>>,
     repository: HybridUserRepository,
     toasts: RwSignal<Vec<ToastData>>,
-    on_import_result: Callback<ImportResult>,
+    on_import_result: Callback<()>,
 ) -> ImportPreviewHandlers {
     let state_clone = state.clone();
     let on_word_toggle = Callback::new(move |word: String| {
@@ -63,10 +58,7 @@ pub fn create_import_preview_handlers(
 
                     let count = selected.len();
                     let message = format!("Успешно импортировано {} слов", count);
-                    on_import_result.run(ImportResult {
-                        is_success: true,
-                        message: message.clone(),
-                    });
+                    on_import_result.run(());
                     let toast_id = toasts.get().len();
                     toasts.update(|t| {
                         t.push(ToastData {
@@ -80,10 +72,7 @@ pub fn create_import_preview_handlers(
                 Err(e) => {
                     state.is_importing.set(false);
                     state.error_message.set(Some(e.clone()));
-                    on_import_result.run(ImportResult {
-                        is_success: false,
-                        message: e.clone(),
-                    });
+                    on_import_result.run(());
                     let toast_id = toasts.get().len();
                     toasts.update(|t| {
                         t.push(ToastData {
