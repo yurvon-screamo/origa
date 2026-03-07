@@ -2,7 +2,7 @@ use super::add_grammar_modal_state::ModalState;
 use crate::app::update_current_user;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use origa::application::CreateGrammarCardUseCase;
+use origa::use_cases::CreateGrammarCardUseCase;
 use ulid::Ulid;
 
 pub struct ModalHandlers {

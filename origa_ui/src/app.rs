@@ -6,9 +6,9 @@ use crate::routes::AppRoutes;
 use crate::ui_components::LoadingOverlay;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use origa::application::{GetUserInfoUseCase, UserRepository};
 use origa::domain::{OrigaError, User};
-use origa::infrastructure::LlmServiceInvoker;
+use origa::traits::UserRepository;
+use origa::use_cases::GetUserInfoUseCase;
 use tracing::{error, info, warn};
 
 #[derive(Clone)]
@@ -201,7 +201,6 @@ pub fn App() -> impl IntoView {
     let auth_context = AuthContext::new();
 
     provide_context(auth_context.repository.clone());
-    provide_context(LlmServiceInvoker::None);
     provide_context(auth_context.current_user);
     provide_context(auth_context.clone());
 

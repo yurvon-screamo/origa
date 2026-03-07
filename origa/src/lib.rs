@@ -1,4 +1,3 @@
-pub mod application;
 pub mod domain;
-pub mod infrastructure;
-pub mod settings;
+pub mod traits;
+pub mod use_cases;

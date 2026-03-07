@@ -1,6 +1,6 @@
 use crate::ui_components::{Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
-use origa::application::SetType;
+use origa::traits::SetType;
 
 use super::set_card::SetCard;
 use super::types::SetInfo;
