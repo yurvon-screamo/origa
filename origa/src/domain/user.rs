@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use chrono::{DateTime, Duration, Utc};
 use serde::{Deserialize, Serialize};
@@ -24,6 +24,9 @@ pub struct User {
 
     #[serde(default)]
     updated_at: DateTime<Utc>,
+
+    #[serde(default)]
+    imported_sets: HashSet<String>,
 }
 
 impl User {
@@ -42,6 +45,7 @@ impl User {
             telegram_user_id,
             reminders_enabled: true,
             updated_at: Utc::now(),
+            imported_sets: HashSet::new(),
         }
     }
 
@@ -56,6 +60,7 @@ impl User {
         reminders_enabled: bool,
         knowledge_set: KnowledgeSet,
         updated_at: DateTime<Utc>,
+        imported_sets: HashSet<String>,
     ) -> Self {
         Self {
             id,
@@ -67,6 +72,7 @@ impl User {
             reminders_enabled,
             knowledge_set,
             updated_at,
+            imported_sets,
         }
     }
 
@@ -78,6 +84,9 @@ impl User {
         self.telegram_user_id = new_values.telegram_user_id;
         self.reminders_enabled = new_values.reminders_enabled;
         self.knowledge_set.merge(&new_values.knowledge_set);
+        for set_id in &new_values.imported_sets {
+            self.imported_sets.insert(set_id.clone());
+        }
         self.touch();
     }
 
@@ -139,6 +148,19 @@ impl User {
 
     pub fn touch(&mut self) {
         self.updated_at = Utc::now();
+    }
+
+    pub fn mark_set_as_imported(&mut self, set_id: String) {
+        self.imported_sets.insert(set_id);
+        self.touch();
+    }
+
+    pub fn is_set_imported(&self, set_id: &str) -> bool {
+        self.imported_sets.contains(set_id)
+    }
+
+    pub fn imported_sets(&self) -> &HashSet<String> {
+        &self.imported_sets
     }
 
     pub fn rate_card(
@@ -404,5 +426,71 @@ mod tests {
             .unwrap();
         assert_eq!(n5_progress.words.learned, 0);
         assert_eq!(n5_progress.words.total, 0);
+    }
+
+    #[test]
+    fn user_mark_set_as_imported_adds_to_set() {
+        let mut user = User::new(
+            "test@example.com".to_string(),
+            NativeLanguage::Russian,
+            None,
+        );
+
+        assert!(!user.is_set_imported("set-123"));
+
+        user.mark_set_as_imported("set-123".to_string());
+
+        assert!(user.is_set_imported("set-123"));
+        assert!(user.imported_sets().contains("set-123"));
+    }
+
+    #[test]
+    fn user_is_set_imported_returns_true_for_imported() {
+        let mut user = User::new(
+            "test@example.com".to_string(),
+            NativeLanguage::Russian,
+            None,
+        );
+
+        user.mark_set_as_imported("set-abc".to_string());
+
+        assert!(user.is_set_imported("set-abc"));
+    }
+
+    #[test]
+    fn user_is_set_imported_returns_false_for_not_imported() {
+        let user = User::new(
+            "test@example.com".to_string(),
+            NativeLanguage::Russian,
+            None,
+        );
+
+        assert!(!user.is_set_imported("set-xyz"));
+        assert!(!user.is_set_imported("nonexistent-set"));
+    }
+
+    #[test]
+    fn user_merge_merges_imported_sets() {
+        let mut user1 = User::new(
+            "user1@example.com".to_string(),
+            NativeLanguage::Russian,
+            None,
+        );
+        user1.mark_set_as_imported("set-1".to_string());
+
+        let mut user2 = User::new(
+            "user2@example.com".to_string(),
+            NativeLanguage::Russian,
+            None,
+        );
+        user2.mark_set_as_imported("set-2".to_string());
+        user2.mark_set_as_imported("set-3".to_string());
+
+        user1.merge(&user2);
+
+        assert!(user1.is_set_imported("set-1"));
+        assert!(user1.is_set_imported("set-2"));
+        assert!(user1.is_set_imported("set-3"));
+        assert_eq!(user1.imported_sets().len(), 3);
     }
 }
