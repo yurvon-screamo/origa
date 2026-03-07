@@ -13,10 +13,11 @@ pub use vocabulary::VocabularyCard;
 use std::collections::{HashMap, HashSet};
 
 use crate::domain::{
-    OrigaError, Rating, ReviewLog, get_rule_by_id, memory::MemoryState,
+    OrigaError, RateMode, Rating, ReviewLog, get_rule_by_id,
+    srs::{NextReview, rate_memory},
     value_objects::NativeLanguage,
 };
-use chrono::{Duration, Utc};
+use chrono::Utc;
 use rand::seq::SliceRandom;
 use serde::{Deserialize, Serialize};
 use ulid::Ulid;
@@ -358,10 +359,14 @@ impl KnowledgeSet {
         &mut self,
         card_id: Ulid,
         rating: Rating,
-        interval: Duration,
-        memory_state: MemoryState,
+        mode: RateMode,
     ) -> Result<(), OrigaError> {
         if let Some(card) = self.study_cards.get_mut(&card_id) {
+            let NextReview {
+                interval,
+                memory_state,
+            } = rate_memory(mode, rating, card.memory())?;
+
             let review = ReviewLog::new(rating, interval);
             card.add_review(memory_state, review);
             card.handle_favorite_rating(rating);
@@ -497,8 +502,10 @@ impl KnowledgeSet {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::domain::memory::MemoryState;
     use crate::domain::tokenizer::PartOfSpeech;
     use crate::domain::value_objects::{Answer, Question};
+    use chrono::Duration;
 
     fn create_vocab_card(word: &str, meaning: &str) -> Card {
         Card::Vocabulary(VocabularyCard::new(
@@ -809,34 +816,12 @@ mod tests {
         let study1 = knowledge_set.create_card(card1).unwrap();
         let study2 = knowledge_set.create_card(card2).unwrap();
 
-        let high_diff_memory = MemoryState::new(
-            crate::domain::memory::Stability::new(0.5).unwrap(),
-            crate::domain::memory::Difficulty::new(7.0).unwrap(),
-            chrono::Utc::now(),
-        );
-
         knowledge_set
-            .rate_card(
-                *study1.card_id(),
-                Rating::Again,
-                chrono::Duration::days(1),
-                high_diff_memory,
-            )
+            .rate_card(*study1.card_id(), Rating::Again, RateMode::FixationLesson)
             .unwrap();
 
-        let low_diff_memory = MemoryState::new(
-            crate::domain::memory::Stability::new(30.0).unwrap(),
-            crate::domain::memory::Difficulty::new(2.0).unwrap(),
-            chrono::Utc::now(),
-        );
-
         knowledge_set
-            .rate_card(
-                *study2.card_id(),
-                Rating::Easy,
-                chrono::Duration::days(30),
-                low_diff_memory,
-            )
+            .rate_card(*study2.card_id(), Rating::Easy, RateMode::StandardLesson)
             .unwrap();
 
         let result = knowledge_set.cards_to_fixation(&NativeLanguage::Russian);
@@ -1053,13 +1038,11 @@ mod tests {
         let card = create_vocab_card("猫", "кошка");
         let study_card = knowledge_set.create_card(card).unwrap();
 
-        let memory = create_memory_state();
         knowledge_set
             .rate_card(
                 *study_card.card_id(),
                 Rating::Good,
-                chrono::Duration::days(1),
-                memory,
+                RateMode::StandardLesson,
             )
             .unwrap();
 

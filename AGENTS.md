@@ -56,7 +56,7 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use ulid::Ulid;
 
-use crate::application::jlpt_content_loader::JlptContent;
+use crate::traits::jlpt_content_loader::JlptContent;
 use crate::domain::{Card, JapaneseLevel, OrigaError};
 ```
 

@@ -1,8 +1,8 @@
 use super::trailbase_client::{AuthError, TrailBaseClient};
 use crate::repository::session::{TrailBaseSession, get_session, set_session};
 use chrono::{DateTime, Utc};
-use origa::application::user_repository::UserRepository;
 use origa::domain::{NativeLanguage, OrigaError, User};
+use origa::traits::UserRepository;
 use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, RwLock};
 use ulid::Ulid;
@@ -154,7 +154,8 @@ fn user_to_json(user: &User, trailbase_id: &str) -> serde_json::Value {
         serde_json::to_string(user.jlpt_progress()).unwrap_or_else(|_| "null".to_string());
     let knowledge_set_json = serde_json::to_string(user.knowledge_set())
         .unwrap_or_else(|_| "{\"study_cards\":{},\"lesson_history\":[]}".to_string());
-    let imported_sets_json = serde_json::to_string(user.imported_sets()).unwrap_or_else(|_| "[]".to_string());
+    let imported_sets_json =
+        serde_json::to_string(user.imported_sets()).unwrap_or_else(|_| "[]".to_string());
 
     serde_json::json!({
         "trailbase_id": trailbase_id,

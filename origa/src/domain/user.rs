@@ -1,14 +1,12 @@
 use std::collections::{HashMap, HashSet};
 
-use chrono::{DateTime, Duration, Utc};
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use ulid::Ulid;
 
-use crate::application::jlpt_content_loader::JlptContent;
 use crate::domain::{
-    Card, JapaneseLevel, JlptProgress, KnowledgeSet, MemoryState, NativeLanguage, OrigaError,
-    Rating, StudyCard,
-    score_content::{ScoreContentResult, score_content},
+    Card, JapaneseLevel, JlptContent, JlptProgress, KnowledgeSet, NativeLanguage, OrigaError,
+    RateMode, Rating, ScoreContentResult, StudyCard, score_content,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -167,12 +165,9 @@ impl User {
         &mut self,
         card_id: Ulid,
         rating: Rating,
-        interval: Duration,
-        memory_state: MemoryState,
+        mode: RateMode,
     ) -> Result<(), OrigaError> {
-        self.knowledge_set
-            .rate_card(card_id, rating, interval, memory_state)?;
-        Ok(())
+        self.knowledge_set.rate_card(card_id, rating, mode)
     }
 
     pub fn delete_card(&mut self, card_id: Ulid) -> Result<(), OrigaError> {
@@ -184,7 +179,7 @@ impl User {
     }
 
     pub fn score_content(&self, content: &str) -> Result<ScoreContentResult, OrigaError> {
-        score_content(content, self.knowledge_set().study_cards())
+        score_content::score_content(content, self.knowledge_set().study_cards())
     }
 
     pub fn toggle_favorite(&mut self, card_id: Ulid) -> Result<(), OrigaError> {
@@ -270,8 +265,8 @@ impl User {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::domain::VocabularyCard;
     use crate::domain::value_objects::{Answer, Question};
+    use crate::domain::{RateMode, VocabularyCard};
 
     fn create_test_vocab_card(word: &str) -> Card {
         Card::Vocabulary(VocabularyCard::new(
@@ -345,17 +340,10 @@ mod tests {
         let study_card1 = user.create_card(card1).unwrap();
         let _study_card2 = user.create_card(card2).unwrap();
 
-        let memory_state = MemoryState::new(
-            crate::domain::memory::Stability::new(15.0).unwrap(),
-            crate::domain::memory::Difficulty::new(0.1).unwrap(),
-            Utc::now(),
-        );
-
         user.rate_card(
             *study_card1.card_id(),
             Rating::Easy,
-            Duration::days(1),
-            memory_state,
+            RateMode::StandardLesson,
         )
         .unwrap();
 
@@ -404,16 +392,10 @@ mod tests {
 
         let card = create_test_vocab_card("猫");
         let study_card = user.create_card(card).unwrap();
-        let memory_state = MemoryState::new(
-            crate::domain::memory::Stability::new(15.0).unwrap(),
-            crate::domain::memory::Difficulty::new(0.1).unwrap(),
-            Utc::now(),
-        );
         user.rate_card(
             *study_card.card_id(),
             Rating::Easy,
-            Duration::days(1),
-            memory_state,
+            RateMode::StandardLesson,
         )
         .unwrap();
 

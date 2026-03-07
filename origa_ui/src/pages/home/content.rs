@@ -4,8 +4,8 @@ use crate::repository::HybridUserRepository;
 use crate::ui_components::{Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use origa::application::GetUserInfoUseCase;
 use origa::domain::{DailyHistoryItem, JlptProgress, User};
+use origa::use_cases::GetUserInfoUseCase;
 
 #[component]
 pub fn HomeContent() -> impl IntoView {

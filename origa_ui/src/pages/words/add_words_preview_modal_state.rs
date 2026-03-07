@@ -1,12 +1,11 @@
 use crate::repository::HybridUserRepository;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use origa::application::{
+use origa::domain::User;
+use origa::use_cases::{
     AnalyzeTextForCardsUseCase, AnalyzedWord, CreateCardsFromAnalysisResult,
     CreateCardsFromAnalysisUseCase, WordToCreate,
 };
-use origa::domain::User;
-use origa::infrastructure::LlmServiceInvoker;
 use std::collections::HashSet;
 
 #[derive(Clone)]
@@ -19,7 +18,6 @@ pub struct PreviewModalState {
     pub error_message: RwSignal<Option<String>>,
     pub current_user: RwSignal<Option<User>>,
     pub repository: HybridUserRepository,
-    pub llm_service: LlmServiceInvoker,
 }
 
 impl PreviewModalState {
@@ -28,8 +26,6 @@ impl PreviewModalState {
             use_context::<RwSignal<Option<User>>>().expect("current_user context not provided");
         let repository =
             use_context::<HybridUserRepository>().expect("repository context not provided");
-        let llm_service =
-            use_context::<LlmServiceInvoker>().expect("llm_service context not provided");
 
         let selected_words = RwSignal::new(HashSet::new());
 
@@ -51,7 +47,6 @@ impl PreviewModalState {
             error_message: RwSignal::new(None),
             current_user,
             repository,
-            llm_service,
         }
     }
 
@@ -118,7 +113,6 @@ impl PreviewModalState {
             .map(|base_form| WordToCreate { base_form })
             .collect();
         let repository = self.repository.clone();
-        let llm_service = self.llm_service.clone();
         let is_creating = self.is_creating;
         let error = self.error_message;
 
@@ -126,7 +120,7 @@ impl PreviewModalState {
             is_creating.set(true);
             error.set(None);
 
-            let use_case = CreateCardsFromAnalysisUseCase::new(&repository, &llm_service);
+            let use_case = CreateCardsFromAnalysisUseCase::new(&repository);
             match use_case.execute(user_id, words_to_create, None).await {
                 Ok(result) => {
                     is_creating.set(false);

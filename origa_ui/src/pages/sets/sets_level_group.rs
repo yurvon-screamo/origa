@@ -1,8 +1,8 @@
 use super::sets_type_group::SetsTypeGroup;
 use super::types::SetInfo;
 use leptos::prelude::*;
-use origa::application::SetType;
 use origa::domain::JapaneseLevel;
+use origa::traits::SetType;
 
 #[component]
 pub fn SetsLevelGroup(

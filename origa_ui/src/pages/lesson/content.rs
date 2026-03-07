@@ -8,8 +8,8 @@ use crate::ui_components::{Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos_router::hooks::use_query_map;
-use origa::application::use_cases::{SelectCardsToFixationUseCase, SelectCardsToLessonUseCase};
 use origa::domain::User;
+use origa::use_cases::{SelectCardsToFixationUseCase, SelectCardsToLessonUseCase};
 use ulid::Ulid;
 
 #[component]

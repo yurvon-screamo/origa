@@ -5,8 +5,8 @@ use crate::ui_components::Spinner;
 use crate::well_known_set::WellKnownSetLoaderImpl;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use origa::application::ListWellKnownSetsUseCase;
 use origa::domain::{JapaneseLevel, User};
+use origa::use_cases::ListWellKnownSetsUseCase;
 
 #[component]
 pub fn SetsContent() -> impl IntoView {

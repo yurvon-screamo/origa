@@ -6,7 +6,7 @@ use crate::ui_components::{
 };
 use leptos::ev::MouseEvent;
 use leptos::prelude::*;
-use origa::application::AnalyzedWord;
+use origa::use_cases::AnalyzedWord;
 
 #[component]
 pub fn AddWordsPreviewModal(is_open: RwSignal<bool>) -> impl IntoView {

@@ -4,7 +4,7 @@ pub struct SetInfo {
     pub title: String,
     pub description: String,
     pub word_count: Option<usize>,
-    pub set_type: origa::application::SetType,
+    pub set_type: origa::traits::SetType,
     pub level: origa::domain::JapaneseLevel,
     pub is_imported: bool,
 }
