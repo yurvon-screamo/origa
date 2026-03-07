@@ -66,7 +66,7 @@ pub fn LessonContent() -> impl IntoView {
                     }
                 };
 
-                web_sys::console::log_1(&format!("Cards len: {}", cards.iter().count()).into());
+                tracing::info!("Cards len: {}", cards.iter().count());
 
                 match cards {
                     Ok(cards) => {

@@ -73,7 +73,7 @@ pub async fn get_cached_dictionary() -> Result<Option<DictionaryData>, OrigaErro
             reason: format!("Failed to deserialize dictionary: {:?}", e),
         })?;
 
-    web_sys::console::info_1(&"Dictionary loaded from Cache API".into());
+    tracing::info!("Dictionary loaded from Cache API");
     Ok(Some(data))
 }
 
@@ -136,6 +136,6 @@ pub async fn save_dictionary_to_cache(data: &DictionaryData) -> Result<(), Origa
             reason: format!("Failed to save to cache: {:?}", e),
         })?;
 
-    web_sys::console::info_1(&"Dictionary saved to Cache API".into());
+    tracing::info!("Dictionary saved to Cache API");
     Ok(())
 }

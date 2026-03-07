@@ -82,9 +82,7 @@ pub async fn load_dictionary() -> Result<(), OrigaError> {
         }
         Ok(None) => {}
         Err(e) => {
-            web_sys::console::warn_1(
-                &format!("Cache read failed, loading from network: {:?}", e).into(),
-            );
+            tracing::warn!("Cache read failed, loading from network: {:?}", e);
         }
     }
 
@@ -94,7 +92,7 @@ pub async fn load_dictionary() -> Result<(), OrigaError> {
     init_dictionary(data)?;
 
     if let Err(e) = save_dictionary_to_cache(&data_clone).await {
-        web_sys::console::warn_1(&format!("Failed to cache dictionary: {:?}", e).into());
+        tracing::warn!("Failed to cache dictionary: {:?}", e);
     }
 
     Ok(())

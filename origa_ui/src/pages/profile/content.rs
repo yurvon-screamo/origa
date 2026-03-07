@@ -109,16 +109,14 @@ pub fn ProfileContent() -> impl IntoView {
                     if let Some(uid) = user_id
                         && let Err(e) = repository_clone.delete(uid).await
                     {
-                        web_sys::console::error_1(
-                            &format!("Failed to delete local data: {}", e).into(),
-                        );
+                        tracing::error!("Failed to delete local data: {}", e);
                     }
                     current_user_clone.set(None);
                     nav("/", Default::default());
                 }
                 Err(e) => {
                     is_deleting_signal.set(false);
-                    web_sys::console::error_1(&format!("Failed to delete account: {}", e).into());
+                    tracing::error!("Failed to delete account: {}", e);
                 }
             }
         });
