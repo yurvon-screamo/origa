@@ -37,49 +37,7 @@ fn decode_jwt_claims(token: &str) -> Result<JwtClaims, String> {
     let json_str =
         String::from_utf8(decoded).map_err(|e| format!("Invalid UTF-8 in JWT payload: {}", e))?;
 
-    let mut claims: JwtClaims = serde_json::from_str(&json_str)
-        .map_err(|e| format!("Failed to parse JWT claims: {}", e))?;
-
-    claims.sub = normalize_trailbase_id(&claims.sub);
-
-    Ok(claims)
-}
-
-fn normalize_trailbase_id(id: &str) -> String {
-    // If it's already a hex UUID, just return it
-    if (id.len() == 36 || id.len() == 32) && id.chars().all(|c| c.is_ascii_hexdigit() || c == '-') {
-        return id.to_lowercase();
-    }
-
-    // If it's base64 (24 characters or 22 characters), try to decode it
-    if id.len() == 24 || id.len() == 22 || (id.len() > 20 && id.ends_with("=")) {
-        if let Ok(bytes) = base64_decode(id) {
-            if bytes.len() == 16 {
-                // Convert 16 bytes to standard UUID format: 00112233-4455-6677-8899-aabbccddeeff
-                return format!(
-                    "{:02x}{:02x}{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
-                    bytes[0],
-                    bytes[1],
-                    bytes[2],
-                    bytes[3],
-                    bytes[4],
-                    bytes[5],
-                    bytes[6],
-                    bytes[7],
-                    bytes[8],
-                    bytes[9],
-                    bytes[10],
-                    bytes[11],
-                    bytes[12],
-                    bytes[13],
-                    bytes[14],
-                    bytes[15]
-                );
-            }
-        }
-    }
-
-    id.to_string()
+    serde_json::from_str(&json_str).map_err(|e| format!("Failed to parse JWT claims: {}", e))
 }
 
 fn base64_decode(input: &str) -> Result<Vec<u8>, String> {
