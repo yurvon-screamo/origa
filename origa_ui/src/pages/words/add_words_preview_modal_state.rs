@@ -127,7 +127,7 @@ impl PreviewModalState {
             error.set(None);
 
             let use_case = CreateCardsFromAnalysisUseCase::new(&repository, &llm_service);
-            match use_case.execute(user_id, words_to_create).await {
+            match use_case.execute(user_id, words_to_create, None).await {
                 Ok(result) => {
                     is_creating.set(false);
                     Ok(result)

@@ -3,7 +3,7 @@ use crate::repository::session::{TrailBaseSession, get_session, set_session};
 use chrono::{DateTime, Utc};
 use origa::application::user_repository::UserRepository;
 use origa::domain::{NativeLanguage, OrigaError, User};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, RwLock};
 use ulid::Ulid;
 
@@ -90,6 +90,7 @@ struct UserRow {
     reminders_enabled: i32,
     knowledge_set: Option<String>,
     updated_at: DateTime<Utc>,
+    imported_sets: Option<String>,
 }
 
 impl UserRow {
@@ -108,6 +109,12 @@ impl UserRow {
             .and_then(|s| serde_json::from_str(s).ok())
             .unwrap_or_default();
 
+        let imported_sets: HashSet<String> = self
+            .imported_sets
+            .as_ref()
+            .and_then(|s| serde_json::from_str(s).ok())
+            .unwrap_or_default();
+
         User::from_row(
             ulid,
             self.email.clone(),
@@ -118,6 +125,7 @@ impl UserRow {
             self.reminders_enabled != 0,
             knowledge_set,
             self.updated_at,
+            imported_sets,
         )
     }
 }
@@ -146,6 +154,7 @@ fn user_to_json(user: &User, trailbase_id: &str) -> serde_json::Value {
         serde_json::to_string(user.jlpt_progress()).unwrap_or_else(|_| "null".to_string());
     let knowledge_set_json = serde_json::to_string(user.knowledge_set())
         .unwrap_or_else(|_| "{\"study_cards\":{},\"lesson_history\":[]}".to_string());
+    let imported_sets_json = serde_json::to_string(user.imported_sets()).unwrap_or_else(|_| "[]".to_string());
 
     serde_json::json!({
         "trailbase_id": trailbase_id,
@@ -158,6 +167,7 @@ fn user_to_json(user: &User, trailbase_id: &str) -> serde_json::Value {
         "reminders_enabled": if user.reminders_enabled() { 1 } else { 0 },
         "knowledge_set": knowledge_set_json,
         "updated_at": user.updated_at().to_rfc3339(),
+        "imported_sets": imported_sets_json,
     })
 }
 

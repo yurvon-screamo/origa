@@ -5,8 +5,8 @@ use crate::ui_components::{
 };
 use leptos::prelude::*;
 
-use super::import_set_preview_modal_handlers::ImportResult;
 use super::import_set_preview_modal_handlers::create_import_preview_handlers;
+use super::import_set_preview_modal_handlers::ImportResult;
 use super::import_set_preview_modal_state::ImportPreviewModalState;
 
 #[component]
@@ -39,7 +39,9 @@ pub fn ImportSetPreviewModal(
         let state = state.clone();
         move |_| {
             if is_open.get() {
-                state.load_preview(set_id.get());
+                let id = set_id.get();
+                state.set_set_id(id.clone());
+                state.load_preview(id);
             }
         }
     });
