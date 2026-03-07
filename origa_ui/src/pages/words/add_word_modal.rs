@@ -5,9 +5,8 @@ use crate::ui_components::{
 };
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use origa::application::CreateVocabularyCardUseCase;
 use origa::domain::User;
-use origa::infrastructure::LlmServiceInvoker;
+use origa::use_cases::CreateVocabularyCardUseCase;
 
 #[component]
 pub fn AddWordModal(is_open: RwSignal<bool>) -> impl IntoView {
@@ -18,7 +17,6 @@ pub fn AddWordModal(is_open: RwSignal<bool>) -> impl IntoView {
         use_context::<RwSignal<Option<User>>>().expect("current_user context not provided");
     let repository =
         use_context::<HybridUserRepository>().expect("repository context not provided");
-    let llm_service = use_context::<LlmServiceInvoker>().expect("llm_service context not provided");
 
     let on_add = {
         let current_user = current_user;
@@ -26,7 +24,6 @@ pub fn AddWordModal(is_open: RwSignal<bool>) -> impl IntoView {
         let is_loading = is_loading;
         let new_word = new_word;
         let is_open = is_open;
-        let llm_service = llm_service.clone();
         let error_message = error_message;
 
         Callback::new(move |_: leptos::ev::MouseEvent| {
@@ -42,15 +39,13 @@ pub fn AddWordModal(is_open: RwSignal<bool>) -> impl IntoView {
             let is_loading_signal = is_loading;
             let new_word_signal = new_word;
             let is_open_signal = is_open;
-            let llm_service_clone = llm_service.clone();
             let error_signal = error_message;
 
             is_loading_signal.set(true);
             error_signal.set(None);
 
             spawn_local(async move {
-                let use_case =
-                    CreateVocabularyCardUseCase::new(&repository_clone, &llm_service_clone);
+                let use_case = CreateVocabularyCardUseCase::new(&repository_clone);
 
                 match use_case.execute(user_id, word.clone()).await {
                     Ok(_) => {

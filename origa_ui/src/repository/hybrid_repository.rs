@@ -3,8 +3,8 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use ulid::Ulid;
 
 use origa::{
-    application::UserRepository,
     domain::{OrigaError, User},
+    traits::UserRepository,
 };
 use web_sys::console;
 

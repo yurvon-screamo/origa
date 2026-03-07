@@ -1,8 +1,8 @@
 use crate::repository::HybridUserRepository;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use origa::application::{KanjiInfoListUseCase, KanjiItemInfo};
 use origa::domain::{JapaneseLevel, User};
+use origa::use_cases::{KanjiInfoListUseCase, KanjiItemInfo};
 use std::collections::HashSet;
 
 #[derive(Clone)]

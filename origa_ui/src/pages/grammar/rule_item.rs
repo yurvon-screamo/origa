@@ -1,7 +1,7 @@
 use crate::ui_components::{FuriganaText, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
-use origa::application::GrammarRuleItem;
 use origa::domain::User;
+use origa::use_cases::GrammarRuleItem;
 use std::collections::HashSet;
 use ulid::Ulid;
 

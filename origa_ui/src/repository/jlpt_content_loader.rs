@@ -1,6 +1,6 @@
 use std::sync::OnceLock;
 
-use origa::application::JlptContent;
+use origa::domain::JlptContent;
 use origa::domain::{JapaneseLevel, OrigaError};
 use serde::Deserialize;
 use web_sys::console;
@@ -34,10 +34,6 @@ struct GrammarDictionary {
 struct GrammarEntry {
     rule_id: String,
     level: String,
-}
-
-pub fn get_jlpt_content() -> Option<&'static JlptContent> {
-    JLPT_CONTENT.get()
 }
 
 pub async fn load_jlpt_content() -> Result<(), OrigaError> {

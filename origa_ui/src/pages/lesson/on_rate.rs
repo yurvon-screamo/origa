@@ -1,11 +1,10 @@
 use super::lesson_state::LessonContext;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use origa::application::srs_service::RateMode;
-use origa::application::use_cases::RateCardUseCase;
+use origa::domain::RateMode;
 use origa::domain::Rating;
 use origa::domain::User;
-use origa::infrastructure::FsrsSrsService;
+use origa::use_cases::RateCardUseCase;
 use ulid::Ulid;
 
 pub fn create_on_rate_callback(
@@ -28,16 +27,7 @@ pub fn create_on_rate_callback(
             let is_rating = is_rating;
 
             spawn_local(async move {
-                let srs_service = match FsrsSrsService::new() {
-                    Ok(s) => s,
-                    Err(e) => {
-                        web_sys::console::error_1(&format!("SRS error: {}", e).into());
-                        is_rating.set(None);
-                        return;
-                    }
-                };
-
-                let use_case = RateCardUseCase::new(&repo, &srs_service);
+                let use_case = RateCardUseCase::new(&repo);
 
                 let _ = use_case
                     .execute(user_id, card_id, RateMode::StandardLesson, rating)

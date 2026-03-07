@@ -1,7 +1,7 @@
 use idb::{Database, DatabaseEvent, Factory, ObjectStoreParams, TransactionMode};
 use origa::{
-    application::UserRepository,
     domain::{OrigaError, User},
+    traits::UserRepository,
 };
 use ulid::Ulid;
 use wasm_bindgen::JsValue;

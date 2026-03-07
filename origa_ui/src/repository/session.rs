@@ -11,12 +11,6 @@ pub struct TrailBaseSession {
     pub expires_at: u64,
 }
 
-#[derive(Clone, Serialize, Deserialize, Debug)]
-pub struct TrailBaseUser {
-    pub sub: String,
-    pub email: String,
-}
-
 const SESSION_KEY: &str = "trailbase_session";
 
 pub fn get_session() -> Option<TrailBaseSession> {

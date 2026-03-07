@@ -2,8 +2,9 @@ use super::{ActionButtons, PersonalDataCard, SettingsCard};
 use crate::app::{AuthContext, update_current_user};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use origa::application::{UpdateUserProfileUseCase, UserRepository};
 use origa::domain::NativeLanguage;
+use origa::traits::UserRepository;
+use origa::use_cases::UpdateUserProfileUseCase;
 
 #[component]
 pub fn ProfileContent() -> impl IntoView {
