@@ -8,8 +8,16 @@ use origa::use_cases::{
 };
 use std::collections::HashSet;
 
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum InputMode {
+    #[default]
+    Text,
+    Image,
+}
+
 #[derive(Clone)]
 pub struct PreviewModalState {
+    pub input_mode: RwSignal<InputMode>,
     pub input_text: RwSignal<String>,
     pub analyzed_words: RwSignal<Vec<AnalyzedWord>>,
     pub selected_words: RwSignal<HashSet<String>>,
@@ -39,6 +47,7 @@ impl PreviewModalState {
         });
 
         Self {
+            input_mode: RwSignal::new(InputMode::Text),
             input_text: RwSignal::new(String::new()),
             analyzed_words: RwSignal::new(Vec::new()),
             selected_words,
@@ -83,7 +92,13 @@ impl PreviewModalState {
         });
     }
 
+    pub fn set_extracted_text(&self, text: String) {
+        self.input_text.set(text);
+        self.analyze_text();
+    }
+
     pub fn reset(&self) {
+        self.input_mode.set(InputMode::Text);
         self.input_text.set(String::new());
         self.analyzed_words.set(Vec::new());
         self.selected_words.set(HashSet::new());

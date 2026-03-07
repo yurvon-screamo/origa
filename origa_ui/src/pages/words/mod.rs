@@ -5,6 +5,7 @@ mod add_words_preview_modal_state;
 mod analyzed_word_item;
 mod content;
 mod header;
+mod image_input_stage;
 mod vocabulary_card_item;
 
 pub use content::WordsContent;

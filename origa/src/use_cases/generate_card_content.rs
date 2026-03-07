@@ -3,7 +3,7 @@ use crate::domain::get_translation;
 use crate::domain::{Answer, NativeLanguage};
 use tracing::{debug, info};
 
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct GenerateCardContentUseCase {}
 
 #[derive(Debug, Clone, PartialEq)]
@@ -13,7 +13,7 @@ pub struct CardContent {
 
 impl GenerateCardContentUseCase {
     pub fn new() -> Self {
-        Self {}
+        Self::default()
     }
 
     pub async fn generate_content(

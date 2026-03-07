@@ -53,6 +53,11 @@ sha2 = "0.10"
 rs-fsrs = "1.2"
 lindera = { version = "2.2", default-features = false }
 lindera-dictionary = { version = "2.2" }
+candle-core = { git = "https://github.com/huggingface/candle.git", rev = "8cc682c97bcb8a76017ad23e35fde8adac639e3f", default-features = false }
+candle-onnx = { git = "https://github.com/huggingface/candle.git", rev = "8cc682c97bcb8a76017ad23e35fde8adac639e3f", default-features = false }
+tokenizers = { version = "0.21", default-features = false, features = ["unstable_wasm"] }
+prost = "0.14"
+image = "0.25"
 
 # Origa workspace crates
 origa = { path = "./origa" }
@@ -116,12 +121,21 @@ web-sys = { version = "0.3", features = [
     "StorageManager",
     "WorkerNavigator",
     "File",
+    "FileList",
+    "FileReader",
+    "HtmlInputElement",
+    "HtmlCanvasElement",
+    "CanvasRenderingContext2d",
+    "ImageData",
     "Blob",
     "BlobPropertyBag",
     "Document",
     "Window",
     "Node",
     "Element",
+    "Event",
+    "EventTarget",
+    "InputEvent",
     "console",
     "SpeechSynthesis",
     "SpeechSynthesisUtterance",
@@ -130,6 +144,7 @@ web-sys = { version = "0.3", features = [
     "CacheStorage",
     "Response",
     "ResponseInit",
+    "Url",
 ] }
 
 
