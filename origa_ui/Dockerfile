@@ -70,7 +70,7 @@ RUN cp -r origa_ui/dist /dist
 
 FROM caddy:2.9-alpine AS caddy
 
-FROM trailbase/trailbase:0.24.2
+FROM trailbase/trailbase:0.24.3
 
 USER root
 WORKDIR /app
