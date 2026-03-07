@@ -63,6 +63,7 @@ pub use modal::Modal;
 pub use reading_group::ReadingGroup;
 pub use search::Search;
 pub use skeleton::Skeleton;
+pub use tabs::{TabItem, Tabs};
 pub use tag::{Tag, TagVariant};
 pub use text_to_speech::{get_reading_from_text, is_speech_supported, speak_text};
 pub use toast::{ToastContainer, ToastData, ToastType};

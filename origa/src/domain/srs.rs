@@ -54,7 +54,7 @@ pub fn rate_memory(
     rating: Rating,
     memory_history: &MemoryHistory,
 ) -> Result<NextReview, OrigaError> {
-    let srs_service = FSRS_SERVICE.get_or_init(|| FsrsSrsService::new());
+    let srs_service = FSRS_SERVICE.get_or_init(FsrsSrsService::new);
 
     let now = Utc::now();
     let card = if let Some(memory_state) = memory_history.memory_state() {

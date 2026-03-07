@@ -1,8 +1,10 @@
 use crate::pages::words::add_words_preview_modal_handlers::create_preview_modal_handlers;
-use crate::pages::words::add_words_preview_modal_state::PreviewModalState;
+use crate::pages::words::add_words_preview_modal_state::{InputMode, PreviewModalState};
 use crate::pages::words::analyzed_word_item::AnalyzedWordItem;
+use crate::pages::words::image_input_stage::ImageInputStage;
 use crate::ui_components::{
-    Alert, AlertType, Button, ButtonVariant, Input, Modal, Text, TextSize, TypographyVariant,
+    Alert, AlertType, Button, ButtonVariant, Input, Modal, TabItem, Tabs, Text, TextSize,
+    TypographyVariant,
 };
 use leptos::ev::MouseEvent;
 use leptos::prelude::*;
@@ -19,24 +21,92 @@ pub fn AddWordsPreviewModal(is_open: RwSignal<bool>) -> impl IntoView {
     let error_message = state.error_message;
     let selected_words = state.selected_words;
     let is_creating = state.is_creating;
-    let handlers = create_preview_modal_handlers(state, is_open, current_user, repository);
+    let input_mode = state.input_mode;
+    let handlers = create_preview_modal_handlers(state.clone(), is_open, current_user, repository);
+
+    let tabs = Signal::derive(|| {
+        vec![
+            TabItem {
+                id: "text".to_string(),
+                label: "Текст".to_string(),
+            },
+            TabItem {
+                id: "image".to_string(),
+                label: "Изображение".to_string(),
+            },
+        ]
+    });
+
+    let active_tab = RwSignal::new("text".to_string());
+
+    Effect::new({
+        let input_mode = input_mode;
+        move || {
+            let tab = active_tab.get();
+            input_mode.set(if tab == "image" {
+                InputMode::Image
+            } else {
+                InputMode::Text
+            });
+        }
+    });
+
+    let on_text_extracted = {
+        let state = state.clone();
+        Callback::new(move |text: String| {
+            state.set_extracted_text(text);
+        })
+    };
+
+    let on_ocr_error = {
+        let error_message = error_message;
+        Callback::new(move |_msg: String| {
+            error_message.set(None);
+        })
+    };
+
+    let on_switch_to_text = {
+        let input_mode = input_mode;
+        let active_tab = active_tab;
+        Callback::new(move |_| {
+            input_mode.set(InputMode::Text);
+            active_tab.set("text".to_string());
+        })
+    };
 
     view! {
         <Modal
             is_open=is_open
-            title=Signal::derive(|| "Добавить слова из текста".to_string())
+            title=Signal::derive(|| "Добавить слова".to_string())
         >
             <div class="space-y-4">
                 {move || {
                     let words = analyzed_words.get();
                     if words.is_empty() {
                         view! {
-                            <InputStage
-                                input_text=input_text
-                                is_analyzing=is_analyzing
-                                error_message=error_message
-                                on_analyze=handlers.on_analyze
-                            />
+                            <div class="space-y-4">
+                                <Tabs tabs=tabs active=active_tab />
+                                {move || {
+                                    let mode = input_mode.get();
+                                    match mode {
+                                        InputMode::Text => view! {
+                                            <InputStage
+                                                input_text=input_text
+                                                is_analyzing=is_analyzing
+                                                error_message=error_message
+                                                on_analyze=handlers.on_analyze
+                                            />
+                                        }.into_any(),
+                                        InputMode::Image => view! {
+                                            <ImageInputStage
+                                                on_text_extracted=on_text_extracted
+                                                on_error=on_ocr_error
+                                                on_switch_to_text=on_switch_to_text
+                                            />
+                                        }.into_any(),
+                                    }
+                                }}
+                            </div>
                         }.into_any()
                     } else {
                         view! {
