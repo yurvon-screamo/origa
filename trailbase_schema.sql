@@ -3,7 +3,7 @@
 
 CREATE TABLE user (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    auth_user_id TEXT UNIQUE NOT NULL,
+    trailbase_id TEXT UNIQUE NOT NULL,
     username TEXT NOT NULL,
     email TEXT NOT NULL,
     native_language INTEGER NOT NULL DEFAULT 0,
@@ -16,8 +16,13 @@ CREATE TABLE user (
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) STRICT;
 
--- Create index for faster lookups by auth_user_id
-CREATE INDEX idx_user_auth_user_id ON user(auth_user_id);
+-- Create index for faster lookups by trailbase_id
+CREATE INDEX idx_user_trailbase_id ON user(trailbase_id);
 
 -- Create index for faster lookups by email
 CREATE INDEX idx_user_email ON user(email);
+
+-- _ROW_.trailbase_id = _USER_.id
+-- _REQ_.trailbase_id = _USER_.id
+-- _ROW_.trailbase_id = _USER_.id AND _REQ_.trailbase_id = _USER_.id
+-- _ROW_.trailbase_id = _USER_.id

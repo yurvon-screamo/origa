@@ -263,7 +263,7 @@ impl TrailBaseClient {
             auth_token: token_response.auth_token,
             refresh_token: token_response.refresh_token.unwrap_or_default(),
             email: claims.email.clone().unwrap_or_default(),
-            auth_user_id: claims.sub.clone(),
+            trailbase_id: claims.sub.clone(),
             record_id: None,
             expires_at,
         };
@@ -287,7 +287,7 @@ impl TrailBaseClient {
             auth_token: auth_token.to_string(),
             refresh_token: refresh_token.unwrap_or("").to_string(),
             email: claims.email.clone().unwrap_or_default(),
-            auth_user_id: claims.sub.clone(),
+            trailbase_id: claims.sub.clone(),
             record_id: None,
             expires_at,
         };
@@ -338,7 +338,7 @@ impl TrailBaseClient {
             auth_token,
             refresh_token,
             email: claims.email.clone().unwrap_or_default(),
-            auth_user_id: claims.sub.clone(),
+            trailbase_id: claims.sub.clone(),
             record_id: None,
             expires_at,
         };
@@ -377,7 +377,7 @@ impl TrailBaseClient {
             auth_token,
             refresh_token,
             email: claims.email.clone().unwrap_or_default(),
-            auth_user_id: claims.sub.clone(),
+            trailbase_id: claims.sub.clone(),
             record_id: None,
             expires_at,
         };
@@ -421,7 +421,7 @@ impl TrailBaseClient {
                 .refresh_token
                 .unwrap_or_else(|| refresh_token.to_string()),
             email: claims.email.clone().unwrap_or_default(),
-            auth_user_id: claims.sub.clone(),
+            trailbase_id: claims.sub.clone(),
             record_id: None,
             expires_at,
         };

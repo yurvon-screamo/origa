@@ -80,7 +80,7 @@ impl Default for TrailBaseUserRepository {
 struct UserRow {
     #[serde(default)]
     id: Option<i64>,
-    auth_user_id: String,
+    trailbase_id: String,
     username: String,
     email: String,
     native_language: i32,
@@ -94,7 +94,7 @@ struct UserRow {
 
 impl UserRow {
     fn to_user(&self) -> User {
-        let ulid = uuid_to_ulid(&self.auth_user_id);
+        let ulid = uuid_to_ulid(&self.trailbase_id);
 
         let jlpt_progress = self
             .jlpt_progress
@@ -141,14 +141,14 @@ fn uuid_to_ulid(uuid_str: &str) -> Ulid {
     Ulid::from_bytes(bytes)
 }
 
-fn user_to_json(user: &User, auth_user_id: &str) -> serde_json::Value {
+fn user_to_json(user: &User, trailbase_id: &str) -> serde_json::Value {
     let jlpt_progress_json =
         serde_json::to_string(user.jlpt_progress()).unwrap_or_else(|_| "null".to_string());
     let knowledge_set_json = serde_json::to_string(user.knowledge_set())
         .unwrap_or_else(|_| "{\"study_cards\":{},\"lesson_history\":[]}".to_string());
 
     serde_json::json!({
-        "auth_user_id": auth_user_id,
+        "trailbase_id": trailbase_id,
         "username": user.username(),
         "email": user.email(),
         "native_language": i32::from(user.native_language().clone()),
@@ -197,7 +197,7 @@ impl UserRepository for TrailBaseUserRepository {
         }
 
         let api = self.client.records(&self.table_name);
-        let body = user_to_json(user, &session.auth_user_id);
+        let body = user_to_json(user, &session.trailbase_id);
 
         if let Some((_, record_id)) = self.find_current().await? {
             api.update(&record_id.to_string(), &body)
