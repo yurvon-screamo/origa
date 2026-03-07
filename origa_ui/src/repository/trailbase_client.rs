@@ -79,7 +79,7 @@ impl OAuthProvider {
     pub fn as_str(&self) -> &'static str {
         match self {
             OAuthProvider::Google => "google",
-            OAuthProvider::Yandex => "oidc0",
+            OAuthProvider::Yandex => "yandex",
         }
     }
 }
