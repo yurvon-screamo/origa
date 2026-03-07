@@ -32,8 +32,8 @@ pub fn KanjiCardDetails(
     view! {
         <Show when=move || show_details>
             <div class="my-6 space-y-4 max-w-max mx-auto">
-                <ReadingGroup label="音読み" readings=on_readings_stored />
-                <ReadingGroup label="訓読み" readings=kun_readings_stored />
+                <ReadingGroup label="音読み[онъёми]" readings=on_readings_stored />
+                <ReadingGroup label="訓読み[кунъёми]" readings=kun_readings_stored />
 
                 <Show when=move || radicals_stored.get_value().is_some()>
                     <div class="flex gap-4 items-start text-left">
