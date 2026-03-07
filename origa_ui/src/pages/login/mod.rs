@@ -1,6 +1,4 @@
 pub mod auth_handlers;
-pub mod email_input;
-pub mod error_message;
 pub mod header;
 pub mod oauth_buttons;
 

@@ -9,7 +9,7 @@ use origa::domain::User;
 use origa::use_cases::CreateVocabularyCardUseCase;
 
 #[component]
-pub fn AddWordModal(is_open: RwSignal<bool>) -> impl IntoView {
+pub fn AddWordModal() -> impl IntoView {
     let new_word = RwSignal::new(String::new());
     let is_loading = RwSignal::new(false);
     let error_message = RwSignal::new(None::<String>);
@@ -23,7 +23,6 @@ pub fn AddWordModal(is_open: RwSignal<bool>) -> impl IntoView {
         let repository = repository.clone();
         let is_loading = is_loading;
         let new_word = new_word;
-        let is_open = is_open;
         let error_message = error_message;
 
         Callback::new(move |_: leptos::ev::MouseEvent| {
@@ -38,7 +37,6 @@ pub fn AddWordModal(is_open: RwSignal<bool>) -> impl IntoView {
             let current_user_signal = current_user;
             let is_loading_signal = is_loading;
             let new_word_signal = new_word;
-            let is_open_signal = is_open;
             let error_signal = error_message;
 
             is_loading_signal.set(true);
@@ -52,7 +50,6 @@ pub fn AddWordModal(is_open: RwSignal<bool>) -> impl IntoView {
                         is_loading_signal.set(false);
                         update_current_user(repository_clone, current_user_signal);
                         new_word_signal.set(String::new());
-                        is_open_signal.set(false);
                     }
                     Err(e) => {
                         is_loading_signal.set(false);
@@ -65,12 +62,10 @@ pub fn AddWordModal(is_open: RwSignal<bool>) -> impl IntoView {
 
     let on_cancel = Callback::new(move |_: leptos::ev::MouseEvent| {
         error_message.set(None);
-        is_open.set(false);
     });
 
     view! {
         <Modal
-            is_open=is_open
             title=Signal::derive(|| "Добавить слово".to_string())
         >
             <div class="space-y-4">
