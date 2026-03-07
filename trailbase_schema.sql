@@ -13,6 +13,7 @@ CREATE TABLE user (
     telegram_user_id INTEGER,
     reminders_enabled INTEGER NOT NULL DEFAULT 0,
     knowledge_set TEXT CHECK(json_valid(knowledge_set)) NOT NULL DEFAULT '{"study_cards":{},"lesson_history":[]}',
+    imported_sets TEXT CHECK(json_valid(imported_sets)) NOT NULL DEFAULT '[]',
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) STRICT;
 
@@ -21,6 +22,10 @@ CREATE INDEX idx_user_trailbase_id ON user(trailbase_id);
 
 -- Create index for faster lookups by email
 CREATE INDEX idx_user_email ON user(email);
+
+-- Migration: Add imported_sets column to existing tables
+-- Run this if you already have a user table without imported_sets
+-- ALTER TABLE user ADD COLUMN imported_sets TEXT CHECK(json_valid(imported_sets)) NOT NULL DEFAULT '[]';
 
 -- _ROW_.trailbase_id = _USER_.id
 -- _REQ_.trailbase_id = _USER_.id
