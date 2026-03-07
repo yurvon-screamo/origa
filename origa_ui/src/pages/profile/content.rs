@@ -1,4 +1,4 @@
-use super::{ActionButtons, IntegrationsCard, PersonalDataCard, SettingsCard};
+use super::{ActionButtons, PersonalDataCard, SettingsCard};
 use crate::app::{AuthContext, update_current_user};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
@@ -131,7 +131,6 @@ pub fn ProfileContent() -> impl IntoView {
             />
 
             <div class="space-y-4">
-                <IntegrationsCard />
                 <SettingsCard reminders={reminders} />
                 <ActionButtons
                     on_save={save_profile}
