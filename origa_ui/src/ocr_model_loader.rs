@@ -4,6 +4,7 @@ use origa::ocr::{ModelConfig, ModelFiles};
 use wasm_bindgen::JsCast;
 use wasm_bindgen_futures::JsFuture;
 use web_sys::{Cache, Request, RequestInit, RequestMode, Response, Window};
+use tracing::{debug, info};
 
 pub struct ModelLoader {
     config: ModelConfig,
@@ -15,6 +16,7 @@ impl ModelLoader {
     }
 
     pub async fn load_or_download_model(&self) -> Result<ModelFiles, OrigaError> {
+        info!("Loading OCR model: {}", self.config.model_name);
         let window = web_sys::window().ok_or_else(|| OrigaError::OcrError {
             reason: "No window object available".to_string(),
         })?;
@@ -22,8 +24,10 @@ impl ModelLoader {
         let cache = self.get_or_create_cache(&window).await?;
 
         if self.is_model_cached(&cache).await? {
+            info!("Model {} found in cache, loading...", self.config.model_name);
             self.load_from_cache(&cache).await
         } else {
+            info!("Model {} not found in cache, downloading...", self.config.model_name);
             self.download_and_cache_model(&cache).await
         }
     }
@@ -60,6 +64,7 @@ impl ModelLoader {
 
     async fn is_model_cached(&self, cache: &Cache) -> Result<bool, OrigaError> {
         for file in ModelConfig::file_names() {
+            debug!("Checking if {} is cached", file);
             let request = Request::new_with_str(file).map_err(|e| OrigaError::OcrError {
                 reason: format!("Failed to create request: {:?}", e),
             })?;
@@ -80,6 +85,7 @@ impl ModelLoader {
     }
 
     async fn load_from_cache(&self, cache: &Cache) -> Result<ModelFiles, OrigaError> {
+        debug!("Loading files from cache");
         let encoder = self
             .load_file_from_cache(cache, "encoder_model.onnx")
             .await?;
@@ -88,6 +94,7 @@ impl ModelLoader {
             .await?;
         let tokenizer = self.load_file_from_cache(cache, "tokenizer.json").await?;
 
+        info!("Model files loaded successfully from cache");
         Ok(ModelFiles {
             encoder,
             decoder,
@@ -149,6 +156,7 @@ impl ModelLoader {
         filename: &str,
     ) -> Result<(), OrigaError> {
         let url = self.config.model_file_url(filename);
+        info!("Downloading {} from {}", filename, url);
 
         let opts = RequestInit::new();
         opts.set_method("GET");
@@ -193,6 +201,7 @@ impl ModelLoader {
             })?;
 
         let mut data = Uint8Array::new(&array_buffer).to_vec();
+        debug!("Downloaded {} bytes for {}", data.len(), filename);
 
         let cache_request = Request::new_with_str(filename).map_err(|e| OrigaError::OcrError {
             reason: format!("Failed to create cache request: {:?}", e),
@@ -205,6 +214,7 @@ impl ModelLoader {
                     reason: format!("Failed to create cache response: {:?}", e),
                 })?;
 
+        debug!("Caching {}", filename);
         JsFuture::from(cache.put_with_request(&cache_request, &cache_response))
             .await
             .map_err(|e| OrigaError::OcrError {
