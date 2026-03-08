@@ -3,7 +3,9 @@ use crate::ui_components::{
     MarkdownText, MarkdownVariant, ReadingGroup, Text, TextSize, TypographyVariant,
 };
 use leptos::{ev::MouseEvent, prelude::*};
-use origa::domain::User;
+use origa::domain::{GrammarInfo, User};
+
+use super::grammar_info_badge::GrammarInfoBadge;
 
 #[component]
 pub fn LessonCardAnswer(
@@ -17,6 +19,7 @@ pub fn LessonCardAnswer(
     is_reversed: bool,
     on_readings: Option<Vec<String>>,
     kun_readings: Option<Vec<String>>,
+    grammar_info: Option<GrammarInfo>,
 ) -> impl IntoView {
     let current_user = use_context::<RwSignal<Option<User>>>().expect("current_user context");
 
@@ -31,6 +34,7 @@ pub fn LessonCardAnswer(
     let answer = StoredValue::new(answer_text);
     let on_readings_stored = StoredValue::new(on_readings);
     let kun_readings_stored = StoredValue::new(kun_readings);
+    let grammar_info_stored = StoredValue::new(grammar_info);
 
     view! {
         <div class="text-center">
@@ -49,6 +53,19 @@ pub fn LessonCardAnswer(
                         />
                     </Show>
                 </Heading>
+            </Show>
+
+            <Show when=move || grammar_info_stored.get_value().is_some()>
+                {move || {
+                    grammar_info_stored.get_value().map(|info| {
+                        view! {
+                            <GrammarInfoBadge
+                                title=info.title().to_string()
+                                description=info.description().to_string()
+                            />
+                        }
+                    })
+                }}
             </Show>
 
             <div

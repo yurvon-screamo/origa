@@ -6,8 +6,8 @@ use super::on_rate::create_on_rate_callback;
 use super::quiz_card::QuizCardView;
 use super::rating_buttons_view::RatingButtonsView;
 use leptos::prelude::*;
-use origa::domain::LessonCardView;
 use origa::domain::User;
+use origa::domain::{GrammarInfo, LessonCardView, Rating};
 use ulid::Ulid;
 
 #[component]
@@ -67,32 +67,14 @@ pub fn LessonCardContainer() -> impl IntoView {
             <Show when=move || current_card_view.get().is_some()>
                 <Show when=move || !is_quiz_mode.get()>
                     {move || {
-                        current_card_view.get().and_then(|card_view| {
-                            match &card_view {
-                                LessonCardView::Normal(card)
-                                | LessonCardView::Reversed(card)
-                                | LessonCardView::GrammarMutated(card) => {
-                                    let is_reversed = matches!(card_view, LessonCardView::Reversed(_));
-                                    let card = card.clone();
-
-                                    Some(view! {
-                                        <LessonCard
-                                            card=card
-                                            is_reversed=is_reversed
-                                            show_answer=lesson_state.get().showing_answer
-                                            on_show_answer=Callback::new(move |_| show_answer())
-                                        />
-
-                                        <Show when=move || lesson_state.get().showing_answer>
-                                            <RatingButtonsView
-                                                on_rate=on_rate_callback
-                                                disabled=Signal::derive(move || is_rating.get().is_some())
-                                            />
-                                        </Show>
-                                    })
-                                }
-                                _ => None,
-                            }
+                        current_card_view.get().map(|card_view| {
+                            render_lesson_card(
+                                card_view,
+                                lesson_state.get().showing_answer,
+                                Callback::new(move |_| show_answer()),
+                                on_rate_callback,
+                                is_rating,
+                            )
                         })
                     }}
                 </Show>
@@ -121,4 +103,57 @@ pub fn LessonCardContainer() -> impl IntoView {
             </Show>
         </div>
     }
+}
+
+struct LessonCardParams {
+    card: origa::domain::Card,
+    is_reversed: bool,
+    grammar_info: Option<GrammarInfo>,
+}
+
+fn render_lesson_card(
+    card_view: LessonCardView,
+    show_answer: bool,
+    on_show_answer: Callback<()>,
+    on_rate_callback: Callback<Rating>,
+    is_rating: RwSignal<Option<Ulid>>,
+) -> impl IntoView {
+    let params = match card_view {
+        LessonCardView::Normal(card) => LessonCardParams {
+            card,
+            is_reversed: false,
+            grammar_info: None,
+        },
+        LessonCardView::Reversed(card) => LessonCardParams {
+            card,
+            is_reversed: true,
+            grammar_info: None,
+        },
+        LessonCardView::GrammarMutated { card, grammar_info } => LessonCardParams {
+            card,
+            is_reversed: false,
+            grammar_info: Some(grammar_info),
+        },
+        LessonCardView::Quiz(_) => {
+            return view! { <div/> }.into_any();
+        }
+    };
+
+    view! {
+        <LessonCard
+            card=params.card
+            is_reversed=params.is_reversed
+            show_answer=show_answer
+            on_show_answer=on_show_answer
+            grammar_info=params.grammar_info
+        />
+
+        <Show when=move || show_answer>
+            <RatingButtonsView
+                on_rate=on_rate_callback
+                disabled=Signal::derive(move || is_rating.get().is_some())
+            />
+        </Show>
+    }
+    .into_any()
 }

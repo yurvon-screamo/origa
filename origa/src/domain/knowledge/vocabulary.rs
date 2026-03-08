@@ -46,26 +46,16 @@ impl VocabularyCard {
         &self,
         rule: &GrammarRule,
         lang: &NativeLanguage,
-    ) -> Result<Self, OrigaError> {
+    ) -> Result<(Self, String), OrigaError> {
         let formatted_word = rule.format(self.word.text(), &self.part_of_speech()?)?;
-        let meaning = self.meaning.text();
-        let description = rule.content(lang).short_description();
+        let grammar_description = rule.content(lang).short_description().to_string();
 
-        let meaning = match lang {
-            NativeLanguage::Russian => format!(
-                "Слово: {} с примененной грамматической конструкцией: {}",
-                meaning, description
-            ),
-            NativeLanguage::English => format!(
-                "Word: {} with applyed grammar rule: {}",
-                meaning, description
-            ),
+        let card = Self {
+            word: Question::new(formatted_word)?,
+            meaning: self.meaning.clone(),
         };
 
-        Ok(Self {
-            word: Question::new(formatted_word)?,
-            meaning: Answer::new(meaning)?,
-        })
+        Ok((card, grammar_description))
     }
 
     pub fn revert(&self) -> Result<Self, OrigaError> {
