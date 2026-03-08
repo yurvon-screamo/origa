@@ -3,7 +3,7 @@ use leptos::prelude::*;
 
 #[component]
 pub fn GrammarInfoBadge(title: String, description: String) -> impl IntoView {
-    let title_signal = Signal::derive(move || title.clone());
+    let title_signal = Signal::derive(move || format!("С грамматикой {}", title.clone()));
     let description_signal = Signal::derive(move || description.clone());
 
     view! {
