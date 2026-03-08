@@ -190,11 +190,34 @@ impl QuizCard {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct GrammarInfo {
+    title: String,
+    description: String,
+}
+
+impl GrammarInfo {
+    pub fn new(title: String, description: String) -> Self {
+        Self { title, description }
+    }
+
+    pub fn title(&self) -> &str {
+        &self.title
+    }
+
+    pub fn description(&self) -> &str {
+        &self.description
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum LessonCardView {
     Normal(Card),
     Quiz(QuizCard),
     Reversed(Card),
-    GrammarMutated(Card),
+    GrammarMutated {
+        card: Card,
+        grammar_info: GrammarInfo,
+    },
 }
 
 impl LessonCardView {
@@ -202,8 +225,15 @@ impl LessonCardView {
         match self {
             LessonCardView::Normal(card)
             | LessonCardView::Reversed(card)
-            | LessonCardView::GrammarMutated(card) => card,
+            | LessonCardView::GrammarMutated { card, .. } => card,
             LessonCardView::Quiz(quiz) => quiz.card(),
+        }
+    }
+
+    pub fn grammar_info(&self) -> Option<&GrammarInfo> {
+        match self {
+            LessonCardView::GrammarMutated { grammar_info, .. } => Some(grammar_info),
+            _ => None,
         }
     }
 

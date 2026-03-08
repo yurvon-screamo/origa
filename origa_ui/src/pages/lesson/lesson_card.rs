@@ -1,6 +1,6 @@
 use crate::ui_components::{Card, get_reading_from_text, is_speech_supported, speak_text};
 use leptos::prelude::*;
-use origa::domain::Card as DomainCard;
+use origa::domain::{Card as DomainCard, GrammarInfo};
 
 use super::card_type::CardType;
 use super::kanji_card_details::KanjiCardDetails;
@@ -15,6 +15,7 @@ pub fn LessonCard(
     show_answer: bool,
     is_reversed: bool,
     on_show_answer: Callback<()>,
+    grammar_info: Option<GrammarInfo>,
 ) -> impl IntoView {
     let card_type = CardType::from(&card);
     let question = StoredValue::new(card.question().text().to_string());
@@ -138,6 +139,7 @@ pub fn LessonCard(
                         is_reversed=is_reversed
                         on_readings=on_readings_stored.get_value()
                         kun_readings=kun_readings_stored.get_value()
+                        grammar_info=grammar_info.clone()
                     />
 
                     <Show when=move || card_type == CardType::Kanji && is_expanded.get()>
