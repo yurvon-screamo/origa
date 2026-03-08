@@ -1,4 +1,3 @@
-use super::generate_card_content::GenerateCardContentUseCase;
 use crate::domain::{Card, OrigaError, Question, StudyCard, VocabularyCard};
 use crate::traits::UserRepository;
 use tracing::{debug, info};
@@ -17,15 +16,11 @@ pub struct CreateCardsFromAnalysisResult {
 
 pub struct CreateCardsFromAnalysisUseCase<'a, R: UserRepository> {
     repository: &'a R,
-    generate_content_use_case: GenerateCardContentUseCase,
 }
 
 impl<'a, R: UserRepository> CreateCardsFromAnalysisUseCase<'a, R> {
     pub fn new(repository: &'a R) -> Self {
-        Self {
-            repository,
-            generate_content_use_case: GenerateCardContentUseCase::new(),
-        }
+        Self { repository }
     }
 
     pub async fn execute(
@@ -84,12 +79,6 @@ impl<'a, R: UserRepository> CreateCardsFromAnalysisUseCase<'a, R> {
         word: &WordToCreate,
     ) -> Result<StudyCard, OrigaError> {
         let question = Question::new(word.base_form.clone())?;
-
-        let _content = self
-            .generate_content_use_case
-            .generate_content(&word.base_form, user.native_language())
-            .await?;
-
         let vocabulary_card = VocabularyCard::new(question);
         let card = Card::Vocabulary(vocabulary_card);
 

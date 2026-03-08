@@ -1,4 +1,3 @@
-use super::generate_card_content::GenerateCardContentUseCase;
 use crate::domain::OrigaError;
 use crate::domain::Question;
 use crate::domain::tokenize_text;
@@ -10,15 +9,11 @@ use ulid::Ulid;
 #[derive(Clone)]
 pub struct CreateVocabularyCardUseCase<'a, R: UserRepository> {
     repository: &'a R,
-    generate_content_use_case: GenerateCardContentUseCase,
 }
 
 impl<'a, R: UserRepository> CreateVocabularyCardUseCase<'a, R> {
     pub fn new(repository: &'a R) -> Self {
-        Self {
-            repository,
-            generate_content_use_case: GenerateCardContentUseCase::new(),
-        }
+        Self { repository }
     }
 
     pub fn repository(&self) -> &'a R {
@@ -65,10 +60,6 @@ impl<'a, R: UserRepository> CreateVocabularyCardUseCase<'a, R> {
 
             let question_text = token.orthographic_base_form();
             let question = Question::new(question_text.to_string())?;
-            let _content = self
-                .generate_content_use_case
-                .generate_content(question_text, user.native_language())
-                .await?;
 
             let vocabulary_card = VocabularyCard::new(question);
             let card = Card::Vocabulary(vocabulary_card);
