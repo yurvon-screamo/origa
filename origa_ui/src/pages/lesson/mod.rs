@@ -1,6 +1,7 @@
 mod card_type;
 mod complete_screen;
 mod content;
+mod grammar_info_badge;
 mod header;
 mod kanji_card_details;
 mod keyboard_handler;

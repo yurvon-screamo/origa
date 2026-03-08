@@ -4,7 +4,7 @@ mod grammar;
 mod kanji;
 mod vocabulary;
 
-pub use card::{Card, CardType, LessonCardView, QuizCard, QuizOption, StudyCard};
+pub use card::{Card, CardType, GrammarInfo, LessonCardView, QuizCard, QuizOption, StudyCard};
 pub use daily_history::DailyHistoryItem;
 pub use grammar::GrammarRuleCard;
 pub use kanji::{ExampleKanjiWord, KanjiCard};
@@ -24,6 +24,10 @@ use ulid::Ulid;
 
 const NEW_CARDS_LIMIT: usize = 7;
 const HARD_CARDS_LIMIT: usize = 15;
+
+const PROB_NORMAL_VIEW: f32 = 0.25;
+const PROB_QUIZ_VIEW: f32 = 0.5;
+const PROB_REVERSED_VIEW: f32 = 0.75;
 
 fn select_applicable_grammar(
     vocab: &VocabularyCard,
@@ -307,11 +311,11 @@ impl KnowledgeSet {
 
             (CardType::Vocabulary, false) => {
                 let rand_val = rand::random::<f32>();
-                if rand_val < 0.25 {
+                if rand_val < PROB_NORMAL_VIEW {
                     LessonCardView::Normal(card.clone())
-                } else if rand_val < 0.5 {
+                } else if rand_val < PROB_QUIZ_VIEW {
                     LessonCardView::generate_quiz(card.clone(), same_type_cards)
-                } else if rand_val < 0.75 {
+                } else if rand_val < PROB_REVERSED_VIEW {
                     Self::apply_reversed(card)
                 } else {
                     Self::apply_grammar_mutated(card, known_grammars, lang)
@@ -341,8 +345,15 @@ impl KnowledgeSet {
                     let rule = get_rule_by_id(grammar_card.rule_id());
                     match rule {
                         Some(r) => match vocab.with_grammar_rule(r, lang) {
-                            Ok(mutated) => {
-                                LessonCardView::GrammarMutated(Card::Vocabulary(mutated))
+                            Ok((mutated, grammar_description)) => {
+                                let grammar_info = GrammarInfo::new(
+                                    grammar_card.title().text().to_string(),
+                                    grammar_description,
+                                );
+                                LessonCardView::GrammarMutated {
+                                    card: Card::Vocabulary(mutated),
+                                    grammar_info,
+                                }
                             }
                             Err(_) => LessonCardView::Normal(card.clone()),
                         },
@@ -755,7 +766,7 @@ mod tests {
             let result =
                 KnowledgeSet::apply_view(&study_kanji, &cards_by_type, &known_grammars, &lang);
             assert!(!matches!(result, LessonCardView::Reversed(_)));
-            assert!(!matches!(result, LessonCardView::GrammarMutated(_)));
+            assert!(!matches!(result, LessonCardView::GrammarMutated { .. }));
         }
     }
 
@@ -772,7 +783,7 @@ mod tests {
             let result =
                 KnowledgeSet::apply_view(&study_card, &cards_by_type, &known_grammars, &lang);
             assert!(!matches!(result, LessonCardView::Reversed(_)));
-            assert!(!matches!(result, LessonCardView::GrammarMutated(_)));
+            assert!(!matches!(result, LessonCardView::GrammarMutated { .. }));
         }
     }
 
@@ -786,7 +797,10 @@ mod tests {
         let reversed = LessonCardView::Reversed(vocab.clone());
         assert_eq!(reversed.card(), &vocab);
 
-        let mutated = LessonCardView::GrammarMutated(vocab.clone());
+        let mutated = LessonCardView::GrammarMutated {
+            card: vocab.clone(),
+            grammar_info: GrammarInfo::new("Test".to_string(), "Test description".to_string()),
+        };
         assert_eq!(mutated.card(), &vocab);
 
         let quiz = LessonCardView::Quiz(QuizCard::new(vocab.clone(), vec![]));
@@ -1048,5 +1062,51 @@ mod tests {
 
         let history_item = &knowledge_set.lesson_history()[0];
         assert_eq!(history_item.lessons_completed(), 1);
+    }
+
+    #[test]
+    fn grammar_info_new_creates_instance() {
+        let info = GrammarInfo::new("Title".to_string(), "Description".to_string());
+        assert_eq!(info.title(), "Title");
+        assert_eq!(info.description(), "Description");
+    }
+
+    #[test]
+    fn grammar_info_returns_correct_data() {
+        let info = GrammarInfo::new(
+            "て-form".to_string(),
+            "Форма для соединения глаголов".to_string(),
+        );
+        assert_eq!(info.title(), "て-form");
+        assert_eq!(info.description(), "Форма для соединения глаголов");
+    }
+
+    #[test]
+    fn vocabulary_with_grammar_rule_returns_tuple_with_unchanged_meaning() {
+        let vocab = VocabularyCard::new(
+            Question::new("食べる".to_string()).unwrap(),
+            Answer::new("есть".to_string()).unwrap(),
+        );
+
+        let original_meaning = vocab.meaning().text().to_string();
+
+        let known_grammars = vec![create_grammar_card("て-form", vec![PartOfSpeech::Verb])];
+        let lang = NativeLanguage::Russian;
+
+        let result = KnowledgeSet::apply_grammar_mutated(
+            &Card::Vocabulary(vocab.clone()),
+            &known_grammars,
+            &lang,
+        );
+
+        if let LessonCardView::GrammarMutated { card, grammar_info } = result {
+            if let Card::Vocabulary(mutated) = card {
+                assert_eq!(mutated.meaning().text(), original_meaning);
+                assert!(!grammar_info.title().is_empty());
+                assert!(!grammar_info.description().is_empty());
+            } else {
+                panic!("Expected Vocabulary card");
+            }
+        }
     }
 }
