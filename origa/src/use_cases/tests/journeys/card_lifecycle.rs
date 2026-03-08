@@ -151,7 +151,7 @@ async fn knowledge_set_cards_returns_all_cards() {
             None,
         );
         for i in 0..5 {
-            let card = create_test_vocab_card(&format!("word_{}", i), &format!("meaning_{}", i));
+            let card = create_test_vocab_card(&format!("word_{}", i));
             u.create_card(card).unwrap();
         }
         u
@@ -178,7 +178,7 @@ async fn toggle_favorite_sets_favorite_true() {
             NativeLanguage::Russian,
             None,
         );
-        let card = create_test_vocab_card("word", "meaning");
+        let card = create_test_vocab_card("word");
         u.create_card(card).unwrap();
         u
     };
@@ -214,7 +214,7 @@ async fn toggle_favorite_toggles_flag() {
             NativeLanguage::Russian,
             None,
         );
-        let card = create_test_vocab_card("word", "meaning");
+        let card = create_test_vocab_card("word");
         u.create_card(card).unwrap();
         u
     };
@@ -252,7 +252,7 @@ async fn delete_card_removes_from_knowledge_set() {
             NativeLanguage::Russian,
             None,
         );
-        let card = create_test_vocab_card("word", "meaning");
+        let card = create_test_vocab_card("word");
         u.create_card(card).unwrap();
         u
     };

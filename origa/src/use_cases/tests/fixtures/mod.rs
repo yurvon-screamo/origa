@@ -19,7 +19,7 @@ pub fn get_public_dir() -> PathBuf {
         .join("public")
 }
 
-pub fn create_test_vocab_card(word: &str, _meaning: &str) -> Card {
+pub fn create_test_vocab_card(word: &str) -> Card {
     Card::Vocabulary(VocabularyCard::new(
         Question::new(word.to_string()).expect("Failed to create Question"),
     ))
@@ -38,8 +38,7 @@ pub fn create_user_with_vocab_cards(count: usize) -> User {
 
     for i in 0..count {
         let word = format!("word_{}", i);
-        let meaning = format!("meaning_{}", i);
-        let card = create_test_vocab_card(&word, &meaning);
+        let card = create_test_vocab_card(&word);
         user.create_card(card).expect("Failed to create card");
     }
 
