@@ -29,8 +29,8 @@ pub use japanese::{JapaneseChar, JapaneseText, filter_japanese_text};
 pub use jlpt_content::{JlptContent, JlptContentError};
 pub use jlpt_progress::{CategoryProgress, JlptProgress, LevelProgressDetail};
 pub use knowledge::{
-    Card, CardType, DailyHistoryItem, ExampleKanjiWord, GrammarRuleCard, KanjiCard, KnowledgeSet,
-    LessonCardView, QuizCard, QuizOption, StudyCard, VocabularyCard,
+    Card, CardType, DailyHistoryItem, ExampleKanjiWord, GrammarInfo, GrammarRuleCard, KanjiCard,
+    KnowledgeSet, LessonCardView, QuizCard, QuizOption, StudyCard, VocabularyCard,
 };
 pub use memory::{Difficulty, MemoryHistory, MemoryState, Rating, ReviewLog, Stability};
 pub use score_content::ScoreContentResult;
