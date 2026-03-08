@@ -21,8 +21,12 @@ pub fn init_grammar_rules(data: GrammarData) -> Result<(), OrigaError> {
         serde_json::from_str(&data.grammar_json).map_err(|e| OrigaError::GrammarParseError {
             reason: format!("Failed to parse grammar.json: {}", e),
         })?;
-    let _ = GRAMMAR_RULES.set(content.grammar);
-    Ok(())
+
+    GRAMMAR_RULES
+        .set(content.grammar)
+        .map_err(|_| OrigaError::GrammarParseError {
+            reason: "Failed to set grammar rules".to_string(),
+        })
 }
 
 pub fn is_grammar_loaded() -> bool {
