@@ -265,7 +265,7 @@ impl User {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::domain::value_objects::{Answer, Question};
+    use crate::domain::value_objects::Question;
     use crate::domain::{RateMode, VocabularyCard};
 
     fn create_test_vocab_card(word: &str) -> Card {
