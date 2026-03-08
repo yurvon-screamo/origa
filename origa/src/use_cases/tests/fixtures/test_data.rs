@@ -1,8 +1,8 @@
 use std::sync::Once;
 
 use crate::domain::{
-    init_kanji_dictionary, init_vocabulary_dictionary, Answer, Card, KanjiCard, KanjiData,
-    NativeLanguage, Question, User, VocabularyCard, VocabularyChunkData,
+    Answer, Card, KanjiCard, KanjiData, NativeLanguage, Question, User, VocabularyCard,
+    VocabularyChunkData, init_kanji_dictionary, init_vocabulary_dictionary,
 };
 
 static INIT: Once = Once::new();
