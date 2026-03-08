@@ -35,17 +35,34 @@ cd tauri && cargo tauri dev               # Tauri development
 ## Test Commands
 
 ```bash
-cargo test                              # All unit tests
-cargo test -p origa                     # Tests for specific crate
+cargo test                              # All tests (unit + integration)
+cargo test -p origa                     # Tests for origa crate (132 unit + 8 integration)
+cargo test --test integration_tests     # Integration tests only (loads real dictionaries)
 cargo test test_name                    # Single test by name
 cargo test -p origa -- mod::test_name   # Test in specific module
 cargo test -- --nocapture               # With output
 cargo test --target wasm32-unknown-unknown  # WASM tests (origa_ui)
-
 npm test                                # All e2e tests
-npx playwright test journeys/full-learning-cycle.spec.ts  # Single file
+npx playwright test journeys/full-learning-cycle.spec.ts  # Single e2e file
 npm run test:ui                         # Playwright UI mode
 ```
+
+### Test Structure
+
+**Unit tests** (`origa/src/use_cases/tests/`):
+- `journeys/onboarding.rs` - 5 tests (user creation, profile)
+- `journeys/card_lifecycle.rs` - 10 tests (kanji, favorites, delete)
+- `journeys/learning_lesson.rs` - 8 tests (standard lesson rating)
+- `journeys/learning_fixation.rs` - 7 tests (fixation lesson rating)
+
+**Integration tests** (`origa/tests/integration_tests.rs`):
+- Loads real dictionaries from `origa_ui/public/domain/`
+- Tests: grammar rules, kanji list, well-known sets
+
+**Test principles** (Vladimir Khorikov):
+- Test behavior, not implementation (black box)
+- Mocks only for external dependencies
+- Use real objects for internal collaborators
 
 ## Code Style Guidelines
 
@@ -135,12 +152,6 @@ pub trait UserRepository {
 
 - Use `tracing` crate with macros: `debug!`, `info!`, `warn!`, `error!`
 - Include structured fields: `debug!(user_id = %user_id, "Processing user")`
-
-### Testing
-
-- Use `rstest` for parameterized tests
-- Place unit tests in same file with `#[cfg(test)] mod tests`
-- Test names describe behavior: `user_new_creates_default_jlpt_progress`
 
 ## UI Component Library (origa_ui)
 
