@@ -2,6 +2,8 @@ use crate::domain::OrigaError;
 use serde::{Deserialize, Serialize};
 use std::{fmt, str::FromStr};
 
+pub const FALLBACK_ANSWER: &str = "—";
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Question {
     text: String,
@@ -130,7 +132,7 @@ impl From<JapaneseLevel> for i32 {
     }
 }
 
-#[derive(Hash, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Hash, Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum NativeLanguage {
     English,
     Russian,

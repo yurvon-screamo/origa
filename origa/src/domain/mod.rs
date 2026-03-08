@@ -39,4 +39,4 @@ pub use tokenizer::{
     DictionaryData, PartOfSpeech, TokenInfo, init_dictionary, is_dictionary_loaded, tokenize_text,
 };
 pub use user::User;
-pub use value_objects::{Answer, JapaneseLevel, NativeLanguage, Question};
+pub use value_objects::{Answer, FALLBACK_ANSWER, JapaneseLevel, NativeLanguage, Question};
