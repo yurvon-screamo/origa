@@ -23,6 +23,9 @@ mod select_cards_to_lesson;
 mod toggle_favorite;
 mod update_user_profile;
 
+#[cfg(test)]
+mod tests;
+
 pub use analyze_text_for_cards::{AnalyzeTextForCardsUseCase, AnalyzeTextResult, AnalyzedWord};
 pub use create_cards_from_analysis::{
     CreateCardsFromAnalysisResult, CreateCardsFromAnalysisUseCase, WordToCreate,
