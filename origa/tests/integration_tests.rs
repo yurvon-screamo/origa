@@ -2,16 +2,16 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex, Once};
 
+use origa::domain::Card;
 use origa::domain::{
-    init_grammar_rules, init_kanji_dictionary, init_vocabulary_dictionary, iter_grammar_rules,
     GrammarData, JapaneseLevel, KanjiData, NativeLanguage, OrigaError, User, VocabularyChunkData,
+    init_grammar_rules, init_kanji_dictionary, init_vocabulary_dictionary, iter_grammar_rules,
 };
 use origa::traits::{UserRepository, WellKnownSet, WellKnownSetLoader, WellKnownSetMeta};
 use origa::use_cases::{
     CreateGrammarCardUseCase, GrammarRuleInfoUseCase, ImportWellKnownSetUseCase,
     KanjiInfoListUseCase, ListWellKnownSetsUseCase,
 };
-use origa::domain::Card;
 use ulid::Ulid;
 
 static INIT: Once = Once::new();
@@ -29,7 +29,10 @@ fn init_real_dictionaries() {
     INIT.call_once(|| {
         let public_dir = get_public_dir();
 
-        let vocab_dir = public_dir.join("domain").join("dictionary").join("vocabulary");
+        let vocab_dir = public_dir
+            .join("domain")
+            .join("dictionary")
+            .join("vocabulary");
         let vocab_data = VocabularyChunkData {
             chunk_01: std::fs::read_to_string(vocab_dir.join("chunk_01.json")).expect("chunk_01"),
             chunk_02: std::fs::read_to_string(vocab_dir.join("chunk_02.json")).expect("chunk_02"),
@@ -54,7 +57,10 @@ fn init_real_dictionaries() {
         };
         init_kanji_dictionary(kanji_data).expect("Failed to init kanji");
 
-        let grammar_path = public_dir.join("domain").join("grammar").join("grammar.json");
+        let grammar_path = public_dir
+            .join("domain")
+            .join("grammar")
+            .join("grammar.json");
         let grammar_data = GrammarData {
             grammar_json: std::fs::read_to_string(grammar_path).expect("grammar.json"),
         };
@@ -129,24 +135,40 @@ async fn grammar_rules_loads_from_real_file() {
     let rules: Vec<_> = iter_grammar_rules().collect();
     assert!(!rules.is_empty(), "Grammar rules should not be empty");
 
-    let n5_rules: Vec<_> = rules.iter().filter(|r| r.level() == &JapaneseLevel::N5).collect();
+    let n5_rules: Vec<_> = rules
+        .iter()
+        .filter(|r| r.level() == &JapaneseLevel::N5)
+        .collect();
     assert!(!n5_rules.is_empty(), "Should have N5 grammar rules");
 
     let first_n5 = n5_rules.first().unwrap();
-    assert!(!first_n5.content(&NativeLanguage::Russian).title().is_empty());
+    assert!(
+        !first_n5
+            .content(&NativeLanguage::Russian)
+            .title()
+            .is_empty()
+    );
 }
 
 #[tokio::test]
 async fn grammar_rule_info_returns_rules_for_level() {
     init_real_dictionaries();
 
-    let user = User::new("test@example.com".to_string(), NativeLanguage::Russian, None);
+    let user = User::new(
+        "test@example.com".to_string(),
+        NativeLanguage::Russian,
+        None,
+    );
     let repo = InMemoryUserRepository::with_user(user);
     let use_case = GrammarRuleInfoUseCase::new(&repo);
 
     let user_id = repo.users.lock().unwrap().keys().next().copied().unwrap();
     let result = use_case
-        .execute(user_id, &JapaneseLevel::N5, &std::collections::HashSet::new())
+        .execute(
+            user_id,
+            &JapaneseLevel::N5,
+            &std::collections::HashSet::new(),
+        )
         .await
         .unwrap();
 
@@ -162,7 +184,11 @@ async fn grammar_rule_info_returns_rules_for_level() {
 async fn create_grammar_card_creates_from_real_rule() {
     init_real_dictionaries();
 
-    let user = User::new("test@example.com".to_string(), NativeLanguage::Russian, None);
+    let user = User::new(
+        "test@example.com".to_string(),
+        NativeLanguage::Russian,
+        None,
+    );
     let user_id = user.id();
     let repo = InMemoryUserRepository::with_user(user);
     let use_case = CreateGrammarCardUseCase::new(&repo);
@@ -177,14 +203,23 @@ async fn create_grammar_card_creates_from_real_rule() {
     assert_eq!(cards.len(), 1);
 
     let saved_user = repo.find_by_id(user_id).await.unwrap().unwrap();
-    assert!(saved_user.knowledge_set().study_cards().contains_key(&cards[0].card_id()));
+    assert!(
+        saved_user
+            .knowledge_set()
+            .study_cards()
+            .contains_key(&cards[0].card_id())
+    );
 }
 
 #[tokio::test]
 async fn kanji_list_returns_real_kanji_for_level() {
     init_real_dictionaries();
 
-    let user = User::new("test@example.com".to_string(), NativeLanguage::Russian, None);
+    let user = User::new(
+        "test@example.com".to_string(),
+        NativeLanguage::Russian,
+        None,
+    );
     let repo = InMemoryUserRepository::with_user(user);
     let use_case = KanjiInfoListUseCase::new(&repo);
 
@@ -198,10 +233,15 @@ async fn kanji_list_returns_real_kanji_for_level() {
 async fn kanji_list_excludes_learned_kanji() {
     init_real_dictionaries();
 
-    let mut user = User::new("test@example.com".to_string(), NativeLanguage::Russian, None);
+    let mut user = User::new(
+        "test@example.com".to_string(),
+        NativeLanguage::Russian,
+        None,
+    );
     let user_id = user.id();
 
-    let kanji_card = origa::domain::KanjiCard::new("一".to_string(), &NativeLanguage::Russian).unwrap();
+    let kanji_card =
+        origa::domain::KanjiCard::new("一".to_string(), &NativeLanguage::Russian).unwrap();
     user.create_card(Card::Kanji(kanji_card)).unwrap();
 
     let repo = InMemoryUserRepository::with_user(user);
@@ -227,10 +267,15 @@ impl FileWellKnownSetLoader {
 
 impl WellKnownSetLoader for FileWellKnownSetLoader {
     async fn load_meta_list(&self) -> Result<Vec<WellKnownSetMeta>, OrigaError> {
-        let path = self.public_dir.join("domain").join("well_known_set").join("well_known_sets_meta.json");
-        let json = std::fs::read_to_string(&path).map_err(|e| OrigaError::WellKnownSetParseError {
-            reason: format!("Failed to read meta list: {}", e),
-        })?;
+        let path = self
+            .public_dir
+            .join("domain")
+            .join("well_known_set")
+            .join("well_known_sets_meta.json");
+        let json =
+            std::fs::read_to_string(&path).map_err(|e| OrigaError::WellKnownSetParseError {
+                reason: format!("Failed to read meta list: {}", e),
+            })?;
         serde_json::from_str(&json).map_err(|e| OrigaError::WellKnownSetParseError {
             reason: format!("Failed to parse meta list: {}", e),
         })
@@ -244,13 +289,15 @@ impl WellKnownSetLoader for FileWellKnownSetLoader {
         }
 
         let path = self.id_to_path(&id);
-        let json = std::fs::read_to_string(&path).map_err(|e| OrigaError::WellKnownSetParseError {
-            reason: format!("Failed to read set {}: {}", id, e),
-        })?;
-        
-        let data: SetData = serde_json::from_str(&json).map_err(|e| OrigaError::WellKnownSetParseError {
-            reason: format!("Failed to parse set {}: {}", id, e),
-        })?;
+        let json =
+            std::fs::read_to_string(&path).map_err(|e| OrigaError::WellKnownSetParseError {
+                reason: format!("Failed to read set {}: {}", id, e),
+            })?;
+
+        let data: SetData =
+            serde_json::from_str(&json).map_err(|e| OrigaError::WellKnownSetParseError {
+                reason: format!("Failed to parse set {}: {}", id, e),
+            })?;
 
         Ok(WellKnownSet::new(data.level, data.words))
     }
@@ -304,7 +351,11 @@ async fn load_well_known_set_n5_returns_words() {
 async fn well_known_set_preview_shows_known_words() {
     init_real_dictionaries();
 
-    let mut user = User::new("test@example.com".to_string(), NativeLanguage::Russian, None);
+    let mut user = User::new(
+        "test@example.com".to_string(),
+        NativeLanguage::Russian,
+        None,
+    );
     let user_id = user.id();
 
     let loader = FileWellKnownSetLoader::new();
@@ -317,5 +368,8 @@ async fn well_known_set_preview_shows_known_words() {
         .unwrap();
 
     assert!(!preview.words.is_empty(), "Preview should have words");
-    assert_eq!(preview.known_count, 0, "New user should have no known words");
+    assert_eq!(
+        preview.known_count, 0,
+        "New user should have no known words"
+    );
 }
