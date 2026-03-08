@@ -44,7 +44,7 @@ impl<'a, R: UserRepository> GetUserInfoUseCase<'a, R> {
             id: user.id(),
             username: user.username().to_string(),
             current_japanese_level: user.current_japanese_level(),
-            native_language: user.native_language().clone(),
+            native_language: *user.native_language(),
             jlpt_progress: user.jlpt_progress().clone(),
             lesson_history: user.knowledge_set().lesson_history().to_vec(),
             telegram_user_id: user.telegram_user_id().copied(),

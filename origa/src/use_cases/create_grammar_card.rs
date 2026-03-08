@@ -1,5 +1,4 @@
 use crate::domain::OrigaError;
-use crate::domain::get_rule_by_id;
 use crate::domain::{Card, GrammarRuleCard, StudyCard};
 use crate::traits::UserRepository;
 use tracing::{debug, info};
@@ -30,10 +29,7 @@ impl<'a, R: UserRepository> CreateGrammarCardUseCase<'a, R> {
 
         let mut cards = vec![];
         for id in rule_ids {
-            let rule = get_rule_by_id(&id).ok_or_else(|| OrigaError::RepositoryError {
-                reason: format!("Grammar rule {} not found", id),
-            })?;
-            let card = Card::Grammar(GrammarRuleCard::new(rule, user.native_language())?);
+            let card = Card::Grammar(GrammarRuleCard::new(id)?);
             let created = user.create_card(card)?;
             info!(card_id = %created.card_id(), "Grammar card created");
             cards.push(created);

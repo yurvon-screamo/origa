@@ -35,11 +35,10 @@ cd tauri && cargo tauri dev               # Tauri development
 ## Test Commands
 
 ```bash
-cargo test                              # All tests (unit + integration)
-cargo test -p origa                     # Tests for origa crate (132 unit + 8 integration)
-cargo test --test integration_tests     # Integration tests only (loads real dictionaries)
+cargo test                              # All tests
+cargo test -p origa                     # Tests for origa crate (137 tests)
 cargo test test_name                    # Single test by name
-cargo test -p origa -- mod::test_name   # Test in specific module
+cargo test -p origa -- journeys::test_name  # Test in specific journey
 cargo test -- --nocapture               # With output
 cargo test --target wasm32-unknown-unknown  # WASM tests (origa_ui)
 npm test                                # All e2e tests
@@ -49,20 +48,23 @@ npm run test:ui                         # Playwright UI mode
 
 ### Test Structure
 
-**Unit tests** (`origa/src/use_cases/tests/`):
-- `journeys/onboarding.rs` - 5 tests (user creation, profile)
-- `journeys/card_lifecycle.rs` - 10 tests (kanji, favorites, delete)
-- `journeys/learning_lesson.rs` - 8 tests (standard lesson rating)
-- `journeys/learning_fixation.rs` - 7 tests (fixation lesson rating)
+**Journey tests** (`origa/src/use_cases/tests/journeys/`):
+- `onboarding.rs` - 5 tests (user creation, profile)
+- `card_lifecycle.rs` - 13 tests (kanji, favorites, delete, well-known sets)
+- `grammar.rs` - 3 tests (grammar rules loading and card creation)
+- `learning_lesson.rs` - 8 tests (standard lesson rating)
+- `learning_fixation.rs` - 7 tests (fixation lesson rating)
 
-**Integration tests** (`origa/tests/integration_tests.rs`):
-- Loads real dictionaries from `origa_ui/public/domain/`
-- Tests: grammar rules, kanji list, well-known sets
+**Fixtures** (`origa/src/use_cases/tests/fixtures/`):
+- `InMemoryUserRepository` - in-memory user storage
+- `FileWellKnownSetLoader` - loads well-known sets from `origa_ui/public/`
+- `init_real_dictionaries()` - loads vocabulary, kanji, grammar from files
 
 **Test principles** (Vladimir Khorikov):
 - Test behavior, not implementation (black box)
 - Mocks only for external dependencies
 - Use real objects for internal collaborators
+- All tests use real dictionaries from `origa_ui/public/domain/`
 
 ## Code Style Guidelines
 
@@ -215,3 +217,19 @@ pub fn Button(
 - Run `npm test` for e2e tests after UI changes
 - Use existing `ui_components/` instead of custom HTML
 - Run `cargo clippy` before committing
+
+## Architecture Notes
+
+### Card Storage Strategy
+
+All card types (Vocabulary, Kanji, Grammar) store only minimal key data and fetch details from dictionaries at runtime:
+
+**VocabularyCard**: stores `word: Question`, optional `original_word: Question` (for reversed mode)
+**KanjiCard**: stores only `kanji: Question`
+**GrammarRuleCard**: stores only `rule_id: Ulid`
+
+Methods like `answer()`, `question()`, `description()`, `example_words()` fetch data dynamically from dictionaries. This eliminates data duplication and ensures consistency with dictionary updates.
+
+**Constants**: `FALLBACK_ANSWER = "—"` used for missing translations/descriptions
+
+**Shared utilities**: `is_word_known()` in `use_cases/shared.rs` checks if a word exists in user's vocabulary

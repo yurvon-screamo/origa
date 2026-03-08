@@ -1,17 +1,13 @@
 use crate::domain::{
-    Answer, OrigaError, Question,
-    dictionary::{RadicalInfo, get_kanji_info, get_radical_info, get_translation},
+    dictionary::{get_kanji_info, get_radical_info, get_translation, RadicalInfo},
     value_objects::{JapaneseLevel, NativeLanguage},
+    Answer, OrigaError, Question, FALLBACK_ANSWER,
 };
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct KanjiCard {
     kanji: Question,
-    description: Answer,
-    example_words: Vec<ExampleKanjiWord>,
-    on_readings: Vec<String>,
-    kun_readings: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -21,31 +17,10 @@ pub struct ExampleKanjiWord {
 }
 
 impl KanjiCard {
-    pub fn new(kanji: String, native_language: &NativeLanguage) -> Result<Self, OrigaError> {
-        let kanji_info = get_kanji_info(&kanji)?;
-        let description = kanji_info.description();
-        let example_words = kanji_info
-            .popular_words()
-            .iter()
-            .map(|word| {
-                let meaning = get_translation(word, native_language).unwrap_or_default();
-
-                ExampleKanjiWord {
-                    word: word.clone(),
-                    meaning,
-                }
-            })
-            .collect();
-
-        let on_readings = kanji_info.on_readings().to_vec();
-        let kun_readings = kanji_info.kun_readings().to_vec();
-
+    pub fn new(kanji: String) -> Result<Self, OrigaError> {
+        get_kanji_info(&kanji)?;
         Ok(Self {
-            kanji: Question::new(kanji.to_string())?,
-            description: Answer::new(description.to_string())?,
-            example_words,
-            on_readings,
-            kun_readings,
+            kanji: Question::new(kanji)?,
         })
     }
 
@@ -53,12 +28,34 @@ impl KanjiCard {
         &self.kanji
     }
 
-    pub fn description(&self) -> &Answer {
-        &self.description
+    pub fn description(&self) -> Answer {
+        get_kanji_info(self.kanji.text())
+            .map(|info| {
+                Answer::new(info.description().to_string())
+                    .unwrap_or_else(|_| Answer::new(FALLBACK_ANSWER.to_string()).unwrap())
+            })
+            .unwrap_or_else(|_| Answer::new(FALLBACK_ANSWER.to_string()).unwrap())
     }
 
-    pub fn example_words(&self) -> &[ExampleKanjiWord] {
-        &self.example_words
+    pub fn example_words(&self, lang: &NativeLanguage) -> Vec<ExampleKanjiWord> {
+        get_kanji_info(self.kanji.text())
+            .map(|info| {
+                info.popular_words()
+                    .iter()
+                    .filter_map(|word| {
+                        let meaning = get_translation(word, lang).unwrap_or_default();
+                        if meaning.is_empty() {
+                            None
+                        } else {
+                            Some(ExampleKanjiWord {
+                                word: word.clone(),
+                                meaning,
+                            })
+                        }
+                    })
+                    .collect()
+            })
+            .unwrap_or_default()
     }
 
     pub fn jlpt(&self) -> JapaneseLevel {
@@ -82,12 +79,16 @@ impl KanjiCard {
             .collect()
     }
 
-    pub fn on_readings(&self) -> &[String] {
-        &self.on_readings
+    pub fn on_readings(&self) -> Vec<String> {
+        get_kanji_info(self.kanji.text())
+            .map(|info| info.on_readings().to_vec())
+            .unwrap_or_default()
     }
 
-    pub fn kun_readings(&self) -> &[String] {
-        &self.kun_readings
+    pub fn kun_readings(&self) -> Vec<String> {
+        get_kanji_info(self.kanji.text())
+            .map(|info| info.kun_readings().to_vec())
+            .unwrap_or_default()
     }
 }
 
@@ -103,13 +104,9 @@ impl ExampleKanjiWord {
 
 impl KanjiCard {
     #[cfg(test)]
-    pub fn new_test(kanji: String, description: String) -> Self {
+    pub fn new_test(kanji: String) -> Self {
         Self {
             kanji: Question::new(kanji).unwrap(),
-            description: Answer::new(description).unwrap(),
-            example_words: vec![],
-            on_readings: vec![],
-            kun_readings: vec![],
         }
     }
 }
