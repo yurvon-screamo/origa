@@ -8,7 +8,7 @@ pub use real_dictionaries::init_real_dictionaries;
 
 use std::path::PathBuf;
 
-use crate::domain::{Answer, Card, KanjiCard, NativeLanguage, Question, User, VocabularyCard};
+use crate::domain::{Card, KanjiCard, NativeLanguage, Question, User, VocabularyCard};
 
 pub fn get_public_dir() -> PathBuf {
     let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR not set");
