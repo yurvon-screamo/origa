@@ -20,6 +20,7 @@ mod list_well_known_sets;
 mod rate_card;
 mod select_cards_to_fixation;
 mod select_cards_to_lesson;
+mod shared;
 mod toggle_favorite;
 mod update_user_profile;
 

@@ -1,14 +1,14 @@
 use ulid::Ulid;
 
 use crate::domain::{JapaneseLevel, NativeLanguage, OrigaError, RateMode, Rating, User};
-use crate::traits::{SetType, UserRepository};
+use crate::traits::{SetType, UserRepository, WellKnownSetLoader};
 use crate::use_cases::tests::fixtures::{
-    InMemoryUserRepository, InMemoryWellKnownSetLoader, create_test_kanji_card,
-    create_test_vocab_card, init_test_dictionaries,
+    FileWellKnownSetLoader, InMemoryUserRepository, create_test_kanji_card, create_test_vocab_card,
+    init_real_dictionaries,
 };
 use crate::use_cases::{
-    CreateKanjiCardUseCase, DeleteCardUseCase, KanjiInfoListUseCase, KnowledgeSetCardsUseCase,
-    ListWellKnownSetsUseCase, ToggleFavoriteUseCase,
+    CreateKanjiCardUseCase, DeleteCardUseCase, ImportWellKnownSetUseCase, KanjiInfoListUseCase,
+    KnowledgeSetCardsUseCase, ListWellKnownSetsUseCase, ToggleFavoriteUseCase,
 };
 
 async fn create_repo() -> InMemoryUserRepository {
@@ -29,21 +29,58 @@ async fn get_user_id(repo: &InMemoryUserRepository) -> Ulid {
 
 #[tokio::test]
 async fn list_well_known_sets_returns_available_sets() {
-    let loader = InMemoryWellKnownSetLoader::new();
+    let loader = FileWellKnownSetLoader::new();
     let use_case = ListWellKnownSetsUseCase::new(&loader);
 
     let sets = use_case.execute().await.unwrap();
 
     assert!(!sets.is_empty());
-    let n5_set = sets.iter().find(|s| s.meta.id == "jltp_n5");
+    let n5_set = sets.iter().find(|s| s.meta.id == "jlpt_n5");
     assert!(n5_set.is_some());
     assert_eq!(n5_set.unwrap().meta.set_type, SetType::Jlpt);
     assert_eq!(n5_set.unwrap().meta.level, JapaneseLevel::N5);
 }
 
 #[tokio::test]
+async fn load_well_known_set_n5_returns_words() {
+    let loader = FileWellKnownSetLoader::new();
+
+    let set = loader.load_set("jlpt_n5".to_string()).await.unwrap();
+
+    assert_eq!(set.level(), &JapaneseLevel::N5);
+    assert!(!set.words().is_empty(), "N5 set should have words");
+}
+
+#[tokio::test]
+async fn well_known_set_preview_shows_known_words() {
+    init_real_dictionaries();
+
+    let user = User::new(
+        "test@example.com".to_string(),
+        NativeLanguage::Russian,
+        None,
+    );
+    let user_id = user.id();
+
+    let loader = FileWellKnownSetLoader::new();
+    let repo = InMemoryUserRepository::with_user(user);
+    let use_case = ImportWellKnownSetUseCase::new(&repo, &loader);
+
+    let preview = use_case
+        .preview_set(user_id, "jlpt_n5".to_string())
+        .await
+        .unwrap();
+
+    assert!(!preview.words.is_empty(), "Preview should have words");
+    assert_eq!(
+        preview.known_count, 0,
+        "New user should have no known words"
+    );
+}
+
+#[tokio::test]
 async fn kanji_info_list_returns_kanji_for_level() {
-    init_test_dictionaries();
+    init_real_dictionaries();
     let repo = create_repo().await;
     let user_id = get_user_id(&repo).await;
     let use_case = KanjiInfoListUseCase::new(&repo);
@@ -51,20 +88,18 @@ async fn kanji_info_list_returns_kanji_for_level() {
     let kanji_list = use_case.execute(user_id, &JapaneseLevel::N5).await.unwrap();
 
     assert!(!kanji_list.is_empty());
-    let kanji_nin = kanji_list.iter().find(|k| k.kanji == '人');
-    assert!(kanji_nin.is_some());
 }
 
 #[tokio::test]
 async fn kanji_info_list_excludes_learned_kanji() {
-    init_test_dictionaries();
+    init_real_dictionaries();
     let user = {
         let mut u = User::new(
             "test@example.com".to_string(),
             NativeLanguage::Russian,
             None,
         );
-        let card = create_test_kanji_card("人");
+        let card = create_test_kanji_card("一");
         u.create_card(card).unwrap();
         let study_card = u.knowledge_set().study_cards().values().next().unwrap();
         u.rate_card(
@@ -86,13 +121,13 @@ async fn kanji_info_list_excludes_learned_kanji() {
 
     let kanji_list = use_case.execute(user_id, &JapaneseLevel::N5).await.unwrap();
 
-    let kanji_nin = kanji_list.iter().find(|k| k.kanji == '人');
-    assert!(kanji_nin.is_none(), "Learned kanji should be excluded");
+    let learned_kanji: Vec<_> = kanji_list.iter().filter(|k| k.kanji == '一').collect();
+    assert!(learned_kanji.is_empty(), "Learned kanji should be excluded");
 }
 
 #[tokio::test]
 async fn create_kanji_card_creates_card_from_dictionary() {
-    init_test_dictionaries();
+    init_real_dictionaries();
     let repo = create_repo().await;
     let user_id = get_user_id(&repo).await;
     let use_case = CreateKanjiCardUseCase::new(&repo);

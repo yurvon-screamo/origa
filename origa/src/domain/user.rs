@@ -77,7 +77,7 @@ impl User {
     pub fn merge(&mut self, new_values: &User) {
         self.email = new_values.email.clone();
         self.username = new_values.username.clone();
-        self.native_language = new_values.native_language.clone();
+        self.native_language = new_values.native_language;
         self.jlpt_progress = new_values.jlpt_progress.clone();
         self.telegram_user_id = new_values.telegram_user_id;
         self.reminders_enabled = new_values.reminders_enabled;
@@ -271,7 +271,6 @@ mod tests {
     fn create_test_vocab_card(word: &str) -> Card {
         Card::Vocabulary(VocabularyCard::new(
             Question::new(word.to_string()).unwrap(),
-            Answer::new("meaning".to_string()).unwrap(),
         ))
     }
 

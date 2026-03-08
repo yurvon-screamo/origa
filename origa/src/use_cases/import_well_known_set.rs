@@ -1,6 +1,6 @@
 use crate::domain::OrigaError;
 use crate::traits::{UserRepository, WellKnownSetLoader};
-use crate::use_cases::CreateVocabularyCardUseCase;
+use crate::use_cases::{CreateVocabularyCardUseCase, shared::is_word_known};
 use tracing::{debug, info};
 use ulid::Ulid;
 
@@ -87,7 +87,7 @@ impl<'a, R: UserRepository, W: WellKnownSetLoader> ImportWellKnownSetUseCase<'a,
         {
             Ok(cards) => {
                 for word in words {
-                    if !cards.iter().any(|c| c.card().question().text() == word) {
+                    if !cards.iter().any(|c| c.card().content_key() == *word) {
                         skipped_words.push(word.clone());
                     }
                 }
@@ -123,7 +123,7 @@ impl<'a, R: UserRepository, W: WellKnownSetLoader> ImportWellKnownSetUseCase<'a,
         let mut known_count = 0;
 
         for word in words {
-            let (is_known, known_meaning) = self.check_if_known(&user, word);
+            let (is_known, known_meaning) = is_word_known(&user, word, user.native_language());
             if is_known {
                 known_count += 1;
             }
@@ -143,16 +143,5 @@ impl<'a, R: UserRepository, W: WellKnownSetLoader> ImportWellKnownSetUseCase<'a,
             total_count,
             known_count,
         })
-    }
-
-    fn check_if_known(&self, user: &crate::domain::User, word: &str) -> (bool, Option<String>) {
-        for study_card in user.knowledge_set().study_cards().values() {
-            if let crate::domain::Card::Vocabulary(vocab_card) = study_card.card()
-                && vocab_card.word().text() == word
-            {
-                return (true, Some(vocab_card.meaning().text().to_string()));
-            }
-        }
-        (false, None)
     }
 }

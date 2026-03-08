@@ -1,8 +1,8 @@
 use crate::domain::{
-    Rating, ReviewLog,
     knowledge::{GrammarRuleCard, KanjiCard, VocabularyCard},
     memory::{MemoryHistory, MemoryState},
-    value_objects::{Answer, Question},
+    value_objects::{Answer, NativeLanguage, Question, FALLBACK_ANSWER},
+    Rating, ReviewLog,
 };
 use rand::seq::SliceRandom;
 use serde::{Deserialize, Serialize};
@@ -98,19 +98,19 @@ pub enum Card {
 }
 
 impl Card {
-    pub fn question(&self) -> &Question {
+    pub fn question(&self, lang: &NativeLanguage) -> Question {
         match self {
-            Card::Vocabulary(card) => card.word(),
-            Card::Kanji(card) => card.kanji(),
-            Card::Grammar(card) => card.title(),
+            Card::Vocabulary(card) => card.word().clone(),
+            Card::Kanji(card) => card.kanji().clone(),
+            Card::Grammar(card) => card.title(lang),
         }
     }
 
-    pub fn answer(&self) -> &Answer {
+    pub fn answer(&self, lang: &NativeLanguage) -> Answer {
         match self {
-            Card::Vocabulary(card) => card.meaning(),
+            Card::Vocabulary(card) => card.answer(lang),
             Card::Kanji(card) => card.description(),
-            Card::Grammar(card) => card.description(),
+            Card::Grammar(card) => card.description(lang),
         }
     }
 
@@ -237,18 +237,22 @@ impl LessonCardView {
         }
     }
 
-    pub fn generate_quiz(original_card: Card, same_type_cards: &[Card]) -> Self {
+    pub fn generate_quiz(
+        original_card: Card,
+        same_type_cards: &[Card],
+        lang: &NativeLanguage,
+    ) -> Self {
         match &original_card {
             Card::Grammar(_) => return LessonCardView::Normal(original_card),
             Card::Vocabulary(_) | Card::Kanji(_) => {}
         }
 
-        let correct_answer = original_card.answer().text().to_string();
+        let correct_answer = original_card.answer(lang).text().to_string();
 
         let mut distractors: Vec<String> = same_type_cards
             .iter()
-            .filter(|c| c.answer().text() != correct_answer)
-            .map(|c| c.answer().text().to_string())
+            .filter(|c| c.answer(lang).text() != correct_answer)
+            .map(|c| c.answer(lang).text().to_string())
             .collect();
 
         distractors.shuffle(&mut rand::rng());
@@ -258,7 +262,7 @@ impl LessonCardView {
 
         if selected_distractors.len() < needed_distractors {
             let correct_len = correct_answer.len();
-            let dummy = "—".repeat(correct_len.max(3));
+            let dummy = FALLBACK_ANSWER.repeat(correct_len.max(3));
             while selected_distractors.len() < needed_distractors {
                 selected_distractors.push(dummy.clone());
             }

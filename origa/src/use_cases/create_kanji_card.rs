@@ -28,7 +28,7 @@ impl<'a, R: UserRepository> CreateKanjiCardUseCase<'a, R> {
         let mut cards = vec![];
         for kanji in kanjies {
             debug!(user_id = %user_id, kanji = %kanji, "Creating kanji card");
-            let card = Card::Kanji(KanjiCard::new(kanji.clone(), user.native_language())?);
+            let card = Card::Kanji(KanjiCard::new(kanji.clone())?);
             let created = user.create_card(card)?;
             info!(kanji = %kanji, "Kanji card created");
             cards.push(created);

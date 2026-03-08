@@ -1,27 +1,42 @@
-use crate::domain::dictionary::{KanjiInfo, get_kanji_info};
+use crate::domain::dictionary::{KanjiInfo, get_kanji_info, get_translation};
 use crate::domain::japanese::JapaneseChar;
 use crate::domain::tokenizer::{PartOfSpeech, tokenize_text};
-use crate::domain::{Answer, JapaneseLevel, NativeLanguage, Question};
+use crate::domain::{Answer, FALLBACK_ANSWER, JapaneseLevel, NativeLanguage, Question};
 use crate::domain::{GrammarRule, OrigaError};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct VocabularyCard {
     word: Question,
-    meaning: Answer,
+    // TODO: костыль
+    original_word: Option<Question>,
 }
 
 impl VocabularyCard {
-    pub fn new(word: Question, meaning: Answer) -> Self {
-        Self { word, meaning }
+    pub fn new(word: Question) -> Self {
+        Self {
+            word,
+            original_word: None,
+        }
     }
 
     pub fn word(&self) -> &Question {
         &self.word
     }
 
-    pub fn meaning(&self) -> &Answer {
-        &self.meaning
+    pub fn question(&self) -> Question {
+        self.word.clone()
+    }
+
+    pub fn answer(&self, lang: &NativeLanguage) -> Answer {
+        if let Some(ref original) = self.original_word {
+            return Answer::new(original.text().to_string())
+                .unwrap_or_else(|_| Answer::new(FALLBACK_ANSWER.to_string()).unwrap());
+        }
+
+        get_translation(self.word.text(), lang)
+            .and_then(|t| Answer::new(t).ok())
+            .unwrap_or_else(|| Answer::new(FALLBACK_ANSWER.to_string()).unwrap())
     }
 
     pub fn get_kanji_cards(&self, current_level: &JapaneseLevel) -> Vec<&KanjiInfo> {
@@ -52,16 +67,17 @@ impl VocabularyCard {
 
         let card = Self {
             word: Question::new(formatted_word)?,
-            meaning: self.meaning.clone(),
+            original_word: self.original_word.clone(),
         };
 
         Ok((card, grammar_description))
     }
 
-    pub fn revert(&self) -> Result<Self, OrigaError> {
+    pub fn revert(&self, lang: &NativeLanguage) -> Result<Self, OrigaError> {
+        let meaning_text = self.answer(lang).text().to_string();
         Ok(Self {
-            word: Question::new(self.meaning.text().to_string())?,
-            meaning: Answer::new(self.word.text().to_string())?,
+            word: Question::new(meaning_text)?,
+            original_word: Some(self.word.clone()),
         })
     }
 }

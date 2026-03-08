@@ -1,6 +1,7 @@
 use crate::{
     domain::{OrigaError, PartOfSpeech, tokenize_text},
     traits::UserRepository,
+    use_cases::shared::is_word_known,
 };
 use serde::{Deserialize, Serialize};
 use tracing::{debug, info};
@@ -70,7 +71,8 @@ impl<'a, R: UserRepository> AnalyzeTextForCardsUseCase<'a, R> {
             }
             seen_words.insert(word_text.clone());
 
-            let (is_known, known_meaning) = self.check_if_known(&user, &word_text);
+            let (is_known, known_meaning) =
+                is_word_known(&user, &word_text, user.native_language());
 
             words.push(AnalyzedWord {
                 text: token.orthographic_surface_form().to_string(),
@@ -94,16 +96,5 @@ impl<'a, R: UserRepository> AnalyzeTextForCardsUseCase<'a, R> {
             known_count,
             new_count,
         })
-    }
-
-    fn check_if_known(&self, user: &crate::domain::User, word: &str) -> (bool, Option<String>) {
-        for study_card in user.knowledge_set().study_cards().values() {
-            if let crate::domain::Card::Vocabulary(vocab_card) = study_card.card()
-                && vocab_card.word().text() == word
-            {
-                return (true, Some(vocab_card.meaning().text().to_string()));
-            }
-        }
-        (false, None)
     }
 }

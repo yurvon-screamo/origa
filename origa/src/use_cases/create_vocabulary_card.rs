@@ -65,12 +65,12 @@ impl<'a, R: UserRepository> CreateVocabularyCardUseCase<'a, R> {
 
             let question_text = token.orthographic_base_form();
             let question = Question::new(question_text.to_string())?;
-            let content = self
+            let _content = self
                 .generate_content_use_case
                 .generate_content(question_text, user.native_language())
                 .await?;
 
-            let vocabulary_card = VocabularyCard::new(question, content.answer);
+            let vocabulary_card = VocabularyCard::new(question);
             let card = Card::Vocabulary(vocabulary_card);
 
             let card_result = user.create_card(card);
