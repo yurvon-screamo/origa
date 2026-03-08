@@ -1,8 +1,8 @@
 use crate::domain::{
-    OrigaError,
-    grammar::GrammarRule,
+    get_rule_by_id,
     tokenizer::PartOfSpeech,
     value_objects::{Answer, NativeLanguage, Question},
+    OrigaError, FALLBACK_ANSWER,
 };
 use serde::{Deserialize, Serialize};
 use ulid::Ulid;
@@ -10,47 +10,50 @@ use ulid::Ulid;
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct GrammarRuleCard {
     rule_id: Ulid,
-    title: Question,
-    description: Answer,
-    apply_to: Vec<PartOfSpeech>,
 }
 
 impl GrammarRuleCard {
-    pub fn new(rule_info: &GrammarRule, lang: &NativeLanguage) -> Result<Self, OrigaError> {
-        Ok(Self {
-            rule_id: rule_info.rule_id().to_owned(),
-            title: Question::new(rule_info.content(lang).title().to_string())?,
-            description: Answer::new(rule_info.content(lang).md_description().to_string())?,
-            apply_to: rule_info.apply_to().to_vec(),
-        })
+    pub fn new(rule_id: Ulid) -> Result<Self, OrigaError> {
+        get_rule_by_id(&rule_id).ok_or_else(|| OrigaError::RepositoryError {
+            reason: format!("Grammar rule {} not found", rule_id),
+        })?;
+        Ok(Self { rule_id })
     }
 
     pub fn rule_id(&self) -> &Ulid {
         &self.rule_id
     }
 
-    pub fn title(&self) -> &Question {
-        &self.title
+    pub fn title(&self, lang: &NativeLanguage) -> Question {
+        get_rule_by_id(&self.rule_id)
+            .map(|rule| {
+                Question::new(rule.content(lang).title().to_string())
+                    .unwrap_or_else(|_| Question::new(FALLBACK_ANSWER.to_string()).unwrap())
+            })
+            .unwrap_or_else(|| Question::new(FALLBACK_ANSWER.to_string()).unwrap())
     }
 
-    pub fn description(&self) -> &Answer {
-        &self.description
+    pub fn description(&self, lang: &NativeLanguage) -> Answer {
+        get_rule_by_id(&self.rule_id)
+            .map(|rule| {
+                Answer::new(rule.content(lang).md_description().to_string())
+                    .unwrap_or_else(|_| Answer::new(FALLBACK_ANSWER.to_string()).unwrap())
+            })
+            .unwrap_or_else(|| Answer::new(FALLBACK_ANSWER.to_string()).unwrap())
     }
 
-    pub fn apply_to(&self) -> &[PartOfSpeech] {
-        &self.apply_to
+    pub fn apply_to(&self) -> Vec<PartOfSpeech> {
+        get_rule_by_id(&self.rule_id)
+            .map(|rule| rule.apply_to())
+            .unwrap_or_default()
     }
 }
 
 impl GrammarRuleCard {
     #[cfg(test)]
-    pub fn new_test(title: String, apply_to: Vec<PartOfSpeech>) -> Self {
-        use ulid::Ulid;
+    pub fn new_test() -> Self {
         Self {
             rule_id: Ulid::new(),
-            title: Question::new(title).unwrap(),
-            description: Answer::new("Test description".to_string()).unwrap(),
-            apply_to,
         }
     }
 }

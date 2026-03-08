@@ -85,12 +85,12 @@ impl<'a, R: UserRepository> CreateCardsFromAnalysisUseCase<'a, R> {
     ) -> Result<StudyCard, OrigaError> {
         let question = Question::new(word.base_form.clone())?;
 
-        let content = self
+        let _content = self
             .generate_content_use_case
             .generate_content(&word.base_form, user.native_language())
             .await?;
 
-        let vocabulary_card = VocabularyCard::new(question, content.answer);
+        let vocabulary_card = VocabularyCard::new(question);
         let card = Card::Vocabulary(vocabulary_card);
 
         user.create_card(card)
