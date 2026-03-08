@@ -54,20 +54,6 @@ pub fn LessonCardAnswer(
                     </Show>
                 </Heading>
             </Show>
-
-            <Show when=move || grammar_info_stored.get_value().is_some()>
-                {move || {
-                    grammar_info_stored.get_value().map(|info| {
-                        view! {
-                            <GrammarInfoBadge
-                                title=info.title().to_string()
-                                description=info.description().to_string()
-                            />
-                        }
-                    })
-                }}
-            </Show>
-
             <div
                 node_ref=content_ref
                 class=move || if is_expanded.get() { "border-t border-[var(--border-light)] pt-4 mt-4" } else { "border-t border-[var(--border-light)] pt-4 mt-4 line-clamp-3" }
@@ -116,6 +102,19 @@ pub fn LessonCardAnswer(
                     </Show>
                 </div>
             </div>
+
+            <Show when=move || grammar_info_stored.get_value().is_some()>
+                {move || {
+                    grammar_info_stored.get_value().map(|info| {
+                        view! {
+                            <GrammarInfoBadge
+                                title=info.title().to_string()
+                                description=info.description().to_string()
+                            />
+                        }
+                    })
+                }}
+            </Show>
 
             <Show when=move || needs_collapse.get()>
                 <div class="mt-2">
