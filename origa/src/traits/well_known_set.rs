@@ -50,6 +50,7 @@ impl WellKnownSetMeta {
     }
 }
 
+#[derive(Clone)]
 pub struct WellKnownSet {
     level: JapaneseLevel,
     words: Vec<String>,

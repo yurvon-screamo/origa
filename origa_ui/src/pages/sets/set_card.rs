@@ -26,7 +26,7 @@ pub fn SetCard(set_info: SetInfo, on_import: Callback<(String, String)>) -> impl
             <div class="set-card-title">
                 {title_for_display.clone()}
                 <Show when=move || is_imported>
-                    <span class="ml-2 px-2 py-1 text-xs bg-green-100 text-green-800 rounded">
+                    <span class="set-imported ml-2">
                         "Импортирован"
                     </span>
                 </Show>
