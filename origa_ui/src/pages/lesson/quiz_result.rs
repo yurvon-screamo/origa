@@ -6,21 +6,31 @@ pub enum QuizResult {
     Incorrect,
 }
 
+#[derive(Clone, Copy, PartialEq, Debug)]
+pub enum OptionDisplay {
+    Neutral,
+    Correct,
+    Wrong,
+    Dimmed,
+}
+
 impl QuizResult {
-    pub fn option_class(&self, is_correct: bool) -> &'static str {
-        match (self, is_correct) {
-            (QuizResult::None, _) => {
-                "bg-[var(--bg-paper)] hover:bg-[var(--bg-aged)] border-[var(--border-dark)]"
-            }
-            (QuizResult::Correct, true) | (QuizResult::Incorrect, true) => {
-                "bg-[var(--bg-warm)] border-[var(--success)] text-[var(--success)]"
-            }
-            (QuizResult::Correct, false) => {
-                "bg-[var(--bg-paper)] border-[var(--border-light)] opacity-50"
-            }
-            (QuizResult::Incorrect, false) => {
-                "bg-[var(--bg-warm)] border-[var(--error)] text-[var(--error)]"
-            }
+    pub fn option_display(&self, is_correct: bool, is_selected: bool) -> OptionDisplay {
+        match self {
+            QuizResult::None => OptionDisplay::Neutral,
+            QuizResult::Correct | QuizResult::Incorrect if is_correct => OptionDisplay::Correct,
+            QuizResult::Correct => OptionDisplay::Dimmed,
+            QuizResult::Incorrect if is_selected => OptionDisplay::Wrong,
+            QuizResult::Incorrect => OptionDisplay::Dimmed,
+        }
+    }
+
+    pub fn option_class(&self, is_correct: bool, is_selected: bool) -> &'static str {
+        match self.option_display(is_correct, is_selected) {
+            OptionDisplay::Neutral => "quiz-option-neutral",
+            OptionDisplay::Correct => "quiz-option-correct",
+            OptionDisplay::Wrong => "quiz-option-wrong",
+            OptionDisplay::Dimmed => "quiz-option-dimmed",
         }
     }
 }

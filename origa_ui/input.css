@@ -1492,3 +1492,30 @@ body {
 .toast-close:hover {
 	color: var(--fg-black);
 }
+
+.quiz-option-neutral {
+	background: var(--bg-paper);
+	border-color: var(--border-dark);
+}
+
+.quiz-option-neutral:hover {
+	background: var(--bg-aged);
+}
+
+.quiz-option-correct {
+	background: var(--bg-warm);
+	border-color: var(--success);
+	color: var(--success);
+}
+
+.quiz-option-wrong {
+	background: var(--bg-warm);
+	border-color: var(--error);
+	color: var(--error);
+}
+
+.quiz-option-dimmed {
+	background: var(--bg-paper);
+	border-color: var(--border-light);
+	opacity: 0.5;
+}
