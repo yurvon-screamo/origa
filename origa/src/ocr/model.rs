@@ -8,6 +8,7 @@ use prost::Message;
 use tokenizers::Tokenizer;
 use tracing::{debug, info};
 
+use super::layout::LayoutModel;
 use crate::domain::OrigaError;
 
 const MAX_SEQ_LEN: usize = 300;
@@ -18,18 +19,18 @@ const NORM_MEAN: [f32; 3] = [0.5, 0.5, 0.5];
 const NORM_STD: [f32; 3] = [0.5, 0.5, 0.5];
 const DEFAULT_BOS_TOKEN_ID: u32 = 2;
 const DEFAULT_EOS_TOKEN_ID: u32 = 3;
-
 pub struct ModelFiles {
     pub encoder: Vec<u8>,
     pub decoder: Vec<u8>,
     pub tokenizer: Vec<u8>,
+    pub layout_model: Vec<u8>,
 }
-
 pub struct JapaneseOCRModel {
     encoder: ModelProto,
     decoder: ModelProto,
     tokenizer: Tokenizer,
     device: Device,
+    layout_model: LayoutModel,
 }
 
 impl JapaneseOCRModel {
@@ -37,6 +38,7 @@ impl JapaneseOCRModel {
         encoder_bytes: Vec<u8>,
         decoder_bytes: Vec<u8>,
         tokenizer_bytes: Vec<u8>,
+        layout_model_bytes: Vec<u8>,
     ) -> Result<Self, OrigaError> {
         info!("Initializing Japanese OCR model");
         let device = Device::Cpu;
@@ -59,20 +61,64 @@ impl JapaneseOCRModel {
                 reason: format!("Failed to decode decoder: {}", e),
             })?;
 
+        debug!("Loading layout model");
+        let layout_model = LayoutModel::from_bytes(layout_model_bytes)?;
+
         info!("Japanese OCR model initialized successfully");
         Ok(Self {
             encoder,
             decoder,
             tokenizer,
             device,
+            layout_model,
         })
     }
 
     pub fn from_model_files(files: ModelFiles) -> Result<Self, OrigaError> {
-        Self::from_bytes(files.encoder, files.decoder, files.tokenizer)
+        Self::from_bytes(
+            files.encoder,
+            files.decoder,
+            files.tokenizer,
+            files.layout_model,
+        )
     }
 
     pub fn run(&mut self, img: &DynamicImage) -> Result<String, OrigaError> {
+        info!("Running OCR with layout analysis");
+        let bboxes = self.layout_model.run_layout_model(img)?;
+
+        let text_bboxes: Vec<_> = bboxes
+            .into_iter()
+            .filter(|bbox| bbox.class.is_text_like())
+            .collect();
+
+        if text_bboxes.is_empty() {
+            info!("No text regions detected, running OCR on full image");
+            return self.run_ocr_on_image(img);
+        }
+
+        info!(count = text_bboxes.len(), "Processing text regions");
+
+        let mut results = Vec::new();
+        for bbox in text_bboxes {
+            let cropped = self.crop_image(img, &bbox)?;
+            match self.run_ocr_on_image(&cropped) {
+                Ok(text) if !text.is_empty() => {
+                    results.push(text);
+                }
+                Ok(_) => {}
+                Err(e) => {
+                    debug!(error = ?e, "Failed to OCR region, skipping");
+                }
+            }
+        }
+
+        let result = results.join("\n");
+        info!(result_length = result.len(), "OCR with layout completed");
+        Ok(result)
+    }
+
+    fn run_ocr_on_image(&mut self, img: &DynamicImage) -> Result<String, OrigaError> {
         info!("Running OCR on image");
         let pixel_values = self.preprocess_image(img)?;
 
@@ -165,6 +211,31 @@ impl JapaneseOCRModel {
         let result = decoded.replace(' ', "");
         info!(result = %result, "OCR completed");
         Ok(result)
+    }
+
+    fn crop_image(
+        &self,
+        img: &DynamicImage,
+        bbox: &super::layout::BoundingBox,
+    ) -> Result<DynamicImage, OrigaError> {
+        let (width, height) = (img.width(), img.height());
+
+        let xmin = bbox.xmin as u32;
+        let ymin = bbox.ymin as u32;
+        let xmax = (bbox.xmax as u32).min(width);
+        let ymax = (bbox.ymax as u32).min(height);
+
+        if xmax <= xmin || ymax <= ymin {
+            return Err(OrigaError::OcrError {
+                reason: "Invalid bounding box".into(),
+            });
+        }
+
+        let crop_width = xmax - xmin;
+        let crop_height = ymax - ymin;
+
+        let cropped = img.crop_imm(xmin, ymin, crop_width, crop_height);
+        Ok(cropped)
     }
 
     fn preprocess_image(&self, img: &DynamicImage) -> Result<Tensor, OrigaError> {

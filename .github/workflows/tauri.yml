@@ -36,6 +36,8 @@ jobs:
       - name: Build frontend
         working-directory: origa_ui
         run: trunk build --release
+        env:
+          TRAILBASE_URL: ${{ vars.TRAILBASE_URL }}
 
       - name: Build Tauri app for Windows
         working-directory: tauri
@@ -86,6 +88,8 @@ jobs:
       - name: Build frontend
         working-directory: origa_ui
         run: trunk build --release
+        env:
+          TRAILBASE_URL: ${{ vars.TRAILBASE_URL }}
 
       - name: Build Tauri app for Linux
         working-directory: tauri
@@ -126,6 +130,8 @@ jobs:
       - name: Build frontend
         working-directory: origa_ui
         run: trunk build --release
+        env:
+          TRAILBASE_URL: ${{ vars.TRAILBASE_URL }}
 
       - name: Build Tauri app for macOS
         working-directory: tauri

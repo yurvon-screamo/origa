@@ -47,9 +47,7 @@ pub fn ImageInputStage(
             debug!(file_name = %file_name, "File selected");
 
             if !is_image_file(&file) {
-                error_message.set(Some(
-                    "Пожалуйста, выберите изображение (PNG, JPEG, WebP)".to_string(),
-                ));
+                error_message.set(Some("Please select an image (PNG, JPEG, WebP)".to_string()));
                 return;
             }
 
@@ -104,7 +102,7 @@ pub fn ImageInputStage(
         <div class=move || format!("space-y-4 {}", class.get())>
             <div>
                 <Text size=TextSize::Small variant=TypographyVariant::Muted class=Signal::derive(|| "mb-2".to_string())>
-                    "Загрузите изображение с японским текстом"
+                    "Upload image with Japanese text"
                 </Text>
             </div>
 
@@ -115,9 +113,9 @@ pub fn ImageInputStage(
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                         </svg>
                         <p class="mb-2 text-sm text-muted">
-                            <span class="font-semibold">"Нажмите для загрузки"</span>
+                            <span class="font-semibold">Click to upload</span>
                         </p>
-                        <p class="text-xs text-muted">"PNG, JPEG или WebP"</p>
+                        <p class="text-xs text-muted">"PNG, JPEG or WebP"</p>
                     </div>
                     <input
                         type="file"
@@ -141,23 +139,23 @@ pub fn ImageInputStage(
                 })
             }}
 
-            {move || {
-                let state = ocr_state.get();
-                match state {
-                    OcrState::Processing => Some(view! {
-                        <div class="flex items-center gap-2 text-muted">
-                            <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                                "Распознавание текста (при первом запуске загружается модель OCR ~50MB)..."
-                            </Text>
-                        </div>
-                    }),
-                    _ => None,
-                }
-            }}
+                            {move || {
+                                let state = ocr_state.get();
+                                match state {
+                                    OcrState::Processing => Some(view! {
+                                        <div class="flex items-center gap-2 text-muted">
+                                            <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            <Text size=TextSize::Small variant=TypographyVariant::Muted>
+                                                "Распознавание текста (при первом запуске загружаются модели OCR ~50MB и сегментации ~100MB)..."
+                                            </Text>
+                                        </div>
+                                    }),
+                                    _ => None,
+                                }
+                            }}
 
             {move || {
                 error_message.get().map(|msg| view! {
@@ -228,20 +226,30 @@ async fn process_image_with_ocr(data_url: &str) -> Result<String, String> {
     let img =
         image::load_from_memory(&bytes).map_err(|e| format!("Failed to decode image: {}", e))?;
 
+    let (width, height) = (img.width(), img.height());
+    info!(width = width, height = height, "Image loaded");
+
     let model = CACHED_MODEL.with(|cached| cached.borrow().clone());
 
     let model = match model {
         Some(m) => m,
         None => {
-            let loader = ModelLoader::new(ModelConfig::new(
+            let config = ModelConfig::new(
                 "https://huggingface.co",
                 "l0wgear/manga-ocr-2025-onnx",
                 ".manga-ocr",
-            ));
+                "https://huggingface.co",
+                "wybxc/DocLayout-YOLO-DocStructBench-onnx",
+                "doclayout_yolo_docstructbench_imgsz1024.onnx",
+            );
+
+            info!("Loading OCR and Layout models");
+            let loader = ModelLoader::new(config);
+
             let model_files = loader
                 .load_or_download_model()
                 .await
-                .map_err(|e| format!("Failed to load OCR model: {:?}", e))?;
+                .map_err(|e| format!("Failed to load models: {:?}", e))?;
 
             let new_model = JapaneseOCRModel::from_model_files(model_files)
                 .map_err(|e| format!("Failed to initialize OCR model: {:?}", e))?;
@@ -256,6 +264,7 @@ async fn process_image_with_ocr(data_url: &str) -> Result<String, String> {
         }
     };
 
+    info!("Running OCR with layout analysis");
     let text = model
         .borrow_mut()
         .run(&img)
