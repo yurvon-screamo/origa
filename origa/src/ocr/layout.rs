@@ -162,52 +162,86 @@ impl LayoutModel {
         w: usize,
         h: usize,
     ) -> std::result::Result<Vec<BoundingBox>, OrigaError> {
-        let pred = pred
-            .to_device(&Device::Cpu)
+        let (dim_size, _num_anchors) = pred.dims2().map_err(|e| OrigaError::OcrError {
+            reason: format!("Candle error: {}", e),
+        })?;
+
+        let nclasses = dim_size - 4;
+
+        // 1. Отделяем координаты боксов от скоров классов
+        let bbox_coords = pred.narrow(0, 0, 4).map_err(|e| OrigaError::OcrError {
+            reason: format!("Candle error: {}", e),
+        })?;
+        let class_scores = pred
+            .narrow(0, 4, nclasses)
             .map_err(|e| OrigaError::OcrError {
                 reason: format!("Candle error: {}", e),
             })?;
-        let (pred_size, npreds) = pred.dims2().map_err(|e| OrigaError::OcrError {
+
+        // 2. Находим максимальный скор для каждого анкора
+        let max_scores = class_scores
+            .max_keepdim(0)
+            .map_err(|e| OrigaError::OcrError {
+                reason: format!("Candle error: {}", e),
+            })?;
+
+        // 3. Создаем маску: оставляем только те анкоры, где уверенность выше порога
+        let mask = max_scores
+            .ge(CONFIDENCE_THRESHOLD)
+            .map_err(|e| OrigaError::OcrError {
+                reason: format!("Candle error: {}", e),
+            })?
+            .squeeze(0)
+            .map_err(|e| OrigaError::OcrError {
+                reason: format!("Candle error: {}", e),
+            })?;
+
+        // 4. Получаем индексы «выживших» анкоров
+        let mask_vec = mask.to_vec1::<u8>().map_err(|e| OrigaError::OcrError {
             reason: format!("Candle error: {}", e),
         })?;
-        let nclasses = pred_size - 4;
 
         let mut bboxes: Vec<Vec<Bbox<Vec<KeyPoint>>>> = (0..nclasses).map(|_| vec![]).collect();
 
-        for index in 0..npreds {
-            let pred_vec =
-                Vec::<f32>::try_from(pred.i((.., index)).map_err(|e| OrigaError::OcrError {
+        // 5. Итерируемся только по тем индексам, которые прошли порог
+        for (idx, &is_candidate) in mask_vec.iter().enumerate() {
+            if is_candidate == 0 {
+                continue;
+            }
+
+            let current_coords: Vec<f32> = bbox_coords
+                .i((.., idx))
+                .and_then(|t| t.to_vec1())
+                .map_err(|e| OrigaError::OcrError {
                     reason: format!("Candle error: {}", e),
-                })?)
+                })?;
+            let current_class_scores: Vec<f32> = class_scores
+                .i((.., idx))
+                .and_then(|t| t.to_vec1())
                 .map_err(|e| OrigaError::OcrError {
                     reason: format!("Candle error: {}", e),
                 })?;
 
-            let confidence = *pred_vec[4..]
+            let (conf, class_idx) = current_class_scores
                 .iter()
-                .max_by(|x, y| x.total_cmp(y))
-                .unwrap_or(&0.0);
+                .enumerate()
+                .max_by(|(_, a), (_, b)| a.total_cmp(b))
+                .map(|(i, &s)| (s, i))
+                .unwrap();
 
-            if confidence > CONFIDENCE_THRESHOLD {
-                let mut class_index = 0;
-                for i in 0..nclasses {
-                    if pred_vec[4 + i] > pred_vec[4 + class_index] {
-                        class_index = i
-                    }
-                }
+            let x_center = current_coords[0];
+            let y_center = current_coords[1];
+            let width = current_coords[2];
+            let height = current_coords[3];
 
-                if pred_vec[class_index + 4] > 0. {
-                    let bbox = Bbox {
-                        xmin: pred_vec[0] - pred_vec[2] / 2.,
-                        ymin: pred_vec[1] - pred_vec[3] / 2.,
-                        xmax: pred_vec[0] + pred_vec[2] / 2.,
-                        ymax: pred_vec[1] + pred_vec[3] / 2.,
-                        confidence,
-                        data: vec![],
-                    };
-                    bboxes[class_index].push(bbox)
-                }
-            }
+            bboxes[class_idx].push(Bbox {
+                xmin: x_center - width / 2.,
+                ymin: y_center - height / 2.,
+                xmax: x_center + width / 2.,
+                ymax: y_center + height / 2.,
+                confidence: conf,
+                data: vec![],
+            });
         }
 
         non_maximum_suppression(&mut bboxes, NMS_THRESHOLD);
