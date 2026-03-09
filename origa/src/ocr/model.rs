@@ -8,7 +8,7 @@ use prost::Message;
 use tokenizers::Tokenizer;
 use tracing::{debug, info};
 
-use super::layout::LayoutModel;
+use super::layout::{BoundingBox, LayoutModel};
 use crate::domain::OrigaError;
 
 const MAX_SEQ_LEN: usize = 300;
@@ -19,12 +19,14 @@ const NORM_MEAN: [f32; 3] = [0.5, 0.5, 0.5];
 const NORM_STD: [f32; 3] = [0.5, 0.5, 0.5];
 const DEFAULT_BOS_TOKEN_ID: u32 = 2;
 const DEFAULT_EOS_TOKEN_ID: u32 = 3;
+
 pub struct ModelFiles {
     pub encoder: Vec<u8>,
     pub decoder: Vec<u8>,
     pub tokenizer: Vec<u8>,
     pub layout_model: Vec<u8>,
 }
+
 pub struct JapaneseOCRModel {
     encoder: ModelProto,
     decoder: ModelProto,
@@ -216,7 +218,7 @@ impl JapaneseOCRModel {
     fn crop_image(
         &self,
         img: &DynamicImage,
-        bbox: &super::layout::BoundingBox,
+        bbox: &BoundingBox,
     ) -> Result<DynamicImage, OrigaError> {
         let (width, height) = (img.width(), img.height());
 

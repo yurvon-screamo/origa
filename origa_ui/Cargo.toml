@@ -54,6 +54,8 @@ prost.workspace = true
 tokio = { version = "1.48", features = ["rt-multi-thread", "macros"] }
 lindera-dictionary = { version = "2.2", features = ["build_rs"] }
 serde_json = "1.0"
+reqwest = { version = "0.12", features = ["blocking", "rustls-tls"] }
+safetensors = "0.5"
 
 [package.metadata.leptos]
 site-root = "target/site"
