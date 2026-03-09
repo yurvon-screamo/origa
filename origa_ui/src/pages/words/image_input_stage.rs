@@ -5,6 +5,7 @@ use crate::ui_components::{
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::ocr::{JapaneseOCRModel, ModelConfig};
+use origa::use_cases::ExtractTextFromImageUseCase;
 use std::cell::RefCell;
 use std::rc::Rc;
 use tracing::{debug, error, info};
@@ -223,27 +224,14 @@ async fn process_image_with_ocr(data_url: &str) -> Result<String, String> {
 
     let bytes = base64_decode(base64_data)?;
 
-    let img =
-        image::load_from_memory(&bytes).map_err(|e| format!("Failed to decode image: {}", e))?;
-
-    let (width, height) = (img.width(), img.height());
-    info!(width = width, height = height, "Image loaded");
-
     let model = CACHED_MODEL.with(|cached| cached.borrow().clone());
 
     let model = match model {
         Some(m) => m,
         None => {
-            let config = ModelConfig::new(
-                "https://huggingface.co",
-                "l0wgear/manga-ocr-2025-onnx",
-                ".manga-ocr",
-                "https://huggingface.co",
-                "wybxc/DocLayout-YOLO-DocStructBench-onnx",
-                "doclayout_yolo_docstructbench_imgsz1024.onnx",
-            );
-
             info!("Loading OCR and Layout models");
+
+            let config = ModelConfig::default();
             let loader = ModelLoader::new(config);
 
             let model_files = loader
@@ -265,9 +253,9 @@ async fn process_image_with_ocr(data_url: &str) -> Result<String, String> {
     };
 
     info!("Running OCR with layout analysis");
-    let text = model
-        .borrow_mut()
-        .run(&img)
+    let use_case = ExtractTextFromImageUseCase::new();
+    let text = use_case
+        .execute(&mut model.borrow_mut(), &bytes)
         .map_err(|e| format!("OCR failed: {:?}", e))?;
 
     Ok(text)
