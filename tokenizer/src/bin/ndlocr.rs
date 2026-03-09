@@ -39,7 +39,7 @@ fn main() -> Result<(), OrigaError> {
     let args = Cli::parse();
 
     let img = image::open(&args.input).map_err(|e| OrigaError::OcrError {
-        reason: format!("Failed to open image {:?}: {}", args.input),
+        reason: format!("Failed to open image {:?}: {}", args.input, e),
     })?;
 
     let deim = std::fs::read(&args.detector).map_err(|e| OrigaError::OcrError {
