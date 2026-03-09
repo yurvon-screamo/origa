@@ -1,6 +1,4 @@
-pub mod ocr;
-
-pub use ocr::{
-    BoundingBox, CascadeRecognizer, DeimDetector, OcrEngine, ParseqRecognizer, Vocabulary,
-    sort_reading_order,
+pub use origa::ocr::{
+    sort_reading_order, BoundingBox, CascadeRecognizer, DeimDetector,
+    JapaneseOCRModel as OcrEngine, ParseqRecognizer, Vocabulary,
 };

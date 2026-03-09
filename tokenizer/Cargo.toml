@@ -19,12 +19,5 @@ path = "src/bin/ndlocr.rs"
 origa = { path = "../origa" }
 clap.workspace = true
 flate2.workspace = true
-
-# OCR dependencies
-ort = { version = "2.0.0-rc.12", features = ["download-binaries"] }
-ndarray = "0.17"
 image.workspace = true
-serde.workspace = true
-serde_yaml = "0.9"
-anyhow = "1.0"
 tracing.workspace = true
