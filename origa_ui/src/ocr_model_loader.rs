@@ -31,10 +31,7 @@ impl ModelLoader {
     }
 
     pub async fn load_or_download_model(&self) -> Result<ModelFiles, OrigaError> {
-        info!(
-            "Loading models: OCR={} Layout={}",
-            self.config.ocr_model_name, self.config.layout_model_name
-        );
+        info!("Loading models: OCR={}", self.config.ocr_model_name);
         let window = web_sys::window().ok_or_else(|| OrigaError::OcrError {
             reason: "No window object available".to_string(),
         })?;
@@ -47,13 +44,9 @@ impl ModelLoader {
                 false,
             )
             .await?;
+
         let layout_cache = self
-            .get_cache(
-                &window,
-                "doclayout-yolo-model-",
-                &self.config.layout_model_name,
-                true,
-            )
+            .get_cache(&window, "local-models-", "layout", false)
             .await?;
 
         let ocr_filenames = ModelConfig::ocr_file_names();
@@ -76,7 +69,7 @@ impl ModelLoader {
                 (loaded.remove(0), loaded.remove(0), loaded.remove(0))
             };
 
-        let layout_name = self.config.layout_filename.as_str();
+        let layout_name = "layout.safetensors";
         let layout_model = if self
             .ensure_files_cached(&layout_cache, &[layout_name])
             .await?
@@ -88,13 +81,13 @@ impl ModelLoader {
                 .next()
                 .unwrap()
         } else {
-            info!("Layout model not found in cache, downloading...");
-            let files = [(layout_name, self.config.layout_model_file_url())];
-            self.download_and_cache_model(&layout_cache, &files)
-                .await?
-                .into_iter()
-                .next()
-                .unwrap()
+            info!(
+                "Layout model not found in cache, fetching from local path /yolo/layout.safetensors..."
+            );
+            let data = self
+                .download_and_cache_file(&layout_cache, layout_name, "/yolo/layout.safetensors")
+                .await?;
+            data
         };
 
         info!("All models loaded successfully");
@@ -174,11 +167,9 @@ impl ModelLoader {
 
         let has_response = JsFuture::from(cache.match_with_request(&request))
             .await
-            .map_err(|e| js_err("Failed to check cache", &e))?
-            .as_bool()
-            .unwrap_or(false);
+            .map_err(|e| js_err("Failed to check cache", &e))?;
 
-        Ok(has_response)
+        Ok(!has_response.is_null() && !has_response.is_undefined())
     }
 
     async fn load_file_from_cache(
@@ -220,7 +211,7 @@ impl ModelLoader {
         cache: &Cache,
         filename: &str,
         url: &str,
-    ) -> Result<(), OrigaError> {
+    ) -> Result<Vec<u8>, OrigaError> {
         info!("Downloading {} from {}", filename, url);
 
         let opts = RequestInit::new();
@@ -274,6 +265,6 @@ impl ModelLoader {
             .await
             .map_err(|e| js_err(format!("Failed to cache {}", filename), &e))?;
 
-        Ok(())
+        Ok(data)
     }
 }

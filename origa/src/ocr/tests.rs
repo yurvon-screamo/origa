@@ -60,11 +60,32 @@ async fn test_japanese_ocr_e2e() {
         "tokenizer.json",
     )
     .await;
-    let layout = get_file_bytes(
-        &config.layout_model_file_url(),
-        "doclayout_yolo_docstructbench_imgsz1024.onnx",
-    )
-    .await;
+
+    // Load layout model from local directory
+    let manifest_dir = env!("CARGO_MANIFEST_DIR");
+    let workspace_root = PathBuf::from(manifest_dir).parent().unwrap().to_path_buf();
+
+    let layout_paths = [
+        workspace_root
+            .join("origa_ui")
+            .join("public")
+            .join("yolo")
+            .join("layout.safetensors"),
+        workspace_root.join(".yolo").join("model.safetensors"),
+    ];
+
+    let mut layout = None;
+    for path in &layout_paths {
+        if path.exists() {
+            println!("Loading layout model from: {:?}", path);
+            layout = Some(fs::read(path).await.expect("Failed to read layout model"));
+            break;
+        }
+    }
+
+    let layout = layout.expect(
+        "Failed to find layout model. Please run scripts/download_yolo.py or ensure .yolo/model.safetensors exists.",
+    );
 
     let model_files = ModelFiles {
         encoder,
@@ -76,7 +97,6 @@ async fn test_japanese_ocr_e2e() {
     let mut model = JapaneseOCRModel::from_model_files(model_files)
         .expect("Failed to initialize JapaneseOCRModel");
 
-    let manifest_dir = env!("CARGO_MANIFEST_DIR");
     let img_path = PathBuf::from(manifest_dir).join("src/ocr/ocr_example.jpg");
     let img = open(img_path).expect("Failed to open ocr_example.jpg");
 
@@ -85,10 +105,47 @@ async fn test_japanese_ocr_e2e() {
     println!("OCR Result:\n{}", result);
 
     // Verify some text from the image
+    assert!(result.contains("れんしゅう"), "should contain 'れんしゅう'");
+    assert!(result.contains("もんだい"), "should contain 'もんだい'");
+    assert!(result.contains("何を"), "should contain '何を'");
+    assert!(result.contains("入れますか"), "should contain '入れますка'");
+    assert!(result.contains("いちばん"), "should contain 'いちばん'");
+    assert!(result.contains("えらんで"), "should contain 'えらんで'");
+    assert!(result.contains("ください"), "should contain 'ください'");
+    assert!(result.contains("トイレ"), "should contain 'トイレ'");
+    assert!(result.contains("行って"), "should contain '行って'");
+    assert!(result.contains("電車"), "should contain '電車'");
+    assert!(result.contains("しまった"), "should contain 'しまった'");
+    assert!(result.contains("すみません"), "should contain 'すみません'");
+    assert!(result.contains("おそく"), "should contain 'おそく'");
+    assert!(result.contains("なって"), "should contain 'なって'");
+    assert!(result.contains("ずいぶん"), "should contain 'ずいぶん'");
     assert!(
-        result.contains("もんだい"),
-        "Result should contain 'もんだい'"
+        result.contains("待ちましたか"),
+        "should contain '待ちましたか'"
     );
-    assert!(result.contains("トイレ"), "Result should contain 'トイレ'");
-    assert!(result.contains("山田"), "Result should contain '山田'");
+    assert!(result.contains("いいえ"), "should contain 'いいえ'");
+    assert!(result.contains("わたしも"), "should contain 'わたしも'");
+    assert!(result.contains("今"), "should contain '今'");
+    assert!(result.contains("ところ"), "should contain 'ところ'");
+    assert!(result.contains("来る"), "should contain '来る'");
+    assert!(result.contains("来ている"), "should contain '来ている'");
+    assert!(result.contains("来て"), "should contain '来て'");
+    assert!(result.contains("来た"), "should contain '来た'");
+    assert!(result.contains("山田"), "should contain '山田'");
+    assert!(result.contains("もしもし"), "should contain 'もしもし'");
+    assert!(result.contains("こちら"), "should contain 'こちら'");
+    assert!(result.contains("スミス"), "should contain 'スミス'");
+    assert!(
+        result.contains("おねがいします"),
+        "should contain 'おねがいします'"
+    );
+    assert!(result.contains("田中"), "should contain '田中'");
+    assert!(result.contains("会議"), "should contain '会議'");
+    assert!(result.contains("あいだ"), "should contain 'あいだ'");
+    assert!(result.contains("ちゅう"), "should contain 'ちゅう'");
+    assert!(result.contains("なか"), "should contain 'なか'");
+    assert!(result.contains("じゅう"), "should contain 'じゅう'");
+    assert!(result.contains("入る"), "should contain '入る'");
+    assert!(result.contains("どれですか"), "should contain 'どれですか'");
 }
