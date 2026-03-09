@@ -4655,6 +4655,7 @@ name = "origa"
 version = "0.1.0"
 dependencies = [
  "candle-core",
+ "candle-nn",
  "candle-onnx",
  "chrono",
  "flate2",

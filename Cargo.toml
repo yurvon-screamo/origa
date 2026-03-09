@@ -49,6 +49,7 @@ lindera-dictionary = { version = "2.2" }
 flate2 = "1.1"
 candle-core = { git = "https://github.com/huggingface/candle.git", rev = "8cc682c97bcb8a76017ad23e35fde8adac639e3f", default-features = false }
 candle-onnx = { git = "https://github.com/huggingface/candle.git", rev = "8cc682c97bcb8a76017ad23e35fde8adac639e3f", default-features = false }
+candle-nn = { git = "https://github.com/huggingface/candle.git", rev = "8cc682c97bcb8a76017ad23e35fde8adac639e3f", default-features = false }
 tokenizers = { version = "0.21", default-features = false, features = [
     "unstable_wasm",
 ] }
