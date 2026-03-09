@@ -55,7 +55,8 @@ fn open_oauth_url(provider: OAuthProvider) {
 
     LocalStorage::set("pkce_verifier", &verifier).ok();
 
-    let url = TrailBaseClient::get_oauth_url(provider.as_str(), &redirect_uri, &challenge);
+    let client = TrailBaseClient::new();
+    let url = client.get_oauth_url(provider.as_str(), &redirect_uri, &challenge);
     tracing::info!("OAuth: Generated URL={}", url);
 
     let _ = window.location().set_href(&url);

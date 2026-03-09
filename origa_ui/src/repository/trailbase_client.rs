@@ -4,10 +4,16 @@ use gloo_net::http::{Method, Request, Response};
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
 use sha2::{Digest, Sha256};
 use std::collections::HashMap;
+use std::sync::OnceLock;
 use thiserror::Error;
 
-const TRAILBASE_URL: &str = "https://origa-app.up.railway.app";
 const REFRESH_THRESHOLD_SECONDS: u64 = 300;
+
+fn trailbase_url() -> &'static str {
+    static TRAILBASE_URL: OnceLock<&str> = OnceLock::new();
+    TRAILBASE_URL
+        .get_or_init(|| option_env!("TRAILBASE_URL").unwrap_or("https://origa-app.up.railway.app"))
+}
 
 #[derive(Debug, Deserialize)]
 struct JwtClaims {
@@ -109,7 +115,7 @@ struct AuthTokenResponse {
 impl TrailBaseClient {
     pub fn new() -> Self {
         Self {
-            base_url: TRAILBASE_URL.to_string(),
+            base_url: trailbase_url().to_string(),
         }
     }
 
@@ -205,7 +211,12 @@ impl TrailBaseClient {
         URL_SAFE_NO_PAD.encode(result)
     }
 
-    pub fn get_oauth_url(provider: &str, redirect_uri: &str, pkce_challenge: &str) -> String {
+    pub fn get_oauth_url(
+        &self,
+        provider: &str,
+        redirect_uri: &str,
+        pkce_challenge: &str,
+    ) -> String {
         let encoded_redirect = urlencoding::encode(redirect_uri);
         let encoded_challenge = urlencoding::encode(pkce_challenge);
 
@@ -217,7 +228,7 @@ impl TrailBaseClient {
 
         format!(
             "{}/api/auth/v1/oauth/{}/login?redirect_uri={}&response_type=code&pkce_code_challenge={}{}",
-            TRAILBASE_URL, provider, encoded_redirect, encoded_challenge, scope
+            self.base_url, provider, encoded_redirect, encoded_challenge, scope
         )
     }
 
