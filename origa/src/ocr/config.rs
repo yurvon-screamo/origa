@@ -5,15 +5,17 @@ pub struct ModelConfig {
     pub ocr_cache_dir: String,
 }
 
-impl ModelConfig {
-    pub fn default() -> Self {
+impl Default for ModelConfig {
+    fn default() -> Self {
         Self {
             ocr_base_url: "https://huggingface.co".to_string(),
             ocr_model_name: "l0wgear/manga-ocr-2025-onnx".to_string(),
             ocr_cache_dir: "manga-ocr-model-".to_string(),
         }
     }
+}
 
+impl ModelConfig {
     pub fn new(
         ocr_base_url: impl Into<String>,
         ocr_model_name: impl Into<String>,
