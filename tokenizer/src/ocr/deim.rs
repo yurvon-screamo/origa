@@ -1,6 +1,6 @@
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use image::{DynamicImage, GenericImageView, ImageBuffer, Pixel, Rgb};
-use ort::session::{builder::GraphOptimizationLevel, Session, SessionOutputs};
+use ort::session::{Session, SessionOutputs, builder::GraphOptimizationLevel};
 use ort::value::Value;
 use std::path::Path;
 use std::sync::Mutex;
