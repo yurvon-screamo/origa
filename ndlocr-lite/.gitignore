@@ -1,0 +1,10 @@
+**/__pycache__/**
+/ocrenv/
+/build/
+/__pycache__/
+/ndlocr-lite-gui/build/
+/ndlocr-lite-gui/src/
+/ndlocr-lite-gui/userconf.yaml
+/ndlocr-lite-gui/debug.log
+/ndlocr-lite-gui/4ab7ecc3-53fb-b3e7-64e8-a809b5a483d2/
+/4ab7ecc3-53fb-b3e7-64e8-a809b5a483d2/
