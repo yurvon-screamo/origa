@@ -32,9 +32,9 @@ impl CascadeRecognizer {
     }
 
     pub fn recognize(&self, line_img: &DynamicImage, pred_char_cnt: f32) -> String {
-        let initial_rec = if pred_char_cnt == 3.0 {
+        let initial_rec = if pred_char_cnt >= 3.0 {
             &self.rec30
-        } else if pred_char_cnt == 2.0 {
+        } else if pred_char_cnt >= 2.0 {
             &self.rec50
         } else {
             &self.rec100
