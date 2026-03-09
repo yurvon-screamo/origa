@@ -1,40 +1,7 @@
-use crate::ocr::{JapaneseOCRModel, ModelConfig, ModelFiles};
+use crate::ocr::{JapaneseOCRModel, ModelFiles};
 use image::open;
 use std::path::PathBuf;
 use tokio::fs;
-
-async fn get_file_bytes(url: &str, filename: &str) -> Vec<u8> {
-    let manifest_dir = env!("CARGO_MANIFEST_DIR");
-    let cache_dir = PathBuf::from(manifest_dir)
-        .join("target")
-        .join("ocr_models");
-    let file_path = cache_dir.join(filename);
-
-    if file_path.exists() {
-        return fs::read(&file_path)
-            .await
-            .expect("Failed to read cached model file");
-    }
-
-    fs::create_dir_all(&cache_dir)
-        .await
-        .expect("Failed to create cache directory");
-    println!("Downloading {} from {}...", filename, url);
-
-    let response = reqwest::get(url)
-        .await
-        .expect("Failed to download model file");
-    let bytes = response
-        .bytes()
-        .await
-        .expect("Failed to get model file bytes")
-        .to_vec();
-
-    fs::write(&file_path, &bytes)
-        .await
-        .expect("Failed to write model file to cache");
-    bytes
-}
 
 #[tokio::test]
 async fn test_japanese_ocr_e2e() {
@@ -43,55 +10,43 @@ async fn test_japanese_ocr_e2e() {
         .with_test_writer()
         .try_init();
 
-    let config = ModelConfig::default();
-
-    let encoder = get_file_bytes(
-        &config.ocr_model_file_url("encoder_model.onnx"),
-        "encoder_model.onnx",
-    )
-    .await;
-    let decoder = get_file_bytes(
-        &config.ocr_model_file_url("decoder_model.onnx"),
-        "decoder_model.onnx",
-    )
-    .await;
-    let tokenizer = get_file_bytes(
-        &config.ocr_model_file_url("tokenizer.json"),
-        "tokenizer.json",
-    )
-    .await;
-
-    // Load layout model from local directory
     let manifest_dir = env!("CARGO_MANIFEST_DIR");
-    let workspace_root = PathBuf::from(manifest_dir).parent().unwrap().to_path_buf();
+    let workspace_root = PathBuf::from(manifest_dir)
+        .parent()
+        .expect("Failed to get workspace root")
+        .to_path_buf();
 
-    let layout_paths = [
-        workspace_root
-            .join("origa_ui")
-            .join("public")
-            .join("yolo")
-            .join("layout.safetensors"),
-        workspace_root.join(".yolo").join("model.safetensors"),
-    ];
+    let ndlocr_model_dir = workspace_root
+        .join("origa_ui")
+        .join("public")
+        .join("ndlocr");
 
-    let mut layout = None;
-    for path in &layout_paths {
-        if path.exists() {
-            println!("Loading layout model from: {:?}", path);
-            layout = Some(fs::read(path).await.expect("Failed to read layout model"));
-            break;
-        }
-    }
+    let deim = fs::read(ndlocr_model_dir.join("deim.onnx"))
+        .await
+        .expect("Failed to read deim model.");
 
-    let layout = layout.expect(
-        "Failed to find layout model. Please run scripts/download_yolo.py or ensure .yolo/model.safetensors exists.",
-    );
+    let parseq30 = fs::read(ndlocr_model_dir.join("parseq-30.onnx"))
+        .await
+        .expect("Failed to read parseq30 model.");
+
+    let parseq50 = fs::read(ndlocr_model_dir.join("parseq-50.onnx"))
+        .await
+        .expect("Failed to read parseq50 model.");
+
+    let parseq100 = fs::read(ndlocr_model_dir.join("parseq-100.onnx"))
+        .await
+        .expect("Failed to read parseq100 model.");
+
+    let vocab = fs::read(ndlocr_model_dir.join("vocab.txt"))
+        .await
+        .expect("Failed to read vocab file. Ensure tokenizer submodule is initialized.");
 
     let model_files = ModelFiles {
-        encoder,
-        decoder,
-        tokenizer,
-        layout_model: layout,
+        deim,
+        parseq30,
+        parseq50,
+        parseq100,
+        vocab,
     };
 
     let mut model = JapaneseOCRModel::from_model_files(model_files)
@@ -104,11 +59,10 @@ async fn test_japanese_ocr_e2e() {
 
     println!("OCR Result:\n{}", result);
 
-    // Verify some text from the image
     assert!(result.contains("れんしゅう"), "should contain 'れんしゅう'");
     assert!(result.contains("もんだい"), "should contain 'もんだい'");
     assert!(result.contains("何を"), "should contain '何を'");
-    assert!(result.contains("入れますか"), "should contain '入れますка'");
+    assert!(result.contains("入れますか"), "should contain '入れますか'");
     assert!(result.contains("いちばん"), "should contain 'いちばん'");
     assert!(result.contains("えらんで"), "should contain 'えらんで'");
     assert!(result.contains("ください"), "should contain 'ください'");

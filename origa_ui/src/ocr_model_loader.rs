@@ -12,12 +12,9 @@ fn js_err(msg: impl AsRef<str>, e: &JsValue) -> OrigaError {
     }
 }
 
-fn sanitize_model_name(name: &str, allow_slash: bool) -> String {
+fn sanitize_cache_name(name: &str) -> String {
     name.chars()
-        .map(|c| {
-            let allowed = c.is_alphanumeric() || c == '-' || c == '_' || (allow_slash && c == '/');
-            if allowed { c } else { '_' }
-        })
+        .map(|c| if c.is_alphanumeric() || c == '-' || c == '_' { c } else { '_' })
         .collect()
 }
 
@@ -31,89 +28,53 @@ impl ModelLoader {
     }
 
     pub async fn load_or_download_model(&self) -> Result<ModelFiles, OrigaError> {
-        info!("Loading models: OCR={}", self.config.ocr_model_name);
+        info!("Loading NDLOCR-Lite models from {}", self.config.ndlocr_base_url);
+
         let window = web_sys::window().ok_or_else(|| OrigaError::OcrError {
             reason: "No window object available".to_string(),
         })?;
 
-        let ocr_cache = self
-            .get_cache(
-                &window,
-                "manga-ocr-model-",
-                &self.config.ocr_model_name,
-                false,
-            )
-            .await?;
+        let cache_name = sanitize_cache_name(&self.config.ndlocr_cache_dir);
+        let cache = self.get_cache(&window, &cache_name).await?;
 
-        let layout_cache = self
-            .get_cache(&window, "local-models-", "layout", false)
-            .await?;
+        let filenames = ModelConfig::ndlocr_file_names();
 
-        let ocr_filenames = ModelConfig::ocr_file_names();
-        let ocr_load_names = &ocr_filenames[..3];
-
-        let (encoder, decoder, tokenizer) =
-            if self.ensure_files_cached(&ocr_cache, ocr_filenames).await? {
-                info!("OCR Model found in cache, loading...");
-                let mut loaded = self
-                    .load_files_from_cache(&ocr_cache, ocr_load_names)
-                    .await?;
-                (loaded.remove(0), loaded.remove(0), loaded.remove(0))
-            } else {
-                info!("OCR Model not found in cache, downloading...");
-                let files: Vec<(&str, String)> = ocr_filenames
-                    .iter()
-                    .map(|&f| (f, self.config.ocr_model_file_url(f)))
-                    .collect();
-                let mut loaded = self.download_and_cache_model(&ocr_cache, &files).await?;
-                (loaded.remove(0), loaded.remove(0), loaded.remove(0))
-            };
-
-        let layout_name = "layout.safetensors";
-        let layout_model = if self
-            .ensure_files_cached(&layout_cache, &[layout_name])
-            .await?
-        {
-            info!("Layout model found in cache, loading...");
-            self.load_files_from_cache(&layout_cache, &[layout_name])
-                .await?
-                .into_iter()
-                .next()
-                .unwrap()
+        if self.ensure_files_cached(&cache, filenames).await? {
+            info!("NDLOCR-Lite models found in cache, loading...");
+            let loaded = self.load_files_from_cache(&cache, filenames).await?;
+            self.build_model_files(loaded)
         } else {
-            info!(
-                "Layout model not found in cache, fetching from local path /yolo/layout.safetensors..."
-            );
-            let data = self
-                .download_and_cache_file(&layout_cache, layout_name, "/yolo/layout.safetensors")
-                .await?;
-            data
-        };
+            info!("NDLOCR-Lite models not found in cache, downloading...");
+            let files: Vec<(&str, String)> = filenames
+                .iter()
+                .map(|&f| (f, self.config.model_url(f)))
+                .collect();
+            let loaded = self.download_and_cache_model(&cache, &files).await?;
+            self.build_model_files(loaded)
+        }
+    }
 
-        info!("All models loaded successfully");
+    fn build_model_files(&self, mut loaded: Vec<Vec<u8>>) -> Result<ModelFiles, OrigaError> {
+        if loaded.len() != 5 {
+            return Err(OrigaError::OcrError {
+                reason: format!("Expected 5 model files, got {}", loaded.len()),
+            });
+        }
         Ok(ModelFiles {
-            encoder,
-            decoder,
-            tokenizer,
-            layout_model,
+            deim: loaded.remove(0),
+            parseq30: loaded.remove(0),
+            parseq50: loaded.remove(0),
+            parseq100: loaded.remove(0),
+            vocab: loaded.remove(0),
         })
     }
 
-    async fn get_cache(
-        &self,
-        window: &Window,
-        prefix: &str,
-        model_name: &str,
-        allow_slash: bool,
-    ) -> Result<Cache, OrigaError> {
+    async fn get_cache(&self, window: &Window, cache_name: &str) -> Result<Cache, OrigaError> {
         let cache_storage = window
             .caches()
             .map_err(|e| js_err("Failed to get cache storage", &e))?;
 
-        let safe_model_name = sanitize_model_name(model_name, allow_slash);
-        let cache_name = format!("{}{}", prefix, safe_model_name);
-
-        let cache = JsFuture::from(cache_storage.open(&cache_name))
+        let cache = JsFuture::from(cache_storage.open(cache_name))
             .await
             .map_err(|e| js_err("Failed to open cache", &e))?;
 
