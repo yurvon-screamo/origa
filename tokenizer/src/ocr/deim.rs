@@ -181,9 +181,9 @@ impl DeimDetector {
         }
 
         let char_counts: Option<Vec<f32>> = if outputs.len() >= 4 {
-            outputs.get("char_counts").and_then(|v| {
-                let (_shape, data): (&ort::value::Shape, &[f32]) = v.try_extract_tensor().ok()?;
-                Some(data.to_vec())
+            outputs.get("char_count").and_then(|v| {
+                let (_shape, data): (&ort::value::Shape, &[i64]) = v.try_extract_tensor().ok()?;
+                Some(data.iter().map(|&v| v as f32).collect())
             })
         } else {
             None
