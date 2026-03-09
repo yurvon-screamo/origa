@@ -5,7 +5,7 @@ use crate::ui_components::{Input, Text, TextSize, TypographyVariant};
 use leptos::either::Either;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use origa::domain::{Card, User};
+use origa::domain::{Card, NativeLanguage, User};
 use origa::use_cases::ToggleFavoriteUseCase;
 use ulid::Ulid;
 
@@ -14,6 +14,13 @@ pub fn GrammarContent() -> impl IntoView {
     let current_user =
         use_context::<RwSignal<Option<User>>>().expect("current_user context not provided");
 
+    let native_lang = Memo::new(move |_| {
+        current_user
+            .get()
+            .map(|u| *u.native_language())
+            .unwrap_or(NativeLanguage::Russian)
+    });
+
     let search = RwSignal::new(String::new());
     let filter = RwSignal::new(Filter::All);
 
@@ -21,7 +28,6 @@ pub fn GrammarContent() -> impl IntoView {
         use_context::<HybridUserRepository>().expect("repository context not provided");
 
     let on_toggle_favorite = {
-        let current_user = current_user;
         let repository = repository.clone();
 
         Callback::new(move |card_id: Ulid| {
@@ -62,14 +68,15 @@ pub fn GrammarContent() -> impl IntoView {
     let filtered_cards = Memo::new(move |_| {
         let query = search.get().to_lowercase();
         let current_filter = filter.get();
+        let lang = native_lang.get();
 
         all_cards
             .get()
             .into_iter()
             .filter(|card| {
                 let matches_search = query.is_empty() || {
-                    let title = card.card().question().text().to_lowercase();
-                    let description = card.card().answer().text().to_lowercase();
+                    let title = card.card().question(&lang).text().to_lowercase();
+                    let description = card.card().answer(&lang).text().to_lowercase();
                     title.contains(&query) || description.contains(&query)
                 };
                 let matches_filter = current_filter.matches(CardStatus::from_study_card(card));

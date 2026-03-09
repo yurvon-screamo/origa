@@ -22,7 +22,7 @@ pub fn ProfileContent() -> impl IntoView {
     let native_language = Memo::new(move |_| {
         current_user.with(|u| {
             u.as_ref()
-                .map(|u| u.native_language().clone())
+                .map(|u| *u.native_language())
                 .unwrap_or(NativeLanguage::Russian)
         })
     });
