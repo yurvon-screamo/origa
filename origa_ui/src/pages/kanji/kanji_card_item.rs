@@ -4,12 +4,19 @@ use crate::ui_components::{
     KanjiWritingSection, MarkdownText, Tag, Text, TextSize, TypographyVariant,
 };
 use leptos::{ev::MouseEvent, prelude::*};
-use origa::domain::{Card as DomainCard, StudyCard, User};
+use origa::domain::{Card as DomainCard, NativeLanguage, StudyCard, User};
 use ulid::Ulid;
 
 #[component]
 pub fn KanjiCardItem(study_card: StudyCard, on_toggle_favorite: Callback<Ulid>) -> impl IntoView {
     let current_user = use_context::<RwSignal<Option<User>>>().expect("current_user context");
+
+    let native_lang = Memo::new(move |_| {
+        current_user
+            .get()
+            .map(|u| *u.native_language())
+            .unwrap_or(NativeLanguage::Russian)
+    });
 
     let known_kanji = Memo::new(move |_| {
         current_user
@@ -26,6 +33,7 @@ pub fn KanjiCardItem(study_card: StudyCard, on_toggle_favorite: Callback<Ulid>) 
 
     let is_history_open = RwSignal::new(false);
 
+    let lang = native_lang.get();
     let (kanji_char, description, radicals, example_words) = match card {
         DomainCard::Kanji(kanji_card) => {
             let radicals_str = kanji_card
@@ -34,7 +42,7 @@ pub fn KanjiCardItem(study_card: StudyCard, on_toggle_favorite: Callback<Ulid>) 
                 .map(|r| r.iter().map(|rad| rad.radical()).collect::<String>())
                 .unwrap_or_default();
             let examples_str = kanji_card
-                .example_words()
+                .example_words(&lang)
                 .iter()
                 .map(|w| format!("{} ({})", w.word(), w.meaning()))
                 .collect::<Vec<_>>()

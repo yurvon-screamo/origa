@@ -4,7 +4,7 @@ use crate::ui_components::{
     HeadingLevel, HistoryButton, MarkdownText, Tag, Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
-use origa::domain::{Card as DomainCard, StudyCard, User};
+use origa::domain::{Card as DomainCard, NativeLanguage, StudyCard, User};
 use ulid::Ulid;
 
 #[component]
@@ -13,6 +13,13 @@ pub fn VocabularyCardItem(
     on_toggle_favorite: Callback<Ulid>,
 ) -> impl IntoView {
     let current_user = use_context::<RwSignal<Option<User>>>().expect("current_user context");
+
+    let native_lang = Memo::new(move |_| {
+        current_user
+            .get()
+            .map(|u| *u.native_language())
+            .unwrap_or(NativeLanguage::Russian)
+    });
 
     let known_kanji = Memo::new(move |_| {
         current_user
@@ -29,10 +36,11 @@ pub fn VocabularyCardItem(
 
     let is_history_open = RwSignal::new(false);
 
+    let lang = native_lang.get();
     let (word, meaning) = match card {
         DomainCard::Vocabulary(vocab) => (
             vocab.word().text().to_string(),
-            vocab.meaning().text().to_string(),
+            vocab.answer(&lang).text().to_string(),
         ),
         _ => ("?".to_string(), "?".to_string()),
     };

@@ -161,7 +161,7 @@ fn user_to_json(user: &User, trailbase_id: &str) -> serde_json::Value {
         "trailbase_id": trailbase_id,
         "username": user.username(),
         "email": user.email(),
-        "native_language": i32::from(user.native_language().clone()),
+        "native_language": i32::from(*user.native_language()),
         "current_japanese_level": i32::from(user.current_japanese_level()),
         "jlpt_progress": jlpt_progress_json,
         "telegram_user_id": user.telegram_user_id().copied().map(|id| id as i64),

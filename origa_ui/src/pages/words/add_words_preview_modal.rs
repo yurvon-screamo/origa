@@ -40,8 +40,6 @@ pub fn AddWordsPreviewModal(is_open: RwSignal<bool>) -> impl IntoView {
     let active_tab = RwSignal::new("text".to_string());
 
     Effect::new({
-        let input_mode = input_mode;
-        let active_tab = active_tab;
         move || {
             let tab = active_tab.get();
             input_mode.set(if tab == "image" {
@@ -60,15 +58,12 @@ pub fn AddWordsPreviewModal(is_open: RwSignal<bool>) -> impl IntoView {
     };
 
     let on_ocr_error = {
-        let error_message = error_message;
         Callback::new(move |_msg: String| {
             error_message.set(None);
         })
     };
 
     let on_switch_to_text = {
-        let input_mode = input_mode;
-        let active_tab = active_tab;
         Callback::new(move |_| {
             input_mode.set(InputMode::Text);
             active_tab.set("text".to_string());
