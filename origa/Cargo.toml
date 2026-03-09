@@ -42,3 +42,11 @@ image.workspace = true
 
 [dev-dependencies]
 rstest.workspace = true
+reqwest.workspace = true
+tokio = { workspace = true, default-features = false, features = [
+    "rt",
+    "macros",
+    "time",
+    "fs",
+] }
+tracing-subscriber = { workspace = true, features = ["fmt"] }

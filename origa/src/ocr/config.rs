@@ -10,6 +10,17 @@ pub struct ModelConfig {
 }
 
 impl ModelConfig {
+    pub fn default() -> Self {
+        Self {
+            ocr_base_url: "https://huggingface.co".to_string(),
+            ocr_model_name: "l0wgear/manga-ocr-2025-onnx".to_string(),
+            ocr_cache_dir: "manga-ocr-model-".to_string(),
+            layout_base_url: "https://huggingface.co".to_string(),
+            layout_model_name: "wybxc/DocLayout-YOLO-DocStructBench-onnx".to_string(),
+            layout_filename: "doclayout_yolo_docstructbench_imgsz1024.onnx".to_string(),
+        }
+    }
+
     pub fn new(
         ocr_base_url: impl Into<String>,
         ocr_model_name: impl Into<String>,

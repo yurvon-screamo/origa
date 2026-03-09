@@ -83,7 +83,7 @@ impl JapaneseOCRModel {
         )
     }
 
-    pub fn run(&mut self, img: &DynamicImage) -> Result<String, OrigaError> {
+    pub(crate) fn run(&mut self, img: &DynamicImage) -> Result<String, OrigaError> {
         info!("Running OCR with layout analysis");
         let bboxes = self.layout_model.run_layout_model(img)?;
 
