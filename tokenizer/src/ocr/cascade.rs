@@ -43,15 +43,18 @@ impl CascadeRecognizer {
         } else if approx_eq(pred_char_cnt, 2.0) {
             &self.rec50
         } else {
-            &self.rec100
+            return self.rec100.read(line_img);
         };
 
         let text = initial_rec.read(line_img);
 
-        if text.len() >= 45 {
-            self.rec100.read(line_img)
-        } else if text.len() >= 25 {
-            self.rec50.read(line_img)
+        if text.len() >= 25 {
+            let text50 = self.rec50.read(line_img);
+            if text50.len() >= 45 {
+                self.rec100.read(line_img)
+            } else {
+                text50
+            }
         } else {
             text
         }
