@@ -1,6 +1,6 @@
 use crate::ui_components::{Card, get_reading_from_text, is_speech_supported, speak_text};
 use leptos::prelude::*;
-use origa::domain::{Card as DomainCard, GrammarInfo};
+use origa::domain::{Card as DomainCard, GrammarInfo, NativeLanguage, User};
 
 use super::card_type::CardType;
 use super::kanji_card_details::KanjiCardDetails;
@@ -17,9 +17,18 @@ pub fn LessonCard(
     on_show_answer: Callback<()>,
     grammar_info: Option<GrammarInfo>,
 ) -> impl IntoView {
+    let current_user = use_context::<RwSignal<Option<User>>>().expect("current_user context");
+    let native_lang = Memo::new(move |_| {
+        current_user
+            .get()
+            .map(|u| *u.native_language())
+            .unwrap_or(NativeLanguage::Russian)
+    });
+
     let card_type = CardType::from(&card);
-    let question = StoredValue::new(card.question().text().to_string());
-    let answer = StoredValue::new(card.answer().text().to_string());
+    let lang = native_lang.get();
+    let question = StoredValue::new(card.question(&lang).text().to_string());
+    let answer = StoredValue::new(card.answer(&lang).text().to_string());
 
     let radicals: Option<String> = match &card {
         DomainCard::Kanji(kanji) => kanji.radicals_info().ok().map(|r| {
@@ -35,7 +44,7 @@ pub fn LessonCard(
     let example_words: Option<Vec<(String, String)>> = match &card {
         DomainCard::Kanji(kanji) => {
             let examples: Vec<_> = kanji
-                .example_words()
+                .example_words(&lang)
                 .iter()
                 .map(|e| (e.word().to_string(), e.meaning().to_string()))
                 .collect();
@@ -76,7 +85,7 @@ pub fn LessonCard(
     let kun_readings_stored = StoredValue::new(kun_readings);
 
     let kanji_for_animation: Option<String> = match &card {
-        DomainCard::Kanji(_) => Some(card.question().text().to_string()),
+        DomainCard::Kanji(_) => Some(card.question(&lang).text().to_string()),
         _ => None,
     };
     let kanji_stored = StoredValue::new(kanji_for_animation);
