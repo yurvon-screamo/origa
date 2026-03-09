@@ -5,9 +5,6 @@ use std::path::Path;
 use super::parseq::ParseqRecognizer;
 use super::vocab::Vocabulary;
 
-const CASCADE_UPGRADE_THRESHOLD_50: usize = 25;
-const CASCADE_UPGRADE_THRESHOLD_100: usize = 45;
-
 pub struct CascadeRecognizer {
     rec30: ParseqRecognizer,
     rec50: ParseqRecognizer,
@@ -35,27 +32,22 @@ impl CascadeRecognizer {
     }
 
     pub fn recognize(&self, line_img: &DynamicImage, pred_char_cnt: f32) -> String {
-        let initial_rec = self.select_initial_model(pred_char_cnt);
+        let initial_rec = if pred_char_cnt == 3.0 {
+            &self.rec30
+        } else if pred_char_cnt == 2.0 {
+            &self.rec50
+        } else {
+            &self.rec100
+        };
+
         let text = initial_rec.read(line_img);
-        self.apply_fallback(line_img, text)
-    }
 
-    fn select_initial_model(&self, pred_char_cnt: f32) -> &ParseqRecognizer {
-        let rounded = pred_char_cnt.round() as i32;
-        match rounded {
-            3 => &self.rec30,
-            2 => &self.rec50,
-            _ => &self.rec100,
-        }
-    }
-
-    fn apply_fallback(&self, line_img: &DynamicImage, initial_text: String) -> String {
-        if initial_text.len() >= CASCADE_UPGRADE_THRESHOLD_100 {
+        if text.len() >= 45 {
             self.rec100.read(line_img)
-        } else if initial_text.len() >= CASCADE_UPGRADE_THRESHOLD_50 {
+        } else if text.len() >= 25 {
             self.rec50.read(line_img)
         } else {
-            initial_text
+            text
         }
     }
 }

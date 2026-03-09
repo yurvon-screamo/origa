@@ -1,32 +1,30 @@
 use anyhow::{Context, Result};
 use image::DynamicImage;
-use ort::session::{builder::GraphOptimizationLevel, Session, SessionOutputs};
+use ort::session::{Session, SessionOutputs, builder::GraphOptimizationLevel};
 use ort::value::Value;
+use std::cell::RefCell;
 use std::path::Path;
-use std::sync::Mutex;
 
 use super::vocab::Vocabulary;
 
-const PARSEQ_INPUT_HEIGHT: u32 = 16;
-const PARSEQ_NORMALIZATION_SCALE: f32 = 127.5;
-const PARSEQ_NORMALIZATION_OFFSET: f32 = 1.0;
-
 pub struct ParseqRecognizer {
-    session: Mutex<Session>,
+    session: RefCell<Session>,
     vocab: Vocabulary,
     input_width: u32,
 }
 
 impl ParseqRecognizer {
     pub fn new(model_path: &Path, vocab: &Vocabulary, input_width: u32) -> Result<Self> {
-        let session = Session::builder()?
+        let builder = Session::builder()?;
+        let mut builder = builder
             .with_optimization_level(GraphOptimizationLevel::Level3)
-            .map_err(|e| anyhow::anyhow!("Failed to set optimization level: {:?}", e))?
+            .map_err(|e| anyhow::anyhow!("Failed to set optimization level: {:?}", e))?;
+        let session = builder
             .commit_from_file(model_path)
             .with_context(|| format!("Failed to load PARSeq model from {:?}", model_path))?;
 
         Ok(Self {
-            session: Mutex::new(session),
+            session: RefCell::new(session),
             vocab: vocab.clone(),
             input_width,
         })
@@ -54,13 +52,7 @@ impl ParseqRecognizer {
         };
 
         let result = {
-            let mut session = match self.session.lock() {
-                Ok(s) => s,
-                Err(e) => {
-                    tracing::warn!("PARSeq inference session error: {:?}", e);
-                    return String::new();
-                }
-            };
+            let mut session = self.session.borrow_mut();
             match session.run(ort::inputs!["images" => input_tensor]) {
                 Ok(outputs) => self.postprocess(&outputs),
                 Err(e) => {
@@ -83,7 +75,7 @@ impl ParseqRecognizer {
             false
         };
 
-        let target_height = PARSEQ_INPUT_HEIGHT;
+        let target_height = 16u32;
         let target_width = self.input_width;
 
         let resized = if rotated {
@@ -110,8 +102,7 @@ impl ParseqRecognizer {
             for x in 0..target_width as usize {
                 let pixel = resized.get_pixel(x as u32, y as u32);
                 for c in 0..3 {
-                    let val = pixel[2 - c] as f32 / PARSEQ_NORMALIZATION_SCALE
-                        - PARSEQ_NORMALIZATION_OFFSET;
+                    let val = pixel[2 - c] as f32 / 127.5 - 1.0;
                     tensor[[0, c, y, x]] = val;
                 }
             }
@@ -126,14 +117,10 @@ impl ParseqRecognizer {
         let (shape, logits_data): (&ort::value::Shape, &[f32]) =
             match logits_value.try_extract_tensor() {
                 Ok(t) => t,
-                Err(e) => {
-                    tracing::warn!("Failed to extract logits tensor: {:?}", e);
-                    return String::new();
-                }
+                Err(_) => return String::new(),
             };
 
         if shape.len() < 3 {
-            tracing::warn!("Unexpected logits shape length: {}", shape.len());
             return String::new();
         }
 
@@ -143,9 +130,9 @@ impl ParseqRecognizer {
         let mut indices = Vec::with_capacity(seq_len);
 
         for t in 0..seq_len {
-            let mut max_idx = 1;
+            let mut max_idx = 0;
             let mut max_val = f32::NEG_INFINITY;
-            for v in 1..vocab_size {
+            for v in 0..vocab_size {
                 let val = logits_data[t * vocab_size + v];
                 if val > max_val {
                     max_val = val;

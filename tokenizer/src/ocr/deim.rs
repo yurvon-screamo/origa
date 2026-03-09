@@ -1,14 +1,12 @@
 use anyhow::{Context, Result};
 use image::{DynamicImage, GenericImageView, ImageBuffer, Pixel, Rgb};
-use ort::session::{builder::GraphOptimizationLevel, Session, SessionOutputs};
+use ort::session::{Session, SessionOutputs, builder::GraphOptimizationLevel};
 use ort::value::Value;
+use std::cell::RefCell;
 use std::path::Path;
-use std::sync::Mutex;
 
 const INPUT_SIZE: u32 = 800;
 const CONF_THRESHOLD: f32 = 0.25;
-const IMAGENET_MEAN: [f32; 3] = [0.485, 0.456, 0.406];
-const IMAGENET_STD: [f32; 3] = [0.229, 0.224, 0.225];
 
 #[derive(Debug, Clone)]
 pub struct BoundingBox {
@@ -22,19 +20,21 @@ pub struct BoundingBox {
 }
 
 pub struct DeimDetector {
-    session: Mutex<Session>,
+    session: RefCell<Session>,
 }
 
 impl DeimDetector {
     pub fn new(model_path: &Path) -> Result<Self> {
-        let session = Session::builder()?
+        let builder = Session::builder()?;
+        let mut builder = builder
             .with_optimization_level(GraphOptimizationLevel::Level3)
-            .map_err(|e| anyhow::anyhow!("Failed to set optimization level: {:?}", e))?
+            .map_err(|e| anyhow::anyhow!("Failed to set optimization level: {:?}", e))?;
+        let session = builder
             .commit_from_file(model_path)
             .with_context(|| format!("Failed to load DEIM model from {:?}", model_path))?;
 
         Ok(Self {
-            session: Mutex::new(session),
+            session: RefCell::new(session),
         })
     }
 
@@ -47,18 +47,12 @@ impl DeimDetector {
         let input_tensor =
             Value::from_array(input_array).context("Failed to create input tensor")?;
 
-        let dims_array = ndarray::Array::from_shape_vec((1, 2), vec![max_wh as i64, max_wh as i64])
-            .context("Failed to create dims array")?;
+        let dims_array =
+            ndarray::Array::from_shape_vec((1, 2), vec![INPUT_SIZE as i64, INPUT_SIZE as i64])?;
         let dims_tensor = Value::from_array(dims_array).context("Failed to create dims tensor")?;
 
         let boxes = {
-            let mut session = match self.session.lock() {
-                Ok(s) => s,
-                Err(e) => {
-                    tracing::warn!("DEIM inference session error: {:?}", e);
-                    return Err(anyhow::anyhow!("DEIM session lock error"));
-                }
-            };
+            let mut session = self.session.borrow_mut();
             let outputs = session
                 .run(ort::inputs![
                     "images" => input_tensor,
@@ -78,9 +72,7 @@ impl DeimDetector {
     ) -> Result<(ndarray::Array4<f32>, f32, f32)> {
         let mut padded = ImageBuffer::<Rgb<u8>, Vec<u8>>::new(max_wh, max_wh);
         for (x, y, pixel) in image.pixels() {
-            if x < max_wh && y < max_wh {
-                padded.put_pixel(x, y, pixel.to_rgb());
-            }
+            padded.put_pixel(x, y, pixel.to_rgb());
         }
 
         let resized = image::imageops::resize(
@@ -90,18 +82,21 @@ impl DeimDetector {
             image::imageops::FilterType::CatmullRom,
         );
 
-        let scale_x = 1.0;
-        let scale_y = 1.0;
+        let scale_x = max_wh as f32 / INPUT_SIZE as f32;
+        let scale_y = max_wh as f32 / INPUT_SIZE as f32;
 
         let mut tensor =
             ndarray::Array4::<f32>::zeros((1, 3, INPUT_SIZE as usize, INPUT_SIZE as usize));
+
+        let mean = [0.485, 0.456, 0.406];
+        let std = [0.229, 0.224, 0.225];
 
         for y in 0..INPUT_SIZE as usize {
             for x in 0..INPUT_SIZE as usize {
                 let pixel = resized.get_pixel(x as u32, y as u32);
                 for c in 0..3 {
                     let val = pixel[c] as f32 / 255.0;
-                    let normalized = (val - IMAGENET_MEAN[c]) / IMAGENET_STD[c];
+                    let normalized = (val - mean[c]) / std[c];
                     tensor[[0, c, y, x]] = normalized;
                 }
             }
@@ -132,10 +127,6 @@ impl DeimDetector {
             .try_extract_tensor()
             .context("Failed to extract labels")?;
 
-        if scores_shape.len() < 2 {
-            return Ok(detections);
-        }
-
         let num_detections = scores_shape[1] as usize;
 
         let char_counts: Option<Vec<f32>> = if outputs.len() >= 4 {
@@ -153,24 +144,19 @@ impl DeimDetector {
                 continue;
             }
 
-            let x0_raw = boxes_data[i * 4] * scale_x;
-            let y0_raw = boxes_data[i * 4 + 1] * scale_y;
-            let x1_raw = boxes_data[i * 4 + 2] * scale_x;
-            let y1_raw = boxes_data[i * 4 + 3] * scale_y;
-
-            let x0 = x0_raw.max(0.0).min(f32::MAX) as i32;
-            let y0 = y0_raw.max(0.0).min(f32::MAX) as i32;
-            let x1 = x1_raw.max(0.0).min(f32::MAX) as i32;
-            let y1 = y1_raw.max(0.0).min(f32::MAX) as i32;
+            let x0 = boxes_data[i * 4] * scale_x;
+            let y0 = boxes_data[i * 4 + 1] * scale_y;
+            let x1 = boxes_data[i * 4 + 2] * scale_x;
+            let y1 = boxes_data[i * 4 + 3] * scale_y;
 
             let label = labels_data[i] as usize;
             let char_count = char_counts.as_ref().map(|c| c[i]).unwrap_or(100.0);
 
             detections.push(BoundingBox {
-                x0,
-                y0,
-                x1,
-                y1,
+                x0: x0 as i32,
+                y0: y0 as i32,
+                x1: x1 as i32,
+                y1: y1 as i32,
                 confidence: score,
                 class_index: label.saturating_sub(1),
                 pred_char_cnt: char_count,
