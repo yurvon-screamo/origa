@@ -32,13 +32,10 @@ lindera.workspace = true
 lindera-dictionary.workspace = true
 flate2.workspace = true
 
-# OCR
-candle-core.workspace = true
-candle-onnx.workspace = true
-candle-nn.workspace = true
-candle-transformers.workspace = true
-tokenizers.workspace = true
-prost.workspace = true
+# OCR (NDLOCR-Lite)
+ort = { version = "2.0.0-rc.12", features = ["download-binaries"] }
+ndarray = "0.17"
+anyhow = "1.0"
 image.workspace = true
 
 [dev-dependencies]
