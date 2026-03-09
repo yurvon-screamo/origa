@@ -1,8 +1,8 @@
-use candle_core::{D, DType, Device, IndexOp, Result, Tensor};
-use candle_nn::{Conv2d, Conv2dConfig, Module, VarBuilder, batch_norm, conv2d, conv2d_no_bias};
-use candle_transformers::object_detection::{Bbox, KeyPoint, non_maximum_suppression};
-use image::{DynamicImage, imageops::FilterType};
-use tracing::{Level, debug, info, span};
+use candle_core::{DType, Device, IndexOp, Result, Tensor, D};
+use candle_nn::{batch_norm, conv2d, conv2d_no_bias, Conv2d, Conv2dConfig, Module, VarBuilder};
+use candle_transformers::object_detection::{non_maximum_suppression, Bbox, KeyPoint};
+use image::{imageops::FilterType, DynamicImage};
+use tracing::{debug, info, span, Level};
 
 use crate::domain::OrigaError;
 
@@ -26,15 +26,15 @@ pub enum LayoutClass {
 
 impl LayoutClass {
     pub fn is_text_like(&self) -> bool {
-        match self {
+        matches!(
+            self,
             Self::Text
-            | Self::Title
-            | Self::SectionHeader
-            | Self::Caption
-            | Self::Footnote
-            | Self::ListItem => true,
-            _ => false,
-        }
+                | Self::Title
+                | Self::SectionHeader
+                | Self::Caption
+                | Self::Footnote
+                | Self::ListItem
+        )
     }
 }
 
@@ -381,7 +381,11 @@ impl Module for Bottleneck {
     fn forward(&self, xs: &Tensor) -> Result<Tensor> {
         let _enter = self.span.enter();
         let ys = self.cv2.forward(&self.cv1.forward(xs)?)?;
-        if self.residual { xs + ys } else { Ok(ys) }
+        if self.residual {
+            xs + ys
+        } else {
+            Ok(ys)
+        }
     }
 }
 
@@ -400,7 +404,7 @@ impl C2f {
         let cv2 = ConvBlock::load(vb.pp("cv2"), (2 + n) * c, c2, 1, 1, None)?;
         let mut bottleneck = Vec::with_capacity(n);
         for idx in 0..n {
-            let b = Bottleneck::load(vb.pp(&format!("bottleneck.{idx}")), c, c, shortcut)?;
+            let b = Bottleneck::load(vb.pp(format!("bottleneck.{idx}")), c, c, shortcut)?;
             bottleneck.push(b)
         }
         Ok(Self {
