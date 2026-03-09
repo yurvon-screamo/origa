@@ -1,6 +1,7 @@
 use crate::ui_components::{
-    Button, ButtonVariant, FuriganaText, Heading, HeadingLevel, KanjiViewMode, KanjiWritingSection,
-    MarkdownText, MarkdownVariant, ReadingGroup, Text, TextSize, TypographyVariant,
+    Button, ButtonVariant, Divider, FuriganaText, Heading, HeadingLevel, KanjiViewMode,
+    KanjiWritingSection, MarkdownText, MarkdownVariant, ReadingGroup, Text, TextSize,
+    TypographyVariant,
 };
 use leptos::{ev::MouseEvent, prelude::*};
 use origa::domain::{GrammarInfo, User};
@@ -104,16 +105,19 @@ pub fn LessonCardAnswer(
             </div>
 
             <Show when=move || grammar_info_stored.get_value().is_some()>
-                {move || {
-                    grammar_info_stored.get_value().map(|info| {
-                        view! {
-                            <GrammarInfoBadge
-                                title=info.title().to_string()
-                                description=info.description().to_string()
-                            />
-                        }
-                    })
-                }}
+                <div class="mt-4">
+                    <Divider class=Signal::derive(|| "mb-4".to_string()) />
+                    {move || {
+                        grammar_info_stored.get_value().map(|info| {
+                            view! {
+                                <GrammarInfoBadge
+                                    title=info.title().to_string()
+                                    description=info.description().to_string()
+                                />
+                            }
+                        })
+                    }}
+                </div>
             </Show>
 
             <Show when=move || needs_collapse.get()>
