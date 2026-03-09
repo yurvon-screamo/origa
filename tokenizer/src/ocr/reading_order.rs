@@ -13,24 +13,14 @@ pub fn sort_reading_order(boxes: &mut [BoundingBox], _img_height: u32, _img_widt
     let is_vertical = vertical_count > boxes.len() / 2;
 
     if is_vertical {
-        boxes.sort_by(|a, b| {
-            let col_a = a.x0 / 50;
-            let col_b = b.x0 / 50;
-            if col_a != col_b {
-                col_b.cmp(&col_a)
-            } else {
-                a.y0.cmp(&b.y0)
-            }
+        boxes.sort_by(|a, b| match b.x0.cmp(&a.x0) {
+            std::cmp::Ordering::Equal => a.y0.cmp(&b.y0),
+            other => other,
         });
     } else {
-        boxes.sort_by(|a, b| {
-            let row_a = a.y0 / 20;
-            let row_b = b.y0 / 20;
-            if row_a != row_b {
-                row_a.cmp(&row_b)
-            } else {
-                a.x0.cmp(&b.x0)
-            }
+        boxes.sort_by(|a, b| match a.y0.cmp(&b.y0) {
+            std::cmp::Ordering::Equal => a.x0.cmp(&b.x0),
+            other => other,
         });
     }
 }

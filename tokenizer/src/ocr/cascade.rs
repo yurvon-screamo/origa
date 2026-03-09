@@ -5,10 +5,16 @@ use std::path::Path;
 use super::parseq::ParseqRecognizer;
 use super::vocab::Vocabulary;
 
+const EPSILON: f32 = 0.1;
+
 pub struct CascadeRecognizer {
     rec30: ParseqRecognizer,
     rec50: ParseqRecognizer,
     rec100: ParseqRecognizer,
+}
+
+fn approx_eq(a: f32, b: f32) -> bool {
+    (a - b).abs() < EPSILON
 }
 
 impl CascadeRecognizer {
@@ -32,9 +38,9 @@ impl CascadeRecognizer {
     }
 
     pub fn recognize(&self, line_img: &DynamicImage, pred_char_cnt: f32) -> String {
-        let initial_rec = if pred_char_cnt >= 3.0 {
+        let initial_rec = if approx_eq(pred_char_cnt, 3.0) {
             &self.rec30
-        } else if pred_char_cnt >= 2.0 {
+        } else if approx_eq(pred_char_cnt, 2.0) {
             &self.rec50
         } else {
             &self.rec100
