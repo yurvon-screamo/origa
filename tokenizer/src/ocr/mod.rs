@@ -34,7 +34,6 @@ impl OcrEngine {
 
     pub fn recognize(&self, image: &DynamicImage) -> Result<String> {
         let mut boxes = self.detector.detect(image)?;
-        eprintln!("DEBUG: Found {} boxes", boxes.len());
         if boxes.is_empty() {
             return Ok(String::new());
         }
@@ -58,16 +57,8 @@ fn crop_bbox(image: &DynamicImage, bbox: &BoundingBox) -> DynamicImage {
     let x1 = bbox.x1.max(0) as u32;
     let y1 = bbox.y1.max(0) as u32;
 
-    if x0 >= x1 || y0 >= y1 {
-        return image.crop_imm(0, 0, 1, 1);
-    }
-
-    let width = (x1 - x0).min(image.width().saturating_sub(x0));
-    let height = (y1 - y0).min(image.height().saturating_sub(y0));
-
-    if width == 0 || height == 0 {
-        return image.crop_imm(0, 0, 1, 1);
-    }
+    let width = (x1 - x0).min(image.width() - x0);
+    let height = (y1 - y0).min(image.height() - y0);
 
     image.crop_imm(x0, y0, width, height)
 }
