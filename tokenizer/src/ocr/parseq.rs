@@ -1,14 +1,18 @@
 use anyhow::{Context, Result};
 use image::DynamicImage;
-use ort::session::{Session, SessionOutputs, builder::GraphOptimizationLevel};
+use ort::session::{builder::GraphOptimizationLevel, Session, SessionOutputs};
 use ort::value::Value;
-use std::cell::RefCell;
 use std::path::Path;
+use std::sync::Mutex;
 
 use super::vocab::Vocabulary;
 
+/// PARSeq input height in pixels
+/// All text lines are resized to this height regardless of original size
+const INPUT_HEIGHT: u32 = 16;
+
 pub struct ParseqRecognizer {
-    session: RefCell<Session>,
+    session: Mutex<Session>,
     vocab: Vocabulary,
     input_width: u32,
 }
@@ -24,7 +28,7 @@ impl ParseqRecognizer {
             .with_context(|| format!("Failed to load PARSeq model from {:?}", model_path))?;
 
         Ok(Self {
-            session: RefCell::new(session),
+            session: Mutex::new(session),
             vocab: vocab.clone(),
             input_width,
         })
@@ -51,18 +55,19 @@ impl ParseqRecognizer {
             }
         };
 
-        let result = {
-            let mut session = self.session.borrow_mut();
-            match session.run(ort::inputs!["images" => input_tensor]) {
+        match self.session.lock() {
+            Ok(mut session) => match session.run(ort::inputs!["images" => input_tensor]) {
                 Ok(outputs) => self.postprocess(&outputs),
                 Err(e) => {
                     tracing::warn!("PARSeq inference failed: {:?}", e);
                     String::new()
                 }
+            },
+            Err(e) => {
+                tracing::warn!("Session lock failed: {:?}", e);
+                String::new()
             }
-        };
-
-        result
+        }
     }
 
     fn preprocess(&self, image: &DynamicImage) -> Result<ndarray::Array4<f32>> {
@@ -75,7 +80,6 @@ impl ParseqRecognizer {
             false
         };
 
-        let target_height = 16u32;
         let target_width = self.input_width;
 
         let resized = if rotated {
@@ -83,22 +87,22 @@ impl ParseqRecognizer {
             image::imageops::resize(
                 &rotated_img,
                 target_width,
-                target_height,
+                INPUT_HEIGHT,
                 image::imageops::FilterType::Triangle,
             )
         } else {
             image::imageops::resize(
                 image,
                 target_width,
-                target_height,
+                INPUT_HEIGHT,
                 image::imageops::FilterType::Triangle,
             )
         };
 
         let mut tensor =
-            ndarray::Array4::<f32>::zeros((1, 3, target_height as usize, target_width as usize));
+            ndarray::Array4::<f32>::zeros((1, 3, INPUT_HEIGHT as usize, target_width as usize));
 
-        for y in 0..target_height as usize {
+        for y in 0..INPUT_HEIGHT as usize {
             for x in 0..target_width as usize {
                 let pixel = resized.get_pixel(x as u32, y as u32);
                 for c in 0..3 {
@@ -117,10 +121,14 @@ impl ParseqRecognizer {
         let (shape, logits_data): (&ort::value::Shape, &[f32]) =
             match logits_value.try_extract_tensor() {
                 Ok(t) => t,
-                Err(_) => return String::new(),
+                Err(e) => {
+                    tracing::warn!("Failed to extract PARSeq output tensor: {:?}", e);
+                    return String::new();
+                }
             };
 
         if shape.len() < 3 {
+            tracing::warn!("Invalid PARSeq output shape: {:?}", shape);
             return String::new();
         }
 

@@ -57,8 +57,21 @@ fn crop_bbox(image: &DynamicImage, bbox: &BoundingBox) -> DynamicImage {
     let x1 = bbox.x1.max(0) as u32;
     let y1 = bbox.y1.max(0) as u32;
 
-    let width = (x1 - x0).min(image.width() - x0);
-    let height = (y1 - y0).min(image.height() - y0);
+    if x1 <= x0 || y1 <= y0 {
+        return image.crop_imm(0, 0, 1, 1);
+    }
+
+    let x0 = x0.min(image.width());
+    let y0 = y0.min(image.height());
+    let x1 = x1.min(image.width());
+    let y1 = y1.min(image.height());
+
+    let width = x1 - x0;
+    let height = y1 - y0;
+
+    if width == 0 || height == 0 {
+        return image.crop_imm(0, 0, 1, 1);
+    }
 
     image.crop_imm(x0, y0, width, height)
 }

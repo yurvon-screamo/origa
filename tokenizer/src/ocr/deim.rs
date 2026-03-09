@@ -1,12 +1,17 @@
-use anyhow::{Context, Result};
+use anyhow::{bail, Context, Result};
 use image::{DynamicImage, GenericImageView, ImageBuffer, Pixel, Rgb};
-use ort::session::{Session, SessionOutputs, builder::GraphOptimizationLevel};
+use ort::session::{builder::GraphOptimizationLevel, Session, SessionOutputs};
 use ort::value::Value;
-use std::cell::RefCell;
 use std::path::Path;
+use std::sync::Mutex;
 
-const INPUT_SIZE: u32 = 800;
+/// Minimum confidence threshold for detection filtering
+/// Detections below this value are discarded
 const CONF_THRESHOLD: f32 = 0.25;
+
+/// ImageNet normalization constants for DEIM preprocessing
+const IMAGENET_MEAN: [f32; 3] = [0.485, 0.456, 0.406];
+const IMAGENET_STD: [f32; 3] = [0.229, 0.224, 0.225];
 
 #[derive(Debug, Clone)]
 pub struct BoundingBox {
@@ -20,7 +25,8 @@ pub struct BoundingBox {
 }
 
 pub struct DeimDetector {
-    session: RefCell<Session>,
+    session: Mutex<Session>,
+    input_size: u32,
 }
 
 impl DeimDetector {
@@ -33,8 +39,26 @@ impl DeimDetector {
             .commit_from_file(model_path)
             .with_context(|| format!("Failed to load DEIM model from {:?}", model_path))?;
 
+        let input_shape = session
+            .inputs()
+            .first()
+            .context("Model has no inputs")?
+            .dtype();
+
+        let input_size = match input_shape {
+            ort::value::ValueType::Tensor { shape, .. } => {
+                if shape.len() >= 4 {
+                    shape[2] as u32
+                } else {
+                    1024
+                }
+            }
+            _ => 1024,
+        };
+
         Ok(Self {
-            session: RefCell::new(session),
+            session: Mutex::new(session),
+            input_size,
         })
     }
 
@@ -42,34 +66,35 @@ impl DeimDetector {
         let (img_h, img_w) = (image.height(), image.width());
         let max_wh = img_h.max(img_w);
 
-        let (input_array, scale_x, scale_y) = self.preprocess(image, max_wh)?;
+        let (input_array, scale) = self.preprocess(image, max_wh)?;
 
         let input_tensor =
             Value::from_array(input_array).context("Failed to create input tensor")?;
 
-        let dims_array =
-            ndarray::Array::from_shape_vec((1, 2), vec![INPUT_SIZE as i64, INPUT_SIZE as i64])?;
+        let dims_array = ndarray::Array::from_shape_vec(
+            (1, 2),
+            vec![self.input_size as i64, self.input_size as i64],
+        )?;
         let dims_tensor = Value::from_array(dims_array).context("Failed to create dims tensor")?;
 
         let boxes = {
-            let mut session = self.session.borrow_mut();
+            let mut session = self
+                .session
+                .lock()
+                .map_err(|e| anyhow::anyhow!("Session lock failed: {:?}", e))?;
             let outputs = session
                 .run(ort::inputs![
                     "images" => input_tensor,
                     "orig_target_sizes" => dims_tensor
                 ])
                 .context("DEIM inference failed")?;
-            self.postprocess(&outputs, scale_x, scale_y)?
+            self.postprocess(&outputs, scale)?
         };
 
         Ok(boxes)
     }
 
-    fn preprocess(
-        &self,
-        image: &DynamicImage,
-        max_wh: u32,
-    ) -> Result<(ndarray::Array4<f32>, f32, f32)> {
+    fn preprocess(&self, image: &DynamicImage, max_wh: u32) -> Result<(ndarray::Array4<f32>, f32)> {
         let mut padded = ImageBuffer::<Rgb<u8>, Vec<u8>>::new(max_wh, max_wh);
         for (x, y, pixel) in image.pixels() {
             padded.put_pixel(x, y, pixel.to_rgb());
@@ -77,40 +102,35 @@ impl DeimDetector {
 
         let resized = image::imageops::resize(
             &padded,
-            INPUT_SIZE,
-            INPUT_SIZE,
+            self.input_size,
+            self.input_size,
             image::imageops::FilterType::CatmullRom,
         );
 
-        let scale_x = max_wh as f32 / INPUT_SIZE as f32;
-        let scale_y = max_wh as f32 / INPUT_SIZE as f32;
+        let scale = max_wh as f32 / self.input_size as f32;
 
-        let mut tensor =
-            ndarray::Array4::<f32>::zeros((1, 3, INPUT_SIZE as usize, INPUT_SIZE as usize));
+        let mut tensor = ndarray::Array4::<f32>::zeros((
+            1,
+            3,
+            self.input_size as usize,
+            self.input_size as usize,
+        ));
 
-        let mean = [0.485, 0.456, 0.406];
-        let std = [0.229, 0.224, 0.225];
-
-        for y in 0..INPUT_SIZE as usize {
-            for x in 0..INPUT_SIZE as usize {
+        for y in 0..self.input_size as usize {
+            for x in 0..self.input_size as usize {
                 let pixel = resized.get_pixel(x as u32, y as u32);
                 for c in 0..3 {
                     let val = pixel[c] as f32 / 255.0;
-                    let normalized = (val - mean[c]) / std[c];
+                    let normalized = (val - IMAGENET_MEAN[c]) / IMAGENET_STD[c];
                     tensor[[0, c, y, x]] = normalized;
                 }
             }
         }
 
-        Ok((tensor, scale_x, scale_y))
+        Ok((tensor, scale))
     }
 
-    fn postprocess(
-        &self,
-        outputs: &SessionOutputs,
-        scale_x: f32,
-        scale_y: f32,
-    ) -> Result<Vec<BoundingBox>> {
+    fn postprocess(&self, outputs: &SessionOutputs, scale: f32) -> Result<Vec<BoundingBox>> {
         let mut detections = Vec::new();
 
         let boxes_value: &Value = &outputs["boxes"];
@@ -127,7 +147,38 @@ impl DeimDetector {
             .try_extract_tensor()
             .context("Failed to extract labels")?;
 
+        if scores_shape.len() < 2 {
+            return Ok(detections);
+        }
+
         let num_detections = scores_shape[1] as usize;
+
+        if num_detections == 0 {
+            return Ok(detections);
+        }
+
+        let expected_boxes_len = num_detections * 4;
+        if boxes_data.len() < expected_boxes_len {
+            bail!(
+                "Boxes tensor too small: {} < {}",
+                boxes_data.len(),
+                expected_boxes_len
+            );
+        }
+        if scores_data.len() < num_detections {
+            bail!(
+                "Scores tensor too small: {} < {}",
+                scores_data.len(),
+                num_detections
+            );
+        }
+        if labels_data.len() < num_detections {
+            bail!(
+                "Labels tensor too small: {} < {}",
+                labels_data.len(),
+                num_detections
+            );
+        }
 
         let char_counts: Option<Vec<f32>> = if outputs.len() >= 4 {
             outputs.get("char_counts").and_then(|v| {
@@ -144,10 +195,10 @@ impl DeimDetector {
                 continue;
             }
 
-            let x0 = boxes_data[i * 4] * scale_x;
-            let y0 = boxes_data[i * 4 + 1] * scale_y;
-            let x1 = boxes_data[i * 4 + 2] * scale_x;
-            let y1 = boxes_data[i * 4 + 3] * scale_y;
+            let x0 = boxes_data[i * 4] * scale;
+            let y0 = boxes_data[i * 4 + 1] * scale;
+            let x1 = boxes_data[i * 4 + 2] * scale;
+            let y1 = boxes_data[i * 4 + 3] * scale;
 
             let label = labels_data[i] as usize;
             let char_count = char_counts.as_ref().map(|c| c[i]).unwrap_or(100.0);
