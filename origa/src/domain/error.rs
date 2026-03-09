@@ -116,8 +116,8 @@ impl fmt::Display for OrigaError {
 
 impl std::error::Error for OrigaError {}
 
-impl From<candle_core::Error> for OrigaError {
-    fn from(error: candle_core::Error) -> Self {
+impl From<ort::Error> for OrigaError {
+    fn from(error: ort::Error) -> Self {
         OrigaError::OcrError {
             reason: error.to_string(),
         }
