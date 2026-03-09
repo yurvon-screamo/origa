@@ -1,12 +1,9 @@
 use anyhow::{Context, Result};
-use std::collections::HashMap;
 use std::path::Path;
 
 #[derive(Clone)]
 pub struct Vocabulary {
     chars: Vec<char>,
-    #[allow(dead_code)]
-    char_to_idx: HashMap<char, usize>,
 }
 
 impl Vocabulary {
@@ -20,10 +17,7 @@ impl Vocabulary {
             .flat_map(|line| line.chars().next())
             .collect();
 
-        let char_to_idx: HashMap<char, usize> =
-            chars.iter().enumerate().map(|(i, &c)| (c, i + 1)).collect();
-
-        Ok(Self { chars, char_to_idx })
+        Ok(Self { chars })
     }
 
     pub fn decode(&self, indices: &[i64]) -> String {
