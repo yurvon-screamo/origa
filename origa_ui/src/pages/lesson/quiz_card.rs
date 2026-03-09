@@ -1,9 +1,9 @@
 use crate::ui_components::{
-    Card, DisplayText, FuriganaText, Heading, HeadingLevel, KanjiViewMode, KanjiWritingSection,
-    Text, TextSize, TypographyVariant, get_reading_from_text, is_speech_supported, speak_text,
+    get_reading_from_text, is_speech_supported, speak_text, Card, DisplayText, FuriganaText,
+    Heading, HeadingLevel, KanjiViewMode, KanjiWritingSection, Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
-use origa::domain::{Card as DomainCard, QuizCard, User};
+use origa::domain::{Card as DomainCard, NativeLanguage, QuizCard, User};
 
 use super::card_type::CardType;
 use super::quiz_card_header::QuizCardHeader;
@@ -20,6 +20,13 @@ pub fn QuizCardView(
 ) -> impl IntoView {
     let current_user = use_context::<RwSignal<Option<User>>>().expect("current_user context");
 
+    let native_lang = Memo::new(move |_| {
+        current_user
+            .get()
+            .map(|u| *u.native_language())
+            .unwrap_or(NativeLanguage::Russian)
+    });
+
     let known_kanji = Memo::new(move |_| {
         current_user
             .get()
@@ -29,7 +36,8 @@ pub fn QuizCardView(
 
     let card = quiz_card.card().clone();
     let card_type = CardType::from(&card);
-    let question = StoredValue::new(card.question().text().to_string());
+    let lang = native_lang.get();
+    let question = StoredValue::new(card.question(&lang).text().to_string());
     let options: StoredValue<Vec<origa::domain::QuizOption>> =
         StoredValue::new(quiz_card.options().to_vec());
 
@@ -48,7 +56,7 @@ pub fn QuizCardView(
     };
 
     let kanji_for_animation: StoredValue<Option<String>> = StoredValue::new(match &card {
-        DomainCard::Kanji(_) => Some(card.question().text().to_string()),
+        DomainCard::Kanji(_) => Some(card.question(&lang).text().to_string()),
         _ => None,
     });
 

@@ -1,8 +1,8 @@
 use crate::domain::{
+    Rating, ReviewLog,
     knowledge::{GrammarRuleCard, KanjiCard, VocabularyCard},
     memory::{MemoryHistory, MemoryState},
-    value_objects::{Answer, NativeLanguage, Question, FALLBACK_ANSWER},
-    Rating, ReviewLog,
+    value_objects::{Answer, FALLBACK_ANSWER, NativeLanguage, Question},
 };
 use rand::seq::SliceRandom;
 use serde::{Deserialize, Serialize};
