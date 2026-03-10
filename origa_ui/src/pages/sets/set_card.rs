@@ -59,10 +59,7 @@ fn SetCardButton(
     view! {
         <Button
             variant=Signal::derive(|| ButtonVariant::Filled)
-            on_click=Callback::new({
-                let title = title;
-                move |_| on_import.run((set_id.clone(), title.clone()))
-            })
+            on_click=Callback::new(move |_| on_import.run((set_id.clone(), title.clone())))
         >
             "Импорт"
         </Button>
