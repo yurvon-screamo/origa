@@ -12,10 +12,7 @@ readme.workspace = true
 # System
 tempfile.workspace = true
 serde_json.workspace = true
-zip.workspace = true
-regex.workspace = true
 rand.workspace = true
-tokio.workspace = true
 thiserror.workspace = true
 
 # Logging
@@ -34,7 +31,6 @@ flate2.workspace = true
 
 # OCR (NDLOCR-Lite)
 ndarray.workspace = true
-anyhow.workspace = true
 image.workspace = true
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
