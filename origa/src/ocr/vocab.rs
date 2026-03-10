@@ -21,6 +21,20 @@ impl Vocabulary {
         Ok(Self { chars })
     }
 
+    pub fn from_bytes(bytes: &[u8]) -> Result<Self, OrigaError> {
+        let content = std::str::from_utf8(bytes).map_err(|e| OrigaError::OcrError {
+            reason: format!("Failed to parse vocabulary as UTF-8: {:?}", e),
+        })?;
+
+        let chars: Vec<char> = content
+            .lines()
+            .filter(|line| !line.is_empty())
+            .flat_map(|line| line.chars().next())
+            .collect();
+
+        Ok(Self { chars })
+    }
+
     pub fn decode(&self, indices: &[i64]) -> String {
         indices
             .iter()
