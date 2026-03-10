@@ -97,7 +97,7 @@ impl JapaneseOCRModel {
     }
 }
 
-fn crop_bbox(image: &DynamicImage, bbox: &super::deim::BoundingBox) -> DynamicImage {
+fn crop_bbox(image: &DynamicImage, bbox: &super::types::BoundingBox) -> DynamicImage {
     let x0 = bbox.x0.max(0) as u32;
     let y0 = bbox.y0.max(0) as u32;
     let x1 = bbox.x1.max(0) as u32;
