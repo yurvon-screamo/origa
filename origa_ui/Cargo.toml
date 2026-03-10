@@ -45,17 +45,12 @@ thiserror.workspace = true
 sha2.workspace = true
 rand.workspace = true
 bincode.workspace = true
-candle-core.workspace = true
-candle-onnx.workspace = true
-tokenizers.workspace = true
 prost.workspace = true
 
 [build-dependencies]
-tokio = { version = "1.48", features = ["rt-multi-thread", "macros"] }
-lindera-dictionary = { version = "2.2", features = ["build_rs"] }
-serde_json = "1.0"
-reqwest = { version = "0.12", features = ["blocking", "rustls-tls"] }
-safetensors = "0.5"
+tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
+lindera-dictionary = { workspace = true, features = ["build_rs"] }
+serde_json.workspace = true
 
 [package.metadata.leptos]
 site-root = "target/site"
