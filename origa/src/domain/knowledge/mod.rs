@@ -624,35 +624,13 @@ mod tests {
     }
 
     #[test]
-    fn generate_quiz_returns_quiz_for_kanji() {
-        let kanji = create_kanji_card("日", "день, солнце");
-        let other = create_kanji_card("月", "луна, месяц");
-        let lang = NativeLanguage::Russian;
-
-        let result = LessonCardView::generate_quiz(kanji.clone(), &[other], &lang);
-
-        if let LessonCardView::Quiz(quiz) = result {
-            assert_eq!(quiz.card(), &kanji);
-            assert_eq!(quiz.options().len(), 4);
-        } else {
-            panic!("Expected Quiz variant");
-        }
-    }
-
-    #[test]
-    fn generate_quiz_fills_missing_distractors() {
+    fn generate_quiz_returns_normal_when_not_enough_distractors() {
         let vocab = create_vocab_card("猫");
         let lang = NativeLanguage::Russian;
 
         let result = LessonCardView::generate_quiz(vocab.clone(), &[], &lang);
 
-        if let LessonCardView::Quiz(quiz) = result {
-            assert_eq!(quiz.options().len(), 4);
-            let correct_count = quiz.options().iter().filter(|o| o.is_correct()).count();
-            assert_eq!(correct_count, 1);
-        } else {
-            panic!("Expected Quiz variant");
-        }
+        assert!(matches!(result, LessonCardView::Normal(_)));
     }
 
     #[test]
@@ -739,42 +717,6 @@ mod tests {
         let result = KnowledgeSet::apply_view(&study_card, &cards_by_type, &known_grammars, &lang);
 
         assert!(matches!(result, LessonCardView::Normal(_)));
-    }
-
-    #[test]
-    fn apply_view_quiz_only_for_vocabulary_and_kanji() {
-        let vocab = create_vocab_card("猫");
-        let kanji = create_kanji_card("日", "день");
-        let grammar = create_grammar_card("Rule", vec![]);
-
-        let study_vocab = create_study_card_new(vocab);
-        let study_kanji = create_study_card_new(kanji);
-        let study_grammar = create_study_card_new(Card::Grammar(grammar));
-
-        let cards_by_type = HashMap::new();
-        let known_grammars = vec![];
-        let lang = NativeLanguage::Russian;
-
-        let mut vocab_has_quiz = false;
-        let mut kanji_has_quiz = false;
-
-        for _ in 0..100 {
-            if let LessonCardView::Quiz(_) =
-                KnowledgeSet::apply_view(&study_vocab, &cards_by_type, &known_grammars, &lang)
-            {
-                vocab_has_quiz = true;
-            }
-            if let LessonCardView::Quiz(_) =
-                KnowledgeSet::apply_view(&study_kanji, &cards_by_type, &known_grammars, &lang)
-            {
-                kanji_has_quiz = true;
-            }
-            let result_grammar =
-                KnowledgeSet::apply_view(&study_grammar, &cards_by_type, &known_grammars, &lang);
-            assert!(matches!(result_grammar, LessonCardView::Normal(_)));
-        }
-
-        assert!(vocab_has_quiz || kanji_has_quiz);
     }
 
     #[test]

@@ -14,7 +14,13 @@ fn js_err(msg: impl AsRef<str>, e: &JsValue) -> OrigaError {
 
 fn sanitize_cache_name(name: &str) -> String {
     name.chars()
-        .map(|c| if c.is_alphanumeric() || c == '-' || c == '_' { c } else { '_' })
+        .map(|c| {
+            if c.is_alphanumeric() || c == '-' || c == '_' {
+                c
+            } else {
+                '_'
+            }
+        })
         .collect()
 }
 
@@ -28,7 +34,10 @@ impl ModelLoader {
     }
 
     pub async fn load_or_download_model(&self) -> Result<ModelFiles, OrigaError> {
-        info!("Loading NDLOCR-Lite models from {}", self.config.ndlocr_base_url);
+        info!(
+            "Loading NDLOCR-Lite models from {}",
+            self.config.ndlocr_base_url
+        );
 
         let window = web_sys::window().ok_or_else(|| OrigaError::OcrError {
             reason: "No window object available".to_string(),

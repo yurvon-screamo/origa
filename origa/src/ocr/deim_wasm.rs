@@ -22,15 +22,16 @@ pub async fn ensure_ort_initialized() -> Result<(), OrigaError> {
     ORT_INIT.call_once(|| {
         should_init = true;
     });
-    
+
     if should_init {
-        let api = ort_web::api(ort_web::FEATURE_NONE).await
+        let api = ort_web::api(ort_web::FEATURE_NONE)
+            .await
             .map_err(|e| OrigaError::OcrError {
                 reason: format!("Failed to get ort API: {:?}", e),
             })?;
         ort::set_api(api);
     }
-    
+
     Ok(())
 }
 
@@ -41,12 +42,13 @@ impl DeimDetector {
         let mut builder = Session::builder().map_err(|e| OrigaError::OcrError {
             reason: format!("Failed to create session builder: {:?}", e),
         })?;
-        let session = builder
-            .commit_from_memory(model_bytes)
-            .await
-            .map_err(|e| OrigaError::OcrError {
-                reason: format!("Failed to load DEIM model: {:?}", e),
-            })?;
+        let session =
+            builder
+                .commit_from_memory(model_bytes)
+                .await
+                .map_err(|e| OrigaError::OcrError {
+                    reason: format!("Failed to load DEIM model: {:?}", e),
+                })?;
 
         let input_info = session
             .inputs()
@@ -95,9 +97,10 @@ impl DeimDetector {
             .into_dyn();
 
         let boxes = {
-            let run_options = ort::session::RunOptions::new().map_err(|e| OrigaError::OcrError {
-                reason: format!("Failed to create run options: {:?}", e),
-            })?;
+            let run_options =
+                ort::session::RunOptions::new().map_err(|e| OrigaError::OcrError {
+                    reason: format!("Failed to create run options: {:?}", e),
+                })?;
             let mut session = self.session.lock().await;
             let mut outputs = session
                 .run_async(
@@ -111,7 +114,7 @@ impl DeimDetector {
                 .map_err(|e| OrigaError::OcrError {
                     reason: format!("DEIM inference failed: {:?}", e),
                 })?;
-            
+
             for (_name, mut output) in outputs.iter_mut() {
                 output
                     .sync(ort_web::SyncDirection::Rust)
@@ -120,7 +123,7 @@ impl DeimDetector {
                         reason: format!("Failed to sync output: {:?}", e),
                     })?;
             }
-            
+
             self.postprocess(&outputs, scale)?
         };
 
@@ -207,17 +210,29 @@ impl DeimDetector {
         let expected_boxes_len = num_detections * 4;
         if boxes_data.len() < expected_boxes_len {
             return Err(OrigaError::OcrError {
-                reason: format!("Boxes tensor too small: {} < {}", boxes_data.len(), expected_boxes_len),
+                reason: format!(
+                    "Boxes tensor too small: {} < {}",
+                    boxes_data.len(),
+                    expected_boxes_len
+                ),
             });
         }
         if scores_data.len() < num_detections {
             return Err(OrigaError::OcrError {
-                reason: format!("Scores tensor too small: {} < {}", scores_data.len(), num_detections),
+                reason: format!(
+                    "Scores tensor too small: {} < {}",
+                    scores_data.len(),
+                    num_detections
+                ),
             });
         }
         if labels_data.len() < num_detections {
             return Err(OrigaError::OcrError {
-                reason: format!("Labels tensor too small: {} < {}", labels_data.len(), num_detections),
+                reason: format!(
+                    "Labels tensor too small: {} < {}",
+                    labels_data.len(),
+                    num_detections
+                ),
             });
         }
 
