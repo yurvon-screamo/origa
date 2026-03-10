@@ -51,15 +51,16 @@ rs-fsrs = "1.2"
 lindera = { version = "2.2", default-features = false }
 lindera-dictionary = { version = "2.2" }
 flate2 = "1.1"
-candle-core = { git = "https://github.com/huggingface/candle.git", rev = "8cc682c97bcb8a76017ad23e35fde8adac639e3f", default-features = false }
-candle-onnx = { git = "https://github.com/huggingface/candle.git", rev = "8cc682c97bcb8a76017ad23e35fde8adac639e3f", default-features = false }
-candle-nn = { git = "https://github.com/huggingface/candle.git", rev = "8cc682c97bcb8a76017ad23e35fde8adac639e3f", default-features = false }
-candle-transformers = { git = "https://github.com/huggingface/candle.git", rev = "8cc682c97bcb8a76017ad23e35fde8adac639e3f", default-features = false }
-tokenizers = { version = "0.21", default-features = false, features = [
-    "unstable_wasm",
-] }
 prost = "0.14"
 image = "0.25"
+
+# OCR / Machine Learning
+ndarray = "0.17"
+anyhow = "1.0"
+ort = { version = "2.0.0-rc.12", default-features = false }
+ort-web = "0.2.0"
+as-slice = "0.2"
+getrandom = "0.3"
 
 # Origa workspace crates
 origa = { path = "./origa" }
@@ -103,6 +104,7 @@ tauri-build = { version = "2", features = [] }
 # Dev Dependencies
 wasm-bindgen = "0.2"
 wasm-bindgen-test = "0.3"
+safetensors = "0.5"
 wasm-bindgen-futures = { version = "0.4", features = [
     "futures-core-03-stream",
 ] }
