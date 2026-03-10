@@ -7,7 +7,7 @@ pub struct ModelConfig {
 impl Default for ModelConfig {
     fn default() -> Self {
         Self {
-            ndlocr_base_url: "/ndlocr".to_string(),
+            ndlocr_base_url: "/public/ndlocr".to_string(),
             ndlocr_cache_dir: "ndlocr-model-".to_string(),
         }
     }
