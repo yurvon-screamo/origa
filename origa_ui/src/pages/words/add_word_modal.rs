@@ -21,13 +21,9 @@ pub fn AddWordModal() -> impl IntoView {
     let on_add = {
         let current_user = current_user;
         let repository = repository.clone();
-        let is_loading = is_loading;
-        let new_word = new_word;
-        let error_message = error_message;
 
         Callback::new(move |_: leptos::ev::MouseEvent| {
             let word = new_word.get().trim().to_string();
-
             if word.is_empty() {
                 return;
             }

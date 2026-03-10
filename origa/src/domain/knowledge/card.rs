@@ -1,5 +1,5 @@
 use crate::domain::{
-    Rating, ReviewLog,
+    OrigaError, Rating, ReviewLog,
     knowledge::{GrammarRuleCard, KanjiCard, VocabularyCard},
     memory::{MemoryHistory, MemoryState},
     value_objects::{Answer, NativeLanguage, Question},
@@ -98,15 +98,15 @@ pub enum Card {
 }
 
 impl Card {
-    pub fn question(&self, lang: &NativeLanguage) -> Question {
+    pub fn question(&self, lang: &NativeLanguage) -> Result<Question, OrigaError> {
         match self {
-            Card::Vocabulary(card) => card.word().clone(),
-            Card::Kanji(card) => card.kanji().clone(),
+            Card::Vocabulary(card) => Ok(card.word().clone()),
+            Card::Kanji(card) => Ok(card.kanji().clone()),
             Card::Grammar(card) => card.title(lang),
         }
     }
 
-    pub fn answer(&self, lang: &NativeLanguage) -> Answer {
+    pub fn answer(&self, lang: &NativeLanguage) -> Result<Answer, OrigaError> {
         match self {
             Card::Vocabulary(card) => card.answer(lang),
             Card::Kanji(card) => card.description(),
@@ -241,18 +241,22 @@ impl LessonCardView {
         original_card: Card,
         same_type_cards: &[Card],
         lang: &NativeLanguage,
-    ) -> Self {
+    ) -> Result<Self, OrigaError> {
         match &original_card {
-            Card::Grammar(_) => return LessonCardView::Normal(original_card),
+            Card::Grammar(_) => return Ok(LessonCardView::Normal(original_card)),
             Card::Vocabulary(_) | Card::Kanji(_) => {}
         }
 
-        let correct_answer = original_card.answer(lang).text().to_string();
+        let correct_answer = original_card.answer(lang)?;
 
         let mut distractors: Vec<String> = same_type_cards
             .iter()
-            .filter(|c| c.answer(lang).text() != correct_answer)
-            .map(|c| c.answer(lang).text().to_string())
+            .filter_map(|c| {
+                c.answer(lang)
+                    .ok()
+                    .filter(|a| a.text() != correct_answer.text())
+            })
+            .map(|a| a.text().to_string())
             .collect();
 
         distractors.shuffle(&mut rand::rng());
@@ -261,7 +265,7 @@ impl LessonCardView {
             distractors.into_iter().take(needed_distractors).collect();
 
         if selected_distractors.len() < needed_distractors {
-            return LessonCardView::Normal(original_card);
+            return Ok(LessonCardView::Normal(original_card));
         }
 
         let mut options: Vec<QuizOption> = selected_distractors
@@ -269,10 +273,10 @@ impl LessonCardView {
             .map(|text| QuizOption::new(text, false))
             .collect();
 
-        options.push(QuizOption::new(correct_answer, true));
+        options.push(QuizOption::new(correct_answer.text().to_string(), true));
         options.shuffle(&mut rand::rng());
 
         let quiz = QuizCard::new(original_card, options);
-        LessonCardView::Quiz(quiz)
+        Ok(LessonCardView::Quiz(quiz))
     }
 }

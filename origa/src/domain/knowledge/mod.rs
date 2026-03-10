@@ -296,6 +296,7 @@ impl KnowledgeSet {
             (_, true) => {
                 if rand::random_bool(0.5) {
                     LessonCardView::generate_quiz(card.clone(), same_type_cards, lang)
+                        .unwrap_or_else(|_| LessonCardView::Normal(card.clone()))
                 } else {
                     LessonCardView::Normal(card.clone())
                 }
@@ -304,6 +305,7 @@ impl KnowledgeSet {
             (CardType::Kanji, false) => {
                 if rand::random_bool(0.5) {
                     LessonCardView::generate_quiz(card.clone(), same_type_cards, lang)
+                        .unwrap_or_else(|_| LessonCardView::Normal(card.clone()))
                 } else {
                     LessonCardView::Normal(card.clone())
                 }
@@ -315,6 +317,7 @@ impl KnowledgeSet {
                     LessonCardView::Normal(card.clone())
                 } else if rand_val < PROB_QUIZ_VIEW {
                     LessonCardView::generate_quiz(card.clone(), same_type_cards, lang)
+                        .unwrap_or_else(|_| LessonCardView::Normal(card.clone()))
                 } else if rand_val < PROB_REVERSED_VIEW {
                     Self::apply_reversed(card, lang)
                 } else {
@@ -346,10 +349,12 @@ impl KnowledgeSet {
                     match rule {
                         Some(r) => match vocab.with_grammar_rule(r, lang) {
                             Ok((mutated, grammar_description)) => {
-                                let grammar_info = GrammarInfo::new(
-                                    grammar_card.title(lang).text().to_string(),
-                                    grammar_description,
-                                );
+                                let grammar_title = grammar_card
+                                    .title(lang)
+                                    .map(|q| q.text().to_string())
+                                    .unwrap_or_else(|_| grammar_card.rule_id().to_string());
+                                let grammar_info =
+                                    GrammarInfo::new(grammar_title, grammar_description);
                                 LessonCardView::GrammarMutated {
                                     card: Card::Vocabulary(mutated),
                                     grammar_info,
@@ -558,7 +563,7 @@ mod tests {
         let lang = NativeLanguage::Russian;
         let result = LessonCardView::generate_quiz(Card::Grammar(grammar), &[], &lang);
 
-        assert!(matches!(result, LessonCardView::Normal(_)));
+        assert!(matches!(result, Ok(LessonCardView::Normal(_))));
     }
 
     #[test]
@@ -616,7 +621,7 @@ mod tests {
         if let LessonCardView::Reversed(reversed) = result {
             if let Card::Vocabulary(v) = reversed {
                 assert!(v.word().text().contains("кошка"));
-                assert!(v.answer(&lang).text().contains("猫"));
+                assert!(v.answer(&lang).expect("answer").text().contains("猫"));
             } else {
                 panic!("Expected Vocabulary card");
             }
@@ -630,7 +635,7 @@ mod tests {
 
         let result = LessonCardView::generate_quiz(vocab.clone(), &[], &lang);
 
-        assert!(matches!(result, LessonCardView::Normal(_)));
+        assert!(matches!(result, Ok(LessonCardView::Normal(_))));
     }
 
     #[test]
@@ -1056,7 +1061,7 @@ mod tests {
         let vocab = VocabularyCard::new(Question::new("食べる".to_string()).unwrap());
 
         let lang = NativeLanguage::Russian;
-        let original_meaning = vocab.answer(&lang).text().to_string();
+        let original_meaning = vocab.answer(&lang).expect("answer").text().to_string();
 
         let known_grammars = vec![create_grammar_card("て-form", vec![PartOfSpeech::Verb])];
 
@@ -1068,7 +1073,10 @@ mod tests {
 
         if let LessonCardView::GrammarMutated { card, grammar_info } = result {
             if let Card::Vocabulary(mutated) = card {
-                assert_eq!(mutated.answer(&lang).text(), original_meaning);
+                assert_eq!(
+                    mutated.answer(&lang).expect("answer").text(),
+                    original_meaning
+                );
                 assert!(!grammar_info.title().is_empty());
                 assert!(!grammar_info.description().is_empty());
             } else {

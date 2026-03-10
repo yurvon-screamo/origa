@@ -2,8 +2,6 @@ use crate::domain::OrigaError;
 use serde::{Deserialize, Serialize};
 use std::{fmt, str::FromStr};
 
-pub const FALLBACK_ANSWER: &str = "—";
-
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Question {
     text: String,
