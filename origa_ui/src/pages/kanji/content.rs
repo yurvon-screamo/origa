@@ -1,12 +1,12 @@
-use super::super::shared::{CardCounts, CardStatus, Filter, FilterBtn};
+use super::super::shared::{CardCounts, CardStatus, Filter, FilterBtn, create_delete_callback};
 use super::kanji_card_item::KanjiCardItem;
 use crate::repository::HybridUserRepository;
-use crate::ui_components::{Input, Text, TextSize, TypographyVariant};
+use crate::ui_components::{Input, Text, TextSize, ToastContainer, ToastData, TypographyVariant};
 use leptos::either::Either;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::domain::{Card, NativeLanguage, User};
-use origa::use_cases::{DeleteKanjiCardUseCase, ToggleFavoriteUseCase};
+use origa::use_cases::ToggleFavoriteUseCase;
 use ulid::Ulid;
 
 #[component]
@@ -23,6 +23,7 @@ pub fn KanjiContent() -> impl IntoView {
 
     let search = RwSignal::new(String::new());
     let filter = RwSignal::new(Filter::All);
+    let toasts: RwSignal<Vec<ToastData>> = RwSignal::new(Vec::new());
 
     let repository =
         use_context::<HybridUserRepository>().expect("repository context not provided");
@@ -50,6 +51,8 @@ pub fn KanjiContent() -> impl IntoView {
             }
         })
     };
+
+    let (is_deleting, on_delete) = create_delete_callback(repository.clone(), current_user, toasts);
 
     let all_cards = Memo::new(move |_| {
         current_user
@@ -82,14 +85,14 @@ pub fn KanjiContent() -> impl IntoView {
                         .map(|q| q.text().to_string())
                         .unwrap_or_default()
                         .to_lowercase();
-                    let description = card
+                    let meaning = card
                         .card()
                         .answer(&lang)
                         .ok()
                         .map(|a| a.text().to_string())
                         .unwrap_or_default()
                         .to_lowercase();
-                    kanji_text.contains(&query) || description.contains(&query)
+                    kanji_text.contains(&query) || meaning.contains(&query)
                 };
                 let matches_filter = current_filter.matches(CardStatus::from_study_card(card));
                 matches_search && matches_filter
@@ -147,6 +150,8 @@ pub fn KanjiContent() -> impl IntoView {
                                         <KanjiCardItem
                                             study_card=card
                                             on_toggle_favorite=on_toggle_favorite
+                                            on_delete=on_delete
+                                            is_deleting=is_deleting.into()
                                         />
                                     }
                                 }
@@ -155,6 +160,7 @@ pub fn KanjiContent() -> impl IntoView {
                     }
                 }}
             </div>
+            <ToastContainer toasts=toasts duration_ms=5000 />
         </div>
     }
 }
