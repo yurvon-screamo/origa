@@ -2,7 +2,7 @@ use super::types::BoundingBox;
 use crate::domain::OrigaError;
 use futures::lock::Mutex;
 use image::{DynamicImage, GenericImageView, ImageBuffer, Pixel, Rgb};
-use ort::session::{builder::GraphOptimizationLevel, Session};
+use ort::session::Session;
 use ort_web::ValueExt;
 
 const CONF_THRESHOLD: f32 = 0.25;
@@ -38,14 +38,9 @@ impl DeimDetector {
     pub async fn new(model_bytes: &[u8]) -> Result<Self, OrigaError> {
         ensure_ort_initialized().await?;
 
-        let builder = Session::builder().map_err(|e| OrigaError::OcrError {
+        let mut builder = Session::builder().map_err(|e| OrigaError::OcrError {
             reason: format!("Failed to create session builder: {:?}", e),
         })?;
-        let mut builder = builder
-            .with_optimization_level(GraphOptimizationLevel::Level3)
-            .map_err(|e| OrigaError::OcrError {
-                reason: format!("Failed to set optimization level: {:?}", e),
-            })?;
         let session = builder
             .commit_from_memory(model_bytes)
             .await
