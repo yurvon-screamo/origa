@@ -1,6 +1,6 @@
 use crate::domain::{Card, OrigaError, Question, StudyCard, VocabularyCard};
 use crate::traits::UserRepository;
-use tracing::{debug, info};
+use tracing::{debug, info, warn};
 use ulid::Ulid;
 
 #[derive(Debug, Clone)]
@@ -78,6 +78,12 @@ impl<'a, R: UserRepository> CreateCardsFromAnalysisUseCase<'a, R> {
         user: &mut crate::domain::User,
         word: &WordToCreate,
     ) -> Result<StudyCard, OrigaError> {
+        VocabularyCard::validate_translation(&word.base_form, user.native_language()).inspect_err(
+            |e| {
+                warn!(word = %word.base_form, error = %e, "Translation not found");
+            },
+        )?;
+
         let question = Question::new(word.base_form.clone())?;
         let vocabulary_card = VocabularyCard::new(question);
         let card = Card::Vocabulary(vocabulary_card);

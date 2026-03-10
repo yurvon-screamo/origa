@@ -85,13 +85,17 @@ impl<'a, R: UserRepository, W: WellKnownSetLoader> ImportWellKnownSetUseCase<'a,
             .execute(user_id, question.clone())
             .await
         {
-            Ok(cards) => {
+            Ok(result) => {
                 for word in words {
-                    if !cards.iter().any(|c| c.card().content_key() == *word) {
+                    if !result
+                        .created_cards
+                        .iter()
+                        .any(|c| c.card().content_key() == *word)
+                    {
                         skipped_words.push(word.clone());
                     }
                 }
-                created_count += cards.len();
+                created_count += result.created_cards.len();
             }
             Err(e) => {
                 tracing::error!("Failed to create cards for words {}: {}", question, e);

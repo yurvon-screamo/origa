@@ -51,7 +51,10 @@ impl JapaneseOCRModel {
         let mut results = Vec::with_capacity(boxes.len());
         for bbox in boxes {
             let line_img = crop_bbox(img, &bbox);
-            let text = self.recognizer.recognize(&line_img, bbox.pred_char_cnt).await;
+            let text = self
+                .recognizer
+                .recognize(&line_img, bbox.pred_char_cnt)
+                .await;
             if !text.is_empty() {
                 results.push(text);
             }
