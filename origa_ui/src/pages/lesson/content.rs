@@ -3,6 +3,7 @@ use super::header::LessonHeader;
 use super::lesson_card_container::LessonCardContainer;
 use super::lesson_progress_view::LessonProgressView;
 use super::lesson_state::{LessonContext, LessonMode, LessonState};
+use crate::app::AuthContext;
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{Spinner, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
@@ -18,6 +19,7 @@ pub fn LessonContent() -> impl IntoView {
         use_context::<RwSignal<Option<User>>>().expect("current_user context not provided");
     let repository =
         use_context::<HybridUserRepository>().expect("repository context not provided");
+    let auth_ctx = use_context::<AuthContext>().expect("AuthContext not provided");
 
     let query = use_query_map();
     let mode = match query.read_untracked().get("mode").as_deref() {
@@ -44,6 +46,11 @@ pub fn LessonContent() -> impl IntoView {
 
     Effect::new(move |_| {
         reload_trigger.get();
+        
+        if auth_ctx.is_session_loading.get() {
+            return;
+        }
+        
         let user = current_user.get();
         if let Some(user) = user {
             let user_id = user.id();
@@ -91,6 +98,9 @@ pub fn LessonContent() -> impl IntoView {
 
                 is_loading.set(false);
             });
+        } else {
+            error_message.set(Some("Пользователь не найден".to_string()));
+            is_loading.set(false);
         }
     });
 
