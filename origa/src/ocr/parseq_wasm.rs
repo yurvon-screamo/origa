@@ -26,12 +26,13 @@ impl ParseqRecognizer {
         let mut builder = Session::builder().map_err(|e| OrigaError::OcrError {
             reason: format!("Failed to create session builder: {:?}", e),
         })?;
-        let session = builder
-            .commit_from_memory(model_bytes)
-            .await
-            .map_err(|e| OrigaError::OcrError {
-                reason: format!("Failed to load PARSeq model: {:?}", e),
-            })?;
+        let session =
+            builder
+                .commit_from_memory(model_bytes)
+                .await
+                .map_err(|e| OrigaError::OcrError {
+                    reason: format!("Failed to load PARSeq model: {:?}", e),
+                })?;
 
         Ok(Self {
             session: Mutex::new(session),
@@ -55,7 +56,7 @@ impl ParseqRecognizer {
 
         let shape: Vec<usize> = input_array.shape().to_vec();
         let data: Vec<f32> = input_array.into_raw_vec_and_offset().0;
-        
+
         let input_tensor = match ort::value::Tensor::from_array((shape, data)) {
             Ok(t) => t.into_dyn(),
             Err(e) => {
@@ -73,10 +74,7 @@ impl ParseqRecognizer {
             }
         };
         let mut outputs = match session
-            .run_async(
-                ort::inputs!["images" => input_tensor],
-                &run_options,
-            )
+            .run_async(ort::inputs!["images" => input_tensor], &run_options)
             .await
         {
             Ok(o) => o,
@@ -144,13 +142,14 @@ impl ParseqRecognizer {
     fn postprocess(&self, outputs: &ort::session::SessionOutputs<'_>) -> String {
         let logits_value = &outputs[0];
 
-        let (shape, logits_data): (&ort::value::Shape, &[f32]) = match logits_value.try_extract_tensor() {
-            Ok(t) => t,
-            Err(e) => {
-                tracing::warn!("Failed to extract PARSeq output tensor: {:?}", e);
-                return String::new();
-            }
-        };
+        let (shape, logits_data): (&ort::value::Shape, &[f32]) =
+            match logits_value.try_extract_tensor() {
+                Ok(t) => t,
+                Err(e) => {
+                    tracing::warn!("Failed to extract PARSeq output tensor: {:?}", e);
+                    return String::new();
+                }
+            };
 
         let shape_slice = shape.as_slice();
 

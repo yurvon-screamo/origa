@@ -46,11 +46,11 @@ pub fn LessonContent() -> impl IntoView {
 
     Effect::new(move |_| {
         reload_trigger.get();
-        
+
         if auth_ctx.is_session_loading.get() {
             return;
         }
-        
+
         let user = current_user.get();
         if let Some(user) = user {
             let user_id = user.id();
