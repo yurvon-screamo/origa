@@ -1,10 +1,9 @@
 use super::types::BoundingBox;
 use crate::domain::OrigaError;
+use futures::lock::Mutex;
 use image::{DynamicImage, GenericImageView, ImageBuffer, Pixel, Rgb};
-use ort::session::{builder::GraphOptimizationLevel, Session, SessionOutputs};
-use ort::value::Value;
-use std::path::Path;
-use std::sync::Mutex;
+use ort::session::{builder::GraphOptimizationLevel, Session};
+use ort_web::ValueExt;
 
 const CONF_THRESHOLD: f32 = 0.25;
 
@@ -16,8 +15,29 @@ pub struct DeimDetector {
     input_size: u32,
 }
 
+static ORT_INIT: std::sync::Once = std::sync::Once::new();
+
+pub async fn ensure_ort_initialized() -> Result<(), OrigaError> {
+    let mut should_init = false;
+    ORT_INIT.call_once(|| {
+        should_init = true;
+    });
+    
+    if should_init {
+        let api = ort_web::api(ort_web::FEATURE_NONE).await
+            .map_err(|e| OrigaError::OcrError {
+                reason: format!("Failed to get ort API: {:?}", e),
+            })?;
+        ort::set_api(api);
+    }
+    
+    Ok(())
+}
+
 impl DeimDetector {
-    pub fn new(model_path: &Path) -> Result<Self, OrigaError> {
+    pub async fn new(model_bytes: &[u8]) -> Result<Self, OrigaError> {
+        ensure_ort_initialized().await?;
+
         let builder = Session::builder().map_err(|e| OrigaError::OcrError {
             reason: format!("Failed to create session builder: {:?}", e),
         })?;
@@ -27,20 +47,20 @@ impl DeimDetector {
                 reason: format!("Failed to set optimization level: {:?}", e),
             })?;
         let session = builder
-            .commit_from_file(model_path)
+            .commit_from_memory(model_bytes)
+            .await
             .map_err(|e| OrigaError::OcrError {
-                reason: format!("Failed to load DEIM model from {:?}: {:?}", model_path, e),
+                reason: format!("Failed to load DEIM model: {:?}", e),
             })?;
 
-        let input_shape = session
+        let input_info = session
             .inputs()
             .first()
             .ok_or_else(|| OrigaError::OcrError {
                 reason: "Model has no inputs".to_string(),
-            })?
-            .dtype();
+            })?;
 
-        let input_size = match input_shape {
+        let input_size = match input_info.dtype() {
             ort::value::ValueType::Tensor { shape, .. } => {
                 if shape.len() >= 4 {
                     shape[2] as u32
@@ -57,39 +77,55 @@ impl DeimDetector {
         })
     }
 
-    pub fn detect(&self, image: &DynamicImage) -> Result<Vec<BoundingBox>, OrigaError> {
+    pub async fn detect(&self, image: &DynamicImage) -> Result<Vec<BoundingBox>, OrigaError> {
         let (img_h, img_w) = (image.height(), image.width());
         let max_wh = img_h.max(img_w);
 
         let (input_array, scale) = self.preprocess(image, max_wh)?;
 
-        let input_tensor = Value::from_array(input_array).map_err(|e| OrigaError::OcrError {
-            reason: format!("Failed to create input tensor: {:?}", e),
-        })?;
+        let shape: Vec<usize> = input_array.shape().to_vec();
+        let data: Vec<f32> = input_array.into_raw_vec_and_offset().0;
+        let input_tensor = ort::value::Tensor::from_array((shape, data))
+            .map_err(|e| OrigaError::OcrError {
+                reason: format!("Failed to create input tensor: {:?}", e),
+            })?
+            .into_dyn();
 
-        let dims_array = ndarray::Array::from_shape_vec(
-            (1, 2),
-            vec![self.input_size as i64, self.input_size as i64],
-        )
-        .map_err(|e| OrigaError::OcrError {
-            reason: format!("Failed to create dims array: {:?}", e),
-        })?;
-        let dims_tensor = Value::from_array(dims_array).map_err(|e| OrigaError::OcrError {
-            reason: format!("Failed to create dims tensor: {:?}", e),
-        })?;
+        let dims_shape = vec![1usize, 2];
+        let dims_data = vec![self.input_size as i64, self.input_size as i64];
+        let dims_tensor = ort::value::Tensor::from_array((dims_shape, dims_data))
+            .map_err(|e| OrigaError::OcrError {
+                reason: format!("Failed to create dims tensor: {:?}", e),
+            })?
+            .into_dyn();
 
         let boxes = {
-            let mut session = self.session.lock().map_err(|e| OrigaError::OcrError {
-                reason: format!("Session lock failed: {:?}", e),
+            let run_options = ort::session::RunOptions::new().map_err(|e| OrigaError::OcrError {
+                reason: format!("Failed to create run options: {:?}", e),
             })?;
-            let outputs = session
-                .run(ort::inputs![
-                    "images" => input_tensor,
-                    "orig_target_sizes" => dims_tensor
-                ])
+            let mut session = self.session.lock().await;
+            let mut outputs = session
+                .run_async(
+                    ort::inputs![
+                        "images" => input_tensor,
+                        "orig_target_sizes" => dims_tensor
+                    ],
+                    &run_options,
+                )
+                .await
                 .map_err(|e| OrigaError::OcrError {
                     reason: format!("DEIM inference failed: {:?}", e),
                 })?;
+            
+            for (_name, mut output) in outputs.iter_mut() {
+                output
+                    .sync(ort_web::SyncDirection::Rust)
+                    .await
+                    .map_err(|e| OrigaError::OcrError {
+                        reason: format!("Failed to sync output: {:?}", e),
+                    })?;
+            }
+            
             self.postprocess(&outputs, scale)?
         };
 
@@ -138,14 +174,14 @@ impl DeimDetector {
 
     fn postprocess(
         &self,
-        outputs: &SessionOutputs,
+        outputs: &ort::session::SessionOutputs<'_>,
         scale: f32,
     ) -> Result<Vec<BoundingBox>, OrigaError> {
         let mut detections = Vec::new();
 
-        let boxes_value: &Value = &outputs["boxes"];
-        let scores_value: &Value = &outputs["scores"];
-        let labels_value: &Value = &outputs["labels"];
+        let boxes_value = &outputs["boxes"];
+        let scores_value = &outputs["scores"];
+        let labels_value = &outputs["labels"];
 
         let (_boxes_shape, boxes_data): (&ort::value::Shape, &[f32]) = boxes_value
             .try_extract_tensor()
@@ -176,29 +212,17 @@ impl DeimDetector {
         let expected_boxes_len = num_detections * 4;
         if boxes_data.len() < expected_boxes_len {
             return Err(OrigaError::OcrError {
-                reason: format!(
-                    "Boxes tensor too small: {} < {}",
-                    boxes_data.len(),
-                    expected_boxes_len
-                ),
+                reason: format!("Boxes tensor too small: {} < {}", boxes_data.len(), expected_boxes_len),
             });
         }
         if scores_data.len() < num_detections {
             return Err(OrigaError::OcrError {
-                reason: format!(
-                    "Scores tensor too small: {} < {}",
-                    scores_data.len(),
-                    num_detections
-                ),
+                reason: format!("Scores tensor too small: {} < {}", scores_data.len(), num_detections),
             });
         }
         if labels_data.len() < num_detections {
             return Err(OrigaError::OcrError {
-                reason: format!(
-                    "Labels tensor too small: {} < {}",
-                    labels_data.len(),
-                    num_detections
-                ),
+                reason: format!("Labels tensor too small: {} < {}", labels_data.len(), num_detections),
             });
         }
 

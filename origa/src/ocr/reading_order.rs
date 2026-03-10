@@ -1,4 +1,4 @@
-use super::deim::BoundingBox;
+use super::types::BoundingBox;
 
 pub fn sort_reading_order(boxes: &mut [BoundingBox], _img_height: u32, _img_width: u32) {
     if boxes.is_empty() {

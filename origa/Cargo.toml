@@ -33,10 +33,20 @@ lindera-dictionary.workspace = true
 flate2.workspace = true
 
 # OCR (NDLOCR-Lite)
-ort = { version = "2.0.0-rc.12", features = ["download-binaries"] }
 ndarray = "0.17"
 anyhow = "1.0"
 image.workspace = true
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+ort = { version = "2.0.0-rc.12", features = ["download-binaries"] }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+ort = { version = "2.0.0-rc.12", default-features = false, features = ["alternative-backend"] }
+ort-web = { version = "0.2.0" }
+wasm-bindgen-futures = { workspace = true }
+getrandom = { version = "0.3", features = ["wasm_js"] }
+as-slice = "0.2"
+futures = "0.3"
 
 [dev-dependencies]
 rstest.workspace = true
