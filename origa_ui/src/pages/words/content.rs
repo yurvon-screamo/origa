@@ -1,12 +1,12 @@
-use super::super::shared::{CardCounts, CardStatus, Filter, FilterBtn};
+use super::super::shared::{create_delete_callback, CardCounts, CardStatus, Filter, FilterBtn};
 use super::vocabulary_card_item::VocabularyCardItem;
 use crate::repository::HybridUserRepository;
-use crate::ui_components::{Input, Text, TextSize, TypographyVariant};
+use crate::ui_components::{Input, Text, TextSize, ToastContainer, ToastData, TypographyVariant};
 use leptos::either::Either;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::domain::{Card, NativeLanguage, User};
-use origa::use_cases::{DeleteCardUseCase, ToggleFavoriteUseCase};
+use origa::use_cases::ToggleFavoriteUseCase;
 use ulid::Ulid;
 
 #[component]
@@ -23,6 +23,7 @@ pub fn WordsContent() -> impl IntoView {
 
     let search = RwSignal::new(String::new());
     let filter = RwSignal::new(Filter::All);
+    let toasts: RwSignal<Vec<ToastData>> = RwSignal::new(Vec::new());
 
     let repository =
         use_context::<HybridUserRepository>().expect("repository context not provided");
@@ -51,29 +52,7 @@ pub fn WordsContent() -> impl IntoView {
         })
     };
 
-    let on_delete = {
-        let repository = repository.clone();
-
-        Callback::new(move |card_id: Ulid| {
-            let user = current_user.get();
-            let repo = repository.clone();
-            let current_user_clone = current_user;
-
-            if let Some(user) = user {
-                let user_id = user.id();
-                spawn_local(async move {
-                    let use_case = DeleteCardUseCase::new(&repo);
-                    if use_case.execute(user_id, card_id).await.is_ok() {
-                        current_user_clone.update(|u| {
-                            if let Some(user) = u {
-                                let _ = user.delete_card(card_id);
-                            }
-                        });
-                    }
-                });
-            }
-        })
-    };
+    let (is_deleting, on_delete) = create_delete_callback(repository.clone(), current_user, toasts);
 
     let all_cards = Memo::new(move |_| {
         current_user
@@ -171,6 +150,8 @@ pub fn WordsContent() -> impl IntoView {
                                         <VocabularyCardItem
                                             study_card=card
                                             on_toggle_favorite=on_toggle_favorite
+                                            on_delete=on_delete
+                                            is_deleting=is_deleting.into()
                                         />
                                     }
                                 }
@@ -179,6 +160,7 @@ pub fn WordsContent() -> impl IntoView {
                     }
                 }}
             </div>
+            <ToastContainer toasts=toasts duration_ms=5000 />
         </div>
     }
 }

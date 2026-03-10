@@ -1,8 +1,8 @@
 use super::super::shared::CardStatus;
 use crate::ui_components::{
-    Button, ButtonVariant, Card, CardHistoryModal, CollapsibleDescription, DeleteButton,
-    FavoriteButton, FuriganaText, Heading, HeadingLevel, HistoryButton, MarkdownText, Modal, Tag,
-    Text, TextSize, TypographyVariant,
+    Card, CardHistoryModal, CollapsibleDescription, DeleteButton, DeleteConfirmModal,
+    FavoriteButton, FuriganaText, Heading, HeadingLevel, HistoryButton, MarkdownText, Tag, Text,
+    TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
 use origa::domain::{Card as DomainCard, NativeLanguage, StudyCard, User};
@@ -13,6 +13,7 @@ pub fn VocabularyCardItem(
     study_card: StudyCard,
     on_toggle_favorite: Callback<Ulid>,
     on_delete: Callback<Ulid>,
+    is_deleting: Signal<bool>,
 ) -> impl IntoView {
     let current_user = use_context::<RwSignal<Option<User>>>().expect("current_user context");
 
@@ -37,6 +38,8 @@ pub fn VocabularyCardItem(
     let memory_clone = memory.clone();
 
     let is_history_open = RwSignal::new(false);
+    let is_delete_modal_open = RwSignal::new(false);
+    let confirm_delete = Callback::new(move |_| on_delete.run(card_id));
 
     let lang = native_lang.get();
     let (word, meaning) = match card {
@@ -82,10 +85,12 @@ pub fn VocabularyCardItem(
                             on_click=Callback::new(move |_| on_toggle_favorite.run(card_id))
                         />
                         <HistoryButton on_click=Callback::new(move |_| is_history_open.set(true)) />
+                        <DeleteButton on_click=Callback::new(move |_| is_delete_modal_open.set(true)) />
                     </div>
                     <CollapsibleDescription>
                         <MarkdownText content=Signal::derive(move || meaning.clone()) known_kanji=known_kanji.get()/>
                     </CollapsibleDescription>
+
                     <Text
                         size=TextSize::Small
                         variant=TypographyVariant::Muted
@@ -99,6 +104,12 @@ pub fn VocabularyCardItem(
                 is_open=Signal::derive(move || is_history_open.get())
                 memory=memory_clone.clone()
                 on_close=Callback::new(move |_| is_history_open.set(false))
+            />
+            <DeleteConfirmModal
+                is_open=is_delete_modal_open
+                is_deleting=is_deleting
+                on_confirm=confirm_delete
+                on_close=Callback::new(move |_| is_delete_modal_open.set(false))
             />
         </Card>
     }
