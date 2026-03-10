@@ -1,7 +1,7 @@
 use super::types::BoundingBox;
 use crate::domain::OrigaError;
 use image::{DynamicImage, GenericImageView, ImageBuffer, Pixel, Rgb};
-use ort::session::{builder::GraphOptimizationLevel, Session, SessionOutputs};
+use ort::session::{Session, SessionOutputs, builder::GraphOptimizationLevel};
 use ort::value::Value;
 use std::path::Path;
 use std::sync::Mutex;

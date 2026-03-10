@@ -2,7 +2,7 @@ use crate::domain::{
     Rating, ReviewLog,
     knowledge::{GrammarRuleCard, KanjiCard, VocabularyCard},
     memory::{MemoryHistory, MemoryState},
-    value_objects::{Answer, FALLBACK_ANSWER, NativeLanguage, Question},
+    value_objects::{Answer, NativeLanguage, Question},
 };
 use rand::seq::SliceRandom;
 use serde::{Deserialize, Serialize};
@@ -257,15 +257,11 @@ impl LessonCardView {
 
         distractors.shuffle(&mut rand::rng());
         let needed_distractors = QUIZ_OPTIONS_COUNT.saturating_sub(1);
-        let mut selected_distractors: Vec<String> =
+        let selected_distractors: Vec<String> =
             distractors.into_iter().take(needed_distractors).collect();
 
         if selected_distractors.len() < needed_distractors {
-            let correct_len = correct_answer.len();
-            let dummy = FALLBACK_ANSWER.repeat(correct_len.max(3));
-            while selected_distractors.len() < needed_distractors {
-                selected_distractors.push(dummy.clone());
-            }
+            return LessonCardView::Normal(original_card);
         }
 
         let mut options: Vec<QuizOption> = selected_distractors
