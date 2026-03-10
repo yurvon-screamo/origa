@@ -48,6 +48,5 @@ futures.workspace = true
 
 [dev-dependencies]
 rstest.workspace = true
-reqwest.workspace = true
 tokio = { workspace = true, features = ["rt", "macros", "time", "fs"] }
 tracing-subscriber = { workspace = true, features = ["fmt"] }
