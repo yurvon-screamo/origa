@@ -240,6 +240,7 @@ async fn process_image_with_ocr(data_url: &str) -> Result<String, String> {
                 .map_err(|e| format!("Failed to load models: {:?}", e))?;
 
             let new_model = JapaneseOCRModel::from_model_files(model_files)
+                .await
                 .map_err(|e| format!("Failed to initialize OCR model: {:?}", e))?;
 
             let wrapped = Rc::new(RefCell::new(new_model));
@@ -256,6 +257,7 @@ async fn process_image_with_ocr(data_url: &str) -> Result<String, String> {
     let use_case = ExtractTextFromImageUseCase::new();
     let text = use_case
         .execute(&mut model.borrow_mut(), &bytes)
+        .await
         .map_err(|e| format!("OCR failed: {:?}", e))?;
 
     Ok(text)
