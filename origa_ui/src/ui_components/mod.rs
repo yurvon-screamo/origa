@@ -1,3 +1,5 @@
+mod error_display;
+
 mod accordion;
 mod alert;
 mod audio_buttons;
@@ -10,6 +12,7 @@ mod card_history_modal;
 mod chart;
 mod checkbox;
 mod collapsible;
+mod delete_button;
 mod divider;
 mod dropdown;
 mod favorite_button;
@@ -51,6 +54,7 @@ pub use card_history_modal::CardHistoryModal;
 pub use chart::LineChart;
 pub use checkbox::Checkbox;
 pub use collapsible::CollapsibleDescription;
+pub use delete_button::DeleteButton;
 pub use divider::{Divider, DividerVariant};
 pub use favorite_button::FavoriteButton;
 pub use furigana::FuriganaText;

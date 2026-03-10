@@ -6,7 +6,7 @@ use leptos::either::Either;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::domain::{Card, NativeLanguage, User};
-use origa::use_cases::ToggleFavoriteUseCase;
+use origa::use_cases::{DeleteKanjiCardUseCase, ToggleFavoriteUseCase};
 use ulid::Ulid;
 
 #[component]
@@ -75,8 +75,20 @@ pub fn KanjiContent() -> impl IntoView {
             .into_iter()
             .filter(|card| {
                 let matches_search = query.is_empty() || {
-                    let kanji_text = card.card().question(&lang).text().to_lowercase();
-                    let description = card.card().answer(&lang).text().to_lowercase();
+                    let kanji_text = card
+                        .card()
+                        .question(&lang)
+                        .ok()
+                        .map(|q| q.text().to_string())
+                        .unwrap_or_default()
+                        .to_lowercase();
+                    let description = card
+                        .card()
+                        .answer(&lang)
+                        .ok()
+                        .map(|a| a.text().to_string())
+                        .unwrap_or_default()
+                        .to_lowercase();
                     kanji_text.contains(&query) || description.contains(&query)
                 };
                 let matches_filter = current_filter.matches(CardStatus::from_study_card(card));

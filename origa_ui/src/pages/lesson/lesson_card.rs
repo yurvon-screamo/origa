@@ -27,8 +27,18 @@ pub fn LessonCard(
 
     let card_type = CardType::from(&card);
     let lang = native_lang.get();
-    let question = StoredValue::new(card.question(&lang).text().to_string());
-    let answer = StoredValue::new(card.answer(&lang).text().to_string());
+    let question = StoredValue::new(
+        card.question(&lang)
+            .ok()
+            .map(|q| q.text().to_string())
+            .unwrap_or_default(),
+    );
+    let answer = StoredValue::new(
+        card.answer(&lang)
+            .ok()
+            .map(|a| a.text().to_string())
+            .unwrap_or_default(),
+    );
 
     let radicals: Option<String> = match &card {
         DomainCard::Kanji(kanji) => kanji.radicals_info().ok().map(|r| {
@@ -85,7 +95,12 @@ pub fn LessonCard(
     let kun_readings_stored = StoredValue::new(kun_readings);
 
     let kanji_for_animation: Option<String> = match &card {
-        DomainCard::Kanji(_) => Some(card.question(&lang).text().to_string()),
+        DomainCard::Kanji(_) => Some(
+            card.question(&lang)
+                .ok()
+                .map(|q| q.text().to_string())
+                .unwrap_or_default(),
+        ),
         _ => None,
     };
     let kanji_stored = StoredValue::new(kanji_for_animation);

@@ -2,6 +2,8 @@ use serde::{Deserialize, Serialize};
 use std::fmt;
 use ulid::Ulid;
 
+use super::value_objects::NativeLanguage;
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum OrigaError {
     UserNotFound { user_id: Ulid },
@@ -30,6 +32,10 @@ pub enum OrigaError {
     DictionaryNotFound { reason: String },
     VocabularyNotFound { word: String },
     OcrError { reason: String },
+    KanjiNotFound { kanji: String },
+    GrammarRuleNotFound { rule_id: Ulid },
+    GrammarContentNotFound { rule_id: Ulid, lang: NativeLanguage },
+    TranslationNotFound { word: String, lang: NativeLanguage },
 }
 
 impl fmt::Display for OrigaError {
@@ -113,6 +119,22 @@ impl fmt::Display for OrigaError {
             }
             OrigaError::OcrError { reason } => {
                 write!(f, "OCR error: {}", reason)
+            }
+            OrigaError::KanjiNotFound { kanji } => {
+                write!(f, "Нет описания для кандзи: {}", kanji)
+            }
+            OrigaError::GrammarRuleNotFound { rule_id } => {
+                write!(f, "Правило грамматики не найдено: {}", rule_id)
+            }
+            OrigaError::GrammarContentNotFound { rule_id, lang } => {
+                write!(
+                    f,
+                    "Контент правила {} не найден для языка {}",
+                    rule_id, lang
+                )
+            }
+            OrigaError::TranslationNotFound { word, lang } => {
+                write!(f, "Нет перевода для: {} ({})", word, lang)
             }
         }
     }

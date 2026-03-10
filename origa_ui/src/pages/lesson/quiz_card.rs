@@ -37,7 +37,12 @@ pub fn QuizCardView(
     let card = quiz_card.card().clone();
     let card_type = CardType::from(&card);
     let lang = native_lang.get();
-    let question = StoredValue::new(card.question(&lang).text().to_string());
+    let question = StoredValue::new(
+        card.question(&lang)
+            .ok()
+            .map(|q| q.text().to_string())
+            .unwrap_or_default(),
+    );
     let options: StoredValue<Vec<origa::domain::QuizOption>> =
         StoredValue::new(quiz_card.options().to_vec());
 
@@ -56,7 +61,12 @@ pub fn QuizCardView(
     };
 
     let kanji_for_animation: StoredValue<Option<String>> = StoredValue::new(match &card {
-        DomainCard::Kanji(_) => Some(card.question(&lang).text().to_string()),
+        DomainCard::Kanji(_) => Some(
+            card.question(&lang)
+                .ok()
+                .map(|q| q.text().to_string())
+                .unwrap_or_default(),
+        ),
         _ => None,
     });
 
