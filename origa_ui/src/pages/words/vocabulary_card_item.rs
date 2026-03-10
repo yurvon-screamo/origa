@@ -1,7 +1,8 @@
 use super::super::shared::CardStatus;
 use crate::ui_components::{
-    Card, CardHistoryModal, CollapsibleDescription, FavoriteButton, FuriganaText, Heading,
-    HeadingLevel, HistoryButton, MarkdownText, Tag, Text, TextSize, TypographyVariant,
+    Button, ButtonVariant, Card, CardHistoryModal, CollapsibleDescription, DeleteButton,
+    FavoriteButton, FuriganaText, Heading, HeadingLevel, HistoryButton, MarkdownText, Modal, Tag,
+    Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
 use origa::domain::{Card as DomainCard, NativeLanguage, StudyCard, User};
@@ -11,6 +12,7 @@ use ulid::Ulid;
 pub fn VocabularyCardItem(
     study_card: StudyCard,
     on_toggle_favorite: Callback<Ulid>,
+    on_delete: Callback<Ulid>,
 ) -> impl IntoView {
     let current_user = use_context::<RwSignal<Option<User>>>().expect("current_user context");
 
@@ -40,7 +42,11 @@ pub fn VocabularyCardItem(
     let (word, meaning) = match card {
         DomainCard::Vocabulary(vocab) => (
             vocab.word().text().to_string(),
-            vocab.answer(&lang).text().to_string(),
+            vocab
+                .answer(&lang)
+                .ok()
+                .map(|a| a.text().to_string())
+                .unwrap_or_default(),
         ),
         _ => ("?".to_string(), "?".to_string()),
     };

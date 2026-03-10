@@ -5,7 +5,8 @@ pub fn is_word_known(user: &User, word: &str, lang: &NativeLanguage) -> (bool, O
         if let Card::Vocabulary(vocab_card) = study_card.card()
             && vocab_card.word().text() == word
         {
-            return (true, Some(vocab_card.answer(lang).text().to_string()));
+            let meaning = vocab_card.answer(lang).ok().map(|a| a.text().to_string());
+            return (true, meaning);
         }
     }
     (false, None)

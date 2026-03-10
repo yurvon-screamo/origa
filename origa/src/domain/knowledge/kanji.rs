@@ -1,5 +1,5 @@
 use crate::domain::{
-    Answer, FALLBACK_ANSWER, OrigaError, Question,
+    Answer, OrigaError, Question,
     dictionary::{RadicalInfo, get_kanji_info, get_radical_info, get_translation},
     value_objects::{JapaneseLevel, NativeLanguage},
 };
@@ -28,13 +28,16 @@ impl KanjiCard {
         &self.kanji
     }
 
-    pub fn description(&self) -> Answer {
+    pub fn description(&self) -> Result<Answer, OrigaError> {
         get_kanji_info(self.kanji.text())
-            .map(|info| {
-                Answer::new(info.description().to_string())
-                    .unwrap_or_else(|_| Answer::new(FALLBACK_ANSWER.to_string()).unwrap())
+            .map_err(|_| OrigaError::KanjiNotFound {
+                kanji: self.kanji.text().to_string(),
             })
-            .unwrap_or_else(|_| Answer::new(FALLBACK_ANSWER.to_string()).unwrap())
+            .and_then(|info| {
+                Answer::new(info.description().to_string()).map_err(|e| OrigaError::InvalidAnswer {
+                    reason: e.to_string(),
+                })
+            })
     }
 
     pub fn example_words(&self, lang: &NativeLanguage) -> Vec<ExampleKanjiWord> {

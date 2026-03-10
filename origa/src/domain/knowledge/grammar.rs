@@ -1,5 +1,5 @@
 use crate::domain::{
-    FALLBACK_ANSWER, OrigaError, get_rule_by_id,
+    OrigaError, get_rule_by_id,
     tokenizer::PartOfSpeech,
     value_objects::{Answer, NativeLanguage, Question},
 };
@@ -23,22 +23,40 @@ impl GrammarRuleCard {
         &self.rule_id
     }
 
-    pub fn title(&self, lang: &NativeLanguage) -> Question {
-        get_rule_by_id(&self.rule_id)
-            .map(|rule| {
-                Question::new(rule.content(lang).title().to_string())
-                    .unwrap_or_else(|_| Question::new(FALLBACK_ANSWER.to_string()).unwrap())
-            })
-            .unwrap_or_else(|| Question::new(FALLBACK_ANSWER.to_string()).unwrap())
+    pub fn title(&self, lang: &NativeLanguage) -> Result<Question, OrigaError> {
+        let rule = get_rule_by_id(&self.rule_id).ok_or(OrigaError::GrammarRuleNotFound {
+            rule_id: self.rule_id,
+        })?;
+
+        let title = rule.content(lang).title();
+        if title.is_empty() {
+            return Err(OrigaError::GrammarContentNotFound {
+                rule_id: self.rule_id,
+                lang: *lang,
+            });
+        }
+
+        Question::new(title.to_string()).map_err(|e| OrigaError::InvalidQuestion {
+            reason: e.to_string(),
+        })
     }
 
-    pub fn description(&self, lang: &NativeLanguage) -> Answer {
-        get_rule_by_id(&self.rule_id)
-            .map(|rule| {
-                Answer::new(rule.content(lang).md_description().to_string())
-                    .unwrap_or_else(|_| Answer::new(FALLBACK_ANSWER.to_string()).unwrap())
-            })
-            .unwrap_or_else(|| Answer::new(FALLBACK_ANSWER.to_string()).unwrap())
+    pub fn description(&self, lang: &NativeLanguage) -> Result<Answer, OrigaError> {
+        let rule = get_rule_by_id(&self.rule_id).ok_or(OrigaError::GrammarRuleNotFound {
+            rule_id: self.rule_id,
+        })?;
+
+        let desc = rule.content(lang).md_description();
+        if desc.is_empty() {
+            return Err(OrigaError::GrammarContentNotFound {
+                rule_id: self.rule_id,
+                lang: *lang,
+            });
+        }
+
+        Answer::new(desc.to_string()).map_err(|e| OrigaError::InvalidAnswer {
+            reason: e.to_string(),
+        })
     }
 
     pub fn apply_to(&self) -> Vec<PartOfSpeech> {

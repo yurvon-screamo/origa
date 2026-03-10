@@ -1,14 +1,19 @@
 use super::super::shared::CardStatus;
 use crate::ui_components::{
-    Button, ButtonVariant, Card, CardHistoryModal, FavoriteButton, HistoryButton, KanjiViewMode,
-    KanjiWritingSection, MarkdownText, Tag, Text, TextSize, TypographyVariant,
+    Button, ButtonVariant, Card, CardHistoryModal, DeleteButton, FavoriteButton, HistoryButton,
+    KanjiViewMode, KanjiWritingSection, MarkdownText, Modal, Tag, Text, TextSize,
+    TypographyVariant,
 };
 use leptos::{ev::MouseEvent, prelude::*};
 use origa::domain::{Card as DomainCard, NativeLanguage, StudyCard, User};
 use ulid::Ulid;
 
 #[component]
-pub fn KanjiCardItem(study_card: StudyCard, on_toggle_favorite: Callback<Ulid>) -> impl IntoView {
+pub fn KanjiCardItem(
+    study_card: StudyCard,
+    on_toggle_favorite: Callback<Ulid>,
+    on_delete: Callback<Ulid>,
+) -> impl IntoView {
     let current_user = use_context::<RwSignal<Option<User>>>().expect("current_user context");
 
     let native_lang = Memo::new(move |_| {
@@ -49,7 +54,11 @@ pub fn KanjiCardItem(study_card: StudyCard, on_toggle_favorite: Callback<Ulid>) 
                 .join(", ");
             (
                 kanji_card.kanji().text().to_string(),
-                kanji_card.description().text().to_string(),
+                kanji_card
+                    .description()
+                    .ok()
+                    .map(|d| d.text().to_string())
+                    .unwrap_or_default(),
                 radicals_str,
                 examples_str,
             )

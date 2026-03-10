@@ -1,8 +1,8 @@
+use crate::domain::GrammarRule;
 use crate::domain::dictionary::{KanjiInfo, get_kanji_info, get_translation};
 use crate::domain::japanese::JapaneseChar;
 use crate::domain::tokenizer::{PartOfSpeech, tokenize_text};
-use crate::domain::{Answer, FALLBACK_ANSWER, JapaneseLevel, NativeLanguage, Question};
-use crate::domain::{GrammarRule, OrigaError};
+use crate::domain::{Answer, JapaneseLevel, NativeLanguage, OrigaError, Question};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -37,15 +37,25 @@ impl VocabularyCard {
         self.word.clone()
     }
 
-    pub fn answer(&self, lang: &NativeLanguage) -> Answer {
+    pub fn answer(&self, lang: &NativeLanguage) -> Result<Answer, OrigaError> {
         if let Some(ref original) = self.reverse_side {
-            return Answer::new(original.text().to_string())
-                .unwrap_or_else(|_| Answer::new(FALLBACK_ANSWER.to_string()).unwrap());
+            return Answer::new(original.text().to_string()).map_err(|e| {
+                OrigaError::InvalidAnswer {
+                    reason: e.to_string(),
+                }
+            });
         }
 
         get_translation(self.word.text(), lang)
-            .and_then(|t| Answer::new(t).ok())
-            .unwrap_or_else(|| Answer::new(FALLBACK_ANSWER.to_string()).unwrap())
+            .ok_or_else(|| OrigaError::TranslationNotFound {
+                word: self.word.text().to_string(),
+                lang: *lang,
+            })
+            .and_then(|t| {
+                Answer::new(t).map_err(|e| OrigaError::InvalidAnswer {
+                    reason: e.to_string(),
+                })
+            })
     }
 
     pub fn get_kanji_cards(&self, current_level: &JapaneseLevel) -> Vec<&KanjiInfo> {
@@ -89,7 +99,7 @@ impl VocabularyCard {
     }
 
     pub fn revert(&self, lang: &NativeLanguage) -> Result<Self, OrigaError> {
-        let meaning_text = self.answer(lang).text().to_string();
+        let meaning_text = self.answer(lang)?.text().to_string();
         Ok(Self {
             word: Question::new(meaning_text)?,
             reverse_side: Some(self.word.clone()),

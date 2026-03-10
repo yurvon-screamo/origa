@@ -239,6 +239,11 @@ async fn process_image_with_ocr(data_url: &str) -> Result<String, String> {
                 .await
                 .map_err(|e| format!("Failed to load models: {:?}", e))?;
 
+            #[cfg(not(target_arch = "wasm32"))]
+            let new_model = JapaneseOCRModel::from_model_files(model_files)
+                .map_err(|e| format!("Failed to initialize OCR model: {:?}", e))?;
+
+            #[cfg(target_arch = "wasm32")]
             let new_model = JapaneseOCRModel::from_model_files(model_files)
                 .await
                 .map_err(|e| format!("Failed to initialize OCR model: {:?}", e))?;
@@ -255,6 +260,13 @@ async fn process_image_with_ocr(data_url: &str) -> Result<String, String> {
 
     info!("Running OCR with layout analysis");
     let use_case = ExtractTextFromImageUseCase::new();
+
+    #[cfg(not(target_arch = "wasm32"))]
+    let text = use_case
+        .execute(&mut model.borrow_mut(), &bytes)
+        .map_err(|e| format!("OCR failed: {:?}", e))?;
+
+    #[cfg(target_arch = "wasm32")]
     let text = use_case
         .execute(&mut model.borrow_mut(), &bytes)
         .await
