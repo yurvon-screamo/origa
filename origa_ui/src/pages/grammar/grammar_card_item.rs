@@ -1,14 +1,19 @@
 use super::super::shared::CardStatus;
 use crate::ui_components::{
-    Card, CardHistoryModal, CollapsibleDescription, FavoriteButton, FuriganaText, Heading,
-    HeadingLevel, HistoryButton, MarkdownText, Tag, Text, TextSize, TypographyVariant,
+    Button, ButtonVariant, Card, CardHistoryModal, CollapsibleDescription, DeleteButton,
+    FavoriteButton, FuriganaText, Heading, HeadingLevel, HistoryButton, MarkdownText, Modal, Tag,
+    Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
 use origa::domain::{Card as DomainCard, NativeLanguage, StudyCard, User};
 use ulid::Ulid;
 
 #[component]
-pub fn GrammarCardItem(study_card: StudyCard, on_toggle_favorite: Callback<Ulid>) -> impl IntoView {
+pub fn GrammarCardItem(
+    study_card: StudyCard,
+    on_toggle_favorite: Callback<Ulid>,
+    on_delete: Callback<Ulid>,
+) -> impl IntoView {
     let current_user = use_context::<RwSignal<Option<User>>>().expect("current_user context");
 
     let native_lang = Memo::new(move |_| {
@@ -36,8 +41,16 @@ pub fn GrammarCardItem(study_card: StudyCard, on_toggle_favorite: Callback<Ulid>
     let lang = native_lang.get();
     let (title, description) = match card {
         DomainCard::Grammar(grammar) => (
-            grammar.title(&lang).text().to_string(),
-            grammar.description(&lang).text().to_string(),
+            grammar
+                .title(&lang)
+                .ok()
+                .map(|t| t.text().to_string())
+                .unwrap_or_default(),
+            grammar
+                .description(&lang)
+                .ok()
+                .map(|d| d.text().to_string())
+                .unwrap_or_default(),
         ),
         _ => ("?".to_string(), "?".to_string()),
     };

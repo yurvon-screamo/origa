@@ -6,7 +6,7 @@ use leptos::either::Either;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::domain::{Card, NativeLanguage, User};
-use origa::use_cases::ToggleFavoriteUseCase;
+use origa::use_cases::{DeleteGrammarCardUseCase, ToggleFavoriteUseCase};
 use ulid::Ulid;
 
 #[component]
@@ -75,9 +75,18 @@ pub fn GrammarContent() -> impl IntoView {
             .into_iter()
             .filter(|card| {
                 let matches_search = query.is_empty() || {
-                    let title = card.card().question(&lang).text().to_lowercase();
-                    let description = card.card().answer(&lang).text().to_lowercase();
-                    title.contains(&query) || description.contains(&query)
+                    let card = card.card();
+                    let question = card.question(&lang);
+                    let answer = card.answer(&lang);
+
+                    if let Ok(question) = question
+                        && let Ok(answer) = answer
+                    {
+                        question.text().to_lowercase().contains(&query)
+                            || answer.text().to_lowercase().contains(&query)
+                    } else {
+                        false
+                    }
                 };
                 let matches_filter = current_filter.matches(CardStatus::from_study_card(card));
                 matches_search && matches_filter
