@@ -521,6 +521,7 @@ mod tests {
     use crate::domain::memory::MemoryState;
     use crate::domain::tokenizer::PartOfSpeech;
     use crate::domain::value_objects::Question;
+    use crate::use_cases::init_real_dictionaries;
     use chrono::Duration;
 
     fn create_vocab_card(word: &str) -> Card {
@@ -630,6 +631,7 @@ mod tests {
 
     #[test]
     fn generate_quiz_returns_normal_when_not_enough_distractors() {
+        init_real_dictionaries();
         let vocab = create_vocab_card("猫");
         let lang = NativeLanguage::Russian;
 
@@ -1058,6 +1060,7 @@ mod tests {
 
     #[test]
     fn vocabulary_with_grammar_rule_returns_tuple_with_unchanged_meaning() {
+        init_real_dictionaries();
         let vocab = VocabularyCard::new(Question::new("食べる".to_string()).unwrap());
 
         let lang = NativeLanguage::Russian;

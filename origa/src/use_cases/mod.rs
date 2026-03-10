@@ -4,14 +4,12 @@ mod create_grammar_card;
 mod create_kanji_card;
 mod create_vocabulary_card;
 mod delete_card;
-mod delete_kanji_card;
 mod extract_text_from_image;
 mod get_user_info;
 mod grammar_info;
 mod score_content;
 // TODO: Implement import_anki_pack
 // mod import_anki_pack;
-mod delete_grammar_card;
 mod import_well_known_set;
 mod kanji_info;
 mod kanji_list;
@@ -27,6 +25,9 @@ mod update_user_profile;
 #[cfg(test)]
 mod tests;
 
+#[cfg(test)]
+pub use tests::fixtures::init_real_dictionaries;
+
 pub use analyze_text_for_cards::{AnalyzeTextForCardsUseCase, AnalyzeTextResult, AnalyzedWord};
 pub use create_cards_from_analysis::{
     CreateCardsFromAnalysisResult, CreateCardsFromAnalysisUseCase, WordToCreate,
@@ -35,8 +36,6 @@ pub use create_grammar_card::CreateGrammarCardUseCase;
 pub use create_kanji_card::CreateKanjiCardUseCase;
 pub use create_vocabulary_card::CreateVocabularyCardUseCase;
 pub use delete_card::DeleteCardUseCase;
-pub use delete_grammar_card::DeleteGrammarCardUseCase;
-pub use delete_kanji_card::DeleteKanjiCardUseCase;
 pub use extract_text_from_image::ExtractTextFromImageUseCase;
 pub use get_user_info::{GetUserInfoUseCase, UserProfile};
 pub use grammar_info::{GrammarRuleInfoUseCase, GrammarRuleItem};

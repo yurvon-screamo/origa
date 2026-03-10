@@ -1,2 +1,2 @@
-mod fixtures;
+pub mod fixtures;
 mod journeys;

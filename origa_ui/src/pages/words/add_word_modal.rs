@@ -19,7 +19,6 @@ pub fn AddWordModal() -> impl IntoView {
         use_context::<HybridUserRepository>().expect("repository context not provided");
 
     let on_add = {
-        let current_user = current_user;
         let repository = repository.clone();
 
         Callback::new(move |_: leptos::ev::MouseEvent| {
