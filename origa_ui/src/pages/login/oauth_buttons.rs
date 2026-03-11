@@ -34,67 +34,49 @@ pub fn OAuthButtons() -> impl IntoView {
 
 fn is_tauri_desktop() -> bool {
     let Some(window) = web_sys::window() else {
-        tracing::info!("[ORIGA-UI] is_tauri_desktop: no window");
         return false;
     };
-    let is_tauri = js_sys::Reflect::get(&window, &JsValue::from_str("isTauri"))
+    js_sys::Reflect::get(&window, &JsValue::from_str("isTauri"))
         .ok()
         .and_then(|v| v.as_bool())
-        .unwrap_or(false);
-    tracing::info!("[ORIGA-UI] is_tauri_desktop: {}", is_tauri);
-    is_tauri
+        .unwrap_or(false)
 }
 
 fn open_url_external(url: &str) {
-    tracing::info!("[ORIGA-UI] open_url_external called with: {}", url);
-
     let Some(window) = web_sys::window() else {
-        tracing::error!("[ORIGA-UI] window not available for opening URL");
         return;
     };
 
     if !is_tauri_desktop() {
-        tracing::info!("[ORIGA-UI] Not Tauri, using window.open");
         let _ = window.open_with_url_and_target(url, "_blank");
         return;
     }
 
-    tracing::info!("[ORIGA-UI] Tauri mode, looking for __TAURI__.opener.openUrl");
-
     let Ok(tauri_obj) = js_sys::Reflect::get(&window, &JsValue::from_str("__TAURI__")) else {
-        tracing::warn!("[ORIGA-UI] Tauri object not found, fallback to window.open");
         let _ = window.open_with_url_and_target(url, "_blank");
         return;
     };
 
     let Ok(opener) = js_sys::Reflect::get(&tauri_obj, &JsValue::from_str("opener")) else {
-        tracing::warn!("[ORIGA-UI] Tauri opener not found, fallback to window.open");
         let _ = window.open_with_url_and_target(url, "_blank");
         return;
     };
 
     let Ok(open_url_fn) = js_sys::Reflect::get(&opener, &JsValue::from_str("openUrl")) else {
-        tracing::warn!("[ORIGA-UI] Tauri opener.openUrl not found, fallback to window.open");
         let _ = window.open_with_url_and_target(url, "_blank");
         return;
     };
 
     let Ok(open_url_fn) = open_url_fn.dyn_into::<js_sys::Function>() else {
-        tracing::warn!("[ORIGA-UI] Tauri openUrl is not a function, fallback to window.open");
         let _ = window.open_with_url_and_target(url, "_blank");
         return;
     };
 
-    tracing::info!("[ORIGA-UI] Calling Tauri opener.openUrl...");
-    match open_url_fn.call1(&JsValue::UNDEFINED, &JsValue::from_str(url)) {
-        Ok(_) => tracing::info!("[ORIGA-UI] Tauri openUrl call successful"),
-        Err(e) => {
-            tracing::warn!(
-                "[ORIGA-UI] Tauri openUrl call failed: {:?}, fallback to window.open",
-                e
-            );
-            let _ = window.open_with_url_and_target(url, "_blank");
-        }
+    if open_url_fn
+        .call1(&JsValue::UNDEFINED, &JsValue::from_str(url))
+        .is_err()
+    {
+        let _ = window.open_with_url_and_target(url, "_blank");
     }
 }
 
@@ -103,14 +85,11 @@ fn open_oauth_url(provider: OAuthProvider) {
     use gloo_storage::{LocalStorage, Storage};
 
     let redirect_uri = if is_tauri_desktop() {
-        tracing::info!("OAuth: Tauri mode");
         "https://origa.uwuwu.net/public/auth/desktop-callback.html".to_string()
     } else {
         let window = web_sys::window().expect("window not available");
         let base_url = window.location().origin().unwrap_or_default();
-        let redirect = format!("{}/login", base_url);
-        tracing::info!("OAuth: Web mode, redirect_uri={}", redirect);
-        redirect
+        format!("{}/login", base_url)
     };
 
     let verifier = TrailBaseClient::generate_pkce_verifier();
@@ -120,7 +99,6 @@ fn open_oauth_url(provider: OAuthProvider) {
 
     let client = TrailBaseClient::new();
     let url = client.get_oauth_url(provider.as_str(), &redirect_uri, &challenge);
-    tracing::info!("OAuth: Generated URL={}", url);
 
     open_url_external(&url);
 }
