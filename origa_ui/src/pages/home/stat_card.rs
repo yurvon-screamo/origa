@@ -31,7 +31,7 @@ pub fn StatCard(
                     {move || value.get()}
                 </DisplayText>
                 <Show when=move || has_delta.get()>
-                    <span class="text-sm font-mono text-green-600">
+                    <span class="text-sm font-mono text-[var(--success)]">
                         {move || delta.get()}
                     </span>
                 </Show>

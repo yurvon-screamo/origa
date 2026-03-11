@@ -33,15 +33,15 @@ pub fn ActionButtons(
                 </Button>
             </div>
 
-            <div class="pt-4 border-t border-[var(--border-subtle)]">
+            <div class="pt-4 border-t border-[var(--border-light)]">
                 <Text size={TextSize::Small} variant={TypographyVariant::Muted} class="block mb-3">
                     "Опасная зона"
                 </Text>
 
                 {move || if show_delete_confirm.get() {
                     view! {
-                        <div class="p-4 bg-red-950/20 border border-red-900/30 rounded-lg">
-                            <p class="text-red-400 text-sm mb-3">
+                        <div class="p-4 bg-[var(--error)]/20 border border-[var(--error)]/30 rounded-lg">
+                            <p class="text-[var(--error)] text-sm mb-3">
                                 "Вы уверены? Это действие удалит ваш аккаунт и все данные безвозвратно."
                             </p>
                             <div class="flex gap-3">
@@ -49,7 +49,7 @@ pub fn ActionButtons(
                                     variant={ButtonVariant::Filled}
                                     on_click={on_delete_account}
                                     disabled=is_deleting
-                                    class="bg-red-600 hover:bg-red-700"
+                                    class="bg-[var(--error)] hover:bg-[var(--error)]"
                                 >
                                     {move || if is_deleting.get() { "Удаление..." } else { "Да, удалить аккаунт" }}
                                 </Button>
@@ -67,7 +67,7 @@ pub fn ActionButtons(
                         <Button
                             variant={ButtonVariant::Ghost}
                             on_click={Callback::new(move |_| show_delete_confirm.set(true))}
-                            class="text-red-400 hover:text-red-300 hover:bg-red-950/20"
+                            class="text-[var(--error)] hover:text-[var(--error)] hover:bg-[var(--error)]/20"
                         >
                             "Удалить аккаунт"
                         </Button>

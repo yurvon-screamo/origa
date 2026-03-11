@@ -29,7 +29,7 @@ pub fn Heading(
     view! {
         <h1 class=move || {
             let variant_class = match variant.get() {
-                TypographyVariant::Primary => "text-[var(--fg-primary)]",
+                TypographyVariant::Primary => "text-[var(--fg-black)]",
                 TypographyVariant::Muted => "text-[var(--fg-muted)]",
                 TypographyVariant::Olive => "text-[var(--accent-olive)]",
             };
@@ -76,7 +76,7 @@ pub fn Text(
             };
 
             let variant_class = match variant.get() {
-                TypographyVariant::Primary => "text-[var(--fg-primary)]",
+                TypographyVariant::Primary => "text-[var(--fg-black)]",
                 TypographyVariant::Muted => "text-[var(--fg-muted)]",
                 TypographyVariant::Olive => "text-[var(--accent-olive)]",
             };
@@ -97,7 +97,7 @@ pub fn DisplayText(
     children: Children,
 ) -> impl IntoView {
     view! {
-        <p class=move || format!("font-serif text-4xl font-light text-[var(--fg-primary)] {}", class.get())>
+        <p class=move || format!("font-serif text-4xl font-light text-[var(--fg-black)] {}", class.get())>
             {children()}
         </p>
     }

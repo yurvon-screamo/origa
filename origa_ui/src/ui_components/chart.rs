@@ -92,14 +92,13 @@ pub fn LineChart(
             .collect::<Vec<_>>()
     };
 
-    let class_str = move || class.get();
+    let class_str = move || format!("{} font-mono text-[10px]", class.get());
 
     view! {
         <svg
             width=width
             height=height
             class=class_str
-            style="font-family: 'DM Mono', monospace; font-size: 10px;"
         >
             <line
                 x1=PADDING

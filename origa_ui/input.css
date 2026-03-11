@@ -21,6 +21,16 @@
 	--success: #4a6b4a;
 	--warning: #a67c3f;
 	--error: #8b4545;
+
+	/* Алиасы для совместимости */
+	--bg-primary: var(--bg-cream);
+	--bg-secondary: var(--bg-aged);
+	--border-color: var(--border-dark);
+	--border-subtle: var(--border-light);
+	--fg: var(--fg-black);
+	--fg-primary: var(--fg-black);
+	--accent: var(--accent-olive);
+	--muted: var(--fg-muted);
 }
 
 * {
