@@ -96,7 +96,9 @@ pub fn update_current_user(repository: HybridUserRepository, current_user: RwSig
 }
 
 fn setup_oauth_listener(ctx: AuthContext) {
-    use crate::pages::login::auth_handlers::{handle_oauth_callback, handle_oauth_callback_desktop};
+    use crate::pages::login::auth_handlers::{
+        handle_oauth_callback, handle_oauth_callback_desktop,
+    };
     use leptos::wasm_bindgen::JsCast;
     use leptos::wasm_bindgen::prelude::*;
 
@@ -105,21 +107,22 @@ fn setup_oauth_listener(ctx: AuthContext) {
         info!("Deep link received: {}", url);
         let ctx = ctx_clone.clone();
         spawn_local(async move {
-            let result = if url::Url::parse(&url).is_ok_and(|u| u.query_pairs().any(|(k, _)| k == "code")) {
-                handle_oauth_callback_desktop(&url, &ctx).await
-            } else if let Some(fragment) = url.split('#').nth(1) {
-                handle_oauth_callback(fragment, &ctx).await
-            } else {
-                Err("Неподдерживаемый формат callback URL".to_string())
-            };
+            let result =
+                if url::Url::parse(&url).is_ok_and(|u| u.query_pairs().any(|(k, _)| k == "code")) {
+                    handle_oauth_callback_desktop(&url, &ctx).await
+                } else if let Some(fragment) = url.split('#').nth(1) {
+                    handle_oauth_callback(fragment, &ctx).await
+                } else {
+                    Err("Неподдерживаемый формат callback URL".to_string())
+                };
 
             match result {
                 Ok(user) => {
                     ctx.current_user.set(Some(user));
-                    if let Some(window) = web_sys::window() {
-                        if let Err(e) = window.location().set_href("/home") {
-                            error!("Failed to redirect to /home: {:?}", e);
-                        }
+                    if let Some(window) = web_sys::window()
+                        && let Err(e) = window.location().set_href("/home")
+                    {
+                        error!("Failed to redirect to /home: {:?}", e);
                     }
                 }
                 Err(e) => {
@@ -182,10 +185,10 @@ fn check_url_oauth_callback(ctx: &AuthContext) {
                                 match get_or_create_profile(&ctx_clone, &email).await {
                                     Ok(user) => {
                                         ctx_clone.current_user.set(Some(user));
-                                        if let Some(window) = web_sys::window() {
-                                            if let Err(e) = window.location().set_href("/home") {
-                                                error!("Failed to redirect to /home: {:?}", e);
-                                            }
+                                        if let Some(window) = web_sys::window()
+                                            && let Err(e) = window.location().set_href("/home")
+                                        {
+                                            error!("Failed to redirect to /home: {:?}", e);
                                         }
                                     }
                                     Err(e) => {

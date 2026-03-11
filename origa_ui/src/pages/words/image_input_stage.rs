@@ -45,7 +45,7 @@ fn process_file(
         return;
     }
 
-    let file_size_mb = file.size() as f64 / (1024.0 * 1024.0);
+    let file_size_mb = file.size() / (1024.0 * 1024.0);
     if file_size_mb > MAX_FILE_SIZE_MB {
         error_message.set(Some(format!(
             "Файл слишком большой ({:.1} MB). Максимальный размер: {:.0} MB",
@@ -160,19 +160,18 @@ pub fn ImageInputStage(
             ev.prevent_default();
             is_drag_over.set(false);
 
-            if let Some(data_transfer) = ev.data_transfer() {
-                if let Some(files) = data_transfer.files() {
-                    if let Some(file) = files.get(0) {
-                        process_file(
-                            file,
-                            image_preview,
-                            ocr_state,
-                            on_text_extracted,
-                            on_error,
-                            error_message,
-                        );
-                    }
-                }
+            if let Some(data_transfer) = ev.data_transfer()
+                && let Some(files) = data_transfer.files()
+                && let Some(file) = files.get(0)
+            {
+                process_file(
+                    file,
+                    image_preview,
+                    ocr_state,
+                    on_text_extracted,
+                    on_error,
+                    error_message,
+                );
             }
         }
     };
@@ -198,19 +197,18 @@ pub fn ImageInputStage(
                 let error_message = error_message;
 
                 move |event: ClipboardEvent| {
-                    if let Some(clipboard_data) = event.clipboard_data() {
-                        if let Some(files) = clipboard_data.files() {
-                            if let Some(file) = files.get(0) {
-                                process_file(
-                                    file,
-                                    image_preview,
-                                    ocr_state,
-                                    on_text_extracted,
-                                    on_error,
-                                    error_message,
-                                );
-                            }
-                        }
+                    if let Some(clipboard_data) = event.clipboard_data()
+                        && let Some(files) = clipboard_data.files()
+                        && let Some(file) = files.get(0)
+                    {
+                        process_file(
+                            file,
+                            image_preview,
+                            ocr_state,
+                            on_text_extracted,
+                            on_error,
+                            error_message,
+                        );
                     }
                 }
             });

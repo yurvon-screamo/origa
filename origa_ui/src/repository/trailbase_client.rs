@@ -11,8 +11,7 @@ const REFRESH_THRESHOLD_SECONDS: u64 = 300;
 
 fn trailbase_url() -> &'static str {
     static TRAILBASE_URL: OnceLock<&str> = OnceLock::new();
-    TRAILBASE_URL
-        .get_or_init(|| option_env!("TRAILBASE_URL").unwrap_or("https://origa.uwuwu.net"))
+    TRAILBASE_URL.get_or_init(|| option_env!("TRAILBASE_URL").unwrap_or("https://origa.uwuwu.net"))
 }
 
 #[derive(Debug, Deserialize)]
