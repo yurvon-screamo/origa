@@ -2,6 +2,7 @@ use crate::ui_components::{Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 use origa::traits::SetType;
 
+use super::filters::TypeFilter;
 use super::set_card::SetCard;
 use super::types::SetInfo;
 
@@ -9,13 +10,15 @@ use super::types::SetInfo;
 pub fn SetsTypeGroup(
     set_type: SetType,
     sets_for_level: Memo<Vec<SetInfo>>,
+    type_filter: RwSignal<TypeFilter>,
     on_import: Callback<(String, String)>,
 ) -> impl IntoView {
     let sets_for_type = Memo::new(move |_| {
+        let current_filter = type_filter.get();
         sets_for_level
             .get()
             .into_iter()
-            .filter(|s| s.set_type == set_type)
+            .filter(|s| s.set_type == set_type && current_filter.matches(set_type))
             .collect::<Vec<_>>()
     });
 
