@@ -261,7 +261,7 @@ pub fn SetsContent() -> impl IntoView {
                         </Tag>
                         <Tag
                             variant=Signal::derive(move || {
-                                if type_filter.get() == TypeFilter::Duolingo {
+                                if type_filter.get() == TypeFilter::DuolingoRu {
                                     TagVariant::Filled
                                 } else {
                                     TagVariant::Default
@@ -269,10 +269,25 @@ pub fn SetsContent() -> impl IntoView {
                             })
                             class=Signal::derive(|| "cursor-pointer".to_string())
                             on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
-                                type_filter.set(TypeFilter::Duolingo);
+                                type_filter.set(TypeFilter::DuolingoRu);
                             })
                         >
-                            {TypeFilter::Duolingo.label()}
+                            {TypeFilter::DuolingoRu.label()}
+                        </Tag>
+                        <Tag
+                            variant=Signal::derive(move || {
+                                if type_filter.get() == TypeFilter::DuolingoEn {
+                                    TagVariant::Filled
+                                } else {
+                                    TagVariant::Default
+                                }
+                            })
+                            class=Signal::derive(|| "cursor-pointer".to_string())
+                            on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
+                                type_filter.set(TypeFilter::DuolingoEn);
+                            })
+                        >
+                            {TypeFilter::DuolingoEn.label()}
                         </Tag>
                     </div>
                 </div>
