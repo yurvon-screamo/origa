@@ -8,6 +8,14 @@ FROM ubuntu:24.04 AS builder
 ARG RUST_VERSION
 ARG TRUNK_VERSION
 
+ARG ORIGA_VERSION=dev
+ARG ORIGA_COMMIT=unknown
+ARG ORIGA_BUILD_DATE=unknown
+
+ENV ORIGA_VERSION=${ORIGA_VERSION}
+ENV ORIGA_COMMIT=${ORIGA_COMMIT}
+ENV ORIGA_BUILD_DATE=${ORIGA_BUILD_DATE}
+
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
