@@ -38,7 +38,7 @@ pub fn ProtectedRoute(children: ChildrenFn) -> impl IntoView {
 #[component]
 pub fn AppRoutes() -> impl IntoView {
     view! {
-        <main class="min-h-screen paper-texture">
+        <main class="paper-texture">
             <Routes fallback=|| view! { <Login/> }>
                 <Route path=path!("/") view=Login />
                 <Route path=path!("login") view=Login />

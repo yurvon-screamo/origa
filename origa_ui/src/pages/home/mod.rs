@@ -29,7 +29,7 @@ pub fn Home() -> impl IntoView {
 
     view! {
         <PageLayout variant=PageLayoutVariant::Full>
-            <div class="min-h-screen flex flex-col pb-16">
+            <div class="flex flex-col pb-16">
                 <HomeHeader current_user />
                 <HomeContent />
             </div>
