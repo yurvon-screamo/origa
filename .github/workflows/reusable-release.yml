@@ -15,6 +15,10 @@ on:
         description: "Release body text"
         default: "Автоматическая сборка"
         type: string
+      version-type:
+        description: "Version type (dev, stable, etc.)"
+        default: "dev"
+        type: string
 
 jobs:
   release:

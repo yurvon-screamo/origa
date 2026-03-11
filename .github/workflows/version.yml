@@ -1,0 +1,87 @@
+name: Version
+
+on:
+  workflow_call:
+    outputs:
+      version:
+        description: "Full version (0.1.1 or 0.1.2-181f7d1)"
+        value: ${{ jobs.version.outputs.version }}
+      version_base:
+        description: "Base version without suffix (0.1.1 or 0.1.2)"
+        value: ${{ jobs.version.outputs.version_base }}
+      version_type:
+        description: "Version type (stable or dev)"
+        value: ${{ jobs.version.outputs.version_type }}
+      commit_sha:
+        description: "Full commit SHA"
+        value: ${{ jobs.version.outputs.commit_sha }}
+      commit_short:
+        description: "Short commit SHA (7 chars)"
+        value: ${{ jobs.version.outputs.commit_short }}
+      build_date:
+        description: "Build date (YYYY-MM-DD)"
+        value: ${{ jobs.version.outputs.build_date }}
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.calc.outputs.version }}
+      version_base: ${{ steps.calc.outputs.version_base }}
+      version_type: ${{ steps.calc.outputs.version_type }}
+      commit_sha: ${{ steps.calc.outputs.commit_sha }}
+      commit_short: ${{ steps.calc.outputs.commit_short }}
+      build_date: ${{ steps.calc.outputs.build_date }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Calculate version
+        id: calc
+        run: |
+          COMMIT_SHA="${{ github.sha }}"
+          COMMIT_SHORT="${COMMIT_SHA:0:7}"
+          BUILD_DATE=$(date -u +'%Y-%m-%d')
+
+          echo "commit_sha=${COMMIT_SHA}" >> $GITHUB_OUTPUT
+          echo "commit_short=${COMMIT_SHORT}" >> $GITHUB_OUTPUT
+          echo "build_date=${BUILD_DATE}" >> $GITHUB_OUTPUT
+
+          if [[ "${{ github.ref_type }}" == "tag" && "${{ github.ref_name }}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            VERSION="${{ github.ref_name }}"
+            VERSION="${VERSION#v}"
+            VERSION_TYPE="stable"
+
+            echo "version=${VERSION}" >> $GITHUB_OUTPUT
+            echo "version_base=${VERSION}" >> $GITHUB_OUTPUT
+            echo "version_type=${VERSION_TYPE}" >> $GITHUB_OUTPUT
+          else
+            VERSION_TYPE="dev"
+
+            LATEST_TAG=$(git describe --tags --match "v*" --abbrev=0 2>/dev/null || echo "")
+
+            if [[ -z "$LATEST_TAG" ]]; then
+              MAJOR=0
+              MINOR=0
+              PATCH=1
+            else
+              TAG_VERSION="${LATEST_TAG#v}"
+
+              IFS='.' read -r MAJOR MINOR PATCH <<< "$TAG_VERSION"
+
+              MAJOR=${MAJOR:-0}
+              MINOR=${MINOR:-0}
+              PATCH=${PATCH:-0}
+
+              PATCH=$((PATCH + 1))
+            fi
+
+            VERSION_BASE="${MAJOR}.${MINOR}.${PATCH}"
+            VERSION="${VERSION_BASE}-${COMMIT_SHORT}"
+
+            echo "version=${VERSION}" >> $GITHUB_OUTPUT
+            echo "version_base=${VERSION_BASE}" >> $GITHUB_OUTPUT
+            echo "version_type=${VERSION_TYPE}" >> $GITHUB_OUTPUT
+          fi

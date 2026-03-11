@@ -10,13 +10,21 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  version:
+    uses: ./.github/workflows/version.yml
+
   build-windows:
     name: Build Windows
+    needs: [version]
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/rust-cross/cargo-zigbuild
     permissions:
       contents: write
+    env:
+      ORIGA_VERSION: ${{ needs.version.outputs.version }}
+      ORIGA_COMMIT: ${{ needs.version.outputs.commit_sha }}
+      ORIGA_BUILD_DATE: ${{ needs.version.outputs.build_date }}
 
     steps:
       - name: Checkout repository
@@ -56,9 +64,14 @@ jobs:
 
   build-linux:
     name: Build Linux
+    needs: [version]
     runs-on: ubuntu-22.04
     permissions:
       contents: write
+    env:
+      ORIGA_VERSION: ${{ needs.version.outputs.version }}
+      ORIGA_COMMIT: ${{ needs.version.outputs.commit_sha }}
+      ORIGA_BUILD_DATE: ${{ needs.version.outputs.build_date }}
 
     steps:
       - name: Checkout repository
@@ -106,11 +119,16 @@ jobs:
 
   build-macos:
     name: Build macOS
+    needs: [version]
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/rust-cross/cargo-zigbuild
     permissions:
       contents: write
+    env:
+      ORIGA_VERSION: ${{ needs.version.outputs.version }}
+      ORIGA_COMMIT: ${{ needs.version.outputs.commit_sha }}
+      ORIGA_BUILD_DATE: ${{ needs.version.outputs.build_date }}
 
     steps:
       - name: Checkout repository
@@ -142,7 +160,7 @@ jobs:
           mkdir -p Origa.app/Contents/MacOS
           mkdir -p Origa.app/Contents/Resources
           cp target/aarch64-apple-darwin/release/origa-app Origa.app/Contents/MacOS/origa
-          cat > Origa.app/Contents/Info.plist << 'EOF'
+          cat > Origa.app/Contents/Info.plist << EOF
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
           <plist version="1.0">
@@ -154,9 +172,9 @@ jobs:
             <key>CFBundleDisplayName</key>
             <string>Origa</string>
             <key>CFBundleVersion</key>
-            <string>0.1.0</string>
+            <string>${{ needs.version.outputs.version }}</string>
             <key>CFBundleShortVersionString</key>
-            <string>0.1.0</string>
+            <string>${{ needs.version.outputs.version }}</string>
             <key>CFBundleExecutable</key>
             <string>origa</string>
             <key>CFBundlePackageType</key>
@@ -176,11 +194,12 @@ jobs:
 
   release:
     name: Update Latest Release
-    needs: [build-windows, build-linux, build-macos]
+    needs: [version, build-windows, build-linux, build-macos]
     uses: ./.github/workflows/reusable-release.yml
     with:
-      tag-name: latest
-      release-name: Latest Build
+      tag-name: ${{ needs.version.outputs.version_type == 'stable' && needs.version.outputs.version || 'latest' }}
+      release-name: ${{ needs.version.outputs.version_type == 'stable' && format('Release {0}', needs.version.outputs.version) || 'Latest Build' }}
+      version-type: ${{ needs.version.outputs.version_type }}
       body: |
         Автоматическая сборка от ${{ github.sha }}
 
