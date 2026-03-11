@@ -10,7 +10,7 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use tracing::{debug, error, info};
 use wasm_bindgen::JsCast;
-use web_sys::{File, HtmlInputElement};
+use web_sys::{ClipboardEvent, File, HtmlInputElement};
 
 thread_local! {
     static CACHED_MODEL: Rc<RefCell<Option<Rc<RefCell<JapaneseOCRModel>>>>> = Rc::new(RefCell::new(None));
@@ -25,6 +25,74 @@ pub enum OcrState {
     Error,
 }
 
+const MAX_FILE_SIZE_MB: f64 = 10.0;
+
+fn process_file(
+    file: File,
+    image_preview: RwSignal<Option<String>>,
+    ocr_state: RwSignal<OcrState>,
+    on_text_extracted: Callback<String>,
+    on_error: Callback<String>,
+    error_message: RwSignal<Option<String>>,
+) {
+    let file_name = file.name();
+    debug!(file_name = %file_name, "File selected");
+
+    if !is_image_file(&file) {
+        error_message.set(Some(
+            "Выберите изображение (PNG, JPEG или WebP)".to_string(),
+        ));
+        return;
+    }
+
+    let file_size_mb = file.size() as f64 / (1024.0 * 1024.0);
+    if file_size_mb > MAX_FILE_SIZE_MB {
+        error_message.set(Some(format!(
+            "Файл слишком большой ({:.1} MB). Максимальный размер: {:.0} MB",
+            file_size_mb, MAX_FILE_SIZE_MB
+        )));
+        return;
+    }
+
+    spawn_local(async move {
+        ocr_state.set(OcrState::Processing);
+        error_message.set(None);
+
+        match read_file_as_data_url(&file).await {
+            Ok(data_url) => {
+                image_preview.set(Some(data_url.clone()));
+
+                match process_image_with_ocr(&data_url).await {
+                    Ok(text) => {
+                        if text.trim().is_empty() {
+                            let err = "Не удалось распознать текст на изображении. Попробуйте другое изображение или введите текст вручную.";
+                            error_message.set(Some(err.to_string()));
+                            ocr_state.set(OcrState::Error);
+                            on_error.run(err.to_string());
+                        } else {
+                            info!(text_length = text.len(), "OCR completed successfully");
+                            ocr_state.set(OcrState::Ready);
+                            on_text_extracted.run(text);
+                        }
+                    }
+                    Err(e) => {
+                        error!(error = %e, "OCR failed");
+                        error_message.set(Some(e.clone()));
+                        ocr_state.set(OcrState::Error);
+                        on_error.run(e);
+                    }
+                }
+            }
+            Err(e) => {
+                error!(error = %e, "Failed to read file");
+                error_message.set(Some(e.clone()));
+                ocr_state.set(OcrState::Error);
+                on_error.run(e);
+            }
+        }
+    });
+}
+
 #[component]
 pub fn ImageInputStage(
     #[prop(optional, into)] class: Signal<String>,
@@ -35,128 +103,189 @@ pub fn ImageInputStage(
     let ocr_state = RwSignal::new(OcrState::Idle);
     let image_preview = RwSignal::new(None::<String>);
     let error_message = RwSignal::new(None::<String>);
+    let is_drag_over = RwSignal::new(false);
 
-    let on_file_change = move |ev: leptos::ev::Event| {
-        let input: HtmlInputElement = ev.target().unwrap().dyn_into().unwrap();
-        let files = match input.files() {
-            Some(f) => f,
-            None => return,
-        };
+    let on_file_change = {
+        let image_preview = image_preview;
+        let ocr_state = ocr_state;
+        let on_text_extracted = on_text_extracted;
+        let on_error = on_error;
+        let error_message = error_message;
 
-        if let Some(file) = files.get(0) {
-            let file_name = file.name();
-            debug!(file_name = %file_name, "File selected");
+        move |ev: leptos::ev::Event| {
+            let target = match ev.target() {
+                Some(t) => t,
+                None => return,
+            };
+            let input: HtmlInputElement = match target.dyn_into() {
+                Ok(i) => i,
+                Err(_) => return,
+            };
+            let files = match input.files() {
+                Some(f) => f,
+                None => return,
+            };
 
-            if !is_image_file(&file) {
-                error_message.set(Some("Please select an image (PNG, JPEG, WebP)".to_string()));
-                return;
+            if let Some(file) = files.get(0) {
+                process_file(
+                    file,
+                    image_preview,
+                    ocr_state,
+                    on_text_extracted,
+                    on_error,
+                    error_message,
+                );
             }
-
-            let file_clone = file.clone();
-            let image_preview_clone = image_preview;
-            let ocr_state_clone = ocr_state;
-            let on_text_extracted_clone = on_text_extracted;
-            let on_error_clone = on_error;
-            let error_message_clone = error_message;
-
-            spawn_local(async move {
-                ocr_state_clone.set(OcrState::Processing);
-                error_message_clone.set(None);
-
-                match read_file_as_data_url(&file_clone).await {
-                    Ok(data_url) => {
-                        image_preview_clone.set(Some(data_url.clone()));
-
-                        match process_image_with_ocr(&data_url).await {
-                            Ok(text) => {
-                                if text.trim().is_empty() {
-                                    let err = "Не удалось распознать текст на изображении. Попробуйте другое изображение или введите текст вручную.";
-                                    error_message_clone.set(Some(err.to_string()));
-                                    ocr_state_clone.set(OcrState::Error);
-                                    on_error_clone.run(err.to_string());
-                                } else {
-                                    info!(text_length = text.len(), "OCR completed successfully");
-                                    ocr_state_clone.set(OcrState::Ready);
-                                    on_text_extracted_clone.run(text);
-                                }
-                            }
-                            Err(e) => {
-                                error!(error = %e, "OCR failed");
-                                error_message_clone.set(Some(e.clone()));
-                                ocr_state_clone.set(OcrState::Error);
-                                on_error_clone.run(e);
-                            }
-                        }
-                    }
-                    Err(e) => {
-                        error!(error = %e, "Failed to read file");
-                        error_message_clone.set(Some(e.clone()));
-                        ocr_state_clone.set(OcrState::Error);
-                        on_error_clone.run(e);
-                    }
-                }
-            });
         }
     };
 
-    view! {
-        <div class=move || format!("space-y-4 {}", class.get())>
-            <div>
-                <Text size=TextSize::Small variant=TypographyVariant::Muted class=Signal::derive(|| "mb-2".to_string())>
-                    "Upload image with Japanese text"
-                </Text>
-            </div>
+    let on_drag_over = move |ev: leptos::ev::DragEvent| {
+        ev.prevent_default();
+        is_drag_over.set(true);
+    };
 
-            <div class="flex flex-col items-center justify-center w-full">
-                <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-hover hover:bg-hover-dark border-border transition-colors">
-                    <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                        <svg class="w-8 h-8 mb-2 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-                        </svg>
-                        <p class="mb-2 text-sm text-muted">
-                            <span class="font-semibold">Click to upload</span>
-                        </p>
-                        <p class="text-xs text-muted">"PNG, JPEG or WebP"</p>
-                    </div>
+    let on_drag_leave = move |ev: leptos::ev::DragEvent| {
+        ev.prevent_default();
+        is_drag_over.set(false);
+    };
+
+    let on_drop = {
+        let image_preview = image_preview;
+        let ocr_state = ocr_state;
+        let on_text_extracted = on_text_extracted;
+        let on_error = on_error;
+        let error_message = error_message;
+
+        move |ev: leptos::ev::DragEvent| {
+            ev.prevent_default();
+            is_drag_over.set(false);
+
+            if let Some(data_transfer) = ev.data_transfer() {
+                if let Some(files) = data_transfer.files() {
+                    if let Some(file) = files.get(0) {
+                        process_file(
+                            file,
+                            image_preview,
+                            ocr_state,
+                            on_text_extracted,
+                            on_error,
+                            error_message,
+                        );
+                    }
+                }
+            }
+        }
+    };
+
+    Effect::new({
+        let image_preview = image_preview;
+        let ocr_state = ocr_state;
+        let on_text_extracted = on_text_extracted;
+        let on_error = on_error;
+        let error_message = error_message;
+
+        move || {
+            let window = match web_sys::window() {
+                Some(w) => w,
+                None => return,
+            };
+
+            let closure = wasm_bindgen::closure::Closure::<dyn FnMut(ClipboardEvent)>::new({
+                let image_preview = image_preview;
+                let ocr_state = ocr_state;
+                let on_text_extracted = on_text_extracted;
+                let on_error = on_error;
+                let error_message = error_message;
+
+                move |event: ClipboardEvent| {
+                    if let Some(clipboard_data) = event.clipboard_data() {
+                        if let Some(files) = clipboard_data.files() {
+                            if let Some(file) = files.get(0) {
+                                process_file(
+                                    file,
+                                    image_preview,
+                                    ocr_state,
+                                    on_text_extracted,
+                                    on_error,
+                                    error_message,
+                                );
+                            }
+                        }
+                    }
+                }
+            });
+
+            let closure_ptr = closure.as_ref().unchecked_ref();
+            if window
+                .add_event_listener_with_callback("paste", closure_ptr)
+                .is_ok()
+            {
+                closure.forget();
+            }
+        }
+    });
+
+    view! {
+        <div class=move || format!("{} space-y-4", class.get())>
+            <div
+                class=move || {
+                    let base = "border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer";
+                    if is_drag_over.get() {
+                        format!("{} border-accent bg-accent/10", base)
+                    } else {
+                        format!("{} border-muted hover:border-accent/50", base)
+                    }
+                }
+                on:dragover=on_drag_over
+                on:dragleave=on_drag_leave
+                on:drop=on_drop
+            >
+                <label class="cursor-pointer">
                     <input
                         type="file"
-                        class="hidden"
                         accept="image/png,image/jpeg,image/webp"
+                        class="hidden"
                         on:change=on_file_change
-                        disabled=Signal::derive(move || matches!(ocr_state.get(), OcrState::Processing))
                     />
+                    <div class="space-y-2">
+                        <svg class="mx-auto h-12 w-12 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <Text size=TextSize::Default variant=TypographyVariant::Muted>
+                            "Перетащите изображение, вставьте из буфера обмена или нажмите для выбора"
+                        </Text>
+                        <Text size=TextSize::Small variant=TypographyVariant::Muted>
+                            "PNG, JPEG, WebP (макс. 10 MB)"
+                        </Text>
+                    </div>
                 </label>
             </div>
 
             {move || {
                 image_preview.get().map(|src| view! {
                     <div class="relative">
-                        <img
-                            src=src
-                            alt="Preview"
-                            class="w-full max-h-48 object-contain rounded-lg border border-border"
-                        />
+                        <img src=src class="max-h-64 mx-auto rounded-lg shadow-md" alt="Preview" />
                     </div>
                 })
             }}
 
-                            {move || {
-                                let state = ocr_state.get();
-                                match state {
-                                    OcrState::Processing => Some(view! {
-                                        <div class="flex items-center gap-2 text-muted">
-                                            <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                            </svg>
-                                            <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                                                "Распознавание текста (при первом запуске загружаются модели OCR ~50MB и сегментации ~100MB)..."
-                                            </Text>
-                                        </div>
-                                    }),
-                                    _ => None,
-                                }
-                            }}
+            {move || {
+                let state = ocr_state.get();
+                match state {
+                    OcrState::Processing => Some(view! {
+                        <div class="flex items-center gap-2 text-muted">
+                            <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <Text size=TextSize::Small variant=TypographyVariant::Muted>
+                                "Распознавание текста (при первом запуске загружаются модели OCR ~50MB и сегментации ~100MB)..."
+                            </Text>
+                        </div>
+                    }),
+                    _ => None,
+                }
+            }}
 
             {move || {
                 error_message.get().map(|msg| view! {

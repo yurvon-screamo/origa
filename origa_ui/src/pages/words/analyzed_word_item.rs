@@ -1,4 +1,8 @@
-use crate::ui_components::{Checkbox, FuriganaText, Text, TextSize, TypographyVariant};
+use crate::pages::icons::{
+    CHECK_CIRCLE_ICON, ICON_CLASS_KNOWN, ICON_CLASS_NEW, PLUS_CIRCLE_ICON, TOOLTIP_KNOWN,
+    TOOLTIP_NEW,
+};
+use crate::ui_components::{Checkbox, FuriganaText, Text, TextSize, Tooltip, TypographyVariant};
 use leptos::prelude::*;
 use origa::domain::User;
 use origa::use_cases::AnalyzedWord;
@@ -22,16 +26,10 @@ pub fn AnalyzedWordItem(
     let base_form = analyzed_word.base_form.clone();
     let is_selected = Memo::new(move |_| selected_words.get().contains(&base_form));
 
-    let status_class = if analyzed_word.is_known {
-        "text-sm text-green-600"
+    let (status_icon, tooltip_text, icon_class) = if analyzed_word.is_known {
+        (CHECK_CIRCLE_ICON, TOOLTIP_KNOWN, ICON_CLASS_KNOWN)
     } else {
-        "text-sm text-gray-500"
-    };
-
-    let status_text = if analyzed_word.is_known {
-        "Изв."
-    } else {
-        "Нов."
+        (PLUS_CIRCLE_ICON, TOOLTIP_NEW, ICON_CLASS_NEW)
     };
 
     view! {
@@ -42,7 +40,9 @@ pub fn AnalyzedWordItem(
                     on_change=Callback::new(move |_| on_toggle.run(()))
                 />
                 <FuriganaText text=analyzed_word.base_form.clone() known_kanji=known_kanji.get()/>
-                <span class=status_class>{status_text}</span>
+                <Tooltip text=Signal::derive(|| tooltip_text.to_string())>
+                    <span class=icon_class inner_html=status_icon />
+                </Tooltip>
             </div>
             {move || {
                 analyzed_word.known_meaning.clone().map(|meaning| {
