@@ -93,7 +93,7 @@ url = "2.5"
 tauri = { version = "2", features = [] }
 tauri-plugin-opener = "2"
 tauri-plugin-deep-link = "2"
-tauri-plugin-single-instance = "2"
+tauri-plugin-single-instance = { version = "2", features = ["deep-link"] }
 tauri-build = { version = "2", features = [] }
 
 # Dev Dependencies
