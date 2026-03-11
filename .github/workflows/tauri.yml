@@ -23,10 +23,14 @@ jobs:
       image: ghcr.io/rust-cross/cargo-zigbuild
     permissions:
       contents: write
+    outputs:
+      signature: ${{ steps.signature.outputs.signature }}
     env:
       ORIGA_VERSION: ${{ needs.version.outputs.version }}
       ORIGA_COMMIT: ${{ needs.version.outputs.commit_sha }}
       ORIGA_BUILD_DATE: ${{ needs.version.outputs.build_date }}
+      TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+      TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
 
     steps:
       - name: Checkout repository
@@ -55,12 +59,25 @@ jobs:
         env:
           TAURI_BUNDLE_NSIS: "true"
 
+      - name: Extract signature
+        id: signature
+        shell: bash
+        run: |
+          SIG_FILE=$(ls target/x86_64-pc-windows-msvc/release/bundle/nsis/*.sig 2>/dev/null | head -1 || true)
+          if [ -n "$SIG_FILE" ] && [ -f "$SIG_FILE" ]; then
+            SIG_CONTENT=$(cat "$SIG_FILE")
+            echo "signature=${SIG_CONTENT}" >> $GITHUB_OUTPUT
+          else
+            echo "signature=" >> $GITHUB_OUTPUT
+          fi
+
       - name: Upload Windows artifacts
         uses: actions/upload-artifact@v4
         with:
           name: windows-build
           path: |
             **/bundle/nsis/*.exe
+            **/bundle/nsis/*.sig
             **/bundle/msi/*.msi
           retention-days: 7
 
@@ -70,10 +87,14 @@ jobs:
     runs-on: ubuntu-22.04
     permissions:
       contents: write
+    outputs:
+      signature: ${{ steps.signature.outputs.signature }}
     env:
       ORIGA_VERSION: ${{ needs.version.outputs.version }}
       ORIGA_COMMIT: ${{ needs.version.outputs.commit_sha }}
       ORIGA_BUILD_DATE: ${{ needs.version.outputs.build_date }}
+      TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+      TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
 
     steps:
       - name: Checkout repository
@@ -110,12 +131,25 @@ jobs:
         working-directory: tauri
         run: cargo tauri build --target x86_64-unknown-linux-gnu
 
+      - name: Extract signature
+        id: signature
+        shell: bash
+        run: |
+          SIG_FILE=$(ls target/x86_64-unknown-linux-gnu/release/bundle/appimage/*.sig 2>/dev/null | head -1 || true)
+          if [ -n "$SIG_FILE" ] && [ -f "$SIG_FILE" ]; then
+            SIG_CONTENT=$(cat "$SIG_FILE")
+            echo "signature=${SIG_CONTENT}" >> $GITHUB_OUTPUT
+          else
+            echo "signature=" >> $GITHUB_OUTPUT
+          fi
+
       - name: Upload Linux artifacts
         uses: actions/upload-artifact@v4
         with:
           name: linux-build
           path: |
             **/bundle/appimage/*.AppImage
+            **/bundle/appimage/*.sig
             **/bundle/deb/*.deb
           retention-days: 7
 
@@ -127,10 +161,14 @@ jobs:
       image: ghcr.io/rust-cross/cargo-zigbuild
     permissions:
       contents: write
+    outputs:
+      signature: ${{ steps.signature.outputs.signature }}
     env:
       ORIGA_VERSION: ${{ needs.version.outputs.version }}
       ORIGA_COMMIT: ${{ needs.version.outputs.commit_sha }}
       ORIGA_BUILD_DATE: ${{ needs.version.outputs.build_date }}
+      TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+      TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
 
     steps:
       - name: Checkout repository
@@ -156,6 +194,11 @@ jobs:
       - name: Build Tauri app for macOS
         working-directory: tauri
         run: cargo tauri build --runner cargo-zigbuild --target aarch64-apple-darwin --no-bundle
+
+      - name: Extract signature
+        id: signature
+        shell: bash
+        run: echo "signature=" >> $GITHUB_OUTPUT
 
       - name: Create macOS app bundle
         run: |
@@ -194,9 +237,48 @@ jobs:
           path: Origa-macos-arm64.zip
           retention-days: 7
 
+  generate-latest-json:
+    name: Generate latest.json
+    needs: [version, build-windows, build-linux, build-macos]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Generate latest.json
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
+          WIN_SIG: ${{ needs.build-windows.outputs.signature }}
+          LINUX_SIG: ${{ needs.build-linux.outputs.signature }}
+        run: |
+          cat > latest.json << EOF
+          {
+            "version": "${VERSION}",
+            "notes": "Release ${VERSION}",
+            "pub_date": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "platforms": {
+              "windows-x86_64": {
+                "signature": "${WIN_SIG}",
+                "url": "https://github.com/yurvon-screamo/origa/releases/download/${VERSION}/origa_${VERSION}_x64-setup.exe"
+              },
+              "linux-x86_64": {
+                "signature": "${LINUX_SIG}",
+                "url": "https://github.com/yurvon-screamo/origa/releases/download/${VERSION}/origa_${VERSION}_amd64.AppImage"
+              }
+            }
+          }
+          EOF
+          cat latest.json
+
+      - name: Upload latest.json artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: latest-json
+          path: latest.json
+          retention-days: 7
+
   release:
     name: Update Latest Release
-    needs: [version, build-windows, build-linux, build-macos]
+    needs: [version, build-windows, build-linux, build-macos, generate-latest-json]
     uses: ./.github/workflows/reusable-release.yml
     with:
       tag-name: ${{ needs.version.outputs.version_type == 'stable' && needs.version.outputs.version || 'latest' }}

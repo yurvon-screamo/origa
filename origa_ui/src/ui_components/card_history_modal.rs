@@ -6,10 +6,10 @@ use ulid::Ulid;
 
 fn rating_color(rating: Rating) -> &'static str {
     match rating {
-        Rating::Easy => "text-green-600",
-        Rating::Good => "text-blue-600",
-        Rating::Hard => "text-orange-600",
-        Rating::Again => "text-red-600",
+        Rating::Easy => "text-[var(--success)]",
+        Rating::Good => "text-[var(--accent-olive)]",
+        Rating::Hard => "text-[var(--warning)]",
+        Rating::Again => "text-[var(--error)]",
     }
 }
 
@@ -130,7 +130,7 @@ pub fn CardHistoryModal(
                                     let label = review.label();
 
                                     view! {
-                                        <div class="flex justify-between items-center py-1 px-2 rounded bg-[var(--bg-secondary)]">
+                                        <div class="flex justify-between items-center py-1 px-2 rounded bg-[var(--bg-aged)]">
                                             <Text
                                                 size=TextSize::Small
                                                 variant=TypographyVariant::Primary
