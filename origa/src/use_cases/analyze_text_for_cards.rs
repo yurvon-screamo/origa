@@ -14,8 +14,7 @@ pub struct AnalyzedWord {
     pub reading: String,
     pub part_of_speech: PartOfSpeech,
     pub is_known: bool,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub known_meaning: Option<String>,
+    pub meaning: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -71,8 +70,7 @@ impl<'a, R: UserRepository> AnalyzeTextForCardsUseCase<'a, R> {
             }
             seen_words.insert(word_text.clone());
 
-            let (is_known, known_meaning) =
-                is_word_known(&user, &word_text, user.native_language());
+            let (is_known, meaning) = is_word_known(&user, &word_text, user.native_language());
 
             words.push(AnalyzedWord {
                 text: token.orthographic_surface_form().to_string(),
@@ -80,7 +78,7 @@ impl<'a, R: UserRepository> AnalyzeTextForCardsUseCase<'a, R> {
                 reading: token.phonological_base_form().to_string(),
                 part_of_speech: token.part_of_speech().clone(),
                 is_known,
-                known_meaning,
+                meaning,
             });
         }
 

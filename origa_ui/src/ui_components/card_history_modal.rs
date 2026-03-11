@@ -121,7 +121,7 @@ pub fn CardHistoryModal(
                                 height=150
                             />
                         </div>
-                        <div class="max-h-64 overflow-y-auto space-y-2">
+                        <div class="overflow-y-auto space-y-2">
                             <For
                                 each=move || reviews_signal.get()
                                 key=|review| review.id

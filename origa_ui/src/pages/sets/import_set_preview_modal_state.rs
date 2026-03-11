@@ -69,7 +69,7 @@ impl ImportPreviewModalState {
                     let words: Vec<(String, Option<String>, bool)> = result
                         .words
                         .iter()
-                        .map(|w| (w.word.clone(), w.known_meaning.clone(), w.is_known))
+                        .map(|w| (w.word.clone(), w.meaning.clone(), w.is_known))
                         .collect();
                     let words_to_select: HashSet<String> =
                         result.words.iter().map(|w| w.word.clone()).collect();

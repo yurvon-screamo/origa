@@ -5,5 +5,5 @@ pub const PLUS_CIRCLE_ICON: &str = r#"<svg class="w-4 h-4" fill="currentColor" v
 pub const TOOLTIP_KNOWN: &str = "Уже в словаре";
 pub const TOOLTIP_NEW: &str = "Новое слово";
 
-pub const ICON_CLASS_KNOWN: &str = "text-green-600";
-pub const ICON_CLASS_NEW: &str = "text-blue-500";
+pub const ICON_CLASS_KNOWN: &str = "text-[var(--success)]";
+pub const ICON_CLASS_NEW: &str = "text-[var(--accent-terracotta)]";

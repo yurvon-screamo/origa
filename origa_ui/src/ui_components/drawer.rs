@@ -1,0 +1,63 @@
+use leptos::prelude::*;
+use leptos_use::use_event_listener;
+
+#[component]
+pub fn Drawer(
+    #[prop(optional)] is_open: RwSignal<bool>,
+    #[prop(optional)] on_close: Option<Callback<leptos::ev::MouseEvent>>,
+    #[prop(optional, into)] title: Signal<String>,
+    children: ChildrenFn,
+) -> impl IntoView {
+    let close_drawer = move |ev: leptos::ev::MouseEvent| {
+        is_open.set(false);
+        if let Some(on_close) = on_close {
+            on_close.run(ev);
+        }
+    };
+
+    let _ = use_event_listener(
+        document(),
+        leptos::ev::keydown,
+        move |ev: leptos::ev::KeyboardEvent| {
+            if ev.key() == "Escape" {
+                is_open.set(false);
+            }
+        },
+    );
+
+    let children = StoredValue::new(children);
+
+    view! {
+        <Show when=move || is_open.get()>
+            <>
+                {/* Используем тот же бэкдроп, что и в модалке, для консистентности */}
+                <div
+                    class="modal-backdrop"
+                    on:click=close_drawer
+                ></div>
+
+                <div class="drawer-content">
+                    {/* Header: фиксированный */}
+                    <div class="flex justify-between items-start mb-6 shrink-0">
+                        <div>
+                            <h3 class="font-serif text-2xl mt-1">{move || title.get()}</h3>
+                        </div>
+                        <button
+                            on:click=close_drawer
+                            class="text-[var(--fg-muted)] hover:text-[var(--fg-black)] transition-colors"
+                        >
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M18 6L6 18M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    {/* Body: скроллируемый контент */}
+                    <div class="drawer-body">
+                        {move || children.with_value(|c| c())}
+                    </div>
+                </div>
+            </>
+        </Show>
+    }
+}

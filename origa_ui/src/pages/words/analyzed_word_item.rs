@@ -2,7 +2,7 @@ use crate::pages::icons::{
     CHECK_CIRCLE_ICON, ICON_CLASS_KNOWN, ICON_CLASS_NEW, PLUS_CIRCLE_ICON, TOOLTIP_KNOWN,
     TOOLTIP_NEW,
 };
-use crate::ui_components::{Checkbox, FuriganaText, Text, TextSize, Tooltip, TypographyVariant};
+use crate::ui_components::{Checkbox, FuriganaText, MarkdownText, MarkdownVariant, Tooltip};
 use leptos::prelude::*;
 use origa::domain::User;
 use origa::use_cases::AnalyzedWord;
@@ -33,26 +33,49 @@ pub fn AnalyzedWordItem(
     };
 
     view! {
-        <div class="flex justify-between items-center py-1 px-2 rounded bg-[var(--bg-secondary)]">
-            <div class="flex items-center gap-2">
+        <div
+            class="group flex items-start gap-4 py-3 px-4 border-b border-[var(--border-light)] hover:bg-[var(--bg-aged)] transition-colors cursor-pointer"
+            on:click=move |_| on_toggle.run(())
+        >
+            <div class="pt-1">
                 <Checkbox
                     checked=Signal::derive(move || is_selected.get())
                     on_change=Callback::new(move |_| on_toggle.run(()))
                 />
-                <FuriganaText text=analyzed_word.base_form.clone() known_kanji=known_kanji.get()/>
-                <Tooltip text=Signal::derive(|| tooltip_text.to_string())>
-                    <span class=icon_class inner_html=status_icon />
-                </Tooltip>
             </div>
-            {move || {
-                analyzed_word.known_meaning.clone().map(|meaning| {
-                    view! {
-                        <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                            {meaning}
-                        </Text>
-                    }
-                })
-            }}
+
+            <div class="flex-1 flex flex-col gap-1">
+                <div class="flex items-center gap-2">
+                    <div class="text-xl font-serif tracking-wide">
+                        <FuriganaText
+                            text=analyzed_word.base_form.clone()
+                            known_kanji=known_kanji.get()
+                        />
+                    </div>
+
+                        <Tooltip text=Signal::derive(|| tooltip_text.to_string())>
+                        <span class=format!("{} opacity-60 group-hover:opacity-100 transition-opacity", icon_class)
+                              inner_html=status_icon
+                        />
+                    </Tooltip>
+                </div>
+
+                {move || {
+                    let known_kanji = known_kanji.get();
+                    analyzed_word.meaning.clone().map(|meaning| {
+                        view! {
+                            <div class="max-w-md">
+                                <MarkdownText
+                                    content=Signal::derive(move || meaning.clone())
+                                    known_kanji=known_kanji.clone()
+                                    variant=MarkdownVariant::Compact
+                                    class="text-[var(--fg-muted)]"
+                                />
+                            </div>
+                        }
+                    })
+                }}
+            </div>
         </div>
     }
 }
