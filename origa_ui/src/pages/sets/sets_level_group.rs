@@ -1,3 +1,4 @@
+use super::filters::TypeFilter;
 use super::sets_type_group::SetsTypeGroup;
 use super::types::SetInfo;
 use leptos::prelude::*;
@@ -7,7 +8,8 @@ use origa::traits::SetType;
 #[component]
 pub fn SetsLevelGroup(
     level: JapaneseLevel,
-    sets: RwSignal<Vec<SetInfo>>,
+    sets: Memo<Vec<SetInfo>>,
+    type_filter: RwSignal<TypeFilter>,
     on_import: Callback<(String, String)>,
 ) -> impl IntoView {
     let sets_for_level = Memo::new(move |_| {
@@ -26,21 +28,25 @@ pub fn SetsLevelGroup(
                 <SetsTypeGroup
                     set_type=SetType::Jlpt
                     sets_for_level=sets_for_level
+                    type_filter=type_filter
                     on_import=on_import
                 />
                 <SetsTypeGroup
                     set_type=SetType::Migii
                     sets_for_level=sets_for_level
+                    type_filter=type_filter
                     on_import=on_import
                 />
                 <SetsTypeGroup
                     set_type=SetType::SpyFamily
                     sets_for_level=sets_for_level
+                    type_filter=type_filter
                     on_import=on_import
                 />
                 <SetsTypeGroup
                     set_type=SetType::Duolingo
                     sets_for_level=sets_for_level
+                    type_filter=type_filter
                     on_import=on_import
                 />
             </div>
