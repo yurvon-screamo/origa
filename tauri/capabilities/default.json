@@ -5,6 +5,8 @@
 	"windows": ["main"],
 	"permissions": [
 		"core:default",
+		"core:event:default",
+		"deep-link:default",
 		{
 			"identifier": "opener:default",
 			"allow": [
