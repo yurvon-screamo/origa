@@ -92,7 +92,7 @@ fn open_oauth_url(provider: OAuthProvider) {
 
     let redirect_uri = if is_tauri_desktop() {
         tracing::info!("OAuth: Tauri mode");
-        "https://origa.uwuwu.net/auth/desktop-callback.html".to_string()
+        "https://origa.uwuwu.net/public/auth/desktop-callback.html".to_string()
     } else {
         let window = web_sys::window().expect("window not available");
         let base_url = window.location().origin().unwrap_or_default();
