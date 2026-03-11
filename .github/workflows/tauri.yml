@@ -21,6 +21,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          lfs: true
 
       - name: Install build dependencies
         run: apt-get update && apt-get install -y nsis clang lld llvm protobuf-compiler
@@ -63,6 +65,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          lfs: true
 
       - name: Install system dependencies
         run: |
@@ -115,6 +119,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          lfs: true
 
       - name: Install build dependencies
         run: apt-get update && apt-get install -y zip protobuf-compiler

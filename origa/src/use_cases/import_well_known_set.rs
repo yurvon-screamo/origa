@@ -12,7 +12,7 @@ pub struct ImportWellKnownSetResult {
 
 pub struct SetPreviewWord {
     pub word: String,
-    pub known_meaning: Option<String>,
+    pub meaning: Option<String>,
     pub is_known: bool,
 }
 
@@ -127,13 +127,13 @@ impl<'a, R: UserRepository, W: WellKnownSetLoader> ImportWellKnownSetUseCase<'a,
         let mut known_count = 0;
 
         for word in words {
-            let (is_known, known_meaning) = is_word_known(&user, word, user.native_language());
+            let (is_known, meaning) = is_word_known(&user, word, user.native_language());
             if is_known {
                 known_count += 1;
             }
             preview_words.push(SetPreviewWord {
                 word: word.clone(),
-                known_meaning,
+                meaning,
                 is_known,
             });
         }

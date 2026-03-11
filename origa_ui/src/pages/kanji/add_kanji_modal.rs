@@ -6,7 +6,7 @@ use super::kanji_list::KanjiList;
 use super::level_selector::LevelSelector;
 use super::selected_count::SelectedCount;
 use crate::ui_components::{
-    Button, ButtonSize, ButtonVariant, Modal, Spinner, Text, TextSize, TypographyVariant,
+    Button, ButtonSize, ButtonVariant, Drawer, Spinner, Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
 use origa::domain::JapaneseLevel;
@@ -34,7 +34,7 @@ pub fn AddKanjiModal(is_open: RwSignal<bool>) -> impl IntoView {
     });
 
     view! {
-        <Modal
+        <Drawer
             is_open=is_open
             title=Signal::derive(|| "Добавить кандзи".to_string())
         >
@@ -96,6 +96,6 @@ pub fn AddKanjiModal(is_open: RwSignal<bool>) -> impl IntoView {
                     on_add=handlers.on_add
                 />
             </div>
-        </Modal>
+        </Drawer>
     }
 }

@@ -527,6 +527,94 @@ body {
 	background: var(--bg-aged);
 }
 
+/* --- Drawer Component --- */
+@keyframes drawerSlideInRight {
+	from {
+		transform: translateX(100%);
+	}
+
+	to {
+		transform: translateX(0);
+	}
+}
+
+@keyframes drawerSlideInBottom {
+	from {
+		transform: translateY(100%);
+	}
+
+	to {
+		transform: translateY(0);
+	}
+}
+
+.drawer-content {
+	position: fixed;
+	background: var(--bg-paper);
+	border: 1px solid var(--border-dark);
+	z-index: 101;
+	padding: 32px;
+	display: flex;
+	flex-direction: column;
+}
+
+/* Декоративная тень в стиле твоего приложения */
+.drawer-content::after {
+	content: "";
+	position: absolute;
+	z-index: -1;
+	background: var(--bg-aged);
+	border: 1px solid var(--border-dark);
+}
+
+/* Мобильная версия: выезжает снизу, 80% высоты */
+@media (max-width: 639px) {
+	.drawer-content {
+		bottom: 0;
+		left: 0;
+		right: 0;
+		height: 80vh;
+		border-bottom: none;
+		animation: drawerSlideInBottom 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+	}
+
+	.drawer-content::after {
+		top: -8px;
+		left: 8px;
+		right: -8px;
+		height: 100%;
+	}
+}
+
+/* Десктопная версия: выезжает справа, 80% ширины */
+@media (min-width: 640px) {
+	.drawer-content {
+		top: 0;
+		right: 0;
+		bottom: 0;
+		width: 80vw;
+		max-width: 800px;
+		border-right: none;
+		animation: drawerSlideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+	}
+
+	.drawer-content::after {
+		top: 8px;
+		left: -8px;
+		bottom: -8px;
+		width: 100%;
+	}
+}
+
+.drawer-body {
+	flex: 1;
+	overflow-y: auto;
+	padding-right: 8px;
+	/* Небольшой отступ для скроллбара */
+}
+
+/* ------------------------ */
+
 .dropdown {
 	position: relative;
 }
@@ -1262,12 +1350,29 @@ body {
 	color: var(--fg-black);
 }
 
-.markdown-text h1 { font-size: 1.5em; }
-.markdown-text h2 { font-size: 1.25em; }
-.markdown-text h3 { font-size: 1.1em; }
-.markdown-text h4 { font-size: 1em; }
-.markdown-text h5 { font-size: 0.9em; }
-.markdown-text h6 { font-size: 0.8em; }
+.markdown-text h1 {
+	font-size: 1.5em;
+}
+
+.markdown-text h2 {
+	font-size: 1.25em;
+}
+
+.markdown-text h3 {
+	font-size: 1.1em;
+}
+
+.markdown-text h4 {
+	font-size: 1em;
+}
+
+.markdown-text h5 {
+	font-size: 0.9em;
+}
+
+.markdown-text h6 {
+	font-size: 0.8em;
+}
 
 .markdown-text p {
 	margin: 0.5em 0;
@@ -1455,6 +1560,7 @@ body {
 		opacity: 0;
 		transform: translateX(20px);
 	}
+
 	to {
 		opacity: 1;
 		transform: translateX(0);

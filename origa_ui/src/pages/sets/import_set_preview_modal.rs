@@ -1,6 +1,6 @@
 use crate::pages::sets::set_word_item::SetWordItem;
 use crate::ui_components::{
-    Alert, AlertType, Button, ButtonVariant, Modal, Spinner, Text, TextSize, ToastContainer,
+    Alert, AlertType, Button, ButtonVariant, Drawer, Spinner, Text, TextSize, ToastContainer,
     ToastData, TypographyVariant,
 };
 use leptos::prelude::*;
@@ -46,9 +46,9 @@ pub fn ImportSetPreviewModal(
     });
 
     view! {
-        <Modal
+        <Drawer
             is_open=is_open
-            title=Signal::derive(move || format!("Импортировать: {}", set_title.get()))
+            title=Signal::derive(move || set_title.get())
         >
             <div class="space-y-4">
                 {move || {
@@ -79,7 +79,7 @@ pub fn ImportSetPreviewModal(
                             <Text size=TextSize::Small variant=TypographyVariant::Muted>
                                 {format!("Найдено {} слов ({} известных)", words.len(), known_count)}
                             </Text>
-                            <div class="space-y-2 max-h-64 overflow-y-auto">
+                            <div class="space-y-2 overflow-y-auto">
                                 <For
                                     each=move || words.clone()
                                     key=|word| word.0.clone()
@@ -129,6 +129,6 @@ pub fn ImportSetPreviewModal(
                 }}
             </div>
             <ToastContainer toasts=toasts duration_ms=5000 />
-        </Modal>
+        </Drawer>
     }
 }

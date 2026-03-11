@@ -26,6 +26,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          lfs: true
 
       - name: Install system dependencies (Linux)
         if: matrix.os == 'ubuntu-22.04'

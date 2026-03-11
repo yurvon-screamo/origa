@@ -27,7 +27,7 @@ pub fn RulesList(
     };
 
     view! {
-        <div class="space-y-2 max-h-64 overflow-y-auto">
+        <div class="space-y-2 overflow-y-auto">
             {move || {
                 let filtered = filtered_rules();
                 if filtered.is_empty() {
