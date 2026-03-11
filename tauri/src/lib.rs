@@ -1,4 +1,4 @@
-use tauri::{Emitter, Manager};
+use tauri::{Emitter, Listener, Manager};
 use tauri_plugin_deep_link::DeepLinkExt;
 
 #[tauri::command]
@@ -26,14 +26,46 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![greet])
         .setup(|app| {
             let handle = app.handle().clone();
+            let handle_for_event = app.handle().clone();
 
-            app.deep_link().on_open_url(move |event| {
-                for url in event.urls() {
-                    if url.scheme() == "origa" {
-                        let _ = handle.emit("deep-link-received", url.to_string());
+            // Способ 1: слушаем событие от плагина (как в kanri)
+            app.listen("deep-link://new-url", move |event: tauri::Event| {
+                let payload = event.payload();
+                log::info!("deep-link://new-url event received: {}", payload);
+
+                if let Ok(urls) = serde_json::from_str::<Vec<String>>(payload) {
+                    for url in urls {
+                        if url.starts_with("origa://") {
+                            log::info!("Emitting deep-link-received: {}", url);
+                            let _ = handle_for_event.emit("deep-link-received", url);
+                        }
                     }
                 }
             });
+
+            // Способ 2: on_open_url callback
+            let handle_for_callback = handle.clone();
+            app.deep_link().on_open_url(move |event| {
+                log::info!("on_open_url callback triggered");
+                for url in event.urls() {
+                    log::info!("URL in on_open_url: {}", url);
+                    if url.scheme() == "origa" {
+                        let _ = handle_for_callback.emit("deep-link-received", url.to_string());
+                    }
+                }
+            });
+
+            // Обработка deep-link при запуске приложения
+            #[cfg(desktop)]
+            {
+                let handle_for_startup = app.handle().clone();
+                if let Ok(Some(urls)) = app.deep_link().get_current() {
+                    if let Some(url) = urls.first() {
+                        log::info!("App started via deep link: {}", url);
+                        let _ = handle_for_startup.emit("deep-link-received", url.to_string());
+                    }
+                }
+            }
 
             #[cfg(any(windows, target_os = "linux"))]
             {
