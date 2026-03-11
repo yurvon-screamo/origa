@@ -1,4 +1,5 @@
 mod content;
+mod filters;
 mod header;
 mod import_set_preview_modal;
 mod import_set_preview_modal_handlers;
