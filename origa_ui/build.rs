@@ -5,6 +5,19 @@ use std::path::Path;
 fn main() {
     handle_lindera_dictionary();
     println!("cargo:rerun-if-changed=build.rs");
+
+    // Version info from CI environment
+    let version = option_env!("ORIGA_VERSION").unwrap_or("dev");
+    let commit = option_env!("ORIGA_COMMIT").unwrap_or("unknown");
+    let build_date = option_env!("ORIGA_BUILD_DATE").unwrap_or("unknown");
+
+    println!("cargo:rustc-env=ORIGA_VERSION={}", version);
+    println!("cargo:rustc-env=ORIGA_COMMIT={}", commit);
+    println!("cargo:rustc-env=ORIGA_BUILD_DATE={}", build_date);
+
+    println!("cargo:rerun-if-env-changed=ORIGA_VERSION");
+    println!("cargo:rerun-if-env-changed=ORIGA_COMMIT");
+    println!("cargo:rerun-if-env-changed=ORIGA_BUILD_DATE");
 }
 
 fn handle_lindera_dictionary() {

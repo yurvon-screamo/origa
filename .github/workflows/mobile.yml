@@ -10,7 +10,11 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  version:
+    uses: ./.github/workflows/version.yml
+
   build:
+    needs: [version]
     strategy:
       fail-fast: false
       matrix:
@@ -22,6 +26,10 @@ jobs:
           # os: macos-15
 
     runs-on: ${{ matrix.os }}
+    env:
+      ORIGA_VERSION: ${{ needs.version.outputs.version }}
+      ORIGA_COMMIT: ${{ needs.version.outputs.commit_sha }}
+      ORIGA_BUILD_DATE: ${{ needs.version.outputs.build_date }}
 
     steps:
       - name: Checkout repository
@@ -150,11 +158,12 @@ jobs:
 
   release:
     name: Update Latest Release
-    needs: [build]
+    needs: [version, build]
     uses: ./.github/workflows/reusable-release.yml
     with:
-      tag-name: latest
-      release-name: Latest Build
+      tag-name: ${{ needs.version.outputs.version_type == 'stable' && needs.version.outputs.version || 'latest' }}
+      release-name: ${{ needs.version.outputs.version_type == 'stable' && format('Release {0}', needs.version.outputs.version) || 'Latest Build' }}
+      version-type: ${{ needs.version.outputs.version_type }}
       body: |
         Автоматическая сборка от ${{ github.sha }}
 

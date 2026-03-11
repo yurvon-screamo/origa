@@ -11,8 +11,12 @@ env:
     IMAGE_NAME: ${{ github.repository }}
 
 jobs:
+    version:
+        uses: ./.github/workflows/version.yml
+
     build-and-push:
         name: Build and Push Docker Image
+        needs: [version]
         runs-on: ubuntu-latest
         permissions:
             contents: read
@@ -39,6 +43,7 @@ jobs:
                   images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
                   tags: |
                       type=raw,value=latest,enable=${{ github.ref == 'refs/heads/master' }}
+                      type=raw,value=${{ needs.version.outputs.version }}
                       type=sha,prefix=
 
             - name: Build and push Docker image
@@ -52,10 +57,14 @@ jobs:
                   cache-from: type=gha
                   cache-to: type=gha,mode=max
                   provenance: false
+                  build-args: |
+                      ORIGA_VERSION=${{ needs.version.outputs.version }}
+                      ORIGA_COMMIT=${{ needs.version.outputs.commit_sha }}
+                      ORIGA_BUILD_DATE=${{ needs.version.outputs.build_date }}
 
     deploy-to-railway:
         name: Deploy to Railway
-        needs: build-and-push
+        needs: [version, build-and-push]
         runs-on: ubuntu-latest
         container: ghcr.io/railwayapp/cli:latest
         env:
