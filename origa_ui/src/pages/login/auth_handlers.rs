@@ -1,5 +1,6 @@
 use crate::app::AuthContext;
 use crate::repository::{TrailBaseClient, set_session};
+use gloo_storage::{LocalStorage, Storage};
 use origa::domain::{NativeLanguage, User};
 use origa::traits::UserRepository;
 
@@ -26,6 +27,37 @@ pub async fn get_or_create_profile(ctx: &AuthContext, email: &str) -> Result<Use
 
 pub async fn handle_oauth_callback(url_fragment: &str, ctx: &AuthContext) -> Result<User, String> {
     let session = TrailBaseClient::parse_tokens_from_url(url_fragment)?;
+    set_session(&session).map_err(|e| format!("Не удалось сохранить сессию: {}", e))?;
+
+    if session.email.is_empty() {
+        return Err("Email не найден в токене авторизации. Попробуйте войти снова.".to_string());
+    }
+
+    get_or_create_profile(ctx, &session.email).await
+}
+
+pub async fn handle_oauth_callback_desktop(url: &str, ctx: &AuthContext) -> Result<User, String> {
+    let parsed = url::Url::parse(url).map_err(|e| format!("Неверный URL: {}", e))?;
+
+    let code = parsed
+        .query_pairs()
+        .find(|(k, _)| k == "code")
+        .map(|(_, v)| v.to_string())
+        .ok_or("Код авторизации не найден в callback URL")?;
+
+    let verifier: Option<String> = LocalStorage::get("pkce_verifier").ok();
+    LocalStorage::delete("pkce_verifier");
+
+    let verifier = verifier.ok_or_else(|| {
+        "PKCE verifier не найден. Пожалуйста, попробуйте войти снова.".to_string()
+    })?;
+
+    let client = TrailBaseClient::new();
+    let session = client
+        .exchange_auth_code_for_session(&code, &verifier)
+        .await
+        .map_err(|e| format!("Ошибка обмена токена: {}", e))?;
+
     set_session(&session).map_err(|e| format!("Не удалось сохранить сессию: {}", e))?;
 
     if session.email.is_empty() {

@@ -1,5 +1,6 @@
 use crate::repository::OAuthProvider;
 use leptos::prelude::*;
+use leptos::wasm_bindgen::JsCast;
 use leptos::wasm_bindgen::JsValue;
 
 #[component]
@@ -31,19 +32,69 @@ pub fn OAuthButtons() -> impl IntoView {
     }
 }
 
+fn is_tauri_desktop() -> bool {
+    let Some(window) = web_sys::window() else {
+        return false;
+    };
+    let Ok(tauri_obj) = js_sys::Reflect::get(&window, &JsValue::from_str("__TAURI__")) else {
+        return false;
+    };
+    tauri_obj.is_object() && window.location().protocol().unwrap_or_default() == "tauri:"
+}
+
+fn open_url_external(url: &str) {
+    let Some(window) = web_sys::window() else {
+        tracing::error!("window not available for opening URL");
+        return;
+    };
+
+    if !is_tauri_desktop() {
+        let _ = window.open_with_url_and_target(url, "_blank");
+        return;
+    }
+
+    let Ok(tauri_obj) = js_sys::Reflect::get(&window, &JsValue::from_str("__TAURI__")) else {
+        tracing::warn!("Tauri object not found, fallback to window.open");
+        let _ = window.open_with_url_and_target(url, "_blank");
+        return;
+    };
+
+    let Ok(opener) = js_sys::Reflect::get(&tauri_obj, &JsValue::from_str("opener")) else {
+        tracing::warn!("Tauri opener not found, fallback to window.open");
+        let _ = window.open_with_url_and_target(url, "_blank");
+        return;
+    };
+
+    let Ok(open_url_fn) = js_sys::Reflect::get(&opener, &JsValue::from_str("openUrl")) else {
+        tracing::warn!("Tauri opener.openUrl not found, fallback to window.open");
+        let _ = window.open_with_url_and_target(url, "_blank");
+        return;
+    };
+
+    let Ok(open_url_fn) = open_url_fn.dyn_into::<js_sys::Function>() else {
+        tracing::warn!("Tauri openUrl is not a function, fallback to window.open");
+        let _ = window.open_with_url_and_target(url, "_blank");
+        return;
+    };
+
+    if open_url_fn
+        .call1(&JsValue::UNDEFINED, &JsValue::from_str(url))
+        .is_err()
+    {
+        tracing::warn!("Tauri openUrl call failed, fallback to window.open");
+        let _ = window.open_with_url_and_target(url, "_blank");
+    }
+}
+
 fn open_oauth_url(provider: OAuthProvider) {
     use crate::repository::TrailBaseClient;
     use gloo_storage::{LocalStorage, Storage};
 
-    let window = web_sys::window().expect("window not available");
-
-    let is_tauri = js_sys::Reflect::get(&window, &JsValue::from_str("__TAURI__")).is_ok()
-        && window.location().protocol().unwrap_or_default() == "tauri:";
-
-    let redirect_uri = if is_tauri {
+    let redirect_uri = if is_tauri_desktop() {
         tracing::info!("OAuth: Tauri mode");
         "origa://auth/callback".to_string()
     } else {
+        let window = web_sys::window().expect("window not available");
         let base_url = window.location().origin().unwrap_or_default();
         let redirect = format!("{}/login", base_url);
         tracing::info!("OAuth: Web mode, redirect_uri={}", redirect);
@@ -59,7 +110,7 @@ fn open_oauth_url(provider: OAuthProvider) {
     let url = client.get_oauth_url(provider.as_str(), &redirect_uri, &challenge);
     tracing::info!("OAuth: Generated URL={}", url);
 
-    let _ = window.location().set_href(&url);
+    open_url_external(&url);
 }
 
 #[component]
