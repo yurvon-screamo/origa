@@ -87,6 +87,7 @@ gloo-net = { version = "0.6", default-features = false, features = [
     "json",
 ] }
 urlencoding = "2.1"
+url = "2.5"
 
 # Tauri
 tauri = { version = "2", features = [] }

@@ -3,5 +3,16 @@
 	"identifier": "default",
 	"description": "Capability for the main window",
 	"windows": ["main"],
-	"permissions": ["core:default", "opener:default"]
+	"permissions": [
+		"core:default",
+		{
+			"identifier": "opener:default",
+			"allow": [
+				{ "url": "https://origa.uwuwu.net/*" },
+				{ "url": "https://accounts.google.com/*" },
+				{ "url": "https://oauth.yandex.com/*" },
+				{ "url": "https://passport.yandex.com/*" }
+			]
+		}
+	]
 }
