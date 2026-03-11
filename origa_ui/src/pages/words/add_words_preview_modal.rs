@@ -3,7 +3,7 @@ use crate::pages::words::add_words_preview_modal_state::{InputMode, PreviewModal
 use crate::pages::words::analyzed_word_item::AnalyzedWordItem;
 use crate::pages::words::image_input_stage::ImageInputStage;
 use crate::ui_components::{
-    Alert, AlertType, Button, ButtonVariant, Input, Modal, TabItem, Tabs, Text, TextSize,
+    Alert, AlertType, Button, ButtonVariant, Drawer, Input, TabItem, Tabs, Text, TextSize,
     TypographyVariant,
 };
 use leptos::ev::MouseEvent;
@@ -71,7 +71,7 @@ pub fn AddWordsPreviewModal(is_open: RwSignal<bool>) -> impl IntoView {
     };
 
     view! {
-        <Modal
+        <Drawer
             is_open=is_open
             title=Signal::derive(|| "Добавить слова".to_string())
         >
@@ -118,7 +118,7 @@ pub fn AddWordsPreviewModal(is_open: RwSignal<bool>) -> impl IntoView {
                     }
                 }}
             </div>
-        </Modal>
+        </Drawer>
     }
 }
 
@@ -144,7 +144,7 @@ fn PreviewStage(
                 )}
             </Text>
         </div>
-        <div class="space-y-2 max-h-64 overflow-y-auto">
+        <div class="space-y-2 overflow-y-auto">
             <For
                 each=move || analyzed_words.clone()
                 key=|word| word.base_form.clone()
@@ -202,7 +202,7 @@ fn InputStage(
             <Input
                 value=input_text
                 placeholder=Signal::derive(|| "例えば、本を読みます。".to_string())
-                rows=Signal::derive(|| Some(6))
+                rows=Signal::derive(|| Some(10))
             />
         </div>
         {move || {
