@@ -10,6 +10,7 @@ mod pages;
 mod repository;
 mod routes;
 mod ui_components;
+pub mod version;
 pub mod well_known_set;
 
 pub fn init_tracing() {
