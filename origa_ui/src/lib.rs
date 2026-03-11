@@ -3,6 +3,7 @@ use tracing_subscriber::{Registry, layer::SubscriberExt};
 use tracing_wasm::{ConsoleConfig, WASMLayer, WASMLayerConfigBuilder};
 
 pub mod app;
+pub mod components;
 pub mod data_loader;
 mod dictionary;
 mod ocr_model_loader;
@@ -10,6 +11,7 @@ mod pages;
 mod repository;
 mod routes;
 mod ui_components;
+pub mod updater;
 pub mod version;
 pub mod well_known_set;
 
