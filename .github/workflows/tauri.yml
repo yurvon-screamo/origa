@@ -36,6 +36,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Update version in config files
+        env:
+          VERSION: ${{ needs.version.outputs.version_base }}
+        run: |
+          # Обновить версию в Cargo.toml (workspace)
+          sed -i 's/^version = ".*"/version = "'${VERSION}'"/' Cargo.toml
+          
+          # Обновить версию в tauri.conf.json
+          sed -i 's/"version": ".*"/"version": "'${VERSION}'"/' tauri/tauri.conf.json
+          
+          echo "Updated version to ${VERSION}"
+
       - name: Install build dependencies
         run: apt-get update && apt-get install -y nsis clang lld llvm protobuf-compiler
 
@@ -99,6 +111,18 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Update version in config files
+        env:
+          VERSION: ${{ needs.version.outputs.version_base }}
+        run: |
+          # Обновить версию в Cargo.toml (workspace)
+          sed -i 's/^version = ".*"/version = "'${VERSION}'"/' Cargo.toml
+          
+          # Обновить версию в tauri.conf.json
+          sed -i 's/"version": ".*"/"version": "'${VERSION}'"/' tauri/tauri.conf.json
+          
+          echo "Updated version to ${VERSION}"
 
       - name: Install system dependencies
         run: |
@@ -173,6 +197,18 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Update version in config files
+        env:
+          VERSION: ${{ needs.version.outputs.version_base }}
+        run: |
+          # Обновить версию в Cargo.toml (workspace)
+          sed -i 's/^version = ".*"/version = "'${VERSION}'"/' Cargo.toml
+          
+          # Обновить версию в tauri.conf.json
+          sed -i 's/"version": ".*"/"version": "'${VERSION}'"/' tauri/tauri.conf.json
+          
+          echo "Updated version to ${VERSION}"
 
       - name: Install build dependencies
         run: apt-get update && apt-get install -y zip protobuf-compiler
