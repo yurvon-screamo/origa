@@ -103,7 +103,18 @@ fn setup_oauth_listener(ctx: AuthContext) {
     use leptos::wasm_bindgen::prelude::*;
 
     let ctx_clone = ctx.clone();
-    let callback = Closure::<dyn Fn(String)>::new(move |url: String| {
+    let callback = Closure::<dyn Fn(JsValue)>::new(move |event: JsValue| {
+        let url = if let Ok(url_str) = js_sys::Reflect::get(&event, &JsValue::from_str("payload"))
+            && let Some(s) = url_str.as_string()
+        {
+            s
+        } else if let Some(s) = event.as_string() {
+            s
+        } else {
+            error!("Invalid deep-link event format: {:?}", event);
+            return;
+        };
+
         info!("Deep link received: {}", url);
         let ctx = ctx_clone.clone();
         spawn_local(async move {
