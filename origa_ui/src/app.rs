@@ -102,26 +102,35 @@ fn setup_oauth_listener(ctx: AuthContext) {
     use leptos::wasm_bindgen::JsCast;
     use leptos::wasm_bindgen::prelude::*;
 
+    info!("[ORIGA-UI] Setting up OAuth listener...");
+
     let ctx_clone = ctx.clone();
     let callback = Closure::<dyn Fn(JsValue)>::new(move |event: JsValue| {
+        info!("[ORIGA-UI] Callback triggered with event: {:?}", event);
+        
         let url = if let Ok(url_str) = js_sys::Reflect::get(&event, &JsValue::from_str("payload"))
             && let Some(s) = url_str.as_string()
         {
+            info!("[ORIGA-UI] Extracted URL from event.payload: {}", s);
             s
         } else if let Some(s) = event.as_string() {
+            info!("[ORIGA-UI] Event is direct string: {}", s);
             s
         } else {
-            error!("Invalid deep-link event format: {:?}", event);
+            error!("[ORIGA-UI] Invalid deep-link event format: {:?}", event);
             return;
         };
 
-        info!("Deep link received: {}", url);
+        info!("[ORIGA-UI] Deep link received: {}", url);
         let ctx = ctx_clone.clone();
         spawn_local(async move {
+            info!("[ORIGA-UI] Processing deep link URL: {}", url);
             let result =
                 if url::Url::parse(&url).is_ok_and(|u| u.query_pairs().any(|(k, _)| k == "code")) {
+                    info!("[ORIGA-UI] Using desktop callback handler");
                     handle_oauth_callback_desktop(&url, &ctx).await
                 } else if let Some(fragment) = url.split('#').nth(1) {
+                    info!("[ORIGA-UI] Using web callback handler");
                     handle_oauth_callback(fragment, &ctx).await
                 } else {
                     Err("Неподдерживаемый формат callback URL".to_string())
@@ -129,36 +138,51 @@ fn setup_oauth_listener(ctx: AuthContext) {
 
             match result {
                 Ok(user) => {
+                    info!("[ORIGA-UI] OAuth success, user: {:?}", user.email());
                     ctx.current_user.set(Some(user));
                     if let Some(window) = web_sys::window()
                         && let Err(e) = window.location().set_href("/home")
                     {
-                        error!("Failed to redirect to /home: {:?}", e);
+                        error!("[ORIGA-UI] Failed to redirect to /home: {:?}", e);
                     }
                 }
                 Err(e) => {
-                    error!("OAuth callback error: {}", e);
+                    error!("[ORIGA-UI] OAuth callback error: {}", e);
                 }
             }
         });
     });
 
     if let Some(window) = web_sys::window() {
+        info!("[ORIGA-UI] Checking for __TAURI__ object...");
         let tauri = js_sys::Reflect::get(&window, &JsValue::from_str("__TAURI__")).ok();
-        if let Some(tauri_obj) = tauri
-            && let Ok(event_mod) = js_sys::Reflect::get(&tauri_obj, &JsValue::from_str("event"))
-            && let Ok(listen_fn) = js_sys::Reflect::get(&event_mod, &JsValue::from_str("listen"))
-            && let Ok(listen_fn) = listen_fn.dyn_into::<js_sys::Function>()
-        {
-            let event_name = JsValue::from_str("deep-link-received");
-            let handler = callback.as_ref().clone();
-            let _ = listen_fn.call2(&JsValue::UNDEFINED, &event_name, &handler);
-            callback.forget();
-            info!("Tauri deep-link listener registered");
-            return;
+        info!("[ORIGA-UI] __TAURI__ present: {}", tauri.is_some());
+        
+        if let Some(tauri_obj) = tauri {
+            info!("[ORIGA-UI] Checking for event module...");
+            let event_mod = js_sys::Reflect::get(&tauri_obj, &JsValue::from_str("event")).ok();
+            info!("[ORIGA-UI] event module present: {}", event_mod.is_some());
+            
+            if let Some(event_mod) = event_mod {
+                let listen_fn = js_sys::Reflect::get(&event_mod, &JsValue::from_str("listen")).ok();
+                info!("[ORIGA-UI] listen function present: {}", listen_fn.is_some());
+                
+                if let Some(listen_fn) = listen_fn
+                    && let Ok(listen_fn) = listen_fn.dyn_into::<js_sys::Function>()
+                {
+                    let event_name = JsValue::from_str("deep-link-received");
+                    let handler = callback.as_ref().clone();
+                    let result = listen_fn.call2(&JsValue::UNDEFINED, &event_name, &handler);
+                    info!("[ORIGA-UI] listen() call result: {:?}", result);
+                    callback.forget();
+                    info!("[ORIGA-UI] Tauri deep-link listener registered successfully");
+                    return;
+                }
+            }
         }
     }
 
+    info!("[ORIGA-UI] Not in Tauri environment or failed to register listener");
     callback.forget();
 }
 
