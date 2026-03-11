@@ -74,7 +74,7 @@ pub fn KanjiCardDetails(
                                     .map(|(word, meaning)| {
                                         let meaning_stored = StoredValue::new(meaning);
                                         view! {
-                                            <div class="p-2 bg-[var(--bg-secondary)] rounded">
+                                            <div class="p-2 bg-[var(--bg-aged)] rounded">
                                                 <Text size=TextSize::Default class="font-bold">
                                                     <FuriganaText text=word known_kanji=known_kanji.get()/>
                                                 </Text>

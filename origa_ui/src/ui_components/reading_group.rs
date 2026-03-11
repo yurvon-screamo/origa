@@ -22,7 +22,7 @@ pub fn ReadingGroup(
                         key=|reading| reading.clone()
                         children=move |reading| {
                             view! {
-                                <span class="inline-block px-2 py-1 bg-[var(--bg-secondary)] rounded text-sm">
+                                <span class="inline-block px-2 py-1 bg-[var(--bg-aged)] rounded text-sm">
                                     {reading}
                                 </span>
                             }

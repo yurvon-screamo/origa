@@ -9,24 +9,24 @@ pub fn OAuthButtons() -> impl IntoView {
         <div class="space-y-3">
             <button
                 type="button"
-                class="w-full flex items-center justify-center gap-3 px-4 py-3 border border-[var(--border-color)] rounded-lg bg-[var(--bg-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
+                class="w-full flex items-center justify-center gap-3 px-4 py-3 border border-[var(--border-dark)] rounded-lg bg-[var(--bg-cream)] hover:bg-[var(--bg-aged)] transition-colors"
                 on:click=move |_: leptos::ev::MouseEvent| {
                     open_oauth_url(OAuthProvider::Google);
                 }
             >
                 <GoogleIcon />
-                <span class="text-[var(--fg)]">"Войти через Google"</span>
+                <span class="text-[var(--fg-black)]">"Войти через Google"</span>
             </button>
 
             <button
                 type="button"
-                class="w-full flex items-center justify-center gap-3 px-4 py-3 border border-[var(--border-color)] rounded-lg bg-[var(--bg-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
+                class="w-full flex items-center justify-center gap-3 px-4 py-3 border border-[var(--border-dark)] rounded-lg bg-[var(--bg-cream)] hover:bg-[var(--bg-aged)] transition-colors"
                 on:click=move |_: leptos::ev::MouseEvent| {
                     open_oauth_url(OAuthProvider::Yandex);
                 }
             >
                 <YandexIcon />
-                <span class="text-[var(--fg)]">"Войти через Yandex"</span>
+                <span class="text-[var(--fg-black)]">"Войти через Yandex"</span>
             </button>
         </div>
     }
@@ -133,7 +133,7 @@ fn YandexIcon() -> impl IntoView {
         <svg class="w-5 h-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path fill="#FC3F1D" d="M3 3h18v18H3V3z" />
             <path
-                fill="#fff"
+                fill="var(--bg-paper)"
                 d="M13.32 18.82V12.7l2.94-7.52h-2.66l-1.57 4.38-1.57-4.38H7.8l2.94 7.52v6.12h2.58z"
             />
         </svg>

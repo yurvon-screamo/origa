@@ -1,9 +1,11 @@
+use crate::components::UpdateDrawer;
 use crate::data_loader::load_all_data;
 use crate::dictionary::load_dictionary;
 use crate::repository::get_session;
 use crate::repository::{HybridUserRepository, TrailBaseClient, clear_session};
 use crate::routes::AppRoutes;
 use crate::ui_components::LoadingOverlay;
+use crate::updater;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::domain::{OrigaError, User};
@@ -227,6 +229,37 @@ pub fn App() -> impl IntoView {
     check_url_oauth_callback(&auth_context);
     setup_oauth_listener(auth_context.clone());
 
+    let update_info = RwSignal::new(None::<updater::UpdateInfo>);
+    let download_progress = RwSignal::new(None::<f32>);
+
+    #[cfg(all(target_arch = "wasm32", target_os = "desktop"))]
+    {
+        let update_info_clone = update_info;
+        spawn_local(async move {
+            if let Some(info) = updater::check_for_updates().await {
+                update_info_clone.set(Some(info));
+            }
+        });
+    }
+
+    let on_update = Callback::new(move |_| {
+        let _update_info = update_info;
+        let download_progress = download_progress;
+
+        spawn_local(async move {
+            download_progress.set(Some(0.0));
+
+            let result = updater::download_and_install(move |progress| {
+                download_progress.set(Some(progress as f32));
+            }).await;
+
+            if let Err(e) = result {
+                error!("Update failed: {}", e);
+                download_progress.set(None);
+            }
+        });
+    });
+
     let ctx = auth_context.clone();
     spawn_local(async move {
         ctx.init_dictionary().await;
@@ -254,6 +287,14 @@ pub fn App() -> impl IntoView {
     });
 
     view! {
+        {move || update_info.get().map(|info| view! {
+            <UpdateDrawer
+                current_version=info.current_version
+                new_version=info.version
+                on_update=on_update
+                download_progress=Signal::from(download_progress)
+            />
+        })}
         <Show when=move || auth_context.is_session_loading.get() || auth_context.is_dictionary_loading.get()>
             <LoadingOverlay message=loading_message />
         </Show>
