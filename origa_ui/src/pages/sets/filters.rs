@@ -43,7 +43,8 @@ pub enum TypeFilter {
     Jlpt,
     Migii,
     SpyFamily,
-    Duolingo,
+    DuolingoRu,
+    DuolingoEn,
 }
 
 impl TypeFilter {
@@ -53,7 +54,8 @@ impl TypeFilter {
             TypeFilter::Jlpt => "JLPT",
             TypeFilter::Migii => "Migii",
             TypeFilter::SpyFamily => "SpyFamily",
-            TypeFilter::Duolingo => "Duolingo",
+            TypeFilter::DuolingoRu => "Duolingo Ru",
+            TypeFilter::DuolingoEn => "Duolingo En",
         }
     }
 
@@ -63,7 +65,8 @@ impl TypeFilter {
             TypeFilter::Jlpt => set_type == SetType::Jlpt,
             TypeFilter::Migii => set_type == SetType::Migii,
             TypeFilter::SpyFamily => set_type == SetType::SpyFamily,
-            TypeFilter::Duolingo => set_type == SetType::Duolingo,
+            TypeFilter::DuolingoRu => set_type == SetType::DuolingoRu,
+            TypeFilter::DuolingoEn => set_type == SetType::DuolingoEn,
         }
     }
 }
@@ -105,7 +108,8 @@ mod tests {
         assert!(filter.matches(SetType::Jlpt));
         assert!(filter.matches(SetType::Migii));
         assert!(filter.matches(SetType::SpyFamily));
-        assert!(filter.matches(SetType::Duolingo));
+        assert!(filter.matches(SetType::DuolingoRu));
+        assert!(filter.matches(SetType::DuolingoEn));
     }
 
     #[test]
@@ -114,7 +118,8 @@ mod tests {
         assert!(!filter.matches(SetType::Jlpt));
         assert!(filter.matches(SetType::Migii));
         assert!(!filter.matches(SetType::SpyFamily));
-        assert!(!filter.matches(SetType::Duolingo));
+        assert!(!filter.matches(SetType::DuolingoRu));
+        assert!(!filter.matches(SetType::DuolingoEn));
     }
 
     #[test]
