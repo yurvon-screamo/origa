@@ -9,7 +9,8 @@ pub enum SetType {
     Jlpt,
     Migii,
     SpyFamily,
-    Duolingo,
+    DuolingoRu,
+    DuolingoEn,
 }
 
 impl SetType {
@@ -18,7 +19,8 @@ impl SetType {
             SetType::Jlpt => "JLPT",
             SetType::Migii => "Migii",
             SetType::SpyFamily => "SpyFamily",
-            SetType::Duolingo => "Duolingo",
+            SetType::DuolingoRu => "Duolingo Ru",
+            SetType::DuolingoEn => "Duolingo En",
         }
     }
 }
