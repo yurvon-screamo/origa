@@ -96,30 +96,37 @@ pub fn update_current_user(repository: HybridUserRepository, current_user: RwSig
 }
 
 fn setup_oauth_listener(ctx: AuthContext) {
-    use crate::pages::login::auth_handlers::handle_oauth_callback;
+    use crate::pages::login::auth_handlers::{handle_oauth_callback, handle_oauth_callback_desktop};
     use leptos::wasm_bindgen::JsCast;
     use leptos::wasm_bindgen::prelude::*;
 
     let ctx_clone = ctx.clone();
     let callback = Closure::<dyn Fn(String)>::new(move |url: String| {
         info!("Deep link received: {}", url);
-        if let Some(fragment) = url.split('#').nth(1) {
-            let fragment = fragment.to_string();
-            let ctx = ctx_clone.clone();
-            spawn_local(async move {
-                match handle_oauth_callback(&fragment, &ctx).await {
-                    Ok(user) => {
-                        ctx.current_user.set(Some(user));
-                        if let Some(window) = web_sys::window() {
-                            let _ = window.location().set_href("/home");
+        let ctx = ctx_clone.clone();
+        spawn_local(async move {
+            let result = if url::Url::parse(&url).is_ok_and(|u| u.query_pairs().any(|(k, _)| k == "code")) {
+                handle_oauth_callback_desktop(&url, &ctx).await
+            } else if let Some(fragment) = url.split('#').nth(1) {
+                handle_oauth_callback(fragment, &ctx).await
+            } else {
+                Err("Неподдерживаемый формат callback URL".to_string())
+            };
+
+            match result {
+                Ok(user) => {
+                    ctx.current_user.set(Some(user));
+                    if let Some(window) = web_sys::window() {
+                        if let Err(e) = window.location().set_href("/home") {
+                            error!("Failed to redirect to /home: {:?}", e);
                         }
                     }
-                    Err(e) => {
-                        error!("OAuth callback error: {}", e);
-                    }
                 }
-            });
-        }
+                Err(e) => {
+                    error!("OAuth callback error: {}", e);
+                }
+            }
+        });
     });
 
     if let Some(window) = web_sys::window() {
@@ -176,7 +183,9 @@ fn check_url_oauth_callback(ctx: &AuthContext) {
                                     Ok(user) => {
                                         ctx_clone.current_user.set(Some(user));
                                         if let Some(window) = web_sys::window() {
-                                            let _ = window.location().set_href("/home");
+                                            if let Err(e) = window.location().set_href("/home") {
+                                                error!("Failed to redirect to /home: {:?}", e);
+                                            }
                                         }
                                     }
                                     Err(e) => {
