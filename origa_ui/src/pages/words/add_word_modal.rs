@@ -1,7 +1,7 @@
 use crate::app::update_current_user;
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{
-    Alert, AlertType, Button, ButtonVariant, Input, Modal, Text, TextSize, TypographyVariant,
+    Alert, AlertType, Button, ButtonVariant, Drawer, Input, Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
 use leptos::task::spawn_local;
@@ -60,7 +60,7 @@ pub fn AddWordModal() -> impl IntoView {
     });
 
     view! {
-        <Modal
+        <Drawer
             title=Signal::derive(|| "Добавить слово".to_string())
         >
             <div class="space-y-4">
@@ -101,6 +101,6 @@ pub fn AddWordModal() -> impl IntoView {
                     </Button>
                 </div>
             </div>
-        </Modal>
+        </Drawer>
     }
 }
