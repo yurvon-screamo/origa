@@ -44,7 +44,13 @@ pub fn SetsLevelGroup(
                     on_import=on_import
                 />
                 <SetsTypeGroup
-                    set_type=SetType::Duolingo
+                    set_type=SetType::DuolingoRu
+                    sets_for_level=sets_for_level
+                    type_filter=type_filter
+                    on_import=on_import
+                />
+                <SetsTypeGroup
+                    set_type=SetType::DuolingoEn
                     sets_for_level=sets_for_level
                     type_filter=type_filter
                     on_import=on_import
