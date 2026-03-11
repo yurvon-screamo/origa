@@ -4449,6 +4449,7 @@ dependencies = [
  "tracing-subscriber",
  "tracing-wasm",
  "ulid",
+ "url",
  "urlencoding",
  "wasm-bindgen",
  "wasm-bindgen-futures",

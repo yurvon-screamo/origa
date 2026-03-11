@@ -4,7 +4,10 @@
 	"version": "0.1.0",
 	"identifier": "net.uwuwu.origa",
 	"build": {
-		"beforeDevCommand": "cd ../origa_ui && trunk serve",
+		"beforeDevCommand": {
+			"script": "trunk serve",
+			"cwd": "../origa_ui"
+		},
 		"devUrl": "http://localhost:1420",
 		"frontendDist": "../origa_ui/dist"
 	},
@@ -35,8 +38,11 @@
 		"iOS": {}
 	},
 	"plugins": {
+		"opener": {},
 		"deep-link": {
-			"schemes": ["origa"]
+			"desktop": {
+				"schemes": ["origa"]
+			}
 		}
 	}
 }
