@@ -75,4 +75,5 @@ pub use tag::{Tag, TagVariant};
 pub use text_to_speech::{get_reading_from_text, is_speech_supported, speak_text};
 pub use toast::{ToastContainer, ToastData, ToastType};
 pub use toggle::Toggle;
+pub use tooltip::Tooltip;
 pub use typography::{DisplayText, Heading, HeadingLevel, Text, TextSize, TypographyVariant};

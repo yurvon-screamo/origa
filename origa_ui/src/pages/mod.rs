@@ -1,5 +1,6 @@
 pub mod grammar;
 pub mod home;
+pub mod icons;
 pub mod kanji;
 pub mod lesson;
 pub mod login;
