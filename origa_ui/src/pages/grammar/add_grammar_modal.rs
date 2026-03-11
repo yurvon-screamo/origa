@@ -6,8 +6,7 @@ use super::level_selector::LevelSelector;
 use super::rules_list::RulesList;
 use super::selected_count::SelectedCount;
 use crate::ui_components::{
-    Button, ButtonSize, ButtonVariant, Drawer, Modal, Search, Spinner, Text, TextSize,
-    TypographyVariant,
+    Button, ButtonSize, ButtonVariant, Drawer, Search, Spinner, Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
 use origa::domain::JapaneseLevel;
