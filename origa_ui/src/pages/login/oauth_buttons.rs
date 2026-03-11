@@ -36,10 +36,10 @@ fn is_tauri_desktop() -> bool {
     let Some(window) = web_sys::window() else {
         return false;
     };
-    let Ok(tauri_obj) = js_sys::Reflect::get(&window, &JsValue::from_str("__TAURI__")) else {
-        return false;
-    };
-    tauri_obj.is_object() && window.location().protocol().unwrap_or_default() == "tauri:"
+    js_sys::Reflect::get(&window, &JsValue::from_str("isTauri"))
+        .ok()
+        .and_then(|v| v.as_bool())
+        .unwrap_or(false)
 }
 
 fn open_url_external(url: &str) {
@@ -92,7 +92,7 @@ fn open_oauth_url(provider: OAuthProvider) {
 
     let redirect_uri = if is_tauri_desktop() {
         tracing::info!("OAuth: Tauri mode");
-        "origa://auth/callback".to_string()
+        "https://origa.uwuwu.net/auth/desktop-callback.html".to_string()
     } else {
         let window = web_sys::window().expect("window not available");
         let base_url = window.location().origin().unwrap_or_default();
