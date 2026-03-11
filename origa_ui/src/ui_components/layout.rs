@@ -18,9 +18,9 @@ pub fn PageLayout(
     view! {
         <div class=move || {
             match variant.get() {
-                PageLayoutVariant::Centered => "min-h-screen flex items-center justify-center",
-                PageLayoutVariant::Full => "min-h-screen",
-                PageLayoutVariant::Compact => "min-h-[calc(100vh-4rem)]",
+                PageLayoutVariant::Centered => "min-h-screen flex items-center justify-center p-4 sm:p-6 p-safe",
+                PageLayoutVariant::Full => "min-h-screen flex flex-col p-4 sm:p-6 p-safe",
+                PageLayoutVariant::Compact => "min-h-[calc(100vh-4rem)] p-4 sm:p-6 px-safe",
             }
         }>
             <div class=move || container_class.get()>

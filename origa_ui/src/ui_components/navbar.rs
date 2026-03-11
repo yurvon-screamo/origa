@@ -16,7 +16,7 @@ pub fn Navbar(
     #[prop(optional)] on_sign_in: Option<Callback<leptos::ev::MouseEvent>>,
 ) -> impl IntoView {
     view! {
-        <nav class="navbar sticky top-0 z-50">
+        <nav class="navbar sticky top-0 z-50 pt-safe-t">
             <div class="max-w-6xl mx-auto px-6 flex items-center justify-between">
                 <a href="#" class="font-serif text-2xl">{move || brand.get()}</a>
 

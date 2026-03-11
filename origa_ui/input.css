@@ -31,6 +31,12 @@
 	--fg-primary: var(--fg-black);
 	--accent: var(--accent-olive);
 	--muted: var(--fg-muted);
+
+	/* Safe Area Insets с fallback */
+	--safe-top: env(safe-area-inset-top, 0px);
+	--safe-bottom: env(safe-area-inset-bottom, 0px);
+	--safe-left: env(safe-area-inset-left, 0px);
+	--safe-right: env(safe-area-inset-right, 0px);
 }
 
 * {
@@ -43,8 +49,19 @@ body {
 	color: var(--fg-black);
 	line-height: 1.6;
 	margin: 0;
-	padding: 1.5rem 1rem;
 }
+
+/* Touch оптимизация */
+button,
+[role="button"],
+a,
+input[type="button"],
+input[type="submit"],
+.cursor-pointer {
+	touch-action: manipulation;
+	-webkit-tap-highlight-color: transparent;
+}
+
 
 .font-serif {
 	font-family: "Cormorant Garamond", serif;
@@ -510,6 +527,8 @@ body {
 	inset: 0;
 	background: rgba(26, 25, 21, 0.6);
 	z-index: 100;
+	padding-top: env(safe-area-inset-top, 0px);
+	padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 .modal-content {
@@ -586,6 +605,7 @@ body {
 		height: 80vh;
 		border-bottom: none;
 		animation: drawerSlideInBottom 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+		padding-bottom: env(safe-area-inset-bottom, 0px);
 	}
 
 	.drawer-content::after {
@@ -1545,7 +1565,7 @@ body {
 
 .toast-container {
 	position: fixed;
-	bottom: 24px;
+	bottom: calc(24px + env(safe-area-inset-bottom, 0px));
 	right: 24px;
 	display: flex;
 	flex-direction: column;
