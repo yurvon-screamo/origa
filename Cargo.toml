@@ -63,6 +63,7 @@ tokenizer = { path = "./tokenizer" }
 
 # Utility
 idb = "0.6"
+lexical-sort = "0.3"
 
 # Testing
 rstest = "0.26"
