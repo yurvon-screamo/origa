@@ -25,6 +25,10 @@ fn set_synced(value: bool) {
         .store(value, Ordering::Relaxed);
 }
 
+pub fn reset_sync() {
+    set_synced(false);
+}
+
 #[derive(Clone)]
 pub struct HybridUserRepository {
     local: FileSystemUserRepository,

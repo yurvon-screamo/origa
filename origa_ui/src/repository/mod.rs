@@ -11,7 +11,7 @@ pub use dictionary_cache::{
     get_cached_vocabulary, save_dictionary_to_cache, save_grammar_to_cache, save_kanji_to_cache,
     save_radical_to_cache, save_vocabulary_to_cache,
 };
-pub use hybrid_repository::HybridUserRepository;
+pub use hybrid_repository::{reset_sync, HybridUserRepository};
 pub use jlpt_content_loader::load_jlpt_content;
 pub use session::{clear_session, get_session, set_session};
 pub use trailbase_client::{OAuthProvider, TrailBaseClient};
