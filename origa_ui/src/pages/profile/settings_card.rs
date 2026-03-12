@@ -1,4 +1,4 @@
-use crate::ui_components::{Card, Heading, HeadingLevel, Text, TextSize};
+use crate::ui_components::{Card, Text, TextSize};
 use crate::version;
 use leptos::prelude::*;
 
@@ -7,10 +7,6 @@ pub fn SettingsCard() -> impl IntoView {
     view! {
         <Card>
             <div class="space-y-4">
-                <Heading level={HeadingLevel::H2}>
-                    "Настройки приложения"
-                </Heading>
-
                 <div class="space-y-2">
                     <Text size={TextSize::Large}>
                         "О приложении"
