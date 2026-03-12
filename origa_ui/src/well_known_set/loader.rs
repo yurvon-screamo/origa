@@ -119,6 +119,10 @@ fn id_to_path(id: &str) -> String {
     } else if let Some(rest) = id.strip_prefix("migii_") {
         let level = rest.split('_').next().unwrap_or("");
         format!("domain/well_known_set/migii/{}/{}.json", level, id)
+    } else if let Some(rest) = id.strip_prefix("duolingo_") {
+        let level = rest.split('_').next().unwrap_or("");
+        let filename = rest.split_once('_').map(|(_, f)| f).unwrap_or("");
+        format!("domain/well_known_set/duolingo/{}/{}.json", level, filename)
     } else {
         format!("domain/well_known_set/{}.json", id)
     }
