@@ -2,10 +2,11 @@ use std::{collections::HashMap, sync::OnceLock};
 
 use serde::{Deserialize, Serialize};
 
-use crate::domain::{OrigaError, value_objects::JapaneseLevel};
+use crate::domain::{value_objects::JapaneseLevel, OrigaError};
 
 pub static RADICAL_DICTIONARY: OnceLock<RadicalDatabase> = OnceLock::new();
 
+#[derive(Clone, Serialize, Deserialize)]
 pub struct RadicalData {
     pub radicals_json: String,
 }

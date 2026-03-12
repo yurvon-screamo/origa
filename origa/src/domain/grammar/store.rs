@@ -1,6 +1,6 @@
 use std::sync::OnceLock;
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use ulid::Ulid;
 
 use crate::domain::{GrammarRule, OrigaError};
@@ -12,6 +12,7 @@ struct GrammarStoreValue {
     grammar: Vec<GrammarRule>,
 }
 
+#[derive(Clone, Serialize, Deserialize)]
 pub struct GrammarData {
     pub grammar_json: String,
 }

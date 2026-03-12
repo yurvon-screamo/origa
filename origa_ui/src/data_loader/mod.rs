@@ -4,7 +4,11 @@ use origa::domain::{
     is_kanji_loaded, is_radical_loaded, is_vocabulary_loaded,
 };
 
-use crate::repository::load_jlpt_content;
+use crate::repository::{
+    get_cached_grammar, get_cached_kanji, get_cached_radical, get_cached_vocabulary,
+    save_grammar_to_cache, save_kanji_to_cache, save_radical_to_cache, save_vocabulary_to_cache,
+    load_jlpt_content,
+};
 
 pub fn is_all_data_loaded() -> bool {
     is_vocabulary_loaded() && is_radical_loaded() && is_kanji_loaded() && is_grammar_loaded()
@@ -81,6 +85,12 @@ pub async fn load_vocabulary() -> Result<(), OrigaError> {
         return Ok(());
     }
 
+    if let Some(cached) = get_cached_vocabulary().await? {
+        init_vocabulary_dictionary(cached)?;
+        tracing::info!("Vocabulary loaded from cache");
+        return Ok(());
+    }
+
     let chunk_futures: Vec<_> = (1..=11)
         .map(|i| fetch_text(format!("domain/dictionary/vocabulary/chunk_{:02}.json", i)))
         .collect();
@@ -102,8 +112,15 @@ pub async fn load_vocabulary() -> Result<(), OrigaError> {
         chunk_11: chunks[10].clone(),
     };
 
+    let data_for_cache = data.clone();
+    wasm_bindgen_futures::spawn_local(async move {
+        if let Err(e) = save_vocabulary_to_cache(&data_for_cache).await {
+            tracing::warn!("Failed to cache vocabulary: {:?}", e);
+        }
+    });
+
     init_vocabulary_dictionary(data)?;
-    tracing::info!("Vocabulary loaded");
+    tracing::info!("Vocabulary loaded from network");
     Ok(())
 }
 
@@ -112,11 +129,26 @@ pub async fn load_radical() -> Result<(), OrigaError> {
         return Ok(());
     }
 
+    if let Some(cached) = get_cached_radical().await? {
+        init_radical_dictionary(cached)?;
+        tracing::info!("Radicals loaded from cache");
+        return Ok(());
+    }
+
     let json = fetch_text("domain/dictionary/radicals.json").await?;
-    init_radical_dictionary(RadicalData {
+    let data = RadicalData {
         radicals_json: json,
-    })?;
-    tracing::info!("Radicals loaded");
+    };
+
+    let data_for_cache = data.clone();
+    wasm_bindgen_futures::spawn_local(async move {
+        if let Err(e) = save_radical_to_cache(&data_for_cache).await {
+            tracing::warn!("Failed to cache radicals: {:?}", e);
+        }
+    });
+
+    init_radical_dictionary(data)?;
+    tracing::info!("Radicals loaded from network");
     Ok(())
 }
 
@@ -125,9 +157,24 @@ pub async fn load_kanji() -> Result<(), OrigaError> {
         return Ok(());
     }
 
+    if let Some(cached) = get_cached_kanji().await? {
+        init_kanji_dictionary(cached)?;
+        tracing::info!("Kanji loaded from cache");
+        return Ok(());
+    }
+
     let json = fetch_text("domain/dictionary/kanji.json").await?;
-    init_kanji_dictionary(KanjiData { kanji_json: json })?;
-    tracing::info!("Kanji loaded");
+    let data = KanjiData { kanji_json: json };
+
+    let data_for_cache = data.clone();
+    wasm_bindgen_futures::spawn_local(async move {
+        if let Err(e) = save_kanji_to_cache(&data_for_cache).await {
+            tracing::warn!("Failed to cache kanji: {:?}", e);
+        }
+    });
+
+    init_kanji_dictionary(data)?;
+    tracing::info!("Kanji loaded from network");
     Ok(())
 }
 
@@ -136,8 +183,23 @@ pub async fn load_grammar() -> Result<(), OrigaError> {
         return Ok(());
     }
 
+    if let Some(cached) = get_cached_grammar().await? {
+        init_grammar_rules(cached)?;
+        tracing::info!("Grammar loaded from cache");
+        return Ok(());
+    }
+
     let json = fetch_text("domain/grammar/grammar.json").await?;
-    init_grammar_rules(GrammarData { grammar_json: json })?;
-    tracing::info!("Grammar loaded");
+    let data = GrammarData { grammar_json: json };
+
+    let data_for_cache = data.clone();
+    wasm_bindgen_futures::spawn_local(async move {
+        if let Err(e) = save_grammar_to_cache(&data_for_cache).await {
+            tracing::warn!("Failed to cache grammar: {:?}", e);
+        }
+    });
+
+    init_grammar_rules(data)?;
+    tracing::info!("Grammar loaded from network");
     Ok(())
 }

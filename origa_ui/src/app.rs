@@ -19,7 +19,7 @@ pub struct AuthContext {
     pub repository: HybridUserRepository,
     pub current_user: RwSignal<Option<User>>,
     pub is_session_loading: RwSignal<bool>,
-    pub is_dictionary_loading: RwSignal<bool>,
+    pub is_data_loaded: RwSignal<bool>,
 }
 
 impl AuthContext {
@@ -29,7 +29,7 @@ impl AuthContext {
             repository: HybridUserRepository::new(),
             current_user: RwSignal::new(None),
             is_session_loading: RwSignal::new(true),
-            is_dictionary_loading: RwSignal::new(true),
+            is_data_loaded: RwSignal::new(false),
         }
     }
 
@@ -64,7 +64,7 @@ impl AuthContext {
             info!("All data loaded");
         }
 
-        self.is_dictionary_loading.set(false);
+        self.is_data_loaded.set(true);
     }
 }
 
@@ -270,22 +270,6 @@ pub fn App() -> impl IntoView {
         ctx.init_session().await;
     });
 
-    let loading_message = Signal::derive(move || {
-        let session = auth_context.is_session_loading.get();
-        let dict = auth_context.is_dictionary_loading.get();
-
-        if session && dict {
-            "Проверка авторизации и загрузка словаря...".to_string()
-        } else if session {
-            "Проверка авторизации...".to_string()
-        } else if dict {
-            "Загрузка словаря Unidic (при первом запуске может занять несколько минут)..."
-                .to_string()
-        } else {
-            "".to_string()
-        }
-    });
-
     view! {
         {move || update_info.get().map(|info| view! {
             <UpdateDrawer
@@ -295,8 +279,13 @@ pub fn App() -> impl IntoView {
                 download_progress=Signal::from(download_progress)
             />
         })}
-        <Show when=move || auth_context.is_session_loading.get() || auth_context.is_dictionary_loading.get()>
-            <LoadingOverlay message=loading_message />
+        <Show when=move || auth_context.is_session_loading.get()>
+            <LoadingOverlay message="Проверка авторизации..." />
+        </Show>
+        <Show when=move || !auth_context.is_data_loaded.get()>
+            <div class="fixed bottom-4 right-4 bg-accent-olive/90 text-white px-3 py-2 rounded-lg text-sm shadow-lg z-50">
+                Загрузка словарей...
+            </div>
         </Show>
         <AppRoutes />
     }
