@@ -6,8 +6,8 @@ use origa::domain::{
 
 use crate::repository::{
     get_cached_grammar, get_cached_kanji, get_cached_radical, get_cached_vocabulary,
-    save_grammar_to_cache, save_kanji_to_cache, save_radical_to_cache, save_vocabulary_to_cache,
-    load_jlpt_content,
+    load_jlpt_content, save_grammar_to_cache, save_kanji_to_cache, save_radical_to_cache,
+    save_vocabulary_to_cache,
 };
 
 pub fn is_all_data_loaded() -> bool {

@@ -1,5 +1,5 @@
-use serde::de::DeserializeOwned;
 use serde::Serialize;
+use serde::de::DeserializeOwned;
 use wasm_bindgen::JsCast;
 use wasm_bindgen_futures::JsFuture;
 
@@ -25,9 +25,10 @@ async fn open_cache() -> Result<web_sys::Cache, OrigaError> {
             reason: format!("Cache API not available: {:?}", e),
         })?;
 
-    let caches: web_sys::CacheStorage = caches.dyn_into().map_err(|e| OrigaError::RepositoryError {
-        reason: format!("Failed to cast CacheStorage: {:?}", e),
-    })?;
+    let caches: web_sys::CacheStorage =
+        caches.dyn_into().map_err(|e| OrigaError::RepositoryError {
+            reason: format!("Failed to cast CacheStorage: {:?}", e),
+        })?;
 
     let cache_promise = caches.open(CACHE_NAME);
     let cache: web_sys::Cache = JsFuture::from(cache_promise)
@@ -44,33 +45,41 @@ pub async fn get_cached_data<T: DeserializeOwned>(url: &str) -> Result<Option<T>
     let cache = open_cache().await?;
 
     let match_promise = cache.match_with_str(url);
-    let response_option = JsFuture::from(match_promise)
-        .await
-        .map_err(|e| OrigaError::RepositoryError {
-            reason: format!("Failed to check cache: {:?}", e),
-        })?;
+    let response_option =
+        JsFuture::from(match_promise)
+            .await
+            .map_err(|e| OrigaError::RepositoryError {
+                reason: format!("Failed to check cache: {:?}", e),
+            })?;
 
     if response_option.is_undefined() || response_option.is_null() {
         return Ok(None);
     }
 
-    let response: web_sys::Response = response_option.dyn_into().map_err(|e| OrigaError::RepositoryError {
-        reason: format!("Failed to cast Response: {:?}", e),
-    })?;
+    let response: web_sys::Response =
+        response_option
+            .dyn_into()
+            .map_err(|e| OrigaError::RepositoryError {
+                reason: format!("Failed to cast Response: {:?}", e),
+            })?;
 
     if !response.ok() {
         return Ok(None);
     }
 
-    let array_buffer_promise = response.array_buffer().map_err(|e| OrigaError::RepositoryError {
-        reason: format!("Failed to get array buffer: {:?}", e),
-    })?;
+    let array_buffer_promise =
+        response
+            .array_buffer()
+            .map_err(|e| OrigaError::RepositoryError {
+                reason: format!("Failed to get array buffer: {:?}", e),
+            })?;
 
-    let array_buffer = JsFuture::from(array_buffer_promise)
-        .await
-        .map_err(|e| OrigaError::RepositoryError {
-            reason: format!("Failed to read array buffer: {:?}", e),
-        })?;
+    let array_buffer =
+        JsFuture::from(array_buffer_promise)
+            .await
+            .map_err(|e| OrigaError::RepositoryError {
+                reason: format!("Failed to read array buffer: {:?}", e),
+            })?;
 
     let uint8_array = js_sys::Uint8Array::new(&array_buffer);
     let bytes = uint8_array.to_vec();

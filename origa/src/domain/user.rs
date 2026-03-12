@@ -5,8 +5,8 @@ use serde::{Deserialize, Serialize};
 use ulid::Ulid;
 
 use crate::domain::{
-    score_content, Card, JapaneseLevel, JlptContent, JlptProgress, KnowledgeSet, NativeLanguage,
-    OrigaError, RateMode, Rating, ScoreContentResult, StudyCard,
+    Card, JapaneseLevel, JlptContent, JlptProgress, KnowledgeSet, NativeLanguage, OrigaError,
+    RateMode, Rating, ScoreContentResult, StudyCard, score_content,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
