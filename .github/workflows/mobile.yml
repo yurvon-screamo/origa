@@ -168,7 +168,7 @@ jobs:
           echo "=== NDK content ==="
           ls -la $NDK_HOME || echo "NDK_HOME not accessible"
           echo "=== Start build ==="
-          cargo tauri android build --release 2>&1 || (echo "Build failed with exit code $?"; exit 1)
+          cargo tauri android build -- --release 2>&1 || (echo "Build failed with exit code $?"; exit 1)
         env:
           NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
           ANDROID_NDK_ROOT: ${{ steps.setup-ndk.outputs.ndk-path }}
