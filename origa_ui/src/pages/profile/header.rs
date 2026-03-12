@@ -8,8 +8,6 @@ pub fn ProfileHeader() -> impl IntoView {
     let current_user =
         use_context::<RwSignal<Option<User>>>().expect("current_user context not provided");
     let navigate = use_navigate();
-    let navigate_home = navigate.clone();
-    let navigate_logout = navigate.clone();
 
     let user_info = move || current_user.get().map(|user| user.username().to_string());
 
@@ -31,19 +29,10 @@ pub fn ProfileHeader() -> impl IntoView {
                 <Button
                     variant=ButtonVariant::Ghost
                     on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
-                        navigate_home("/home", Default::default());
+                        navigate("/home", Default::default());
                     })
                 >
                     "Назад"
-                </Button>
-                <Button
-                    variant=ButtonVariant::Ghost
-                    on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
-                        current_user.set(None);
-                        navigate_logout("/", Default::default());
-                    })
-                >
-                    "Выйти"
                 </Button>
             </div>
         </div>
