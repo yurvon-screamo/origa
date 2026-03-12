@@ -131,6 +131,55 @@ jobs:
           NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
           ANDROID_NDK_ROOT: ${{ steps.setup-ndk.outputs.ndk-path }}
 
+      - name: Decode Android Keystore
+        if: matrix.platform == 'android' && github.event_name != 'pull_request'
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          echo "Decoding Android keystore..."
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > /tmp/keystore.jks
+          echo "Keystore decoded successfully"
+
+      - name: Configure Android Signing
+        if: matrix.platform == 'android' && github.event_name != 'pull_request'
+        working-directory: tauri/gen/android
+        run: |
+          # Create keystore.properties
+          cat > keystore.properties << EOF
+          storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}
+          keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
+          storeFile=/tmp/keystore.jks
+          EOF
+          
+          # Modify app/build.gradle.kts to add signing config
+          BUILD_GRADLE="app/build.gradle.kts"
+          
+          # Add FileInputStream import at the top (after existing imports)
+          sed -i '1s/^/import java.io.FileInputStream\nimport java.util.Properties\n\n/' "$BUILD_GRADLE"
+          
+          # Add signingConfigs block before buildTypes
+          sed -i '/^android {/a\
+          \
+              signingConfigs {\
+                  create("release") {\
+                      val keystorePropertiesFile = file("../keystore.properties")\
+                      val keystoreProperties = Properties()\
+                      if (keystorePropertiesFile.exists()) {\
+                          keystoreProperties.load(FileInputStream(keystorePropertiesFile))\
+                      }\
+                      keyAlias = keystoreProperties.getProperty("keyAlias")\
+                      keyPassword = keystoreProperties.getProperty("keyPassword")\
+                      storeFile = file(keystoreProperties.getProperty("storeFile"))\
+                      storePassword = keystoreProperties.getProperty("storePassword")\
+                  }\
+              }' "$BUILD_GRADLE"
+          
+          # Configure release buildType to use signing config
+          sed -i '/getByName("release")/,/}/s/isMinifyEnabled = false/isMinifyEnabled = false\n                signingConfig = signingConfigs.getByName("release")/' "$BUILD_GRADLE"
+          
+          echo "Android signing configured successfully"
+
       - name: Build Tauri Android APK
         if: matrix.platform == 'android'
         working-directory: tauri
@@ -141,7 +190,7 @@ jobs:
           echo "=== NDK content ==="
           ls -la $NDK_HOME || echo "NDK_HOME not accessible"
           echo "=== Start build ==="
-          cargo tauri android build 2>&1 || (echo "Build failed with exit code $?"; exit 1)
+          cargo tauri android build --release 2>&1 || (echo "Build failed with exit code $?"; exit 1)
         env:
           NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
           ANDROID_NDK_ROOT: ${{ steps.setup-ndk.outputs.ndk-path }}
@@ -178,10 +227,3 @@ jobs:
       tag-name: ${{ needs.version.outputs.version_type == 'stable' && needs.version.outputs.version || 'latest' }}
       release-name: ${{ needs.version.outputs.version_type == 'stable' && format('Release {0}', needs.version.outputs.version) || 'Latest Build' }}
       version-type: ${{ needs.version.outputs.version_type }}
-      body: |
-        Автоматическая сборка от ${{ github.sha }}
-
-        ## Android
-        - `*.apk` - Android App Package
-    permissions:
-      contents: write
