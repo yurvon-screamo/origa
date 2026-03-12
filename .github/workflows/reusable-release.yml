@@ -19,6 +19,14 @@ on:
         description: "Version type (dev, stable, etc.)"
         default: "dev"
         type: string
+      make-latest:
+        description: "Mark as latest release"
+        default: false
+        type: boolean
+      prerelease:
+        description: "Mark as prerelease"
+        default: false
+        type: boolean
 
 jobs:
   release:
@@ -47,6 +55,6 @@ jobs:
           name: ${{ inputs.release-name }}
           body: ${{ inputs.body }}
           files: release_assets/*
-          prerelease: false
+          prerelease: ${{ inputs.prerelease }}
           draft: false
-          make_latest: true
+          make_latest: ${{ inputs.make-latest }}
