@@ -38,6 +38,7 @@ jobs:
       ORIGA_VERSION: ${{ needs.version.outputs.version }}
       ORIGA_COMMIT: ${{ needs.version.outputs.commit_sha }}
       ORIGA_BUILD_DATE: ${{ needs.version.outputs.build_date }}
+      SCCACHE_IGNORE_SERVER_IO_ERROR: "1"
 
     steps:
       - name: Checkout repository
