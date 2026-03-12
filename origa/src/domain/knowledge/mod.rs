@@ -13,9 +13,10 @@ pub use vocabulary::VocabularyCard;
 use std::collections::{HashMap, HashSet};
 
 use crate::domain::{
-    OrigaError, RateMode, Rating, ReviewLog, get_rule_by_id,
-    srs::{NextReview, rate_memory},
+    get_rule_by_id,
+    srs::{rate_memory, NextReview},
     value_objects::NativeLanguage,
+    OrigaError, RateMode, Rating, ReviewLog,
 };
 use chrono::Utc;
 use rand::seq::SliceRandom;
@@ -48,6 +49,7 @@ fn select_applicable_grammar(
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct KnowledgeSet {
     study_cards: HashMap<Ulid, StudyCard>,
+    #[serde(default)]
     deleted_cards: HashSet<Ulid>,
     lesson_history: Vec<DailyHistoryItem>,
 }
@@ -581,7 +583,7 @@ mod tests {
     }
 
     #[test]
-    fn apply_reversed_returns_reversed_for_vocabulary() {
+    fn apply_reversed_returnlary() {, VocabularyChunkData
         use crate::domain::{VocabularyChunkData, init_vocabulary_dictionary};
         use std::sync::Once;
 
