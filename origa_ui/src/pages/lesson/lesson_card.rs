@@ -106,7 +106,6 @@ pub fn LessonCard(
     let kanji_stored = StoredValue::new(kanji_for_animation);
 
     let lesson_ctx = use_context::<LessonContext>();
-    let question_text = question.get_value();
 
     let is_expanded = RwSignal::new(false);
     let content_ref = NodeRef::<leptos::html::Div>::new();
@@ -118,7 +117,12 @@ pub fn LessonCard(
             .map(|ctx| ctx.is_muted.get())
             .unwrap_or(false);
         if !show_answer && card_type != CardType::Kanji && is_speech_supported() && !is_muted {
-            let reading = get_reading_from_text(&question_text);
+            let text_to_speak = if is_reversed {
+                answer.get_value()
+            } else {
+                question.get_value()
+            };
+            let reading = get_reading_from_text(&text_to_speak);
             let _ = speak_text(&reading, 1.0);
         }
     });
@@ -138,13 +142,13 @@ pub fn LessonCard(
         <Card class=Signal::derive(|| "p-6 min-h-[300px] flex flex-col".to_string()) shadow=Signal::derive(|| true)>
             <LessonCardHeader
                 card_type=card_type
-                question_text=question.get_value()
+                question_text=if is_reversed { answer.get_value() } else { question.get_value() }
             />
 
             <div class="flex-1 flex flex-col justify-center">
                 <Show when=move || !show_answer>
                     <LessonCardQuestion
-                        question_text=question.get_value()
+                        question_text=if is_reversed { answer.get_value() } else { question.get_value() }
                         kanji=kanji_stored.get_value()
                         is_reversed=is_reversed
                         on_show_answer=on_show_answer
