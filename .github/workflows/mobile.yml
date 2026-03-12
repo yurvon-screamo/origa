@@ -205,3 +205,5 @@ jobs:
       tag-name: ${{ needs.version.outputs.version_type == 'stable' && needs.version.outputs.version || 'latest' }}
       release-name: ${{ needs.version.outputs.version_type == 'stable' && format('Release {0}', needs.version.outputs.version) || 'Latest Build' }}
       version-type: ${{ needs.version.outputs.version_type }}
+      make-latest: ${{ needs.version.outputs.version_type == 'stable' }}
+      prerelease: ${{ needs.version.outputs.version_type != 'stable' }}
