@@ -168,21 +168,30 @@ fn check_url_oauth_callback(ctx: &AuthContext) {
     use crate::pages::login::auth_handlers::get_or_create_profile;
     use crate::repository::TrailBaseClient;
     use gloo_storage::{LocalStorage, Storage};
+    use web_sys::console;
 
     let path = web_sys::window()
         .and_then(|w| w.location().pathname().ok())
         .unwrap_or_default();
+
+    console::log_1(&format!("check_url_oauth_callback path: {}", path).into());
 
     if path == "/login" {
         let search = web_sys::window()
             .and_then(|w| w.location().search().ok())
             .unwrap_or_default();
 
+        console::log_1(&format!("check_url_oauth_callback search: {}", search).into());
+
         if let Some(code) = search.strip_prefix("?code=") {
             let code = code.split('&').next().unwrap_or(code).to_string();
 
+            console::log_1(&format!("check_url_oauth_callback code: {}", code).into());
+
             let verifier: Option<String> = LocalStorage::get("pkce_verifier").ok();
             LocalStorage::delete("pkce_verifier");
+
+            console::log_1(&format!("verifier found: {}", verifier.is_some()).into());
 
             if let Some(verifier) = verifier {
                 let ctx_clone = ctx.clone();
@@ -193,6 +202,7 @@ fn check_url_oauth_callback(ctx: &AuthContext) {
                         .await
                     {
                         Ok(session) => {
+                            console::log_1(&"OAuth exchange success".into());
                             if !session.email.is_empty() {
                                 let email = session.email.clone();
                                 match get_or_create_profile(&ctx_clone, &email).await {
@@ -211,6 +221,7 @@ fn check_url_oauth_callback(ctx: &AuthContext) {
                             }
                         }
                         Err(e) => {
+                            console::log_1(&format!("OAuth exchange error: {:?}", e).into());
                             error!("Failed to exchange auth code: {:?}", e);
                         }
                     }
