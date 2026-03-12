@@ -48,7 +48,7 @@ fn open_url_external(url: &str) {
     };
 
     if !is_tauri_desktop() {
-        let _ = window.open_with_url_and_target(url, "_blank");
+        let _ = window.location().set_href(url);
         return;
     }
 
