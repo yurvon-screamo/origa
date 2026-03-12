@@ -68,6 +68,12 @@ impl TrailBaseUserRepository {
 
         Ok(None)
     }
+
+    pub fn clear_cache(&self) {
+        if let Ok(mut cache) = self.user_cache.write() {
+            cache.clear();
+        }
+    }
 }
 
 impl Default for TrailBaseUserRepository {

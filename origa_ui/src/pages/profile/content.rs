@@ -1,5 +1,6 @@
 use super::{ActionButtons, PersonalDataCard, SettingsCard};
 use crate::app::{AuthContext, update_current_user};
+use crate::repository::{clear_session, reset_sync};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::domain::NativeLanguage;
@@ -60,12 +61,14 @@ pub fn ProfileContent() -> impl IntoView {
     });
 
     let client_for_logout = client.clone();
+    let repository_for_logout = ctx.repository.clone();
     let navigate = leptos_router::hooks::use_navigate();
     let navigate_for_logout = navigate.clone();
     let navigate_for_delete = navigate.clone();
 
     let logout = Callback::new(move |_| {
         let client_clone = client_for_logout.clone();
+        let repository_clone = repository_for_logout.clone();
         let current_user_clone = current_user;
         let nav = navigate_for_logout.clone();
         let is_logging_out_signal = is_logging_out;
@@ -73,7 +76,19 @@ pub fn ProfileContent() -> impl IntoView {
         is_logging_out_signal.set(true);
 
         spawn_local(async move {
+            let user_id = current_user_clone.with(|u| u.as_ref().map(|u| u.id()));
+
             let _ = client_clone.logout().await;
+
+            reset_sync();
+            clear_session();
+
+            if let Some(uid) = user_id
+                && let Err(e) = repository_clone.delete(uid).await
+            {
+                tracing::error!("Failed to clear local data on logout: {}", e);
+            }
+
             current_user_clone.set(None);
             nav("/", Default::default());
         });
