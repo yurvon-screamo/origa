@@ -155,7 +155,8 @@ jobs:
           storeFile=/tmp/keystore.jks
           EOF
           
-          git apply --unsafe-paths --directory=tauri/gen/android "$GITHUB_WORKSPACE/tauri/android-signing.patch"
+          cp "$GITHUB_WORKSPACE/tauri/android-signing.patch" .
+          git apply -p0 android-signing.patch
 
       - name: Build Tauri Android APK
         if: matrix.platform == 'android'
