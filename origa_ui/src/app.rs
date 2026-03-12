@@ -19,6 +19,7 @@ pub struct AuthContext {
     pub repository: HybridUserRepository,
     pub current_user: RwSignal<Option<User>>,
     pub is_session_loading: RwSignal<bool>,
+    pub is_oauth_loading: RwSignal<bool>,
     pub is_data_loaded: RwSignal<bool>,
 }
 
@@ -29,6 +30,7 @@ impl AuthContext {
             repository: HybridUserRepository::new(),
             current_user: RwSignal::new(None),
             is_session_loading: RwSignal::new(true),
+            is_oauth_loading: RwSignal::new(false),
             is_data_loaded: RwSignal::new(false),
         }
     }
@@ -194,6 +196,9 @@ fn check_url_oauth_callback(ctx: &AuthContext) {
             console::log_1(&format!("verifier found: {}", verifier.is_some()).into());
 
             if let Some(verifier) = verifier {
+                let is_oauth_loading = ctx.is_oauth_loading;
+                is_oauth_loading.set(true);
+
                 let ctx_clone = ctx.clone();
                 spawn_local(async move {
                     let client = TrailBaseClient::new();
@@ -215,12 +220,16 @@ fn check_url_oauth_callback(ctx: &AuthContext) {
                                         }
                                     }
                                     Err(e) => {
+                                        is_oauth_loading.set(false);
                                         error!("Failed to create profile: {}", e);
                                     }
                                 }
+                            } else {
+                                is_oauth_loading.set(false);
                             }
                         }
                         Err(e) => {
+                            is_oauth_loading.set(false);
                             console::log_1(&format!("OAuth exchange error: {:?}", e).into());
                             error!("Failed to exchange auth code: {:?}", e);
                         }
@@ -295,6 +304,9 @@ pub fn App() -> impl IntoView {
         })}
         <Show when=move || auth_context.is_session_loading.get()>
             <LoadingOverlay message="Проверка авторизации..." />
+        </Show>
+        <Show when=move || auth_context.is_oauth_loading.get()>
+            <LoadingOverlay message="Вход..." />
         </Show>
         <Show when=move || !auth_context.is_data_loaded.get()>
             <div class="fixed bottom-4 right-4 bg-accent-olive/90 text-white px-3 py-2 rounded-lg text-sm shadow-lg z-50">

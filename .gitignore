@@ -51,3 +51,8 @@ concatenated_*
 
 # UniDic dictionary (built by build.rs)
 origa_ui/public/dictionaries/unidic/
+# Android keystore files
+*.keystore
+
+# Android signing
+origa-release.keystore
