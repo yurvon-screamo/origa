@@ -26,6 +26,7 @@ jobs:
     outputs:
       signature: ${{ steps.signature.outputs.signature }}
     env:
+      SCCACHE_IGNORE_SERVER_IO_ERROR: "1"
       ORIGA_VERSION: ${{ needs.version.outputs.version }}
       ORIGA_COMMIT: ${{ needs.version.outputs.commit_sha }}
       ORIGA_BUILD_DATE: ${{ needs.version.outputs.build_date }}
@@ -96,6 +97,7 @@ jobs:
         working-directory: origa_ui
         run: trunk build --release
         env:
+          SCCACHE_IGNORE_SERVER_IO_ERROR: "1"
           SCCACHE_GHA_ENABLED: "true"
           RUSTC_WRAPPER: "sccache"
           TRAILBASE_URL: ${{ vars.TRAILBASE_URL }}
@@ -104,6 +106,7 @@ jobs:
         working-directory: tauri
         run: cargo tauri build --runner cargo-xwin --target x86_64-pc-windows-msvc
         env:
+          SCCACHE_IGNORE_SERVER_IO_ERROR: "1"
           SCCACHE_GHA_ENABLED: "true"
           RUSTC_WRAPPER: "sccache"
           TAURI_BUNDLE_NSIS: "true"
@@ -227,6 +230,7 @@ jobs:
     outputs:
       signature: ${{ steps.signature.outputs.signature }}
     env:
+      SCCACHE_IGNORE_SERVER_IO_ERROR: "1"
       ORIGA_VERSION: ${{ needs.version.outputs.version }}
       ORIGA_COMMIT: ${{ needs.version.outputs.commit_sha }}
       ORIGA_BUILD_DATE: ${{ needs.version.outputs.build_date }}
@@ -297,6 +301,7 @@ jobs:
         working-directory: origa_ui
         run: trunk build --release
         env:
+          SCCACHE_IGNORE_SERVER_IO_ERROR: "1"
           SCCACHE_GHA_ENABLED: "true"
           RUSTC_WRAPPER: "sccache"
           TRAILBASE_URL: ${{ vars.TRAILBASE_URL }}
@@ -305,6 +310,7 @@ jobs:
         working-directory: tauri
         run: cargo tauri build --runner cargo-zigbuild --target aarch64-apple-darwin --no-bundle
         env:
+          SCCACHE_IGNORE_SERVER_IO_ERROR: "1"
           SCCACHE_GHA_ENABLED: "true"
           RUSTC_WRAPPER: "sccache"
 
