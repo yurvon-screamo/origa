@@ -1,6 +1,7 @@
 use super::filters::TypeFilter;
 use super::sets_type_group::SetsTypeGroup;
 use super::types::SetInfo;
+use crate::ui_components::{Heading, HeadingLevel};
 use leptos::prelude::*;
 use origa::domain::JapaneseLevel;
 use origa::traits::SetType;
@@ -22,9 +23,12 @@ pub fn SetsLevelGroup(
     view! {
         <Show when=move || !sets_for_level.get().is_empty()>
             <div class="sets-group">
-                <div class="sets-group-title">
+                <Heading
+                    level=Signal::derive(|| HeadingLevel::H3)
+                    class=Signal::derive(|| "mb-4".to_string())
+                >
                     {format!("Уровень {}", level.code())}
-                </div>
+                </Heading>
                 <SetsTypeGroup
                     set_type=SetType::Jlpt
                     sets_for_level=sets_for_level
