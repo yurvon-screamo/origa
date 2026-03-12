@@ -36,6 +36,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Cache UniDic dictionary
+        uses: actions/cache@v4
+        with:
+          path: origa_ui/public/dictionaries/unidic
+          key: unidic-dict-v1-${{ runner.os }}
+          restore-keys: |
+            unidic-dict-v1-
+
       - name: Update version in config files
         env:
           VERSION: ${{ needs.version.outputs.version_base }}
@@ -111,6 +119,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Cache UniDic dictionary
+        uses: actions/cache@v4
+        with:
+          path: origa_ui/public/dictionaries/unidic
+          key: unidic-dict-v1-${{ runner.os }}
+          restore-keys: |
+            unidic-dict-v1-
 
       - name: Update version in config files
         env:
@@ -197,6 +213,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Cache UniDic dictionary
+        uses: actions/cache@v4
+        with:
+          path: origa_ui/public/dictionaries/unidic
+          key: unidic-dict-v1-${{ runner.os }}
+          restore-keys: |
+            unidic-dict-v1-
 
       - name: Update version in config files
         env:
