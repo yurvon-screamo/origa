@@ -2,7 +2,7 @@ use std::{collections::HashMap, sync::OnceLock};
 
 use serde::{Deserialize, Serialize};
 
-use crate::domain::{OrigaError, value_objects::NativeLanguage};
+use crate::domain::{value_objects::NativeLanguage, OrigaError};
 
 pub static VOCABULARY_DICTIONARY: OnceLock<VocabularyDatabase> = OnceLock::new();
 
@@ -39,6 +39,7 @@ pub struct VocabularyDatabase {
     vocabulary_map: HashMap<String, VocabularyInfo>,
 }
 
+#[derive(Clone, Serialize, Deserialize)]
 pub struct VocabularyChunkData {
     pub chunk_01: String,
     pub chunk_02: String,

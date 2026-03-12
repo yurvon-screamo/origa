@@ -7,10 +7,17 @@
 
     encode gzip zstd
 
-    @static {
-        path *.js *.css *.png *.jpg *.jpeg *.gif *.svg *.woff *.woff2 *.ttf *.eot *.ico *.webmanifest *.json
+    @static_assets {
+        path *.js *.css *.png *.jpg *.jpeg *.gif *.svg *.woff *.woff2 *.ttf *.eot *.ico *.webmanifest
     }
-    header @static Cache-Control "public, max-age=31536000, immutable"
+    header @static_assets Cache-Control "public, max-age=31536000, immutable"
+
+    @dictionaries {
+        path /public/domain/dictionary/*.json
+        path /public/domain/grammar/*.json
+        path /public/dictionaries/unidic/*
+    }
+    header @dictionaries Cache-Control "public, max-age=86400, stale-while-revalidate=604800"
 
     @html {
         path *.html /

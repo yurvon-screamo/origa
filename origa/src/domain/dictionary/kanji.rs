@@ -3,12 +3,13 @@ use std::{collections::HashMap, sync::OnceLock};
 use serde::{Deserialize, Serialize};
 
 use crate::domain::{
-    OrigaError,
     value_objects::{JapaneseLevel, NativeLanguage},
+    OrigaError,
 };
 
 pub static KANJI_DICTIONARY: OnceLock<KanjiDatabase> = OnceLock::new();
 
+#[derive(Clone, Serialize, Deserialize)]
 pub struct KanjiData {
     pub kanji_json: String,
 }
