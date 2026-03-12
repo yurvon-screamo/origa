@@ -83,7 +83,7 @@ impl ImportFilter {
     pub fn label(&self) -> &'static str {
         match self {
             ImportFilter::All => "Все",
-            ImportFilter::Imported => "Импортированы",
+            ImportFilter::Imported => "Импортированые",
             ImportFilter::New => "Новые",
         }
     }
@@ -191,7 +191,7 @@ mod tests {
     #[test]
     fn import_filter_labels() {
         assert_eq!(ImportFilter::All.label(), "Все");
-        assert_eq!(ImportFilter::Imported.label(), "Импортированы");
+        assert_eq!(ImportFilter::Imported.label(), "Импортированые");
         assert_eq!(ImportFilter::New.label(), "Новые");
     }
 }
