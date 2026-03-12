@@ -16,7 +16,6 @@ pub struct UserProfile {
     pub jlpt_progress: JlptProgress,
     pub lesson_history: Vec<DailyHistoryItem>,
     pub telegram_user_id: Option<u64>,
-    pub reminders_enabled: bool,
 }
 
 #[derive(Clone)]
@@ -48,7 +47,6 @@ impl<'a, R: UserRepository> GetUserInfoUseCase<'a, R> {
             jlpt_progress: user.jlpt_progress().clone(),
             lesson_history: user.knowledge_set().lesson_history().to_vec(),
             telegram_user_id: user.telegram_user_id().copied(),
-            reminders_enabled: user.reminders_enabled(),
         })
     }
 }

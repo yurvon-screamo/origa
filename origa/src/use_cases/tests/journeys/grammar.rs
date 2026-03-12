@@ -94,6 +94,6 @@ async fn create_grammar_card_creates_from_real_rule() {
         saved_user
             .knowledge_set()
             .study_cards()
-            .contains_key(&cards[0].card_id())
+            .contains_key(cards[0].card_id())
     );
 }

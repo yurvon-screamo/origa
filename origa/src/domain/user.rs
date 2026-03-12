@@ -5,8 +5,8 @@ use serde::{Deserialize, Serialize};
 use ulid::Ulid;
 
 use crate::domain::{
-    Card, JapaneseLevel, JlptContent, JlptProgress, KnowledgeSet, NativeLanguage, OrigaError,
-    RateMode, Rating, ScoreContentResult, StudyCard, score_content,
+    score_content, Card, JapaneseLevel, JlptContent, JlptProgress, KnowledgeSet, NativeLanguage,
+    OrigaError, RateMode, Rating, ScoreContentResult, StudyCard,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -18,7 +18,6 @@ pub struct User {
     jlpt_progress: JlptProgress,
     telegram_user_id: Option<u64>,
     knowledge_set: KnowledgeSet,
-    reminders_enabled: bool,
 
     #[serde(default)]
     updated_at: DateTime<Utc>,
@@ -41,7 +40,6 @@ impl User {
             jlpt_progress: JlptProgress::new(),
             native_language,
             telegram_user_id,
-            reminders_enabled: true,
             updated_at: Utc::now(),
             imported_sets: HashSet::new(),
         }
@@ -55,7 +53,6 @@ impl User {
         jlpt_progress: JlptProgress,
         native_language: NativeLanguage,
         telegram_user_id: Option<u64>,
-        reminders_enabled: bool,
         knowledge_set: KnowledgeSet,
         updated_at: DateTime<Utc>,
         imported_sets: HashSet<String>,
@@ -67,7 +64,6 @@ impl User {
             jlpt_progress,
             native_language,
             telegram_user_id,
-            reminders_enabled,
             knowledge_set,
             updated_at,
             imported_sets,
@@ -80,7 +76,6 @@ impl User {
         self.native_language = new_values.native_language;
         self.jlpt_progress = new_values.jlpt_progress.clone();
         self.telegram_user_id = new_values.telegram_user_id;
-        self.reminders_enabled = new_values.reminders_enabled;
         self.knowledge_set.merge(&new_values.knowledge_set);
         for set_id in &new_values.imported_sets {
             self.imported_sets.insert(set_id.clone());
@@ -130,14 +125,6 @@ impl User {
 
     pub fn set_telegram_user_id(&mut self, telegram_user_id: Option<u64>) {
         self.telegram_user_id = telegram_user_id;
-    }
-
-    pub fn reminders_enabled(&self) -> bool {
-        self.reminders_enabled
-    }
-
-    pub fn set_reminders_enabled(&mut self, reminders_enabled: bool) {
-        self.reminders_enabled = reminders_enabled;
     }
 
     pub fn updated_at(&self) -> &DateTime<Utc> {
