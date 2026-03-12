@@ -12,6 +12,10 @@ ARG ORIGA_VERSION=dev
 ARG ORIGA_COMMIT=unknown
 ARG ORIGA_BUILD_DATE=unknown
 
+ARG SCCACHE_GHA_ENABLED=off
+ARG ACTIONS_CACHE_URL=
+ARG ACTIONS_RUNTIME_TOKEN=
+
 ENV ORIGA_VERSION=${ORIGA_VERSION}
 ENV ORIGA_COMMIT=${ORIGA_COMMIT}
 ENV ORIGA_BUILD_DATE=${ORIGA_BUILD_DATE}
@@ -29,6 +33,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     lld \
     binaryen \
     && rm -rf /var/lib/apt/lists/*
+
+RUN curl -fsSL https://github.com/mozilla/sccache/releases/download/v0.8.1/sccache-v0.8.1-x86_64-unknown-linux-musl.tar.gz | tar xz && \
+    mv sccache-v0.8.1-x86_64-unknown-linux-musl/sccache /usr/local/bin/ && \
+    chmod +x /usr/local/bin/sccache
+
+ENV RUSTC_WRAPPER=sccache
+ENV SCCACHE_GHA_ENABLED=${SCCACHE_GHA_ENABLED}
+ENV ACTIONS_CACHE_URL=${ACTIONS_CACHE_URL}
+ENV ACTIONS_RUNTIME_TOKEN=${ACTIONS_RUNTIME_TOKEN}
 
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain ${RUST_VERSION}
 ENV PATH="/root/.cargo/bin:${PATH}"
