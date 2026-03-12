@@ -53,13 +53,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-container-
 
-      - name: Cache cargo-binstall
-        uses: actions/cache@v4
-        with:
-          path: ~/.cargo/bin
-          key: cargo-binstall-windows-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: cargo-binstall-windows-
-
       - name: Cache UniDic dictionary
         uses: actions/cache@v4
         with:
@@ -259,13 +252,6 @@ jobs:
           key: ${{ runner.os }}-cargo-container-macos-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-container-macos-
-
-      - name: Cache cargo-binstall
-        uses: actions/cache@v4
-        with:
-          path: ~/.cargo/bin
-          key: cargo-binstall-macos-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: cargo-binstall-macos-
 
       - name: Cache UniDic dictionary
         uses: actions/cache@v4
