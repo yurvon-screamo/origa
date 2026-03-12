@@ -1,0 +1,52 @@
+name: "Setup Frontend"
+description: "Install cargo-binstall, trunk, tauri-cli and cache UniDic dictionary"
+
+inputs:
+  tools:
+    description: "Space-separated list of tools to install via cargo-binstall"
+    required: false
+    default: "trunk tauri-cli"
+  cache-key-suffix:
+    description: "Suffix for cache keys (e.g., platform identifier)"
+    required: false
+
+outputs:
+  binstall-cache-hit:
+    description: "Whether cargo-binstall cache was hit"
+    value: ${{ steps.binstall-cache.outputs.cache-hit }}
+  unidic-cache-hit:
+    description: "Whether UniDic dictionary cache was hit"
+    value: ${{ steps.unidic-cache.outputs.cache-hit }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Cache cargo-binstall binaries
+      id: binstall-cache
+      uses: actions/cache@v4
+      with:
+        path: ~/.cargo/bin
+        key: cargo-binstall-${{ inputs.cache-key-suffix || runner.os }}-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: |
+          cargo-binstall-${{ inputs.cache-key-suffix || runner.os }}-
+          cargo-binstall-
+
+    - name: Install cargo-binstall
+      if: steps.binstall-cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
+
+    - name: Install tools via cargo-binstall
+      if: steps.binstall-cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: cargo binstall ${{ inputs.tools }} --no-confirm
+
+    - name: Cache UniDic dictionary
+      id: unidic-cache
+      uses: actions/cache@v4
+      with:
+        path: origa_ui/public/dictionaries/unidic
+        key: unidic-dict-v1-${{ inputs.cache-key-suffix || runner.os }}
+        restore-keys: |
+          unidic-dict-v1-

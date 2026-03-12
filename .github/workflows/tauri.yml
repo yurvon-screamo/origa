@@ -36,13 +36,35 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Setup sccache
+        uses: mozilla-actions/sccache-action@v0.0.6
+
+      - name: Cache Cargo (container)
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-container-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-container-
+
+      - name: Cache cargo-binstall
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/bin
+          key: cargo-binstall-windows-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: cargo-binstall-windows-
+
       - name: Cache UniDic dictionary
         uses: actions/cache@v4
         with:
           path: origa_ui/public/dictionaries/unidic
-          key: unidic-dict-v1-${{ runner.os }}
-          restore-keys: |
-            unidic-dict-v1-
+          key: unidic-dict-v1-${{ hashFiles('origa_ui/build.rs') }}
+          restore-keys: unidic-dict-v1-
 
       - name: Update version in config files
         env:
@@ -71,12 +93,16 @@ jobs:
         working-directory: origa_ui
         run: trunk build --release
         env:
+          SCCACHE_GHA_ENABLED: "true"
+          RUSTC_WRAPPER: "sccache"
           TRAILBASE_URL: ${{ vars.TRAILBASE_URL }}
 
       - name: Build Tauri app for Windows
         working-directory: tauri
         run: cargo tauri build --runner cargo-xwin --target x86_64-pc-windows-msvc
         env:
+          SCCACHE_GHA_ENABLED: "true"
+          RUSTC_WRAPPER: "sccache"
           TAURI_BUNDLE_NSIS: "true"
 
       - name: Extract signature
@@ -124,9 +150,8 @@ jobs:
         uses: actions/cache@v4
         with:
           path: origa_ui/public/dictionaries/unidic
-          key: unidic-dict-v1-${{ runner.os }}
-          restore-keys: |
-            unidic-dict-v1-
+          key: unidic-dict-v1-${{ hashFiles('origa_ui/build.rs') }}
+          restore-keys: unidic-dict-v1-
 
       - name: Update version in config files
         env:
@@ -145,21 +170,16 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf protobuf-compiler
 
-      - name: Setup Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
+      - name: Setup Rust with caching
+        uses: ./.github/actions/setup-rust
         with:
           targets: x86_64-unknown-linux-gnu,wasm32-unknown-unknown
 
-      - name: Cache Cargo
-        uses: Swatinem/rust-cache@v2
+      - name: Setup frontend tools
+        uses: ./.github/actions/setup-frontend
         with:
-          cache-all-crates: true
-          save-if: ${{ github.ref == 'refs/heads/master' }}
-
-      - name: Install cargo-binstall
-        run: |
-          curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
-          cargo binstall trunk tauri-cli --no-confirm --force
+          tools: trunk tauri-cli
+          cache-key-suffix: linux
 
       - name: Build frontend
         working-directory: origa_ui
@@ -214,13 +234,35 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Setup sccache
+        uses: mozilla-actions/sccache-action@v0.0.6
+
+      - name: Cache Cargo (container)
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-container-macos-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-container-macos-
+
+      - name: Cache cargo-binstall
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/bin
+          key: cargo-binstall-macos-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: cargo-binstall-macos-
+
       - name: Cache UniDic dictionary
         uses: actions/cache@v4
         with:
           path: origa_ui/public/dictionaries/unidic
-          key: unidic-dict-v1-${{ runner.os }}
-          restore-keys: |
-            unidic-dict-v1-
+          key: unidic-dict-v1-${{ hashFiles('origa_ui/build.rs') }}
+          restore-keys: unidic-dict-v1-
 
       - name: Update version in config files
         env:
@@ -249,11 +291,16 @@ jobs:
         working-directory: origa_ui
         run: trunk build --release
         env:
+          SCCACHE_GHA_ENABLED: "true"
+          RUSTC_WRAPPER: "sccache"
           TRAILBASE_URL: ${{ vars.TRAILBASE_URL }}
 
       - name: Build Tauri app for macOS
         working-directory: tauri
         run: cargo tauri build --runner cargo-zigbuild --target aarch64-apple-darwin --no-bundle
+        env:
+          SCCACHE_GHA_ENABLED: "true"
+          RUSTC_WRAPPER: "sccache"
 
       - name: Extract signature
         id: signature

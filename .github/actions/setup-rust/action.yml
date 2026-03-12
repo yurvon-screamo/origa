@@ -1,0 +1,36 @@
+name: 'Setup Rust'
+description: 'Setup Rust toolchain with sccache and cargo caching'
+
+inputs:
+  targets:
+    description: 'Comma-separated list of targets (e.g. "x86_64-unknown-linux-gnu,wasm32-unknown-unknown")'
+    required: false
+    default: ''
+
+outputs:
+  cache-hit:
+    description: 'Whether cache was hit'
+    value: ${{ steps.rust-cache.outputs.cache-hit }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Rust toolchain
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        targets: ${{ inputs.targets }}
+
+    - name: Setup sccache
+      uses: mozilla-actions/sccache-action@v0.0.6
+
+    - name: Setup cargo cache
+      uses: Swatinem/rust-cache@v2
+      id: rust-cache
+      with:
+        key: ${{ inputs.targets }}
+
+    - name: Export sccache environment variables
+      shell: bash
+      run: |
+        echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
+        echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
