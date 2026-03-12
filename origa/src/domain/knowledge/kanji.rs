@@ -1,7 +1,7 @@
 use crate::domain::{
-    dictionary::{get_kanji_info, get_radical_info, get_translation, RadicalInfo},
-    value_objects::{JapaneseLevel, NativeLanguage},
     Answer, OrigaError, Question,
+    dictionary::{RadicalInfo, get_kanji_info, get_radical_info, get_translation},
+    value_objects::{JapaneseLevel, NativeLanguage},
 };
 use serde::{Deserialize, Serialize};
 

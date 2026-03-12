@@ -147,8 +147,10 @@ fn setup_oauth_listener(ctx: AuthContext) {
     if let Some(window) = web_sys::window() {
         let tauri = js_sys::Reflect::get(&window, &JsValue::from_str("__TAURI__")).ok();
         if let Some(tauri_obj) = tauri
-            && let Some(event_mod) = js_sys::Reflect::get(&tauri_obj, &JsValue::from_str("event")).ok()
-            && let Some(listen_fn) = js_sys::Reflect::get(&event_mod, &JsValue::from_str("listen")).ok()
+            && let Some(event_mod) =
+                js_sys::Reflect::get(&tauri_obj, &JsValue::from_str("event")).ok()
+            && let Some(listen_fn) =
+                js_sys::Reflect::get(&event_mod, &JsValue::from_str("listen")).ok()
             && let Ok(listen_fn) = listen_fn.dyn_into::<js_sys::Function>()
         {
             let event_name = JsValue::from_str("deep-link-received");
@@ -251,7 +253,8 @@ pub fn App() -> impl IntoView {
 
             let result = updater::download_and_install(move |progress| {
                 download_progress.set(Some(progress as f32));
-            }).await;
+            })
+            .await;
 
             if let Err(e) = result {
                 error!("Update failed: {}", e);

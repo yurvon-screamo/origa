@@ -142,14 +142,16 @@ where
     let on_progress = Arc::new(on_progress);
     let closure = Closure::<dyn Fn(JsValue)>::new(move |event| {
         if let Ok(data) = js_sys::Reflect::get(&event, &JsValue::from_str("data")) {
-            if let Some(content_length) = js_sys::Reflect::get(&data, &JsValue::from_str("contentLength"))
-                .ok()
-                .and_then(|v| v.as_f64())
+            if let Some(content_length) =
+                js_sys::Reflect::get(&data, &JsValue::from_str("contentLength"))
+                    .ok()
+                    .and_then(|v| v.as_f64())
             {
                 if content_length > 0.0 {
-                    if let Some(chunk_length) = js_sys::Reflect::get(&data, &JsValue::from_str("chunkLength"))
-                        .ok()
-                        .and_then(|v| v.as_f64())
+                    if let Some(chunk_length) =
+                        js_sys::Reflect::get(&data, &JsValue::from_str("chunkLength"))
+                            .ok()
+                            .and_then(|v| v.as_f64())
                     {
                         let progress = ((chunk_length / content_length) * 100.0).min(100.0) as u8;
                         on_progress(progress);
