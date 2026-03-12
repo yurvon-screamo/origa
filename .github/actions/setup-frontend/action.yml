@@ -21,15 +21,14 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: Cache cargo-binstall binaries
+    - name: Cache cargo-binstall binary
       id: binstall-cache
       uses: actions/cache@v4
       with:
-        path: ~/.cargo/bin
-        key: cargo-binstall-${{ inputs.cache-key-suffix || runner.os }}-${{ hashFiles('**/Cargo.lock') }}
+        path: ~/.cargo/bin/cargo-binstall
+        key: cargo-binstall-bin-${{ inputs.cache-key-suffix || runner.os }}
         restore-keys: |
-          cargo-binstall-${{ inputs.cache-key-suffix || runner.os }}-
-          cargo-binstall-
+          cargo-binstall-bin-
 
     - name: Install cargo-binstall
       if: steps.binstall-cache.outputs.cache-hit != 'true'
@@ -38,7 +37,6 @@ runs:
         curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
 
     - name: Install tools via cargo-binstall
-      if: steps.binstall-cache.outputs.cache-hit != 'true'
       shell: bash
       run: cargo binstall ${{ inputs.tools }} --no-confirm
 
@@ -47,6 +45,6 @@ runs:
       uses: actions/cache@v4
       with:
         path: origa_ui/public/dictionaries/unidic
-        key: unidic-dict-v1-${{ inputs.cache-key-suffix || runner.os }}
+        key: unidic-dict-v1-${{ hashFiles('origa_ui/build.rs') }}
         restore-keys: |
           unidic-dict-v1-

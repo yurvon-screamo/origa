@@ -59,15 +59,13 @@ jobs:
                   cache-from: type=gha
                   cache-to: type=gha,mode=max
                   provenance: false
-                  # TODO: Для полноценной работы sccache внутри Docker нужно модифицировать Dockerfile
-                  # - Добавить ARG SCCACHE_GHA_ENABLED
-                  # - Установить sccache в образ
-                  # - Настроить RUSTC_WRAPPER=sccache
                   build-args: |
                       ORIGA_VERSION=${{ needs.version.outputs.version }}
                       ORIGA_COMMIT=${{ needs.version.outputs.commit_sha }}
                       ORIGA_BUILD_DATE=${{ needs.version.outputs.build_date }}
                       SCCACHE_GHA_ENABLED=true
+                      ACTIONS_CACHE_URL=${{ env.ACTIONS_CACHE_URL }}
+                      ACTIONS_RUNTIME_TOKEN=${{ env.ACTIONS_RUNTIME_TOKEN }}
 
     deploy-to-railway:
         name: Deploy to Railway
