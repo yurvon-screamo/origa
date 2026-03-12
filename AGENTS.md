@@ -6,21 +6,6 @@ Origa — приложение для изучения японского язы
 
 ## Quick Start Commands
 
-### Setup
-```bash
-# Установка Rust (если нет)
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-
-# Добавление WASM target для frontend
-rustup target add wasm32-unknown-unknown
-
-# Установка Trunk (bundler для Leptos)
-cargo install trunk --version 0.21.14
-
-# Установка Tauri CLI (для desktop)
-cargo install tauri-cli --version "^2"
-```
-
 ### Development
 
 ```bash
@@ -213,30 +198,11 @@ origa/
 
 ## Git Workflow
 
-### Commit Messages
+Default branch - `master`
 
-```
-type(scope): краткое описание
+## Commit
 
-# Примеры:
-feat(ocr): add cascade text detection
-fix(srs): correct interval calculation for hard rating
-refactor(use_cases): extract card creation logic
-test(domain): add vocabulary card tests
-```
-
-### Branch Naming
-
-- `feature/description` — новые функции
-- `fix/description` — исправления багов
-- `refactor/description` — рефакторинг
-
-### PR Process
-
-1. Создать branch от master
-2. Сделать изменения + тесты
-3. Запустить `cargo test --workspace && cargo clippy --workspace`
-4. Создать PR с описанием изменений
+Use @git-commit-push subagent
 
 ## Critical Boundaries (IMPORTANT!)
 
@@ -251,11 +217,9 @@ test(domain): add vocabulary card tests
 
 ### ⚠️ ASK FIRST
 
-- Изменения в `origa/src/domain/error.rs` (OrigaError)
-- Изменения в trait definitions в `origa/src/traits/`
 - Изменения в Cargo.toml (dependencies, features)
 - Изменения в CI/CD workflows
-- Удаление кода из domain layer
+- Изменения кода domain layer
 
 ### 🚫 NEVER Do
 
@@ -263,7 +227,6 @@ test(domain): add vocabulary card tests
 - Использовать `unwrap()` в production коде (только в тестах)
 - Использовать `#[async_trait]` — использовать `impl Future`
 - Коммитить console.log или println! в production коде
-- Изменять Dockerfile без согласования
 - Удалять test fixtures
 
 ## Security & Secrets
@@ -288,19 +251,6 @@ use ort::Session;  // native
 use ort_web::Session;  // WASM
 ```
 
-### Async в traits
-
-```rust
-// ❌ НЕ использовать
-#[async_trait]
-pub trait UserRepository { async fn find(...) -> ...; }
-
-// ✅ Использовать
-pub trait UserRepository {
-    fn find(&self, id: Ulid) -> impl Future<Output = Result<...>>;
-}
-```
-
 ### Tauri JS Interop
 
 ```rust
@@ -313,42 +263,3 @@ let tauri = js_sys::Reflect::get(&window, &JsValue::from_str("__TAURI__")).ok();
 - `lindera-dictionary` требует `build_rs` feature
 - Словарь unidic загружается при build time
 - В Docker словарь удаляется для уменьшения размера
-
-## Deployment
-
-### Web (Docker/Railway)
-```bash
-docker build -f origa_ui/Dockerfile -t origa:latest .
-docker run -p 4000:4000 origa:latest
-```
-
-### Desktop (Tauri)
-```bash
-cd tauri && cargo tauri build
-# Результат: NSIS/MSI (Windows), AppImage/deb (Linux), .app (macOS)
-```
-
-### Mobile (Android)
-```bash
-cd tauri && cargo tauri android build
-# Результат: APK в tauri/gen/android/
-```
-
-## Workspace Commands Quick Reference
-
-```bash
-# Сборка всего workspace
-cargo build --workspace
-
-# Сборка конкретного крейта
-cargo build -p origa
-
-# Запуск конкретного бинарника
-cargo run -p tokenizer
-
-# Проверка без сборки
-cargo check --workspace
-
-# Документация
-cargo doc --workspace --open
-```
