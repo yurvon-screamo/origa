@@ -148,7 +148,6 @@ jobs:
         if: matrix.platform == 'android' && github.event_name != 'pull_request'
         working-directory: tauri/gen/android
         run: |
-          # Create keystore.properties
           cat > keystore.properties << EOF
           storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}
@@ -156,33 +155,7 @@ jobs:
           storeFile=/tmp/keystore.jks
           EOF
           
-          # Modify app/build.gradle.kts to add signing config
-          BUILD_GRADLE="app/build.gradle.kts"
-          
-          # Add FileInputStream import at the top (after existing imports)
-          sed -i '1s/^/import java.io.FileInputStream\nimport java.util.Properties\n\n/' "$BUILD_GRADLE"
-          
-          # Add signingConfigs block before buildTypes
-          sed -i '/^android {/a\
-          \
-              signingConfigs {\
-                  create("release") {\
-                      val keystorePropertiesFile = file("../keystore.properties")\
-                      val keystoreProperties = Properties()\
-                      if (keystorePropertiesFile.exists()) {\
-                          keystoreProperties.load(FileInputStream(keystorePropertiesFile))\
-                      }\
-                      keyAlias = keystoreProperties.getProperty("keyAlias")\
-                      keyPassword = keystoreProperties.getProperty("keyPassword")\
-                      storeFile = file(keystoreProperties.getProperty("storeFile"))\
-                      storePassword = keystoreProperties.getProperty("storePassword")\
-                  }\
-              }' "$BUILD_GRADLE"
-          
-          # Configure release buildType to use signing config
-          sed -i '/getByName("release")/,/}/s/isMinifyEnabled = false/isMinifyEnabled = false\n                signingConfig = signingConfigs.getByName("release")/' "$BUILD_GRADLE"
-          
-          echo "Android signing configured successfully"
+          git apply --unsafe-paths --directory=tauri/gen/android "$GITHUB_WORKSPACE/tauri/android-signing.patch"
 
       - name: Build Tauri Android APK
         if: matrix.platform == 'android'
