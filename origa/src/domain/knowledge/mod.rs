@@ -13,10 +13,9 @@ pub use vocabulary::VocabularyCard;
 use std::collections::{HashMap, HashSet};
 
 use crate::domain::{
-    get_rule_by_id,
-    srs::{rate_memory, NextReview},
+    OrigaError, RateMode, Rating, ReviewLog, get_rule_by_id,
+    srs::{NextReview, rate_memory},
     value_objects::NativeLanguage,
-    OrigaError, RateMode, Rating, ReviewLog,
 };
 use chrono::Utc;
 use rand::seq::SliceRandom;
@@ -585,7 +584,7 @@ mod tests {
 
     #[test]
     fn apply_reversed_returns_reversed_for_vocabulary() {
-        use crate::domain::{init_vocabulary_dictionary, VocabularyChunkData};
+        use crate::domain::{VocabularyChunkData, init_vocabulary_dictionary};
         use std::sync::Once;
 
         static INIT: Once = Once::new();
