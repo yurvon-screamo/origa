@@ -103,6 +103,9 @@ jobs:
           tools: trunk tauri-cli
           cache-key-suffix: mobile-${{ matrix.platform }}
 
+      - name: Add cargo bin to PATH
+        run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
       - name: Cache UniDic dictionary
         uses: actions/cache@v4
         with:

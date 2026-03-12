@@ -47,8 +47,8 @@ runs:
     - name: Verify trunk installation
       shell: bash
       run: |
-        which trunk || echo "trunk not found in PATH"
-        trunk --version || echo "trunk --version failed"
+        which trunk
+        trunk --version
 
     - name: Cache UniDic dictionary
       id: unidic-cache
