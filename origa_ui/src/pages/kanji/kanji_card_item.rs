@@ -44,11 +44,7 @@ pub fn KanjiCardItem(
     let lang = native_lang.get();
     let (kanji_char, description, radicals, example_words) = match card {
         DomainCard::Kanji(kanji_card) => {
-            let radicals_str = kanji_card
-                .radicals_info()
-                .ok()
-                .map(|r| r.iter().map(|rad| rad.radical()).collect::<String>())
-                .unwrap_or_default();
+            let radicals_str = kanji_card.radicals_chars().into_iter().collect::<String>();
             let examples_str = kanji_card
                 .example_words(&lang)
                 .iter()

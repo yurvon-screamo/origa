@@ -36,7 +36,7 @@ pub fn SetsTypeGroup(
                 >
                     {set_type.label()}
                 </Text>
-                <div class="sets-list">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     <For
                         each=move || sets_for_type.get()
                         key=|s| s.set_id.clone()

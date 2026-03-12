@@ -1,7 +1,7 @@
 use crate::domain::{
-    Answer, OrigaError, Question,
-    dictionary::{RadicalInfo, get_kanji_info, get_radical_info, get_translation},
+    dictionary::{get_kanji_info, get_radical_info, get_translation, RadicalInfo},
     value_objects::{JapaneseLevel, NativeLanguage},
+    Answer, OrigaError, Question,
 };
 use serde::{Deserialize, Serialize};
 
@@ -80,6 +80,12 @@ impl KanjiCard {
             .iter()
             .map(|&r| get_radical_info(r))
             .collect()
+    }
+
+    pub fn radicals_chars(&self) -> Vec<char> {
+        get_kanji_info(self.kanji.text())
+            .map(|info| info.radicals_chars().to_vec())
+            .unwrap_or_default()
     }
 
     pub fn on_readings(&self) -> Vec<String> {

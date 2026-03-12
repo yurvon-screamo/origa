@@ -46,6 +46,13 @@
             let deepLink = 'origa://auth/callback?code=' + encodeURIComponent(code);
             if (state) deepLink += '&state=' + encodeURIComponent(state);
             window.location.href = deepLink;
+
+            setTimeout(() => window.close(), 100);
+
+            setTimeout(() => {
+                document.querySelector('.container').innerHTML =
+                    '<p style="font-size:18px">Авторизация завершена.</p><p style="color:#888;margin-top:10px">Можно закрыть эту вкладку</p>';
+            }, 500);
         } else {
             document.querySelector('.container').innerHTML = 
                 '<p>Ошибка: код авторизации не найден</p><p><a href="https://origa.uwuwu.net" style="color:#7cb342">Вернуться на сайт</a></p>';
