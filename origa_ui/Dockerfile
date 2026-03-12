@@ -12,10 +12,6 @@ ARG ORIGA_VERSION=dev
 ARG ORIGA_COMMIT=unknown
 ARG ORIGA_BUILD_DATE=unknown
 
-ARG SCCACHE_GHA_ENABLED=off
-ARG ACTIONS_CACHE_URL=
-ARG ACTIONS_RUNTIME_TOKEN=
-
 ENV ORIGA_VERSION=${ORIGA_VERSION}
 ENV ORIGA_COMMIT=${ORIGA_COMMIT}
 ENV ORIGA_BUILD_DATE=${ORIGA_BUILD_DATE}
@@ -39,9 +35,7 @@ RUN curl -fsSL https://github.com/mozilla/sccache/releases/download/v0.14.0/scca
     chmod +x /usr/local/bin/sccache
 
 ENV RUSTC_WRAPPER=sccache
-ENV SCCACHE_GHA_ENABLED=${SCCACHE_GHA_ENABLED}
-ENV ACTIONS_CACHE_URL=${ACTIONS_CACHE_URL}
-ENV ACTIONS_RUNTIME_TOKEN=${ACTIONS_RUNTIME_TOKEN}
+ENV SCCACHE_DIR=/sccache
 
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain ${RUST_VERSION}
 ENV PATH="/root/.cargo/bin:${PATH}"
@@ -64,8 +58,8 @@ RUN mkdir -p origa_ui/src && echo "pub fn dummy() {}" > origa_ui/src/lib.rs
 RUN mkdir -p tokenizer/src && echo "pub fn dummy() {}" > tokenizer/src/lib.rs
 RUN mkdir -p tauri/src && echo "pub fn dummy() {}" > tauri/src/lib.rs
 
-RUN --mount=type=cache,target=/root/.cargo/registry \
-    --mount=type=cache,target=/app/target \
+RUN --mount=type=cache,target=/sccache,sharing=locked \
+    --mount=type=cache,target=/root/.cargo/registry,sharing=locked \
     cargo build --release -p origa_ui --target wasm32-unknown-unknown && \
     rm -rf origa origa_ui
 
