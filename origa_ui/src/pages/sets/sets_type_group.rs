@@ -1,5 +1,6 @@
 use crate::ui_components::{Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
+use lexical_sort::natural_lexical_cmp;
 use origa::traits::SetType;
 
 use super::filters::TypeFilter;
@@ -15,11 +16,14 @@ pub fn SetsTypeGroup(
 ) -> impl IntoView {
     let sets_for_type = Memo::new(move |_| {
         let current_filter = type_filter.get();
-        sets_for_level
+        let mut sets: Vec<_> = sets_for_level
             .get()
             .into_iter()
             .filter(|s| s.set_type == set_type && current_filter.matches(set_type))
-            .collect::<Vec<_>>()
+            .collect();
+
+        sets.sort_by(|a, b| natural_lexical_cmp(&a.title, &b.title));
+        sets
     });
 
     view! {
