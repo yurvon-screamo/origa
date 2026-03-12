@@ -52,10 +52,10 @@ pub fn run() {
             #[cfg(desktop)]
             {
                 let handle_for_startup = app.handle().clone();
-                if let Ok(Some(urls)) = app.deep_link().get_current() {
-                    if let Some(url) = urls.first() {
-                        let _ = handle_for_startup.emit("deep-link-received", url.to_string());
-                    }
+                if let Ok(Some(urls)) = app.deep_link().get_current()
+                    && let Some(url) = urls.first()
+                {
+                    let _ = handle_for_startup.emit("deep-link-received", url.to_string());
                 }
             }
 

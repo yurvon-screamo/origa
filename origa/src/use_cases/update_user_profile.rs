@@ -18,7 +18,6 @@ impl<'a, R: UserRepository> UpdateUserProfileUseCase<'a, R> {
         user_id: Ulid,
         native_language: NativeLanguage,
         telegram_user_id: Option<u64>,
-        reminders_enabled: bool,
     ) -> Result<(), OrigaError> {
         debug!(user_id = %user_id, "Updating user profile");
 
@@ -30,7 +29,6 @@ impl<'a, R: UserRepository> UpdateUserProfileUseCase<'a, R> {
 
         user.set_native_language(native_language);
         user.set_telegram_user_id(telegram_user_id);
-        user.set_reminders_enabled(reminders_enabled);
 
         self.repository.save(&user).await?;
 

@@ -11,7 +11,6 @@ CREATE TABLE user (
     current_japanese_level INTEGER,
     duolingo_jwt_token TEXT,
     telegram_user_id INTEGER,
-    reminders_enabled INTEGER NOT NULL DEFAULT 0,
     knowledge_set TEXT CHECK(json_valid(knowledge_set)) NOT NULL DEFAULT '{"study_cards":{},"lesson_history":[]}',
     imported_sets TEXT CHECK(json_valid(imported_sets)) NOT NULL DEFAULT '[]',
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP

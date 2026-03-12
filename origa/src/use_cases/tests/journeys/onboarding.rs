@@ -18,7 +18,6 @@ async fn user_new_creates_default_state() {
     assert_eq!(user.native_language(), &NativeLanguage::Russian);
     assert_eq!(user.current_japanese_level(), JapaneseLevel::N5);
     assert!(user.knowledge_set().study_cards().is_empty());
-    assert!(user.reminders_enabled());
 }
 
 #[tokio::test]
@@ -60,14 +59,13 @@ async fn update_user_profile_updates_fields() {
     let use_case = UpdateUserProfileUseCase::new(&repo);
 
     use_case
-        .execute(user_id, NativeLanguage::English, Some(123456789), false)
+        .execute(user_id, NativeLanguage::English, Some(123456789))
         .await
         .unwrap();
 
     let updated = repo.find_by_id(user_id).await.unwrap().unwrap();
     assert_eq!(updated.native_language(), &NativeLanguage::English);
     assert_eq!(updated.telegram_user_id(), Some(&123456789));
-    assert!(!updated.reminders_enabled());
 }
 
 #[tokio::test]
@@ -88,7 +86,7 @@ async fn update_user_profile_returns_error_for_nonexistent_user() {
     let non_existent_id = Ulid::new();
 
     let result = use_case
-        .execute(non_existent_id, NativeLanguage::English, None, true)
+        .execute(non_existent_id, NativeLanguage::English, None)
         .await;
 
     assert!(matches!(result, Err(OrigaError::UserNotFound { .. })));

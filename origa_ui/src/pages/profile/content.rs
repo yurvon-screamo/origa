@@ -26,18 +26,10 @@ pub fn ProfileContent() -> impl IntoView {
                 .unwrap_or(NativeLanguage::Russian)
         })
     });
-    let reminders_enabled = Memo::new(move |_| {
-        current_user.with(|u| u.as_ref().map(|u| u.reminders_enabled()).unwrap_or(true))
-    });
-
     let selected_language = RwSignal::new(native_language.get_untracked());
-    let reminders = RwSignal::new(reminders_enabled.get_untracked());
 
     Effect::new(move |_| {
         selected_language.set(native_language.get());
-    });
-    Effect::new(move |_| {
-        reminders.set(reminders_enabled.get());
     });
 
     let is_saving = RwSignal::new(false);
@@ -50,7 +42,6 @@ pub fn ProfileContent() -> impl IntoView {
         let repository = repository.clone();
         let current_user_signal = current_user;
         let language = selected_language.get();
-        let reminders_enabled = reminders.get();
         let is_saving_signal = is_saving;
 
         is_saving_signal.set(true);
@@ -58,9 +49,7 @@ pub fn ProfileContent() -> impl IntoView {
         spawn_local(async move {
             let use_case = UpdateUserProfileUseCase::new(&repository);
 
-            let result = use_case
-                .execute(user_id, language, None, reminders_enabled)
-                .await;
+            let result = use_case.execute(user_id, language, None).await;
 
             is_saving_signal.set(false);
 
@@ -130,7 +119,7 @@ pub fn ProfileContent() -> impl IntoView {
             />
 
             <div class="space-y-4">
-                <SettingsCard reminders={reminders} />
+                <SettingsCard />
                 <ActionButtons
                     on_save={save_profile}
                     on_logout={logout}
