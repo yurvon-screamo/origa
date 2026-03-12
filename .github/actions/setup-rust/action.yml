@@ -27,7 +27,8 @@ runs:
       uses: Swatinem/rust-cache@v2
       id: rust-cache
       with:
-        key: ${{ inputs.targets }}
+        cache-all-crates: true
+        save-if: ${{ github.ref == 'refs/heads/master' }}
 
     - name: Export sccache environment variables
       shell: bash
