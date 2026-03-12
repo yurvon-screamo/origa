@@ -1,4 +1,4 @@
-use super::filters::{LevelFilter, TypeFilter};
+use super::filters::{ImportFilter, LevelFilter, TypeFilter};
 use super::import_set_preview_modal::ImportSetPreviewModal;
 use super::sets_level_group::SetsLevelGroup;
 use super::types::SetInfo;
@@ -19,6 +19,7 @@ pub fn SetsContent() -> impl IntoView {
     let current_user = use_context::<RwSignal<Option<User>>>().expect("current_user context");
     let level_filter = RwSignal::new(LevelFilter::default());
     let type_filter = RwSignal::new(TypeFilter::default());
+    let import_filter = RwSignal::new(ImportFilter::default());
     let search = RwSignal::new(String::new());
 
     let loader = WellKnownSetLoaderImpl::new();
@@ -67,6 +68,7 @@ pub fn SetsContent() -> impl IntoView {
     let filtered_sets = Memo::new(move |_| {
         let level = level_filter.get();
         let type_f = type_filter.get();
+        let import_f = import_filter.get();
         let query = search.get().to_lowercase();
 
         sets.get()
@@ -74,10 +76,11 @@ pub fn SetsContent() -> impl IntoView {
             .filter(|s| {
                 let matches_level = level.matches(s.level);
                 let matches_type = type_f.matches(s.set_type);
+                let matches_import = import_f.matches(s.is_imported);
                 let matches_search = query.is_empty()
                     || s.title.to_lowercase().contains(&query)
                     || s.description.to_lowercase().contains(&query);
-                matches_level && matches_type && matches_search
+                matches_level && matches_type && matches_import && matches_search
             })
             .collect::<Vec<_>>()
     });
@@ -288,6 +291,54 @@ pub fn SetsContent() -> impl IntoView {
                             })
                         >
                             {TypeFilter::DuolingoEn.label()}
+                        </Tag>
+                    </div>
+
+                    <div class="flex flex-wrap gap-2">
+                        <Tag
+                            variant=Signal::derive(move || {
+                                if import_filter.get() == ImportFilter::All {
+                                    TagVariant::Filled
+                                } else {
+                                    TagVariant::Default
+                                }
+                            })
+                            class=Signal::derive(|| "cursor-pointer".to_string())
+                            on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
+                                import_filter.set(ImportFilter::All);
+                            })
+                        >
+                            {ImportFilter::All.label()}
+                        </Tag>
+                        <Tag
+                            variant=Signal::derive(move || {
+                                if import_filter.get() == ImportFilter::Imported {
+                                    TagVariant::Filled
+                                } else {
+                                    TagVariant::Default
+                                }
+                            })
+                            class=Signal::derive(|| "cursor-pointer".to_string())
+                            on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
+                                import_filter.set(ImportFilter::Imported);
+                            })
+                        >
+                            {ImportFilter::Imported.label()}
+                        </Tag>
+                        <Tag
+                            variant=Signal::derive(move || {
+                                if import_filter.get() == ImportFilter::New {
+                                    TagVariant::Filled
+                                } else {
+                                    TagVariant::Default
+                                }
+                            })
+                            class=Signal::derive(|| "cursor-pointer".to_string())
+                            on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
+                                import_filter.set(ImportFilter::New);
+                            })
+                        >
+                            {ImportFilter::New.label()}
                         </Tag>
                     </div>
                 </div>
