@@ -13,9 +13,10 @@ pub use vocabulary::VocabularyCard;
 use std::collections::{HashMap, HashSet};
 
 use crate::domain::{
-    OrigaError, RateMode, Rating, ReviewLog, get_rule_by_id,
-    srs::{NextReview, rate_memory},
+    get_rule_by_id,
+    srs::{rate_memory, NextReview},
     value_objects::NativeLanguage,
+    OrigaError, RateMode, Rating, ReviewLog,
 };
 use chrono::Utc;
 use rand::seq::SliceRandom;
@@ -48,6 +49,7 @@ fn select_applicable_grammar(
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct KnowledgeSet {
     study_cards: HashMap<Ulid, StudyCard>,
+    deleted_cards: HashSet<Ulid>,
     lesson_history: Vec<DailyHistoryItem>,
 }
 
@@ -61,13 +63,20 @@ impl KnowledgeSet {
     pub fn new() -> Self {
         Self {
             study_cards: HashMap::new(),
+            deleted_cards: HashSet::new(),
             lesson_history: Vec::new(),
         }
     }
 
     pub fn merge(&mut self, new_values: &KnowledgeSet) {
+        for deleted_id in &new_values.deleted_cards {
+            self.study_cards.remove(deleted_id);
+            self.deleted_cards.insert(*deleted_id);
+        }
+
         for (id, study_card) in &new_values.study_cards {
-            if !self.study_cards.contains_key(id)
+            if !self.deleted_cards.contains(id)
+                && !self.study_cards.contains_key(id)
                 && self.validate_unique_card(study_card.card()).is_ok()
             {
                 self.study_cards.insert(*id, study_card.clone());
@@ -116,7 +125,12 @@ impl KnowledgeSet {
         if self.study_cards.remove(&card_id).is_none() {
             return Err(OrigaError::CardNotFound { card_id });
         }
+        self.deleted_cards.insert(card_id);
         Ok(())
+    }
+
+    pub fn deleted_cards(&self) -> &HashSet<Ulid> {
+        &self.deleted_cards
     }
 
     pub fn create_card(&mut self, card: Card) -> Result<StudyCard, OrigaError> {
@@ -569,7 +583,7 @@ mod tests {
 
     #[test]
     fn apply_reversed_returns_reversed_for_vocabulary() {
-        use crate::domain::{VocabularyChunkData, init_vocabulary_dictionary};
+        use crate::domain::{init_vocabulary_dictionary, VocabularyChunkData};
         use std::sync::Once;
 
         static INIT: Once = Once::new();
@@ -1021,6 +1035,34 @@ mod tests {
         assert_eq!(history_item.total_words(), 2);
         assert_eq!(history_item.new_words(), 2);
         assert_eq!(history_item.lessons_completed(), 0);
+    }
+
+    #[test]
+    fn merge_respects_tombstones() {
+        let mut local = KnowledgeSet::new();
+        local.create_card(create_vocab_card("猫")).unwrap();
+        let study2 = local.create_card(create_vocab_card("犬")).unwrap();
+        local.create_card(create_vocab_card("鳥")).unwrap();
+
+        let remote = local.clone();
+
+        let card2_id = *study2.card_id();
+        local.delete_card(card2_id).unwrap();
+
+        assert_eq!(local.study_cards().len(), 2);
+        assert!(local.deleted_cards().contains(&card2_id));
+
+        local.merge(&remote);
+
+        assert_eq!(
+            local.study_cards().len(),
+            2,
+            "card2 не должна восстановиться"
+        );
+        assert!(
+            local.deleted_cards().contains(&card2_id),
+            "tombstone должен сохраниться"
+        );
     }
 
     #[test]
