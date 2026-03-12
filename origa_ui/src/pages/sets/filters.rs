@@ -71,6 +71,32 @@ impl TypeFilter {
     }
 }
 
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Default)]
+pub enum ImportFilter {
+    #[default]
+    All,
+    Imported,
+    New,
+}
+
+impl ImportFilter {
+    pub fn label(&self) -> &'static str {
+        match self {
+            ImportFilter::All => "Все",
+            ImportFilter::Imported => "Импортированы",
+            ImportFilter::New => "Новые",
+        }
+    }
+
+    pub fn matches(&self, is_imported: bool) -> bool {
+        match self {
+            ImportFilter::All => true,
+            ImportFilter::Imported => is_imported,
+            ImportFilter::New => !is_imported,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -134,5 +160,38 @@ mod tests {
         assert_eq!(TypeFilter::All.label(), "Все типы");
         assert_eq!(TypeFilter::Jlpt.label(), "JLPT");
         assert_eq!(TypeFilter::Migii.label(), "Migii");
+    }
+
+    #[test]
+    fn import_filter_default_is_all() {
+        assert_eq!(ImportFilter::default(), ImportFilter::All);
+    }
+
+    #[test]
+    fn import_filter_matches_all_returns_true() {
+        let filter = ImportFilter::All;
+        assert!(filter.matches(true));
+        assert!(filter.matches(false));
+    }
+
+    #[test]
+    fn import_filter_matches_imported() {
+        let filter = ImportFilter::Imported;
+        assert!(filter.matches(true));
+        assert!(!filter.matches(false));
+    }
+
+    #[test]
+    fn import_filter_matches_new() {
+        let filter = ImportFilter::New;
+        assert!(!filter.matches(true));
+        assert!(filter.matches(false));
+    }
+
+    #[test]
+    fn import_filter_labels() {
+        assert_eq!(ImportFilter::All.label(), "Все");
+        assert_eq!(ImportFilter::Imported.label(), "Импортированы");
+        assert_eq!(ImportFilter::New.label(), "Новые");
     }
 }
