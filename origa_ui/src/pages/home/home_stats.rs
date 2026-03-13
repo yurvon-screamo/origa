@@ -25,6 +25,8 @@ pub fn format_number(n: usize) -> String {
 pub fn format_delta(delta: isize) -> String {
     if delta > 0 {
         format!("+{}", delta)
+    } else if delta < 0 {
+        delta.to_string()
     } else {
         String::new()
     }

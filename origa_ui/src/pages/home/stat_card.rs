@@ -14,6 +14,17 @@ pub fn StatCard(
 ) -> impl IntoView {
     let has_delta = Signal::derive(move || !delta.get().is_empty());
 
+    let delta_class = Signal::derive(move || {
+        let d = delta.get();
+        if d.is_empty() {
+            String::new()
+        } else if d.starts_with('-') {
+            "text-sm font-mono text-[var(--error)]".to_string()
+        } else {
+            "text-sm font-mono text-[var(--success)]".to_string()
+        }
+    });
+
     view! {
         <Card class=Signal::derive(|| "p-6".to_string())>
             <Text
@@ -31,7 +42,7 @@ pub fn StatCard(
                     {move || value.get()}
                 </DisplayText>
                 <Show when=move || has_delta.get()>
-                    <span class="text-sm font-mono text-[var(--success)]">
+                    <span class=move || delta_class.get()>
                         {move || delta.get()}
                     </span>
                 </Show>
