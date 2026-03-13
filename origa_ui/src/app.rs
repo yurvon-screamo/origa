@@ -2,7 +2,7 @@ use crate::components::UpdateDrawer;
 use crate::data_loader::load_all_data;
 use crate::dictionary::load_dictionary;
 use crate::repository::get_session;
-use crate::repository::{HybridUserRepository, TrailBaseClient, clear_session};
+use crate::repository::{HybridUserRepository, SyncContext, TrailBaseClient, clear_session};
 use crate::routes::AppRoutes;
 use crate::ui_components::LoadingOverlay;
 use crate::updater;
@@ -21,6 +21,7 @@ pub struct AuthContext {
     pub is_session_loading: RwSignal<bool>,
     pub is_oauth_loading: RwSignal<bool>,
     pub is_data_loaded: RwSignal<bool>,
+    pub sync_context: SyncContext,
 }
 
 impl AuthContext {
@@ -32,7 +33,12 @@ impl AuthContext {
             is_session_loading: RwSignal::new(true),
             is_oauth_loading: RwSignal::new(false),
             is_data_loaded: RwSignal::new(false),
+            sync_context: SyncContext::new(),
         }
+    }
+
+    pub fn start_background_sync(&self) {
+        self.repository.start_background_sync(self.sync_context, self.current_user);
     }
 
     pub async fn init_session(&self) {
@@ -246,6 +252,7 @@ pub fn App() -> impl IntoView {
 
     provide_context(auth_context.repository.clone());
     provide_context(auth_context.current_user);
+    provide_context(auth_context.sync_context);
     provide_context(auth_context.clone());
 
     check_url_oauth_callback(&auth_context);
@@ -291,6 +298,7 @@ pub fn App() -> impl IntoView {
     let ctx = auth_context.clone();
     spawn_local(async move {
         ctx.init_session().await;
+        ctx.start_background_sync();
     });
 
     view! {

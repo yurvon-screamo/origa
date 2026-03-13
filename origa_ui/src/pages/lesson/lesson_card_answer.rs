@@ -1,7 +1,6 @@
 use crate::ui_components::{
-    Button, ButtonVariant, Divider, FuriganaText, Heading, HeadingLevel, KanjiViewMode,
-    KanjiWritingSection, MarkdownText, MarkdownVariant, ReadingGroup, Text, TextSize,
-    TypographyVariant,
+    Button, ButtonVariant, FuriganaText, Heading, HeadingLevel, KanjiViewMode, KanjiWritingSection,
+    MarkdownText, MarkdownVariant, ReadingGroup, Text, TextSize, TypographyVariant,
 };
 use leptos::{ev::MouseEvent, prelude::*};
 use origa::domain::{GrammarInfo, User};
@@ -55,6 +54,22 @@ pub fn LessonCardAnswer(
                     </Show>
                 </Heading>
             </Show>
+
+            <Show when=move || grammar_info_stored.get_value().is_some()>
+                <div class="mt-1">
+                    {move || {
+                        grammar_info_stored.get_value().map(|info| {
+                            view! {
+                                <GrammarInfoBadge
+                                    title=info.title().to_string()
+                                    description=info.description().to_string()
+                                />
+                            }
+                        })
+                    }}
+                </div>
+            </Show>
+
             <div
                 node_ref=content_ref
                 class=move || if is_expanded.get() { "border-t border-[var(--border-light)] pt-4 mt-4" } else { "border-t border-[var(--border-light)] pt-4 mt-4 line-clamp-3" }
@@ -103,22 +118,6 @@ pub fn LessonCardAnswer(
                     </Show>
                 </div>
             </div>
-
-            <Show when=move || grammar_info_stored.get_value().is_some()>
-                <div class="mt-4">
-                    <Divider class=Signal::derive(|| "mb-4".to_string()) />
-                    {move || {
-                        grammar_info_stored.get_value().map(|info| {
-                            view! {
-                                <GrammarInfoBadge
-                                    title=info.title().to_string()
-                                    description=info.description().to_string()
-                                />
-                            }
-                        })
-                    }}
-                </div>
-            </Show>
 
             <Show when=move || needs_collapse.get()>
                 <div class="mt-2">
