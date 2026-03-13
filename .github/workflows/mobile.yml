@@ -28,10 +28,6 @@ jobs:
           - platform: android
             os: ubuntu-22.04
             rust_targets: wasm32-unknown-unknown,aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
-          # TODO: Add iOS build support
-          # - platform: ios
-          #   os: macos-15
-          #   rust_targets: wasm32-unknown-unknown,aarch64-apple-ios,aarch64-apple-ios-sim
 
     runs-on: ${{ matrix.os }}
     env:
@@ -47,12 +43,8 @@ jobs:
         env:
           VERSION: ${{ needs.version.outputs.version_base }}
         run: |
-          # Обновить версию в Cargo.toml (workspace)
           sed -i 's/^version = ".*"/version = "'${VERSION}'"/' Cargo.toml
-          
-          # Обновить версию в tauri/tauri.conf.json
           sed -i 's/"version": ".*"/"version": "'${VERSION}'"/' tauri/tauri.conf.json
-          
           echo "Updated version to ${VERSION}"
 
       - name: Install system dependencies (Linux)
@@ -117,6 +109,17 @@ jobs:
       - name: Build frontend
         working-directory: origa_ui
         run: trunk build --release
+        env:
+          PUBLIC_BASE_URL: ${{ vars.TRAILBASE_URL }}
+
+      - name: Remove public assets from dist (mobile lazy loading)
+        if: matrix.platform == 'android'
+        working-directory: origa_ui
+        run: |
+          echo "Removing public/ from dist/ for mobile lazy loading..."
+          rm -rf dist/public/
+          echo "Remaining dist/ contents:"
+          ls -la dist/
 
       - name: Initialize Tauri Android
         if: matrix.platform == 'android'
@@ -168,29 +171,12 @@ jobs:
           NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
           ANDROID_NDK_ROOT: ${{ steps.setup-ndk.outputs.ndk-path }}
 
-      - name: Initialize Tauri iOS
-        if: matrix.platform == 'ios'
-        working-directory: tauri
-        run: cargo tauri ios init --ci
-
-      - name: Build Tauri iOS
-        if: matrix.platform == 'ios'
-        working-directory: tauri
-        run: cargo tauri ios build --target aarch64 --ci
-
       - name: Upload Android APK
         if: matrix.platform == 'android'
         uses: actions/upload-artifact@v4
         with:
           name: android-apk
           path: tauri/gen/android/app/build/outputs/apk/**/*.apk
-
-      - name: Upload iOS App
-        if: matrix.platform == 'ios'
-        uses: actions/upload-artifact@v4
-        with:
-          name: ios-app
-          path: tauri/gen/apple/**/*.app
 
   release:
     name: Update Latest Release

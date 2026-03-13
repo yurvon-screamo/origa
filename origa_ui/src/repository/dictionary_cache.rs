@@ -7,13 +7,9 @@ use origa::domain::{
     DictionaryData, GrammarData, KanjiData, OrigaError, RadicalData, VocabularyChunkData,
 };
 
-const CACHE_NAME: &str = "origa-dictionary-v1";
+use crate::config::urls;
 
-const DICTIONARY_URL: &str = "/public/dictionaries/unidic/cache/dictionary-data";
-const VOCABULARY_URL: &str = "/public/domain/dictionary/vocabulary/cache/vocabulary-data";
-const KANJI_URL: &str = "/public/domain/dictionary/kanji/cache/kanji-data";
-const RADICAL_URL: &str = "/public/domain/dictionary/radical/cache/radical-data";
-const GRAMMAR_URL: &str = "/public/domain/grammar/cache/grammar-data";
+const CACHE_NAME: &str = "origa-dictionary-v1";
 
 async fn open_cache() -> Result<web_sys::Cache, OrigaError> {
     let window = web_sys::window().ok_or_else(|| OrigaError::RepositoryError {
@@ -136,41 +132,41 @@ pub async fn save_data_to_cache<T: Serialize>(url: &str, data: &T) -> Result<(),
 }
 
 pub async fn get_cached_dictionary() -> Result<Option<DictionaryData>, OrigaError> {
-    get_cached_data(DICTIONARY_URL).await
+    get_cached_data(urls().dictionary).await
 }
 
 pub async fn save_dictionary_to_cache(data: &DictionaryData) -> Result<(), OrigaError> {
-    save_data_to_cache(DICTIONARY_URL, data).await
+    save_data_to_cache(urls().dictionary, data).await
 }
 
 pub async fn get_cached_vocabulary() -> Result<Option<VocabularyChunkData>, OrigaError> {
-    get_cached_data(VOCABULARY_URL).await
+    get_cached_data(urls().vocabulary).await
 }
 
 pub async fn save_vocabulary_to_cache(data: &VocabularyChunkData) -> Result<(), OrigaError> {
-    save_data_to_cache(VOCABULARY_URL, data).await
+    save_data_to_cache(urls().vocabulary, data).await
 }
 
 pub async fn get_cached_kanji() -> Result<Option<KanjiData>, OrigaError> {
-    get_cached_data(KANJI_URL).await
+    get_cached_data(urls().kanji).await
 }
 
 pub async fn save_kanji_to_cache(data: &KanjiData) -> Result<(), OrigaError> {
-    save_data_to_cache(KANJI_URL, data).await
+    save_data_to_cache(urls().kanji, data).await
 }
 
 pub async fn get_cached_radical() -> Result<Option<RadicalData>, OrigaError> {
-    get_cached_data(RADICAL_URL).await
+    get_cached_data(urls().radical).await
 }
 
 pub async fn save_radical_to_cache(data: &RadicalData) -> Result<(), OrigaError> {
-    save_data_to_cache(RADICAL_URL, data).await
+    save_data_to_cache(urls().radical, data).await
 }
 
 pub async fn get_cached_grammar() -> Result<Option<GrammarData>, OrigaError> {
-    get_cached_data(GRAMMAR_URL).await
+    get_cached_data(urls().grammar).await
 }
 
 pub async fn save_grammar_to_cache(data: &GrammarData) -> Result<(), OrigaError> {
-    save_data_to_cache(GRAMMAR_URL, data).await
+    save_data_to_cache(urls().grammar, data).await
 }

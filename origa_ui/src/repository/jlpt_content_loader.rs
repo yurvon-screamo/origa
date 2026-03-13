@@ -4,6 +4,9 @@ use origa::domain::JlptContent;
 use origa::domain::{JapaneseLevel, OrigaError};
 use serde::Deserialize;
 
+use crate::config::public_url;
+use crate::utils::fetch_text;
+
 static JLPT_CONTENT: OnceLock<JlptContent> = OnceLock::new();
 
 #[derive(Debug, Deserialize)]
@@ -57,48 +60,8 @@ async fn load_content() -> Result<JlptContent, OrigaError> {
     Ok(content)
 }
 
-async fn fetch_text(url: &str) -> Result<String, OrigaError> {
-    use leptos::wasm_bindgen::JsCast;
-    use wasm_bindgen_futures::JsFuture;
-
-    let window = web_sys::window().ok_or_else(|| OrigaError::RepositoryError {
-        reason: "No window found".to_string(),
-    })?;
-
-    let resp_value = JsFuture::from(window.fetch_with_str(url))
-        .await
-        .map_err(|e| OrigaError::RepositoryError {
-            reason: format!("Failed to fetch {}: {:?}", url, e),
-        })?;
-
-    let resp: web_sys::Response =
-        resp_value
-            .dyn_into()
-            .map_err(|e| OrigaError::RepositoryError {
-                reason: format!("Failed to cast response for {}: {:?}", url, e),
-            })?;
-
-    if !resp.ok() {
-        return Err(OrigaError::RepositoryError {
-            reason: format!("Failed to fetch {}: HTTP {}", url, resp.status()),
-        });
-    }
-
-    let text = JsFuture::from(resp.text().map_err(|e| OrigaError::RepositoryError {
-        reason: format!("Failed to get text promise for {}: {:?}", url, e),
-    })?)
-    .await
-    .map_err(|e| OrigaError::RepositoryError {
-        reason: format!("Failed to read text for {}: {:?}", url, e),
-    })?;
-
-    text.as_string().ok_or_else(|| OrigaError::RepositoryError {
-        reason: format!("Response is not a string for {}", url),
-    })
-}
-
 async fn load_kanji(content: &mut JlptContent) -> Result<(), OrigaError> {
-    let json = fetch_text("/public/domain/dictionary/kanji.json").await?;
+    let json = fetch_text(public_url("/public/domain/dictionary/kanji.json")).await?;
     let data: KanjiDictionary =
         serde_json::from_str(&json).map_err(|e| OrigaError::RepositoryError {
             reason: format!("Failed to parse kanji.json: {}", e),
@@ -127,7 +90,7 @@ async fn load_words(content: &mut JlptContent) -> Result<(), OrigaError> {
     ];
 
     for (level, filename) in levels {
-        let path = format!("/public/domain/well_known_set/{}", filename);
+        let path = public_url(&format!("/public/domain/well_known_set/{}", filename));
         match fetch_text(&path).await {
             Ok(json) => {
                 if let Ok(data) = serde_json::from_str::<JlptWordsFile>(&json) {
@@ -148,7 +111,7 @@ async fn load_words(content: &mut JlptContent) -> Result<(), OrigaError> {
 }
 
 async fn load_grammar(content: &mut JlptContent) -> Result<(), OrigaError> {
-    let json = fetch_text("/public/domain/grammar/grammar.json").await?;
+    let json = fetch_text(public_url("/public/domain/grammar/grammar.json")).await?;
     let data: GrammarDictionary =
         serde_json::from_str(&json).map_err(|e| OrigaError::RepositoryError {
             reason: format!("Failed to parse grammar.json: {}", e),

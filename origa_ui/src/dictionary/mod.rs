@@ -18,14 +18,12 @@ fn decompress(data: Vec<u8>) -> Result<Vec<u8>, OrigaError> {
 
 async fn fetch_file(
     window: &web_sys::Window,
-    base_url: &str,
+    url: String,
     filename: &str,
     field: &str,
 ) -> Result<(String, Vec<u8>), OrigaError> {
     use leptos::wasm_bindgen::JsCast;
     use wasm_bindgen_futures::JsFuture;
-
-    let url = format!("{}{}", base_url, filename);
     let resp_value = JsFuture::from(window.fetch_with_str(&url))
         .await
         .map_err(|e| OrigaError::TokenizerError {
@@ -101,7 +99,6 @@ pub async fn load_dictionary() -> Result<(), OrigaError> {
 async fn load_dictionary_from_network() -> Result<DictionaryData, OrigaError> {
     use futures::future::join_all;
 
-    let base_url = "/public/dictionaries/unidic/";
     let files = [
         ("char_def", "char_def.bin"),
         ("matrix", "matrix.mtx"),
@@ -119,7 +116,10 @@ async fn load_dictionary_from_network() -> Result<DictionaryData, OrigaError> {
 
     let fetch_futures: Vec<_> = files
         .iter()
-        .map(|(field, filename)| fetch_file(&window, base_url, filename, field))
+        .map(|(field, filename)| {
+            let url = crate::config::public_url(&format!("/public/dictionaries/unidic/{}", filename));
+            fetch_file(&window, url, filename, field)
+        })
         .collect();
 
     let results = join_all(fetch_futures).await;

@@ -9,6 +9,8 @@ use crate::repository::{
     load_jlpt_content, save_grammar_to_cache, save_kanji_to_cache, save_radical_to_cache,
     save_vocabulary_to_cache,
 };
+use crate::utils::fetch_text;
+use crate::config::public_url;
 
 pub fn is_all_data_loaded() -> bool {
     is_vocabulary_loaded() && is_radical_loaded() && is_kanji_loaded() && is_grammar_loaded()
@@ -36,48 +38,6 @@ pub async fn load_all_data() -> Result<(), OrigaError> {
     Ok(())
 }
 
-async fn fetch_text(url: impl Into<String>) -> Result<String, OrigaError> {
-    use leptos::wasm_bindgen::JsCast;
-    use wasm_bindgen_futures::JsFuture;
-
-    let url = format!("/public/{}", url.into());
-
-    let window = web_sys::window().ok_or_else(|| OrigaError::TokenizerError {
-        reason: "No window found".to_string(),
-    })?;
-
-    let resp_value = JsFuture::from(window.fetch_with_str(&url))
-        .await
-        .map_err(|e| OrigaError::TokenizerError {
-            reason: format!("Failed to fetch {}: {:?}", url, e),
-        })?;
-
-    let resp: web_sys::Response =
-        resp_value
-            .dyn_into()
-            .map_err(|e| OrigaError::TokenizerError {
-                reason: format!("Failed to cast response for {}: {:?}", url, e),
-            })?;
-
-    if !resp.ok() {
-        return Err(OrigaError::TokenizerError {
-            reason: format!("Failed to fetch {}: HTTP {}", url, resp.status()),
-        });
-    }
-
-    let text = JsFuture::from(resp.text().map_err(|e| OrigaError::TokenizerError {
-        reason: format!("Failed to get text promise for {}: {:?}", url, e),
-    })?)
-    .await
-    .map_err(|e| OrigaError::TokenizerError {
-        reason: format!("Failed to read text for {}: {:?}", url, e),
-    })?;
-
-    text.as_string().ok_or_else(|| OrigaError::TokenizerError {
-        reason: format!("Response is not a string for {}", url),
-    })
-}
-
 pub async fn load_vocabulary() -> Result<(), OrigaError> {
     use futures::future::join_all;
 
@@ -92,7 +52,7 @@ pub async fn load_vocabulary() -> Result<(), OrigaError> {
     }
 
     let chunk_futures: Vec<_> = (1..=11)
-        .map(|i| fetch_text(format!("domain/dictionary/vocabulary/chunk_{:02}.json", i)))
+        .map(|i| fetch_text(public_url(&format!("/public/domain/dictionary/vocabulary/chunk_{:02}.json", i))))
         .collect();
 
     let chunks = join_all(chunk_futures).await;
@@ -135,7 +95,7 @@ pub async fn load_radical() -> Result<(), OrigaError> {
         return Ok(());
     }
 
-    let json = fetch_text("domain/dictionary/radicals.json").await?;
+    let json = fetch_text(public_url("/public/domain/dictionary/radicals.json")).await?;
     let data = RadicalData {
         radicals_json: json,
     };
@@ -163,7 +123,7 @@ pub async fn load_kanji() -> Result<(), OrigaError> {
         return Ok(());
     }
 
-    let json = fetch_text("domain/dictionary/kanji.json").await?;
+    let json = fetch_text(public_url("/public/domain/dictionary/kanji.json")).await?;
     let data = KanjiData { kanji_json: json };
 
     let data_for_cache = data.clone();
@@ -189,7 +149,7 @@ pub async fn load_grammar() -> Result<(), OrigaError> {
         return Ok(());
     }
 
-    let json = fetch_text("domain/grammar/grammar.json").await?;
+    let json = fetch_text(public_url("/public/domain/grammar/grammar.json")).await?;
     let data = GrammarData { grammar_json: json };
 
     let data_for_cache = data.clone();

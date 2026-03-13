@@ -5,6 +5,9 @@ use origa::{
 use serde::Deserialize;
 use std::sync::OnceLock;
 
+use crate::config::public_url;
+use crate::utils::fetch_text;
+
 static META_CACHE: OnceLock<Vec<WellKnownSetMeta>> = OnceLock::new();
 
 fn parse_well_known_meta_list(json: &str) -> Result<Vec<WellKnownSetMeta>, OrigaError> {
@@ -48,7 +51,7 @@ impl WellKnownSetLoader for WellKnownSetLoaderImpl {
         if let Some(cached) = META_CACHE.get() {
             return Ok(cached.clone());
         }
-        let json = fetch_text("domain/well_known_set/well_known_sets_meta.json").await?;
+        let json = fetch_text(public_url("/public/domain/well_known_set/well_known_sets_meta.json")).await?;
         let meta_list = parse_well_known_meta_list(&json)?;
         let _ = META_CACHE.set(meta_list.clone());
         Ok(meta_list)
@@ -62,55 +65,9 @@ impl WellKnownSetLoader for WellKnownSetLoaderImpl {
             }
         })?;
         let path = id_to_path(&id);
-        let json = fetch_text(&path).await?;
+        let json = fetch_text(public_url(&format!("/public/{}", path))).await?;
         parse_well_known_set(&json, &id)
     }
-}
-
-async fn fetch_text(url: &str) -> Result<String, OrigaError> {
-    use leptos::wasm_bindgen::JsCast;
-    use wasm_bindgen_futures::JsFuture;
-
-    let url = format!("/public/{}", url);
-
-    let window = web_sys::window().ok_or_else(|| OrigaError::WellKnownSetParseError {
-        reason: "No window found".to_string(),
-    })?;
-
-    let resp_value = JsFuture::from(window.fetch_with_str(&url))
-        .await
-        .map_err(|e| OrigaError::WellKnownSetParseError {
-            reason: format!("Failed to fetch {}: {:?}", url, e),
-        })?;
-
-    let resp: web_sys::Response =
-        resp_value
-            .dyn_into()
-            .map_err(|e| OrigaError::WellKnownSetParseError {
-                reason: format!("Failed to cast response for {}: {:?}", url, e),
-            })?;
-
-    if !resp.ok() {
-        return Err(OrigaError::WellKnownSetParseError {
-            reason: format!("Failed to fetch {}: HTTP {}", url, resp.status()),
-        });
-    }
-
-    let text = JsFuture::from(
-        resp.text()
-            .map_err(|e| OrigaError::WellKnownSetParseError {
-                reason: format!("Failed to get text promise for {}: {:?}", url, e),
-            })?,
-    )
-    .await
-    .map_err(|e| OrigaError::WellKnownSetParseError {
-        reason: format!("Failed to read text for {}: {:?}", url, e),
-    })?;
-
-    text.as_string()
-        .ok_or_else(|| OrigaError::WellKnownSetParseError {
-            reason: format!("Response is not a string for {}", url),
-        })
 }
 
 fn id_to_path(id: &str) -> String {
