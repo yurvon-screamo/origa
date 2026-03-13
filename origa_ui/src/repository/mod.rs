@@ -2,7 +2,7 @@ mod dictionary_cache;
 mod file_repository;
 mod hybrid_repository;
 mod jlpt_content_loader;
-mod session;
+pub mod session;
 mod sync_context;
 mod trailbase_client;
 mod trailbase_repository;
@@ -14,8 +14,6 @@ pub use dictionary_cache::{
 };
 pub use hybrid_repository::{HybridUserRepository, reset_sync};
 pub use jlpt_content_loader::load_jlpt_content;
-pub use session::{clear_session, get_session, set_session};
-pub use sync_context::{
-    SyncContext, get_last_sync_timestamp, get_sync_version, increment_sync_version, reset_sync_context,
-};
+pub use session::{clear_session, get_last_sync_time, get_session, set_last_sync_time, set_session};
+pub use sync_context::SyncContext;
 pub use trailbase_client::{OAuthProvider, TrailBaseClient};

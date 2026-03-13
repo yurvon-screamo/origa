@@ -1,9 +1,9 @@
+use crate::repository::session::{get_last_sync_time, set_last_sync_time};
 use leptos::prelude::*;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::OnceLock;
 
 static SYNC_ACTIVE: OnceLock<AtomicBool> = OnceLock::new();
-static LAST_SYNC_TIMESTAMP: OnceLock<AtomicU64> = OnceLock::new();
 static SYNC_VERSION: OnceLock<AtomicU64> = OnceLock::new();
 
 fn is_sync_active() -> bool {
@@ -18,18 +18,7 @@ fn set_sync_active(value: bool) {
         .store(value, Ordering::Relaxed);
 }
 
-pub fn get_last_sync_timestamp() -> u64 {
-    LAST_SYNC_TIMESTAMP
-        .get_or_init(|| AtomicU64::new(0))
-        .load(Ordering::Relaxed)
-}
-
-fn set_last_sync_timestamp(value: u64) {
-    LAST_SYNC_TIMESTAMP
-        .get_or_init(|| AtomicU64::new(0))
-        .store(value, Ordering::Relaxed);
-}
-
+#[allow(dead_code)]
 pub fn get_sync_version() -> u64 {
     SYNC_VERSION
         .get_or_init(|| AtomicU64::new(0))
@@ -42,9 +31,9 @@ pub fn increment_sync_version() {
         .fetch_add(1, Ordering::Relaxed);
 }
 
+#[allow(dead_code)]
 pub fn reset_sync_context() {
     set_sync_active(false);
-    set_last_sync_timestamp(0);
 }
 
 #[derive(Clone, Copy)]
@@ -79,7 +68,7 @@ impl SyncContext {
             .map(|d| d.as_secs())
             .unwrap_or(0);
 
-        set_last_sync_timestamp(now);
+        set_last_sync_time(now);
         increment_sync_version();
         self.is_syncing.set(false);
         self.trigger_sync();
@@ -96,6 +85,20 @@ impl SyncContext {
 
     pub fn is_background_active() -> bool {
         is_sync_active()
+    }
+
+    pub fn should_sync(&self, interval_secs: u64) -> bool {
+        if self.is_syncing.get_untracked() {
+            return false;
+        }
+
+        let last_sync = get_last_sync_time();
+        let now = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|d| d.as_secs())
+            .unwrap_or(0);
+
+        now.saturating_sub(last_sync) >= interval_secs
     }
 }
 

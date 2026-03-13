@@ -1,9 +1,21 @@
 use leptos::prelude::*;
 
 #[component]
-pub fn Spinner(#[prop(optional, into)] class: Signal<String>) -> impl IntoView {
+pub fn Spinner(
+    #[prop(optional, into)] class: Signal<String>,
+    #[prop(optional, into)] size: Signal<String>,
+) -> impl IntoView {
+    let size_class = Signal::derive(move || {
+        match size.get().as_str() {
+            "sm" => "spinner-sm",
+            "lg" => "spinner-lg",
+            _ => "",
+        }
+        .to_string()
+    });
+
     view! {
-        <div class=move || format!("spinner {}", class.get())></div>
+        <div class=move || format!("spinner {} {}", size_class.get(), class.get())></div>
     }
 }
 
@@ -14,7 +26,7 @@ pub fn LoadingOverlay(
 ) -> impl IntoView {
     view! {
         <div class=move || format!("loading-overlay {}", class.get())>
-            <Spinner class=Signal::derive(|| "".to_string()) />
+            <Spinner class=Signal::derive(|| "".to_string()) size=Signal::derive(|| "".to_string()) />
             <p class="loading-overlay-message">{move || message.get()}</p>
         </div>
     }

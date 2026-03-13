@@ -5,7 +5,7 @@ on:
     branches:
       - master
     tags:
-      - 'v*.*.*'
+      - "v*.*.*"
   workflow_dispatch:
 
 env:
@@ -59,10 +59,10 @@ jobs:
         run: |
           # Обновить версию в Cargo.toml (workspace)
           sed -i 's/^version = ".*"/version = "'${VERSION}'"/' Cargo.toml
-          
+
           # Обновить версию в tauri.conf.json
           sed -i 's/"version": ".*"/"version": "'${VERSION}'"/' tauri/tauri.conf.json
-          
+
           echo "Updated version to ${VERSION}"
 
       - name: Install build dependencies
@@ -110,8 +110,6 @@ jobs:
           # Rename NSIS
           for f in nsis/*.exe; do mv "$f" "nsis/origa_latest_x64-setup.exe"; done
           for f in nsis/*.sig; do mv "$f" "nsis/origa_latest_x64-setup.exe.sig"; done
-          # Rename MSI
-          for f in msi/*.msi; do mv "$f" "msi/origa_latest_x64_en-US.msi"; done
 
       - name: Extract signature
         id: signature
@@ -132,7 +130,6 @@ jobs:
           path: |
             **/bundle/nsis/*.exe
             **/bundle/nsis/*.sig
-            **/bundle/msi/*.msi
           retention-days: 7
 
   build-linux:
@@ -168,10 +165,10 @@ jobs:
         run: |
           # Обновить версию в Cargo.toml (workspace)
           sed -i 's/^version = ".*"/version = "'${VERSION}'"/' Cargo.toml
-          
+
           # Обновить версию в tauri.conf.json
           sed -i 's/"version": ".*"/"version": "'${VERSION}'"/' tauri/tauri.conf.json
-          
+
           echo "Updated version to ${VERSION}"
 
       - name: Cache APT packages
@@ -287,10 +284,10 @@ jobs:
         run: |
           # Обновить версию в Cargo.toml (workspace)
           sed -i 's/^version = ".*"/version = "'${VERSION}'"/' Cargo.toml
-          
+
           # Обновить версию в tauri.conf.json
           sed -i 's/"version": ".*"/"version": "'${VERSION}'"/' tauri/tauri.conf.json
-          
+
           echo "Updated version to ${VERSION}"
 
       - name: Install build dependencies
@@ -410,7 +407,8 @@ jobs:
 
   release:
     name: Update Latest Release
-    needs: [version, build-windows, build-linux, build-macos, generate-latest-json]
+    needs:
+      [version, build-windows, build-linux, build-macos, generate-latest-json]
     uses: ./.github/workflows/reusable-release.yml
     with:
       tag-name: ${{ needs.version.outputs.version_type == 'stable' && needs.version.outputs.version || 'latest' }}
@@ -423,7 +421,6 @@ jobs:
 
         ## Windows
         - `origa_*_x64-setup.exe` - NSIS инсталлятор
-        - `origa_*_x64_en-US.msi` - MSI инсталлятор
 
         ## Linux
         - `*.AppImage` - Portable версия

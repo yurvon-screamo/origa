@@ -1507,6 +1507,18 @@ input[type="submit"],
 	animation: spinner-rotate 0.8s linear infinite;
 }
 
+.spinner-sm {
+	width: 16px;
+	height: 16px;
+	border-width: 1.5px;
+}
+
+.spinner-lg {
+	width: 40px;
+	height: 40px;
+	border-width: 3px;
+}
+
 @keyframes spinner-rotate {
 	to {
 		transform: rotate(360deg);
