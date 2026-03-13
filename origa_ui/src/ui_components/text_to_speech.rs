@@ -1,8 +1,9 @@
 use std::collections::HashSet;
 
+use leptos::wasm_bindgen::closure::Closure;
 use leptos::wasm_bindgen::JsCast;
 use origa::domain::{filter_japanese_text, furiganize_segments};
-use web_sys::{SpeechSynthesisUtterance, SpeechSynthesisVoice, window};
+use web_sys::{window, SpeechSynthesisUtterance, SpeechSynthesisVoice};
 
 pub fn is_speech_supported() -> bool {
     window().and_then(|w| w.speech_synthesis().ok()).is_some()
@@ -26,6 +27,36 @@ pub fn speak_text(text: &str, rate: f32) -> Result<(), String> {
     if let Some(voice) = get_japanese_voice(&synthesis) {
         utterance.set_voice(Some(&voice));
     }
+
+    synthesis.speak(&utterance);
+    Ok(())
+}
+
+pub fn speak_text_with_callback<F>(text: &str, rate: f32, on_end: F) -> Result<(), String>
+where
+    F: FnMut() + 'static,
+{
+    if text.is_empty() {
+        return Ok(());
+    }
+    let window = window().ok_or("Window not available")?;
+    let synthesis = window
+        .speech_synthesis()
+        .map_err(|e| format!("Speech synthesis not supported: {:?}", e))?;
+
+    let utterance = SpeechSynthesisUtterance::new()
+        .map_err(|e| format!("Failed to create utterance: {:?}", e))?;
+    utterance.set_text(text);
+    utterance.set_rate(rate);
+    utterance.set_lang("ja-JP");
+
+    if let Some(voice) = get_japanese_voice(&synthesis) {
+        utterance.set_voice(Some(&voice));
+    }
+
+    let closure = Closure::<dyn FnMut()>::new(on_end);
+    utterance.set_onend(Some(closure.as_ref().unchecked_ref()));
+    closure.forget();
 
     synthesis.speak(&utterance);
     Ok(())
