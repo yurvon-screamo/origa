@@ -31,6 +31,7 @@ jobs:
       ORIGA_BUILD_DATE: ${{ needs.version.outputs.build_date }}
       TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
       TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+      XWIN_CACHE_DIR: ${{ github.workspace }}/.xwin-cache
 
     steps:
       - name: Checkout repository
@@ -87,6 +88,14 @@ jobs:
         run: trunk build --release
         env:
           TRAILBASE_URL: ${{ vars.TRAILBASE_URL }}
+
+      - name: Cache cargo-xwin MSVC CRT
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/.xwin-cache
+          key: xwin-${{ runner.os }}-x86_64-pc-windows-msvc-v17
+          restore-keys: |
+            xwin-${{ runner.os }}-
 
       - name: Build Tauri app for Windows
         working-directory: tauri
