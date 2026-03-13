@@ -1,7 +1,7 @@
 use super::types::SetInfo;
 use crate::ui_components::{
-    Button, ButtonVariant, Card, Heading, HeadingLevel, MarkdownText, Tag, TagVariant, Text,
-    TextSize, TypographyVariant,
+    Button, ButtonSize, ButtonVariant, Card, Heading, HeadingLevel, MarkdownText, Tag, TagVariant,
+    Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
 use origa::domain::User;
@@ -33,14 +33,6 @@ pub fn SetCard(set_info: SetInfo, on_import: Callback<(String, String)>) -> impl
                         "Импортирован"
                     </Tag>
                 </Show>
-            </div>
-            <div class="flex-1 min-h-0 mb-3">
-                <MarkdownText content=Signal::derive(move || description.clone()) known_kanji=known_kanji.get()/>
-            </div>
-            <div class="flex justify-between items-center mt-auto pt-2 border-t border-[var(--border-color)]">
-                <Text size=Signal::derive(|| TextSize::Small) variant=Signal::derive(|| TypographyVariant::Muted)>
-                    {word_count.map(|c| format!("{} слов", c)).unwrap_or_default()}
-                </Text>
                 <Show when=move || !is_imported>
                     <SetCardButton
                         set_id=set_info.set_id.clone()
@@ -48,6 +40,14 @@ pub fn SetCard(set_info: SetInfo, on_import: Callback<(String, String)>) -> impl
                         on_import=on_import
                     />
                 </Show>
+            </div>
+            <div class="flex-1 min-h-0 mb-3">
+                <MarkdownText content=Signal::derive(move || description.clone()) known_kanji=known_kanji.get()/>
+            </div>
+            <div class="mt-auto">
+                <Text size=Signal::derive(|| TextSize::Small) variant=Signal::derive(|| TypographyVariant::Muted)>
+                    {word_count.map(|c| format!("{} слов", c)).unwrap_or_default()}
+                </Text>
             </div>
         </Card>
     }
@@ -62,6 +62,7 @@ fn SetCardButton(
     view! {
         <Button
             variant=Signal::derive(|| ButtonVariant::Filled)
+            size=ButtonSize::Small
             on_click=Callback::new(move |_| on_import.run((set_id.clone(), title.clone())))
         >
             "Импорт"
