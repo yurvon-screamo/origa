@@ -84,6 +84,10 @@ jobs:
         run: trunk build --release
         env:
           TRAILBASE_URL: ${{ vars.TRAILBASE_URL }}
+          PUBLIC_BASE_URL: ${{ vars.TRAILBASE_URL }}
+
+      - name: Remove public assets from dist
+        run: rm -rf origa_ui/dist/public
 
       - name: Cache cargo-xwin MSVC CRT
         uses: actions/cache@v4
@@ -189,6 +193,10 @@ jobs:
         run: trunk build --release
         env:
           TRAILBASE_URL: ${{ vars.TRAILBASE_URL }}
+          PUBLIC_BASE_URL: ${{ vars.TRAILBASE_URL }}
+
+      - name: Remove public assets from dist
+        run: rm -rf origa_ui/dist/public
 
       - name: Build Tauri app for Linux
         working-directory: tauri
@@ -284,6 +292,10 @@ jobs:
         run: trunk build --release
         env:
           TRAILBASE_URL: ${{ vars.TRAILBASE_URL }}
+          PUBLIC_BASE_URL: ${{ vars.TRAILBASE_URL }}
+
+      - name: Remove public assets from dist
+        run: rm -rf origa_ui/dist/public
 
       - name: Build Tauri app for macOS
         working-directory: tauri
