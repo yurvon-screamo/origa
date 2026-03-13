@@ -1,8 +1,7 @@
 use crate::domain::{
-    get_rule_by_id,
+    OrigaError, get_rule_by_id,
     tokenizer::PartOfSpeech,
     value_objects::{Answer, NativeLanguage, Question},
-    OrigaError,
 };
 use serde::{Deserialize, Serialize};
 use ulid::Ulid;

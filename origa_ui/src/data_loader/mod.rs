@@ -4,13 +4,13 @@ use origa::domain::{
     is_kanji_loaded, is_radical_loaded, is_vocabulary_loaded,
 };
 
+use crate::config::public_url;
 use crate::repository::{
     get_cached_grammar, get_cached_kanji, get_cached_radical, get_cached_vocabulary,
     load_jlpt_content, save_grammar_to_cache, save_kanji_to_cache, save_radical_to_cache,
     save_vocabulary_to_cache,
 };
 use crate::utils::fetch_text;
-use crate::config::public_url;
 
 pub fn is_all_data_loaded() -> bool {
     is_vocabulary_loaded() && is_radical_loaded() && is_kanji_loaded() && is_grammar_loaded()
@@ -52,7 +52,12 @@ pub async fn load_vocabulary() -> Result<(), OrigaError> {
     }
 
     let chunk_futures: Vec<_> = (1..=11)
-        .map(|i| fetch_text(public_url(&format!("/public/domain/dictionary/vocabulary/chunk_{:02}.json", i))))
+        .map(|i| {
+            fetch_text(public_url(&format!(
+                "/public/domain/dictionary/vocabulary/chunk_{:02}.json",
+                i
+            )))
+        })
         .collect();
 
     let chunks = join_all(chunk_futures).await;

@@ -51,7 +51,10 @@ impl WellKnownSetLoader for WellKnownSetLoaderImpl {
         if let Some(cached) = META_CACHE.get() {
             return Ok(cached.clone());
         }
-        let json = fetch_text(public_url("/public/domain/well_known_set/well_known_sets_meta.json")).await?;
+        let json = fetch_text(public_url(
+            "/public/domain/well_known_set/well_known_sets_meta.json",
+        ))
+        .await?;
         let meta_list = parse_well_known_meta_list(&json)?;
         let _ = META_CACHE.set(meta_list.clone());
         Ok(meta_list)

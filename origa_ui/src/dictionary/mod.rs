@@ -117,7 +117,8 @@ async fn load_dictionary_from_network() -> Result<DictionaryData, OrigaError> {
     let fetch_futures: Vec<_> = files
         .iter()
         .map(|(field, filename)| {
-            let url = crate::config::public_url(&format!("/public/dictionaries/unidic/{}", filename));
+            let url =
+                crate::config::public_url(&format!("/public/dictionaries/unidic/{}", filename));
             fetch_file(&window, url, filename, field)
         })
         .collect();
