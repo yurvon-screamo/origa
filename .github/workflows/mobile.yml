@@ -38,7 +38,6 @@ jobs:
       ORIGA_VERSION: ${{ needs.version.outputs.version }}
       ORIGA_COMMIT: ${{ needs.version.outputs.commit_sha }}
       ORIGA_BUILD_DATE: ${{ needs.version.outputs.build_date }}
-      SCCACHE_IGNORE_SERVER_IO_ERROR: "1"
 
     steps:
       - name: Checkout repository
@@ -116,9 +115,6 @@ jobs:
       - name: Build frontend
         working-directory: origa_ui
         run: trunk build --release
-        env:
-          SCCACHE_GHA_ENABLED: "true"
-          RUSTC_WRAPPER: "sccache"
 
       - name: Initialize Tauri Android
         if: matrix.platform == 'android'
@@ -169,8 +165,6 @@ jobs:
         env:
           NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
           ANDROID_NDK_ROOT: ${{ steps.setup-ndk.outputs.ndk-path }}
-          SCCACHE_GHA_ENABLED: "true"
-          RUSTC_WRAPPER: "sccache"
 
       - name: Initialize Tauri iOS
         if: matrix.platform == 'ios'
@@ -181,9 +175,6 @@ jobs:
         if: matrix.platform == 'ios'
         working-directory: tauri
         run: cargo tauri ios build --target aarch64 --ci
-        env:
-          SCCACHE_GHA_ENABLED: "true"
-          RUSTC_WRAPPER: "sccache"
 
       - name: Upload Android APK
         if: matrix.platform == 'android'

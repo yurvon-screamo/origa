@@ -1,5 +1,5 @@
 name: 'Setup Rust'
-description: 'Setup Rust toolchain with sccache and cargo caching'
+description: 'Setup Rust toolchain with cargo caching'
 
 inputs:
   targets:
@@ -20,19 +20,9 @@ runs:
       with:
         targets: ${{ inputs.targets }}
 
-    - name: Setup sccache
-      uses: mozilla-actions/sccache-action@v0.0.6
-
     - name: Setup cargo cache
       uses: Swatinem/rust-cache@v2
       id: rust-cache
       with:
         cache-all-crates: true
         save-if: ${{ github.ref == 'refs/heads/master' }}
-
-    - name: Export sccache environment variables
-      shell: bash
-      run: |
-        echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
-        echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
-        echo "SCCACHE_IGNORE_SERVER_IO_ERROR=1" >> $GITHUB_ENV
