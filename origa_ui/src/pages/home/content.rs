@@ -2,7 +2,7 @@ use super::{HistoryModal, HomeSkeleton, JlptProgressCard, JlptSkeleton, StatMetr
 use super::{HomeStats, calculate_stats, format_delta, format_number};
 use crate::repository::session;
 use crate::repository::{HybridUserRepository, SyncContext};
-use crate::ui_components::{Spinner, Text, TextSize, TypographyVariant};
+use crate::ui_components::{Spinner, Text, TextSize, ToastContainer, ToastData, ToastType, TypographyVariant};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::domain::{DailyHistoryItem, JlptProgress, User};
@@ -14,8 +14,7 @@ pub fn HomeContent() -> impl IntoView {
         use_context::<RwSignal<Option<User>>>().expect("current_user context not provided");
     let repository =
         use_context::<HybridUserRepository>().expect("repository context not provided");
-    let sync_context =
-        use_context::<SyncContext>().expect("sync_context not provided");
+    let sync_context = use_context::<SyncContext>().expect("sync_context not provided");
 
     let stats = RwSignal::new(None::<HomeStats>);
     let history = RwSignal::new(Vec::<DailyHistoryItem>::new());
@@ -24,6 +23,7 @@ pub fn HomeContent() -> impl IntoView {
     let is_loading = RwSignal::new(true);
     let is_syncing = RwSignal::new(true);
     let jlpt_progress = RwSignal::new(JlptProgress::new());
+    let toasts: RwSignal<Vec<ToastData>> = RwSignal::new(Vec::new());
 
     let repo_for_sync = repository.clone();
     let sync_ctx_for_sync = sync_context;
@@ -41,19 +41,17 @@ pub fn HomeContent() -> impl IntoView {
                 match repo.force_sync(user_id).await {
                     Ok(Some(merged_user)) => {
                         current_user_signal.set(Some(merged_user));
+                        session::set_last_sync_time(js_sys::Date::now() as u64 / 1000);
                         tracing::info!("Home: force_sync completed");
                     }
                     Ok(None) => {
+                        session::set_last_sync_time(js_sys::Date::now() as u64 / 1000);
                         tracing::debug!("Home: force_sync - no changes");
                     }
                     Err(e) => {
                         tracing::error!("Home: force_sync error: {:?}", e);
                     }
                 }
-
-                session::set_last_sync_time(
-                    js_sys::Date::now() as u64 / 1000,
-                );
                 sync_ctx.complete_sync();
                 is_syncing.set(false);
             });
@@ -107,6 +105,21 @@ pub fn HomeContent() -> impl IntoView {
     let on_manual_sync = move |_| {
         repo_for_manual_sync.sync_stats(sync_context, current_user);
     };
+
+    Effect::new(move |_| {
+        if let Some(error) = sync_context.sync_error.get() {
+            let toast_id = toasts.get().len();
+            toasts.update(|t| {
+                t.push(ToastData {
+                    id: toast_id,
+                    toast_type: ToastType::Error,
+                    title: "Ошибка синхронизации".to_string(),
+                    message: error,
+                });
+            });
+            sync_context.sync_error.set(None);
+        }
+    });
 
     let total_cards =
         Signal::derive(move || format_number(stats.get().map(|s| s.total_cards).unwrap_or(0)));
@@ -209,6 +222,8 @@ pub fn HomeContent() -> impl IntoView {
                 history=Signal::derive(move || history.get())
                 on_close=close_history
             />
+
+            <ToastContainer toasts=toasts duration_ms=5000 />
         </main>
     }
 }

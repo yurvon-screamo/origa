@@ -1,6 +1,6 @@
-use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::OnceLock;
 use leptos::prelude::*;
+use std::sync::OnceLock;
+use std::sync::atomic::{AtomicBool, Ordering};
 use ulid::Ulid;
 
 use origa::{
@@ -60,17 +60,18 @@ impl HybridUserRepository {
         let sync_ctx_clone = sync_ctx;
         let current_user_clone = current_user;
 
-        wasm_bindgen_futures::spawn_local(async move {
-            tracing::info!("Starting polling sync with interval {}s", interval_secs);
+            wasm_bindgen_futures::spawn_local(async move {
+                tracing::info!("Starting polling sync with interval {}s", interval_secs);
 
-            loop {
-                if !SyncContext::is_background_active() {
-                    tracing::info!("Polling sync stopped");
-                    break;
-                }
+                loop {
+                    if !SyncContext::is_background_active() {
+                        tracing::info!("Polling sync stopped");
+                        break;
+                    }
 
-                if sync_ctx_clone.should_sync(interval_secs) {
-                    if let Some(user) = current_user_clone.get_untracked() {
+                    if sync_ctx_clone.should_sync(interval_secs)
+                        && let Some(user) = current_user_clone.get_untracked()
+                    {
                         let user_id = user.id();
 
                         match repo.sync_stats_internal(user_id).await {
@@ -81,6 +82,7 @@ impl HybridUserRepository {
                             }
                             Ok(None) => {
                                 tracing::debug!("Polling sync: no changes");
+                                sync_ctx_clone.complete_sync();
                             }
                             Err(e) => {
                                 tracing::error!("Polling sync error: {:?}", e);
@@ -88,12 +90,16 @@ impl HybridUserRepository {
                             }
                         }
                     }
-                }
 
-                let interval_ms = (interval_secs * 1000) as u32;
-                gloo_timers::future::TimeoutFuture::new(interval_ms).await;
-            }
-        });
+                    let interval_ms = (interval_secs * 1000) as u32;
+                    gloo_timers::future::TimeoutFuture::new(interval_ms).await;
+                }
+            });
+    }
+
+    pub fn stop_polling(&self, sync_ctx: &SyncContext) {
+        sync_ctx.stop_background_sync();
+        tracing::info!("Polling sync stop requested");
     }
 
     pub fn sync_stats(&self, sync_ctx: SyncContext, current_user: RwSignal<Option<User>>) {
@@ -133,54 +139,13 @@ impl HybridUserRepository {
         });
     }
 
-    pub async fn force_sync(&self, user_id: Ulid) -> Result<Option<User>, OrigaError> {
+    async fn do_sync(&self, user_id: Ulid) -> Result<Option<User>, OrigaError> {
         let remote_result = self.remote.find_current().await?;
 
         let (remote_user, _record_id) = match remote_result {
             Some(data) => data,
             None => {
-                tracing::debug!("force_sync: No remote user found");
-                return Ok(None);
-            }
-        };
-
-        let local_user = self.local.find_by_id(user_id).await?;
-
-        let merged_user = match local_user {
-            Some(local) if remote_user.updated_at() != local.updated_at() => {
-                let mut merged = local;
-                merged.merge(&remote_user);
-
-                self.local.save(&merged).await?;
-                self.remote.save(&merged).await?;
-
-                set_synced(true);
-                tracing::info!("force_sync: User data merged and synced");
-                Some(merged)
-            }
-            Some(_) => {
-                set_synced(true);
-                tracing::debug!("force_sync: User data already in sync");
-                None
-            }
-            None => {
-                self.local.save(&remote_user).await?;
-                set_synced(true);
-                tracing::info!("force_sync: Remote user saved to local storage");
-                Some(remote_user)
-            }
-        };
-
-        Ok(merged_user)
-    }
-
-    async fn sync_stats_internal(&self, user_id: Ulid) -> Result<Option<User>, OrigaError> {
-        let remote_result = self.remote.find_current().await?;
-
-        let (remote_user, _record_id) = match remote_result {
-            Some(data) => data,
-            None => {
-                tracing::debug!("No remote user found");
+                tracing::debug!("do_sync: No remote user found");
                 return Ok(None);
             }
         };
@@ -196,51 +161,29 @@ impl HybridUserRepository {
                 self.remote.save(&merged).await?;
 
                 set_synced(true);
-                tracing::info!("User data merged and synced");
+                tracing::info!("do_sync: User data merged and synced");
                 Ok(Some(merged))
             }
             Some(_) => {
                 set_synced(true);
-                tracing::debug!("User data already in sync");
+                tracing::debug!("do_sync: User data already in sync");
                 Ok(None)
             }
             None => {
                 self.local.save(&remote_user).await?;
                 set_synced(true);
-                tracing::info!("Remote user saved to local storage");
+                tracing::info!("do_sync: Remote user saved to local storage");
                 Ok(Some(remote_user))
             }
         }
     }
 
-    async fn sync_user_data(&self, user_id: Ulid) -> Result<bool, OrigaError> {
-        if let Ok(Some((remote_user, _record_id))) = self.remote.find_current().await {
-            let local_user = self.local.find_by_id(user_id).await?;
+    pub async fn force_sync(&self, user_id: Ulid) -> Result<Option<User>, OrigaError> {
+        self.do_sync(user_id).await
+    }
 
-            match local_user {
-                Some(local) if remote_user.updated_at() != local.updated_at() => {
-                    let mut merged = local;
-                    merged.merge(&remote_user);
-
-                    self.local.save(&merged).await?;
-                    self.remote.save(&merged).await?;
-
-                    tracing::info!("User data synced and merged");
-                    return Ok(true);
-                }
-                Some(_) => {
-                    tracing::debug!("User data already in sync");
-                    return Ok(false);
-                }
-                None => {
-                    self.local.save(&remote_user).await?;
-                    tracing::info!("Remote user saved to local storage");
-                    return Ok(true);
-                }
-            }
-        }
-
-        Ok(false)
+    async fn sync_stats_internal(&self, user_id: Ulid) -> Result<Option<User>, OrigaError> {
+        self.do_sync(user_id).await
     }
 }
 

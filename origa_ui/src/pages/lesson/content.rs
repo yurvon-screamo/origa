@@ -21,8 +21,7 @@ pub fn LessonContent() -> impl IntoView {
     let repository =
         use_context::<HybridUserRepository>().expect("repository context not provided");
     let auth_ctx = use_context::<AuthContext>().expect("AuthContext not provided");
-    let sync_context =
-        use_context::<SyncContext>().expect("sync_context not provided");
+    let sync_context = use_context::<SyncContext>().expect("sync_context not provided");
 
     let query = use_query_map();
     let mode = match query.read_untracked().get("mode").as_deref() {
@@ -65,19 +64,17 @@ pub fn LessonContent() -> impl IntoView {
                 match repo.force_sync(user_id).await {
                     Ok(Some(merged_user)) => {
                         current_user_signal.set(Some(merged_user));
+                        session::set_last_sync_time(js_sys::Date::now() as u64 / 1000);
                         tracing::info!("Lesson: force_sync completed");
                     }
                     Ok(None) => {
+                        session::set_last_sync_time(js_sys::Date::now() as u64 / 1000);
                         tracing::debug!("Lesson: force_sync - no changes");
                     }
                     Err(e) => {
                         tracing::error!("Lesson: force_sync error: {:?}", e);
                     }
                 }
-
-                session::set_last_sync_time(
-                    js_sys::Date::now() as u64 / 1000,
-                );
                 sync_ctx.complete_sync();
                 is_initial_syncing.set(false);
             });
