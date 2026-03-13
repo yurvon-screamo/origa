@@ -16,7 +16,7 @@ pub fn AudioButtons(
         <Show when=move || has_reading>
             <div class=move || format!("flex gap-2 {}", class.get())>
                 <button
-                    class="p-1.5 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-600 hover:text-blue-700 transition-colors disabled:opacity-50"
+                    class="p-1.5 hover:bg-[var(--bg-aged)] transition-colors disabled:opacity-50"
                     on:click={
                         let reading = reading.clone();
                         move |_| {
@@ -33,7 +33,7 @@ pub fn AudioButtons(
                     <Show when=move || is_playing.get() fallback=|| view! {
                         <Icon icon=icondata::LuVolume width="1.25em" height="1.25em" />
                     }>
-                        <span class="inline-block animate-spin">
+                        <span class="inline-block animate-spin" style="animation-duration: 1.5s;">
                             <Icon icon=icondata::LuLoader width="1.25em" height="1.25em" />
                         </span>
                     </Show>
