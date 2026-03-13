@@ -63,10 +63,7 @@ impl SyncContext {
     }
 
     pub fn complete_sync(&self) {
-        let now = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .map(|d| d.as_secs())
-            .unwrap_or(0);
+        let now = (js_sys::Date::now() / 1000.0) as u64;
 
         set_last_sync_time(now);
         increment_sync_version();
@@ -93,10 +90,7 @@ impl SyncContext {
         }
 
         let last_sync = get_last_sync_time();
-        let now = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .map(|d| d.as_secs())
-            .unwrap_or(0);
+        let now = (js_sys::Date::now() / 1000.0) as u64;
 
         now.saturating_sub(last_sync) >= interval_secs
     }
