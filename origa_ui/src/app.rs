@@ -37,8 +37,8 @@ impl AuthContext {
         }
     }
 
-    pub fn start_background_sync(&self) {
-        self.repository.start_background_sync(self.sync_context, self.current_user);
+    pub fn start_background_sync(&self, interval_secs: u64) {
+        self.repository.start_polling_sync(self.sync_context, self.current_user, interval_secs);
     }
 
     pub async fn init_session(&self) {
@@ -298,7 +298,7 @@ pub fn App() -> impl IntoView {
     let ctx = auth_context.clone();
     spawn_local(async move {
         ctx.init_session().await;
-        ctx.start_background_sync();
+        ctx.start_background_sync(60);
     });
 
     view! {

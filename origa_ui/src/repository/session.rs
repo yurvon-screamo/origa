@@ -24,3 +24,17 @@ pub fn set_session(session: &TrailBaseSession) -> Result<(), String> {
 pub fn clear_session() {
     LocalStorage::delete(SESSION_KEY);
 }
+
+const LAST_SYNC_KEY: &str = "origa_last_sync_time";
+
+pub fn get_last_sync_time() -> u64 {
+    LocalStorage::get(LAST_SYNC_KEY).unwrap_or(0)
+}
+
+pub fn set_last_sync_time(timestamp: u64) {
+    let _ = LocalStorage::set(LAST_SYNC_KEY, timestamp);
+}
+
+pub fn clear_last_sync_time() {
+    LocalStorage::delete(LAST_SYNC_KEY);
+}

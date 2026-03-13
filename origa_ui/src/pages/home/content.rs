@@ -1,7 +1,8 @@
 use super::{HistoryModal, HomeSkeleton, JlptProgressCard, JlptSkeleton, StatMetric, StatsGrid};
 use super::{HomeStats, calculate_stats, format_delta, format_number};
+use crate::repository::session;
 use crate::repository::{HybridUserRepository, SyncContext};
-use crate::ui_components::{Text, TextSize, TypographyVariant};
+use crate::ui_components::{Spinner, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::domain::{DailyHistoryItem, JlptProgress, User};
@@ -21,13 +22,50 @@ pub fn HomeContent() -> impl IntoView {
     let history_open = RwSignal::new(false);
     let selected_metric = RwSignal::new(StatMetric::TotalCards);
     let is_loading = RwSignal::new(true);
+    let is_syncing = RwSignal::new(true);
     let jlpt_progress = RwSignal::new(JlptProgress::new());
 
+    let repo_for_sync = repository.clone();
+    let sync_ctx_for_sync = sync_context;
+    let user_for_sync = current_user;
     Effect::new(move |_| {
         let user = current_user.get();
         if let Some(user) = user {
             let user_id = user.id();
-            let repo = repository.clone();
+            let repo = repo_for_sync.clone();
+            let sync_ctx = sync_ctx_for_sync;
+            let current_user_signal = user_for_sync;
+            spawn_local(async move {
+                sync_ctx.start_sync();
+
+                match repo.force_sync(user_id).await {
+                    Ok(Some(merged_user)) => {
+                        current_user_signal.set(Some(merged_user));
+                        tracing::info!("Home: force_sync completed");
+                    }
+                    Ok(None) => {
+                        tracing::debug!("Home: force_sync - no changes");
+                    }
+                    Err(e) => {
+                        tracing::error!("Home: force_sync error: {:?}", e);
+                    }
+                }
+
+                session::set_last_sync_time(
+                    js_sys::Date::now() as u64 / 1000,
+                );
+                sync_ctx.complete_sync();
+                is_syncing.set(false);
+            });
+        }
+    });
+
+    let repo_for_init = repository.clone();
+    Effect::new(move |_| {
+        let user = current_user.get();
+        if let Some(user) = user {
+            let user_id = user.id();
+            let repo = repo_for_init.clone();
             spawn_local(async move {
                 let use_case = GetUserInfoUseCase::new(&repo);
                 match use_case.execute(user_id).await {
@@ -46,13 +84,14 @@ pub fn HomeContent() -> impl IntoView {
         }
     });
 
+    let repo_for_reload = repository.clone();
     Effect::new(move |_| {
         sync_context.sync_trigger.get();
-        
+
         let user = current_user.get();
         if let Some(user) = user {
             let user_id = user.id();
-            let repo = repository.clone();
+            let repo = repo_for_reload.clone();
             spawn_local(async move {
                 let use_case = GetUserInfoUseCase::new(&repo);
                 if let Ok(profile) = use_case.execute(user_id).await {
@@ -63,6 +102,11 @@ pub fn HomeContent() -> impl IntoView {
             });
         }
     });
+
+    let repo_for_manual_sync = repository.clone();
+    let on_manual_sync = move |_| {
+        repo_for_manual_sync.sync_stats(sync_context, current_user);
+    };
 
     let total_cards =
         Signal::derive(move || format_number(stats.get().map(|s| s.total_cards).unwrap_or(0)));
@@ -100,9 +144,37 @@ pub fn HomeContent() -> impl IntoView {
     view! {
         <main class="flex-1">
             <div class="w-full px-4 sm:px-6 lg:px-8 py-12">
-                <Text size=TextSize::Small variant=TypographyVariant::Muted uppercase=true tracking_widest=true class="mb-6">
-                    "Статистика"
-                </Text>
+                <div class="flex items-center justify-between mb-6">
+                    <Text size=TextSize::Small variant=TypographyVariant::Muted uppercase=true tracking_widest=true>
+                        "Статистика"
+                    </Text>
+
+                    <div class="flex items-center gap-2">
+                        <Show when=move || is_syncing.get()>
+                            <div class="flex items-center gap-1 text-sm text-muted-foreground">
+                                <Spinner size="sm" />
+                                "Синхронизация..."
+                            </div>
+                        </Show>
+
+                        <Show when=move || !is_syncing.get()>
+                            <Show when=move || sync_context.is_syncing.get()>
+                                <div class="flex items-center gap-1 text-sm text-muted-foreground">
+                                    <Spinner size="sm" />
+                                    "Синхронизация..."
+                                </div>
+                            </Show>
+                        </Show>
+
+                        <button
+                            class="text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+                            on:click=on_manual_sync
+                            disabled=move || sync_context.is_syncing.get() || is_syncing.get()
+                        >
+                            "Обновить"
+                        </button>
+                    </div>
+                </div>
 
                 <Show
                     when=move || !is_loading.get()

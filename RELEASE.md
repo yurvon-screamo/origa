@@ -18,7 +18,7 @@ Stable релизы создаются при push тега в формате `v
 - Не обновляются - каждая версия уникальна
 
 **Артефакты:**
-- **Windows**: `.exe` (установщик), `.msi` (MSI пакет)
+- **Windows**: `.exe` (установщик)
 - **Linux**: `.AppImage` (portable), `.deb` (Debian/Ubuntu)
 - **macOS**: `.zip` (архив приложения)
 - **Android**: `.apk` (Android приложение)
@@ -156,7 +156,6 @@ Push в master / Push тега
 
 ### Windows
 - **NSIS installer** (`.exe`) - классический установщик Windows
-- **MSI installer** (`.msi`) - Windows Installer пакет для корпоративного развёртывания
 
 ### Linux
 - **AppImage** (`.AppImage`) - portable приложение, не требует установки
