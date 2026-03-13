@@ -1,8 +1,8 @@
 use crate::domain::{
-    OrigaError, Rating, ReviewLog,
     knowledge::{GrammarRuleCard, KanjiCard, VocabularyCard},
     memory::{MemoryHistory, MemoryState},
     value_objects::{Answer, NativeLanguage, Question},
+    OrigaError, Rating, ReviewLog,
 };
 use rand::seq::SliceRandom;
 use serde::{Deserialize, Serialize};
@@ -83,6 +83,14 @@ impl StudyCard {
                 self.perfect_streak_since_known = 0;
             }
         }
+    }
+
+    pub fn merge(&mut self, other: &StudyCard) {
+        self.memory_history.merge(&other.memory_history);
+        self.is_favorite = self.is_favorite || other.is_favorite;
+        self.perfect_streak_since_known = self
+            .perfect_streak_since_known
+            .max(other.perfect_streak_since_known);
     }
 
     pub fn shuffle_card(&self) -> Card {
