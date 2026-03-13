@@ -1,6 +1,6 @@
 use crate::ui_components::{
-    Card, DisplayText, FuriganaText, Heading, HeadingLevel, KanjiViewMode, KanjiWritingSection,
-    Text, TextSize, TypographyVariant, get_reading_from_text, is_speech_supported, speak_text,
+    get_reading_from_text, is_speech_supported, speak_text, Card, DisplayText, FuriganaText,
+    Heading, HeadingLevel, KanjiViewMode, KanjiWritingSection, Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
 use origa::domain::{Card as DomainCard, NativeLanguage, QuizCard, User};
@@ -85,14 +85,14 @@ pub fn QuizCardView(
     });
 
     view! {
-        <Card class=Signal::derive(|| "p-6 min-h-[300px] flex flex-col".to_string()) shadow=Signal::derive(|| true)>
+        <Card class=Signal::derive(|| "p-4 sm:p-6 min-h-[250px] sm:min-h-[300px] flex flex-col".to_string()) shadow=Signal::derive(|| true)>
             <QuizCardHeader
                 card_type=card_type
                 question_text=question.get_value()
             />
 
             <div class="flex-1 flex flex-col justify-center">
-                <div class="text-center mb-6">
+                <div class="text-center mb-3 sm:mb-6">
                     <Show when=move || card_type != CardType::Kanji>
                         <div class="mb-4">
                             <Heading level=HeadingLevel::H2>
@@ -106,7 +106,7 @@ pub fn QuizCardView(
                             kanji_for_animation.get_value().map(|kanji: String| {
                                 let kanji_for_section = kanji.clone();
                                 view! {
-                                    <div class="mb-6">
+                                    <div class="mb-3 sm:mb-6">
                                         <DisplayText>
                                             {kanji}
                                         </DisplayText>

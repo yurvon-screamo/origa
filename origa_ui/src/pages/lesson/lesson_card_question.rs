@@ -27,7 +27,7 @@ pub fn LessonCardQuestion(
     view! {
         <div class="text-center">
             <Show when=move || kanji_stored.get_value().is_none()>
-                <div class="mb-4">
+                <div class="mb-2 sm:mb-4">
                     <Heading level=HeadingLevel::H2>
                         <Show
                             when=move || is_reversed
@@ -50,7 +50,7 @@ pub fn LessonCardQuestion(
                     kanji_stored.get_value().map(|k| {
                         let k_clone = k.clone();
                         view! {
-                            <div class="mb-6">
+                            <div class="mb-3 sm:mb-6">
                                 <DisplayText>
                                     {k_clone}
                                 </DisplayText>

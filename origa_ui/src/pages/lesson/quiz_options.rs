@@ -22,7 +22,7 @@ pub fn QuizOptions(
             .unwrap_or_default()
     });
     view! {
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div class="grid grid-cols-2 gap-2 sm:gap-3">
             {move || {
                 options
                     .iter()
@@ -30,7 +30,7 @@ pub fn QuizOptions(
                     .map(|(index, option): (usize, &QuizOption)| {
                         let is_correct = option.is_correct();
                         let is_selected = selected_option == Some(index);
-                        let base_class = "p-4 border text-left transition-all cursor-pointer relative";
+                        let base_class = "p-2 sm:p-4 border text-left transition-all cursor-pointer relative flex flex-col justify-center min-h-[4rem]";
                         let disabled_class = if show_result { "pointer-events-none" } else { "" };
                         let result_class = quiz_result.option_class(is_correct, is_selected);
                         let selected_ring = if is_selected && !show_result {

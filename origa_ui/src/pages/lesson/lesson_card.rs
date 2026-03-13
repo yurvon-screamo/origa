@@ -149,7 +149,7 @@ pub fn LessonCard(
     });
 
     view! {
-        <Card class=Signal::derive(|| "p-6 min-h-[300px] flex flex-col".to_string()) shadow=Signal::derive(|| true)>
+        <Card class=Signal::derive(|| "p-4 sm:p-6 min-h-[250px] sm:min-h-[300px] flex flex-col".to_string()) shadow=Signal::derive(|| true)>
             <LessonCardHeader
                 card_type=card_type
                 question_text=if is_reversed { answer.get_value() } else { question.get_value() }
