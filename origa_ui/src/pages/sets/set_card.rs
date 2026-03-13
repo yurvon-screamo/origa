@@ -24,15 +24,17 @@ pub fn SetCard(set_info: SetInfo, on_import: Callback<(String, String)>) -> impl
 
     view! {
         <Card class=Signal::derive(|| "p-4 flex flex-col h-full".to_string())>
-            <div class="flex items-center gap-2 mb-2">
-                <Heading level=Signal::derive(|| HeadingLevel::H4)>
-                    {title_for_display}
-                </Heading>
-                <Show when=move || is_imported>
-                    <Tag variant=Signal::derive(|| TagVariant::Olive)>
-                        "Импортирован"
-                    </Tag>
-                </Show>
+            <div class="flex items-center justify-between gap-2 mb-2">
+                <div class="flex items-center gap-2">
+                    <Heading level=Signal::derive(|| HeadingLevel::H4)>
+                        {title_for_display}
+                    </Heading>
+                    <Show when=move || is_imported>
+                        <Tag variant=Signal::derive(|| TagVariant::Olive)>
+                            "Импортирован"
+                        </Tag>
+                    </Show>
+                </div>
                 <Show when=move || !is_imported>
                     <SetCardButton
                         set_id=set_info.set_id.clone()
