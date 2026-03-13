@@ -103,6 +103,16 @@ jobs:
         env:
           TAURI_BUNDLE_NSIS: "true"
 
+      - name: Rename artifacts for latest release
+        if: needs.version.outputs.version_type != 'stable'
+        working-directory: target/x86_64-pc-windows-msvc/release/bundle
+        run: |
+          # Rename NSIS
+          for f in nsis/*.exe; do mv "$f" "nsis/origa_latest_x64-setup.exe"; done
+          for f in nsis/*.sig; do mv "$f" "nsis/origa_latest_x64-setup.exe.sig"; done
+          # Rename MSI
+          for f in msi/*.msi; do mv "$f" "msi/origa_latest_x64_en-US.msi"; done
+
       - name: Extract signature
         id: signature
         shell: bash
@@ -201,6 +211,16 @@ jobs:
       - name: Build Tauri app for Linux
         working-directory: tauri
         run: cargo tauri build --target x86_64-unknown-linux-gnu
+
+      - name: Rename artifacts for latest release
+        if: needs.version.outputs.version_type != 'stable'
+        working-directory: target/x86_64-unknown-linux-gnu/release/bundle
+        run: |
+          # Rename AppImage
+          for f in appimage/*.AppImage; do mv "$f" "appimage/origa_latest_amd64.AppImage"; done
+          for f in appimage/*.sig; do mv "$f" "appimage/origa_latest_amd64.AppImage.sig"; done
+          # Rename DEB
+          for f in deb/*.deb; do mv "$f" "deb/origa_latest_amd64.deb"; done
 
       - name: Extract signature
         id: signature
@@ -353,9 +373,15 @@ jobs:
       - name: Generate latest.json
         env:
           VERSION: ${{ needs.version.outputs.version }}
+          VERSION_TYPE: ${{ needs.version.outputs.version_type }}
           WIN_SIG: ${{ needs.build-windows.outputs.signature }}
           LINUX_SIG: ${{ needs.build-linux.outputs.signature }}
         run: |
+          if [ "$VERSION_TYPE" != "stable" ]; then
+            FILE_VERSION="latest"
+          else
+            FILE_VERSION="${VERSION}"
+          fi
           cat > latest.json << EOF
           {
             "version": "${VERSION}",
@@ -364,11 +390,11 @@ jobs:
             "platforms": {
               "windows-x86_64": {
                 "signature": "${WIN_SIG}",
-                "url": "https://github.com/yurvon-screamo/origa/releases/download/${VERSION}/origa_${VERSION}_x64-setup.exe"
+                "url": "https://github.com/yurvon-screamo/origa/releases/download/${FILE_VERSION}/origa_${FILE_VERSION}_x64-setup.exe"
               },
               "linux-x86_64": {
                 "signature": "${LINUX_SIG}",
-                "url": "https://github.com/yurvon-screamo/origa/releases/download/${VERSION}/origa_${VERSION}_amd64.AppImage"
+                "url": "https://github.com/yurvon-screamo/origa/releases/download/${FILE_VERSION}/origa_${FILE_VERSION}_amd64.AppImage"
               }
             }
           }

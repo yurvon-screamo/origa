@@ -171,6 +171,18 @@ jobs:
           NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
           ANDROID_NDK_ROOT: ${{ steps.setup-ndk.outputs.ndk-path }}
 
+      - name: Rename APK for latest release
+        if: needs.version.outputs.version_type != 'stable'
+        working-directory: tauri/gen/android/app/build/outputs/apk
+        run: |
+          # Find and rename the APK to a stable name
+          for f in release/*.apk; do
+            if [ -f "$f" ]; then
+              mv "$f" "release/origa-latest.apk"
+              echo "Renamed to origa-latest.apk"
+            fi
+          done
+
       - name: Upload Android APK
         if: matrix.platform == 'android'
         uses: actions/upload-artifact@v4
