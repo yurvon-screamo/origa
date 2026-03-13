@@ -35,7 +35,7 @@ pub fn Heading(
             };
 
             let size_class = match level.get() {
-                HeadingLevel::H1 => "text-5xl",
+                HeadingLevel::H1 => "text-[clamp(1.75rem,6vw,3rem)] leading-tight break-words",
                 HeadingLevel::H2 => "text-2xl",
                 HeadingLevel::H3 => "text-xl",
                 HeadingLevel::H4 => "text-lg",
@@ -97,7 +97,7 @@ pub fn DisplayText(
     children: Children,
 ) -> impl IntoView {
     view! {
-        <p class=move || format!("font-serif text-4xl font-light text-[var(--fg-black)] {}", class.get())>
+        <p class=move || format!("font-serif text-[clamp(1.5rem,5vw,2.25rem)] font-light leading-tight break-words text-[var(--fg-black)] {}", class.get())>
             {children()}
         </p>
     }

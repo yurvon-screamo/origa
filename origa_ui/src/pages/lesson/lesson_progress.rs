@@ -12,7 +12,7 @@ pub fn LessonProgress(current: Signal<usize>, total: Signal<usize>) -> impl Into
     };
 
     view! {
-        <div class="mb-6">
+        <div class="mb-3 sm:mb-6">
             <div class="flex justify-between mb-2">
                 <span class="font-mono text-[10px] tracking-widest uppercase">
                     "Прогресс"

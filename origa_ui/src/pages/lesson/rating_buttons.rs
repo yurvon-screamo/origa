@@ -8,7 +8,7 @@ pub fn RatingButtons(
     #[prop(optional, into)] disabled: Signal<bool>,
 ) -> impl IntoView {
     view! {
-        <div class="grid grid-cols-4 gap-2 mt-6">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
             <Button
                 variant=Signal::derive(|| ButtonVariant::Default)
                 class=Signal::derive(|| "".to_string())
