@@ -126,7 +126,7 @@ pub fn GrammarContent() -> impl IntoView {
                 <FilterBtn filter=Filter::Learned count=move || counts.get().learned active=filter />
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
                 {move || {
                     let cards = filtered_cards.get();
                     if cards.is_empty() {
