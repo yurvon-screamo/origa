@@ -6,6 +6,10 @@ inputs:
     description: 'Comma-separated list of targets (e.g. "x86_64-unknown-linux-gnu,wasm32-unknown-unknown")'
     required: false
     default: ''
+  shared-key:
+    description: 'Shared key for cache sharing between jobs'
+    required: false
+    default: ''
 
 outputs:
   cache-hit:
@@ -25,4 +29,5 @@ runs:
       id: rust-cache
       with:
         cache-all-crates: true
+        shared-key: ${{ inputs.shared-key }}
         save-if: ${{ github.ref == 'refs/heads/master' }}
