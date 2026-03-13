@@ -79,7 +79,7 @@ pub fn HomeContent() -> impl IntoView {
 
     view! {
         <main class="flex-1">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="w-full px-4 sm:px-6 lg:px-8 py-12">
                 <Text size=TextSize::Small variant=TypographyVariant::Muted uppercase=true tracking_widest=true class="mb-6">
                     "Статистика"
                 </Text>

@@ -24,7 +24,7 @@ pub fn Footer(
 ) -> impl IntoView {
     view! {
         <footer class="footer py-16 mt-24">
-            <div class="max-w-6xl mx-auto px-6">
+            <div class="w-full px-6">
                 <div class="grid md:grid-cols-4 gap-12 mb-12">
                     <div>
                         <h4 class="font-serif text-2xl mb-4">{move || brand.get()}</h4>
