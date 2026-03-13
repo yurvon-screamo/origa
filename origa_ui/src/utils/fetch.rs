@@ -17,10 +17,12 @@ pub async fn fetch_text(url: impl Into<String>) -> Result<String, OrigaError> {
             reason: format!("Failed to fetch: {:?}", e),
         })?;
 
-    let resp: web_sys::Response = resp_value.dyn_into().map_err(|e| OrigaError::NetworkError {
-        url: url.clone(),
-        reason: format!("Failed to cast response: {:?}", e),
-    })?;
+    let resp: web_sys::Response = resp_value
+        .dyn_into()
+        .map_err(|e| OrigaError::NetworkError {
+            url: url.clone(),
+            reason: format!("Failed to cast response: {:?}", e),
+        })?;
 
     if !resp.ok() {
         return Err(OrigaError::NetworkError {

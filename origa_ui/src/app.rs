@@ -38,7 +38,8 @@ impl AuthContext {
     }
 
     pub fn start_background_sync(&self, interval_secs: u64) {
-        self.repository.start_polling_sync(self.sync_context, self.current_user, interval_secs);
+        self.repository
+            .start_polling_sync(self.sync_context, self.current_user, interval_secs);
     }
 
     pub async fn init_session(&self) {

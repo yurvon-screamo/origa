@@ -14,6 +14,6 @@ pub use dictionary_cache::{
 };
 pub use hybrid_repository::{HybridUserRepository, reset_sync};
 pub use jlpt_content_loader::load_jlpt_content;
-pub use session::{clear_session, get_last_sync_time, get_session, set_last_sync_time, set_session};
+pub use session::{clear_session, get_session, set_session};
 pub use sync_context::SyncContext;
 pub use trailbase_client::{OAuthProvider, TrailBaseClient};
