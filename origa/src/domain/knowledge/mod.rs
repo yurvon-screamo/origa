@@ -13,9 +13,10 @@ pub use vocabulary::VocabularyCard;
 use std::collections::{HashMap, HashSet};
 
 use crate::domain::{
-    OrigaError, RateMode, Rating, ReviewLog, get_rule_by_id,
-    srs::{NextReview, rate_memory},
+    get_rule_by_id,
+    srs::{rate_memory, NextReview},
     value_objects::NativeLanguage,
+    OrigaError, RateMode, Rating, ReviewLog,
 };
 use chrono::Utc;
 use rand::seq::SliceRandom;
@@ -75,21 +76,26 @@ impl KnowledgeSet {
         }
 
         for (id, study_card) in &new_values.study_cards {
-            if !self.deleted_cards.contains(id)
-                && !self.study_cards.contains_key(id)
-                && self.validate_unique_card(study_card.card()).is_ok()
-            {
+            if self.deleted_cards.contains(id) {
+                continue;
+            }
+
+            if let Some(existing_card) = self.study_cards.get_mut(id) {
+                existing_card.merge(study_card);
+            } else if self.validate_unique_card(study_card.card()).is_ok() {
                 self.study_cards.insert(*id, study_card.clone());
             }
         }
 
         for item in &new_values.lesson_history {
             let date = item.timestamp().date_naive();
-            if !self
+            if let Some(existing_item) = self
                 .lesson_history
-                .iter()
-                .any(|h| h.timestamp().date_naive() == date)
+                .iter_mut()
+                .find(|h| h.timestamp().date_naive() == date)
             {
+                existing_item.merge_with(item);
+            } else {
                 self.lesson_history.push(item.clone());
             }
         }
@@ -584,7 +590,7 @@ mod tests {
 
     #[test]
     fn apply_reversed_returns_reversed_for_vocabulary() {
-        use crate::domain::{VocabularyChunkData, init_vocabulary_dictionary};
+        use crate::domain::{init_vocabulary_dictionary, VocabularyChunkData};
         use std::sync::Once;
 
         static INIT: Once = Once::new();
@@ -1129,5 +1135,104 @@ mod tests {
                 panic!("Expected Vocabulary card");
             }
         }
+    }
+
+    #[test]
+    fn merge_study_cards_updates_existing() {
+        let mut local = KnowledgeSet::new();
+        let study_card = local.create_card(create_vocab_card("猫")).unwrap();
+        let card_id = *study_card.card_id();
+
+        assert!(
+            local.get_card(card_id).unwrap().is_new(),
+            "карточка должна быть новой до merge"
+        );
+
+        let mut remote = local.clone();
+        remote
+            .rate_card(card_id, Rating::Good, RateMode::StandardLesson)
+            .unwrap();
+
+        local.merge(&remote);
+
+        let merged_card = local.get_card(card_id).unwrap();
+        assert!(
+            !merged_card.is_new(),
+            "карточка не должна быть новой после merge"
+        );
+    }
+
+    #[test]
+    fn merge_lessons_completed_takes_max() {
+        let mut local = KnowledgeSet::new();
+        let card1 = local.create_card(create_vocab_card("猫")).unwrap();
+        local
+            .rate_card(*card1.card_id(), Rating::Good, RateMode::StandardLesson)
+            .unwrap();
+        local
+            .rate_card(*card1.card_id(), Rating::Good, RateMode::StandardLesson)
+            .unwrap();
+
+        let history_item = &local.lesson_history()[0];
+        assert_eq!(history_item.lessons_completed(), 2);
+
+        let mut remote = KnowledgeSet::new();
+        let card2 = remote.create_card(create_vocab_card("犬")).unwrap();
+        remote
+            .rate_card(*card2.card_id(), Rating::Good, RateMode::StandardLesson)
+            .unwrap();
+        remote
+            .rate_card(*card2.card_id(), Rating::Good, RateMode::StandardLesson)
+            .unwrap();
+        remote
+            .rate_card(*card2.card_id(), Rating::Good, RateMode::StandardLesson)
+            .unwrap();
+
+        let remote_history_item = &remote.lesson_history()[0];
+        assert_eq!(remote_history_item.lessons_completed(), 3);
+
+        local.merge(&remote);
+
+        let merged_history = &local.lesson_history()[0];
+        assert_eq!(
+            merged_history.lessons_completed(),
+            3,
+            "lessons_completed должен использовать max для идемпотентности"
+        );
+    }
+
+    #[test]
+    fn merge_stats_takes_max() {
+        let mut local = KnowledgeSet::new();
+        for i in 0..100 {
+            local
+                .create_card(create_vocab_card(&format!("word{i}")))
+                .unwrap();
+        }
+        for i in 0..50 {
+            let card = local
+                .create_card(create_vocab_card(&format!("known{i}")))
+                .unwrap();
+            let memory = create_known_memory_state();
+            let study = local.study_cards().get(card.card_id()).unwrap();
+            let mut study_mut = study.clone();
+            study_mut.add_review(memory, ReviewLog::new(Rating::Good, Duration::days(1)));
+        }
+
+        let mut remote = KnowledgeSet::new();
+        for i in 0..150 {
+            remote
+                .create_card(create_vocab_card(&format!("remote{i}")))
+                .unwrap();
+        }
+
+        local.merge(&remote);
+
+        let history_item = &local.lesson_history()[0];
+        assert_eq!(
+            history_item.total_words(),
+            150,
+            "total_words должен быть максимумом"
+        );
     }
 }

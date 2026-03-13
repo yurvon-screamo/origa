@@ -2,10 +2,11 @@ mod value;
 
 pub use value::{Difficulty, MemoryState, Rating, ReviewLog, Stability};
 
-use std::collections::VecDeque;
+use std::collections::{HashSet, VecDeque};
 
 use chrono::{DateTime, TimeDelta, Utc};
 use serde::{Deserialize, Serialize};
+use ulid::Ulid;
 
 const KNOWN_CARD_STABILITY_THRESHOLD: f64 = 10.0;
 const HIGH_DIFFICULTY_THRESHOLD: f64 = 5.0;
@@ -99,5 +100,51 @@ impl MemoryHistory {
     /// Карта которая еще не была изучена до стабильного уровня, но уже начала изучаться
     pub fn is_in_progress(&self) -> bool {
         !self.is_known_card() && !self.is_high_difficulty() && !self.is_new()
+    }
+
+    pub fn merge(&mut self, other: &MemoryHistory) {
+        self.current_state = select_later_state(
+            &self.current_state,
+            &other.current_state,
+            self.last_review_date(),
+            other.last_review_date(),
+        );
+
+        let existing_ids: HashSet<Ulid> = self.reviews.iter().map(|r| r.id()).collect();
+
+        for review in &other.reviews {
+            if !existing_ids.contains(&review.id()) {
+                self.reviews.push_back(*review);
+            }
+        }
+
+        self.reviews
+            .make_contiguous()
+            .sort_by_key(|r| r.timestamp());
+    }
+}
+
+fn select_later_state(
+    left: &Option<MemoryState>,
+    right: &Option<MemoryState>,
+    left_last_review: Option<DateTime<Utc>>,
+    right_last_review: Option<DateTime<Utc>>,
+) -> Option<MemoryState> {
+    match (left, right) {
+        (None, None) => None,
+        (Some(l), None) => Some(l.clone()),
+        (None, Some(r)) => Some(r.clone()),
+        (Some(l), Some(r)) => match (left_last_review, right_last_review) {
+            (None, None) => Some(r.clone()),
+            (Some(_), None) => Some(l.clone()),
+            (None, Some(_)) => Some(r.clone()),
+            (Some(left_date), Some(right_date)) => {
+                if right_date >= left_date {
+                    Some(r.clone())
+                } else {
+                    Some(l.clone())
+                }
+            }
+        },
     }
 }
