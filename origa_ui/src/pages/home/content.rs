@@ -1,6 +1,6 @@
 use super::{HistoryModal, HomeSkeleton, JlptProgressCard, JlptSkeleton, StatMetric, StatsGrid};
 use super::{HomeStats, calculate_stats, format_delta, format_number};
-use crate::repository::HybridUserRepository;
+use crate::repository::{HybridUserRepository, SyncContext};
 use crate::ui_components::{Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
@@ -13,6 +13,8 @@ pub fn HomeContent() -> impl IntoView {
         use_context::<RwSignal<Option<User>>>().expect("current_user context not provided");
     let repository =
         use_context::<HybridUserRepository>().expect("repository context not provided");
+    let sync_context =
+        use_context::<SyncContext>().expect("sync_context not provided");
 
     let stats = RwSignal::new(None::<HomeStats>);
     let history = RwSignal::new(Vec::<DailyHistoryItem>::new());
@@ -39,6 +41,24 @@ pub fn HomeContent() -> impl IntoView {
                         stats.set(Some(HomeStats::default()));
                         is_loading.set(false);
                     }
+                }
+            });
+        }
+    });
+
+    Effect::new(move |_| {
+        sync_context.sync_trigger.get();
+        
+        let user = current_user.get();
+        if let Some(user) = user {
+            let user_id = user.id();
+            let repo = repository.clone();
+            spawn_local(async move {
+                let use_case = GetUserInfoUseCase::new(&repo);
+                if let Ok(profile) = use_case.execute(user_id).await {
+                    history.set(profile.lesson_history.clone());
+                    stats.set(Some(calculate_stats(&profile.lesson_history)));
+                    jlpt_progress.set(profile.jlpt_progress);
                 }
             });
         }
