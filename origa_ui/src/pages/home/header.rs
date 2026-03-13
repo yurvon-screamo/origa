@@ -7,7 +7,7 @@ use origa::domain::User;
 pub fn HomeHeader(current_user: RwSignal<Option<User>>) -> impl IntoView {
     view! {
         <header class="border-b border-[var(--border-dark)] bg-[var(--bg-cream)]">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="w-full px-4 sm:px-6 lg:px-8">
                 <div class="flex flex-wrap justify-between items-center min-h-16 gap-4">
                     <div class="flex items-center space-x-4">
                         {move || {

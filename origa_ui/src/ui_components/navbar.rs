@@ -17,7 +17,7 @@ pub fn Navbar(
 ) -> impl IntoView {
     view! {
         <nav class="navbar sticky top-0 z-50 pt-safe-t">
-            <div class="max-w-6xl mx-auto px-6 flex items-center justify-between">
+            <div class="w-full px-6 flex items-center justify-between">
                 <a href="#" class="font-serif text-2xl">{move || brand.get()}</a>
 
                 <div class="hidden md:flex items-center gap-8">

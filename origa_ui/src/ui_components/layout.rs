@@ -11,7 +11,7 @@ pub enum PageLayoutVariant {
 #[component]
 pub fn PageLayout(
     #[prop(optional, into)] variant: Signal<PageLayoutVariant>,
-    #[prop(optional, into, default = "max-w-7xl mx-auto".to_string().into())]
+    #[prop(optional, into, default = "w-full px-4 sm:px-6 lg:px-8".to_string().into())]
     container_class: Signal<String>,
     children: Children,
 ) -> impl IntoView {
@@ -51,7 +51,7 @@ pub fn CardLayout(
                 CardLayoutSize::Small => "max-w-sm w-full mx-auto",
                 CardLayoutSize::Medium => "max-w-md w-full mx-auto",
                 CardLayoutSize::Large => "max-w-lg w-full mx-auto",
-                CardLayoutSize::Adaptive => "w-full max-w-full lg:max-w-7xl mx-auto",
+                CardLayoutSize::Adaptive => "w-full",
             };
             format!("{} {}", base, class.get())
         }>
