@@ -5,10 +5,18 @@ use crate::ui_components::{
 use leptos::prelude::*;
 use origa::domain::User;
 
+/// Данные для отображения радикала
+#[derive(Clone, Debug, PartialEq)]
+pub struct RadicalDisplay {
+    pub symbol: char,
+    pub name: String,
+    pub description: String,
+}
+
 #[component]
 pub fn KanjiCardDetails(
     kanji: String,
-    radicals: Option<String>,
+    radicals: Option<Vec<RadicalDisplay>>,
     example_words: Option<Vec<(String, String)>>,
     show_details: bool,
     on_readings: Option<Vec<String>>,
@@ -42,9 +50,32 @@ pub fn KanjiCardDetails(
                                 "Радикалы"
                             </Text>
                         </div>
-                        <Text size=TextSize::Default>
-                            {radicals_stored.get_value().unwrap_or_default()}
-                        </Text>
+                        <div class="flex flex-wrap gap-2">
+                            {move || {
+                                radicals_stored
+                                    .get_value()
+                                    .unwrap_or_default()
+                                    .into_iter()
+                                    .map(|radical| {
+                                        view! {
+                                            <div class="flex items-center gap-1 px-2 py-1 bg-secondary/30 rounded">
+                                                <Text size=TextSize::Large class="text-primary">
+                                                    {radical.symbol}
+                                                </Text>
+                                                <div class="flex flex-col">
+                                                    <Text size=TextSize::Small class="text-muted-foreground">
+                                                        {radical.name}
+                                                    </Text>
+                                                    <Text size=TextSize::Small class="text-muted-foreground text-xs">
+                                                        {radical.description}
+                                                    </Text>
+                                                </div>
+                                            </div>
+                                        }
+                                    })
+                                    .collect::<Vec<_>>()
+                            }}
+                        </div>
                     </div>
                 </Show>
 
