@@ -18,7 +18,7 @@ pub fn SettingsCard() -> impl IntoView {
                         </div>
                         <div class="flex gap-2">
                             <span>"Commit:"</span>
-                            <span class="font-mono">{version::COMMIT}</span>
+                            <span class="font-mono min-w-0 truncate">{version::COMMIT}</span>
                         </div>
                         <div class="flex gap-2">
                             <span>"Дата сборки:"</span>

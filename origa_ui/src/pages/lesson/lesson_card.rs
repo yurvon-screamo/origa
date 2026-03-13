@@ -1,9 +1,10 @@
 use crate::ui_components::{Card, get_reading_from_text, is_speech_supported, speak_text};
 use leptos::prelude::*;
 use origa::domain::{Card as DomainCard, GrammarInfo, NativeLanguage, User};
+use tracing;
 
 use super::card_type::CardType;
-use super::kanji_card_details::KanjiCardDetails;
+use super::kanji_card_details::{KanjiCardDetails, RadicalDisplay};
 use super::lesson_card_answer::LessonCardAnswer;
 use super::lesson_card_header::LessonCardHeader;
 use super::lesson_card_question::LessonCardQuestion;
@@ -40,13 +41,22 @@ pub fn LessonCard(
             .unwrap_or_default(),
     );
 
-    let radicals: Option<String> = match &card {
-        DomainCard::Kanji(kanji) => kanji.radicals_info().ok().map(|r| {
-            r.iter()
-                .map(|info| info.radical().to_string())
-                .collect::<Vec<_>>()
-                .join(", ")
-        }),
+    let radicals: Option<Vec<RadicalDisplay>> = match &card {
+        DomainCard::Kanji(kanji) => match kanji.radicals_info() {
+            Ok(r) => Some(
+                r.iter()
+                    .map(|info| RadicalDisplay {
+                        symbol: info.radical(),
+                        name: info.name().to_string(),
+                        description: info.description().to_string(),
+                    })
+                    .collect(),
+            ),
+            Err(e) => {
+                tracing::warn!("Failed to get radicals for kanji: {:?}", e);
+                None
+            }
+        },
         _ => None,
     };
     let radicals_stored = StoredValue::new(radicals);
