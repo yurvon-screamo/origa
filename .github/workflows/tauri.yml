@@ -37,18 +37,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Cache Cargo (container)
-        uses: actions/cache@v4
+      - name: Setup cargo cache
+        uses: Swatinem/rust-cache@v2
         with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-          key: ${{ runner.os }}-cargo-container-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-container-
+          cache-all-crates: true
+          cache-targets: false
+          shared-key: origa-cross-build
+          save-if: ${{ github.ref == 'refs/heads/master' }}
 
       - name: Cache UniDic dictionary
         uses: actions/cache@v4
@@ -56,6 +51,7 @@ jobs:
           path: origa_ui/public/dictionaries/unidic
           key: unidic-dict-v1-${{ hashFiles('origa_ui/build.rs') }}
           restore-keys: unidic-dict-v1-
+          save-if: ${{ github.ref == 'refs/heads/master' }}
 
       - name: Update version in config files
         env:
@@ -150,6 +146,7 @@ jobs:
           path: origa_ui/public/dictionaries/unidic
           key: unidic-dict-v1-${{ hashFiles('origa_ui/build.rs') }}
           restore-keys: unidic-dict-v1-
+          save-if: ${{ github.ref == 'refs/heads/master' }}
 
       - name: Update version in config files
         env:
@@ -240,18 +237,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Cache Cargo (container)
-        uses: actions/cache@v4
+      - name: Setup cargo cache
+        uses: Swatinem/rust-cache@v2
         with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-          key: ${{ runner.os }}-cargo-container-macos-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-container-macos-
+          cache-all-crates: true
+          cache-targets: false
+          shared-key: origa-cross-build
+          save-if: ${{ github.ref == 'refs/heads/master' }}
 
       - name: Cache UniDic dictionary
         uses: actions/cache@v4
@@ -259,6 +251,7 @@ jobs:
           path: origa_ui/public/dictionaries/unidic
           key: unidic-dict-v1-${{ hashFiles('origa_ui/build.rs') }}
           restore-keys: unidic-dict-v1-
+          save-if: ${{ github.ref == 'refs/heads/master' }}
 
       - name: Update version in config files
         env:
