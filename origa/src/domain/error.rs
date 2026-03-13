@@ -36,6 +36,7 @@ pub enum OrigaError {
     GrammarRuleNotFound { rule_id: Ulid },
     GrammarContentNotFound { rule_id: Ulid, lang: NativeLanguage },
     TranslationNotFound { word: String, lang: NativeLanguage },
+    NetworkError { url: String, reason: String },
 }
 
 impl fmt::Display for OrigaError {
@@ -135,6 +136,9 @@ impl fmt::Display for OrigaError {
             }
             OrigaError::TranslationNotFound { word, lang } => {
                 write!(f, "Нет перевода для: {} ({})", word, lang)
+            }
+            OrigaError::NetworkError { url, reason } => {
+                write!(f, "Network error fetching {}: {}", url, reason)
             }
         }
     }

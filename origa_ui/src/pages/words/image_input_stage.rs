@@ -358,7 +358,10 @@ async fn process_image_with_ocr(data_url: &str) -> Result<String, String> {
         None => {
             info!("Loading OCR and Layout models");
 
-            let config = ModelConfig::default();
+            let config = ModelConfig::new(
+                crate::config::ndlocr_base_url(),
+                "ndlocr-model-"
+            );
             let loader = ModelLoader::new(config);
 
             let model_files = loader

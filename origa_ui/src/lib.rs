@@ -4,6 +4,7 @@ use tracing_wasm::{ConsoleConfig, WASMLayer, WASMLayerConfigBuilder};
 
 pub mod app;
 pub mod components;
+pub mod config;
 pub mod data_loader;
 mod dictionary;
 mod ocr_model_loader;
@@ -12,6 +13,7 @@ mod repository;
 mod routes;
 mod ui_components;
 pub mod updater;
+pub mod utils;
 pub mod version;
 pub mod well_known_set;
 

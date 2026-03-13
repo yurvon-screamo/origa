@@ -10,14 +10,17 @@ fn main() {
     let version = option_env!("ORIGA_VERSION").unwrap_or("dev");
     let commit = option_env!("ORIGA_COMMIT").unwrap_or("unknown");
     let build_date = option_env!("ORIGA_BUILD_DATE").unwrap_or("unknown");
+    let public_base_url = option_env!("PUBLIC_BASE_URL").unwrap_or("");
 
     println!("cargo:rustc-env=ORIGA_VERSION={}", version);
     println!("cargo:rustc-env=ORIGA_COMMIT={}", commit);
     println!("cargo:rustc-env=ORIGA_BUILD_DATE={}", build_date);
+    println!("cargo:rustc-env=PUBLIC_BASE_URL={}", public_base_url);
 
     println!("cargo:rerun-if-env-changed=ORIGA_VERSION");
     println!("cargo:rerun-if-env-changed=ORIGA_COMMIT");
     println!("cargo:rerun-if-env-changed=ORIGA_BUILD_DATE");
+    println!("cargo:rerun-if-env-changed=PUBLIC_BASE_URL");
 }
 
 fn handle_lindera_dictionary() {
