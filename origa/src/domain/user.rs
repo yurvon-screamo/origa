@@ -6,8 +6,14 @@ use ulid::Ulid;
 
 use crate::domain::{
     Card, JapaneseLevel, JlptContent, JlptProgress, KnowledgeSet, NativeLanguage, OrigaError,
-    RateMode, Rating, ScoreContentResult, StudyCard, score_content,
+    RateMode, Rating, ScoreContentResult, StudyCard, get_translation, score_content,
 };
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct WordKnowledge {
+    pub is_known: bool,
+    pub meaning: Option<String>,
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct User {
@@ -148,6 +154,26 @@ impl User {
 
     pub fn imported_sets(&self) -> &HashSet<String> {
         &self.imported_sets
+    }
+
+    pub fn is_word_known(&self, word: &str) -> WordKnowledge {
+        let meaning = get_translation(word, self.native_language());
+
+        for study_card in self.knowledge_set().study_cards().values() {
+            if let Card::Vocabulary(vocab_card) = study_card.card()
+                && vocab_card.word().text() == word
+            {
+                return WordKnowledge {
+                    is_known: true,
+                    meaning,
+                };
+            }
+        }
+
+        WordKnowledge {
+            is_known: false,
+            meaning,
+        }
     }
 
     pub fn rate_card(
@@ -462,5 +488,24 @@ mod tests {
         assert!(user1.is_set_imported("set-2"));
         assert!(user1.is_set_imported("set-3"));
         assert_eq!(user1.imported_sets().len(), 3);
+    }
+
+    #[test]
+    fn user_is_word_known_returns_correct_knowledge() {
+        let mut user = User::new(
+            "test@example.com".to_string(),
+            NativeLanguage::Russian,
+            None,
+        );
+
+        let word = "猫";
+        let knowledge_before = user.is_word_known(word);
+        assert!(!knowledge_before.is_known);
+
+        let card = create_test_vocab_card(word);
+        user.create_card(card).unwrap();
+
+        let knowledge_after = user.is_word_known(word);
+        assert!(knowledge_after.is_known);
     }
 }

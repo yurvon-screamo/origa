@@ -1,7 +1,6 @@
 use crate::{
     domain::{OrigaError, PartOfSpeech, tokenize_text},
     traits::UserRepository,
-    use_cases::shared::is_word_known,
 };
 use serde::{Deserialize, Serialize};
 use tracing::{debug, info};
@@ -61,15 +60,15 @@ impl<'a, R: UserRepository> AnalyzeTextForCardsUseCase<'a, R> {
             }
             seen_words.insert(word_text.clone());
 
-            let (is_known, meaning) = is_word_known(&user, &word_text, user.native_language());
+            let knowledge = user.is_word_known(&word_text);
 
             words.push(AnalyzedWord {
                 text: token.orthographic_surface_form().to_string(),
                 base_form: word_text.clone(),
                 reading: token.phonological_base_form().to_string(),
                 part_of_speech: token.part_of_speech().clone(),
-                is_known,
-                meaning,
+                is_known: knowledge.is_known,
+                meaning: knowledge.meaning,
             });
         }
 

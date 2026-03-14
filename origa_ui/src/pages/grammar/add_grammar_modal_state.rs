@@ -1,15 +1,18 @@
 use crate::repository::HybridUserRepository;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use origa::domain::JapaneseLevel;
-use origa::use_cases::{GrammarRuleInfoUseCase, GrammarRuleItem};
+use origa::domain::{
+    iter_grammar_rules, Card, GrammarRule, JapaneseLevel, NativeLanguage,
+};
+use origa::traits::UserRepository;
 use std::collections::HashSet;
 use ulid::Ulid;
 
 #[derive(Clone)]
 pub struct ModalState {
     pub selected_level: RwSignal<JapaneseLevel>,
-    pub available_rules: RwSignal<Vec<GrammarRuleItem>>,
+    pub available_rules: RwSignal<Vec<&'static GrammarRule>>,
+    pub native_language: RwSignal<NativeLanguage>,
     pub selected_rule_ids: RwSignal<HashSet<Ulid>>,
     pub is_loading_rules: RwSignal<bool>,
     pub is_creating: RwSignal<bool>,
@@ -37,6 +40,7 @@ impl ModalState {
         Self {
             selected_level: RwSignal::new(JapaneseLevel::N5),
             available_rules: RwSignal::new(Vec::new()),
+            native_language: RwSignal::new(NativeLanguage::Russian),
             selected_rule_ids,
             is_loading_rules: RwSignal::new(false),
             is_creating: RwSignal::new(false),
@@ -47,10 +51,10 @@ impl ModalState {
     }
 
     pub fn load_rules(&self) {
-        let existing_rule_ids: HashSet<Ulid> = HashSet::new();
         let level = self.selected_level.get();
         let repository = self.repository.clone();
         let available_rules = self.available_rules;
+        let native_language = self.native_language;
         let is_loading = self.is_loading_rules;
         let error = self.error_message;
 
@@ -58,17 +62,35 @@ impl ModalState {
         error.set(None);
 
         spawn_local(async move {
-            let use_case = GrammarRuleInfoUseCase::new(&repository);
-            match use_case.execute(&level, &existing_rule_ids).await {
-                Ok(rules) => {
+            match repository.get_current_user().await {
+                Ok(Some(user)) => {
+                    let lang = *user.native_language();
+                    native_language.set(lang);
+
+                    let existing_rule_ids: HashSet<Ulid> = user
+                        .knowledge_set()
+                        .study_cards()
+                        .values()
+                        .filter_map(|card| match card.card() {
+                            Card::Grammar(rule) => Some(*rule.rule_id()),
+                            _ => None,
+                        })
+                        .collect();
+
+                    let rules: Vec<&'static GrammarRule> = iter_grammar_rules()
+                        .filter(|rule| rule.level() == &level)
+                        .filter(|rule| !existing_rule_ids.contains(rule.rule_id()))
+                        .collect();
                     available_rules.set(rules);
-                    is_loading.set(false);
+                }
+                Ok(None) => {
+                    error.set(Some("Пользователь не найден".to_string()));
                 }
                 Err(e) => {
-                    error.set(Some(e.to_string()));
-                    is_loading.set(false);
+                    error.set(Some(format!("Ошибка загрузки пользователя: {}", e)));
                 }
             }
+            is_loading.set(false);
         });
     }
 
@@ -86,14 +108,16 @@ impl ModalState {
     pub fn select_all(&self) {
         let query = self.search_query.get().to_lowercase();
         let rules = self.available_rules.get();
+        let lang = self.native_language.get();
         let filtered_ids: HashSet<Ulid> = rules
             .iter()
             .filter(|rule| {
+                let content = rule.content(&lang);
                 query.is_empty()
-                    || rule.title.to_lowercase().contains(&query)
-                    || rule.short_description.to_lowercase().contains(&query)
+                    || content.title().to_lowercase().contains(&query)
+                    || content.short_description().to_lowercase().contains(&query)
             })
-            .map(|rule| rule.rule_id)
+            .map(|rule| *rule.rule_id())
             .collect();
         self.selected_rule_ids.set(filtered_ids);
     }

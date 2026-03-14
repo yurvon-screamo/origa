@@ -93,6 +93,7 @@ pub fn AddGrammarModal(is_open: RwSignal<bool>) -> impl IntoView {
                             view! {
                                 <RulesList
                                     rules=rules
+                                    native_language=state.native_language.get()
                                     selected_ids=state.selected_rule_ids
                                     search_query=state.search_query
                                     known_kanji=known_kanji.get()

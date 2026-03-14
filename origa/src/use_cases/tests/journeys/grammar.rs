@@ -1,9 +1,7 @@
-use std::collections::HashSet;
-
 use crate::domain::{JapaneseLevel, NativeLanguage, User, iter_grammar_rules};
 use crate::traits::UserRepository;
+use crate::use_cases::CreateGrammarCardUseCase;
 use crate::use_cases::tests::fixtures::{InMemoryUserRepository, init_real_dictionaries};
-use crate::use_cases::{CreateGrammarCardUseCase, GrammarRuleInfoUseCase};
 
 #[tokio::test]
 async fn grammar_rules_loads_from_real_file() {
@@ -25,33 +23,6 @@ async fn grammar_rules_loads_from_real_file() {
             .title()
             .is_empty()
     );
-}
-
-#[tokio::test]
-async fn grammar_rule_info_returns_rules_for_level() {
-    init_real_dictionaries();
-
-    let user = User::new(
-        "test@example.com".to_string(),
-        NativeLanguage::Russian,
-        None,
-    );
-    let repo = InMemoryUserRepository::with_user(user);
-    let use_case = GrammarRuleInfoUseCase::new(&repo);
-
-    let result = use_case
-        .execute(&JapaneseLevel::N5, &HashSet::new())
-        .await
-        .expect("Failed to execute GrammarRuleInfoUseCase");
-
-    assert!(!result.is_empty(), "Should return N5 grammar rules");
-
-    let first = result
-        .first()
-        .expect("Should have at least one grammar rule");
-    assert!(!first.title.is_empty());
-    assert!(!first.short_description.is_empty());
-    assert!(!first.md_description.is_empty());
 }
 
 #[tokio::test]

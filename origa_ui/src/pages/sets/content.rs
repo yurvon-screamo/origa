@@ -7,7 +7,7 @@ use crate::well_known_set::WellKnownSetLoaderImpl;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::domain::{JapaneseLevel, User};
-use origa::use_cases::ListWellKnownSetsUseCase;
+use origa::traits::WellKnownSetLoader;
 
 #[component]
 pub fn SetsContent() -> impl IntoView {
@@ -34,23 +34,22 @@ pub fn SetsContent() -> impl IntoView {
     let user_for_load = current_user;
 
     spawn_local(async move {
-        let use_case = ListWellKnownSetsUseCase::new(&loader);
-        if let Ok(set_infos) = use_case.execute().await {
-            let set_list: Vec<SetInfo> = set_infos
+        if let Ok(meta_list) = loader.load_meta_list().await {
+            let set_list: Vec<SetInfo> = meta_list
                 .into_iter()
-                .map(|info| {
+                .map(|meta| {
                     let is_imported = user_for_load
                         .get()
-                        .map(|u| u.is_set_imported(&info.meta.id))
+                        .map(|u| u.is_set_imported(&meta.id))
                         .unwrap_or(false);
 
                     SetInfo {
-                        set_id: info.meta.id,
-                        title: info.meta.title_ru,
-                        description: info.meta.desc_ru,
-                        word_count: info.word_count,
-                        set_type: info.meta.set_type,
-                        level: info.meta.level,
+                        set_id: meta.id,
+                        title: meta.title_ru,
+                        description: meta.desc_ru,
+                        word_count: Some(meta.word_count),
+                        set_type: meta.set_type,
+                        level: meta.level,
                         is_imported,
                     }
                 })

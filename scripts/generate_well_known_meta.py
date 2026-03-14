@@ -16,6 +16,7 @@ def extract_meta(data: dict, set_id: str, set_type: str) -> dict:
     content = data.get("content", {})
     russian = content.get("Russian", {})
     english = content.get("English", {})
+    words = data.get("words", [])
 
     return {
         "id": set_id,
@@ -25,6 +26,7 @@ def extract_meta(data: dict, set_id: str, set_type: str) -> dict:
         "title_en": english.get("title", ""),
         "desc_ru": russian.get("description", ""),
         "desc_en": english.get("description", ""),
+        "word_count": len(words),
     }
 
 

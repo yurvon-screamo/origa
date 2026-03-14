@@ -1,17 +1,21 @@
 use crate::ui_components::{FuriganaText, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
-use origa::use_cases::GrammarRuleItem;
+use origa::domain::{GrammarRule, NativeLanguage};
 use std::collections::HashSet;
 use ulid::Ulid;
 
 #[component]
 pub fn RuleItem(
-    rule: GrammarRuleItem,
+    rule: &'static GrammarRule,
+    native_language: NativeLanguage,
     selected_ids: RwSignal<HashSet<Ulid>>,
     known_kanji: HashSet<String>,
 ) -> impl IntoView {
-    let rule_id = rule.rule_id;
+    let rule_id = *rule.rule_id();
     let is_selected = move || selected_ids.get().contains(&rule_id);
+    let content = rule.content(&native_language);
+    let title = content.title().to_string();
+    let short_description = content.short_description().to_string();
 
     let on_click = move |_| {
         selected_ids.update(|ids| {
@@ -35,9 +39,9 @@ pub fn RuleItem(
             )
             on:click=on_click
         >
-            <div class="font-bold text-sm font-mono"><FuriganaText text=rule.title known_kanji=known_kanji.clone()/></div>
+            <div class="font-bold text-sm font-mono"><FuriganaText text=title known_kanji=known_kanji.clone()/></div>
             <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                {rule.short_description}
+                {short_description}
             </Text>
         </div>
     }
