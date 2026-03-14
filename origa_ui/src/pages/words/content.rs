@@ -1,7 +1,7 @@
 use super::super::shared::{CardCounts, CardStatus, Filter, FilterBtn, create_delete_callback};
 use super::vocabulary_card_item::VocabularyCardItem;
 use crate::repository::HybridUserRepository;
-use crate::ui_components::{Input, Text, TextSize, ToastContainer, ToastData, TypographyVariant};
+use crate::ui_components::{Input, LoadingOverlay, Text, TextSize, ToastContainer, ToastData, TypographyVariant};
 use leptos::either::Either;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
@@ -16,6 +16,7 @@ pub fn WordsContent() -> impl IntoView {
         use_context::<HybridUserRepository>().expect("repository context not provided");
 
     let current_user: RwSignal<Option<User>> = RwSignal::new(None);
+    let is_loading = RwSignal::new(true);
     let all_cards: RwSignal<Vec<StudyCard>> = RwSignal::new(Vec::new());
     let repo_for_init = repository.clone();
 
@@ -33,6 +34,7 @@ pub fn WordsContent() -> impl IntoView {
                         .collect();
                     all_cards.set(cards);
                     current_user.set(Some(user));
+                    is_loading.set(false);
                 }
                 Ok(None) => {
                     tracing::warn!("WordsContent: user not found");
@@ -132,53 +134,58 @@ pub fn WordsContent() -> impl IntoView {
 
     view! {
         <div class="space-y-4">
-            <Input
-                value=search
-                placeholder=Signal::derive(|| "Поиск...".to_string())
-            />
+            <Show when=move || is_loading.get()>
+                <LoadingOverlay message=Signal::derive(|| "Загрузка...".to_string()) />
+            </Show>
+            <Show when=move || !is_loading.get()>
+                <Input
+                    value=search
+                    placeholder=Signal::derive(|| "Поиск...".to_string())
+                />
 
-            <div class="flex flex-wrap gap-2">
-                <FilterBtn filter=Filter::All count=move || counts.get().total active=filter />
-                <FilterBtn filter=Filter::New count=move || counts.get().new active=filter />
-                <FilterBtn filter=Filter::Hard count=move || counts.get().hard active=filter />
-                <FilterBtn filter=Filter::InProgress count=move || counts.get().in_progress active=filter />
-                <FilterBtn filter=Filter::Learned count=move || counts.get().learned active=filter />
-            </div>
+                <div class="flex flex-wrap gap-2">
+                    <FilterBtn filter=Filter::All count=move || counts.get().total active=filter />
+                    <FilterBtn filter=Filter::New count=move || counts.get().new active=filter />
+                    <FilterBtn filter=Filter::Hard count=move || counts.get().hard active=filter />
+                    <FilterBtn filter=Filter::InProgress count=move || counts.get().in_progress active=filter />
+                    <FilterBtn filter=Filter::Learned count=move || counts.get().learned active=filter />
+                </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-                {move || {
-                    let cards = filtered_cards.get();
-                    if cards.is_empty() {
-                        Either::Left(view! {
-                            <div class="col-span-full">
-                                <Text size=TextSize::Default variant=TypographyVariant::Muted>
-                                    "Слов не найдено"
-                                </Text>
-                            </div>
-                        })
-                    } else {
-                        Either::Right(view! {
-                            <For
-                                each=move || filtered_cards.get()
-                                key=|card| *card.card_id()
-                                children=move |card| {
-                                    view! {
-                                        <VocabularyCardItem
-                                            study_card=card
-                                            native_language=native_lang.get()
-                                            known_kanji=known_kanji.get()
-                                            on_toggle_favorite=on_toggle_favorite
-                                            on_delete=on_delete
-                                            is_deleting=is_deleting.into()
-                                        />
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+                    {move || {
+                        let cards = filtered_cards.get();
+                        if cards.is_empty() {
+                            Either::Left(view! {
+                                <div class="col-span-full">
+                                    <Text size=TextSize::Default variant=TypographyVariant::Muted>
+                                        "Слов не найдено"
+                                    </Text>
+                                </div>
+                            })
+                        } else {
+                            Either::Right(view! {
+                                <For
+                                    each=move || filtered_cards.get()
+                                    key=|card| *card.card_id()
+                                    children=move |card| {
+                                        view! {
+                                            <VocabularyCardItem
+                                                study_card=card
+                                                native_language=native_lang.get()
+                                                known_kanji=known_kanji.get()
+                                                on_toggle_favorite=on_toggle_favorite
+                                                on_delete=on_delete
+                                                is_deleting=is_deleting.into()
+                                            />
+                                        }
                                     }
-                                }
-                            />
-                        })
-                    }
-                }}
-            </div>
-            <ToastContainer toasts=toasts duration_ms=5000 />
+                                />
+                            })
+                        }
+                    }}
+                </div>
+                <ToastContainer toasts=toasts duration_ms=5000 />
+            </Show>
         </div>
     }
 }
