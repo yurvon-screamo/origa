@@ -1,5 +1,4 @@
 use super::add_grammar_modal_state::ModalState;
-use crate::app::update_current_user;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::use_cases::CreateGrammarCardUseCase;
@@ -28,10 +27,6 @@ impl ModalHandlers {
                     return;
                 }
 
-                let user_id = state
-                    .current_user
-                    .with(|u| u.as_ref().map(|u| u.id()))
-                    .unwrap();
                 let repository = state.repository.clone();
                 let is_creating = state.is_creating;
                 let error = state.error_message;
@@ -43,10 +38,9 @@ impl ModalHandlers {
 
                 spawn_local(async move {
                     let use_case = CreateGrammarCardUseCase::new(&repository);
-                    match use_case.execute(user_id, rule_ids).await {
+                    match use_case.execute(rule_ids).await {
                         Ok(_) => {
                             is_creating.set(false);
-                            update_current_user(repository, state_for_async.current_user);
                             state_for_async.reset();
                             is_open_for_async.set(false);
                         }

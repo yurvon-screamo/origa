@@ -10,6 +10,7 @@ pub fn RulesList(
     rules: Vec<GrammarRuleItem>,
     selected_ids: RwSignal<HashSet<Ulid>>,
     search_query: RwSignal<String>,
+    known_kanji: HashSet<String>,
 ) -> impl IntoView {
     let filtered_rules = move || {
         let query = search_query.get().to_lowercase();
@@ -25,6 +26,8 @@ pub fn RulesList(
             .cloned()
             .collect::<Vec<_>>()
     };
+
+    let known_kanji_stored = StoredValue::new(known_kanji);
 
     view! {
         <div class="space-y-2 overflow-y-auto">
@@ -42,7 +45,13 @@ pub fn RulesList(
                             each=move || filtered.clone()
                             key=|rule| rule.rule_id
                             children=move |rule| {
-                                view! { <RuleItem rule=rule selected_ids=selected_ids /> }
+                                view! {
+                                    <RuleItem
+                                        rule=rule
+                                        selected_ids=selected_ids
+                                        known_kanji=known_kanji_stored.get_value()
+                                    />
+                                }
                             }
                         />
                     }.into_any()

@@ -1,6 +1,6 @@
 use super::{ActionButtons, PersonalDataCard, SettingsCard};
-use crate::app::{AuthContext, update_current_user};
-use crate::repository::{clear_session, reset_sync};
+use crate::app::AuthContext;
+use crate::repository::clear_session;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::domain::NativeLanguage;
@@ -10,8 +10,22 @@ use origa::use_cases::UpdateUserProfileUseCase;
 #[component]
 pub fn ProfileContent() -> impl IntoView {
     let ctx = use_context::<AuthContext>().expect("AuthContext not provided");
-    let current_user = ctx.current_user;
     let client = ctx.client.clone();
+    let repository = ctx.repository.clone();
+
+    let current_user: RwSignal<Option<origa::domain::User>> = RwSignal::new(None);
+
+    Effect::new({
+        let repository = repository.clone();
+        move |_| {
+            let repository = repository.clone();
+            spawn_local(async move {
+                if let Ok(Some(user)) = repository.get_current_user().await {
+                    current_user.set(Some(user));
+                }
+            });
+        }
+    });
 
     let user_name = Memo::new(move |_| {
         current_user.with(|u| {
@@ -36,26 +50,26 @@ pub fn ProfileContent() -> impl IntoView {
     let is_saving = RwSignal::new(false);
     let is_deleting = RwSignal::new(false);
     let is_logging_out = RwSignal::new(false);
-    let repository = ctx.repository.clone();
 
     let save_profile = Callback::new(move |_| {
-        let user_id = current_user.with(|u| u.as_ref().map(|u| u.id())).unwrap();
         let repository = repository.clone();
-        let current_user_signal = current_user;
         let language = selected_language.get();
         let is_saving_signal = is_saving;
+        let current_user_signal = current_user;
 
         is_saving_signal.set(true);
 
         spawn_local(async move {
             let use_case = UpdateUserProfileUseCase::new(&repository);
 
-            let result = use_case.execute(user_id, language, None).await;
+            let result = use_case.execute(language, None).await;
 
             is_saving_signal.set(false);
 
-            if result.is_ok() {
-                update_current_user(repository, current_user_signal);
+            if result.is_ok()
+                && let Ok(Some(updated_user)) = repository.get_current_user().await
+            {
+                current_user_signal.set(Some(updated_user));
             }
         });
     });
@@ -69,27 +83,25 @@ pub fn ProfileContent() -> impl IntoView {
     let logout = Callback::new(move |_| {
         let client_clone = client_for_logout.clone();
         let repository_clone = repository_for_logout.clone();
-        let current_user_clone = current_user;
+        let current_user_signal = current_user;
         let nav = navigate_for_logout.clone();
         let is_logging_out_signal = is_logging_out;
 
         is_logging_out_signal.set(true);
 
         spawn_local(async move {
-            let user_id = current_user_clone.with(|u| u.as_ref().map(|u| u.id()));
-
             let _ = client_clone.logout().await;
-
-            reset_sync();
             clear_session();
 
-            if let Some(uid) = user_id
-                && let Err(e) = repository_clone.delete(uid).await
-            {
-                tracing::error!("Failed to clear local data on logout: {}", e);
+            let user_opt = repository_clone.get_current_user().await.ok().flatten();
+            if let Some(user) = user_opt {
+                let user_id = user.id();
+                if let Err(e) = repository_clone.delete(user_id).await {
+                    tracing::error!("Failed to clear local data on logout: {}", e);
+                }
             }
 
-            current_user_clone.set(None);
+            current_user_signal.set(None);
             nav("/", Default::default());
         });
     });
@@ -99,23 +111,23 @@ pub fn ProfileContent() -> impl IntoView {
     let delete_account = Callback::new(move |_| {
         let client_clone = client_for_delete.clone();
         let repository_clone = repository_for_delete.clone();
-        let current_user_clone = current_user;
+        let current_user_signal = current_user;
         let is_deleting_signal = is_deleting;
         let nav = navigate_for_delete.clone();
 
         is_deleting_signal.set(true);
 
         spawn_local(async move {
-            let user_id = current_user_clone.with(|u| u.as_ref().map(|u| u.id()));
-
             match client_clone.delete_account().await {
                 Ok(()) => {
-                    if let Some(uid) = user_id
-                        && let Err(e) = repository_clone.delete(uid).await
-                    {
-                        tracing::error!("Failed to delete local data: {}", e);
+                    let user_opt = repository_clone.get_current_user().await.ok().flatten();
+                    if let Some(user) = user_opt {
+                        let user_id = user.id();
+                        if let Err(e) = repository_clone.delete(user_id).await {
+                            tracing::error!("Failed to delete local data: {}", e);
+                        }
                     }
-                    current_user_clone.set(None);
+                    current_user_signal.set(None);
                     nav("/", Default::default());
                 }
                 Err(e) => {

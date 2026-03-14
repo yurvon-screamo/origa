@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use super::super::shared::CardStatus;
 use crate::ui_components::{
     Card, CardHistoryModal, CollapsibleDescription, DeleteButton, DeleteConfirmModal,
@@ -5,32 +7,18 @@ use crate::ui_components::{
     TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
-use origa::domain::{Card as DomainCard, NativeLanguage, StudyCard, User};
+use origa::domain::{Card as DomainCard, NativeLanguage, StudyCard};
 use ulid::Ulid;
 
 #[component]
 pub fn GrammarCardItem(
     study_card: StudyCard,
+    native_language: NativeLanguage,
+    known_kanji: HashSet<String>,
     on_toggle_favorite: Callback<Ulid>,
     on_delete: Callback<Ulid>,
     is_deleting: Signal<bool>,
 ) -> impl IntoView {
-    let current_user = use_context::<RwSignal<Option<User>>>().expect("current_user context");
-
-    let native_lang = Memo::new(move |_| {
-        current_user
-            .get()
-            .map(|u| *u.native_language())
-            .unwrap_or(NativeLanguage::Russian)
-    });
-
-    let known_kanji = Memo::new(move |_| {
-        current_user
-            .get()
-            .map(|u| u.knowledge_set().get_known_kanji())
-            .unwrap_or_default()
-    });
-
     let card = study_card.card();
     let card_id = *study_card.card_id();
     let is_favorite = study_card.is_favorite();
@@ -41,16 +29,15 @@ pub fn GrammarCardItem(
     let is_delete_modal_open = RwSignal::new(false);
     let confirm_delete = Callback::new(move |_| on_delete.run(card_id));
 
-    let lang = native_lang.get();
     let (title, description) = match card {
         DomainCard::Grammar(grammar) => (
             grammar
-                .title(&lang)
+                .title(&native_language)
                 .ok()
                 .map(|t| t.text().to_string())
                 .unwrap_or_default(),
             grammar
-                .description(&lang)
+                .description(&native_language)
                 .ok()
                 .map(|d| d.text().to_string())
                 .unwrap_or_default(),
@@ -59,6 +46,9 @@ pub fn GrammarCardItem(
     };
 
     let status = CardStatus::from_study_card(&study_card);
+
+    let known_kanji_for_furigana = known_kanji.clone();
+    let known_kanji_for_markdown = known_kanji;
 
     let difficulty = memory
         .difficulty()
@@ -79,7 +69,7 @@ pub fn GrammarCardItem(
                 <div class="min-w-0 flex-1">
                     <div class="flex items-center gap-3 mb-2">
                         <Heading level=HeadingLevel::H4>
-                            <FuriganaText text=title.clone() known_kanji=known_kanji.get()/>
+                            <FuriganaText text=title.clone() known_kanji=known_kanji_for_furigana/>
                         </Heading>
                         <Tag variant=Signal::derive(move || status.tag_variant())>
                             {status.label()}
@@ -92,7 +82,7 @@ pub fn GrammarCardItem(
                         <DeleteButton on_click=Callback::new(move |_| is_delete_modal_open.set(true)) />
                     </div>
                     <CollapsibleDescription>
-                        <MarkdownText content=Signal::derive(move || description.clone()) known_kanji=known_kanji.get()/>
+                        <MarkdownText content=Signal::derive(move || description.clone()) known_kanji=known_kanji_for_markdown/>
                     </CollapsibleDescription>
 
                     <Text

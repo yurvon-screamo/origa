@@ -5,32 +5,19 @@ use crate::ui_components::{
     TextSize, TypographyVariant,
 };
 use leptos::{ev::MouseEvent, prelude::*};
-use origa::domain::{Card as DomainCard, NativeLanguage, StudyCard, User};
+use origa::domain::{Card as DomainCard, NativeLanguage, StudyCard};
+use std::collections::HashSet;
 use ulid::Ulid;
 
 #[component]
 pub fn KanjiCardItem(
     study_card: StudyCard,
+    native_language: NativeLanguage,
+    known_kanji: HashSet<String>,
     on_toggle_favorite: Callback<Ulid>,
     on_delete: Callback<Ulid>,
     is_deleting: Signal<bool>,
 ) -> impl IntoView {
-    let current_user = use_context::<RwSignal<Option<User>>>().expect("current_user context");
-
-    let native_lang = Memo::new(move |_| {
-        current_user
-            .get()
-            .map(|u| *u.native_language())
-            .unwrap_or(NativeLanguage::Russian)
-    });
-
-    let known_kanji = Memo::new(move |_| {
-        current_user
-            .get()
-            .map(|u| u.knowledge_set().get_known_kanji())
-            .unwrap_or_default()
-    });
-
     let card = study_card.card();
     let card_id = *study_card.card_id();
     let is_favorite = study_card.is_favorite();
@@ -41,12 +28,11 @@ pub fn KanjiCardItem(
     let is_delete_modal_open = RwSignal::new(false);
     let confirm_delete = Callback::new(move |_| on_delete.run(card_id));
 
-    let lang = native_lang.get();
     let (kanji_char, description, radicals, example_words) = match card {
         DomainCard::Kanji(kanji_card) => {
             let radicals_str = kanji_card.radicals_chars().into_iter().collect::<String>();
             let examples_str = kanji_card
-                .example_words(&lang)
+                .example_words(&native_language)
                 .iter()
                 .map(|w| format!("{} ({})", w.word(), w.meaning()))
                 .collect::<Vec<_>>()
@@ -96,7 +82,7 @@ pub fn KanjiCardItem(
                     <div class="flex items-center gap-3 mb-2">
                         <span class="text-3xl font-serif">{kanji_char.clone()}</span>
                         <div class="min-w-0 flex-1">
-                            <MarkdownText content=Signal::derive(move || description.clone()) known_kanji=known_kanji.get()/>
+                            <MarkdownText content=Signal::derive(move || description.clone()) known_kanji=known_kanji.clone()/>
                         </div>
                         <Tag variant=Signal::derive(move || status.tag_variant())>
                             {status.label()}
@@ -124,7 +110,7 @@ pub fn KanjiCardItem(
                             let examples = example_words.clone();
                             view! {
                                 <div class=Signal::derive(|| "mb-1".to_string())>
-                                    <MarkdownText content=Signal::derive(move || format!("**Примеры:** {}", examples)) known_kanji=known_kanji.get()/>
+                                    <MarkdownText content=Signal::derive(move || format!("**Примеры:** {}", examples)) known_kanji=known_kanji.clone()/>
                                 </div>
                             }.into_any()
                         } else {

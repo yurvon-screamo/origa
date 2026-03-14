@@ -1,7 +1,7 @@
 use crate::ui_components::{MarkdownText, MarkdownVariant, Text, TextSize};
 use leptos::prelude::*;
 use origa::domain::QuizOption;
-use origa::domain::User;
+use std::collections::HashSet;
 
 use super::quiz_result::QuizResult;
 
@@ -12,15 +12,8 @@ pub fn QuizOptions(
     show_result: bool,
     quiz_result: QuizResult,
     on_select_option: Callback<usize>,
+    #[prop(into)] known_kanji: Signal<HashSet<String>>,
 ) -> impl IntoView {
-    let current_user = use_context::<RwSignal<Option<User>>>().expect("current_user context");
-
-    let known_kanji = Memo::new(move |_| {
-        current_user
-            .get()
-            .map(|u| u.knowledge_set().get_known_kanji())
-            .unwrap_or_default()
-    });
     view! {
         <div class="grid grid-cols-2 gap-2 sm:gap-3">
             {move || {

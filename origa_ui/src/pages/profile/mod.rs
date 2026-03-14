@@ -16,13 +16,24 @@ pub use settings_card::SettingsCard;
 
 use crate::ui_components::{CardLayout, CardLayoutSize, PageLayout, PageLayoutVariant};
 use leptos::prelude::*;
+use origa::domain::User;
 
 #[component]
 pub fn Profile() -> impl IntoView {
+    let current_user =
+        use_context::<RwSignal<Option<User>>>().expect("current_user context not provided");
+
+    let username = Memo::new(move |_| {
+        current_user
+            .get()
+            .map(|u| u.username().to_string())
+            .unwrap_or_default()
+    });
+
     view! {
         <PageLayout variant=PageLayoutVariant::Full>
             <CardLayout size=CardLayoutSize::Adaptive class="px-4 py-8">
-                <ProfileHeader />
+                <ProfileHeader username=username.get() />
                 <ProfileContent />
             </CardLayout>
         </PageLayout>

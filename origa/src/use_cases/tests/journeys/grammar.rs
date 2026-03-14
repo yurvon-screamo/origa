@@ -39,14 +39,8 @@ async fn grammar_rule_info_returns_rules_for_level() {
     let repo = InMemoryUserRepository::with_user(user);
     let use_case = GrammarRuleInfoUseCase::new(&repo);
 
-    let user_id = repo
-        .find_by_email("test@example.com")
-        .await
-        .expect("Failed to find user by email")
-        .expect("User should exist")
-        .id();
     let result = use_case
-        .execute(user_id, &JapaneseLevel::N5, &HashSet::new())
+        .execute(&JapaneseLevel::N5, &HashSet::new())
         .await
         .expect("Failed to execute GrammarRuleInfoUseCase");
 
@@ -69,7 +63,6 @@ async fn create_grammar_card_creates_from_real_rule() {
         NativeLanguage::Russian,
         None,
     );
-    let user_id = user.id();
     let repo = InMemoryUserRepository::with_user(user);
     let use_case = CreateGrammarCardUseCase::new(&repo);
 
@@ -79,17 +72,13 @@ async fn create_grammar_card_creates_from_real_rule() {
     let rule_id = *first_rule.rule_id();
 
     let cards = use_case
-        .execute(user_id, vec![rule_id])
+        .execute(vec![rule_id])
         .await
         .expect("Failed to execute CreateGrammarCardUseCase");
 
     assert_eq!(cards.len(), 1);
 
-    let saved_user = repo
-        .find_by_id(user_id)
-        .await
-        .expect("Failed to find user by id")
-        .expect("User should exist");
+    let saved_user = repo.get_current_user().await.unwrap().unwrap();
     assert!(
         saved_user
             .knowledge_set()

@@ -27,14 +27,18 @@ pub fn clear_session() {
 
 const LAST_SYNC_KEY: &str = "origa_last_sync_time";
 
+#[allow(dead_code)]
 pub fn get_last_sync_time() -> u64 {
-    LocalStorage::get(LAST_SYNC_KEY).unwrap_or(0)
+    let res = LocalStorage::get(LAST_SYNC_KEY);
+    if let Err(e) = &res {
+        tracing::error!("Failed to get last sync time: {}", e);
+    }
+    res.unwrap_or_default()
 }
 
 pub fn set_last_sync_time(timestamp: u64) {
-    let _ = LocalStorage::set(LAST_SYNC_KEY, timestamp);
-}
-
-pub fn clear_last_sync_time() {
-    LocalStorage::delete(LAST_SYNC_KEY);
+    let res = LocalStorage::set(LAST_SYNC_KEY, timestamp);
+    if let Err(e) = res {
+        tracing::error!("Failed to set last sync time: {}", e);
+    }
 }

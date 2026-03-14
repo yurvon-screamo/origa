@@ -25,15 +25,9 @@ fn create_user_with_rated_cards(count: usize) -> (User, Vec<Ulid>) {
 async fn select_cards_to_fixation_returns_high_difficulty_cards() {
     let (user, _) = create_user_with_rated_cards(3);
     let repo = InMemoryUserRepository::with_user(user);
-    let user_id = repo
-        .find_by_email("test@example.com")
-        .await
-        .unwrap()
-        .unwrap()
-        .id();
     let use_case = SelectCardsToFixationUseCase::new(&repo);
 
-    let cards = use_case.execute(user_id).await.unwrap();
+    let cards = use_case.execute().await.unwrap();
 
     assert!(!cards.is_empty());
 }
@@ -42,15 +36,9 @@ async fn select_cards_to_fixation_returns_high_difficulty_cards() {
 async fn select_cards_to_fixation_returns_empty_for_new_cards() {
     let user = create_user_with_vocab_cards(3);
     let repo = InMemoryUserRepository::with_user(user);
-    let user_id = repo
-        .find_by_email("test@example.com")
-        .await
-        .unwrap()
-        .unwrap()
-        .id();
     let use_case = SelectCardsToFixationUseCase::new(&repo);
 
-    let cards = use_case.execute(user_id).await.unwrap();
+    let cards = use_case.execute().await.unwrap();
 
     assert!(cards.is_empty(), "New cards should not be in fixation");
 }
@@ -62,15 +50,9 @@ async fn select_cards_to_fixation_returns_empty_for_empty_knowledge_set() {
         NativeLanguage::Russian,
         None,
     ));
-    let user_id = repo
-        .find_by_email("test@example.com")
-        .await
-        .unwrap()
-        .unwrap()
-        .id();
     let use_case = SelectCardsToFixationUseCase::new(&repo);
 
-    let cards = use_case.execute(user_id).await.unwrap();
+    let cards = use_case.execute().await.unwrap();
 
     assert!(cards.is_empty());
 }
@@ -79,21 +61,15 @@ async fn select_cards_to_fixation_returns_empty_for_empty_knowledge_set() {
 async fn rate_card_fixation_again_updates_memory() {
     let (user, card_ids) = create_user_with_rated_cards(1);
     let repo = InMemoryUserRepository::with_user(user);
-    let user_id = repo
-        .find_by_email("test@example.com")
-        .await
-        .unwrap()
-        .unwrap()
-        .id();
     let use_case = RateCardUseCase::new(&repo);
     let card_id = card_ids[0];
 
     use_case
-        .execute(user_id, card_id, RateMode::FixationLesson, Rating::Again)
+        .execute(card_id, RateMode::FixationLesson, Rating::Again)
         .await
         .unwrap();
 
-    let updated = repo.find_by_id(user_id).await.unwrap().unwrap();
+    let updated = repo.get_current_user().await.unwrap().unwrap();
     let _card = updated.knowledge_set().get_card(card_id).unwrap();
 }
 
@@ -101,21 +77,15 @@ async fn rate_card_fixation_again_updates_memory() {
 async fn rate_card_fixation_good_updates_memory() {
     let (user, card_ids) = create_user_with_rated_cards(1);
     let repo = InMemoryUserRepository::with_user(user);
-    let user_id = repo
-        .find_by_email("test@example.com")
-        .await
-        .unwrap()
-        .unwrap()
-        .id();
     let use_case = RateCardUseCase::new(&repo);
     let card_id = card_ids[0];
 
     use_case
-        .execute(user_id, card_id, RateMode::FixationLesson, Rating::Good)
+        .execute(card_id, RateMode::FixationLesson, Rating::Good)
         .await
         .unwrap();
 
-    let updated = repo.find_by_id(user_id).await.unwrap().unwrap();
+    let updated = repo.get_current_user().await.unwrap().unwrap();
     let _card = updated.knowledge_set().get_card(card_id).unwrap();
 }
 
@@ -123,24 +93,18 @@ async fn rate_card_fixation_good_updates_memory() {
 async fn full_fixation_cycle_processes_all_cards() {
     let (user, _) = create_user_with_rated_cards(3);
     let repo = InMemoryUserRepository::with_user(user);
-    let user_id = repo
-        .find_by_email("test@example.com")
-        .await
-        .unwrap()
-        .unwrap()
-        .id();
     let select_use_case = SelectCardsToFixationUseCase::new(&repo);
     let rate_use_case = RateCardUseCase::new(&repo);
 
-    let cards = select_use_case.execute(user_id).await.unwrap();
+    let cards = select_use_case.execute().await.unwrap();
     for (card_id, _) in cards {
         rate_use_case
-            .execute(user_id, card_id, RateMode::FixationLesson, Rating::Good)
+            .execute(card_id, RateMode::FixationLesson, Rating::Good)
             .await
             .unwrap();
     }
 
-    let updated = repo.find_by_id(user_id).await.unwrap().unwrap();
+    let updated = repo.get_current_user().await.unwrap().unwrap();
     assert!(!updated.knowledge_set().lesson_history().is_empty());
 }
 
@@ -151,22 +115,11 @@ async fn rate_card_fixation_nonexistent_returns_error() {
         NativeLanguage::Russian,
         None,
     ));
-    let user_id = repo
-        .find_by_email("test@example.com")
-        .await
-        .unwrap()
-        .unwrap()
-        .id();
     let use_case = RateCardUseCase::new(&repo);
     let non_existent_card_id = Ulid::new();
 
     let result = use_case
-        .execute(
-            user_id,
-            non_existent_card_id,
-            RateMode::FixationLesson,
-            Rating::Good,
-        )
+        .execute(non_existent_card_id, RateMode::FixationLesson, Rating::Good)
         .await;
 
     assert!(matches!(result, Err(OrigaError::CardNotFound { .. })));

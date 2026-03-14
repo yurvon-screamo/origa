@@ -4,24 +4,22 @@ use super::lesson_card_container::LessonCardContainer;
 use super::lesson_progress_view::LessonProgressView;
 use super::lesson_state::{LessonContext, LessonMode, LessonState};
 use crate::app::AuthContext;
-use crate::repository::session;
-use crate::repository::{HybridUserRepository, SyncContext};
+use crate::repository::{HybridUserRepository, set_last_sync_time};
 use crate::ui_components::{Spinner, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos_router::hooks::use_query_map;
-use origa::domain::User;
+use origa::domain::NativeLanguage;
+use origa::traits::UserRepository;
 use origa::use_cases::{SelectCardsToFixationUseCase, SelectCardsToLessonUseCase};
+use std::collections::HashSet;
 use ulid::Ulid;
 
 #[component]
 pub fn LessonContent() -> impl IntoView {
-    let current_user =
-        use_context::<RwSignal<Option<User>>>().expect("current_user context not provided");
     let repository =
         use_context::<HybridUserRepository>().expect("repository context not provided");
     let auth_ctx = use_context::<AuthContext>().expect("AuthContext not provided");
-    let sync_context = use_context::<SyncContext>().expect("sync_context not provided");
 
     let query = use_query_map();
     let mode = match query.read_untracked().get("mode").as_deref() {
@@ -37,6 +35,8 @@ pub fn LessonContent() -> impl IntoView {
     let is_muted = RwSignal::new(false);
     let is_syncing_cards = RwSignal::new(false);
     let is_initial_syncing = RwSignal::new(true);
+    let known_kanji = RwSignal::new(HashSet::<String>::new());
+    let native_language = RwSignal::new(NativeLanguage::Russian);
 
     let lesson_ctx = LessonContext {
         repository: repository.clone(),
@@ -45,45 +45,32 @@ pub fn LessonContent() -> impl IntoView {
         mode,
         reload_trigger,
         is_muted,
+        known_kanji,
+        native_language,
     };
     provide_context(lesson_ctx);
 
     let repo_for_sync = repository.clone();
-    let sync_ctx_for_sync = sync_context;
-    let user_for_sync = current_user;
     Effect::new(move |_| {
-        let user = current_user.get();
-        if let Some(user) = user {
-            let user_id = user.id();
-            let repo = repo_for_sync.clone();
-            let sync_ctx = sync_ctx_for_sync;
-            let current_user_signal = user_for_sync;
-            spawn_local(async move {
-                sync_ctx.start_sync();
-
-                match repo.force_sync(user_id).await {
-                    Ok(Some(merged_user)) => {
-                        current_user_signal.set(Some(merged_user));
-                        session::set_last_sync_time(js_sys::Date::now() as u64 / 1000);
-                        tracing::info!("Lesson: force_sync completed");
-                    }
-                    Ok(None) => {
-                        session::set_last_sync_time(js_sys::Date::now() as u64 / 1000);
-                        tracing::debug!("Lesson: force_sync - no changes");
-                    }
-                    Err(e) => {
-                        tracing::error!("Lesson: force_sync error: {:?}", e);
+        let repo = repo_for_sync.clone();
+        spawn_local(async move {
+            match repo.merge_current_user().await {
+                Ok(()) => {
+                    set_last_sync_time(js_sys::Date::now() as u64 / 1000);
+                    if let Ok(Some(user)) = repo.get_current_user().await {
+                        known_kanji.set(user.knowledge_set().get_known_kanji());
+                        native_language.set(*user.native_language());
                     }
                 }
-                sync_ctx.complete_sync();
-                is_initial_syncing.set(false);
-            });
-        }
+                Err(e) => {
+                    tracing::error!("Lesson: merge_current_user error: {:?}", e);
+                }
+            }
+            is_initial_syncing.set(false);
+        });
     });
 
     Effect::new(move |_| {
-        sync_context.sync_trigger.get();
-
         if !is_loading.get_untracked() {
             is_syncing_cards.set(true);
         }
@@ -98,59 +85,51 @@ pub fn LessonContent() -> impl IntoView {
             return;
         }
 
-        let user = current_user.get();
-        if let Some(user) = user {
-            let user_id = user.id();
-            let repo = repository.clone();
-            let current_mode = mode;
-            spawn_local(async move {
-                is_loading.set(true);
+        let repo = repository.clone();
+        let current_mode = mode;
+        spawn_local(async move {
+            is_loading.set(true);
 
-                let cards: Result<
-                    std::collections::HashMap<ulid::Ulid, origa::domain::LessonCardView>,
-                    _,
-                > = match current_mode {
-                    LessonMode::Lesson => {
-                        let use_case = SelectCardsToLessonUseCase::new(&repo);
-                        use_case.execute(user_id).await
-                    }
-                    LessonMode::Fixation => {
-                        let use_case = SelectCardsToFixationUseCase::new(&repo);
-                        use_case.execute(user_id).await
-                    }
-                };
+            let cards: Result<
+                std::collections::HashMap<ulid::Ulid, origa::domain::LessonCardView>,
+                _,
+            > = match current_mode {
+                LessonMode::Lesson => {
+                    let use_case = SelectCardsToLessonUseCase::new(&repo);
+                    use_case.execute().await
+                }
+                LessonMode::Fixation => {
+                    let use_case = SelectCardsToFixationUseCase::new(&repo);
+                    use_case.execute().await
+                }
+            };
 
-                tracing::info!("Cards len: {}", cards.iter().count());
+            tracing::info!("Cards len: {}", cards.iter().count());
 
-                match cards {
-                    Ok(cards) => {
-                        let card_ids: Vec<Ulid> = cards.keys().cloned().collect();
-                        if cards.is_empty() {
-                            error_message.set(Some("Нет карточек для изучения".to_string()));
-                        } else {
-                            lesson_state.set(LessonState {
-                                cards,
-                                card_ids,
-                                current_index: 0,
-                                showing_answer: false,
-                                review_count: 0,
-                                selected_quiz_option: None,
-                            });
-                        }
-                    }
-                    Err(e) => {
-                        error_message.set(Some(format!("Ошибка загрузки карточек: {}", e)));
+            match cards {
+                Ok(cards) => {
+                    let card_ids: Vec<Ulid> = cards.keys().cloned().collect();
+                    if cards.is_empty() {
+                        error_message.set(Some("Нет карточек для изучения".to_string()));
+                    } else {
+                        lesson_state.set(LessonState {
+                            cards,
+                            card_ids,
+                            current_index: 0,
+                            showing_answer: false,
+                            review_count: 0,
+                            selected_quiz_option: None,
+                        });
                     }
                 }
+                Err(e) => {
+                    error_message.set(Some(format!("Ошибка загрузки карточек: {}", e)));
+                }
+            }
 
-                is_loading.set(false);
-                is_syncing_cards.set(false);
-            });
-        } else {
-            error_message.set(Some("Пользователь не найден".to_string()));
             is_loading.set(false);
             is_syncing_cards.set(false);
-        }
+        });
     });
 
     view! {

@@ -32,17 +32,16 @@ impl<'a, R: UserRepository> GrammarRuleInfoUseCase<'a, R> {
 
     pub async fn execute(
         &self,
-        user_id: Ulid,
         level: &JapaneseLevel,
         existing_rule_ids: &HashSet<Ulid>,
     ) -> Result<Vec<GrammarRuleItem>, OrigaError> {
-        debug!(user_id = %user_id, level = ?level, "Getting grammar info");
+        debug!(level = ?level, "Getting grammar info");
 
         let user = self
             .repository
-            .find_by_id(user_id)
+            .get_current_user()
             .await?
-            .ok_or(OrigaError::UserNotFound { user_id })?;
+            .ok_or(OrigaError::CurrentUserNotExist {})?;
 
         let lang = user.native_language();
 

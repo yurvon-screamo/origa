@@ -1,10 +1,8 @@
-use crate::app::update_current_user;
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{ToastData, ToastType};
 use leptos::ev::MouseEvent;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use origa::domain::User;
 
 use super::import_set_preview_modal_state::ImportPreviewModalState;
 
@@ -17,7 +15,6 @@ pub struct ImportPreviewHandlers {
 pub fn create_import_preview_handlers(
     state: ImportPreviewModalState,
     is_open: RwSignal<bool>,
-    current_user: RwSignal<Option<User>>,
     repository: HybridUserRepository,
     toasts: RwSignal<Vec<ToastData>>,
     on_import_result: Callback<()>,
@@ -29,7 +26,6 @@ pub fn create_import_preview_handlers(
 
     let state_clone = state.clone();
     let is_open_clone = is_open;
-    let current_user_clone = current_user;
     let repository_clone = repository;
     let toasts_clone = toasts;
     let on_import_result_clone = on_import_result;
@@ -41,8 +37,7 @@ pub fn create_import_preview_handlers(
 
         let state = state_clone.clone();
         let is_open = is_open_clone;
-        let current_user = current_user_clone;
-        let repository = repository_clone.clone();
+        let _repository = repository_clone.clone();
         let toasts = toasts_clone;
         let on_import_result = on_import_result_clone;
 
@@ -52,7 +47,6 @@ pub fn create_import_preview_handlers(
             match state.import_selected().await {
                 Ok(_) => {
                     state.is_importing.set(false);
-                    update_current_user(repository, current_user);
                     state.reset();
                     is_open.set(false);
 

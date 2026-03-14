@@ -1,6 +1,7 @@
 use crate::ui_components::{Card, get_reading_from_text, is_speech_supported, speak_text};
 use leptos::prelude::*;
-use origa::domain::{Card as DomainCard, GrammarInfo, NativeLanguage, User};
+use origa::domain::{Card as DomainCard, GrammarInfo, NativeLanguage};
+use std::collections::HashSet;
 use tracing;
 
 use super::card_type::CardType;
@@ -17,17 +18,11 @@ pub fn LessonCard(
     is_reversed: bool,
     on_show_answer: Callback<()>,
     grammar_info: Option<GrammarInfo>,
+    native_language: NativeLanguage,
+    #[prop(into)] known_kanji: Signal<HashSet<String>>,
 ) -> impl IntoView {
-    let current_user = use_context::<RwSignal<Option<User>>>().expect("current_user context");
-    let native_lang = Memo::new(move |_| {
-        current_user
-            .get()
-            .map(|u| *u.native_language())
-            .unwrap_or(NativeLanguage::Russian)
-    });
-
     let card_type = CardType::from(&card);
-    let lang = native_lang.get();
+    let lang = native_language;
     let question = StoredValue::new(
         card.question(&lang)
             .ok()
@@ -153,6 +148,8 @@ pub fn LessonCard(
             <LessonCardHeader
                 card_type=card_type
                 question_text=if is_reversed { answer.get_value() } else { question.get_value() }
+                grammar_info=grammar_info.clone()
+                show_answer=show_answer
             />
 
             <div class="flex-1 flex flex-col justify-center">
@@ -162,6 +159,7 @@ pub fn LessonCard(
                         kanji=kanji_stored.get_value()
                         is_reversed=is_reversed
                         on_show_answer=on_show_answer
+                        known_kanji=known_kanji
                     />
                 </Show>
 
@@ -177,7 +175,7 @@ pub fn LessonCard(
                         is_reversed=is_reversed
                         on_readings=on_readings_stored.get_value()
                         kun_readings=kun_readings_stored.get_value()
-                        grammar_info=grammar_info.clone()
+                        known_kanji=known_kanji
                     />
 
                     <Show when=move || card_type == CardType::Kanji && is_expanded.get()>
@@ -191,6 +189,7 @@ pub fn LessonCard(
                                         show_details=is_expanded.get()
                                         on_readings=on_readings_stored.get_value()
                                         kun_readings=kun_readings_stored.get_value()
+                                        known_kanji=known_kanji
                                     />
                                 }
                             })

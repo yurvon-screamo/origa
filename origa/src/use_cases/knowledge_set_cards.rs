@@ -2,7 +2,6 @@ use crate::domain::OrigaError;
 use crate::domain::StudyCard;
 use crate::traits::UserRepository;
 use tracing::{debug, info};
-use ulid::Ulid;
 
 #[derive(Clone)]
 pub struct KnowledgeSetCardsUseCase<'a, R: UserRepository> {
@@ -14,14 +13,14 @@ impl<'a, R: UserRepository> KnowledgeSetCardsUseCase<'a, R> {
         Self { repository }
     }
 
-    pub async fn execute(&self, user_id: Ulid) -> Result<Vec<StudyCard>, OrigaError> {
-        debug!(user_id = %user_id, "Getting knowledge set cards");
+    pub async fn execute(&self) -> Result<Vec<StudyCard>, OrigaError> {
+        debug!("Getting knowledge set cards");
 
         let user = self
             .repository
-            .find_by_id(user_id)
+            .get_current_user()
             .await?
-            .ok_or(OrigaError::UserNotFound { user_id })?;
+            .ok_or(OrigaError::CurrentUserNotExist {})?;
 
         let cards: Vec<StudyCard> = user
             .knowledge_set()

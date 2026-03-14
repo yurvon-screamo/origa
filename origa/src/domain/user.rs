@@ -70,14 +70,16 @@ impl User {
         }
     }
 
-    pub fn merge(&mut self, new_values: &User) {
-        self.email = new_values.email.clone();
-        self.username = new_values.username.clone();
-        self.native_language = new_values.native_language;
-        self.jlpt_progress = new_values.jlpt_progress.clone();
-        self.telegram_user_id = new_values.telegram_user_id;
-        self.knowledge_set.merge(&new_values.knowledge_set);
-        for set_id in &new_values.imported_sets {
+    pub fn merge(&mut self, another_user: &User) {
+        // updated_at()
+
+        self.email = another_user.email.clone();
+        self.username = another_user.username.clone();
+        self.native_language = another_user.native_language;
+        self.jlpt_progress = another_user.jlpt_progress.clone();
+        self.telegram_user_id = another_user.telegram_user_id;
+        self.knowledge_set.merge(&another_user.knowledge_set);
+        for set_id in &another_user.imported_sets {
             self.imported_sets.insert(set_id.clone());
         }
         self.touch();
@@ -131,7 +133,7 @@ impl User {
         &self.updated_at
     }
 
-    pub fn touch(&mut self) {
+    fn touch(&mut self) {
         self.updated_at = Utc::now();
     }
 

@@ -5,7 +5,6 @@ use crate::{
 };
 use serde::{Deserialize, Serialize};
 use tracing::{debug, info};
-use ulid::Ulid;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AnalyzedWord {
@@ -34,22 +33,14 @@ impl<'a, R: UserRepository> AnalyzeTextForCardsUseCase<'a, R> {
         Self { repository }
     }
 
-    pub async fn execute(
-        &self,
-        user_id: Ulid,
-        text: String,
-    ) -> Result<AnalyzeTextResult, OrigaError> {
-        debug!(
-            user_id = %user_id,
-            text_length = text.len(),
-            "Analyzing text for cards"
-        );
+    pub async fn execute(&self, text: String) -> Result<AnalyzeTextResult, OrigaError> {
+        debug!(text_length = text.len(), "Analyzing text for cards");
 
         let user = self
             .repository
-            .find_by_id(user_id)
+            .get_current_user()
             .await?
-            .ok_or(OrigaError::UserNotFound { user_id })?;
+            .ok_or(OrigaError::CurrentUserNotExist {})?;
 
         let tokens = tokenize_text(text.as_str())?;
 

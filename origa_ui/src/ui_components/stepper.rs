@@ -1,12 +1,14 @@
 use leptos::prelude::*;
 
 #[derive(Clone, Debug)]
+#[allow(dead_code)]
 pub struct StepperStep {
     pub number: u32,
     pub label: String,
 }
 
 #[derive(Clone, Copy, PartialEq, Default, Debug)]
+#[allow(dead_code)]
 pub enum StepStatus {
     #[default]
     Pending,
@@ -16,15 +18,15 @@ pub enum StepStatus {
 
 #[component]
 pub fn Stepper(
-    #[prop(optional, into)] steps: Signal<Vec<StepperStep>>,
-    #[prop(optional)] active: RwSignal<usize>,
+    #[prop(optional, into)] _steps: Signal<Vec<StepperStep>>,
+    #[prop(optional)] _active: RwSignal<usize>,
 ) -> impl IntoView {
     view! {
         <div class="stepper">
             <For
                 each=move || {
-                    let steps = steps.get();
-                    let active_idx = active.get();
+                    let steps = _steps.get();
+                    let active_idx = _active.get();
                     steps.into_iter().enumerate().map(move |(idx, step)| {
                         let status = if idx < active_idx {
                             StepStatus::Completed
@@ -38,7 +40,7 @@ pub fn Stepper(
                 }
                 key=|(idx, _, _)| *idx
                 children=move |(idx, step, status)| {
-                    let steps_count = steps.get().len();
+                    let steps_count = _steps.get().len();
                     let is_last = idx == steps_count - 1;
                     let status_class = match status {
                         StepStatus::Active => "active",

@@ -3,7 +3,7 @@ use crate::ui_components::{
     KanjiWritingSection, MarkdownText, MarkdownVariant,
 };
 use leptos::prelude::*;
-use origa::domain::User;
+use std::collections::HashSet;
 
 #[component]
 pub fn LessonCardQuestion(
@@ -11,16 +11,8 @@ pub fn LessonCardQuestion(
     kanji: Option<String>,
     is_reversed: bool,
     on_show_answer: Callback<()>,
+    #[prop(into)] known_kanji: Signal<HashSet<String>>,
 ) -> impl IntoView {
-    let current_user = use_context::<RwSignal<Option<User>>>().expect("current_user context");
-
-    let known_kanji = Memo::new(move |_| {
-        current_user
-            .get()
-            .map(|u| u.knowledge_set().get_known_kanji())
-            .unwrap_or_default()
-    });
-
     let question = StoredValue::new(question_text);
     let kanji_stored = StoredValue::new(kanji);
 

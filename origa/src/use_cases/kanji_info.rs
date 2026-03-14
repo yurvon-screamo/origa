@@ -1,5 +1,4 @@
 use tracing::{debug, info};
-use ulid::Ulid;
 
 use crate::{
     domain::{Card, JapaneseLevel, KanjiInfo, OrigaError, get_kanji_info, get_kanji_list},
@@ -48,18 +47,14 @@ impl<'a, R: UserRepository> KanjiInfoListUseCase<'a, R> {
         Self { repository }
     }
 
-    pub async fn execute(
-        &self,
-        user_id: Ulid,
-        level: &JapaneseLevel,
-    ) -> Result<Vec<KanjiItemInfo>, OrigaError> {
-        debug!(user_id = %user_id, level = ?level, "Getting kanji info list");
+    pub async fn execute(&self, level: &JapaneseLevel) -> Result<Vec<KanjiItemInfo>, OrigaError> {
+        debug!(level = ?level, "Getting kanji info list");
 
         let user = self
             .repository
-            .find_by_id(user_id)
+            .get_current_user()
             .await?
-            .ok_or(OrigaError::UserNotFound { user_id })?;
+            .ok_or(OrigaError::CurrentUserNotExist {})?;
 
         let learned_kanji: std::collections::HashSet<String> = user
             .knowledge_set()

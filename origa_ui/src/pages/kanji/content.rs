@@ -21,6 +21,13 @@ pub fn KanjiContent() -> impl IntoView {
             .unwrap_or(NativeLanguage::Russian)
     });
 
+    let known_kanji = Memo::new(move |_| {
+        current_user
+            .get()
+            .map(|u| u.knowledge_set().get_known_kanji())
+            .unwrap_or_default()
+    });
+
     let search = RwSignal::new(String::new());
     let filter = RwSignal::new(Filter::All);
     let toasts: RwSignal<Vec<ToastData>> = RwSignal::new(Vec::new());
@@ -32,27 +39,23 @@ pub fn KanjiContent() -> impl IntoView {
         let repository = repository.clone();
 
         Callback::new(move |card_id: Ulid| {
-            let user = current_user.get();
             let repo = repository.clone();
             let current_user_clone = current_user;
 
-            if let Some(user) = user {
-                let user_id = user.id();
-                spawn_local(async move {
-                    let use_case = ToggleFavoriteUseCase::new(&repo);
-                    if use_case.execute(user_id, card_id).await.is_ok() {
-                        current_user_clone.update(|u| {
-                            if let Some(user) = u {
-                                let _ = user.toggle_favorite(card_id);
-                            }
-                        });
-                    }
-                });
-            }
+            spawn_local(async move {
+                let use_case = ToggleFavoriteUseCase::new(&repo);
+                if use_case.execute(card_id).await.is_ok() {
+                    current_user_clone.update(|u| {
+                        if let Some(user) = u {
+                            let _ = user.toggle_favorite(card_id);
+                        }
+                    });
+                }
+            });
         })
     };
 
-    let (is_deleting, on_delete) = create_delete_callback(repository.clone(), current_user, toasts);
+    let (is_deleting, on_delete) = create_delete_callback(repository.clone(), toasts);
 
     let all_cards = Memo::new(move |_| {
         current_user
@@ -149,6 +152,8 @@ pub fn KanjiContent() -> impl IntoView {
                                     view! {
                                         <KanjiCardItem
                                             study_card=card
+                                            native_language=native_lang.get()
+                                            known_kanji=known_kanji.get()
                                             on_toggle_favorite=on_toggle_favorite
                                             on_delete=on_delete
                                             is_deleting=is_deleting.into()

@@ -4,7 +4,6 @@ use crate::pages::icons::{
 };
 use crate::ui_components::{Checkbox, FuriganaText, MarkdownText, MarkdownVariant, Tooltip};
 use leptos::prelude::*;
-use origa::domain::User;
 use origa::use_cases::AnalyzedWord;
 use std::collections::HashSet;
 
@@ -12,17 +11,9 @@ use std::collections::HashSet;
 pub fn AnalyzedWordItem(
     analyzed_word: AnalyzedWord,
     selected_words: RwSignal<HashSet<String>>,
+    known_kanji: HashSet<String>,
     on_toggle: Callback<()>,
 ) -> impl IntoView {
-    let current_user = use_context::<RwSignal<Option<User>>>().expect("current_user context");
-
-    let known_kanji = Memo::new(move |_| {
-        current_user
-            .get()
-            .map(|u| u.knowledge_set().get_known_kanji())
-            .unwrap_or_default()
-    });
-
     let base_form = analyzed_word.base_form.clone();
     let is_selected = Memo::new(move |_| selected_words.get().contains(&base_form));
 
@@ -49,7 +40,7 @@ pub fn AnalyzedWordItem(
                     <div class="text-xl font-serif tracking-wide">
                         <FuriganaText
                             text=analyzed_word.base_form.clone()
-                            known_kanji=known_kanji.get()
+                            known_kanji=known_kanji.clone()
                         />
                     </div>
 
@@ -61,13 +52,13 @@ pub fn AnalyzedWordItem(
                 </div>
 
                 {move || {
-                    let known_kanji = known_kanji.get();
-                    analyzed_word.meaning.clone().map(|meaning| {
+                    let known_kanji = known_kanji.clone();
+                    analyzed_word.meaning.clone().map(move |meaning| {
                         view! {
                             <div class="max-w-md">
                                 <MarkdownText
                                     content=Signal::derive(move || meaning.clone())
-                                    known_kanji=known_kanji.clone()
+                                    known_kanji=known_kanji
                                     variant=MarkdownVariant::Compact
                                     class="text-[var(--fg-muted)]"
                                 />

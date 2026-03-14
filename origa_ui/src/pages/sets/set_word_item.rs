@@ -4,7 +4,6 @@ use crate::pages::icons::{
 };
 use crate::ui_components::{Checkbox, FuriganaText, MarkdownText, MarkdownVariant, Tooltip};
 use leptos::prelude::*;
-use origa::domain::User;
 use std::collections::HashSet;
 
 #[component]
@@ -13,17 +12,9 @@ pub fn SetWordItem(
     known_meaning: Option<String>,
     is_known: bool,
     selected_words: RwSignal<HashSet<String>>,
+    known_kanji: HashSet<String>,
     on_toggle: Callback<()>,
 ) -> impl IntoView {
-    let current_user = use_context::<RwSignal<Option<User>>>().expect("current_user context");
-
-    let known_kanji = Memo::new(move |_| {
-        current_user
-            .get()
-            .map(|u| u.knowledge_set().get_known_kanji())
-            .unwrap_or_default()
-    });
-
     let word_for_memo = word.clone();
     let is_selected = Memo::new(move |_| selected_words.get().contains(&word_for_memo));
 
@@ -50,7 +41,7 @@ pub fn SetWordItem(
                     <div class="text-xl font-serif tracking-wide">
                         <FuriganaText
                             text=word.clone()
-                            known_kanji=known_kanji.get()
+                            known_kanji=known_kanji.clone()
                         />
                     </div>
 
@@ -62,13 +53,13 @@ pub fn SetWordItem(
                 </div>
 
                 {move || {
-                    let known_kanji = known_kanji.get();
-                    known_meaning.clone().map(|meaning| {
+                    let known_kanji = known_kanji.clone();
+                    known_meaning.clone().map(move |meaning| {
                         view! {
                             <div class="max-w-md">
                                 <MarkdownText
                                     content=Signal::derive(move || meaning.clone())
-                                    known_kanji=known_kanji.clone()
+                                    known_kanji=known_kanji
                                     variant=MarkdownVariant::Compact
                                     class="text-[var(--fg-muted)]"
                                 />

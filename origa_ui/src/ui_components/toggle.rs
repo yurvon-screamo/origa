@@ -2,25 +2,25 @@ use leptos::prelude::*;
 
 #[component]
 pub fn Toggle(
-    #[prop(into)] checked: Signal<bool>,
-    #[prop(optional)] disabled: bool,
-    #[prop(optional, into)] label: String,
-    #[prop(optional)] on_change: Option<Callback<leptos::ev::Event>>,
+    #[prop(into)] _checked: Signal<bool>,
+    #[prop(optional)] _disabled: bool,
+    #[prop(optional, into)] _label: String,
+    #[prop(optional)] _on_change: Option<Callback<leptos::ev::Event>>,
 ) -> impl IntoView {
     view! {
         <label class="toggle-container">
             <input
                 type="checkbox"
-                checked={move || checked.get()}
-                disabled=disabled
+                checked={move || _checked.get()}
+                disabled=_disabled
                 on:change=move |ev| {
-                    if let Some(on_change) = on_change {
+                    if let Some(on_change) = _on_change {
                         on_change.run(ev);
                     }
                 }
             />
             <span class="toggle-track"></span>
-            <span>{label}</span>
+            <span>{_label}</span>
         </label>
     }
 }

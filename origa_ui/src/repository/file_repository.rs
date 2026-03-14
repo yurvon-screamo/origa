@@ -109,67 +109,13 @@ impl FileSystemUserRepository {
 }
 
 impl UserRepository for FileSystemUserRepository {
-    async fn find_by_id(&self, user_id: Ulid) -> Result<Option<User>, OrigaError> {
-        let db = open_database().await?;
-
-        let transaction = db
-            .transaction(&[STORE_NAME], TransactionMode::ReadOnly)
-            .map_err(|e| {
-                let reason = format!("Failed to create transaction: {:?}", e);
-                tracing::error!("{}", reason);
-                OrigaError::RepositoryError { reason }
-            })?;
-
-        let store = transaction.object_store(STORE_NAME).map_err(|e| {
-            let reason = format!("Failed to get object store: {:?}", e);
-            tracing::error!("{}", reason);
-            OrigaError::RepositoryError { reason }
-        })?;
-
-        let key = JsValue::from_str(&user_key(user_id));
-        let request = store.get(key).map_err(|e| {
-            let reason = format!("Failed to create get request: {:?}", e);
-            tracing::error!("{}", reason);
-            OrigaError::RepositoryError { reason }
-        })?;
-
-        let value: Option<JsValue> = request.await.map_err(|e| {
-            let reason = format!("Failed to get user: {:?}", e);
-            tracing::error!("{}", reason);
-            OrigaError::RepositoryError { reason }
-        })?;
-
-        match value {
-            Some(v) => {
-                let user: User = serde_wasm_bindgen::from_value(v).map_err(|e| {
-                    let reason = format!("Failed to deserialize user: {:?}", e);
-                    tracing::error!("{}", reason);
-                    OrigaError::RepositoryError { reason }
-                })?;
-                Ok(Some(user))
-            }
-            None => {
-                tracing::warn!("User not found: {}", user_id);
-                Ok(None)
-            }
-        }
-    }
-
-    async fn find_by_email(&self, email: &str) -> Result<Option<User>, OrigaError> {
+    async fn get_current_user(&self) -> Result<Option<User>, OrigaError> {
         let users = self.list_users().await?;
-        Ok(users.into_iter().find(|x| x.email() == email))
-    }
-
-    async fn find_by_telegram_id(&self, telegram_id: &u64) -> Result<Option<User>, OrigaError> {
-        let users = self.list_users().await?;
-        Ok(users
-            .into_iter()
-            .find(|x| x.telegram_user_id() == Some(telegram_id)))
+        Ok(users.first().cloned())
     }
 
     async fn save(&self, user: &User) -> Result<(), OrigaError> {
         let mut user_clone = user.clone();
-        user_clone.touch();
         recalculate_user_jlpt_progress(&mut user_clone);
 
         let db = open_database().await?;

@@ -1,11 +1,13 @@
 use leptos::prelude::*;
 
 #[derive(Clone, Debug)]
+#[allow(dead_code)]
 pub struct TableHeader {
     pub label: String,
 }
 
 #[derive(Clone, Debug)]
+#[allow(dead_code)]
 pub struct TableRow {
     pub id: String,
     pub cells: Vec<String>,
@@ -13,8 +15,8 @@ pub struct TableRow {
 
 #[component]
 pub fn Table(
-    #[prop(optional, into)] headers: Signal<Vec<TableHeader>>,
-    #[prop(optional, into)] rows: Signal<Vec<TableRow>>,
+    #[prop(optional, into)] _headers: Signal<Vec<TableHeader>>,
+    #[prop(optional, into)] _rows: Signal<Vec<TableRow>>,
 ) -> impl IntoView {
     view! {
         <div class="table-container">
@@ -22,7 +24,7 @@ pub fn Table(
                 <thead>
                     <tr>
                         <For
-                            each=move || headers.get()
+                            each=move || _headers.get()
                             key=|header| header.label.clone()
                             children=move |header| {
                                 view! {
@@ -34,7 +36,7 @@ pub fn Table(
                 </thead>
                 <tbody>
                     <For
-                        each=move || rows.get()
+                        each=move || _rows.get()
                         key=|row| row.id.clone()
                         children=move |row| {
                             let cells = row.cells.clone();

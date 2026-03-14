@@ -3,6 +3,7 @@ use leptos::either::*;
 use leptos::prelude::*;
 
 #[derive(Clone, Debug)]
+#[allow(dead_code)]
 pub struct NavItem {
     pub label: String,
     pub href: String,
@@ -10,19 +11,19 @@ pub struct NavItem {
 
 #[component]
 pub fn Navbar(
-    #[prop(optional, into)] brand: Signal<String>,
-    #[prop(optional, into)] items: Signal<Vec<NavItem>>,
-    #[prop(into)] cart_count: RwSignal<u32>,
-    #[prop(optional)] on_sign_in: Option<Callback<leptos::ev::MouseEvent>>,
+    #[prop(optional, into)] _brand: Signal<String>,
+    #[prop(optional, into)] _items: Signal<Vec<NavItem>>,
+    #[prop(into)] _cart_count: RwSignal<u32>,
+    #[prop(optional)] _on_sign_in: Option<Callback<leptos::ev::MouseEvent>>,
 ) -> impl IntoView {
     view! {
         <nav class="navbar sticky top-0 z-50 pt-safe-t">
             <div class="w-full px-6 flex items-center justify-between">
-                <a href="#" class="font-serif text-2xl">{move || brand.get()}</a>
+                <a href="#" class="font-serif text-2xl">{move || _brand.get()}</a>
 
                 <div class="hidden md:flex items-center gap-8">
                     <For
-                        each=move || items.get()
+                        each=move || _items.get()
                         key=|item| item.label.clone()
                         children=move |item| {
                             view! {
@@ -38,7 +39,7 @@ pub fn Navbar(
                 </div>
 
                 <div class="flex items-center gap-4">
-                    {if let Some(click_handler) = on_sign_in {
+                    {if let Some(click_handler) = _on_sign_in {
                         Either::Left(view! {
                             <Button variant=ButtonVariant::Ghost size=ButtonSize::Small on_click=click_handler>
                                 "Sign In"
@@ -52,7 +53,7 @@ pub fn Navbar(
                         })
                     }}
                     <Button variant=ButtonVariant::Filled size=ButtonSize::Small>
-                        "Cart (" {move || cart_count.get()} ")"
+                        "Cart (" {move || _cart_count.get()} ")"
                     </Button>
                 </div>
             </div>

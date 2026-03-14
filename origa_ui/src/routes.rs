@@ -13,7 +13,7 @@ pub fn ProtectedRoute(children: ChildrenFn) -> impl IntoView {
     Effect::new({
         let navigate = navigate.clone();
         move |_| {
-            if !auth_ctx.is_session_loading.get() && auth_ctx.current_user.get().is_none() {
+            if !auth_ctx.is_session_loading.get() && !auth_ctx.is_authenticated.get() {
                 navigate("/login", Default::default());
             }
         }
@@ -27,7 +27,7 @@ pub fn ProtectedRoute(children: ChildrenFn) -> impl IntoView {
                 </div>
             }
             .into_any()
-        } else if auth_ctx.current_user.get().is_some() {
+        } else if auth_ctx.is_authenticated.get() {
             children().into_any()
         } else {
             view! { <Login/> }.into_any()

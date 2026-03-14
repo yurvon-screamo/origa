@@ -9,7 +9,7 @@ use crate::ui_components::{
     Button, ButtonSize, ButtonVariant, Drawer, Search, Spinner, Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
-use origa::domain::JapaneseLevel;
+use origa::domain::{JapaneseLevel, User};
 
 const JLPT_LEVELS: [JapaneseLevel; 5] = [
     JapaneseLevel::N5,
@@ -21,6 +21,16 @@ const JLPT_LEVELS: [JapaneseLevel; 5] = [
 
 #[component]
 pub fn AddGrammarModal(is_open: RwSignal<bool>) -> impl IntoView {
+    let current_user =
+        use_context::<RwSignal<Option<User>>>().expect("current_user context not provided");
+
+    let known_kanji = Memo::new(move |_| {
+        current_user
+            .get()
+            .map(|u| u.knowledge_set().get_known_kanji())
+            .unwrap_or_default()
+    });
+
     let state = ModalState::new(is_open);
     let handlers = ModalHandlers::new(&state, is_open);
 
@@ -85,6 +95,7 @@ pub fn AddGrammarModal(is_open: RwSignal<bool>) -> impl IntoView {
                                     rules=rules
                                     selected_ids=state.selected_rule_ids
                                     search_query=state.search_query
+                                    known_kanji=known_kanji.get()
                                 />
                             }.into_any()
                         }

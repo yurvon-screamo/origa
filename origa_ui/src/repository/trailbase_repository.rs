@@ -68,12 +68,6 @@ impl TrailBaseUserRepository {
 
         Ok(None)
     }
-
-    pub fn clear_cache(&self) {
-        if let Ok(mut cache) = self.user_cache.write() {
-            cache.clear();
-        }
-    }
 }
 
 impl Default for TrailBaseUserRepository {
@@ -176,24 +170,7 @@ fn user_to_json(user: &User, trailbase_id: &str) -> serde_json::Value {
 }
 
 impl UserRepository for TrailBaseUserRepository {
-    async fn find_by_id(&self, _user_id: Ulid) -> Result<Option<User>, OrigaError> {
-        self.find_current()
-            .await
-            .map(|opt| opt.map(|(user, _)| user))
-    }
-
-    async fn find_by_email(&self, email: &str) -> Result<Option<User>, OrigaError> {
-        if let Ok(cache) = self.user_cache.read()
-            && let Some(user) = cache.get(email)
-        {
-            return Ok(Some(user.clone()));
-        }
-        self.find_current()
-            .await
-            .map(|opt| opt.map(|(user, _)| user))
-    }
-
-    async fn find_by_telegram_id(&self, _telegram_id: &u64) -> Result<Option<User>, OrigaError> {
+    async fn get_current_user(&self) -> Result<Option<User>, OrigaError> {
         self.find_current()
             .await
             .map(|opt| opt.map(|(user, _)| user))

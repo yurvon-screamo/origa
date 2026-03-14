@@ -3,6 +3,7 @@ use leptos::wasm_bindgen::JsCast;
 use leptos_use::use_event_listener;
 
 #[derive(Clone, Debug)]
+#[allow(dead_code)]
 pub struct DropdownItem {
     pub value: String,
     pub label: String,
@@ -10,9 +11,9 @@ pub struct DropdownItem {
 
 #[component]
 pub fn Dropdown(
-    #[prop(optional, into)] options: Signal<Vec<DropdownItem>>,
-    #[prop(optional)] selected: RwSignal<String>,
-    #[prop(optional, into)] placeholder: Signal<String>,
+    #[prop(optional, into)] _options: Signal<Vec<DropdownItem>>,
+    _selected: RwSignal<String>,
+    #[prop(optional, into)] _placeholder: Signal<String>,
 ) -> impl IntoView {
     let (is_open, set_is_open) = signal(false);
     let dropdown_ref = NodeRef::<leptos::html::Div>::new();
@@ -22,7 +23,7 @@ pub fn Dropdown(
     };
 
     let select_item = move |item: DropdownItem| {
-        selected.set(item.value.clone());
+        _selected.set(item.value.clone());
         set_is_open.set(false);
     };
 
@@ -46,13 +47,13 @@ pub fn Dropdown(
     let _ = use_event_listener(document(), leptos::ev::click, close_on_outside);
 
     let display_text = move || {
-        let sel = selected.get();
-        options
+        let sel = _selected.get();
+        _options
             .get()
             .iter()
             .find(|opt| opt.value == sel)
             .map(|opt| opt.label.clone())
-            .unwrap_or_else(|| placeholder.get())
+            .unwrap_or_else(|| _placeholder.get())
     };
 
     view! {
@@ -69,7 +70,7 @@ pub fn Dropdown(
             </button>
             <div class="dropdown-menu">
                 <For
-                    each=move || options.get()
+                    each=move || _options.get()
                     key=|item| item.value.clone()
                     children=move |item| {
                         let item_clone = item.clone();

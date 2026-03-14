@@ -6,17 +6,17 @@ use super::on_rate::create_on_rate_callback;
 use super::quiz_card::QuizCardView;
 use super::rating_buttons_view::RatingButtonsView;
 use leptos::prelude::*;
-use origa::domain::User;
-use origa::domain::{GrammarInfo, LessonCardView, Rating};
+use origa::domain::{GrammarInfo, LessonCardView, NativeLanguage, Rating};
+use std::collections::HashSet;
 use ulid::Ulid;
 
 #[component]
 pub fn LessonCardContainer() -> impl IntoView {
     let lesson_ctx = use_context::<LessonContext>().expect("lesson context");
-    let current_user =
-        use_context::<RwSignal<Option<User>>>().expect("current_user context not provided");
     let lesson_state = lesson_ctx.lesson_state;
     let is_rating = RwSignal::new(None::<Ulid>);
+    let known_kanji = lesson_ctx.known_kanji;
+    let native_language = lesson_ctx.native_language;
 
     let show_answer = move || {
         lesson_state.update(|state| {
@@ -24,13 +24,12 @@ pub fn LessonCardContainer() -> impl IntoView {
         });
     };
 
-    let on_rate_callback =
-        create_on_rate_callback(lesson_state, current_user, lesson_ctx.clone(), is_rating);
+    let on_rate_callback = create_on_rate_callback(lesson_state, lesson_ctx.clone(), is_rating);
 
     let on_quiz_select = create_on_quiz_select(lesson_state, on_rate_callback);
 
     let handle_keydown = create_keyboard_handler(
-        lesson_ctx.clone(),
+        lesson_ctx,
         is_rating,
         on_rate_callback,
         on_quiz_select,
@@ -74,6 +73,8 @@ pub fn LessonCardContainer() -> impl IntoView {
                                 Callback::new(move |_| show_answer()),
                                 on_rate_callback,
                                 is_rating,
+                                known_kanji,
+                                native_language,
                             )
                         })
                     }}
@@ -92,6 +93,8 @@ pub fn LessonCardContainer() -> impl IntoView {
                                         show_result=show_result
                                         selected_option=selected_option
                                         on_select_option=on_quiz_select
+                                        native_language=native_language.get()
+                                        known_kanji=Signal::from(known_kanji)
                                     />
                                 })
                             } else {
@@ -117,6 +120,8 @@ fn render_lesson_card(
     on_show_answer: Callback<()>,
     on_rate_callback: Callback<Rating>,
     is_rating: RwSignal<Option<Ulid>>,
+    known_kanji: RwSignal<HashSet<String>>,
+    native_language: RwSignal<NativeLanguage>,
 ) -> impl IntoView {
     let params = match card_view {
         LessonCardView::Normal(card) => LessonCardParams {
@@ -146,6 +151,8 @@ fn render_lesson_card(
             show_answer=show_answer
             on_show_answer=on_show_answer
             grammar_info=params.grammar_info
+            native_language=native_language.get()
+            known_kanji=Signal::from(known_kanji)
         />
 
         <Show when=move || show_answer>

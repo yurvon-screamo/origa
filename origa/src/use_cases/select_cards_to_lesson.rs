@@ -15,17 +15,14 @@ impl<'a, R: UserRepository> SelectCardsToLessonUseCase<'a, R> {
         Self { repository }
     }
 
-    pub async fn execute(
-        &self,
-        user_id: Ulid,
-    ) -> Result<HashMap<Ulid, LessonCardView>, OrigaError> {
-        debug!(user_id = %user_id, "Selecting cards to lesson");
+    pub async fn execute(&self) -> Result<HashMap<Ulid, LessonCardView>, OrigaError> {
+        debug!("Selecting cards to lesson");
 
         let user = self
             .repository
-            .find_by_id(user_id)
+            .get_current_user()
             .await?
-            .ok_or(OrigaError::UserNotFound { user_id })?;
+            .ok_or(OrigaError::CurrentUserNotExist {})?;
 
         let cards = user.knowledge_set().cards_to_lesson(user.native_language());
         info!(count = cards.len(), "Cards selected for lesson");

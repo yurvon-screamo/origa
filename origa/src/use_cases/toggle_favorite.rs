@@ -13,14 +13,14 @@ impl<'a, R: UserRepository> ToggleFavoriteUseCase<'a, R> {
         Self { repository }
     }
 
-    pub async fn execute(&self, user_id: Ulid, card_id: Ulid) -> Result<bool, OrigaError> {
-        debug!(user_id = %user_id, card_id = %card_id, "Toggling favorite");
+    pub async fn execute(&self, card_id: Ulid) -> Result<bool, OrigaError> {
+        debug!(card_id = %card_id, "Toggling favorite");
 
         let mut user = self
             .repository
-            .find_by_id(user_id)
+            .get_current_user()
             .await?
-            .ok_or(OrigaError::UserNotFound { user_id })?;
+            .ok_or(OrigaError::CurrentUserNotExist {})?;
 
         user.toggle_favorite(card_id)?;
 

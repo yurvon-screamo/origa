@@ -4,19 +4,14 @@ use crate::ui_components::{
     Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
-use origa::domain::User;
+use std::collections::HashSet;
 
 #[component]
-pub fn SetCard(set_info: SetInfo, on_import: Callback<(String, String)>) -> impl IntoView {
-    let current_user = use_context::<RwSignal<Option<User>>>().expect("current_user context");
-
-    let known_kanji = Memo::new(move |_| {
-        current_user
-            .get()
-            .map(|u| u.knowledge_set().get_known_kanji())
-            .unwrap_or_default()
-    });
-
+pub fn SetCard(
+    set_info: SetInfo,
+    known_kanji: HashSet<String>,
+    on_import: Callback<(String, String)>,
+) -> impl IntoView {
     let description = set_info.description.clone();
     let title_for_display = set_info.title.clone();
     let is_imported = set_info.is_imported;
@@ -44,7 +39,7 @@ pub fn SetCard(set_info: SetInfo, on_import: Callback<(String, String)>) -> impl
                 </Show>
             </div>
             <div class="flex-1 min-h-0 mb-3">
-                <MarkdownText content=Signal::derive(move || description.clone()) known_kanji=known_kanji.get()/>
+                <MarkdownText content=Signal::derive(move || description.clone()) known_kanji=known_kanji.clone()/>
             </div>
             <div class="mt-auto">
                 <Text size=Signal::derive(|| TextSize::Small) variant=Signal::derive(|| TypographyVariant::Muted)>

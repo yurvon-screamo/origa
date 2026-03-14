@@ -28,16 +28,16 @@ impl<'a, R: UserRepository> GetUserInfoUseCase<'a, R> {
         Self { repository }
     }
 
-    pub async fn execute(&self, user_id: Ulid) -> Result<UserProfile, OrigaError> {
-        debug!(user_id = %user_id, "Getting user info");
+    pub async fn execute(&self) -> Result<UserProfile, OrigaError> {
+        debug!("Getting user info");
 
         let user = self
             .repository
-            .find_by_id(user_id)
+            .get_current_user()
             .await?
-            .ok_or(OrigaError::UserNotFound { user_id })?;
+            .ok_or(OrigaError::CurrentUserNotExist {})?;
 
-        info!(user_id = %user_id, "User info retrieved successfully");
+        info!("User info retrieved successfully");
 
         Ok(UserProfile {
             id: user.id(),

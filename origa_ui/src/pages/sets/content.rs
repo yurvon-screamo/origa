@@ -22,6 +22,13 @@ pub fn SetsContent() -> impl IntoView {
     let import_filter = RwSignal::new(ImportFilter::default());
     let search = RwSignal::new(String::new());
 
+    let known_kanji = Memo::new(move |_| {
+        current_user
+            .get()
+            .map(|u| u.knowledge_set().get_known_kanji())
+            .unwrap_or_default()
+    });
+
     let loader = WellKnownSetLoaderImpl::new();
     let sets_for_load = sets;
     let user_for_load = current_user;
@@ -347,30 +354,35 @@ pub fn SetsContent() -> impl IntoView {
                     level=JapaneseLevel::N5
                     sets=filtered_sets
                     type_filter=type_filter
+                    known_kanji=known_kanji.get()
                     on_import=on_import
                 />
                 <SetsLevelGroup
                     level=JapaneseLevel::N4
                     sets=filtered_sets
                     type_filter=type_filter
+                    known_kanji=known_kanji.get()
                     on_import=on_import
                 />
                 <SetsLevelGroup
                     level=JapaneseLevel::N3
                     sets=filtered_sets
                     type_filter=type_filter
+                    known_kanji=known_kanji.get()
                     on_import=on_import
                 />
                 <SetsLevelGroup
                     level=JapaneseLevel::N2
                     sets=filtered_sets
                     type_filter=type_filter
+                    known_kanji=known_kanji.get()
                     on_import=on_import
                 />
                 <SetsLevelGroup
                     level=JapaneseLevel::N1
                     sets=filtered_sets
                     type_filter=type_filter
+                    known_kanji=known_kanji.get()
                     on_import=on_import
                 />
             </Show>

@@ -1,18 +1,16 @@
-use crate::ui_components::{Alert, AlertType};
+use crate::ui_components::{Tag, TagVariant};
 use leptos::prelude::*;
 
 #[component]
 pub fn GrammarInfoBadge(title: String, description: String) -> impl IntoView {
-    let title_signal = Signal::derive(move || format!("С грамматикой {}", title.clone()));
-    let description_signal = Signal::derive(move || description.clone());
-
     view! {
-        <div class="mb-4">
-            <Alert
-                alert_type=Signal::derive(|| AlertType::Info)
-                title=title_signal
-                message=description_signal
-            />
-        </div>
+        <Tag
+            variant=Signal::derive(|| TagVariant::Default)
+            class=Signal::derive(|| "cursor-help".to_string())
+        >
+            <span title=description>
+                {format!("Грамматика: {}", title)}
+            </span>
+        </Tag>
     }
 }
