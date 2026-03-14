@@ -2,7 +2,7 @@ use std::{collections::HashMap, sync::OnceLock};
 
 use serde::{Deserialize, Serialize};
 
-use crate::domain::{OrigaError, value_objects::NativeLanguage};
+use crate::domain::{value_objects::NativeLanguage, OrigaError};
 
 pub static VOCABULARY_DICTIONARY: OnceLock<VocabularyDatabase> = OnceLock::new();
 
@@ -72,12 +72,15 @@ pub fn get_translation(word: &str, native_language: &NativeLanguage) -> Option<S
 
 impl VocabularyDatabase {
     fn from_chunks(data: VocabularyChunkData) -> Result<Self, OrigaError> {
+        fn strip_bom(json: &str) -> &str {
+            json.strip_prefix('\u{FEFF}').unwrap_or(json)
+        }
+
         let parse_chunk = |json: &str, chunk_name: &str| {
-            serde_json::from_str::<HashMap<String, VocabularyEntryStoredType>>(json).map_err(|e| {
-                OrigaError::VocabularyParseError {
+            serde_json::from_str::<HashMap<String, VocabularyEntryStoredType>>(strip_bom(json))
+                .map_err(|e| OrigaError::VocabularyParseError {
                     reason: format!("Failed to parse {}: {}", chunk_name, e),
-                }
-            })
+                })
         };
 
         let vocabulary_data: HashMap<_, _> = parse_chunk(&data.chunk_01, "chunk_01")?

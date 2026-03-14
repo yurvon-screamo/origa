@@ -1,7 +1,9 @@
 use super::super::shared::{CardCounts, CardStatus, Filter, FilterBtn, create_delete_callback};
 use super::kanji_card_item::KanjiCardItem;
 use crate::repository::HybridUserRepository;
-use crate::ui_components::{Input, LoadingOverlay, Text, TextSize, ToastContainer, ToastData, TypographyVariant};
+use crate::ui_components::{
+    Input, LoadingOverlay, Text, TextSize, ToastContainer, ToastData, TypographyVariant,
+};
 use leptos::either::Either;
 use leptos::prelude::*;
 use leptos::task::spawn_local;

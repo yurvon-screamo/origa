@@ -1,6 +1,6 @@
 {
 	"$schema": "https://schema.tauri.app/config/2",
-	"productName": "origa",
+	"productName": "Origa",
 	"version": "0.1.0",
 	"identifier": "net.uwuwu.origa",
 	"build": {
@@ -15,7 +15,7 @@
 		"withGlobalTauri": true,
 		"windows": [
 			{
-				"title": "オリガ",
+				"title": "Origa 「オリガ」",
 				"width": 800,
 				"height": 600
 			}

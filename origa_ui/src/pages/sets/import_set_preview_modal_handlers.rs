@@ -60,6 +60,7 @@ pub fn create_import_preview_handlers(
                             title: "Успех".to_string(),
                             message,
                             toast_type: ToastType::Success,
+                            duration_ms: None,
                         });
                     });
                 }
@@ -74,6 +75,7 @@ pub fn create_import_preview_handlers(
                             title: "Ошибка".to_string(),
                             message: e,
                             toast_type: ToastType::Error,
+                            duration_ms: None,
                         });
                     });
                 }

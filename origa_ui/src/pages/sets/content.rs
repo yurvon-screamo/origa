@@ -62,29 +62,34 @@ pub fn SetsContent() -> impl IntoView {
                 }
             };
 
-            if let Ok(meta_list) = loader.load_meta_list().await {
-                let set_list: Vec<SetInfo> = meta_list
-                    .into_iter()
-                    .map(|meta| {
-                        let is_imported = user
-                            .as_ref()
-                            .map(|u| u.is_set_imported(&meta.id))
-                            .unwrap_or(false);
+            match loader.load_meta_list().await {
+                Ok(meta_list) => {
+                    let set_list: Vec<SetInfo> = meta_list
+                        .into_iter()
+                        .map(|meta| {
+                            let is_imported = user
+                                .as_ref()
+                                .map(|u| u.is_set_imported(&meta.id))
+                                .unwrap_or(false);
 
-                        SetInfo {
-                            set_id: meta.id,
-                            title: meta.title_ru,
-                            description: meta.desc_ru,
-                            word_count: Some(meta.word_count),
-                            set_type: meta.set_type,
-                            level: meta.level,
-                            is_imported,
-                        }
-                    })
-                    .collect();
-                sets_for_load.set(set_list);
-                is_loading.set(false);
+                            SetInfo {
+                                set_id: meta.id,
+                                title: meta.title_ru,
+                                description: meta.desc_ru,
+                                word_count: Some(meta.word_count),
+                                set_type: meta.set_type,
+                                level: meta.level,
+                                is_imported,
+                            }
+                        })
+                        .collect();
+                    sets_for_load.set(set_list);
+                }
+                Err(e) => {
+                    tracing::error!("SetsContent: load_meta_list error: {:?}", e);
+                }
             }
+            is_loading.set(false);
         });
     });
 
