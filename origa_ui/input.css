@@ -62,7 +62,6 @@ input[type="submit"],
 	-webkit-tap-highlight-color: transparent;
 }
 
-
 .font-serif {
 	font-family: "Cormorant Garamond", serif;
 }
@@ -298,7 +297,7 @@ input[type="submit"],
 	transition: all 0.2s ease;
 }
 
-.checkbox-container input:checked+.checkbox-box::after {
+.checkbox-container input:checked + .checkbox-box::after {
 	content: "";
 	position: absolute;
 	inset: 4px;
@@ -332,7 +331,7 @@ input[type="submit"],
 	transition: all 0.2s ease;
 }
 
-.radio-container input:checked+.radio-box::after {
+.radio-container input:checked + .radio-box::after {
 	content: "";
 	position: absolute;
 	inset: 4px;
@@ -377,11 +376,11 @@ input[type="submit"],
 	transition: all 0.3s ease;
 }
 
-.toggle-container input:checked+.toggle-track {
+.toggle-container input:checked + .toggle-track {
 	background: var(--fg-black);
 }
 
-.toggle-container input:checked+.toggle-track::after {
+.toggle-container input:checked + .toggle-track::after {
 	left: 23px;
 	background: var(--bg-paper);
 }
@@ -819,7 +818,7 @@ input[type="submit"],
 	opacity: 0.3;
 }
 
-.stepper-step.completed+.stepper-line {
+.stepper-step.completed + .stepper-line {
 	opacity: 1;
 }
 
@@ -1141,10 +1140,12 @@ input[type="submit"],
 }
 
 .skeleton {
-	background: linear-gradient(90deg,
-			var(--bg-aged) 25%,
-			var(--bg-warm) 50%,
-			var(--bg-aged) 75%);
+	background: linear-gradient(
+		90deg,
+		var(--bg-aged) 25%,
+		var(--bg-warm) 50%,
+		var(--bg-aged) 75%
+	);
 	background-size: 200% 100%;
 	animation: skeleton-loading 1.5s infinite;
 }
