@@ -1,5 +1,5 @@
+use crate::loaders::WellKnownSetLoaderImpl;
 use crate::repository::HybridUserRepository;
-use crate::well_known_set::WellKnownSetLoaderImpl;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::traits::{UserRepository, WellKnownSetLoader};

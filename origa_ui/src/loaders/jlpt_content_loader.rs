@@ -4,7 +4,7 @@ use origa::domain::JlptContent;
 use origa::domain::{JapaneseLevel, OrigaError};
 use serde::Deserialize;
 
-use crate::config::public_url;
+use crate::core::config::public_url;
 use crate::utils::fetch_text;
 
 static JLPT_CONTENT: OnceLock<JlptContent> = OnceLock::new();

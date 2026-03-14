@@ -30,7 +30,7 @@ pub async fn check_for_updates() -> Option<UpdateInfo> {
     any(target_os = "windows", target_os = "macos", target_os = "linux")
 ))]
 async fn check_for_updates_tauri() -> Option<UpdateInfo> {
-    use crate::version::VERSION;
+    use super::version::VERSION;
     use leptos::logging;
     use leptos::wasm_bindgen::JsCast;
     use leptos::wasm_bindgen::JsValue;
@@ -92,7 +92,7 @@ async fn check_for_updates_tauri() -> Option<UpdateInfo> {
     any(target_os = "windows", target_os = "macos", target_os = "linux")
 ))]
 fn parse_update_info(value: &leptos::wasm_bindgen::JsValue) -> Option<UpdateInfo> {
-    use crate::version::VERSION;
+    use super::version::VERSION;
     use leptos::wasm_bindgen::JsValue;
 
     let Ok(version) = js_sys::Reflect::get(value, &JsValue::from_str("version")) else {
@@ -106,8 +106,6 @@ fn parse_update_info(value: &leptos::wasm_bindgen::JsValue) -> Option<UpdateInfo
         current_version: VERSION.to_string(),
     })
 }
-
-pub type ProgressCallback = Box<dyn Fn(u8) + Send + Sync>;
 
 pub async fn download_and_install<F>(_on_progress: F) -> Result<(), String>
 where

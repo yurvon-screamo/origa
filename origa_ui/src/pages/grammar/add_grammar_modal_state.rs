@@ -1,9 +1,7 @@
 use crate::repository::HybridUserRepository;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use origa::domain::{
-    iter_grammar_rules, Card, GrammarRule, JapaneseLevel, NativeLanguage,
-};
+use origa::domain::{Card, GrammarRule, JapaneseLevel, NativeLanguage, iter_grammar_rules};
 use origa::traits::UserRepository;
 use std::collections::HashSet;
 use ulid::Ulid;

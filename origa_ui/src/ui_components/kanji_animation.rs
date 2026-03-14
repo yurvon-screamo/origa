@@ -1,3 +1,4 @@
+use crate::core::config::public_url;
 use leptos::prelude::*;
 
 #[derive(Clone, Copy, PartialEq, Default)]
@@ -49,11 +50,9 @@ pub fn KanjiAnimation(kanji: String, #[prop(optional)] mode: KanjiViewMode) -> i
     let encoded = urlencoding::encode(&kanji);
     let svg_path = match mode {
         KanjiViewMode::Animation => {
-            crate::config::public_url(&format!("/public/kanji_animations/{}.svg", encoded))
+            public_url(&format!("/public/kanji_animations/{}.svg", encoded))
         }
-        KanjiViewMode::Frames => {
-            crate::config::public_url(&format!("/public/kanji_frames/{}.svg", encoded))
-        }
+        KanjiViewMode::Frames => public_url(&format!("/public/kanji_frames/{}.svg", encoded)),
     };
 
     let container_class = match mode {

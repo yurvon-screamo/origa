@@ -5,8 +5,8 @@ use origa::{
     traits::UserRepository,
 };
 
+use crate::loaders::recalculate_user_jlpt_progress;
 use crate::repository::file_repository::FileSystemUserRepository;
-use crate::repository::jlpt_content_loader::recalculate_user_jlpt_progress;
 use crate::repository::trailbase_repository::TrailBaseUserRepository;
 
 #[derive(Clone)]

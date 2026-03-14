@@ -5,7 +5,7 @@ use origa::{
 use serde::Deserialize;
 use std::sync::OnceLock;
 
-use crate::config::public_url;
+use crate::core::config::public_url;
 use crate::utils::fetch_text;
 
 static META_CACHE: OnceLock<Vec<WellKnownSetMeta>> = OnceLock::new();

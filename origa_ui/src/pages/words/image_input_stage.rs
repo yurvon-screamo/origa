@@ -1,4 +1,4 @@
-use crate::ocr_model_loader::ModelLoader;
+use crate::loaders::ModelLoader;
 use crate::ui_components::{
     Alert, AlertType, Button, ButtonVariant, Text, TextSize, TypographyVariant,
 };
@@ -328,7 +328,7 @@ async fn process_image_with_ocr(data_url: &str) -> Result<String, String> {
         None => {
             info!("Loading OCR and Layout models");
 
-            let config = ModelConfig::new(crate::config::ndlocr_base_url(), "ndlocr-model-");
+            let config = ModelConfig::new(crate::core::config::ndlocr_base_url(), "ndlocr-model-");
             let loader = ModelLoader::new(config);
 
             let model_files = loader
