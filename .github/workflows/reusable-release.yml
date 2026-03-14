@@ -36,7 +36,7 @@ jobs:
       contents: write
     steps:
       - name: Download all artifacts
-        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        uses: actions/download-artifact@v4
         with:
           path: artifacts
 
@@ -49,7 +49,7 @@ jobs:
           ls -la release_assets/
 
       - name: Update latest release
-        uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2.5.0
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ inputs.tag-name }}
           name: ${{ inputs.release-name }}

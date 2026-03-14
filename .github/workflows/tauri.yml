@@ -11,12 +11,8 @@ on:
 env:
   CARGO_TERM_COLOR: always
 
-permissions: {}
-
 jobs:
   version:
-    permissions:
-      contents: read
     uses: ./.github/workflows/version.yml
 
   build-windows:
@@ -24,7 +20,7 @@ jobs:
     needs: [version]
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/rust-cross/cargo-zigbuild:v0.22.1@sha256:4d4be2cab126b5b503fd9bd573f300d6769b7058bc31edfe02db652bc9074c8b
+      image: ghcr.io/rust-cross/cargo-zigbuild
     permissions:
       contents: write
     outputs:
@@ -39,24 +35,23 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          persist-credentials: false
+        uses: actions/checkout@v4
 
       - name: Setup cargo cache
-        uses: Swatinem/rust-cache@9d47c6ad4b02e050fd481d890b2ea34778fd09d6 # v2.7.8
+        uses: Swatinem/rust-cache@v2
         with:
           cache-all-crates: true
           cache-targets: false
           shared-key: origa-cross-build
-          save-always: true
+          save-if: ${{ github.ref == 'refs/heads/master' }}
 
       - name: Cache UniDic dictionary
-        uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5.0.1
+        uses: actions/cache@v4
         with:
           path: origa_ui/public/dictionaries/unidic
           key: unidic-dict-v1-${{ hashFiles('origa_ui/build.rs') }}
-          save-always: true
+          restore-keys: unidic-dict-v1-
+          save-if: ${{ github.ref == 'refs/heads/master' }}
 
       - name: Update version in config files
         env:
@@ -95,11 +90,12 @@ jobs:
         run: rm -rf origa_ui/dist/public
 
       - name: Cache cargo-xwin MSVC CRT
-        uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5.0.1
+        uses: actions/cache@v4
         with:
           path: ${{ github.workspace }}/.xwin-cache
           key: xwin-${{ runner.os }}-x86_64-pc-windows-msvc-v17
-          save-always: true
+          restore-keys: |
+            xwin-${{ runner.os }}-
 
       - name: Build Tauri app for Windows
         working-directory: tauri
@@ -153,16 +149,15 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          persist-credentials: false
+        uses: actions/checkout@v4
 
       - name: Cache UniDic dictionary
-        uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5.0.1
+        uses: actions/cache@v4
         with:
           path: origa_ui/public/dictionaries/unidic
           key: unidic-dict-v1-${{ hashFiles('origa_ui/build.rs') }}
-          save-always: true
+          restore-keys: unidic-dict-v1-
+          save-if: ${{ github.ref == 'refs/heads/master' }}
 
       - name: Update version in config files
         env:
@@ -177,13 +172,13 @@ jobs:
           echo "Updated version to ${VERSION}"
 
       - name: Cache APT packages
-        uses: awalsh128/cache-apt-pkgs-action@a6c3917cc929dd0345bfb2d3feaf9101823370ad # v1.4.2
+        uses: awalsh128/cache-apt-pkgs-action@latest
         with:
           packages: libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf protobuf-compiler
           version: 1.0
 
       - name: Install mold linker
-        uses: rui314/setup-mold@725a8794d15fc7563f59595bd9556495c0564878 # v1
+        uses: rui314/setup-mold@v1
 
       - name: Setup Rust with caching
         uses: ./.github/actions/setup-rust
@@ -251,7 +246,7 @@ jobs:
     needs: [version]
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/rust-cross/cargo-zigbuild:v0.22.1@sha256:4d4be2cab126b5b503fd9bd573f300d6769b7058bc31edfe02db652bc9074c8b
+      image: ghcr.io/rust-cross/cargo-zigbuild
     permissions:
       contents: write
     outputs:
@@ -265,24 +260,23 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          persist-credentials: false
+        uses: actions/checkout@v4
 
       - name: Setup cargo cache
-        uses: Swatinem/rust-cache@9d47c6ad4b02e050fd481d890b2ea34778fd09d6 # v2.7.8
+        uses: Swatinem/rust-cache@v2
         with:
           cache-all-crates: true
           cache-targets: false
           shared-key: origa-cross-build
-          save-always: true
+          save-if: ${{ github.ref == 'refs/heads/master' }}
 
       - name: Cache UniDic dictionary
-        uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5.0.1
+        uses: actions/cache@v4
         with:
           path: origa_ui/public/dictionaries/unidic
           key: unidic-dict-v1-${{ hashFiles('origa_ui/build.rs') }}
-          save-always: true
+          restore-keys: unidic-dict-v1-
+          save-if: ${{ github.ref == 'refs/heads/master' }}
 
       - name: Update version in config files
         env:
@@ -330,8 +324,6 @@ jobs:
         run: echo "signature=" >> $GITHUB_OUTPUT
 
       - name: Create macOS app bundle
-        env:
-          VERSION: ${{ needs.version.outputs.version }}
         run: |
           mkdir -p Origa.app/Contents/MacOS
           mkdir -p Origa.app/Contents/Resources
@@ -348,9 +340,9 @@ jobs:
             <key>CFBundleDisplayName</key>
             <string>Origa</string>
             <key>CFBundleVersion</key>
-            <string>${VERSION}</string>
+            <string>${{ needs.version.outputs.version }}</string>
             <key>CFBundleShortVersionString</key>
-            <string>${VERSION}</string>
+            <string>${{ needs.version.outputs.version }}</string>
             <key>CFBundleExecutable</key>
             <string>origa</string>
             <key>CFBundlePackageType</key>

@@ -22,9 +22,6 @@ on:
         description: "Build date (YYYY-MM-DD)"
         value: ${{ jobs.version.outputs.build_date }}
 
-permissions:
-  contents: read
-
 jobs:
   version:
     runs-on: ubuntu-latest
@@ -37,19 +34,15 @@ jobs:
       build_date: ${{ steps.calc.outputs.build_date }}
 
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           filter: blob:none
-          persist-credentials: false
 
       - name: Calculate version
         id: calc
-        env:
-          REF_TYPE: ${{ github.ref_type }}
-          REF_NAME: ${{ github.ref_name }}
-          COMMIT_SHA: ${{ github.sha }}
         run: |
+          COMMIT_SHA="${{ github.sha }}"
           COMMIT_SHORT="${COMMIT_SHA:0:7}"
           BUILD_DATE=$(date -u +'%Y-%m-%d')
 
@@ -57,8 +50,9 @@ jobs:
           echo "commit_short=${COMMIT_SHORT}" >> $GITHUB_OUTPUT
           echo "build_date=${BUILD_DATE}" >> $GITHUB_OUTPUT
 
-          if [[ "$REF_TYPE" == "tag" && "$REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            VERSION="${REF_NAME#v}"
+          if [[ "${{ github.ref_type }}" == "tag" && "${{ github.ref_name }}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            VERSION="${{ github.ref_name }}"
+            VERSION="${VERSION#v}"
             VERSION_TYPE="stable"
 
             echo "version=${VERSION}" >> $GITHUB_OUTPUT
