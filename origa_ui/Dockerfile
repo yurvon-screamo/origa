@@ -5,7 +5,7 @@ ARG TRUNK_VERSION=0.21.14
 
 FROM ubuntu:24.04 AS builder
 
-SHELL ["/bin/sh", "-o", "pipefail", "-c"]
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 ARG RUST_VERSION
 ARG TRUNK_VERSION
@@ -86,11 +86,11 @@ RUN --mount=type=cache,target=/root/.cargo/registry \
 
 FROM caddy:2.9-alpine AS caddy
 
-SHELL ["/bin/sh", "-o", "pipefail", "-c"]
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 FROM trailbase/trailbase:0.24.3
 
-SHELL ["/bin/sh", "-o", "pipefail", "-c"]
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 USER root
 WORKDIR /app
