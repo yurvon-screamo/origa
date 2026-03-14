@@ -39,7 +39,7 @@ runs:
 
     - name: Cache UniDic dictionary
       id: unidic-cache
-      uses: actions/cache@v4
+      uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5.0.1
       with:
         path: origa_ui/public/dictionaries/unidic
         key: unidic-dict-v1-${{ hashFiles('origa_ui/build.rs') }}
