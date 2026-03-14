@@ -56,10 +56,7 @@ impl AuthContext {
 
         spawn_local(async move {
             if let Some(session) = get_session() {
-                let now = std::time::SystemTime::now()
-                    .duration_since(std::time::UNIX_EPOCH)
-                    .unwrap_or_default()
-                    .as_secs();
+                let now = (js_sys::Date::now() / 1000.0) as u64;
 
                 if session.expires_at > now {
                     is_authenticated.set(true);
@@ -270,9 +267,7 @@ pub fn App() -> impl IntoView {
             <LoadingOverlay message="Вход..." />
         </Show>
         <Show when=move || !auth_context.is_data_loaded.get()>
-            <div class="fixed bottom-4 right-4 bg-accent-olive/90 text-white px-3 py-2 rounded-lg text-sm shadow-lg z-50">
-                Загрузка словарей...
-            </div>
+            <LoadingOverlay message="Загрузка словарей..." />
         </Show>
         <AppRoutes />
     }
