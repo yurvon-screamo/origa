@@ -246,131 +246,9 @@ jobs:
             **/bundle/deb/*.deb
           retention-days: 7
 
-  build-macos:
-    name: Build macOS
-    needs: [version]
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/rust-cross/cargo-zigbuild:v0.22.1@sha256:4d4be2cab126b5b503fd9bd573f300d6769b7058bc31edfe02db652bc9074c8b
-    permissions:
-      contents: write
-    outputs:
-      signature: ${{ steps.signature.outputs.signature }}
-    env:
-      ORIGA_VERSION: ${{ needs.version.outputs.version }}
-      ORIGA_COMMIT: ${{ needs.version.outputs.commit_sha }}
-      ORIGA_BUILD_DATE: ${{ needs.version.outputs.build_date }}
-      TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-      TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          persist-credentials: false
-
-      - name: Setup cargo cache
-        uses: Swatinem/rust-cache@9d47c6ad4b02e050fd481d890b2ea34778fd09d6 # v2.7.8
-        with:
-          cache-all-crates: true
-          cache-targets: false
-          shared-key: origa-cross-build
-          save-always: true
-
-      - name: Cache UniDic dictionary
-        uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5.0.1
-        with:
-          path: origa_ui/public/dictionaries/unidic
-          key: unidic-dict-v1-${{ hashFiles('origa_ui/build.rs') }}
-          save-always: true
-
-      - name: Update version in config files
-        env:
-          VERSION: ${{ needs.version.outputs.version_base }}
-        run: |
-          # Обновить версию в Cargo.toml (workspace)
-          sed -i 's/^version = ".*"/version = "'${VERSION}'"/' Cargo.toml
-
-          # Обновить версию в tauri.conf.json
-          sed -i 's/"version": ".*"/"version": "'${VERSION}'"/' tauri/tauri.conf.json
-
-          echo "Updated version to ${VERSION}"
-
-      - name: Install build dependencies
-        run: apt-get update && apt-get install -y zip protobuf-compiler
-
-      - name: Setup Rust targets
-        run: rustup target add x86_64-apple-darwin aarch64-apple-darwin wasm32-unknown-unknown
-
-      - name: Install cargo-binstall
-        run: |
-          curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
-          cargo binstall trunk tauri-cli --no-confirm --force
-
-      - name: Add cargo bin to PATH
-        run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-
-      - name: Build frontend
-        working-directory: origa_ui
-        run: trunk build --release
-        env:
-          TRAILBASE_URL: ${{ vars.TRAILBASE_URL }}
-          PUBLIC_BASE_URL: ${{ vars.TRAILBASE_URL }}
-
-      - name: Remove public assets from dist
-        run: rm -rf origa_ui/dist/public
-
-      - name: Build Tauri app for macOS
-        working-directory: tauri
-        run: cargo tauri build --runner cargo-zigbuild --target aarch64-apple-darwin --no-bundle
-
-      - name: Extract signature
-        id: signature
-        shell: bash
-        run: echo "signature=" >> $GITHUB_OUTPUT
-
-      - name: Create macOS app bundle
-        env:
-          VERSION: ${{ needs.version.outputs.version }}
-        run: |
-          mkdir -p Origa.app/Contents/MacOS
-          mkdir -p Origa.app/Contents/Resources
-          cp target/aarch64-apple-darwin/release/origa-app Origa.app/Contents/MacOS/origa
-          cat > Origa.app/Contents/Info.plist << EOF
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-            <key>CFBundleIdentifier</key>
-            <string>net.uwuwu.origa</string>
-            <key>CFBundleName</key>
-            <string>Origa</string>
-            <key>CFBundleDisplayName</key>
-            <string>Origa</string>
-            <key>CFBundleVersion</key>
-            <string>${VERSION}</string>
-            <key>CFBundleShortVersionString</key>
-            <string>${VERSION}</string>
-            <key>CFBundleExecutable</key>
-            <string>origa</string>
-            <key>CFBundlePackageType</key>
-            <string>APPL</string>
-          </dict>
-          </plist>
-          EOF
-          chmod +x Origa.app/Contents/MacOS/origa
-          zip -r Origa-macos-arm64.zip Origa.app
-
-      - name: Upload macOS artifacts
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
-        with:
-          name: macos-build
-          path: Origa-macos-arm64.zip
-          retention-days: 7
-
   generate-latest-json:
     name: Generate latest.json
-    needs: [version, build-windows, build-linux, build-macos]
+    needs: [version, build-windows, build-linux]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -416,7 +294,7 @@ jobs:
   release:
     name: Update Latest Release
     needs:
-      [version, build-windows, build-linux, build-macos, generate-latest-json]
+      [version, build-windows, build-linux, generate-latest-json]
     uses: ./.github/workflows/reusable-release.yml
     with:
       tag-name: ${{ needs.version.outputs.version_type == 'stable' && needs.version.outputs.version || 'latest' }}
@@ -433,8 +311,5 @@ jobs:
         ## Linux
         - `*.AppImage` - Portable версия
         - `*.deb` - Debian/Ubuntu пакет
-
-        ## macOS
-        - `Origa-macos-arm64.zip` - Apple Silicon
     permissions:
       contents: write
