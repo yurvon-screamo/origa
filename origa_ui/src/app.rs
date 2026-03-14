@@ -1,5 +1,7 @@
 use leptos::prelude::*;
 use leptos::task::spawn_local;
+use origa::domain::User;
+use origa::traits::UserRepository;
 use tracing::{error, info};
 
 use crate::core::updater;
@@ -13,6 +15,7 @@ use crate::ui_components::UpdateDrawer;
 pub struct AuthContext {
     pub client: TrailBaseClient,
     pub repository: HybridUserRepository,
+    pub current_user: RwSignal<Option<User>>,
     pub is_session_loading: RwSignal<bool>,
     pub is_authenticated: RwSignal<bool>,
     pub is_oauth_loading: RwSignal<bool>,
@@ -24,6 +27,7 @@ impl AuthContext {
         Self {
             client: TrailBaseClient::new(),
             repository: HybridUserRepository::new(),
+            current_user: RwSignal::new(None),
             is_session_loading: RwSignal::new(true),
             is_oauth_loading: RwSignal::new(false),
             is_data_loaded: RwSignal::new(false),
@@ -53,6 +57,8 @@ impl AuthContext {
 
         let is_authenticated = self.is_authenticated;
         let is_session_loading = self.is_session_loading;
+        let current_user = self.current_user;
+        let repository = self.repository.clone();
 
         spawn_local(async move {
             if let Some(session) = get_session() {
@@ -60,6 +66,18 @@ impl AuthContext {
 
                 if session.expires_at > now {
                     is_authenticated.set(true);
+
+                    match repository.get_current_user().await {
+                        Ok(Some(user)) => {
+                            current_user.set(Some(user));
+                        }
+                        Ok(None) => {
+                            error!("No local user found");
+                        }
+                        Err(e) => {
+                            error!("Failed to load user: {:?}", e);
+                        }
+                    }
                 } else {
                     crate::repository::clear_session();
                 }
@@ -215,6 +233,7 @@ pub fn App() -> impl IntoView {
 
     provide_context(auth_context.repository.clone());
     provide_context(auth_context.clone());
+    provide_context(auth_context.current_user);
 
     auth_context.check_session();
     check_url_oauth_callback(&auth_context);
