@@ -8,7 +8,7 @@ pub use real_dictionaries::init_real_dictionaries;
 
 use std::path::PathBuf;
 
-use crate::domain::{Card, KanjiCard, NativeLanguage, Question, User, VocabularyCard};
+use crate::domain::{Card, NativeLanguage, Question, User, VocabularyCard};
 
 pub fn get_public_dir() -> PathBuf {
     let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR not set");
@@ -23,10 +23,6 @@ pub fn create_test_vocab_card(word: &str) -> Card {
     Card::Vocabulary(VocabularyCard::new(
         Question::new(word.to_string()).expect("Failed to create Question"),
     ))
-}
-
-pub fn create_test_kanji_card(kanji: &str) -> Card {
-    Card::Kanji(KanjiCard::new(kanji.to_string()).expect("Failed to create KanjiCard"))
 }
 
 pub fn create_user_with_vocab_cards(count: usize) -> User {

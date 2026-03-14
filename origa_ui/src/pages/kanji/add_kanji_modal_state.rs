@@ -1,14 +1,14 @@
 use crate::repository::HybridUserRepository;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use origa::domain::JapaneseLevel;
-use origa::use_cases::{KanjiInfoListUseCase, KanjiItemInfo};
+use origa::domain::{get_kanji_list, Card, JapaneseLevel, KanjiInfo};
+use origa::traits::UserRepository;
 use std::collections::HashSet;
 
 #[derive(Clone)]
 pub struct ModalState {
     pub selected_level: RwSignal<JapaneseLevel>,
-    pub available_kanji: RwSignal<Vec<KanjiItemInfo>>,
+    pub available_kanji: RwSignal<Vec<&'static KanjiInfo>>,
     pub selected_kanji: RwSignal<HashSet<String>>,
     pub is_loading_kanji: RwSignal<bool>,
     pub is_creating: RwSignal<bool>,
@@ -54,10 +54,33 @@ impl ModalState {
         error.set(None);
 
         spawn_local(async move {
-            let use_case = KanjiInfoListUseCase::new(&repository);
-            match use_case.execute(&level).await {
-                Ok(kanji_list) => {
+            match repository.get_current_user().await {
+                Ok(Some(user)) => {
+                    let learned_kanji: HashSet<String> = user
+                        .knowledge_set()
+                        .study_cards()
+                        .iter()
+                        .filter_map(|(_, card)| {
+                            if let Card::Kanji(kanji_card) = card.card() {
+                                Some(kanji_card.kanji().text().to_string())
+                            } else {
+                                None
+                            }
+                        })
+                        .collect();
+
+                    let kanji_list: Vec<&'static KanjiInfo> = get_kanji_list(&level)
+                        .into_iter()
+                        .filter(|kanji_info| {
+                            !learned_kanji.contains(&kanji_info.kanji().to_string())
+                        })
+                        .collect();
+
                     available_kanji.set(kanji_list);
+                    is_loading.set(false);
+                }
+                Ok(None) => {
+                    error.set(Some("Пользователь не найден".to_string()));
                     is_loading.set(false);
                 }
                 Err(e) => {
@@ -84,7 +107,7 @@ impl ModalState {
             .available_kanji
             .get()
             .iter()
-            .map(|k| k.kanji.to_string())
+            .map(|k| k.kanji().to_string())
             .collect();
         self.selected_kanji.set(all_kanji);
     }

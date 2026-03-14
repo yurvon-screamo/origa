@@ -1,13 +1,15 @@
-use super::rule_item::RuleItem;
 use crate::ui_components::{Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
-use origa::use_cases::GrammarRuleItem;
+use origa::domain::{GrammarRule, NativeLanguage};
 use std::collections::HashSet;
 use ulid::Ulid;
 
+use super::rule_item::RuleItem;
+
 #[component]
 pub fn RulesList(
-    rules: Vec<GrammarRuleItem>,
+    rules: Vec<&'static GrammarRule>,
+    native_language: NativeLanguage,
     selected_ids: RwSignal<HashSet<Ulid>>,
     search_query: RwSignal<String>,
     known_kanji: HashSet<String>,
@@ -20,10 +22,11 @@ pub fn RulesList(
         rules
             .iter()
             .filter(|rule| {
-                rule.title.to_lowercase().contains(&query)
-                    || rule.short_description.to_lowercase().contains(&query)
+                let content = rule.content(&native_language);
+                content.title().to_lowercase().contains(&query)
+                    || content.short_description().to_lowercase().contains(&query)
             })
-            .cloned()
+            .copied()
             .collect::<Vec<_>>()
     };
 
@@ -43,11 +46,12 @@ pub fn RulesList(
                     view! {
                         <For
                             each=move || filtered.clone()
-                            key=|rule| rule.rule_id
+                            key=|rule| *rule.rule_id()
                             children=move |rule| {
                                 view! {
                                     <RuleItem
                                         rule=rule
+                                        native_language=native_language
                                         selected_ids=selected_ids
                                         known_kanji=known_kanji_stored.get_value()
                                     />

@@ -38,5 +38,5 @@ pub use srs::RateMode;
 pub use tokenizer::{
     DictionaryData, PartOfSpeech, TokenInfo, init_dictionary, is_dictionary_loaded, tokenize_text,
 };
-pub use user::User;
+pub use user::{User, WordKnowledge};
 pub use value_objects::{Answer, JapaneseLevel, NativeLanguage, Question};

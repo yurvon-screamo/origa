@@ -5,7 +5,7 @@ use crate::ui_components::{Spinner, Text, TextSize, ToastContainer, ToastData, T
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::domain::{DailyHistoryItem, JlptProgress};
-use origa::use_cases::GetUserInfoUseCase;
+use origa::traits::UserRepository;
 
 #[component]
 pub fn HomeContent() -> impl IntoView {
@@ -41,15 +41,21 @@ pub fn HomeContent() -> impl IntoView {
     Effect::new(move |_| {
         let repo = repo_for_init.clone();
         spawn_local(async move {
-            let use_case = GetUserInfoUseCase::new(&repo);
-            match use_case.execute().await {
-                Ok(profile) => {
-                    history.set(profile.lesson_history.clone());
-                    stats.set(Some(calculate_stats(&profile.lesson_history)));
-                    jlpt_progress.set(profile.jlpt_progress);
+            match repo.get_current_user().await {
+                Ok(Some(user)) => {
+                    let history_items = user.knowledge_set().lesson_history().to_vec();
+                    history.set(history_items.clone());
+                    stats.set(Some(calculate_stats(&history_items)));
+                    jlpt_progress.set(user.jlpt_progress().clone());
                     is_loading.set(false);
                 }
-                Err(_) => {
+                Ok(None) => {
+                    tracing::warn!("Home: user not found");
+                    stats.set(Some(HomeStats::default()));
+                    is_loading.set(false);
+                }
+                Err(e) => {
+                    tracing::error!("Home: get_current_user error: {:?}", e);
                     stats.set(Some(HomeStats::default()));
                     is_loading.set(false);
                 }
@@ -61,11 +67,19 @@ pub fn HomeContent() -> impl IntoView {
     Effect::new(move |_| {
         let repo = repo_for_reload.clone();
         spawn_local(async move {
-            let use_case = GetUserInfoUseCase::new(&repo);
-            if let Ok(profile) = use_case.execute().await {
-                history.set(profile.lesson_history.clone());
-                stats.set(Some(calculate_stats(&profile.lesson_history)));
-                jlpt_progress.set(profile.jlpt_progress);
+            match repo.get_current_user().await {
+                Ok(Some(user)) => {
+                    let history_items = user.knowledge_set().lesson_history().to_vec();
+                    history.set(history_items.clone());
+                    stats.set(Some(calculate_stats(&history_items)));
+                    jlpt_progress.set(user.jlpt_progress().clone());
+                }
+                Ok(None) => {
+                    tracing::warn!("Home: user not found on reload");
+                }
+                Err(e) => {
+                    tracing::error!("Home: get_current_user error on reload: {:?}", e);
+                }
             }
         });
     });

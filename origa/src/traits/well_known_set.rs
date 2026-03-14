@@ -34,6 +34,8 @@ pub struct WellKnownSetMeta {
     pub title_en: String,
     pub desc_ru: String,
     pub desc_en: String,
+    #[serde(default)]
+    pub word_count: usize,
 }
 
 impl WellKnownSetMeta {

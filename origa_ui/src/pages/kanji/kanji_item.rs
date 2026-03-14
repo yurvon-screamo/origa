@@ -1,22 +1,22 @@
 use crate::ui_components::{MarkdownText, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
-use origa::use_cases::KanjiItemInfo;
+use origa::domain::KanjiInfo;
 use std::collections::HashSet;
 
 #[component]
 pub fn KanjiItem(
-    kanji_info: KanjiItemInfo,
+    kanji_info: &'static KanjiInfo,
     selected_kanji: RwSignal<HashSet<String>>,
     known_kanji: HashSet<String>,
 ) -> impl IntoView {
-    let kanji_str = kanji_info.kanji.to_string();
+    let kanji_str = kanji_info.kanji().to_string();
     let kanji_str_for_click = kanji_str.clone();
     let kanji_str_for_memo = kanji_str.clone();
 
     let is_selected = Memo::new(move |_| selected_kanji.get().contains(&kanji_str_for_memo));
 
-    let radicals_str = kanji_info.radicals.iter().collect::<String>();
-    let description = kanji_info.description.clone();
+    let radicals_str = kanji_info.radicals_chars().iter().collect::<String>();
+    let description = kanji_info.description().to_string();
 
     view! {
         <div
@@ -40,7 +40,7 @@ pub fn KanjiItem(
             }
         >
             <div class="flex items-center gap-3">
-                <span class="text-2xl font-serif">{kanji_info.kanji}</span>
+                <span class="text-2xl font-serif">{kanji_info.kanji()}</span>
                 <div class="flex-1">
                     <MarkdownText content=Signal::derive(move || description.clone()) known_kanji=known_kanji.clone()/>
                     {move || {

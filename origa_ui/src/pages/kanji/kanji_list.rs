@@ -1,12 +1,12 @@
 use super::kanji_item::KanjiItem;
 use crate::ui_components::{Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
-use origa::use_cases::KanjiItemInfo;
+use origa::domain::KanjiInfo;
 use std::collections::HashSet;
 
 #[component]
 pub fn KanjiList(
-    kanji_list: Vec<KanjiItemInfo>,
+    kanji_list: Vec<&'static KanjiInfo>,
     selected_kanji: RwSignal<HashSet<String>>,
     known_kanji: HashSet<String>,
 ) -> impl IntoView {
@@ -23,7 +23,7 @@ pub fn KanjiList(
         <div class="space-y-2 overflow-y-auto">
             <For
                 each=move || kanji_list.clone()
-                key=|kanji| kanji.kanji.to_string()
+                key=|kanji| kanji.kanji().to_string()
                 children=move |kanji_info| {
                     view! {
                         <KanjiItem

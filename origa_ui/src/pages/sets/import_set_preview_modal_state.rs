@@ -2,9 +2,9 @@ use crate::repository::HybridUserRepository;
 use crate::well_known_set::WellKnownSetLoaderImpl;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
+use origa::traits::{UserRepository, WellKnownSetLoader};
 use origa::use_cases::{
-    CreateCardsFromAnalysisResult, CreateCardsFromAnalysisUseCase, ImportWellKnownSetUseCase,
-    WordToCreate,
+    CreateCardsFromAnalysisResult, CreateCardsFromAnalysisUseCase, WordToCreate,
 };
 use std::collections::HashSet;
 use std::future::Future;
@@ -54,25 +54,41 @@ impl ImportPreviewModalState {
         error.set(None);
 
         spawn_local(async move {
-            let use_case = ImportWellKnownSetUseCase::new(&repository, &well_known_loader);
-            match use_case.preview_set(set_id).await {
-                Ok(result) => {
-                    let words: Vec<(String, Option<String>, bool)> = result
-                        .words
-                        .iter()
-                        .map(|w| (w.word.clone(), w.meaning.clone(), w.is_known))
-                        .collect();
-                    let words_to_select: HashSet<String> =
-                        result.words.iter().map(|w| w.word.clone()).collect();
-                    set_words.set(words);
-                    selected_words.set(words_to_select);
+            let user = match repository.get_current_user().await {
+                Ok(Some(u)) => u,
+                Ok(None) => {
+                    error.set(Some("Пользователь не найден".to_string()));
                     is_loading_preview.set(false);
+                    return;
                 }
                 Err(e) => {
                     error.set(Some(e.to_string()));
                     is_loading_preview.set(false);
+                    return;
                 }
+            };
+
+            let set = match well_known_loader.load_set(set_id).await {
+                Ok(s) => s,
+                Err(e) => {
+                    error.set(Some(e.to_string()));
+                    is_loading_preview.set(false);
+                    return;
+                }
+            };
+
+            let words = set.words();
+            let mut preview_words = Vec::new();
+            for word in words {
+                let knowledge = user.is_word_known(word);
+                preview_words.push((word.clone(), knowledge.meaning, knowledge.is_known));
             }
+
+            let words_to_select: HashSet<String> =
+                preview_words.iter().map(|w| w.0.clone()).collect();
+            set_words.set(preview_words);
+            selected_words.set(words_to_select);
+            is_loading_preview.set(false);
         });
     }
 
