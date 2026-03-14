@@ -154,23 +154,64 @@ def translate_japanese_to_russian(word: str, client: OpenAI) -> str:
             raise e
 
 
-def process_file(file_path_str: str):
-    start_time = time.time()
-
-    # Normalize path
+def _resolve_file_path(file_path_str: str) -> Path | None:
     if file_path_str.startswith("@"):
         file_path_str = file_path_str[1:]
 
     file_path = Path(file_path_str).resolve()
-    if not file_path.exists():
-        alt_path = (Path(__file__).parent.parent / file_path_str).resolve()
-        if alt_path.exists():
-            file_path = alt_path
-        else:
-            print(
-                f"[{datetime.now().strftime('%H:%M:%S')}] Error: File not found: {file_path_str}"
-            )
-            return
+    if file_path.exists():
+        return file_path
+
+    alt_path = (Path(__file__).parent.parent / file_path_str).resolve()
+    if alt_path.exists():
+        return alt_path
+
+    print(
+        f"[{datetime.now().strftime('%H:%M:%S')}] Error: File not found: {file_path_str}"
+    )
+    return None
+
+
+def _process_chunk(chunk: list, data: dict, client: OpenAI, file_path: Path):
+    completed = 0
+    errors = 0
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=32) as executor:
+        future_to_word = {
+            executor.submit(translate_japanese_to_russian, word, client): word
+            for word in chunk
+        }
+
+        for future in concurrent.futures.as_completed(future_to_word):
+            word = future_to_word[future]
+            try:
+                translation = future.result()
+                if translation:
+                    data[word]["russian_translation"] = translation
+                    completed += 1
+                    with file_lock:
+                        with open(file_path, "w", encoding="utf-8") as f:
+                            json.dump(data, f, ensure_ascii=False, indent=2)
+            except Exception:
+                errors += 1
+
+            current = completed + errors
+            if current % 50 == 0 or current == len(chunk):
+                percent = (current / len(chunk)) * 100
+                print(
+                    f"  Progress in chunk: {current}/{len(chunk)} ({percent:.1f}%)",
+                    end="\r",
+                )
+
+    return completed, errors
+
+
+def process_file(file_path_str: str):
+    start_time = time.time()
+
+    file_path = _resolve_file_path(file_path_str)
+    if not file_path:
+        return
 
     print(f"[{datetime.now().strftime('%H:%M:%S')}] Loading {file_path}...")
     with open(file_path, "r", encoding="utf-8") as f:
@@ -198,48 +239,15 @@ def process_file(file_path_str: str):
             f"\n--- Chunk {chunk_num}/{total_chunks} ({i} to {min(i + chunk_size, total_words)}) ---"
         )
 
-        completed_in_chunk = 0
-        errors_in_chunk = 0
+        completed_in_chunk, errors_in_chunk = _process_chunk(
+            chunk, data, client, file_path
+        )
 
-        with concurrent.futures.ThreadPoolExecutor(max_workers=32) as executor:
-            future_to_word = {
-                executor.submit(translate_japanese_to_russian, word, client): word
-                for word in chunk
-            }
-
-            for future in concurrent.futures.as_completed(future_to_word):
-                word = future_to_word[future]
-                try:
-                    translation = future.result()
-                    if translation:
-                        data[word]["russian_translation"] = translation
-                        completed_in_chunk += 1
-
-                        # Save immediately on each word translation to avoid losing progress
-                        with file_lock:
-                            with open(file_path, "w", encoding="utf-8") as f:
-                                json.dump(data, f, ensure_ascii=False, indent=2)
-                except Exception:
-                    errors_in_chunk += 1
-                    # print(f"Error for '{word}': {e}") # Silent error to keep logs clean
-
-                # Periodic progress update within chunk
-                current_completed = completed_in_chunk + errors_in_chunk
-                if current_completed % 50 == 0 or current_completed == len(chunk):
-                    percent = (current_completed / len(chunk)) * 100
-                    print(
-                        f"  Progress in chunk: {current_completed}/{len(chunk)} ({percent:.1f}%)",
-                        end="\r",
-                    )
-
-        # Stats update
         completed_total += completed_in_chunk
         errors_total += errors_in_chunk
 
         chunk_duration = time.time() - chunk_start_time
         avg_time_per_word = chunk_duration / len(chunk) if len(chunk) > 0 else 0
-
-        # Calculate ETA
         remaining_words = total_words - (i + len(chunk))
         eta_seconds = remaining_words * avg_time_per_word
         eta_str = str(timedelta(seconds=int(eta_seconds)))

@@ -11,8 +11,12 @@ on:
 env:
   CARGO_TERM_COLOR: always
 
+permissions: {}
+
 jobs:
   version:
+    permissions:
+      contents: read
     uses: ./.github/workflows/version.yml
 
   build-windows:
@@ -20,7 +24,7 @@ jobs:
     needs: [version]
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/rust-cross/cargo-zigbuild
+      image: ghcr.io/rust-cross/cargo-zigbuild:v0.22.1@sha256:4d4be2cab126b5b503fd9bd573f300d6769b7058bc31edfe02db652bc9074c8b
     permissions:
       contents: write
     outputs:
@@ -35,23 +39,24 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
 
       - name: Setup cargo cache
-        uses: Swatinem/rust-cache@v2
+        uses: Swatinem/rust-cache@9d47c6ad4b02e050fd481d890b2ea34778fd09d6 # v2.7.8
         with:
           cache-all-crates: true
           cache-targets: false
           shared-key: origa-cross-build
-          save-if: ${{ github.ref == 'refs/heads/master' }}
+          save-always: true
 
       - name: Cache UniDic dictionary
-        uses: actions/cache@v4
+        uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
         with:
           path: origa_ui/public/dictionaries/unidic
           key: unidic-dict-v1-${{ hashFiles('origa_ui/build.rs') }}
-          restore-keys: unidic-dict-v1-
-          save-if: ${{ github.ref == 'refs/heads/master' }}
+          save-always: true
 
       - name: Update version in config files
         env:
@@ -90,12 +95,11 @@ jobs:
         run: rm -rf origa_ui/dist/public
 
       - name: Cache cargo-xwin MSVC CRT
-        uses: actions/cache@v4
+        uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
         with:
           path: ${{ github.workspace }}/.xwin-cache
           key: xwin-${{ runner.os }}-x86_64-pc-windows-msvc-v17
-          restore-keys: |
-            xwin-${{ runner.os }}-
+          save-always: true
 
       - name: Build Tauri app for Windows
         working-directory: tauri
@@ -124,7 +128,7 @@ jobs:
           fi
 
       - name: Upload Windows artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: windows-build
           path: |
@@ -149,15 +153,16 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
 
       - name: Cache UniDic dictionary
-        uses: actions/cache@v4
+        uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
         with:
           path: origa_ui/public/dictionaries/unidic
           key: unidic-dict-v1-${{ hashFiles('origa_ui/build.rs') }}
-          restore-keys: unidic-dict-v1-
-          save-if: ${{ github.ref == 'refs/heads/master' }}
+          save-always: true
 
       - name: Update version in config files
         env:
@@ -172,13 +177,13 @@ jobs:
           echo "Updated version to ${VERSION}"
 
       - name: Cache APT packages
-        uses: awalsh128/cache-apt-pkgs-action@latest
+        uses: awalsh128/cache-apt-pkgs-action@a6c3917cc929dd0345bfb2d3feaf9101823370ad # v1.4.2
         with:
           packages: libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf protobuf-compiler
           version: 1.0
 
       - name: Install mold linker
-        uses: rui314/setup-mold@v1
+        uses: rui314/setup-mold@725a8794d15fc7563f59595bd9556495c0564878 # v1
 
       - name: Setup Rust with caching
         uses: ./.github/actions/setup-rust
@@ -232,7 +237,7 @@ jobs:
           fi
 
       - name: Upload Linux artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: linux-build
           path: |
@@ -246,7 +251,7 @@ jobs:
     needs: [version]
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/rust-cross/cargo-zigbuild
+      image: ghcr.io/rust-cross/cargo-zigbuild:v0.22.1@sha256:4d4be2cab126b5b503fd9bd573f300d6769b7058bc31edfe02db652bc9074c8b
     permissions:
       contents: write
     outputs:
@@ -260,23 +265,24 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
 
       - name: Setup cargo cache
-        uses: Swatinem/rust-cache@v2
+        uses: Swatinem/rust-cache@9d47c6ad4b02e050fd481d890b2ea34778fd09d6 # v2.7.8
         with:
           cache-all-crates: true
           cache-targets: false
           shared-key: origa-cross-build
-          save-if: ${{ github.ref == 'refs/heads/master' }}
+          save-always: true
 
       - name: Cache UniDic dictionary
-        uses: actions/cache@v4
+        uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
         with:
           path: origa_ui/public/dictionaries/unidic
           key: unidic-dict-v1-${{ hashFiles('origa_ui/build.rs') }}
-          restore-keys: unidic-dict-v1-
-          save-if: ${{ github.ref == 'refs/heads/master' }}
+          save-always: true
 
       - name: Update version in config files
         env:
@@ -324,6 +330,8 @@ jobs:
         run: echo "signature=" >> $GITHUB_OUTPUT
 
       - name: Create macOS app bundle
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
         run: |
           mkdir -p Origa.app/Contents/MacOS
           mkdir -p Origa.app/Contents/Resources
@@ -340,9 +348,9 @@ jobs:
             <key>CFBundleDisplayName</key>
             <string>Origa</string>
             <key>CFBundleVersion</key>
-            <string>${{ needs.version.outputs.version }}</string>
+            <string>${VERSION}</string>
             <key>CFBundleShortVersionString</key>
-            <string>${{ needs.version.outputs.version }}</string>
+            <string>${VERSION}</string>
             <key>CFBundleExecutable</key>
             <string>origa</string>
             <key>CFBundlePackageType</key>
@@ -354,7 +362,7 @@ jobs:
           zip -r Origa-macos-arm64.zip Origa.app
 
       - name: Upload macOS artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: macos-build
           path: Origa-macos-arm64.zip
@@ -399,7 +407,7 @@ jobs:
           cat latest.json
 
       - name: Upload latest.json artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: latest-json
           path: latest.json
