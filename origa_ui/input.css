@@ -397,17 +397,6 @@ input[type="submit"],
 	border-bottom: 1px solid var(--border-dark);
 }
 
-.number-badge {
-	font-family: "DM Mono", monospace;
-	font-size: 10px;
-	width: 28px;
-	height: 28px;
-	border: 1px solid var(--border-dark);
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-}
-
 .badge {
 	font-family: "DM Mono", monospace;
 	font-size: 10px;
@@ -454,71 +443,6 @@ input[type="submit"],
 	position: absolute;
 	inset: 2px;
 	border: 1px solid var(--accent-terracotta);
-}
-
-@keyframes fadeUp {
-	from {
-		opacity: 0;
-		transform: translateY(20px);
-	}
-
-	to {
-		opacity: 1;
-		transform: translateY(0);
-	}
-}
-
-@keyframes slideDown {
-	from {
-		opacity: 0;
-		transform: translateY(-10px);
-	}
-
-	to {
-		opacity: 1;
-		transform: translateY(0);
-	}
-}
-
-@keyframes fadeIn {
-	from {
-		opacity: 0;
-	}
-
-	to {
-		opacity: 1;
-	}
-}
-
-.animate-in {
-	animation: fadeUp 0.6s ease forwards;
-}
-
-.delay-1 {
-	animation-delay: 0.1s;
-}
-
-.delay-2 {
-	animation-delay: 0.2s;
-}
-
-.delay-3 {
-	animation-delay: 0.3s;
-}
-
-.delay-4 {
-	animation-delay: 0.4s;
-}
-
-.delay-5 {
-	animation-delay: 0.5s;
-}
-
-@media (prefers-reduced-motion: reduce) {
-	.animate-in {
-		animation: none;
-		opacity: 1;
-	}
 }
 
 .modal-backdrop {
@@ -1171,22 +1095,6 @@ input[type="submit"],
 	background: var(--bg-paper);
 }
 
-.animate-in {
-	animation: fadeIn 0.8s ease-out forwards;
-}
-
-@keyframes fadeIn {
-	from {
-		opacity: 0;
-		transform: translateY(10px);
-	}
-
-	to {
-		opacity: 1;
-		transform: translateY(0);
-	}
-}
-
 .furigana-text {
 	display: inline;
 }
@@ -1270,15 +1178,6 @@ input[type="submit"],
 	margin-top: 16px;
 }
 
-.kanji-writing-title {
-	font-family: "DM Mono", monospace;
-	font-size: 10px;
-	letter-spacing: 0.1em;
-	text-transform: uppercase;
-	color: var(--fg-muted);
-	margin-bottom: 12px;
-}
-
 .kanji-writing-grid {
 	display: flex;
 	gap: 32px;
@@ -1294,70 +1193,6 @@ input[type="submit"],
 
 .sets-group {
 	margin-bottom: 32px;
-}
-
-.sets-group-title {
-	font-family: "Cormorant Garamond", serif;
-	font-size: 18px;
-	font-weight: 500;
-	margin-bottom: 16px;
-	padding-bottom: 8px;
-	border-bottom: 1px solid var(--border-light);
-}
-
-.sets-list {
-	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-	gap: 12px;
-}
-
-.set-card {
-	border: 1px solid var(--border-dark);
-	padding: 16px;
-	background: var(--bg-paper);
-	display: flex;
-	flex-direction: column;
-	gap: 8px;
-	transition: all 0.2s ease;
-}
-
-.set-card:hover {
-	background: var(--bg-aged);
-}
-
-.set-card-title {
-	font-family: "DM Mono", monospace;
-	font-size: 12px;
-	letter-spacing: 0.05em;
-}
-
-.set-card-description {
-	font-family: "DM Mono", monospace;
-	font-size: 10px;
-	color: var(--fg-muted);
-}
-
-.set-card-footer {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	margin-top: 8px;
-}
-
-.set-card-count {
-	font-family: "DM Mono", monospace;
-	font-size: 10px;
-	color: var(--fg-muted);
-}
-
-.set-imported {
-	font-family: "DM Mono", monospace;
-	font-size: 9px;
-	letter-spacing: 0.1em;
-	text-transform: uppercase;
-	color: var(--accent-olive);
-	padding: 4px 8px;
-	border: 1px solid var(--accent-olive);
 }
 
 .markdown-text {
