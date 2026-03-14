@@ -25,6 +25,7 @@ pub fn create_delete_callback(
                         toast_type: ToastType::Error,
                         title: "Ошибка удаления".to_string(),
                         message: e.to_string(),
+                        duration_ms: None,
                     });
                 });
             }
