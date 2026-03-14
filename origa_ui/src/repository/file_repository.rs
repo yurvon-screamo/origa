@@ -6,7 +6,7 @@ use origa::{
 use ulid::Ulid;
 use wasm_bindgen::JsValue;
 
-use crate::repository::jlpt_content_loader::recalculate_user_jlpt_progress;
+use crate::loaders::recalculate_user_jlpt_progress;
 
 const DB_NAME: &str = "origa";
 const DB_VERSION: u32 = 1;

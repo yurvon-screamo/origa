@@ -7,7 +7,7 @@ use origa::domain::{
     DictionaryData, GrammarData, KanjiData, OrigaError, RadicalData, VocabularyChunkData,
 };
 
-use crate::config::urls;
+use crate::core::config::urls;
 
 const CACHE_NAME: &str = "origa-dictionary-v1";
 

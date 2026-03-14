@@ -1,5 +1,5 @@
+use crate::core::version;
 use crate::ui_components::{Card, Text, TextSize};
-use crate::version;
 use leptos::prelude::*;
 
 #[component]

@@ -1,13 +1,13 @@
-use crate::components::UpdateDrawer;
-use crate::data_loader::load_all_data;
-use crate::dictionary::load_dictionary;
-use crate::repository::{HybridUserRepository, TrailBaseClient};
-use crate::routes::AppRoutes;
-use crate::ui_components::LoadingOverlay;
-use crate::updater;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use tracing::{error, info};
+
+use crate::core::updater;
+use crate::loaders::{load_all_data, load_dictionary};
+use crate::repository::{HybridUserRepository, TrailBaseClient};
+use crate::routes::AppRoutes;
+use crate::ui_components::LoadingOverlay;
+use crate::ui_components::UpdateDrawer;
 
 #[derive(Clone)]
 pub struct AuthContext {

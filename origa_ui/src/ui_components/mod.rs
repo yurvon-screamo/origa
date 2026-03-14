@@ -46,6 +46,7 @@ mod toast;
 mod toggle;
 mod tooltip;
 mod typography;
+mod update_drawer;
 
 pub use alert::{Alert, AlertType};
 pub use audio_buttons::AudioButtons;
@@ -81,3 +82,4 @@ pub use text_to_speech::{
 pub use toast::{ToastContainer, ToastData, ToastType};
 pub use tooltip::Tooltip;
 pub use typography::{DisplayText, Heading, HeadingLevel, Text, TextSize, TypographyVariant};
+pub use update_drawer::UpdateDrawer;

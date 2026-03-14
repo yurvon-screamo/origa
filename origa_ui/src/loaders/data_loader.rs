@@ -4,11 +4,11 @@ use origa::domain::{
     is_kanji_loaded, is_radical_loaded, is_vocabulary_loaded,
 };
 
-use crate::config::public_url;
+use super::jlpt_content_loader::load_jlpt_content;
+use crate::core::config::public_url;
 use crate::repository::{
     get_cached_grammar, get_cached_kanji, get_cached_radical, get_cached_vocabulary,
-    load_jlpt_content, save_grammar_to_cache, save_kanji_to_cache, save_radical_to_cache,
-    save_vocabulary_to_cache,
+    save_grammar_to_cache, save_kanji_to_cache, save_radical_to_cache, save_vocabulary_to_cache,
 };
 use crate::utils::fetch_text;
 
