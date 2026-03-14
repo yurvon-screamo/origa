@@ -39,7 +39,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
 
@@ -52,7 +52,7 @@ jobs:
           save-always: true
 
       - name: Cache UniDic dictionary
-        uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
+        uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5.0.1
         with:
           path: origa_ui/public/dictionaries/unidic
           key: unidic-dict-v1-${{ hashFiles('origa_ui/build.rs') }}
@@ -95,7 +95,7 @@ jobs:
         run: rm -rf origa_ui/dist/public
 
       - name: Cache cargo-xwin MSVC CRT
-        uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
+        uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5.0.1
         with:
           path: ${{ github.workspace }}/.xwin-cache
           key: xwin-${{ runner.os }}-x86_64-pc-windows-msvc-v17
@@ -128,7 +128,7 @@ jobs:
           fi
 
       - name: Upload Windows artifacts
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: windows-build
           path: |
@@ -153,12 +153,12 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
 
       - name: Cache UniDic dictionary
-        uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
+        uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5.0.1
         with:
           path: origa_ui/public/dictionaries/unidic
           key: unidic-dict-v1-${{ hashFiles('origa_ui/build.rs') }}
@@ -237,7 +237,7 @@ jobs:
           fi
 
       - name: Upload Linux artifacts
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: linux-build
           path: |
@@ -265,7 +265,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
 
@@ -278,7 +278,7 @@ jobs:
           save-always: true
 
       - name: Cache UniDic dictionary
-        uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
+        uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5.0.1
         with:
           path: origa_ui/public/dictionaries/unidic
           key: unidic-dict-v1-${{ hashFiles('origa_ui/build.rs') }}
@@ -362,7 +362,7 @@ jobs:
           zip -r Origa-macos-arm64.zip Origa.app
 
       - name: Upload macOS artifacts
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: macos-build
           path: Origa-macos-arm64.zip
@@ -407,7 +407,7 @@ jobs:
           cat latest.json
 
       - name: Upload latest.json artifact
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: latest-json
           path: latest.json
