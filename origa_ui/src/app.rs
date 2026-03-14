@@ -47,6 +47,29 @@ impl AuthContext {
 
         self.is_data_loaded.set(true);
     }
+
+    pub fn check_session(&self) {
+        use crate::repository::get_session;
+
+        let is_authenticated = self.is_authenticated;
+        let is_session_loading = self.is_session_loading;
+
+        spawn_local(async move {
+            if let Some(session) = get_session() {
+                let now = std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .unwrap_or_default()
+                    .as_secs();
+
+                if session.expires_at > now {
+                    is_authenticated.set(true);
+                } else {
+                    crate::repository::clear_session();
+                }
+            }
+            is_session_loading.set(false);
+        });
+    }
 }
 
 impl Default for AuthContext {
@@ -196,6 +219,7 @@ pub fn App() -> impl IntoView {
     provide_context(auth_context.repository.clone());
     provide_context(auth_context.clone());
 
+    auth_context.check_session();
     check_url_oauth_callback(&auth_context);
     setup_oauth_listener(auth_context.clone());
 
