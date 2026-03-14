@@ -12,12 +12,8 @@ env:
     REGISTRY: ghcr.io
     IMAGE_NAME: ${{ github.repository }}
 
-permissions: {}
-
 jobs:
     version:
-        permissions:
-            contents: read
         uses: ./.github/workflows/version.yml
 
     build-and-push:
@@ -30,15 +26,13 @@ jobs:
 
         steps:
             - name: Checkout repository
-              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-              with:
-                  persist-credentials: false
+              uses: actions/checkout@v4
 
             - name: Set up Docker Buildx
-              uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
+              uses: docker/setup-buildx-action@v3
 
             - name: Login to GitHub Container Registry
-              uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
+              uses: docker/login-action@v3
               with:
                   registry: ${{ env.REGISTRY }}
                   username: ${{ github.actor }}
@@ -46,7 +40,7 @@ jobs:
 
             - name: Extract metadata (tags, labels)
               id: meta
-              uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5.10.0
+              uses: docker/metadata-action@v5
               with:
                   images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
                   tags: |
@@ -55,7 +49,7 @@ jobs:
                       type=sha,prefix=
 
             - name: Build and push Docker image
-              uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6.19.2
+              uses: docker/build-push-action@v6
               with:
                   context: .
                   file: ./origa_ui/Dockerfile
@@ -75,12 +69,10 @@ jobs:
         needs: [version, build-and-push]
         if: success()
         runs-on: ubuntu-latest
-        permissions: {}
-        container:
-            image: ghcr.io/railwayapp/cli:v4.31.0@sha256:4586b24e9aed23ce1acdd36840182262be9c8b0f94db5aff97845487c3f77661
+        container: ghcr.io/railwayapp/cli:latest
         env:
             RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
             RAILWAY_SERVICE_ID: ${{ secrets.RAILWAY_SERVICE_ID }}
         steps:
             - name: Trigger Railway redeploy
-              run: railway redeploy -y --service "$RAILWAY_SERVICE_ID"
+              run: railway redeploy -y --service ${{ env.RAILWAY_SERVICE_ID }}
