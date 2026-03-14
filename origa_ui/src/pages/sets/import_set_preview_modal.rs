@@ -1,10 +1,13 @@
 use crate::pages::sets::set_word_item::SetWordItem;
+use crate::repository::HybridUserRepository;
 use crate::ui_components::{
     Alert, AlertType, Button, ButtonVariant, Drawer, Spinner, Text, TextSize, ToastContainer,
     ToastData, TypographyVariant,
 };
 use leptos::prelude::*;
+use leptos::task::spawn_local;
 use origa::domain::User;
+use origa::traits::UserRepository;
 
 use super::import_set_preview_modal_handlers::create_import_preview_handlers;
 use super::import_set_preview_modal_state::ImportPreviewModalState;
@@ -16,8 +19,20 @@ pub fn ImportSetPreviewModal(
     set_title: Signal<String>,
     on_import_result: Callback<()>,
 ) -> impl IntoView {
-    let current_user =
-        use_context::<RwSignal<Option<User>>>().expect("current_user context not provided");
+    let repository =
+        use_context::<HybridUserRepository>().expect("repository context not provided");
+
+    let current_user: RwSignal<Option<User>> = RwSignal::new(None);
+    let repo_for_init = repository.clone();
+
+    Effect::new(move |_| {
+        let repo = repo_for_init.clone();
+        spawn_local(async move {
+            if let Ok(Some(user)) = repo.get_current_user().await {
+                current_user.set(Some(user));
+            }
+        });
+    });
 
     let known_kanji = Memo::new(move |_| {
         current_user
@@ -27,7 +42,6 @@ pub fn ImportSetPreviewModal(
     });
 
     let state = ImportPreviewModalState::new();
-    let repository = state.repository.clone();
     let toasts: RwSignal<Vec<ToastData>> = RwSignal::new(Vec::new());
     let handlers = create_import_preview_handlers(
         state.clone(),
