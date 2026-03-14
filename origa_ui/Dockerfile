@@ -86,11 +86,7 @@ RUN --mount=type=cache,target=/root/.cargo/registry \
 
 FROM caddy:2.9-alpine AS caddy
 
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-
 FROM trailbase/trailbase:0.24.3
-
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 USER root
 WORKDIR /app
