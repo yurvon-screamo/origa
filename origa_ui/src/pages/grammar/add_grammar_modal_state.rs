@@ -1,7 +1,7 @@
 use crate::repository::HybridUserRepository;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use origa::domain::{Card, JapaneseLevel, User};
+use origa::domain::JapaneseLevel;
 use origa::use_cases::{GrammarRuleInfoUseCase, GrammarRuleItem};
 use std::collections::HashSet;
 use ulid::Ulid;
@@ -14,15 +14,12 @@ pub struct ModalState {
     pub is_loading_rules: RwSignal<bool>,
     pub is_creating: RwSignal<bool>,
     pub error_message: RwSignal<Option<String>>,
-    pub current_user: RwSignal<Option<User>>,
     pub repository: HybridUserRepository,
     pub search_query: RwSignal<String>,
 }
 
 impl ModalState {
     pub fn new(is_open: RwSignal<bool>) -> Self {
-        let current_user =
-            use_context::<RwSignal<Option<User>>>().expect("current_user context not provided");
         let repository =
             use_context::<HybridUserRepository>().expect("repository context not provided");
 
@@ -44,31 +41,13 @@ impl ModalState {
             is_loading_rules: RwSignal::new(false),
             is_creating: RwSignal::new(false),
             error_message: RwSignal::new(None),
-            current_user,
             repository,
             search_query: RwSignal::new(String::new()),
         }
     }
 
     pub fn load_rules(&self) {
-        let user_id = self
-            .current_user
-            .with(|u| u.as_ref().map(|u| u.id()))
-            .unwrap();
-        let existing_rule_ids: HashSet<Ulid> = self.current_user.with(|u| {
-            u.as_ref()
-                .map(|u| {
-                    u.knowledge_set()
-                        .study_cards()
-                        .values()
-                        .filter_map(|sc| match sc.card() {
-                            Card::Grammar(g) => Some(*g.rule_id()),
-                            _ => None,
-                        })
-                        .collect()
-                })
-                .unwrap_or_default()
-        });
+        let existing_rule_ids: HashSet<Ulid> = HashSet::new();
         let level = self.selected_level.get();
         let repository = self.repository.clone();
         let available_rules = self.available_rules;
@@ -80,7 +59,7 @@ impl ModalState {
 
         spawn_local(async move {
             let use_case = GrammarRuleInfoUseCase::new(&repository);
-            match use_case.execute(user_id, &level, &existing_rule_ids).await {
+            match use_case.execute(&level, &existing_rule_ids).await {
                 Ok(rules) => {
                     available_rules.set(rules);
                     is_loading.set(false);

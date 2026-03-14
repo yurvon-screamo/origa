@@ -15,6 +15,7 @@ pub enum ButtonSize {
     #[default]
     Default,
     Small,
+    #[allow(dead_code)]
     Large,
 }
 

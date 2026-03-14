@@ -1,7 +1,6 @@
 use crate::domain::{Card, OrigaError, Question, StudyCard, VocabularyCard, tokenize_text};
 use crate::traits::UserRepository;
 use tracing::{debug, info, warn};
-use ulid::Ulid;
 
 pub struct CreateVocabularyCardResult {
     pub created_cards: Vec<StudyCard>,
@@ -25,14 +24,13 @@ impl<'a, R: UserRepository> CreateVocabularyCardUseCase<'a, R> {
 
     pub async fn execute(
         &self,
-        user_id: Ulid,
         question_text: String,
     ) -> Result<CreateVocabularyCardResult, OrigaError> {
         let mut user = self
             .repository
-            .find_by_id(user_id)
+            .get_current_user()
             .await?
-            .ok_or(OrigaError::UserNotFound { user_id })?;
+            .ok_or(OrigaError::CurrentUserNotExist {})?;
 
         let result = self.create(&mut user, question_text).await?;
 

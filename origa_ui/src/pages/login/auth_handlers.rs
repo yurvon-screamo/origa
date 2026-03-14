@@ -5,8 +5,14 @@ use origa::domain::{NativeLanguage, User};
 use origa::traits::UserRepository;
 
 pub async fn get_or_create_profile(ctx: &AuthContext, email: &str) -> Result<User, String> {
-    match ctx.repository.find_by_email(email).await {
-        Ok(Some(user)) => Ok(user),
+    match ctx.repository.get_current_user().await {
+        Ok(Some(user)) => {
+            ctx.repository
+                .merge_current_user()
+                .await
+                .map_err(|e| format!("Не удалось синхронизировать профиль: {}", e))?;
+            Ok(user)
+        }
         Ok(None) => {
             let new_user = User::new(email.to_string(), NativeLanguage::Russian, None);
 
@@ -16,7 +22,7 @@ pub async fn get_or_create_profile(ctx: &AuthContext, email: &str) -> Result<Use
                 .map_err(|e| format!("Не удалось создать профиль: {}", e))?;
 
             ctx.repository
-                .find_by_email(email)
+                .get_current_user()
                 .await
                 .map_err(|e| format!("Не удалось загрузить профиль: {}", e))?
                 .ok_or_else(|| "Профиль не найден после создания".to_string())

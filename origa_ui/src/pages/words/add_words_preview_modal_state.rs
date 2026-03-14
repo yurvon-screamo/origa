@@ -1,7 +1,6 @@
 use crate::repository::HybridUserRepository;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use origa::domain::User;
 use origa::use_cases::{
     AnalyzeTextForCardsUseCase, AnalyzedWord, CreateCardsFromAnalysisResult,
     CreateCardsFromAnalysisUseCase, WordToCreate,
@@ -24,14 +23,11 @@ pub struct PreviewModalState {
     pub is_analyzing: RwSignal<bool>,
     pub is_creating: RwSignal<bool>,
     pub error_message: RwSignal<Option<String>>,
-    pub current_user: RwSignal<Option<User>>,
     pub repository: HybridUserRepository,
 }
 
 impl PreviewModalState {
     pub fn new(is_open: RwSignal<bool>) -> Self {
-        let current_user =
-            use_context::<RwSignal<Option<User>>>().expect("current_user context not provided");
         let repository =
             use_context::<HybridUserRepository>().expect("repository context not provided");
 
@@ -54,16 +50,11 @@ impl PreviewModalState {
             is_analyzing: RwSignal::new(false),
             is_creating: RwSignal::new(false),
             error_message: RwSignal::new(None),
-            current_user,
             repository,
         }
     }
 
     pub fn analyze_text(&self) {
-        let user_id = self
-            .current_user
-            .with(|u| u.as_ref().map(|u| u.id()))
-            .unwrap();
         let text = self.input_text.get();
         let repository = self.repository.clone();
         let analyzed_words = self.analyzed_words;
@@ -76,7 +67,7 @@ impl PreviewModalState {
 
         spawn_local(async move {
             let use_case = AnalyzeTextForCardsUseCase::new(&repository);
-            match use_case.execute(user_id, text).await {
+            match use_case.execute(text).await {
                 Ok(result) => {
                     let words_to_select: HashSet<String> =
                         result.words.iter().map(|w| w.base_form.clone()).collect();
@@ -118,10 +109,6 @@ impl PreviewModalState {
     pub fn create_cards(
         &self,
     ) -> impl Future<Output = Result<CreateCardsFromAnalysisResult, String>> {
-        let user_id = self
-            .current_user
-            .with(|u| u.as_ref().map(|u| u.id()))
-            .unwrap();
         let selected_words = self.selected_words.get();
         let words_to_create: Vec<WordToCreate> = selected_words
             .into_iter()
@@ -136,7 +123,7 @@ impl PreviewModalState {
             error.set(None);
 
             let use_case = CreateCardsFromAnalysisUseCase::new(&repository);
-            match use_case.execute(user_id, words_to_create, None).await {
+            match use_case.execute(words_to_create, None).await {
                 Ok(result) => {
                     is_creating.set(false);
                     Ok(result)

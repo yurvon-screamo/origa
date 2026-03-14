@@ -8,6 +8,7 @@ use std::collections::HashSet;
 pub fn KanjiList(
     kanji_list: Vec<KanjiItemInfo>,
     selected_kanji: RwSignal<HashSet<String>>,
+    known_kanji: HashSet<String>,
 ) -> impl IntoView {
     if kanji_list.is_empty() {
         return view! {
@@ -24,7 +25,13 @@ pub fn KanjiList(
                 each=move || kanji_list.clone()
                 key=|kanji| kanji.kanji.to_string()
                 children=move |kanji_info| {
-                    view! { <KanjiItem kanji_info=kanji_info selected_kanji=selected_kanji /> }
+                    view! {
+                        <KanjiItem
+                            kanji_info=kanji_info
+                            selected_kanji=selected_kanji
+                            known_kanji=known_kanji.clone()
+                        />
+                    }
                 }
             />
         </div>

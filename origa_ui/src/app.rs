@@ -1,27 +1,22 @@
 use crate::components::UpdateDrawer;
 use crate::data_loader::load_all_data;
 use crate::dictionary::load_dictionary;
-use crate::repository::get_session;
-use crate::repository::{HybridUserRepository, SyncContext, TrailBaseClient, clear_session};
+use crate::repository::{HybridUserRepository, TrailBaseClient};
 use crate::routes::AppRoutes;
 use crate::ui_components::LoadingOverlay;
 use crate::updater;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use origa::domain::{OrigaError, User};
-use origa::traits::UserRepository;
-use origa::use_cases::GetUserInfoUseCase;
 use tracing::{error, info};
 
 #[derive(Clone)]
 pub struct AuthContext {
     pub client: TrailBaseClient,
     pub repository: HybridUserRepository,
-    pub current_user: RwSignal<Option<User>>,
     pub is_session_loading: RwSignal<bool>,
+    pub is_authenticated: RwSignal<bool>,
     pub is_oauth_loading: RwSignal<bool>,
     pub is_data_loaded: RwSignal<bool>,
-    pub sync_context: SyncContext,
 }
 
 impl AuthContext {
@@ -29,34 +24,11 @@ impl AuthContext {
         Self {
             client: TrailBaseClient::new(),
             repository: HybridUserRepository::new(),
-            current_user: RwSignal::new(None),
             is_session_loading: RwSignal::new(true),
             is_oauth_loading: RwSignal::new(false),
             is_data_loaded: RwSignal::new(false),
-            sync_context: SyncContext::new(),
+            is_authenticated: RwSignal::new(false),
         }
-    }
-
-    pub fn start_background_sync(&self, interval_secs: u64) {
-        self.repository
-            .start_polling_sync(self.sync_context, self.current_user, interval_secs);
-    }
-
-    pub async fn init_session(&self) {
-        if let Some(session) = get_session() {
-            match self.repository.find_by_email(&session.email).await {
-                Ok(Some(user)) => {
-                    self.current_user.set(Some(user));
-                }
-                Ok(None) => {}
-                Err(OrigaError::SessionExpired) => {
-                    clear_session();
-                    self.current_user.set(None);
-                }
-                Err(_) => {}
-            }
-        }
-        self.is_session_loading.set(false);
     }
 
     pub async fn init_dictionary(&self) {
@@ -81,29 +53,6 @@ impl Default for AuthContext {
     fn default() -> Self {
         Self::new()
     }
-}
-
-pub fn update_current_user(repository: HybridUserRepository, current_user: RwSignal<Option<User>>) {
-    spawn_local(async move {
-        if let Some(user) = current_user.get_untracked() {
-            let user_id = user.id();
-            let use_case = GetUserInfoUseCase::new(&repository);
-            match use_case.execute(user_id).await {
-                Ok(_) => {
-                    if let Ok(updated_user) = repository.find_by_email(user.email()).await
-                        && let Some(u) = updated_user
-                    {
-                        current_user.set(Some(u))
-                    }
-                }
-                Err(OrigaError::SessionExpired) => {
-                    clear_session();
-                    current_user.set(None);
-                }
-                Err(_) => {}
-            }
-        }
-    });
 }
 
 fn setup_oauth_listener(ctx: AuthContext) {
@@ -138,8 +87,8 @@ fn setup_oauth_listener(ctx: AuthContext) {
                 };
 
             match result {
-                Ok(user) => {
-                    ctx.current_user.set(Some(user));
+                Ok(_) => {
+                    ctx.is_authenticated.set(true);
                     if let Some(window) = web_sys::window()
                         && let Err(e) = window.location().set_href("/home")
                     {
@@ -177,30 +126,21 @@ fn check_url_oauth_callback(ctx: &AuthContext) {
     use crate::pages::login::auth_handlers::get_or_create_profile;
     use crate::repository::TrailBaseClient;
     use gloo_storage::{LocalStorage, Storage};
-    use web_sys::console;
 
     let path = web_sys::window()
         .and_then(|w| w.location().pathname().ok())
         .unwrap_or_default();
-
-    console::log_1(&format!("check_url_oauth_callback path: {}", path).into());
 
     if path == "/login" {
         let search = web_sys::window()
             .and_then(|w| w.location().search().ok())
             .unwrap_or_default();
 
-        console::log_1(&format!("check_url_oauth_callback search: {}", search).into());
-
         if let Some(code) = search.strip_prefix("?code=") {
             let code = code.split('&').next().unwrap_or(code).to_string();
 
-            console::log_1(&format!("check_url_oauth_callback code: {}", code).into());
-
             let verifier: Option<String> = LocalStorage::get("pkce_verifier").ok();
             LocalStorage::delete("pkce_verifier");
-
-            console::log_1(&format!("verifier found: {}", verifier.is_some()).into());
 
             if let Some(verifier) = verifier {
                 let is_oauth_loading = ctx.is_oauth_loading;
@@ -214,12 +154,15 @@ fn check_url_oauth_callback(ctx: &AuthContext) {
                         .await
                     {
                         Ok(session) => {
-                            console::log_1(&"OAuth exchange success".into());
                             if !session.email.is_empty() {
                                 let email = session.email.clone();
                                 match get_or_create_profile(&ctx_clone, &email).await {
-                                    Ok(user) => {
-                                        ctx_clone.current_user.set(Some(user));
+                                    Ok(_) => {
+                                        if let Err(e) =
+                                            ctx_clone.repository.merge_current_user().await
+                                        {
+                                            error!("Failed to merge user after OAuth: {:?}", e);
+                                        }
                                         if let Some(window) = web_sys::window()
                                             && let Err(e) = window.location().set_href("/home")
                                         {
@@ -237,7 +180,6 @@ fn check_url_oauth_callback(ctx: &AuthContext) {
                         }
                         Err(e) => {
                             is_oauth_loading.set(false);
-                            console::log_1(&format!("OAuth exchange error: {:?}", e).into());
                             error!("Failed to exchange auth code: {:?}", e);
                         }
                     }
@@ -252,8 +194,6 @@ pub fn App() -> impl IntoView {
     let auth_context = AuthContext::new();
 
     provide_context(auth_context.repository.clone());
-    provide_context(auth_context.current_user);
-    provide_context(auth_context.sync_context);
     provide_context(auth_context.clone());
 
     check_url_oauth_callback(&auth_context);
@@ -262,20 +202,14 @@ pub fn App() -> impl IntoView {
     let update_info = RwSignal::new(None::<updater::UpdateInfo>);
     let download_progress = RwSignal::new(None::<f32>);
 
-    #[cfg(all(target_arch = "wasm32", target_os = "desktop"))]
-    {
-        let update_info_clone = update_info;
-        spawn_local(async move {
-            if let Some(info) = updater::check_for_updates().await {
-                update_info_clone.set(Some(info));
-            }
-        });
-    }
+    let update_info_clone = update_info;
+    spawn_local(async move {
+        if let Some(info) = updater::check_for_updates().await {
+            update_info_clone.set(Some(info));
+        }
+    });
 
     let on_update = Callback::new(move |_| {
-        let _update_info = update_info;
-        let download_progress = download_progress;
-
         spawn_local(async move {
             download_progress.set(Some(0.0));
 
@@ -294,12 +228,6 @@ pub fn App() -> impl IntoView {
     let ctx = auth_context.clone();
     spawn_local(async move {
         ctx.init_dictionary().await;
-    });
-
-    let ctx = auth_context.clone();
-    spawn_local(async move {
-        ctx.init_session().await;
-        ctx.start_background_sync(60);
     });
 
     view! {

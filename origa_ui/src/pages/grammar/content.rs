@@ -5,7 +5,7 @@ use crate::ui_components::{Input, Text, TextSize, ToastContainer, ToastData, Typ
 use leptos::either::Either;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use origa::domain::{Card, NativeLanguage, User};
+use origa::domain::{NativeLanguage, StudyCard, User};
 use origa::use_cases::ToggleFavoriteUseCase;
 use ulid::Ulid;
 
@@ -21,6 +21,13 @@ pub fn GrammarContent() -> impl IntoView {
             .unwrap_or(NativeLanguage::Russian)
     });
 
+    let known_kanji = Memo::new(move |_| {
+        current_user
+            .get()
+            .map(|u| u.knowledge_set().get_known_kanji())
+            .unwrap_or_default()
+    });
+
     let search = RwSignal::new(String::new());
     let filter = RwSignal::new(Filter::All);
     let toasts: RwSignal<Vec<ToastData>> = RwSignal::new(Vec::new());
@@ -32,41 +39,25 @@ pub fn GrammarContent() -> impl IntoView {
         let repository = repository.clone();
 
         Callback::new(move |card_id: Ulid| {
-            let user = current_user.get();
             let repo = repository.clone();
             let current_user_clone = current_user;
 
-            if let Some(user) = user {
-                let user_id = user.id();
-                spawn_local(async move {
-                    let use_case = ToggleFavoriteUseCase::new(&repo);
-                    if use_case.execute(user_id, card_id).await.is_ok() {
-                        current_user_clone.update(|u| {
-                            if let Some(user) = u {
-                                let _ = user.toggle_favorite(card_id);
-                            }
-                        });
-                    }
-                });
-            }
+            spawn_local(async move {
+                let use_case = ToggleFavoriteUseCase::new(&repo);
+                if use_case.execute(card_id).await.is_ok() {
+                    current_user_clone.update(|u| {
+                        if let Some(user) = u {
+                            let _ = user.toggle_favorite(card_id);
+                        }
+                    });
+                }
+            });
         })
     };
 
-    let (is_deleting, on_delete) = create_delete_callback(repository.clone(), current_user, toasts);
+    let (is_deleting, on_delete) = create_delete_callback(repository.clone(), toasts);
 
-    let all_cards = Memo::new(move |_| {
-        current_user
-            .get()
-            .map(|user| {
-                user.knowledge_set()
-                    .study_cards()
-                    .iter()
-                    .filter(|(_, card)| matches!(card.card(), Card::Grammar(_)))
-                    .map(|(_, card)| card.clone())
-                    .collect::<Vec<_>>()
-            })
-            .unwrap_or_default()
-    });
+    let all_cards: RwSignal<Vec<StudyCard>> = RwSignal::new(Vec::new());
 
     let filtered_cards = Memo::new(move |_| {
         let query = search.get().to_lowercase();
@@ -146,6 +137,8 @@ pub fn GrammarContent() -> impl IntoView {
                                     view! {
                                         <GrammarCardItem
                                             study_card=card
+                                            native_language=native_lang.get()
+                                            known_kanji=known_kanji.get()
                                             on_toggle_favorite=on_toggle_favorite
                                             on_delete=on_delete
                                             is_deleting=is_deleting.into()

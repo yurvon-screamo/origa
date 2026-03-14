@@ -19,14 +19,6 @@ async fn create_repo() -> InMemoryUserRepository {
     ))
 }
 
-async fn get_user_id(repo: &InMemoryUserRepository) -> Ulid {
-    repo.find_by_email("test@example.com")
-        .await
-        .unwrap()
-        .unwrap()
-        .id()
-}
-
 #[tokio::test]
 async fn list_well_known_sets_returns_available_sets() {
     let loader = FileWellKnownSetLoader::new();
@@ -60,16 +52,12 @@ async fn well_known_set_preview_shows_known_words() {
         NativeLanguage::Russian,
         None,
     );
-    let user_id = user.id();
 
     let loader = FileWellKnownSetLoader::new();
     let repo = InMemoryUserRepository::with_user(user);
     let use_case = ImportWellKnownSetUseCase::new(&repo, &loader);
 
-    let preview = use_case
-        .preview_set(user_id, "jlpt_n5".to_string())
-        .await
-        .unwrap();
+    let preview = use_case.preview_set("jlpt_n5".to_string()).await.unwrap();
 
     assert!(!preview.words.is_empty(), "Preview should have words");
     assert_eq!(
@@ -82,10 +70,9 @@ async fn well_known_set_preview_shows_known_words() {
 async fn kanji_info_list_returns_kanji_for_level() {
     init_real_dictionaries();
     let repo = create_repo().await;
-    let user_id = get_user_id(&repo).await;
     let use_case = KanjiInfoListUseCase::new(&repo);
 
-    let kanji_list = use_case.execute(user_id, &JapaneseLevel::N5).await.unwrap();
+    let kanji_list = use_case.execute(&JapaneseLevel::N5).await.unwrap();
 
     assert!(!kanji_list.is_empty());
 }
@@ -111,15 +98,9 @@ async fn kanji_info_list_excludes_learned_kanji() {
         u
     };
     let repo = InMemoryUserRepository::with_user(user);
-    let user_id = repo
-        .find_by_email("test@example.com")
-        .await
-        .unwrap()
-        .unwrap()
-        .id();
     let use_case = KanjiInfoListUseCase::new(&repo);
 
-    let kanji_list = use_case.execute(user_id, &JapaneseLevel::N5).await.unwrap();
+    let kanji_list = use_case.execute(&JapaneseLevel::N5).await.unwrap();
 
     let learned_kanji: Vec<_> = kanji_list.iter().filter(|k| k.kanji == '一').collect();
     assert!(learned_kanji.is_empty(), "Learned kanji should be excluded");
@@ -129,16 +110,12 @@ async fn kanji_info_list_excludes_learned_kanji() {
 async fn create_kanji_card_creates_card_from_dictionary() {
     init_real_dictionaries();
     let repo = create_repo().await;
-    let user_id = get_user_id(&repo).await;
     let use_case = CreateKanjiCardUseCase::new(&repo);
 
-    let cards = use_case
-        .execute(user_id, vec!["人".to_string()])
-        .await
-        .unwrap();
+    let cards = use_case.execute(vec!["人".to_string()]).await.unwrap();
 
     assert_eq!(cards.len(), 1);
-    let updated = repo.find_by_id(user_id).await.unwrap().unwrap();
+    let updated = repo.get_current_user().await.unwrap().unwrap();
     assert_eq!(updated.knowledge_set().study_cards().len(), 1);
 }
 
@@ -157,15 +134,9 @@ async fn knowledge_set_cards_returns_all_cards() {
         u
     };
     let repo = InMemoryUserRepository::with_user(user);
-    let user_id = repo
-        .find_by_email("test@example.com")
-        .await
-        .unwrap()
-        .unwrap()
-        .id();
     let use_case = KnowledgeSetCardsUseCase::new(&repo);
 
-    let cards = use_case.execute(user_id).await.unwrap();
+    let cards = use_case.execute().await.unwrap();
 
     assert_eq!(cards.len(), 5);
 }
@@ -183,14 +154,9 @@ async fn toggle_favorite_sets_favorite_true() {
         u
     };
     let repo = InMemoryUserRepository::with_user(user);
-    let user_id = repo
-        .find_by_email("test@example.com")
-        .await
-        .unwrap()
-        .unwrap()
-        .id();
+
     let card_id = *repo
-        .find_by_id(user_id)
+        .get_current_user()
         .await
         .unwrap()
         .unwrap()
@@ -201,7 +167,7 @@ async fn toggle_favorite_sets_favorite_true() {
         .unwrap();
     let use_case = ToggleFavoriteUseCase::new(&repo);
 
-    let is_favorite = use_case.execute(user_id, card_id).await.unwrap();
+    let is_favorite = use_case.execute(card_id).await.unwrap();
 
     assert!(is_favorite);
 }
@@ -219,14 +185,8 @@ async fn toggle_favorite_toggles_flag() {
         u
     };
     let repo = InMemoryUserRepository::with_user(user);
-    let user_id = repo
-        .find_by_email("test@example.com")
-        .await
-        .unwrap()
-        .unwrap()
-        .id();
     let card_id = *repo
-        .find_by_id(user_id)
+        .get_current_user()
         .await
         .unwrap()
         .unwrap()
@@ -237,8 +197,8 @@ async fn toggle_favorite_toggles_flag() {
         .unwrap();
     let use_case = ToggleFavoriteUseCase::new(&repo);
 
-    let first = use_case.execute(user_id, card_id).await.unwrap();
-    let second = use_case.execute(user_id, card_id).await.unwrap();
+    let first = use_case.execute(card_id).await.unwrap();
+    let second = use_case.execute(card_id).await.unwrap();
 
     assert!(first);
     assert!(!second);
@@ -257,14 +217,8 @@ async fn delete_card_removes_from_knowledge_set() {
         u
     };
     let repo = InMemoryUserRepository::with_user(user);
-    let user_id = repo
-        .find_by_email("test@example.com")
-        .await
-        .unwrap()
-        .unwrap()
-        .id();
     let card_id = *repo
-        .find_by_id(user_id)
+        .get_current_user()
         .await
         .unwrap()
         .unwrap()
@@ -275,20 +229,19 @@ async fn delete_card_removes_from_knowledge_set() {
         .unwrap();
     let use_case = DeleteCardUseCase::new(&repo);
 
-    use_case.execute(user_id, card_id).await.unwrap();
+    use_case.execute(card_id).await.unwrap();
 
-    let updated = repo.find_by_id(user_id).await.unwrap().unwrap();
+    let updated = repo.get_current_user().await.unwrap().unwrap();
     assert!(updated.knowledge_set().study_cards().is_empty());
 }
 
 #[tokio::test]
 async fn delete_nonexistent_card_returns_error() {
     let repo = create_repo().await;
-    let user_id = get_user_id(&repo).await;
     let use_case = DeleteCardUseCase::new(&repo);
     let non_existent_card_id = Ulid::new();
 
-    let result = use_case.execute(user_id, non_existent_card_id).await;
+    let result = use_case.execute(non_existent_card_id).await;
 
     assert!(matches!(result, Err(OrigaError::CardNotFound { .. })));
 }
@@ -296,11 +249,10 @@ async fn delete_nonexistent_card_returns_error() {
 #[tokio::test]
 async fn toggle_favorite_nonexistent_card_returns_error() {
     let repo = create_repo().await;
-    let user_id = get_user_id(&repo).await;
     let use_case = ToggleFavoriteUseCase::new(&repo);
     let non_existent_card_id = Ulid::new();
 
-    let result = use_case.execute(user_id, non_existent_card_id).await;
+    let result = use_case.execute(non_existent_card_id).await;
 
     assert!(matches!(result, Err(OrigaError::CardNotFound { .. })));
 }

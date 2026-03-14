@@ -13,14 +13,14 @@ impl<'a, R: UserRepository> DeleteCardUseCase<'a, R> {
         Self { repository }
     }
 
-    pub async fn execute(&self, user_id: Ulid, card_id: Ulid) -> Result<(), OrigaError> {
-        debug!(user_id = %user_id, card_id = %card_id, "Deleting card");
+    pub async fn execute(&self, card_id: Ulid) -> Result<(), OrigaError> {
+        debug!(card_id = %card_id, "Deleting card");
 
         let mut user = self
             .repository
-            .find_by_id(user_id)
+            .get_current_user()
             .await?
-            .ok_or(OrigaError::UserNotFound { user_id })?;
+            .ok_or(OrigaError::CurrentUserNotExist {})?;
 
         user.delete_card(card_id)?;
 

@@ -3,7 +3,8 @@ use crate::ui_components::{
     Text, TextSize, TypographyVariant, get_reading_from_text, is_speech_supported, speak_text,
 };
 use leptos::prelude::*;
-use origa::domain::{Card as DomainCard, NativeLanguage, QuizCard, User};
+use origa::domain::{Card as DomainCard, NativeLanguage, QuizCard};
+use std::collections::HashSet;
 
 use super::card_type::CardType;
 use super::quiz_card_header::QuizCardHeader;
@@ -17,26 +18,12 @@ pub fn QuizCardView(
     show_result: bool,
     selected_option: Option<usize>,
     on_select_option: Callback<usize>,
+    native_language: NativeLanguage,
+    #[prop(into)] known_kanji: Signal<HashSet<String>>,
 ) -> impl IntoView {
-    let current_user = use_context::<RwSignal<Option<User>>>().expect("current_user context");
-
-    let native_lang = Memo::new(move |_| {
-        current_user
-            .get()
-            .map(|u| *u.native_language())
-            .unwrap_or(NativeLanguage::Russian)
-    });
-
-    let known_kanji = Memo::new(move |_| {
-        current_user
-            .get()
-            .map(|u| u.knowledge_set().get_known_kanji())
-            .unwrap_or_default()
-    });
-
     let card = quiz_card.card().clone();
     let card_type = CardType::from(&card);
-    let lang = native_lang.get();
+    let lang = native_language;
     let question = StoredValue::new(
         card.question(&lang)
             .ok()
@@ -128,6 +115,7 @@ pub fn QuizCardView(
                     show_result=show_result
                     quiz_result=quiz_result()
                     on_select_option=on_select_option
+                    known_kanji=known_kanji
                 />
 
                 <Show when=move || show_result>

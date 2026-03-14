@@ -3,9 +3,8 @@ use crate::ui_components::{
     Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
-use origa::domain::User;
+use std::collections::HashSet;
 
-/// Данные для отображения радикала
 #[derive(Clone, Debug, PartialEq)]
 pub struct RadicalDisplay {
     pub symbol: char,
@@ -21,16 +20,8 @@ pub fn KanjiCardDetails(
     show_details: bool,
     on_readings: Option<Vec<String>>,
     kun_readings: Option<Vec<String>>,
+    #[prop(into)] known_kanji: Signal<HashSet<String>>,
 ) -> impl IntoView {
-    let current_user = use_context::<RwSignal<Option<User>>>().expect("current_user context");
-
-    let known_kanji = Memo::new(move |_| {
-        current_user
-            .get()
-            .map(|u| u.knowledge_set().get_known_kanji())
-            .unwrap_or_default()
-    });
-
     let kanji_stored = StoredValue::new(kanji);
     let radicals_stored = StoredValue::new(radicals);
     let examples_stored = StoredValue::new(example_words);

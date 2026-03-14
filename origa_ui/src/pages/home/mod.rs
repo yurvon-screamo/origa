@@ -18,14 +18,31 @@ pub use lesson_buttons_card::LessonButtonsCard;
 pub use stat_card::StatCard;
 pub use stats_grid::StatsGrid;
 
+use crate::app::AuthContext;
 use crate::ui_components::{PageLayout, PageLayoutVariant};
 use leptos::prelude::*;
+use leptos::task::spawn_local;
 use origa::domain::User;
+use origa::traits::UserRepository;
 
 #[component]
 pub fn Home() -> impl IntoView {
-    let current_user =
-        use_context::<RwSignal<Option<User>>>().expect("current_user context not provided");
+    let ctx = use_context::<AuthContext>().expect("AuthContext not provided");
+    let repository = ctx.repository.clone();
+
+    let current_user: RwSignal<Option<User>> = RwSignal::new(None);
+
+    Effect::new({
+        let repository = repository.clone();
+        move |_| {
+            let repository = repository.clone();
+            spawn_local(async move {
+                if let Ok(Some(user)) = repository.get_current_user().await {
+                    current_user.set(Some(user));
+                }
+            });
+        }
+    });
 
     view! {
         <PageLayout variant=PageLayoutVariant::Full>

@@ -4,12 +4,14 @@ use crate::ui_components::search::Search;
 use leptos::prelude::*;
 
 #[derive(Clone, Debug)]
+#[allow(dead_code)]
 pub struct FooterLink {
     pub label: String,
     pub href: String,
 }
 
 #[derive(Clone, Debug)]
+#[allow(dead_code)]
 pub struct FooterSection {
     pub title: String,
     pub links: Vec<FooterLink>,
@@ -17,24 +19,24 @@ pub struct FooterSection {
 
 #[component]
 pub fn Footer(
-    #[prop(optional, into)] brand: Signal<String>,
-    #[prop(optional, into)] sections: Signal<Vec<FooterSection>>,
-    #[prop(optional, into)] description: Signal<String>,
-    #[prop(optional, into)] newsletter_placeholder: Signal<String>,
+    #[prop(optional, into)] _brand: Signal<String>,
+    #[prop(optional, into)] _sections: Signal<Vec<FooterSection>>,
+    #[prop(optional, into)] _description: Signal<String>,
+    #[prop(optional, into)] _newsletter_placeholder: Signal<String>,
 ) -> impl IntoView {
     view! {
         <footer class="footer py-16 mt-24">
             <div class="w-full px-6">
                 <div class="grid md:grid-cols-4 gap-12 mb-12">
                     <div>
-                        <h4 class="font-serif text-2xl mb-4">{move || brand.get()}</h4>
+                        <h4 class="font-serif text-2xl mb-4">{move || _brand.get()}</h4>
                         <p class="font-mono text-[10px] tracking-widest text-[var(--fg-muted)] leading-relaxed">
-                            {move || description.get()}
+                            {move || _description.get()}
                         </p>
                     </div>
 
                     <For
-                        each=move || sections.get()
+                        each=move || _sections.get()
                         key=|section| section.title.clone()
                         children=move |section| {
                             let links = section.links.clone();
@@ -69,7 +71,7 @@ pub fn Footer(
                     <div>
                         <p class="font-mono text-[9px] tracking-widest text-[var(--fg-muted)] uppercase mb-4">"Newsletter"</p>
                         <Search
-                            placeholder=move || newsletter_placeholder.get()
+                            placeholder=move || _newsletter_placeholder.get()
                             class="!pl-4"
                             value=RwSignal::new(String::new())
                         />

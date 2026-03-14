@@ -1,7 +1,7 @@
 use crate::repository::HybridUserRepository;
 use leptos::prelude::*;
-use origa::domain::LessonCardView;
-use std::collections::HashMap;
+use origa::domain::{LessonCardView, NativeLanguage};
+use std::collections::{HashMap, HashSet};
 use ulid::Ulid;
 
 #[derive(Clone, Copy, PartialEq, Default, Debug)]
@@ -26,7 +26,10 @@ pub struct LessonContext {
     pub repository: HybridUserRepository,
     pub lesson_state: RwSignal<LessonState>,
     pub is_completed: RwSignal<bool>,
+    #[allow(dead_code)]
     pub mode: LessonMode,
     pub reload_trigger: RwSignal<u32>,
     pub is_muted: RwSignal<bool>,
+    pub known_kanji: RwSignal<HashSet<String>>,
+    pub native_language: RwSignal<NativeLanguage>,
 }

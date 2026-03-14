@@ -17,13 +17,11 @@ impl<'a, R: UserRepository> RateCardUseCase<'a, R> {
 
     pub async fn execute(
         &self,
-        user_id: Ulid,
         card_id: Ulid,
         mode: RateMode,
         rating: Rating,
     ) -> Result<(), OrigaError> {
         debug!(
-            user_id = %user_id,
             card_id = %card_id,
             mode = ?mode,
             rating = ?rating,
@@ -32,9 +30,9 @@ impl<'a, R: UserRepository> RateCardUseCase<'a, R> {
 
         let mut user = self
             .repository
-            .find_by_id(user_id)
+            .get_current_user()
             .await?
-            .ok_or(OrigaError::UserNotFound { user_id })?;
+            .ok_or(OrigaError::CurrentUserNotExist {})?;
 
         user.rate_card(card_id, rating, mode)?;
 

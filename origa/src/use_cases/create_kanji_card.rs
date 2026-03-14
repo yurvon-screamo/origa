@@ -2,7 +2,6 @@ use crate::domain::OrigaError;
 use crate::domain::{Card, KanjiCard, StudyCard};
 use crate::traits::UserRepository;
 use tracing::{debug, info};
-use ulid::Ulid;
 
 #[derive(Clone)]
 pub struct CreateKanjiCardUseCase<'a, R: UserRepository> {
@@ -14,20 +13,16 @@ impl<'a, R: UserRepository> CreateKanjiCardUseCase<'a, R> {
         Self { repository }
     }
 
-    pub async fn execute(
-        &self,
-        user_id: Ulid,
-        kanjies: Vec<String>,
-    ) -> Result<Vec<StudyCard>, OrigaError> {
+    pub async fn execute(&self, kanjies: Vec<String>) -> Result<Vec<StudyCard>, OrigaError> {
         let mut user = self
             .repository
-            .find_by_id(user_id)
+            .get_current_user()
             .await?
-            .ok_or(OrigaError::UserNotFound { user_id })?;
+            .ok_or(OrigaError::CurrentUserNotExist {})?;
 
         let mut cards = vec![];
         for kanji in kanjies {
-            debug!(user_id = %user_id, kanji = %kanji, "Creating kanji card");
+            debug!(kanji = %kanji, "Creating kanji card");
             let card = Card::Kanji(KanjiCard::new(kanji.clone())?);
             let created = user.create_card(card)?;
             info!(kanji = %kanji, "Kanji card created");

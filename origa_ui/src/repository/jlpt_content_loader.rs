@@ -130,6 +130,7 @@ async fn load_grammar(content: &mut JlptContent) -> Result<(), OrigaError> {
     Ok(())
 }
 
+// TODO: to domain
 pub fn recalculate_user_jlpt_progress(user: &mut origa::domain::User) {
     if let Some(content) = JLPT_CONTENT.get() {
         user.recalculate_jlpt_progress(content);

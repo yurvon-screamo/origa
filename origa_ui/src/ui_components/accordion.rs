@@ -2,8 +2,8 @@ use leptos::prelude::*;
 
 #[component]
 pub fn AccordionItem(
-    #[prop(optional, into)] header: Signal<String>,
-    children: Children,
+    #[prop(optional, into)] _header: Signal<String>,
+    _children: Children,
 ) -> impl IntoView {
     let (is_open, set_is_open) = signal(false);
 
@@ -17,7 +17,7 @@ pub fn AccordionItem(
                 class="accordion-header"
                 on:click=toggle
             >
-                <span class="font-mono text-xs tracking-wider">{move || header.get()}</span>
+                <span class="font-mono text-xs tracking-wider">{move || _header.get()}</span>
                 <span class="accordion-icon"></span>
             </div>
             <div
@@ -25,7 +25,7 @@ pub fn AccordionItem(
                 style:max-height=move || if is_open.get() { "200px" } else { "0px" }
             >
                 <div class="accordion-body font-mono text-xs text-[var(--fg-muted)]">
-                    {children()}
+                    {_children()}
                 </div>
             </div>
         </div>

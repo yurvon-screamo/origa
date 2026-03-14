@@ -4,7 +4,9 @@ use leptos::prelude::*;
 pub enum AvatarSize {
     #[default]
     Default,
+    #[allow(dead_code)]
     Small,
+    #[allow(dead_code)]
     Large,
 }
 
@@ -29,10 +31,10 @@ pub fn Avatar(
 }
 
 #[component]
-pub fn AvatarGroup(children: Children) -> impl IntoView {
+pub fn AvatarGroup(_children: Children) -> impl IntoView {
     view! {
         <div class="avatar-group">
-            {children()}
+            {_children()}
         </div>
     }
 }

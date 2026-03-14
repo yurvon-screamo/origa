@@ -2,16 +2,16 @@ use leptos::prelude::*;
 
 #[component]
 pub fn Pagination(
-    #[prop(optional)] current_page: RwSignal<usize>,
-    #[prop(optional, into)] total_pages: Signal<usize>,
+    #[prop(optional)] _current_page: RwSignal<usize>,
+    #[prop(optional, into)] _total_pages: Signal<usize>,
 ) -> impl IntoView {
     let handle_page_change = move |page: usize| {
-        current_page.set(page);
+        _current_page.set(page);
     };
 
     let pages = move || {
-        let current = current_page.get();
-        let total = total_pages.get();
+        let current = _current_page.get();
+        let total = _total_pages.get();
         let mut result = vec![];
 
         if current > 1 {
@@ -40,14 +40,14 @@ pub fn Pagination(
                 each=move || pages()
                 key=|(idx, label)| format!("{}-{}", idx, label)
                 children=move |(idx, label)| {
-                    let is_current = move || current_page.get() == idx;
-                    let is_disabled = move || idx == 0 || idx > total_pages.get();
+                    let is_current = move || _current_page.get() == idx;
+                    let is_disabled = move || idx == 0 || idx > _total_pages.get();
                     view! {
                         <button
                             class=move || format!("pagination-btn {}", if is_current() { "active" } else { "" })
                             disabled=is_disabled
                             on:click=move |_| {
-                                if idx > 0 && idx <= total_pages.get() {
+                                if idx > 0 && idx <= _total_pages.get() {
                                     handle_page_change(idx);
                                 }
                             }

@@ -8,12 +8,22 @@ use crate::ui_components::{
 };
 use leptos::ev::MouseEvent;
 use leptos::prelude::*;
+use origa::domain::User;
 use origa::use_cases::AnalyzedWord;
 
 #[component]
 pub fn AddWordsPreviewModal(is_open: RwSignal<bool>) -> impl IntoView {
+    let current_user =
+        use_context::<RwSignal<Option<User>>>().expect("current_user context not provided");
+
+    let known_kanji = Memo::new(move |_| {
+        current_user
+            .get()
+            .map(|u| u.knowledge_set().get_known_kanji())
+            .unwrap_or_default()
+    });
+
     let state = PreviewModalState::new(is_open);
-    let current_user = state.current_user;
     let repository = state.repository.clone();
     let analyzed_words = state.analyzed_words;
     let input_text = state.input_text;
@@ -22,7 +32,7 @@ pub fn AddWordsPreviewModal(is_open: RwSignal<bool>) -> impl IntoView {
     let selected_words = state.selected_words;
     let is_creating = state.is_creating;
     let input_mode = state.input_mode;
-    let handlers = create_preview_modal_handlers(state.clone(), is_open, current_user, repository);
+    let handlers = create_preview_modal_handlers(state.clone(), is_open, repository);
 
     let tabs = Signal::derive(|| {
         vec![
@@ -109,6 +119,7 @@ pub fn AddWordsPreviewModal(is_open: RwSignal<bool>) -> impl IntoView {
                             <PreviewStage
                                 analyzed_words=words
                                 selected_words=selected_words
+                                known_kanji=known_kanji.get()
                                 is_creating=is_creating
                                 on_word_toggle=handlers.on_word_toggle
                                 on_cancel=handlers.on_cancel
@@ -126,6 +137,7 @@ pub fn AddWordsPreviewModal(is_open: RwSignal<bool>) -> impl IntoView {
 fn PreviewStage(
     analyzed_words: Vec<AnalyzedWord>,
     selected_words: RwSignal<std::collections::HashSet<String>>,
+    known_kanji: std::collections::HashSet<String>,
     is_creating: RwSignal<bool>,
     on_word_toggle: Callback<String>,
     on_cancel: Callback<MouseEvent>,
@@ -154,6 +166,7 @@ fn PreviewStage(
                         <AnalyzedWordItem
                             analyzed_word=word
                             selected_words=selected_words
+                            known_kanji=known_kanji.clone()
                             on_toggle=Callback::new(move |_| on_word_toggle.run(base_form.clone()))
                         />
                     }

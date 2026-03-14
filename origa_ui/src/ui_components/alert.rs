@@ -4,6 +4,7 @@ use leptos::prelude::*;
 pub enum AlertType {
     #[default]
     Info,
+    #[allow(dead_code)]
     Success,
     Warning,
     Error,

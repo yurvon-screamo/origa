@@ -108,7 +108,6 @@ pub enum AuthError {
 struct AuthTokenResponse {
     auth_token: String,
     refresh_token: Option<String>,
-    csrf_token: Option<String>,
 }
 
 impl TrailBaseClient {

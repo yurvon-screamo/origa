@@ -1,7 +1,6 @@
 use crate::domain::{Card, OrigaError, Question, StudyCard, VocabularyCard};
 use crate::traits::UserRepository;
 use tracing::{debug, info, warn};
-use ulid::Ulid;
 
 #[derive(Debug, Clone)]
 pub struct WordToCreate {
@@ -25,17 +24,16 @@ impl<'a, R: UserRepository> CreateCardsFromAnalysisUseCase<'a, R> {
 
     pub async fn execute(
         &self,
-        user_id: Ulid,
         words: Vec<WordToCreate>,
         set_id: Option<String>,
     ) -> Result<CreateCardsFromAnalysisResult, OrigaError> {
-        debug!(user_id = %user_id, word_count = words.len(), set_id = ?set_id, "Creating cards from analysis");
+        debug!(word_count = words.len(), set_id = ?set_id, "Creating cards from analysis");
 
         let mut user = self
             .repository
-            .find_by_id(user_id)
+            .get_current_user()
             .await?
-            .ok_or(OrigaError::UserNotFound { user_id })?;
+            .ok_or(OrigaError::CurrentUserNotExist {})?;
 
         let mut created_cards = Vec::new();
         let mut skipped_words = Vec::new();

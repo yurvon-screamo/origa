@@ -1,7 +1,6 @@
 use crate::domain::{OrigaError, ScoreContentResult};
 use crate::traits::UserRepository;
 use tracing::{debug, info};
-use ulid::Ulid;
 
 #[derive(Clone, Copy)]
 pub struct ScoreContentUseCase<'a, R: UserRepository> {
@@ -13,18 +12,14 @@ impl<'a, R: UserRepository> ScoreContentUseCase<'a, R> {
         Self { repository }
     }
 
-    pub async fn execute(
-        &self,
-        user_id: Ulid,
-        content: &str,
-    ) -> Result<ScoreContentResult, OrigaError> {
-        debug!(user_id = %user_id, "Scoring content");
+    pub async fn execute(&self, content: &str) -> Result<ScoreContentResult, OrigaError> {
+        debug!("Scoring content");
 
         let user = self
             .repository
-            .find_by_id(user_id)
+            .get_current_user()
             .await?
-            .ok_or(OrigaError::UserNotFound { user_id })?;
+            .ok_or(OrigaError::CurrentUserNotExist {})?;
 
         let result = user.score_content(content)?;
 

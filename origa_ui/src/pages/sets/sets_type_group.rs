@@ -2,6 +2,7 @@ use crate::ui_components::{Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 use lexical_sort::natural_lexical_cmp;
 use origa::traits::SetType;
+use std::collections::HashSet;
 
 use super::filters::TypeFilter;
 use super::set_card::SetCard;
@@ -12,6 +13,7 @@ pub fn SetsTypeGroup(
     set_type: SetType,
     sets_for_level: Memo<Vec<SetInfo>>,
     type_filter: RwSignal<TypeFilter>,
+    known_kanji: HashSet<String>,
     on_import: Callback<(String, String)>,
 ) -> impl IntoView {
     let sets_for_type = Memo::new(move |_| {
@@ -25,6 +27,8 @@ pub fn SetsTypeGroup(
         sets.sort_by(|a, b| natural_lexical_cmp(&a.title, &b.title));
         sets
     });
+
+    let known_kanji_stored = StoredValue::new(known_kanji);
 
     view! {
         <Show when=move || !sets_for_type.get().is_empty()>
@@ -44,6 +48,7 @@ pub fn SetsTypeGroup(
                             view! {
                                 <SetCard
                                     set_info=set_info
+                                    known_kanji=known_kanji_stored.get_value()
                                     on_import=on_import
                                 />
                             }

@@ -105,37 +105,29 @@ pub fn ImageInputStage(
     let error_message = RwSignal::new(None::<String>);
     let is_drag_over = RwSignal::new(false);
 
-    let on_file_change = {
-        let image_preview = image_preview;
-        let ocr_state = ocr_state;
-        let on_text_extracted = on_text_extracted;
-        let on_error = on_error;
-        let error_message = error_message;
+    let on_file_change = move |ev: leptos::ev::Event| {
+        let target = match ev.target() {
+            Some(t) => t,
+            None => return,
+        };
+        let input: HtmlInputElement = match target.dyn_into() {
+            Ok(i) => i,
+            Err(_) => return,
+        };
+        let files = match input.files() {
+            Some(f) => f,
+            None => return,
+        };
 
-        move |ev: leptos::ev::Event| {
-            let target = match ev.target() {
-                Some(t) => t,
-                None => return,
-            };
-            let input: HtmlInputElement = match target.dyn_into() {
-                Ok(i) => i,
-                Err(_) => return,
-            };
-            let files = match input.files() {
-                Some(f) => f,
-                None => return,
-            };
-
-            if let Some(file) = files.get(0) {
-                process_file(
-                    file,
-                    image_preview,
-                    ocr_state,
-                    on_text_extracted,
-                    on_error,
-                    error_message,
-                );
-            }
+        if let Some(file) = files.get(0) {
+            process_file(
+                file,
+                image_preview,
+                ocr_state,
+                on_text_extracted,
+                on_error,
+                error_message,
+            );
         }
     };
 
@@ -149,77 +141,55 @@ pub fn ImageInputStage(
         is_drag_over.set(false);
     };
 
-    let on_drop = {
-        let image_preview = image_preview;
-        let ocr_state = ocr_state;
-        let on_text_extracted = on_text_extracted;
-        let on_error = on_error;
-        let error_message = error_message;
+    let on_drop = move |ev: leptos::ev::DragEvent| {
+        ev.prevent_default();
+        is_drag_over.set(false);
 
-        move |ev: leptos::ev::DragEvent| {
-            ev.prevent_default();
-            is_drag_over.set(false);
-
-            if let Some(data_transfer) = ev.data_transfer()
-                && let Some(files) = data_transfer.files()
-                && let Some(file) = files.get(0)
-            {
-                process_file(
-                    file,
-                    image_preview,
-                    ocr_state,
-                    on_text_extracted,
-                    on_error,
-                    error_message,
-                );
-            }
+        if let Some(data_transfer) = ev.data_transfer()
+            && let Some(files) = data_transfer.files()
+            && let Some(file) = files.get(0)
+        {
+            process_file(
+                file,
+                image_preview,
+                ocr_state,
+                on_text_extracted,
+                on_error,
+                error_message,
+            );
         }
     };
 
-    Effect::new({
-        let image_preview = image_preview;
-        let ocr_state = ocr_state;
-        let on_text_extracted = on_text_extracted;
-        let on_error = on_error;
-        let error_message = error_message;
+    Effect::new(move || {
+        let window = match web_sys::window() {
+            Some(w) => w,
+            None => return,
+        };
 
-        move || {
-            let window = match web_sys::window() {
-                Some(w) => w,
-                None => return,
-            };
-
-            let closure = wasm_bindgen::closure::Closure::<dyn FnMut(ClipboardEvent)>::new({
-                let image_preview = image_preview;
-                let ocr_state = ocr_state;
-                let on_text_extracted = on_text_extracted;
-                let on_error = on_error;
-                let error_message = error_message;
-
-                move |event: ClipboardEvent| {
-                    if let Some(clipboard_data) = event.clipboard_data()
-                        && let Some(files) = clipboard_data.files()
-                        && let Some(file) = files.get(0)
-                    {
-                        process_file(
-                            file,
-                            image_preview,
-                            ocr_state,
-                            on_text_extracted,
-                            on_error,
-                            error_message,
-                        );
-                    }
+        let closure = wasm_bindgen::closure::Closure::<dyn FnMut(ClipboardEvent)>::new(
+            move |event: ClipboardEvent| {
+                if let Some(clipboard_data) = event.clipboard_data()
+                    && let Some(files) = clipboard_data.files()
+                    && let Some(file) = files.get(0)
+                {
+                    process_file(
+                        file,
+                        image_preview,
+                        ocr_state,
+                        on_text_extracted,
+                        on_error,
+                        error_message,
+                    );
                 }
-            });
+            },
+        );
 
-            let closure_ptr = closure.as_ref().unchecked_ref();
-            if window
-                .add_event_listener_with_callback("paste", closure_ptr)
-                .is_ok()
-            {
-                closure.forget();
-            }
+        let closure_ptr = closure.as_ref().unchecked_ref();
+        if window
+            .add_event_listener_with_callback("paste", closure_ptr)
+            .is_ok()
+        {
+            closure.forget();
         }
     });
 

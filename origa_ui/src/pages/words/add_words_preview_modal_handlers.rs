@@ -1,10 +1,8 @@
 use super::add_words_preview_modal_state::PreviewModalState;
-use crate::app::update_current_user;
 use crate::repository::HybridUserRepository;
 use leptos::ev::MouseEvent;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use origa::domain::User;
 
 pub struct PreviewModalHandlers {
     pub on_analyze: Callback<()>,
@@ -16,8 +14,7 @@ pub struct PreviewModalHandlers {
 pub fn create_preview_modal_handlers(
     state: PreviewModalState,
     is_open: RwSignal<bool>,
-    current_user: RwSignal<Option<User>>,
-    repository: HybridUserRepository,
+    _repository: HybridUserRepository,
 ) -> PreviewModalHandlers {
     let on_analyze = {
         let state = state.clone();
@@ -45,8 +42,6 @@ pub fn create_preview_modal_handlers(
             let error = state.error_message;
             let state_for_async = state.clone();
             let is_open_for_async = is_open;
-            let repository_for_async = repository.clone();
-            let current_user_for_async = current_user;
 
             is_creating.set(true);
             error.set(None);
@@ -55,7 +50,6 @@ pub fn create_preview_modal_handlers(
                 match state_for_async.create_cards().await {
                     Ok(_) => {
                         is_creating.set(false);
-                        update_current_user(repository_for_async, current_user_for_async);
                         state_for_async.reset();
                         is_open_for_async.set(false);
                     }

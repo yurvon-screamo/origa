@@ -2,7 +2,6 @@ use crate::repository::HybridUserRepository;
 use crate::well_known_set::WellKnownSetLoaderImpl;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use origa::domain::User;
 use origa::use_cases::{
     CreateCardsFromAnalysisResult, CreateCardsFromAnalysisUseCase, ImportWellKnownSetUseCase,
     WordToCreate,
@@ -17,7 +16,6 @@ pub struct ImportPreviewModalState {
     pub is_loading_preview: RwSignal<bool>,
     pub is_importing: RwSignal<bool>,
     pub error_message: RwSignal<Option<String>>,
-    pub current_user: RwSignal<Option<User>>,
     pub repository: HybridUserRepository,
     pub well_known_loader: WellKnownSetLoaderImpl,
     pub set_id: RwSignal<String>,
@@ -25,8 +23,6 @@ pub struct ImportPreviewModalState {
 
 impl ImportPreviewModalState {
     pub fn new() -> Self {
-        let current_user =
-            use_context::<RwSignal<Option<User>>>().expect("current_user context not provided");
         let repository =
             use_context::<HybridUserRepository>().expect("repository context not provided");
 
@@ -38,7 +34,6 @@ impl ImportPreviewModalState {
             is_loading_preview: RwSignal::new(false),
             is_importing: RwSignal::new(false),
             error_message: RwSignal::new(None),
-            current_user,
             repository,
             well_known_loader,
             set_id: RwSignal::new(String::new()),
@@ -46,10 +41,6 @@ impl ImportPreviewModalState {
     }
 
     pub fn load_preview(&self, set_id: String) {
-        let user_id = self
-            .current_user
-            .with(|u| u.as_ref().map(|u| u.id()))
-            .unwrap();
         let repository = self.repository.clone();
         let well_known_loader = self.well_known_loader.clone();
         let set_words = self.set_words;
@@ -64,7 +55,7 @@ impl ImportPreviewModalState {
 
         spawn_local(async move {
             let use_case = ImportWellKnownSetUseCase::new(&repository, &well_known_loader);
-            match use_case.preview_set(user_id, set_id).await {
+            match use_case.preview_set(set_id).await {
                 Ok(result) => {
                     let words: Vec<(String, Option<String>, bool)> = result
                         .words
@@ -104,10 +95,6 @@ impl ImportPreviewModalState {
     pub fn import_selected(
         &self,
     ) -> impl Future<Output = Result<CreateCardsFromAnalysisResult, String>> {
-        let user_id = self
-            .current_user
-            .with(|u| u.as_ref().map(|u| u.id()))
-            .unwrap();
         let selected_words = self.selected_words.get();
         let words_to_create: Vec<WordToCreate> = selected_words
             .into_iter()
@@ -128,7 +115,7 @@ impl ImportPreviewModalState {
             error.set(None);
 
             let use_case = CreateCardsFromAnalysisUseCase::new(&repository);
-            match use_case.execute(user_id, words_to_create, set_id_opt).await {
+            match use_case.execute(words_to_create, set_id_opt).await {
                 Ok(result) => {
                     is_importing.set(false);
                     Ok(result)

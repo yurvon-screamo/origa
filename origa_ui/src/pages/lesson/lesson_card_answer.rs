@@ -3,9 +3,7 @@ use crate::ui_components::{
     MarkdownText, MarkdownVariant, ReadingGroup, Text, TextSize, TypographyVariant,
 };
 use leptos::{ev::MouseEvent, prelude::*};
-use origa::domain::{GrammarInfo, User};
-
-use super::grammar_info_badge::GrammarInfoBadge;
+use std::collections::HashSet;
 
 #[component]
 pub fn LessonCardAnswer(
@@ -19,22 +17,12 @@ pub fn LessonCardAnswer(
     is_reversed: bool,
     on_readings: Option<Vec<String>>,
     kun_readings: Option<Vec<String>>,
-    grammar_info: Option<GrammarInfo>,
+    #[prop(into)] known_kanji: Signal<HashSet<String>>,
 ) -> impl IntoView {
-    let current_user = use_context::<RwSignal<Option<User>>>().expect("current_user context");
-
-    let known_kanji = Memo::new(move |_| {
-        current_user
-            .get()
-            .map(|u| u.knowledge_set().get_known_kanji())
-            .unwrap_or_default()
-    });
-
     let question = StoredValue::new(question_text);
     let answer = StoredValue::new(answer_text);
     let on_readings_stored = StoredValue::new(on_readings);
     let kun_readings_stored = StoredValue::new(kun_readings);
-    let grammar_info_stored = StoredValue::new(grammar_info);
 
     view! {
         <div class="text-center">
@@ -53,21 +41,6 @@ pub fn LessonCardAnswer(
                         />
                     </Show>
                 </Heading>
-            </Show>
-
-            <Show when=move || grammar_info_stored.get_value().is_some()>
-                <div class="mt-1">
-                    {move || {
-                        grammar_info_stored.get_value().map(|info| {
-                            view! {
-                                <GrammarInfoBadge
-                                    title=info.title().to_string()
-                                    description=info.description().to_string()
-                                />
-                            }
-                        })
-                    }}
-                </div>
             </Show>
 
             <div

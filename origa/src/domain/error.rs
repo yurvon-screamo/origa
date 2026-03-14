@@ -6,7 +6,7 @@ use super::value_objects::NativeLanguage;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum OrigaError {
-    UserNotFound { user_id: Ulid },
+    CurrentUserNotExist {},
     CardNotFound { card_id: Ulid },
     DuplicateCard { question: String },
     InvalidQuestion { reason: String },
@@ -42,10 +42,9 @@ pub enum OrigaError {
 impl fmt::Display for OrigaError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            OrigaError::UserNotFound { user_id } => {
-                write!(f, "User with id {} not found", user_id)
+            OrigaError::CurrentUserNotExist {} => {
+                write!(f, "Current user does not exist")
             }
-
             OrigaError::CardNotFound { card_id } => {
                 write!(f, "Card with id {} not found", card_id)
             }

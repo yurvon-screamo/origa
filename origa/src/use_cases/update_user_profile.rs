@@ -1,7 +1,6 @@
 use crate::domain::{NativeLanguage, OrigaError};
 use crate::traits::UserRepository;
 use tracing::{debug, info};
-use ulid::Ulid;
 
 #[derive(Clone)]
 pub struct UpdateUserProfileUseCase<'a, R: UserRepository> {
@@ -15,24 +14,23 @@ impl<'a, R: UserRepository> UpdateUserProfileUseCase<'a, R> {
 
     pub async fn execute(
         &self,
-        user_id: Ulid,
         native_language: NativeLanguage,
         telegram_user_id: Option<u64>,
     ) -> Result<(), OrigaError> {
-        debug!(user_id = %user_id, "Updating user profile");
+        debug!("Updating user profile");
 
         let mut user = self
             .repository
-            .find_by_id(user_id)
+            .get_current_user()
             .await?
-            .ok_or(OrigaError::UserNotFound { user_id })?;
+            .ok_or(OrigaError::CurrentUserNotExist {})?;
 
         user.set_native_language(native_language);
         user.set_telegram_user_id(telegram_user_id);
 
         self.repository.save(&user).await?;
 
-        info!(user_id = %user_id, "User profile updated");
+        info!("User profile updated");
         Ok(())
     }
 }

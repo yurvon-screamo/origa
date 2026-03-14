@@ -14,18 +14,14 @@ impl<'a, R: UserRepository> CreateGrammarCardUseCase<'a, R> {
         Self { repository }
     }
 
-    pub async fn execute(
-        &self,
-        user_id: Ulid,
-        rule_ids: Vec<Ulid>,
-    ) -> Result<Vec<StudyCard>, OrigaError> {
-        debug!(user_id = %user_id, "Creating grammar card");
+    pub async fn execute(&self, rule_ids: Vec<Ulid>) -> Result<Vec<StudyCard>, OrigaError> {
+        debug!(rule_ids = ?&rule_ids, "Creating grammar card");
 
         let mut user = self
             .repository
-            .find_by_id(user_id)
+            .get_current_user()
             .await?
-            .ok_or(OrigaError::UserNotFound { user_id })?;
+            .ok_or(OrigaError::CurrentUserNotExist {})?;
 
         let mut cards = vec![];
         for id in rule_ids {

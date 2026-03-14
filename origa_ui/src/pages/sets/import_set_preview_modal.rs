@@ -4,6 +4,7 @@ use crate::ui_components::{
     ToastData, TypographyVariant,
 };
 use leptos::prelude::*;
+use origa::domain::User;
 
 use super::import_set_preview_modal_handlers::create_import_preview_handlers;
 use super::import_set_preview_modal_state::ImportPreviewModalState;
@@ -15,14 +16,22 @@ pub fn ImportSetPreviewModal(
     set_title: Signal<String>,
     on_import_result: Callback<()>,
 ) -> impl IntoView {
+    let current_user =
+        use_context::<RwSignal<Option<User>>>().expect("current_user context not provided");
+
+    let known_kanji = Memo::new(move |_| {
+        current_user
+            .get()
+            .map(|u| u.knowledge_set().get_known_kanji())
+            .unwrap_or_default()
+    });
+
     let state = ImportPreviewModalState::new();
-    let current_user = state.current_user;
     let repository = state.repository.clone();
     let toasts: RwSignal<Vec<ToastData>> = RwSignal::new(Vec::new());
     let handlers = create_import_preview_handlers(
         state.clone(),
         is_open,
-        current_user,
         repository,
         toasts,
         on_import_result,
@@ -94,6 +103,7 @@ pub fn ImportSetPreviewModal(
                                                 known_meaning=known_meaning
                                                 is_known=is_known
                                                 selected_words=selected_words
+                                                known_kanji=known_kanji.get()
                                                 on_toggle=Callback::new(move |_| handlers.on_word_toggle.run(word_text.clone()))
                                             />
                                         }

@@ -7,19 +7,28 @@ pub struct UpdateInfo {
 }
 
 pub async fn check_for_updates() -> Option<UpdateInfo> {
-    #[cfg(all(target_arch = "wasm32", target_os = "desktop"))]
+    #[cfg(all(
+        target_arch = "wasm32",
+        any(target_os = "windows", target_os = "macos", target_os = "linux")
+    ))]
     {
         check_for_updates_tauri().await
     }
 
-    #[cfg(not(all(target_arch = "wasm32", target_os = "desktop")))]
+    #[cfg(not(all(
+        target_arch = "wasm32",
+        any(target_os = "windows", target_os = "macos", target_os = "linux")
+    )))]
     {
         leptos::logging::log!("Проверка обновлений доступна только в desktop-версии");
         None
     }
 }
 
-#[cfg(all(target_arch = "wasm32", target_os = "desktop"))]
+#[cfg(all(
+    target_arch = "wasm32",
+    any(target_os = "windows", target_os = "macos", target_os = "linux")
+))]
 async fn check_for_updates_tauri() -> Option<UpdateInfo> {
     use crate::version::VERSION;
     use leptos::logging;
@@ -78,7 +87,10 @@ async fn check_for_updates_tauri() -> Option<UpdateInfo> {
     }
 }
 
-#[cfg(all(target_arch = "wasm32", target_os = "desktop"))]
+#[cfg(all(
+    target_arch = "wasm32",
+    any(target_os = "windows", target_os = "macos", target_os = "linux")
+))]
 fn parse_update_info(value: &leptos::wasm_bindgen::JsValue) -> Option<UpdateInfo> {
     use crate::version::VERSION;
     use leptos::wasm_bindgen::JsValue;
@@ -101,19 +113,28 @@ pub async fn download_and_install<F>(_on_progress: F) -> Result<(), String>
 where
     F: Fn(u8) + Send + Sync + 'static,
 {
-    #[cfg(all(target_arch = "wasm32", target_os = "desktop"))]
+    #[cfg(all(
+        target_arch = "wasm32",
+        any(target_os = "windows", target_os = "macos", target_os = "linux")
+    ))]
     {
         download_and_install_tauri(_on_progress).await
     }
 
-    #[cfg(not(all(target_arch = "wasm32", target_os = "desktop")))]
+    #[cfg(not(all(
+        target_arch = "wasm32",
+        any(target_os = "windows", target_os = "macos", target_os = "linux")
+    )))]
     {
         leptos::logging::log!("Загрузка обновлений доступна только в desktop-версии");
         Ok(())
     }
 }
 
-#[cfg(all(target_arch = "wasm32", target_os = "desktop"))]
+#[cfg(all(
+    target_arch = "wasm32",
+    any(target_os = "windows", target_os = "macos", target_os = "linux")
+))]
 async fn download_and_install_tauri<F>(on_progress: F) -> Result<(), String>
 where
     F: Fn(u8) + Send + Sync + 'static,

@@ -4,17 +4,18 @@ use leptos::prelude::*;
 pub enum TabButtonState {
     #[default]
     Inactive,
+    #[allow(dead_code)]
     Active,
 }
 
 #[component]
 pub fn TabButton(
-    #[prop(into)] icon: Signal<String>,
-    #[prop(into)] label: Signal<String>,
-    #[prop(optional, into)] state: Signal<TabButtonState>,
-    #[prop(optional)] on_click: Option<Callback<()>>,
+    #[prop(into)] _icon: Signal<String>,
+    #[prop(into)] _label: Signal<String>,
+    #[prop(optional, into)] _state: Signal<TabButtonState>,
+    #[prop(optional)] _on_click: Option<Callback<()>>,
 ) -> impl IntoView {
-    let class_str = move || match state.get() {
+    let class_str = move || match _state.get() {
         TabButtonState::Active => "flex flex-col items-center text-[var(--accent-olive)]",
         TabButtonState::Inactive => "flex flex-col items-center text-[var(--fg-muted)]",
     };
@@ -23,13 +24,13 @@ pub fn TabButton(
         <button
             class=class_str
             on:click=move |_| {
-                if let Some(cb) = on_click {
+                if let Some(cb) = _on_click {
                     cb.run(());
                 }
             }
         >
-            <span class="text-xl">{move || icon.get()}</span>
-            <span class="text-xs mt-1">{move || label.get()}</span>
+            <span class="text-xl">{move || _icon.get()}</span>
+            <span class="text-xs mt-1">{move || _label.get()}</span>
         </button>
     }
 }

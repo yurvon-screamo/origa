@@ -1,7 +1,7 @@
 use crate::repository::HybridUserRepository;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use origa::domain::{JapaneseLevel, User};
+use origa::domain::JapaneseLevel;
 use origa::use_cases::{KanjiInfoListUseCase, KanjiItemInfo};
 use std::collections::HashSet;
 
@@ -13,14 +13,11 @@ pub struct ModalState {
     pub is_loading_kanji: RwSignal<bool>,
     pub is_creating: RwSignal<bool>,
     pub error_message: RwSignal<Option<String>>,
-    pub current_user: RwSignal<Option<User>>,
     pub repository: HybridUserRepository,
 }
 
 impl ModalState {
     pub fn new(is_open: RwSignal<bool>) -> Self {
-        let current_user =
-            use_context::<RwSignal<Option<User>>>().expect("current_user context not provided");
         let repository =
             use_context::<HybridUserRepository>().expect("repository context not provided");
 
@@ -42,16 +39,11 @@ impl ModalState {
             is_loading_kanji: RwSignal::new(false),
             is_creating: RwSignal::new(false),
             error_message: RwSignal::new(None),
-            current_user,
             repository,
         }
     }
 
     pub fn load_kanji(&self) {
-        let user_id = self
-            .current_user
-            .with(|u| u.as_ref().map(|u| u.id()))
-            .unwrap();
         let level = self.selected_level.get();
         let repository = self.repository.clone();
         let available_kanji = self.available_kanji;
@@ -63,7 +55,7 @@ impl ModalState {
 
         spawn_local(async move {
             let use_case = KanjiInfoListUseCase::new(&repository);
-            match use_case.execute(user_id, &level).await {
+            match use_case.execute(&level).await {
                 Ok(kanji_list) => {
                     available_kanji.set(kanji_list);
                     is_loading.set(false);

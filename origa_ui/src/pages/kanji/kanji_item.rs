@@ -1,6 +1,5 @@
 use crate::ui_components::{MarkdownText, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
-use origa::domain::User;
 use origa::use_cases::KanjiItemInfo;
 use std::collections::HashSet;
 
@@ -8,16 +7,8 @@ use std::collections::HashSet;
 pub fn KanjiItem(
     kanji_info: KanjiItemInfo,
     selected_kanji: RwSignal<HashSet<String>>,
+    known_kanji: HashSet<String>,
 ) -> impl IntoView {
-    let current_user = use_context::<RwSignal<Option<User>>>().expect("current_user context");
-
-    let known_kanji = Memo::new(move |_| {
-        current_user
-            .get()
-            .map(|u| u.knowledge_set().get_known_kanji())
-            .unwrap_or_default()
-    });
-
     let kanji_str = kanji_info.kanji.to_string();
     let kanji_str_for_click = kanji_str.clone();
     let kanji_str_for_memo = kanji_str.clone();
@@ -51,7 +42,7 @@ pub fn KanjiItem(
             <div class="flex items-center gap-3">
                 <span class="text-2xl font-serif">{kanji_info.kanji}</span>
                 <div class="flex-1">
-                    <MarkdownText content=Signal::derive(move || description.clone()) known_kanji=known_kanji.get()/>
+                    <MarkdownText content=Signal::derive(move || description.clone()) known_kanji=known_kanji.clone()/>
                     {move || {
                         if !radicals_str.is_empty() {
                             view! {

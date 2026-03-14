@@ -26,7 +26,7 @@ pub fn Login() -> impl IntoView {
     Effect::new({
         let navigate = navigate.clone();
         move |_| {
-            if auth_ctx.current_user.get().is_some() {
+            if auth_ctx.is_authenticated.get() {
                 navigate("/home", Default::default());
             }
         }
@@ -46,8 +46,8 @@ pub fn Login() -> impl IntoView {
                 loading.set(false);
 
                 match result {
-                    Ok(user) => {
-                        auth_ctx.current_user.set(Some(user));
+                    Ok(_) => {
+                        auth_ctx.is_authenticated.set(true);
                         navigate("/home", Default::default());
                     }
                     Err(e) => {

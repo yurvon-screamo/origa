@@ -2,7 +2,6 @@ use crate::domain::OrigaError;
 use crate::traits::{UserRepository, WellKnownSetLoader};
 use crate::use_cases::{CreateVocabularyCardUseCase, shared::is_word_known};
 use tracing::{debug, info};
-use ulid::Ulid;
 
 pub struct ImportWellKnownSetResult {
     pub total_created_count: usize,
@@ -35,12 +34,8 @@ impl<'a, R: UserRepository, W: WellKnownSetLoader> ImportWellKnownSetUseCase<'a,
         }
     }
 
-    pub async fn execute(
-        &self,
-        user_id: Ulid,
-        set_id: String,
-    ) -> Result<ImportWellKnownSetResult, OrigaError> {
-        debug!(user_id = %user_id, set_id = %set_id, "Importing well-known set");
+    pub async fn execute(&self, set_id: String) -> Result<ImportWellKnownSetResult, OrigaError> {
+        debug!(set_id = %set_id, "Importing well-known set");
 
         let mut total_created_count = 0;
         let mut total_skipped_words = Vec::new();
@@ -49,7 +44,7 @@ impl<'a, R: UserRepository, W: WellKnownSetLoader> ImportWellKnownSetUseCase<'a,
         let set = self.loader.load_set(set_id.clone()).await?;
         info!(word_count = set.words().len(), "Well-known set loaded");
 
-        let (created, skipped, errors) = self.process_words(user_id, set.words()).await?;
+        let (created, skipped, errors) = self.process_words(set.words()).await?;
 
         total_created_count += created;
         total_skipped_words.extend(skipped);
@@ -71,7 +66,6 @@ impl<'a, R: UserRepository, W: WellKnownSetLoader> ImportWellKnownSetUseCase<'a,
 
     async fn process_words(
         &self,
-        user_id: Ulid,
         words: &[String],
     ) -> Result<(usize, Vec<String>, Vec<String>), OrigaError> {
         let mut created_count = 0;
@@ -80,11 +74,7 @@ impl<'a, R: UserRepository, W: WellKnownSetLoader> ImportWellKnownSetUseCase<'a,
 
         let question = words.join(";");
 
-        match self
-            .create_card_use_case
-            .execute(user_id, question.clone())
-            .await
-        {
+        match self.create_card_use_case.execute(question.clone()).await {
             Ok(result) => {
                 for word in words {
                     if !result
@@ -106,19 +96,15 @@ impl<'a, R: UserRepository, W: WellKnownSetLoader> ImportWellKnownSetUseCase<'a,
         Ok((created_count, skipped_words, errors))
     }
 
-    pub async fn preview_set(
-        &self,
-        user_id: Ulid,
-        set_id: String,
-    ) -> Result<SetPreviewResult, OrigaError> {
-        debug!(user_id = %user_id, set_id = %set_id, "Previewing well-known set");
+    pub async fn preview_set(&self, set_id: String) -> Result<SetPreviewResult, OrigaError> {
+        debug!(set_id = %set_id, "Previewing well-known set");
 
         let user = self
             .create_card_use_case
             .repository()
-            .find_by_id(user_id)
+            .get_current_user()
             .await?
-            .ok_or(OrigaError::UserNotFound { user_id })?;
+            .ok_or(OrigaError::CurrentUserNotExist {})?;
 
         let set = self.loader.load_set(set_id.clone()).await?;
         let words = set.words();
