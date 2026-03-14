@@ -17,6 +17,7 @@ pub struct ToastData {
     pub toast_type: ToastType,
     pub title: String,
     pub message: String,
+    pub duration_ms: Option<u64>,
 }
 
 #[component]
@@ -26,11 +27,12 @@ pub fn Toast(
     #[prop(optional)] duration_ms: u64,
 ) -> impl IntoView {
     let toast_id = toast.id;
-    let has_duration = duration_ms > 0;
+    let actual_duration = toast.duration_ms.unwrap_or(duration_ms);
+    let has_duration = actual_duration > 0;
 
     if has_duration {
         spawn_local(async move {
-            gloo_timers::future::TimeoutFuture::new(duration_ms as u32).await;
+            gloo_timers::future::TimeoutFuture::new(actual_duration as u32).await;
             on_close.run(toast_id);
         });
     }
