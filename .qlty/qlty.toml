@@ -102,3 +102,9 @@ name = "trufflehog"
 
 [[plugin]]
 name = "zizmor"
+
+[[plugin]]
+name = "trivy"
+
+[[plugin]]
+name = "biome"
