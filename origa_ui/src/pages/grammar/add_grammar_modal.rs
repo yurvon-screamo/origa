@@ -5,11 +5,14 @@ use super::error_alert::ErrorAlert;
 use super::level_selector::LevelSelector;
 use super::rules_list::RulesList;
 use super::selected_count::SelectedCount;
+use crate::repository::HybridUserRepository;
 use crate::ui_components::{
     Button, ButtonSize, ButtonVariant, Drawer, Search, Spinner, Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
+use leptos::task::spawn_local;
 use origa::domain::{JapaneseLevel, User};
+use origa::traits::UserRepository;
 
 const JLPT_LEVELS: [JapaneseLevel; 5] = [
     JapaneseLevel::N5,
@@ -21,8 +24,20 @@ const JLPT_LEVELS: [JapaneseLevel; 5] = [
 
 #[component]
 pub fn AddGrammarModal(is_open: RwSignal<bool>) -> impl IntoView {
-    let current_user =
-        use_context::<RwSignal<Option<User>>>().expect("current_user context not provided");
+    let repository =
+        use_context::<HybridUserRepository>().expect("repository context not provided");
+
+    let current_user: RwSignal<Option<User>> = RwSignal::new(None);
+    let repo_for_init = repository.clone();
+
+    Effect::new(move |_| {
+        let repo = repo_for_init.clone();
+        spawn_local(async move {
+            if let Ok(Some(user)) = repo.get_current_user().await {
+                current_user.set(Some(user));
+            }
+        });
+    });
 
     let known_kanji = Memo::new(move |_| {
         current_user

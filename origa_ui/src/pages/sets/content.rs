@@ -3,20 +3,24 @@ use super::import_set_preview_modal::ImportSetPreviewModal;
 use super::sets_level_group::SetsLevelGroup;
 use super::types::SetInfo;
 use crate::loaders::WellKnownSetLoaderImpl;
+use crate::repository::HybridUserRepository;
 use crate::ui_components::{Input, Spinner, Tag, TagVariant, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::domain::{JapaneseLevel, User};
-use origa::traits::WellKnownSetLoader;
+use origa::traits::{UserRepository, WellKnownSetLoader};
 
 #[component]
 pub fn SetsContent() -> impl IntoView {
+    let repository =
+        use_context::<HybridUserRepository>().expect("repository context not provided");
+
     let sets: RwSignal<Vec<SetInfo>> = RwSignal::new(Vec::new());
     let is_loading: RwSignal<bool> = RwSignal::new(true);
     let preview_modal_open = RwSignal::new(false);
     let preview_set_id = RwSignal::new(String::new());
     let preview_set_title = RwSignal::new(String::new());
-    let current_user = use_context::<RwSignal<Option<User>>>().expect("current_user context");
+    let current_user: RwSignal<Option<User>> = RwSignal::new(None);
     let level_filter = RwSignal::new(LevelFilter::default());
     let type_filter = RwSignal::new(TypeFilter::default());
     let import_filter = RwSignal::new(ImportFilter::default());
@@ -29,34 +33,59 @@ pub fn SetsContent() -> impl IntoView {
             .unwrap_or_default()
     });
 
+    let repo_for_init = repository.clone();
     let loader = WellKnownSetLoaderImpl::new();
     let sets_for_load = sets;
-    let user_for_load = current_user;
+    let initialized = RwSignal::new(false);
 
-    spawn_local(async move {
-        if let Ok(meta_list) = loader.load_meta_list().await {
-            let set_list: Vec<SetInfo> = meta_list
-                .into_iter()
-                .map(|meta| {
-                    let is_imported = user_for_load
-                        .get()
-                        .map(|u| u.is_set_imported(&meta.id))
-                        .unwrap_or(false);
-
-                    SetInfo {
-                        set_id: meta.id,
-                        title: meta.title_ru,
-                        description: meta.desc_ru,
-                        word_count: Some(meta.word_count),
-                        set_type: meta.set_type,
-                        level: meta.level,
-                        is_imported,
-                    }
-                })
-                .collect();
-            sets_for_load.set(set_list);
-            is_loading.set(false);
+    Effect::new(move |_| {
+        if initialized.get() {
+            return;
         }
+        initialized.set(true);
+
+        let repo = repo_for_init.clone();
+        let loader = loader.clone();
+        spawn_local(async move {
+            let user = match repo.get_current_user().await {
+                Ok(Some(user)) => {
+                    current_user.set(Some(user.clone()));
+                    Some(user)
+                }
+                Ok(None) => {
+                    tracing::warn!("SetsContent: user not found");
+                    None
+                }
+                Err(e) => {
+                    tracing::error!("SetsContent: get_current_user error: {:?}", e);
+                    None
+                }
+            };
+
+            if let Ok(meta_list) = loader.load_meta_list().await {
+                let set_list: Vec<SetInfo> = meta_list
+                    .into_iter()
+                    .map(|meta| {
+                        let is_imported = user
+                            .as_ref()
+                            .map(|u| u.is_set_imported(&meta.id))
+                            .unwrap_or(false);
+
+                        SetInfo {
+                            set_id: meta.id,
+                            title: meta.title_ru,
+                            description: meta.desc_ru,
+                            word_count: Some(meta.word_count),
+                            set_type: meta.set_type,
+                            level: meta.level,
+                            is_imported,
+                        }
+                    })
+                    .collect();
+                sets_for_load.set(set_list);
+                is_loading.set(false);
+            }
+        });
     });
 
     let sets_for_update = sets;

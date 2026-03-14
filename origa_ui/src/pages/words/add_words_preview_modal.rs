@@ -2,19 +2,34 @@ use crate::pages::words::add_words_preview_modal_handlers::create_preview_modal_
 use crate::pages::words::add_words_preview_modal_state::{InputMode, PreviewModalState};
 use crate::pages::words::analyzed_word_item::AnalyzedWordItem;
 use crate::pages::words::image_input_stage::ImageInputStage;
+use crate::repository::HybridUserRepository;
 use crate::ui_components::{
     Alert, AlertType, Button, ButtonVariant, Drawer, Input, TabItem, Tabs, Text, TextSize,
     TypographyVariant,
 };
 use leptos::ev::MouseEvent;
 use leptos::prelude::*;
+use leptos::task::spawn_local;
 use origa::domain::User;
+use origa::traits::UserRepository;
 use origa::use_cases::AnalyzedWord;
 
 #[component]
 pub fn AddWordsPreviewModal(is_open: RwSignal<bool>) -> impl IntoView {
-    let current_user =
-        use_context::<RwSignal<Option<User>>>().expect("current_user context not provided");
+    let repository =
+        use_context::<HybridUserRepository>().expect("repository context not provided");
+
+    let current_user: RwSignal<Option<User>> = RwSignal::new(None);
+    let repo_for_init = repository.clone();
+
+    Effect::new(move |_| {
+        let repo = repo_for_init.clone();
+        spawn_local(async move {
+            if let Ok(Some(user)) = repo.get_current_user().await {
+                current_user.set(Some(user));
+            }
+        });
+    });
 
     let known_kanji = Memo::new(move |_| {
         current_user
@@ -24,7 +39,6 @@ pub fn AddWordsPreviewModal(is_open: RwSignal<bool>) -> impl IntoView {
     });
 
     let state = PreviewModalState::new(is_open);
-    let repository = state.repository.clone();
     let analyzed_words = state.analyzed_words;
     let input_text = state.input_text;
     let is_analyzing = state.is_analyzing;

@@ -6,13 +6,43 @@ use leptos::either::Either;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::domain::{NativeLanguage, StudyCard, User};
+use origa::traits::UserRepository;
 use origa::use_cases::ToggleFavoriteUseCase;
 use ulid::Ulid;
 
 #[component]
 pub fn GrammarContent() -> impl IntoView {
-    let current_user =
-        use_context::<RwSignal<Option<User>>>().expect("current_user context not provided");
+    let repository =
+        use_context::<HybridUserRepository>().expect("repository context not provided");
+
+    let current_user: RwSignal<Option<User>> = RwSignal::new(None);
+    let all_cards: RwSignal<Vec<StudyCard>> = RwSignal::new(Vec::new());
+    let repo_for_init = repository.clone();
+
+    Effect::new(move |_| {
+        let repo = repo_for_init.clone();
+        spawn_local(async move {
+            match repo.get_current_user().await {
+                Ok(Some(user)) => {
+                    let cards = user
+                        .knowledge_set()
+                        .study_cards()
+                        .iter()
+                        .filter(|(_, card)| matches!(card.card(), origa::domain::Card::Grammar(_)))
+                        .map(|(_, card)| card.clone())
+                        .collect();
+                    all_cards.set(cards);
+                    current_user.set(Some(user));
+                }
+                Ok(None) => {
+                    tracing::warn!("GrammarContent: user not found");
+                }
+                Err(e) => {
+                    tracing::error!("GrammarContent: get_current_user error: {:?}", e);
+                }
+            }
+        });
+    });
 
     let native_lang = Memo::new(move |_| {
         current_user
@@ -32,20 +62,17 @@ pub fn GrammarContent() -> impl IntoView {
     let filter = RwSignal::new(Filter::All);
     let toasts: RwSignal<Vec<ToastData>> = RwSignal::new(Vec::new());
 
-    let repository =
-        use_context::<HybridUserRepository>().expect("repository context not provided");
-
     let on_toggle_favorite = {
-        let repository = repository.clone();
+        let repo = repository.clone();
 
         Callback::new(move |card_id: Ulid| {
-            let repo = repository.clone();
-            let current_user_clone = current_user;
+            let repository = repo.clone();
+            let user_signal = current_user;
 
             spawn_local(async move {
-                let use_case = ToggleFavoriteUseCase::new(&repo);
+                let use_case = ToggleFavoriteUseCase::new(&repository);
                 if use_case.execute(card_id).await.is_ok() {
-                    current_user_clone.update(|u| {
+                    user_signal.update(|u| {
                         if let Some(user) = u {
                             let _ = user.toggle_favorite(card_id);
                         }
@@ -56,8 +83,6 @@ pub fn GrammarContent() -> impl IntoView {
     };
 
     let (is_deleting, on_delete) = create_delete_callback(repository.clone(), toasts);
-
-    let all_cards: RwSignal<Vec<StudyCard>> = RwSignal::new(Vec::new());
 
     let filtered_cards = Memo::new(move |_| {
         let query = search.get().to_lowercase();

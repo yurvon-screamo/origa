@@ -14,26 +14,36 @@ pub use language_selector::LanguageSelector;
 pub use personal_data_card::PersonalDataCard;
 pub use settings_card::SettingsCard;
 
+use crate::repository::HybridUserRepository;
 use crate::ui_components::{CardLayout, CardLayoutSize, PageLayout, PageLayoutVariant};
 use leptos::prelude::*;
+use leptos::task::spawn_local;
 use origa::domain::User;
+use origa::traits::UserRepository;
 
 #[component]
 pub fn Profile() -> impl IntoView {
-    let current_user =
-        use_context::<RwSignal<Option<User>>>().expect("current_user context not provided");
+    let repository =
+        use_context::<HybridUserRepository>().expect("repository context not provided");
 
-    let username = Memo::new(move |_| {
-        current_user
-            .get()
-            .map(|u| u.username().to_string())
-            .unwrap_or_default()
+    let current_user: RwSignal<Option<User>> = RwSignal::new(None);
+    let username = RwSignal::new(String::new());
+    let repo_for_init = repository.clone();
+
+    Effect::new(move |_| {
+        let repo = repo_for_init.clone();
+        spawn_local(async move {
+            if let Ok(Some(user)) = repo.get_current_user().await {
+                username.set(user.username().to_string());
+                current_user.set(Some(user));
+            }
+        });
     });
 
     view! {
         <PageLayout variant=PageLayoutVariant::Full>
             <CardLayout size=CardLayoutSize::Adaptive class="px-4 py-8">
-                <ProfileHeader username=username.get() />
+                <ProfileHeader username=Signal::derive(move || username.get()) />
                 <ProfileContent />
             </CardLayout>
         </PageLayout>
