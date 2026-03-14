@@ -30,4 +30,4 @@ runs:
       with:
         cache-all-crates: true
         shared-key: ${{ inputs.shared-key }}
-        save-if: ${{ github.ref == 'refs/heads/master' }}
+        save-always: true
