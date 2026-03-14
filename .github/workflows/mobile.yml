@@ -8,19 +8,21 @@ on:
       - 'v*.*.*'
   workflow_dispatch:
 
-permissions:
-  contents: write
-  actions: write
-
 env:
   CARGO_TERM_COLOR: always
 
+permissions: {}
+
 jobs:
   version:
+    permissions:
+      contents: read
     uses: ./.github/workflows/version.yml
 
   build:
     needs: [version]
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -37,7 +39,9 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
 
       - name: Update version in config files
         env:
@@ -61,18 +65,18 @@ jobs:
 
       - name: Setup Java
         if: matrix.platform == 'android'
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4.8.0
         with:
           distribution: temurin
           java-version: 21
 
       - name: Setup Android SDK
         if: matrix.platform == 'android'
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3.2.2
 
       - name: Setup Android NDK
         if: matrix.platform == 'android'
-        uses: nttld/setup-ndk@v1
+        uses: nttld/setup-ndk@ed92fe6cadad69be94a966a7ee3271275e62f779 # v1.6.0
         id: setup-ndk
         with:
           ndk-version: r25b
@@ -80,14 +84,13 @@ jobs:
 
       - name: Cache Gradle
         if: matrix.platform == 'android'
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
+          save-always: true
 
       - name: Setup frontend tools
         uses: ./.github/actions/setup-frontend
@@ -99,12 +102,11 @@ jobs:
         run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
 
       - name: Cache UniDic dictionary
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: origa_ui/public/dictionaries/unidic
           key: unidic-dict-v1-${{ hashFiles('origa_ui/build.rs') }}
-          restore-keys: unidic-dict-v1-
-          save-if: ${{ github.ref == 'refs/heads/master' }}
+          save-always: true
 
       - name: Build frontend
         working-directory: origa_ui
@@ -185,7 +187,7 @@ jobs:
 
       - name: Upload Android APK
         if: matrix.platform == 'android'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: android-apk
           path: tauri/gen/android/app/build/outputs/apk/**/*.apk
@@ -193,6 +195,8 @@ jobs:
   release:
     name: Update Latest Release
     needs: [version, build]
+    permissions:
+      contents: write
     uses: ./.github/workflows/reusable-release.yml
     with:
       tag-name: ${{ needs.version.outputs.version_type == 'stable' && needs.version.outputs.version || 'latest' }}

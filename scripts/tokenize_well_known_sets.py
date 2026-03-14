@@ -1,6 +1,6 @@
 import json
 import os
-import subprocess
+import subprocess  # nosec B404
 import tempfile
 from pathlib import Path
 
@@ -31,7 +31,7 @@ def run_tokenizer(words):
         cmd = [str(binary_path), "-f", temp_path]
         result = subprocess.run(
             cmd, capture_output=True, text=True, encoding="utf-8", cwd=str(root_dir)
-        )
+        )  # nosec B603
 
         if result.returncode != 0:
             print(f"Error tokenizing: {result.stderr}", flush=True)
