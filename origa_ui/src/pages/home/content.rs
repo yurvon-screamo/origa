@@ -1,11 +1,15 @@
 use super::{HistoryModal, HomeSkeleton, JlptProgressCard, JlptSkeleton, StatMetric, StatsGrid};
 use super::{HomeStats, calculate_stats, format_delta, format_number};
 use crate::repository::{HybridUserRepository, set_last_sync_time};
-use crate::ui_components::{Spinner, Text, TextSize, ToastContainer, ToastData, TypographyVariant};
+use crate::ui_components::{
+    Text, TextSize, ToastContainer, ToastData, ToastType, TypographyVariant,
+};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::domain::{DailyHistoryItem, JlptProgress};
 use origa::traits::UserRepository;
+
+const SYNC_TOAST_ID: usize = usize::MAX;
 
 #[component]
 pub fn HomeContent() -> impl IntoView {
@@ -17,23 +21,51 @@ pub fn HomeContent() -> impl IntoView {
     let history_open = RwSignal::new(false);
     let selected_metric = RwSignal::new(StatMetric::TotalCards);
     let is_loading = RwSignal::new(true);
-    let is_syncing = RwSignal::new(true);
     let jlpt_progress = RwSignal::new(JlptProgress::new());
     let toasts: RwSignal<Vec<ToastData>> = RwSignal::new(Vec::new());
     let repo_for_sync = repository.clone();
 
     Effect::new(move |_| {
         let repo = repo_for_sync.clone();
+
+        toasts.update(|t| {
+            t.push(ToastData {
+                id: SYNC_TOAST_ID,
+                toast_type: ToastType::Info,
+                title: "Синхронизация".to_string(),
+                message: "Синхронизация данных с сервером...".to_string(),
+                duration_ms: None,
+            });
+        });
+
         spawn_local(async move {
             match repo.merge_current_user().await {
                 Ok(()) => {
+                    toasts.update(|t| t.retain(|toast| toast.id != SYNC_TOAST_ID));
+                    toasts.update(|t| {
+                        t.push(ToastData {
+                            id: t.len(),
+                            toast_type: ToastType::Success,
+                            title: "Синхронизация".to_string(),
+                            message: "Данные успешно синхронизированы".to_string(),
+                            duration_ms: None,
+                        });
+                    });
                     set_last_sync_time(js_sys::Date::now() as u64 / 1000);
                 }
                 Err(e) => {
-                    tracing::error!("Home: merge_current_user error: {:?}", e);
+                    toasts.update(|t| t.retain(|toast| toast.id != SYNC_TOAST_ID));
+                    toasts.update(|t| {
+                        t.push(ToastData {
+                            id: t.len(),
+                            toast_type: ToastType::Error,
+                            title: "Ошибка синхронизации".to_string(),
+                            message: e.to_string(),
+                            duration_ms: None,
+                        });
+                    });
                 }
             }
-            is_syncing.set(false);
         });
     });
 
@@ -125,14 +157,7 @@ pub fn HomeContent() -> impl IntoView {
                         "Статистика"
                     </Text>
 
-                    <div class="flex items-center gap-2">
-                        <Show when=move || is_syncing.get()>
-                            <div class="flex items-center gap-1 text-sm text-muted-foreground">
-                                <Spinner size="sm" />
-                                "Синхронизация..."
-                            </div>
-                        </Show>
-                    </div>
+                    <div class="flex items-center gap-2"></div>
                 </div>
 
                 <Show
