@@ -1,10 +1,26 @@
-use js_sys::Uint8Array;
+use js_sys::{Reflect, Uint8Array};
 use origa::domain::OrigaError;
 use origa::ocr::{ModelConfig, ModelFiles};
+use std::cell::RefCell;
+use std::rc::Rc;
 use tracing::{debug, info};
 use wasm_bindgen::{JsCast, JsValue};
 use wasm_bindgen_futures::JsFuture;
-use web_sys::{Cache, Request, RequestInit, RequestMode, Response, Window};
+use web_sys::{
+    Cache, ReadableStream, ReadableStreamDefaultReader, Request, RequestInit, RequestMode,
+    Response, Window,
+};
+
+/// Approximate size of Deim model in bytes (50 MB)
+pub const _DEIM_SIZE: u64 = 52_428_800;
+/// Approximate size of Parseq models combined in bytes (100 MB)
+pub const _PARSEQ_SIZE: u64 = 104_857_600;
+/// Number of model files required for NDLOCR-Lite:
+/// deim.onnx, parseq30.onnx, parseq50.onnx, parseq100.onnx, vocab.txt
+const MODEL_FILE_COUNT: usize = 5;
+
+/// Progress callback type: (filename, loaded_bytes, total_bytes)
+pub type ProgressCallback = Rc<dyn Fn(&str, u64, u64)>;
 
 fn js_err(msg: impl AsRef<str>, e: &JsValue) -> OrigaError {
     OrigaError::OcrError {
@@ -13,24 +29,45 @@ fn js_err(msg: impl AsRef<str>, e: &JsValue) -> OrigaError {
 }
 
 fn sanitize_cache_name(name: &str) -> String {
-    name.chars()
+    const MAX_CACHE_NAME_LEN: usize = 64;
+
+    let sanitized: String = name
+        .chars()
+        .take(MAX_CACHE_NAME_LEN)
         .map(|c| {
-            if c.is_alphanumeric() || c == '-' || c == '_' {
+            if c.is_ascii_alphanumeric() || c == '-' || c == '_' {
                 c
             } else {
                 '_'
             }
         })
-        .collect()
+        .collect();
+
+    let sanitized = sanitized.replace("..", "_");
+
+    if sanitized.is_empty() {
+        "default_cache".to_string()
+    } else {
+        sanitized
+    }
 }
 
 pub struct ModelLoader {
     config: ModelConfig,
+    on_progress: Option<ProgressCallback>,
 }
 
 impl ModelLoader {
     pub fn new(config: ModelConfig) -> Self {
-        Self { config }
+        Self {
+            config,
+            on_progress: None,
+        }
+    }
+
+    pub fn with_progress_callback(mut self, callback: ProgressCallback) -> Self {
+        self.on_progress = Some(callback);
+        self
     }
 
     pub async fn load_or_download_model(&self) -> Result<ModelFiles, OrigaError> {
@@ -64,9 +101,13 @@ impl ModelLoader {
     }
 
     fn build_model_files(&self, mut loaded: Vec<Vec<u8>>) -> Result<ModelFiles, OrigaError> {
-        if loaded.len() != 5 {
+        if loaded.len() != MODEL_FILE_COUNT {
             return Err(OrigaError::OcrError {
-                reason: format!("Expected 5 model files, got {}", loaded.len()),
+                reason: format!(
+                    "Expected {} model files, got {}",
+                    MODEL_FILE_COUNT,
+                    loaded.len()
+                ),
             });
         }
         Ok(ModelFiles {
@@ -211,24 +252,32 @@ impl ModelLoader {
             });
         }
 
-        let array_buffer = JsFuture::from(
-            response
-                .array_buffer()
-                .map_err(|e| js_err("Failed to get array buffer", &e))?,
-        )
-        .await
-        .map_err(|e| js_err("Failed to read response body", &e))?;
+        let total_bytes = self.get_content_length(&response);
 
-        let mut data = Uint8Array::new(&array_buffer).to_vec();
+        let stream = response.body().ok_or_else(|| OrigaError::OcrError {
+            reason: "Response body is not a stream".to_string(),
+        })?;
+
+        let reader = self.get_stream_reader(&stream)?;
+
+        let data = self
+            .read_stream_with_progress(&reader, filename, total_bytes)
+            .await?;
+
         debug!("Downloaded {} bytes for {}", data.len(), filename);
 
+        // Clone required: Response::new_with_opt_u8_array_and_init takes &mut [u8]
+        // and may modify/consume it during cache storage. We must preserve original data.
+        let mut data_for_cache = data.clone();
         let cache_request = Request::new_with_str(filename)
             .map_err(|e| js_err("Failed to create cache request", &e))?;
 
         let cache_response_init = web_sys::ResponseInit::new();
-        let cache_response =
-            Response::new_with_opt_u8_array_and_init(Some(&mut data[..]), &cache_response_init)
-                .map_err(|e| js_err("Failed to create cache response", &e))?;
+        let cache_response = Response::new_with_opt_u8_array_and_init(
+            Some(&mut data_for_cache[..]),
+            &cache_response_init,
+        )
+        .map_err(|e| js_err("Failed to create cache response", &e))?;
 
         debug!("Caching {}", filename);
         JsFuture::from(cache.put_with_request(&cache_request, &cache_response))
@@ -236,5 +285,74 @@ impl ModelLoader {
             .map_err(|e| js_err(format!("Failed to cache {}", filename), &e))?;
 
         Ok(data)
+    }
+
+    fn get_content_length(&self, response: &Response) -> Option<u64> {
+        response
+            .headers()
+            .get("content-length")
+            .ok()
+            .flatten()
+            .and_then(|s| s.parse::<u64>().ok())
+    }
+
+    fn get_stream_reader(
+        &self,
+        stream: &ReadableStream,
+    ) -> Result<ReadableStreamDefaultReader, OrigaError> {
+        stream
+            .get_reader()
+            .dyn_into::<ReadableStreamDefaultReader>()
+            .map_err(|e| js_err("Failed to cast to ReadableStreamDefaultReader", &e))
+    }
+
+    async fn read_stream_with_progress(
+        &self,
+        reader: &ReadableStreamDefaultReader,
+        filename: &str,
+        total_bytes: Option<u64>,
+    ) -> Result<Vec<u8>, OrigaError> {
+        let chunks: Rc<RefCell<Vec<Vec<u8>>>> = Rc::new(RefCell::new(Vec::new()));
+        let loaded: Rc<RefCell<u64>> = Rc::new(RefCell::new(0));
+
+        loop {
+            let read_result = JsFuture::from(reader.read())
+                .await
+                .map_err(|e| js_err("Failed to read from stream", &e))?;
+
+            let done = Reflect::get(&read_result, &JsValue::from_str("done"))
+                .map_err(|e| js_err("Failed to get done flag", &e))?
+                .as_bool()
+                .unwrap_or(true);
+
+            if done {
+                break;
+            }
+
+            let value = Reflect::get(&read_result, &JsValue::from_str("value"))
+                .map_err(|e| js_err("Failed to get chunk value", &e))?;
+
+            let chunk = Uint8Array::new(&value);
+            let chunk_len = chunk.length() as u64;
+            let chunk_vec = chunk.to_vec();
+
+            chunks.borrow_mut().push(chunk_vec);
+
+            let mut loaded_guard = loaded.borrow_mut();
+            *loaded_guard += chunk_len;
+
+            if let Some(ref callback) = self.on_progress {
+                callback(filename, *loaded_guard, total_bytes.unwrap_or(0));
+            }
+        }
+
+        let chunks_guard = chunks.borrow();
+        let total_size: usize = chunks_guard.iter().map(|c| c.len()).sum();
+        let mut result = Vec::with_capacity(total_size);
+        for chunk in chunks_guard.iter() {
+            result.extend_from_slice(chunk);
+        }
+
+        Ok(result)
     }
 }

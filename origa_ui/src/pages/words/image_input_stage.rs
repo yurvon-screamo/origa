@@ -1,6 +1,8 @@
 use crate::loaders::ModelLoader;
+use crate::loaders::ocr_model_loader::ProgressCallback;
 use crate::ui_components::{
-    Alert, AlertType, Button, ButtonVariant, Text, TextSize, TypographyVariant,
+    Alert, AlertType, Button, ButtonVariant, OcrLoadingModal, OcrLoadingStage, OcrLoadingState,
+    ProgressInfo, Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
 use leptos::task::spawn_local;
@@ -10,13 +12,14 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use tracing::{debug, error, info};
 use wasm_bindgen::JsCast;
+use web_sys::js_sys::{Date, Function};
 use web_sys::{ClipboardEvent, File, HtmlInputElement};
 
 thread_local! {
-    static CACHED_MODEL: Rc<RefCell<Option<Rc<RefCell<JapaneseOCRModel>>>>> = Rc::new(RefCell::new(None));
+    static CACHED_MODEL: RefCell<Option<Rc<RefCell<JapaneseOCRModel>>>> = const { RefCell::new(None) };
 }
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Copy, Debug, Default)]
 pub enum OcrState {
     #[default]
     Idle,
@@ -26,20 +29,83 @@ pub enum OcrState {
 }
 
 const MAX_FILE_SIZE_MB: f64 = 10.0;
+const MAX_BASE64_LEN: usize = 15_000_000;
+
+#[derive(Clone)]
+struct ProcessContext {
+    image_preview: RwSignal<Option<String>>,
+    ocr_state: RwSignal<OcrState>,
+    ocr_loading_state: OcrLoadingState,
+    show_loading_modal: RwSignal<bool>,
+    error_message: RwSignal<Option<String>>,
+}
+
+fn handle_ocr_result(
+    result: Result<String, String>,
+    ctx: &ProcessContext,
+    on_text_extracted: &Callback<String>,
+    close_modal: bool,
+) {
+    match result {
+        Ok(text) => {
+            if text.trim().is_empty() {
+                let err = "Не удалось распознать текст на изображении.";
+                ctx.error_message.set(Some(err.to_string()));
+                ctx.ocr_state.set(OcrState::Error);
+                ctx.ocr_loading_state.stage.set(OcrLoadingStage::Error {
+                    stage: "recognize".to_string(),
+                    message: err.to_string(),
+                });
+            } else {
+                info!(text_length = text.len(), "OCR completed successfully");
+                ctx.ocr_state.set(OcrState::Ready);
+                ctx.ocr_loading_state.stage.set(OcrLoadingStage::Completed);
+                on_text_extracted.run(text);
+            }
+            if close_modal {
+                ctx.show_loading_modal.set(false);
+            }
+        }
+        Err(e) => {
+            error!(error = %e, "OCR failed");
+            ctx.error_message.set(Some(e.clone()));
+            ctx.ocr_state.set(OcrState::Error);
+            ctx.ocr_loading_state.stage.set(OcrLoadingStage::Error {
+                stage: "recognize".to_string(),
+                message: e,
+            });
+            if close_modal {
+                ctx.show_loading_modal.set(false);
+            }
+        }
+    }
+}
+
+async fn run_ocr_on_data_url(
+    data_url: &str,
+    ctx: &ProcessContext,
+    on_text_extracted: &Callback<String>,
+    close_modal: bool,
+) {
+    ctx.ocr_state.set(OcrState::Processing);
+    ctx.show_loading_modal.set(true);
+    ctx.ocr_loading_state.start_time.set(Some(Date::now()));
+
+    let result = process_image_with_ocr(data_url, &ctx.ocr_loading_state).await;
+    handle_ocr_result(result, ctx, on_text_extracted, close_modal);
+}
 
 fn process_file(
     file: File,
-    image_preview: RwSignal<Option<String>>,
-    ocr_state: RwSignal<OcrState>,
+    ctx: ProcessContext,
     on_text_extracted: Callback<String>,
     on_error: Callback<String>,
-    error_message: RwSignal<Option<String>>,
 ) {
     let file_name = file.name();
     debug!(file_name = %file_name, "File selected");
 
     if !is_image_file(&file) {
-        error_message.set(Some(
+        ctx.error_message.set(Some(
             "Выберите изображение (PNG, JPEG или WebP)".to_string(),
         ));
         return;
@@ -47,7 +113,7 @@ fn process_file(
 
     let file_size_mb = file.size() / (1024.0 * 1024.0);
     if file_size_mb > MAX_FILE_SIZE_MB {
-        error_message.set(Some(format!(
+        ctx.error_message.set(Some(format!(
             "Файл слишком большой ({:.1} MB). Максимальный размер: {:.0} MB",
             file_size_mb, MAX_FILE_SIZE_MB
         )));
@@ -55,39 +121,21 @@ fn process_file(
     }
 
     spawn_local(async move {
-        ocr_state.set(OcrState::Processing);
-        error_message.set(None);
-
         match read_file_as_data_url(&file).await {
             Ok(data_url) => {
-                image_preview.set(Some(data_url.clone()));
-
-                match process_image_with_ocr(&data_url).await {
-                    Ok(text) => {
-                        if text.trim().is_empty() {
-                            let err = "Не удалось распознать текст на изображении. Попробуйте другое изображение или введите текст вручную.";
-                            error_message.set(Some(err.to_string()));
-                            ocr_state.set(OcrState::Error);
-                            on_error.run(err.to_string());
-                        } else {
-                            info!(text_length = text.len(), "OCR completed successfully");
-                            ocr_state.set(OcrState::Ready);
-                            on_text_extracted.run(text);
-                        }
-                    }
-                    Err(e) => {
-                        error!(error = %e, "OCR failed");
-                        error_message.set(Some(e.clone()));
-                        ocr_state.set(OcrState::Error);
-                        on_error.run(e);
-                    }
-                }
+                ctx.image_preview.set(Some(data_url.clone()));
+                run_ocr_on_data_url(&data_url, &ctx, &on_text_extracted, true).await;
             }
             Err(e) => {
                 error!(error = %e, "Failed to read file");
-                error_message.set(Some(e.clone()));
-                ocr_state.set(OcrState::Error);
+                ctx.error_message.set(Some(e.clone()));
+                ctx.ocr_state.set(OcrState::Error);
+                ctx.ocr_loading_state.stage.set(OcrLoadingStage::Error {
+                    stage: "init".to_string(),
+                    message: e.clone(),
+                });
                 on_error.run(e);
+                ctx.show_loading_modal.set(false);
             }
         }
     });
@@ -104,7 +152,11 @@ pub fn ImageInputStage(
     let image_preview = RwSignal::new(None::<String>);
     let error_message = RwSignal::new(None::<String>);
     let is_drag_over = RwSignal::new(false);
+    let ocr_loading_state = OcrLoadingState::new();
+    let show_loading_modal = RwSignal::new(false);
 
+    let ocr_loading_state_for_file = ocr_loading_state;
+    let show_loading_modal_for_file = show_loading_modal;
     let on_file_change = move |ev: leptos::ev::Event| {
         let target = match ev.target() {
             Some(t) => t,
@@ -122,15 +174,21 @@ pub fn ImageInputStage(
         if let Some(file) = files.get(0) {
             process_file(
                 file,
-                image_preview,
-                ocr_state,
+                ProcessContext {
+                    image_preview,
+                    ocr_state,
+                    ocr_loading_state: ocr_loading_state_for_file,
+                    show_loading_modal: show_loading_modal_for_file,
+                    error_message,
+                },
                 on_text_extracted,
                 on_error,
-                error_message,
             );
         }
     };
 
+    let ocr_loading_state_for_drag = ocr_loading_state;
+    let show_loading_modal_for_drag = show_loading_modal;
     let on_drag_over = move |ev: leptos::ev::DragEvent| {
         ev.prevent_default();
         is_drag_over.set(true);
@@ -151,19 +209,36 @@ pub fn ImageInputStage(
         {
             process_file(
                 file,
-                image_preview,
-                ocr_state,
+                ProcessContext {
+                    image_preview,
+                    ocr_state,
+                    ocr_loading_state: ocr_loading_state_for_drag,
+                    show_loading_modal: show_loading_modal_for_drag,
+                    error_message,
+                },
                 on_text_extracted,
                 on_error,
-                error_message,
             );
         }
     };
 
-    Effect::new(move || {
+    let ocr_loading_state_for_paste = ocr_loading_state;
+    let show_loading_modal_for_paste = show_loading_modal;
+
+    let stored_closure = StoredValue::new_local(None::<StoredClosure>);
+
+    Effect::new(move |_| {
         let window = match web_sys::window() {
             Some(w) => w,
             None => return,
+        };
+
+        let ctx = ProcessContext {
+            image_preview,
+            ocr_state,
+            ocr_loading_state: ocr_loading_state_for_paste,
+            show_loading_modal: show_loading_modal_for_paste,
+            error_message,
         };
 
         let closure = wasm_bindgen::closure::Closure::<dyn FnMut(ClipboardEvent)>::new(
@@ -172,26 +247,26 @@ pub fn ImageInputStage(
                     && let Some(files) = clipboard_data.files()
                     && let Some(file) = files.get(0)
                 {
-                    process_file(
-                        file,
-                        image_preview,
-                        ocr_state,
-                        on_text_extracted,
-                        on_error,
-                        error_message,
-                    );
+                    process_file(file, ctx.clone(), on_text_extracted, on_error);
                 }
             },
         );
 
-        let closure_ptr = closure.as_ref().unchecked_ref();
+        let closure_ptr: Function = closure.as_ref().unchecked_ref::<Function>().clone();
         if window
-            .add_event_listener_with_callback("paste", closure_ptr)
+            .add_event_listener_with_callback("paste", &closure_ptr)
             .is_ok()
         {
-            closure.forget();
+            stored_closure.set_value(Some(StoredClosure {
+                window,
+                closure_ptr,
+                _closure: closure,
+            }));
         }
     });
+
+    let ocr_loading_state_for_modal = ocr_loading_state;
+    let show_loading_modal_for_retry = show_loading_modal;
 
     view! {
         <div class=move || format!("{} space-y-4", class.get())>
@@ -238,24 +313,6 @@ pub fn ImageInputStage(
             }}
 
             {move || {
-                let state = ocr_state.get();
-                match state {
-                    OcrState::Processing => Some(view! {
-                        <div class="flex items-center gap-2 text-[var(--fg-muted)]">
-                            <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                                "Распознавание текста (при первом запуске загружаются модели OCR ~50MB и сегментации ~100MB)..."
-                            </Text>
-                        </div>
-                    }),
-                    _ => None,
-                }
-            }}
-
-            {move || {
                 error_message.get().map(|msg| view! {
                     <Alert
                         alert_type=Signal::derive(|| AlertType::Warning)
@@ -271,6 +328,57 @@ pub fn ImageInputStage(
                 })
             }}
         </div>
+
+        <OcrLoadingModal
+            state=ocr_loading_state_for_modal
+            on_cancel=Callback::new({
+                let state = ocr_loading_state_for_modal;
+                let show_modal = show_loading_modal;
+                move |_| {
+                    state.cancel_requested.set(true);
+                    show_modal.set(false);
+                }
+            })
+            on_retry=Callback::new({
+                let state = ocr_loading_state_for_modal;
+                let show_modal = show_loading_modal_for_retry;
+                let error_msg = error_message;
+                let preview = image_preview;
+                move |_| {
+                    state.reset();
+                    error_msg.set(None);
+                    if let Some(data_url) = preview.get() {
+                        let state = state;
+                        let show_modal = show_modal;
+                        let on_text = on_text_extracted;
+                        spawn_local(async move {
+                            let ctx = ProcessContext {
+                                image_preview: preview,
+                                ocr_state,
+                                ocr_loading_state: state,
+                                show_loading_modal: show_modal,
+                                error_message: error_msg,
+                            };
+                            run_ocr_on_data_url(&data_url, &ctx, &on_text, true).await;
+                        });
+                    }
+                }
+            })
+        />
+    }
+}
+
+struct StoredClosure {
+    window: web_sys::Window,
+    closure_ptr: Function,
+    _closure: wasm_bindgen::closure::Closure<dyn FnMut(ClipboardEvent)>,
+}
+
+impl Drop for StoredClosure {
+    fn drop(&mut self) {
+        let _ = self
+            .window
+            .remove_event_listener_with_callback("paste", &self.closure_ptr);
     }
 }
 
@@ -312,7 +420,64 @@ async fn read_file_as_data_url(file: &File) -> Result<String, String> {
         .ok_or_else(|| "Result is not a string".to_string())
 }
 
-async fn process_image_with_ocr(data_url: &str) -> Result<String, String> {
+#[cfg(target_arch = "wasm32")]
+async fn init_ocr_model(
+    model_files: origa::ocr::ModelFiles,
+    loading_state: &OcrLoadingState,
+) -> Result<JapaneseOCRModel, String> {
+    JapaneseOCRModel::from_model_files(model_files)
+        .await
+        .map_err(|e| {
+            loading_state.stage.set(OcrLoadingStage::Error {
+                stage: "init".to_string(),
+                message: format!("Failed to initialize OCR model: {:?}", e),
+            });
+            format!("Failed to initialize OCR model: {:?}", e)
+        })
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+async fn init_ocr_model(
+    model_files: origa::ocr::ModelFiles,
+    loading_state: &OcrLoadingState,
+) -> Result<JapaneseOCRModel, String> {
+    JapaneseOCRModel::from_model_files(model_files).map_err(|e| {
+        loading_state.stage.set(OcrLoadingStage::Error {
+            stage: "init".to_string(),
+            message: format!("Failed to initialize OCR model: {:?}", e),
+        });
+        format!("Failed to initialize OCR model: {:?}", e)
+    })
+}
+
+#[cfg(target_arch = "wasm32")]
+async fn execute_ocr(
+    use_case: &ExtractTextFromImageUseCase,
+    model: &mut JapaneseOCRModel,
+    bytes: &[u8],
+) -> Result<String, String> {
+    use_case
+        .execute(model, bytes)
+        .await
+        .map_err(|e| format!("OCR failed: {:?}", e))
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+async fn execute_ocr(
+    use_case: &ExtractTextFromImageUseCase,
+    model: &mut JapaneseOCRModel,
+    bytes: &[u8],
+) -> Result<String, String> {
+    use_case
+        .execute(model, bytes)
+        .map_err(|e| format!("OCR failed: {:?}", e))
+}
+
+#[allow(clippy::await_holding_refcell_ref)]
+async fn process_image_with_ocr(
+    data_url: &str,
+    loading_state: &OcrLoadingState,
+) -> Result<String, String> {
     let base64_data = data_url
         .strip_prefix("data:image/")
         .and_then(|s| s.split_once(";base64,"))
@@ -329,21 +494,65 @@ async fn process_image_with_ocr(data_url: &str) -> Result<String, String> {
             info!("Loading OCR and Layout models");
 
             let config = ModelConfig::new(crate::core::config::ndlocr_base_url(), "ndlocr-model-");
-            let loader = ModelLoader::new(config);
 
-            let model_files = loader
-                .load_or_download_model()
-                .await
-                .map_err(|e| format!("Failed to load models: {:?}", e))?;
+            let loading_state_ref = *loading_state;
+            let progress_callback: ProgressCallback = Rc::new(move |filename, loaded, total| {
+                let stage = loading_state_ref.stage.get();
+                let start_time = loading_state_ref.start_time.get();
 
-            #[cfg(not(target_arch = "wasm32"))]
-            let new_model = JapaneseOCRModel::from_model_files(model_files)
-                .map_err(|e| format!("Failed to initialize OCR model: {:?}", e))?;
+                let percent = if total > 0 {
+                    ((loaded as f64 / total as f64) * 100.0) as u32
+                } else {
+                    0
+                };
 
-            #[cfg(target_arch = "wasm32")]
-            let new_model = JapaneseOCRModel::from_model_files(model_files)
-                .await
-                .map_err(|e| format!("Failed to initialize OCR model: {:?}", e))?;
+                let (speed_bps, eta_seconds) = calculate_speed_and_eta(start_time, loaded, total);
+
+                let progress = ProgressInfo {
+                    percent,
+                    loaded_bytes: loaded,
+                    total_bytes: total,
+                    speed_bps,
+                    eta_seconds,
+                };
+
+                if filename.contains("deim") {
+                    loading_state_ref
+                        .stage
+                        .set(OcrLoadingStage::DownloadingDeim { progress });
+                } else if filename.contains("parseq") {
+                    let current = match stage {
+                        OcrLoadingStage::DownloadingParseq { current_model, .. } => current_model,
+                        _ => 1,
+                    };
+                    loading_state_ref
+                        .stage
+                        .set(OcrLoadingStage::DownloadingParseq {
+                            current_model: current,
+                            progress,
+                        });
+                }
+            });
+
+            let loader = ModelLoader::new(config).with_progress_callback(progress_callback);
+
+            loading_state.stage.set(OcrLoadingStage::DownloadingDeim {
+                progress: ProgressInfo::default(),
+            });
+
+            let model_files = loader.load_or_download_model().await.map_err(|e| {
+                loading_state.stage.set(OcrLoadingStage::Error {
+                    stage: "deim".to_string(),
+                    message: format!("Failed to load models: {:?}", e),
+                });
+                format!("Failed to load models: {:?}", e)
+            })?;
+
+            loading_state.stage.set(OcrLoadingStage::Initializing {
+                model_name: "OCR models".to_string(),
+            });
+
+            let new_model = init_ocr_model(model_files, loading_state).await?;
 
             let wrapped = Rc::new(RefCell::new(new_model));
 
@@ -355,27 +564,58 @@ async fn process_image_with_ocr(data_url: &str) -> Result<String, String> {
         }
     };
 
+    loading_state.stage.set(OcrLoadingStage::Recognizing);
+
     info!("Running OCR with layout analysis");
     let use_case = ExtractTextFromImageUseCase::new();
 
-    #[cfg(not(target_arch = "wasm32"))]
-    let text = use_case
-        .execute(&mut model.borrow_mut(), &bytes)
-        .map_err(|e| format!("OCR failed: {:?}", e))?;
+    #[allow(clippy::await_holding_refcell_ref)]
+    let mut model_ref = model.borrow_mut();
+    execute_ocr(&use_case, &mut model_ref, &bytes).await
+}
 
-    #[cfg(target_arch = "wasm32")]
-    let text = use_case
-        .execute(&mut model.borrow_mut(), &bytes)
-        .await
-        .map_err(|e| format!("OCR failed: {:?}", e))?;
+fn calculate_speed_and_eta(start_time: Option<f64>, loaded: u64, total: u64) -> (u64, u64) {
+    let Some(start) = start_time else {
+        return (0, 0);
+    };
 
-    Ok(text)
+    let elapsed_ms = Date::now() - start;
+    if elapsed_ms <= 0.0 {
+        return (0, 0);
+    }
+
+    let elapsed_secs = elapsed_ms / 1000.0;
+    let speed_bps = (loaded as f64 / elapsed_secs) as u64;
+
+    if speed_bps == 0 || total == 0 || loaded >= total {
+        return (speed_bps, 0);
+    }
+
+    let remaining_bytes = total - loaded;
+    let eta_seconds = (remaining_bytes as f64 / speed_bps as f64) as u64;
+
+    (speed_bps, eta_seconds)
 }
 
 fn base64_decode(input: &str) -> Result<Vec<u8>, String> {
-    use base64::{Engine, engine::general_purpose::STANDARD};
+    use base64::{engine::general_purpose::STANDARD, Engine};
+
+    if input.len() > MAX_BASE64_LEN {
+        return Err(format!(
+            "Input too large: {} bytes (max {})",
+            input.len(),
+            MAX_BASE64_LEN
+        ));
+    }
 
     let input = input.replace(['\n', '\r'], "");
+
+    if !input
+        .chars()
+        .all(|c| c.is_ascii_alphanumeric() || c == '+' || c == '/' || c == '=')
+    {
+        return Err("Invalid base64 characters".to_string());
+    }
 
     let padding = (4 - input.len() % 4) % 4;
     let padded_input = format!("{}{}", input, "=".repeat(padding));
