@@ -15,7 +15,7 @@ pub fn Modal(
         }
     };
 
-    let _ = use_event_listener(
+    let cleanup = use_event_listener(
         document(),
         leptos::ev::keydown,
         move |ev: leptos::ev::KeyboardEvent| {
@@ -24,6 +24,7 @@ pub fn Modal(
             }
         },
     );
+    on_cleanup(move || drop(cleanup));
 
     let children = StoredValue::new(children);
 

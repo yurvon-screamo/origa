@@ -1,4 +1,4 @@
-use super::super::shared::CardStatus;
+use super::super::shared::{CardStatus, DeleteRequest};
 use crate::ui_components::{
     Button, ButtonVariant, Card, CardHistoryModal, DeleteButton, DeleteConfirmModal,
     FavoriteButton, HistoryButton, KanjiViewMode, KanjiWritingSection, MarkdownText, Tag, Text,
@@ -15,7 +15,7 @@ pub fn KanjiCardItem(
     native_language: NativeLanguage,
     known_kanji: HashSet<String>,
     on_toggle_favorite: Callback<Ulid>,
-    on_delete: Callback<Ulid>,
+    on_delete: Callback<DeleteRequest>,
     is_deleting: Signal<bool>,
 ) -> impl IntoView {
     let card = study_card.card();
@@ -26,7 +26,12 @@ pub fn KanjiCardItem(
 
     let is_history_open = RwSignal::new(false);
     let is_delete_modal_open = RwSignal::new(false);
-    let confirm_delete = Callback::new(move |_| on_delete.run(card_id));
+    let confirm_delete = Callback::new(move |_| {
+        on_delete.run(DeleteRequest {
+            card_id,
+            on_success: Callback::new(move |_| is_delete_modal_open.set(false)),
+        })
+    });
 
     let (kanji_char, description, radicals, example_words) = match card {
         DomainCard::Kanji(kanji_card) => {
