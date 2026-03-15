@@ -2,7 +2,7 @@ use std::{collections::HashMap, sync::OnceLock};
 
 use serde::{Deserialize, Serialize};
 
-use crate::domain::{OrigaError, NativeLanguage};
+use crate::domain::{NativeLanguage, OrigaError};
 
 pub static VOCABULARY_DICTIONARY: OnceLock<VocabularyDatabase> = OnceLock::new();
 

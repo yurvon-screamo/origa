@@ -1,13 +1,9 @@
-use std::collections::HashMap;
-use std::sync::OnceLock;
+use std::{collections::HashMap, sync::OnceLock};
 
 use serde::{Deserialize, Serialize};
 use ulid::Ulid;
 
-use crate::domain::{
-    OrigaError, PartOfSpeech,
-    JapaneseLevel, NativeLanguage,
-};
+use crate::domain::{JapaneseLevel, NativeLanguage, OrigaError, PartOfSpeech};
 
 pub static GRAMMAR_RULES: OnceLock<Vec<GrammarRule>> = OnceLock::new();
 
@@ -40,6 +36,13 @@ pub fn is_grammar_loaded() -> bool {
 
 pub fn get_rule_by_id(rule_id: &Ulid) -> Option<&'static GrammarRule> {
     GRAMMAR_RULES.get()?.iter().find(|x| x.rule_id() == rule_id)
+}
+
+pub fn get_rule_by_title(title: &str) -> Option<&'static GrammarRule> {
+    GRAMMAR_RULES
+        .get()?
+        .iter()
+        .find(|x| x.content.values().any(|c| c.title() == title))
 }
 
 pub fn iter_grammar_rules() -> impl Iterator<Item = &'static GrammarRule> {
@@ -126,6 +129,21 @@ pub enum FormatAction {
 }
 
 impl GrammarRule {
+    #[cfg(test)]
+    pub fn new(
+        rule_id: Ulid,
+        level: JapaneseLevel,
+        content: HashMap<NativeLanguage, GrammarRuleContent>,
+        format_map: Option<HashMap<PartOfSpeech, Vec<FormatAction>>>,
+    ) -> Self {
+        Self {
+            rule_id,
+            level,
+            content,
+            format_map,
+        }
+    }
+
     pub fn rule_id(&self) -> &Ulid {
         &self.rule_id
     }

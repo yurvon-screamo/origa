@@ -2,10 +2,7 @@ use std::{collections::HashMap, sync::OnceLock};
 
 use serde::{Deserialize, Serialize};
 
-use crate::domain::{
-    OrigaError,
-    JapaneseLevel, NativeLanguage,
-};
+use crate::domain::{JapaneseLevel, NativeLanguage, OrigaError};
 
 pub static KANJI_DICTIONARY: OnceLock<KanjiDatabase> = OnceLock::new();
 

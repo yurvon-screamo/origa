@@ -43,6 +43,9 @@ cargo test -p origa test_name
 
 # Тесты с выводом
 cargo test --workspace -- --nocapture
+
+# Coverage report (требуется cargo-llvm-cov)
+cargo llvm-cov --workspace --html
 ```
 
 ### Linting & Formatting
@@ -196,6 +199,82 @@ origa/
 └── tokenizer/                # Токенизатор для японского текста
 ```
 
+## Testing Principles (Владимир Хориков)
+
+Тесты следуют принципам из "Unit Testing Principles, Practices, and Patterns":
+
+### ✅ Обязательные принципы
+
+1. **Черный ящик** — тестировать только публичный API, не private методы
+2. **Устойчивость к рефакторингу** — тесты не должны ломаться при изменении реализации
+3. **Изоляция** — использовать InMemoryRepository вместо mock-библиотек
+4. **AAA паттерн** — Arrange, Act, Assert структура тестов
+5. **Детерминированность** — использовать seeded RNG для предсказуемых результатов
+
+### Структура тестов
+
+```
+origa/src/use_cases/tests/
+├── fixtures/              # Тестовые данные и моки
+│   ├── in_memory_repository.rs   # InMemory реализация репозитория
+│   └── real_dictionaries.rs      # Реальные словари для интеграционных тестов
+└── journeys/              # End-to-end сценарии использования
+```
+
+### Параметризованные тесты
+
+Использовать `rstest` для сокращения дублирования:
+
+```rust
+use rstest::rstest;
+
+#[rstest]
+#[case("食べる", "たべる")]
+#[case("飲む", "のみ")]
+fn test_reading_conversion(#[case] input: &str, #[case] expected: &str) {
+    // test body
+}
+```
+
+### Детерминированные тесты с RNG
+
+```rust
+use rand::{rngs::StdRng, SeedableRng};
+
+#[test]
+fn test_with_seeded_rng() {
+    let mut rng = StdRng::seed_from_u64(42);  // Предсказуемый seed
+    let result = some_random_operation(&mut rng);
+    assert_eq!(result, expected_value);
+}
+```
+
+### Coverage Goals
+
+| Модуль | Цель coverage |
+|--------|---------------|
+| `domain/` | 80%+ |
+| `use_cases/` | 85%+ |
+
+Проверка coverage:
+```bash
+cargo llvm-cov --workspace --html
+```
+
+### Типы тестов
+
+1. **Unit тесты** — изолированные тесты domain entities и value objects
+2. **Integration тесты** — use cases с InMemoryRepository
+3. **Journey тесты** — полные сценарии использования (learning_lesson, card_lifecycle)
+
+### Что НЕ делать в тестах
+
+- ❌ Тестировать private методы — рефакторить код для тестируемости
+- ❌ Использовать mock библиотеки — использовать InMemoryRepository
+- ❌ Недиабетические тесты — всегда seed RNG
+- ❌ Дублировать тестовые данные — выносить в fixtures
+- ❌ Тесты реализации вместо поведения — тестировать outcome, не implementation details
+
 ## Git Workflow
 
 Default branch - `master`
@@ -227,39 +306,4 @@ Use @git-commit-push subagent
 - Использовать `unwrap()` в production коде (только в тестах)
 - Использовать `#[async_trait]` — использовать `impl Future`
 - Коммитить console.log или println! в production коде
-- Удалять test fixtures
-
-## Security & Secrets
-
-- Секреты не хранятся в репозитории
-- OAuth tokens обрабатываются через deep-link и хранятся в TrailBase
-- Environment variables передаются через CI/CD:
-  - `ORIGA_VERSION` — версия сборки
-  - `ORIGA_COMMIT` — хеш коммита
-  - `ORIGA_BUILD_DATE` — дата сборки
-
-## Gotchas & Common Pitfalls
-
-### WASM vs Native
-
-```rust
-// Условная компиляция для OCR
-#[cfg(not(target_arch = "wasm32"))]
-use ort::Session;  // native
-
-#[cfg(target_arch = "wasm32")]
-use ort_web::Session;  // WASM
-```
-
-### Tauri JS Interop
-
-```rust
-// Доступ к __TAURI__ из Leptos (WASM)
-let tauri = js_sys::Reflect::get(&window, &JsValue::from_str("__TAURI__")).ok();
-```
-
-### Japanese Dictionary Loading
-
-- `lindera-dictionary` требует `build_rs` feature
-- Словарь unidic загружается при build time
-- В Docker словарь удаляется для уменьшения размера
+- Удалять test 
