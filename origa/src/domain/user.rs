@@ -508,4 +508,108 @@ mod tests {
         let knowledge_after = user.is_word_known(word);
         assert!(knowledge_after.is_known);
     }
+
+    #[test]
+    fn user_rate_card_nonexistent_returns_card_not_found() {
+        // Arrange
+        let mut user = User::new(
+            "test@example.com".to_string(),
+            NativeLanguage::Russian,
+            None,
+        );
+        let nonexistent_id = Ulid::new();
+
+        // Act
+        let result = user.rate_card(nonexistent_id, Rating::Good, RateMode::StandardLesson);
+
+        // Assert
+        assert!(matches!(result, Err(OrigaError::CardNotFound { .. })));
+        if let Err(OrigaError::CardNotFound { card_id }) = result {
+            assert_eq!(card_id, nonexistent_id);
+        }
+    }
+
+    #[test]
+    fn user_delete_card_nonexistent_returns_card_not_found() {
+        // Arrange
+        let mut user = User::new(
+            "test@example.com".to_string(),
+            NativeLanguage::Russian,
+            None,
+        );
+        let nonexistent_id = Ulid::new();
+
+        // Act
+        let result = user.delete_card(nonexistent_id);
+
+        // Assert
+        assert!(matches!(result, Err(OrigaError::CardNotFound { .. })));
+        if let Err(OrigaError::CardNotFound { card_id }) = result {
+            assert_eq!(card_id, nonexistent_id);
+        }
+    }
+
+    #[test]
+    fn user_create_card_duplicate_returns_duplicate_card() {
+        // Arrange
+        let mut user = User::new(
+            "test@example.com".to_string(),
+            NativeLanguage::Russian,
+            None,
+        );
+        let word = "猫";
+        let card1 = create_test_vocab_card(word);
+        let card2 = create_test_vocab_card(word);
+
+        // Act
+        let result1 = user.create_card(card1);
+        let result2 = user.create_card(card2);
+
+        // Assert
+        assert!(result1.is_ok());
+        assert!(matches!(result2, Err(OrigaError::DuplicateCard { .. })));
+        if let Err(OrigaError::DuplicateCard { question }) = result2 {
+            assert_eq!(question, word);
+        }
+    }
+
+    #[test]
+    fn user_toggle_favorite_nonexistent_returns_card_not_found() {
+        // Arrange
+        let mut user = User::new(
+            "test@example.com".to_string(),
+            NativeLanguage::Russian,
+            None,
+        );
+        let nonexistent_id = Ulid::new();
+
+        // Act
+        let result = user.toggle_favorite(nonexistent_id);
+
+        // Assert
+        assert!(matches!(result, Err(OrigaError::CardNotFound { .. })));
+        if let Err(OrigaError::CardNotFound { card_id }) = result {
+            assert_eq!(card_id, nonexistent_id);
+        }
+    }
+
+    #[test]
+    fn user_rate_card_after_delete_returns_card_not_found() {
+        // Arrange
+        let mut user = User::new(
+            "test@example.com".to_string(),
+            NativeLanguage::Russian,
+            None,
+        );
+        let card = create_test_vocab_card("猫");
+        let study_card = user.create_card(card).unwrap();
+        let card_id = *study_card.card_id();
+
+        // Act
+        user.delete_card(card_id).unwrap();
+        let result = user.rate_card(card_id, Rating::Good, RateMode::StandardLesson);
+
+        // Assert
+        assert!(matches!(result, Err(OrigaError::CardNotFound { .. })));
+    }
 }

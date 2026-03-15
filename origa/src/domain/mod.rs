@@ -16,10 +16,10 @@ pub use crate::dictionary::{
     FormatAction, GRAMMAR_RULES, GrammarData, GrammarRule, GrammarRuleContent, KANJI_DICTIONARY,
     KanjiData, KanjiInfo, PopularWord, RADICAL_DICTIONARY, RadicalData, RadicalInfo,
     VOCABULARY_DICTIONARY, VocabularyChunkData, VocabularyInfo, get_kanji_info, get_kanji_list,
-    get_radical_info, get_rule_by_id, get_translation, init_grammar, init_kanji, init_radicals,
-    init_vocabulary, is_grammar_loaded, is_kanji_loaded, is_radicals_loaded, is_vocabulary_loaded,
-    iter_grammar_rules, init_grammar_rules, init_kanji_dictionary, init_radical_dictionary,
-    init_vocabulary_dictionary, is_radical_loaded,
+    get_radical_info, get_rule_by_id, get_rule_by_title, get_translation, init_grammar,
+    init_grammar_rules, init_kanji, init_kanji_dictionary, init_radical_dictionary, init_radicals,
+    init_vocabulary, init_vocabulary_dictionary, is_grammar_loaded, is_kanji_loaded,
+    is_radical_loaded, is_radicals_loaded, is_vocabulary_loaded, iter_grammar_rules,
 };
 pub use error::OrigaError;
 pub use furigana::{FuriganaSegment, furiganize_segments, furiganize_text, furiganize_text_html};

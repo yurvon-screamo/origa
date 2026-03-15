@@ -1,5 +1,9 @@
+mod analyze_text;
 mod card_lifecycle;
+mod create_cards_from_analysis;
+mod create_vocabulary_card;
 mod grammar;
+mod import_anki_pack;
 mod learning_fixation;
 mod learning_lesson;
 mod onboarding;
