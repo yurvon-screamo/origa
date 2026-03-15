@@ -18,10 +18,10 @@ pub fn urls() -> &'static Urls {
         Urls {
             base,
             dictionary: "/public/dictionaries/unidic/cache/dictionary-data",
-            vocabulary: "/public/domain/dictionary/vocabulary/cache/vocabulary-data",
-            kanji: "/public/domain/dictionary/kanji/cache/kanji-data",
-            radical: "/public/domain/dictionary/radical/cache/radical-data",
-            grammar: "/public/domain/grammar/cache/grammar-data",
+            vocabulary: "/public/dictionary/vocabulary/cache/vocabulary-data",
+            kanji: "/public/dictionary/kanji/cache/kanji-data",
+            radical: "/public/dictionary/radical/cache/radical-data",
+            grammar: "/public/grammar/cache/grammar-data",
             ndlocr_base: "/public/ndlocr",
         }
     })

@@ -61,7 +61,7 @@ async fn load_content() -> Result<JlptContent, OrigaError> {
 }
 
 async fn load_kanji(content: &mut JlptContent) -> Result<(), OrigaError> {
-    let json = fetch_text(public_url("/public/domain/dictionary/kanji.json")).await?;
+    let json = fetch_text(public_url("/public/dictionary/kanji.json")).await?;
     let data: KanjiDictionary =
         serde_json::from_str(&json).map_err(|e| OrigaError::RepositoryError {
             reason: format!("Failed to parse kanji.json: {}", e),
@@ -111,7 +111,7 @@ async fn load_words(content: &mut JlptContent) -> Result<(), OrigaError> {
 }
 
 async fn load_grammar(content: &mut JlptContent) -> Result<(), OrigaError> {
-    let json = fetch_text(public_url("/public/domain/grammar/grammar.json")).await?;
+    let json = fetch_text(public_url("/public/grammar/grammar.json")).await?;
     let data: GrammarDictionary =
         serde_json::from_str(&json).map_err(|e| OrigaError::RepositoryError {
             reason: format!("Failed to parse grammar.json: {}", e),

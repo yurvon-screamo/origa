@@ -2,8 +2,7 @@ use std::sync::Once;
 
 use super::get_public_dir;
 use crate::domain::{
-    GrammarData, KanjiData, VocabularyChunkData, init_grammar_rules, init_kanji_dictionary,
-    init_vocabulary_dictionary,
+    GrammarData, KanjiData, VocabularyChunkData, init_grammar, init_kanji, init_vocabulary,
 };
 
 static INIT: Once = Once::new();
@@ -13,7 +12,6 @@ pub fn init_real_dictionaries() {
         let public_dir = get_public_dir();
 
         let vocab_dir = public_dir
-            .join("domain")
             .join("dictionary")
             .join("vocabulary");
         let vocab_data = VocabularyChunkData {
@@ -40,25 +38,23 @@ pub fn init_real_dictionaries() {
             chunk_11: std::fs::read_to_string(vocab_dir.join("chunk_11.json"))
                 .expect("Failed to read vocabulary chunk_11.json"),
         };
-        init_vocabulary_dictionary(vocab_data).expect("Failed to init vocabulary dictionary");
+        init_vocabulary(vocab_data).expect("Failed to init vocabulary dictionary");
 
         let kanji_path = public_dir
-            .join("domain")
             .join("dictionary")
             .join("kanji.json");
         let kanji_data = KanjiData {
             kanji_json: std::fs::read_to_string(&kanji_path).expect("Failed to read kanji.json"),
         };
-        init_kanji_dictionary(kanji_data).expect("Failed to init kanji dictionary");
+        init_kanji(kanji_data).expect("Failed to init kanji dictionary");
 
         let grammar_path = public_dir
-            .join("domain")
             .join("grammar")
             .join("grammar.json");
         let grammar_data = GrammarData {
             grammar_json: std::fs::read_to_string(&grammar_path)
                 .expect("Failed to read grammar.json"),
         };
-        init_grammar_rules(grammar_data).expect("Failed to init grammar rules");
+        init_grammar(grammar_data).expect("Failed to init grammar rules");
     });
 }

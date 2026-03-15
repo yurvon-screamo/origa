@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::domain::{
     OrigaError,
-    value_objects::{JapaneseLevel, NativeLanguage},
+    JapaneseLevel, NativeLanguage,
 };
 
 pub static KANJI_DICTIONARY: OnceLock<KanjiDatabase> = OnceLock::new();
@@ -14,10 +14,13 @@ pub struct KanjiData {
     pub kanji_json: String,
 }
 
-pub fn init_kanji_dictionary(data: KanjiData) -> Result<(), OrigaError> {
+pub fn init_kanji(data: KanjiData) -> Result<(), OrigaError> {
     let db = KanjiDatabase::from_json(&data.kanji_json)?;
-    let _ = KANJI_DICTIONARY.set(db);
-    Ok(())
+    KANJI_DICTIONARY
+        .set(db)
+        .map_err(|_| OrigaError::KradfileError {
+            reason: "Failed to set kanji dictionary".to_string(),
+        })
 }
 
 pub fn is_kanji_loaded() -> bool {
@@ -113,7 +116,7 @@ impl KanjiInfo {
         &self,
         native_language: &NativeLanguage,
     ) -> Vec<PopularWord> {
-        use crate::domain::dictionary::vocabulary::VOCABULARY_DICTIONARY;
+        use crate::dictionary::vocabulary::VOCABULARY_DICTIONARY;
 
         self.popular_words
             .iter()

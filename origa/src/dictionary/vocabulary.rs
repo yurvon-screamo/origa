@@ -2,7 +2,7 @@ use std::{collections::HashMap, sync::OnceLock};
 
 use serde::{Deserialize, Serialize};
 
-use crate::domain::{value_objects::NativeLanguage, OrigaError};
+use crate::domain::{OrigaError, NativeLanguage};
 
 pub static VOCABULARY_DICTIONARY: OnceLock<VocabularyDatabase> = OnceLock::new();
 
@@ -54,10 +54,13 @@ pub struct VocabularyChunkData {
     pub chunk_11: String,
 }
 
-pub fn init_vocabulary_dictionary(data: VocabularyChunkData) -> Result<(), OrigaError> {
+pub fn init_vocabulary(data: VocabularyChunkData) -> Result<(), OrigaError> {
     let db = VocabularyDatabase::from_chunks(data)?;
-    let _ = VOCABULARY_DICTIONARY.set(db);
-    Ok(())
+    VOCABULARY_DICTIONARY
+        .set(db)
+        .map_err(|_| OrigaError::VocabularyParseError {
+            reason: "Failed to set vocabulary dictionary".to_string(),
+        })
 }
 
 pub fn is_vocabulary_loaded() -> bool {

@@ -54,7 +54,7 @@ pub async fn load_vocabulary() -> Result<(), OrigaError> {
     let chunk_futures: Vec<_> = (1..=11)
         .map(|i| {
             fetch_text(public_url(&format!(
-                "/public/domain/dictionary/vocabulary/chunk_{:02}.json",
+                "/public/dictionary/vocabulary/chunk_{:02}.json",
                 i
             )))
         })
@@ -100,7 +100,7 @@ pub async fn load_radical() -> Result<(), OrigaError> {
         return Ok(());
     }
 
-    let json = fetch_text(public_url("/public/domain/dictionary/radicals.json")).await?;
+    let json = fetch_text(public_url("/public/dictionary/radicals.json")).await?;
     let data = RadicalData {
         radicals_json: json,
     };
@@ -128,7 +128,7 @@ pub async fn load_kanji() -> Result<(), OrigaError> {
         return Ok(());
     }
 
-    let json = fetch_text(public_url("/public/domain/dictionary/kanji.json")).await?;
+    let json = fetch_text(public_url("/public/dictionary/kanji.json")).await?;
     let data = KanjiData { kanji_json: json };
 
     let data_for_cache = data.clone();
@@ -154,7 +154,7 @@ pub async fn load_grammar() -> Result<(), OrigaError> {
         return Ok(());
     }
 
-    let json = fetch_text(public_url("/public/domain/grammar/grammar.json")).await?;
+    let json = fetch_text(public_url("/public/grammar/grammar.json")).await?;
     let data = GrammarData { grammar_json: json };
 
     let data_for_cache = data.clone();
