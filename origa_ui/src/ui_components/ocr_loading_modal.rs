@@ -17,6 +17,37 @@ pub struct ProgressInfo {
     pub eta_seconds: u64,
 }
 
+impl ProgressInfo {
+    #[allow(dead_code)]
+    pub fn new(loaded_bytes: u64, total_bytes: u64, elapsed_secs: f64) -> Self {
+        let percent = if total_bytes > 0 {
+            (loaded_bytes as f64 / total_bytes as f64 * 100.0).min(100.0) as u32
+        } else {
+            0
+        };
+
+        let speed_bps = if elapsed_secs > 0.0 && loaded_bytes > 0 {
+            (loaded_bytes as f64 / elapsed_secs) as u64
+        } else {
+            0
+        };
+
+        let eta_seconds = if speed_bps > 0 && total_bytes > loaded_bytes {
+            (total_bytes - loaded_bytes) / speed_bps
+        } else {
+            0
+        };
+
+        Self {
+            percent,
+            loaded_bytes,
+            total_bytes,
+            speed_bps,
+            eta_seconds,
+        }
+    }
+}
+
 #[derive(Clone, Debug, Default)]
 pub enum OcrLoadingStage {
     #[default]
@@ -40,7 +71,7 @@ pub enum OcrLoadingStage {
     },
 }
 
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub struct OcrLoadingState {
     pub stage: RwSignal<OcrLoadingStage>,
     pub cancel_requested: RwSignal<bool>,
@@ -85,11 +116,11 @@ pub fn LoadingStageItem(
     #[prop(default = None)] progress: Option<ProgressInfo>,
     #[prop(default = None)] error_message: Option<String>,
 ) -> impl IntoView {
-    let (icon_class, icon_content) = match status {
-        StageStatus::Waiting => ("text-slate-600", "\u{25CB}"),
-        StageStatus::Active => ("text-sky-500 animate-spin", "\u{25C9}"),
-        StageStatus::Completed => ("text-emerald-500", "\u{2713}"),
-        StageStatus::Error => ("text-rose-500", "\u{2717}"),
+    let (icon_class, icon_content, icon_label) = match status {
+        StageStatus::Waiting => ("text-slate-600", "\u{25CB}", "Ожидание"),
+        StageStatus::Active => ("text-sky-500 animate-spin", "\u{25C9}", "Загрузка"),
+        StageStatus::Completed => ("text-emerald-500", "\u{2713}", "Завершено"),
+        StageStatus::Error => ("text-rose-500", "\u{2717}", "Ошибка"),
     };
 
     let card_class = match status {
@@ -114,7 +145,7 @@ pub fn LoadingStageItem(
                 let speed_mbps = p.speed_bps as f64 / 1_048_576.0;
                 if p.eta_seconds > 0 {
                     format!(
-                        "{:.0} MB / {:.0} MB \u{2022} {:.1} MB/s \u{2022} ~{} \u{441}\u{435}\u{43a}",
+                        "{:.0} MB / {:.0} MB \u{2022} {:.1} MB/s \u{2022} ~{} сек",
                         loaded_mb, total_mb, speed_mbps, p.eta_seconds
                     )
                 } else {
@@ -154,7 +185,11 @@ pub fn LoadingStageItem(
     view! {
         <div class=format!("p-3 rounded-lg {}", card_class)>
             <div class="flex items-start gap-3">
-                <span class=format!("w-5 h-5 flex-shrink-0 {}", icon_class)>{icon_content}</span>
+                <span
+                    class=format!("w-5 h-5 flex-shrink-0 {}", icon_class)
+                    role="img"
+                    aria-label=icon_label
+                >{icon_content}</span>
                 <div class="flex-1 min-w-0">
                     <div class=format!("text-sm font-medium {}", text_class)>{title}</div>
                     <div class="text-xs text-slate-400 mt-0.5">{description}</div>
@@ -163,6 +198,138 @@ pub fn LoadingStageItem(
                 </div>
             </div>
         </div>
+    }
+}
+
+enum StageType {
+    Deim,
+    Parseq,
+    Init,
+    Recognize,
+}
+
+#[derive(Clone, PartialEq)]
+struct StageInfo {
+    status: StageStatus,
+    progress: Option<ProgressInfo>,
+    description: String,
+    error_message: Option<String>,
+}
+
+fn get_stage_info(stage: &OcrLoadingStage, stage_type: StageType) -> StageInfo {
+    match stage_type {
+        StageType::Deim => match stage {
+            OcrLoadingStage::DownloadingDeim { progress } => StageInfo {
+                status: StageStatus::Active,
+                progress: Some(*progress),
+                description: "Deim \u{2022} ~50 MB".into(),
+                error_message: None,
+            },
+            OcrLoadingStage::DownloadingParseq { .. }
+            | OcrLoadingStage::Initializing { .. }
+            | OcrLoadingStage::Recognizing
+            | OcrLoadingStage::Completed => StageInfo {
+                status: StageStatus::Completed,
+                progress: None,
+                description: "Deim \u{2022} загружено".into(),
+                error_message: None,
+            },
+            OcrLoadingStage::Error { stage: s, message } if s == "deim" => StageInfo {
+                status: StageStatus::Error,
+                progress: None,
+                description: "Ошибка загрузки".into(),
+                error_message: Some(message.clone()),
+            },
+            _ => StageInfo {
+                status: StageStatus::Waiting,
+                progress: None,
+                description: "Deim \u{2022} ~50 MB".into(),
+                error_message: None,
+            },
+        },
+        StageType::Parseq => match stage {
+            OcrLoadingStage::DownloadingParseq {
+                current_model,
+                progress,
+            } => StageInfo {
+                status: StageStatus::Active,
+                progress: Some(*progress),
+                description: format!("Parseq \u{2022} модель {}/3", current_model),
+                error_message: None,
+            },
+            OcrLoadingStage::Initializing { .. }
+            | OcrLoadingStage::Recognizing
+            | OcrLoadingStage::Completed => StageInfo {
+                status: StageStatus::Completed,
+                progress: None,
+                description: "Parseq \u{2022} загружено".into(),
+                error_message: None,
+            },
+            OcrLoadingStage::Error { stage: s, message } if s.starts_with("parseq") => StageInfo {
+                status: StageStatus::Error,
+                progress: None,
+                description: "Ошибка загрузки".into(),
+                error_message: Some(message.clone()),
+            },
+            _ => StageInfo {
+                status: StageStatus::Waiting,
+                progress: None,
+                description: "Parseq \u{2022} ~100 MB".into(),
+                error_message: None,
+            },
+        },
+        StageType::Init => match stage {
+            OcrLoadingStage::Initializing { model_name } => StageInfo {
+                status: StageStatus::Active,
+                progress: None,
+                description: format!("Загрузка {} в память...", model_name),
+                error_message: None,
+            },
+            OcrLoadingStage::Recognizing | OcrLoadingStage::Completed => StageInfo {
+                status: StageStatus::Completed,
+                progress: None,
+                description: "Модели загружены".into(),
+                error_message: None,
+            },
+            OcrLoadingStage::Error { stage: s, message } if s == "init" => StageInfo {
+                status: StageStatus::Error,
+                progress: None,
+                description: "Ошибка инициализации".into(),
+                error_message: Some(message.clone()),
+            },
+            _ => StageInfo {
+                status: StageStatus::Waiting,
+                progress: None,
+                description: "Ожидание...".into(),
+                error_message: None,
+            },
+        },
+        StageType::Recognize => match stage {
+            OcrLoadingStage::Recognizing => StageInfo {
+                status: StageStatus::Active,
+                progress: None,
+                description: "Обработка изображения...".into(),
+                error_message: None,
+            },
+            OcrLoadingStage::Completed => StageInfo {
+                status: StageStatus::Completed,
+                progress: None,
+                description: "Завершено".into(),
+                error_message: None,
+            },
+            OcrLoadingStage::Error { stage: s, message } if s == "recognize" => StageInfo {
+                status: StageStatus::Error,
+                progress: None,
+                description: "Ошибка распознавания".into(),
+                error_message: Some(message.clone()),
+            },
+            _ => StageInfo {
+                status: StageStatus::Waiting,
+                progress: None,
+                description: "Ожидание...".into(),
+                error_message: None,
+            },
+        },
     }
 }
 
@@ -175,72 +342,10 @@ pub fn OcrLoadingModal(
     let stage = state.stage;
     let cancel_requested = state.cancel_requested;
 
-    let deim_info = Memo::new(move |_| {
-        match stage.get() {
-            OcrLoadingStage::DownloadingDeim { progress } => {
-                (StageStatus::Active, Some(progress), "Deim \u{2022} ~50 MB".to_string())
-            }
-            OcrLoadingStage::DownloadingParseq { .. }
-            | OcrLoadingStage::Initializing { .. }
-            | OcrLoadingStage::Recognizing
-            | OcrLoadingStage::Completed => {
-                (StageStatus::Completed, None, "Deim \u{2022} \u{437}\u{430}\u{433}\u{440}\u{443}\u{436}\u{435}\u{43d}\u{43e}".to_string())
-            }
-            OcrLoadingStage::Error { stage: s, .. } if s == "deim" => {
-                (StageStatus::Error, None, "\u{41e}\u{448}\u{438}\u{431}\u{43a}\u{430} \u{437}\u{430}\u{433}\u{440}\u{443}\u{437}\u{43a}\u{438}".to_string())
-            }
-            _ => (StageStatus::Waiting, None, "Deim \u{2022} ~50 MB".to_string()),
-        }
-    });
-
-    let parseq_info = Memo::new(move |_| {
-        match stage.get() {
-            OcrLoadingStage::DownloadingParseq { current_model, progress } => {
-                let desc = format!("Parseq \u{2022} \u{43c}\u{43e}\u{434}\u{435}\u{43b}\u{44c} {}/3", current_model);
-                (StageStatus::Active, Some(progress), desc)
-            }
-            OcrLoadingStage::Initializing { .. }
-            | OcrLoadingStage::Recognizing
-            | OcrLoadingStage::Completed => {
-                (StageStatus::Completed, None, "Parseq \u{2022} \u{437}\u{430}\u{433}\u{440}\u{443}\u{436}\u{435}\u{43d}\u{43e}".to_string())
-            }
-            OcrLoadingStage::Error { stage: s, .. } if s.starts_with("parseq") => {
-                (StageStatus::Error, None, "\u{41e}\u{448}\u{438}\u{431}\u{43a}\u{430} \u{437}\u{430}\u{433}\u{440}\u{443}\u{437}\u{43a}\u{438}".to_string())
-            }
-            _ => (StageStatus::Waiting, None, "Parseq \u{2022} ~100 MB".to_string()),
-        }
-    });
-
-    let init_info = Memo::new(move |_| {
-        match stage.get() {
-            OcrLoadingStage::Initializing { model_name } => {
-                let desc = format!("\u{417}\u{430}\u{433}\u{440}\u{443}\u{437}\u{43a}\u{430} {} \u{432} \u{43f}\u{430}\u{43c}\u{44f}\u{442}\u{44c}...", model_name);
-                (StageStatus::Active, desc)
-            }
-            OcrLoadingStage::Recognizing | OcrLoadingStage::Completed => {
-                (StageStatus::Completed, "\u{41c}\u{43e}\u{434}\u{435}\u{43b}\u{438} \u{437}\u{430}\u{433}\u{440}\u{443}\u{436}\u{435}\u{43d}\u{44b}".to_string())
-            }
-            OcrLoadingStage::Error { stage: s, .. } if s == "init" => {
-                (StageStatus::Error, "\u{41e}\u{448}\u{438}\u{431}\u{43a}\u{430} \u{438}\u{43d}\u{438}\u{446}\u{438}\u{430}\u{43b}\u{438}\u{437}\u{430}\u{446}\u{438}\u{438}".to_string())
-            }
-            _ => (StageStatus::Waiting, "\u{41e}\u{436}\u{438}\u{434}\u{430}\u{43d}\u{438}\u{435}...".to_string()),
-        }
-    });
-
-    let recognize_info = Memo::new(move |_| {
-        match stage.get() {
-            OcrLoadingStage::Recognizing => {
-                (StageStatus::Active, "\u{41e}\u{431}\u{440}\u{430}\u{431}\u{43e}\u{442}\u{43a}\u{430} \u{438}\u{437}\u{43e}\u{431}\u{440}\u{430}\u{436}\u{435}\u{43d}\u{438}\u{44f}...".to_string())
-            }
-            OcrLoadingStage::Completed => {
-                (StageStatus::Completed, "\u{417}\u{430}\u{432}\u{435}\u{440}\u{448}\u{435}\u{43d}\u{43e}".to_string())
-            }
-            OcrLoadingStage::Error { stage: s, .. } if s == "recognize" => {
-                (StageStatus::Error, "\u{41e}\u{448}\u{438}\u{431}\u{43a}\u{430} \u{440}\u{430}\u{441}\u{43f}\u{43e}\u{437}\u{43d}\u{430}\u{432}\u{430}\u{43d}\u{438}\u{44f}".to_string())
-            }
-            _ => (StageStatus::Waiting, "\u{41e}\u{436}\u{438}\u{434}\u{430}\u{43d}\u{438}\u{435}...".to_string()),
-        }
-    });
+    let deim_info = Memo::new(move |_| get_stage_info(&stage.get(), StageType::Deim));
+    let parseq_info = Memo::new(move |_| get_stage_info(&stage.get(), StageType::Parseq));
+    let init_info = Memo::new(move |_| get_stage_info(&stage.get(), StageType::Init));
+    let recognize_info = Memo::new(move |_| get_stage_info(&stage.get(), StageType::Recognize));
 
     let is_error = Memo::new(move |_| matches!(stage.get(), OcrLoadingStage::Error { .. }));
 
@@ -257,19 +362,36 @@ pub fn OcrLoadingModal(
         }
     };
 
+    let handle_keydown = move |ev: leptos::ev::KeyboardEvent| {
+        if ev.key() == "Escape" {
+            ev.prevent_default();
+            handle_cancel();
+        }
+    };
+
     let title_icon = move || {
         if is_error.get() {
-            view! { <span class="text-rose-500">"\u{26a0}"</span> }.into_any()
+            view! {
+                <span class="text-rose-500" role="img" aria-label="Предупреждение">
+                    "\u{26a0}"
+                </span>
+            }
+            .into_any()
         } else {
-            view! { <span class="text-sky-500">"\u{25c9}"</span> }.into_any()
+            view! {
+                <span class="text-sky-500" role="img" aria-label="Загрузка">
+                    "\u{25c9}"
+                </span>
+            }
+            .into_any()
         }
     };
 
     let title_text = move || {
         if is_error.get() {
-            "\u{41e}\u{448}\u{438}\u{431}\u{43a}\u{430} \u{437}\u{430}\u{433}\u{440}\u{443}\u{437}\u{43a}\u{438}"
+            "Ошибка загрузки"
         } else {
-            "\u{41f}\u{43e}\u{434}\u{433}\u{43e}\u{442}\u{43e}\u{432}\u{43a}\u{430} \u{43a} \u{440}\u{430}\u{441}\u{43f}\u{43e}\u{437}\u{43d}\u{430}\u{432}\u{430}\u{43d}\u{438}\u{44e}"
+            "Подготовка к распознаванию"
         }
     };
 
@@ -281,13 +403,13 @@ pub fn OcrLoadingModal(
                         class="px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium transition-colors duration-150"
                         on:click=move |_| handle_cancel()
                     >
-                        "\u{41e}\u{442}\u{43c}\u{435}\u{43d}\u{430}"
+                        "Отмена"
                     </button>
                     <button
                         class="px-4 py-2 rounded-lg bg-sky-500 hover:bg-sky-400 text-white font-medium transition-colors duration-150"
                         on:click=move |_| handle_retry()
                     >
-                        "\u{41f}\u{43e}\u{432}\u{442}\u{43e}\u{440}\u{438}\u{442}\u{44c}"
+                        "Повторить"
                     </button>
                 </>
             }
@@ -299,7 +421,7 @@ pub fn OcrLoadingModal(
                     on:click=move |_| handle_cancel()
                     disabled=cancel_requested.get()
                 >
-                    {move || if cancel_requested.get() { "\u{41e}\u{442}\u{43c}\u{435}\u{43d}\u{430}..." } else { "\u{41e}\u{442}\u{43c}\u{435}\u{43d}\u{438}\u{442}\u{44c}" }}
+                    {move || if cancel_requested.get() { "Отмена..." } else { "Отменить" }}
                 </button>
             }
             .into_any()
@@ -312,6 +434,9 @@ pub fn OcrLoadingModal(
             role="dialog"
             aria-modal="true"
             aria-labelledby="ocr-loading-title"
+            aria-describedby="ocr-loading-desc"
+            tabindex="-1"
+            on:keydown=handle_keydown
         >
             <div class="w-full max-w-md mx-4 bg-slate-900 rounded-xl shadow-2xl border border-slate-700 p-6 space-y-4">
                 <h2
@@ -322,31 +447,41 @@ pub fn OcrLoadingModal(
                     {title_text}
                 </h2>
 
+                <div id="ocr-loading-desc" class="sr-only">
+                    "Загрузка моделей для распознавания японского текста"
+                </div>
+
                 <div class="space-y-3" role="list">
                     <LoadingStageItem
-                        status=deim_info.get().0
-                        title="\u{421}\u{435}\u{433}\u{43c}\u{435}\u{43d}\u{442}\u{430}\u{446}\u{438}\u{44f} \u{442}\u{435}\u{43a}\u{441}\u{442}\u{430}".to_string()
-                        description=deim_info.get().2
-                        progress=deim_info.get().1
+                        status=deim_info.get().status
+                        title="Сегментация текста".to_string()
+                        description=deim_info.get().description
+                        progress=deim_info.get().progress
+                        error_message=deim_info.get().error_message
                     />
 
                     <LoadingStageItem
-                        status=parseq_info.get().0
-                        title="\u{420}\u{430}\u{441}\u{43f}\u{43e}\u{437}\u{43d}\u{430}\u{432}\u{430}\u{43d}\u{438}\u{435} \u{441}\u{438}\u{43c}\u{432}\u{43e}\u{43b}\u{43e}\u{432}".to_string()
-                        description=parseq_info.get().2
-                        progress=parseq_info.get().1
+                        status=parseq_info.get().status
+                        title="Распознавание символов".to_string()
+                        description=parseq_info.get().description
+                        progress=parseq_info.get().progress
+                        error_message=parseq_info.get().error_message
                     />
 
                     <LoadingStageItem
-                        status=init_info.get().0
-                        title="\u{418}\u{43d}\u{438}\u{446}\u{438}\u{430}\u{43b}\u{438}\u{437}\u{430}\u{446}\u{438}\u{44f} \u{43c}\u{43e}\u{434}\u{435}\u{43b}\u{435}\u{439}".to_string()
-                        description=init_info.get().1
+                        status=init_info.get().status
+                        title="Инициализация моделей".to_string()
+                        description=init_info.get().description
+                        progress=init_info.get().progress
+                        error_message=init_info.get().error_message
                     />
 
                     <LoadingStageItem
-                        status=recognize_info.get().0
-                        title="\u{420}\u{430}\u{441}\u{43f}\u{43e}\u{437}\u{43d}\u{430}\u{432}\u{430}\u{43d}\u{438}\u{435} \u{442}\u{435}\u{43a}\u{441}\u{442}\u{430}".to_string()
-                        description=recognize_info.get().1
+                        status=recognize_info.get().status
+                        title="Распознавание текста".to_string()
+                        description=recognize_info.get().description
+                        progress=recognize_info.get().progress
+                        error_message=recognize_info.get().error_message
                     />
                 </div>
 
