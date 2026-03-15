@@ -2,7 +2,7 @@ use std::{collections::HashMap, sync::OnceLock};
 
 use serde::{Deserialize, Serialize};
 
-use crate::domain::{OrigaError, value_objects::JapaneseLevel};
+use crate::domain::{OrigaError, JapaneseLevel};
 
 pub static RADICAL_DICTIONARY: OnceLock<RadicalDatabase> = OnceLock::new();
 
@@ -11,13 +11,16 @@ pub struct RadicalData {
     pub radicals_json: String,
 }
 
-pub fn init_radical_dictionary(data: RadicalData) -> Result<(), OrigaError> {
+pub fn init_radicals(data: RadicalData) -> Result<(), OrigaError> {
     let db = RadicalDatabase::from_json(&data.radicals_json)?;
-    let _ = RADICAL_DICTIONARY.set(db);
-    Ok(())
+    RADICAL_DICTIONARY
+        .set(db)
+        .map_err(|_| OrigaError::KradfileError {
+            reason: "Failed to set radical dictionary".to_string(),
+        })
 }
 
-pub fn is_radical_loaded() -> bool {
+pub fn is_radicals_loaded() -> bool {
     RADICAL_DICTIONARY.get().is_some()
 }
 

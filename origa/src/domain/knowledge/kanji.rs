@@ -1,8 +1,5 @@
-use crate::domain::{
-    Answer, OrigaError, Question,
-    dictionary::{RadicalInfo, get_kanji_info, get_radical_info, get_translation},
-    value_objects::{JapaneseLevel, NativeLanguage},
-};
+use crate::dictionary::{RadicalInfo, get_kanji_info, get_radical_info, get_translation};
+use crate::domain::{Answer, JapaneseLevel, NativeLanguage, OrigaError, Question};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

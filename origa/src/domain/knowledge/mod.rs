@@ -589,7 +589,7 @@ mod tests {
 
     #[test]
     fn apply_reversed_returns_reversed_for_vocabulary() {
-        use crate::domain::{VocabularyChunkData, init_vocabulary_dictionary};
+        use crate::domain::{VocabularyChunkData, init_vocabulary};
         use std::sync::Once;
 
         static INIT: Once = Once::new();
@@ -630,7 +630,7 @@ mod tests {
                 chunk_11: std::fs::read_to_string(vocab_dir.join("chunk_11.json"))
                     .unwrap_or_default(),
             };
-            let _ = init_vocabulary_dictionary(vocab_data);
+            let _ = init_vocabulary(vocab_data);
         });
 
         let vocab = create_vocab_card("猫");
