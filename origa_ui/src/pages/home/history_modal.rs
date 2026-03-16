@@ -55,7 +55,8 @@ pub fn HistoryModal(
     let recent_history = move || {
         let mut items: Vec<_> = history.get();
         items.sort_by_key(|a| a.timestamp());
-        items.into_iter().take(7).collect::<Vec<_>>()
+        let start = items.len().saturating_sub(7);
+        items.into_iter().skip(start).collect::<Vec<_>>()
     };
 
     let has_data = move || !recent_history().is_empty();
