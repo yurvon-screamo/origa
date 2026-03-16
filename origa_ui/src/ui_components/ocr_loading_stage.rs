@@ -1,7 +1,4 @@
-use crate::ui_components::{Button, ButtonVariant};
-use leptos::ev::{KeyboardEvent, MouseEvent};
 use leptos::prelude::*;
-use leptos_use::use_event_listener;
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum StageStatus {
@@ -98,6 +95,7 @@ impl OcrLoadingState {
         )
     }
 
+    #[allow(dead_code)]
     pub fn reset(&self) {
         self.stage.set(OcrLoadingStage::Idle);
         self.cancel_requested.set(false);
@@ -207,7 +205,7 @@ pub fn LoadingStageItem(
     }
 }
 
-enum StageType {
+pub enum StageType {
     Deim,
     Parseq,
     Init,
@@ -215,14 +213,14 @@ enum StageType {
 }
 
 #[derive(Clone, PartialEq)]
-struct StageInfo {
-    status: StageStatus,
-    progress: Option<ProgressInfo>,
-    description: String,
-    error_message: Option<String>,
+pub struct StageInfo {
+    pub status: StageStatus,
+    pub progress: Option<ProgressInfo>,
+    pub description: String,
+    pub error_message: Option<String>,
 }
 
-fn get_stage_info(stage: &OcrLoadingStage, stage_type: StageType) -> StageInfo {
+pub fn get_stage_info(stage: &OcrLoadingStage, stage_type: StageType) -> StageInfo {
     match stage_type {
         StageType::Deim => match stage {
             OcrLoadingStage::DownloadingDeim { progress } => StageInfo {
@@ -336,168 +334,5 @@ fn get_stage_info(stage: &OcrLoadingStage, stage_type: StageType) -> StageInfo {
                 error_message: None,
             },
         },
-    }
-}
-
-#[component]
-pub fn OcrLoadingModal(
-    #[prop(optional)] is_open: RwSignal<bool>,
-    state: OcrLoadingState,
-    #[prop(optional, into)] on_cancel: Option<Callback<()>>,
-    #[prop(optional, into)] on_retry: Option<Callback<()>>,
-) -> impl IntoView {
-    let stage = state.stage;
-    let cancel_requested = state.cancel_requested;
-
-    let close_modal = move || {
-        cancel_requested.set(true);
-        is_open.set(false);
-        if let Some(cb) = on_cancel {
-            cb.run(());
-        }
-    };
-
-    let handle_retry = move || {
-        if let Some(cb) = on_retry {
-            cb.run(());
-        }
-    };
-
-    let cleanup = use_event_listener(document(), leptos::ev::keydown, move |ev: KeyboardEvent| {
-        if ev.key() == "Escape" && is_open.get() {
-            ev.prevent_default();
-            close_modal();
-        }
-    });
-    on_cleanup(move || drop(cleanup));
-
-    view! {
-        <Show when=move || is_open.get()>
-            <div
-                class="modal-backdrop flex items-center justify-center"
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby="ocr-loading-title"
-                aria-describedby="ocr-loading-desc"
-            >
-                <div class="modal-content max-w-md mx-4 space-y-4">
-                    <h2
-                        id="ocr-loading-title"
-                        class="text-lg font-semibold text-[var(--fg-black)] flex items-center gap-2"
-                    >
-                        {move || {
-                            if matches!(stage.get(), OcrLoadingStage::Error { .. }) {
-                                view! {
-                                    <>
-                                        <span class="text-[var(--error)]" role="img" aria-label="Предупреждение">
-                                            "\u{26a0}"
-                                        </span>
-                                        "Ошибка загрузки"
-                                    </>
-                                }.into_any()
-                            } else {
-                                view! {
-                                    <>
-                                        <span class="spinner spinner-sm"></span>
-                                        "Подготовка к распознаванию"
-                                    </>
-                                }.into_any()
-                            }
-                        }}
-                    </h2>
-
-                    <div id="ocr-loading-desc" class="sr-only">
-                        "Загрузка моделей для распознавания японского текста"
-                    </div>
-
-                    <div class="space-y-3" role="list">
-                        {move || {
-                            let info = get_stage_info(&stage.get(), StageType::Deim);
-                            view! {
-                                <LoadingStageItem
-                                    status=info.status
-                                    title="Сегментация текста".to_string()
-                                    description=info.description
-                                    progress=info.progress
-                                    error_message=info.error_message
-                                />
-                            }
-                        }}
-
-                        {move || {
-                            let info = get_stage_info(&stage.get(), StageType::Parseq);
-                            view! {
-                                <LoadingStageItem
-                                    status=info.status
-                                    title="Распознавание символов".to_string()
-                                    description=info.description
-                                    progress=info.progress
-                                    error_message=info.error_message
-                                />
-                            }
-                        }}
-
-                        {move || {
-                            let info = get_stage_info(&stage.get(), StageType::Init);
-                            view! {
-                                <LoadingStageItem
-                                    status=info.status
-                                    title="Инициализация моделей".to_string()
-                                    description=info.description
-                                    progress=info.progress
-                                    error_message=info.error_message
-                                />
-                            }
-                        }}
-
-                        {move || {
-                            let info = get_stage_info(&stage.get(), StageType::Recognize);
-                            view! {
-                                <LoadingStageItem
-                                    status=info.status
-                                    title="Распознавание текста".to_string()
-                                    description=info.description
-                                    progress=info.progress
-                                    error_message=info.error_message
-                                />
-                            }
-                        }}
-                    </div>
-
-                    <div class="flex justify-end gap-2 pt-2">
-                        {move || {
-                            if matches!(stage.get(), OcrLoadingStage::Error { .. }) {
-                                view! {
-                                    <>
-                                        <Button
-                                            variant=Signal::derive(|| ButtonVariant::Ghost)
-                                            on_click=Callback::new(move |_: MouseEvent| close_modal())
-                                        >
-                                            "Отмена"
-                                        </Button>
-                                        <Button
-                                            variant=Signal::derive(|| ButtonVariant::Default)
-                                            on_click=Callback::new(move |_: MouseEvent| handle_retry())
-                                        >
-                                            "Повторить"
-                                        </Button>
-                                    </>
-                                }.into_any()
-                            } else {
-                                view! {
-                                    <Button
-                                        variant=Signal::derive(|| ButtonVariant::Ghost)
-                                        disabled=Signal::derive(move || cancel_requested.get())
-                                        on_click=Callback::new(move |_: MouseEvent| close_modal())
-                                    >
-                                        {move || if cancel_requested.get() { "Отмена..." } else { "Отменить" }}
-                                    </Button>
-                                }.into_any()
-                            }
-                        }}
-                    </div>
-                </div>
-            </div>
-        </Show>
     }
 }
