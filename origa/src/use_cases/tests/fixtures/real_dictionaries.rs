@@ -5,8 +5,9 @@ use flate2::read::DeflateDecoder;
 
 use super::get_public_dir;
 use crate::domain::{
-    DictionaryData, GrammarData, KanjiData, VocabularyChunkData, init_dictionary, init_grammar,
-    init_kanji, init_vocabulary, is_dictionary_loaded, is_grammar_loaded,
+    init_dictionary, init_grammar, init_kanji, init_radicals, init_vocabulary,
+    is_dictionary_loaded, is_grammar_loaded, DictionaryData, GrammarData, KanjiData, RadicalData,
+    VocabularyChunkData,
 };
 
 static INIT: Once = Once::new();
@@ -23,6 +24,7 @@ pub fn init_real_dictionaries() {
         init_tokenizer_dictionary();
         init_vocabulary_dictionary();
         init_kanji_dictionary();
+        init_radicals_dictionary();
         init_grammar_rules();
     });
 }
@@ -90,6 +92,16 @@ fn init_kanji_dictionary() {
         kanji_json: std::fs::read_to_string(&kanji_path).expect("Failed to read kanji.json"),
     };
     init_kanji(kanji_data).expect("Failed to init kanji dictionary");
+}
+
+fn init_radicals_dictionary() {
+    let public_dir = get_public_dir();
+    let radicals_path = public_dir.join("dictionary").join("radicals.json");
+    let radicals_data = RadicalData {
+        radicals_json: std::fs::read_to_string(&radicals_path)
+            .expect("Failed to read radicals.json"),
+    };
+    init_radicals(radicals_data).expect("Failed to init radicals dictionary");
 }
 
 fn init_grammar_rules() {

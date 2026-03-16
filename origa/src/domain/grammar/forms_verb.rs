@@ -725,9 +725,13 @@ pub fn to_sugiru_form_verb(word: &str) -> String {
 pub fn to_chau_form(word: &str) -> String {
     let te = to_te_form(word);
     if te.ends_with("て") {
-        format!("{}ちゃう", &te[..te.len() - 1])
+        let mut stem = te;
+        stem.pop();
+        format!("{}ちゃう", stem)
     } else if te.ends_with("で") {
-        format!("{}じゃう", &te[..te.len() - 1])
+        let mut stem = te;
+        stem.pop();
+        format!("{}じゃう", stem)
     } else {
         format!("{}ちゃう", te)
     }
@@ -736,9 +740,13 @@ pub fn to_chau_form(word: &str) -> String {
 pub fn to_toku_form(word: &str) -> String {
     let te = to_te_form(word);
     if te.ends_with("て") {
-        format!("{}とく", &te[..te.len() - 1])
+        let mut stem = te;
+        stem.pop();
+        format!("{}とく", stem)
     } else if te.ends_with("で") {
-        format!("{}どく", &te[..te.len() - 1])
+        let mut stem = te;
+        stem.pop();
+        format!("{}どく", stem)
     } else {
         format!("{}とく", te)
     }
@@ -747,9 +755,13 @@ pub fn to_toku_form(word: &str) -> String {
 pub fn to_teru_form(word: &str) -> String {
     let te = to_te_form(word);
     if te.ends_with("て") {
-        format!("{}てる", &te[..te.len() - 1])
+        let mut stem = te;
+        stem.pop();
+        format!("{}てる", stem)
     } else if te.ends_with("で") {
-        format!("{}でる", &te[..te.len() - 1])
+        let mut stem = te;
+        stem.pop();
+        format!("{}でる", stem)
     } else {
         format!("{}てる", te)
     }
