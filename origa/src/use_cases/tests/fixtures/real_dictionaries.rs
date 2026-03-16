@@ -5,9 +5,9 @@ use flate2::read::DeflateDecoder;
 
 use super::get_public_dir;
 use crate::domain::{
-    init_dictionary, init_grammar, init_kanji, init_radicals, init_vocabulary,
-    is_dictionary_loaded, is_grammar_loaded, DictionaryData, GrammarData, KanjiData, RadicalData,
-    VocabularyChunkData,
+    DictionaryData, GrammarData, KanjiData, RadicalData, VocabularyChunkData, init_dictionary,
+    init_grammar, init_kanji, init_radicals, init_vocabulary, is_dictionary_loaded,
+    is_grammar_loaded,
 };
 
 static INIT: Once = Once::new();

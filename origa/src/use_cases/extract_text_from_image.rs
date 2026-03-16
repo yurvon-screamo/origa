@@ -130,16 +130,22 @@ mod tests {
         fn create_minimal_png() -> Vec<u8> {
             let img = image::DynamicImage::ImageRgba8(image::RgbaImage::new(1, 1));
             let mut bytes = Vec::new();
-            img.write_to(&mut std::io::Cursor::new(&mut bytes), image::ImageFormat::Png)
-                .unwrap();
+            img.write_to(
+                &mut std::io::Cursor::new(&mut bytes),
+                image::ImageFormat::Png,
+            )
+            .unwrap();
             bytes
         }
 
         fn create_minimal_jpeg() -> Vec<u8> {
             let img = image::DynamicImage::ImageRgb8(image::RgbImage::new(1, 1));
             let mut bytes = Vec::new();
-            img.write_to(&mut std::io::Cursor::new(&mut bytes), image::ImageFormat::Jpeg)
-                .unwrap();
+            img.write_to(
+                &mut std::io::Cursor::new(&mut bytes),
+                image::ImageFormat::Jpeg,
+            )
+            .unwrap();
             bytes
         }
     }

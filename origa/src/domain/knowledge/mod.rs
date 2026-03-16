@@ -13,13 +13,12 @@ pub use vocabulary::VocabularyCard;
 use std::collections::{HashMap, HashSet};
 
 use crate::domain::{
-    get_rule_by_id,
-    srs::{rate_memory, NextReview},
+    OrigaError, RateMode, Rating, ReviewLog, get_rule_by_id,
+    srs::{NextReview, rate_memory},
     value_objects::NativeLanguage,
-    OrigaError, RateMode, Rating, ReviewLog,
 };
 use chrono::Utc;
-use rand::{seq::SliceRandom, Rng};
+use rand::{Rng, seq::SliceRandom};
 use serde::{Deserialize, Serialize};
 use ulid::Ulid;
 
@@ -557,7 +556,7 @@ mod tests {
     use crate::domain::value_objects::Question;
     use crate::use_cases::init_real_dictionaries;
     use chrono::Duration;
-    use rand::{rngs::StdRng, SeedableRng};
+    use rand::{SeedableRng, rngs::StdRng};
 
     fn create_vocab_card(word: &str) -> Card {
         Card::Vocabulary(VocabularyCard::new(
