@@ -330,15 +330,8 @@ pub fn ImageInputStage(
         </div>
 
         <OcrLoadingModal
+            is_open=show_loading_modal
             state=ocr_loading_state_for_modal
-            on_cancel=Callback::new({
-                let state = ocr_loading_state_for_modal;
-                let show_modal = show_loading_modal;
-                move |_| {
-                    state.cancel_requested.set(true);
-                    show_modal.set(false);
-                }
-            })
             on_retry=Callback::new({
                 let state = ocr_loading_state_for_modal;
                 let show_modal = show_loading_modal_for_retry;
