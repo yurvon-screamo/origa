@@ -29,7 +29,7 @@ mod loading;
 mod markdown;
 mod modal;
 mod navbar;
-mod ocr_loading_modal;
+mod ocr_loading_stage;
 mod pagination;
 mod progress;
 mod radio;
@@ -71,7 +71,9 @@ pub use layout::{CardLayout, CardLayoutSize, PageLayout, PageLayoutVariant};
 pub use loading::{LoadingOverlay, Spinner};
 pub use markdown::{MarkdownText, MarkdownVariant};
 pub use modal::Modal;
-pub use ocr_loading_modal::{OcrLoadingModal, OcrLoadingStage, OcrLoadingState, ProgressInfo};
+pub use ocr_loading_stage::{
+    LoadingStageItem, OcrLoadingStage, OcrLoadingState, ProgressInfo, StageType, get_stage_info,
+};
 pub use progress::ProgressBar;
 pub use reading_group::ReadingGroup;
 pub use search::Search;
