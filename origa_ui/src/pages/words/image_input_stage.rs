@@ -1,8 +1,8 @@
 use crate::loaders::ModelLoader;
 use crate::loaders::ocr_model_loader::ProgressCallback;
 use crate::ui_components::{
-    Alert, AlertType, Button, ButtonVariant, OcrLoadingModal, OcrLoadingStage, OcrLoadingState,
-    ProgressInfo, Text, TextSize, TypographyVariant,
+    Alert, AlertType, Button, ButtonVariant, LoadingStageItem, OcrLoadingStage, OcrLoadingState,
+    ProgressInfo, StageType, Text, TextSize, TypographyVariant, get_stage_info,
 };
 use leptos::prelude::*;
 use leptos::task::spawn_local;
@@ -36,7 +36,6 @@ struct ProcessContext {
     image_preview: RwSignal<Option<String>>,
     ocr_state: RwSignal<OcrState>,
     ocr_loading_state: OcrLoadingState,
-    show_loading_modal: RwSignal<bool>,
     error_message: RwSignal<Option<String>>,
 }
 
@@ -44,7 +43,6 @@ fn handle_ocr_result(
     result: Result<String, String>,
     ctx: &ProcessContext,
     on_text_extracted: &Callback<String>,
-    close_modal: bool,
 ) {
     match result {
         Ok(text) => {
@@ -62,9 +60,6 @@ fn handle_ocr_result(
                 ctx.ocr_loading_state.stage.set(OcrLoadingStage::Completed);
                 on_text_extracted.run(text);
             }
-            if close_modal {
-                ctx.show_loading_modal.set(false);
-            }
         }
         Err(e) => {
             error!(error = %e, "OCR failed");
@@ -74,9 +69,6 @@ fn handle_ocr_result(
                 stage: "recognize".to_string(),
                 message: e,
             });
-            if close_modal {
-                ctx.show_loading_modal.set(false);
-            }
         }
     }
 }
@@ -85,14 +77,12 @@ async fn run_ocr_on_data_url(
     data_url: &str,
     ctx: &ProcessContext,
     on_text_extracted: &Callback<String>,
-    close_modal: bool,
 ) {
     ctx.ocr_state.set(OcrState::Processing);
-    ctx.show_loading_modal.set(true);
     ctx.ocr_loading_state.start_time.set(Some(Date::now()));
 
     let result = process_image_with_ocr(data_url, &ctx.ocr_loading_state).await;
-    handle_ocr_result(result, ctx, on_text_extracted, close_modal);
+    handle_ocr_result(result, ctx, on_text_extracted);
 }
 
 fn process_file(
@@ -124,7 +114,7 @@ fn process_file(
         match read_file_as_data_url(&file).await {
             Ok(data_url) => {
                 ctx.image_preview.set(Some(data_url.clone()));
-                run_ocr_on_data_url(&data_url, &ctx, &on_text_extracted, true).await;
+                run_ocr_on_data_url(&data_url, &ctx, &on_text_extracted).await;
             }
             Err(e) => {
                 error!(error = %e, "Failed to read file");
@@ -135,7 +125,6 @@ fn process_file(
                     message: e.clone(),
                 });
                 on_error.run(e);
-                ctx.show_loading_modal.set(false);
             }
         }
     });
@@ -153,10 +142,8 @@ pub fn ImageInputStage(
     let error_message = RwSignal::new(None::<String>);
     let is_drag_over = RwSignal::new(false);
     let ocr_loading_state = OcrLoadingState::new();
-    let show_loading_modal = RwSignal::new(false);
 
     let ocr_loading_state_for_file = ocr_loading_state;
-    let show_loading_modal_for_file = show_loading_modal;
     let on_file_change = move |ev: leptos::ev::Event| {
         let target = match ev.target() {
             Some(t) => t,
@@ -178,7 +165,6 @@ pub fn ImageInputStage(
                     image_preview,
                     ocr_state,
                     ocr_loading_state: ocr_loading_state_for_file,
-                    show_loading_modal: show_loading_modal_for_file,
                     error_message,
                 },
                 on_text_extracted,
@@ -188,7 +174,6 @@ pub fn ImageInputStage(
     };
 
     let ocr_loading_state_for_drag = ocr_loading_state;
-    let show_loading_modal_for_drag = show_loading_modal;
     let on_drag_over = move |ev: leptos::ev::DragEvent| {
         ev.prevent_default();
         is_drag_over.set(true);
@@ -213,7 +198,6 @@ pub fn ImageInputStage(
                     image_preview,
                     ocr_state,
                     ocr_loading_state: ocr_loading_state_for_drag,
-                    show_loading_modal: show_loading_modal_for_drag,
                     error_message,
                 },
                 on_text_extracted,
@@ -223,7 +207,6 @@ pub fn ImageInputStage(
     };
 
     let ocr_loading_state_for_paste = ocr_loading_state;
-    let show_loading_modal_for_paste = show_loading_modal;
 
     let stored_closure = StoredValue::new_local(None::<StoredClosure>);
 
@@ -237,7 +220,6 @@ pub fn ImageInputStage(
             image_preview,
             ocr_state,
             ocr_loading_state: ocr_loading_state_for_paste,
-            show_loading_modal: show_loading_modal_for_paste,
             error_message,
         };
 
@@ -265,99 +247,156 @@ pub fn ImageInputStage(
         }
     });
 
-    let ocr_loading_state_for_modal = ocr_loading_state;
-    let show_loading_modal_for_retry = show_loading_modal;
+    let ocr_loading_state_for_cancel = ocr_loading_state;
+    let ocr_state_for_cancel = ocr_state;
+    let on_cancel = move |_| {
+        ocr_loading_state_for_cancel.cancel_requested.set(true);
+        ocr_state_for_cancel.set(OcrState::Idle);
+    };
+
+    let stage = ocr_loading_state.stage;
 
     view! {
         <div class=move || format!("{} space-y-4", class.get())>
-            <div
-                class=move || {
-                    let base = "border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer";
-                    if is_drag_over.get() {
-                        format!("{} border-[var(--accent-olive)] bg-[var(--accent-olive)]/10", base)
-                    } else {
-                        format!("{} border-[var(--border-light)] hover:border-[var(--accent-olive)]/50", base)
-                    }
+            {move || {
+                if matches!(ocr_state.get(), OcrState::Processing) {
+                    view! {
+                        <div class="space-y-4">
+                            <h2 class="text-lg font-semibold text-[var(--fg-black)] flex items-center gap-2">
+                                <span class="spinner spinner-sm"></span>
+                                "Подготовка к распознаванию"
+                            </h2>
+
+                            <div class="space-y-3" role="list">
+                                {move || {
+                                    let info = get_stage_info(&stage.get(), StageType::Deim);
+                                    view! {
+                                        <LoadingStageItem
+                                            status=info.status
+                                            title="Сегментация текста".to_string()
+                                            description=info.description
+                                            progress=info.progress
+                                            error_message=info.error_message
+                                        />
+                                    }
+                                }}
+
+                                {move || {
+                                    let info = get_stage_info(&stage.get(), StageType::Parseq);
+                                    view! {
+                                        <LoadingStageItem
+                                            status=info.status
+                                            title="Распознавание символов".to_string()
+                                            description=info.description
+                                            progress=info.progress
+                                            error_message=info.error_message
+                                        />
+                                    }
+                                }}
+
+                                {move || {
+                                    let info = get_stage_info(&stage.get(), StageType::Init);
+                                    view! {
+                                        <LoadingStageItem
+                                            status=info.status
+                                            title="Инициализация моделей".to_string()
+                                            description=info.description
+                                            progress=info.progress
+                                            error_message=info.error_message
+                                        />
+                                    }
+                                }}
+
+                                {move || {
+                                    let info = get_stage_info(&stage.get(), StageType::Recognize);
+                                    view! {
+                                        <LoadingStageItem
+                                            status=info.status
+                                            title="Распознавание текста".to_string()
+                                            description=info.description
+                                            progress=info.progress
+                                            error_message=info.error_message
+                                        />
+                                    }
+                                }}
+                            </div>
+
+                            <div class="flex justify-end pt-2">
+                                <Button
+                                    variant=Signal::derive(|| ButtonVariant::Ghost)
+                                    disabled=Signal::derive(move || ocr_loading_state.cancel_requested.get())
+                                    on_click=Callback::new(on_cancel)
+                                >
+                                    {move || if ocr_loading_state.cancel_requested.get() { "Отмена..." } else { "Отменить" }}
+                                </Button>
+                            </div>
+                        </div>
+                    }.into_any()
+                } else {
+                    view! {
+                        <>
+                            <div
+                                class=move || {
+                                    let base = "border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer";
+                                    if is_drag_over.get() {
+                                        format!("{} border-[var(--accent-olive)] bg-[var(--accent-olive)]/10", base)
+                                    } else {
+                                        format!("{} border-[var(--border-light)] hover:border-[var(--accent-olive)]/50", base)
+                                    }
+                                }
+                                on:dragover=on_drag_over
+                                on:dragleave=on_drag_leave
+                                on:drop=on_drop
+                            >
+                                <label class="cursor-pointer">
+                                    <input
+                                        type="file"
+                                        accept="image/png,image/jpeg,image/webp"
+                                        class="hidden"
+                                        on:change=on_file_change
+                                    />
+                                    <div class="space-y-2">
+                                        <svg class="mx-auto h-12 w-12 text-[var(--fg-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                        <Text size=TextSize::Default variant=TypographyVariant::Muted>
+                                            "Перетащите изображение, вставьте из буфера обмена или нажмите для выбора"
+                                        </Text>
+                                        <Text size=TextSize::Small variant=TypographyVariant::Muted>
+                                            "PNG, JPEG, WebP (макс. 10 MB)"
+                                        </Text>
+                                    </div>
+                                </label>
+                            </div>
+
+                            {move || {
+                                image_preview.get().map(|src| view! {
+                                    <div class="relative">
+                                        <img src=src class="max-h-64 mx-auto rounded-lg shadow-md" alt="Preview" />
+                                    </div>
+                                })
+                            }}
+
+                            {move || {
+                                error_message.get().map(|msg| view! {
+                                    <Alert
+                                        alert_type=Signal::derive(|| AlertType::Warning)
+                                        title=Signal::derive(|| "Не удалось распознать".to_string())
+                                        message=Signal::derive(move || msg.clone())
+                                    />
+                                    <Button
+                                        variant=ButtonVariant::Ghost
+                                        on_click=Callback::new(move |_| on_switch_to_text.run(()))
+                                    >
+                                        "Ввести текст вручную"
+                                    </Button>
+                                })
+                            }}
+                        </>
+                    }.into_any()
                 }
-                on:dragover=on_drag_over
-                on:dragleave=on_drag_leave
-                on:drop=on_drop
-            >
-                <label class="cursor-pointer">
-                    <input
-                        type="file"
-                        accept="image/png,image/jpeg,image/webp"
-                        class="hidden"
-                        on:change=on_file_change
-                    />
-                    <div class="space-y-2">
-                        <svg class="mx-auto h-12 w-12 text-[var(--fg-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        <Text size=TextSize::Default variant=TypographyVariant::Muted>
-                            "Перетащите изображение, вставьте из буфера обмена или нажмите для выбора"
-                        </Text>
-                        <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                            "PNG, JPEG, WebP (макс. 10 MB)"
-                        </Text>
-                    </div>
-                </label>
-            </div>
-
-            {move || {
-                image_preview.get().map(|src| view! {
-                    <div class="relative">
-                        <img src=src class="max-h-64 mx-auto rounded-lg shadow-md" alt="Preview" />
-                    </div>
-                })
-            }}
-
-            {move || {
-                error_message.get().map(|msg| view! {
-                    <Alert
-                        alert_type=Signal::derive(|| AlertType::Warning)
-                        title=Signal::derive(|| "Не удалось распознать".to_string())
-                        message=Signal::derive(move || msg.clone())
-                    />
-                    <Button
-                        variant=ButtonVariant::Ghost
-                        on_click=Callback::new(move |_| on_switch_to_text.run(()))
-                    >
-                        "Ввести текст вручную"
-                    </Button>
-                })
             }}
         </div>
-
-        <OcrLoadingModal
-            is_open=show_loading_modal
-            state=ocr_loading_state_for_modal
-            on_retry=Callback::new({
-                let state = ocr_loading_state_for_modal;
-                let show_modal = show_loading_modal_for_retry;
-                let error_msg = error_message;
-                let preview = image_preview;
-                move |_| {
-                    state.reset();
-                    error_msg.set(None);
-                    if let Some(data_url) = preview.get() {
-                        let state = state;
-                        let show_modal = show_modal;
-                        let on_text = on_text_extracted;
-                        spawn_local(async move {
-                            let ctx = ProcessContext {
-                                image_preview: preview,
-                                ocr_state,
-                                ocr_loading_state: state,
-                                show_loading_modal: show_modal,
-                                error_message: error_msg,
-                            };
-                            run_ocr_on_data_url(&data_url, &ctx, &on_text, true).await;
-                        });
-                    }
-                }
-            })
-        />
     }
 }
 
@@ -591,7 +630,7 @@ fn calculate_speed_and_eta(start_time: Option<f64>, loaded: u64, total: u64) -> 
 }
 
 fn base64_decode(input: &str) -> Result<Vec<u8>, String> {
-    use base64::{engine::general_purpose::STANDARD, Engine};
+    use base64::{Engine, engine::general_purpose::STANDARD};
 
     if input.len() > MAX_BASE64_LEN {
         return Err(format!(

@@ -48,6 +48,15 @@ pub fn AddWordsPreviewModal(is_open: RwSignal<bool>) -> impl IntoView {
     let input_mode = state.input_mode;
     let handlers = create_preview_modal_handlers(state.clone(), is_open, repository);
 
+    Effect::new({
+        let state = state.clone();
+        move |_| {
+            if !is_open.get() {
+                state.reset();
+            }
+        }
+    });
+
     let tabs = Signal::derive(|| {
         vec![
             TabItem {
