@@ -34,7 +34,13 @@ pub fn LessonCardAnswer(
                     <Show
                         when=move || is_reversed
                         fallback=move || {
-                            view! { <FuriganaText text=question.get_value() known_kanji=known_kanji.get()/> }
+                            view! {
+                                <FuriganaText
+                                    text=question.get_value()
+                                    known_kanji=known_kanji.get()
+                                    class=Signal::derive(|| "text-3xl leading-snug".to_string())
+                                />
+                            }
                         }
                     >
                         <MarkdownText

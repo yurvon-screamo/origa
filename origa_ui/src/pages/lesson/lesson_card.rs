@@ -116,12 +116,25 @@ pub fn LessonCard(
     let content_ref = NodeRef::<leptos::html::Div>::new();
     let needs_collapse = RwSignal::new(false);
 
+    let lesson_ctx_tts_normal = lesson_ctx.clone();
     Effect::new(move |_| {
-        let is_muted = lesson_ctx
+        let is_muted = lesson_ctx_tts_normal
             .as_ref()
             .map(|ctx| ctx.is_muted.get())
             .unwrap_or(false);
         if !show_answer && !is_reversed && card_type != CardType::Kanji && is_speech_supported() && !is_muted {
+            let reading = get_reading_from_text(&question.get_value());
+            let _ = speak_text(&reading, 1.0);
+        }
+    });
+
+    let lesson_ctx_tts_reversed = lesson_ctx.clone();
+    Effect::new(move |_| {
+        let is_muted = lesson_ctx_tts_reversed
+            .as_ref()
+            .map(|ctx| ctx.is_muted.get())
+            .unwrap_or(false);
+        if show_answer && is_reversed && card_type != CardType::Kanji && is_speech_supported() && !is_muted {
             let reading = get_reading_from_text(&question.get_value());
             let _ = speak_text(&reading, 1.0);
         }
