@@ -96,6 +96,7 @@ fn process_file(
     ctx: ProcessContext,
     on_text_extracted: Callback<String>,
     on_error: Callback<String>,
+    on_ocr_start: Callback<()>,
 ) {
     let file_name = file.name();
     debug!(file_name = %file_name, "File selected");
@@ -115,6 +116,8 @@ fn process_file(
         )));
         return;
     }
+
+    on_ocr_start.run(());
 
     spawn_local(async move {
         ctx.ocr_loading_state.cancel_requested.set(false);
@@ -147,6 +150,7 @@ pub fn ImageInputStage(
     on_text_extracted: Callback<String>,
     on_error: Callback<String>,
     on_switch_to_text: Callback<()>,
+    on_ocr_start: Callback<()>,
 ) -> impl IntoView {
     let ocr_state = RwSignal::new(OcrState::Idle);
     let image_preview = RwSignal::new(None::<String>);
@@ -190,6 +194,7 @@ pub fn ImageInputStage(
                 },
                 on_text_extracted,
                 on_error,
+                on_ocr_start,
             );
         }
     };
@@ -223,6 +228,7 @@ pub fn ImageInputStage(
                 },
                 on_text_extracted,
                 on_error,
+                on_ocr_start,
             );
         }
     };
@@ -250,7 +256,7 @@ pub fn ImageInputStage(
                     && let Some(files) = clipboard_data.files()
                     && let Some(file) = files.get(0)
                 {
-                    process_file(file, ctx.clone(), on_text_extracted, on_error);
+                    process_file(file, ctx.clone(), on_text_extracted, on_error, on_ocr_start);
                 }
             },
         );
