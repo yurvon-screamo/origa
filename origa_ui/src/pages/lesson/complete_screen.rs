@@ -1,8 +1,8 @@
 use super::lesson_state::LessonContext;
 use crate::repository::set_last_sync_time;
 use crate::ui_components::{
-    Button, ButtonVariant, Card, DisplayText, Text, TextSize, ToastContainer, ToastData,
-    ToastType, TypographyVariant,
+    Button, ButtonVariant, Card, DisplayText, Text, TextSize, ToastContainer, ToastData, ToastType,
+    TypographyVariant,
 };
 use leptos::prelude::*;
 use leptos::task::spawn_local;

@@ -1,7 +1,6 @@
 mod error_display;
 
 mod accordion;
-mod kanji_drawing;
 mod alert;
 mod audio_buttons;
 mod avatar;
@@ -24,6 +23,7 @@ mod furigana;
 mod history_button;
 mod input;
 mod kanji_animation;
+mod kanji_drawing;
 mod label_frame;
 mod layout;
 mod loading;

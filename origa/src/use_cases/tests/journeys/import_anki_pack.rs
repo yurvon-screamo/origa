@@ -58,17 +58,17 @@ fn find_field_indices(
         for (_model_id, model_data) in models_map {
             if let Some(fields) = model_data["flds"].as_array() {
                 for (index, field) in fields.iter().enumerate() {
-                        if let Some(field_name) = field["name"].as_str() {
-                            let field_name_lower = field_name.to_lowercase();
-                            if field_name_lower == word_tag.to_lowercase() {
-                                word_index = Some(index);
-                            }
-                            if let Some(trans_tag) = translation_tag
-                                && field_name_lower == trans_tag.to_lowercase()
-                            {
-                                translation_index = Some(index);
-                            }
+                    if let Some(field_name) = field["name"].as_str() {
+                        let field_name_lower = field_name.to_lowercase();
+                        if field_name_lower == word_tag.to_lowercase() {
+                            word_index = Some(index);
                         }
+                        if let Some(trans_tag) = translation_tag
+                            && field_name_lower == trans_tag.to_lowercase()
+                        {
+                            translation_index = Some(index);
+                        }
+                    }
                 }
 
                 if word_index.is_some()

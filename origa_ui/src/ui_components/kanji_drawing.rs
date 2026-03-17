@@ -4,13 +4,15 @@ use leptos::html::Canvas;
 use leptos::prelude::*;
 use leptos::wasm_bindgen::JsCast;
 use std::sync::{Arc, Mutex};
+use tracing::debug;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::JsFuture;
-use web_sys::js_sys::Array;
 use web_sys::CanvasRenderingContext2d;
+use web_sys::js_sys::Array;
 
-const CANVAS_SIZE: u32 = 400;
-const SVG_SCALE: f64 = 2.0;
+const CANVAS_SIZE: u32 = 256;
+const SVG_VIEWBOX_SIZE: f64 = 109.0;
+const SVG_SCALE: f64 = CANVAS_SIZE as f64 / SVG_VIEWBOX_SIZE;
 const STROKE_TOLERANCE: f64 = 15.0;
 const MIN_POINTS_FOR_CHECK: usize = 8;
 const SAMPLE_COUNT: usize = 21;
@@ -19,11 +21,44 @@ const SUCCESS_THRESHOLD: f64 = 0.68;
 
 const MIN_STROKE_POINTS: usize = 8;
 const STROKE_LINE_WIDTH: f64 = 12.0;
-const HINT_LINE_WIDTH: f64 = 6.0;
-const USER_LINE_WIDTH: f64 = 12.0;
-const STROKE_COLOR: &str = "#1a1915";
-const HINT_COLOR: &str = "#e74c3c";
-const USER_COLOR: &str = "#3498db";
+const HINT_LINE_WIDTH: f64 = 4.0;
+const USER_LINE_WIDTH: f64 = 8.0;
+
+fn get_css_color(var_name: &str) -> String {
+    let window = match web_sys::window() {
+        Some(w) => w,
+        None => return "#000000".to_string(),
+    };
+    let document = match window.document() {
+        Some(d) => d,
+        None => return "#000000".to_string(),
+    };
+    let root = match document.document_element() {
+        Some(e) => e,
+        None => return "#000000".to_string(),
+    };
+    let style = match window.get_computed_style(&root) {
+        Ok(Some(s)) => s,
+        _ => return "#000000".to_string(),
+    };
+    style
+        .get_property_value(var_name)
+        .unwrap_or_default()
+        .trim()
+        .to_string()
+}
+
+fn get_stroke_color() -> String {
+    get_css_color("--fg-black")
+}
+
+fn get_hint_color() -> String {
+    get_css_color("--accent-terracotta")
+}
+
+fn get_user_color() -> String {
+    get_css_color("--accent-olive")
+}
 
 #[derive(Clone, Default)]
 struct StrokeData {
@@ -58,29 +93,30 @@ pub fn KanjiDrawingPractice(
     let drawing_state: DrawingStateRef = Arc::new(Mutex::new(DrawingState::default()));
     let ctx_storage: CanvasContext = Arc::new(Mutex::new(None));
     let ctx_storage_clone = ctx_storage.clone();
-    Effect::new(move |_| {
-        match svg_content.get() {
-            Some(Some(svg)) => {
-                let parsed = parse_stroke_paths(&svg);
-                if parsed.is_empty() {
-                    load_error.set(true);
-                } else {
-                    strokes.set(parsed);
-                    current_stroke_index.set(0);
-                    is_completed.set(false);
-                    load_error.set(false);
-                }
-            }
-            Some(None) => {
+    Effect::new(move |_| match svg_content.get() {
+        Some(Some(svg)) => {
+            let parsed = parse_stroke_paths(&svg);
+            if parsed.is_empty() {
                 load_error.set(true);
+            } else {
+                strokes.set(parsed);
+                current_stroke_index.set(0);
+                is_completed.set(false);
+                load_error.set(false);
             }
-            None => {}
         }
+        Some(None) => {
+            load_error.set(true);
+        }
+        None => {}
     });
     Effect::new(move |_| {
         let canvas = canvas_ref.get()?;
         let canvas: web_sys::HtmlCanvasElement = canvas.unchecked_into();
-        let ctx = canvas.get_context("2d").ok()?.and_then(|v| v.dyn_into::<CanvasRenderingContext2d>().ok())?;
+        let ctx = canvas
+            .get_context("2d")
+            .ok()?
+            .and_then(|v| v.dyn_into::<CanvasRenderingContext2d>().ok())?;
         redraw_canvas(&ctx, &strokes.get(), current_stroke_index.get());
         ctx_storage_clone.lock().ok()?.replace(ctx);
         Some(())
@@ -109,8 +145,12 @@ pub fn KanjiDrawingPractice(
             let Some(canvas) = canvas else { return };
             let canvas: web_sys::HtmlCanvasElement = canvas.unchecked_into();
             let ctx_guard = ctx_store.lock().ok();
-            let Some(ref ctx_guard) = ctx_guard else { return };
-            let Some(ctx) = ctx_guard.as_ref() else { return };
+            let Some(ref ctx_guard) = ctx_guard else {
+                return;
+            };
+            let Some(ctx) = ctx_guard.as_ref() else {
+                return;
+            };
             let rect = canvas.get_bounding_client_rect();
             let x = ev.client_x() as f64 - rect.left();
             let y = ev.client_y() as f64 - rect.top();
@@ -119,7 +159,7 @@ pub fn KanjiDrawingPractice(
             state.points = vec![(x, y)];
             state.is_drawing = true;
             ctx.set_line_width(USER_LINE_WIDTH);
-            ctx.set_stroke_style_str(USER_COLOR);
+            ctx.set_stroke_style_str(&get_user_color());
             ctx.set_line_cap("round");
             ctx.set_line_join("round");
             ctx.begin_path();
@@ -132,7 +172,9 @@ pub fn KanjiDrawingPractice(
         move |ev: PointerEvent| {
             {
                 let state_guard = state.lock().ok();
-                let Some(ref state_guard) = state_guard else { return };
+                let Some(ref state_guard) = state_guard else {
+                    return;
+                };
                 if !state_guard.is_drawing {
                     return;
                 }
@@ -141,14 +183,20 @@ pub fn KanjiDrawingPractice(
             let Some(canvas) = canvas else { return };
             let canvas: web_sys::HtmlCanvasElement = canvas.unchecked_into();
             let ctx_guard = ctx_store.lock().ok();
-            let Some(ref ctx_guard) = ctx_guard else { return };
-            let Some(ctx) = ctx_guard.as_ref() else { return };
+            let Some(ref ctx_guard) = ctx_guard else {
+                return;
+            };
+            let Some(ctx) = ctx_guard.as_ref() else {
+                return;
+            };
             let rect = canvas.get_bounding_client_rect();
             let x = ev.client_x() as f64 - rect.left();
             let y = ev.client_y() as f64 - rect.top();
             {
                 let mut state_guard = state.lock().ok();
-                let Some(ref mut state_guard) = state_guard else { return };
+                let Some(ref mut state_guard) = state_guard else {
+                    return;
+                };
                 state_guard.points.push((x, y));
             }
             ctx.line_to(x, y);
@@ -162,7 +210,9 @@ pub fn KanjiDrawingPractice(
         move |_| {
             let points: Vec<(f64, f64)> = {
                 let mut state_guard = state.lock().ok();
-                let Some(ref mut state_guard) = state_guard else { return };
+                let Some(ref mut state_guard) = state_guard else {
+                    return;
+                };
                 state_guard.is_drawing = false;
                 let pts = state_guard.points.clone();
                 state_guard.points.clear();
@@ -236,16 +286,18 @@ pub fn KanjiDrawingPractice(
                     }
                 }}
             </div>
-            <canvas
-                node_ref={canvas_ref}
-                width={CANVAS_SIZE}
-                height={CANVAS_SIZE}
-                class="kanji-drawing-canvas"
-                on:pointerdown={handle_pointer_down}
-                on:pointermove={handle_pointer_move}
-                on:pointerup={handle_pointer_up}
-                on:pointerleave={handle_pointer_leave}
-            />
+            <div class="kanji-drawing-canvas-wrapper">
+                <canvas
+                    node_ref={canvas_ref}
+                    width={CANVAS_SIZE}
+                    height={CANVAS_SIZE}
+                    class="kanji-drawing-canvas"
+                    on:pointerdown={handle_pointer_down}
+                    on:pointermove={handle_pointer_move}
+                    on:pointerup={handle_pointer_up}
+                    on:pointerleave={handle_pointer_leave}
+                />
+            </div>
             <div class="kanji-drawing-controls">
                 <button class="kanji-drawing-reset-btn" on:click={reset_practice}>
                     "Начать заново"
@@ -273,10 +325,15 @@ fn parse_stroke_paths(svg: &str) -> Vec<StrokeData> {
             && !path_tag.contains("class='bg'")
             && let Some(d) = extract_attribute(path_tag, "d")
         {
+            debug!(stroke_index = strokes.len(), d = %d, "Parsed stroke path");
             strokes.push(StrokeData { d });
         }
         pos = abs_start + tag_end + 1;
     }
+    debug!(
+        total_strokes = strokes.len(),
+        "Finished parsing SVG strokes"
+    );
     strokes
 }
 fn extract_attribute(tag: &str, attr: &str) -> Option<String> {
@@ -304,7 +361,7 @@ fn redraw_canvas(ctx: &CanvasRenderingContext2d, strokes: &[StrokeData], current
 }
 fn draw_completed_stroke(ctx: &CanvasRenderingContext2d, d: &str) {
     ctx.set_line_width(STROKE_LINE_WIDTH);
-    ctx.set_stroke_style_str(STROKE_COLOR);
+    ctx.set_stroke_style_str(&get_stroke_color());
     ctx.set_line_cap("round");
     ctx.set_line_join("round");
     ctx.set_line_dash(&js_sys::Array::new()).ok();
@@ -312,7 +369,7 @@ fn draw_completed_stroke(ctx: &CanvasRenderingContext2d, d: &str) {
 }
 fn draw_hint_stroke(ctx: &CanvasRenderingContext2d, d: &str) {
     ctx.set_line_width(HINT_LINE_WIDTH);
-    ctx.set_stroke_style_str(HINT_COLOR);
+    ctx.set_stroke_style_str(&get_hint_color());
     ctx.set_line_cap("round");
     ctx.set_line_join("round");
     let dash_array = Array::new_with_length(2);
@@ -331,6 +388,7 @@ fn parse_and_draw_svg_path(ctx: &CanvasRenderingContext2d, d: &str) {
     let chars: Vec<char> = d.chars().collect();
     let mut pos = 0;
     let mut current_cmd = 'M';
+    let mut current_pos = (0.0, 0.0);
     while pos < chars.len() {
         let c = chars[pos];
         if c.is_ascii_alphabetic() {
@@ -340,16 +398,28 @@ fn parse_and_draw_svg_path(ctx: &CanvasRenderingContext2d, d: &str) {
         match current_cmd {
             'M' | 'm' => {
                 if let Some((x, y, new_pos)) = parse_coords(&chars, pos) {
-                    ctx.move_to(x * SVG_SCALE, y * SVG_SCALE);
+                    let (abs_x, abs_y) = if current_cmd == 'm' {
+                        (current_pos.0 + x, current_pos.1 + y)
+                    } else {
+                        (x, y)
+                    };
+                    ctx.move_to(abs_x * SVG_SCALE, abs_y * SVG_SCALE);
+                    current_pos = (abs_x, abs_y);
                     pos = new_pos;
-                    current_cmd = 'L';
+                    current_cmd = if current_cmd == 'm' { 'l' } else { 'L' };
                 } else {
                     break;
                 }
             }
             'L' | 'l' => {
                 if let Some((x, y, new_pos)) = parse_coords(&chars, pos) {
-                    ctx.line_to(x * SVG_SCALE, y * SVG_SCALE);
+                    let (abs_x, abs_y) = if current_cmd == 'l' {
+                        (current_pos.0 + x, current_pos.1 + y)
+                    } else {
+                        (x, y)
+                    };
+                    ctx.line_to(abs_x * SVG_SCALE, abs_y * SVG_SCALE);
+                    current_pos = (abs_x, abs_y);
                     pos = new_pos;
                 } else {
                     break;
@@ -357,14 +427,27 @@ fn parse_and_draw_svg_path(ctx: &CanvasRenderingContext2d, d: &str) {
             }
             'C' | 'c' => {
                 if let Some((x1, y1, x2, y2, x, y, new_pos)) = parse_curve_coords(&chars, pos) {
+                    let (abs_x1, abs_y1, abs_x2, abs_y2, abs_x, abs_y) = if current_cmd == 'c' {
+                        (
+                            current_pos.0 + x1,
+                            current_pos.1 + y1,
+                            current_pos.0 + x2,
+                            current_pos.1 + y2,
+                            current_pos.0 + x,
+                            current_pos.1 + y,
+                        )
+                    } else {
+                        (x1, y1, x2, y2, x, y)
+                    };
                     ctx.bezier_curve_to(
-                        x1 * SVG_SCALE,
-                        y1 * SVG_SCALE,
-                        x2 * SVG_SCALE,
-                        y2 * SVG_SCALE,
-                        x * SVG_SCALE,
-                        y * SVG_SCALE,
+                        abs_x1 * SVG_SCALE,
+                        abs_y1 * SVG_SCALE,
+                        abs_x2 * SVG_SCALE,
+                        abs_y2 * SVG_SCALE,
+                        abs_x * SVG_SCALE,
+                        abs_y * SVG_SCALE,
                     );
+                    current_pos = (abs_x, abs_y);
                     pos = new_pos;
                 } else {
                     break;
@@ -387,7 +470,10 @@ fn parse_coords(chars: &[char], start: usize) -> Option<(f64, f64, usize)> {
     let (y, new_pos) = parse_number(chars, pos)?;
     Some((x, y, new_pos))
 }
-fn parse_curve_coords(chars: &[char], start: usize) -> Option<(f64, f64, f64, f64, f64, f64, usize)> {
+fn parse_curve_coords(
+    chars: &[char],
+    start: usize,
+) -> Option<(f64, f64, f64, f64, f64, f64, usize)> {
     let (x1, pos) = parse_number(chars, skip_whitespace(chars, start))?;
     let (y1, pos) = parse_number(chars, skip_whitespace_or_comma(chars, pos))?;
     let (x2, pos) = parse_number(chars, skip_whitespace_or_comma(chars, pos))?;
@@ -454,20 +540,30 @@ fn sample_stroke_path(d: &str) -> Vec<(f64, f64)> {
             pos += 1;
         }
         match current_cmd {
-            'M' => {
+            'M' | 'm' => {
                 if let Some((x, y, new_pos)) = parse_coords(&chars, pos) {
-                    current_pos = (x * SVG_SCALE, y * SVG_SCALE);
+                    let (abs_x, abs_y) = if current_cmd == 'm' {
+                        (current_pos.0 + x, current_pos.1 + y)
+                    } else {
+                        (x, y)
+                    };
+                    current_pos = (abs_x * SVG_SCALE, abs_y * SVG_SCALE);
                     start_pos = current_pos;
                     points.push(current_pos);
                     pos = new_pos;
-                    current_cmd = 'L';
+                    current_cmd = if current_cmd == 'm' { 'l' } else { 'L' };
                 } else {
                     break;
                 }
             }
-            'L' => {
+            'L' | 'l' => {
                 if let Some((x, y, new_pos)) = parse_coords(&chars, pos) {
-                    let end = (x * SVG_SCALE, y * SVG_SCALE);
+                    let (abs_x, abs_y) = if current_cmd == 'l' {
+                        (current_pos.0 + x, current_pos.1 + y)
+                    } else {
+                        (x, y)
+                    };
+                    let end = (abs_x * SVG_SCALE, abs_y * SVG_SCALE);
                     interpolate_line(&mut points, current_pos, end);
                     current_pos = end;
                     pos = new_pos;
@@ -475,14 +571,26 @@ fn sample_stroke_path(d: &str) -> Vec<(f64, f64)> {
                     break;
                 }
             }
-            'C' => {
+            'C' | 'c' => {
                 if let Some((x1, y1, x2, y2, x, y, new_pos)) = parse_curve_coords(&chars, pos) {
-                    let end = (x * SVG_SCALE, y * SVG_SCALE);
+                    let (abs_x1, abs_y1, abs_x2, abs_y2, abs_x, abs_y) = if current_cmd == 'c' {
+                        (
+                            current_pos.0 + x1,
+                            current_pos.1 + y1,
+                            current_pos.0 + x2,
+                            current_pos.1 + y2,
+                            current_pos.0 + x,
+                            current_pos.1 + y,
+                        )
+                    } else {
+                        (x1, y1, x2, y2, x, y)
+                    };
+                    let end = (abs_x * SVG_SCALE, abs_y * SVG_SCALE);
                     interpolate_bezier(
                         &mut points,
                         current_pos,
-                        (x1 * SVG_SCALE, y1 * SVG_SCALE),
-                        (x2 * SVG_SCALE, y2 * SVG_SCALE),
+                        (abs_x1 * SVG_SCALE, abs_y1 * SVG_SCALE),
+                        (abs_x2 * SVG_SCALE, abs_y2 * SVG_SCALE),
                         end,
                     );
                     current_pos = end;
