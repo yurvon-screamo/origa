@@ -57,6 +57,25 @@
 
 Нормальный текст: ![img](./Нормальный%20текст.png)
 
+Я скопировал из браузера итоговую реализацию тут от что:
+
+  <!-- Нормального рамера -->
+  <span class="furigana-text "><ruby class="furigana-ruby">様<rp>(</rp>
+      <rt class="furigana-rt">ヨー</rt>
+      <rp>)</rp>
+    </ruby><!----></span>
+
+  <!-- Мелкий пиздец -->
+  <div class="markdown-text prose prose-lg ">
+    <div>
+      <p><ruby class="">汚い<rp>(</rp>
+          <rt class="furigana-rt">キタナイ</rt>
+          <rp>)</rp>
+        </ruby></p>
+      <!---->
+    </div>
+  </div>
+
 ## В ответе кандзи-карточки нет радикалов
 
 Нужно разобраться в чем дело. Может не инициализирован словарь радикалов?

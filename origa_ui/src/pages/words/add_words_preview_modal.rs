@@ -46,6 +46,7 @@ pub fn AddWordsPreviewModal(is_open: RwSignal<bool>) -> impl IntoView {
     let selected_words = state.selected_words;
     let is_creating = state.is_creating;
     let input_mode = state.input_mode;
+    let active_tab = state.active_tab;
     let handlers = create_preview_modal_handlers(state.clone(), is_open, repository);
 
     Effect::new({
@@ -70,12 +71,11 @@ pub fn AddWordsPreviewModal(is_open: RwSignal<bool>) -> impl IntoView {
         ]
     });
 
-    let active_tab = RwSignal::new("text".to_string());
-
     Effect::new({
+        let state = state.clone();
         move || {
-            let tab = active_tab.get();
-            input_mode.set(if tab == "image" {
+            let tab = state.active_tab.get();
+            state.input_mode.set(if tab == "image" {
                 InputMode::Image
             } else {
                 InputMode::Text
@@ -128,6 +128,7 @@ pub fn AddWordsPreviewModal(is_open: RwSignal<bool>) -> impl IntoView {
                                         }.into_any(),
                                         InputMode::Image => view! {
                                             <ImageInputStage
+                                                is_open=is_open
                                                 on_text_extracted=on_text_extracted
                                                 on_error=on_ocr_error
                                                 on_switch_to_text=on_switch_to_text

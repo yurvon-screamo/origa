@@ -37,7 +37,7 @@ impl JapaneseOCRModel {
         })
     }
 
-    pub async fn run(&mut self, img: &DynamicImage) -> Result<String, OrigaError> {
+    pub async fn run(&self, img: &DynamicImage) -> Result<String, OrigaError> {
         info!("Running OCR (NDLOCR-Lite)");
 
         let mut boxes = self.detector.detect(img).await?;

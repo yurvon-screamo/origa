@@ -66,7 +66,7 @@ fn main() -> Result<(), OrigaError> {
         vocab,
     };
 
-    let mut model = JapaneseOCRModel::from_model_files(model_files)?;
+    let model = JapaneseOCRModel::from_model_files(model_files)?;
     let text = model.run(&img)?;
 
     println!("{}", text);

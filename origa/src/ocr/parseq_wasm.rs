@@ -2,15 +2,15 @@ use super::deim_wasm::ensure_ort_initialized;
 use super::vocab::Vocabulary;
 use crate::domain::OrigaError;
 use as_slice::AsSlice;
-use futures::lock::Mutex;
 use image::DynamicImage;
 use ort::session::Session;
 use ort_web::ValueExt;
+use std::cell::RefCell;
 
 const INPUT_HEIGHT: u32 = 16;
 
 pub struct ParseqRecognizer {
-    session: Mutex<Session>,
+    session: RefCell<Session>,
     vocab: Vocabulary,
     input_width: u32,
 }
@@ -35,7 +35,7 @@ impl ParseqRecognizer {
                 })?;
 
         Ok(Self {
-            session: Mutex::new(session),
+            session: RefCell::new(session),
             vocab: vocab.clone(),
             input_width,
         })
@@ -65,7 +65,7 @@ impl ParseqRecognizer {
             }
         };
 
-        let mut session = self.session.lock().await;
+        let mut session = self.session.borrow_mut();
         let run_options = match ort::session::RunOptions::new() {
             Ok(o) => o,
             Err(e) => {

@@ -18,7 +18,7 @@ impl ExtractTextFromImageUseCase {
     #[cfg(not(target_arch = "wasm32"))]
     pub fn execute(
         &self,
-        model: &mut JapaneseOCRModel,
+        model: &JapaneseOCRModel,
         image_bytes: &[u8],
     ) -> Result<String, OrigaError> {
         info!(
@@ -33,7 +33,7 @@ impl ExtractTextFromImageUseCase {
     #[cfg(target_arch = "wasm32")]
     pub async fn execute(
         &self,
-        model: &mut JapaneseOCRModel,
+        model: &JapaneseOCRModel,
         image_bytes: &[u8],
     ) -> Result<String, OrigaError> {
         info!(
