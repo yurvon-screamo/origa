@@ -13,11 +13,10 @@ use web_sys::js_sys::Array;
 const CANVAS_SIZE: u32 = 256;
 const SVG_VIEWBOX_SIZE: f64 = 109.0;
 const SVG_SCALE: f64 = CANVAS_SIZE as f64 / SVG_VIEWBOX_SIZE;
-const STROKE_TOLERANCE: f64 = 15.0;
-const MIN_POINTS_FOR_CHECK: usize = 8;
+const STROKE_TOLERANCE: f64 = 0.2;
 const SAMPLE_COUNT: usize = 21;
 
-const SUCCESS_THRESHOLD: f64 = 0.68;
+const SUCCESS_THRESHOLD: f64 = 0.55;
 
 const MIN_STROKE_POINTS: usize = 8;
 const STROKE_LINE_WIDTH: f64 = 12.0;
@@ -218,7 +217,7 @@ pub fn KanjiDrawingPractice(
                 state_guard.points.clear();
                 pts
             };
-            if points.len() < MIN_POINTS_FOR_CHECK {
+            if points.len() < MIN_STROKE_POINTS {
                 current_stroke_index.update(|_| {});
                 return;
             }
@@ -506,17 +505,41 @@ fn parse_number(chars: &[char], start: usize) -> Option<(f64, usize)> {
     let num: f64 = num_str.parse().ok()?;
     Some((num, pos))
 }
+fn normalize_points(points: &[(f64, f64)]) -> Vec<(f64, f64)> {
+    if points.is_empty() {
+        return Vec::new();
+    }
+    let (min_x, max_x, min_y, max_y) = points.iter().fold(
+        (f64::INFINITY, f64::NEG_INFINITY, f64::INFINITY, f64::NEG_INFINITY),
+        |(min_x, max_x, min_y, max_y), &(x, y)| {
+            (min_x.min(x), max_x.max(x), min_y.min(y), max_y.max(y))
+        },
+    );
+    let width = (max_x - min_x).max(1.0);
+    let height = (max_y - min_y).max(1.0);
+    let scale = width.max(height);
+    points
+        .iter()
+        .map(|(x, y)| ((x - min_x) / scale, (y - min_y) / scale))
+        .collect()
+}
 fn is_stroke_similar(user_points: &[(f64, f64)], stroke_d: &str) -> bool {
+    if user_points.len() < MIN_STROKE_POINTS {
+        return false;
+    }
     let stroke_samples = sample_stroke_path(stroke_d);
-    if stroke_samples.len() < SAMPLE_COUNT || user_points.len() < MIN_STROKE_POINTS {
+    if stroke_samples.len() < SAMPLE_COUNT {
+        return false;
+    }
+    let normalized_stroke = normalize_points(&stroke_samples);
+    let normalized_user = normalize_points(user_points);
+    let user_samples = resample_points(&normalized_user, SAMPLE_COUNT);
+    let stroke_resampled = resample_points(&normalized_stroke, SAMPLE_COUNT);
+    if user_samples.len() < SAMPLE_COUNT || stroke_resampled.len() < SAMPLE_COUNT {
         return false;
     }
     let mut match_count = 0;
-    let sample_step = (user_points.len() - 1) as f64 / (SAMPLE_COUNT - 1) as f64;
-    for (i, stroke_point) in stroke_samples.iter().enumerate() {
-        let user_idx = (i as f64 * sample_step).round() as usize;
-        let user_idx = user_idx.min(user_points.len() - 1);
-        let user_point = user_points[user_idx];
+    for (user_point, stroke_point) in user_samples.iter().zip(stroke_resampled.iter()) {
         let dx = user_point.0 - stroke_point.0;
         let dy = user_point.1 - stroke_point.1;
         let distance = (dx * dx + dy * dy).sqrt();
