@@ -1,6 +1,7 @@
 use std::{collections::HashMap, sync::OnceLock};
 
 use serde::{Deserialize, Serialize};
+use tracing::debug;
 
 use crate::domain::{JapaneseLevel, NativeLanguage, OrigaError};
 
@@ -25,12 +26,14 @@ pub fn is_kanji_loaded() -> bool {
 }
 
 pub fn get_kanji_info(kanji: &str) -> Result<&'static KanjiInfo, OrigaError> {
-    KANJI_DICTIONARY
-        .get()
-        .ok_or(OrigaError::KradfileError {
-            reason: "Kanji dictionary not loaded".to_string(),
-        })?
-        .get_kanji_info(kanji)
+    let db = KANJI_DICTIONARY.get();
+    if db.is_none() {
+        debug!(kanji = %kanji, "Kanji dictionary not loaded");
+    }
+    db.ok_or(OrigaError::KradfileError {
+        reason: "Kanji dictionary not loaded".to_string(),
+    })?
+    .get_kanji_info(kanji)
 }
 
 pub fn get_kanji_list(level: &JapaneseLevel) -> Vec<&'static KanjiInfo> {
@@ -167,7 +170,11 @@ impl KanjiDatabase {
     }
 
     pub fn get_kanji_info(&self, kanji: &str) -> Result<&KanjiInfo, OrigaError> {
-        self.kanji_map.get(kanji).ok_or(OrigaError::KradfileError {
+        let info = self.kanji_map.get(kanji);
+        if info.is_none() {
+            debug!(kanji = %kanji, "Kanji not found in dictionary");
+        }
+        info.ok_or(OrigaError::KradfileError {
             reason: format!("Kanji {} not found in kanji database", kanji),
         })
     }
