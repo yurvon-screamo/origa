@@ -121,13 +121,8 @@ pub fn LessonCard(
             .as_ref()
             .map(|ctx| ctx.is_muted.get())
             .unwrap_or(false);
-        if !show_answer && card_type != CardType::Kanji && is_speech_supported() && !is_muted {
-            let text_to_speak = if is_reversed {
-                answer.get_value()
-            } else {
-                question.get_value()
-            };
-            let reading = get_reading_from_text(&text_to_speak);
+        if !show_answer && !is_reversed && card_type != CardType::Kanji && is_speech_supported() && !is_muted {
+            let reading = get_reading_from_text(&question.get_value());
             let _ = speak_text(&reading, 1.0);
         }
     });
@@ -155,7 +150,7 @@ pub fn LessonCard(
             <div class="flex-1 flex flex-col justify-center">
                 <Show when=move || !show_answer>
                     <LessonCardQuestion
-                        question_text=if is_reversed { answer.get_value() } else { question.get_value() }
+                        question_text=question.get_value()
                         kanji=kanji_stored.get_value()
                         is_reversed=is_reversed
                         on_show_answer=on_show_answer
@@ -175,6 +170,7 @@ pub fn LessonCard(
                         is_reversed=is_reversed
                         on_readings=on_readings_stored.get_value()
                         kun_readings=kun_readings_stored.get_value()
+                        radicals=radicals_stored.get_value()
                         known_kanji=known_kanji
                     />
 

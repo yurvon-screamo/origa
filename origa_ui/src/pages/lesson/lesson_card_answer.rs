@@ -1,3 +1,4 @@
+use super::kanji_card_details::RadicalDisplay;
 use crate::ui_components::{
     Button, ButtonVariant, FuriganaText, Heading, HeadingLevel, KanjiViewMode, KanjiWritingSection,
     MarkdownText, MarkdownVariant, ReadingGroup, Text, TextSize, TypographyVariant,
@@ -17,12 +18,14 @@ pub fn LessonCardAnswer(
     is_reversed: bool,
     on_readings: Option<Vec<String>>,
     kun_readings: Option<Vec<String>>,
+    radicals: Option<Vec<RadicalDisplay>>,
     #[prop(into)] known_kanji: Signal<HashSet<String>>,
 ) -> impl IntoView {
     let question = StoredValue::new(question_text);
     let answer = StoredValue::new(answer_text);
     let on_readings_stored = StoredValue::new(on_readings);
     let kun_readings_stored = StoredValue::new(kun_readings);
+    let radicals_stored = StoredValue::new(radicals);
 
     view! {
         <div class="text-center">
@@ -76,6 +79,43 @@ pub fn LessonCardAnswer(
                                 <ReadingGroup label="音読み[онъёми]" readings=on_readings_stored />
                                 <ReadingGroup label="訓読み[кунъёми]" readings=kun_readings_stored />
                             </div>
+
+                            <Show when=move || radicals_stored.get_value().is_some()>
+                                <div class="flex gap-4 items-start text-left">
+                                    <div class="w-16 shrink-0">
+                                        <Text size=TextSize::Default variant=TypographyVariant::Muted>
+                                            "Радикалы"
+                                        </Text>
+                                    </div>
+                                    <div class="flex flex-wrap gap-2">
+                                        {move || {
+                                            radicals_stored
+                                                .get_value()
+                                                .unwrap_or_default()
+                                                .into_iter()
+                                                .map(|radical| {
+                                                    view! {
+                                                        <div class="flex items-center gap-1 px-2 py-1 bg-secondary/30 rounded">
+                                                            <Text size=TextSize::Large class="text-primary">
+                                                                {radical.symbol}
+                                                            </Text>
+                                                            <div class="flex flex-col">
+                                                                <Text size=TextSize::Small class="text-muted-foreground">
+                                                                    {radical.name}
+                                                                </Text>
+                                                                <Text size=TextSize::Small class="text-muted-foreground text-xs">
+                                                                    {radical.description}
+                                                                </Text>
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                })
+                                                .collect::<Vec<_>>()
+                                        }}
+                                    </div>
+                                </div>
+                            </Show>
+
                             <div class="flex gap-4 items-start text-left">
                                 <div class="w-16 shrink-0">
                                     <Text size=TextSize::Default variant=TypographyVariant::Muted>
