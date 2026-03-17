@@ -63,7 +63,7 @@ mod tests {
 
     #[test]
     fn default_creates_instance() {
-        let _use_case = ExtractTextFromImageUseCase::default();
+        let _use_case = ExtractTextFromImageUseCase::new();
     }
 
     mod decode_image {
