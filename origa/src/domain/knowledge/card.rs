@@ -1,8 +1,8 @@
 use crate::domain::{
-    OrigaError, Rating, ReviewLog,
     knowledge::{GrammarRuleCard, KanjiCard, VocabularyCard},
     memory::{MemoryHistory, MemoryState},
     value_objects::{Answer, NativeLanguage, Question},
+    OrigaError, Rating, ReviewLog,
 };
 use rand::seq::SliceRandom;
 use serde::{Deserialize, Serialize};
@@ -226,6 +226,7 @@ pub enum LessonCardView {
         card: Card,
         grammar_info: GrammarInfo,
     },
+    Writing(Card),
 }
 
 impl LessonCardView {
@@ -233,7 +234,8 @@ impl LessonCardView {
         match self {
             LessonCardView::Normal(card)
             | LessonCardView::Reversed(card)
-            | LessonCardView::GrammarMutated { card, .. } => card,
+            | LessonCardView::GrammarMutated { card, .. }
+            | LessonCardView::Writing(card) => card,
             LessonCardView::Quiz(quiz) => quiz.card(),
         }
     }

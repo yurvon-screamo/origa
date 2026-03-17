@@ -22,6 +22,7 @@ mod quiz_result;
 mod quiz_result_display;
 mod rating_buttons;
 mod rating_buttons_view;
+mod writing_card;
 
 pub use content::LessonContent;
 

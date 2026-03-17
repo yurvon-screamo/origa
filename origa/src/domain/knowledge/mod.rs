@@ -13,12 +13,13 @@ pub use vocabulary::VocabularyCard;
 use std::collections::{HashMap, HashSet};
 
 use crate::domain::{
-    OrigaError, RateMode, Rating, ReviewLog, get_rule_by_id,
-    srs::{NextReview, rate_memory},
+    get_rule_by_id,
+    srs::{rate_memory, NextReview},
     value_objects::NativeLanguage,
+    OrigaError, RateMode, Rating, ReviewLog,
 };
 use chrono::Utc;
-use rand::{Rng, seq::SliceRandom};
+use rand::{seq::SliceRandom, Rng};
 use serde::{Deserialize, Serialize};
 use ulid::Ulid;
 
@@ -28,6 +29,9 @@ const HARD_CARDS_LIMIT: usize = 15;
 const PROB_NORMAL_VIEW: f32 = 0.25;
 const PROB_QUIZ_VIEW: f32 = 0.5;
 const PROB_REVERSED_VIEW: f32 = 0.75;
+
+const PROB_KANJI_NORMAL: f32 = 0.33;
+const PROB_KANJI_QUIZ: f32 = 0.66;
 
 fn select_applicable_grammar<R: Rng>(
     vocab: &VocabularyCard,
@@ -325,16 +329,19 @@ impl KnowledgeSet {
                 LessonCardView::Normal(card.clone())
             }
 
-            (_, true) => {
-                if rng.random_bool(0.5) {
+            (CardType::Kanji, true) | (CardType::Kanji, false) => {
+                let rand_val = rng.random::<f32>();
+                if rand_val < PROB_KANJI_NORMAL {
+                    LessonCardView::Normal(card.clone())
+                } else if rand_val < PROB_KANJI_QUIZ {
                     LessonCardView::generate_quiz(card.clone(), same_type_cards, lang)
                         .unwrap_or_else(|_| LessonCardView::Normal(card.clone()))
                 } else {
-                    LessonCardView::Normal(card.clone())
+                    LessonCardView::Writing(card.clone())
                 }
             }
 
-            (CardType::Kanji, false) => {
+            (_, true) => {
                 if rng.random_bool(0.5) {
                     LessonCardView::generate_quiz(card.clone(), same_type_cards, lang)
                         .unwrap_or_else(|_| LessonCardView::Normal(card.clone()))
@@ -558,7 +565,7 @@ mod tests {
     use crate::domain::value_objects::Question;
     use crate::use_cases::init_real_dictionaries;
     use chrono::Duration;
-    use rand::{SeedableRng, rngs::StdRng};
+    use rand::{rngs::StdRng, SeedableRng};
 
     fn create_vocab_card(word: &str) -> Card {
         Card::Vocabulary(VocabularyCard::new(

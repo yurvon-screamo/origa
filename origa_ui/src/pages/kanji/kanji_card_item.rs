@@ -1,4 +1,5 @@
 use super::super::shared::{CardStatus, DeleteRequest};
+use super::DrawingDrawer;
 use crate::ui_components::{
     Button, ButtonVariant, Card, CardHistoryModal, DeleteButton, DeleteConfirmModal,
     FavoriteButton, HistoryButton, KanjiViewMode, KanjiWritingSection, MarkdownText, Tag, Text,
@@ -26,6 +27,7 @@ pub fn KanjiCardItem(
 
     let is_history_open = RwSignal::new(false);
     let is_delete_modal_open = RwSignal::new(false);
+    let drawing_drawer_open = RwSignal::new(false);
     let confirm_delete = Callback::new(move |_| {
         on_delete.run(DeleteRequest {
             card_id,
@@ -97,6 +99,25 @@ pub fn KanjiCardItem(
                             on_click=Callback::new(move |_| on_toggle_favorite.run(card_id))
                         />
                         <HistoryButton on_click=Callback::new(move |_| is_history_open.set(true)) />
+                        <button
+                            class="cursor-pointer transition-colors duration-200 hover:opacity-70"
+                            on:click=move |_| drawing_drawer_open.set(true)
+                            title="Практика прописей"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                class="w-4 h-4"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                                <path d="m15 5 4 4" />
+                            </svg>
+                        </button>
                         <DeleteButton on_click=Callback::new(move |_| is_delete_modal_open.set(true)) />
                     </div>
                     {move || {
@@ -163,6 +184,7 @@ pub fn KanjiCardItem(
                 on_confirm=confirm_delete
                 on_close=Callback::new(move |_| is_delete_modal_open.set(false))
             />
+            <DrawingDrawer kanji=kanji_char.clone() is_open=drawing_drawer_open />
         </Card>
     }
 }

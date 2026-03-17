@@ -5,6 +5,7 @@ use super::on_quiz_select::create_on_quiz_select;
 use super::on_rate::create_on_rate_callback;
 use super::quiz_card::QuizCardView;
 use super::rating_buttons_view::RatingButtonsView;
+use super::writing_card::WritingCard;
 use leptos::prelude::*;
 use origa::domain::{GrammarInfo, LessonCardView, NativeLanguage, Rating};
 use std::collections::HashSet;
@@ -53,6 +54,13 @@ pub fn LessonCardContainer() -> impl IntoView {
             .unwrap_or(false)
     });
 
+    let is_writing_mode = Memo::new(move |_| {
+        current_card_view
+            .get()
+            .map(|view| matches!(view, LessonCardView::Writing(_)))
+            .unwrap_or(false)
+    });
+
     let container_ref = NodeRef::<leptos::html::Div>::new();
 
     Effect::new(move |_| {
@@ -64,7 +72,7 @@ pub fn LessonCardContainer() -> impl IntoView {
     view! {
         <div class="outline-none" tabindex="0" node_ref=container_ref on:keydown=handle_keydown>
             <Show when=move || current_card_view.get().is_some()>
-                <Show when=move || !is_quiz_mode.get()>
+                <Show when=move || !is_quiz_mode.get() && !is_writing_mode.get()>
                     {move || {
                         current_card_view.get().map(|card_view| {
                             render_lesson_card(
@@ -93,6 +101,26 @@ pub fn LessonCardContainer() -> impl IntoView {
                                         show_result=show_result
                                         selected_option=selected_option
                                         on_select_option=on_quiz_select
+                                        native_language=native_language.get()
+                                        known_kanji=Signal::from(known_kanji)
+                                    />
+                                })
+                            } else {
+                                None
+                            }
+                        })
+                    }}
+                </Show>
+
+                <Show when=move || is_writing_mode.get()>
+                    {move || {
+                        current_card_view.get().and_then(|card_view| {
+                            if let LessonCardView::Writing(card) = card_view {
+                                Some(view! {
+                                    <WritingCard
+                                        card=card
+                                        on_rate=on_rate_callback
+                                        disabled=Signal::derive(move || is_rating.get().is_some())
                                         native_language=native_language.get()
                                         known_kanji=Signal::from(known_kanji)
                                     />
@@ -139,7 +167,7 @@ fn render_lesson_card(
             is_reversed: false,
             grammar_info: Some(grammar_info),
         },
-        LessonCardView::Quiz(_) => {
+        LessonCardView::Quiz(_) | LessonCardView::Writing(_) => {
             return view! { <div/> }.into_any();
         }
     };

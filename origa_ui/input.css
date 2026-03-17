@@ -1501,3 +1501,61 @@ input[type="submit"],
 	border-color: var(--border-light);
 	opacity: 0.5;
 }
+
+.kanji-drawing-container {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 16px;
+}
+
+.kanji-drawing-canvas {
+	border: 3px solid #333;
+	background: #fff;
+	touch-action: none;
+	cursor: crosshair;
+	border-radius: 8px;
+}
+
+.kanji-drawing-info {
+	text-align: center;
+	margin: 15px 0;
+	font-size: 1.2rem;
+}
+
+.kanji-drawing-success {
+	color: #27ae60;
+	font-size: 1.4rem;
+}
+
+.kanji-drawing-progress {
+	color: #666;
+}
+
+.kanji-drawing-controls {
+	display: flex;
+	justify-content: center;
+	margin-top: 8px;
+}
+
+.kanji-drawing-reset-btn {
+	padding: 10px 20px;
+	background: #e74c3c;
+	color: white;
+	border: none;
+	border-radius: 6px;
+	cursor: pointer;
+	font-size: 1rem;
+	transition: background 0.2s;
+	font-family: "DM Mono", monospace;
+}
+
+.kanji-drawing-reset-btn:hover {
+	background: #c0392b;
+}
+
+.kanji-drawing-loading {
+	text-align: center;
+	padding: 40px;
+	color: #666;
+}
