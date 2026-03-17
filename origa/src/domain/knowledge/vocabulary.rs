@@ -1,7 +1,7 @@
-use crate::dictionary::{KanjiInfo, get_kanji_info, get_translation};
-use crate::domain::GrammarRule;
+use crate::dictionary::{get_kanji_info, get_translation, KanjiInfo};
 use crate::domain::japanese::JapaneseChar;
-use crate::domain::tokenizer::{PartOfSpeech, tokenize_text};
+use crate::domain::tokenizer::{tokenize_text, PartOfSpeech};
+use crate::domain::GrammarRule;
 use crate::domain::{Answer, JapaneseLevel, NativeLanguage, OrigaError, Question};
 use serde::{Deserialize, Serialize};
 
@@ -339,6 +339,29 @@ mod tests {
         assert!(
             reversed_card.word().text().contains("кошка")
                 || reversed_card.word().text().contains("кот")
+        );
+    }
+
+    #[test]
+    fn revert_swaps_question_and_answer() {
+        init_real_dictionaries();
+        let original_word = "猫";
+        let card = create_vocab_card(original_word);
+        let lang = NativeLanguage::Russian;
+
+        let reversed_card = card.revert(&lang).unwrap();
+
+        let question = reversed_card.question();
+        let answer = reversed_card.answer(&lang).unwrap();
+
+        assert!(
+            question.text().contains("кошка") || question.text().contains("кот"),
+            "question should return translation after revert"
+        );
+        assert_eq!(
+            answer.text(),
+            original_word,
+            "answer should return original japanese word after revert"
         );
     }
 
