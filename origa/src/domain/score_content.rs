@@ -80,3 +80,332 @@ pub fn score_content(
 
     Ok(result)
 }
+
+#[cfg(test)]
+mod tests {
+    use chrono::{Duration, Utc};
+    use std::collections::HashMap;
+    use ulid::Ulid;
+
+    use super::*;
+    use crate::domain::{
+        Card, Difficulty, KanjiCard, MemoryState, Rating, ReviewLog, Stability, StudyCard,
+        VocabularyCard, value_objects::Question,
+    };
+    use crate::use_cases::init_real_dictionaries;
+
+    fn create_known_study_card_with_kanji(kanji: &str) -> StudyCard {
+        let kanji_card = KanjiCard::new_test(kanji.to_string());
+        let mut study_card = StudyCard::new(Card::Kanji(kanji_card));
+        set_card_as_known(&mut study_card);
+        study_card
+    }
+
+    fn create_unknown_study_card_with_kanji(kanji: &str) -> StudyCard {
+        let kanji_card = KanjiCard::new_test(kanji.to_string());
+        StudyCard::new(Card::Kanji(kanji_card))
+    }
+
+    fn create_known_study_card_with_vocab(word: &str) -> StudyCard {
+        let question = Question::new(word.to_string()).unwrap();
+        let vocab_card = VocabularyCard::new(question);
+        let mut study_card = StudyCard::new(Card::Vocabulary(vocab_card));
+        set_card_as_known(&mut study_card);
+        study_card
+    }
+
+    fn create_unknown_study_card_with_vocab(word: &str) -> StudyCard {
+        let question = Question::new(word.to_string()).unwrap();
+        let vocab_card = VocabularyCard::new(question);
+        StudyCard::new(Card::Vocabulary(vocab_card))
+    }
+
+    fn set_card_as_known(study_card: &mut StudyCard) {
+        let stability = Stability::new(15.0).unwrap();
+        let difficulty = Difficulty::new(3.0).unwrap();
+        let next_review = Utc::now() + Duration::days(30);
+        let memory_state = MemoryState::new(stability, difficulty, next_review);
+        let review = ReviewLog::new(Rating::Good, Duration::days(15));
+        study_card.add_review(memory_state, review);
+    }
+
+    fn cards_to_hashmap(cards: Vec<StudyCard>) -> HashMap<Ulid, StudyCard> {
+        cards
+            .into_iter()
+            .map(|card| (*card.card_id(), card))
+            .collect()
+    }
+
+    #[test]
+    fn score_content_returns_empty_for_plain_text() {
+        init_real_dictionaries();
+
+        let content = "Hello World";
+        let cards = HashMap::new();
+
+        let result = score_content(content, &cards).unwrap();
+
+        assert!(result.known_words().is_empty());
+        assert!(result.unknown_words().is_empty());
+        assert!(result.known_kanji().is_empty());
+        assert!(result.unknown_kanji().is_empty());
+    }
+
+    #[test]
+    fn score_content_identifies_known_kanji() {
+        init_real_dictionaries();
+
+        let content = "日本語";
+        let cards = cards_to_hashmap(vec![
+            create_known_study_card_with_kanji("日"),
+            create_known_study_card_with_kanji("本"),
+        ]);
+
+        let result = score_content(content, &cards).unwrap();
+
+        assert!(result.known_kanji().contains(&"日".to_string()));
+        assert!(result.known_kanji().contains(&"本".to_string()));
+        assert!(!result.known_kanji().contains(&"語".to_string()));
+    }
+
+    #[test]
+    fn score_content_identifies_unknown_kanji() {
+        init_real_dictionaries();
+
+        let content = "日本語";
+        let cards = HashMap::new();
+
+        let result = score_content(content, &cards).unwrap();
+
+        assert!(result.unknown_kanji().contains(&"日".to_string()));
+        assert!(result.unknown_kanji().contains(&"本".to_string()));
+        assert!(result.unknown_kanji().contains(&"語".to_string()));
+        assert!(result.known_kanji().is_empty());
+    }
+
+    #[test]
+    fn score_content_mixed_kanji_knowledge() {
+        init_real_dictionaries();
+
+        let content = "日本語";
+        let cards = cards_to_hashmap(vec![
+            create_known_study_card_with_kanji("日"),
+            create_known_study_card_with_kanji("本"),
+        ]);
+
+        let result = score_content(content, &cards).unwrap();
+
+        assert!(result.known_kanji().contains(&"日".to_string()));
+        assert!(result.known_kanji().contains(&"本".to_string()));
+        assert!(result.unknown_kanji().contains(&"語".to_string()));
+    }
+
+    #[test]
+    fn score_content_identifies_known_words() {
+        init_real_dictionaries();
+
+        let content = "猫と犬";
+        let cards = cards_to_hashmap(vec![create_known_study_card_with_vocab("猫")]);
+
+        let result = score_content(content, &cards).unwrap();
+
+        assert!(result.known_words().contains(&"猫".to_string()));
+    }
+
+    #[test]
+    fn score_content_identifies_unknown_words() {
+        init_real_dictionaries();
+
+        let content = "猫と犬";
+        let cards = HashMap::new();
+
+        let result = score_content(content, &cards).unwrap();
+
+        assert!(result.unknown_words().iter().any(|w| w == "猫"));
+    }
+
+    #[test]
+    fn score_content_mixed_word_knowledge() {
+        init_real_dictionaries();
+
+        let content = "猫と犬";
+        let cards = cards_to_hashmap(vec![create_known_study_card_with_vocab("猫")]);
+
+        let result = score_content(content, &cards).unwrap();
+
+        assert!(result.known_words().contains(&"猫".to_string()));
+        assert!(result.unknown_words().iter().any(|w| w == "犬"));
+    }
+
+    #[test]
+    fn score_content_ignores_hiragana_for_kanji() {
+        init_real_dictionaries();
+
+        let content = "こんにちは";
+        let cards = HashMap::new();
+
+        let result = score_content(content, &cards).unwrap();
+
+        assert!(result.known_kanji().is_empty());
+        assert!(result.unknown_kanji().is_empty());
+    }
+
+    #[test]
+    fn score_content_ignores_katakana_for_kanji() {
+        init_real_dictionaries();
+
+        let content = "コンニチハ";
+        let cards = HashMap::new();
+
+        let result = score_content(content, &cards).unwrap();
+
+        assert!(result.known_kanji().is_empty());
+        assert!(result.unknown_kanji().is_empty());
+    }
+
+    #[test]
+    fn score_content_handles_empty_content() {
+        init_real_dictionaries();
+
+        let content = "";
+        let cards = HashMap::new();
+
+        let result = score_content(content, &cards).unwrap();
+
+        assert!(result.known_words().is_empty());
+        assert!(result.unknown_words().is_empty());
+        assert!(result.known_kanji().is_empty());
+        assert!(result.unknown_kanji().is_empty());
+    }
+
+    #[test]
+    fn score_content_ignores_unknown_card_type_for_kanji() {
+        init_real_dictionaries();
+
+        let content = "日";
+        let vocab_card = create_known_study_card_with_vocab("日");
+        let cards = cards_to_hashmap(vec![vocab_card]);
+
+        let result = score_content(content, &cards).unwrap();
+
+        assert!(result.unknown_kanji().contains(&"日".to_string()));
+        assert!(result.known_kanji().is_empty());
+    }
+
+    #[test]
+    fn score_content_ignores_unknown_card_type_for_words() {
+        init_real_dictionaries();
+
+        let content = "猫";
+        let kanji_card = create_known_study_card_with_kanji("猫");
+        let cards = cards_to_hashmap(vec![kanji_card]);
+
+        let result = score_content(content, &cards).unwrap();
+
+        assert!(result.unknown_words().iter().any(|w| w == "猫"));
+    }
+
+    #[test]
+    fn score_content_deduplicates_kanji() {
+        init_real_dictionaries();
+
+        let content = "日日日";
+        let cards = HashMap::new();
+
+        let result = score_content(content, &cards).unwrap();
+
+        assert_eq!(result.unknown_kanji().len(), 1);
+        assert!(result.unknown_kanji().contains(&"日".to_string()));
+    }
+
+    #[test]
+    fn score_content_deduplicates_words() {
+        init_real_dictionaries();
+
+        let content = "猫猫猫";
+        let cards = HashMap::new();
+
+        let result = score_content(content, &cards).unwrap();
+
+        let cat_count = result.unknown_words().iter().filter(|w| *w == "猫").count();
+        assert_eq!(cat_count, 1);
+    }
+
+    #[test]
+    fn score_content_unknown_kanji_card_not_counted_as_known() {
+        init_real_dictionaries();
+
+        let content = "日";
+        let cards = cards_to_hashmap(vec![create_unknown_study_card_with_kanji("日")]);
+
+        let result = score_content(content, &cards).unwrap();
+
+        assert!(result.unknown_kanji().contains(&"日".to_string()));
+        assert!(result.known_kanji().is_empty());
+    }
+
+    #[test]
+    fn score_content_unknown_vocab_card_not_counted_as_known() {
+        init_real_dictionaries();
+
+        let content = "猫";
+        let cards = cards_to_hashmap(vec![create_unknown_study_card_with_vocab("猫")]);
+
+        let result = score_content(content, &cards).unwrap();
+
+        assert!(result.unknown_words().iter().any(|w| w == "猫"));
+        assert!(result.known_words().is_empty());
+    }
+
+    mod score_content_result_accessors {
+        use super::*;
+
+        #[test]
+        fn known_words_returns_slice() {
+            init_real_dictionaries();
+
+            let content = "猫";
+            let cards = cards_to_hashmap(vec![create_known_study_card_with_vocab("猫")]);
+
+            let result = score_content(content, &cards).unwrap();
+
+            assert!(!result.known_words().is_empty());
+        }
+
+        #[test]
+        fn unknown_words_returns_slice() {
+            init_real_dictionaries();
+
+            let content = "猫";
+            let cards = HashMap::new();
+
+            let result = score_content(content, &cards).unwrap();
+
+            assert!(!result.unknown_words().is_empty());
+        }
+
+        #[test]
+        fn known_kanji_returns_slice() {
+            init_real_dictionaries();
+
+            let content = "日";
+            let cards = cards_to_hashmap(vec![create_known_study_card_with_kanji("日")]);
+
+            let result = score_content(content, &cards).unwrap();
+
+            assert!(!result.known_kanji().is_empty());
+        }
+
+        #[test]
+        fn unknown_kanji_returns_slice() {
+            init_real_dictionaries();
+
+            let content = "日";
+            let cards = HashMap::new();
+
+            let result = score_content(content, &cards).unwrap();
+
+            assert!(!result.unknown_kanji().is_empty());
+        }
+    }
+}

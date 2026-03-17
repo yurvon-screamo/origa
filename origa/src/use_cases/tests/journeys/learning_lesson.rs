@@ -1,9 +1,10 @@
+use rstest::rstest;
 use ulid::Ulid;
 
 use crate::domain::{NativeLanguage, OrigaError, RateMode, Rating, User};
 use crate::traits::UserRepository;
 use crate::use_cases::tests::fixtures::{InMemoryUserRepository, create_user_with_vocab_cards};
-use crate::use_cases::{RateCardUseCase, SelectCardsToLessonUseCase};
+use crate::use_cases::{RateCardUseCase, SelectCardsToFixationUseCase, SelectCardsToLessonUseCase};
 
 #[tokio::test]
 async fn select_cards_to_lesson_returns_cards() {
@@ -30,8 +31,13 @@ async fn select_cards_to_lesson_returns_empty_for_empty_knowledge_set() {
     assert!(cards.is_empty());
 }
 
+#[rstest]
+#[case(Rating::Again)]
+#[case(Rating::Hard)]
+#[case(Rating::Good)]
+#[case(Rating::Easy)]
 #[tokio::test]
-async fn rate_card_again_updates_memory() {
+async fn rate_card_updates_memory(#[case] rating: Rating) {
     let user = create_user_with_vocab_cards(1);
     let repo = InMemoryUserRepository::with_user(user);
     let user = repo.get_current_user().await.unwrap().unwrap();
@@ -39,61 +45,7 @@ async fn rate_card_again_updates_memory() {
     let use_case = RateCardUseCase::new(&repo);
 
     use_case
-        .execute(card_id, RateMode::StandardLesson, Rating::Again)
-        .await
-        .unwrap();
-
-    let updated = repo.get_current_user().await.unwrap().unwrap();
-    let card = updated.knowledge_set().get_card(card_id).unwrap();
-    assert!(!card.memory().is_new());
-}
-
-#[tokio::test]
-async fn rate_card_hard_updates_memory() {
-    let user = create_user_with_vocab_cards(1);
-    let repo = InMemoryUserRepository::with_user(user);
-    let user = repo.get_current_user().await.unwrap().unwrap();
-    let card_id = *user.knowledge_set().study_cards().keys().next().unwrap();
-    let use_case = RateCardUseCase::new(&repo);
-
-    use_case
-        .execute(card_id, RateMode::StandardLesson, Rating::Hard)
-        .await
-        .unwrap();
-
-    let updated = repo.get_current_user().await.unwrap().unwrap();
-    let card = updated.knowledge_set().get_card(card_id).unwrap();
-    assert!(!card.memory().is_new());
-}
-
-#[tokio::test]
-async fn rate_card_good_updates_memory() {
-    let user = create_user_with_vocab_cards(1);
-    let repo = InMemoryUserRepository::with_user(user);
-    let user = repo.get_current_user().await.unwrap().unwrap();
-    let card_id = *user.knowledge_set().study_cards().keys().next().unwrap();
-    let use_case = RateCardUseCase::new(&repo);
-
-    use_case
-        .execute(card_id, RateMode::StandardLesson, Rating::Good)
-        .await
-        .unwrap();
-
-    let updated = repo.get_current_user().await.unwrap().unwrap();
-    let card = updated.knowledge_set().get_card(card_id).unwrap();
-    assert!(!card.memory().is_new());
-}
-
-#[tokio::test]
-async fn rate_card_easy_updates_memory() {
-    let user = create_user_with_vocab_cards(1);
-    let repo = InMemoryUserRepository::with_user(user);
-    let user = repo.get_current_user().await.unwrap().unwrap();
-    let card_id = *user.knowledge_set().study_cards().keys().next().unwrap();
-    let use_case = RateCardUseCase::new(&repo);
-
-    use_case
-        .execute(card_id, RateMode::StandardLesson, Rating::Easy)
+        .execute(card_id, RateMode::StandardLesson, rating)
         .await
         .unwrap();
 
@@ -137,4 +89,78 @@ async fn rate_card_nonexistent_returns_error() {
         .await;
 
     assert!(matches!(result, Err(OrigaError::CardNotFound { .. })));
+}
+
+#[tokio::test]
+async fn select_cards_to_fixation_empty_knowledge_set_returns_empty() {
+    let repo = InMemoryUserRepository::with_user(User::new(
+        "test@example.com".to_string(),
+        NativeLanguage::Russian,
+        None,
+    ));
+    let use_case = SelectCardsToFixationUseCase::new(&repo);
+
+    let cards = use_case.execute().await.unwrap();
+
+    assert!(cards.is_empty());
+}
+
+#[tokio::test]
+async fn rate_card_with_fixation_mode_updates_memory() {
+    let user = create_user_with_vocab_cards(1);
+    let repo = InMemoryUserRepository::with_user(user);
+    let user = repo.get_current_user().await.unwrap().unwrap();
+    let card_id = *user.knowledge_set().study_cards().keys().next().unwrap();
+    let use_case = RateCardUseCase::new(&repo);
+
+    use_case
+        .execute(card_id, RateMode::FixationLesson, Rating::Good)
+        .await
+        .unwrap();
+
+    let updated = repo.get_current_user().await.unwrap().unwrap();
+    let card = updated.knowledge_set().get_card(card_id).unwrap();
+    assert!(!card.memory().is_new());
+}
+
+#[rstest]
+#[case::again(Rating::Again)]
+#[case::hard(Rating::Hard)]
+#[case::good(Rating::Good)]
+#[case::easy(Rating::Easy)]
+#[tokio::test]
+async fn rate_card_fixation_mode_all_ratings(#[case] rating: Rating) {
+    let user = create_user_with_vocab_cards(1);
+    let repo = InMemoryUserRepository::with_user(user);
+    let user = repo.get_current_user().await.unwrap().unwrap();
+    let card_id = *user.knowledge_set().study_cards().keys().next().unwrap();
+    let use_case = RateCardUseCase::new(&repo);
+
+    let result = use_case
+        .execute(card_id, RateMode::FixationLesson, rating)
+        .await;
+
+    assert!(result.is_ok());
+}
+
+#[tokio::test]
+async fn rate_card_twice_in_fixation_mode_updates_state() {
+    let user = create_user_with_vocab_cards(1);
+    let repo = InMemoryUserRepository::with_user(user);
+    let user = repo.get_current_user().await.unwrap().unwrap();
+    let card_id = *user.knowledge_set().study_cards().keys().next().unwrap();
+    let use_case = RateCardUseCase::new(&repo);
+
+    use_case
+        .execute(card_id, RateMode::FixationLesson, Rating::Good)
+        .await
+        .unwrap();
+    use_case
+        .execute(card_id, RateMode::FixationLesson, Rating::Easy)
+        .await
+        .unwrap();
+
+    let updated = repo.get_current_user().await.unwrap().unwrap();
+    let card = updated.knowledge_set().get_card(card_id).unwrap();
+    assert!(!card.memory().is_new());
 }

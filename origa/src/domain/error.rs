@@ -152,3 +152,310 @@ impl From<ort::Error> for OrigaError {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn assert_display_contains(error: &OrigaError, expected: &str) {
+        let display = format!("{}", error);
+        assert!(
+            display.contains(expected),
+            "Display '{}' should contain '{}'",
+            display,
+            expected
+        );
+    }
+
+    fn assert_serialization_roundtrip(error: OrigaError) {
+        let json = serde_json::to_string(&error).unwrap();
+        let deserialized: OrigaError = serde_json::from_str(&json).unwrap();
+        assert_eq!(error, deserialized);
+    }
+
+    #[test]
+    fn current_user_not_exist() {
+        let error = OrigaError::CurrentUserNotExist {};
+        assert_display_contains(&error, "Current user does not exist");
+        assert_serialization_roundtrip(error);
+    }
+
+    #[test]
+    fn card_not_found() {
+        let card_id = Ulid::new();
+        let error = OrigaError::CardNotFound { card_id };
+        assert_display_contains(&error, &card_id.to_string());
+        assert_serialization_roundtrip(error);
+    }
+
+    #[test]
+    fn duplicate_card() {
+        let question = "test question".to_string();
+        let error = OrigaError::DuplicateCard {
+            question: question.clone(),
+        };
+        assert_display_contains(&error, &question);
+        assert_serialization_roundtrip(error);
+    }
+
+    #[test]
+    fn invalid_question() {
+        let error = OrigaError::InvalidQuestion {
+            reason: "empty".into(),
+        };
+        assert_display_contains(&error, "Invalid question");
+        assert_serialization_roundtrip(error);
+    }
+
+    #[test]
+    fn invalid_answer() {
+        let error = OrigaError::InvalidAnswer {
+            reason: "too long".into(),
+        };
+        assert_display_contains(&error, "Invalid answer");
+        assert_serialization_roundtrip(error);
+    }
+
+    #[test]
+    fn invalid_stability() {
+        let error = OrigaError::InvalidStability {
+            reason: "negative".into(),
+        };
+        assert_display_contains(&error, "Invalid stability");
+        assert_serialization_roundtrip(error);
+    }
+
+    #[test]
+    fn invalid_difficulty() {
+        let error = OrigaError::InvalidDifficulty {
+            reason: "out of range".into(),
+        };
+        assert_display_contains(&error, "Invalid difficulty");
+        assert_serialization_roundtrip(error);
+    }
+
+    #[test]
+    fn invalid_memory_state() {
+        let error = OrigaError::InvalidMemoryState {
+            reason: "corrupt".into(),
+        };
+        assert_display_contains(&error, "Invalid memory state");
+        assert_serialization_roundtrip(error);
+    }
+
+    #[test]
+    fn srs_calculation_failed() {
+        let error = OrigaError::SrsCalculationFailed {
+            reason: "overflow".into(),
+        };
+        assert_display_contains(&error, "SRS calculation failed");
+        assert_serialization_roundtrip(error);
+    }
+
+    #[test]
+    fn repository_error() {
+        let error = OrigaError::RepositoryError {
+            reason: "connection failed".into(),
+        };
+        assert_display_contains(&error, "Repository error");
+        assert_serialization_roundtrip(error);
+    }
+
+    #[test]
+    fn embedding_error() {
+        let error = OrigaError::EmbeddingError {
+            reason: "model not loaded".into(),
+        };
+        assert_display_contains(&error, "Embedding error");
+        assert_serialization_roundtrip(error);
+    }
+
+    #[test]
+    fn llm_error() {
+        let error = OrigaError::LlmError {
+            reason: "timeout".into(),
+        };
+        assert_display_contains(&error, "LLM error");
+        assert_serialization_roundtrip(error);
+    }
+
+    #[test]
+    fn settings_error() {
+        let error = OrigaError::SettingsError {
+            reason: "invalid config".into(),
+        };
+        assert_display_contains(&error, "Settings error");
+        assert_serialization_roundtrip(error);
+    }
+
+    #[test]
+    fn furigana_error() {
+        let error = OrigaError::FuriganaError {
+            reason: "parse failed".into(),
+        };
+        assert_display_contains(&error, "Furigana error");
+        assert_serialization_roundtrip(error);
+    }
+
+    #[test]
+    fn translation_error() {
+        let error = OrigaError::TranslationError {
+            reason: "api error".into(),
+        };
+        assert_display_contains(&error, "Translation error");
+        assert_serialization_roundtrip(error);
+    }
+
+    #[test]
+    fn kradfile_error() {
+        let error = OrigaError::KradfileError {
+            reason: "file not found".into(),
+        };
+        assert_display_contains(&error, "Kradfile error");
+        assert_serialization_roundtrip(error);
+    }
+
+    #[test]
+    fn vocabulary_parse_error() {
+        let error = OrigaError::VocabularyParseError {
+            reason: "invalid format".into(),
+        };
+        assert_display_contains(&error, "Vocabulary parse error");
+        assert_serialization_roundtrip(error);
+    }
+
+    #[test]
+    fn invalid_values() {
+        let error = OrigaError::InvalidValues {
+            reason: "missing fields".into(),
+        };
+        assert_display_contains(&error, "Invalid values");
+        assert_serialization_roundtrip(error);
+    }
+
+    #[test]
+    fn tokenizer_error() {
+        let error = OrigaError::TokenizerError {
+            reason: "dictionary missing".into(),
+        };
+        assert_display_contains(&error, "Tokenizer error");
+        assert_serialization_roundtrip(error);
+    }
+
+    #[test]
+    fn grammar_format_error() {
+        let error = OrigaError::GrammarFormatError {
+            reason: "bad syntax".into(),
+        };
+        assert_display_contains(&error, "Grammar rule format error");
+        assert_serialization_roundtrip(error);
+    }
+
+    #[test]
+    fn grammar_parse_error() {
+        let error = OrigaError::GrammarParseError {
+            reason: "unexpected token".into(),
+        };
+        assert_display_contains(&error, "Grammar parse error");
+        assert_serialization_roundtrip(error);
+    }
+
+    #[test]
+    fn well_known_set_parse_error() {
+        let error = OrigaError::WellKnownSetParseError {
+            reason: "invalid id".into(),
+        };
+        assert_display_contains(&error, "WellKnownSetError");
+        assert_serialization_roundtrip(error);
+    }
+
+    #[test]
+    fn session_expired() {
+        let error = OrigaError::SessionExpired;
+        assert_display_contains(&error, "Session expired");
+        assert_serialization_roundtrip(error);
+    }
+
+    #[test]
+    fn dictionary_not_found() {
+        let error = OrigaError::DictionaryNotFound {
+            reason: "jmdict".into(),
+        };
+        assert_display_contains(&error, "Dictionary not found");
+        assert_serialization_roundtrip(error);
+    }
+
+    #[test]
+    fn vocabulary_not_found() {
+        let error = OrigaError::VocabularyNotFound {
+            word: "日本語".into(),
+        };
+        assert_display_contains(&error, "日本語");
+        assert_serialization_roundtrip(error);
+    }
+
+    #[test]
+    fn ocr_error() {
+        let error = OrigaError::OcrError {
+            reason: "image corrupt".into(),
+        };
+        assert_display_contains(&error, "OCR error");
+        assert_serialization_roundtrip(error);
+    }
+
+    #[test]
+    fn kanji_not_found() {
+        let error = OrigaError::KanjiNotFound {
+            kanji: "日".into()
+        };
+        assert_display_contains(&error, "日");
+        assert_serialization_roundtrip(error);
+    }
+
+    #[test]
+    fn grammar_rule_not_found() {
+        let rule_id = Ulid::new();
+        let error = OrigaError::GrammarRuleNotFound { rule_id };
+        assert_display_contains(&error, &rule_id.to_string());
+        assert_serialization_roundtrip(error);
+    }
+
+    #[test]
+    fn grammar_content_not_found() {
+        let rule_id = Ulid::new();
+        let error = OrigaError::GrammarContentNotFound {
+            rule_id,
+            lang: NativeLanguage::Russian,
+        };
+        assert_display_contains(&error, &rule_id.to_string());
+        assert_serialization_roundtrip(error);
+    }
+
+    #[test]
+    fn translation_not_found() {
+        let error = OrigaError::TranslationNotFound {
+            word: "猫".into(),
+            lang: NativeLanguage::Russian,
+        };
+        assert_display_contains(&error, "猫");
+        assert_serialization_roundtrip(error);
+    }
+
+    #[test]
+    fn network_error() {
+        let error = OrigaError::NetworkError {
+            url: "https://api.example.com".into(),
+            reason: "timeout".into(),
+        };
+        assert_display_contains(&error, "https://api.example.com");
+        assert_serialization_roundtrip(error);
+    }
+
+    #[test]
+    fn error_trait_implementation() {
+        let error = OrigaError::CardNotFound {
+            card_id: Ulid::new(),
+        };
+        let _: &dyn std::error::Error = &error;
+    }
+}

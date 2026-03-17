@@ -2,7 +2,7 @@ use std::{collections::HashMap, sync::OnceLock};
 
 use serde::{Deserialize, Serialize};
 
-use crate::domain::{OrigaError, JapaneseLevel};
+use crate::domain::{JapaneseLevel, OrigaError};
 
 pub static RADICAL_DICTIONARY: OnceLock<RadicalDatabase> = OnceLock::new();
 

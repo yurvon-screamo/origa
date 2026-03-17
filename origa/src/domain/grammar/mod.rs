@@ -103,3 +103,732 @@ impl GrammarRule {
         Ok(result)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::dictionary::grammar::{FormatAction, GrammarRule, GrammarRuleContent};
+    use crate::domain::{JapaneseLevel, NativeLanguage, PartOfSpeech};
+    use std::collections::HashMap;
+    use ulid::Ulid;
+
+    fn create_rule_with_format_map(
+        format_map: HashMap<PartOfSpeech, Vec<FormatAction>>,
+    ) -> GrammarRule {
+        GrammarRule::new(
+            Ulid::new(),
+            JapaneseLevel::N5,
+            HashMap::from([(
+                NativeLanguage::English,
+                GrammarRuleContent::new(
+                    "Test Rule".to_string(),
+                    "Test description".to_string(),
+                    "# Test".to_string(),
+                ),
+            )]),
+            Some(format_map),
+        )
+    }
+
+    mod format_errors {
+        use super::*;
+
+        #[test]
+        fn returns_error_when_format_map_is_none() {
+            let rule = GrammarRule::new(Ulid::new(), JapaneseLevel::N5, HashMap::new(), None);
+
+            let result = rule.format("高い", &PartOfSpeech::IAdjective);
+
+            assert!(result.is_err());
+            assert!(matches!(
+                result.unwrap_err(),
+                OrigaError::GrammarFormatError { .. }
+            ));
+        }
+
+        #[test]
+        fn returns_error_when_part_of_speech_not_supported() {
+            let format_map = HashMap::from([(PartOfSpeech::Verb, vec![])]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("高い", &PartOfSpeech::IAdjective);
+
+            assert!(result.is_err());
+            assert!(matches!(
+                result.unwrap_err(),
+                OrigaError::GrammarFormatError { .. }
+            ));
+        }
+    }
+
+    mod i_adjective_forms {
+        use super::*;
+
+        #[test]
+        fn removes_postfix() {
+            let format_map = HashMap::from([(
+                PartOfSpeech::IAdjective,
+                vec![FormatAction::AdjectiveRemovePostfix {}],
+            )]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("高い", &PartOfSpeech::IAdjective);
+
+            assert_eq!(result.unwrap(), "高くなる");
+        }
+
+        #[test]
+        fn converts_to_kunai() {
+            let format_map = HashMap::from([(
+                PartOfSpeech::IAdjective,
+                vec![FormatAction::AdjectiveToKunai {}],
+            )]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("高い", &PartOfSpeech::IAdjective);
+
+            assert_eq!(result.unwrap(), "高くない");
+        }
+
+        #[test]
+        fn converts_to_katta() {
+            let format_map = HashMap::from([(
+                PartOfSpeech::IAdjective,
+                vec![FormatAction::AdjectiveToKatta {}],
+            )]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("高い", &PartOfSpeech::IAdjective);
+
+            assert_eq!(result.unwrap(), "高かった");
+        }
+
+        #[test]
+        fn converts_to_kunakatta() {
+            let format_map = HashMap::from([(
+                PartOfSpeech::IAdjective,
+                vec![FormatAction::AdjectiveToKunakatta {}],
+            )]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("高い", &PartOfSpeech::IAdjective);
+
+            assert_eq!(result.unwrap(), "高くなかった");
+        }
+
+        #[test]
+        fn converts_to_kute() {
+            let format_map = HashMap::from([(
+                PartOfSpeech::IAdjective,
+                vec![FormatAction::AdjectiveToKute {}],
+            )]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("高い", &PartOfSpeech::IAdjective);
+
+            assert_eq!(result.unwrap(), "高くて");
+        }
+
+        #[test]
+        fn converts_to_ku() {
+            let format_map = HashMap::from([(
+                PartOfSpeech::IAdjective,
+                vec![FormatAction::AdjectiveToKu {}],
+            )]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("高い", &PartOfSpeech::IAdjective);
+
+            assert_eq!(result.unwrap(), "高く");
+        }
+
+        #[test]
+        fn converts_to_kereba() {
+            let format_map = HashMap::from([(
+                PartOfSpeech::IAdjective,
+                vec![FormatAction::AdjectiveToKereba {}],
+            )]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("高い", &PartOfSpeech::IAdjective);
+
+            assert_eq!(result.unwrap(), "高ければ");
+        }
+
+        #[test]
+        fn converts_to_sou() {
+            let format_map = HashMap::from([(
+                PartOfSpeech::IAdjective,
+                vec![FormatAction::AdjectiveToSou {}],
+            )]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("高い", &PartOfSpeech::IAdjective);
+
+            assert_eq!(result.unwrap(), "高そう");
+        }
+
+        #[test]
+        fn converts_to_sugiru() {
+            let format_map = HashMap::from([(
+                PartOfSpeech::IAdjective,
+                vec![FormatAction::AdjectiveToSugiru {}],
+            )]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("高い", &PartOfSpeech::IAdjective);
+
+            assert_eq!(result.unwrap(), "高すぎる");
+        }
+
+        #[test]
+        fn converts_to_nasasou() {
+            let format_map = HashMap::from([(
+                PartOfSpeech::IAdjective,
+                vec![FormatAction::AdjectiveToNasasou {}],
+            )]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("高い", &PartOfSpeech::IAdjective);
+
+            assert_eq!(result.unwrap(), "高なさそう");
+        }
+
+        #[test]
+        fn converts_to_garu() {
+            let format_map = HashMap::from([(
+                PartOfSpeech::IAdjective,
+                vec![FormatAction::AdjectiveToGaru {}],
+            )]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("高い", &PartOfSpeech::IAdjective);
+
+            assert_eq!(result.unwrap(), "高がる");
+        }
+    }
+
+    mod na_adjective_forms {
+        use super::*;
+
+        #[test]
+        fn removes_postfix() {
+            let format_map = HashMap::from([(
+                PartOfSpeech::NaAdjective,
+                vec![FormatAction::AdjectiveRemovePostfix {}],
+            )]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("静かな", &PartOfSpeech::NaAdjective);
+
+            assert_eq!(result.unwrap(), "静かになる");
+        }
+
+        #[test]
+        fn converts_to_na() {
+            let format_map = HashMap::from([(
+                PartOfSpeech::NaAdjective,
+                vec![FormatAction::AdjectiveToNa {}],
+            )]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("静かな", &PartOfSpeech::NaAdjective);
+
+            assert_eq!(result.unwrap(), "静かな");
+        }
+
+        #[test]
+        fn converts_to_de() {
+            let format_map = HashMap::from([(
+                PartOfSpeech::NaAdjective,
+                vec![FormatAction::AdjectiveToDe {}],
+            )]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("静かな", &PartOfSpeech::NaAdjective);
+
+            assert_eq!(result.unwrap(), "静かで");
+        }
+
+        #[test]
+        fn converts_to_nara() {
+            let format_map = HashMap::from([(
+                PartOfSpeech::NaAdjective,
+                vec![FormatAction::AdjectiveToNara {}],
+            )]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("静かな", &PartOfSpeech::NaAdjective);
+
+            assert_eq!(result.unwrap(), "静かなら");
+        }
+
+        #[test]
+        fn converts_to_sou_na() {
+            let format_map = HashMap::from([(
+                PartOfSpeech::NaAdjective,
+                vec![FormatAction::AdjectiveToSouNa {}],
+            )]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("静かな", &PartOfSpeech::NaAdjective);
+
+            assert_eq!(result.unwrap(), "静かそう");
+        }
+
+        #[test]
+        fn converts_to_nasasou() {
+            let format_map = HashMap::from([(
+                PartOfSpeech::NaAdjective,
+                vec![FormatAction::AdjectiveToNasasou {}],
+            )]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("静かな", &PartOfSpeech::NaAdjective);
+
+            assert_eq!(result.unwrap(), "静かじゃなさそう");
+        }
+
+        #[test]
+        fn converts_to_garu() {
+            let format_map = HashMap::from([(
+                PartOfSpeech::NaAdjective,
+                vec![FormatAction::AdjectiveToGaru {}],
+            )]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("静かな", &PartOfSpeech::NaAdjective);
+
+            assert_eq!(result.unwrap(), "静かがる");
+        }
+    }
+
+    mod verb_forms {
+        use super::*;
+
+        #[test]
+        fn converts_to_te_form() {
+            let format_map =
+                HashMap::from([(PartOfSpeech::Verb, vec![FormatAction::VerbToTeForm {}])]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("行く", &PartOfSpeech::Verb);
+
+            assert_eq!(result.unwrap(), "行って");
+        }
+
+        #[test]
+        fn converts_to_main_view() {
+            let format_map =
+                HashMap::from([(PartOfSpeech::Verb, vec![FormatAction::VerbToMainView {}])]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("行く", &PartOfSpeech::Verb);
+
+            assert_eq!(result.unwrap(), "行き");
+        }
+
+        #[test]
+        fn converts_to_masu() {
+            let format_map =
+                HashMap::from([(PartOfSpeech::Verb, vec![FormatAction::VerbToMasu {}])]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("行く", &PartOfSpeech::Verb);
+
+            assert_eq!(result.unwrap(), "行きます");
+        }
+
+        #[test]
+        fn converts_to_masen() {
+            let format_map =
+                HashMap::from([(PartOfSpeech::Verb, vec![FormatAction::VerbToMasen {}])]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("行く", &PartOfSpeech::Verb);
+
+            assert_eq!(result.unwrap(), "行きません");
+        }
+
+        #[test]
+        fn converts_to_mashita() {
+            let format_map =
+                HashMap::from([(PartOfSpeech::Verb, vec![FormatAction::VerbToMashita {}])]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("行く", &PartOfSpeech::Verb);
+
+            assert_eq!(result.unwrap(), "行きました");
+        }
+
+        #[test]
+        fn converts_to_masen_deshita() {
+            let format_map = HashMap::from([(
+                PartOfSpeech::Verb,
+                vec![FormatAction::VerbToMasenDeshita {}],
+            )]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("行く", &PartOfSpeech::Verb);
+
+            assert_eq!(result.unwrap(), "行きませんでした");
+        }
+
+        #[test]
+        fn converts_to_mashou() {
+            let format_map =
+                HashMap::from([(PartOfSpeech::Verb, vec![FormatAction::VerbToMashou {}])]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("行く", &PartOfSpeech::Verb);
+
+            assert_eq!(result.unwrap(), "行きましょう");
+        }
+
+        #[test]
+        fn converts_to_stem() {
+            let format_map =
+                HashMap::from([(PartOfSpeech::Verb, vec![FormatAction::VerbToStem {}])]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("行く", &PartOfSpeech::Verb);
+
+            assert_eq!(result.unwrap(), "行き");
+        }
+
+        #[test]
+        fn converts_to_ta() {
+            let format_map = HashMap::from([(PartOfSpeech::Verb, vec![FormatAction::VerbToTa {}])]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("行く", &PartOfSpeech::Verb);
+
+            assert_eq!(result.unwrap(), "行った");
+        }
+
+        #[test]
+        fn converts_to_nai() {
+            let format_map =
+                HashMap::from([(PartOfSpeech::Verb, vec![FormatAction::VerbToNai {}])]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("行く", &PartOfSpeech::Verb);
+
+            assert_eq!(result.unwrap(), "行かない");
+        }
+
+        #[test]
+        fn converts_to_tara() {
+            let format_map =
+                HashMap::from([(PartOfSpeech::Verb, vec![FormatAction::VerbToTara {}])]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("行く", &PartOfSpeech::Verb);
+
+            assert_eq!(result.unwrap(), "行ったら");
+        }
+
+        #[test]
+        fn converts_to_ba() {
+            let format_map = HashMap::from([(PartOfSpeech::Verb, vec![FormatAction::VerbToBa {}])]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("行く", &PartOfSpeech::Verb);
+
+            assert_eq!(result.unwrap(), "行けば");
+        }
+
+        #[test]
+        fn converts_to_potential() {
+            let format_map =
+                HashMap::from([(PartOfSpeech::Verb, vec![FormatAction::VerbToPotential {}])]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("行く", &PartOfSpeech::Verb);
+
+            assert_eq!(result.unwrap(), "行ける");
+        }
+
+        #[test]
+        fn converts_to_passive() {
+            let format_map =
+                HashMap::from([(PartOfSpeech::Verb, vec![FormatAction::VerbToPassive {}])]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("行く", &PartOfSpeech::Verb);
+
+            assert_eq!(result.unwrap(), "行かれる");
+        }
+
+        #[test]
+        fn converts_to_causative() {
+            let format_map =
+                HashMap::from([(PartOfSpeech::Verb, vec![FormatAction::VerbToCausative {}])]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("行く", &PartOfSpeech::Verb);
+
+            assert_eq!(result.unwrap(), "行かせる");
+        }
+
+        #[test]
+        fn converts_to_causative_passive() {
+            let format_map = HashMap::from([(
+                PartOfSpeech::Verb,
+                vec![FormatAction::VerbToCausativePassive {}],
+            )]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("行く", &PartOfSpeech::Verb);
+
+            assert_eq!(result.unwrap(), "行かされる");
+        }
+
+        #[test]
+        fn converts_to_imperative() {
+            let format_map =
+                HashMap::from([(PartOfSpeech::Verb, vec![FormatAction::VerbToImperative {}])]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("行く", &PartOfSpeech::Verb);
+
+            assert_eq!(result.unwrap(), "行け");
+        }
+
+        #[test]
+        fn converts_to_volitional() {
+            let format_map =
+                HashMap::from([(PartOfSpeech::Verb, vec![FormatAction::VerbToVolitional {}])]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("行く", &PartOfSpeech::Verb);
+
+            assert_eq!(result.unwrap(), "行こう");
+        }
+
+        #[test]
+        fn converts_to_sou() {
+            let format_map =
+                HashMap::from([(PartOfSpeech::Verb, vec![FormatAction::VerbToSou {}])]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("行く", &PartOfSpeech::Verb);
+
+            assert_eq!(result.unwrap(), "行きそう");
+        }
+
+        #[test]
+        fn converts_to_zu() {
+            let format_map = HashMap::from([(PartOfSpeech::Verb, vec![FormatAction::VerbToZu {}])]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("行く", &PartOfSpeech::Verb);
+
+            assert_eq!(result.unwrap(), "行かず");
+        }
+
+        #[test]
+        fn converts_to_tai() {
+            let format_map =
+                HashMap::from([(PartOfSpeech::Verb, vec![FormatAction::VerbToTai {}])]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("行く", &PartOfSpeech::Verb);
+
+            assert_eq!(result.unwrap(), "行きたい");
+        }
+
+        #[test]
+        fn converts_to_yasui() {
+            let format_map =
+                HashMap::from([(PartOfSpeech::Verb, vec![FormatAction::VerbToYasui {}])]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("行く", &PartOfSpeech::Verb);
+
+            assert_eq!(result.unwrap(), "行きやすい");
+        }
+
+        #[test]
+        fn converts_to_nikui() {
+            let format_map =
+                HashMap::from([(PartOfSpeech::Verb, vec![FormatAction::VerbToNikui {}])]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("行く", &PartOfSpeech::Verb);
+
+            assert_eq!(result.unwrap(), "行きにくい");
+        }
+
+        #[test]
+        fn converts_to_sugiru() {
+            let format_map =
+                HashMap::from([(PartOfSpeech::Verb, vec![FormatAction::VerbToSugiru {}])]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("行く", &PartOfSpeech::Verb);
+
+            assert_eq!(result.unwrap(), "行きすぎる");
+        }
+
+        #[test]
+        fn converts_to_chau() {
+            let format_map =
+                HashMap::from([(PartOfSpeech::Verb, vec![FormatAction::VerbToChau {}])]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("行く", &PartOfSpeech::Verb);
+
+            assert_eq!(result.unwrap(), "行っちゃう");
+        }
+
+        #[test]
+        fn converts_to_toku() {
+            let format_map =
+                HashMap::from([(PartOfSpeech::Verb, vec![FormatAction::VerbToToku {}])]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("行く", &PartOfSpeech::Verb);
+
+            assert_eq!(result.unwrap(), "行っとく");
+        }
+
+        #[test]
+        fn converts_to_teru() {
+            let format_map =
+                HashMap::from([(PartOfSpeech::Verb, vec![FormatAction::VerbToTeru {}])]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("行く", &PartOfSpeech::Verb);
+
+            assert_eq!(result.unwrap(), "行ってる");
+        }
+
+        #[test]
+        fn converts_to_o_ni_narimasu() {
+            let format_map =
+                HashMap::from([(PartOfSpeech::Verb, vec![FormatAction::VerbToONinarimasu {}])]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("行く", &PartOfSpeech::Verb);
+
+            assert_eq!(result.unwrap(), "お行きになる");
+        }
+
+        #[test]
+        fn converts_to_o_kudasai() {
+            let format_map =
+                HashMap::from([(PartOfSpeech::Verb, vec![FormatAction::VerbToOKudasai {}])]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("行く", &PartOfSpeech::Verb);
+
+            assert_eq!(result.unwrap(), "お行きください");
+        }
+
+        #[test]
+        fn converts_to_o_shimasu() {
+            let format_map =
+                HashMap::from([(PartOfSpeech::Verb, vec![FormatAction::VerbToOShimasu {}])]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("行く", &PartOfSpeech::Verb);
+
+            assert_eq!(result.unwrap(), "お行きする");
+        }
+
+        #[test]
+        fn irregular_verb_suru_conversions() {
+            let format_map =
+                HashMap::from([(PartOfSpeech::Verb, vec![FormatAction::VerbToTeForm {}])]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("する", &PartOfSpeech::Verb);
+
+            assert_eq!(result.unwrap(), "して");
+        }
+
+        #[test]
+        fn irregular_verb_kuru_conversions() {
+            let format_map =
+                HashMap::from([(PartOfSpeech::Verb, vec![FormatAction::VerbToTeForm {}])]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("くる", &PartOfSpeech::Verb);
+
+            assert_eq!(result.unwrap(), "きて");
+        }
+    }
+
+    mod postfix_operations {
+        use super::*;
+
+        #[test]
+        fn adds_postfix() {
+            let format_map = HashMap::from([(
+                PartOfSpeech::Verb,
+                vec![FormatAction::AddPostfix {
+                    postfix: "たい".to_string(),
+                }],
+            )]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("行き", &PartOfSpeech::Verb);
+
+            assert_eq!(result.unwrap(), "行きたい");
+        }
+
+        #[test]
+        fn replaces_postfix() {
+            let format_map = HashMap::from([(
+                PartOfSpeech::Verb,
+                vec![FormatAction::ReplacePostfix {
+                    old_postfix: "く".to_string(),
+                    new_postfix: "いて".to_string(),
+                }],
+            )]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("行く", &PartOfSpeech::Verb);
+
+            assert_eq!(result.unwrap(), "行いて");
+        }
+
+        #[test]
+        fn removes_postfix() {
+            let format_map = HashMap::from([(
+                PartOfSpeech::Verb,
+                vec![FormatAction::RemovePostfix {
+                    postfix: "く".to_string(),
+                }],
+            )]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("行く", &PartOfSpeech::Verb);
+
+            assert_eq!(result.unwrap(), "行");
+        }
+    }
+
+    mod chained_operations {
+        use super::*;
+
+        #[test]
+        fn chains_multiple_format_actions() {
+            let format_map = HashMap::from([(
+                PartOfSpeech::IAdjective,
+                vec![
+                    FormatAction::AdjectiveRemovePostfix {},
+                    FormatAction::AddPostfix {
+                        postfix: "です".to_string(),
+                    },
+                ],
+            )]);
+            let rule = create_rule_with_format_map(format_map);
+
+            let result = rule.format("高い", &PartOfSpeech::IAdjective);
+
+            assert_eq!(result.unwrap(), "高くなるです");
+        }
+    }
+}

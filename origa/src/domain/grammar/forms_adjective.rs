@@ -174,100 +174,106 @@ pub fn to_garu_form(word: &str, part_of_speech: &PartOfSpeech) -> Result<String,
 #[cfg(test)]
 mod tests {
     use super::*;
+    use rstest::rstest;
 
-    #[test]
-    fn test_to_kunai_form() {
+    #[rstest]
+    #[case("高い", "高くない")]
+    #[case("新しい", "新しくない")]
+    fn kunai_form(#[case] input: &str, #[case] expected: &str) {
         assert_eq!(
-            to_kunai_form("高い", &PartOfSpeech::IAdjective).unwrap(),
-            "高くない"
-        );
-        assert_eq!(
-            to_kunai_form("新しい", &PartOfSpeech::IAdjective).unwrap(),
-            "新しくない"
+            to_kunai_form(input, &PartOfSpeech::IAdjective).unwrap(),
+            expected
         );
     }
 
-    #[test]
-    fn test_to_katta_form() {
+    #[rstest]
+    #[case("高い", "高かった")]
+    #[case("新しい", "新しかった")]
+    fn katta_form(#[case] input: &str, #[case] expected: &str) {
         assert_eq!(
-            to_katta_form("高い", &PartOfSpeech::IAdjective).unwrap(),
-            "高かった"
-        );
-        assert_eq!(
-            to_katta_form("新しい", &PartOfSpeech::IAdjective).unwrap(),
-            "新しかった"
+            to_katta_form(input, &PartOfSpeech::IAdjective).unwrap(),
+            expected
         );
     }
 
-    #[test]
-    fn test_to_kunakatta_form() {
+    #[rstest]
+    #[case("高い", "高くなかった")]
+    fn kunakatta_form(#[case] input: &str, #[case] expected: &str) {
         assert_eq!(
-            to_kunakatta_form("高い", &PartOfSpeech::IAdjective).unwrap(),
-            "高くなかった"
+            to_kunakatta_form(input, &PartOfSpeech::IAdjective).unwrap(),
+            expected
         );
     }
 
-    #[test]
-    fn test_to_kute_form() {
+    #[rstest]
+    #[case("高い", "高くて")]
+    fn kute_form(#[case] input: &str, #[case] expected: &str) {
         assert_eq!(
-            to_kute_form("高い", &PartOfSpeech::IAdjective).unwrap(),
-            "高くて"
+            to_kute_form(input, &PartOfSpeech::IAdjective).unwrap(),
+            expected
         );
     }
 
-    #[test]
-    fn test_to_ku_form() {
+    #[rstest]
+    #[case("高い", "高く")]
+    fn ku_form(#[case] input: &str, #[case] expected: &str) {
         assert_eq!(
-            to_ku_form("高い", &PartOfSpeech::IAdjective).unwrap(),
-            "高く"
+            to_ku_form(input, &PartOfSpeech::IAdjective).unwrap(),
+            expected
         );
     }
 
-    #[test]
-    fn test_to_kereba_form() {
+    #[rstest]
+    #[case("高い", "高ければ")]
+    fn kereba_form(#[case] input: &str, #[case] expected: &str) {
         assert_eq!(
-            to_kereba_form("高い", &PartOfSpeech::IAdjective).unwrap(),
-            "高ければ"
+            to_kereba_form(input, &PartOfSpeech::IAdjective).unwrap(),
+            expected
         );
     }
 
-    #[test]
-    fn test_to_na_form() {
+    #[rstest]
+    #[case("静かな", "静かな")]
+    fn na_form(#[case] input: &str, #[case] expected: &str) {
         assert_eq!(
-            to_na_form("静かな", &PartOfSpeech::NaAdjective).unwrap(),
-            "静かな"
+            to_na_form(input, &PartOfSpeech::NaAdjective).unwrap(),
+            expected
         );
     }
 
-    #[test]
-    fn test_to_de_form() {
+    #[rstest]
+    #[case("静かな", "静かで")]
+    fn de_form(#[case] input: &str, #[case] expected: &str) {
         assert_eq!(
-            to_de_form("静かな", &PartOfSpeech::NaAdjective).unwrap(),
-            "静かで"
+            to_de_form(input, &PartOfSpeech::NaAdjective).unwrap(),
+            expected
         );
     }
 
-    #[test]
-    fn test_to_nara_form() {
+    #[rstest]
+    #[case("静かな", "静かなら")]
+    fn nara_form(#[case] input: &str, #[case] expected: &str) {
         assert_eq!(
-            to_nara_form("静かな", &PartOfSpeech::NaAdjective).unwrap(),
-            "静かなら"
+            to_nara_form(input, &PartOfSpeech::NaAdjective).unwrap(),
+            expected
         );
     }
 
-    #[test]
-    fn test_to_sugiru_form() {
+    #[rstest]
+    #[case("高い", "高すぎる")]
+    fn sugiru_form(#[case] input: &str, #[case] expected: &str) {
         assert_eq!(
-            to_sugiru_form("高い", &PartOfSpeech::IAdjective).unwrap(),
-            "高すぎる"
+            to_sugiru_form(input, &PartOfSpeech::IAdjective).unwrap(),
+            expected
         );
     }
 
-    #[test]
-    fn test_to_nasasou_form() {
+    #[rstest]
+    #[case("高い", "高なさそう")]
+    fn nasasou_form(#[case] input: &str, #[case] expected: &str) {
         assert_eq!(
-            to_nasasou_form("高い", &PartOfSpeech::IAdjective).unwrap(),
-            "高なさそう"
+            to_nasasou_form(input, &PartOfSpeech::IAdjective).unwrap(),
+            expected
         );
     }
 }

@@ -725,9 +725,13 @@ pub fn to_sugiru_form_verb(word: &str) -> String {
 pub fn to_chau_form(word: &str) -> String {
     let te = to_te_form(word);
     if te.ends_with("て") {
-        format!("{}ちゃう", &te[..te.len() - 1])
+        let mut stem = te;
+        stem.pop();
+        format!("{}ちゃう", stem)
     } else if te.ends_with("で") {
-        format!("{}じゃう", &te[..te.len() - 1])
+        let mut stem = te;
+        stem.pop();
+        format!("{}じゃう", stem)
     } else {
         format!("{}ちゃう", te)
     }
@@ -736,9 +740,13 @@ pub fn to_chau_form(word: &str) -> String {
 pub fn to_toku_form(word: &str) -> String {
     let te = to_te_form(word);
     if te.ends_with("て") {
-        format!("{}とく", &te[..te.len() - 1])
+        let mut stem = te;
+        stem.pop();
+        format!("{}とく", stem)
     } else if te.ends_with("で") {
-        format!("{}どく", &te[..te.len() - 1])
+        let mut stem = te;
+        stem.pop();
+        format!("{}どく", stem)
     } else {
         format!("{}とく", te)
     }
@@ -747,9 +755,13 @@ pub fn to_toku_form(word: &str) -> String {
 pub fn to_teru_form(word: &str) -> String {
     let te = to_te_form(word);
     if te.ends_with("て") {
-        format!("{}てる", &te[..te.len() - 1])
+        let mut stem = te;
+        stem.pop();
+        format!("{}てる", stem)
     } else if te.ends_with("で") {
-        format!("{}でる", &te[..te.len() - 1])
+        let mut stem = te;
+        stem.pop();
+        format!("{}でる", stem)
     } else {
         format!("{}てる", te)
     }
@@ -788,139 +800,154 @@ pub fn to_o_shimasu_form(word: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use rstest::rstest;
 
-    #[test]
-    fn test_classify_verb() {
-        assert_eq!(classify_verb("する"), VerbGroup::Irregular);
-        assert_eq!(classify_verb("くる"), VerbGroup::Irregular);
-        assert_eq!(classify_verb("食べる"), VerbGroup::Ichidan);
-        assert_eq!(classify_verb("見る"), VerbGroup::Ichidan);
-        assert_eq!(classify_verb("行く"), VerbGroup::Godan);
-        assert_eq!(classify_verb("話す"), VerbGroup::Godan);
+    #[rstest]
+    #[case("する", VerbGroup::Irregular)]
+    #[case("くる", VerbGroup::Irregular)]
+    #[case("食べる", VerbGroup::Ichidan)]
+    #[case("見る", VerbGroup::Ichidan)]
+    #[case("行く", VerbGroup::Godan)]
+    #[case("話す", VerbGroup::Godan)]
+    fn classify_verb(#[case] input: &str, #[case] expected: VerbGroup) {
+        assert_eq!(super::classify_verb(input), expected);
     }
 
-    #[test]
-    fn test_te_form() {
-        assert_eq!(to_te_form("行く"), "行って");
-        assert_eq!(to_te_form("話す"), "話して");
-        assert_eq!(to_te_form("読む"), "読んで");
-        assert_eq!(to_te_form("書く"), "書いて");
-        assert_eq!(to_te_form("泳ぐ"), "泳いで");
-        assert_eq!(to_te_form("食べる"), "食べて");
-        assert_eq!(to_te_form("見る"), "見て");
-        assert_eq!(to_te_form("する"), "して");
-        assert_eq!(to_te_form("くる"), "きて");
+    #[rstest]
+    #[case("行く", "行って")]
+    #[case("話す", "話して")]
+    #[case("読む", "読んで")]
+    #[case("書く", "書いて")]
+    #[case("泳ぐ", "泳いで")]
+    #[case("食べる", "食べて")]
+    #[case("見る", "見て")]
+    #[case("する", "して")]
+    #[case("くる", "きて")]
+    fn te_form(#[case] input: &str, #[case] expected: &str) {
+        assert_eq!(to_te_form(input), expected);
     }
 
-    #[test]
-    fn test_masu_form() {
-        assert_eq!(to_masu_form("行く"), "行きます");
-        assert_eq!(to_masu_form("食べる"), "食べます");
-        assert_eq!(to_masu_form("する"), "します");
+    #[rstest]
+    #[case("行く", "行きます")]
+    #[case("食べる", "食べます")]
+    #[case("する", "します")]
+    fn masu_form(#[case] input: &str, #[case] expected: &str) {
+        assert_eq!(to_masu_form(input), expected);
     }
 
-    #[test]
-    fn test_ta_form() {
-        assert_eq!(to_ta_form("行く"), "行った");
-        assert_eq!(to_ta_form("話す"), "話した");
-        assert_eq!(to_ta_form("読む"), "読んだ");
-        assert_eq!(to_ta_form("書く"), "書いた");
-        assert_eq!(to_ta_form("食べる"), "食べた");
-        assert_eq!(to_ta_form("する"), "した");
+    #[rstest]
+    #[case("行く", "行った")]
+    #[case("話す", "話した")]
+    #[case("読む", "読んだ")]
+    #[case("書く", "書いた")]
+    #[case("食べる", "食べた")]
+    #[case("する", "した")]
+    fn ta_form(#[case] input: &str, #[case] expected: &str) {
+        assert_eq!(to_ta_form(input), expected);
     }
 
-    #[test]
-    fn test_nai_form() {
-        assert_eq!(to_nai_form("行く"), "行かない");
-        assert_eq!(to_nai_form("食べる"), "食べない");
-        assert_eq!(to_nai_form("する"), "しない");
-        assert_eq!(to_nai_form("くる"), "こない");
+    #[rstest]
+    #[case("行く", "行かない")]
+    #[case("食べる", "食べない")]
+    #[case("する", "しない")]
+    #[case("くる", "こない")]
+    fn nai_form(#[case] input: &str, #[case] expected: &str) {
+        assert_eq!(to_nai_form(input), expected);
     }
 
-    #[test]
-    fn test_tara_form() {
-        assert_eq!(to_tara_form("行く"), "行ったら");
-        assert_eq!(to_tara_form("食べる"), "食べたら");
-        assert_eq!(to_tara_form("する"), "したら");
+    #[rstest]
+    #[case("行く", "行ったら")]
+    #[case("食べる", "食べたら")]
+    #[case("する", "したら")]
+    fn tara_form(#[case] input: &str, #[case] expected: &str) {
+        assert_eq!(to_tara_form(input), expected);
     }
 
-    #[test]
-    fn test_ba_form() {
-        assert_eq!(to_ba_form("行く"), "行けば");
-        assert_eq!(to_ba_form("食べる"), "食べれば");
-        assert_eq!(to_ba_form("する"), "すれば");
+    #[rstest]
+    #[case("行く", "行けば")]
+    #[case("食べる", "食べれば")]
+    #[case("する", "すれば")]
+    fn ba_form(#[case] input: &str, #[case] expected: &str) {
+        assert_eq!(to_ba_form(input), expected);
     }
 
-    #[test]
-    fn test_potential_form() {
-        assert_eq!(to_potential_form("行く"), "行ける");
-        assert_eq!(to_potential_form("食べる"), "食べられる");
-        assert_eq!(to_potential_form("する"), "できる");
+    #[rstest]
+    #[case("行く", "行ける")]
+    #[case("食べる", "食べられる")]
+    #[case("する", "できる")]
+    fn potential_form(#[case] input: &str, #[case] expected: &str) {
+        assert_eq!(to_potential_form(input), expected);
     }
 
-    #[test]
-    fn test_passive_form() {
-        assert_eq!(to_passive_form("行く"), "行かれる");
-        assert_eq!(to_passive_form("食べる"), "食べられる");
-        assert_eq!(to_passive_form("する"), "される");
+    #[rstest]
+    #[case("行く", "行かれる")]
+    #[case("食べる", "食べられる")]
+    #[case("する", "される")]
+    fn passive_form(#[case] input: &str, #[case] expected: &str) {
+        assert_eq!(to_passive_form(input), expected);
     }
 
-    #[test]
-    fn test_causative_form() {
-        assert_eq!(to_causative_form("行く"), "行かせる");
-        assert_eq!(to_causative_form("食べる"), "食べさせる");
-        assert_eq!(to_causative_form("する"), "させる");
+    #[rstest]
+    #[case("行く", "行かせる")]
+    #[case("食べる", "食べさせる")]
+    #[case("する", "させる")]
+    fn causative_form(#[case] input: &str, #[case] expected: &str) {
+        assert_eq!(to_causative_form(input), expected);
     }
 
-    #[test]
-    fn test_imperative_form() {
-        assert_eq!(to_imperative_form("行く"), "行け");
-        assert_eq!(to_imperative_form("食べる"), "食べろ");
-        assert_eq!(to_imperative_form("する"), "しろ");
+    #[rstest]
+    #[case("行く", "行け")]
+    #[case("食べる", "食べろ")]
+    #[case("する", "しろ")]
+    fn imperative_form(#[case] input: &str, #[case] expected: &str) {
+        assert_eq!(to_imperative_form(input), expected);
     }
 
-    #[test]
-    fn test_volitional_form() {
-        assert_eq!(to_volitional_form("行く"), "行こう");
-        assert_eq!(to_volitional_form("食べる"), "食べよう");
-        assert_eq!(to_volitional_form("する"), "しよう");
+    #[rstest]
+    #[case("行く", "行こう")]
+    #[case("食べる", "食べよう")]
+    #[case("する", "しよう")]
+    fn volitional_form(#[case] input: &str, #[case] expected: &str) {
+        assert_eq!(to_volitional_form(input), expected);
     }
 
-    #[test]
-    fn test_zu_form() {
-        assert_eq!(to_zu_form("行く"), "行かず");
-        assert_eq!(to_zu_form("食べる"), "食べず");
-        assert_eq!(to_zu_form("する"), "せず");
+    #[rstest]
+    #[case("行く", "行かず")]
+    #[case("食べる", "食べず")]
+    #[case("する", "せず")]
+    fn zu_form(#[case] input: &str, #[case] expected: &str) {
+        assert_eq!(to_zu_form(input), expected);
     }
 
-    #[test]
-    fn test_godan_iru_eru_exceptions() {
-        assert_eq!(classify_verb("要る"), VerbGroup::Godan);
-        assert_eq!(classify_verb("入る"), VerbGroup::Godan);
-        assert_eq!(classify_verb("減る"), VerbGroup::Godan);
-        assert_eq!(classify_verb("茂る"), VerbGroup::Godan);
-        assert_eq!(classify_verb("喋る"), VerbGroup::Godan);
-        assert_eq!(classify_verb("遮る"), VerbGroup::Godan);
-        assert_eq!(classify_verb("悟る"), VerbGroup::Godan);
+    #[rstest]
+    #[case("要る", VerbGroup::Godan)]
+    #[case("入る", VerbGroup::Godan)]
+    #[case("減る", VerbGroup::Godan)]
+    #[case("茂る", VerbGroup::Godan)]
+    #[case("喋る", VerbGroup::Godan)]
+    #[case("遮る", VerbGroup::Godan)]
+    #[case("悟る", VerbGroup::Godan)]
+    fn godan_iru_eru_exceptions(#[case] input: &str, #[case] expected: VerbGroup) {
+        assert_eq!(super::classify_verb(input), expected);
     }
 
-    #[test]
-    fn test_ichidan_short_verbs() {
-        assert_eq!(classify_verb("見る"), VerbGroup::Ichidan);
-        assert_eq!(classify_verb("居る"), VerbGroup::Ichidan);
-        assert_eq!(classify_verb("着る"), VerbGroup::Ichidan);
-        assert_eq!(classify_verb("寝る"), VerbGroup::Ichidan);
-        assert_eq!(classify_verb("経る"), VerbGroup::Ichidan);
-        assert_eq!(classify_verb("蹴る"), VerbGroup::Ichidan);
+    #[rstest]
+    #[case("見る", VerbGroup::Ichidan)]
+    #[case("居る", VerbGroup::Ichidan)]
+    #[case("着る", VerbGroup::Ichidan)]
+    #[case("寝る", VerbGroup::Ichidan)]
+    #[case("経る", VerbGroup::Ichidan)]
+    #[case("蹴る", VerbGroup::Ichidan)]
+    fn ichidan_short_verbs(#[case] input: &str, #[case] expected: VerbGroup) {
+        assert_eq!(super::classify_verb(input), expected);
     }
 
-    #[test]
-    fn test_godan_exceptions_conjugation() {
-        assert_eq!(to_te_form("要る"), "要って");
-        assert_eq!(to_masu_form("要る"), "要ります");
-        assert_eq!(to_te_form("入る"), "入って");
-        assert_eq!(to_masu_form("入る"), "入ります");
-        assert_eq!(to_te_form("喋る"), "喋って");
-        assert_eq!(to_masu_form("喋る"), "喋ります");
+    #[rstest]
+    #[case("要る", "要って", "要ります")]
+    #[case("入る", "入って", "入ります")]
+    #[case("喋る", "喋って", "喋ります")]
+    fn godan_exceptions_conjugation(#[case] verb: &str, #[case] te: &str, #[case] masu: &str) {
+        assert_eq!(to_te_form(verb), te);
+        assert_eq!(to_masu_form(verb), masu);
     }
 }
