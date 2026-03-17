@@ -7,6 +7,8 @@ pub fn create_on_quiz_select(
     lesson_state: RwSignal<LessonState>,
     on_rate_callback: Callback<Rating>,
 ) -> Callback<usize> {
+    let is_disposed = use_context::<StoredValue<bool>>().expect("is_disposed must be provided");
+
     Callback::new(move |option_index: usize| {
         lesson_state.update(|state| {
             state.selected_quiz_option = Some(option_index);
@@ -31,6 +33,9 @@ pub fn create_on_quiz_select(
             let on_rate_clone = on_rate_callback;
             spawn_local(async move {
                 gloo_timers::future::TimeoutFuture::new(1500).await;
+                if is_disposed.get_value() {
+                    return;
+                }
                 on_rate_clone.run(rating);
             });
         }

@@ -11,6 +11,8 @@ pub fn create_on_rate_callback(
     lesson_ctx: LessonContext,
     is_rating: RwSignal<Option<Ulid>>,
 ) -> Callback<Rating> {
+    let is_disposed = use_context::<StoredValue<bool>>().expect("is_disposed must be provided");
+
     Callback::new(move |rating: Rating| {
         let state = lesson_state.get_untracked();
 
@@ -28,6 +30,10 @@ pub fn create_on_rate_callback(
                 let _ = use_case
                     .execute(card_id, RateMode::StandardLesson, rating)
                     .await;
+
+                if is_disposed.get_value() {
+                    return;
+                }
 
                 lesson_state.update(|state| {
                     let next_index = state.current_index + 1;

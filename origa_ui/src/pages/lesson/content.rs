@@ -38,6 +38,10 @@ pub fn LessonContent() -> impl IntoView {
     let known_kanji = RwSignal::new(HashSet::<String>::new());
     let native_language = RwSignal::new(NativeLanguage::Russian);
 
+    let is_disposed = StoredValue::new(false);
+    on_cleanup(move || is_disposed.set_value(true));
+    provide_context(is_disposed);
+
     let lesson_ctx = LessonContext {
         repository: repository.clone(),
         lesson_state,
@@ -58,6 +62,9 @@ pub fn LessonContent() -> impl IntoView {
                 Ok(()) => {
                     set_last_sync_time(js_sys::Date::now() as u64 / 1000);
                     if let Ok(Some(user)) = repo.get_current_user().await {
+                        if is_disposed.get_value() {
+                            return;
+                        }
                         known_kanji.set(user.knowledge_set().get_known_kanji());
                         native_language.set(*user.native_language());
                     }
@@ -65,6 +72,9 @@ pub fn LessonContent() -> impl IntoView {
                 Err(e) => {
                     tracing::error!("Lesson: merge_current_user error: {:?}", e);
                 }
+            }
+            if is_disposed.get_value() {
+                return;
             }
             is_initial_syncing.set(false);
         });
@@ -88,6 +98,9 @@ pub fn LessonContent() -> impl IntoView {
         let repo = repository.clone();
         let current_mode = mode;
         spawn_local(async move {
+            if is_disposed.get_value() {
+                return;
+            }
             is_loading.set(true);
 
             let cards: Result<
@@ -105,6 +118,10 @@ pub fn LessonContent() -> impl IntoView {
             };
 
             tracing::info!("Cards len: {}", cards.iter().count());
+
+            if is_disposed.get_value() {
+                return;
+            }
 
             match cards {
                 Ok(cards) => {
