@@ -101,6 +101,8 @@ impl KnowledgeSet {
         }
 
         self.lesson_history.sort_by_key(|h| h.timestamp());
+
+        self.recalculate_daily_stats();
     }
 
     pub fn get_card(&self, card_id: Ulid) -> Option<&StudyCard> {
@@ -999,24 +1001,22 @@ mod tests {
     }
 
     #[test]
-    fn merge_stats_takes_max() {
+    fn merge_stats_recalculated_from_actual() {
         let mut local = KnowledgeSet::new();
         for i in 0..100 {
             local
                 .create_card(create_vocab_card(&format!("word{i}")))
                 .unwrap();
         }
+
+        let mut remote = local.clone();
+
         for i in 0..50 {
-            let card = local
+            local
                 .create_card(create_vocab_card(&format!("known{i}")))
                 .unwrap();
-            let memory = create_known_memory_state();
-            let study = local.study_cards().get(card.card_id()).unwrap();
-            let mut study_mut = study.clone();
-            study_mut.add_review(memory, ReviewLog::new(Rating::Good, Duration::days(1)));
         }
 
-        let mut remote = KnowledgeSet::new();
         for i in 0..150 {
             remote
                 .create_card(create_vocab_card(&format!("remote{i}")))
@@ -1026,11 +1026,7 @@ mod tests {
         local.merge(&remote);
 
         let history_item = &local.lesson_history()[0];
-        assert_eq!(
-            history_item.total_words(),
-            150,
-            "total_words должен быть максимумом"
-        );
+        assert_eq!(history_item.total_words(), 300);
     }
 
     #[test]

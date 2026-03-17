@@ -1,9 +1,9 @@
 use super::types::BoundingBox;
 use crate::domain::OrigaError;
-use futures::lock::Mutex;
 use image::{DynamicImage, GenericImageView, ImageBuffer, Pixel, Rgb};
 use ort::session::Session;
 use ort_web::ValueExt;
+use std::cell::RefCell;
 
 const CONF_THRESHOLD: f32 = 0.25;
 
@@ -11,7 +11,7 @@ const IMAGENET_MEAN: [f32; 3] = [0.485, 0.456, 0.406];
 const IMAGENET_STD: [f32; 3] = [0.229, 0.224, 0.225];
 
 pub struct DeimDetector {
-    session: Mutex<Session>,
+    session: RefCell<Session>,
     input_size: u32,
 }
 
@@ -69,7 +69,7 @@ impl DeimDetector {
         };
 
         Ok(Self {
-            session: Mutex::new(session),
+            session: RefCell::new(session),
             input_size,
         })
     }
@@ -101,7 +101,7 @@ impl DeimDetector {
                 ort::session::RunOptions::new().map_err(|e| OrigaError::OcrError {
                     reason: format!("Failed to create run options: {:?}", e),
                 })?;
-            let mut session = self.session.lock().await;
+            let mut session = self.session.borrow_mut();
             let mut outputs = session
                 .run_async(
                     ort::inputs![

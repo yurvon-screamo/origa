@@ -118,12 +118,6 @@ impl DailyHistoryItem {
     pub fn merge_with(&mut self, other: &DailyHistoryItem) {
         self.lessons_completed = self.lessons_completed.max(other.lessons_completed);
 
-        self.total_words = self.total_words.max(other.total_words);
-        self.known_words = self.known_words.max(other.known_words);
-        self.new_words = self.new_words.max(other.new_words);
-        self.in_progress_words = self.in_progress_words.max(other.in_progress_words);
-        self.high_difficulty_words = self.high_difficulty_words.max(other.high_difficulty_words);
-
         if other.timestamp > self.timestamp {
             self.timestamp = other.timestamp;
             self.avg_stability = other.avg_stability;

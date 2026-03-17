@@ -8,7 +8,7 @@ use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::ocr::{JapaneseOCRModel, ModelConfig};
 use origa::use_cases::ExtractTextFromImageUseCase;
-use std::cell::RefCell;
+use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 use tracing::{debug, error, info};
 use wasm_bindgen::JsCast;
@@ -17,6 +17,7 @@ use web_sys::{ClipboardEvent, File, HtmlInputElement};
 
 thread_local! {
     static CACHED_MODEL: RefCell<Option<Rc<RefCell<JapaneseOCRModel>>>> = const { RefCell::new(None) };
+    static MODEL_LOADING: Cell<bool> = const { Cell::new(false) };
 }
 
 #[derive(Clone, Copy, Debug, Default)]
@@ -82,6 +83,11 @@ async fn run_ocr_on_data_url(
     ctx.ocr_loading_state.start_time.set(Some(Date::now()));
 
     let result = process_image_with_ocr(data_url, &ctx.ocr_loading_state).await;
+
+    if ctx.ocr_loading_state.cancel_requested.get() {
+        return;
+    }
+
     handle_ocr_result(result, ctx, on_text_extracted);
 }
 
@@ -111,8 +117,12 @@ fn process_file(
     }
 
     spawn_local(async move {
+        ctx.ocr_loading_state.cancel_requested.set(false);
         match read_file_as_data_url(&file).await {
             Ok(data_url) => {
+                if ctx.ocr_loading_state.cancel_requested.get() {
+                    return;
+                }
                 ctx.image_preview.set(Some(data_url.clone()));
                 run_ocr_on_data_url(&data_url, &ctx, &on_text_extracted).await;
             }
@@ -133,6 +143,7 @@ fn process_file(
 #[component]
 pub fn ImageInputStage(
     #[prop(optional, into)] class: Signal<String>,
+    is_open: RwSignal<bool>,
     on_text_extracted: Callback<String>,
     on_error: Callback<String>,
     on_switch_to_text: Callback<()>,
@@ -142,6 +153,16 @@ pub fn ImageInputStage(
     let error_message = RwSignal::new(None::<String>);
     let is_drag_over = RwSignal::new(false);
     let ocr_loading_state = OcrLoadingState::new();
+
+    Effect::new(move |_| {
+        if !is_open.get() {
+            ocr_loading_state.cancel_requested.set(true);
+            ocr_loading_state.reset();
+            ocr_state.set(OcrState::Idle);
+            image_preview.set(None);
+            error_message.set(None);
+        }
+    });
 
     let ocr_loading_state_for_file = ocr_loading_state;
     let on_file_change = move |ev: leptos::ev::Event| {
@@ -485,7 +506,7 @@ async fn init_ocr_model(
 #[cfg(target_arch = "wasm32")]
 async fn execute_ocr(
     use_case: &ExtractTextFromImageUseCase,
-    model: &mut JapaneseOCRModel,
+    model: &JapaneseOCRModel,
     bytes: &[u8],
 ) -> Result<String, String> {
     use_case
@@ -497,7 +518,7 @@ async fn execute_ocr(
 #[cfg(not(target_arch = "wasm32"))]
 async fn execute_ocr(
     use_case: &ExtractTextFromImageUseCase,
-    model: &mut JapaneseOCRModel,
+    model: &JapaneseOCRModel,
     bytes: &[u8],
 ) -> Result<String, String> {
     use_case
@@ -523,87 +544,118 @@ async fn process_image_with_ocr(
     let model = match model {
         Some(m) => m,
         None => {
-            info!("Loading OCR and Layout models");
+            if MODEL_LOADING.with(|loading| loading.get()) {
+                return Err("OCR-модель уже загружается, пожалуйста подождите".to_string());
+            }
 
-            let config = ModelConfig::new(crate::core::config::ndlocr_base_url(), "ndlocr-model-");
+            MODEL_LOADING.with(|loading| loading.set(true));
+            debug!("Starting OCR model loading");
 
-            let loading_state_ref = *loading_state;
-            let progress_callback: ProgressCallback = Rc::new(move |filename, loaded, total| {
-                let stage = loading_state_ref.stage.get();
-                let start_time = loading_state_ref.start_time.get();
+            let result = async {
+                info!("Loading OCR and Layout models");
 
-                let percent = if total > 0 {
-                    ((loaded as f64 / total as f64) * 100.0) as u32
-                } else {
-                    0
-                };
+                let config = ModelConfig::new(crate::core::config::ndlocr_base_url(), "ndlocr-model-");
 
-                let (speed_bps, eta_seconds) = calculate_speed_and_eta(start_time, loaded, total);
+                let loading_state_ref = *loading_state;
+                let progress_callback: ProgressCallback = Rc::new(move |filename, loaded, total| {
+                    let stage = loading_state_ref.stage.get();
+                    let start_time = loading_state_ref.start_time.get();
 
-                let progress = ProgressInfo {
-                    percent,
-                    loaded_bytes: loaded,
-                    total_bytes: total,
-                    speed_bps,
-                    eta_seconds,
-                };
-
-                if filename.contains("deim") {
-                    loading_state_ref
-                        .stage
-                        .set(OcrLoadingStage::DownloadingDeim { progress });
-                } else if filename.contains("parseq") {
-                    let current = match stage {
-                        OcrLoadingStage::DownloadingParseq { current_model, .. } => current_model,
-                        _ => 1,
+                    let percent = if total > 0 {
+                        ((loaded as f64 / total as f64) * 100.0) as u32
+                    } else {
+                        0
                     };
-                    loading_state_ref
-                        .stage
-                        .set(OcrLoadingStage::DownloadingParseq {
-                            current_model: current,
-                            progress,
-                        });
-                }
-            });
 
-            let loader = ModelLoader::new(config).with_progress_callback(progress_callback);
+                    let (speed_bps, eta_seconds) = calculate_speed_and_eta(start_time, loaded, total);
 
-            loading_state.stage.set(OcrLoadingStage::DownloadingDeim {
-                progress: ProgressInfo::default(),
-            });
+                    let progress = ProgressInfo {
+                        percent,
+                        loaded_bytes: loaded,
+                        total_bytes: total,
+                        speed_bps,
+                        eta_seconds,
+                    };
 
-            let model_files = loader.load_or_download_model().await.map_err(|e| {
-                loading_state.stage.set(OcrLoadingStage::Error {
-                    stage: "deim".to_string(),
-                    message: format!("Failed to load models: {:?}", e),
+                    if filename.contains("deim") {
+                        loading_state_ref
+                            .stage
+                            .set(OcrLoadingStage::DownloadingDeim { progress });
+                    } else if filename.contains("parseq") {
+                        let current = match stage {
+                            OcrLoadingStage::DownloadingParseq { current_model, .. } => current_model,
+                            _ => 1,
+                        };
+                        loading_state_ref
+                            .stage
+                            .set(OcrLoadingStage::DownloadingParseq {
+                                current_model: current,
+                                progress,
+                            });
+                    }
                 });
-                format!("Failed to load models: {:?}", e)
-            })?;
 
-            loading_state.stage.set(OcrLoadingStage::Initializing {
-                model_name: "OCR models".to_string(),
-            });
+                let loader = ModelLoader::new(config).with_progress_callback(progress_callback);
 
-            let new_model = init_ocr_model(model_files, loading_state).await?;
+                loading_state.stage.set(OcrLoadingStage::DownloadingDeim {
+                    progress: ProgressInfo::default(),
+                });
 
-            let wrapped = Rc::new(RefCell::new(new_model));
+                let model_files = loader.load_or_download_model().await.map_err(|e| {
+                    loading_state.stage.set(OcrLoadingStage::Error {
+                        stage: "deim".to_string(),
+                        message: format!("Failed to load models: {:?}", e),
+                    });
+                    format!("Failed to load models: {:?}", e)
+                })?;
 
-            CACHED_MODEL.with(|cached| {
-                *cached.borrow_mut() = Some(wrapped.clone());
-            });
+                if loading_state.cancel_requested.get() {
+                    return Err("Операция отменена".to_string());
+                }
 
-            wrapped
+                loading_state.stage.set(OcrLoadingStage::Initializing {
+                    model_name: "OCR models".to_string(),
+                });
+
+                let new_model = init_ocr_model(model_files, loading_state).await?;
+
+                if loading_state.cancel_requested.get() {
+                    return Err("Операция отменена".to_string());
+                }
+
+                let wrapped = Rc::new(RefCell::new(new_model));
+
+                CACHED_MODEL.with(|cached| {
+                    *cached.borrow_mut() = Some(wrapped.clone());
+                });
+
+                debug!("OCR model loaded and cached");
+                Ok(wrapped)
+            }.await;
+
+            MODEL_LOADING.with(|loading| loading.set(false));
+
+            result?
         }
     };
+
+    if loading_state.cancel_requested.get() {
+        return Err("Операция отменена".to_string());
+    }
 
     loading_state.stage.set(OcrLoadingStage::Recognizing);
 
     info!("Running OCR with layout analysis");
     let use_case = ExtractTextFromImageUseCase::new();
 
-    #[allow(clippy::await_holding_refcell_ref)]
-    let mut model_ref = model.borrow_mut();
-    execute_ocr(&use_case, &mut model_ref, &bytes).await
+    let model_ref = model.borrow();
+    let result = execute_ocr(&use_case, &model_ref, &bytes).await;
+
+    if loading_state.cancel_requested.get() {
+        return Err("Операция отменена".to_string());
+    }
+
+    result
 }
 
 fn calculate_speed_and_eta(start_time: Option<f64>, loaded: u64, total: u64) -> (u64, u64) {

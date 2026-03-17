@@ -17,6 +17,7 @@ pub enum InputMode {
 #[derive(Clone)]
 pub struct PreviewModalState {
     pub input_mode: RwSignal<InputMode>,
+    pub active_tab: RwSignal<String>,
     pub input_text: RwSignal<String>,
     pub analyzed_words: RwSignal<Vec<AnalyzedWord>>,
     pub selected_words: RwSignal<HashSet<String>>,
@@ -44,6 +45,7 @@ impl PreviewModalState {
 
         Self {
             input_mode: RwSignal::new(InputMode::Text),
+            active_tab: RwSignal::new("text".to_string()),
             input_text: RwSignal::new(String::new()),
             analyzed_words: RwSignal::new(Vec::new()),
             selected_words,
@@ -90,6 +92,7 @@ impl PreviewModalState {
 
     pub fn reset(&self) {
         self.input_mode.set(InputMode::Text);
+        self.active_tab.set("text".to_string());
         self.input_text.set(String::new());
         self.analyzed_words.set(Vec::new());
         self.selected_words.set(HashSet::new());

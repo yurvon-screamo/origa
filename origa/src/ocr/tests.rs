@@ -49,7 +49,7 @@ async fn test_japanese_ocr_e2e() {
         vocab,
     };
 
-    let mut model = JapaneseOCRModel::from_model_files(model_files)
+    let model = JapaneseOCRModel::from_model_files(model_files)
         .expect("Failed to initialize JapaneseOCRModel");
 
     let img_path = PathBuf::from(manifest_dir).join("src/ocr/ocr_example.jpg");
