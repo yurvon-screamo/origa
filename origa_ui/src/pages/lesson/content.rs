@@ -81,7 +81,7 @@ pub fn LessonContent() -> impl IntoView {
     Effect::new(move |_| {
         reload_trigger.get();
 
-        if auth_ctx.is_session_loading.get() {
+        if auth_ctx.is_session_loading.get() || !auth_ctx.is_data_loaded.get() {
             return;
         }
 
