@@ -1,6 +1,7 @@
 use std::{collections::HashMap, sync::OnceLock};
 
 use serde::{Deserialize, Serialize};
+use tracing::debug;
 
 use crate::domain::{JapaneseLevel, OrigaError};
 
@@ -27,8 +28,11 @@ pub fn is_radicals_loaded() -> bool {
 pub fn get_radical_info(radical: char) -> Result<&'static RadicalInfo, OrigaError> {
     RADICAL_DICTIONARY
         .get()
-        .ok_or(OrigaError::KradfileError {
-            reason: "Radical dictionary not loaded".to_string(),
+        .ok_or_else(|| {
+            debug!(radical = %radical, "Radical dictionary not loaded");
+            OrigaError::KradfileError {
+                reason: "Radical dictionary not loaded".to_string(),
+            }
         })?
         .get_radical_info(&radical)
 }
@@ -115,11 +119,12 @@ impl RadicalDatabase {
     }
 
     pub fn get_radical_info(&self, radical: &char) -> Result<&RadicalInfo, OrigaError> {
-        self.radical_map
-            .get(radical)
-            .ok_or(OrigaError::KradfileError {
+        self.radical_map.get(radical).ok_or_else(|| {
+            debug!(radical = %radical, "Radical not found in dictionary");
+            OrigaError::KradfileError {
                 reason: format!("Radical {} not found in radkfile", radical),
-            })
+            }
+        })
     }
 
     pub fn known_radicals(&self) -> &[char] {
