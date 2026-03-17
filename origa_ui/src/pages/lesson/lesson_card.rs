@@ -122,7 +122,12 @@ pub fn LessonCard(
             .as_ref()
             .map(|ctx| ctx.is_muted.get())
             .unwrap_or(false);
-        if !show_answer && !is_reversed && card_type != CardType::Kanji && is_speech_supported() && !is_muted {
+        if !show_answer
+            && !is_reversed
+            && card_type != CardType::Kanji
+            && is_speech_supported()
+            && !is_muted
+        {
             let reading = get_reading_from_text(&question.get_value());
             let _ = speak_text(&reading, 1.0);
         }
@@ -134,7 +139,12 @@ pub fn LessonCard(
             .as_ref()
             .map(|ctx| ctx.is_muted.get())
             .unwrap_or(false);
-        if show_answer && is_reversed && card_type != CardType::Kanji && is_speech_supported() && !is_muted {
+        if show_answer
+            && is_reversed
+            && card_type != CardType::Kanji
+            && is_speech_supported()
+            && !is_muted
+        {
             let reading = get_reading_from_text(&question.get_value());
             let _ = speak_text(&reading, 1.0);
         }

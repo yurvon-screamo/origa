@@ -1502,6 +1502,7 @@ input[type="submit"],
 	opacity: 0.5;
 }
 
+/* === Kанадзи Drawing Container === */
 .kanji-drawing-container {
 	display: flex;
 	flex-direction: column;
@@ -1509,27 +1510,48 @@ input[type="submit"],
 	gap: 16px;
 }
 
+/* === Canvas стили в стиле проекта === */
+.kanji-drawing-canvas-wrapper {
+	position: relative;
+}
+
+.kanji-drawing-canvas-wrapper::after {
+	content: "";
+	position: absolute;
+	inset: 4px;
+	border: 1px solid var(--border-dark);
+	z-index: -1;
+	background: var(--bg-aged);
+	pointer-events: none;
+}
+
 .kanji-drawing-canvas {
-	border: 3px solid #333;
-	background: #fff;
+	border: 1px solid var(--border-dark);
+	background: var(--bg-paper);
 	touch-action: none;
 	cursor: crosshair;
-	border-radius: 8px;
+	width: 256px;
+	height: 256px;
 }
 
 .kanji-drawing-info {
 	text-align: center;
 	margin: 15px 0;
-	font-size: 1.2rem;
+	font-family: "DM Mono", monospace;
+	font-size: 11px;
+	letter-spacing: 0.15em;
+	text-transform: uppercase;
+	color: var(--fg-muted);
 }
 
 .kanji-drawing-success {
-	color: #27ae60;
-	font-size: 1.4rem;
+	color: var(--success);
+	font-size: 14px;
+	font-family: "DM Mono", monospace;
 }
 
 .kanji-drawing-progress {
-	color: #666;
+	color: var(--fg-muted);
 }
 
 .kanji-drawing-controls {
@@ -1539,23 +1561,47 @@ input[type="submit"],
 }
 
 .kanji-drawing-reset-btn {
-	padding: 10px 20px;
-	background: #e74c3c;
-	color: white;
-	border: none;
-	border-radius: 6px;
-	cursor: pointer;
-	font-size: 1rem;
-	transition: background 0.2s;
+	position: relative;
 	font-family: "DM Mono", monospace;
+	font-size: 11px;
+	letter-spacing: 0.2em;
+	text-transform: uppercase;
+	padding: 12px 24px;
+	border: 1px solid var(--border-dark);
+	background: var(--bg-paper);
+	color: var(--fg-black);
+	cursor: pointer;
+	transition: all 0.2s ease;
 }
 
 .kanji-drawing-reset-btn:hover {
-	background: #c0392b;
+	background: var(--fg-black);
+	color: var(--bg-paper);
+}
+
+.kanji-drawing-reset-btn::before {
+	content: "";
+	position: absolute;
+	inset: 4px;
+	border: 1px solid var(--border-dark);
+	pointer-events: none;
 }
 
 .kanji-drawing-loading {
 	text-align: center;
 	padding: 40px;
-	color: #666;
+	color: var(--fg-muted);
+	font-family: "DM Mono", monospace;
+	font-size: 11px;
+	letter-spacing: 0.15em;
+	text-transform: uppercase;
+}
+
+.kanji-drawing-error {
+	text-align: center;
+	padding: 40px;
+	font-family: "DM Mono", monospace;
+	font-size: 11px;
+	letter-spacing: 0.15em;
+	color: var(--error);
 }
