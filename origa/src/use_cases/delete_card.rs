@@ -24,7 +24,7 @@ impl<'a, R: UserRepository> DeleteCardUseCase<'a, R> {
 
         user.delete_card(card_id)?;
 
-        self.repository.save(&user).await?;
+        self.repository.save_sync(&user).await?;
 
         info!(card_id = %card_id, "Card deleted");
         Ok(())

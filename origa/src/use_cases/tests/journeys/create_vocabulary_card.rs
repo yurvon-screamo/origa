@@ -90,10 +90,10 @@ async fn create_vocabulary_card_creates_multiple_cards_from_sentence() {
         .await
         .unwrap();
 
-    assert!(result.created_cards.len() >= 1);
+    assert!(!result.created_cards.is_empty());
 
     let user = repo.get_current_user().await.unwrap().unwrap();
-    assert!(user.knowledge_set().study_cards().len() >= 1);
+    assert!(!user.knowledge_set().study_cards().is_empty());
 }
 
 #[tokio::test]
