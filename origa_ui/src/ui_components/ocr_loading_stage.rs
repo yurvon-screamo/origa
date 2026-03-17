@@ -76,7 +76,6 @@ pub struct OcrLoadingState {
     pub stage: RwSignal<OcrLoadingStage>,
     pub cancel_requested: RwSignal<bool>,
     pub start_time: RwSignal<Option<f64>>,
-    pub is_disposed: RwSignal<bool>,
 }
 
 impl OcrLoadingState {
@@ -85,7 +84,6 @@ impl OcrLoadingState {
             stage: RwSignal::new(OcrLoadingStage::Idle),
             cancel_requested: RwSignal::new(false),
             start_time: RwSignal::new(None),
-            is_disposed: RwSignal::new(false),
         }
     }
 
