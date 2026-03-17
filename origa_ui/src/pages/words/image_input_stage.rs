@@ -45,10 +45,6 @@ fn handle_ocr_result(
     ctx: &ProcessContext,
     on_text_extracted: &Callback<String>,
 ) {
-    if ctx.ocr_loading_state.is_disposed.get() {
-        return;
-    }
-
     match result {
         Ok(text) => {
             if text.trim().is_empty() {
@@ -83,16 +79,12 @@ async fn run_ocr_on_data_url(
     ctx: &ProcessContext,
     on_text_extracted: &Callback<String>,
 ) {
-    if ctx.ocr_loading_state.is_disposed.get() {
-        return;
-    }
-
     ctx.ocr_state.set(OcrState::Processing);
     ctx.ocr_loading_state.start_time.set(Some(Date::now()));
 
     let result = process_image_with_ocr(data_url, &ctx.ocr_loading_state).await;
 
-    if ctx.ocr_loading_state.cancel_requested.get() || ctx.ocr_loading_state.is_disposed.get() {
+    if ctx.ocr_loading_state.cancel_requested.get() {
         return;
     }
 
@@ -104,7 +96,6 @@ fn process_file(
     ctx: ProcessContext,
     on_text_extracted: Callback<String>,
     on_error: Callback<String>,
-    on_ocr_start: Callback<()>,
 ) {
     let file_name = file.name();
     debug!(file_name = %file_name, "File selected");
@@ -125,24 +116,17 @@ fn process_file(
         return;
     }
 
-    on_ocr_start.run(());
-
     spawn_local(async move {
         ctx.ocr_loading_state.cancel_requested.set(false);
         match read_file_as_data_url(&file).await {
             Ok(data_url) => {
-                if ctx.ocr_loading_state.cancel_requested.get()
-                    || ctx.ocr_loading_state.is_disposed.get()
-                {
+                if ctx.ocr_loading_state.cancel_requested.get() {
                     return;
                 }
                 ctx.image_preview.set(Some(data_url.clone()));
                 run_ocr_on_data_url(&data_url, &ctx, &on_text_extracted).await;
             }
             Err(e) => {
-                if ctx.ocr_loading_state.is_disposed.get() {
-                    return;
-                }
                 error!(error = %e, "Failed to read file");
                 ctx.error_message.set(Some(e.clone()));
                 ctx.ocr_state.set(OcrState::Error);
@@ -163,7 +147,6 @@ pub fn ImageInputStage(
     on_text_extracted: Callback<String>,
     on_error: Callback<String>,
     on_switch_to_text: Callback<()>,
-    on_ocr_start: Callback<()>,
 ) -> impl IntoView {
     let ocr_state = RwSignal::new(OcrState::Idle);
     let image_preview = RwSignal::new(None::<String>);
@@ -173,15 +156,11 @@ pub fn ImageInputStage(
 
     Effect::new(move |_| {
         if !is_open.get() {
-            ocr_loading_state.is_disposed.set(true);
             ocr_loading_state.cancel_requested.set(true);
             ocr_loading_state.reset();
             ocr_state.set(OcrState::Idle);
             image_preview.set(None);
             error_message.set(None);
-        } else {
-            ocr_loading_state.is_disposed.set(false);
-            ocr_loading_state.cancel_requested.set(false);
         }
     });
 
@@ -211,7 +190,6 @@ pub fn ImageInputStage(
                 },
                 on_text_extracted,
                 on_error,
-                on_ocr_start,
             );
         }
     };
@@ -245,7 +223,6 @@ pub fn ImageInputStage(
                 },
                 on_text_extracted,
                 on_error,
-                on_ocr_start,
             );
         }
     };
@@ -273,7 +250,7 @@ pub fn ImageInputStage(
                     && let Some(files) = clipboard_data.files()
                     && let Some(file) = files.get(0)
                 {
-                    process_file(file, ctx.clone(), on_text_extracted, on_error, on_ocr_start);
+                    process_file(file, ctx.clone(), on_text_extracted, on_error);
                 }
             },
         );
@@ -577,55 +554,46 @@ async fn process_image_with_ocr(
             let result = async {
                 info!("Loading OCR and Layout models");
 
-                let config =
-                    ModelConfig::new(crate::core::config::ndlocr_base_url(), "ndlocr-model-");
+                let config = ModelConfig::new(crate::core::config::ndlocr_base_url(), "ndlocr-model-");
 
                 let loading_state_ref = *loading_state;
-                let progress_callback: ProgressCallback =
-                    Rc::new(move |filename, loaded, total| {
-                        if loading_state_ref.is_disposed.get() {
-                            return;
-                        }
+                let progress_callback: ProgressCallback = Rc::new(move |filename, loaded, total| {
+                    let stage = loading_state_ref.stage.get();
+                    let start_time = loading_state_ref.start_time.get();
 
-                        let stage = loading_state_ref.stage.get();
-                        let start_time = loading_state_ref.start_time.get();
+                    let percent = if total > 0 {
+                        ((loaded as f64 / total as f64) * 100.0) as u32
+                    } else {
+                        0
+                    };
 
-                        let percent = if total > 0 {
-                            ((loaded as f64 / total as f64) * 100.0) as u32
-                        } else {
-                            0
+                    let (speed_bps, eta_seconds) = calculate_speed_and_eta(start_time, loaded, total);
+
+                    let progress = ProgressInfo {
+                        percent,
+                        loaded_bytes: loaded,
+                        total_bytes: total,
+                        speed_bps,
+                        eta_seconds,
+                    };
+
+                    if filename.contains("deim") {
+                        loading_state_ref
+                            .stage
+                            .set(OcrLoadingStage::DownloadingDeim { progress });
+                    } else if filename.contains("parseq") {
+                        let current = match stage {
+                            OcrLoadingStage::DownloadingParseq { current_model, .. } => current_model,
+                            _ => 1,
                         };
-
-                        let (speed_bps, eta_seconds) =
-                            calculate_speed_and_eta(start_time, loaded, total);
-
-                        let progress = ProgressInfo {
-                            percent,
-                            loaded_bytes: loaded,
-                            total_bytes: total,
-                            speed_bps,
-                            eta_seconds,
-                        };
-
-                        if filename.contains("deim") {
-                            loading_state_ref
-                                .stage
-                                .set(OcrLoadingStage::DownloadingDeim { progress });
-                        } else if filename.contains("parseq") {
-                            let current = match stage {
-                                OcrLoadingStage::DownloadingParseq { current_model, .. } => {
-                                    current_model
-                                }
-                                _ => 1,
-                            };
-                            loading_state_ref
-                                .stage
-                                .set(OcrLoadingStage::DownloadingParseq {
-                                    current_model: current,
-                                    progress,
-                                });
-                        }
-                    });
+                        loading_state_ref
+                            .stage
+                            .set(OcrLoadingStage::DownloadingParseq {
+                                current_model: current,
+                                progress,
+                            });
+                    }
+                });
 
                 let loader = ModelLoader::new(config).with_progress_callback(progress_callback);
 
@@ -634,9 +602,6 @@ async fn process_image_with_ocr(
                 });
 
                 let model_files = loader.load_or_download_model().await.map_err(|e| {
-                    if loading_state.is_disposed.get() {
-                        return "Операция отменена".to_string();
-                    }
                     loading_state.stage.set(OcrLoadingStage::Error {
                         stage: "deim".to_string(),
                         message: format!("Failed to load models: {:?}", e),
@@ -644,7 +609,7 @@ async fn process_image_with_ocr(
                     format!("Failed to load models: {:?}", e)
                 })?;
 
-                if loading_state.cancel_requested.get() || loading_state.is_disposed.get() {
+                if loading_state.cancel_requested.get() {
                     return Err("Операция отменена".to_string());
                 }
 
@@ -654,7 +619,7 @@ async fn process_image_with_ocr(
 
                 let new_model = init_ocr_model(model_files, loading_state).await?;
 
-                if loading_state.cancel_requested.get() || loading_state.is_disposed.get() {
+                if loading_state.cancel_requested.get() {
                     return Err("Операция отменена".to_string());
                 }
 
@@ -666,8 +631,7 @@ async fn process_image_with_ocr(
 
                 debug!("OCR model loaded and cached");
                 Ok(wrapped)
-            }
-            .await;
+            }.await;
 
             MODEL_LOADING.with(|loading| loading.set(false));
 
@@ -675,7 +639,7 @@ async fn process_image_with_ocr(
         }
     };
 
-    if loading_state.cancel_requested.get() || loading_state.is_disposed.get() {
+    if loading_state.cancel_requested.get() {
         return Err("Операция отменена".to_string());
     }
 
@@ -687,7 +651,7 @@ async fn process_image_with_ocr(
     let model_ref = model.borrow();
     let result = execute_ocr(&use_case, &model_ref, &bytes).await;
 
-    if loading_state.cancel_requested.get() || loading_state.is_disposed.get() {
+    if loading_state.cancel_requested.get() {
         return Err("Операция отменена".to_string());
     }
 

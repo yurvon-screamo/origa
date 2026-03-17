@@ -103,14 +103,6 @@ pub fn AddWordsPreviewModal(is_open: RwSignal<bool>) -> impl IntoView {
         })
     };
 
-    let on_ocr_start = {
-        let state = state.clone();
-        Callback::new(move |_| {
-            state.analyzed_words.set(Vec::new());
-            state.input_text.set(String::new());
-        })
-    };
-
     view! {
         <Drawer
             is_open=is_open
@@ -140,7 +132,6 @@ pub fn AddWordsPreviewModal(is_open: RwSignal<bool>) -> impl IntoView {
                                                 on_text_extracted=on_text_extracted
                                                 on_error=on_ocr_error
                                                 on_switch_to_text=on_switch_to_text
-                                                on_ocr_start=on_ocr_start
                                             />
                                         }.into_any(),
                                     }
