@@ -38,7 +38,7 @@ pub fn Heading(
 
             let size_class = match level.get() {
                 HeadingLevel::H1 => "text-[clamp(1.75rem,6vw,3rem)] leading-tight break-words",
-                HeadingLevel::H2 => "text-2xl",
+                HeadingLevel::H2 => "text-[clamp(1.5rem,5vw,2.5rem)] leading-tight break-words",
                 HeadingLevel::H3 => "text-xl",
                 HeadingLevel::H4 => "text-lg",
                 HeadingLevel::H5 => "text-base",
