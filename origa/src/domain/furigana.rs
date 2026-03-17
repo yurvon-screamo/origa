@@ -1,9 +1,9 @@
 use std::collections::HashSet;
 
 use crate::domain::{
-    OrigaError,
     japanese::{JapaneseChar, JapaneseText},
     tokenizer::tokenize_text,
+    OrigaError,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -120,7 +120,7 @@ pub fn furiganize_text_html(segments: &[FuriganaSegment]) -> String {
         .iter()
         .map(|seg| match &seg.reading {
             Some(reading) => {
-                let class = if seg.is_known { "furigana-hidden" } else { "" };
+                let class = if seg.is_known { "furigana-hidden furigana-ruby" } else { "furigana-ruby" };
                 format!(
                     "<ruby class=\"{}\">{}<rp>(</rp><rt class=\"furigana-rt\">{}</rt><rp>)</rp></ruby>",
                     class, seg.text, reading
@@ -143,7 +143,7 @@ mod tests {
     use flate2::read::DeflateDecoder;
 
     use super::*;
-    use crate::domain::{DictionaryData, init_dictionary, is_dictionary_loaded};
+    use crate::domain::{init_dictionary, is_dictionary_loaded, DictionaryData};
 
     fn decompress(data: Vec<u8>) -> Vec<u8> {
         let mut decoder = DeflateDecoder::new(&data[..]);
@@ -262,16 +262,12 @@ mod tests {
         let known_kanji = HashSet::new();
         let segments = furiganize_segments("hello食べ物world", &known_kanji).unwrap();
         assert!(!segments.is_empty());
-        assert!(
-            segments
-                .iter()
-                .any(|s| s.text() == "hello" && !s.has_reading())
-        );
-        assert!(
-            segments
-                .iter()
-                .any(|s| s.text() == "world" && !s.has_reading())
-        );
+        assert!(segments
+            .iter()
+            .any(|s| s.text() == "hello" && !s.has_reading()));
+        assert!(segments
+            .iter()
+            .any(|s| s.text() == "world" && !s.has_reading()));
     }
 
     #[test]
@@ -284,7 +280,7 @@ mod tests {
         let html = furiganize_text_html(&segments);
         assert_eq!(
             html,
-            "<ruby class=\"\">食<rp>(</rp><rt class=\"furigana-rt\">ショク</rt><rp>)</rp></ruby>"
+            "<ruby class=\"furigana-ruby\">食<rp>(</rp><rt class=\"furigana-rt\">ショク</rt><rp>)</rp></ruby>"
         );
     }
 
@@ -304,7 +300,7 @@ mod tests {
         let html = furiganize_text_html(&segments);
         assert_eq!(
             html,
-            "<ruby class=\"\">食<rp>(</rp><rt class=\"furigana-rt\">ショク</rt><rp>)</rp></ruby>べ"
+            "<ruby class=\"furigana-ruby\">食<rp>(</rp><rt class=\"furigana-rt\">ショク</rt><rp>)</rp></ruby>べ"
         );
     }
 
@@ -318,7 +314,7 @@ mod tests {
         let html = furiganize_text_html(&segments);
         assert_eq!(
             html,
-            "<ruby class=\"furigana-hidden\">食<rp>(</rp><rt class=\"furigana-rt\">ショク</rt><rp>)</rp></ruby>"
+            "<ruby class=\"furigana-hidden furigana-ruby\">食<rp>(</rp><rt class=\"furigana-rt\">ショク</rt><rp>)</rp></ruby>"
         );
     }
 
