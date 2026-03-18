@@ -130,7 +130,6 @@ pub fn KanjiDrawingPractice(
         let stroke_list = strokes.get();
         let completed = is_completed.get();
 
-        // Always redraw, even when completed - this ensures last stroke is shown
         redraw_canvas(ctx, &stroke_list, stroke_idx);
 
         if completed {
@@ -249,22 +248,6 @@ pub fn KanjiDrawingPractice(
         }
     };
     let handle_pointer_leave = handle_pointer_up.clone();
-    let reset_practice = {
-        let state = drawing_state.clone();
-        let ctx_store = ctx_storage.clone();
-        move |_| {
-            current_stroke_index.set(0);
-            is_completed.set(false);
-            if let Ok(mut state_guard) = state.lock() {
-                state_guard.points.clear();
-            }
-            if let Ok(ctx_guard) = ctx_store.lock()
-                && let Some(ctx) = ctx_guard.as_ref()
-            {
-                redraw_canvas(ctx, &strokes.get(), 0);
-            }
-        }
-    };
     view! {
         <div class="kanji-drawing-container">
             <div class="kanji-drawing-info">
@@ -312,11 +295,6 @@ pub fn KanjiDrawingPractice(
                     on:pointerup={handle_pointer_up}
                     on:pointerleave={handle_pointer_leave}
                 />
-            </div>
-            <div class="kanji-drawing-controls">
-                <button class="kanji-drawing-reset-btn" on:click={reset_practice}>
-                    "Начать заново"
-                </button>
             </div>
         </div>
     }
@@ -544,7 +522,6 @@ fn is_stroke_similar(user_points: &[(f64, f64)], stroke_d: &str) -> bool {
         return false;
     }
 
-    // Debug: show raw coordinates range
     if !user_points.is_empty() {
         let (min_x, max_x, min_y, max_y) = user_points.iter().fold(
             (
@@ -581,11 +558,8 @@ fn is_stroke_similar(user_points: &[(f64, f64)], stroke_d: &str) -> bool {
         );
     }
 
-    // Resample reference stroke to fixed number of points
     let stroke_resampled = resample_points(&stroke_samples, SAMPLE_COUNT);
 
-    // Count how many reference points have a nearby user point
-    // Use tolerance in canvas pixels (e.g., 25 pixels = ~8% of 320px canvas)
     let mut covered_count = 0;
 
     for stroke_point in &stroke_resampled {
@@ -617,8 +591,8 @@ fn is_stroke_similar(user_points: &[(f64, f64)], stroke_d: &str) -> bool {
 
 fn sample_stroke_path(d: &str) -> Vec<(f64, f64)> {
     let mut points = Vec::new();
-    let mut current_pos = (0.0, 0.0); // Keep in SVG coords
-    let mut start_pos = (0.0, 0.0); // Keep in SVG coords
+    let mut current_pos = (0.0, 0.0);
+    let mut start_pos = (0.0, 0.0);
     let chars: Vec<char> = d.chars().collect();
     let mut pos = 0;
     let mut current_cmd = 'M';
@@ -637,9 +611,9 @@ fn sample_stroke_path(d: &str) -> Vec<(f64, f64)> {
                     } else {
                         (x, y)
                     };
-                    current_pos = (abs_x, abs_y); // SVG coords
+                    current_pos = (abs_x, abs_y);
                     start_pos = current_pos;
-                    points.push((abs_x * SVG_SCALE, abs_y * SVG_SCALE)); // Convert to canvas
+                    points.push((abs_x * SVG_SCALE, abs_y * SVG_SCALE));
                     pos = new_pos;
                     current_cmd = if current_cmd == 'm' { 'l' } else { 'L' };
                 } else {
@@ -649,14 +623,14 @@ fn sample_stroke_path(d: &str) -> Vec<(f64, f64)> {
             'L' | 'l' => {
                 if let Some((x, y, new_pos)) = parse_coords(&chars, pos) {
                     let (abs_x, abs_y) = if current_cmd == 'l' {
-                        (current_pos.0 + x, current_pos.1 + y) // Both in SVG coords - correct!
+                        (current_pos.0 + x, current_pos.1 + y)
                     } else {
                         (x, y)
                     };
                     let start = (current_pos.0 * SVG_SCALE, current_pos.1 * SVG_SCALE);
                     let end = (abs_x * SVG_SCALE, abs_y * SVG_SCALE);
                     interpolate_line(&mut points, start, end);
-                    current_pos = (abs_x, abs_y); // SVG coords
+                    current_pos = (abs_x, abs_y);
                     pos = new_pos;
                 } else {
                     break;
@@ -666,7 +640,7 @@ fn sample_stroke_path(d: &str) -> Vec<(f64, f64)> {
                 if let Some((x1, y1, x2, y2, x, y, new_pos)) = parse_curve_coords(&chars, pos) {
                     let (abs_x1, abs_y1, abs_x2, abs_y2, abs_x, abs_y) = if current_cmd == 'c' {
                         (
-                            current_pos.0 + x1, // All in SVG coords - correct!
+                            current_pos.0 + x1,
                             current_pos.1 + y1,
                             current_pos.0 + x2,
                             current_pos.1 + y2,
@@ -681,7 +655,7 @@ fn sample_stroke_path(d: &str) -> Vec<(f64, f64)> {
                     let ctrl2 = (abs_x2 * SVG_SCALE, abs_y2 * SVG_SCALE);
                     let end = (abs_x * SVG_SCALE, abs_y * SVG_SCALE);
                     interpolate_bezier(&mut points, start, ctrl1, ctrl2, end);
-                    current_pos = (abs_x, abs_y); // SVG coords
+                    current_pos = (abs_x, abs_y);
                     pos = new_pos;
                 } else {
                     break;
