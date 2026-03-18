@@ -65,34 +65,31 @@ pub fn VocabularyCardItem(
         .unwrap_or("-".to_string());
 
     view! {
-        <Card class=Signal::derive(|| "p-4".to_string())>
-            <div class="flex justify-between items-start">
-                <div class="min-w-0 flex-1">
-                    <div class="flex items-center gap-3 mb-2">
-                        <Heading level=HeadingLevel::H4>
-                            <FuriganaText text=word.clone() known_kanji=known_kanji_for_furigana/>
-                        </Heading>
-                        <Tag variant=Signal::derive(move || status.tag_variant())>
-                            {status.label()}
-                        </Tag>
-                        <FavoriteButton
-                            is_favorite=Signal::derive(move || is_favorite)
-                            on_click=Callback::new(move |_| on_toggle_favorite.run(card_id))
-                        />
-                        <HistoryButton on_click=Callback::new(move |_| is_history_open.set(true)) />
-                        <DeleteButton on_click=Callback::new(move |_| is_delete_modal_open.set(true)) />
-                    </div>
-                    <CollapsibleDescription>
-                        <MarkdownText content=Signal::derive(move || meaning.clone()) known_kanji=known_kanji_for_markdown/>
-                    </CollapsibleDescription>
-
-                    <Text
-                        size=TextSize::Small
-                        variant=TypographyVariant::Muted
-                        class=Signal::derive(|| "mt-2".to_string())
-                    >
-                        {format!("Повтор: {} | Слож: {} | Стаб: {}", next_review, difficulty, stability)}
-                    </Text>
+        <Card class="p-4">
+            <Heading level=HeadingLevel::H4 class="mb-2">
+                <FuriganaText text=word.clone() known_kanji=known_kanji_for_furigana/>
+            </Heading>
+            <CollapsibleDescription>
+                <MarkdownText content=Signal::derive(move || meaning.clone()) known_kanji=known_kanji_for_markdown/>
+            </CollapsibleDescription>
+            <Text
+                size=TextSize::Small
+                variant=TypographyVariant::Muted
+                class="mt-2"
+            >
+                {format!("Повтор: {} | Слож: {} | Стаб: {}", next_review, difficulty, stability)}
+            </Text>
+            <div class="border-t border-[var(--border-dark)] pt-2 mt-2 flex justify-between items-center">
+                <Tag variant=Signal::derive(move || status.tag_variant())>
+                    {status.label()}
+                </Tag>
+                <div class="flex items-center gap-2">
+                    <FavoriteButton
+                        is_favorite=Signal::derive(move || is_favorite)
+                        on_click=Callback::new(move |_| on_toggle_favorite.run(card_id))
+                    />
+                    <HistoryButton on_click=Callback::new(move |_| is_history_open.set(true)) />
+                    <DeleteButton on_click=Callback::new(move |_| is_delete_modal_open.set(true)) />
                 </div>
             </div>
             <CardHistoryModal

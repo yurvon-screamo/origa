@@ -4,7 +4,7 @@ use leptos::prelude::*;
 use leptos_router::hooks::use_navigate;
 
 #[component]
-pub fn GrammarHeader() -> impl IntoView {
+pub fn GrammarHeader(refresh_trigger: RwSignal<u32>) -> impl IntoView {
     let navigate = use_navigate();
     let is_modal_open = RwSignal::new(false);
 
@@ -33,6 +33,6 @@ pub fn GrammarHeader() -> impl IntoView {
             </div>
         </div>
 
-        <AddGrammarModal is_open=is_modal_open />
+        <AddGrammarModal is_open=is_modal_open refresh_trigger=refresh_trigger />
     }
 }

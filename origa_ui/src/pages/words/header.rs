@@ -4,7 +4,7 @@ use leptos::prelude::*;
 use leptos_router::hooks::use_navigate;
 
 #[component]
-pub fn WordsHeader() -> impl IntoView {
+pub fn WordsHeader(refresh_trigger: RwSignal<u32>) -> impl IntoView {
     let navigate = use_navigate();
     let navigate_clone = navigate.clone();
     let is_modal_open = RwSignal::new(false);
@@ -42,6 +42,6 @@ pub fn WordsHeader() -> impl IntoView {
             </div>
         </div>
 
-        <AddWordsPreviewModal is_open=is_modal_open />
+        <AddWordsPreviewModal is_open=is_modal_open refresh_trigger=refresh_trigger />
     }
 }

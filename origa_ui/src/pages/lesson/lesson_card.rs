@@ -5,7 +5,7 @@ use std::collections::HashSet;
 use tracing;
 
 use super::card_type::CardType;
-use super::kanji_card_details::{KanjiCardDetails, RadicalDisplay};
+use super::kanji_card_details::RadicalDisplay;
 use super::lesson_card_answer::LessonCardAnswer;
 use super::lesson_card_header::LessonCardHeader;
 use super::lesson_card_question::LessonCardQuestion;
@@ -145,7 +145,7 @@ pub fn LessonCard(
             && is_speech_supported()
             && !is_muted
         {
-            let reading = get_reading_from_text(&question.get_value());
+            let reading = get_reading_from_text(&answer.get_value());
             let _ = speak_text(&reading, 1.0);
         }
     });
@@ -194,26 +194,9 @@ pub fn LessonCard(
                         on_readings=on_readings_stored.get_value()
                         kun_readings=kun_readings_stored.get_value()
                         radicals=radicals_stored.get_value()
+                        example_words=examples_stored.get_value()
                         known_kanji=known_kanji
                     />
-
-                    <Show when=move || card_type == CardType::Kanji && is_expanded.get()>
-                        {move || {
-                            kanji_stored.get_value().map(|kanji| {
-                                view! {
-                                    <KanjiCardDetails
-                                        kanji=kanji
-                                        radicals=radicals_stored.get_value()
-                                        example_words=examples_stored.get_value()
-                                        show_details=is_expanded.get()
-                                        on_readings=on_readings_stored.get_value()
-                                        kun_readings=kun_readings_stored.get_value()
-                                        known_kanji=known_kanji
-                                    />
-                                }
-                            })
-                        }}
-                    </Show>
                 </Show>
             </div>
         </Card>

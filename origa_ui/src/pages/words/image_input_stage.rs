@@ -554,46 +554,51 @@ async fn process_image_with_ocr(
             let result = async {
                 info!("Loading OCR and Layout models");
 
-                let config = ModelConfig::new(crate::core::config::ndlocr_base_url(), "ndlocr-model-");
+                let config =
+                    ModelConfig::new(crate::core::config::ndlocr_base_url(), "ndlocr-model-");
 
                 let loading_state_ref = *loading_state;
-                let progress_callback: ProgressCallback = Rc::new(move |filename, loaded, total| {
-                    let stage = loading_state_ref.stage.get();
-                    let start_time = loading_state_ref.start_time.get();
+                let progress_callback: ProgressCallback =
+                    Rc::new(move |filename, loaded, total| {
+                        let stage = loading_state_ref.stage.get();
+                        let start_time = loading_state_ref.start_time.get();
 
-                    let percent = if total > 0 {
-                        ((loaded as f64 / total as f64) * 100.0) as u32
-                    } else {
-                        0
-                    };
-
-                    let (speed_bps, eta_seconds) = calculate_speed_and_eta(start_time, loaded, total);
-
-                    let progress = ProgressInfo {
-                        percent,
-                        loaded_bytes: loaded,
-                        total_bytes: total,
-                        speed_bps,
-                        eta_seconds,
-                    };
-
-                    if filename.contains("deim") {
-                        loading_state_ref
-                            .stage
-                            .set(OcrLoadingStage::DownloadingDeim { progress });
-                    } else if filename.contains("parseq") {
-                        let current = match stage {
-                            OcrLoadingStage::DownloadingParseq { current_model, .. } => current_model,
-                            _ => 1,
+                        let percent = if total > 0 {
+                            ((loaded as f64 / total as f64) * 100.0) as u32
+                        } else {
+                            0
                         };
-                        loading_state_ref
-                            .stage
-                            .set(OcrLoadingStage::DownloadingParseq {
-                                current_model: current,
-                                progress,
-                            });
-                    }
-                });
+
+                        let (speed_bps, eta_seconds) =
+                            calculate_speed_and_eta(start_time, loaded, total);
+
+                        let progress = ProgressInfo {
+                            percent,
+                            loaded_bytes: loaded,
+                            total_bytes: total,
+                            speed_bps,
+                            eta_seconds,
+                        };
+
+                        if filename.contains("deim") {
+                            loading_state_ref
+                                .stage
+                                .set(OcrLoadingStage::DownloadingDeim { progress });
+                        } else if filename.contains("parseq") {
+                            let current = match stage {
+                                OcrLoadingStage::DownloadingParseq { current_model, .. } => {
+                                    current_model
+                                }
+                                _ => 1,
+                            };
+                            loading_state_ref
+                                .stage
+                                .set(OcrLoadingStage::DownloadingParseq {
+                                    current_model: current,
+                                    progress,
+                                });
+                        }
+                    });
 
                 let loader = ModelLoader::new(config).with_progress_callback(progress_callback);
 
@@ -631,7 +636,8 @@ async fn process_image_with_ocr(
 
                 debug!("OCR model loaded and cached");
                 Ok(wrapped)
-            }.await;
+            }
+            .await;
 
             MODEL_LOADING.with(|loading| loading.set(false));
 

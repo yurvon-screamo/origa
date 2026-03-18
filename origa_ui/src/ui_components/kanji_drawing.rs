@@ -10,13 +10,12 @@ use wasm_bindgen_futures::JsFuture;
 use web_sys::CanvasRenderingContext2d;
 use web_sys::js_sys::Array;
 
-const CANVAS_SIZE: u32 = 256;
+const CANVAS_SIZE: u32 = 320;
 const SVG_VIEWBOX_SIZE: f64 = 109.0;
 const SVG_SCALE: f64 = CANVAS_SIZE as f64 / SVG_VIEWBOX_SIZE;
-const STROKE_TOLERANCE: f64 = 0.2;
-const SAMPLE_COUNT: usize = 21;
-
-const SUCCESS_THRESHOLD: f64 = 0.55;
+const CANVAS_TOLERANCE: f64 = 25.0; // Max distance in canvas pixels (~8% of 320px)
+const SUCCESS_THRESHOLD: f64 = 0.80; // 80% of reference points must be covered
+const SAMPLE_COUNT: usize = 21; // Number of points to sample from reference stroke
 
 const MIN_STROKE_POINTS: usize = 8;
 const STROKE_LINE_WIDTH: f64 = 12.0;
@@ -130,10 +129,12 @@ pub fn KanjiDrawingPractice(
         let stroke_idx = current_stroke_index.get();
         let stroke_list = strokes.get();
         let completed = is_completed.get();
+
+        redraw_canvas(ctx, &stroke_list, stroke_idx);
+
         if completed {
             return Some(());
         }
-        redraw_canvas(ctx, &stroke_list, stroke_idx);
         Some(())
     });
     let handle_pointer_down = {
@@ -206,6 +207,7 @@ pub fn KanjiDrawingPractice(
     };
     let handle_pointer_up = {
         let state = drawing_state.clone();
+        let ctx_store = ctx_storage.clone();
         move |_| {
             let points: Vec<(f64, f64)> = {
                 let mut state_guard = state.lock().ok();
@@ -230,6 +232,7 @@ pub fn KanjiDrawingPractice(
             if is_stroke_similar(&points, &current_stroke.d) {
                 let next_idx = current_idx + 1;
                 if next_idx >= stroke_list.len() {
+                    current_stroke_index.set(next_idx);
                     is_completed.set(true);
                     if let Some(cb) = on_complete {
                         cb.run(());
@@ -237,26 +240,14 @@ pub fn KanjiDrawingPractice(
                 } else {
                     current_stroke_index.set(next_idx);
                 }
+            } else if let Ok(ctx_guard) = ctx_store.lock()
+                && let Some(ctx) = ctx_guard.as_ref()
+            {
+                redraw_canvas(ctx, &strokes.get(), current_stroke_index.get());
             }
         }
     };
     let handle_pointer_leave = handle_pointer_up.clone();
-    let reset_practice = {
-        let state = drawing_state.clone();
-        let ctx_store = ctx_storage.clone();
-        move |_| {
-            current_stroke_index.set(0);
-            is_completed.set(false);
-            if let Ok(mut state_guard) = state.lock() {
-                state_guard.points.clear();
-            }
-            if let Ok(ctx_guard) = ctx_store.lock()
-                && let Some(ctx) = ctx_guard.as_ref()
-            {
-                redraw_canvas(ctx, &strokes.get(), 0);
-            }
-        }
-    };
     view! {
         <div class="kanji-drawing-container">
             <div class="kanji-drawing-info">
@@ -270,7 +261,9 @@ pub fn KanjiDrawingPractice(
                         .into_any()
                     } else if is_completed.get() {
                         view! {
-                            <div class="kanji-drawing-success">"Готово! 🎉"</div>
+                            <div class="kanji-drawing-progress">
+                                "Готово!"
+                            </div>
                         }
                         .into_any()
                     } else {
@@ -290,17 +283,18 @@ pub fn KanjiDrawingPractice(
                     node_ref={canvas_ref}
                     width={CANVAS_SIZE}
                     height={CANVAS_SIZE}
-                    class="kanji-drawing-canvas"
+                    class=move || {
+                        if is_completed.get() {
+                            "kanji-drawing-canvas pointer-events-none"
+                        } else {
+                            "kanji-drawing-canvas"
+                        }
+                    }
                     on:pointerdown={handle_pointer_down}
                     on:pointermove={handle_pointer_move}
                     on:pointerup={handle_pointer_up}
                     on:pointerleave={handle_pointer_leave}
                 />
-            </div>
-            <div class="kanji-drawing-controls">
-                <button class="kanji-drawing-reset-btn" on:click={reset_practice}>
-                    "Начать заново"
-                </button>
             </div>
         </div>
     }
@@ -529,31 +523,94 @@ fn normalize_points(points: &[(f64, f64)]) -> Vec<(f64, f64)> {
         .collect()
 }
 fn is_stroke_similar(user_points: &[(f64, f64)], stroke_d: &str) -> bool {
+    debug!("[Stroke Check] user_points count: {}", user_points.len());
+
     if user_points.len() < MIN_STROKE_POINTS {
+        debug!(
+            "[Stroke Check] FAIL: too few points ({})",
+            user_points.len()
+        );
         return false;
     }
+
     let stroke_samples = sample_stroke_path(stroke_d);
+    debug!(
+        "[Stroke Check] stroke_samples count: {}",
+        stroke_samples.len()
+    );
+
     if stroke_samples.len() < SAMPLE_COUNT {
+        debug!("[Stroke Check] FAIL: too few stroke samples");
         return false;
     }
-    let normalized_stroke = normalize_points(&stroke_samples);
-    let normalized_user = normalize_points(user_points);
-    let user_samples = resample_points(&normalized_user, SAMPLE_COUNT);
-    let stroke_resampled = resample_points(&normalized_stroke, SAMPLE_COUNT);
-    if user_samples.len() < SAMPLE_COUNT || stroke_resampled.len() < SAMPLE_COUNT {
-        return false;
+
+    if !user_points.is_empty() {
+        let (min_x, max_x, min_y, max_y) = user_points.iter().fold(
+            (
+                f64::INFINITY,
+                f64::NEG_INFINITY,
+                f64::INFINITY,
+                f64::NEG_INFINITY,
+            ),
+            |(min_x, max_x, min_y, max_y), &(x, y)| {
+                (min_x.min(x), max_x.max(x), min_y.min(y), max_y.max(y))
+            },
+        );
+        debug!(
+            "[Stroke Check] user raw range: x=[{:.1}, {:.1}], y=[{:.1}, {:.1}]",
+            min_x, max_x, min_y, max_y
+        );
     }
-    let mut match_count = 0;
-    for (user_point, stroke_point) in user_samples.iter().zip(stroke_resampled.iter()) {
-        let dx = user_point.0 - stroke_point.0;
-        let dy = user_point.1 - stroke_point.1;
-        let distance = (dx * dx + dy * dy).sqrt();
-        if distance <= STROKE_TOLERANCE {
-            match_count += 1;
+
+    if !stroke_samples.is_empty() {
+        let (min_x, max_x, min_y, max_y) = stroke_samples.iter().fold(
+            (
+                f64::INFINITY,
+                f64::NEG_INFINITY,
+                f64::INFINITY,
+                f64::NEG_INFINITY,
+            ),
+            |(min_x, max_x, min_y, max_y), &(x, y)| {
+                (min_x.min(x), max_x.max(x), min_y.min(y), max_y.max(y))
+            },
+        );
+        debug!(
+            "[Stroke Check] stroke raw range: x=[{:.1}, {:.1}], y=[{:.1}, {:.1}]",
+            min_x, max_x, min_y, max_y
+        );
+    }
+
+    let stroke_resampled = resample_points(&stroke_samples, SAMPLE_COUNT);
+
+    let mut covered_count = 0;
+
+    for stroke_point in &stroke_resampled {
+        let is_covered = user_points.iter().any(|user_point| {
+            let dx = user_point.0 - stroke_point.0;
+            let dy = user_point.1 - stroke_point.1;
+            let distance = (dx * dx + dy * dy).sqrt();
+            distance <= CANVAS_TOLERANCE
+        });
+        if is_covered {
+            covered_count += 1;
         }
     }
-    (match_count as f64 / SAMPLE_COUNT as f64) >= SUCCESS_THRESHOLD
+
+    let coverage_ratio = covered_count as f64 / stroke_resampled.len() as f64;
+    debug!(
+        "[Stroke Check] coverage: {}/{} = {:.2}, threshold: {:.2}",
+        covered_count,
+        stroke_resampled.len(),
+        coverage_ratio,
+        SUCCESS_THRESHOLD
+    );
+
+    let result = coverage_ratio >= SUCCESS_THRESHOLD;
+    debug!("[Stroke Check] RESULT: {}", result);
+
+    result
 }
+
 fn sample_stroke_path(d: &str) -> Vec<(f64, f64)> {
     let mut points = Vec::new();
     let mut current_pos = (0.0, 0.0);
@@ -561,6 +618,7 @@ fn sample_stroke_path(d: &str) -> Vec<(f64, f64)> {
     let chars: Vec<char> = d.chars().collect();
     let mut pos = 0;
     let mut current_cmd = 'M';
+
     while pos < chars.len() {
         let c = chars[pos];
         if c.is_ascii_alphabetic() {
@@ -575,9 +633,9 @@ fn sample_stroke_path(d: &str) -> Vec<(f64, f64)> {
                     } else {
                         (x, y)
                     };
-                    current_pos = (abs_x * SVG_SCALE, abs_y * SVG_SCALE);
+                    current_pos = (abs_x, abs_y);
                     start_pos = current_pos;
-                    points.push(current_pos);
+                    points.push((abs_x * SVG_SCALE, abs_y * SVG_SCALE));
                     pos = new_pos;
                     current_cmd = if current_cmd == 'm' { 'l' } else { 'L' };
                 } else {
@@ -591,9 +649,10 @@ fn sample_stroke_path(d: &str) -> Vec<(f64, f64)> {
                     } else {
                         (x, y)
                     };
+                    let start = (current_pos.0 * SVG_SCALE, current_pos.1 * SVG_SCALE);
                     let end = (abs_x * SVG_SCALE, abs_y * SVG_SCALE);
-                    interpolate_line(&mut points, current_pos, end);
-                    current_pos = end;
+                    interpolate_line(&mut points, start, end);
+                    current_pos = (abs_x, abs_y);
                     pos = new_pos;
                 } else {
                     break;
@@ -613,22 +672,21 @@ fn sample_stroke_path(d: &str) -> Vec<(f64, f64)> {
                     } else {
                         (x1, y1, x2, y2, x, y)
                     };
+                    let start = (current_pos.0 * SVG_SCALE, current_pos.1 * SVG_SCALE);
+                    let ctrl1 = (abs_x1 * SVG_SCALE, abs_y1 * SVG_SCALE);
+                    let ctrl2 = (abs_x2 * SVG_SCALE, abs_y2 * SVG_SCALE);
                     let end = (abs_x * SVG_SCALE, abs_y * SVG_SCALE);
-                    interpolate_bezier(
-                        &mut points,
-                        current_pos,
-                        (abs_x1 * SVG_SCALE, abs_y1 * SVG_SCALE),
-                        (abs_x2 * SVG_SCALE, abs_y2 * SVG_SCALE),
-                        end,
-                    );
-                    current_pos = end;
+                    interpolate_bezier(&mut points, start, ctrl1, ctrl2, end);
+                    current_pos = (abs_x, abs_y);
                     pos = new_pos;
                 } else {
                     break;
                 }
             }
             'Z' | 'z' => {
-                interpolate_line(&mut points, current_pos, start_pos);
+                let start = (current_pos.0 * SVG_SCALE, current_pos.1 * SVG_SCALE);
+                let end = (start_pos.0 * SVG_SCALE, start_pos.1 * SVG_SCALE);
+                interpolate_line(&mut points, start, end);
                 current_pos = start_pos;
                 pos += 1;
             }

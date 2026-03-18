@@ -4,7 +4,7 @@ use super::lesson_card_container::LessonCardContainer;
 use super::lesson_progress_view::LessonProgressView;
 use super::lesson_state::{LessonContext, LessonMode, LessonState};
 use crate::app::AuthContext;
-use crate::repository::{HybridUserRepository, set_last_sync_time};
+use crate::repository::HybridUserRepository;
 use crate::ui_components::{Spinner, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
@@ -34,7 +34,6 @@ pub fn LessonContent() -> impl IntoView {
     let reload_trigger = RwSignal::new(0u32);
     let is_muted = RwSignal::new(false);
     let is_syncing_cards = RwSignal::new(false);
-    let is_initial_syncing = RwSignal::new(true);
     let known_kanji = RwSignal::new(HashSet::<String>::new());
     let native_language = RwSignal::new(NativeLanguage::Russian);
 
@@ -54,29 +53,17 @@ pub fn LessonContent() -> impl IntoView {
     };
     provide_context(lesson_ctx);
 
-    let repo_for_sync = repository.clone();
+    let repo_for_user_data = repository.clone();
     Effect::new(move |_| {
-        let repo = repo_for_sync.clone();
+        let repo = repo_for_user_data.clone();
         spawn_local(async move {
-            match repo.merge_current_user().await {
-                Ok(()) => {
-                    set_last_sync_time(js_sys::Date::now() as u64 / 1000);
-                    if let Ok(Some(user)) = repo.get_current_user().await {
-                        if is_disposed.get_value() {
-                            return;
-                        }
-                        known_kanji.set(user.knowledge_set().get_known_kanji());
-                        native_language.set(*user.native_language());
-                    }
+            if let Ok(Some(user)) = repo.get_current_user().await {
+                if is_disposed.get_value() {
+                    return;
                 }
-                Err(e) => {
-                    tracing::error!("Lesson: merge_current_user error: {:?}", e);
-                }
+                known_kanji.set(user.knowledge_set().get_known_kanji());
+                native_language.set(*user.native_language());
             }
-            if is_disposed.get_value() {
-                return;
-            }
-            is_initial_syncing.set(false);
         });
     });
 
@@ -152,16 +139,7 @@ pub fn LessonContent() -> impl IntoView {
     view! {
         <LessonHeader />
 
-        <Show when=move || is_initial_syncing.get()>
-            <div class="flex flex-col items-center py-8 gap-4">
-                <Spinner />
-                <Text size=TextSize::Default variant=TypographyVariant::Muted>
-                    "Синхронизация..."
-                </Text>
-            </div>
-        </Show>
-
-        <Show when=move || !is_initial_syncing.get() && is_loading.get()>
+        <Show when=move || is_loading.get()>
             <div class="flex flex-col items-center py-8 gap-4">
                 <Spinner />
                 <Text size=TextSize::Default variant=TypographyVariant::Muted>
@@ -170,7 +148,7 @@ pub fn LessonContent() -> impl IntoView {
             </div>
         </Show>
 
-        <Show when=move || error_message.get().is_some() && !is_loading.get() && !is_initial_syncing.get()>
+        <Show when=move || error_message.get().is_some() && !is_loading.get()>
             <div class="text-center py-8">
                 <Text size=TextSize::Default variant=TypographyVariant::Muted>
                     {move || error_message.get().unwrap_or_default()}
@@ -185,7 +163,7 @@ pub fn LessonContent() -> impl IntoView {
             />
         </Show>
 
-        <Show when=move || !is_initial_syncing.get() && !is_loading.get() && !is_completed.get() && error_message.get().is_none()>
+        <Show when=move || !is_loading.get() && !is_completed.get() && error_message.get().is_none()>
             <div class="relative">
                 <Show when=move || is_syncing_cards.get()>
                     <div class="absolute top-0 right-0 flex items-center gap-1 text-sm text-muted-foreground p-2">

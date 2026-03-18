@@ -1,5 +1,4 @@
 use super::add_words_preview_modal_state::PreviewModalState;
-use crate::repository::HybridUserRepository;
 use leptos::ev::MouseEvent;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
@@ -14,7 +13,6 @@ pub struct PreviewModalHandlers {
 pub fn create_preview_modal_handlers(
     state: PreviewModalState,
     is_open: RwSignal<bool>,
-    _repository: HybridUserRepository,
 ) -> PreviewModalHandlers {
     let on_analyze = {
         let state = state.clone();
@@ -52,10 +50,11 @@ pub fn create_preview_modal_handlers(
                         is_creating.set(false);
                         state_for_async.reset();
                         is_open_for_async.set(false);
+                        state_for_async.refresh_trigger.update(|v| *v += 1);
                     }
                     Err(e) => {
                         is_creating.set(false);
-                        error.set(Some(e));
+                        error.set(Some(e.to_string()));
                     }
                 }
             });

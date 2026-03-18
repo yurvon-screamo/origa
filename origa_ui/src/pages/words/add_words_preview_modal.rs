@@ -15,15 +15,18 @@ use origa::traits::UserRepository;
 use origa::use_cases::AnalyzedWord;
 
 #[component]
-pub fn AddWordsPreviewModal(is_open: RwSignal<bool>) -> impl IntoView {
+pub fn AddWordsPreviewModal(
+    is_open: RwSignal<bool>,
+    refresh_trigger: RwSignal<u32>,
+) -> impl IntoView {
     let repository =
         use_context::<HybridUserRepository>().expect("repository context not provided");
 
     let current_user: RwSignal<Option<User>> = RwSignal::new(None);
-    let repo_for_init = repository.clone();
+    let repo_for_effect = repository.clone();
 
     Effect::new(move |_| {
-        let repo = repo_for_init.clone();
+        let repo = repo_for_effect.clone();
         spawn_local(async move {
             if let Ok(Some(user)) = repo.get_current_user().await {
                 current_user.set(Some(user));
@@ -38,7 +41,7 @@ pub fn AddWordsPreviewModal(is_open: RwSignal<bool>) -> impl IntoView {
             .unwrap_or_default()
     });
 
-    let state = PreviewModalState::new(is_open);
+    let state = PreviewModalState::new(is_open, refresh_trigger);
     let analyzed_words = state.analyzed_words;
     let input_text = state.input_text;
     let is_analyzing = state.is_analyzing;
@@ -47,7 +50,7 @@ pub fn AddWordsPreviewModal(is_open: RwSignal<bool>) -> impl IntoView {
     let is_creating = state.is_creating;
     let input_mode = state.input_mode;
     let active_tab = state.active_tab;
-    let handlers = create_preview_modal_handlers(state.clone(), is_open, repository);
+    let handlers = create_preview_modal_handlers(state.clone(), is_open);
 
     Effect::new({
         let state = state.clone();
