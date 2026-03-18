@@ -13,17 +13,14 @@ use web_sys::js_sys::Array;
 const CANVAS_SIZE: u32 = 320;
 const SVG_VIEWBOX_SIZE: f64 = 109.0;
 const SVG_SCALE: f64 = CANVAS_SIZE as f64 / SVG_VIEWBOX_SIZE;
-const STROKE_TOLERANCE: f64 = 0.50;
-const SAMPLE_COUNT: usize = 21;
-
-const SUCCESS_THRESHOLD: f64 = 0.30;
+const STROKE_TOLERANCE: f64 = 0.15; // Max distance for a point to be considered "nearby" (in normalized coords)
+const SUCCESS_THRESHOLD: f64 = 0.80; // 80% of reference points must be covered
+const SAMPLE_COUNT: usize = 21; // Number of points to sample from reference stroke
 
 const MIN_STROKE_POINTS: usize = 8;
 const STROKE_LINE_WIDTH: f64 = 12.0;
 const HINT_LINE_WIDTH: f64 = 4.0;
 const USER_LINE_WIDTH: f64 = 8.0;
-
-const MIN_SIZE_RATIO: f64 = 0.3;
 
 fn get_css_color(var_name: &str) -> String {
     let window = match web_sys::window() {
@@ -540,34 +537,13 @@ fn normalize_points(points: &[(f64, f64)]) -> Vec<(f64, f64)> {
         .collect()
 }
 
-fn get_bounding_box_size(points: &[(f64, f64)]) -> f64 {
-    if points.is_empty() {
-        return 0.0;
-    }
-    let (min_x, max_x, min_y, max_y) = points.iter().fold(
-        (
-            f64::INFINITY,
-            f64::NEG_INFINITY,
-            f64::INFINITY,
-            f64::NEG_INFINITY,
-        ),
-        |(min_x, max_x, min_y, max_y), &(x, y)| {
-            (min_x.min(x), max_x.max(x), min_y.min(y), max_y.max(y))
-        },
-    );
-    let width = max_x - min_x;
-    let height = max_y - min_y;
-    (width * width + height * height).sqrt()
-}
-
 fn is_stroke_similar(user_points: &[(f64, f64)], stroke_d: &str) -> bool {
     debug!("[Stroke Check] user_points count: {}", user_points.len());
 
     if user_points.len() < MIN_STROKE_POINTS {
         debug!(
-            "[Stroke Check] FAIL: too few points ({}) < MIN_STROKE_POINTS ({})",
-            user_points.len(),
-            MIN_STROKE_POINTS
+            "[Stroke Check] FAIL: too few points ({})",
+            user_points.len()
         );
         return false;
     }
@@ -579,77 +555,102 @@ fn is_stroke_similar(user_points: &[(f64, f64)], stroke_d: &str) -> bool {
     );
 
     if stroke_samples.len() < SAMPLE_COUNT {
-        debug!("[Stroke Check] FAIL: stroke has too few samples");
+        debug!("[Stroke Check] FAIL: too few stroke samples");
         return false;
     }
 
-    // Normalize BOTH first - now they're in same units [0,1]
+    // Debug: show raw coordinates range
+    if !user_points.is_empty() {
+        let (min_x, max_x, min_y, max_y) = user_points.iter().fold(
+            (
+                f64::INFINITY,
+                f64::NEG_INFINITY,
+                f64::INFINITY,
+                f64::NEG_INFINITY,
+            ),
+            |(min_x, max_x, min_y, max_y), &(x, y)| {
+                (min_x.min(x), max_x.max(x), min_y.min(y), max_y.max(y))
+            },
+        );
+        debug!(
+            "[Stroke Check] user raw range: x=[{:.1}, {:.1}], y=[{:.1}, {:.1}]",
+            min_x, max_x, min_y, max_y
+        );
+    }
+
+    if !stroke_samples.is_empty() {
+        let (min_x, max_x, min_y, max_y) = stroke_samples.iter().fold(
+            (
+                f64::INFINITY,
+                f64::NEG_INFINITY,
+                f64::INFINITY,
+                f64::NEG_INFINITY,
+            ),
+            |(min_x, max_x, min_y, max_y), &(x, y)| {
+                (min_x.min(x), max_x.max(x), min_y.min(y), max_y.max(y))
+            },
+        );
+        debug!(
+            "[Stroke Check] stroke raw range: x=[{:.1}, {:.1}], y=[{:.1}, {:.1}]",
+            min_x, max_x, min_y, max_y
+        );
+    }
+
+    // Normalize both to [0,1] range
     let normalized_stroke = normalize_points(&stroke_samples);
     let normalized_user = normalize_points(user_points);
 
-    // NOW check size ratio - both are normalized, so comparable
-    let user_size = get_bounding_box_size(&normalized_user);
-    let ref_size = get_bounding_box_size(&normalized_stroke);
-    let size_ratio = if ref_size > 0.0 {
-        user_size / ref_size
-    } else {
-        0.0
-    };
+    // Debug: show first few normalized points
     debug!(
-        "[Stroke Check] size_ratio: {:.2} (user: {:.3}, ref: {:.3})",
-        size_ratio, user_size, ref_size
+        "[Stroke Check] user normalized first 3: {:?}",
+        &normalized_user.iter().take(3).collect::<Vec<_>>()
+    );
+    debug!(
+        "[Stroke Check] stroke normalized first 3: {:?}",
+        &normalized_stroke.iter().take(3).collect::<Vec<_>>()
     );
 
-    if size_ratio < MIN_SIZE_RATIO {
-        debug!(
-            "[Stroke Check] FAIL: stroke too small (ratio {:.2} < min {:.2})",
-            size_ratio, MIN_SIZE_RATIO
-        );
-        return false;
-    }
-
-    let user_samples = resample_points(&normalized_user, SAMPLE_COUNT);
+    // Resample reference to fixed number of points
     let stroke_resampled = resample_points(&normalized_stroke, SAMPLE_COUNT);
 
-    if user_samples.len() < SAMPLE_COUNT || stroke_resampled.len() < SAMPLE_COUNT {
-        debug!("[Stroke Check] FAIL: resample too short");
-        return false;
-    }
-
-    let mut match_count = 0;
-    let mut distances = Vec::new();
-    for (user_point, stroke_point) in user_samples.iter().zip(stroke_resampled.iter()) {
-        let dx = user_point.0 - stroke_point.0;
-        let dy = user_point.1 - stroke_point.1;
-        let distance = (dx * dx + dy * dy).sqrt();
-        distances.push(distance);
-        if distance <= STROKE_TOLERANCE {
-            match_count += 1;
+    // Count how many reference points have a nearby user point
+    let mut covered_count = 0;
+    for stroke_point in &stroke_resampled {
+        // Check if any user point is within tolerance of this stroke point
+        let is_covered = normalized_user.iter().any(|user_point| {
+            let dx = user_point.0 - stroke_point.0;
+            let dy = user_point.1 - stroke_point.1;
+            let distance = (dx * dx + dy * dy).sqrt();
+            distance <= STROKE_TOLERANCE
+        });
+        if is_covered {
+            covered_count += 1;
         }
     }
 
-    let ratio = match_count as f64 / SAMPLE_COUNT as f64;
-    let avg_distance: f64 = distances.iter().sum::<f64>() / distances.len() as f64;
+    let coverage_ratio = covered_count as f64 / stroke_resampled.len() as f64;
     debug!(
-        "[Stroke Check] match_count: {}/{}, ratio: {:.2}, avg_distance: {:.3}, tolerance: {:.2}, threshold: {:.2}",
-        match_count, SAMPLE_COUNT, ratio, avg_distance, STROKE_TOLERANCE, SUCCESS_THRESHOLD
+        "[Stroke Check] coverage: {}/{} = {:.2}, threshold: {:.2}",
+        covered_count,
+        stroke_resampled.len(),
+        coverage_ratio,
+        SUCCESS_THRESHOLD
     );
 
-    let result = ratio >= SUCCESS_THRESHOLD;
-    debug!(
-        "[Stroke Check] RESULT: {} (ratio {:.2}, threshold {:.2})",
-        result, ratio, SUCCESS_THRESHOLD
-    );
+    let result = coverage_ratio >= SUCCESS_THRESHOLD;
+    debug!("[Stroke Check] RESULT: {}", result);
 
     result
 }
+
 fn sample_stroke_path(d: &str) -> Vec<(f64, f64)> {
     let mut points = Vec::new();
-    let mut current_pos = (0.0, 0.0);
-    let mut start_pos = (0.0, 0.0);
+    let mut current_pos = (0.0, 0.0); // Keep in SVG coords
+    let mut start_pos = (0.0, 0.0); // Keep in SVG coords
     let chars: Vec<char> = d.chars().collect();
     let mut pos = 0;
     let mut current_cmd = 'M';
+
     while pos < chars.len() {
         let c = chars[pos];
         if c.is_ascii_alphabetic() {
@@ -664,9 +665,9 @@ fn sample_stroke_path(d: &str) -> Vec<(f64, f64)> {
                     } else {
                         (x, y)
                     };
-                    current_pos = (abs_x * SVG_SCALE, abs_y * SVG_SCALE);
+                    current_pos = (abs_x, abs_y); // SVG coords
                     start_pos = current_pos;
-                    points.push(current_pos);
+                    points.push((abs_x * SVG_SCALE, abs_y * SVG_SCALE)); // Convert to canvas
                     pos = new_pos;
                     current_cmd = if current_cmd == 'm' { 'l' } else { 'L' };
                 } else {
@@ -676,13 +677,14 @@ fn sample_stroke_path(d: &str) -> Vec<(f64, f64)> {
             'L' | 'l' => {
                 if let Some((x, y, new_pos)) = parse_coords(&chars, pos) {
                     let (abs_x, abs_y) = if current_cmd == 'l' {
-                        (current_pos.0 + x, current_pos.1 + y)
+                        (current_pos.0 + x, current_pos.1 + y) // Both in SVG coords - correct!
                     } else {
                         (x, y)
                     };
+                    let start = (current_pos.0 * SVG_SCALE, current_pos.1 * SVG_SCALE);
                     let end = (abs_x * SVG_SCALE, abs_y * SVG_SCALE);
-                    interpolate_line(&mut points, current_pos, end);
-                    current_pos = end;
+                    interpolate_line(&mut points, start, end);
+                    current_pos = (abs_x, abs_y); // SVG coords
                     pos = new_pos;
                 } else {
                     break;
@@ -692,7 +694,7 @@ fn sample_stroke_path(d: &str) -> Vec<(f64, f64)> {
                 if let Some((x1, y1, x2, y2, x, y, new_pos)) = parse_curve_coords(&chars, pos) {
                     let (abs_x1, abs_y1, abs_x2, abs_y2, abs_x, abs_y) = if current_cmd == 'c' {
                         (
-                            current_pos.0 + x1,
+                            current_pos.0 + x1, // All in SVG coords - correct!
                             current_pos.1 + y1,
                             current_pos.0 + x2,
                             current_pos.1 + y2,
@@ -702,22 +704,21 @@ fn sample_stroke_path(d: &str) -> Vec<(f64, f64)> {
                     } else {
                         (x1, y1, x2, y2, x, y)
                     };
+                    let start = (current_pos.0 * SVG_SCALE, current_pos.1 * SVG_SCALE);
+                    let ctrl1 = (abs_x1 * SVG_SCALE, abs_y1 * SVG_SCALE);
+                    let ctrl2 = (abs_x2 * SVG_SCALE, abs_y2 * SVG_SCALE);
                     let end = (abs_x * SVG_SCALE, abs_y * SVG_SCALE);
-                    interpolate_bezier(
-                        &mut points,
-                        current_pos,
-                        (abs_x1 * SVG_SCALE, abs_y1 * SVG_SCALE),
-                        (abs_x2 * SVG_SCALE, abs_y2 * SVG_SCALE),
-                        end,
-                    );
-                    current_pos = end;
+                    interpolate_bezier(&mut points, start, ctrl1, ctrl2, end);
+                    current_pos = (abs_x, abs_y); // SVG coords
                     pos = new_pos;
                 } else {
                     break;
                 }
             }
             'Z' | 'z' => {
-                interpolate_line(&mut points, current_pos, start_pos);
+                let start = (current_pos.0 * SVG_SCALE, current_pos.1 * SVG_SCALE);
+                let end = (start_pos.0 * SVG_SCALE, start_pos.1 * SVG_SCALE);
+                interpolate_line(&mut points, start, end);
                 current_pos = start_pos;
                 pos += 1;
             }
