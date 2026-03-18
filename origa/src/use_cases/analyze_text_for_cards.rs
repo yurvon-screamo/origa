@@ -54,10 +54,10 @@ impl<'a, R: UserRepository> AnalyzeTextForCardsUseCase<'a, R> {
             }
 
             let word_text = token.orthographic_base_form().to_string();
-
             if seen_words.contains(&word_text) {
                 continue;
             }
+
             seen_words.insert(word_text.clone());
 
             let knowledge = user.is_word_known(&word_text);

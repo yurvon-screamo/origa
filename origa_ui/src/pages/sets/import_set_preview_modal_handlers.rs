@@ -16,7 +16,7 @@ pub fn create_import_preview_handlers(
     state: ImportPreviewModalState,
     is_open: RwSignal<bool>,
     toasts: RwSignal<Vec<ToastData>>,
-    on_import_result: Callback<()>,
+    on_import_result: Callback<Vec<String>>,
 ) -> ImportPreviewHandlers {
     let state_clone = state.clone();
     let on_word_toggle = Callback::new(move |word: String| {
@@ -40,13 +40,20 @@ pub fn create_import_preview_handlers(
 
         state.is_importing.set(true);
 
+        let imported_set_ids = state.preview_words.get()
+            .iter()
+            .map(|w| w.set_id.clone())
+            .collect::<std::collections::HashSet<_>>()
+            .into_iter()
+            .collect::<Vec<_>>();
+
         spawn_local(async move {
             match state.import_selected().await {
                 Ok(result) => {
                     state.is_importing.set(false);
                     state.reset();
                     is_open.set(false);
-                    on_import_result.run(());
+                    on_import_result.run(imported_set_ids);
 
                     let toast_id = toasts.get().len();
                     let message = if result.failed_words.is_empty() {
@@ -81,7 +88,7 @@ pub fn create_import_preview_handlers(
                 Err(e) => {
                     state.is_importing.set(false);
                     state.error_message.set(Some(e.clone()));
-                    on_import_result.run(());
+                    on_import_result.run(Vec::new());
                     let toast_id = toasts.get().len();
                     toasts.update(|t| {
                         t.push(ToastData {
