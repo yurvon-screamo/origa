@@ -15,6 +15,8 @@ pub fn SetsTypeGroup(
     type_filter: RwSignal<TypeFilter>,
     known_kanji: HashSet<String>,
     on_import: Callback<(String, String)>,
+    selected_sets: RwSignal<HashSet<String>>,
+    on_toggle_select: Callback<String>,
 ) -> impl IntoView {
     let sets_for_type = Memo::new(move |_| {
         let current_filter = type_filter.get();
@@ -50,6 +52,8 @@ pub fn SetsTypeGroup(
                                     set_info=set_info
                                     known_kanji=known_kanji_stored.get_value()
                                     on_import=on_import
+                                    selected_sets=selected_sets
+                                    on_toggle_select=on_toggle_select
                                 />
                             }
                         }

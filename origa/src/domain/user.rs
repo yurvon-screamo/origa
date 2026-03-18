@@ -149,6 +149,14 @@ impl User {
         self.touch();
     }
 
+    /// Пометить несколько наборов как импортированные
+    pub fn mark_sets_as_imported(&mut self, set_ids: impl IntoIterator<Item = String>) {
+        for set_id in set_ids {
+            self.imported_sets.insert(set_id);
+        }
+        self.touch();
+    }
+
     pub fn is_set_imported(&self, set_id: &str) -> bool {
         self.imported_sets.contains(set_id)
     }

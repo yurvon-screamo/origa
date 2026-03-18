@@ -1,3 +1,4 @@
+use futures::future::join_all;
 use origa::{
     domain::{JapaneseLevel, OrigaError},
     traits::{WellKnownSet, WellKnownSetLoader, WellKnownSetMeta},
@@ -70,6 +71,26 @@ impl WellKnownSetLoader for WellKnownSetLoaderImpl {
         let path = id_to_path(&id);
         let json = fetch_text(public_url(&format!("/public/{}", path))).await?;
         parse_well_known_set(&json, &id)
+    }
+
+    async fn load_sets(&self, ids: Vec<String>) -> Result<Vec<(String, WellKnownSet)>, OrigaError> {
+        let futures: Vec<_> = ids
+            .into_iter()
+            .map(|id| {
+                let id_clone = id.clone();
+                async move {
+                    let set = self.load_set(id_clone.clone()).await?;
+                    Ok::<_, OrigaError>((id_clone, set))
+                }
+            })
+            .collect();
+
+        let results = join_all(futures)
+            .await
+            .into_iter()
+            .collect::<Result<Vec<_>, _>>()?;
+
+        Ok(results)
     }
 }
 

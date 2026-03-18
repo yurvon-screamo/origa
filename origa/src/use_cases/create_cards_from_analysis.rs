@@ -22,12 +22,16 @@ impl<'a, R: UserRepository> CreateCardsFromAnalysisUseCase<'a, R> {
         Self { repository }
     }
 
+    /// Создаёт карточки из списка слов с опциональной пометкой наборов как импортированных.
+    ///
+    /// - `words` — список слов для создания карточек
+    /// - `set_ids` — ID наборов для пометки как импортированные (None = без пометки)
     pub async fn execute(
         &self,
         words: Vec<WordToCreate>,
-        set_id: Option<String>,
+        set_ids: Option<Vec<String>>,
     ) -> Result<CreateCardsFromAnalysisResult, OrigaError> {
-        debug!(word_count = words.len(), set_id = ?set_id, "Creating cards from analysis");
+        debug!(word_count = words.len(), set_ids = ?set_ids, "Creating cards from analysis");
 
         let mut user = self
             .repository
@@ -51,8 +55,8 @@ impl<'a, R: UserRepository> CreateCardsFromAnalysisUseCase<'a, R> {
             }
         }
 
-        if let Some(id) = set_id {
-            user.mark_set_as_imported(id);
+        if let Some(ids) = set_ids {
+            user.mark_sets_as_imported(ids);
         }
 
         self.repository.save_sync(&user).await?;

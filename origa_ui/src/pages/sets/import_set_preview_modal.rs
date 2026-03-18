@@ -1,4 +1,5 @@
 use crate::pages::sets::set_word_item::SetWordItem;
+use crate::pages::sets::types::PreviewWord;
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{
     Alert, AlertType, Button, ButtonVariant, Drawer, Spinner, Text, TextSize, ToastContainer,
@@ -8,6 +9,7 @@ use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::domain::User;
 use origa::traits::UserRepository;
+use std::collections::HashMap;
 
 use super::import_set_preview_modal_handlers::create_import_preview_handlers;
 use super::import_set_preview_modal_state::ImportPreviewModalState;
@@ -15,8 +17,8 @@ use super::import_set_preview_modal_state::ImportPreviewModalState;
 #[component]
 pub fn ImportSetPreviewModal(
     is_open: RwSignal<bool>,
-    set_id: Signal<String>,
-    set_title: Signal<String>,
+    set_ids: Signal<Vec<String>>,
+    set_titles: Signal<HashMap<String, String>>,
     on_import_result: Callback<()>,
 ) -> impl IntoView {
     let repository =
@@ -43,39 +45,73 @@ pub fn ImportSetPreviewModal(
 
     let state = ImportPreviewModalState::new();
     let toasts: RwSignal<Vec<ToastData>> = RwSignal::new(Vec::new());
-    let handlers = create_import_preview_handlers(
-        state.clone(),
-        is_open,
-        repository,
-        toasts,
-        on_import_result,
-    );
+    let handlers = create_import_preview_handlers(state.clone(), is_open, toasts, on_import_result);
 
-    let set_words = state.set_words;
+    let preview_words = state.preview_words;
     let selected_words = state.selected_words;
     let is_loading_preview = state.is_loading_preview;
     let is_importing = state.is_importing;
     let error_message = state.error_message;
 
+    let grouped_words = Memo::new(move |_| {
+        let words = preview_words.get();
+        let mut groups: HashMap<String, Vec<PreviewWord>> = HashMap::new();
+        for word in words {
+            groups.entry(word.set_id.clone()).or_default().push(word);
+        }
+        groups
+    });
+
+    let drawer_title = Memo::new(move |_| {
+        let ids = set_ids.get();
+        if ids.len() == 1 {
+            set_titles
+                .get()
+                .get(&ids[0])
+                .cloned()
+                .unwrap_or_else(|| "Импорт набора".to_string())
+        } else {
+            format!("{} наборов", ids.len())
+        }
+    });
+
     Effect::new({
         let state = state.clone();
         move |_| {
             if is_open.get() {
-                let id = set_id.get();
-                state.set_set_id(id.clone());
-                state.load_preview(id);
+                let ids = set_ids.get();
+                let titles = set_titles.get();
+                if ids.len() == 1 {
+                    state.load_preview(ids[0].clone());
+                } else {
+                    state.load_preview_multiple(ids, titles);
+                }
             }
         }
+    });
+
+    let total_words_count = Memo::new(move |_| {
+        let groups = grouped_words.get();
+        groups.values().map(|g| g.len()).sum::<usize>()
+    });
+
+    let known_words_count = Memo::new(move |_| {
+        let groups = grouped_words.get();
+        groups
+            .values()
+            .flat_map(|g| g.iter())
+            .filter(|w| w.is_known)
+            .count()
     });
 
     view! {
         <Drawer
             is_open=is_open
-            title=Signal::derive(move || set_title.get())
+            title=Signal::derive(move || drawer_title.get())
         >
             <div class="space-y-4">
                 {move || {
-                    let words = set_words.get();
+                    let groups = grouped_words.get();
                     let is_loading = is_loading_preview.get();
 
                     if let Some(error) = error_message.get() {
@@ -86,7 +122,7 @@ pub fn ImportSetPreviewModal(
                                 message=Signal::derive(move || error.clone())
                             />
                         }.into_any()
-                    } else if is_loading || words.is_empty() {
+                    } else if is_loading {
                         view! {
                             <div class="flex flex-col items-center py-4 gap-3">
                                 <Spinner />
@@ -95,36 +131,67 @@ pub fn ImportSetPreviewModal(
                                 </Text>
                             </div>
                         }.into_any()
+                    } else if groups.is_empty() {
+                        view! {
+                            <div class="flex flex-col items-center py-4 gap-3">
+                                <Text size=TextSize::Default variant=TypographyVariant::Muted>
+                                    "Нет слов для импорта"
+                                </Text>
+                            </div>
+                        }.into_any()
                     } else {
-                        let known_count = words.iter().filter(|(_, _, known)| *known).count();
+                        let titles_map = set_titles.get();
+                        let kanji = known_kanji.get();
+                        let selected = selected_words;
 
                         view! {
                             <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                                {format!("Найдено {} слов ({} известных)", words.len(), known_count)}
+                                {move || format!("Найдено {} слов ({} известных)", total_words_count.get(), known_words_count.get())}
                             </Text>
-                            <div class="space-y-2 overflow-y-auto">
-                                <For
-                                    each=move || words.clone()
-                                    key=|word| word.0.clone()
-                                    children=move |word| {
-                                        let word_text = word.0.clone();
-                                        let known_meaning = word.1.clone();
-                                        let is_known = word.2;
+                            <div class="space-y-6 overflow-y-auto max-h-[60vh]">
+                                {groups
+                                    .into_iter()
+                                    .map(|(set_id, words)| {
+                                        let title = titles_map
+                                            .get(&set_id)
+                                            .cloned()
+                                            .unwrap_or_else(|| set_id.clone());
 
                                         view! {
-                                            <SetWordItem
-                                                word=word_text.clone()
-                                                known_meaning=known_meaning
-                                                is_known=is_known
-                                                selected_words=selected_words
-                                                known_kanji=known_kanji.get()
-                                                on_toggle=Callback::new(move |_| handlers.on_word_toggle.run(word_text.clone()))
-                                            />
+                                            <div class="border-b border-gray-200 pb-4 last:border-0">
+                                                <h3 class="font-semibold text-base mb-3 text-gray-700">
+                                                    {title}
+                                                    <span class="text-gray-400 font-normal ml-2">
+                                                        ({words.len()} слов)
+                                                    </span>
+                                                </h3>
+                                                <div class="space-y-2">
+                                                    {words
+                                                        .into_iter()
+                                                        .map(|word| {
+                                                            let word_text = word.word.clone();
+                                                            let known_meaning = word.meaning.clone();
+                                                            let is_known = word.is_known;
+
+                                                            view! {
+                                                                <SetWordItem
+                                                                    word=word_text.clone()
+                                                                    known_meaning=known_meaning
+                                                                    is_known=is_known
+                                                                    selected_words=selected
+                                                                    known_kanji=kanji.clone()
+                                                                    on_toggle=Callback::new(move |_| handlers.on_word_toggle.run(word_text.clone()))
+                                                                />
+                                                            }
+                                                        })
+                                                        .collect::<Vec<_>>()}
+                                                </div>
+                                            </div>
                                         }
-                                    }
-                                />
+                                    })
+                                    .collect::<Vec<_>>()}
                             </div>
-                            <div class="flex gap-2 justify-between">
+                            <div class="flex gap-2 justify-between pt-4 border-t">
                                 <Button
                                     variant=ButtonVariant::Ghost
                                     on_click=handlers.on_cancel

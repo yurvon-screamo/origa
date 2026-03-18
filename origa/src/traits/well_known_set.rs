@@ -77,4 +77,18 @@ impl WellKnownSet {
 pub trait WellKnownSetLoader {
     fn load_meta_list(&self) -> impl Future<Output = Result<Vec<WellKnownSetMeta>, OrigaError>>;
     fn load_set(&self, id: String) -> impl Future<Output = Result<WellKnownSet, OrigaError>>;
+
+    fn load_sets(
+        &self,
+        ids: Vec<String>,
+    ) -> impl Future<Output = Result<Vec<(String, WellKnownSet)>, OrigaError>> {
+        async {
+            let mut results = Vec::new();
+            for id in ids {
+                let set = self.load_set(id.clone()).await?;
+                results.push((id, set));
+            }
+            Ok(results)
+        }
+    }
 }

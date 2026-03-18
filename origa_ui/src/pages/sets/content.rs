@@ -4,11 +4,14 @@ use super::sets_level_group::SetsLevelGroup;
 use super::types::SetInfo;
 use crate::loaders::WellKnownSetLoaderImpl;
 use crate::repository::HybridUserRepository;
-use crate::ui_components::{Input, Spinner, Tag, TagVariant, Text, TextSize, TypographyVariant};
+use crate::ui_components::{
+    Button, ButtonVariant, Input, Spinner, Tag, TagVariant, Text, TextSize, TypographyVariant,
+};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::domain::{JapaneseLevel, User};
 use origa::traits::{UserRepository, WellKnownSetLoader};
+use std::collections::{HashMap, HashSet};
 
 #[component]
 pub fn SetsContent() -> impl IntoView {
@@ -18,13 +21,14 @@ pub fn SetsContent() -> impl IntoView {
     let sets: RwSignal<Vec<SetInfo>> = RwSignal::new(Vec::new());
     let is_loading: RwSignal<bool> = RwSignal::new(true);
     let preview_modal_open = RwSignal::new(false);
-    let preview_set_id = RwSignal::new(String::new());
-    let preview_set_title = RwSignal::new(String::new());
+    let preview_set_ids = RwSignal::new(Vec::<String>::new());
+    let preview_set_titles = RwSignal::new(HashMap::<String, String>::new());
     let current_user: RwSignal<Option<User>> = RwSignal::new(None);
     let level_filter = RwSignal::new(LevelFilter::default());
     let type_filter = RwSignal::new(TypeFilter::default());
     let import_filter = RwSignal::new(ImportFilter::default());
     let search = RwSignal::new(String::new());
+    let selected_sets: RwSignal<HashSet<String>> = RwSignal::new(HashSet::new());
 
     let known_kanji = Memo::new(move |_| {
         current_user
@@ -126,10 +130,25 @@ pub fn SetsContent() -> impl IntoView {
     });
 
     let on_import = Callback::new(move |(set_id, title): (String, String)| {
-        preview_set_id.set(set_id);
-        preview_set_title.set(title);
+        preview_set_ids.set(vec![set_id.clone()]);
+        preview_set_titles.update(|m| {
+            m.clear();
+            m.insert(set_id, title);
+        });
         preview_modal_open.set(true);
     });
+
+    let on_toggle_select = Callback::new(move |set_id: String| {
+        selected_sets.update(|sets| {
+            if sets.contains(&set_id) {
+                sets.remove(&set_id);
+            } else {
+                sets.insert(set_id);
+            }
+        });
+    });
+
+    let known_kanji_clone = known_kanji.get();
 
     view! {
         <div class="sets-page">
@@ -381,49 +400,95 @@ pub fn SetsContent() -> impl IntoView {
                             {ImportFilter::New.label()}
                         </Tag>
                     </div>
+
+                    <Show when=move || !selected_sets.get().is_empty()>
+                        <div class="flex items-center gap-3 pt-2">
+                            <Button
+                                variant=ButtonVariant::Olive
+                                on_click=Callback::new(move |_| {
+                                    let set_ids: Vec<String> = selected_sets.get().into_iter().collect();
+                                    let count = set_ids.len();
+                                    if count > 0 {
+                                        let all_sets = sets.get();
+                                        let titles: HashMap<String, String> = all_sets
+                                            .iter()
+                                            .filter(|s| set_ids.contains(&s.set_id))
+                                            .map(|s| (s.set_id.clone(), s.title.clone()))
+                                            .collect();
+
+                                        preview_set_ids.set(set_ids);
+                                        preview_set_titles.set(titles);
+                                        preview_modal_open.set(true);
+                                    }
+                                })
+                            >
+                                {move || format!("Импортировать {} наборов", selected_sets.get().len())}
+                            </Button>
+                            <Button
+                                variant=ButtonVariant::Ghost
+                                on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
+                                    selected_sets.set(HashSet::new());
+                                })
+                            >
+                                "Отменить выбор"
+                            </Button>
+                        </div>
+                    </Show>
                 </div>
 
                 <SetsLevelGroup
                     level=JapaneseLevel::N5
                     sets=filtered_sets
                     type_filter=type_filter
-                    known_kanji=known_kanji.get()
+                    known_kanji=known_kanji_clone.clone()
                     on_import=on_import
+                    selected_sets=selected_sets
+                    on_toggle_select=on_toggle_select
                 />
                 <SetsLevelGroup
                     level=JapaneseLevel::N4
                     sets=filtered_sets
                     type_filter=type_filter
-                    known_kanji=known_kanji.get()
+                    known_kanji=known_kanji_clone.clone()
                     on_import=on_import
+                    selected_sets=selected_sets
+                    on_toggle_select=on_toggle_select
                 />
                 <SetsLevelGroup
                     level=JapaneseLevel::N3
                     sets=filtered_sets
                     type_filter=type_filter
-                    known_kanji=known_kanji.get()
+                    known_kanji=known_kanji_clone.clone()
                     on_import=on_import
+                    selected_sets=selected_sets
+                    on_toggle_select=on_toggle_select
                 />
                 <SetsLevelGroup
                     level=JapaneseLevel::N2
                     sets=filtered_sets
                     type_filter=type_filter
-                    known_kanji=known_kanji.get()
+                    known_kanji=known_kanji_clone.clone()
                     on_import=on_import
+                    selected_sets=selected_sets
+                    on_toggle_select=on_toggle_select
                 />
                 <SetsLevelGroup
                     level=JapaneseLevel::N1
                     sets=filtered_sets
                     type_filter=type_filter
-                    known_kanji=known_kanji.get()
+                    known_kanji=known_kanji_clone.clone()
                     on_import=on_import
+                    selected_sets=selected_sets
+                    on_toggle_select=on_toggle_select
                 />
             </Show>
             <ImportSetPreviewModal
                 is_open=preview_modal_open
-                set_id=Signal::derive(move || preview_set_id.get())
-                set_title=Signal::derive(move || preview_set_title.get())
-                on_import_result=Callback::new(move |_| {})
+                set_ids=Signal::derive(move || preview_set_ids.get())
+                set_titles=Signal::derive(move || preview_set_titles.get())
+                on_import_result=Callback::new(move |_| {
+                    selected_sets.set(HashSet::new());
+                })
             />
         </div>
     }
