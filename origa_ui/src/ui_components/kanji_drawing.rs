@@ -13,10 +13,10 @@ use web_sys::js_sys::Array;
 const CANVAS_SIZE: u32 = 256;
 const SVG_VIEWBOX_SIZE: f64 = 109.0;
 const SVG_SCALE: f64 = CANVAS_SIZE as f64 / SVG_VIEWBOX_SIZE;
-const STROKE_TOLERANCE: f64 = 0.2;
+const STROKE_TOLERANCE: f64 = 0.55;
 const SAMPLE_COUNT: usize = 21;
 
-const SUCCESS_THRESHOLD: f64 = 0.55;
+const SUCCESS_THRESHOLD: f64 = 0.25;
 
 const MIN_STROKE_POINTS: usize = 8;
 const STROKE_LINE_WIDTH: f64 = 12.0;
@@ -524,30 +524,52 @@ fn normalize_points(points: &[(f64, f64)]) -> Vec<(f64, f64)> {
         .collect()
 }
 fn is_stroke_similar(user_points: &[(f64, f64)], stroke_d: &str) -> bool {
+    debug!("[Stroke Check] user_points count: {}", user_points.len());
+    
     if user_points.len() < MIN_STROKE_POINTS {
+        debug!("[Stroke Check] FAIL: too few points ({}) < MIN_STROKE_POINTS ({})", user_points.len(), MIN_STROKE_POINTS);
         return false;
     }
+    
     let stroke_samples = sample_stroke_path(stroke_d);
+    debug!("[Stroke Check] stroke_samples count: {}", stroke_samples.len());
+    
     if stroke_samples.len() < SAMPLE_COUNT {
+        debug!("[Stroke Check] FAIL: stroke has too few samples");
         return false;
     }
+    
     let normalized_stroke = normalize_points(&stroke_samples);
     let normalized_user = normalize_points(user_points);
     let user_samples = resample_points(&normalized_user, SAMPLE_COUNT);
     let stroke_resampled = resample_points(&normalized_stroke, SAMPLE_COUNT);
+    
     if user_samples.len() < SAMPLE_COUNT || stroke_resampled.len() < SAMPLE_COUNT {
+        debug!("[Stroke Check] FAIL: resample too short");
         return false;
     }
+    
     let mut match_count = 0;
+    let mut distances = Vec::new();
     for (user_point, stroke_point) in user_samples.iter().zip(stroke_resampled.iter()) {
         let dx = user_point.0 - stroke_point.0;
         let dy = user_point.1 - stroke_point.1;
         let distance = (dx * dx + dy * dy).sqrt();
+        distances.push(distance);
         if distance <= STROKE_TOLERANCE {
             match_count += 1;
         }
     }
-    (match_count as f64 / SAMPLE_COUNT as f64) >= SUCCESS_THRESHOLD
+    
+    let ratio = match_count as f64 / SAMPLE_COUNT as f64;
+    let avg_distance: f64 = distances.iter().sum::<f64>() / distances.len() as f64;
+    debug!("[Stroke Check] match_count: {}/{}, ratio: {:.2}, avg_distance: {:.3}, tolerance: {:.2}, threshold: {:.2}", 
+        match_count, SAMPLE_COUNT, ratio, avg_distance, STROKE_TOLERANCE, SUCCESS_THRESHOLD);
+    
+    let result = ratio >= SUCCESS_THRESHOLD;
+    debug!("[Stroke Check] RESULT: {} (ratio {:.2}, threshold {:.2})", result, ratio, SUCCESS_THRESHOLD);
+    
+    result
 }
 fn sample_stroke_path(d: &str) -> Vec<(f64, f64)> {
     let mut points = Vec::new();
