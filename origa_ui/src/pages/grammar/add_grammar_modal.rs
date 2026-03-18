@@ -28,10 +28,10 @@ pub fn AddGrammarModal(is_open: RwSignal<bool>, refresh_trigger: RwSignal<u32>) 
         use_context::<HybridUserRepository>().expect("repository context not provided");
 
     let current_user: RwSignal<Option<User>> = RwSignal::new(None);
-    let repo_for_init = repository.clone();
+    let repo_for_effect = repository.clone();
 
     Effect::new(move |_| {
-        let repo = repo_for_init.clone();
+        let repo = repo_for_effect.clone();
         spawn_local(async move {
             if let Ok(Some(user)) = repo.get_current_user().await {
                 current_user.set(Some(user));
@@ -46,8 +46,8 @@ pub fn AddGrammarModal(is_open: RwSignal<bool>, refresh_trigger: RwSignal<u32>) 
             .unwrap_or_default()
     });
 
-    let state = ModalState::new(is_open);
-    let handlers = ModalHandlers::new(&state, is_open, refresh_trigger);
+    let state = ModalState::new(is_open, refresh_trigger);
+    let handlers = ModalHandlers::new(&state, is_open);
 
     Effect::new({
         let state = state.clone();
