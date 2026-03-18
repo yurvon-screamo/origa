@@ -15,7 +15,7 @@ use origa::traits::UserRepository;
 use origa::use_cases::AnalyzedWord;
 
 #[component]
-pub fn AddWordsPreviewModal(is_open: RwSignal<bool>) -> impl IntoView {
+pub fn AddWordsPreviewModal(is_open: RwSignal<bool>, refresh_trigger: RwSignal<u32>) -> impl IntoView {
     let repository =
         use_context::<HybridUserRepository>().expect("repository context not provided");
 
@@ -47,7 +47,7 @@ pub fn AddWordsPreviewModal(is_open: RwSignal<bool>) -> impl IntoView {
     let is_creating = state.is_creating;
     let input_mode = state.input_mode;
     let active_tab = state.active_tab;
-    let handlers = create_preview_modal_handlers(state.clone(), is_open, repository);
+    let handlers = create_preview_modal_handlers(state.clone(), is_open, repository, refresh_trigger);
 
     Effect::new({
         let state = state.clone();

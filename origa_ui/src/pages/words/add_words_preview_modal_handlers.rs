@@ -15,6 +15,7 @@ pub fn create_preview_modal_handlers(
     state: PreviewModalState,
     is_open: RwSignal<bool>,
     _repository: HybridUserRepository,
+    refresh_trigger: RwSignal<u32>,
 ) -> PreviewModalHandlers {
     let on_analyze = {
         let state = state.clone();
@@ -42,6 +43,7 @@ pub fn create_preview_modal_handlers(
             let error = state.error_message;
             let state_for_async = state.clone();
             let is_open_for_async = is_open;
+            let refresh_for_async = refresh_trigger;
 
             is_creating.set(true);
             error.set(None);
@@ -52,6 +54,7 @@ pub fn create_preview_modal_handlers(
                         is_creating.set(false);
                         state_for_async.reset();
                         is_open_for_async.set(false);
+                        refresh_for_async.update(|v| *v += 1);
                     }
                     Err(e) => {
                         is_creating.set(false);
