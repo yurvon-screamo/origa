@@ -1,4 +1,13 @@
 #[derive(Clone, PartialEq)]
+pub struct PreviewWord {
+    pub word: String,
+    pub meaning: Option<String>,
+    pub is_known: bool,
+    pub set_id: String,
+    pub set_title: String,
+}
+
+#[derive(Clone, PartialEq)]
 pub struct SetInfo {
     pub set_id: String,
     pub title: String,

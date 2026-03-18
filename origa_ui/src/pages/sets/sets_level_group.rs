@@ -14,6 +14,8 @@ pub fn SetsLevelGroup(
     type_filter: RwSignal<TypeFilter>,
     known_kanji: HashSet<String>,
     on_import: Callback<(String, String)>,
+    selected_sets: RwSignal<HashSet<String>>,
+    on_toggle_select: Callback<String>,
 ) -> impl IntoView {
     let sets_for_level = Memo::new(move |_| {
         sets.get()
@@ -37,6 +39,8 @@ pub fn SetsLevelGroup(
                     type_filter=type_filter
                     known_kanji=known_kanji.clone()
                     on_import=on_import
+                    selected_sets=selected_sets
+                    on_toggle_select=on_toggle_select
                 />
                 <SetsTypeGroup
                     set_type=SetType::Migii
@@ -44,6 +48,8 @@ pub fn SetsLevelGroup(
                     type_filter=type_filter
                     known_kanji=known_kanji.clone()
                     on_import=on_import
+                    selected_sets=selected_sets
+                    on_toggle_select=on_toggle_select
                 />
                 <SetsTypeGroup
                     set_type=SetType::SpyFamily
@@ -51,6 +57,8 @@ pub fn SetsLevelGroup(
                     type_filter=type_filter
                     known_kanji=known_kanji.clone()
                     on_import=on_import
+                    selected_sets=selected_sets
+                    on_toggle_select=on_toggle_select
                 />
                 <SetsTypeGroup
                     set_type=SetType::DuolingoRu
@@ -58,6 +66,8 @@ pub fn SetsLevelGroup(
                     type_filter=type_filter
                     known_kanji=known_kanji.clone()
                     on_import=on_import
+                    selected_sets=selected_sets
+                    on_toggle_select=on_toggle_select
                 />
                 <SetsTypeGroup
                     set_type=SetType::DuolingoEn
@@ -65,6 +75,8 @@ pub fn SetsLevelGroup(
                     type_filter=type_filter
                     known_kanji=known_kanji.clone()
                     on_import=on_import
+                    selected_sets=selected_sets
+                    on_toggle_select=on_toggle_select
                 />
             </div>
         </Show>

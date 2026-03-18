@@ -1,7 +1,7 @@
 use super::types::SetInfo;
 use crate::ui_components::{
-    Button, ButtonSize, ButtonVariant, Card, Heading, HeadingLevel, MarkdownText, Tag, TagVariant,
-    Text, TextSize, TypographyVariant,
+    Button, ButtonSize, ButtonVariant, Card, Checkbox, Heading, HeadingLevel, MarkdownText, Tag,
+    TagVariant, Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
 use std::collections::HashSet;
@@ -11,40 +11,72 @@ pub fn SetCard(
     set_info: SetInfo,
     known_kanji: HashSet<String>,
     on_import: Callback<(String, String)>,
+    selected_sets: RwSignal<HashSet<String>>,
+    on_toggle_select: Callback<String>,
 ) -> impl IntoView {
     let description = set_info.description.clone();
     let title_for_display = set_info.title.clone();
     let is_imported = set_info.is_imported;
     let word_count = set_info.word_count;
+    let set_id = set_info.set_id.clone();
+
+    let is_selected = Signal::derive({
+        let sid = set_id.clone();
+        let ss = selected_sets;
+        move || ss.get().contains(&sid)
+    });
+
+    let card_class = Signal::derive(move || {
+        let base = "p-4 flex flex-col h-full transition-all duration-200".to_string();
+        if is_selected.get() {
+            format!("{} ring-2 ring-primary ring-offset-2", base)
+        } else {
+            base
+        }
+    });
+
+    let sid_for_callback = set_id.clone();
 
     view! {
-        <Card class=Signal::derive(|| "p-4 flex flex-col h-full".to_string())>
-            <div class="flex items-center justify-between gap-2 mb-2">
-                <div class="flex items-center gap-2">
-                    <Heading level=Signal::derive(|| HeadingLevel::H4)>
-                        {title_for_display}
-                    </Heading>
-                    <Show when=move || is_imported>
-                        <Tag variant=Signal::derive(|| TagVariant::Olive)>
-                            "Импортирован"
-                        </Tag>
-                    </Show>
-                </div>
-                <Show when=move || !is_imported>
-                    <SetCardButton
-                        set_id=set_info.set_id.clone()
-                        title=set_info.title.clone()
-                        on_import=on_import
+        <Card class=card_class>
+            <div class="flex items-start gap-3">
+                <div class="flex-shrink-0 mt-1">
+                    <Checkbox
+                        checked=is_selected
+                        on_change=Callback::new(move |_| {
+                            on_toggle_select.run(sid_for_callback.clone());
+                        })
                     />
-                </Show>
-            </div>
-            <div class="flex-1 min-h-0 mb-3">
-                <MarkdownText content=Signal::derive(move || description.clone()) known_kanji=known_kanji.clone()/>
-            </div>
-            <div class="mt-auto">
-                <Text size=Signal::derive(|| TextSize::Small) variant=Signal::derive(|| TypographyVariant::Muted)>
-                    {word_count.map(|c| format!("{} слов", c)).unwrap_or_default()}
-                </Text>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between gap-2 mb-2">
+                        <div class="flex items-center gap-2">
+                            <Heading level=Signal::derive(|| HeadingLevel::H4)>
+                                {title_for_display}
+                            </Heading>
+                            <Show when=move || is_imported>
+                                <Tag variant=Signal::derive(|| TagVariant::Olive)>
+                                    "Импортирован"
+                                </Tag>
+                            </Show>
+                        </div>
+                        <Show when=move || !is_imported>
+                            <SetCardButton
+                                set_id=set_info.set_id.clone()
+                                title=set_info.title.clone()
+                                on_import=on_import
+                            />
+                        </Show>
+                    </div>
+                    <div class="flex-1 min-h-0 mb-3">
+                        <MarkdownText content=Signal::derive(move || description.clone()) known_kanji=known_kanji.clone()/>
+                    </div>
+                    <div class="mt-auto">
+                        <Text size=Signal::derive(|| TextSize::Small) variant=Signal::derive(|| TypographyVariant::Muted)>
+                            {word_count.map(|c| format!("{} слов", c)).unwrap_or_default()}
+                        </Text>
+                    </div>
+                </div>
             </div>
         </Card>
     }

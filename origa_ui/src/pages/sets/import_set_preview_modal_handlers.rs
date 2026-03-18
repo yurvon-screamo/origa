@@ -1,4 +1,3 @@
-use crate::repository::HybridUserRepository;
 use crate::ui_components::{ToastData, ToastType};
 use leptos::ev::MouseEvent;
 use leptos::prelude::*;
@@ -6,6 +5,7 @@ use leptos::task::spawn_local;
 
 use super::import_set_preview_modal_state::ImportPreviewModalState;
 
+#[derive(Clone)]
 pub struct ImportPreviewHandlers {
     pub on_word_toggle: Callback<String>,
     pub on_import: Callback<()>,
@@ -15,7 +15,6 @@ pub struct ImportPreviewHandlers {
 pub fn create_import_preview_handlers(
     state: ImportPreviewModalState,
     is_open: RwSignal<bool>,
-    repository: HybridUserRepository,
     toasts: RwSignal<Vec<ToastData>>,
     on_import_result: Callback<()>,
 ) -> ImportPreviewHandlers {
@@ -26,7 +25,6 @@ pub fn create_import_preview_handlers(
 
     let state_clone = state.clone();
     let is_open_clone = is_open;
-    let repository_clone = repository;
     let toasts_clone = toasts;
     let on_import_result_clone = on_import_result;
     let on_import = Callback::new(move |_: ()| {
@@ -37,7 +35,6 @@ pub fn create_import_preview_handlers(
 
         let state = state_clone.clone();
         let is_open = is_open_clone;
-        let _repository = repository_clone.clone();
         let toasts = toasts_clone;
         let on_import_result = on_import_result_clone;
 
@@ -45,19 +42,36 @@ pub fn create_import_preview_handlers(
 
         spawn_local(async move {
             match state.import_selected().await {
-                Ok(_) => {
+                Ok(result) => {
                     state.is_importing.set(false);
                     state.reset();
                     is_open.set(false);
-
-                    let count = selected.len();
-                    let message = format!("Успешно импортировано {} слов", count);
                     on_import_result.run(());
+
                     let toast_id = toasts.get().len();
+                    let message = if result.failed_words.is_empty() {
+                        if result.skipped_words.is_empty() {
+                            format!("Успешно создано {} карточек", result.created_cards.len())
+                        } else {
+                            format!(
+                                "Создано {} карточек, пропущено {} (уже существуют)",
+                                result.created_cards.len(),
+                                result.skipped_words.len()
+                            )
+                        }
+                    } else {
+                        format!(
+                            "Создано {} карточек, пропущено {}, ошибок: {}",
+                            result.created_cards.len(),
+                            result.skipped_words.len(),
+                            result.failed_words.len()
+                        )
+                    };
+
                     toasts.update(|t| {
                         t.push(ToastData {
                             id: toast_id,
-                            title: "Успех".to_string(),
+                            title: "Импорт завершён".to_string(),
                             message,
                             toast_type: ToastType::Success,
                             duration_ms: None,

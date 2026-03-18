@@ -122,11 +122,45 @@ async fn create_cards_from_analysis_marks_set_as_imported() {
     }];
     let set_id = "test-set-123".to_string();
 
-    let result = use_case.execute(words, Some(set_id.clone())).await.unwrap();
+    let result = use_case
+        .execute(words, Some(vec![set_id.clone()]))
+        .await
+        .unwrap();
     assert!(!result.created_cards.is_empty());
 
     let user = repo.get_current_user().await.unwrap().unwrap();
     assert!(user.is_set_imported(&set_id));
+}
+
+#[tokio::test]
+async fn create_cards_from_analysis_marks_multiple_sets_as_imported() {
+    init_real_dictionaries();
+    let repo = create_repo();
+    let use_case = CreateCardsFromAnalysisUseCase::new(&repo);
+
+    let words = vec![WordToCreate {
+        base_form: "あい変わらず".to_string(),
+    }];
+    let set_ids = vec![
+        "set-1".to_string(),
+        "set-2".to_string(),
+        "set-3".to_string(),
+    ];
+
+    let result = use_case
+        .execute(words, Some(set_ids.clone()))
+        .await
+        .unwrap();
+    assert!(!result.created_cards.is_empty());
+
+    let user = repo.get_current_user().await.unwrap().unwrap();
+    for set_id in &set_ids {
+        assert!(
+            user.is_set_imported(set_id),
+            "Set {} should be imported",
+            set_id
+        );
+    }
 }
 
 #[tokio::test]
