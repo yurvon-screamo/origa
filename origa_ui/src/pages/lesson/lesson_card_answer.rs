@@ -100,7 +100,7 @@ pub fn LessonCardAnswer(
                             kanji=question.get_value()
                             radicals=radicals_stored.get_value()
                             example_words=examples_stored.get_value()
-                            show_details=is_expanded.get()
+                            show_details=is_expanded
                             on_readings=on_readings_stored.get_value()
                             kun_readings=kun_readings_stored.get_value()
                             known_kanji=known_kanji
