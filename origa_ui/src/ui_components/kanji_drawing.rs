@@ -499,7 +499,29 @@ fn parse_number(chars: &[char], start: usize) -> Option<(f64, usize)> {
     let num: f64 = num_str.parse().ok()?;
     Some((num, pos))
 }
-
+fn normalize_points(points: &[(f64, f64)]) -> Vec<(f64, f64)> {
+    if points.is_empty() {
+        return Vec::new();
+    }
+    let (min_x, max_x, min_y, max_y) = points.iter().fold(
+        (
+            f64::INFINITY,
+            f64::NEG_INFINITY,
+            f64::INFINITY,
+            f64::NEG_INFINITY,
+        ),
+        |(min_x, max_x, min_y, max_y), &(x, y)| {
+            (min_x.min(x), max_x.max(x), min_y.min(y), max_y.max(y))
+        },
+    );
+    let width = (max_x - min_x).max(1.0);
+    let height = (max_y - min_y).max(1.0);
+    let scale = width.max(height);
+    points
+        .iter()
+        .map(|(x, y)| ((x - min_x) / scale, (y - min_y) / scale))
+        .collect()
+}
 fn is_stroke_similar(user_points: &[(f64, f64)], stroke_d: &str) -> bool {
     debug!("[Stroke Check] user_points count: {}", user_points.len());
 

@@ -10,5 +10,11 @@
 			"description": "Words from section/unit: order food"
 		}
 	},
-	"words": ["です", "と", "みず", "ごはん", "すし", "ください", "おちゃ"]
+	"words": [
+		"下さる",
+		"寿司",
+		"御飯",
+		"水",
+		"茶"
+	]
 }
