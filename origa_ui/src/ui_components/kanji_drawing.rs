@@ -13,10 +13,10 @@ use web_sys::js_sys::Array;
 const CANVAS_SIZE: u32 = 320;
 const SVG_VIEWBOX_SIZE: f64 = 109.0;
 const SVG_SCALE: f64 = CANVAS_SIZE as f64 / SVG_VIEWBOX_SIZE;
-const STROKE_TOLERANCE: f64 = 0.45;
+const STROKE_TOLERANCE: f64 = 0.50;
 const SAMPLE_COUNT: usize = 21;
 
-const SUCCESS_THRESHOLD: f64 = 0.35;
+const SUCCESS_THRESHOLD: f64 = 0.30;
 
 const MIN_STROKE_POINTS: usize = 8;
 const STROKE_LINE_WIDTH: f64 = 12.0;
@@ -130,10 +130,10 @@ pub fn KanjiDrawingPractice(
         let stroke_idx = current_stroke_index.get();
         let stroke_list = strokes.get();
         let completed = is_completed.get();
-        
+
         // Always redraw, even when completed - this ensures last stroke is shown
         redraw_canvas(ctx, &stroke_list, stroke_idx);
-        
+
         if completed {
             return Some(());
         }
@@ -209,6 +209,7 @@ pub fn KanjiDrawingPractice(
     };
     let handle_pointer_up = {
         let state = drawing_state.clone();
+        let ctx_store = ctx_storage.clone();
         move |_| {
             let points: Vec<(f64, f64)> = {
                 let mut state_guard = state.lock().ok();
@@ -241,6 +242,10 @@ pub fn KanjiDrawingPractice(
                 } else {
                     current_stroke_index.set(next_idx);
                 }
+            } else if let Ok(ctx_guard) = ctx_store.lock()
+                && let Some(ctx) = ctx_guard.as_ref()
+            {
+                redraw_canvas(ctx, &strokes.get(), current_stroke_index.get());
             }
         }
     };
@@ -514,7 +519,12 @@ fn normalize_points(points: &[(f64, f64)]) -> Vec<(f64, f64)> {
         return Vec::new();
     }
     let (min_x, max_x, min_y, max_y) = points.iter().fold(
-        (f64::INFINITY, f64::NEG_INFINITY, f64::INFINITY, f64::NEG_INFINITY),
+        (
+            f64::INFINITY,
+            f64::NEG_INFINITY,
+            f64::INFINITY,
+            f64::NEG_INFINITY,
+        ),
         |(min_x, max_x, min_y, max_y), &(x, y)| {
             (min_x.min(x), max_x.max(x), min_y.min(y), max_y.max(y))
         },
@@ -529,30 +539,37 @@ fn normalize_points(points: &[(f64, f64)]) -> Vec<(f64, f64)> {
 }
 fn is_stroke_similar(user_points: &[(f64, f64)], stroke_d: &str) -> bool {
     debug!("[Stroke Check] user_points count: {}", user_points.len());
-    
+
     if user_points.len() < MIN_STROKE_POINTS {
-        debug!("[Stroke Check] FAIL: too few points ({}) < MIN_STROKE_POINTS ({})", user_points.len(), MIN_STROKE_POINTS);
+        debug!(
+            "[Stroke Check] FAIL: too few points ({}) < MIN_STROKE_POINTS ({})",
+            user_points.len(),
+            MIN_STROKE_POINTS
+        );
         return false;
     }
-    
+
     let stroke_samples = sample_stroke_path(stroke_d);
-    debug!("[Stroke Check] stroke_samples count: {}", stroke_samples.len());
-    
+    debug!(
+        "[Stroke Check] stroke_samples count: {}",
+        stroke_samples.len()
+    );
+
     if stroke_samples.len() < SAMPLE_COUNT {
         debug!("[Stroke Check] FAIL: stroke has too few samples");
         return false;
     }
-    
+
     let normalized_stroke = normalize_points(&stroke_samples);
     let normalized_user = normalize_points(user_points);
     let user_samples = resample_points(&normalized_user, SAMPLE_COUNT);
     let stroke_resampled = resample_points(&normalized_stroke, SAMPLE_COUNT);
-    
+
     if user_samples.len() < SAMPLE_COUNT || stroke_resampled.len() < SAMPLE_COUNT {
         debug!("[Stroke Check] FAIL: resample too short");
         return false;
     }
-    
+
     let mut match_count = 0;
     let mut distances = Vec::new();
     for (user_point, stroke_point) in user_samples.iter().zip(stroke_resampled.iter()) {
@@ -564,15 +581,20 @@ fn is_stroke_similar(user_points: &[(f64, f64)], stroke_d: &str) -> bool {
             match_count += 1;
         }
     }
-    
+
     let ratio = match_count as f64 / SAMPLE_COUNT as f64;
     let avg_distance: f64 = distances.iter().sum::<f64>() / distances.len() as f64;
-    debug!("[Stroke Check] match_count: {}/{}, ratio: {:.2}, avg_distance: {:.3}, tolerance: {:.2}, threshold: {:.2}", 
-        match_count, SAMPLE_COUNT, ratio, avg_distance, STROKE_TOLERANCE, SUCCESS_THRESHOLD);
-    
+    debug!(
+        "[Stroke Check] match_count: {}/{}, ratio: {:.2}, avg_distance: {:.3}, tolerance: {:.2}, threshold: {:.2}",
+        match_count, SAMPLE_COUNT, ratio, avg_distance, STROKE_TOLERANCE, SUCCESS_THRESHOLD
+    );
+
     let result = ratio >= SUCCESS_THRESHOLD;
-    debug!("[Stroke Check] RESULT: {} (ratio {:.2}, threshold {:.2})", result, ratio, SUCCESS_THRESHOLD);
-    
+    debug!(
+        "[Stroke Check] RESULT: {} (ratio {:.2}, threshold {:.2})",
+        result, ratio, SUCCESS_THRESHOLD
+    );
+
     result
 }
 fn sample_stroke_path(d: &str) -> Vec<(f64, f64)> {
