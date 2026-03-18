@@ -23,7 +23,7 @@ const JLPT_LEVELS: [JapaneseLevel; 5] = [
 ];
 
 #[component]
-pub fn AddGrammarModal(is_open: RwSignal<bool>) -> impl IntoView {
+pub fn AddGrammarModal(is_open: RwSignal<bool>, refresh_trigger: RwSignal<u32>) -> impl IntoView {
     let repository =
         use_context::<HybridUserRepository>().expect("repository context not provided");
 
@@ -47,7 +47,7 @@ pub fn AddGrammarModal(is_open: RwSignal<bool>) -> impl IntoView {
     });
 
     let state = ModalState::new(is_open);
-    let handlers = ModalHandlers::new(&state, is_open);
+    let handlers = ModalHandlers::new(&state, is_open, refresh_trigger);
 
     Effect::new({
         let state = state.clone();
