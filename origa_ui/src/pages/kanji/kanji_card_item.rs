@@ -84,42 +84,10 @@ pub fn KanjiCardItem(
 
     view! {
         <Card class="p-4">
-            <div class="flex items-start gap-3 mb-3">
+            <div class="flex items-start gap-3 mb-2">
                 <span class="text-3xl font-serif">{kanji_char.clone()}</span>
                 <div class="min-w-0 flex-1">
                     <MarkdownText content=Signal::derive(move || description.clone()) known_kanji=known_kanji.clone()/>
-                </div>
-            </div>
-            <div class="flex justify-between items-center mb-2">
-                <Tag variant=Signal::derive(move || status.tag_variant())>
-                    {status.label()}
-                </Tag>
-                <div class="flex items-center gap-2">
-                    <FavoriteButton
-                        is_favorite=Signal::derive(move || is_favorite)
-                        on_click=Callback::new(move |_| on_toggle_favorite.run(card_id))
-                    />
-                    <HistoryButton on_click=Callback::new(move |_| is_history_open.set(true)) />
-                    <button
-                        class="cursor-pointer transition-colors duration-200 hover:opacity-70"
-                        on:click=move |_| drawing_drawer_open.set(true)
-                        title="Практика прописей"
-                    >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 24 24"
-                            class="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                        >
-                            <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                            <path d="m15 5 4 4" />
-                        </svg>
-                    </button>
-                    <DeleteButton on_click=Callback::new(move |_| is_delete_modal_open.set(true)) />
                 </div>
             </div>
             {move || {
@@ -186,6 +154,38 @@ pub fn KanjiCardItem(
                 on_close=Callback::new(move |_| is_delete_modal_open.set(false))
             />
             <DrawingDrawer kanji=kanji_char.clone() is_open=drawing_drawer_open />
+            <div class="border-t border-[var(--border-dark)] pt-2 mt-2 flex justify-between items-center">
+                <Tag variant=Signal::derive(move || status.tag_variant())>
+                    {status.label()}
+                </Tag>
+                <div class="flex items-center gap-2">
+                    <FavoriteButton
+                        is_favorite=Signal::derive(move || is_favorite)
+                        on_click=Callback::new(move |_| on_toggle_favorite.run(card_id))
+                    />
+                    <HistoryButton on_click=Callback::new(move |_| is_history_open.set(true)) />
+                    <button
+                        class="cursor-pointer transition-colors duration-200 hover:opacity-70"
+                        on:click=move |_| drawing_drawer_open.set(true)
+                        title="Практика прописей"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            class="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
+                            <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                            <path d="m15 5 4 4" />
+                        </svg>
+                    </button>
+                    <DeleteButton on_click=Callback::new(move |_| is_delete_modal_open.set(true)) />
+                </div>
+            </div>
         </Card>
     }
 }
