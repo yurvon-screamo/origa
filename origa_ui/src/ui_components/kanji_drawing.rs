@@ -276,6 +276,13 @@ pub fn KanjiDrawingPractice(
                             </div>
                         }
                         .into_any()
+                    } else if is_completed.get() {
+                        view! {
+                            <div class="kanji-drawing-progress">
+                                "Готово!"
+                            </div>
+                        }
+                        .into_any()
                     } else {
                         let total = strokes.get().len();
                         let current = current_stroke_index.get() + 1;
@@ -293,7 +300,13 @@ pub fn KanjiDrawingPractice(
                     node_ref={canvas_ref}
                     width={CANVAS_SIZE}
                     height={CANVAS_SIZE}
-                    class="kanji-drawing-canvas"
+                    class=move || {
+                        if is_completed.get() {
+                            "kanji-drawing-canvas pointer-events-none"
+                        } else {
+                            "kanji-drawing-canvas"
+                        }
+                    }
                     on:pointerdown={handle_pointer_down}
                     on:pointermove={handle_pointer_move}
                     on:pointerup={handle_pointer_up}

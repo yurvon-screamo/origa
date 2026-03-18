@@ -1,7 +1,9 @@
 use crate::pages::lesson::kanji_card_details::{KanjiCardDetails, RadicalDisplay};
 use crate::pages::lesson::rating_buttons_view::RatingButtonsView;
-use crate::ui_components::{Card, DisplayText, Tag, TagVariant};
+use crate::ui_components::{Card, DisplayText, KanjiDrawingPractice, Tag, TagVariant};
+use gloo_timers::future::TimeoutFuture;
 use leptos::prelude::*;
+use leptos::task::spawn_local;
 use origa::domain::{Card as DomainCard, NativeLanguage, Rating};
 use std::collections::HashSet;
 use tracing::warn;
@@ -65,14 +67,25 @@ pub fn WritingCard(
         }
     };
 
-    let is_completed = RwSignal::new(false);
+    let show_details = RwSignal::new(false);
+    let show_drawing = RwSignal::new(true);
     let is_expanded = RwSignal::new(true);
+
+    Effect::new(move |_| {
+        if show_details.get() {
+            spawn_local(async move {
+                TimeoutFuture::new(1500).await;
+                show_drawing.set(false);
+            });
+        }
+    });
 
     let kanji_stored = StoredValue::new(kanji_char.clone());
     let on_readings_stored = StoredValue::new(on_readings);
     let kun_readings_stored = StoredValue::new(kun_readings);
     let radicals_stored = StoredValue::new(radicals);
     let examples_stored = StoredValue::new(example_words);
+    let kanji_for_practice_stored = StoredValue::new(kanji_char.clone());
 
     view! {
         <Card class=Signal::derive(|| "p-4 sm:p-6 min-h-[250px] sm:min-h-[300px] flex flex-col".to_string()) shadow=Signal::derive(|| true)>
@@ -85,7 +98,18 @@ pub fn WritingCard(
                     <DisplayText>{kanji_char.clone()}</DisplayText>
                 </div>
 
-                <Show when=move || is_completed.get()>
+                <Show when=move || show_drawing.get() && !show_details.get()>
+                    <div class="my-4">
+                        <KanjiDrawingPractice
+                            kanji={kanji_for_practice_stored.get_value()}
+                            on_complete=Callback::new(move |_| {
+                                show_details.set(true);
+                            })
+                        />
+                    </div>
+                </Show>
+
+                <Show when=move || show_details.get()>
                     <KanjiCardDetails
                         kanji=kanji_stored.get_value()
                         radicals=radicals_stored.get_value()
