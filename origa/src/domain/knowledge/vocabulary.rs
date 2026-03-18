@@ -5,6 +5,13 @@ use crate::domain::tokenizer::{PartOfSpeech, tokenize_text};
 use crate::domain::{Answer, JapaneseLevel, NativeLanguage, OrigaError, Question};
 use serde::{Deserialize, Serialize};
 
+/// Результат создания карточек из текста
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct CreateFromTextResult {
+    pub cards: Vec<VocabularyCard>,
+    pub skipped_no_translation: Vec<String>,
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct VocabularyCard {
     word: Question,
@@ -12,10 +19,56 @@ pub struct VocabularyCard {
 }
 
 impl VocabularyCard {
-    pub fn new(word: Question) -> Self {
+    /// Конструктор для создания карточки (pub(crate) для использования внутри крейта)
+    #[allow(dead_code)]
+    pub(crate) fn new(word: Question) -> Self {
         Self {
             word,
             reverse_side: None,
+        }
+    }
+
+    /// Приватный helper для создания одной карточки с валидацией
+    fn try_from_word(word: &str, lang: &NativeLanguage) -> Result<Self, OrigaError> {
+        Self::validate_translation(word, lang)?;
+        let question = Question::new(word.to_string())?;
+        Ok(Self {
+            word: question,
+            reverse_side: None,
+        })
+    }
+
+    /// Создаёт карточки из текста с токенизацией и валидацией
+    pub fn from_text(text: &str, lang: &NativeLanguage) -> CreateFromTextResult {
+        let mut cards = Vec::new();
+        let mut skipped = Vec::new();
+
+        let tokens = match tokenize_text(text) {
+            Ok(t) => t,
+            Err(_) => {
+                return CreateFromTextResult {
+                    cards,
+                    skipped_no_translation: skipped,
+                };
+            }
+        };
+
+        for token in tokens {
+            if !token.part_of_speech().is_vocabulary_word() {
+                continue;
+            }
+
+            let word_text = token.orthographic_base_form();
+
+            match Self::try_from_word(word_text, lang) {
+                Ok(card) => cards.push(card),
+                Err(_) => skipped.push(word_text.to_string()),
+            }
+        }
+
+        CreateFromTextResult {
+            cards,
+            skipped_no_translation: skipped,
         }
     }
 
@@ -114,15 +167,16 @@ mod tests {
     use crate::use_cases::init_real_dictionaries;
 
     fn create_vocab_card(word: &str) -> VocabularyCard {
-        VocabularyCard::new(Question::new(word.to_string()).unwrap())
+        VocabularyCard {
+            word: Question::new(word.to_string()).unwrap(),
+            reverse_side: None,
+        }
     }
 
     #[test]
     fn new_creates_card_with_word() {
-        let question = Question::new("猫".to_string()).unwrap();
-        let card = VocabularyCard::new(question.clone());
+        let card = create_vocab_card("猫");
 
-        assert_eq!(card.word(), &question);
         assert_eq!(card.word().text(), "猫");
     }
 

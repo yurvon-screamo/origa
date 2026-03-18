@@ -1,4 +1,4 @@
-use crate::domain::{Card, OrigaError, Question, StudyCard, VocabularyCard, tokenize_text};
+use crate::domain::{Card, OrigaError, StudyCard, VocabularyCard};
 use crate::traits::UserRepository;
 use tracing::{debug, info, warn};
 
@@ -44,51 +44,44 @@ impl<'a, R: UserRepository> CreateVocabularyCardUseCase<'a, R> {
         user: &mut crate::domain::User,
         question_text: String,
     ) -> Result<CreateVocabularyCardResult, OrigaError> {
-        let user_id = user.id();
         debug!(
-            user_id = %user_id,
+            user_id = %user.id(),
             question_text = %question_text,
             "Creating vocabulary card"
         );
 
+        let result = VocabularyCard::from_text(&question_text, user.native_language());
+
+        for word in &result.skipped_no_translation {
+            warn!(user_id = %user.id(), word = %word, "Translation not found, skipping");
+        }
+
         let mut created_cards = Vec::new();
-        let mut skipped_no_translation = Vec::new();
         let mut skipped_duplicates = Vec::new();
-        let tokens = tokenize_text(question_text.as_str())?;
 
-        for token in tokens {
-            if !token.part_of_speech().is_vocabulary_word() {
-                continue;
-            }
-
-            let word_text = token.orthographic_base_form();
-
-            if VocabularyCard::validate_translation(word_text, user.native_language()).is_err() {
-                warn!(user_id = %user_id, word = %word_text, "Translation not found, skipping");
-                skipped_no_translation.push(word_text.to_string());
-                continue;
-            }
-
-            let question = Question::new(word_text.to_string())?;
-            let vocabulary_card = VocabularyCard::new(question);
-            let card = Card::Vocabulary(vocabulary_card);
-
+        for vocab_card in result.cards {
+            let card = Card::Vocabulary(vocab_card);
             match user.create_card(card) {
                 Ok(study_card) => {
                     created_cards.push(study_card);
-                    info!(user_id = %user_id, word_count = created_cards.len(), "Vocabulary card created");
                 }
-                Err(OrigaError::DuplicateCard { .. }) => {
-                    warn!(user_id = %user_id, word = %word_text, "Card already exists, skipping");
-                    skipped_duplicates.push(word_text.to_string());
+                Err(OrigaError::DuplicateCard { question }) => {
+                    warn!(user_id = %user.id(), word = %question, "Card already exists, skipping");
+                    skipped_duplicates.push(question);
                 }
                 Err(e) => return Err(e),
             }
         }
 
+        info!(
+            user_id = %user.id(),
+            created_count = created_cards.len(),
+            "Vocabulary cards created"
+        );
+
         Ok(CreateVocabularyCardResult {
             created_cards,
-            skipped_no_translation,
+            skipped_no_translation: result.skipped_no_translation,
             skipped_duplicates,
         })
     }
