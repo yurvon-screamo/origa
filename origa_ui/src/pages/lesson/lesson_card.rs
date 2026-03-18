@@ -112,7 +112,7 @@ pub fn LessonCard(
 
     let lesson_ctx = use_context::<LessonContext>();
 
-    let is_expanded = RwSignal::new(false);
+    let is_expanded = RwSignal::new(card_type == CardType::Kanji);
     let content_ref = NodeRef::<leptos::html::Div>::new();
     let needs_collapse = RwSignal::new(false);
 
