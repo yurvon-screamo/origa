@@ -21,6 +21,12 @@ pub fn WritingCard(
     };
 
     let kanji_char = kanji.kanji().text().to_string();
+    let kanji_description = kanji
+        .description()
+        .ok()
+        .map(|d| d.text().to_string())
+        .unwrap_or_default();
+
     let on_readings: Option<Vec<String>> = {
         let readings = kanji.on_readings();
         if readings.is_empty() {
@@ -95,7 +101,7 @@ pub fn WritingCard(
 
             <div class="flex-1 flex flex-col justify-center">
                 <div class="text-center mb-4">
-                    <DisplayText>{kanji_char.clone()}</DisplayText>
+                    <DisplayText>{kanji_description}</DisplayText>
                 </div>
 
                 <Show when=move || show_drawing.get() && !show_details.get()>

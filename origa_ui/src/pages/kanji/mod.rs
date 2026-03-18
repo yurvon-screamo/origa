@@ -21,11 +21,13 @@ use leptos::prelude::*;
 
 #[component]
 pub fn Kanji() -> impl IntoView {
+    let refresh_trigger = RwSignal::new(0u32);
+
     view! {
         <PageLayout variant=PageLayoutVariant::Full>
             <CardLayout size=CardLayoutSize::Adaptive class="px-4 py-8">
-                <KanjiHeader />
-                <KanjiContent />
+                <KanjiHeader refresh_trigger=refresh_trigger />
+                <KanjiContent refresh_trigger=refresh_trigger />
             </CardLayout>
         </PageLayout>
     }
