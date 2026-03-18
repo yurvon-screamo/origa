@@ -1,9 +1,10 @@
-use crate::dictionary::{KanjiInfo, get_kanji_info, get_translation};
-use crate::domain::GrammarRule;
+use crate::dictionary::{get_kanji_info, get_translation, KanjiInfo};
 use crate::domain::japanese::JapaneseChar;
-use crate::domain::tokenizer::{PartOfSpeech, tokenize_text};
+use crate::domain::tokenizer::{tokenize_text, PartOfSpeech};
+use crate::domain::GrammarRule;
 use crate::domain::{Answer, JapaneseLevel, NativeLanguage, OrigaError, Question};
 use serde::{Deserialize, Serialize};
+use tracing::warn;
 
 /// Результат создания карточек из текста
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -45,7 +46,8 @@ impl VocabularyCard {
 
         let tokens = match tokenize_text(text) {
             Ok(t) => t,
-            Err(_) => {
+            Err(e) => {
+                warn!(text = %text, error = %e, "Tokenization failed");
                 return CreateFromTextResult {
                     cards,
                     skipped_no_translation: skipped,
