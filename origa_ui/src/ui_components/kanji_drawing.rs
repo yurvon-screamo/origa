@@ -10,7 +10,7 @@ use wasm_bindgen_futures::JsFuture;
 use web_sys::CanvasRenderingContext2d;
 use web_sys::js_sys::Array;
 
-const CANVAS_SIZE: u32 = 256;
+const CANVAS_SIZE: u32 = 320;
 const SVG_VIEWBOX_SIZE: f64 = 109.0;
 const SVG_SCALE: f64 = CANVAS_SIZE as f64 / SVG_VIEWBOX_SIZE;
 const STROKE_TOLERANCE: f64 = 0.55;
