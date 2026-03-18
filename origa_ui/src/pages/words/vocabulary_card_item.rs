@@ -69,7 +69,17 @@ pub fn VocabularyCardItem(
             <Heading level=HeadingLevel::H4 class="mb-2">
                 <FuriganaText text=word.clone() known_kanji=known_kanji_for_furigana/>
             </Heading>
-            <div class="flex justify-between items-center mb-3">
+            <CollapsibleDescription>
+                <MarkdownText content=Signal::derive(move || meaning.clone()) known_kanji=known_kanji_for_markdown/>
+            </CollapsibleDescription>
+            <Text
+                size=TextSize::Small
+                variant=TypographyVariant::Muted
+                class="mt-2"
+            >
+                {format!("Повтор: {} | Слож: {} | Стаб: {}", next_review, difficulty, stability)}
+            </Text>
+            <div class="border-t border-[var(--border-dark)] pt-2 mt-2 flex justify-between items-center">
                 <Tag variant=Signal::derive(move || status.tag_variant())>
                     {status.label()}
                 </Tag>
@@ -82,16 +92,6 @@ pub fn VocabularyCardItem(
                     <DeleteButton on_click=Callback::new(move |_| is_delete_modal_open.set(true)) />
                 </div>
             </div>
-            <CollapsibleDescription>
-                <MarkdownText content=Signal::derive(move || meaning.clone()) known_kanji=known_kanji_for_markdown/>
-            </CollapsibleDescription>
-            <Text
-                size=TextSize::Small
-                variant=TypographyVariant::Muted
-                class="mt-2"
-            >
-                {format!("Повтор: {} | Слож: {} | Стаб: {}", next_review, difficulty, stability)}
-            </Text>
             <CardHistoryModal
                 is_open=Signal::derive(move || is_history_open.get())
                 memory=memory_clone.clone()
