@@ -17,10 +17,11 @@ pub struct ModalState {
     pub error_message: RwSignal<Option<String>>,
     pub repository: HybridUserRepository,
     pub search_query: RwSignal<String>,
+    pub refresh_trigger: RwSignal<u32>,
 }
 
 impl ModalState {
-    pub fn new(is_open: RwSignal<bool>) -> Self {
+    pub fn new(is_open: RwSignal<bool>, refresh_trigger: RwSignal<u32>) -> Self {
         let repository =
             use_context::<HybridUserRepository>().expect("repository context not provided");
 
@@ -45,6 +46,7 @@ impl ModalState {
             error_message: RwSignal::new(None),
             repository,
             search_query: RwSignal::new(String::new()),
+            refresh_trigger,
         }
     }
 

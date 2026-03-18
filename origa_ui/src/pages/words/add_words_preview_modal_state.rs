@@ -25,10 +25,11 @@ pub struct PreviewModalState {
     pub is_creating: RwSignal<bool>,
     pub error_message: RwSignal<Option<String>>,
     pub repository: HybridUserRepository,
+    pub refresh_trigger: RwSignal<u32>,
 }
 
 impl PreviewModalState {
-    pub fn new(is_open: RwSignal<bool>) -> Self {
+    pub fn new(is_open: RwSignal<bool>, refresh_trigger: RwSignal<u32>) -> Self {
         let repository =
             use_context::<HybridUserRepository>().expect("repository context not provided");
 
@@ -53,6 +54,7 @@ impl PreviewModalState {
             is_creating: RwSignal::new(false),
             error_message: RwSignal::new(None),
             repository,
+            refresh_trigger,
         }
     }
 
