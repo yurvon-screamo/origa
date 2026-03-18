@@ -84,7 +84,13 @@ pub fn KanjiCardItem(
 
     view! {
         <Card class="p-4">
-            <div class="flex justify-between items-center mb-3">
+            <div class="flex items-start gap-3 mb-3">
+                <span class="text-3xl font-serif">{kanji_char.clone()}</span>
+                <div class="min-w-0 flex-1">
+                    <MarkdownText content=Signal::derive(move || description.clone()) known_kanji=known_kanji.clone()/>
+                </div>
+            </div>
+            <div class="flex justify-between items-center mb-2">
                 <Tag variant=Signal::derive(move || status.tag_variant())>
                     {status.label()}
                 </Tag>
@@ -114,12 +120,6 @@ pub fn KanjiCardItem(
                         </svg>
                     </button>
                     <DeleteButton on_click=Callback::new(move |_| is_delete_modal_open.set(true)) />
-                </div>
-            </div>
-            <div class="flex items-start gap-3">
-                <span class="text-3xl font-serif">{kanji_char.clone()}</span>
-                <div class="min-w-0 flex-1">
-                    <MarkdownText content=Signal::derive(move || description.clone()) known_kanji=known_kanji.clone()/>
                 </div>
             </div>
             {move || {
