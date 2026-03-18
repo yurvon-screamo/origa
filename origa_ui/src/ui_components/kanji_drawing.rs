@@ -23,6 +23,8 @@ const STROKE_LINE_WIDTH: f64 = 12.0;
 const HINT_LINE_WIDTH: f64 = 4.0;
 const USER_LINE_WIDTH: f64 = 8.0;
 
+const MIN_SIZE_RATIO: f64 = 0.3;
+
 fn get_css_color(var_name: &str) -> String {
     let window = match web_sys::window() {
         Some(w) => w,
@@ -537,6 +539,27 @@ fn normalize_points(points: &[(f64, f64)]) -> Vec<(f64, f64)> {
         .map(|(x, y)| ((x - min_x) / scale, (y - min_y) / scale))
         .collect()
 }
+
+fn get_bounding_box_size(points: &[(f64, f64)]) -> f64 {
+    if points.is_empty() {
+        return 0.0;
+    }
+    let (min_x, max_x, min_y, max_y) = points.iter().fold(
+        (
+            f64::INFINITY,
+            f64::NEG_INFINITY,
+            f64::INFINITY,
+            f64::NEG_INFINITY,
+        ),
+        |(min_x, max_x, min_y, max_y), &(x, y)| {
+            (min_x.min(x), max_x.max(x), min_y.min(y), max_y.max(y))
+        },
+    );
+    let width = max_x - min_x;
+    let height = max_y - min_y;
+    (width * width + height * height).sqrt()
+}
+
 fn is_stroke_similar(user_points: &[(f64, f64)], stroke_d: &str) -> bool {
     debug!("[Stroke Check] user_points count: {}", user_points.len());
 
@@ -560,8 +583,31 @@ fn is_stroke_similar(user_points: &[(f64, f64)], stroke_d: &str) -> bool {
         return false;
     }
 
+    // Normalize BOTH first - now they're in same units [0,1]
     let normalized_stroke = normalize_points(&stroke_samples);
     let normalized_user = normalize_points(user_points);
+
+    // NOW check size ratio - both are normalized, so comparable
+    let user_size = get_bounding_box_size(&normalized_user);
+    let ref_size = get_bounding_box_size(&normalized_stroke);
+    let size_ratio = if ref_size > 0.0 {
+        user_size / ref_size
+    } else {
+        0.0
+    };
+    debug!(
+        "[Stroke Check] size_ratio: {:.2} (user: {:.3}, ref: {:.3})",
+        size_ratio, user_size, ref_size
+    );
+
+    if size_ratio < MIN_SIZE_RATIO {
+        debug!(
+            "[Stroke Check] FAIL: stroke too small (ratio {:.2} < min {:.2})",
+            size_ratio, MIN_SIZE_RATIO
+        );
+        return false;
+    }
+
     let user_samples = resample_points(&normalized_user, SAMPLE_COUNT);
     let stroke_resampled = resample_points(&normalized_stroke, SAMPLE_COUNT);
 
