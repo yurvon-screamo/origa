@@ -10,7 +10,11 @@ pub struct ModalHandlers {
 }
 
 impl ModalHandlers {
-    pub fn new(state: &ModalState, is_open: RwSignal<bool>) -> Self {
+    pub fn new(
+        state: &ModalState,
+        is_open: RwSignal<bool>,
+        refresh_trigger: RwSignal<u32>,
+    ) -> Self {
         let on_cancel = {
             let state = state.clone();
             Callback::new(move |_| {
@@ -32,6 +36,7 @@ impl ModalHandlers {
                 let error = state.error_message;
                 let state_for_async = state.clone();
                 let is_open_for_async = is_open;
+                let refresh_for_async = refresh_trigger;
 
                 is_creating.set(true);
                 error.set(None);
@@ -43,6 +48,7 @@ impl ModalHandlers {
                             is_creating.set(false);
                             state_for_async.reset();
                             is_open_for_async.set(false);
+                            refresh_for_async.update(|v| *v += 1);
                         }
                         Err(e) => {
                             is_creating.set(false);
