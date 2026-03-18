@@ -13,10 +13,10 @@ use web_sys::js_sys::Array;
 const CANVAS_SIZE: u32 = 320;
 const SVG_VIEWBOX_SIZE: f64 = 109.0;
 const SVG_SCALE: f64 = CANVAS_SIZE as f64 / SVG_VIEWBOX_SIZE;
-const STROKE_TOLERANCE: f64 = 0.55;
+const STROKE_TOLERANCE: f64 = 0.45;
 const SAMPLE_COUNT: usize = 21;
 
-const SUCCESS_THRESHOLD: f64 = 0.25;
+const SUCCESS_THRESHOLD: f64 = 0.35;
 
 const MIN_STROKE_POINTS: usize = 8;
 const STROKE_LINE_WIDTH: f64 = 12.0;
