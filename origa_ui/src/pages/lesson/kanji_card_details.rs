@@ -17,7 +17,7 @@ pub fn KanjiCardDetails(
     kanji: String,
     radicals: Option<Vec<RadicalDisplay>>,
     example_words: Option<Vec<(String, String)>>,
-    show_details: bool,
+    #[prop(into)] show_details: Signal<bool>,
     on_readings: Option<Vec<String>>,
     kun_readings: Option<Vec<String>>,
     #[prop(into)] known_kanji: Signal<HashSet<String>>,
@@ -29,7 +29,7 @@ pub fn KanjiCardDetails(
     let kun_readings_stored = StoredValue::new(kun_readings);
 
     view! {
-        <Show when=move || show_details>
+        <Show when=move || show_details.get()>
             <div class="my-6 space-y-4 max-w-max mx-auto">
                 <ReadingGroup label="音読み[онъёми]" readings=on_readings_stored />
                 <ReadingGroup label="訓読み[кунъёми]" readings=kun_readings_stored />
