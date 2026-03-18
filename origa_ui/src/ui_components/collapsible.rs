@@ -1,4 +1,4 @@
-use crate::ui_components::{Button, ButtonVariant};
+use crate::ui_components::{Button, ButtonSize, ButtonVariant};
 use leptos::ev::MouseEvent;
 use leptos::prelude::*;
 
@@ -27,9 +27,10 @@ pub fn CollapsibleDescription(
                 {children()}
             </div>
             <Show when=move || needs_collapse.get()>
-                <div class="mt-2">
+                <div class="mt-1">
                     <Button
                         variant=ButtonVariant::Ghost
+                        size=ButtonSize::Small
                         on_click=Callback::new(move |_: MouseEvent| {
                             is_expanded.update(|v| *v = !*v);
                         })
