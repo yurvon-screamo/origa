@@ -13,7 +13,7 @@ use web_sys::js_sys::Array;
 const CANVAS_SIZE: u32 = 320;
 const SVG_VIEWBOX_SIZE: f64 = 109.0;
 const SVG_SCALE: f64 = CANVAS_SIZE as f64 / SVG_VIEWBOX_SIZE;
-const STROKE_TOLERANCE: f64 = 0.15; // Max distance for a point to be considered "nearby" (in normalized coords)
+const CANVAS_TOLERANCE: f64 = 25.0; // Max distance in canvas pixels (~8% of 320px)
 const SUCCESS_THRESHOLD: f64 = 0.80; // 80% of reference points must be covered
 const SAMPLE_COUNT: usize = 21; // Number of points to sample from reference stroke
 
@@ -513,29 +513,6 @@ fn parse_number(chars: &[char], start: usize) -> Option<(f64, usize)> {
     let num: f64 = num_str.parse().ok()?;
     Some((num, pos))
 }
-fn normalize_points(points: &[(f64, f64)]) -> Vec<(f64, f64)> {
-    if points.is_empty() {
-        return Vec::new();
-    }
-    let (min_x, max_x, min_y, max_y) = points.iter().fold(
-        (
-            f64::INFINITY,
-            f64::NEG_INFINITY,
-            f64::INFINITY,
-            f64::NEG_INFINITY,
-        ),
-        |(min_x, max_x, min_y, max_y), &(x, y)| {
-            (min_x.min(x), max_x.max(x), min_y.min(y), max_y.max(y))
-        },
-    );
-    let width = (max_x - min_x).max(1.0);
-    let height = (max_y - min_y).max(1.0);
-    let scale = width.max(height);
-    points
-        .iter()
-        .map(|(x, y)| ((x - min_x) / scale, (y - min_y) / scale))
-        .collect()
-}
 
 fn is_stroke_similar(user_points: &[(f64, f64)], stroke_d: &str) -> bool {
     debug!("[Stroke Check] user_points count: {}", user_points.len());
@@ -596,32 +573,19 @@ fn is_stroke_similar(user_points: &[(f64, f64)], stroke_d: &str) -> bool {
         );
     }
 
-    // Normalize both to [0,1] range
-    let normalized_stroke = normalize_points(&stroke_samples);
-    let normalized_user = normalize_points(user_points);
-
-    // Debug: show first few normalized points
-    debug!(
-        "[Stroke Check] user normalized first 3: {:?}",
-        &normalized_user.iter().take(3).collect::<Vec<_>>()
-    );
-    debug!(
-        "[Stroke Check] stroke normalized first 3: {:?}",
-        &normalized_stroke.iter().take(3).collect::<Vec<_>>()
-    );
-
-    // Resample reference to fixed number of points
-    let stroke_resampled = resample_points(&normalized_stroke, SAMPLE_COUNT);
+    // Resample reference stroke to fixed number of points
+    let stroke_resampled = resample_points(&stroke_samples, SAMPLE_COUNT);
 
     // Count how many reference points have a nearby user point
+    // Use tolerance in canvas pixels (e.g., 25 pixels = ~8% of 320px canvas)
     let mut covered_count = 0;
+
     for stroke_point in &stroke_resampled {
-        // Check if any user point is within tolerance of this stroke point
-        let is_covered = normalized_user.iter().any(|user_point| {
+        let is_covered = user_points.iter().any(|user_point| {
             let dx = user_point.0 - stroke_point.0;
             let dy = user_point.1 - stroke_point.1;
             let distance = (dx * dx + dy * dy).sqrt();
-            distance <= STROKE_TOLERANCE
+            distance <= CANVAS_TOLERANCE
         });
         if is_covered {
             covered_count += 1;
