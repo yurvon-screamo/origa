@@ -29,26 +29,35 @@ pub fn LessonCardAnswer(
 
     view! {
         <div class="text-center">
-            <Show when=move || !is_kanji>
-                <Heading level=HeadingLevel::H3 class="mb-2">
-                    <Show
-                        when=move || is_reversed
-                        fallback=move || {
-                            view! {
-                                <FuriganaText
-                                    text=question.get_value()
+            <Show
+                when=move || is_kanji
+                fallback=move || {
+                    view! {
+                        <Heading level=HeadingLevel::H3 class="mb-2">
+                            <Show
+                                when=move || is_reversed
+                                fallback=move || {
+                                    view! {
+                                        <FuriganaText
+                                            text=question.get_value()
+                                            known_kanji=known_kanji.get()
+                                            class=Signal::derive(|| "text-3xl leading-snug".to_string())
+                                        />
+                                    }
+                                }
+                            >
+                                <MarkdownText
+                                    content=Signal::derive(move || question.get_value())
+                                    variant=Signal::derive(|| MarkdownVariant::Large)
                                     known_kanji=known_kanji.get()
-                                    class=Signal::derive(|| "text-3xl leading-snug".to_string())
                                 />
-                            }
-                        }
-                    >
-                        <MarkdownText
-                            content=Signal::derive(move || question.get_value())
-                            variant=Signal::derive(|| MarkdownVariant::Large)
-                            known_kanji=known_kanji.get()
-                        />
-                    </Show>
+                            </Show>
+                        </Heading>
+                    }
+                }
+            >
+                <Heading level=HeadingLevel::H1 class="text-6xl mb-2 text-primary">
+                    {question.get_value()}
                 </Heading>
             </Show>
 
@@ -57,27 +66,45 @@ pub fn LessonCardAnswer(
                 class=move || if is_expanded.get() { "border-t border-[var(--border-light)] pt-4 mt-4" } else { "border-t border-[var(--border-light)] pt-4 mt-4 line-clamp-3" }
             >
                 <div class="max-w-max mx-auto space-y-4">
-                    <div class="flex gap-4 items-baseline text-left">
-                        <div class="w-16 shrink-0">
-                            <Text size=TextSize::Default variant=TypographyVariant::Muted>
-                                "Ответ:"
+                    <Show
+                        when=move || is_kanji
+                        fallback=move || {
+                            view! {
+                                <div class="flex gap-4 items-baseline text-left">
+                                    <div class="w-16 shrink-0">
+                                        <Text size=TextSize::Default variant=TypographyVariant::Muted>
+                                            "Ответ:"
+                                        </Text>
+                                    </div>
+                                    <Show
+                                        when=move || is_reversed
+                                        fallback=move || {
+                                            view! {
+                                                <MarkdownText
+                                                    content=Signal::derive(move || answer.get_value())
+                                                    variant=Signal::derive(|| MarkdownVariant::Large)
+                                                    known_kanji=known_kanji.get()
+                                                />
+                                            }
+                                        }
+                                    >
+                                        <FuriganaText text=answer.get_value() known_kanji=known_kanji.get()/>
+                                    </Show>
+                                </div>
+                            }
+                        }
+                    >
+                        <div class="flex gap-4 items-baseline text-left">
+                            <div class="w-20 shrink-0">
+                                <Text size=TextSize::Default variant=TypographyVariant::Muted>
+                                    "Значение:"
+                                </Text>
+                            </div>
+                            <Text size=TextSize::Large>
+                                {answer.get_value()}
                             </Text>
                         </div>
-                        <Show
-                            when=move || is_reversed
-                            fallback=move || {
-                                view! {
-                                    <MarkdownText
-                                        content=Signal::derive(move || answer.get_value())
-                                        variant=Signal::derive(|| MarkdownVariant::Large)
-                                        known_kanji=known_kanji.get()
-                                    />
-                                }
-                            }
-                        >
-                            <FuriganaText text=answer.get_value() known_kanji=known_kanji.get()/>
-                        </Show>
-                    </div>
+                    </Show>
 
                     <Show when=move || is_kanji>
                         <div class="space-y-4">
@@ -88,7 +115,7 @@ pub fn LessonCardAnswer(
 
                             <Show when=move || radicals_stored.get_value().is_some()>
                                 <div class="flex gap-4 items-start text-left">
-                                    <div class="w-16 shrink-0">
+                                    <div class="w-20 shrink-0">
                                         <Text size=TextSize::Default variant=TypographyVariant::Muted>
                                             "Радикалы"
                                         </Text>
@@ -123,7 +150,7 @@ pub fn LessonCardAnswer(
                             </Show>
 
                             <div class="flex gap-4 items-start text-left">
-                                <div class="w-16 shrink-0">
+                                <div class="w-20 shrink-0">
                                     <Text size=TextSize::Default variant=TypographyVariant::Muted>
                                         "Написание"
                                     </Text>

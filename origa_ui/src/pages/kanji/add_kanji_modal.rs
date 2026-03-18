@@ -23,7 +23,7 @@ const JLPT_LEVELS: [JapaneseLevel; 5] = [
 ];
 
 #[component]
-pub fn AddKanjiModal(is_open: RwSignal<bool>) -> impl IntoView {
+pub fn AddKanjiModal(is_open: RwSignal<bool>, refresh_trigger: RwSignal<u32>) -> impl IntoView {
     let repository =
         use_context::<HybridUserRepository>().expect("repository context not provided");
 
@@ -46,7 +46,7 @@ pub fn AddKanjiModal(is_open: RwSignal<bool>) -> impl IntoView {
             .unwrap_or_default()
     });
 
-    let state = ModalState::new(is_open);
+    let state = ModalState::new(is_open, refresh_trigger);
     let handlers = ModalHandlers::new(&state, is_open);
 
     Effect::new({
