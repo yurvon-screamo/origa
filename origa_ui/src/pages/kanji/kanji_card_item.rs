@@ -1,7 +1,7 @@
 use super::super::shared::{CardStatus, DeleteRequest};
 use super::DrawingDrawer;
 use crate::ui_components::{
-    Button, ButtonVariant, Card, CardHistoryModal, DeleteButton, DeleteConfirmModal,
+    Button, ButtonSize, ButtonVariant, Card, CardHistoryModal, DeleteButton, DeleteConfirmModal,
     FavoriteButton, HistoryButton, KanjiViewMode, KanjiWritingSection, MarkdownText, Tag, Text,
     TextSize, TypographyVariant,
 };
@@ -83,87 +83,88 @@ pub fn KanjiCardItem(
     let has_examples = !example_words.is_empty();
 
     view! {
-        <Card class=Signal::derive(|| "p-4".to_string())>
-            <div class="flex justify-between items-start">
-                <div class="min-w-0 flex-1">
-                    <div class="flex items-center gap-3 mb-2">
-                        <span class="text-3xl font-serif">{kanji_char.clone()}</span>
-                        <div class="min-w-0 flex-1">
-                            <MarkdownText content=Signal::derive(move || description.clone()) known_kanji=known_kanji.clone()/>
-                        </div>
-                        <Tag variant=Signal::derive(move || status.tag_variant())>
-                            {status.label()}
-                        </Tag>
-                        <FavoriteButton
-                            is_favorite=Signal::derive(move || is_favorite)
-                            on_click=Callback::new(move |_| on_toggle_favorite.run(card_id))
-                        />
-                        <HistoryButton on_click=Callback::new(move |_| is_history_open.set(true)) />
-                        <button
-                            class="cursor-pointer transition-colors duration-200 hover:opacity-70"
-                            on:click=move |_| drawing_drawer_open.set(true)
-                            title="Практика прописей"
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 24 24"
-                                class="w-4 h-4"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="2"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                            >
-                                <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                                <path d="m15 5 4 4" />
-                            </svg>
-                        </button>
-                        <DeleteButton on_click=Callback::new(move |_| is_delete_modal_open.set(true)) />
-                    </div>
-                    {move || {
-                        if !radicals.is_empty() {
-                            view! {
-                                <Text size=TextSize::Small variant=TypographyVariant::Muted class=Signal::derive(|| "mb-1".to_string())>
-                                    {format!("Радикалы: {}", radicals)}
-                                </Text>
-                            }.into_any()
-                        } else {
-                            ().into_any()
-                        }
-                    }}
-                    {move || {
-                        if has_examples && is_expanded.get() {
-                            let examples = example_words.clone();
-                            view! {
-                                <div class=Signal::derive(|| "mb-1".to_string())>
-                                    <MarkdownText content=Signal::derive(move || format!("**Примеры:** {}", examples)) known_kanji=known_kanji.clone()/>
-                                </div>
-                            }.into_any()
-                        } else {
-                            ().into_any()
-                        }
-                    }}
-                    <Text
-                        size=TextSize::Small
-                        variant=TypographyVariant::Muted
-                        class=Signal::derive(|| "mt-2".to_string())
+        <Card class="p-4">
+            <div class="flex justify-between items-center mb-3">
+                <Tag variant=Signal::derive(move || status.tag_variant())>
+                    {status.label()}
+                </Tag>
+                <div class="flex items-center gap-2">
+                    <FavoriteButton
+                        is_favorite=Signal::derive(move || is_favorite)
+                        on_click=Callback::new(move |_| on_toggle_favorite.run(card_id))
+                    />
+                    <HistoryButton on_click=Callback::new(move |_| is_history_open.set(true)) />
+                    <button
+                        class="cursor-pointer transition-colors duration-200 hover:opacity-70"
+                        on:click=move |_| drawing_drawer_open.set(true)
+                        title="Практика прописей"
                     >
-                        {format!("Повтор: {} | Слож: {} | Стаб: {}", next_review, difficulty, stability)}
-                    </Text>
-                    <Show when=move || has_examples>
-                        <div class="mt-2 flex items-center gap-3">
-                            <Button
-                                variant=ButtonVariant::Ghost
-                                on_click=Callback::new(move |_: MouseEvent| {
-                                    is_expanded.update(|v| *v = !*v);
-                                })
-                            >
-                                {move || if is_expanded.get() { "Свернуть" } else { "Развернуть" }}
-                            </Button>
-                        </div>
-                    </Show>
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            class="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
+                            <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                            <path d="m15 5 4 4" />
+                        </svg>
+                    </button>
+                    <DeleteButton on_click=Callback::new(move |_| is_delete_modal_open.set(true)) />
                 </div>
             </div>
+            <div class="flex items-start gap-3">
+                <span class="text-3xl font-serif">{kanji_char.clone()}</span>
+                <div class="min-w-0 flex-1">
+                    <MarkdownText content=Signal::derive(move || description.clone()) known_kanji=known_kanji.clone()/>
+                </div>
+            </div>
+            {move || {
+                if !radicals.is_empty() {
+                    view! {
+                        <Text size=TextSize::Small variant=TypographyVariant::Muted class="mb-1">
+                            {format!("Радикалы: {}", radicals)}
+                        </Text>
+                    }.into_any()
+                } else {
+                    ().into_any()
+                }
+            }}
+            {move || {
+                if has_examples && is_expanded.get() {
+                    let examples = example_words.clone();
+                    view! {
+                        <div class="mb-1">
+                            <MarkdownText content=Signal::derive(move || format!("**Примеры:** {}", examples)) known_kanji=known_kanji.clone()/>
+                        </div>
+                    }.into_any()
+                } else {
+                    ().into_any()
+                }
+            }}
+            <Text
+                size=TextSize::Small
+                variant=TypographyVariant::Muted
+                class="mt-2"
+            >
+                {format!("Повтор: {} | Слож: {} | Стаб: {}", next_review, difficulty, stability)}
+            </Text>
+            <Show when=move || has_examples>
+                <div class="mt-1 flex items-center gap-3">
+                    <Button
+                        variant=ButtonVariant::Ghost
+                        size=ButtonSize::Small
+                        on_click=Callback::new(move |_: MouseEvent| {
+                            is_expanded.update(|v| *v = !*v);
+                        })
+                    >
+                        {move || if is_expanded.get() { "Свернуть" } else { "Развернуть" }}
+                    </Button>
+                </div>
+            </Show>
             {move || {
                 if is_expanded.get() {
                     view! {
