@@ -12,40 +12,59 @@ use origa::traits::UserRepository;
 use origa::use_cases::ToggleFavoriteUseCase;
 use ulid::Ulid;
 
+fn load_user_data(
+    repository: HybridUserRepository,
+    current_user: RwSignal<Option<User>>,
+    all_cards: RwSignal<Vec<StudyCard>>,
+    is_loading: RwSignal<bool>,
+) {
+    spawn_local(async move {
+        match repository.get_current_user().await {
+            Ok(Some(user)) => {
+                let cards = user
+                    .knowledge_set()
+                    .study_cards()
+                    .iter()
+                    .filter(|(_, card)| matches!(card.card(), Card::Kanji(_)))
+                    .map(|(_, card)| card.clone())
+                    .collect();
+                all_cards.set(cards);
+                current_user.set(Some(user));
+                is_loading.set(false);
+            }
+            Ok(None) => {
+                tracing::warn!("KanjiContent: user not found");
+            }
+            Err(e) => {
+                tracing::error!("KanjiContent: get_current_user error: {:?}", e);
+            }
+        }
+    });
+}
+
 #[component]
-pub fn KanjiContent() -> impl IntoView {
+pub fn KanjiContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
     let repository =
         use_context::<HybridUserRepository>().expect("repository context not provided");
 
     let current_user: RwSignal<Option<User>> = RwSignal::new(None);
     let is_loading = RwSignal::new(true);
     let all_cards: RwSignal<Vec<StudyCard>> = RwSignal::new(Vec::new());
-    let repo_for_init = repository.clone();
 
+    let repo_for_init = repository.clone();
     Effect::new(move |_| {
-        let repo = repo_for_init.clone();
-        spawn_local(async move {
-            match repo.get_current_user().await {
-                Ok(Some(user)) => {
-                    let cards = user
-                        .knowledge_set()
-                        .study_cards()
-                        .iter()
-                        .filter(|(_, card)| matches!(card.card(), Card::Kanji(_)))
-                        .map(|(_, card)| card.clone())
-                        .collect();
-                    all_cards.set(cards);
-                    current_user.set(Some(user));
-                    is_loading.set(false);
-                }
-                Ok(None) => {
-                    tracing::warn!("KanjiContent: user not found");
-                }
-                Err(e) => {
-                    tracing::error!("KanjiContent: get_current_user error: {:?}", e);
-                }
-            }
-        });
+        load_user_data(repo_for_init.clone(), current_user, all_cards, is_loading);
+    });
+
+    let repo_for_refresh = repository.clone();
+    Effect::new(move |_| {
+        let _ = refresh_trigger.get();
+        load_user_data(
+            repo_for_refresh.clone(),
+            current_user,
+            all_cards,
+            is_loading,
+        );
     });
 
     let native_lang = Memo::new(move |_| {

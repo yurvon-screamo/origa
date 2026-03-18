@@ -13,17 +13,18 @@ use origa::use_cases::ToggleFavoriteUseCase;
 use ulid::Ulid;
 
 #[component]
-pub fn GrammarContent() -> impl IntoView {
+pub fn GrammarContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
     let repository =
         use_context::<HybridUserRepository>().expect("repository context not provided");
 
     let current_user: RwSignal<Option<User>> = RwSignal::new(None);
     let is_loading = RwSignal::new(true);
     let all_cards: RwSignal<Vec<StudyCard>> = RwSignal::new(Vec::new());
-    let repo_for_init = repository.clone();
+    let repo_for_effect = repository.clone();
 
     Effect::new(move |_| {
-        let repo = repo_for_init.clone();
+        let _ = refresh_trigger.get();
+        let repo = repo_for_effect.clone();
         spawn_local(async move {
             match repo.get_current_user().await {
                 Ok(Some(user)) => {

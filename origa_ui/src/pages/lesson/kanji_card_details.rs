@@ -49,7 +49,7 @@ pub fn KanjiCardDetails(
                                     .into_iter()
                                     .map(|radical| {
                                         view! {
-                                            <div class="flex items-center gap-1 px-2 py-1 bg-secondary/30 rounded">
+                                            <div class="flex items-center gap-2 px-2 py-1 bg-secondary/30 rounded">
                                                 <Text size=TextSize::Large class="text-primary">
                                                     {radical.symbol}
                                                 </Text>
