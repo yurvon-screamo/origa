@@ -233,6 +233,7 @@ pub fn KanjiDrawingPractice(
             if is_stroke_similar(&points, &current_stroke.d) {
                 let next_idx = current_idx + 1;
                 if next_idx >= stroke_list.len() {
+                    current_stroke_index.set(next_idx);
                     is_completed.set(true);
                     if let Some(cb) = on_complete {
                         cb.run(());
