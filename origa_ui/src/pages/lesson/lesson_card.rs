@@ -145,7 +145,7 @@ pub fn LessonCard(
             && is_speech_supported()
             && !is_muted
         {
-            let reading = get_reading_from_text(&question.get_value());
+            let reading = get_reading_from_text(&answer.get_value());
             let _ = speak_text(&reading, 1.0);
         }
     });
