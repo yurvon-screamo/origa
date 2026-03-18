@@ -35,48 +35,47 @@ pub fn SetCard(
         }
     });
 
-    let sid_for_callback = set_id.clone();
+    let toggle_callback = Callback::new({
+        let sid = set_id.clone();
+        move |_| {
+            on_toggle_select.run(sid.clone());
+        }
+    });
 
     view! {
         <Card class=card_class>
-            <div class="flex items-start gap-3">
-                <div class="flex-shrink-0 mt-1">
-                    <Checkbox
-                        checked=is_selected
-                        on_change=Callback::new(move |_| {
-                            on_toggle_select.run(sid_for_callback.clone());
-                        })
+            <div class="flex items-center justify-between gap-2 mb-2">
+                <div class="flex items-center gap-2 flex-1 min-w-0">
+                    <Show when=move || !is_imported>
+                        <Checkbox
+                            checked=is_selected
+                            on_change=toggle_callback
+                        />
+                    </Show>
+                    <Heading level=Signal::derive(|| HeadingLevel::H4) class="truncate">
+                        {title_for_display}
+                    </Heading>
+                </div>
+                <Show when=move || !is_imported>
+                    <SetCardButton
+                        set_id=set_info.set_id.clone()
+                        title=set_info.title.clone()
+                        on_import=on_import
                     />
-                </div>
-                <div class="flex-1 min-w-0">
-                    <div class="flex items-center justify-between gap-2 mb-2">
-                        <div class="flex items-center gap-2">
-                            <Heading level=Signal::derive(|| HeadingLevel::H4)>
-                                {title_for_display}
-                            </Heading>
-                            <Show when=move || is_imported>
-                                <Tag variant=Signal::derive(|| TagVariant::Olive)>
-                                    "Импортирован"
-                                </Tag>
-                            </Show>
-                        </div>
-                        <Show when=move || !is_imported>
-                            <SetCardButton
-                                set_id=set_info.set_id.clone()
-                                title=set_info.title.clone()
-                                on_import=on_import
-                            />
-                        </Show>
-                    </div>
-                    <div class="flex-1 min-h-0 mb-3">
-                        <MarkdownText content=Signal::derive(move || description.clone()) known_kanji=known_kanji.clone()/>
-                    </div>
-                    <div class="mt-auto">
-                        <Text size=Signal::derive(|| TextSize::Small) variant=Signal::derive(|| TypographyVariant::Muted)>
-                            {word_count.map(|c| format!("{} слов", c)).unwrap_or_default()}
-                        </Text>
-                    </div>
-                </div>
+                </Show>
+            </div>
+            <div class="flex-1 min-h-0 mb-3">
+                <MarkdownText content=Signal::derive(move || description.clone()) known_kanji=known_kanji.clone()/>
+            </div>
+            <div class="flex items-center justify-between mt-auto">
+                <Text size=Signal::derive(|| TextSize::Small) variant=Signal::derive(|| TypographyVariant::Muted)>
+                    {word_count.map(|c| format!("{} слов", c)).unwrap_or_default()}
+                </Text>
+                <Show when=move || is_imported>
+                    <Tag variant=Signal::derive(|| TagVariant::Olive)>
+                        "Импортирован"
+                    </Tag>
+                </Show>
             </div>
         </Card>
     }
