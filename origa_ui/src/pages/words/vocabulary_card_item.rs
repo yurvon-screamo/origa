@@ -66,6 +66,9 @@ pub fn VocabularyCardItem(
 
     view! {
         <Card class="p-4">
+            <Heading level=HeadingLevel::H4 class="mb-2">
+                <FuriganaText text=word.clone() known_kanji=known_kanji_for_furigana/>
+            </Heading>
             <div class="flex justify-between items-center mb-3">
                 <Tag variant=Signal::derive(move || status.tag_variant())>
                     {status.label()}
@@ -79,9 +82,6 @@ pub fn VocabularyCardItem(
                     <DeleteButton on_click=Callback::new(move |_| is_delete_modal_open.set(true)) />
                 </div>
             </div>
-            <Heading level=HeadingLevel::H4 class="mb-2">
-                <FuriganaText text=word.clone() known_kanji=known_kanji_for_furigana/>
-            </Heading>
             <CollapsibleDescription>
                 <MarkdownText content=Signal::derive(move || meaning.clone()) known_kanji=known_kanji_for_markdown/>
             </CollapsibleDescription>
