@@ -1,9 +1,6 @@
 use crate::pages::lesson::kanji_card_details::{KanjiCardDetails, RadicalDisplay};
 use crate::pages::lesson::rating_buttons_view::RatingButtonsView;
-use crate::ui_components::{
-    Card, DisplayText, KanjiDrawingPractice, ReadingGroup, Tag, TagVariant, Text, TextSize,
-    TypographyVariant,
-};
+use crate::ui_components::{Card, DisplayText, Tag, TagVariant};
 use leptos::prelude::*;
 use origa::domain::{Card as DomainCard, NativeLanguage, Rating};
 use std::collections::HashSet;
@@ -77,12 +74,6 @@ pub fn WritingCard(
     let radicals_stored = StoredValue::new(radicals);
     let examples_stored = StoredValue::new(example_words);
 
-    let on_complete = Callback::new(move |_| {
-        is_completed.set(true);
-    });
-
-    let kanji_for_drawing = kanji_char.clone();
-
     view! {
         <Card class=Signal::derive(|| "p-4 sm:p-6 min-h-[250px] sm:min-h-[300px] flex flex-col".to_string()) shadow=Signal::derive(|| true)>
             <div class="flex items-center justify-between mb-4">
@@ -92,18 +83,6 @@ pub fn WritingCard(
             <div class="flex-1 flex flex-col justify-center">
                 <div class="text-center mb-4">
                     <DisplayText>{kanji_char.clone()}</DisplayText>
-                </div>
-
-                <div class="mb-4 space-y-2 max-w-max mx-auto">
-                    <ReadingGroup label="音読み[онъёми]" readings=on_readings_stored />
-                    <ReadingGroup label="訓読み[кунъёми]" readings=kun_readings_stored />
-                </div>
-
-                <div class="mb-4">
-                    <Text size=TextSize::Default variant=TypographyVariant::Muted class="text-center block mb-2">
-                        "Попробуйте написать кандзи:"
-                    </Text>
-                    <KanjiDrawingPractice kanji=kanji_for_drawing on_complete=on_complete />
                 </div>
 
                 <Show when=move || is_completed.get()>

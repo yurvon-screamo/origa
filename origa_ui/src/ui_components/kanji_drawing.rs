@@ -276,11 +276,6 @@ pub fn KanjiDrawingPractice(
                             </div>
                         }
                         .into_any()
-                    } else if is_completed.get() {
-                        view! {
-                            <div class="kanji-drawing-success">"Готово!"</div>
-                        }
-                        .into_any()
                     } else {
                         let total = strokes.get().len();
                         let current = current_stroke_index.get() + 1;
