@@ -259,6 +259,15 @@ mod tests {
     }
 
     #[test]
+    fn should_return_base_form_for_hiragana_2() {
+        ensure_dictionary();
+        let tokens = tokenize_text("こんや").unwrap();
+        assert_eq!(tokens.len(), 1);
+        assert_eq!(tokens[0].orthographic_base_form, "今夜");
+        assert_eq!(tokens[0].phonological_base_form, "コンヤ");
+    }
+
+    #[test]
     fn should_return_surface_form_for_verb() {
         ensure_dictionary();
         let tokens = tokenize_text("食べます").unwrap();
