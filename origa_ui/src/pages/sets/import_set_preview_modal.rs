@@ -19,7 +19,7 @@ pub fn ImportSetPreviewModal(
     is_open: RwSignal<bool>,
     set_ids: Signal<Vec<String>>,
     set_titles: Signal<HashMap<String, String>>,
-    on_import_result: Callback<()>,
+    on_import_result: Callback<Vec<String>>,
 ) -> impl IntoView {
     let repository =
         use_context::<HybridUserRepository>().expect("repository context not provided");
@@ -60,6 +60,11 @@ pub fn ImportSetPreviewModal(
             groups.entry(word.set_id.clone()).or_default().push(word);
         }
         groups
+    });
+
+    let group_word_counts = Memo::new(move |_| {
+        let groups = grouped_words.get();
+        groups.iter().map(|(k, v)| (k.clone(), v.len())).collect::<HashMap<_, _>>()
     });
 
     let drawer_title = Memo::new(move |_| {
@@ -156,13 +161,14 @@ pub fn ImportSetPreviewModal(
                                             .get(&set_id)
                                             .cloned()
                                             .unwrap_or_else(|| set_id.clone());
+                                        let word_count = group_word_counts.get().get(&set_id).copied().unwrap_or(0);
 
                                         view! {
                                             <div class="border-b border-gray-200 pb-4 last:border-0">
                                                 <h3 class="font-semibold text-base mb-3 text-gray-700">
                                                     {title}
                                                     <span class="text-gray-400 font-normal ml-2">
-                                                        ({words.len()} слов)
+                                                        {word_count} слов
                                                     </span>
                                                 </h3>
                                                 <div class="space-y-2">

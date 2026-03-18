@@ -486,7 +486,16 @@ pub fn SetsContent() -> impl IntoView {
                 is_open=preview_modal_open
                 set_ids=Signal::derive(move || preview_set_ids.get())
                 set_titles=Signal::derive(move || preview_set_titles.get())
-                on_import_result=Callback::new(move |_| {
+                on_import_result=Callback::new(move |imported_ids: Vec<String>| {
+                    if !imported_ids.is_empty() {
+                        sets.update(|list| {
+                            for set in list.iter_mut() {
+                                if imported_ids.contains(&set.set_id) {
+                                    set.is_imported = true;
+                                }
+                            }
+                        });
+                    }
                     selected_sets.set(HashSet::new());
                 })
             />
