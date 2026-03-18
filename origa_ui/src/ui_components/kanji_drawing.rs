@@ -130,10 +130,13 @@ pub fn KanjiDrawingPractice(
         let stroke_idx = current_stroke_index.get();
         let stroke_list = strokes.get();
         let completed = is_completed.get();
+        
+        // Always redraw, even when completed - this ensures last stroke is shown
+        redraw_canvas(ctx, &stroke_list, stroke_idx);
+        
         if completed {
             return Some(());
         }
-        redraw_canvas(ctx, &stroke_list, stroke_idx);
         Some(())
     });
     let handle_pointer_down = {
@@ -270,7 +273,7 @@ pub fn KanjiDrawingPractice(
                         .into_any()
                     } else if is_completed.get() {
                         view! {
-                            <div class="kanji-drawing-success">"Готово! 🎉"</div>
+                            <div class="kanji-drawing-success">"Готово!"</div>
                         }
                         .into_any()
                     } else {
