@@ -510,7 +510,12 @@ fn normalize_points(points: &[(f64, f64)]) -> Vec<(f64, f64)> {
         return Vec::new();
     }
     let (min_x, max_x, min_y, max_y) = points.iter().fold(
-        (f64::INFINITY, f64::NEG_INFINITY, f64::INFINITY, f64::NEG_INFINITY),
+        (
+            f64::INFINITY,
+            f64::NEG_INFINITY,
+            f64::INFINITY,
+            f64::NEG_INFINITY,
+        ),
         |(min_x, max_x, min_y, max_y), &(x, y)| {
             (min_x.min(x), max_x.max(x), min_y.min(y), max_y.max(y))
         },

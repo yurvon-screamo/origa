@@ -20,7 +20,7 @@ def main():
         translations = json.load(f)
 
     print(f"Reading dictionary from {dictionary_path}...")
-    with open(dictionary_path, "r", encoding="utf-8") as f:
+    with open(dictionary_path, "r", encoding="utf-8-sig") as f:
         dictionary = json.load(f)
 
     words_with_both = 0
