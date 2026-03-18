@@ -25,25 +25,28 @@ impl HybridUserRepository {
 
     pub async fn merge_current_user(&self) -> Result<(), OrigaError> {
         let remote_result = self.remote.find_current().await?;
-        let remote_user = match remote_result {
-            Some(data) => data.0,
-            None => {
-                return Err(OrigaError::RepositoryError {
-                    reason: "No remote user found".to_string(),
-                });
-            }
-        };
-
         let local_result = self.local.get_current_user().await?;
-        let mut local_user = match local_result {
+
+        let local_user = match local_result {
             Some(data) => data,
             None => {
-                tracing::warn!("No local user found, creating new user");
-                self.local.save(&remote_user).await?;
+                tracing::warn!("No local user found");
                 return Ok(());
             }
         };
 
+        // Если remote не существует - создаём его из local (first-time sync)
+        let remote_user = match remote_result {
+            Some(data) => data.0,
+            None => {
+                tracing::info!("First-time sync: creating remote user from local");
+                self.remote.save(&local_user).await?;
+                return Ok(()); // merge не нужен, объекты идентичны
+            }
+        };
+
+        // Обычный merge для существующих пользователей
+        let mut local_user = local_user;
         local_user.merge(&remote_user);
 
         self.local.save(&local_user).await?;
