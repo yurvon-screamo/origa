@@ -78,7 +78,8 @@ def main():
         for path in sorted(duolingo_dir.rglob("*.json")):
             data = load_json(path)
             set_id = f"duolingo_{path.parent.name}_{path.stem}"
-            meta_list.append(extract_meta(data, set_id, "Duolingo"))
+            set_type = "DuolingoEn" if "_en_" in path.stem else "DuolingoRu"
+            meta_list.append(extract_meta(data, set_id, set_type))
 
     meta_list.sort(key=lambda x: x["id"])
 
