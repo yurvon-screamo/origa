@@ -13,8 +13,8 @@ pub use kanji::{
     init_kanji, init_kanji as init_kanji_dictionary, is_kanji_loaded,
 };
 pub use radical::{
-    RADICAL_DICTIONARY, RadicalData, RadicalInfo, get_radical_info, init_radicals,
-    init_radicals as init_radical_dictionary, is_radicals_loaded,
+    RADICAL_DICTIONARY, RadicalData, RadicalInfo, get_radical_info, get_radical_list,
+    init_radicals, init_radicals as init_radical_dictionary, is_radicals_loaded,
     is_radicals_loaded as is_radical_loaded,
 };
 pub use vocabulary::{

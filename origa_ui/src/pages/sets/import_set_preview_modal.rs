@@ -64,7 +64,10 @@ pub fn ImportSetPreviewModal(
 
     let group_word_counts = Memo::new(move |_| {
         let groups = grouped_words.get();
-        groups.iter().map(|(k, v)| (k.clone(), v.len())).collect::<HashMap<_, _>>()
+        groups
+            .iter()
+            .map(|(k, v)| (k.clone(), v.len()))
+            .collect::<HashMap<_, _>>()
     });
 
     let drawer_title = Memo::new(move |_| {

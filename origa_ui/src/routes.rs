@@ -1,5 +1,5 @@
 use crate::app::AuthContext;
-use crate::pages::{Grammar, Home, Kanji, Lesson, Login, Profile, Sets, Words};
+use crate::pages::{Grammar, Home, Kanji, Lesson, Login, Profile, Radicals, Sets, Words};
 use leptos::prelude::*;
 use leptos_router::components::*;
 use leptos_router::hooks::use_navigate;
@@ -47,6 +47,7 @@ pub fn AppRoutes() -> impl IntoView {
                 <Route path=path!("words") view=|| view! { <ProtectedRoute><Words/></ProtectedRoute> } />
                 <Route path=path!("grammar") view=|| view! { <ProtectedRoute><Grammar/></ProtectedRoute> } />
                 <Route path=path!("kanji") view=|| view! { <ProtectedRoute><Kanji/></ProtectedRoute> } />
+                <Route path=path!("radicals") view=|| view! { <ProtectedRoute><Radicals/></ProtectedRoute> } />
                 <Route path=path!("lesson") view=|| view! { <ProtectedRoute><Lesson/></ProtectedRoute> } />
                 <Route path=path!("sets") view=|| view! { <ProtectedRoute><Sets/></ProtectedRoute> } />
             </Routes>

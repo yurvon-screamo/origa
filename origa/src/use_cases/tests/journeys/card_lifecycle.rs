@@ -35,9 +35,10 @@ async fn create_kanji_card_creates_card_from_dictionary() {
 
     let cards = use_case.execute(vec!["人".to_string()]).await.unwrap();
 
+    // CreateKanjiCardUseCase автосоздаёт радикальные карточки
     assert_eq!(cards.len(), 1);
     let updated = repo.get_current_user().await.unwrap().unwrap();
-    assert_eq!(updated.knowledge_set().study_cards().len(), 1);
+    assert_eq!(updated.knowledge_set().study_cards().len(), 2); // кандзи + радикал
 }
 
 #[tokio::test]

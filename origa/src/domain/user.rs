@@ -258,6 +258,7 @@ impl User {
                             *learned_grammar.entry(level).or_insert(0) += 1;
                         }
                     }
+                    crate::domain::Card::Radical(_) => {}
                 }
             }
         }

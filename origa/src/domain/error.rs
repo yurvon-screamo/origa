@@ -33,6 +33,7 @@ pub enum OrigaError {
     VocabularyNotFound { word: String },
     OcrError { reason: String },
     KanjiNotFound { kanji: String },
+    RadicalNotFound { radical: char },
     GrammarRuleNotFound { rule_id: Ulid },
     GrammarContentNotFound { rule_id: Ulid, lang: NativeLanguage },
     TranslationNotFound { word: String, lang: NativeLanguage },
@@ -122,6 +123,9 @@ impl fmt::Display for OrigaError {
             }
             OrigaError::KanjiNotFound { kanji } => {
                 write!(f, "Нет описания для кандзи: {}", kanji)
+            }
+            OrigaError::RadicalNotFound { radical } => {
+                write!(f, "Радикал не найден: {}", radical)
             }
             OrigaError::GrammarRuleNotFound { rule_id } => {
                 write!(f, "Правило грамматики не найдено: {}", rule_id)
@@ -409,6 +413,13 @@ mod tests {
             kanji: "日".into()
         };
         assert_display_contains(&error, "日");
+        assert_serialization_roundtrip(error);
+    }
+
+    #[test]
+    fn radical_not_found() {
+        let error = OrigaError::RadicalNotFound { radical: '一' };
+        assert_display_contains(&error, "一");
         assert_serialization_roundtrip(error);
     }
 
