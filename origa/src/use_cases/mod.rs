@@ -2,7 +2,6 @@ mod analyze_text_for_cards;
 mod create_cards_from_analysis;
 mod create_grammar_card;
 mod create_kanji_card;
-mod create_radical_card;
 mod create_vocabulary_card;
 mod delete_card;
 mod extract_text_from_image;
@@ -26,7 +25,6 @@ pub use create_cards_from_analysis::{
 };
 pub use create_grammar_card::CreateGrammarCardUseCase;
 pub use create_kanji_card::CreateKanjiCardUseCase;
-pub use create_radical_card::CreateRadicalCardUseCase;
 pub use create_vocabulary_card::CreateVocabularyCardUseCase;
 pub use delete_card::DeleteCardUseCase;
 pub use extract_text_from_image::ExtractTextFromImageUseCase;
