@@ -7,9 +7,11 @@ pub fn ActionButtons(
     on_save: Callback<MouseEvent>,
     on_logout: Callback<MouseEvent>,
     on_delete_account: Callback<MouseEvent>,
+    on_migrate: Callback<MouseEvent>,
     is_saving: Signal<bool>,
     is_deleting: Signal<bool>,
     is_logging_out: Signal<bool>,
+    is_migrating: Signal<bool>,
 ) -> impl IntoView {
     let show_delete_confirm = RwSignal::new(false);
 
@@ -30,6 +32,14 @@ pub fn ActionButtons(
                     disabled=is_logging_out
                 >
                     {move || if is_logging_out.get() { "Выход..." } else { "Выйти из аккаунта" }}
+                </Button>
+
+                <Button
+                    variant={ButtonVariant::Ghost}
+                    on_click={on_migrate}
+                    disabled=is_migrating
+                >
+                    {move || if is_migrating.get() { "Миграция..." } else { "🔄 Мигрировать карточки" }}
                 </Button>
             </div>
 

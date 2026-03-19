@@ -5,7 +5,7 @@ use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::domain::NativeLanguage;
 use origa::traits::UserRepository;
-use origa::use_cases::UpdateUserProfileUseCase;
+use origa::use_cases::{MigrateKnowledgeSetUseCase, UpdateUserProfileUseCase};
 
 #[component]
 pub fn ProfileContent() -> impl IntoView {
@@ -50,6 +50,8 @@ pub fn ProfileContent() -> impl IntoView {
     let is_saving = RwSignal::new(false);
     let is_deleting = RwSignal::new(false);
     let is_logging_out = RwSignal::new(false);
+    let is_migrating = RwSignal::new(false);
+    let migration_message = RwSignal::new(None::<String>);
 
     let save_profile = Callback::new(move |_| {
         let repository = repository.clone();
@@ -71,6 +73,35 @@ pub fn ProfileContent() -> impl IntoView {
             {
                 current_user_signal.set(Some(updated_user));
             }
+        });
+    });
+
+    let repository_for_migrate = ctx.repository.clone();
+    let migrate_cards = Callback::new(move |_| {
+        let repository_clone = repository_for_migrate.clone();
+        let is_migrating_signal = is_migrating;
+        let migration_message_signal = migration_message;
+
+        is_migrating_signal.set(true);
+        migration_message_signal.set(None);
+
+        spawn_local(async move {
+            let use_case = MigrateKnowledgeSetUseCase::new(&repository_clone);
+
+            match use_case.execute().await {
+                Ok(true) => {
+                    migration_message_signal.set(Some("✅ Миграция завершена!".to_string()));
+                }
+                Ok(false) => {
+                    migration_message_signal.set(Some("ℹ️ Нет карточек для миграции".to_string()));
+                }
+                Err(e) => {
+                    tracing::error!("Migration failed: {}", e);
+                    migration_message_signal.set(Some(format!("❌ Ошибка: {:?}", e)));
+                }
+            }
+
+            is_migrating_signal.set(false);
         });
     });
 
@@ -151,10 +182,21 @@ pub fn ProfileContent() -> impl IntoView {
                     on_save={save_profile}
                     on_logout={logout}
                     on_delete_account={delete_account}
+                    on_migrate={migrate_cards}
                     is_saving={Signal::derive(move || is_saving.get())}
                     is_deleting={Signal::derive(move || is_deleting.get())}
                     is_logging_out={Signal::derive(move || is_logging_out.get())}
+                    is_migrating={Signal::derive(move || is_migrating.get())}
                 />
+
+                {move || migration_message.with(|msg| msg.as_ref().map(|msg| {
+                    let is_error = msg.starts_with('❌');
+                    view! {
+                        <div class="text-sm mt-2" class=("text-[var(--error)]", is_error)>
+                            {msg.clone()}
+                        </div>
+                    }
+                }))}
             </div>
         </div>
     }
