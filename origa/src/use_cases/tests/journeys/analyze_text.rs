@@ -176,7 +176,6 @@ async fn analyze_text_provides_word_details() {
         .unwrap();
 
     for word in &analysis.words {
-        assert!(!word.text.is_empty());
         assert!(!word.base_form.is_empty());
         assert!(!word.reading.is_empty());
     }

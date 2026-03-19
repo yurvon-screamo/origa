@@ -123,7 +123,7 @@ impl Card {
             Card::Grammar(card) => card.description(lang),
             Card::Radical(card) => {
                 let info = card.radical_info()?;
-                Answer::new(info.description().to_string()).map_err(|e| OrigaError::InvalidAnswer {
+                Answer::new(info.radical().to_string()).map_err(|e| OrigaError::InvalidAnswer {
                     reason: e.to_string(),
                 })
             }

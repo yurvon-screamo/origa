@@ -7,7 +7,6 @@ use tracing::{debug, info};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AnalyzedWord {
-    pub text: String,
     pub base_form: String,
     pub reading: String,
     pub part_of_speech: PartOfSpeech,
@@ -63,7 +62,6 @@ impl<'a, R: UserRepository> AnalyzeTextForCardsUseCase<'a, R> {
             let knowledge = user.is_word_known(&word_text);
 
             words.push(AnalyzedWord {
-                text: token.orthographic_surface_form().to_string(),
                 base_form: word_text.clone(),
                 reading: token.phonological_base_form().to_string(),
                 part_of_speech: token.part_of_speech().clone(),
