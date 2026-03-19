@@ -37,6 +37,13 @@ pub fn get_radical_info(radical: char) -> Result<&'static RadicalInfo, OrigaErro
         .get_radical_info(&radical)
 }
 
+pub fn get_radical_list() -> Vec<RadicalInfo> {
+    RADICAL_DICTIONARY
+        .get()
+        .map(|db| db.radical_list())
+        .unwrap_or_default()
+}
+
 pub struct RadicalDatabase {
     known_radicals: Vec<char>,
     radical_map: HashMap<char, RadicalInfo>,
@@ -129,6 +136,10 @@ impl RadicalDatabase {
 
     pub fn known_radicals(&self) -> &[char] {
         &self.known_radicals
+    }
+
+    pub fn radical_list(&self) -> Vec<RadicalInfo> {
+        self.radical_map.values().cloned().collect()
     }
 }
 

@@ -1,6 +1,6 @@
 use crate::domain::{
     OrigaError, Rating, ReviewLog,
-    knowledge::{GrammarRuleCard, KanjiCard, VocabularyCard},
+    knowledge::{GrammarRuleCard, KanjiCard, RadicalCard, VocabularyCard},
     memory::{MemoryHistory, MemoryState},
     value_objects::{Answer, NativeLanguage, Question},
 };
@@ -103,6 +103,7 @@ pub enum Card {
     Vocabulary(VocabularyCard),
     Kanji(KanjiCard),
     Grammar(GrammarRuleCard),
+    Radical(RadicalCard),
 }
 
 impl Card {
@@ -111,6 +112,7 @@ impl Card {
             Card::Vocabulary(card) => Ok(card.word().clone()),
             Card::Kanji(card) => Ok(card.kanji().clone()),
             Card::Grammar(card) => card.title(lang),
+            Card::Radical(card) => Ok(card.question().clone()),
         }
     }
 
@@ -119,6 +121,12 @@ impl Card {
             Card::Vocabulary(card) => card.answer(lang),
             Card::Kanji(card) => card.description(),
             Card::Grammar(card) => card.description(lang),
+            Card::Radical(card) => {
+                let info = card.radical_info()?;
+                Answer::new(info.description().to_string()).map_err(|e| OrigaError::InvalidAnswer {
+                    reason: e.to_string(),
+                })
+            }
         }
     }
 
@@ -127,6 +135,7 @@ impl Card {
             Card::Vocabulary(card) => card.word().text().to_string(),
             Card::Kanji(card) => card.kanji().text().to_string(),
             Card::Grammar(card) => card.rule_id().to_string(),
+            Card::Radical(card) => card.radical_char().to_string(),
         }
     }
 }
@@ -136,6 +145,7 @@ pub enum CardType {
     Vocabulary,
     Kanji,
     Grammar,
+    Radical,
 }
 
 impl From<&Card> for CardType {
@@ -144,6 +154,7 @@ impl From<&Card> for CardType {
             Card::Vocabulary(_) => CardType::Vocabulary,
             Card::Kanji(_) => CardType::Kanji,
             Card::Grammar(_) => CardType::Grammar,
+            Card::Radical(_) => CardType::Radical,
         }
     }
 }
@@ -253,7 +264,9 @@ impl LessonCardView {
         lang: &NativeLanguage,
     ) -> Result<Self, OrigaError> {
         match &original_card {
-            Card::Grammar(_) => return Ok(LessonCardView::Normal(original_card)),
+            Card::Grammar(_) | Card::Radical(_) => {
+                return Ok(LessonCardView::Normal(original_card));
+            }
             Card::Vocabulary(_) | Card::Kanji(_) => {}
         }
 

@@ -40,7 +40,9 @@ pub fn create_import_preview_handlers(
 
         state.is_importing.set(true);
 
-        let imported_set_ids = state.preview_words.get()
+        let imported_set_ids = state
+            .preview_words
+            .get()
             .iter()
             .map(|w| w.set_id.clone())
             .collect::<std::collections::HashSet<_>>()

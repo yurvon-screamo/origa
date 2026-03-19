@@ -1,5 +1,5 @@
 use crate::domain::OrigaError;
-use crate::domain::{Card, KanjiCard, StudyCard};
+use crate::domain::{Card, KanjiCard, RadicalCard, StudyCard};
 use crate::traits::UserRepository;
 use tracing::{debug, info};
 
@@ -27,6 +27,23 @@ impl<'a, R: UserRepository> CreateKanjiCardUseCase<'a, R> {
             let created = user.create_card(card)?;
             info!(kanji = %kanji, "Kanji card created");
             cards.push(created);
+
+            // Автосоздание радикалов для кандзи
+            if let Ok(kanji_info) = crate::domain::get_kanji_info(&kanji) {
+                for radical_char in kanji_info.radicals_chars() {
+                    if crate::domain::get_radical_info(*radical_char).is_ok()
+                        && user
+                            .create_card(Card::Radical(RadicalCard::new(*radical_char)?))
+                            .is_ok()
+                    {
+                        debug!(
+                            radical = %radical_char,
+                            "Auto-created radical card for kanji {}",
+                            kanji
+                        );
+                    }
+                }
+            }
         }
 
         self.repository.save(&user).await?;

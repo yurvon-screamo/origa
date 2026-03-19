@@ -67,7 +67,7 @@ pub use favorite_button::FavoriteButton;
 pub use furigana::FuriganaText;
 pub use history_button::HistoryButton;
 pub use input::Input;
-pub use kanji_animation::{KanjiViewMode, KanjiWritingSection};
+pub use kanji_animation::{KanjiAnimation, KanjiViewMode, KanjiWritingSection};
 pub use kanji_drawing::KanjiDrawingPractice;
 pub use layout::{CardLayout, CardLayoutSize, PageLayout, PageLayoutVariant};
 pub use loading::{LoadingOverlay, Spinner};

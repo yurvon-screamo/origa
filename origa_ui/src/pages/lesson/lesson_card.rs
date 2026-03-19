@@ -10,6 +10,7 @@ use super::lesson_card_answer::LessonCardAnswer;
 use super::lesson_card_header::LessonCardHeader;
 use super::lesson_card_question::LessonCardQuestion;
 use super::lesson_state::LessonContext;
+use super::radical_card_details::RadicalCardDisplay;
 
 #[component]
 pub fn LessonCard(
@@ -100,7 +101,7 @@ pub fn LessonCard(
     let kun_readings_stored = StoredValue::new(kun_readings);
 
     let kanji_for_animation: Option<String> = match &card {
-        DomainCard::Kanji(_) => Some(
+        DomainCard::Kanji(_) | DomainCard::Radical(_) => Some(
             card.question(&lang)
                 .ok()
                 .map(|q| q.text().to_string())
@@ -110,9 +111,27 @@ pub fn LessonCard(
     };
     let kanji_stored = StoredValue::new(kanji_for_animation);
 
+    let radical_display: Option<RadicalCardDisplay> = match &card {
+        DomainCard::Radical(radical) => match radical.radical_info() {
+            Ok(info) => Some(RadicalCardDisplay {
+                symbol: info.radical(),
+                name: info.name().to_string(),
+                description: info.description().to_string(),
+                stroke_count: info.stroke_count(),
+                kanji_examples: info.kanji().to_vec(),
+            }),
+            Err(e) => {
+                tracing::warn!("Failed to get radical info: {:?}", e);
+                None
+            }
+        },
+        _ => None,
+    };
+    let radical_stored = StoredValue::new(radical_display);
+
     let lesson_ctx = use_context::<LessonContext>();
 
-    let is_expanded = RwSignal::new(card_type == CardType::Kanji);
+    let is_expanded = RwSignal::new(card_type == CardType::Kanji || card_type == CardType::Radical);
     let content_ref = NodeRef::<leptos::html::Div>::new();
     let needs_collapse = RwSignal::new(false);
 
@@ -125,6 +144,7 @@ pub fn LessonCard(
         if !show_answer
             && !is_reversed
             && card_type != CardType::Kanji
+            && card_type != CardType::Radical
             && is_speech_supported()
             && !is_muted
         {
@@ -142,6 +162,7 @@ pub fn LessonCard(
         if show_answer
             && is_reversed
             && card_type != CardType::Kanji
+            && card_type != CardType::Radical
             && is_speech_supported()
             && !is_muted
         {
@@ -190,10 +211,12 @@ pub fn LessonCard(
                         content_ref=content_ref
                         on_toggle=on_toggle
                         is_kanji=card_type == CardType::Kanji
+                        is_radical=card_type == CardType::Radical
                         is_reversed=is_reversed
                         on_readings=on_readings_stored.get_value()
                         kun_readings=kun_readings_stored.get_value()
                         radicals=radicals_stored.get_value()
+                        radical=radical_stored.get_value()
                         example_words=examples_stored.get_value()
                         known_kanji=known_kanji
                     />
