@@ -27,10 +27,7 @@ impl<'a, R: UserRepository> MigrateKnowledgeSetUseCase<'a, R> {
             .await?
             .ok_or(OrigaError::CurrentUserNotExist {})?;
 
-        if user.knowledge_set().has_radical_cards() {
-            info!("Migration skipped: radical cards already exist");
-            return Ok(false);
-        }
+        info!("Starting migration");
 
         let old_data = self.collect_old_card_data(user.knowledge_set());
 

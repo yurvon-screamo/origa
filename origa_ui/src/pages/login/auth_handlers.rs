@@ -37,6 +37,19 @@ pub async fn get_or_create_profile(ctx: &AuthContext, email: &str) -> Result<Use
                 .await
                 .map_err(|e| format!("Не удалось создать профиль: {}", e))?;
 
+            let migration_use_case = MigrateKnowledgeSetUseCase::new(&ctx.repository);
+            match migration_use_case.execute().await {
+                Ok(true) => {
+                    debug!("Migration completed successfully");
+                }
+                Ok(false) => {
+                    debug!("Migration skipped (already done or no cards)");
+                }
+                Err(e) => {
+                    debug!("Migration failed (non-critical): {:?}", e);
+                }
+            }
+
             ctx.repository
                 .get_current_user()
                 .await
