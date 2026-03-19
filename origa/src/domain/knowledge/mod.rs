@@ -15,12 +15,13 @@ pub use vocabulary::VocabularyCard;
 use std::collections::{HashMap, HashSet};
 
 use crate::domain::{
-    OrigaError, RateMode, Rating, ReviewLog, get_rule_by_id,
-    srs::{NextReview, rate_memory},
+    get_rule_by_id,
+    srs::{rate_memory, NextReview},
     value_objects::NativeLanguage,
+    OrigaError, RateMode, Rating, ReviewLog,
 };
 use chrono::Utc;
-use rand::{Rng, seq::SliceRandom};
+use rand::{seq::SliceRandom, Rng};
 use serde::{Deserialize, Serialize};
 use ulid::Ulid;
 
@@ -560,6 +561,24 @@ impl KnowledgeSet {
             self.lesson_history.push(item);
         }
     }
+
+    pub fn clear_study_cards(&mut self) {
+        self.study_cards.clear();
+    }
+
+    pub fn set_lesson_history(&mut self, history: Vec<DailyHistoryItem>) {
+        self.lesson_history = history;
+    }
+
+    pub fn get_card_mut(&mut self, card_id: &Ulid) -> Option<&mut StudyCard> {
+        self.study_cards.get_mut(card_id)
+    }
+
+    pub fn has_radical_cards(&self) -> bool {
+        self.study_cards
+            .values()
+            .any(|sc| matches!(sc.card(), Card::Radical(_)))
+    }
 }
 
 #[cfg(test)]
@@ -570,7 +589,7 @@ mod tests {
     use crate::domain::value_objects::Question;
     use crate::use_cases::init_real_dictionaries;
     use chrono::Duration;
-    use rand::{SeedableRng, rngs::StdRng};
+    use rand::{rngs::StdRng, SeedableRng};
 
     fn create_vocab_card(word: &str) -> Card {
         Card::Vocabulary(VocabularyCard::new(
