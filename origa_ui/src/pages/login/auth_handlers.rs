@@ -18,6 +18,11 @@ pub async fn get_or_create_profile(ctx: &AuthContext, email: &str) -> Result<Use
             match migration_use_case.execute().await {
                 Ok(true) => {
                     debug!("Migration completed successfully");
+                    return ctx.repository
+                        .get_current_user()
+                        .await
+                        .map_err(|e| format!("Не удалось загрузить профиль: {}", e))?
+                        .ok_or_else(|| "Профиль не найден".to_string());
                 }
                 Ok(false) => {
                     debug!("Migration skipped (already done or no cards)");

@@ -77,8 +77,10 @@ pub fn ProfileContent() -> impl IntoView {
     });
 
     let repository_for_migrate = ctx.repository.clone();
+    let current_user_for_migrate = current_user;
     let migrate_cards = Callback::new(move |_| {
         let repository_clone = repository_for_migrate.clone();
+        let current_user_signal = current_user_for_migrate;
         let is_migrating_signal = is_migrating;
         let migration_message_signal = migration_message;
 
@@ -90,6 +92,9 @@ pub fn ProfileContent() -> impl IntoView {
 
             match use_case.execute().await {
                 Ok(true) => {
+                    if let Ok(Some(updated_user)) = repository_clone.get_current_user().await {
+                        current_user_signal.set(Some(updated_user));
+                    }
                     migration_message_signal.set(Some("✅ Миграция завершена!".to_string()));
                 }
                 Ok(false) => {
