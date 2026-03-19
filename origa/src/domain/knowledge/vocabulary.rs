@@ -1,7 +1,7 @@
-use crate::dictionary::{KanjiInfo, get_kanji_info, get_translation};
-use crate::domain::GrammarRule;
+use crate::dictionary::{get_kanji_info, get_translation, KanjiInfo};
 use crate::domain::japanese::JapaneseChar;
-use crate::domain::tokenizer::{PartOfSpeech, tokenize_text};
+use crate::domain::tokenizer::{tokenize_text, PartOfSpeech};
+use crate::domain::GrammarRule;
 use crate::domain::{Answer, JapaneseLevel, NativeLanguage, OrigaError, Question};
 use serde::{Deserialize, Serialize};
 use tracing::warn;
