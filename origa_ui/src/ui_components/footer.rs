@@ -4,14 +4,14 @@ use crate::ui_components::search::Search;
 use leptos::prelude::*;
 
 #[derive(Clone, Debug)]
-#[allow(dead_code)]
+
 pub struct FooterLink {
     pub label: String,
     pub href: String,
 }
 
 #[derive(Clone, Debug)]
-#[allow(dead_code)]
+
 pub struct FooterSection {
     pub title: String,
     pub links: Vec<FooterLink>,

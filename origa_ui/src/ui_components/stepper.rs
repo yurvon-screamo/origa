@@ -1,14 +1,14 @@
 use leptos::prelude::*;
 
 #[derive(Clone, Debug)]
-#[allow(dead_code)]
+
 pub struct StepperStep {
     pub number: u32,
     pub label: String,
 }
 
 #[derive(Clone, Copy, PartialEq, Default, Debug)]
-#[allow(dead_code)]
+
 pub enum StepStatus {
     #[default]
     Pending,

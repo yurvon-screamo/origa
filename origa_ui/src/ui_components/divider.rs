@@ -4,7 +4,7 @@ use leptos::prelude::*;
 pub enum DividerVariant {
     #[default]
     Single,
-    #[allow(dead_code)]
+ 
     Double,
 }
 

@@ -51,7 +51,6 @@ impl User {
         }
     }
 
-    #[allow(clippy::too_many_arguments)]
     pub fn from_row(
         id: Ulid,
         email: String,

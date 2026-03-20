@@ -72,7 +72,6 @@ impl DailyHistoryItem {
         self.lessons_completed
     }
 
-    #[allow(clippy::too_many_arguments)]
     pub fn update(
         &mut self,
         avg_stability: f64,
@@ -95,7 +94,6 @@ impl DailyHistoryItem {
         self.lessons_completed += 1;
     }
 
-    #[allow(clippy::too_many_arguments)]
     pub fn update_stats(
         &mut self,
         avg_stability: f64,

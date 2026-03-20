@@ -1,13 +1,13 @@
 use leptos::prelude::*;
 
 #[derive(Clone, Debug)]
-#[allow(dead_code)]
+
 pub struct TableHeader {
     pub label: String,
 }
 
 #[derive(Clone, Debug)]
-#[allow(dead_code)]
+
 pub struct TableRow {
     pub id: String,
     pub cells: Vec<String>,

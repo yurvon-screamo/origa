@@ -4,7 +4,7 @@ use leptos::prelude::*;
 pub enum TabButtonState {
     #[default]
     Inactive,
-    #[allow(dead_code)]
+ 
     Active,
 }
 

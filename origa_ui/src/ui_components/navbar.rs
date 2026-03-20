@@ -3,7 +3,7 @@ use leptos::either::*;
 use leptos::prelude::*;
 
 #[derive(Clone, Debug)]
-#[allow(dead_code)]
+
 pub struct NavItem {
     pub label: String,
     pub href: String,

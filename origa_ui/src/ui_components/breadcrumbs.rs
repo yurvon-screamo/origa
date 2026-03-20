@@ -2,7 +2,7 @@ use leptos::either::*;
 use leptos::prelude::*;
 
 #[derive(Clone, Debug)]
-#[allow(dead_code)]
+
 pub struct BreadcrumbItem {
     pub label: String,
     pub href: Option<String>,

@@ -14,7 +14,7 @@ pub fn RadicalItem(
     native_language: NativeLanguage,
     on_toggle_favorite: Callback<Ulid>,
     on_delete: Callback<DeleteRequest>,
-    #[allow(unused_variables)] is_deleting: Signal<bool>,
+    is_deleting: Signal<bool>,
 ) -> impl IntoView {
     let card = study_card.card();
     let card_id = *study_card.card_id();

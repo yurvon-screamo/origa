@@ -18,7 +18,7 @@ pub struct ProgressInfo {
 }
 
 impl ProgressInfo {
-    #[allow(dead_code)]
+ 
     pub fn new(loaded_bytes: u64, total_bytes: u64, elapsed_secs: f64) -> Self {
         let percent = if total_bytes > 0 {
             (loaded_bytes as f64 / total_bytes as f64 * 100.0).min(100.0) as u32
@@ -66,7 +66,7 @@ pub enum OcrLoadingStage {
     Completed,
     Error {
         stage: String,
-        #[allow(dead_code)]
+     
         message: String,
     },
 }
@@ -87,7 +87,7 @@ impl OcrLoadingState {
         }
     }
 
-    #[allow(dead_code)]
+ 
     pub fn is_loading(&self) -> bool {
         !matches!(
             self.stage.get(),
@@ -95,7 +95,7 @@ impl OcrLoadingState {
         )
     }
 
-    #[allow(dead_code)]
+ 
     pub fn reset(&self) {
         self.stage.set(OcrLoadingStage::Idle);
         self.cancel_requested.set(false);

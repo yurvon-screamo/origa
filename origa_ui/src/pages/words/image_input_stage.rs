@@ -526,7 +526,6 @@ async fn execute_ocr(
         .map_err(|e| format!("OCR failed: {:?}", e))
 }
 
-#[allow(clippy::await_holding_refcell_ref)]
 async fn process_image_with_ocr(
     data_url: &str,
     loading_state: &OcrLoadingState,

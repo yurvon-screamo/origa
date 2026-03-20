@@ -26,7 +26,7 @@ pub struct LessonContext {
     pub repository: HybridUserRepository,
     pub lesson_state: RwSignal<LessonState>,
     pub is_completed: RwSignal<bool>,
-    #[allow(dead_code)]
+ 
     pub mode: LessonMode,
     pub reload_trigger: RwSignal<u32>,
     pub is_muted: RwSignal<bool>,
