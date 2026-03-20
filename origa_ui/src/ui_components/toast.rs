@@ -6,7 +6,7 @@ pub enum ToastType {
     #[default]
     Info,
     Success,
- 
+
     Warning,
     Error,
 }

@@ -1,9 +1,11 @@
 mod classify;
 mod conjugations;
 mod godan_tables;
+mod irregulars;
 mod te_ta;
 
-pub use classify::{VerbGroup, classify_verb};
+#[cfg(test)]
+pub use classify::{classify_verb, VerbGroup};
 pub use conjugations::{
     to_ba_form, to_causative_form, to_causative_passive_form, to_chau_form, to_imperative_form,
     to_main_view, to_masen_deshita_form, to_masen_form, to_mashita_form, to_mashou_form,

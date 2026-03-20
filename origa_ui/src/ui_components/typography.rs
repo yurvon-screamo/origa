@@ -6,7 +6,7 @@ pub enum HeadingLevel {
     H2,
     H3,
     H4,
- 
+
     H5,
     #[default]
     H6,
@@ -17,7 +17,7 @@ pub enum TypographyVariant {
     #[default]
     Primary,
     Muted,
- 
+
     Olive,
 }
 
