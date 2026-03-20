@@ -1,3 +1,5 @@
+use crate::dictionary::kanji::get_kanji_info;
+use crate::dictionary::radical::get_radical_info;
 use crate::domain::OrigaError;
 use crate::domain::{Card, KanjiCard, RadicalCard, StudyCard};
 use crate::traits::UserRepository;
@@ -29,9 +31,9 @@ impl<'a, R: UserRepository> CreateKanjiCardUseCase<'a, R> {
             cards.push(created);
 
             // Автосоздание радикалов для кандзи
-            if let Ok(kanji_info) = crate::domain::get_kanji_info(&kanji) {
+            if let Ok(kanji_info) = get_kanji_info(&kanji) {
                 for radical_char in kanji_info.radicals_chars() {
-                    if crate::domain::get_radical_info(*radical_char).is_ok()
+                    if get_radical_info(*radical_char).is_ok()
                         && user
                             .create_card(Card::Radical(RadicalCard::new(*radical_char)?))
                             .is_ok()

@@ -14,8 +14,9 @@ pub use vocabulary::VocabularyCard;
 
 use std::collections::{HashMap, HashSet};
 
+use crate::dictionary::grammar::get_rule_by_id;
 use crate::domain::{
-    OrigaError, RateMode, Rating, ReviewLog, get_rule_by_id,
+    OrigaError, RateMode, Rating, ReviewLog,
     srs::{NextReview, rate_memory},
     value_objects::NativeLanguage,
 };

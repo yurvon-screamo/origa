@@ -1,5 +1,6 @@
-use crate::dictionary::{KanjiInfo, get_kanji_info, get_translation};
-use crate::domain::GrammarRule;
+use crate::dictionary::grammar::GrammarRule;
+use crate::dictionary::kanji::{get_kanji_info, KanjiInfo};
+use crate::dictionary::vocabulary::get_translation;
 use crate::domain::japanese::JapaneseChar;
 use crate::domain::tokenizer::{PartOfSpeech, tokenize_text};
 use crate::domain::{Answer, JapaneseLevel, NativeLanguage, OrigaError, Question};
@@ -428,7 +429,7 @@ mod tests {
         let lang = NativeLanguage::Russian;
 
         let rule_id = ulid::Ulid::from_string("01KJ9AVWBGW9JTQNV2RXVNVWXR").expect("Invalid ULID");
-        let rule = crate::domain::get_rule_by_id(&rule_id).expect("Rule not found");
+        let rule = crate::dictionary::grammar::get_rule_by_id(&rule_id).expect("Rule not found");
         let result = card.with_grammar_rule(rule, &lang);
 
         assert!(result.is_err());
@@ -441,7 +442,7 @@ mod tests {
         let lang = NativeLanguage::Russian;
 
         let rule_id = ulid::Ulid::from_string("01KJ9AVWBGW9JTQNV2RXVNVWXR").expect("Invalid ULID");
-        let rule = crate::domain::get_rule_by_id(&rule_id).expect("Rule not found");
+        let rule = crate::dictionary::grammar::get_rule_by_id(&rule_id).expect("Rule not found");
         let result = card.with_grammar_rule(rule, &lang);
 
         assert!(result.is_ok());

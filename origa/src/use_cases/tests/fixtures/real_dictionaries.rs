@@ -4,11 +4,11 @@ use std::sync::Once;
 use flate2::read::DeflateDecoder;
 
 use super::get_public_dir;
-use crate::domain::{
-    DictionaryData, GrammarData, KanjiData, RadicalData, VocabularyChunkData, init_dictionary,
-    init_grammar, init_kanji, init_radicals, init_vocabulary, is_dictionary_loaded,
-    is_grammar_loaded,
-};
+use crate::dictionary::grammar::{GrammarData, init_grammar, is_grammar_loaded};
+use crate::dictionary::kanji::{KanjiData, init_kanji};
+use crate::dictionary::radical::{RadicalData, init_radicals};
+use crate::dictionary::vocabulary::{VocabularyChunkData, init_vocabulary};
+use crate::domain::{DictionaryData, init_dictionary, is_dictionary_loaded};
 
 static INIT: Once = Once::new();
 
