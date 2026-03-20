@@ -3,8 +3,6 @@ use crate::repository::{TrailBaseClient, set_session};
 use gloo_storage::{LocalStorage, Storage};
 use origa::domain::{NativeLanguage, User};
 use origa::traits::UserRepository;
-use origa::use_cases::MigrateKnowledgeSetUseCase;
-use tracing::debug;
 
 pub async fn get_or_create_profile(ctx: &AuthContext, email: &str) -> Result<User, String> {
     match ctx.repository.get_current_user().await {
@@ -13,25 +11,6 @@ pub async fn get_or_create_profile(ctx: &AuthContext, email: &str) -> Result<Use
                 .merge_current_user()
                 .await
                 .map_err(|e| format!("Не удалось синхронизировать профиль: {}", e))?;
-
-            let migration_use_case = MigrateKnowledgeSetUseCase::new(&ctx.repository);
-            match migration_use_case.execute().await {
-                Ok(true) => {
-                    debug!("Migration completed successfully");
-                    return ctx.repository
-                        .get_current_user()
-                        .await
-                        .map_err(|e| format!("Не удалось загрузить профиль: {}", e))?
-                        .ok_or_else(|| "Профиль не найден".to_string());
-                }
-                Ok(false) => {
-                    debug!("Migration skipped (already done or no cards)");
-                }
-                Err(e) => {
-                    debug!("Migration failed (non-critical): {:?}", e);
-                }
-            }
-
             Ok(user)
         }
         Ok(None) => {
@@ -41,19 +20,6 @@ pub async fn get_or_create_profile(ctx: &AuthContext, email: &str) -> Result<Use
                 .save(&new_user)
                 .await
                 .map_err(|e| format!("Не удалось создать профиль: {}", e))?;
-
-            let migration_use_case = MigrateKnowledgeSetUseCase::new(&ctx.repository);
-            match migration_use_case.execute().await {
-                Ok(true) => {
-                    debug!("Migration completed successfully");
-                }
-                Ok(false) => {
-                    debug!("Migration skipped (already done or no cards)");
-                }
-                Err(e) => {
-                    debug!("Migration failed (non-critical): {:?}", e);
-                }
-            }
 
             ctx.repository
                 .get_current_user()
