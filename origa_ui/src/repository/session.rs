@@ -27,7 +27,7 @@ pub fn clear_session() {
 
 const LAST_SYNC_KEY: &str = "origa_last_sync_time";
 
-#[allow(dead_code)]
+
 pub fn get_last_sync_time() -> u64 {
     let res = LocalStorage::get(LAST_SYNC_KEY);
     if let Err(e) = &res {

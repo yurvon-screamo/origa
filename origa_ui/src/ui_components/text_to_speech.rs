@@ -97,7 +97,6 @@ fn get_japanese_voice(synthesis: &web_sys::SpeechSynthesis) -> Option<SpeechSynt
     })
 }
 
-#[allow(dead_code)]
 pub fn stop_speech() -> Result<(), String> {
     let window = window().ok_or("Window not available")?;
     let synthesis = window

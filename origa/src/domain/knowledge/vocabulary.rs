@@ -1,5 +1,5 @@
 use crate::dictionary::grammar::GrammarRule;
-use crate::dictionary::kanji::{get_kanji_info, KanjiInfo};
+use crate::dictionary::kanji::{KanjiInfo, get_kanji_info};
 use crate::dictionary::vocabulary::get_translation;
 use crate::domain::japanese::JapaneseChar;
 use crate::domain::tokenizer::{PartOfSpeech, tokenize_text};
@@ -22,7 +22,7 @@ pub struct VocabularyCard {
 
 impl VocabularyCard {
     /// Конструктор для создания карточки (pub(crate) для использования внутри крейта)
-    #[allow(dead_code)]
+
     pub(crate) fn new(word: Question) -> Self {
         Self {
             word,

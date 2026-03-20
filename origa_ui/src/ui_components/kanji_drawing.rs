@@ -499,7 +499,7 @@ fn parse_number(chars: &[char], start: usize) -> Option<(f64, usize)> {
     let num: f64 = num_str.parse().ok()?;
     Some((num, pos))
 }
-#[allow(dead_code)]
+
 fn normalize_points(points: &[(f64, f64)]) -> Vec<(f64, f64)> {
     if points.is_empty() {
         return Vec::new();

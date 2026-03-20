@@ -3,7 +3,7 @@ use leptos::wasm_bindgen::JsCast;
 use leptos_use::use_event_listener;
 
 #[derive(Clone, Debug)]
-#[allow(dead_code)]
+
 pub struct DropdownItem {
     pub value: String,
     pub label: String,
