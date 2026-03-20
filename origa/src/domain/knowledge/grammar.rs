@@ -1,5 +1,6 @@
+use crate::dictionary::grammar::get_rule_by_id;
+use crate::domain::OrigaError;
 use crate::domain::{
-    OrigaError, get_rule_by_id,
     tokenizer::PartOfSpeech,
     value_objects::{Answer, NativeLanguage, Question},
 };
@@ -78,7 +79,8 @@ impl GrammarRuleCard {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::domain::{GrammarData, NativeLanguage, init_grammar, is_grammar_loaded};
+    use crate::dictionary::grammar::{GrammarData, init_grammar, is_grammar_loaded};
+    use crate::domain::NativeLanguage;
     use std::sync::Once;
 
     static INIT: Once = Once::new();

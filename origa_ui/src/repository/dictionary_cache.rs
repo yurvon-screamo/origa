@@ -3,9 +3,11 @@ use serde::de::DeserializeOwned;
 use wasm_bindgen::JsCast;
 use wasm_bindgen_futures::JsFuture;
 
-use origa::domain::{
-    DictionaryData, GrammarData, KanjiData, OrigaError, RadicalData, VocabularyChunkData,
-};
+use origa::dictionary::grammar::GrammarData;
+use origa::dictionary::kanji::KanjiData;
+use origa::dictionary::radical::RadicalData;
+use origa::dictionary::vocabulary::VocabularyChunkData;
+use origa::domain::{DictionaryData, OrigaError};
 
 use crate::core::config::urls;
 

@@ -1,6 +1,6 @@
 use crate::ui_components::{MarkdownText, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
-use origa::domain::KanjiInfo;
+use origa::dictionary::kanji::KanjiInfo;
 use std::collections::HashSet;
 
 #[component]

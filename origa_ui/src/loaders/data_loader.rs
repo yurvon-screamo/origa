@@ -1,8 +1,8 @@
-use origa::domain::{
-    GrammarData, KanjiData, OrigaError, RadicalData, VocabularyChunkData, init_grammar_rules,
-    init_kanji_dictionary, init_radical_dictionary, init_vocabulary_dictionary, is_grammar_loaded,
-    is_kanji_loaded, is_radical_loaded, is_vocabulary_loaded,
-};
+use origa::dictionary::grammar::{GrammarData, init_grammar, is_grammar_loaded};
+use origa::dictionary::kanji::{KanjiData, init_kanji, is_kanji_loaded};
+use origa::dictionary::radical::{RadicalData, init_radicals, is_radicals_loaded};
+use origa::dictionary::vocabulary::{VocabularyChunkData, init_vocabulary, is_vocabulary_loaded};
+use origa::domain::OrigaError;
 
 use super::jlpt_content_loader::load_jlpt_content;
 use crate::core::config::public_url;
@@ -13,7 +13,7 @@ use crate::repository::{
 use crate::utils::fetch_text;
 
 pub fn is_all_data_loaded() -> bool {
-    is_vocabulary_loaded() && is_radical_loaded() && is_kanji_loaded() && is_grammar_loaded()
+    is_vocabulary_loaded() && is_radicals_loaded() && is_kanji_loaded() && is_grammar_loaded()
 }
 
 pub async fn load_all_data() -> Result<(), OrigaError> {
@@ -46,7 +46,7 @@ pub async fn load_vocabulary() -> Result<(), OrigaError> {
     }
 
     if let Some(cached) = get_cached_vocabulary().await? {
-        init_vocabulary_dictionary(cached)?;
+        init_vocabulary(cached)?;
         tracing::info!("Vocabulary loaded from cache");
         return Ok(());
     }
@@ -84,18 +84,18 @@ pub async fn load_vocabulary() -> Result<(), OrigaError> {
         }
     });
 
-    init_vocabulary_dictionary(data)?;
+    init_vocabulary(data)?;
     tracing::info!("Vocabulary loaded from network");
     Ok(())
 }
 
 pub async fn load_radical() -> Result<(), OrigaError> {
-    if is_radical_loaded() {
+    if is_radicals_loaded() {
         return Ok(());
     }
 
     if let Some(cached) = get_cached_radical().await? {
-        init_radical_dictionary(cached)?;
+        init_radicals(cached)?;
         tracing::info!("Radicals loaded from cache");
         return Ok(());
     }
@@ -112,7 +112,7 @@ pub async fn load_radical() -> Result<(), OrigaError> {
         }
     });
 
-    init_radical_dictionary(data)?;
+    init_radicals(data)?;
     tracing::info!("Radicals loaded from network");
     Ok(())
 }
@@ -123,7 +123,7 @@ pub async fn load_kanji() -> Result<(), OrigaError> {
     }
 
     if let Some(cached) = get_cached_kanji().await? {
-        init_kanji_dictionary(cached)?;
+        init_kanji(cached)?;
         tracing::info!("Kanji loaded from cache");
         return Ok(());
     }
@@ -138,7 +138,7 @@ pub async fn load_kanji() -> Result<(), OrigaError> {
         }
     });
 
-    init_kanji_dictionary(data)?;
+    init_kanji(data)?;
     tracing::info!("Kanji loaded from network");
     Ok(())
 }
@@ -149,7 +149,7 @@ pub async fn load_grammar() -> Result<(), OrigaError> {
     }
 
     if let Some(cached) = get_cached_grammar().await? {
-        init_grammar_rules(cached)?;
+        init_grammar(cached)?;
         tracing::info!("Grammar loaded from cache");
         return Ok(());
     }
@@ -164,7 +164,7 @@ pub async fn load_grammar() -> Result<(), OrigaError> {
         }
     });
 
-    init_grammar_rules(data)?;
+    init_grammar(data)?;
     tracing::info!("Grammar loaded from network");
     Ok(())
 }

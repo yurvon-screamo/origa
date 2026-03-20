@@ -1,7 +1,7 @@
 use super::kanji_item::KanjiItem;
 use crate::ui_components::{Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
-use origa::domain::KanjiInfo;
+use origa::dictionary::kanji::KanjiInfo;
 use std::collections::HashSet;
 
 #[component]
