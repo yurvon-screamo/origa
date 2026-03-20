@@ -4,9 +4,9 @@ use leptos::prelude::*;
 pub enum AvatarSize {
     #[default]
     Default,
- 
+
     Small,
- 
+
     Large,
 }
 

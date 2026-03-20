@@ -5,7 +5,7 @@ pub enum PageLayoutVariant {
     #[default]
     Centered,
     Full,
- 
+
     Compact,
 }
 
@@ -33,11 +33,10 @@ pub fn PageLayout(
 
 #[derive(Clone, Copy, PartialEq, Debug, Default)]
 pub enum CardLayoutSize {
- 
     Small,
- 
+
     Medium,
- 
+
     Large,
     #[default]
     Adaptive,
