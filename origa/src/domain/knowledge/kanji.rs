@@ -1,4 +1,4 @@
-use crate::dictionary::{get_kanji_info, get_radical_info, get_translation, RadicalInfo};
+use crate::dictionary::{RadicalInfo, get_kanji_info, get_radical_info, get_translation};
 use crate::domain::{Answer, JapaneseLevel, NativeLanguage, OrigaError, Question};
 use serde::{Deserialize, Serialize};
 

@@ -128,10 +128,6 @@ impl User {
         &self.knowledge_set
     }
 
-    pub fn knowledge_set_mut(&mut self) -> &mut KnowledgeSet {
-        &mut self.knowledge_set
-    }
-
     pub fn telegram_user_id(&self) -> Option<&u64> {
         self.telegram_user_id.as_ref()
     }

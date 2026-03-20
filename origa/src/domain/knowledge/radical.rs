@@ -1,4 +1,4 @@
-use crate::dictionary::radical::{get_radical_info, RadicalInfo};
+use crate::dictionary::radical::{RadicalInfo, get_radical_info};
 use crate::domain::{OrigaError, Question};
 use serde::{Deserialize, Serialize};
 
