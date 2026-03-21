@@ -7,6 +7,24 @@ use crate::domain::{
 use serde::{Deserialize, Serialize};
 use ulid::Ulid;
 
+macro_rules! get_content {
+    ($self:expr, $lang:expr, $content_method:ident, $new_method:path) => {{
+        let rule = get_rule_by_id(&$self.rule_id).ok_or(OrigaError::GrammarRuleNotFound {
+            rule_id: $self.rule_id,
+        })?;
+
+        let text = rule.content($lang).$content_method();
+        if text.is_empty() {
+            return Err(OrigaError::GrammarContentNotFound {
+                rule_id: $self.rule_id,
+                lang: *$lang,
+            });
+        }
+
+        $new_method(text.to_string())
+    }};
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct GrammarRuleCard {
     rule_id: Ulid,
@@ -25,39 +43,15 @@ impl GrammarRuleCard {
     }
 
     pub fn title(&self, lang: &NativeLanguage) -> Result<Question, OrigaError> {
-        let rule = get_rule_by_id(&self.rule_id).ok_or(OrigaError::GrammarRuleNotFound {
-            rule_id: self.rule_id,
-        })?;
-
-        let title = rule.content(lang).title();
-        if title.is_empty() {
-            return Err(OrigaError::GrammarContentNotFound {
-                rule_id: self.rule_id,
-                lang: *lang,
-            });
-        }
-
-        Question::new(title.to_string()).map_err(|e| OrigaError::InvalidQuestion {
-            reason: e.to_string(),
-        })
+        get_content!(self, lang, title, Question::new)
     }
 
     pub fn description(&self, lang: &NativeLanguage) -> Result<Answer, OrigaError> {
-        let rule = get_rule_by_id(&self.rule_id).ok_or(OrigaError::GrammarRuleNotFound {
-            rule_id: self.rule_id,
-        })?;
+        get_content!(self, lang, md_description, Answer::new)
+    }
 
-        let desc = rule.content(lang).md_description();
-        if desc.is_empty() {
-            return Err(OrigaError::GrammarContentNotFound {
-                rule_id: self.rule_id,
-                lang: *lang,
-            });
-        }
-
-        Answer::new(desc.to_string()).map_err(|e| OrigaError::InvalidAnswer {
-            reason: e.to_string(),
-        })
+    pub fn short_description(&self, lang: &NativeLanguage) -> Result<Answer, OrigaError> {
+        get_content!(self, lang, short_description, Answer::new)
     }
 
     pub fn apply_to(&self) -> Vec<PartOfSpeech> {
@@ -267,6 +261,61 @@ mod tests {
 
             assert!(!parts.is_empty());
             assert!(parts.contains(&PartOfSpeech::Verb));
+        }
+    }
+
+    mod short_description {
+        use super::*;
+
+        #[test]
+        fn returns_short_description_in_russian() {
+            init_test_grammar();
+
+            let rule_id = get_first_rule_id();
+            let card = GrammarRuleCard::new(rule_id).expect("Failed to create card");
+
+            let short_desc = card.short_description(&NativeLanguage::Russian);
+
+            assert!(short_desc.is_ok());
+            assert!(!short_desc.unwrap().text().is_empty());
+        }
+
+        #[test]
+        fn returns_short_description_in_english() {
+            init_test_grammar();
+
+            let rule_id = get_first_rule_id();
+            let card = GrammarRuleCard::new(rule_id).expect("Failed to create card");
+
+            let short_desc = card.short_description(&NativeLanguage::English);
+
+            assert!(short_desc.is_ok());
+            assert!(!short_desc.unwrap().text().is_empty());
+        }
+
+        #[test]
+        fn short_description_is_shorter_than_full_description() {
+            init_test_grammar();
+
+            let rule_id = get_first_rule_id();
+            let card = GrammarRuleCard::new(rule_id).expect("Failed to create card");
+
+            let short_desc = card.short_description(&NativeLanguage::Russian).unwrap();
+            let full_desc = card.description(&NativeLanguage::Russian).unwrap();
+
+            assert!(short_desc.text().len() < full_desc.text().len());
+        }
+
+        #[test]
+        fn returns_error_for_nonexistent_rule() {
+            init_test_grammar();
+
+            let card = GrammarRuleCard::new_test();
+            let result = card.short_description(&NativeLanguage::Russian);
+
+            assert!(result.is_err());
+            let err = result.unwrap_err();
+            assert!(matches!(err, OrigaError::GrammarRuleNotFound { .. }));
         }
     }
 
