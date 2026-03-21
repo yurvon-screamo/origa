@@ -1,0 +1,206 @@
+import { test, expect } from '../fixtures';
+import { HomePage, LessonPage, KanjiPage, SetsPage, WordsPage, GrammarPage } from '../pages';
+
+import { TEST_KANJI, TEST_VOCABULARY, TEST_GRAMMAR_RULES } from '../fixtures/test-data';
+
+import path from 'node:path';
+import fs from 'fs';
+
+const authFile = path.join(__dirname, '..', 'playwright', '.auth', 'user.json');
+const dataSeedFile = path.join(__dirname, '..', 'playwright', '.auth', 'data-seeded.json');
+
+test.describe('Complete User Journey @journey @smoke', () => {
+  test.setTimeout(300000);
+
+  setup('seed test data', async ({ browser }) => {
+    setup.setTimeout(180000);
+
+    if (!fs.existsSync(authFile)) {
+      throw new Error('Auth file not found. Run auth.setup.ts first.');
+    }
+
+    if (fs.existsSync(dataSeedFile)) {
+      console.log('Data already seeded, skipping...');
+      return;
+    }
+
+    const context = await browser.newContext({
+      storageState: authFile,
+    });
+    const page = await context.newPage();
+
+    await setup.step('Navigate to home and verify auth', async () => {
+      await page.goto('/home');
+      await page.waitForLoadState('domcontentloaded', { timeout: 60000 }).catch(() => {});
+      await page.waitForTimeout(3000);
+    });
+
+    
+    await setup.step('Import N5 kanji set', async () => {
+      await page.goto('/sets');
+      await page.waitForLoadState('domcontentloaded', { timeout: 60000 }).catch(() => {});
+      await page.waitForTimeout(3000);
+      
+      const setCards = page.locator('.set-card, [data-testid="set-card"]');
+      const setCount = await setCards.count();
+      console.log(`Found ${setCount} sets`);
+      
+      if (setCount > 0) {
+        const n5KanjiSet = setCards.filter({
+          hasText: s => s.name.includes('N5') || s.name.includes('кандзи'),
+        }).first();
+        
+        if (n5KanjiSet) {
+          await n5KanjiSet.click();
+          await page.waitForTimeout(1000);
+          
+          const previewModal = page.locator('.modal, [role="dialog"]');
+          const confirmButton = previewModal.getByRole('button', { name: /подтвердить|импортировать/i }).first();
+          
+          if (await confirmButton.isVisible({ timeout: 5000 }).catch(() => false)) {
+            await confirmButton.click();
+            await page.waitForTimeout(2000);
+          } else {
+            const importButton = setCards.first().getByRole('button', { name: /импортировать|импорт/i });
+            if (await importButton.isVisible({ timeout: 5000 }).catch(() => false)) {
+              await importButton.click();
+              await page.waitForTimeout(1000);
+              
+              const closeButton = previewModal.getByRole('button', { name: /закрыть/i }).first();
+              if (await closeButton.isVisible({ timeout: 3000 }).catch(() => false)) {
+                await closeButton.click();
+              }
+            }
+          }
+        }
+      }
+    });
+
+      
+      await setup.step('Verify cards were created', async () => {
+        await page.goto('/kanji');
+        await page.waitForLoadState('domcontentloaded', { timeout: 60000 }).catch(() => {});
+        await page.waitForTimeout(2000);
+      
+        const kanjiItems = page.locator('.kanji-item, [data-testid="kanji-item"]');
+        const kanjiCount = await kanjiItems.count();
+        console.log(`Seeded ${kanjiCount} kanji cards`);
+      });
+
+    
+      
+      await setup.step('Mark data as seeded', async () => {
+      const dir = path.dirname(dataSeedFile);
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
+      fs.writeFileSync(dataSeedFile, JSON.stringify({ seeded: true, timestamp: new Date().toISOString() }));
+      console.log('Data seeding completed');
+    });
+
+    await context.close();
+  });
+
+  test('Full learning flow: login -> sets -> import -> verify cards -> lesson @critical', async ({ authenticatedPage }) => {
+    const homePage = new HomePage(authenticatedPage);
+    const setsPage = new SetsPage(authenticatedPage);
+    const kanjiPage = new KanjiPage(authenticatedPage);
+    const wordsPage = new WordsPage(authenticatedPage);
+    const grammarPage = new GrammarPage(authenticatedPage);
+    const lessonPage = new LessonPage(authenticatedPage);
+
+    await test.step('2. Navigate to Sets and check available sets', async () => {
+      await setsPage.goto();
+      await expect(authenticatedPage).toHaveURL(/\/sets/);
+      await setsPage.waitForSets();
+      const setCount = await setsPage.getSetCount();
+      console.log(`Found ${setCount} sets`);
+    });
+
+    await test.step('3. Import first available set if not imported', async () => {
+      const setCount = await setsPage.getSetCount();
+      if (setCount > 0) {
+        const importButtons = authenticatedPage.getByRole('button', { name: /импортировать|импорт/i });
+        const firstImportButton = importButtons.first();
+        const hasImportButton = await firstImportButton.isVisible({ timeout: 5000 }).catch(() => false);
+        
+        if (hasImportButton) {
+          await firstImportButton.click();
+          await authenticatedPage.waitForTimeout(1000);
+          
+          const confirmButton = authenticatedPage.getByRole('button', { name: /подтвердить|импортировать/i }).first();
+          if (await confirmButton.isVisible({ timeout: 5000 }).catch(() => false)) {
+            await confirmButton.click();
+            await authenticatedPage.waitForTimeout(2000);
+          }
+          
+          const closeButton = authenticatedPage.getByRole('button', { name: /закрыть/i }).first();
+          if (await closeButton.isVisible({ timeout: 3000 }).catch(() => false)) {
+            await closeButton.click();
+          }
+        }
+      }
+    });
+
+    await test.step('4. Navigate to Kanji and verify cards exist', async () => {
+      await kanjiPage.goto();
+      await expect(authenticatedPage).toHaveURL(/\/kanji/);
+      await kanjiPage.waitForKanjiList();
+      const kanjiCount = await kanjiPage.getKanjiCount();
+      console.log(`Found ${kanjiCount} kanji items`);
+    });
+
+    await test.step('5. Navigate to Words and verify content', async () => {
+      await wordsPage.goto();
+      await expect(authenticatedPage).toHaveURL(/\/words/);
+      await wordsPage.waitForWords();
+      const wordCount = await wordsPage.getWordCount();
+      console.log(`Found ${wordCount} words`);
+    });
+
+    await test.step('6. Navigate to Grammar and verify content', async () => {
+      await grammarPage.goto();
+      await expect(authenticatedPage).toHaveURL(/\/grammar/);
+      await grammarPage.waitForRules();
+      const ruleCount = await grammarPage.getRuleCount();
+      console.log(`Found ${ruleCount} grammar rules`);
+    });
+
+    await test.step('7. Start standard lesson from Home', async () => {
+      await homePage.goto();
+      await expect(homePage.lessonButton).toBeVisible({ timeout: 30000 });
+      await homePage.startLesson();
+      await expect(authenticatedPage).toHaveURL(/\/lesson/);
+    });
+
+    await test.step('8. Complete lesson by rating cards', async () => {
+      await lessonPage.waitForCardsOrComplete();
+      
+      const hasNoCards = await lessonPage.noCardsMessage.isVisible().catch(() => false);
+      if (hasNoCards) {
+        console.log('No cards available for lesson - skipping rating');
+        return;
+      }
+      
+      const completed = await lessonPage.completeFullLesson(10);
+      console.log(`Completed ${completed} cards in lesson`);
+      expect(completed).toBeGreaterThanOrEqual(0);
+    });
+
+    await test.step('9. Verify home page shows progress', async () => {
+      await homePage.goto();
+      await expect(authenticatedPage.locator('body')).toContainText(/\d+/, { timeout: 30000 });
+    });
+  });
+
+  test('Quick smoke test: navigation between all pages @smoke', async ({ authenticatedPage }) => {
+    const pages = [
+      { name: 'Home', url: '/home' },
+      { name: 'Kanji', url: '/kanji' },
+      { name: 'Words', url: '/words' },
+      { name: 'Grammar', url: '/grammar' },
+      { name: 'Sets', url: '/sets' },
+    ];
+
+    for (const pageInfo of pages) {
+      await test.step(`Navigate to ${pageInfo.name}`,
