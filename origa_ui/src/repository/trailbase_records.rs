@@ -13,6 +13,7 @@ impl<C: AuthRequestClient> RecordApi<C> {
         Self { client, table_name }
     }
 
+    #[allow(dead_code)]
     pub async fn list<T: DeserializeOwned>(&self) -> Result<Vec<T>, AuthError> {
         let path = format!("/api/records/v1/{}", self.table_name);
         let response = self
@@ -60,6 +61,7 @@ impl<C: AuthRequestClient> RecordApi<C> {
         Ok(list.records)
     }
 
+    #[allow(dead_code)]
     pub async fn read<T: DeserializeOwned>(&self, id: &str) -> Result<T, AuthError> {
         let path = format!("/api/records/v1/{}/{}", self.table_name, id);
         let response = self

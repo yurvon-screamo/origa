@@ -1,46 +1,31 @@
 use super::{ActionButtons, PersonalDataCard, SettingsCard};
-use crate::app::AuthContext;
-use crate::repository::clear_session;
+use crate::store::AuthStore;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use origa::domain::NativeLanguage;
-use origa::traits::UserRepository;
+use leptos_router::hooks::use_navigate;
+use origa::domain::{NativeLanguage, User};
 use origa::use_cases::UpdateUserProfileUseCase;
 
 #[component]
 pub fn ProfileContent() -> impl IntoView {
-    let ctx = use_context::<AuthContext>().expect("AuthContext not provided");
-    let client = ctx.client.clone();
-    let repository = ctx.repository.clone();
-
-    let current_user: RwSignal<Option<origa::domain::User>> = RwSignal::new(None);
-
-    Effect::new({
-        let repository = repository.clone();
-        move |_| {
-            let repository = repository.clone();
-            spawn_local(async move {
-                if let Ok(Some(user)) = repository.get_current_user().await {
-                    current_user.set(Some(user));
-                }
-            });
-        }
-    });
+    let auth_store = use_context::<AuthStore>().expect("AuthStore not provided");
 
     let user_name = Memo::new(move |_| {
-        current_user.with(|u| {
+        auth_store.user.with(|u: &Option<User>| {
             u.as_ref()
                 .map(|u| u.username().to_string())
                 .unwrap_or_default()
         })
     });
+
     let native_language = Memo::new(move |_| {
-        current_user.with(|u| {
+        auth_store.user.with(|u: &Option<User>| {
             u.as_ref()
                 .map(|u| *u.native_language())
                 .unwrap_or(NativeLanguage::Russian)
         })
     });
+
     let selected_language = RwSignal::new(native_language.get_untracked());
 
     Effect::new(move |_| {
@@ -48,14 +33,15 @@ pub fn ProfileContent() -> impl IntoView {
     });
 
     let is_saving = RwSignal::new(false);
-    let is_deleting = RwSignal::new(false);
     let is_logging_out = RwSignal::new(false);
+    let is_deleting = RwSignal::new(false);
 
+    let auth_store_for_save = auth_store.clone();
     let save_profile = Callback::new(move |_| {
-        let repository = repository.clone();
+        let repository = auth_store_for_save.repository().clone();
         let language = selected_language.get();
         let is_saving_signal = is_saving;
-        let current_user_signal = current_user;
+        let auth_store_clone = auth_store_for_save.clone();
 
         is_saving_signal.set(true);
 
@@ -66,74 +52,43 @@ pub fn ProfileContent() -> impl IntoView {
 
             is_saving_signal.set(false);
 
-            if result.is_ok()
-                && let Ok(Some(updated_user)) = repository.get_current_user().await
-            {
-                current_user_signal.set(Some(updated_user));
+            if result.is_ok() {
+                let _ = auth_store_clone.refresh_user().await;
             }
         });
     });
 
-    let client_for_logout = client.clone();
-    let repository_for_logout = ctx.repository.clone();
-    let navigate = leptos_router::hooks::use_navigate();
+    let navigate = use_navigate();
     let navigate_for_logout = navigate.clone();
     let navigate_for_delete = navigate.clone();
 
+    let auth_store_for_logout = auth_store.clone();
     let logout = Callback::new(move |_| {
-        let client_clone = client_for_logout.clone();
-        let repository_clone = repository_for_logout.clone();
-        let current_user_signal = current_user;
         let nav = navigate_for_logout.clone();
+        let auth_store_clone = auth_store_for_logout.clone();
         let is_logging_out_signal = is_logging_out;
 
         is_logging_out_signal.set(true);
 
         spawn_local(async move {
-            let _ = client_clone.logout().await;
-            clear_session();
-
-            let user_opt = repository_clone.get_current_user().await.ok().flatten();
-            if let Some(user) = user_opt {
-                let user_id = user.id();
-                if let Err(e) = repository_clone.delete(user_id).await {
-                    tracing::error!("Failed to clear local data on logout: {}", e);
-                }
-            }
-
-            current_user_signal.set(None);
+            let _ = auth_store_clone.logout().await;
             nav("/", Default::default());
         });
     });
 
-    let client_for_delete = client.clone();
-    let repository_for_delete = ctx.repository.clone();
+    let auth_store_for_delete = auth_store.clone();
     let delete_account = Callback::new(move |_| {
-        let client_clone = client_for_delete.clone();
-        let repository_clone = repository_for_delete.clone();
-        let current_user_signal = current_user;
-        let is_deleting_signal = is_deleting;
         let nav = navigate_for_delete.clone();
+        let auth_store_clone = auth_store_for_delete.clone();
+        let is_deleting_signal = is_deleting;
 
         is_deleting_signal.set(true);
 
         spawn_local(async move {
-            match client_clone.delete_account().await {
-                Ok(()) => {
-                    let user_opt = repository_clone.get_current_user().await.ok().flatten();
-                    if let Some(user) = user_opt {
-                        let user_id = user.id();
-                        if let Err(e) = repository_clone.delete(user_id).await {
-                            tracing::error!("Failed to delete local data: {}", e);
-                        }
-                    }
-                    current_user_signal.set(None);
-                    nav("/", Default::default());
-                }
-                Err(e) => {
-                    is_deleting_signal.set(false);
-                    tracing::error!("Failed to delete account: {}", e);
-                }
+            if auth_store_clone.delete_account().await.is_ok() {
+                nav("/", Default::default());
+            } else {
+                is_deleting_signal.set(false);
             }
         });
     });

@@ -8,7 +8,7 @@ mod validation;
 
 pub use header::LoginHeader;
 
-use crate::app::AuthContext;
+use crate::store::auth_store::AuthStore;
 use crate::ui_components::{
     CardLayout, CardLayoutSize, Divider, DividerVariant, PageLayout, PageLayoutVariant, Text,
     TextSize, TypographyVariant,
@@ -20,14 +20,15 @@ use leptos_router::hooks::use_navigate;
 
 #[component]
 pub fn Login() -> impl IntoView {
-    let auth_ctx = use_context::<AuthContext>().expect("AuthContext not provided");
+    let auth_store = use_context::<AuthStore>().expect("AuthStore not provided");
     let navigate = use_navigate();
     let loading = RwSignal::new(false);
 
+    let auth_store_for_effect = auth_store.clone();
     Effect::new({
         let navigate = navigate.clone();
         move |_| {
-            if auth_ctx.is_authenticated.get() {
+            if auth_store_for_effect.is_authenticated().get() {
                 navigate("/home", Default::default());
             }
         }
@@ -36,23 +37,21 @@ pub fn Login() -> impl IntoView {
     let on_email_submit = Callback::new({
         let navigate = navigate.clone();
         move |(email, password): (String, String)| {
-            let auth_ctx = auth_ctx.clone();
+            let auth_store = auth_store.clone();
             let navigate = navigate.clone();
             loading.set(true);
 
             spawn_local(async move {
-                let result =
-                    auth_handlers::handle_email_password_login(&auth_ctx, &email, &password).await;
+                let result = auth_store.login(&email, &password).await;
 
                 loading.set(false);
 
                 match result {
                     Ok(_) => {
-                        auth_ctx.is_authenticated.set(true);
                         navigate("/home", Default::default());
                     }
                     Err(e) => {
-                        tracing::error!("Login error: {}", e);
+                        tracing::error!("Login error: {:?}", e);
                     }
                 }
             });

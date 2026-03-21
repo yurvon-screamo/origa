@@ -1,5 +1,5 @@
-use crate::app::AuthContext;
 use crate::pages::{Grammar, Home, Kanji, Lesson, Login, Profile, Radicals, Sets, Words};
+use crate::store::auth_store::AuthStore;
 use leptos::prelude::*;
 use leptos_router::components::*;
 use leptos_router::hooks::use_navigate;
@@ -7,27 +7,32 @@ use leptos_router::path;
 
 #[component]
 pub fn ProtectedRoute(children: ChildrenFn) -> impl IntoView {
-    let auth_ctx = use_context::<AuthContext>().expect("AuthContext not provided");
+    let auth_store = use_context::<AuthStore>().expect("AuthStore not provided");
     let navigate = use_navigate();
 
+    let auth_store_for_effect = auth_store.clone();
     Effect::new({
         let navigate = navigate.clone();
         move |_| {
-            if !auth_ctx.is_session_loading.get() && !auth_ctx.is_authenticated.get() {
+            let store = auth_store_for_effect.clone();
+            if store.is_checking_session.get() {
+                return;
+            }
+            if !store.is_authenticated().get() {
                 navigate("/login", Default::default());
             }
         }
     });
 
     move || {
-        if auth_ctx.is_session_loading.get() {
+        if auth_store.is_loading().get() {
             view! {
                 <div class="min-h-screen flex items-center justify-center">
                     "Загрузка..."
                 </div>
             }
             .into_any()
-        } else if auth_ctx.is_authenticated.get() {
+        } else if auth_store.is_authenticated().get() {
             children().into_any()
         } else {
             view! { <Login/> }.into_any()

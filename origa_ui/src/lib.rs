@@ -8,6 +8,7 @@ mod loaders;
 mod pages;
 mod repository;
 mod routes;
+mod store;
 mod ui_components;
 pub mod utils;
 

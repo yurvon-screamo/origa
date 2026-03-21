@@ -18,7 +18,7 @@ pub use lesson_buttons_card::LessonButtonsCard;
 pub use stat_card::StatCard;
 pub use stats_grid::StatsGrid;
 
-use crate::app::AuthContext;
+use crate::store::auth_store::AuthStore;
 use crate::ui_components::{PageLayout, PageLayoutVariant};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
@@ -27,8 +27,8 @@ use origa::traits::UserRepository;
 
 #[component]
 pub fn Home() -> impl IntoView {
-    let ctx = use_context::<AuthContext>().expect("AuthContext not provided");
-    let repository = ctx.repository.clone();
+    let auth_store = use_context::<AuthStore>().expect("AuthStore not provided");
+    let repository = auth_store.repository().clone();
 
     let current_user: RwSignal<Option<User>> = RwSignal::new(None);
 

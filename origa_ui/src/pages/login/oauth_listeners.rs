@@ -1,7 +1,5 @@
-use crate::app::AuthContext;
-use crate::pages::login::auth_handlers::get_or_create_profile;
 use crate::pages::login::auth_handlers::{handle_oauth_callback, handle_oauth_callback_desktop};
-use crate::repository::TrailBaseClient;
+use crate::store::auth_store::AuthStore;
 use gloo_storage::{LocalStorage, Storage};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
@@ -12,18 +10,18 @@ use tracing::error;
 const LOGIN_PATH: &str = "/login";
 const HOME_PATH: &str = "/home";
 
-pub fn setup_oauth_listener(ctx: AuthContext) {
-    let ctx_clone = ctx.clone();
+pub fn setup_oauth_listener(auth_store: AuthStore) {
+    let auth_store_clone = auth_store.clone();
     let callback = Closure::<dyn Fn(JsValue)>::new(move |event: JsValue| {
         let url = extract_url_from_event(&event);
         if url.is_empty() {
             return;
         }
 
-        let ctx = ctx_clone.clone();
+        let auth_store = auth_store_clone.clone();
         spawn_local(async move {
-            let result = process_oauth_url(&url, &ctx).await;
-            handle_oauth_result(result, &ctx);
+            let result = process_oauth_url(&url, &auth_store).await;
+            handle_oauth_result(result, &auth_store);
         });
     });
 
@@ -45,27 +43,26 @@ fn extract_url_from_event(event: &JsValue) -> String {
     String::new()
 }
 
-async fn process_oauth_url(url: &str, ctx: &AuthContext) -> Result<(), String> {
+async fn process_oauth_url(url: &str, auth_store: &AuthStore) -> Result<(), String> {
     if url::Url::parse(url).is_ok_and(|u| u.query_pairs().any(|(k, _)| k == "code")) {
-        handle_oauth_callback_desktop(url, ctx).await?;
+        handle_oauth_callback_desktop(url, auth_store).await?;
         return Ok(());
     }
 
     if let Some(fragment) = url.split('#').nth(1) {
-        handle_oauth_callback(fragment, ctx).await?;
+        handle_oauth_callback(fragment, auth_store).await?;
         return Ok(());
     }
 
     Err("Неподдерживаемый формат callback URL".to_string())
 }
 
-fn handle_oauth_result(result: Result<(), String>, ctx: &AuthContext) {
+fn handle_oauth_result(result: Result<(), String>, _auth_store: &AuthStore) {
     if let Err(e) = result {
         error!("OAuth callback error: {}", e);
         return;
     }
 
-    ctx.is_authenticated.set(true);
     if let Some(window) = web_sys::window()
         && let Err(e) = window.location().set_href(HOME_PATH)
     {
@@ -120,7 +117,7 @@ fn get_listen_function(event_mod: &js_sys::Object) -> Option<js_sys::Function> {
         .and_then(|v| v.dyn_into::<js_sys::Function>().ok())
 }
 
-pub fn check_url_oauth_callback(ctx: &AuthContext) {
+pub fn check_url_oauth_callback(auth_store: &AuthStore) {
     let path = web_sys::window()
         .and_then(|w| w.location().pathname().ok())
         .unwrap_or_default();
@@ -142,12 +139,12 @@ pub fn check_url_oauth_callback(ctx: &AuthContext) {
         return;
     }
 
-    let is_oauth_loading = ctx.is_oauth_loading;
+    let is_oauth_loading = auth_store.is_oauth_loading;
     is_oauth_loading.set(true);
-    let ctx_clone = ctx.clone();
+    let auth_store_clone = auth_store.clone();
 
     spawn_local(async move {
-        process_oauth_flow(ctx_clone, verifier.unwrap(), code, is_oauth_loading).await;
+        process_oauth_flow(auth_store_clone, verifier.unwrap(), code, is_oauth_loading).await;
     });
 }
 
@@ -164,46 +161,22 @@ fn get_and_delete_verifier() -> Option<String> {
 }
 
 async fn process_oauth_flow(
-    ctx: AuthContext,
+    auth_store: AuthStore,
     verifier: String,
     code: String,
     is_oauth_loading: RwSignal<bool>,
 ) {
-    let client = TrailBaseClient::new();
-    let session = match client
-        .exchange_auth_code_for_session(&code, &verifier)
-        .await
-    {
-        Ok(s) => s,
+    let result = auth_store.set_oauth_session(&code, Some(&verifier)).await;
+
+    match result {
+        Ok(_) => {
+            redirect_to_home();
+        }
         Err(e) => {
             is_oauth_loading.set(false);
-            error!("Failed to exchange auth code: {:?}", e);
-            return;
+            error!("OAuth flow failed: {:?}", e);
         }
-    };
-
-    if session.email.is_empty() {
-        is_oauth_loading.set(false);
-        return;
     }
-
-    if let Err(e) = finalize_oauth_profile(&ctx, &session.email).await {
-        is_oauth_loading.set(false);
-        error!("Failed to create profile: {}", e);
-        return;
-    }
-
-    redirect_to_home();
-}
-
-async fn finalize_oauth_profile(ctx: &AuthContext, email: &str) -> Result<(), String> {
-    get_or_create_profile(ctx, email).await?;
-
-    if let Err(e) = ctx.repository.merge_current_user().await {
-        error!("Failed to merge user after OAuth: {:?}", e);
-    }
-
-    Ok(())
 }
 
 fn redirect_to_home() {
