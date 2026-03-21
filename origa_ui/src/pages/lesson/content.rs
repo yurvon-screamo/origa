@@ -3,8 +3,8 @@ use super::header::LessonHeader;
 use super::lesson_card_container::LessonCardContainer;
 use super::lesson_progress_view::LessonProgressView;
 use super::lesson_state::{LessonContext, LessonMode, LessonState};
-use crate::app::AuthContext;
 use crate::repository::HybridUserRepository;
+use crate::store::auth_store::AuthStore;
 use crate::ui_components::{Spinner, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
@@ -19,7 +19,7 @@ use ulid::Ulid;
 pub fn LessonContent() -> impl IntoView {
     let repository =
         use_context::<HybridUserRepository>().expect("repository context not provided");
-    let auth_ctx = use_context::<AuthContext>().expect("AuthContext not provided");
+    let auth_store = use_context::<AuthStore>().expect("AuthStore not provided");
 
     let query = use_query_map();
     let mode = match query.read_untracked().get("mode").as_deref() {
@@ -77,7 +77,7 @@ pub fn LessonContent() -> impl IntoView {
     Effect::new(move |_| {
         reload_trigger.get();
 
-        if auth_ctx.is_session_loading.get() || !auth_ctx.is_data_loaded.get() {
+        if auth_store.is_checking_session.get() || !auth_store.is_data_loaded.get() {
             return;
         }
 

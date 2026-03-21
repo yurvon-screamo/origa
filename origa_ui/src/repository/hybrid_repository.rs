@@ -98,14 +98,22 @@ impl UserRepository for HybridUserRepository {
     async fn delete(&self, user_id: Ulid) -> Result<(), OrigaError> {
         tracing::info!("delete: Deleting user {}", user_id);
 
-        self.local.delete(user_id).await?;
-        tracing::debug!("delete: Local delete completed");
+        // Always delete local data first
+        if let Err(e) = self.local.delete(user_id).await {
+            tracing::error!("delete: Local delete failed: {:?}", e);
+            return Err(e);
+        }
+        tracing::info!("delete: Local delete completed for user {}", user_id);
 
+        // Try remote delete, but don't fail if it doesn't work
         match self.remote.delete(user_id).await {
             Ok(_) => tracing::info!("delete: Remote delete completed for user {}", user_id),
             Err(e) => {
-                tracing::error!("delete: Remote delete failed for user {}: {:?}", user_id, e);
-                return Err(e);
+                tracing::error!(
+                    "delete: Remote delete failed for user {}: {:?}. Local data deleted.",
+                    user_id,
+                    e
+                );
             }
         }
 

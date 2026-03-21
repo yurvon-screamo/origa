@@ -1,13 +1,14 @@
-use crate::app::AuthContext;
 use crate::repository::{TrailBaseClient, set_session};
+use crate::store::auth_store::AuthStore;
 use gloo_storage::{LocalStorage, Storage};
 use origa::domain::{NativeLanguage, User};
 use origa::traits::UserRepository;
 
-pub async fn get_or_create_profile(ctx: &AuthContext, email: &str) -> Result<User, String> {
-    match ctx.repository.get_current_user().await {
+pub async fn get_or_create_profile(auth_store: &AuthStore, email: &str) -> Result<User, String> {
+    match auth_store.repository().get_current_user().await {
         Ok(Some(user)) => {
-            ctx.repository
+            auth_store
+                .repository()
                 .merge_current_user()
                 .await
                 .map_err(|e| format!("Не удалось синхронизировать профиль: {}", e))?;
@@ -16,12 +17,14 @@ pub async fn get_or_create_profile(ctx: &AuthContext, email: &str) -> Result<Use
         Ok(None) => {
             let new_user = User::new(email.to_string(), NativeLanguage::Russian, None);
 
-            ctx.repository
+            auth_store
+                .repository()
                 .save(&new_user)
                 .await
                 .map_err(|e| format!("Не удалось создать профиль: {}", e))?;
 
-            ctx.repository
+            auth_store
+                .repository()
                 .get_current_user()
                 .await
                 .map_err(|e| format!("Не удалось загрузить профиль: {}", e))?
@@ -31,7 +34,7 @@ pub async fn get_or_create_profile(ctx: &AuthContext, email: &str) -> Result<Use
     }
 }
 
-pub async fn handle_oauth_callback(url_fragment: &str, ctx: &AuthContext) -> Result<User, String> {
+pub async fn handle_oauth_callback(url_fragment: &str, auth_store: &AuthStore) -> Result<User, String> {
     let session = TrailBaseClient::parse_tokens_from_url(url_fragment)?;
     set_session(&session).map_err(|e| format!("Не удалось сохранить сессию: {}", e))?;
 
@@ -39,10 +42,10 @@ pub async fn handle_oauth_callback(url_fragment: &str, ctx: &AuthContext) -> Res
         return Err("Email не найден в токене авторизации. Попробуйте войти снова.".to_string());
     }
 
-    get_or_create_profile(ctx, &session.email).await
+    get_or_create_profile(auth_store, &session.email).await
 }
 
-pub async fn handle_oauth_callback_desktop(url: &str, ctx: &AuthContext) -> Result<User, String> {
+pub async fn handle_oauth_callback_desktop(url: &str, auth_store: &AuthStore) -> Result<User, String> {
     let parsed = url::Url::parse(url).map_err(|e| format!("Неверный URL: {}", e))?;
 
     let code = parsed
@@ -70,11 +73,12 @@ pub async fn handle_oauth_callback_desktop(url: &str, ctx: &AuthContext) -> Resu
         return Err("Email не найден в токене авторизации. Попробуйте войти снова.".to_string());
     }
 
-    get_or_create_profile(ctx, &session.email).await
+    get_or_create_profile(auth_store, &session.email).await
 }
 
+#[allow(dead_code)]
 pub async fn handle_email_password_login(
-    ctx: &AuthContext,
+    auth_store: &AuthStore,
     email: &str,
     password: &str,
 ) -> Result<User, String> {
@@ -88,5 +92,5 @@ pub async fn handle_email_password_login(
         return Err("Email не найден в токене авторизации".to_string());
     }
 
-    get_or_create_profile(ctx, &session.email).await
+    get_or_create_profile(auth_store, &session.email).await
 }

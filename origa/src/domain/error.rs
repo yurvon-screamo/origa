@@ -37,6 +37,7 @@ pub enum OrigaError {
     GrammarRuleNotFound { rule_id: Ulid },
     GrammarContentNotFound { rule_id: Ulid, lang: NativeLanguage },
     TranslationNotFound { word: String, lang: NativeLanguage },
+    AccountDeletionFailed { reason: String },
     NetworkError { url: String, reason: String },
 }
 
@@ -139,6 +140,9 @@ impl fmt::Display for OrigaError {
             }
             OrigaError::TranslationNotFound { word, lang } => {
                 write!(f, "Нет перевода для: {} ({})", word, lang)
+            }
+            OrigaError::AccountDeletionFailed { reason } => {
+                write!(f, "Failed to delete account: {}", reason)
             }
             OrigaError::NetworkError { url, reason } => {
                 write!(f, "Network error fetching {}: {}", url, reason)
@@ -459,6 +463,15 @@ mod tests {
             reason: "timeout".into(),
         };
         assert_display_contains(&error, "https://api.example.com");
+        assert_serialization_roundtrip(error);
+    }
+
+    #[test]
+    fn account_deletion_failed() {
+        let error = OrigaError::AccountDeletionFailed {
+            reason: "server timeout".into(),
+        };
+        assert_display_contains(&error, "Failed to delete account");
         assert_serialization_roundtrip(error);
     }
 
