@@ -2,55 +2,31 @@ mod card;
 mod daily_history;
 mod grammar;
 mod kanji;
+pub mod lesson;
 mod radical;
 mod vocabulary;
 
-pub use card::{Card, CardType, GrammarInfo, LessonCardView, QuizCard, QuizOption, StudyCard};
+pub use card::{Card, CardType, StudyCard};
 pub use daily_history::DailyHistoryItem;
 pub use grammar::GrammarRuleCard;
 pub use kanji::{ExampleKanjiWord, KanjiCard};
+pub use lesson::{GrammarInfo, LessonCardView, LessonViewGenerator, QuizCard, QuizOption};
 pub use radical::RadicalCard;
 pub use vocabulary::VocabularyCard;
 
 use std::collections::{HashMap, HashSet};
 
-use crate::dictionary::grammar::get_rule_by_id;
 use crate::domain::{
     OrigaError, RateMode, Rating, ReviewLog,
     srs::{NextReview, rate_memory},
-    value_objects::NativeLanguage,
 };
 use chrono::Utc;
-use rand::{Rng, seq::SliceRandom};
+use rand::seq::SliceRandom;
 use serde::{Deserialize, Serialize};
 use ulid::Ulid;
 
 const NEW_CARDS_LIMIT: usize = 7;
 const HARD_CARDS_LIMIT: usize = 15;
-
-const PROB_NORMAL_VIEW: f32 = 0.25;
-const PROB_QUIZ_VIEW: f32 = 0.5;
-const PROB_REVERSED_VIEW: f32 = 0.75;
-
-const PROB_KANJI_NORMAL: f32 = 0.33;
-const PROB_KANJI_QUIZ: f32 = 0.66;
-
-fn select_applicable_grammar<R: Rng>(
-    vocab: &VocabularyCard,
-    known_grammars: &[GrammarRuleCard],
-    rng: &mut R,
-) -> Option<GrammarRuleCard> {
-    let word_part = vocab.part_of_speech().ok()?;
-
-    let mut rules: Vec<_> = known_grammars
-        .iter()
-        .filter(|g| g.apply_to().contains(&word_part))
-        .cloned()
-        .collect();
-
-    rules.shuffle(rng);
-    rules.into_iter().next()
-}
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct KnowledgeSet {
@@ -203,7 +179,10 @@ impl KnowledgeSet {
         Ok(())
     }
 
-    pub fn cards_to_fixation(&self, lang: &NativeLanguage) -> HashMap<Ulid, LessonCardView> {
+    pub fn cards_to_fixation(
+        &self,
+        _lang: &crate::domain::value_objects::NativeLanguage,
+    ) -> HashMap<Ulid, LessonCardView> {
         let mut cards = self
             .study_cards
             .iter()
@@ -215,27 +194,20 @@ impl KnowledgeSet {
 
         cards.truncate(HARD_CARDS_LIMIT);
 
-        let known_rules: Vec<_> = self
-            .study_cards
-            .values()
-            .filter_map(|x| match x.card() {
-                Card::Grammar(grammar_rule_card) => Some(grammar_rule_card.clone()),
-                _ => None,
-            })
-            .collect();
-
-        let cards_by_type = self.build_cards_by_type();
-
+        let generator = LessonViewGenerator::new(self);
         cards
             .iter()
             .map(|(card_id, study_card)| {
-                let view = Self::apply_view(study_card, &cards_by_type, &known_rules, lang);
+                let view = generator.apply_view(study_card, study_card.is_new(), &mut rand::rng());
                 (**card_id, view)
             })
             .collect()
     }
 
-    pub fn cards_to_lesson(&self, lang: &NativeLanguage) -> HashMap<Ulid, LessonCardView> {
+    pub fn cards_to_lesson(
+        &self,
+        _lang: &crate::domain::value_objects::NativeLanguage,
+    ) -> HashMap<Ulid, LessonCardView> {
         let mut all_cards = self.study_cards.iter().collect::<Vec<_>>();
         all_cards.sort_by_key(|(_, card)| card.memory().next_review_date());
 
@@ -267,21 +239,12 @@ impl KnowledgeSet {
         priority_cards.extend(known_cards);
         priority_cards.shuffle(&mut rand::rng());
 
-        let known_rules: Vec<_> = self
-            .study_cards
-            .values()
-            .filter_map(|x| match x.card() {
-                Card::Grammar(grammar_rule_card) => Some(grammar_rule_card.clone()),
-                _ => None,
-            })
-            .collect();
-
-        let cards_by_type = self.build_cards_by_type();
+        let generator = LessonViewGenerator::new(self);
 
         let mut result: Vec<_> = favorite_cards
             .iter()
             .map(|(card_id, study_card)| {
-                let view = Self::apply_view(study_card, &cards_by_type, &known_rules, lang);
+                let view = generator.apply_view(study_card, study_card.is_new(), &mut rand::rng());
                 (**card_id, view)
             })
             .collect();
@@ -289,134 +252,13 @@ impl KnowledgeSet {
         let priority_shuffled: Vec<_> = priority_cards
             .iter()
             .map(|(card_id, study_card)| {
-                let view = Self::apply_view(study_card, &cards_by_type, &known_rules, lang);
+                let view = generator.apply_view(study_card, study_card.is_new(), &mut rand::rng());
                 (**card_id, view)
             })
             .collect();
 
         result.extend(priority_shuffled);
         result.into_iter().collect()
-    }
-
-    fn apply_view(
-        study_card: &StudyCard,
-        cards_by_type: &HashMap<CardType, Vec<Card>>,
-        known_grammars: &[GrammarRuleCard],
-        lang: &NativeLanguage,
-    ) -> LessonCardView {
-        Self::apply_view_with_rng(
-            study_card,
-            cards_by_type,
-            known_grammars,
-            lang,
-            &mut rand::rng(),
-        )
-    }
-
-    fn apply_view_with_rng<R: Rng>(
-        study_card: &StudyCard,
-        cards_by_type: &HashMap<CardType, Vec<Card>>,
-        known_grammars: &[GrammarRuleCard],
-        lang: &NativeLanguage,
-        rng: &mut R,
-    ) -> LessonCardView {
-        let card = study_card.card();
-        let card_type = CardType::from(card);
-        let is_new = study_card.is_new();
-
-        let same_type_cards = cards_by_type
-            .get(&card_type)
-            .map(|v| v.as_slice())
-            .unwrap_or(&[]);
-
-        match (card_type, is_new) {
-            (CardType::Grammar, true)
-            | (CardType::Grammar, false)
-            | (CardType::Radical, true)
-            | (CardType::Radical, false) => LessonCardView::Normal(card.clone()),
-
-            (CardType::Kanji, true) | (CardType::Kanji, false) => {
-                let rand_val = rng.random::<f32>();
-                if rand_val < PROB_KANJI_NORMAL {
-                    LessonCardView::Normal(card.clone())
-                } else if rand_val < PROB_KANJI_QUIZ {
-                    LessonCardView::generate_quiz(card.clone(), same_type_cards, lang)
-                        .unwrap_or_else(|_| LessonCardView::Normal(card.clone()))
-                } else {
-                    LessonCardView::Writing(card.clone())
-                }
-            }
-
-            (_, true) => {
-                if rng.random_bool(0.5) {
-                    LessonCardView::generate_quiz(card.clone(), same_type_cards, lang)
-                        .unwrap_or_else(|_| LessonCardView::Normal(card.clone()))
-                } else {
-                    LessonCardView::Normal(card.clone())
-                }
-            }
-
-            (CardType::Vocabulary, false) => {
-                let rand_val = rng.random::<f32>();
-                if rand_val < PROB_NORMAL_VIEW {
-                    LessonCardView::Normal(card.clone())
-                } else if rand_val < PROB_QUIZ_VIEW {
-                    LessonCardView::generate_quiz(card.clone(), same_type_cards, lang)
-                        .unwrap_or_else(|_| LessonCardView::Normal(card.clone()))
-                } else if rand_val < PROB_REVERSED_VIEW {
-                    Self::apply_reversed(card, lang)
-                } else {
-                    Self::apply_grammar_mutated(card, known_grammars, lang, rng)
-                }
-            }
-        }
-    }
-
-    fn apply_reversed(card: &Card, lang: &NativeLanguage) -> LessonCardView {
-        match card {
-            Card::Vocabulary(vocab) => match vocab.revert(lang) {
-                Ok(reverted) => LessonCardView::Reversed(Card::Vocabulary(reverted)),
-                Err(_) => LessonCardView::Normal(card.clone()),
-            },
-            _ => LessonCardView::Normal(card.clone()),
-        }
-    }
-
-    fn apply_grammar_mutated<R: Rng>(
-        card: &Card,
-        known_grammars: &[GrammarRuleCard],
-        lang: &NativeLanguage,
-        rng: &mut R,
-    ) -> LessonCardView {
-        match card {
-            Card::Vocabulary(vocab) => {
-                match select_applicable_grammar(vocab, known_grammars, rng) {
-                    Some(grammar_card) => {
-                        let rule = get_rule_by_id(grammar_card.rule_id());
-                        match rule {
-                            Some(r) => match vocab.with_grammar_rule(r, lang) {
-                                Ok((mutated, grammar_description)) => {
-                                    let grammar_title = grammar_card
-                                        .title(lang)
-                                        .map(|q| q.text().to_string())
-                                        .unwrap_or_else(|_| grammar_card.rule_id().to_string());
-                                    let grammar_info =
-                                        GrammarInfo::new(grammar_title, grammar_description);
-                                    LessonCardView::GrammarMutated {
-                                        card: Card::Vocabulary(mutated),
-                                        grammar_info,
-                                    }
-                                }
-                                Err(_) => LessonCardView::Normal(card.clone()),
-                            },
-                            None => LessonCardView::Normal(card.clone()),
-                        }
-                    }
-                    None => LessonCardView::Normal(card.clone()),
-                }
-            }
-            _ => LessonCardView::Normal(card.clone()),
-        }
     }
 
     pub(crate) fn rate_card(
@@ -567,36 +409,13 @@ impl KnowledgeSet {
 mod tests {
     use super::*;
     use crate::domain::memory::MemoryState;
-    use crate::domain::tokenizer::PartOfSpeech;
-    use crate::domain::value_objects::Question;
-    use crate::use_cases::init_real_dictionaries;
+    use crate::domain::value_objects::{NativeLanguage, Question};
     use chrono::Duration;
-    use rand::{SeedableRng, rngs::StdRng};
 
     fn create_vocab_card(word: &str) -> Card {
         Card::Vocabulary(VocabularyCard::new(
             Question::new(word.to_string()).unwrap(),
         ))
-    }
-
-    fn create_kanji_card(kanji: &str, _description: &str) -> Card {
-        Card::Kanji(KanjiCard::new_test(kanji.to_string()))
-    }
-
-    fn create_grammar_card(_title: &str, _apply_to: Vec<PartOfSpeech>) -> GrammarRuleCard {
-        GrammarRuleCard::new_test()
-    }
-
-    fn create_study_card_new(card: Card) -> StudyCard {
-        StudyCard::new(card)
-    }
-
-    fn create_memory_state() -> MemoryState {
-        MemoryState::new(
-            crate::domain::memory::Stability::new(5.0).unwrap(),
-            crate::domain::memory::Difficulty::new(0.5).unwrap(),
-            chrono::Utc::now(),
-        )
     }
 
     fn create_known_memory_state() -> MemoryState {
@@ -605,46 +424,6 @@ mod tests {
             crate::domain::memory::Difficulty::new(2.0).unwrap(),
             chrono::Utc::now(),
         )
-    }
-
-    #[test]
-    fn generate_quiz_returns_normal_for_grammar() {
-        let grammar = create_grammar_card("Test Rule", vec![]);
-        let lang = NativeLanguage::Russian;
-        let result = LessonCardView::generate_quiz(Card::Grammar(grammar), &[], &lang);
-
-        assert!(matches!(result, Ok(LessonCardView::Normal(_))));
-    }
-
-    #[test]
-    fn generate_quiz_returns_normal_when_not_enough_distractors() {
-        init_real_dictionaries();
-        let vocab = create_vocab_card("猫");
-        let lang = NativeLanguage::Russian;
-
-        let result = LessonCardView::generate_quiz(vocab.clone(), &[], &lang);
-
-        assert!(matches!(result, Ok(LessonCardView::Normal(_))));
-    }
-
-    #[test]
-    fn lesson_card_view_card_returns_inner_card() {
-        let vocab = create_vocab_card("猫");
-
-        let normal = LessonCardView::Normal(vocab.clone());
-        assert_eq!(normal.card(), &vocab);
-
-        let reversed = LessonCardView::Reversed(vocab.clone());
-        assert_eq!(reversed.card(), &vocab);
-
-        let mutated = LessonCardView::GrammarMutated {
-            card: vocab.clone(),
-            grammar_info: GrammarInfo::new("Test".to_string(), "Test description".to_string()),
-        };
-        assert_eq!(mutated.card(), &vocab);
-
-        let quiz = LessonCardView::Quiz(QuizCard::new(vocab.clone(), vec![]));
-        assert_eq!(quiz.card(), &vocab);
     }
 
     #[test]
@@ -933,23 +712,6 @@ mod tests {
     }
 
     #[test]
-    fn grammar_info_new_creates_instance() {
-        let info = GrammarInfo::new("Title".to_string(), "Description".to_string());
-        assert_eq!(info.title(), "Title");
-        assert_eq!(info.description(), "Description");
-    }
-
-    #[test]
-    fn grammar_info_returns_correct_data() {
-        let info = GrammarInfo::new(
-            "て-form".to_string(),
-            "Форма для соединения глаголов".to_string(),
-        );
-        assert_eq!(info.title(), "て-form");
-        assert_eq!(info.description(), "Форма для соединения глаголов");
-    }
-
-    #[test]
     fn merge_study_cards_updates_existing() {
         let mut local = KnowledgeSet::new();
         let study_card = local.create_card(create_vocab_card("猫")).unwrap();
@@ -1040,112 +802,5 @@ mod tests {
 
         let history_item = &local.lesson_history()[0];
         assert_eq!(history_item.total_words(), 300);
-    }
-
-    #[test]
-    fn apply_view_with_rng_kanji_never_reversed_or_grammar_mutated() {
-        let kanji = create_kanji_card("日", "день");
-        let mut study_kanji = create_study_card_new(kanji);
-        study_kanji.add_review(
-            create_memory_state(),
-            ReviewLog::new(Rating::Good, Duration::days(1)),
-        );
-
-        let cards_by_type = HashMap::new();
-        let known_grammars = vec![];
-        let lang = NativeLanguage::Russian;
-
-        for seed in 0..100u64 {
-            let mut rng = StdRng::seed_from_u64(seed);
-            let result = KnowledgeSet::apply_view_with_rng(
-                &study_kanji,
-                &cards_by_type,
-                &known_grammars,
-                &lang,
-                &mut rng,
-            );
-            assert!(
-                !matches!(result, LessonCardView::Reversed(_)),
-                "Kanji should never be reversed (seed={seed})"
-            );
-            assert!(
-                !matches!(result, LessonCardView::GrammarMutated { .. }),
-                "Kanji should never be grammar mutated (seed={seed})"
-            );
-        }
-    }
-
-    #[test]
-    fn apply_view_with_rng_new_cards_never_reversed_or_grammar_mutated() {
-        let vocab = create_vocab_card("猫");
-        let study_card = create_study_card_new(vocab);
-
-        let cards_by_type = HashMap::new();
-        let known_grammars = vec![];
-        let lang = NativeLanguage::Russian;
-
-        for seed in 0..100u64 {
-            let mut rng = StdRng::seed_from_u64(seed);
-            let result = KnowledgeSet::apply_view_with_rng(
-                &study_card,
-                &cards_by_type,
-                &known_grammars,
-                &lang,
-                &mut rng,
-            );
-            assert!(
-                !matches!(result, LessonCardView::Reversed(_)),
-                "New cards should never be reversed (seed={seed})"
-            );
-            assert!(
-                !matches!(result, LessonCardView::GrammarMutated { .. }),
-                "New cards should never be grammar mutated (seed={seed})"
-            );
-        }
-    }
-
-    #[test]
-    fn apply_view_with_rng_deterministic_results() {
-        let vocab = create_vocab_card("猫");
-        let mut study_card = create_study_card_new(vocab);
-        study_card.add_review(
-            create_memory_state(),
-            ReviewLog::new(Rating::Good, Duration::days(1)),
-        );
-
-        let cards_by_type = HashMap::new();
-        let known_grammars = vec![];
-        let lang = NativeLanguage::Russian;
-
-        let mut results = Vec::new();
-        for seed in 0..10u64 {
-            let mut rng = StdRng::seed_from_u64(seed);
-            let result = KnowledgeSet::apply_view_with_rng(
-                &study_card,
-                &cards_by_type,
-                &known_grammars,
-                &lang,
-                &mut rng,
-            );
-            results.push(format!("{:?}", result));
-        }
-
-        let mut results2 = Vec::new();
-        for seed in 0..10u64 {
-            let mut rng = StdRng::seed_from_u64(seed);
-            let result = KnowledgeSet::apply_view_with_rng(
-                &study_card,
-                &cards_by_type,
-                &known_grammars,
-                &lang,
-                &mut rng,
-            );
-            results2.push(format!("{:?}", result));
-        }
-
-        assert_eq!(
-            results, results2,
-            "Same seeds should produce identical results"
-        );
     }
 }

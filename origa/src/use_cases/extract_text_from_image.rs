@@ -1,5 +1,6 @@
 use crate::domain::OrigaError;
 use crate::ocr::JapaneseOCRModel;
+use std::rc::Rc;
 use tracing::info;
 
 pub struct ExtractTextFromImageUseCase;
@@ -18,7 +19,7 @@ impl ExtractTextFromImageUseCase {
     #[cfg(not(target_arch = "wasm32"))]
     pub fn execute(
         &self,
-        model: &JapaneseOCRModel,
+        model: Rc<JapaneseOCRModel>,
         image_bytes: &[u8],
     ) -> Result<String, OrigaError> {
         info!(
@@ -33,7 +34,7 @@ impl ExtractTextFromImageUseCase {
     #[cfg(target_arch = "wasm32")]
     pub async fn execute(
         &self,
-        model: &JapaneseOCRModel,
+        model: Rc<JapaneseOCRModel>,
         image_bytes: &[u8],
     ) -> Result<String, OrigaError> {
         info!(

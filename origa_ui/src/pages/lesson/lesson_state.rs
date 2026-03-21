@@ -26,8 +26,6 @@ pub struct LessonContext {
     pub repository: HybridUserRepository,
     pub lesson_state: RwSignal<LessonState>,
     pub is_completed: RwSignal<bool>,
-
-    pub mode: LessonMode,
     pub reload_trigger: RwSignal<u32>,
     pub is_muted: RwSignal<bool>,
     pub known_kanji: RwSignal<HashSet<String>>,

@@ -1,92 +1,21 @@
 use crate::repository::session::{TrailBaseSession, set_session};
-use base64::{Engine as _, engine::general_purpose::URL_SAFE_NO_PAD};
+use crate::repository::trailbase_auth::{decode_jwt_claims, urlencoding_decode};
+use crate::repository::trailbase_records::RecordApi;
+
 use gloo_net::http::{Method, Request, Response};
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
-use sha2::{Digest, Sha256};
 use std::collections::HashMap;
 use std::sync::OnceLock;
 use thiserror::Error;
+
+pub use crate::repository::trailbase_auth::OAuthProvider;
+pub type TrailBaseRecordApi = RecordApi<TrailBaseClient>;
 
 const REFRESH_THRESHOLD_SECONDS: u64 = 300;
 
 fn trailbase_url() -> &'static str {
     static TRAILBASE_URL: OnceLock<&str> = OnceLock::new();
     TRAILBASE_URL.get_or_init(|| option_env!("TRAILBASE_URL").unwrap_or("https://origa.uwuwu.net"))
-}
-
-#[derive(Debug, Deserialize)]
-struct JwtClaims {
-    sub: String,
-    email: Option<String>,
-}
-
-fn decode_jwt_claims(token: &str) -> Result<JwtClaims, String> {
-    let parts: Vec<&str> = token.split('.').collect();
-    if parts.len() != 3 {
-        return Err("Invalid JWT format".to_string());
-    }
-
-    let payload = parts[1];
-    let padding_len = (4 - payload.len() % 4) % 4;
-    let padded = if padding_len > 0 {
-        let mut s = payload.to_string();
-        for _ in 0..padding_len {
-            s.push('=');
-        }
-        s
-    } else {
-        payload.to_string()
-    };
-
-    let decoded = base64_decode(&padded)?;
-    let json_str =
-        String::from_utf8(decoded).map_err(|e| format!("Invalid UTF-8 in JWT payload: {}", e))?;
-
-    serde_json::from_str(&json_str).map_err(|e| format!("Failed to parse JWT claims: {}", e))
-}
-
-fn base64_decode(input: &str) -> Result<Vec<u8>, String> {
-    let input = input.replace('-', "+").replace('_', "/");
-    let chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-
-    let mut result = Vec::new();
-    let chars_vec: Vec<char> = chars.chars().collect();
-
-    let clean_input: String = input.chars().filter(|c| *c != '=').collect();
-
-    for chunk in clean_input.as_bytes().chunks(4) {
-        let mut acc: u32 = 0;
-        let mut bits = 0;
-
-        for &byte in chunk {
-            if let Some(pos) = chars_vec.iter().position(|&c| c == byte as char) {
-                acc = (acc << 6) | pos as u32;
-                bits += 6;
-            }
-        }
-
-        while bits >= 8 {
-            bits -= 8;
-            result.push((acc >> bits) as u8);
-        }
-    }
-
-    Ok(result)
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum OAuthProvider {
-    Google,
-    Yandex,
-}
-
-impl OAuthProvider {
-    pub fn as_str(&self) -> &'static str {
-        match self {
-            OAuthProvider::Google => "google",
-            OAuthProvider::Yandex => "yandex",
-        }
-    }
 }
 
 #[derive(Clone, Debug)]
@@ -187,26 +116,6 @@ impl TrailBaseClient {
             .json()
             .await
             .map_err(|e| AuthError::ApiError(format!("Failed to parse response: {}", e)))
-    }
-
-    pub fn generate_pkce_verifier() -> String {
-        use rand::Rng;
-        const CHARSET: &[u8] =
-            b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~";
-        let mut rng = rand::rng();
-        (0..64)
-            .map(|_| {
-                let idx = rng.random_range(0..CHARSET.len());
-                CHARSET[idx] as char
-            })
-            .collect()
-    }
-
-    pub fn generate_pkce_challenge(verifier: &str) -> String {
-        let mut hasher = Sha256::new();
-        hasher.update(verifier.as_bytes());
-        let result = hasher.finalize();
-        URL_SAFE_NO_PAD.encode(result)
     }
 
     pub fn get_oauth_url(
@@ -487,7 +396,7 @@ impl TrailBaseClient {
         Ok(session)
     }
 
-    pub async fn request_with_auth<T: Serialize>(
+    async fn _request_with_auth_impl<T: Serialize>(
         &self,
         path: &str,
         method: Method,
@@ -531,6 +440,15 @@ impl TrailBaseClient {
         } else {
             Ok(response)
         }
+    }
+
+    pub async fn request_with_auth<T: Serialize>(
+        &self,
+        path: &str,
+        method: Method,
+        body: Option<&T>,
+    ) -> Result<Response, AuthError> {
+        self._request_with_auth_impl(path, method, body).await
     }
 
     pub async fn logout(&self) -> Result<(), String> {
@@ -579,11 +497,16 @@ impl TrailBaseClient {
         self.logout().await
     }
 
-    pub fn records(&self, table_name: &str) -> RecordApi {
-        RecordApi {
-            client: self.clone(),
-            table_name: table_name.to_string(),
-        }
+    pub fn records(&self, table_name: &str) -> TrailBaseRecordApi {
+        RecordApi::new(self.clone(), table_name.to_string())
+    }
+
+    pub fn generate_pkce_verifier() -> String {
+        super::trailbase_auth::generate_pkce_verifier()
+    }
+
+    pub fn generate_pkce_challenge(verifier: &str) -> String {
+        super::trailbase_auth::generate_pkce_challenge(verifier)
     }
 }
 
@@ -593,158 +516,23 @@ impl Default for TrailBaseClient {
     }
 }
 
-#[derive(Clone)]
-pub struct RecordApi {
-    client: TrailBaseClient,
-    table_name: String,
+#[allow(async_fn_in_trait)]
+pub trait AuthRequestClient: Clone + Send + Sync {
+    async fn request_with_auth<T: Serialize>(
+        &self,
+        path: &str,
+        method: Method,
+        body: Option<&T>,
+    ) -> Result<Response, AuthError>;
 }
 
-impl RecordApi {
-    pub async fn list<T: DeserializeOwned>(&self) -> Result<Vec<T>, AuthError> {
-        let path = format!("/api/records/v1/{}", self.table_name);
-        let response = self
-            .client
-            .request_with_auth(&path, Method::GET, None::<&()>)
-            .await?;
-
-        #[derive(Deserialize)]
-        struct ListResponse<T> {
-            records: Vec<T>,
-        }
-
-        let list: ListResponse<T> = TrailBaseClient::json(response).await?;
-        Ok(list.records)
-    }
-
-    pub async fn list_filtered<T: DeserializeOwned>(
+impl AuthRequestClient for TrailBaseClient {
+    async fn request_with_auth<T: Serialize>(
         &self,
-        column: &str,
-        value: &str,
-    ) -> Result<Vec<T>, AuthError> {
-        let path = format!(
-            "/api/records/v1/{}?filter[{}][$eq]={}",
-            self.table_name,
-            urlencoding::encode(column),
-            urlencoding::encode(value)
-        );
-        let response = self
-            .client
-            .request_with_auth(&path, Method::GET, None::<&()>)
-            .await?;
-
-        #[derive(Deserialize)]
-        struct ListResponse<T> {
-            records: Vec<T>,
-        }
-
-        let list: ListResponse<T> = TrailBaseClient::json(response).await?;
-        Ok(list.records)
+        path: &str,
+        method: Method,
+        body: Option<&T>,
+    ) -> Result<Response, AuthError> {
+        self._request_with_auth_impl(path, method, body).await
     }
-
-    pub async fn read<T: DeserializeOwned>(&self, id: &str) -> Result<T, AuthError> {
-        let path = format!("/api/records/v1/{}/{}", self.table_name, id);
-        let response = self
-            .client
-            .request_with_auth(&path, Method::GET, None::<&()>)
-            .await?;
-        TrailBaseClient::json(response).await
-    }
-
-    pub async fn create<T: Serialize + std::fmt::Debug>(
-        &self,
-        record: &T,
-    ) -> Result<String, AuthError> {
-        let path = format!("/api/records/v1/{}", self.table_name);
-        let response = self
-            .client
-            .request_with_auth(&path, Method::POST, Some(record))
-            .await?;
-
-        if !response.ok() {
-            let error_text = response
-                .text()
-                .await
-                .unwrap_or_else(|_| "Unknown error".to_string());
-            return Err(AuthError::ApiError(format!(
-                "Failed to create record: {}",
-                error_text
-            )));
-        }
-
-        #[derive(Deserialize)]
-        struct CreateResponse {
-            ids: Vec<String>,
-        }
-
-        let create_response: CreateResponse = TrailBaseClient::json(response).await?;
-        create_response
-            .ids
-            .first()
-            .cloned()
-            .ok_or_else(|| AuthError::ApiError("No ID returned".to_string()))
-    }
-
-    pub async fn update<T: Serialize>(&self, id: &str, record: &T) -> Result<(), AuthError> {
-        let path = format!("/api/records/v1/{}/{}", self.table_name, id);
-        let response = self
-            .client
-            .request_with_auth(&path, Method::PATCH, Some(record))
-            .await?;
-
-        if !response.ok() {
-            let error_text = response
-                .text()
-                .await
-                .unwrap_or_else(|_| "Unknown error".to_string());
-            return Err(AuthError::ApiError(format!(
-                "Failed to update record: {}",
-                error_text
-            )));
-        }
-
-        Ok(())
-    }
-
-    pub async fn delete(&self, id: &str) -> Result<(), AuthError> {
-        let path = format!("/api/records/v1/{}/{}", self.table_name, id);
-        let response = self
-            .client
-            .request_with_auth::<()>(&path, Method::DELETE, None)
-            .await?;
-
-        if !response.ok() {
-            let error_text = response
-                .text()
-                .await
-                .unwrap_or_else(|_| "Unknown error".to_string());
-            return Err(AuthError::ApiError(format!(
-                "Failed to delete record: {}",
-                error_text
-            )));
-        }
-
-        Ok(())
-    }
-}
-
-fn urlencoding_decode(s: &str) -> String {
-    let mut result = String::with_capacity(s.len());
-    let mut chars = s.chars().peekable();
-
-    while let Some(c) = chars.next() {
-        if c == '%' {
-            let hex: String = chars.by_ref().take(2).collect();
-            if let Ok(byte) = u8::from_str_radix(&hex, 16) {
-                result.push(byte as char);
-            } else {
-                result.push('%');
-                result.push_str(&hex);
-            }
-        } else if c == '+' {
-            result.push(' ');
-        } else {
-            result.push(c);
-        }
-    }
-    result
 }

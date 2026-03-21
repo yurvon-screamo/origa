@@ -188,7 +188,7 @@ pub fn RadicalsContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
                                                 native_language=native_lang.get()
                                                 on_toggle_favorite=on_toggle_favorite
                                                 on_delete=on_delete
-                                                is_deleting=Signal::derive(move || is_deleting.get())
+                                                _is_deleting=Signal::derive(move || is_deleting.get())
                                             />
                                         }
                                     }

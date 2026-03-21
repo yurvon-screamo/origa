@@ -16,7 +16,7 @@ use web_sys::js_sys::{Date, Function};
 use web_sys::{ClipboardEvent, File, HtmlInputElement};
 
 thread_local! {
-    static CACHED_MODEL: RefCell<Option<Rc<RefCell<JapaneseOCRModel>>>> = const { RefCell::new(None) };
+    static CACHED_MODEL: RefCell<Option<Rc<JapaneseOCRModel>>> = const { RefCell::new(None) };
     static MODEL_LOADING: Cell<bool> = const { Cell::new(false) };
 }
 
@@ -506,11 +506,11 @@ async fn init_ocr_model(
 #[cfg(target_arch = "wasm32")]
 async fn execute_ocr(
     use_case: &ExtractTextFromImageUseCase,
-    model: &JapaneseOCRModel,
+    model: Rc<JapaneseOCRModel>,
     bytes: &[u8],
 ) -> Result<String, String> {
     use_case
-        .execute(model, bytes)
+        .execute(model.clone(), bytes)
         .await
         .map_err(|e| format!("OCR failed: {:?}", e))
 }
@@ -518,11 +518,11 @@ async fn execute_ocr(
 #[cfg(not(target_arch = "wasm32"))]
 async fn execute_ocr(
     use_case: &ExtractTextFromImageUseCase,
-    model: &JapaneseOCRModel,
+    model: Rc<JapaneseOCRModel>,
     bytes: &[u8],
 ) -> Result<String, String> {
     use_case
-        .execute(model, bytes)
+        .execute(model.clone(), bytes)
         .map_err(|e| format!("OCR failed: {:?}", e))
 }
 
@@ -627,7 +627,7 @@ async fn process_image_with_ocr(
                     return Err("Операция отменена".to_string());
                 }
 
-                let wrapped = Rc::new(RefCell::new(new_model));
+                let wrapped = Rc::new(new_model);
 
                 CACHED_MODEL.with(|cached| {
                     *cached.borrow_mut() = Some(wrapped.clone());
@@ -653,8 +653,7 @@ async fn process_image_with_ocr(
     info!("Running OCR with layout analysis");
     let use_case = ExtractTextFromImageUseCase::new();
 
-    let model_ref = model.borrow();
-    let result = execute_ocr(&use_case, &model_ref, &bytes).await;
+    let result = execute_ocr(&use_case, model.clone(), &bytes).await;
 
     if loading_state.cancel_requested.get() {
         return Err("Операция отменена".to_string());

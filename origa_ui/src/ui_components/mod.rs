@@ -1,4 +1,4 @@
-mod error_display;
+#![allow(dead_code)]
 
 mod accordion;
 mod alert;

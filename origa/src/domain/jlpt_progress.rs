@@ -74,28 +74,14 @@ pub struct JlptProgress {
 impl JlptProgress {
     pub fn new() -> Self {
         let mut levels = HashMap::new();
-        for level in [
-            JapaneseLevel::N5,
-            JapaneseLevel::N4,
-            JapaneseLevel::N3,
-            JapaneseLevel::N2,
-            JapaneseLevel::N1,
-        ] {
+        for level in JapaneseLevel::ALL {
             levels.insert(level, LevelProgressDetail::new());
         }
         Self { levels }
     }
 
     pub fn current_level(&self) -> JapaneseLevel {
-        let all_levels = [
-            JapaneseLevel::N5,
-            JapaneseLevel::N4,
-            JapaneseLevel::N3,
-            JapaneseLevel::N2,
-            JapaneseLevel::N1,
-        ];
-
-        let all_empty = all_levels.iter().all(|&level| {
+        let all_empty = JapaneseLevel::ALL.iter().all(|&level| {
             self.levels
                 .get(&level)
                 .map(|d| d.overall_percentage() == 0.0)
@@ -106,7 +92,7 @@ impl JlptProgress {
             return JapaneseLevel::N5;
         }
 
-        let completed_levels: Vec<_> = all_levels
+        let completed_levels: Vec<_> = JapaneseLevel::ALL
             .iter()
             .filter(|&&level| {
                 self.levels
@@ -151,13 +137,7 @@ impl JlptProgress {
         total_words: &HashMap<JapaneseLevel, usize>,
         total_grammar: &HashMap<JapaneseLevel, usize>,
     ) {
-        for level in [
-            JapaneseLevel::N5,
-            JapaneseLevel::N4,
-            JapaneseLevel::N3,
-            JapaneseLevel::N2,
-            JapaneseLevel::N1,
-        ] {
+        for level in JapaneseLevel::ALL {
             let detail = LevelProgressDetail {
                 kanji: CategoryProgress {
                     learned: *learned_kanji.get(&level).unwrap_or(&0),
@@ -317,13 +297,7 @@ mod tests {
             },
         };
 
-        for level in [
-            JapaneseLevel::N5,
-            JapaneseLevel::N4,
-            JapaneseLevel::N3,
-            JapaneseLevel::N2,
-            JapaneseLevel::N1,
-        ] {
+        for level in JapaneseLevel::ALL {
             progress.update_level(level, complete.clone());
         }
 

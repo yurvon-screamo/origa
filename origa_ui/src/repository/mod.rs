@@ -2,7 +2,9 @@ mod dictionary_cache;
 mod file_repository;
 mod hybrid_repository;
 mod session;
+pub mod trailbase_auth;
 mod trailbase_client;
+mod trailbase_records;
 mod trailbase_repository;
 
 pub use dictionary_cache::{
