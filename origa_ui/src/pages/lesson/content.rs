@@ -45,7 +45,6 @@ pub fn LessonContent() -> impl IntoView {
         repository: repository.clone(),
         lesson_state,
         is_completed,
-        mode,
         reload_trigger,
         is_muted,
         known_kanji,

@@ -22,7 +22,8 @@ struct KanjiEntry {
 
 #[derive(Debug, Deserialize)]
 struct JlptWordsFile {
-    level: String,
+    #[serde(skip)]
+    _level: String,
     words: Vec<String>,
 }
 

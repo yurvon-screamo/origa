@@ -5,8 +5,8 @@ use serde::{Deserialize, Serialize};
 use ulid::Ulid;
 
 use crate::domain::{
-    Card, JapaneseLevel, JlptContent, JlptProgress, KnowledgeSet, NativeLanguage, OrigaError,
-    RateMode, Rating, ScoreContentResult, StudyCard, get_translation, score_content,
+    Card, CardType, JapaneseLevel, JlptContent, JlptProgress, KnowledgeSet, NativeLanguage,
+    OrigaError, RateMode, Rating, ScoreContentResult, StudyCard, get_translation, score_content,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -51,6 +51,7 @@ impl User {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn from_row(
         id: Ulid,
         email: String,
@@ -220,45 +221,15 @@ impl User {
             }
 
             let card = study_card.card();
-            let key = card.content_key();
+            let Some(level) = content.find_level(&card.content_key(), CardType::from(card)) else {
+                continue;
+            };
 
-            for &level in &[
-                JapaneseLevel::N5,
-                JapaneseLevel::N4,
-                JapaneseLevel::N3,
-                JapaneseLevel::N2,
-                JapaneseLevel::N1,
-            ] {
-                match card {
-                    crate::domain::Card::Kanji(_) => {
-                        if content
-                            .kanji_by_level
-                            .get(&level)
-                            .is_some_and(|set| set.contains(&key))
-                        {
-                            *learned_kanji.entry(level).or_insert(0) += 1;
-                        }
-                    }
-                    crate::domain::Card::Vocabulary(_) => {
-                        if content
-                            .words_by_level
-                            .get(&level)
-                            .is_some_and(|set| set.contains(&key))
-                        {
-                            *learned_words.entry(level).or_insert(0) += 1;
-                        }
-                    }
-                    crate::domain::Card::Grammar(_) => {
-                        if content
-                            .grammar_by_level
-                            .get(&level)
-                            .is_some_and(|set| set.contains(&key))
-                        {
-                            *learned_grammar.entry(level).or_insert(0) += 1;
-                        }
-                    }
-                    crate::domain::Card::Radical(_) => {}
-                }
+            match card {
+                Card::Kanji(_) => *learned_kanji.entry(level).or_insert(0) += 1,
+                Card::Vocabulary(_) => *learned_words.entry(level).or_insert(0) += 1,
+                Card::Grammar(_) => *learned_grammar.entry(level).or_insert(0) += 1,
+                Card::Radical(_) => {}
             }
         }
 

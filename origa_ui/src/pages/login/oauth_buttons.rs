@@ -82,6 +82,7 @@ fn open_url_external(url: &str) {
 
 fn open_oauth_url(provider: OAuthProvider) {
     use crate::repository::TrailBaseClient;
+    use crate::repository::trailbase_auth::{generate_pkce_challenge, generate_pkce_verifier};
     use gloo_storage::{LocalStorage, Storage};
     use web_sys::console;
 
@@ -98,13 +99,13 @@ fn open_oauth_url(provider: OAuthProvider) {
         redirect_uri
     )));
 
-    let verifier = TrailBaseClient::generate_pkce_verifier();
+    let verifier = generate_pkce_verifier();
     console::log_1(&JsValue::from_str(&format!(
         "Generated PKCE verifier: {}",
         verifier
     )));
 
-    let challenge = TrailBaseClient::generate_pkce_challenge(&verifier);
+    let challenge = generate_pkce_challenge(&verifier);
 
     LocalStorage::set("pkce_verifier", &verifier).ok();
     console::log_1(&JsValue::from_str("Saved verifier to LocalStorage"));

@@ -2,6 +2,7 @@ pub mod auth_handlers;
 pub mod email_password_form;
 pub mod header;
 pub mod oauth_buttons;
+pub mod oauth_listeners;
 mod password_input;
 mod validation;
 

@@ -6,6 +6,22 @@ pub struct UpdateInfo {
     pub current_version: String,
 }
 
+#[cfg(all(
+    target_arch = "wasm32",
+    any(target_os = "windows", target_os = "macos", target_os = "linux")
+))]
+fn get_js_property(
+    obj: &leptos::wasm_bindgen::JsValue,
+    name: &str,
+    error_msg: &str,
+) -> Option<leptos::wasm_bindgen::JsValue> {
+    let result = js_sys::Reflect::get(obj, &leptos::wasm_bindgen::JsValue::from_str(name));
+    if result.is_err() {
+        leptos::logging::warn!("{}", error_msg);
+    }
+    result.ok()
+}
+
 pub async fn check_for_updates() -> Option<UpdateInfo> {
     #[cfg(all(
         target_arch = "wasm32",
@@ -35,44 +51,40 @@ async fn check_for_updates_tauri() -> Option<UpdateInfo> {
     use leptos::wasm_bindgen::JsCast;
     use leptos::wasm_bindgen::JsValue;
 
-    let Some(window) = web_sys::window() else {
-        logging::warn!("Window недоступен");
-        return None;
-    };
+    let window = web_sys::window();
+    let tauri_obj = window
+        .as_ref()
+        .and_then(|w| get_js_property(w, "__TAURI__", "Tauri API недоступен"));
+    let updater_mod = tauri_obj
+        .as_ref()
+        .and_then(|obj| get_js_property(obj, "updater", "Tauri updater модуль недоступен"));
+    let check_fn_val = updater_mod
+        .as_ref()
+        .and_then(|mod_| get_js_property(mod_, "check", "Tauri updater.check недоступен"));
+    let check_fn = check_fn_val.as_ref().and_then(|val| {
+        let fn_result = val.dyn_into::<js_sys::Function>().ok();
+        if fn_result.is_none() {
+            logging::warn!("updater.check не является функцией");
+        }
+        fn_result
+    });
 
-    let Ok(tauri_obj) = js_sys::Reflect::get(&window, &JsValue::from_str("__TAURI__")) else {
-        logging::warn!("Tauri API недоступен");
-        return None;
-    };
-
-    let Ok(updater_mod) = js_sys::Reflect::get(&tauri_obj, &JsValue::from_str("updater")) else {
-        logging::warn!("Tauri updater модуль недоступен");
-        return None;
-    };
-
-    let Ok(check_fn) = js_sys::Reflect::get(&updater_mod, &JsValue::from_str("check")) else {
-        logging::warn!("Tauri updater.check недоступен");
-        return None;
-    };
-
-    let Ok(check_fn) = check_fn.dyn_into::<js_sys::Function>() else {
-        logging::warn!("updater.check не является функцией");
-        return None;
-    };
-
-    let result = check_fn.call0(&JsValue::UNDEFINED);
+    let result = check_fn
+        .as_ref()
+        .map(|fn_val| fn_val.call0(&JsValue::UNDEFINED));
 
     match result {
-        Ok(promise) => {
-            let promise = wasm_bindgen_futures::JsFuture::from(js_sys::Promise::from(promise));
-            match promise.await {
+        Some(Ok(promise)) => {
+            let promise_result =
+                wasm_bindgen_futures::JsFuture::from(js_sys::Promise::from(promise)).await;
+            match promise_result {
                 Ok(update_result) => {
                     if update_result.is_null() || update_result.is_undefined() {
                         logging::log!("Обновления не найдены");
-                        return None;
+                        None
+                    } else {
+                        parse_update_info(&update_result)
                     }
-
-                    parse_update_info(&update_result)
                 }
                 Err(e) => {
                     logging::warn!("Ошибка при проверке обновлений: {:?}", e);
@@ -80,8 +92,14 @@ async fn check_for_updates_tauri() -> Option<UpdateInfo> {
                 }
             }
         }
-        Err(e) => {
+        Some(Err(e)) => {
             logging::warn!("Ошибка вызова updater.check: {:?}", e);
+            None
+        }
+        None => {
+            if window.is_none() {
+                logging::warn!("Window недоступен");
+            }
             None
         }
     }

@@ -60,6 +60,8 @@ pub enum JapaneseLevel {
 }
 
 impl JapaneseLevel {
+    pub const ALL: [JapaneseLevel; 5] = [Self::N5, Self::N4, Self::N3, Self::N2, Self::N1];
+
     pub fn as_number(&self) -> u8 {
         match self {
             JapaneseLevel::N5 => 5,

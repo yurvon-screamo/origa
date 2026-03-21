@@ -1,4 +1,4 @@
-use crate::domain::JapaneseLevel;
+use crate::domain::{CardType, JapaneseLevel};
 use std::collections::{HashMap, HashSet};
 
 #[derive(Debug, Clone)]
@@ -27,6 +27,24 @@ impl JlptContent {
 
     pub fn total_grammar(&self, level: JapaneseLevel) -> usize {
         self.grammar_by_level.get(&level).map_or(0, HashSet::len)
+    }
+
+    pub fn find_level(&self, content_key: &str, card_type: CardType) -> Option<JapaneseLevel> {
+        let collection = match card_type {
+            CardType::Kanji => &self.kanji_by_level,
+            CardType::Vocabulary => &self.words_by_level,
+            CardType::Grammar => &self.grammar_by_level,
+            CardType::Radical => return None,
+        };
+
+        JapaneseLevel::ALL
+            .iter()
+            .find(|&&level| {
+                collection
+                    .get(&level)
+                    .is_some_and(|set| set.contains(content_key))
+            })
+            .copied()
     }
 }
 
