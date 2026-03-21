@@ -4,6 +4,7 @@ use crate::domain::value_objects::NativeLanguage;
 use crate::domain::{Card, CardType, GrammarRuleCard, VocabularyCard};
 use rand::{Rng, seq::SliceRandom};
 use serde::{Deserialize, Serialize};
+use ulid::Ulid;
 
 const QUIZ_OPTIONS_COUNT: usize = 4;
 
@@ -63,13 +64,22 @@ impl QuizCard {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct GrammarInfo {
+    pub rule_id: Option<Ulid>,
     title: String,
     description: String,
 }
 
 impl GrammarInfo {
-    pub fn new(title: String, description: String) -> Self {
-        Self { title, description }
+    pub fn new(rule_id: Option<Ulid>, title: String, description: String) -> Self {
+        Self {
+            rule_id,
+            title,
+            description,
+        }
+    }
+
+    pub fn rule_id(&self) -> Option<Ulid> {
+        self.rule_id
     }
 
     pub fn title(&self) -> &str {
@@ -310,8 +320,11 @@ impl<'a> LessonViewGenerator<'a> {
                                         .title(&NativeLanguage::Russian)
                                         .map(|q| q.text().to_string())
                                         .unwrap_or_else(|_| grammar_card.rule_id().to_string());
-                                    let grammar_info =
-                                        GrammarInfo::new(grammar_title, grammar_description);
+                                    let grammar_info = GrammarInfo::new(
+                                        Some(grammar_card.rule_id().to_owned()),
+                                        grammar_title,
+                                        grammar_description,
+                                    );
                                     LessonCardView::GrammarMutated {
                                         card: Card::Vocabulary(mutated),
                                         grammar_info,
@@ -368,14 +381,32 @@ mod tests {
 
     #[test]
     fn grammar_info_new_creates_instance() {
-        let info = GrammarInfo::new("Title".to_string(), "Description".to_string());
+        let info = GrammarInfo::new(None, "Title".to_string(), "Description".to_string());
         assert_eq!(info.title(), "Title");
         assert_eq!(info.description(), "Description");
     }
 
     #[test]
+    fn grammar_info_creates_with_rule_id() {
+        let rule_id = Ulid::new();
+        let info = GrammarInfo::new(
+            Some(rule_id),
+            "て-form".to_string(),
+            "Description".to_string(),
+        );
+        assert_eq!(info.rule_id(), Some(rule_id));
+    }
+
+    #[test]
+    fn grammar_info_without_rule_id_returns_none() {
+        let info = GrammarInfo::new(None, "て-form".to_string(), "Description".to_string());
+        assert_eq!(info.rule_id(), None);
+    }
+
+    #[test]
     fn grammar_info_returns_correct_data() {
         let info = GrammarInfo::new(
+            None,
             "て-form".to_string(),
             "Форма для соединения глаголов".to_string(),
         );
@@ -395,7 +426,11 @@ mod tests {
 
         let mutated = LessonCardView::GrammarMutated {
             card: vocab.clone(),
-            grammar_info: GrammarInfo::new("Test".to_string(), "Test description".to_string()),
+            grammar_info: GrammarInfo::new(
+                None,
+                "Test".to_string(),
+                "Test description".to_string(),
+            ),
         };
         assert_eq!(mutated.card(), &vocab);
 

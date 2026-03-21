@@ -4,7 +4,10 @@ use ulid::Ulid;
 use crate::domain::{NativeLanguage, OrigaError, RateMode, Rating, User};
 use crate::traits::UserRepository;
 use crate::use_cases::tests::fixtures::{InMemoryUserRepository, create_user_with_vocab_cards};
-use crate::use_cases::{RateCardUseCase, SelectCardsToFixationUseCase, SelectCardsToLessonUseCase};
+use crate::use_cases::{
+    CreateGrammarCardUseCase, RateCardUseCase, SelectCardsToFixationUseCase,
+    SelectCardsToLessonUseCase,
+};
 
 #[tokio::test]
 async fn select_cards_to_lesson_returns_cards() {
@@ -163,4 +166,66 @@ async fn rate_card_twice_in_fixation_mode_updates_state() {
     let updated = repo.get_current_user().await.unwrap().unwrap();
     let card = updated.knowledge_set().get_card(card_id).unwrap();
     assert!(!card.memory().is_new());
+}
+
+#[rstest]
+#[case(Rating::Again)]
+#[case(Rating::Hard)]
+#[case(Rating::Good)]
+#[case(Rating::Easy)]
+#[tokio::test]
+async fn rate_card_and_create_and_rate_grammar_card_dual_rating(#[case] rating: Rating) {
+    crate::use_cases::init_real_dictionaries();
+
+    let user = create_user_with_vocab_cards(1);
+    let repo = InMemoryUserRepository::with_user(user);
+
+    let user = repo.get_current_user().await.unwrap().unwrap();
+    let vocab_card_id = *user
+        .knowledge_set()
+        .study_cards()
+        .keys()
+        .next()
+        .expect("No vocab card found");
+
+    let rule_id = Ulid::from_string("01KJ9AVWBGC2BT0DMFPDYYFEWB").expect("Invalid ULID");
+
+    let rate_use_case = RateCardUseCase::new(&repo);
+    rate_use_case
+        .execute(vocab_card_id, RateMode::StandardLesson, rating)
+        .await
+        .unwrap();
+
+    let create_grammar_use_case = CreateGrammarCardUseCase::new(&repo);
+    let grammar_cards = create_grammar_use_case
+        .execute(vec![rule_id])
+        .await
+        .expect("Failed to create grammar card");
+
+    assert_eq!(grammar_cards.len(), 1);
+    let grammar_card_id = *grammar_cards
+        .first()
+        .expect("No grammar card created")
+        .card_id();
+
+    rate_use_case
+        .execute(grammar_card_id, RateMode::StandardLesson, rating)
+        .await
+        .unwrap();
+
+    let updated = repo.get_current_user().await.unwrap().unwrap();
+
+    let vocab_card = updated
+        .knowledge_set()
+        .get_card(vocab_card_id)
+        .expect("Vocab card not found");
+    assert!(!vocab_card.memory().is_new());
+
+    let grammar_card = updated
+        .knowledge_set()
+        .get_card(grammar_card_id)
+        .expect("Grammar card not found");
+    assert!(!grammar_card.memory().is_new());
+
+    assert_ne!(vocab_card_id, grammar_card_id);
 }
