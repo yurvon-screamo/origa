@@ -34,7 +34,10 @@ pub async fn get_or_create_profile(auth_store: &AuthStore, email: &str) -> Resul
     }
 }
 
-pub async fn handle_oauth_callback(url_fragment: &str, auth_store: &AuthStore) -> Result<User, String> {
+pub async fn handle_oauth_callback(
+    url_fragment: &str,
+    auth_store: &AuthStore,
+) -> Result<User, String> {
     let session = TrailBaseClient::parse_tokens_from_url(url_fragment)?;
     set_session(&session).map_err(|e| format!("Не удалось сохранить сессию: {}", e))?;
 
@@ -45,7 +48,10 @@ pub async fn handle_oauth_callback(url_fragment: &str, auth_store: &AuthStore) -
     get_or_create_profile(auth_store, &session.email).await
 }
 
-pub async fn handle_oauth_callback_desktop(url: &str, auth_store: &AuthStore) -> Result<User, String> {
+pub async fn handle_oauth_callback_desktop(
+    url: &str,
+    auth_store: &AuthStore,
+) -> Result<User, String> {
     let parsed = url::Url::parse(url).map_err(|e| format!("Неверный URL: {}", e))?;
 
     let code = parsed
