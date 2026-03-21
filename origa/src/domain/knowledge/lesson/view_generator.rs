@@ -117,10 +117,10 @@ impl LessonCardView {
         lang: &NativeLanguage,
     ) -> Result<Self, crate::domain::OrigaError> {
         match &original_card {
-            Card::Grammar(_) | Card::Radical(_) => {
+            Card::Radical(_) => {
                 return Ok(LessonCardView::Normal(original_card));
             }
-            Card::Vocabulary(_) | Card::Kanji(_) => {}
+            Card::Vocabulary(_) | Card::Kanji(_) | Card::Grammar(_) => {}
         }
 
         let correct_answer = original_card.answer(lang)?;
@@ -335,6 +335,7 @@ mod tests {
     use super::*;
     use crate::domain::knowledge::VocabularyCard;
     use crate::domain::value_objects::Question;
+    use ulid::Ulid;
 
     fn create_vocab_card(word: &str) -> Card {
         Card::Vocabulary(VocabularyCard::new(
@@ -342,18 +343,25 @@ mod tests {
         ))
     }
 
-    fn create_grammar_card(
-        _title: &str,
-        _apply_to: Vec<crate::domain::tokenizer::PartOfSpeech>,
-    ) -> GrammarRuleCard {
-        GrammarRuleCard::new_test()
+    fn create_grammar_card(rule_id: Ulid) -> Card {
+        Card::Grammar(GrammarRuleCard::new(rule_id).unwrap())
     }
 
     #[test]
-    fn generate_quiz_returns_normal_for_grammar() {
-        let grammar = create_grammar_card("Test Rule", vec![]);
+    fn generate_quiz_returns_normal_for_radical() {
+        crate::use_cases::init_real_dictionaries();
+
+        let vocab1 = create_vocab_card("単語1");
+        let vocab2 = create_vocab_card("単語2");
+        let vocab3 = create_vocab_card("単語3");
+
+        let other_cards: Vec<Card> = vec![vocab1, vocab2, vocab3];
         let lang = NativeLanguage::Russian;
-        let result = LessonCardView::generate_quiz(Card::Grammar(grammar), &[], &lang);
+
+        // Radical карточки всегда возвращают Normal вид
+        let radical_card = crate::domain::knowledge::RadicalCard::new('一').unwrap();
+        let result =
+            LessonCardView::generate_quiz(Card::Radical(radical_card), &other_cards, &lang);
 
         assert!(matches!(result, Ok(LessonCardView::Normal(_))));
     }
@@ -393,5 +401,107 @@ mod tests {
 
         let quiz = LessonCardView::Quiz(QuizCard::new(vocab.clone(), vec![]));
         assert_eq!(quiz.card(), &vocab);
+    }
+
+    mod grammar_quiz {
+        use super::*;
+        use crate::use_cases::init_real_dictionaries;
+
+        fn get_first_grammar_rule_id() -> Ulid {
+            init_real_dictionaries();
+            Ulid::from_string("01KJ9AVWBGC2BT0DMFPDYYFEWB").expect("Invalid ULID")
+        }
+
+        #[test]
+        fn grammar_card_generates_quiz_with_sufficient_distinct_cards() {
+            init_real_dictionaries();
+
+            let grammar_rule_id = get_first_grammar_rule_id();
+            let grammar_card = create_grammar_card(grammar_rule_id);
+
+            let rule_ids = vec![
+                "01KJ9AVWBG78GHSKKD8W1YHJB3",
+                "01KJ9AVWBG1AAJZXRGA499R44W",
+                "01KJ9AVWBG865E0F72RYM7F34B",
+            ];
+            let other_cards: Vec<Card> = rule_ids
+                .into_iter()
+                .map(|id| create_grammar_card(Ulid::from_string(id).expect("Invalid ULID")))
+                .collect();
+
+            let lang = NativeLanguage::Russian;
+
+            let result = LessonCardView::generate_quiz(grammar_card, &other_cards, &lang);
+
+            assert!(result.is_ok());
+
+            match result.unwrap() {
+                LessonCardView::Quiz(quiz) => {
+                    assert_eq!(quiz.options().len(), 4);
+                    assert!(quiz.options().iter().any(|o| o.is_correct()));
+                }
+                _ => panic!("Expected Quiz view for grammar card with sufficient distractors"),
+            }
+        }
+
+        #[test]
+        fn grammar_card_returns_normal_with_insufficient_distinct_cards() {
+            init_real_dictionaries();
+
+            let grammar_rule_id = get_first_grammar_rule_id();
+            let grammar_card = create_grammar_card(grammar_rule_id);
+
+            let other_cards: Vec<Card> = vec![];
+
+            let lang = NativeLanguage::Russian;
+
+            let result = LessonCardView::generate_quiz(grammar_card.clone(), &other_cards, &lang);
+
+            assert!(result.is_ok());
+
+            match result.unwrap() {
+                LessonCardView::Normal(card) => {
+                    assert_eq!(card, grammar_card);
+                }
+                _ => panic!("Expected Normal view for grammar card with insufficient distractors"),
+            }
+        }
+
+        #[test]
+        fn grammar_quiz_options_contain_correct_answer() {
+            init_real_dictionaries();
+
+            let grammar_rule_id = get_first_grammar_rule_id();
+            let grammar_card = create_grammar_card(grammar_rule_id);
+
+            let rule_ids = vec![
+                "01KJ9AVWBG78GHSKKD8W1YHJB3",
+                "01KJ9AVWBG1AAJZXRGA499R44W",
+                "01KJ9AVWBG865E0F72RYM7F34B",
+            ];
+            let other_cards: Vec<Card> = rule_ids
+                .into_iter()
+                .map(|id| create_grammar_card(Ulid::from_string(id).expect("Invalid ULID")))
+                .collect();
+
+            let lang = NativeLanguage::Russian;
+
+            let result = LessonCardView::generate_quiz(grammar_card.clone(), &other_cards, &lang);
+
+            assert!(result.is_ok());
+
+            match result.unwrap() {
+                LessonCardView::Quiz(quiz) => {
+                    let correct_answer = grammar_card.answer(&lang).unwrap();
+                    assert!(
+                        quiz.options()
+                            .iter()
+                            .any(|o| o.text() == correct_answer.text()),
+                        "Quiz options should contain the correct answer"
+                    );
+                }
+                _ => panic!("Expected Quiz view"),
+            }
+        }
     }
 }
