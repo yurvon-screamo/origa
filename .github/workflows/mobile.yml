@@ -140,9 +140,6 @@ jobs:
           keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
           storeFile=/tmp/keystore.jks
           EOF
-          
-          cp "$GITHUB_WORKSPACE/tauri/android-signing.patch" .
-          git apply -p1 android-signing.patch
 
       - name: Build Tauri Android APK
         if: matrix.platform == 'android'
