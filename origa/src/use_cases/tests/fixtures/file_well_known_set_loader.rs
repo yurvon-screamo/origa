@@ -2,7 +2,7 @@ use std::{io, path::PathBuf};
 
 use super::get_public_dir;
 use crate::domain::{JapaneseLevel, OrigaError};
-use crate::traits::{WellKnownSet, WellKnownSetLoader, WellKnownSetMeta};
+use crate::traits::{WellKnownSet, WellKnownSetLoader, WellKnownSetMeta, resolve_set_path};
 
 pub struct FileWellKnownSetLoader {
     public_dir: PathBuf,
@@ -12,43 +12,6 @@ impl FileWellKnownSetLoader {
     pub fn new() -> Self {
         Self {
             public_dir: get_public_dir(),
-        }
-    }
-
-    fn id_to_path(&self, id: &str) -> PathBuf {
-        if let Some(level) = id.strip_prefix("jlpt_") {
-            self.public_dir
-                .join("domain")
-                .join("well_known_set")
-                .join(format!("jlpt_{}.json", level))
-        } else if let Some(rest) = id.strip_prefix("migii_") {
-            let level = rest.split('_').next().unwrap_or("");
-            self.public_dir
-                .join("domain")
-                .join("well_known_set")
-                .join("migii")
-                .join(level)
-                .join(format!("{}.json", id))
-        } else if let Some(rest) = id.strip_prefix("duolingo_") {
-            let level = rest.split('_').next().unwrap_or("");
-            let filename = rest.split_once('_').map(|(_, f)| f).unwrap_or("");
-            self.public_dir
-                .join("domain")
-                .join("well_known_set")
-                .join("duolingo")
-                .join(level)
-                .join(format!("{}.json", filename))
-        } else if id.starts_with("minna_n5_") {
-            self.public_dir
-                .join("domain")
-                .join("well_known_set")
-                .join("minna_n5")
-                .join(format!("{}.json", id))
-        } else {
-            self.public_dir
-                .join("domain")
-                .join("well_known_set")
-                .join(format!("{}.json", id))
         }
     }
 }
@@ -96,7 +59,7 @@ impl WellKnownSetLoader for FileWellKnownSetLoader {
             words: Vec<String>,
         }
 
-        let path = self.id_to_path(&id);
+        let path = self.public_dir.join(resolve_set_path(&id));
 
         if !path.exists() {
             return Err(OrigaError::WellKnownSetNotFound { set_id: id.clone() });

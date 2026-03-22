@@ -1,16 +1,23 @@
 use crate::ui_components::{Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 use lexical_sort::natural_lexical_cmp;
-use origa::traits::SetType;
 use std::collections::HashSet;
 
-use super::filters::TypeFilter;
+use super::filters::{available_set_types, TypeFilter};
 use super::set_card::SetCard;
 use super::types::SetInfo;
 
+fn get_set_type_label(set_type_id: &str) -> String {
+    available_set_types()
+        .iter()
+        .find(|t| t.id == set_type_id)
+        .map(|t| t.label_ru.clone())
+        .unwrap_or_else(|| set_type_id.to_string())
+}
+
 #[component]
 pub fn SetsTypeGroup(
-    set_type: SetType,
+    set_type: String,
     sets_for_level: Memo<Vec<SetInfo>>,
     type_filter: RwSignal<TypeFilter>,
     known_kanji: HashSet<String>,
@@ -18,12 +25,13 @@ pub fn SetsTypeGroup(
     selected_sets: RwSignal<HashSet<String>>,
     on_toggle_select: Callback<String>,
 ) -> impl IntoView {
+    let set_type_clone = set_type.clone();
     let sets_for_type = Memo::new(move |_| {
         let current_filter = type_filter.get();
         let mut sets: Vec<_> = sets_for_level
             .get()
             .into_iter()
-            .filter(|s| s.set_type == set_type && current_filter.matches(set_type))
+            .filter(|s| s.set_type == set_type_clone && current_filter.matches(&set_type_clone))
             .collect();
 
         sets.sort_by(|a, b| natural_lexical_cmp(&a.title, &b.title));
@@ -31,6 +39,7 @@ pub fn SetsTypeGroup(
     });
 
     let known_kanji_stored = StoredValue::new(known_kanji);
+    let set_type_label = StoredValue::new(get_set_type_label(&set_type));
 
     view! {
         <Show when=move || !sets_for_type.get().is_empty()>
@@ -40,7 +49,7 @@ pub fn SetsTypeGroup(
                     variant=TypographyVariant::Muted
                     class="mb-2"
                 >
-                    {set_type.label()}
+                    {move || set_type_label.get_value()}
                 </Text>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
                     <For

@@ -1,7 +1,10 @@
 use futures::future::join_all;
 use origa::{
     domain::{JapaneseLevel, OrigaError},
-    traits::{WellKnownSet, WellKnownSetLoader, WellKnownSetMeta},
+    traits::{
+        get_types_meta, resolve_set_path, set_types_meta, TypesMeta, WellKnownSet,
+        WellKnownSetLoader, WellKnownSetMeta,
+    },
 };
 use serde::Deserialize;
 use std::sync::OnceLock;
@@ -47,8 +50,27 @@ impl Default for WellKnownSetLoaderImpl {
     }
 }
 
+async fn ensure_types_loaded() -> Result<(), OrigaError> {
+    if get_types_meta().is_some() {
+        return Ok(());
+    }
+    let json = fetch_text(public_url(
+        "/public/domain/well_known_set/well_known_types_meta.json",
+    ))
+    .await?;
+    let types_meta: TypesMeta = serde_json::from_str(&json).map_err(|e| {
+        OrigaError::WellKnownSetParseError {
+            reason: format!("Error parsing types meta: {}", e),
+        }
+    })?;
+    set_types_meta(types_meta);
+    Ok(())
+}
+
 impl WellKnownSetLoader for WellKnownSetLoaderImpl {
     async fn load_meta_list(&self) -> Result<Vec<WellKnownSetMeta>, OrigaError> {
+        ensure_types_loaded().await?;
+
         if let Some(cached) = META_CACHE.get() {
             return Ok(cached.clone());
         }
@@ -68,7 +90,7 @@ impl WellKnownSetLoader for WellKnownSetLoaderImpl {
                 reason: format!("Set not found: {}", id),
             }
         })?;
-        let path = id_to_path(&id);
+        let path = resolve_set_path(&id);
         let json = fetch_text(public_url(&format!("/public/{}", path))).await?;
         parse_well_known_set(&json, &id)
     }
@@ -91,22 +113,5 @@ impl WellKnownSetLoader for WellKnownSetLoaderImpl {
             .collect::<Result<Vec<_>, _>>()?;
 
         Ok(results)
-    }
-}
-
-fn id_to_path(id: &str) -> String {
-    if let Some(level) = id.strip_prefix("jlpt_") {
-        format!("domain/well_known_set/jlpt_{}.json", level)
-    } else if let Some(rest) = id.strip_prefix("migii_") {
-        let level = rest.split('_').next().unwrap_or("");
-        format!("domain/well_known_set/migii/{}/{}.json", level, id)
-    } else if let Some(rest) = id.strip_prefix("duolingo_") {
-        let level = rest.split('_').next().unwrap_or("");
-        let filename = rest.split_once('_').map(|(_, f)| f).unwrap_or("");
-        format!("domain/well_known_set/duolingo/{}/{}.json", level, filename)
-    } else if id.starts_with("minna_n5_") {
-        format!("domain/well_known_set/minna_n5/{}.json", id)
-    } else {
-        format!("domain/well_known_set/{}.json", id)
     }
 }
