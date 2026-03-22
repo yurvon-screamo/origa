@@ -82,7 +82,6 @@ pub async fn handle_oauth_callback_desktop(
     get_or_create_profile(auth_store, &session.email).await
 }
 
-#[allow(dead_code)]
 pub async fn handle_email_password_login(
     auth_store: &AuthStore,
     email: &str,
