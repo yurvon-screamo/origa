@@ -8,7 +8,7 @@
     @compressible {
         not path *.wasm
     }
-    encode gzip zstd @compressible
+    encode @compressible gzip zstd
 
     @static_files {
         path *.js *.css *.json *.png *.jpg *.jpeg *.gif *.svg *.woff *.woff2 *.ttf *.eot *.ico *.webmanifest *.wasm
