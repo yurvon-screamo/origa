@@ -171,8 +171,8 @@ impl AuthStore {
     /// Set session after OAuth callback
     pub async fn set_oauth_session(
         &self,
-        auth_token: &str,
-        refresh_token: Option<&str>,
+        code: &str,
+        pkce_verifier: &str,
     ) -> Result<(), OrigaError> {
         if self.user.with(|u| u.is_some()) {
             return Ok(());
@@ -182,7 +182,7 @@ impl AuthStore {
 
         match self
             .client
-            .exchange_code_for_session(auth_token, refresh_token)
+            .exchange_auth_code_for_session(code, pkce_verifier)
             .await
         {
             Ok(_) => {

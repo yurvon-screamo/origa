@@ -166,7 +166,7 @@ async fn process_oauth_flow(
     code: String,
     is_oauth_loading: RwSignal<bool>,
 ) {
-    let result = auth_store.set_oauth_session(&code, Some(&verifier)).await;
+    let result = auth_store.set_oauth_session(&code, &verifier).await;
 
     match result {
         Ok(_) => {
