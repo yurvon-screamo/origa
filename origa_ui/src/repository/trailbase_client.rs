@@ -39,6 +39,9 @@ struct AuthTokenResponse {
     refresh_token: Option<String>,
 }
 
+#[derive(Serialize)]
+struct Empty {}
+
 impl TrailBaseClient {
     pub fn new() -> Self {
         Self {
@@ -373,7 +376,12 @@ impl TrailBaseClient {
                 ("Content-Type".to_string(), "application/json".to_string()),
             ]);
             let _ = self
-                .fetch::<()>("/api/auth/v1/logout", Method::POST, None, Some(headers))
+                .fetch(
+                    "/api/auth/v1/logout",
+                    Method::POST,
+                    Some(&Empty {}),
+                    Some(headers),
+                )
                 .await;
         }
         clear_session();
