@@ -45,6 +45,7 @@ pub enum TypeFilter {
     SpyFamily,
     DuolingoRu,
     DuolingoEn,
+    MinnaNoNihongo,
 }
 
 impl TypeFilter {
@@ -56,17 +57,19 @@ impl TypeFilter {
             TypeFilter::SpyFamily => "SpyFamily",
             TypeFilter::DuolingoRu => "Duolingo Ru",
             TypeFilter::DuolingoEn => "Duolingo En",
+            TypeFilter::MinnaNoNihongo => "Minna no Nihongo",
         }
     }
 
     pub fn matches(&self, set_type: SetType) -> bool {
         match self {
             TypeFilter::All => true,
-            TypeFilter::Jlpt => set_type == SetType::Jlpt,
-            TypeFilter::Migii => set_type == SetType::Migii,
-            TypeFilter::SpyFamily => set_type == SetType::SpyFamily,
-            TypeFilter::DuolingoRu => set_type == SetType::DuolingoRu,
-            TypeFilter::DuolingoEn => set_type == SetType::DuolingoEn,
+            TypeFilter::Jlpt => matches!(set_type, SetType::Jlpt),
+            TypeFilter::Migii => matches!(set_type, SetType::Migii),
+            TypeFilter::SpyFamily => matches!(set_type, SetType::SpyFamily),
+            TypeFilter::DuolingoRu => matches!(set_type, SetType::DuolingoRu),
+            TypeFilter::DuolingoEn => matches!(set_type, SetType::DuolingoEn),
+            TypeFilter::MinnaNoNihongo => matches!(set_type, SetType::MinnaNoNihongo),
         }
     }
 }
@@ -136,6 +139,7 @@ mod tests {
         assert!(filter.matches(SetType::SpyFamily));
         assert!(filter.matches(SetType::DuolingoRu));
         assert!(filter.matches(SetType::DuolingoEn));
+        assert!(filter.matches(SetType::MinnaNoNihongo));
     }
 
     #[test]
@@ -146,6 +150,7 @@ mod tests {
         assert!(!filter.matches(SetType::SpyFamily));
         assert!(!filter.matches(SetType::DuolingoRu));
         assert!(!filter.matches(SetType::DuolingoEn));
+        assert!(!filter.matches(SetType::MinnaNoNihongo));
     }
 
     #[test]
@@ -160,6 +165,7 @@ mod tests {
         assert_eq!(TypeFilter::All.label(), "Все типы");
         assert_eq!(TypeFilter::Jlpt.label(), "JLPT");
         assert_eq!(TypeFilter::Migii.label(), "Migii");
+        assert_eq!(TypeFilter::MinnaNoNihongo.label(), "Minna no Nihongo");
     }
 
     #[test]

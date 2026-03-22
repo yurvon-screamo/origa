@@ -82,11 +82,11 @@ async fn load_kanji(content: &mut JlptContent) -> Result<(), OrigaError> {
 
 async fn load_words(content: &mut JlptContent) -> Result<(), OrigaError> {
     let levels = [
-        (JapaneseLevel::N5, "jltp_n5.json"),
-        (JapaneseLevel::N4, "jltp_n4.json"),
-        (JapaneseLevel::N3, "jltp_n3.json"),
-        (JapaneseLevel::N2, "jltp_n2.json"),
-        (JapaneseLevel::N1, "jltp_n1.json"),
+        (JapaneseLevel::N5, "jlpt_n5.json"),
+        (JapaneseLevel::N4, "jlpt_n4.json"),
+        (JapaneseLevel::N3, "jlpt_n3.json"),
+        (JapaneseLevel::N2, "jlpt_n2.json"),
+        (JapaneseLevel::N1, "jlpt_n1.json"),
     ];
 
     for (level, filename) in levels {

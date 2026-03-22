@@ -34,11 +34,11 @@ def main():
     meta_list = []
 
     jlpt_files = [
-        ("jltp_n5.json", "jlpt_n5", "N5"),
-        ("jltp_n4.json", "jlpt_n4", "N4"),
-        ("jltp_n3.json", "jlpt_n3", "N3"),
-        ("jltp_n2.json", "jlpt_n2", "N2"),
-        ("jltp_n1.json", "jlpt_n1", "N1"),
+        ("jlpt_n5.json", "jlpt_n5", "N5"),
+        ("jlpt_n4.json", "jlpt_n4", "N4"),
+        ("jlpt_n3.json", "jlpt_n3", "N3"),
+        ("jlpt_n2.json", "jlpt_n2", "N2"),
+        ("jlpt_n1.json", "jlpt_n1", "N1"),
     ]
 
     for filename, set_id, level in jlpt_files:
@@ -65,6 +65,13 @@ def main():
                 data["level"] = level
                 set_id = f"migii_{level_id}_{i}"
                 meta_list.append(extract_meta(data, set_id, "Migii"))
+
+    minna_n5_dir = BASE_DIR / "minna_n5"
+    if minna_n5_dir.exists():
+        for path in sorted(minna_n5_dir.glob("minna_n5_*.json")):
+            data = load_json(path)
+            set_id = path.stem
+            meta_list.append(extract_meta(data, set_id, "MinnaN5"))
 
     spy_family_dir = BASE_DIR / "spy_family"
     if spy_family_dir.exists():

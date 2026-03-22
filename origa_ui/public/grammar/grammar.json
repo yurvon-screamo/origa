@@ -3371,6 +3371,686 @@
 				}
 			},
 			"format_map": null
+		},
+		{
+			"rule_id": "01KJ9AVWN5GC4BT0DMFPDYY001",
+			"level": "N5",
+			"content": {
+				"Russian": {
+					"title": "は (тема)",
+					"short_description": "Частица темы",
+					"md_description": "## は — Частица темы\n\n### Что это?\n\n`は` помечает тему предложения.\n\n### Примеры\n\n```\n私は学生です。\nЯ студент.\n```"
+				},
+				"English": {
+					"title": "は (topic)",
+					"short_description": "Topic particle",
+					"md_description": "## は — Topic Marker\n\n### What is it?\n\n`は` marks the topic of a sentence.\n\n### Examples\n\n```\n私は学生です。\nI am a student.\n```"
+				}
+			},
+			"format_map": {}
+		},
+		{
+			"rule_id": "01KJ9AVWN5GC4BT0DMFPDYY002",
+			"level": "N5",
+			"content": {
+				"Russian": {
+					"title": "が (субъект)",
+					"short_description": "Частица субъекта",
+					"md_description": "## が — Частица субъекта\n\n### Что это?\n\n`が` помечает грамматический субъект.\n\n### Примеры\n\n```\n雨が降っています。\nИдёт дождь.\n```"
+				},
+				"English": {
+					"title": "が (subject)",
+					"short_description": "Subject particle",
+					"md_description": "## が — Subject Particle\n\n### What is it?\n\n`が` marks the grammatical subject.\n\n### Examples\n\n```\n雨が降っています。\nIt is raining.\n```"
+				}
+			},
+			"format_map": {}
+		},
+		{
+			"rule_id": "01KJ9AVWN5GC4BT0DMFPDYY003",
+			"level": "N5",
+			"content": {
+				"Russian": {
+					"title": "を (объект)",
+					"short_description": "Частица объекта",
+					"md_description": "## を — Частица объекта\n\n### Что это?\n\n`を` помечает прямой объект.\n\n### Примеры\n\n```\nご飯を食べます。\nЕм еду.\n```"
+				},
+				"English": {
+					"title": "を (object)",
+					"short_description": "Object particle",
+					"md_description": "## を — Object Particle\n\n### What is it?\n\n`を` marks the direct object.\n\n### Examples\n\n```\nご飯を食べます。\nI eat rice.\n```"
+				}
+			},
+			"format_map": {}
+		},
+		{
+			"rule_id": "01KJ9AVWN5GC4BT0DMFPDYY004",
+			"level": "N5",
+			"content": {
+				"Russian": {
+					"title": "に (направление)",
+					"short_description": "Частица направления",
+					"md_description": "## に — Частица направления\n\n### Что это?\n\n`に` указывает направление или время.\n\n### Примеры\n\n```\n日本に行きます。\nЕду в Японию.\n```"
+				},
+				"English": {
+					"title": "に (direction)",
+					"short_description": "Direction particle",
+					"md_description": "## に — Direction Particle\n\n### What is it?\n\n`に` indicates direction or time.\n\n### Examples\n\n```\n日本に行きます。\nI go to Japan.\n```"
+				}
+			},
+			"format_map": {}
+		},
+		{
+			"rule_id": "01KJ9AVWN5GC4BT0DMFPDYY005",
+			"level": "N5",
+			"content": {
+				"Russian": {
+					"title": "で (место)",
+					"short_description": "Частица места действия",
+					"md_description": "## で — Частица места действия\n\n### Что это?\n\n`で` указывает место действия.\n\n### Примеры\n\n```\n公園で遊びます。\nИграю в парке.\n```"
+				},
+				"English": {
+					"title": "で (place)",
+					"short_description": "Place of action particle",
+					"md_description": "## で — Place of Action Particle\n\n### What is it?\n\n`で` indicates where an action takes place.\n\n### Examples\n\n```\n公園で遊びます。\nI play in the park.\n```"
+				}
+			},
+			"format_map": {}
+		},
+		{
+			"rule_id": "01KJ9AVWN5GC4BT0DMFPDYY006",
+			"level": "N5",
+			"content": {
+				"Russian": {
+					"title": "と (с)",
+					"short_description": "Частица совместности",
+					"md_description": "## と — Частица совместности\n\n### Что это?\n\n`と` указывает, с кем действие выполняется.\n\n### Примеры\n\n```\n友達と行きます。\nИду с другом.\n```"
+				},
+				"English": {
+					"title": "と (with)",
+					"short_description": "With particle",
+					"md_description": "## と — With Particle\n\n### What is it?\n\n`と` indicates doing something with someone.\n\n### Examples\n\n```\n友達と行きます。\nI go with a friend.\n```"
+				}
+			},
+			"format_map": {}
+		},
+		{
+			"rule_id": "01KJ9AVWN5GC4BT0DMFPDYY007",
+			"level": "N5",
+			"content": {
+				"Russian": {
+					"title": "も (тоже)",
+					"short_description": "Частица \"тоже\"",
+					"md_description": "## も — Частица \"тоже\"\n\n### Что это?\n\n`も` означает \"тоже\" или \"также\".\n\n### Примеры\n\n```\n私も学生です。\nЯ тоже студент.\n```"
+				},
+				"English": {
+					"title": "も (also)",
+					"short_description": "Also particle",
+					"md_description": "## も — Also Particle\n\n### What is it?\n\n`も` means \"also\" or \"too\".\n\n### Examples\n\n```\n私も学生です。\nI am also a student.\n```"
+				}
+			},
+			"format_map": {}
+		},
+		{
+			"rule_id": "01KJ9AVWN5GC4BT0DMFPDYY008",
+			"level": "N5",
+			"content": {
+				"Russian": {
+					"title": "から (от/из)",
+					"short_description": "Частица источника",
+					"md_description": "## から — Частица источника\n\n### Что это?\n\n`から` указывает источник или время начала.\n\n### Примеры\n\n```\n友達からもらいました。\nПолучил от друга.\n```"
+				},
+				"English": {
+					"title": "から (from)",
+					"short_description": "From particle",
+					"md_description": "## から — From Particle\n\n### What is it?\n\n`から` indicates source or starting time.\n\n### Examples\n\n```\n友達からもらいました。\nI received it from a friend.\n```"
+				}
+			},
+			"format_map": {}
+		},
+		{
+			"rule_id": "01KJ9AVWN5GC4BT0DMFPDYY009",
+			"level": "N5",
+			"content": {
+				"Russian": {
+					"title": "まで (до)",
+					"short_description": "Частица предела",
+					"md_description": "## まで — Частица предела\n\n### Что это?\n\n`まで` указывает предел или время окончания.\n\n### Примеры\n\n```\n東京まで行きます。\nЕду до Токио.\n```"
+				},
+				"English": {
+					"title": "まで (until)",
+					"short_description": "Until particle",
+					"md_description": "## まで — Until Particle\n\n### What is it?\n\n`まで` indicates limit or ending time.\n\n### Examples\n\n```\n東京まで行きます。\nI go to Tokyo.\n```"
+				}
+			},
+			"format_map": {}
+		},
+		{
+			"rule_id": "01KJ9AVWN5GC4BT0DMFPDYY010",
+			"level": "N5",
+			"content": {
+				"Russian": {
+					"title": "の (притяжательный)",
+					"short_description": "Притяжательная частица",
+					"md_description": "## の — Притяжательная частица\n\n### Что это?\n\n`の` работает как притяжательный падеж.\n\n### Примеры\n\n```\n私の本です。\nЭто моя книга.\n```"
+				},
+				"English": {
+					"title": "の (possessive)",
+					"short_description": "Possessive particle",
+					"md_description": "## の — Possessive Particle\n\n### What is it?\n\n`の` works like the possessive case.\n\n### Examples\n\n```\n私の本です。\nIt is my book.\n```"
+				}
+			},
+			"format_map": {}
+		},
+		{
+			"rule_id": "01KJ9AVWN5GC4BT0DMFPDYY011",
+			"level": "N5",
+			"content": {
+				"Russian": {
+					"title": "ここ/そこ/あそこ - Указательные места",
+					"short_description": "Указательные местоимения мест",
+					"md_description": "## ここ/そこ/あそこ — Указательные места\n\n### Что это?\n\nУказательные местоимения для обозначения мест относительно говорящего и слушателя.\n\n---\n\n### Значения\n\n| Слово | Значение | Дистанция |\n|-------|----------|----------|\n| ここ | здесь | Близко к говорящему |\n| そこ | там | Близко к слушателю |\n| あそこ | вон там | Далеко от обоих |\n\n---\n\n### Примеры\n\n```\nここはトイレです。\nЗдесь туалет.\n```\n\n```\nそこは何ですか。\nЧто там?\n```\n\n```\nあそこは銀行です。\nВон там банк.\n```\n\n---\n\n### 💡 Правило выбора\n\n- `ここ`: ты можешь дотронуться\n- `そこ`: слушатель может дотронуться\n- `あそこ`: никто не может дотронуться"
+				},
+				"English": {
+					"title": "ここ/そこ/あそこ - Demonstrative places",
+					"short_description": "Place demonstratives",
+					"md_description": "## ここ/そこ/あそこ — Place Demonstratives\n\n### What is it?\n\nDemonstratives for indicating places relative to speaker and listener.\n\n---\n\n### Meanings\n\n| Word | Meaning | Distance |\n|------|---------|----------|\n| ここ | here | Close to speaker |\n| そこ | there | Close to listener |\n| あそこ | over there | Far from both |\n\n---\n\n### Examples\n\n```\nここはトイレです。\nHere is the bathroom.\n```\n\n```\nそこは何ですか。\nWhat is there?\n```\n\n```\nあそこは銀行です。\nOver there is a bank.\n```\n\n---\n\n### 💡 Selection rule\n\n- `ここ`: you can touch it\n- `そこ`: listener can touch it\n- `あそこ`: nobody can touch it"
+				}
+			},
+			"format_map": {}
+		},
+		{
+			"rule_id": "01KJ9AVWN5GC4BT0DMFPDYY012",
+			"level": "N5",
+			"content": {
+				"Russian": {
+					"title": "これ/それ/あれ - Указательные местоимения",
+					"short_description": "Указательные местоимения вещей",
+					"md_description": "## これ/それ/あれ — Указательные местоимения\n\n### Что это?\n\nБазовые указательные местоимения для предметов. Подобно «этот/тот».\n\n---\n\n### Значения\n\n| Слово | Значение | Дистанция |\n|-------|----------|----------|\n| これ | это | Близко к говорящему |\n| それ | то | Близко к слушателю |\n| あれ | вон то | Далеко от обоих |\n\n---\n\n### Примеры\n\n```\nこれは本です。\nЭто книга.\n```\n\n```\nそれは何ですか。\nЧто это?\n```\n\n```\nあれは山です。\nВон та гора.\n```\n\n---\n\n### 💡 Правило выбора\n\n- `これ`: у меня в руках\n- `それ`: у тебя в руках\n- `あれ`: далеко, не можем взять"
+				},
+				"English": {
+					"title": "これ/それ/あれ - Demonstrative pronouns",
+					"short_description": "Thing demonstratives",
+					"md_description": "## これ/それ/あれ — Demonstrative Pronouns\n\n### What is it?\n\nBasic demonstrative pronouns for objects. Similar to \"this/that\".\n\n---\n\n### Meanings\n\n| Word | Meaning | Distance |\n|------|---------|----------|\n| これ | this | Close to speaker |\n| それ | that | Close to listener |\n| あれ | that over there | Far from both |\n\n---\n\n### Examples\n\n```\nこれは本です。\nThis is a book.\n```\n\n```\nそれは何ですか。\nWhat is that?\n```\n\n```\nあれは山です。\nThat over there is a mountain.\n```\n\n---\n\n### 💡 Selection rule\n\n- `これ`: I'm holding it\n- `それ`: you're holding it\n- `あれ`: far away, can't reach"
+				}
+			},
+			"format_map": {}
+		},
+		{
+			"rule_id": "01KJ9AVWN5GC4BT0DMFPDYY013",
+			"level": "N5",
+			"content": {
+				"Russian": {
+					"title": "この/その/あの + СУЩ - Косвенные указания",
+					"short_description": "Указательные местоимения перед существительным",
+					"md_description": "## この/その/あの + СУЩ — Косвенные указания\n\n### Что это?\n\nМодификаторы существительных: «этот/тот + существительное».\n\n---\n\n### Правило образования\n\n```\nこの/その/あの + СУЩЕСТВИТЕЛЬНОЕ\nこの本 = эта книга\nその本 = та книга\nあの本 = вон та книга\n```\n\n---\n\n### Значения\n\n| Слово | Значение | Дистанция |\n|-------|----------|----------|\n| この | этот/эта | Близко к говорящему |\n| その | тот/та | Близко к слушателю |\n| あの | вон тот/та | Далеко от обоих |\n\n---\n\n### Примеры\n\n```\nこの本は面白いです。\nЭта книга интересная.\n```\n\n```\nそのペンはあなたのですか。\nТот ручка — твой?\n```\n\n```\nあの建物は学校です。\nВон то здание — школа.\n```\n\n---\n\n### 💡 Отличие от これ/それ/あれ\n\n- `これ/それ/あれ`: стоят сами по себе (подлежащее)\n- `この/その/あの`: требуют существительного после себя"
+				},
+				"English": {
+					"title": "この/その/あの + NOUN - Modifier demonstratives",
+					"short_description": "Demonstrative modifiers before noun",
+					"md_description": "## この/その/あの + NOUN — Modifier Demonstratives\n\n### What is it?\n\nNoun modifiers: \"this/that + noun\".\n\n---\n\n### Formation\n\n```\nこの/その/あの + NOUN\nこの本 = this book\nその本 = that book\nあの本 = that book over there\n```\n\n---\n\n### Meanings\n\n| Word | Meaning | Distance |\n|------|---------|----------|\n| この | this | Close to speaker |\n| その | that | Close to listener |\n| あの | that over there | Far from both |\n\n---\n\n### Examples\n\n```\nこの本は面白いです。\nThis book is interesting.\n```\n\n```\nそのペンはあなたのですか。\nIs that pen yours?\n```\n\n```\nあの建物は学校です。\nThat building over there is a school.\n```\n\n---\n\n### 💡 Difference from これ/それ/あれ\n\n- `これ/それ/あれ`: stand alone as subject\n- `この/その/あの`: must be followed by a noun"
+				}
+			},
+			"format_map": {}
+		},
+		{
+			"rule_id": "01KJ9AVWN5GC4BT0DMFPDYY014",
+			"level": "N5",
+			"content": {
+				"Russian": {
+					"title": "ね - Частица подтверждения",
+					"short_description": "Частица для согласия",
+					"md_description": "## ね — Частица подтверждения\n\n### Что это?\n\nЧастица `ね` используется для подтверждения, ожидания согласия или мягкого окончания предложения.\n\n---\n\n### Использование\n\n1. **Ожидание согласия**\n```\n今日はいい天気ですね。\nСегодня хорошая погода, правда?\n```\n\n2. **Мягкое утверждение**\n```\n私は学生です。\nЯ студент. (с мягким тоном)\n```\n\n3. **Подтверждение собеседника**\n```\nA: これはペンです。\nB: そうですね。\nA: Это ручка.\nB: Да, так и есть.\n```\n\n---\n\n### 💡 Тон\n\n`ね` делает утверждение мягче, вежливее, invites agreement."
+				},
+				"English": {
+					"title": "ね - Confirmation particle",
+					"short_description": "Agreement seeking particle",
+					"md_description": "## ね — Confirmation Particle\n\n### What is it?\n\n`ね` is used to seek agreement, confirm understanding, or soften statement endings.\n\n---\n\n### Usage\n\n1. **Seeking agreement**\n```\n今日はいい天気ですね。\nNice weather today, right?\n```\n\n2. **Softening statements**\n```\n私は学生です。\nI am a student. (gentle tone)\n```\n\n3. **Confirming speaker**\n```\nA: これはペンです。\nB: そうですね。\nA: This is a pen.\nB: Yes, that's right.\n```\n\n---\n\n### 💡 Tone\n\n`ね` softens and makes statements polite, inviting agreement."
+				}
+			},
+			"format_map": {}
+		},
+		{
+			"rule_id": "01KJ9AVWN5GC4BT0DMFPDYY015",
+			"level": "N5",
+			"content": {
+				"Russian": {
+					"title": "よ - Частица утверждения",
+					"short_description": "Частица для подчёркивания",
+					"md_description": "## よ — Частица утверждения\n\n### Что это?\n\nЧастица `よ` подчёркивает новую информацию, уверенность или предупреждает.\n\n---\n\n### Использование\n\n1. **Новая информация для слушателя**\n```\nこれは新しい本ですよ。\nЭто новая книга! (ты не знал)\n```\n\n2. **Уверенность**\n```\n大丈夫ですよ。\nВсё в порядке!\n```\n\n3. **Предупреждение/напоминание**\n```\n時間がないですよ。\nВремени нет, знаешь.\n```\n\n---\n\n### 💡 Отличие от ね\n\n| Частица | Цель |\n|---------|------|\n| ね | Жду согласия |\n| よ | Сообщаю новое |\n\n---\n\n### Пример сравнения\n\n```\nこれは高いですね。（＝согласен?）\nЭто дорого, правда?\n\nこれは高いですよ。（＝я告诉你!）\nЭто дорого (я тебе говорю)!\n```"
+				},
+				"English": {
+					"title": "よ - Emphasis particle",
+					"short_description": "New information particle",
+					"md_description": "## よ — Emphasis Particle\n\n### What is it?\n\n`よ` emphasizes new information, shows confidence, or warns/reminds.\n\n---\n\n### Usage\n\n1. **New information for listener**\n```\nこれは新しい本ですよ。\nThis is a new book! (you didn't know)\n```\n\n2. **Confidence**\n```\n大丈夫ですよ。\nIt's fine!\n```\n\n3. **Warning/reminding**\n```\n時間がないですよ。\nThere's no time, just so you know.\n```\n\n---\n\n### 💡 Difference from ね\n\n| Particle | Purpose |\n|----------|---------|\n| ね | Seeking agreement |\n| よ | Giving new info |\n\n---\n\n### Comparison example\n\n```\nこれは高いですね。（＝agree?）\nThis is expensive, right?\n\nこれは高いですよ。（＝telling you!）\nThis is expensive (I'm telling you)!\n```"
+				}
+			},
+			"format_map": {}
+		},
+		{
+			"rule_id": "01KJ9AVWN5GC4BT0DMFPDYY016",
+			"level": "N5",
+			"content": {
+				"Russian": {
+					"title": "どこ/誰/何/いつ - Вопросительные слова",
+					"short_description": "Вопросительные местоимения",
+					"md_description": "## どこ/誰/何/いつ — Вопросительные слова\n\n### Что это?\n\nБазовые вопросительные слова в японском языке.\n\n---\n\n### Вопросительные слова\n\n| Слово | Значение | Пример |\n|-------|----------|--------|\n| どこ | где | ここはどこですか (Где это?) |\n| 誰 | кто | 誰が来ますか (Кто придёт?) |\n| 何 | что | 何を食べますか (Что будешь есть?) |\n| いつ | когда | いつ行きますか (Когда пойдёшь?) |\n\n---\n\n### Примеры\n\n```\nどこに住んでいますか。\nГде ты живёшь?\n```\n\n```\n誰と来ましたか。\nС кем ты пришёл?\n```\n\n```\n何が好きですか。\nЧто тебе нравится?\n```\n\n```\nいつ帰りますか。\nКогда ты вернёшься?\n```\n\n---\n\n### 💡 Чтение 何\n\n`何` читается как:\n- `なん` перед `た`, `だ`, `な`\n- `なに` в других случаях\n\nПримеры:\n- `何時` (なんじ) — когда (часы)\n- `何歳` (なんさい) — сколько лет\n- `何を食べます` (なにをたべます) — что будешь есть"
+				},
+				"English": {
+					"title": "どこ/誰/何/いつ - Question words",
+					"short_description": "Wh-words",
+					"md_description": "## どこ/誰/何/いつ — Question Words\n\n### What is it?\n\nBasic question words in Japanese.\n\n---\n\n### Question words\n\n| Word | Meaning | Example |\n|------|---------|--------|\n| どこ | where | ここはどこですか (Where is this?) |\n| 誰 | who | 誰が来ますか (Who will come?) |\n| 何 | what | 何を食べますか (What will you eat?) |\n| いつ | when | いつ行きますか (When will you go?) |\n\n---\n\n### Examples\n\n```\nどこに住んでいますか。\nWhere do you live?\n```\n\n```\n誰と来ましたか。\nWho did you come with?\n```\n\n```\n何が好きですか。\nWhat do you like?\n```\n\n```\nいつ帰りますか。\nWhen will you return?\n```\n\n---\n\n### 💡 Reading 何\n\n`何` is read as:\n- `なん` before `た`, `だ`, `な`\n- `なに` otherwise\n\nExamples:\n- `何時` (なんじ) — what time\n- `何歳` (なんさい) — how old\n- `何を食べます` (なにをたべます) — what will you eat"
+				}
+			},
+			"format_map": {}
+		},
+		{
+			"rule_id": "01KJ9AVWN5GC4BT0DMFPDYY017",
+			"level": "N5",
+			"content": {
+				"Russian": {
+					"title": "へ - Частица направления",
+					"short_description": "Частица движения",
+					"md_description": "## へ — Частица направления\n\n### Что это?\n\n`へ` указывает направление движения. Читается как `え`.\n\n---\n\n### Правило\n\n```\nМЕСТО + へ + ГЛАГОЛ ДВИЖЕНИЯ\n日本へ行きます。\nЕду в Японию.\n```\n\n---\n\n### Отличие от に\n\n| Частица | Фокус | Пример |\n|---------|-------|--------|\n| へ | направление (как туда?) | 日本へ行きます (еду в Японию) |\n| に | цель (куда именно?) | 日本に行きます (иду в Японию) |\n\n> ⚠️ В большинстве случаев взаимозаменяемы, но `へ` подчёркивает сам путь/направление.\n\n---\n\n### Примеры\n\n```\n東京へ行きます。\nЕду в Токио.\n```\n\n```\n家へ帰ります。\nВозвращаюсь домой.\n```\n\n```\nどこへ行きますか。\nКуда ты идёшь?\n```\n\n---\n\n### 💡 Частая фраза\n\n`行ってきます` = «пойду-вернусь» (иду куда-то и вернусь)"
+				},
+				"English": {
+					"title": "へ - Direction particle",
+					"short_description": "Movement particle",
+					"md_description": "## へ — Direction Particle\n\n### What is it?\n\n`へ` indicates direction of movement. Read as `e`.\n\n---\n\n### Rule\n\n```\nPLACE + へ + MOVEMENT VERB\n日本へ行きます。\nI'm going to Japan.\n```\n\n---\n\n### Difference from に\n\n| Particle | Focus | Example |\n|----------|-------|--------|\n| へ | direction (how there?) | 日本へ行きます (going to Japan) |\n| に | destination (where exactly?) | 日本に行きます (going to Japan) |\n\n> ⚠️ Often interchangeable, but `へ` emphasizes the path/direction itself.\n\n---\n\n### Examples\n\n```\n東京へ行きます。\nI'm going to Tokyo.\n```\n\n```\n家へ帰ります。\nI'm returning home.\n```\n\n```\nどこへ行きますか。\nWhere are you going?\n```\n\n---\n\n### 💡 Common phrase\n\n`行ってきます` = \"I'm off\" (going out and will return)"
+				}
+			},
+			"format_map": {}
+		},
+		{
+			"rule_id": "01KJ9AVWN5GC4BT0DMFPDYY018",
+			"level": "N5",
+			"content": {
+				"Russian": {
+					"title": "があります/います - Существование",
+					"short_description": "Есть/Имеется",
+					"md_description": "## があります/います — Существование\n\n### Что это?\n\nВыражает наличие чего-либо: «есть», «имеется».\n\n---\n\n### Правило выбора\n\n| Глагол | Что описывает |\n|--------|---------------|\n| があります | неодушевлённые предметы |\n| がいます | живые существа |\n\n---\n\n### Формула\n\n```\nПРЕДМЕТ/СУЩЕСТВО + が + あります/います\n本があります。\nЕсть книга.\n\n猫がいます。\nЕсть кот.\n```\n\n---\n\n### Примеры\n\n```\n机の上に本があります。\nНа столе есть книга.\n```\n\n```\n庭に犬がいます。\nВо дворе есть собака.\n```\n\n```\nお金がありません。\nДенег нет.\n```\n\n```\n子供がいません。\nДетей нет.\n```\n\n---\n\n### 💡 Отрицание\n\n`ありません`/`いません` = «нет»\n\n---\n\n### 💡 Вопросительная форма\n\n```\n本がありますか。\nЕсть книга?\n```\n\n---\n\n### ⚠️ Важно\n\n- `があります` — для предметов, вещей\n- `がいます` — для людей, животных"
+				},
+				"English": {
+					"title": "があります/います - Existence",
+					"short_description": "There is/There are",
+					"md_description": "## があります/います — Existence\n\n### What is it?\n\nExpresses existence: \"there is/are\".\n\n---\n\n### Selection rule\n\n| Verb | Describes |\n|------|----------|\n| があります | inanimate objects |\n| がいます | living beings |\n\n---\n\n### Formula\n\n```\nOBJECT/BEING + が + あります/います\n本があります。\nThere is a book.\n\n猫がいます。\nThere is a cat.\n```\n\n---\n\n### Examples\n\n```\n机の上に本があります。\nThere is a book on the desk.\n```\n\n```\n庭に犬がいます。\nThere is a dog in the yard.\n```\n\n```\nお金がありません。\nThere is no money.\n```\n\n```\n子供がいません。\nThere are no children.\n```\n\n---\n\n### 💡 Negation\n\n`ありません`/`いません` = \"there isn't/aren't\"\n\n---\n\n### 💡 Question form\n\n```\n本がありますか。\nIs there a book?\n```\n\n---\n\n### ⚠️ Important\n\n- `があります` — for objects, things\n- `がいます` — for people, animals"
+				}
+			},
+			"format_map": {}
+		},
+		{
+			"rule_id": "01KJ9AVWN5GC4BT0DMFPDYY019",
+			"level": "N5",
+			"content": {
+				"Russian": {
+					"title": "好き/嫌い - Нравится/Не нравится",
+					"short_description": "Предпочтения",
+					"md_description": "## 好き/嫌い — Нравится/Не нравится\n\n### Что это?\n\nСлова-прилагательные для выражения предпочтений. Используются с частицей `が`.\n\n---\n\n### Слова\n\n| Слово | Значение | Тип |\n|-------|----------|-----|\n| 好き | нравится | на-прилагательное |\n| 嫌い | не нравится | на-прилагательное |\n\n---\n\n### Формула\n\n```\nСУЩЕСТВИТЕЛЬНОЕ + が + 好き/嫌い\n日本語が好きです。\nМне нравится японский язык.\n```\n\n---\n\n### Примеры\n\n```\n私は日本語が好きです。\nМне нравится японский язык.\n```\n\n```\n肉が嫌いです。\nЯ не люблю мясо.\n```\n\n```\n音楽が好きです。\nМне нравится музыка.\n```\n\n```\n野菜が嫌いです。\nОвощи не нравятся.\n```\n\n---\n\n### 💡 Важные моменты\n\n- Используй `が`, не `を`\n- `好き` = «нравится» (позитивное)\n- `嫌い` = «не нравится» (негативное)\n\n---\n\n### ❌ Частая ошибка\n\n`日本語を好きです` ✗ → `日本語が好きです` ✓"
+				},
+				"English": {
+					"title": "好き/嫌い - Likes/Dislikes",
+					"short_description": "Preferences",
+					"md_description": "## 好き/嫌い — Likes/Dislikes\n\n### What is it?\n\nNa-adjectives for expressing preferences. Used with `が` particle.\n\n---\n\n### Words\n\n| Word | Meaning | Type |\n|------|---------|------|\n| 好き | like | na-adjective |\n| 嫌い | dislike | na-adjective |\n\n---\n\n### Formula\n\n```\nNOUN + が + 好き/嫌い\n日本語が好きです。\nI like Japanese.\n```\n\n---\n\n### Examples\n\n```\n私は日本語が好きです。\nI like Japanese language.\n```\n\n```\n肉が嫌いです。\nI dislike meat.\n```\n\n```\n音楽が好きです。\nI like music.\n```\n\n```\n野菜が嫌いです。\nI dislike vegetables.\n```\n\n---\n\n### 💡 Important points\n\n- Use `が`, not `を`\n- `好き` = like (positive)\n- `嫌い` = dislike (negative)\n\n---\n\n### ❌ Common mistake\n\n`日本語を好きです` ✗ → `日本語が好きです` ✓"
+				}
+			},
+			"format_map": {}
+		},
+		{
+			"rule_id": "01KJ9AVWN5GC4BT0DMFPDYY020",
+			"level": "N5",
+			"content": {
+				"Russian": {
+					"title": "欲しい - Хотеть (вещь)",
+					"short_description": "Желание предметов",
+					"md_description": "## 欲しい — Хотеть (вещь)\n\n### Что это?\n\nГлагол-прилагательное `欲しい` означает «хочу» (вещь, предмет). Используется с частицей `が`.\n\n---\n\n### Правило\n\n```\nПРЕДМЕТ + が + 欲しい\n新しい車が欲しいです。\nХочу новую машину.\n```\n\n---\n\n### Примеры\n\n```\n新しいパソコンが欲しいです。\nХочу новый компьютер.\n```\n\n```\n水が欲しいです。\nХочу воды.\n```\n\n```\nお金が欲しいです。\nХочу денег.\n```\n\n```\n何が欲しいですか。\nЧто ты хочешь?\n```\n\n---\n\n### ⚠️ Важно\n\n`欲しい` используется **только для вещей/предметов**.\n\nДля желаний выполнить действие используй `～たい`.\n\n---\n\n### 💡 Сравнение\n\n| Хотеть вещь | Хотеть делать |\n|------------|---------------|\n| 水が欲しい (хочу воды) | 水を飲みたい (хочу пить) |"
+				},
+				"English": {
+					"title": "欲しい - Want (thing)",
+					"short_description": "Object desire",
+					"md_description": "## 欲しい — Want (thing)\n\n### What is it?\n\n`欲しい` is a i-adjective meaning \"want (something)\". Used with `が` particle.\n\n---\n\n### Rule\n\n```\nOBJECT + が + 欲しい\n新しい車が欲しいです。\nI want a new car.\n```\n\n---\n\n### Examples\n\n```\n新しいパソコンが欲しいです。\nI want a new computer.\n```\n\n```\n水が欲しいです。\nI want water.\n```\n\n```\nお金が欲しいです。\nI want money.\n```\n\n```\n何が欲しいですか。\nWhat do you want?\n```\n\n---\n\n### ⚠️ Important\n\n`欲しい` is **only for objects/things**.\n\nFor wanting to do an action, use `～たい`.\n\n---\n\n### 💡 Comparison\n\n| Want object | Want action |\n|------------|------------|\n| 水が欲しい (want water) | 水を飲みたい (want to drink) |"
+				}
+			},
+			"format_map": {}
+		},
+		{
+			"rule_id": "01KJ9AVWN5GC4BT0DMFPDYY021",
+			"level": "N5",
+			"content": {
+				"Russian": {
+					"title": "上手/下手 - Хорошо/Плохо уметь",
+					"short_description": "Умения и навыки",
+					"md_description": "## 上手/下手 — Хорошо/Плохо уметь\n\n### Что это?\n\nНа-прилагательные для описания умений. Используются с частицей `が`.\n\n---\n\n### Слова\n\n| Слово | Значение |\n|-------|----------|\n| 上手 | умело, хорошо получается |\n| 下手 | неумело, плохо получается |\n\n---\n\n### Формула\n\n```\nДЕЯТЕЛЬНОСТЬ + が + 上手/下手\n日本語が上手です。\nЯ хорошо знаю японский (язык у меня получается).\n```\n\n---\n\n### Примеры\n\n```\n彼女はピアノが上手です。\nОна хорошо играет на пианино.\n```\n\n```\n私は料理が下手です。\nЯ плохо готовлю.\n```\n\n```\nテニスが上手です。\nЯ хорошо играю в теннис.\n```\n\n```\n絵を描くのが下手です。\nЯ плохо рисую.\n```\n\n---\n\n### 💡 Использование\n\n- `上手` = хорошо получается, талантлив в этом\n- `下手` = плохо получается, не талантлив в этом\n\n---\n\n### ❌ Частая ошибка\n\n`日本語が上手です` ✓ (хорошо знаю японский)\n\n`日本語を上手です` ✗ (неправильная частица)"
+				},
+				"English": {
+					"title": "上手/下手 - Good/Bad at",
+					"short_description": "Skills and abilities",
+					"md_description": "## 上手/下手 — Good/Bad at\n\n### What is it?\n\nNa-adjectives for describing skills. Used with `が` particle.\n\n---\n\n### Words\n\n| Word | Meaning |\n|------|---------|\n| 上手 | good at, skilled |\n| 下手 | bad at, unskilled |\n\n---\n\n### Formula\n\n```\nACTIVITY + が + 上手/下手\n日本語が上手です。\nI am good at Japanese.\n```\n\n---\n\n### Examples\n\n```\n彼女はピアノが上手です。\nShe is good at playing piano.\n```\n\n```\n私は料理が下手です。\nI am bad at cooking.\n```\n\n```\nテニスが上手です。\nI am good at tennis.\n```\n\n```\n絵を描くのが下手です。\nI am bad at drawing.\n```\n\n---\n\n### 💡 Usage\n\n- `上手` = good at, talented in\n- `下手` = bad at, unskilled in\n\n---\n\n### ❌ Common mistake\n\n`日本語が上手です` ✓ (good at Japanese)\n\n`日本語を上手です` ✗ (wrong particle)"
+				}
+			},
+			"format_map": {}
+		},
+		{
+			"rule_id": "01KJ9AVWN5GC4BT0DMFPDYY022",
+			"level": "N5",
+			"content": {
+				"Russian": {
+					"title": "とても/あまり/全然 - Наречия степени",
+					"short_description": "Наречия интенсивности",
+					"md_description": "## とても/あまり/全然 — Наречия степени\n\n### Что это?\n\nНаречия для выражения степени признака: «очень», «не очень», «совсем не».\n\n---\n\n### Наречия\n\n| Наречие | Значение | Использование с положительным | Использование с отрицательным |\n|---------|----------|----------------------------|-----------------------------|\n| とても | очень | ✓ | ✗ |\n| あまり | не очень | ✗ | ✓ |\n| 全然 | совсем не | ✗ | ✓ |\n\n---\n\n### Примеры\n\n**とても**\n```\nとてもおいしいです。\nОчень вкусно.\n\nとても暑いです。\nОчень жарко.\n```\n\n**あまり**\n```\nあまりおいしくないです。\nНе очень вкусно.\n\nあまり好きではありません。\nНе очень нравится.\n```\n\n**全然**\n```\n全然わかりません。\nСовсем не понимаю.\n\n全然好きではありません。\nСовсем не нравится.\n```\n\n---\n\n### 💡 Важные моменты\n\n- `とても` — только с положительным\n- `あまり` и `全然` — только с отрицательным\n- `全然` = более сильное отрицание, чем `あまり`"
+				},
+				"English": {
+					"title": "とても/あまり/全然 - Degree adverbs",
+					"short_description": "Intensity adverbs",
+					"md_description": "## とても/あまり/全然 — Degree Adverbs\n\n### What is it?\n\nAdverbs expressing degree: \"very\", \"not very\", \"not at all\".\n\n---\n\n### Adverbs\n\n| Adverb | Meaning | Use with affirmative | Use with negative |\n|--------|---------|---------------------|-------------------|\n| とても | very | ✓ | ✗ |\n| あまり | not very | ✗ | ✓ |\n| 全然 | not at all | ✗ | ✓ |\n\n---\n\n### Examples\n\n**とても**\n```\nとてもおいしいです。\nIt's very delicious.\n\nとても暑いです。\nIt's very hot.\n```\n\n**あまり**\n```\nあまりおいしくないです。\nIt's not very delicious.\n\nあまり好きではありません。\nI don't like it very much.\n```\n\n**全然**\n```\n全然わかりません。\nI don't understand at all.\n\n全然好きではありません。\nI don't like it at all.\n```\n\n---\n\n### 💡 Important points\n\n- `とても` — only with affirmative\n- `あまり` and `全然` — only with negative\n- `全然` = stronger negation than `あまり`"
+				}
+			},
+			"format_map": {}
+		},
+		{
+			"rule_id": "01KJ9AVWN5GC4BT0DMFPDYY023",
+			"level": "N5",
+			"content": {
+				"Russian": {
+					"title": "から (причина) - Потому что",
+					"short_description": "Причинная частица",
+					"md_description": "## から (причина) — Потому что\n\n### Что это?\n\nЧастица `から` указывает причину или основание для действия. Ставится **после** причины.\n\n---\n\n### Структура\n\n```\nПРИЧИНА + から + РЕЗУЛЬТАТ\n疲れているから、休みます。\nПотому что устал, отдыхаю.\n```\n\n---\n\n### Примеры\n\n```\n雨が降っているから、家にいます。\nПотому что идёт дождь, я дома.\n```\n\n```\nお金がないから、買いません。\nПотому что нет денег, не куплю.\n```\n\n```\n試験があるから、勉強します。\nПотому что есть экзамен, я учусь.\n```\n\n```\n暑いから、冷たいものを飲みます。\nПотому что жарко, пью холодное.\n```\n\n---\n\n### 💡 Позиция\n\n- Японский: ПРИЧИНА + から + РЕЗУЛЬТАТ\n- Русский/English: РЕЗУЛЬТАТ + так как + ПРИЧИНА\n\n---\n\n### 💡 Сравнение с ので\n\n| Частица | Тон |\n|---------|-----|\n| から | субъективный, более прямой |\n| ので | объективный, более вежливый |"
+				},
+				"English": {
+					"title": "から (reason) - Because",
+					"short_description": "Reason particle",
+					"md_description": "## から (reason) — Because\n\n### What is it?\n\n`から` indicates reason or cause for an action. Placed **after** the reason.\n\n---\n\n### Structure\n\n```\nREASON + から + RESULT\n疲れているから、休みます。\nBecause tired, resting.\n```\n\n---\n\n### Examples\n\n```\n雨が降っているから、家にいます。\nBecause it's raining, I'm at home.\n```\n\n```\nお金がないから、買いません。\nBecause I have no money, I won't buy it.\n```\n\n```\n試験があるから、勉強します。\nBecause there is an exam, I'm studying.\n```\n\n```\n暑いから、冷たいものを飲みます。\nBecause it's hot, I'm drinking something cold.\n```\n\n---\n\n### 💡 Position\n\n- Japanese: REASON + から + RESULT\n- English: RESULT + because + REASON\n\n---\n\n### 💡 Comparison with ので\n\n| Particle | Tone |\n|----------|------|\n| から | subjective, more direct |\n| ので | objective, more polite |"
+				}
+			},
+			"format_map": {}
+		},
+		{
+			"rule_id": "01KJ9AVWN5GC4BT0DMFPDYY024",
+			"level": "N5",
+			"content": {
+				"Russian": {
+					"title": "どうして - Почему",
+					"short_description": "Вопрос о причине",
+					"md_description": "## どうして — Почему\n\n### Что это?\n\nВопросительное слово `どうして` означает «почему», «по какой причине».\n\n---\n\n### Структура ответа\n\nОбычно отвечают с `から` (потому что):\n\n```\nQ: どうして来ませんでしたか。\nПочему ты не пришёл?\n\nA: 忙しかったからです。\nПотому что был занят.\n```\n\n---\n\n### Примеры\n\n```\nどうして日本語を勉強しますか。\nПочему ты изучаешь японский?\n```\n\n```\nどうして遅れましたか。\nПочему ты опоздал?\n```\n\n```\nどうて嬉しいですか。\nПочему ты рад?\n```\n\n```\nどうて来ないんですか。\nПочему ты не приходишь?\n```\n\n---\n\n### 💡 Другие варианты «почему»\n\n| Слово | Тон |\n|------|-----|\n| どうして | нейтральный |\n| なぜ | формальный, письменный |\n| なんで | разговорный |"
+				},
+				"English": {
+					"title": "どうして - Why",
+					"short_description": "Reason question",
+					"md_description": "## どうして — Why\n\n### What is it?\n\n`どうして` is the question word meaning \"why\", \"for what reason\".\n\n---\n\n### Response structure\n\nUsually answered with `から` (because):\n\n```\nQ: どうして来ませんでしたか。\nWhy didn't you come?\n\nA: 忙しかったからです。\nBecause I was busy.\n```\n\n---\n\n### Examples\n\n```\nどうして日本語を勉強しますか。\nWhy do you study Japanese?\n```\n\n```\nどうして遅れましたか。\nWhy were you late?\n```\n\n```\nどうて嬉しいですか。\nWhy are you happy?\n```\n\n```\nどうて来ないんですか。\nWhy don't you come?\n```\n\n---\n\n### 💡 Other \"why\" variants\n\n| Word | Tone |\n|------|------|\n| どうして | neutral |\n| なぜ | formal, written |\n| なんで | casual |"
+				}
+			},
+			"format_map": {}
+		},
+		{
+			"rule_id": "01KJ9AVWN5GC4BT0DMFPDYY025",
+			"level": "N5",
+			"content": {
+				"Russian": {
+					"title": "数量 - Выражения количества",
+					"short_description": "Счётные слова",
+					"md_description": "## Количество — Выражения количества\n\n### Что это?\n\nВ японском языке счётные слова зависят от типа предмета.\n\n---\n\n### Базовые счётные слова\n\n| Тип | Счётное слово | Примеры |\n|-----|---------------|---------|\n| Тонкие предметы | 枚 (まい) | лист бумаги, тарелка |\n| Длинные предметы | 本 (ほん) | книга, ручка, дорога |\n| Маленькие предметы | 個 (こ) | яблоко, камень |\n| Люди | 人 (にん) | люди |\n| Машины/аппараты | 台 (だい) | машина, компьютер |\n| Животные | 匹 (ひき) | кошка, собака |\n| Книги/тома | 冊 (さつ) | книга, журнал |\n| Степи/этажи | 階 (かい) | этаж |\n| Разы | 回 (かい) | раз |\n| Минуты | 分 (ふん) | минута |\n| Часы | 時間 (じかん) | час |\n\n---\n\n### Формула\n\n```\nЧИСЛО + СЧЁТНОЕ СЛОВО + ПРЕДМЕТ\n三枚の紙\nТри листа бумаги\n\n一人の学生\nОдин студент\n```\n\n---\n\n### Чтение чисел\n\n| Число | С чтением ひと/ふた/み/よ/いつ/む/なな/や/ここの/とお |\n|-------|--------------------------------------------------|\n| 1 | 一つ (ひとつ) |\n| 2 | 二つ (ふたつ) |\n| 3 | 三つ (みっつ) |\n| 4 | 四つ (よっつ) |\n| 5 | 五つ (いつつ) |\n| 6 | 六つ (むっつ) |\n| 7 | 七つ (ななつ) |\n| 8 | 八つ (やっつ) |\n| 9 | 九つ (ここのつ) |\n| 10 | 十 (とお) |"
+				},
+				"English": {
+					"title": "Quantity - Counters",
+					"short_description": "Counting words",
+					"md_description": "## Quantity — Counter Words\n\n### What is it?\n\nJapanese uses different counter words depending on the type of object.\n\n---\n\n### Basic counters\n\n| Type | Counter | Examples |\n|-----|---------|---------|\n| Thin objects | 枚 (まい) | paper, plate |\n| Long objects | 本 (ほん) | book, pen, road |\n| Small objects | 個 (こ) | apple, stone |\n| People | 人 (にん) | people |\n| Machines | 台 (だい) | car, computer |\n| Animals | 匹 (ひき) | cat, dog |\n| Books | 冊 (さつ) | book, magazine |\n| Floors | 階 (かい) | floor |\n| Times | 回 (かい) | time |\n| Minutes | 分 (ふん) | minute |\n| Hours | 時間 (じかん) | hour |\n\n---\n\n### Formula\n\n```\nNUMBER + COUNTER + NOUN\n三枚の紙\nThree sheets of paper\n\n一人の学生\nOne student\n```\n\n---\n\n### Reading numbers\n\n| Number | Native Japanese reading |\n|---------|------------------------|\n| 1 | 一つ (ひとつ) |\n| 2 | 二つ (ふたつ) |\n| 3 | 三つ (みっつ) |\n| 4 | 四つ (よっつ) |\n| 5 | 五つ (いつつ) |\n| 6 | 六つ (むっつ) |\n| 7 | 七つ (ななつ) |\n| 8 | 八つ (やっつ) |\n| 9 | 九つ (ここのつ) |\n| 10 | 十 (とお) |"
+				}
+			},
+			"format_map": {}
+		},
+		{
+			"rule_id": "MBPSQBX4E787AVDF1YJ1T333CT",
+			"level": "N5",
+			"content": {
+				"Russian": {
+					"title": "より",
+					"short_description": "Сравнение (чем)",
+					"md_description": "## Грамматическая частица より — Сравнение «чем»\n\n### Что это?\n\n`より` — **частица сравнения**: «чем». Указывает на стандарт для сравнения. Аналог английского «than».\n\n---\n\n### Формула\n\n```\n[слово] + より + [прилагательное]\n東京 + より + 大きい (больше, чем Токио)\n昨日 + より + 寒い (холоднее, чем вчера)\n```\n\n---\n\n### Примеры\n\n```\n東京は大阪より大きいです。\nТокио больше, чем Осака.\n```\n\n```\n今日は昨日より暑いです。\nСегодня жарче, чем вчера.\n```\n\n```\n私は姉より背が高いです。\nЯ выше, чем моя сестра.\n```\n\n```\n電車はバスより速いです。\nПоезд быстрее автобуса.\n```\n\n---\n\n### Порядок слов\n\n| Русский порядок | Японский порядок |\n|---------------|-----------------|\n| Токио **чем** Осака (большой) | Осака **より** Токио (большой) |\n| 昨日 **чем** сегодня (холодно) | Сегодня **より** вчера (холодно) |\n\n⚠️ В японском стандарт сравнения (`より`) стоит **перед** тем, с чем сравниваем!\n\n---\n\n### Сравнение с のほうが\n\n| Форма | Акцент |\n|-------|--------|\n| `AよりB` | Внимание на B |\n| `AのほうがB` | Внимание на A как на выбранном варианте |\n\n---\n\n### 💡 Лайфхак\n\n`より` — чистое сравнение. `のほうが` — выбор/предпочтение."
+				},
+				"English": {
+					"title": "より",
+					"short_description": "Comparison (than)",
+					"md_description": "## Particle より — Comparison \"than\"\n\n### What is it?\n\n`より` is the **comparison particle**: \"than.\" It marks the standard of comparison, similar to English \"than.\"\n\n---\n\n### Formula\n\n```\n[word] + より + [adjective]\n東京 + より + 大きい (bigger than Tokyo)\n昨日 + より + 寒い (colder than yesterday)\n```\n\n---\n\n### Examples\n\n```\n東京は大阪より大きいです。\nTokyo is bigger than Osaka.\n```\n\n```\n今日は昨日より暑いです。\nToday is hotter than yesterday.\n```\n\n```\n私は姉より背が高いです。\nI am taller than my sister.\n```\n\n```\n電車はバスより速いです。\nThe train is faster than the bus.\n```\n\n---\n\n### Word order\n\n| English | Japanese |\n|---------|----------|\n| Tokyo **than** Osaka (bigger) | Osaka **より** Tokyo (bigger) |\n| Yesterday **than** today (cold) | Today **より** yesterday (cold) |\n\n⚠️ In Japanese, the comparison standard (`より`) comes **before** what's being compared!\n\n---\n\n### Comparison with のほうが\n\n| Form | Focus |\n|------|-------|\n| `AよりB` | Focus on B |\n| `AのほうがB` | Focus on A as the chosen option |\n\n---\n\n### 💡 Tip\n\n`より` is pure comparison. `のほうが` is about preference/choice."
+				}
+			},
+			"format_map": {}
+		},
+		{
+			"rule_id": "51G5RYT7W687JTP0JOK9SF5QXK",
+			"level": "N5",
+			"content": {
+				"Russian": {
+					"title": "のほうが",
+					"short_description": "Более чем / Лучше чем",
+					"md_description": "## Конструкция のほうが — «Более чем» / «Лучше»\n\n### Что это?\n\n`のほうが` выражает **предпочтение или выбор**: «X лучше, чем Y», «X больше, чем Y». Акцент на том, что выделено (`のほうが`).\n\n---\n\n### Формула\n\n```\n[A] + のほうが + [B] + より\n水 + のほうが + コーヒー + より + いい (вода лучше кофе)\n```\n\n---\n\n### Примеры\n\n```\n水のほうがコーヒーより好きです。\nЯ больше люблю воду, чем кофе.\n```\n\n```\n電車のほうがバスより速いです。\nПоезд быстрее автобуса.\n```\n\n```\n春のほうが秋より好きです。\nЯ больше люблю весну, чем осень.\n```\n\n```\n昨日のほうが今日より忙しかったです。\nВчера было занятее, чем сегодня.\n```\n\n---\n\n### Сравнение форм\n\n| Форма | Значение |\n|-------|----------|\n| `AはBより大きい` | A больше B (чистое сравнение) |\n| `AのほうがBより大きい` | A больше B (акцент на A как на выбранном) |\n\n---\n\n### 💡 Нюанс\n\n`のほうが` часто используется, когда нужно **выбрать** из двух вариантов или показать **предпочтение**."
+				},
+				"English": {
+					"title": "のほうが",
+					"short_description": "More than / Better than",
+					"md_description": "## Construction のほうが — \"More than\" / \"Better than\"\n\n### What is it?\n\n`のほうが` expresses **preference or choice**: \"X is better than Y,\" \"X is more than Y.\" The focus is on the item marked by `のほうが`.\n\n---\n\n### Formula\n\n```\n[A] + のほうが + [B] + より\nWater + のほうが + Coffee + より + better\n```\n\n---\n\n### Examples\n\n```\n水のほうがコーヒーより好きです。\nI like water more than coffee.\n```\n\n```\n電車のほうがバスより速いです。\nThe train is faster than the bus.\n```\n\n```\n春のほうが秋より好きです。\nI like spring more than autumn.\n```\n\n```\n昨日のほうが今日より忙しかったです。\nYesterday was busier than today.\n```\n\n---\n\n### Comparison of forms\n\n| Form | Meaning |\n|------|---------|\n| `AはBより大きい` | A is bigger than B (pure comparison) |\n| `AのほうがBより大きい` | A is bigger than B (focus on A) |\n\n---\n\n### 💡 Nuance\n\n`のほうが` is often used when **choosing** between two options or showing **preference**."
+				}
+			},
+			"format_map": {}
+		},
+		{
+			"rule_id": "TZWY8HNRXAHAYL3JUOYZ2GDRJ4",
+			"level": "N5",
+			"content": {
+				"Russian": {
+					"title": "いちばん",
+					"short_description": "Самый / Лучший",
+					"md_description": "## Идиома いちばん — «Самый» / «Лучший»\n\n### Что это?\n\n`いちばん` (一番) означает «самый», «наилучший», «лучший из всех». Используется с прилагательными и глаголами для выражения превосходной степени.\n\n---\n\n### Формула\n\n```\nいちばん + [прилагательное/глагол]\nいちばん + 高い (самый дорогой)\nいちばん + 好き (самый любимый)\n```\n\n---\n\n### Примеры\n\n```\nこれは一番高い本です。\nЭто самая дорогая книга.\n```\n\n```\n日本料理の中で、寿司が一番好きです。\nИз японской еды я больше всего люблю суши.\n```\n\n```\n彼はクラスで一番背が高いです。\nОн самый высокий в классе.\n```\n\n```\n一番行きたい国は日本です。\nСтрана, в которую я больше всего хочу поехать, — Япония.\n```\n\n```\n今日は一番忙しい日でした。\nСегодня был самый занятой день.\n```\n\n---\n\n### Использование с существительными\n\n```\nいちばん + の + [существительное]\nいちばんのおすすめ (лучшая рекомендация)\nいちばんの友達 (лучший друг)\n```\n\n---\n\n### 💡 Лайфхак\n\n`いちばん` — одно из самых частых слов в разговорной японской. Используется везде: в магазине («самый популярный»), на работе («самый важный»), в быту («самый вкусный»)."
+				},
+				"English": {
+					"title": "いちばん",
+					"short_description": "The most / The best",
+					"md_description": "## Idiom いちばん — \"The most\" / \"The best\"\n\n### What is it?\n\n`いちばん` (一番) means \"the most,\" \"the best,\" \"the number one.\" It's used with adjectives and verbs to express the superlative degree.\n\n---\n\n### Formula\n\n```\nいちばん + [adjective/verb]\nいちばん + 高い (the most expensive)\nいちばん + 好き (the most favorite)\n```\n\n---\n\n### Examples\n\n```\nこれは一番高い本です。\nThis is the most expensive book.\n```\n\n```\n日本料理の中で、寿司が一番好きです。\nAmong Japanese foods, I like sushi the most.\n```\n\n```\n彼はクラスで一番背が高いです。\nHe is the tallest in the class.\n```\n\n```\n一番行きたい国は日本です。\nThe country I want to visit most is Japan.\n```\n\n```\n今日は一番忙しい日でした。\nToday was the busiest day.\n```\n\n---\n\n### With nouns\n\n```\nいちばん + の + [noun]\nいちばんのおすすめ (top recommendation)\nいちばんの友達 (best friend)\n```\n\n---\n\n### 💡 Tip\n\n`いちばん` is one of the most frequently used words in spoken Japanese. You'll hear it everywhere: in shops (\"most popular\"), at work (\"most important\"), and in daily life (\"most delicious\")."
+				}
+			},
+			"format_map": {}
+		},
+		{
+			"rule_id": "29MYHRGUN2ROR5Y4U7YRNQL9SZ",
+			"level": "N5",
+			"content": {
+				"Russian": {
+					"title": "～とき",
+					"short_description": "Когда (время)",
+					"md_description": "## Конструкция ～とき — «Когда» / «В то время, когда»\n\n### Что это?\n\n`～とき` выражает **временное условие**: «когда», «в то время, когда». Указывает на момент, когда происходит действие.\n\n---\n\n### Формула\n\n```\n[глагол/прилагательное] + とき\n食べるとき (когда ем / когда буду есть)\n行ったとき (когда пошёл / когда пошёл)\n寒いとき (когда холодно)\n```\n\n---\n\n### Правило спряжения\n\n| Тип | Настоящее (+) | Настоящее (-) | Прошедшее (+) | Прошедшее (-) |\n|-----|---------------|---------------|---------------|---------------|\n| Глагол | `食べるとき` | `食べないとき` | `食べたとき` | `食べなかったとき` |\n| И-прилагательное | `寒いとき` | `寒くないとき` | `寒かったとき` | `寒くなかったとき` |\n| На-прилагательное | `静かなとき` | `静かじゃないとき` | `静かなとき` | `静かじゃないとき` |\n| Существительное | `学生のとき` | — | `学生のとき` | — |\n\n---\n\n### Примеры\n\n```\n日本へ行ったとき、京都を見学しました。\nКогда ездил в Японию, посетил Киото.\n```\n\n```\n子供のとき、よく公園で遊びました。\nВ детстве часто играл в парке.\n```\n\n```\n暇なとき、映画を見ます。\nКогда есть свободное время, смотрю фильмы.\n```\n\n```\n日本語がわからないとき、辞書を使います。\nКогда не понимаю по-японски, использую словарь.\n```\n\n```\n朝ご飯を食べるとき、ニュースを見ます。\nКогда завтракаю, смотрю новости.\n```\n\n---\n\n### ⚠️ Важная разница: ～とき / ～たら\n\n| Форма | Использование |\n|-------|---------------|\n| `～とき` | Когда / В момент (одновременность или описание момента) |\n| `～たら` | Если / Когда (после завершения действия) |\n\n---\n\n### 💡 Нюанс\n\n`～とき` используется для **описания момента времени**, в то время как `～たら` — для **условия или следствия**."
+				},
+				"English": {
+					"title": "～とき",
+					"short_description": "When (time)",
+					"md_description": "## Construction ～とき — \"When\" / \"At the time when\"\n\n### What is it?\n\n`～とき` expresses a **temporal condition**: \"when,\" \"at the time when.\" It specifies the moment when an action occurs.\n\n---\n\n### Formula\n\n```\n[verb/adjective] + とき\n食べるとき (when eating / when going to eat)\n行ったとき (when went / when I went)\n寒いとき (when cold)\n```\n\n---\n\n### Conjugation rules\n\n| Type | Present (+) | Present (-) | Past (+) | Past (-) |\n|-----|-------------|-------------|----------|----------|\n| Verb | `食べるとき` | `食べないとき` | `食べたとき` | `食べなかったとき` |\n| I-adjective | `寒いとき` | `寒くないとき` | `寒かったとき` | `寒くなかったとき` |\n| Na-adjective | `静かなとき` | `静かじゃないとき` | `静かなとき` | `静かじゃないとき` |\n| Noun | `学生のとき` | — | `学生のとき` | — |\n\n---\n\n### Examples\n\n```\n日本へ行ったとき、京都を見学しました。\nWhen I went to Japan, I visited Kyoto.\n```\n\n```\n子供のとき、よく公園で遊びました。\nWhen I was a child, I often played at the park.\n```\n\n```\n暇なとき、映画を見ます。\nWhen I have free time, I watch movies.\n```\n\n```\n日本語がわからないとき、辞書を使います。\nWhen I don't understand Japanese, I use a dictionary.\n```\n\n```\n朝ご飯を食べるとき、ニュースを見ます。\nWhen I eat breakfast, I watch the news.\n```\n\n---\n\n### ⚠️ Key difference: ～とき / ～たら\n\n| Form | Usage |\n|------|-------|\n| `～とき` | When / At the moment (simultaneity or moment description) |\n| `～たら` | If / When (after the action is completed) |\n\n---\n\n### 💡 Nuance\n\n`～とき` describes the **moment in time**, while `～たら` describes a **condition or consequence**."
+				}
+			},
+			"format_map": {}
+		},
+		{
+			"rule_id": "51O34PIW7FWWT19OU7YH0ZRRDB",
+			"level": "N5",
+			"content": {
+				"Russian": {
+					"title": "～てから",
+					"short_description": "После того как",
+					"md_description": "## Конструкция ～てから — «После того как»\n\n### Что это?\n\n`～てから` выражает **последовательность действий**: «сделать Х, затем Y», «после того как сделать Х». Важный нюанс: **первое действие завершается перед началом второго**.\n\n---\n\n### Формула\n\n```\n[て-форма глагола] + から\n食べる → 食べてから (после того как поем)\n帰る → 帰ってから (после того как вернусь)\n```\n\n---\n\n### Примеры\n\n```\nご飯を食べてから、出かけます。\nПосле того как поем, выхожу из дома.\n```\n\n```\n宿題をしてから、テレビを見ます。\nСделаю домашнее задание, потом буду смотреть телевизор.\n```\n\n```\nお風呂に入ってから、寝ます。\nПриму ванну, потом лягу спать.\n```\n\n```\n日本語を勉強してから、日本へ行きたいです。\nХочу поехать в Японию после того, как изучу японский.\n```\n\n```\n仕事が終わってから、飲みに行きましょう。\nПосле работы пойдём выпьем.\n```\n\n---\n\n### ⚠️ Разница с ～とき\n\n| Форма | Значение |\n|-------|----------|\n| `ご飯を食べるとき` | Когда ем (во время еды) |\n| `ご飯を食べてから` | После того как поем (после завершения) |\n\n---\n\n### 💡 Лайфхак\n\n`～てから` используется для **последовательных действий**, которые логически связаны. Типичный паттерн: «сначала А, потом Б»."
+				},
+				"English": {
+					"title": "～てから",
+					"short_description": "After doing",
+					"md_description": "## Construction ～てから — \"After doing\"\n\n### What is it?\n\n`～てから` expresses **sequence of actions**: \"do X, then Y,\" \"after doing X.\" Key nuance: **the first action must be completed before the second begins**.\n\n---\n\n### Formula\n\n```\n[te-form of verb] + から\n食べる → 食べてから (after eating)\n帰る → 帰ってから (after returning)\n```\n\n---\n\n### Examples\n\n```\nご飯を食べてから、出かけます。\nI go out after I eat.\n```\n\n```\n宿題をしてから、テレビを見ます。\nI watch TV after I do my homework.\n```\n\n```\nお風呂に入ってから、寝ます。\nI go to bed after I take a bath.\n```\n\n```\n日本語を勉強してから、日本へ行きたいです。\nI want to go to Japan after I study Japanese.\n```\n\n```\n仕事が終わってから、飲みに行きましょう。\nLet's go for a drink after work.\n```\n\n---\n\n### ⚠️ Difference from ～とき\n\n| Form | Meaning |\n|------|---------|\n| `ご飯を食べるとき` | When eating (during the meal) |\n| `ご飯を食べてから` | After eating (after completion) |\n\n---\n\n### 💡 Tip\n\n`～てから` is used for **sequential actions** that are logically connected. The typical pattern is: \"first A, then B.\""
+				}
+			},
+			"format_map": {}
+		},
+		{
+			"rule_id": "M6KILIDX0TR4GT6HK4WIRMKUNS",
+			"level": "N5",
+			"content": {
+				"Russian": {
+					"title": "～てもいいです",
+					"short_description": "Можно / Разрешено",
+					"md_description": "## Конструкция ～てもいいです — «Можно»\n\n### Что это?\n\n`～てもいいです` выражает **разрешение**: «можно», «позволено», «в порядке». Противоположность `～てはいけません`.\n\n---\n\n### Формула\n\n```\n[て-форма глагола] + も + いいです\n見る → 見てもいいです (можно смотреть)\n食べる → 食べてもいいです (можно есть)\n```\n\n---\n\n### Примеры\n\n```\nここで写真を撮ってもいいです。\nЗдесь можно фотографировать.\n```\n\n```\n家に帰ってもいいです。\nМожно вернуться домой.\n```\n\n```\nこの本を借りてもいいですか。\nМожно взять эту книгу?\n```\n\n```\n明日来てもいいです。\nМожно прийти завтра.\n```\n\n```\n座ってもいいですか。\nМожно сесть?\n```\n\n---\n\n### Сравнение форм\n\n| Форма | Значение |\n|-------|----------|\n| `～てもいいです` | Можно (разрешение) |\n| `～なくてもいいです` | Не обязательно (отсутствие обязанности) |\n| `～てはいけません` | Нельзя (запрет) |\n\n---\n\n### 💡 Нюанс\n\n`～てもいいです` часто используется для **запроса разрешения**. Добавьте `か` в конце для вопроса: `～てもいいですか`"
+				},
+				"English": {
+					"title": "～てもいいです",
+					"short_description": "May / Allowed",
+					"md_description": "## Construction ～てもいいです — \"May / Allowed\"\n\n### What is it?\n\n`～てもいいです` expresses **permission**: \"may,\" \"allowed to,\" \"it's okay.\" It's the opposite of `～てはいけません`.\n\n---\n\n### Formula\n\n```\n[te-form of verb] + も + いいです\n見る → 見てもいいです (may look)\n食べる → 食べてもいいです (may eat)\n```\n\n---\n\n### Examples\n\n```\nここで写真を撮ってもいいです。\nYou may take photos here.\n```\n\n```\n家に帰ってもいいです。\nYou may go home.\n```\n\n```\nこの本を借りてもいいですか。\nMay I borrow this book?\n```\n\n```\n明日来てもいいです。\nYou may come tomorrow.\n```\n\n```\n座ってもいいですか。\nMay I sit down?\n```\n\n---\n\n### Comparison of forms\n\n| Form | Meaning |\n|------|---------|\n| `～てもいいです` | May / Allowed (permission) |\n| `～なくてもいいです` | Don't have to (lack of obligation) |\n| `～てはいけません` | Must not (prohibition) |\n\n---\n\n### 💡 Tip\n\n`～てもいいです` is often used to **ask for permission**. Add `か` at the end for a question: `～てもいいですか`"
+				}
+			},
+			"format_map": {}
+		},
+		{
+			"rule_id": "OBUZ2RS2HI9YACEQABD47UNNG4",
+			"level": "N5",
+			"content": {
+				"Russian": {
+					"title": "～てはいけません",
+					"short_description": "Нельзя / Запрещено",
+					"md_description": "## Конструкция ～てはいけません — «Нельзя»\n\n### Что это?\n\n`～てはいけません` выражает **запрет**: «нельзя», «запрещено». Это формальная форма запрещения.\n\n---\n\n### Формула\n\n```\n[て-форма глагола] + は + いけません\n見る → 見てはいけません (нельзя смотреть)\n食べる → 食べてはいけません (нельзя есть)\n```\n\n---\n\n### Примеры\n\n```\nここでタバコを吸ってはいけません。\nЗдесь нельзя курить.\n```\n\n```\n授業中、話してはいけません。\nНельзя разговаривать на уроке.\n```\n\n```\nこの川で泳いではいけません。\nВ этой реке нельзя плавать.\n```\n\n```\nここに入ってはいけません。\nВход сюда запрещён.\n```\n\n```\nお酒を飲んではいけません。\nНельзя пить алкоголь.\n```\n\n---\n\n### Разговорный вариант\n\n`～てはいけません` → `～てはいけない` (менее формально)\n\n---\n\n### Сравнение форм\n\n| Форма | Значение |\n|-------|----------|\n| `～てはいけません` | Нельзя (формальный запрет) |\n| `～ないでください` | Пожалуйста, не делайте (просьба) |\n| `～てもいいです` | Можно (разрешение) |\n\n---\n\n### 💡 Нюанс\n\n`～てはいけません` — это **жёсткий запрет**. Используется в правилах, на табличках, в официальных инструкциях."
+				},
+				"English": {
+					"title": "～てはいけません",
+					"short_description": "Must not / Prohibited",
+					"md_description": "## Construction ～てはいけません — \"Must not\"\n\n### What is it?\n\n`～てはいけません` expresses a **prohibition**: \"must not,\" \"not allowed to.\" It's the formal form of prohibition.\n\n---\n\n### Formula\n\n```\n[te-form of verb] + は + いけません\n見る → 見てはいけません (must not look)\n食べる → 食べてはいけません (must not eat)\n```\n\n---\n\n### Examples\n\n```\nここでタバコを吸ってはいけません。\nYou must not smoke here.\n```\n\n```\n授業中、話してはいけません。\nYou must not talk during class.\n```\n\n```\nこの川で泳いではいけません。\nYou must not swim in this river.\n```\n\n```\nここに入ってはいけません。\nEntering here is prohibited.\n```\n\n```\nお酒を飲んではいけません。\nYou must not drink alcohol.\n```\n\n---\n\n### Casual variant\n\n`～てはいけません` → `～てはいけない` (less formal)\n\n---\n\n### Comparison of forms\n\n| Form | Meaning |\n|------|---------|\n| `～てはいけません` | Must not (formal prohibition) |\n| `～ないでください` | Please don't (request) |\n| `～てもいいです` | May (permission) |\n\n---\n\n### 💡 Tip\n\n`～てはいけません` is a **strong prohibition**. Used in rules, on signs, and in official instructions."
+				}
+			},
+			"format_map": {}
+		},
+		{
+			"rule_id": "BX5G6TK7Z8RYREJEN544NKPY2N",
+			"level": "N5",
+			"content": {
+				"Russian": {
+					"title": "～たり～たり",
+					"short_description": "Перечисление действий",
+					"md_description": "## Конструкция ～たり～たり — Перечисление примеров\n\n### Что это?\n\n`～たり～たり` выражает **неполное перечисление**: «делать то-то и то-то», «то ли это, то ли то». Указывает на примеры действий, но не исчерпывающий список.\n\n---\n\n### Формула\n\n```\n[た-форма глагола] + り + [た-форма глагола] + り + する\n見る → 見たり (смотреть и...)\n食べる → 食べたり (есть и...)\n```\n\n---\n\n### Правило образования た-формы\n\n| Тип глагола | Словарная форма | た-форма |\n|------------|----------------|---------|\n| Группа 1 (く) | 書く | 書いた |\n| Группа 1 (ぐ) | 泳ぐ | 泳いだ |\n| Группа 1 (す) | 話す | 話した |\n| Группа 1 (つ、る、う) | 待つ、買う | 待った、買った |\n| Группа 1 (む、ぬ、ぶ) | 飲む、遊ぶ | 飲んだ、遊んだ |\n| Группа 2 | 食べる | 食べた |\n| Группа 3 | する、来る | した、来た |\n\n---\n\n### Примеры\n\n```\n日曜日は映画を見たり、本を読んだりします。\nПо воскресеньям я смотрю фильмы, читаю книги и так далее.\n```\n\n```\n休みの日は買い物に行ったり、友達と会ったりします。\nВ выходные дни я хожу за покупками, встречаюсь с друзьями и т.д.\n```\n\n```\n昨日は雨だったり、風だったりでした。\nВчера то ли шёл дождь, то ли дул ветер.\n```\n\n```\n日本では寿司を食べたり、ラーメンを食べたりしました。\nВ Японии я ел суши, рамен и другое.\n```\n\n```\n彼は英語を話したり、フランス語を話したりできます。\nОн говорит по-английски, по-французски и т.д.\n```\n\n---\n\n### ⚠️ Важное правило\n\nВсегда заканчивается на `～たり...する` (или `～たり...した` в прошедшем времени).\n\n---\n\n### 💡 Нюанс\n\n`～たり～たり` означает «и другие подобные вещи», а не исчерпывающий список. Подходит, когда хочешь дать примеры."
+				},
+				"English": {
+					"title": "～たり～たり",
+					"short_description": "Listing actions (examples)",
+					"md_description": "## Construction ～たり～たり — Listing Examples\n\n### What is it?\n\n`～たり～たり` expresses **incomplete listing**: \"doing this and that,\" \"things like A and B.\" It gives examples of actions, not an exhaustive list.\n\n---\n\n### Formula\n\n```\n[ta-form of verb] + り + [ta-form of verb] + り + する\n見る → 見たり (looking and...)\n食べる → 食べたり (eating and...)\n```\n\n---\n\n### Ta-form rules\n\n| Verb type | Dictionary form | Ta-form |\n|-----------|----------------|---------|\n| Group 1 (く) | 書く | 書いた |\n| Group 1 (ぐ) | 泳ぐ | 泳いだ |\n| Group 1 (す) | 話す | 話した |\n| Group 1 (つ、る、う) | 待つ、買う | 待った、買った |\n| Group 1 (む、ぬ、ぶ) | 飲む、遊ぶ | 飲んだ、遊んだ |\n| Group 2 | 食べる | 食べた |\n| Group 3 | する、来る | した、来た |\n\n---\n\n### Examples\n\n```\n日曜日は映画を見たり、本を読んだりします。\nOn Sundays, I watch movies, read books, and so on.\n```\n\n```\n休みの日は買い物に行ったり、友達と会ったりします.\n```\n\n```\n昨日は雨だったり、風だったりでした。\nYesterday it rained, blew wind, and so forth.\n```\n\n```\n日本では寿司を食べたり、ラーメンを食べたりしました。\nIn Japan, I ate sushi, ramen, and other things.\n```\n\n```\n彼は英語を話したり、フランス語を話したりできます。\nHe speaks English, French, and so on.\n```\n\n---\n\n### ⚠️ Important rule\n\nAlways ends with `～たり...する` (or `～たり...した` in past tense).\n\n---\n\n### 💡 Tip\n\n`～たり～たり` means \"and similar things,\" not an exhaustive list. Use it when you want to give examples."
+				}
+			},
+			"format_map": {}
+		},
+		{
+			"rule_id": "0741RPK5YOOCRTZTUNQQ2S71KM",
+			"level": "N5",
+			"content": {
+				"Russian": {
+					"title": "あげる",
+					"short_description": "Давать (кому-то другому)",
+					"md_description": "## Глагол あげる — Давать (кому-то другому)\n\n### Что это?\n\n`あげる` выражает **дарение кому-то другому**: «я даю тебе», «он даёт ей». Важный нюанс: даритель говорит о себе как о субъекте.\n\n---\n\n### Формула\n\n```\n[кто] + は + [кому] + に + [что] + を + あげる\n私は + 友達に + 本 + を + あげる (я даю другу книгу)\n```\n\n---\n\n### Примеры\n\n```\n私は友達に本をあげました。\nЯ подарил другу книгу.\n```\n\n```\n母に花をあげます。\nДам маме цветы.\n```\n\n```\n彼女にプレゼントをあげたいです。\nХочу подарить ей подарок.\n```\n\n```\n子供にお菓子をあげました。\nДал ребёнку конфеты.\n```\n\n```\n田中さんにペンをあげました。\nПодарил господину Танаке ручку.\n```\n\n---\n\n### ⚠️ Важное правило\n\nНельзя сказать «я даю самому себе» или «ты даёшь мне» — используй `もらう` или `くれる`.\n\n---\n\n### Сравнение глаголов дарения\n\n| Глагол | Субъект | Получатель | Пример |\n|--------|---------|-----------|--------|\n| `あげる` | Я | Другой человек | Я даю другу |\n| `くれる` | Другой человек | Я | Друг даёт мне |\n| `もらう` | Я | Получаю от другого | Я получаю от друга |\n\n---\n\n### 💡 Культурный нюанс\n\n`～てあげる` означает «я делаю для тебя (как услугу)»: `作ってあげる` = «я сделаю для тебя»."
+				},
+				"English": {
+					"title": "あげる",
+					"short_description": "To give (to someone else)",
+					"md_description": "## Verb あげる — To give (to someone else)\n\n### What is it?\n\n`あげる` expresses **giving to someone else**: \"I give you,\" \"he gives her.\" Key nuance: the giver speaks about themselves as the subject.\n\n---\n\n### Formula\n\n```\n[giver] + は + [recipient] + に + [object] + を + あげる\nI + to friend + book + を + give (I give a book to a friend)\n```\n\n---\n\n### Examples\n\n```\n私は友達に本をあげました。\nI gave a book to my friend.\n```\n\n```\n母に花をあげます。\nI will give flowers to my mother.\n```\n\n```\n彼女にプレゼントをあげたいです。\nI want to give a present to her.\n```\n\n```\n子供にお菓子をあげました。\nI gave candy to the child.\n```\n\n```\n田中さんにペンをあげました。\nI gave a pen to Mr./Ms. Tanaka.\n```\n\n---\n\n### ⚠️ Important rule\n\nYou cannot say \"I give to myself\" or \"you give to me\" — use `もらう` or `くれる` instead.\n\n---\n\n### Comparison of giving verbs\n\n| Verb | Subject | Recipient | Example |\n|------|---------|-----------|---------|\n| `あげる` | I | Someone else | I give to friend |\n| `くれる` | Someone else | Me | Friend gives to me |\n| `もらう` | I | Receive from someone | I receive from friend |\n\n---\n\n### 💡 Cultural nuance\n\n`～てあげる` means \"I do this for you (as a favor)\": `作ってあげる` = \"I'll make it for you.\""
+				}
+			},
+			"format_map": {}
+		},
+		{
+			"rule_id": "JPK94UVRICF8BBSCR6Z3YN86NL",
+			"level": "N5",
+			"content": {
+				"Russian": {
+					"title": "もらう",
+					"short_description": "Получать (от кого-то)",
+					"md_description": "## Глагол もらう — Получать (от кого-то)\n\n### Что это?\n\n`もらう` выражает **получение от кого-то**: «я получаю от тебя», «он получает от неё». Субъект — получатель, который говорит от себя.\n\n---\n\n### Формула\n\n```\n[получатель] + は + [от кого] + に/から + [что] + を + もらう\n私は + 友達に + 本 + を + もらう (я получаю книгу от друга)\n```\n\n---\n\n### Примеры\n\n```\n私は友達に本をもらいました。\nЯ получил книгу от друга.\n```\n\n```\n母から手紙をもらいました。\nПолучил письмо от мамы.\n```\n\n```\n先生に褒められましたが、プレゼントをもらいました。\nПохвалили учителем, но получил подарок.\n```\n\n```\n彼女に誕生日プレゼントをもらいました。\nПолучил от неё подарок на день рождения.\n```\n\n```\n田中さんに日本語を教えてもらいました。\nГосподин Танака научил меня японскому (я получил урок).\n```\n\n---\n\n### ⚠️ Сравнение: もらう vs くれる\n\n| Глагол | Перспектива | Пример |\n|--------|-------------|--------|\n| `もらう` | Я получаю | 友達にもらった (получил от друга) |\n| `くれる` | Другой даёт мне | 友達がくれた (друг дал мне) |\n\n---\n\n### 💡 Нюанс\n\n`～てもらう` означает «я получаю услугу»: `作ってもらう` = «для меня сделали»."
+				},
+				"English": {
+					"title": "もらう",
+					"short_description": "To receive (from someone)",
+					"md_description": "## Verb もらう — To receive (from someone)\n\n### What is it?\n\n`もらう` expresses **receiving from someone**: \"I receive from you,\" \"he receives from her.\" The subject is the recipient speaking from their perspective.\n\n---\n\n### Formula\n\n```\n[recipient] + は + [from whom] + に/から + [object] + を + もらう\nI + from friend + book + を + receive (I receive a book from a friend)\n```\n\n---\n\n### Examples\n\n```\n私は友達に本をもらいました。\nI received a book from my friend.\n```\n\n```\n母から手紙をもらいました。\nI received a letter from my mother.\n```\n\n```\n先生に褒められましたが、プレゼントをもらいました。\nI was praised by the teacher but I received a present.\n```\n\n```\n彼女に誕生日プレゼントをもらいました。\nI received a birthday present from her.\n```\n\n```\n田中さんに日本語を教えてもらいました。\nI was taught Japanese by Mr./Ms. Tanaka (I received a lesson).\n```\n\n---\n\n### ⚠️ Comparison: もらう vs くれる\n\n| Verb | Perspective | Example |\n|------|-------------|---------|\n| `もらう` | I receive | 友達にもらった (received from friend) |\n| `くれる` | Someone gives to me | 友達がくれた (friend gave to me) |\n\n---\n\n### 💡 Tip\n\n`～てもらう` means \"I receive a favor/service\": `作ってもらう` = \"someone made it for me.\""
+				}
+			},
+			"format_map": {}
+		},
+		{
+			"rule_id": "YFYBGZ28VSPU7B6439UUS7E073",
+			"level": "N5",
+			"content": {
+				"Russian": {
+					"title": "くれる",
+					"short_description": "Давать (мне / нам)",
+					"md_description": "## Глагол くれる — Давать (мне / нам)\n\n### Что это?\n\n`くれる` выражает **дарение мне или нам**: «ты даёшь мне», «он даёт нам». Важный нюанс: получатель — «я» или «моя группа».\n\n---\n\n### Формула\n\n```\n[кто] + が/は + [мне/нам] + に + [что] + を + くれる\n友達 + が + 私 + に + 本 + を + くれる (друг даёт мне книгу)\n```\n\n---\n\n### Примеры\n\n```\n友達が私に本をくれました。\nДруг дал мне книгу.\n```\n\n```\n母が私にプレゼントをくれました。\nМама подарила мне подарок.\n```\n\n```\n先生が私たちにアドバイスをくれました.\nУчитель дал нам совет.\n```\n\n```\n彼が私を助けてくれました。\nОн помог мне.\n```\n\n```\n田中さんが日本語を教えてくれました.\nГосподин Танака научил меня японскому.\n\n---\n\n### ⚠️ Важное правило\n\n`くれる` используется **только**, когда получатель — «я» или «моя семья/группа». Нельзя сказать «он дал ей» — используй `あげる`.\n\n---\n\n### Сравнение глаголов дарения\n\n| Глагол | Субъект | Получатель | Пример |\n|--------|---------|-----------|--------|\n| `あげる` | Я | Другой человек | Я даю другу |\n| `くれる` | Другой человек | Я / Моя группа | Друг даёт мне |\n| `もらう` | Я | Получаю от другого | Я получаю от друга |\n\n---\n\n### 💡 Нюанс\n\n`～てくれる` означает «ты делаешь для меня (как услугу)»: `作ってくれる` = «ты делаешь для меня»."
+				},
+				"English": {
+					"title": "くれる",
+					"short_description": "To give (to me / to us)",
+					"md_description": "## Verb くれる — To give (to me / to us)\n\n### What is it?\n\n`くれる` expresses **giving to me or to us**: \"you give to me,\" \"he gives to us.\" Key nuance: the recipient is \"me\" or \"my group.\"\n\n---\n\n### Formula\n\n```\n[giver] + が/は + [me/us] + に + [object] + を + くれる\nFriend + が + me + に + book + を + give (friend gives me a book)\n```\n\n---\n\n### Examples\n\n```\n友達が私に本をくれました。\nMy friend gave me a book.\n```\n\n```\n母が私にプレゼントをくれました。\nMy mother gave me a present.\n```\n\n```\n先生が私たちにアドバイスをくれました.\nThe teacher gave us advice.\n```\n\n```\n彼が私を助けてくれました。\nHe helped me.\n```\n\n```\n田中さんが日本語を教えてくれました.\nMr./Ms. Tanaka taught me Japanese.\n\n---\n\n### ⚠️ Important rule\n\n`くれる` is used **only** when the recipient is \"me\" or \"my family/group.\" You cannot say \"he gave to her\" — use `あげる` instead.\n\n---\n\n### Comparison of giving verbs\n\n| Verb | Subject | Recipient | Example |\n|------|---------|-----------|---------|\n| `あげる` | I | Someone else | I give to friend |\n| `くれる` | Someone else | Me / My group | Friend gives to me |\n| `もらう` | I | Receive from someone | I receive from friend |\n\n---\n\n### 💡 Tip\n\n`～てくれる` means \"you do this for me (as a favor)\": `作ってくれる` = \"you make it for me.\""
+				}
+			},
+			"format_map": {}
+		},
+		{
+			"rule_id": "C92AKHC3QZDKUK7SVTEWC0WLIU",
+			"level": "N5",
+			"content": {
+				"Russian": {
+					"title": "～と思います",
+					"short_description": "Я думаю / считаю",
+					"md_description": "## Конструкция ～と思います — «Я думаю / считаю»\n\n### Что это?\n\n`～と思います` выражает **личное мнение или мысль**: «я думаю», «я считаю». Используется для выражения своей точки зрения.\n\n---\n\n### Формула\n\n```\n[короткая форма глагола/прилагательного] + と思います\n食べる → 食べると思います (я думаю, что буду есть)\nいい → いいと思います (я думаю, что это хорошо)\nだ → だと思います (я думаю, что это...)\n\n---\n\n### Правило спряжения для と思います\n\n| Тип | Словарная форма | ～と思います |\n|-----|----------------|-------------|\n| Глагол (+) | 食べる | `食べると思います` |\n| Глагол (-) | 食べない | `食べないと思います` |\n| Глагол (прош.) | 食べた | `食べたと思います` |\n| И-прилагательное (+) | 高い | `高いと思います` |\n| И-прилагательное (-) | 高くない | `高くないと思います` |\n| На-прилагательное/сущ. (+) | 静かだ | `静かだと思います` |\n| На-прилагательное/сущ. (-) | 静かじゃない | `静かじゃないと思います` |\n\n---\n\n### Примеры\n\n```\n明日は雨が降ると思います。\nЯ думаю, что завтра пойдёт дождь.\n```\n\n```\nこの映画は面白いと思います。\nЯ считаю, что этот фильм интересный.\n```\n\n```\n彼はいい人だと思います。\nЯ думаю, что он хороший человек.\n```\n\n```\n日本は美しい国だと思います。\nЯ считаю, что Япония — красивая страна.\n```\n\n```\n来週は忙しいと思います。\nЯ думаю, что на следующей неделе буду занят.\n```\n\n---\n\n### 💡 Нюанс\n\n`と思います` — вежливая форма. В разговорной речи: `～と思う` (просто)."
+				},
+				"English": {
+					"title": "～と思います",
+					"short_description": "I think / I believe",
+					"md_description": "## Construction ～と思います — \"I think / I believe\"\n\n### What is it?\n\n`～と思います` expresses **personal opinion or thought**: \"I think,\" \"I believe.\" It's used to express your point of view.\n\n---\n\n### Formula\n\n```\n[plain form of verb/adjective] + と思います\n食べる → 食べると思います (I think I will eat)\nいい → いいと思います (I think it's good)\nだ → だと思います (I think it's...)\n\n---\n\n### Conjugation rules for ～と思います\n\n| Type | Dictionary form | ～と思います |\n|-----|----------------|-------------|\n| Verb (+) | 食べる | `食べると思います` |\n| Verb (-) | 食べない | `食べないと思います` |\n| Verb (past) | 食べた | `食べたと思います` |\n| I-adjective (+) | 高い | `高いと思います` |\n| I-adjective (-) | 高くない | `高くないと思います` |\n| Na-adjective/noun (+) | 静かだ | `静かだと思います` |\n| Na-adjective/noun (-) | 静かじゃない | `静かじゃないと思います` |\n\n---\n\n### Examples\n\n```\n明日は雨が降ると思います。\nI think it will rain tomorrow.\n```\n\n```\nこの映画は面白いと思います。\nI think this movie is interesting.\n```\n\n```\n彼はいい人だと思います。\nI think he is a good person.\n```\n\n```\n日本は美しい国だと思います。\nI think Japan is a beautiful country.\n```\n\n```\n来週は忙しいと思います。\nI think I'll be busy next week.\n```\n\n---\n\n### 💡 Tip\n\n`と思います` is the polite form. In casual speech: `～と思う` (plain)."
+				}
+			},
+			"format_map": {}
+		},
+		{
+			"rule_id": "M5CCQ8CPO92TWUJJV1DF7ZTXS7",
+			"level": "N5",
+			"content": {
+				"Russian": {
+					"title": "～と言いました",
+					"short_description": "Сказал(а) / Сказал(а) что",
+					"md_description": "## Конструкция ～と言いました — «Сказал(а) что»\n\n### Что это?\n\n`～と言いました` выражает **косвенную речь** в прошедшем времени: «он сказал, что...», «она сказала, что...».\n\n---\n\n### Формула\n\n```\n[короткая форма] + と言いました\n食べる → 食べると言いました (сказал, что ест)\n食べた → 食べたと言いました (сказал, что съел)\nいい → いいと言いました (сказал, что хорошо)\n```\n\n---\n\n### Примеры\n\n```\n彼は「行く」と言いました。\nОн сказал: «Иду». (прямая речь)\n彼は行くと言いました。\nОн сказал, что пойдёт. (косвенная речь)\n```\n\n```\n田中さんは来年日本へ行くと言いました。\nГосподин Танака сказал, что поедет в Японию в следующем году.\n```\n\n```\n彼女は試験が難しかったと言いました。\nОна сказала, что экзамен был сложным.\n```\n\n```\n先生は明日が休みだと言いました。\nУчитель сказал, что завтра выходной.\n```\n\n```\n母は料理がおいしいと言いました。\nМама сказала, что блюдо вкусное.\n```\n\n---\n\n### Сравнение форм\n\n| Форма | Значение |\n|-------|----------|\n| `～と言いました` | Сказал(а) (прошедшее) |\n| `～と言っています` | Говорит (настоящее) |\n\n---\n\n### 💡 Нюанс\n\n`と言いました` используется для **прошедших высказываний**, `と言っています` — для **текущего мнения или реплики**."
+				},
+				"English": {
+					"title": "～と言いました",
+					"short_description": "Said that...",
+					"md_description": "## Construction ～と言いました — \"Said that...\"\n\n### What is it?\n\n`～と言いました` expresses **indirect speech** in the past tense: \"he said that...\",\"she said that...\"\n\n---\n\n### Formula\n\n```\n[plain form] + と言いました\n食べる → 食べると言いました (said he eats)\n食べた → 食べたと言いました (said he ate)\nいい → いいと言いました (said it's good)\n```\n\n---\n\n### Examples\n\n```\n彼は「行く」と言いました。\nHe said, \"I'm going.\" (direct speech)\n彼は行くと言いました。\nHe said he would go. (indirect speech)\n```\n\n```\n田中さんは来年日本へ行くと言いました。\nMr./Ms. Tanaka said he/she will go to Japan next year.\n```\n\n```\n彼女は試験が難しかったと言いました。\nShe said the exam was difficult.\n```\n\n```\n先生は明日が休みだと言いました。\nThe teacher said tomorrow is a holiday.\n```\n\n```\n母は料理がおいしいと言いました。\nMy mother said the food is delicious.\n```\n\n---\n\n### Comparison of forms\n\n| Form | Meaning |\n|------|---------|\n| `～と言いました` | Said (past) |\n| `～と言っています` | Says / Is saying (present) |\n\n---\n\n### 💡 Tip\n\n`と言いました` is used for **past statements**, `と言っています` for **current opinions or remarks**."
+				}
+			},
+			"format_map": {}
+		},
+		{
+			"rule_id": "SKV9001A1QHANB7F5DQL8DX9G1",
+			"level": "N5",
+			"content": {
+				"Russian": {
+					"title": "～ほうがいい",
+					"short_description": "Лучше бы / Стоит",
+					"md_description": "## Конструкция ～ほうがいい — «Лучше бы / Стоит»\n\n### Что это?\n\n`～ほうがいい` выражает **совет или рекомендацию**: «лучше сделать», «стоит сделать». Это мягкий способ дать совет, не навязывая его.\n\n---\n\n### Формула\n\n```\n[короткая форма глагола] + ほうがいい\n行く → 行ったほうがいい (лучше пойти / стоит пойти)\n行かない → 行かないほうがいい (лучше не идти / стоит не идти)\n```\n\n---\n\n### Правило выбора формы\n\n| Значение | Форма | Пример |\n|----------|-------|--------|\n| Совет сделать | Короткая прошедшая (+) | `行ったほうがいい` (лучше пойти) |\n| Совет НЕ делать | Короткая настоящая (-) | `行かないほうがいい` (лучше не идти) |\n\n---\n\n### Примеры\n\n```\n藥を飲んだほうがいいです。\nЛучше принять лекарство.\n```\n\n```\n早く寝たほうがいいです。\nСтоит лечь пораньше.\n```\n\n```\n朝ご飯を食べたほうがいいです。\nЛучше позавтракать.\n```\n\n```\nタバコを吸わないほうがいいです。\nЛучше не курить.\n```\n\n```\nあまり遅くまで起きないほうがいいです。\nСтоит не засиживаться допоздна.\n```\n\n```\nこの店で買ったほうがいいです。\nЛучше купить в этом магазине.\n```\n\n---\n\n### Сравнение форм совета\n\n| Форма | Тон |\n|-------|-----|\n| `～たほうがいい` | Мягкий совет |\n| `～なければなりません` | Обязанность |\n| `～てください` | Просьба |\n| `～ほうがいいですか` | Вопросительный совет |\n\n---\n\n### 💡 Нюанс\n\n`～ほうがいいですか` добавляет мягкий, консультативный тон: «не стоит ли...?»"
+				},
+				"English": {
+					"title": "～ほうがいい",
+					"short_description": "Had better / Should",
+					"md_description": "## Construction ～ほうがいい — \"Had better / Should\"\n\n### What is it?\n\n`～ほうがいい` expresses **advice or recommendation**: \"had better do,\" \"should do.\" It's a gentle way to give advice without being pushy.\n\n---\n\n### Formula\n\n```\n[plain form of verb] + ほうがいい\n行く → 行ったほうがいい (had better go / should go)\n行かない → 行かないほうがいい (had better not go / should not go)\n```\n\n---\n\n### Rule for choosing the form\n\n| Meaning | Form | Example |\n|----------|-------|--------|\n| Advice to do | Plain past (+) | `行ったほうがいい` (had better go) |\n| Advice NOT to do | Plain present (-) | `行かないほうがいい` (had better not go) |\n\n---\n\n### Examples\n\n```\n薬を飲んだほうがいいです。\nYou had better take the medicine.\n```\n\n```\n早く寝たほうがいいです。\nYou should go to bed early.\n```\n\n```\n朝ご飯を食べたほうがいいです。\nYou had better eat breakfast.\n```\n\n```\nタバコを吸わないほうがいいです。\nYou had better not smoke.\n```\n\n```\nあまり遅くまで起きないほうがいいです。\nYou had better not stay up too late.\n```\n\n```\nこの店で買ったほうがいいです。\nYou had better buy it at this shop.\n```\n\n---\n\n### Comparison of advice forms\n\n| Form | Tone |\n|------|------|\n| `～たほうがいい` | Gentle advice |\n| `～なければなりません` | Obligation |\n| `～てください` | Request |\n| `～ほうがいいですか` | Question/Consultative advice |\n\n---\n\n### 💡 Tip\n\n`～ほうがいいですか` adds a soft, consultative tone: \"wouldn't it be better to...?\""
+				}
+			},
+			"format_map": {}
+		},
+		{
+			"rule_id": "TSG7575ZZ3DCJ4Q63SQXEBB6ZT",
+			"level": "N5",
+			"content": {
+				"Russian": {
+					"title": "～でしょう",
+					"short_description": "Наверное / Должно быть",
+					"md_description": "## Частица ～でしょう — «Наверное / Должно быть»\n\n### Что это?\n\n`～でしょう` выражает **предположение или неуверенность**: «наверное», «должно быть», «видимо». Используется для выражения догадки или ожидания.\n\n---\n\n### Формула\n\n```\n[вежливая форма] + でしょう\n食べます → 食べるでしょう (наверное, будет есть)\n高いです → 高いでしょう (наверное, дорого)\nだ → だでしょう (наверное, это...)\n```\n\n---\n\n### Правило спряжения\n\n| Тип | Вежливая форма | ～でしょう |\n|-----|---------------|-----------|\n| Глагол (+) | 食べます | `食べるでしょう` |\n| Глагол (-) | 食べません | `食べないでしょう` |\n| Глагол (прош.) | 食べました | `食べたでしょう` |\n| И-прилагательное (+) | 高いです | `高いでしょう` |\n| И-прилагательное (-) | 高くないです | `高くないでしょう` |\n| На-прилагательное/сущ. (+) | 静かです | `静かでしょう` |\n| На-прилагательное/сущ. (-) | 静かじゃありません | `静かじゃないでしょう` |\n\n---\n\n### Примеры\n\n```\n明日は雨でしょう。\nЗавтра, наверное, будет дождь.\n```\n\n```\n彼は忙しいでしょう.\nОн, вероятно, занят.\n```\n\n```\nこの本は面白いでしょう。\nЭта книга, должно быть, интересная.\n```\n\n```\n田中さんは来るでしょう。\nГосподин Танака, наверное, придёт.\n```\n\n```\n日本語は難しいでしょう。\nЯпонский, должно быть, сложный язык.\n```\n\n```\n彼女は家にいるでしょう.\nОна, наверно, дома.\n```\n\n---\n\n### ⚠️ Разница с ～だろう\n\n| Форма | Тон |\n|-------|-----|\n| `～でしょう` | Вежливая |\n| `～だろう` | Простая / Мужская |\n\n---\n\n### 💡 Нюанс\n\n`～でしょう` также используется для **вопроса с догадкой**: `～でしょう？` = «так и есть?», «верно?»"
+				},
+				"English": {
+					"title": "～でしょう",
+					"short_description": "Probably / Must be",
+					"md_description": "## Particle ～でしょう — \"Probably / Must be\"\n\n### What is it?\n\n`～でしょう` expresses **conjecture or uncertainty**: \"probably,\" \"must be,\" \"I guess.\" It's used to express a guess or expectation.\n\n---\n\n### Formula\n\n```\n[polite form] + でしょう\n食べます → 食べるでしょう (will probably eat)\n高いです → 高いでしょう (is probably expensive)\nだ → だでしょう (is probably...)\n```\n\n---\n\n### Conjugation rules\n\n| Type | Polite form | ～でしょう |\n|-----|-------------|-----------|\n| Verb (+) | 食べます | `食べるでしょう` |\n| Verb (-) | 食べません | `食べないでしょう` |\n| Verb (past) | 食べました | `食べたでしょう` |\n| I-adjective (+) | 高いです | `高いでしょう` |\n| I-adjective (-) | 高くないです | `高くないでしょう` |\n| Na-adjective/noun (+) | 静かです | `静かでしょう` |\n| Na-adjective/noun (-) | 静かじゃありません | `静かじゃないでしょう` |\n\n---\n\n### Examples\n\n```\n明日は雨でしょう。\nIt will probably rain tomorrow.\n```\n\n```\n彼は忙しいでしょう.\nHe's probably busy.\n```\n\n```\nこの本は面白いでしょう。\nThis book must be interesting.\n```\n\n```\n田中さんは来るでしょう。\nMr./Ms. Tanaka will probably come.\n```\n\n```\n日本語は難しいでしょう。\nJapanese must be difficult.\n```\n\n```\n彼女は家にいるでしょう.\nShe is probably at home.\n```\n\n---\n\n### ⚠️ Difference from ～だろう\n\n| Form | Tone |\n|------|------|\n| `～でしょう` | Polite |\n| `～だろう` | Plain / Masculine |\n\n---\n\n### 💡 Tip\n\n`～でしょう` is also used for **questions with conjecture**: `～でしょう？` = \"is that right?,\" \"aren't I?\""
+				}
+			},
+			"format_map": {}
 		}
 	]
 }

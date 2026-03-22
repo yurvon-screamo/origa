@@ -96,7 +96,7 @@ impl WellKnownSetLoader for WellKnownSetLoaderImpl {
 
 fn id_to_path(id: &str) -> String {
     if let Some(level) = id.strip_prefix("jlpt_") {
-        format!("domain/well_known_set/jltp_{}.json", level)
+        format!("domain/well_known_set/jlpt_{}.json", level)
     } else if let Some(rest) = id.strip_prefix("migii_") {
         let level = rest.split('_').next().unwrap_or("");
         format!("domain/well_known_set/migii/{}/{}.json", level, id)
@@ -104,6 +104,8 @@ fn id_to_path(id: &str) -> String {
         let level = rest.split('_').next().unwrap_or("");
         let filename = rest.split_once('_').map(|(_, f)| f).unwrap_or("");
         format!("domain/well_known_set/duolingo/{}/{}.json", level, filename)
+    } else if id.starts_with("minna_n5_") {
+        format!("domain/well_known_set/minna_n5/{}.json", id)
     } else {
         format!("domain/well_known_set/{}.json", id)
     }

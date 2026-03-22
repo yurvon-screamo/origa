@@ -28,6 +28,7 @@ pub enum OrigaError {
     GrammarFormatError { reason: String },
     GrammarParseError { reason: String },
     WellKnownSetParseError { reason: String },
+    WellKnownSetNotFound { set_id: String },
     SessionExpired,
     DictionaryNotFound { reason: String },
     VocabularyNotFound { word: String },
@@ -109,6 +110,9 @@ impl fmt::Display for OrigaError {
             }
             OrigaError::WellKnownSetParseError { reason } => {
                 write!(f, "WellKnownSetError: {}", reason)
+            }
+            OrigaError::WellKnownSetNotFound { set_id } => {
+                write!(f, "WellKnownSet '{}' not found", set_id)
             }
             OrigaError::SessionExpired => {
                 write!(f, "Session expired, please login again")
@@ -374,6 +378,15 @@ mod tests {
             reason: "invalid id".into(),
         };
         assert_display_contains(&error, "WellKnownSetError");
+        assert_serialization_roundtrip(error);
+    }
+
+    #[test]
+    fn well_known_set_not_found() {
+        let error = OrigaError::WellKnownSetNotFound {
+            set_id: "test_set".into(),
+        };
+        assert_display_contains(&error, "test_set");
         assert_serialization_roundtrip(error);
     }
 

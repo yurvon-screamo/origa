@@ -11,6 +11,7 @@ pub enum SetType {
     SpyFamily,
     DuolingoRu,
     DuolingoEn,
+    MinnaNoNihongo,
 }
 
 impl SetType {
@@ -21,6 +22,7 @@ impl SetType {
             SetType::SpyFamily => "SpyFamily",
             SetType::DuolingoRu => "Duolingo Ru",
             SetType::DuolingoEn => "Duolingo En",
+            SetType::MinnaNoNihongo => "Minna no Nihongo",
         }
     }
 }
