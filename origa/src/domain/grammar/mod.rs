@@ -15,7 +15,7 @@ use crate::domain::grammar::forms_verb::{
     to_sugiru_form_verb, to_ta_form, to_tai_form, to_tara_form, to_te_form, to_teru_form,
     to_toku_form, to_volitional_form, to_yasui_form, to_zu_form,
 };
-use crate::domain::{grammar::forms_adjective::adjective_remove_postfix, OrigaError, PartOfSpeech};
+use crate::domain::{OrigaError, PartOfSpeech, grammar::forms_adjective::adjective_remove_postfix};
 
 impl GrammarRule {
     pub fn format(

@@ -234,30 +234,6 @@ impl TrailBaseClient {
         Ok(session)
     }
 
-    pub async fn exchange_code_for_session(
-        &self,
-        auth_token: &str,
-        refresh_token: Option<&str>,
-    ) -> Result<TrailBaseSession, AuthError> {
-        let claims = decode_jwt_claims(auth_token)
-            .map_err(|e| AuthError::ApiError(format!("Failed to decode JWT: {}", e)))?;
-
-        let now = Self::current_timestamp();
-        let expires_at = now.saturating_add(3600);
-
-        let session = TrailBaseSession {
-            auth_token: auth_token.to_string(),
-            refresh_token: refresh_token.unwrap_or("").to_string(),
-            email: claims.email.clone().unwrap_or_default(),
-            trailbase_id: claims.sub.clone(),
-            record_id: None,
-            expires_at,
-        };
-
-        set_session(&session).map_err(AuthError::ApiError)?;
-        Ok(session)
-    }
-
     pub fn parse_tokens_from_url(url_fragment: &str) -> Result<TrailBaseSession, String> {
         let fragment = url_fragment.strip_prefix('#').unwrap_or(url_fragment);
 
