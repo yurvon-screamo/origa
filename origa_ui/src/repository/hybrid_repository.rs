@@ -27,30 +27,28 @@ impl HybridUserRepository {
         let remote_result = self.remote.find_current().await?;
         let local_result = self.local.get_current_user().await?;
 
-        let local_user = match local_result {
-            Some(data) => data,
-            None => {
-                tracing::warn!("No local user found");
-                return Ok(());
+        match (remote_result, local_result) {
+            // Remote есть, local нет → создаём local из remote
+            (Some(remote_data), None) => {
+                tracing::info!("Creating local user from remote");
+                self.local.save(&remote_data.0).await?;
             }
-        };
-
-        // Если remote не существует - создаём его из local (first-time sync)
-        let remote_user = match remote_result {
-            Some(data) => data.0,
-            None => {
-                tracing::info!("First-time sync: creating remote user from local");
+            // Local есть, remote нет → создаём remote из local
+            (None, Some(local_user)) => {
+                tracing::info!("Creating remote user from local");
                 self.remote.save(&local_user).await?;
-                return Ok(()); // merge не нужен, объекты идентичны
             }
-        };
-
-        // Обычный merge для существующих пользователей
-        let mut local_user = local_user;
-        local_user.merge(&remote_user);
-
-        self.local.save(&local_user).await?;
-        self.remote.save(&local_user).await?;
+            // Оба есть → выполняем merge
+            (Some(remote_data), Some(mut local_user)) => {
+                local_user.merge(&remote_data.0);
+                self.local.save(&local_user).await?;
+                self.remote.save(&local_user).await?;
+            }
+            // Оба отсутствуют → warn и выходим
+            (None, None) => {
+                tracing::warn!("No user found locally or remotely");
+            }
+        }
 
         Ok(())
     }
