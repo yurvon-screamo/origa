@@ -10903,26 +10903,6 @@
     "russian_translation": "- Словарь\n- Учебник (языковой)\n\n> Термин, используемый в контексте приложения Duolingo как название платформы для изучения языков.",
     "english_translation": "- To do\n- To make\n- To act\n- To practice\n\n> Commonly refers to performing an action or engaging in a specific activity."
   },
-  "jltp_n1": {
-    "russian_translation": "- Случай\n- Удача\n- Шанс\n\n> В значении «случай» часто подразумевает неожиданное или благоприятное стечение обстоятельств.",
-    "english_translation": "No word provided in the input. Please specify a Japanese word (e.g., 努力，環境) to receive its English meanings."
-  },
-  "jltp_n2": {
-    "russian_translation": "- Уровень N2\n- Сложный (описывает уровень экзамена JLPT)\n\n> Термин относится к уровню владения японским языком, соответствующему второму из пяти уровней экзамена JLPT.",
-    "english_translation": "No Japanese word provided. Please specify the JLPT N2 word you would like me to define."
-  },
-  "jltp_n3": {
-    "russian_translation": "- Неизвестно (слово \"jltp_n3\" является меткой уровня JLPT, а не лексической единицей)",
-    "english_translation": "- N3 level Japanese language proficiency\n- JLPT N3 exam\n\n> Refers to the third level of the Japanese-Language Proficiency Test (JLPT), which covers intermediate vocabulary and grammar."
-  },
-  "jltp_n4": {
-    "russian_translation": "- Случай\n- Шанс\n- Возможность\n\n> В значении «случай» часто подразумевает удачу или поворот событий.",
-    "english_translation": "No Japanese word was provided in the prompt. Please specify a JLPT N4 vocabulary word (e.g., 食べる，行く，先生) so I can generate the definitions."
-  },
-  "jltp_n5": {
-    "russian_translation": "- Сделка\n- Обмен (товаром, информацией)\n- Разговор (о делах)\n\n> В значении «сделка» часто подразумевает деловую или финансовую операцию.",
-    "english_translation": "- N5 level Japanese word not specified; please provide the target word."
-  },
   "migii_n1_1": {
     "russian_translation": "- Правая сторона\n- Правый (прилагательное)\n\n> В японском языке это слово является существительным, но может функционировать как прилагательное в сочетании с другими словами (например, «правая рука»).",
     "english_translation": "- Right (direction)\n- The right side or hand\n\n> In contexts involving handedness, \"right\" refers to the dominant hand; in spatial contexts, it denotes the direction opposite to left."
@@ -11566,5 +11546,25 @@
   "spy_family_s01_e12": {
     "russian_translation": "- Шпионская семья\n- Тайная миссия (в контексте сюжета)\n\n> Указывает на название аниме-сериала «Spy x Family» (первый сезон, двенадцатая серия), а не является самостоятельным лексическим словом.",
     "english_translation": "- Spy\n- Espionage agent\n\n> Context: Refers to the central character or theme of the anime \"Spy x Family\" (specifically Loid Forger/Byakuya), rather than the general noun for a spy."
+  },
+  "jlpt_n1": {
+    "russian_translation": "- Случай\n- Удача\n- Шанс\n\n> В значении «случай» часто подразумевает неожиданное или благоприятное стечение обстоятельств.",
+    "english_translation": "No word provided in the input. Please specify a Japanese word (e.g., 努力，環境) to receive its English meanings."
+  },
+  "jlpt_n2": {
+    "russian_translation": "- Уровень N2\n- Сложный (описывает уровень экзамена JLPT)\n\n> Термин относится к уровню владения японским языком, соответствующему второму из пяти уровней экзамена JLPT.",
+    "english_translation": "No Japanese word provided. Please specify the JLPT N2 word you would like me to define."
+  },
+  "jlpt_n3": {
+    "russian_translation": "- Неизвестно (слово \"jltp_n3\" является меткой уровня JLPT, а не лексической единицей)",
+    "english_translation": "- N3 level Japanese language proficiency\n- JLPT N3 exam\n\n> Refers to the third level of the Japanese-Language Proficiency Test (JLPT), which covers intermediate vocabulary and grammar."
+  },
+  "jlpt_n4": {
+    "russian_translation": "- Случай\n- Шанс\n- Возможность\n\n> В значении «случай» часто подразумевает удачу или поворот событий.",
+    "english_translation": "No Japanese word was provided in the prompt. Please specify a JLPT N4 vocabulary word (e.g., 食べる，行く，先生) so I can generate the definitions."
+  },
+  "jlpt_n5": {
+    "russian_translation": "- Сделка\n- Обмен (товаром, информацией)\n- Разговор (о делах)\n\n> В значении «сделка» часто подразумевает деловую или финансовую операцию.",
+    "english_translation": "- N5 level Japanese word not specified; please provide the target word."
   }
 }

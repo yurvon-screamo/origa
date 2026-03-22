@@ -70,6 +70,15 @@ pub fn SetsLevelGroup(
                     on_toggle_select=on_toggle_select
                 />
                 <SetsTypeGroup
+                    set_type=SetType::MinnaNoNihongo
+                    sets_for_level=sets_for_level
+                    type_filter=type_filter
+                    known_kanji=known_kanji.clone()
+                    on_import=on_import
+                    selected_sets=selected_sets
+                    on_toggle_select=on_toggle_select
+                />
+                <SetsTypeGroup
                     set_type=SetType::DuolingoEn
                     sets_for_level=sets_for_level
                     type_filter=type_filter
