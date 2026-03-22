@@ -100,7 +100,7 @@ async fn load_well_known_sets_meta_json_valid() {
 async fn well_known_set_minna_nihongo_serialization() {
     let meta = WellKnownSetMeta {
         id: "minna_n5".to_string(),
-        set_type: SetType::MinnaNoNihongo,
+        set_type: SetType::from("MinnaNoNihongo"),
         level: JapaneseLevel::N5,
         title_ru: "Minna no Nihongo N5".to_string(),
         title_en: "Minna no Nihongo N5".to_string(),
@@ -110,7 +110,7 @@ async fn well_known_set_minna_nihongo_serialization() {
     };
 
     let set_type = meta.set_type;
-    assert!(matches!(set_type, SetType::MinnaNoNihongo));
+    assert_eq!(set_type, "MinnaNoNihongo");
 }
 
 #[tokio::test]

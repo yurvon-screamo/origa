@@ -74,7 +74,7 @@ impl AuthStore {
     }
 
     /// Get current user ID if authenticated
-    #[allow(dead_code)]
+
     pub fn user_id(&self) -> Option<Ulid> {
         self.user.with(|u| u.as_ref().map(|u| u.id()))
     }
@@ -85,7 +85,7 @@ impl AuthStore {
     }
 
     /// Get client for OAuth URL generation
-    #[allow(dead_code)]
+
     pub fn client(&self) -> &TrailBaseClient {
         &self.client
     }
@@ -298,7 +298,7 @@ impl AuthStore {
     }
 
     /// Sync with server
-    #[allow(dead_code)]
+
     pub async fn sync_with_server(&self) -> Result<(), OrigaError> {
         self.is_syncing.set(true);
 
@@ -313,7 +313,7 @@ impl AuthStore {
     }
 
     /// Update user profile
-    #[allow(dead_code)]
+
     pub async fn update_profile(&self, user: &User) -> Result<(), OrigaError> {
         self.repository.save(user).await?;
         self.refresh_user().await

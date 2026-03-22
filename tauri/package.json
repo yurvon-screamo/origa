@@ -1,8 +1,8 @@
 {
-  "name": "origa-app",
-  "version": "0.3.4",
-  "private": true,
-  "devDependencies": {
-    "@tauri-apps/cli": "^2.10.3"
-  }
+	"name": "origa-app",
+	"version": "0.3.4",
+	"private": true,
+	"devDependencies": {
+		"@tauri-apps/cli": "^2.10.3"
+	}
 }

@@ -46,7 +46,6 @@ impl TrailBaseClient {
         }
     }
 
-    #[allow(dead_code)]
     pub fn with_url(base_url: String) -> Self {
         Self { base_url }
     }
@@ -263,7 +262,6 @@ impl TrailBaseClient {
         Ok(session)
     }
 
-    #[allow(dead_code)]
     pub fn get_session_from_cookies() -> Result<TrailBaseSession, String> {
         let window = web_sys::window().ok_or("Window not available")?;
         let document = window.document().ok_or("Document not available")?;
@@ -444,7 +442,6 @@ impl TrailBaseClient {
         }
     }
 
-    #[allow(dead_code)]
     pub async fn request_with_auth<T: Serialize>(
         &self,
         path: &str,
@@ -504,12 +501,10 @@ impl TrailBaseClient {
         RecordApi::new(self.clone(), table_name.to_string())
     }
 
-    #[allow(dead_code)]
     pub fn generate_pkce_verifier() -> String {
         super::trailbase_auth::generate_pkce_verifier()
     }
 
-    #[allow(dead_code)]
     pub fn generate_pkce_challenge(verifier: &str) -> String {
         super::trailbase_auth::generate_pkce_challenge(verifier)
     }

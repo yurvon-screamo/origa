@@ -22,7 +22,7 @@ pub struct VocabularyCard {
 
 impl VocabularyCard {
     /// Конструктор для создания карточки (pub(crate) для использования внутри крейта)
-    #[allow(dead_code)]
+
     pub(crate) fn new(word: Question) -> Self {
         Self {
             word,
