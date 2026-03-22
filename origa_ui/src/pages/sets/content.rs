@@ -1,4 +1,4 @@
-use super::filters::{ImportFilter, LevelFilter, TypeFilter};
+use super::filters::{available_set_types, ImportFilter, LevelFilter, TypeFilter};
 use super::import_set_preview_modal::ImportSetPreviewModal;
 use super::sets_level_group::SetsLevelGroup;
 use super::types::SetInfo;
@@ -10,7 +10,7 @@ use crate::ui_components::{
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::domain::{JapaneseLevel, User};
-use origa::traits::{UserRepository, WellKnownSetLoader};
+use origa::traits::{TypeMeta, UserRepository, WellKnownSetLoader};
 use std::collections::{HashMap, HashSet};
 
 #[component]
@@ -119,7 +119,7 @@ pub fn SetsContent() -> impl IntoView {
             .into_iter()
             .filter(|s| {
                 let matches_level = level.matches(s.level);
-                let matches_type = type_f.matches(s.set_type);
+                let matches_type = type_f.matches(&s.set_type);
                 let matches_import = import_f.matches(s.is_imported);
                 let matches_search = query.is_empty()
                     || s.title.to_lowercase().contains(&query)
@@ -263,7 +263,7 @@ pub fn SetsContent() -> impl IntoView {
                     <div class="flex flex-wrap gap-2">
                         <Tag
                             variant=Signal::derive(move || {
-                                if type_filter.get() == TypeFilter::All {
+                                if type_filter.get().is_all() {
                                     TagVariant::Filled
                                 } else {
                                     TagVariant::Default
@@ -271,86 +271,37 @@ pub fn SetsContent() -> impl IntoView {
                             })
                             class=Signal::derive(|| "cursor-pointer".to_string())
                             on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
-                                type_filter.set(TypeFilter::All);
+                                type_filter.set(TypeFilter::all());
                             })
                         >
-                            {TypeFilter::All.label()}
+                            "Все типы"
                         </Tag>
-                        <Tag
-                            variant=Signal::derive(move || {
-                                if type_filter.get() == TypeFilter::Jlpt {
-                                    TagVariant::Filled
-                                } else {
-                                    TagVariant::Default
+                        <For
+                            each=move || available_set_types()
+                            key=|type_meta: &TypeMeta| type_meta.id.clone()
+                            children=move |type_meta| {
+                                let type_id = type_meta.id.clone();
+                                let type_id_for_click = type_id.clone();
+                                let type_filter = type_filter.clone();
+                                let label = type_meta.label_ru.clone();
+                                view! {
+                                    <Tag
+                                        variant=Signal::derive(move || {
+                                            match &type_filter.get().0 {
+                                                Some(filter_id) if filter_id == &type_id => TagVariant::Filled,
+                                                _ => TagVariant::Default,
+                                            }
+                                        })
+                                        class=Signal::derive(|| "cursor-pointer".to_string())
+                                        on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
+                                            type_filter.set(TypeFilter::specific(&type_id_for_click));
+                                        })
+                                    >
+                                        {label}
+                                    </Tag>
                                 }
-                            })
-                            class=Signal::derive(|| "cursor-pointer".to_string())
-                            on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
-                                type_filter.set(TypeFilter::Jlpt);
-                            })
-                        >
-                            {TypeFilter::Jlpt.label()}
-                        </Tag>
-                        <Tag
-                            variant=Signal::derive(move || {
-                                if type_filter.get() == TypeFilter::Migii {
-                                    TagVariant::Filled
-                                } else {
-                                    TagVariant::Default
-                                }
-                            })
-                            class=Signal::derive(|| "cursor-pointer".to_string())
-                            on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
-                                type_filter.set(TypeFilter::Migii);
-                            })
-                        >
-                            {TypeFilter::Migii.label()}
-                        </Tag>
-                        <Tag
-                            variant=Signal::derive(move || {
-                                if type_filter.get() == TypeFilter::SpyFamily {
-                                    TagVariant::Filled
-                                } else {
-                                    TagVariant::Default
-                                }
-                            })
-                            class=Signal::derive(|| "cursor-pointer".to_string())
-                            on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
-                                type_filter.set(TypeFilter::SpyFamily);
-                            })
-                        >
-                            {TypeFilter::SpyFamily.label()}
-                        </Tag>
-                        <Tag
-                            variant=Signal::derive(move || {
-                                if type_filter.get() == TypeFilter::DuolingoRu {
-                                    TagVariant::Filled
-                                } else {
-                                    TagVariant::Default
-                                }
-                            })
-                            class=Signal::derive(|| "cursor-pointer".to_string())
-                            on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
-                                type_filter.set(TypeFilter::DuolingoRu);
-                            })
-                        >
-                            {TypeFilter::DuolingoRu.label()}
-                        </Tag>
-                        <Tag
-                            variant=Signal::derive(move || {
-                                if type_filter.get() == TypeFilter::DuolingoEn {
-                                    TagVariant::Filled
-                                } else {
-                                    TagVariant::Default
-                                }
-                            })
-                            class=Signal::derive(|| "cursor-pointer".to_string())
-                            on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
-                                type_filter.set(TypeFilter::DuolingoEn);
-                            })
-                        >
-                            {TypeFilter::DuolingoEn.label()}
-                        </Tag>
+                            }
+                        />
                     </div>
 
                     <div class="flex flex-wrap gap-2">

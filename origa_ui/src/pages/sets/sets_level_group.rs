@@ -1,10 +1,9 @@
-use super::filters::TypeFilter;
+use super::filters::{available_set_types, TypeFilter};
 use super::sets_type_group::SetsTypeGroup;
 use super::types::SetInfo;
 use crate::ui_components::{Heading, HeadingLevel};
 use leptos::prelude::*;
 use origa::domain::JapaneseLevel;
-use origa::traits::SetType;
 use std::collections::HashSet;
 
 #[component]
@@ -24,6 +23,20 @@ pub fn SetsLevelGroup(
             .collect::<Vec<_>>()
     });
 
+    let available_types = Memo::new(move |_| {
+        let sets_for_level_vec = sets_for_level.get();
+        available_set_types()
+            .into_iter()
+            .filter(|type_meta| {
+                sets_for_level_vec
+                    .iter()
+                    .any(|set| set.set_type == type_meta.id)
+            })
+            .collect::<Vec<_>>()
+    });
+
+    let known_kanji_stored = StoredValue::new(known_kanji);
+
     view! {
         <Show when=move || !sets_for_level.get().is_empty()>
             <div class="sets-group">
@@ -33,60 +46,23 @@ pub fn SetsLevelGroup(
                 >
                     {format!("Уровень {}", level.code())}
                 </Heading>
-                <SetsTypeGroup
-                    set_type=SetType::Jlpt
-                    sets_for_level=sets_for_level
-                    type_filter=type_filter
-                    known_kanji=known_kanji.clone()
-                    on_import=on_import
-                    selected_sets=selected_sets
-                    on_toggle_select=on_toggle_select
-                />
-                <SetsTypeGroup
-                    set_type=SetType::Migii
-                    sets_for_level=sets_for_level
-                    type_filter=type_filter
-                    known_kanji=known_kanji.clone()
-                    on_import=on_import
-                    selected_sets=selected_sets
-                    on_toggle_select=on_toggle_select
-                />
-                <SetsTypeGroup
-                    set_type=SetType::SpyFamily
-                    sets_for_level=sets_for_level
-                    type_filter=type_filter
-                    known_kanji=known_kanji.clone()
-                    on_import=on_import
-                    selected_sets=selected_sets
-                    on_toggle_select=on_toggle_select
-                />
-                <SetsTypeGroup
-                    set_type=SetType::DuolingoRu
-                    sets_for_level=sets_for_level
-                    type_filter=type_filter
-                    known_kanji=known_kanji.clone()
-                    on_import=on_import
-                    selected_sets=selected_sets
-                    on_toggle_select=on_toggle_select
-                />
-                <SetsTypeGroup
-                    set_type=SetType::MinnaNoNihongo
-                    sets_for_level=sets_for_level
-                    type_filter=type_filter
-                    known_kanji=known_kanji.clone()
-                    on_import=on_import
-                    selected_sets=selected_sets
-                    on_toggle_select=on_toggle_select
-                />
-                <SetsTypeGroup
-                    set_type=SetType::DuolingoEn
-                    sets_for_level=sets_for_level
-                    type_filter=type_filter
-                    known_kanji=known_kanji.clone()
-                    on_import=on_import
-                    selected_sets=selected_sets
-                    on_toggle_select=on_toggle_select
-                />
+                    <For
+                        each=move || available_types.get()
+                        key=|type_meta| type_meta.id.clone()
+                        children=move |type_meta| {
+                            view! {
+                                <SetsTypeGroup
+                                    set_type=type_meta.id.clone()
+                                    sets_for_level=sets_for_level
+                                    type_filter=type_filter
+                                    known_kanji=known_kanji_stored.get_value()
+                                    on_import=on_import
+                                    selected_sets=selected_sets
+                                    on_toggle_select=on_toggle_select
+                                />
+                            }
+                        }
+                    />
             </div>
         </Show>
     }
