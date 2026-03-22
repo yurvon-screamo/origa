@@ -2,7 +2,7 @@ use crate::dictionary::grammar::get_rule_by_id;
 use crate::domain::knowledge::KnowledgeSet;
 use crate::domain::value_objects::NativeLanguage;
 use crate::domain::{Card, CardType, GrammarRuleCard, VocabularyCard};
-use rand::{Rng, seq::SliceRandom};
+use rand::{seq::SliceRandom, Rng};
 use serde::{Deserialize, Serialize};
 use ulid::Ulid;
 

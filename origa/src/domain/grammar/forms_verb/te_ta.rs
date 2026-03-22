@@ -1,4 +1,4 @@
-use super::classify::{VerbGroup, classify_verb};
+use super::classify::{classify_verb, VerbGroup};
 use super::godan_tables::TE_TA_MAPPING;
 
 pub fn to_te_form(word: &str) -> String {

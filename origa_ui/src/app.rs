@@ -7,15 +7,19 @@ use crate::loaders::{load_all_data, load_dictionary};
 use crate::pages::login::oauth_listeners::{check_url_oauth_callback, setup_oauth_listener};
 use crate::routes::AppRoutes;
 use crate::store::auth_store::AuthStore;
+use crate::store::connectivity::ConnectivityStore;
+use crate::ui_components::ConnectivityBanner;
 use crate::ui_components::LoadingOverlay;
 use crate::ui_components::UpdateDrawer;
 
 #[component]
 pub fn App() -> impl IntoView {
     let auth_store = AuthStore::new();
+    let connectivity = ConnectivityStore::new();
 
     provide_context(auth_store.repository().clone());
     provide_context(auth_store.clone());
+    provide_context(connectivity);
 
     auth_store.check_session();
     check_url_oauth_callback(&auth_store);
@@ -57,6 +61,7 @@ pub fn App() -> impl IntoView {
     let auth_store_for_data = auth_store.clone();
 
     view! {
+        <ConnectivityBanner />
         {move || update_info.get().map(|info| view! {
             <UpdateDrawer
                 current_version=info.current_version

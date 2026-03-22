@@ -2044,3 +2044,39 @@ input[type="submit"],
 .anima-toast-exit {
 	animation: anima-toast-exit 0.2s ease-in forwards;
 }
+
+/* === CONNECTIVITY BANNER === */
+
+.connectivity-banner {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	z-index: 9999;
+	background: var(--warning);
+	color: var(--bg-paper);
+	padding: 8px 16px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	font-family: "DM Mono", monospace;
+	font-size: 11px;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	border-bottom: 1px solid var(--border-dark);
+	animation: slideDown 0.3s ease-out;
+}
+
+.banner-icon {
+	font-size: 14px;
+}
+
+@keyframes slideDown {
+	from {
+		transform: translateY(-100%);
+	}
+	to {
+		transform: translateY(0);
+	}
+}

@@ -282,7 +282,7 @@ pub fn SetsContent() -> impl IntoView {
                             children=move |type_meta| {
                                 let type_id = type_meta.id.clone();
                                 let type_id_for_click = type_id.clone();
-                                let type_filter = type_filter.clone();
+                                let type_filter = type_filter;
                                 let label = type_meta.label_ru.clone();
                                 view! {
                                     <Tag
