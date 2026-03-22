@@ -1086,8 +1086,12 @@ input[type="submit"],
 }
 
 @keyframes anima-skeleton-paper {
-	0% { background-position: -200% 0; }
-	100% { background-position: 200% 0; }
+	0% {
+		background-position: -200% 0;
+	}
+	100% {
+		background-position: 200% 0;
+	}
 }
 
 .navbar {
@@ -1627,7 +1631,7 @@ input[type="submit"],
 /* Карточка приподнимается при hover */
 .anima-card-lift {
 	transition: transform var(--anima-duration-normal) var(--anima-ease-paper),
-	            box-shadow var(--anima-duration-normal) var(--anima-ease-paper);
+		box-shadow var(--anima-duration-normal) var(--anima-ease-paper);
 }
 .anima-card-lift:hover {
 	transform: translateY(-2px);
@@ -1686,13 +1690,18 @@ input[type="submit"],
 	}
 }
 .anima-modal-enter {
-	animation: anima-modal-enter var(--anima-duration-entrance) var(--anima-ease-out-expo) forwards;
+	animation: anima-modal-enter var(--anima-duration-entrance)
+		var(--anima-ease-out-expo) forwards;
 }
 
 /* Backdrop */
 @keyframes anima-backdrop-enter {
-	from { opacity: 0; }
-	to { opacity: 0.6; }
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 0.6;
+	}
 }
 .anima-backdrop-enter {
 	animation: anima-backdrop-enter var(--anima-duration-slow) ease forwards;
@@ -1742,8 +1751,13 @@ input[type="submit"],
 
 /* Мягкая пульсация */
 @keyframes anima-pulse-subtle {
-	0%, 100% { opacity: 1; }
-	50% { opacity: 0.7; }
+	0%,
+	100% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0.7;
+	}
 }
 .anima-pulse-subtle {
 	animation: anima-pulse-subtle 2s ease-in-out infinite;
@@ -1760,9 +1774,23 @@ input[type="submit"],
 
 /* Тряска при ошибке */
 @keyframes anima-shake {
-	0%, 100% { transform: translateX(0); }
-	10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
-	20%, 40%, 60%, 80% { transform: translateX(4px); }
+	0%,
+	100% {
+		transform: translateX(0);
+	}
+	10%,
+	30%,
+	50%,
+	70%,
+	90% {
+		transform: translateX(-4px);
+	}
+	20%,
+	40%,
+	60%,
+	80% {
+		transform: translateX(4px);
+	}
 }
 .anima-shake {
 	animation: anima-shake 0.5s ease;
@@ -1770,8 +1798,12 @@ input[type="submit"],
 
 /* Галочка рисуется */
 @keyframes anima-check-draw {
-	from { stroke-dashoffset: 24; }
-	to { stroke-dashoffset: 0; }
+	from {
+		stroke-dashoffset: 24;
+	}
+	to {
+		stroke-dashoffset: 0;
+	}
 }
 .anima-check-draw {
 	stroke-dasharray: 24;
@@ -1815,11 +1847,21 @@ input[type="submit"],
 
 /* Квадратный spinner в стиле проекта */
 @keyframes anima-spinner-square {
-	0% { transform: rotate(0deg); }
-	25% { transform: rotate(90deg); }
-	50% { transform: rotate(180deg); }
-	75% { transform: rotate(270deg); }
-	100% { transform: rotate(360deg); }
+	0% {
+		transform: rotate(0deg);
+	}
+	25% {
+		transform: rotate(90deg);
+	}
+	50% {
+		transform: rotate(180deg);
+	}
+	75% {
+		transform: rotate(270deg);
+	}
+	100% {
+		transform: rotate(360deg);
+	}
 }
 .anima-spinner-square {
 	width: 20px;
@@ -1842,7 +1884,8 @@ input[type="submit"],
 	}
 }
 .anima-kanji-reveal {
-	animation: anima-kanji-reveal var(--anima-duration-slow) var(--anima-ease-paper) forwards;
+	animation: anima-kanji-reveal var(--anima-duration-slow)
+		var(--anima-ease-paper) forwards;
 }
 
 /* Furigana появление */
@@ -1874,24 +1917,49 @@ input[type="submit"],
 }
 .anima-stagger > * {
 	opacity: 0;
-	animation: anima-stagger-fade var(--anima-duration-slow) var(--anima-ease-out-expo) forwards;
+	animation: anima-stagger-fade var(--anima-duration-slow)
+		var(--anima-ease-out-expo) forwards;
 }
-.anima-stagger > *:nth-child(1) { animation-delay: 0ms; }
-.anima-stagger > *:nth-child(2) { animation-delay: 50ms; }
-.anima-stagger > *:nth-child(3) { animation-delay: 100ms; }
-.anima-stagger > *:nth-child(4) { animation-delay: 150ms; }
-.anima-stagger > *:nth-child(5) { animation-delay: 200ms; }
-.anima-stagger > *:nth-child(6) { animation-delay: 250ms; }
-.anima-stagger > *:nth-child(7) { animation-delay: 300ms; }
-.anima-stagger > *:nth-child(8) { animation-delay: 350ms; }
-.anima-stagger > *:nth-child(9) { animation-delay: 400ms; }
-.anima-stagger > *:nth-child(10) { animation-delay: 450ms; }
+.anima-stagger > *:nth-child(1) {
+	animation-delay: 0ms;
+}
+.anima-stagger > *:nth-child(2) {
+	animation-delay: 50ms;
+}
+.anima-stagger > *:nth-child(3) {
+	animation-delay: 100ms;
+}
+.anima-stagger > *:nth-child(4) {
+	animation-delay: 150ms;
+}
+.anima-stagger > *:nth-child(5) {
+	animation-delay: 200ms;
+}
+.anima-stagger > *:nth-child(6) {
+	animation-delay: 250ms;
+}
+.anima-stagger > *:nth-child(7) {
+	animation-delay: 300ms;
+}
+.anima-stagger > *:nth-child(8) {
+	animation-delay: 350ms;
+}
+.anima-stagger > *:nth-child(9) {
+	animation-delay: 400ms;
+}
+.anima-stagger > *:nth-child(10) {
+	animation-delay: 450ms;
+}
 
 /* === 9. PAGE TRANSITIONS === */
 
 @keyframes anima-page-fade {
-	from { opacity: 0; }
-	to { opacity: 1; }
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
 }
 .anima-page-fade {
 	animation: anima-page-fade var(--anima-duration-slow) ease forwards;
@@ -1909,7 +1977,8 @@ input[type="submit"],
 	}
 }
 .anima-slide-up {
-	animation: anima-slide-up var(--anima-duration-entrance) var(--anima-ease-out-expo) forwards;
+	animation: anima-slide-up var(--anima-duration-entrance)
+		var(--anima-ease-out-expo) forwards;
 }
 
 /* === 10. ACCESSIBILITY === */
@@ -1950,8 +2019,12 @@ input[type="submit"],
 
 /* Backdrop exit - fade out */
 @keyframes anima-backdrop-exit {
-	from { opacity: 0.6; }
-	to { opacity: 0; }
+	from {
+		opacity: 0.6;
+	}
+	to {
+		opacity: 0;
+	}
 }
 .anima-backdrop-exit {
 	animation: anima-backdrop-exit 0.2s ease forwards;
