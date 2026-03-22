@@ -18,6 +18,6 @@ pub fn Skeleton(
     };
 
     view! {
-        <div class=move || format!("skeleton {}", class.get()) style=style></div>
+        <div class=move || format!("anima-skeleton-paper {}", class.get()) style=style></div>
     }
 }

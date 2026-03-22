@@ -8,11 +8,23 @@ pub fn Modal(
     #[prop(optional, into)] title: Signal<String>,
     children: ChildrenFn,
 ) -> impl IntoView {
-    let close_modal = move |ev: leptos::ev::MouseEvent| {
-        is_open.set(false);
-        if let Some(on_close) = on_close {
-            on_close.run(ev);
-        }
+    let children = StoredValue::new(children);
+    let is_closing = RwSignal::new(false);
+    let on_close_clone = on_close;
+
+    let close_modal_anim = move |ev: leptos::ev::MouseEvent| {
+        is_closing.set(true);
+        let is_open_clone = is_open;
+        let on_close_inner = on_close_clone;
+        let ev_clone = ev.clone();
+        leptos::task::spawn_local(async move {
+            gloo_timers::future::TimeoutFuture::new(250).await;
+            is_open_clone.set(false);
+            is_closing.set(false);
+            if let Some(on_close) = on_close_inner {
+                on_close.run(ev_clone);
+            }
+        });
     };
 
     let cleanup = use_event_listener(
@@ -20,28 +32,52 @@ pub fn Modal(
         leptos::ev::keydown,
         move |ev: leptos::ev::KeyboardEvent| {
             if ev.key() == "Escape" {
-                is_open.set(false);
+                is_closing.set(true);
+                let is_open_clone = is_open;
+                let on_close_inner = on_close_clone;
+                leptos::task::spawn_local(async move {
+                    gloo_timers::future::TimeoutFuture::new(250).await;
+                    is_open_clone.set(false);
+                    is_closing.set(false);
+                    if let Some(on_close) = on_close_inner {
+                        on_close.run(leptos::ev::MouseEvent::new("click").unwrap());
+                    }
+                });
             }
         },
     );
     on_cleanup(move || drop(cleanup));
 
-    let children = StoredValue::new(children);
+    let backdrop_class = move || {
+        if is_closing.get() {
+            "modal-backdrop anima-backdrop-exit"
+        } else {
+            "modal-backdrop anima-backdrop-enter"
+        }
+    };
+
+    let modal_class = move || {
+        if is_closing.get() {
+            "modal-content anima-modal-exit"
+        } else {
+            "modal-content anima-modal-enter"
+        }
+    };
 
     view! {
         <Show when=move || is_open.get()>
             <>
                 <div
-                    class="modal-backdrop"
-                    on:click=close_modal
+                    class=backdrop_class
+                    on:click=close_modal_anim
                 ></div>
-                <div class="modal-content">
+                <div class=modal_class>
                     <div class="flex justify-between items-start mb-6">
                         <div>
                             <h3 class="font-serif text-2xl mt-1">{move || title.get()}</h3>
                         </div>
                         <button
-                            on:click=close_modal
+                            on:click=close_modal_anim
                             class="text-[var(--fg-muted)] hover:text-[var(--fg-black)] transition-colors"
                         >
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">

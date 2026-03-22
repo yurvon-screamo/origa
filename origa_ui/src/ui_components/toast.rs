@@ -1,5 +1,6 @@
 use leptos::prelude::*;
 use leptos::task::spawn_local;
+use std::collections::HashMap;
 
 #[derive(Clone, Copy, PartialEq, Default, Debug)]
 pub enum ToastType {
@@ -25,6 +26,7 @@ pub fn Toast(
     toast: ToastData,
     on_close: Callback<usize>,
     #[prop(optional)] duration_ms: u64,
+    #[prop(optional)] is_closing: bool,
 ) -> impl IntoView {
     let toast_id = toast.id;
     let actual_duration = toast.duration_ms.unwrap_or(duration_ms);
@@ -45,7 +47,12 @@ pub fn Toast(
                 ToastType::Warning => "toast-warning",
                 ToastType::Error => "toast-error",
             };
-            format!("toast {}", toast_class)
+            let anim_class = if is_closing {
+                "anima-toast-exit"
+            } else {
+                "anima-toast-bounce"
+            };
+            format!("toast {} {}", anim_class, toast_class)
         }>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                 {move || match toast.toast_type {
@@ -86,9 +93,23 @@ pub fn ToastContainer(
     toasts: RwSignal<Vec<ToastData>>,
     #[prop(optional)] duration_ms: u64,
 ) -> impl IntoView {
+    let closing_toasts = RwSignal::new(HashMap::<usize, bool>::new());
+
     let on_close = Callback::new(move |id: usize| {
-        toasts.update(|t| t.retain(|toast| toast.id != id));
+        let toasts_clone = toasts;
+        closing_toasts.update(|c| {
+            c.insert(id, true);
+        });
+        leptos::task::spawn_local(async move {
+            gloo_timers::future::TimeoutFuture::new(200).await;
+            toasts_clone.update(|t| t.retain(|toast| toast.id != id));
+            closing_toasts.update(|c| {
+                c.remove(&id);
+            });
+        });
     });
+
+    let is_closing = move |id: usize| closing_toasts.with(|c| c.get(&id).copied().unwrap_or(false));
 
     view! {
         <div class="toast-container">
@@ -97,7 +118,7 @@ pub fn ToastContainer(
                 key=|toast| toast.id
                 children=move |toast| {
                     view! {
-                        <Toast toast=toast on_close=on_close duration_ms=duration_ms />
+                        <Toast toast=toast.clone() on_close=on_close duration_ms=duration_ms is_closing=is_closing(toast.id) />
                     }
                 }
             />

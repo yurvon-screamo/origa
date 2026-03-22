@@ -25,7 +25,7 @@ pub fn LoadingOverlay(
     #[prop(optional, into)] class: Signal<String>,
 ) -> impl IntoView {
     view! {
-        <div class=move || format!("loading-overlay {}", class.get())>
+        <div class=move || format!("loading-overlay anima-page-fade {}", class.get())>
             <Spinner class=Signal::derive(|| "".to_string()) size=Signal::derive(|| "".to_string()) />
             <p class="loading-overlay-message">{move || message.get()}</p>
         </div>
