@@ -2,7 +2,6 @@ use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::domain::{OrigaError, User};
 use origa::traits::UserRepository;
-use ulid::Ulid;
 
 use crate::repository::{HybridUserRepository, TrailBaseClient, clear_session, get_session};
 
@@ -73,21 +72,9 @@ impl AuthStore {
         Memo::new(move |_| is_checking_session.get() || is_oauth_loading.get() || is_syncing.get())
     }
 
-    /// Get current user ID if authenticated
-
-    pub fn user_id(&self) -> Option<Ulid> {
-        self.user.with(|u| u.as_ref().map(|u| u.id()))
-    }
-
     /// Get repository for use cases
     pub fn repository(&self) -> &HybridUserRepository {
         &self.repository
-    }
-
-    /// Get client for OAuth URL generation
-
-    pub fn client(&self) -> &TrailBaseClient {
-        &self.client
     }
 
     // ========================================
@@ -295,28 +282,6 @@ impl AuthStore {
             Ok(None) => Err(OrigaError::CurrentUserNotExist {}),
             Err(e) => Err(e),
         }
-    }
-
-    /// Sync with server
-
-    pub async fn sync_with_server(&self) -> Result<(), OrigaError> {
-        self.is_syncing.set(true);
-
-        let result = self.repository.merge_current_user().await;
-
-        if result.is_ok() {
-            let _ = self.refresh_user().await;
-        }
-
-        self.is_syncing.set(false);
-        result
-    }
-
-    /// Update user profile
-
-    pub async fn update_profile(&self, user: &User) -> Result<(), OrigaError> {
-        self.repository.save(user).await?;
-        self.refresh_user().await
     }
 }
 

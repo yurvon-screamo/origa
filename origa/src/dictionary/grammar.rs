@@ -1,6 +1,6 @@
 use std::{collections::HashMap, sync::OnceLock};
 
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
 use ulid::Ulid;
 
 use crate::domain::{JapaneseLevel, NativeLanguage, OrigaError, PartOfSpeech};

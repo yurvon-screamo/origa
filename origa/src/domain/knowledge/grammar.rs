@@ -73,7 +73,7 @@ impl GrammarRuleCard {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::dictionary::grammar::{GrammarData, init_grammar, is_grammar_loaded};
+    use crate::dictionary::grammar::{init_grammar, is_grammar_loaded, GrammarData};
     use crate::domain::NativeLanguage;
     use std::sync::Once;
 
@@ -84,8 +84,10 @@ mod tests {
             if is_grammar_loaded() {
                 return;
             }
+
             let manifest_dir =
                 std::env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR not set");
+
             let grammar_path = std::path::PathBuf::from(manifest_dir)
                 .parent()
                 .expect("Failed to get parent directory")
@@ -94,8 +96,10 @@ mod tests {
                 .join("grammar")
                 .join("grammar.json");
 
+            eprintln!("Reading grammar from: {:?}", grammar_path);
             let grammar_json =
                 std::fs::read_to_string(&grammar_path).expect("Failed to read grammar.json");
+            eprintln!("Read {} bytes from grammar.json", grammar_json.len());
 
             let grammar_data = GrammarData { grammar_json };
             init_grammar(grammar_data).expect("Failed to init grammar rules");

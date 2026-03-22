@@ -13,25 +13,6 @@ impl<C: AuthRequestClient> RecordApi<C> {
         Self { client, table_name }
     }
 
-    pub async fn list<T: DeserializeOwned>(&self) -> Result<Vec<T>, AuthError> {
-        let path = format!("/api/records/v1/{}", self.table_name);
-        let response = self
-            .client
-            .request_with_auth(&path, Method::GET, None::<&()>)
-            .await?;
-
-        #[derive(Deserialize)]
-        struct ListResponseInner<T> {
-            records: Vec<T>,
-        }
-
-        let list: ListResponseInner<T> = response
-            .json()
-            .await
-            .map_err(|e| AuthError::ApiError(format!("Failed to parse response: {}", e)))?;
-        Ok(list.records)
-    }
-
     pub async fn list_filtered<T: DeserializeOwned>(
         &self,
         column: &str,
@@ -58,18 +39,6 @@ impl<C: AuthRequestClient> RecordApi<C> {
             .await
             .map_err(|e| AuthError::ApiError(format!("Failed to parse response: {}", e)))?;
         Ok(list.records)
-    }
-
-    pub async fn read<T: DeserializeOwned>(&self, id: &str) -> Result<T, AuthError> {
-        let path = format!("/api/records/v1/{}/{}", self.table_name, id);
-        let response = self
-            .client
-            .request_with_auth(&path, Method::GET, None::<&()>)
-            .await?;
-        response
-            .json()
-            .await
-            .map_err(|e| AuthError::ApiError(format!("Failed to parse response: {}", e)))
     }
 
     pub async fn create<T: Serialize + std::fmt::Debug>(

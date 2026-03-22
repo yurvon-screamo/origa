@@ -46,10 +46,6 @@ impl TrailBaseClient {
         }
     }
 
-    pub fn with_url(base_url: String) -> Self {
-        Self { base_url }
-    }
-
     fn current_timestamp() -> u64 {
         chrono::Utc::now().timestamp() as u64
     }
@@ -262,57 +258,6 @@ impl TrailBaseClient {
         Ok(session)
     }
 
-    pub fn get_session_from_cookies() -> Result<TrailBaseSession, String> {
-        let window = web_sys::window().ok_or("Window not available")?;
-        let document = window.document().ok_or("Document not available")?;
-
-        let cookie_value =
-            js_sys::Reflect::get(&document, &wasm_bindgen::JsValue::from_str("cookie"))
-                .map_err(|e| format!("Failed to get cookies: {:?}", e))?;
-
-        let cookies = cookie_value.as_string().unwrap_or_default();
-
-        let cookie_map: HashMap<&str, &str> = cookies
-            .split(';')
-            .filter_map(|cookie: &str| {
-                let cookie = cookie.trim();
-                let (key, value) = cookie.split_once('=')?;
-
-                Some((key, value))
-            })
-            .collect();
-
-        let auth_token = cookie_map
-            .get("auth_token")
-            .map(|s: &&str| s.to_string())
-            .unwrap_or_default();
-        let refresh_token = cookie_map
-            .get("refresh_token")
-            .map(|s: &&str| s.to_string())
-            .unwrap_or_default();
-
-        if auth_token.is_empty() {
-            return Err("No auth_token found in cookies".to_string());
-        }
-
-        let claims = decode_jwt_claims(&auth_token)?;
-
-        let now = Self::current_timestamp();
-        let expires_at = now.saturating_add(3600);
-
-        let session = TrailBaseSession {
-            auth_token,
-            refresh_token,
-            email: claims.email.clone().unwrap_or_default(),
-            trailbase_id: claims.sub.clone(),
-            record_id: None,
-            expires_at,
-        };
-
-        set_session(&session).map_err(|e| format!("Failed to set session: {}", e))?;
-        Ok(session)
-    }
-
     pub fn parse_tokens_from_url(url_fragment: &str) -> Result<TrailBaseSession, String> {
         let fragment = url_fragment.strip_prefix('#').unwrap_or(url_fragment);
 
@@ -442,15 +387,6 @@ impl TrailBaseClient {
         }
     }
 
-    pub async fn request_with_auth<T: Serialize>(
-        &self,
-        path: &str,
-        method: Method,
-        body: Option<&T>,
-    ) -> Result<Response, AuthError> {
-        self._request_with_auth_impl(path, method, body).await
-    }
-
     pub async fn logout(&self) -> Result<(), String> {
         use crate::repository::session::{clear_session, get_session};
 
@@ -499,14 +435,6 @@ impl TrailBaseClient {
 
     pub fn records(&self, table_name: &str) -> TrailBaseRecordApi {
         RecordApi::new(self.clone(), table_name.to_string())
-    }
-
-    pub fn generate_pkce_verifier() -> String {
-        super::trailbase_auth::generate_pkce_verifier()
-    }
-
-    pub fn generate_pkce_challenge(verifier: &str) -> String {
-        super::trailbase_auth::generate_pkce_challenge(verifier)
     }
 }
 

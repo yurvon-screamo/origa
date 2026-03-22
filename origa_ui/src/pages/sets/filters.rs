@@ -1,5 +1,5 @@
-use origa::domain::{JapaneseLevel, NativeLanguage};
-use origa::traits::{TypeMeta, get_types_meta};
+use origa::domain::JapaneseLevel;
+use origa::traits::{get_types_meta, TypeMeta};
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Default)]
 pub enum LevelFilter {
@@ -90,12 +90,6 @@ pub fn available_set_types() -> Vec<TypeMeta> {
     get_types_meta()
         .map(|meta| meta.types.clone())
         .unwrap_or_default()
-}
-
-pub fn set_type_label(id: &String, lang: &NativeLanguage) -> String {
-    get_types_meta()
-        .map(|meta| meta.get_label(id, lang).to_string())
-        .unwrap_or_else(|| id.to_string())
 }
 
 #[cfg(test)]
@@ -208,18 +202,5 @@ mod tests {
         // get_types_meta() returns None by default
         let types = available_set_types();
         assert!(types.is_empty());
-    }
-
-    #[test]
-    fn set_type_label_fallback_to_id() {
-        // When get_types_meta() returns None, fallback to id
-        assert_eq!(
-            set_type_label(&"Jlpt".to_string(), &NativeLanguage::Russian),
-            "Jlpt"
-        );
-        assert_eq!(
-            set_type_label(&"Migii".to_string(), &NativeLanguage::English),
-            "Migii"
-        );
     }
 }
