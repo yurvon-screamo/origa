@@ -35,10 +35,17 @@ pub fn Input(
     let full_class = move || {
         let base_class = "input-field";
         let textarea_class = "resize-none";
+        let focus_ring = "anima-focus-ring";
         if rows.get().is_some() {
-            format!("{} {} {}", base_class, textarea_class, class.get())
+            format!(
+                "{} {} {} {}",
+                base_class,
+                textarea_class,
+                class.get(),
+                focus_ring
+            )
         } else {
-            format!("{} {}", base_class, class.get())
+            format!("{} {} {}", base_class, class.get(), focus_ring)
         }
     };
 

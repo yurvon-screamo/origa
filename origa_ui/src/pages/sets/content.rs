@@ -1,4 +1,4 @@
-use super::filters::{available_set_types, ImportFilter, LevelFilter, TypeFilter};
+use super::filters::{ImportFilter, LevelFilter, TypeFilter, available_set_types};
 use super::import_set_preview_modal::ImportSetPreviewModal;
 use super::sets_level_group::SetsLevelGroup;
 use super::types::SetInfo;

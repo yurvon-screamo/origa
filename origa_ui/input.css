@@ -5,6 +5,7 @@
 @tailwind utilities;
 
 :root {
+	/* Colors */
 	--bg-cream: #f7f4ee;
 	--bg-paper: #fdfbf7;
 	--bg-aged: #ede8dd;
@@ -31,6 +32,15 @@
 	--fg-primary: var(--fg-black);
 	--accent: var(--accent-olive);
 	--muted: var(--fg-muted);
+
+	/* Animation Timing */
+	--anima-duration-fast: 100ms;
+	--anima-duration-normal: 200ms;
+	--anima-duration-slow: 300ms;
+	--anima-duration-entrance: 350ms;
+	--anima-ease-paper: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+	--anima-ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+	--anima-ease-out-back: cubic-bezier(0.34, 1.56, 0.64, 1);
 
 	/* Safe Area Insets с fallback */
 	--safe-top: env(safe-area-inset-top, 0px);
@@ -1063,24 +1073,24 @@ input[type="submit"],
 	height: 16px;
 }
 
+/* Алиас для обратной совместимости */
 .skeleton {
 	background: linear-gradient(
 		90deg,
-		var(--bg-aged) 25%,
-		var(--bg-warm) 50%,
-		var(--bg-aged) 75%
+		var(--bg-aged) 0%,
+		var(--bg-paper) 50%,
+		var(--bg-aged) 100%
 	);
 	background-size: 200% 100%;
-	animation: skeleton-loading 1.5s infinite;
+	animation: anima-skeleton-paper 2s ease-in-out infinite;
 }
 
-@keyframes skeleton-loading {
+@keyframes anima-skeleton-paper {
 	0% {
-		background-position: 200% 0;
-	}
-
-	100% {
 		background-position: -200% 0;
+	}
+	100% {
+		background-position: 200% 0;
 	}
 }
 
@@ -1429,20 +1439,7 @@ input[type="submit"],
 	gap: 12px;
 	align-items: flex-start;
 	background: var(--bg-paper);
-	animation: toast-slide-in 0.3s ease;
 	box-shadow: 4px 4px 0 var(--border-dark);
-}
-
-@keyframes toast-slide-in {
-	from {
-		opacity: 0;
-		transform: translateX(20px);
-	}
-
-	to {
-		opacity: 1;
-		transform: translateX(0);
-	}
 }
 
 .toast-success {
@@ -1606,4 +1603,444 @@ input[type="submit"],
 	font-size: 11px;
 	letter-spacing: 0.15em;
 	color: var(--error);
+}
+
+/* ============================================
+   ANIMATION SYSTEM - Origa UI
+   ============================================
+
+   Использование: добавьте классы вида anima-* к элементам
+   Например: <div class="card anima-card-lift">
+
+   Категории:
+   - Hover: anima-card-lift, anima-tag-hover, anima-link-typewriter, anima-btn-press
+   - Entrance: anima-modal-enter, anima-backdrop-enter, anima-toast-bounce
+   - Exit: anima-modal-exit, anima-backdrop-exit, anima-toast-exit
+   - Micro: anima-shake, anima-check-draw, anima-strikethrough
+   - Loading: anima-skeleton-paper, anima-spinner-square
+   - Japanese: anima-kanji-reveal, anima-furigana-show
+   - Layout: anima-stagger, anima-page-fade, anima-slide-up
+   - Special: anima-stamp, anima-pulse-subtle, anima-focus-ring
+
+   Accessibility: prefers-reduced-motion отключает все анимации
+   ============================================
+*/
+
+/* === 1. HOVER АНИМАЦИИ === */
+
+/* Карточка приподнимается при hover */
+.anima-card-lift {
+	transition: transform var(--anima-duration-normal) var(--anima-ease-paper),
+		box-shadow var(--anima-duration-normal) var(--anima-ease-paper);
+}
+.anima-card-lift:hover {
+	transform: translateY(-2px);
+}
+.anima-card-lift:hover.card-shadow::after {
+	transform: translate(8px, 8px);
+	transition: transform var(--anima-duration-normal) var(--anima-ease-paper);
+}
+
+/* Тег - наклон при hover */
+.anima-tag-hover {
+	transition: transform var(--anima-duration-fast) var(--anima-ease-paper);
+}
+.anima-tag-hover:hover {
+	transform: translateY(-1px) rotate(-1deg);
+}
+
+/* Ссылка - печатное подчёркивание */
+.anima-link-typewriter {
+	position: relative;
+	text-decoration: none;
+}
+.anima-link-typewriter::after {
+	content: "";
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	width: 100%;
+	height: 1px;
+	background: currentColor;
+	transform: scaleX(0);
+	transform-origin: left;
+	transition: transform var(--anima-duration-normal) var(--anima-ease-paper);
+}
+.anima-link-typewriter:hover::after {
+	transform: scaleX(1);
+}
+
+/* Кнопка - нажатие */
+.anima-btn-press:active {
+	transform: translateY(1px);
+	transition: transform var(--anima-duration-fast) ease;
+}
+
+/* === 2. ПОЯВЛЕНИЕ/ИСЧЕЗНОВЕНИЕ === */
+
+/* Модальное окно - вход */
+@keyframes anima-modal-enter {
+	from {
+		opacity: 0;
+		transform: translateY(20px) scale(0.98);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0) scale(1);
+	}
+}
+.anima-modal-enter {
+	animation: anima-modal-enter var(--anima-duration-entrance)
+		var(--anima-ease-out-expo) forwards;
+}
+
+/* Backdrop */
+@keyframes anima-backdrop-enter {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 0.6;
+	}
+}
+.anima-backdrop-enter {
+	animation: anima-backdrop-enter var(--anima-duration-slow) ease forwards;
+}
+
+/* Toast - улучшенный вход с лёгким bounce */
+@keyframes anima-toast-bounce {
+	0% {
+		opacity: 0;
+		transform: translateX(20px) translateY(-10px);
+	}
+	60% {
+		opacity: 1;
+		transform: translateX(0) translateY(2px);
+	}
+	100% {
+		opacity: 1;
+		transform: translateX(0) translateY(0);
+	}
+}
+.anima-toast-bounce {
+	animation: anima-toast-bounce 0.4s var(--anima-ease-out-back) forwards;
+}
+
+/* === 3. ГЛУБИНА И СЛОИ === */
+
+/* Stamp-эффект (для важных меток) */
+@keyframes anima-stamp {
+	0% {
+		transform: scale(1.3) rotate(-15deg);
+		opacity: 0;
+	}
+	60% {
+		transform: scale(0.95) rotate(-2deg);
+		opacity: 1;
+	}
+	100% {
+		transform: scale(1) rotate(-3deg);
+		opacity: 1;
+	}
+}
+.anima-stamp {
+	animation: anima-stamp 0.4s var(--anima-ease-out-back) forwards;
+}
+
+/* === 4. ФОКУС И ВНИМАНИЕ === */
+
+/* Мягкая пульсация */
+@keyframes anima-pulse-subtle {
+	0%,
+	100% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0.7;
+	}
+}
+.anima-pulse-subtle {
+	animation: anima-pulse-subtle 2s ease-in-out infinite;
+}
+
+/* Focus ring для keyboard navigation */
+.anima-focus-ring:focus-visible {
+	outline: 2px solid var(--accent-terracotta);
+	outline-offset: 2px;
+	transition: outline-offset var(--anima-duration-fast) ease;
+}
+
+/* === 5. МИКРОВЗАИМОДЕЙСТВИЯ === */
+
+/* Тряска при ошибке */
+@keyframes anima-shake {
+	0%,
+	100% {
+		transform: translateX(0);
+	}
+	10%,
+	30%,
+	50%,
+	70%,
+	90% {
+		transform: translateX(-4px);
+	}
+	20%,
+	40%,
+	60%,
+	80% {
+		transform: translateX(4px);
+	}
+}
+.anima-shake {
+	animation: anima-shake 0.5s ease;
+}
+
+/* Галочка рисуется */
+@keyframes anima-check-draw {
+	from {
+		stroke-dashoffset: 24;
+	}
+	to {
+		stroke-dashoffset: 0;
+	}
+}
+.anima-check-draw {
+	stroke-dasharray: 24;
+	stroke-dashoffset: 24;
+	animation: anima-check-draw 0.3s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+
+/* Зачёркивание */
+.anima-strikethrough {
+	position: relative;
+}
+.anima-strikethrough::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	top: 50%;
+	width: 100%;
+	height: 1px;
+	background: currentColor;
+	transform: scaleX(0);
+	transform-origin: left;
+	transition: transform var(--anima-duration-normal) ease;
+}
+.anima-strikethrough.active::after {
+	transform: scaleX(1);
+}
+
+/* === 6. LOADING СОСТОЯНИЯ === */
+
+/* Skeleton с бумажной текстурой - улучшенный */
+.anima-skeleton-paper {
+	background: linear-gradient(
+		90deg,
+		var(--bg-aged) 0%,
+		var(--bg-paper) 50%,
+		var(--bg-aged) 100%
+	);
+	background-size: 200% 100%;
+	animation: anima-skeleton-paper 2s ease-in-out infinite;
+}
+
+/* Квадратный spinner в стиле проекта */
+@keyframes anima-spinner-square {
+	0% {
+		transform: rotate(0deg);
+	}
+	25% {
+		transform: rotate(90deg);
+	}
+	50% {
+		transform: rotate(180deg);
+	}
+	75% {
+		transform: rotate(270deg);
+	}
+	100% {
+		transform: rotate(360deg);
+	}
+}
+.anima-spinner-square {
+	width: 20px;
+	height: 20px;
+	border: 2px solid var(--border-light);
+	animation: anima-spinner-square 1.2s steps(4) infinite;
+}
+
+/* === 7. ЯПОНСКАЯ СПЕЦИФИКА === */
+
+/* Появление иероглифа - fade in + scale */
+@keyframes anima-kanji-reveal {
+	0% {
+		opacity: 0;
+		transform: scale(1.1);
+	}
+	100% {
+		opacity: 1;
+		transform: scale(1);
+	}
+}
+.anima-kanji-reveal {
+	animation: anima-kanji-reveal var(--anima-duration-slow)
+		var(--anima-ease-paper) forwards;
+}
+
+/* Furigana появление */
+@keyframes anima-furigana-show {
+	from {
+		opacity: 0;
+		transform: translateY(4px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+.anima-furigana-show {
+	animation: anima-furigana-show var(--anima-duration-fast) ease forwards;
+}
+
+/* === 8. STAGGER (каскадное появление) === */
+
+@keyframes anima-stagger-fade {
+	from {
+		opacity: 0;
+		transform: translateY(12px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+.anima-stagger > * {
+	opacity: 0;
+	animation: anima-stagger-fade var(--anima-duration-slow)
+		var(--anima-ease-out-expo) forwards;
+}
+.anima-stagger > *:nth-child(1) {
+	animation-delay: 0ms;
+}
+.anima-stagger > *:nth-child(2) {
+	animation-delay: 50ms;
+}
+.anima-stagger > *:nth-child(3) {
+	animation-delay: 100ms;
+}
+.anima-stagger > *:nth-child(4) {
+	animation-delay: 150ms;
+}
+.anima-stagger > *:nth-child(5) {
+	animation-delay: 200ms;
+}
+.anima-stagger > *:nth-child(6) {
+	animation-delay: 250ms;
+}
+.anima-stagger > *:nth-child(7) {
+	animation-delay: 300ms;
+}
+.anima-stagger > *:nth-child(8) {
+	animation-delay: 350ms;
+}
+.anima-stagger > *:nth-child(9) {
+	animation-delay: 400ms;
+}
+.anima-stagger > *:nth-child(10) {
+	animation-delay: 450ms;
+}
+
+/* === 9. PAGE TRANSITIONS === */
+
+@keyframes anima-page-fade {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+.anima-page-fade {
+	animation: anima-page-fade var(--anima-duration-slow) ease forwards;
+}
+
+/* Mobile-friendly slide up */
+@keyframes anima-slide-up {
+	from {
+		opacity: 0;
+		transform: translateY(20px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+.anima-slide-up {
+	animation: anima-slide-up var(--anima-duration-entrance)
+		var(--anima-ease-out-expo) forwards;
+}
+
+/* === 10. ACCESSIBILITY === */
+
+/* Отключение анимаций для prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+	}
+}
+
+/* Класс для полного отключения анимаций */
+.anima-none {
+	animation: none !important;
+	transition: none !important;
+}
+
+/* === EXIT ANIMATIONS === */
+
+/* Modal exit - обратное к появлению */
+@keyframes anima-modal-exit {
+	from {
+		opacity: 1;
+		transform: translateY(0) scale(1);
+	}
+	to {
+		opacity: 0;
+		transform: translateY(-10px) scale(0.98);
+	}
+}
+.anima-modal-exit {
+	animation: anima-modal-exit 0.25s ease-in forwards;
+}
+
+/* Backdrop exit - fade out */
+@keyframes anima-backdrop-exit {
+	from {
+		opacity: 0.6;
+	}
+	to {
+		opacity: 0;
+	}
+}
+.anima-backdrop-exit {
+	animation: anima-backdrop-exit 0.2s ease forwards;
+}
+
+/* Toast exit - slide out */
+@keyframes anima-toast-exit {
+	from {
+		opacity: 1;
+		transform: translateX(0);
+	}
+	to {
+		opacity: 0;
+		transform: translateX(20px);
+	}
+}
+.anima-toast-exit {
+	animation: anima-toast-exit 0.2s ease-in forwards;
 }

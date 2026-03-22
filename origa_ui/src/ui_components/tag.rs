@@ -23,7 +23,9 @@ pub fn Tag(
         TagVariant::Terracotta => "tag-terracotta",
     };
 
-    let full_class = move || format!("tag {} {}", variant_class(), class.get());
+    let is_clickable = on_click.is_some();
+    let anima_class = if is_clickable { "anima-tag-hover" } else { "" };
+    let full_class = move || format!("tag {} {} {}", variant_class(), anima_class, class.get());
 
     match on_click {
         Some(callback) => view! {

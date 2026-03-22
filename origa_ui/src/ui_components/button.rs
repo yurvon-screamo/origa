@@ -49,7 +49,9 @@ pub fn Button(
                     ButtonSize::Large => "btn-lg",
                 };
                 let loading_class = if loading.get() { "btn-loading" } else { "" };
-                format!("btn {} {} {} {}", v, s, class.get(), loading_class)
+                let focus_ring = "anima-focus-ring";
+                let btn_press = "anima-btn-press";
+                format!("btn {} {} {} {} {} {}", v, s, class.get(), loading_class, focus_ring, btn_press)
             }
             disabled=move || disabled.get() || loading.get()
             on:click=move |ev| {

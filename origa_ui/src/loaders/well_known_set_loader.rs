@@ -2,8 +2,8 @@ use futures::future::join_all;
 use origa::{
     domain::{JapaneseLevel, OrigaError},
     traits::{
-        get_types_meta, resolve_set_path, set_types_meta, TypesMeta, WellKnownSet,
-        WellKnownSetLoader, WellKnownSetMeta,
+        TypesMeta, WellKnownSet, WellKnownSetLoader, WellKnownSetMeta, get_types_meta,
+        resolve_set_path, set_types_meta,
     },
 };
 use serde::Deserialize;
@@ -58,11 +58,10 @@ async fn ensure_types_loaded() -> Result<(), OrigaError> {
         "/public/domain/well_known_set/well_known_types_meta.json",
     ))
     .await?;
-    let types_meta: TypesMeta = serde_json::from_str(&json).map_err(|e| {
-        OrigaError::WellKnownSetParseError {
+    let types_meta: TypesMeta =
+        serde_json::from_str(&json).map_err(|e| OrigaError::WellKnownSetParseError {
             reason: format!("Error parsing types meta: {}", e),
-        }
-    })?;
+        })?;
     set_types_meta(types_meta);
     Ok(())
 }

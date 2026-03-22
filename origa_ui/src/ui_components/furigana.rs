@@ -33,9 +33,9 @@ fn render_segment(text: String, reading: Option<String>, is_known: bool) -> impl
     match reading {
         Some(reading) => {
             let class = if is_known {
-                "furigana-hidden furigana-ruby"
+                "furigana-hidden furigana-ruby anima-furigana-show"
             } else {
-                "furigana-ruby"
+                "furigana-ruby anima-furigana-show"
             };
             view! {
                 <ruby class=class>

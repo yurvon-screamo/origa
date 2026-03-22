@@ -1,34 +1,34 @@
 {
-  "types": [
-    {
-      "id": "Jlpt",
-      "label_ru": "JLPT",
-      "label_en": "JLPT"
-    },
-    {
-      "id": "Migii",
-      "label_ru": "Migii",
-      "label_en": "Migii"
-    },
-    {
-      "id": "SpyFamily",
-      "label_ru": "Spy x Family",
-      "label_en": "Spy x Family"
-    },
-    {
-      "id": "DuolingoRu",
-      "label_ru": "Duolingo Ru",
-      "label_en": "Duolingo Ru"
-    },
-    {
-      "id": "DuolingoEn",
-      "label_ru": "Duolingo En",
-      "label_en": "Duolingo En"
-    },
-    {
-      "id": "MinnaNoNihongo",
-      "label_ru": "Minna no Nihongo",
-      "label_en": "Minna no Nihongo"
-    }
-  ]
+	"types": [
+		{
+			"id": "Jlpt",
+			"label_ru": "JLPT",
+			"label_en": "JLPT"
+		},
+		{
+			"id": "Migii",
+			"label_ru": "Migii",
+			"label_en": "Migii"
+		},
+		{
+			"id": "SpyFamily",
+			"label_ru": "Spy x Family",
+			"label_en": "Spy x Family"
+		},
+		{
+			"id": "DuolingoRu",
+			"label_ru": "Duolingo Ru",
+			"label_en": "Duolingo Ru"
+		},
+		{
+			"id": "DuolingoEn",
+			"label_ru": "Duolingo En",
+			"label_en": "Duolingo En"
+		},
+		{
+			"id": "MinnaNoNihongo",
+			"label_ru": "Minna no Nihongo",
+			"label_en": "Minna no Nihongo"
+		}
+	]
 }

@@ -32,7 +32,7 @@ pub fn Drawer(
             <>
                 {/* Используем тот же бэкдроп, что и в модалке, для консистентности */}
                 <div
-                    class="modal-backdrop"
+                    class="modal-backdrop anima-backdrop-enter"
                     on:click=close_drawer
                 ></div>
 
