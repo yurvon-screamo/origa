@@ -5,19 +5,16 @@
 :4000 {
     reverse_proxy localhost:8080
 
-    encode gzip zstd
-
-    @static_assets {
-        path *.js *.css *.png *.jpg *.jpeg *.gif *.svg *.woff *.woff2 *.ttf *.eot *.ico *.webmanifest
+    @compressible {
+        not path *.wasm
     }
-    header @static_assets Cache-Control "public, max-age=31536000, immutable"
+    encode gzip zstd @compressible
 
-    @dictionaries {
-        path /public/dictionary/*.json
-        path /public/domain/grammar/*.json
-        path /public/dictionaries/unidic/*
+    @static_files {
+        path *.js *.css *.json *.png *.jpg *.jpeg *.gif *.svg *.woff *.woff2 *.ttf *.eot *.ico *.webmanifest *.wasm
     }
-    header @dictionaries Cache-Control "public, max-age=86400, stale-while-revalidate=604800"
+    header @static_files Cache-Control "public, max-age=2592000, must-revalidate"
+    header @static_files ETag ""
 
     @html {
         path *.html /
