@@ -1,18 +1,17 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 37",
-			"description": "Слова из модуля: Опыт: Расскажи о своём опыте"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 37",
-			"description": "Words from module: Опыт: Расскажи о своём опыте"
+			"description": "Words from module: Опыт: Расскажи о своём опыте",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 37"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Опыт: Расскажи о своём опыте",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 37"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"けれど",
-		"で",
 		"其れ",
 		"卒業",
 		"大変",

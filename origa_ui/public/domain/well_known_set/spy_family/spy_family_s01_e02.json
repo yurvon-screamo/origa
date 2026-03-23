@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "SPY x FAMILY - S01 E02",
-			"description": "Слова для просмотра к SPY x FAMILY второго эпизода первого сезона"
-		},
 		"English": {
-			"title": "SPY x FAMILY - S01 E02",
-			"description": "Words for watching SPY x FAMILY second episode of the first season"
+			"description": "Words for watching SPY x FAMILY second episode of the first season",
+			"title": "SPY x FAMILY - S01 E02"
+		},
+		"Russian": {
+			"description": "Слова для просмотра к SPY x FAMILY второго эпизода первого сезона",
+			"title": "SPY x FAMILY - S01 E02"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"あわよくば",
 		"あんな",
@@ -30,7 +30,6 @@
 		"ちち",
 		"ちゃっちゃ",
 		"ちゃんと",
-		"で",
 		"とある",
 		"どう",
 		"どんな",
@@ -43,7 +42,6 @@
 		"ほっと",
 		"まあ",
 		"まさか",
-		"まじ",
 		"みたい",
 		"もう",
 		"もじゃもじゃ",
@@ -259,6 +257,7 @@
 		"受け入れる",
 		"受験",
 		"叩き込む",
+		"只",
 		"可哀想",
 		"可能",
 		"名門",
@@ -267,7 +266,6 @@
 		"呉れる",
 		"呼ぶ",
 		"命ずる",
-		"唯",
 		"啜る",
 		"善",
 		"喋る",

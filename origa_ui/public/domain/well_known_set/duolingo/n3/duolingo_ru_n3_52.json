@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 52",
-			"description": "Слова из модуля: События: Опиши праздник"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 52",
-			"description": "Words from module: События: Опиши праздник"
+			"description": "Words from module: События: Опиши праздник",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 52"
+		},
+		"Russian": {
+			"description": "Слова из модуля: События: Опиши праздник",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 52"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"イヤホン",
 		"ネット",

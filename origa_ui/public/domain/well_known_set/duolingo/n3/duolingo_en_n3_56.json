@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 6 Unit 6",
-			"description": "Слова из модуля: talk about chores"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 6 Unit 6",
-			"description": "Words from section/unit: talk about chores"
+			"description": "Words from section/unit: talk about chores",
+			"title": "Duolingo (EN) - Section 6 Unit 6"
+		},
+		"Russian": {
+			"description": "Слова из модуля: talk about chores",
+			"title": "Duolingo (EN) - Section 6 Unit 6"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"くしゃくしゃ",
 		"カーテン",

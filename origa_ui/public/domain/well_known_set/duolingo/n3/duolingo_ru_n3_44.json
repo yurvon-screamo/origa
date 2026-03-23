@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 44",
-			"description": "Слова из модуля: Привычки: Расскажи о своих привычках"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 44",
-			"description": "Words from module: Привычки: Расскажи о своих привычках"
+			"description": "Words from module: Привычки: Расскажи о своих привычках",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 44"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Привычки: Расскажи о своих привычках",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 44"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"メッセージ",
 		"七",

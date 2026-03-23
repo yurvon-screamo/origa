@@ -1,18 +1,17 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 4",
-			"description": "Слова из модуля: Досуг: Расскажи о своем досуге"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 4",
-			"description": "Words from module: Досуг: Расскажи о своем досуге"
+			"description": "Words from module: Досуг: Расскажи о своем досуге",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 4"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Досуг: Расскажи о своем досуге",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 4"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"きちんと",
-		"で",
 		"アサクサ",
 		"コウベ",
 		"付き合う",

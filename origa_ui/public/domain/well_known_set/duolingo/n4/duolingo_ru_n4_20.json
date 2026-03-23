@@ -1,19 +1,20 @@
 {
-	"level": "N4",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 4 Раздел 20",
-			"description": "Слова из модуля: Обсудите спорт и активности"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 4 Раздел 20",
-			"description": "Words from module: Обсудите спорт и активности"
+			"description": "Words from module: Обсудите спорт и активности",
+			"title": "Duolingo (RU) - Модуль 4 Раздел 20"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Обсудите спорт и активности",
+			"title": "Duolingo (RU) - Модуль 4 Раздел 20"
 		}
 	},
+	"level": "N4",
 	"words": [
 		"アメフト",
 		"ストレッチ",
 		"ダンベル",
+		"ハン",
 		"入る",
 		"回",
 		"因る",
@@ -22,7 +23,6 @@
 		"掻く",
 		"方",
 		"暑い",
-		"汗",
 		"良い",
 		"行く",
 		"趣味",

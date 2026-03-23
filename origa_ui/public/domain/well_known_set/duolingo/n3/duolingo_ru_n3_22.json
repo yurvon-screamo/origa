@@ -1,19 +1,18 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 22",
-			"description": "Слова из модуля: Лагерь: Опиши свой лагерь"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 22",
-			"description": "Words from module: Лагерь: Опиши свой лагерь"
+			"description": "Words from module: Лагерь: Опиши свой лагерь",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 22"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Лагерь: Опиши свой лагерь",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 22"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"グループ",
 		"コース",
-		"トマリ",
 		"ミス",
 		"交換",
 		"仕方無い",

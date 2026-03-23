@@ -1,40 +1,40 @@
 {
-	"level": "N5",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 2 Unit 3",
-			"description": "Слова из модуля: describe your family"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 2 Unit 3",
-			"description": "Words from section/unit: describe your family"
+			"description": "Words from section/unit: describe your family",
+			"title": "Duolingo (EN) - Section 2 Unit 3"
+		},
+		"Russian": {
+			"description": "Слова из модуля: describe your family",
+			"title": "Duolingo (EN) - Section 2 Unit 3"
 		}
 	},
+	"level": "N5",
 	"words": [
-		"おっと",
-		"七",
-		"あたまがいい",
-		"むすこ",
-		"おしゃれ",
-		"むすめ",
-		"六",
-		"つま",
-		"だいがくせい",
-		"ゆうめい",
-		"かんごし",
-		"おとうと",
-		"うるさい",
-		"五",
-		"あに",
-		"かいしゃいん",
-		"あね",
-		"四",
-		"いもうと",
-		"さい",
-		"いそがしい",
 		"エンジニア",
+		"七",
+		"五",
+		"六",
+		"四",
+		"大学",
+		"妹",
+		"姉",
+		"娘",
+		"家族",
+		"弟",
+		"御洒落",
+		"忙しい",
+		"息子",
+		"患い",
+		"成る",
+		"所為",
+		"有名",
+		"母",
 		"父",
-		"かぞく",
-		"母"
+		"看護",
+		"良い",
+		"褄",
+		"際",
+		"頭"
 	]
 }

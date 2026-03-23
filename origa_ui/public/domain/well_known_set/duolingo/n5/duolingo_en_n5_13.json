@@ -1,36 +1,35 @@
 {
-	"level": "N5",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 2 Unit 4",
-			"description": "Слова из модуля: talk about hobbies"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 2 Unit 4",
-			"description": "Words from section/unit: talk about hobbies"
+			"description": "Words from section/unit: talk about hobbies",
+			"title": "Duolingo (EN) - Section 2 Unit 4"
+		},
+		"Russian": {
+			"description": "Слова из модуля: talk about hobbies",
+			"title": "Duolingo (EN) - Section 2 Unit 4"
 		}
 	},
+	"level": "N5",
 	"words": [
-		"Jポップ",
-		"まんが",
 		"アニメ",
-		"やきゅう",
-		"ざっし",
-		"本",
-		"読みます",
-		"ニュース",
-		"おんがく",
-		"ロック",
-		"ききます",
-		"ジャズ",
 		"サッカー",
-		"ときどき",
-		"します",
-		"バスケットボール",
-		"を",
-		"よく",
-		"えいが",
+		"ジャズ",
 		"テレビ",
-		"見ます"
+		"ニュース",
+		"バスケットボール",
+		"ポップ",
+		"ロック",
+		"成る",
+		"映画",
+		"時々",
+		"本",
+		"漫画",
+		"聞く",
+		"良い",
+		"見る",
+		"読む",
+		"野球",
+		"雑誌",
+		"音楽"
 	]
 }

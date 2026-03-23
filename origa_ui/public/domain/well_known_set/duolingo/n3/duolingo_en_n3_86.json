@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 6 Unit 36",
-			"description": "Слова из модуля: discuss science"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 6 Unit 36",
-			"description": "Words from section/unit: discuss science"
+			"description": "Words from section/unit: discuss science",
+			"title": "Duolingo (EN) - Section 6 Unit 36"
+		},
+		"Russian": {
+			"description": "Слова из модуля: discuss science",
+			"title": "Duolingo (EN) - Section 6 Unit 36"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"仕組み",
 		"公式",

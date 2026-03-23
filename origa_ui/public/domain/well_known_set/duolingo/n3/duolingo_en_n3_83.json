@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 6 Unit 33",
-			"description": "Слова из модуля: use polite language"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 6 Unit 33",
-			"description": "Words from section/unit: use polite language"
+			"description": "Words from section/unit: use polite language",
+			"title": "Duolingo (EN) - Section 6 Unit 33"
+		},
+		"Russian": {
+			"description": "Слова из модуля: use polite language",
+			"title": "Duolingo (EN) - Section 6 Unit 33"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"こっそり",
 		"助言",

@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 6",
-			"description": "Слова из модуля: Быт: Опиши порядок в квартире"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 6",
-			"description": "Words from module: Быт: Опиши порядок в квартире"
+			"description": "Words from module: Быт: Опиши порядок в квартире",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 6"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Быт: Опиши порядок в квартире",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 6"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"トラブル",
 		"八",

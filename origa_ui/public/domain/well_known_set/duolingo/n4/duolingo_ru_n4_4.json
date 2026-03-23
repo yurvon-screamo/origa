@@ -1,28 +1,28 @@
 {
-	"level": "N4",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 4 Раздел 4",
-			"description": "Слова из модуля: Опишите бизнес своей семьи"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 4 Раздел 4",
-			"description": "Words from module: Опишите бизнес своей семьи"
+			"description": "Words from module: Опишите бизнес своей семьи",
+			"title": "Duolingo (RU) - Модуль 4 Раздел 4"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Опишите бизнес своей семьи",
+			"title": "Duolingo (RU) - Модуль 4 Раздел 4"
 		}
 	},
+	"level": "N4",
 	"words": [
-		"かん",
-		"どんぶり",
 		"アルバイト",
 		"シフト",
 		"ソフト",
 		"ドリンク",
 		"メニュー",
+		"丼",
 		"以外",
 		"利する",
 		"割り引く",
 		"学生",
 		"客",
+		"彼",
 		"御数",
 		"毎週",
 		"着替える",

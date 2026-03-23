@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 27",
-			"description": "Слова из модуля: Причины: Объясни причину изменений"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 27",
-			"description": "Words from module: Причины: Объясни причину изменений"
+			"description": "Words from module: Причины: Объясни причину изменений",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 27"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Причины: Объясни причину изменений",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 27"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"中国",
 		"作家",

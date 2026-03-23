@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Migii N3 Урок 16",
-			"description": "Словарный запас из урока 16 уровня N3 от Migii."
-		},
 		"English": {
-			"title": "Migii N3 Lesson 16",
-			"description": "Vocabulary from lesson 16 of N3 level by Migii."
+			"description": "Vocabulary from lesson 16 of N3 level by Migii.",
+			"title": "Migii N3 Lesson 16"
+		},
+		"Russian": {
+			"description": "Словарный запас из урока 16 уровня N3 от Migii.",
+			"title": "Migii N3 Урок 16"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"にっこり",
 		"スキー",
@@ -46,7 +46,6 @@
 		"武器",
 		"死亡",
 		"法",
-		"無",
 		"爆発",
 		"率",
 		"祝う",

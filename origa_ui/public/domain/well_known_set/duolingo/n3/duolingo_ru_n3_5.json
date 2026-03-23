@@ -1,19 +1,18 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 5",
-			"description": "Слова из модуля: Праздник: Расскажи о празднике"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 5",
-			"description": "Words from module: Праздник: Расскажи о празднике"
+			"description": "Words from module: Праздник: Расскажи о празднике",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 5"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Праздник: Расскажи о празднике",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 5"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"びっくり",
 		"カード",
-		"トコロ",
 		"不快",
 		"人",
 		"今晩",
@@ -22,6 +21,7 @@
 		"彼氏",
 		"情報",
 		"成る",
+		"所",
 		"料理",
 		"断る",
 		"日",

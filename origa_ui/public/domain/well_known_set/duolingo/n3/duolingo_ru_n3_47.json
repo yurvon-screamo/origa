@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 47",
-			"description": "Слова из модуля: Встреча: Представь гостя"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 47",
-			"description": "Words from module: Встреча: Представь гостя"
+			"description": "Words from module: Встреча: Представь гостя",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 47"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Встреча: Представь гостя",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 47"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"いらっしゃる",
 		"パン",

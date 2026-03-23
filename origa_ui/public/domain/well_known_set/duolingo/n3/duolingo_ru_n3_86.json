@@ -1,18 +1,17 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 34",
-			"description": "Слова из модуля: места: Опиши любимое место"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 34",
-			"description": "Words from module: места: Опиши любимое место"
+			"description": "Words from module: места: Опиши любимое место",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 34"
+		},
+		"Russian": {
+			"description": "Слова из модуля: места: Опиши любимое место",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 34"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"から",
-		"で",
 		"でかい",
 		"アルコール",
 		"キャプテン",
@@ -22,8 +21,8 @@
 		"呼吸",
 		"場合",
 		"広告",
+		"成る",
 		"濃い",
-		"為る",
 		"観戦",
 		"賑やか",
 		"駄目"

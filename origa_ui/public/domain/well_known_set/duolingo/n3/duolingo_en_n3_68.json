@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 6 Unit 18",
-			"description": "Слова из модуля: describe home appliances"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 6 Unit 18",
-			"description": "Words from section/unit: describe home appliances"
+			"description": "Words from section/unit: describe home appliances",
+			"title": "Duolingo (EN) - Section 6 Unit 18"
+		},
+		"Russian": {
+			"description": "Слова из модуля: describe home appliances",
+			"title": "Duolingo (EN) - Section 6 Unit 18"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"うっかり",
 		"つい",

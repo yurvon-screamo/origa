@@ -1,19 +1,18 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 32",
-			"description": "Слова из модуля: Встреча: Делись обязанностями"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 32",
-			"description": "Words from module: Встреча: Делись обязанностями"
+			"description": "Words from module: Встреча: Делись обязанностями",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 32"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Встреча: Делись обязанностями",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 32"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"コスト",
 		"スピード",
-		"トコロ",
 		"メートル",
 		"ワゴン",
 		"十",

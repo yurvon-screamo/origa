@@ -1,18 +1,17 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 4",
-			"description": "Слова из модуля: План: Расскажи о своих планах"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 4",
-			"description": "Words from module: План: Расскажи о своих планах"
+			"description": "Words from module: План: Расскажи о своих планах",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 4"
+		},
+		"Russian": {
+			"description": "Слова из модуля: План: Расскажи о своих планах",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 4"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"せめて",
-		"で",
 		"キシ",
 		"危機",
 		"塵",

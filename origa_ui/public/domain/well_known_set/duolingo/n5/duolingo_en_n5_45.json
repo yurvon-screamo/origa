@@ -1,41 +1,45 @@
 {
-	"level": "N5",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 3 Unit 6",
-			"description": "Слова из модуля: communicate at a hotel"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 3 Unit 6",
-			"description": "Words from section/unit: communicate at a hotel"
+			"description": "Words from section/unit: communicate at a hotel",
+			"title": "Duolingo (EN) - Section 3 Unit 6"
+		},
+		"Russian": {
+			"description": "Слова из модуля: communicate at a hotel",
+			"title": "Duolingo (EN) - Section 3 Unit 6"
 		}
 	},
+	"level": "N5",
 	"words": [
-		"トースト",
-		"コーヒーメーカー",
-		"まで",
-		"チェックアウト",
-		"ぎゅうにゅう",
-		"四階",
-		"タオル",
-		"うしろ",
-		"むりょう",
+		"イン",
+		"カード",
+		"クレジット",
+		"コーヒー",
+		"サービス",
 		"スパ",
-		"パスワード",
-		"三階",
-		"ルームサービス",
-		"こおり",
-		"まえ",
-		"ばんごう",
-		"クレジットカード",
-		"となり",
-		"チェックイン",
-		"かぎ",
-		"おねがいします",
+		"タオル",
+		"チェック",
+		"チェックアウト",
+		"トースト",
 		"ネット",
-		"三日",
-		"二日",
-		"とまりませんか",
-		"さがします"
+		"パスワード",
+		"メーカー",
+		"ルーム",
+		"三",
+		"二",
+		"前",
+		"四",
+		"後ろ",
+		"成る",
+		"探す",
+		"止まる",
+		"氷",
+		"無量",
+		"牛乳",
+		"番号",
+		"鍵",
+		"階",
+		"隣り",
+		"願う"
 	]
 }

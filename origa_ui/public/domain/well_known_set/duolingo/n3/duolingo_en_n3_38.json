@@ -1,22 +1,22 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 5 Unit 38",
-			"description": "Слова из модуля: discuss geography"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 5 Unit 38",
-			"description": "Words from section/unit: discuss geography"
+			"description": "Words from section/unit: discuss geography",
+			"title": "Duolingo (EN) - Section 5 Unit 38"
+		},
+		"Russian": {
+			"description": "Слова из модуля: discuss geography",
+			"title": "Duolingo (EN) - Section 5 Unit 38"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"中心",
 		"位置",
 		"国境",
 		"塔",
 		"境界",
-		"平ら",
+		"平",
 		"恋しい",
 		"故郷",
 		"方",

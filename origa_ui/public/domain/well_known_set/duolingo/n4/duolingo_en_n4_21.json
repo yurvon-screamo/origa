@@ -1,15 +1,15 @@
 {
-	"level": "N4",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 4 Unit 21",
-			"description": "Слова из модуля: talk about hobbies"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 4 Unit 21",
-			"description": "Words from section/unit: talk about hobbies"
+			"description": "Words from section/unit: talk about hobbies",
+			"title": "Duolingo (EN) - Section 4 Unit 21"
+		},
+		"Russian": {
+			"description": "Слова из модуля: talk about hobbies",
+			"title": "Duolingo (EN) - Section 4 Unit 21"
 		}
 	},
+	"level": "N4",
 	"words": [
 		"余り",
 		"写真",
@@ -27,7 +27,6 @@
 		"泳ぐ",
 		"絵",
 		"習い",
-		"聞き",
 		"聞く",
 		"見る",
 		"読み",

@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 40",
-			"description": "Слова из модуля: Соседи: Расскажи о новых соседях"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 40",
-			"description": "Words from module: Соседи: Расскажи о новых соседях"
+			"description": "Words from module: Соседи: Расскажи о новых соседях",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 40"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Соседи: Расскажи о новых соседях",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 40"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"人",
 		"勝手",
@@ -19,7 +19,6 @@
 		"恥ずかしい",
 		"成る",
 		"毎回",
-		"為る",
 		"研究",
 		"空っぽ",
 		"考え",

@@ -1,39 +1,39 @@
 {
-	"level": "N5",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 2 Unit 25",
-			"description": "Слова из модуля: get around a theme park"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 2 Unit 25",
-			"description": "Words from section/unit: get around a theme park"
+			"description": "Words from section/unit: get around a theme park",
+			"title": "Duolingo (EN) - Section 2 Unit 25"
+		},
+		"Russian": {
+			"description": "Слова из модуля: get around a theme park",
+			"title": "Duolingo (EN) - Section 2 Unit 25"
 		}
 	},
+	"level": "N5",
 	"words": [
-		"チョコミント",
-		"あじ",
-		"バニラ",
-		"かお",
-		"きいろい",
-		"ショー",
-		"キャラクター",
-		"見ましょうか",
-		"ゴーカート",
-		"ジェットコースター",
-		"すきな",
 		"アトラクション",
-		"こわい",
-		"がすきです",
-		"おとな",
-		"の",
+		"カート",
+		"キャラクター",
+		"コースター",
+		"ゴー",
+		"ショー",
+		"ジェット",
+		"チョコ",
+		"バニラ",
+		"ミント",
 		"三千",
-		"にゅうじょうりょう",
-		"いりぐち",
-		"ごご",
-		"つまらない",
-		"はくぶつかん",
-		"ゆうえんち",
-		"でかけましょう"
+		"入り口",
+		"出掛ける",
+		"午後",
+		"博物",
+		"味",
+		"大人",
+		"好き",
+		"怖い",
+		"見る",
+		"詰まる",
+		"量",
+		"顔",
+		"黄色い"
 	]
 }

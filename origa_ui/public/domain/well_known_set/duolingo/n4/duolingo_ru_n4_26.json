@@ -1,15 +1,15 @@
 {
-	"level": "N4",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 4 Раздел 26",
-			"description": "Слова из модуля: Обсудите пищевые потребности"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 4 Раздел 26",
-			"description": "Words from module: Обсудите пищевые потребности"
+			"description": "Words from module: Обсудите пищевые потребности",
+			"title": "Duolingo (RU) - Модуль 4 Раздел 26"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Обсудите пищевые потребности",
+			"title": "Duolingo (RU) - Модуль 4 Раздел 26"
 		}
 	},
+	"level": "N4",
 	"words": [
 		"いらっしゃる",
 		"サービス",
@@ -26,11 +26,11 @@
 		"御腹",
 		"悪い",
 		"情報",
+		"成る",
 		"有る",
 		"材料",
 		"来る",
 		"気分",
-		"為る",
 		"申し訳",
 		"直ぐ",
 		"表示",

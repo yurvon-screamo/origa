@@ -1,15 +1,15 @@
 {
-	"level": "N2",
 	"content": {
-		"Russian": {
-			"title": "Рекомендованные слова для уровня N2",
-			"description": "Список слов, рекомендованных для изучения языка на уровне N2."
-		},
 		"English": {
-			"title": "Recomended words for N2 level",
-			"description": "Words list, recomended for learning language for N2 level."
+			"description": "Words list, recomended for learning language for N2 level.",
+			"title": "Recomended words for N2 level"
+		},
+		"Russian": {
+			"description": "Список слов, рекомендованных для изучения языка на уровне N2.",
+			"title": "Рекомендованные слова для уровня N2"
 		}
 	},
+	"level": "N2",
 	"words": [
 		"いらっしゃる",
 		"うっかり",
@@ -505,6 +505,7 @@
 		"口紅",
 		"古典",
 		"句読点",
+		"只",
 		"可愛い",
 		"可決",
 		"司会",
@@ -538,7 +539,6 @@
 		"和服",
 		"和英",
 		"唇",
-		"唯",
 		"商店",
 		"商業",
 		"商社",
@@ -737,7 +737,7 @@
 		"布団",
 		"帰する",
 		"干す",
-		"平ら",
+		"平",
 		"平仮名",
 		"平凡",
 		"平日",

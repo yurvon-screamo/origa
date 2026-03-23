@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "SPY x FAMILY - S01 E07",
-			"description": "Слова для просмотра к SPY x FAMILY седьмого эпизода первого сезона"
-		},
 		"English": {
-			"title": "SPY x FAMILY - S01 E07",
-			"description": "Words for watching SPY x FAMILY seventh episode of the first season"
+			"description": "Words for watching SPY x FAMILY seventh episode of the first season",
+			"title": "SPY x FAMILY - S01 E07"
+		},
+		"Russian": {
+			"description": "Слова для просмотра к SPY x FAMILY седьмого эпизода первого сезона",
+			"title": "SPY x FAMILY - S01 E07"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"あわよくば",
 		"あんな",
@@ -28,14 +28,12 @@
 		"ちち",
 		"ちび",
 		"ちゃんと",
-		"で",
 		"どう",
 		"どんな",
 		"ばらばら",
 		"ふっ",
 		"ほっと",
 		"まあ",
-		"まじ",
 		"みたい",
 		"むにゅ",
 		"もう",
@@ -73,7 +71,6 @@
 		"チャンス",
 		"テスト",
 		"デズモンド",
-		"トコロ",
 		"ドア",
 		"ドノバン",
 		"ドミニク",
@@ -347,6 +344,7 @@
 		"成功",
 		"成績",
 		"我々",
+		"所",
 		"手",
 		"打ち",
 		"打つ",

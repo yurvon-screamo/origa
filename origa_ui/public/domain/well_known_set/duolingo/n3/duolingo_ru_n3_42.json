@@ -1,29 +1,29 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 42",
-			"description": "Слова из модуля: Темы: Расскажи о любимой теме"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 42",
-			"description": "Words from module: Темы: Расскажи о любимой теме"
+			"description": "Words from module: Темы: Расскажи о любимой теме",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 42"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Темы: Расскажи о любимой теме",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 42"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"タイト",
 		"ホッカイドウ",
 		"一",
 		"何",
-		"何方",
 		"分かる",
 		"十",
 		"半額",
-		"唯",
+		"只",
 		"噂",
 		"広がる",
 		"成る",
 		"戻す",
+		"方",
 		"時",
 		"有名",
 		"欠席",

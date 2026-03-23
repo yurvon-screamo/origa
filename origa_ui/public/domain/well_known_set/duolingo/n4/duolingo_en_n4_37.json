@@ -1,15 +1,15 @@
 {
-	"level": "N4",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 4 Unit 37",
-			"description": "Слова из модуля: shop at a convenience store"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 4 Unit 37",
-			"description": "Words from section/unit: shop at a convenience store"
+			"description": "Words from section/unit: shop at a convenience store",
+			"title": "Duolingo (EN) - Section 4 Unit 37"
+		},
+		"Russian": {
+			"description": "Слова из модуля: shop at a convenience store",
+			"title": "Duolingo (EN) - Section 4 Unit 37"
 		}
 	},
+	"level": "N4",
 	"words": [
 		"オン",
 		"フライド",

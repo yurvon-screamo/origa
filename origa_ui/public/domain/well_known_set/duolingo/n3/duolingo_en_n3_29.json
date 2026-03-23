@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 5 Unit 29",
-			"description": "Слова из модуля: talk about cooking"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 5 Unit 29",
-			"description": "Words from section/unit: talk about cooking"
+			"description": "Words from section/unit: talk about cooking",
+			"title": "Duolingo (EN) - Section 5 Unit 29"
+		},
+		"Russian": {
+			"description": "Слова из модуля: talk about cooking",
+			"title": "Duolingo (EN) - Section 5 Unit 29"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"たっぷり",
 		"オーブン",

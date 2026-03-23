@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 39",
-			"description": "Слова из модуля: Дом: Расскажи о террасе"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 39",
-			"description": "Words from module: Дом: Расскажи о террасе"
+			"description": "Words from module: Дом: Расскажи о террасе",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 39"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Дом: Расскажи о террасе",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 39"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"がっかり",
 		"テラス",

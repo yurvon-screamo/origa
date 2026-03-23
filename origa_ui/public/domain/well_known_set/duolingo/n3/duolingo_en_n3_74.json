@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 6 Unit 24",
-			"description": "Слова из модуля: talk about science"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 6 Unit 24",
-			"description": "Words from section/unit: talk about science"
+			"description": "Words from section/unit: talk about science",
+			"title": "Duolingo (EN) - Section 6 Unit 24"
+		},
+		"Russian": {
+			"description": "Слова из модуля: talk about science",
+			"title": "Duolingo (EN) - Section 6 Unit 24"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"やや",
 		"仮",

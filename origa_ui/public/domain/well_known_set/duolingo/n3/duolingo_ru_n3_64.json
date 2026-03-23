@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 12",
-			"description": "Слова из модуля: Правила: Спроси о новых правилах"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 12",
-			"description": "Words from module: Правила: Спроси о новых правилах"
+			"description": "Words from module: Правила: Спроси о новых правилах",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 12"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Правила: Спроси о новых правилах",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 12"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"ボックス",
 		"リサイクル",
@@ -19,8 +19,8 @@
 		"古着",
 		"州",
 		"思う",
+		"成る",
 		"手袋",
-		"為る",
 		"用意",
 		"発表",
 		"繋がる",

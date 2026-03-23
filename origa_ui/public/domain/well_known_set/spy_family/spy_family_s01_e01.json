@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "SPY x FAMILY - S01 E01",
-			"description": "Слова для просмотра к SPY x FAMILY первого эпизода первого сезона"
-		},
 		"English": {
-			"title": "SPY x FAMILY - S01 E01",
-			"description": "Words for watching SPY x FAMILY first episode of the first season"
+			"description": "Words for watching SPY x FAMILY first episode of the first season",
+			"title": "SPY x FAMILY - S01 E01"
+		},
+		"Russian": {
+			"description": "Слова для просмотра к SPY x FAMILY первого эпизода первого сезона",
+			"title": "SPY x FAMILY - S01 E01"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"あやふや",
 		"うい",
@@ -28,7 +28,6 @@
 		"ちち",
 		"ちび",
 		"ちょい",
-		"で",
 		"とある",
 		"とっとと",
 		"どう",
@@ -41,7 +40,6 @@
 		"まあ",
 		"まぐれ",
 		"まさか",
-		"まじ",
 		"みたい",
 		"むかつく",
 		"もう",
@@ -49,7 +47,6 @@
 		"わくわく",
 		"アナウンス",
 		"アニメ",
-		"アユミ",
 		"アングラ",
 		"アーニャ",
 		"イーデン",
@@ -254,6 +251,7 @@
 		"取る",
 		"受け止める",
 		"受験",
+		"只",
 		"可愛い",
 		"可能",
 		"叱る",
@@ -278,7 +276,6 @@
 		"和平",
 		"咳き込む",
 		"咳払い",
-		"唯",
 		"唯々",
 		"唯一",
 		"問題",
@@ -372,11 +369,11 @@
 		"幼稚",
 		"幾ら",
 		"度",
-		"延いては",
 		"弄る",
 		"引き取る",
 		"引き摺る",
 		"引き締める",
+		"引く",
 		"引っ越す",
 		"張る",
 		"当局",
@@ -514,6 +511,7 @@
 		"此奴",
 		"此方",
 		"歩く",
+		"歩み",
 		"死",
 		"死ぬ",
 		"殴る",

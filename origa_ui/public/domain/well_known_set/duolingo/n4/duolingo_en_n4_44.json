@@ -1,19 +1,17 @@
 {
-	"level": "N4",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 4 Unit 44",
-			"description": "Слова из модуля: discuss interests"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 4 Unit 44",
-			"description": "Words from section/unit: discuss interests"
+			"description": "Words from section/unit: discuss interests",
+			"title": "Duolingo (EN) - Section 4 Unit 44"
+		},
+		"Russian": {
+			"description": "Слова из модуля: discuss interests",
+			"title": "Duolingo (EN) - Section 4 Unit 44"
 		}
 	},
+	"level": "N4",
 	"words": [
-		"オモウ",
 		"ボール",
-		"ライ",
 		"上手",
 		"下手",
 		"取る",
@@ -22,12 +20,12 @@
 		"字",
 		"弾く",
 		"思い",
+		"成る",
 		"投げ",
 		"来る",
 		"歌う",
 		"泳ぐ",
 		"漫画",
-		"為る",
 		"玉",
 		"番号",
 		"行く",

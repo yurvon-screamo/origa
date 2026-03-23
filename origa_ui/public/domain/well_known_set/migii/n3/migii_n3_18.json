@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Migii N3 Урок 18",
-			"description": "Словарный запас из урока 18 уровня N3 от Migii."
-		},
 		"English": {
-			"title": "Migii N3 Lesson 18",
-			"description": "Vocabulary from lesson 18 of N3 level by Migii."
+			"description": "Vocabulary from lesson 18 of N3 level by Migii.",
+			"title": "Migii N3 Lesson 18"
+		},
+		"Russian": {
+			"description": "Словарный запас из урока 18 уровня N3 от Migii.",
+			"title": "Migii N3 Урок 18"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"ばったり",
 		"ジュース",

@@ -1,14 +1,14 @@
 {
-	"level": "N5",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 1 Раздел 1",
-			"description": "Слова из модуля: Заказывайте еду и напитки"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 1 Раздел 1",
-			"description": "Words from module: Заказывайте еду и напитки"
+			"description": "Words from module: Заказывайте еду и напитки",
+			"title": "Duolingo (RU) - Модуль 1 Раздел 1"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Заказывайте еду и напитки",
+			"title": "Duolingo (RU) - Модуль 1 Раздел 1"
 		}
 	},
-	"words": ["です", "ごはん", "と", "ください", "おちゃ", "みず", "すし"]
+	"level": "N5",
+	"words": ["下さる", "寿司", "御飯", "水", "茶"]
 }

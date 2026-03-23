@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 5 Unit 39",
-			"description": "Слова из модуля: talk about money"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 5 Unit 39",
-			"description": "Words from section/unit: talk about money"
+			"description": "Words from section/unit: talk about money",
+			"title": "Duolingo (EN) - Section 5 Unit 39"
+		},
+		"Russian": {
+			"description": "Слова из модуля: talk about money",
+			"title": "Duolingo (EN) - Section 5 Unit 39"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"もう",
 		"保険",
@@ -18,7 +18,7 @@
 		"利子",
 		"勘",
 		"勘定",
-		"唯",
+		"只",
 		"唯一",
 		"営業",
 		"大金",

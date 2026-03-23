@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 1",
-			"description": "Слова из модуля: Офис: Опиши опыт работы"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 1",
-			"description": "Words from module: Офис: Опиши опыт работы"
+			"description": "Words from module: Офис: Опиши опыт работы",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 1"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Офис: Опиши опыт работы",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 1"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"二",
 		"会議",

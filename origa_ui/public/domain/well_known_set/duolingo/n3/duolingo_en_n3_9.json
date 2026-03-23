@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 5 Unit 9",
-			"description": "Слова из модуля: use numbers"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 5 Unit 9",
-			"description": "Words from section/unit: use numbers"
+			"description": "Words from section/unit: use numbers",
+			"title": "Duolingo (EN) - Section 5 Unit 9"
+		},
+		"Russian": {
+			"description": "Слова из модуля: use numbers",
+			"title": "Duolingo (EN) - Section 5 Unit 9"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"パーセント",
 		"ヒトシ",

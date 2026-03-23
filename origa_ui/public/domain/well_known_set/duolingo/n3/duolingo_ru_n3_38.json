@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 38",
-			"description": "Слова из модуля: Семья: Опиши привычки семьи"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 38",
-			"description": "Words from module: Семья: Опиши привычки семьи"
+			"description": "Words from module: Семья: Опиши привычки семьи",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 38"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Семья: Опиши привычки семьи",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 38"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"タップ",
 		"付ける",

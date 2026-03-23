@@ -1,38 +1,36 @@
 {
-	"level": "N5",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 2 Unit 7",
-			"description": "Слова из модуля: order food and drink"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 2 Unit 7",
-			"description": "Words from section/unit: order food and drink"
+			"description": "Words from section/unit: order food and drink",
+			"title": "Duolingo (EN) - Section 2 Unit 7"
+		},
+		"Russian": {
+			"description": "Слова из модуля: order food and drink",
+			"title": "Duolingo (EN) - Section 2 Unit 7"
 		}
 	},
+	"level": "N5",
 	"words": [
-		"アイスコーヒー",
-		"アイスクリーム",
-		"こうちゃ",
-		"小さい",
-		"すこし",
-		"みそしる",
+		"こう",
+		"アイス",
+		"クリーム",
+		"コーヒー",
 		"サラダ",
-		"そば",
-		"大きい",
-		"おにぎり",
-		"よっつ",
-		"ええと",
-		"みっつ",
-		"じゃあ",
-		"ふたつ",
-		"あ",
-		"ひとつ",
-		"水",
 		"レストラン",
-		"ていしょく",
-		"うどん",
-		"てんぷら",
-		"を"
+		"一",
+		"三",
+		"二",
+		"側",
+		"味噌",
+		"四",
+		"大きい",
+		"天麩羅",
+		"小さい",
+		"少し",
+		"御握り",
+		"水",
+		"汁",
+		"移植",
+		"饂飩"
 	]
 }

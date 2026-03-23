@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Migii N3 Урок 11",
-			"description": "Словарный запас из урока 11 уровня N3 от Migii."
-		},
 		"English": {
-			"title": "Migii N3 Lesson 11",
-			"description": "Vocabulary from lesson 11 of N3 level by Migii."
+			"description": "Vocabulary from lesson 11 of N3 level by Migii.",
+			"title": "Migii N3 Lesson 11"
+		},
+		"Russian": {
+			"description": "Словарный запас из урока 11 уровня N3 от Migii.",
+			"title": "Migii N3 Урок 11"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"ドレス",
 		"メモ",

@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 23",
-			"description": "Слова из модуля: Работа: Опиши путь на работу"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 23",
-			"description": "Words from module: Работа: Опиши путь на работу"
+			"description": "Words from module: Работа: Опиши путь на работу",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 23"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Работа: Опиши путь на работу",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 23"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"シブヤ",
 		"一",

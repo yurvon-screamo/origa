@@ -1,41 +1,41 @@
 {
-	"level": "N5",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 2 Unit 10",
-			"description": "Слова из модуля: describe your routine"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 2 Unit 10",
-			"description": "Words from section/unit: describe your routine"
+			"description": "Words from section/unit: describe your routine",
+			"title": "Duolingo (EN) - Section 2 Unit 10"
+		},
+		"Russian": {
+			"description": "Слова из модуля: describe your routine",
+			"title": "Duolingo (EN) - Section 2 Unit 10"
 		}
 	},
+	"level": "N5",
 	"words": [
-		"でかけます",
-		"見ます",
-		"はしります",
-		"飲みます",
-		"パスタ",
-		"およぎます",
-		"ねます",
-		"あそびます",
-		"シャワーをあびます",
-		"メールを読みます",
-		"あした",
-		"します",
-		"らいしゅう",
-		"買います",
+		"シャワー",
+		"シュウ",
 		"バレーボール",
-		"まいしゅう",
-		"四時",
-		"ごろ",
-		"つくります",
-		"食べます",
-		"何時に",
-		"おきます",
-		"新聞",
+		"パスタ",
+		"メール",
 		"ラジオ",
-		"何時",
-		"いつも"
+		"何",
+		"作る",
+		"出掛ける",
+		"四",
+		"成る",
+		"新聞",
+		"明日",
+		"時",
+		"来週",
+		"泳ぐ",
+		"浴びる",
+		"置く",
+		"見る",
+		"読む",
+		"買う",
+		"走る",
+		"遊ぶ",
+		"頃",
+		"食べる",
+		"飲む"
 	]
 }

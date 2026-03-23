@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 25",
-			"description": "Слова из модуля: Правила: Спроси о распорядке дня"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 25",
-			"description": "Words from module: Правила: Спроси о распорядке дня"
+			"description": "Words from module: Правила: Спроси о распорядке дня",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 25"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Правила: Спроси о распорядке дня",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 25"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"ばっ",
 		"予定",

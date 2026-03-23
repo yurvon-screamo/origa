@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 6 Unit 29",
-			"description": "Слова из модуля: talk about nature"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 6 Unit 29",
-			"description": "Words from section/unit: talk about nature"
+			"description": "Words from section/unit: talk about nature",
+			"title": "Duolingo (EN) - Section 6 Unit 29"
+		},
+		"Russian": {
+			"description": "Слова из модуля: talk about nature",
+			"title": "Duolingo (EN) - Section 6 Unit 29"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"アキラ",
 		"キシ",

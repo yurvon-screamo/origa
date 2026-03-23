@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 6 Unit 30",
-			"description": "Слова из модуля: discuss fiction"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 6 Unit 30",
-			"description": "Words from section/unit: discuss fiction"
+			"description": "Words from section/unit: discuss fiction",
+			"title": "Duolingo (EN) - Section 6 Unit 30"
+		},
+		"Russian": {
+			"description": "Слова из модуля: discuss fiction",
+			"title": "Duolingo (EN) - Section 6 Unit 30"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"体験",
 		"光景",

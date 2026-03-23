@@ -1,40 +1,40 @@
 {
-	"level": "N5",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 3 Unit 10",
-			"description": "Слова из модуля: express what you want to do at a concert"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 3 Unit 10",
-			"description": "Words from section/unit: express what you want to do at a concert"
+			"description": "Words from section/unit: express what you want to do at a concert",
+			"title": "Duolingo (EN) - Section 3 Unit 10"
+		},
+		"Russian": {
+			"description": "Слова из модуля: express what you want to do at a concert",
+			"title": "Duolingo (EN) - Section 3 Unit 10"
 		}
 	},
+	"level": "N5",
 	"words": [
-		"グッズ",
-		"また",
-		"つかれました",
 		"もう",
-		"買いたいです",
+		"アーチスト",
+		"グッズ",
 		"サイン",
-		"ペン",
-		"話したいです",
-		"ひがしぐち",
-		"ならびます",
-		"はやく",
-		"飲みたいです",
-		"ききたいです",
-		"外",
-		"もどります",
 		"ステージ",
-		"まんなか",
-		"に",
-		"すわりたい",
-		"でかけたいです",
-		"アーティスト",
-		"にんき",
+		"ペン",
+		"並ぶ",
+		"人気",
 		"今夜",
-		"行きたいです",
-		"会いたいです"
+		"会う",
+		"出掛ける",
+		"又",
+		"外",
+		"座る",
+		"愚痴",
+		"戻る",
+		"早い",
+		"東",
+		"疲れる",
+		"真ん中",
+		"聞く",
+		"行く",
+		"話す",
+		"買う",
+		"飲む"
 	]
 }

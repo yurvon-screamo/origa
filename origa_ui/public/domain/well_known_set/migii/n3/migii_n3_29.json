@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Migii N3 Урок 29",
-			"description": "Словарный запас из урока 29 уровня N3 от Migii."
-		},
 		"English": {
-			"title": "Migii N3 Lesson 29",
-			"description": "Vocabulary from lesson 29 of N3 level by Migii."
+			"description": "Vocabulary from lesson 29 of N3 level by Migii.",
+			"title": "Migii N3 Lesson 29"
+		},
+		"Russian": {
+			"description": "Словарный запас из урока 29 уровня N3 от Migii.",
+			"title": "Migii N3 Урок 29"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"デモ",
 		"人物",

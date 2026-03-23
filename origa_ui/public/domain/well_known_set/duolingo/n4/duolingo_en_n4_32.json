@@ -1,21 +1,21 @@
 {
-	"level": "N4",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 4 Unit 32",
-			"description": "Слова из модуля: discuss relationships"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 4 Unit 32",
-			"description": "Words from section/unit: discuss relationships"
+			"description": "Words from section/unit: discuss relationships",
+			"title": "Duolingo (EN) - Section 4 Unit 32"
+		},
+		"Russian": {
+			"description": "Слова из модуля: discuss relationships",
+			"title": "Duolingo (EN) - Section 4 Unit 32"
 		}
 	},
+	"level": "N4",
 	"words": [
 		"デート",
-		"ユウ",
+		"ユー",
 		"亡くなる",
 		"人",
-		"何方",
+		"何",
 		"別",
 		"別れ",
 		"呼",

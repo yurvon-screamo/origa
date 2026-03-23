@@ -1,19 +1,18 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 6 Unit 8",
-			"description": "Слова из модуля: express your feelings"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 6 Unit 8",
-			"description": "Words from section/unit: express your feelings"
+			"description": "Words from section/unit: express your feelings",
+			"title": "Duolingo (EN) - Section 6 Unit 8"
+		},
+		"Russian": {
+			"description": "Слова из модуля: express your feelings",
+			"title": "Duolingo (EN) - Section 6 Unit 8"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"ショック",
 		"タイ",
-		"フク",
 		"乱",
 		"何",
 		"友人",
@@ -31,6 +30,7 @@
 		"楽",
 		"死",
 		"気",
+		"河豚",
 		"泣き",
 		"泣く",
 		"混乱",

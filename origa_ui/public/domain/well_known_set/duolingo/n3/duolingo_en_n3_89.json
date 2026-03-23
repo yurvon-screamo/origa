@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 6 Unit 39",
-			"description": "Слова из модуля: discuss nature"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 6 Unit 39",
-			"description": "Words from section/unit: discuss nature"
+			"description": "Words from section/unit: discuss nature",
+			"title": "Duolingo (EN) - Section 6 Unit 39"
+		},
+		"Russian": {
+			"description": "Слова из модуля: discuss nature",
+			"title": "Duolingo (EN) - Section 6 Unit 39"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"人類",
 		"保護",

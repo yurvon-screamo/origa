@@ -1,15 +1,15 @@
 {
-	"level": "N4",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 4 Unit 9",
-			"description": "Слова из модуля: describe a recent date"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 4 Unit 9",
-			"description": "Words from section/unit: describe a recent date"
+			"description": "Words from section/unit: describe a recent date",
+			"title": "Duolingo (EN) - Section 4 Unit 9"
+		},
+		"Russian": {
+			"description": "Слова из модуля: describe a recent date",
+			"title": "Duolingo (EN) - Section 4 Unit 9"
 		}
 	},
+	"level": "N4",
 	"words": [
 		"ゴルフ",
 		"スパイス",
@@ -26,12 +26,12 @@
 		"干る",
 		"幸せ",
 		"得意",
+		"成る",
 		"持つ",
 		"料理",
 		"来週",
 		"楽しい",
 		"様",
-		"為る",
 		"行く",
 		"見る",
 		"趣味",

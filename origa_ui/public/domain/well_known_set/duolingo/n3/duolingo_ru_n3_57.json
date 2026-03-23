@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 5",
-			"description": "Слова из модуля: Фильмы: Расскажи о фильме"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 5",
-			"description": "Words from module: Фильмы: Расскажи о фильме"
+			"description": "Words from module: Фильмы: Расскажи о фильме",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 5"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Фильмы: Расскажи о фильме",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 5"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"ずっと",
 		"何",

@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 37",
-			"description": "Слова из модуля: Места: Опиши известные места"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 37",
-			"description": "Words from module: Места: Опиши известные места"
+			"description": "Words from module: Места: Опиши известные места",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 37"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Места: Опиши известные места",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 37"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"じっと",
 		"シリーズ",

@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 5 Unit 44",
-			"description": "Слова из модуля: discuss conflict"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 5 Unit 44",
-			"description": "Words from section/unit: discuss conflict"
+			"description": "Words from section/unit: discuss conflict",
+			"title": "Duolingo (EN) - Section 5 Unit 44"
+		},
+		"Russian": {
+			"description": "Слова из модуля: discuss conflict",
+			"title": "Duolingo (EN) - Section 5 Unit 44"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"基",
 		"基地",
@@ -28,7 +28,6 @@
 		"訓",
 		"訓練",
 		"軍事",
-		"銃",
-		"隊"
+		"銃"
 	]
 }

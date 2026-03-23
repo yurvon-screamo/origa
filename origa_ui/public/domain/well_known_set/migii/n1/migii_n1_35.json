@@ -1,15 +1,15 @@
 {
-	"level": "N1",
 	"content": {
-		"Russian": {
-			"title": "Migii N1 Урок 35",
-			"description": "Словарный запас из урока 35 уровня N1 от Migii."
-		},
 		"English": {
-			"title": "Migii N1 Lesson 35",
-			"description": "Vocabulary from lesson 35 of N1 level by Migii."
+			"description": "Vocabulary from lesson 35 of N1 level by Migii.",
+			"title": "Migii N1 Lesson 35"
+		},
+		"Russian": {
+			"description": "Словарный запас из урока 35 уровня N1 от Migii.",
+			"title": "Migii N1 Урок 35"
 		}
 	},
+	"level": "N1",
 	"words": [
 		"アップ",
 		"カメラマン",

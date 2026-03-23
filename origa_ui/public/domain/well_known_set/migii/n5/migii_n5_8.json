@@ -1,15 +1,15 @@
 {
-	"level": "N5",
 	"content": {
-		"Russian": {
-			"title": "Migii N5 Урок 8",
-			"description": "Словарный запас из урока 8 уровня N5 от Migii."
-		},
 		"English": {
-			"title": "Migii N5 Lesson 8",
-			"description": "Vocabulary from lesson 8 of N5 level by Migii."
+			"description": "Vocabulary from lesson 8 of N5 level by Migii.",
+			"title": "Migii N5 Lesson 8"
+		},
+		"Russian": {
+			"description": "Словарный запас из урока 8 уровня N5 от Migii.",
+			"title": "Migii N5 Урок 8"
 		}
 	},
+	"level": "N5",
 	"words": [
 		"コップ",
 		"ニュース",

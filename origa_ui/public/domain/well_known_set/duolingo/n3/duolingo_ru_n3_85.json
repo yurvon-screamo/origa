@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 33",
-			"description": "Слова из модуля: Характер: Обсуди качества человека"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 33",
-			"description": "Words from module: Характер: Обсуди качества человека"
+			"description": "Words from module: Характер: Обсуди качества человека",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 33"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Характер: Обсуди качества человека",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 33"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"何",
 		"八",
@@ -18,7 +18,7 @@
 		"性格",
 		"悩む",
 		"悲しい",
-		"為る",
+		"成る",
 		"相手",
 		"素直",
 		"義務",

@@ -1,20 +1,18 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 6 Unit 13",
-			"description": "Слова из модуля: use casual language"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 6 Unit 13",
-			"description": "Words from section/unit: use casual language"
+			"description": "Words from section/unit: use casual language",
+			"title": "Duolingo (EN) - Section 6 Unit 13"
+		},
+		"Russian": {
+			"description": "Слова из модуля: use casual language",
+			"title": "Duolingo (EN) - Section 6 Unit 13"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"いけメン",
 		"きもい",
-		"で",
-		"まじ",
 		"やばい",
 		"何",
 		"俺",

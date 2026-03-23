@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 10",
-			"description": "Слова из модуля: Фестиваль: Расскажи о фестивале"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 10",
-			"description": "Words from module: Фестиваль: Расскажи о фестивале"
+			"description": "Words from module: Фестиваль: Расскажи о фестивале",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 10"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Фестиваль: Расскажи о фестивале",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 10"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"チャリティー",
 		"ボランティア",

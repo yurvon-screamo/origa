@@ -1,15 +1,15 @@
 {
-	"level": "N1",
 	"content": {
-		"Russian": {
-			"title": "Migii N1 Урок 13",
-			"description": "Словарный запас из урока 13 уровня N1 от Migii."
-		},
 		"English": {
-			"title": "Migii N1 Lesson 13",
-			"description": "Vocabulary from lesson 13 of N1 level by Migii."
+			"description": "Vocabulary from lesson 13 of N1 level by Migii.",
+			"title": "Migii N1 Lesson 13"
+		},
+		"Russian": {
+			"description": "Словарный запас из урока 13 уровня N1 от Migii.",
+			"title": "Migii N1 Урок 13"
 		}
 	},
+	"level": "N1",
 	"words": [
 		"ポット",
 		"ミスプリント",

@@ -1,39 +1,39 @@
 {
-	"level": "N5",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 3 Unit 30",
-			"description": "Слова из модуля: talk about your childhood"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 3 Unit 30",
-			"description": "Words from section/unit: talk about your childhood"
+			"description": "Words from section/unit: talk about your childhood",
+			"title": "Duolingo (EN) - Section 3 Unit 30"
+		},
+		"Russian": {
+			"description": "Слова из модуля: talk about your childhood",
+			"title": "Duolingo (EN) - Section 3 Unit 30"
 		}
 	},
+	"level": "N5",
 	"words": [
-		"になりたいです",
-		"ボクシング",
+		"すい",
 		"ジョギング",
-		"たいかい",
-		"まんがか",
-		"かっこよかった",
-		"高校生",
-		"びじゅつ",
-		"せいふく",
-		"きびしい",
-		"中学生",
-		"よかった",
+		"ボクシング",
+		"中学",
+		"体育",
+		"倣う",
+		"勉強",
+		"厳しい",
+		"大会",
+		"始める",
 		"学校",
-		"べんきょう",
-		"はじめます",
-		"小学生",
-		"すいえい",
-		"たいいく",
-		"ならいます",
-		"あめ",
-		"ようちえん",
-		"こうがい",
-		"とき",
-		"えをかきます"
+		"小学",
+		"幼稚",
+		"征服",
+		"成る",
+		"掻く",
+		"時",
+		"格好",
+		"漫画",
+		"笄",
+		"美術",
+		"良い",
+		"飴",
+		"高校"
 	]
 }

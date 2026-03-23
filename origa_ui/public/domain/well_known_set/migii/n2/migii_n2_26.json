@@ -1,15 +1,15 @@
 {
-	"level": "N2",
 	"content": {
-		"Russian": {
-			"title": "Migii N2 Урок 26",
-			"description": "Словарный запас из урока 26 уровня N2 от Migii."
-		},
 		"English": {
-			"title": "Migii N2 Lesson 26",
-			"description": "Vocabulary from lesson 26 of N2 level by Migii."
+			"description": "Vocabulary from lesson 26 of N2 level by Migii.",
+			"title": "Migii N2 Lesson 26"
+		},
+		"Russian": {
+			"description": "Словарный запас из урока 26 уровня N2 от Migii.",
+			"title": "Migii N2 Урок 26"
 		}
 	},
+	"level": "N2",
 	"words": [
 		"こっそり",
 		"どきどき",

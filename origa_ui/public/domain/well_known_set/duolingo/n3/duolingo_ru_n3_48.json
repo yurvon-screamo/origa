@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 48",
-			"description": "Слова из модуля: Работа: Объясни новую услугу"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 48",
-			"description": "Words from module: Работа: Объясни новую услугу"
+			"description": "Words from module: Работа: Объясни новую услугу",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 48"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Работа: Объясни новую услугу",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 48"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"いらっしゃる",
 		"ギンザ",

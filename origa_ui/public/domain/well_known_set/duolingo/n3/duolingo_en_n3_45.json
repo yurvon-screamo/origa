@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 5 Unit 45",
-			"description": "Слова из модуля: talk about transportation"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 5 Unit 45",
-			"description": "Words from section/unit: talk about transportation"
+			"description": "Words from section/unit: talk about transportation",
+			"title": "Duolingo (EN) - Section 5 Unit 45"
+		},
+		"Russian": {
+			"description": "Слова из модуля: talk about transportation",
+			"title": "Duolingo (EN) - Section 5 Unit 45"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"停車",
 		"免許",

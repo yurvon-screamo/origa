@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 9",
-			"description": "Слова из модуля: Опыты: Попробуй новое"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 9",
-			"description": "Words from module: Опыты: Попробуй новое"
+			"description": "Words from module: Опыты: Попробуй новое",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 9"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Опыты: Попробуй новое",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 9"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"七",
 		"体験",
@@ -21,8 +21,8 @@
 		"契約",
 		"年間",
 		"悪い",
+		"成る",
 		"手順",
-		"為る",
 		"番",
 		"絵の具",
 		"美術",

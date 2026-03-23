@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 6",
-			"description": "Слова из модуля: Места: Спроси дорогу в университете"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 6",
-			"description": "Words from module: Места: Спроси дорогу в университете"
+			"description": "Words from module: Места: Спроси дорогу в университете",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 6"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Места: Спроси дорогу в университете",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 6"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"グラフ",
 		"メーカー",

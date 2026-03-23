@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 5 Unit 11",
-			"description": "Слова из модуля: suggest activities"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 5 Unit 11",
-			"description": "Words from section/unit: suggest activities"
+			"description": "Words from section/unit: suggest activities",
+			"title": "Duolingo (EN) - Section 5 Unit 11"
+		},
+		"Russian": {
+			"description": "Слова из модуля: suggest activities",
+			"title": "Duolingo (EN) - Section 5 Unit 11"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"で",
 		"ミユキ",

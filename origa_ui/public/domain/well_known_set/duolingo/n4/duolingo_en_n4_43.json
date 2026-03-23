@@ -1,15 +1,15 @@
 {
-	"level": "N4",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 4 Unit 43",
-			"description": "Слова из модуля: describe clothes"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 4 Unit 43",
-			"description": "Words from section/unit: describe clothes"
+			"description": "Words from section/unit: describe clothes",
+			"title": "Duolingo (EN) - Section 4 Unit 43"
+		},
+		"Russian": {
+			"description": "Слова из модуля: describe clothes",
+			"title": "Duolingo (EN) - Section 4 Unit 43"
 		}
 	},
+	"level": "N4",
 	"words": [
 		"ぴったり",
 		"サイズ",
@@ -29,7 +29,6 @@
 		"浴衣",
 		"着",
 		"着物",
-		"短",
 		"短い",
 		"締め",
 		"締める",

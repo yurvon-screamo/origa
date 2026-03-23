@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 6 Unit 40",
-			"description": "Слова из модуля: talk about the news"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 6 Unit 40",
-			"description": "Words from section/unit: talk about the news"
+			"description": "Words from section/unit: talk about the news",
+			"title": "Duolingo (EN) - Section 6 Unit 40"
+		},
+		"Russian": {
+			"description": "Слова из модуля: talk about the news",
+			"title": "Duolingo (EN) - Section 6 Unit 40"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"マサヨシ",
 		"不利",

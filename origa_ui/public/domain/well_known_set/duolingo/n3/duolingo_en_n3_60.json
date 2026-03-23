@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 6 Unit 10",
-			"description": "Слова из модуля: describe the outdoors"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 6 Unit 10",
-			"description": "Words from section/unit: describe the outdoors"
+			"description": "Words from section/unit: describe the outdoors",
+			"title": "Duolingo (EN) - Section 6 Unit 10"
+		},
+		"Russian": {
+			"description": "Слова из модуля: describe the outdoors",
+			"title": "Duolingo (EN) - Section 6 Unit 10"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"下ろす",
 		"叩く",

@@ -7285,7 +7285,9 @@ dependencies = [
  "flate2",
  "image",
  "origa",
+ "serde_json",
  "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]

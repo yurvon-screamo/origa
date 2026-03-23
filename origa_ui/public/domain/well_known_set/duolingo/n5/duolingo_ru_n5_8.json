@@ -1,22 +1,14 @@
 {
-	"level": "N5",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 1 Раздел 8",
-			"description": "Слова из модуля: Опишите своих друзей"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 1 Раздел 8",
-			"description": "Words from module: Опишите своих друзей"
+			"description": "Words from module: Опишите своих друзей",
+			"title": "Duolingo (RU) - Модуль 1 Раздел 8"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Опишите своих друзей",
+			"title": "Duolingo (RU) - Модуль 1 Раздел 8"
 		}
 	},
-	"words": [
-		"なかやま",
-		"おもしろい",
-		"ともだち",
-		"あかるい",
-		"さん",
-		"やまぐち",
-		"たなか"
-	]
+	"level": "N5",
+	"words": ["タナカ", "ヤマグチ", "中", "友達", "山", "明るい", "面白い"]
 }

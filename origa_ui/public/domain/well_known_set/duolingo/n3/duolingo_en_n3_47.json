@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 5 Unit 47",
-			"description": "Слова из модуля: discuss fairy tales"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 5 Unit 47",
-			"description": "Words from section/unit: discuss fairy tales"
+			"description": "Words from section/unit: discuss fairy tales",
+			"title": "Duolingo (EN) - Section 5 Unit 47"
+		},
+		"Russian": {
+			"description": "Слова из модуля: discuss fairy tales",
+			"title": "Duolingo (EN) - Section 5 Unit 47"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"あやかし",
 		"イサム",
@@ -31,8 +31,8 @@
 		"河童",
 		"王",
 		"王女",
-		"王子",
 		"竜",
+		"蛆",
 		"要る",
 		"鬼",
 		"魔女",

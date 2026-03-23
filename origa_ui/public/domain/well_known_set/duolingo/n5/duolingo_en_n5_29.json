@@ -1,41 +1,44 @@
 {
-	"level": "N5",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 2 Unit 20",
-			"description": "Слова из модуля: discuss a family visit"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 2 Unit 20",
-			"description": "Words from section/unit: discuss a family visit"
+			"description": "Words from section/unit: discuss a family visit",
+			"title": "Duolingo (EN) - Section 2 Unit 20"
+		},
+		"Russian": {
+			"description": "Слова из модуля: discuss a family visit",
+			"title": "Duolingo (EN) - Section 2 Unit 20"
 		}
 	},
+	"level": "N5",
 	"words": [
-		"みじかい",
-		"何時",
-		"がたのしみです",
-		"月曜日",
-		"まちます",
-		"みそかつ",
-		"にわ",
-		"かんこう",
-		"見ます",
-		"しろ",
-		"せき",
-		"べんり",
-		"にのります",
-		"しんかんせん",
-		"なごや",
-		"日本りょうり",
-		"金曜日",
-		"お母さん",
-		"に",
-		"すしや",
+		"ナゴヤ",
 		"ロビー",
-		"来ます",
-		"ごりょうしん",
-		"会います",
-		"りょうしん",
-		"お父さん"
+		"乗る",
+		"会う",
+		"何",
+		"便利",
+		"咳",
+		"密か",
+		"寿司",
+		"庭",
+		"待つ",
+		"料理",
+		"方",
+		"日",
+		"日本",
+		"時",
+		"月曜",
+		"来る",
+		"染み",
+		"母",
+		"漁師",
+		"父",
+		"白",
+		"短い",
+		"箋",
+		"芯",
+		"見る",
+		"観光",
+		"金曜"
 	]
 }

@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 5 Unit 15",
-			"description": "Слова из модуля: discuss religion"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 5 Unit 15",
-			"description": "Words from section/unit: discuss religion"
+			"description": "Words from section/unit: discuss religion",
+			"title": "Duolingo (EN) - Section 5 Unit 15"
+		},
+		"Russian": {
+			"description": "Слова из модуля: discuss religion",
+			"title": "Duolingo (EN) - Section 5 Unit 15"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"そう",
 		"イスラム",

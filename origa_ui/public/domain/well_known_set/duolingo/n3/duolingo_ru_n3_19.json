@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 19",
-			"description": "Слова из модуля: Продукты: Опиши любимую еду"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 19",
-			"description": "Words from module: Продукты: Опиши любимую еду"
+			"description": "Words from module: Продукты: Опиши любимую еду",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 19"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Продукты: Опиши любимую еду",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 19"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"ずっと",
 		"勧める",

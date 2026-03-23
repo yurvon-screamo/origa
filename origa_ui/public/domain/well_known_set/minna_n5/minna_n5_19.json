@@ -1,38 +1,37 @@
 {
-	"level": "N5",
 	"content": {
-		"Russian": {
-			"title": "Minna no Nihongo N5 Урок 19",
-			"description": "Слова урока 19: здоровье, спорт."
-		},
 		"English": {
-			"title": "Minna no Nihongo N5 Lesson 19",
-			"description": "Lesson 19 words: health, sports."
+			"description": "Lesson 19 words: health, sports.",
+			"title": "Minna no Nihongo N5 Lesson 19"
+		},
+		"Russian": {
+			"description": "Слова урока 19: здоровье, спорт.",
+			"title": "Minna no Nihongo N5 Урок 19"
 		}
 	},
+	"level": "N5",
 	"words": [
-		"のぼります",
-		"とまります",
-		"そうじします",
-		"せんたくします",
-		"なります",
-		"ねむい",
-		"つよい",
-		"よわい",
-		"練習",
-		" 골프",
-		"すもう",
-		"おちゃ",
-		"ひ",
-		"ちょうし",
-		"一度",
-		"だんだ",
-		"もうすぐ",
-		"おかげさまで",
-		"でも",
-		"乾杯",
+		"もう",
 		"ダイエット",
+		"一",
+		"上る",
+		"乾杯",
+		"体",
+		"度",
+		"弱い",
+		"強い",
+		"御陰",
+		"成る",
+		"掃除",
+		"止まる",
+		"洗濯",
 		"無理",
-		"体"
+		"直ぐ",
+		"相撲",
+		"眠い",
+		"碑",
+		"練習",
+		"茶",
+		"銚子"
 	]
 }

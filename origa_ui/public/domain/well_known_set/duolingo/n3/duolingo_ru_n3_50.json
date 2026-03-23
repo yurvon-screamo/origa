@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 50",
-			"description": "Слова из модуля: Удобства: Объясни где ждать поезд"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 50",
-			"description": "Words from module: Удобства: Объясни где ждать поезд"
+			"description": "Words from module: Удобства: Объясни где ждать поезд",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 50"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Удобства: Объясни где ждать поезд",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 50"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"アプリ",
 		"エンタメ",

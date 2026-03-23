@@ -1,15 +1,15 @@
 {
-	"level": "N1",
 	"content": {
-		"Russian": {
-			"title": "Migii N1 Урок 39",
-			"description": "Словарный запас из урока 39 уровня N1 от Migii."
-		},
 		"English": {
-			"title": "Migii N1 Lesson 39",
-			"description": "Vocabulary from lesson 39 of N1 level by Migii."
+			"description": "Vocabulary from lesson 39 of N1 level by Migii.",
+			"title": "Migii N1 Lesson 39"
+		},
+		"Russian": {
+			"description": "Словарный запас из урока 39 уровня N1 от Migii.",
+			"title": "Migii N1 Урок 39"
 		}
 	},
+	"level": "N1",
 	"words": [
 		"ずぶ濡れ",
 		"ストレス",

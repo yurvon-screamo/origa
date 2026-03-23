@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 6 Unit 32",
-			"description": "Слова из модуля: discuss life on a farm"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 6 Unit 32",
-			"description": "Words from section/unit: discuss life on a farm"
+			"description": "Words from section/unit: discuss life on a farm",
+			"title": "Duolingo (EN) - Section 6 Unit 32"
+		},
+		"Russian": {
+			"description": "Слова из модуля: discuss life on a farm",
+			"title": "Duolingo (EN) - Section 6 Unit 32"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"マキ",
 		"主要",

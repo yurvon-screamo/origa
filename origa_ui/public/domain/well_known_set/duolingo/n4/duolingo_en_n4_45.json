@@ -1,15 +1,15 @@
 {
-	"level": "N4",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 4 Unit 45",
-			"description": "Слова из модуля: talk about class"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 4 Unit 45",
-			"description": "Words from section/unit: talk about class"
+			"description": "Words from section/unit: talk about class",
+			"title": "Duolingo (EN) - Section 4 Unit 45"
+		},
+		"Russian": {
+			"description": "Слова из модуля: talk about class",
+			"title": "Duolingo (EN) - Section 4 Unit 45"
 		}
 	},
+	"level": "N4",
 	"words": [
 		"カレンダー",
 		"コピー",
@@ -18,11 +18,10 @@
 		"並み",
 		"何",
 		"作文",
-		"借り",
 		"借りる",
-		"取り",
 		"取る",
 		"居る",
+		"成る",
 		"文章",
 		"書く",
 		"有る",
@@ -31,7 +30,6 @@
 		"歩く",
 		"渡し",
 		"渡す",
-		"為る",
 		"行く",
 		"見る",
 		"買う",

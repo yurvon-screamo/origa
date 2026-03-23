@@ -1,41 +1,43 @@
 {
-	"level": "N5",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 2 Unit 28",
-			"description": "Слова из модуля: talk about hobbies"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 2 Unit 28",
-			"description": "Words from section/unit: talk about hobbies"
+			"description": "Words from section/unit: talk about hobbies",
+			"title": "Duolingo (EN) - Section 2 Unit 28"
+		},
+		"Russian": {
+			"description": "Слова из модуля: talk about hobbies",
+			"title": "Duolingo (EN) - Section 2 Unit 28"
 		}
 	},
+	"level": "N5",
 	"words": [
-		"きじ",
-		"ブログ",
-		"ファッション",
-		"作ります",
-		"書きます",
-		"バレエ",
-		"レッスン",
-		"パフォーマンス",
-		"おどります",
-		"はじまります",
-		"こんや",
-		"半",
-		"かんじ",
-		"ひらがな",
-		"べんきょうします",
-		"話します",
-		"ピアノ",
-		"九時間",
-		"がっき",
 		"ギター",
-		"ひきます",
-		"何時間",
-		"れんしゅう",
 		"バドミントン",
-		"しあい",
-		"四時間"
+		"バレエ",
+		"パフォーマンス",
+		"ピアノ",
+		"ファッション",
+		"ブログ",
+		"レッスン",
+		"九",
+		"今夜",
+		"何",
+		"作る",
+		"勉強",
+		"半",
+		"取る",
+		"四",
+		"始まる",
+		"学期",
+		"平仮名",
+		"引く",
+		"感じ",
+		"成る",
+		"時間",
+		"書く",
+		"生地",
+		"練習",
+		"試合",
+		"話す"
 	]
 }

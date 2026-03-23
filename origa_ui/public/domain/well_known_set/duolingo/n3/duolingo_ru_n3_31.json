@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 31",
-			"description": "Слова из модуля: Город: Узнай о транспорте в городе"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 31",
-			"description": "Words from module: Город: Узнай о транспорте в городе"
+			"description": "Words from module: Город: Узнай о транспорте в городе",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 31"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Город: Узнай о транспорте в городе",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 31"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"デザイナー",
 		"交差",

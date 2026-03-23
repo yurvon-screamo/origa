@@ -1,15 +1,15 @@
 {
-	"level": "N4",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 4 Unit 59",
-			"description": "Слова из модуля: discuss nature"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 4 Unit 59",
-			"description": "Words from section/unit: discuss nature"
+			"description": "Words from section/unit: discuss nature",
+			"title": "Duolingo (EN) - Section 4 Unit 59"
+		},
+		"Russian": {
+			"description": "Слова из модуля: discuss nature",
+			"title": "Duolingo (EN) - Section 4 Unit 59"
 		}
 	},
+	"level": "N4",
 	"words": [
 		"人間",
 		"兎",

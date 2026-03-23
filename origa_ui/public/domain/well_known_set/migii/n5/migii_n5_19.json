@@ -1,15 +1,15 @@
 {
-	"level": "N5",
 	"content": {
-		"Russian": {
-			"title": "Migii N5 Урок 19",
-			"description": "Словарный запас из урока 19 уровня N5 от Migii."
-		},
 		"English": {
-			"title": "Migii N5 Lesson 19",
-			"description": "Vocabulary from lesson 19 of N5 level by Migii."
+			"description": "Vocabulary from lesson 19 of N5 level by Migii.",
+			"title": "Migii N5 Lesson 19"
+		},
+		"Russian": {
+			"description": "Словарный запас из урока 19 уровня N5 от Migii.",
+			"title": "Migii N5 Урок 19"
 		}
 	},
+	"level": "N5",
 	"words": [
 		"両親",
 		"主人",

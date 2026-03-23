@@ -1,15 +1,15 @@
 {
-	"level": "N4",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 4 Unit 56",
-			"description": "Слова из модуля: describe the outdoors"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 4 Unit 56",
-			"description": "Words from section/unit: describe the outdoors"
+			"description": "Words from section/unit: describe the outdoors",
+			"title": "Duolingo (EN) - Section 4 Unit 56"
+		},
+		"Russian": {
+			"description": "Слова из модуля: describe the outdoors",
+			"title": "Duolingo (EN) - Section 4 Unit 56"
 		}
 	},
+	"level": "N4",
 	"words": [
 		"フジ",
 		"モリ",

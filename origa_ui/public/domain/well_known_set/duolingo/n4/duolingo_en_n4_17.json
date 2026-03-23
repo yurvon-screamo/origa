@@ -1,21 +1,20 @@
 {
-	"level": "N4",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 4 Unit 17",
-			"description": "Слова из модуля: ask about food"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 4 Unit 17",
-			"description": "Words from section/unit: ask about food"
+			"description": "Words from section/unit: ask about food",
+			"title": "Duolingo (EN) - Section 4 Unit 17"
+		},
+		"Russian": {
+			"description": "Слова из модуля: ask about food",
+			"title": "Duolingo (EN) - Section 4 Unit 17"
 		}
 	},
+	"level": "N4",
 	"words": [
 		"ステーキ",
 		"セン",
 		"ドウ",
 		"メニュー",
-		"ヨシミ",
 		"万",
 		"不味い",
 		"円",

@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 40",
-			"description": "Слова из модуля: Школа: Расскажи о школьных заданиях"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 40",
-			"description": "Words from module: Школа: Расскажи о школьных заданиях"
+			"description": "Words from module: Школа: Расскажи о школьных заданиях",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 40"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Школа: Расскажи о школьных заданиях",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 40"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"もう",
 		"一",

@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 18",
-			"description": "Слова из модуля: Няня: Представься детям"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 18",
-			"description": "Words from module: Няня: Представься детям"
+			"description": "Words from module: Няня: Представься детям",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 18"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Няня: Представься детям",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 18"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"シッター",
 		"付ける",

@@ -1,40 +1,43 @@
 {
-	"level": "N5",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 3 Unit 13",
-			"description": "Слова из модуля: use negative adjectives"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 3 Unit 13",
-			"description": "Words from section/unit: use negative adjectives"
+			"description": "Words from section/unit: use negative adjectives",
+			"title": "Duolingo (EN) - Section 3 Unit 13"
+		},
+		"Russian": {
+			"description": "Слова из модуля: use negative adjectives",
+			"title": "Duolingo (EN) - Section 3 Unit 13"
 		}
 	},
+	"level": "N5",
 	"words": [
-		"みかん",
+		"サツマ",
 		"スキー",
-		"二月",
-		"スノボ",
-		"たのしくない",
 		"スケート",
-		"なべ",
-		"ふゆ",
-		"くらくない",
-		"一月",
-		"あき",
-		"さつまいも",
-		"さむくない",
-		"だんぼう",
-		"あまり",
-		"あつくない",
-		"なつ",
+		"スノボー",
+		"一",
+		"二",
+		"付ける",
+		"住む",
+		"余り",
+		"冬",
+		"厚い",
+		"四",
+		"夏",
 		"夜",
-		"すいか",
-		"つけます",
-		"の",
-		"さくら",
-		"四月",
-		"さきます",
-		"住んでいます"
+		"寒い",
+		"居る",
+		"暖房",
+		"暗い",
+		"月",
+		"桜",
+		"楽しい",
+		"無い",
+		"秋",
+		"芋",
+		"蜜柑",
+		"裂く",
+		"西瓜",
+		"鍋"
 	]
 }

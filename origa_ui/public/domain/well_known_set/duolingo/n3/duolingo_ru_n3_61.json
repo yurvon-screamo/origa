@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 9",
-			"description": "Слова из модуля: Покупки: Опиши свои покупки"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 9",
-			"description": "Words from module: Покупки: Опиши свои покупки"
+			"description": "Words from module: Покупки: Опиши свои покупки",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 9"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Покупки: Опиши свои покупки",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 9"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"どう",
 		"マナー",
@@ -24,8 +24,8 @@
 		"嬉しい",
 		"専門",
 		"布団",
+		"成る",
 		"日用",
-		"為る",
 		"無い",
 		"良い",
 		"褒める",

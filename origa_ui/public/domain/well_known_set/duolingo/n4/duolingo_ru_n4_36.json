@@ -1,15 +1,15 @@
 {
-	"level": "N4",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 4 Раздел 36",
-			"description": "Слова из модуля: Организовывайте пикник"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 4 Раздел 36",
-			"description": "Words from module: Организовывайте пикник"
+			"description": "Words from module: Организовывайте пикник",
+			"title": "Duolingo (RU) - Модуль 4 Раздел 36"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Организовывайте пикник",
+			"title": "Duolingo (RU) - Модуль 4 Раздел 36"
 		}
 	},
+	"level": "N4",
 	"words": [
 		"ガソリン",
 		"シート",
@@ -23,11 +23,11 @@
 		"天気",
 		"彼",
 		"御絞り",
+		"成る",
 		"拭く",
 		"有る",
 		"気持ち",
 		"水筒",
-		"為る",
 		"畳む",
 		"良い",
 		"芝生",

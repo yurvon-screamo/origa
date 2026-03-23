@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "SPY x FAMILY - S01 E10",
-			"description": "Слова для просмотра к SPY x FAMILY десятого эпизода первого сезона"
-		},
 		"English": {
-			"title": "SPY x FAMILY - S01 E10",
-			"description": "Words for watching SPY x FAMILY tenth episode of the first season"
+			"description": "Words for watching SPY x FAMILY tenth episode of the first season",
+			"title": "SPY x FAMILY - S01 E10"
+		},
+		"Russian": {
+			"description": "Слова для просмотра к SPY x FAMILY десятого эпизода первого сезона",
+			"title": "SPY x FAMILY - S01 E10"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"あんな",
 		"があん",
@@ -26,8 +26,6 @@
 		"ちび",
 		"ちょこまか",
 		"ちんちくりん",
-		"てまえ",
-		"で",
 		"でかい",
 		"どう",
 		"どじ",
@@ -40,7 +38,6 @@
 		"ぺっ",
 		"まあ",
 		"まぐれ",
-		"まじ",
 		"みたい",
 		"むかつく",
 		"むん",
@@ -86,7 +83,6 @@
 		"チーム",
 		"テイ",
 		"デズモンド",
-		"トコロ",
 		"ドア",
 		"ドッジ",
 		"ドッジボール",
@@ -304,10 +300,12 @@
 		"情報",
 		"成る",
 		"我が",
+		"所",
 		"所為",
 		"手",
 		"手々",
 		"手伝い",
+		"手前",
 		"扠",
 		"扱き",
 		"技",

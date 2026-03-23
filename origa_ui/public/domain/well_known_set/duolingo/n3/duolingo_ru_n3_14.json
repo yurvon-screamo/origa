@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 14",
-			"description": "Слова из модуля: Будни: Расскажи о событии"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 14",
-			"description": "Words from module: Будни: Расскажи о событии"
+			"description": "Words from module: Будни: Расскажи о событии",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 14"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Будни: Расскажи о событии",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 14"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"しょっちゅう",
 		"ショック",

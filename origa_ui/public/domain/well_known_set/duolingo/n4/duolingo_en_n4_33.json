@@ -1,22 +1,22 @@
 {
-	"level": "N4",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 4 Unit 33",
-			"description": "Слова из модуля: talk about weather"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 4 Unit 33",
-			"description": "Words from section/unit: talk about weather"
+			"description": "Words from section/unit: talk about weather",
+			"title": "Duolingo (EN) - Section 4 Unit 33"
+		},
+		"Russian": {
+			"description": "Слова из модуля: talk about weather",
+			"title": "Duolingo (EN) - Section 4 Unit 33"
 		}
 	},
+	"level": "N4",
 	"words": [
 		"ススム",
 		"ヒロシ",
 		"今夜",
-		"何方",
+		"何",
 		"傘",
-		"其方",
+		"其の",
 		"夜",
 		"寒",
 		"寒い",
@@ -24,6 +24,7 @@
 		"差し",
 		"広い",
 		"彼方",
+		"方",
 		"暑い",
 		"暖",
 		"曲",

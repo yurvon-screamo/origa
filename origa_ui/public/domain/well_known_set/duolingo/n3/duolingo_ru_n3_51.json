@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 51",
-			"description": "Слова из модуля: Правила: Объясни местные правила"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 51",
-			"description": "Words from module: Правила: Объясни местные правила"
+			"description": "Words from module: Правила: Объясни местные правила",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 51"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Правила: Объясни местные правила",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 51"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"こう",
 		"どう",

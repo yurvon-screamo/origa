@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 5 Unit 41",
-			"description": "Слова из модуля: describe health issues"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 5 Unit 41",
-			"description": "Words from section/unit: describe health issues"
+			"description": "Words from section/unit: describe health issues",
+			"title": "Duolingo (EN) - Section 5 Unit 41"
+		},
+		"Russian": {
+			"description": "Слова из модуля: describe health issues",
+			"title": "Duolingo (EN) - Section 5 Unit 41"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"ストレス",
 		"中毒",

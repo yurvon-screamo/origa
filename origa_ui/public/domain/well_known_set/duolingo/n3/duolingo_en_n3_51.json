@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 6 Unit 1",
-			"description": "Слова из модуля: describe a hospital visit"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 6 Unit 1",
-			"description": "Words from section/unit: describe a hospital visit"
+			"description": "Words from section/unit: describe a hospital visit",
+			"title": "Duolingo (EN) - Section 6 Unit 1"
+		},
+		"Russian": {
+			"description": "Слова из модуля: describe a hospital visit",
+			"title": "Duolingo (EN) - Section 6 Unit 1"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"ふらふら",
 		"インフルエンザ",

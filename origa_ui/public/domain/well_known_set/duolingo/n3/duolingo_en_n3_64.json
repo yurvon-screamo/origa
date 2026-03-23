@@ -1,17 +1,16 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 6 Unit 14",
-			"description": "Слова из модуля: discuss religion"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 6 Unit 14",
-			"description": "Words from section/unit: discuss religion"
+			"description": "Words from section/unit: discuss religion",
+			"title": "Duolingo (EN) - Section 6 Unit 14"
+		},
+		"Russian": {
+			"description": "Слова из модуля: discuss religion",
+			"title": "Duolingo (EN) - Section 6 Unit 14"
 		}
 	},
+	"level": "N3",
 	"words": [
-		"アクマ",
 		"何",
 		"使命",
 		"司祭",
@@ -19,6 +18,7 @@
 		"墓",
 		"墓地",
 		"奇跡",
+		"悪魔",
 		"救う",
 		"神聖",
 		"聖書",

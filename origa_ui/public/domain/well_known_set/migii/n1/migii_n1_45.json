@@ -1,15 +1,15 @@
 {
-	"level": "N1",
 	"content": {
-		"Russian": {
-			"title": "Migii N1 Урок 45",
-			"description": "Словарный запас из урока 45 уровня N1 от Migii."
-		},
 		"English": {
-			"title": "Migii N1 Lesson 45",
-			"description": "Vocabulary from lesson 45 of N1 level by Migii."
+			"description": "Vocabulary from lesson 45 of N1 level by Migii.",
+			"title": "Migii N1 Lesson 45"
+		},
+		"Russian": {
+			"description": "Словарный запас из урока 45 уровня N1 от Migii.",
+			"title": "Migii N1 Урок 45"
 		}
 	},
+	"level": "N1",
 	"words": [
 		"げっそり",
 		"エンジニア",

@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 31",
-			"description": "Слова из модуля: Знания: Опиши трудные моменты"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 31",
-			"description": "Words from module: Знания: Опиши трудные моменты"
+			"description": "Words from module: Знания: Опиши трудные моменты",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 31"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Знания: Опиши трудные моменты",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 31"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"三",
 		"十",

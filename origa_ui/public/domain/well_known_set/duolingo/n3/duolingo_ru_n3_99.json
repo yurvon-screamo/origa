@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 47",
-			"description": "Слова из модуля: Дом: Опиши вещи на кухне"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 47",
-			"description": "Words from module: Дом: Опиши вещи на кухне"
+			"description": "Words from module: Дом: Опиши вещи на кухне",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 47"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Дом: Опиши вещи на кухне",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 47"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"アピール",
 		"エリア",
@@ -22,11 +22,11 @@
 		"大きい",
 		"失敗",
 		"得意",
+		"成る",
 		"折れる",
 		"数字",
 		"決まり",
 		"滑らか",
-		"為る",
 		"無い",
 		"若い",
 		"頃"

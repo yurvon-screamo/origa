@@ -1,43 +1,41 @@
 {
-	"level": "N5",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 2 Unit 23",
-			"description": "Слова из модуля: discuss classes"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 2 Unit 23",
-			"description": "Words from section/unit: discuss classes"
+			"description": "Words from section/unit: discuss classes",
+			"title": "Duolingo (EN) - Section 2 Unit 23"
+		},
+		"Russian": {
+			"description": "Слова из модуля: discuss classes",
+			"title": "Duolingo (EN) - Section 2 Unit 23"
 		}
 	},
+	"level": "N5",
 	"words": [
-		"ききましょう",
-		"水曜日",
-		"プロジェクト",
-		"しめきり",
-		"ななつ",
-		"むっつ",
-		"に",
-		"は",
-		"おわります",
-		"ききましょうか",
-		"おもしろい",
-		"火曜日",
-		"しつもん",
-		"はやく",
-		"いつつ",
-		"テスト",
-		"何曜日",
-		"あります",
+		"シュウ",
+		"スペイン",
 		"スミス",
-		"山田",
-		"こんしゅう",
-		"たくさん",
-		"が",
-		"だれ",
-		"じゅぎょう",
-		"スペインご",
-		"きょうしつ",
-		"せんせい"
+		"テスト",
+		"プロジェクト",
+		"ヤマダ",
+		"七",
+		"何曜",
+		"先生",
+		"六",
+		"居る",
+		"授業",
+		"教室",
+		"日",
+		"早い",
+		"有る",
+		"此の",
+		"水曜",
+		"沢山",
+		"火曜",
+		"終わる",
+		"締め切る",
+		"聞く",
+		"誰",
+		"質問",
+		"面白い"
 	]
 }

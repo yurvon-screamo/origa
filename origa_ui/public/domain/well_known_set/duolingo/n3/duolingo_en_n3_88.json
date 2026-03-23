@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 6 Unit 38",
-			"description": "Слова из модуля: share opinions"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 6 Unit 38",
-			"description": "Words from section/unit: share opinions"
+			"description": "Words from section/unit: share opinions",
+			"title": "Duolingo (EN) - Section 6 Unit 38"
+		},
+		"Russian": {
+			"description": "Слова из модуля: share opinions",
+			"title": "Duolingo (EN) - Section 6 Unit 38"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"丸",
 		"了解",

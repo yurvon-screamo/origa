@@ -1,41 +1,42 @@
 {
-	"level": "N5",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 3 Unit 8",
-			"description": "Слова из модуля: make transit plans"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 3 Unit 8",
-			"description": "Words from section/unit: make transit plans"
+			"description": "Words from section/unit: make transit plans",
+			"title": "Duolingo (EN) - Section 3 Unit 8"
+		},
+		"Russian": {
+			"description": "Слова из модуля: make transit plans",
+			"title": "Duolingo (EN) - Section 3 Unit 8"
 		}
 	},
+	"level": "N5",
 	"words": [
-		"に",
-		"おさら",
-		"ナイフ",
-		"きります",
-		"あるきます",
-		"おもちゃ",
-		"かかります",
-		"でんきや",
-		"ヘッドホン",
-		"六百",
-		"プレゼント",
+		"どう",
 		"カップ",
+		"ショップ",
+		"チキン",
+		"チップ",
+		"ナイフ",
 		"フォーク",
-		"百円ショップ",
-		"から",
-		"わたります",
-		"ポテトチップス",
-		"どうやって",
-		"とちゅうで",
-		"みち",
-		"フライドチキン",
-		"まで",
+		"フライド",
+		"プレゼント",
+		"ヘッドホン",
+		"ポテト",
+		"乗る",
+		"六百",
 		"円",
+		"切る",
 		"家",
-		"いとこ",
-		"のります"
+		"従兄弟",
+		"掛かる",
+		"歩く",
+		"渡る",
+		"玩具",
+		"百",
+		"皿",
+		"途中",
+		"道",
+		"遣る",
+		"電気"
 	]
 }

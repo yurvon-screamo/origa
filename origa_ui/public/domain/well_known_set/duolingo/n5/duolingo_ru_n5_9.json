@@ -1,26 +1,14 @@
 {
-	"level": "N5",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 1 Раздел 9",
-			"description": "Слова из модуля: Говорите время"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 1 Раздел 9",
-			"description": "Words from module: Говорите время"
+			"description": "Words from module: Говорите время",
+			"title": "Duolingo (RU) - Модуль 1 Раздел 9"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Говорите время",
+			"title": "Duolingo (RU) - Модуль 1 Раздел 9"
 		}
 	},
-	"words": [
-		"三",
-		"すみません",
-		"はん",
-		"なんじ",
-		"一",
-		"二",
-		"さん",
-		"いま",
-		"に",
-		"じ",
-		"いち"
-	]
+	"level": "N5",
+	"words": ["一", "三", "二", "今", "済む", "班", "難ずる"]
 }

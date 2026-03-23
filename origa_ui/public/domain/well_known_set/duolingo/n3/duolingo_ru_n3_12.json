@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 12",
-			"description": "Слова из модуля: Вещи: Спроси, где это лежит"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 12",
-			"description": "Words from module: Вещи: Спроси, где это лежит"
+			"description": "Words from module: Вещи: Спроси, где это лежит",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 12"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Вещи: Спроси, где это лежит",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 12"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"スキャナー",
 		"ポンプ",

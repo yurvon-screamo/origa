@@ -1,18 +1,17 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 5 Unit 19",
-			"description": "Слова из модуля: discuss society"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 5 Unit 19",
-			"description": "Words from section/unit: discuss society"
+			"description": "Words from section/unit: discuss society",
+			"title": "Duolingo (EN) - Section 5 Unit 19"
+		},
+		"Russian": {
+			"description": "Слова из модуля: discuss society",
+			"title": "Duolingo (EN) - Section 5 Unit 19"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"世界",
-		"付",
 		"値",
 		"受け付け",
 		"国家",

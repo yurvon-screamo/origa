@@ -1,39 +1,38 @@
 {
-	"level": "N5",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 2 Unit 13",
-			"description": "Слова из модуля: take public transit"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 2 Unit 13",
-			"description": "Words from section/unit: take public transit"
+			"description": "Words from section/unit: take public transit",
+			"title": "Duolingo (EN) - Section 2 Unit 13"
+		},
+		"Russian": {
+			"description": "Слова из модуля: take public transit",
+			"title": "Duolingo (EN) - Section 2 Unit 13"
 		}
 	},
+	"level": "N5",
 	"words": [
-		"ながい",
-		"しゅうてん",
-		"時間",
-		"分",
-		"ぐらい",
-		"かかります",
-		"はやい",
-		"十分",
-		"どの",
-		"もうすぐ",
-		"あさくさ",
-		"うえのこうえん",
-		"来ます",
-		"つぎの",
-		"つぎ",
-		"ここ",
-		"よこはま",
+		"もう",
+		"アキハバラ",
+		"シブヤ",
+		"シュウ",
 		"バス",
-		"あきはばら",
-		"しぶや",
-		"に",
-		"行きます",
-		"でんしゃ",
-		"えき"
+		"ヨコハマ",
+		"上",
+		"何",
+		"公園",
+		"分",
+		"十分",
+		"掛かる",
+		"早い",
+		"時間",
+		"朝",
+		"来る",
+		"次",
+		"此処",
+		"直ぐ",
+		"行く",
+		"長い",
+		"電車",
+		"駅"
 	]
 }

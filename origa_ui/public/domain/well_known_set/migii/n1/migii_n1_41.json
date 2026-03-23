@@ -1,15 +1,15 @@
 {
-	"level": "N1",
 	"content": {
-		"Russian": {
-			"title": "Migii N1 Урок 41",
-			"description": "Словарный запас из урока 41 уровня N1 от Migii."
-		},
 		"English": {
-			"title": "Migii N1 Lesson 41",
-			"description": "Vocabulary from lesson 41 of N1 level by Migii."
+			"description": "Vocabulary from lesson 41 of N1 level by Migii.",
+			"title": "Migii N1 Lesson 41"
+		},
+		"Russian": {
+			"description": "Словарный запас из урока 41 уровня N1 от Migii.",
+			"title": "Migii N1 Урок 41"
 		}
 	},
+	"level": "N1",
 	"words": [
 		"じっくり",
 		"どう",
@@ -46,7 +46,6 @@
 		"照明",
 		"片言",
 		"短波",
-		"第",
 		"統治",
 		"縁談",
 		"背景",

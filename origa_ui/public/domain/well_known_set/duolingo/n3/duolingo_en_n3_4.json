@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 5 Unit 4",
-			"description": "Слова из модуля: discuss possibilities"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 5 Unit 4",
-			"description": "Words from section/unit: discuss possibilities"
+			"description": "Words from section/unit: discuss possibilities",
+			"title": "Duolingo (EN) - Section 5 Unit 4"
+		},
+		"Russian": {
+			"description": "Слова из модуля: discuss possibilities",
+			"title": "Duolingo (EN) - Section 5 Unit 4"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"エネルギー",
 		"ガス",

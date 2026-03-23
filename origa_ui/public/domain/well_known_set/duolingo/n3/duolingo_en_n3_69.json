@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 6 Unit 19",
-			"description": "Слова из модуля: follow a cooking recipe"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 6 Unit 19",
-			"description": "Words from section/unit: follow a cooking recipe"
+			"description": "Words from section/unit: follow a cooking recipe",
+			"title": "Duolingo (EN) - Section 6 Unit 19"
+		},
+		"Russian": {
+			"description": "Слова из модуля: follow a cooking recipe",
+			"title": "Duolingo (EN) - Section 6 Unit 19"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"ねばねば",
 		"べたべた",

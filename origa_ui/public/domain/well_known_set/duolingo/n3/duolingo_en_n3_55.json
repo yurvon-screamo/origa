@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 6 Unit 5",
-			"description": "Слова из модуля: describe people's jobs"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 6 Unit 5",
-			"description": "Words from section/unit: describe people's jobs"
+			"description": "Words from section/unit: describe people's jobs",
+			"title": "Duolingo (EN) - Section 6 Unit 5"
+		},
+		"Russian": {
+			"description": "Слова из модуля: describe people's jobs",
+			"title": "Duolingo (EN) - Section 6 Unit 5"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"与える",
 		"件",

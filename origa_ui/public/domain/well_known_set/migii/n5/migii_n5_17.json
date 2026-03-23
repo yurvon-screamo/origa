@@ -1,15 +1,15 @@
 {
-	"level": "N5",
 	"content": {
-		"Russian": {
-			"title": "Migii N5 Урок 17",
-			"description": "Словарный запас из урока 17 уровня N5 от Migii."
-		},
 		"English": {
-			"title": "Migii N5 Lesson 17",
-			"description": "Vocabulary from lesson 17 of N5 level by Migii."
+			"description": "Vocabulary from lesson 17 of N5 level by Migii.",
+			"title": "Migii N5 Lesson 17"
+		},
+		"Russian": {
+			"description": "Словарный запас из урока 17 уровня N5 от Migii.",
+			"title": "Migii N5 Урок 17"
 		}
 	},
+	"level": "N5",
 	"words": [
 		"コーヒー",
 		"ジュース",

@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 34",
-			"description": "Слова из модуля: Друзья: Расскажи о друзьях"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 34",
-			"description": "Words from module: Друзья: Расскажи о друзьях"
+			"description": "Words from module: Друзья: Расскажи о друзьях",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 34"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Друзья: Расскажи о друзьях",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 34"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"こう",
 		"シリーズ",

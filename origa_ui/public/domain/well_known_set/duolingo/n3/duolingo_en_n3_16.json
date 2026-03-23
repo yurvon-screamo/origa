@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 5 Unit 16",
-			"description": "Слова из модуля: talk about opinions"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 5 Unit 16",
-			"description": "Words from section/unit: talk about opinions"
+			"description": "Words from section/unit: talk about opinions",
+			"title": "Duolingo (EN) - Section 5 Unit 16"
+		},
+		"Russian": {
+			"description": "Слова из модуля: talk about opinions",
+			"title": "Duolingo (EN) - Section 5 Unit 16"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"はっきり",
 		"伝える",

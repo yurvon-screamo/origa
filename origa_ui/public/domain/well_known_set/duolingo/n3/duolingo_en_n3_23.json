@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 5 Unit 23",
-			"description": "Слова из модуля: talk about creative arts"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 5 Unit 23",
-			"description": "Words from section/unit: talk about creative arts"
+			"description": "Words from section/unit: talk about creative arts",
+			"title": "Duolingo (EN) - Section 5 Unit 23"
+		},
+		"Russian": {
+			"description": "Слова из модуля: talk about creative arts",
+			"title": "Duolingo (EN) - Section 5 Unit 23"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"ユー",
 		"一種",

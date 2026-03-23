@@ -1,15 +1,15 @@
 {
-	"level": "N4",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 4 Раздел 15",
-			"description": "Слова из модуля: Посетите семейную свадьбу"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 4 Раздел 15",
-			"description": "Words from module: Посетите семейную свадьбу"
+			"description": "Words from module: Посетите семейную свадьбу",
+			"title": "Duolingo (RU) - Модуль 4 Раздел 15"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Посетите семейную свадьбу",
+			"title": "Duolingo (RU) - Модуль 4 Раздел 15"
 		}
 	},
+	"level": "N4",
 	"words": [
 		"ウエディング",
 		"ケーキ",
@@ -28,7 +28,6 @@
 		"成る",
 		"投げる",
 		"桜ん坊",
-		"為る",
 		"白い"
 	]
 }

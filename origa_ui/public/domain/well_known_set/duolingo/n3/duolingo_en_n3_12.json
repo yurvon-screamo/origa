@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 5 Unit 12",
-			"description": "Слова из модуля: express opinions"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 5 Unit 12",
-			"description": "Words from section/unit: express opinions"
+			"description": "Words from section/unit: express opinions",
+			"title": "Duolingo (EN) - Section 5 Unit 12"
+		},
+		"Russian": {
+			"description": "Слова из модуля: express opinions",
+			"title": "Duolingo (EN) - Section 5 Unit 12"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"ずっと",
 		"まあまあ",
@@ -18,7 +18,7 @@
 		"分かる",
 		"初め",
 		"単語",
-		"唯",
+		"只",
 		"嘘",
 		"学び",
 		"度",

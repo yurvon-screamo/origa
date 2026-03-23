@@ -1,17 +1,16 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 2",
-			"description": "Слова из модуля: Повседнев: Обсуди планы на поездку"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 2",
-			"description": "Words from module: Повседнев: Обсуди планы на поездку"
+			"description": "Words from module: Повседнев: Обсуди планы на поездку",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 2"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Повседнев: Обсуди планы на поездку",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 2"
 		}
 	},
+	"level": "N3",
 	"words": [
-		"トマリ",
 		"ライター",
 		"一",
 		"付く",

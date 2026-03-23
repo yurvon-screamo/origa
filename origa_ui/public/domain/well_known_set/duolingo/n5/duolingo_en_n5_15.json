@@ -1,41 +1,38 @@
 {
-	"level": "N5",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 2 Unit 6",
-			"description": "Слова из модуля: shop for clothes"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 2 Unit 6",
-			"description": "Words from section/unit: shop for clothes"
+			"description": "Words from section/unit: shop for clothes",
+			"title": "Duolingo (EN) - Section 2 Unit 6"
+		},
+		"Russian": {
+			"description": "Слова из модуля: shop for clothes",
+			"title": "Duolingo (EN) - Section 2 Unit 6"
 		}
 	},
+	"level": "N5",
 	"words": [
+		"ださい",
+		"シャツ",
 		"ジャケット",
-		"たかい",
-		"くろい",
-		"みせ",
-		"ありがとうございます",
-		"千",
-		"いくら",
-		"ネクタイ",
-		"えん",
-		"やすい",
-		"百",
-		"あの",
-		"あおい",
-		"いい",
-		"ドレス",
-		"すてき",
-		"がほしいです",
 		"スカート",
-		"Tシャツ",
+		"ドレス",
+		"ネクタイ",
+		"一寸",
+		"千",
+		"古い",
+		"幾ら",
+		"彼",
+		"御座る",
 		"新しい",
-		"ね",
-		"ふく",
-		"ダサい",
-		"はちょっと",
-		"さいふ",
-		"古い"
+		"服",
+		"欲しい",
+		"百",
+		"素敵",
+		"良い",
+		"見せる",
+		"財布",
+		"青い",
+		"高い",
+		"黒い"
 	]
 }

@@ -1,16 +1,17 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 28",
-			"description": "Слова из модуля: Здоровье: Расскажи о тренировке"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 28",
-			"description": "Words from module: Здоровье: Расскажи о тренировке"
+			"description": "Words from module: Здоровье: Расскажи о тренировке",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 28"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Здоровье: Расскажи о тренировке",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 28"
 		}
 	},
+	"level": "N3",
 	"words": [
+		"ハン",
 		"レベル",
 		"三",
 		"代わり",
@@ -22,7 +23,6 @@
 		"十",
 		"嫌",
 		"才能",
-		"汗",
 		"無理",
 		"番",
 		"笑う",
