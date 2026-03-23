@@ -44,7 +44,7 @@ cargo test -p origa test_name
 # Тесты с выводом
 cargo test --workspace -- --nocapture
 
-# Coverage report (требуется cargo-llvm-cov)
+# Coverage report
 cargo llvm-cov --workspace --html
 ```
 
@@ -306,4 +306,4 @@ Use @git-commit-push subagent
 - Использовать `unwrap()` в production коде (только в тестах)
 - Использовать `#[async_trait]` — использовать `impl Future`
 - Коммитить console.log или println! в production коде
-- Удалять test 
+- Удалять test
