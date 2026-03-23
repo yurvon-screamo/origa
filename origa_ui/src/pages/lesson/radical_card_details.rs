@@ -92,32 +92,6 @@ pub fn RadicalCardDetails(
                     />
                 </div>
             </div>
-
-            <Show when=move || !kanji_examples_stored.get_value().is_empty()>
-                <div class="my-6">
-                    <Text size=TextSize::Default variant=TypographyVariant::Muted class="mb-3 block text-left">
-                        "Примеры кандзи:"
-                    </Text>
-                    <div class="flex flex-wrap gap-2">
-                        {move || {
-                            kanji_examples_stored
-                                .get_value()
-                                .iter()
-                                .map(|&kanji| {
-                                    view! {
-                                        <Button
-                                            variant=ButtonVariant::Ghost
-                                            class="text-xl px-3 py-2 min-w-[48px]"
-                                        >
-                                            {kanji.to_string()}
-                                        </Button>
-                                    }
-                                })
-                                .collect::<Vec<_>>()
-                        }}
-                    </div>
-                </div>
-            </Show>
         </Show>
     }
 }
