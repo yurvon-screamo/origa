@@ -5,8 +5,8 @@ use flate2::read::DeflateDecoder;
 
 use super::get_public_dir;
 use crate::dictionary::grammar::{GrammarData, init_grammar, is_grammar_loaded};
-use crate::dictionary::kanji::{KanjiData, init_kanji};
-use crate::dictionary::radical::{RadicalData, init_radicals};
+use crate::dictionary::kanji::{KanjiData, init_kanji, is_kanji_loaded};
+use crate::dictionary::radical::{RadicalData, init_radicals, is_radicals_loaded};
 use crate::dictionary::vocabulary::{VocabularyChunkData, init_vocabulary};
 use crate::domain::{DictionaryData, init_dictionary, is_dictionary_loaded};
 
@@ -85,6 +85,10 @@ fn init_vocabulary_dictionary() {
 }
 
 fn init_kanji_dictionary() {
+    if is_kanji_loaded() {
+        return;
+    }
+
     let public_dir = get_public_dir();
 
     let kanji_path = public_dir.join("dictionary").join("kanji.json");
@@ -95,6 +99,10 @@ fn init_kanji_dictionary() {
 }
 
 fn init_radicals_dictionary() {
+    if is_radicals_loaded() {
+        return;
+    }
+
     let public_dir = get_public_dir();
     let radicals_path = public_dir.join("dictionary").join("radicals.json");
     let radicals_data = RadicalData {

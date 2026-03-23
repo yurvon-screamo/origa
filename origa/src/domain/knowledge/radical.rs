@@ -15,6 +15,13 @@ impl RadicalCard {
         })
     }
 
+    #[cfg(test)]
+    pub fn new_test(radical: char) -> Self {
+        Self {
+            radical: Question::new(radical.to_string()).unwrap(),
+        }
+    }
+
     pub fn radical_char(&self) -> char {
         self.radical.text().chars().next().unwrap()
     }

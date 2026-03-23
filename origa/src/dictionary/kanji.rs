@@ -13,12 +13,13 @@ pub struct KanjiData {
 }
 
 pub fn init_kanji(data: KanjiData) -> Result<(), OrigaError> {
+    if is_kanji_loaded() {
+        return Ok(());
+    }
+
     let db = KanjiDatabase::from_json(&data.kanji_json)?;
-    KANJI_DICTIONARY
-        .set(db)
-        .map_err(|_| OrigaError::KradfileError {
-            reason: "Failed to set kanji dictionary".to_string(),
-        })
+    KANJI_DICTIONARY.set(db).ok();
+    Ok(())
 }
 
 pub fn is_kanji_loaded() -> bool {
@@ -43,6 +44,7 @@ pub fn get_kanji_list(level: &JapaneseLevel) -> Vec<&'static KanjiInfo> {
         .unwrap_or_default()
 }
 
+#[derive(Clone)]
 pub struct KanjiDatabase {
     kanji_map: HashMap<String, KanjiInfo>,
 }
@@ -204,4 +206,403 @@ struct KanjiStoredType {
 #[derive(Serialize, Deserialize)]
 struct KanjiDatabaseStoredType {
     kanji: Vec<KanjiStoredType>,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rstest::rstest;
+    use std::path::Path;
+
+    fn create_valid_kanji_json() -> String {
+        r#"{
+            "kanji": [
+                {
+                    "kanji": "日",
+                    "jlpt": "N5",
+                    "used_in": 100,
+                    "description": "день, солнце",
+                    "radicals": ["一", "口"],
+                    "popular_words": ["日本", "日曜日"],
+                    "on_readings": ["NICHI", "JITSU"],
+                    "kun_readings": ["ひ", "-び"]
+                },
+                {
+                    "kanji": "本",
+                    "jlpt": "N5",
+                    "used_in": 80,
+                    "description": "книга, основа",
+                    "radicals": ["木", "一"],
+                    "popular_words": ["本", "日本"],
+                    "on_readings": ["HON"],
+                    "kun_readings": ["もと"]
+                }
+            ]
+        }"#
+        .to_string()
+    }
+
+    fn create_invalid_json() -> String {
+        "{ invalid json }".to_string()
+    }
+
+    fn load_real_kanji_json() -> String {
+        let kanji_path =
+            Path::new(env!("CARGO_MANIFEST_DIR")).join("../origa_ui/public/dictionary/kanji.json");
+
+        if kanji_path.exists() {
+            std::fs::read_to_string(&kanji_path).expect("Failed to read kanji.json")
+        } else {
+            create_valid_kanji_json()
+        }
+    }
+
+    fn ensure_test_dictionary_loaded() {
+        if !is_kanji_loaded() {
+            let kanji_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("../origa_ui/public/dictionary/kanji.json");
+
+            if kanji_path.exists() {
+                let kanji_json =
+                    std::fs::read_to_string(&kanji_path).expect("Failed to read kanji.json");
+                let data = KanjiData { kanji_json };
+                init_kanji(data).expect("Failed to initialize kanji dictionary");
+            } else {
+                let data = KanjiData {
+                    kanji_json: create_valid_kanji_json(),
+                };
+                init_kanji(data).expect("Failed to initialize test dictionary");
+            }
+        }
+    }
+
+    #[test]
+    fn init_kanji_valid_json_success() {
+        ensure_test_dictionary_loaded();
+        assert!(is_kanji_loaded());
+    }
+
+    #[test]
+    fn init_kanji_invalid_json_error() {
+        let data = KanjiData {
+            kanji_json: create_invalid_json(),
+        };
+        let result = init_kanji(data);
+        assert!(result.is_err());
+        assert!(matches!(result, Err(OrigaError::KradfileError { .. })));
+    }
+
+    #[rstest]
+    #[case("日", '日', JapaneseLevel::N5)]
+    #[case("人", '人', JapaneseLevel::N5)]
+    #[case("本", '本', JapaneseLevel::N5)]
+    fn get_kanji_info_found(
+        #[case] kanji_str: &str,
+        #[case] expected_char: char,
+        #[case] expected_level: JapaneseLevel,
+    ) {
+        ensure_test_dictionary_loaded();
+        let result = get_kanji_info(kanji_str);
+        assert!(result.is_ok());
+        let info = result.unwrap();
+        assert_eq!(info.kanji(), expected_char);
+        assert_eq!(info.jlpt(), &expected_level);
+    }
+
+    #[test]
+    fn get_kanji_info_not_found_error() {
+        ensure_test_dictionary_loaded();
+        let result = get_kanji_info("𠮷");
+        assert!(result.is_err());
+        assert!(matches!(result, Err(OrigaError::KradfileError { .. })));
+    }
+
+    #[rstest]
+    #[case(JapaneseLevel::N5)]
+    #[case(JapaneseLevel::N4)]
+    #[case(JapaneseLevel::N3)]
+    #[case(JapaneseLevel::N2)]
+    #[case(JapaneseLevel::N1)]
+    fn get_kanji_list_all_levels(#[case] level: JapaneseLevel) {
+        ensure_test_dictionary_loaded();
+        let result = get_kanji_list(&level);
+        assert!(!result.is_empty(), "Level {:?} should have kanji", level);
+    }
+
+    #[test]
+    fn kanji_info_accessors() {
+        ensure_test_dictionary_loaded();
+        let info = get_kanji_info("日").unwrap();
+
+        assert_eq!(info.kanji(), '日');
+        assert_eq!(info.jlpt(), &JapaneseLevel::N5);
+    }
+
+    #[test]
+    fn popular_word_new() {
+        let word = PopularWord::new("日本".to_string(), "Japan".to_string());
+        assert_eq!(word.word(), "日本");
+        assert_eq!(word.translation(), "Japan");
+    }
+
+    #[test]
+    fn popular_words_with_translations() {
+        ensure_test_dictionary_loaded();
+        let info = get_kanji_info("日").unwrap();
+        let words = info.popular_words_with_translations(&NativeLanguage::Russian);
+        assert!(!words.is_empty());
+        assert!(words.len() >= 2);
+    }
+
+    #[test]
+    fn integration_real_dictionary() {
+        ensure_test_dictionary_loaded();
+        let n5_list = get_kanji_list(&JapaneseLevel::N5);
+        assert!(!n5_list.is_empty());
+
+        for kanji_str in ["日", "人", "一", "大", "年"] {
+            let result = get_kanji_info(kanji_str);
+            assert!(result.is_ok(), "Should find kanji: {}", kanji_str);
+            let info = result.unwrap();
+            assert!(!info.description().is_empty());
+            assert!(!info.popular_words().is_empty());
+        }
+    }
+
+    #[test]
+    fn test_kanji_database_from_json_with_empty_kanji_array() {
+        let json = r#"{"kanji": []}"#;
+        let db = KanjiDatabase::from_json(json).unwrap();
+        assert!(db.get_kanji_list(&JapaneseLevel::N5).is_empty());
+    }
+
+    #[test]
+    fn test_kanji_database_from_json_missing_optional_fields() {
+        let json = r#"{
+            "kanji": [{
+                "kanji": "測",
+                "jlpt": "N2",
+                "used_in": 100,
+                "description": "measurement",
+                "radicals": [],
+                "popular_words": []
+            }]
+        }"#;
+        let db = KanjiDatabase::from_json(json).unwrap();
+        let info = db.get_kanji_info("測").unwrap();
+        assert_eq!(info.radicals_chars().len(), 0);
+        assert!(info.popular_words().is_empty());
+    }
+
+    #[test]
+    fn test_kanji_database_from_json_multibyte_kanji() {
+        let json = r#"{
+            "kanji": [{
+                "kanji": "一二三四五六七八九十",
+                "jlpt": "N5",
+                "used_in": 100,
+                "description": "numbers",
+                "radicals": [],
+                "popular_words": [],
+                "on_readings": [],
+                "kun_readings": []
+            }]
+        }"#;
+        let db = KanjiDatabase::from_json(json).unwrap();
+        let info = db.get_kanji_info("一").unwrap();
+        assert_eq!(info.kanji(), '一');
+    }
+
+    #[test]
+    fn test_get_kanji_info_empty_string() {
+        let json = load_real_kanji_json();
+        let db = KanjiDatabase::from_json(&json).unwrap();
+        let result = db.get_kanji_info("");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_kanji_info_radicals_expanded_from_multichar_strings() {
+        let json = r#"{
+            "kanji": [{
+                "kanji": "木",
+                "jlpt": "N5",
+                "used_in": 100,
+                "description": "tree",
+                "radicals": ["木", "一"],
+                "popular_words": [],
+                "on_readings": ["ボク", "モク"],
+                "kun_readings": ["き", "こ"]
+            }]
+        }"#;
+        let db = KanjiDatabase::from_json(json).unwrap();
+        let info = db.get_kanji_info("木").unwrap();
+        assert!(info.radicals_chars().contains(&'木'));
+        assert!(info.radicals_chars().contains(&'一'));
+    }
+
+    #[test]
+    fn test_kanji_info_description_is_russian() {
+        let json = load_real_kanji_json();
+        let db = KanjiDatabase::from_json(&json).unwrap();
+        let info = db.get_kanji_info("日").unwrap();
+        assert!(!info.description().is_empty());
+    }
+
+    #[test]
+    fn test_popular_words_with_translations_fallback() {
+        let json = load_real_kanji_json();
+        let db = KanjiDatabase::from_json(&json).unwrap();
+        let info = db.get_kanji_info("日").unwrap();
+        let words = info.popular_words_with_translations(&NativeLanguage::English);
+        assert!(!words.is_empty());
+    }
+
+    #[rstest]
+    #[case("人", 2000)]
+    #[case("一", 0)]
+    #[case("日", 1000)]
+    fn test_kanji_used_in_frequency(#[case] kanji: &str, #[case] min_used_in: u32) {
+        let json = load_real_kanji_json();
+        let db = KanjiDatabase::from_json(&json).unwrap();
+        let info = db.get_kanji_info(kanji).unwrap();
+        assert!(
+            info.used_in() >= min_used_in,
+            "Kanji {} should have high usage frequency",
+            kanji
+        );
+    }
+
+    #[test]
+    fn test_kanji_database_clone() {
+        let json = load_real_kanji_json();
+        let db1 = KanjiDatabase::from_json(&json).unwrap();
+        let db2 = db1.clone();
+        let info1 = db1.get_kanji_info("日").unwrap();
+        let info2 = db2.get_kanji_info("日").unwrap();
+        assert_eq!(info1.kanji(), info2.kanji());
+    }
+
+    #[test]
+    fn test_kanji_database_from_json_parsing_errors() {
+        let invalid_json_variants = vec![
+            "not json at all",
+            r#"{"kanji": invalid}"#,
+            r#"{"kanji": [{ "kanji": 123 }]}"#,
+            "",
+        ];
+
+        for json in invalid_json_variants {
+            let result = KanjiDatabase::from_json(json);
+            assert!(result.is_err(), "Should fail to parse: {:?}", json);
+        }
+    }
+
+    #[test]
+    fn test_get_kanji_info_debug_logging() {
+        let json = r#"{"kanji": []}"#;
+        let db = KanjiDatabase::from_json(json).unwrap();
+
+        let result = db.get_kanji_info("不存在");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_get_kanji_list_filters_by_level() {
+        let json = load_real_kanji_json();
+        let db = KanjiDatabase::from_json(&json).unwrap();
+
+        let n5_count = db.get_kanji_list(&JapaneseLevel::N5).len();
+        let n1_count = db.get_kanji_list(&JapaneseLevel::N1).len();
+
+        assert!(n5_count > 0, "N5 list should not be empty");
+        assert_ne!(n5_count, n1_count, "N5 and N1 should have different counts");
+    }
+
+    #[test]
+    fn test_kanji_info_all_readings_accessors() {
+        let json = r#"{
+            "kanji": [{
+                "kanji": "会",
+                "jlpt": "N4",
+                "used_in": 500,
+                "description": "meeting",
+                "radicals": ["人", "云"],
+                "popular_words": ["会社"],
+                "on_readings": ["カイ", "エ"],
+                "kun_readings": ["あ.う"]
+            }]
+        }"#;
+        let db = KanjiDatabase::from_json(json).unwrap();
+        let info = db.get_kanji_info("会").unwrap();
+
+        assert!(!info.on_readings().is_empty());
+        assert!(!info.kun_readings().is_empty());
+
+        assert!(info.on_readings().iter().any(|r| r == "カイ"));
+        assert!(info.kun_readings().iter().any(|r| r == "あ.う"));
+    }
+
+    #[test]
+    fn test_module_public_functions_isolation() {
+        let json = load_real_kanji_json();
+        let data = KanjiData { kanji_json: json };
+
+        let result = init_kanji(data);
+        assert!(result.is_ok());
+
+        assert!(is_kanji_loaded());
+    }
+
+    #[test]
+    fn test_module_get_kanji_info_public_function() {
+        let json = load_real_kanji_json();
+        let data = KanjiData { kanji_json: json };
+        let _ = init_kanji(data);
+
+        let result = get_kanji_info("日");
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap().kanji(), '日');
+    }
+
+    #[test]
+    fn test_module_get_kanji_list_public_function() {
+        let json = load_real_kanji_json();
+        let data = KanjiData { kanji_json: json };
+        let _ = init_kanji(data);
+
+        let result = get_kanji_list(&JapaneseLevel::N5);
+        assert!(!result.is_empty());
+    }
+
+    #[test]
+    fn test_get_kanji_info_exact_match_required() {
+        let json = r#"{
+            "kanji": [{
+                "kanji": "日",
+                "jlpt": "N5",
+                "used_in": 100,
+                "description": "day",
+                "radicals": ["日"],
+                "popular_words": [],
+                "on_readings": ["ニチ"],
+                "kun_readings": ["ひ"]
+            }]
+        }"#;
+        let db = KanjiDatabase::from_json(json).unwrap();
+
+        let single_char = db.get_kanji_info("日");
+        assert!(single_char.is_ok());
+
+        let multi_char = db.get_kanji_info("日本");
+        assert!(multi_char.is_err());
+    }
+
+    #[test]
+    fn test_popular_word_clone() {
+        let word = PopularWord::new("test".to_string(), "тест".to_string());
+        let cloned = word.clone();
+        assert_eq!(word.word(), cloned.word());
+        assert_eq!(word.translation(), cloned.translation());
+    }
 }

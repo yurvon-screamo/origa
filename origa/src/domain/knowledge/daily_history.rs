@@ -125,3 +125,152 @@ impl DailyHistoryItem {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use chrono::Duration;
+
+    fn create_test_item(
+        timestamp: DateTime<Utc>,
+        lessons: usize,
+        known: usize,
+        total: usize,
+    ) -> DailyHistoryItem {
+        let mut item = DailyHistoryItem::new();
+        item.update_stats(
+            0.5, // avg_stability
+            0.3, // avg_difficulty
+            total,
+            known,
+            total - known, // new_words
+            0,             // in_progress
+            0,             // high_difficulty
+        );
+        for _ in 0..lessons {
+            item.lessons_completed += 1;
+        }
+        item.timestamp = timestamp;
+        item
+    }
+
+    #[test]
+    fn test_daily_history_item_new() {
+        let item = DailyHistoryItem::new();
+
+        assert_eq!(item.lessons_completed(), 0);
+        assert_eq!(item.known_words(), 0);
+        assert_eq!(item.total_words(), 0);
+        assert_eq!(item.avg_stability(), None);
+        assert_eq!(item.avg_difficulty(), None);
+    }
+
+    #[test]
+    fn test_daily_history_item_getters() {
+        let now = Utc::now();
+        let item = create_test_item(now, 1, 3, 8);
+
+        assert_eq!(item.avg_stability(), Some(0.5));
+        assert_eq!(item.avg_difficulty(), Some(0.3));
+        assert_eq!(item.new_words(), 5); // 8 - 3
+        assert_eq!(item.in_progress_words(), 0);
+        assert_eq!(item.high_difficulty_words(), 0);
+    }
+
+    #[test]
+    fn test_daily_history_item_update() {
+        let mut item = DailyHistoryItem::new();
+
+        item.update(0.5, 0.3, 5, 10, 2, 3, 1);
+
+        assert_eq!(item.lessons_completed(), 1);
+        assert_eq!(item.total_words(), 5);
+        assert_eq!(item.known_words(), 10);
+        assert_eq!(item.new_words(), 2);
+        assert_eq!(item.in_progress_words(), 3);
+        assert_eq!(item.high_difficulty_words(), 1);
+        assert_eq!(item.avg_stability(), Some(0.5));
+        assert_eq!(item.avg_difficulty(), Some(0.3));
+    }
+
+    #[test]
+    fn test_merge_with_takes_higher_lessons() {
+        let now = Utc::now();
+        let mut item1 = create_test_item(now, 2, 5, 10);
+        let item2 = create_test_item(now, 5, 3, 8);
+
+        item1.merge_with(&item2);
+
+        assert_eq!(item1.lessons_completed(), 5);
+    }
+
+    #[test]
+    fn test_merge_with_preserves_known_words_when_other_older() {
+        let now = Utc::now();
+        let older = now - Duration::seconds(100);
+        let mut item1 = create_test_item(now, 2, 5, 10);
+        let item2 = create_test_item(older, 5, 8, 12);
+
+        let known_before = item1.known_words();
+        item1.merge_with(&item2);
+
+        assert_eq!(item1.known_words(), known_before);
+    }
+
+    #[test]
+    fn test_merge_with_updates_timestamp_when_newer() {
+        let now = Utc::now();
+        let newer = now + Duration::seconds(100);
+        let mut item1 = create_test_item(now, 2, 5, 10);
+        let item2 = create_test_item(newer, 5, 3, 8);
+
+        item1.merge_with(&item2);
+
+        assert_eq!(item1.timestamp(), newer);
+        assert_eq!(item1.avg_stability(), Some(0.5));
+        assert_eq!(item1.avg_difficulty(), Some(0.3));
+    }
+
+    #[test]
+    fn test_merge_with_does_not_update_timestamp_when_older() {
+        let now = Utc::now();
+        let older = now - Duration::seconds(100);
+        let mut item1 = create_test_item(now, 2, 5, 10);
+        let item2 = create_test_item(older, 5, 3, 8);
+
+        let timestamp_before = item1.timestamp();
+        item1.merge_with(&item2);
+
+        assert_eq!(item1.timestamp(), timestamp_before);
+    }
+
+    #[test]
+    fn test_merge_with_updates_stats_when_newer() {
+        let now = Utc::now();
+        let newer = now + Duration::seconds(100);
+        let mut item1 = create_test_item(now, 2, 5, 10);
+        let mut item2 = create_test_item(newer, 5, 3, 8);
+        item2.update_stats(0.8, 0.6, 8, 3, 5, 0, 0);
+
+        item1.merge_with(&item2);
+
+        assert_eq!(item1.avg_stability(), Some(0.8));
+        assert_eq!(item1.avg_difficulty(), Some(0.6));
+    }
+
+    #[test]
+    fn test_merge_with_preserves_stats_when_other_older() {
+        let now = Utc::now();
+        let older = now - Duration::seconds(100);
+        let mut item1 = create_test_item(now, 2, 5, 10);
+        let mut item2 = create_test_item(older, 5, 3, 8);
+        item2.update_stats(0.8, 0.6, 8, 3, 5, 0, 0);
+
+        let stability_before = item1.avg_stability();
+        let difficulty_before = item1.avg_difficulty();
+        item1.merge_with(&item2);
+
+        assert_eq!(item1.avg_stability(), stability_before);
+        assert_eq!(item1.avg_difficulty(), difficulty_before);
+    }
+}

@@ -54,3 +54,115 @@ impl Vocabulary {
         self.chars.is_empty()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::io::Write;
+    use tempfile::NamedTempFile;
+
+    // from_bytes tests
+    #[test]
+    fn test_from_bytes_empty() {
+        let vocab = Vocabulary::from_bytes(b"").unwrap();
+        assert!(vocab.is_empty());
+    }
+
+    #[test]
+    fn test_from_bytes_single_token() {
+        let vocab = Vocabulary::from_bytes(b"hello").unwrap();
+        assert_eq!(vocab.len(), 1);
+        assert!(!vocab.is_empty());
+    }
+
+    #[test]
+    fn test_from_bytes_multiple_tokens() {
+        let vocab = Vocabulary::from_bytes(b"a\nb\nc").unwrap();
+        assert_eq!(vocab.len(), 3);
+    }
+
+    #[test]
+    fn test_from_bytes_filters_empty_lines() {
+        // Empty lines should be filtered out
+        let vocab = Vocabulary::from_bytes(b"a\n\n\nb").unwrap();
+        assert_eq!(vocab.len(), 2); // Only "a" and "b"
+    }
+
+    // decode tests
+    #[test]
+    fn test_decode_valid_indices() {
+        let vocab = Vocabulary::from_bytes(b"a\nb\nc").unwrap();
+        assert_eq!(vocab.decode(&[1, 2, 3]), "abc");
+    }
+
+    #[test]
+    fn test_decode_filters_zero() {
+        let vocab = Vocabulary::from_bytes(b"a\nb\nc").unwrap();
+        assert_eq!(vocab.decode(&[0, 1, 0, 2, 0, 3, 0]), "abc");
+    }
+
+    #[test]
+    fn test_decode_filters_negative() {
+        let vocab = Vocabulary::from_bytes(b"a\nb\nc").unwrap();
+        assert_eq!(vocab.decode(&[-1, 1, -5, 2, 3]), "abc");
+    }
+
+    #[test]
+    fn test_decode_filters_out_of_bounds() {
+        let vocab = Vocabulary::from_bytes(b"a\nb").unwrap();
+        // Index 99 is out of bounds, should be filtered
+        assert_eq!(vocab.decode(&[1, 99, 2]), "ab");
+    }
+
+    #[test]
+    fn test_decode_empty_indices() {
+        let vocab = Vocabulary::from_bytes(b"a\nb\nc").unwrap();
+        assert_eq!(vocab.decode(&[]), "");
+    }
+
+    #[test]
+    fn test_decode_all_invalid_indices() {
+        let vocab = Vocabulary::from_bytes(b"a\nb\nc").unwrap();
+        assert_eq!(vocab.decode(&[0, -1, 99, 0]), "");
+    }
+
+    // from_file tests
+    #[test]
+    fn test_from_file_creates_vocabulary() {
+        let mut temp_file = NamedTempFile::new().unwrap();
+        writeln!(temp_file, "token1").unwrap();
+        writeln!(temp_file, "token2").unwrap();
+
+        let vocab = Vocabulary::from_file(temp_file.path()).unwrap();
+        assert_eq!(vocab.len(), 2);
+        assert_eq!(vocab.decode(&[1, 2]), "tt");
+    }
+
+    #[test]
+    fn test_from_file_empty_file() {
+        let temp_file = NamedTempFile::new().unwrap();
+        // Write nothing
+
+        let vocab = Vocabulary::from_file(temp_file.path()).unwrap();
+        assert!(vocab.is_empty());
+    }
+
+    #[test]
+    fn test_from_file_not_found() {
+        let result = Vocabulary::from_file(std::path::Path::new("/nonexistent/file.txt"));
+        assert!(result.is_err());
+    }
+
+    // is_empty tests
+    #[test]
+    fn test_is_empty_true() {
+        let vocab = Vocabulary::from_bytes(b"").unwrap();
+        assert!(vocab.is_empty());
+    }
+
+    #[test]
+    fn test_is_empty_false() {
+        let vocab = Vocabulary::from_bytes(b"a").unwrap();
+        assert!(!vocab.is_empty());
+    }
+}
