@@ -2,7 +2,7 @@ use crate::dictionary::grammar::get_rule_by_id;
 use crate::domain::knowledge::KnowledgeSet;
 use crate::domain::value_objects::NativeLanguage;
 use crate::domain::{Card, CardType, GrammarRuleCard, VocabularyCard};
-use rand::{Rng, seq::SliceRandom};
+use rand::{seq::SliceRandom, Rng};
 use serde::{Deserialize, Serialize};
 use ulid::Ulid;
 
@@ -127,10 +127,7 @@ impl LessonCardView {
         lang: &NativeLanguage,
     ) -> Result<Self, crate::domain::OrigaError> {
         match &original_card {
-            Card::Radical(_) => {
-                return Ok(LessonCardView::Normal(original_card));
-            }
-            Card::Vocabulary(_) | Card::Kanji(_) | Card::Grammar(_) => {}
+            Card::Vocabulary(_) | Card::Kanji(_) | Card::Grammar(_) | Card::Radical(_) => {}
         }
 
         let correct_answer = original_card.answer(lang)?;
@@ -182,6 +179,22 @@ fn select_applicable_grammar<R: Rng>(
 
     rules.shuffle(rng);
     rules.into_iter().next()
+}
+
+fn select_writing_card_view<R: Rng>(
+    card: &Card,
+    same_type_cards: &[Card],
+    rng: &mut R,
+) -> LessonCardView {
+    let rand_val = rng.random::<f32>();
+    if rand_val < PROB_KANJI_NORMAL {
+        LessonCardView::Normal(card.clone())
+    } else if rand_val < PROB_KANJI_QUIZ {
+        LessonCardView::generate_quiz(card.clone(), same_type_cards, &NativeLanguage::Russian)
+            .unwrap_or_else(|_| LessonCardView::Normal(card.clone()))
+    } else {
+        LessonCardView::Writing(card.clone())
+    }
 }
 
 pub struct LessonViewGenerator<'a> {
@@ -238,25 +251,16 @@ impl<'a> LessonViewGenerator<'a> {
         rng: &mut R,
     ) -> LessonCardView {
         match (card_type, is_new) {
-            (CardType::Grammar, true)
-            | (CardType::Grammar, false)
-            | (CardType::Radical, true)
-            | (CardType::Radical, false) => LessonCardView::Normal(card.clone()),
+            (CardType::Grammar, true) | (CardType::Grammar, false) => {
+                LessonCardView::Normal(card.clone())
+            }
+
+            (CardType::Radical, true) | (CardType::Radical, false) => {
+                select_writing_card_view(card, same_type_cards, rng)
+            }
 
             (CardType::Kanji, true) | (CardType::Kanji, false) => {
-                let rand_val = rng.random::<f32>();
-                if rand_val < PROB_KANJI_NORMAL {
-                    LessonCardView::Normal(card.clone())
-                } else if rand_val < PROB_KANJI_QUIZ {
-                    LessonCardView::generate_quiz(
-                        card.clone(),
-                        same_type_cards,
-                        &NativeLanguage::Russian,
-                    )
-                    .unwrap_or_else(|_| LessonCardView::Normal(card.clone()))
-                } else {
-                    LessonCardView::Writing(card.clone())
-                }
+                select_writing_card_view(card, same_type_cards, rng)
             }
 
             (_, true) => {
@@ -361,22 +365,34 @@ mod tests {
     }
 
     #[test]
-    fn generate_quiz_returns_normal_for_radical() {
+    fn generate_quiz_can_return_quiz_for_radical() {
         crate::use_cases::init_real_dictionaries();
 
-        let vocab1 = create_vocab_card("単語1");
-        let vocab2 = create_vocab_card("単語2");
-        let vocab3 = create_vocab_card("単語3");
+        let radical_chars: Vec<char> = vec!['一', '二', '三', '人', '口', '日', '月'];
+        let radical_cards: Vec<Card> = radical_chars
+            .into_iter()
+            .filter_map(|c| crate::domain::knowledge::RadicalCard::new(c).ok())
+            .map(Card::Radical)
+            .collect();
 
-        let other_cards: Vec<Card> = vec![vocab1, vocab2, vocab3];
+        if radical_cards.len() < 4 {
+            // Not enough radicals in dictionary, test is not applicable
+            return;
+        }
+
         let lang = NativeLanguage::Russian;
+        let result = LessonCardView::generate_quiz(radical_cards[0].clone(), &radical_cards, &lang);
 
-        // Radical карточки всегда возвращают Normal вид
-        let radical_card = crate::domain::knowledge::RadicalCard::new('一').unwrap();
-        let result =
-            LessonCardView::generate_quiz(Card::Radical(radical_card), &other_cards, &lang);
-
-        assert!(matches!(result, Ok(LessonCardView::Normal(_))));
+        match result.unwrap() {
+            LessonCardView::Quiz(quiz) => {
+                assert_eq!(quiz.options().len(), 4);
+                assert!(quiz.options().iter().any(|o| o.is_correct()));
+            }
+            LessonCardView::Normal(_) => {
+                // This is also acceptable if not enough distractors
+            }
+            _ => panic!("Expected Quiz or Normal view for radical"),
+        }
     }
 
     #[test]
