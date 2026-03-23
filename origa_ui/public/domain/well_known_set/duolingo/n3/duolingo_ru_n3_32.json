@@ -1,18 +1,17 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 32",
-			"description": "Слова из модуля: Цели: Определи свои цели"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 32",
-			"description": "Words from module: Цели: Определи свои цели"
+			"description": "Words from module: Цели: Определи свои цели",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 32"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Цели: Определи свои цели",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 32"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"そう",
-		"で",
 		"セット",
 		"分ける",
 		"夢",

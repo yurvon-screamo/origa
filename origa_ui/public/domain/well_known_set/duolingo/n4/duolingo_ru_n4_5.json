@@ -1,15 +1,15 @@
 {
-	"level": "N4",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 4 Раздел 5",
-			"description": "Слова из модуля: Участвуйте в фотоконкурсе"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 4 Раздел 5",
-			"description": "Words from module: Участвуйте в фотоконкурсе"
+			"description": "Words from module: Участвуйте в фотоконкурсе",
+			"title": "Duolingo (RU) - Модуль 4 Раздел 5"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Участвуйте в фотоконкурсе",
+			"title": "Duolingo (RU) - Модуль 4 Раздел 5"
 		}
 	},
+	"level": "N4",
 	"words": [
 		"こう",
 		"アイディア",
@@ -22,13 +22,13 @@
 		"前",
 		"博物",
 		"参加",
+		"成る",
 		"成る程",
 		"扠",
 		"星",
 		"普通",
 		"決める",
 		"消す",
-		"為る",
 		"白黒",
 		"空",
 		"結果",

@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 5 Unit 35",
-			"description": "Слова из модуля: schedule plans"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 5 Unit 35",
-			"description": "Words from section/unit: schedule plans"
+			"description": "Words from section/unit: schedule plans",
+			"title": "Duolingo (EN) - Section 5 Unit 35"
+		},
+		"Russian": {
+			"description": "Слова из модуля: schedule plans",
+			"title": "Duolingo (EN) - Section 5 Unit 35"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"キャンセル",
 		"ヒロシ",

@@ -1,22 +1,22 @@
 {
-	"level": "N4",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 4 Unit 58",
-			"description": "Слова из модуля: talk about restaurant food"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 4 Unit 58",
-			"description": "Words from section/unit: talk about restaurant food"
+			"description": "Words from section/unit: talk about restaurant food",
+			"title": "Duolingo (EN) - Section 4 Unit 58"
+		},
+		"Russian": {
+			"description": "Слова из модуля: talk about restaurant food",
+			"title": "Duolingo (EN) - Section 4 Unit 58"
 		}
 	},
+	"level": "N4",
 	"words": [
 		"いらっしゃる",
 		"ススム",
 		"ベジタリアン",
 		"一杯",
 		"予約",
-		"余",
+		"余り",
 		"入り",
 		"味",
 		"味噌",

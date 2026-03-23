@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 5 Unit 50",
-			"description": "Слова из модуля: talk about celebrations"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 5 Unit 50",
-			"description": "Words from section/unit: talk about celebrations"
+			"description": "Words from section/unit: talk about celebrations",
+			"title": "Duolingo (EN) - Section 5 Unit 50"
+		},
+		"Russian": {
+			"description": "Слова из модуля: talk about celebrations",
+			"title": "Duolingo (EN) - Section 5 Unit 50"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"出来事",
 		"喜",

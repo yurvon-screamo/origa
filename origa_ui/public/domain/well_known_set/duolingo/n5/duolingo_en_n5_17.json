@@ -1,37 +1,36 @@
 {
-	"level": "N5",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 2 Unit 8",
-			"description": "Слова из модуля: use present tense verbs"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 2 Unit 8",
-			"description": "Words from section/unit: use present tense verbs"
+			"description": "Words from section/unit: use present tense verbs",
+			"title": "Duolingo (EN) - Section 2 Unit 8"
+		},
+		"Russian": {
+			"description": "Слова из модуля: use present tense verbs",
+			"title": "Duolingo (EN) - Section 2 Unit 8"
 		}
 	},
+	"level": "N5",
 	"words": [
-		"どうが",
-		"じゅうどう",
-		"テニス",
-		"話します",
-		"日曜日",
+		"どう",
 		"ゲーム",
-		"からて",
-		"でかけます",
-		"土曜日",
-		"買います",
+		"シュウ",
 		"スポーツ",
-		"かぞく",
-		"します",
-		"ヨガ",
-		"ともだち",
-		"と",
+		"テニス",
 		"ドラマ",
-		"あそびます",
-		"およぎます",
-		"しゅうまつ",
-		"ひとりで",
-		"は"
+		"ヨーガ",
+		"一人",
+		"出掛ける",
+		"十",
+		"友達",
+		"土曜",
+		"家族",
+		"成る",
+		"日",
+		"日曜",
+		"松",
+		"泳ぐ",
+		"話す",
+		"買う",
+		"遊ぶ"
 	]
 }

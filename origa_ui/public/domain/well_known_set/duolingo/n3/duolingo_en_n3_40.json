@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 5 Unit 40",
-			"description": "Слова из модуля: discuss politics"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 5 Unit 40",
-			"description": "Words from section/unit: discuss politics"
+			"description": "Words from section/unit: discuss politics",
+			"title": "Duolingo (EN) - Section 5 Unit 40"
+		},
+		"Russian": {
+			"description": "Слова из модуля: discuss politics",
+			"title": "Duolingo (EN) - Section 5 Unit 40"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"会談",
 		"候補",

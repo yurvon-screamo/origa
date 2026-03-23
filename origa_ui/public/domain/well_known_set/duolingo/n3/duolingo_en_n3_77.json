@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 6 Unit 27",
-			"description": "Слова из модуля: talk about history"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 6 Unit 27",
-			"description": "Words from section/unit: talk about history"
+			"description": "Words from section/unit: talk about history",
+			"title": "Duolingo (EN) - Section 6 Unit 27"
+		},
+		"Russian": {
+			"description": "Слова из модуля: talk about history",
+			"title": "Duolingo (EN) - Section 6 Unit 27"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"アキラ",
 		"エド",

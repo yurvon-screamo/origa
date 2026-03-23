@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 24",
-			"description": "Слова из модуля: Семья: Опиши свою семью"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 24",
-			"description": "Words from module: Семья: Опиши свою семью"
+			"description": "Words from module: Семья: Опиши свою семью",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 24"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Семья: Опиши свою семью",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 24"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"はっきり",
 		"コミュニティー",
@@ -23,7 +23,6 @@
 		"御陰",
 		"意味",
 		"成る",
-		"為る",
 		"知事",
 		"祭り",
 		"結局",

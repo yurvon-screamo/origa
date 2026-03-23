@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 44",
-			"description": "Слова из модуля: Темы: Ищи нужные слова"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 44",
-			"description": "Words from module: Темы: Ищи нужные слова"
+			"description": "Words from module: Темы: Ищи нужные слова",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 44"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Темы: Ищи нужные слова",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 44"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"どきどき",
 		"ぴったり",

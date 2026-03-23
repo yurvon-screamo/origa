@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 26",
-			"description": "Слова из модуля: Соревнования: Спроси о команде"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 26",
-			"description": "Words from module: Соревнования: Спроси о команде"
+			"description": "Words from module: Соревнования: Спроси о команде",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 26"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Соревнования: Спроси о команде",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 26"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"ゴール",
 		"プレッシャー",
@@ -21,10 +21,10 @@
 		"大会",
 		"定食",
 		"年齢",
+		"成る",
 		"戦い",
 		"打つ",
 		"深い",
-		"為る",
 		"相手",
 		"緊急",
 		"腕",

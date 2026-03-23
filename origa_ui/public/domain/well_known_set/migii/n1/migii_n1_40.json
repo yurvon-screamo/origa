@@ -1,15 +1,15 @@
 {
-	"level": "N1",
 	"content": {
-		"Russian": {
-			"title": "Migii N1 Урок 40",
-			"description": "Словарный запас из урока 40 уровня N1 от Migii."
-		},
 		"English": {
-			"title": "Migii N1 Lesson 40",
-			"description": "Vocabulary from lesson 40 of N1 level by Migii."
+			"description": "Vocabulary from lesson 40 of N1 level by Migii.",
+			"title": "Migii N1 Lesson 40"
+		},
+		"Russian": {
+			"description": "Словарный запас из урока 40 уровня N1 от Migii.",
+			"title": "Migii N1 Урок 40"
 		}
 	},
+	"level": "N1",
 	"words": [
 		"デッサン",
 		"交える",
@@ -20,7 +20,6 @@
 		"免れる",
 		"冷やかす",
 		"原点",
-		"反",
 		"司る",
 		"名誉",
 		"器官",

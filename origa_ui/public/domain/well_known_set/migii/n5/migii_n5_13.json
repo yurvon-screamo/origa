@@ -1,15 +1,15 @@
 {
-	"level": "N5",
 	"content": {
-		"Russian": {
-			"title": "Migii N5 Урок 13",
-			"description": "Словарный запас из урока 13 уровня N5 от Migii."
-		},
 		"English": {
-			"title": "Migii N5 Lesson 13",
-			"description": "Vocabulary from lesson 13 of N5 level by Migii."
+			"description": "Vocabulary from lesson 13 of N5 level by Migii.",
+			"title": "Migii N5 Lesson 13"
+		},
+		"Russian": {
+			"description": "Словарный запас из урока 13 уровня N5 от Migii.",
+			"title": "Migii N5 Урок 13"
 		}
 	},
+	"level": "N5",
 	"words": [
 		"モリ",
 		"世界",

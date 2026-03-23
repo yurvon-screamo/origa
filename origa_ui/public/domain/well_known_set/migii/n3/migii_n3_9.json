@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Migii N3 Урок 9",
-			"description": "Словарный запас из урока 9 уровня N3 от Migii."
-		},
 		"English": {
-			"title": "Migii N3 Lesson 9",
-			"description": "Vocabulary from lesson 9 of N3 level by Migii."
+			"description": "Vocabulary from lesson 9 of N3 level by Migii.",
+			"title": "Migii N3 Lesson 9"
+		},
+		"Russian": {
+			"description": "Словарный запас из урока 9 уровня N3 от Migii.",
+			"title": "Migii N3 Урок 9"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"ちゃんと",
 		"イズミ",

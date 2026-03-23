@@ -1,15 +1,15 @@
 {
-	"level": "N4",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 4 Unit 23",
-			"description": "Слова из модуля: take public transit"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 4 Unit 23",
-			"description": "Words from section/unit: take public transit"
+			"description": "Words from section/unit: take public transit",
+			"title": "Duolingo (EN) - Section 4 Unit 23"
+		},
+		"Russian": {
+			"description": "Слова из модуля: take public transit",
+			"title": "Duolingo (EN) - Section 4 Unit 23"
 		}
 	},
+	"level": "N4",
 	"words": [
 		"乗り",
 		"使い",

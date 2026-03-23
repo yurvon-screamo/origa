@@ -1,15 +1,15 @@
 {
-	"level": "N4",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 4 Unit 51",
-			"description": "Слова из модуля: describe a city"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 4 Unit 51",
-			"description": "Words from section/unit: describe a city"
+			"description": "Words from section/unit: describe a city",
+			"title": "Duolingo (EN) - Section 4 Unit 51"
+		},
+		"Russian": {
+			"description": "Слова из модуля: describe a city",
+			"title": "Duolingo (EN) - Section 4 Unit 51"
 		}
 	},
+	"level": "N4",
 	"words": [
 		"アキハバラ",
 		"イケブクロ",
@@ -18,7 +18,6 @@
 		"サラリーマン",
 		"シブヤ",
 		"シンジュク",
-		"ハラ",
 		"ハラジュク",
 		"ヒロシマ",
 		"メトロ",
@@ -41,6 +40,7 @@
 		"減る",
 		"点",
 		"線",
+		"腹",
 		"近所",
 		"都市",
 		"集",

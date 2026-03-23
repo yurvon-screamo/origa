@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "SPY x FAMILY - S01 E09",
-			"description": "Слова для просмотра к SPY x FAMILY девятого эпизода первого сезона"
-		},
 		"English": {
-			"title": "SPY x FAMILY - S01 E09",
-			"description": "Words for watching SPY x FAMILY ninth episode of the first season"
+			"description": "Words for watching SPY x FAMILY ninth episode of the first season",
+			"title": "SPY x FAMILY - S01 E09"
+		},
+		"Russian": {
+			"description": "Слова для просмотра к SPY x FAMILY девятого эпизода первого сезона",
+			"title": "SPY x FAMILY - S01 E09"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"あんな",
 		"いけメン",
@@ -31,7 +31,6 @@
 		"ちゅっ",
 		"ちょちょ",
 		"つい",
-		"で",
 		"ともあれ",
 		"とんだ",
 		"どう",
@@ -61,7 +60,6 @@
 		"ダメージ",
 		"ダーリン",
 		"テスト",
-		"トコロ",
 		"ドア",
 		"バーンズ",
 		"フウ",
@@ -133,7 +131,6 @@
 		"伯父",
 		"何",
 		"何事",
-		"何方",
 		"余り",
 		"余程",
 		"余韻",
@@ -208,6 +205,7 @@
 		"受け入れる",
 		"口座",
 		"叩く",
+		"只",
 		"叫び声",
 		"叫ぶ",
 		"可愛い",
@@ -233,7 +231,6 @@
 		"呼ぶ",
 		"命",
 		"唇",
-		"唯",
 		"問題",
 		"善人",
 		"善良",
@@ -311,7 +308,7 @@
 		"幼い",
 		"広告",
 		"度",
-		"延いては",
+		"引く",
 		"弟",
 		"当てる",
 		"役",
@@ -349,6 +346,7 @@
 		"成る程",
 		"我々",
 		"戻す",
+		"所",
 		"所為",
 		"手",
 		"手紙",

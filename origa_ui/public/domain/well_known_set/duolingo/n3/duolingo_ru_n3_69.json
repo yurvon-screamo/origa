@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 17",
-			"description": "Слова из модуля: Внешний вид: Опиши причёску"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 17",
-			"description": "Words from module: Внешний вид: Опиши причёску"
+			"description": "Words from module: Внешний вид: Опиши причёску",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 17"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Внешний вид: Опиши причёску",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 17"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"一",
 		"人",
@@ -26,8 +26,8 @@
 		"思う",
 		"感じ",
 		"憧れ",
+		"成る",
 		"格好",
-		"為る",
 		"番",
 		"真ん中",
 		"美容",

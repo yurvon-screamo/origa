@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 13",
-			"description": "Слова из модуля: Друзья: Расскажи о друге"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 13",
-			"description": "Words from module: Друзья: Расскажи о друге"
+			"description": "Words from module: Друзья: Расскажи о друге",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 13"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Друзья: Расскажи о друге",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 13"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"不便",
 		"仕様",

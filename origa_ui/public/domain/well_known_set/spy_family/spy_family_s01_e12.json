@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "SPY x FAMILY - S01 E12",
-			"description": "Слова для просмотра к SPY x FAMILY двенадцатого эпизода первого сезона"
-		},
 		"English": {
-			"title": "SPY x FAMILY - S01 E12",
-			"description": "Words for watching SPY x FAMILY twelfth episode of the first season"
+			"description": "Words for watching SPY x FAMILY twelfth episode of the first season",
+			"title": "SPY x FAMILY - S01 E12"
+		},
+		"Russian": {
+			"description": "Слова для просмотра к SPY x FAMILY двенадцатого эпизода первого сезона",
+			"title": "SPY x FAMILY - S01 E12"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"いけメン",
 		"うい",
@@ -75,7 +75,6 @@
 		"ツー",
 		"テロ",
 		"テロリスト",
-		"トコロ",
 		"トレーニング",
 		"ドア",
 		"ナイフ",
@@ -354,6 +353,7 @@
 		"戦い",
 		"戦争",
 		"戻る",
+		"所",
 		"手",
 		"手っ取り",
 		"手放す",

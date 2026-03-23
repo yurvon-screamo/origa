@@ -1,23 +1,23 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 6 Unit 9",
-			"description": "Слова из модуля: use commands"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 6 Unit 9",
-			"description": "Words from section/unit: use commands"
+			"description": "Words from section/unit: use commands",
+			"title": "Duolingo (EN) - Section 6 Unit 9"
+		},
+		"Russian": {
+			"description": "Слова из модуля: use commands",
+			"title": "Duolingo (EN) - Section 6 Unit 9"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"タカシ",
 		"値",
 		"先輩",
 		"出でる",
 		"反抗",
+		"只",
 		"命令",
-		"唯",
 		"威",
 		"尊敬",
 		"影響",

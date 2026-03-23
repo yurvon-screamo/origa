@@ -1,19 +1,20 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Migii N3 Урок 23",
-			"description": "Словарный запас из урока 23 уровня N3 от Migii."
-		},
 		"English": {
-			"title": "Migii N3 Lesson 23",
-			"description": "Vocabulary from lesson 23 of N3 level by Migii."
+			"description": "Vocabulary from lesson 23 of N3 level by Migii.",
+			"title": "Migii N3 Lesson 23"
+		},
+		"Russian": {
+			"description": "Словарный запас из урока 23 уровня N3 от Migii.",
+			"title": "Migii N3 Урок 23"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"きちんと",
 		"エンジン",
 		"ガラス",
+		"ハン",
 		"ホリ",
 		"ライター",
 		"事務",
@@ -42,7 +43,6 @@
 		"教授",
 		"日本",
 		"機関",
-		"汗",
 		"無い",
 		"状況",
 		"狂う",

@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 41",
-			"description": "Слова из модуля: Кафе: Спроси о правилах кафе"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 41",
-			"description": "Words from module: Кафе: Спроси о правилах кафе"
+			"description": "Words from module: Кафе: Спроси о правилах кафе",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 41"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Кафе: Спроси о правилах кафе",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 41"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"から",
 		"主義",

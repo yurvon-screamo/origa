@@ -1,15 +1,15 @@
 {
-	"level": "N2",
 	"content": {
-		"Russian": {
-			"title": "Migii N2 Урок 21",
-			"description": "Словарный запас из урока 21 уровня N2 от Migii."
-		},
 		"English": {
-			"title": "Migii N2 Lesson 21",
-			"description": "Vocabulary from lesson 21 of N2 level by Migii."
+			"description": "Vocabulary from lesson 21 of N2 level by Migii.",
+			"title": "Migii N2 Lesson 21"
+		},
+		"Russian": {
+			"description": "Словарный запас из урока 21 уровня N2 от Migii.",
+			"title": "Migii N2 Урок 21"
 		}
 	},
+	"level": "N2",
 	"words": [
 		"コック",
 		"ブラシ",

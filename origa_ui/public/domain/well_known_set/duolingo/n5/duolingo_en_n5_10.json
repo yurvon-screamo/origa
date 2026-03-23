@@ -1,27 +1,26 @@
 {
-	"level": "N5",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 2 Unit 1",
-			"description": "Слова из модуля: get help when traveling"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 2 Unit 1",
-			"description": "Words from section/unit: get help when traveling"
+			"description": "Words from section/unit: get help when traveling",
+			"title": "Duolingo (EN) - Section 2 Unit 1"
+		},
+		"Russian": {
+			"description": "Слова из модуля: get help when traveling",
+			"title": "Duolingo (EN) - Section 2 Unit 1"
 		}
 	},
+	"level": "N5",
 	"words": [
-		"かばん",
-		"中山",
-		"田中",
-		"山口",
+		"くう",
+		"こう",
+		"タナカ",
 		"パスポート",
-		"の",
-		"スマホ",
-		"ちず",
-		"きっぷ",
-		"じゃないです",
-		"ちかてつ",
-		"くうこう"
+		"ヤマグチ",
+		"切符",
+		"地下",
+		"地図",
+		"無い",
+		"鉄",
+		"鞄"
 	]
 }

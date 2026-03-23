@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "SPY x FAMILY - S01 E08",
-			"description": "Слова для просмотра к SPY x FAMILY восьмого эпизода первого сезона"
-		},
 		"English": {
-			"title": "SPY x FAMILY - S01 E08",
-			"description": "Words for watching SPY x FAMILY eighth episode of the first season"
+			"description": "Words for watching SPY x FAMILY eighth episode of the first season",
+			"title": "SPY x FAMILY - S01 E08"
+		},
+		"Russian": {
+			"description": "Слова для просмотра к SPY x FAMILY восьмого эпизода первого сезона",
+			"title": "SPY x FAMILY - S01 E08"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"あらゆる",
 		"あんな",
@@ -46,7 +46,6 @@
 		"ぽっと出",
 		"まあ",
 		"まさか",
-		"まじ",
 		"みたい",
 		"もう",
 		"ゆっくり",
@@ -62,7 +61,6 @@
 		"カミラ",
 		"カルパティア",
 		"キス",
-		"キン",
 		"コート",
 		"シスコン",
 		"シチュー",
@@ -78,7 +76,6 @@
 		"チャイム",
 		"チーム",
 		"テンプレート",
-		"トコロ",
 		"ドア",
 		"ドミニク",
 		"ナレーション",
@@ -235,6 +232,7 @@
 		"取れる",
 		"口",
 		"叩く",
+		"只",
 		"只今",
 		"可愛い",
 		"同じ",
@@ -249,7 +247,6 @@
 		"咳",
 		"咳払い",
 		"品",
-		"唯",
 		"唯一",
 		"問答",
 		"問題",
@@ -383,6 +380,7 @@
 		"成る",
 		"我が",
 		"我が家",
+		"所",
 		"所属",
 		"手",
 		"手強い",
@@ -696,6 +694,7 @@
 		"重ねる",
 		"重要",
 		"野郎",
+		"金",
 		"銃",
 		"鐘",
 		"長引く",

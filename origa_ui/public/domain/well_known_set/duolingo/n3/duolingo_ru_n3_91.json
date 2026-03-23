@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 39",
-			"description": "Слова из модуля: События: Расскажи о событии"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 39",
-			"description": "Words from module: События: Расскажи о событии"
+			"description": "Words from module: События: Расскажи о событии",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 39"
+		},
+		"Russian": {
+			"description": "Слова из модуля: События: Расскажи о событии",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 39"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"けれど",
 		"そう",
@@ -18,13 +18,13 @@
 		"作家",
 		"完全",
 		"感動",
+		"成る",
 		"手編",
 		"数える",
 		"本当",
 		"気",
 		"消防",
 		"演技",
-		"為る",
 		"無い",
 		"状況",
 		"要素",

@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 6 Unit 26",
-			"description": "Слова из модуля: express thoughts"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 6 Unit 26",
-			"description": "Words from section/unit: express thoughts"
+			"description": "Words from section/unit: express thoughts",
+			"title": "Duolingo (EN) - Section 6 Unit 26"
+		},
+		"Russian": {
+			"description": "Слова из модуля: express thoughts",
+			"title": "Duolingo (EN) - Section 6 Unit 26"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"あらゆる",
 		"こつ",

@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 5 Unit 5",
-			"description": "Слова из модуля: get emergency help"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 5 Unit 5",
-			"description": "Words from section/unit: get emergency help"
+			"description": "Words from section/unit: get emergency help",
+			"title": "Duolingo (EN) - Section 5 Unit 5"
+		},
+		"Russian": {
+			"description": "Слова из модуля: get emergency help",
+			"title": "Duolingo (EN) - Section 5 Unit 5"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"シン",
 		"不明",

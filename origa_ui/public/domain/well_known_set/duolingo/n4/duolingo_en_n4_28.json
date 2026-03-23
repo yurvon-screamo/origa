@@ -1,25 +1,24 @@
 {
-	"level": "N4",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 4 Unit 28",
-			"description": "Слова из модуля: get directions"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 4 Unit 28",
-			"description": "Words from section/unit: get directions"
+			"description": "Words from section/unit: get directions",
+			"title": "Duolingo (EN) - Section 4 Unit 28"
+		},
+		"Russian": {
+			"description": "Слова из модуля: get directions",
+			"title": "Duolingo (EN) - Section 4 Unit 28"
 		}
 	},
+	"level": "N4",
 	"words": [
 		"どう",
 		"ケン",
-		"ツウ",
-		"ムカイ",
-		"何方",
+		"会",
+		"何",
 		"側",
 		"入り",
 		"入り口",
-		"其方",
+		"其の",
 		"出",
 		"出口",
 		"北",
@@ -32,6 +31,7 @@
 		"店",
 		"建物",
 		"彼方",
+		"方",
 		"東",
 		"病院",
 		"西",

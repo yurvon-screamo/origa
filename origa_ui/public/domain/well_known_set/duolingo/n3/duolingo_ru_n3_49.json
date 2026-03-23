@@ -1,18 +1,17 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 49",
-			"description": "Слова из модуля: Музей: Опиши картину"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 49",
-			"description": "Words from module: Музей: Опиши картину"
+			"description": "Words from module: Музей: Опиши картину",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 49"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Музей: Опиши картину",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 49"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"しんと",
-		"で",
 		"みたい",
 		"タイトル",
 		"モリ",

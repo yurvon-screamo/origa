@@ -1,15 +1,15 @@
 {
-	"level": "N4",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 4 Раздел 9",
-			"description": "Слова из модуля: Покупайте в комиссионном магазине"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 4 Раздел 9",
-			"description": "Words from module: Покупайте в комиссионном магазине"
+			"description": "Words from module: Покупайте в комиссионном магазине",
+			"title": "Duolingo (RU) - Модуль 4 Раздел 9"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Покупайте в комиссионном магазине",
+			"title": "Duolingo (RU) - Модуль 4 Раздел 9"
 		}
 	},
+	"level": "N4",
 	"words": [
 		"さっ",
 		"より",
@@ -23,7 +23,7 @@
 		"レトロ",
 		"中古",
 		"仕様",
-		"切",
+		"切れ",
 		"売る",
 		"多い",
 		"少ない",

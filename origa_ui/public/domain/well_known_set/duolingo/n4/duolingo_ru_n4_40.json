@@ -1,17 +1,16 @@
 {
-	"level": "N4",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 4 Раздел 40",
-			"description": "Слова из модуля: Обсудите опыт учебы за границей"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 4 Раздел 40",
-			"description": "Words from module: Обсудите опыт учебы за границей"
+			"description": "Words from module: Обсудите опыт учебы за границей",
+			"title": "Duolingo (RU) - Модуль 4 Раздел 40"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Обсудите опыт учебы за границей",
+			"title": "Duolingo (RU) - Модуль 4 Раздел 40"
 		}
 	},
+	"level": "N4",
 	"words": [
-		"が",
 		"こう",
 		"もう",
 		"アジア",
@@ -38,7 +37,6 @@
 		"斤",
 		"来る",
 		"海外",
-		"為る",
 		"生活",
 		"竜",
 		"箇月",

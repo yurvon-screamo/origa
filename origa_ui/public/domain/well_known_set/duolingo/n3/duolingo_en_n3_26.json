@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 5 Unit 26",
-			"description": "Слова из модуля: discuss the law"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 5 Unit 26",
-			"description": "Words from section/unit: discuss the law"
+			"description": "Words from section/unit: discuss the law",
+			"title": "Duolingo (EN) - Section 5 Unit 26"
+		},
+		"Russian": {
+			"description": "Слова из модуля: discuss the law",
+			"title": "Duolingo (EN) - Section 5 Unit 26"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"モリ",
 		"公平",

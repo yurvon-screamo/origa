@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 5 Unit 28",
-			"description": "Слова из модуля: make plans"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 5 Unit 28",
-			"description": "Words from section/unit: make plans"
+			"description": "Words from section/unit: make plans",
+			"title": "Duolingo (EN) - Section 5 Unit 28"
+		},
+		"Russian": {
+			"description": "Слова из модуля: make plans",
+			"title": "Duolingo (EN) - Section 5 Unit 28"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"さっき",
 		"予定",

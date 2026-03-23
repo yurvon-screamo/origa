@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 48",
-			"description": "Слова из модуля: Жизнь: Обсуди новые занятия"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 48",
-			"description": "Words from module: Жизнь: Обсуди новые занятия"
+			"description": "Words from module: Жизнь: Обсуди новые занятия",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 48"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Жизнь: Обсуди новые занятия",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 48"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"どんな",
 		"アイコン",

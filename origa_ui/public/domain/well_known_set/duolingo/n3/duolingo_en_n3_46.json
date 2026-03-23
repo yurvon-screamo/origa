@@ -1,20 +1,20 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 5 Unit 46",
-			"description": "Слова из модуля: talk about exercise"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 5 Unit 46",
-			"description": "Words from section/unit: talk about exercise"
+			"description": "Words from section/unit: talk about exercise",
+			"title": "Duolingo (EN) - Section 5 Unit 46"
+		},
+		"Russian": {
+			"description": "Слова из модуля: talk about exercise",
+			"title": "Duolingo (EN) - Section 5 Unit 46"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"シン",
 		"ジョギング",
 		"ダンベル",
-		"フク",
+		"ハン",
 		"ペース",
 		"二",
 		"伏せ",
@@ -33,7 +33,7 @@
 		"斯く",
 		"曲げる",
 		"更衣",
-		"汗",
+		"河豚",
 		"筋",
 		"筋トレ",
 		"筋肉",

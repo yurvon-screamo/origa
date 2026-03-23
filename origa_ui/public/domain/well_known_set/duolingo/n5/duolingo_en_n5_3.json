@@ -1,25 +1,14 @@
 {
-	"level": "N5",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 1 Unit 3",
-			"description": "Слова из модуля: introduce yourself"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 1 Unit 3",
-			"description": "Words from section/unit: introduce yourself"
+			"description": "Words from section/unit: introduce yourself",
+			"title": "Duolingo (EN) - Section 1 Unit 3"
+		},
+		"Russian": {
+			"description": "Слова из модуля: introduce yourself",
+			"title": "Duolingo (EN) - Section 1 Unit 3"
 		}
 	},
-	"words": [
-		"またあした",
-		"じゃあね",
-		"さん",
-		"こんばんは",
-		"なおみ",
-		"はな",
-		"どうぞよろしく",
-		"こんにちは",
-		"です",
-		"けん"
-	]
+	"level": "N5",
+	"words": ["どうぞ", "ケン", "ナオミ", "又", "宜しく", "明日", "端"]
 }

@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 6 Unit 34",
-			"description": "Слова из модуля: talk about languages"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 6 Unit 34",
-			"description": "Words from section/unit: talk about languages"
+			"description": "Words from section/unit: talk about languages",
+			"title": "Duolingo (EN) - Section 6 Unit 34"
+		},
+		"Russian": {
+			"description": "Слова из модуля: talk about languages",
+			"title": "Duolingo (EN) - Section 6 Unit 34"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"そう",
 		"トオル",

@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 3",
-			"description": "Слова из модуля: Группа: Опиши умения группы"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 3",
-			"description": "Words from module: Группа: Опиши умения группы"
+			"description": "Words from module: Группа: Опиши умения группы",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 3"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Группа: Опиши умения группы",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 3"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"ぎりぎり",
 		"どう",

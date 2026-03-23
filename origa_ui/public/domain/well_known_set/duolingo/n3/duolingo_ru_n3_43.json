@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 43",
-			"description": "Слова из модуля: Классика: Объясни свой выбор музыки"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 43",
-			"description": "Words from module: Классика: Объясни свой выбор музыки"
+			"description": "Words from module: Классика: Объясни свой выбор музыки",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 43"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Классика: Объясни свой выбор музыки",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 43"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"クラシック",
 		"ピアニスト",

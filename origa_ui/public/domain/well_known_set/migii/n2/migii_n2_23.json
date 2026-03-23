@@ -1,15 +1,15 @@
 {
-	"level": "N2",
 	"content": {
-		"Russian": {
-			"title": "Migii N2 Урок 23",
-			"description": "Словарный запас из урока 23 уровня N2 от Migii."
-		},
 		"English": {
-			"title": "Migii N2 Lesson 23",
-			"description": "Vocabulary from lesson 23 of N2 level by Migii."
+			"description": "Vocabulary from lesson 23 of N2 level by Migii.",
+			"title": "Migii N2 Lesson 23"
+		},
+		"Russian": {
+			"description": "Словарный запас из урока 23 уровня N2 от Migii.",
+			"title": "Migii N2 Урок 23"
 		}
 	},
+	"level": "N2",
 	"words": [
 		"ずらり",
 		"クーラー",
@@ -27,7 +27,7 @@
 		"寝台",
 		"岬",
 		"差す",
-		"平ら",
+		"平",
 		"広める",
 		"強引",
 		"当日",

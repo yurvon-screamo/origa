@@ -1,17 +1,16 @@
 {
-	"level": "N4",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 4 Unit 3",
-			"description": "Слова из модуля: suggest things to do at the beach"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 4 Unit 3",
-			"description": "Words from section/unit: suggest things to do at the beach"
+			"description": "Words from section/unit: suggest things to do at the beach",
+			"title": "Duolingo (EN) - Section 4 Unit 3"
+		},
+		"Russian": {
+			"description": "Слова из модуля: suggest things to do at the beach",
+			"title": "Duolingo (EN) - Section 4 Unit 3"
 		}
 	},
+	"level": "N4",
 	"words": [
-		"かき",
 		"けれど",
 		"サングラス",
 		"サーフィン",
@@ -24,6 +23,7 @@
 		"何処",
 		"八",
 		"冷や",
+		"垣",
 		"場所",
 		"奇麗",
 		"持つ",

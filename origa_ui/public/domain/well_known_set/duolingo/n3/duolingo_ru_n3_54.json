@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 2",
-			"description": "Слова из модуля: События: Опиши детали события"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 2",
-			"description": "Words from module: События: Опиши детали события"
+			"description": "Words from module: События: Опиши детали события",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 2"
+		},
+		"Russian": {
+			"description": "Слова из модуля: События: Опиши детали события",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 2"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"こつ",
 		"タバコ",

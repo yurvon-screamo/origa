@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 45",
-			"description": "Слова из модуля: Клубы: Объясни правила клуба"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 45",
-			"description": "Words from module: Клубы: Объясни правила клуба"
+			"description": "Words from module: Клубы: Объясни правила клуба",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 45"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Клубы: Объясни правила клуба",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 45"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"から",
 		"はっきり",

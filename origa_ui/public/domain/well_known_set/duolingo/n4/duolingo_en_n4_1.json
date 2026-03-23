@@ -1,21 +1,20 @@
 {
-	"level": "N4",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 4 Unit 1",
-			"description": "Слова из модуля: use past tense negative adjectives"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 4 Unit 1",
-			"description": "Words from section/unit: use past tense negative adjectives"
+			"description": "Words from section/unit: use past tense negative adjectives",
+			"title": "Duolingo (EN) - Section 4 Unit 1"
+		},
+		"Russian": {
+			"description": "Слова из модуля: use past tense negative adjectives",
+			"title": "Duolingo (EN) - Section 4 Unit 1"
 		}
 	},
+	"level": "N4",
 	"words": [
 		"アプリ",
 		"シーン",
 		"メーン",
 		"ユカ",
-		"レツ",
 		"七",
 		"今回",
 		"六",
@@ -27,8 +26,10 @@
 		"安い",
 		"居る",
 		"屋敷",
+		"度",
 		"怖い",
-		"急度",
+		"急",
+		"成る",
 		"日",
 		"晩御飯",
 		"最悪",
@@ -36,7 +37,6 @@
 		"楽しい",
 		"此れ",
 		"残念",
-		"為る",
 		"無い",
 		"縁起",
 		"美味しい",

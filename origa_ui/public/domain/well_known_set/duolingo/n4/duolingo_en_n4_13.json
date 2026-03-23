@@ -1,18 +1,18 @@
 {
-	"level": "N4",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 4 Unit 13",
-			"description": "Слова из модуля: talk about your day"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 4 Unit 13",
-			"description": "Words from section/unit: talk about your day"
+			"description": "Words from section/unit: talk about your day",
+			"title": "Duolingo (EN) - Section 4 Unit 13"
+		},
+		"Russian": {
+			"description": "Слова из модуля: talk about your day",
+			"title": "Duolingo (EN) - Section 4 Unit 13"
 		}
 	},
+	"level": "N4",
 	"words": [
-		"コウ",
 		"会社",
+		"劫",
 		"午前",
 		"台所",
 		"寝",

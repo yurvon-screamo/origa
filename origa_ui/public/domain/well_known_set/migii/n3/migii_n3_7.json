@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Migii N3 Урок 7",
-			"description": "Словарный запас из урока 7 уровня N3 от Migii."
-		},
 		"English": {
-			"title": "Migii N3 Lesson 7",
-			"description": "Vocabulary from lesson 7 of N3 level by Migii."
+			"description": "Vocabulary from lesson 7 of N3 level by Migii.",
+			"title": "Migii N3 Lesson 7"
+		},
+		"Russian": {
+			"description": "Словарный запас из урока 7 уровня N3 от Migii.",
+			"title": "Migii N3 Урок 7"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"あんな",
 		"ジーンズ",

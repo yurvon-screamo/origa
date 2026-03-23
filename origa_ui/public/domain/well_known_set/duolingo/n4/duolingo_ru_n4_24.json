@@ -1,19 +1,19 @@
 {
-	"level": "N4",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 4 Раздел 24",
-			"description": "Слова из модуля: Обсудите процесс академ. исследования"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 4 Раздел 24",
-			"description": "Words from module: Обсудите процесс академ. исследования"
+			"description": "Words from module: Обсудите процесс академ. исследования",
+			"title": "Duolingo (RU) - Модуль 4 Раздел 24"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Обсудите процесс академ. исследования",
+			"title": "Duolingo (RU) - Модуль 4 Раздел 24"
 		}
 	},
+	"level": "N4",
 	"words": [
-		"つく",
 		"どう",
 		"リンク",
+		"付く",
 		"其の",
 		"分",
 		"古代",

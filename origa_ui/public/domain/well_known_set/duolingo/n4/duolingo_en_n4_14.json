@@ -1,15 +1,15 @@
 {
-	"level": "N4",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 4 Unit 14",
-			"description": "Слова из модуля: describe your home"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 4 Unit 14",
-			"description": "Words from section/unit: describe your home"
+			"description": "Words from section/unit: describe your home",
+			"title": "Duolingo (EN) - Section 4 Unit 14"
+		},
+		"Russian": {
+			"description": "Слова из модуля: describe your home",
+			"title": "Duolingo (EN) - Section 4 Unit 14"
 		}
 	},
+	"level": "N4",
 	"words": [
 		"ソファー",
 		"子",

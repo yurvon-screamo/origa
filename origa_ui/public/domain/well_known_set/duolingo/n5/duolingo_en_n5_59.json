@@ -1,42 +1,42 @@
 {
-	"level": "N5",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 3 Unit 20",
-			"description": "Слова из модуля: use past tense negative verbs"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 3 Unit 20",
-			"description": "Words from section/unit: use past tense negative verbs"
+			"description": "Words from section/unit: use past tense negative verbs",
+			"title": "Duolingo (EN) - Section 3 Unit 20"
+		},
+		"Russian": {
+			"description": "Слова из модуля: use past tense negative verbs",
+			"title": "Duolingo (EN) - Section 3 Unit 20"
 		}
 	},
+	"level": "N5",
 	"words": [
-		"飲みませんでした",
-		"にがい",
-		"りんご",
-		"昨日",
-		"げんきになります",
-		"ビタミン",
-		"おかゆ",
-		"くすり",
-		"食べませんでした",
+		"ジョウ",
 		"ティッシュ",
-		"マスク",
-		"一日中",
-		"まど",
-		"ぜんぜん",
-		"あけます",
-		"行きませんでした",
 		"ノート",
-		"メールします",
-		"休みます",
-		"かります",
-		"電話します",
-		"しませんでした",
-		"ねつ",
+		"ビタミン",
+		"マスク",
+		"メール",
+		"一日",
+		"中",
+		"休む",
+		"何",
+		"借りる",
+		"元気",
+		"全然",
+		"嵐",
+		"成る",
+		"昨日",
+		"林檎",
+		"熱",
+		"窓",
+		"苦い",
+		"薬",
+		"行く",
+		"開ける",
 		"雨",
-		"の中で",
-		"あらし",
-		"何も"
+		"電話",
+		"食べる",
+		"飲む"
 	]
 }

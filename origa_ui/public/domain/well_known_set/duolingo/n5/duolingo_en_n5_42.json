@@ -1,40 +1,38 @@
 {
-	"level": "N5",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 3 Unit 3",
-			"description": "Слова из модуля: count animals"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 3 Unit 3",
-			"description": "Words from section/unit: count animals"
+			"description": "Words from section/unit: count animals",
+			"title": "Duolingo (EN) - Section 3 Unit 3"
+		},
+		"Russian": {
+			"description": "Слова из модуля: count animals",
+			"title": "Duolingo (EN) - Section 3 Unit 3"
 		}
 	},
+	"level": "N5",
 	"words": [
-		"すみ",
-		"カラフルな",
-		"はな",
-		"よんひき",
-		"カメレオン",
-		"なんびき",
-		"さんびき",
-		"へや",
-		"口",
-		"トマト",
-		"に",
-		"みみ",
-		"いぬ",
-		"にひき",
-		"あそびます",
-		"ハムスター",
-		"ちゃいろ",
-		"パンケーキ",
-		"め",
-		"いっぴき",
 		"カプチーノ",
-		"にんき",
-		"どうぶつ",
-		"ねこ",
-		"います"
+		"カメレオン",
+		"カラフル",
+		"トマト",
+		"ハムスター",
+		"パンケーキ",
+		"一",
+		"三",
+		"人気",
+		"何",
+		"動物",
+		"口",
+		"四",
+		"墨",
+		"居る",
+		"引く",
+		"犬",
+		"猫",
+		"端",
+		"耳",
+		"茶色",
+		"遊ぶ",
+		"部屋"
 	]
 }

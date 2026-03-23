@@ -1,15 +1,15 @@
 {
-	"level": "N4",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 4 Раздел 33",
-			"description": "Слова из модуля: Организовывайте экскурсию по городу"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 4 Раздел 33",
-			"description": "Words from module: Организовывайте экскурсию по городу"
+			"description": "Words from module: Организовывайте экскурсию по городу",
+			"title": "Duolingo (RU) - Модуль 4 Раздел 33"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Организовывайте экскурсию по городу",
+			"title": "Duolingo (RU) - Модуль 4 Раздел 33"
 		}
 	},
+	"level": "N4",
 	"words": [
 		"で",
 		"ホーム",

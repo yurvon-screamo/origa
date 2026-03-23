@@ -1,39 +1,41 @@
 {
-	"level": "N5",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 3 Unit 2",
-			"description": "Слова из модуля: discuss college life"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 3 Unit 2",
-			"description": "Words from section/unit: discuss college life"
+			"description": "Words from section/unit: discuss college life",
+			"title": "Duolingo (EN) - Section 3 Unit 2"
+		},
+		"Russian": {
+			"description": "Слова из модуля: discuss college life",
+			"title": "Duolingo (EN) - Section 3 Unit 2"
 		}
 	},
+	"level": "N5",
 	"words": [
-		"チェス",
-		"ボランティア",
-		"サークル",
-		"ボードゲーム",
+		"すう",
 		"キャンパス",
-		"ルームメイト",
-		"りょう",
-		"駅",
-		"ちかく",
-		"タガログご",
-		"ドイツご",
-		"げんご",
-		"ドイツ",
-		"フィリピン",
-		"すうがく",
-		"ビジネス",
-		"せんこう",
-		"四年生",
-		"三年生",
+		"ゲーム",
 		"サム",
-		"かい",
-		"二年生",
-		"一年生",
-		"何年生"
+		"サークル",
+		"タガログ",
+		"チェス",
+		"ドイツ",
+		"ビジネス",
+		"フィリピン",
+		"ボランティア",
+		"ボード",
+		"リョウ",
+		"ルームメート",
+		"一",
+		"三",
+		"二",
+		"何",
+		"四",
+		"年",
+		"弦",
+		"潜航",
+		"甲斐",
+		"近い",
+		"顎",
+		"駅"
 	]
 }

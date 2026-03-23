@@ -1,39 +1,40 @@
 {
-	"level": "N5",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 3 Unit 14",
-			"description": "Слова из модуля: make plans for a party"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 3 Unit 14",
-			"description": "Words from section/unit: make plans for a party"
+			"description": "Words from section/unit: make plans for a party",
+			"title": "Duolingo (EN) - Section 3 Unit 14"
+		},
+		"Russian": {
+			"description": "Слова из модуля: make plans for a party",
+			"title": "Duolingo (EN) - Section 3 Unit 14"
 		}
 	},
+	"level": "N5",
 	"words": [
-		"タクシー",
 		"そろそろ",
-		"の",
-		"かたづけます",
-		"帰ります",
-		"ひさしぶりです",
-		"いそがしくない",
-		"チーズ",
-		"さいきん",
 		"もう",
-		"とおくない",
-		"ようじ",
-		"じてんしゃ",
-		"かかります",
-		"ゆうがた",
-		"前に",
+		"サイタマ",
+		"タクシー",
+		"チーズ",
+		"ユー",
+		"三",
+		"久しい",
+		"二十歳",
+		"前",
+		"呼ぶ",
+		"四",
+		"忙しい",
+		"成る",
+		"掛かる",
+		"日",
+		"最近",
+		"月",
+		"楊枝",
+		"無い",
+		"片付ける",
+		"自転",
 		"車",
-		"で",
-		"よびます",
-		"さいたま",
-		"はたち",
-		"になります",
-		"四日",
-		"三月"
+		"返る",
+		"遠い"
 	]
 }

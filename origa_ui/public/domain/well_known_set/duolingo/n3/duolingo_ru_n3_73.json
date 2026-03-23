@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 21",
-			"description": "Слова из модуля: Одежда: Опиши свою одежду"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 21",
-			"description": "Words from module: Одежда: Опиши свою одежду"
+			"description": "Words from module: Одежда: Опиши свою одежду",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 21"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Одежда: Опиши свою одежду",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 21"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"オフィス",
 		"カジュアル",

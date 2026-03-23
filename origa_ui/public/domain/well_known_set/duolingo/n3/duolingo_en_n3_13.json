@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 5 Unit 13",
-			"description": "Слова из модуля: get around an airport"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 5 Unit 13",
-			"description": "Words from section/unit: get around an airport"
+			"description": "Words from section/unit: get around an airport",
+			"title": "Duolingo (EN) - Section 5 Unit 13"
+		},
+		"Russian": {
+			"description": "Слова из модуля: get around an airport",
+			"title": "Duolingo (EN) - Section 5 Unit 13"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"ゲート",
 		"シート",

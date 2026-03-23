@@ -1,42 +1,42 @@
 {
-	"level": "N5",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 2 Unit 18",
-			"description": "Слова из модуля: discuss chores"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 2 Unit 18",
-			"description": "Words from section/unit: discuss chores"
+			"description": "Words from section/unit: discuss chores",
+			"title": "Duolingo (EN) - Section 2 Unit 18"
+		},
+		"Russian": {
+			"description": "Слова из модуля: discuss chores",
+			"title": "Duolingo (EN) - Section 2 Unit 18"
 		}
 	},
+	"level": "N5",
 	"words": [
-		"休みの日",
-		"ガーデニング",
-		"たのしい",
-		"りょうり",
-		"買い物",
 		"そして",
-		"たいへん",
+		"ガーデニング",
 		"ストレッチ",
-		"にはいります",
-		"おふろ",
-		"せんたく",
-		"ごはん",
-		"やさしい",
-		"だれ",
-		"いろいろ",
-		"そうじ",
-		"てつだいます",
-		"しゅくだい",
+		"仕事",
+		"休み",
 		"何",
-		"がっこう",
-		"かじ",
-		"あと",
-		"しごと",
-		"うち",
-		"かえります",
-		"します",
-		"の"
+		"優しい",
+		"入る",
+		"内",
+		"大変",
+		"学校",
+		"宿",
+		"後",
+		"御飯",
+		"成る",
+		"手伝う",
+		"掃除",
+		"料理",
+		"日",
+		"梶",
+		"楽しい",
+		"洗濯",
+		"色々",
+		"誰",
+		"買い物",
+		"返る",
+		"風呂"
 	]
 }

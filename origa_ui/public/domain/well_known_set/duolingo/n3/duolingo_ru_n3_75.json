@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 23",
-			"description": "Слова из модуля: Популярность: Скажи своё мнение"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 23",
-			"description": "Words from module: Популярность: Скажи своё мнение"
+			"description": "Words from module: Популярность: Скажи своё мнение",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 23"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Популярность: Скажи своё мнение",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 23"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"で",
 		"ほっと",
@@ -21,10 +21,10 @@
 		"六",
 		"商店",
 		"宿題",
+		"成る",
 		"止める",
 		"池",
 		"浮く",
-		"為る",
 		"珍しい",
 		"砂",
 		"自由",

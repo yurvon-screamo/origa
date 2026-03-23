@@ -1,18 +1,17 @@
 {
-	"level": "N4",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 4 Раздел 38",
-			"description": "Слова из модуля: Поделитесь разочарованием"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 4 Раздел 38",
-			"description": "Words from module: Поделитесь разочарованием"
+			"description": "Words from module: Поделитесь разочарованием",
+			"title": "Duolingo (RU) - Модуль 4 Раздел 38"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Поделитесь разочарованием",
+			"title": "Duolingo (RU) - Модуль 4 Раздел 38"
 		}
 	},
+	"level": "N4",
 	"words": [
 		"そう",
-		"で",
 		"どう",
 		"やばい",
 		"人",

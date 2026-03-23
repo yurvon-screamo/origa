@@ -1,36 +1,35 @@
 {
-	"level": "N5",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 3 Unit 26",
-			"description": "Слова из модуля: cook with someone"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 3 Unit 26",
-			"description": "Words from section/unit: cook with someone"
+			"description": "Words from section/unit: cook with someone",
+			"title": "Duolingo (EN) - Section 3 Unit 26"
+		},
+		"Russian": {
+			"description": "Слова из модуля: cook with someone",
+			"title": "Duolingo (EN) - Section 3 Unit 26"
 		}
 	},
+	"level": "N5",
 	"words": [
-		"ひきだし",
-		"スプーン",
-		"ちゃわん",
-		"こむぎこ",
 		"グラム",
-		"さとう",
-		"はいりません",
-		"はいりますか",
-		"八つ",
-		"バター",
-		"肉",
-		"レシピ",
-		"じゃがいも",
-		"いくつ",
-		"もいります",
-		"がいります",
-		"たまねぎ",
-		"昼ご飯",
-		"おなかがすきました",
 		"シチュー",
-		"作ります"
+		"ジャガ芋",
+		"スプーン",
+		"バター",
+		"レシピ",
+		"作る",
+		"入る",
+		"八",
+		"小麦",
+		"幾",
+		"引き出す",
+		"御腹",
+		"昼御飯",
+		"玉葱",
+		"砂糖",
+		"空く",
+		"肉",
+		"茶碗",
+		"要る"
 	]
 }

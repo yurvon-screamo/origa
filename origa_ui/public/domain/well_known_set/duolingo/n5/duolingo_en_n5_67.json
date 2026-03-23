@@ -1,41 +1,38 @@
 {
-	"level": "N5",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 3 Unit 28",
-			"description": "Слова из модуля: describe health issues"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 3 Unit 28",
-			"description": "Words from section/unit: describe health issues"
+			"description": "Words from section/unit: describe health issues",
+			"title": "Duolingo (EN) - Section 3 Unit 28"
+		},
+		"Russian": {
+			"description": "Слова из модуля: describe health issues",
+			"title": "Duolingo (EN) - Section 3 Unit 28"
 		}
 	},
+	"level": "N5",
 	"words": [
-		"なおります",
-		"しません",
-		"やっきょく",
-		"しばらく",
-		"ぬります",
-		"きず",
-		"うで",
-		"は痛いですか",
-		"くび",
-		"目",
-		"sns",
-		"ほとんど",
-		"でんきをつけます",
-		"ストレス",
-		"ねませんでした",
-		"あたま",
-		"先生",
-		"から",
-		"痛い",
-		"が痛いです",
-		"入れます",
-		"かぜ",
-		"どうしましたか",
+		"どう",
+		"やっ",
 		"クリニック",
-		"ちょっと",
-		"よやくを入れます"
+		"ストレス",
+		"一寸",
+		"付ける",
+		"傷",
+		"先生",
+		"入れる",
+		"塗る",
+		"役",
+		"成る",
+		"暫く",
+		"曲",
+		"殆ど",
+		"痛い",
+		"目",
+		"直る",
+		"腕",
+		"電気",
+		"頭",
+		"風邪",
+		"首"
 	]
 }

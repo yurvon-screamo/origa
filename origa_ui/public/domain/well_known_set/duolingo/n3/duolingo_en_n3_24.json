@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 5 Unit 24",
-			"description": "Слова из модуля: use the passive form"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 5 Unit 24",
-			"description": "Words from section/unit: use the passive form"
+			"description": "Words from section/unit: use the passive form",
+			"title": "Duolingo (EN) - Section 5 Unit 24"
+		},
+		"Russian": {
+			"description": "Слова из модуля: use the passive form",
+			"title": "Duolingo (EN) - Section 5 Unit 24"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"ぎりぎり",
 		"ホッカイドウ",

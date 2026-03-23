@@ -1,15 +1,15 @@
 {
-	"level": "N4",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 4 Раздел 52",
-			"description": "Слова из модуля: Покупайте одежду и аксессуары"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 4 Раздел 52",
-			"description": "Words from module: Покупайте одежду и аксессуары"
+			"description": "Words from module: Покупайте одежду и аксессуары",
+			"title": "Duolingo (RU) - Модуль 4 Раздел 52"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Покупайте одежду и аксессуары",
+			"title": "Duolingo (RU) - Модуль 4 Раздел 52"
 		}
 	},
+	"level": "N4",
 	"words": [
 		"まあ",
 		"もう",

@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 6 Unit 23",
-			"description": "Слова из модуля: discuss medical treatment"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 6 Unit 23",
-			"description": "Words from section/unit: discuss medical treatment"
+			"description": "Words from section/unit: discuss medical treatment",
+			"title": "Duolingo (EN) - Section 6 Unit 23"
+		},
+		"Russian": {
+			"description": "Слова из модуля: discuss medical treatment",
+			"title": "Duolingo (EN) - Section 6 Unit 23"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"マスク",
 		"伝染",

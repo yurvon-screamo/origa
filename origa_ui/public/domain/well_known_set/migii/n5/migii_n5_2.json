@@ -1,15 +1,15 @@
 {
-	"level": "N5",
 	"content": {
-		"Russian": {
-			"title": "Migii N5 Урок 2",
-			"description": "Словарный запас из урока 2 уровня N5 от Migii."
-		},
 		"English": {
-			"title": "Migii N5 Lesson 2",
-			"description": "Vocabulary from lesson 2 of N5 level by Migii."
+			"description": "Vocabulary from lesson 2 of N5 level by Migii.",
+			"title": "Migii N5 Lesson 2"
+		},
+		"Russian": {
+			"description": "Словарный запас из урока 2 уровня N5 от Migii.",
+			"title": "Migii N5 Урок 2"
 		}
 	},
+	"level": "N5",
 	"words": [
 		"ゆっくり",
 		"クラス",

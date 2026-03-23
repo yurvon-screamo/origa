@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Migii N3 Урок 27",
-			"description": "Словарный запас из урока 27 уровня N3 от Migii."
-		},
 		"English": {
-			"title": "Migii N3 Lesson 27",
-			"description": "Vocabulary from lesson 27 of N3 level by Migii."
+			"description": "Vocabulary from lesson 27 of N3 level by Migii.",
+			"title": "Migii N3 Lesson 27"
+		},
+		"Russian": {
+			"description": "Словарный запас из урока 27 уровня N3 от Migii.",
+			"title": "Migii N3 Урок 27"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"キャプテン",
 		"ゴール",
@@ -32,8 +32,8 @@
 		"半ば",
 		"収入",
 		"収穫",
+		"只",
 		"可",
-		"唯",
 		"喜び",
 		"大半",
 		"太陽",

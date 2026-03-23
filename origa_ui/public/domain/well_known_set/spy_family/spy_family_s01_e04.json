@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "SPY x FAMILY - S01 E04",
-			"description": "Слова для просмотра к SPY x FAMILY четвертого эпизода первого сезона"
-		},
 		"English": {
-			"title": "SPY x FAMILY - S01 E04",
-			"description": "Words for watching SPY x FAMILY fourth episode of the first season"
+			"description": "Words for watching SPY x FAMILY fourth episode of the first season",
+			"title": "SPY x FAMILY - S01 E04"
+		},
+		"Russian": {
+			"description": "Слова для просмотра к SPY x FAMILY четвертого эпизода первого сезона",
+			"title": "SPY x FAMILY - S01 E04"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"あからさま",
 		"あんな",
@@ -28,7 +28,6 @@
 		"そんな",
 		"ちち",
 		"つい",
-		"で",
 		"とんと",
 		"どう",
 		"どうぞ",
@@ -69,12 +68,12 @@
 		"スマート",
 		"スワン",
 		"スーツ",
-		"タイセイ",
+		"セイ",
+		"タイ",
 		"チェック",
 		"テスト",
 		"テロ",
 		"デズモンド",
-		"トコロ",
 		"トップ",
 		"ドア",
 		"ナレーション",
@@ -171,7 +170,6 @@
 		"体",
 		"何",
 		"何処",
-		"何方",
 		"何者",
 		"余り",
 		"作る",
@@ -184,7 +182,7 @@
 		"俺",
 		"倍",
 		"偉い",
-		"偏に",
+		"偏",
 		"偏食",
 		"健在",
 		"偶に",
@@ -263,6 +261,7 @@
 		"取り締まり",
 		"受験",
 		"口",
+		"只",
 		"合格",
 		"名前",
 		"名門",
@@ -274,7 +273,6 @@
 		"呼ぶ",
 		"咳払い",
 		"品",
-		"唯",
 		"唯々",
 		"唾",
 		"嘘",
@@ -422,6 +420,7 @@
 		"我が",
 		"我が家",
 		"我慢",
+		"所",
 		"所為",
 		"所詮",
 		"手足",

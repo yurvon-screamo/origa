@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 6 Unit 15",
-			"description": "Слова из модуля: express desires"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 6 Unit 15",
-			"description": "Words from section/unit: express desires"
+			"description": "Words from section/unit: express desires",
+			"title": "Duolingo (EN) - Section 6 Unit 15"
+		},
+		"Russian": {
+			"description": "Слова из модуля: express desires",
+			"title": "Duolingo (EN) - Section 6 Unit 15"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"のんびり",
 		"一切",

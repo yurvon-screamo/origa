@@ -1,15 +1,15 @@
 {
-	"level": "N2",
 	"content": {
-		"Russian": {
-			"title": "Migii N2 Урок 14",
-			"description": "Словарный запас из урока 14 уровня N2 от Migii."
-		},
 		"English": {
-			"title": "Migii N2 Lesson 14",
-			"description": "Vocabulary from lesson 14 of N2 level by Migii."
+			"description": "Vocabulary from lesson 14 of N2 level by Migii.",
+			"title": "Migii N2 Lesson 14"
+		},
+		"Russian": {
+			"description": "Словарный запас из урока 14 уровня N2 от Migii.",
+			"title": "Migii N2 Урок 14"
 		}
 	},
+	"level": "N2",
 	"words": [
 		"カロリー",
 		"サークル",

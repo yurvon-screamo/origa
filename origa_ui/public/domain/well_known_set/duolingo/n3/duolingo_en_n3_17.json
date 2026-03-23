@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 5 Unit 17",
-			"description": "Слова из модуля: describe health issues"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 5 Unit 17",
-			"description": "Words from section/unit: describe health issues"
+			"description": "Words from section/unit: describe health issues",
+			"title": "Duolingo (EN) - Section 5 Unit 17"
+		},
+		"Russian": {
+			"description": "Слова из модуля: describe health issues",
+			"title": "Duolingo (EN) - Section 5 Unit 17"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"オサム",
 		"付ける",

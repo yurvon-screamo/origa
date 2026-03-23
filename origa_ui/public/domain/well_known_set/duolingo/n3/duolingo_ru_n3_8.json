@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 8",
-			"description": "Слова из модуля: Жизнь: Расскажи о ежедневных делах"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 8",
-			"description": "Words from module: Жизнь: Расскажи о ежедневных делах"
+			"description": "Words from module: Жизнь: Расскажи о ежедневных делах",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 8"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Жизнь: Расскажи о ежедневных делах",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 8"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"コミュニケーション",
 		"マッチ",

@@ -1,24 +1,14 @@
 {
-	"level": "N5",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 1 Unit 7",
-			"description": "Слова из модуля: describe belongings"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 1 Unit 7",
-			"description": "Words from section/unit: describe belongings"
+			"description": "Words from section/unit: describe belongings",
+			"title": "Duolingo (EN) - Section 1 Unit 7"
+		},
+		"Russian": {
+			"description": "Слова из модуля: describe belongings",
+			"title": "Duolingo (EN) - Section 1 Unit 7"
 		}
 	},
-	"words": [
-		"それら",
-		"これら",
-		"くつ",
-		"しろい",
-		"コート",
-		"あかい",
-		"わたしの",
-		"かさ",
-		"ぼうし"
-	]
+	"level": "N5",
+	"words": ["コート", "其れ", "嵩", "帽子", "此れ", "白い", "私", "赤い", "靴"]
 }

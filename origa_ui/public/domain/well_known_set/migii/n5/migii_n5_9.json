@@ -1,15 +1,15 @@
 {
-	"level": "N5",
 	"content": {
-		"Russian": {
-			"title": "Migii N5 Урок 9",
-			"description": "Словарный запас из урока 9 уровня N5 от Migii."
-		},
 		"English": {
-			"title": "Migii N5 Lesson 9",
-			"description": "Vocabulary from lesson 9 of N5 level by Migii."
+			"description": "Vocabulary from lesson 9 of N5 level by Migii.",
+			"title": "Migii N5 Lesson 9"
+		},
+		"Russian": {
+			"description": "Словарный запас из урока 9 уровня N5 от Migii.",
+			"title": "Migii N5 Урок 9"
 		}
 	},
+	"level": "N5",
 	"words": [
 		"で",
 		"どう",

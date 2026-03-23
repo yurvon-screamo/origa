@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 14",
-			"description": "Слова из модуля: Природа: Задай вопрос о растениях"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 14",
-			"description": "Words from module: Природа: Задай вопрос о растениях"
+			"description": "Words from module: Природа: Задай вопрос о растениях",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 14"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Природа: Задай вопрос о растениях",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 14"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"ハーブ",
 		"会場",
@@ -17,9 +17,9 @@
 		"初心",
 		"土",
 		"居る",
+		"成る",
 		"拾う",
 		"水",
-		"為る",
 		"神社",
 		"続ける",
 		"肌",

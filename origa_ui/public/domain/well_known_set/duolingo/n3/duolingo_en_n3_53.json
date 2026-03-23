@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 6 Unit 3",
-			"description": "Слова из модуля: ride a train or bus"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 6 Unit 3",
-			"description": "Words from section/unit: ride a train or bus"
+			"description": "Words from section/unit: ride a train or bus",
+			"title": "Duolingo (EN) - Section 6 Unit 3"
+		},
+		"Russian": {
+			"description": "Слова из модуля: ride a train or bus",
+			"title": "Duolingo (EN) - Section 6 Unit 3"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"カイ",
 		"カンサイ",

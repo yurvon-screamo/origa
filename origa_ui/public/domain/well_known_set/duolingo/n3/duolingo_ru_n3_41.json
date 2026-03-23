@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 41",
-			"description": "Слова из модуля: улица: Опиши маршрут до кафе"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 41",
-			"description": "Words from module: улица: Опиши маршрут до кафе"
+			"description": "Words from module: улица: Опиши маршрут до кафе",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 41"
+		},
+		"Russian": {
+			"description": "Слова из модуля: улица: Опиши маршрут до кафе",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 41"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"しょっぱい",
 		"ブランド",

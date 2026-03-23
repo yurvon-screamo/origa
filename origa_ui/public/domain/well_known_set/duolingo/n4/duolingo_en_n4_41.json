@@ -1,15 +1,15 @@
 {
-	"level": "N4",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 4 Unit 41",
-			"description": "Слова из модуля: describe belongings"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 4 Unit 41",
-			"description": "Words from section/unit: describe belongings"
+			"description": "Words from section/unit: describe belongings",
+			"title": "Duolingo (EN) - Section 4 Unit 41"
+		},
+		"Russian": {
+			"description": "Слова из модуля: describe belongings",
+			"title": "Duolingo (EN) - Section 4 Unit 41"
 		}
 	},
+	"level": "N4",
 	"words": [
 		"アツシ",
 		"カップ",

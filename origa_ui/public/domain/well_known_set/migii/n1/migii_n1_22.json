@@ -1,15 +1,15 @@
 {
-	"level": "N1",
 	"content": {
-		"Russian": {
-			"title": "Migii N1 Урок 22",
-			"description": "Словарный запас из урока 22 уровня N1 от Migii."
-		},
 		"English": {
-			"title": "Migii N1 Lesson 22",
-			"description": "Vocabulary from lesson 22 of N1 level by Migii."
+			"description": "Vocabulary from lesson 22 of N1 level by Migii.",
+			"title": "Migii N1 Lesson 22"
+		},
+		"Russian": {
+			"description": "Словарный запас из урока 22 уровня N1 от Migii.",
+			"title": "Migii N1 Урок 22"
 		}
 	},
+	"level": "N1",
 	"words": [
 		"インターチェンジ",
 		"スチーム",

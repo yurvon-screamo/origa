@@ -1,19 +1,18 @@
 {
-	"level": "N4",
 	"content": {
-		"Russian": {
-			"title": "Рекомендованные слова для уровня N4",
-			"description": "Список слов, рекомендованных для изучения языка на уровне N4."
-		},
 		"English": {
-			"title": "Recomended words for N4 level",
-			"description": "Words list, recomended for learning language for N4 level."
+			"description": "Words list, recomended for learning language for N4 level.",
+			"title": "Recomended words for N4 level"
+		},
+		"Russian": {
+			"description": "Список слов, рекомендованных для изучения языка на уровне N4.",
+			"title": "Рекомендованные слова для уровня N4"
 		}
 	},
+	"level": "N4",
 	"words": [
 		"あんな",
 		"いらっしゃる",
-		"かっこう",
 		"けれど",
 		"こう",
 		"さっき",
@@ -59,7 +58,6 @@
 		"チェック",
 		"テキスト",
 		"テニス",
-		"トコロ",
 		"ナカ",
 		"ハンドバッグ",
 		"パソコン",
@@ -298,6 +296,7 @@
 		"成る程",
 		"戦争",
 		"戻る",
+		"所",
 		"手伝う",
 		"手袋",
 		"打つ",
@@ -358,6 +357,7 @@
 		"柔らかい",
 		"柔道",
 		"校長",
+		"格好",
 		"案内",
 		"棚",
 		"植える",

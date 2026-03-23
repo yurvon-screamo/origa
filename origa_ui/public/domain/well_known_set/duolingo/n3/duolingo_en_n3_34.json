@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 5 Unit 34",
-			"description": "Слова из модуля: use commands"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 5 Unit 34",
-			"description": "Words from section/unit: use commands"
+			"description": "Words from section/unit: use commands",
+			"title": "Duolingo (EN) - Section 5 Unit 34"
+		},
+		"Russian": {
+			"description": "Слова из модуля: use commands",
+			"title": "Duolingo (EN) - Section 5 Unit 34"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"どう",
 		"ツトム",
@@ -46,7 +46,6 @@
 		"責め",
 		"責任",
 		"際",
-		"飲酒",
-		"駄"
+		"飲酒"
 	]
 }

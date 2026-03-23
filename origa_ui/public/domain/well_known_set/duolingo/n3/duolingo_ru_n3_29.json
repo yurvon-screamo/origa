@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 29",
-			"description": "Слова из модуля: Быт: Используй новые слова"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 29",
-			"description": "Words from module: Быт: Используй новые слова"
+			"description": "Words from module: Быт: Используй новые слова",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 29"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Быт: Используй новые слова",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 29"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"どんどん",
 		"サービス",

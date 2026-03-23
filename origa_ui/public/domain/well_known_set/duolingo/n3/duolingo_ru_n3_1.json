@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 1",
-			"description": "Слова из модуля: Команда: Спроси о командных правилах"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 1",
-			"description": "Words from module: Команда: Спроси о командных правилах"
+			"description": "Words from module: Команда: Спроси о командных правилах",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 1"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Команда: Спроси о командных правилах",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 1"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"サプリ",
 		"チームワーク",

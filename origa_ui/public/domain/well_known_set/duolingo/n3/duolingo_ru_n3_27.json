@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 27",
-			"description": "Слова из модуля: Обычное: Погуляй по парку"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 27",
-			"description": "Words from module: Обычное: Погуляй по парку"
+			"description": "Words from module: Обычное: Погуляй по парку",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 27"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Обычное: Погуляй по парку",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 27"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"で",
 		"びっくり",

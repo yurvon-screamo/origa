@@ -1,15 +1,15 @@
 {
-	"level": "N4",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 4 Unit 18",
-			"description": "Слова из модуля: talk about your schedule"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 4 Unit 18",
-			"description": "Words from section/unit: talk about your schedule"
+			"description": "Words from section/unit: talk about your schedule",
+			"title": "Duolingo (EN) - Section 4 Unit 18"
+		},
+		"Russian": {
+			"description": "Слова из модуля: talk about your schedule",
+			"title": "Duolingo (EN) - Section 4 Unit 18"
 		}
 	},
+	"level": "N4",
 	"words": [
 		"アキラ",
 		"パーティー",
@@ -20,12 +20,12 @@
 		"勉強",
 		"友達",
 		"忙しい",
+		"成る",
 		"明後日",
 		"明日",
 		"昨日",
 		"曜",
 		"来る",
-		"為る",
 		"話す",
 		"買い"
 	]

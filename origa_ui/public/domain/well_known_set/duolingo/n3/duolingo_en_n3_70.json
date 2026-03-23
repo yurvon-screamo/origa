@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 6 Unit 20",
-			"description": "Слова из модуля: talk about work"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 6 Unit 20",
-			"description": "Words from section/unit: talk about work"
+			"description": "Words from section/unit: talk about work",
+			"title": "Duolingo (EN) - Section 6 Unit 20"
+		},
+		"Russian": {
+			"description": "Слова из модуля: talk about work",
+			"title": "Duolingo (EN) - Section 6 Unit 20"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"一言",
 		"予告",

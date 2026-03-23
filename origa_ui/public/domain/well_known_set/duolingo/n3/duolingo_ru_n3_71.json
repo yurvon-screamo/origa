@@ -1,23 +1,22 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 19",
-			"description": "Слова из модуля: Новости: Расскажи новость"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 19",
-			"description": "Words from module: Новости: Расскажи новость"
+			"description": "Words from module: Новости: Расскажи новость",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 19"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Новости: Расскажи новость",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 19"
 		}
 	},
+	"level": "N3",
 	"words": [
-		"つく",
-		"キン",
 		"ショウコ",
 		"ニュース",
 		"パン",
 		"三",
 		"予約",
+		"付く",
 		"入れる",
 		"内",
 		"到着",
@@ -33,6 +32,7 @@
 		"行く",
 		"記者",
 		"近い",
+		"金",
 		"食",
 		"首都"
 	]

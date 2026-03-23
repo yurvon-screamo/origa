@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 7",
-			"description": "Слова из модуля: Награды: Опиши желаемую награду"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 7",
-			"description": "Words from module: Награды: Опиши желаемую награду"
+			"description": "Words from module: Награды: Опиши желаемую награду",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 7"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Награды: Опиши желаемую награду",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 7"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"セール",
 		"其の",

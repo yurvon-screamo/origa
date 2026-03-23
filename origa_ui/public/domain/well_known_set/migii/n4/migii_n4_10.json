@@ -1,15 +1,15 @@
 {
-	"level": "N4",
 	"content": {
-		"Russian": {
-			"title": "Migii N4 Урок 10",
-			"description": "Словарный запас из урока 10 уровня N4 от Migii."
-		},
 		"English": {
-			"title": "Migii N4 Lesson 10",
-			"description": "Vocabulary from lesson 10 of N4 level by Migii."
+			"description": "Vocabulary from lesson 10 of N4 level by Migii.",
+			"title": "Migii N4 Lesson 10"
+		},
+		"Russian": {
+			"description": "Словарный запас из урока 10 уровня N4 от Migii.",
+			"title": "Migii N4 Урок 10"
 		}
 	},
+	"level": "N4",
 	"words": [
 		"さっき",
 		"コンサート",

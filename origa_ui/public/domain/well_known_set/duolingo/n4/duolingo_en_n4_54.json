@@ -1,25 +1,24 @@
 {
-	"level": "N4",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 4 Unit 54",
-			"description": "Слова из модуля: ask for and offer help"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 4 Unit 54",
-			"description": "Words from section/unit: ask for and offer help"
+			"description": "Words from section/unit: ask for and offer help",
+			"title": "Duolingo (EN) - Section 4 Unit 54"
+		},
+		"Russian": {
+			"description": "Слова из модуля: ask for and offer help",
+			"title": "Duolingo (EN) - Section 4 Unit 54"
 		}
 	},
+	"level": "N4",
 	"words": [
 		"あんな",
 		"けれど",
 		"そんな",
-		"チン",
 		"プレゼント",
-		"モトム",
-		"ユウ",
+		"ユー",
 		"上げる",
 		"優しい",
+		"元",
 		"其れ",
 		"凄い",
 		"君",
@@ -31,6 +30,7 @@
 		"書く",
 		"洗う",
 		"為",
+		"狆",
 		"珍しい",
 		"発音",
 		"良い",

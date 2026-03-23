@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 5 Unit 49",
-			"description": "Слова из модуля: express ideas"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 5 Unit 49",
-			"description": "Words from section/unit: express ideas"
+			"description": "Words from section/unit: express ideas",
+			"title": "Duolingo (EN) - Section 5 Unit 49"
+		},
+		"Russian": {
+			"description": "Слова из модуля: express ideas",
+			"title": "Duolingo (EN) - Section 5 Unit 49"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"アキラ",
 		"オオイタ",

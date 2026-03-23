@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 3",
-			"description": "Слова из модуля: Кафе: Спроси о столике"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 3",
-			"description": "Words from module: Кафе: Спроси о столике"
+			"description": "Words from module: Кафе: Спроси о столике",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 3"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Кафе: Спроси о столике",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 3"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"そう",
 		"丁寧",

@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 6 Unit 4",
-			"description": "Слова из модуля: discuss business"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 6 Unit 4",
-			"description": "Words from section/unit: discuss business"
+			"description": "Words from section/unit: discuss business",
+			"title": "Duolingo (EN) - Section 6 Unit 4"
+		},
+		"Russian": {
+			"description": "Слова из модуля: discuss business",
+			"title": "Duolingo (EN) - Section 6 Unit 4"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"けち",
 		"中古",
@@ -17,7 +17,7 @@
 		"価格",
 		"入れる",
 		"利益",
-		"唯",
+		"只",
 		"商",
 		"商品",
 		"商売",

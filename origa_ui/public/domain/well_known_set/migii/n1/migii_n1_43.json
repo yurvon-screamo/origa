@@ -1,15 +1,15 @@
 {
-	"level": "N1",
 	"content": {
-		"Russian": {
-			"title": "Migii N1 Урок 43",
-			"description": "Словарный запас из урока 43 уровня N1 от Migii."
-		},
 		"English": {
-			"title": "Migii N1 Lesson 43",
-			"description": "Vocabulary from lesson 43 of N1 level by Migii."
+			"description": "Vocabulary from lesson 43 of N1 level by Migii.",
+			"title": "Migii N1 Lesson 43"
+		},
+		"Russian": {
+			"description": "Словарный запас из урока 43 уровня N1 от Migii.",
+			"title": "Migii N1 Урок 43"
 		}
 	},
+	"level": "N1",
 	"words": [
 		"しぶとい",
 		"てっきり",

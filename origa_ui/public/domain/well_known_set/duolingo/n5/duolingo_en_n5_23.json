@@ -1,40 +1,40 @@
 {
-	"level": "N5",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 2 Unit 14",
-			"description": "Слова из модуля: use na-adjectives"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 2 Unit 14",
-			"description": "Words from section/unit: use na-adjectives"
+			"description": "Words from section/unit: use na-adjectives",
+			"title": "Duolingo (EN) - Section 2 Unit 14"
+		},
+		"Russian": {
+			"description": "Слова из модуля: use na-adjectives",
+			"title": "Duolingo (EN) - Section 2 Unit 14"
 		}
 	},
+	"level": "N5",
 	"words": [
-		"どうですか",
-		"おみやげ",
-		"すてき",
-		"おかし",
-		"ポストカード",
-		"はな",
-		"ふじさん",
-		"高い",
-		"山",
-		"じんじゃ",
-		"ラーメンや",
-		"ピザや",
-		"ゆうめい",
-		"はらじゅく",
+		"どう",
 		"デザート",
-		"あれ",
-		"何ですか",
-		"おてら",
-		"たてもの",
-		"にぎやか",
-		"な",
-		"ところ",
-		"きれい",
-		"ほんとうに",
-		"しずか"
+		"ピザ",
+		"ポストカード",
+		"ラーメン",
+		"何",
+		"可笑しい",
+		"土産",
+		"塾",
+		"奇麗",
+		"寺",
+		"山",
+		"建物",
+		"彼れ",
+		"所",
+		"有名",
+		"本当",
+		"神社",
+		"端",
+		"素敵",
+		"腹",
+		"藤",
+		"賑やか",
+		"静か",
+		"高い"
 	]
 }

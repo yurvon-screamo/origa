@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 6 Unit 35",
-			"description": "Слова из модуля: say how you feel"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 6 Unit 35",
-			"description": "Words from section/unit: say how you feel"
+			"description": "Words from section/unit: say how you feel",
+			"title": "Duolingo (EN) - Section 6 Unit 35"
+		},
+		"Russian": {
+			"description": "Слова из модуля: say how you feel",
+			"title": "Duolingo (EN) - Section 6 Unit 35"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"さっぱり",
 		"まあ",

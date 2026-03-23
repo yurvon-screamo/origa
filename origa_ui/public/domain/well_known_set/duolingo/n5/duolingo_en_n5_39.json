@@ -1,40 +1,42 @@
 {
-	"level": "N5",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 2 Unit 30",
-			"description": "Слова из модуля: talk about date plans"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 2 Unit 30",
-			"description": "Words from section/unit: talk about date plans"
+			"description": "Words from section/unit: talk about date plans",
+			"title": "Duolingo (EN) - Section 2 Unit 30"
+		},
+		"Russian": {
+			"description": "Слова из модуля: talk about date plans",
+			"title": "Duolingo (EN) - Section 2 Unit 30"
 		}
 	},
+	"level": "N5",
 	"words": [
-		"うた",
-		"ワイン",
 		"ステーキ",
-		"すてき",
-		"高い",
-		"かんとく",
-		"ポップコーン",
-		"えいがかん",
-		"ホットドッグ",
-		"よやくします",
-		"きれい",
-		"ブラウス",
-		"しろい",
 		"スーツ",
-		"きます",
-		"あおい",
-		"うでどけい",
+		"デート",
+		"ドッグ",
 		"ネックレス",
+		"ブラウス",
 		"プレゼント",
-		"おしゃれ",
-		"げんき",
-		"たんじょうび",
-		"やさしい",
+		"ホット",
+		"ポップコーン",
+		"ワイン",
 		"人",
-		"デート"
+		"優しい",
+		"元気",
+		"奇麗",
+		"御洒落",
+		"映画",
+		"時計",
+		"来る",
+		"歌",
+		"白い",
+		"監督",
+		"素敵",
+		"腕",
+		"訳す",
+		"誕生",
+		"青い",
+		"高い"
 	]
 }

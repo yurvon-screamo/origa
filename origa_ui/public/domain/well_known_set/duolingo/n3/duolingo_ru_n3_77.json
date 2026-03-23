@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 25",
-			"description": "Слова из модуля: Заметки: Опиши жизнь в квартире"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 25",
-			"description": "Words from module: Заметки: Опиши жизнь в квартире"
+			"description": "Words from module: Заметки: Опиши жизнь в квартире",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 25"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Заметки: Опиши жизнь в квартире",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 25"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"チャン",
 		"ワン",
@@ -21,10 +21,10 @@
 		"強引",
 		"必要",
 		"忘れる",
+		"成る",
 		"最悪",
 		"有る",
 		"正解",
-		"為る",
 		"無視",
 		"経済",
 		"能力",

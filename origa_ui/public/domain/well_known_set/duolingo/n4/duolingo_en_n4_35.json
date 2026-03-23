@@ -1,15 +1,15 @@
 {
-	"level": "N4",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 4 Unit 35",
-			"description": "Слова из модуля: describe nature"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 4 Unit 35",
-			"description": "Words from section/unit: describe nature"
+			"description": "Words from section/unit: describe nature",
+			"title": "Duolingo (EN) - Section 4 Unit 35"
+		},
+		"Russian": {
+			"description": "Слова из модуля: describe nature",
+			"title": "Duolingo (EN) - Section 4 Unit 35"
 		}
 	},
+	"level": "N4",
 	"words": [
 		"ウエノ",
 		"セイ",
@@ -23,7 +23,7 @@
 		"池",
 		"泳ぐ",
 		"海",
-		"然る",
+		"然り",
 		"熊",
 		"牛",
 		"狐",

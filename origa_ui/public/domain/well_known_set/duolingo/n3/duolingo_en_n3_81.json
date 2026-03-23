@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 6 Unit 31",
-			"description": "Слова из модуля: use casual language"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 6 Unit 31",
-			"description": "Words from section/unit: use casual language"
+			"description": "Words from section/unit: use casual language",
+			"title": "Duolingo (EN) - Section 6 Unit 31"
+		},
+		"Russian": {
+			"description": "Слова из модуля: use casual language",
+			"title": "Duolingo (EN) - Section 6 Unit 31"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"でかい",
 		"ママ",

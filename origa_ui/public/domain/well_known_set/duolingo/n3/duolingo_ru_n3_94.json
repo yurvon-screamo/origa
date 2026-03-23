@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 42",
-			"description": "Слова из модуля: Центр: Опиши работу центра"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 42",
-			"description": "Words from module: Центр: Опиши работу центра"
+			"description": "Words from module: Центр: Опиши работу центра",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 42"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Центр: Опиши работу центра",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 42"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"みたい",
 		"仲間",
@@ -24,9 +24,9 @@
 		"大きい",
 		"始め",
 		"少し",
+		"成る",
 		"早い",
 		"最後",
-		"為る",
 		"無理",
 		"皆",
 		"良い",

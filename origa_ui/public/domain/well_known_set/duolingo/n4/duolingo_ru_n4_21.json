@@ -1,15 +1,15 @@
 {
-	"level": "N4",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 4 Раздел 21",
-			"description": "Слова из модуля: Обсудите японские новогодние обычаи"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 4 Раздел 21",
-			"description": "Words from module: Обсудите японские новогодние обычаи"
+			"description": "Words from module: Обсудите японские новогодние обычаи",
+			"title": "Duolingo (RU) - Модуль 4 Раздел 21"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Обсудите японские новогодние обычаи",
+			"title": "Duolingo (RU) - Модуль 4 Раздел 21"
 		}
 	},
+	"level": "N4",
 	"words": [
 		"ばん",
 		"めでたい",

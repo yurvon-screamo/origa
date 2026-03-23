@@ -1,37 +1,37 @@
 {
-	"level": "N5",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 3 Unit 9",
-			"description": "Слова из модуля: shop for electronics"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 3 Unit 9",
-			"description": "Words from section/unit: shop for electronics"
+			"description": "Words from section/unit: shop for electronics",
+			"title": "Duolingo (EN) - Section 3 Unit 9"
+		},
+		"Russian": {
+			"description": "Слова из модуля: shop for electronics",
+			"title": "Duolingo (EN) - Section 3 Unit 9"
 		}
 	},
+	"level": "N5",
 	"words": [
-		"レシート",
-		"レジぶくろ",
-		"でんち",
-		"おもい",
-		"の",
-		"グレー",
-		"ワイヤレス",
-		"ケーブル",
-		"スピーカー",
-		"ひかります",
-		"キーボード",
-		"万",
-		"マウス",
-		"かるい",
-		"インチ",
-		"一万",
-		"安い",
-		"モニター",
+		"で",
 		"もっと",
-		"前",
+		"インチ",
+		"キーボード",
+		"グレー",
+		"ケーブル",
 		"ゲーミング",
-		"今日"
+		"スピーカー",
+		"マウス",
+		"モニター",
+		"レシート",
+		"レジ",
+		"ワイヤレス",
+		"一",
+		"万",
+		"今日",
+		"光る",
+		"前",
+		"安い",
+		"思い",
+		"袋",
+		"軽い"
 	]
 }

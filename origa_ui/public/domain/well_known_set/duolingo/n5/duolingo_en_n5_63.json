@@ -1,37 +1,38 @@
 {
-	"level": "N5",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 3 Unit 24",
-			"description": "Слова из модуля: buy clothes"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 3 Unit 24",
-			"description": "Words from section/unit: buy clothes"
+			"description": "Words from section/unit: buy clothes",
+			"title": "Duolingo (EN) - Section 3 Unit 24"
+		},
+		"Russian": {
+			"description": "Слова из модуля: buy clothes",
+			"title": "Duolingo (EN) - Section 3 Unit 24"
 		}
 	},
+	"level": "N5",
 	"words": [
-		"ブーツ",
-		"よ",
-		"サンダル",
-		"スニーカー",
-		"シルバー",
-		"ゆびわ",
-		"めがね",
-		"ブレスレット",
+		"カード",
 		"キャップ",
-		"好き",
-		"ショルダーバッグ",
-		"七百",
+		"ギフト",
 		"サイズ",
-		"の",
-		"ボタン",
-		"ポロシャツ",
-		"ショートパンツ",
+		"サンダル",
 		"シャツ",
+		"ショルダー",
+		"ショート",
+		"シルバー",
+		"スニーカー",
+		"バッグ",
+		"パンツ",
 		"ブランド",
-		"今週末",
-		"ギフトカード",
-		"北"
+		"ブレスレット",
+		"ブーツ",
+		"ボタン",
+		"ポロ",
+		"七百",
+		"今週",
+		"北",
+		"好き",
+		"指輪",
+		"眼鏡"
 	]
 }

@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 35",
-			"description": "Слова из модуля: Личности: Опиши образ жизни"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 35",
-			"description": "Words from module: Личности: Опиши образ жизни"
+			"description": "Words from module: Личности: Опиши образ жизни",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 35"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Личности: Опиши образ жизни",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 35"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"一",
 		"個性",

@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Migii N3 Урок 28",
-			"description": "Словарный запас из урока 28 уровня N3 от Migii."
-		},
 		"English": {
-			"title": "Migii N3 Lesson 28",
-			"description": "Vocabulary from lesson 28 of N3 level by Migii."
+			"description": "Vocabulary from lesson 28 of N3 level by Migii.",
+			"title": "Migii N3 Lesson 28"
+		},
+		"Russian": {
+			"description": "Словарный запас из урока 28 уровня N3 от Migii.",
+			"title": "Migii N3 Урок 28"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"ぴん",
 		"クリスマス",
@@ -21,6 +21,7 @@
 		"住宅",
 		"余裕",
 		"共同",
+		"匂い",
 		"協力",
 		"句",
 		"台",
@@ -46,7 +47,6 @@
 		"程度",
 		"空く",
 		"笛",
-		"臭い",
 		"舌",
 		"苦労",
 		"表面",

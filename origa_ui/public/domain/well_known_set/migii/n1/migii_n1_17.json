@@ -1,20 +1,19 @@
 {
-	"level": "N1",
 	"content": {
-		"Russian": {
-			"title": "Migii N1 Урок 17",
-			"description": "Словарный запас из урока 17 уровня N1 от Migii."
-		},
 		"English": {
-			"title": "Migii N1 Lesson 17",
-			"description": "Vocabulary from lesson 17 of N1 level by Migii."
+			"description": "Vocabulary from lesson 17 of N1 level by Migii.",
+			"title": "Migii N1 Lesson 17"
+		},
+		"Russian": {
+			"description": "Словарный запас из урока 17 уровня N1 от Migii.",
+			"title": "Migii N1 Урок 17"
 		}
 	},
+	"level": "N1",
 	"words": [
 		"シック",
 		"ソックス",
 		"ソース",
-		"フク",
 		"メッセージ",
 		"付く",
 		"促す",
@@ -42,6 +41,7 @@
 		"接触",
 		"構想",
 		"標語",
+		"河豚",
 		"沿岸",
 		"満たす",
 		"滴",

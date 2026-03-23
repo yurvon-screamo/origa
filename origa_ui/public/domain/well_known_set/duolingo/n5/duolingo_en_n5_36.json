@@ -1,40 +1,44 @@
 {
-	"level": "N5",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 2 Unit 27",
-			"description": "Слова из модуля: communicate at work"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 2 Unit 27",
-			"description": "Words from section/unit: communicate at work"
+			"description": "Words from section/unit: communicate at work",
+			"title": "Duolingo (EN) - Section 2 Unit 27"
+		},
+		"Russian": {
+			"description": "Слова из модуля: communicate at work",
+			"title": "Duolingo (EN) - Section 2 Unit 27"
 		}
 	},
+	"level": "N5",
 	"words": [
-		"この",
-		"バー",
+		"どう",
 		"カラオケ",
-		"さいご",
-		"うたいます",
-		"ごご",
 		"クライアント",
-		"プレゼン",
-		"パソコン",
-		"まで",
-		"ひる休み",
-		"しょくどう",
-		"二階",
 		"チャーハン",
-		"フライドポテト",
-		"何時",
 		"トレーニング",
-		"ごぜん",
+		"バー",
+		"パソコン",
+		"フライド",
 		"プリンター",
-		"から",
+		"プレゼン",
+		"ポテト",
 		"ミーティング",
-		"一階",
-		"うけつけ",
-		"よろしくおねがいします",
-		"何階"
+		"一",
+		"二",
+		"休む",
+		"何",
+		"午前",
+		"午後",
+		"受け付ける",
+		"宜しく",
+		"成る",
+		"昼",
+		"時",
+		"最後",
+		"歌う",
+		"此の",
+		"階",
+		"願う",
+		"食"
 	]
 }

@@ -1,36 +1,37 @@
 {
-	"level": "N5",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 2 Unit 2",
-			"description": "Слова из модуля: get to know people"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 2 Unit 2",
-			"description": "Words from section/unit: get to know people"
+			"description": "Words from section/unit: get to know people",
+			"title": "Duolingo (EN) - Section 2 Unit 2"
+		},
+		"Russian": {
+			"description": "Слова из модуля: get to know people",
+			"title": "Duolingo (EN) - Section 2 Unit 2"
 		}
 	},
+	"level": "N5",
 	"words": [
-		"まち",
-		"とても",
-		"きれい",
-		"しずか",
-		"トロント",
-		"にぎやか",
-		"とし",
+		"しゅっ",
 		"どう",
-		"日本",
-		"おおさか",
-		"京都",
-		"にすんでいます",
+		"オオサカ",
+		"キョウト",
+		"トウキョウ",
+		"トロント",
 		"ニューヨーク",
-		"も",
-		"しゅっしん",
-		"東京",
+		"名前",
+		"奇麗",
+		"始める",
+		"居る",
+		"御座る",
+		"成る",
+		"日本",
+		"済む",
+		"町",
 		"私",
-		"ようこそ",
-		"おはようございます",
-		"はじめまして",
-		"おなまえは"
+		"良い",
+		"芯",
+		"賑やか",
+		"迚も",
+		"静か"
 	]
 }

@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 5 Unit 20",
-			"description": "Слова из модуля: talk about your day"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 5 Unit 20",
-			"description": "Words from section/unit: talk about your day"
+			"description": "Words from section/unit: talk about your day",
+			"title": "Duolingo (EN) - Section 5 Unit 20"
+		},
+		"Russian": {
+			"description": "Слова из модуля: talk about your day",
+			"title": "Duolingo (EN) - Section 5 Unit 20"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"エンジン",
 		"ファックス",

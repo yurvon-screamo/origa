@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 5 Unit 18",
-			"description": "Слова из модуля: identify seafood"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 5 Unit 18",
-			"description": "Words from section/unit: identify seafood"
+			"description": "Words from section/unit: identify seafood",
+			"title": "Duolingo (EN) - Section 5 Unit 18"
+		},
+		"Russian": {
+			"description": "Слова из модуля: identify seafood",
+			"title": "Duolingo (EN) - Section 5 Unit 18"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"がり",
 		"とろ",

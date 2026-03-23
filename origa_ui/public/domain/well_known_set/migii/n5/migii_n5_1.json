@@ -1,15 +1,15 @@
 {
-	"level": "N5",
 	"content": {
-		"Russian": {
-			"title": "Migii N5 Урок 1",
-			"description": "Словарный запас из урока 1 уровня N5 от Migii."
-		},
 		"English": {
-			"title": "Migii N5 Lesson 1",
-			"description": "Vocabulary from lesson 1 of N5 level by Migii."
+			"description": "Vocabulary from lesson 1 of N5 level by Migii.",
+			"title": "Migii N5 Lesson 1"
+		},
+		"Russian": {
+			"description": "Словарный запас из урока 1 уровня N5 от Migii.",
+			"title": "Migii N5 Урок 1"
 		}
 	},
+	"level": "N5",
 	"words": [
 		"もう",
 		"シャツ",

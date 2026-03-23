@@ -1,24 +1,14 @@
 {
-	"level": "N5",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 1 Раздел 4",
-			"description": "Слова из модуля: Говорите о еде"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 1 Раздел 4",
-			"description": "Words from module: Говорите о еде"
+			"description": "Words from module: Говорите о еде",
+			"title": "Duolingo (RU) - Модуль 1 Раздел 4"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Говорите о еде",
+			"title": "Duolingo (RU) - Модуль 1 Раздел 4"
 		}
 	},
-	"words": [
-		"ケーキ",
-		"か",
-		"ピザ",
-		"はい",
-		"おいしい",
-		"サラダ",
-		"ラーメン",
-		"これ",
-		"は"
-	]
+	"level": "N5",
+	"words": ["ケーキ", "サラダ", "ピザ", "ラーメン", "此れ", "美味しい"]
 }

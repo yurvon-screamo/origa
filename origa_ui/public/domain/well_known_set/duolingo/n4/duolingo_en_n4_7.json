@@ -1,15 +1,15 @@
 {
-	"level": "N4",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 4 Unit 7",
-			"description": "Слова из модуля: connect two adjectives"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 4 Unit 7",
-			"description": "Words from section/unit: connect two adjectives"
+			"description": "Words from section/unit: connect two adjectives",
+			"title": "Duolingo (EN) - Section 4 Unit 7"
+		},
+		"Russian": {
+			"description": "Слова из модуля: connect two adjectives",
+			"title": "Duolingo (EN) - Section 4 Unit 7"
 		}
 	},
+	"level": "N4",
 	"words": [
 		"そう",
 		"サイト",
@@ -28,12 +28,12 @@
 		"屋上",
 		"役",
 		"御洒落",
+		"成る",
 		"料理",
 		"新鮮",
 		"日本",
 		"最高",
 		"有る",
-		"為る",
 		"素敵",
 		"調べる",
 		"賑やか",

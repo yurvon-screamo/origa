@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 6 Unit 25",
-			"description": "Слова из модуля: discuss creative arts"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 6 Unit 25",
-			"description": "Words from section/unit: discuss creative arts"
+			"description": "Words from section/unit: discuss creative arts",
+			"title": "Duolingo (EN) - Section 6 Unit 25"
+		},
+		"Russian": {
+			"description": "Слова из модуля: discuss creative arts",
+			"title": "Duolingo (EN) - Section 6 Unit 25"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"がらがら",
 		"ジャンル",

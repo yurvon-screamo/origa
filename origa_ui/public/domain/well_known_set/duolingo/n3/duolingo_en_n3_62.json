@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 6 Unit 12",
-			"description": "Слова из модуля: discuss space"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 6 Unit 12",
-			"description": "Words from section/unit: discuss space"
+			"description": "Words from section/unit: discuss space",
+			"title": "Duolingo (EN) - Section 6 Unit 12"
+		},
+		"Russian": {
+			"description": "Слова из модуля: discuss space",
+			"title": "Duolingo (EN) - Section 6 Unit 12"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"ロケット",
 		"人工",

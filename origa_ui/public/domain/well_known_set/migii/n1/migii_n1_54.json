@@ -1,15 +1,15 @@
 {
-	"level": "N1",
 	"content": {
-		"Russian": {
-			"title": "Migii N1 Урок 54",
-			"description": "Словарный запас из урока 54 уровня N1 от Migii."
-		},
 		"English": {
-			"title": "Migii N1 Lesson 54",
-			"description": "Vocabulary from lesson 54 of N1 level by Migii."
+			"description": "Vocabulary from lesson 54 of N1 level by Migii.",
+			"title": "Migii N1 Lesson 54"
+		},
+		"Russian": {
+			"description": "Словарный запас из урока 54 уровня N1 от Migii.",
+			"title": "Migii N1 Урок 54"
 		}
 	},
+	"level": "N1",
 	"words": [
 		"ふんだん",
 		"ぼやける",
@@ -50,7 +50,6 @@
 		"番",
 		"眉",
 		"着席",
-		"粥",
 		"結び",
 		"給仕",
 		"網",

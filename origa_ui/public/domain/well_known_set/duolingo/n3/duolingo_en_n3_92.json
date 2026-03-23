@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 6 Unit 42",
-			"description": "Слова из модуля: talk about seasons"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 6 Unit 42",
-			"description": "Words from section/unit: talk about seasons"
+			"description": "Words from section/unit: talk about seasons",
+			"title": "Duolingo (EN) - Section 6 Unit 42"
+		},
+		"Russian": {
+			"description": "Слова из модуля: talk about seasons",
+			"title": "Duolingo (EN) - Section 6 Unit 42"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"ぽかぽか",
 		"サッポロ",

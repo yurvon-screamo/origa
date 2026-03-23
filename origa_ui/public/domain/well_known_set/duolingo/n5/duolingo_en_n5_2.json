@@ -1,23 +1,24 @@
 {
-	"level": "N5",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 1 Unit 2",
-			"description": "Слова из модуля: describe people"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 1 Unit 2",
-			"description": "Words from section/unit: describe people"
+			"description": "Words from section/unit: describe people",
+			"title": "Duolingo (EN) - Section 1 Unit 2"
+		},
+		"Russian": {
+			"description": "Слова из модуля: describe people",
+			"title": "Duolingo (EN) - Section 1 Unit 2"
 		}
 	},
+	"level": "N5",
 	"words": [
-		"がくせい",
-		"ひと",
-		"かっこいい",
-		"べんごし",
-		"です",
-		"やさしい",
-		"せんせい",
-		"いしゃ"
+		"ごし",
+		"人",
+		"優しい",
+		"先生",
+		"医者",
+		"所為",
+		"格好",
+		"良い",
+		"顎"
 	]
 }

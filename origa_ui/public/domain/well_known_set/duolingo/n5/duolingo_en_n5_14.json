@@ -1,37 +1,36 @@
 {
-	"level": "N5",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 2 Unit 5",
-			"description": "Слова из модуля: describe eating habits"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 2 Unit 5",
-			"description": "Words from section/unit: describe eating habits"
+			"description": "Words from section/unit: describe eating habits",
+			"title": "Duolingo (EN) - Section 2 Unit 5"
+		},
+		"Russian": {
+			"description": "Слова из модуля: describe eating habits",
+			"title": "Duolingo (EN) - Section 2 Unit 5"
 		}
 	},
+	"level": "N5",
 	"words": [
-		"ばんごはん",
-		"まいばん",
-		"九時",
-		"半",
-		"八",
-		"べんとう",
-		"ひるごはん",
-		"十二",
-		"十",
-		"十一",
-		"あさごはん",
-		"七時",
-		"に",
-		"時",
+		"ばん",
 		"コーヒー",
-		"まいあさ",
-		"のみます",
-		"ジュース",
-		"まいにち",
-		"パン",
 		"サンドイッチ",
-		"たべます"
+		"ジュース",
+		"パン",
+		"一",
+		"七",
+		"九",
+		"二",
+		"八",
+		"十",
+		"半",
+		"弁当",
+		"御飯",
+		"時",
+		"朝",
+		"朝御飯",
+		"毎日",
+		"毎晩",
+		"蛭",
+		"食べる"
 	]
 }

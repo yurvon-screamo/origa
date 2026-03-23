@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 46",
-			"description": "Слова из модуля: Обычаи: Расскажи о зимних обычаях"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 46",
-			"description": "Words from module: Обычаи: Расскажи о зимних обычаях"
+			"description": "Words from module: Обычаи: Расскажи о зимних обычаях",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 46"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Обычаи: Расскажи о зимних обычаях",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 46"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"おでん",
 		"コラム",

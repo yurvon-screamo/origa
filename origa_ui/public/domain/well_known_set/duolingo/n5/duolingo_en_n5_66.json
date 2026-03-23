@@ -1,42 +1,42 @@
 {
-	"level": "N5",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 3 Unit 27",
-			"description": "Слова из модуля: use past tense adjectives"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 3 Unit 27",
-			"description": "Words from section/unit: use past tense adjectives"
+			"description": "Words from section/unit: use past tense adjectives",
+			"title": "Duolingo (EN) - Section 3 Unit 27"
+		},
+		"Russian": {
+			"description": "Слова из модуля: use past tense adjectives",
+			"title": "Duolingo (EN) - Section 3 Unit 27"
 		}
 	},
+	"level": "N5",
 	"words": [
-		"てづくりの",
-		"ダイニング",
-		"かびん",
-		"チキン",
-		"おいしかった",
-		"かわいかった",
-		"ソファ",
-		"かぐ",
-		"ペット",
-		"間",
-		"たな",
 		"カラフル",
-		"ドア",
-		"だんなさん",
-		"大きかった",
-		"かべ",
 		"スリッパ",
-		"おくさん",
-		"げんかん",
+		"ソファー",
+		"ダイニング",
+		"チキン",
+		"ドア",
+		"ペット",
+		"今月",
 		"午後",
-		"ひろかった",
-		"はきます",
-		"だれの",
+		"可愛い",
+		"嗅ぐ",
+		"壁",
+		"大きい",
+		"奥",
+		"広い",
+		"手作り",
+		"旦那",
+		"来る",
 		"東",
-		"もん",
-		"たのしかった",
-		"今月"
+		"棚",
+		"楽しい",
+		"物",
+		"玄関",
+		"美味しい",
+		"誰",
+		"過敏",
+		"間"
 	]
 }

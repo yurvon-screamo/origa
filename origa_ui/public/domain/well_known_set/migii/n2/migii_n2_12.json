@@ -1,15 +1,15 @@
 {
-	"level": "N2",
 	"content": {
-		"Russian": {
-			"title": "Migii N2 Урок 12",
-			"description": "Словарный запас из урока 12 уровня N2 от Migii."
-		},
 		"English": {
-			"title": "Migii N2 Lesson 12",
-			"description": "Vocabulary from lesson 12 of N2 level by Migii."
+			"description": "Vocabulary from lesson 12 of N2 level by Migii.",
+			"title": "Migii N2 Lesson 12"
+		},
+		"Russian": {
+			"description": "Словарный запас из урока 12 уровня N2 от Migii.",
+			"title": "Migii N2 Урок 12"
 		}
 	},
+	"level": "N2",
 	"words": [
 		"どうせ",
 		"ステージ",

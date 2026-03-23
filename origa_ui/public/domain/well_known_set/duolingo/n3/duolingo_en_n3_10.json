@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 5 Unit 10",
-			"description": "Слова из модуля: discuss the outdoors"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 5 Unit 10",
-			"description": "Words from section/unit: discuss the outdoors"
+			"description": "Words from section/unit: discuss the outdoors",
+			"title": "Duolingo (EN) - Section 5 Unit 10"
+		},
+		"Russian": {
+			"description": "Слова из модуля: discuss the outdoors",
+			"title": "Duolingo (EN) - Section 5 Unit 10"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"きらきら",
 		"パパ",
@@ -33,7 +33,6 @@
 		"甥",
 		"田舎",
 		"義理",
-		"舎",
 		"集める"
 	]
 }

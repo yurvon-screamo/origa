@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 20",
-			"description": "Слова из модуля: Дом: Опиши свой дом"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 20",
-			"description": "Words from module: Дом: Опиши свой дом"
+			"description": "Words from module: Дом: Опиши свой дом",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 20"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Дом: Опиши свой дом",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 20"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"アシスタント",
 		"ベランダ",

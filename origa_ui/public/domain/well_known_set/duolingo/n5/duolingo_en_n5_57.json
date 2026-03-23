@@ -1,34 +1,33 @@
 {
-	"level": "N5",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 3 Unit 18",
-			"description": "Слова из модуля: make plans to go to a festival"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 3 Unit 18",
-			"description": "Words from section/unit: make plans to go to a festival"
+			"description": "Words from section/unit: make plans to go to a festival",
+			"title": "Duolingo (EN) - Section 3 Unit 18"
+		},
+		"Russian": {
+			"description": "Слова из модуля: make plans to go to a festival",
+			"title": "Duolingo (EN) - Section 3 Unit 18"
 		}
 	},
+	"level": "N5",
 	"words": [
-		"はし",
-		"カモ",
-		"来年",
-		"いけ",
-		"もう一つ",
-		"やっと",
-		"やきそば",
-		"やたい",
-		"じこ",
-		"のりかえます",
-		"とまります",
-		"電車",
-		"八分",
-		"もち",
+		"もう",
+		"一",
+		"乗り換える",
+		"事故",
 		"今週",
-		"で",
+		"八",
+		"分",
+		"成る",
+		"来年",
+		"止まる",
+		"漸と",
+		"焼き蕎麦",
+		"箸",
 		"花見",
-		"に",
-		"花見をします"
+		"行く",
+		"電車",
+		"餅",
+		"鴨"
 	]
 }

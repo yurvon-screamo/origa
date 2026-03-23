@@ -1,42 +1,38 @@
 {
-	"level": "N5",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 2 Unit 11",
-			"description": "Слова из модуля: talk about interests"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 2 Unit 11",
-			"description": "Words from section/unit: talk about interests"
+			"description": "Words from section/unit: talk about interests",
+			"title": "Duolingo (EN) - Section 2 Unit 11"
+		},
+		"Russian": {
+			"description": "Слова из модуля: talk about interests",
+			"title": "Duolingo (EN) - Section 2 Unit 11"
 		}
 	},
+	"level": "N5",
 	"words": [
-		"れんあい",
-		"コメディ",
-		"ほんとうですか",
-		"アクション",
-		"の",
-		"アメリカの",
 		"どんな",
-		"ファンタジー",
-		"ホラー",
-		"がすきですか",
-		"しゅみはありますか",
-		"ミステリー",
-		"Kポップ",
-		"日本の",
-		"がすきです",
-		"ベトナム",
-		"かんこく",
-		"かのじょ",
-		"ちゅうごく",
-		"さんは",
-		"かれし",
+		"アクション",
+		"アメリカ",
 		"アンドリュー",
-		"と言います",
 		"エリカ",
-		"言います",
-		"こちら",
-		"ダニエル"
+		"コメディー",
+		"ダニエル",
+		"ファンタジー",
+		"ベトナム",
+		"ホラー",
+		"ポップ",
+		"ミステリー",
+		"中国",
+		"好き",
+		"彼",
+		"彼女",
+		"日本",
+		"有る",
+		"本当",
+		"此方",
+		"言う",
+		"趣味",
+		"韓国"
 	]
 }

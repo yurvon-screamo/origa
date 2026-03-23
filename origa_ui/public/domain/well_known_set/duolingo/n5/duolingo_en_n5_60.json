@@ -1,40 +1,42 @@
 {
-	"level": "N5",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 3 Unit 21",
-			"description": "Слова из модуля: discuss work issues"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 3 Unit 21",
-			"description": "Words from section/unit: discuss work issues"
+			"description": "Words from section/unit: discuss work issues",
+			"title": "Duolingo (EN) - Section 3 Unit 21"
+		},
+		"Russian": {
+			"description": "Слова из модуля: discuss work issues",
+			"title": "Duolingo (EN) - Section 3 Unit 21"
 		}
 	},
+	"level": "N5",
 	"words": [
-		"スキル",
-		"べつの",
-		"しごと",
-		"しょうかいします",
-		"がんばります",
+		"どう",
 		"インスタント",
-		"おなじ",
-		"きれいじゃない",
-		"毎日",
-		"です",
-		"まずい",
-		"の人",
-		"話したくないです",
-		"まじめ",
-		"おこります",
-		"私たちの",
-		"十階",
 		"オフィス",
-		"こわれます",
-		"ひろくない",
-		"今の",
-		"どうですか",
-		"おそくまで",
-		"よくない",
-		"やめたいです"
+		"スキル",
+		"不味い",
+		"人",
+		"今",
+		"仕事",
+		"別",
+		"十",
+		"同じ",
+		"壊れる",
+		"奇麗",
+		"広い",
+		"成る",
+		"止める",
+		"毎日",
+		"無い",
+		"真面目",
+		"私",
+		"紹介",
+		"良い",
+		"話す",
+		"起こる",
+		"遅い",
+		"階",
+		"頑張る"
 	]
 }

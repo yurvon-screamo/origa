@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 5 Unit 32",
-			"description": "Слова из модуля: discuss laws"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 5 Unit 32",
-			"description": "Words from section/unit: discuss laws"
+			"description": "Words from section/unit: discuss laws",
+			"title": "Duolingo (EN) - Section 5 Unit 32"
+		},
+		"Russian": {
+			"description": "Слова из модуля: discuss laws",
+			"title": "Duolingo (EN) - Section 5 Unit 32"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"下",
 		"事実",

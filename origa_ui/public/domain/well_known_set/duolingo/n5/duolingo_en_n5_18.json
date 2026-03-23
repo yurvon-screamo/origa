@@ -1,40 +1,39 @@
 {
-	"level": "N5",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 2 Unit 9",
-			"description": "Слова из модуля: get around a station"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 2 Unit 9",
-			"description": "Words from section/unit: get around a station"
+			"description": "Words from section/unit: get around a station",
+			"title": "Duolingo (EN) - Section 2 Unit 9"
+		},
+		"Russian": {
+			"description": "Слова из модуля: get around a station",
+			"title": "Duolingo (EN) - Section 2 Unit 9"
 		}
 	},
+	"level": "N5",
 	"words": [
-		"でぐち",
-		"じはんき",
-		"コインロッカー",
-		"ちかい",
-		"カフェ",
-		"にかい",
-		"かいだん",
-		"コンセント",
-		"とおい",
-		"でんわ",
-		"ちか",
-		"タクシー",
+		"で",
 		"エレベーター",
-		"おてあらい",
-		"wifi",
-		"ありません",
-		"すみません",
-		"ゴミばこ",
-		"のりかえ",
-		"あそこ",
-		"かいさつ",
-		"ありますか",
-		"いっかい",
-		"は",
-		"ホーム"
+		"カフェ",
+		"コイン",
+		"コンセント",
+		"タクシー",
+		"ホーム",
+		"ロッカー",
+		"乗り換える",
+		"地下",
+		"塵",
+		"彼処",
+		"愚痴",
+		"手洗い",
+		"掻く",
+		"有る",
+		"済む",
+		"甲斐",
+		"箱",
+		"良い",
+		"近い",
+		"遠い",
+		"階段",
+		"電話"
 	]
 }

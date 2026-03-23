@@ -1,18 +1,17 @@
 {
-	"level": "N5",
 	"content": {
-		"Russian": {
-			"title": "Migii N5 Урок 6",
-			"description": "Словарный запас из урока 6 уровня N5 от Migii."
-		},
 		"English": {
-			"title": "Migii N5 Lesson 6",
-			"description": "Vocabulary from lesson 6 of N5 level by Migii."
+			"description": "Vocabulary from lesson 6 of N5 level by Migii.",
+			"title": "Migii N5 Lesson 6"
+		},
+		"Russian": {
+			"description": "Словарный запас из урока 6 уровня N5 от Migii.",
+			"title": "Migii N5 Урок 6"
 		}
 	},
+	"level": "N5",
 	"words": [
 		"エレベーター",
-		"キン",
 		"コピー",
 		"テープ",
 		"バター",
@@ -53,6 +52,7 @@
 		"絵",
 		"買い物",
 		"部屋",
+		"金",
 		"金曜",
 		"開ける",
 		"頼む",

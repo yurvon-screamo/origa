@@ -15,9 +15,15 @@ path = "src/main.rs"
 name = "ndlocr"
 path = "src/bin/ndlocr.rs"
 
+[[bin]]
+name = "tokenize_well_known"
+path = "src/bin/tokenize_well_known.rs"
+
 [dependencies]
 origa = { path = "../origa" }
 clap.workspace = true
 flate2.workspace = true
 image.workspace = true
 tracing.workspace = true
+tracing-subscriber.workspace = true
+serde_json.workspace = true

@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 36",
-			"description": "Слова из модуля: Подготовка: Обсуди планы на случай ЧС"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 5 Раздел 36",
-			"description": "Words from module: Подготовка: Обсуди планы на случай ЧС"
+			"description": "Words from module: Подготовка: Обсуди планы на случай ЧС",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 36"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Подготовка: Обсуди планы на случай ЧС",
+			"title": "Duolingo (RU) - Модуль 5 Раздел 36"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"どんな",
 		"一",

@@ -1,17 +1,16 @@
 {
-	"level": "N4",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 4 Unit 49",
-			"description": "Слова из модуля: talk about mail"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 4 Unit 49",
-			"description": "Words from section/unit: talk about mail"
+			"description": "Words from section/unit: talk about mail",
+			"title": "Duolingo (EN) - Section 4 Unit 49"
+		},
+		"Russian": {
+			"description": "Слова из модуля: talk about mail",
+			"title": "Duolingo (EN) - Section 4 Unit 49"
 		}
 	},
+	"level": "N4",
 	"words": [
-		"が",
 		"ポスト",
 		"中身",
 		"住所",
@@ -23,7 +22,6 @@
 		"封筒",
 		"局",
 		"届く",
-		"届け",
 		"届ける",
 		"張る",
 		"掛かる",

@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 5 Unit 30",
-			"description": "Слова из модуля: discuss conflict"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 5 Unit 30",
-			"description": "Words from section/unit: discuss conflict"
+			"description": "Words from section/unit: discuss conflict",
+			"title": "Duolingo (EN) - Section 5 Unit 30"
+		},
+		"Russian": {
+			"description": "Слова из модуля: discuss conflict",
+			"title": "Duolingo (EN) - Section 5 Unit 30"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"タケシ",
 		"ワタル",
@@ -31,7 +31,6 @@
 		"武器",
 		"激しい",
 		"盾",
-		"第",
 		"紛争",
 		"解決"
 	]

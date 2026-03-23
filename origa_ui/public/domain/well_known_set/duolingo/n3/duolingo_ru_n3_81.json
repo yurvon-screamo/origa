@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 29",
-			"description": "Слова из модуля: Событие: Выбери мероприятие"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 29",
-			"description": "Words from module: Событие: Выбери мероприятие"
+			"description": "Words from module: Событие: Выбери мероприятие",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 29"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Событие: Выбери мероприятие",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 29"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"どう",
 		"オーケストラ",
@@ -21,13 +21,13 @@
 		"十",
 		"周り",
 		"地域",
+		"成る",
 		"文化",
 		"時計",
 		"時間",
 		"曲",
 		"歌手",
 		"正しい",
-		"為る",
 		"番",
 		"発見",
 		"礼儀",

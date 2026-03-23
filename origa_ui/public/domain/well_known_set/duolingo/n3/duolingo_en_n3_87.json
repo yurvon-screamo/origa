@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 6 Unit 37",
-			"description": "Слова из модуля: talk about business"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 6 Unit 37",
-			"description": "Words from section/unit: talk about business"
+			"description": "Words from section/unit: talk about business",
+			"title": "Duolingo (EN) - Section 6 Unit 37"
+		},
+		"Russian": {
+			"description": "Слова из модуля: talk about business",
+			"title": "Duolingo (EN) - Section 6 Unit 37"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"事業",
 		"代金",

@@ -19,7 +19,6 @@ pub fn RadicalCardDetails(
     #[prop(into)] show_details: Signal<bool>,
 ) -> impl IntoView {
     let radical_stored = StoredValue::new(radical);
-    let kanji_examples_stored = StoredValue::new(radical_stored.get_value().kanji_examples.clone());
 
     view! {
         <Show when=move || show_details.get()>
@@ -60,19 +59,7 @@ pub fn RadicalCardDetails(
                 <div class="flex gap-4 items-start text-left">
                     <div class="w-16 shrink-0">
                         <Text size=TextSize::Default variant=TypographyVariant::Muted>
-                            "Анимация"
-                        </Text>
-                    </div>
-                    <KanjiAnimation
-                        kanji={radical_stored.get_value().symbol.to_string()}
-                        mode=KanjiViewMode::Animation
-                    />
-                </div>
-
-                <div class="flex gap-4 items-start text-left">
-                    <div class="w-16 shrink-0">
-                        <Text size=TextSize::Default variant=TypographyVariant::Muted>
-                            "Покадрово"
+                            "Написание"
                         </Text>
                     </div>
                     <KanjiAnimation
@@ -81,16 +68,6 @@ pub fn RadicalCardDetails(
                     />
                 </div>
 
-                <div class="flex gap-4 items-start text-left">
-                    <div class="w-16 shrink-0">
-                        <Text size=TextSize::Default variant=TypographyVariant::Muted>
-                            "Прописи"
-                        </Text>
-                    </div>
-                    <KanjiDrawingPractice
-                        kanji={radical_stored.get_value().symbol.to_string()}
-                    />
-                </div>
             </div>
         </Show>
     }

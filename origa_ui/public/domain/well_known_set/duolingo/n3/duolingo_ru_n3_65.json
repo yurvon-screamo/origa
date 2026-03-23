@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 13",
-			"description": "Слова из модуля: Темы: Опиши порядок уборки"
-		},
 		"English": {
-			"title": "Duolingo (RU) - Модуль 6 Раздел 13",
-			"description": "Words from module: Темы: Опиши порядок уборки"
+			"description": "Words from module: Темы: Опиши порядок уборки",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 13"
+		},
+		"Russian": {
+			"description": "Слова из модуля: Темы: Опиши порядок уборки",
+			"title": "Duolingo (RU) - Модуль 6 Раздел 13"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"スイッチ",
 		"メモ",

@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 5 Unit 42",
-			"description": "Слова из модуля: check in to a hotel"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 5 Unit 42",
-			"description": "Words from section/unit: check in to a hotel"
+			"description": "Words from section/unit: check in to a hotel",
+			"title": "Duolingo (EN) - Section 5 Unit 42"
+		},
+		"Russian": {
+			"description": "Слова из модуля: check in to a hotel",
+			"title": "Duolingo (EN) - Section 5 Unit 42"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"イズミ",
 		"イン",

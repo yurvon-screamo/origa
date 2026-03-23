@@ -1,21 +1,20 @@
 {
-	"level": "N5",
 	"content": {
-		"Russian": {
-			"title": "Рекомендованные слова для уровня N5",
-			"description": "Список слов, рекомендованных для изучения языка на уровне N5."
-		},
 		"English": {
-			"title": "Recomended words for N5 level",
-			"description": "Words list, recomended for learning language for N5 level."
+			"description": "Words list, recomended for learning language for N5 level.",
+			"title": "Recomended words for N5 level"
+		},
+		"Russian": {
+			"description": "Список слов, рекомендованных для изучения языка на уровне N5.",
+			"title": "Рекомендованные слова для уровня N5"
 		}
 	},
+	"level": "N5",
 	"words": [
 		"あさって",
 		"こんな",
 		"そう",
 		"そして",
-		"で",
 		"どう",
 		"どうぞ",
 		"もう",
@@ -32,7 +31,6 @@
 		"キロ",
 		"キログラム",
 		"キロメートル",
-		"キン",
 		"ギター",
 		"クラス",
 		"グラム",
@@ -148,7 +146,6 @@
 		"何れ",
 		"何処",
 		"何故",
-		"何方",
 		"余り",
 		"作る",
 		"作文",
@@ -576,6 +573,7 @@
 		"醤油",
 		"重い",
 		"野菜",
+		"金",
 		"金曜",
 		"鉛筆",
 		"銀行",

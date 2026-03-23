@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 6 Unit 2",
-			"description": "Слова из модуля: discuss cooking"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 6 Unit 2",
-			"description": "Words from section/unit: discuss cooking"
+			"description": "Words from section/unit: discuss cooking",
+			"title": "Duolingo (EN) - Section 6 Unit 2"
+		},
+		"Russian": {
+			"description": "Слова из модуля: discuss cooking",
+			"title": "Duolingo (EN) - Section 6 Unit 2"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"お好み焼き",
 		"サツマ",

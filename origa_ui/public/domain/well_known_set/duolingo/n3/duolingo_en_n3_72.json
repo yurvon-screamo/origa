@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 6 Unit 22",
-			"description": "Слова из модуля: talk about school"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 6 Unit 22",
-			"description": "Words from section/unit: talk about school"
+			"description": "Words from section/unit: talk about school",
+			"title": "Duolingo (EN) - Section 6 Unit 22"
+		},
+		"Russian": {
+			"description": "Слова из модуля: talk about school",
+			"title": "Duolingo (EN) - Section 6 Unit 22"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"シュウ",
 		"優秀",

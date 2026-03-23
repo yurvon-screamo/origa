@@ -1,15 +1,15 @@
 {
-	"level": "N2",
 	"content": {
-		"Russian": {
-			"title": "Migii N2 Урок 18",
-			"description": "Словарный запас из урока 18 уровня N2 от Migii."
-		},
 		"English": {
-			"title": "Migii N2 Lesson 18",
-			"description": "Vocabulary from lesson 18 of N2 level by Migii."
+			"description": "Vocabulary from lesson 18 of N2 level by Migii.",
+			"title": "Migii N2 Lesson 18"
+		},
+		"Russian": {
+			"description": "Словарный запас из урока 18 уровня N2 от Migii.",
+			"title": "Migii N2 Урок 18"
 		}
 	},
+	"level": "N2",
 	"words": [
 		"ぴかぴか",
 		"インタビュー",

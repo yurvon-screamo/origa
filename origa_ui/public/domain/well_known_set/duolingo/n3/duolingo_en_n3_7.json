@@ -1,15 +1,15 @@
 {
-	"level": "N3",
 	"content": {
-		"Russian": {
-			"title": "Duolingo (EN) - Section 5 Unit 7",
-			"description": "Слова из модуля: talk about education"
-		},
 		"English": {
-			"title": "Duolingo (EN) - Section 5 Unit 7",
-			"description": "Words from section/unit: talk about education"
+			"description": "Words from section/unit: talk about education",
+			"title": "Duolingo (EN) - Section 5 Unit 7"
+		},
+		"Russian": {
+			"description": "Слова из модуля: talk about education",
+			"title": "Duolingo (EN) - Section 5 Unit 7"
 		}
 	},
+	"level": "N3",
 	"words": [
 		"ヒトシ",
 		"入学",
