@@ -13,10 +13,16 @@ pub fn StatsGrid(
     new_delta: Signal<String>,
     high_difficulty: Signal<String>,
     high_difficulty_delta: Signal<String>,
+    positive: Signal<String>,
+    positive_delta: Signal<String>,
+    negative: Signal<String>,
+    negative_delta: Signal<String>,
+    total_ratings: Signal<String>,
+    total_ratings_delta: Signal<String>,
     open_history: impl Fn(StatMetric) -> Callback<()> + 'static,
 ) -> impl IntoView {
     view! {
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-9 gap-6">
             <LessonButtonsCard />
 
             <StatCard
@@ -57,6 +63,30 @@ pub fn StatsGrid(
                 subtitle=Signal::derive(|| "требуют внимания".to_string())
                 delta=high_difficulty_delta
                 on_history=open_history(StatMetric::HighDifficulty)
+            />
+
+            <StatCard
+                title=Signal::derive(|| "Позитивные".to_string())
+                value=positive
+                subtitle=Signal::derive(|| "оценок".to_string())
+                delta=positive_delta
+                on_history=open_history(StatMetric::PositiveRatings)
+            />
+
+            <StatCard
+                title=Signal::derive(|| "Негативные".to_string())
+                value=negative
+                subtitle=Signal::derive(|| "оценок".to_string())
+                delta=negative_delta
+                on_history=open_history(StatMetric::NegativeRatings)
+            />
+
+            <StatCard
+                title=Signal::derive(|| "Всего оценок".to_string())
+                value=total_ratings
+                subtitle=Signal::derive(|| "за сегодня".to_string())
+                delta=total_ratings_delta
+                on_history=open_history(StatMetric::TotalRatings)
             />
         </div>
     }
