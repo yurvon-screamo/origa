@@ -1,8 +1,8 @@
 use crate::domain::{
-    OrigaError, Rating, ReviewLog,
     knowledge::{GrammarRuleCard, KanjiCard, RadicalCard, VocabularyCard},
     memory::{MemoryHistory, MemoryState},
     value_objects::{Answer, NativeLanguage, Question},
+    OrigaError, Rating, ReviewLog,
 };
 use serde::{Deserialize, Serialize};
 use ulid::Ulid;
@@ -122,7 +122,7 @@ impl Card {
             Card::Grammar(card) => card.short_description(lang),
             Card::Radical(card) => {
                 let info = card.radical_info()?;
-                Answer::new(info.radical().to_string()).map_err(|e| OrigaError::InvalidAnswer {
+                Answer::new(info.name().to_string()).map_err(|e| OrigaError::InvalidAnswer {
                     reason: e.to_string(),
                 })
             }
@@ -562,7 +562,16 @@ mod tests {
                 let answer = card.answer(&NativeLanguage::Russian);
 
                 assert!(answer.is_ok());
-                assert_eq!(answer.unwrap().text(), "一");
+                let binding = answer.unwrap();
+                let answer_text = binding.text();
+                assert!(
+                    !answer_text.trim().is_empty(),
+                    "Answer should not be empty or whitespace"
+                );
+                assert_ne!(
+                    answer_text, "一",
+                    "Answer should be the radical name, not the character"
+                );
             }
         }
 

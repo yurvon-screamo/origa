@@ -1,7 +1,4 @@
-use crate::ui_components::{
-    Button, ButtonVariant, KanjiAnimation, KanjiDrawingPractice, KanjiViewMode, Text, TextSize,
-    TypographyVariant,
-};
+use crate::ui_components::{KanjiAnimation, KanjiViewMode, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 
 #[derive(Clone, Debug, PartialEq)]
