@@ -187,7 +187,7 @@ mod tests {
 
     #[test]
     fn test_review_log_all_ratings() {
-        let logs = vec![
+        let logs = [
             ReviewLog::new(Rating::Easy, Duration::days(1)),
             ReviewLog::new(Rating::Good, Duration::days(1)),
             ReviewLog::new(Rating::Hard, Duration::days(1)),
