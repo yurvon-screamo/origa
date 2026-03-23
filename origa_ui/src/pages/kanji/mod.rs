@@ -1,4 +1,3 @@
-mod action_buttons;
 mod add_kanji_modal;
 mod add_kanji_modal_handlers;
 mod add_kanji_modal_state;
