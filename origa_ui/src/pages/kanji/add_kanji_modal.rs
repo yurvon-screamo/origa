@@ -1,4 +1,3 @@
-use super::action_buttons::ActionButtons;
 use super::add_kanji_modal_handlers::ModalHandlers;
 use super::add_kanji_modal_state::ModalState;
 use super::error_alert::ErrorAlert;
@@ -13,6 +12,7 @@ use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::domain::{JapaneseLevel, User};
 use origa::traits::UserRepository;
+use std::sync::Arc;
 
 const JLPT_LEVELS: [JapaneseLevel; 5] = [
     JapaneseLevel::N5,
@@ -62,6 +62,17 @@ pub fn AddKanjiModal(is_open: RwSignal<bool>, refresh_trigger: RwSignal<u32>) ->
         <Drawer
             is_open=is_open
             title=Signal::derive(|| "Добавить кандзи".to_string())
+            action_button=Arc::new(move || {
+                view! {
+                    <Button
+                        variant=Signal::derive(|| ButtonVariant::Olive)
+                        disabled=Signal::derive(move || state.selected_kanji.get().is_empty() || state.is_creating.get())
+                        on_click=handlers.on_add
+                    >
+                        {move || if state.is_creating.get() { "Добавление..." } else { "Добавить" }}
+                    </Button>
+                }.into_any()
+            })
         >
             <div class="space-y-4">
                 <LevelSelector
@@ -114,13 +125,6 @@ pub fn AddKanjiModal(is_open: RwSignal<bool>, refresh_trigger: RwSignal<u32>) ->
                 <SelectedCount count=Signal::derive(move || state.selected_kanji.get().len()) />
 
                 <ErrorAlert message=state.error_message />
-
-                <ActionButtons
-                    is_creating=state.is_creating
-                    is_disabled=Signal::derive(move || state.selected_kanji.get().is_empty())
-                    on_cancel=handlers.on_cancel
-                    on_add=handlers.on_add
-                />
             </div>
         </Drawer>
     }

@@ -4,20 +4,11 @@ use leptos::task::spawn_local;
 use origa::use_cases::CreateKanjiCardUseCase;
 
 pub struct ModalHandlers {
-    pub on_cancel: Callback<leptos::ev::MouseEvent>,
     pub on_add: Callback<leptos::ev::MouseEvent>,
 }
 
 impl ModalHandlers {
     pub fn new(state: &ModalState, is_open: RwSignal<bool>) -> Self {
-        let on_cancel = {
-            let state = state.clone();
-            Callback::new(move |_| {
-                state.reset();
-                is_open.set(false);
-            })
-        };
-
         let on_add = {
             let state = state.clone();
             Callback::new(move |_| {
@@ -53,6 +44,6 @@ impl ModalHandlers {
             })
         };
 
-        Self { on_cancel, on_add }
+        Self { on_add }
     }
 }

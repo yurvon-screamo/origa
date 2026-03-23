@@ -6,6 +6,7 @@ pub fn Drawer(
     #[prop(optional)] is_open: RwSignal<bool>,
     #[prop(optional)] on_close: Option<Callback<leptos::ev::MouseEvent>>,
     #[prop(optional, into)] title: Signal<String>,
+    #[prop(optional)] action_button: Option<ChildrenFn>,
     children: ChildrenFn,
 ) -> impl IntoView {
     let close_drawer = move |ev: leptos::ev::MouseEvent| {
@@ -26,6 +27,7 @@ pub fn Drawer(
     );
 
     let children = StoredValue::new(children);
+    let action_button = StoredValue::new(action_button);
 
     view! {
         <Show when=move || is_open.get()>
@@ -42,14 +44,17 @@ pub fn Drawer(
                         <div>
                             <h3 class="font-serif text-2xl mt-1">{move || title.get()}</h3>
                         </div>
-                        <button
-                            on:click=close_drawer
-                            class="text-[var(--fg-muted)] hover:text-[var(--fg-black)] transition-colors"
-                        >
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                <path d="M18 6L6 18M6 6l12 12" />
-                            </svg>
-                        </button>
+                        <div class="flex items-center gap-2">
+                            {move || action_button.with_value(|b| b.as_ref().map(|c| c()))}
+                            <button
+                                on:click=close_drawer
+                                class="text-[var(--fg-muted)] hover:text-[var(--fg-black)] transition-colors"
+                            >
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M18 6L6 18M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
                     </div>
 
                     {/* Body: скроллируемый контент */}
