@@ -1,6 +1,5 @@
 use crate::ui_components::{
-    Button, ButtonVariant, KanjiAnimation, KanjiDrawingPractice, KanjiViewMode, Text, TextSize,
-    TypographyVariant,
+    KanjiAnimation, KanjiDrawingPractice, KanjiViewMode, Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
 
@@ -19,7 +18,6 @@ pub fn RadicalCardDetails(
     #[prop(into)] show_details: Signal<bool>,
 ) -> impl IntoView {
     let radical_stored = StoredValue::new(radical);
-    let kanji_examples_stored = StoredValue::new(radical_stored.get_value().kanji_examples.clone());
 
     view! {
         <Show when=move || show_details.get()>
