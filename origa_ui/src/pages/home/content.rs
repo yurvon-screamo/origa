@@ -125,6 +125,12 @@ pub fn HomeContent() -> impl IntoView {
     let new_cards = Signal::derive(move || format_number(stats.get().map(|s| s.new).unwrap_or(0)));
     let high_difficulty =
         Signal::derive(move || format_number(stats.get().map(|s| s.high_difficulty).unwrap_or(0)));
+    let positive =
+        Signal::derive(move || format_number(stats.get().map(|s| s.positive).unwrap_or(0)));
+    let negative =
+        Signal::derive(move || format_number(stats.get().map(|s| s.negative).unwrap_or(0)));
+    let total_ratings =
+        Signal::derive(move || format_number(stats.get().map(|s| s.total_ratings).unwrap_or(0)));
 
     let total_cards_delta =
         Signal::derive(move || format_delta(stats.get().map(|s| s.total_cards_delta).unwrap_or(0)));
@@ -136,6 +142,13 @@ pub fn HomeContent() -> impl IntoView {
         Signal::derive(move || format_delta(stats.get().map(|s| s.new_delta).unwrap_or(0)));
     let high_difficulty_delta = Signal::derive(move || {
         format_delta(stats.get().map(|s| s.high_difficulty_delta).unwrap_or(0))
+    });
+    let positive_delta =
+        Signal::derive(move || format_delta(stats.get().map(|s| s.positive_delta).unwrap_or(0)));
+    let negative_delta =
+        Signal::derive(move || format_delta(stats.get().map(|s| s.negative_delta).unwrap_or(0)));
+    let total_ratings_delta = Signal::derive(move || {
+        format_delta(stats.get().map(|s| s.total_ratings_delta).unwrap_or(0))
     });
 
     let open_history = move |metric: StatMetric| {
@@ -182,6 +195,12 @@ pub fn HomeContent() -> impl IntoView {
                         new_delta=new_delta
                         high_difficulty=high_difficulty
                         high_difficulty_delta=high_difficulty_delta
+                        positive=positive
+                        positive_delta=positive_delta
+                        negative=negative
+                        negative_delta=negative_delta
+                        total_ratings=total_ratings
+                        total_ratings_delta=total_ratings_delta
                         open_history=open_history
                     />
                 </Show>
