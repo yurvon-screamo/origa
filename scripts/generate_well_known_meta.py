@@ -71,7 +71,7 @@ def main():
         for path in sorted(minna_n5_dir.glob("minna_n5_*.json")):
             data = load_json(path)
             set_id = path.stem
-            meta_list.append(extract_meta(data, set_id, "MinnaN5"))
+            meta_list.append(extract_meta(data, set_id, "MinnaNoNihongo"))
 
     spy_family_dir = BASE_DIR / "spy_family"
     if spy_family_dir.exists():

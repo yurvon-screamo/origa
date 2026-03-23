@@ -81,8 +81,11 @@ pub fn resolve_set_path(id: &str) -> String {
     } else if let Some(rest) = id.strip_prefix("duolingo_") {
         let level = rest.split('_').next().unwrap_or("");
         let parts: Vec<&str> = rest.split('_').collect();
-        let filename = if parts.len() >= 4 {
-            format!("{}_{}", parts[2], parts[3])
+        let remaining = parts.iter().skip(1).copied().collect::<Vec<_>>().join("_");
+        let filename = if remaining.starts_with("duolingo_") {
+            remaining
+        } else if parts.len() >= 3 {
+            parts[2..].join("_")
         } else {
             rest.to_string()
         };
@@ -211,6 +214,14 @@ mod tests {
         "domain/well_known_set/duolingo/n5/n5_animals.json"
     )]
     #[case("duolingo_n4_verbs", "domain/well_known_set/duolingo/n4/n4_verbs.json")]
+    #[case(
+        "duolingo_n5_duolingo_ru_n5_1",
+        "domain/well_known_set/duolingo/n5/duolingo_ru_n5_1.json"
+    )]
+    #[case(
+        "duolingo_n4_duolingo_jp_n4_2",
+        "domain/well_known_set/duolingo/n4/duolingo_jp_n4_2.json"
+    )]
     #[case("minna_n5_01", "domain/well_known_set/minna_n5/minna_n5_01.json")]
     #[case("minna_n4_02", "domain/well_known_set/minna_n4_02.json")]
     #[case("spy_family_s1", "domain/well_known_set/spy_family_s1.json")]

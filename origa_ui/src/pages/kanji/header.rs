@@ -8,6 +8,9 @@ pub fn KanjiHeader(refresh_trigger: RwSignal<u32>) -> impl IntoView {
     let navigate = use_navigate();
     let is_modal_open = RwSignal::new(false);
 
+    let navigate_to_radicals = navigate.clone();
+    let navigate_to_home = navigate.clone();
+
     view! {
         <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
             <Heading level=HeadingLevel::H1>
@@ -17,7 +20,15 @@ pub fn KanjiHeader(refresh_trigger: RwSignal<u32>) -> impl IntoView {
                 <Button
                     variant=ButtonVariant::Ghost
                     on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
-                        navigate("/home", Default::default());
+                        navigate_to_radicals("/radicals", Default::default());
+                    })
+                >
+                    "Радикалы"
+                </Button>
+                <Button
+                    variant=ButtonVariant::Ghost
+                    on_click=Callback::new(move |_| {
+                        navigate_to_home("/home", Default::default());
                     })
                 >
                     "Назад"
