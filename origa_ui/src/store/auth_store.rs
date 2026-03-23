@@ -1,9 +1,9 @@
-use gloo_timers::future::sleep;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::domain::{OrigaError, User};
 use origa::traits::UserRepository;
 
+use crate::pages::login::auth_handlers::get_or_create_profile;
 use crate::repository::{HybridUserRepository, TrailBaseClient, clear_session, get_session};
 
 /// AuthStore - centralized authentication state management
@@ -176,6 +176,7 @@ impl AuthStore {
         pkce_verifier: &str,
     ) -> Result<(), OrigaError> {
         if self.user.with(|u| u.is_some()) {
+            self.is_oauth_loading.set(false);
             return Ok(());
         }
 
@@ -186,56 +187,26 @@ impl AuthStore {
             .exchange_auth_code_for_session(code, pkce_verifier)
             .await
         {
-            Ok(_) => {
-                if let Err(e) = self.repository.merge_current_user().await {
-                    tracing::error!("Failed to sync user after OAuth: {:?}", e);
+            Ok(session) => {
+                if session.email.is_empty() {
                     self.is_oauth_loading.set(false);
                     return Err(OrigaError::NetworkError {
                         url: "/api/auth/v1/token".to_string(),
-                        reason: format!("Failed to merge user: {}", e),
+                        reason: "Email not found in OAuth token".to_string(),
                     });
                 }
 
-                // Retry logic for getting user after IndexedDB write
-                const MAX_RETRIES: u32 = 3;
-                const RETRY_DELAY_MS: u32 = 50;
-
-                for attempt in 1..=MAX_RETRIES {
-                    match self.repository.get_current_user().await {
-                        Ok(Some(user)) => {
-                            tracing::debug!("User loaded on attempt {}", attempt);
-                            self.user.set(Some(user));
-                            self.is_oauth_loading.set(false);
-                            return Ok(());
-                        }
-                        Ok(None) => {
-                            if attempt < MAX_RETRIES {
-                                tracing::debug!(
-                                    "User not found on attempt {}, retrying...",
-                                    attempt
-                                );
-                                sleep(std::time::Duration::from_millis(RETRY_DELAY_MS as u64))
-                                    .await;
-                            } else {
-                                tracing::error!("User not found after {} attempts", MAX_RETRIES);
-                            }
-                        }
-                        Err(e) => {
-                            tracing::error!("Failed to load user on attempt {}: {:?}", attempt, e);
-                            self.is_oauth_loading.set(false);
-                            return Err(OrigaError::NetworkError {
-                                url: "/api/auth/v1/token".to_string(),
-                                reason: format!("Failed to load user: {}", e),
-                            });
-                        }
+                match get_or_create_profile(self, &session.email).await {
+                    Ok(user) => {
+                        self.user.set(Some(user));
+                        self.is_oauth_loading.set(false);
+                        Ok(())
+                    }
+                    Err(e) => {
+                        self.is_oauth_loading.set(false);
+                        Err(OrigaError::InvalidValues { reason: e })
                     }
                 }
-
-                self.is_oauth_loading.set(false);
-                Err(OrigaError::NetworkError {
-                    url: "/api/auth/v1/token".to_string(),
-                    reason: "User not found after sync".to_string(),
-                })
             }
             Err(e) => {
                 self.is_oauth_loading.set(false);
