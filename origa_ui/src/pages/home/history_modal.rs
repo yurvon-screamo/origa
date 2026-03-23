@@ -10,6 +10,9 @@ pub enum StatMetric {
     InProgress,
     New,
     HighDifficulty,
+    PositiveRatings,
+    NegativeRatings,
+    TotalRatings,
 }
 
 impl StatMetric {
@@ -20,6 +23,9 @@ impl StatMetric {
             StatMetric::InProgress => "В процессе",
             StatMetric::New => "Новые",
             StatMetric::HighDifficulty => "Сложные",
+            StatMetric::PositiveRatings => "Позитивные",
+            StatMetric::NegativeRatings => "Негативные",
+            StatMetric::TotalRatings => "Всего оценок",
         }
     }
 }
@@ -31,6 +37,9 @@ fn get_metric_value(item: &DailyHistoryItem, metric: StatMetric) -> usize {
         StatMetric::InProgress => item.in_progress_words(),
         StatMetric::New => item.new_words(),
         StatMetric::HighDifficulty => item.high_difficulty_words(),
+        StatMetric::PositiveRatings => item.positive_ratings(),
+        StatMetric::NegativeRatings => item.negative_ratings(),
+        StatMetric::TotalRatings => item.total_ratings(),
     }
 }
 
