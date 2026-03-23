@@ -170,3 +170,238 @@ impl From<NativeLanguage> for i32 {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rstest::rstest;
+
+    // Question tests
+    #[test]
+    fn question_new_success() {
+        let question = Question::new("valid text".to_string()).unwrap();
+        assert_eq!(question.text(), "valid text");
+    }
+
+    #[test]
+    fn question_new_trims_whitespace() {
+        let question = Question::new("  trimmed  ".to_string()).unwrap();
+        assert_eq!(question.text(), "trimmed");
+    }
+
+    #[test]
+    fn question_new_empty_string_error() {
+        let result = Question::new("".to_string());
+        assert!(matches!(result, Err(OrigaError::InvalidQuestion { .. })));
+    }
+
+    #[test]
+    fn question_new_whitespace_only_error() {
+        let result = Question::new("   ".to_string());
+        assert!(matches!(result, Err(OrigaError::InvalidQuestion { .. })));
+    }
+
+    // Answer tests
+    #[test]
+    fn answer_new_success() {
+        let answer = Answer::new("valid text".to_string()).unwrap();
+        assert_eq!(answer.text(), "valid text");
+    }
+
+    #[test]
+    fn answer_new_trims_whitespace() {
+        let answer = Answer::new("  trimmed  ".to_string()).unwrap();
+        assert_eq!(answer.text(), "trimmed");
+    }
+
+    #[test]
+    fn answer_new_empty_string_error() {
+        let result = Answer::new("".to_string());
+        assert!(matches!(result, Err(OrigaError::InvalidAnswer { .. })));
+    }
+
+    #[test]
+    fn answer_new_whitespace_only_error() {
+        let result = Answer::new("   ".to_string());
+        assert!(matches!(result, Err(OrigaError::InvalidAnswer { .. })));
+    }
+
+    // JapaneseLevel::from_str tests
+    #[rstest]
+    #[case("N5", Ok(JapaneseLevel::N5))]
+    #[case("N4", Ok(JapaneseLevel::N4))]
+    #[case("N3", Ok(JapaneseLevel::N3))]
+    #[case("N2", Ok(JapaneseLevel::N2))]
+    #[case("N1", Ok(JapaneseLevel::N1))]
+    fn japanese_level_from_str_success(
+        #[case] input: &str,
+        #[case] expected: Result<JapaneseLevel, String>,
+    ) {
+        let result: Result<JapaneseLevel, String> = input.parse();
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn japanese_level_from_str_lowercase_success() {
+        let result: Result<JapaneseLevel, String> = "n5".parse();
+        assert_eq!(result, Ok(JapaneseLevel::N5));
+    }
+
+    #[test]
+    fn japanese_level_from_str_invalid_error() {
+        let result: Result<JapaneseLevel, String> = "invalid".parse();
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn japanese_level_from_str_empty_error() {
+        let result: Result<JapaneseLevel, String> = "".parse();
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn japanese_level_from_str_trims_whitespace() {
+        let result: Result<JapaneseLevel, String> = "  N5  ".parse();
+        assert_eq!(result, Ok(JapaneseLevel::N5));
+    }
+
+    // JapaneseLevel::from(i32) tests
+    #[rstest]
+    #[case(5, JapaneseLevel::N5)]
+    #[case(4, JapaneseLevel::N4)]
+    #[case(3, JapaneseLevel::N3)]
+    #[case(2, JapaneseLevel::N2)]
+    #[case(1, JapaneseLevel::N1)]
+    fn japanese_level_from_i32_success(#[case] input: i32, #[case] expected: JapaneseLevel) {
+        let result = JapaneseLevel::from(input);
+        assert_eq!(result, expected);
+    }
+
+    #[rstest]
+    #[case(0, JapaneseLevel::N5)]
+    #[case(-1, JapaneseLevel::N5)]
+    #[case(99, JapaneseLevel::N5)]
+    fn japanese_level_from_i32_fallback(#[case] input: i32, #[case] expected: JapaneseLevel) {
+        let result = JapaneseLevel::from(input);
+        assert_eq!(result, expected);
+    }
+
+    // JapaneseLevel::as_number tests
+    #[rstest]
+    #[case(JapaneseLevel::N5, 5)]
+    #[case(JapaneseLevel::N4, 4)]
+    #[case(JapaneseLevel::N3, 3)]
+    #[case(JapaneseLevel::N2, 2)]
+    #[case(JapaneseLevel::N1, 1)]
+    fn japanese_level_as_number(#[case] level: JapaneseLevel, #[case] expected: u8) {
+        assert_eq!(level.as_number(), expected);
+    }
+
+    // JapaneseLevel::code tests
+    #[rstest]
+    #[case(JapaneseLevel::N5, "N5")]
+    #[case(JapaneseLevel::N4, "N4")]
+    #[case(JapaneseLevel::N3, "N3")]
+    #[case(JapaneseLevel::N2, "N2")]
+    #[case(JapaneseLevel::N1, "N1")]
+    fn japanese_level_code(#[case] level: JapaneseLevel, #[case] expected: &str) {
+        assert_eq!(level.code(), expected);
+    }
+
+    // JapaneseLevel::from_str_or_default tests
+    #[rstest]
+    #[case("N5", JapaneseLevel::N5)]
+    #[case("N4", JapaneseLevel::N4)]
+    #[case("N3", JapaneseLevel::N3)]
+    #[case("N2", JapaneseLevel::N2)]
+    #[case("N1", JapaneseLevel::N1)]
+    fn japanese_level_from_str_or_default_success(
+        #[case] input: &str,
+        #[case] expected: JapaneseLevel,
+    ) {
+        let result = JapaneseLevel::from_str_or_default(input);
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn japanese_level_from_str_or_default_fallback() {
+        let result = JapaneseLevel::from_str_or_default("invalid");
+        assert_eq!(result, JapaneseLevel::N1);
+    }
+
+    // JapaneseLevel Display trait test
+    #[rstest]
+    #[case(JapaneseLevel::N5, "5")]
+    #[case(JapaneseLevel::N4, "4")]
+    #[case(JapaneseLevel::N3, "3")]
+    #[case(JapaneseLevel::N2, "2")]
+    #[case(JapaneseLevel::N1, "1")]
+    fn japanese_level_display(#[case] level: JapaneseLevel, #[case] expected: &str) {
+        assert_eq!(format!("{}", level), expected);
+    }
+
+    // JapaneseLevel ALL constant test
+    #[test]
+    fn japanese_level_all_contains_all_levels() {
+        assert_eq!(JapaneseLevel::ALL.len(), 5);
+        assert!(JapaneseLevel::ALL.contains(&JapaneseLevel::N5));
+        assert!(JapaneseLevel::ALL.contains(&JapaneseLevel::N4));
+        assert!(JapaneseLevel::ALL.contains(&JapaneseLevel::N3));
+        assert!(JapaneseLevel::ALL.contains(&JapaneseLevel::N2));
+        assert!(JapaneseLevel::ALL.contains(&JapaneseLevel::N1));
+    }
+
+    // NativeLanguage::from(i32) tests
+    #[rstest]
+    #[case(0, NativeLanguage::English)]
+    #[case(1, NativeLanguage::Russian)]
+    fn native_language_from_i32_success(#[case] input: i32, #[case] expected: NativeLanguage) {
+        let result = NativeLanguage::from(input);
+        assert_eq!(result, expected);
+    }
+
+    #[rstest]
+    #[case(-1, NativeLanguage::Russian)]
+    #[case(99, NativeLanguage::Russian)]
+    fn native_language_from_i32_fallback(#[case] input: i32, #[case] expected: NativeLanguage) {
+        let result = NativeLanguage::from(input);
+        assert_eq!(result, expected);
+    }
+
+    // NativeLanguage::as_str tests
+    #[rstest]
+    #[case(NativeLanguage::English, "English")]
+    #[case(NativeLanguage::Russian, "Russian")]
+    fn native_language_as_str(#[case] lang: NativeLanguage, #[case] expected: &str) {
+        assert_eq!(lang.as_str(), expected);
+    }
+
+    // NativeLanguage Display trait test
+    #[rstest]
+    #[case(NativeLanguage::English, "English")]
+    #[case(NativeLanguage::Russian, "Russian")]
+    fn native_language_display(#[case] lang: NativeLanguage, #[case] expected: &str) {
+        assert_eq!(format!("{}", lang), expected);
+    }
+
+    // Conversion from JapaneseLevel to i32
+    #[rstest]
+    #[case(JapaneseLevel::N1, 1)]
+    #[case(JapaneseLevel::N2, 2)]
+    #[case(JapaneseLevel::N3, 3)]
+    #[case(JapaneseLevel::N4, 4)]
+    #[case(JapaneseLevel::N5, 5)]
+    fn japanese_level_into_i32(#[case] level: JapaneseLevel, #[case] expected: i32) {
+        let result: i32 = level.into();
+        assert_eq!(result, expected);
+    }
+
+    // Conversion from NativeLanguage to i32
+    #[rstest]
+    #[case(NativeLanguage::English, 0)]
+    #[case(NativeLanguage::Russian, 1)]
+    fn native_language_into_i32(#[case] lang: NativeLanguage, #[case] expected: i32) {
+        let result: i32 = lang.into();
+        assert_eq!(result, expected);
+    }
+}

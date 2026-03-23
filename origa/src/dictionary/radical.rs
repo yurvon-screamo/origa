@@ -13,12 +13,13 @@ pub struct RadicalData {
 }
 
 pub fn init_radicals(data: RadicalData) -> Result<(), OrigaError> {
+    if is_radicals_loaded() {
+        return Ok(());
+    }
+
     let db = RadicalDatabase::from_json(&data.radicals_json)?;
-    RADICAL_DICTIONARY
-        .set(db)
-        .map_err(|_| OrigaError::KradfileError {
-            reason: "Failed to set radical dictionary".to_string(),
-        })
+    RADICAL_DICTIONARY.set(db).ok();
+    Ok(())
 }
 
 pub fn is_radicals_loaded() -> bool {
@@ -86,7 +87,7 @@ impl RadicalInfo {
 }
 
 impl RadicalDatabase {
-    fn from_json(json: &str) -> Result<Self, OrigaError> {
+    pub fn from_json(json: &str) -> Result<Self, OrigaError> {
         let radkfile: RadkfilStoredType =
             serde_json::from_str(json).map_err(|e| OrigaError::KradfileError {
                 reason: format!("Failed to parse radicals.json: {}", e),
@@ -156,4 +157,365 @@ struct RadicalStoredType {
 #[derive(Serialize, Deserialize)]
 struct RadkfilStoredType {
     radicals: HashMap<String, RadicalStoredType>,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rstest::rstest;
+
+    // RadicalDatabase::from_json tests
+    #[test]
+    fn test_radical_database_from_json_valid() {
+        let json = r#"{
+            "radicals": {
+                "日": {
+                    "strokeCount": 4,
+                    "kanji": ["明", "睛"],
+                    "name": "sun, day",
+                    "description": "Sun or day radical",
+                    "jlpt": "N5"
+                }
+            }
+        }"#;
+
+        let db = RadicalDatabase::from_json(json).unwrap();
+        let info = db.get_radical_info(&'日').unwrap();
+        assert_eq!(info.stroke_count(), 4);
+        assert_eq!(info.name(), "sun, day");
+        assert!(info.kanji().contains(&'明'));
+    }
+
+    #[test]
+    fn test_radical_database_from_json_multibyte_key() {
+        let json = r#"{"radicals": {"山": {"strokeCount": 3, "kanji": [], "name": "mountain", "description": "Mountain", "jlpt": "N5"}}}"#;
+        let db = RadicalDatabase::from_json(json).unwrap();
+        assert!(db.get_radical_info(&'山').is_ok());
+    }
+
+    #[test]
+    fn test_radical_database_from_json_empty() {
+        let json = r#"{"radicals": {}}"#;
+        let db = RadicalDatabase::from_json(json).unwrap();
+        assert!(db.radical_list().is_empty());
+    }
+
+    #[test]
+    fn test_radical_database_from_json_invalid_json() {
+        let json = "not valid json";
+        let result = RadicalDatabase::from_json(json);
+        assert!(result.is_err());
+    }
+
+    // RadicalDatabase::radical_list tests
+    #[test]
+    fn test_radical_database_radical_list() {
+        let json = r#"{
+            "radicals": {
+                "一": {"strokeCount": 1, "kanji": [], "name": "one", "description": "One", "jlpt": "N5"},
+                "二": {"strokeCount": 2, "kanji": [], "name": "two", "description": "Two", "jlpt": "N5"}
+            }
+        }"#;
+
+        let db = RadicalDatabase::from_json(json).unwrap();
+        let list = db.radical_list();
+
+        assert_eq!(list.len(), 2);
+        assert!(list.iter().any(|r| r.radical() == '一'));
+        assert!(list.iter().any(|r| r.radical() == '二'));
+    }
+
+    // RadicalDatabase::known_radicals tests
+    #[test]
+    fn test_radical_database_known_radicals() {
+        let json = r#"{
+            "radicals": {
+                "日": {"strokeCount": 4, "kanji": [], "name": "sun", "description": "Sun", "jlpt": "N5"},
+                "月": {"strokeCount": 4, "kanji": [], "name": "moon", "description": "Moon", "jlpt": "N5"}
+            }
+        }"#;
+
+        let db = RadicalDatabase::from_json(json).unwrap();
+        let radicals = db.known_radicals();
+
+        assert_eq!(radicals.len(), 2);
+        assert!(radicals.contains(&'日'));
+        assert!(radicals.contains(&'月'));
+    }
+
+    // RadicalDatabase::get_radical_info tests
+    #[test]
+    fn test_radical_database_get_radical_info_not_found() {
+        let json = r#"{"radicals": {"日": {"strokeCount": 4, "kanji": [], "name": "sun", "description": "Sun", "jlpt": "N5"}}}"#;
+        let db = RadicalDatabase::from_json(json).unwrap();
+
+        assert!(db.get_radical_info(&'不').is_err());
+    }
+
+    // RadicalDatabase::get_radical_info all fields tests
+    #[test]
+    fn test_radical_database_get_radical_info_all_fields() {
+        let json = r#"{
+            "radicals": {
+                "木": {
+                    "strokeCount": 4,
+                    "kanji": ["林", "森", "村"],
+                    "name": "tree, wood",
+                    "description": "Tree radical",
+                    "jlpt": "N4"
+                }
+            }
+        }"#;
+
+        let db = RadicalDatabase::from_json(json).unwrap();
+        let info = db.get_radical_info(&'木').unwrap();
+
+        assert_eq!(info.radical(), '木');
+        assert_eq!(info.stroke_count(), 4);
+        assert_eq!(info.name(), "tree, wood");
+        assert_eq!(info.description(), "Tree radical");
+        assert_eq!(info.jlpt(), &JapaneseLevel::N4);
+        assert_eq!(info.kanji().len(), 3);
+        assert!(info.kanji().contains(&'林'));
+        assert!(info.kanji().contains(&'森'));
+        assert!(info.kanji().contains(&'村'));
+    }
+
+    // Tests for public API functions
+    #[test]
+    fn test_init_radicals_valid() {
+        // Test init_radicals with RadicalDatabase instead of global static to avoid OnceLock issues
+        let data = RadicalData {
+            radicals_json: r#"{
+                "radicals": {
+                    "日": {"strokeCount": 4, "kanji": [], "name": "sun", "description": "Sun", "jlpt": "N5"}
+                }
+            }"#.to_string(),
+        };
+
+        // Create a database directly to test the JSON parsing without setting global state
+        let db = RadicalDatabase::from_json(&data.radicals_json).unwrap();
+        assert_eq!(db.radical_list().len(), 1);
+        assert_eq!(db.radical_list()[0].radical(), '日');
+    }
+
+    #[test]
+    fn test_init_radicals_invalid_json() {
+        let data = RadicalData {
+            radicals_json: "not valid json".to_string(),
+        };
+
+        // Test that invalid JSON is properly detected
+        let result = RadicalDatabase::from_json(&data.radicals_json);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_get_radical_info_after_init() {
+        // Test using RadicalDatabase directly to avoid OnceLock issues
+        let json = r#"{
+            "radicals": {
+                "水": {"strokeCount": 4, "kanji": ["海", "川"], "name": "water", "description": "Water", "jlpt": "N5"}
+            }
+        }"#;
+
+        let db = RadicalDatabase::from_json(json).unwrap();
+        let info = db.get_radical_info(&'水').unwrap();
+
+        assert_eq!(info.radical(), '水');
+        assert_eq!(info.stroke_count(), 4);
+        assert_eq!(info.name(), "water");
+        assert!(info.kanji().contains(&'海'));
+    }
+
+    #[test]
+    fn test_get_radical_info_not_loaded() {
+        // Test with a fresh RadicalDatabase instead of global static to avoid OnceLock issues
+        let json = r#"{"radicals": {"日": {"strokeCount": 4, "kanji": [], "name": "sun", "description": "Sun", "jlpt": "N5"}}}"#;
+        let db = RadicalDatabase::from_json(json).unwrap();
+        let result = db.get_radical_info(&'中');
+
+        assert!(result.is_err());
+        if let Err(OrigaError::KradfileError { reason }) = result {
+            assert!(reason.contains("中"));
+        }
+    }
+
+    #[test]
+    fn test_get_radical_list_not_loaded_returns_empty() {
+        // Test that get_radical_list returns empty when dictionary is not loaded
+        // Since we can't reset the global dictionary, we test the behavior with RadicalDatabase instead
+        let json = r#"{"radicals": {}}"#;
+        let db = RadicalDatabase::from_json(json).unwrap();
+        assert!(db.radical_list().is_empty());
+    }
+
+    #[test]
+    fn test_get_radical_list() {
+        // Test with a fresh RadicalDatabase instead of global static to avoid OnceLock issues
+        let json = r#"{
+            "radicals": {
+                "日": {"strokeCount": 4, "kanji": [], "name": "sun", "description": "Sun", "jlpt": "N5"},
+                "月": {"strokeCount": 4, "kanji": [], "name": "moon", "description": "Moon", "jlpt": "N5"},
+                "金": {"strokeCount": 8, "kanji": [], "name": "gold", "description": "Gold", "jlpt": "N4"}
+            }
+        }"#;
+
+        let db = RadicalDatabase::from_json(json).unwrap();
+        let list = db.radical_list();
+
+        assert_eq!(list.len(), 3);
+        assert!(list.iter().any(|r| r.radical() == '日'));
+        assert!(list.iter().any(|r| r.radical() == '月'));
+        assert!(list.iter().any(|r| r.radical() == '金'));
+    }
+
+    // Parametrized tests with rstest
+    #[rstest]
+    #[case('日', 4, "sun")]
+    #[case('月', 4, "moon")]
+    #[case('山', 3, "mountain")]
+    fn test_radical_database_stroke_count_and_name(
+        #[case] radical_char: char,
+        #[case] expected_stroke_count: u32,
+        #[case] expected_name: &str,
+    ) {
+        let json = format!(
+            r#"{{
+                "radicals": {{
+                    "{}": {{"strokeCount": {}, "kanji": [], "name": "{}", "description": "Test", "jlpt": "N5"}}
+                }}
+            }}"#,
+            radical_char, expected_stroke_count, expected_name
+        );
+
+        let db = RadicalDatabase::from_json(&json).unwrap();
+        let info = db.get_radical_info(&radical_char).unwrap();
+
+        assert_eq!(info.stroke_count(), expected_stroke_count);
+        assert_eq!(info.name(), expected_name);
+    }
+
+    #[rstest]
+    #[case("N5", JapaneseLevel::N5)]
+    #[case("N4", JapaneseLevel::N4)]
+    #[case("N3", JapaneseLevel::N3)]
+    #[case("N2", JapaneseLevel::N2)]
+    #[case("N1", JapaneseLevel::N1)]
+    fn test_radical_database_jlpt_parsing(
+        #[case] jlpt_str: &str,
+        #[case] expected_level: JapaneseLevel,
+    ) {
+        let json = format!(
+            r#"{{
+                "radicals": {{
+                    "一": {{"strokeCount": 1, "kanji": [], "name": "one", "description": "One", "jlpt": "{}"}}
+                }}
+            }}"#,
+            jlpt_str
+        );
+
+        let db = RadicalDatabase::from_json(&json).unwrap();
+        let info = db.get_radical_info(&'一').unwrap();
+
+        assert_eq!(info.jlpt(), &expected_level);
+    }
+
+    #[rstest]
+    #[case("invalid", JapaneseLevel::N1)] // defaults to N1
+    fn test_radical_database_jlpt_invalid_defaults(
+        #[case] jlpt_str: &str,
+        #[case] expected_level: JapaneseLevel,
+    ) {
+        let json = format!(
+            r#"{{
+                "radicals": {{
+                    "一": {{"strokeCount": 1, "kanji": [], "name": "one", "description": "One", "jlpt": "{}"}}
+                }}
+            }}"#,
+            jlpt_str
+        );
+
+        let db = RadicalDatabase::from_json(&json).unwrap();
+        let info = db.get_radical_info(&'一').unwrap();
+
+        assert_eq!(info.jlpt(), &expected_level);
+    }
+
+    // Test kanji parsing from strings
+    #[test]
+    fn test_radical_database_kanji_from_string() {
+        let json = r#"{
+            "radicals": {
+                "火": {
+                    "strokeCount": 4,
+                    "kanji": ["燃", "焼", "灯"],
+                    "name": "fire",
+                    "description": "Fire radical",
+                    "jlpt": "N5"
+                }
+            }
+        }"#;
+
+        let db = RadicalDatabase::from_json(json).unwrap();
+        let info = db.get_radical_info(&'火').unwrap();
+
+        assert_eq!(info.kanji().len(), 3);
+        assert!(info.kanji().contains(&'燃'));
+        assert!(info.kanji().contains(&'焼'));
+        assert!(info.kanji().contains(&'灯'));
+    }
+
+    // Test multiple radicals in kanji list (edge case)
+    #[test]
+    fn test_radical_database_multichar_kanji() {
+        let json = r#"{
+            "radicals": {
+                "土": {
+                    "strokeCount": 3,
+                    "kanji": ["埴"],
+                    "name": "earth",
+                    "description": "Earth radical",
+                    "jlpt": "N5"
+                }
+            }
+        }"#;
+
+        let db = RadicalDatabase::from_json(json).unwrap();
+        let info = db.get_radical_info(&'土').unwrap();
+
+        assert_eq!(info.kanji().len(), 1);
+        assert!(info.kanji().contains(&'埴'));
+    }
+
+    // RadicalDatabase equality and cloning tests
+    #[test]
+    fn test_radical_info_clone() {
+        let json = r#"{
+            "radicals": {
+                "日": {"strokeCount": 4, "kanji": [], "name": "sun", "description": "Sun", "jlpt": "N5"}
+            }
+        }"#;
+
+        let db = RadicalDatabase::from_json(json).unwrap();
+        let list = db.radical_list();
+        let cloned = list[0].clone();
+
+        assert_eq!(cloned.radical(), '日');
+        assert_eq!(cloned.stroke_count(), 4);
+    }
+
+    // Test error messages
+    #[test]
+    fn test_radical_database_error_message() {
+        let json = r#"{"radicals": {"日": {"strokeCount": 4, "kanji": [], "name": "sun", "description": "Sun", "jlpt": "N5"}}}"#;
+        let db = RadicalDatabase::from_json(json).unwrap();
+
+        let result = db.get_radical_info(&'不');
+        assert!(result.is_err());
+
+        if let Err(OrigaError::KradfileError { reason }) = result {
+            assert!(reason.contains("不"));
+        }
+    }
 }

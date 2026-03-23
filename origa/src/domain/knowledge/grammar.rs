@@ -68,6 +68,11 @@ impl GrammarRuleCard {
             rule_id: Ulid::new(),
         }
     }
+
+    #[cfg(test)]
+    pub fn new_test_with_id(rule_id: Ulid) -> Self {
+        Self { rule_id }
+    }
 }
 
 #[cfg(test)]
