@@ -276,7 +276,7 @@ impl KnowledgeSet {
             let review = ReviewLog::new(rating, interval);
             card.add_review(memory_state, review);
             card.handle_favorite_rating(rating);
-            self.update_history();
+            self.update_history(rating);
             Ok(())
         } else {
             Err(OrigaError::CardNotFound { card_id })
@@ -292,7 +292,7 @@ impl KnowledgeSet {
         }
     }
 
-    fn update_history(&mut self) {
+    fn update_history(&mut self, rating: Rating) {
         let mut avg_stability = 0.0;
         let mut avg_difficulty = 0.0;
         let mut total_words = 0;
@@ -330,6 +330,7 @@ impl KnowledgeSet {
                 new_words,
                 in_progress_words,
                 high_difficulty_words,
+                rating,
             );
         } else {
             let mut item = DailyHistoryItem::new();
@@ -341,6 +342,7 @@ impl KnowledgeSet {
                 new_words,
                 in_progress_words,
                 high_difficulty_words,
+                rating,
             );
             self.lesson_history.push(item);
         }
@@ -372,8 +374,16 @@ impl KnowledgeSet {
         avg_stability /= total_words as f64;
         avg_difficulty /= total_words as f64;
 
-        let now = Utc::now();
-        let today = now.date_naive();
+        let today = Utc::now().date_naive();
+        let (positive, negative, total) = self
+            .study_cards
+            .values()
+            .flat_map(|card| card.memory().reviews())
+            .filter(|review| review.timestamp().date_naive() == today)
+            .fold((0, 0, 0), |(pos, neg, tot), review| match review.rating() {
+                Rating::Easy | Rating::Good => (pos + 1, neg, tot + 1),
+                Rating::Hard | Rating::Again => (pos, neg + 1, tot + 1),
+            });
 
         if let Some(existing_item) = self
             .lesson_history
@@ -388,6 +398,9 @@ impl KnowledgeSet {
                 new_words,
                 in_progress_words,
                 high_difficulty_words,
+                positive,
+                negative,
+                total,
             );
         } else {
             let mut item = DailyHistoryItem::new();
@@ -399,6 +412,9 @@ impl KnowledgeSet {
                 new_words,
                 in_progress_words,
                 high_difficulty_words,
+                positive,
+                negative,
+                total,
             );
             self.lesson_history.push(item);
         }
