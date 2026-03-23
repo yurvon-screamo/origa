@@ -12,6 +12,12 @@ pub struct HomeStats {
     pub in_progress_delta: isize,
     pub new_delta: isize,
     pub high_difficulty_delta: isize,
+    pub positive: usize,
+    pub negative: usize,
+    pub total_ratings: usize,
+    pub positive_delta: isize,
+    pub negative_delta: isize,
+    pub total_ratings_delta: isize,
 }
 
 pub fn format_number(n: usize) -> String {
@@ -39,19 +45,30 @@ pub fn calculate_stats(history: &[DailyHistoryItem]) -> HomeStats {
 
     let last = history.last().unwrap();
 
-    let (total_delta, learned_delta, in_progress_delta, new_delta, high_difficulty_delta) =
-        if history.len() >= 2 {
-            let prev = &history[history.len() - 2];
-            (
-                last.total_words() as isize - prev.total_words() as isize,
-                last.known_words() as isize - prev.known_words() as isize,
-                last.in_progress_words() as isize - prev.in_progress_words() as isize,
-                last.new_words() as isize - prev.new_words() as isize,
-                last.high_difficulty_words() as isize - prev.high_difficulty_words() as isize,
-            )
-        } else {
-            (0, 0, 0, 0, 0)
-        };
+    let (
+        total_delta,
+        learned_delta,
+        in_progress_delta,
+        new_delta,
+        high_difficulty_delta,
+        positive_delta,
+        negative_delta,
+        total_ratings_delta,
+    ) = if history.len() >= 2 {
+        let prev = &history[history.len() - 2];
+        (
+            last.total_words() as isize - prev.total_words() as isize,
+            last.known_words() as isize - prev.known_words() as isize,
+            last.in_progress_words() as isize - prev.in_progress_words() as isize,
+            last.new_words() as isize - prev.new_words() as isize,
+            last.high_difficulty_words() as isize - prev.high_difficulty_words() as isize,
+            last.positive_ratings() as isize - prev.positive_ratings() as isize,
+            last.negative_ratings() as isize - prev.negative_ratings() as isize,
+            last.total_ratings() as isize - prev.total_ratings() as isize,
+        )
+    } else {
+        (0, 0, 0, 0, 0, 0, 0, 0)
+    };
 
     HomeStats {
         total_cards: last.total_words(),
@@ -64,5 +81,11 @@ pub fn calculate_stats(history: &[DailyHistoryItem]) -> HomeStats {
         in_progress_delta,
         new_delta,
         high_difficulty_delta,
+        positive: last.positive_ratings(),
+        negative: last.negative_ratings(),
+        total_ratings: last.total_ratings(),
+        positive_delta,
+        negative_delta,
+        total_ratings_delta,
     }
 }
