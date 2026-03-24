@@ -55,6 +55,7 @@ COPY origa_ui/Cargo.toml ./origa_ui/
 
 RUN mkdir -p origa/src && echo "pub fn dummy() {}" > origa/src/lib.rs && \
     mkdir -p origa_ui/src && echo "pub fn dummy() {}" > origa_ui/src/lib.rs && \
+    echo "fn main() {}" > origa_ui/src/main.rs && \
     mkdir -p tokenizer/src && echo "pub fn dummy() {}" > tokenizer/src/lib.rs && \
     mkdir -p tauri/src && echo "pub fn dummy() {}" > tauri/src/lib.rs
 
