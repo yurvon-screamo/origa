@@ -145,10 +145,29 @@ fn parse_migii_lessons(sets: &[WellKnownSetMeta]) -> HashMap<JapaneseLevel, Vec<
     by_level
 }
 
-fn parse_minna_lessons(sets: &[WellKnownSetMeta]) -> Vec<MinnaLesson> {
+fn parse_minna_n5_lessons(sets: &[WellKnownSetMeta]) -> Vec<MinnaLesson> {
     let mut lessons: Vec<MinnaLesson> = sets
         .iter()
-        .filter(|s| s.set_type == "MinnaNoNihongo")
+        .filter(|s| s.id.starts_with("minna_n5_"))
+        .filter_map(|set| {
+            parse_minna_lesson(&set.title_ru)
+                .or_else(|| parse_minna_lesson(&set.title_en))
+                .or_else(|| parse_minna_lesson(&set.id))
+                .map(|lesson_number| MinnaLesson {
+                    id: set.id.clone(),
+                    lesson_number,
+                })
+        })
+        .collect();
+
+    lessons.sort_by_key(|l| l.lesson_number);
+    lessons
+}
+
+fn parse_minna_n4_lessons(sets: &[WellKnownSetMeta]) -> Vec<MinnaLesson> {
+    let mut lessons: Vec<MinnaLesson> = sets
+        .iter()
+        .filter(|s| s.id.starts_with("minna_n4_"))
         .filter_map(|set| {
             parse_minna_lesson(&set.title_ru)
                 .or_else(|| parse_minna_lesson(&set.title_en))
@@ -534,7 +553,7 @@ fn MigiiProgressSelector(
 }
 
 #[component]
-fn MinnaProgressSelector(
+fn MinnaN5ProgressSelector(
     lessons: Vec<MinnaLesson>,
     state: RwSignal<OnboardingState>,
 ) -> impl IntoView {
@@ -575,7 +594,7 @@ fn MinnaProgressSelector(
                 .collect();
 
             state.update(|s| {
-                s.set_app_selection("MinnaNoNihongo", &format!("lesson_{}", n));
+                s.set_app_selection("MinnaNoNihongoN5", &format!("lesson_{}", n));
                 s.sets_to_import
                     .retain(|set| !lessons_ref.iter().any(|l| l.id == set.id));
                 let sets_to_add: Vec<_> = sets
@@ -608,7 +627,109 @@ fn MinnaProgressSelector(
     view! {
         <Card class=Signal::derive(|| "p-4".to_string())>
             <Text size=TextSize::Default variant=TypographyVariant::Primary>
-                "MinnaNoNihongo"
+                "Minna no Nihongo N5"
+            </Text>
+
+            <div class="mt-4">
+                <Text size=TextSize::Small variant=TypographyVariant::Muted>
+                    "Урок"
+                </Text>
+                <div class="mt-2">
+                    <Dropdown
+                        _options=Signal::derive(move || lesson_items.clone())
+                        _selected=selected_lesson_value
+                        _placeholder=Signal::derive(|| "Выберите урок".to_string())
+                    />
+                </div>
+            </div>
+
+            <Show when=move || import_info.get().is_some()>
+                <div class="mt-2">
+                    <Text size=TextSize::Small variant=TypographyVariant::Muted>
+                        {move || import_info.get().unwrap_or_default()}
+                    </Text>
+                </div>
+            </Show>
+        </Card>
+    }
+}
+
+#[component]
+fn MinnaN4ProgressSelector(
+    lessons: Vec<MinnaLesson>,
+    state: RwSignal<OnboardingState>,
+) -> impl IntoView {
+    let selected_lesson = RwSignal::new(None::<usize>);
+    let available_sets = Signal::derive(move || state.get().available_sets.clone());
+
+    let lesson_items = {
+        let mut items = vec![DropdownItem {
+            value: "none".to_string(),
+            label: "Не изучал".to_string(),
+        }];
+        for lesson in &lessons {
+            items.push(DropdownItem {
+                value: format!("lesson_{}", lesson.lesson_number),
+                label: format!("Урок {}", lesson.lesson_number),
+            });
+        }
+        items
+    };
+
+    let import_info = Signal::derive(move || {
+        selected_lesson
+            .get()
+            .map(|n| format!("Будут импортированы: Уроки 1-{}", n))
+    });
+
+    let lessons_for_effect = lessons.clone();
+    Effect::new(move |_| {
+        let lesson_num = selected_lesson.get();
+        let lessons_ref = lessons_for_effect.clone();
+        let sets = available_sets.get();
+
+        if let Some(n) = lesson_num {
+            let ids_to_import: Vec<String> = lessons_ref
+                .iter()
+                .filter(|l| l.lesson_number <= n)
+                .map(|l| l.id.clone())
+                .collect();
+
+            state.update(|s| {
+                s.set_app_selection("MinnaNoNihongoN4", &format!("lesson_{}", n));
+                s.sets_to_import
+                    .retain(|set| !lessons_ref.iter().any(|l| l.id == set.id));
+                let sets_to_add: Vec<_> = sets
+                    .iter()
+                    .filter(|set_meta| ids_to_import.contains(&set_meta.id))
+                    .cloned()
+                    .collect();
+                for set_meta in sets_to_add {
+                    s.add_set_to_import(set_meta);
+                }
+            });
+        }
+    });
+
+    let selected_lesson_value = RwSignal::new(
+        selected_lesson
+            .get()
+            .map(|n| format!("lesson_{}", n))
+            .unwrap_or_else(|| "none".to_string()),
+    );
+
+    Effect::new(move |_| {
+        let val = selected_lesson_value.get();
+        selected_lesson.set(
+            val.strip_prefix("lesson_")
+                .and_then(|s| s.parse::<usize>().ok()),
+        );
+    });
+
+    view! {
+        <Card class=Signal::derive(|| "p-4".to_string())>
+            <Text size=TextSize::Default variant=TypographyVariant::Primary>
+                "Minna no Nihongo N4"
             </Text>
 
             <div class="mt-4">
@@ -650,7 +771,8 @@ enum AppType {
     DuolingoRu,
     DuolingoEn,
     Migii,
-    MinnaNoNihongo,
+    MinnaNoNihongoN5,
+    MinnaNoNihongoN4,
 }
 
 fn parse_app_type(app_id: &str) -> Option<AppType> {
@@ -658,7 +780,8 @@ fn parse_app_type(app_id: &str) -> Option<AppType> {
         "DuolingoRu" => Some(AppType::DuolingoRu),
         "DuolingoEn" => Some(AppType::DuolingoEn),
         "Migii" => Some(AppType::Migii),
-        "MinnaNoNihongo" => Some(AppType::MinnaNoNihongo),
+        "MinnaNoNihongoN5" => Some(AppType::MinnaNoNihongoN5),
+        "MinnaNoNihongoN4" => Some(AppType::MinnaNoNihongoN4),
         _ => None,
     }
 }
@@ -739,10 +862,19 @@ pub fn ProgressStep() -> impl IntoView {
                                     />
                                 }.into_any()
                             }
-                            Some(AppType::MinnaNoNihongo) => {
-                                let lessons = parse_minna_lessons(&sets);
+                            Some(AppType::MinnaNoNihongoN5) => {
+                                let lessons = parse_minna_n5_lessons(&sets);
                                 view! {
-                                    <MinnaProgressSelector
+                                    <MinnaN5ProgressSelector
+                                        lessons=lessons
+                                        state=state
+                                    />
+                                }.into_any()
+                            }
+                            Some(AppType::MinnaNoNihongoN4) => {
+                                let lessons = parse_minna_n4_lessons(&sets);
+                                view! {
+                                    <MinnaN4ProgressSelector
                                         lessons=lessons
                                         state=state
                                     />

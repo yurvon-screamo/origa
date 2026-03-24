@@ -513,13 +513,13 @@ fn load_dictionary(base_path: &Path) -> HashMap<String, VocabularyEntry> {
                                     found_in_sets: None,
                                 }
                             } else {
-                                serde_json::from_value(entry_data.clone()).unwrap_or_else(|_| {
+                                serde_json::from_value(entry_data.clone()).unwrap_or(
                                     VocabularyEntry {
                                         russian_translation: None,
                                         english_translation: None,
                                         found_in_sets: None,
-                                    }
-                                })
+                                    },
+                                )
                             };
                             dictionary.insert(word.clone(), entry);
                         }
@@ -622,7 +622,7 @@ async fn generate_missing_vocabulary(
     let errors = Arc::new(Mutex::new(0usize));
 
     let chunk_size = cli.chunk_size;
-    let total_chunks = (total_words + chunk_size - 1) / chunk_size;
+    let total_chunks = total_words.div_ceil(chunk_size);
 
     for (chunk_num, chunk_start) in (0..total_words).step_by(chunk_size).enumerate() {
         let chunk_end = (chunk_start + chunk_size).min(total_words);
