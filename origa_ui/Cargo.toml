@@ -47,15 +47,28 @@ sha2.workspace = true
 rand.workspace = true
 bincode.workspace = true
 
+[features]
+default = ["csr"]
+csr = ["leptos/csr"]
+hydrate = ["leptos/hydrate"]
+ssr = ["leptos/ssr"]
+
 [build-dependencies]
 tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
 lindera-dictionary = { workspace = true, features = ["build_rs"] }
 serde_json.workspace = true
 
 [package.metadata.leptos]
+output-name = "origa_ui"
+lib-features = ["csr"]
+lib-default-features = false
+lib-profile-release = "wasm-release"
 site-root = "target/site"
 site-pkg-dir = "pkg"
 
 assets-dir = "public"
 style-file = "input.css"
 # tailwind-input = "input.css"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
