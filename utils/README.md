@@ -1,4 +1,4 @@
-# Tokenizer CLI
+# Utils CLI
 
 Unified command-line interface for Japanese tokenization and OCR tools.
 
@@ -8,7 +8,7 @@ Unified command-line interface for Japanese tokenization and OCR tools.
 cargo build --release
 ```
 
-The binary will be available at `target/release/tokenizer`.
+The binary will be available at `target/release/utils`.
 
 ## Usage
 
@@ -20,11 +20,11 @@ Tokenizes Japanese text and extracts vocabulary words.
 
 ```bash
 # Tokenize a text string
-tokenizer tokenize "日本語のテキスト"
+utils tokenize "日本語のテキスト"
 
 # Tokenize from a file
-tokenizer tokenize -f path/to/file.txt
-tokenizer tokenize path/to/file.txt  # Automatically detects if path exists
+utils tokenize -f path/to/file.txt
+utils tokenize path/to/file.txt  # Automatically detects if path exists
 ```
 
 **Options:**
@@ -37,10 +37,10 @@ Performs OCR on Japanese text images using NDLOCR-Lite models.
 
 ```bash
 # Basic usage
-tokenizer ndlocr -i image.png
+utils ndlocr -i image.png
 
 # With custom model paths
-tokenizer ndlocr \
+utils ndlocr \
   -i image.png \
   --detector path/to/detector.onnx \
   --rec30 path/to/rec30.onnx \
@@ -64,10 +64,10 @@ Batch processes JSON files in well_known_set format, updating the words arrays w
 
 ```bash
 # Process a single file
-tokenizer tokenize-well-known path/to/file.json
+utils tokenize-well-known path/to/file.json
 
 # Process all JSON files in a directory
-tokenizer tokenize-well-known path/to/directory/
+utils tokenize-well-known path/to/directory/
 ```
 
 **Arguments:**
@@ -79,22 +79,22 @@ Finds vocabulary words from well-known sets that are missing from the dictionary
 
 ```bash
 # Generate a report of missing vocabulary
-tokenizer find-missing
+utils find-missing
 
 # Generate a report with custom output path
-tokenizer find-missing -o custom_report.md
+utils find-missing -o custom_report.md
 
 # Auto-generate translations for missing words
-tokenizer find-missing --generate
+utils find-missing --generate
 
 # Generate only Russian translations
-tokenizer find-missing --generate --russian-only
+utils find-missing --generate --russian-only
 
 # Generate only English translations
-tokenizer find-missing --generate --english-only
+utils find-missing --generate --english-only
 
 # With custom API settings
-tokenizer find-missing \
+utils find-missing \
   --generate \
   --api-base http://localhost:8000/v1 \
   --api-key your-api-key \
@@ -116,16 +116,16 @@ tokenizer find-missing \
 To see all available commands:
 
 ```bash
-tokenizer --help
+utils --help
 ```
 
 To see help for a specific command:
 
 ```bash
-tokenizer tokenize --help
-tokenizer ndlocr --help
-tokenizer tokenize-well-known --help
-tokenizer find-missing --help
+utils tokenize --help
+utils ndlocr --help
+utils tokenize-well-known --help
+utils find-missing --help
 ```
 
 ## Dictionary Requirements

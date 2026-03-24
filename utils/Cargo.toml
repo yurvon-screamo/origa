@@ -1,5 +1,5 @@
 [package]
-name = "tokenizer"
+name = "utils"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
@@ -8,7 +8,7 @@ repository.workspace = true
 readme.workspace = true
 
 [[bin]]
-name = "tokenizer"
+name = "utils"
 path = "src/main.rs"
 
 [dependencies]

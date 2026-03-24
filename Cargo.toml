@@ -1,5 +1,5 @@
 [workspace]
-members = ["origa", "tokenizer", "origa_ui", "tauri"]
+members = ["origa", "utils", "origa_ui", "tauri"]
 resolver = "2"
 
 [workspace.package]
@@ -59,7 +59,7 @@ getrandom = "0.3"
 
 # Origa workspace crates
 origa = { path = "./origa" }
-tokenizer = { path = "./tokenizer" }
+utils = { path = "./utils" }
 
 # Utility
 idb = "0.6"
