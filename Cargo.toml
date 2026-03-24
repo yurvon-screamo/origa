@@ -69,7 +69,7 @@ lexical-sort = "0.3"
 rstest = "0.26"
 
 # UI
-leptos = { version = "0.8", default-features = false, features = ["csr"] }
+leptos = { version = "0.8", default-features = false }
 leptos_icons = "0.7"
 icondata = "0.7"
 pulldown-cmark = "0.12"
@@ -158,3 +158,10 @@ lto = "fat"
 codegen-units = 1
 panic = "abort"
 strip = true
+
+[profile.wasm-release]
+inherits = "release"
+opt-level = 'z'
+lto = "fat"
+codegen-units = 1
+panic = "abort"
