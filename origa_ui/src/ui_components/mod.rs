@@ -65,6 +65,7 @@ pub use delete_button::DeleteButton;
 pub use delete_confirm_modal::DeleteConfirmModal;
 pub use divider::{Divider, DividerVariant};
 pub use drawer::Drawer;
+pub use dropdown::{Dropdown, DropdownItem};
 pub use favorite_button::FavoriteButton;
 pub use furigana::FuriganaText;
 pub use history_button::HistoryButton;
