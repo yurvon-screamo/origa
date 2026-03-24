@@ -23,28 +23,6 @@ impl OnboardingStep {
         }
     }
 
-    #[allow(dead_code)]
-    pub fn from_usize(value: usize) -> Self {
-        match value {
-            0 => OnboardingStep::Intro,
-            1 => OnboardingStep::Jlpt,
-            2 => OnboardingStep::Apps,
-            3 => OnboardingStep::Progress,
-            _ => OnboardingStep::Summary,
-        }
-    }
-
-    #[allow(dead_code)]
-    pub fn label(&self) -> &'static str {
-        match self {
-            OnboardingStep::Intro => "Добро пожаловать",
-            OnboardingStep::Jlpt => "Уровень",
-            OnboardingStep::Apps => "Приложения",
-            OnboardingStep::Progress => "Прогресс",
-            OnboardingStep::Summary => "Итог",
-        }
-    }
-
     pub fn is_first(&self) -> bool {
         matches!(self, OnboardingStep::Intro)
     }
