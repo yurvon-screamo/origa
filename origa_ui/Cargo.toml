@@ -50,8 +50,6 @@ bincode.workspace = true
 [features]
 default = ["csr"]
 csr = ["leptos/csr"]
-hydrate = ["leptos/hydrate"]
-ssr = ["leptos/ssr"]
 
 [build-dependencies]
 tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
