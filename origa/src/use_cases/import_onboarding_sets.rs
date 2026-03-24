@@ -60,15 +60,16 @@ impl<'a, R: UserRepository, L: WellKnownSetLoader> ImportOnboardingSetsUseCase<'
             debug!(set_id = %set_id, words_count = set.words().len(), "Processing set");
 
             let set_level = *set.level();
-            let words_result =
-                VocabularyCard::from_text(&set.words().join(" "), &native_language);
+            let words_result = VocabularyCard::from_text(&set.words().join(" "), &native_language);
 
             result.skipped_no_translation += words_result.skipped_no_translation.len();
 
             for vocab_card in words_result.cards {
-                    if let Ok(study_card) =
-                    self.create_vocabulary_card(&mut user, vocab_card, &mut result.skipped_duplicates)
-                {
+                if let Ok(study_card) = self.create_vocabulary_card(
+                    &mut user,
+                    vocab_card,
+                    &mut result.skipped_duplicates,
+                ) {
                     result.created_vocabulary += 1;
 
                     self.process_kanji_from_vocab(

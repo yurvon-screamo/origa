@@ -19,7 +19,9 @@ pub use stat_card::StatCard;
 pub use stats_grid::StatsGrid;
 
 use crate::store::auth_store::AuthStore;
-use crate::ui_components::{PageLayout, PageLayoutVariant, Spinner, Text, TextSize, TypographyVariant};
+use crate::ui_components::{
+    PageLayout, PageLayoutVariant, Spinner, Text, TextSize, TypographyVariant,
+};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos_router::hooks::use_navigate;

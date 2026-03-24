@@ -20,10 +20,10 @@ fn extract_lesson_number(id: &str) -> Option<usize> {
         if let Ok(num) = part.parse::<usize>() {
             return Some(num);
         }
-        if let Some(stripped) = part.strip_prefix('0') {
-            if let Ok(num) = stripped.parse::<usize>() {
-                return Some(num);
-            }
+        if let Some(stripped) = part.strip_prefix('0')
+            && let Ok(num) = stripped.parse::<usize>()
+        {
+            return Some(num);
         }
     }
     None

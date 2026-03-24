@@ -1,8 +1,8 @@
 mod onboarding_state;
 
+mod apps_step;
 mod intro_step;
 mod jlpt_step;
-mod apps_step;
 mod progress_step;
 mod summary_step;
 
@@ -18,7 +18,7 @@ use jlpt_step::JlptStep;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos_router::hooks::use_navigate;
-use onboarding_state::{OnboardingStep, OnboardingState};
+use onboarding_state::{OnboardingState, OnboardingStep};
 use origa::domain::User;
 use origa::traits::{UserRepository, WellKnownSetLoader};
 use origa::use_cases::ImportOnboardingSetsUseCase;

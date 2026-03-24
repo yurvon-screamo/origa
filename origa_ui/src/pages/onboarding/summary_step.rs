@@ -135,7 +135,7 @@ pub fn SummaryStep() -> impl IntoView {
                                                 <div class="flex items-center gap-2 p-2 rounded hover:bg-gray-50">
                                                     <Checkbox
                                                         checked=Signal::derive(move || !is_excluded.get())
-                                                        label=Signal::derive(|| String::new())
+                                                        label=Signal::derive(String::new)
                                                         on_change=Callback::new(move |()| {
                                                             toggle_set.run(set_id_for_cb.clone());
                                                         })
