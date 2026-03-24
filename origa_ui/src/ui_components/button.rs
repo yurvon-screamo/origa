@@ -27,9 +27,19 @@ pub fn Button(
     #[prop(optional, into)] disabled: Signal<bool>,
     #[prop(optional, into)] loading: Signal<bool>,
     #[prop(optional, into)] button_type: Signal<String>,
+    #[prop(optional, into)] test_id: Signal<String>,
     #[prop(optional)] on_click: Option<Callback<MouseEvent>>,
     children: Children,
 ) -> impl IntoView {
+    let test_id_val = move || {
+        let val = test_id.get();
+        if val.is_empty() {
+            None
+        } else {
+            Some(val)
+        }
+    };
+
     view! {
         <button
             type=move || {
@@ -54,6 +64,7 @@ pub fn Button(
                 format!("btn {} {} {} {} {} {}", v, s, class.get(), loading_class, focus_ring, btn_press)
             }
             disabled=move || disabled.get() || loading.get()
+            data-testid=test_id_val
             on:click=move |ev| {
                 if let Some(on_click) = on_click {
                     on_click.run(ev);

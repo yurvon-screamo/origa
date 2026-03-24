@@ -2,7 +2,10 @@ use crate::ui_components::{Card, Dropdown, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 
 use super::super::onboarding_state::OnboardingState;
-use super::duolingo_helpers::{build_module_items, build_unit_items, collect_units_to_import, format_import_info, is_unit_in_modules};
+use super::duolingo_helpers::{
+    build_module_items, build_unit_items, collect_units_to_import, format_import_info,
+    is_unit_in_modules,
+};
 use super::types::DuolingoModule;
 
 #[component]
@@ -19,13 +22,11 @@ pub fn DuolingoProgressSelector(
     let module_items = build_module_items(&modules);
 
     let modules_for_unit_items = modules.clone();
-    let unit_items = Signal::derive(move || {
-        build_unit_items(&modules_for_unit_items, selected_module.get())
-    });
+    let unit_items =
+        Signal::derive(move || build_unit_items(&modules_for_unit_items, selected_module.get()));
 
-    let import_info = Signal::derive(move || {
-        format_import_info(selected_module.get(), selected_unit.get())
-    });
+    let import_info =
+        Signal::derive(move || format_import_info(selected_module.get(), selected_unit.get()));
 
     let modules_for_effect = modules.clone();
     let app_id_for_effect = app_id;
@@ -86,7 +87,11 @@ pub fn DuolingoProgressSelector(
         );
     });
 
-    let app_label = if is_ru { "Duolingo (RU)" } else { "Duolingo (EN)" };
+    let app_label = if is_ru {
+        "Duolingo (RU)"
+    } else {
+        "Duolingo (EN)"
+    };
 
     view! {
         <Card class=Signal::derive(|| "p-4".to_string())>

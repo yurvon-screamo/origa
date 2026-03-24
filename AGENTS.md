@@ -61,6 +61,40 @@ cargo fmt --check
 cargo fmt
 ```
 
+### E2E Testing
+
+```bash
+# Установка (первичный запуск)
+cd end2end
+npm install
+npx playwright install
+
+# Запуск тестов
+npm test                    # Все тесты (headless)
+npm run test:ui            # С UI Playwright
+npm run test:headed        # В видимом браузере
+npm run test:debug         # Режим отладки
+npm run report             # Просмотр отчёта
+
+# Для CSR-проектов (запуск вручную)
+# Терминал 1: trunk serve
+cd origa_ui && trunk serve
+
+# Терминал 2: playwright tests
+cd end2end && npm test
+```
+
+### Environment Variables для E2E
+
+Скопировать `.env.example` в `.env` и настроить:
+- `TRAILBASE_URL` — URL TrailBase API (default: `https://origa.uwuwu.net`)
+- `ADMIN_EMAIL` — Email админа (default: `admin@localhost`)
+- `ADMIN_PASSWORD` — Пароль админа (обязателен для создания пользователей)
+
+Тестовые пользователи (hardcoded):
+- `TEST_USER_EMAIL=e2e-test@origa.local`
+- `TEST_USER_PASSWORD=e2e-test-password-123`
+
 ## Code Style & Conventions
 
 ### Imports

@@ -7,6 +7,7 @@ pub fn PasswordInput(
     #[prop(optional, into)] autocomplete: Signal<String>,
     #[prop(optional, into)] id: Signal<String>,
     #[prop(optional, into)] name: Signal<String>,
+    #[prop(optional, into)] test_id: Signal<String>,
 ) -> impl IntoView {
     let show_password = RwSignal::new(false);
     let autocomplete_val = move || {
@@ -30,6 +31,7 @@ pub fn PasswordInput(
                     autocomplete=Signal::derive(autocomplete_val)
                     id=id
                     name=name
+                    test_id=test_id
                     on_change=Callback::new(move |ev: leptos::ev::Event| {
                         value.set(event_target_value(&ev));
                     })

@@ -13,24 +13,49 @@ pub fn Input(
     #[prop(optional, into)] autocomplete: Signal<String>,
     #[prop(optional, into)] id: Signal<String>,
     #[prop(optional, into)] name: Signal<String>,
+    #[prop(optional, into)] test_id: Signal<String>,
     #[prop(optional)] on_change: Option<Callback<Event>>,
     #[prop(optional)] on_keydown: Option<Callback<leptos::ev::KeyboardEvent>>,
 ) -> impl IntoView {
     let input_type = move || {
         let t = input_type.get();
-        if t.is_empty() { "text".to_string() } else { t }
+        if t.is_empty() {
+            "text".to_string()
+        } else {
+            t
+        }
     };
     let autocomplete = move || {
         let a = autocomplete.get();
-        if a.is_empty() { "off".to_string() } else { a }
+        if a.is_empty() {
+            "off".to_string()
+        } else {
+            a
+        }
     };
     let id_val = move || {
         let val = id.get();
-        if val.is_empty() { None } else { Some(val) }
+        if val.is_empty() {
+            None
+        } else {
+            Some(val)
+        }
     };
     let name_val = move || {
         let val = name.get();
-        if val.is_empty() { None } else { Some(val) }
+        if val.is_empty() {
+            None
+        } else {
+            Some(val)
+        }
+    };
+    let test_id_val = move || {
+        let val = test_id.get();
+        if val.is_empty() {
+            None
+        } else {
+            Some(val)
+        }
     };
     let full_class = move || {
         let base_class = "input-field";
@@ -59,6 +84,7 @@ pub fn Input(
                     autocomplete=autocomplete
                     id=id_val
                     name=name_val
+                    data-testid=test_id_val
                     rows=r
                     bind:value=value
                     on:change=move |ev| {
@@ -83,6 +109,7 @@ pub fn Input(
                     autocomplete=autocomplete
                     id=id_val
                     name=name_val
+                    data-testid=test_id_val
                     bind:value=value
                     on:change=move |ev| {
                         if let Some(on_change) = on_change {
