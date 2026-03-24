@@ -3,7 +3,7 @@ mod onboarding_state;
 mod apps_step;
 mod intro_step;
 mod jlpt_step;
-mod progress_step;
+mod progress;
 mod summary_step;
 
 use crate::loaders::WellKnownSetLoaderImpl;
@@ -22,7 +22,7 @@ use onboarding_state::{OnboardingState, OnboardingStep};
 use origa::domain::User;
 use origa::traits::{UserRepository, WellKnownSetLoader};
 use origa::use_cases::ImportOnboardingSetsUseCase;
-use progress_step::ProgressStep;
+use progress::ProgressStep;
 use summary_step::SummaryStep;
 
 #[component]

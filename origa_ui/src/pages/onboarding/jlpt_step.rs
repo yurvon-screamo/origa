@@ -4,69 +4,33 @@ use origa::domain::JapaneseLevel;
 
 use super::onboarding_state::OnboardingState;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-enum JLPTSelection {
-    None,
-    N5,
-    N4,
-    N3,
-    N2,
-    N1,
-}
-
-impl JLPTSelection {
-    fn label(&self) -> &'static str {
-        match self {
-            JLPTSelection::None => "Не знаю",
-            JLPTSelection::N5 => "N5",
-            JLPTSelection::N4 => "N4",
-            JLPTSelection::N3 => "N3",
-            JLPTSelection::N2 => "N2",
-            JLPTSelection::N1 => "N1",
-        }
-    }
-
-    fn description(&self) -> &'static str {
-        match self {
-            JLPTSelection::None => "Начну с самого начала",
-            JLPTSelection::N5 => "Начальный уровень — базовые слова и грамматика",
-            JLPTSelection::N4 => "Базовый уровень — разговорный японский",
-            JLPTSelection::N3 => "Средний уровень — повседневное общение",
-            JLPTSelection::N2 => "Продвинутый — бизнес и формальный японский",
-            JLPTSelection::N1 => "Эксперт — свободное владение",
-        }
-    }
-
-    fn to_japanese_level(self) -> Option<JapaneseLevel> {
-        match self {
-            JLPTSelection::None => None,
-            JLPTSelection::N5 => Some(JapaneseLevel::N5),
-            JLPTSelection::N4 => Some(JapaneseLevel::N4),
-            JLPTSelection::N3 => Some(JapaneseLevel::N3),
-            JLPTSelection::N2 => Some(JapaneseLevel::N2),
-            JLPTSelection::N1 => Some(JapaneseLevel::N1),
-        }
-    }
-
-    fn from_japanese_level(level: Option<JapaneseLevel>) -> Self {
-        match level {
-            None => JLPTSelection::None,
-            Some(JapaneseLevel::N5) => JLPTSelection::N5,
-            Some(JapaneseLevel::N4) => JLPTSelection::N4,
-            Some(JapaneseLevel::N3) => JLPTSelection::N3,
-            Some(JapaneseLevel::N2) => JLPTSelection::N2,
-            Some(JapaneseLevel::N1) => JLPTSelection::N1,
-        }
-    }
-}
-
-const JLPT_OPTIONS: [JLPTSelection; 6] = [
-    JLPTSelection::None,
-    JLPTSelection::N5,
-    JLPTSelection::N4,
-    JLPTSelection::N3,
-    JLPTSelection::N2,
-    JLPTSelection::N1,
+const JLPT_UI_OPTIONS: &[(Option<JapaneseLevel>, &str, &str)] = &[
+    (None, "Не знаю", "Начну с самого начала"),
+    (
+        Some(JapaneseLevel::N5),
+        "N5",
+        "Начальный уровень — базовые слова и грамматика",
+    ),
+    (
+        Some(JapaneseLevel::N4),
+        "N4",
+        "Базовый уровень — разговорный японский",
+    ),
+    (
+        Some(JapaneseLevel::N3),
+        "N3",
+        "Средний уровень — повседневное общение",
+    ),
+    (
+        Some(JapaneseLevel::N2),
+        "N2",
+        "Продвинутый — бизнес и формальный японский",
+    ),
+    (
+        Some(JapaneseLevel::N1),
+        "N1",
+        "Эксперт — свободное владение",
+    ),
 ];
 
 #[component]
@@ -74,14 +38,9 @@ pub fn JlptStep() -> impl IntoView {
     let state =
         use_context::<RwSignal<OnboardingState>>().expect("OnboardingState context not found");
 
-    let selected = Memo::new(move |_| {
-        let current_level = state.get().selected_level;
-        JLPTSelection::from_japanese_level(current_level)
-    });
-
-    let select_level = Callback::new(move |selection: JLPTSelection| {
+    let select_level = Callback::new(move |level: Option<JapaneseLevel>| {
         state.update(|s| {
-            s.set_jlpt_level(selection.to_japanese_level());
+            s.set_jlpt_level(level);
         });
     });
 
@@ -100,13 +59,14 @@ pub fn JlptStep() -> impl IntoView {
 
             <div class="space-y-3">
                 <For
-                    each=move || JLPT_OPTIONS
-                    key=|option| *option
-                    children=move |option| {
-                        let is_selected = Memo::new(move |_| selected.get() == option);
-                        let option_label = option.label();
-                        let option_desc = option.description();
-                        let opt_for_click = option;
+                    each=move || JLPT_UI_OPTIONS.iter().enumerate()
+                    key=|(idx, _)| *idx
+                    children=move |(_idx, (level, label, description))| {
+                        let level = *level;
+                        let label = *label;
+                        let description = *description;
+                        let is_selected = Memo::new(move |_| state.get().selected_level == level);
+                        let level_for_click = level;
 
                         view! {
                             <div
@@ -119,7 +79,7 @@ pub fn JlptStep() -> impl IntoView {
                                     }
                                 }
                                 on:click=move |_| {
-                                    select_level.run(opt_for_click);
+                                    select_level.run(level_for_click);
                                 }
                             >
                                 <div class="flex items-center gap-3">
@@ -133,10 +93,10 @@ pub fn JlptStep() -> impl IntoView {
                                     }/>
                                     <div class="flex-1">
                                         <Text size=TextSize::Default variant=TypographyVariant::Primary>
-                                            {option_label}
+                                            {label}
                                         </Text>
                                         <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                                            {option_desc}
+                                            {description}
                                         </Text>
                                     </div>
                                 </div>
