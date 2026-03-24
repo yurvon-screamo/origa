@@ -61,7 +61,7 @@ pub fn id_to_set_type(id: &str) -> SetType {
         "DuolingoEn".to_string()
     } else if id.contains("_ru_") || id.starts_with("duolingo_") {
         "DuolingoRu".to_string()
-    } else if id.starts_with("minna_n5_") {
+    } else if id.starts_with("minna_n5_") || id.starts_with("minna_n4_") {
         "MinnaNoNihongo".to_string()
     } else {
         id.split('_').next().unwrap_or("Unknown").to_string()
@@ -92,6 +92,8 @@ pub fn resolve_set_path(id: &str) -> String {
         format!("domain/well_known_set/duolingo/{}/{}.json", level, filename)
     } else if id.starts_with("minna_n5_") {
         format!("domain/well_known_set/minna_n5/{}.json", id)
+    } else if id.starts_with("minna_n4_") {
+        format!("domain/well_known_set/minna_n4/{}.json", id)
     } else {
         format!("domain/well_known_set/{}.json", id)
     }
@@ -194,7 +196,7 @@ mod tests {
     #[case("duolingo_n5_animals", "DuolingoRu")]
     #[case("duolingo_n4_verbs", "DuolingoRu")]
     #[case("minna_n5_01", "MinnaNoNihongo")]
-    #[case("minna_n4_02", "minna")]
+    #[case("minna_n4_26", "MinnaNoNihongo")]
     #[case("unknown_id", "unknown")]
     #[case("some_random_set", "some")]
     fn test_id_to_set_type_various_prefixes(#[case] id: &str, #[case] expected: &str) {
@@ -223,7 +225,7 @@ mod tests {
         "domain/well_known_set/duolingo/n4/duolingo_jp_n4_2.json"
     )]
     #[case("minna_n5_01", "domain/well_known_set/minna_n5/minna_n5_01.json")]
-    #[case("minna_n4_02", "domain/well_known_set/minna_n4_02.json")]
+    #[case("minna_n4_26", "domain/well_known_set/minna_n4/minna_n4_26.json")]
     #[case("spy_family_s1", "domain/well_known_set/spy_family_s1.json")]
     #[case("random_id", "domain/well_known_set/random_id.json")]
     fn test_resolve_set_path_formats(#[case] id: &str, #[case] expected: &str) {

@@ -88,7 +88,10 @@ pub fn Dropdown(
     };
 
     let on_search_input = move |ev: leptos::ev::Event| {
-        if let Some(input) = ev.target().and_then(|t| t.dyn_into::<web_sys::HtmlInputElement>().ok()) {
+        if let Some(input) = ev
+            .target()
+            .and_then(|t| t.dyn_into::<web_sys::HtmlInputElement>().ok())
+        {
             search_query.set(input.value());
         }
     };
