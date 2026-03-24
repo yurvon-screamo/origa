@@ -11,18 +11,6 @@ readme.workspace = true
 name = "tokenizer"
 path = "src/main.rs"
 
-[[bin]]
-name = "ndlocr"
-path = "src/bin/ndlocr.rs"
-
-[[bin]]
-name = "tokenize_well_known"
-path = "src/bin/tokenize_well_known.rs"
-
-[[bin]]
-name = "find_missing_vocabulary"
-path = "src/bin/find_missing_vocabulary.rs"
-
 [dependencies]
 origa = { path = "../origa" }
 clap.workspace = true
