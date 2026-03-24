@@ -136,7 +136,7 @@ pub fn AppsStep() -> impl IntoView {
                                     </div>
                                     <Checkbox
                                         checked=Signal::derive(move || is_selected.get())
-                                        label=Signal::derive(|| String::new())
+                                        label=Signal::derive(String::new)
                                         on_change=Callback::new(move |()| {
                                             toggle_app.run(app_id_for_cb.clone());
                                         })

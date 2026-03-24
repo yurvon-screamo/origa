@@ -191,10 +191,10 @@ impl OnboardingState {
         self.selected_level = level;
         self.clear_previous_jlpt_selections();
 
-        if let Some(_) = level {
-            if let Some(jlpt_n5_set) = self.available_sets.iter().find(|s| s.id == "jlpt_n5") {
-                self.sets_to_import.push(jlpt_n5_set.clone());
-            }
+        if level.is_some()
+            && let Some(jlpt_n5_set) = self.available_sets.iter().find(|s| s.id == "jlpt_n5")
+        {
+            self.sets_to_import.push(jlpt_n5_set.clone());
         }
     }
 }

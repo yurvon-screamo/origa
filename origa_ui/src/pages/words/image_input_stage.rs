@@ -255,7 +255,9 @@ pub fn ImageInputStage(
             },
         );
 
-        let closure_ptr: Function = closure.as_ref().dyn_ref::<Function>()
+        let closure_ptr: Function = closure
+            .as_ref()
+            .dyn_ref::<Function>()
             .cloned()
             .expect("Closure must be convertible to Function");
         if window

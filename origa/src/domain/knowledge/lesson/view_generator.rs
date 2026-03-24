@@ -2,7 +2,7 @@ use crate::dictionary::grammar::get_rule_by_id;
 use crate::domain::knowledge::KnowledgeSet;
 use crate::domain::value_objects::NativeLanguage;
 use crate::domain::{Card, CardType, GrammarRuleCard, VocabularyCard};
-use rand::{prelude::IndexedRandom, seq::SliceRandom, Rng};
+use rand::{Rng, prelude::IndexedRandom, seq::SliceRandom};
 use serde::{Deserialize, Serialize};
 use ulid::Ulid;
 
@@ -663,7 +663,7 @@ mod tests {
 
     mod tests_yesno {
         use super::*;
-        use rand::{rngs::StdRng, SeedableRng};
+        use rand::{SeedableRng, rngs::StdRng};
 
         fn create_vocab_card_with_word(word: &str) -> Card {
             Card::Vocabulary(VocabularyCard::new(
