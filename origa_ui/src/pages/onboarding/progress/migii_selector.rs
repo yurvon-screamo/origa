@@ -6,7 +6,9 @@ use origa::domain::JapaneseLevel;
 
 use super::super::onboarding_state::OnboardingState;
 use super::app_type::level_to_str;
-use super::migii_helpers::{build_lesson_items, build_level_items, collect_lessons_to_import, is_lesson_in_levels};
+use super::migii_helpers::{
+    build_lesson_items, build_level_items, collect_lessons_to_import, is_lesson_in_levels,
+};
 use super::types::MigiiLesson;
 
 #[component]

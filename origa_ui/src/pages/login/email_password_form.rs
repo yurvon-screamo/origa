@@ -51,6 +51,7 @@ pub fn EmailPasswordForm(on_submit: Callback<(String, String)>) -> impl IntoView
                     id=Signal::derive(|| "email".to_string())
                     name=Signal::derive(|| "email".to_string())
                     placeholder=Signal::derive(|| "example@mail.com".to_string())
+                    test_id=Signal::derive(|| "email-input".to_string())
                 />
             </div>
 
@@ -58,6 +59,7 @@ pub fn EmailPasswordForm(on_submit: Callback<(String, String)>) -> impl IntoView
                 value=password
                 id=Signal::derive(|| "password".to_string())
                 name=Signal::derive(|| "password".to_string())
+                test_id=Signal::derive(|| "password-input".to_string())
             />
 
             <Button
@@ -66,6 +68,7 @@ pub fn EmailPasswordForm(on_submit: Callback<(String, String)>) -> impl IntoView
                 disabled=loading
                 button_type=Signal::derive(|| "submit".to_string())
                 class=Signal::derive(|| "w-full".to_string())
+                test_id=Signal::derive(|| "login-submit".to_string())
             >
                 "Войти"
             </Button>

@@ -72,6 +72,8 @@ site-pkg-dir = "pkg"
 assets-dir = "public"
 style-file = "input.css"
 # tailwind-input = "input.css"
+end2end-cmd = "npx playwright test"
+end2end-dir = "end2end"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
