@@ -12,19 +12,22 @@ pub fn ProtectedRoute(children: ChildrenFn) -> impl IntoView {
     let auth_store = use_context::<AuthStore>().expect("AuthStore not provided");
     let navigate = use_navigate();
 
-    let auth_store_for_effect = auth_store.clone();
-    Effect::new({
-        let navigate = navigate.clone();
-        move |_| {
-            let store = auth_store_for_effect.clone();
-            if store.is_checking_session.get() {
+    let is_authenticated = auth_store.is_authenticated();
+    let is_checking = auth_store.is_checking_session;
+
+    {
+        let auth_store = auth_store.clone();
+        Effect::new(move |_| {
+            if is_checking.get() {
                 return;
             }
-            if !store.is_authenticated().get() {
+
+            if !is_authenticated.get() {
+                auth_store.handle_session_expiry();
                 navigate("/login", Default::default());
             }
-        }
-    });
+        });
+    }
 
     move || {
         if auth_store.is_loading().get() {
@@ -34,7 +37,7 @@ pub fn ProtectedRoute(children: ChildrenFn) -> impl IntoView {
                 </div>
             }
             .into_any()
-        } else if auth_store.is_authenticated().get() {
+        } else if is_authenticated.get() {
             children().into_any()
         } else {
             view! { <Login/> }.into_any()

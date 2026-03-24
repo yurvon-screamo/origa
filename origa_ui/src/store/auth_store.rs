@@ -4,7 +4,10 @@ use origa::domain::{OrigaError, User};
 use origa::traits::UserRepository;
 
 use crate::pages::login::auth_handlers::get_or_create_profile;
-use crate::repository::{HybridUserRepository, TrailBaseClient, clear_session, get_session};
+use crate::repository::{
+    AuthError, HybridUserRepository, TrailBaseClient, clear_session, get_session, set_session,
+    trailbase_client::{is_refresh_in_progress, set_refresh_in_progress, should_refresh_session},
+};
 
 /// AuthStore - centralized authentication state management
 /// Single source of truth for:
@@ -78,40 +81,101 @@ impl AuthStore {
         &self.repository
     }
 
+    /// Get TrailBase client for auth operations
+    #[allow(dead_code)]
+    pub fn client(&self) -> &TrailBaseClient {
+        &self.client
+    }
+
+    /// Load user after successful authentication
+    async fn load_user_after_auth(
+        &self,
+        user_signal: RwSignal<Option<User>>,
+    ) -> Result<(), OrigaError> {
+        match self.repository.get_current_user().await {
+            Ok(Some(user)) => {
+                user_signal.set(Some(user));
+                Ok(())
+            }
+            Ok(None) => {
+                if self.repository.merge_current_user().await.is_ok()
+                    && let Ok(Some(user)) = self.repository.get_current_user().await
+                {
+                    user_signal.set(Some(user));
+                }
+                Ok(())
+            }
+            Err(e) => {
+                tracing::error!("Failed to load user: {:?}", e);
+                Err(e)
+            }
+        }
+    }
+
     // ========================================
     // Initialization
     // ========================================
 
     /// Check existing session from LocalStorage on app start
+    /// Implements proactive refresh logic: attempts refresh if session expires within 5 minutes
     pub fn check_session(&self) {
         let user_signal = self.user;
         let is_checking = self.is_checking_session;
-        let repository = self.repository.clone();
+
+        if is_refresh_in_progress() {
+            tracing::debug!("Refresh already in progress, skipping check_session");
+            is_checking.set(false);
+            return;
+        }
+
+        let client = self.client.clone();
+        let _repository = self.repository.clone();
+        let store = self.clone();
 
         spawn_local(async move {
-            if let Some(session) = get_session() {
-                let now = (js_sys::Date::now() / 1000.0) as u64;
+            let session = match get_session() {
+                Some(s) => s,
+                None => {
+                    is_checking.set(false);
+                    return;
+                }
+            };
 
-                if session.expires_at > now {
-                    match repository.get_current_user().await {
-                        Ok(Some(user)) => {
-                            user_signal.set(Some(user));
-                        }
-                        Ok(None) => {
-                            if repository.merge_current_user().await.is_ok()
-                                && let Ok(Some(user)) = repository.get_current_user().await
-                            {
-                                user_signal.set(Some(user));
-                            }
-                        }
-                        Err(e) => {
-                            tracing::error!("Failed to load user on session check: {:?}", e);
-                        }
+            let needs_refresh = should_refresh_session(session.expires_at);
+
+            if !needs_refresh {
+                tracing::debug!("Session still valid, loading user");
+                let _ = store.load_user_after_auth(user_signal).await;
+                is_checking.set(false);
+                return;
+            }
+
+            if session.refresh_token.is_empty() {
+                tracing::warn!("Session needs refresh but no refresh_token available");
+                clear_session();
+                is_checking.set(false);
+                return;
+            }
+
+            tracing::debug!("Attempting proactive session refresh");
+            set_refresh_in_progress(true);
+
+            match client.refresh_session(&session.refresh_token).await {
+                Ok(new_session) => {
+                    tracing::info!("Session refreshed successfully");
+                    if let Err(e) = set_session(&new_session) {
+                        tracing::error!("Failed to save refreshed session: {:?}", e);
                     }
-                } else {
+                    let _ = store.load_user_after_auth(user_signal).await;
+                }
+                Err(e) => {
+                    tracing::error!("Session refresh failed: {:?}", e);
                     clear_session();
+                    user_signal.set(None);
                 }
             }
+
+            set_refresh_in_progress(false);
             is_checking.set(false);
         });
     }
@@ -292,6 +356,34 @@ impl AuthStore {
             }
             Ok(None) => Err(OrigaError::CurrentUserNotExist {}),
             Err(e) => Err(e),
+        }
+    }
+
+    // ========================================
+    // Session Expiry Handling
+    // ========================================
+
+    /// Handle session expiry - clears all auth state
+    /// Call this when AuthError::SessionExpired is received
+    pub fn handle_session_expiry(&self) {
+        tracing::debug!("Handling session expiry - clearing auth state");
+
+        clear_session();
+        self.user.set(None);
+        self.is_data_loaded.set(false);
+        self.is_checking_session.set(false);
+    }
+
+    /// Process an error and handle session expiry if needed
+    /// Returns true if error was session expiry (and was handled)
+    #[allow(dead_code)]
+    pub fn handle_error_if_session_expired(&self, error: &AuthError) -> bool {
+        match error {
+            AuthError::SessionExpired => {
+                self.handle_session_expiry();
+                true
+            }
+            _ => false,
         }
     }
 }
