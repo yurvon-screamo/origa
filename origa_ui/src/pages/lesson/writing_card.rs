@@ -38,23 +38,33 @@ fn extract_kanji_data(kanji: &DomainCard, native_language: NativeLanguage) -> Ka
 
     let on_readings: Option<Vec<String>> = {
         let readings = kanji.on_readings();
-        if readings.is_empty() { None } else { Some(readings) }
+        if readings.is_empty() {
+            None
+        } else {
+            Some(readings)
+        }
     };
 
     let kun_readings: Option<Vec<String>> = {
         let readings = kanji.kun_readings();
-        if readings.is_empty() { None } else { Some(readings) }
+        if readings.is_empty() {
+            None
+        } else {
+            Some(readings)
+        }
     };
 
     let radicals: Option<Vec<crate::pages::lesson::kanji_card_details::RadicalDisplay>> =
         match kanji.radicals_info() {
             Ok(r) => Some(
                 r.iter()
-                    .map(|info| crate::pages::lesson::kanji_card_details::RadicalDisplay {
-                        symbol: info.radical(),
-                        name: info.name().to_string(),
-                        description: info.description().to_string(),
-                    })
+                    .map(
+                        |info| crate::pages::lesson::kanji_card_details::RadicalDisplay {
+                            symbol: info.radical(),
+                            name: info.name().to_string(),
+                            description: info.description().to_string(),
+                        },
+                    )
                     .collect(),
             ),
             Err(e) => {
@@ -108,7 +118,11 @@ fn extract_radical_data(radical: &DomainCard) -> RadicalData {
 
     let kanji_examples: Option<Vec<char>> = {
         let examples = radical.kanji_examples();
-        if examples.is_empty() { None } else { Some(examples) }
+        if examples.is_empty() {
+            None
+        } else {
+            Some(examples)
+        }
     };
 
     RadicalData {

@@ -22,7 +22,7 @@ pub use jlpt_progress::{CategoryProgress, JlptProgress, LevelProgressDetail};
 pub use knowledge::{
     Card, CardType, DailyHistoryItem, ExampleKanjiWord, GrammarInfo, GrammarRuleCard, KanjiCard,
     KnowledgeSet, LessonCardView, LessonViewGenerator, QuizCard, QuizOption, RadicalCard,
-    StudyCard, VocabularyCard,
+    StudyCard, VocabularyCard, YesNoCard,
 };
 pub use memory::{Difficulty, MemoryHistory, MemoryState, Rating, ReviewLog, Stability};
 pub use score_content::ScoreContentResult;

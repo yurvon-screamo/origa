@@ -10,7 +10,9 @@ pub use card::{Card, CardType, StudyCard};
 pub use daily_history::DailyHistoryItem;
 pub use grammar::GrammarRuleCard;
 pub use kanji::{ExampleKanjiWord, KanjiCard};
-pub use lesson::{GrammarInfo, LessonCardView, LessonViewGenerator, QuizCard, QuizOption};
+pub use lesson::{
+    GrammarInfo, LessonCardView, LessonViewGenerator, QuizCard, QuizOption, YesNoCard,
+};
 pub use radical::RadicalCard;
 pub use vocabulary::VocabularyCard;
 

@@ -1,9 +1,10 @@
 use std::collections::HashSet;
 
-use leptos::wasm_bindgen::JsCast;
 use leptos::wasm_bindgen::closure::Closure;
+use leptos::wasm_bindgen::JsCast;
 use origa::domain::{filter_japanese_text, furiganize_segments};
-use web_sys::{SpeechSynthesisUtterance, SpeechSynthesisVoice, window};
+use web_sys::js_sys::Function;
+use web_sys::{window, SpeechSynthesisUtterance, SpeechSynthesisVoice};
 
 pub fn is_speech_supported() -> bool {
     window().and_then(|w| w.speech_synthesis().ok()).is_some()
@@ -55,7 +56,9 @@ where
     }
 
     let closure = Closure::<dyn FnMut()>::new(on_end);
-    utterance.set_onend(Some(closure.as_ref().unchecked_ref()));
+    if let Some(func) = closure.as_ref().dyn_ref::<Function>() {
+        utterance.set_onend(Some(func));
+    }
     closure.forget();
 
     synthesis.speak(&utterance);
