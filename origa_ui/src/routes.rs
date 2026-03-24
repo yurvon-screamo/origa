@@ -1,4 +1,6 @@
-use crate::pages::{Grammar, Home, Kanji, Lesson, Login, Profile, Radicals, Sets, Words};
+use crate::pages::{
+    Grammar, Home, Kanji, Lesson, Login, Onboarding, Profile, Radicals, Sets, Words,
+};
 use crate::store::auth_store::AuthStore;
 use leptos::prelude::*;
 use leptos_router::components::*;
@@ -47,6 +49,7 @@ pub fn AppRoutes() -> impl IntoView {
             <Routes fallback=|| view! { <Login/> }>
                 <Route path=path!("/") view=Login />
                 <Route path=path!("login") view=Login />
+                <Route path=path!("onboarding") view=|| view! { <ProtectedRoute><Onboarding/></ProtectedRoute> } />
                 <Route path=path!("home") view=|| view! { <ProtectedRoute><Home/></ProtectedRoute> } />
                 <Route path=path!("profile") view=|| view! { <ProtectedRoute><Profile/></ProtectedRoute> } />
                 <Route path=path!("words") view=|| view! { <ProtectedRoute><Words/></ProtectedRoute> } />

@@ -5,6 +5,7 @@ mod create_kanji_card;
 mod create_vocabulary_card;
 mod delete_card;
 mod extract_text_from_image;
+mod import_onboarding_sets;
 mod rate_card;
 mod select_cards_to_fixation;
 mod select_cards_to_lesson;
@@ -28,6 +29,9 @@ pub use create_kanji_card::CreateKanjiCardUseCase;
 pub use create_vocabulary_card::CreateVocabularyCardUseCase;
 pub use delete_card::DeleteCardUseCase;
 pub use extract_text_from_image::ExtractTextFromImageUseCase;
+pub use import_onboarding_sets::{
+    ImportOnboardingResult, ImportOnboardingSetsUseCase,
+};
 pub use rate_card::RateCardUseCase;
 pub use select_cards_to_fixation::SelectCardsToFixationUseCase;
 pub use select_cards_to_lesson::SelectCardsToLessonUseCase;

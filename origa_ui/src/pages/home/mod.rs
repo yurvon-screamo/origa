@@ -19,9 +19,10 @@ pub use stat_card::StatCard;
 pub use stats_grid::StatsGrid;
 
 use crate::store::auth_store::AuthStore;
-use crate::ui_components::{PageLayout, PageLayoutVariant};
+use crate::ui_components::{PageLayout, PageLayoutVariant, Spinner, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
+use leptos_router::hooks::use_navigate;
 use origa::domain::User;
 use origa::traits::UserRepository;
 
@@ -29,27 +30,56 @@ use origa::traits::UserRepository;
 pub fn Home() -> impl IntoView {
     let auth_store = use_context::<AuthStore>().expect("AuthStore not provided");
     let repository = auth_store.repository().clone();
+    let navigate = use_navigate();
 
     let current_user: RwSignal<Option<User>> = RwSignal::new(None);
+    let is_checking_onboarding = RwSignal::new(true);
 
     Effect::new({
         let repository = repository.clone();
+        let navigate = navigate.clone();
         move |_| {
             let repository = repository.clone();
+            let navigate = navigate.clone();
             spawn_local(async move {
-                if let Ok(Some(user)) = repository.get_current_user().await {
-                    current_user.set(Some(user));
+                match repository.get_current_user().await {
+                    Ok(Some(user)) => {
+                        if user.imported_sets().is_empty() {
+                            navigate("/onboarding", Default::default());
+                            return;
+                        }
+                        current_user.set(Some(user));
+                    }
+                    Ok(None) => {
+                        navigate("/login", Default::default());
+                    }
+                    Err(e) => {
+                        tracing::error!("Home: get_current_user error: {:?}", e);
+                        navigate("/login", Default::default());
+                    }
                 }
+                is_checking_onboarding.set(false);
             });
         }
     });
 
     view! {
         <PageLayout variant=PageLayoutVariant::Full>
-            <div class="flex flex-col pb-16">
-                <HomeHeader current_user />
-                <HomeContent />
-            </div>
+            <Show when=move || is_checking_onboarding.get()>
+                <div class="flex flex-col items-center justify-center min-h-screen gap-4">
+                    <Spinner />
+                    <Text size=TextSize::Small variant=TypographyVariant::Muted>
+                        "Загрузка..."
+                    </Text>
+                </div>
+            </Show>
+
+            <Show when=move || !is_checking_onboarding.get()>
+                <div class="flex flex-col pb-16">
+                    <HomeHeader current_user />
+                    <HomeContent />
+                </div>
+            </Show>
         </PageLayout>
     }
 }
