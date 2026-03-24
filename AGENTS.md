@@ -196,7 +196,7 @@ origa/
 ├── tauri/                    # Tauri v2 desktop application
 │   ├── src/                  # Tauri commands и setup
 │   └── tauri.conf.json       # Tauri конфигурация
-└── tokenizer/                # Токенизатор для японского текста
+└── utils/                    # Support-утилиты проекта
 ```
 
 ## Testing Principles (Владимир Хориков)
