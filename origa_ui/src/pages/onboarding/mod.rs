@@ -195,14 +195,14 @@ pub fn Onboarding() -> impl IntoView {
 
                 <Show when=move || !is_loading.get()>
                     <div class="onboarding-container">
-                        <Stepper _steps=steps _active=active_step />
+                        <Stepper steps=steps active=active_step />
 
                         <div class="onboarding-content mt-8">
                             <Show when=move || matches!(state.get().current_step, OnboardingStep::Intro)>
                                 <IntroStep />
                             </Show>
 
-                            <Show when=move || matches!(state.get().current_step, OnboardingStep::JLPT)>
+                            <Show when=move || matches!(state.get().current_step, OnboardingStep::Jlpt)>
                                 <JlptStep />
                             </Show>
 

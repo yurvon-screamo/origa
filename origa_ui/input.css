@@ -257,6 +257,20 @@ input[type="submit"],
 	background: var(--bg-aged);
 }
 
+.card-selectable {
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.card-selectable:hover {
+	background: var(--bg-aged);
+}
+
+.card-selectable.selected {
+	border-color: var(--accent-olive);
+	background: var(--bg-warm);
+}
+
 .tag {
 	font-family: "DM Mono", monospace;
 	font-size: 9px;
@@ -835,6 +849,12 @@ input[type="submit"],
 .tooltip-container:hover .tooltip {
 	opacity: 1;
 	visibility: visible;
+}
+
+.accordion-item-group {
+	display: flex;
+	flex-direction: column;
+	gap: 0;
 }
 
 .accordion-item {
