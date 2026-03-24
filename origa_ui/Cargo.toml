@@ -7,6 +7,10 @@ license-file.workspace = true
 repository.workspace = true
 readme.workspace = true
 
+[[bin]]
+name = "origa_ui_bin"
+path = "src/main.rs"
+
 [dependencies]
 leptos.workspace = true
 leptos_icons.workspace = true
