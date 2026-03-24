@@ -122,6 +122,7 @@ pub fn LessonContent() -> impl IntoView {
                             showing_answer: false,
                             review_count: 0,
                             selected_quiz_option: None,
+                            selected_yesno_answer: None,
                         });
                     }
                 }

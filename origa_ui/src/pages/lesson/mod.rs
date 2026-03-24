@@ -15,6 +15,7 @@ mod lesson_progress_view;
 mod lesson_state;
 mod on_quiz_select;
 mod on_rate;
+mod on_yesno_select;
 mod quiz_card;
 mod quiz_card_header;
 mod quiz_options;
@@ -25,6 +26,7 @@ mod rating_buttons;
 mod rating_buttons_view;
 mod writing_card;
 mod writing_card_details;
+mod yesno_card_view;
 
 pub use content::LessonContent;
 

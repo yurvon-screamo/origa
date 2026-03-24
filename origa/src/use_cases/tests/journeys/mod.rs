@@ -7,3 +7,4 @@ mod import_anki_pack;
 mod learning_fixation;
 mod learning_lesson;
 mod onboarding;
+mod yesno_journey;

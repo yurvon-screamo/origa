@@ -2,18 +2,20 @@ use crate::dictionary::grammar::get_rule_by_id;
 use crate::domain::knowledge::KnowledgeSet;
 use crate::domain::value_objects::NativeLanguage;
 use crate::domain::{Card, CardType, GrammarRuleCard, VocabularyCard};
-use rand::{seq::SliceRandom, Rng};
+use rand::{prelude::IndexedRandom, seq::SliceRandom, Rng};
 use serde::{Deserialize, Serialize};
 use ulid::Ulid;
 
 const QUIZ_OPTIONS_COUNT: usize = 4;
 
-const PROB_NORMAL_VIEW: f32 = 0.25;
-const PROB_QUIZ_VIEW: f32 = 0.5;
+const PROB_NORMAL_VIEW: f32 = 0.15;
+const PROB_QUIZ_VIEW: f32 = 0.30;
+const PROB_YESNO_VIEW: f32 = 0.55;
 const PROB_REVERSED_VIEW: f32 = 0.75;
 
-const PROB_KANJI_NORMAL: f32 = 0.33;
-const PROB_KANJI_QUIZ: f32 = 0.66;
+const PROB_KANJI_NORMAL: f32 = 0.25;
+const PROB_KANJI_QUIZ: f32 = 0.50;
+const PROB_KANJI_YESNO: f32 = 0.75;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct QuizOption {
@@ -63,6 +65,42 @@ impl QuizCard {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct YesNoCard {
+    card: Card,
+    statement_text: String,
+    is_correct: bool,
+}
+
+impl YesNoCard {
+    pub fn new(card: Card, statement_text: String, is_correct: bool) -> Self {
+        Self {
+            card,
+            statement_text,
+            is_correct,
+        }
+    }
+
+    pub fn card(&self) -> &Card {
+        &self.card
+    }
+
+    pub fn statement_text(&self) -> &str {
+        &self.statement_text
+    }
+
+    pub fn is_correct(&self) -> bool {
+        self.is_correct
+    }
+
+    /// Проверяет, правильно ли ответил пользователь
+    /// user_said_yes: true = "Да", false = "Нет"
+    /// Возвращает true если ответ правильный (верное утверждение + "Да" или ложное + "Нет")
+    pub fn check_answer(&self, user_said_yes: bool) -> bool {
+        (self.is_correct && user_said_yes) || (!self.is_correct && !user_said_yes)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct GrammarInfo {
     pub rule_id: Option<Ulid>,
     title: String,
@@ -95,6 +133,7 @@ impl GrammarInfo {
 pub enum LessonCardView {
     Normal(Card),
     Quiz(QuizCard),
+    YesNo(YesNoCard),
     Reversed(Card),
     GrammarMutated {
         card: Card,
@@ -111,6 +150,7 @@ impl LessonCardView {
             | LessonCardView::GrammarMutated { card, .. }
             | LessonCardView::Writing(card) => card,
             LessonCardView::Quiz(quiz) => quiz.card(),
+            LessonCardView::YesNo(yc) => yc.card(),
         }
     }
 
@@ -162,6 +202,50 @@ impl LessonCardView {
         let quiz = QuizCard::new(original_card, options);
         Ok(LessonCardView::Quiz(quiz))
     }
+
+    pub fn generate_yesno(
+        original_card: Card,
+        same_type_cards: &[Card],
+        lang: &NativeLanguage,
+        rng: &mut impl Rng,
+    ) -> Result<Self, crate::domain::OrigaError> {
+        match &original_card {
+            Card::Vocabulary(_) | Card::Kanji(_) | Card::Grammar(_) | Card::Radical(_) => {}
+        }
+
+        let question = original_card.question(lang)?;
+        let correct_answer = original_card.answer(lang)?;
+
+        let is_correct = rng.random_bool(0.5);
+
+        let statement_answer = if is_correct {
+            correct_answer.text().to_string()
+        } else {
+            let distractors: Vec<_> = same_type_cards
+                .iter()
+                .filter_map(|c| c.answer(lang).ok())
+                .filter(|a| a.text() != correct_answer.text())
+                .map(|a| a.text().to_string())
+                .collect();
+
+            if distractors.is_empty() {
+                return Ok(LessonCardView::Normal(original_card));
+            }
+
+            distractors
+                .choose(rng)
+                .expect("distractors guaranteed non-empty after is_empty check")
+                .clone()
+        };
+
+        let statement_text = format!("{} – {}", question.text(), statement_answer);
+
+        Ok(LessonCardView::YesNo(YesNoCard::new(
+            original_card,
+            statement_text,
+            is_correct,
+        )))
+    }
 }
 
 fn select_applicable_grammar<R: Rng>(
@@ -184,13 +268,17 @@ fn select_applicable_grammar<R: Rng>(
 fn select_writing_card_view<R: Rng>(
     card: &Card,
     same_type_cards: &[Card],
+    lang: &NativeLanguage,
     rng: &mut R,
 ) -> LessonCardView {
     let rand_val = rng.random::<f32>();
     if rand_val < PROB_KANJI_NORMAL {
         LessonCardView::Normal(card.clone())
     } else if rand_val < PROB_KANJI_QUIZ {
-        LessonCardView::generate_quiz(card.clone(), same_type_cards, &NativeLanguage::Russian)
+        LessonCardView::generate_quiz(card.clone(), same_type_cards, lang)
+            .unwrap_or_else(|_| LessonCardView::Normal(card.clone()))
+    } else if rand_val < PROB_KANJI_YESNO {
+        LessonCardView::generate_yesno(card.clone(), same_type_cards, lang, rng)
             .unwrap_or_else(|_| LessonCardView::Normal(card.clone()))
     } else {
         LessonCardView::Writing(card.clone())
@@ -256,15 +344,18 @@ impl<'a> LessonViewGenerator<'a> {
             }
 
             (CardType::Radical, true) | (CardType::Radical, false) => {
-                select_writing_card_view(card, same_type_cards, rng)
+                select_writing_card_view(card, same_type_cards, &NativeLanguage::Russian, rng)
             }
 
             (CardType::Kanji, true) | (CardType::Kanji, false) => {
-                select_writing_card_view(card, same_type_cards, rng)
+                select_writing_card_view(card, same_type_cards, &NativeLanguage::Russian, rng)
             }
 
             (_, true) => {
-                if rng.random_bool(0.5) {
+                let rand_val = rng.random::<f32>();
+                if rand_val < 0.33 {
+                    LessonCardView::Normal(card.clone())
+                } else if rand_val < 0.66 {
                     LessonCardView::generate_quiz(
                         card.clone(),
                         same_type_cards,
@@ -272,7 +363,13 @@ impl<'a> LessonViewGenerator<'a> {
                     )
                     .unwrap_or_else(|_| LessonCardView::Normal(card.clone()))
                 } else {
-                    LessonCardView::Normal(card.clone())
+                    LessonCardView::generate_yesno(
+                        card.clone(),
+                        same_type_cards,
+                        &NativeLanguage::Russian,
+                        rng,
+                    )
+                    .unwrap_or_else(|_| LessonCardView::Normal(card.clone()))
                 }
             }
 
@@ -285,6 +382,14 @@ impl<'a> LessonViewGenerator<'a> {
                         card.clone(),
                         same_type_cards,
                         &NativeLanguage::Russian,
+                    )
+                    .unwrap_or_else(|_| LessonCardView::Normal(card.clone()))
+                } else if rand_val < PROB_YESNO_VIEW {
+                    LessonCardView::generate_yesno(
+                        card.clone(),
+                        same_type_cards,
+                        &NativeLanguage::Russian,
+                        rng,
                     )
                     .unwrap_or_else(|_| LessonCardView::Normal(card.clone()))
                 } else if rand_val < PROB_REVERSED_VIEW {
@@ -553,6 +658,204 @@ mod tests {
                 }
                 _ => panic!("Expected Quiz view"),
             }
+        }
+    }
+
+    mod tests_yesno {
+        use super::*;
+        use rand::{rngs::StdRng, SeedableRng};
+
+        fn create_vocab_card_with_word(word: &str) -> Card {
+            Card::Vocabulary(VocabularyCard::new(
+                Question::new(word.to_string()).unwrap(),
+            ))
+        }
+
+        fn create_yesno_card(is_correct: bool) -> YesNoCard {
+            let card = create_vocab_card_with_word("テスト");
+            YesNoCard::new(card, "テスト – тест".to_string(), is_correct)
+        }
+
+        #[test]
+        fn test_yesno_card_check_answer_correct_yes() {
+            let yesno = create_yesno_card(true);
+            assert!(yesno.check_answer(true));
+        }
+
+        #[test]
+        fn test_yesno_card_check_answer_false_no() {
+            let yesno = create_yesno_card(false);
+            assert!(yesno.check_answer(false));
+        }
+
+        #[test]
+        fn test_yesno_card_check_answer_wrong_yes() {
+            let yesno = create_yesno_card(false);
+            assert!(!yesno.check_answer(true));
+        }
+
+        #[test]
+        fn test_yesno_card_check_answer_wrong_no() {
+            let yesno = create_yesno_card(true);
+            assert!(!yesno.check_answer(false));
+        }
+
+        #[test]
+        fn test_generate_yesno_correct_statement() {
+            crate::use_cases::init_real_dictionaries();
+
+            let vocab_words = ["猫", "犬", "鳥", "魚"];
+            let cards: Vec<Card> = vocab_words
+                .iter()
+                .map(|w| create_vocab_card_with_word(w))
+                .collect();
+
+            let mut rng = StdRng::seed_from_u64(42);
+            let result = LessonCardView::generate_yesno(
+                cards[0].clone(),
+                &cards[1..],
+                &NativeLanguage::Russian,
+                &mut rng,
+            );
+
+            assert!(result.is_ok());
+            match result.unwrap() {
+                LessonCardView::YesNo(yesno) => {
+                    assert!(!yesno.statement_text().is_empty());
+                }
+                _ => panic!("Expected YesNo view"),
+            }
+        }
+
+        #[test]
+        fn test_generate_yesno_false_statement() {
+            crate::use_cases::init_real_dictionaries();
+
+            let vocab_words = ["猫", "犬", "鳥", "魚"];
+            let cards: Vec<Card> = vocab_words
+                .iter()
+                .map(|w| create_vocab_card_with_word(w))
+                .collect();
+
+            let mut rng = StdRng::seed_from_u64(123);
+            let result = LessonCardView::generate_yesno(
+                cards[0].clone(),
+                &cards[1..],
+                &NativeLanguage::Russian,
+                &mut rng,
+            );
+
+            assert!(result.is_ok());
+            match result.unwrap() {
+                LessonCardView::YesNo(yesno) => {
+                    assert!(!yesno.statement_text().is_empty());
+                }
+                _ => panic!("Expected YesNo view"),
+            }
+        }
+
+        #[test]
+        fn test_generate_yesno_fallback_no_distractors() {
+            crate::use_cases::init_real_dictionaries();
+
+            let card = create_vocab_card_with_word("猫");
+            let empty_cards: Vec<Card> = vec![];
+
+            let mut rng = StdRng::seed_from_u64(42);
+            let result = LessonCardView::generate_yesno(
+                card.clone(),
+                &empty_cards,
+                &NativeLanguage::Russian,
+                &mut rng,
+            );
+
+            assert!(result.is_ok());
+            match result.unwrap() {
+                LessonCardView::Normal(returned_card) => {
+                    assert_eq!(returned_card, card);
+                }
+                _ => panic!("Expected Normal fallback when no distractors available"),
+            }
+        }
+
+        #[test]
+        fn test_yesno_probability_distribution() {
+            crate::use_cases::init_real_dictionaries();
+
+            let vocab_words = ["猫", "犬", "鳥", "魚", "馬", "牛", "羊", "豚"];
+            let cards: Vec<Card> = vocab_words
+                .iter()
+                .map(|w| create_vocab_card_with_word(w))
+                .collect();
+
+            let iterations = 1000;
+            let mut yesno_count = 0;
+
+            for seed in 0..iterations {
+                let mut rng = StdRng::seed_from_u64(seed);
+                let result = LessonCardView::generate_yesno(
+                    cards[0].clone(),
+                    &cards[1..],
+                    &NativeLanguage::Russian,
+                    &mut rng,
+                );
+
+                if let Ok(LessonCardView::YesNo(_)) = result {
+                    yesno_count += 1;
+                }
+            }
+
+            let ratio = yesno_count as f32 / iterations as f32;
+
+            // YesNo должен генерироваться примерно в 100% случаев при наличии дистракторов
+            // (fallback на Normal происходит только когда is_correct=false И нет дистракторов)
+            assert!(ratio > 0.95, "YesNo generation ratio too low: {ratio}");
+        }
+
+        #[test]
+        fn test_yesno_is_correct_distribution() {
+            crate::use_cases::init_real_dictionaries();
+
+            let vocab_words = ["猫", "犬", "鳥", "魚"];
+            let cards: Vec<Card> = vocab_words
+                .iter()
+                .map(|w| create_vocab_card_with_word(w))
+                .collect();
+
+            let iterations = 1000;
+            let mut correct_count = 0;
+            let mut incorrect_count = 0;
+
+            for seed in 0..iterations {
+                let mut rng = StdRng::seed_from_u64(seed);
+                let result = LessonCardView::generate_yesno(
+                    cards[0].clone(),
+                    &cards[1..],
+                    &NativeLanguage::Russian,
+                    &mut rng,
+                );
+
+                if let Ok(LessonCardView::YesNo(yesno)) = result {
+                    if yesno.is_correct() {
+                        correct_count += 1;
+                    } else {
+                        incorrect_count += 1;
+                    }
+                }
+            }
+
+            let correct_ratio = correct_count as f32 / iterations as f32;
+            let incorrect_ratio = incorrect_count as f32 / iterations as f32;
+
+            // is_correct должен быть примерно 50/50 из-за rng.random_bool(0.5)
+            assert!(
+                (0.45..=0.55).contains(&correct_ratio),
+                "is_correct ratio should be ~50%, got {correct_ratio}"
+            );
+            assert!(
+                (0.45..=0.55).contains(&incorrect_ratio),
+                "is_incorrect ratio should be ~50%, got {incorrect_ratio}"
+            );
         }
     }
 }

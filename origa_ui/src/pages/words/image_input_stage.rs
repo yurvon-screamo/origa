@@ -255,7 +255,9 @@ pub fn ImageInputStage(
             },
         );
 
-        let closure_ptr: Function = closure.as_ref().unchecked_ref::<Function>().clone();
+        let closure_ptr: Function = closure.as_ref().dyn_ref::<Function>()
+            .cloned()
+            .expect("Closure must be convertible to Function");
         if window
             .add_event_listener_with_callback("paste", &closure_ptr)
             .is_ok()
@@ -454,7 +456,9 @@ async fn read_file_as_data_url(file: &File) -> Result<String, String> {
         }
     });
 
-    reader.set_onloadend(Some(closure.as_ref().unchecked_ref()));
+    if let Some(func) = closure.as_ref().dyn_ref::<Function>() {
+        reader.set_onloadend(Some(func));
+    }
     closure.forget();
 
     reader
