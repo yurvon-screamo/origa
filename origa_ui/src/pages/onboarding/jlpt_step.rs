@@ -37,7 +37,7 @@ impl JLPTSelection {
         }
     }
 
-    fn to_japanese_level(&self) -> Option<JapaneseLevel> {
+    fn to_japanese_level(self) -> Option<JapaneseLevel> {
         match self {
             JLPTSelection::None => None,
             JLPTSelection::N5 => Some(JapaneseLevel::N5),
