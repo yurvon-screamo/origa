@@ -1,14 +1,12 @@
 use leptos::prelude::*;
 
 #[derive(Clone, Debug)]
-
 pub struct StepperStep {
     pub number: u32,
     pub label: String,
 }
 
 #[derive(Clone, Copy, PartialEq, Default, Debug)]
-
 pub enum StepStatus {
     #[default]
     Pending,
@@ -18,50 +16,43 @@ pub enum StepStatus {
 
 #[component]
 pub fn Stepper(
-    #[prop(optional, into)] _steps: Signal<Vec<StepperStep>>,
-    #[prop(optional)] _active: RwSignal<usize>,
+    #[prop(optional, into)] steps: Signal<Vec<StepperStep>>,
+    #[prop(optional)] active: RwSignal<usize>,
 ) -> impl IntoView {
     view! {
         <div class="stepper">
             <For
-                each=move || {
-                    let steps = _steps.get();
-                    let active_idx = _active.get();
-                    steps.into_iter().enumerate().map(move |(idx, step)| {
-                        let status = if idx < active_idx {
-                            StepStatus::Completed
-                        } else if idx == active_idx {
-                            StepStatus::Active
-                        } else {
-                            StepStatus::Pending
-                        };
-                        (idx, step, status)
-                    }).collect::<Vec<_>>()
-                }
-                key=|(idx, _, _)| *idx
-                children=move |(idx, step, status)| {
-                    let steps_count = _steps.get().len();
-                    let is_last = idx == steps_count - 1;
-                    let status_class = match status {
-                        StepStatus::Active => "active",
-                        StepStatus::Completed => "completed",
-                        StepStatus::Pending => "",
-                    };
-                    let line_class = if matches!(status, StepStatus::Completed) { "" } else { "opacity-30" };
+                each=move || steps.get().into_iter().enumerate()
+                key=|(idx, _)| *idx
+                children=move |(idx, step)| {
                     let step_number = step.number;
                     let step_label = step.label.clone();
+                    let steps_len = steps.get().len();
 
                     view! {
                         <>
-                            <div class=move || format!("stepper-step {}", status_class)>
+                            <div class=move || {
+                                let active_idx = active.get();
+                                if idx < active_idx {
+                                    "stepper-step completed"
+                                } else if idx == active_idx {
+                                    "stepper-step active"
+                                } else {
+                                    "stepper-step"
+                                }
+                            }>
                                 <div class="stepper-number">{step_number}</div>
                                 <span class="stepper-label hidden md:block">{step_label.clone()}</span>
                             </div>
-                            <Show
-                                when=move || !is_last
-                                fallback=move || view! { <div class="stepper-line"></div> }
-                            >
-                                <div class=move || format!("stepper-line {}", line_class)></div>
+                            <Show when=move || idx < steps_len - 1>
+                                <div class=move || {
+                                    let active_idx = active.get();
+                                    if idx < active_idx {
+                                        "stepper-line"
+                                    } else {
+                                        "stepper-line opacity-30"
+                                    }
+                                }></div>
                             </Show>
                         </>
                     }

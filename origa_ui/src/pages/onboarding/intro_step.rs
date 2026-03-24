@@ -7,11 +7,11 @@ pub fn IntroStep() -> impl IntoView {
         <div class="intro-step">
             <div class="text-center mb-8">
                 <Text size=TextSize::Large variant=TypographyVariant::Primary>
-                    "Добро пожаловать в Origa!"
+                    "Настроим обучение!"
                 </Text>
                 <div class="mt-2">
                     <Text size=TextSize::Default variant=TypographyVariant::Muted>
-                        "Origa помогает изучать японский язык с интервальными повторениями"
+                        "Сейчас подберём наборы слов под ваш уровень и опыт. Это займёт около 2 минут."
                     </Text>
                 </div>
             </div>
@@ -21,6 +21,9 @@ pub fn IntroStep() -> impl IntoView {
                     <div class="text-4xl mb-2">"📚"</div>
                     <Text size=TextSize::Default variant=TypographyVariant::Primary>
                         "Словарь"
+                    </Text>
+                    <Text size=TextSize::Small variant=TypographyVariant::Muted>
+                        "Слова из учебников и курсов"
                     </Text>
                     <Text size=TextSize::Small variant=TypographyVariant::Muted>
                         "Vocabulary"
@@ -33,6 +36,9 @@ pub fn IntroStep() -> impl IntoView {
                         "Иероглифы"
                     </Text>
                     <Text size=TextSize::Small variant=TypographyVariant::Muted>
+                        "Китайские символы для записи"
+                    </Text>
+                    <Text size=TextSize::Small variant=TypographyVariant::Muted>
                         "Kanji"
                     </Text>
                 </Card>
@@ -41,6 +47,9 @@ pub fn IntroStep() -> impl IntoView {
                     <div class="text-4xl mb-2">"📖"</div>
                     <Text size=TextSize::Default variant=TypographyVariant::Primary>
                         "Грамматика"
+                    </Text>
+                    <Text size=TextSize::Small variant=TypographyVariant::Muted>
+                        "Правила построения предложений"
                     </Text>
                     <Text size=TextSize::Small variant=TypographyVariant::Muted>
                         "Grammar"
@@ -53,6 +62,9 @@ pub fn IntroStep() -> impl IntoView {
                         "Радикалы"
                     </Text>
                     <Text size=TextSize::Small variant=TypographyVariant::Muted>
+                        "Составные части иероглифов"
+                    </Text>
+                    <Text size=TextSize::Small variant=TypographyVariant::Muted>
                         "Radicals"
                     </Text>
                 </Card>
@@ -60,7 +72,7 @@ pub fn IntroStep() -> impl IntoView {
 
             <div class="text-center mt-6">
                 <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                    "Выберите свой уровень и начните обучение"
+                    "Эти наборы будут импортированы на основе ваших выборов"
                 </Text>
             </div>
         </div>

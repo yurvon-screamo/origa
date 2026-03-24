@@ -112,10 +112,11 @@ pub fn AppsStep() -> impl IntoView {
                         view! {
                             <Card
                                 class=Signal::derive(move || {
+                                    let base = "card card-shadow card-selectable";
                                     if is_selected.get() {
-                                        "border-2 border-olive-500 bg-olive-50 cursor-pointer".to_string()
+                                        format!("{} selected", base)
                                     } else {
-                                        "border-2 border-transparent hover:border-gray-200 cursor-pointer".to_string()
+                                        base.to_string()
                                     }
                                 })
                             >

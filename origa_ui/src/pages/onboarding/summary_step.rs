@@ -29,6 +29,16 @@ fn format_word_count(count: usize) -> String {
     }
 }
 
+fn format_set_count(count: usize) -> String {
+    match count {
+        1 => "1 набор".to_string(),
+        n if n < 5 => format!("{} набора", n),
+        n if n % 10 == 1 && n % 100 != 11 => format!("{} набор", n),
+        n if n % 10 < 5 && (n % 100 < 10 || n % 100 >= 20) => format!("{} набора", n),
+        n => format!("{} наборов", n),
+    }
+}
+
 #[component]
 pub fn SummaryStep() -> impl IntoView {
     let state =
@@ -94,7 +104,7 @@ pub fn SummaryStep() -> impl IntoView {
                 </div>
             </div>
 
-            <div class="space-y-4">
+            <div class="accordion-item-group">
                 <For
                     each=move || sorted_types.get()
                     key=|t| t.clone()
@@ -106,52 +116,81 @@ pub fn SummaryStep() -> impl IntoView {
                         let type_word_count: Signal<usize> = Signal::derive(move || {
                             sets_for_type.get().iter().map(|s| s.word_count).sum()
                         });
+                        let type_set_count: Signal<usize> = Signal::derive(move || {
+                            sets_for_type.get().len()
+                        });
                         let type_label = get_type_label(&set_type);
+                        let is_expanded = RwSignal::new(true);
 
                         view! {
-                            <div class="border rounded-lg p-4">
-                                <div class="flex justify-between items-center mb-2">
-                                    <Text size=TextSize::Default variant=TypographyVariant::Primary>
-                                        {type_label}
-                                    </Text>
-                                    <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                                        {move || format_word_count(type_word_count.get())}
-                                    </Text>
+                            <div class=move || {
+                                format!("accordion-item {}", if is_expanded.get() { "active" } else { "" })
+                            }>
+                                <div
+                                    class="accordion-header"
+                                    on:click=move |_| is_expanded.update(|v| *v = !*v)
+                                >
+                                    <div class="flex items-center gap-2">
+                                        <Text size=TextSize::Default variant=TypographyVariant::Primary>
+                                            {type_label}
+                                        </Text>
+                                        <Text size=TextSize::Small variant=TypographyVariant::Muted>
+                                            {move || format!("({})", format_set_count(type_set_count.get()))}
+                                        </Text>
+                                    </div>
+                                    <div class="flex items-center gap-3">
+                                        <Text size=TextSize::Small variant=TypographyVariant::Muted>
+                                            {move || format_word_count(type_word_count.get())}
+                                        </Text>
+                                        <div class="accordion-icon"></div>
+                                    </div>
                                 </div>
+                                <div
+                                    class="accordion-content"
+                                    style:max-height=move || {
+                                        let count = sets_for_type.get().len();
+                                        let estimated_height = (count * 44 + 40).max(200);
+                                        if is_expanded.get() {
+                                            format!("{}px", estimated_height)
+                                        } else {
+                                            "0px".to_string()
+                                        }
+                                    }
+                                >
+                                    <div class="accordion-body">
+                                        <For
+                                            each=move || sets_for_type.get()
+                                            key=|s| s.id.clone()
+                                            children=move |set_meta| {
+                                                let set_id = set_meta.id.clone();
+                                                let set_id_for_cb = set_id.clone();
+                                                let set_title = set_meta.title_ru.clone();
+                                                let word_count = set_meta.word_count;
+                                                let is_excluded =
+                                                    Memo::new(move |_| excluded_sets.get().contains(&set_id));
 
-                                <div class="space-y-2">
-                                    <For
-                                        each=move || sets_for_type.get()
-                                        key=|s| s.id.clone()
-                                        children=move |set_meta| {
-                                            let set_id = set_meta.id.clone();
-                                            let set_id_for_cb = set_id.clone();
-                                            let set_title = set_meta.title_ru.clone();
-                                            let word_count = set_meta.word_count;
-                                            let is_excluded =
-                                                Memo::new(move |_| excluded_sets.get().contains(&set_id));
-
-                                            view! {
-                                                <div class="flex items-center gap-2 p-2 rounded hover:bg-gray-50">
-                                                    <Checkbox
-                                                        checked=Signal::derive(move || !is_excluded.get())
-                                                        label=Signal::derive(String::new)
-                                                        on_change=Callback::new(move |()| {
-                                                            toggle_set.run(set_id_for_cb.clone());
-                                                        })
-                                                    />
-                                                    <div class="flex-1">
-                                                        <Text size=TextSize::Small variant=TypographyVariant::Primary>
-                                                            {set_title}
+                                                view! {
+                                                    <div class="checkbox-container py-2">
+                                                        <Checkbox
+                                                            checked=Signal::derive(move || !is_excluded.get())
+                                                            label=Signal::derive(String::new)
+                                                            on_change=Callback::new(move |()| {
+                                                                toggle_set.run(set_id_for_cb.clone());
+                                                            })
+                                                        />
+                                                        <span class="flex-1">
+                                                            <Text size=TextSize::Small variant=TypographyVariant::Primary>
+                                                                {set_title}
+                                                            </Text>
+                                                        </span>
+                                                        <Text size=TextSize::Small variant=TypographyVariant::Muted>
+                                                            {format_word_count(word_count)}
                                                         </Text>
                                                     </div>
-                                                    <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                                                        {format_word_count(word_count)}
-                                                    </Text>
-                                                </div>
+                                                }
                                             }
-                                        }
-                                    />
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         }
