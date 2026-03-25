@@ -7,8 +7,8 @@ use std::sync::{Arc, Mutex};
 use tracing::debug;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::JsFuture;
-use web_sys::js_sys::Array;
 use web_sys::CanvasRenderingContext2d;
+use web_sys::js_sys::Array;
 
 const CANVAS_SIZE: u32 = 320;
 const SVG_VIEWBOX_SIZE: f64 = 109.0;
@@ -252,11 +252,7 @@ pub fn KanjiDrawingPractice(
 
     let test_id_val = move || {
         let val = test_id.get();
-        if val.is_empty() {
-            None
-        } else {
-            Some(val)
-        }
+        if val.is_empty() { None } else { Some(val) }
     };
 
     let test_id_canvas = move || {

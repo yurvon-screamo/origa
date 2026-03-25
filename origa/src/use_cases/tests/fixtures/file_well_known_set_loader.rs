@@ -2,7 +2,7 @@ use std::{io, path::PathBuf};
 
 use super::get_public_dir;
 use crate::domain::{JapaneseLevel, OrigaError};
-use crate::traits::{resolve_set_path, WellKnownSet, WellKnownSetLoader, WellKnownSetMeta};
+use crate::traits::{WellKnownSet, WellKnownSetLoader, WellKnownSetMeta, resolve_set_path};
 
 pub struct FileWellKnownSetLoader {
     public_dir: PathBuf,

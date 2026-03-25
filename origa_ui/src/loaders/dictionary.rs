@@ -2,7 +2,7 @@ use crate::repository::{get_cached_dictionary_rkyv, save_dictionary_to_cache_rky
 use crate::utils::yield_to_browser;
 use flate2::read::DeflateDecoder;
 use origa::domain::{
-    init_dictionary, init_dictionary_from_rkyv, is_dictionary_loaded, DictionaryData, OrigaError,
+    DictionaryData, OrigaError, init_dictionary, init_dictionary_from_rkyv, is_dictionary_loaded,
 };
 use std::io::Read;
 fn decompress(data: Vec<u8>) -> Result<Vec<u8>, OrigaError> {

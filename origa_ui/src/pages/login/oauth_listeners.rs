@@ -3,8 +3,8 @@ use crate::store::auth_store::AuthStore;
 use gloo_storage::{LocalStorage, Storage};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use leptos::wasm_bindgen::prelude::*;
 use leptos::wasm_bindgen::JsCast;
+use leptos::wasm_bindgen::prelude::*;
 use tracing::error;
 
 const LOGIN_PATH: &str = "/login";

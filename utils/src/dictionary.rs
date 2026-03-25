@@ -1,5 +1,5 @@
 use flate2::read::DeflateDecoder;
-use origa::domain::{init_dictionary, is_dictionary_loaded, DictionaryData, OrigaError};
+use origa::domain::{DictionaryData, OrigaError, init_dictionary, is_dictionary_loaded};
 use std::fs;
 use std::io::Read;
 use std::path::PathBuf;

@@ -1,8 +1,8 @@
-use crate::loaders::ocr_model_loader::ProgressCallback;
 use crate::loaders::ModelLoader;
+use crate::loaders::ocr_model_loader::ProgressCallback;
 use crate::ui_components::{
-    get_stage_info, Alert, AlertType, Button, ButtonVariant, LoadingStageItem, OcrLoadingStage,
-    OcrLoadingState, ProgressInfo, StageType, Text, TextSize, TypographyVariant,
+    Alert, AlertType, Button, ButtonVariant, LoadingStageItem, OcrLoadingStage, OcrLoadingState,
+    ProgressInfo, StageType, Text, TextSize, TypographyVariant, get_stage_info,
 };
 use leptos::prelude::*;
 use leptos::task::spawn_local;
@@ -692,7 +692,7 @@ fn calculate_speed_and_eta(start_time: Option<f64>, loaded: u64, total: u64) -> 
 }
 
 fn base64_decode(input: &str) -> Result<Vec<u8>, String> {
-    use base64::{engine::general_purpose::STANDARD, Engine};
+    use base64::{Engine, engine::general_purpose::STANDARD};
 
     if input.len() > MAX_BASE64_LEN {
         return Err(format!(

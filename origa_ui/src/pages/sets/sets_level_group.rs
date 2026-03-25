@@ -1,4 +1,4 @@
-use super::filters::{available_set_types, TypeFilter};
+use super::filters::{TypeFilter, available_set_types};
 use super::sets_type_group::SetsTypeGroup;
 use super::types::SetInfo;
 use crate::ui_components::{Heading, HeadingLevel};

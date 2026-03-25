@@ -78,7 +78,7 @@ impl GrammarRuleCard {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::dictionary::grammar::{init_grammar, is_grammar_loaded, GrammarData};
+    use crate::dictionary::grammar::{GrammarData, init_grammar, is_grammar_loaded};
     use crate::domain::NativeLanguage;
     use std::sync::Once;
 

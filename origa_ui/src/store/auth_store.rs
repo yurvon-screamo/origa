@@ -5,9 +5,8 @@ use origa::traits::UserRepository;
 
 use crate::pages::login::auth_handlers::get_or_create_profile;
 use crate::repository::{
-    clear_session, get_session, set_session,
+    AuthError, HybridUserRepository, TrailBaseClient, clear_session, get_session, set_session,
     trailbase_client::{is_refresh_in_progress, set_refresh_in_progress, should_refresh_session},
-    AuthError, HybridUserRepository, TrailBaseClient,
 };
 
 /// AuthStore - centralized authentication state management

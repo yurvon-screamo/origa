@@ -1,4 +1,4 @@
-use super::super::shared::{create_delete_callback, CardCounts, CardStatus, Filter, FilterBtn};
+use super::super::shared::{CardCounts, CardStatus, Filter, FilterBtn, create_delete_callback};
 use super::grammar_card_item::GrammarCardItem;
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{

@@ -1,13 +1,13 @@
-use crate::repository::session::{set_session, TrailBaseSession};
+use crate::repository::session::{TrailBaseSession, set_session};
 use crate::repository::trailbase_auth::{decode_jwt_claims, urlencoding_decode};
 use crate::repository::trailbase_records::RecordApi;
 
 use gloo_net::http::{Method, Request, Response};
 use gloo_timers::future::TimeoutFuture;
-use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use serde::{Deserialize, Serialize, de::DeserializeOwned};
 use std::collections::HashMap;
-use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::OnceLock;
+use std::sync::atomic::{AtomicBool, Ordering};
 use thiserror::Error;
 use tracing::debug;
 

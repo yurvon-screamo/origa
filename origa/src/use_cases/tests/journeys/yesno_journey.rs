@@ -1,7 +1,7 @@
 use rstest::rstest;
 
-use crate::domain::value_objects::Question;
 use crate::domain::User;
+use crate::domain::value_objects::Question;
 use crate::domain::{Card, NativeLanguage, RateMode, Rating, VocabularyCard, YesNoCard};
 use crate::traits::UserRepository;
 use crate::use_cases::tests::fixtures::InMemoryUserRepository;

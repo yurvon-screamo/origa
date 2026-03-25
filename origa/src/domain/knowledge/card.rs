@@ -1,8 +1,8 @@
 use crate::domain::{
+    OrigaError, Rating, ReviewLog,
     knowledge::{GrammarRuleCard, KanjiCard, RadicalCard, VocabularyCard},
     memory::{MemoryHistory, MemoryState},
     value_objects::{Answer, NativeLanguage, Question},
-    OrigaError, Rating, ReviewLog,
 };
 use serde::{Deserialize, Serialize};
 use ulid::Ulid;

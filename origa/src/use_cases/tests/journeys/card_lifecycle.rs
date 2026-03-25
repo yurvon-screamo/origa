@@ -3,7 +3,7 @@ use ulid::Ulid;
 use crate::domain::{JapaneseLevel, NativeLanguage, OrigaError, User};
 use crate::traits::{SetType, UserRepository, WellKnownSetLoader, WellKnownSetMeta};
 use crate::use_cases::tests::fixtures::{
-    create_test_vocab_card, init_real_dictionaries, FileWellKnownSetLoader, InMemoryUserRepository,
+    FileWellKnownSetLoader, InMemoryUserRepository, create_test_vocab_card, init_real_dictionaries,
 };
 use crate::use_cases::{
     CreateKanjiCardUseCase, CreateVocabularyCardUseCase, DeleteCardUseCase, ToggleFavoriteUseCase,

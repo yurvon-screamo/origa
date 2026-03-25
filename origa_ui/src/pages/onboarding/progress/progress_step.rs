@@ -2,7 +2,7 @@ use crate::ui_components::{Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 
 use super::super::onboarding_state::OnboardingState;
-use super::app_type::{parse_app_type, AppType};
+use super::app_type::{AppType, parse_app_type};
 use super::duolingo_selector::DuolingoProgressSelector;
 use super::migii_selector::MigiiProgressSelector;
 use super::minna_selector::MinnaProgressSelector;

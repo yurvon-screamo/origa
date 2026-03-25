@@ -3,7 +3,7 @@ use ulid::Ulid;
 
 use crate::domain::{NativeLanguage, OrigaError, RateMode, Rating, User};
 use crate::traits::UserRepository;
-use crate::use_cases::tests::fixtures::{create_user_with_vocab_cards, InMemoryUserRepository};
+use crate::use_cases::tests::fixtures::{InMemoryUserRepository, create_user_with_vocab_cards};
 use crate::use_cases::{
     CreateGrammarCardUseCase, RateCardUseCase, SelectCardsToFixationUseCase,
     SelectCardsToLessonUseCase,
