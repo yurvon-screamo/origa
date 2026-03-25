@@ -60,18 +60,18 @@ pub fn Login() -> impl IntoView {
     });
 
     view! {
-        <PageLayout variant=PageLayoutVariant::Full>
-            <CardLayout size=CardLayoutSize::Adaptive class="px-4 py-8">
+        <PageLayout variant=PageLayoutVariant::Full test_id=Signal::derive(|| "login-page".to_string())>
+            <CardLayout size=CardLayoutSize::Adaptive class="px-4 py-8" test_id=Signal::derive(|| "login-card".to_string())>
                 <LoginHeader />
                 <div class="space-y-6">
-                    <EmailPasswordForm on_submit=on_email_submit />
+                    <EmailPasswordForm on_submit=on_email_submit test_id=Signal::derive(|| "login-form".to_string()) />
 
                     <div class="flex items-center gap-4">
-                        <Divider variant=Signal::derive(|| DividerVariant::Single) class=Signal::derive(|| "flex-1".to_string()) />
-                        <Text size=TextSize::Small variant=TypographyVariant::Muted class="whitespace-nowrap">
+                        <Divider variant=Signal::derive(|| DividerVariant::Single) class=Signal::derive(|| "flex-1".to_string()) test_id=Signal::derive(|| "login-divider-left".to_string()) />
+                        <Text size=TextSize::Small variant=TypographyVariant::Muted class="whitespace-nowrap" test_id=Signal::derive(|| "login-divider-text".to_string())>
                             "или войти/зарегистрироваться через"
                         </Text>
-                        <Divider variant=Signal::derive(|| DividerVariant::Single) class=Signal::derive(|| "flex-1".to_string()) />
+                        <Divider variant=Signal::derive(|| DividerVariant::Single) class=Signal::derive(|| "flex-1".to_string()) test_id=Signal::derive(|| "login-divider-right".to_string()) />
                     </div>
 
                     <oauth_buttons::OAuthButtons />

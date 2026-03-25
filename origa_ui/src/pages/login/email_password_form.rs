@@ -7,7 +7,10 @@ use super::password_input::PasswordInput;
 use super::validation;
 
 #[component]
-pub fn EmailPasswordForm(on_submit: Callback<(String, String)>) -> impl IntoView {
+pub fn EmailPasswordForm(
+    #[prop(optional, into)] test_id: Signal<String>,
+    on_submit: Callback<(String, String)>,
+) -> impl IntoView {
     let email = RwSignal::new(String::new());
     let password = RwSignal::new(String::new());
     let loading = RwSignal::new(false);
@@ -31,10 +34,25 @@ pub fn EmailPasswordForm(on_submit: Callback<(String, String)>) -> impl IntoView
         handle_submit();
     };
 
+    let form_test_id = move || {
+        let val = test_id.get();
+        if val.is_empty() { None } else { Some(val) }
+    };
+
+    let error_test_id = Signal::derive(move || {
+        let base = test_id.get();
+        if base.is_empty() {
+            "login-error".to_string()
+        } else {
+            format!("{}-error", base)
+        }
+    });
+
     view! {
-        <form class="space-y-4" on:submit=on_submit_form>
+        <form class="space-y-4" on:submit=on_submit_form data-testid=form_test_id>
             <Show when=move || error.get().is_some()>
                 <Alert
+                    test_id=error_test_id
                     alert_type=Signal::derive(|| AlertType::Error)
                     message=Signal::derive(move || error.get().unwrap_or_default())
                 />

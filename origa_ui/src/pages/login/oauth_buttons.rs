@@ -4,12 +4,36 @@ use leptos::wasm_bindgen::JsCast;
 use leptos::wasm_bindgen::JsValue;
 
 #[component]
-pub fn OAuthButtons() -> impl IntoView {
+pub fn OAuthButtons(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoView {
+    let test_id_val = move || {
+        let val = test_id.get();
+        if val.is_empty() { None } else { Some(val) }
+    };
+
+    let google_test_id = Signal::derive(move || {
+        let val = test_id.get();
+        if val.is_empty() {
+            "oauth-google".to_string()
+        } else {
+            format!("{}-google", val)
+        }
+    });
+
+    let yandex_test_id = Signal::derive(move || {
+        let val = test_id.get();
+        if val.is_empty() {
+            "oauth-yandex".to_string()
+        } else {
+            format!("{}-yandex", val)
+        }
+    });
+
     view! {
-        <div class="space-y-3">
+        <div class="space-y-3" data-testid=test_id_val>
             <button
                 type="button"
                 class="w-full flex items-center justify-center gap-3 px-4 py-3 border border-[var(--border-dark)] rounded-lg bg-[var(--bg-cream)] hover:bg-[var(--bg-aged)] transition-colors"
+                data-testid=google_test_id
                 on:click=move |_: leptos::ev::MouseEvent| {
                     open_oauth_url(OAuthProvider::Google);
                 }
@@ -21,6 +45,7 @@ pub fn OAuthButtons() -> impl IntoView {
             <button
                 type="button"
                 class="w-full flex items-center justify-center gap-3 px-4 py-3 border border-[var(--border-dark)] rounded-lg bg-[var(--bg-cream)] hover:bg-[var(--bg-aged)] transition-colors"
+                data-testid=yandex_test_id
                 on:click=move |_: leptos::ev::MouseEvent| {
                     open_oauth_url(OAuthProvider::Yandex);
                 }
