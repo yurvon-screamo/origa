@@ -7,7 +7,7 @@ use crate::domain::{JapaneseLevel, OrigaError};
 
 pub static RADICAL_DICTIONARY: OnceLock<RadicalDatabase> = OnceLock::new();
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize, rkyv::Archive, rkyv::Serialize, rkyv::Deserialize)]
 pub struct RadicalData {
     pub radicals_json: String,
 }
@@ -20,6 +20,31 @@ pub fn init_radicals(data: RadicalData) -> Result<(), OrigaError> {
     let db = RadicalDatabase::from_json(&data.radicals_json)?;
     RADICAL_DICTIONARY.set(db).ok();
     Ok(())
+}
+
+/// Serialize RadicalData to rkyv bytes
+pub fn serialize_radicals_to_rkyv(data: &RadicalData) -> Result<Vec<u8>, OrigaError> {
+    let bytes =
+        rkyv::to_bytes::<rkyv::rancor::Error>(data).map_err(|e| OrigaError::KradfileError {
+            reason: format!("Failed to serialize radicals: {}", e),
+        })?;
+    Ok(bytes.to_vec())
+}
+
+/// Initialize radicals from rkyv bytes
+pub fn init_radicals_from_rkyv(bytes: &[u8]) -> Result<(), OrigaError> {
+    let archived =
+        rkyv::access::<ArchivedRadicalData, rkyv::rancor::Error>(bytes).map_err(|e| {
+            OrigaError::KradfileError {
+                reason: format!("Failed to validate radicals data: {:?}", e),
+            }
+        })?;
+
+    let data = RadicalData {
+        radicals_json: archived.radicals_json.as_str().to_string(),
+    };
+
+    init_radicals(data)
 }
 
 pub fn is_radicals_loaded() -> bool {

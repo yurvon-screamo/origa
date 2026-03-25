@@ -36,11 +36,11 @@ async fn load_well_known_set_migii_returns_words() {
     match result {
         Ok(set) => {
             assert!(!set.words().is_empty(), "migii_n5 set should have words");
-        }
+        },
         Err(OrigaError::WellKnownSetNotFound { set_id: id }) if id == set_id => {
             // Skip test if data file doesn't exist yet (feature not fully implemented)
             println!("Skipping: {set_id} data file not yet created");
-        }
+        },
         Err(e) => panic!("Unexpected error loading {set_id}: {e}"),
     }
 }
@@ -54,10 +54,10 @@ async fn load_well_known_set_duolingo_returns_words() {
     match result {
         Ok(set) => {
             assert!(!set.words().is_empty(), "duolingo_n5 set should have words");
-        }
+        },
         Err(OrigaError::WellKnownSetNotFound { set_id: id }) if id == set_id => {
             println!("Skipping: {set_id} data file not yet created");
-        }
+        },
         Err(e) => panic!("Unexpected error loading {set_id}: {e}"),
     }
 }
@@ -71,10 +71,10 @@ async fn load_well_known_set_minna_nihongo_returns_words() {
     match result {
         Ok(set) => {
             assert!(!set.words().is_empty(), "minna_n5 set should have words");
-        }
+        },
         Err(OrigaError::WellKnownSetNotFound { set_id: id }) if id == set_id => {
             println!("Skipping: {set_id} data file not yet created");
-        }
+        },
         Err(e) => panic!("Unexpected error loading {set_id}: {e}"),
     }
 }
@@ -85,13 +85,13 @@ async fn load_well_known_sets_meta_json_valid() {
     match loader.load_meta_list().await {
         Ok(meta_list) => {
             assert!(!meta_list.is_empty(), "meta list should not be empty");
-        }
+        },
         Err(OrigaError::WellKnownSetNotFound { .. }) => {
             println!("Skipping: well_known_sets_meta.json not found in test environment");
-        }
+        },
         Err(OrigaError::WellKnownSetParseError { .. }) => {
             println!("Skipping: well_known_sets_meta.json has invalid format in test environment");
-        }
+        },
         Err(e) => panic!("Unexpected error loading meta: {e}"),
     }
 }

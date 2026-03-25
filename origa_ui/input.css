@@ -1486,7 +1486,7 @@ input[type="submit"],
 	display: flex;
 	flex-direction: column;
 	gap: 12px;
-	z-index: 300;
+	z-index: 10000;
 	max-width: 360px;
 }
 
@@ -1530,6 +1530,25 @@ input[type="submit"],
 
 .toast-close:hover {
 	color: var(--fg-black);
+}
+
+.toast-progress {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.toast-progress .spinner {
+	width: 16px;
+	height: 16px;
+	border: 2px solid var(--fg-muted);
+	border-top-color: transparent;
+	border-radius: 50%;
+	animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+	to { transform: rotate(360deg); }
 }
 
 .quiz-option-neutral {

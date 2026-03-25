@@ -37,7 +37,9 @@ impl TokenInfo {
     }
 }
 
-#[derive(Clone, serde::Serialize, serde::Deserialize)]
+#[derive(
+    Clone, serde::Serialize, serde::Deserialize, rkyv::Archive, rkyv::Serialize, rkyv::Deserialize,
+)]
 pub struct DictionaryData {
     pub char_def: Vec<u8>,
     pub matrix: Vec<u8>,
@@ -47,6 +49,38 @@ pub struct DictionaryData {
     pub words_idx: Vec<u8>,
     pub words: Vec<u8>,
     pub metadata: Vec<u8>,
+}
+
+/// Convert DictionaryData to rkyv bytes for storage
+pub fn serialize_dictionary_to_rkyv(data: &DictionaryData) -> Result<Vec<u8>, OrigaError> {
+    let bytes =
+        rkyv::to_bytes::<rkyv::rancor::Error>(data).map_err(|e| OrigaError::TokenizerError {
+            reason: format!("Failed to serialize dictionary: {}", e),
+        })?;
+    Ok(bytes.to_vec())
+}
+
+/// Initialize dictionary from rkyv bytes directly (zero-copy access)
+pub fn init_dictionary_from_rkyv(bytes: &[u8]) -> Result<(), OrigaError> {
+    let archived =
+        rkyv::access::<ArchivedDictionaryData, rkyv::rancor::Error>(bytes).map_err(|e| {
+            OrigaError::TokenizerError {
+                reason: format!("Failed to validate dictionary data: {:?}", e),
+            }
+        })?;
+
+    let data = DictionaryData {
+        char_def: archived.char_def.to_vec(),
+        matrix: archived.matrix.to_vec(),
+        dict_da: archived.dict_da.to_vec(),
+        dict_vals: archived.dict_vals.to_vec(),
+        unk: archived.unk.to_vec(),
+        words_idx: archived.words_idx.to_vec(),
+        words: archived.words.to_vec(),
+        metadata: archived.metadata.to_vec(),
+    };
+
+    init_dictionary(data)
 }
 
 static DICTIONARY_DATA: OnceLock<DictionaryData> = OnceLock::new();

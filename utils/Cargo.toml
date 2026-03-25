@@ -15,6 +15,7 @@ path = "src/main.rs"
 origa = { path = "../origa" }
 clap.workspace = true
 flate2.workspace = true
+rkyv.workspace = true
 image.workspace = true
 tracing.workspace = true
 tracing-subscriber.workspace = true

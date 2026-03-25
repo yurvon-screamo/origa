@@ -76,11 +76,11 @@ impl StudyCard {
                     self.is_favorite = false;
                     self.perfect_streak_since_known = 0;
                 }
-            }
-            Rating::Good => {}
+            },
+            Rating::Good => {},
             Rating::Hard | Rating::Again => {
                 self.perfect_streak_since_known = 0;
-            }
+            },
         }
     }
 
@@ -125,7 +125,7 @@ impl Card {
                 Answer::new(info.name().to_string()).map_err(|e| OrigaError::InvalidAnswer {
                     reason: e.to_string(),
                 })
-            }
+            },
         }
     }
 

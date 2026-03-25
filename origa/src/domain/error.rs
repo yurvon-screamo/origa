@@ -47,110 +47,110 @@ impl fmt::Display for OrigaError {
         match self {
             OrigaError::CurrentUserNotExist {} => {
                 write!(f, "Current user does not exist")
-            }
+            },
             OrigaError::CardNotFound { card_id } => {
                 write!(f, "Card with id {} not found", card_id)
-            }
+            },
             OrigaError::DuplicateCard { question } => {
                 write!(f, "Card with question '{}' already exists", question)
-            }
+            },
             OrigaError::InvalidQuestion { reason } => {
                 write!(f, "Invalid question: {}", reason)
-            }
+            },
             OrigaError::InvalidAnswer { reason } => {
                 write!(f, "Invalid answer: {}", reason)
-            }
+            },
             OrigaError::InvalidStability { reason } => {
                 write!(f, "Invalid stability: {}", reason)
-            }
+            },
             OrigaError::InvalidDifficulty { reason } => {
                 write!(f, "Invalid difficulty: {}", reason)
-            }
+            },
             OrigaError::InvalidMemoryState { reason } => {
                 write!(f, "Invalid memory state: {}", reason)
-            }
+            },
             OrigaError::SrsCalculationFailed { reason } => {
                 write!(f, "SRS calculation failed: {}", reason)
-            }
+            },
             OrigaError::RepositoryError { reason } => {
                 write!(f, "Repository error: {}", reason)
-            }
+            },
             OrigaError::EmbeddingError { reason } => {
                 write!(f, "Embedding error: {}", reason)
-            }
+            },
             OrigaError::LlmError { reason } => {
                 write!(f, "LLM error: {}", reason)
-            }
+            },
             OrigaError::SettingsError { reason } => {
                 write!(f, "Settings error: {}", reason)
-            }
+            },
             OrigaError::FuriganaError { reason } => {
                 write!(f, "Furigana error: {}", reason)
-            }
+            },
             OrigaError::TranslationError { reason } => {
                 write!(f, "Translation error: {}", reason)
-            }
+            },
             OrigaError::KradfileError { reason } => {
                 write!(f, "Kradfile error: {}", reason)
-            }
+            },
             OrigaError::VocabularyParseError { reason } => {
                 write!(f, "Vocabulary parse error: {}", reason)
-            }
+            },
             OrigaError::InvalidValues { reason } => {
                 write!(f, "Invalid values: {}", reason)
-            }
+            },
             OrigaError::TokenizerError { reason } => {
                 write!(f, "Tokenizer error: {}", reason)
-            }
+            },
             OrigaError::GrammarFormatError { reason } => {
                 write!(f, "Grammar rule format error: {}", reason)
-            }
+            },
             OrigaError::GrammarParseError { reason } => {
                 write!(f, "Grammar parse error: {}", reason)
-            }
+            },
             OrigaError::WellKnownSetParseError { reason } => {
                 write!(f, "WellKnownSetError: {}", reason)
-            }
+            },
             OrigaError::WellKnownSetNotFound { set_id } => {
                 write!(f, "WellKnownSet '{}' not found", set_id)
-            }
+            },
             OrigaError::SessionExpired => {
                 write!(f, "Session expired, please login again")
-            }
+            },
             OrigaError::DictionaryNotFound { reason } => {
                 write!(f, "Dictionary not found: {}", reason)
-            }
+            },
             OrigaError::VocabularyNotFound { word } => {
                 write!(f, "Translation not found for word: {}", word)
-            }
+            },
             OrigaError::OcrError { reason } => {
                 write!(f, "OCR error: {}", reason)
-            }
+            },
             OrigaError::KanjiNotFound { kanji } => {
                 write!(f, "Нет описания для кандзи: {}", kanji)
-            }
+            },
             OrigaError::RadicalNotFound { radical } => {
                 write!(f, "Радикал не найден: {}", radical)
-            }
+            },
             OrigaError::GrammarRuleNotFound { rule_id } => {
                 write!(f, "Правило грамматики не найдено: {}", rule_id)
-            }
+            },
             OrigaError::GrammarContentNotFound { rule_id, lang } => {
                 write!(
                     f,
                     "Контент правила {} не найден для языка {}",
                     rule_id, lang
                 )
-            }
+            },
             OrigaError::TranslationNotFound { word, lang } => {
                 write!(f, "Нет перевода для: {} ({})", word, lang)
-            }
+            },
             OrigaError::AccountDeletionFailed { reason } => {
                 write!(f, "Failed to delete account: {}", reason)
-            }
+            },
             OrigaError::NetworkError { url, reason } => {
                 write!(f, "Network error fetching {}: {}", url, reason)
-            }
+            },
         }
     }
 }

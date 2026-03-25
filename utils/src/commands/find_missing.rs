@@ -29,14 +29,14 @@ fn load_well_known_sets(base_path: &Path) -> Result<HashMap<String, HashSet<Stri
                 reason: format!("Failed to parse {}: {}", file.display(), e),
             })?;
 
-        if let Some(name) = json.get("name").and_then(|n| n.as_str()) {
-            if let Some(words) = json.get("words").and_then(|w| w.as_array()) {
-                let word_set: HashSet<String> = words
-                    .iter()
-                    .filter_map(|w| w.as_str().map(String::from))
-                    .collect();
-                sets.insert(name.to_string(), word_set);
-            }
+        if let Some(name) = json.get("name").and_then(|n| n.as_str())
+            && let Some(words) = json.get("words").and_then(|w| w.as_array())
+        {
+            let word_set: HashSet<String> = words
+                .iter()
+                .filter_map(|w| w.as_str().map(String::from))
+                .collect();
+            sets.insert(name.to_string(), word_set);
         }
     }
 
@@ -80,7 +80,7 @@ fn generate_report(
         for word in words {
             report.push_str(&format!("- {}\n", word));
         }
-        report.push_str("\n");
+        report.push('\n');
     }
 
     report.insert_str(0, &format!("Total missing words: {}\n\n", total_missing));
@@ -201,13 +201,14 @@ fn save_dictionary(
 }
 
 /// Main function for find_missing command
+#[allow(clippy::too_many_arguments)]
 pub async fn run_find_missing(
     output: Option<std::path::PathBuf>,
     generate: bool,
     api_base: String,
     api_key: String,
     workers: usize,
-    chunk_size: usize,
+    _chunk_size: usize,
     russian_only: bool,
     english_only: bool,
 ) -> Result<(), OrigaError> {

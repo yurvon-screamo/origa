@@ -6,7 +6,9 @@ use origa::domain::JapaneseLevel;
 
 use super::super::onboarding_state::OnboardingState;
 use super::app_type::level_to_str;
-use super::migii_helpers::{build_lesson_items, build_level_items, collect_lessons_to_import, is_lesson_in_levels};
+use super::migii_helpers::{
+    build_lesson_items, build_level_items, collect_lessons_to_import, is_lesson_in_levels,
+};
 use super::types::MigiiLesson;
 
 #[component]
@@ -117,6 +119,7 @@ pub fn MigiiProgressSelector(
                             _options=Signal::derive(move || level_items.clone())
                             _selected=selected_level_value
                             _placeholder=Signal::derive(|| "Выберите уровень".to_string())
+                            test_id=Signal::derive(|| "migii-level-dropdown".to_string())
                         />
                     </div>
                 </div>
@@ -126,13 +129,14 @@ pub fn MigiiProgressSelector(
                         <Text size=TextSize::Small variant=TypographyVariant::Muted>
                             "Урок"
                         </Text>
-                        <div class="mt-2">
-                            <Dropdown
-                                _options=lesson_items
-                                _selected=selected_lesson_value
-                                _placeholder=Signal::derive(|| "Выберите урок".to_string())
-                            />
-                        </div>
+                    <div class="mt-2">
+                        <Dropdown
+                            _options=lesson_items
+                            _selected=selected_lesson_value
+                            _placeholder=Signal::derive(|| "Выберите урок".to_string())
+                            test_id=Signal::derive(|| "migii-lesson-dropdown".to_string())
+                        />
+                    </div>
                     </div>
                 </Show>
 

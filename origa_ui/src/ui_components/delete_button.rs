@@ -1,11 +1,20 @@
 use leptos::prelude::*;
 
 #[component]
-pub fn DeleteButton(on_click: Callback<()>) -> impl IntoView {
+pub fn DeleteButton(
+    on_click: Callback<()>,
+    #[prop(optional, into)] test_id: Signal<String>,
+) -> impl IntoView {
+    let test_id_val = move || {
+        let val = test_id.get();
+        if val.is_empty() { None } else { Some(val) }
+    };
+
     view! {
         <button
             class="cursor-pointer transition-colors duration-200 hover:opacity-70"
             on:click=move |_| on_click.run(())
+            data-testid=test_id_val
         >
             <svg
                 xmlns="http://www.w3.org/2000/svg"

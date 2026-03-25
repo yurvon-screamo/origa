@@ -48,6 +48,7 @@ rs-fsrs = "1.2"
 lindera = { version = "2.2", default-features = false }
 lindera-dictionary = { version = "2.2" }
 flate2 = "1.1"
+rkyv = { version = "0.8", features = ["bytecheck"] }
 image = "0.25"
 
 # OCR / Machine Learning
@@ -149,6 +150,7 @@ web-sys = { version = "0.3", features = [
     "Response",
     "ResponseInit",
     "Url",
+    "Performance",
 ] }
 
 

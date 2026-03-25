@@ -2,10 +2,16 @@ use leptos::prelude::*;
 
 #[component]
 pub fn Card(
+    #[prop(optional, into)] test_id: Signal<String>,
     #[prop(optional, into)] class: Signal<String>,
     #[prop(optional, into)] shadow: Signal<bool>,
     children: Children,
 ) -> impl IntoView {
+    let test_id_val = move || {
+        let val = test_id.get();
+        if val.is_empty() { None } else { Some(val) }
+    };
+
     view! {
         <div class=move || {
             let base_class = "card";
@@ -19,7 +25,7 @@ pub fn Card(
             } else {
                 format!("{} {} {}", base_class, anima_class, user_class)
             }
-        }>
+        } data-testid=test_id_val>
             {children()}
         </div>
     }

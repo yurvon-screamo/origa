@@ -48,10 +48,10 @@ impl<'a, R: UserRepository> CreateCardsFromAnalysisUseCase<'a, R> {
                 Ok(card) => created_cards.push(card),
                 Err(OrigaError::DuplicateCard { .. }) => {
                     skipped_words.push(word.base_form);
-                }
+                },
                 Err(e) => {
                     failed_words.push((word.base_form, e.to_string()));
-                }
+                },
             }
         }
 

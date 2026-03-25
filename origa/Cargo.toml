@@ -28,6 +28,7 @@ rs-fsrs.workspace = true
 lindera.workspace = true
 lindera-dictionary.workspace = true
 flate2.workspace = true
+rkyv.workspace = true
 
 # OCR (NDLOCR-Lite)
 ndarray.workspace = true

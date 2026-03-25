@@ -39,12 +39,12 @@ impl GrammarRule {
                 match rule {
                     FormatAction::AdjectiveRemovePostfix {} => {
                         adjective_remove_postfix(&word, part_of_speech)
-                    }
+                    },
                     FormatAction::AdjectiveToKunai {} => to_kunai_form(&word, part_of_speech),
                     FormatAction::AdjectiveToKatta {} => to_katta_form(&word, part_of_speech),
                     FormatAction::AdjectiveToKunakatta {} => {
                         to_kunakatta_form(&word, part_of_speech)
-                    }
+                    },
                     FormatAction::AdjectiveToKute {} => to_kute_form(&word, part_of_speech),
                     FormatAction::AdjectiveToKu {} => to_ku_form(&word, part_of_speech),
                     FormatAction::AdjectiveToKereba {} => to_kereba_form(&word, part_of_speech),
@@ -95,7 +95,7 @@ impl GrammarRule {
                     } => Ok(word.trim_end_matches(old_postfix).to_string() + new_postfix),
                     FormatAction::RemovePostfix { postfix } => {
                         Ok(word.trim_end_matches(postfix).to_string())
-                    }
+                    },
                 }
             },
         )?;

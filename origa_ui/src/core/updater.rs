@@ -85,23 +85,23 @@ async fn check_for_updates_tauri() -> Option<UpdateInfo> {
                     } else {
                         parse_update_info(&update_result)
                     }
-                }
+                },
                 Err(e) => {
                     logging::warn!("Ошибка при проверке обновлений: {:?}", e);
                     None
-                }
+                },
             }
-        }
+        },
         Some(Err(e)) => {
             logging::warn!("Ошибка вызова updater.check: {:?}", e);
             None
-        }
+        },
         None => {
             if window.is_none() {
                 logging::warn!("Window недоступен");
             }
             None
-        }
+        },
     }
 }
 
@@ -221,7 +221,7 @@ where
                 .await
                 .map(|_| ())
                 .map_err(|e| format!("Ошибка при загрузке обновления: {:?}", e))
-        }
+        },
         Err(e) => Err(format!("Ошибка вызова downloadAndInstall: {:?}", e)),
     }
 }

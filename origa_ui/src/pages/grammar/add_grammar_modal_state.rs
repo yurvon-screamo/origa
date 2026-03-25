@@ -83,13 +83,13 @@ impl ModalState {
                         .filter(|rule| !existing_rule_ids.contains(rule.rule_id()))
                         .collect();
                     available_rules.set(rules);
-                }
+                },
                 Ok(None) => {
                     error.set(Some("Пользователь не найден".to_string()));
-                }
+                },
                 Err(e) => {
                     error.set(Some(format!("Ошибка загрузки пользователя: {}", e)));
-                }
+                },
             }
             is_loading.set(false);
         });

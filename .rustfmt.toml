@@ -1,0 +1,41 @@
+# =============================================================================
+# rustfmt Configuration for Origa Project (STABLE OPTIONS ONLY)
+# =============================================================================
+# Compatible with stable Rust - no unstable features
+# =============================================================================
+
+# Edition - matches workspace Cargo.toml
+edition = "2021"
+
+# Line width - standard 100 chars for readability
+max_width = 100
+
+# Use Unix-style line endings (cross-platform consistency)
+newline_style = "Unix"
+
+# Use 4 spaces for indentation
+tab_spaces = 4
+
+# Use field init shorthand where possible
+use_field_init_shorthand = true
+
+# Force explicit ABI
+force_explicit_abi = true
+
+# Match block trailing comma (stable)
+match_block_trailing_comma = true
+
+# Use small heuristics (stable)
+use_small_heuristics = "Default"
+
+# Chain width for method chains
+chain_width = 60
+
+# Single-line if-else max width
+single_line_if_else_max_width = 50
+
+# Struct literal width
+struct_lit_width = 18
+
+# Reorder imports (stable)
+reorder_imports = true

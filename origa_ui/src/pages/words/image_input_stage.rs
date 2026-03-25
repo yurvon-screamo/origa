@@ -61,7 +61,7 @@ fn handle_ocr_result(
                 ctx.ocr_loading_state.stage.set(OcrLoadingStage::Completed);
                 on_text_extracted.run(text);
             }
-        }
+        },
         Err(e) => {
             error!(error = %e, "OCR failed");
             ctx.error_message.set(Some(e.clone()));
@@ -70,7 +70,7 @@ fn handle_ocr_result(
                 stage: "recognize".to_string(),
                 message: e,
             });
-        }
+        },
     }
 }
 
@@ -125,7 +125,7 @@ fn process_file(
                 }
                 ctx.image_preview.set(Some(data_url.clone()));
                 run_ocr_on_data_url(&data_url, &ctx, &on_text_extracted).await;
-            }
+            },
             Err(e) => {
                 error!(error = %e, "Failed to read file");
                 ctx.error_message.set(Some(e.clone()));
@@ -135,7 +135,7 @@ fn process_file(
                     message: e.clone(),
                 });
                 on_error.run(e);
-            }
+            },
         }
     });
 }
@@ -593,7 +593,7 @@ async fn process_image_with_ocr(
                             let current = match stage {
                                 OcrLoadingStage::DownloadingParseq { current_model, .. } => {
                                     current_model
-                                }
+                                },
                                 _ => 1,
                             };
                             loading_state_ref
@@ -647,7 +647,7 @@ async fn process_image_with_ocr(
             MODEL_LOADING.with(|loading| loading.set(false));
 
             result?
-        }
+        },
     };
 
     if loading_state.cancel_requested.get() {

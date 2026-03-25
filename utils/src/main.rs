@@ -47,7 +47,7 @@ async fn main() {
                 english_only,
             )
             .await
-        }
+        },
     };
 
     if let Err(e) = result {

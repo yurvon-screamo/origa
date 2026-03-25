@@ -38,11 +38,11 @@ pub fn AddWordModal() -> impl IntoView {
                     Ok(_) => {
                         is_loading_signal.set(false);
                         new_word_signal.set(String::new());
-                    }
+                    },
                     Err(e) => {
                         is_loading_signal.set(false);
                         error_signal.set(Some(e.to_string()));
-                    }
+                    },
                 }
             });
         })
