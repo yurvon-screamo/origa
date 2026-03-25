@@ -32,6 +32,6 @@ test.describe('Authentication', () => {
   test('should show error for invalid credentials', async ({ page }) => {
     await loginPage.login('invalid@test.com', 'wrongpassword');
     
-    await expect(page).toHaveURL(/\/(login)?$/);
+    await loginPage.expectLoginFormVisible();
   });
 });
