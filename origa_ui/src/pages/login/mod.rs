@@ -23,6 +23,7 @@ pub fn Login() -> impl IntoView {
     let auth_store = use_context::<AuthStore>().expect("AuthStore not provided");
     let navigate = use_navigate();
     let loading = RwSignal::new(false);
+    let server_error = RwSignal::new(None::<String>);
 
     let auth_store_for_effect = auth_store.clone();
     Effect::new({
@@ -40,11 +41,11 @@ pub fn Login() -> impl IntoView {
             let auth_store = auth_store.clone();
             let navigate = navigate.clone();
             loading.set(true);
+            server_error.set(None);
 
             spawn_local(async move {
                 let result = auth_store.login(&email, &password).await;
 
-                // Always clear loading state after login attempt completes
                 loading.set(false);
 
                 match result {
@@ -53,6 +54,7 @@ pub fn Login() -> impl IntoView {
                     },
                     Err(e) => {
                         tracing::error!("Login error: {:?}", e);
+                        server_error.set(Some(e.to_string()));
                     },
                 }
             });
@@ -64,7 +66,11 @@ pub fn Login() -> impl IntoView {
             <CardLayout size=CardLayoutSize::Adaptive class="px-4 py-8" test_id=Signal::derive(|| "login-card".to_string())>
                 <LoginHeader />
                 <div class="space-y-6">
-                    <EmailPasswordForm on_submit=on_email_submit test_id=Signal::derive(|| "login-form".to_string()) />
+                    <EmailPasswordForm
+                        on_submit=on_email_submit
+                        server_error=server_error
+                        test_id=Signal::derive(|| "login-form".to_string())
+                    />
 
                     <div class="flex items-center gap-4">
                         <Divider variant=Signal::derive(|| DividerVariant::Single) class=Signal::derive(|| "flex-1".to_string()) test_id=Signal::derive(|| "login-divider-left".to_string()) />

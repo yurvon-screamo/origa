@@ -29,11 +29,15 @@ test.describe("Authentication", () => {
         await expect(loginPage.submitButton).toBeVisible();
     });
 
-    // test("should show error for invalid credentials", async ({ page }) => {
-    //     await loginPage.login("invalid@test.com", "wrongpassword");
+    test("should show error for invalid credentials", async () => {
+        await loginPage.login("invalid@test.com", "wrongpassword");
 
-    //     await page.waitForTimeout(500);
+        // Wait for error message to appear
+        await expect(loginPage.errorAlert).toBeVisible({ timeout: 10000 });
 
-    //     await expect(loginPage.emailInput).toBeVisible({ timeout: 5000 });
-    // });
+        // Verify error message contains expected text
+        const errorMessage = await loginPage.errorAlert.textContent();
+        expect(errorMessage).toBeTruthy();
+        expect(errorMessage?.length).toBeGreaterThan(0);
+    });
 });
