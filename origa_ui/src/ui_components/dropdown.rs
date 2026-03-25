@@ -10,9 +10,9 @@ pub struct DropdownItem {
 
 #[component]
 pub fn Dropdown(
-    #[prop(optional, into)] _options: Signal<Vec<DropdownItem>>,
-    _selected: RwSignal<String>,
-    #[prop(optional, into)] _placeholder: Signal<String>,
+    #[prop(optional, into)] options: Signal<Vec<DropdownItem>>,
+    selected: RwSignal<String>,
+    #[prop(optional, into)] placeholder: Signal<String>,
     #[prop(optional, into)] test_id: Signal<String>,
 ) -> impl IntoView {
     let test_id_val = move || {
@@ -63,7 +63,8 @@ pub fn Dropdown(
     let filtered_options = Signal::derive(move || {
         let query = search_query.get();
         let lower_query = query.to_lowercase();
-        _options
+
+        options
             .get()
             .into_iter()
             .filter(|item| {
@@ -85,7 +86,7 @@ pub fn Dropdown(
     };
 
     let select_item = move |item: DropdownItem| {
-        _selected.set(item.value.clone());
+        selected.set(item.value.clone());
         is_open.set(false);
         search_query.set(String::new());
     };
@@ -111,13 +112,13 @@ pub fn Dropdown(
     let _ = use_event_listener(document(), leptos::ev::click, close_on_outside);
 
     let display_text = move || {
-        let sel = _selected.get();
-        _options
+        let sel = selected.get();
+        options
             .get()
             .iter()
             .find(|opt| opt.value == sel)
             .map(|opt| opt.label.clone())
-            .unwrap_or_else(|| _placeholder.get())
+            .unwrap_or_else(|| placeholder.get())
     };
 
     let on_search_input = move |ev: leptos::ev::Event| {
