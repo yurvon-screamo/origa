@@ -71,13 +71,16 @@ pub fn App() -> impl IntoView {
             />
         })}
         <Show when=move || auth_store_for_loading.is_loading().get()>
-            <LoadingOverlay message="Проверка авторизации..." />
-        </Show>
-        <Show when=move || auth_store_for_oauth.is_oauth_loading.get()>
-            <LoadingOverlay message="Вход..." />
-        </Show>
-        <Show when=move || !auth_store_for_data.is_data_loaded.get()>
-            <LoadingOverlay message="Загрузка словарей..." />
+            {move || {
+                let message = if auth_store_for_oauth.is_oauth_loading.get() {
+                    "Вход..."
+                } else if !auth_store_for_data.is_data_loaded.get() {
+                    "Загрузка словарей..."
+                } else {
+                    "Проверка авторизации..."
+                };
+                view! { <LoadingOverlay message=message /> }
+            }}
         </Show>
         <AppRoutes />
     }

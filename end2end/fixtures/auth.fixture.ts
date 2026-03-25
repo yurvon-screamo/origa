@@ -1,10 +1,15 @@
-import { test as base, type Page } from '@playwright/test';
-import { getAdminToken, createTestUser, deleteTestUser, loginTestUser } from './admin';
-import { testUser } from '../config';
+import { test as base, type Page } from "@playwright/test";
+import {
+	getAdminToken,
+	createTestUser,
+	deleteTestUser,
+	loginTestUser,
+} from "./admin";
+import { testUser } from "../config";
 
 export interface AuthFixture {
-  testUserEmail: string;
-  testUserPassword: string;
+	testUserEmail: string;
+	testUserPassword: string;
 }
 
 /**
@@ -12,12 +17,12 @@ export interface AuthFixture {
  * Provides test user credentials for tests
  */
 export const test = base.extend<AuthFixture>({
-  testUserEmail: async ({}, use) => {
-    await use(testUser.email);
-  },
-  testUserPassword: async ({}, use) => {
-    await use(testUser.password);
-  },
+	testUserEmail: async ({}, use) => {
+		await use(testUser.email);
+	},
+	testUserPassword: async ({}, use) => {
+		await use(testUser.password);
+	},
 });
 
 /**
@@ -25,44 +30,46 @@ export const test = base.extend<AuthFixture>({
  * Creates user before all tests, deletes after all tests
  * Provides authToken for authenticated requests
  */
-export const testWithUser = base.extend<AuthFixture & { page: Page; authToken: string }>({
-  testUserEmail: async ({}, use) => {
-    await use(testUser.email);
-  },
-  testUserPassword: async ({}, use) => {
-    await use(testUser.password);
-  },
-  
-  page: async ({ page }, use) => {
-    await use(page);
-  },
+export const testWithUser = base.extend<
+	AuthFixture & { page: Page; authToken: string }
+>({
+	testUserEmail: async ({}, use) => {
+		await use(testUser.email);
+	},
+	testUserPassword: async ({}, use) => {
+		await use(testUser.password);
+	},
 
-  authToken: async ({}, use) => {
-    let adminToken: string | undefined;
+	page: async ({ page }, use) => {
+		await use(page);
+	},
 
-    try {
-      adminToken = await getAdminToken();
-      await createTestUser(adminToken);
-    } catch (error) {
-      console.error('[fixture] Failed to setup test user:', error);
-      throw error;
-    }
+	authToken: async ({}, use) => {
+		let adminToken: string | undefined;
 
-    let authToken = '';
-    try {
-      // Login as test user to get auth token
-      authToken = await loginTestUser();
-      await use(authToken);
-    } finally {
-      // Cleanup: delete test user after all tests in this worker
-      if (adminToken) {
-        try {
-          await deleteTestUser(adminToken);
-        } catch (error) {
-          // Don't log user email in production
-          console.error('[fixture] Failed to cleanup test user');
-        }
-      }
-    }
-  },
+		try {
+			adminToken = await getAdminToken();
+			await createTestUser(adminToken);
+		} catch (error) {
+			console.error("[fixture] Failed to setup test user:", error);
+			throw error;
+		}
+
+		let authToken = "";
+		try {
+			// Login as test user to get auth token
+			authToken = await loginTestUser();
+			await use(authToken);
+		} finally {
+			// Cleanup: delete test user after all tests in this worker
+			if (adminToken) {
+				try {
+					await deleteTestUser(adminToken);
+				} catch (error) {
+					// Don't log user email in production
+					console.error("[fixture] Failed to cleanup test user");
+				}
+			}
+		}
+	},
 });

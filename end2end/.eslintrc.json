@@ -1,5 +1,5 @@
 {
-  "rules": {
-    "@typescript-eslint/no-empty-object-pattern": "off"
-  }
+	"rules": {
+		"@typescript-eslint/no-empty-object-pattern": "off"
+	}
 }

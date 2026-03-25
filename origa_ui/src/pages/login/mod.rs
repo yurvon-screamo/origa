@@ -44,6 +44,7 @@ pub fn Login() -> impl IntoView {
             spawn_local(async move {
                 let result = auth_store.login(&email, &password).await;
 
+                // Always clear loading state after login attempt completes
                 loading.set(false);
 
                 match result {
