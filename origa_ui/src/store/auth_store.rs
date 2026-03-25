@@ -34,6 +34,9 @@ pub struct AuthStore {
     /// Dictionary/data loading complete
     pub is_data_loaded: RwSignal<bool>,
 
+    /// Dictionary (tokenizer) loading in background
+    pub is_dictionary_loaded: RwSignal<bool>,
+
     /// Logout in progress (prevents race conditions)
     is_logging_out: RwSignal<bool>,
 
@@ -52,6 +55,7 @@ impl AuthStore {
             is_oauth_loading: RwSignal::new(false),
             is_syncing: RwSignal::new(false),
             is_data_loaded: RwSignal::new(false),
+            is_dictionary_loaded: RwSignal::new(false),
             is_logging_out: RwSignal::new(false),
             is_deleting_account: RwSignal::new(false),
         }
@@ -73,12 +77,10 @@ impl AuthStore {
         let is_checking_session = self.is_checking_session;
         let is_oauth_loading = self.is_oauth_loading;
         let is_syncing = self.is_syncing;
-        let is_data_loaded = self.is_data_loaded;
         Memo::new(move |_| {
             is_checking_session.get()
                 || is_oauth_loading.get()
                 || is_syncing.get()
-                || !is_data_loaded.get()
         })
     }
 
@@ -189,6 +191,11 @@ impl AuthStore {
     /// Mark data as loaded (dictionary, etc.)
     pub fn set_data_loaded(&self) {
         self.is_data_loaded.set(true);
+    }
+
+    /// Mark dictionary (tokenizer) as loaded
+    pub fn set_dictionary_loaded(&self) {
+        self.is_dictionary_loaded.set(true);
     }
 
     // ========================================
@@ -347,6 +354,7 @@ impl AuthStore {
 
         self.user.set(None);
         self.is_data_loaded.set(false);
+        self.is_dictionary_loaded.set(false);
     }
 
     // ========================================
@@ -377,6 +385,7 @@ impl AuthStore {
         clear_session();
         self.user.set(None);
         self.is_data_loaded.set(false);
+        self.is_dictionary_loaded.set(false);
         self.is_checking_session.set(false);
     }
 
