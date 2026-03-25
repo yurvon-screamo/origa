@@ -57,7 +57,7 @@ pub fn init_grammar_from_rkyv(bytes: &[u8]) -> Result<(), OrigaError> {
     let archived =
         rkyv::access::<ArchivedGrammarData, rkyv::rancor::Error>(bytes).map_err(|e| {
             OrigaError::GrammarParseError {
-                reason: format!("Failed to access archived grammar: {}", e),
+                reason: format!("Failed to validate grammar data: {:?}", e),
             }
         })?;
 

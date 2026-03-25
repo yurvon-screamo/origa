@@ -44,7 +44,7 @@ pub fn init_kanji_from_rkyv(bytes: &[u8]) -> Result<(), OrigaError> {
 
     let archived = rkyv::access::<ArchivedKanjiData, rkyv::rancor::Error>(bytes).map_err(|e| {
         OrigaError::KradfileError {
-            reason: format!("Failed to access archived kanji: {}", e),
+            reason: format!("Failed to validate kanji data: {:?}", e),
         }
     })?;
 

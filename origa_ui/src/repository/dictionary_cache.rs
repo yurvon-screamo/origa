@@ -11,7 +11,7 @@ use origa::domain::{DictionaryData, OrigaError};
 
 use crate::core::config::urls;
 
-const CACHE_NAME: &str = "origa-dictionary-v1";
+const CACHE_NAME: &str = "origa-dictionary-rkyv-v2";
 
 async fn open_cache() -> Result<web_sys::Cache, OrigaError> {
     let window = web_sys::window().ok_or_else(|| OrigaError::RepositoryError {

@@ -68,7 +68,7 @@ pub fn init_dictionary_from_rkyv(bytes: &[u8]) -> Result<(), OrigaError> {
     let archived =
         rkyv::access::<ArchivedDictionaryData, rkyv::rancor::Error>(bytes).map_err(|e| {
             OrigaError::TokenizerError {
-                reason: format!("Failed to access archived dictionary: {}", e),
+                reason: format!("Failed to validate dictionary data: {:?}", e),
             }
         })?;
 
