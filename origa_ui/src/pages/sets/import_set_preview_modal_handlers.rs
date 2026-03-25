@@ -87,7 +87,7 @@ pub fn create_import_preview_handlers(
                             closable: true,
                         });
                     });
-                }
+                },
                 Err(e) => {
                     state.is_importing.set(false);
                     state.error_message.set(Some(e.clone()));
@@ -103,7 +103,7 @@ pub fn create_import_preview_handlers(
                             closable: true,
                         });
                     });
-                }
+                },
             }
         });
     });

@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 use leptos::prelude::*;
-use origa::domain::{FuriganaSegment, furiganize_segments};
+use origa::domain::{furiganize_segments, FuriganaSegment};
 
 #[component]
 pub fn FuriganaText(
@@ -14,7 +14,11 @@ pub fn FuriganaText(
 
     let test_id_val = move || {
         let val = test_id.get();
-        if val.is_empty() { None } else { Some(val) }
+        if val.is_empty() {
+            None
+        } else {
+            Some(val)
+        }
     };
 
     view! {
@@ -55,7 +59,7 @@ fn render_segment(text: String, reading: Option<String>, is_known: bool) -> impl
                 </ruby>
             }
             .into_any()
-        }
+        },
         None => view! {
             <span class="furigana-plain">{text}</span>
         }

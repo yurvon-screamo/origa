@@ -111,12 +111,12 @@ impl<'a, R: UserRepository, L: WellKnownSetLoader> ImportOnboardingSetsUseCase<'
             Ok(study_card) => {
                 debug!(word = ?study_card.card().question(&crate::domain::NativeLanguage::Russian), "Vocabulary card created");
                 Ok(study_card)
-            }
+            },
             Err(OrigaError::DuplicateCard { question }) => {
                 warn!(word = %question, "Duplicate vocabulary card, skipping");
                 *skipped_duplicates += 1;
                 Err(OrigaError::DuplicateCard { question })
-            }
+            },
             Err(e) => Err(e),
         }
     }
@@ -192,19 +192,19 @@ impl<'a, R: UserRepository, L: WellKnownSetLoader> ImportOnboardingSetsUseCase<'
                     Ok(study_card) => {
                         debug!(kanji = %kanji_char, "Kanji card created");
                         Ok(study_card)
-                    }
+                    },
                     Err(OrigaError::DuplicateCard { question }) => {
                         warn!(kanji = %question, "Duplicate kanji card, skipping");
                         *skipped_duplicates += 1;
                         Err(OrigaError::DuplicateCard { question })
-                    }
+                    },
                     Err(e) => Err(e),
                 }
-            }
+            },
             Err(e) => {
                 warn!(kanji = %kanji_char, error = ?e, "Failed to create kanji card");
                 Err(e)
-            }
+            },
         }
     }
 }

@@ -1,4 +1,4 @@
-use super::super::shared::{CardCounts, CardStatus, Filter, FilterBtn, create_delete_callback};
+use super::super::shared::{create_delete_callback, CardCounts, CardStatus, Filter, FilterBtn};
 use super::kanji_card_item::KanjiCardItem;
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{
@@ -31,13 +31,13 @@ fn load_user_data(
                 all_cards.set(cards);
                 current_user.set(Some(user));
                 is_loading.set(false);
-            }
+            },
             Ok(None) => {
                 tracing::warn!("KanjiContent: user not found");
-            }
+            },
             Err(e) => {
                 tracing::error!("KanjiContent: get_current_user error: {:?}", e);
-            }
+            },
         }
     });
 }

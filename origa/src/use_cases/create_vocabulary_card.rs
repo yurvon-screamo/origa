@@ -64,11 +64,11 @@ impl<'a, R: UserRepository> CreateVocabularyCardUseCase<'a, R> {
             match user.create_card(card) {
                 Ok(study_card) => {
                     created_cards.push(study_card);
-                }
+                },
                 Err(OrigaError::DuplicateCard { question }) => {
                     warn!(user_id = %user.id(), word = %question, "Card already exists, skipping");
                     skipped_duplicates.push(question);
-                }
+                },
                 Err(e) => return Err(e),
             }
         }

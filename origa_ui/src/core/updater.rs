@@ -85,23 +85,23 @@ async fn check_for_updates_tauri() -> Option<UpdateInfo> {
                     } else {
                         parse_update_info(&update_result)
                     }
-                }
+                },
                 Err(e) => {
                     logging::warn!("Ошибка при проверке обновлений: {:?}", e);
                     None
-                }
+                },
             }
-        }
+        },
         Some(Err(e)) => {
             logging::warn!("Ошибка вызова updater.check: {:?}", e);
             None
-        }
+        },
         None => {
             if window.is_none() {
                 logging::warn!("Window недоступен");
             }
             None
-        }
+        },
     }
 }
 
@@ -156,9 +156,9 @@ where
     F: Fn(u8) + Send + Sync + 'static,
 {
     use leptos::logging;
+    use leptos::wasm_bindgen::closure::Closure;
     use leptos::wasm_bindgen::JsCast;
     use leptos::wasm_bindgen::JsValue;
-    use leptos::wasm_bindgen::closure::Closure;
     use std::sync::Arc;
 
     let window = web_sys::window().ok_or("Window недоступен")?;
@@ -221,7 +221,7 @@ where
                 .await
                 .map(|_| ())
                 .map_err(|e| format!("Ошибка при загрузке обновления: {:?}", e))
-        }
+        },
         Err(e) => Err(format!("Ошибка вызова downloadAndInstall: {:?}", e)),
     }
 }

@@ -5,6 +5,7 @@ End-to-end testing suite for Origa application using Playwright.
 ## Overview
 
 This directory contains end-to-end tests that verify the complete application flow, including:
+
 - User authentication
 - Navigation and routing
 - Core user workflows
@@ -33,6 +34,7 @@ Copy `.env.example` to `.env` and configure:
 ### Test User Configuration
 
 Test users are configured with hardcoded defaults:
+
 - **Email:** `e2e-test@origa.local`
 - **Password:** `e2e-test-password-123`
 
@@ -152,7 +154,7 @@ test.describe('Example feature', () => {
 });
 ```
 
-2. Use test fixtures for authenticated pages:
+1. Use test fixtures for authenticated pages:
 
 ```typescript
 import { test, expect } from '@playwright/test';
@@ -168,7 +170,7 @@ test('login flow', async ({ page }) => {
 });
 ```
 
-3. Run tests:
+1. Run tests:
 
 ```bash
 npm test                    # All tests
@@ -240,6 +242,7 @@ cargo install trunk
 ### Authentication failures
 
 Verify:
+
 1. `TRAILBASE_URL` is accessible
 2. `ORIGA_ADMIN_PASSWORD` is set correctly
 3. Test user exists or can be created by admin

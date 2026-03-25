@@ -7,8 +7,8 @@ use std::sync::{Arc, Mutex};
 use tracing::debug;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::JsFuture;
-use web_sys::CanvasRenderingContext2d;
 use web_sys::js_sys::Array;
+use web_sys::CanvasRenderingContext2d;
 
 const CANVAS_SIZE: u32 = 320;
 const SVG_VIEWBOX_SIZE: f64 = 109.0;
@@ -103,11 +103,11 @@ pub fn KanjiDrawingPractice(
                 is_completed.set(false);
                 load_error.set(false);
             }
-        }
+        },
         Some(None) => {
             load_error.set(true);
-        }
-        None => {}
+        },
+        None => {},
     });
     Effect::new(move |_| {
         let canvas = canvas_ref.get()?;
@@ -252,7 +252,11 @@ pub fn KanjiDrawingPractice(
 
     let test_id_val = move || {
         let val = test_id.get();
-        if val.is_empty() { None } else { Some(val) }
+        if val.is_empty() {
+            None
+        } else {
+            Some(val)
+        }
     };
 
     let test_id_canvas = move || {
@@ -429,7 +433,7 @@ fn parse_and_draw_svg_path(ctx: &CanvasRenderingContext2d, d: &str) {
                 } else {
                     break;
                 }
-            }
+            },
             'L' | 'l' => {
                 if let Some((x, y, new_pos)) = parse_coords(&chars, pos) {
                     let (abs_x, abs_y) = if current_cmd == 'l' {
@@ -443,7 +447,7 @@ fn parse_and_draw_svg_path(ctx: &CanvasRenderingContext2d, d: &str) {
                 } else {
                     break;
                 }
-            }
+            },
             'C' | 'c' => {
                 if let Some((x1, y1, x2, y2, x, y, new_pos)) = parse_curve_coords(&chars, pos) {
                     let (abs_x1, abs_y1, abs_x2, abs_y2, abs_x, abs_y) = if current_cmd == 'c' {
@@ -471,14 +475,14 @@ fn parse_and_draw_svg_path(ctx: &CanvasRenderingContext2d, d: &str) {
                 } else {
                     break;
                 }
-            }
+            },
             'Z' | 'z' => {
                 ctx.close_path();
                 pos += 1;
-            }
+            },
             _ => {
                 pos += 1;
-            }
+            },
         }
     }
 }
@@ -668,7 +672,7 @@ fn sample_stroke_path(d: &str) -> Vec<(f64, f64)> {
                 } else {
                     break;
                 }
-            }
+            },
             'L' | 'l' => {
                 if let Some((x, y, new_pos)) = parse_coords(&chars, pos) {
                     let (abs_x, abs_y) = if current_cmd == 'l' {
@@ -684,7 +688,7 @@ fn sample_stroke_path(d: &str) -> Vec<(f64, f64)> {
                 } else {
                     break;
                 }
-            }
+            },
             'C' | 'c' => {
                 if let Some((x1, y1, x2, y2, x, y, new_pos)) = parse_curve_coords(&chars, pos) {
                     let (abs_x1, abs_y1, abs_x2, abs_y2, abs_x, abs_y) = if current_cmd == 'c' {
@@ -709,17 +713,17 @@ fn sample_stroke_path(d: &str) -> Vec<(f64, f64)> {
                 } else {
                     break;
                 }
-            }
+            },
             'Z' | 'z' => {
                 let start = (current_pos.0 * SVG_SCALE, current_pos.1 * SVG_SCALE);
                 let end = (start_pos.0 * SVG_SCALE, start_pos.1 * SVG_SCALE);
                 interpolate_line(&mut points, start, end);
                 current_pos = start_pos;
                 pos += 1;
-            }
+            },
             _ => {
                 pos += 1;
-            }
+            },
         }
     }
     resample_points(&points, SAMPLE_COUNT)

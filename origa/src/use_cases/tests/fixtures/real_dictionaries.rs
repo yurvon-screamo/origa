@@ -4,11 +4,11 @@ use std::sync::Once;
 use flate2::read::DeflateDecoder;
 
 use super::get_public_dir;
-use crate::dictionary::grammar::{GrammarData, init_grammar, is_grammar_loaded};
-use crate::dictionary::kanji::{KanjiData, init_kanji, is_kanji_loaded};
-use crate::dictionary::radical::{RadicalData, init_radicals, is_radicals_loaded};
-use crate::dictionary::vocabulary::{VocabularyChunkData, init_vocabulary};
-use crate::domain::{DictionaryData, init_dictionary, is_dictionary_loaded};
+use crate::dictionary::grammar::{init_grammar, is_grammar_loaded, GrammarData};
+use crate::dictionary::kanji::{init_kanji, is_kanji_loaded, KanjiData};
+use crate::dictionary::radical::{init_radicals, is_radicals_loaded, RadicalData};
+use crate::dictionary::vocabulary::{init_vocabulary, VocabularyChunkData};
+use crate::domain::{init_dictionary, is_dictionary_loaded, DictionaryData};
 
 static INIT: Once = Once::new();
 
@@ -128,7 +128,7 @@ fn init_grammar_rules() {
                 e
             );
             return;
-        }
+        },
     };
 
     let grammar_data = GrammarData { grammar_json };

@@ -2,7 +2,7 @@ use crate::domain::OrigaError;
 use crate::domain::Rating;
 use crate::domain::{Difficulty, MemoryHistory, MemoryState, Stability};
 use chrono::{Duration, Utc};
-use rs_fsrs::{Card as FsrsCard, FSRS, Parameters, Rating as FsrsRating, State as FsrsState};
+use rs_fsrs::{Card as FsrsCard, Parameters, Rating as FsrsRating, State as FsrsState, FSRS};
 use serde::Deserialize;
 use serde::Serialize;
 use std::sync::OnceLock;

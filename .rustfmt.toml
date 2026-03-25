@@ -1,0 +1,78 @@
+# =============================================================================
+# rustfmt Configuration for Origa Project
+# =============================================================================
+# Project: Rust workspace (origa, utils, tokenizer) + Leptos/WASM (origa_ui) + Tauri (tauri)
+# Edition: 2024
+# =============================================================================
+
+# Edition - matches workspace Cargo.toml
+edition = "2024"
+
+# Line width - standard 100 chars for readability
+max_width = 100
+
+# Use Unix-style line endings (cross-platform consistency)
+newline_style = "Unix"
+
+# Use 4 spaces for indentation
+tab_spaces = 4
+
+# Use spaces instead of tabs
+use_small_heuristics = "Default"
+
+# Import grouping and sorting
+imports_granularity = "Crate"
+group_imports = "StdExternalCrate"
+reorder_imports = true
+
+# Function arguments - prefer vertical layout for readability
+fn_args_layout = "Tall"
+
+# Single-line function definitions where they fit
+fn_single_line = true
+
+# Match arm wrapping
+match_arm_blocks = true
+match_block_trailing_comma = true
+
+# Struct literals
+struct_lit_single_line = true
+
+# Use field init shorthand where possible
+use_field_init_shorthand = true
+
+# Use try! macro instead of ? operator for early returns
+# Actually prefer ? operator (default behavior is fine)
+
+# Consecutive blank lines
+blank_lines_upper_bound = 1
+blank_lines_lower_bound = 0
+
+# Chain formatting - for WASM/JS interop chains
+chain_width = 60
+
+# Single-line if-else expressions
+single_line_if_else_max_width = 50
+
+# Struct literal width
+struct_lit_width = 18
+
+# Force explicit lifetime annotations
+force_explicit_abi = true
+
+# Comments
+wrap_comments = true
+comment_width = 80
+normalize_comments = true
+
+# Doc comments
+format_code_in_doc_comments = true
+normalize_doc_attributes = true
+
+# Macros - more permissive for Leptos macros
+format_macro_matchers = true
+format_macro_bodies = true
+
+# Print debugging
+# color = "Auto"
+# unstable_features = true

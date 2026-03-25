@@ -5,8 +5,8 @@ use serde::{Deserialize, Serialize};
 use ulid::Ulid;
 
 use crate::domain::{
-    Card, CardType, JapaneseLevel, JlptContent, JlptProgress, KnowledgeSet, NativeLanguage,
-    OrigaError, RateMode, Rating, ScoreContentResult, StudyCard, get_translation, score_content,
+    get_translation, score_content, Card, CardType, JapaneseLevel, JlptContent, JlptProgress,
+    KnowledgeSet, NativeLanguage, OrigaError, RateMode, Rating, ScoreContentResult, StudyCard,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -229,7 +229,7 @@ impl User {
                 Card::Kanji(_) => *learned_kanji.entry(level).or_insert(0) += 1,
                 Card::Vocabulary(_) => *learned_words.entry(level).or_insert(0) += 1,
                 Card::Grammar(_) => *learned_grammar.entry(level).or_insert(0) += 1,
-                Card::Radical(_) => {}
+                Card::Radical(_) => {},
             }
         }
 

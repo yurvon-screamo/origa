@@ -1,9 +1,9 @@
 use std::collections::HashSet;
 
 use crate::domain::{
-    OrigaError,
     japanese::{JapaneseChar, JapaneseText},
     tokenizer::tokenize_text,
+    OrigaError,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -143,7 +143,7 @@ mod tests {
     use flate2::read::DeflateDecoder;
 
     use super::*;
-    use crate::domain::{DictionaryData, init_dictionary, is_dictionary_loaded};
+    use crate::domain::{init_dictionary, is_dictionary_loaded, DictionaryData};
 
     fn decompress(data: Vec<u8>) -> Vec<u8> {
         let mut decoder = DeflateDecoder::new(&data[..]);
@@ -262,16 +262,12 @@ mod tests {
         let known_kanji = HashSet::new();
         let segments = furiganize_segments("hello食べ物world", &known_kanji).unwrap();
         assert!(!segments.is_empty());
-        assert!(
-            segments
-                .iter()
-                .any(|s| s.text() == "hello" && !s.has_reading())
-        );
-        assert!(
-            segments
-                .iter()
-                .any(|s| s.text() == "world" && !s.has_reading())
-        );
+        assert!(segments
+            .iter()
+            .any(|s| s.text() == "hello" && !s.has_reading()));
+        assert!(segments
+            .iter()
+            .any(|s| s.text() == "world" && !s.has_reading()));
     }
 
     #[test]

@@ -1,7 +1,7 @@
 use crate::repository::HybridUserRepository;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use origa::dictionary::kanji::{KanjiInfo, get_kanji_list};
+use origa::dictionary::kanji::{get_kanji_list, KanjiInfo};
 use origa::domain::{Card, JapaneseLevel};
 use origa::traits::UserRepository;
 use std::collections::HashSet;
@@ -81,15 +81,15 @@ impl ModalState {
 
                     available_kanji.set(kanji_list);
                     is_loading.set(false);
-                }
+                },
                 Ok(None) => {
                     error.set(Some("Пользователь не найден".to_string()));
                     is_loading.set(false);
-                }
+                },
                 Err(e) => {
                     error.set(Some(e.to_string()));
                     is_loading.set(false);
-                }
+                },
             }
         });
     }

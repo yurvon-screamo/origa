@@ -59,7 +59,7 @@ pub fn LessonCompleteScreen(is_completed: RwSignal<bool>, review_count: usize) -
                             });
                         });
                         tracing::info!("Lesson complete: sync successful");
-                    }
+                    },
                     Err(e) => {
                         if is_disposed.get_value() {
                             return;
@@ -76,7 +76,7 @@ pub fn LessonCompleteScreen(is_completed: RwSignal<bool>, review_count: usize) -
                             });
                         });
                         tracing::error!("Lesson complete: sync error: {:?}", e);
-                    }
+                    },
                 }
                 if is_disposed.get_value() {
                     return;
@@ -121,12 +121,12 @@ pub fn LessonCompleteScreen(is_completed: RwSignal<bool>, review_count: usize) -
                 kb_sync();
                 kb_lesson_ctx.is_completed.set(false);
                 kb_lesson_ctx.reload_trigger.update(|t| *t += 1);
-            }
+            },
             "Escape" => {
                 kb_sync();
                 kb_navigate("/home", Default::default());
-            }
-            _ => {}
+            },
+            _ => {},
         }
     });
 

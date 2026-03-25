@@ -1,7 +1,7 @@
 use crate::domain::{JapaneseLevel, NativeLanguage, OrigaError, User};
 use crate::traits::UserRepository;
-use crate::use_cases::UpdateUserProfileUseCase;
 use crate::use_cases::tests::fixtures::InMemoryUserRepository;
+use crate::use_cases::UpdateUserProfileUseCase;
 
 #[tokio::test]
 async fn user_new_creates_default_state() {

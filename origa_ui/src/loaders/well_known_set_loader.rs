@@ -2,8 +2,8 @@ use futures::future::join_all;
 use origa::{
     domain::{JapaneseLevel, OrigaError},
     traits::{
-        TypesMeta, WellKnownSet, WellKnownSetLoader, WellKnownSetMeta, get_types_meta,
-        resolve_set_path, set_types_meta,
+        get_types_meta, resolve_set_path, set_types_meta, TypesMeta, WellKnownSet,
+        WellKnownSetLoader, WellKnownSetMeta,
     },
 };
 use serde::Deserialize;
