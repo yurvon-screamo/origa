@@ -17,13 +17,7 @@ pub fn init_kanji(data: KanjiData) -> Result<(), OrigaError> {
         return Ok(());
     }
 
-    let start = std::time::Instant::now();
-    tracing::info!("📖 Initializing kanji dictionary...");
     let db = KanjiDatabase::from_json(&data.kanji_json)?;
-    tracing::info!(
-        "📖 Kanji dictionary initialized ({:.2}s)",
-        start.elapsed().as_secs_f64()
-    );
     KANJI_DICTIONARY.set(db).ok();
     Ok(())
 }
@@ -39,19 +33,11 @@ pub fn serialize_kanji_to_rkyv(data: &KanjiData) -> Result<Vec<u8>, OrigaError> 
 
 /// Initialize kanji from rkyv bytes
 pub fn init_kanji_from_rkyv(bytes: &[u8]) -> Result<(), OrigaError> {
-    let start = std::time::Instant::now();
-    tracing::info!("📖 Loading kanji from rkyv...");
-
     let archived = rkyv::access::<ArchivedKanjiData, rkyv::rancor::Error>(bytes).map_err(|e| {
         OrigaError::KradfileError {
             reason: format!("Failed to validate kanji data: {:?}", e),
         }
     })?;
-
-    tracing::info!(
-        "📖 Kanji accessed from rkyv ({:.2}s)",
-        start.elapsed().as_secs_f64()
-    );
 
     let data = KanjiData {
         kanji_json: archived.kanji_json.as_str().to_string(),
