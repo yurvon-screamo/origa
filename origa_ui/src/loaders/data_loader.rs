@@ -1,23 +1,31 @@
-use origa::dictionary::grammar::{GrammarData, init_grammar, init_grammar_from_rkyv, is_grammar_loaded};
+use origa::dictionary::grammar::{
+    GrammarData, init_grammar, init_grammar_from_rkyv, is_grammar_loaded,
+};
 use origa::dictionary::kanji::{KanjiData, init_kanji, init_kanji_from_rkyv, is_kanji_loaded};
-use origa::dictionary::radical::{RadicalData, init_radicals, init_radicals_from_rkyv, is_radicals_loaded};
-use origa::dictionary::vocabulary::{VocabularyChunkData, init_vocabulary, init_vocabulary_from_rkyv, is_vocabulary_loaded, VOCABULARY_DICTIONARY};
+use origa::dictionary::radical::{
+    RadicalData, init_radicals, init_radicals_from_rkyv, is_radicals_loaded,
+};
+use origa::dictionary::vocabulary::{
+    VOCABULARY_DICTIONARY, VocabularyChunkData, init_vocabulary, init_vocabulary_from_rkyv,
+    is_vocabulary_loaded,
+};
 use origa::domain::OrigaError;
 
 use super::jlpt_content_loader::load_jlpt_content;
 use crate::core::config::public_url;
 use crate::repository::{
-    get_cached_grammar_rkyv, save_grammar_to_cache_rkyv,
-    get_cached_kanji_rkyv, save_kanji_to_cache_rkyv,
-    get_cached_radical_rkyv, save_radical_to_cache_rkyv,
-    get_cached_vocabulary_rkyv, save_vocabulary_to_cache_rkyv,
+    get_cached_grammar_rkyv, get_cached_kanji_rkyv, get_cached_radical_rkyv,
+    get_cached_vocabulary_rkyv, save_grammar_to_cache_rkyv, save_kanji_to_cache_rkyv,
+    save_radical_to_cache_rkyv, save_vocabulary_to_cache_rkyv,
 };
 use crate::utils::{fetch_text, yield_to_browser};
 
+#[allow(dead_code)]
 pub fn is_all_data_loaded() -> bool {
     is_vocabulary_loaded() && is_radicals_loaded() && is_kanji_loaded() && is_grammar_loaded()
 }
 
+#[allow(dead_code)]
 pub async fn load_all_data() -> Result<(), OrigaError> {
     if is_all_data_loaded() {
         tracing::info!("📚 All data already loaded, skipping");
@@ -71,7 +79,10 @@ pub async fn load_vocabulary() -> Result<(), OrigaError> {
         tracing::info!("📖 Vocabulary found in rkyv cache ({} bytes)", bytes.len());
         yield_to_browser().await;
         init_vocabulary_from_rkyv(&bytes)?;
-        tracing::info!("📖 Vocabulary loaded from rkyv cache ({:.2}s)", (now_ms() - start) / 1000.0);
+        tracing::info!(
+            "📖 Vocabulary loaded from rkyv cache ({:.2}s)",
+            (now_ms() - start) / 1000.0
+        );
         return Ok(());
     }
 
@@ -114,11 +125,13 @@ pub async fn load_vocabulary() -> Result<(), OrigaError> {
     // Save to rkyv cache after initialization
     // Get the database from global and serialize it
     if let Some(db) = VOCABULARY_DICTIONARY.get() {
-        let bytes = origa::dictionary::vocabulary::serialize_vocabulary_to_rkyv(db)
-            .map_err(|e| OrigaError::RepositoryError {
-                reason: format!("Failed to serialize vocabulary: {:?}", e),
+        let bytes =
+            origa::dictionary::vocabulary::serialize_vocabulary_to_rkyv(db).map_err(|e| {
+                OrigaError::RepositoryError {
+                    reason: format!("Failed to serialize vocabulary: {:?}", e),
+                }
             })?;
-        
+
         wasm_bindgen_futures::spawn_local(async move {
             if let Err(e) = save_vocabulary_to_cache_rkyv(&bytes).await {
                 tracing::warn!("Failed to cache vocabulary: {:?}", e);
@@ -147,20 +160,26 @@ pub async fn load_radical() -> Result<(), OrigaError> {
         tracing::info!("📖 Radicals found in rkyv cache ({} bytes)", bytes.len());
         yield_to_browser().await;
         init_radicals_from_rkyv(&bytes)?;
-        tracing::info!("📖 Radicals loaded from rkyv cache ({:.2}s)", (now_ms() - start) / 1000.0);
+        tracing::info!(
+            "📖 Radicals loaded from rkyv cache ({:.2}s)",
+            (now_ms() - start) / 1000.0
+        );
         return Ok(());
     }
 
     tracing::debug!("📖 No rkyv cache, loading from network");
 
     let json = fetch_text(public_url("/public/dictionary/radicals.json")).await?;
-    let data = RadicalData { radicals_json: json };
+    let data = RadicalData {
+        radicals_json: json,
+    };
 
     // Serialize before init (takes reference, doesn't move data)
-    let bytes = origa::dictionary::radical::serialize_radicals_to_rkyv(&data)
-        .map_err(|e| OrigaError::RepositoryError {
+    let bytes = origa::dictionary::radical::serialize_radicals_to_rkyv(&data).map_err(|e| {
+        OrigaError::RepositoryError {
             reason: format!("Failed to serialize radicals: {:?}", e),
-        })?;
+        }
+    })?;
 
     yield_to_browser().await;
     // Now init takes ownership
@@ -193,7 +212,10 @@ pub async fn load_kanji() -> Result<(), OrigaError> {
         tracing::info!("📖 Kanji found in rkyv cache ({} bytes)", bytes.len());
         yield_to_browser().await;
         init_kanji_from_rkyv(&bytes)?;
-        tracing::info!("📖 Kanji loaded from rkyv cache ({:.2}s)", (now_ms() - start) / 1000.0);
+        tracing::info!(
+            "📖 Kanji loaded from rkyv cache ({:.2}s)",
+            (now_ms() - start) / 1000.0
+        );
         return Ok(());
     }
 
@@ -203,10 +225,11 @@ pub async fn load_kanji() -> Result<(), OrigaError> {
     let data = KanjiData { kanji_json: json };
 
     // Serialize before init (takes reference, doesn't move data)
-    let bytes = origa::dictionary::kanji::serialize_kanji_to_rkyv(&data)
-        .map_err(|e| OrigaError::RepositoryError {
+    let bytes = origa::dictionary::kanji::serialize_kanji_to_rkyv(&data).map_err(|e| {
+        OrigaError::RepositoryError {
             reason: format!("Failed to serialize kanji: {:?}", e),
-        })?;
+        }
+    })?;
 
     yield_to_browser().await;
     // Now init takes ownership
@@ -239,7 +262,10 @@ pub async fn load_grammar() -> Result<(), OrigaError> {
         tracing::info!("📖 Grammar found in rkyv cache ({} bytes)", bytes.len());
         yield_to_browser().await;
         init_grammar_from_rkyv(&bytes)?;
-        tracing::info!("📖 Grammar loaded from rkyv cache ({:.2}s)", (now_ms() - start) / 1000.0);
+        tracing::info!(
+            "📖 Grammar loaded from rkyv cache ({:.2}s)",
+            (now_ms() - start) / 1000.0
+        );
         return Ok(());
     }
 
@@ -249,10 +275,11 @@ pub async fn load_grammar() -> Result<(), OrigaError> {
     let data = GrammarData { grammar_json: json };
 
     // Serialize before init (takes reference, doesn't move data)
-    let bytes = origa::dictionary::grammar::serialize_grammar_to_rkyv(&data)
-        .map_err(|e| OrigaError::RepositoryError {
+    let bytes = origa::dictionary::grammar::serialize_grammar_to_rkyv(&data).map_err(|e| {
+        OrigaError::RepositoryError {
             reason: format!("Failed to serialize grammar: {:?}", e),
-        })?;
+        }
+    })?;
 
     yield_to_browser().await;
     // Now init takes ownership

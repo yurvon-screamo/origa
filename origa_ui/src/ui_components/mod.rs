@@ -2,6 +2,7 @@
 
 mod accordion;
 mod alert;
+mod app_skeleton;
 mod audio_buttons;
 mod avatar;
 mod badge;
@@ -52,6 +53,7 @@ mod typography;
 mod update_drawer;
 
 pub use alert::{Alert, AlertType};
+pub use app_skeleton::AppSkeleton;
 pub use audio_buttons::AudioButtons;
 pub use avatar::Avatar;
 pub use button::{Button, ButtonSize, ButtonVariant};

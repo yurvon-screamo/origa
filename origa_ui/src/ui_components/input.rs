@@ -19,43 +19,23 @@ pub fn Input(
 ) -> impl IntoView {
     let input_type = move || {
         let t = input_type.get();
-        if t.is_empty() {
-            "text".to_string()
-        } else {
-            t
-        }
+        if t.is_empty() { "text".to_string() } else { t }
     };
     let autocomplete = move || {
         let a = autocomplete.get();
-        if a.is_empty() {
-            "off".to_string()
-        } else {
-            a
-        }
+        if a.is_empty() { "off".to_string() } else { a }
     };
     let id_val = move || {
         let val = id.get();
-        if val.is_empty() {
-            None
-        } else {
-            Some(val)
-        }
+        if val.is_empty() { None } else { Some(val) }
     };
     let name_val = move || {
         let val = name.get();
-        if val.is_empty() {
-            None
-        } else {
-            Some(val)
-        }
+        if val.is_empty() { None } else { Some(val) }
     };
     let test_id_val = move || {
         let val = test_id.get();
-        if val.is_empty() {
-            None
-        } else {
-            Some(val)
-        }
+        if val.is_empty() { None } else { Some(val) }
     };
     let full_class = move || {
         let base_class = "input-field";
