@@ -100,11 +100,12 @@ async fn get_cached_bytes(url: &str) -> Result<Option<Vec<u8>>, OrigaError> {
 
     let match_start = now_ms();
     let match_promise = cache.match_with_str(url);
-    let response_option = JsFuture::from(match_promise)
-        .await
-        .map_err(|e| OrigaError::RepositoryError {
-            reason: format!("Failed to check cache: {:?}", e),
-        })?;
+    let response_option =
+        JsFuture::from(match_promise)
+            .await
+            .map_err(|e| OrigaError::RepositoryError {
+                reason: format!("Failed to check cache: {:?}", e),
+            })?;
     tracing::debug!(
         "Cache match checked ({:.2}s)",
         (now_ms() - match_start) / 1000.0
@@ -114,27 +115,30 @@ async fn get_cached_bytes(url: &str) -> Result<Option<Vec<u8>>, OrigaError> {
         return Ok(None);
     }
 
-    let response: web_sys::Response = response_option
-        .dyn_into()
-        .map_err(|e| OrigaError::RepositoryError {
-            reason: format!("Failed to cast Response: {:?}", e),
-        })?;
+    let response: web_sys::Response =
+        response_option
+            .dyn_into()
+            .map_err(|e| OrigaError::RepositoryError {
+                reason: format!("Failed to cast Response: {:?}", e),
+            })?;
 
     if !response.ok() {
         return Ok(None);
     }
 
-    let array_buffer_promise = response
-        .array_buffer()
-        .map_err(|e| OrigaError::RepositoryError {
-            reason: format!("Failed to get array buffer: {:?}", e),
-        })?;
+    let array_buffer_promise =
+        response
+            .array_buffer()
+            .map_err(|e| OrigaError::RepositoryError {
+                reason: format!("Failed to get array buffer: {:?}", e),
+            })?;
 
-    let array_buffer = JsFuture::from(array_buffer_promise)
-        .await
-        .map_err(|e| OrigaError::RepositoryError {
-            reason: format!("Failed to read array buffer: {:?}", e),
-        })?;
+    let array_buffer =
+        JsFuture::from(array_buffer_promise)
+            .await
+            .map_err(|e| OrigaError::RepositoryError {
+                reason: format!("Failed to read array buffer: {:?}", e),
+            })?;
 
     let uint8_array = js_sys::Uint8Array::new(&array_buffer);
     let bytes = uint8_array.to_vec();
@@ -150,7 +154,10 @@ async fn get_cached_bytes(url: &str) -> Result<Option<Vec<u8>>, OrigaError> {
 async fn save_cached_bytes(url: &str, bytes: &[u8]) -> Result<(), OrigaError> {
     let start = now_ms();
     let cache = open_cache().await?;
-    tracing::debug!("Cache opened for save ({:.2}s)", (now_ms() - start) / 1000.0);
+    tracing::debug!(
+        "Cache opened for save ({:.2}s)",
+        (now_ms() - start) / 1000.0
+    );
 
     let array_buffer = js_sys::ArrayBuffer::new(bytes.len() as u32);
     let view = js_sys::Uint8Array::new(&array_buffer);
@@ -166,10 +173,11 @@ async fn save_cached_bytes(url: &str, bytes: &[u8]) -> Result<(), OrigaError> {
     let blob_parts = js_sys::Array::new();
     blob_parts.push(&array_buffer);
 
-    let blob = web_sys::Blob::new_with_buffer_source_sequence_and_options(&blob_parts, &blob_property_bag)
-        .map_err(|e| OrigaError::RepositoryError {
-            reason: format!("Failed to create blob: {:?}", e),
-        })?;
+    let blob =
+        web_sys::Blob::new_with_buffer_source_sequence_and_options(&blob_parts, &blob_property_bag)
+            .map_err(|e| OrigaError::RepositoryError {
+                reason: format!("Failed to create blob: {:?}", e),
+            })?;
 
     let response = web_sys::Response::new_with_opt_blob_and_init(Some(&blob), &response_init)
         .map_err(|e| OrigaError::RepositoryError {
@@ -211,11 +219,12 @@ pub async fn get_cached_dictionary_rkyv() -> Result<Option<Vec<u8>>, OrigaError>
 
     let match_start = now_ms();
     let match_promise = cache.match_with_str(url);
-    let response_option = JsFuture::from(match_promise)
-        .await
-        .map_err(|e| OrigaError::RepositoryError {
-            reason: format!("Failed to check cache: {:?}", e),
-        })?;
+    let response_option =
+        JsFuture::from(match_promise)
+            .await
+            .map_err(|e| OrigaError::RepositoryError {
+                reason: format!("Failed to check cache: {:?}", e),
+            })?;
     tracing::debug!(
         "Cache match checked ({:.2}s)",
         (now_ms() - match_start) / 1000.0
@@ -225,28 +234,31 @@ pub async fn get_cached_dictionary_rkyv() -> Result<Option<Vec<u8>>, OrigaError>
         return Ok(None);
     }
 
-    let response: web_sys::Response = response_option
-        .dyn_into()
-        .map_err(|e| OrigaError::RepositoryError {
-            reason: format!("Failed to cast Response: {:?}", e),
-        })?;
+    let response: web_sys::Response =
+        response_option
+            .dyn_into()
+            .map_err(|e| OrigaError::RepositoryError {
+                reason: format!("Failed to cast Response: {:?}", e),
+            })?;
 
     if !response.ok() {
         return Ok(None);
     }
 
     let _read_start = now_ms();
-    let array_buffer_promise = response
-        .array_buffer()
-        .map_err(|e| OrigaError::RepositoryError {
-            reason: format!("Failed to get array buffer: {:?}", e),
-        })?;
+    let array_buffer_promise =
+        response
+            .array_buffer()
+            .map_err(|e| OrigaError::RepositoryError {
+                reason: format!("Failed to get array buffer: {:?}", e),
+            })?;
 
-    let array_buffer = JsFuture::from(array_buffer_promise)
-        .await
-        .map_err(|e| OrigaError::RepositoryError {
-            reason: format!("Failed to read array buffer: {:?}", e),
-        })?;
+    let array_buffer =
+        JsFuture::from(array_buffer_promise)
+            .await
+            .map_err(|e| OrigaError::RepositoryError {
+                reason: format!("Failed to read array buffer: {:?}", e),
+            })?;
 
     let uint8_array = js_sys::Uint8Array::new(&array_buffer);
     let bytes = uint8_array.to_vec();
@@ -264,10 +276,11 @@ pub async fn save_dictionary_to_cache_rkyv(data: &DictionaryData) -> Result<(), 
     let start = now_ms();
 
     let serialize_start = now_ms();
-    let bytes = origa::domain::serialize_dictionary_to_rkyv(data)
-        .map_err(|e| OrigaError::RepositoryError {
+    let bytes = origa::domain::serialize_dictionary_to_rkyv(data).map_err(|e| {
+        OrigaError::RepositoryError {
             reason: format!("Failed to serialize dictionary: {:?}", e),
-        })?;
+        }
+    })?;
     tracing::info!(
         "Dictionary serialized rkyv ({} bytes, {:.2}s)",
         bytes.len(),
@@ -275,7 +288,10 @@ pub async fn save_dictionary_to_cache_rkyv(data: &DictionaryData) -> Result<(), 
     );
 
     let cache = open_cache().await?;
-    tracing::debug!("Cache opened for save ({:.2}s)", (now_ms() - start) / 1000.0);
+    tracing::debug!(
+        "Cache opened for save ({:.2}s)",
+        (now_ms() - start) / 1000.0
+    );
 
     let array_buffer = js_sys::ArrayBuffer::new(bytes.len() as u32);
     let view = js_sys::Uint8Array::new(&array_buffer);
@@ -291,10 +307,11 @@ pub async fn save_dictionary_to_cache_rkyv(data: &DictionaryData) -> Result<(), 
     let blob_parts = js_sys::Array::new();
     blob_parts.push(&array_buffer);
 
-    let blob = web_sys::Blob::new_with_buffer_source_sequence_and_options(&blob_parts, &blob_property_bag)
-        .map_err(|e| OrigaError::RepositoryError {
-            reason: format!("Failed to create blob: {:?}", e),
-        })?;
+    let blob =
+        web_sys::Blob::new_with_buffer_source_sequence_and_options(&blob_parts, &blob_property_bag)
+            .map_err(|e| OrigaError::RepositoryError {
+                reason: format!("Failed to create blob: {:?}", e),
+            })?;
 
     let response = web_sys::Response::new_with_opt_blob_and_init(Some(&blob), &response_init)
         .map_err(|e| OrigaError::RepositoryError {

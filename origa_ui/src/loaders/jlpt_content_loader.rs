@@ -121,7 +121,11 @@ async fn load_kanji(content: &mut JlptContent) -> Result<(), OrigaError> {
     }
     tracing::info!(
         "📖 JLPT kanji processed ({} entries, {:.2}s)",
-        content.kanji_by_level.values().map(|s| s.len()).sum::<usize>(),
+        content
+            .kanji_by_level
+            .values()
+            .map(|s| s.len())
+            .sum::<usize>(),
         (now_ms() - process_start) / 1000.0
     );
 
@@ -172,7 +176,11 @@ async fn load_words(content: &mut JlptContent) -> Result<(), OrigaError> {
     }
     tracing::info!(
         "📖 JLPT words processed ({} total, {:.2}s)",
-        content.words_by_level.values().map(|s| s.len()).sum::<usize>(),
+        content
+            .words_by_level
+            .values()
+            .map(|s| s.len())
+            .sum::<usize>(),
         (now_ms() - process_start) / 1000.0
     );
 
@@ -209,7 +217,11 @@ async fn load_grammar(content: &mut JlptContent) -> Result<(), OrigaError> {
     }
     tracing::info!(
         "📖 JLPT grammar processed ({} entries, {:.2}s)",
-        content.grammar_by_level.values().map(|s| s.len()).sum::<usize>(),
+        content
+            .grammar_by_level
+            .values()
+            .map(|s| s.len())
+            .sum::<usize>(),
         (now_ms() - process_start) / 1000.0
     );
 
