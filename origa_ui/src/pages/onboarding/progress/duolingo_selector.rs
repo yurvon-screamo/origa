@@ -29,7 +29,7 @@ pub fn DuolingoProgressSelector(
         Signal::derive(move || format_import_info(selected_module.get(), selected_unit.get()));
 
     let modules_for_effect = modules.clone();
-    let app_id_for_effect = app_id;
+    let app_id_for_effect = app_id.clone();
     Effect::new(move |_| {
         let module_num = selected_module.get();
         let unit_num = selected_unit.get();
@@ -93,6 +93,9 @@ pub fn DuolingoProgressSelector(
         "Duolingo (EN)"
     };
 
+    let app_id_for_module_dropdown = app_id.clone();
+    let app_id_for_unit_dropdown = app_id.clone();
+
     view! {
         <Card class=Signal::derive(|| "p-4".to_string())>
             <Text size=TextSize::Default variant=TypographyVariant::Primary>
@@ -109,6 +112,7 @@ pub fn DuolingoProgressSelector(
                             _options=Signal::derive(move || module_items.clone())
                             _selected=selected_module_value
                             _placeholder=Signal::derive(|| "Выберите модуль".to_string())
+                            test_id=Signal::derive(move || format!("{}-module-dropdown", app_id_for_module_dropdown.clone()))
                         />
                     </div>
                 </div>
@@ -123,6 +127,10 @@ pub fn DuolingoProgressSelector(
                                 _options=unit_items
                                 _selected=selected_unit_value
                                 _placeholder=Signal::derive(|| "Выберите раздел".to_string())
+                                test_id=Signal::derive({
+                                    let app_id = app_id_for_unit_dropdown.clone();
+                                    move || format!("{}-unit-dropdown", app_id)
+                                })
                             />
                         </div>
                     </div>

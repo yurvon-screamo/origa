@@ -72,6 +72,7 @@ pub fn JlptStep(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoVie
                         let description = *description;
                         let is_selected = Memo::new(move |_| state.get().selected_level == level);
                         let level_for_click = level;
+                        let level_code = label.to_lowercase().replace(" ", "-");
 
                         view! {
                             <div
@@ -83,6 +84,7 @@ pub fn JlptStep(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoVie
                                         format!("{} border-gray-200 hover:border-gray-300", base)
                                     }
                                 }
+                                data-testid=format!("jlpt-option-{}", level_code)
                                 on:click=move |_| {
                                     select_level.run(level_for_click);
                                 }

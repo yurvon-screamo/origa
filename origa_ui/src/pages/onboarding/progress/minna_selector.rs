@@ -96,6 +96,7 @@ pub fn MinnaProgressSelector(
                         _options=Signal::derive(move || lesson_items.clone())
                         _selected=selected_lesson_value
                         _placeholder=Signal::derive(|| "Выберите урок".to_string())
+                        test_id=Signal::derive(move || format!("{}-lesson-dropdown", app_id.clone()))
                     />
                 </div>
             </div>
