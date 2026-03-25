@@ -1486,7 +1486,7 @@ input[type="submit"],
 	display: flex;
 	flex-direction: column;
 	gap: 12px;
-	z-index: 300;
+	z-index: 10000;
 	max-width: 360px;
 }
 
