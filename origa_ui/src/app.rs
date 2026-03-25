@@ -87,18 +87,32 @@ pub fn App() -> impl IntoView {
 }
 
 async fn init_dictionary(auth_store: AuthStore) {
+    let start = now_ms();
+    info!("🚀 Starting application data initialization...");
+
+    let dict_start = now_ms();
     let (dict_result, data_result) = futures::join!(load_dictionary(), load_all_data());
+    let parallel_end = now_ms();
+    info!("⏱️ Parallel loading completed in {:.2}s", (parallel_end - dict_start) / 1000.0);
 
     if let Err(e) = dict_result {
         error!("Failed to load dictionary: {}", e);
     } else {
-        info!("Unidic dictionary loaded");
+        info!("✅ Unidic dictionary loaded ({:.2}s)", (parallel_end - dict_start) / 1000.0);
     }
     if let Err(e) = data_result {
         error!("Failed to load data: {:?}", e);
     } else {
-        info!("All data loaded");
+        info!("✅ All data loaded ({:.2}s)", (parallel_end - dict_start) / 1000.0);
     }
 
     auth_store.set_data_loaded();
+    info!("🎉 Application initialization completed in {:.2}s", (now_ms() - start) / 1000.0);
+}
+
+fn now_ms() -> f64 {
+    web_sys::window()
+        .and_then(|w| w.performance())
+        .map(|p| p.now())
+        .unwrap_or(0.0)
 }
