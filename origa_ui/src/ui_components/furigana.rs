@@ -8,11 +8,20 @@ pub fn FuriganaText(
     #[prop(into)] text: String,
     known_kanji: HashSet<String>,
     #[prop(optional, into, default = String::new().into())] class: Signal<String>,
+    #[prop(optional, into)] test_id: Signal<String>,
 ) -> impl IntoView {
     let segments = move || furiganize_segments(&text, &known_kanji).unwrap_or_else(|_| vec![]);
 
+    let test_id_val = move || {
+        let val = test_id.get();
+        if val.is_empty() { None } else { Some(val) }
+    };
+
     view! {
-        <span class=move || format!("furigana-text {}", class.get())>
+        <span
+            class=move || format!("furigana-text {}", class.get())
+            data-testid=test_id_val
+        >
             <For
                 each=segments
                 key=|seg: &FuriganaSegment| (seg.text().to_string(), seg.reading().map(|r| r.to_string()))

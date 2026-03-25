@@ -9,7 +9,12 @@ pub fn LineChart(
     #[prop(default = 400)] width: u32,
     #[prop(default = 200)] height: u32,
     #[prop(optional, into)] class: Signal<String>,
+    #[prop(optional, into)] test_id: Signal<String>,
 ) -> impl IntoView {
+    let test_id_val = move || {
+        let val = test_id.get();
+        if val.is_empty() { None } else { Some(val) }
+    };
     let chart_width = width - PADDING * 2;
     let chart_height = height - PADDING * 2;
 
@@ -99,6 +104,7 @@ pub fn LineChart(
             width=width
             height=height
             class=class_str
+            data-testid=test_id_val
         >
             <line
                 x1=PADDING

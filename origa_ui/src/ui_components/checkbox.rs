@@ -7,14 +7,21 @@ pub fn Checkbox(
     #[prop(optional, into)] label: Signal<String>,
     #[prop(optional, into)] class: Signal<String>,
     #[prop(optional)] on_change: Option<Callback<()>>,
+    #[prop(optional, into)] test_id: Signal<String>,
 ) -> impl IntoView {
     let checkbox_checked = checked;
     let checkbox_disabled = disabled;
     let checkbox_label = label;
     let checkbox_class = class;
+    let checkbox_test_id = test_id;
+
+    let test_id_val = move || {
+        let val = checkbox_test_id.get();
+        if val.is_empty() { None } else { Some(val) }
+    };
 
     view! {
-        <label class=move || format!("checkbox-container {}", checkbox_class.get())>
+        <label class=move || format!("checkbox-container {}", checkbox_class.get()) data-testid=test_id_val>
             <input
                 type="checkbox"
                 checked=move || checkbox_checked.get()

@@ -2,10 +2,16 @@ use leptos::prelude::*;
 
 #[component]
 pub fn ProgressBar(
+    #[prop(optional, into)] test_id: Signal<String>,
     #[prop(optional)] value: RwSignal<u32>,
     #[prop(default = 100)] max: u32,
     #[prop(optional, into)] label: Signal<String>,
 ) -> impl IntoView {
+    let test_id_val = move || {
+        let val = test_id.get();
+        if val.is_empty() { None } else { Some(val) }
+    };
+
     let percentage = move || {
         let v = value.get();
         let m = max;
@@ -13,7 +19,7 @@ pub fn ProgressBar(
     };
 
     view! {
-        <div>
+        <div data-testid=test_id_val>
             <div class="flex justify-between mb-2">
                 <span class="font-mono text-[10px] tracking-widest">{move || label.get()}</span>
                 <span class="font-mono text-[10px]">{move || format!("{}%", percentage() as u32)}</span>

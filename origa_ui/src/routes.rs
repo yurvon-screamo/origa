@@ -59,7 +59,10 @@ pub fn ProtectedRoute(children: ChildrenFn) -> impl IntoView {
     Effect::new({
         let auth_store = auth_store.clone();
         move |_| {
-            if !is_checking.get() && is_authenticated.get() && !auth_store.is_dictionary_loaded.get() {
+            if !is_checking.get()
+                && is_authenticated.get()
+                && !auth_store.is_dictionary_loaded.get()
+            {
                 start_dictionary_loading(auth_store.clone());
             }
         }

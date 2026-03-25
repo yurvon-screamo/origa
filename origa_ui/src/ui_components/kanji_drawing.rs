@@ -76,6 +76,7 @@ type DrawingStateRef = Arc<Mutex<DrawingState>>;
 pub fn KanjiDrawingPractice(
     kanji: String,
     #[prop(optional)] on_complete: Option<Callback<()>>,
+    #[prop(optional, into)] test_id: Signal<String>,
 ) -> impl IntoView {
     let svg_content = LocalResource::new(move || {
         let encoded = urlencoding::encode(&kanji);
@@ -248,9 +249,33 @@ pub fn KanjiDrawingPractice(
         }
     };
     let handle_pointer_leave = handle_pointer_up.clone();
+
+    let test_id_val = move || {
+        let val = test_id.get();
+        if val.is_empty() { None } else { Some(val) }
+    };
+
+    let test_id_canvas = move || {
+        let val = test_id.get();
+        if val.is_empty() {
+            None
+        } else {
+            Some(format!("{}-canvas", val))
+        }
+    };
+
+    let test_id_progress = move || {
+        let val = test_id.get();
+        if val.is_empty() {
+            None
+        } else {
+            Some(format!("{}-progress", val))
+        }
+    };
+
     view! {
-        <div class="kanji-drawing-container">
-            <div class="kanji-drawing-info">
+        <div class="kanji-drawing-container" data-testid=test_id_val>
+            <div class="kanji-drawing-info" data-testid=test_id_progress>
                 {move || {
                     if load_error.get() {
                         view! {
@@ -283,6 +308,7 @@ pub fn KanjiDrawingPractice(
                     node_ref={canvas_ref}
                     width={CANVAS_SIZE}
                     height={CANVAS_SIZE}
+                    data-testid=test_id_canvas
                     class=move || {
                         if is_completed.get() {
                             "kanji-drawing-canvas pointer-events-none"

@@ -28,9 +28,8 @@ pub use memory::{Difficulty, MemoryHistory, MemoryState, Rating, ReviewLog, Stab
 pub use score_content::ScoreContentResult;
 pub use srs::RateMode;
 pub use tokenizer::{
-    DictionaryData, PartOfSpeech, TokenInfo,
-    init_dictionary, init_dictionary_from_rkyv, serialize_dictionary_to_rkyv,
-    is_dictionary_loaded, tokenize_text,
+    DictionaryData, PartOfSpeech, TokenInfo, init_dictionary, init_dictionary_from_rkyv,
+    is_dictionary_loaded, serialize_dictionary_to_rkyv, tokenize_text,
 };
 pub use user::{User, WordKnowledge};
 pub use value_objects::{Answer, JapaneseLevel, NativeLanguage, Question};

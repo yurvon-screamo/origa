@@ -16,17 +16,26 @@ pub fn Alert(
     #[prop(optional, into)] title: Signal<String>,
     #[prop(optional, into)] message: Signal<String>,
     #[prop(optional, into)] class: Signal<String>,
+    #[prop(optional, into)] test_id: Signal<String>,
 ) -> impl IntoView {
+    let test_id_val = move || {
+        let val = test_id.get();
+        if val.is_empty() { None } else { Some(val) }
+    };
+
     view! {
-        <div class=move || {
-            let alert_class = match alert_type.get() {
-                AlertType::Info => "alert-info",
-                AlertType::Success => "alert-success",
-                AlertType::Warning => "alert-warning",
-                AlertType::Error => "alert-error",
-            };
-            format!("alert {} {}", alert_class, class.get())
-        }>
+        <div
+            class=move || {
+                let alert_class = match alert_type.get() {
+                    AlertType::Info => "alert-info",
+                    AlertType::Success => "alert-success",
+                    AlertType::Warning => "alert-warning",
+                    AlertType::Error => "alert-error",
+                };
+                format!("alert {} {}", alert_class, class.get())
+            }
+            data-testid=test_id_val
+        >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                 {move || match alert_type.get() {
                     AlertType::Success => view! {

@@ -7,12 +7,36 @@ pub fn Drawer(
     #[prop(optional)] on_close: Option<Callback<leptos::ev::MouseEvent>>,
     #[prop(optional, into)] title: Signal<String>,
     #[prop(optional)] action_button: Option<ChildrenFn>,
+    #[prop(optional, into)] test_id: Signal<String>,
     children: ChildrenFn,
 ) -> impl IntoView {
     let close_drawer = move |ev: leptos::ev::MouseEvent| {
         is_open.set(false);
         if let Some(on_close) = on_close {
             on_close.run(ev);
+        }
+    };
+
+    let test_id_val = move || {
+        let val = test_id.get();
+        if val.is_empty() { None } else { Some(val) }
+    };
+
+    let test_id_close = move || {
+        let val = test_id.get();
+        if val.is_empty() {
+            None
+        } else {
+            Some(format!("{}-close", val))
+        }
+    };
+
+    let test_id_backdrop = move || {
+        let val = test_id.get();
+        if val.is_empty() {
+            None
+        } else {
+            Some(format!("{}-backdrop", val))
         }
     };
 
@@ -36,9 +60,10 @@ pub fn Drawer(
                 <div
                     class="modal-backdrop anima-backdrop-enter"
                     on:click=close_drawer
+                    data-testid=test_id_backdrop
                 ></div>
 
-                <div class="drawer-content">
+                <div class="drawer-content" data-testid=test_id_val>
                     {/* Header: фиксированный */}
                     <div class="flex justify-between items-start mb-6 shrink-0">
                         <div>
@@ -49,6 +74,7 @@ pub fn Drawer(
                             <button
                                 on:click=close_drawer
                                 class="text-[var(--fg-muted)] hover:text-[var(--fg-black)] transition-colors"
+                                data-testid=test_id_close
                             >
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                                     <path d="M18 6L6 18M6 6l12 12" />
