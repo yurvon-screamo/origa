@@ -51,11 +51,11 @@ pub fn create_preview_modal_handlers(
                         state_for_async.reset();
                         is_open_for_async.set(false);
                         state_for_async.refresh_trigger.update(|v| *v += 1);
-                    }
+                    },
                     Err(e) => {
                         is_creating.set(false);
                         error.set(Some(e.to_string()));
-                    }
+                    },
                 }
             });
         })

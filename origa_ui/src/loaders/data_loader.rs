@@ -1,13 +1,13 @@
 use origa::dictionary::grammar::{
-    GrammarData, init_grammar, init_grammar_from_rkyv, is_grammar_loaded,
+    init_grammar, init_grammar_from_rkyv, is_grammar_loaded, GrammarData,
 };
-use origa::dictionary::kanji::{KanjiData, init_kanji, init_kanji_from_rkyv, is_kanji_loaded};
+use origa::dictionary::kanji::{init_kanji, init_kanji_from_rkyv, is_kanji_loaded, KanjiData};
 use origa::dictionary::radical::{
-    RadicalData, init_radicals, init_radicals_from_rkyv, is_radicals_loaded,
+    init_radicals, init_radicals_from_rkyv, is_radicals_loaded, RadicalData,
 };
 use origa::dictionary::vocabulary::{
-    VOCABULARY_DICTIONARY, VocabularyChunkData, init_vocabulary, init_vocabulary_from_rkyv,
-    is_vocabulary_loaded,
+    init_vocabulary, init_vocabulary_from_rkyv, is_vocabulary_loaded, VocabularyChunkData,
+    VOCABULARY_DICTIONARY,
 };
 use origa::domain::OrigaError;
 

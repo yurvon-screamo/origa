@@ -1,4 +1,4 @@
-use super::classify::{VerbGroup, classify_verb};
+use super::classify::{classify_verb, VerbGroup};
 use super::godan_tables::GODAN_TO_STEM;
 use super::te_ta::to_te_form;
 

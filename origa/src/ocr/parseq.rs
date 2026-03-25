@@ -1,6 +1,6 @@
 use crate::domain::OrigaError;
 use image::DynamicImage;
-use ort::session::{Session, SessionOutputs, builder::GraphOptimizationLevel};
+use ort::session::{builder::GraphOptimizationLevel, Session, SessionOutputs};
 use ort::value::Value;
 use std::path::Path;
 use std::sync::Mutex;
@@ -52,7 +52,7 @@ impl ParseqRecognizer {
             Err(e) => {
                 tracing::warn!("PARSeq preprocessing failed: {}", e);
                 return String::new();
-            }
+            },
         };
 
         let input_tensor = match Value::from_array(input_array) {
@@ -60,7 +60,7 @@ impl ParseqRecognizer {
             Err(e) => {
                 tracing::warn!("Failed to create tensor: {}", e);
                 return String::new();
-            }
+            },
         };
 
         match self.session.lock() {
@@ -69,12 +69,12 @@ impl ParseqRecognizer {
                 Err(e) => {
                     tracing::warn!("PARSeq inference failed: {:?}", e);
                     String::new()
-                }
+                },
             },
             Err(e) => {
                 tracing::warn!("Session lock failed: {:?}", e);
                 String::new()
-            }
+            },
         }
     }
 
@@ -132,7 +132,7 @@ impl ParseqRecognizer {
                 Err(e) => {
                     tracing::warn!("Failed to extract PARSeq output tensor: {:?}", e);
                     return String::new();
-                }
+                },
             };
 
         if shape.len() < 3 {

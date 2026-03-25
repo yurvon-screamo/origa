@@ -1,4 +1,4 @@
-use crate::ui_components::{Card, get_reading_from_text, is_speech_supported, speak_text};
+use crate::ui_components::{get_reading_from_text, is_speech_supported, speak_text, Card};
 use leptos::prelude::*;
 use origa::domain::{Card as DomainCard, GrammarInfo, NativeLanguage};
 use std::collections::HashSet;
@@ -51,7 +51,7 @@ pub fn LessonCard(
             Err(e) => {
                 tracing::warn!("Failed to get radicals for kanji: {:?}", e);
                 None
-            }
+            },
         },
         _ => None,
     };
@@ -69,7 +69,7 @@ pub fn LessonCard(
             } else {
                 Some(examples)
             }
-        }
+        },
         _ => None,
     };
     let examples_stored = StoredValue::new(example_words);
@@ -82,7 +82,7 @@ pub fn LessonCard(
             } else {
                 Some(readings)
             }
-        }
+        },
         _ => None,
     };
     let on_readings_stored = StoredValue::new(on_readings);
@@ -95,7 +95,7 @@ pub fn LessonCard(
             } else {
                 Some(readings)
             }
-        }
+        },
         _ => None,
     };
     let kun_readings_stored = StoredValue::new(kun_readings);
@@ -123,7 +123,7 @@ pub fn LessonCard(
             Err(e) => {
                 tracing::warn!("Failed to get radical info: {:?}", e);
                 None
-            }
+            },
         },
         _ => None,
     };

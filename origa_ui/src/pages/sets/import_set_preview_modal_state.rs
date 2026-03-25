@@ -66,12 +66,12 @@ impl ImportPreviewModalState {
                     error.set(Some("Пользователь не найден".to_string()));
                     is_loading_preview.set(false);
                     return;
-                }
+                },
                 Err(e) => {
                     error.set(Some(e.to_string()));
                     is_loading_preview.set(false);
                     return;
-                }
+                },
             };
 
             let set = match well_known_loader.load_set(set_id.clone()).await {
@@ -80,7 +80,7 @@ impl ImportPreviewModalState {
                     error.set(Some(e.to_string()));
                     is_loading_preview.set(false);
                     return;
-                }
+                },
             };
 
             let set_title = set_ids
@@ -144,12 +144,12 @@ impl ImportPreviewModalState {
                     error.set(Some("Пользователь не найден".to_string()));
                     is_loading_preview.set(false);
                     return;
-                }
+                },
                 Err(e) => {
                     error.set(Some(e.to_string()));
                     is_loading_preview.set(false);
                     return;
-                }
+                },
             };
 
             let sets_result = well_known_loader.load_sets(set_ids.clone()).await;
@@ -159,7 +159,7 @@ impl ImportPreviewModalState {
                     error.set(Some(e.to_string()));
                     is_loading_preview.set(false);
                     return;
-                }
+                },
             };
 
             let mut words_preview = Vec::new();
@@ -256,12 +256,12 @@ impl ImportPreviewModalState {
                 Ok(result) => {
                     is_importing.set(false);
                     Ok(result)
-                }
+                },
                 Err(e) => {
                     error.set(Some(e.to_string()));
                     is_importing.set(false);
                     Err(e.to_string())
-                }
+                },
             }
         }
     }

@@ -36,7 +36,11 @@ pub fn EmailPasswordForm(
 
     let form_test_id = move || {
         let val = test_id.get();
-        if val.is_empty() { None } else { Some(val) }
+        if val.is_empty() {
+            None
+        } else {
+            Some(val)
+        }
     };
 
     let error_test_id = Signal::derive(move || {

@@ -1,6 +1,6 @@
+use super::{calculate_stats, format_delta, format_number, HomeStats};
 use super::{HistoryModal, HomeSkeleton, JlptProgressCard, JlptSkeleton, StatMetric, StatsGrid};
-use super::{HomeStats, calculate_stats, format_delta, format_number};
-use crate::repository::{HybridUserRepository, set_last_sync_time};
+use crate::repository::{set_last_sync_time, HybridUserRepository};
 use crate::ui_components::{
     Text, TextSize, ToastContainer, ToastData, ToastType, TypographyVariant,
 };
@@ -54,7 +54,7 @@ pub fn HomeContent() -> impl IntoView {
                         });
                     });
                     set_last_sync_time(js_sys::Date::now() as u64 / 1000);
-                }
+                },
                 Err(e) => {
                     toasts.update(|t| t.retain(|toast| toast.id != SYNC_TOAST_ID));
                     toasts.update(|t| {
@@ -67,7 +67,7 @@ pub fn HomeContent() -> impl IntoView {
                             closable: true,
                         });
                     });
-                }
+                },
             }
         });
     });
@@ -83,17 +83,17 @@ pub fn HomeContent() -> impl IntoView {
                     stats.set(Some(calculate_stats(&history_items)));
                     jlpt_progress.set(user.jlpt_progress().clone());
                     is_loading.set(false);
-                }
+                },
                 Ok(None) => {
                     tracing::warn!("Home: user not found");
                     stats.set(Some(HomeStats::default()));
                     is_loading.set(false);
-                }
+                },
                 Err(e) => {
                     tracing::error!("Home: get_current_user error: {:?}", e);
                     stats.set(Some(HomeStats::default()));
                     is_loading.set(false);
-                }
+                },
             }
         });
     });
@@ -108,13 +108,13 @@ pub fn HomeContent() -> impl IntoView {
                     history.set(history_items.clone());
                     stats.set(Some(calculate_stats(&history_items)));
                     jlpt_progress.set(user.jlpt_progress().clone());
-                }
+                },
                 Ok(None) => {
                     tracing::warn!("Home: user not found on reload");
-                }
+                },
                 Err(e) => {
                     tracing::error!("Home: get_current_user error on reload: {:?}", e);
-                }
+                },
             }
         });
     });

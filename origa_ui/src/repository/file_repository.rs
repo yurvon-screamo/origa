@@ -35,7 +35,7 @@ async fn open_database() -> Result<Database, OrigaError> {
             Err(e) => {
                 tracing::error!("Failed to get database: {:?}", e);
                 return;
-            }
+            },
         };
 
         if database.store_names().iter().any(|n| n == STORE_NAME) {

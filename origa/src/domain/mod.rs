@@ -12,11 +12,11 @@ mod tokenizer;
 mod user;
 pub(crate) mod value_objects;
 
-pub use crate::dictionary::grammar::{GrammarRule, get_rule_by_id, iter_grammar_rules};
+pub use crate::dictionary::grammar::{get_rule_by_id, iter_grammar_rules, GrammarRule};
 pub use crate::dictionary::vocabulary::get_translation;
 pub use error::OrigaError;
-pub use furigana::{FuriganaSegment, furiganize_segments, furiganize_text, furiganize_text_html};
-pub use japanese::{JapaneseChar, JapaneseText, filter_japanese_text};
+pub use furigana::{furiganize_segments, furiganize_text, furiganize_text_html, FuriganaSegment};
+pub use japanese::{filter_japanese_text, JapaneseChar, JapaneseText};
 pub use jlpt_content::{JlptContent, JlptContentError};
 pub use jlpt_progress::{CategoryProgress, JlptProgress, LevelProgressDetail};
 pub use knowledge::{
@@ -28,8 +28,8 @@ pub use memory::{Difficulty, MemoryHistory, MemoryState, Rating, ReviewLog, Stab
 pub use score_content::ScoreContentResult;
 pub use srs::RateMode;
 pub use tokenizer::{
-    DictionaryData, PartOfSpeech, TokenInfo, init_dictionary, init_dictionary_from_rkyv,
-    is_dictionary_loaded, serialize_dictionary_to_rkyv, tokenize_text,
+    init_dictionary, init_dictionary_from_rkyv, is_dictionary_loaded, serialize_dictionary_to_rkyv,
+    tokenize_text, DictionaryData, PartOfSpeech, TokenInfo,
 };
 pub use user::{User, WordKnowledge};
 pub use value_objects::{Answer, JapaneseLevel, NativeLanguage, Question};

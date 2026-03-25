@@ -1,4 +1,4 @@
-use super::super::shared::{CardCounts, CardStatus, Filter, FilterBtn, create_delete_callback};
+use super::super::shared::{create_delete_callback, CardCounts, CardStatus, Filter, FilterBtn};
 use super::vocabulary_card_item::VocabularyCardItem;
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{
@@ -38,13 +38,13 @@ pub fn WordsContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
                     all_cards.set(cards);
                     current_user.set(Some(user));
                     is_loading.set(false);
-                }
+                },
                 Ok(None) => {
                     tracing::warn!("WordsContent: user not found");
-                }
+                },
                 Err(e) => {
                     tracing::error!("WordsContent: get_current_user error: {:?}", e);
-                }
+                },
             }
         });
     });

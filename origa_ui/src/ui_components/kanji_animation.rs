@@ -55,7 +55,7 @@ pub fn KanjiAnimation(
     let svg_path = match mode {
         KanjiViewMode::Animation => {
             public_url(&format!("/public/kanji_animations/{}.svg", encoded))
-        }
+        },
         KanjiViewMode::Frames => public_url(&format!("/public/kanji_frames/{}.svg", encoded)),
     };
 
@@ -108,7 +108,11 @@ pub fn KanjiAnimation(
 
     let test_id_val = move || {
         let val = test_id.get();
-        if val.is_empty() { None } else { Some(val) }
+        if val.is_empty() {
+            None
+        } else {
+            Some(val)
+        }
     };
 
     view! {
@@ -140,7 +144,11 @@ pub fn KanjiWritingSection(
 ) -> impl IntoView {
     let test_id_val = move || {
         let val = test_id.get();
-        if val.is_empty() { None } else { Some(val) }
+        if val.is_empty() {
+            None
+        } else {
+            Some(val)
+        }
     };
 
     view! {

@@ -1,6 +1,6 @@
 use crate::dictionary::load_dictionary;
 use crate::utils::collect_json_files;
-use origa::domain::{OrigaError, tokenize_text};
+use origa::domain::{tokenize_text, OrigaError};
 use serde_json::{Map, Value};
 use std::collections::HashSet;
 use std::fs;

@@ -34,20 +34,20 @@ pub fn create_keyboard_handler(
                     "1" => {
                         ev.prevent_default();
                         on_quiz_select.run(0);
-                    }
+                    },
                     "2" => {
                         ev.prevent_default();
                         on_quiz_select.run(1);
-                    }
+                    },
                     "3" => {
                         ev.prevent_default();
                         on_quiz_select.run(2);
-                    }
+                    },
                     "4" => {
                         ev.prevent_default();
                         on_quiz_select.run(3);
-                    }
-                    _ => {}
+                    },
+                    _ => {},
                 }
                 return;
             }
@@ -57,12 +57,12 @@ pub fn create_keyboard_handler(
                     "1" => {
                         ev.prevent_default();
                         on_yesno_select.run(true);
-                    }
+                    },
                     "2" => {
                         ev.prevent_default();
                         on_yesno_select.run(false);
-                    }
-                    _ => {}
+                    },
+                    _ => {},
                 }
                 return;
             }
@@ -72,17 +72,17 @@ pub fn create_keyboard_handler(
             match key.as_str() {
                 "1" => {
                     on_rate_callback.run(Rating::Again);
-                }
+                },
                 "2" => {
                     on_rate_callback.run(Rating::Hard);
-                }
+                },
                 "3" => {
                     on_rate_callback.run(Rating::Good);
-                }
+                },
                 "4" => {
                     on_rate_callback.run(Rating::Easy);
-                }
-                _ => {}
+                },
+                _ => {},
             }
             return;
         }

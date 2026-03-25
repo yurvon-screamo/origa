@@ -1,6 +1,7 @@
 # Missing Vocabulary
 
 ## Statistics
+
 - Total unique words in sets: 9727
 - Words in dictionary: 97469
 - Missing words: 63

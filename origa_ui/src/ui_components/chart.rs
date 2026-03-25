@@ -13,7 +13,11 @@ pub fn LineChart(
 ) -> impl IntoView {
     let test_id_val = move || {
         let val = test_id.get();
-        if val.is_empty() { None } else { Some(val) }
+        if val.is_empty() {
+            None
+        } else {
+            Some(val)
+        }
     };
     let chart_width = width - PADDING * 2;
     let chart_height = height - PADDING * 2;

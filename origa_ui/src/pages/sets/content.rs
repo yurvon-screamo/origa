@@ -1,4 +1,4 @@
-use super::filters::{ImportFilter, LevelFilter, TypeFilter, available_set_types};
+use super::filters::{available_set_types, ImportFilter, LevelFilter, TypeFilter};
 use super::import_set_preview_modal::ImportSetPreviewModal;
 use super::sets_level_group::SetsLevelGroup;
 use super::types::SetInfo;
@@ -55,15 +55,15 @@ pub fn SetsContent() -> impl IntoView {
                 Ok(Some(user)) => {
                     current_user.set(Some(user.clone()));
                     Some(user)
-                }
+                },
                 Ok(None) => {
                     tracing::warn!("SetsContent: user not found");
                     None
-                }
+                },
                 Err(e) => {
                     tracing::error!("SetsContent: get_current_user error: {:?}", e);
                     None
-                }
+                },
             };
 
             match loader.load_meta_list().await {
@@ -88,10 +88,10 @@ pub fn SetsContent() -> impl IntoView {
                         })
                         .collect();
                     sets_for_load.set(set_list);
-                }
+                },
                 Err(e) => {
                     tracing::error!("SetsContent: load_meta_list error: {:?}", e);
-                }
+                },
             }
             is_loading.set(false);
         });

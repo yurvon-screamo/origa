@@ -1,5 +1,5 @@
-use crate::traits::{CreateVocabularyCardUseCase, LlmService, UserRepository};
 use crate::domain::OrigaError;
+use crate::traits::{CreateVocabularyCardUseCase, LlmService, UserRepository};
 use regex::Regex;
 use rusqlite::Connection;
 use serde_json::Value;
@@ -92,13 +92,13 @@ impl<'a, R: UserRepository, L: LlmService> ExportAnkiPackUseCase<'a, R, L> {
             {
                 Ok(_) => {
                     total_created_count += 1;
-                }
+                },
                 Err(OrigaError::DuplicateCard { .. }) => {
                     total_skipped_words.push(question);
-                }
+                },
                 Err(e) => {
                     return Err(e);
-                }
+                },
             }
         }
 

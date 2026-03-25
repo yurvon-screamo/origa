@@ -28,6 +28,7 @@ utils tokenize path/to/file.txt  # Automatically detects if path exists
 ```
 
 **Options:**
+
 - `TEXT` - Text to tokenize or path to file
 - `-f, --file` - Read text from file
 
@@ -50,6 +51,7 @@ utils ndlocr \
 ```
 
 **Options:**
+
 - `-i, --input <INPUT>` - Input image path (required)
 - `--detector <DETECTOR>` - Detector model path (default: `../ndlocr-lite/src/model/deim-s-1024x1024.onnx`)
 - `--rec30 <REC30>` - Parseq 30 model path
@@ -71,6 +73,7 @@ utils tokenize-well-known path/to/directory/
 ```
 
 **Arguments:**
+
 - `PATH` - Path to directory or JSON file
 
 ### `find-missing` - Find Missing Vocabulary
@@ -102,6 +105,7 @@ utils find-missing \
 ```
 
 **Options:**
+
 - `-o, --output <OUTPUT>` - Output path for the markdown report (default: `missing_vocabulary.md` in project root)
 - `-g, --generate` - Auto-generate missing words with translations
 - `--api-base <API_BASE>` - OpenAI API base URL (default: `http://10.2.11.6:8001/v1`)
@@ -137,6 +141,7 @@ The `tokenize
 2. `CARGO_MANIFEST_DIR/../origa_ui/public/dictionaries/unidic/`
 
 The dictionary files should include:
+
 - `char_def.bin` (compressed)
 - `matrix.mtx` (compressed)
 - `dict.da` (compressed)

@@ -205,7 +205,7 @@ fn render_lesson_card(
         },
         LessonCardView::Quiz(_) | LessonCardView::Writing(_) | LessonCardView::YesNo(_) => {
             return view! { <div/> }.into_any();
-        }
+        },
     };
 
     view! {

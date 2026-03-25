@@ -1,5 +1,5 @@
-use crate::api::VocabularyEntry;
 use crate::api::translate_word;
+use crate::api::VocabularyEntry;
 use crate::dictionary::load_dictionary;
 use crate::utils::{collect_json_files, get_base_path};
 use origa::domain::OrigaError;

@@ -1,6 +1,6 @@
 use crate::ui_components::{
-    Card, DisplayText, FuriganaText, Heading, HeadingLevel, KanjiViewMode, KanjiWritingSection,
-    Text, TextSize, TypographyVariant, get_reading_from_text, is_speech_supported, speak_text,
+    get_reading_from_text, is_speech_supported, speak_text, Card, DisplayText, FuriganaText,
+    Heading, HeadingLevel, KanjiViewMode, KanjiWritingSection, Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
 use origa::domain::{Card as DomainCard, NativeLanguage, QuizCard};

@@ -4,7 +4,7 @@ use ammonia::clean;
 use ego_tree::NodeRef;
 use leptos::prelude::*;
 use origa::domain::furiganize_text;
-use pulldown_cmark::{Options, Parser, html};
+use pulldown_cmark::{html, Options, Parser};
 use scraper::{Html, Node};
 
 #[derive(Clone, Copy, PartialEq, Default, Debug)]
@@ -50,7 +50,7 @@ fn add_furigana_to_html(html: &str, known_kanji: &HashSet<String>) -> String {
                         Err(_) => output.push_str(text_str),
                     }
                 }
-            }
+            },
             Node::Element(elem) => {
                 let tag = elem.name();
                 let should_skip = in_skip || SKIP_TAGS.contains(&tag);
@@ -66,12 +66,12 @@ fn add_furigana_to_html(html: &str, known_kanji: &HashSet<String>) -> String {
                 }
 
                 output.push_str(&format!("</{}>", tag));
-            }
+            },
             _ => {
                 for child in node_ref.children() {
                     process_node(child, output, in_skip, known_kanji);
                 }
-            }
+            },
         }
     }
 
@@ -102,7 +102,11 @@ pub fn MarkdownText(
 
     let test_id_val = move || {
         let val = test_id.get();
-        if val.is_empty() { None } else { Some(val) }
+        if val.is_empty() {
+            None
+        } else {
+            Some(val)
+        }
     };
 
     view! {

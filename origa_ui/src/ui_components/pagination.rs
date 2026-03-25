@@ -8,7 +8,11 @@ pub fn Pagination(
 ) -> impl IntoView {
     let test_id_val = move || {
         let val = test_id.get();
-        if val.is_empty() { None } else { Some(val) }
+        if val.is_empty() {
+            None
+        } else {
+            Some(val)
+        }
     };
 
     let button_test_id = move |idx: usize, total: usize| {

@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet};
 
 use ulid::Ulid;
 
-use crate::domain::{Card, JapaneseChar, OrigaError, StudyCard, tokenize_text};
+use crate::domain::{tokenize_text, Card, JapaneseChar, OrigaError, StudyCard};
 
 pub struct ScoreContentResult {
     unknown_words: Vec<String>,
@@ -89,8 +89,8 @@ mod tests {
 
     use super::*;
     use crate::domain::{
-        Card, Difficulty, KanjiCard, MemoryState, Rating, ReviewLog, Stability, StudyCard,
-        VocabularyCard, value_objects::Question,
+        value_objects::Question, Card, Difficulty, KanjiCard, MemoryState, Rating, ReviewLog,
+        Stability, StudyCard, VocabularyCard,
     };
     use crate::use_cases::init_real_dictionaries;
 

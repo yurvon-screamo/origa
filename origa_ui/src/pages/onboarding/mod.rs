@@ -93,17 +93,17 @@ pub fn Onboarding() -> impl IntoView {
                         nav("/home", Default::default());
                         return;
                     }
-                }
+                },
                 Ok(None) => {
                     tracing::warn!("Onboarding: user not found");
                     nav("/login", Default::default());
                     return;
-                }
+                },
                 Err(e) => {
                     tracing::error!("Onboarding: get_current_user error: {:?}", e);
                     nav("/login", Default::default());
                     return;
-                }
+                },
             };
 
             match loader.load_meta_list().await {
@@ -112,10 +112,10 @@ pub fn Onboarding() -> impl IntoView {
                         s.set_available_sets(meta_list);
                         sets_loaded.set(true);
                     });
-                }
+                },
                 Err(e) => {
                     tracing::error!("Onboarding: load_meta_list error: {:?}", e);
-                }
+                },
             }
             is_loading.set(false);
         });
@@ -169,11 +169,11 @@ pub fn Onboarding() -> impl IntoView {
                         );
                         is_importing.set(false);
                         nav("/home", Default::default());
-                    }
+                    },
                     Err(e) => {
                         tracing::error!("Import failed: {:?}", e);
                         is_importing.set(false);
-                    }
+                    },
                 }
             });
         })

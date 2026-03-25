@@ -51,7 +51,7 @@ impl ParseqRecognizer {
             Err(e) => {
                 tracing::warn!("PARSeq preprocessing failed: {}", e);
                 return String::new();
-            }
+            },
         };
 
         let shape: Vec<usize> = input_array.shape().to_vec();
@@ -62,7 +62,7 @@ impl ParseqRecognizer {
             Err(e) => {
                 tracing::warn!("Failed to create tensor: {:?}", e);
                 return String::new();
-            }
+            },
         };
 
         let mut session = self.session.borrow_mut();
@@ -71,7 +71,7 @@ impl ParseqRecognizer {
             Err(e) => {
                 tracing::warn!("Failed to create run options: {:?}", e);
                 return String::new();
-            }
+            },
         };
         let mut outputs = match session
             .run_async(ort::inputs!["images" => input_tensor], &run_options)
@@ -81,7 +81,7 @@ impl ParseqRecognizer {
             Err(e) => {
                 tracing::warn!("PARSeq inference failed: {:?}", e);
                 return String::new();
-            }
+            },
         };
 
         for (_name, mut output) in outputs.iter_mut() {
@@ -148,7 +148,7 @@ impl ParseqRecognizer {
                 Err(e) => {
                     tracing::warn!("Failed to extract PARSeq output tensor: {:?}", e);
                     return String::new();
-                }
+                },
             };
 
         let shape_slice = shape.as_slice();

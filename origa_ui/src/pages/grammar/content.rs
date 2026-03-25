@@ -1,4 +1,4 @@
-use super::super::shared::{CardCounts, CardStatus, Filter, FilterBtn, create_delete_callback};
+use super::super::shared::{create_delete_callback, CardCounts, CardStatus, Filter, FilterBtn};
 use super::grammar_card_item::GrammarCardItem;
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{
@@ -38,13 +38,13 @@ pub fn GrammarContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
                     all_cards.set(cards);
                     current_user.set(Some(user));
                     is_loading.set(false);
-                }
+                },
                 Ok(None) => {
                     tracing::warn!("GrammarContent: user not found");
-                }
+                },
                 Err(e) => {
                     tracing::error!("GrammarContent: get_current_user error: {:?}", e);
-                }
+                },
             }
         });
     });

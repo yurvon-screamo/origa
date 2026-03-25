@@ -87,11 +87,13 @@ cd end2end && npm test
 ### Environment Variables для E2E
 
 Скопировать `.env.example` в `.env` и настроить:
+
 - `TRAILBASE_URL` — URL TrailBase API (default: `https://origa.uwuwu.net`)
 - `ADMIN_EMAIL` — Email админа (default: `admin@localhost`)
 - `ADMIN_PASSWORD` — Пароль админа (обязателен для создания пользователей)
 
 Тестовые пользователи (hardcoded):
+
 - `TEST_USER_EMAIL=e2e-test@origa.local`
 - `TEST_USER_PASSWORD=e2e-test-password-123`
 
@@ -291,6 +293,7 @@ fn test_with_seeded_rng() {
 | `use_cases/` | 85%+ |
 
 Проверка coverage:
+
 ```bash
 cargo llvm-cov --workspace --html
 ```
@@ -315,7 +318,7 @@ cargo llvm-cov --workspace --html
 
 Все интерактивные UI компоненты ДОЛЖНЫ иметь `test_id` prop для e2e тестирования (Playwright).
 
-#### Стандартный паттерн:
+#### Стандартный паттерн
 
 ```rust
 #[component]
@@ -336,7 +339,7 @@ pub fn Button(
 }
 ```
 
-#### Использование в Playwright:
+#### Использование в Playwright
 
 ```typescript
 // Page Object
@@ -347,7 +350,7 @@ await expect(page.getByTestId("email-input")).toBeVisible();
 await page.getByTestId("login-submit").click();
 ```
 
-#### test_id для контейнеров с внутренними элементами:
+#### test_id для контейнеров с внутренними элементами
 
 | Компонент | Контейнер | Внутренние элементы |
 |-----------|-----------|---------------------|
@@ -399,19 +402,22 @@ await page.getByTestId("login-submit").click();
 | KanjiAnimation | `${test_id}` | — |
 | KanjiWritingSection | `${test_id}` | — |
 
-#### Автогенерация test_id:
+#### Автогенерация test_id
 
 Toast компонент использует `toast.id` для автогенерации (нет optional prop):
+
 - Toast container: `toast-{id}`
 - Close button: `toast-{id}-close`
 
 Breadcrumbs компонент автогенерирует `test_id` для каждого item на основе индекса:
+
 - Item container: `${test_id}-item-{idx}`
 
 Table компонент автогенерирует `test_id` для каждой row на основе row.id:
+
 - Row: `${test_id}-row-{row.id}`
 
-#### Компоненты БЕЗ test_id (не имеют view):
+#### Компоненты БЕЗ test_id (не имеют view)
 
 - text_to_speech.rs — утилита для генерации речи, не имеет UI компонента
 

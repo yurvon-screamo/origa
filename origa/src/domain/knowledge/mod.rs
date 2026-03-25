@@ -19,8 +19,8 @@ pub use vocabulary::VocabularyCard;
 use std::collections::{HashMap, HashSet};
 
 use crate::domain::{
+    srs::{rate_memory, NextReview},
     OrigaError, RateMode, Rating, ReviewLog,
-    srs::{NextReview, rate_memory},
 };
 use chrono::Utc;
 use rand::seq::SliceRandom;
@@ -107,7 +107,7 @@ impl KnowledgeSet {
             .filter_map(|study_card| match study_card.card() {
                 Card::Kanji(kanji_card) if study_card.memory().is_known_card() => {
                     Some(kanji_card.kanji().text().to_string())
-                }
+                },
                 _ => None,
             })
             .collect()
@@ -161,16 +161,16 @@ impl KnowledgeSet {
         if self.study_cards.values().any(|c| match (card, c.card()) {
             (Card::Vocabulary(vocabulary_card), Card::Vocabulary(existing_vocabulary_card)) => {
                 vocabulary_card.word() == existing_vocabulary_card.word()
-            }
+            },
             (Card::Kanji(kanji_card), Card::Kanji(existing_kanji_card)) => {
                 kanji_card.kanji() == existing_kanji_card.kanji()
-            }
+            },
             (Card::Grammar(grammar_rule_card), Card::Grammar(existing_grammar_rule_card)) => {
                 grammar_rule_card.rule_id() == existing_grammar_rule_card.rule_id()
-            }
+            },
             (Card::Radical(radical_card), Card::Radical(existing_radical_card)) => {
                 radical_card.radical_char() == existing_radical_card.radical_char()
-            }
+            },
             _ => false,
         }) {
             return Err(OrigaError::DuplicateCard {

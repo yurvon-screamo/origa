@@ -1,5 +1,5 @@
 use crate::{
-    domain::{OrigaError, PartOfSpeech, tokenize_text},
+    domain::{tokenize_text, OrigaError, PartOfSpeech},
     traits::UserRepository,
 };
 use serde::{Deserialize, Serialize};

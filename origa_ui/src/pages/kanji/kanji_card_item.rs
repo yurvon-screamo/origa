@@ -54,7 +54,7 @@ pub fn KanjiCardItem(
                 radicals_str,
                 examples_str,
             )
-        }
+        },
         _ => (
             "?".to_string(),
             "?".to_string(),

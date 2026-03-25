@@ -15,5 +15,5 @@ pub use dictionary_cache::{
 };
 pub use hybrid_repository::HybridUserRepository;
 #[allow(unused_imports)]
-pub use session::{TrailBaseSession, clear_session, get_session, set_last_sync_time, set_session};
+pub use session::{clear_session, get_session, set_last_sync_time, set_session, TrailBaseSession};
 pub use trailbase_client::{AuthError, OAuthProvider, TrailBaseClient};

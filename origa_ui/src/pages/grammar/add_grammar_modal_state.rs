@@ -1,7 +1,7 @@
 use crate::repository::HybridUserRepository;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use origa::dictionary::grammar::{GrammarRule, iter_grammar_rules};
+use origa::dictionary::grammar::{iter_grammar_rules, GrammarRule};
 use origa::domain::{Card, JapaneseLevel, NativeLanguage};
 use origa::traits::UserRepository;
 use std::collections::HashSet;
@@ -83,13 +83,13 @@ impl ModalState {
                         .filter(|rule| !existing_rule_ids.contains(rule.rule_id()))
                         .collect();
                     available_rules.set(rules);
-                }
+                },
                 Ok(None) => {
                     error.set(Some("Пользователь не найден".to_string()));
-                }
+                },
                 Err(e) => {
                     error.set(Some(format!("Ошибка загрузки пользователя: {}", e)));
-                }
+                },
             }
             is_loading.set(false);
         });

@@ -50,10 +50,10 @@ pub fn Login() -> impl IntoView {
                 match result {
                     Ok(_) => {
                         navigate("/home", Default::default());
-                    }
+                    },
                     Err(e) => {
                         tracing::error!("Login error: {:?}", e);
-                    }
+                    },
                 }
             });
         }

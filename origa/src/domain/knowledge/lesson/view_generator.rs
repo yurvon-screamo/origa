@@ -2,7 +2,7 @@ use crate::dictionary::grammar::get_rule_by_id;
 use crate::domain::knowledge::KnowledgeSet;
 use crate::domain::value_objects::NativeLanguage;
 use crate::domain::{Card, CardType, GrammarRuleCard, VocabularyCard};
-use rand::{Rng, prelude::IndexedRandom, seq::SliceRandom};
+use rand::{prelude::IndexedRandom, seq::SliceRandom, Rng};
 use serde::{Deserialize, Serialize};
 use ulid::Ulid;
 
@@ -167,7 +167,7 @@ impl LessonCardView {
         lang: &NativeLanguage,
     ) -> Result<Self, crate::domain::OrigaError> {
         match &original_card {
-            Card::Vocabulary(_) | Card::Kanji(_) | Card::Grammar(_) | Card::Radical(_) => {}
+            Card::Vocabulary(_) | Card::Kanji(_) | Card::Grammar(_) | Card::Radical(_) => {},
         }
 
         let correct_answer = original_card.answer(lang)?;
@@ -210,7 +210,7 @@ impl LessonCardView {
         rng: &mut impl Rng,
     ) -> Result<Self, crate::domain::OrigaError> {
         match &original_card {
-            Card::Vocabulary(_) | Card::Kanji(_) | Card::Grammar(_) | Card::Radical(_) => {}
+            Card::Vocabulary(_) | Card::Kanji(_) | Card::Grammar(_) | Card::Radical(_) => {},
         }
 
         let question = original_card.question(lang)?;
@@ -341,15 +341,15 @@ impl<'a> LessonViewGenerator<'a> {
         match (card_type, is_new) {
             (CardType::Grammar, true) | (CardType::Grammar, false) => {
                 LessonCardView::Normal(card.clone())
-            }
+            },
 
             (CardType::Radical, true) | (CardType::Radical, false) => {
                 select_writing_card_view(card, same_type_cards, &NativeLanguage::Russian, rng)
-            }
+            },
 
             (CardType::Kanji, true) | (CardType::Kanji, false) => {
                 select_writing_card_view(card, same_type_cards, &NativeLanguage::Russian, rng)
-            }
+            },
 
             (_, true) => {
                 let rand_val = rng.random::<f32>();
@@ -371,7 +371,7 @@ impl<'a> LessonViewGenerator<'a> {
                     )
                     .unwrap_or_else(|_| LessonCardView::Normal(card.clone()))
                 }
-            }
+            },
 
             (CardType::Vocabulary, false) => {
                 let rand_val = rng.random::<f32>();
@@ -397,7 +397,7 @@ impl<'a> LessonViewGenerator<'a> {
                 } else {
                     self.apply_grammar_mutated(card, known_grammars, rng)
                 }
-            }
+            },
         }
     }
 
@@ -438,15 +438,15 @@ impl<'a> LessonViewGenerator<'a> {
                                         card: Card::Vocabulary(mutated),
                                         grammar_info,
                                     }
-                                }
+                                },
                                 Err(_) => LessonCardView::Normal(card.clone()),
                             },
                             None => LessonCardView::Normal(card.clone()),
                         }
-                    }
+                    },
                     None => LessonCardView::Normal(card.clone()),
                 }
-            }
+            },
             _ => LessonCardView::Normal(card.clone()),
         }
     }
@@ -492,10 +492,10 @@ mod tests {
             LessonCardView::Quiz(quiz) => {
                 assert_eq!(quiz.options().len(), 4);
                 assert!(quiz.options().iter().any(|o| o.is_correct()));
-            }
+            },
             LessonCardView::Normal(_) => {
                 // This is also acceptable if not enough distractors
-            }
+            },
             _ => panic!("Expected Quiz or Normal view for radical"),
         }
     }
@@ -595,7 +595,7 @@ mod tests {
                 LessonCardView::Quiz(quiz) => {
                     assert_eq!(quiz.options().len(), 4);
                     assert!(quiz.options().iter().any(|o| o.is_correct()));
-                }
+                },
                 _ => panic!("Expected Quiz view for grammar card with sufficient distractors"),
             }
         }
@@ -618,7 +618,7 @@ mod tests {
             match result.unwrap() {
                 LessonCardView::Normal(card) => {
                     assert_eq!(card, grammar_card);
-                }
+                },
                 _ => panic!("Expected Normal view for grammar card with insufficient distractors"),
             }
         }
@@ -655,7 +655,7 @@ mod tests {
                             .any(|o| o.text() == correct_answer.text()),
                         "Quiz options should contain the correct answer"
                     );
-                }
+                },
                 _ => panic!("Expected Quiz view"),
             }
         }
@@ -663,7 +663,7 @@ mod tests {
 
     mod tests_yesno {
         use super::*;
-        use rand::{SeedableRng, rngs::StdRng};
+        use rand::{rngs::StdRng, SeedableRng};
 
         fn create_vocab_card_with_word(word: &str) -> Card {
             Card::Vocabulary(VocabularyCard::new(
@@ -722,7 +722,7 @@ mod tests {
             match result.unwrap() {
                 LessonCardView::YesNo(yesno) => {
                     assert!(!yesno.statement_text().is_empty());
-                }
+                },
                 _ => panic!("Expected YesNo view"),
             }
         }
@@ -749,7 +749,7 @@ mod tests {
             match result.unwrap() {
                 LessonCardView::YesNo(yesno) => {
                     assert!(!yesno.statement_text().is_empty());
-                }
+                },
                 _ => panic!("Expected YesNo view"),
             }
         }
@@ -773,7 +773,7 @@ mod tests {
             match result.unwrap() {
                 LessonCardView::Normal(returned_card) => {
                     assert_eq!(returned_card, card);
-                }
+                },
                 _ => panic!("Expected Normal fallback when no distractors available"),
             }
         }

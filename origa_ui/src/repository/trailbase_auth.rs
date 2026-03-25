@@ -89,7 +89,7 @@ pub fn generate_pkce_verifier() -> String {
 }
 
 pub fn generate_pkce_challenge(verifier: &str) -> String {
-    use base64::{Engine as _, engine::general_purpose::URL_SAFE_NO_PAD};
+    use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine as _};
     let mut hasher = Sha256::new();
     hasher.update(verifier.as_bytes());
     let result = hasher.finalize();
