@@ -9,23 +9,36 @@ use super::validation;
 #[component]
 pub fn EmailPasswordForm(
     #[prop(optional, into)] test_id: Signal<String>,
+    #[prop(optional)] server_error: Option<RwSignal<Option<String>>>,
     on_submit: Callback<(String, String)>,
 ) -> impl IntoView {
     let email = RwSignal::new(String::new());
     let password = RwSignal::new(String::new());
     let loading = RwSignal::new(false);
-    let error = RwSignal::new(None::<String>);
+    let validation_error = RwSignal::new(None::<String>);
+
+    let display_error = move || {
+        if let Some(server_err) = server_error.as_ref().and_then(|s| s.get()) {
+            Some(server_err)
+        } else {
+            validation_error.get()
+        }
+    };
 
     let handle_submit = move || {
         let email_val = email.get();
         let password_val = password.get();
 
+        if let Some(ref se) = server_error {
+            se.set(None);
+        }
+
         if let Err(e) = validation::validate_credentials(&email_val, &password_val) {
-            error.set(Some(e));
+            validation_error.set(Some(e));
             return;
         }
 
-        error.set(None);
+        validation_error.set(None);
         on_submit.run((email_val, password_val));
     };
 
@@ -36,11 +49,7 @@ pub fn EmailPasswordForm(
 
     let form_test_id = move || {
         let val = test_id.get();
-        if val.is_empty() {
-            None
-        } else {
-            Some(val)
-        }
+        if val.is_empty() { None } else { Some(val) }
     };
 
     let error_test_id = Signal::derive(move || {
@@ -54,11 +63,11 @@ pub fn EmailPasswordForm(
 
     view! {
         <form class="space-y-4" on:submit=on_submit_form data-testid=form_test_id>
-            <Show when=move || error.get().is_some()>
+            <Show when=move || display_error().is_some()>
                 <Alert
                     test_id=error_test_id
                     alert_type=Signal::derive(|| AlertType::Error)
-                    message=Signal::derive(move || error.get().unwrap_or_default())
+                    message=Signal::derive(move || display_error().unwrap_or_default())
                 />
             </Show>
 
