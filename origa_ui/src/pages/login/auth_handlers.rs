@@ -13,7 +13,7 @@ pub async fn get_or_create_profile(auth_store: &AuthStore, email: &str) -> Resul
                 .await
                 .map_err(|e| format!("Не удалось синхронизировать профиль: {}", e))?;
             Ok(user)
-        }
+        },
         Ok(None) => {
             let new_user = User::new(email.to_string(), NativeLanguage::Russian, None);
 
@@ -29,7 +29,7 @@ pub async fn get_or_create_profile(auth_store: &AuthStore, email: &str) -> Resul
                 .await
                 .map_err(|e| format!("Не удалось загрузить профиль: {}", e))?
                 .ok_or_else(|| "Профиль не найден после создания".to_string())
-        }
+        },
         Err(e) => Err(format!("Не удалось загрузить профиль: {}", e)),
     }
 }

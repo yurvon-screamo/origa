@@ -54,7 +54,16 @@ pub fn HistoryModal(
     #[prop(into)] metric: Signal<StatMetric>,
     #[prop(into)] history: Signal<Vec<DailyHistoryItem>>,
     on_close: Callback<()>,
+    #[prop(optional, into)] test_id: Signal<String>,
 ) -> impl IntoView {
+    let test_id_val = move || {
+        let val = test_id.get();
+        if val.is_empty() {
+            "history-modal".to_string()
+        } else {
+            val
+        }
+    };
     let is_open_rw = RwSignal::new(is_open.get_untracked());
 
     Effect::new(move || {
@@ -89,14 +98,25 @@ pub fn HistoryModal(
 
     view! {
         <Modal
+            test_id=Signal::derive(test_id_val)
             is_open=is_open_rw
             title=Signal::derive(title)
         >
             <div class="space-y-4">
                 {move || if has_data() {
                     view! {
-                        <div class="flex justify-center">
+                        <div
+                            class="flex justify-center"
+                            data-testid=move || {
+                                let val = test_id.get();
+                                if val.is_empty() { None } else { Some(format!("{}-chart", val)) }
+                            }
+                        >
                             <LineChart
+                                test_id=Signal::derive(move || {
+                                    let val = test_id.get();
+                                    if val.is_empty() { "history-chart".to_string() } else { format!("{}-chart", val) }
+                                })
                                 data=chart_data
                                 width=380
                                 height=180
@@ -106,6 +126,10 @@ pub fn HistoryModal(
                 } else {
                     view! {
                         <Text
+                            test_id=Signal::derive(move || {
+                                let val = test_id.get();
+                                if val.is_empty() { "history-empty".to_string() } else { format!("{}-empty", val) }
+                            })
                             size=TextSize::Default
                             variant=TypographyVariant::Muted
                             class=Signal::derive(|| "text-center py-8".to_string())

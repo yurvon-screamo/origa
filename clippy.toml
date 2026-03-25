@@ -1,0 +1,67 @@
+# =============================================================================
+# Clippy Configuration for Origa Project
+# =============================================================================
+# Project: Rust workspace with FSRS algorithm, OCR, Leptos/WASM UI, Tauri desktop
+# =============================================================================
+
+# Cognitive complexity threshold - higher for business logic with FSRS algorithm
+cognitive-complexity-threshold = 25
+
+# Documentation - allow missing docs for now (incremental improvement)
+# missing-docs-in-crate-items = false
+
+# Type complexity threshold - higher for WASM interop types
+type-complexity-threshold = 250
+
+# Single-character binding names allowed for common patterns (x, y, i, j, etc.)
+# Used in iterators and coordinate calculations
+
+# Allow single-character names in specific contexts
+# (Rust conventions: i, j, k for loops; x, y for coordinates; etc.)
+
+# Too many arguments threshold - higher for domain entities
+too-many-arguments-threshold = 7
+
+# Large types threshold - increased for WASM types with many fields
+# trivial-copy-size-limit = 16
+
+# Standard macros that are allowed to have uppercase identifiers
+standard-macro-braces = []
+
+# Allow certain common patterns
+# disallowed-names = []
+
+# Literal representation
+# literal_representation_group = "normal"
+
+# MSRV - Minimum Supported Rust Version
+# Align with project needs
+msrv = "1.75"
+
+# Avoid breaking changes from new Clippy lints early
+doc-valid-idents = [
+    "FSRS",
+    "WASM",
+    "ONNX",
+    "OCR",
+    "Ulid",
+    "Leptos",
+    "Tauri",
+    "WebAssembly",
+    "JavaScript",
+    "TypeScript",
+    "Playwright",
+    "TrailBase",
+    "GitHub",
+    "GitLab",
+    "API",
+    "REST",
+    "JSON",
+    "URL",
+    "UUID",
+    "UTF",
+    "HTML",
+    "CSS",
+    "DOM",
+    "DOMException",
+]

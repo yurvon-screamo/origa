@@ -19,6 +19,20 @@ pub struct ToastData {
     pub title: String,
     pub message: String,
     pub duration_ms: Option<u64>,
+    pub closable: bool,
+}
+
+impl Default for ToastData {
+    fn default() -> Self {
+        Self {
+            id: 0,
+            toast_type: ToastType::Info,
+            title: String::new(),
+            message: String::new(),
+            duration_ms: None,
+            closable: true,
+        }
+    }
 }
 
 #[component]
@@ -40,20 +54,23 @@ pub fn Toast(
     }
 
     view! {
-        <div class=move || {
-            let toast_class = match toast.toast_type {
-                ToastType::Info => "toast-info",
-                ToastType::Success => "toast-success",
-                ToastType::Warning => "toast-warning",
-                ToastType::Error => "toast-error",
-            };
-            let anim_class = if is_closing {
-                "anima-toast-exit"
-            } else {
-                "anima-toast-bounce"
-            };
-            format!("toast {} {}", anim_class, toast_class)
-        }>
+        <div
+            class=move || {
+                let toast_class = match toast.toast_type {
+                    ToastType::Info => "toast-info",
+                    ToastType::Success => "toast-success",
+                    ToastType::Warning => "toast-warning",
+                    ToastType::Error => "toast-error",
+                };
+                let anim_class = if is_closing {
+                    "anima-toast-exit"
+                } else {
+                    "anima-toast-bounce"
+                };
+                format!("toast {} {}", anim_class, toast_class)
+            }
+            data-testid=format!("toast-{}", toast.id)
+        >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                 {move || match toast.toast_type {
                     ToastType::Success => view! {
@@ -76,14 +93,21 @@ pub fn Toast(
                 <p class="font-mono text-xs tracking-wider">{toast.title}</p>
                 <p class="font-mono text-[10px] text-[var(--fg-muted)] mt-1">{toast.message}</p>
             </div>
-            <button
-                class="toast-close"
-                on:click=move |_| on_close.run(toast_id)
-            >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M18 6L6 18M6 6l12 12" />
-                </svg>
-            </button>
+            {move || if toast.closable {
+                view! {
+                    <button
+                        class="toast-close"
+                        data-testid=format!("toast-{}-close", toast_id)
+                        on:click=move |_| on_close.run(toast_id)
+                    >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 6L6 18M6 6l12 12" />
+                        </svg>
+                    </button>
+                }.into_any()
+            } else {
+                view! { <div></div> }.into_any()
+            }}
         </div>
     }
 }
@@ -92,7 +116,12 @@ pub fn Toast(
 pub fn ToastContainer(
     toasts: RwSignal<Vec<ToastData>>,
     #[prop(optional)] duration_ms: u64,
+    #[prop(optional, into)] test_id: Signal<String>,
 ) -> impl IntoView {
+    let test_id_val = move || {
+        let val = test_id.get();
+        if val.is_empty() { None } else { Some(val) }
+    };
     let closing_toasts = RwSignal::new(HashMap::<usize, bool>::new());
 
     let on_close = Callback::new(move |id: usize| {
@@ -112,7 +141,7 @@ pub fn ToastContainer(
     let is_closing = move |id: usize| closing_toasts.with(|c| c.get(&id).copied().unwrap_or(false));
 
     view! {
-        <div class="toast-container">
+        <div class="toast-container" data-testid=test_id_val>
             <For
                 each=move || toasts.get()
                 key=|toast| toast.id

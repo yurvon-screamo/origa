@@ -78,11 +78,11 @@ impl PreviewModalState {
                     analyzed_words.set(result.words);
                     selected_words.set(words_to_select);
                     is_analyzing.set(false);
-                }
+                },
                 Err(e) => {
                     error.set(Some(e.to_string()));
                     is_analyzing.set(false);
-                }
+                },
             }
         });
     }
@@ -132,12 +132,12 @@ impl PreviewModalState {
                 Ok(result) => {
                     is_creating.set(false);
                     Ok(result)
-                }
+                },
                 Err(e) => {
                     error.set(Some(e.to_string()));
                     is_creating.set(false);
                     Err(e.to_string())
-                }
+                },
             }
         }
     }

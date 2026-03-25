@@ -7,9 +7,15 @@ pub fn Radio(
     #[prop(into)] _checked: Signal<bool>,
     #[prop(optional, into)] _disabled: Signal<bool>,
     #[prop(optional, into)] _label: Signal<String>,
+    #[prop(optional, into)] test_id: Signal<String>,
 ) -> impl IntoView {
+    let test_id_val = move || {
+        let val = test_id.get();
+        if val.is_empty() { None } else { Some(val) }
+    };
+
     view! {
-        <label class="radio-container">
+        <label class="radio-container" data-testid=test_id_val>
             <input
                 type="radio"
                 name=move || _name.get()

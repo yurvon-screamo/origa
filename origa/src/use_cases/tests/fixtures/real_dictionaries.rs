@@ -128,7 +128,7 @@ fn init_grammar_rules() {
                 e
             );
             return;
-        }
+        },
     };
 
     let grammar_data = GrammarData { grammar_json };

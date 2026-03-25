@@ -73,7 +73,7 @@ impl std::str::FromStr for PartOfSpeech {
                 return Err(OrigaError::TokenizerError {
                     reason: format!("Unknown part of speech: '{japanese}'"),
                 });
-            }
+            },
         })
     }
 }

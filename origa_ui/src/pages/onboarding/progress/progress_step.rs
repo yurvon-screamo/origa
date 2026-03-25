@@ -2,14 +2,19 @@ use crate::ui_components::{Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 
 use super::super::onboarding_state::OnboardingState;
-use super::app_type::{parse_app_type, AppType};
+use super::app_type::{AppType, parse_app_type};
 use super::duolingo_selector::DuolingoProgressSelector;
 use super::migii_selector::MigiiProgressSelector;
 use super::minna_selector::MinnaProgressSelector;
 use super::parsers::{parse_duolingo_modules, parse_migii_lessons, parse_minna_lessons};
 
 #[component]
-pub fn ProgressStep() -> impl IntoView {
+pub fn ProgressStep(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoView {
+    let test_id_val = move || {
+        let val = test_id.get();
+        if val.is_empty() { None } else { Some(val) }
+    };
+
     let state =
         use_context::<RwSignal<OnboardingState>>().expect("OnboardingState context not found");
 
@@ -19,13 +24,13 @@ pub fn ProgressStep() -> impl IntoView {
     let app_list = Memo::new(move |_| selected_apps.get().into_iter().collect::<Vec<_>>());
 
     view! {
-        <div class="progress-step">
+        <div class="progress-step" data-testid=test_id_val>
             <div class="text-center mb-6">
-                <Text size=TextSize::Large variant=TypographyVariant::Primary>
+                <Text size=TextSize::Large variant=TypographyVariant::Primary test_id=Signal::derive(|| "progress-step-title".to_string())>
                     "Ваш прогресс"
                 </Text>
                 <div class="mt-2">
-                    <Text size=TextSize::Small variant=TypographyVariant::Muted>
+                    <Text size=TextSize::Small variant=TypographyVariant::Muted test_id=Signal::derive(|| "progress-step-subtitle".to_string())>
                         "Выберите пройденные разделы в каждом приложении"
                     </Text>
                 </div>
@@ -33,11 +38,11 @@ pub fn ProgressStep() -> impl IntoView {
 
             <Show when=move || app_list.get().is_empty()>
                 <div class="text-center py-8">
-                    <Text size=TextSize::Default variant=TypographyVariant::Muted>
+                    <Text size=TextSize::Default variant=TypographyVariant::Muted test_id=Signal::derive(|| "progress-step-empty".to_string())>
                         "Вы не выбрали ни одно приложение"
                     </Text>
                     <div class="mt-2">
-                        <Text size=TextSize::Small variant=TypographyVariant::Muted>
+                        <Text size=TextSize::Small variant=TypographyVariant::Muted test_id=Signal::derive(|| "progress-step-empty-hint".to_string())>
                             "Вернитесь на шаг назад, чтобы выбрать приложения"
                         </Text>
                     </div>

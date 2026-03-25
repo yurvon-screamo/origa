@@ -1,21 +1,21 @@
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use tracing::{error, info};
+use tracing::error;
 
 use crate::core::updater;
-use crate::loaders::{load_all_data, load_dictionary};
 use crate::pages::login::oauth_listeners::{check_url_oauth_callback, setup_oauth_listener};
 use crate::routes::AppRoutes;
 use crate::store::auth_store::AuthStore;
 use crate::store::connectivity::ConnectivityStore;
-use crate::ui_components::ConnectivityBanner;
-use crate::ui_components::LoadingOverlay;
-use crate::ui_components::UpdateDrawer;
+use crate::ui_components::{
+    ConnectivityBanner, LoadingOverlay, ToastContainer, ToastData, UpdateDrawer,
+};
 
 #[component]
 pub fn App() -> impl IntoView {
     let auth_store = AuthStore::new();
     let connectivity = ConnectivityStore::new();
+    let toasts: RwSignal<Vec<ToastData>> = RwSignal::new(Vec::new());
 
     provide_context(auth_store.repository().clone());
     provide_context(auth_store.clone());
@@ -51,14 +51,8 @@ pub fn App() -> impl IntoView {
         });
     });
 
-    let auth_store_for_init = auth_store.clone();
-    spawn_local(async move {
-        init_dictionary(auth_store_for_init).await;
-    });
-
-    let auth_store_for_loading = auth_store.clone();
     let auth_store_for_oauth = auth_store.clone();
-    let auth_store_for_data = auth_store.clone();
+    let auth_store_for_checking = auth_store.clone();
 
     view! {
         <ConnectivityBanner />
@@ -70,32 +64,25 @@ pub fn App() -> impl IntoView {
                 download_progress=Signal::from(download_progress)
             />
         })}
-        <Show when=move || auth_store_for_loading.is_loading().get()>
-            <LoadingOverlay message="Проверка авторизации..." />
-        </Show>
-        <Show when=move || auth_store_for_oauth.is_oauth_loading.get()>
-            <LoadingOverlay message="Вход..." />
-        </Show>
-        <Show when=move || !auth_store_for_data.is_data_loaded.get()>
-            <LoadingOverlay message="Загрузка словарей..." />
+        <ToastContainer toasts=toasts duration_ms=5000 />
+        <Show when=move || auth_store_for_oauth.is_oauth_loading.get() || auth_store_for_checking.is_checking_session.get()>
+            {move || {
+                let message = if auth_store_for_oauth.is_oauth_loading.get() {
+                    "Вход..."
+                } else {
+                    "Проверка авторизации..."
+                };
+                view! { <LoadingOverlay message=message /> }
+            }}
         </Show>
         <AppRoutes />
     }
 }
 
-async fn init_dictionary(auth_store: AuthStore) {
-    let (dict_result, data_result) = futures::join!(load_dictionary(), load_all_data());
-
-    if let Err(e) = dict_result {
-        error!("Failed to load dictionary: {}", e);
-    } else {
-        info!("Unidic dictionary loaded");
-    }
-    if let Err(e) = data_result {
-        error!("Failed to load data: {:?}", e);
-    } else {
-        info!("All data loaded");
-    }
-
-    auth_store.set_data_loaded();
+#[allow(dead_code)]
+fn now_ms() -> f64 {
+    web_sys::window()
+        .and_then(|w| w.performance())
+        .map(|p| p.now())
+        .unwrap_or(0.0)
 }

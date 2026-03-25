@@ -171,11 +171,11 @@ async fn process_oauth_flow(
     match result {
         Ok(_) => {
             redirect_to_home();
-        }
+        },
         Err(e) => {
             is_oauth_loading.set(false);
             error!("OAuth flow failed: {:?}", e);
-        }
+        },
     }
 }
 

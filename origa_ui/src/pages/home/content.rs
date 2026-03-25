@@ -12,7 +12,12 @@ use origa::traits::UserRepository;
 const SYNC_TOAST_ID: usize = usize::MAX;
 
 #[component]
-pub fn HomeContent() -> impl IntoView {
+pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoView {
+    let test_id_val = move || {
+        let val = test_id.get();
+        if val.is_empty() { None } else { Some(val) }
+    };
+
     let repository =
         use_context::<HybridUserRepository>().expect("repository context not provided");
 
@@ -35,6 +40,7 @@ pub fn HomeContent() -> impl IntoView {
                 title: "Синхронизация".to_string(),
                 message: "Синхронизация данных с сервером...".to_string(),
                 duration_ms: None,
+                closable: false,
             });
         });
 
@@ -49,10 +55,11 @@ pub fn HomeContent() -> impl IntoView {
                             title: "Синхронизация".to_string(),
                             message: "Данные успешно синхронизированы".to_string(),
                             duration_ms: None,
+                            closable: true,
                         });
                     });
                     set_last_sync_time(js_sys::Date::now() as u64 / 1000);
-                }
+                },
                 Err(e) => {
                     toasts.update(|t| t.retain(|toast| toast.id != SYNC_TOAST_ID));
                     toasts.update(|t| {
@@ -62,9 +69,10 @@ pub fn HomeContent() -> impl IntoView {
                             title: "Ошибка синхронизации".to_string(),
                             message: e.to_string(),
                             duration_ms: None,
+                            closable: true,
                         });
                     });
-                }
+                },
             }
         });
     });
@@ -80,17 +88,17 @@ pub fn HomeContent() -> impl IntoView {
                     stats.set(Some(calculate_stats(&history_items)));
                     jlpt_progress.set(user.jlpt_progress().clone());
                     is_loading.set(false);
-                }
+                },
                 Ok(None) => {
                     tracing::warn!("Home: user not found");
                     stats.set(Some(HomeStats::default()));
                     is_loading.set(false);
-                }
+                },
                 Err(e) => {
                     tracing::error!("Home: get_current_user error: {:?}", e);
                     stats.set(Some(HomeStats::default()));
                     is_loading.set(false);
-                }
+                },
             }
         });
     });
@@ -105,13 +113,13 @@ pub fn HomeContent() -> impl IntoView {
                     history.set(history_items.clone());
                     stats.set(Some(calculate_stats(&history_items)));
                     jlpt_progress.set(user.jlpt_progress().clone());
-                }
+                },
                 Ok(None) => {
                     tracing::warn!("Home: user not found on reload");
-                }
+                },
                 Err(e) => {
                     tracing::error!("Home: get_current_user error on reload: {:?}", e);
-                }
+                },
             }
         });
     });
@@ -163,10 +171,19 @@ pub fn HomeContent() -> impl IntoView {
     });
 
     view! {
-        <main class="flex-1">
+        <main class="flex-1" data-testid=test_id_val>
             <div class="w-full px-4 sm:px-6 lg:px-8 py-12">
                 <div class="flex items-center justify-between mb-6">
-                    <Text size=TextSize::Small variant=TypographyVariant::Muted uppercase=true tracking_widest=true>
+                    <Text
+                        size=TextSize::Small
+                        variant=TypographyVariant::Muted
+                        uppercase=true
+                        tracking_widest=true
+                        test_id=Signal::derive(move || {
+                            let val = test_id.get();
+                            if val.is_empty() { "home-stats-title".to_string() } else { val }
+                        })
+                    >
                         "Статистика"
                     </Text>
 
@@ -177,7 +194,13 @@ pub fn HomeContent() -> impl IntoView {
                     when=move || !is_loading.get()
                     fallback=move || view! { <JlptSkeleton /> }
                 >
-                    <JlptProgressCard jlpt_progress=Signal::derive(move || jlpt_progress.get()) />
+                    <JlptProgressCard
+                        jlpt_progress=Signal::derive(move || jlpt_progress.get())
+                        test_id=Signal::derive(move || {
+                            let val = test_id.get();
+                            if val.is_empty() { "home-jlpt-progress".to_string() } else { format!("{}-jlpt-progress", val) }
+                        })
+                    />
                 </Show>
 
                 <Show
@@ -202,6 +225,10 @@ pub fn HomeContent() -> impl IntoView {
                         total_ratings=total_ratings
                         total_ratings_delta=total_ratings_delta
                         open_history=open_history
+                        test_id=Signal::derive(move || {
+                            let val = test_id.get();
+                            if val.is_empty() { "home-stats-grid".to_string() } else { val }
+                        })
                     />
                 </Show>
             </div>
@@ -211,9 +238,20 @@ pub fn HomeContent() -> impl IntoView {
                 metric=Signal::derive(move || selected_metric.get())
                 history=Signal::derive(move || history.get())
                 on_close=close_history
+                test_id=Signal::derive(move || {
+                    let val = test_id.get();
+                    if val.is_empty() { "home-history-modal".to_string() } else { format!("{}-history-modal", val) }
+                })
             />
 
-            <ToastContainer toasts=toasts duration_ms=5000 />
+            <ToastContainer
+                toasts=toasts
+                duration_ms=5000
+                test_id=Signal::derive(move || {
+                    let val = test_id.get();
+                    if val.is_empty() { "home-toasts".to_string() } else { format!("{}-toasts", val) }
+                })
+            />
         </main>
     }
 }

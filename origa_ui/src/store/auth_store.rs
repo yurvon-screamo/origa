@@ -34,6 +34,9 @@ pub struct AuthStore {
     /// Dictionary/data loading complete
     pub is_data_loaded: RwSignal<bool>,
 
+    /// Dictionary (tokenizer) loading in background
+    pub is_dictionary_loaded: RwSignal<bool>,
+
     /// Logout in progress (prevents race conditions)
     is_logging_out: RwSignal<bool>,
 
@@ -52,6 +55,7 @@ impl AuthStore {
             is_oauth_loading: RwSignal::new(false),
             is_syncing: RwSignal::new(false),
             is_data_loaded: RwSignal::new(false),
+            is_dictionary_loaded: RwSignal::new(false),
             is_logging_out: RwSignal::new(false),
             is_deleting_account: RwSignal::new(false),
         }
@@ -96,7 +100,7 @@ impl AuthStore {
             Ok(Some(user)) => {
                 user_signal.set(Some(user));
                 Ok(())
-            }
+            },
             Ok(None) => {
                 if self.repository.merge_current_user().await.is_ok()
                     && let Ok(Some(user)) = self.repository.get_current_user().await
@@ -104,11 +108,11 @@ impl AuthStore {
                     user_signal.set(Some(user));
                 }
                 Ok(())
-            }
+            },
             Err(e) => {
                 tracing::error!("Failed to load user: {:?}", e);
                 Err(e)
-            }
+            },
         }
     }
 
@@ -138,7 +142,7 @@ impl AuthStore {
                 None => {
                     is_checking.set(false);
                     return;
-                }
+                },
             };
 
             let needs_refresh = should_refresh_session(session.expires_at);
@@ -167,12 +171,12 @@ impl AuthStore {
                         tracing::error!("Failed to save refreshed session: {:?}", e);
                     }
                     let _ = store.load_user_after_auth(user_signal).await;
-                }
+                },
                 Err(e) => {
                     tracing::error!("Session refresh failed: {:?}", e);
                     clear_session();
                     user_signal.set(None);
-                }
+                },
             }
 
             set_refresh_in_progress(false);
@@ -181,8 +185,14 @@ impl AuthStore {
     }
 
     /// Mark data as loaded (dictionary, etc.)
+    #[allow(dead_code)]
     pub fn set_data_loaded(&self) {
         self.is_data_loaded.set(true);
+    }
+
+    /// Mark dictionary (tokenizer) as loaded
+    pub fn set_dictionary_loaded(&self) {
+        self.is_dictionary_loaded.set(true);
     }
 
     // ========================================
@@ -204,32 +214,32 @@ impl AuthStore {
                 match self.repository.get_current_user().await {
                     Ok(Some(user)) => {
                         self.user.set(Some(user));
-                    }
+                    },
                     Ok(None) => {
                         let _ = self.repository.merge_current_user().await;
                         if let Ok(Some(user)) = self.repository.get_current_user().await {
                             self.user.set(Some(user));
                         }
-                    }
+                    },
                     Err(e) => {
                         self.is_syncing.set(false);
                         return Err(OrigaError::NetworkError {
                             url: "/api/auth/v1/login".to_string(),
                             reason: format!("Failed to load user: {}", e),
                         });
-                    }
+                    },
                 }
 
                 self.is_syncing.set(false);
                 Ok(())
-            }
+            },
             Err(e) => {
                 self.is_syncing.set(false);
                 Err(OrigaError::NetworkError {
                     url: "/api/auth/v1/login".to_string(),
                     reason: e.to_string(),
                 })
-            }
+            },
         }
     }
 
@@ -265,20 +275,20 @@ impl AuthStore {
                         self.user.set(Some(user));
                         self.is_oauth_loading.set(false);
                         Ok(())
-                    }
+                    },
                     Err(e) => {
                         self.is_oauth_loading.set(false);
                         Err(OrigaError::InvalidValues { reason: e })
-                    }
+                    },
                 }
-            }
+            },
             Err(e) => {
                 self.is_oauth_loading.set(false);
                 Err(OrigaError::NetworkError {
                     url: "/api/auth/v1/token".to_string(),
                     reason: e.to_string(),
                 })
-            }
+            },
         }
     }
 
@@ -341,6 +351,7 @@ impl AuthStore {
 
         self.user.set(None);
         self.is_data_loaded.set(false);
+        self.is_dictionary_loaded.set(false);
     }
 
     // ========================================
@@ -353,7 +364,7 @@ impl AuthStore {
             Ok(Some(user)) => {
                 self.user.set(Some(user));
                 Ok(())
-            }
+            },
             Ok(None) => Err(OrigaError::CurrentUserNotExist {}),
             Err(e) => Err(e),
         }
@@ -371,6 +382,7 @@ impl AuthStore {
         clear_session();
         self.user.set(None);
         self.is_data_loaded.set(false);
+        self.is_dictionary_loaded.set(false);
         self.is_checking_session.set(false);
     }
 
@@ -382,7 +394,7 @@ impl AuthStore {
             AuthError::SessionExpired => {
                 self.handle_session_expiry();
                 true
-            }
+            },
             _ => false,
         }
     }

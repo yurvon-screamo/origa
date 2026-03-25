@@ -84,9 +84,10 @@ pub fn create_import_preview_handlers(
                             message,
                             toast_type: ToastType::Success,
                             duration_ms: None,
+                            closable: true,
                         });
                     });
-                }
+                },
                 Err(e) => {
                     state.is_importing.set(false);
                     state.error_message.set(Some(e.clone()));
@@ -99,9 +100,10 @@ pub fn create_import_preview_handlers(
                             message: e,
                             toast_type: ToastType::Error,
                             duration_ms: None,
+                            closable: true,
                         });
                     });
-                }
+                },
             }
         });
     });

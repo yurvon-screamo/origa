@@ -144,7 +144,7 @@ fn select_later_state(
                 } else {
                     Some(l.clone())
                 }
-            }
+            },
         },
     }
 }

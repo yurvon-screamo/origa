@@ -70,7 +70,7 @@ fn extract_kanji_data(kanji: &DomainCard, native_language: NativeLanguage) -> Ka
             Err(e) => {
                 warn!("Failed to get radicals for kanji: {:?}", e);
                 None
-            }
+            },
         };
 
     let examples: Option<Vec<(String, String)>> = {
@@ -173,7 +173,7 @@ pub fn WritingCard(
                 data.examples,
                 None,
             )
-        }
+        },
         DomainCard::Radical(_) => {
             let data = extract_radical_data(&card);
             (
@@ -185,11 +185,11 @@ pub fn WritingCard(
                 None,
                 Some(data.info),
             )
-        }
+        },
         _ => {
             return view! { <div>"WritingCard поддерживает только кандзи и радикалы"</div> }
                 .into_any();
-        }
+        },
     };
 
     let show_details = RwSignal::new(false);

@@ -53,7 +53,7 @@ impl VocabularyCard {
                     cards,
                     skipped_no_translation: skipped,
                 };
-            }
+            },
         };
 
         for token in tokens {

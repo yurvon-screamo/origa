@@ -34,6 +34,7 @@ pub fn LessonCompleteScreen(is_completed: RwSignal<bool>, review_count: usize) -
                     title: "Синхронизация".to_string(),
                     message: "Сохранение прогресса...".to_string(),
                     duration_ms: None,
+                    closable: false,
                 });
             });
 
@@ -54,10 +55,11 @@ pub fn LessonCompleteScreen(is_completed: RwSignal<bool>, review_count: usize) -
                                 title: "Сохранено".to_string(),
                                 message: "Прогресс успешно сохранён".to_string(),
                                 duration_ms: Some(3000),
+                                closable: true,
                             });
                         });
                         tracing::info!("Lesson complete: sync successful");
-                    }
+                    },
                     Err(e) => {
                         if is_disposed.get_value() {
                             return;
@@ -70,10 +72,11 @@ pub fn LessonCompleteScreen(is_completed: RwSignal<bool>, review_count: usize) -
                                 title: "Ошибка синхронизации".to_string(),
                                 message: e.to_string(),
                                 duration_ms: Some(5000),
+                                closable: true,
                             });
                         });
                         tracing::error!("Lesson complete: sync error: {:?}", e);
-                    }
+                    },
                 }
                 if is_disposed.get_value() {
                     return;
@@ -118,12 +121,12 @@ pub fn LessonCompleteScreen(is_completed: RwSignal<bool>, review_count: usize) -
                 kb_sync();
                 kb_lesson_ctx.is_completed.set(false);
                 kb_lesson_ctx.reload_trigger.update(|t| *t += 1);
-            }
+            },
             "Escape" => {
                 kb_sync();
                 kb_navigate("/home", Default::default());
-            }
-            _ => {}
+            },
+            _ => {},
         }
     });
 

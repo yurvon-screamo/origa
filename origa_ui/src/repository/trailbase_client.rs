@@ -93,7 +93,7 @@ impl TrailBaseClient {
                     "Unsupported HTTP method: {:?}",
                     method
                 )));
-            }
+            },
         };
 
         let request_builder = if let Some(h) = headers {

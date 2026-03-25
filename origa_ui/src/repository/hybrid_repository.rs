@@ -32,22 +32,22 @@ impl HybridUserRepository {
             (Some(remote_data), None) => {
                 tracing::info!("Creating local user from remote");
                 self.local.save(&remote_data.0).await?;
-            }
+            },
             // Local есть, remote нет → создаём remote из local
             (None, Some(local_user)) => {
                 tracing::info!("Creating remote user from local");
                 self.remote.save(&local_user).await?;
-            }
+            },
             // Оба есть → выполняем merge
             (Some(remote_data), Some(mut local_user)) => {
                 local_user.merge(&remote_data.0);
                 self.local.save(&local_user).await?;
                 self.remote.save(&local_user).await?;
-            }
+            },
             // Оба отсутствуют → warn и выходим
             (None, None) => {
                 tracing::warn!("No user found locally or remotely");
-            }
+            },
         }
 
         Ok(())
@@ -81,13 +81,13 @@ impl UserRepository for HybridUserRepository {
         match self.merge_current_user().await {
             Ok(_) => {
                 tracing::info!("save_sync: Remote sync completed");
-            }
+            },
             Err(e) => {
                 tracing::error!(
                     "save_sync: Remote sync failed: {:?}. Local save is still valid.",
                     e
                 );
-            }
+            },
         }
 
         Ok(())
@@ -112,7 +112,7 @@ impl UserRepository for HybridUserRepository {
                     user_id,
                     e
                 );
-            }
+            },
         }
 
         Ok(())

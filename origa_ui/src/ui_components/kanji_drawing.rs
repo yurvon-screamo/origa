@@ -76,6 +76,7 @@ type DrawingStateRef = Arc<Mutex<DrawingState>>;
 pub fn KanjiDrawingPractice(
     kanji: String,
     #[prop(optional)] on_complete: Option<Callback<()>>,
+    #[prop(optional, into)] test_id: Signal<String>,
 ) -> impl IntoView {
     let svg_content = LocalResource::new(move || {
         let encoded = urlencoding::encode(&kanji);
@@ -102,11 +103,11 @@ pub fn KanjiDrawingPractice(
                 is_completed.set(false);
                 load_error.set(false);
             }
-        }
+        },
         Some(None) => {
             load_error.set(true);
-        }
-        None => {}
+        },
+        None => {},
     });
     Effect::new(move |_| {
         let canvas = canvas_ref.get()?;
@@ -248,9 +249,33 @@ pub fn KanjiDrawingPractice(
         }
     };
     let handle_pointer_leave = handle_pointer_up.clone();
+
+    let test_id_val = move || {
+        let val = test_id.get();
+        if val.is_empty() { None } else { Some(val) }
+    };
+
+    let test_id_canvas = move || {
+        let val = test_id.get();
+        if val.is_empty() {
+            None
+        } else {
+            Some(format!("{}-canvas", val))
+        }
+    };
+
+    let test_id_progress = move || {
+        let val = test_id.get();
+        if val.is_empty() {
+            None
+        } else {
+            Some(format!("{}-progress", val))
+        }
+    };
+
     view! {
-        <div class="kanji-drawing-container">
-            <div class="kanji-drawing-info">
+        <div class="kanji-drawing-container" data-testid=test_id_val>
+            <div class="kanji-drawing-info" data-testid=test_id_progress>
                 {move || {
                     if load_error.get() {
                         view! {
@@ -283,6 +308,7 @@ pub fn KanjiDrawingPractice(
                     node_ref={canvas_ref}
                     width={CANVAS_SIZE}
                     height={CANVAS_SIZE}
+                    data-testid=test_id_canvas
                     class=move || {
                         if is_completed.get() {
                             "kanji-drawing-canvas pointer-events-none"
@@ -403,7 +429,7 @@ fn parse_and_draw_svg_path(ctx: &CanvasRenderingContext2d, d: &str) {
                 } else {
                     break;
                 }
-            }
+            },
             'L' | 'l' => {
                 if let Some((x, y, new_pos)) = parse_coords(&chars, pos) {
                     let (abs_x, abs_y) = if current_cmd == 'l' {
@@ -417,7 +443,7 @@ fn parse_and_draw_svg_path(ctx: &CanvasRenderingContext2d, d: &str) {
                 } else {
                     break;
                 }
-            }
+            },
             'C' | 'c' => {
                 if let Some((x1, y1, x2, y2, x, y, new_pos)) = parse_curve_coords(&chars, pos) {
                     let (abs_x1, abs_y1, abs_x2, abs_y2, abs_x, abs_y) = if current_cmd == 'c' {
@@ -445,14 +471,14 @@ fn parse_and_draw_svg_path(ctx: &CanvasRenderingContext2d, d: &str) {
                 } else {
                     break;
                 }
-            }
+            },
             'Z' | 'z' => {
                 ctx.close_path();
                 pos += 1;
-            }
+            },
             _ => {
                 pos += 1;
-            }
+            },
         }
     }
 }
@@ -642,7 +668,7 @@ fn sample_stroke_path(d: &str) -> Vec<(f64, f64)> {
                 } else {
                     break;
                 }
-            }
+            },
             'L' | 'l' => {
                 if let Some((x, y, new_pos)) = parse_coords(&chars, pos) {
                     let (abs_x, abs_y) = if current_cmd == 'l' {
@@ -658,7 +684,7 @@ fn sample_stroke_path(d: &str) -> Vec<(f64, f64)> {
                 } else {
                     break;
                 }
-            }
+            },
             'C' | 'c' => {
                 if let Some((x1, y1, x2, y2, x, y, new_pos)) = parse_curve_coords(&chars, pos) {
                     let (abs_x1, abs_y1, abs_x2, abs_y2, abs_x, abs_y) = if current_cmd == 'c' {
@@ -683,17 +709,17 @@ fn sample_stroke_path(d: &str) -> Vec<(f64, f64)> {
                 } else {
                     break;
                 }
-            }
+            },
             'Z' | 'z' => {
                 let start = (current_pos.0 * SVG_SCALE, current_pos.1 * SVG_SCALE);
                 let end = (start_pos.0 * SVG_SCALE, start_pos.1 * SVG_SCALE);
                 interpolate_line(&mut points, start, end);
                 current_pos = start_pos;
                 pos += 1;
-            }
+            },
             _ => {
                 pos += 1;
-            }
+            },
         }
     }
     resample_points(&points, SAMPLE_COUNT)

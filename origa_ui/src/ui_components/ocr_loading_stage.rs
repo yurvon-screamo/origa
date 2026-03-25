@@ -108,12 +108,17 @@ impl Default for OcrLoadingState {
 
 #[component]
 pub fn LoadingStageItem(
+    #[prop(optional, into)] test_id: Signal<String>,
     status: StageStatus,
     title: String,
     description: String,
     #[prop(default = None)] progress: Option<ProgressInfo>,
     #[prop(default = None)] error_message: Option<String>,
 ) -> impl IntoView {
+    let test_id_val = move || {
+        let val = test_id.get();
+        if val.is_empty() { None } else { Some(val) }
+    };
     let (icon_class, icon_content, icon_label) = match status {
         StageStatus::Waiting => ("text-[var(--fg-light)]", "\u{25CB}", "Ожидание"),
         StageStatus::Active => ("text-[var(--accent-olive)]", "\u{25C9}", "Загрузка"),
@@ -184,7 +189,7 @@ pub fn LoadingStageItem(
     };
 
     view! {
-        <div class=format!("p-3 {}", card_class)>
+        <div class=format!("p-3 {}", card_class) data-testid=test_id_val>
             <div class="flex items-start gap-3">
                 <span
                     class=format!("w-5 h-5 flex-shrink-0 {}", icon_class)

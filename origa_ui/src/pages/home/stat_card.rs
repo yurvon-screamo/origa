@@ -11,7 +11,17 @@ pub fn StatCard(
     #[prop(into)] subtitle: Signal<String>,
     #[prop(optional, into)] delta: Signal<String>,
     on_history: Callback<()>,
+    #[prop(optional, into)] test_id: Signal<String>,
 ) -> impl IntoView {
+    let test_id_history = Signal::derive(move || {
+        let val = test_id.get();
+        if val.is_empty() {
+            "stat-history".to_string()
+        } else {
+            format!("{}-history", val)
+        }
+    });
+
     let has_delta = Signal::derive(move || !delta.get().is_empty());
 
     let delta_class = Signal::derive(move || {
@@ -25,8 +35,10 @@ pub fn StatCard(
         }
     });
 
+    let test_id_for_card = Signal::derive(move || test_id.get());
+
     view! {
-        <Card class=Signal::derive(|| "p-6".to_string())>
+        <Card class=Signal::derive(|| "p-6".to_string()) test_id=test_id_for_card>
             <Text
                 size=Signal::derive(|| TextSize::Small)
                 variant=Signal::derive(|| TypographyVariant::Muted)
@@ -59,6 +71,7 @@ pub fn StatCard(
             <Button
                 variant=Signal::derive(|| ButtonVariant::Ghost)
                 on_click=Callback::new(move |_: MouseEvent| on_history.run(()))
+                test_id=test_id_history
             >
                 "История"
             </Button>

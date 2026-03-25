@@ -96,11 +96,11 @@ pub fn LessonContent() -> impl IntoView {
                 LessonMode::Lesson => {
                     let use_case = SelectCardsToLessonUseCase::new(&repo);
                     use_case.execute().await
-                }
+                },
                 LessonMode::Fixation => {
                     let use_case = SelectCardsToFixationUseCase::new(&repo);
                     use_case.execute().await
-                }
+                },
             };
 
             tracing::info!("Cards len: {}", cards.iter().count());
@@ -125,10 +125,10 @@ pub fn LessonContent() -> impl IntoView {
                             selected_yesno_answer: None,
                         });
                     }
-                }
+                },
                 Err(e) => {
                     error_message.set(Some(format!("Ошибка загрузки карточек: {}", e)));
-                }
+                },
             }
 
             is_loading.set(false);

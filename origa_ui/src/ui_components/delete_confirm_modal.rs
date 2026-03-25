@@ -4,13 +4,32 @@ use super::{Button, ButtonVariant, Modal, Spinner, Text, TextSize, TypographyVar
 
 #[component]
 pub fn DeleteConfirmModal(
+    #[prop(optional, into)] test_id: Signal<String>,
     is_open: RwSignal<bool>,
     is_deleting: Signal<bool>,
     on_confirm: Callback<()>,
     on_close: Callback<()>,
 ) -> impl IntoView {
+    let cancel_test_id = Signal::derive(move || {
+        let val = test_id.get();
+        if val.is_empty() {
+            String::new()
+        } else {
+            format!("{}-cancel", val)
+        }
+    });
+
+    let confirm_test_id = Signal::derive(move || {
+        let val = test_id.get();
+        if val.is_empty() {
+            String::new()
+        } else {
+            format!("{}-confirm", val)
+        }
+    });
     view! {
         <Modal
+            test_id=test_id
             is_open=is_open
             title=Signal::derive(|| "Удалить карточку?".to_string())
         >
@@ -20,6 +39,7 @@ pub fn DeleteConfirmModal(
                 </Text>
                 <div class="flex gap-2 justify-end">
                     <Button
+                        test_id=cancel_test_id
                         variant=ButtonVariant::Ghost
                         disabled=is_deleting
                         on_click=Callback::new(move |_| on_close.run(()))
@@ -27,6 +47,7 @@ pub fn DeleteConfirmModal(
                         "Отмена"
                     </Button>
                     <Button
+                        test_id=confirm_test_id
                         variant=ButtonVariant::Filled
                         disabled=is_deleting
                         on_click=Callback::new(move |_| {

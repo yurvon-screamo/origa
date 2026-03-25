@@ -69,6 +69,7 @@ impl ReviewItem {
 
 #[component]
 pub fn CardHistoryModal(
+    #[prop(optional, into)] test_id: Signal<String>,
     #[prop(into)] is_open: Signal<bool>,
     memory: MemoryHistory,
     on_close: Callback<()>,
@@ -102,19 +103,29 @@ pub fn CardHistoryModal(
     let chart_data = Signal::derive(move || chart_items.clone());
     let reviews_signal = Signal::derive(move || recent_reviews.clone());
 
+    let chart_test_id = Signal::derive(move || {
+        let val = test_id.get();
+        if val.is_empty() {
+            String::new()
+        } else {
+            format!("{}-chart", val)
+        }
+    });
+
     let _on_close_click = Callback::new(move |_: leptos::ev::MouseEvent| {
         on_close.run(());
     });
 
     view! {
         <Modal
+            test_id=test_id
             is_open=is_open_rw
             title=Signal::derive(|| "История карточки".to_string())
         >
             <div class="space-y-4">
                 {move || if has_data {
                     view! {
-                        <div class="flex justify-center">
+                        <div class="flex justify-center" data-testid=chart_test_id>
                             <LineChart
                                 data=chart_data
                                 width=380

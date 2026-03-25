@@ -64,7 +64,7 @@ impl DeimDetector {
                 } else {
                     1024
                 }
-            }
+            },
             _ => 1024,
         };
 
