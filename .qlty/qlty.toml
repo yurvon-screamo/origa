@@ -146,10 +146,6 @@ name = "trufflehog"
 mode = "block"
 
 [[plugin]]
-name = "trivy"
-mode = "monitor"
-
-[[plugin]]
 name = "osv-scanner"
 mode = "monitor"
 
