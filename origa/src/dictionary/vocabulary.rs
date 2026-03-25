@@ -101,13 +101,7 @@ pub struct VocabularyChunkData {
 }
 
 pub fn init_vocabulary(data: VocabularyChunkData) -> Result<(), OrigaError> {
-    let start = std::time::Instant::now();
-    tracing::info!("📖 Initializing vocabulary dictionary...");
     let db = VocabularyDatabase::from_chunks(data)?;
-    tracing::info!(
-        "📖 Vocabulary dictionary initialized ({:.2}s)",
-        start.elapsed().as_secs_f64()
-    );
     VOCABULARY_DICTIONARY
         .set(db)
         .map_err(|_| OrigaError::VocabularyParseError {
@@ -128,20 +122,11 @@ pub fn serialize_vocabulary_to_rkyv(db: &VocabularyDatabase) -> Result<Vec<u8>, 
 
 /// Initialize vocabulary from rkyv bytes
 pub fn init_vocabulary_from_rkyv(bytes: &[u8]) -> Result<(), OrigaError> {
-    let start = std::time::Instant::now();
-    tracing::info!("📖 Loading vocabulary from rkyv...");
-
     let archived = rkyv::access::<ArchivedVocabularyDatabaseData, rkyv::rancor::Error>(bytes)
         .map_err(|e| OrigaError::VocabularyParseError {
             reason: format!("Failed to validate vocabulary data: {:?}", e),
         })?;
 
-    tracing::info!(
-        "📖 Vocabulary accessed from rkyv ({:.2}s)",
-        start.elapsed().as_secs_f64()
-    );
-
-    // Convert to owned VocabularyDatabaseData
     let data = VocabularyDatabaseData {
         entries: archived
             .entries

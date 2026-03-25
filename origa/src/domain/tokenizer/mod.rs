@@ -62,9 +62,6 @@ pub fn serialize_dictionary_to_rkyv(data: &DictionaryData) -> Result<Vec<u8>, Or
 
 /// Initialize dictionary from rkyv bytes directly (zero-copy access)
 pub fn init_dictionary_from_rkyv(bytes: &[u8]) -> Result<(), OrigaError> {
-    let start = std::time::Instant::now();
-    tracing::info!("📖 Loading dictionary from rkyv...");
-
     let archived =
         rkyv::access::<ArchivedDictionaryData, rkyv::rancor::Error>(bytes).map_err(|e| {
             OrigaError::TokenizerError {
@@ -72,12 +69,6 @@ pub fn init_dictionary_from_rkyv(bytes: &[u8]) -> Result<(), OrigaError> {
             }
         })?;
 
-    tracing::info!(
-        "📖 Dictionary accessed from rkyv ({:.2}s)",
-        start.elapsed().as_secs_f64()
-    );
-
-    // Convert to owned DictionaryData for lindera (it requires owned data)
     let data = DictionaryData {
         char_def: archived.char_def.to_vec(),
         matrix: archived.matrix.to_vec(),

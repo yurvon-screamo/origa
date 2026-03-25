@@ -22,16 +22,10 @@ pub fn init_grammar(data: GrammarData) -> Result<(), OrigaError> {
         return Ok(());
     }
 
-    let start = std::time::Instant::now();
-    tracing::info!("📖 Initializing grammar dictionary...");
     let content: GrammarStoreValue =
         serde_json::from_str(&data.grammar_json).map_err(|e| OrigaError::GrammarParseError {
             reason: format!("Failed to parse grammar.json: {}", e),
         })?;
-    tracing::info!(
-        "📖 Grammar dictionary initialized ({:.2}s)",
-        start.elapsed().as_secs_f64()
-    );
 
     GRAMMAR_RULES
         .set(content.grammar)
@@ -51,20 +45,12 @@ pub fn serialize_grammar_to_rkyv(data: &GrammarData) -> Result<Vec<u8>, OrigaErr
 
 /// Initialize grammar from rkyv bytes
 pub fn init_grammar_from_rkyv(bytes: &[u8]) -> Result<(), OrigaError> {
-    let start = std::time::Instant::now();
-    tracing::info!("📖 Loading grammar from rkyv...");
-
     let archived =
         rkyv::access::<ArchivedGrammarData, rkyv::rancor::Error>(bytes).map_err(|e| {
             OrigaError::GrammarParseError {
                 reason: format!("Failed to validate grammar data: {:?}", e),
             }
         })?;
-
-    tracing::info!(
-        "📖 Grammar accessed from rkyv ({:.2}s)",
-        start.elapsed().as_secs_f64()
-    );
 
     let data = GrammarData {
         grammar_json: archived.grammar_json.as_str().to_string(),
