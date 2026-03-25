@@ -1,7 +1,7 @@
-use crate::domain::{iter_grammar_rules, JapaneseLevel, NativeLanguage, User};
+use crate::domain::{JapaneseLevel, NativeLanguage, User, iter_grammar_rules};
 use crate::traits::UserRepository;
-use crate::use_cases::tests::fixtures::{init_real_dictionaries, InMemoryUserRepository};
 use crate::use_cases::CreateGrammarCardUseCase;
+use crate::use_cases::tests::fixtures::{InMemoryUserRepository, init_real_dictionaries};
 
 #[tokio::test]
 async fn grammar_rules_loads_from_real_file() {
@@ -17,10 +17,12 @@ async fn grammar_rules_loads_from_real_file() {
     assert!(!n5_rules.is_empty(), "Should have N5 grammar rules");
 
     let first_n5 = n5_rules.first().expect("Should have at least one N5 rule");
-    assert!(!first_n5
-        .content(&NativeLanguage::Russian)
-        .title()
-        .is_empty());
+    assert!(
+        !first_n5
+            .content(&NativeLanguage::Russian)
+            .title()
+            .is_empty()
+    );
 }
 
 #[tokio::test]
@@ -48,8 +50,10 @@ async fn create_grammar_card_creates_from_real_rule() {
     assert_eq!(cards.len(), 1);
 
     let saved_user = repo.get_current_user().await.unwrap().unwrap();
-    assert!(saved_user
-        .knowledge_set()
-        .study_cards()
-        .contains_key(cards[0].card_id()));
+    assert!(
+        saved_user
+            .knowledge_set()
+            .study_cards()
+            .contains_key(cards[0].card_id())
+    );
 }

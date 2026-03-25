@@ -1,6 +1,6 @@
-use super::{calculate_stats, format_delta, format_number, HomeStats};
 use super::{HistoryModal, HomeSkeleton, JlptProgressCard, JlptSkeleton, StatMetric, StatsGrid};
-use crate::repository::{set_last_sync_time, HybridUserRepository};
+use super::{HomeStats, calculate_stats, format_delta, format_number};
+use crate::repository::{HybridUserRepository, set_last_sync_time};
 use crate::ui_components::{
     Text, TextSize, ToastContainer, ToastData, ToastType, TypographyVariant,
 };

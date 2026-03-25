@@ -1,7 +1,7 @@
 use crate::domain::{CardType, NativeLanguage, OrigaError, User};
 use crate::traits::UserRepository;
-use crate::use_cases::tests::fixtures::{init_real_dictionaries, InMemoryUserRepository};
 use crate::use_cases::CreateVocabularyCardUseCase;
+use crate::use_cases::tests::fixtures::{InMemoryUserRepository, init_real_dictionaries};
 
 fn create_repo() -> InMemoryUserRepository {
     InMemoryUserRepository::with_user(User::new(

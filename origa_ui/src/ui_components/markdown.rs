@@ -4,7 +4,7 @@ use ammonia::clean;
 use ego_tree::NodeRef;
 use leptos::prelude::*;
 use origa::domain::furiganize_text;
-use pulldown_cmark::{html, Options, Parser};
+use pulldown_cmark::{Options, Parser, html};
 use scraper::{Html, Node};
 
 #[derive(Clone, Copy, PartialEq, Default, Debug)]
@@ -102,11 +102,7 @@ pub fn MarkdownText(
 
     let test_id_val = move || {
         let val = test_id.get();
-        if val.is_empty() {
-            None
-        } else {
-            Some(val)
-        }
+        if val.is_empty() { None } else { Some(val) }
     };
 
     view! {

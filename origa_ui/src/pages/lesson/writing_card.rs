@@ -79,11 +79,7 @@ fn extract_kanji_data(kanji: &DomainCard, native_language: NativeLanguage) -> Ka
             .iter()
             .map(|e| (e.word().to_string(), e.meaning().to_string()))
             .collect();
-        if ex.is_empty() {
-            None
-        } else {
-            Some(ex)
-        }
+        if ex.is_empty() { None } else { Some(ex) }
     };
 
     KanjiData {

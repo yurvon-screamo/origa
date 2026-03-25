@@ -19,8 +19,8 @@ pub use vocabulary::VocabularyCard;
 use std::collections::{HashMap, HashSet};
 
 use crate::domain::{
-    srs::{rate_memory, NextReview},
     OrigaError, RateMode, Rating, ReviewLog,
+    srs::{NextReview, rate_memory},
 };
 use chrono::Utc;
 use rand::seq::SliceRandom;

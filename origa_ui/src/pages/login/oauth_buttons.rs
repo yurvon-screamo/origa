@@ -7,11 +7,7 @@ use leptos::wasm_bindgen::JsValue;
 pub fn OAuthButtons(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoView {
     let test_id_val = move || {
         let val = test_id.get();
-        if val.is_empty() {
-            None
-        } else {
-            Some(val)
-        }
+        if val.is_empty() { None } else { Some(val) }
     };
 
     let google_test_id = Signal::derive(move || {
@@ -110,8 +106,8 @@ fn open_url_external(url: &str) {
 }
 
 fn open_oauth_url(provider: OAuthProvider) {
-    use crate::repository::trailbase_auth::{generate_pkce_challenge, generate_pkce_verifier};
     use crate::repository::TrailBaseClient;
+    use crate::repository::trailbase_auth::{generate_pkce_challenge, generate_pkce_verifier};
     use gloo_storage::{LocalStorage, Storage};
     use web_sys::console;
 

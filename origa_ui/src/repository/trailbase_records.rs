@@ -1,6 +1,6 @@
 use crate::repository::trailbase_client::{AuthError, AuthRequestClient};
 use gloo_net::http::{Method, Response};
-use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use serde::{Deserialize, Serialize, de::DeserializeOwned};
 
 #[derive(Clone)]
 pub struct RecordApi<C: AuthRequestClient> {

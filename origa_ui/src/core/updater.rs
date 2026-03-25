@@ -156,9 +156,9 @@ where
     F: Fn(u8) + Send + Sync + 'static,
 {
     use leptos::logging;
-    use leptos::wasm_bindgen::closure::Closure;
     use leptos::wasm_bindgen::JsCast;
     use leptos::wasm_bindgen::JsValue;
+    use leptos::wasm_bindgen::closure::Closure;
     use std::sync::Arc;
 
     let window = web_sys::window().ok_or("Window недоступен")?;

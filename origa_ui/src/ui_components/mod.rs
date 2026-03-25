@@ -80,7 +80,7 @@ pub use loading::{LoadingOverlay, Spinner};
 pub use markdown::{MarkdownText, MarkdownVariant};
 pub use modal::Modal;
 pub use ocr_loading_stage::{
-    get_stage_info, LoadingStageItem, OcrLoadingStage, OcrLoadingState, ProgressInfo, StageType,
+    LoadingStageItem, OcrLoadingStage, OcrLoadingState, ProgressInfo, StageType, get_stage_info,
 };
 pub use progress::ProgressBar;
 pub use reading_group::ReadingGroup;

@@ -1,5 +1,5 @@
 use super::trailbase_client::{AuthError, TrailBaseClient};
-use crate::repository::session::{get_session, set_session, TrailBaseSession};
+use crate::repository::session::{TrailBaseSession, get_session, set_session};
 use chrono::{DateTime, Utc};
 use origa::domain::{NativeLanguage, OrigaError, User};
 use origa::traits::UserRepository;

@@ -1,4 +1,4 @@
-use crate::ui_components::{get_reading_from_text, is_speech_supported, speak_text, Card};
+use crate::ui_components::{Card, get_reading_from_text, is_speech_supported, speak_text};
 use leptos::prelude::*;
 use origa::domain::{Card as DomainCard, GrammarInfo, NativeLanguage};
 use std::collections::HashSet;

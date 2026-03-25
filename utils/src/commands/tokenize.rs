@@ -1,5 +1,5 @@
 use crate::dictionary::load_dictionary;
-use origa::domain::{tokenize_text, OrigaError};
+use origa::domain::{OrigaError, tokenize_text};
 use std::collections::HashSet;
 use std::fs;
 use std::path::Path;

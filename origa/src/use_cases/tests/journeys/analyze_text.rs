@@ -1,8 +1,8 @@
 use crate::domain::{NativeLanguage, OrigaError, User};
-use crate::use_cases::tests::fixtures::{
-    create_test_vocab_card, init_real_dictionaries, InMemoryUserRepository,
-};
 use crate::use_cases::AnalyzeTextForCardsUseCase;
+use crate::use_cases::tests::fixtures::{
+    InMemoryUserRepository, create_test_vocab_card, init_real_dictionaries,
+};
 
 #[tokio::test]
 async fn analyze_text_finds_vocabulary_candidates() {
