@@ -10,6 +10,16 @@ pub fn PasswordInput(
     #[prop(optional, into)] test_id: Signal<String>,
 ) -> impl IntoView {
     let show_password = RwSignal::new(false);
+
+    let toggle_test_id = Signal::derive(move || {
+        let val = test_id.get();
+        if val.is_empty() {
+            String::new()
+        } else {
+            format!("{}-toggle", val)
+        }
+    });
+
     let autocomplete_val = move || {
         let a = autocomplete.get();
         if a.is_empty() {
@@ -39,6 +49,10 @@ pub fn PasswordInput(
                 <button
                     type="button"
                     class="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[var(--fg-muted)] hover:text-[var(--fg-black)] transition-colors"
+                    data-testid=move || {
+                        let val = toggle_test_id.get();
+                        if val.is_empty() { None } else { Some(val) }
+                    }
                     on:click=move |_| show_password.set(!show_password.get())
                 >
                     <PasswordVisibilityIcon show=show_password />

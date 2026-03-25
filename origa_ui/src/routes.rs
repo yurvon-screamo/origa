@@ -10,7 +10,6 @@ use crate::store::auth_store::AuthStore;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos_router::components::*;
-use leptos_router::hooks::use_navigate;
 use leptos_router::path;
 use std::sync::OnceLock;
 
@@ -49,7 +48,6 @@ pub fn start_dictionary_loading(auth_store: AuthStore) {
 #[component]
 pub fn ProtectedRoute(children: ChildrenFn) -> impl IntoView {
     let auth_store = use_context::<AuthStore>().expect("AuthStore not provided");
-    let _navigate = use_navigate();
 
     let is_authenticated = auth_store.is_authenticated();
     let is_checking = auth_store.is_checking_session;
