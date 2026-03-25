@@ -23,7 +23,7 @@ type-complexity-threshold = 250
 too-many-arguments-threshold = 7
 
 # Large types threshold - increased for WASM types with many fields
-trivially-large-copy-break-limit = 16
+# trivial-copy-size-limit = 16
 
 # Standard macros that are allowed to have uppercase identifiers
 standard-macro-braces = []
@@ -39,7 +39,7 @@ standard-macro-braces = []
 msrv = "1.75"
 
 # Avoid breaking changes from new Clippy lints early
-doc-valid-idents-allow = [
+doc-valid-idents = [
     "FSRS",
     "WASM",
     "ONNX",

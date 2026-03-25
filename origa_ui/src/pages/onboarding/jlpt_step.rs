@@ -34,7 +34,12 @@ const JLPT_UI_OPTIONS: &[(Option<JapaneseLevel>, &str, &str)] = &[
 ];
 
 #[component]
-pub fn JlptStep() -> impl IntoView {
+pub fn JlptStep(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoView {
+    let test_id_val = move || {
+        let val = test_id.get();
+        if val.is_empty() { None } else { Some(val) }
+    };
+
     let state =
         use_context::<RwSignal<OnboardingState>>().expect("OnboardingState context not found");
 
@@ -45,13 +50,13 @@ pub fn JlptStep() -> impl IntoView {
     });
 
     view! {
-        <div class="jlpt-step">
+        <div class="jlpt-step" data-testid=test_id_val>
             <div class="text-center mb-6">
-                <Text size=TextSize::Large variant=TypographyVariant::Primary>
+                <Text size=TextSize::Large variant=TypographyVariant::Primary test_id=Signal::derive(|| "jlpt-step-title".to_string())>
                     "Выберите ваш текущий уровень JLPT"
                 </Text>
                 <div class="mt-2">
-                    <Text size=TextSize::Small variant=TypographyVariant::Muted>
+                    <Text size=TextSize::Small variant=TypographyVariant::Muted test_id=Signal::derive(|| "jlpt-step-subtitle".to_string())>
                         "Мы подберём подходящие наборы слов для вашего уровня"
                     </Text>
                 </div>
