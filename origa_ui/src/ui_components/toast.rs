@@ -19,6 +19,20 @@ pub struct ToastData {
     pub title: String,
     pub message: String,
     pub duration_ms: Option<u64>,
+    pub closable: bool,
+}
+
+impl Default for ToastData {
+    fn default() -> Self {
+        Self {
+            id: 0,
+            toast_type: ToastType::Info,
+            title: String::new(),
+            message: String::new(),
+            duration_ms: None,
+            closable: true,
+        }
+    }
 }
 
 #[component]
@@ -76,14 +90,20 @@ pub fn Toast(
                 <p class="font-mono text-xs tracking-wider">{toast.title}</p>
                 <p class="font-mono text-[10px] text-[var(--fg-muted)] mt-1">{toast.message}</p>
             </div>
-            <button
-                class="toast-close"
-                on:click=move |_| on_close.run(toast_id)
-            >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M18 6L6 18M6 6l12 12" />
-                </svg>
-            </button>
+            {move || if toast.closable {
+                view! {
+                    <button
+                        class="toast-close"
+                        on:click=move |_| on_close.run(toast_id)
+                    >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 6L6 18M6 6l12 12" />
+                        </svg>
+                    </button>
+                }.into_any()
+            } else {
+                view! { <div></div> }.into_any()
+            }}
         </div>
     }
 }

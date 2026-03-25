@@ -3,7 +3,10 @@ use leptos::task::spawn_local;
 use tracing::{error, info};
 
 use crate::core::updater;
-use crate::loaders::{load_all_data, load_dictionary};
+use crate::utils::yield_to_browser;
+use crate::loaders::data_loader::{load_vocabulary, load_radical, load_kanji, load_grammar};
+use crate::loaders::jlpt_content_loader::load_jlpt_content;
+use crate::loaders::load_dictionary;
 use crate::pages::login::oauth_listeners::{check_url_oauth_callback, setup_oauth_listener};
 use crate::routes::AppRoutes;
 use crate::store::auth_store::AuthStore;
@@ -93,76 +96,169 @@ async fn init_dictionary(auth_store: AuthStore, toasts: RwSignal<Vec<ToastData>>
     let start = now_ms();
     info!("🚀 Starting application data initialization...");
 
-    // Load basic data first (fast, ~4s)
-    let dict_start = now_ms();
-    let data_result = load_all_data().await;
-    let parallel_end = now_ms();
-    info!("⏱️ Basic data loading completed in {:.2}s", (parallel_end - dict_start) / 1000.0);
+    // Show initial progress toast
+    show_progress_toast(&toasts, "Загрузка данных...");
 
-    if let Err(e) = data_result {
-        error!("Failed to load data: {:?}", e);
-    } else {
-        info!("✅ All basic data loaded ({:.2}s)", (parallel_end - dict_start) / 1000.0);
+    let mut loaded_count = 0;
+    let total = 5;
+
+    // Helper to show progress
+    let show_progress = |count: usize, msg: &str| {
+        update_progress_toast(&toasts, &format!("{} ({}/{})", msg, count, total));
+    };
+
+    // Load vocabulary
+    show_progress(loaded_count + 1, "Загрузка словаря...");
+    yield_to_browser().await;
+    match load_vocabulary().await {
+        Ok(()) => {
+            loaded_count += 1;
+            info!("✅ Vocabulary loaded");
+        }
+        Err(e) => {
+            error!("Failed to load vocabulary: {:?}", e);
+        }
+    }
+    yield_to_browser().await;
+
+    // Load kanji
+    show_progress(loaded_count + 1, "Загрузка канджи...");
+    yield_to_browser().await;
+    match load_kanji().await {
+        Ok(()) => {
+            loaded_count += 1;
+            info!("✅ Kanji loaded");
+        }
+        Err(e) => {
+            error!("Failed to load kanji: {:?}", e);
+        }
+    }
+    yield_to_browser().await;
+
+    // Load radicals
+    show_progress(loaded_count + 1, "Загрузка радикалов...");
+    yield_to_browser().await;
+    match load_radical().await {
+        Ok(()) => {
+            loaded_count += 1;
+            info!("✅ Radicals loaded");
+        }
+        Err(e) => {
+            error!("Failed to load radicals: {:?}", e);
+        }
+    }
+    yield_to_browser().await;
+
+    // Load grammar
+    show_progress(loaded_count + 1, "Загрузка грамматики...");
+    yield_to_browser().await;
+    match load_grammar().await {
+        Ok(()) => {
+            loaded_count += 1;
+            info!("✅ Grammar loaded");
+        }
+        Err(e) => {
+            error!("Failed to load grammar: {:?}", e);
+        }
+    }
+    yield_to_browser().await;
+
+    // Load JLPT content
+    show_progress(loaded_count + 1, "Загрузка JLPT...");
+    yield_to_browser().await;
+    match load_jlpt_content().await {
+        Ok(()) => {
+            loaded_count += 1;
+            info!("✅ JLPT content loaded");
+        }
+        Err(e) => {
+            error!("Failed to load JLPT content: {:?}", e);
+        }
+    }
+    yield_to_browser().await;
+
+    // Check for critical failures
+    let has_error = loaded_count < 4; // vocabulary, kanji, radicals, grammar are critical
+
+    if has_error {
+        show_error_toast(&toasts, "Не удалось загрузить критические данные");
+        return;
     }
 
-    // Mark data as loaded so UI can show immediately
+    // Mark basic data as loaded - UI is now interactive
     auth_store.set_data_loaded();
-    info!("🎉 App ready ({:.2}s)", (now_ms() - start) / 1000.0);
+    info!("✅ Basic data loaded ({:.2}s)", (now_ms() - start) / 1000.0);
 
-    // Load dictionary in background (slow, ~17s)
-    init_background_dictionary(auth_store, toasts);
+    // Load tokenizer dictionary in background
+    update_progress_toast(&toasts, "Загрузка словаря токенизации...");
+    yield_to_browser().await;
+
+    match load_dictionary().await {
+        Ok(()) => {
+            let elapsed = (now_ms() - start) / 1000.0;
+            auth_store.set_dictionary_loaded();
+            info!("✅ Dictionary loaded ({:.2}s total)", elapsed);
+            show_success_toast(&toasts, &format!("Данные загружены ({:.1}с)", elapsed));
+        }
+        Err(e) => {
+            error!("Failed to load dictionary: {}", e);
+            show_error_toast(&toasts, "Не удалось загрузить словарь токенизации");
+        }
+    }
+    yield_to_browser().await;
+
+    info!("🎉 App ready ({:.2}s)", (now_ms() - start) / 1000.0);
 }
 
-fn init_background_dictionary(auth_store: AuthStore, toasts: RwSignal<Vec<ToastData>>) {
-    spawn_local(async move {
-        // Show loading toast
-        toasts.update(|t| {
-            t.push(ToastData {
-                id: DICT_TOAST_ID,
-                title: "Загрузка словаря".to_string(),
-                message: "Загружаем словарь токенизации...".to_string(),
-                toast_type: ToastType::Info,
-                duration_ms: None,
-            });
+fn show_progress_toast(toasts: &RwSignal<Vec<ToastData>>, message: &str) {
+    toasts.update(|t| {
+        t.retain(|toast| toast.id != DICT_TOAST_ID);
+        t.push(ToastData {
+            id: DICT_TOAST_ID,
+            toast_type: ToastType::Info,
+            title: "Инициализация".to_string(),
+            message: message.to_string(),
+            duration_ms: None,
+            closable: false,
         });
+    });
+}
 
-        let start = now_ms();
-        info!("📖 Loading dictionary in background...");
-
-        match load_dictionary().await {
-            Ok(()) => {
-                let elapsed = (now_ms() - start) / 1000.0;
-                info!("✅ Dictionary loaded in background ({:.2}s)", elapsed);
-                auth_store.set_dictionary_loaded();
-
-                // Update toast to success
-                toasts.update(|t| {
-                    t.retain(|toast| toast.id != DICT_TOAST_ID);
-                    t.push(ToastData {
-                        id: DICT_TOAST_ID,
-                        title: "Словарь загружен".to_string(),
-                        message: format!("Готово к работе ({:.1}с)", elapsed),
-                        toast_type: ToastType::Success,
-                        duration_ms: Some(3000),
-                    });
-                });
-            }
-            Err(e) => {
-                error!("Failed to load dictionary: {}", e);
-
-                // Update toast to error
-                toasts.update(|t| {
-                    t.retain(|toast| toast.id != DICT_TOAST_ID);
-                    t.push(ToastData {
-                        id: DICT_TOAST_ID,
-                        title: "Ошибка загрузки".to_string(),
-                        message: "Не удалось загрузить словарь токенизации".to_string(),
-                        toast_type: ToastType::Error,
-                        duration_ms: Some(5000),
-                    });
-                });
+fn update_progress_toast(toasts: &RwSignal<Vec<ToastData>>, message: &str) {
+    toasts.update(|t| {
+        for toast in t.iter_mut() {
+            if toast.id == DICT_TOAST_ID {
+                toast.message = message.to_string();
             }
         }
+    });
+}
+
+fn show_success_toast(toasts: &RwSignal<Vec<ToastData>>, message: &str) {
+    toasts.update(|t| {
+        t.retain(|toast| toast.id != DICT_TOAST_ID);
+        t.push(ToastData {
+            id: DICT_TOAST_ID,
+            toast_type: ToastType::Success,
+            title: "Готово".to_string(),
+            message: message.to_string(),
+            duration_ms: Some(3000),
+            closable: true,
+        });
+    });
+}
+
+fn show_error_toast(toasts: &RwSignal<Vec<ToastData>>, message: &str) {
+    toasts.update(|t| {
+        t.retain(|toast| toast.id != DICT_TOAST_ID);
+        t.push(ToastData {
+            id: DICT_TOAST_ID,
+            toast_type: ToastType::Error,
+            title: "Ошибка".to_string(),
+            message: message.to_string(),
+            duration_ms: Some(5000),
+            closable: true,
+        });
     });
 }
 

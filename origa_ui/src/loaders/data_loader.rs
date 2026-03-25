@@ -12,7 +12,7 @@ use crate::repository::{
     get_cached_radical_rkyv, save_radical_to_cache_rkyv,
     get_cached_vocabulary_rkyv, save_vocabulary_to_cache_rkyv,
 };
-use crate::utils::fetch_text;
+use crate::utils::{fetch_text, yield_to_browser};
 
 pub fn is_all_data_loaded() -> bool {
     is_vocabulary_loaded() && is_radicals_loaded() && is_kanji_loaded() && is_grammar_loaded()
@@ -69,6 +69,7 @@ pub async fn load_vocabulary() -> Result<(), OrigaError> {
     // Try rkyv cache first
     if let Some(bytes) = get_cached_vocabulary_rkyv().await? {
         tracing::info!("📖 Vocabulary found in rkyv cache ({} bytes)", bytes.len());
+        yield_to_browser().await;
         init_vocabulary_from_rkyv(&bytes)?;
         tracing::info!("📖 Vocabulary loaded from rkyv cache ({:.2}s)", (now_ms() - start) / 1000.0);
         return Ok(());
@@ -107,6 +108,7 @@ pub async fn load_vocabulary() -> Result<(), OrigaError> {
         chunk_11: chunks[10].clone(),
     };
 
+    yield_to_browser().await;
     init_vocabulary(data)?;
 
     // Save to rkyv cache after initialization
@@ -143,6 +145,7 @@ pub async fn load_radical() -> Result<(), OrigaError> {
     // Try rkyv cache first
     if let Some(bytes) = get_cached_radical_rkyv().await? {
         tracing::info!("📖 Radicals found in rkyv cache ({} bytes)", bytes.len());
+        yield_to_browser().await;
         init_radicals_from_rkyv(&bytes)?;
         tracing::info!("📖 Radicals loaded from rkyv cache ({:.2}s)", (now_ms() - start) / 1000.0);
         return Ok(());
@@ -159,6 +162,7 @@ pub async fn load_radical() -> Result<(), OrigaError> {
             reason: format!("Failed to serialize radicals: {:?}", e),
         })?;
 
+    yield_to_browser().await;
     // Now init takes ownership
     init_radicals(data)?;
 
@@ -187,6 +191,7 @@ pub async fn load_kanji() -> Result<(), OrigaError> {
     // Try rkyv cache first
     if let Some(bytes) = get_cached_kanji_rkyv().await? {
         tracing::info!("📖 Kanji found in rkyv cache ({} bytes)", bytes.len());
+        yield_to_browser().await;
         init_kanji_from_rkyv(&bytes)?;
         tracing::info!("📖 Kanji loaded from rkyv cache ({:.2}s)", (now_ms() - start) / 1000.0);
         return Ok(());
@@ -203,6 +208,7 @@ pub async fn load_kanji() -> Result<(), OrigaError> {
             reason: format!("Failed to serialize kanji: {:?}", e),
         })?;
 
+    yield_to_browser().await;
     // Now init takes ownership
     init_kanji(data)?;
 
@@ -231,6 +237,7 @@ pub async fn load_grammar() -> Result<(), OrigaError> {
     // Try rkyv cache first
     if let Some(bytes) = get_cached_grammar_rkyv().await? {
         tracing::info!("📖 Grammar found in rkyv cache ({} bytes)", bytes.len());
+        yield_to_browser().await;
         init_grammar_from_rkyv(&bytes)?;
         tracing::info!("📖 Grammar loaded from rkyv cache ({:.2}s)", (now_ms() - start) / 1000.0);
         return Ok(());
@@ -247,6 +254,7 @@ pub async fn load_grammar() -> Result<(), OrigaError> {
             reason: format!("Failed to serialize grammar: {:?}", e),
         })?;
 
+    yield_to_browser().await;
     // Now init takes ownership
     init_grammar(data)?;
 
