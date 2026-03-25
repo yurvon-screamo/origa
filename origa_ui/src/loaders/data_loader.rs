@@ -153,13 +153,14 @@ pub async fn load_radical() -> Result<(), OrigaError> {
     let json = fetch_text(public_url("/public/dictionary/radicals.json")).await?;
     let data = RadicalData { radicals_json: json };
 
-    init_radicals(data.clone())?;
-
-    // Save to rkyv cache using the serialize function
+    // Serialize before init (takes reference, doesn't move data)
     let bytes = origa::dictionary::radical::serialize_radicals_to_rkyv(&data)
         .map_err(|e| OrigaError::RepositoryError {
             reason: format!("Failed to serialize radicals: {:?}", e),
         })?;
+
+    // Now init takes ownership
+    init_radicals(data)?;
 
     wasm_bindgen_futures::spawn_local(async move {
         if let Err(e) = save_radical_to_cache_rkyv(&bytes).await {
@@ -196,13 +197,14 @@ pub async fn load_kanji() -> Result<(), OrigaError> {
     let json = fetch_text(public_url("/public/dictionary/kanji.json")).await?;
     let data = KanjiData { kanji_json: json };
 
-    init_kanji(data.clone())?;
-
-    // Save to rkyv cache using the serialize function
+    // Serialize before init (takes reference, doesn't move data)
     let bytes = origa::dictionary::kanji::serialize_kanji_to_rkyv(&data)
         .map_err(|e| OrigaError::RepositoryError {
             reason: format!("Failed to serialize kanji: {:?}", e),
         })?;
+
+    // Now init takes ownership
+    init_kanji(data)?;
 
     wasm_bindgen_futures::spawn_local(async move {
         if let Err(e) = save_kanji_to_cache_rkyv(&bytes).await {
@@ -239,13 +241,14 @@ pub async fn load_grammar() -> Result<(), OrigaError> {
     let json = fetch_text(public_url("/public/grammar/grammar.json")).await?;
     let data = GrammarData { grammar_json: json };
 
-    init_grammar(data.clone())?;
-
-    // Save to rkyv cache using the serialize function
+    // Serialize before init (takes reference, doesn't move data)
     let bytes = origa::dictionary::grammar::serialize_grammar_to_rkyv(&data)
         .map_err(|e| OrigaError::RepositoryError {
             reason: format!("Failed to serialize grammar: {:?}", e),
         })?;
+
+    // Now init takes ownership
+    init_grammar(data)?;
 
     wasm_bindgen_futures::spawn_local(async move {
         if let Err(e) = save_grammar_to_cache_rkyv(&bytes).await {

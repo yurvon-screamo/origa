@@ -45,7 +45,7 @@ pub fn init_radicals_from_rkyv(bytes: &[u8]) -> Result<(), OrigaError> {
     let archived =
         rkyv::access::<ArchivedRadicalData, rkyv::rancor::Error>(bytes).map_err(|e| {
             OrigaError::KradfileError {
-                reason: format!("Failed to access archived radicals: {}", e),
+                reason: format!("Failed to validate radicals data: {:?}", e),
             }
         })?;
 

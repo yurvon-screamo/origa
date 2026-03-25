@@ -49,9 +49,17 @@ pub struct VocabularyDatabaseData {
 impl From<&VocabularyDatabase> for VocabularyDatabaseData {
     fn from(db: &VocabularyDatabase) -> Self {
         Self {
-            entries: db.vocabulary_map.iter().map(|(word, info)| {
-                (word.clone(), info.russian_translation.clone(), info.english_translation.clone())
-            }).collect(),
+            entries: db
+                .vocabulary_map
+                .iter()
+                .map(|(word, info)| {
+                    (
+                        word.clone(),
+                        info.russian_translation.clone(),
+                        info.english_translation.clone(),
+                    )
+                })
+                .collect(),
         }
     }
 }
@@ -59,9 +67,20 @@ impl From<&VocabularyDatabase> for VocabularyDatabaseData {
 impl From<VocabularyDatabaseData> for VocabularyDatabase {
     fn from(data: VocabularyDatabaseData) -> Self {
         Self {
-            vocabulary_map: data.entries.into_iter().map(|(word, ru, en)| {
-                (word.clone(), VocabularyInfo { word, russian_translation: ru, english_translation: en })
-            }).collect(),
+            vocabulary_map: data
+                .entries
+                .into_iter()
+                .map(|(word, ru, en)| {
+                    (
+                        word.clone(),
+                        VocabularyInfo {
+                            word,
+                            russian_translation: ru,
+                            english_translation: en,
+                        },
+                    )
+                })
+                .collect(),
         }
     }
 }
@@ -99,10 +118,11 @@ pub fn init_vocabulary(data: VocabularyChunkData) -> Result<(), OrigaError> {
 /// Serialize VocabularyDatabase to rkyv bytes
 pub fn serialize_vocabulary_to_rkyv(db: &VocabularyDatabase) -> Result<Vec<u8>, OrigaError> {
     let data = VocabularyDatabaseData::from(db);
-    let bytes = rkyv::to_bytes::<rkyv::rancor::Error>(&data)
-        .map_err(|e| OrigaError::VocabularyParseError {
+    let bytes = rkyv::to_bytes::<rkyv::rancor::Error>(&data).map_err(|e| {
+        OrigaError::VocabularyParseError {
             reason: format!("Failed to serialize vocabulary: {}", e),
-        })?;
+        }
+    })?;
     Ok(bytes.to_vec())
 }
 
@@ -110,23 +130,34 @@ pub fn serialize_vocabulary_to_rkyv(db: &VocabularyDatabase) -> Result<Vec<u8>, 
 pub fn init_vocabulary_from_rkyv(bytes: &[u8]) -> Result<(), OrigaError> {
     let start = std::time::Instant::now();
     tracing::info!("📖 Loading vocabulary from rkyv...");
-    
+
     let archived = rkyv::access::<ArchivedVocabularyDatabaseData, rkyv::rancor::Error>(bytes)
         .map_err(|e| OrigaError::VocabularyParseError {
-            reason: format!("Failed to access archived vocabulary: {}", e),
+            reason: format!("Failed to validate vocabulary data: {:?}", e),
         })?;
-    
-    tracing::info!("📖 Vocabulary accessed from rkyv ({:.2}s)", start.elapsed().as_secs_f64());
-    
+
+    tracing::info!(
+        "📖 Vocabulary accessed from rkyv ({:.2}s)",
+        start.elapsed().as_secs_f64()
+    );
+
     // Convert to owned VocabularyDatabaseData
     let data = VocabularyDatabaseData {
-        entries: archived.entries.iter().map(|e| {
-            (e.0.as_str().to_string(), e.1.as_str().to_string(), e.2.as_str().to_string())
-        }).collect(),
+        entries: archived
+            .entries
+            .iter()
+            .map(|e| {
+                (
+                    e.0.as_str().to_string(),
+                    e.1.as_str().to_string(),
+                    e.2.as_str().to_string(),
+                )
+            })
+            .collect(),
     };
-    
+
     let db = VocabularyDatabase::from(data);
-    
+
     VOCABULARY_DICTIONARY
         .set(db)
         .map_err(|_| OrigaError::VocabularyParseError {
