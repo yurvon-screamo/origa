@@ -73,7 +73,13 @@ impl AuthStore {
         let is_checking_session = self.is_checking_session;
         let is_oauth_loading = self.is_oauth_loading;
         let is_syncing = self.is_syncing;
-        Memo::new(move |_| is_checking_session.get() || is_oauth_loading.get() || is_syncing.get())
+        let is_data_loaded = self.is_data_loaded;
+        Memo::new(move |_| {
+            is_checking_session.get()
+                || is_oauth_loading.get()
+                || is_syncing.get()
+                || !is_data_loaded.get()
+        })
     }
 
     /// Get repository for use cases

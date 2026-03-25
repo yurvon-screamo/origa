@@ -1,2 +1,2 @@
-export * from './admin';
-export * from './auth.fixture';
+export * from "./admin";
+export * from "./auth.fixture";

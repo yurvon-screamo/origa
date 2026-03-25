@@ -1,50 +1,46 @@
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig, devices } from "@playwright/test";
 
 const isCI = !!process.env.CI;
 
 export default defineConfig({
-  testDir: './tests',
-  timeout: 60000,
-  expect: {
-    timeout: 10000,
-  },
-  fullyParallel: false,
-  forbidOnly: isCI,
-  retries: isCI ? 2 : 1,
-  workers: 1,
-  reporter: [['html']],
-  use: {
-    baseURL: 'http://localhost:1420',
-    trace: 'on-first-retry',
-    screenshot: 'only-on-failure',
-    video: 'retain-on-failure',
-  },
-  projects: [
-    {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+    testDir: "./tests",
+    timeout: 60000,
+    expect: {
+        timeout: 10000,
     },
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
+    fullyParallel: false,
+    forbidOnly: isCI,
+    retries: isCI ? 2 : 1,
+    workers: 16,
+    reporter: [["html"]],
+    use: {
+        baseURL: "http://localhost:1420",
+        trace: "on-first-retry",
+        screenshot: "only-on-failure",
+        video: "retain-on-failure",
     },
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
+    projects: [
+        {
+            name: "chromium",
+            use: { ...devices["Desktop Chrome"] },
+        },
+        {
+            name: "firefox",
+            use: { ...devices["Desktop Firefox"] },
+        },
+        // TODO: Tauri desktop project placeholder
+        // {
+        //   name: 'tauri-desktop',
+        //   use: { ...devices['Desktop Chrome'] },
+        // },
+    ],
+    webServer: {
+        command: "cd ../origa_ui && trunk serve",
+        url: "http://localhost:1420",
+        reuseExistingServer: !isCI,
+        timeout: 600000,
+        stdout: "pipe",
+        stderr: "pipe",
     },
-    // TODO: Tauri desktop project placeholder
-    // {
-    //   name: 'tauri-desktop',
-    //   use: { ...devices['Desktop Chrome'] },
-    // },
-  ],
-  webServer: {
-    command: 'cd ../origa_ui && trunk serve',
-    url: 'http://localhost:1420',
-    reuseExistingServer: !isCI,
-    timeout: 600000,
-    stdout: 'pipe',
-    stderr: 'pipe',
-  },
-  globalSetup: './global-setup.ts',
+    globalSetup: "./global-setup.ts",
 });

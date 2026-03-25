@@ -10,12 +10,6 @@ This directory contains end-to-end tests that verify the complete application fl
 - Core user workflows
 - Frontend-backend integration
 
-## Prerequisites
-
-- Node.js 18+ (LTS recommended)
-- npm or yarn
-- Playwright browsers
-
 ## Installation
 
 ```bash
@@ -99,7 +93,7 @@ end2end/
 - **`playwright.config.ts`** - Playwright configuration including:
   - Test directory: `./tests`
   - Base URL: `http://localhost:1420`
-  - Browser projects: Chromium, Firefox, WebKit
+  - Browser projects: Chromium, Firefox
   - Auto web server startup via `trunk serve`
 
 - **`global-setup.ts`** - Runs before all tests:
@@ -214,14 +208,12 @@ Tests run on three browsers by default:
 
 - **Chromium** - Desktop Chrome
 - **Firefox** - Desktop Firefox
-- **WebKit** - Desktop Safari (closest to iOS/macOS)
 
 Run specific browser:
 
 ```bash
 npx playwright test --project=chromium
 npx playwright test --project=firefox
-npx playwright test --project=webkit
 ```
 
 ## Troubleshooting
