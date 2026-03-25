@@ -252,3 +252,28 @@ Verify:
 - Check artifacts (traces, screenshots, videos) in test report
 - Ensure `playwright install --with-deps` runs before tests
 - Verify environment variables are set in CI configuration
+
+### Report viewing issues
+
+If you see an error like "Unsafe attempt to load URL <http://localhost:10485/> from frame with URL chrome-error://chromewebdata/. Domains, protocols and ports must match", this is a browser security issue with Playwright HTML reports loading in iframes.
+
+**Solutions:**
+
+1. **Use the updated report command** (recommended):
+
+   ```bash
+   npm run report
+   ```
+
+   This now uses `--host 0.0.0.0 --port 9323` to avoid iframe security issues.
+
+2. **Open report as file directly**:
+
+   ```bash
+   npm run report:file
+   ```
+
+   Opens the HTML report directly in your default browser.
+
+3. **Manual fix**:
+   If issues persist, try clearing browser cache or using a different browser.

@@ -63,6 +63,8 @@ cargo fmt
 
 ### E2E Testing
 
+> Для запуска e2e не нужно запускать вручную сервер, он запустится автоматически.
+
 ```bash
 # Установка (первичный запуск)
 cd end2end
@@ -89,13 +91,13 @@ cd end2end && npm test
 Скопировать `.env.example` в `.env` и настроить:
 
 - `TRAILBASE_URL` — URL TrailBase API (default: `https://origa.uwuwu.net`)
-- `ADMIN_EMAIL` — Email админа (default: `admin@localhost`)
+- `ADMIN_EMAIL` — Email админа
 - `ADMIN_PASSWORD` — Пароль админа (обязателен для создания пользователей)
 
-Тестовые пользователи (hardcoded):
+Тестовые пользователи:
 
-- `TEST_USER_EMAIL=e2e-test@origa.local`
-- `TEST_USER_PASSWORD=e2e-test-password-123`
+- end2end\.env
+- end2end\config.ts
 
 ## Code Style & Conventions
 

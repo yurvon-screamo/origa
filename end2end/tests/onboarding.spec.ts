@@ -14,6 +14,8 @@ import { testUser, trailBaseUrl } from "../config";
  * 6. Summary and import
  */
 
+test.describe.configure({ mode: 'serial' });
+
 test.describe("Onboarding Flow - N4 with ~50% Progress", () => {
     let page: Page;
     let loginPage: LoginPage;
@@ -32,7 +34,17 @@ test.describe("Onboarding Flow - N4 with ~50% Progress", () => {
 
         // Login with test user
         await loginPage.goto();
-        await loginPage.login(testUser.email, testUser.password);
+        const loginResult = await loginPage.login(testUser.email, testUser.password);
+
+        if (!loginResult.success) {
+            console.error(`Login failed: ${loginResult.error}`);
+            // Take screenshot to see what happened
+            await page.screenshot({
+                path: "test-results/login-failed.png",
+                fullPage: true,
+            });
+            throw new Error(`Login failed: ${loginResult.error}`);
+        }
 
         // Wait for redirect after login
         await page.waitForURL(/\/(onboarding|home)$/, { timeout: 10000 });
