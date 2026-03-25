@@ -8,14 +8,15 @@ use crate::pages::login::oauth_listeners::{check_url_oauth_callback, setup_oauth
 use crate::routes::AppRoutes;
 use crate::store::auth_store::AuthStore;
 use crate::store::connectivity::ConnectivityStore;
-use crate::ui_components::ConnectivityBanner;
-use crate::ui_components::LoadingOverlay;
-use crate::ui_components::UpdateDrawer;
+use crate::ui_components::{ConnectivityBanner, LoadingOverlay, ToastContainer, ToastData, ToastType, UpdateDrawer};
+
+const DICT_TOAST_ID: usize = 9999;
 
 #[component]
 pub fn App() -> impl IntoView {
     let auth_store = AuthStore::new();
     let connectivity = ConnectivityStore::new();
+    let toasts: RwSignal<Vec<ToastData>> = RwSignal::new(Vec::new());
 
     provide_context(auth_store.repository().clone());
     provide_context(auth_store.clone());
@@ -52,8 +53,9 @@ pub fn App() -> impl IntoView {
     });
 
     let auth_store_for_init = auth_store.clone();
+    let toasts_for_init = toasts;
     spawn_local(async move {
-        init_dictionary(auth_store_for_init).await;
+        init_dictionary(auth_store_for_init, toasts_for_init).await;
     });
 
     let auth_store_for_loading = auth_store.clone();
@@ -70,6 +72,7 @@ pub fn App() -> impl IntoView {
                 download_progress=Signal::from(download_progress)
             />
         })}
+        <ToastContainer toasts=toasts duration_ms=5000 />
         <Show when=move || auth_store_for_loading.is_loading().get()>
             {move || {
                 let message = if auth_store_for_oauth.is_oauth_loading.get() {
@@ -86,28 +89,81 @@ pub fn App() -> impl IntoView {
     }
 }
 
-async fn init_dictionary(auth_store: AuthStore) {
+async fn init_dictionary(auth_store: AuthStore, toasts: RwSignal<Vec<ToastData>>) {
     let start = now_ms();
     info!("🚀 Starting application data initialization...");
 
+    // Load basic data first (fast, ~4s)
     let dict_start = now_ms();
-    let (dict_result, data_result) = futures::join!(load_dictionary(), load_all_data());
+    let data_result = load_all_data().await;
     let parallel_end = now_ms();
-    info!("⏱️ Parallel loading completed in {:.2}s", (parallel_end - dict_start) / 1000.0);
+    info!("⏱️ Basic data loading completed in {:.2}s", (parallel_end - dict_start) / 1000.0);
 
-    if let Err(e) = dict_result {
-        error!("Failed to load dictionary: {}", e);
-    } else {
-        info!("✅ Unidic dictionary loaded ({:.2}s)", (parallel_end - dict_start) / 1000.0);
-    }
     if let Err(e) = data_result {
         error!("Failed to load data: {:?}", e);
     } else {
-        info!("✅ All data loaded ({:.2}s)", (parallel_end - dict_start) / 1000.0);
+        info!("✅ All basic data loaded ({:.2}s)", (parallel_end - dict_start) / 1000.0);
     }
 
+    // Mark data as loaded so UI can show immediately
     auth_store.set_data_loaded();
-    info!("🎉 Application initialization completed in {:.2}s", (now_ms() - start) / 1000.0);
+    info!("🎉 App ready ({:.2}s)", (now_ms() - start) / 1000.0);
+
+    // Load dictionary in background (slow, ~17s)
+    init_background_dictionary(auth_store, toasts);
+}
+
+fn init_background_dictionary(auth_store: AuthStore, toasts: RwSignal<Vec<ToastData>>) {
+    spawn_local(async move {
+        // Show loading toast
+        toasts.update(|t| {
+            t.push(ToastData {
+                id: DICT_TOAST_ID,
+                title: "Загрузка словаря".to_string(),
+                message: "Загружаем словарь токенизации...".to_string(),
+                toast_type: ToastType::Info,
+                duration_ms: None,
+            });
+        });
+
+        let start = now_ms();
+        info!("📖 Loading dictionary in background...");
+
+        match load_dictionary().await {
+            Ok(()) => {
+                let elapsed = (now_ms() - start) / 1000.0;
+                info!("✅ Dictionary loaded in background ({:.2}s)", elapsed);
+                auth_store.set_dictionary_loaded();
+
+                // Update toast to success
+                toasts.update(|t| {
+                    t.retain(|toast| toast.id != DICT_TOAST_ID);
+                    t.push(ToastData {
+                        id: DICT_TOAST_ID,
+                        title: "Словарь загружен".to_string(),
+                        message: format!("Готово к работе ({:.1}с)", elapsed),
+                        toast_type: ToastType::Success,
+                        duration_ms: Some(3000),
+                    });
+                });
+            }
+            Err(e) => {
+                error!("Failed to load dictionary: {}", e);
+
+                // Update toast to error
+                toasts.update(|t| {
+                    t.retain(|toast| toast.id != DICT_TOAST_ID);
+                    t.push(ToastData {
+                        id: DICT_TOAST_ID,
+                        title: "Ошибка загрузки".to_string(),
+                        message: "Не удалось загрузить словарь токенизации".to_string(),
+                        toast_type: ToastType::Error,
+                        duration_ms: Some(5000),
+                    });
+                });
+            }
+        }
+    });
 }
 
 fn now_ms() -> f64 {
