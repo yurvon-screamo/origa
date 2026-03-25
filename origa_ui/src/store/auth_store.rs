@@ -185,6 +185,7 @@ impl AuthStore {
     }
 
     /// Mark data as loaded (dictionary, etc.)
+    #[allow(dead_code)]
     pub fn set_data_loaded(&self) {
         self.is_data_loaded.set(true);
     }
