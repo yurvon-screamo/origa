@@ -1,33 +1,69 @@
+use crate::loaders::{
+    data_loader::{load_grammar, load_kanji, load_radical, load_vocabulary},
+    dictionary::load_dictionary,
+    jlpt_content_loader::load_jlpt_content,
+};
 use crate::pages::{
     Grammar, Home, Kanji, Lesson, Login, Onboarding, Profile, Radicals, Sets, Words,
 };
 use crate::store::auth_store::AuthStore;
 use leptos::prelude::*;
+use leptos::task::spawn_local;
 use leptos_router::components::*;
 use leptos_router::hooks::use_navigate;
 use leptos_router::path;
+use std::sync::OnceLock;
+
+static DICTIONARY_LOADING: OnceLock<RwSignal<bool>> = OnceLock::new();
+static PROGRESS_MESSAGE: OnceLock<RwSignal<String>> = OnceLock::new();
+
+fn is_dictionary_loading() -> RwSignal<bool> {
+    *DICTIONARY_LOADING.get_or_init(|| RwSignal::new(false))
+}
+
+fn progress_message() -> RwSignal<String> {
+    *PROGRESS_MESSAGE.get_or_init(|| RwSignal::new(String::new()))
+}
+
+pub fn start_dictionary_loading(auth_store: AuthStore) {
+    let loading = is_dictionary_loading();
+    let progress = progress_message();
+
+    loading.set(true);
+    progress.set("Загрузка данных...".to_string());
+
+    spawn_local(async move {
+        let _ = load_vocabulary().await;
+        let _ = load_kanji().await;
+        let _ = load_radical().await;
+        let _ = load_grammar().await;
+        let _ = load_jlpt_content().await;
+        let _ = load_dictionary().await;
+
+        auth_store.set_dictionary_loaded();
+        loading.set(false);
+        progress.set(String::new());
+    });
+}
 
 #[component]
 pub fn ProtectedRoute(children: ChildrenFn) -> impl IntoView {
     let auth_store = use_context::<AuthStore>().expect("AuthStore not provided");
-    let navigate = use_navigate();
+    let _navigate = use_navigate();
 
     let is_authenticated = auth_store.is_authenticated();
     let is_checking = auth_store.is_checking_session;
+    let is_loading = is_dictionary_loading();
+    let progress = progress_message();
 
-    {
+    Effect::new({
         let auth_store = auth_store.clone();
-        Effect::new(move |_| {
-            if is_checking.get() {
-                return;
+        move |_| {
+            if !is_checking.get() && is_authenticated.get() && !auth_store.is_dictionary_loaded.get() {
+                start_dictionary_loading(auth_store.clone());
             }
-
-            if !is_authenticated.get() {
-                auth_store.handle_session_expiry();
-                navigate("/login", Default::default());
-            }
-        });
-    }
+        }
+    });
 
     move || {
         if auth_store.is_loading().get() {
@@ -37,6 +73,15 @@ pub fn ProtectedRoute(children: ChildrenFn) -> impl IntoView {
                 </div>
             }
             .into_any()
+        } else if is_loading.get() {
+            view! {
+                <div class="fixed inset-0 z-[9999] flex items-center justify-center bg-[var(--bg-primary)]">
+                    <div class="text-center">
+                        <div class="animate-spin w-12 h-12 border-4 border-[var(--border)] border-t-[var(--accent)] rounded-full mx-auto mb-4"></div>
+                        <p class="text-[var(--text-secondary)]">{move || progress.get()}</p>
+                    </div>
+                </div>
+            }.into_any()
         } else if is_authenticated.get() {
             children().into_any()
         } else {

@@ -53,6 +53,7 @@ mod typography;
 mod update_drawer;
 
 pub use alert::{Alert, AlertType};
+#[allow(unused_imports)]
 pub use app_skeleton::AppSkeleton;
 pub use audio_buttons::AudioButtons;
 pub use avatar::Avatar;
