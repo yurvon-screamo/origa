@@ -40,7 +40,12 @@ fn format_set_count(count: usize) -> String {
 }
 
 #[component]
-pub fn SummaryStep() -> impl IntoView {
+pub fn SummaryStep(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoView {
+    let test_id_val = move || {
+        let val = test_id.get();
+        if val.is_empty() { None } else { Some(val) }
+    };
+
     let state =
         use_context::<RwSignal<OnboardingState>>().expect("OnboardingState context not found");
 
@@ -88,13 +93,13 @@ pub fn SummaryStep() -> impl IntoView {
     });
 
     view! {
-        <div class="summary-step">
+        <div class="summary-step" data-testid=test_id_val>
             <div class="text-center mb-6">
-                <Text size=TextSize::Large variant=TypographyVariant::Primary>
+                <Text size=TextSize::Large variant=TypographyVariant::Primary test_id=Signal::derive(|| "summary-step-title".to_string())>
                     "Готово к импорту"
                 </Text>
                 <div class="mt-2">
-                    <Text size=TextSize::Default variant=TypographyVariant::Muted>
+                    <Text size=TextSize::Default variant=TypographyVariant::Muted test_id=Signal::derive(|| "summary-step-stats".to_string())>
                         {move || {
                             let count = total_count.get();
                             let word_count = total_word_count.get();
@@ -110,6 +115,9 @@ pub fn SummaryStep() -> impl IntoView {
                     key=|t| t.clone()
                     children=move |set_type| {
                         let set_type_for_signal = set_type.clone();
+                        let set_type_for_id_1 = set_type.clone();
+                        let set_type_for_id_2 = set_type.clone();
+                        let set_type_for_id_3 = set_type.clone();
                         let sets_for_type: Signal<Vec<WellKnownSetMeta>> = Signal::derive(
                             move || sets_by_type.get().get(&set_type_for_signal).cloned().unwrap_or_default(),
                         );
@@ -131,15 +139,15 @@ pub fn SummaryStep() -> impl IntoView {
                                     on:click=move |_| is_expanded.update(|v| *v = !*v)
                                 >
                                     <div class="flex items-center gap-2">
-                                        <Text size=TextSize::Default variant=TypographyVariant::Primary>
+                                        <Text size=TextSize::Default variant=TypographyVariant::Primary test_id=Signal::derive(move || format!("summary-step-type-{}", set_type_for_id_1.clone()))>
                                             {type_label}
                                         </Text>
-                                        <Text size=TextSize::Small variant=TypographyVariant::Muted>
+                                        <Text size=TextSize::Small variant=TypographyVariant::Muted test_id=Signal::derive(move || format!("summary-step-type-count-{}", set_type_for_id_2.clone()))>
                                             {move || format!("({})", format_set_count(type_set_count.get()))}
                                         </Text>
                                     </div>
                                     <div class="flex items-center gap-3">
-                                        <Text size=TextSize::Small variant=TypographyVariant::Muted>
+                                        <Text size=TextSize::Small variant=TypographyVariant::Muted test_id=Signal::derive(move || format!("summary-step-words-{}", set_type_for_id_3.clone()))>
                                             {move || format_word_count(type_word_count.get())}
                                         </Text>
                                         <div class="accordion-icon"></div>
@@ -162,12 +170,17 @@ pub fn SummaryStep() -> impl IntoView {
                                             each=move || sets_for_type.get()
                                             key=|s| s.id.clone()
                                             children=move |set_meta| {
-                                                let set_id = set_meta.id.clone();
-                                                let set_id_for_cb = set_id.clone();
+                                                let set_meta_id = set_meta.id.clone();
+                                                let set_id_for_cb = set_meta_id.clone();
+                                                let set_id_for_memo = set_meta_id.clone();
                                                 let set_title = set_meta.title_ru.clone();
                                                 let word_count = set_meta.word_count;
                                                 let is_excluded =
-                                                    Memo::new(move |_| excluded_sets.get().contains(&set_id));
+                                                    Memo::new(move |_| excluded_sets.get().contains(&set_id_for_memo));
+                                                let set_test_id = format!("summary-step-set-{}", set_meta_id);
+                                                let set_test_id_1 = set_test_id.clone();
+                                                let set_test_id_2 = set_test_id.clone();
+                                                let set_test_id_3 = set_test_id.clone();
 
                                                 view! {
                                                     <div class="checkbox-container py-2">
@@ -177,13 +190,14 @@ pub fn SummaryStep() -> impl IntoView {
                                                             on_change=Callback::new(move |()| {
                                                                 toggle_set.run(set_id_for_cb.clone());
                                                             })
+                                                            test_id=Signal::derive(move || format!("{}-checkbox", set_test_id_1.clone()))
                                                         />
                                                         <span class="flex-1">
-                                                            <Text size=TextSize::Small variant=TypographyVariant::Primary>
+                                                            <Text size=TextSize::Small variant=TypographyVariant::Primary test_id=Signal::derive(move || format!("{}-title", set_test_id_2.clone()))>
                                                                 {set_title}
                                                             </Text>
                                                         </span>
-                                                        <Text size=TextSize::Small variant=TypographyVariant::Muted>
+                                                        <Text size=TextSize::Small variant=TypographyVariant::Muted test_id=Signal::derive(move || format!("{}-words", set_test_id_3.clone()))>
                                                             {format_word_count(word_count)}
                                                         </Text>
                                                     </div>
@@ -200,11 +214,11 @@ pub fn SummaryStep() -> impl IntoView {
 
             <Show when=move || total_count.get() == 0>
                 <div class="text-center py-8">
-                    <Text size=TextSize::Default variant=TypographyVariant::Muted>
+                    <Text size=TextSize::Default variant=TypographyVariant::Muted test_id=Signal::derive(|| "summary-step-empty".to_string())>
                         "Ничего не выбрано для импорта"
                     </Text>
                     <div class="mt-2">
-                        <Text size=TextSize::Small variant=TypographyVariant::Muted>
+                        <Text size=TextSize::Small variant=TypographyVariant::Muted test_id=Signal::derive(|| "summary-step-empty-hint".to_string())>
                             "Вернитесь на предыдущие шаги, чтобы выбрать наборы"
                         </Text>
                     </div>

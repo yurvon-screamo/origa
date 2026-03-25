@@ -4,7 +4,14 @@ use origa::domain::{CategoryProgress, JapaneseLevel, JlptProgress, LevelProgress
 use crate::ui_components::{Heading, HeadingLevel, Text, TextSize, TypographyVariant};
 
 #[component]
-pub fn JlptProgressCard(jlpt_progress: Signal<JlptProgress>) -> impl IntoView {
+pub fn JlptProgressCard(
+    jlpt_progress: Signal<JlptProgress>,
+    #[prop(optional, into)] test_id: Signal<String>,
+) -> impl IntoView {
+    let test_id_val = move || {
+        let val = test_id.get();
+        if val.is_empty() { None } else { Some(val) }
+    };
     let current_level = Signal::derive(move || jlpt_progress.get().current_level());
     let level_detail = Signal::derive(move || {
         let level = jlpt_progress.get().current_level();
@@ -19,15 +26,28 @@ pub fn JlptProgressCard(jlpt_progress: Signal<JlptProgress>) -> impl IntoView {
     });
 
     view! {
-        <div class="p-6 mb-6 bg-[var(--bg-paper)] border border-[var(--border-dark)]">
+        <div
+            class="p-6 mb-6 bg-[var(--bg-paper)] border border-[var(--border-dark)]"
+            data-testid=test_id_val
+        >
             <Heading
+                test_id=Signal::derive(move || {
+                    let val = test_id.get();
+                    if val.is_empty() { "jlpt-title".to_string() } else { format!("{}-title", val) }
+                })
                 level=Signal::from(HeadingLevel::H2)
                 variant=Signal::from(TypographyVariant::Primary)
             >
                 {move || format!("JLPT {}", current_level.get().code())}
             </Heading>
 
-            <div class="mt-4">
+            <div
+                class="mt-4"
+                data-testid=move || {
+                    let val = test_id.get();
+                    if val.is_empty() { None } else { Some(format!("{}-progress", val)) }
+                }
+            >
                 <div class="flex justify-between mb-2">
                     <Text
                         size=Signal::from(TextSize::Default)
@@ -48,21 +68,34 @@ pub fn JlptProgressCard(jlpt_progress: Signal<JlptProgress>) -> impl IntoView {
             </div>
 
             <div class="mt-6">
-                <CategoryProgressSection detail=level_detail />
+                <CategoryProgressSection
+                    test_id=Signal::derive(move || {
+                        let val = test_id.get();
+                        if val.is_empty() { "jlpt-categories".to_string() } else { format!("{}-categories", val) }
+                    })
+                    detail=level_detail
+                />
             </div>
         </div>
     }
 }
 
 #[component]
-fn CategoryProgressSection(detail: Signal<Option<LevelProgressDetail>>) -> impl IntoView {
+fn CategoryProgressSection(
+    detail: Signal<Option<LevelProgressDetail>>,
+    #[prop(optional, into)] test_id: Signal<String>,
+) -> impl IntoView {
+    let test_id_val = move || {
+        let val = test_id.get();
+        if val.is_empty() { None } else { Some(val) }
+    };
     let is_expanded = RwSignal::new(false);
     let kanji = Signal::derive(move || detail.get().map(|d| d.kanji.clone()));
     let words = Signal::derive(move || detail.get().map(|d| d.words.clone()));
     let grammar = Signal::derive(move || detail.get().map(|d| d.grammar.clone()));
 
     view! {
-        <div>
+        <div data-testid=test_id_val>
             <div
                 class="flex items-center justify-between cursor-pointer select-none"
                 on:click=move |_| is_expanded.update(|v| *v = !*v)
@@ -78,13 +111,34 @@ fn CategoryProgressSection(detail: Signal<Option<LevelProgressDetail>>) -> impl 
             <Show when=move || is_expanded.get()>
                 <div class="mt-3 space-y-3">
                     <Show when=move || kanji.get().is_some()>
-                        <CategoryProgressBar name="Кандзи" progress=Signal::derive(move || kanji.get().unwrap()) />
+                        <CategoryProgressBar
+                            test_id=Signal::derive(move || {
+                                let val = test_id.get();
+                                if val.is_empty() { "jlpt-kanji".to_string() } else { format!("{}-kanji", val) }
+                            })
+                            name="Кандзи"
+                            progress=Signal::derive(move || kanji.get().unwrap())
+                        />
                     </Show>
                     <Show when=move || words.get().is_some()>
-                        <CategoryProgressBar name="Слова" progress=Signal::derive(move || words.get().unwrap()) />
+                        <CategoryProgressBar
+                            test_id=Signal::derive(move || {
+                                let val = test_id.get();
+                                if val.is_empty() { "jlpt-words".to_string() } else { format!("{}-words", val) }
+                            })
+                            name="Слова"
+                            progress=Signal::derive(move || words.get().unwrap())
+                        />
                     </Show>
                     <Show when=move || grammar.get().is_some()>
-                        <CategoryProgressBar name="Грамматика" progress=Signal::derive(move || grammar.get().unwrap()) />
+                        <CategoryProgressBar
+                            test_id=Signal::derive(move || {
+                                let val = test_id.get();
+                                if val.is_empty() { "jlpt-grammar".to_string() } else { format!("{}-grammar", val) }
+                            })
+                            name="Грамматика"
+                            progress=Signal::derive(move || grammar.get().unwrap())
+                        />
                     </Show>
                 </div>
             </Show>
@@ -93,12 +147,20 @@ fn CategoryProgressSection(detail: Signal<Option<LevelProgressDetail>>) -> impl 
 }
 
 #[component]
-fn CategoryProgressBar(name: &'static str, progress: Signal<CategoryProgress>) -> impl IntoView {
+fn CategoryProgressBar(
+    name: &'static str,
+    progress: Signal<CategoryProgress>,
+    #[prop(optional, into)] test_id: Signal<String>,
+) -> impl IntoView {
+    let test_id_val = move || {
+        let val = test_id.get();
+        if val.is_empty() { None } else { Some(val) }
+    };
     let pct = Signal::derive(move || progress.get().percentage());
     let size = Signal::from(TextSize::Small);
 
     view! {
-        <div class="category-progress">
+        <div class="category-progress" data-testid=test_id_val>
             <div class="flex justify-between mb-1">
                 <Text size=size>{name}</Text>
                 <Text size=size>

@@ -182,12 +182,12 @@ pub fn Onboarding() -> impl IntoView {
     let can_proceed = Memo::new(move |_| state.get().can_proceed());
 
     view! {
-        <PageLayout variant=PageLayoutVariant::Full>
-            <CardLayout size=CardLayoutSize::Adaptive class="px-4 py-8">
+        <PageLayout variant=PageLayoutVariant::Full test_id="onboarding-page">
+            <CardLayout size=CardLayoutSize::Adaptive class="px-4 py-8" test_id="onboarding-card">
                 <Show when=move || is_loading.get()>
                     <div class="flex flex-col items-center py-8 gap-4">
-                        <Spinner />
-                        <Text size=TextSize::Small variant=TypographyVariant::Muted>
+                        <Spinner test_id="onboarding-spinner" />
+                        <Text size=TextSize::Small variant=TypographyVariant::Muted test_id=Signal::derive(|| "onboarding-loading-text".to_string())>
                             "Загрузка..."
                         </Text>
                     </div>
@@ -195,27 +195,27 @@ pub fn Onboarding() -> impl IntoView {
 
                 <Show when=move || !is_loading.get()>
                     <div class="onboarding-container">
-                        <Stepper steps=steps active=active_step />
+                        <Stepper steps=steps active=active_step test_id="onboarding-stepper" />
 
                         <div class="onboarding-content mt-8">
                             <Show when=move || matches!(state.get().current_step, OnboardingStep::Intro)>
-                                <IntroStep />
+                                <IntroStep test_id=Signal::derive(|| "onboarding-intro-step".to_string()) />
                             </Show>
 
                             <Show when=move || matches!(state.get().current_step, OnboardingStep::Jlpt)>
-                                <JlptStep />
+                                <JlptStep test_id=Signal::derive(|| "onboarding-jlpt-step".to_string()) />
                             </Show>
 
                             <Show when=move || matches!(state.get().current_step, OnboardingStep::Apps)>
-                                <AppsStep />
+                                <AppsStep test_id=Signal::derive(|| "onboarding-apps-step".to_string()) />
                             </Show>
 
                             <Show when=move || matches!(state.get().current_step, OnboardingStep::Progress)>
-                                <ProgressStep />
+                                <ProgressStep test_id=Signal::derive(|| "onboarding-progress-step".to_string()) />
                             </Show>
 
                             <Show when=move || matches!(state.get().current_step, OnboardingStep::Summary)>
-                                <SummaryStep />
+                                <SummaryStep test_id=Signal::derive(|| "onboarding-summary-step".to_string()) />
                             </Show>
                         </div>
 
@@ -226,6 +226,7 @@ pub fn Onboarding() -> impl IntoView {
                                     on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
                                         on_prev.run(());
                                     })
+                                    test_id="onboarding-prev"
                                 >
                                     "Назад"
                                 </Button>
@@ -238,6 +239,7 @@ pub fn Onboarding() -> impl IntoView {
                                         on_next.run(());
                                     })
                                     disabled=Signal::derive(move || !can_proceed.get())
+                                    test_id="onboarding-next"
                                 >
                                     "Далее"
                                 </Button>
@@ -250,6 +252,7 @@ pub fn Onboarding() -> impl IntoView {
                                         on_start_import.run(());
                                     })
                                     disabled=Signal::derive(move || is_importing.get() || !can_proceed.get())
+                                    test_id="onboarding-import"
                                 >
                                     {move || if is_importing.get() { "Импорт..." } else { "Начать импорт" }}
                                 </Button>

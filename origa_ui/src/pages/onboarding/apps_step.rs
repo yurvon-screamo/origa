@@ -81,7 +81,12 @@ fn get_available_app_ids(available_sets: &[WellKnownSetMeta]) -> HashSet<String>
 }
 
 #[component]
-pub fn AppsStep() -> impl IntoView {
+pub fn AppsStep(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoView {
+    let test_id_val = move || {
+        let val = test_id.get();
+        if val.is_empty() { None } else { Some(val) }
+    };
+
     let state =
         use_context::<RwSignal<OnboardingState>>().expect("OnboardingState context not found");
 
@@ -108,13 +113,13 @@ pub fn AppsStep() -> impl IntoView {
     });
 
     view! {
-        <div class="apps-step">
+        <div class="apps-step" data-testid=test_id_val>
             <div class="text-center mb-6">
-                <Text size=TextSize::Large variant=TypographyVariant::Primary>
+                <Text size=TextSize::Large variant=TypographyVariant::Primary test_id=Signal::derive(|| "apps-step-title".to_string())>
                     "Какие приложения вы используете?"
                 </Text>
                 <div class="mt-2">
-                    <Text size=TextSize::Small variant=TypographyVariant::Muted>
+                    <Text size=TextSize::Small variant=TypographyVariant::Muted test_id=Signal::derive(|| "apps-step-subtitle".to_string())>
                         "Выберите приложения, в которых вы уже изучали японский. Мы импортируем ваш прогресс."
                     </Text>
                 </div>
@@ -134,6 +139,12 @@ pub fn AppsStep() -> impl IntoView {
                         let app_icon = app.icon;
                         let is_selected = Memo::new(move |_| state.get().selected_apps.contains(&app_id_for_selected));
 
+                        let app_test_id = format!("apps-step-app-{}", app_id);
+                        let app_test_id_for_card = app_test_id.clone();
+                        let app_test_id_for_name = app_test_id.clone();
+                        let app_test_id_for_desc = app_test_id.clone();
+                        let app_test_id_for_checkbox = app_test_id.clone();
+
                         view! {
                             <Card
                                 class=Signal::derive(move || {
@@ -144,6 +155,7 @@ pub fn AppsStep() -> impl IntoView {
                                         base.to_string()
                                     }
                                 })
+                                test_id=Signal::derive(move || app_test_id_for_card.clone())
                             >
                                 <div
                                     class="flex items-center gap-4 p-2"
@@ -153,10 +165,10 @@ pub fn AppsStep() -> impl IntoView {
                                 >
                                     <div class="text-3xl">{app_icon}</div>
                                     <div class="flex-1">
-                                        <Text size=TextSize::Default variant=TypographyVariant::Primary>
+                                        <Text size=TextSize::Default variant=TypographyVariant::Primary test_id=Signal::derive(move || format!("{}-name", app_test_id_for_name.clone()))>
                                             {app_name}
                                         </Text>
-                                        <Text size=TextSize::Small variant=TypographyVariant::Muted>
+                                        <Text size=TextSize::Small variant=TypographyVariant::Muted test_id=Signal::derive(move || format!("{}-desc", app_test_id_for_desc.clone()))>
                                             {app_desc}
                                         </Text>
                                     </div>
@@ -166,6 +178,7 @@ pub fn AppsStep() -> impl IntoView {
                                         on_change=Callback::new(move |()| {
                                             toggle_app.run(app_id_for_cb.clone());
                                         })
+                                        test_id=Signal::derive(move || format!("{}-checkbox", app_test_id_for_checkbox.clone()))
                                     />
                                 </div>
                             </Card>
@@ -176,7 +189,7 @@ pub fn AppsStep() -> impl IntoView {
 
             <Show when=move || state.get().selected_apps.is_empty()>
                 <div class="text-center mt-4">
-                    <Text size=TextSize::Small variant=TypographyVariant::Muted>
+                    <Text size=TextSize::Small variant=TypographyVariant::Muted test_id=Signal::derive(|| "apps-step-skip-hint".to_string())>
                         "Можно пропустить этот шаг, если вы не использовали другие приложения"
                     </Text>
                 </div>

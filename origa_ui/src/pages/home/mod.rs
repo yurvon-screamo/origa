@@ -66,10 +66,10 @@ pub fn Home() -> impl IntoView {
     });
 
     view! {
-        <PageLayout variant=PageLayoutVariant::Full>
+        <PageLayout variant=PageLayoutVariant::Full test_id="home-page">
             <Show when=move || is_checking_onboarding.get()>
-                <div class="flex flex-col items-center justify-center min-h-screen gap-4">
-                    <Spinner />
+                <div class="flex flex-col items-center justify-center min-h-screen gap-4" data-testid="home-loading">
+                    <Spinner test_id="home-spinner" />
                     <Text size=TextSize::Small variant=TypographyVariant::Muted>
                         "Загрузка..."
                     </Text>
@@ -77,9 +77,9 @@ pub fn Home() -> impl IntoView {
             </Show>
 
             <Show when=move || !is_checking_onboarding.get()>
-                <div class="flex flex-col pb-16">
-                    <HomeHeader current_user />
-                    <HomeContent />
+                <div class="flex flex-col pb-16" data-testid="home-content">
+                    <HomeHeader current_user test_id="home-header" />
+                    <HomeContent test_id="home-main" />
                 </div>
             </Show>
         </PageLayout>

@@ -133,9 +133,6 @@ default = true
 name = "clippy"
 mode = "comment"
 
-[[plugin]]
-name = "rustfmt"
-
 # ----- SECURITY SCANNING (HIGH PRIORITY) -----
 [[plugin]]
 name = "gitleaks"
