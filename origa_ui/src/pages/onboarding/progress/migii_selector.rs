@@ -16,22 +16,44 @@ pub fn MigiiProgressSelector(
     lessons_by_level: HashMap<JapaneseLevel, Vec<MigiiLesson>>,
     state: RwSignal<OnboardingState>,
 ) -> impl IntoView {
-    let selected_level = RwSignal::new(None::<JapaneseLevel>);
-    let selected_lesson = RwSignal::new(None::<usize>);
+    let selected_level_value = RwSignal::new("none".to_string());
+    let selected_lesson_value = RwSignal::new("none".to_string());
     let available_sets = Signal::derive(move || state.get().available_sets.clone());
 
     let level_items = build_level_items();
 
     let lessons_by_level_for_items = lessons_by_level.clone();
     let lesson_items = Signal::derive(move || {
-        build_lesson_items(&lessons_by_level_for_items, selected_level.get())
+        let level_str = selected_level_value.get();
+        let level = match level_str.as_str() {
+            "N5" => Some(JapaneseLevel::N5),
+            "N4" => Some(JapaneseLevel::N4),
+            "N3" => Some(JapaneseLevel::N3),
+            "N2" => Some(JapaneseLevel::N2),
+            "N1" => Some(JapaneseLevel::N1),
+            _ => None,
+        };
+        build_lesson_items(&lessons_by_level_for_items, level)
     });
 
     let import_info = Signal::derive(move || {
-        let level = selected_level.get();
-        let lesson = selected_lesson.get();
+        let level_str = selected_level_value.get();
+        let lesson_str = selected_lesson_value.get();
 
-        match (level, lesson) {
+        let level = match level_str.as_str() {
+            "N5" => Some(JapaneseLevel::N5),
+            "N4" => Some(JapaneseLevel::N4),
+            "N3" => Some(JapaneseLevel::N3),
+            "N2" => Some(JapaneseLevel::N2),
+            "N1" => Some(JapaneseLevel::N1),
+            _ => None,
+        };
+
+        let lesson_num = lesson_str
+            .strip_prefix("lesson_")
+            .and_then(|s| s.parse::<usize>().ok());
+
+        match (level, lesson_num) {
             (Some(lvl), Some(n)) => Some(format!(
                 "Будут импортированы: {} Уроки 1-{}",
                 level_to_str(lvl),
@@ -42,22 +64,39 @@ pub fn MigiiProgressSelector(
         }
     });
 
-    let lessons_by_level_for_effect = lessons_by_level.clone();
+    // Single Effect that handles both level and lesson selection
     Effect::new(move |_| {
-        let level = selected_level.get();
-        let lesson_num = selected_lesson.get();
-        let lessons_by = lessons_by_level_for_effect.clone();
-        let sets = available_sets.get();
+        let level_str = selected_level_value.get();
+        let lesson_str = selected_lesson_value.get();
+
+        let level = match level_str.as_str() {
+            "N5" => Some(JapaneseLevel::N5),
+            "N4" => Some(JapaneseLevel::N4),
+            "N3" => Some(JapaneseLevel::N3),
+            "N2" => Some(JapaneseLevel::N2),
+            "N1" => Some(JapaneseLevel::N1),
+            _ => None,
+        };
+
+        let lesson_num = lesson_str
+            .strip_prefix("lesson_")
+            .and_then(|s| s.parse::<usize>().ok());
 
         if let (Some(lvl), Some(lesson_n)) = (level, lesson_num)
-            && let Some(lessons) = lessons_by.get(&lvl)
+            && let Some(lessons) = lessons_by_level.get(&lvl)
         {
+            // Collect IDs to import - use iterator without cloning the whole map
             let ids_to_import = collect_lessons_to_import(lessons, lesson_n);
+
+            let lessons_by_ref = lessons_by_level.clone();
+            let sets = available_sets.get();
 
             state.update(|s| {
                 s.set_app_selection("Migii", &format!("{:?}_{}", lvl, lesson_n));
+                // Remove old Migii sets
                 s.sets_to_import
-                    .retain(|set| !is_lesson_in_levels(set.id.as_str(), &lessons_by));
+                    .retain(|set| !is_lesson_in_levels(set.id.as_str(), &lessons_by_ref));
+                // Add new sets
                 let sets_to_add: Vec<_> = sets
                     .iter()
                     .filter(|set_meta| ids_to_import.contains(&set_meta.id))
@@ -68,39 +107,6 @@ pub fn MigiiProgressSelector(
                 }
             });
         }
-    });
-
-    let selected_level_value = RwSignal::new(
-        selected_level
-            .get()
-            .map(|l| level_to_str(l).to_string())
-            .unwrap_or_else(|| "none".to_string()),
-    );
-    let selected_lesson_value = RwSignal::new(
-        selected_lesson
-            .get()
-            .map(|n| format!("lesson_{}", n))
-            .unwrap_or_else(|| "none".to_string()),
-    );
-
-    Effect::new(move |_| {
-        let val = selected_level_value.get();
-        selected_level.set(match val.as_str() {
-            "N5" => Some(JapaneseLevel::N5),
-            "N4" => Some(JapaneseLevel::N4),
-            "N3" => Some(JapaneseLevel::N3),
-            "N2" => Some(JapaneseLevel::N2),
-            "N1" => Some(JapaneseLevel::N1),
-            _ => None,
-        });
-    });
-
-    Effect::new(move |_| {
-        let val = selected_lesson_value.get();
-        selected_lesson.set(
-            val.strip_prefix("lesson_")
-                .and_then(|s| s.parse::<usize>().ok()),
-        );
     });
 
     view! {
@@ -116,27 +122,27 @@ pub fn MigiiProgressSelector(
                     </Text>
                     <div class="mt-2">
                         <Dropdown
-                            _options=Signal::derive(move || level_items.clone())
-                            _selected=selected_level_value
-                            _placeholder=Signal::derive(|| "Выберите уровень".to_string())
+                            options=Signal::derive(move || level_items.clone())
+                            selected=selected_level_value
+                            placeholder=Signal::derive(|| "Выберите уровень".to_string())
                             test_id=Signal::derive(|| "migii-level-dropdown".to_string())
                         />
                     </div>
                 </div>
 
-                <Show when=move || selected_level.get().is_some()>
+                <Show when=move || selected_level_value.get() != "none">
                     <div>
                         <Text size=TextSize::Small variant=TypographyVariant::Muted>
                             "Урок"
                         </Text>
-                    <div class="mt-2">
-                        <Dropdown
-                            _options=lesson_items
-                            _selected=selected_lesson_value
-                            _placeholder=Signal::derive(|| "Выберите урок".to_string())
-                            test_id=Signal::derive(|| "migii-lesson-dropdown".to_string())
-                        />
-                    </div>
+                        <div class="mt-2">
+                            <Dropdown
+                                options=lesson_items
+                                selected=selected_lesson_value
+                                placeholder=Signal::derive(|| "Выберите урок".to_string())
+                                test_id=Signal::derive(|| "migii-lesson-dropdown".to_string())
+                            />
+                        </div>
                     </div>
                 </Show>
 

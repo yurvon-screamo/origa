@@ -1,8 +1,4 @@
-// Этот пользователь создается автоматически на время запуска теста, после автоматически удаляется.
-export const testUser = {
-    email: "e2e-runner@origa.local",
-    password: "e2e-test-password-123",
-};
-
+// Test users are created dynamically via fixtures (see auth.fixture.ts)
+// Each test gets a unique user that is automatically cleaned up
 export const trailBaseUrl =
-    process.env.TRAILBASE_URL || "https://origa.uwuwu.net";
+	process.env.TRAILBASE_URL || "https://origa.uwuwu.net";

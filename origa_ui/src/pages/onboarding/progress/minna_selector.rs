@@ -11,7 +11,7 @@ pub fn MinnaProgressSelector(
     lessons: Vec<MinnaLesson>,
     state: RwSignal<OnboardingState>,
 ) -> impl IntoView {
-    let selected_lesson = RwSignal::new(None::<usize>);
+    let selected_lesson_value = RwSignal::new("none".to_string());
     let available_sets = Signal::derive(move || state.get().available_sets.clone());
 
     let lesson_items = {
@@ -29,30 +29,44 @@ pub fn MinnaProgressSelector(
     };
 
     let import_info = Signal::derive(move || {
-        selected_lesson
-            .get()
-            .map(|n| format!("Будут импортированы: Уроки 1-{}", n))
+        let val = selected_lesson_value.get();
+        if let Some(n) = val
+            .strip_prefix("lesson_")
+            .and_then(|s| s.parse::<usize>().ok())
+        {
+            Some(format!("Будут импортированы: Уроки 1-{}", n))
+        } else {
+            None
+        }
     });
 
-    let lessons_for_effect = lessons.clone();
+    // Clone app_id before the Effect to avoid ownership issues
     let app_id_for_effect = app_id.clone();
+
+    // Single Effect that handles lesson selection
     Effect::new(move |_| {
-        let lesson_num = selected_lesson.get();
-        let lessons_ref = lessons_for_effect.clone();
-        let sets = available_sets.get();
+        let val = selected_lesson_value.get();
+        let lesson_num = val
+            .strip_prefix("lesson_")
+            .and_then(|s| s.parse::<usize>().ok());
 
         if let Some(n) = lesson_num {
-            let ids_to_import: Vec<String> = lessons_ref
+            // Collect IDs to import - use iterator without cloning the whole vector
+            let ids_to_import: Vec<String> = lessons
                 .iter()
                 .filter(|l| l.lesson_number <= n)
                 .map(|l| l.id.clone())
                 .collect();
 
-            let aid = app_id_for_effect.clone();
+            let lessons_ref = lessons.clone();
+            let sets = available_sets.get();
+
             state.update(|s| {
-                s.set_app_selection(&aid, &format!("lesson_{}", n));
+                s.set_app_selection(&app_id_for_effect, &format!("lesson_{}", n));
+                // Remove old minna sets
                 s.sets_to_import
                     .retain(|set| !lessons_ref.iter().any(|l| l.id == set.id));
+                // Add new sets
                 let sets_to_add: Vec<_> = sets
                     .iter()
                     .filter(|set_meta| ids_to_import.contains(&set_meta.id))
@@ -63,21 +77,6 @@ pub fn MinnaProgressSelector(
                 }
             });
         }
-    });
-
-    let selected_lesson_value = RwSignal::new(
-        selected_lesson
-            .get()
-            .map(|n| format!("lesson_{}", n))
-            .unwrap_or_else(|| "none".to_string()),
-    );
-
-    Effect::new(move |_| {
-        let val = selected_lesson_value.get();
-        selected_lesson.set(
-            val.strip_prefix("lesson_")
-                .and_then(|s| s.parse::<usize>().ok()),
-        );
     });
 
     let title_for_view = title.clone();
@@ -93,10 +92,13 @@ pub fn MinnaProgressSelector(
                 </Text>
                 <div class="mt-2">
                     <Dropdown
-                        _options=Signal::derive(move || lesson_items.clone())
-                        _selected=selected_lesson_value
-                        _placeholder=Signal::derive(|| "Выберите урок".to_string())
-                        test_id=Signal::derive(move || format!("{}-lesson-dropdown", app_id.clone()))
+                        options=Signal::derive(move || lesson_items.clone())
+                        selected=selected_lesson_value
+                        placeholder=Signal::derive(|| "Выберите урок".to_string())
+                        test_id=Signal::derive({
+                            let app_id_for_dropdown = app_id.clone();
+                            move || format!("{}-lesson-dropdown", app_id_for_dropdown)
+                        })
                     />
                 </div>
             </div>
