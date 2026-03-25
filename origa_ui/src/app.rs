@@ -70,7 +70,6 @@ pub fn App() -> impl IntoView {
 
     view! {
         <ConnectivityBanner />
-
         // AppSkeleton блокирует UI пока словарь не загружен
         <Show when=move || !auth_store_for_dictionary.is_dictionary_loaded.get()>
             <AppSkeleton />
@@ -107,7 +106,7 @@ async fn init_dictionary(auth_store: AuthStore, toasts: RwSignal<Vec<ToastData>>
     info!("🚀 Starting application data initialization...");
 
     const PROGRESS_TOAST_ID: usize = 9998;
-    let total = 5;
+    let total = 6;
     let mut loaded_count = 0;
 
     let update_progress_toast = |count: usize, msg: &str| {
@@ -124,12 +123,14 @@ async fn init_dictionary(auth_store: AuthStore, toasts: RwSignal<Vec<ToastData>>
         });
     };
 
-    update_progress_toast(loaded_count + 1, "Загрузка словаря");
+    update_progress_toast(1, "Загрузка словаря");
     yield_to_browser().await;
+
     match load_vocabulary().await {
         Ok(()) => {
             loaded_count += 1;
             info!("✅ Vocabulary loaded");
+            update_progress_toast(loaded_count + 1, "Загрузка канджи");
         }
         Err(e) => {
             error!("Failed to load vocabulary: {:?}", e);
@@ -137,12 +138,11 @@ async fn init_dictionary(auth_store: AuthStore, toasts: RwSignal<Vec<ToastData>>
     }
     yield_to_browser().await;
 
-    update_progress_toast(loaded_count + 1, "Загрузка канджи");
-    yield_to_browser().await;
     match load_kanji().await {
         Ok(()) => {
             loaded_count += 1;
             info!("✅ Kanji loaded");
+            update_progress_toast(loaded_count + 1, "Загрузка радикалов");
         }
         Err(e) => {
             error!("Failed to load kanji: {:?}", e);
@@ -150,12 +150,11 @@ async fn init_dictionary(auth_store: AuthStore, toasts: RwSignal<Vec<ToastData>>
     }
     yield_to_browser().await;
 
-    update_progress_toast(loaded_count + 1, "Загрузка радикалов");
-    yield_to_browser().await;
     match load_radical().await {
         Ok(()) => {
             loaded_count += 1;
             info!("✅ Radicals loaded");
+            update_progress_toast(loaded_count + 1, "Загрузка грамматики");
         }
         Err(e) => {
             error!("Failed to load radicals: {:?}", e);
@@ -163,12 +162,11 @@ async fn init_dictionary(auth_store: AuthStore, toasts: RwSignal<Vec<ToastData>>
     }
     yield_to_browser().await;
 
-    update_progress_toast(loaded_count + 1, "Загрузка грамматики");
-    yield_to_browser().await;
     match load_grammar().await {
         Ok(()) => {
             loaded_count += 1;
             info!("✅ Grammar loaded");
+            update_progress_toast(loaded_count + 1, "Загрузка JLPT");
         }
         Err(e) => {
             error!("Failed to load grammar: {:?}", e);
@@ -176,12 +174,11 @@ async fn init_dictionary(auth_store: AuthStore, toasts: RwSignal<Vec<ToastData>>
     }
     yield_to_browser().await;
 
-    update_progress_toast(loaded_count + 1, "Загрузка JLPT");
-    yield_to_browser().await;
     match load_jlpt_content().await {
         Ok(()) => {
             loaded_count += 1;
             info!("✅ JLPT content loaded");
+            update_progress_toast(loaded_count + 1, "Загрузка словаря токенизации");
         }
         Err(e) => {
             error!("Failed to load JLPT content: {:?}", e);
@@ -199,9 +196,6 @@ async fn init_dictionary(auth_store: AuthStore, toasts: RwSignal<Vec<ToastData>>
     auth_store.set_data_loaded();
     info!("✅ Basic data loaded ({:.2}s)", (now_ms() - start) / 1000.0);
 
-    update_progress_toast(total, "Загрузка словаря токенизации");
-    yield_to_browser().await;
-
     match load_dictionary().await {
         Ok(()) => {
             let elapsed = (now_ms() - start) / 1000.0;
@@ -214,7 +208,6 @@ async fn init_dictionary(auth_store: AuthStore, toasts: RwSignal<Vec<ToastData>>
             show_error_toast(&toasts, "Не удалось загрузить словарь токенизации");
         }
     }
-    yield_to_browser().await;
 
     info!("🎉 App ready ({:.2}s)", (now_ms() - start) / 1000.0);
 }
