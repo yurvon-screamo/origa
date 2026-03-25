@@ -23,9 +23,15 @@ pub fn Footer(
     #[prop(optional, into)] _sections: Signal<Vec<FooterSection>>,
     #[prop(optional, into)] _description: Signal<String>,
     #[prop(optional, into)] _newsletter_placeholder: Signal<String>,
+    #[prop(optional, into)] test_id: Signal<String>,
 ) -> impl IntoView {
+    let test_id_val = move || {
+        let val = test_id.get();
+        if val.is_empty() { None } else { Some(val) }
+    };
+
     view! {
-        <footer class="footer py-16 mt-24">
+        <footer data-testid=test_id_val class="footer py-16 mt-24">
             <div class="w-full px-6">
                 <div class="grid md:grid-cols-4 gap-12 mb-12">
                     <div>

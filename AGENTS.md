@@ -309,6 +309,112 @@ cargo llvm-cov --workspace --html
 - ❌ Дублировать тестовые данные — выносить в fixtures
 - ❌ Тесты реализации вместо поведения — тестировать outcome, не implementation details
 
+## UI Components & E2E Testing
+
+### test_id Паттерн
+
+Все интерактивные UI компоненты ДОЛЖНЫ иметь `test_id` prop для e2e тестирования (Playwright).
+
+#### Стандартный паттерн:
+
+```rust
+#[component]
+pub fn Button(
+    #[prop(optional, into)] test_id: Signal<String>,
+    // ... другие props
+) -> impl IntoView {
+    let test_id_val = move || {
+        let val = test_id.get();
+        if val.is_empty() { None } else { Some(val) }
+    };
+
+    view! {
+        <button data-testid=test_id_val>
+            {children()}
+        </button>
+    }
+}
+```
+
+#### Использование в Playwright:
+
+```typescript
+// Page Object
+this.submitButton = page.getByTestId("login-submit");
+
+// Test
+await expect(page.getByTestId("email-input")).toBeVisible();
+await page.getByTestId("login-submit").click();
+```
+
+#### test_id для контейнеров с внутренними элементами:
+
+| Компонент | Контейнер | Внутренние элементы |
+|-----------|-----------|---------------------|
+| Modal | `${test_id}` | `${test_id}-close`, `${test_id}-backdrop` |
+| Drawer | `${test_id}` | `${test_id}-close`, `${test_id}-backdrop` |
+| Dropdown | `${test_id}` | `${test_id}-trigger`, `${test_id}-search`, `${test_id}-option-{value}` |
+| Pagination | `${test_id}` | `${test_id}-prev`, `${test_id}-next`, `${test_id}-page-{n}` |
+| Tabs | `${test_id}` | `${test_id}-{tab.id}` |
+| Stepper | `${test_id}` | `${test_id}-step-{idx}` |
+| Search | `${test_id}` | `${test_id}-input` |
+| Navbar | `${test_id}` | `${test_id}-signin`, `${test_id}-cart` |
+| Breadcrumbs | `${test_id}` | `${test_id}-item-{idx}` |
+| Card | `${test_id}` | — |
+| Table | `${test_id}` | `${test_id}-row-{row.id}` |
+| CardHistoryModal | `${test_id}` (Modal) | `${test_id}-chart` |
+| DeleteConfirmModal | `${test_id}` (Modal) | `${test_id}-cancel`, `${test_id}-confirm` |
+| UpdateDrawer | `${test_id}` | `${test_id}-update` (Button), `${test_id}-progress` |
+| ProgressBar | `${test_id}` | — |
+| LoadingStageItem | `${test_id}` | — |
+
+**Typography:**
+| Text | `${test_id}` | — |
+| Heading | `${test_id}` | — |
+| DisplayText | `${test_id}` | — |
+
+**Static Display:**
+| Avatar | `${test_id}` | — |
+| AvatarGroup | `${test_id}` | — |
+| Badge | `${test_id}` | — |
+| Divider | `${test_id}` | — |
+| Skeleton | `${test_id}` | — |
+| Stamp | `${test_id}` | — |
+| Tooltip | `${test_id}` | — |
+
+**Content:**
+| FuriganaText | `${test_id}` | — |
+| MarkdownText | `${test_id}` | — |
+| ReadingGroup | `${test_id}` | — |
+| LineChart | `${test_id}` | — |
+
+**Layout:**
+| PageLayout | `${test_id}` | — |
+| CardLayout | `${test_id}` | — |
+| Footer | `${test_id}` | — |
+| AppSkeleton | `${test_id}` | — |
+| LabelFrame | `${test_id}` | — |
+| Spinner | `${test_id}` | — |
+| LoadingOverlay | `${test_id}` | — |
+| KanjiAnimation | `${test_id}` | — |
+| KanjiWritingSection | `${test_id}` | — |
+
+#### Автогенерация test_id:
+
+Toast компонент использует `toast.id` для автогенерации (нет optional prop):
+- Toast container: `toast-{id}`
+- Close button: `toast-{id}-close`
+
+Breadcrumbs компонент автогенерирует `test_id` для каждого item на основе индекса:
+- Item container: `${test_id}-item-{idx}`
+
+Table компонент автогенерирует `test_id` для каждой row на основе row.id:
+- Row: `${test_id}-row-{row.id}`
+
+#### Компоненты БЕЗ test_id (не имеют view):
+
+- text_to_speech.rs — утилита для генерации речи, не имеет UI компонента
+
 ## Git Workflow
 
 Default branch - `master`

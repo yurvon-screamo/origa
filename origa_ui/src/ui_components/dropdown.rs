@@ -13,7 +13,40 @@ pub fn Dropdown(
     #[prop(optional, into)] _options: Signal<Vec<DropdownItem>>,
     _selected: RwSignal<String>,
     #[prop(optional, into)] _placeholder: Signal<String>,
+    #[prop(optional, into)] test_id: Signal<String>,
 ) -> impl IntoView {
+    let test_id_val = move || {
+        let val = test_id.get();
+        if val.is_empty() { None } else { Some(val) }
+    };
+
+    let trigger_test_id = move || {
+        let base = test_id.get();
+        if base.is_empty() {
+            None
+        } else {
+            Some(format!("{}-trigger", base))
+        }
+    };
+
+    let search_test_id = move || {
+        let base = test_id.get();
+        if base.is_empty() {
+            None
+        } else {
+            Some(format!("{}-search", base))
+        }
+    };
+
+    let option_test_id = move |value: &str| {
+        let base = test_id.get();
+        if base.is_empty() {
+            None
+        } else {
+            Some(format!("{}-option-{}", base, value))
+        }
+    };
+
     let is_open = RwSignal::new(false);
     let search_query = RwSignal::new(String::new());
     let dropdown_ref = NodeRef::<leptos::html::Div>::new();
@@ -106,10 +139,12 @@ pub fn Dropdown(
         <div
             class=move || format!("dropdown {}", if is_open.get() { "active" } else { "" })
             node_ref=dropdown_ref
+            data-testid=test_id_val
         >
             <button
                 class="dropdown-trigger"
                 type="button"
+                data-testid=trigger_test_id
                 on:click=toggle_dropdown
             >
                 {display_text}
@@ -120,6 +155,7 @@ pub fn Dropdown(
                         type="text"
                         placeholder="Поиск..."
                         node_ref=input_ref
+                        data-testid=search_test_id
                         on:input=on_search_input
                     />
                 </div>
@@ -129,9 +165,12 @@ pub fn Dropdown(
                         key=|item| item.value.clone()
                         children=move |item| {
                             let item_clone = item.clone();
+                            let item_value = item.value.clone();
+                            let opt_test_id = move || option_test_id(&item_value);
                             view! {
                                 <div
                                     class="dropdown-item"
+                                    data-testid=opt_test_id
                                     on:click=move |_| select_item(item_clone.clone())
                                 >
                                     {item.label}

@@ -44,7 +44,11 @@ fn add_animation_delays(svg_html: &str, stroke_time: f32) -> (String, usize) {
 }
 
 #[component]
-pub fn KanjiAnimation(kanji: String, #[prop(optional)] mode: KanjiViewMode) -> impl IntoView {
+pub fn KanjiAnimation(
+    kanji: String,
+    #[prop(optional)] mode: KanjiViewMode,
+    #[prop(optional, into)] test_id: Signal<String>,
+) -> impl IntoView {
     let (iteration, set_iteration) = signal(0);
 
     let encoded = urlencoding::encode(&kanji);
@@ -102,8 +106,13 @@ pub fn KanjiAnimation(kanji: String, #[prop(optional)] mode: KanjiViewMode) -> i
         }
     });
 
+    let test_id_val = move || {
+        let val = test_id.get();
+        if val.is_empty() { None } else { Some(val) }
+    };
+
     view! {
-        <div class={container_class}>
+        <div data-testid=test_id_val class={container_class}>
             <Suspense fallback=|| view! { <div class="kanji-loading">"Загрузка..."</div> }>
                 {move || {
                     if iteration.get() % 2 != 0 {
@@ -124,13 +133,23 @@ pub fn KanjiAnimation(kanji: String, #[prop(optional)] mode: KanjiViewMode) -> i
 }
 
 #[component]
-pub fn KanjiWritingSection(kanji: String, #[prop(optional)] mode: KanjiViewMode) -> impl IntoView {
+pub fn KanjiWritingSection(
+    kanji: String,
+    #[prop(optional)] mode: KanjiViewMode,
+    #[prop(optional, into)] test_id: Signal<String>,
+) -> impl IntoView {
+    let test_id_val = move || {
+        let val = test_id.get();
+        if val.is_empty() { None } else { Some(val) }
+    };
+
     view! {
-        <div class="kanji-writing-section">
+        <div data-testid=test_id_val class="kanji-writing-section">
             <div class="kanji-writing-grid">
                 <KanjiAnimation
                     kanji={kanji.clone()}
                     mode={mode}
+                    test_id="kanji-animation"
                 />
             </div>
         </div>

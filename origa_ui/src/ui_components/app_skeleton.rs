@@ -4,9 +4,16 @@ use leptos::prelude::*;
 /// Full-screen skeleton loading screen shown during app initialization
 /// Blocks UI until all critical data (vocabulary, kanji, radicals, grammar) is loaded
 #[component]
-pub fn AppSkeleton() -> impl IntoView {
+pub fn AppSkeleton(
+    #[prop(optional, into, default = "".to_string().into())] test_id: Signal<String>,
+) -> impl IntoView {
+    let test_id_val = move || {
+        let val = test_id.get();
+        if val.is_empty() { None } else { Some(val) }
+    };
+
     view! {
-        <div class="fixed inset-0 z-[9999] flex items-center justify-center bg-[#f7f4ee]">
+        <div data-testid=test_id_val class="fixed inset-0 z-[9999] flex items-center justify-center bg-[#f7f4ee]">
             <div class="w-full max-w-[800px] p-6">
                 // Header skeleton
                 <div class="mb-8">

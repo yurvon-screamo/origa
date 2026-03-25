@@ -89,6 +89,7 @@ pub fn MarkdownText(
     #[prop(optional, into)] variant: Signal<MarkdownVariant>,
     #[prop(optional, into)] class: Signal<String>,
     #[prop(optional, default = true)] furigana: bool,
+    #[prop(optional, into)] test_id: Signal<String>,
 ) -> impl IntoView {
     let html_content = Memo::new(move |_| {
         let rendered = render_markdown(&content.get());
@@ -99,15 +100,23 @@ pub fn MarkdownText(
         }
     });
 
+    let test_id_val = move || {
+        let val = test_id.get();
+        if val.is_empty() { None } else { Some(val) }
+    };
+
     view! {
-        <div class=move || {
-            let variant_class = match variant.get() {
-                MarkdownVariant::Default => "prose prose-sm",
-                MarkdownVariant::Compact => "prose prose-xs",
-                MarkdownVariant::Large => "prose prose-lg",
-            };
-            format!("markdown-text {} {}", variant_class, class.get())
-        }>
+        <div
+            class=move || {
+                let variant_class = match variant.get() {
+                    MarkdownVariant::Default => "prose prose-sm",
+                    MarkdownVariant::Compact => "prose prose-xs",
+                    MarkdownVariant::Large => "prose prose-lg",
+                };
+                format!("markdown-text {} {}", variant_class, class.get())
+            }
+            data-testid=test_id_val
+        >
             <div inner_html=move || html_content.get() />
         </div>
     }

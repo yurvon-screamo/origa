@@ -5,6 +5,7 @@ use leptos::prelude::*;
 #[component]
 pub fn CollapsibleDescription(
     #[prop(optional, default = true)] default_collapsed: bool,
+    #[prop(optional, into)] test_id: Signal<String>,
     children: Children,
 ) -> impl IntoView {
     let is_expanded = RwSignal::new(!default_collapsed);
@@ -18,8 +19,22 @@ pub fn CollapsibleDescription(
         }
     });
 
+    let test_id_val = move || {
+        let val = test_id.get();
+        if val.is_empty() { None } else { Some(val) }
+    };
+
+    let button_test_id = Signal::derive(move || {
+        let val = test_id.get();
+        if val.is_empty() {
+            String::new()
+        } else {
+            format!("{}-toggle", val)
+        }
+    });
+
     view! {
-        <div>
+        <div data-testid=test_id_val>
             <div
                 node_ref=content_ref
                 class=move || if is_expanded.get() { "" } else { "line-clamp-3" }
@@ -31,6 +46,7 @@ pub fn CollapsibleDescription(
                     <Button
                         variant=ButtonVariant::Ghost
                         size=ButtonSize::Small
+                        test_id=button_test_id
                         on_click=Callback::new(move |_: MouseEvent| {
                             is_expanded.update(|v| *v = !*v);
                         })

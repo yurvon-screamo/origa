@@ -5,12 +5,21 @@ use leptos::prelude::*;
 pub fn ReadingGroup(
     label: &'static str,
     readings: StoredValue<Option<Vec<String>>>,
+    #[prop(optional, into)] test_id: Signal<String>,
 ) -> impl IntoView {
     let readings_list = move || readings.get_value().unwrap_or_default();
 
+    let test_id_val = move || {
+        let val = test_id.get();
+        if val.is_empty() { None } else { Some(val) }
+    };
+
     view! {
         <Show when=move || readings.get_value().is_some()>
-            <div class="flex gap-4 items-start text-left">
+            <div
+                class="flex gap-4 items-start text-left"
+                data-testid=test_id_val
+            >
                 <div class="w-16 shrink-0 pt-1">
                     <Text size=TextSize::Default variant=TypographyVariant::Muted>
                         {label}
