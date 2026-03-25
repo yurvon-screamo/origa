@@ -207,31 +207,24 @@ impl AuthStore {
 
         match result {
             Ok(_) => {
-                if let Err(e) = self.repository.merge_current_user().await {
-                    tracing::error!("Failed to sync user after login: {:?}", e);
-                }
+                let session = get_session().ok_or_else(|| OrigaError::RepositoryError {
+                    reason: "Session not found after login".to_string(),
+                })?;
 
-                match self.repository.get_current_user().await {
-                    Ok(Some(user)) => {
+                match get_or_create_profile(self, &session.email).await {
+                    Ok(user) => {
                         self.user.set(Some(user));
-                    },
-                    Ok(None) => {
-                        let _ = self.repository.merge_current_user().await;
-                        if let Ok(Some(user)) = self.repository.get_current_user().await {
-                            self.user.set(Some(user));
-                        }
+                        self.is_syncing.set(false);
+                        Ok(())
                     },
                     Err(e) => {
                         self.is_syncing.set(false);
-                        return Err(OrigaError::NetworkError {
+                        Err(OrigaError::NetworkError {
                             url: "/api/auth/v1/login".to_string(),
-                            reason: format!("Failed to load user: {}", e),
-                        });
+                            reason: e,
+                        })
                     },
                 }
-
-                self.is_syncing.set(false);
-                Ok(())
             },
             Err(e) => {
                 self.is_syncing.set(false);
