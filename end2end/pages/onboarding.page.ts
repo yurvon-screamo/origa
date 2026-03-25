@@ -58,12 +58,12 @@ export class OnboardingPage extends BasePage {
 		this.nextButton = page.getByTestId("onboarding-next");
 		this.importButton = page.getByTestId("onboarding-import");
 
-		// Steps
-		this.introStep = page.getByTestId("intro-step");
-		this.jlptStep = page.getByTestId("jlpt-step");
-		this.appsStep = page.getByTestId("apps-step");
-		this.progressStep = page.getByTestId("progress-step");
-		this.summaryStep = page.getByTestId("summary-step");
+		// Steps (actual test IDs from mod.rs)
+		this.introStep = page.getByTestId("onboarding-intro-step");
+		this.jlptStep = page.getByTestId("onboarding-jlpt-step");
+		this.appsStep = page.getByTestId("onboarding-apps-step");
+		this.progressStep = page.getByTestId("onboarding-progress-step");
+		this.summaryStep = page.getByTestId("onboarding-summary-step");
 
 		// Intro step
 		this.introTitle = page.getByTestId("intro-title");
@@ -91,20 +91,32 @@ export class OnboardingPage extends BasePage {
 		await expect(this.onboardingCard).toBeVisible();
 	}
 
-	async selectJlptLevel(level: string): Promise<void> {
-		// level can be "N5", "N4", "N3", "N2", "N1", or "unknown"
-		const levelOption = this.page.locator(`text="${level}"`);
-		await levelOption.click();
+	async selectJlptLevel(level: "N5" | "N4" | "N3" | "N2" | "N1" | "unknown"): Promise<void> {
+		// JLPT options don't have test_ids, use text selector
+		await this.page.getByText(level, { exact: false }).first().click();
 	}
 
 	async toggleApp(appId: string): Promise<void> {
-		const appCheckbox = this.page.getByTestId(`apps-checkbox-${appId}`);
+		// Updated test ID pattern to match actual implementation
+		const appCheckbox = this.page.getByTestId(`apps-step-app-${appId}-checkbox`);
 		await appCheckbox.click();
 	}
 
 	async toggleSet(setId: string): Promise<void> {
-		const setCheckbox = this.page.getByTestId(`summary-checkbox-${setId}`);
+		// Updated test ID pattern to match actual implementation
+		const setCheckbox = this.page.getByTestId(`summary-step-set-${setId}-checkbox`);
 		await setCheckbox.click();
+	}
+
+	async isAppSelected(appId: string): Promise<boolean> {
+		const appCard = this.page.getByTestId(`apps-step-app-${appId}`);
+		const classAttribute = await appCard.getAttribute("class");
+		return classAttribute?.includes("selected") ?? false;
+	}
+
+	async getSelectedSetsCount(): Promise<string> {
+		const statsText = await this.page.getByTestId("summary-step-stats").textContent();
+		return statsText ?? "";
 	}
 
 	async goToNextStep(): Promise<void> {

@@ -1,2 +1,3 @@
 export * from "./admin";
-export * from "./auth.fixture";
+export { test } from "./auth.fixture";
+export { test as testWithOnboarding } from "./onboarding.fixture";

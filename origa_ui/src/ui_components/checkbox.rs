@@ -26,14 +26,20 @@ pub fn Checkbox(
                 type="checkbox"
                 checked=move || checkbox_checked.get()
                 disabled=move || checkbox_disabled.get()
-                on:change=move |_| {
+                on:change=move |ev| {
+                    // Prevent event bubbling to avoid double-toggle when inside clickable cards
+                    ev.stop_propagation();
                     if let Some(cb) = on_change {
                         cb.run(());
                     }
                 }
+                on:click=move |ev| {
+                    // Also stop click propagation
+                    ev.stop_propagation();
+                }
             />
             <span class="checkbox-box"></span>
-            <span>{move || checkbox_label.get()}</span>
+            <span class="sr-only">{move || checkbox_label.get()}</span>
         </label>
     }
 }

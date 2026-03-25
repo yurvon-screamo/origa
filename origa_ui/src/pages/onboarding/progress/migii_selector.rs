@@ -119,6 +119,7 @@ pub fn MigiiProgressSelector(
                             _options=Signal::derive(move || level_items.clone())
                             _selected=selected_level_value
                             _placeholder=Signal::derive(|| "Выберите уровень".to_string())
+                            test_id=Signal::derive(|| "migii-level-dropdown".to_string())
                         />
                     </div>
                 </div>
@@ -128,13 +129,14 @@ pub fn MigiiProgressSelector(
                         <Text size=TextSize::Small variant=TypographyVariant::Muted>
                             "Урок"
                         </Text>
-                        <div class="mt-2">
-                            <Dropdown
-                                _options=lesson_items
-                                _selected=selected_lesson_value
-                                _placeholder=Signal::derive(|| "Выберите урок".to_string())
-                            />
-                        </div>
+                    <div class="mt-2">
+                        <Dropdown
+                            _options=lesson_items
+                            _selected=selected_lesson_value
+                            _placeholder=Signal::derive(|| "Выберите урок".to_string())
+                            test_id=Signal::derive(|| "migii-lesson-dropdown".to_string())
+                        />
+                    </div>
                     </div>
                 </Show>
 
