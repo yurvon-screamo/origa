@@ -2,6 +2,7 @@ use std::io::Read;
 use flate2::read::DeflateDecoder;
 use origa::domain::{DictionaryData, OrigaError, init_dictionary, init_dictionary_from_rkyv, is_dictionary_loaded};
 use crate::repository::{get_cached_dictionary_rkyv, save_dictionary_to_cache_rkyv};
+use crate::utils::yield_to_browser;
 fn decompress(data: Vec<u8>) -> Result<Vec<u8>, OrigaError> {
     let mut decoder = DeflateDecoder::new(&data[..]);
     let mut decompressed = Vec::new();
@@ -67,6 +68,7 @@ pub async fn load_dictionary() -> Result<(), OrigaError> {
     match get_cached_dictionary_rkyv().await {
         Ok(Some(bytes)) => {
             tracing::info!("📖 Dictionary found in cache (rkyv), {} bytes", bytes.len());
+            yield_to_browser().await;
             init_dictionary_from_rkyv(&bytes)?;
             tracing::info!(
                 "📖 Dictionary loaded from rkyv cache ({:.2}s)",
@@ -83,6 +85,7 @@ pub async fn load_dictionary() -> Result<(), OrigaError> {
     }
     let data = load_dictionary_from_network().await?;
     let data_clone = data.clone();
+    yield_to_browser().await;
     init_dictionary(data)?;
     let cache_start = now_ms();
     if let Err(e) = save_dictionary_to_cache_rkyv(&data_clone).await {

@@ -1532,6 +1532,25 @@ input[type="submit"],
 	color: var(--fg-black);
 }
 
+.toast-progress {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.toast-progress .spinner {
+	width: 16px;
+	height: 16px;
+	border: 2px solid var(--fg-muted);
+	border-top-color: transparent;
+	border-radius: 50%;
+	animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+	to { transform: rotate(360deg); }
+}
+
 .quiz-option-neutral {
 	background: var(--bg-paper);
 	border-color: var(--border-dark);

@@ -35,6 +35,7 @@ pub fn HomeContent() -> impl IntoView {
                 title: "Синхронизация".to_string(),
                 message: "Синхронизация данных с сервером...".to_string(),
                 duration_ms: None,
+                closable: false,
             });
         });
 
@@ -49,6 +50,7 @@ pub fn HomeContent() -> impl IntoView {
                             title: "Синхронизация".to_string(),
                             message: "Данные успешно синхронизированы".to_string(),
                             duration_ms: None,
+                            closable: true,
                         });
                     });
                     set_last_sync_time(js_sys::Date::now() as u64 / 1000);
@@ -62,6 +64,7 @@ pub fn HomeContent() -> impl IntoView {
                             title: "Ошибка синхронизации".to_string(),
                             message: e.to_string(),
                             duration_ms: None,
+                            closable: true,
                         });
                     });
                 }

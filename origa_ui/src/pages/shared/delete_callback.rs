@@ -33,6 +33,7 @@ pub fn create_delete_callback(
                         title: "Ошибка удаления".to_string(),
                         message: e.to_string(),
                         duration_ms: None,
+                        closable: true,
                     });
                 }),
             }
