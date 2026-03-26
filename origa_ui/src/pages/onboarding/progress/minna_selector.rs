@@ -12,7 +12,6 @@ pub fn MinnaProgressSelector(
     state: RwSignal<OnboardingState>,
 ) -> impl IntoView {
     let selected_lesson = RwSignal::new("none".to_string());
-    let is_updating = RwSignal::new(false);
     let available_sets = Signal::derive(move || state.get().available_sets.clone());
 
     let lesson_items = Signal::derive(move || {
@@ -41,17 +40,10 @@ pub fn MinnaProgressSelector(
     Effect::new(move |_| {
         let val = selected_lesson.get();
 
-        // Защита от повторного запуска
-        if is_updating.get() {
-            web_sys::console::log_1(&"[Minna] Effect SKIPPED - already updating".into());
-            return;
-        }
-
         if val == "none" {
             return;
         }
 
-        is_updating.set(true);
         web_sys::console::log_1(&"[Minna] Effect START".into());
 
         let lesson_num = val
@@ -60,12 +52,11 @@ pub fn MinnaProgressSelector(
 
         if lesson_num.is_none() {
             web_sys::console::log_1(&"[Minna] lesson_num is None, returning".into());
-            is_updating.set(false);
             return;
         }
 
-        let lessons_snapshot: Vec<_> = lessons.get().clone();
-        let sets_snapshot: Vec<_> = available_sets.get().clone();
+        let lessons_snapshot: Vec<_> = lessons.get_untracked();
+        let sets_snapshot: Vec<_> = available_sets.get_untracked();
 
         if let Some(n) = lesson_num {
             web_sys::console::log_1(&format!("[Minna] Processing lesson_num: {}", n).into());
@@ -96,7 +87,6 @@ pub fn MinnaProgressSelector(
             });
         }
         web_sys::console::log_1(&"[Minna] Effect END".into());
-        is_updating.set(false);
     });
 
     let title_for_view = title.clone();

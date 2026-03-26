@@ -17,7 +17,6 @@ pub fn DuolingoProgressSelector(
 ) -> impl IntoView {
     let selected_module = RwSignal::new("none".to_string());
     let selected_unit = RwSignal::new("none".to_string());
-    let is_updating = RwSignal::new(false);
     let available_sets = Signal::derive(move || state.get().available_sets.clone());
 
     let module_items = Signal::derive(move || build_module_items(&modules.get()));
@@ -44,12 +43,6 @@ pub fn DuolingoProgressSelector(
     let app_id_for_effect = app_id.clone();
 
     Effect::new(move |_| {
-        // Защита от повторного запуска
-        if is_updating.get() {
-            web_sys::console::log_1(&"[Duolingo] Effect SKIPPED - already updating".into());
-            return;
-        }
-
         let module_num = parsed_module.get();
         let unit_num = selected_unit
             .get()
@@ -60,11 +53,10 @@ pub fn DuolingoProgressSelector(
             return;
         }
 
-        is_updating.set(true);
         web_sys::console::log_1(&"[Duolingo] Effect START".into());
 
-        let mods_snapshot: Vec<_> = modules.get().clone();
-        let sets_snapshot: Vec<_> = available_sets.get().clone();
+        let mods_snapshot: Vec<_> = modules.get_untracked();
+        let sets_snapshot: Vec<_> = available_sets.get_untracked();
 
         if let (Some(m), Some(u)) = (module_num, unit_num)
             && let Some(module) = mods_snapshot.iter().find(|mod_| mod_.module_number == m)
@@ -91,7 +83,6 @@ pub fn DuolingoProgressSelector(
             });
         }
         web_sys::console::log_1(&"[Duolingo] Effect END".into());
-        is_updating.set(false);
     });
 
     let app_label = if is_ru {

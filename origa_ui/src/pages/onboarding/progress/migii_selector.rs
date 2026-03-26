@@ -29,7 +29,6 @@ pub fn MigiiProgressSelector(
 ) -> impl IntoView {
     let selected_level = RwSignal::new("none".to_string());
     let selected_lesson = RwSignal::new("none".to_string());
-    let is_updating = RwSignal::new(false);
     let available_sets = Signal::derive(move || state.get().available_sets.clone());
 
     let level_items = build_level_items();
@@ -58,12 +57,6 @@ pub fn MigiiProgressSelector(
     });
 
     Effect::new(move |_| {
-        // Защита от повторного запуска
-        if is_updating.get() {
-            web_sys::console::log_1(&"[Migii] Effect SKIPPED - already updating".into());
-            return;
-        }
-
         let level = parsed_level.get();
         let lesson_num = selected_lesson
             .get()
@@ -74,11 +67,10 @@ pub fn MigiiProgressSelector(
             return;
         }
 
-        is_updating.set(true);
         web_sys::console::log_1(&"[Migii] Effect START".into());
 
-        let lessons_by_snapshot = lessons_by_level.get().clone();
-        let sets_snapshot: Vec<_> = available_sets.get().clone();
+        let lessons_by_snapshot = lessons_by_level.get_untracked();
+        let sets_snapshot: Vec<_> = available_sets.get_untracked();
 
         if let (Some(lvl), Some(lesson_n)) = (level, lesson_num)
             && let Some(lessons) = lessons_by_snapshot.get(&lvl)
@@ -104,7 +96,6 @@ pub fn MigiiProgressSelector(
             });
         }
         web_sys::console::log_1(&"[Migii] Effect END".into());
-        is_updating.set(false);
     });
 
     view! {
