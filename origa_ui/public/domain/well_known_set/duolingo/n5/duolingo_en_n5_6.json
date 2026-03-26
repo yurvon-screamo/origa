@@ -1,24 +1,24 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: ask for directions",
-			"title": "Duolingo (EN) - Section 1 Unit 6"
-		},
-		"Russian": {
-			"description": "Слова из модуля: ask for directions",
-			"title": "Duolingo (EN) - Section 1 Unit 6"
-		}
-	},
-	"level": "N5",
-	"words": [
-		"コンビニ",
-		"デパート",
-		"バス",
-		"ホテル",
-		"何処",
-		"其処",
-		"大学",
-		"此処",
-		"駅"
-	]
+    "content": {
+        "English": {
+            "description": "Words from section/unit: ask for directions",
+            "title": "Duolingo 「EN」 - Section 1 Unit 6"
+        },
+        "Russian": {
+            "description": "Слова из модуля: ask for directions",
+            "title": "Duolingo 「EN」 - Section 1 Unit 6"
+        }
+    },
+    "level": "N5",
+    "words": [
+        "コンビニ",
+        "デパート",
+        "バス",
+        "ホテル",
+        "何処",
+        "其処",
+        "大学",
+        "此処",
+        "駅"
+    ]
 }

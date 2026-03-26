@@ -1,49 +1,49 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: talk about weather",
-			"title": "Duolingo (EN) - Section 5 Unit 27"
-		},
-		"Russian": {
-			"description": "Слова из модуля: talk about weather",
-			"title": "Duolingo (EN) - Section 5 Unit 27"
-		}
-	},
-	"level": "N3",
-	"words": [
-		"がたがた",
-		"ごろごろ",
-		"ざあざあ",
-		"じめじめ",
-		"びしょびしょ",
-		"一",
-		"乾燥",
-		"予報",
-		"台風",
-		"因る",
-		"地域",
-		"域",
-		"報",
-		"季節",
-		"急",
-		"気候",
-		"気温",
-		"流れる",
-		"温度",
-		"温暖",
-		"滑",
-		"滑る",
-		"猛烈",
-		"現象",
-		"示す",
-		"稲",
-		"稲妻",
-		"蒸し",
-		"蒸し暑い",
-		"転ぶ",
-		"近付く",
-		"雲",
-		"雷",
-		"霧"
-	]
+    "content": {
+        "English": {
+            "description": "Words from section/unit: talk about weather",
+            "title": "Duolingo 「EN」 - Section 5 Unit 27"
+        },
+        "Russian": {
+            "description": "Слова из модуля: talk about weather",
+            "title": "Duolingo 「EN」 - Section 5 Unit 27"
+        }
+    },
+    "level": "N3",
+    "words": [
+        "がたがた",
+        "ごろごろ",
+        "ざあざあ",
+        "じめじめ",
+        "びしょびしょ",
+        "一",
+        "乾燥",
+        "予報",
+        "台風",
+        "因る",
+        "地域",
+        "域",
+        "報",
+        "季節",
+        "急",
+        "気候",
+        "気温",
+        "流れる",
+        "温度",
+        "温暖",
+        "滑",
+        "滑る",
+        "猛烈",
+        "現象",
+        "示す",
+        "稲",
+        "稲妻",
+        "蒸し",
+        "蒸し暑い",
+        "転ぶ",
+        "近付く",
+        "雲",
+        "雷",
+        "霧"
+    ]
 }

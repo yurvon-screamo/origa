@@ -1,42 +1,42 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: talk about weather",
-			"title": "Duolingo (EN) - Section 2 Unit 16"
-		},
-		"Russian": {
-			"description": "Слова из модуля: talk about weather",
-			"title": "Duolingo (EN) - Section 2 Unit 16"
-		}
-	},
-	"level": "N5",
-	"words": [
-		"ゆき",
-		"ココア",
-		"コンサート",
-		"プール",
-		"七",
-		"九",
-		"今日",
-		"今晩",
-		"休み",
-		"公園",
-		"冬",
-		"厚い",
-		"夏",
-		"天気",
-		"寒い",
-		"日",
-		"明日",
-		"曇り",
-		"月",
-		"来週",
-		"海",
-		"温かい",
-		"温泉",
-		"秋",
-		"腫れ",
-		"花火",
-		"飴"
-	]
+    "content": {
+        "English": {
+            "description": "Words from section/unit: talk about weather",
+            "title": "Duolingo 「EN」 - Section 2 Unit 16"
+        },
+        "Russian": {
+            "description": "Слова из модуля: talk about weather",
+            "title": "Duolingo 「EN」 - Section 2 Unit 16"
+        }
+    },
+    "level": "N5",
+    "words": [
+        "ゆき",
+        "ココア",
+        "コンサート",
+        "プール",
+        "七",
+        "九",
+        "今日",
+        "今晩",
+        "休み",
+        "公園",
+        "冬",
+        "厚い",
+        "夏",
+        "天気",
+        "寒い",
+        "日",
+        "明日",
+        "曇り",
+        "月",
+        "来週",
+        "海",
+        "温かい",
+        "温泉",
+        "秋",
+        "腫れ",
+        "花火",
+        "飴"
+    ]
 }

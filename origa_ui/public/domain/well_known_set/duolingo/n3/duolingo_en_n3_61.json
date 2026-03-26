@@ -1,31 +1,31 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: talk about animals",
-			"title": "Duolingo (EN) - Section 6 Unit 11"
-		},
-		"Russian": {
-			"description": "Слова из модуля: talk about animals",
-			"title": "Duolingo (EN) - Section 6 Unit 11"
-		}
-	},
-	"level": "N3",
-	"words": [
-		"パンダ",
-		"双子",
-		"吠える",
-		"哺乳",
-		"唸る",
-		"巣",
-		"恐竜",
-		"有り",
-		"生む",
-		"祖先",
-		"網",
-		"虎",
-		"進化",
-		"雌",
-		"鯨",
-		"麒麟"
-	]
+    "content": {
+        "English": {
+            "description": "Words from section/unit: talk about animals",
+            "title": "Duolingo 「EN」 - Section 6 Unit 11"
+        },
+        "Russian": {
+            "description": "Слова из модуля: talk about animals",
+            "title": "Duolingo 「EN」 - Section 6 Unit 11"
+        }
+    },
+    "level": "N3",
+    "words": [
+        "パンダ",
+        "双子",
+        "吠える",
+        "哺乳",
+        "唸る",
+        "巣",
+        "恐竜",
+        "有り",
+        "生む",
+        "祖先",
+        "網",
+        "虎",
+        "進化",
+        "雌",
+        "鯨",
+        "麒麟"
+    ]
 }

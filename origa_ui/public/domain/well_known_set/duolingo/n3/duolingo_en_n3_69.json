@@ -1,37 +1,37 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: follow a cooking recipe",
-			"title": "Duolingo (EN) - Section 6 Unit 19"
-		},
-		"Russian": {
-			"description": "Слова из модуля: follow a cooking recipe",
-			"title": "Duolingo (EN) - Section 6 Unit 19"
-		}
-	},
-	"level": "N3",
-	"words": [
-		"ねばねば",
-		"べたべた",
-		"ジャム",
-		"チョコレート",
-		"チーズ",
-		"フライパン",
-		"塗り",
-		"塗る",
-		"容器",
-		"桃",
-		"浸ける",
-		"熱する",
-		"皮",
-		"缶",
-		"胡椒",
-		"胡麻",
-		"苺",
-		"蒸気",
-		"蜂蜜",
-		"詰め",
-		"詰める",
-		"酢"
-	]
+    "content": {
+        "English": {
+            "description": "Words from section/unit: follow a cooking recipe",
+            "title": "Duolingo 「EN」 - Section 6 Unit 19"
+        },
+        "Russian": {
+            "description": "Слова из модуля: follow a cooking recipe",
+            "title": "Duolingo 「EN」 - Section 6 Unit 19"
+        }
+    },
+    "level": "N3",
+    "words": [
+        "ねばねば",
+        "べたべた",
+        "ジャム",
+        "チョコレート",
+        "チーズ",
+        "フライパン",
+        "塗り",
+        "塗る",
+        "容器",
+        "桃",
+        "浸ける",
+        "熱する",
+        "皮",
+        "缶",
+        "胡椒",
+        "胡麻",
+        "苺",
+        "蒸気",
+        "蜂蜜",
+        "詰め",
+        "詰める",
+        "酢"
+    ]
 }

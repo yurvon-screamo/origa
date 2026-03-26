@@ -1,44 +1,44 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: talk about school",
-			"title": "Duolingo (EN) - Section 5 Unit 14"
-		},
-		"Russian": {
-			"description": "Слова из модуля: talk about school",
-			"title": "Duolingo (EN) - Section 5 Unit 14"
-		}
-	},
-	"level": "N3",
-	"words": [
-		"ぺらぺら",
-		"タダシ",
-		"メモ",
-		"リュックサック",
-		"予習",
-		"例",
-		"具体",
-		"典型",
-		"分野",
-		"可能",
-		"学位",
-		"対する",
-		"専門",
-		"師",
-		"成る程",
-		"教師",
-		"教授",
-		"文法",
-		"校長",
-		"欠",
-		"欠席",
-		"正しい",
-		"法律",
-		"理解",
-		"科目",
-		"解",
-		"通う",
-		"間違える",
-		"関心"
-	]
+    "content": {
+        "English": {
+            "description": "Words from section/unit: talk about school",
+            "title": "Duolingo 「EN」 - Section 5 Unit 14"
+        },
+        "Russian": {
+            "description": "Слова из модуля: talk about school",
+            "title": "Duolingo 「EN」 - Section 5 Unit 14"
+        }
+    },
+    "level": "N3",
+    "words": [
+        "ぺらぺら",
+        "タダシ",
+        "メモ",
+        "リュックサック",
+        "予習",
+        "例",
+        "具体",
+        "典型",
+        "分野",
+        "可能",
+        "学位",
+        "対する",
+        "専門",
+        "師",
+        "成る程",
+        "教師",
+        "教授",
+        "文法",
+        "校長",
+        "欠",
+        "欠席",
+        "正しい",
+        "法律",
+        "理解",
+        "科目",
+        "解",
+        "通う",
+        "間違える",
+        "関心"
+    ]
 }

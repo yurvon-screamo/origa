@@ -1,41 +1,41 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: discuss creative arts",
-			"title": "Duolingo (EN) - Section 6 Unit 25"
-		},
-		"Russian": {
-			"description": "Слова из модуля: discuss creative arts",
-			"title": "Duolingo (EN) - Section 6 Unit 25"
-		}
-	},
-	"level": "N3",
-	"words": [
-		"がらがら",
-		"ジャンル",
-		"ドラム",
-		"バイオリン",
-		"フルート",
-		"分類",
-		"創造",
-		"化粧",
-		"吹く",
-		"天才",
-		"奏",
-		"字幕",
-		"富む",
-		"幕",
-		"才能",
-		"折り紙",
-		"抽象",
-		"書道",
-		"楽器",
-		"演奏",
-		"演技",
-		"生け花",
-		"盛ん",
-		"目次",
-		"著",
-		"著者"
-	]
+    "content": {
+        "English": {
+            "description": "Words from section/unit: discuss creative arts",
+            "title": "Duolingo 「EN」 - Section 6 Unit 25"
+        },
+        "Russian": {
+            "description": "Слова из модуля: discuss creative arts",
+            "title": "Duolingo 「EN」 - Section 6 Unit 25"
+        }
+    },
+    "level": "N3",
+    "words": [
+        "がらがら",
+        "ジャンル",
+        "ドラム",
+        "バイオリン",
+        "フルート",
+        "分類",
+        "創造",
+        "化粧",
+        "吹く",
+        "天才",
+        "奏",
+        "字幕",
+        "富む",
+        "幕",
+        "才能",
+        "折り紙",
+        "抽象",
+        "書道",
+        "楽器",
+        "演奏",
+        "演技",
+        "生け花",
+        "盛ん",
+        "目次",
+        "著",
+        "著者"
+    ]
 }

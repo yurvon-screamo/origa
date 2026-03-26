@@ -1,46 +1,46 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: talk about transportation",
-			"title": "Duolingo (EN) - Section 5 Unit 45"
-		},
-		"Russian": {
-			"description": "Слова из модуля: talk about transportation",
-			"title": "Duolingo (EN) - Section 5 Unit 45"
-		}
-	},
-	"level": "N3",
-	"words": [
-		"停車",
-		"免許",
-		"列車",
-		"各駅",
-		"尋",
-		"尋ねる",
-		"延べ",
-		"延長",
-		"改札",
-		"更新",
-		"有効",
-		"期限",
-		"標識",
-		"止まる",
-		"止める",
-		"歩行",
-		"決定",
-		"渋滞",
-		"渡る",
-		"滞在",
-		"無視",
-		"白線",
-		"目",
-		"警察",
-		"通ずる",
-		"通行",
-		"通過",
-		"道",
-		"道路",
-		"遠足",
-		"高速"
-	]
+    "content": {
+        "English": {
+            "description": "Words from section/unit: talk about transportation",
+            "title": "Duolingo 「EN」 - Section 5 Unit 45"
+        },
+        "Russian": {
+            "description": "Слова из модуля: talk about transportation",
+            "title": "Duolingo 「EN」 - Section 5 Unit 45"
+        }
+    },
+    "level": "N3",
+    "words": [
+        "停車",
+        "免許",
+        "列車",
+        "各駅",
+        "尋",
+        "尋ねる",
+        "延べ",
+        "延長",
+        "改札",
+        "更新",
+        "有効",
+        "期限",
+        "標識",
+        "止まる",
+        "止める",
+        "歩行",
+        "決定",
+        "渋滞",
+        "渡る",
+        "滞在",
+        "無視",
+        "白線",
+        "目",
+        "警察",
+        "通ずる",
+        "通行",
+        "通過",
+        "道",
+        "道路",
+        "遠足",
+        "高速"
+    ]
 }

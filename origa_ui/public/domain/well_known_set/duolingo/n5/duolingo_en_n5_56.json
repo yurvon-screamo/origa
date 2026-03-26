@@ -1,39 +1,39 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: use the past tense",
-			"title": "Duolingo (EN) - Section 3 Unit 17"
-		},
-		"Russian": {
-			"description": "Слова из модуля: use the past tense",
-			"title": "Duolingo (EN) - Section 3 Unit 17"
-		}
-	},
-	"level": "N5",
-	"words": [
-		"そう",
-		"クルーズ",
-		"ゴルフ",
-		"ハンバーガー",
-		"パフォーマンス",
-		"フクオカ",
-		"ミニ",
-		"リゾート",
-		"ロブスター",
-		"一",
-		"三",
-		"今度",
-		"以外",
-		"何",
-		"御飯",
-		"放題",
-		"日間",
-		"水",
-		"港",
-		"結構",
-		"縞",
-		"船",
-		"週間",
-		"食べる"
-	]
+    "content": {
+        "English": {
+            "description": "Words from section/unit: use the past tense",
+            "title": "Duolingo 「EN」 - Section 3 Unit 17"
+        },
+        "Russian": {
+            "description": "Слова из модуля: use the past tense",
+            "title": "Duolingo 「EN」 - Section 3 Unit 17"
+        }
+    },
+    "level": "N5",
+    "words": [
+        "そう",
+        "クルーズ",
+        "ゴルフ",
+        "ハンバーガー",
+        "パフォーマンス",
+        "フクオカ",
+        "ミニ",
+        "リゾート",
+        "ロブスター",
+        "一",
+        "三",
+        "今度",
+        "以外",
+        "何",
+        "御飯",
+        "放題",
+        "日間",
+        "水",
+        "港",
+        "結構",
+        "縞",
+        "船",
+        "週間",
+        "食べる"
+    ]
 }

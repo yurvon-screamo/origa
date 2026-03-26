@@ -1,38 +1,38 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: discuss the outdoors",
-			"title": "Duolingo (EN) - Section 5 Unit 10"
-		},
-		"Russian": {
-			"description": "Слова из модуля: discuss the outdoors",
-			"title": "Duolingo (EN) - Section 5 Unit 10"
-		}
-	},
-	"level": "N3",
-	"words": [
-		"きらきら",
-		"パパ",
-		"プラスチック",
-		"ペット",
-		"ボトル",
-		"ママ",
-		"リサイクル",
-		"塵",
-		"姪",
-		"嬢",
-		"家庭",
-		"息子",
-		"折",
-		"捨てる",
-		"景",
-		"景色",
-		"林",
-		"枝",
-		"燃える",
-		"甥",
-		"田舎",
-		"義理",
-		"集める"
-	]
+    "content": {
+        "English": {
+            "description": "Words from section/unit: discuss the outdoors",
+            "title": "Duolingo 「EN」 - Section 5 Unit 10"
+        },
+        "Russian": {
+            "description": "Слова из модуля: discuss the outdoors",
+            "title": "Duolingo 「EN」 - Section 5 Unit 10"
+        }
+    },
+    "level": "N3",
+    "words": [
+        "きらきら",
+        "パパ",
+        "プラスチック",
+        "ペット",
+        "ボトル",
+        "ママ",
+        "リサイクル",
+        "塵",
+        "姪",
+        "嬢",
+        "家庭",
+        "息子",
+        "折",
+        "捨てる",
+        "景",
+        "景色",
+        "林",
+        "枝",
+        "燃える",
+        "甥",
+        "田舎",
+        "義理",
+        "集める"
+    ]
 }

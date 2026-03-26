@@ -1,42 +1,42 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: ask about food",
-			"title": "Duolingo (EN) - Section 4 Unit 17"
-		},
-		"Russian": {
-			"description": "Слова из модуля: ask about food",
-			"title": "Duolingo (EN) - Section 4 Unit 17"
-		}
-	},
-	"level": "N4",
-	"words": [
-		"ステーキ",
-		"セン",
-		"ドウ",
-		"メニュー",
-		"万",
-		"不味い",
-		"円",
-		"冷",
-		"冷たい",
-		"好き",
-		"嫌",
-		"嫌い",
-		"安",
-		"安い",
-		"昼",
-		"昼御飯",
-		"晩",
-		"晩御飯",
-		"朝御飯",
-		"無い",
-		"熱",
-		"熱い",
-		"甘い",
-		"百",
-		"辛い",
-		"食堂",
-		"高い"
-	]
+    "content": {
+        "English": {
+            "description": "Words from section/unit: ask about food",
+            "title": "Duolingo 「EN」 - Section 4 Unit 17"
+        },
+        "Russian": {
+            "description": "Слова из модуля: ask about food",
+            "title": "Duolingo 「EN」 - Section 4 Unit 17"
+        }
+    },
+    "level": "N4",
+    "words": [
+        "ステーキ",
+        "セン",
+        "ドウ",
+        "メニュー",
+        "万",
+        "不味い",
+        "円",
+        "冷",
+        "冷たい",
+        "好き",
+        "嫌",
+        "嫌い",
+        "安",
+        "安い",
+        "昼",
+        "昼御飯",
+        "晩",
+        "晩御飯",
+        "朝御飯",
+        "無い",
+        "熱",
+        "熱い",
+        "甘い",
+        "百",
+        "辛い",
+        "食堂",
+        "高い"
+    ]
 }

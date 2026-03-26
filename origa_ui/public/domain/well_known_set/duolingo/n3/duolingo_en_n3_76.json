@@ -1,52 +1,52 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: express thoughts",
-			"title": "Duolingo (EN) - Section 6 Unit 26"
-		},
-		"Russian": {
-			"description": "Слова из модуля: express thoughts",
-			"title": "Duolingo (EN) - Section 6 Unit 26"
-		}
-	},
-	"level": "N3",
-	"words": [
-		"あらゆる",
-		"こつ",
-		"ケン",
-		"上達",
-		"仕様",
-		"伝達",
-		"例えば",
-		"兎に角",
-		"完成",
-		"完璧",
-		"実際",
-		"当たり前",
-		"彼是",
-		"思想",
-		"意思",
-		"或いは",
-		"所",
-		"暗記",
-		"本気",
-		"極",
-		"極めて",
-		"概念",
-		"流石",
-		"無い",
-		"理性",
-		"真理",
-		"純粋",
-		"結局",
-		"解く",
-		"試す",
-		"誤解",
-		"謎",
-		"賢い",
-		"遂に",
-		"適",
-		"適当",
-		"集中"
-	]
+    "content": {
+        "English": {
+            "description": "Words from section/unit: express thoughts",
+            "title": "Duolingo 「EN」 - Section 6 Unit 26"
+        },
+        "Russian": {
+            "description": "Слова из модуля: express thoughts",
+            "title": "Duolingo 「EN」 - Section 6 Unit 26"
+        }
+    },
+    "level": "N3",
+    "words": [
+        "あらゆる",
+        "こつ",
+        "ケン",
+        "上達",
+        "仕様",
+        "伝達",
+        "例えば",
+        "兎に角",
+        "完成",
+        "完璧",
+        "実際",
+        "当たり前",
+        "彼是",
+        "思想",
+        "意思",
+        "或いは",
+        "所",
+        "暗記",
+        "本気",
+        "極",
+        "極めて",
+        "概念",
+        "流石",
+        "無い",
+        "理性",
+        "真理",
+        "純粋",
+        "結局",
+        "解く",
+        "試す",
+        "誤解",
+        "謎",
+        "賢い",
+        "遂に",
+        "適",
+        "適当",
+        "集中"
+    ]
 }

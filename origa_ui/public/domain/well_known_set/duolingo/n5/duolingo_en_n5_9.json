@@ -1,14 +1,23 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: tell time",
-			"title": "Duolingo (EN) - Section 1 Unit 9"
-		},
-		"Russian": {
-			"description": "Слова из модуля: tell time",
-			"title": "Duolingo (EN) - Section 1 Unit 9"
-		}
-	},
-	"level": "N5",
-	"words": ["一", "三", "二", "今", "済む", "班", "難ずる", "頃"]
+    "content": {
+        "English": {
+            "description": "Words from section/unit: tell time",
+            "title": "Duolingo 「EN」 - Section 1 Unit 9"
+        },
+        "Russian": {
+            "description": "Слова из модуля: tell time",
+            "title": "Duolingo 「EN」 - Section 1 Unit 9"
+        }
+    },
+    "level": "N5",
+    "words": [
+        "一",
+        "三",
+        "二",
+        "今",
+        "済む",
+        "班",
+        "難ずる",
+        "頃"
+    ]
 }

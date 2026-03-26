@@ -1,48 +1,48 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: talk about your day",
-			"title": "Duolingo (EN) - Section 5 Unit 20"
-		},
-		"Russian": {
-			"description": "Слова из модуля: talk about your day",
-			"title": "Duolingo (EN) - Section 5 Unit 20"
-		}
-	},
-	"level": "N3",
-	"words": [
-		"エンジン",
-		"ファックス",
-		"メール",
-		"乗り物",
-		"乗客",
-		"信号",
-		"判子",
-		"取り敢えず",
-		"変わる",
-		"工",
-		"工場",
-		"挨拶",
-		"暮らす",
-		"暮れ",
-		"曲がり",
-		"書類",
-		"歩道",
-		"法",
-		"港",
-		"無理",
-		"用事",
-		"相談",
-		"続く",
-		"船",
-		"裏",
-		"規則",
-		"許可",
-		"貧",
-		"貧しい",
-		"遅刻",
-		"運ぶ",
-		"類",
-		"駐車"
-	]
+    "content": {
+        "English": {
+            "description": "Words from section/unit: talk about your day",
+            "title": "Duolingo 「EN」 - Section 5 Unit 20"
+        },
+        "Russian": {
+            "description": "Слова из модуля: talk about your day",
+            "title": "Duolingo 「EN」 - Section 5 Unit 20"
+        }
+    },
+    "level": "N3",
+    "words": [
+        "エンジン",
+        "ファックス",
+        "メール",
+        "乗り物",
+        "乗客",
+        "信号",
+        "判子",
+        "取り敢えず",
+        "変わる",
+        "工",
+        "工場",
+        "挨拶",
+        "暮らす",
+        "暮れ",
+        "曲がり",
+        "書類",
+        "歩道",
+        "法",
+        "港",
+        "無理",
+        "用事",
+        "相談",
+        "続く",
+        "船",
+        "裏",
+        "規則",
+        "許可",
+        "貧",
+        "貧しい",
+        "遅刻",
+        "運ぶ",
+        "類",
+        "駐車"
+    ]
 }

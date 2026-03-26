@@ -1,43 +1,43 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: buy stationery",
-			"title": "Duolingo (EN) - Section 4 Unit 10"
-		},
-		"Russian": {
-			"description": "Слова из модуля: buy stationery",
-			"title": "Duolingo (EN) - Section 4 Unit 10"
-		}
-	},
-	"level": "N4",
-	"words": [
-		"びき",
-		"カレンダー",
-		"ゴム",
-		"シャー",
-		"デザイン",
-		"ペン",
-		"ホチキス",
-		"付箋",
-		"会計",
-		"何",
-		"使う",
-		"分",
-		"可愛い",
-		"大きい",
-		"安い",
-		"小さい",
-		"店",
-		"所",
-		"日",
-		"班",
-		"罌粟",
-		"色",
-		"買う",
-		"軽い",
-		"鉛筆",
-		"鋏",
-		"顎",
-		"高い"
-	]
+    "content": {
+        "English": {
+            "description": "Words from section/unit: buy stationery",
+            "title": "Duolingo 「EN」 - Section 4 Unit 10"
+        },
+        "Russian": {
+            "description": "Слова из модуля: buy stationery",
+            "title": "Duolingo 「EN」 - Section 4 Unit 10"
+        }
+    },
+    "level": "N4",
+    "words": [
+        "びき",
+        "カレンダー",
+        "ゴム",
+        "シャー",
+        "デザイン",
+        "ペン",
+        "ホチキス",
+        "付箋",
+        "会計",
+        "何",
+        "使う",
+        "分",
+        "可愛い",
+        "大きい",
+        "安い",
+        "小さい",
+        "店",
+        "所",
+        "日",
+        "班",
+        "罌粟",
+        "色",
+        "買う",
+        "軽い",
+        "鉛筆",
+        "鋏",
+        "顎",
+        "高い"
+    ]
 }

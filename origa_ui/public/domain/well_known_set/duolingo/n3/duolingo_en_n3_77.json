@@ -1,54 +1,54 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: talk about history",
-			"title": "Duolingo (EN) - Section 6 Unit 27"
-		},
-		"Russian": {
-			"description": "Слова из модуля: talk about history",
-			"title": "Duolingo (EN) - Section 6 Unit 27"
-		}
-	},
-	"level": "N3",
-	"words": [
-		"アキラ",
-		"エド",
-		"ケン",
-		"ノブ",
-		"世紀",
-		"令",
-		"以前",
-		"保障",
-		"共和",
-		"共産",
-		"再建",
-		"刀",
-		"劫",
-		"君主",
-		"和",
-		"嘗て",
-		"四",
-		"屡",
-		"平成",
-		"当時",
-		"忍者",
-		"憲法",
-		"戦後",
-		"持つ",
-		"昔",
-		"昭和",
-		"最早",
-		"武士",
-		"生み出す",
-		"発明",
-		"発見",
-		"立憲",
-		"米国",
-		"紀",
-		"自殺",
-		"英国",
-		"記念",
-		"革命",
-		"領土"
-	]
+    "content": {
+        "English": {
+            "description": "Words from section/unit: talk about history",
+            "title": "Duolingo 「EN」 - Section 6 Unit 27"
+        },
+        "Russian": {
+            "description": "Слова из модуля: talk about history",
+            "title": "Duolingo 「EN」 - Section 6 Unit 27"
+        }
+    },
+    "level": "N3",
+    "words": [
+        "アキラ",
+        "エド",
+        "ケン",
+        "ノブ",
+        "世紀",
+        "令",
+        "以前",
+        "保障",
+        "共和",
+        "共産",
+        "再建",
+        "刀",
+        "劫",
+        "君主",
+        "和",
+        "嘗て",
+        "四",
+        "屡",
+        "平成",
+        "当時",
+        "忍者",
+        "憲法",
+        "戦後",
+        "持つ",
+        "昔",
+        "昭和",
+        "最早",
+        "武士",
+        "生み出す",
+        "発明",
+        "発見",
+        "立憲",
+        "米国",
+        "紀",
+        "自殺",
+        "英国",
+        "記念",
+        "革命",
+        "領土"
+    ]
 }

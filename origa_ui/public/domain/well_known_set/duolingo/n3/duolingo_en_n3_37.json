@@ -1,43 +1,43 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: talk about a work day",
-			"title": "Duolingo (EN) - Section 5 Unit 37"
-		},
-		"Russian": {
-			"description": "Слова из модуля: talk about a work day",
-			"title": "Duolingo (EN) - Section 5 Unit 37"
-		}
-	},
-	"level": "N3",
-	"words": [
-		"オサム",
-		"ミス",
-		"代表",
-		"収入",
-		"失敗",
-		"己",
-		"役",
-		"情報",
-		"我",
-		"我々",
-		"我が",
-		"最大",
-		"生産",
-		"産業",
-		"相手",
-		"税",
-		"税金",
-		"立つ",
-		"紹介",
-		"職",
-		"職業",
-		"自己",
-		"負け",
-		"貿易",
-		"輸入",
-		"輸出",
-		"連絡",
-		"遅れる"
-	]
+    "content": {
+        "English": {
+            "description": "Words from section/unit: talk about a work day",
+            "title": "Duolingo 「EN」 - Section 5 Unit 37"
+        },
+        "Russian": {
+            "description": "Слова из модуля: talk about a work day",
+            "title": "Duolingo 「EN」 - Section 5 Unit 37"
+        }
+    },
+    "level": "N3",
+    "words": [
+        "オサム",
+        "ミス",
+        "代表",
+        "収入",
+        "失敗",
+        "己",
+        "役",
+        "情報",
+        "我",
+        "我々",
+        "我が",
+        "最大",
+        "生産",
+        "産業",
+        "相手",
+        "税",
+        "税金",
+        "立つ",
+        "紹介",
+        "職",
+        "職業",
+        "自己",
+        "負け",
+        "貿易",
+        "輸入",
+        "輸出",
+        "連絡",
+        "遅れる"
+    ]
 }

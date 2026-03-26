@@ -1,24 +1,24 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: describe people",
-			"title": "Duolingo (EN) - Section 1 Unit 2"
-		},
-		"Russian": {
-			"description": "Слова из модуля: describe people",
-			"title": "Duolingo (EN) - Section 1 Unit 2"
-		}
-	},
-	"level": "N5",
-	"words": [
-		"ごし",
-		"人",
-		"優しい",
-		"先生",
-		"医者",
-		"所為",
-		"格好",
-		"良い",
-		"顎"
-	]
+    "content": {
+        "English": {
+            "description": "Words from section/unit: describe people",
+            "title": "Duolingo 「EN」 - Section 1 Unit 2"
+        },
+        "Russian": {
+            "description": "Слова из модуля: describe people",
+            "title": "Duolingo 「EN」 - Section 1 Unit 2"
+        }
+    },
+    "level": "N5",
+    "words": [
+        "ごし",
+        "人",
+        "優しい",
+        "先生",
+        "医者",
+        "所為",
+        "格好",
+        "良い",
+        "顎"
+    ]
 }

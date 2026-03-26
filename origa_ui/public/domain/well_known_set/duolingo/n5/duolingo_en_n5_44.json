@@ -1,45 +1,45 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: eat in a restaurant",
-			"title": "Duolingo (EN) - Section 3 Unit 5"
-		},
-		"Russian": {
-			"description": "Слова из модуля: eat in a restaurant",
-			"title": "Duolingo (EN) - Section 3 Unit 5"
-		}
-	},
-	"level": "N5",
-	"words": [
-		"いらっしゃる",
-		"ちゅ",
-		"ウーロン",
-		"ギョーザ",
-		"スープ",
-		"タピオカ",
-		"ティー",
-		"ナプキン",
-		"マーボー",
-		"メニュー",
-		"七",
-		"二人",
-		"五",
-		"伺う",
-		"何",
-		"全部",
-		"六",
-		"冷たい",
-		"吊る",
-		"四",
-		"多い",
-		"料理",
-		"明く",
-		"沢山",
-		"甲斐",
-		"箸",
-		"罫",
-		"蝦",
-		"豆腐",
-		"辛い"
-	]
+    "content": {
+        "English": {
+            "description": "Words from section/unit: eat in a restaurant",
+            "title": "Duolingo 「EN」 - Section 3 Unit 5"
+        },
+        "Russian": {
+            "description": "Слова из модуля: eat in a restaurant",
+            "title": "Duolingo 「EN」 - Section 3 Unit 5"
+        }
+    },
+    "level": "N5",
+    "words": [
+        "いらっしゃる",
+        "ちゅ",
+        "ウーロン",
+        "ギョーザ",
+        "スープ",
+        "タピオカ",
+        "ティー",
+        "ナプキン",
+        "マーボー",
+        "メニュー",
+        "七",
+        "二人",
+        "五",
+        "伺う",
+        "何",
+        "全部",
+        "六",
+        "冷たい",
+        "吊る",
+        "四",
+        "多い",
+        "料理",
+        "明く",
+        "沢山",
+        "甲斐",
+        "箸",
+        "罫",
+        "蝦",
+        "豆腐",
+        "辛い"
+    ]
 }

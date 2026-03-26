@@ -1,43 +1,43 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: get around a building",
-			"title": "Duolingo (EN) - Section 4 Unit 40"
-		},
-		"Russian": {
-			"description": "Слова из модуля: get around a building",
-			"title": "Duolingo (EN) - Section 4 Unit 40"
-		}
-	},
-	"level": "N4",
-	"words": [
-		"キロ",
-		"メートル",
-		"上り",
-		"交番",
-		"切符",
-		"危ない",
-		"図書",
-		"廊",
-		"廊下",
-		"戸",
-		"所",
-		"手洗い",
-		"村",
-		"橋",
-		"止まる",
-		"止める",
-		"玄関",
-		"町",
-		"締まる",
-		"自",
-		"自動",
-		"近く",
-		"運",
-		"運転",
-		"門",
-		"開き",
-		"階",
-		"階段"
-	]
+    "content": {
+        "English": {
+            "description": "Words from section/unit: get around a building",
+            "title": "Duolingo 「EN」 - Section 4 Unit 40"
+        },
+        "Russian": {
+            "description": "Слова из модуля: get around a building",
+            "title": "Duolingo 「EN」 - Section 4 Unit 40"
+        }
+    },
+    "level": "N4",
+    "words": [
+        "キロ",
+        "メートル",
+        "上り",
+        "交番",
+        "切符",
+        "危ない",
+        "図書",
+        "廊",
+        "廊下",
+        "戸",
+        "所",
+        "手洗い",
+        "村",
+        "橋",
+        "止まる",
+        "止める",
+        "玄関",
+        "町",
+        "締まる",
+        "自",
+        "自動",
+        "近く",
+        "運",
+        "運転",
+        "門",
+        "開き",
+        "階",
+        "階段"
+    ]
 }

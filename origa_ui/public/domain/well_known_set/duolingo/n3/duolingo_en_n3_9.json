@@ -1,44 +1,44 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: use numbers",
-			"title": "Duolingo (EN) - Section 5 Unit 9"
-		},
-		"Russian": {
-			"description": "Слова из модуля: use numbers",
-			"title": "Duolingo (EN) - Section 5 Unit 9"
-		}
-	},
-	"level": "N3",
-	"words": [
-		"パーセント",
-		"ヒトシ",
-		"係",
-		"分ける",
-		"割",
-		"割れる",
-		"割合",
-		"占い",
-		"占める",
-		"合計",
-		"回",
-		"増す",
-		"多数",
-		"少ない",
-		"少数",
-		"平均",
-		"引く",
-		"掛ける",
-		"数える",
-		"数学",
-		"本",
-		"相当",
-		"秒",
-		"等しい",
-		"計算",
-		"足す",
-		"電卓",
-		"順",
-		"順番"
-	]
+    "content": {
+        "English": {
+            "description": "Words from section/unit: use numbers",
+            "title": "Duolingo 「EN」 - Section 5 Unit 9"
+        },
+        "Russian": {
+            "description": "Слова из модуля: use numbers",
+            "title": "Duolingo 「EN」 - Section 5 Unit 9"
+        }
+    },
+    "level": "N3",
+    "words": [
+        "パーセント",
+        "ヒトシ",
+        "係",
+        "分ける",
+        "割",
+        "割れる",
+        "割合",
+        "占い",
+        "占める",
+        "合計",
+        "回",
+        "増す",
+        "多数",
+        "少ない",
+        "少数",
+        "平均",
+        "引く",
+        "掛ける",
+        "数える",
+        "数学",
+        "本",
+        "相当",
+        "秒",
+        "等しい",
+        "計算",
+        "足す",
+        "電卓",
+        "順",
+        "順番"
+    ]
 }
