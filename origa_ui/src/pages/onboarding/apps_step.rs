@@ -84,11 +84,7 @@ fn get_available_app_ids(available_sets: &[WellKnownSetMeta]) -> HashSet<String>
 pub fn AppsStep(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoView {
     let test_id_val = move || {
         let val = test_id.get();
-        if val.is_empty() {
-            None
-        } else {
-            Some(val)
-        }
+        if val.is_empty() { None } else { Some(val) }
     };
 
     let state =
