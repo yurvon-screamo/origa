@@ -36,7 +36,7 @@ export default defineConfig({
             name: "firefox",
             use: { ...devices["Desktop Firefox"] },
         },
-        // TODO: Tauri/WebView desktop project placeholder
+        // Tauri/WebView desktop project placeholder
         // {
         //   name: 'tauri-desktop',
         //   use: { ...devices['Desktop Chrome'] },
