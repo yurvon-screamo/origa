@@ -2,7 +2,7 @@ use crate::ui_components::{Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 
 use super::super::onboarding_state::OnboardingState;
-use super::app_type::{AppType, parse_app_type};
+use super::app_type::{parse_app_type, AppType};
 use super::duolingo_selector::DuolingoProgressSelector;
 use super::migii_selector::MigiiProgressSelector;
 use super::minna_selector::MinnaProgressSelector;
@@ -12,7 +12,11 @@ use super::parsers::{parse_duolingo_modules, parse_migii_lessons, parse_minna_le
 pub fn ProgressStep(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoView {
     let test_id_val = move || {
         let val = test_id.get();
-        if val.is_empty() { None } else { Some(val) }
+        if val.is_empty() {
+            None
+        } else {
+            Some(val)
+        }
     };
 
     let state =
@@ -21,7 +25,11 @@ pub fn ProgressStep(#[prop(optional, into)] test_id: Signal<String>) -> impl Int
     let selected_apps = Memo::new(move |_| state.get().selected_apps.clone());
     let available_sets = Signal::derive(move || state.get().available_sets.clone());
 
-    let app_list = Memo::new(move |_| selected_apps.get().into_iter().collect::<Vec<_>>());
+    let app_list = Memo::new(move |_| {
+        let mut v: Vec<_> = selected_apps.get().into_iter().collect();
+        v.sort();
+        v
+    });
 
     view! {
         <div class="progress-step" data-testid=test_id_val>

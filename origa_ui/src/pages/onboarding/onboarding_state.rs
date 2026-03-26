@@ -150,7 +150,7 @@ impl OnboardingState {
     pub fn can_proceed(&self) -> bool {
         match self.current_step {
             OnboardingStep::Intro => true,
-            OnboardingStep::Jlpt => self.selected_level.is_some(),
+            OnboardingStep::Jlpt => true,
             OnboardingStep::Apps => true,
             OnboardingStep::Progress => true,
             OnboardingStep::Summary => !self.sets_to_import.is_empty(),
