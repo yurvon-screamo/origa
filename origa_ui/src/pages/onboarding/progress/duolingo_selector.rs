@@ -28,6 +28,7 @@ pub fn DuolingoProgressSelector(
         Signal::derive(move || format_import_info(selected_module.get(), selected_unit.get()));
 
     let app_id_for_effect = app_id.clone();
+
     Effect::new(move |_| {
         let module_num = selected_module.get();
         let unit_num = selected_unit.get();
@@ -76,18 +77,18 @@ pub fn DuolingoProgressSelector(
 
     Effect::new(move |_| {
         let val = selected_module_value.get();
-        selected_module.set(
-            val.strip_prefix("module_")
-                .and_then(|s| s.parse::<usize>().ok()),
-        );
+        let parsed = val
+            .strip_prefix("module_")
+            .and_then(|s| s.parse::<usize>().ok());
+        selected_module.set(parsed);
     });
 
     Effect::new(move |_| {
         let val = selected_unit_value.get();
-        selected_unit.set(
-            val.strip_prefix("unit_")
-                .and_then(|s| s.parse::<usize>().ok()),
-        );
+        let parsed = val
+            .strip_prefix("unit_")
+            .and_then(|s| s.parse::<usize>().ok());
+        selected_unit.set(parsed);
     });
 
     let app_label = if is_ru {

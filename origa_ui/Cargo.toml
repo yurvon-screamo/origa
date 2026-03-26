@@ -75,5 +75,8 @@ style-file = "input.css"
 end2end-cmd = "npx playwright test"
 end2end-dir = "end2end"
 
+[dev-dependencies]
+rstest.workspace = true
+
 [lib]
 crate-type = ["cdylib", "rlib"]

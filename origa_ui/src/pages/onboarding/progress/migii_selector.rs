@@ -22,9 +22,8 @@ pub fn MigiiProgressSelector(
 
     let level_items = build_level_items();
 
-    let lesson_items = Signal::derive(move || {
-        build_lesson_items(&lessons_by_level.get(), selected_level.get())
-    });
+    let lesson_items =
+        Signal::derive(move || build_lesson_items(&lessons_by_level.get(), selected_level.get()));
 
     let import_info = Signal::derive(move || {
         let level = selected_level.get();
