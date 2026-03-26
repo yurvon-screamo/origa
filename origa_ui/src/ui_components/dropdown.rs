@@ -87,8 +87,8 @@ pub fn Dropdown(
 
     let select_item = move |item: DropdownItem| {
         web_sys::console::log_1(&format!("[Dropdown] select_item: {}", item.value).into());
-        _selected.set(item.value.clone());
-        web_sys::console::log_1(&"[Dropdown] _selected set".into());
+        selected.set(item.value.clone());
+        web_sys::console::log_1(&"[Dropdown] selected set".into());
         is_open.set(false);
         web_sys::console::log_1(&"[Dropdown] is_open set to false".into());
         search_query.set(String::new());
