@@ -29,6 +29,7 @@ pub fn MigiiProgressSelector(
 ) -> impl IntoView {
     let selected_level = RwSignal::new("none".to_string());
     let selected_lesson = RwSignal::new("none".to_string());
+    let is_updating = RwSignal::new(false);
     let available_sets = Signal::derive(move || state.get().available_sets.clone());
 
     let level_items = build_level_items();
@@ -57,6 +58,12 @@ pub fn MigiiProgressSelector(
     });
 
     Effect::new(move |_| {
+        // Защита от повторного запуска
+        if is_updating.get() {
+            web_sys::console::log_1(&"[Migii] Effect SKIPPED - already updating".into());
+            return;
+        }
+
         let level = parsed_level.get();
         let lesson_num = selected_lesson
             .get()
@@ -67,15 +74,21 @@ pub fn MigiiProgressSelector(
             return;
         }
 
+        is_updating.set(true);
+        web_sys::console::log_1(&"[Migii] Effect START".into());
+
         let lessons_by_snapshot = lessons_by_level.get().clone();
         let sets_snapshot: Vec<_> = available_sets.get().clone();
 
         if let (Some(lvl), Some(lesson_n)) = (level, lesson_num)
             && let Some(lessons) = lessons_by_snapshot.get(&lvl)
         {
+            web_sys::console::log_1(&format!("[Migii] Processing level {:?}, lesson {}", lvl, lesson_n).into());
             let ids_to_import = collect_lessons_to_import(lessons, lesson_n);
+            web_sys::console::log_1(&format!("[Migii] ids_to_import count: {}", ids_to_import.len()).into());
 
             state.update(|s| {
+                web_sys::console::log_1(&"[Migii] state.update START".into());
                 s.set_app_selection("Migii", &format!("{:?}_{}", lvl, lesson_n));
                 s.sets_to_import
                     .retain(|set| !is_lesson_in_levels(set.id.as_str(), &lessons_by_snapshot));
@@ -87,8 +100,11 @@ pub fn MigiiProgressSelector(
                 for set_meta in sets_to_add {
                     s.add_set_to_import(set_meta);
                 }
+                web_sys::console::log_1(&"[Migii] state.update END".into());
             });
         }
+        web_sys::console::log_1(&"[Migii] Effect END".into());
+        is_updating.set(false);
     });
 
     view! {

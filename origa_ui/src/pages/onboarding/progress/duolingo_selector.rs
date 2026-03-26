@@ -17,6 +17,7 @@ pub fn DuolingoProgressSelector(
 ) -> impl IntoView {
     let selected_module = RwSignal::new("none".to_string());
     let selected_unit = RwSignal::new("none".to_string());
+    let is_updating = RwSignal::new(false);
     let available_sets = Signal::derive(move || state.get().available_sets.clone());
 
     let module_items = Signal::derive(move || build_module_items(&modules.get()));
@@ -43,6 +44,12 @@ pub fn DuolingoProgressSelector(
     let app_id_for_effect = app_id.clone();
 
     Effect::new(move |_| {
+        // Защита от повторного запуска
+        if is_updating.get() {
+            web_sys::console::log_1(&"[Duolingo] Effect SKIPPED - already updating".into());
+            return;
+        }
+
         let module_num = parsed_module.get();
         let unit_num = selected_unit
             .get()
@@ -53,16 +60,22 @@ pub fn DuolingoProgressSelector(
             return;
         }
 
+        is_updating.set(true);
+        web_sys::console::log_1(&"[Duolingo] Effect START".into());
+
         let mods_snapshot: Vec<_> = modules.get().clone();
         let sets_snapshot: Vec<_> = available_sets.get().clone();
 
         if let (Some(m), Some(u)) = (module_num, unit_num)
             && let Some(module) = mods_snapshot.iter().find(|mod_| mod_.module_number == m)
         {
+            web_sys::console::log_1(&format!("[Duolingo] Processing module {}, unit {}", m, u).into());
             let units_to_import = collect_units_to_import(module, u);
+            web_sys::console::log_1(&format!("[Duolingo] units_to_import count: {}", units_to_import.len()).into());
             let aid = app_id_for_effect.clone();
 
             state.update(|s| {
+                web_sys::console::log_1(&"[Duolingo] state.update START".into());
                 s.set_app_selection(&aid, &format!("module_{}_unit_{}", m, u));
                 s.sets_to_import
                     .retain(|set| !is_unit_in_modules(set.id.as_str(), &mods_snapshot));
@@ -74,8 +87,11 @@ pub fn DuolingoProgressSelector(
                 for set_meta in sets_to_add {
                     s.add_set_to_import(set_meta);
                 }
+                web_sys::console::log_1(&"[Duolingo] state.update END".into());
             });
         }
+        web_sys::console::log_1(&"[Duolingo] Effect END".into());
+        is_updating.set(false);
     });
 
     let app_label = if is_ru {
