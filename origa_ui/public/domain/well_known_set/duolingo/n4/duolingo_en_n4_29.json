@@ -1,38 +1,38 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: discuss food you like",
-			"title": "Duolingo (EN) - Section 4 Unit 29"
-		},
-		"Russian": {
-			"description": "Слова из модуля: discuss food you like",
-			"title": "Duolingo (EN) - Section 4 Unit 29"
-		}
-	},
-	"level": "N4",
-	"words": [
-		"しょっぱい",
-		"ガラス",
-		"コップ",
-		"スプーン",
-		"スープ",
-		"ナイフ",
-		"フォーク",
-		"ボウル",
-		"レモン",
-		"ワイン",
-		"半分",
-		"好き",
-		"好物",
-		"寿司",
-		"御腹",
-		"本当",
-		"椀",
-		"皿",
-		"箸",
-		"腹",
-		"茶碗",
-		"葡萄",
-		"酸っぱい"
-	]
+    "content": {
+        "English": {
+            "description": "Words from section/unit: discuss food you like",
+            "title": "Duolingo 「EN」 - Section 4 Unit 29"
+        },
+        "Russian": {
+            "description": "Слова из модуля: discuss food you like",
+            "title": "Duolingo 「EN」 - Section 4 Unit 29"
+        }
+    },
+    "level": "N4",
+    "words": [
+        "しょっぱい",
+        "ガラス",
+        "コップ",
+        "スプーン",
+        "スープ",
+        "ナイフ",
+        "フォーク",
+        "ボウル",
+        "レモン",
+        "ワイン",
+        "半分",
+        "好き",
+        "好物",
+        "寿司",
+        "御腹",
+        "本当",
+        "椀",
+        "皿",
+        "箸",
+        "腹",
+        "茶碗",
+        "葡萄",
+        "酸っぱい"
+    ]
 }

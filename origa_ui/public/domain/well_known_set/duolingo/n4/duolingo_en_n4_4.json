@@ -1,39 +1,39 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: discuss what to eat",
-			"title": "Duolingo (EN) - Section 4 Unit 4"
-		},
-		"Russian": {
-			"description": "Слова из модуля: discuss what to eat",
-			"title": "Duolingo (EN) - Section 4 Unit 4"
-		}
-	},
-	"level": "N4",
-	"words": [
-		"とろとろ",
-		"オムライス",
-		"スペシャル",
-		"ソーセージ",
-		"ドリンク",
-		"ドレッシング",
-		"ハンバーグ",
-		"バー",
-		"ファミレス",
-		"ブロッコリー",
-		"マヨネーズ",
-		"レタス",
-		"何",
-		"半分",
-		"多い",
-		"成る",
-		"方",
-		"温かい",
-		"胡瓜",
-		"良い",
-		"葡萄",
-		"頂く",
-		"養殖",
-		"驕り"
-	]
+    "content": {
+        "English": {
+            "description": "Words from section/unit: discuss what to eat",
+            "title": "Duolingo 「EN」 - Section 4 Unit 4"
+        },
+        "Russian": {
+            "description": "Слова из модуля: discuss what to eat",
+            "title": "Duolingo 「EN」 - Section 4 Unit 4"
+        }
+    },
+    "level": "N4",
+    "words": [
+        "とろとろ",
+        "オムライス",
+        "スペシャル",
+        "ソーセージ",
+        "ドリンク",
+        "ドレッシング",
+        "ハンバーグ",
+        "バー",
+        "ファミレス",
+        "ブロッコリー",
+        "マヨネーズ",
+        "レタス",
+        "何",
+        "半分",
+        "多い",
+        "成る",
+        "方",
+        "温かい",
+        "胡瓜",
+        "良い",
+        "葡萄",
+        "頂く",
+        "養殖",
+        "驕り"
+    ]
 }

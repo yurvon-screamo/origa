@@ -1,39 +1,39 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: order pastries",
-			"title": "Duolingo (EN) - Section 2 Unit 21"
-		},
-		"Russian": {
-			"description": "Слова из модуля: order pastries",
-			"title": "Duolingo (EN) - Section 2 Unit 21"
-		}
-	},
-	"level": "N5",
-	"words": [
-		"カップ",
-		"クッキー",
-		"ケーキ",
-		"チョコレート",
-		"チーズ",
-		"ドーナツ",
-		"パイ",
-		"一",
-		"三",
-		"二",
-		"何",
-		"其の",
-		"可笑しい",
-		"四",
-		"大好き",
-		"好き",
-		"彼",
-		"抹茶",
-		"物",
-		"甘い",
-		"緑",
-		"苺",
-		"行く",
-		"買う"
-	]
+    "content": {
+        "English": {
+            "description": "Words from section/unit: order pastries",
+            "title": "Duolingo 「EN」 - Section 2 Unit 21"
+        },
+        "Russian": {
+            "description": "Слова из модуля: order pastries",
+            "title": "Duolingo 「EN」 - Section 2 Unit 21"
+        }
+    },
+    "level": "N5",
+    "words": [
+        "カップ",
+        "クッキー",
+        "ケーキ",
+        "チョコレート",
+        "チーズ",
+        "ドーナツ",
+        "パイ",
+        "一",
+        "三",
+        "二",
+        "何",
+        "其の",
+        "可笑しい",
+        "四",
+        "大好き",
+        "好き",
+        "彼",
+        "抹茶",
+        "物",
+        "甘い",
+        "緑",
+        "苺",
+        "行く",
+        "買う"
+    ]
 }

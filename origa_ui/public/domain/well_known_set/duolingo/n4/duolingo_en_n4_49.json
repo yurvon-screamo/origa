@@ -1,41 +1,41 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: talk about mail",
-			"title": "Duolingo (EN) - Section 4 Unit 49"
-		},
-		"Russian": {
-			"description": "Слова из модуля: talk about mail",
-			"title": "Duolingo (EN) - Section 4 Unit 49"
-		}
-	},
-	"level": "N4",
-	"words": [
-		"ポスト",
-		"中身",
-		"住所",
-		"出す",
-		"切手",
-		"包み",
-		"変更",
-		"宅",
-		"封筒",
-		"局",
-		"届く",
-		"届ける",
-		"張る",
-		"掛かる",
-		"更",
-		"書き留める",
-		"航",
-		"航空",
-		"船",
-		"船便",
-		"葉書",
-		"送り",
-		"通知",
-		"郵便",
-		"配",
-		"配達"
-	]
+    "content": {
+        "English": {
+            "description": "Words from section/unit: talk about mail",
+            "title": "Duolingo 「EN」 - Section 4 Unit 49"
+        },
+        "Russian": {
+            "description": "Слова из модуля: talk about mail",
+            "title": "Duolingo 「EN」 - Section 4 Unit 49"
+        }
+    },
+    "level": "N4",
+    "words": [
+        "ポスト",
+        "中身",
+        "住所",
+        "出す",
+        "切手",
+        "包み",
+        "変更",
+        "宅",
+        "封筒",
+        "局",
+        "届く",
+        "届ける",
+        "張る",
+        "掛かる",
+        "更",
+        "書き留める",
+        "航",
+        "航空",
+        "船",
+        "船便",
+        "葉書",
+        "送り",
+        "通知",
+        "郵便",
+        "配",
+        "配達"
+    ]
 }

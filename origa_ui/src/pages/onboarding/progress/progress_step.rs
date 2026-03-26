@@ -21,7 +21,11 @@ pub fn ProgressStep(#[prop(optional, into)] test_id: Signal<String>) -> impl Int
     let selected_apps = Memo::new(move |_| state.get().selected_apps.clone());
     let available_sets = Signal::derive(move || state.get().available_sets.clone());
 
-    let app_list = Memo::new(move |_| selected_apps.get().into_iter().collect::<Vec<_>>());
+    let app_list = Memo::new(move |_| {
+        let mut v: Vec<_> = selected_apps.get().into_iter().collect();
+        v.sort();
+        v
+    });
 
     view! {
         <div class="progress-step" data-testid=test_id_val>
@@ -55,58 +59,57 @@ pub fn ProgressStep(#[prop(optional, into)] test_id: Signal<String>) -> impl Int
                     key=|app_id| app_id.clone()
                     children=move |app_id| {
                         let app_type = parse_app_type(&app_id);
-                        let sets = available_sets.get();
+                        let sets = available_sets;
 
                         match app_type {
                             Some(AppType::DuolingoRu) => {
-                                let modules = parse_duolingo_modules(&sets, "DuolingoRu", true);
+                                let modules_signal = Signal::derive(move || {
+                                    parse_duolingo_modules(&sets.get(), "DuolingoRu", true)
+                                });
                                 view! {
                                     <DuolingoProgressSelector
                                         app_id=app_id.clone()
                                         is_ru=true
-                                        modules=modules
+                                        modules=modules_signal
                                         state=state
                                     />
                                 }.into_any()
                             }
                             Some(AppType::DuolingoEn) => {
-                                let modules = parse_duolingo_modules(&sets, "DuolingoEn", false);
+                                let modules_signal = Signal::derive(move || {
+                                    parse_duolingo_modules(&sets.get(), "DuolingoEn", false)
+                                });
                                 view! {
                                     <DuolingoProgressSelector
                                         app_id=app_id.clone()
                                         is_ru=false
-                                        modules=modules
+                                        modules=modules_signal
                                         state=state
                                     />
                                 }.into_any()
                             }
                             Some(AppType::Migii) => {
-                                let lessons = parse_migii_lessons(&sets);
+                                let lessons_signal = Signal::derive(move || {
+                                    parse_migii_lessons(&sets.get())
+                                });
                                 view! {
                                     <MigiiProgressSelector
-                                        lessons_by_level=lessons
+                                        lessons_by_level=lessons_signal
                                         state=state
                                     />
                                 }.into_any()
                             }
-                            Some(AppType::MinnaNoNihongoN5) => {
-                                let lessons = parse_minna_lessons(&sets, "minna_n5_");
+                            Some(AppType::MinnaNoNihongo) => {
+                                let lessons_n5_signal = Signal::derive(move || {
+                                    parse_minna_lessons(&sets.get(), "minna_n5_")
+                                });
+                                let lessons_n4_signal = Signal::derive(move || {
+                                    parse_minna_lessons(&sets.get(), "minna_n4_")
+                                });
                                 view! {
                                     <MinnaProgressSelector
-                                        app_id="MinnaNoNihongoN5".to_string()
-                                        title="Minna no Nihongo N5".to_string()
-                                        lessons=lessons
-                                        state=state
-                                    />
-                                }.into_any()
-                            }
-                            Some(AppType::MinnaNoNihongoN4) => {
-                                let lessons = parse_minna_lessons(&sets, "minna_n4_");
-                                view! {
-                                    <MinnaProgressSelector
-                                        app_id="MinnaNoNihongoN4".to_string()
-                                        title="Minna no Nihongo N4".to_string()
-                                        lessons=lessons
+                                        lessons_n5=lessons_n5_signal
+                                        lessons_n4=lessons_n4_signal
                                         state=state
                                     />
                                 }.into_any()

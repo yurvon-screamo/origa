@@ -1,40 +1,40 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: describe a hospital visit",
-			"title": "Duolingo (EN) - Section 6 Unit 1"
-		},
-		"Russian": {
-			"description": "Слова из модуля: describe a hospital visit",
-			"title": "Duolingo (EN) - Section 6 Unit 1"
-		}
-	},
-	"level": "N3",
-	"words": [
-		"ふらふら",
-		"インフルエンザ",
-		"ウイルス",
-		"マイ",
-		"体調",
-		"入院",
-		"圧",
-		"感染",
-		"流行",
-		"熱",
-		"症状",
-		"痼",
-		"看護",
-		"細菌",
-		"胃",
-		"脚",
-		"腰",
-		"菌",
-		"血圧",
-		"見舞い",
-		"診",
-		"診察",
-		"診断",
-		"退院",
-		"面皰"
-	]
+    "content": {
+        "English": {
+            "description": "Words from section/unit: describe a hospital visit",
+            "title": "Duolingo 「EN」 - Section 6 Unit 1"
+        },
+        "Russian": {
+            "description": "Слова из модуля: describe a hospital visit",
+            "title": "Duolingo 「EN」 - Section 6 Unit 1"
+        }
+    },
+    "level": "N3",
+    "words": [
+        "ふらふら",
+        "インフルエンザ",
+        "ウイルス",
+        "マイ",
+        "体調",
+        "入院",
+        "圧",
+        "感染",
+        "流行",
+        "熱",
+        "症状",
+        "痼",
+        "看護",
+        "細菌",
+        "胃",
+        "脚",
+        "腰",
+        "菌",
+        "血圧",
+        "見舞い",
+        "診",
+        "診察",
+        "診断",
+        "退院",
+        "面皰"
+    ]
 }

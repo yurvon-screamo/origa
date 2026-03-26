@@ -11,9 +11,19 @@ fn get_type_label(set_type: &str) -> String {
         "Jlpt" => "JLPT".to_string(),
         "Migii" => "Migii".to_string(),
         "DuolingoRu" => "Duolingo (RU)".to_string(),
-        "DuolingoEn" => "Duolingo (EN)".to_string(),
+        "DuolingoEn" => "Duolingo 「EN」".to_string(),
         "MinnaNoNihongo" => "Minna no Nihongo".to_string(),
         other => other.to_string(),
+    }
+}
+
+fn get_type_icon(set_type: &str) -> Option<&'static str> {
+    match set_type {
+        "Migii" => Some("/public/external_icons/migii.png"),
+        "DuolingoRu" => Some("/public/external_icons/duolingo.png"),
+        "DuolingoEn" => Some("/public/external_icons/duolingo.png"),
+        "MinnaNoNihongo" => Some("/public/external_icons/minnanonihongo.png"),
+        _ => None,
     }
 }
 
@@ -56,6 +66,9 @@ pub fn SummaryStep(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
         let mut result: HashMap<String, Vec<WellKnownSetMeta>> = HashMap::new();
         for set in sets {
             result.entry(set.set_type.clone()).or_default().push(set);
+        }
+        for sets in result.values_mut() {
+            sets.sort_by(|a, b| a.title_ru.cmp(&b.title_ru));
         }
         result
     });
@@ -118,6 +131,7 @@ pub fn SummaryStep(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                         let set_type_for_id_1 = set_type.clone();
                         let set_type_for_id_2 = set_type.clone();
                         let set_type_for_id_3 = set_type.clone();
+                        let set_type_for_icon = set_type.clone();
                         let sets_for_type: Signal<Vec<WellKnownSetMeta>> = Signal::derive(
                             move || sets_by_type.get().get(&set_type_for_signal).cloned().unwrap_or_default(),
                         );
@@ -128,6 +142,7 @@ pub fn SummaryStep(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                             sets_for_type.get().len()
                         });
                         let type_label = get_type_label(&set_type);
+                        let type_label_for_img = type_label.clone();
                         let is_expanded = RwSignal::new(true);
 
                         view! {
@@ -139,6 +154,16 @@ pub fn SummaryStep(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                                     on:click=move |_| is_expanded.update(|v| *v = !*v)
                                 >
                                     <div class="flex items-center gap-2">
+                                        {move || {
+                                            let icon = get_type_icon(&set_type_for_icon);
+                                            if let Some(icon_path) = icon {
+                                                view! {
+                                                    <img src=icon_path class="w-6 h-6 object-contain" alt=type_label_for_img.clone() />
+                                                }.into_any()
+                                            } else {
+                                                ().into_any()
+                                            }
+                                        }}
                                         <Text size=TextSize::Default variant=TypographyVariant::Primary test_id=Signal::derive(move || format!("summary-step-type-{}", set_type_for_id_1.clone()))>
                                             {type_label}
                                         </Text>

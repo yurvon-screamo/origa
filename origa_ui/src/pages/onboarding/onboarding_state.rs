@@ -150,7 +150,7 @@ impl OnboardingState {
     pub fn can_proceed(&self) -> bool {
         match self.current_step {
             OnboardingStep::Intro => true,
-            OnboardingStep::Jlpt => self.selected_level.is_some(),
+            OnboardingStep::Jlpt => true,
             OnboardingStep::Apps => true,
             OnboardingStep::Progress => true,
             OnboardingStep::Summary => !self.sets_to_import.is_empty(),
@@ -169,10 +169,35 @@ impl OnboardingState {
         self.selected_level = level;
         self.clear_previous_jlpt_selections();
 
-        if level.is_some()
-            && let Some(jlpt_n5_set) = self.available_sets.iter().find(|s| s.id == "jlpt_n5")
-        {
-            self.sets_to_import.push(jlpt_n5_set.clone());
+        let levels_order = [
+            JapaneseLevel::N5,
+            JapaneseLevel::N4,
+            JapaneseLevel::N3,
+            JapaneseLevel::N2,
+            JapaneseLevel::N1,
+        ];
+
+        if let Some(selected) = level {
+            for &lvl in &levels_order {
+                if lvl == selected {
+                    break;
+                }
+
+                let set_id = format!("jlpt_{}", level_to_str(lvl));
+                if let Some(jlpt_set) = self.available_sets.iter().find(|s| s.id == set_id) {
+                    self.sets_to_import.push(jlpt_set.clone());
+                }
+            }
         }
+    }
+}
+
+fn level_to_str(level: JapaneseLevel) -> &'static str {
+    match level {
+        JapaneseLevel::N5 => "n5",
+        JapaneseLevel::N4 => "n4",
+        JapaneseLevel::N3 => "n3",
+        JapaneseLevel::N2 => "n2",
+        JapaneseLevel::N1 => "n1",
     }
 }

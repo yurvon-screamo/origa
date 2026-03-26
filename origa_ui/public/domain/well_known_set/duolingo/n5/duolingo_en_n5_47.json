@@ -1,42 +1,42 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: make transit plans",
-			"title": "Duolingo (EN) - Section 3 Unit 8"
-		},
-		"Russian": {
-			"description": "Слова из модуля: make transit plans",
-			"title": "Duolingo (EN) - Section 3 Unit 8"
-		}
-	},
-	"level": "N5",
-	"words": [
-		"どう",
-		"カップ",
-		"ショップ",
-		"チキン",
-		"チップ",
-		"ナイフ",
-		"フォーク",
-		"フライド",
-		"プレゼント",
-		"ヘッドホン",
-		"ポテト",
-		"乗る",
-		"六百",
-		"円",
-		"切る",
-		"家",
-		"従兄弟",
-		"掛かる",
-		"歩く",
-		"渡る",
-		"玩具",
-		"百",
-		"皿",
-		"途中",
-		"道",
-		"遣る",
-		"電気"
-	]
+    "content": {
+        "English": {
+            "description": "Words from section/unit: make transit plans",
+            "title": "Duolingo 「EN」 - Section 3 Unit 8"
+        },
+        "Russian": {
+            "description": "Слова из модуля: make transit plans",
+            "title": "Duolingo 「EN」 - Section 3 Unit 8"
+        }
+    },
+    "level": "N5",
+    "words": [
+        "どう",
+        "カップ",
+        "ショップ",
+        "チキン",
+        "チップ",
+        "ナイフ",
+        "フォーク",
+        "フライド",
+        "プレゼント",
+        "ヘッドホン",
+        "ポテト",
+        "乗る",
+        "六百",
+        "円",
+        "切る",
+        "家",
+        "従兄弟",
+        "掛かる",
+        "歩く",
+        "渡る",
+        "玩具",
+        "百",
+        "皿",
+        "途中",
+        "道",
+        "遣る",
+        "電気"
+    ]
 }

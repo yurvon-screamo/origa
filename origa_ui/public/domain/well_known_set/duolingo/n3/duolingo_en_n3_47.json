@@ -1,41 +1,41 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: discuss fairy tales",
-			"title": "Duolingo (EN) - Section 5 Unit 47"
-		},
-		"Russian": {
-			"description": "Слова из модуля: discuss fairy tales",
-			"title": "Duolingo (EN) - Section 5 Unit 47"
-		}
-	},
-	"level": "N3",
-	"words": [
-		"あやかし",
-		"イサム",
-		"不思議",
-		"使い",
-		"勇気",
-		"勇者",
-		"化け",
-		"国王",
-		"城",
-		"女王",
-		"妖怪",
-		"妖精",
-		"姫",
-		"幽霊",
-		"怪",
-		"杖",
-		"気味",
-		"河童",
-		"王",
-		"王女",
-		"竜",
-		"蛆",
-		"要る",
-		"鬼",
-		"魔女",
-		"魔法"
-	]
+    "content": {
+        "English": {
+            "description": "Words from section/unit: discuss fairy tales",
+            "title": "Duolingo 「EN」 - Section 5 Unit 47"
+        },
+        "Russian": {
+            "description": "Слова из модуля: discuss fairy tales",
+            "title": "Duolingo 「EN」 - Section 5 Unit 47"
+        }
+    },
+    "level": "N3",
+    "words": [
+        "あやかし",
+        "イサム",
+        "不思議",
+        "使い",
+        "勇気",
+        "勇者",
+        "化け",
+        "国王",
+        "城",
+        "女王",
+        "妖怪",
+        "妖精",
+        "姫",
+        "幽霊",
+        "怪",
+        "杖",
+        "気味",
+        "河童",
+        "王",
+        "王女",
+        "竜",
+        "蛆",
+        "要る",
+        "鬼",
+        "魔女",
+        "魔法"
+    ]
 }

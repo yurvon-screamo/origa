@@ -1,41 +1,41 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: make plans to go out",
-			"title": "Duolingo (EN) - Section 4 Unit 6"
-		},
-		"Russian": {
-			"description": "Слова из модуля: make plans to go out",
-			"title": "Duolingo (EN) - Section 4 Unit 6"
-		}
-	},
-	"level": "N4",
-	"words": [
-		"イヤリング",
-		"キャラメル",
-		"ゲーム",
-		"ショッピング",
-		"ジャンル",
-		"センター",
-		"タワー",
-		"パフェ",
-		"ボウリング",
-		"モール",
-		"ユー",
-		"十",
-		"南",
-		"夜",
-		"学生",
-		"後",
-		"悲しい",
-		"良い",
-		"茅",
-		"行く",
-		"袋",
-		"見る",
-		"買い",
-		"遊び",
-		"食べる",
-		"飲む"
-	]
+    "content": {
+        "English": {
+            "description": "Words from section/unit: make plans to go out",
+            "title": "Duolingo 「EN」 - Section 4 Unit 6"
+        },
+        "Russian": {
+            "description": "Слова из модуля: make plans to go out",
+            "title": "Duolingo 「EN」 - Section 4 Unit 6"
+        }
+    },
+    "level": "N4",
+    "words": [
+        "イヤリング",
+        "キャラメル",
+        "ゲーム",
+        "ショッピング",
+        "ジャンル",
+        "センター",
+        "タワー",
+        "パフェ",
+        "ボウリング",
+        "モール",
+        "ユー",
+        "十",
+        "南",
+        "夜",
+        "学生",
+        "後",
+        "悲しい",
+        "良い",
+        "茅",
+        "行く",
+        "袋",
+        "見る",
+        "買い",
+        "遊び",
+        "食べる",
+        "飲む"
+    ]
 }
