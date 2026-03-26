@@ -20,31 +20,31 @@ fn get_known_apps() -> Vec<AppInfo> {
             id: "Migii".to_string(),
             name: "Migii".to_string(),
             description: "Приложение для изучения JLPT".to_string(),
-            icon: "📱",
+            icon: "/public/external_icons/migii.png",
         },
         AppInfo {
             id: "DuolingoRu".to_string(),
             name: "Duolingo (RU)".to_string(),
             description: "Duolingo на русском языке".to_string(),
-            icon: "🦉",
+            icon: "/public/external_icons/duolingo.png",
         },
         AppInfo {
             id: "DuolingoEn".to_string(),
             name: "Duolingo (EN)".to_string(),
             description: "Duolingo на английском языке".to_string(),
-            icon: "🦉",
+            icon: "/public/external_icons/duolingo.png",
         },
         AppInfo {
             id: "MinnaNoNihongoN5".to_string(),
             name: "Minna no Nihongo N5".to_string(),
             description: "Учебник японского языка (уроки 1-25)".to_string(),
-            icon: "📚",
+            icon: "/public/external_icons/minnanonihongo.png",
         },
         AppInfo {
             id: "MinnaNoNihongoN4".to_string(),
             name: "Minna no Nihongo N4".to_string(),
             description: "Учебник японского языка (уроки 26-50)".to_string(),
-            icon: "📚",
+            icon: "/public/external_icons/minnanonihongo.png",
         },
     ]
 }
@@ -84,7 +84,11 @@ fn get_available_app_ids(available_sets: &[WellKnownSetMeta]) -> HashSet<String>
 pub fn AppsStep(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoView {
     let test_id_val = move || {
         let val = test_id.get();
-        if val.is_empty() { None } else { Some(val) }
+        if val.is_empty() {
+            None
+        } else {
+            Some(val)
+        }
     };
 
     let state =
@@ -126,65 +130,64 @@ pub fn AppsStep(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoVie
             </div>
 
             <div class="grid gap-4">
-                <For
-                    each=move || filtered_apps.get()
-                    key=|app| app.id.clone()
-                    children=move |app| {
-                        let app_id = app.id.clone();
-                        let app_id_for_click = app_id.clone();
-                        let app_id_for_cb = app_id.clone();
-                        let app_id_for_selected = app_id.clone();
-                        let app_name = app.name.clone();
-                        let app_desc = app.description.clone();
-                        let app_icon = app.icon;
-                        let is_selected = Memo::new(move |_| state.get().selected_apps.contains(&app_id_for_selected));
+                    <For
+                        each=move || filtered_apps.get()
+                        key=|app| app.id.clone()
+                        children=move |app| {
+                            let app_id = app.id.clone();
+                            let app_id_for_cb = app_id.clone();
+                            let app_id_for_selected = app_id.clone();
+                            let app_name = app.name.clone();
+                            let app_desc = app.description.clone();
+                            let app_icon = app.icon;
+                            let is_selected = Memo::new(move |_| state.get().selected_apps.contains(&app_id_for_selected));
 
-                        let app_test_id = format!("apps-step-app-{}", app_id);
-                        let app_test_id_for_card = app_test_id.clone();
-                        let app_test_id_for_name = app_test_id.clone();
-                        let app_test_id_for_desc = app_test_id.clone();
-                        let app_test_id_for_checkbox = app_test_id.clone();
+                            let app_test_id = format!("apps-step-app-{}", app_id);
+                            let app_test_id_for_card = app_test_id.clone();
+                            let app_test_id_for_name = app_test_id.clone();
+                            let app_test_id_for_desc = app_test_id.clone();
+                            let app_test_id_for_checkbox = app_test_id.clone();
 
-                        view! {
-                            <Card
-                                class=Signal::derive(move || {
-                                    let base = "card card-shadow card-selectable";
-                                    if is_selected.get() {
-                                        format!("{} selected", base)
-                                    } else {
-                                        base.to_string()
-                                    }
-                                })
-                                test_id=Signal::derive(move || app_test_id_for_card.clone())
-                            >
-                                <div
-                                    class="flex items-center gap-4 p-2"
-                                    on:click=move |_| {
-                                        toggle_app.run(app_id_for_click.clone());
-                                    }
+                            view! {
+                                <Card
+                                    class=Signal::derive(move || {
+                                        let base = "card card-shadow card-selectable";
+                                        if is_selected.get() {
+                                            format!("{} selected", base)
+                                        } else {
+                                            base.to_string()
+                                        }
+                                    })
+                                    test_id=Signal::derive(move || app_test_id_for_card.clone())
                                 >
-                                    <div class="text-3xl">{app_icon}</div>
-                                    <div class="flex-1">
-                                        <Text size=TextSize::Default variant=TypographyVariant::Primary test_id=Signal::derive(move || format!("{}-name", app_test_id_for_name.clone()))>
-                                            {app_name}
-                                        </Text>
-                                        <Text size=TextSize::Small variant=TypographyVariant::Muted test_id=Signal::derive(move || format!("{}-desc", app_test_id_for_desc.clone()))>
-                                            {app_desc}
-                                        </Text>
-                                    </div>
-                                    <Checkbox
-                                        checked=Signal::derive(move || is_selected.get())
-                                        label=Signal::derive(String::new)
-                                        on_change=Callback::new(move |()| {
+                                    <div
+                                        class="flex items-center gap-4 p-2"
+                                        on:click=move |_| {
                                             toggle_app.run(app_id_for_cb.clone());
-                                        })
-                                        test_id=Signal::derive(move || format!("{}-checkbox", app_test_id_for_checkbox.clone()))
-                                    />
-                                </div>
-                            </Card>
+                                        }
+                                    >
+                                        <img src=app_icon class="w-12 h-12 object-contain" alt=app_name.clone() />
+                                        <div class="flex-1">
+                                            <Text size=TextSize::Default variant=TypographyVariant::Primary test_id=Signal::derive(move || format!("{}-name", app_test_id_for_name.clone()))>
+                                                {app_name}
+                                            </Text>
+                                            <Text size=TextSize::Small variant=TypographyVariant::Muted test_id=Signal::derive(move || format!("{}-desc", app_test_id_for_desc.clone()))>
+                                                {app_desc}
+                                            </Text>
+                                        </div>
+                                        <Checkbox
+                                            checked=Signal::derive(move || is_selected.get())
+                                            label=Signal::derive(String::new)
+                                            on_change=Callback::new(move |()| {
+                                                toggle_app.run(app_id_for_cb.clone());
+                                            })
+                                            test_id=Signal::derive(move || format!("{}-checkbox", app_test_id_for_checkbox.clone()))
+                                        />
+                                    </div>
+                                </Card>
+                            }
                         }
-                    }
-                />
+                    />
             </div>
 
             <Show when=move || state.get().selected_apps.is_empty()>
