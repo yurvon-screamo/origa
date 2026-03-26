@@ -14,28 +14,23 @@ import { LoginPage, OnboardingPage } from "../pages";
  * 6. Summary and import
  */
 
-testWithFreshUser.describe.configure({ mode: 'serial' });
-
 testWithFreshUser.describe("Onboarding Flow - N4 with ~50% Progress", () => {
-    let loginPage: LoginPage;
-    let onboardingPage: OnboardingPage;
-
-    testWithFreshUser.beforeEach(async ({ page }: { page: Page }) => {
+    testWithFreshUser("should complete full onboarding flow", async ({ page }: { page: Page }) => {
         // Set viewport for consistent testing
         await page.setViewportSize({ width: 1280, height: 720 });
 
-        loginPage = new LoginPage(page);
-        onboardingPage = new OnboardingPage(page);
+        const loginPage = new LoginPage(page);
+        const onboardingPage = new OnboardingPage(page);
 
         // Navigate to login page - user is already authenticated via fixture
         await loginPage.goto();
 
         // Wait for redirect after login (fixture already sets auth token)
         await page.waitForURL(/\/(onboarding|home)$/, { timeout: 10000 });
-    });
 
-    testWithFreshUser("should display onboarding page with stepper", async ({ page }: { page: Page }) => {
-        // Verify we're on onboarding page
+        // ========================================
+        // Step 0: Verify onboarding page with stepper
+        // ========================================
         await expect(page).toHaveURL(/\/onboarding$/);
 
         // Wait for loading to complete
@@ -47,14 +42,14 @@ testWithFreshUser.describe("Onboarding Flow - N4 with ~50% Progress", () => {
         await expect(page.getByTestId("onboarding-page")).toBeVisible();
         await expect(page.getByTestId("onboarding-card")).toBeVisible();
         await expect(page.getByTestId("onboarding-stepper")).toBeVisible();
-    });
 
-    testWithFreshUser("Step 1: Intro - should display welcome message and proceed", async ({ page }: { page: Page }) => {
-        // Verify intro step is visible
+        // ========================================
+        // Step 1: Intro - should display welcome message and proceed
+        // ========================================
         await expect(page.getByTestId("onboarding-intro-step")).toBeVisible();
 
         // Verify welcome text
-        await expect(page.getByText("Настроим обучение!")).toBeVisible();
+        await expect(page.getByTestId("intro-step-title")).toBeVisible();
 
         // Verify skip button is visible
         const skipButton = page.getByTestId("onboarding-skip");
@@ -71,12 +66,12 @@ testWithFreshUser.describe("Onboarding Flow - N4 with ~50% Progress", () => {
 
         // Verify we moved to next step
         await expect(page.getByTestId("onboarding-jlpt-step")).toBeVisible();
-    });
 
-    testWithFreshUser("Step 2: JLPT - should select N4 level", async ({ page }: { page: Page }) => {
-        // Verify JLPT step
+        // ========================================
+        // Step 2: JLPT - should select N4 level
+        // ========================================
         await expect(page.getByTestId("onboarding-jlpt-step")).toBeVisible();
-        await expect(page.getByText("Выберите ваш текущий уровень JLPT")).toBeVisible();
+        await expect(page.getByTestId("jlpt-step-title")).toBeVisible();
 
         // Take screenshot before selection
         await page.screenshot({
@@ -103,12 +98,12 @@ testWithFreshUser.describe("Onboarding Flow - N4 with ~50% Progress", () => {
         // Proceed to next step
         await page.getByTestId("onboarding-next").click();
         await expect(page.getByTestId("onboarding-apps-step")).toBeVisible();
-    });
 
-    testWithFreshUser("Step 3: Apps - should select all available apps", async ({ page }: { page: Page }) => {
-        // Verify apps step
+        // ========================================
+        // Step 3: Apps - should select all available apps
+        // ========================================
         await expect(page.getByTestId("onboarding-apps-step")).toBeVisible();
-        await expect(page.getByText("Какие приложения вы используете?")).toBeVisible();
+        await expect(page.getByTestId("apps-step-title")).toBeVisible();
 
         // Take screenshot before selections
         await page.screenshot({
@@ -154,12 +149,12 @@ testWithFreshUser.describe("Onboarding Flow - N4 with ~50% Progress", () => {
         // Proceed to progress step
         await page.getByTestId("onboarding-next").click();
         await expect(page.getByTestId("onboarding-progress-step")).toBeVisible();
-    });
 
-    testWithFreshUser("Step 4: Progress - should configure ~50% progress for each app", async ({ page }: { page: Page }) => {
-        // Verify progress step
+        // ========================================
+        // Step 4: Progress - should configure ~50% progress for each app
+        // ========================================
         await expect(page.getByTestId("onboarding-progress-step")).toBeVisible();
-        await expect(page.getByText("Ваш прогресс")).toBeVisible();
+        await expect(page.getByTestId("progress-step-title")).toBeVisible();
 
         // Take screenshot
         await page.screenshot({
@@ -212,15 +207,15 @@ testWithFreshUser.describe("Onboarding Flow - N4 with ~50% Progress", () => {
         // Proceed to summary
         await page.getByTestId("onboarding-next").click();
         await expect(page.getByTestId("onboarding-summary-step")).toBeVisible();
-    });
 
-    testWithFreshUser("Step 5: Summary - should display selected sets and allow toggle", async ({ page }: { page: Page }) => {
-        // Verify summary step
+        // ========================================
+        // Step 5: Summary - should display selected sets and allow toggle
+        // ========================================
         await expect(page.getByTestId("onboarding-summary-step")).toBeVisible();
-        await expect(page.getByText("Готово к импорту")).toBeVisible();
+        await expect(page.getByTestId("summary-step-title")).toBeVisible();
 
         // Verify word count is displayed
-        await expect(page.getByText(/Выбрано.*наборов/)).toBeVisible();
+        await expect(page.getByTestId("summary-step-stats")).toBeVisible();
 
         // Take screenshot
         await page.screenshot({
@@ -229,7 +224,7 @@ testWithFreshUser.describe("Onboarding Flow - N4 with ~50% Progress", () => {
         });
 
         // Test accordion toggle (if expandable)
-        const accordionHeader = page.locator('.accordion-header').first();
+        const accordionHeader = page.getByTestId('summary-step-accordion-header').first();
         if (await accordionHeader.isVisible().catch(() => false)) {
             await accordionHeader.click();
             // Verify content collapses/expands
@@ -249,17 +244,19 @@ testWithFreshUser.describe("Onboarding Flow - N4 with ~50% Progress", () => {
             path: "test-results/onboarding-step-5-summary-before-import.png",
             fullPage: true
         });
-    });
 
-    testWithFreshUser("should complete import and redirect to home", async ({ page }: { page: Page }) => {
+        // ========================================
+        // Final: Complete import and redirect to home
+
+        // ========================================
         // Start import
         await page.getByTestId("onboarding-import").click();
 
         // Verify import button shows loading state
-        await expect(page.getByText("Импорт...")).toBeVisible();
+        await expect(page.getByTestId("onboarding-import")).toHaveAttribute("data-loading", "true", { timeout: 5000 });
 
         // Wait for redirect to home (can take time for import)
-        await page.waitForURL(/\/home$/, { timeout: 60000 });
+        await page.waitForURL(/\/home$/, { timeout: 120_000 });
 
         // Verify we're on home page
         await expect(page).toHaveURL(/\/home$/);

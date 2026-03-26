@@ -151,6 +151,7 @@ pub fn SummaryStep(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                             }>
                                 <div
                                     class="accordion-header"
+                                    data-testid="summary-step-accordion-header"
                                     on:click=move |_| is_expanded.update(|v| *v = !*v)
                                 >
                                     <div class="flex items-center gap-2">
