@@ -255,7 +255,10 @@ Verify:
 
 ### Report viewing issues
 
-If you see an error like "Unsafe attempt to load URL <http://localhost:10485/> from frame with URL chrome-error://chromewebdata/. Domains, protocols and ports must match", this is a browser security issue with Playwright HTML reports loading in iframes.
+If you see an error like "Unsafe attempt to load URL <http://localhost:10485/>
+from frame with URL chrome-error://chromewebdata/. Domains, protocols and ports
+must match", this is a browser security issue with Playwright HTML reports
+loading in iframes.
 
 **Solutions:**
 
