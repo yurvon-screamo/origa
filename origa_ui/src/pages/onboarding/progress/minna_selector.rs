@@ -12,6 +12,7 @@ pub fn MinnaProgressSelector(
     state: RwSignal<OnboardingState>,
 ) -> impl IntoView {
     let selected_lesson = RwSignal::new("none".to_string());
+    let is_updating = RwSignal::new(false);
     let available_sets = Signal::derive(move || state.get().available_sets.clone());
 
     let lesson_items = Signal::derive(move || {
@@ -39,11 +40,27 @@ pub fn MinnaProgressSelector(
     let app_id_for_effect = app_id.clone();
     Effect::new(move |_| {
         let val = selected_lesson.get();
+
+        // Защита от повторного запуска
+        if is_updating.get() {
+            web_sys::console::log_1(&"[Minna] Effect SKIPPED - already updating".into());
+            return;
+        }
+
+        if val == "none" {
+            return;
+        }
+
+        is_updating.set(true);
+        web_sys::console::log_1(&"[Minna] Effect START".into());
+
         let lesson_num = val
             .strip_prefix("lesson_")
             .and_then(|s| s.parse::<usize>().ok());
 
         if lesson_num.is_none() {
+            web_sys::console::log_1(&"[Minna] lesson_num is None, returning".into());
+            is_updating.set(false);
             return;
         }
 
@@ -51,14 +68,19 @@ pub fn MinnaProgressSelector(
         let sets_snapshot: Vec<_> = available_sets.get().clone();
 
         if let Some(n) = lesson_num {
+            web_sys::console::log_1(&format!("[Minna] Processing lesson_num: {}", n).into());
             let ids_to_import: Vec<String> = lessons_snapshot
                 .iter()
                 .filter(|l| l.lesson_number <= n)
                 .map(|l| l.id.clone())
                 .collect();
 
+            web_sys::console::log_1(
+                &format!("[Minna] ids_to_import count: {}", ids_to_import.len()).into(),
+            );
             let aid = app_id_for_effect.clone();
             state.update(|s| {
+                web_sys::console::log_1(&"[Minna] state.update START".into());
                 s.set_app_selection(&aid, &format!("lesson_{}", n));
                 s.sets_to_import
                     .retain(|set| !lessons_snapshot.iter().any(|l| l.id == set.id));
@@ -70,8 +92,11 @@ pub fn MinnaProgressSelector(
                 for set_meta in sets_to_add {
                     s.add_set_to_import(set_meta);
                 }
+                web_sys::console::log_1(&"[Minna] state.update END".into());
             });
         }
+        web_sys::console::log_1(&"[Minna] Effect END".into());
+        is_updating.set(false);
     });
 
     let title_for_view = title.clone();
