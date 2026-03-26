@@ -48,19 +48,20 @@ pub fn MigiiProgressSelector(
             return;
         }
 
-        let lessons_by = lessons_by_level.get();
-        let sets = available_sets.get();
+        // Читаем данные ОДИН РАЗ в начале, до state.update()
+        let lessons_by_snapshot = lessons_by_level.get().clone();
+        let sets_snapshot: Vec<_> = available_sets.get().clone();
 
         if let (Some(lvl), Some(lesson_n)) = (level, lesson_num)
-            && let Some(lessons) = lessons_by.get(&lvl)
+            && let Some(lessons) = lessons_by_snapshot.get(&lvl)
         {
             let ids_to_import = collect_lessons_to_import(lessons, lesson_n);
 
             state.update(|s| {
                 s.set_app_selection("Migii", &format!("{:?}_{}", lvl, lesson_n));
                 s.sets_to_import
-                    .retain(|set| !is_lesson_in_levels(set.id.as_str(), &lessons_by));
-                let sets_to_add: Vec<_> = sets
+                    .retain(|set| !is_lesson_in_levels(set.id.as_str(), &lessons_by_snapshot));
+                let sets_to_add: Vec<_> = sets_snapshot
                     .iter()
                     .filter(|set_meta| ids_to_import.contains(&set_meta.id))
                     .cloned()
