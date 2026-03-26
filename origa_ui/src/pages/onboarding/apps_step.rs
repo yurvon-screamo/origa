@@ -135,6 +135,7 @@ pub fn AppsStep(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoVie
                         key=|app| app.id.clone()
                         children=move |app| {
                             let app_id = app.id.clone();
+                            let app_id_for_click = app_id.clone();
                             let app_id_for_cb = app_id.clone();
                             let app_id_for_selected = app_id.clone();
                             let app_name = app.name.clone();
@@ -163,7 +164,7 @@ pub fn AppsStep(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoVie
                                     <div
                                         class="flex items-center gap-4 p-2"
                                         on:click=move |_| {
-                                            toggle_app.run(app_id_for_cb.clone());
+                                            toggle_app.run(app_id_for_click.clone());
                                         }
                                     >
                                         <img src=app_icon class="w-12 h-12 object-contain" alt=app_name.clone() />
