@@ -2,8 +2,10 @@
 
 ## Project Overview
 
-Origa — приложение для изучения японского языка с интервальными повторениями (FSRS), OCR и токенизацией.  
-**Tech stack**: Rust workspace (крейты `origa`, `origa_ui`, `tokenizer`), Leptos/WASM, Tauri v2.  
+Origa — приложение для изучения японского языка с интервальными повторениями (FSRS),
+OCR и токенизацией.
+**Tech stack**: Rust workspace (крейты `origa`, `origa_ui`, `tokenizer`),
+Leptos/WASM, Tauri v2.
 **Архитектура**: Clean Architecture (Use Cases → Domain → Traits).
 
 ## Просмотр всех доступных задач
@@ -104,14 +106,14 @@ use crate::traits::UserRepository;
 
 ### Naming Conventions
 
-| Элемент          | Конвенция          | Пример                     |
-|------------------|--------------------|----------------------------|
-| Struct/Enum      | `PascalCase`       | `RateCardUseCase`          |
-| Enum variants    | `PascalCase`       | `UserNotFound`             |
-| Functions        | `snake_case`       | `find_by_id()`             |
-| Variables        | `snake_case`       | `user_id`                  |
-| Constants        | `SCREAMING_SNAKE_CASE` | `KANJI_DICTIONARY`    |
-| Trait            | `PascalCase`       | `UserRepository`           |
+| Элемент       | Конвенция              | Пример             |
+|---------------|------------------------|--------------------|
+| Struct/Enum   | `PascalCase`           | `RateCardUseCase`  |
+| Enum variants | `PascalCase`           | `UserNotFound`     |
+| Functions     | `snake_case`           | `find_by_id()`     |
+| Variables     | `snake_case`           | `user_id`          |
+| Constants     | `SCREAMING_SNAKE_CASE` | `KANJI_DICTIONARY` |
+| Trait         | `PascalCase`           | `UserRepository`   |
 
 ### Formatting
 
@@ -246,7 +248,8 @@ let mut rng = StdRng::seed_from_u64(42);
 
 ### test_id Паттерн (обязательно для всех интерактивных компонентов)
 
-Все интерактивные компоненты **должны** получать `test_id: Signal<String>` prop.
+Все интерактивные компоненты **должны** получать `test_id: Signal<String>`
+prop.
 
 ```rust
 #[component]
@@ -301,4 +304,4 @@ pub fn Button(
 - Коммитить `console.log` / `println!`
 - Удалять тесты
 
-```
+```markdown
