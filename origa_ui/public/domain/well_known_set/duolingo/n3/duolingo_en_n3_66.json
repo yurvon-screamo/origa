@@ -1,41 +1,41 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: talk to a hair stylist",
-			"title": "Duolingo (EN) - Section 6 Unit 16"
-		},
-		"Russian": {
-			"description": "Слова из модуля: talk to a hair stylist",
-			"title": "Duolingo (EN) - Section 6 Unit 16"
-		}
-	},
-	"level": "N3",
-	"words": [
-		"カット",
-		"センチ",
-		"バリカン",
-		"乾かす",
-		"似合う",
-		"前髪",
-		"床屋",
-		"揉み上げ",
-		"染める",
-		"櫛",
-		"毛",
-		"溶かす",
-		"痒い",
-		"白髪",
-		"目立つ",
-		"美人",
-		"美容",
-		"茶髪",
-		"赤毛",
-		"辺り",
-		"金髪",
-		"鋏",
-		"髪の毛",
-		"髪型",
-		"髭",
-		"黒髪"
-	]
+    "content": {
+        "English": {
+            "description": "Words from section/unit: talk to a hair stylist",
+            "title": "Duolingo 「EN」 - Section 6 Unit 16"
+        },
+        "Russian": {
+            "description": "Слова из модуля: talk to a hair stylist",
+            "title": "Duolingo 「EN」 - Section 6 Unit 16"
+        }
+    },
+    "level": "N3",
+    "words": [
+        "カット",
+        "センチ",
+        "バリカン",
+        "乾かす",
+        "似合う",
+        "前髪",
+        "床屋",
+        "揉み上げ",
+        "染める",
+        "櫛",
+        "毛",
+        "溶かす",
+        "痒い",
+        "白髪",
+        "目立つ",
+        "美人",
+        "美容",
+        "茶髪",
+        "赤毛",
+        "辺り",
+        "金髪",
+        "鋏",
+        "髪の毛",
+        "髪型",
+        "髭",
+        "黒髪"
+    ]
 }

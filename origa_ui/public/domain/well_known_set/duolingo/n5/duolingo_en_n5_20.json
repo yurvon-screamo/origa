@@ -1,38 +1,38 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: talk about interests",
-			"title": "Duolingo (EN) - Section 2 Unit 11"
-		},
-		"Russian": {
-			"description": "Слова из модуля: talk about interests",
-			"title": "Duolingo (EN) - Section 2 Unit 11"
-		}
-	},
-	"level": "N5",
-	"words": [
-		"どんな",
-		"アクション",
-		"アメリカ",
-		"アンドリュー",
-		"エリカ",
-		"コメディー",
-		"ダニエル",
-		"ファンタジー",
-		"ベトナム",
-		"ホラー",
-		"ポップ",
-		"ミステリー",
-		"中国",
-		"好き",
-		"彼",
-		"彼女",
-		"日本",
-		"有る",
-		"本当",
-		"此方",
-		"言う",
-		"趣味",
-		"韓国"
-	]
+    "content": {
+        "English": {
+            "description": "Words from section/unit: talk about interests",
+            "title": "Duolingo 「EN」 - Section 2 Unit 11"
+        },
+        "Russian": {
+            "description": "Слова из модуля: talk about interests",
+            "title": "Duolingo 「EN」 - Section 2 Unit 11"
+        }
+    },
+    "level": "N5",
+    "words": [
+        "どんな",
+        "アクション",
+        "アメリカ",
+        "アンドリュー",
+        "エリカ",
+        "コメディー",
+        "ダニエル",
+        "ファンタジー",
+        "ベトナム",
+        "ホラー",
+        "ポップ",
+        "ミステリー",
+        "中国",
+        "好き",
+        "彼",
+        "彼女",
+        "日本",
+        "有る",
+        "本当",
+        "此方",
+        "言う",
+        "趣味",
+        "韓国"
+    ]
 }

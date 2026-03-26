@@ -1,53 +1,53 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: describe people's jobs",
-			"title": "Duolingo (EN) - Section 6 Unit 5"
-		},
-		"Russian": {
-			"description": "Слова из модуля: describe people's jobs",
-			"title": "Duolingo (EN) - Section 6 Unit 5"
-		}
-	},
-	"level": "N3",
-	"words": [
-		"与える",
-		"件",
-		"会社",
-		"僚",
-		"公務",
-		"出張",
-		"労",
-		"労働",
-		"募集",
-		"同僚",
-		"就職",
-		"履歴",
-		"工事",
-		"年金",
-		"店員",
-		"建築",
-		"建設",
-		"従",
-		"従業",
-		"持ち主",
-		"支店",
-		"方法",
-		"日程",
-		"深刻",
-		"築",
-		"組合",
-		"組織",
-		"経営",
-		"編集",
-		"言う",
-		"設",
-		"設計",
-		"調整",
-		"転勤",
-		"転職",
-		"退職",
-		"過労",
-		"面接"
-	]
+    "content": {
+        "English": {
+            "description": "Words from section/unit: describe people's jobs",
+            "title": "Duolingo 「EN」 - Section 6 Unit 5"
+        },
+        "Russian": {
+            "description": "Слова из модуля: describe people's jobs",
+            "title": "Duolingo 「EN」 - Section 6 Unit 5"
+        }
+    },
+    "level": "N3",
+    "words": [
+        "与える",
+        "件",
+        "会社",
+        "僚",
+        "公務",
+        "出張",
+        "労",
+        "労働",
+        "募集",
+        "同僚",
+        "就職",
+        "履歴",
+        "工事",
+        "年金",
+        "店員",
+        "建築",
+        "建設",
+        "従",
+        "従業",
+        "持ち主",
+        "支店",
+        "方法",
+        "日程",
+        "深刻",
+        "築",
+        "組合",
+        "組織",
+        "経営",
+        "編集",
+        "言う",
+        "設",
+        "設計",
+        "調整",
+        "転勤",
+        "転職",
+        "退職",
+        "過労",
+        "面接"
+    ]
 }

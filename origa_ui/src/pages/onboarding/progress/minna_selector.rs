@@ -1,73 +1,127 @@
 use crate::ui_components::{Card, Dropdown, DropdownItem, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
+use origa::domain::JapaneseLevel;
 
 use super::super::onboarding_state::OnboardingState;
 use super::types::MinnaLesson;
 
 #[component]
 pub fn MinnaProgressSelector(
-    app_id: String,
-    title: String,
-    lessons: Vec<MinnaLesson>,
+    lessons_n5: Signal<Vec<MinnaLesson>>,
+    lessons_n4: Signal<Vec<MinnaLesson>>,
     state: RwSignal<OnboardingState>,
 ) -> impl IntoView {
-    let selected_lesson_value = RwSignal::new("none".to_string());
+    let selected_level = RwSignal::new("none".to_string());
+    let selected_lesson = RwSignal::new("none".to_string());
     let available_sets = Signal::derive(move || state.get().available_sets.clone());
 
-    let lesson_items = {
+    let level_items = vec![
+        DropdownItem {
+            value: "none".to_string(),
+            label: "Не изучал".to_string(),
+        },
+        DropdownItem {
+            value: "N5".to_string(),
+            label: "N5 (Уроки 1-25)".to_string(),
+        },
+        DropdownItem {
+            value: "N4".to_string(),
+            label: "N4 (Уроки 26-50)".to_string(),
+        },
+    ];
+
+    let parsed_level = Signal::derive(move || match selected_level.get().as_str() {
+        "N5" => Some(JapaneseLevel::N5),
+        "N4" => Some(JapaneseLevel::N4),
+        _ => None,
+    });
+
+    let lesson_items = Signal::derive(move || {
+        let level = parsed_level.get();
         let mut items = vec![DropdownItem {
             value: "none".to_string(),
             label: "Не изучал".to_string(),
         }];
-        for lesson in &lessons {
-            items.push(DropdownItem {
-                value: format!("lesson_{}", lesson.lesson_number),
-                label: format!("Урок {}", lesson.lesson_number),
-            });
+
+        if let Some(lvl) = level {
+            let lessons = match lvl {
+                JapaneseLevel::N5 => lessons_n5.get(),
+                JapaneseLevel::N4 => lessons_n4.get(),
+                _ => return items,
+            };
+
+            for lesson in lessons.iter() {
+                items.push(DropdownItem {
+                    value: format!("lesson_{}", lesson.lesson_number),
+                    label: format!("Урок {}", lesson.lesson_number),
+                });
+            }
         }
         items
-    };
-
-    let import_info = Signal::derive(move || {
-        let val = selected_lesson_value.get();
-        if let Some(n) = val
-            .strip_prefix("lesson_")
-            .and_then(|s| s.parse::<usize>().ok())
-        {
-            Some(format!("Будут импортированы: Уроки 1-{}", n))
-        } else {
-            None
-        }
     });
 
-    // Clone app_id before the Effect to avoid ownership issues
-    let app_id_for_effect = app_id.clone();
-
-    // Single Effect that handles lesson selection
-    Effect::new(move |_| {
-        let val = selected_lesson_value.get();
-        let lesson_num = val
+    let import_info = Signal::derive(move || {
+        let level = parsed_level.get();
+        let lesson_num = selected_lesson
+            .get()
             .strip_prefix("lesson_")
             .and_then(|s| s.parse::<usize>().ok());
 
-        if let Some(n) = lesson_num {
-            // Collect IDs to import - use iterator without cloning the whole vector
-            let ids_to_import: Vec<String> = lessons
-                .iter()
-                .filter(|l| l.lesson_number <= n)
-                .map(|l| l.id.clone())
-                .collect();
+        match (level, lesson_num) {
+            (Some(JapaneseLevel::N5), Some(n)) => {
+                Some(format!("Будут импортированы: Уроки 1-{}", n))
+            },
+            (Some(JapaneseLevel::N4), Some(n)) => {
+                Some(format!("Будут импортированы: Уроки 1-25 + 26-{}", n))
+            },
+            _ => None,
+        }
+    });
 
-            let lessons_ref = lessons.clone();
-            let sets = available_sets.get();
+    Effect::new(move |_| {
+        let level = parsed_level.get();
+        let lesson_num = selected_lesson
+            .get()
+            .strip_prefix("lesson_")
+            .and_then(|s| s.parse::<usize>().ok());
+
+        if level.is_none() || lesson_num.is_none() {
+            return;
+        }
+
+        let lessons_n5_snapshot: Vec<_> = lessons_n5.get_untracked();
+        let lessons_n4_snapshot: Vec<_> = lessons_n4.get_untracked();
+        let sets_snapshot: Vec<_> = available_sets.get_untracked();
+
+        if let (Some(lvl), Some(n)) = (level, lesson_num) {
+            let ids_to_import: Vec<String> = match lvl {
+                JapaneseLevel::N4 => {
+                    let mut ids: Vec<String> =
+                        lessons_n5_snapshot.iter().map(|l| l.id.clone()).collect();
+                    for lesson in lessons_n4_snapshot.iter() {
+                        if lesson.lesson_number <= n {
+                            ids.push(lesson.id.clone());
+                        }
+                    }
+                    ids
+                },
+                JapaneseLevel::N5 => lessons_n5_snapshot
+                    .iter()
+                    .filter(|l| l.lesson_number <= n)
+                    .map(|l| l.id.clone())
+                    .collect(),
+                _ => vec![],
+            };
 
             state.update(|s| {
-                s.set_app_selection(&app_id_for_effect, &format!("lesson_{}", n));
-                // Remove old minna sets
+                s.set_app_selection("MinnaNoNihongo", &format!("{:?}_{}", lvl, n));
+                let all_lessons: Vec<_> = lessons_n5_snapshot
+                    .iter()
+                    .chain(lessons_n4_snapshot.iter())
+                    .collect();
                 s.sets_to_import
-                    .retain(|set| !lessons_ref.iter().any(|l| l.id == set.id));
-                // Add new sets
-                let sets_to_add: Vec<_> = sets
+                    .retain(|set| !all_lessons.iter().any(|l| l.id == set.id));
+                let sets_to_add: Vec<_> = sets_snapshot
                     .iter()
                     .filter(|set_meta| ids_to_import.contains(&set_meta.id))
                     .cloned()
@@ -79,29 +133,52 @@ pub fn MinnaProgressSelector(
         }
     });
 
+<<<<<<< HEAD
     let title_for_view = title.clone();
+=======
+>>>>>>> master
     view! {
         <Card class=Signal::derive(|| "p-4".to_string())>
-            <Text size=TextSize::Default variant=TypographyVariant::Primary>
-                {title_for_view}
-            </Text>
+            <div class="flex items-center gap-3 mb-2">
+                <img
+                    src="/public/external_icons/minnanonihongo.png"
+                    class="w-12 h-12 object-contain"
+                    alt="Minna no Nihongo"
+                />
+                <Text size=TextSize::Default variant=TypographyVariant::Primary>
+                    "Minna no Nihongo"
+                </Text>
+            </div>
 
             <div class="mt-4">
                 <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                    "Урок"
+                    "Уровень"
                 </Text>
                 <div class="mt-2">
                     <Dropdown
-                        options=Signal::derive(move || lesson_items.clone())
-                        selected=selected_lesson_value
-                        placeholder=Signal::derive(|| "Выберите урок".to_string())
-                        test_id=Signal::derive({
-                            let app_id_for_dropdown = app_id.clone();
-                            move || format!("{}-lesson-dropdown", app_id_for_dropdown)
-                        })
+                        _options=Signal::derive(move || level_items.clone())
+                        _selected=selected_level
+                        _placeholder=Signal::derive(|| "Выберите уровень".to_string())
+                        test_id=Signal::derive(|| "minna-level-dropdown".to_string())
                     />
                 </div>
             </div>
+
+            <Show when=move || parsed_level.get().is_some()>
+                <div class="mt-4">
+                    <Text size=TextSize::Small variant=TypographyVariant::Muted>
+                        "Урок"
+                    </Text>
+                    <div class="mt-2">
+                        <Dropdown
+                            _options=lesson_items
+                            _selected=selected_lesson
+                            _placeholder=Signal::derive(|| "Выберите урок".to_string())
+                            test_id=Signal::derive(|| "minna-lesson-dropdown".to_string())
+                        />
+                    </div>
+                </div>
+            </Show>
 
             <Show when=move || import_info.get().is_some()>
                 <div class="mt-2">

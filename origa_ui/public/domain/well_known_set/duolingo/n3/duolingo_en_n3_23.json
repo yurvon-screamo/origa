@@ -1,45 +1,45 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: talk about creative arts",
-			"title": "Duolingo (EN) - Section 5 Unit 23"
-		},
-		"Russian": {
-			"description": "Слова из модуля: talk about creative arts",
-			"title": "Duolingo (EN) - Section 5 Unit 23"
-		}
-	},
-	"level": "N3",
-	"words": [
-		"ユー",
-		"一種",
-		"人々",
-		"作品",
-		"作家",
-		"俳優",
-		"偉い",
-		"偉大",
-		"劇",
-		"劇場",
-		"品",
-		"場面",
-		"壁",
-		"女優",
-		"役割",
-		"感動",
-		"拍",
-		"拍手",
-		"歌手",
-		"演ずる",
-		"監督",
-		"筆",
-		"絵画",
-		"美術",
-		"舞台",
-		"芸術",
-		"見る",
-		"視線",
-		"観客",
-		"詩"
-	]
+    "content": {
+        "English": {
+            "description": "Words from section/unit: talk about creative arts",
+            "title": "Duolingo 「EN」 - Section 5 Unit 23"
+        },
+        "Russian": {
+            "description": "Слова из модуля: talk about creative arts",
+            "title": "Duolingo 「EN」 - Section 5 Unit 23"
+        }
+    },
+    "level": "N3",
+    "words": [
+        "ユー",
+        "一種",
+        "人々",
+        "作品",
+        "作家",
+        "俳優",
+        "偉い",
+        "偉大",
+        "劇",
+        "劇場",
+        "品",
+        "場面",
+        "壁",
+        "女優",
+        "役割",
+        "感動",
+        "拍",
+        "拍手",
+        "歌手",
+        "演ずる",
+        "監督",
+        "筆",
+        "絵画",
+        "美術",
+        "舞台",
+        "芸術",
+        "見る",
+        "視線",
+        "観客",
+        "詩"
+    ]
 }

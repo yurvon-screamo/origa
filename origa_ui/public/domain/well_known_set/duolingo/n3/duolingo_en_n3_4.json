@@ -1,42 +1,42 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: discuss possibilities",
-			"title": "Duolingo (EN) - Section 5 Unit 4"
-		},
-		"Russian": {
-			"description": "Слова из модуля: discuss possibilities",
-			"title": "Duolingo (EN) - Section 5 Unit 4"
-		}
-	},
-	"level": "N3",
-	"words": [
-		"エネルギー",
-		"ガス",
-		"ガラス",
-		"ユタカ",
-		"一生",
-		"再生",
-		"取っ手",
-		"可能",
-		"回す",
-		"土地",
-		"天然",
-		"当たる",
-		"懸命",
-		"所有",
-		"来る",
-		"殆ど",
-		"決して",
-		"油",
-		"燃料",
-		"石油",
-		"若し",
-		"言う",
-		"豊か",
-		"資源",
-		"開発",
-		"降る",
-		"限り"
-	]
+    "content": {
+        "English": {
+            "description": "Words from section/unit: discuss possibilities",
+            "title": "Duolingo 「EN」 - Section 5 Unit 4"
+        },
+        "Russian": {
+            "description": "Слова из модуля: discuss possibilities",
+            "title": "Duolingo 「EN」 - Section 5 Unit 4"
+        }
+    },
+    "level": "N3",
+    "words": [
+        "エネルギー",
+        "ガス",
+        "ガラス",
+        "ユタカ",
+        "一生",
+        "再生",
+        "取っ手",
+        "可能",
+        "回す",
+        "土地",
+        "天然",
+        "当たる",
+        "懸命",
+        "所有",
+        "来る",
+        "殆ど",
+        "決して",
+        "油",
+        "燃料",
+        "石油",
+        "若し",
+        "言う",
+        "豊か",
+        "資源",
+        "開発",
+        "降る",
+        "限り"
+    ]
 }

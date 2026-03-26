@@ -53,11 +53,11 @@ pub fn JlptStep(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoVie
         <div class="jlpt-step" data-testid=test_id_val>
             <div class="text-center mb-6">
                 <Text size=TextSize::Large variant=TypographyVariant::Primary test_id=Signal::derive(|| "jlpt-step-title".to_string())>
-                    "Выберите ваш текущий уровень JLPT"
+                    "Выберите уровень JLPT которого вы хотите достичь"
                 </Text>
                 <div class="mt-2">
                     <Text size=TextSize::Small variant=TypographyVariant::Muted test_id=Signal::derive(|| "jlpt-step-subtitle".to_string())>
-                        "Мы подберём подходящие наборы слов для вашего уровня"
+                        "Мы подберём подходящие наборы для вашего уровня"
                     </Text>
                 </div>
             </div>
@@ -76,12 +76,12 @@ pub fn JlptStep(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoVie
 
                         view! {
                             <div
-                                class=move || {
-                                    let base = "p-4 rounded-lg border-2 cursor-pointer transition-all";
+                                class="p-4 border cursor-pointer transition-all"
+                                style=move || {
                                     if is_selected.get() {
-                                        format!("{} border-olive-500 bg-olive-50", base)
+                                        "border: 2px solid var(--accent-olive); background: var(--bg-warm)"
                                     } else {
-                                        format!("{} border-gray-200 hover:border-gray-300", base)
+                                        "border: 1px solid var(--border-dark)"
                                     }
                                 }
                                 data-testid=format!("jlpt-option-{}", level_code)
@@ -90,14 +90,6 @@ pub fn JlptStep(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoVie
                                 }
                             >
                                 <div class="flex items-center gap-3">
-                                    <div class=move || {
-                                        let dot_class = "w-4 h-4 rounded-full border-2";
-                                        if is_selected.get() {
-                                            format!("{} border-olive-500 bg-olive-500", dot_class)
-                                        } else {
-                                            format!("{} border-gray-300", dot_class)
-                                        }
-                                    }/>
                                     <div class="flex-1">
                                         <Text size=TextSize::Default variant=TypographyVariant::Primary>
                                             {label}
@@ -105,6 +97,29 @@ pub fn JlptStep(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoVie
                                         <Text size=TextSize::Small variant=TypographyVariant::Muted>
                                             {description}
                                         </Text>
+                                    </div>
+                                    <div
+                                        class="w-5 h-5 border relative flex-shrink-0 transition-all"
+                                        style=move || {
+                                            if is_selected.get() {
+                                                "border: 1px solid var(--accent-olive)"
+                                            } else {
+                                                "border: 1px solid var(--border-dark)"
+                                            }
+                                        }
+                                    >
+                                        {move || {
+                                            if is_selected.get() {
+                                                view! {
+                                                    <div
+                                                        class="absolute"
+                                                        style="inset: 3px; background: var(--fg-black)"
+                                                    ></div>
+                                                }.into_any()
+                                            } else {
+                                                ().into_any()
+                                            }
+                                        }}
                                     </div>
                                 </div>
                             </div>

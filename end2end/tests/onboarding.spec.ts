@@ -123,13 +123,13 @@ testWithFreshUser.describe("Onboarding Flow - N4 with ~50% Progress", () => {
             console.log("Migii selected state class not found");
         });
 
-        // Select Duolingo (RU)
+        // Select Duolingo 「RU」
         const duolingoRuCheckbox = page.getByTestId("apps-step-app-DuolingoRu-checkbox");
         if (await duolingoRuCheckbox.isVisible().catch(() => false)) {
             await duolingoRuCheckbox.click();
         }
 
-        // Select Duolingo (EN)
+        // Select Duolingo 「EN」
         const duolingoEnCheckbox = page.getByTestId("apps-step-app-DuolingoEn-checkbox");
         if (await duolingoEnCheckbox.isVisible().catch(() => false)) {
             await duolingoEnCheckbox.click();
@@ -181,7 +181,7 @@ testWithFreshUser.describe("Onboarding Flow - N4 with ~50% Progress", () => {
             await page.getByTestId("migii-lesson-dropdown-option-10").click();
         }
 
-        // Configure Duolingo (RU) progress
+        // Configure Duolingo 「RU」 progress
         const duolingoRuModuleDropdown = page.getByTestId("DuolingoRu-module-dropdown");
         if (await duolingoRuModuleDropdown.isVisible().catch(() => false)) {
             // Select first module
