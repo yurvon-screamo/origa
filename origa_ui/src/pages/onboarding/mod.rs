@@ -30,7 +30,9 @@ pub fn Onboarding() -> impl IntoView {
     let repository =
         use_context::<HybridUserRepository>().expect("repository context not provided");
     let navigate = use_navigate();
+    let navigate_for_init = navigate.clone();
     let navigate_for_import = navigate.clone();
+    let navigate_for_skip = navigate.clone();
 
     let state = RwSignal::new(OnboardingState::new());
     let current_user: RwSignal<Option<User>> = RwSignal::new(None);
@@ -84,7 +86,7 @@ pub fn Onboarding() -> impl IntoView {
 
         let repo = repo_for_init.clone();
         let loader = loader.clone();
-        let nav = navigate.clone();
+        let nav = navigate_for_init.clone();
         spawn_local(async move {
             match repo.get_current_user().await {
                 Ok(Some(user)) => {
@@ -132,6 +134,13 @@ pub fn Onboarding() -> impl IntoView {
             s.go_to_prev_step();
         });
     });
+
+    let on_skip = {
+        let nav = navigate_for_skip;
+        Callback::new(move |_: leptos::ev::MouseEvent| {
+            nav("/home", Default::default());
+        })
+    };
 
     let on_start_import = {
         let nav = navigate_for_import.clone();
@@ -224,11 +233,7 @@ pub fn Onboarding() -> impl IntoView {
                                 <Show when=move || state.get().is_first_step()>
                                     <Button
                                         variant=ButtonVariant::Ghost
-                                        on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
-                                            state.update(|s| {
-                                                s.current_step = OnboardingStep::Summary;
-                                            });
-                                        })
+                                        on_click=on_skip
                                         test_id="onboarding-skip"
                                     >
                                         "Пропустить"
