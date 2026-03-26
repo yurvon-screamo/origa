@@ -74,12 +74,22 @@ export class LoginPage extends BasePage {
         await this.submitButton.click({ force: true });
     }
 
-    async login(email: string, password: string): Promise<void> {
-        await this.fillEmail(email);
-        await this.page.waitForTimeout(100);
-        await this.fillPassword(password);
-        await this.page.waitForTimeout(100);
-        await this.submit();
+    async login(
+        email: string,
+        password: string,
+    ): Promise<{ success: boolean; error?: string }> {
+        try {
+            await this.fillEmail(email);
+            await this.page.waitForTimeout(100);
+            await this.fillPassword(password);
+            await this.page.waitForTimeout(100);
+            await this.submit();
+            await this.page.waitForTimeout(20_000);
+            return { success: true };
+        }
+        catch (error) {
+            return { success: false, error: error instanceof Error ? error.message : String(error) };
+        }
     }
 
     async expectLoginSuccess(redirectTo = "/home"): Promise<void> {

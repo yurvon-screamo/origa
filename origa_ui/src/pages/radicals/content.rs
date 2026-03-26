@@ -1,4 +1,4 @@
-use super::super::shared::{CardCounts, CardStatus, Filter, FilterBtn, create_delete_callback};
+use super::super::shared::{create_delete_callback, CardCounts, CardStatus, Filter, FilterBtn};
 use super::radical_item::RadicalItem;
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{
@@ -155,6 +155,7 @@ pub fn RadicalsContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
                 <Input
                     value=search
                     placeholder=Signal::derive(|| "Поиск...".to_string())
+                    test_id="radicals-search-input"
                 />
 
                 <div class="flex flex-wrap gap-2">
@@ -165,12 +166,12 @@ pub fn RadicalsContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
                     <FilterBtn filter=Filter::Learned count=move || counts.get().learned active=filter />
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4" data-testid="radicals-grid">
                     {move || {
                         let cards = filtered_cards.get();
                         if cards.is_empty() {
                             Either::Left(view! {
-                                <div class="col-span-full">
+                                <div class="col-span-full" data-testid="radicals-empty-state">
                                     <Text size=TextSize::Default variant=TypographyVariant::Muted>
                                         "Радикалы не найдены"
                                     </Text>

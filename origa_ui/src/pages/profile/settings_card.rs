@@ -3,9 +3,9 @@ use crate::ui_components::{Card, Text, TextSize};
 use leptos::prelude::*;
 
 #[component]
-pub fn SettingsCard() -> impl IntoView {
+pub fn SettingsCard(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoView {
     view! {
-        <Card>
+        <Card test_id=test_id>
             <div class="space-y-4">
                 <div class="space-y-2">
                     <Text size={TextSize::Large}>

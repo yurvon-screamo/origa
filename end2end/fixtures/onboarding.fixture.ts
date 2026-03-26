@@ -1,12 +1,13 @@
+/* eslint-disable @typescript-eslint/no-empty-object-pattern */
 import { test as base, type Page } from "@playwright/test";
-import { LoginPage } from "../pages";
-import { testUser, trailBaseUrl } from "../config";
+import { trailBaseUrl } from "../config";
 import {
 	getAdminToken,
 	createTestUser,
 	deleteTestUser,
 	loginTestUser,
 } from "./admin";
+import { generateUniqueEmail, DEFAULT_TEST_PASSWORD } from "./auth.fixture";
 
 /**
  * Extended test with authenticated page fixture
@@ -17,51 +18,44 @@ export const test = base.extend<{
 	authToken: string;
 }>({
 	authenticatedPage: async ({ browser }, use) => {
-		// Create new browser context
 		const context = await browser.newContext();
 		const page = await context.newPage();
-
-		// Set viewport for consistent testing
 		await page.setViewportSize({ width: 1280, height: 720 });
 
+		const userEmail = generateUniqueEmail();
+		const userPassword = DEFAULT_TEST_PASSWORD;
 		let adminToken: string | undefined;
+		let adminCsrfToken: string | undefined;
+		let userUuid: string | undefined;
 
 		try {
-			// Get admin token
-			adminToken = await getAdminToken();
-			// Ensure test user exists
-			await createTestUser(adminToken);
+			const adminAuth = await getAdminToken();
+			adminToken = adminAuth.token;
+			adminCsrfToken = adminAuth.csrfToken;
+
+			userUuid = await createTestUser(adminToken, adminCsrfToken, userEmail, userPassword);
 		} catch (error) {
 			console.error("[fixture] Failed to setup test user:", error);
 			throw error;
 		}
 
 		try {
-			// Login to get auth token
-			const authToken = await loginTestUser();
+			const { token: authToken } = await loginTestUser(userEmail, userPassword);
 
-			// Navigate to base URL and set auth cookie
 			await page.goto(trailBaseUrl);
-
-			// Set auth token in localStorage/sessionStorage if needed
-			// This depends on how the app stores auth tokens
 			await page.evaluate((token) => {
 				localStorage.setItem("auth_token", token);
 			}, authToken);
 
-			// Navigate to app
 			await page.goto("http://localhost:1420");
-
-			// Wait for auth to complete
 			await page.waitForLoadState("networkidle");
 
 			await use(page);
 		} finally {
-			// Cleanup
 			await context.close();
-			if (adminToken) {
+			if (adminToken && adminCsrfToken && userUuid) {
 				try {
-					await deleteTestUser(adminToken);
+					await deleteTestUser(adminToken, adminCsrfToken, userUuid);
 				} catch (error) {
 					console.error("[fixture] Failed to cleanup test user");
 				}
@@ -69,9 +63,30 @@ export const test = base.extend<{
 		}
 	},
 
-	authToken: async (_args, use) => {
-		const token = await loginTestUser();
-		await use(token);
+	authToken: async ({}, use) => {
+		const userEmail = generateUniqueEmail();
+		const userPassword = DEFAULT_TEST_PASSWORD;
+		let adminToken: string | undefined;
+		let adminCsrfToken: string | undefined;
+		let userUuid: string | undefined;
+
+		try {
+			const adminAuth = await getAdminToken();
+			adminToken = adminAuth.token;
+			adminCsrfToken = adminAuth.csrfToken;
+
+			userUuid = await createTestUser(adminToken, adminCsrfToken, userEmail, userPassword);
+			const { token } = await loginTestUser(userEmail, userPassword);
+			await use(token);
+		} finally {
+			if (adminToken && adminCsrfToken && userUuid) {
+				try {
+					await deleteTestUser(adminToken, adminCsrfToken, userUuid);
+				} catch (error) {
+					console.error("[fixture] Failed to cleanup test user");
+				}
+			}
+		}
 	},
 });
 
@@ -86,23 +101,25 @@ export const testWithFreshUser = base.extend<{
 		const page = await context.newPage();
 		await page.setViewportSize({ width: 1280, height: 720 });
 
-		// Create unique test user for this test
-		const uniqueEmail = `e2e-fresh-${Date.now()}@origa.local`;
-		const uniquePassword = "test-password-123";
-
+		const uniqueEmail = generateUniqueEmail();
+		const uniquePassword = DEFAULT_TEST_PASSWORD;
 		let adminToken: string | undefined;
+		let adminCsrfToken: string | undefined;
+		let userUuid: string | undefined;
 
 		try {
-			adminToken = await getAdminToken();
-			await createTestUser(adminToken, uniqueEmail, uniquePassword);
+			const adminAuth = await getAdminToken();
+			adminToken = adminAuth.token;
+			adminCsrfToken = adminAuth.csrfToken;
+
+			userUuid = await createTestUser(adminToken, adminCsrfToken, uniqueEmail, uniquePassword);
 		} catch (error) {
 			console.error("[fixture] Failed to create fresh user:", error);
 			throw error;
 		}
 
 		try {
-			// Login with fresh user
-			const authToken = await loginTestUser(uniqueEmail, uniquePassword);
+			const { token: authToken } = await loginTestUser(uniqueEmail, uniquePassword);
 
 			await page.goto(trailBaseUrl);
 			await page.evaluate((token) => {
@@ -115,9 +132,9 @@ export const testWithFreshUser = base.extend<{
 			await use(page);
 		} finally {
 			await context.close();
-			if (adminToken) {
+			if (adminToken && adminCsrfToken && userUuid) {
 				try {
-					await deleteTestUser(adminToken, uniqueEmail);
+					await deleteTestUser(adminToken, adminCsrfToken, userUuid);
 				} catch (error) {
 					console.error("[fixture] Failed to cleanup fresh user");
 				}

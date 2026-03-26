@@ -21,8 +21,8 @@ pub fn Grammar() -> impl IntoView {
     let refresh_trigger = RwSignal::new(0u32);
 
     view! {
-        <PageLayout variant=PageLayoutVariant::Full>
-            <CardLayout size=CardLayoutSize::Adaptive class="px-4 py-8">
+        <PageLayout variant=PageLayoutVariant::Full test_id="grammar-page">
+            <CardLayout size=CardLayoutSize::Adaptive class="px-4 py-8" test_id="grammar-card">
                 <GrammarHeader refresh_trigger=refresh_trigger />
                 <GrammarContent refresh_trigger=refresh_trigger />
             </CardLayout>

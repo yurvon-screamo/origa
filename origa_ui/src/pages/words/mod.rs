@@ -19,8 +19,8 @@ pub fn Words() -> impl IntoView {
     let refresh_trigger = RwSignal::new(0u32);
 
     view! {
-        <PageLayout variant=PageLayoutVariant::Full>
-            <CardLayout size=CardLayoutSize::Adaptive class="px-4 py-8">
+        <PageLayout variant=PageLayoutVariant::Full test_id="words-page">
+            <CardLayout size=CardLayoutSize::Adaptive class="px-4 py-8" test_id="words-card">
                 <WordsHeader refresh_trigger=refresh_trigger />
                 <WordsContent refresh_trigger=refresh_trigger />
             </CardLayout>

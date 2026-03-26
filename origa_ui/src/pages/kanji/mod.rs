@@ -23,8 +23,8 @@ pub fn Kanji() -> impl IntoView {
     let refresh_trigger = RwSignal::new(0u32);
 
     view! {
-        <PageLayout variant=PageLayoutVariant::Full>
-            <CardLayout size=CardLayoutSize::Adaptive class="px-4 py-8">
+        <PageLayout variant=PageLayoutVariant::Full test_id="kanji-page">
+            <CardLayout size=CardLayoutSize::Adaptive class="px-4 py-8" test_id="kanji-card">
                 <KanjiHeader refresh_trigger=refresh_trigger />
                 <KanjiContent refresh_trigger=refresh_trigger />
             </CardLayout>

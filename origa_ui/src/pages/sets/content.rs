@@ -1,4 +1,4 @@
-use super::filters::{ImportFilter, LevelFilter, TypeFilter, available_set_types};
+use super::filters::{available_set_types, ImportFilter, LevelFilter, TypeFilter};
 use super::import_set_preview_modal::ImportSetPreviewModal;
 use super::sets_level_group::SetsLevelGroup;
 use super::types::SetInfo;
@@ -153,9 +153,9 @@ pub fn SetsContent() -> impl IntoView {
     view! {
         <div class="sets-page">
             <Show when=move || is_loading.get()>
-                <div class="flex flex-col items-center py-8 gap-4">
+                <div class="flex flex-col items-center py-8 gap-4" data-testid="sets-loading">
                     <Spinner />
-                    <Text size=TextSize::Small variant=TypographyVariant::Muted>
+                    <Text size=TextSize::Small variant=TypographyVariant::Muted test_id="sets-loading-text">
                         "Загрузка списков слов..."
                     </Text>
                 </div>
@@ -165,9 +165,10 @@ pub fn SetsContent() -> impl IntoView {
                     <Input
                         value=search
                         placeholder=Signal::derive(|| "Поиск наборов...".to_string())
+                        test_id="sets-search-input"
                     />
 
-                    <div class="flex flex-wrap gap-2">
+                    <div class="flex flex-wrap gap-2" data-testid="sets-level-filters">
                         <Tag
                             variant=Signal::derive(move || {
                                 if level_filter.get() == LevelFilter::All {
@@ -177,6 +178,7 @@ pub fn SetsContent() -> impl IntoView {
                                 }
                             })
                             class=Signal::derive(|| "cursor-pointer".to_string())
+                            test_id="sets-level-all"
                             on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
                                 level_filter.set(LevelFilter::All);
                             })
@@ -192,6 +194,7 @@ pub fn SetsContent() -> impl IntoView {
                                 }
                             })
                             class=Signal::derive(|| "cursor-pointer".to_string())
+                            test_id="sets-level-n5"
                             on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
                                 level_filter.set(LevelFilter::N5);
                             })
@@ -207,6 +210,7 @@ pub fn SetsContent() -> impl IntoView {
                                 }
                             })
                             class=Signal::derive(|| "cursor-pointer".to_string())
+                            test_id="sets-level-n4"
                             on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
                                 level_filter.set(LevelFilter::N4);
                             })
@@ -222,6 +226,7 @@ pub fn SetsContent() -> impl IntoView {
                                 }
                             })
                             class=Signal::derive(|| "cursor-pointer".to_string())
+                            test_id="sets-level-n3"
                             on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
                                 level_filter.set(LevelFilter::N3);
                             })
@@ -237,6 +242,7 @@ pub fn SetsContent() -> impl IntoView {
                                 }
                             })
                             class=Signal::derive(|| "cursor-pointer".to_string())
+                            test_id="sets-level-n2"
                             on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
                                 level_filter.set(LevelFilter::N2);
                             })
@@ -252,6 +258,7 @@ pub fn SetsContent() -> impl IntoView {
                                 }
                             })
                             class=Signal::derive(|| "cursor-pointer".to_string())
+                            test_id="sets-level-n1"
                             on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
                                 level_filter.set(LevelFilter::N1);
                             })
@@ -260,7 +267,7 @@ pub fn SetsContent() -> impl IntoView {
                         </Tag>
                     </div>
 
-                    <div class="flex flex-wrap gap-2">
+                    <div class="flex flex-wrap gap-2" data-testid="sets-type-filters">
                         <Tag
                             variant=Signal::derive(move || {
                                 if type_filter.get().is_all() {
@@ -270,6 +277,7 @@ pub fn SetsContent() -> impl IntoView {
                                 }
                             })
                             class=Signal::derive(|| "cursor-pointer".to_string())
+                            test_id="sets-type-all"
                             on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
                                 type_filter.set(TypeFilter::all());
                             })
@@ -284,6 +292,7 @@ pub fn SetsContent() -> impl IntoView {
                                 let type_id_for_click = type_id.clone();
                                 let type_filter = type_filter;
                                 let label = type_meta.label_ru.clone();
+                                let test_id_val = format!("sets-type-{}", type_id);
                                 view! {
                                     <Tag
                                         variant=Signal::derive(move || {
@@ -293,6 +302,7 @@ pub fn SetsContent() -> impl IntoView {
                                             }
                                         })
                                         class=Signal::derive(|| "cursor-pointer".to_string())
+                                        test_id=Signal::derive(move || test_id_val.clone())
                                         on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
                                             type_filter.set(TypeFilter::specific(&type_id_for_click));
                                         })
@@ -304,7 +314,7 @@ pub fn SetsContent() -> impl IntoView {
                         />
                     </div>
 
-                    <div class="flex flex-wrap gap-2">
+                    <div class="flex flex-wrap gap-2" data-testid="sets-import-filters">
                         <Tag
                             variant=Signal::derive(move || {
                                 if import_filter.get() == ImportFilter::All {
@@ -314,6 +324,7 @@ pub fn SetsContent() -> impl IntoView {
                                 }
                             })
                             class=Signal::derive(|| "cursor-pointer".to_string())
+                            test_id="sets-import-all"
                             on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
                                 import_filter.set(ImportFilter::All);
                             })
@@ -329,6 +340,7 @@ pub fn SetsContent() -> impl IntoView {
                                 }
                             })
                             class=Signal::derive(|| "cursor-pointer".to_string())
+                            test_id="sets-import-imported"
                             on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
                                 import_filter.set(ImportFilter::Imported);
                             })
@@ -344,6 +356,7 @@ pub fn SetsContent() -> impl IntoView {
                                 }
                             })
                             class=Signal::derive(|| "cursor-pointer".to_string())
+                            test_id="sets-import-new"
                             on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
                                 import_filter.set(ImportFilter::New);
                             })
@@ -356,6 +369,7 @@ pub fn SetsContent() -> impl IntoView {
                         <div class="flex items-center gap-3 pt-2">
                             <Button
                                 variant=ButtonVariant::Olive
+                                test_id="sets-import-selected-btn"
                                 on_click=Callback::new(move |_| {
                                     let set_ids: Vec<String> = selected_sets.get().into_iter().collect();
                                     let count = set_ids.len();
@@ -377,6 +391,7 @@ pub fn SetsContent() -> impl IntoView {
                             </Button>
                             <Button
                                 variant=ButtonVariant::Ghost
+                                test_id="sets-cancel-select-btn"
                                 on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
                                     selected_sets.set(HashSet::new());
                                 })

@@ -1,12 +1,12 @@
-import { test, expect, Page } from "@playwright/test";
+import { expect, type Page } from "@playwright/test";
+import { testWithFreshUser } from "../fixtures";
 import { LoginPage, OnboardingPage } from "../pages";
-import { testUser, trailBaseUrl } from "../config";
 
 /**
  * Onboarding Flow E2E Tests
  *
  * Tests the complete onboarding flow:
- * 1. Login
+ * 1. Login (handled by fixture)
  * 2. Intro step
  * 3. JLPT level selection (N4)
  * 4. Apps selection (Migii, Duolingo RU, Minna N4)
@@ -14,35 +14,27 @@ import { testUser, trailBaseUrl } from "../config";
  * 6. Summary and import
  */
 
-test.describe("Onboarding Flow - N4 with ~50% Progress", () => {
-    let page: Page;
+testWithFreshUser.describe.configure({ mode: 'serial' });
+
+testWithFreshUser.describe("Onboarding Flow - N4 with ~50% Progress", () => {
     let loginPage: LoginPage;
     let onboardingPage: OnboardingPage;
 
-    test.beforeAll(async ({ browser }) => {
-        // Create isolated context for onboarding tests
-        const context = await browser.newContext();
-        page = await context.newPage();
-
+    testWithFreshUser.beforeEach(async ({ page }: { page: Page }) => {
         // Set viewport for consistent testing
         await page.setViewportSize({ width: 1280, height: 720 });
 
         loginPage = new LoginPage(page);
         onboardingPage = new OnboardingPage(page);
 
-        // Login with test user
+        // Navigate to login page - user is already authenticated via fixture
         await loginPage.goto();
-        await loginPage.login(testUser.email, testUser.password);
 
-        // Wait for redirect after login
+        // Wait for redirect after login (fixture already sets auth token)
         await page.waitForURL(/\/(onboarding|home)$/, { timeout: 10000 });
     });
 
-    test.afterAll(async () => {
-        await page.close();
-    });
-
-    test("should display onboarding page with stepper", async () => {
+    testWithFreshUser("should display onboarding page with stepper", async ({ page }: { page: Page }) => {
         // Verify we're on onboarding page
         await expect(page).toHaveURL(/\/onboarding$/);
 
@@ -57,12 +49,16 @@ test.describe("Onboarding Flow - N4 with ~50% Progress", () => {
         await expect(page.getByTestId("onboarding-stepper")).toBeVisible();
     });
 
-    test("Step 1: Intro - should display welcome message and proceed", async () => {
+    testWithFreshUser("Step 1: Intro - should display welcome message and proceed", async ({ page }: { page: Page }) => {
         // Verify intro step is visible
         await expect(page.getByTestId("onboarding-intro-step")).toBeVisible();
 
         // Verify welcome text
         await expect(page.getByText("Настроим обучение!")).toBeVisible();
+
+        // Verify skip button is visible
+        const skipButton = page.getByTestId("onboarding-skip");
+        await expect(skipButton).toBeVisible();
 
         // Take screenshot for visual verification
         await page.screenshot({
@@ -77,7 +73,7 @@ test.describe("Onboarding Flow - N4 with ~50% Progress", () => {
         await expect(page.getByTestId("onboarding-jlpt-step")).toBeVisible();
     });
 
-    test("Step 2: JLPT - should select N4 level", async () => {
+    testWithFreshUser("Step 2: JLPT - should select N4 level", async ({ page }: { page: Page }) => {
         // Verify JLPT step
         await expect(page.getByTestId("onboarding-jlpt-step")).toBeVisible();
         await expect(page.getByText("Выберите ваш текущий уровень JLPT")).toBeVisible();
@@ -109,7 +105,7 @@ test.describe("Onboarding Flow - N4 with ~50% Progress", () => {
         await expect(page.getByTestId("onboarding-apps-step")).toBeVisible();
     });
 
-    test("Step 3: Apps - should select all available apps", async () => {
+    testWithFreshUser("Step 3: Apps - should select all available apps", async ({ page }: { page: Page }) => {
         // Verify apps step
         await expect(page.getByTestId("onboarding-apps-step")).toBeVisible();
         await expect(page.getByText("Какие приложения вы используете?")).toBeVisible();
@@ -143,16 +139,10 @@ test.describe("Onboarding Flow - N4 with ~50% Progress", () => {
             await duolingoEnCheckbox.click();
         }
 
-        // Select Minna N5
-        const minnaN5Checkbox = page.getByTestId("apps-step-app-MinnaNoNihongoN5-checkbox");
-        if (await minnaN5Checkbox.isVisible().catch(() => false)) {
-            await minnaN5Checkbox.click();
-        }
-
-        // Select Minna N4
-        const minnaN4Checkbox = page.getByTestId("apps-step-app-MinnaNoNihongoN4-checkbox");
-        if (await minnaN4Checkbox.isVisible().catch(() => false)) {
-            await minnaN4Checkbox.click();
+        // Select Minna no Nihongo
+        const minnaNoNihongoCheckbox = page.getByTestId("apps-step-app-MinnaNoNihongo-checkbox");
+        if (await minnaNoNihongoCheckbox.isVisible().catch(() => false)) {
+            await minnaNoNihongoCheckbox.click();
         }
 
         // Screenshot after selections
@@ -166,7 +156,7 @@ test.describe("Onboarding Flow - N4 with ~50% Progress", () => {
         await expect(page.getByTestId("onboarding-progress-step")).toBeVisible();
     });
 
-    test("Step 4: Progress - should configure ~50% progress for each app", async () => {
+    testWithFreshUser("Step 4: Progress - should configure ~50% progress for each app", async ({ page }: { page: Page }) => {
         // Verify progress step
         await expect(page.getByTestId("onboarding-progress-step")).toBeVisible();
         await expect(page.getByText("Ваш прогресс")).toBeVisible();
@@ -181,12 +171,12 @@ test.describe("Onboarding Flow - N4 with ~50% Progress", () => {
         const migiiLevelDropdown = page.getByTestId("migii-level-dropdown");
         if (await migiiLevelDropdown.isVisible().catch(() => false)) {
             await migiiLevelDropdown.click();
-            await page.getByTestId("migii-level-dropdown-option-n4").click();
+            await page.getByTestId("migii-level-dropdown-option-N4").click();
 
             // Select middle lesson (around lesson 10 for N4)
             const migiiLessonDropdown = page.getByTestId("migii-lesson-dropdown");
             await migiiLessonDropdown.click();
-            await page.getByTestId("migii-lesson-dropdown-option-10").click();
+            await page.getByTestId("migii-lesson-dropdown-option-lesson_10").click();
         }
 
         // Configure Duolingo 「RU」 progress
@@ -194,20 +184,23 @@ test.describe("Onboarding Flow - N4 with ~50% Progress", () => {
         if (await duolingoRuModuleDropdown.isVisible().catch(() => false)) {
             // Select first module
             await duolingoRuModuleDropdown.click();
-            await page.getByTestId("DuolingoRu-module-dropdown-option-1").first().click();
+            await page.getByTestId("DuolingoRu-module-dropdown-option-module_1").click();
 
             // Select ~50% unit
             const duolingoRuUnitDropdown = page.getByTestId("DuolingoRu-unit-dropdown");
             await duolingoRuUnitDropdown.click();
-            await page.getByTestId("DuolingoRu-unit-dropdown-option-10").first().click();
+            await page.getByTestId("DuolingoRu-unit-dropdown-option-unit_10").click();
         }
 
-        // Configure Minna N4 progress
-        const minnaN4LessonDropdown = page.getByTestId("MinnaNoNihongoN4-lesson-dropdown");
-        if (await minnaN4LessonDropdown.isVisible().catch(() => false)) {
-            await minnaN4LessonDropdown.click();
-            // Select lesson around middle (lesson 38 of 26-50)
-            await page.getByTestId("MinnaNoNihongoN4-lesson-dropdown-option-38").click();
+        // Configure Minna no Nihongo progress (two dropdowns: level + lesson)
+        const minnaLevelDropdown = page.getByTestId("minna-level-dropdown");
+        if (await minnaLevelDropdown.isVisible().catch(() => false)) {
+            await minnaLevelDropdown.click();
+            await page.getByTestId("minna-level-dropdown-option-N4").click();
+
+            const minnaLessonDropdown = page.getByTestId("minna-lesson-dropdown");
+            await minnaLessonDropdown.click();
+            await page.getByTestId("minna-lesson-dropdown-option-lesson_38").click();
         }
 
         // Screenshot after progress configuration
@@ -221,7 +214,7 @@ test.describe("Onboarding Flow - N4 with ~50% Progress", () => {
         await expect(page.getByTestId("onboarding-summary-step")).toBeVisible();
     });
 
-    test("Step 5: Summary - should display selected sets and allow toggle", async () => {
+    testWithFreshUser("Step 5: Summary - should display selected sets and allow toggle", async ({ page }: { page: Page }) => {
         // Verify summary step
         await expect(page.getByTestId("onboarding-summary-step")).toBeVisible();
         await expect(page.getByText("Готово к импорту")).toBeVisible();
@@ -258,7 +251,7 @@ test.describe("Onboarding Flow - N4 with ~50% Progress", () => {
         });
     });
 
-    test("should complete import and redirect to home", async () => {
+    testWithFreshUser("should complete import and redirect to home", async ({ page }: { page: Page }) => {
         // Start import
         await page.getByTestId("onboarding-import").click();
 
@@ -276,24 +269,5 @@ test.describe("Onboarding Flow - N4 with ~50% Progress", () => {
             path: "test-results/onboarding-complete-home.png",
             fullPage: true
         });
-    });
-});
-
-test.describe("Onboarding Flow - Edge Cases", () => {
-    test("should handle empty app selection", async ({ page }) => {
-        // This test would require a fresh user
-        // For now, skip as it requires user cleanup/recreation
-        test.skip(true, "Requires fresh user without onboarding completion");
-    });
-
-    test("should allow going back between steps", async ({ page }) => {
-        // Test navigation backwards
-        // Requires starting from a specific step
-        test.skip(true, "Requires specific setup");
-    });
-
-    test("should validate JLPT level selection is required", async ({ page }) => {
-        // Test that "Далее" is disabled when no JLPT level selected
-        test.skip(true, "Requires fresh onboarding state");
     });
 });

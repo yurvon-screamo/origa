@@ -115,9 +115,9 @@ pub fn DuolingoProgressSelector(
                     </Text>
                     <div class="mt-2">
                         <Dropdown
-                            _options=module_items
-                            _selected=selected_module
-                            _placeholder=Signal::derive(|| "Выберите модуль".to_string())
+                            options=module_items
+                            selected=selected_module
+                            placeholder=Signal::derive(|| "Выберите модуль".to_string())
                             test_id=Signal::derive(move || format!("{}-module-dropdown", app_id_for_module_dropdown.clone()))
                         />
                     </div>
@@ -130,9 +130,9 @@ pub fn DuolingoProgressSelector(
                         </Text>
                         <div class="mt-2">
                             <Dropdown
-                                _options=unit_items
-                                _selected=selected_unit
-                                _placeholder=Signal::derive(|| "Выберите раздел".to_string())
+                                options=unit_items
+                                selected=selected_unit
+                                placeholder=Signal::derive(|| "Выберите раздел".to_string())
                                 test_id=Signal::derive({
                                     let app_id = app_id_for_unit_dropdown.clone();
                                     move || format!("{}-unit-dropdown", app_id)
