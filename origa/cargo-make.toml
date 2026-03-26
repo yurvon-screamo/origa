@@ -1,0 +1,280 @@
+# Origa - Cargo Make Configuration
+# https://sagiegurari.github.io/cargo-make/
+
+[config]
+skip_core_tasks = true
+
+[tasks.default]
+description = "Show available tasks"
+command = "cargo"
+args = ["make", "--list-all-steps"]
+
+# ============================================================================
+# DEVELOPMENT
+# ============================================================================
+
+[tasks.dev]
+description = "Start frontend dev server (alias for dev-ui)"
+alias = "dev-ui"
+
+[tasks.dev-ui]
+description = "Start frontend dev server with Trunk"
+command = "trunk"
+args = ["serve"]
+cwd = "origa_ui"
+
+[tasks.dev-tauri]
+description = "Start Tauri desktop app in dev mode"
+command = "cargo"
+args = ["tauri", "dev"]
+cwd = "tauri"
+
+# ============================================================================
+# BUILD
+# ============================================================================
+
+[tasks.build]
+description = "Build all workspace crates (debug)"
+command = "cargo"
+args = ["build", "--workspace"]
+
+[tasks.build-release]
+description = "Build all workspace crates (release)"
+command = "cargo"
+args = ["build", "--workspace", "--release"]
+
+[tasks.build-ui]
+description = "Build frontend for production"
+command = "trunk"
+args = ["build", "--release"]
+cwd = "origa_ui"
+
+[tasks.build-tauri]
+description = "Build Tauri desktop application"
+command = "cargo"
+args = ["tauri", "build"]
+cwd = "tauri"
+
+[tasks.build-docker]
+description = "Build Docker image for web deployment"
+command = "docker"
+args = ["build", "-f", "origa_ui/Dockerfile", "-t", "origa:latest", "."]
+
+# ============================================================================
+# TESTING
+# ============================================================================
+
+[tasks.test]
+description = "Run all workspace tests"
+command = "cargo"
+args = ["test", "--workspace"]
+
+[tasks.test-verbose]
+description = "Run all tests with output"
+command = "cargo"
+args = ["test", "--workspace", "--", "--nocapture"]
+
+[tasks.test-origa]
+description = "Run tests for origa crate only"
+command = "cargo"
+args = ["test", "-p", "origa"]
+
+[tasks.test-ui]
+description = "Run tests for origa_ui crate only"
+command = "cargo"
+args = ["test", "-p", "origa_ui"]
+
+[tasks.test-tauri]
+description = "Run tests for tauri crate only"
+command = "cargo"
+args = ["test", "-p", "tauri"]
+
+[tasks.test-cov]
+description = "Generate test coverage report (terminal summary)"
+command = "cargo"
+args = ["llvm-cov", "--workspace"]
+
+# ============================================================================
+# LINTING & FORMATTING
+# ============================================================================
+
+[tasks.fmt]
+description = "Format code with rustfmt"
+command = "cargo"
+args = ["fmt"]
+
+[tasks.fmt-check]
+description = "Check code formatting without changes"
+command = "cargo"
+args = ["fmt", "--check"]
+
+[tasks.clippy]
+description = "Run clippy linter with warnings as errors"
+command = "cargo"
+args = ["clippy", "--workspace", "--all-targets", "--", "-D", "warnings"]
+
+[tasks.lint]
+description = "Run all linting checks (fmt + clippy)"
+dependencies = ["fmt-check", "clippy"]
+
+# ============================================================================
+# QLTY CODE QUALITY
+# ============================================================================
+
+[tasks.qlty-install]
+description = "Install qlty CLI tool"
+command = "sh"
+args = ["-c", "curl https://qlty.sh | sh"]
+
+[tasks.qlty-check]
+description = "Run qlty code quality analysis"
+command = "qlty"
+args = ["check"]
+
+[tasks.qlty-ci]
+description = "Run qlty in CI mode"
+command = "qlty"
+args = ["check", "--ci"]
+
+[tasks.qlty-full]
+description = "Run comprehensive qlty analysis with all plugins"
+command = "qlty"
+args = ["check", "--all"]
+
+[tasks.qlty-validate]
+description = "Validate qlty configuration"
+command = "qlty"
+args = ["validate"]
+
+# ============================================================================
+# E2E TESTING (Playwright)
+# ============================================================================
+
+[tasks.e2e-install]
+description = "Install Playwright dependencies"
+command = "npm"
+args = ["install"]
+cwd = "end2end"
+
+[tasks.e2e-playwright-install]
+description = "Install Playwright browsers"
+command = "npx"
+args = ["playwright", "install"]
+cwd = "end2end"
+
+[tasks.e2e]
+description = "Run E2E tests (headless)"
+command = "npm"
+args = ["test"]
+cwd = "end2end"
+dependencies = ["e2e-install"]
+
+[tasks.e2e-headed]
+description = "Run E2E tests in headed mode"
+command = "npm"
+args = ["run", "test:headed"]
+cwd = "end2end"
+dependencies = ["e2e-install"]
+
+[tasks.e2e-ui]
+description = "Run E2E tests with Playwright UI"
+command = "npm"
+args = ["run", "test:ui"]
+cwd = "end2end"
+dependencies = ["e2e-install"]
+
+[tasks.e2e-debug]
+description = "Run E2E tests in debug mode"
+command = "npm"
+args = ["run", "test:debug"]
+cwd = "end2end"
+dependencies = ["e2e-install"]
+
+[tasks.e2e-report]
+description = "Open Playwright HTML report"
+command = "npm"
+args = ["run", "report"]
+cwd = "end2end"
+
+# ============================================================================
+# CI/CD PIPELINE
+# ============================================================================
+
+[tasks.ci]
+description = "Run full CI pipeline (lint + test)"
+dependencies = [
+    "fmt-check",
+    "clippy",
+    "test",
+]
+
+[tasks.ci-full]
+description = "Run full CI pipeline including E2E tests and qlty"
+dependencies = [
+    "fmt-check",
+    "clippy",
+    "test",
+    "qlty-ci",
+    "e2e",
+]
+
+# ============================================================================
+# UTILITIES
+# ============================================================================
+
+[tasks.clean]
+description = "Clean all build artifacts"
+command = "cargo"
+args = ["clean"]
+
+[tasks.check]
+description = "Check workspace for errors without building"
+command = "cargo"
+args = ["check", "--workspace"]
+
+[tasks.check-release]
+description = "Check workspace for errors in release mode"
+command = "cargo"
+args = ["check", "--workspace", "--release"]
+
+[tasks.docs]
+description = "Generate and open documentation"
+command = "cargo"
+args = ["doc", "--workspace", "--open"]
+
+[tasks.deps]
+description = "Show dependency tree"
+command = "cargo"
+args = ["tree"]
+
+[tasks.outdated]
+description = "Check for outdated dependencies"
+command = "cargo"
+args = ["outdated"]
+
+# ============================================================================
+# COMBINED WORKFLOWS
+# ============================================================================
+
+[tasks.pre-commit]
+description = "Run checks before committing"
+dependencies = [
+    "fmt",
+    "clippy",
+    "test",
+]
+
+[tasks.quick-check]
+description = "Quick check without tests (fmt + clippy + qlty)"
+dependencies = [
+    "fmt-check",
+    "clippy",
+    "qlty-check",
+]
+
+[tasks.release]
+description = "Prepare release: lint, test, and build"
+dependencies = [
+    "ci",
+    "build-release",
+]

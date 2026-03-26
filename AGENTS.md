@@ -4,61 +4,63 @@
 
 Origa — приложение для изучения японского языка с интервальными повторениями (FSRS), OCR и токенизацией. Tech stack: Rust workspace с крейтами origa (бизнес-логика), origa_ui (Leptos/WASM frontend), tauri (Tauri v2 desktop), tokenizer. Architecture: Clean Architecture с Use Cases, Domain, Traits.
 
-## Quick Start Commands
+# Просмотр всех доступных задач
+
+```bash
+cargo make --list-all-steps
+```
 
 ### Development
 
 ```bash
-# Frontend dev сервер (origa_ui)
-cd origa_ui && trunk serve
+# Frontend dev сервер (origa_ui) - основной вариант
+cargo make dev
 
 # Tauri dev (desktop приложение)
-cd tauri && cargo tauri dev
+cargo make dev-tauri
 ```
 
 ### Build
 
 ```bash
+# Build всех workspace крейтов (debug)
+cargo make build
+
 # Frontend production build
-cd origa_ui && trunk build --release
+cargo make build-ui
 
 # Tauri production build (native)
-cd tauri && cargo tauri build
+cargo make build-tauri
 
 # Docker build (web)
-docker build -f origa_ui/Dockerfile -t origa:latest .
+cargo make build-docker
 ```
 
 ### Testing
 
 ```bash
 # Все тесты workspace
-cargo test --workspace
-
-# Тесты конкретного крейта
-cargo test -p origa
-
-# Один тест (по имени)
-cargo test -p origa test_name
+cargo make test
 
 # Тесты с выводом
-cargo test --workspace -- --nocapture
+cargo make test-verbose
 
-# Coverage report
-cargo llvm-cov --workspace --html
+# Coverage report (terminal)
+cargo make test-cov-report
 ```
 
 ### Linting & Formatting
 
 ```bash
-# Clippy (linting)
-cargo clippy --workspace --all-targets -- -D warnings
+# Все проверки
+cargo make lint
+```
 
-# Format check
-cargo fmt --check
+### Code Quality (QLTY)
 
-# Format fix
-cargo fmt
+```bash
+# Полная проверка со всеми плагинами
+cargo make qlty-full
 ```
 
 ### E2E Testing
@@ -66,24 +68,9 @@ cargo fmt
 > Для запуска e2e не нужно запускать вручную сервер, он запустится автоматически.
 
 ```bash
-# Установка (первичный запуск)
-cd end2end
-npm install
-npx playwright install
-
-# Запуск тестов
-npm test                    # Все тесты (headless)
-npm run test:ui            # С UI Playwright
-npm run test:headed        # В видимом браузере
-npm run test:debug         # Режим отладки
-npm run report             # Просмотр отчёта
-
-# Для CSR-проектов (запуск вручную)
-# Терминал 1: trunk serve
-cd origa_ui && trunk serve
-
-# Терминал 2: playwright tests
-cd end2end && npm test
+cargo make e2e                    # Все тесты (headless)
+cargo make e2e-headed            # В видимом браузере
+cargo make e2e-debug             # Режим отладки
 ```
 
 ### Environment Variables для E2E
@@ -131,7 +118,7 @@ use serde::{Deserialize, Serialize};
 
 ### Formatting
 
-Rustfmt default. Проверить: `cargo fmt --check`. Исправить: `cargo fmt`.
+Rustfmt default. Проверить: `cargo make fmt-check`. Исправить: `cargo make fmt`.
 
 ### Error Handling
 
@@ -297,7 +284,7 @@ fn test_with_seeded_rng() {
 Проверка coverage:
 
 ```bash
-cargo llvm-cov --workspace --html
+cargo make test-cov
 ```
 
 ### Типы тестов
@@ -435,8 +422,6 @@ Use @git-commit-push subagent
 
 ### ✅ ALWAYS Do
 
-- Запускать `cargo test --workspace` перед коммитом
-- Запускать `cargo clippy --workspace -- -D warnings` перед PR
 - Использовать `Result<T, OrigaError>` для всех fallible операций
 - Добавлять тесты в `use_cases/tests/` для нового функционала
 - Использовать `tracing::{debug, info}` для логирования
