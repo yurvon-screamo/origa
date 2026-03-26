@@ -47,9 +47,22 @@ pub fn MigiiProgressSelector(
             .and_then(|s| s.parse::<usize>().ok());
 
         match (level, lesson) {
-            (Some(lvl), Some(n)) => Some(format!(
-                "Будут импортированы: {} Уроки 1-{}",
-                level_to_str(lvl),
+            (Some(JapaneseLevel::N5), Some(n)) => {
+                Some(format!("Будут импортированы: N5 Уроки 1-{}", n))
+            },
+            (Some(JapaneseLevel::N4), Some(n)) => {
+                Some(format!("Будут импортированы: N5 (все) + N4 Уроки 1-{}", n))
+            },
+            (Some(JapaneseLevel::N3), Some(n)) => Some(format!(
+                "Будут импортированы: N5+N4 (все) + N3 Уроки 1-{}",
+                n
+            )),
+            (Some(JapaneseLevel::N2), Some(n)) => Some(format!(
+                "Будут импортированы: N5+N4+N3 (все) + N2 Уроки 1-{}",
+                n
+            )),
+            (Some(JapaneseLevel::N1), Some(n)) => Some(format!(
+                "Будут импортированы: N5+N4+N3+N2 (все) + N1 Уроки 1-{}",
                 n
             )),
             (Some(lvl), None) => Some(format!("Выберите урок для {}", level_to_str(lvl))),
