@@ -1,38 +1,38 @@
 {
-	"content": {
-		"English": {
-			"description": "Lesson 20 words: repair, casual speech.",
-			"title": "Minna no Nihongo N5 Lesson 20"
-		},
-		"Russian": {
-			"description": "Слова урока 20: ремонт, разговорная речь.",
-			"title": "Minna no Nihongo N5 Урок 20"
-		}
-	},
-	"level": "N5",
-	"words": [
-		"けれど",
-		"しゅっ",
-		"ビザ",
-		"一杯",
-		"何",
-		"僕",
-		"其の",
-		"君",
-		"始め",
-		"彼方",
-		"御腹",
-		"成る",
-		"方",
-		"此方",
-		"瓜",
-		"皆",
-		"着物",
-		"終わり",
-		"良い",
-		"色々",
-		"要る",
-		"言葉",
-		"調べる"
-	]
+  "content": {
+    "English": {
+      "description": "Lesson 20 words: repair, casual speech.",
+      "title": "Minna no Nihongo N5 Lesson 20"
+    },
+    "Russian": {
+      "description": "Слова урока 20: ремонт, разговорная речь.",
+      "title": "Minna no Nihongo N5 Урок 20"
+    }
+  },
+  "level": "N5",
+  "words": [
+    "けれど",
+    "しゅっ",
+    "ビザ",
+    "一杯",
+    "何",
+    "僕",
+    "其の",
+    "君",
+    "始め",
+    "彼方",
+    "御腹",
+    "成る",
+    "方",
+    "此方",
+    "瓜",
+    "皆",
+    "着物",
+    "終わり",
+    "良い",
+    "色々",
+    "要る",
+    "言葉",
+    "調べる"
+  ]
 }

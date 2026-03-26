@@ -1,47 +1,47 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: take public transit",
-			"title": "Duolingo 「EN」 - Section 5 Unit 6"
-		},
-		"Russian": {
-			"description": "Слова из модуля: take public transit",
-			"title": "Duolingo 「EN」 - Section 5 Unit 6"
-		}
-	},
-	"level": "N3",
-	"words": [
-		"ゆき",
-		"イタル",
-		"バイク",
-		"乗り換え",
-		"側",
-		"出す",
-		"出来る",
-		"出発",
-		"別",
-		"到着",
-		"十",
-		"売り場",
-		"女性",
-		"専用",
-		"席",
-		"年寄り",
-		"幹",
-		"幹線",
-		"急行",
-		"性",
-		"拾う",
-		"替え",
-		"無い",
-		"男性",
-		"空く",
-		"終点",
-		"車両",
-		"途",
-		"途中",
-		"間",
-		"降る",
-		"駐車"
-	]
+  "content": {
+    "English": {
+      "description": "Words from section/unit: take public transit",
+      "title": "Duolingo 「EN」 - Section 5 Unit 6"
+    },
+    "Russian": {
+      "description": "Слова из модуля: take public transit",
+      "title": "Duolingo 「EN」 - Section 5 Unit 6"
+    }
+  },
+  "level": "N3",
+  "words": [
+    "ゆき",
+    "イタル",
+    "バイク",
+    "乗り換え",
+    "側",
+    "出す",
+    "出来る",
+    "出発",
+    "別",
+    "到着",
+    "十",
+    "売り場",
+    "女性",
+    "専用",
+    "席",
+    "年寄り",
+    "幹",
+    "幹線",
+    "急行",
+    "性",
+    "拾う",
+    "替え",
+    "無い",
+    "男性",
+    "空く",
+    "終点",
+    "車両",
+    "途",
+    "途中",
+    "間",
+    "降る",
+    "駐車"
+  ]
 }

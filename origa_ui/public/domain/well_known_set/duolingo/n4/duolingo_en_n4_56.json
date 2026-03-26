@@ -1,41 +1,41 @@
 {
-    "content": {
-        "English": {
-            "description": "Words from section/unit: describe the outdoors",
-            "title": "Duolingo 「EN」 - Section 4 Unit 56"
-        },
-        "Russian": {
-            "description": "Слова из модуля: describe the outdoors",
-            "title": "Duolingo 「EN」 - Section 4 Unit 56"
-        }
+  "content": {
+    "English": {
+      "description": "Words from section/unit: describe the outdoors",
+      "title": "Duolingo 「EN」 - Section 4 Unit 56"
     },
-    "level": "N4",
-    "words": [
-        "フジ",
-        "モリ",
-        "光",
-        "太陽",
-        "山",
-        "島",
-        "戌亥",
-        "日",
-        "星",
-        "月",
-        "氷",
-        "波",
-        "浅い",
-        "浜",
-        "浜辺",
-        "深い",
-        "湖",
-        "濡れる",
-        "火",
-        "生き物",
-        "石",
-        "空気",
-        "草",
-        "葉",
-        "見付ける",
-        "釣り"
-    ]
+    "Russian": {
+      "description": "Слова из модуля: describe the outdoors",
+      "title": "Duolingo 「EN」 - Section 4 Unit 56"
+    }
+  },
+  "level": "N4",
+  "words": [
+    "フジ",
+    "モリ",
+    "光",
+    "太陽",
+    "山",
+    "島",
+    "戌亥",
+    "日",
+    "星",
+    "月",
+    "氷",
+    "波",
+    "浅い",
+    "浜",
+    "浜辺",
+    "深い",
+    "湖",
+    "濡れる",
+    "火",
+    "生き物",
+    "石",
+    "空気",
+    "草",
+    "葉",
+    "見付ける",
+    "釣り"
+  ]
 }

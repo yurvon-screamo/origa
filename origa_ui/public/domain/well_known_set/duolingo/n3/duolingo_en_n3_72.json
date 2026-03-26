@@ -1,44 +1,44 @@
 {
-    "content": {
-        "English": {
-            "description": "Words from section/unit: talk about school",
-            "title": "Duolingo 「EN」 - Section 6 Unit 22"
-        },
-        "Russian": {
-            "description": "Слова из модуля: talk about school",
-            "title": "Duolingo 「EN」 - Section 6 Unit 22"
-        }
+  "content": {
+    "English": {
+      "description": "Words from section/unit: talk about school",
+      "title": "Duolingo 「EN」 - Section 6 Unit 22"
     },
-    "level": "N3",
-    "words": [
-        "シュウ",
-        "優秀",
-        "児童",
-        "公立",
-        "単位",
-        "大学",
-        "子",
-        "学問",
-        "学期",
-        "寮",
-        "幼稚",
-        "板",
-        "正解",
-        "段階",
-        "私立",
-        "章",
-        "範",
-        "範囲",
-        "給食",
-        "要素",
-        "課",
-        "課題",
-        "論ずる",
-        "講堂",
-        "講演",
-        "集会",
-        "飲食",
-        "館内",
-        "黒板"
-    ]
+    "Russian": {
+      "description": "Слова из модуля: talk about school",
+      "title": "Duolingo 「EN」 - Section 6 Unit 22"
+    }
+  },
+  "level": "N3",
+  "words": [
+    "シュウ",
+    "優秀",
+    "児童",
+    "公立",
+    "単位",
+    "大学",
+    "子",
+    "学問",
+    "学期",
+    "寮",
+    "幼稚",
+    "板",
+    "正解",
+    "段階",
+    "私立",
+    "章",
+    "範",
+    "範囲",
+    "給食",
+    "要素",
+    "課",
+    "課題",
+    "論ずる",
+    "講堂",
+    "講演",
+    "集会",
+    "飲食",
+    "館内",
+    "黒板"
+  ]
 }

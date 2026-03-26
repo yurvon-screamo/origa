@@ -1,40 +1,40 @@
 {
-    "content": {
-        "English": {
-            "description": "Words from section/unit: talk about money",
-            "title": "Duolingo 「EN」 - Section 4 Unit 55"
-        },
-        "Russian": {
-            "description": "Слова из модуля: talk about money",
-            "title": "Duolingo 「EN」 - Section 4 Unit 55"
-        }
+  "content": {
+    "English": {
+      "description": "Words from section/unit: talk about money",
+      "title": "Duolingo 「EN」 - Section 4 Unit 55"
     },
-    "level": "N4",
-    "words": [
-        "ドル",
-        "ローマ",
-        "両替",
-        "会計",
-        "別々",
-        "口座",
-        "字",
-        "小切手",
-        "引き出す",
-        "支払う",
-        "暗証",
-        "替え",
-        "残高",
-        "現金",
-        "用紙",
-        "署",
-        "署名",
-        "記入",
-        "証し",
-        "金持ち",
-        "釣り",
-        "閉じる",
-        "開く",
-        "預金",
-        "領収"
-    ]
+    "Russian": {
+      "description": "Слова из модуля: talk about money",
+      "title": "Duolingo 「EN」 - Section 4 Unit 55"
+    }
+  },
+  "level": "N4",
+  "words": [
+    "ドル",
+    "ローマ",
+    "両替",
+    "会計",
+    "別々",
+    "口座",
+    "字",
+    "小切手",
+    "引き出す",
+    "支払う",
+    "暗証",
+    "替え",
+    "残高",
+    "現金",
+    "用紙",
+    "署",
+    "署名",
+    "記入",
+    "証し",
+    "金持ち",
+    "釣り",
+    "閉じる",
+    "開く",
+    "預金",
+    "領収"
+  ]
 }

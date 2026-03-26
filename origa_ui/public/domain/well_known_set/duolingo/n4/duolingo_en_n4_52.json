@@ -1,42 +1,42 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: talk about sports",
-			"title": "Duolingo 「EN」 - Section 4 Unit 52"
-		},
-		"Russian": {
-			"description": "Слова из модуля: talk about sports",
-			"title": "Duolingo 「EN」 - Section 4 Unit 52"
-		}
-	},
-	"level": "N4",
-	"words": [
-		"オリンピック",
-		"ゴルフ",
-		"スキー",
-		"タク",
-		"メダル",
-		"会場",
-		"体操",
-		"出来る",
-		"動き",
-		"卓球",
-		"場",
-		"操",
-		"旨い",
-		"柔ら",
-		"柔道",
-		"楽しみ",
-		"水泳",
-		"種",
-		"種目",
-		"空手",
-		"選手",
-		"金",
-		"金属",
-		"銀",
-		"銅",
-		"陸",
-		"陸上"
-	]
+  "content": {
+    "English": {
+      "description": "Words from section/unit: talk about sports",
+      "title": "Duolingo 「EN」 - Section 4 Unit 52"
+    },
+    "Russian": {
+      "description": "Слова из модуля: talk about sports",
+      "title": "Duolingo 「EN」 - Section 4 Unit 52"
+    }
+  },
+  "level": "N4",
+  "words": [
+    "オリンピック",
+    "ゴルフ",
+    "スキー",
+    "タク",
+    "メダル",
+    "会場",
+    "体操",
+    "出来る",
+    "動き",
+    "卓球",
+    "場",
+    "操",
+    "旨い",
+    "柔ら",
+    "柔道",
+    "楽しみ",
+    "水泳",
+    "種",
+    "種目",
+    "空手",
+    "選手",
+    "金",
+    "金属",
+    "銀",
+    "銅",
+    "陸",
+    "陸上"
+  ]
 }

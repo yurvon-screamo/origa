@@ -1,36 +1,36 @@
 {
-    "content": {
-        "English": {
-            "description": "Words from section/unit: discuss life on a farm",
-            "title": "Duolingo 「EN」 - Section 6 Unit 32"
-        },
-        "Russian": {
-            "description": "Слова из модуля: discuss life on a farm",
-            "title": "Duolingo 「EN」 - Section 6 Unit 32"
-        }
+  "content": {
+    "English": {
+      "description": "Words from section/unit: discuss life on a farm",
+      "title": "Duolingo 「EN」 - Section 6 Unit 32"
     },
-    "level": "N3",
-    "words": [
-        "マキ",
-        "主要",
-        "作物",
-        "刈り",
-        "収穫",
-        "小麦",
-        "栽培",
-        "温室",
-        "牧場",
-        "産物",
-        "田圃",
-        "畑",
-        "種",
-        "稲",
-        "穀",
-        "穀物",
-        "農",
-        "農場",
-        "農家",
-        "農業",
-        "餌"
-    ]
+    "Russian": {
+      "description": "Слова из модуля: discuss life on a farm",
+      "title": "Duolingo 「EN」 - Section 6 Unit 32"
+    }
+  },
+  "level": "N3",
+  "words": [
+    "マキ",
+    "主要",
+    "作物",
+    "刈り",
+    "収穫",
+    "小麦",
+    "栽培",
+    "温室",
+    "牧場",
+    "産物",
+    "田圃",
+    "畑",
+    "種",
+    "稲",
+    "穀",
+    "穀物",
+    "農",
+    "農場",
+    "農家",
+    "農業",
+    "餌"
+  ]
 }

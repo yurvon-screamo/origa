@@ -1,37 +1,37 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: express possibilities",
-			"title": "Duolingo 「EN」 - Section 5 Unit 1"
-		},
-		"Russian": {
-			"description": "Слова из модуля: express possibilities",
-			"title": "Duolingo 「EN」 - Section 5 Unit 1"
-		}
-	},
-	"level": "N3",
-	"words": [
-		"びっくり",
-		"まさか",
-		"オバマ",
-		"ナゴヤ",
-		"ヨコハマ",
-		"会う",
-		"値",
-		"値引き",
-		"偶々",
-		"周り",
-		"回",
-		"回る",
-		"居る",
-		"必ず",
-		"成る",
-		"有る",
-		"機会",
-		"良い",
-		"行く",
-		"買う",
-		"降る",
-		"飲む"
-	]
+  "content": {
+    "English": {
+      "description": "Words from section/unit: express possibilities",
+      "title": "Duolingo 「EN」 - Section 5 Unit 1"
+    },
+    "Russian": {
+      "description": "Слова из модуля: express possibilities",
+      "title": "Duolingo 「EN」 - Section 5 Unit 1"
+    }
+  },
+  "level": "N3",
+  "words": [
+    "びっくり",
+    "まさか",
+    "オバマ",
+    "ナゴヤ",
+    "ヨコハマ",
+    "会う",
+    "値",
+    "値引き",
+    "偶々",
+    "周り",
+    "回",
+    "回る",
+    "居る",
+    "必ず",
+    "成る",
+    "有る",
+    "機会",
+    "良い",
+    "行く",
+    "買う",
+    "降る",
+    "飲む"
+  ]
 }

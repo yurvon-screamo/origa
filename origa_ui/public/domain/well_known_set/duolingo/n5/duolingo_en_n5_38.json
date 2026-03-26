@@ -1,48 +1,48 @@
 {
-    "content": {
-        "English": {
-            "description": "Words from section/unit: discuss seasonal events",
-            "title": "Duolingo 「EN」 - Section 2 Unit 29"
-        },
-        "Russian": {
-            "description": "Слова из модуля: discuss seasonal events",
-            "title": "Duolingo 「EN」 - Section 2 Unit 29"
-        }
+  "content": {
+    "English": {
+      "description": "Words from section/unit: discuss seasonal events",
+      "title": "Duolingo 「EN」 - Section 2 Unit 29"
     },
-    "level": "N5",
-    "words": [
-        "イルミネーション",
-        "カウントダウン",
-        "クリスマス",
-        "コミュニティー",
-        "コンテスト",
-        "シュウ",
-        "センター",
-        "ダンス",
-        "チョコ",
-        "ハロウィーン",
-        "バナナ",
-        "パレード",
-        "パーティー",
-        "一",
-        "三十",
-        "二",
-        "八",
-        "十",
-        "大会",
-        "大晦日",
-        "太鼓",
-        "日",
-        "月",
-        "有る",
-        "松",
-        "此の",
-        "祭り",
-        "花火",
-        "行く",
-        "近い",
-        "遊ぶ",
-        "食べる",
-        "食べ物"
-    ]
+    "Russian": {
+      "description": "Слова из модуля: discuss seasonal events",
+      "title": "Duolingo 「EN」 - Section 2 Unit 29"
+    }
+  },
+  "level": "N5",
+  "words": [
+    "イルミネーション",
+    "カウントダウン",
+    "クリスマス",
+    "コミュニティー",
+    "コンテスト",
+    "シュウ",
+    "センター",
+    "ダンス",
+    "チョコ",
+    "ハロウィーン",
+    "バナナ",
+    "パレード",
+    "パーティー",
+    "一",
+    "三十",
+    "二",
+    "八",
+    "十",
+    "大会",
+    "大晦日",
+    "太鼓",
+    "日",
+    "月",
+    "有る",
+    "松",
+    "此の",
+    "祭り",
+    "花火",
+    "行く",
+    "近い",
+    "遊ぶ",
+    "食べる",
+    "食べ物"
+  ]
 }

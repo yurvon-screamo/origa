@@ -1,47 +1,47 @@
 {
-    "content": {
-        "English": {
-            "description": "Words from section/unit: talk about science",
-            "title": "Duolingo 「EN」 - Section 6 Unit 24"
-        },
-        "Russian": {
-            "description": "Слова из модуля: talk about science",
-            "title": "Duolingo 「EN」 - Section 6 Unit 24"
-        }
+  "content": {
+    "English": {
+      "description": "Words from section/unit: talk about science",
+      "title": "Duolingo 「EN」 - Section 6 Unit 24"
     },
-    "level": "N3",
-    "words": [
-        "やや",
-        "仮",
-        "仮説",
-        "作用",
-        "傾向",
-        "元素",
-        "全体",
-        "凍る",
-        "分析",
-        "参考",
-        "固体",
-        "心理",
-        "標準",
-        "比較",
-        "気体",
-        "水素",
-        "液",
-        "液体",
-        "混合",
-        "溶ける",
-        "無色",
-        "物質",
-        "状態",
-        "生命",
-        "種類",
-        "観察",
-        "記号",
-        "証明",
-        "資料",
-        "起源",
-        "酸",
-        "酸素"
-    ]
+    "Russian": {
+      "description": "Слова из модуля: talk about science",
+      "title": "Duolingo 「EN」 - Section 6 Unit 24"
+    }
+  },
+  "level": "N3",
+  "words": [
+    "やや",
+    "仮",
+    "仮説",
+    "作用",
+    "傾向",
+    "元素",
+    "全体",
+    "凍る",
+    "分析",
+    "参考",
+    "固体",
+    "心理",
+    "標準",
+    "比較",
+    "気体",
+    "水素",
+    "液",
+    "液体",
+    "混合",
+    "溶ける",
+    "無色",
+    "物質",
+    "状態",
+    "生命",
+    "種類",
+    "観察",
+    "記号",
+    "証明",
+    "資料",
+    "起源",
+    "酸",
+    "酸素"
+  ]
 }

@@ -1,38 +1,38 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: talk about jobs",
-			"title": "Duolingo 「EN」 - Section 2 Unit 24"
-		},
-		"Russian": {
-			"description": "Слова из модуля: talk about jobs",
-			"title": "Duolingo 「EN」 - Section 2 Unit 24"
-		}
-	},
-	"level": "N5",
-	"words": [
-		"どう",
-		"イベント",
-		"カメラ",
-		"ジム",
-		"チーム",
-		"ナビ",
-		"プロ",
-		"マネージャー",
-		"リョウ",
-		"仕事",
-		"使う",
-		"写真",
-		"医者",
-		"午前",
-		"取る",
-		"感",
-		"成る",
-		"旅行",
-		"洗う",
-		"翻訳",
-		"運動",
-		"運転",
-		"選手"
-	]
+  "content": {
+    "English": {
+      "description": "Words from section/unit: talk about jobs",
+      "title": "Duolingo 「EN」 - Section 2 Unit 24"
+    },
+    "Russian": {
+      "description": "Слова из модуля: talk about jobs",
+      "title": "Duolingo 「EN」 - Section 2 Unit 24"
+    }
+  },
+  "level": "N5",
+  "words": [
+    "どう",
+    "イベント",
+    "カメラ",
+    "ジム",
+    "チーム",
+    "ナビ",
+    "プロ",
+    "マネージャー",
+    "リョウ",
+    "仕事",
+    "使う",
+    "写真",
+    "医者",
+    "午前",
+    "取る",
+    "感",
+    "成る",
+    "旅行",
+    "洗う",
+    "翻訳",
+    "運動",
+    "運転",
+    "選手"
+  ]
 }

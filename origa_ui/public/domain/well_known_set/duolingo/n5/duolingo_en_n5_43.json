@@ -1,39 +1,39 @@
 {
-    "content": {
-        "English": {
-            "description": "Words from section/unit: discuss outdoor activities",
-            "title": "Duolingo 「EN」 - Section 3 Unit 4"
-        },
-        "Russian": {
-            "description": "Слова из модуля: discuss outdoor activities",
-            "title": "Duolingo 「EN」 - Section 3 Unit 4"
-        }
+  "content": {
+    "English": {
+      "description": "Words from section/unit: discuss outdoor activities",
+      "title": "Duolingo 「EN」 - Section 3 Unit 4"
     },
-    "level": "N5",
-    "words": [
-        "キャンプ",
-        "シーフード",
-        "ハイキング",
-        "バックパック",
-        "バーベキュー",
-        "ピクニック",
-        "ホッカイドウ",
-        "一寸",
-        "一日",
-        "五",
-        "外",
-        "大丈夫",
-        "川",
-        "成る",
-        "早い",
-        "景色",
-        "月",
-        "楽しむ",
-        "涼しい",
-        "焼く",
-        "牛肉",
-        "胡椒",
-        "良い",
-        "雨"
-    ]
+    "Russian": {
+      "description": "Слова из модуля: discuss outdoor activities",
+      "title": "Duolingo 「EN」 - Section 3 Unit 4"
+    }
+  },
+  "level": "N5",
+  "words": [
+    "キャンプ",
+    "シーフード",
+    "ハイキング",
+    "バックパック",
+    "バーベキュー",
+    "ピクニック",
+    "ホッカイドウ",
+    "一寸",
+    "一日",
+    "五",
+    "外",
+    "大丈夫",
+    "川",
+    "成る",
+    "早い",
+    "景色",
+    "月",
+    "楽しむ",
+    "涼しい",
+    "焼く",
+    "牛肉",
+    "胡椒",
+    "良い",
+    "雨"
+  ]
 }

@@ -1,41 +1,41 @@
 {
-    "content": {
-        "English": {
-            "description": "Words from section/unit: talk about nature",
-            "title": "Duolingo 「EN」 - Section 6 Unit 29"
-        },
-        "Russian": {
-            "description": "Слова из модуля: talk about nature",
-            "title": "Duolingo 「EN」 - Section 6 Unit 29"
-        }
+  "content": {
+    "English": {
+      "description": "Words from section/unit: talk about nature",
+      "title": "Duolingo 「EN」 - Section 6 Unit 29"
     },
-    "level": "N3",
-    "words": [
-        "アキラ",
-        "キシ",
-        "ノボル",
-        "上る",
-        "凸凹",
-        "夕日",
-        "夕焼け",
-        "大気",
-        "安定",
-        "岩",
-        "日の出",
-        "日没",
-        "朝日",
-        "没",
-        "洞窟",
-        "海岸",
-        "生長",
-        "真っ暗",
-        "真っ白",
-        "真っ赤",
-        "真っ青",
-        "竹",
-        "衝",
-        "衝突",
-        "貝",
-        "踏む"
-    ]
+    "Russian": {
+      "description": "Слова из модуля: talk about nature",
+      "title": "Duolingo 「EN」 - Section 6 Unit 29"
+    }
+  },
+  "level": "N3",
+  "words": [
+    "アキラ",
+    "キシ",
+    "ノボル",
+    "上る",
+    "凸凹",
+    "夕日",
+    "夕焼け",
+    "大気",
+    "安定",
+    "岩",
+    "日の出",
+    "日没",
+    "朝日",
+    "没",
+    "洞窟",
+    "海岸",
+    "生長",
+    "真っ暗",
+    "真っ白",
+    "真っ赤",
+    "真っ青",
+    "竹",
+    "衝",
+    "衝突",
+    "貝",
+    "踏む"
+  ]
 }

@@ -1,44 +1,44 @@
 {
-	"content": {
-		"English": {
-			"description": "Lesson 23 words: directions, actions.",
-			"title": "Minna no Nihongo N5 Lesson 23"
-		},
-		"Russian": {
-			"description": "Слова урока 23: направления, действия.",
-			"title": "Minna no Nihongo N5 Урок 23"
-		}
-	},
-	"level": "N5",
-	"words": [
-		"サイズ",
-		"ドア",
-		"交差",
-		"何",
-		"信号",
-		"先生",
-		"出る",
-		"右",
-		"回",
-		"回す",
-		"変える",
-		"寂しい",
-		"建物",
-		"引く",
-		"故障",
-		"曲がる",
-		"橋",
-		"歩く",
-		"渡る",
-		"湯",
-		"点",
-		"目",
-		"聞く",
-		"角",
-		"触る",
-		"道",
-		"釣り",
-		"音",
-		"駐車"
-	]
+  "content": {
+    "English": {
+      "description": "Lesson 23 words: directions, actions.",
+      "title": "Minna no Nihongo N5 Lesson 23"
+    },
+    "Russian": {
+      "description": "Слова урока 23: направления, действия.",
+      "title": "Minna no Nihongo N5 Урок 23"
+    }
+  },
+  "level": "N5",
+  "words": [
+    "サイズ",
+    "ドア",
+    "交差",
+    "何",
+    "信号",
+    "先生",
+    "出る",
+    "右",
+    "回",
+    "回す",
+    "変える",
+    "寂しい",
+    "建物",
+    "引く",
+    "故障",
+    "曲がる",
+    "橋",
+    "歩く",
+    "渡る",
+    "湯",
+    "点",
+    "目",
+    "聞く",
+    "角",
+    "触る",
+    "道",
+    "釣り",
+    "音",
+    "駐車"
+  ]
 }

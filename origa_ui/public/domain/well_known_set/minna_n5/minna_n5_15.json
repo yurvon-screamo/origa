@@ -1,42 +1,42 @@
 {
-	"content": {
-		"English": {
-			"description": "Lesson 15 words: action verbs 2.",
-			"title": "Minna no Nihongo N5 Lesson 15"
-		},
-		"Russian": {
-			"description": "Слова урока 15: глаголы действия 2.",
-			"title": "Minna no Nihongo N5 Урок 15"
-		}
-	},
-	"level": "N5",
-	"words": [
-		"いらっしゃる",
-		"カタログ",
-		"ソフト",
-		"住む",
-		"作る",
-		"医者",
-		"売る",
-		"市",
-		"役所",
-		"思い出す",
-		"成る",
-		"時刻",
-		"服",
-		"歯",
-		"済む",
-		"独身",
-		"皆",
-		"知る",
-		"研究",
-		"経済",
-		"置く",
-		"表",
-		"製品",
-		"資料",
-		"辞書",
-		"電子",
-		"高校"
-	]
+  "content": {
+    "English": {
+      "description": "Lesson 15 words: action verbs 2.",
+      "title": "Minna no Nihongo N5 Lesson 15"
+    },
+    "Russian": {
+      "description": "Слова урока 15: глаголы действия 2.",
+      "title": "Minna no Nihongo N5 Урок 15"
+    }
+  },
+  "level": "N5",
+  "words": [
+    "いらっしゃる",
+    "カタログ",
+    "ソフト",
+    "住む",
+    "作る",
+    "医者",
+    "売る",
+    "市",
+    "役所",
+    "思い出す",
+    "成る",
+    "時刻",
+    "服",
+    "歯",
+    "済む",
+    "独身",
+    "皆",
+    "知る",
+    "研究",
+    "経済",
+    "置く",
+    "表",
+    "製品",
+    "資料",
+    "辞書",
+    "電子",
+    "高校"
+  ]
 }

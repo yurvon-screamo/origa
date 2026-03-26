@@ -1,44 +1,44 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: talk about restaurant food",
-			"title": "Duolingo 「EN」 - Section 4 Unit 58"
-		},
-		"Russian": {
-			"description": "Слова из модуля: talk about restaurant food",
-			"title": "Duolingo 「EN」 - Section 4 Unit 58"
-		}
-	},
-	"level": "N4",
-	"words": [
-		"いらっしゃる",
-		"ススム",
-		"ベジタリアン",
-		"一杯",
-		"予約",
-		"余り",
-		"入り",
-		"味",
-		"味噌",
-		"和",
-		"和食",
-		"客",
-		"旨い",
-		"様",
-		"残",
-		"残す",
-		"汁",
-		"決",
-		"決まり",
-		"注",
-		"注文",
-		"湯",
-		"濃い",
-		"無し",
-		"苦",
-		"苦い",
-		"質",
-		"量",
-		"食事"
-	]
+  "content": {
+    "English": {
+      "description": "Words from section/unit: talk about restaurant food",
+      "title": "Duolingo 「EN」 - Section 4 Unit 58"
+    },
+    "Russian": {
+      "description": "Слова из модуля: talk about restaurant food",
+      "title": "Duolingo 「EN」 - Section 4 Unit 58"
+    }
+  },
+  "level": "N4",
+  "words": [
+    "いらっしゃる",
+    "ススム",
+    "ベジタリアン",
+    "一杯",
+    "予約",
+    "余り",
+    "入り",
+    "味",
+    "味噌",
+    "和",
+    "和食",
+    "客",
+    "旨い",
+    "様",
+    "残",
+    "残す",
+    "汁",
+    "決",
+    "決まり",
+    "注",
+    "注文",
+    "湯",
+    "濃い",
+    "無し",
+    "苦",
+    "苦い",
+    "質",
+    "量",
+    "食事"
+  ]
 }

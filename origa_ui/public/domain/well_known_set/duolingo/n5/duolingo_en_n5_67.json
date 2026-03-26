@@ -1,38 +1,38 @@
 {
-    "content": {
-        "English": {
-            "description": "Words from section/unit: describe health issues",
-            "title": "Duolingo 「EN」 - Section 3 Unit 28"
-        },
-        "Russian": {
-            "description": "Слова из модуля: describe health issues",
-            "title": "Duolingo 「EN」 - Section 3 Unit 28"
-        }
+  "content": {
+    "English": {
+      "description": "Words from section/unit: describe health issues",
+      "title": "Duolingo 「EN」 - Section 3 Unit 28"
     },
-    "level": "N5",
-    "words": [
-        "どう",
-        "やっ",
-        "クリニック",
-        "ストレス",
-        "一寸",
-        "付ける",
-        "傷",
-        "先生",
-        "入れる",
-        "塗る",
-        "役",
-        "成る",
-        "暫く",
-        "曲",
-        "殆ど",
-        "痛い",
-        "目",
-        "直る",
-        "腕",
-        "電気",
-        "頭",
-        "風邪",
-        "首"
-    ]
+    "Russian": {
+      "description": "Слова из модуля: describe health issues",
+      "title": "Duolingo 「EN」 - Section 3 Unit 28"
+    }
+  },
+  "level": "N5",
+  "words": [
+    "どう",
+    "クリニック",
+    "ストレス",
+    "一寸",
+    "付ける",
+    "傷",
+    "先生",
+    "入れる",
+    "塗る",
+    "役",
+    "成る",
+    "暫く",
+    "曲",
+    "殆ど",
+    "痛い",
+    "目",
+    "直る",
+    "腕",
+    "遣る",
+    "電気",
+    "頭",
+    "風邪",
+    "首"
+  ]
 }

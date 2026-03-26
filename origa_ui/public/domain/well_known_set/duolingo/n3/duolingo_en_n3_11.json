@@ -1,49 +1,49 @@
 {
-    "content": {
-        "English": {
-            "description": "Words from section/unit: suggest activities",
-            "title": "Duolingo 「EN」 - Section 5 Unit 11"
-        },
-        "Russian": {
-            "description": "Слова из модуля: suggest activities",
-            "title": "Duolingo 「EN」 - Section 5 Unit 11"
-        }
+  "content": {
+    "English": {
+      "description": "Words from section/unit: suggest activities",
+      "title": "Duolingo 「EN」 - Section 5 Unit 11"
     },
-    "level": "N3",
-    "words": [
-        "で",
-        "ミユキ",
-        "仕様",
-        "何",
-        "夢",
-        "安心",
-        "幸せ",
-        "念",
-        "思う",
-        "書く",
-        "有る",
-        "楽しみ",
-        "様",
-        "此れ",
-        "歩く",
-        "残念",
-        "流す",
-        "涙",
-        "玩具",
-        "生き甲斐",
-        "的",
-        "目的",
-        "眺める",
-        "聞く",
-        "興",
-        "興味",
-        "良い",
-        "行く",
-        "見る",
-        "話す",
-        "趣",
-        "趣味",
-        "返る",
-        "遊ぶ"
-    ]
+    "Russian": {
+      "description": "Слова из модуля: suggest activities",
+      "title": "Duolingo 「EN」 - Section 5 Unit 11"
+    }
+  },
+  "level": "N3",
+  "words": [
+    "で",
+    "ミユキ",
+    "仕様",
+    "何",
+    "夢",
+    "安心",
+    "幸せ",
+    "念",
+    "思う",
+    "書く",
+    "有る",
+    "楽しみ",
+    "様",
+    "此れ",
+    "歩く",
+    "残念",
+    "流す",
+    "涙",
+    "玩具",
+    "生き甲斐",
+    "的",
+    "目的",
+    "眺める",
+    "聞く",
+    "興",
+    "興味",
+    "良い",
+    "行く",
+    "見る",
+    "話す",
+    "趣",
+    "趣味",
+    "返る",
+    "遊ぶ"
+  ]
 }

@@ -1,48 +1,48 @@
 {
-    "content": {
-        "English": {
-            "description": "Words from section/unit: express your feelings",
-            "title": "Duolingo 「EN」 - Section 6 Unit 8"
-        },
-        "Russian": {
-            "description": "Слова из модуля: express your feelings",
-            "title": "Duolingo 「EN」 - Section 6 Unit 8"
-        }
+  "content": {
+    "English": {
+      "description": "Words from section/unit: express your feelings",
+      "title": "Duolingo 「EN」 - Section 6 Unit 8"
     },
-    "level": "N3",
-    "words": [
-        "ショック",
-        "タイ",
-        "乱",
-        "何",
-        "友人",
-        "大人しい",
-        "大嫌い",
-        "嫌う",
-        "幸福",
-        "後悔",
-        "悔",
-        "感情",
-        "感覚",
-        "慢",
-        "我が儘",
-        "我慢",
-        "楽",
-        "死",
-        "気",
-        "河豚",
-        "泣き",
-        "泣く",
-        "混乱",
-        "緊張",
-        "興奮",
-        "苛める",
-        "表わす",
-        "誇り",
-        "諦める",
-        "辛い",
-        "退屈",
-        "通る",
-        "運"
-    ]
+    "Russian": {
+      "description": "Слова из модуля: express your feelings",
+      "title": "Duolingo 「EN」 - Section 6 Unit 8"
+    }
+  },
+  "level": "N3",
+  "words": [
+    "ショック",
+    "タイ",
+    "乱",
+    "何",
+    "友人",
+    "大人しい",
+    "大嫌い",
+    "嫌う",
+    "幸福",
+    "後悔",
+    "悔",
+    "感情",
+    "感覚",
+    "慢",
+    "我が儘",
+    "我慢",
+    "楽",
+    "死",
+    "気",
+    "河豚",
+    "泣き",
+    "泣く",
+    "混乱",
+    "緊張",
+    "興奮",
+    "苛める",
+    "表わす",
+    "誇り",
+    "諦める",
+    "辛い",
+    "退屈",
+    "通る",
+    "運"
+  ]
 }

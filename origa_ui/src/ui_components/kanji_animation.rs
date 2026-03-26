@@ -1,5 +1,8 @@
 use crate::core::config::public_url;
+use futures::future::{AbortHandle, abortable};
 use leptos::prelude::*;
+use leptos::task::spawn_local;
+use std::sync::{Arc, Mutex};
 
 #[derive(Clone, Copy, PartialEq, Default)]
 pub enum KanjiViewMode {
@@ -50,6 +53,7 @@ pub fn KanjiAnimation(
     #[prop(optional, into)] test_id: Signal<String>,
 ) -> impl IntoView {
     let (iteration, set_iteration) = signal(0);
+    let abort_handle = Arc::new(Mutex::new(None::<AbortHandle>));
 
     let encoded = urlencoding::encode(&kanji);
     let svg_path = match mode {
@@ -81,28 +85,51 @@ pub fn KanjiAnimation(
     });
 
     let stroke_time = 0.4f32;
+    let abort_handle_clone = abort_handle.clone();
 
     Effect::new(move |_| {
-        use std::time::Duration;
+        // Cancel previous timer if exists
+        if let Some(handle) = abort_handle_clone.lock().unwrap().take() {
+            handle.abort();
+        }
 
         let iter = iteration.get();
+        let abort_handle_clone2 = abort_handle_clone.clone();
+
         if iter % 2 != 0 {
-            set_timeout(
-                move || set_iteration.update(|n| *n += 1),
-                Duration::from_millis(1500),
-            );
+            spawn_local(async move {
+                let future = async {
+                    gloo_timers::future::TimeoutFuture::new(1500).await;
+                    set_iteration.try_update(|n| *n += 1);
+                };
+                let (abortable, handle) = abortable(future);
+                *abort_handle_clone2.lock().unwrap() = Some(handle);
+                let _ = abortable.await;
+            });
         } else if let Some(Some(svg_html)) = svg_content.get()
             && matches!(mode, KanjiViewMode::Animation)
         {
             let bg_count = svg_html.matches("class=\"bg\"").count();
             let path_count = svg_html.matches("<path").count();
             let strokes = path_count.saturating_sub(bg_count).max(1);
-            let total_duration = strokes as f32 * stroke_time + 0.5;
+            let total_duration_ms = ((strokes as f32 * stroke_time + 0.5) * 1000.0) as u32;
 
-            set_timeout(
-                move || set_iteration.update(|n| *n += 1),
-                Duration::from_secs_f32(total_duration),
-            );
+            spawn_local(async move {
+                let future = async {
+                    gloo_timers::future::TimeoutFuture::new(total_duration_ms).await;
+                    set_iteration.try_update(|n| *n += 1);
+                };
+                let (abortable, handle) = abortable(future);
+                *abort_handle_clone2.lock().unwrap() = Some(handle);
+                let _ = abortable.await;
+            });
+        }
+    });
+
+    let abort_handle_cleanup = abort_handle.clone();
+    on_cleanup(move || {
+        if let Some(handle) = abort_handle_cleanup.lock().unwrap().take() {
+            handle.abort();
         }
     });
 

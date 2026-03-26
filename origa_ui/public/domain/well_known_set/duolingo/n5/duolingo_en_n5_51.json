@@ -1,40 +1,40 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: shop for clothes",
-			"title": "Duolingo 「EN」 - Section 3 Unit 12"
-		},
-		"Russian": {
-			"description": "Слова из модуля: shop for clothes",
-			"title": "Duolingo 「EN」 - Section 3 Unit 12"
-		}
-	},
-	"level": "N5",
-	"words": [
-		"きらきら",
-		"ふわふわ",
-		"ぼろぼろ",
-		"アクセサリー",
-		"カード",
-		"ジーンズ",
-		"セーター",
-		"パーカ",
-		"ポイント",
-		"マフラー",
-		"マン",
-		"レジ",
-		"レディー",
-		"上がる",
-		"今度",
-		"先ず",
-		"八千",
-		"右",
-		"左",
-		"成る",
-		"曲がる",
-		"此の",
-		"真っ直ぐ",
-		"紫",
-		"靴"
-	]
+  "content": {
+    "English": {
+      "description": "Words from section/unit: shop for clothes",
+      "title": "Duolingo 「EN」 - Section 3 Unit 12"
+    },
+    "Russian": {
+      "description": "Слова из модуля: shop for clothes",
+      "title": "Duolingo 「EN」 - Section 3 Unit 12"
+    }
+  },
+  "level": "N5",
+  "words": [
+    "きらきら",
+    "ふわふわ",
+    "ぼろぼろ",
+    "アクセサリー",
+    "カード",
+    "ジーンズ",
+    "セーター",
+    "パーカ",
+    "ポイント",
+    "マフラー",
+    "マン",
+    "レジ",
+    "レディー",
+    "上がる",
+    "今度",
+    "先ず",
+    "八千",
+    "右",
+    "左",
+    "成る",
+    "曲がる",
+    "此の",
+    "真っ直ぐ",
+    "紫",
+    "靴"
+  ]
 }

@@ -1,53 +1,53 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: express ideas",
-			"title": "Duolingo 「EN」 - Section 5 Unit 49"
-		},
-		"Russian": {
-			"description": "Слова из модуля: express ideas",
-			"title": "Duolingo 「EN」 - Section 5 Unit 49"
-		}
-	},
-	"level": "N3",
-	"words": [
-		"アキラ",
-		"オオイタ",
-		"テーマ",
-		"主義",
-		"人権",
-		"他人",
-		"体制",
-		"判断",
-		"博士",
-		"反する",
-		"哲学",
-		"基本",
-		"失う",
-		"姿",
-		"完",
-		"完全",
-		"尊",
-		"尊重",
-		"平等",
-		"意識",
-		"支持",
-		"期待",
-		"権利",
-		"正確",
-		"民主",
-		"況",
-		"無くなる",
-		"状況",
-		"現在",
-		"理論",
-		"知識",
-		"経験",
-		"考える",
-		"論文",
-		"讃",
-		"賛成",
-		"身",
-		"関する"
-	]
+  "content": {
+    "English": {
+      "description": "Words from section/unit: express ideas",
+      "title": "Duolingo 「EN」 - Section 5 Unit 49"
+    },
+    "Russian": {
+      "description": "Слова из модуля: express ideas",
+      "title": "Duolingo 「EN」 - Section 5 Unit 49"
+    }
+  },
+  "level": "N3",
+  "words": [
+    "アキラ",
+    "オオイタ",
+    "テーマ",
+    "主義",
+    "人権",
+    "他人",
+    "体制",
+    "判断",
+    "博士",
+    "反する",
+    "哲学",
+    "基本",
+    "失う",
+    "姿",
+    "完",
+    "完全",
+    "尊",
+    "尊重",
+    "平等",
+    "意識",
+    "支持",
+    "期待",
+    "権利",
+    "正確",
+    "民主",
+    "況",
+    "無くなる",
+    "状況",
+    "現在",
+    "理論",
+    "知識",
+    "経験",
+    "考える",
+    "論文",
+    "讃",
+    "賛成",
+    "身",
+    "関する"
+  ]
 }

@@ -1,48 +1,48 @@
 {
-    "content": {
-        "English": {
-            "description": "Words from section/unit: discuss relationships",
-            "title": "Duolingo 「EN」 - Section 6 Unit 21"
-        },
-        "Russian": {
-            "description": "Слова из модуля: discuss relationships",
-            "title": "Duolingo 「EN」 - Section 6 Unit 21"
-        }
+  "content": {
+    "English": {
+      "description": "Words from section/unit: discuss relationships",
+      "title": "Duolingo 「EN」 - Section 6 Unit 21"
     },
-    "level": "N3",
-    "words": [
-        "しょっちゅう",
-        "一般",
-        "世代",
-        "人種",
-        "付き合う",
-        "仲",
-        "仲間",
-        "偏",
-        "偏見",
-        "呼ぶ",
-        "喧嘩",
-        "大衆",
-        "夫婦",
-        "婚約",
-        "少女",
-        "少年",
-        "差別",
-        "年齢",
-        "急速",
-        "恋人",
-        "成人",
-        "成年",
-        "成長",
-        "様々",
-        "民族",
-        "知る",
-        "般",
-        "衆",
-        "親しい",
-        "記憶",
-        "集団",
-        "高齢",
-        "齢"
-    ]
+    "Russian": {
+      "description": "Слова из модуля: discuss relationships",
+      "title": "Duolingo 「EN」 - Section 6 Unit 21"
+    }
+  },
+  "level": "N3",
+  "words": [
+    "しょっちゅう",
+    "一般",
+    "世代",
+    "人種",
+    "付き合う",
+    "仲",
+    "仲間",
+    "偏",
+    "偏見",
+    "呼ぶ",
+    "喧嘩",
+    "大衆",
+    "夫婦",
+    "婚約",
+    "少女",
+    "少年",
+    "差別",
+    "年齢",
+    "急速",
+    "恋人",
+    "成人",
+    "成年",
+    "成長",
+    "様々",
+    "民族",
+    "知る",
+    "般",
+    "衆",
+    "親しい",
+    "記憶",
+    "集団",
+    "高齢",
+    "齢"
+  ]
 }

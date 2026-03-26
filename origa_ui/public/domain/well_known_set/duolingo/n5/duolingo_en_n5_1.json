@@ -1,14 +1,20 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: order food",
-			"title": "Duolingo 「EN」 - Section 1 Unit 1"
-		},
-		"Russian": {
-			"description": "Слова из модуля: order food",
-			"title": "Duolingo 「EN」 - Section 1 Unit 1"
-		}
-	},
-	"level": "N5",
-	"words": ["下さる", "寿司", "御飯", "水", "茶"]
+  "content": {
+    "English": {
+      "description": "Words from section/unit: order food",
+      "title": "Duolingo 「EN」 - Section 1 Unit 1"
+    },
+    "Russian": {
+      "description": "Слова из модуля: order food",
+      "title": "Duolingo 「EN」 - Section 1 Unit 1"
+    }
+  },
+  "level": "N5",
+  "words": [
+    "下さる",
+    "寿司",
+    "御飯",
+    "水",
+    "茶"
+  ]
 }

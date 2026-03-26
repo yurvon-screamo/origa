@@ -1,51 +1,51 @@
 {
-    "content": {
-        "English": {
-            "description": "Words from section/unit: use commands",
-            "title": "Duolingo 「EN」 - Section 5 Unit 34"
-        },
-        "Russian": {
-            "description": "Слова из модуля: use commands",
-            "title": "Duolingo 「EN」 - Section 5 Unit 34"
-        }
+  "content": {
+    "English": {
+      "description": "Words from section/unit: use commands",
+      "title": "Duolingo 「EN」 - Section 5 Unit 34"
     },
-    "level": "N3",
-    "words": [
-        "どう",
-        "ツトム",
-        "ルール",
-        "公共",
-        "共",
-        "分担",
-        "努力",
-        "勿体",
-        "受け取る",
-        "喫煙",
-        "安全",
-        "家事",
-        "当番",
-        "怠い",
-        "怠ける",
-        "怠る",
-        "成る",
-        "担",
-        "担当",
-        "求",
-        "無い",
-        "無駄",
-        "真面目",
-        "確",
-        "確か",
-        "確かめる",
-        "禁ずる",
-        "終える",
-        "終わる",
-        "義務",
-        "要求",
-        "説得",
-        "責め",
-        "責任",
-        "際",
-        "飲酒"
-    ]
+    "Russian": {
+      "description": "Слова из модуля: use commands",
+      "title": "Duolingo 「EN」 - Section 5 Unit 34"
+    }
+  },
+  "level": "N3",
+  "words": [
+    "どう",
+    "ツトム",
+    "ルール",
+    "公共",
+    "共",
+    "分担",
+    "努力",
+    "勿体",
+    "受け取る",
+    "喫煙",
+    "安全",
+    "家事",
+    "当番",
+    "怠い",
+    "怠ける",
+    "怠る",
+    "成る",
+    "担",
+    "担当",
+    "求",
+    "無い",
+    "無駄",
+    "真面目",
+    "確",
+    "確か",
+    "確かめる",
+    "禁ずる",
+    "終える",
+    "終わる",
+    "義務",
+    "要求",
+    "説得",
+    "責め",
+    "責任",
+    "際",
+    "飲酒"
+  ]
 }

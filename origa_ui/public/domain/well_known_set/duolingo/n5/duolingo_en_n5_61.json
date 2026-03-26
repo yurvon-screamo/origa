@@ -1,36 +1,36 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: talk about gifts you gave or received",
-			"title": "Duolingo 「EN」 - Section 3 Unit 22"
-		},
-		"Russian": {
-			"description": "Слова из модуля: talk about gifts you gave or received",
-			"title": "Duolingo 「EN」 - Section 3 Unit 22"
-		}
-	},
-	"level": "N5",
-	"words": [
-		"そう",
-		"カップ",
-		"ケース",
-		"タブレット",
-		"ハンカチ",
-		"パートナー",
-		"ベルト",
-		"マグ",
-		"上げる",
-		"二",
-		"人形",
-		"今年",
-		"喜ぶ",
-		"姪",
-		"川",
-		"毎年",
-		"焼く",
-		"絵本",
-		"茶",
-		"貰う",
-		"遣る"
-	]
+  "content": {
+    "English": {
+      "description": "Words from section/unit: talk about gifts you gave or received",
+      "title": "Duolingo 「EN」 - Section 3 Unit 22"
+    },
+    "Russian": {
+      "description": "Слова из модуля: talk about gifts you gave or received",
+      "title": "Duolingo 「EN」 - Section 3 Unit 22"
+    }
+  },
+  "level": "N5",
+  "words": [
+    "そう",
+    "カップ",
+    "ケース",
+    "タブレット",
+    "ハンカチ",
+    "パートナー",
+    "ベルト",
+    "マグ",
+    "上げる",
+    "二",
+    "人形",
+    "今年",
+    "喜ぶ",
+    "姪",
+    "川",
+    "毎年",
+    "焼く",
+    "絵本",
+    "茶",
+    "貰う",
+    "遣る"
+  ]
 }

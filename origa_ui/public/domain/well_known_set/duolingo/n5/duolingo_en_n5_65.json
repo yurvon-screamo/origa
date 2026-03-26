@@ -1,35 +1,35 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: cook with someone",
-			"title": "Duolingo 「EN」 - Section 3 Unit 26"
-		},
-		"Russian": {
-			"description": "Слова из модуля: cook with someone",
-			"title": "Duolingo 「EN」 - Section 3 Unit 26"
-		}
-	},
-	"level": "N5",
-	"words": [
-		"グラム",
-		"シチュー",
-		"ジャガ芋",
-		"スプーン",
-		"バター",
-		"レシピ",
-		"作る",
-		"入る",
-		"八",
-		"小麦",
-		"幾",
-		"引き出す",
-		"御腹",
-		"昼御飯",
-		"玉葱",
-		"砂糖",
-		"空く",
-		"肉",
-		"茶碗",
-		"要る"
-	]
+  "content": {
+    "English": {
+      "description": "Words from section/unit: cook with someone",
+      "title": "Duolingo 「EN」 - Section 3 Unit 26"
+    },
+    "Russian": {
+      "description": "Слова из модуля: cook with someone",
+      "title": "Duolingo 「EN」 - Section 3 Unit 26"
+    }
+  },
+  "level": "N5",
+  "words": [
+    "グラム",
+    "シチュー",
+    "ジャガ芋",
+    "スプーン",
+    "バター",
+    "レシピ",
+    "作る",
+    "入る",
+    "八",
+    "小麦",
+    "幾",
+    "引き出す",
+    "御腹",
+    "昼御飯",
+    "玉葱",
+    "砂糖",
+    "空く",
+    "肉",
+    "茶碗",
+    "要る"
+  ]
 }

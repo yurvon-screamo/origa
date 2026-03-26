@@ -3,7 +3,7 @@ use leptos::prelude::*;
 use lexical_sort::natural_lexical_cmp;
 use std::collections::HashSet;
 
-use super::filters::{available_set_types, TypeFilter};
+use super::filters::{TypeFilter, available_set_types};
 use super::set_card::SetCard;
 use super::types::SetInfo;
 

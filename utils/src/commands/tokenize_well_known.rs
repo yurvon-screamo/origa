@@ -40,6 +40,14 @@ fn extract_words_array(json: &Map<String, Value>, path: &Path) -> Result<Vec<Str
 
 /// Processes a single well-known JSON file
 fn process_well_known_file(path: &Path) -> Result<(), OrigaError> {
+    // Skip metadata files
+    if let Some(filename) = path.file_name().and_then(|n| n.to_str()) {
+        if filename == "well_known_sets_meta.json" || filename == "well_known_types_meta.json" {
+            tracing::debug!("Skipping metadata file: {}", path.display());
+            return Ok(());
+        }
+    }
+
     // Read and parse JSON
     let content = fs::read_to_string(path).map_err(|e| OrigaError::TokenizerError {
         reason: format!("Failed to read {}: {}", path.display(), e),

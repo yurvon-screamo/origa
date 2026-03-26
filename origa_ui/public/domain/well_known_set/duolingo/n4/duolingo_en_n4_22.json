@@ -1,46 +1,46 @@
 {
-    "content": {
-        "English": {
-            "description": "Words from section/unit: describe extended family",
-            "title": "Duolingo 「EN」 - Section 4 Unit 22"
-        },
-        "Russian": {
-            "description": "Слова из модуля: describe extended family",
-            "title": "Duolingo 「EN」 - Section 4 Unit 22"
-        }
+  "content": {
+    "English": {
+      "description": "Words from section/unit: describe extended family",
+      "title": "Duolingo 「EN」 - Section 4 Unit 22"
     },
-    "level": "N4",
-    "words": [
-        "セキ",
-        "三",
-        "主",
-        "主人",
-        "二人",
-        "伯母",
-        "伯父",
-        "似る",
-        "只今",
-        "在宅",
-        "夫",
-        "奥",
-        "妻",
-        "娘",
-        "婆",
-        "子",
-        "孫",
-        "幾",
-        "従兄弟",
-        "息",
-        "息子",
-        "来る",
-        "為さる",
-        "爺",
-        "祖",
-        "祖母",
-        "祖父",
-        "行く",
-        "親",
-        "親戚",
-        "返る"
-    ]
+    "Russian": {
+      "description": "Слова из модуля: describe extended family",
+      "title": "Duolingo 「EN」 - Section 4 Unit 22"
+    }
+  },
+  "level": "N4",
+  "words": [
+    "セキ",
+    "三",
+    "主",
+    "主人",
+    "二人",
+    "伯母",
+    "伯父",
+    "似る",
+    "只今",
+    "在宅",
+    "夫",
+    "奥",
+    "妻",
+    "娘",
+    "婆",
+    "子",
+    "孫",
+    "幾",
+    "従兄弟",
+    "息",
+    "息子",
+    "来る",
+    "為さる",
+    "爺",
+    "祖",
+    "祖母",
+    "祖父",
+    "行く",
+    "親",
+    "親戚",
+    "返る"
+  ]
 }

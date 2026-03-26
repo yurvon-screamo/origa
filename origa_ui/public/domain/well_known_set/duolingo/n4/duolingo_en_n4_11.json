@@ -1,43 +1,43 @@
 {
-    "content": {
-        "English": {
-            "description": "Words from section/unit: communicate at a store",
-            "title": "Duolingo 「EN」 - Section 4 Unit 11"
-        },
-        "Russian": {
-            "description": "Слова из модуля: communicate at a store",
-            "title": "Duolingo 「EN」 - Section 4 Unit 11"
-        }
+  "content": {
+    "English": {
+      "description": "Words from section/unit: communicate at a store",
+      "title": "Duolingo 「EN」 - Section 4 Unit 11"
     },
-    "level": "N4",
-    "words": [
-        "で",
-        "どうぞ",
-        "カップ",
-        "ガム",
-        "コピー",
-        "スキャン",
-        "ラーメン",
-        "下さる",
-        "仕様",
-        "出来る",
-        "分かる",
-        "切る",
-        "前",
-        "大丈夫",
-        "居る",
-        "幾",
-        "弁当",
-        "引き出す",
-        "待つ",
-        "成る",
-        "押す",
-        "此方",
-        "温める",
-        "箸",
-        "納豆",
-        "肉饅",
-        "金",
-        "開く"
-    ]
+    "Russian": {
+      "description": "Слова из модуля: communicate at a store",
+      "title": "Duolingo 「EN」 - Section 4 Unit 11"
+    }
+  },
+  "level": "N4",
+  "words": [
+    "で",
+    "どうぞ",
+    "カップ",
+    "ガム",
+    "コピー",
+    "スキャン",
+    "ラーメン",
+    "下さる",
+    "仕様",
+    "出来る",
+    "分かる",
+    "切る",
+    "前",
+    "大丈夫",
+    "居る",
+    "幾",
+    "弁当",
+    "引き出す",
+    "待つ",
+    "成る",
+    "押す",
+    "此方",
+    "温める",
+    "箸",
+    "納豆",
+    "肉饅",
+    "金",
+    "開く"
+  ]
 }

@@ -1,31 +1,31 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: talk about business",
-			"title": "Duolingo 「EN」 - Section 6 Unit 37"
-		},
-		"Russian": {
-			"description": "Слова из модуля: talk about business",
-			"title": "Duolingo 「EN」 - Section 6 Unit 37"
-		}
-	},
-	"level": "N3",
-	"words": [
-		"事業",
-		"代金",
-		"企業",
-		"取り引き",
-		"品",
-		"商店",
-		"商業",
-		"失業",
-		"提供",
-		"稼ぐ",
-		"節約",
-		"請求",
-		"資本",
-		"資金",
-		"購入",
-		"金額"
-	]
+  "content": {
+    "English": {
+      "description": "Words from section/unit: talk about business",
+      "title": "Duolingo 「EN」 - Section 6 Unit 37"
+    },
+    "Russian": {
+      "description": "Слова из модуля: talk about business",
+      "title": "Duolingo 「EN」 - Section 6 Unit 37"
+    }
+  },
+  "level": "N3",
+  "words": [
+    "事業",
+    "代金",
+    "企業",
+    "取り引き",
+    "品",
+    "商店",
+    "商業",
+    "失業",
+    "提供",
+    "稼ぐ",
+    "節約",
+    "請求",
+    "資本",
+    "資金",
+    "購入",
+    "金額"
+  ]
 }

@@ -1,39 +1,39 @@
 {
-    "content": {
-        "English": {
-            "description": "Words from section/unit: discuss health",
-            "title": "Duolingo 「EN」 - Section 4 Unit 46"
-        },
-        "Russian": {
-            "description": "Слова из модуля: discuss health",
-            "title": "Duolingo 「EN」 - Section 4 Unit 46"
-        }
+  "content": {
+    "English": {
+      "description": "Words from section/unit: discuss health",
+      "title": "Duolingo 「EN」 - Section 4 Unit 46"
     },
-    "level": "N4",
-    "words": [
-        "体",
-        "医者",
-        "口",
-        "太る",
-        "手",
-        "歯",
-        "病気",
-        "痛い",
-        "痩せ",
-        "目",
-        "眼鏡",
-        "磨き",
-        "耳",
-        "背",
-        "背中",
-        "薬",
-        "足",
-        "運動",
-        "邪",
-        "頭",
-        "顔",
-        "風邪",
-        "髪",
-        "鼻"
-    ]
+    "Russian": {
+      "description": "Слова из модуля: discuss health",
+      "title": "Duolingo 「EN」 - Section 4 Unit 46"
+    }
+  },
+  "level": "N4",
+  "words": [
+    "体",
+    "医者",
+    "口",
+    "太る",
+    "手",
+    "歯",
+    "病気",
+    "痛い",
+    "痩せ",
+    "目",
+    "眼鏡",
+    "磨き",
+    "耳",
+    "背",
+    "背中",
+    "薬",
+    "足",
+    "運動",
+    "邪",
+    "頭",
+    "顔",
+    "風邪",
+    "髪",
+    "鼻"
+  ]
 }

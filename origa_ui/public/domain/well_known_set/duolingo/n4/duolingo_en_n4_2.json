@@ -1,44 +1,44 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: describe health habits",
-			"title": "Duolingo 「EN」 - Section 4 Unit 2"
-		},
-		"Russian": {
-			"description": "Слова из модуля: describe health habits",
-			"title": "Duolingo 「EN」 - Section 4 Unit 2"
-		}
-	},
-	"level": "N4",
-	"words": [
-		"きん",
-		"インフルエンザ",
-		"オレンジ",
-		"サイクリング",
-		"タバコ",
-		"トレ",
-		"ファースト",
-		"フード",
-		"ヨーグルト",
-		"一",
-		"中",
-		"人参",
-		"何れ",
-		"喉",
-		"四",
-		"回",
-		"役",
-		"御腹",
-		"成る",
-		"揚げ物",
-		"携帯",
-		"日",
-		"此れ",
-		"済む",
-		"箇月",
-		"結構",
-		"脂っこい",
-		"飲む",
-		"鮭"
-	]
+  "content": {
+    "English": {
+      "description": "Words from section/unit: describe health habits",
+      "title": "Duolingo 「EN」 - Section 4 Unit 2"
+    },
+    "Russian": {
+      "description": "Слова из модуля: describe health habits",
+      "title": "Duolingo 「EN」 - Section 4 Unit 2"
+    }
+  },
+  "level": "N4",
+  "words": [
+    "きん",
+    "インフルエンザ",
+    "オレンジ",
+    "サイクリング",
+    "タバコ",
+    "トレ",
+    "ファースト",
+    "フード",
+    "ヨーグルト",
+    "一",
+    "中",
+    "人参",
+    "何れ",
+    "喉",
+    "四",
+    "回",
+    "役",
+    "御腹",
+    "成る",
+    "揚げ物",
+    "携帯",
+    "日",
+    "此れ",
+    "済む",
+    "箇月",
+    "結構",
+    "脂っこい",
+    "飲む",
+    "鮭"
+  ]
 }

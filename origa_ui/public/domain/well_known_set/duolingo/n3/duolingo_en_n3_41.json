@@ -1,46 +1,46 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: describe health issues",
-			"title": "Duolingo 「EN」 - Section 5 Unit 41"
-		},
-		"Russian": {
-			"description": "Слова из модуля: describe health issues",
-			"title": "Duolingo 「EN」 - Section 5 Unit 41"
-		}
-	},
-	"level": "N3",
-	"words": [
-		"ストレス",
-		"中毒",
-		"体温",
-		"使う",
-		"傷",
-		"利く",
-		"又",
-		"咳",
-		"噛む",
-		"嚔",
-		"回復",
-		"妊娠",
-		"尻",
-		"患",
-		"患者",
-		"手術",
-		"手首",
-		"椅子",
-		"毒",
-		"消化",
-		"爪",
-		"甲斐",
-		"痛む",
-		"眠い",
-		"睡眠",
-		"肌",
-		"肺",
-		"腹",
-		"舌",
-		"車",
-		"頭痛"
-	]
+  "content": {
+    "English": {
+      "description": "Words from section/unit: describe health issues",
+      "title": "Duolingo 「EN」 - Section 5 Unit 41"
+    },
+    "Russian": {
+      "description": "Слова из модуля: describe health issues",
+      "title": "Duolingo 「EN」 - Section 5 Unit 41"
+    }
+  },
+  "level": "N3",
+  "words": [
+    "ストレス",
+    "中毒",
+    "体温",
+    "使う",
+    "傷",
+    "利く",
+    "又",
+    "咳",
+    "噛む",
+    "嚔",
+    "回復",
+    "妊娠",
+    "尻",
+    "患",
+    "患者",
+    "手術",
+    "手首",
+    "椅子",
+    "毒",
+    "消化",
+    "爪",
+    "甲斐",
+    "痛む",
+    "眠い",
+    "睡眠",
+    "肌",
+    "肺",
+    "腹",
+    "舌",
+    "車",
+    "頭痛"
+  ]
 }

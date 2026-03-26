@@ -1,42 +1,42 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: get around an airport",
-			"title": "Duolingo 「EN」 - Section 5 Unit 13"
-		},
-		"Russian": {
-			"description": "Слова из модуля: get around an airport",
-			"title": "Duolingo 「EN」 - Section 5 Unit 13"
-		}
-	},
-	"level": "N3",
-	"words": [
-		"ゲート",
-		"シート",
-		"ナリタ",
-		"パイロット",
-		"ビザ",
-		"ベルト",
-		"便",
-		"入国",
-		"切れる",
-		"券",
-		"塞",
-		"惚ける",
-		"手",
-		"手続き",
-		"拝",
-		"搭乗",
-		"時差",
-		"機内",
-		"無事",
-		"着陸",
-		"苦しむ",
-		"荷物",
-		"観光",
-		"込み",
-		"通路",
-		"進む",
-		"離陸"
-	]
+  "content": {
+    "English": {
+      "description": "Words from section/unit: get around an airport",
+      "title": "Duolingo 「EN」 - Section 5 Unit 13"
+    },
+    "Russian": {
+      "description": "Слова из модуля: get around an airport",
+      "title": "Duolingo 「EN」 - Section 5 Unit 13"
+    }
+  },
+  "level": "N3",
+  "words": [
+    "ゲート",
+    "シート",
+    "ナリタ",
+    "パイロット",
+    "ビザ",
+    "ベルト",
+    "便",
+    "入国",
+    "切れる",
+    "券",
+    "塞",
+    "惚ける",
+    "手",
+    "手続き",
+    "拝",
+    "搭乗",
+    "時差",
+    "機内",
+    "無事",
+    "着陸",
+    "苦しむ",
+    "荷物",
+    "観光",
+    "込み",
+    "通路",
+    "進む",
+    "離陸"
+  ]
 }

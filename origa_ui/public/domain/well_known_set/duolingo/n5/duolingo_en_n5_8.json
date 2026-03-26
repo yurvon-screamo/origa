@@ -1,24 +1,24 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: talk about neighbors",
-			"title": "Duolingo 「EN」 - Section 1 Unit 8"
-		},
-		"Russian": {
-			"description": "Слова из модуля: talk about neighbors",
-			"title": "Duolingo 「EN」 - Section 1 Unit 8"
-		}
-	},
-	"level": "N5",
-	"words": [
-		"タナカ",
-		"ヤマグチ",
-		"中",
-		"其の",
-		"可愛い",
-		"山",
-		"明るい",
-		"此の",
-		"面白い"
-	]
+  "content": {
+    "English": {
+      "description": "Words from section/unit: talk about neighbors",
+      "title": "Duolingo 「EN」 - Section 1 Unit 8"
+    },
+    "Russian": {
+      "description": "Слова из модуля: talk about neighbors",
+      "title": "Duolingo 「EN」 - Section 1 Unit 8"
+    }
+  },
+  "level": "N5",
+  "words": [
+    "タナカ",
+    "ヤマグチ",
+    "中",
+    "其の",
+    "可愛い",
+    "山",
+    "明るい",
+    "此の",
+    "面白い"
+  ]
 }

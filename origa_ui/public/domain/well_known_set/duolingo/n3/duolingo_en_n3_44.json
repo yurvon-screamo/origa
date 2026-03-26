@@ -1,33 +1,33 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: discuss conflict",
-			"title": "Duolingo 「EN」 - Section 5 Unit 44"
-		},
-		"Russian": {
-			"description": "Слова из модуля: discuss conflict",
-			"title": "Duolingo 「EN」 - Section 5 Unit 44"
-		}
-	},
-	"level": "N3",
-	"words": [
-		"基",
-		"基地",
-		"年々",
-		"弓",
-		"手段",
-		"暴",
-		"暴力",
-		"爆弾",
-		"爆発",
-		"率",
-		"矢",
-		"競り",
-		"競争",
-		"自衛",
-		"訓",
-		"訓練",
-		"軍事",
-		"銃"
-	]
+  "content": {
+    "English": {
+      "description": "Words from section/unit: discuss conflict",
+      "title": "Duolingo 「EN」 - Section 5 Unit 44"
+    },
+    "Russian": {
+      "description": "Слова из модуля: discuss conflict",
+      "title": "Duolingo 「EN」 - Section 5 Unit 44"
+    }
+  },
+  "level": "N3",
+  "words": [
+    "基",
+    "基地",
+    "年々",
+    "弓",
+    "手段",
+    "暴",
+    "暴力",
+    "爆弾",
+    "爆発",
+    "率",
+    "矢",
+    "競り",
+    "競争",
+    "自衛",
+    "訓",
+    "訓練",
+    "軍事",
+    "銃"
+  ]
 }

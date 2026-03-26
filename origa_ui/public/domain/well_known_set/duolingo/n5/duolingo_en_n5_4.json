@@ -1,22 +1,22 @@
 {
-    "content": {
-        "English": {
-            "description": "Words from section/unit: order food and drink",
-            "title": "Duolingo 「EN」 - Section 1 Unit 4"
-        },
-        "Russian": {
-            "description": "Слова из модуля: order food and drink",
-            "title": "Duolingo 「EN」 - Section 1 Unit 4"
-        }
+  "content": {
+    "English": {
+      "description": "Words from section/unit: order food and drink",
+      "title": "Duolingo 「EN」 - Section 1 Unit 4"
     },
-    "level": "N5",
-    "words": [
-        "カレー",
-        "ケーキ",
-        "ピザ",
-        "ラーメン",
-        "其れ",
-        "此れ",
-        "美味しい"
-    ]
+    "Russian": {
+      "description": "Слова из модуля: order food and drink",
+      "title": "Duolingo 「EN」 - Section 1 Unit 4"
+    }
+  },
+  "level": "N5",
+  "words": [
+    "カレー",
+    "ケーキ",
+    "ピザ",
+    "ラーメン",
+    "其れ",
+    "此れ",
+    "美味しい"
+  ]
 }

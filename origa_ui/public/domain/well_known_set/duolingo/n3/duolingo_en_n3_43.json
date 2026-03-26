@@ -1,30 +1,30 @@
 {
-    "content": {
-        "English": {
-            "description": "Words from section/unit: talk about the news",
-            "title": "Duolingo 「EN」 - Section 5 Unit 43"
-        },
-        "Russian": {
-            "description": "Слова из модуля: talk about the news",
-            "title": "Duolingo 「EN」 - Section 5 Unit 43"
-        }
+  "content": {
+    "English": {
+      "description": "Words from section/unit: talk about the news",
+      "title": "Duolingo 「EN」 - Section 5 Unit 43"
     },
-    "level": "N3",
-    "words": [
-        "噂",
-        "報道",
-        "意外",
-        "放送",
-        "査",
-        "正直",
-        "無知",
-        "発表",
-        "結果",
-        "記事",
-        "記者",
-        "詳しい",
-        "詳らか",
-        "調査",
-        "述べる"
-    ]
+    "Russian": {
+      "description": "Слова из модуля: talk about the news",
+      "title": "Duolingo 「EN」 - Section 5 Unit 43"
+    }
+  },
+  "level": "N3",
+  "words": [
+    "噂",
+    "報道",
+    "意外",
+    "放送",
+    "査",
+    "正直",
+    "無知",
+    "発表",
+    "結果",
+    "記事",
+    "記者",
+    "詳しい",
+    "詳らか",
+    "調査",
+    "述べる"
+  ]
 }

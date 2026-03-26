@@ -1,37 +1,37 @@
 {
-	"content": {
-		"English": {
-			"description": "Vocabulary from lesson 12 of N5 level by Migii.",
-			"title": "Migii N5 Lesson 12"
-		},
-		"Russian": {
-			"description": "Словарный запас из урока 12 уровня N5 от Migii.",
-			"title": "Migii N5 Урок 12"
-		}
-	},
-	"level": "N5",
-	"words": [
-		"ペン",
-		"七",
-		"三",
-		"五",
-		"先生",
-		"切手",
-		"卵",
-		"四",
-		"大切",
-		"女",
-		"始まる",
-		"座る",
-		"日",
-		"朝御飯",
-		"本当",
-		"漢字",
-		"留学",
-		"番号",
-		"目",
-		"緑",
-		"赤",
-		"返る"
-	]
+  "content": {
+    "English": {
+      "description": "Vocabulary from lesson 12 of N5 level by Migii.",
+      "title": "Migii N5 Lesson 12"
+    },
+    "Russian": {
+      "description": "Словарный запас из урока 12 уровня N5 от Migii.",
+      "title": "Migii N5 Урок 12"
+    }
+  },
+  "level": "N5",
+  "words": [
+    "ペン",
+    "七",
+    "三",
+    "五",
+    "先生",
+    "切手",
+    "卵",
+    "四",
+    "大切",
+    "女",
+    "始まる",
+    "座る",
+    "日",
+    "朝御飯",
+    "本当",
+    "漢字",
+    "留学",
+    "番号",
+    "目",
+    "緑",
+    "赤",
+    "返る"
+  ]
 }

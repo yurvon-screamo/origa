@@ -1,35 +1,35 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: describe your family",
-			"title": "Duolingo 「EN」 - Section 2 Unit 17"
-		},
-		"Russian": {
-			"description": "Слова из модуля: describe your family",
-			"title": "Duolingo 「EN」 - Section 2 Unit 17"
-		}
-	},
-	"level": "N5",
-	"words": [
-		"オーストラリア",
-		"コーチ",
-		"ソウル",
-		"マレーシア",
-		"一人",
-		"中国",
-		"二人",
-		"兄",
-		"兄弟",
-		"出来る",
-		"妹",
-		"姉",
-		"子供",
-		"居る",
-		"弟",
-		"日本",
-		"椀",
-		"烏滸",
-		"英語",
-		"韓国"
-	]
+  "content": {
+    "English": {
+      "description": "Words from section/unit: describe your family",
+      "title": "Duolingo 「EN」 - Section 2 Unit 17"
+    },
+    "Russian": {
+      "description": "Слова из модуля: describe your family",
+      "title": "Duolingo 「EN」 - Section 2 Unit 17"
+    }
+  },
+  "level": "N5",
+  "words": [
+    "オーストラリア",
+    "コーチ",
+    "ソウル",
+    "マレーシア",
+    "一人",
+    "中国",
+    "二人",
+    "兄",
+    "兄弟",
+    "出来る",
+    "妹",
+    "姉",
+    "子供",
+    "居る",
+    "弟",
+    "日本",
+    "椀",
+    "烏滸",
+    "英語",
+    "韓国"
+  ]
 }

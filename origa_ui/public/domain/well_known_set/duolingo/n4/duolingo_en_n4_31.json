@@ -1,46 +1,46 @@
 {
-    "content": {
-        "English": {
-            "description": "Words from section/unit: shop for common items",
-            "title": "Duolingo 「EN」 - Section 4 Unit 31"
-        },
-        "Russian": {
-            "description": "Слова из модуля: shop for common items",
-            "title": "Duolingo 「EN」 - Section 4 Unit 31"
-        }
+  "content": {
+    "English": {
+      "description": "Words from section/unit: shop for common items",
+      "title": "Duolingo 「EN」 - Section 4 Unit 31"
     },
-    "level": "N4",
-    "words": [
-        "こんな",
-        "丈夫",
-        "上げる",
-        "他",
-        "入れる",
-        "出し",
-        "切れ",
-        "取る",
-        "同",
-        "同じ",
-        "大切",
-        "大好き",
-        "持つ",
-        "時計",
-        "物",
-        "腕",
-        "色",
-        "色々",
-        "花",
-        "荷",
-        "荷物",
-        "財",
-        "財布",
-        "貰う",
-        "軽",
-        "軽い",
-        "違う",
-        "重",
-        "重い",
-        "金",
-        "鞄"
-    ]
+    "Russian": {
+      "description": "Слова из модуля: shop for common items",
+      "title": "Duolingo 「EN」 - Section 4 Unit 31"
+    }
+  },
+  "level": "N4",
+  "words": [
+    "こんな",
+    "丈夫",
+    "上げる",
+    "他",
+    "入れる",
+    "出し",
+    "切れ",
+    "取る",
+    "同",
+    "同じ",
+    "大切",
+    "大好き",
+    "持つ",
+    "時計",
+    "物",
+    "腕",
+    "色",
+    "色々",
+    "花",
+    "荷",
+    "荷物",
+    "財",
+    "財布",
+    "貰う",
+    "軽",
+    "軽い",
+    "違う",
+    "重",
+    "重い",
+    "金",
+    "鞄"
+  ]
 }
