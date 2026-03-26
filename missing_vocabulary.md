@@ -1,5 +1,3 @@
-Total missing words: 107
-
 # Missing Vocabulary Report
 
 ## duolingo_ru_n5_54
