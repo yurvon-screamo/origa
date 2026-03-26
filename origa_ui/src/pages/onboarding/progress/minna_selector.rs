@@ -8,25 +8,25 @@ use super::types::MinnaLesson;
 pub fn MinnaProgressSelector(
     app_id: String,
     title: String,
-    lessons: Vec<MinnaLesson>,
+    lessons: Signal<Vec<MinnaLesson>>,
     state: RwSignal<OnboardingState>,
 ) -> impl IntoView {
     let selected_lesson = RwSignal::new(None::<usize>);
     let available_sets = Signal::derive(move || state.get().available_sets.clone());
 
-    let lesson_items = {
+    let lesson_items = Signal::derive(move || {
         let mut items = vec![DropdownItem {
             value: "none".to_string(),
             label: "Не изучал".to_string(),
         }];
-        for lesson in &lessons {
+        for lesson in lessons.get().iter() {
             items.push(DropdownItem {
                 value: format!("lesson_{}", lesson.lesson_number),
                 label: format!("Урок {}", lesson.lesson_number),
             });
         }
         items
-    };
+    });
 
     let import_info = Signal::derive(move || {
         selected_lesson
@@ -34,11 +34,15 @@ pub fn MinnaProgressSelector(
             .map(|n| format!("Будут импортированы: Уроки 1-{}", n))
     });
 
-    let lessons_for_effect = lessons.clone();
     let app_id_for_effect = app_id.clone();
     Effect::new(move |_| {
         let lesson_num = selected_lesson.get();
-        let lessons_ref = lessons_for_effect.clone();
+
+        if lesson_num.is_none() {
+            return;
+        }
+
+        let lessons_ref = lessons.get();
         let sets = available_sets.get();
 
         if let Some(n) = lesson_num {
@@ -81,11 +85,15 @@ pub fn MinnaProgressSelector(
     });
 
     let title_for_view = title.clone();
+    let app_id_for_dropdown = app_id.clone();
     view! {
         <Card class=Signal::derive(|| "p-4".to_string())>
-            <Text size=TextSize::Default variant=TypographyVariant::Primary>
-                {title_for_view}
-            </Text>
+            <div class="flex items-center gap-3 mb-2">
+                <img src="/public/external_icons/minnanonihongo.png" class="w-12 h-12 object-contain" alt="Minna no Nihongo" />
+                <Text size=TextSize::Default variant=TypographyVariant::Primary>
+                    {title_for_view}
+                </Text>
+            </div>
 
             <div class="mt-4">
                 <Text size=TextSize::Small variant=TypographyVariant::Muted>
@@ -93,10 +101,10 @@ pub fn MinnaProgressSelector(
                 </Text>
                 <div class="mt-2">
                     <Dropdown
-                        _options=Signal::derive(move || lesson_items.clone())
+                        _options=lesson_items
                         _selected=selected_lesson_value
                         _placeholder=Signal::derive(|| "Выберите урок".to_string())
-                        test_id=Signal::derive(move || format!("{}-lesson-dropdown", app_id.clone()))
+                        test_id=Signal::derive(move || format!("{}-lesson-dropdown", app_id_for_dropdown.clone()))
                     />
                 </div>
             </div>

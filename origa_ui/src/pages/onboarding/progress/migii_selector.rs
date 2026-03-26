@@ -13,7 +13,7 @@ use super::types::MigiiLesson;
 
 #[component]
 pub fn MigiiProgressSelector(
-    lessons_by_level: HashMap<JapaneseLevel, Vec<MigiiLesson>>,
+    lessons_by_level: Signal<HashMap<JapaneseLevel, Vec<MigiiLesson>>>,
     state: RwSignal<OnboardingState>,
 ) -> impl IntoView {
     let selected_level = RwSignal::new(None::<JapaneseLevel>);
@@ -22,9 +22,8 @@ pub fn MigiiProgressSelector(
 
     let level_items = build_level_items();
 
-    let lessons_by_level_for_items = lessons_by_level.clone();
     let lesson_items = Signal::derive(move || {
-        build_lesson_items(&lessons_by_level_for_items, selected_level.get())
+        build_lesson_items(&lessons_by_level.get(), selected_level.get())
     });
 
     let import_info = Signal::derive(move || {
@@ -42,11 +41,15 @@ pub fn MigiiProgressSelector(
         }
     });
 
-    let lessons_by_level_for_effect = lessons_by_level.clone();
     Effect::new(move |_| {
         let level = selected_level.get();
         let lesson_num = selected_lesson.get();
-        let lessons_by = lessons_by_level_for_effect.clone();
+
+        if level.is_none() || lesson_num.is_none() {
+            return;
+        }
+
+        let lessons_by = lessons_by_level.get();
         let sets = available_sets.get();
 
         if let (Some(lvl), Some(lesson_n)) = (level, lesson_num)
@@ -105,9 +108,12 @@ pub fn MigiiProgressSelector(
 
     view! {
         <Card class=Signal::derive(|| "p-4".to_string())>
-            <Text size=TextSize::Default variant=TypographyVariant::Primary>
-                "Migii"
-            </Text>
+            <div class="flex items-center gap-3 mb-2">
+                <img src="/public/external_icons/migii.png" class="w-12 h-12 object-contain" alt="Migii" />
+                <Text size=TextSize::Default variant=TypographyVariant::Primary>
+                    "Migii"
+                </Text>
+            </div>
 
             <div class="mt-4 space-y-4">
                 <div>
