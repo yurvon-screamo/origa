@@ -42,11 +42,12 @@ pub fn MinnaProgressSelector(
             return;
         }
 
-        let lessons_ref = lessons.get();
-        let sets = available_sets.get();
+        // Читаем данные ОДИН РАЗ в начале, до state.update()
+        let lessons_snapshot: Vec<_> = lessons.get().clone();
+        let sets_snapshot: Vec<_> = available_sets.get().clone();
 
         if let Some(n) = lesson_num {
-            let ids_to_import: Vec<String> = lessons_ref
+            let ids_to_import: Vec<String> = lessons_snapshot
                 .iter()
                 .filter(|l| l.lesson_number <= n)
                 .map(|l| l.id.clone())
@@ -56,8 +57,8 @@ pub fn MinnaProgressSelector(
             state.update(|s| {
                 s.set_app_selection(&aid, &format!("lesson_{}", n));
                 s.sets_to_import
-                    .retain(|set| !lessons_ref.iter().any(|l| l.id == set.id));
-                let sets_to_add: Vec<_> = sets
+                    .retain(|set| !lessons_snapshot.iter().any(|l| l.id == set.id));
+                let sets_to_add: Vec<_> = sets_snapshot
                     .iter()
                     .filter(|set_meta| ids_to_import.contains(&set_meta.id))
                     .cloned()

@@ -37,20 +37,21 @@ pub fn DuolingoProgressSelector(
             return;
         }
 
-        let aid = app_id_for_effect.clone();
-        let mods = modules.get();
-        let sets = available_sets.get();
+        // Читаем данные ОДИН РАЗ в начале, до state.update()
+        let mods_snapshot: Vec<_> = modules.get().clone();
+        let sets_snapshot: Vec<_> = available_sets.get().clone();
 
         if let (Some(m), Some(u)) = (module_num, unit_num)
-            && let Some(module) = mods.iter().find(|mod_| mod_.module_number == m)
+            && let Some(module) = mods_snapshot.iter().find(|mod_| mod_.module_number == m)
         {
             let units_to_import = collect_units_to_import(module, u);
+            let aid = app_id_for_effect.clone();
 
             state.update(|s| {
                 s.set_app_selection(&aid, &format!("module_{}_unit_{}", m, u));
                 s.sets_to_import
-                    .retain(|set| !is_unit_in_modules(set.id.as_str(), &mods));
-                let sets_to_add: Vec<_> = sets
+                    .retain(|set| !is_unit_in_modules(set.id.as_str(), &mods_snapshot));
+                let sets_to_add: Vec<_> = sets_snapshot
                     .iter()
                     .filter(|set_meta| units_to_import.contains(&set_meta.id))
                     .cloned()
