@@ -275,6 +275,7 @@ pub fn Onboarding() -> impl IntoView {
                                         })
                                         disabled=Signal::derive(move || is_importing.get() || !can_proceed.get())
                                         test_id="onboarding-import"
+                                        attr:data-loading=Signal::derive(move || is_importing.get().to_string())
                                     >
                                         {move || if is_importing.get() { "Импорт..." } else { "Начать импорт" }}
                                     </Button>

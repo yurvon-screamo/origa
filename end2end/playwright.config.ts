@@ -11,7 +11,7 @@ export default defineConfig({
     fullyParallel: false,
     forbidOnly: isCI,
     retries: isCI ? 2 : 1,
-    workers: 16,
+    workers: process.env.CI ? 1 : "100%",
     reporter: [
         [
             "html",
@@ -36,7 +36,7 @@ export default defineConfig({
             name: "firefox",
             use: { ...devices["Desktop Firefox"] },
         },
-        // TODO: Tauri desktop project placeholder
+        // TODO: Tauri/WebView desktop project placeholder
         // {
         //   name: 'tauri-desktop',
         //   use: { ...devices['Desktop Chrome'] },

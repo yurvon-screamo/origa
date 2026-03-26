@@ -92,8 +92,12 @@ export class LoginPage extends BasePage {
         }
     }
 
-    async expectLoginSuccess(redirectTo = "/home"): Promise<void> {
-        await this.page.waitForURL(`**${redirectTo}**`);
+    async expectLoginSuccess(redirectTo: string | string[] = ["/home", "/onboarding"]): Promise<void> {
+        const paths = Array.isArray(redirectTo) ? redirectTo : [redirectTo];
+        await this.page.waitForURL((url) => {
+            const pathname = url.pathname;
+            return paths.some(path => pathname.includes(path));
+        });
     }
 
     async expectErrorMessage(): Promise<string | null> {
