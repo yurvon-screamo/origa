@@ -1,50 +1,50 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: talk about exercise",
-			"title": "Duolingo (EN) - Section 5 Unit 46"
-		},
-		"Russian": {
-			"description": "Слова из модуля: talk about exercise",
-			"title": "Duolingo (EN) - Section 5 Unit 46"
-		}
-	},
-	"level": "N3",
-	"words": [
-		"シン",
-		"ジョギング",
-		"ダンベル",
-		"ハン",
-		"ペース",
-		"二",
-		"伏せ",
-		"休憩",
-		"体力",
-		"体格",
-		"体育",
-		"出る",
-		"合わせる",
-		"和らげる",
-		"姿勢",
-		"定期",
-		"強化",
-		"息",
-		"持ち上げる",
-		"斯く",
-		"曲げる",
-		"更衣",
-		"河豚",
-		"筋",
-		"筋トレ",
-		"筋肉",
-		"胸筋",
-		"腕立て",
-		"腹筋",
-		"裸",
-		"見せびらかす",
-		"走る",
-		"逞しい",
-		"鍛え",
-		"鍛える"
-	]
+    "content": {
+        "English": {
+            "description": "Words from section/unit: talk about exercise",
+            "title": "Duolingo 「EN」 - Section 5 Unit 46"
+        },
+        "Russian": {
+            "description": "Слова из модуля: talk about exercise",
+            "title": "Duolingo 「EN」 - Section 5 Unit 46"
+        }
+    },
+    "level": "N3",
+    "words": [
+        "シン",
+        "ジョギング",
+        "ダンベル",
+        "ハン",
+        "ペース",
+        "二",
+        "伏せ",
+        "休憩",
+        "体力",
+        "体格",
+        "体育",
+        "出る",
+        "合わせる",
+        "和らげる",
+        "姿勢",
+        "定期",
+        "強化",
+        "息",
+        "持ち上げる",
+        "斯く",
+        "曲げる",
+        "更衣",
+        "河豚",
+        "筋",
+        "筋トレ",
+        "筋肉",
+        "胸筋",
+        "腕立て",
+        "腹筋",
+        "裸",
+        "見せびらかす",
+        "走る",
+        "逞しい",
+        "鍛え",
+        "鍛える"
+    ]
 }

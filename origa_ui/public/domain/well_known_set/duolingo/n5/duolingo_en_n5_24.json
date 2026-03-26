@@ -1,38 +1,38 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: get emergency help",
-			"title": "Duolingo (EN) - Section 2 Unit 15"
-		},
-		"Russian": {
-			"description": "Слова из модуля: get emergency help",
-			"title": "Duolingo (EN) - Section 2 Unit 15"
-		}
-	},
-	"level": "N5",
-	"words": [
-		"ちゃんと",
-		"アレルギー",
-		"九",
-		"今日",
-		"休む",
-		"何",
-		"具合",
-		"危ない",
-		"大丈夫",
-		"家族",
-		"座る",
-		"悪い",
-		"成る",
-		"救急",
-		"漁師",
-		"番号",
-		"病院",
-		"薬",
-		"警察",
-		"近い",
-		"電話",
-		"願う",
-		"飲む"
-	]
+    "content": {
+        "English": {
+            "description": "Words from section/unit: get emergency help",
+            "title": "Duolingo 「EN」 - Section 2 Unit 15"
+        },
+        "Russian": {
+            "description": "Слова из модуля: get emergency help",
+            "title": "Duolingo 「EN」 - Section 2 Unit 15"
+        }
+    },
+    "level": "N5",
+    "words": [
+        "ちゃんと",
+        "アレルギー",
+        "九",
+        "今日",
+        "休む",
+        "何",
+        "具合",
+        "危ない",
+        "大丈夫",
+        "家族",
+        "座る",
+        "悪い",
+        "成る",
+        "救急",
+        "漁師",
+        "番号",
+        "病院",
+        "薬",
+        "警察",
+        "近い",
+        "電話",
+        "願う",
+        "飲む"
+    ]
 }

@@ -30,7 +30,7 @@ fn get_known_apps() -> Vec<AppInfo> {
         },
         AppInfo {
             id: "DuolingoEn".to_string(),
-            name: "Duolingo (EN)".to_string(),
+            name: "Duolingo 「EN」".to_string(),
             description: "Duolingo на английском языке".to_string(),
             icon: "/public/external_icons/duolingo.png",
         },

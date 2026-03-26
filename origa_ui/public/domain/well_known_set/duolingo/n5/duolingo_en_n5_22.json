@@ -1,38 +1,38 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: take public transit",
-			"title": "Duolingo (EN) - Section 2 Unit 13"
-		},
-		"Russian": {
-			"description": "Слова из модуля: take public transit",
-			"title": "Duolingo (EN) - Section 2 Unit 13"
-		}
-	},
-	"level": "N5",
-	"words": [
-		"もう",
-		"アキハバラ",
-		"シブヤ",
-		"シュウ",
-		"バス",
-		"ヨコハマ",
-		"上",
-		"何",
-		"公園",
-		"分",
-		"十分",
-		"掛かる",
-		"早い",
-		"時間",
-		"朝",
-		"来る",
-		"次",
-		"此処",
-		"直ぐ",
-		"行く",
-		"長い",
-		"電車",
-		"駅"
-	]
+    "content": {
+        "English": {
+            "description": "Words from section/unit: take public transit",
+            "title": "Duolingo 「EN」 - Section 2 Unit 13"
+        },
+        "Russian": {
+            "description": "Слова из модуля: take public transit",
+            "title": "Duolingo 「EN」 - Section 2 Unit 13"
+        }
+    },
+    "level": "N5",
+    "words": [
+        "もう",
+        "アキハバラ",
+        "シブヤ",
+        "シュウ",
+        "バス",
+        "ヨコハマ",
+        "上",
+        "何",
+        "公園",
+        "分",
+        "十分",
+        "掛かる",
+        "早い",
+        "時間",
+        "朝",
+        "来る",
+        "次",
+        "此処",
+        "直ぐ",
+        "行く",
+        "長い",
+        "電車",
+        "駅"
+    ]
 }

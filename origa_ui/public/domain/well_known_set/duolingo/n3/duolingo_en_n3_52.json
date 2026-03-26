@@ -1,38 +1,38 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: discuss cooking",
-			"title": "Duolingo (EN) - Section 6 Unit 2"
-		},
-		"Russian": {
-			"description": "Слова из модуля: discuss cooking",
-			"title": "Duolingo (EN) - Section 6 Unit 2"
-		}
-	},
-	"level": "N3",
-	"words": [
-		"お好み焼き",
-		"サツマ",
-		"ビタミン",
-		"不足",
-		"伝統",
-		"保",
-		"保存",
-		"冷凍",
-		"含む",
-		"和",
-		"小豆",
-		"抹茶",
-		"栄養",
-		"玄米",
-		"白米",
-		"米",
-		"芋",
-		"菓子",
-		"蛋白",
-		"豊富",
-		"食料",
-		"食欲",
-		"餅"
-	]
+    "content": {
+        "English": {
+            "description": "Words from section/unit: discuss cooking",
+            "title": "Duolingo 「EN」 - Section 6 Unit 2"
+        },
+        "Russian": {
+            "description": "Слова из модуля: discuss cooking",
+            "title": "Duolingo 「EN」 - Section 6 Unit 2"
+        }
+    },
+    "level": "N3",
+    "words": [
+        "お好み焼き",
+        "サツマ",
+        "ビタミン",
+        "不足",
+        "伝統",
+        "保",
+        "保存",
+        "冷凍",
+        "含む",
+        "和",
+        "小豆",
+        "抹茶",
+        "栄養",
+        "玄米",
+        "白米",
+        "米",
+        "芋",
+        "菓子",
+        "蛋白",
+        "豊富",
+        "食料",
+        "食欲",
+        "餅"
+    ]
 }

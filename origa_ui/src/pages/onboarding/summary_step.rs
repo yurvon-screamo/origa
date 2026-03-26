@@ -11,7 +11,7 @@ fn get_type_label(set_type: &str) -> String {
         "Jlpt" => "JLPT".to_string(),
         "Migii" => "Migii".to_string(),
         "DuolingoRu" => "Duolingo (RU)".to_string(),
-        "DuolingoEn" => "Duolingo (EN)".to_string(),
+        "DuolingoEn" => "Duolingo 「EN」".to_string(),
         "MinnaNoNihongo" => "Minna no Nihongo".to_string(),
         other => other.to_string(),
     }
@@ -53,11 +53,7 @@ fn format_set_count(count: usize) -> String {
 pub fn SummaryStep(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoView {
     let test_id_val = move || {
         let val = test_id.get();
-        if val.is_empty() {
-            None
-        } else {
-            Some(val)
-        }
+        if val.is_empty() { None } else { Some(val) }
     };
 
     let state =

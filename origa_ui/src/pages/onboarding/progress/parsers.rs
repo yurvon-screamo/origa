@@ -170,8 +170,8 @@ mod parser_tests {
     // ==================== parse_duolingo_module_unit EN ====================
 
     #[rstest]
-    #[case("Duolingo (EN) - Section 5 Unit 1", false, Some((5, 1)))]
-    #[case("Duolingo (EN) - Section 10 Unit 25", false, Some((10, 25)))]
+    #[case("Duolingo 「EN」 - Section 5 Unit 1", false, Some((5, 1)))]
+    #[case("Duolingo 「EN」 - Section 10 Unit 25", false, Some((10, 25)))]
     #[case("Duolingo - Section 1 Unit 1", false, Some((1, 1)))]
     #[case("Invalid title", false, None)]
     #[case("Duolingo - без unit", false, None)]
@@ -224,7 +224,7 @@ mod parser_tests {
             set_type: "DuolingoRu".to_string(),
             level: JapaneseLevel::N5,
             title_ru: "Duolingo (RU) - Модуль 5 Раздел 1".to_string(),
-            title_en: "Duolingo (EN) - Section 5 Unit 1".to_string(),
+            title_en: "Duolingo 「EN」 - Section 5 Unit 1".to_string(),
             desc_ru: String::new(),
             desc_en: String::new(),
             word_count: 0,
@@ -292,7 +292,7 @@ mod parser_tests {
                 set_type: "DuolingoEn".to_string(),
                 level: JapaneseLevel::N5,
                 title_ru: String::new(),
-                title_en: "Duolingo (EN) - Section 3 Unit 2".to_string(),
+                title_en: "Duolingo 「EN」 - Section 3 Unit 2".to_string(),
                 desc_ru: String::new(),
                 desc_en: String::new(),
                 word_count: 0,

@@ -1,45 +1,45 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: get directions",
-			"title": "Duolingo (EN) - Section 4 Unit 28"
-		},
-		"Russian": {
-			"description": "Слова из модуля: get directions",
-			"title": "Duolingo (EN) - Section 4 Unit 28"
-		}
-	},
-	"level": "N4",
-	"words": [
-		"どう",
-		"ケン",
-		"会",
-		"何",
-		"側",
-		"入り",
-		"入り口",
-		"其の",
-		"出",
-		"出口",
-		"北",
-		"南",
-		"口",
-		"向こう",
-		"大きな",
-		"始め",
-		"小さな",
-		"店",
-		"建物",
-		"彼方",
-		"方",
-		"東",
-		"病院",
-		"西",
-		"通り",
-		"道",
-		"遣る",
-		"銀",
-		"銀行",
-		"降り"
-	]
+    "content": {
+        "English": {
+            "description": "Words from section/unit: get directions",
+            "title": "Duolingo 「EN」 - Section 4 Unit 28"
+        },
+        "Russian": {
+            "description": "Слова из модуля: get directions",
+            "title": "Duolingo 「EN」 - Section 4 Unit 28"
+        }
+    },
+    "level": "N4",
+    "words": [
+        "どう",
+        "ケン",
+        "会",
+        "何",
+        "側",
+        "入り",
+        "入り口",
+        "其の",
+        "出",
+        "出口",
+        "北",
+        "南",
+        "口",
+        "向こう",
+        "大きな",
+        "始め",
+        "小さな",
+        "店",
+        "建物",
+        "彼方",
+        "方",
+        "東",
+        "病院",
+        "西",
+        "通り",
+        "道",
+        "遣る",
+        "銀",
+        "銀行",
+        "降り"
+    ]
 }

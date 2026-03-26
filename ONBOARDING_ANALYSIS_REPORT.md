@@ -273,8 +273,8 @@ A comprehensive E2E test suite was created in `end2end/tests/onboarding.spec.ts`
 4. **Step 3: Apps Selection**
    - Tests checkbox functionality for all apps:
      - Migii
-     - Duolingo (RU)
-     - Duolingo (EN)
+     - Duolingo 「RU」
+     - Duolingo 「EN」
      - Minna no Nihongo N5
      - Minna no Nihongo N4
    - Verifies checkbox toggle states

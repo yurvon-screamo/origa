@@ -1,39 +1,39 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: talk about your childhood",
-			"title": "Duolingo (EN) - Section 3 Unit 30"
-		},
-		"Russian": {
-			"description": "Слова из модуля: talk about your childhood",
-			"title": "Duolingo (EN) - Section 3 Unit 30"
-		}
-	},
-	"level": "N5",
-	"words": [
-		"すい",
-		"ジョギング",
-		"ボクシング",
-		"中学",
-		"体育",
-		"倣う",
-		"勉強",
-		"厳しい",
-		"大会",
-		"始める",
-		"学校",
-		"小学",
-		"幼稚",
-		"征服",
-		"成る",
-		"掻く",
-		"時",
-		"格好",
-		"漫画",
-		"笄",
-		"美術",
-		"良い",
-		"飴",
-		"高校"
-	]
+    "content": {
+        "English": {
+            "description": "Words from section/unit: talk about your childhood",
+            "title": "Duolingo 「EN」 - Section 3 Unit 30"
+        },
+        "Russian": {
+            "description": "Слова из модуля: talk about your childhood",
+            "title": "Duolingo 「EN」 - Section 3 Unit 30"
+        }
+    },
+    "level": "N5",
+    "words": [
+        "すい",
+        "ジョギング",
+        "ボクシング",
+        "中学",
+        "体育",
+        "倣う",
+        "勉強",
+        "厳しい",
+        "大会",
+        "始める",
+        "学校",
+        "小学",
+        "幼稚",
+        "征服",
+        "成る",
+        "掻く",
+        "時",
+        "格好",
+        "漫画",
+        "笄",
+        "美術",
+        "良い",
+        "飴",
+        "高校"
+    ]
 }

@@ -1,34 +1,34 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: express desires",
-			"title": "Duolingo (EN) - Section 6 Unit 15"
-		},
-		"Russian": {
-			"description": "Слова из модуля: express desires",
-			"title": "Duolingo (EN) - Section 6 Unit 15"
-		}
-	},
-	"level": "N3",
-	"words": [
-		"のんびり",
-		"一切",
-		"不満",
-		"価値",
-		"入る",
-		"向かう",
-		"地位",
-		"希望",
-		"望む",
-		"権力",
-		"気",
-		"満",
-		"満足",
-		"目標",
-		"稀",
-		"羨ましい",
-		"達成",
-		"重要",
-		"零れ"
-	]
+    "content": {
+        "English": {
+            "description": "Words from section/unit: express desires",
+            "title": "Duolingo 「EN」 - Section 6 Unit 15"
+        },
+        "Russian": {
+            "description": "Слова из модуля: express desires",
+            "title": "Duolingo 「EN」 - Section 6 Unit 15"
+        }
+    },
+    "level": "N3",
+    "words": [
+        "のんびり",
+        "一切",
+        "不満",
+        "価値",
+        "入る",
+        "向かう",
+        "地位",
+        "希望",
+        "望む",
+        "権力",
+        "気",
+        "満",
+        "満足",
+        "目標",
+        "稀",
+        "羨ましい",
+        "達成",
+        "重要",
+        "零れ"
+    ]
 }

@@ -1,31 +1,31 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: discuss nature",
-			"title": "Duolingo (EN) - Section 6 Unit 39"
-		},
-		"Russian": {
-			"description": "Слова из модуля: discuss nature",
-			"title": "Duolingo (EN) - Section 6 Unit 39"
-		}
-	},
-	"level": "N3",
-	"words": [
-		"人類",
-		"保護",
-		"化石",
-		"周囲",
-		"寸前",
-		"属する",
-		"崖",
-		"崩れる",
-		"崩壊",
-		"本能",
-		"熱帯",
-		"絶滅",
-		"自ら",
-		"虹",
-		"鉱物",
-		"雑草"
-	]
+    "content": {
+        "English": {
+            "description": "Words from section/unit: discuss nature",
+            "title": "Duolingo 「EN」 - Section 6 Unit 39"
+        },
+        "Russian": {
+            "description": "Слова из модуля: discuss nature",
+            "title": "Duolingo 「EN」 - Section 6 Unit 39"
+        }
+    },
+    "level": "N3",
+    "words": [
+        "人類",
+        "保護",
+        "化石",
+        "周囲",
+        "寸前",
+        "属する",
+        "崖",
+        "崩れる",
+        "崩壊",
+        "本能",
+        "熱帯",
+        "絶滅",
+        "自ら",
+        "虹",
+        "鉱物",
+        "雑草"
+    ]
 }

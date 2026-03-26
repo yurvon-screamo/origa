@@ -1,53 +1,53 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: describe common objects",
-			"title": "Duolingo (EN) - Section 4 Unit 60"
-		},
-		"Russian": {
-			"description": "Слова из модуля: describe common objects",
-			"title": "Duolingo (EN) - Section 4 Unit 60"
-		}
-	},
-	"level": "N4",
-	"words": [
-		"そう",
-		"みたい",
-		"イワオ",
-		"ヒロシ",
-		"中々",
-		"厳しい",
-		"可笑しい",
-		"壊",
-		"壊れる",
-		"変",
-		"形",
-		"忙しい",
-		"悲",
-		"悲しみ",
-		"感",
-		"感ずる",
-		"旨み",
-		"易しい",
-		"普通",
-		"最も",
-		"最後",
-		"最悪",
-		"最新",
-		"最近",
-		"最高",
-		"格",
-		"格好",
-		"様",
-		"様子",
-		"甘み",
-		"痛み",
-		"素",
-		"素晴らしい",
-		"美",
-		"美しい",
-		"良い",
-		"酷い",
-		"難しい"
-	]
+    "content": {
+        "English": {
+            "description": "Words from section/unit: describe common objects",
+            "title": "Duolingo 「EN」 - Section 4 Unit 60"
+        },
+        "Russian": {
+            "description": "Слова из модуля: describe common objects",
+            "title": "Duolingo 「EN」 - Section 4 Unit 60"
+        }
+    },
+    "level": "N4",
+    "words": [
+        "そう",
+        "みたい",
+        "イワオ",
+        "ヒロシ",
+        "中々",
+        "厳しい",
+        "可笑しい",
+        "壊",
+        "壊れる",
+        "変",
+        "形",
+        "忙しい",
+        "悲",
+        "悲しみ",
+        "感",
+        "感ずる",
+        "旨み",
+        "易しい",
+        "普通",
+        "最も",
+        "最後",
+        "最悪",
+        "最新",
+        "最近",
+        "最高",
+        "格",
+        "格好",
+        "様",
+        "様子",
+        "甘み",
+        "痛み",
+        "素",
+        "素晴らしい",
+        "美",
+        "美しい",
+        "良い",
+        "酷い",
+        "難しい"
+    ]
 }

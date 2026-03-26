@@ -1,41 +1,41 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: discuss nature",
-			"title": "Duolingo (EN) - Section 4 Unit 59"
-		},
-		"Russian": {
-			"description": "Слова из модуля: discuss nature",
-			"title": "Duolingo (EN) - Section 4 Unit 59"
-		}
-	},
-	"level": "N4",
-	"words": [
-		"人間",
-		"兎",
-		"全て",
-		"八",
-		"地球",
-		"巨",
-		"巨大",
-		"染め",
-		"植",
-		"植える",
-		"植物",
-		"死ぬ",
-		"殺す",
-		"汚染",
-		"狼",
-		"環境",
-		"生きる",
-		"生物",
-		"自然",
-		"虫",
-		"豚",
-		"野生",
-		"頭",
-		"飼う",
-		"鶏",
-		"鼠"
-	]
+    "content": {
+        "English": {
+            "description": "Words from section/unit: discuss nature",
+            "title": "Duolingo 「EN」 - Section 4 Unit 59"
+        },
+        "Russian": {
+            "description": "Слова из модуля: discuss nature",
+            "title": "Duolingo 「EN」 - Section 4 Unit 59"
+        }
+    },
+    "level": "N4",
+    "words": [
+        "人間",
+        "兎",
+        "全て",
+        "八",
+        "地球",
+        "巨",
+        "巨大",
+        "染め",
+        "植",
+        "植える",
+        "植物",
+        "死ぬ",
+        "殺す",
+        "汚染",
+        "狼",
+        "環境",
+        "生きる",
+        "生物",
+        "自然",
+        "虫",
+        "豚",
+        "野生",
+        "頭",
+        "飼う",
+        "鶏",
+        "鼠"
+    ]
 }
