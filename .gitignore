@@ -39,6 +39,7 @@ tokens_*
 output_*
 trimmed_*
 concatenated_*
+missing_vocabulary.md
 
 # Logs
 *.log
