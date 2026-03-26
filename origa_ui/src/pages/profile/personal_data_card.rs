@@ -5,6 +5,7 @@ use origa::domain::NativeLanguage;
 
 #[component]
 pub fn PersonalDataCard(
+    #[prop(optional, into)] test_id: Signal<String>,
     user_name: Memo<String>,
     selected_language: RwSignal<NativeLanguage>,
 ) -> impl IntoView {
@@ -15,7 +16,7 @@ pub fn PersonalDataCard(
     });
 
     view! {
-        <Card>
+        <Card test_id=test_id>
             <div class="space-y-6">
                 <Heading level={HeadingLevel::H2}>
                     "Личные данные"

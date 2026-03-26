@@ -8,12 +8,13 @@ pub fn RadicalsHeader() -> impl IntoView {
 
     view! {
         <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
-            <Heading level=HeadingLevel::H1>
+            <Heading level=HeadingLevel::H1 test_id="radicals-heading">
                 "Радикалы"
             </Heading>
             <div class="flex items-center gap-2 sm:gap-4">
                 <Button
                     variant=ButtonVariant::Ghost
+                    test_id="radicals-back-btn"
                     on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
                         navigate("/home", Default::default());
                     })

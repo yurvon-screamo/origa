@@ -8,11 +8,12 @@ pub fn SetsHeader() -> impl IntoView {
 
     view! {
         <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
-            <Heading level=HeadingLevel::H2>
+            <Heading level=HeadingLevel::H2 test_id="sets-title">
                 "Наборы для изучения"
             </Heading>
             <Button
                 variant=ButtonVariant::Ghost
+                test_id="sets-back-btn"
                 on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
                     navigate("/words", Default::default());
                 })

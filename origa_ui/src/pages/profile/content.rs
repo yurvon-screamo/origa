@@ -94,14 +94,15 @@ pub fn ProfileContent() -> impl IntoView {
     });
 
     view! {
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" data-testid="profile-content">
             <PersonalDataCard
                 user_name={user_name}
                 selected_language={selected_language}
+                test_id="profile-personal-data"
             />
 
             <div class="space-y-4">
-                <SettingsCard />
+                <SettingsCard test_id="profile-settings" />
                 <ActionButtons
                     on_save={save_profile}
                     on_logout={logout}
@@ -109,6 +110,7 @@ pub fn ProfileContent() -> impl IntoView {
                     is_saving={Signal::derive(move || is_saving.get())}
                     is_deleting={Signal::derive(move || is_deleting.get())}
                     is_logging_out={Signal::derive(move || is_logging_out.get())}
+                    test_id="profile-actions"
                 />
             </div>
         </div>

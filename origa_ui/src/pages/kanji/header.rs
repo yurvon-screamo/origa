@@ -13,12 +13,13 @@ pub fn KanjiHeader(refresh_trigger: RwSignal<u32>) -> impl IntoView {
 
     view! {
         <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
-            <Heading level=HeadingLevel::H1>
+            <Heading level=HeadingLevel::H1 test_id="kanji-title">
                 "Кандзи"
             </Heading>
             <div class="flex items-center gap-2 sm:gap-4">
                 <Button
                     variant=ButtonVariant::Ghost
+                    test_id="kanji-radicals-btn"
                     on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
                         navigate_to_radicals("/radicals", Default::default());
                     })
@@ -27,6 +28,7 @@ pub fn KanjiHeader(refresh_trigger: RwSignal<u32>) -> impl IntoView {
                 </Button>
                 <Button
                     variant=ButtonVariant::Ghost
+                    test_id="kanji-back-btn"
                     on_click=Callback::new(move |_| {
                         navigate_to_home("/home", Default::default());
                     })
@@ -35,6 +37,7 @@ pub fn KanjiHeader(refresh_trigger: RwSignal<u32>) -> impl IntoView {
                 </Button>
                 <Button
                     variant=ButtonVariant::Olive
+                    test_id="kanji-add-btn"
                     on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
                         is_modal_open.set(true);
                     })
