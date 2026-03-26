@@ -134,4 +134,28 @@ export class OnboardingPage extends BasePage {
     async expectStepVisible(stepTestId: string): Promise<void> {
         await expect(this.page.getByTestId(stepTestId)).toBeVisible();
     }
+
+    async selectMinnaLevel(level: "N5" | "N4"): Promise<void> {
+        await this.page.getByTestId("minna-level-dropdown").click();
+        await this.page.getByTestId(`minna-level-dropdown-option-${level}`).click();
+    }
+
+    async selectMinnaLesson(lessonNumber: number): Promise<void> {
+        await this.page.getByTestId("minna-lesson-dropdown").click();
+        await this.page.getByTestId(`minna-lesson-dropdown-option-lesson_${lessonNumber}`).click();
+    }
+
+    async selectMigiiLevel(level: string): Promise<void> {
+        await this.page.getByTestId("migii-level-dropdown").click();
+        await this.page.getByTestId(`migii-level-dropdown-option-${level}`).click();
+    }
+
+    async selectMigiiLesson(lessonNumber: number): Promise<void> {
+        await this.page.getByTestId("migii-lesson-dropdown").click();
+        await this.page.getByTestId(`migii-lesson-dropdown-option-lesson_${lessonNumber}`).click();
+    }
+
+    async skipOnboarding(): Promise<void> {
+        await this.page.getByTestId("onboarding-skip").click();
+    }
 }
