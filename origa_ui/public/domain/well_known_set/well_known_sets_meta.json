@@ -4517,7 +4517,7 @@
     "title_en": "Recomended words for N1 level",
     "desc_ru": "Список слов, рекомендованных для изучения языка на уровне N1.",
     "desc_en": "Words list, recomended for learning language for N1 level.",
-    "word_count": 3345
+    "word_count": 3340
   },
   {
     "id": "jlpt_n2",
@@ -4537,7 +4537,7 @@
     "title_en": "Recomended words for N3 level",
     "desc_ru": "Список слов, рекомендованных для изучения языка на уровне N3.",
     "desc_en": "Words list, recomended for learning language for N3 level.",
-    "word_count": 1728
+    "word_count": 1723
   },
   {
     "id": "jlpt_n4",
@@ -4547,7 +4547,7 @@
     "title_en": "Recomended words for N4 level",
     "desc_ru": "Список слов, рекомендованных для изучения языка на уровне N4.",
     "desc_en": "Words list, recomended for learning language for N4 level.",
-    "word_count": 626
+    "word_count": 625
   },
   {
     "id": "jlpt_n5",
@@ -4557,7 +4557,7 @@
     "title_en": "Recomended words for N5 level",
     "desc_ru": "Список слов, рекомендованных для изучения языка на уровне N5.",
     "desc_en": "Words list, recomended for learning language for N5 level.",
-    "word_count": 622
+    "word_count": 617
   },
   {
     "id": "migii_n1_1",
