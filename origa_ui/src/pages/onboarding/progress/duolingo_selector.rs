@@ -15,29 +15,44 @@ pub fn DuolingoProgressSelector(
     modules: Signal<Vec<DuolingoModule>>,
     state: RwSignal<OnboardingState>,
 ) -> impl IntoView {
-    let selected_module = RwSignal::new(None::<usize>);
-    let selected_unit = RwSignal::new(None::<usize>);
+    let selected_module = RwSignal::new("none".to_string());
+    let selected_unit = RwSignal::new("none".to_string());
     let available_sets = Signal::derive(move || state.get().available_sets.clone());
 
     let module_items = Signal::derive(move || build_module_items(&modules.get()));
 
-    let unit_items =
-        Signal::derive(move || build_unit_items(&modules.get(), selected_module.get()));
+    let parsed_module = Signal::derive(move || {
+        selected_module
+            .get()
+            .strip_prefix("module_")
+            .and_then(|s| s.parse::<usize>().ok())
+    });
 
-    let import_info =
-        Signal::derive(move || format_import_info(selected_module.get(), selected_unit.get()));
+    let unit_items =
+        Signal::derive(move || build_unit_items(&modules.get(), parsed_module.get()));
+
+    let import_info = Signal::derive(move || {
+        let module_num = parsed_module.get();
+        let unit_num = selected_unit
+            .get()
+            .strip_prefix("unit_")
+            .and_then(|s| s.parse::<usize>().ok());
+        format_import_info(module_num, unit_num)
+    });
 
     let app_id_for_effect = app_id.clone();
 
     Effect::new(move |_| {
-        let module_num = selected_module.get();
-        let unit_num = selected_unit.get();
+        let module_num = parsed_module.get();
+        let unit_num = selected_unit
+            .get()
+            .strip_prefix("unit_")
+            .and_then(|s| s.parse::<usize>().ok());
 
         if module_num.is_none() || unit_num.is_none() {
             return;
         }
 
-        // Читаем данные ОДИН РАЗ в начале, до state.update()
         let mods_snapshot: Vec<_> = modules.get().clone();
         let sets_snapshot: Vec<_> = available_sets.get().clone();
 
@@ -61,35 +76,6 @@ pub fn DuolingoProgressSelector(
                 }
             });
         }
-    });
-
-    let selected_module_value = RwSignal::new(
-        selected_module
-            .get()
-            .map(|n| format!("module_{}", n))
-            .unwrap_or_else(|| "none".to_string()),
-    );
-    let selected_unit_value = RwSignal::new(
-        selected_unit
-            .get()
-            .map(|n| format!("unit_{}", n))
-            .unwrap_or_else(|| "none".to_string()),
-    );
-
-    Effect::new(move |_| {
-        let val = selected_module_value.get();
-        let parsed = val
-            .strip_prefix("module_")
-            .and_then(|s| s.parse::<usize>().ok());
-        selected_module.set(parsed);
-    });
-
-    Effect::new(move |_| {
-        let val = selected_unit_value.get();
-        let parsed = val
-            .strip_prefix("unit_")
-            .and_then(|s| s.parse::<usize>().ok());
-        selected_unit.set(parsed);
     });
 
     let app_label = if is_ru {
@@ -118,14 +104,14 @@ pub fn DuolingoProgressSelector(
                     <div class="mt-2">
                         <Dropdown
                             _options=module_items
-                            _selected=selected_module_value
+                            _selected=selected_module
                             _placeholder=Signal::derive(|| "Выберите модуль".to_string())
                             test_id=Signal::derive(move || format!("{}-module-dropdown", app_id_for_module_dropdown.clone()))
                         />
                     </div>
                 </div>
 
-                <Show when=move || selected_module.get().is_some()>
+                <Show when=move || parsed_module.get().is_some()>
                     <div>
                         <Text size=TextSize::Small variant=TypographyVariant::Muted>
                             "Раздел"
@@ -133,7 +119,7 @@ pub fn DuolingoProgressSelector(
                         <div class="mt-2">
                             <Dropdown
                                 _options=unit_items
-                                _selected=selected_unit_value
+                                _selected=selected_unit
                                 _placeholder=Signal::derive(|| "Выберите раздел".to_string())
                                 test_id=Signal::derive({
                                     let app_id = app_id_for_unit_dropdown.clone();
