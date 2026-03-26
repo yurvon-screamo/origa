@@ -12,10 +12,51 @@ use std::time::Duration;
 use tokio::sync::Mutex;
 use tokio::time::sleep;
 
+/// Loads vocabulary dictionary from chunk files
+fn load_vocabulary_dictionary(base_path: &Path) -> Result<HashSet<String>, OrigaError> {
+    let mut words = HashSet::new();
+    let vocab_path = base_path
+        .join("origa_ui")
+        .join("public")
+        .join("dictionary")
+        .join("vocabulary");
+
+    if !vocab_path.exists() {
+        tracing::warn!("Vocabulary directory not found: {}", vocab_path.display());
+        return Ok(words);
+    }
+
+    let files = collect_json_files(&vocab_path)?;
+
+    for file in files {
+        let content = fs::read_to_string(&file).map_err(|e| OrigaError::TokenizerError {
+            reason: format!("Failed to read {}: {}", file.display(), e),
+        })?;
+
+        let json: Value =
+            serde_json::from_str(&content).map_err(|e| OrigaError::TokenizerError {
+                reason: format!("Failed to parse {}: {}", file.display(), e),
+            })?;
+
+        if let Some(obj) = json.as_object() {
+            for key in obj.keys() {
+                words.insert(key.clone());
+            }
+        }
+    }
+
+    tracing::info!("Loaded {} words from vocabulary dictionary", words.len());
+    Ok(words)
+}
+
 /// Loads well-known sets from JSON files
 fn load_well_known_sets(base_path: &Path) -> Result<HashMap<String, HashSet<String>>, OrigaError> {
     let mut sets = HashMap::new();
-    let well_known_path = base_path.join("origa_ui").join("public").join("well_known");
+    let well_known_path = base_path
+        .join("origa_ui")
+        .join("public")
+        .join("domain")
+        .join("well_known_set");
 
     let files = collect_json_files(&well_known_path)?;
 
@@ -29,14 +70,19 @@ fn load_well_known_sets(base_path: &Path) -> Result<HashMap<String, HashSet<Stri
                 reason: format!("Failed to parse {}: {}", file.display(), e),
             })?;
 
-        if let Some(name) = json.get("name").and_then(|n| n.as_str())
-            && let Some(words) = json.get("words").and_then(|w| w.as_array())
-        {
+        // Use filename stem as set name (e.g., "duolingo_en_n3_1")
+        let name = file
+            .file_stem()
+            .and_then(|s| s.to_str())
+            .unwrap_or("unknown")
+            .to_string();
+
+        if let Some(words) = json.get("words").and_then(|w| w.as_array()) {
             let word_set: HashSet<String> = words
                 .iter()
                 .filter_map(|w| w.as_str().map(String::from))
                 .collect();
-            sets.insert(name.to_string(), word_set);
+            sets.insert(name, word_set);
         }
     }
 
@@ -192,6 +238,13 @@ fn save_dictionary(
         reason: format!("Failed to serialize dictionary: {}", e),
     })?;
 
+    // Create dictionaries directory if it doesn't exist
+    if let Some(parent) = dict_path.parent() {
+        fs::create_dir_all(parent).map_err(|e| OrigaError::TokenizerError {
+            reason: format!("Failed to create dictionaries directory: {}", e),
+        })?;
+    }
+
     fs::write(&dict_path, json).map_err(|e| OrigaError::TokenizerError {
         reason: format!("Failed to write dictionary: {}", e),
     })?;
@@ -212,15 +265,18 @@ pub async fn run_find_missing(
     russian_only: bool,
     english_only: bool,
 ) -> Result<(), OrigaError> {
-    let base_path = get_base_path();
+    // Get workspace root (go up from utils directory)
+    let mut base_path = get_base_path();
+    if base_path.ends_with("utils") {
+        base_path.pop();
+    }
 
     load_dictionary()?;
-    save_dictionary(&HashMap::new(), &base_path)?;
 
     let sets = load_well_known_sets(&base_path)?;
     tracing::info!("Loaded {} well-known sets", sets.len());
 
-    let dictionary_words: HashSet<String> = HashSet::new();
+    let dictionary_words = load_vocabulary_dictionary(&base_path)?;
     let missing = find_missing_words(&sets, &dictionary_words);
 
     let output_path = output.unwrap_or_else(|| base_path.join("missing_vocabulary.md"));
