@@ -133,10 +133,6 @@ pub fn MinnaProgressSelector(
         }
     });
 
-<<<<<<< HEAD
-    let title_for_view = title.clone();
-=======
->>>>>>> master
     view! {
         <Card class=Signal::derive(|| "p-4".to_string())>
             <div class="flex items-center gap-3 mb-2">
@@ -156,9 +152,9 @@ pub fn MinnaProgressSelector(
                 </Text>
                 <div class="mt-2">
                     <Dropdown
-                        _options=Signal::derive(move || level_items.clone())
-                        _selected=selected_level
-                        _placeholder=Signal::derive(|| "Выберите уровень".to_string())
+                        options=Signal::derive(move || level_items.clone())
+                        selected=selected_level
+                        placeholder=Signal::derive(|| "Выберите уровень".to_string())
                         test_id=Signal::derive(|| "minna-level-dropdown".to_string())
                     />
                 </div>
@@ -171,9 +167,9 @@ pub fn MinnaProgressSelector(
                     </Text>
                     <div class="mt-2">
                         <Dropdown
-                            _options=lesson_items
-                            _selected=selected_lesson
-                            _placeholder=Signal::derive(|| "Выберите урок".to_string())
+                            options=lesson_items
+                            selected=selected_lesson
+                            placeholder=Signal::derive(|| "Выберите урок".to_string())
                             test_id=Signal::derive(|| "minna-lesson-dropdown".to_string())
                         />
                     </div>
