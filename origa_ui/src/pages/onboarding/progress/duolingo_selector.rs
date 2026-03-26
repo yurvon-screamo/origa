@@ -12,30 +12,32 @@ use super::types::DuolingoModule;
 pub fn DuolingoProgressSelector(
     app_id: String,
     is_ru: bool,
-    modules: Vec<DuolingoModule>,
+    modules: Signal<Vec<DuolingoModule>>,
     state: RwSignal<OnboardingState>,
 ) -> impl IntoView {
     let selected_module = RwSignal::new(None::<usize>);
     let selected_unit = RwSignal::new(None::<usize>);
     let available_sets = Signal::derive(move || state.get().available_sets.clone());
 
-    let modules_for_items = modules.clone();
-    let module_items = Signal::derive(move || build_module_items(&modules_for_items));
+    let module_items = Signal::derive(move || build_module_items(&modules.get()));
 
-    let modules_for_unit_items = modules.clone();
     let unit_items =
-        Signal::derive(move || build_unit_items(&modules_for_unit_items, selected_module.get()));
+        Signal::derive(move || build_unit_items(&modules.get(), selected_module.get()));
 
     let import_info =
         Signal::derive(move || format_import_info(selected_module.get(), selected_unit.get()));
 
-    let modules_for_effect = modules.clone();
     let app_id_for_effect = app_id.clone();
     Effect::new(move |_| {
         let module_num = selected_module.get();
         let unit_num = selected_unit.get();
+
+        if module_num.is_none() || unit_num.is_none() {
+            return;
+        }
+
         let aid = app_id_for_effect.clone();
-        let mods = modules_for_effect.clone();
+        let mods = modules.get();
         let sets = available_sets.get();
 
         if let (Some(m), Some(u)) = (module_num, unit_num)
@@ -99,9 +101,12 @@ pub fn DuolingoProgressSelector(
 
     view! {
         <Card class=Signal::derive(|| "p-4".to_string())>
-            <Text size=TextSize::Default variant=TypographyVariant::Primary>
-                {app_label}
-            </Text>
+            <div class="flex items-center gap-3 mb-2">
+                <img src="/public/external_icons/duolingo.png" class="w-12 h-12 object-contain" alt="Duolingo" />
+                <Text size=TextSize::Default variant=TypographyVariant::Primary>
+                    {app_label}
+                </Text>
+            </div>
 
             <div class="mt-4 space-y-4">
                 <div>

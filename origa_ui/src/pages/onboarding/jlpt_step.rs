@@ -37,7 +37,11 @@ const JLPT_UI_OPTIONS: &[(Option<JapaneseLevel>, &str, &str)] = &[
 pub fn JlptStep(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoView {
     let test_id_val = move || {
         let val = test_id.get();
-        if val.is_empty() { None } else { Some(val) }
+        if val.is_empty() {
+            None
+        } else {
+            Some(val)
+        }
     };
 
     let state =
@@ -90,6 +94,14 @@ pub fn JlptStep(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoVie
                                 }
                             >
                                 <div class="flex items-center gap-3">
+                                    <div class="flex-1">
+                                        <Text size=TextSize::Default variant=TypographyVariant::Primary>
+                                            {label}
+                                        </Text>
+                                        <Text size=TextSize::Small variant=TypographyVariant::Muted>
+                                            {description}
+                                        </Text>
+                                    </div>
                                     <div
                                         class="w-5 h-5 border relative flex-shrink-0 transition-all"
                                         style=move || {
@@ -112,14 +124,6 @@ pub fn JlptStep(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoVie
                                                 ().into_any()
                                             }
                                         }}
-                                    </div>
-                                    <div class="flex-1">
-                                        <Text size=TextSize::Default variant=TypographyVariant::Primary>
-                                            {label}
-                                        </Text>
-                                        <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                                            {description}
-                                        </Text>
                                     </div>
                                 </div>
                             </div>
