@@ -25,7 +25,7 @@ Builded with Rust only.
 
 ## Development
 
-This project uses [cargo-make](https://sagiegurari.github.io/cargo-make/) as a task runner for common development operations.
+This project uses [cargo-make](https://sagiegurari.github.io/cargo-make/) as a task runner for common operations.
 
 ### Install cargo-make
 
