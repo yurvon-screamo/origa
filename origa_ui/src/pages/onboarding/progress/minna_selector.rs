@@ -11,7 +11,7 @@ pub fn MinnaProgressSelector(
     lessons: Signal<Vec<MinnaLesson>>,
     state: RwSignal<OnboardingState>,
 ) -> impl IntoView {
-    let selected_lesson = RwSignal::new(None::<usize>);
+    let selected_lesson = RwSignal::new("none".to_string());
     let available_sets = Signal::derive(move || state.get().available_sets.clone());
 
     let lesson_items = Signal::derive(move || {
@@ -31,18 +31,22 @@ pub fn MinnaProgressSelector(
     let import_info = Signal::derive(move || {
         selected_lesson
             .get()
+            .strip_prefix("lesson_")
+            .and_then(|s| s.parse::<usize>().ok())
             .map(|n| format!("Будут импортированы: Уроки 1-{}", n))
     });
 
     let app_id_for_effect = app_id.clone();
     Effect::new(move |_| {
-        let lesson_num = selected_lesson.get();
+        let val = selected_lesson.get();
+        let lesson_num = val
+            .strip_prefix("lesson_")
+            .and_then(|s| s.parse::<usize>().ok());
 
         if lesson_num.is_none() {
             return;
         }
 
-        // Читаем данные ОДИН РАЗ в начале, до state.update()
         let lessons_snapshot: Vec<_> = lessons.get().clone();
         let sets_snapshot: Vec<_> = available_sets.get().clone();
 
@@ -70,21 +74,6 @@ pub fn MinnaProgressSelector(
         }
     });
 
-    let selected_lesson_value = RwSignal::new(
-        selected_lesson
-            .get()
-            .map(|n| format!("lesson_{}", n))
-            .unwrap_or_else(|| "none".to_string()),
-    );
-
-    Effect::new(move |_| {
-        let val = selected_lesson_value.get();
-        selected_lesson.set(
-            val.strip_prefix("lesson_")
-                .and_then(|s| s.parse::<usize>().ok()),
-        );
-    });
-
     let title_for_view = title.clone();
     let app_id_for_dropdown = app_id.clone();
     view! {
@@ -103,7 +92,7 @@ pub fn MinnaProgressSelector(
                 <div class="mt-2">
                     <Dropdown
                         _options=lesson_items
-                        _selected=selected_lesson_value
+                        _selected=selected_lesson
                         _placeholder=Signal::derive(|| "Выберите урок".to_string())
                         test_id=Signal::derive(move || format!("{}-lesson-dropdown", app_id_for_dropdown.clone()))
                     />
