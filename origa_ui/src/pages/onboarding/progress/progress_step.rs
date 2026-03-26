@@ -2,7 +2,7 @@ use crate::ui_components::{Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 
 use super::super::onboarding_state::OnboardingState;
-use super::app_type::{parse_app_type, AppType};
+use super::app_type::{AppType, parse_app_type};
 use super::duolingo_selector::DuolingoProgressSelector;
 use super::migii_selector::MigiiProgressSelector;
 use super::minna_selector::MinnaProgressSelector;
@@ -12,11 +12,7 @@ use super::parsers::{parse_duolingo_modules, parse_migii_lessons, parse_minna_le
 pub fn ProgressStep(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoView {
     let test_id_val = move || {
         let val = test_id.get();
-        if val.is_empty() {
-            None
-        } else {
-            Some(val)
-        }
+        if val.is_empty() { None } else { Some(val) }
     };
 
     let state =
@@ -103,28 +99,17 @@ pub fn ProgressStep(#[prop(optional, into)] test_id: Signal<String>) -> impl Int
                                     />
                                 }.into_any()
                             }
-                            Some(AppType::MinnaNoNihongoN5) => {
-                                let lessons_signal = Signal::derive(move || {
+                            Some(AppType::MinnaNoNihongo) => {
+                                let lessons_n5_signal = Signal::derive(move || {
                                     parse_minna_lessons(&sets.get(), "minna_n5_")
                                 });
-                                view! {
-                                    <MinnaProgressSelector
-                                        app_id="MinnaNoNihongoN5".to_string()
-                                        title="Minna no Nihongo N5".to_string()
-                                        lessons=lessons_signal
-                                        state=state
-                                    />
-                                }.into_any()
-                            }
-                            Some(AppType::MinnaNoNihongoN4) => {
-                                let lessons_signal = Signal::derive(move || {
+                                let lessons_n4_signal = Signal::derive(move || {
                                     parse_minna_lessons(&sets.get(), "minna_n4_")
                                 });
                                 view! {
                                     <MinnaProgressSelector
-                                        app_id="MinnaNoNihongoN4".to_string()
-                                        title="Minna no Nihongo N4".to_string()
-                                        lessons=lessons_signal
+                                        lessons_n5=lessons_n5_signal
+                                        lessons_n4=lessons_n4_signal
                                         state=state
                                     />
                                 }.into_any()

@@ -3,7 +3,7 @@ use leptos::prelude::*;
 
 use super::super::onboarding_state::OnboardingState;
 use super::duolingo_helpers::{
-    build_module_items, build_unit_items, collect_units_to_import, format_import_info,
+    build_module_items, build_unit_items, collect_all_units_to_import, format_import_info,
     is_unit_in_modules,
 };
 use super::types::DuolingoModule;
@@ -28,8 +28,7 @@ pub fn DuolingoProgressSelector(
             .and_then(|s| s.parse::<usize>().ok())
     });
 
-    let unit_items =
-        Signal::derive(move || build_unit_items(&modules.get(), parsed_module.get()));
+    let unit_items = Signal::derive(move || build_unit_items(&modules.get(), parsed_module.get()));
 
     let import_info = Signal::derive(move || {
         let module_num = parsed_module.get();
@@ -58,12 +57,18 @@ pub fn DuolingoProgressSelector(
         let mods_snapshot: Vec<_> = modules.get_untracked();
         let sets_snapshot: Vec<_> = available_sets.get_untracked();
 
-        if let (Some(m), Some(u)) = (module_num, unit_num)
-            && let Some(module) = mods_snapshot.iter().find(|mod_| mod_.module_number == m)
-        {
-            web_sys::console::log_1(&format!("[Duolingo] Processing module {}, unit {}", m, u).into());
-            let units_to_import = collect_units_to_import(module, u);
-            web_sys::console::log_1(&format!("[Duolingo] units_to_import count: {}", units_to_import.len()).into());
+        if let (Some(m), Some(u)) = (module_num, unit_num) {
+            web_sys::console::log_1(
+                &format!("[Duolingo] Processing module {}, unit {}", m, u).into(),
+            );
+            let units_to_import = collect_all_units_to_import(&mods_snapshot, m, u);
+            web_sys::console::log_1(
+                &format!(
+                    "[Duolingo] units_to_import count: {}",
+                    units_to_import.len()
+                )
+                .into(),
+            );
             let aid = app_id_for_effect.clone();
 
             state.update(|s| {

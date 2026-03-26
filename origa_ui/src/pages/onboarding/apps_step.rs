@@ -35,15 +35,9 @@ fn get_known_apps() -> Vec<AppInfo> {
             icon: "/public/external_icons/duolingo.png",
         },
         AppInfo {
-            id: "MinnaNoNihongoN5".to_string(),
-            name: "Minna no Nihongo N5".to_string(),
-            description: "Учебник японского языка (уроки 1-25)".to_string(),
-            icon: "/public/external_icons/minnanonihongo.png",
-        },
-        AppInfo {
-            id: "MinnaNoNihongoN4".to_string(),
-            name: "Minna no Nihongo N4".to_string(),
-            description: "Учебник японского языка (уроки 26-50)".to_string(),
+            id: "MinnaNoNihongo".to_string(),
+            name: "Minna no Nihongo".to_string(),
+            description: "Учебник японского языка (N5-N4)".to_string(),
             icon: "/public/external_icons/minnanonihongo.png",
         },
     ]
@@ -51,28 +45,19 @@ fn get_known_apps() -> Vec<AppInfo> {
 
 fn get_available_app_ids(available_sets: &[WellKnownSetMeta]) -> HashSet<String> {
     let mut set_types: HashSet<String> = HashSet::new();
-    let mut has_minna_n5 = false;
-    let mut has_minna_n4 = false;
+    let mut has_minna = false;
 
     for meta in available_sets {
         set_types.insert(meta.set_type.clone());
-        if meta.set_type.contains("MinnaNoNihongo") {
-            if meta.id.starts_with("minna_n5_") {
-                has_minna_n5 = true;
-            }
-            if meta.id.starts_with("minna_n4_") {
-                has_minna_n4 = true;
-            }
+        if meta.set_type == "MinnaNoNihongo" {
+            has_minna = true;
         }
     }
 
     let mut result: HashSet<String> = HashSet::new();
 
     for app in get_known_apps() {
-        if set_types.contains(&app.id)
-            || (app.id == "MinnaNoNihongoN5" && has_minna_n5)
-            || (app.id == "MinnaNoNihongoN4" && has_minna_n4)
-        {
+        if set_types.contains(&app.id) || (app.id == "MinnaNoNihongo" && has_minna) {
             result.insert(app.id);
         }
     }

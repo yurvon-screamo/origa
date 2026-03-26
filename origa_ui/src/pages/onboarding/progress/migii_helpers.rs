@@ -56,12 +56,53 @@ pub fn build_lesson_items(
     items
 }
 
-pub fn collect_lessons_to_import(lessons: &[MigiiLesson], lesson_limit: usize) -> Vec<String> {
-    lessons
-        .iter()
-        .filter(|l| l.lesson_number <= lesson_limit)
-        .map(|l| l.id.clone())
-        .collect()
+pub fn collect_lessons_to_import_all_levels(
+    lessons_by_level: &HashMap<JapaneseLevel, Vec<MigiiLesson>>,
+    selected_level: JapaneseLevel,
+    lesson_limit: usize,
+) -> Vec<String> {
+    let mut ids = Vec::new();
+    let levels_order = [
+        JapaneseLevel::N5,
+        JapaneseLevel::N4,
+        JapaneseLevel::N3,
+        JapaneseLevel::N2,
+        JapaneseLevel::N1,
+    ];
+
+    for &level in &levels_order {
+        if let Some(lessons) = lessons_by_level.get(&level) {
+            if level == selected_level {
+                for lesson in lessons {
+                    if lesson.lesson_number <= lesson_limit {
+                        ids.push(lesson.id.clone());
+                    }
+                }
+            } else if is_lower_level(level, selected_level) {
+                for lesson in lessons {
+                    ids.push(lesson.id.clone());
+                }
+            }
+        }
+    }
+
+    ids
+}
+
+fn is_lower_level(level: JapaneseLevel, selected: JapaneseLevel) -> bool {
+    matches!(
+        (level, selected),
+        (JapaneseLevel::N5, JapaneseLevel::N4)
+            | (JapaneseLevel::N5, JapaneseLevel::N3)
+            | (JapaneseLevel::N5, JapaneseLevel::N2)
+            | (JapaneseLevel::N5, JapaneseLevel::N1)
+            | (JapaneseLevel::N4, JapaneseLevel::N3)
+            | (JapaneseLevel::N4, JapaneseLevel::N2)
+            | (JapaneseLevel::N4, JapaneseLevel::N1)
+            | (JapaneseLevel::N3, JapaneseLevel::N2)
+            | (JapaneseLevel::N3, JapaneseLevel::N1)
+            | (JapaneseLevel::N2, JapaneseLevel::N1)
+    )
 }
 
 pub fn is_lesson_in_levels(
