@@ -5,6 +5,7 @@ const FETCH_TIMEOUT_MS = 30000;
 interface AuthResponse {
 	auth_token: string;
 	refresh_token?: string;
+	csrf_token?: string;
 }
 
 interface UserCreateRequest {
@@ -14,12 +15,23 @@ interface UserCreateRequest {
 	admin?: boolean;
 }
 
+interface CreateUserResponse {
+	id: string;
+	email: string;
+}
+
 interface UserDeleteRequest {
 	id: string;
 }
 
+export interface AdminTokens {
+	token: string;
+	csrfToken: string;
+}
+
 export interface LoginResponse {
 	token: string;
+	csrfToken?: string;
 }
 
 async function fetchWithTimeout(
@@ -41,7 +53,7 @@ async function fetchWithTimeout(
 	}
 }
 
-export async function getAdminToken(): Promise<string> {
+export async function getAdminToken(): Promise<AdminTokens> {
 	const adminEmail = process.env.ORIGA_ADMIN_EMAIL || "admin@localhost";
 	const adminPassword = process.env.ORIGA_ADMIN_PASSWORD;
 
@@ -68,19 +80,30 @@ export async function getAdminToken(): Promise<string> {
 	}
 
 	const data = (await response.json()) as AuthResponse;
-	return data.auth_token;
+	const csrfToken = data.csrf_token;
+
+	if (!csrfToken) {
+		throw new Error("Admin login response missing csrf_token");
+	}
+
+	return {
+		token: data.auth_token,
+		csrfToken,
+	};
 }
 
 export async function createTestUser(
 	token: string,
+	csrfToken: string,
 	email: string,
 	password: string,
-): Promise<void> {
-	const response = await fetchWithTimeout(`${trailBaseUrl}/api/_/user/create`, {
+): Promise<string> {
+	const response = await fetchWithTimeout(`${trailBaseUrl}/api/_admin/user`, {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",
 			Authorization: `Bearer ${token}`,
+			"csrf-token": csrfToken,
 		},
 		body: JSON.stringify({
 			email,
@@ -93,25 +116,29 @@ export async function createTestUser(
 	if (!response.ok) {
 		const text = await response.text();
 		if (response.status === 409 || text.includes("already exists")) {
-			return;
+			throw new Error(`User already exists: ${email}. Cannot retrieve UUID without creation.`);
 		}
 		throw new Error(`Failed to create user: ${response.status} ${text}`);
 	}
 
-	console.log(`[admin] Created test user: ${email}`);
+	const data = (await response.json()) as CreateUserResponse;
+	console.log(`[admin] Created test user: ${email} (id: ${data.id})`);
+	return data.id;
 }
 
 export async function deleteTestUser(
 	token: string,
-	emailOrId: string,
+	csrfToken: string,
+	userId: string,
 ): Promise<void> {
-	const response = await fetchWithTimeout(`${trailBaseUrl}/api/_/user`, {
+	const response = await fetchWithTimeout(`${trailBaseUrl}/api/_admin/user`, {
 		method: "DELETE",
 		headers: {
 			"Content-Type": "application/json",
 			Authorization: `Bearer ${token}`,
+			"csrf-token": csrfToken,
 		},
-		body: JSON.stringify({ id: emailOrId } as UserDeleteRequest),
+		body: JSON.stringify({ id: userId } as UserDeleteRequest),
 	});
 
 	if (!response.ok) {
@@ -122,7 +149,7 @@ export async function deleteTestUser(
 		throw new Error(`Failed to delete user: ${response.status} ${text}`);
 	}
 
-	console.log(`[admin] Deleted test user: ${emailOrId}`);
+	console.log(`[admin] Deleted test user: ${userId}`);
 }
 
 export async function loginTestUser(
@@ -143,5 +170,8 @@ export async function loginTestUser(
 	}
 
 	const data = (await response.json()) as AuthResponse;
-	return { token: data.auth_token };
+	return {
+		token: data.auth_token,
+		csrfToken: data.csrf_token,
+	};
 }
