@@ -14,14 +14,15 @@ pub fn LessonHeader() -> impl IntoView {
     };
 
     view! {
-        <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
+        <div data-testid="lesson-header" class="flex flex-wrap justify-between items-center gap-4 mb-6">
             <A href="/home">
-                <Button variant=Signal::derive(|| ButtonVariant::Ghost)>
+                <Button variant=Signal::derive(|| ButtonVariant::Ghost) test_id="lesson-back-btn">
                     "Назад"
                 </Button>
             </A>
 
             <button
+                data-testid="lesson-mute-btn"
                 class="btn btn-ghost px-3 py-2"
                 on:click=move |_| toggle_mute()
             >

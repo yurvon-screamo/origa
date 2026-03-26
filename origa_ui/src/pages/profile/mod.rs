@@ -41,8 +41,8 @@ pub fn Profile() -> impl IntoView {
     });
 
     view! {
-        <PageLayout variant=PageLayoutVariant::Full>
-            <CardLayout size=CardLayoutSize::Adaptive class="px-4 py-8">
+        <PageLayout variant=PageLayoutVariant::Full test_id="profile-page">
+            <CardLayout size=CardLayoutSize::Adaptive class="px-4 py-8" test_id="profile-card">
                 <ProfileHeader username=Signal::derive(move || username.get()) />
                 <ProfileContent />
             </CardLayout>

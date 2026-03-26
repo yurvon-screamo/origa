@@ -1,5 +1,5 @@
 use origa::domain::JapaneseLevel;
-use origa::traits::{TypeMeta, get_types_meta};
+use origa::traits::{get_types_meta, TypeMeta};
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Default)]
 pub enum LevelFilter {
