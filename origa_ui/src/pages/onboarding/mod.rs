@@ -219,7 +219,13 @@ pub fn Onboarding() -> impl IntoView {
                             </Show>
                         </div>
 
-                        <div class="onboarding-actions mt-8 flex justify-between">
+                        <div class=move || {
+                            if state.get().is_first_step() {
+                                "onboarding-actions mt-8 flex justify-end"
+                            } else {
+                                "onboarding-actions mt-8 flex justify-between"
+                            }
+                        }>
                             <Show when=move || !state.get().is_first_step()>
                                 <Button
                                     variant=ButtonVariant::Ghost

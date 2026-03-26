@@ -19,7 +19,8 @@ pub fn DuolingoProgressSelector(
     let selected_unit = RwSignal::new(None::<usize>);
     let available_sets = Signal::derive(move || state.get().available_sets.clone());
 
-    let module_items = build_module_items(&modules);
+    let modules_for_items = modules.clone();
+    let module_items = Signal::derive(move || build_module_items(&modules_for_items));
 
     let modules_for_unit_items = modules.clone();
     let unit_items =
@@ -109,7 +110,7 @@ pub fn DuolingoProgressSelector(
                     </Text>
                     <div class="mt-2">
                         <Dropdown
-                            _options=Signal::derive(move || module_items.clone())
+                            _options=module_items
                             _selected=selected_module_value
                             _placeholder=Signal::derive(|| "Выберите модуль".to_string())
                             test_id=Signal::derive(move || format!("{}-module-dropdown", app_id_for_module_dropdown.clone()))
