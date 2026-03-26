@@ -1,4 +1,11 @@
 export { BasePage } from "./base.page";
+export { GrammarPage } from "./grammar.page";
 export { HomePage } from "./home.page";
+export { KanjiPage } from "./kanji.page";
+export { LessonPage } from "./lesson.page";
 export { LoginPage } from "./login.page";
 export { OnboardingPage } from "./onboarding.page";
+export { ProfilePage } from "./profile.page";
+export { RadicalsPage } from "./radicals.page";
+export { SetsPage } from "./sets.page";
+export { WordsPage } from "./words.page";

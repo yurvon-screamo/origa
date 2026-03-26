@@ -4,6 +4,7 @@ use leptos::prelude::*;
 
 #[component]
 pub fn ActionButtons(
+    #[prop(optional, into)] test_id: Signal<String>,
     on_save: Callback<MouseEvent>,
     on_logout: Callback<MouseEvent>,
     on_delete_account: Callback<MouseEvent>,
@@ -12,9 +13,17 @@ pub fn ActionButtons(
     is_logging_out: Signal<bool>,
 ) -> impl IntoView {
     let show_delete_confirm = RwSignal::new(false);
+    let test_id_val = move || {
+        let val = test_id.get();
+        if val.is_empty() {
+            None
+        } else {
+            Some(val)
+        }
+    };
 
     view! {
-        <div class="space-y-4">
+        <div class="space-y-4" data-testid=test_id_val>
             <div class="flex flex-wrap gap-4">
                 <Button
                     variant={ButtonVariant::Filled}

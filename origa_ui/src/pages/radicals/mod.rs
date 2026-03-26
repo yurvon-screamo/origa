@@ -13,8 +13,8 @@ pub fn Radicals() -> impl IntoView {
     let refresh_trigger = RwSignal::new(0u32);
 
     view! {
-        <PageLayout variant=PageLayoutVariant::Full>
-            <CardLayout size=CardLayoutSize::Adaptive class="px-4 py-8">
+        <PageLayout variant=PageLayoutVariant::Full test_id="radicals-page">
+            <CardLayout size=CardLayoutSize::Adaptive class="px-4 py-8" test_id="radicals-card">
                 <RadicalsHeader />
                 <RadicalsContent refresh_trigger=refresh_trigger />
             </CardLayout>

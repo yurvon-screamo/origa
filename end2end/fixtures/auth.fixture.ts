@@ -1,11 +1,19 @@
-import { test as base, type Page } from "@playwright/test";
+/* eslint-disable @typescript-eslint/no-empty-object-pattern */
+import { test as base } from "@playwright/test";
 import {
 	getAdminToken,
 	createTestUser,
 	deleteTestUser,
 	loginTestUser,
 } from "./admin";
-import { testUser } from "../config";
+
+export const DEFAULT_TEST_PASSWORD = "e2e-test-password-123";
+
+export function generateUniqueEmail(): string {
+	const timestamp = Date.now();
+	const random = Math.random().toString(36).substring(2, 8);
+	return `e2e-${timestamp}-${random}@origa.local`;
+}
 
 export interface AuthFixture {
 	testUserEmail: string;
@@ -13,60 +21,58 @@ export interface AuthFixture {
 }
 
 /**
- * Extended test with auth fixture
- * Provides test user credentials for tests
+ * Base test fixture without auth (for tests that don't need a user)
  */
 export const test = base.extend<AuthFixture>({
 	testUserEmail: async ({}, use) => {
-		await use(testUser.email);
+		await use("");
 	},
 	testUserPassword: async ({}, use) => {
-		await use(testUser.password);
+		await use("");
 	},
 });
 
+export interface UniqueUserFixture extends AuthFixture {
+	authToken: string;
+}
+
 /**
- * Fixture that manages test user lifecycle
- * Creates user before all tests, deletes after all tests
+ * Fixture that manages unique test user lifecycle
+ * Creates a new user before each test, deletes after test
  * Provides authToken for authenticated requests
  */
-export const testWithUser = base.extend<
-	AuthFixture & { page: Page; authToken: string }
->({
+export const testWithUniqueUser = base.extend<UniqueUserFixture>({
 	testUserEmail: async ({}, use) => {
-		await use(testUser.email);
+		const email = generateUniqueEmail();
+		await use(email);
 	},
+
 	testUserPassword: async ({}, use) => {
-		await use(testUser.password);
+		await use(DEFAULT_TEST_PASSWORD);
 	},
 
-	page: async ({ page }, use) => {
-		await use(page);
-	},
-
-	authToken: async ({}, use) => {
+	authToken: async ({ testUserEmail, testUserPassword }, use) => {
 		let adminToken: string | undefined;
+		let adminCsrfToken: string | undefined;
+		let userUuid: string | undefined;
 
 		try {
-			adminToken = await getAdminToken();
-			await createTestUser(adminToken);
+			const adminAuth = await getAdminToken();
+			adminToken = adminAuth.token;
+			adminCsrfToken = adminAuth.csrfToken;
+
+			userUuid = await createTestUser(adminToken, adminCsrfToken, testUserEmail, testUserPassword);
+
+			const { token: authToken } = await loginTestUser(testUserEmail, testUserPassword);
+			await use(authToken);
 		} catch (error) {
 			console.error("[fixture] Failed to setup test user:", error);
 			throw error;
-		}
-
-		let authToken = "";
-		try {
-			// Login as test user to get auth token
-			authToken = await loginTestUser();
-			await use(authToken);
 		} finally {
-			// Cleanup: delete test user after all tests in this worker
-			if (adminToken) {
+			if (adminToken && adminCsrfToken && userUuid) {
 				try {
-					await deleteTestUser(adminToken);
+					await deleteTestUser(adminToken, adminCsrfToken, userUuid);
 				} catch (error) {
-					// Don't log user email in production
 					console.error("[fixture] Failed to cleanup test user");
 				}
 			}

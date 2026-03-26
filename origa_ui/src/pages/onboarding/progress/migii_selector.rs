@@ -99,6 +99,7 @@ pub fn MigiiProgressSelector(
             state.update(|s| {
                 web_sys::console::log_1(&"[Migii] state.update START".into());
                 s.set_app_selection("Migii", &format!("{:?}_{}", lvl, lesson_n));
+                // Remove old Migii sets
                 s.sets_to_import
                     .retain(|set| !is_lesson_in_levels(set.id.as_str(), &lessons_by_snapshot));
                 let sets_to_add: Vec<_> = sets_snapshot
@@ -131,9 +132,9 @@ pub fn MigiiProgressSelector(
                     </Text>
                     <div class="mt-2">
                         <Dropdown
-                            _options=Signal::derive(move || level_items.clone())
-                            _selected=selected_level
-                            _placeholder=Signal::derive(|| "Выберите уровень".to_string())
+                            options=Signal::derive(move || level_items.clone())
+                            selected=selected_level
+                            placeholder=Signal::derive(|| "Выберите уровень".to_string())
                             test_id=Signal::derive(|| "migii-level-dropdown".to_string())
                         />
                     </div>
@@ -146,9 +147,9 @@ pub fn MigiiProgressSelector(
                         </Text>
                     <div class="mt-2">
                         <Dropdown
-                            _options=lesson_items
-                            _selected=selected_lesson
-                            _placeholder=Signal::derive(|| "Выберите урок".to_string())
+                            options=lesson_items
+                            selected=selected_lesson
+                            placeholder=Signal::derive(|| "Выберите урок".to_string())
                             test_id=Signal::derive(|| "migii-lesson-dropdown".to_string())
                         />
                     </div>

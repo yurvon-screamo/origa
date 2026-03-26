@@ -140,16 +140,16 @@ pub fn LessonContent() -> impl IntoView {
         <LessonHeader />
 
         <Show when=move || is_loading.get()>
-            <div class="flex flex-col items-center py-8 gap-4">
-                <Spinner />
-                <Text size=TextSize::Default variant=TypographyVariant::Muted>
+            <div data-testid="lesson-loading" class="flex flex-col items-center py-8 gap-4">
+                <Spinner test_id="lesson-spinner" />
+                <Text size=TextSize::Default variant=TypographyVariant::Muted test_id="lesson-loading-text">
                     "Подготовка карточек для урока..."
                 </Text>
             </div>
         </Show>
 
         <Show when=move || error_message.get().is_some() && !is_loading.get()>
-            <div class="text-center py-8">
+            <div data-testid="lesson-error" class="text-center py-8">
                 <Text size=TextSize::Default variant=TypographyVariant::Muted>
                     {move || error_message.get().unwrap_or_default()}
                 </Text>
@@ -164,10 +164,10 @@ pub fn LessonContent() -> impl IntoView {
         </Show>
 
         <Show when=move || !is_loading.get() && !is_completed.get() && error_message.get().is_none()>
-            <div class="relative">
+            <div data-testid="lesson-content" class="relative">
                 <Show when=move || is_syncing_cards.get()>
-                    <div class="absolute top-0 right-0 flex items-center gap-1 text-sm text-muted-foreground p-2">
-                        <Spinner class=Signal::derive(|| "".to_string()) size=Signal::derive(|| "sm".to_string()) />
+                    <div data-testid="lesson-sync-indicator" class="absolute top-0 right-0 flex items-center gap-1 text-sm text-muted-foreground p-2">
+                        <Spinner test_id="lesson-sync-spinner" class=Signal::derive(|| "".to_string()) size=Signal::derive(|| "sm".to_string()) />
                         "Синхронизация..."
                     </div>
                 </Show>

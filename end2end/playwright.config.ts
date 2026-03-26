@@ -12,7 +12,15 @@ export default defineConfig({
     forbidOnly: isCI,
     retries: isCI ? 2 : 1,
     workers: 16,
-    reporter: [["html"]],
+    reporter: [
+        [
+            "html",
+            {
+                open: "on-failure",
+                host: "0.0.0.0",
+            },
+        ],
+    ],
     use: {
         baseURL: "http://localhost:1420",
         trace: "on-first-retry",
