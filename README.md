@@ -23,6 +23,63 @@ Builded with Rust only.
 * [TODO: 2 priority] Korean
 * [TODO: 2 priority] Indonesian
 
+## Development
+
+This project uses [cargo-make](https://sagiegurari.github.io/cargo-make/) as a task runner for common development operations.
+
+### Install cargo-make
+
+```bash
+cargo install cargo-make
+```
+
+### Common Commands
+
+```bash
+# Show all available tasks
+cargo make
+
+# Development
+cargo make dev              # Start frontend dev server
+cargo make dev-tauri        # Start Tauri desktop app
+
+# Building
+cargo make build            # Build all workspace (debug)
+cargo make build-release    # Build all workspace (release)
+cargo make build-ui         # Build frontend for production
+cargo make build-tauri      # Build Tauri desktop application
+
+# Testing
+cargo make test             # Run all workspace tests
+cargo make test-verbose     # Run tests with output
+cargo make test-cov         # Generate test coverage report (HTML)
+
+# Code Quality
+cargo make lint             # Run all linting checks (fmt + clippy)
+cargo make fmt              # Format code
+cargo make clippy           # Run clippy linter
+
+# E2E Testing
+cargo make e2e              # Run E2E tests (headless)
+cargo make e2e-headed       # Run E2E tests in visible browser
+cargo make e2e-ui           # Run E2E tests with Playwright UI
+
+# CI/CD
+cargo make ci               # Run full CI pipeline (lint + test)
+cargo make ci-full          # Run full CI with E2E and qlty
+
+# Utilities
+cargo make clean            # Clean all build artifacts
+cargo make check            # Check workspace for errors
+cargo make docs             # Generate and open documentation
+cargo make deps             # Show dependency tree
+
+# Pre-commit hook
+cargo make pre-commit       # Run fmt + clippy + test
+```
+
+For full list of available tasks, see [cargo-make.toml](origa/cargo-make.toml).
+
 ## Features
 
 (partially implemented)
