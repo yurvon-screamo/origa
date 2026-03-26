@@ -56,6 +56,10 @@ testWithFreshUser.describe("Onboarding Flow - N4 with ~50% Progress", () => {
         // Verify welcome text
         await expect(page.getByText("Настроим обучение!")).toBeVisible();
 
+        // Verify skip button is visible
+        const skipButton = page.getByTestId("onboarding-skip");
+        await expect(skipButton).toBeVisible();
+
         // Take screenshot for visual verification
         await page.screenshot({
             path: "test-results/onboarding-step-1-intro.png",
@@ -135,16 +139,10 @@ testWithFreshUser.describe("Onboarding Flow - N4 with ~50% Progress", () => {
             await duolingoEnCheckbox.click();
         }
 
-        // Select Minna N5
-        const minnaN5Checkbox = page.getByTestId("apps-step-app-MinnaNoNihongoN5-checkbox");
-        if (await minnaN5Checkbox.isVisible().catch(() => false)) {
-            await minnaN5Checkbox.click();
-        }
-
-        // Select Minna N4
-        const minnaN4Checkbox = page.getByTestId("apps-step-app-MinnaNoNihongoN4-checkbox");
-        if (await minnaN4Checkbox.isVisible().catch(() => false)) {
-            await minnaN4Checkbox.click();
+        // Select Minna no Nihongo
+        const minnaNoNihongoCheckbox = page.getByTestId("apps-step-app-MinnaNoNihongo-checkbox");
+        if (await minnaNoNihongoCheckbox.isVisible().catch(() => false)) {
+            await minnaNoNihongoCheckbox.click();
         }
 
         // Screenshot after selections
@@ -173,12 +171,12 @@ testWithFreshUser.describe("Onboarding Flow - N4 with ~50% Progress", () => {
         const migiiLevelDropdown = page.getByTestId("migii-level-dropdown");
         if (await migiiLevelDropdown.isVisible().catch(() => false)) {
             await migiiLevelDropdown.click();
-            await page.getByTestId("migii-level-dropdown-option-n4").click();
+            await page.getByTestId("migii-level-dropdown-option-N4").click();
 
             // Select middle lesson (around lesson 10 for N4)
             const migiiLessonDropdown = page.getByTestId("migii-lesson-dropdown");
             await migiiLessonDropdown.click();
-            await page.getByTestId("migii-lesson-dropdown-option-10").click();
+            await page.getByTestId("migii-lesson-dropdown-option-lesson_10").click();
         }
 
         // Configure Duolingo 「RU」 progress
@@ -186,20 +184,23 @@ testWithFreshUser.describe("Onboarding Flow - N4 with ~50% Progress", () => {
         if (await duolingoRuModuleDropdown.isVisible().catch(() => false)) {
             // Select first module
             await duolingoRuModuleDropdown.click();
-            await page.getByTestId("DuolingoRu-module-dropdown-option-1").first().click();
+            await page.getByTestId("DuolingoRu-module-dropdown-option-module_1").click();
 
             // Select ~50% unit
             const duolingoRuUnitDropdown = page.getByTestId("DuolingoRu-unit-dropdown");
             await duolingoRuUnitDropdown.click();
-            await page.getByTestId("DuolingoRu-unit-dropdown-option-10").first().click();
+            await page.getByTestId("DuolingoRu-unit-dropdown-option-unit_10").click();
         }
 
-        // Configure Minna N4 progress
-        const minnaN4LessonDropdown = page.getByTestId("MinnaNoNihongoN4-lesson-dropdown");
-        if (await minnaN4LessonDropdown.isVisible().catch(() => false)) {
-            await minnaN4LessonDropdown.click();
-            // Select lesson around middle (lesson 38 of 26-50)
-            await page.getByTestId("MinnaNoNihongoN4-lesson-dropdown-option-38").click();
+        // Configure Minna no Nihongo progress (two dropdowns: level + lesson)
+        const minnaLevelDropdown = page.getByTestId("minna-level-dropdown");
+        if (await minnaLevelDropdown.isVisible().catch(() => false)) {
+            await minnaLevelDropdown.click();
+            await page.getByTestId("minna-level-dropdown-option-N4").click();
+
+            const minnaLessonDropdown = page.getByTestId("minna-lesson-dropdown");
+            await minnaLessonDropdown.click();
+            await page.getByTestId("minna-lesson-dropdown-option-lesson_38").click();
         }
 
         // Screenshot after progress configuration
@@ -268,21 +269,5 @@ testWithFreshUser.describe("Onboarding Flow - N4 with ~50% Progress", () => {
             path: "test-results/onboarding-complete-home.png",
             fullPage: true
         });
-    });
-});
-
-testWithFreshUser.describe("Onboarding Flow - Edge Cases", () => {
-    testWithFreshUser.skip("should handle empty app selection", async () => {
-        // This test would require a fresh user
-        // For now, skip as it requires user cleanup/recreation
-    });
-
-    testWithFreshUser.skip("should allow going back between steps", async () => {
-        // Test navigation backwards
-        // Requires starting from a specific step
-    });
-
-    testWithFreshUser.skip("should validate JLPT level selection is required", async () => {
-        // Test that "Далее" is disabled when no JLPT level selected
     });
 });
