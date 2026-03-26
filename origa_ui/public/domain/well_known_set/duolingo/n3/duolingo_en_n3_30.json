@@ -1,37 +1,37 @@
 {
-    "content": {
-        "English": {
-            "description": "Words from section/unit: discuss conflict",
-            "title": "Duolingo 「EN」 - Section 5 Unit 30"
-        },
-        "Russian": {
-            "description": "Слова из модуля: discuss conflict",
-            "title": "Duolingo 「EN」 - Section 5 Unit 30"
-        }
+  "content": {
+    "English": {
+      "description": "Words from section/unit: discuss conflict",
+      "title": "Duolingo 「EN」 - Section 5 Unit 30"
     },
-    "level": "N3",
-    "words": [
-        "タケシ",
-        "ワタル",
-        "一",
-        "両国",
-        "交渉",
-        "兵",
-        "兵士",
-        "剣",
-        "勝利",
-        "収める",
-        "命",
-        "困る",
-        "外交",
-        "大戦",
-        "戦い",
-        "攻撃",
-        "敵",
-        "武器",
-        "激しい",
-        "盾",
-        "紛争",
-        "解決"
-    ]
+    "Russian": {
+      "description": "Слова из модуля: discuss conflict",
+      "title": "Duolingo 「EN」 - Section 5 Unit 30"
+    }
+  },
+  "level": "N3",
+  "words": [
+    "タケシ",
+    "ワタル",
+    "一",
+    "両国",
+    "交渉",
+    "兵",
+    "兵士",
+    "剣",
+    "勝利",
+    "収める",
+    "命",
+    "困る",
+    "外交",
+    "大戦",
+    "戦い",
+    "攻撃",
+    "敵",
+    "武器",
+    "激しい",
+    "盾",
+    "紛争",
+    "解決"
+  ]
 }

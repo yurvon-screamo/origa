@@ -1,22 +1,22 @@
 {
-    "content": {
-        "English": {
-            "description": "Words from section/unit: talk about countries",
-            "title": "Duolingo 「EN」 - Section 1 Unit 5"
-        },
-        "Russian": {
-            "description": "Слова из модуля: talk about countries",
-            "title": "Duolingo 「EN」 - Section 1 Unit 5"
-        }
+  "content": {
+    "English": {
+      "description": "Words from section/unit: talk about countries",
+      "title": "Duolingo 「EN」 - Section 1 Unit 5"
     },
-    "level": "N5",
-    "words": [
-        "アメリカ",
-        "イギリス",
-        "カナダ",
-        "ブラジル",
-        "大きい",
-        "小さい",
-        "日本"
-    ]
+    "Russian": {
+      "description": "Слова из модуля: talk about countries",
+      "title": "Duolingo 「EN」 - Section 1 Unit 5"
+    }
+  },
+  "level": "N5",
+  "words": [
+    "アメリカ",
+    "イギリス",
+    "カナダ",
+    "ブラジル",
+    "大きい",
+    "小さい",
+    "日本"
+  ]
 }

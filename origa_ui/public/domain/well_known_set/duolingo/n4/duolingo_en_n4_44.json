@@ -1,38 +1,38 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: discuss interests",
-			"title": "Duolingo 「EN」 - Section 4 Unit 44"
-		},
-		"Russian": {
-			"description": "Слова из модуля: discuss interests",
-			"title": "Duolingo 「EN」 - Section 4 Unit 44"
-		}
-	},
-	"level": "N4",
-	"words": [
-		"ボール",
-		"上手",
-		"下手",
-		"取る",
-		"多分",
-		"大丈夫",
-		"字",
-		"弾く",
-		"思い",
-		"成る",
-		"投げ",
-		"来る",
-		"歌う",
-		"泳ぐ",
-		"漫画",
-		"玉",
-		"番号",
-		"行く",
-		"見る",
-		"読む",
-		"走る",
-		"野球",
-		"頼み"
-	]
+  "content": {
+    "English": {
+      "description": "Words from section/unit: discuss interests",
+      "title": "Duolingo 「EN」 - Section 4 Unit 44"
+    },
+    "Russian": {
+      "description": "Слова из модуля: discuss interests",
+      "title": "Duolingo 「EN」 - Section 4 Unit 44"
+    }
+  },
+  "level": "N4",
+  "words": [
+    "ボール",
+    "上手",
+    "下手",
+    "取る",
+    "多分",
+    "大丈夫",
+    "字",
+    "弾く",
+    "思い",
+    "成る",
+    "投げ",
+    "来る",
+    "歌う",
+    "泳ぐ",
+    "漫画",
+    "玉",
+    "番号",
+    "行く",
+    "見る",
+    "読む",
+    "走る",
+    "野球",
+    "頼み"
+  ]
 }

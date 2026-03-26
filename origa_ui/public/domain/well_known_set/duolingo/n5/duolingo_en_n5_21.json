@@ -1,42 +1,42 @@
 {
-    "content": {
-        "English": {
-            "description": "Words from section/unit: describe your home",
-            "title": "Duolingo 「EN」 - Section 2 Unit 12"
-        },
-        "Russian": {
-            "description": "Слова из модуля: describe your home",
-            "title": "Duolingo 「EN」 - Section 2 Unit 12"
-        }
+  "content": {
+    "English": {
+      "description": "Words from section/unit: describe your home",
+      "title": "Duolingo 「EN」 - Section 2 Unit 12"
     },
-    "level": "N5",
-    "words": [
-        "そう",
-        "アパート",
-        "エアコン",
-        "キッチン",
-        "シャワー",
-        "シュウ",
-        "テーブル",
-        "ベッド",
-        "リビング",
-        "レンジ",
-        "何",
-        "其れ",
-        "冷蔵",
-        "多分",
-        "布団",
-        "広い",
-        "引っ越す",
-        "明るい",
-        "時",
-        "有る",
-        "未だ",
-        "机",
-        "椅子",
-        "此の",
-        "洗濯",
-        "狭い",
-        "直"
-    ]
+    "Russian": {
+      "description": "Слова из модуля: describe your home",
+      "title": "Duolingo 「EN」 - Section 2 Unit 12"
+    }
+  },
+  "level": "N5",
+  "words": [
+    "そう",
+    "アパート",
+    "エアコン",
+    "キッチン",
+    "シャワー",
+    "シュウ",
+    "テーブル",
+    "ベッド",
+    "リビング",
+    "レンジ",
+    "何",
+    "其れ",
+    "冷蔵",
+    "多分",
+    "布団",
+    "広い",
+    "引っ越す",
+    "明るい",
+    "時",
+    "有る",
+    "未だ",
+    "机",
+    "椅子",
+    "此の",
+    "洗濯",
+    "狭い",
+    "直"
+  ]
 }

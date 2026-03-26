@@ -1,46 +1,46 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: discuss weather",
-			"title": "Duolingo 「EN」 - Section 4 Unit 26"
-		},
-		"Russian": {
-			"description": "Слова из модуля: discuss weather",
-			"title": "Duolingo 「EN」 - Section 4 Unit 26"
-		}
-	},
-	"level": "N4",
-	"words": [
-		"今晩",
-		"今朝",
-		"又",
-		"吹き",
-		"夕",
-		"夕べ",
-		"夕方",
-		"天",
-		"天気",
-		"弱",
-		"弱い",
-		"強い",
-		"悪い",
-		"方",
-		"明るい",
-		"昼間",
-		"晴れ",
-		"晴れる",
-		"暗",
-		"暗い",
-		"曇り",
-		"曇る",
-		"朝",
-		"空",
-		"良い",
-		"降",
-		"降り",
-		"降る",
-		"雨",
-		"雪",
-		"風"
-	]
+  "content": {
+    "English": {
+      "description": "Words from section/unit: discuss weather",
+      "title": "Duolingo 「EN」 - Section 4 Unit 26"
+    },
+    "Russian": {
+      "description": "Слова из модуля: discuss weather",
+      "title": "Duolingo 「EN」 - Section 4 Unit 26"
+    }
+  },
+  "level": "N4",
+  "words": [
+    "今晩",
+    "今朝",
+    "又",
+    "吹き",
+    "夕",
+    "夕べ",
+    "夕方",
+    "天",
+    "天気",
+    "弱",
+    "弱い",
+    "強い",
+    "悪い",
+    "方",
+    "明るい",
+    "昼間",
+    "晴れ",
+    "晴れる",
+    "暗",
+    "暗い",
+    "曇り",
+    "曇る",
+    "朝",
+    "空",
+    "良い",
+    "降",
+    "降り",
+    "降る",
+    "雨",
+    "雪",
+    "風"
+  ]
 }

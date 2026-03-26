@@ -1,42 +1,42 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: discuss society",
-			"title": "Duolingo 「EN」 - Section 5 Unit 19"
-		},
-		"Russian": {
-			"description": "Слова из модуля: discuss society",
-			"title": "Duolingo 「EN」 - Section 5 Unit 19"
-		}
-	},
-	"level": "N3",
-	"words": [
-		"世界",
-		"値",
-		"受け付け",
-		"国家",
-		"地元",
-		"天皇",
-		"平和",
-		"慣れる",
-		"成る",
-		"戦争",
-		"文化",
-		"文明",
-		"活動",
-		"物価",
-		"独立",
-		"生活",
-		"番組",
-		"皇",
-		"県",
-		"社会",
-		"立てる",
-		"経",
-		"経済",
-		"行動",
-		"計画",
-		"象徴",
-		"進歩"
-	]
+  "content": {
+    "English": {
+      "description": "Words from section/unit: discuss society",
+      "title": "Duolingo 「EN」 - Section 5 Unit 19"
+    },
+    "Russian": {
+      "description": "Слова из модуля: discuss society",
+      "title": "Duolingo 「EN」 - Section 5 Unit 19"
+    }
+  },
+  "level": "N3",
+  "words": [
+    "世界",
+    "値",
+    "受け付け",
+    "国家",
+    "地元",
+    "天皇",
+    "平和",
+    "慣れる",
+    "成る",
+    "戦争",
+    "文化",
+    "文明",
+    "活動",
+    "物価",
+    "独立",
+    "生活",
+    "番組",
+    "皇",
+    "県",
+    "社会",
+    "立てる",
+    "経",
+    "経済",
+    "行動",
+    "計画",
+    "象徴",
+    "進歩"
+  ]
 }

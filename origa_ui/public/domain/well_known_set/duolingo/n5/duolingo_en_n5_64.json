@@ -1,43 +1,43 @@
 {
-    "content": {
-        "English": {
-            "description": "Words from section/unit: describe a day at college",
-            "title": "Duolingo 「EN」 - Section 3 Unit 25"
-        },
-        "Russian": {
-            "description": "Слова из модуля: describe a day at college",
-            "title": "Duolingo 「EN」 - Section 3 Unit 25"
-        }
+  "content": {
+    "English": {
+      "description": "Words from section/unit: describe a day at college",
+      "title": "Duolingo 「EN」 - Section 3 Unit 25"
     },
-    "level": "N5",
-    "words": [
-        "まあまあ",
-        "イタリア",
-        "バイク",
-        "バイト",
-        "フランス",
-        "リョウ",
-        "レポート",
-        "人",
-        "会う",
-        "何処",
-        "借りる",
-        "偶に",
-        "入る",
-        "分",
-        "外国",
-        "大好き",
-        "大学",
-        "年",
-        "快適",
-        "成る",
-        "成績",
-        "毎朝",
-        "生活",
-        "竜",
-        "過大",
-        "金",
-        "顎",
-        "駄目"
-    ]
+    "Russian": {
+      "description": "Слова из модуля: describe a day at college",
+      "title": "Duolingo 「EN」 - Section 3 Unit 25"
+    }
+  },
+  "level": "N5",
+  "words": [
+    "まあまあ",
+    "イタリア",
+    "バイク",
+    "バイト",
+    "フランス",
+    "リョウ",
+    "レポート",
+    "人",
+    "会う",
+    "何処",
+    "借りる",
+    "偶に",
+    "入る",
+    "分",
+    "外国",
+    "大好き",
+    "大学",
+    "年",
+    "快適",
+    "成る",
+    "成績",
+    "毎朝",
+    "生活",
+    "竜",
+    "過大",
+    "金",
+    "顎",
+    "駄目"
+  ]
 }

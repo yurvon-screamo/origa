@@ -1,34 +1,34 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: discuss space",
-			"title": "Duolingo 「EN」 - Section 6 Unit 12"
-		},
-		"Russian": {
-			"description": "Слова из модуля: discuss space",
-			"title": "Duolingo 「EN」 - Section 6 Unit 12"
-		}
-	},
-	"level": "N3",
-	"words": [
-		"ロケット",
-		"人工",
-		"天文",
-		"太陽",
-		"宇宙",
-		"惑星",
-		"打ち上げる",
-		"探検",
-		"望遠",
-		"検",
-		"火星",
-		"無限",
-		"発射",
-		"系",
-		"衛星",
-		"軌道",
-		"通信",
-		"重力",
-		"飛行"
-	]
+  "content": {
+    "English": {
+      "description": "Words from section/unit: discuss space",
+      "title": "Duolingo 「EN」 - Section 6 Unit 12"
+    },
+    "Russian": {
+      "description": "Слова из модуля: discuss space",
+      "title": "Duolingo 「EN」 - Section 6 Unit 12"
+    }
+  },
+  "level": "N3",
+  "words": [
+    "ロケット",
+    "人工",
+    "天文",
+    "太陽",
+    "宇宙",
+    "惑星",
+    "打ち上げる",
+    "探検",
+    "望遠",
+    "検",
+    "火星",
+    "無限",
+    "発射",
+    "系",
+    "衛星",
+    "軌道",
+    "通信",
+    "重力",
+    "飛行"
+  ]
 }

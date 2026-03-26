@@ -1,41 +1,41 @@
 {
-    "content": {
-        "English": {
-            "description": "Words from section/unit: discuss the news",
-            "title": "Duolingo 「EN」 - Section 6 Unit 7"
-        },
-        "Russian": {
-            "description": "Слова из модуля: discuss the news",
-            "title": "Duolingo 「EN」 - Section 6 Unit 7"
-        }
+  "content": {
+    "English": {
+      "description": "Words from section/unit: discuss the news",
+      "title": "Duolingo 「EN」 - Section 6 Unit 7"
     },
-    "level": "N3",
-    "words": [
-        "しゃっ",
-        "アンケート",
-        "何",
-        "余地",
-        "偶",
-        "偶然",
-        "居る",
-        "広告",
-        "感謝",
-        "政策",
-        "日記",
-        "現実",
-        "疑う",
-        "発言",
-        "礼",
-        "策",
-        "見出し",
-        "記録",
-        "認める",
-        "謝る",
-        "購読",
-        "軈て",
-        "輿論",
-        "避ける",
-        "配る",
-        "頂戴"
-    ]
+    "Russian": {
+      "description": "Слова из модуля: discuss the news",
+      "title": "Duolingo 「EN」 - Section 6 Unit 7"
+    }
+  },
+  "level": "N3",
+  "words": [
+    "しゃっ",
+    "アンケート",
+    "何",
+    "余地",
+    "偶",
+    "偶然",
+    "居る",
+    "広告",
+    "感謝",
+    "政策",
+    "日記",
+    "現実",
+    "疑う",
+    "発言",
+    "礼",
+    "策",
+    "見出し",
+    "記録",
+    "認める",
+    "謝る",
+    "購読",
+    "軈て",
+    "輿論",
+    "避ける",
+    "配る",
+    "頂戴"
+  ]
 }

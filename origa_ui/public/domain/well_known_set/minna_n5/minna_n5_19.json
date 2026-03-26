@@ -1,37 +1,37 @@
 {
-	"content": {
-		"English": {
-			"description": "Lesson 19 words: health, sports.",
-			"title": "Minna no Nihongo N5 Lesson 19"
-		},
-		"Russian": {
-			"description": "Слова урока 19: здоровье, спорт.",
-			"title": "Minna no Nihongo N5 Урок 19"
-		}
-	},
-	"level": "N5",
-	"words": [
-		"もう",
-		"ダイエット",
-		"一",
-		"上る",
-		"乾杯",
-		"体",
-		"度",
-		"弱い",
-		"強い",
-		"御陰",
-		"成る",
-		"掃除",
-		"止まる",
-		"洗濯",
-		"無理",
-		"直ぐ",
-		"相撲",
-		"眠い",
-		"碑",
-		"練習",
-		"茶",
-		"銚子"
-	]
+  "content": {
+    "English": {
+      "description": "Lesson 19 words: health, sports.",
+      "title": "Minna no Nihongo N5 Lesson 19"
+    },
+    "Russian": {
+      "description": "Слова урока 19: здоровье, спорт.",
+      "title": "Minna no Nihongo N5 Урок 19"
+    }
+  },
+  "level": "N5",
+  "words": [
+    "もう",
+    "ダイエット",
+    "一",
+    "上る",
+    "乾杯",
+    "体",
+    "度",
+    "弱い",
+    "強い",
+    "御陰",
+    "成る",
+    "掃除",
+    "止まる",
+    "洗濯",
+    "無理",
+    "直ぐ",
+    "相撲",
+    "眠い",
+    "碑",
+    "練習",
+    "茶",
+    "銚子"
+  ]
 }

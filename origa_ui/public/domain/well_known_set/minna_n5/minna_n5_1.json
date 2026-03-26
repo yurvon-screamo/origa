@@ -1,38 +1,38 @@
 {
-	"content": {
-		"English": {
-			"description": "Lesson 1 words: people, professions, questions.",
-			"title": "Minna no Nihongo N5 Lesson 1"
-		},
-		"Russian": {
-			"description": "Слова урока 1: люди, профессии, вопросы.",
-			"title": "Minna no Nihongo N5 Урок 1"
-		}
-	},
-	"level": "N5",
-	"words": [
-		"人",
-		"会社",
-		"何",
-		"供する",
-		"先生",
-		"医者",
-		"名",
-		"大学",
-		"学生",
-		"年",
-		"彼",
-		"所為",
-		"教師",
-		"病院",
-		"研究",
-		"社員",
-		"私",
-		"腎",
-		"誰",
-		"貴方",
-		"銀行",
-		"際",
-		"顎"
-	]
+  "content": {
+    "English": {
+      "description": "Lesson 1 words: people, professions, questions.",
+      "title": "Minna no Nihongo N5 Lesson 1"
+    },
+    "Russian": {
+      "description": "Слова урока 1: люди, профессии, вопросы.",
+      "title": "Minna no Nihongo N5 Урок 1"
+    }
+  },
+  "level": "N5",
+  "words": [
+    "人",
+    "会社",
+    "何",
+    "供する",
+    "先生",
+    "医者",
+    "名",
+    "大学",
+    "学生",
+    "年",
+    "彼",
+    "所為",
+    "教師",
+    "病院",
+    "研究",
+    "社員",
+    "私",
+    "腎",
+    "誰",
+    "貴方",
+    "銀行",
+    "際",
+    "顎"
+  ]
 }

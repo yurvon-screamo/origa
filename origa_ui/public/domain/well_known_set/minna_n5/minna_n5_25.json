@@ -1,31 +1,31 @@
 {
-	"content": {
-		"English": {
-			"description": "Lesson 25 words: work, life.",
-			"title": "Minna no Nihongo N5 Lesson 25"
-		},
-		"Russian": {
-			"description": "Слова урока 25: работа, жизнь.",
-			"title": "Minna no Nihongo N5 Урок 25"
-		}
-	},
-	"level": "N5",
-	"words": [
-		"チャンス",
-		"世",
-		"事",
-		"億",
-		"元気",
-		"取る",
-		"年",
-		"意味",
-		"暇",
-		"田舎",
-		"着く",
-		"考える",
-		"若し",
-		"足りる",
-		"転勤",
-		"頑張る"
-	]
+  "content": {
+    "English": {
+      "description": "Lesson 25 words: work, life.",
+      "title": "Minna no Nihongo N5 Lesson 25"
+    },
+    "Russian": {
+      "description": "Слова урока 25: работа, жизнь.",
+      "title": "Minna no Nihongo N5 Урок 25"
+    }
+  },
+  "level": "N5",
+  "words": [
+    "チャンス",
+    "世",
+    "事",
+    "億",
+    "元気",
+    "取る",
+    "年",
+    "意味",
+    "暇",
+    "田舎",
+    "着く",
+    "考える",
+    "若し",
+    "足りる",
+    "転勤",
+    "頑張る"
+  ]
 }

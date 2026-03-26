@@ -1,50 +1,50 @@
 {
-    "content": {
-        "English": {
-            "description": "Words from section/unit: talk about languages",
-            "title": "Duolingo 「EN」 - Section 6 Unit 34"
-        },
-        "Russian": {
-            "description": "Слова из модуля: talk about languages",
-            "title": "Duolingo 「EN」 - Section 6 Unit 34"
-        }
+  "content": {
+    "English": {
+      "description": "Words from section/unit: talk about languages",
+      "title": "Duolingo 「EN」 - Section 6 Unit 34"
     },
-    "level": "N3",
-    "words": [
-        "そう",
-        "トオル",
-        "一致",
-        "動詞",
-        "名詞",
-        "学習",
-        "定義",
-        "常",
-        "引用",
-        "形容",
-        "方言",
-        "既に",
-        "曖昧",
-        "活用",
-        "流暢",
-        "特徴",
-        "用語",
-        "異",
-        "異なる",
-        "直接",
-        "繰り返す",
-        "習得",
-        "翻訳",
-        "能力",
-        "要約",
-        "解釈",
-        "言い訳",
-        "言う",
-        "訛り",
-        "詞",
-        "語学",
-        "語彙",
-        "誤る",
-        "釈",
-        "零"
-    ]
+    "Russian": {
+      "description": "Слова из модуля: talk about languages",
+      "title": "Duolingo 「EN」 - Section 6 Unit 34"
+    }
+  },
+  "level": "N3",
+  "words": [
+    "そう",
+    "トオル",
+    "一致",
+    "動詞",
+    "名詞",
+    "学習",
+    "定義",
+    "常",
+    "引用",
+    "形容",
+    "方言",
+    "既に",
+    "曖昧",
+    "活用",
+    "流暢",
+    "特徴",
+    "用語",
+    "異",
+    "異なる",
+    "直接",
+    "繰り返す",
+    "習得",
+    "翻訳",
+    "能力",
+    "要約",
+    "解釈",
+    "言い訳",
+    "言う",
+    "訛り",
+    "詞",
+    "語学",
+    "語彙",
+    "誤る",
+    "釈",
+    "零"
+  ]
 }

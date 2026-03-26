@@ -1,27 +1,27 @@
 {
-    "content": {
-        "English": {
-            "description": "Words from section/unit: discuss religion",
-            "title": "Duolingo 「EN」 - Section 6 Unit 14"
-        },
-        "Russian": {
-            "description": "Слова из модуля: discuss religion",
-            "title": "Duolingo 「EN」 - Section 6 Unit 14"
-        }
+  "content": {
+    "English": {
+      "description": "Words from section/unit: discuss religion",
+      "title": "Duolingo 「EN」 - Section 6 Unit 14"
     },
-    "level": "N3",
-    "words": [
-        "何",
-        "使命",
-        "司祭",
-        "地獄",
-        "墓",
-        "墓地",
-        "奇跡",
-        "悪魔",
-        "救う",
-        "神聖",
-        "聖書",
-        "説教"
-    ]
+    "Russian": {
+      "description": "Слова из модуля: discuss religion",
+      "title": "Duolingo 「EN」 - Section 6 Unit 14"
+    }
+  },
+  "level": "N3",
+  "words": [
+    "何",
+    "使命",
+    "司祭",
+    "地獄",
+    "墓",
+    "墓地",
+    "奇跡",
+    "悪魔",
+    "救う",
+    "神聖",
+    "聖書",
+    "説教"
+  ]
 }

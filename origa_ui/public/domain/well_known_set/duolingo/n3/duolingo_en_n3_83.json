@@ -1,35 +1,35 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: use polite language",
-			"title": "Duolingo 「EN」 - Section 6 Unit 33"
-		},
-		"Russian": {
-			"description": "Слова из модуля: use polite language",
-			"title": "Duolingo 「EN」 - Section 6 Unit 33"
-		}
-	},
-	"level": "N3",
-	"words": [
-		"こっそり",
-		"助言",
-		"委員",
-		"存知",
-		"幸い",
-		"御覧",
-		"忘れる",
-		"思う",
-		"成る",
-		"成る可く",
-		"承認",
-		"有り難い",
-		"案",
-		"氏",
-		"率直",
-		"真",
-		"覧",
-		"言う",
-		"詫び",
-		"頂く"
-	]
+  "content": {
+    "English": {
+      "description": "Words from section/unit: use polite language",
+      "title": "Duolingo 「EN」 - Section 6 Unit 33"
+    },
+    "Russian": {
+      "description": "Слова из модуля: use polite language",
+      "title": "Duolingo 「EN」 - Section 6 Unit 33"
+    }
+  },
+  "level": "N3",
+  "words": [
+    "こっそり",
+    "助言",
+    "委員",
+    "存知",
+    "幸い",
+    "御覧",
+    "忘れる",
+    "思う",
+    "成る",
+    "成る可く",
+    "承認",
+    "有り難い",
+    "案",
+    "氏",
+    "率直",
+    "真",
+    "覧",
+    "言う",
+    "詫び",
+    "頂く"
+  ]
 }

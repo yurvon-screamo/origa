@@ -1,32 +1,32 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: shop for groceries",
-			"title": "Duolingo 「EN」 - Section 4 Unit 42"
-		},
-		"Russian": {
-			"description": "Слова из модуля: shop for groceries",
-			"title": "Duolingo 「EN」 - Section 4 Unit 42"
-		}
-	},
-	"level": "N4",
-	"words": [
-		"より",
-		"キロ",
-		"グラム",
-		"ダイヤモンド",
-		"ハンカチ",
-		"バター",
-		"一番",
-		"可成",
-		"売り",
-		"嫌",
-		"払い",
-		"牛肉",
-		"豚",
-		"豚肉",
-		"飴",
-		"鶏",
-		"鶏肉"
-	]
+  "content": {
+    "English": {
+      "description": "Words from section/unit: shop for groceries",
+      "title": "Duolingo 「EN」 - Section 4 Unit 42"
+    },
+    "Russian": {
+      "description": "Слова из модуля: shop for groceries",
+      "title": "Duolingo 「EN」 - Section 4 Unit 42"
+    }
+  },
+  "level": "N4",
+  "words": [
+    "より",
+    "キロ",
+    "グラム",
+    "ダイヤモンド",
+    "ハンカチ",
+    "バター",
+    "一番",
+    "可成",
+    "売り",
+    "嫌",
+    "払い",
+    "牛肉",
+    "豚",
+    "豚肉",
+    "飴",
+    "鶏",
+    "鶏肉"
+  ]
 }

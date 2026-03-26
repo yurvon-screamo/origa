@@ -1,44 +1,44 @@
 {
-    "content": {
-        "English": {
-            "description": "Words from section/unit: say how you feel",
-            "title": "Duolingo 「EN」 - Section 6 Unit 35"
-        },
-        "Russian": {
-            "description": "Слова из модуля: say how you feel",
-            "title": "Duolingo 「EN」 - Section 6 Unit 35"
-        }
+  "content": {
+    "English": {
+      "description": "Words from section/unit: say how you feel",
+      "title": "Duolingo 「EN」 - Section 6 Unit 35"
     },
-    "level": "N3",
-    "words": [
-        "さっぱり",
-        "まあ",
-        "わくわく",
-        "キス",
-        "メグミ",
-        "不幸",
-        "信用",
-        "信頼",
-        "叫び",
-        "叫ぶ",
-        "可哀想",
-        "叱る",
-        "好む",
-        "快適",
-        "恐怖",
-        "悲しむ",
-        "抑",
-        "押さえる",
-        "支援",
-        "消極",
-        "積",
-        "積極",
-        "笑顔",
-        "肉体",
-        "苛々",
-        "苦痛",
-        "裏切る",
-        "褒める",
-        "面倒"
-    ]
+    "Russian": {
+      "description": "Слова из модуля: say how you feel",
+      "title": "Duolingo 「EN」 - Section 6 Unit 35"
+    }
+  },
+  "level": "N3",
+  "words": [
+    "さっぱり",
+    "まあ",
+    "わくわく",
+    "キス",
+    "メグミ",
+    "不幸",
+    "信用",
+    "信頼",
+    "叫び",
+    "叫ぶ",
+    "可哀想",
+    "叱る",
+    "好む",
+    "快適",
+    "恐怖",
+    "悲しむ",
+    "抑",
+    "押さえる",
+    "支援",
+    "消極",
+    "積",
+    "積極",
+    "笑顔",
+    "肉体",
+    "苛々",
+    "苦痛",
+    "裏切る",
+    "褒める",
+    "面倒"
+  ]
 }

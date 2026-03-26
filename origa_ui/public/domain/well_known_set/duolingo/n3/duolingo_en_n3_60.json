@@ -1,36 +1,36 @@
 {
-    "content": {
-        "English": {
-            "description": "Words from section/unit: describe the outdoors",
-            "title": "Duolingo 「EN」 - Section 6 Unit 10"
-        },
-        "Russian": {
-            "description": "Слова из модуля: describe the outdoors",
-            "title": "Duolingo 「EN」 - Section 6 Unit 10"
-        }
+  "content": {
+    "English": {
+      "description": "Words from section/unit: describe the outdoors",
+      "title": "Duolingo 「EN」 - Section 6 Unit 10"
     },
-    "level": "N3",
-    "words": [
-        "下ろす",
-        "叩く",
-        "底",
-        "影",
-        "性格",
-        "掘る",
-        "根",
-        "棒",
-        "森林",
-        "沈",
-        "沈む",
-        "滝",
-        "煙",
-        "煙突",
-        "狩り",
-        "穴",
-        "罠",
-        "芝",
-        "芝生",
-        "薔薇",
-        "追う"
-    ]
+    "Russian": {
+      "description": "Слова из модуля: describe the outdoors",
+      "title": "Duolingo 「EN」 - Section 6 Unit 10"
+    }
+  },
+  "level": "N3",
+  "words": [
+    "下ろす",
+    "叩く",
+    "底",
+    "影",
+    "性格",
+    "掘る",
+    "根",
+    "棒",
+    "森林",
+    "沈",
+    "沈む",
+    "滝",
+    "煙",
+    "煙突",
+    "狩り",
+    "穴",
+    "罠",
+    "芝",
+    "芝生",
+    "薔薇",
+    "追う"
+  ]
 }

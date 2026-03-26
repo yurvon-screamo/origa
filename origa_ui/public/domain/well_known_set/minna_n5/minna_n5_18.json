@@ -1,37 +1,37 @@
 {
-	"content": {
-		"English": {
-			"description": "Lesson 18 words: abilities, hobbies, work.",
-			"title": "Minna no Nihongo N5 Lesson 18"
-		},
-		"Russian": {
-			"description": "Слова урока 18: умения, хобби, работа.",
-			"title": "Minna no Nihongo N5 Урок 18"
-		}
-	},
-	"level": "N5",
-	"words": [
-		"インターネット",
-		"ピアノ",
-		"メートル",
-		"予約",
-		"出来る",
-		"動物",
-		"変える",
-		"弾く",
-		"成る",
-		"捨てる",
-		"日記",
-		"歌う",
-		"洗う",
-		"現金",
-		"社長",
-		"祈る",
-		"課長",
-		"趣味",
-		"運転",
-		"部長",
-		"集める",
-		"馬"
-	]
+  "content": {
+    "English": {
+      "description": "Lesson 18 words: abilities, hobbies, work.",
+      "title": "Minna no Nihongo N5 Lesson 18"
+    },
+    "Russian": {
+      "description": "Слова урока 18: умения, хобби, работа.",
+      "title": "Minna no Nihongo N5 Урок 18"
+    }
+  },
+  "level": "N5",
+  "words": [
+    "インターネット",
+    "ピアノ",
+    "メートル",
+    "予約",
+    "出来る",
+    "動物",
+    "変える",
+    "弾く",
+    "成る",
+    "捨てる",
+    "日記",
+    "歌う",
+    "洗う",
+    "現金",
+    "社長",
+    "祈る",
+    "課長",
+    "趣味",
+    "運転",
+    "部長",
+    "集める",
+    "馬"
+  ]
 }

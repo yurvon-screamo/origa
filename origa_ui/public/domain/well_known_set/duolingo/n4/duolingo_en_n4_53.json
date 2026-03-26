@@ -1,36 +1,36 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: say what you can do",
-			"title": "Duolingo 「EN」 - Section 4 Unit 53"
-		},
-		"Russian": {
-			"description": "Слова из модуля: say what you can do",
-			"title": "Duolingo 「EN」 - Section 4 Unit 53"
-		}
-	},
-	"level": "N4",
-	"words": [
-		"カード",
-		"会う",
-		"作る",
-		"使う",
-		"信",
-		"出来る",
-		"書く",
-		"直",
-		"直す",
-		"聞こえる",
-		"行く",
-		"見える",
-		"言う",
-		"読む",
-		"買う",
-		"踊り",
-		"踊る",
-		"音",
-		"飛ぶ",
-		"食べる",
-		"飲む"
-	]
+  "content": {
+    "English": {
+      "description": "Words from section/unit: say what you can do",
+      "title": "Duolingo 「EN」 - Section 4 Unit 53"
+    },
+    "Russian": {
+      "description": "Слова из модуля: say what you can do",
+      "title": "Duolingo 「EN」 - Section 4 Unit 53"
+    }
+  },
+  "level": "N4",
+  "words": [
+    "カード",
+    "会う",
+    "作る",
+    "使う",
+    "信",
+    "出来る",
+    "書く",
+    "直",
+    "直す",
+    "聞こえる",
+    "行く",
+    "見える",
+    "言う",
+    "読む",
+    "買う",
+    "踊り",
+    "踊る",
+    "音",
+    "飛ぶ",
+    "食べる",
+    "飲む"
+  ]
 }

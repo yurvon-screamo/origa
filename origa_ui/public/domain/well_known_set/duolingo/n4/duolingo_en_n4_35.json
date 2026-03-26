@@ -1,39 +1,39 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: describe nature",
-			"title": "Duolingo 「EN」 - Section 4 Unit 35"
-		},
-		"Russian": {
-			"description": "Слова из модуля: describe nature",
-			"title": "Duolingo 「EN」 - Section 4 Unit 35"
-		}
-	},
-	"level": "N4",
-	"words": [
-		"ウエノ",
-		"セイ",
-		"ナル",
-		"動",
-		"動物",
-		"咲き",
-		"声",
-		"川",
-		"木",
-		"池",
-		"泳ぐ",
-		"海",
-		"然り",
-		"熊",
-		"牛",
-		"狐",
-		"登り",
-		"賑やか",
-		"静か",
-		"飛ぶ",
-		"馬",
-		"鳩",
-		"鳴く",
-		"鹿"
-	]
+  "content": {
+    "English": {
+      "description": "Words from section/unit: describe nature",
+      "title": "Duolingo 「EN」 - Section 4 Unit 35"
+    },
+    "Russian": {
+      "description": "Слова из модуля: describe nature",
+      "title": "Duolingo 「EN」 - Section 4 Unit 35"
+    }
+  },
+  "level": "N4",
+  "words": [
+    "ウエノ",
+    "セイ",
+    "ナル",
+    "動",
+    "動物",
+    "咲き",
+    "声",
+    "川",
+    "木",
+    "池",
+    "泳ぐ",
+    "海",
+    "然り",
+    "熊",
+    "牛",
+    "狐",
+    "登り",
+    "賑やか",
+    "静か",
+    "飛ぶ",
+    "馬",
+    "鳩",
+    "鳴く",
+    "鹿"
+  ]
 }

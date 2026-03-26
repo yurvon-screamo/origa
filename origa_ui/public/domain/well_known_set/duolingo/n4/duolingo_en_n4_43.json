@@ -1,44 +1,44 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: describe clothes",
-			"title": "Duolingo 「EN」 - Section 4 Unit 43"
-		},
-		"Russian": {
-			"description": "Слова из модуля: describe clothes",
-			"title": "Duolingo 「EN」 - Section 4 Unit 43"
-		}
-	},
-	"level": "N4",
-	"words": [
-		"ぴったり",
-		"サイズ",
-		"ハンドバッグ",
-		"ブラウス",
-		"ベルト",
-		"ワイシャツ",
-		"上着",
-		"制服",
-		"半袖",
-		"外し",
-		"帯",
-		"指",
-		"指輪",
-		"洋",
-		"洋服",
-		"浴衣",
-		"着",
-		"着物",
-		"短い",
-		"締め",
-		"締める",
-		"羽目",
-		"背",
-		"背広",
-		"衣",
-		"袖",
-		"輪",
-		"長袖",
-		"革"
-	]
+  "content": {
+    "English": {
+      "description": "Words from section/unit: describe clothes",
+      "title": "Duolingo 「EN」 - Section 4 Unit 43"
+    },
+    "Russian": {
+      "description": "Слова из модуля: describe clothes",
+      "title": "Duolingo 「EN」 - Section 4 Unit 43"
+    }
+  },
+  "level": "N4",
+  "words": [
+    "ぴったり",
+    "サイズ",
+    "ハンドバッグ",
+    "ブラウス",
+    "ベルト",
+    "ワイシャツ",
+    "上着",
+    "制服",
+    "半袖",
+    "外し",
+    "帯",
+    "指",
+    "指輪",
+    "洋",
+    "洋服",
+    "浴衣",
+    "着",
+    "着物",
+    "短い",
+    "締め",
+    "締める",
+    "羽目",
+    "背",
+    "背広",
+    "衣",
+    "袖",
+    "輪",
+    "長袖",
+    "革"
+  ]
 }

@@ -1,42 +1,42 @@
 {
-    "content": {
-        "English": {
-            "description": "Words from section/unit: talk about disasters",
-            "title": "Duolingo 「EN」 - Section 5 Unit 31"
-        },
-        "Russian": {
-            "description": "Слова из модуля: talk about disasters",
-            "title": "Duolingo 「EN」 - Section 5 Unit 31"
-        }
+  "content": {
+    "English": {
+      "description": "Words from section/unit: talk about disasters",
+      "title": "Duolingo 「EN」 - Section 5 Unit 31"
     },
-    "level": "N3",
-    "words": [
-        "ヒロシ",
-        "付く",
-        "伴う",
-        "停電",
-        "友",
-        "地方",
-        "嵐",
-        "広がる",
-        "明かり",
-        "残る",
-        "津",
-        "津波",
-        "洪水",
-        "消える",
-        "消防",
-        "火災",
-        "災害",
-        "犠牲",
-        "発生",
-        "破壊",
-        "署",
-        "蝋燭",
-        "被害",
-        "警報",
-        "避難",
-        "防ぐ",
-        "鳴る"
-    ]
+    "Russian": {
+      "description": "Слова из модуля: talk about disasters",
+      "title": "Duolingo 「EN」 - Section 5 Unit 31"
+    }
+  },
+  "level": "N3",
+  "words": [
+    "ヒロシ",
+    "付く",
+    "伴う",
+    "停電",
+    "友",
+    "地方",
+    "嵐",
+    "広がる",
+    "明かり",
+    "残る",
+    "津",
+    "津波",
+    "洪水",
+    "消える",
+    "消防",
+    "火災",
+    "災害",
+    "犠牲",
+    "発生",
+    "破壊",
+    "署",
+    "蝋燭",
+    "被害",
+    "警報",
+    "避難",
+    "防ぐ",
+    "鳴る"
+  ]
 }

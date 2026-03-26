@@ -1,14 +1,22 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from module: Опишите своих друзей",
-			"title": "Duolingo (RU) - Модуль 1 Раздел 8"
-		},
-		"Russian": {
-			"description": "Слова из модуля: Опишите своих друзей",
-			"title": "Duolingo (RU) - Модуль 1 Раздел 8"
-		}
-	},
-	"level": "N5",
-	"words": ["タナカ", "ヤマグチ", "中", "友達", "山", "明るい", "面白い"]
+  "content": {
+    "English": {
+      "description": "Words from module: Опишите своих друзей",
+      "title": "Duolingo (RU) - Модуль 1 Раздел 8"
+    },
+    "Russian": {
+      "description": "Слова из модуля: Опишите своих друзей",
+      "title": "Duolingo (RU) - Модуль 1 Раздел 8"
+    }
+  },
+  "level": "N5",
+  "words": [
+    "タナカ",
+    "ヤマグチ",
+    "中",
+    "友達",
+    "山",
+    "明るい",
+    "面白い"
+  ]
 }

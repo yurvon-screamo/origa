@@ -1,43 +1,43 @@
 {
-    "content": {
-        "English": {
-            "description": "Words from section/unit: take public transport",
-            "title": "Duolingo 「EN」 - Section 3 Unit 1"
-        },
-        "Russian": {
-            "description": "Слова из модуля: take public transport",
-            "title": "Duolingo 「EN」 - Section 3 Unit 1"
-        }
+  "content": {
+    "English": {
+      "description": "Words from section/unit: take public transport",
+      "title": "Duolingo 「EN」 - Section 3 Unit 1"
     },
-    "level": "N5",
-    "words": [
-        "ゆっくり",
-        "インフォメーション",
-        "エスカレーター",
-        "オレンジ",
-        "ツアー",
-        "モノレール",
-        "一番",
-        "三",
-        "三百",
-        "乗り換える",
-        "乗る",
-        "二",
-        "何処",
-        "八百",
-        "其処",
-        "切符",
-        "南",
-        "呼ぶ",
-        "居る",
-        "彼処",
-        "愚痴",
-        "成る",
-        "払う",
-        "来る",
-        "此処",
-        "版",
-        "磯",
-        "飲み物"
-    ]
+    "Russian": {
+      "description": "Слова из модуля: take public transport",
+      "title": "Duolingo 「EN」 - Section 3 Unit 1"
+    }
+  },
+  "level": "N5",
+  "words": [
+    "ゆっくり",
+    "インフォメーション",
+    "エスカレーター",
+    "オレンジ",
+    "ツアー",
+    "モノレール",
+    "一番",
+    "三",
+    "三百",
+    "乗り換える",
+    "乗る",
+    "二",
+    "何処",
+    "八百",
+    "其処",
+    "切符",
+    "南",
+    "呼ぶ",
+    "居る",
+    "彼処",
+    "愚痴",
+    "成る",
+    "払う",
+    "来る",
+    "此処",
+    "版",
+    "磯",
+    "飲み物"
+  ]
 }

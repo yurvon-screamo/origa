@@ -1,40 +1,40 @@
 {
-    "content": {
-        "English": {
-            "description": "Words from section/unit: make requests",
-            "title": "Duolingo 「EN」 - Section 4 Unit 20"
-        },
-        "Russian": {
-            "description": "Слова из модуля: make requests",
-            "title": "Duolingo 「EN」 - Section 4 Unit 20"
-        }
+  "content": {
+    "English": {
+      "description": "Words from section/unit: make requests",
+      "title": "Duolingo 「EN」 - Section 4 Unit 20"
     },
-    "level": "N4",
-    "words": [
-        "タク",
-        "一昨",
-        "付ける",
-        "其れ",
-        "帰り",
-        "平",
-        "平日",
-        "座",
-        "座り",
-        "成る",
-        "掃除",
-        "日",
-        "書く",
-        "洗濯",
-        "浴びる",
-        "直ぐ",
-        "立つ",
-        "締める",
-        "読む",
-        "週末",
-        "開",
-        "開ける",
-        "電気",
-        "食べる",
-        "飲む"
-    ]
+    "Russian": {
+      "description": "Слова из модуля: make requests",
+      "title": "Duolingo 「EN」 - Section 4 Unit 20"
+    }
+  },
+  "level": "N4",
+  "words": [
+    "タク",
+    "一昨",
+    "付ける",
+    "其れ",
+    "帰り",
+    "平",
+    "平日",
+    "座",
+    "座り",
+    "成る",
+    "掃除",
+    "日",
+    "書く",
+    "洗濯",
+    "浴びる",
+    "直ぐ",
+    "立つ",
+    "締める",
+    "読む",
+    "週末",
+    "開",
+    "開ける",
+    "電気",
+    "食べる",
+    "飲む"
+  ]
 }

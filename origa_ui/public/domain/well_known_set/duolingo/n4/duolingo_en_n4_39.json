@@ -1,41 +1,41 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: express how you feel",
-			"title": "Duolingo 「EN」 - Section 4 Unit 39"
-		},
-		"Russian": {
-			"description": "Слова из модуля: express how you feel",
-			"title": "Duolingo 「EN」 - Section 4 Unit 39"
-		}
-	},
-	"level": "N4",
-	"words": [
-		"から",
-		"どう",
-		"何故",
-		"分かる",
-		"困る",
-		"大変",
-		"嫌",
-		"嬉しい",
-		"怖い",
-		"悲",
-		"悲しい",
-		"愛",
-		"成る",
-		"暇",
-		"楽",
-		"楽しい",
-		"気分",
-		"気持ち",
-		"無い",
-		"疲れ",
-		"美味しい",
-		"親切",
-		"詰まる",
-		"面",
-		"面白い",
-		"駆る"
-	]
+  "content": {
+    "English": {
+      "description": "Words from section/unit: express how you feel",
+      "title": "Duolingo 「EN」 - Section 4 Unit 39"
+    },
+    "Russian": {
+      "description": "Слова из модуля: express how you feel",
+      "title": "Duolingo 「EN」 - Section 4 Unit 39"
+    }
+  },
+  "level": "N4",
+  "words": [
+    "から",
+    "どう",
+    "何故",
+    "分かる",
+    "困る",
+    "大変",
+    "嫌",
+    "嬉しい",
+    "怖い",
+    "悲",
+    "悲しい",
+    "愛",
+    "成る",
+    "暇",
+    "楽",
+    "楽しい",
+    "気分",
+    "気持ち",
+    "無い",
+    "疲れ",
+    "美味しい",
+    "親切",
+    "詰まる",
+    "面",
+    "面白い",
+    "駆る"
+  ]
 }

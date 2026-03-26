@@ -1,39 +1,39 @@
 {
-    "content": {
-        "English": {
-            "description": "Words from section/unit: use past tense verbs",
-            "title": "Duolingo 「EN」 - Section 3 Unit 7"
-        },
-        "Russian": {
-            "description": "Слова из модуля: use past tense verbs",
-            "title": "Duolingo 「EN」 - Section 3 Unit 7"
-        }
+  "content": {
+    "English": {
+      "description": "Words from section/unit: use past tense verbs",
+      "title": "Duolingo 「EN」 - Section 3 Unit 7"
     },
-    "level": "N5",
-    "words": [
-        "すい",
-        "ぞく",
-        "ギンザ",
-        "クレープ",
-        "タイ",
-        "ピーナッツ",
-        "先月",
-        "先週",
-        "分",
-        "初めて",
-        "去年",
-        "成る",
-        "明日",
-        "昨日",
-        "来る",
-        "来週",
-        "歌舞伎",
-        "練習",
-        "行く",
-        "見る",
-        "見付ける",
-        "象",
-        "遊ぶ",
-        "食べる"
-    ]
+    "Russian": {
+      "description": "Слова из модуля: use past tense verbs",
+      "title": "Duolingo 「EN」 - Section 3 Unit 7"
+    }
+  },
+  "level": "N5",
+  "words": [
+    "すい",
+    "ぞく",
+    "ギンザ",
+    "クレープ",
+    "タイ",
+    "ピーナッツ",
+    "先月",
+    "先週",
+    "分",
+    "初めて",
+    "去年",
+    "成る",
+    "明日",
+    "昨日",
+    "来る",
+    "来週",
+    "歌舞伎",
+    "練習",
+    "行く",
+    "見る",
+    "見付ける",
+    "象",
+    "遊ぶ",
+    "食べる"
+  ]
 }

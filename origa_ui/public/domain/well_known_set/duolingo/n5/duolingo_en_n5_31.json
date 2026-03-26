@@ -1,40 +1,40 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: use negative verbs",
-			"title": "Duolingo 「EN」 - Section 2 Unit 22"
-		},
-		"Russian": {
-			"description": "Слова из модуля: use negative verbs",
-			"title": "Duolingo 「EN」 - Section 2 Unit 22"
-		}
-	},
-	"level": "N5",
-	"words": [
-		"ぎゅっ",
-		"しょっぱい",
-		"もっと",
-		"コーラ",
-		"スーパー",
-		"ソース",
-		"ビール",
-		"一緒",
-		"作る",
-		"使う",
-		"卵",
-		"日",
-		"暇",
-		"木曜",
-		"潮",
-		"生",
-		"豆腐",
-		"豚カツ",
-		"豚肉",
-		"醤油",
-		"野菜",
-		"食べる",
-		"飲む",
-		"饂飩",
-		"魚"
-	]
+  "content": {
+    "English": {
+      "description": "Words from section/unit: use negative verbs",
+      "title": "Duolingo 「EN」 - Section 2 Unit 22"
+    },
+    "Russian": {
+      "description": "Слова из модуля: use negative verbs",
+      "title": "Duolingo 「EN」 - Section 2 Unit 22"
+    }
+  },
+  "level": "N5",
+  "words": [
+    "ぎゅっ",
+    "しょっぱい",
+    "もっと",
+    "コーラ",
+    "スーパー",
+    "ソース",
+    "ビール",
+    "一緒",
+    "作る",
+    "使う",
+    "卵",
+    "日",
+    "暇",
+    "木曜",
+    "潮",
+    "生",
+    "豆腐",
+    "豚カツ",
+    "豚肉",
+    "醤油",
+    "野菜",
+    "食べる",
+    "飲む",
+    "饂飩",
+    "魚"
+  ]
 }

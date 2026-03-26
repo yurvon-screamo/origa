@@ -1,34 +1,34 @@
 {
-    "content": {
-        "English": {
-            "description": "Words from section/unit: discuss the law",
-            "title": "Duolingo 「EN」 - Section 5 Unit 26"
-        },
-        "Russian": {
-            "description": "Слова из модуля: discuss the law",
-            "title": "Duolingo 「EN」 - Section 5 Unit 26"
-        }
+  "content": {
+    "English": {
+      "description": "Words from section/unit: discuss the law",
+      "title": "Duolingo 「EN」 - Section 5 Unit 26"
     },
-    "level": "N3",
-    "words": [
-        "モリ",
-        "公平",
-        "刑",
-        "刑務",
-        "判決",
-        "官",
-        "弁護",
-        "擂り",
-        "有罪",
-        "殺人",
-        "無罪",
-        "犯人",
-        "犯罪",
-        "確定",
-        "罪",
-        "裁判",
-        "訴える",
-        "逃げる",
-        "重大"
-    ]
+    "Russian": {
+      "description": "Слова из модуля: discuss the law",
+      "title": "Duolingo 「EN」 - Section 5 Unit 26"
+    }
+  },
+  "level": "N3",
+  "words": [
+    "モリ",
+    "公平",
+    "刑",
+    "刑務",
+    "判決",
+    "官",
+    "弁護",
+    "擂り",
+    "有罪",
+    "殺人",
+    "無罪",
+    "犯人",
+    "犯罪",
+    "確定",
+    "罪",
+    "裁判",
+    "訴える",
+    "逃げる",
+    "重大"
+  ]
 }

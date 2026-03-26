@@ -1,41 +1,41 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: discuss belongings",
-			"title": "Duolingo 「EN」 - Section 4 Unit 34"
-		},
-		"Russian": {
-			"description": "Слова из модуля: discuss belongings",
-			"title": "Duolingo 「EN」 - Section 4 Unit 34"
-		}
-	},
-	"level": "N4",
-	"words": [
-		"きつい",
-		"ゆっくり",
-		"ドア",
-		"冬",
-		"勤",
-		"勤め",
-		"台",
-		"夏",
-		"待つ",
-		"手袋",
-		"持つ",
-		"携帯",
-		"早い",
-		"春",
-		"消し",
-		"灰",
-		"灰色",
-		"秋",
-		"紫",
-		"紫色",
-		"組",
-		"緑",
-		"緑色",
-		"緩い",
-		"足",
-		"靴下"
-	]
+  "content": {
+    "English": {
+      "description": "Words from section/unit: discuss belongings",
+      "title": "Duolingo 「EN」 - Section 4 Unit 34"
+    },
+    "Russian": {
+      "description": "Слова из модуля: discuss belongings",
+      "title": "Duolingo 「EN」 - Section 4 Unit 34"
+    }
+  },
+  "level": "N4",
+  "words": [
+    "きつい",
+    "ゆっくり",
+    "ドア",
+    "冬",
+    "勤",
+    "勤め",
+    "台",
+    "夏",
+    "待つ",
+    "手袋",
+    "持つ",
+    "携帯",
+    "早い",
+    "春",
+    "消し",
+    "灰",
+    "灰色",
+    "秋",
+    "紫",
+    "紫色",
+    "組",
+    "緑",
+    "緑色",
+    "緩い",
+    "足",
+    "靴下"
+  ]
 }

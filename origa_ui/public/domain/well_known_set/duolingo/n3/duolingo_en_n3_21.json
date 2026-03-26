@@ -1,52 +1,52 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: express feelings",
-			"title": "Duolingo 「EN」 - Section 5 Unit 21"
-		},
-		"Russian": {
-			"description": "Слова из модуля: express feelings",
-			"title": "Duolingo 「EN」 - Section 5 Unit 21"
-		}
-	},
-	"level": "N3",
-	"words": [
-		"がっかり",
-		"ときめく",
-		"どきどき",
-		"不安",
-		"互い",
-		"人気",
-		"係",
-		"個人",
-		"其れ",
-		"冗談",
-		"寂",
-		"寂しい",
-		"得",
-		"得る",
-		"微か",
-		"心配",
-		"怒",
-		"怒る",
-		"恋",
-		"恐れる",
-		"恥",
-		"恥ずかしい",
-		"情",
-		"愛情",
-		"漸と",
-		"眠い",
-		"笑い",
-		"精",
-		"精神",
-		"胸",
-		"自信",
-		"落ち着く",
-		"触る",
-		"触れる",
-		"関係",
-		"驚き",
-		"驚く"
-	]
+  "content": {
+    "English": {
+      "description": "Words from section/unit: express feelings",
+      "title": "Duolingo 「EN」 - Section 5 Unit 21"
+    },
+    "Russian": {
+      "description": "Слова из модуля: express feelings",
+      "title": "Duolingo 「EN」 - Section 5 Unit 21"
+    }
+  },
+  "level": "N3",
+  "words": [
+    "がっかり",
+    "ときめく",
+    "どきどき",
+    "不安",
+    "互い",
+    "人気",
+    "係",
+    "個人",
+    "其れ",
+    "冗談",
+    "寂",
+    "寂しい",
+    "得",
+    "得る",
+    "微か",
+    "心配",
+    "怒",
+    "怒る",
+    "恋",
+    "恐れる",
+    "恥",
+    "恥ずかしい",
+    "情",
+    "愛情",
+    "漸と",
+    "眠い",
+    "笑い",
+    "精",
+    "精神",
+    "胸",
+    "自信",
+    "落ち着く",
+    "触る",
+    "触れる",
+    "関係",
+    "驚き",
+    "驚く"
+  ]
 }

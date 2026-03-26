@@ -1,42 +1,42 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: express feelings",
-			"title": "Duolingo 「EN」 - Section 6 Unit 41"
-		},
-		"Russian": {
-			"description": "Слова из модуля: express feelings",
-			"title": "Duolingo 「EN」 - Section 6 Unit 41"
-		}
-	},
-	"level": "N3",
-	"words": [
-		"ほっと",
-		"人物",
-		"保証",
-		"励ます",
-		"印象",
-		"友情",
-		"同情",
-		"告白",
-		"味方",
-		"困難",
-		"失望",
-		"娯楽",
-		"対処",
-		"怖い",
-		"悪い",
-		"愉快",
-		"意地",
-		"意欲",
-		"支える",
-		"敬意",
-		"歓迎",
-		"独りぼっち",
-		"癖",
-		"自慢",
-		"親友",
-		"遣る気",
-		"頑固"
-	]
+  "content": {
+    "English": {
+      "description": "Words from section/unit: express feelings",
+      "title": "Duolingo 「EN」 - Section 6 Unit 41"
+    },
+    "Russian": {
+      "description": "Слова из модуля: express feelings",
+      "title": "Duolingo 「EN」 - Section 6 Unit 41"
+    }
+  },
+  "level": "N3",
+  "words": [
+    "ほっと",
+    "人物",
+    "保証",
+    "励ます",
+    "印象",
+    "友情",
+    "同情",
+    "告白",
+    "味方",
+    "困難",
+    "失望",
+    "娯楽",
+    "対処",
+    "怖い",
+    "悪い",
+    "愉快",
+    "意地",
+    "意欲",
+    "支える",
+    "敬意",
+    "歓迎",
+    "独りぼっち",
+    "癖",
+    "自慢",
+    "親友",
+    "遣る気",
+    "頑固"
+  ]
 }

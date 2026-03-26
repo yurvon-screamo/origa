@@ -1,36 +1,36 @@
 {
-    "content": {
-        "English": {
-            "description": "Words from section/unit: talk about games",
-            "title": "Duolingo 「EN」 - Section 4 Unit 50"
-        },
-        "Russian": {
-            "description": "Слова из модуля: talk about games",
-            "title": "Duolingo 「EN」 - Section 4 Unit 50"
-        }
+  "content": {
+    "English": {
+      "description": "Words from section/unit: talk about games",
+      "title": "Duolingo 「EN」 - Section 4 Unit 50"
     },
-    "level": "N4",
-    "words": [
-        "じゃんけん",
-        "ちょき",
-        "ぽん",
-        "グッド",
-        "ゼルダ",
-        "パー",
-        "ボス",
-        "レベル",
-        "伝説",
-        "初心",
-        "勝ち",
-        "勝つ",
-        "宅",
-        "得",
-        "得意",
-        "最初",
-        "苦",
-        "苦手",
-        "試合",
-        "負",
-        "負ける"
-    ]
+    "Russian": {
+      "description": "Слова из модуля: talk about games",
+      "title": "Duolingo 「EN」 - Section 4 Unit 50"
+    }
+  },
+  "level": "N4",
+  "words": [
+    "じゃんけん",
+    "ちょき",
+    "ぽん",
+    "グッド",
+    "ゼルダ",
+    "パー",
+    "ボス",
+    "レベル",
+    "伝説",
+    "初心",
+    "勝ち",
+    "勝つ",
+    "宅",
+    "得",
+    "得意",
+    "最初",
+    "苦",
+    "苦手",
+    "試合",
+    "負",
+    "負ける"
+  ]
 }

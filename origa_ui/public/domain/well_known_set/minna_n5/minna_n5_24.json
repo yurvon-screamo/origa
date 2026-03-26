@@ -1,38 +1,38 @@
 {
-	"content": {
-		"English": {
-			"description": "Lesson 24 words: giving, introducing.",
-			"title": "Minna no Nihongo N5 Lesson 24"
-		},
-		"Russian": {
-			"description": "Слова урока 24: дарение, знакомство.",
-			"title": "Minna no Nihongo N5 Урок 24"
-		}
-	},
-	"level": "N5",
-	"words": [
-		"ステー",
-		"ホーム",
-		"人",
-		"他",
-		"全部",
-		"呉れる",
-		"婆",
-		"引っ越し",
-		"成る",
-		"日",
-		"来る",
-		"案内",
-		"母",
-		"準備",
-		"爺",
-		"直す",
-		"紹介",
-		"自分",
-		"菓子",
-		"行く",
-		"説明",
-		"送る",
-		"連れる"
-	]
+  "content": {
+    "English": {
+      "description": "Lesson 24 words: giving, introducing.",
+      "title": "Minna no Nihongo N5 Lesson 24"
+    },
+    "Russian": {
+      "description": "Слова урока 24: дарение, знакомство.",
+      "title": "Minna no Nihongo N5 Урок 24"
+    }
+  },
+  "level": "N5",
+  "words": [
+    "ステー",
+    "ホーム",
+    "人",
+    "他",
+    "全部",
+    "呉れる",
+    "婆",
+    "引っ越し",
+    "成る",
+    "日",
+    "来る",
+    "案内",
+    "母",
+    "準備",
+    "爺",
+    "直す",
+    "紹介",
+    "自分",
+    "菓子",
+    "行く",
+    "説明",
+    "送る",
+    "連れる"
+  ]
 }

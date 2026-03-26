@@ -1,45 +1,45 @@
 {
-    "content": {
-        "English": {
-            "description": "Words from section/unit: talk about work",
-            "title": "Duolingo 「EN」 - Section 6 Unit 20"
-        },
-        "Russian": {
-            "description": "Слова из модуля: talk about work",
-            "title": "Duolingo 「EN」 - Section 6 Unit 20"
-        }
+  "content": {
+    "English": {
+      "description": "Words from section/unit: talk about work",
+      "title": "Duolingo 「EN」 - Section 6 Unit 20"
     },
-    "level": "N3",
-    "words": [
-        "一言",
-        "予告",
-        "使用",
-        "内容",
-        "割",
-        "報告",
-        "増やす",
-        "寄付",
-        "導べ",
-        "指導",
-        "早速",
-        "更に",
-        "最低",
-        "条",
-        "条件",
-        "満たす",
-        "管理",
-        "職場",
-        "解雇",
-        "訪問",
-        "話題",
-        "警告",
-        "費用",
-        "賞",
-        "返信",
-        "選択",
-        "雇",
-        "雇う",
-        "雇用",
-        "首"
-    ]
+    "Russian": {
+      "description": "Слова из модуля: talk about work",
+      "title": "Duolingo 「EN」 - Section 6 Unit 20"
+    }
+  },
+  "level": "N3",
+  "words": [
+    "一言",
+    "予告",
+    "使用",
+    "内容",
+    "割",
+    "報告",
+    "増やす",
+    "寄付",
+    "導べ",
+    "指導",
+    "早速",
+    "更に",
+    "最低",
+    "条",
+    "条件",
+    "満たす",
+    "管理",
+    "職場",
+    "解雇",
+    "訪問",
+    "話題",
+    "警告",
+    "費用",
+    "賞",
+    "返信",
+    "選択",
+    "雇",
+    "雇う",
+    "雇用",
+    "首"
+  ]
 }

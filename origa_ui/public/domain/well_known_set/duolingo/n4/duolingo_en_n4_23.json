@@ -1,37 +1,37 @@
 {
-    "content": {
-        "English": {
-            "description": "Words from section/unit: take public transit",
-            "title": "Duolingo 「EN」 - Section 4 Unit 23"
-        },
-        "Russian": {
-            "description": "Слова из модуля: take public transit",
-            "title": "Duolingo 「EN」 - Section 4 Unit 23"
-        }
+  "content": {
+    "English": {
+      "description": "Words from section/unit: take public transit",
+      "title": "Duolingo 「EN」 - Section 4 Unit 23"
     },
-    "level": "N4",
-    "words": [
-        "乗り",
-        "使い",
-        "図",
-        "地下",
-        "地図",
-        "掛かる",
-        "早い",
-        "機",
-        "歩く",
-        "無い",
-        "空港",
-        "自転",
-        "車",
-        "近",
-        "近い",
-        "近く",
-        "速",
-        "遅い",
-        "遠い",
-        "電車",
-        "飛行",
-        "駅"
-    ]
+    "Russian": {
+      "description": "Слова из модуля: take public transit",
+      "title": "Duolingo 「EN」 - Section 4 Unit 23"
+    }
+  },
+  "level": "N4",
+  "words": [
+    "乗り",
+    "使い",
+    "図",
+    "地下",
+    "地図",
+    "掛かる",
+    "早い",
+    "機",
+    "歩く",
+    "無い",
+    "空港",
+    "自転",
+    "車",
+    "近",
+    "近い",
+    "近く",
+    "速",
+    "遅い",
+    "遠い",
+    "電車",
+    "飛行",
+    "駅"
+  ]
 }

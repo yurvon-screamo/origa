@@ -1,41 +1,41 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: discuss classes",
-			"title": "Duolingo 「EN」 - Section 2 Unit 23"
-		},
-		"Russian": {
-			"description": "Слова из модуля: discuss classes",
-			"title": "Duolingo 「EN」 - Section 2 Unit 23"
-		}
-	},
-	"level": "N5",
-	"words": [
-		"シュウ",
-		"スペイン",
-		"スミス",
-		"テスト",
-		"プロジェクト",
-		"ヤマダ",
-		"七",
-		"何曜",
-		"先生",
-		"六",
-		"居る",
-		"授業",
-		"教室",
-		"日",
-		"早い",
-		"有る",
-		"此の",
-		"水曜",
-		"沢山",
-		"火曜",
-		"終わる",
-		"締め切る",
-		"聞く",
-		"誰",
-		"質問",
-		"面白い"
-	]
+  "content": {
+    "English": {
+      "description": "Words from section/unit: discuss classes",
+      "title": "Duolingo 「EN」 - Section 2 Unit 23"
+    },
+    "Russian": {
+      "description": "Слова из модуля: discuss classes",
+      "title": "Duolingo 「EN」 - Section 2 Unit 23"
+    }
+  },
+  "level": "N5",
+  "words": [
+    "シュウ",
+    "スペイン",
+    "スミス",
+    "テスト",
+    "プロジェクト",
+    "ヤマダ",
+    "七",
+    "何曜",
+    "先生",
+    "六",
+    "居る",
+    "授業",
+    "教室",
+    "日",
+    "早い",
+    "有る",
+    "此の",
+    "水曜",
+    "沢山",
+    "火曜",
+    "終わる",
+    "締め切る",
+    "聞く",
+    "誰",
+    "質問",
+    "面白い"
+  ]
 }

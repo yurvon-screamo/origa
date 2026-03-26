@@ -1,43 +1,43 @@
 {
-    "content": {
-        "English": {
-            "description": "Words from section/unit: talk about class",
-            "title": "Duolingo 「EN」 - Section 4 Unit 45"
-        },
-        "Russian": {
-            "description": "Слова из модуля: talk about class",
-            "title": "Duolingo 「EN」 - Section 4 Unit 45"
-        }
+  "content": {
+    "English": {
+      "description": "Words from section/unit: talk about class",
+      "title": "Duolingo 「EN」 - Section 4 Unit 45"
     },
-    "level": "N4",
-    "words": [
-        "カレンダー",
-        "コピー",
-        "ノート",
-        "ページ",
-        "並み",
-        "何",
-        "作文",
-        "借りる",
-        "取る",
-        "居る",
-        "成る",
-        "文章",
-        "書く",
-        "有る",
-        "来る",
-        "止める",
-        "歩く",
-        "渡し",
-        "渡す",
-        "行く",
-        "見る",
-        "買う",
-        "貸し",
-        "貸す",
-        "返し",
-        "返す",
-        "遣る",
-        "雑誌"
-    ]
+    "Russian": {
+      "description": "Слова из модуля: talk about class",
+      "title": "Duolingo 「EN」 - Section 4 Unit 45"
+    }
+  },
+  "level": "N4",
+  "words": [
+    "カレンダー",
+    "コピー",
+    "ノート",
+    "ページ",
+    "並み",
+    "何",
+    "作文",
+    "借りる",
+    "取る",
+    "居る",
+    "成る",
+    "文章",
+    "書く",
+    "有る",
+    "来る",
+    "止める",
+    "歩く",
+    "渡し",
+    "渡す",
+    "行く",
+    "見る",
+    "買う",
+    "貸し",
+    "貸す",
+    "返し",
+    "返す",
+    "遣る",
+    "雑誌"
+  ]
 }

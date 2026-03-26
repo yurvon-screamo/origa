@@ -1,30 +1,30 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: use the past tense",
-			"title": "Duolingo 「EN」 - Section 4 Unit 48"
-		},
-		"Russian": {
-			"description": "Слова из модуля: use the past tense",
-			"title": "Duolingo 「EN」 - Section 4 Unit 48"
-		}
-	},
-	"level": "N4",
-	"words": [
-		"休む",
-		"始まる",
-		"居る",
-		"成る",
-		"書く",
-		"有る",
-		"無い",
-		"無くす",
-		"立つ",
-		"起きる",
-		"返る",
-		"遊ぶ",
-		"過ぎる",
-		"選",
-		"選び"
-	]
+  "content": {
+    "English": {
+      "description": "Words from section/unit: use the past tense",
+      "title": "Duolingo 「EN」 - Section 4 Unit 48"
+    },
+    "Russian": {
+      "description": "Слова из модуля: use the past tense",
+      "title": "Duolingo 「EN」 - Section 4 Unit 48"
+    }
+  },
+  "level": "N4",
+  "words": [
+    "休む",
+    "始まる",
+    "居る",
+    "成る",
+    "書く",
+    "有る",
+    "無い",
+    "無くす",
+    "立つ",
+    "起きる",
+    "返る",
+    "遊ぶ",
+    "過ぎる",
+    "選",
+    "選び"
+  ]
 }

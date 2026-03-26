@@ -1,44 +1,44 @@
 {
-    "content": {
-        "English": {
-            "description": "Words from section/unit: discuss a family visit",
-            "title": "Duolingo 「EN」 - Section 2 Unit 20"
-        },
-        "Russian": {
-            "description": "Слова из модуля: discuss a family visit",
-            "title": "Duolingo 「EN」 - Section 2 Unit 20"
-        }
+  "content": {
+    "English": {
+      "description": "Words from section/unit: discuss a family visit",
+      "title": "Duolingo 「EN」 - Section 2 Unit 20"
     },
-    "level": "N5",
-    "words": [
-        "ナゴヤ",
-        "ロビー",
-        "乗る",
-        "会う",
-        "何",
-        "便利",
-        "咳",
-        "密か",
-        "寿司",
-        "庭",
-        "待つ",
-        "料理",
-        "方",
-        "日",
-        "日本",
-        "時",
-        "月曜",
-        "来る",
-        "染み",
-        "母",
-        "漁師",
-        "父",
-        "白",
-        "短い",
-        "箋",
-        "芯",
-        "見る",
-        "観光",
-        "金曜"
-    ]
+    "Russian": {
+      "description": "Слова из модуля: discuss a family visit",
+      "title": "Duolingo 「EN」 - Section 2 Unit 20"
+    }
+  },
+  "level": "N5",
+  "words": [
+    "ナゴヤ",
+    "ロビー",
+    "乗る",
+    "会う",
+    "何",
+    "便利",
+    "咳",
+    "密か",
+    "寿司",
+    "庭",
+    "待つ",
+    "料理",
+    "方",
+    "日",
+    "日本",
+    "時",
+    "月曜",
+    "来る",
+    "染み",
+    "母",
+    "漁師",
+    "父",
+    "白",
+    "短い",
+    "箋",
+    "芯",
+    "見る",
+    "観光",
+    "金曜"
+  ]
 }

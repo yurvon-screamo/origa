@@ -1,43 +1,43 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: talk about classes at university",
-			"title": "Duolingo 「EN」 - Section 4 Unit 8"
-		},
-		"Russian": {
-			"description": "Слова из модуля: talk about classes at university",
-			"title": "Duolingo 「EN」 - Section 4 Unit 8"
-		}
-	},
-	"level": "N4",
-	"words": [
-		"けれど",
-		"アワー",
-		"オフィス",
-		"グループ",
-		"スケジュール",
-		"センター",
-		"プログラミング",
-		"メディア",
-		"ヨーロッパ",
-		"一",
-		"何",
-		"劇",
-		"十",
-		"受ける",
-		"学期",
-		"所為",
-		"教科",
-		"日本",
-		"是非",
-		"此の",
-		"癩",
-		"竜",
-		"終わる",
-		"経済",
-		"語",
-		"週",
-		"選ぶ",
-		"顎"
-	]
+  "content": {
+    "English": {
+      "description": "Words from section/unit: talk about classes at university",
+      "title": "Duolingo 「EN」 - Section 4 Unit 8"
+    },
+    "Russian": {
+      "description": "Слова из модуля: talk about classes at university",
+      "title": "Duolingo 「EN」 - Section 4 Unit 8"
+    }
+  },
+  "level": "N4",
+  "words": [
+    "けれど",
+    "アワー",
+    "オフィス",
+    "グループ",
+    "スケジュール",
+    "センター",
+    "プログラミング",
+    "メディア",
+    "ヨーロッパ",
+    "一",
+    "何",
+    "劇",
+    "十",
+    "受ける",
+    "学期",
+    "所為",
+    "教科",
+    "日本",
+    "是非",
+    "此の",
+    "癩",
+    "竜",
+    "終わる",
+    "経済",
+    "語",
+    "週",
+    "選ぶ",
+    "顎"
+  ]
 }

@@ -1,48 +1,48 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: get emergency help",
-			"title": "Duolingo 「EN」 - Section 5 Unit 5"
-		},
-		"Russian": {
-			"description": "Слова из модуля: get emergency help",
-			"title": "Duolingo 「EN」 - Section 5 Unit 5"
-		}
-	},
-	"level": "N3",
-	"words": [
-		"シン",
-		"不明",
-		"事件",
-		"事故",
-		"交通",
-		"件",
-		"倒れる",
-		"助",
-		"助ける",
-		"危険",
-		"原因",
-		"地震",
-		"地面",
-		"場合",
-		"床",
-		"必死",
-		"怪我",
-		"態",
-		"打",
-		"打つ",
-		"救急",
-		"明らか",
-		"火事",
-		"突然",
-		"落ち",
-		"落ちる",
-		"落とす",
-		"警察",
-		"起こし",
-		"起こり",
-		"逮捕",
-		"険",
-		"非常"
-	]
+  "content": {
+    "English": {
+      "description": "Words from section/unit: get emergency help",
+      "title": "Duolingo 「EN」 - Section 5 Unit 5"
+    },
+    "Russian": {
+      "description": "Слова из модуля: get emergency help",
+      "title": "Duolingo 「EN」 - Section 5 Unit 5"
+    }
+  },
+  "level": "N3",
+  "words": [
+    "シン",
+    "不明",
+    "事件",
+    "事故",
+    "交通",
+    "件",
+    "倒れる",
+    "助",
+    "助ける",
+    "危険",
+    "原因",
+    "地震",
+    "地面",
+    "場合",
+    "床",
+    "必死",
+    "怪我",
+    "態",
+    "打",
+    "打つ",
+    "救急",
+    "明らか",
+    "火事",
+    "突然",
+    "落ち",
+    "落ちる",
+    "落とす",
+    "警察",
+    "起こし",
+    "起こり",
+    "逮捕",
+    "険",
+    "非常"
+  ]
 }

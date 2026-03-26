@@ -1,40 +1,40 @@
 {
-	"content": {
-		"English": {
-			"description": "Vocabulary from lesson 15 of N5 level by Migii.",
-			"title": "Migii N5 Lesson 15"
-		},
-		"Russian": {
-			"description": "Словарный запас из урока 15 уровня N5 от Migii.",
-			"title": "Migii N5 Урок 15"
-		}
-	},
-	"level": "N5",
-	"words": [
-		"キッチン",
-		"ダイニング",
-		"トイレ",
-		"ビル",
-		"ベッド",
-		"マンション",
-		"リビング",
-		"住む",
-		"台所",
-		"家",
-		"家具",
-		"寝室",
-		"布団",
-		"庭",
-		"建物",
-		"本棚",
-		"枕",
-		"洗面",
-		"玄関",
-		"窓",
-		"置く",
-		"部屋",
-		"鍵",
-		"鏡",
-		"風呂"
-	]
+  "content": {
+    "English": {
+      "description": "Vocabulary from lesson 15 of N5 level by Migii.",
+      "title": "Migii N5 Lesson 15"
+    },
+    "Russian": {
+      "description": "Словарный запас из урока 15 уровня N5 от Migii.",
+      "title": "Migii N5 Урок 15"
+    }
+  },
+  "level": "N5",
+  "words": [
+    "キッチン",
+    "ダイニング",
+    "トイレ",
+    "ビル",
+    "ベッド",
+    "マンション",
+    "リビング",
+    "住む",
+    "台所",
+    "家",
+    "家具",
+    "寝室",
+    "布団",
+    "庭",
+    "建物",
+    "本棚",
+    "枕",
+    "洗面",
+    "玄関",
+    "窓",
+    "置く",
+    "部屋",
+    "鍵",
+    "鏡",
+    "風呂"
+  ]
 }

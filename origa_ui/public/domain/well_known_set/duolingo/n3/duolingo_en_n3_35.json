@@ -1,39 +1,39 @@
 {
-    "content": {
-        "English": {
-            "description": "Words from section/unit: schedule plans",
-            "title": "Duolingo 「EN」 - Section 5 Unit 35"
-        },
-        "Russian": {
-            "description": "Слова из модуля: schedule plans",
-            "title": "Duolingo 「EN」 - Section 5 Unit 35"
-        }
+  "content": {
+    "English": {
+      "description": "Words from section/unit: schedule plans",
+      "title": "Duolingo 「EN」 - Section 5 Unit 35"
     },
-    "level": "N3",
-    "words": [
-        "キャンセル",
-        "ヒロシ",
-        "世話",
-        "再び",
-        "博物",
-        "去る",
-        "将",
-        "将来",
-        "念",
-        "急ぎ",
-        "持つ",
-        "日付け",
-        "時期",
-        "未",
-        "未来",
-        "次回",
-        "留守",
-        "確認",
-        "蕩々",
-        "行く",
-        "訪ねる",
-        "訪れる",
-        "連れる",
-        "都合"
-    ]
+    "Russian": {
+      "description": "Слова из модуля: schedule plans",
+      "title": "Duolingo 「EN」 - Section 5 Unit 35"
+    }
+  },
+  "level": "N3",
+  "words": [
+    "キャンセル",
+    "ヒロシ",
+    "世話",
+    "再び",
+    "博物",
+    "去る",
+    "将",
+    "将来",
+    "念",
+    "急ぎ",
+    "持つ",
+    "日付け",
+    "時期",
+    "未",
+    "未来",
+    "次回",
+    "留守",
+    "確認",
+    "蕩々",
+    "行く",
+    "訪ねる",
+    "訪れる",
+    "連れる",
+    "都合"
+  ]
 }

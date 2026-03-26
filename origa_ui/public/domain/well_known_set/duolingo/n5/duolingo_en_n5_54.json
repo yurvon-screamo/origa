@@ -1,41 +1,41 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: describe what you don't want to do",
-			"title": "Duolingo 「EN」 - Section 3 Unit 15"
-		},
-		"Russian": {
-			"description": "Слова из модуля: describe what you don't want to do",
-			"title": "Duolingo 「EN」 - Section 3 Unit 15"
-		}
-	},
-	"level": "N5",
-	"words": [
-		"もう",
-		"ゆっくり",
-		"アラーム",
-		"キャンセル",
-		"バナナ",
-		"ブランケット",
-		"リモコン",
-		"今",
-		"仕様",
-		"会う",
-		"出る",
-		"切れ",
-		"外",
-		"寝る",
-		"少し",
-		"後",
-		"成る",
-		"未だ",
-		"無い",
-		"焼く",
-		"痛い",
-		"眠い",
-		"置く",
-		"行く",
-		"遊ぶ",
-		"食べる"
-	]
+  "content": {
+    "English": {
+      "description": "Words from section/unit: describe what you don't want to do",
+      "title": "Duolingo 「EN」 - Section 3 Unit 15"
+    },
+    "Russian": {
+      "description": "Слова из модуля: describe what you don't want to do",
+      "title": "Duolingo 「EN」 - Section 3 Unit 15"
+    }
+  },
+  "level": "N5",
+  "words": [
+    "もう",
+    "ゆっくり",
+    "アラーム",
+    "キャンセル",
+    "バナナ",
+    "ブランケット",
+    "リモコン",
+    "今",
+    "仕様",
+    "会う",
+    "出る",
+    "切れ",
+    "外",
+    "寝る",
+    "少し",
+    "後",
+    "成る",
+    "未だ",
+    "無い",
+    "焼く",
+    "痛い",
+    "眠い",
+    "置く",
+    "行く",
+    "遊ぶ",
+    "食べる"
+  ]
 }

@@ -1,43 +1,43 @@
 {
-    "content": {
-        "English": {
-            "description": "Words from section/unit: talk about weather",
-            "title": "Duolingo 「EN」 - Section 4 Unit 33"
-        },
-        "Russian": {
-            "description": "Слова из модуля: talk about weather",
-            "title": "Duolingo 「EN」 - Section 4 Unit 33"
-        }
+  "content": {
+    "English": {
+      "description": "Words from section/unit: talk about weather",
+      "title": "Duolingo 「EN」 - Section 4 Unit 33"
     },
-    "level": "N4",
-    "words": [
-        "ススム",
-        "ヒロシ",
-        "今夜",
-        "何",
-        "傘",
-        "其の",
-        "夜",
-        "寒",
-        "寒い",
-        "差",
-        "差し",
-        "広い",
-        "彼方",
-        "方",
-        "暑い",
-        "暖",
-        "曲",
-        "曲がり",
-        "次",
-        "此方",
-        "涼",
-        "涼しい",
-        "温かい",
-        "然し",
-        "狭い",
-        "真っ直ぐ",
-        "角",
-        "進む"
-    ]
+    "Russian": {
+      "description": "Слова из модуля: talk about weather",
+      "title": "Duolingo 「EN」 - Section 4 Unit 33"
+    }
+  },
+  "level": "N4",
+  "words": [
+    "ススム",
+    "ヒロシ",
+    "今夜",
+    "何",
+    "傘",
+    "其の",
+    "夜",
+    "寒",
+    "寒い",
+    "差",
+    "差し",
+    "広い",
+    "彼方",
+    "方",
+    "暑い",
+    "暖",
+    "曲",
+    "曲がり",
+    "次",
+    "此方",
+    "涼",
+    "涼しい",
+    "温かい",
+    "然し",
+    "狭い",
+    "真っ直ぐ",
+    "角",
+    "進む"
+  ]
 }

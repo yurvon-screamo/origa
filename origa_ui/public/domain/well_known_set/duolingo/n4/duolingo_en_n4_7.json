@@ -1,43 +1,43 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: connect two adjectives",
-			"title": "Duolingo 「EN」 - Section 4 Unit 7"
-		},
-		"Russian": {
-			"description": "Слова из модуля: connect two adjectives",
-			"title": "Duolingo 「EN」 - Section 4 Unit 7"
-		}
-	},
-	"level": "N4",
-	"words": [
-		"そう",
-		"サイト",
-		"シェフ",
-		"チェック",
-		"ブラジル",
-		"ヘルシー",
-		"ベジタリアン",
-		"マンション",
-		"人気",
-		"入れる",
-		"四",
-		"場所",
-		"奇麗",
-		"少し",
-		"屋上",
-		"役",
-		"御洒落",
-		"成る",
-		"料理",
-		"新鮮",
-		"日本",
-		"最高",
-		"有る",
-		"素敵",
-		"調べる",
-		"賑やか",
-		"込む",
-		"静か"
-	]
+  "content": {
+    "English": {
+      "description": "Words from section/unit: connect two adjectives",
+      "title": "Duolingo 「EN」 - Section 4 Unit 7"
+    },
+    "Russian": {
+      "description": "Слова из модуля: connect two adjectives",
+      "title": "Duolingo 「EN」 - Section 4 Unit 7"
+    }
+  },
+  "level": "N4",
+  "words": [
+    "そう",
+    "サイト",
+    "シェフ",
+    "チェック",
+    "ブラジル",
+    "ヘルシー",
+    "ベジタリアン",
+    "マンション",
+    "人気",
+    "入れる",
+    "四",
+    "場所",
+    "奇麗",
+    "少し",
+    "屋上",
+    "役",
+    "御洒落",
+    "成る",
+    "料理",
+    "新鮮",
+    "日本",
+    "最高",
+    "有る",
+    "素敵",
+    "調べる",
+    "賑やか",
+    "込む",
+    "静か"
+  ]
 }

@@ -1,31 +1,31 @@
 {
-	"content": {
-		"English": {
-			"description": "Words from section/unit: talk about your family",
-			"title": "Duolingo 「EN」 - Section 4 Unit 16"
-		},
-		"Russian": {
-			"description": "Слова из модуля: talk about your family",
-			"title": "Duolingo 「EN」 - Section 4 Unit 16"
-		}
-	},
-	"level": "N4",
-	"words": [
-		"両親",
-		"供",
-		"兄",
-		"兄弟",
-		"女",
-		"妹",
-		"姉",
-		"姉妹",
-		"子供",
-		"家族",
-		"弟",
-		"彼",
-		"彼女",
-		"族",
-		"誰",
-		"貴方"
-	]
+  "content": {
+    "English": {
+      "description": "Words from section/unit: talk about your family",
+      "title": "Duolingo 「EN」 - Section 4 Unit 16"
+    },
+    "Russian": {
+      "description": "Слова из модуля: talk about your family",
+      "title": "Duolingo 「EN」 - Section 4 Unit 16"
+    }
+  },
+  "level": "N4",
+  "words": [
+    "両親",
+    "供",
+    "兄",
+    "兄弟",
+    "女",
+    "妹",
+    "姉",
+    "姉妹",
+    "子供",
+    "家族",
+    "弟",
+    "彼",
+    "彼女",
+    "族",
+    "誰",
+    "貴方"
+  ]
 }
