@@ -219,50 +219,62 @@ pub fn Onboarding() -> impl IntoView {
                             </Show>
                         </div>
 
-                        <div class=move || {
-                            if state.get().is_first_step() {
-                                "onboarding-actions mt-8 flex justify-end"
-                            } else {
-                                "onboarding-actions mt-8 flex justify-between"
-                            }
-                        }>
-                            <Show when=move || !state.get().is_first_step()>
-                                <Button
-                                    variant=ButtonVariant::Ghost
-                                    on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
-                                        on_prev.run(());
-                                    })
-                                    test_id="onboarding-prev"
-                                >
-                                    "Назад"
-                                </Button>
-                            </Show>
+                        <div class="onboarding-actions mt-8 flex justify-between">
+                            <div>
+                                <Show when=move || state.get().is_first_step()>
+                                    <Button
+                                        variant=ButtonVariant::Ghost
+                                        on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
+                                            state.update(|s| {
+                                                s.current_step = OnboardingStep::Summary;
+                                            });
+                                        })
+                                        test_id="onboarding-skip"
+                                    >
+                                        "Пропустить"
+                                    </Button>
+                                </Show>
 
-                            <Show when=move || !state.get().is_last_step()>
-                                <Button
-                                    variant=ButtonVariant::Olive
-                                    on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
-                                        on_next.run(());
-                                    })
-                                    disabled=Signal::derive(move || !can_proceed.get())
-                                    test_id="onboarding-next"
-                                >
-                                    "Далее"
-                                </Button>
-                            </Show>
+                                <Show when=move || !state.get().is_first_step() && !state.get().is_last_step()>
+                                    <Button
+                                        variant=ButtonVariant::Ghost
+                                        on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
+                                            on_prev.run(());
+                                        })
+                                        test_id="onboarding-prev"
+                                    >
+                                        "Назад"
+                                    </Button>
+                                </Show>
+                            </div>
 
-                            <Show when=move || state.get().is_last_step()>
-                                <Button
-                                    variant=ButtonVariant::Olive
-                                    on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
-                                        on_start_import.run(());
-                                    })
-                                    disabled=Signal::derive(move || is_importing.get() || !can_proceed.get())
-                                    test_id="onboarding-import"
-                                >
-                                    {move || if is_importing.get() { "Импорт..." } else { "Начать импорт" }}
-                                </Button>
-                            </Show>
+                            <div>
+                                <Show when=move || !state.get().is_last_step()>
+                                    <Button
+                                        variant=ButtonVariant::Olive
+                                        on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
+                                            on_next.run(());
+                                        })
+                                        disabled=Signal::derive(move || !can_proceed.get())
+                                        test_id="onboarding-next"
+                                    >
+                                        "Далее"
+                                    </Button>
+                                </Show>
+
+                                <Show when=move || state.get().is_last_step()>
+                                    <Button
+                                        variant=ButtonVariant::Olive
+                                        on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
+                                            on_start_import.run(());
+                                        })
+                                        disabled=Signal::derive(move || is_importing.get() || !can_proceed.get())
+                                        test_id="onboarding-import"
+                                    >
+                                        {move || if is_importing.get() { "Импорт..." } else { "Начать импорт" }}
+                                    </Button>
+                                </Show>
+                            </div>
                         </div>
                     </div>
                 </Show>

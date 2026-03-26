@@ -41,7 +41,12 @@ pub fn build_unit_items(
 pub fn format_import_info(module_num: Option<usize>, unit_num: Option<usize>) -> Option<String> {
     match (module_num, unit_num) {
         (Some(1), Some(u)) => Some(format!("Будут импортированы: Модуль 1 Разделы 1-{}", u)),
-        (Some(m), Some(u)) if m > 1 => Some(format!("Будут импортированы: Модули 1-{} (все) + Модуль {} Разделы 1-{}", m - 1, m, u)),
+        (Some(m), Some(u)) if m > 1 => Some(format!(
+            "Будут импортированы: Модули 1-{} (все) + Модуль {} Разделы 1-{}",
+            m - 1,
+            m,
+            u
+        )),
         (Some(m), None) => Some(format!("Выберите раздел в Модуле {}", m)),
         _ => None,
     }
