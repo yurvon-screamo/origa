@@ -46,13 +46,28 @@ pub fn format_import_info(module_num: Option<usize>, unit_num: Option<usize>) ->
     }
 }
 
-pub fn collect_units_to_import(module: &DuolingoModule, unit_limit: usize) -> Vec<String> {
-    module
-        .units
-        .iter()
-        .filter(|unit| unit.unit_number <= unit_limit)
-        .map(|unit| unit.id.clone())
-        .collect()
+pub fn collect_all_units_to_import(
+    modules: &[DuolingoModule],
+    selected_module: usize,
+    unit_limit: usize,
+) -> Vec<String> {
+    let mut ids = Vec::new();
+
+    for module in modules {
+        if module.module_number < selected_module {
+            for unit in &module.units {
+                ids.push(unit.id.clone());
+            }
+        } else if module.module_number == selected_module {
+            for unit in &module.units {
+                if unit.unit_number <= unit_limit {
+                    ids.push(unit.id.clone());
+                }
+            }
+        }
+    }
+
+    ids
 }
 
 pub fn is_unit_in_modules(unit_id: &str, modules: &[DuolingoModule]) -> bool {

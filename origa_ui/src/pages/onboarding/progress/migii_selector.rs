@@ -7,7 +7,8 @@ use origa::domain::JapaneseLevel;
 use super::super::onboarding_state::OnboardingState;
 use super::app_type::level_to_str;
 use super::migii_helpers::{
-    build_lesson_items, build_level_items, collect_lessons_to_import, is_lesson_in_levels,
+    build_lesson_items, build_level_items, collect_lessons_to_import_all_levels,
+    is_lesson_in_levels,
 };
 use super::types::MigiiLesson;
 
@@ -72,12 +73,15 @@ pub fn MigiiProgressSelector(
         let lessons_by_snapshot = lessons_by_level.get_untracked();
         let sets_snapshot: Vec<_> = available_sets.get_untracked();
 
-        if let (Some(lvl), Some(lesson_n)) = (level, lesson_num)
-            && let Some(lessons) = lessons_by_snapshot.get(&lvl)
-        {
-            web_sys::console::log_1(&format!("[Migii] Processing level {:?}, lesson {}", lvl, lesson_n).into());
-            let ids_to_import = collect_lessons_to_import(lessons, lesson_n);
-            web_sys::console::log_1(&format!("[Migii] ids_to_import count: {}", ids_to_import.len()).into());
+        if let (Some(lvl), Some(lesson_n)) = (level, lesson_num) {
+            web_sys::console::log_1(
+                &format!("[Migii] Processing level {:?}, lesson {}", lvl, lesson_n).into(),
+            );
+            let ids_to_import =
+                collect_lessons_to_import_all_levels(&lessons_by_snapshot, lvl, lesson_n);
+            web_sys::console::log_1(
+                &format!("[Migii] ids_to_import count: {}", ids_to_import.len()).into(),
+            );
 
             state.update(|s| {
                 web_sys::console::log_1(&"[Migii] state.update START".into());

@@ -751,12 +751,14 @@ input[type="submit"],
 	display: flex;
 	align-items: center;
 	gap: 0;
+	width: 100%;
 }
 
 .stepper-step {
 	display: flex;
 	align-items: center;
 	gap: 8px;
+	flex-shrink: 0;
 }
 
 .stepper-number {
@@ -797,10 +799,9 @@ input[type="submit"],
 }
 
 .stepper-line {
-	width: 60px;
+	flex-grow: 1;
 	height: 1px;
 	background: var(--border-dark);
-	margin: 0 16px;
 	opacity: 0.3;
 }
 
