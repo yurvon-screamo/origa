@@ -1,7 +1,7 @@
 # =============================================================================
 # Qlty Configuration for Origa Project
 # =============================================================================
-# Tech Stack: Rust workspace (origa, utils, tokenizer) + Leptos/WASM (origa_ui) + 
+# Tech Stack: Rust workspace (origa, utils, tokenizer) + Leptos/WASM (origa_ui) +
 #             Tauri v2 desktop (tauri) + Playwright E2E (end2end)
 # =============================================================================
 
@@ -14,43 +14,43 @@ exclude_patterns = [
     # ----- Rust Build Artifacts -----
     "**/target/**",
     "**/Cargo.lock",
-    
+
     # ----- WASM / Leptos -----
     "**/dist/**",
     "**/dist-gen/**",
     "**/pkg/**",
     "**/*.wasm",
     "**/*.wat",
-    
+
     # ----- Tauri -----
     "**/src-tauri/target/**",
     "**/*.exe",
-    
+
     # ----- Node / TypeScript -----
     "**/node_modules/**",
     "**/.yarn/**",
     "**/*.min.*",
     "**/*_min.*",
     "*-min.*",
-    
+
     # ----- Generated Files -----
     "**/generated/**",
     "**/*.generated.rs",
     "**/*.generated.ts",
     "**/*.d.ts",
-    
+
     # ----- E2E Test Artifacts -----
     "**/end2end/test-results/**",
     "**/end2end/playwright-report/**",
     "**/end2end/.playwright/**",
-    
+
     # ----- IDE / Editor -----
     "**/.vscode/**",
     "**/.idea/**",
-    
+
     # ----- Version Control -----
     "**/.git/**",
-    
+
     # ----- Misc -----
     "**/assets/**",
     "**/cache/**",
@@ -67,12 +67,12 @@ test_patterns = [
     "**/*_test.rs",
     "**/*_tests.rs",
     "**/src/**/tests/**",
-    
+
     # ----- Playwright E2E -----
     "**/end2end/**/*.spec.ts",
     "**/end2end/**/*.test.ts",
     "**/e2e/**/*.spec.ts",
-    
+
     # ----- General Test Patterns -----
     "**/test/**",
     "**/spec/**",
@@ -134,9 +134,10 @@ name = "clippy"
 mode = "comment"
 
 # ----- SECURITY SCANNING (HIGH PRIORITY) -----
-[[plugin]]
-name = "gitleaks"
-mode = "block"
+# DISABLED: Memory allocation error on Windows (wazero WebAssembly issue)
+# [[plugin]]
+# name = "gitleaks"
+# mode = "block"
 
 [[plugin]]
 name = "trufflehog"
