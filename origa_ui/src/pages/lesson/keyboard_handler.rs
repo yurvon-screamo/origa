@@ -56,11 +56,11 @@ pub fn create_keyboard_handler(
                 match key.as_str() {
                     "1" => {
                         ev.prevent_default();
-                        on_yesno_select.run(true);
+                        on_yesno_select.run(false);
                     },
                     "2" => {
                         ev.prevent_default();
-                        on_yesno_select.run(false);
+                        on_yesno_select.run(true);
                     },
                     _ => {},
                 }

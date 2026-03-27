@@ -1579,6 +1579,46 @@ input[type="submit"],
 	opacity: 0.5;
 }
 
+.btn.quiz-option-correct {
+	background: var(--bg-warm);
+	border-color: var(--success);
+	color: var(--success);
+}
+
+.btn.quiz-option-correct:hover {
+	background: var(--bg-warm);
+	color: var(--success);
+}
+
+.btn.quiz-option-correct::before {
+	border-color: var(--success);
+}
+
+.btn.quiz-option-wrong {
+	background: var(--bg-warm);
+	border-color: var(--error);
+	color: var(--error);
+}
+
+.btn.quiz-option-wrong:hover {
+	background: var(--bg-warm);
+	color: var(--error);
+}
+
+.btn.quiz-option-wrong::before {
+	border-color: var(--error);
+}
+
+.btn.quiz-option-dimmed {
+	background: var(--bg-paper);
+	border-color: var(--border-light);
+}
+
+.btn.quiz-option-dimmed:hover {
+	background: var(--bg-paper);
+	color: var(--fg-black);
+}
+
 /* === Kанадзи Drawing Container === */
 .kanji-drawing-container {
 	display: flex;
