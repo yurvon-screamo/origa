@@ -145,7 +145,14 @@ pub fn check_url_oauth_callback(auth_store: &AuthStore) {
     let auth_store_clone = auth_store.clone();
 
     spawn_local(async move {
-        process_oauth_flow(auth_store_clone, verifier.unwrap(), code, is_oauth_loading, disposed).await;
+        process_oauth_flow(
+            auth_store_clone,
+            verifier.unwrap(),
+            code,
+            is_oauth_loading,
+            disposed,
+        )
+        .await;
     });
 }
 

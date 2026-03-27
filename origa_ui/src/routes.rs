@@ -7,6 +7,7 @@ use crate::pages::{
     Grammar, Home, Kanji, Lesson, Login, Onboarding, Profile, Radicals, Sets, Words,
 };
 use crate::store::auth_store::AuthStore;
+use crate::ui_components::LoadingOverlay;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos_router::components::*;
@@ -72,21 +73,16 @@ pub fn ProtectedRoute(children: ChildrenFn) -> impl IntoView {
 
     move || {
         if auth_store.is_loading().get() {
+            let loading_msg: Signal<String> = Signal::derive(|| "Загрузка...".to_string());
             view! {
-                <div class="min-h-screen flex items-center justify-center">
-                    "Загрузка..."
-                </div>
+                <LoadingOverlay message=loading_msg />
             }
             .into_any()
         } else if is_loading.get() {
             view! {
-                <div class="fixed inset-0 z-[9999] flex items-center justify-center bg-[var(--bg-primary)]">
-                    <div class="text-center">
-                        <div class="animate-spin w-12 h-12 border-4 border-[var(--border)] border-t-[var(--accent)] rounded-full mx-auto mb-4"></div>
-                        <p class="text-[var(--text-secondary)]">{move || progress.get()}</p>
-                    </div>
-                </div>
-            }.into_any()
+                <LoadingOverlay message=progress />
+            }
+            .into_any()
         } else if is_authenticated.get() {
             children().into_any()
         } else {

@@ -1,6 +1,6 @@
-use super::{calculate_stats, format_delta, format_number, HomeStats};
 use super::{HistoryModal, HomeSkeleton, JlptProgressCard, JlptSkeleton, StatMetric, StatsGrid};
-use crate::repository::{set_last_sync_time, HybridUserRepository};
+use super::{HomeStats, calculate_stats, format_delta, format_number};
+use crate::repository::{HybridUserRepository, set_last_sync_time};
 use crate::ui_components::{
     Text, TextSize, ToastContainer, ToastData, ToastType, TypographyVariant,
 };
@@ -15,11 +15,7 @@ const SYNC_TOAST_ID: usize = usize::MAX;
 pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoView {
     let test_id_val = move || {
         let val = test_id.get();
-        if val.is_empty() {
-            None
-        } else {
-            Some(val)
-        }
+        if val.is_empty() { None } else { Some(val) }
     };
 
     let repository =

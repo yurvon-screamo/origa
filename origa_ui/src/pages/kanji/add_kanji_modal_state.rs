@@ -1,7 +1,7 @@
 use crate::repository::HybridUserRepository;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use origa::dictionary::kanji::{get_kanji_list, KanjiInfo};
+use origa::dictionary::kanji::{KanjiInfo, get_kanji_list};
 use origa::domain::{Card, JapaneseLevel};
 use origa::traits::UserRepository;
 use std::collections::HashSet;

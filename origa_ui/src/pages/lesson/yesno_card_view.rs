@@ -1,6 +1,6 @@
 use crate::ui_components::{
-    Card, DisplayText, FuriganaText, Heading, HeadingLevel, Text, TextSize, TypographyVariant,
-    get_reading_from_text, is_speech_supported, speak_text,
+    get_reading_from_text, is_speech_supported, speak_text, Button, ButtonVariant, Card,
+    DisplayText, MarkdownText, MarkdownVariant, Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
 use origa::domain::{Card as DomainCard, NativeLanguage, YesNoCard};
@@ -103,67 +103,41 @@ pub fn YesNoCardView(
     let yes_selected = selected_answer == Some(true);
     let no_selected = selected_answer == Some(false);
 
-    let yes_class = move || {
-        let base =
-            "p-3 sm:p-4 border text-lg transition-all cursor-pointer flex-1 text-center rounded-lg"
-                .to_string();
-        let mut classes = base;
-
+    let no_btn_class = Signal::derive(move || {
         if show_result {
-            classes.push_str(" pointer-events-none");
-        }
-
-        if yes_selected {
-            classes.push_str(" ring-2 ring-[var(--accent-olive)]");
-        }
-
-        if show_result {
-            let correct_answer = is_statement_correct;
-            if correct_answer {
-                classes.push_str(" bg-[var(--success)] bg-opacity-20 border-[var(--success)]");
-            } else if yes_selected {
-                classes.push_str(" bg-[var(--error)] bg-opacity-20 border-[var(--error)]");
-            } else {
-                classes.push_str(" opacity-50");
-            }
-        } else if yes_selected {
-            classes
-                .push_str(" bg-[var(--accent-olive)] bg-opacity-10 border-[var(--accent-olive)]");
-        }
-
-        classes
-    };
-
-    let no_class = move || {
-        let base =
-            "p-3 sm:p-4 border text-lg transition-all cursor-pointer flex-1 text-center rounded-lg"
-                .to_string();
-        let mut classes = base;
-
-        if show_result {
-            classes.push_str(" pointer-events-none");
-        }
-
-        if no_selected {
-            classes.push_str(" ring-2 ring-[var(--accent-olive)]");
-        }
-
-        if show_result {
-            let correct_answer = is_statement_correct;
-            if !correct_answer {
-                classes.push_str(" bg-[var(--success)] bg-opacity-20 border-[var(--success)]");
+            if !is_statement_correct {
+                "quiz-option-correct".to_string()
             } else if no_selected {
-                classes.push_str(" bg-[var(--error)] bg-opacity-20 border-[var(--error)]");
+                "quiz-option-wrong".to_string()
             } else {
-                classes.push_str(" opacity-50");
+                "quiz-option-dimmed".to_string()
             }
-        } else if no_selected {
-            classes
-                .push_str(" bg-[var(--accent-olive)] bg-opacity-10 border-[var(--accent-olive)]");
+        } else {
+            String::new()
         }
+    });
 
-        classes
-    };
+    let yes_btn_class = Signal::derive(move || {
+        if show_result {
+            if is_statement_correct {
+                "quiz-option-correct".to_string()
+            } else if yes_selected {
+                "quiz-option-wrong".to_string()
+            } else {
+                "quiz-option-dimmed".to_string()
+            }
+        } else {
+            String::new()
+        }
+    });
+
+    let yes_variant = Signal::derive(move || {
+        if show_result {
+            ButtonVariant::Default
+        } else {
+            ButtonVariant::Olive
+        }
+    });
 
     let correct_answer_text = move || {
         if is_statement_correct {
@@ -184,9 +158,11 @@ pub fn YesNoCardView(
                 <div class="text-center mb-3 sm:mb-6">
                     <Show when=move || card_type != CardType::Kanji>
                         <div class="mb-4">
-                            <Heading level=HeadingLevel::H2>
-                                <FuriganaText text=statement.get_value() known_kanji=known_kanji.get()/>
-                            </Heading>
+                            <MarkdownText
+                                content=Signal::derive(move || statement.get_value())
+                                known_kanji=known_kanji.get()
+                                variant=Signal::derive(|| MarkdownVariant::Large)
+                            />
                         </div>
                     </Show>
 
@@ -213,33 +189,24 @@ pub fn YesNoCardView(
                     </Text>
                 </div>
 
-                <div class="flex gap-3 sm:gap-4 justify-center">
-                    <button
-                        class=yes_class
-                        disabled=show_result
-                        on:click=move |_| {
-                            if !show_result {
-                                on_answer.run(true);
-                            }
-                        }
+                <div class="grid grid-cols-2 gap-3">
+                    <Button
+                        variant=Signal::derive(|| ButtonVariant::Default)
+                        class=no_btn_class
+                        disabled=Signal::derive(move || show_result)
+                        on_click=Callback::new(move |_| on_answer.run(false))
                     >
-                        <Text size=TextSize::Large>
-                            "Да"
-                        </Text>
-                    </button>
-                    <button
-                        class=no_class
-                        disabled=show_result
-                        on:click=move |_| {
-                            if !show_result {
-                                on_answer.run(false);
-                            }
-                        }
+                        "Нет" <span class="hidden sm:inline">"[1]"</span>
+                    </Button>
+
+                    <Button
+                        variant=yes_variant
+                        class=yes_btn_class
+                        disabled=Signal::derive(move || show_result)
+                        on_click=Callback::new(move |_| on_answer.run(true))
                     >
-                        <Text size=TextSize::Large>
-                            "Нет"
-                        </Text>
-                    </button>
+                        "Да" <span class="hidden sm:inline">"[2]"</span>
+                    </Button>
                 </div>
 
                 <Show when=move || show_result>

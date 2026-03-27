@@ -10,12 +10,12 @@ const QUIZ_OPTIONS_COUNT: usize = 4;
 
 const PROB_NORMAL_VIEW: f32 = 0.15;
 const PROB_QUIZ_VIEW: f32 = 0.30;
-const PROB_YESNO_VIEW: f32 = 0.55;
+const PROB_YESNO_VIEW: f32 = 0.50;
 const PROB_REVERSED_VIEW: f32 = 0.75;
 
 const PROB_KANJI_NORMAL: f32 = 0.25;
 const PROB_KANJI_QUIZ: f32 = 0.50;
-const PROB_KANJI_YESNO: f32 = 0.75;
+const PROB_KANJI_YESNO: f32 = 0.70;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct QuizOption {
@@ -238,7 +238,7 @@ impl LessonCardView {
                 .clone()
         };
 
-        let statement_text = format!("{} – {}", question.text(), statement_answer);
+        let statement_text = format!("{} \n {}", question.text(), statement_answer);
 
         Ok(LessonCardView::YesNo(YesNoCard::new(
             original_card,
@@ -343,15 +343,7 @@ impl<'a> LessonViewGenerator<'a> {
                 LessonCardView::Normal(card.clone())
             },
 
-            (CardType::Radical, true) | (CardType::Radical, false) => {
-                select_writing_card_view(card, same_type_cards, &NativeLanguage::Russian, rng)
-            },
-
-            (CardType::Kanji, true) | (CardType::Kanji, false) => {
-                select_writing_card_view(card, same_type_cards, &NativeLanguage::Russian, rng)
-            },
-
-            (_, true) => {
+            (CardType::Radical, true) | (CardType::Kanji, true) => {
                 let rand_val = rng.random::<f32>();
                 if rand_val < 0.33 {
                     LessonCardView::Normal(card.clone())
@@ -363,11 +355,23 @@ impl<'a> LessonViewGenerator<'a> {
                     )
                     .unwrap_or_else(|_| LessonCardView::Normal(card.clone()))
                 } else {
-                    LessonCardView::generate_yesno(
+                    LessonCardView::Writing(card.clone())
+                }
+            },
+
+            (CardType::Radical, false) | (CardType::Kanji, false) => {
+                select_writing_card_view(card, same_type_cards, &NativeLanguage::Russian, rng)
+            },
+
+            (_, true) => {
+                let rand_val = rng.random::<f32>();
+                if rand_val < 0.50 {
+                    LessonCardView::Normal(card.clone())
+                } else {
+                    LessonCardView::generate_quiz(
                         card.clone(),
                         same_type_cards,
                         &NativeLanguage::Russian,
-                        rng,
                     )
                     .unwrap_or_else(|_| LessonCardView::Normal(card.clone()))
                 }
