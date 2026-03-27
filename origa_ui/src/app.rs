@@ -16,6 +16,7 @@ pub fn App() -> impl IntoView {
     let auth_store = AuthStore::new();
     let connectivity = ConnectivityStore::new();
     let toasts: RwSignal<Vec<ToastData>> = RwSignal::new(Vec::new());
+    let disposed = StoredValue::new(());
 
     provide_context(auth_store.repository().clone());
     provide_context(auth_store.clone());
@@ -31,11 +32,15 @@ pub fn App() -> impl IntoView {
     let update_info_clone = update_info;
     spawn_local(async move {
         if let Some(info) = updater::check_for_updates().await {
+            if disposed.is_disposed() {
+                return;
+            }
             update_info_clone.set(Some(info));
         }
     });
 
     let on_update = Callback::new(move |_| {
+        let disposed = StoredValue::new(());
         spawn_local(async move {
             download_progress.set(Some(0.0));
 
@@ -44,6 +49,9 @@ pub fn App() -> impl IntoView {
             })
             .await;
 
+            if disposed.is_disposed() {
+                return;
+            }
             if let Err(e) = result {
                 error!("Update failed: {}", e);
                 download_progress.set(None);

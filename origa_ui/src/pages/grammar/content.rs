@@ -25,9 +25,13 @@ pub fn GrammarContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
     Effect::new(move |_| {
         let _ = refresh_trigger.get();
         let repo = repo_for_effect.clone();
+        let disposed = StoredValue::new(());
         spawn_local(async move {
             match repo.get_current_user().await {
                 Ok(Some(user)) => {
+                    if disposed.is_disposed() {
+                        return;
+                    }
                     let cards = user
                         .knowledge_set()
                         .study_cards()
@@ -73,10 +77,14 @@ pub fn GrammarContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
         Callback::new(move |card_id: Ulid| {
             let repository = repo.clone();
             let user_signal = current_user;
+            let disposed = StoredValue::new(());
 
             spawn_local(async move {
                 let use_case = ToggleFavoriteUseCase::new(&repository);
                 if use_case.execute(card_id).await.is_ok() {
+                    if disposed.is_disposed() {
+                        return;
+                    }
                     user_signal.update(|u| {
                         if let Some(user) = u {
                             let _ = user.toggle_favorite(card_id);

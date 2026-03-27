@@ -1,4 +1,4 @@
-use super::super::shared::{CardCounts, CardStatus, Filter, FilterBtn, create_delete_callback};
+use super::super::shared::{create_delete_callback, CardCounts, CardStatus, Filter, FilterBtn};
 use super::kanji_card_item::KanjiCardItem;
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{
@@ -18,9 +18,13 @@ fn load_user_data(
     all_cards: RwSignal<Vec<StudyCard>>,
     is_loading: RwSignal<bool>,
 ) {
+    let disposed = StoredValue::new(());
     spawn_local(async move {
         match repository.get_current_user().await {
             Ok(Some(user)) => {
+                if disposed.is_disposed() {
+                    return;
+                }
                 let cards = user
                     .knowledge_set()
                     .study_cards()
@@ -91,10 +95,14 @@ pub fn KanjiContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
         Callback::new(move |card_id: Ulid| {
             let repository = repo.clone();
             let user_signal = current_user;
+            let disposed = StoredValue::new(());
 
             spawn_local(async move {
                 let use_case = ToggleFavoriteUseCase::new(&repository);
                 if use_case.execute(card_id).await.is_ok() {
+                    if disposed.is_disposed() {
+                        return;
+                    }
                     user_signal.update(|u| {
                         if let Some(user) = u {
                             let _ = user.toggle_favorite(card_id);

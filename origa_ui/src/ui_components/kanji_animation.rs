@@ -54,6 +54,7 @@ pub fn KanjiAnimation(
 ) -> impl IntoView {
     let (iteration, set_iteration) = signal(0);
     let abort_handle = Arc::new(Mutex::new(None::<AbortHandle>));
+    let disposed = StoredValue::new(());
 
     let encoded = urlencoding::encode(&kanji);
     let svg_path = match mode {
@@ -100,6 +101,9 @@ pub fn KanjiAnimation(
             spawn_local(async move {
                 let future = async {
                     gloo_timers::future::TimeoutFuture::new(1500).await;
+                    if disposed.is_disposed() {
+                        return;
+                    }
                     set_iteration.try_update(|n| *n += 1);
                 };
                 let (abortable, handle) = abortable(future);
@@ -117,6 +121,9 @@ pub fn KanjiAnimation(
             spawn_local(async move {
                 let future = async {
                     gloo_timers::future::TimeoutFuture::new(total_duration_ms).await;
+                    if disposed.is_disposed() {
+                        return;
+                    }
                     set_iteration.try_update(|n| *n += 1);
                 };
                 let (abortable, handle) = abortable(future);

@@ -12,7 +12,7 @@ pub use content::HomeContent;
 pub use header::HomeHeader;
 pub use history_modal::{HistoryModal, StatMetric};
 pub use home_skeleton::{HomeSkeleton, JlptSkeleton};
-pub use home_stats::{HomeStats, calculate_stats, format_delta, format_number};
+pub use home_stats::{calculate_stats, format_delta, format_number, HomeStats};
 pub use jlpt_progress_card::JlptProgressCard;
 pub use lesson_buttons_card::LessonButtonsCard;
 pub use stat_card::StatCard;
@@ -36,6 +36,7 @@ pub fn Home() -> impl IntoView {
 
     let current_user: RwSignal<Option<User>> = RwSignal::new(None);
     let is_checking_onboarding = RwSignal::new(true);
+    let disposed = StoredValue::new(());
 
     Effect::new({
         let repository = repository.clone();
@@ -46,6 +47,9 @@ pub fn Home() -> impl IntoView {
             spawn_local(async move {
                 match repository.get_current_user().await {
                     Ok(Some(user)) => {
+                        if disposed.is_disposed() {
+                            return;
+                        }
                         if user.imported_sets().is_empty() {
                             navigate("/onboarding", Default::default());
                             return;

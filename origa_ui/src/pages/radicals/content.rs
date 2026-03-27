@@ -1,4 +1,4 @@
-use super::super::shared::{CardCounts, CardStatus, Filter, FilterBtn, create_delete_callback};
+use super::super::shared::{create_delete_callback, CardCounts, CardStatus, Filter, FilterBtn};
 use super::radical_item::RadicalItem;
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{
@@ -17,10 +17,14 @@ fn load_user_data(
     current_user: RwSignal<Option<User>>,
     all_cards: RwSignal<Vec<StudyCard>>,
     is_loading: RwSignal<bool>,
+    disposed: StoredValue<()>,
 ) {
     spawn_local(async move {
         match repository.get_current_user().await {
             Ok(Some(user)) => {
+                if disposed.is_disposed() {
+                    return;
+                }
                 let cards = user
                     .knowledge_set()
                     .study_cards()
@@ -50,10 +54,17 @@ pub fn RadicalsContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
     let current_user: RwSignal<Option<User>> = RwSignal::new(None);
     let is_loading = RwSignal::new(true);
     let all_cards: RwSignal<Vec<StudyCard>> = RwSignal::new(Vec::new());
+    let disposed = StoredValue::new(());
 
     let repo_for_init = repository.clone();
     Effect::new(move |_| {
-        load_user_data(repo_for_init.clone(), current_user, all_cards, is_loading);
+        load_user_data(
+            repo_for_init.clone(),
+            current_user,
+            all_cards,
+            is_loading,
+            disposed,
+        );
     });
 
     let repo_for_refresh = repository.clone();
@@ -64,6 +75,7 @@ pub fn RadicalsContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
             current_user,
             all_cards,
             is_loading,
+            disposed,
         );
     });
 
@@ -84,10 +96,14 @@ pub fn RadicalsContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
         Callback::new(move |card_id: Ulid| {
             let repository = repo.clone();
             let user_signal = current_user;
+            let disposed = disposed;
 
             spawn_local(async move {
                 let use_case = ToggleFavoriteUseCase::new(&repository);
                 if use_case.execute(card_id).await.is_ok() {
+                    if disposed.is_disposed() {
+                        return;
+                    }
                     user_signal.update(|u| {
                         if let Some(user) = u {
                             let _ = user.toggle_favorite(card_id);

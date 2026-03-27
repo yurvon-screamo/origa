@@ -38,6 +38,7 @@ struct ProcessContext {
     ocr_state: RwSignal<OcrState>,
     ocr_loading_state: OcrLoadingState,
     error_message: RwSignal<Option<String>>,
+    disposed: StoredValue<()>,
 }
 
 fn handle_ocr_result(
@@ -120,6 +121,9 @@ fn process_file(
         ctx.ocr_loading_state.cancel_requested.set(false);
         match read_file_as_data_url(&file).await {
             Ok(data_url) => {
+                if ctx.disposed.is_disposed() {
+                    return;
+                }
                 if ctx.ocr_loading_state.cancel_requested.get() {
                     return;
                 }
@@ -153,6 +157,7 @@ pub fn ImageInputStage(
     let error_message = RwSignal::new(None::<String>);
     let is_drag_over = RwSignal::new(false);
     let ocr_loading_state = OcrLoadingState::new();
+    let disposed = StoredValue::new(());
 
     Effect::new(move |_| {
         if !is_open.get() {
@@ -165,6 +170,7 @@ pub fn ImageInputStage(
     });
 
     let ocr_loading_state_for_file = ocr_loading_state;
+    let disposed_for_file = disposed;
     let on_file_change = move |ev: leptos::ev::Event| {
         let target = match ev.target() {
             Some(t) => t,
@@ -187,6 +193,7 @@ pub fn ImageInputStage(
                     ocr_state,
                     ocr_loading_state: ocr_loading_state_for_file,
                     error_message,
+                    disposed: disposed_for_file,
                 },
                 on_text_extracted,
                 on_error,
@@ -195,6 +202,7 @@ pub fn ImageInputStage(
     };
 
     let ocr_loading_state_for_drag = ocr_loading_state;
+    let disposed_for_drag = disposed;
     let on_drag_over = move |ev: leptos::ev::DragEvent| {
         ev.prevent_default();
         is_drag_over.set(true);
@@ -220,6 +228,7 @@ pub fn ImageInputStage(
                     ocr_state,
                     ocr_loading_state: ocr_loading_state_for_drag,
                     error_message,
+                    disposed: disposed_for_drag,
                 },
                 on_text_extracted,
                 on_error,
@@ -228,6 +237,7 @@ pub fn ImageInputStage(
     };
 
     let ocr_loading_state_for_paste = ocr_loading_state;
+    let disposed_for_paste = disposed;
 
     let stored_closure = StoredValue::new_local(None::<StoredClosure>);
 
@@ -242,6 +252,7 @@ pub fn ImageInputStage(
             ocr_state,
             ocr_loading_state: ocr_loading_state_for_paste,
             error_message,
+            disposed: disposed_for_paste,
         };
 
         let closure = wasm_bindgen::closure::Closure::<dyn FnMut(ClipboardEvent)>::new(

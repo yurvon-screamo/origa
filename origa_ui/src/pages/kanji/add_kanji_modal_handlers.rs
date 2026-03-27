@@ -25,17 +25,24 @@ impl ModalHandlers {
 
                 is_creating.set(true);
                 error.set(None);
+                let disposed = StoredValue::new(());
 
                 spawn_local(async move {
                     let use_case = CreateKanjiCardUseCase::new(&repository);
                     match use_case.execute(kanji_list).await {
                         Ok(_) => {
+                            if disposed.is_disposed() {
+                                return;
+                            }
                             is_creating.set(false);
                             state_for_async.reset();
                             is_open_for_async.set(false);
                             state_for_async.refresh_trigger.update(|v| *v += 1);
                         },
                         Err(e) => {
+                            if disposed.is_disposed() {
+                                return;
+                            }
                             is_creating.set(false);
                             error.set(Some(e.to_string()));
                         },

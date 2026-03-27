@@ -24,6 +24,7 @@ pub fn Login() -> impl IntoView {
     let navigate = use_navigate();
     let loading = RwSignal::new(false);
     let server_error = RwSignal::new(None::<String>);
+    let disposed = StoredValue::new(());
 
     let auth_store_for_effect = auth_store.clone();
     Effect::new({
@@ -45,6 +46,10 @@ pub fn Login() -> impl IntoView {
 
             spawn_local(async move {
                 let result = auth_store.login(&email, &password).await;
+
+                if disposed.is_disposed() {
+                    return;
+                }
 
                 loading.set(false);
 

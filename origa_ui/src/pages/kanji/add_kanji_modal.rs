@@ -32,8 +32,12 @@ pub fn AddKanjiModal(is_open: RwSignal<bool>, refresh_trigger: RwSignal<u32>) ->
 
     Effect::new(move |_| {
         let repo = repo_for_effect.clone();
+        let disposed = StoredValue::new(());
         spawn_local(async move {
             if let Ok(Some(user)) = repo.get_current_user().await {
+                if disposed.is_disposed() {
+                    return;
+                }
                 current_user.set(Some(user));
             }
         });

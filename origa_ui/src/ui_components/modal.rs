@@ -12,10 +12,15 @@ pub fn Modal(
     let children = StoredValue::new(children);
     let is_closing = RwSignal::new(false);
     let on_close_clone = on_close;
+    let disposed = StoredValue::new(());
 
     let test_id_val = move || {
         let val = test_id.get();
-        if val.is_empty() { None } else { Some(val) }
+        if val.is_empty() {
+            None
+        } else {
+            Some(val)
+        }
     };
 
     let test_id_close = move || {
@@ -43,6 +48,9 @@ pub fn Modal(
         let ev_clone = ev.clone();
         leptos::task::spawn_local(async move {
             gloo_timers::future::TimeoutFuture::new(250).await;
+            if disposed.is_disposed() {
+                return;
+            }
             is_open_clone.set(false);
             is_closing.set(false);
             if let Some(on_close) = on_close_inner {
@@ -61,6 +69,9 @@ pub fn Modal(
                 let on_close_inner = on_close_clone;
                 leptos::task::spawn_local(async move {
                     gloo_timers::future::TimeoutFuture::new(250).await;
+                    if disposed.is_disposed() {
+                        return;
+                    }
                     is_open_clone.set(false);
                     is_closing.set(false);
                     if let Some(on_close) = on_close_inner {

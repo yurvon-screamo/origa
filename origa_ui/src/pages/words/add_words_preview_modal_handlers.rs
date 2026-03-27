@@ -30,6 +30,7 @@ pub fn create_preview_modal_handlers(
 
     let on_create = {
         let state = state.clone();
+        let disposed = state.disposed;
         Callback::new(move |_| {
             let selected_words_count = state.selected_words.get().len();
             if selected_words_count == 0 {
@@ -47,12 +48,18 @@ pub fn create_preview_modal_handlers(
             spawn_local(async move {
                 match state_for_async.create_cards().await {
                     Ok(_) => {
+                        if disposed.is_disposed() {
+                            return;
+                        }
                         is_creating.set(false);
                         state_for_async.reset();
                         is_open_for_async.set(false);
                         state_for_async.refresh_trigger.update(|v| *v += 1);
                     },
                     Err(e) => {
+                        if disposed.is_disposed() {
+                            return;
+                        }
                         is_creating.set(false);
                         error.set(Some(e.to_string()));
                     },
