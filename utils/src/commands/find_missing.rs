@@ -164,9 +164,18 @@ async fn translate_words_chunk(
 
         let handle = tokio::spawn(async move {
             let entry = translate_word(&word, &api_base, &api_key, to_russian, to_english).await;
-            if let Ok(entry) = entry {
-                let mut results = results.lock().await;
-                results.insert(word, entry);
+            match entry {
+                Ok(entry) => {
+                    if entry.russian_translation.is_none() && entry.english_translation.is_none() {
+                        tracing::warn!("Translation returned empty for word: {}", word);
+                    } else {
+                        let mut results = results.lock().await;
+                        results.insert(word, entry);
+                    }
+                },
+                Err(e) => {
+                    tracing::error!("Failed to translate word '{}': {}", word, e);
+                },
             }
             sleep(Duration::from_millis(100)).await;
         });
