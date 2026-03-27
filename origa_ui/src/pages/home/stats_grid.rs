@@ -32,7 +32,7 @@ pub fn StatsGrid(
     };
 
     view! {
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-9 gap-6" data-testid=test_id_val>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-9 gap-6" data-testid=test_id_val>
             <LessonButtonsCard test_id=Signal::derive(|| "lesson-buttons".to_string()) />
 
             <StatCard
