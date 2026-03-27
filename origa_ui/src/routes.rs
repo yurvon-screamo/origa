@@ -27,6 +27,7 @@ fn progress_message() -> RwSignal<String> {
 pub fn start_dictionary_loading(auth_store: AuthStore) {
     let loading = is_dictionary_loading();
     let progress = progress_message();
+    let disposed = StoredValue::new(());
 
     loading.set(true);
     progress.set("Загрузка данных...".to_string());
@@ -39,6 +40,9 @@ pub fn start_dictionary_loading(auth_store: AuthStore) {
         let _ = load_jlpt_content().await;
         let _ = load_dictionary().await;
 
+        if disposed.is_disposed() {
+            return;
+        }
         auth_store.set_dictionary_loaded();
         loading.set(false);
         progress.set(String::new());

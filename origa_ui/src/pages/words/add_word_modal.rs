@@ -13,6 +13,7 @@ pub fn AddWordModal() -> impl IntoView {
     let error_message = RwSignal::new(None::<String>);
     let repository =
         use_context::<HybridUserRepository>().expect("repository context not provided");
+    let disposed = StoredValue::new(());
 
     let on_add = {
         let repository = repository.clone();
@@ -27,6 +28,7 @@ pub fn AddWordModal() -> impl IntoView {
             let is_loading_signal = is_loading;
             let new_word_signal = new_word;
             let error_signal = error_message;
+            let disposed = disposed;
 
             is_loading_signal.set(true);
             error_signal.set(None);
@@ -36,10 +38,16 @@ pub fn AddWordModal() -> impl IntoView {
 
                 match use_case.execute(word.clone()).await {
                     Ok(_) => {
+                        if disposed.is_disposed() {
+                            return;
+                        }
                         is_loading_signal.set(false);
                         new_word_signal.set(String::new());
                     },
                     Err(e) => {
+                        if disposed.is_disposed() {
+                            return;
+                        }
                         is_loading_signal.set(false);
                         error_signal.set(Some(e.to_string()));
                     },

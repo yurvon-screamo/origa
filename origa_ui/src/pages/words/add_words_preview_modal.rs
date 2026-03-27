@@ -24,11 +24,15 @@ pub fn AddWordsPreviewModal(
 
     let current_user: RwSignal<Option<User>> = RwSignal::new(None);
     let repo_for_effect = repository.clone();
+    let disposed = StoredValue::new(());
 
     Effect::new(move |_| {
         let repo = repo_for_effect.clone();
         spawn_local(async move {
             if let Ok(Some(user)) = repo.get_current_user().await {
+                if disposed.is_disposed() {
+                    return;
+                }
                 current_user.set(Some(user));
             }
         });

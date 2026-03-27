@@ -27,6 +27,7 @@ pub fn create_import_preview_handlers(
     let is_open_clone = is_open;
     let toasts_clone = toasts;
     let on_import_result_clone = on_import_result;
+    let disposed = state.disposed;
     let on_import = Callback::new(move |_: ()| {
         let selected = state_clone.selected_words.get();
         if selected.is_empty() {
@@ -52,6 +53,9 @@ pub fn create_import_preview_handlers(
         spawn_local(async move {
             match state.import_selected().await {
                 Ok(result) => {
+                    if disposed.is_disposed() {
+                        return;
+                    }
                     state.is_importing.set(false);
                     state.reset();
                     is_open.set(false);
@@ -89,6 +93,9 @@ pub fn create_import_preview_handlers(
                     });
                 },
                 Err(e) => {
+                    if disposed.is_disposed() {
+                        return;
+                    }
                     state.is_importing.set(false);
                     state.error_message.set(Some(e.clone()));
                     on_import_result.run(Vec::new());

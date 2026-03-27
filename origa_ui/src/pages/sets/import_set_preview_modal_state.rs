@@ -22,6 +22,7 @@ pub struct ImportPreviewModalState {
     pub well_known_loader: WellKnownSetLoaderImpl,
     pub set_titles: RwSignal<HashMap<String, String>>,
     pub set_ids: RwSignal<Vec<String>>,
+    pub disposed: StoredValue<()>,
 }
 
 impl ImportPreviewModalState {
@@ -30,6 +31,7 @@ impl ImportPreviewModalState {
             use_context::<HybridUserRepository>().expect("repository context not provided");
 
         let well_known_loader = WellKnownSetLoaderImpl::new();
+        let disposed = StoredValue::new(());
 
         Self {
             preview_words: RwSignal::new(Vec::new()),
@@ -41,6 +43,7 @@ impl ImportPreviewModalState {
             well_known_loader,
             set_titles: RwSignal::new(HashMap::new()),
             set_ids: RwSignal::new(Vec::new()),
+            disposed,
         }
     }
 
@@ -53,6 +56,7 @@ impl ImportPreviewModalState {
         let error = self.error_message;
         let set_titles = self.set_titles;
         let set_ids = self.set_ids;
+        let disposed = self.disposed;
 
         preview_words.set(Vec::new());
         selected_words.set(HashSet::new());
@@ -63,20 +67,33 @@ impl ImportPreviewModalState {
             let user = match repository.get_current_user().await {
                 Ok(Some(u)) => u,
                 Ok(None) => {
+                    if disposed.is_disposed() {
+                        return;
+                    }
                     error.set(Some("Пользователь не найден".to_string()));
                     is_loading_preview.set(false);
                     return;
                 },
                 Err(e) => {
+                    if disposed.is_disposed() {
+                        return;
+                    }
                     error.set(Some(e.to_string()));
                     is_loading_preview.set(false);
                     return;
                 },
             };
 
+            if disposed.is_disposed() {
+                return;
+            }
+
             let set = match well_known_loader.load_set(set_id.clone()).await {
                 Ok(s) => s,
                 Err(e) => {
+                    if disposed.is_disposed() {
+                        return;
+                    }
                     error.set(Some(e.to_string()));
                     is_loading_preview.set(false);
                     return;
@@ -108,6 +125,9 @@ impl ImportPreviewModalState {
                 });
             }
 
+            if disposed.is_disposed() {
+                return;
+            }
             let words_to_select: HashSet<String> =
                 words_preview.iter().map(|w| w.word.clone()).collect();
             preview_words.set(words_preview);
@@ -129,6 +149,7 @@ impl ImportPreviewModalState {
         let error = self.error_message;
         let set_titles = self.set_titles;
         let state_set_ids = self.set_ids;
+        let disposed = self.disposed;
 
         preview_words.set(Vec::new());
         selected_words.set(HashSet::new());
@@ -141,21 +162,34 @@ impl ImportPreviewModalState {
             let user = match repository.get_current_user().await {
                 Ok(Some(u)) => u,
                 Ok(None) => {
+                    if disposed.is_disposed() {
+                        return;
+                    }
                     error.set(Some("Пользователь не найден".to_string()));
                     is_loading_preview.set(false);
                     return;
                 },
                 Err(e) => {
+                    if disposed.is_disposed() {
+                        return;
+                    }
                     error.set(Some(e.to_string()));
                     is_loading_preview.set(false);
                     return;
                 },
             };
 
+            if disposed.is_disposed() {
+                return;
+            }
+
             let sets_result = well_known_loader.load_sets(set_ids.clone()).await;
             let loaded_sets = match sets_result {
                 Ok(sets) => sets,
                 Err(e) => {
+                    if disposed.is_disposed() {
+                        return;
+                    }
                     error.set(Some(e.to_string()));
                     is_loading_preview.set(false);
                     return;
@@ -183,6 +217,9 @@ impl ImportPreviewModalState {
                 }
             }
 
+            if disposed.is_disposed() {
+                return;
+            }
             let words_to_select: HashSet<String> =
                 words_preview.iter().map(|w| w.word.clone()).collect();
             preview_words.set(words_preview);

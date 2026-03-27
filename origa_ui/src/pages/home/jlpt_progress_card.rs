@@ -10,7 +10,11 @@ pub fn JlptProgressCard(
 ) -> impl IntoView {
     let test_id_val = move || {
         let val = test_id.get();
-        if val.is_empty() { None } else { Some(val) }
+        if val.is_empty() {
+            None
+        } else {
+            Some(val)
+        }
     };
     let current_level = Signal::derive(move || jlpt_progress.get().current_level());
     let level_detail = Signal::derive(move || {
@@ -87,7 +91,11 @@ fn CategoryProgressSection(
 ) -> impl IntoView {
     let test_id_val = move || {
         let val = test_id.get();
-        if val.is_empty() { None } else { Some(val) }
+        if val.is_empty() {
+            None
+        } else {
+            Some(val)
+        }
     };
     let is_expanded = RwSignal::new(false);
     let kanji = Signal::derive(move || detail.get().map(|d| d.kanji.clone()));
@@ -154,7 +162,11 @@ fn CategoryProgressBar(
 ) -> impl IntoView {
     let test_id_val = move || {
         let val = test_id.get();
-        if val.is_empty() { None } else { Some(val) }
+        if val.is_empty() {
+            None
+        } else {
+            Some(val)
+        }
     };
     let pct = Signal::derive(move || progress.get().percentage());
     let size = Signal::from(TextSize::Small);

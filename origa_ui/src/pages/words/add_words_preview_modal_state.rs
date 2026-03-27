@@ -26,6 +26,7 @@ pub struct PreviewModalState {
     pub error_message: RwSignal<Option<String>>,
     pub repository: HybridUserRepository,
     pub refresh_trigger: RwSignal<u32>,
+    pub disposed: StoredValue<()>,
 }
 
 impl PreviewModalState {
@@ -34,6 +35,7 @@ impl PreviewModalState {
             use_context::<HybridUserRepository>().expect("repository context not provided");
 
         let selected_words = RwSignal::new(HashSet::new());
+        let disposed = StoredValue::new(());
 
         Effect::new({
             let selected_words_clone = selected_words;
@@ -55,6 +57,7 @@ impl PreviewModalState {
             error_message: RwSignal::new(None),
             repository,
             refresh_trigger,
+            disposed,
         }
     }
 
@@ -65,6 +68,7 @@ impl PreviewModalState {
         let selected_words = self.selected_words;
         let is_analyzing = self.is_analyzing;
         let error = self.error_message;
+        let disposed = self.disposed;
 
         is_analyzing.set(true);
         error.set(None);
@@ -73,6 +77,9 @@ impl PreviewModalState {
             let use_case = AnalyzeTextForCardsUseCase::new(&repository);
             match use_case.execute(text).await {
                 Ok(result) => {
+                    if disposed.is_disposed() {
+                        return;
+                    }
                     let words_to_select: HashSet<String> =
                         result.words.iter().map(|w| w.base_form.clone()).collect();
                     analyzed_words.set(result.words);
@@ -80,6 +87,9 @@ impl PreviewModalState {
                     is_analyzing.set(false);
                 },
                 Err(e) => {
+                    if disposed.is_disposed() {
+                        return;
+                    }
                     error.set(Some(e.to_string()));
                     is_analyzing.set(false);
                 },

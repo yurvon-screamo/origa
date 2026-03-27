@@ -1,4 +1,4 @@
-use super::super::shared::{CardCounts, CardStatus, Filter, FilterBtn, create_delete_callback};
+use super::super::shared::{create_delete_callback, CardCounts, CardStatus, Filter, FilterBtn};
 use super::vocabulary_card_item::VocabularyCardItem;
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{
@@ -21,6 +21,7 @@ pub fn WordsContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
     let is_loading = RwSignal::new(true);
     let all_cards: RwSignal<Vec<StudyCard>> = RwSignal::new(Vec::new());
     let repo_for_effect = repository.clone();
+    let disposed = StoredValue::new(());
 
     Effect::new(move |_| {
         let _ = refresh_trigger.get();
@@ -28,6 +29,9 @@ pub fn WordsContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
         spawn_local(async move {
             match repo.get_current_user().await {
                 Ok(Some(user)) => {
+                    if disposed.is_disposed() {
+                        return;
+                    }
                     let cards = user
                         .knowledge_set()
                         .study_cards()
@@ -73,10 +77,14 @@ pub fn WordsContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
         Callback::new(move |card_id: Ulid| {
             let repository = repo.clone();
             let user_signal = current_user;
+            let disposed = disposed;
 
             spawn_local(async move {
                 let use_case = ToggleFavoriteUseCase::new(&repository);
                 if use_case.execute(card_id).await.is_ok() {
+                    if disposed.is_disposed() {
+                        return;
+                    }
                     user_signal.update(|u| {
                         if let Some(user) = u {
                             let _ = user.toggle_favorite(card_id);

@@ -1,4 +1,4 @@
-use super::filters::{ImportFilter, LevelFilter, TypeFilter, available_set_types};
+use super::filters::{available_set_types, ImportFilter, LevelFilter, TypeFilter};
 use super::import_set_preview_modal::ImportSetPreviewModal;
 use super::sets_level_group::SetsLevelGroup;
 use super::types::SetInfo;
@@ -29,6 +29,7 @@ pub fn SetsContent() -> impl IntoView {
     let import_filter = RwSignal::new(ImportFilter::default());
     let search = RwSignal::new(String::new());
     let selected_sets: RwSignal<HashSet<String>> = RwSignal::new(HashSet::new());
+    let disposed = StoredValue::new(());
 
     let known_kanji = Memo::new(move |_| {
         current_user
@@ -53,6 +54,9 @@ pub fn SetsContent() -> impl IntoView {
         spawn_local(async move {
             let user = match repo.get_current_user().await {
                 Ok(Some(user)) => {
+                    if disposed.is_disposed() {
+                        return;
+                    }
                     current_user.set(Some(user.clone()));
                     Some(user)
                 },
@@ -68,6 +72,9 @@ pub fn SetsContent() -> impl IntoView {
 
             match loader.load_meta_list().await {
                 Ok(meta_list) => {
+                    if disposed.is_disposed() {
+                        return;
+                    }
                     let set_list: Vec<SetInfo> = meta_list
                         .into_iter()
                         .map(|meta| {

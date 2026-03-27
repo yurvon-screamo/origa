@@ -1,7 +1,7 @@
 use crate::repository::HybridUserRepository;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use origa::dictionary::grammar::{GrammarRule, iter_grammar_rules};
+use origa::dictionary::grammar::{iter_grammar_rules, GrammarRule};
 use origa::domain::{Card, JapaneseLevel, NativeLanguage};
 use origa::traits::UserRepository;
 use std::collections::HashSet;
@@ -58,6 +58,7 @@ impl ModalState {
         let native_language = self.native_language;
         let is_loading = self.is_loading_rules;
         let error = self.error_message;
+        let disposed = StoredValue::new(());
 
         is_loading.set(true);
         error.set(None);
@@ -65,6 +66,9 @@ impl ModalState {
         spawn_local(async move {
             match repository.get_current_user().await {
                 Ok(Some(user)) => {
+                    if disposed.is_disposed() {
+                        return;
+                    }
                     let lang = *user.native_language();
                     native_language.set(lang);
 
@@ -85,11 +89,20 @@ impl ModalState {
                     available_rules.set(rules);
                 },
                 Ok(None) => {
+                    if disposed.is_disposed() {
+                        return;
+                    }
                     error.set(Some("Пользователь не найден".to_string()));
                 },
                 Err(e) => {
+                    if disposed.is_disposed() {
+                        return;
+                    }
                     error.set(Some(format!("Ошибка загрузки пользователя: {}", e)));
                 },
+            }
+            if disposed.is_disposed() {
+                return;
             }
             is_loading.set(false);
         });

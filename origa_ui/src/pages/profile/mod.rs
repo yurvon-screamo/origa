@@ -28,12 +28,16 @@ pub fn Profile() -> impl IntoView {
 
     let current_user: RwSignal<Option<User>> = RwSignal::new(None);
     let username = RwSignal::new(String::new());
+    let disposed = StoredValue::new(());
     let repo_for_init = repository.clone();
 
     Effect::new(move |_| {
         let repo = repo_for_init.clone();
         spawn_local(async move {
             if let Ok(Some(user)) = repo.get_current_user().await {
+                if disposed.is_disposed() {
+                    return;
+                }
                 username.set(user.username().to_string());
                 current_user.set(Some(user));
             }

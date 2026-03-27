@@ -16,6 +16,7 @@ pub fn create_delete_callback(
 ) -> (RwSignal<bool>, Callback<DeleteRequest>) {
     let is_deleting = RwSignal::new(false);
     let callback = Callback::new(move |request: DeleteRequest| {
+        let disposed = StoredValue::new(());
         let repo = repository.clone();
         let toasts_clone = toasts;
         let is_deleting_clone = is_deleting;
@@ -25,17 +26,30 @@ pub fn create_delete_callback(
         spawn_local(async move {
             let use_case = DeleteCardUseCase::new(&repo);
             match use_case.execute(request.card_id).await {
-                Ok(()) => on_success.run(()),
-                Err(e) => toasts_clone.update(|t| {
-                    t.push(ToastData {
-                        id: t.len(),
-                        toast_type: ToastType::Error,
-                        title: "Ошибка удаления".to_string(),
-                        message: e.to_string(),
-                        duration_ms: None,
-                        closable: true,
+                Ok(()) => {
+                    if disposed.is_disposed() {
+                        return;
+                    }
+                    on_success.run(())
+                },
+                Err(e) => {
+                    if disposed.is_disposed() {
+                        return;
+                    }
+                    toasts_clone.update(|t| {
+                        t.push(ToastData {
+                            id: t.len(),
+                            toast_type: ToastType::Error,
+                            title: "Ошибка удаления".to_string(),
+                            message: e.to_string(),
+                            duration_ms: None,
+                            closable: true,
+                        });
                     });
-                }),
+                },
+            }
+            if disposed.is_disposed() {
+                return;
             }
             is_deleting_clone.set(false);
         });

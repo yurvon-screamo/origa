@@ -125,6 +125,7 @@ impl AuthStore {
     pub fn check_session(&self) {
         let user_signal = self.user;
         let is_checking = self.is_checking_session;
+        let disposed = StoredValue::new(());
 
         if is_refresh_in_progress() {
             tracing::debug!("Refresh already in progress, skipping check_session");
@@ -150,6 +151,9 @@ impl AuthStore {
             if !needs_refresh {
                 tracing::debug!("Session still valid, loading user");
                 let _ = store.load_user_after_auth(user_signal).await;
+                if disposed.is_disposed() {
+                    return;
+                }
                 is_checking.set(false);
                 return;
             }
@@ -157,6 +161,9 @@ impl AuthStore {
             if session.refresh_token.is_empty() {
                 tracing::warn!("Session needs refresh but no refresh_token available");
                 clear_session();
+                if disposed.is_disposed() {
+                    return;
+                }
                 is_checking.set(false);
                 return;
             }
@@ -171,15 +178,24 @@ impl AuthStore {
                         tracing::error!("Failed to save refreshed session: {:?}", e);
                     }
                     let _ = store.load_user_after_auth(user_signal).await;
+                    if disposed.is_disposed() {
+                        return;
+                    }
                 },
                 Err(e) => {
                     tracing::error!("Session refresh failed: {:?}", e);
                     clear_session();
+                    if disposed.is_disposed() {
+                        return;
+                    }
                     user_signal.set(None);
                 },
             }
 
             set_refresh_in_progress(false);
+            if disposed.is_disposed() {
+                return;
+            }
             is_checking.set(false);
         });
     }

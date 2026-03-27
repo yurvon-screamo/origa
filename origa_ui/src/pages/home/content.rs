@@ -1,6 +1,6 @@
+use super::{calculate_stats, format_delta, format_number, HomeStats};
 use super::{HistoryModal, HomeSkeleton, JlptProgressCard, JlptSkeleton, StatMetric, StatsGrid};
-use super::{HomeStats, calculate_stats, format_delta, format_number};
-use crate::repository::{HybridUserRepository, set_last_sync_time};
+use crate::repository::{set_last_sync_time, HybridUserRepository};
 use crate::ui_components::{
     Text, TextSize, ToastContainer, ToastData, ToastType, TypographyVariant,
 };
@@ -15,7 +15,11 @@ const SYNC_TOAST_ID: usize = usize::MAX;
 pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoView {
     let test_id_val = move || {
         let val = test_id.get();
-        if val.is_empty() { None } else { Some(val) }
+        if val.is_empty() {
+            None
+        } else {
+            Some(val)
+        }
     };
 
     let repository =
@@ -29,6 +33,7 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
     let jlpt_progress = RwSignal::new(JlptProgress::new());
     let toasts: RwSignal<Vec<ToastData>> = RwSignal::new(Vec::new());
     let repo_for_sync = repository.clone();
+    let disposed = StoredValue::new(());
 
     Effect::new(move |_| {
         let repo = repo_for_sync.clone();
@@ -47,6 +52,9 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
         spawn_local(async move {
             match repo.merge_current_user().await {
                 Ok(()) => {
+                    if disposed.is_disposed() {
+                        return;
+                    }
                     toasts.update(|t| t.retain(|toast| toast.id != SYNC_TOAST_ID));
                     toasts.update(|t| {
                         t.push(ToastData {
@@ -61,6 +69,9 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                     set_last_sync_time(js_sys::Date::now() as u64 / 1000);
                 },
                 Err(e) => {
+                    if disposed.is_disposed() {
+                        return;
+                    }
                     toasts.update(|t| t.retain(|toast| toast.id != SYNC_TOAST_ID));
                     toasts.update(|t| {
                         t.push(ToastData {
@@ -83,6 +94,9 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
         spawn_local(async move {
             match repo.get_current_user().await {
                 Ok(Some(user)) => {
+                    if disposed.is_disposed() {
+                        return;
+                    }
                     let history_items = user.knowledge_set().lesson_history().to_vec();
                     history.set(history_items.clone());
                     stats.set(Some(calculate_stats(&history_items)));
@@ -109,6 +123,9 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
         spawn_local(async move {
             match repo.get_current_user().await {
                 Ok(Some(user)) => {
+                    if disposed.is_disposed() {
+                        return;
+                    }
                     let history_items = user.knowledge_set().lesson_history().to_vec();
                     history.set(history_items.clone());
                     stats.set(Some(calculate_stats(&history_items)));

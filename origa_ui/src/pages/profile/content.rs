@@ -35,6 +35,7 @@ pub fn ProfileContent() -> impl IntoView {
     let is_saving = RwSignal::new(false);
     let is_logging_out = RwSignal::new(false);
     let is_deleting = RwSignal::new(false);
+    let disposed = StoredValue::new(());
 
     let auth_store_for_save = auth_store.clone();
     let save_profile = Callback::new(move |_| {
@@ -50,6 +51,9 @@ pub fn ProfileContent() -> impl IntoView {
 
             let result = use_case.execute(language, None).await;
 
+            if disposed.is_disposed() {
+                return;
+            }
             is_saving_signal.set(false);
 
             if result.is_ok() {
@@ -86,6 +90,9 @@ pub fn ProfileContent() -> impl IntoView {
 
         spawn_local(async move {
             if auth_store_clone.delete_account().await.is_ok() {
+                if disposed.is_disposed() {
+                    return;
+                }
                 nav("/", Default::default());
             } else {
                 is_deleting_signal.set(false);

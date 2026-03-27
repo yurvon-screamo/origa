@@ -118,6 +118,7 @@ fn get_listen_function(event_mod: &js_sys::Object) -> Option<js_sys::Function> {
 }
 
 pub fn check_url_oauth_callback(auth_store: &AuthStore) {
+    let disposed = StoredValue::new(());
     let path = web_sys::window()
         .and_then(|w| w.location().pathname().ok())
         .unwrap_or_default();
@@ -144,7 +145,7 @@ pub fn check_url_oauth_callback(auth_store: &AuthStore) {
     let auth_store_clone = auth_store.clone();
 
     spawn_local(async move {
-        process_oauth_flow(auth_store_clone, verifier.unwrap(), code, is_oauth_loading).await;
+        process_oauth_flow(auth_store_clone, verifier.unwrap(), code, is_oauth_loading, disposed).await;
     });
 }
 
@@ -165,8 +166,13 @@ async fn process_oauth_flow(
     verifier: String,
     code: String,
     is_oauth_loading: RwSignal<bool>,
+    disposed: StoredValue<()>,
 ) {
     let result = auth_store.set_oauth_session(&code, &verifier).await;
+
+    if disposed.is_disposed() {
+        return;
+    }
 
     match result {
         Ok(_) => {

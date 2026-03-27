@@ -39,6 +39,7 @@ pub fn Onboarding() -> impl IntoView {
     let sets_loaded = RwSignal::new(false);
     let is_loading = RwSignal::new(true);
     let is_importing = RwSignal::new(false);
+    let disposed = StoredValue::new(());
 
     provide_context(state);
 
@@ -90,6 +91,9 @@ pub fn Onboarding() -> impl IntoView {
         spawn_local(async move {
             match repo.get_current_user().await {
                 Ok(Some(user)) => {
+                    if disposed.is_disposed() {
+                        return;
+                    }
                     current_user.set(Some(user.clone()));
                     if !user.imported_sets().is_empty() {
                         nav("/home", Default::default());
@@ -110,6 +114,9 @@ pub fn Onboarding() -> impl IntoView {
 
             match loader.load_meta_list().await {
                 Ok(meta_list) => {
+                    if disposed.is_disposed() {
+                        return;
+                    }
                     state.update(|s| {
                         s.set_available_sets(meta_list);
                         sets_loaded.set(true);
@@ -148,6 +155,7 @@ pub fn Onboarding() -> impl IntoView {
             let repo = repository.clone();
             let loader = WellKnownSetLoaderImpl::new();
             let nav = nav.clone();
+            let disposed = disposed;
             is_importing.set(true);
 
             spawn_local(async move {
@@ -168,6 +176,9 @@ pub fn Onboarding() -> impl IntoView {
                 let use_case = ImportOnboardingSetsUseCase::new(&repo, &loader);
                 let result = use_case.execute(user.id(), set_ids).await;
 
+                if disposed.is_disposed() {
+                    return;
+                }
                 match result {
                     Ok(import_result) => {
                         tracing::info!(
