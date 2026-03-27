@@ -5,7 +5,7 @@ use origa::domain::OrigaError;
 /// Creates a chat request with the given prompt
 fn create_chat_request(prompt: String) -> ChatRequest {
     ChatRequest {
-        model: "gpt-4".to_string(),
+        model: "llm".to_string(),
         messages: vec![ChatMessage {
             role: "user".to_string(),
             content: prompt,
@@ -34,6 +34,15 @@ async fn send_chat_request(
         .map_err(|e| OrigaError::TokenizerError {
             reason: format!("API request failed: {}", e),
         })?;
+
+    let status = response.status();
+    if !status.is_success() {
+        let body = response.text().await.unwrap_or_default();
+        tracing::error!("API returned error status {}: {}", status, body);
+        return Err(OrigaError::TokenizerError {
+            reason: format!("API returned error status {}: {}", status, body),
+        });
+    }
 
     response
         .json()
@@ -69,7 +78,17 @@ async fn translate_to_language(
     let request = create_chat_request(prompt);
     let response = send_chat_request(&client, api_base, api_key, &request).await?;
 
-    Ok(extract_translation(response))
+    match extract_translation(response) {
+        Some(translation) => Ok(Some(translation)),
+        None => {
+            tracing::warn!(
+                "API returned empty translation for '{}' to {}",
+                word,
+                language
+            );
+            Ok(None)
+        },
+    }
 }
 
 /// Translates a word to Russian and/or English using the API
