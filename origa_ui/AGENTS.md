@@ -23,7 +23,7 @@ pub fn Button(
 
 ## Project Structure
 
-```
+```text
 origa_ui/
 └── src/
     ├── components/     # Переиспользуемые UI компоненты

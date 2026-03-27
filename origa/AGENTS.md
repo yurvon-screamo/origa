@@ -2,7 +2,8 @@
 
 Origa — приложение для изучения японского языка с интервальными повторениями (FSRS),
 OCR и токенизацией.
-**Tech stack**: Rust workspace (`origa`, `origa_ui`, `tokenizer`), Leptos/WASM, Tauri v2.
+**Tech stack**: Rust workspace (`origa`, `origa_ui`, `tokenizer`),
+Leptos/WASM, Tauri v2.
 **Архитектура**: Clean Architecture (Use Cases → Domain → Traits).
 
 ## Code Style
@@ -13,7 +14,7 @@ OCR и токенизацией.
 
 ## Project Structure
 
-```
+```text
 origa/
 ├── origa/       # Бизнес-логика (domain, use_cases, traits, ocr)
 ├── origa_ui/    # Leptos frontend (components, pages, repository)

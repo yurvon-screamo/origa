@@ -6,7 +6,7 @@
 
 ## Project Structure
 
-```
+```text
 end2end/
 ├── config.ts        # Конфигурация тестовых пользователей
 ├── .env             # Локальные переменные окружения (gitignored)
