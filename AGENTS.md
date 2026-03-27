@@ -45,6 +45,6 @@ origa/
 
 - Коммитить без прохождения всех тестов
 - Использовать `unwrap()` в production-коде
-- Использовать `#[async_trait]`
+- Использовать `#[async_trait]` и `#[allow(dead_code)]`
 - Коммитить `console.log` / `println!`
 - Удалять тесты
