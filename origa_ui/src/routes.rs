@@ -12,25 +12,15 @@ use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos_router::components::*;
 use leptos_router::path;
-use std::sync::OnceLock;
 
-static DICTIONARY_LOADING: OnceLock<RwSignal<bool>> = OnceLock::new();
-static PROGRESS_MESSAGE: OnceLock<RwSignal<String>> = OnceLock::new();
-
-fn is_dictionary_loading() -> RwSignal<bool> {
-    *DICTIONARY_LOADING.get_or_init(|| RwSignal::new(false))
-}
-
-fn progress_message() -> RwSignal<String> {
-    *PROGRESS_MESSAGE.get_or_init(|| RwSignal::new(String::new()))
-}
-
-pub fn start_dictionary_loading(auth_store: AuthStore) {
-    let loading = is_dictionary_loading();
-    let progress = progress_message();
+pub fn start_dictionary_loading(
+    auth_store: AuthStore,
+    is_loading: RwSignal<bool>,
+    progress: RwSignal<String>,
+) {
     let disposed = StoredValue::new(());
 
-    loading.set(true);
+    is_loading.set(true);
     progress.set("Загрузка данных...".to_string());
 
     spawn_local(async move {
@@ -45,7 +35,7 @@ pub fn start_dictionary_loading(auth_store: AuthStore) {
             return;
         }
         auth_store.set_dictionary_loaded();
-        loading.set(false);
+        is_loading.set(false);
         progress.set(String::new());
     });
 }
@@ -56,8 +46,8 @@ pub fn ProtectedRoute(children: ChildrenFn) -> impl IntoView {
 
     let is_authenticated = auth_store.is_authenticated();
     let is_checking = auth_store.is_checking_session;
-    let is_loading = is_dictionary_loading();
-    let progress = progress_message();
+    let is_loading = auth_store.is_dictionary_loading;
+    let progress = auth_store.dictionary_progress_message;
 
     Effect::new({
         let auth_store = auth_store.clone();
@@ -65,8 +55,9 @@ pub fn ProtectedRoute(children: ChildrenFn) -> impl IntoView {
             if !is_checking.get()
                 && is_authenticated.get()
                 && !auth_store.is_dictionary_loaded.get()
+                && !is_loading.get()
             {
-                start_dictionary_loading(auth_store.clone());
+                start_dictionary_loading(auth_store.clone(), is_loading, progress);
             }
         }
     });
