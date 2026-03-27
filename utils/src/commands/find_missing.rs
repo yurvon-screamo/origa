@@ -288,6 +288,11 @@ pub async fn run_find_missing(
     let dictionary_words = load_vocabulary_dictionary(&base_path)?;
     let missing = find_missing_words(&sets, &dictionary_words);
 
+    if missing.is_empty() {
+        tracing::info!("No missing words found");
+        return Ok(());
+    }
+
     let output_path = output.unwrap_or_else(|| base_path.join("missing_vocabulary.md"));
     generate_report(&missing, &output_path)?;
 
