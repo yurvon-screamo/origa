@@ -81,7 +81,7 @@ pub fn StatsGrid(
             />
 
             <StatCard
-                title=Signal::derive(|| "Позитивные".to_string())
+                title=Signal::derive(|| "Позитивные оценки".to_string())
                 value=positive
                 subtitle=Signal::derive(|| "оценок".to_string())
                 delta=positive_delta
@@ -90,7 +90,7 @@ pub fn StatsGrid(
             />
 
             <StatCard
-                title=Signal::derive(|| "Негативные".to_string())
+                title=Signal::derive(|| "Негативные оценки".to_string())
                 value=negative
                 subtitle=Signal::derive(|| "оценок".to_string())
                 delta=negative_delta
