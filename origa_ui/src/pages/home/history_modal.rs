@@ -23,8 +23,8 @@ impl StatMetric {
             StatMetric::InProgress => "В процессе",
             StatMetric::New => "Новые",
             StatMetric::HighDifficulty => "Сложные",
-            StatMetric::PositiveRatings => "Позитивные",
-            StatMetric::NegativeRatings => "Негативные",
+            StatMetric::PositiveRatings => "Позитивные оценки",
+            StatMetric::NegativeRatings => "Негативные оценки",
             StatMetric::TotalRatings => "Всего оценок",
         }
     }
