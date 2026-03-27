@@ -34,6 +34,12 @@ pub struct AuthStore {
     /// Dictionary (tokenizer) loading in background
     pub is_dictionary_loaded: RwSignal<bool>,
 
+    /// Dictionary loading in progress
+    pub is_dictionary_loading: RwSignal<bool>,
+
+    /// Progress message for dictionary loading
+    pub dictionary_progress_message: RwSignal<String>,
+
     /// Logout in progress (prevents race conditions)
     is_logging_out: RwSignal<bool>,
 
@@ -52,6 +58,8 @@ impl AuthStore {
             is_oauth_loading: RwSignal::new(false),
             is_syncing: RwSignal::new(false),
             is_dictionary_loaded: RwSignal::new(false),
+            is_dictionary_loading: RwSignal::new(false),
+            dictionary_progress_message: RwSignal::new(String::new()),
             is_logging_out: RwSignal::new(false),
             is_deleting_account: RwSignal::new(false),
         }
@@ -350,6 +358,8 @@ impl AuthStore {
 
         self.user.set(None);
         self.is_dictionary_loaded.set(false);
+        self.is_dictionary_loading.set(false);
+        self.dictionary_progress_message.set(String::new());
     }
 
     // ========================================
@@ -380,6 +390,8 @@ impl AuthStore {
         clear_session();
         self.user.set(None);
         self.is_dictionary_loaded.set(false);
+        self.is_dictionary_loading.set(false);
+        self.dictionary_progress_message.set(String::new());
         self.is_checking_session.set(false);
     }
 
