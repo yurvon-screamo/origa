@@ -18,22 +18,33 @@ pub fn start_dictionary_loading(
     is_loading: RwSignal<bool>,
     progress: RwSignal<String>,
 ) {
-    let disposed = StoredValue::new(());
+    if is_loading.get() {
+        return;
+    }
 
     is_loading.set(true);
     progress.set("Загрузка данных...".to_string());
 
     spawn_local(async move {
-        let _ = load_vocabulary().await;
-        let _ = load_kanji().await;
-        let _ = load_radical().await;
-        let _ = load_grammar().await;
-        let _ = load_jlpt_content().await;
-        let _ = load_dictionary().await;
-
-        if disposed.is_disposed() {
-            return;
+        if let Err(e) = load_vocabulary().await {
+            tracing::error!("Failed to load vocabulary: {e}");
         }
+        if let Err(e) = load_kanji().await {
+            tracing::error!("Failed to load kanji: {e}");
+        }
+        if let Err(e) = load_radical().await {
+            tracing::error!("Failed to load radical: {e}");
+        }
+        if let Err(e) = load_grammar().await {
+            tracing::error!("Failed to load grammar: {e}");
+        }
+        if let Err(e) = load_jlpt_content().await {
+            tracing::error!("Failed to load jlpt_content: {e}");
+        }
+        if let Err(e) = load_dictionary().await {
+            tracing::error!("Failed to load dictionary: {e}");
+        }
+
         auth_store.set_dictionary_loaded();
         is_loading.set(false);
         progress.set(String::new());
