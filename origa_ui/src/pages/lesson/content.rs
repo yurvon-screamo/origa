@@ -76,7 +76,7 @@ pub fn LessonContent() -> impl IntoView {
     Effect::new(move |_| {
         reload_trigger.get();
 
-        if auth_store.is_checking_session.get() || !auth_store.is_data_loaded.get() {
+        if !auth_store.is_dictionary_loaded.get() {
             return;
         }
 
