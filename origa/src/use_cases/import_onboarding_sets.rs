@@ -2,13 +2,21 @@ use std::collections::HashSet;
 
 use tracing::{debug, info, warn};
 
-use crate::domain::{Card, JapaneseLevel, KanjiCard, OrigaError, StudyCard, VocabularyCard};
+use crate::dictionary::grammar::get_rules_by_level;
+use crate::dictionary::kanji::get_kanji_info;
+use crate::dictionary::radical::get_radical_info;
+use crate::domain::{
+    Card, GrammarRuleCard, JapaneseLevel, KanjiCard, OrigaError, RadicalCard, StudyCard,
+    VocabularyCard,
+};
 use crate::traits::{UserRepository, WellKnownSetLoader};
 
 pub struct ImportOnboardingResult {
     pub imported_set_ids: Vec<String>,
     pub created_vocabulary: usize,
     pub created_kanji: usize,
+    pub created_grammar: usize,
+    pub created_radicals: usize,
     pub skipped_duplicates: usize,
     pub skipped_no_translation: usize,
 }
@@ -50,16 +58,20 @@ impl<'a, R: UserRepository, L: WellKnownSetLoader> ImportOnboardingSetsUseCase<'
             imported_set_ids: Vec::new(),
             created_vocabulary: 0,
             created_kanji: 0,
+            created_grammar: 0,
+            created_radicals: 0,
             skipped_duplicates: 0,
             skipped_no_translation: 0,
         };
 
         let mut created_kanji_chars: HashSet<String> = HashSet::new();
+        let mut imported_levels: HashSet<JapaneseLevel> = HashSet::new();
 
         for (set_id, set) in sets {
             debug!(set_id = %set_id, words_count = set.words().len(), "Processing set");
 
             let set_level = *set.level();
+            imported_levels.insert(set_level);
             let words_result = VocabularyCard::from_text(&set.words().join(" "), &native_language);
 
             result.skipped_no_translation += words_result.skipped_no_translation.len();
@@ -86,6 +98,31 @@ impl<'a, R: UserRepository, L: WellKnownSetLoader> ImportOnboardingSetsUseCase<'
             result.imported_set_ids.push(set_id);
         }
 
+        debug!(levels = ?imported_levels, "Importing grammar rules for onboarding levels");
+
+        for level in &imported_levels {
+            let grammar_rules = get_rules_by_level(level);
+            for rule in grammar_rules {
+                match GrammarRuleCard::new(*rule.rule_id()) {
+                    Ok(grammar_card) => {
+                        let card = Card::Grammar(grammar_card);
+                        match user.create_card(card) {
+                            Ok(_) => {
+                                result.created_grammar += 1;
+                            },
+                            Err(OrigaError::DuplicateCard { .. }) => {
+                                result.skipped_duplicates += 1;
+                            },
+                            Err(e) => {
+                                warn!(error = ?e, "Failed to create grammar card");
+                            },
+                        }
+                    },
+                    Err(_) => {},
+                }
+            }
+        }
+
         user.mark_sets_as_imported(set_ids);
         self.repository.save_sync(&user).await?;
 
@@ -93,6 +130,8 @@ impl<'a, R: UserRepository, L: WellKnownSetLoader> ImportOnboardingSetsUseCase<'
             user_id = %user_id,
             vocabulary = result.created_vocabulary,
             kanji = result.created_kanji,
+            grammar = result.created_grammar,
+            radicals = result.created_radicals,
             duplicates = result.skipped_duplicates,
             "Onboarding sets import completed"
         );
@@ -157,10 +196,7 @@ impl<'a, R: UserRepository, L: WellKnownSetLoader> ImportOnboardingSetsUseCase<'
                 continue;
             }
 
-            if self
-                .create_kanji_card(user, &kanji_char, &mut result.skipped_duplicates)
-                .is_ok()
-            {
+            if self.create_kanji_card(user, &kanji_char, result).is_ok() {
                 result.created_kanji += 1;
                 created_kanji_chars.insert(kanji_char);
             }
@@ -183,7 +219,7 @@ impl<'a, R: UserRepository, L: WellKnownSetLoader> ImportOnboardingSetsUseCase<'
         &self,
         user: &mut crate::domain::User,
         kanji_char: &str,
-        skipped_duplicates: &mut usize,
+        result: &mut ImportOnboardingResult,
     ) -> Result<StudyCard, OrigaError> {
         match KanjiCard::new(kanji_char.to_string()) {
             Ok(kanji_card) => {
@@ -191,11 +227,34 @@ impl<'a, R: UserRepository, L: WellKnownSetLoader> ImportOnboardingSetsUseCase<'
                 match user.create_card(card) {
                     Ok(study_card) => {
                         debug!(kanji = %kanji_char, "Kanji card created");
+                        if let Ok(kanji_info) = get_kanji_info(kanji_char) {
+                            for radical_char in kanji_info.radicals_chars() {
+                                if get_radical_info(*radical_char).is_ok() {
+                                    match RadicalCard::new(*radical_char) {
+                                        Ok(radical_card) => {
+                                            match user.create_card(Card::Radical(radical_card)) {
+                                                Ok(_) => {
+                                                    debug!(radical = %radical_char, "Auto-created radical card for kanji {}", kanji_char);
+                                                    result.created_radicals += 1;
+                                                },
+                                                Err(OrigaError::DuplicateCard { .. }) => {
+                                                    result.skipped_duplicates += 1;
+                                                },
+                                                Err(_) => {},
+                                            }
+                                        },
+                                        Err(e) => {
+                                            warn!(radical = %radical_char, error = ?e, "Failed to create radical card");
+                                        },
+                                    }
+                                }
+                            }
+                        }
                         Ok(study_card)
                     },
                     Err(OrigaError::DuplicateCard { question }) => {
                         warn!(kanji = %question, "Duplicate kanji card, skipping");
-                        *skipped_duplicates += 1;
+                        result.skipped_duplicates += 1;
                         Err(OrigaError::DuplicateCard { question })
                     },
                     Err(e) => Err(e),

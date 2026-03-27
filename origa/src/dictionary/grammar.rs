@@ -81,6 +81,13 @@ pub fn iter_grammar_rules() -> impl Iterator<Item = &'static GrammarRule> {
         .flat_map(|rules| rules.iter())
 }
 
+pub fn get_rules_by_level(level: &JapaneseLevel) -> Vec<&'static GrammarRule> {
+    GRAMMAR_RULES
+        .get()
+        .map(|rules| rules.iter().filter(|r| r.level() == level).collect())
+        .unwrap_or_default()
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GrammarRule {
     rule_id: Ulid,
