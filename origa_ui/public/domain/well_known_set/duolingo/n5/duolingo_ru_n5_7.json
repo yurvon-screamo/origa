@@ -1,23 +1,23 @@
 {
-  "content": {
-    "English": {
-      "description": "Words from module: Расскажите о своих вещах",
-      "title": "Duolingo (RU) - Модуль 1 Раздел 7"
+    "content": {
+        "English": {
+            "description": "Words from module: Расскажите о своих вещах",
+            "title": "Duolingo 「RU」 - Модуль 1 Раздел 7"
+        },
+        "Russian": {
+            "description": "Слова из модуля: Расскажите о своих вещах",
+            "title": "Duolingo 「RU」 - Модуль 1 Раздел 7"
+        }
     },
-    "Russian": {
-      "description": "Слова из модуля: Расскажите о своих вещах",
-      "title": "Duolingo (RU) - Модуль 1 Раздел 7"
-    }
-  },
-  "level": "N5",
-  "words": [
-    "コート",
-    "手袋",
-    "此れ",
-    "白い",
-    "私",
-    "赤い",
-    "靴",
-    "鞄"
-  ]
+    "level": "N5",
+    "words": [
+        "コート",
+        "手袋",
+        "此れ",
+        "白い",
+        "私",
+        "赤い",
+        "靴",
+        "鞄"
+    ]
 }

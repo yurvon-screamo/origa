@@ -91,7 +91,7 @@ pub fn DuolingoProgressSelector(
     });
 
     let app_label = if is_ru {
-        "Duolingo (RU)"
+        "Duolingo 「RU」"
     } else {
         "Duolingo 「EN」"
     };

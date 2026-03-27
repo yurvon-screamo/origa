@@ -79,7 +79,11 @@ fn extract_kanji_data(kanji: &DomainCard, native_language: NativeLanguage) -> Ka
             .iter()
             .map(|e| (e.word().to_string(), e.meaning().to_string()))
             .collect();
-        if ex.is_empty() { None } else { Some(ex) }
+        if ex.is_empty() {
+            None
+        } else {
+            Some(ex)
+        }
     };
 
     KanjiData {
@@ -196,10 +200,14 @@ pub fn WritingCard(
     let show_drawing = RwSignal::new(true);
     let is_expanded = RwSignal::new(true);
 
+    let local_disposed = StoredValue::new(());
     Effect::new(move |_| {
         if show_details.get() {
             spawn_local(async move {
                 TimeoutFuture::new(1500).await;
+                if local_disposed.is_disposed() {
+                    return;
+                }
                 show_drawing.set(false);
             });
         }

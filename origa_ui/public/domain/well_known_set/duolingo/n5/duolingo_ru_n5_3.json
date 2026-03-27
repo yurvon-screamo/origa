@@ -1,20 +1,20 @@
 {
-  "content": {
-    "English": {
-      "description": "Words from module: Здоровайтесь и прощайтесь",
-      "title": "Duolingo (RU) - Модуль 1 Раздел 3"
+    "content": {
+        "English": {
+            "description": "Words from module: Здоровайтесь и прощайтесь",
+            "title": "Duolingo 「RU」 - Модуль 1 Раздел 3"
+        },
+        "Russian": {
+            "description": "Слова из модуля: Здоровайтесь и прощайтесь",
+            "title": "Duolingo 「RU」 - Модуль 1 Раздел 3"
+        }
     },
-    "Russian": {
-      "description": "Слова из модуля: Здоровайтесь и прощайтесь",
-      "title": "Duolingo (RU) - Модуль 1 Раздел 3"
-    }
-  },
-  "level": "N5",
-  "words": [
-    "ケン",
-    "ナオミ",
-    "又",
-    "明日",
-    "端"
-  ]
+    "level": "N5",
+    "words": [
+        "ケン",
+        "ナオミ",
+        "又",
+        "明日",
+        "端"
+    ]
 }

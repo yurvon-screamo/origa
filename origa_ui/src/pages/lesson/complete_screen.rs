@@ -15,7 +15,7 @@ const SYNC_TOAST_ID: usize = usize::MAX;
 pub fn LessonCompleteScreen(is_completed: RwSignal<bool>, review_count: usize) -> impl IntoView {
     let navigate = use_navigate();
     let lesson_ctx = use_context::<LessonContext>().expect("lesson context");
-    let is_disposed = use_context::<StoredValue<bool>>().expect("is_disposed must be provided");
+    let is_disposed = use_context::<StoredValue<()>>().expect("is_disposed must be provided");
     let is_syncing = RwSignal::new(false);
     let toasts: RwSignal<Vec<ToastData>> = RwSignal::new(Vec::new());
 
@@ -43,7 +43,7 @@ pub fn LessonCompleteScreen(is_completed: RwSignal<bool>, review_count: usize) -
             spawn_local(async move {
                 match repo.merge_current_user().await {
                     Ok(()) => {
-                        if is_disposed.get_value() {
+                        if is_disposed.is_disposed() {
                             return;
                         }
                         set_last_sync_time(js_sys::Date::now() as u64 / 1000);
@@ -61,7 +61,7 @@ pub fn LessonCompleteScreen(is_completed: RwSignal<bool>, review_count: usize) -
                         tracing::info!("Lesson complete: sync successful");
                     },
                     Err(e) => {
-                        if is_disposed.get_value() {
+                        if is_disposed.is_disposed() {
                             return;
                         }
                         toasts.update(|t| t.retain(|toast| toast.id != SYNC_TOAST_ID));
@@ -78,7 +78,7 @@ pub fn LessonCompleteScreen(is_completed: RwSignal<bool>, review_count: usize) -
                         tracing::error!("Lesson complete: sync error: {:?}", e);
                     },
                 }
-                if is_disposed.get_value() {
+                if is_disposed.is_disposed() {
                     return;
                 }
                 is_syncing.set(false);
