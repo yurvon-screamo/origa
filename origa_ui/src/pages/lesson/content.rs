@@ -37,8 +37,7 @@ pub fn LessonContent() -> impl IntoView {
     let known_kanji = RwSignal::new(HashSet::<String>::new());
     let native_language = RwSignal::new(NativeLanguage::Russian);
 
-    let is_disposed = StoredValue::new(false);
-    on_cleanup(move || is_disposed.set_value(true));
+    let is_disposed = StoredValue::new(());
     provide_context(is_disposed);
 
     let lesson_ctx = LessonContext {
@@ -57,7 +56,7 @@ pub fn LessonContent() -> impl IntoView {
         let repo = repo_for_user_data.clone();
         spawn_local(async move {
             if let Ok(Some(user)) = repo.get_current_user().await {
-                if is_disposed.get_value() {
+                if is_disposed.is_disposed() {
                     return;
                 }
                 known_kanji.set(user.knowledge_set().get_known_kanji());
@@ -84,7 +83,7 @@ pub fn LessonContent() -> impl IntoView {
         let repo = repository.clone();
         let current_mode = mode;
         spawn_local(async move {
-            if is_disposed.get_value() {
+            if is_disposed.is_disposed() {
                 return;
             }
             is_loading.set(true);
@@ -105,7 +104,7 @@ pub fn LessonContent() -> impl IntoView {
 
             tracing::info!("Cards len: {}", cards.iter().count());
 
-            if is_disposed.get_value() {
+            if is_disposed.is_disposed() {
                 return;
             }
 

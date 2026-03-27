@@ -10,7 +10,7 @@ fn get_type_label(set_type: &str) -> String {
     match set_type {
         "Jlpt" => "JLPT".to_string(),
         "Migii" => "Migii".to_string(),
-        "DuolingoRu" => "Duolingo (RU)".to_string(),
+        "DuolingoRu" => "Duolingo 「RU」".to_string(),
         "DuolingoEn" => "Duolingo 「EN」".to_string(),
         "MinnaNoNihongo" => "Minna no Nihongo".to_string(),
         other => other.to_string(),

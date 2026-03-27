@@ -308,9 +308,9 @@ mod parser_tests {
     // ==================== parse_duolingo_module_unit RU ====================
 
     #[rstest]
-    #[case("Duolingo (RU) - Модуль 5 Раздел 1", true, Some((5, 1)))]
-    #[case("Duolingo (RU) - Модуль 6 Раздел 48", true, Some((6, 48)))]
-    #[case("Duolingo (RU) - Модуль 1 Раздел 1", true, Some((1, 1)))]
+    #[case("Duolingo 「RU」 - Модуль 5 Раздел 1", true, Some((5, 1)))]
+    #[case("Duolingo 「RU」 - Модуль 6 Раздел 48", true, Some((6, 48)))]
+    #[case("Duolingo 「RU」 - Модуль 1 Раздел 1", true, Some((1, 1)))]
     #[case("Invalid title", true, None)]
     #[case("Duolingo - без модуля", true, None)]
     fn test_parse_duolingo_module_unit_ru(
@@ -377,7 +377,7 @@ mod parser_tests {
             id: "duolingo_ru_1".to_string(),
             set_type: "DuolingoRu".to_string(),
             level: JapaneseLevel::N5,
-            title_ru: "Duolingo (RU) - Модуль 5 Раздел 1".to_string(),
+            title_ru: "Duolingo 「RU」 - Модуль 5 Раздел 1".to_string(),
             title_en: "Duolingo 「EN」 - Section 5 Unit 1".to_string(),
             desc_ru: String::new(),
             desc_en: String::new(),
@@ -400,7 +400,7 @@ mod parser_tests {
                 id: "duolingo_ru_1".to_string(),
                 set_type: "DuolingoRu".to_string(),
                 level: JapaneseLevel::N5,
-                title_ru: "Duolingo (RU) - Модуль 5 Раздел 1".to_string(),
+                title_ru: "Duolingo 「RU」 - Модуль 5 Раздел 1".to_string(),
                 title_en: String::new(),
                 desc_ru: String::new(),
                 desc_en: String::new(),
@@ -410,7 +410,7 @@ mod parser_tests {
                 id: "duolingo_ru_2".to_string(),
                 set_type: "DuolingoRu".to_string(),
                 level: JapaneseLevel::N5,
-                title_ru: "Duolingo (RU) - Модуль 5 Раздел 3".to_string(),
+                title_ru: "Duolingo 「RU」 - Модуль 5 Раздел 3".to_string(),
                 title_en: String::new(),
                 desc_ru: String::new(),
                 desc_en: String::new(),
@@ -435,7 +435,7 @@ mod parser_tests {
                 id: "duolingo_ru_1".to_string(),
                 set_type: "DuolingoRu".to_string(),
                 level: JapaneseLevel::N5,
-                title_ru: "Duolingo (RU) - Модуль 5 Раздел 1".to_string(),
+                title_ru: "Duolingo 「RU」 - Модуль 5 Раздел 1".to_string(),
                 title_en: String::new(),
                 desc_ru: String::new(),
                 desc_en: String::new(),
