@@ -1,19 +1,18 @@
-use crate::repository::{TrailBaseClient, set_session};
+use crate::repository::{set_session, TrailBaseClient};
 use crate::store::auth_store::AuthStore;
 use gloo_storage::{LocalStorage, Storage};
 use origa::domain::{NativeLanguage, User};
 use origa::traits::UserRepository;
 
 pub async fn get_or_create_profile(auth_store: &AuthStore, email: &str) -> Result<User, String> {
+    auth_store
+        .repository()
+        .merge_current_user()
+        .await
+        .map_err(|e| format!("Не удалось синхронизировать профиль: {}", e))?;
+
     match auth_store.repository().get_current_user().await {
-        Ok(Some(user)) => {
-            auth_store
-                .repository()
-                .merge_current_user()
-                .await
-                .map_err(|e| format!("Не удалось синхронизировать профиль: {}", e))?;
-            Ok(user)
-        },
+        Ok(Some(user)) => Ok(user),
         Ok(None) => {
             let new_user = User::new(email.to_string(), NativeLanguage::Russian, None);
 
