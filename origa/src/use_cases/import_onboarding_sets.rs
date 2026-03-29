@@ -9,7 +9,7 @@ use crate::domain::{
     Card, GrammarRuleCard, JapaneseLevel, KanjiCard, OrigaError, RadicalCard, StudyCard,
     VocabularyCard,
 };
-use crate::traits::{UserRepository, WellKnownSetLoader};
+use crate::traits::{id_to_set_type, UserRepository, WellKnownSetLoader};
 
 pub struct ImportOnboardingResult {
     pub imported_set_ids: Vec<String>,
@@ -65,13 +65,15 @@ impl<'a, R: UserRepository, L: WellKnownSetLoader> ImportOnboardingSetsUseCase<'
         };
 
         let mut created_kanji_chars: HashSet<String> = HashSet::new();
-        let mut imported_levels: HashSet<JapaneseLevel> = HashSet::new();
+        let mut jlpt_imported_levels: HashSet<JapaneseLevel> = HashSet::new();
 
         for (set_id, set) in sets {
             debug!(set_id = %set_id, words_count = set.words().len(), "Processing set");
 
             let set_level = *set.level();
-            imported_levels.insert(set_level);
+            if id_to_set_type(&set_id) == "Jlpt" {
+                jlpt_imported_levels.insert(set_level);
+            }
             let words_result = VocabularyCard::from_text(&set.words().join(" "), &native_language);
 
             result.skipped_no_translation += words_result.skipped_no_translation.len();
@@ -98,9 +100,9 @@ impl<'a, R: UserRepository, L: WellKnownSetLoader> ImportOnboardingSetsUseCase<'
             result.imported_set_ids.push(set_id);
         }
 
-        debug!(levels = ?imported_levels, "Importing grammar rules for onboarding levels");
+        debug!(levels = ?jlpt_imported_levels, "Importing grammar rules for onboarding levels");
 
-        for level in &imported_levels {
+        for level in &jlpt_imported_levels {
             let grammar_rules = get_rules_by_level(level);
             for rule in grammar_rules {
                 match GrammarRuleCard::new(*rule.rule_id()) {
