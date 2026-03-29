@@ -51,6 +51,7 @@ pub fn RadicalCardDetails(
                     <KanjiAnimation
                         kanji={radical_stored.get_value().symbol.to_string()}
                         mode=KanjiViewMode::Frames
+                        fallback={radical_stored.get_value().symbol.to_string()}
                     />
                 </div>
 

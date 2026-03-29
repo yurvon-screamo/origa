@@ -48,7 +48,7 @@ pub fn QuizCardView(
     };
 
     let kanji_for_animation: StoredValue<Option<String>> = StoredValue::new(match &card {
-        DomainCard::Kanji(_) => Some(
+        DomainCard::Kanji(_) | DomainCard::Radical(_) => Some(
             card.question(&lang)
                 .ok()
                 .map(|q| q.text().to_string())
@@ -65,7 +65,12 @@ pub fn QuizCardView(
             .as_ref()
             .map(|ctx| ctx.is_muted.get())
             .unwrap_or(false);
-        if !show_result && card_type != CardType::Kanji && is_speech_supported() && !is_muted {
+        if !show_result
+            && card_type != CardType::Kanji
+            && card_type != CardType::Radical
+            && is_speech_supported()
+            && !is_muted
+        {
             let reading = get_reading_from_text(&question_text);
             let _ = speak_text(&reading, 1.0);
         }
@@ -80,7 +85,7 @@ pub fn QuizCardView(
 
             <div class="flex-1 flex flex-col justify-center">
                 <div class="text-center mb-3 sm:mb-6">
-                    <Show when=move || card_type != CardType::Kanji>
+                    <Show when=move || kanji_for_animation.get_value().is_none()>
                         <div class="mb-4">
                             <Heading level=HeadingLevel::H2>
                                 <FuriganaText text=question.get_value() known_kanji=known_kanji.get()/>
@@ -91,14 +96,19 @@ pub fn QuizCardView(
                     <Show when=move || kanji_for_animation.get_value().is_some()>
                         {move || {
                             kanji_for_animation.get_value().map(|kanji: String| {
-                                let kanji_for_section = kanji.clone();
+                                let kanji_clone = kanji.clone();
+                                let fallback_for_radical = if card_type == CardType::Radical {
+                                    Some(kanji_clone.clone())
+                                } else {
+                                    None
+                                };
                                 view! {
                                     <div class="mb-3 sm:mb-6">
                                         <DisplayText>
                                             {kanji}
                                         </DisplayText>
                                     </div>
-                                    <KanjiWritingSection kanji=kanji_for_section mode=KanjiViewMode::Animation />
+                                    <KanjiWritingSection kanji=kanji_clone mode=KanjiViewMode::Animation fallback=fallback_for_radical />
                                 }
                             })
                         }}

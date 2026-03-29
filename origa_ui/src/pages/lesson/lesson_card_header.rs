@@ -31,7 +31,7 @@ pub fn LessonCardHeader(
                     }}
                 </Show>
             </div>
-            <Show when=move || card_type != CardType::Kanji>
+            <Show when=move || card_type != CardType::Kanji && card_type != CardType::Radical>
                 <AudioButtons text=question_text.clone() class=Signal::derive(|| "".to_string())/>
             </Show>
         </div>

@@ -51,6 +51,7 @@ pub fn KanjiAnimation(
     kanji: String,
     #[prop(optional)] mode: KanjiViewMode,
     #[prop(optional, into)] test_id: Signal<String>,
+    #[prop(into)] fallback: Option<String>,
 ) -> impl IntoView {
     let (iteration, set_iteration) = signal(0);
     let abort_handle = Arc::new(Mutex::new(None::<AbortHandle>));
@@ -78,9 +79,11 @@ pub fn KanjiAnimation(
 
             let window = web_sys::window()?;
             let resp = JsFuture::from(window.fetch_with_str(&path)).await.ok()?;
-            let text = JsFuture::from(resp.dyn_into::<web_sys::Response>().ok()?.text().ok()?)
-                .await
-                .ok()?;
+            let response = resp.dyn_into::<web_sys::Response>().ok()?;
+            if !response.ok() {
+                return None;
+            }
+            let text = JsFuture::from(response.text().ok()?).await.ok()?;
             text.as_string()
         }
     });
@@ -153,13 +156,26 @@ pub fn KanjiAnimation(
                         return None;
                     }
 
-                    svg_content.get().flatten().map(move |svg_html: String| {
-                        let (modified_svg, _strokes) = add_animation_delays(&svg_html, stroke_time);
+                    let svg_content_state = svg_content.get();
+                    let is_error = svg_content_state == Some(None);
+                    let svg_result = svg_content_state.flatten();
 
-                        view! {
-                            <div inner_html={modified_svg} />
-                        }
-                    })
+                    if is_error {
+                        fallback.as_ref().map(|text| {
+                            view! {
+                                <div class="kanji-fallback">{text.to_string()}</div>
+                            }
+                            .into_any()
+                        })
+                    } else {
+                        svg_result.map(move |svg_html: String| {
+                            let (modified_svg, _strokes) = add_animation_delays(&svg_html, stroke_time);
+                            view! {
+                                <div inner_html={modified_svg} />
+                            }
+                            .into_any()
+                        })
+                    }
                 }}
             </Suspense>
         </div>
@@ -171,6 +187,7 @@ pub fn KanjiWritingSection(
     kanji: String,
     #[prop(optional)] mode: KanjiViewMode,
     #[prop(optional, into)] test_id: Signal<String>,
+    #[prop(into)] fallback: Option<String>,
 ) -> impl IntoView {
     let test_id_val = move || {
         let val = test_id.get();
@@ -184,6 +201,7 @@ pub fn KanjiWritingSection(
                     kanji={kanji.clone()}
                     mode={mode}
                     test_id="kanji-animation"
+                    fallback={fallback.clone()}
                 />
             </div>
         </div>

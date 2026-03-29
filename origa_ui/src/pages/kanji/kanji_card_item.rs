@@ -136,7 +136,7 @@ pub fn KanjiCardItem(
             {move || {
                 if is_expanded.get() {
                     view! {
-                        <KanjiWritingSection kanji=kanji_for_animation.get_value() mode=KanjiViewMode::Frames />
+                        <KanjiWritingSection kanji=kanji_for_animation.get_value() mode=KanjiViewMode::Frames fallback=None />
                     }.into_any()
                 } else {
                     ().into_any()

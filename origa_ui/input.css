@@ -1227,6 +1227,16 @@ input[type="submit"],
 	height: auto;
 }
 
+.kanji-fallback {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 109px;
+	height: 109px;
+	font-size: 64px;
+	font-family: serif;
+}
+
 .kanji-frames-svg svg {
 	max-width: 100%;
 	width: 100%;
