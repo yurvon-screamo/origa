@@ -16,6 +16,7 @@ const PROB_REVERSED_VIEW: f32 = 0.75;
 const PROB_KANJI_NORMAL: f32 = 0.25;
 const PROB_KANJI_QUIZ: f32 = 0.50;
 const PROB_KANJI_YESNO: f32 = 0.70;
+const PROB_RADICAL_NORMAL: f32 = 0.50;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct QuizOption {
@@ -265,11 +266,12 @@ fn select_applicable_grammar<R: Rng>(
     rules.into_iter().next()
 }
 
-fn select_writing_card_view<R: Rng>(
+fn select_card_view<R: Rng>(
     card: &Card,
     same_type_cards: &[Card],
     lang: &NativeLanguage,
     rng: &mut R,
+    allow_writing: bool,
 ) -> LessonCardView {
     let rand_val = rng.random::<f32>();
     if rand_val < PROB_KANJI_NORMAL {
@@ -280,8 +282,10 @@ fn select_writing_card_view<R: Rng>(
     } else if rand_val < PROB_KANJI_YESNO {
         LessonCardView::generate_yesno(card.clone(), same_type_cards, lang, rng)
             .unwrap_or_else(|_| LessonCardView::Normal(card.clone()))
-    } else {
+    } else if allow_writing {
         LessonCardView::Writing(card.clone())
+    } else {
+        LessonCardView::Normal(card.clone())
     }
 }
 
@@ -343,7 +347,21 @@ impl<'a> LessonViewGenerator<'a> {
                 LessonCardView::Normal(card.clone())
             },
 
-            (CardType::Radical, true) | (CardType::Kanji, true) => {
+            (CardType::Radical, true) => {
+                let rand_val = rng.random::<f32>();
+                if rand_val < PROB_RADICAL_NORMAL {
+                    LessonCardView::Normal(card.clone())
+                } else {
+                    LessonCardView::generate_quiz(
+                        card.clone(),
+                        same_type_cards,
+                        &NativeLanguage::Russian,
+                    )
+                    .unwrap_or_else(|_| LessonCardView::Normal(card.clone()))
+                }
+            },
+
+            (CardType::Kanji, true) => {
                 let rand_val = rng.random::<f32>();
                 if rand_val < 0.33 {
                     LessonCardView::Normal(card.clone())
@@ -359,8 +377,12 @@ impl<'a> LessonViewGenerator<'a> {
                 }
             },
 
-            (CardType::Radical, false) | (CardType::Kanji, false) => {
-                select_writing_card_view(card, same_type_cards, &NativeLanguage::Russian, rng)
+            (CardType::Radical, false) => {
+                select_card_view(card, same_type_cards, &NativeLanguage::Russian, rng, false)
+            },
+
+            (CardType::Kanji, false) => {
+                select_card_view(card, same_type_cards, &NativeLanguage::Russian, rng, true)
             },
 
             (_, true) => {
