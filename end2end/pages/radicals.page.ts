@@ -1,8 +1,9 @@
 import { Page, Locator, expect } from "@playwright/test";
 import { BasePage } from "./base.page";
 
+type FilterType = "Все" | "Новые" | "Сложные" | "В процессе" | "Изученные";
+
 export class RadicalsPage extends BasePage {
-	// Page structure
 	readonly radicalsPage: Locator;
 	readonly radicalsCard: Locator;
 	readonly radicalsHeading: Locator;
@@ -14,7 +15,6 @@ export class RadicalsPage extends BasePage {
 	constructor(page: Page) {
 		super(page);
 
-		// Page structure
 		this.radicalsPage = page.getByTestId("radicals-page");
 		this.radicalsCard = page.getByTestId("radicals-card");
 		this.radicalsHeading = page.getByTestId("radicals-heading");
@@ -40,5 +40,15 @@ export class RadicalsPage extends BasePage {
 
 	async clickBack(): Promise<void> {
 		await this.radicalsBackBtn.click();
+	}
+
+	async selectFilter(name: FilterType): Promise<void> {
+		await this.radicalsPage
+			.getByRole("button", { name: new RegExp(`${name} \\(\\d+\\)`) })
+			.click();
+	}
+
+	async getCardCount(): Promise<number> {
+		return this.radicalsGrid.locator(".card").count();
 	}
 }
