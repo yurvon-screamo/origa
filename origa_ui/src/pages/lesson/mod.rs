@@ -25,7 +25,6 @@ mod radical_card_details;
 mod rating_buttons;
 mod rating_buttons_view;
 mod writing_card;
-mod writing_card_details;
 mod yesno_card_view;
 
 pub use content::LessonContent;

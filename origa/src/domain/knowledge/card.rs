@@ -119,7 +119,7 @@ impl Card {
         match self {
             Card::Vocabulary(card) => card.answer(lang),
             Card::Kanji(card) => card.description(),
-            Card::Grammar(card) => card.short_description(lang),
+            Card::Grammar(card) => card.description(lang),
             Card::Radical(card) => {
                 let info = card.radical_info()?;
                 Answer::new(info.name().to_string()).map_err(|e| OrigaError::InvalidAnswer {

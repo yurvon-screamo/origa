@@ -1,6 +1,6 @@
+use super::radical_card_details::{RadicalCardDetails, RadicalCardDisplay};
 use crate::pages::lesson::kanji_card_details::KanjiCardDetails;
 use crate::pages::lesson::rating_buttons_view::RatingButtonsView;
-use crate::pages::lesson::writing_card_details::RadicalDetailsView;
 use crate::ui_components::{Card, DisplayText, KanjiDrawingPractice, Tag, TagVariant};
 use gloo_timers::future::TimeoutFuture;
 use leptos::prelude::*;
@@ -8,12 +8,6 @@ use leptos::task::spawn_local;
 use origa::domain::{Card as DomainCard, NativeLanguage, Rating};
 use std::collections::HashSet;
 use tracing::warn;
-
-#[derive(Clone)]
-pub struct RadicalInfoForWriting {
-    pub stroke_count: u32,
-    pub kanji_examples: Option<Vec<char>>,
-}
 
 struct KanjiData {
     symbol: String,
@@ -79,11 +73,7 @@ fn extract_kanji_data(kanji: &DomainCard, native_language: NativeLanguage) -> Ka
             .iter()
             .map(|e| (e.word().to_string(), e.meaning().to_string()))
             .collect();
-        if ex.is_empty() {
-            None
-        } else {
-            Some(ex)
-        }
+        if ex.is_empty() { None } else { Some(ex) }
     };
 
     KanjiData {
@@ -96,47 +86,20 @@ fn extract_kanji_data(kanji: &DomainCard, native_language: NativeLanguage) -> Ka
     }
 }
 
-struct RadicalData {
-    symbol: String,
-    display_text: String,
-    info: RadicalInfoForWriting,
-}
-
-fn extract_radical_data(radical: &DomainCard) -> RadicalData {
+fn extract_radical_data(radical: &DomainCard) -> Option<RadicalCardDisplay> {
     let DomainCard::Radical(radical) = radical else {
         unreachable!()
     };
 
-    let symbol = radical.radical_char().to_string();
-    let radical_info_stored = radical.radical_info().ok();
+    let info = radical.radical_info().ok()?;
 
-    let display_text = radical_info_stored
-        .as_ref()
-        .map(|i| i.name().to_string())
-        .unwrap_or_default();
-
-    let stroke_count = radical_info_stored
-        .as_ref()
-        .map(|i| i.stroke_count())
-        .unwrap_or(0);
-
-    let kanji_examples: Option<Vec<char>> = {
-        let examples = radical.kanji_examples();
-        if examples.is_empty() {
-            None
-        } else {
-            Some(examples)
-        }
-    };
-
-    RadicalData {
-        symbol,
-        display_text,
-        info: RadicalInfoForWriting {
-            stroke_count,
-            kanji_examples,
-        },
-    }
+    Some(RadicalCardDisplay {
+        symbol: info.radical(),
+        name: info.name().to_string(),
+        description: info.description().to_string(),
+        stroke_count: info.stroke_count(),
+        kanji_examples: info.kanji().to_vec(),
+    })
 }
 
 fn get_card_type(card: &DomainCard) -> (&'static str, TagVariant) {
@@ -179,16 +142,32 @@ pub fn WritingCard(
             )
         },
         DomainCard::Radical(_) => {
-            let data = extract_radical_data(&card);
-            (
-                data.symbol,
-                data.display_text,
-                None,
-                None,
-                None,
-                None,
-                Some(data.info),
-            )
+            let radical_display = extract_radical_data(&card);
+            match radical_display {
+                Some(display) => (
+                    display.symbol.to_string(),
+                    display.name.clone(),
+                    None,
+                    None,
+                    None,
+                    None,
+                    Some(display),
+                ),
+                None => {
+                    let DomainCard::Radical(radical) = &card else {
+                        unreachable!()
+                    };
+                    (
+                        radical.radical_char().to_string(),
+                        String::new(),
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                    )
+                },
+            }
         },
         _ => {
             return view! { <div>"WritingCard поддерживает только кандзи и радикалы"</div> }
@@ -262,17 +241,9 @@ pub fn WritingCard(
                     </Show>
 
                     <Show when=move || radical_info_sv.get_value().is_some()>
-                        <RadicalDetailsView
-                            stroke_count=radical_info_sv
-                                .get_value()
-                                .as_ref()
-                                .map(|i| i.stroke_count)
-                                .unwrap_or(0)
-                            kanji_examples=StoredValue::new(
-                                radical_info_sv
-                                    .get_value()
-                                    .and_then(|i| i.kanji_examples.clone())
-                            )
+                        <RadicalCardDetails
+                            radical=radical_info_sv.get_value().unwrap()
+                            show_details=is_expanded
                         />
                     </Show>
 
