@@ -143,9 +143,31 @@ pub fn Onboarding() -> impl IntoView {
     });
 
     let on_skip = {
-        let nav = navigate_for_skip;
+        let nav = navigate_for_skip.clone();
+        let disposed = disposed;
+        let repo = repository.clone();
         Callback::new(move |_: leptos::ev::MouseEvent| {
-            nav("/home", Default::default());
+            let repo = repo.clone();
+            let nav = nav.clone();
+
+            spawn_local(async move {
+                let Ok(Some(mut user)) = repo.get_current_user().await else {
+                    tracing::error!("Onboarding skip: get_current_user error");
+                    return;
+                };
+
+                user.mark_set_as_imported("__onboarding_skipped__".to_string());
+
+                if let Err(e) = repo.save_sync(&user).await {
+                    tracing::error!("Onboarding skip: save error: {:?}", e);
+                    return;
+                }
+
+                if disposed.is_disposed() {
+                    return;
+                }
+                nav("/home", Default::default());
+            });
         })
     };
 
