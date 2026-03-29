@@ -144,7 +144,6 @@ pub fn Onboarding() -> impl IntoView {
 
     let on_skip = {
         let nav = navigate_for_skip.clone();
-        let disposed = disposed;
         let repo = repository.clone();
         Callback::new(move |_: leptos::ev::MouseEvent| {
             let repo = repo.clone();

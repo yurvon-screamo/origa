@@ -9,7 +9,7 @@ use crate::domain::{
     Card, GrammarRuleCard, JapaneseLevel, KanjiCard, OrigaError, RadicalCard, StudyCard,
     VocabularyCard,
 };
-use crate::traits::{id_to_set_type, UserRepository, WellKnownSetLoader};
+use crate::traits::{UserRepository, WellKnownSetLoader, id_to_set_type};
 
 pub struct ImportOnboardingResult {
     pub imported_set_ids: Vec<String>,
@@ -105,22 +105,19 @@ impl<'a, R: UserRepository, L: WellKnownSetLoader> ImportOnboardingSetsUseCase<'
         for level in &jlpt_imported_levels {
             let grammar_rules = get_rules_by_level(level);
             for rule in grammar_rules {
-                match GrammarRuleCard::new(*rule.rule_id()) {
-                    Ok(grammar_card) => {
-                        let card = Card::Grammar(grammar_card);
-                        match user.create_card(card) {
-                            Ok(_) => {
-                                result.created_grammar += 1;
-                            },
-                            Err(OrigaError::DuplicateCard { .. }) => {
-                                result.skipped_duplicates += 1;
-                            },
-                            Err(e) => {
-                                warn!(error = ?e, "Failed to create grammar card");
-                            },
-                        }
-                    },
-                    Err(_) => {},
+                if let Ok(grammar_card) = GrammarRuleCard::new(*rule.rule_id()) {
+                    let card = Card::Grammar(grammar_card);
+                    match user.create_card(card) {
+                        Ok(_) => {
+                            result.created_grammar += 1;
+                        },
+                        Err(OrigaError::DuplicateCard { .. }) => {
+                            result.skipped_duplicates += 1;
+                        },
+                        Err(e) => {
+                            warn!(error = ?e, "Failed to create grammar card");
+                        },
+                    }
                 }
             }
         }

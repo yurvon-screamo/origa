@@ -1,4 +1,4 @@
-use crate::repository::{set_session, TrailBaseClient};
+use crate::repository::{TrailBaseClient, set_session};
 use crate::store::auth_store::AuthStore;
 use gloo_storage::{LocalStorage, Storage};
 use origa::domain::{NativeLanguage, User};
