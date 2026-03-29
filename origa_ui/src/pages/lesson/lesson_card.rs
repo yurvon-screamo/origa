@@ -218,6 +218,7 @@ pub fn LessonCard(
                         radicals=radicals_stored.get_value()
                         radical=radical_stored.get_value()
                         example_words=examples_stored.get_value()
+                        grammar_info=grammar_info.clone()
                         known_kanji=known_kanji
                     />
                 </Show>

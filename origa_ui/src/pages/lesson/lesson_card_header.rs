@@ -25,10 +25,7 @@ pub fn LessonCardHeader(
                             .get_value()
                             .map(|info| {
                                 view! {
-                                    <GrammarInfoBadge
-                                        title=info.title().to_string()
-                                        description=info.description().to_string()
-                                    />
+                                    <GrammarInfoBadge title=info.title().to_string() />
                                 }
                             })
                     }}

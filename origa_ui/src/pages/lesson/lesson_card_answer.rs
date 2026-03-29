@@ -5,6 +5,7 @@ use crate::ui_components::{
     Text, TextSize, TypographyVariant,
 };
 use leptos::{ev::MouseEvent, prelude::*};
+use origa::domain::GrammarInfo;
 use std::collections::HashSet;
 
 #[component]
@@ -23,6 +24,7 @@ pub fn LessonCardAnswer(
     radicals: Option<Vec<RadicalDisplay>>,
     radical: Option<RadicalCardDisplay>,
     example_words: Option<Vec<(String, String)>>,
+    grammar_info: Option<GrammarInfo>,
     #[prop(into)] known_kanji: Signal<HashSet<String>>,
 ) -> impl IntoView {
     let question = StoredValue::new(question_text);
@@ -32,6 +34,7 @@ pub fn LessonCardAnswer(
     let radicals_stored = StoredValue::new(radicals);
     let radical_stored = StoredValue::new(radical);
     let examples_stored = StoredValue::new(example_words);
+    let grammar_info_stored = StoredValue::new(grammar_info);
 
     view! {
         <div class="text-center">
@@ -72,6 +75,25 @@ pub fn LessonCardAnswer(
                 class=move || if is_expanded.get() { "border-t border-[var(--border-light)] pt-4 mt-4" } else { "border-t border-[var(--border-light)] pt-4 mt-4 line-clamp-3" }
             >
                 <div class="max-w-max mx-auto space-y-4">
+                    <Show
+                        when=move || grammar_info_stored.get_value().is_some() && !is_kanji && !is_radical
+                    >
+                        {move || {
+                            grammar_info_stored
+                                .get_value()
+                                .map(|info| {
+                                    view! {
+                                        <div class="text-left">
+                                            <MarkdownText
+                                                content=Signal::stored(info.description().to_string())
+                                                variant=Signal::derive(|| MarkdownVariant::Default)
+                                                known_kanji=known_kanji.get()
+                                            />
+                                        </div>
+                                    }
+                                })
+                        }}
+                    </Show>
                     <Show
                         when=move || is_kanji
                         fallback=move || {
