@@ -1,6 +1,6 @@
 use crate::ui_components::{
-    get_reading_from_text, is_speech_supported, speak_text, Button, ButtonVariant, Card,
-    DisplayText, MarkdownText, MarkdownVariant, Text, TextSize, TypographyVariant,
+    Button, ButtonVariant, Card, DisplayText, MarkdownText, MarkdownVariant, Text, TextSize,
+    TypographyVariant, get_reading_from_text, is_speech_supported, speak_text,
 };
 use leptos::prelude::*;
 use origa::domain::{Card as DomainCard, NativeLanguage, YesNoCard};
@@ -70,7 +70,7 @@ pub fn YesNoCardView(
     );
 
     let kanji_for_animation: StoredValue<Option<String>> = StoredValue::new(match &card {
-        DomainCard::Kanji(_) => Some(
+        DomainCard::Kanji(_) | DomainCard::Radical(_) => Some(
             card.question(&lang)
                 .ok()
                 .map(|q| q.text().to_string())
@@ -86,7 +86,12 @@ pub fn YesNoCardView(
             .as_ref()
             .map(|ctx| ctx.is_muted.get())
             .unwrap_or(false);
-        if !show_result && card_type != CardType::Kanji && is_speech_supported() && !is_muted {
+        if !show_result
+            && card_type != CardType::Kanji
+            && card_type != CardType::Radical
+            && is_speech_supported()
+            && !is_muted
+        {
             let reading = get_reading_from_text(&stmt_for_effect);
             let _ = speak_text(&reading, 1.0);
         }
@@ -156,7 +161,7 @@ pub fn YesNoCardView(
 
             <div class="flex-1 flex flex-col justify-center">
                 <div class="text-center mb-3 sm:mb-6">
-                    <Show when=move || card_type != CardType::Kanji>
+                    <Show when=move || kanji_for_animation.get_value().is_none()>
                         <div class="mb-4">
                             <MarkdownText
                                 content=Signal::derive(move || statement.get_value())
