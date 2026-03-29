@@ -141,11 +141,6 @@ jobs:
           storeFile=/tmp/keystore.jks
           EOF
 
-      - name: Install Tauri CLI (npm)
-        if: matrix.platform == 'android'
-        working-directory: tauri
-        run: npm install
-
       - name: Build Tauri Android APK
         if: matrix.platform == 'android'
         working-directory: tauri
