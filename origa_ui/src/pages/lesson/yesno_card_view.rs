@@ -1,6 +1,6 @@
 use crate::ui_components::{
-    Button, ButtonVariant, Card, DisplayText, MarkdownText, MarkdownVariant, Text, TextSize,
-    TypographyVariant, get_reading_from_text, is_speech_supported, speak_text,
+    get_reading_from_text, is_speech_supported, speak_text, Button, ButtonVariant, Card,
+    DisplayText, MarkdownText, MarkdownVariant, Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
 use origa::domain::{Card as DomainCard, NativeLanguage, YesNoCard};
@@ -80,7 +80,6 @@ pub fn YesNoCardView(
     });
 
     let lesson_ctx = use_context::<super::lesson_state::LessonContext>();
-    let stmt_for_effect = statement.get_value();
     Effect::new(move |_| {
         let is_muted = lesson_ctx
             .as_ref()
@@ -92,7 +91,7 @@ pub fn YesNoCardView(
             && is_speech_supported()
             && !is_muted
         {
-            let reading = get_reading_from_text(&stmt_for_effect);
+            let reading = get_reading_from_text(&question_text.get_value());
             let _ = speak_text(&reading, 1.0);
         }
     });
