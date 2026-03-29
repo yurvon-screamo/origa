@@ -23,17 +23,6 @@ pub fn RadicalCardDetails(
                 <div class="flex gap-4 items-start text-left">
                     <div class="w-16 shrink-0">
                         <Text size=TextSize::Default variant=TypographyVariant::Muted>
-                            "Штрихи"
-                        </Text>
-                    </div>
-                    <Text size=TextSize::Large>
-                        {move || radical_stored.get_value().stroke_count.to_string()}
-                    </Text>
-                </div>
-
-                <div class="flex gap-4 items-start text-left">
-                    <div class="w-16 shrink-0">
-                        <Text size=TextSize::Default variant=TypographyVariant::Muted>
                             "Название"
                         </Text>
                     </div>
