@@ -1,106 +1,62 @@
 # Origa　「オリガ」
 
-## Download
+[![Rust](https://img.shields.io/badge/Rust-1.70+-orange.svg)](https://www.rust-lang.org)
+[![Tauri](https://img.shields.io/badge/Tauri-2.0-24C8DB.svg)](https://tauri.app)
+[![Leptos](https://img.shields.io/badge/Leptos-Web-F64F4F.svg)](https://leptos.dev)
+[![License](https://img.shields.io/badge/License-BSL%201.1-blue.svg)](LICENSE)
 
-[![Windows](https://img.shields.io/badge/Windows-Installer-0078D4?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/yurvon-screamo/origa/releases/latest/download/origa_latest_x64-setup.exe)
-[![Linux](https://img.shields.io/badge/Linux-AppImage-FCC624?style=for-the-badge&logo=linux&logoColor=black)](https://github.com/yurvon-screamo/origa/releases/latest/download/origa_latest_amd64.AppImage)
-[![macOS](https://img.shields.io/badge/macOS-Apple_Silicon-000000?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa-macos-arm64.zip)
-[![Android](https://img.shields.io/badge/Android-APK-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://github.com/yurvon-screamo/origa/releases/latest/download/origa-latest.apk)
+**Японский язык без английского посредника.**
 
-[📥 All releases](https://github.com/yurvon-screamo/origa/releases)
+オリガ — это современное десктопное и мобильное приложение для эффективного изучения японского языка.
 
-Origa「オリガ」 - application for learning japanese. Like Anki, but for japanese native and simplified for better user experience.
+Мы используем алгоритм интервального повторения FSRS, встроенный OCR для работы с изображениями и поддерживаем материалы из популярных приложений и учебников.
 
-Learn all flashcards as a single set with FSRS algorithm, tracking your Japanese language progress as single value.
+---
 
-Builded with Rust only.
+## 📥 Скачать
 
-## Supported native languages
+| Платформа | Статус | Формат |
+| :--- | :--- | :--- |
+| **Windows** | ✅ Готово | `.exe`, `.msi` |
+| **Linux** | ✅ Готово | `.deb`, `.AppImage`, `.rpm` |
+| **macOS** | ✅ Готово | `.dmg`, `.app` |
+| **Android** | ✅ Готово | `.apk` |
 
-* Russian
-* English
-* [TODO: 1 priority] Vietnamese
-* [TODO: 2 priority] Korean
-* [TODO: 2 priority] Indonesian
+> Все версии поддерживают оффлайн-режим работы.
 
-## Development
+Также доступна web-версия.
 
-This project uses cargo-make as a task runner for common operations.
+---
 
-### Install cargo-make
+## ✨ Возможности
 
-```bash
-cargo install cargo-make
-```
+### 🧠 Умное запоминание
 
-### Common Commands
+* **Алгоритм FSRS**: Современная альтернатива SM-2, адаптирующая график повторений под вашу память точнее, чем классические методы.
+* **Гибкая настройка колод**: Создавайте свои колоды или используйте готовые подборки.
 
-```bash
-# Show all available tasks
-cargo make
+### 📚 Работа с контентом
 
-# Development
-cargo make dev              # Start frontend dev server
-cargo make dev-tauri        # Start Tauri desktop app
+* **Импорт карточек**:
+  * Из **Anki** (`.apkg`, текстовые файлы).
+  * Из обычного текста.
+  * Импорт материалов из учебников и приложения.
+* **Встроенный OCR**: Распознавание текста с изображений (скриншоты, фото учебников) для быстрого создания карточек.
+* **JLPT-аналитика**: Отслеживание прогресса в соответствии с уровнями японского языкового теста (N5–N1).
 
-# Building
-cargo make build            # Build all workspace (debug)
-cargo make build-release    # Build all workspace (release)
-cargo make build-ui         # Build frontend for production
-cargo make build-tauri      # Build Tauri desktop application
+### 🌍 Локализация
 
-# Testing
-cargo make test             # Run all workspace tests
-cargo make test-verbose     # Run tests with output
-cargo make test-cov         # Generate test coverage report (HTML)
+* **Русский** (полная поддержка)
+* **English** (в разработке)
+* **Vietnam** (в разработке)
 
-# Code Quality
-cargo make lint             # Run all linting checks (fmt + clippy)
-cargo make fmt              # Format code
-cargo make clippy           # Run clippy linter
+---
 
-# E2E Testing
-cargo make e2e              # Run E2E tests (headless)
-cargo make e2e-headed       # Run E2E tests in visible browser
-cargo make e2e-ui           # Run E2E tests with Playwright UI
+## 🏗️ Архитектура и технологии
 
-# CI/CD
-cargo make ci               # Run full CI pipeline (lint + test)
-cargo make ci-full          # Run full CI with E2E and qlty
+Проект построен на современном стеке, обеспечивающем производительность нативного приложения и гибкость веб-интерфейса.
 
-# Utilities
-cargo make clean            # Clean all build artifacts
-cargo make check            # Check workspace for errors
-cargo make docs             # Generate and open documentation
-cargo make deps             # Show dependency tree
-
-# Pre-commit hook
-cargo make pre-commit       # Run fmt + clippy + test
-```
-
-For full list of available tasks, see [cargo-make.toml](origa/cargo-make.toml).
-
-## Features
-
-(partially implemented)
-
-* Learning vocabulary with FSRS algorithm
-* Learning grammar with FSRS algorithm
-* Learning kanji with FSRS algorithm
-* Automatic JLPT level detection based on learned content (kanji, vocabulary, grammar)
-* Visual progress tracking for each JLPT level (N5-N1) with detailed breakdown
-* Generation of translation for the flashcards
-* Generation of furigana for the text
-* Extraction kanji from the flashcards
-* Show radicals for the kanji
-* Import flashcards from anki
-* Import flashcards from screenshots or any images with text
-* Import flashcards from youtube videos
-* Import flashcards from migii
-* Sync flashcards list from duolingo
-* Tokenize and deduplicate vocabulary flashcards
-* Ready collection of flashcards for each level of Japanese language
-
-## License
-
-Application is licensed under [Business Source License 1.1](./LICENSE).
+* **Ядро и бэкенд**: **Rust** — безопасность и высокая скорость обработки данных.
+* **Десктопная обертка**: **Tauri v2** — нативные приложения для Windows, macOS и Linux.
+* **Фронтенд**: **Leptos** — реактивный UI-фреймворк на Rust (WebAssembly), обеспечивающий мгновенный отклик интерфейса.
+* **Мобильная версия**: Нативная сборка под **Android** через Tauri Mobile.
