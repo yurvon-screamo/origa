@@ -15,6 +15,7 @@ pub struct RadicalDisplay {
 #[component]
 pub fn KanjiCardDetails(
     kanji: String,
+    name: String,
     radicals: Option<Vec<RadicalDisplay>>,
     example_words: Option<Vec<(String, String)>>,
     #[prop(into)] show_details: Signal<bool>,
@@ -23,6 +24,7 @@ pub fn KanjiCardDetails(
     #[prop(into)] known_kanji: Signal<HashSet<String>>,
 ) -> impl IntoView {
     let kanji_stored = StoredValue::new(kanji);
+    let name_stored = StoredValue::new(name);
     let radicals_stored = StoredValue::new(radicals);
     let examples_stored = StoredValue::new(example_words);
     let on_readings_stored = StoredValue::new(on_readings);
@@ -33,6 +35,19 @@ pub fn KanjiCardDetails(
             <div class="my-6 space-y-4 max-w-max mx-auto">
                 <ReadingGroup label="音読み[онъёми]" readings=on_readings_stored />
                 <ReadingGroup label="訓読み[кунъёми]" readings=kun_readings_stored />
+
+                <div class="flex gap-4 items-start text-left">
+                    <div class="w-16 shrink-0">
+                        <Text size=TextSize::Default variant=TypographyVariant::Muted>
+                            "Значение"
+                        </Text>
+                    </div>
+                    <div class="flex px-2 py-1">
+                        <Text size=TextSize::Large class="text-primary">
+                            {name_stored.get_value()}
+                        </Text>
+                    </div>
+                </div>
 
                 <Show when=move || radicals_stored.get_value().is_some()>
                     <div class="flex gap-4 items-start text-left">

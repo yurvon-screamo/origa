@@ -114,6 +114,7 @@ pub fn LessonCardAnswer(
                     >
                         <KanjiCardDetails
                             kanji=question.get_value()
+                            name=answer.get_value()
                             radicals=radicals_stored.get_value()
                             example_words=examples_stored.get_value()
                             show_details=is_expanded

@@ -79,7 +79,11 @@ fn extract_kanji_data(kanji: &DomainCard, native_language: NativeLanguage) -> Ka
             .iter()
             .map(|e| (e.word().to_string(), e.meaning().to_string()))
             .collect();
-        if ex.is_empty() { None } else { Some(ex) }
+        if ex.is_empty() {
+            None
+        } else {
+            Some(ex)
+        }
     };
 
     KanjiData {
@@ -247,6 +251,7 @@ pub fn WritingCard(
                     <Show when=move || radicals_sv.get_value().is_some()>
                         <KanjiCardDetails
                             kanji=symbol_sv.get_value()
+                            name=display_text_sv.get_value()
                             radicals=radicals_sv.get_value()
                             example_words=examples_sv.get_value()
                             show_details=is_expanded
