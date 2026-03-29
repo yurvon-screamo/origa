@@ -1,8 +1,8 @@
 use super::lesson_state::LessonContext;
 use crate::repository::set_last_sync_time;
 use crate::ui_components::{
-    Button, ButtonVariant, Card, DisplayText, Text, TextSize, ToastContainer, ToastData, ToastType,
-    TypographyVariant,
+    stop_speech, Button, ButtonVariant, Card, DisplayText, Text, TextSize, ToastContainer,
+    ToastData, ToastType, TypographyVariant,
 };
 use leptos::prelude::*;
 use leptos::task::spawn_local;
@@ -90,6 +90,7 @@ pub fn LessonCompleteScreen(is_completed: RwSignal<bool>, review_count: usize) -
         let lesson_ctx = lesson_ctx.clone();
         let sync_with_server = sync_with_server.clone();
         Callback::new(move |_: ()| {
+            let _ = stop_speech();
             sync_with_server();
             lesson_ctx.is_completed.set(false);
             lesson_ctx.reload_trigger.update(|t| *t += 1);
@@ -100,6 +101,7 @@ pub fn LessonCompleteScreen(is_completed: RwSignal<bool>, review_count: usize) -
         let navigate = navigate.clone();
         let sync_with_server = sync_with_server.clone();
         Callback::new(move |_: ()| {
+            let _ = stop_speech();
             sync_with_server();
             navigate("/home", Default::default());
         })
@@ -118,11 +120,13 @@ pub fn LessonCompleteScreen(is_completed: RwSignal<bool>, review_count: usize) -
                 if ev.key() == " " {
                     ev.prevent_default();
                 }
+                let _ = stop_speech();
                 kb_sync();
                 kb_lesson_ctx.is_completed.set(false);
                 kb_lesson_ctx.reload_trigger.update(|t| *t += 1);
             },
             "Escape" => {
+                let _ = stop_speech();
                 kb_sync();
                 kb_navigate("/home", Default::default());
             },

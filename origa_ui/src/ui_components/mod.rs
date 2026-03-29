@@ -90,7 +90,7 @@ pub use stepper::{Stepper, StepperStep};
 pub use tabs::{TabItem, Tabs};
 pub use tag::{Tag, TagVariant};
 pub use text_to_speech::{
-    get_reading_from_text, is_speech_supported, speak_text, speak_text_with_callback,
+    get_reading_from_text, is_speech_supported, speak_text, speak_text_with_callback, stop_speech,
 };
 pub use toast::{ToastContainer, ToastData, ToastType};
 pub use tooltip::Tooltip;

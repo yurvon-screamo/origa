@@ -1,10 +1,10 @@
 use std::collections::HashSet;
 
-use leptos::wasm_bindgen::JsCast;
 use leptos::wasm_bindgen::closure::Closure;
+use leptos::wasm_bindgen::JsCast;
 use origa::domain::{filter_japanese_text, furiganize_segments};
 use web_sys::js_sys::Function;
-use web_sys::{SpeechSynthesisUtterance, SpeechSynthesisVoice, window};
+use web_sys::{window, SpeechSynthesisUtterance, SpeechSynthesisVoice};
 
 pub fn is_speech_supported() -> bool {
     window().and_then(|w| w.speech_synthesis().ok()).is_some()
@@ -18,6 +18,8 @@ pub fn speak_text(text: &str, rate: f32) -> Result<(), String> {
     let synthesis = window
         .speech_synthesis()
         .map_err(|e| format!("Speech synthesis not supported: {:?}", e))?;
+
+    synthesis.cancel();
 
     let utterance = SpeechSynthesisUtterance::new()
         .map_err(|e| format!("Failed to create utterance: {:?}", e))?;
@@ -44,6 +46,8 @@ where
     let synthesis = window
         .speech_synthesis()
         .map_err(|e| format!("Speech synthesis not supported: {:?}", e))?;
+
+    synthesis.cancel();
 
     let utterance = SpeechSynthesisUtterance::new()
         .map_err(|e| format!("Failed to create utterance: {:?}", e))?;
