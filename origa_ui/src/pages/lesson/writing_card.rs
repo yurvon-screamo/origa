@@ -73,7 +73,11 @@ fn extract_kanji_data(kanji: &DomainCard, native_language: NativeLanguage) -> Ka
             .iter()
             .map(|e| (e.word().to_string(), e.meaning().to_string()))
             .collect();
-        if ex.is_empty() { None } else { Some(ex) }
+        if ex.is_empty() {
+            None
+        } else {
+            Some(ex)
+        }
     };
 
     KanjiData {
@@ -114,6 +118,7 @@ fn get_card_type(card: &DomainCard) -> (&'static str, TagVariant) {
 pub fn WritingCard(
     card: DomainCard,
     on_rate: Callback<Rating>,
+    #[prop(optional)] on_show_answer: Option<Callback<()>>,
     #[prop(into)] disabled: Signal<bool>,
     native_language: NativeLanguage,
     #[prop(into)] known_kanji: Signal<HashSet<String>>,
@@ -221,6 +226,9 @@ pub fn WritingCard(
                             kanji=symbol_sv.get_value()
                             on_complete=Callback::new(move |_| {
                                 show_details.set(true);
+                                if let Some(cb) = on_show_answer {
+                                    cb.run(());
+                                }
                             })
                         />
                     </div>
