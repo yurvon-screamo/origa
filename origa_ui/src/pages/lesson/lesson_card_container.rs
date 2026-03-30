@@ -132,6 +132,7 @@ pub fn LessonCardContainer() -> impl IntoView {
                                     <WritingCard
                                         card=card
                                         on_rate=on_rate_callback
+                                        on_show_answer=Callback::new(move |_| show_answer())
                                         disabled=Signal::derive(move || is_rating.get().is_some())
                                         native_language=native_language.get()
                                         known_kanji=Signal::from(known_kanji)
