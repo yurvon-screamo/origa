@@ -1,8 +1,8 @@
 use crate::dictionary::grammar::get_rule_by_id;
 use crate::domain::knowledge::KnowledgeSet;
 use crate::domain::value_objects::NativeLanguage;
-use crate::domain::{Card, CardType, GrammarRuleCard, VocabularyCard};
-use rand::{Rng, prelude::IndexedRandom, seq::SliceRandom};
+use crate::domain::{Card, CardType, GrammarRuleCard, MemoryHistory, VocabularyCard};
+use rand::{prelude::IndexedRandom, seq::SliceRandom, Rng};
 use serde::{Deserialize, Serialize};
 use ulid::Ulid;
 
@@ -329,6 +329,7 @@ impl<'a> LessonViewGenerator<'a> {
             is_new,
             same_type_cards,
             &known_grammars,
+            study_card.memory(),
             rng,
         )
     }
@@ -340,6 +341,7 @@ impl<'a> LessonViewGenerator<'a> {
         is_new: bool,
         same_type_cards: &[Card],
         known_grammars: &[GrammarRuleCard],
+        memory: &MemoryHistory,
         rng: &mut R,
     ) -> LessonCardView {
         match (card_type, is_new) {
@@ -400,6 +402,7 @@ impl<'a> LessonViewGenerator<'a> {
             },
 
             (CardType::Vocabulary, false) => {
+                let eligible_for_advanced_views = memory.is_known_card() || memory.is_in_progress();
                 let rand_val = rng.random::<f32>();
                 if rand_val < PROB_NORMAL_VIEW {
                     LessonCardView::Normal(card.clone())
@@ -418,10 +421,12 @@ impl<'a> LessonViewGenerator<'a> {
                         rng,
                     )
                     .unwrap_or_else(|_| LessonCardView::Normal(card.clone()))
-                } else if rand_val < PROB_REVERSED_VIEW {
+                } else if eligible_for_advanced_views && rand_val < PROB_REVERSED_VIEW {
                     self.apply_reversed(card)
-                } else {
+                } else if eligible_for_advanced_views {
                     self.apply_grammar_mutated(card, known_grammars, rng)
+                } else {
+                    LessonCardView::Normal(card.clone())
                 }
             },
         }
@@ -689,7 +694,7 @@ mod tests {
 
     mod tests_yesno {
         use super::*;
-        use rand::{SeedableRng, rngs::StdRng};
+        use rand::{rngs::StdRng, SeedableRng};
 
         fn create_vocab_card_with_word(word: &str) -> Card {
             Card::Vocabulary(VocabularyCard::new(
@@ -881,6 +886,150 @@ mod tests {
             assert!(
                 (0.45..=0.55).contains(&incorrect_ratio),
                 "is_incorrect ratio should be ~50%, got {incorrect_ratio}"
+            );
+        }
+    }
+
+    mod reversed_view_filtering {
+        use super::*;
+        use crate::domain::memory::{Difficulty, MemoryState, Rating, ReviewLog, Stability};
+        use crate::domain::value_objects::Question;
+        use crate::domain::{Card, StudyCard};
+        use chrono::{Duration, Utc};
+        use rand::{rngs::StdRng, SeedableRng};
+
+        fn create_study_card_with_memory(
+            word: &str,
+            stability: f64,
+            difficulty: f64,
+            interval_days: i64,
+            rating: Rating,
+        ) -> StudyCard {
+            let card = Card::Vocabulary(VocabularyCard::new(
+                Question::new(word.to_string()).unwrap(),
+            ));
+            let mut study_card = StudyCard::new(card);
+            let memory = MemoryState::new(
+                Stability::new(stability).unwrap(),
+                Difficulty::new(difficulty).unwrap(),
+                Utc::now(),
+            );
+            study_card.add_review(
+                memory,
+                ReviewLog::new(rating, Duration::days(interval_days)),
+            );
+            study_card
+        }
+
+        fn create_high_difficulty_card(word: &str) -> StudyCard {
+            let study_card = create_study_card_with_memory(word, 3.0, 7.0, 5, Rating::Hard);
+            assert!(study_card.memory().is_high_difficulty());
+            assert!(!study_card.memory().is_known_card());
+            assert!(!study_card.memory().is_in_progress());
+            study_card
+        }
+
+        fn create_known_card(word: &str) -> StudyCard {
+            let study_card = create_study_card_with_memory(word, 15.0, 2.0, 20, Rating::Easy);
+            assert!(study_card.memory().is_known_card());
+            assert!(!study_card.memory().is_high_difficulty());
+            assert!(!study_card.memory().is_in_progress());
+            study_card
+        }
+
+        fn create_in_progress_card(word: &str) -> StudyCard {
+            let study_card = create_study_card_with_memory(word, 5.0, 3.0, 5, Rating::Good);
+            assert!(study_card.memory().is_in_progress());
+            assert!(!study_card.memory().is_high_difficulty());
+            assert!(!study_card.memory().is_known_card());
+            study_card
+        }
+
+        fn create_knowledge_set_with_vocab(words: &[&str]) -> KnowledgeSet {
+            let mut ks = KnowledgeSet::new();
+            for word in words {
+                ks.create_card(Card::Vocabulary(VocabularyCard::new(
+                    Question::new(word.to_string()).unwrap(),
+                )))
+                .unwrap();
+            }
+            ks
+        }
+
+        const DISTRACTOR_WORDS: &[&str] = &["猫", "犬", "鳥", "魚", "馬", "牛"];
+        const ITERATIONS: u64 = 500;
+
+        fn count_view_types(study_card: &StudyCard, ks: &KnowledgeSet) -> (usize, usize, usize) {
+            let generator = LessonViewGenerator::new(ks);
+            let mut reversed_count = 0;
+            let mut grammar_mutated_count = 0;
+            let mut normal_count = 0;
+
+            for seed in 0..ITERATIONS {
+                let mut rng = StdRng::seed_from_u64(seed);
+                let view = generator.apply_view(study_card, study_card.is_new(), &mut rng);
+
+                match view {
+                    LessonCardView::Reversed(_) => reversed_count += 1,
+                    LessonCardView::GrammarMutated { .. } => grammar_mutated_count += 1,
+                    LessonCardView::Normal(_) => normal_count += 1,
+                    _ => {},
+                }
+            }
+
+            (reversed_count, grammar_mutated_count, normal_count)
+        }
+
+        #[test]
+        fn high_difficulty_card_never_gets_reversed_view() {
+            crate::use_cases::init_real_dictionaries();
+
+            let ks = create_knowledge_set_with_vocab(DISTRACTOR_WORDS);
+            let study_card = create_high_difficulty_card("猫");
+
+            let (reversed, grammar_mutated, normal) = count_view_types(&study_card, &ks);
+
+            assert_eq!(
+                reversed, 0,
+                "high_difficulty card should never get Reversed view"
+            );
+            assert_eq!(
+                grammar_mutated, 0,
+                "high_difficulty card should never get GrammarMutated view"
+            );
+            assert!(
+                normal > 0,
+                "high_difficulty card should get Normal view as fallback in advanced range"
+            );
+        }
+
+        #[test]
+        fn known_card_can_get_reversed_view() {
+            crate::use_cases::init_real_dictionaries();
+
+            let ks = create_knowledge_set_with_vocab(DISTRACTOR_WORDS);
+            let study_card = create_known_card("猫");
+
+            let (reversed, grammar_mutated, normal) = count_view_types(&study_card, &ks);
+
+            assert!(
+                reversed > 0 || grammar_mutated > 0,
+                "known card should get Reversed or GrammarMutated views, got {reversed} reversed, {grammar_mutated} grammar_mutated, {normal} normal"
+            );
+        }
+
+        #[test]
+        fn in_progress_card_can_get_reversed_view() {
+            crate::use_cases::init_real_dictionaries();
+
+            let ks = create_knowledge_set_with_vocab(DISTRACTOR_WORDS);
+            let study_card = create_in_progress_card("猫");
+
+            let (reversed, grammar_mutated, normal) = count_view_types(&study_card, &ks);
+
+            assert!(
+                reversed > 0 || grammar_mutated > 0,
+                "in_progress card should get Reversed or GrammarMutated views, got {reversed} reversed, {grammar_mutated} grammar_mutated, {normal} normal"
             );
         }
     }
