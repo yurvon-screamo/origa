@@ -34,6 +34,12 @@ export class SetsPage extends BasePage {
 	readonly importSelectedBtn: Locator;
 	readonly cancelSelectBtn: Locator;
 
+	// Drawer (import preview modal)
+	readonly drawer: Locator;
+	readonly drawerImportBtn: Locator;
+	readonly drawerCancelBtn: Locator;
+	readonly drawerWordItems: Locator;
+
 	constructor(page: Page) {
 		super(page);
 
@@ -68,6 +74,12 @@ export class SetsPage extends BasePage {
 		// Import actions
 		this.importSelectedBtn = page.getByTestId("sets-import-selected-btn");
 		this.cancelSelectBtn = page.getByTestId("sets-cancel-select-btn");
+
+		// Drawer
+		this.drawer = page.locator(".drawer-content");
+		this.drawerImportBtn = this.drawer.getByRole("button", { name: "Импортировать" });
+		this.drawerCancelBtn = this.drawer.getByRole("button", { name: "Отмена" });
+		this.drawerWordItems = this.drawer.locator(".cursor-pointer");
 	}
 
 	async goto(): Promise<void> {
@@ -107,5 +119,54 @@ export class SetsPage extends BasePage {
 	async waitForLoading(): Promise<void> {
 		await expect(this.loading).toBeVisible();
 		await expect(this.loading).toBeHidden();
+	}
+
+	async waitForLoad(): Promise<void> {
+		await expect(this.searchInput).toBeVisible({ timeout: 10_000 });
+	}
+
+	async getSetCardCount(): Promise<number> {
+		return this.setsPage.locator(".card").count();
+	}
+
+	async getImportedCardCount(): Promise<number> {
+		return this.setsPage.locator(".card").filter({ hasText: "Импортирован" }).count();
+	}
+
+	getFirstNonImportedCard(): Locator {
+		return this.setsPage
+			.locator(".card")
+			.filter({ has: this.page.getByRole("button", { name: "Импорт" }) })
+			.first();
+	}
+
+	async clickImportOnCard(index: number): Promise<void> {
+		const card = this.setsPage.locator(".card").nth(index);
+		await card.getByRole("button", { name: "Импорт" }).click();
+		await expect(this.drawer).toBeVisible({ timeout: 5_000 });
+	}
+
+	async importFromDrawer(): Promise<void> {
+		await this.drawerImportBtn.click({ timeout: 5_000 });
+		await expect(this.drawer).not.toBeVisible({ timeout: 30_000 });
+	}
+
+	async cancelImportFromDrawer(): Promise<void> {
+		await this.drawerCancelBtn.click();
+	}
+
+	async selectSetCheckbox(index: number): Promise<void> {
+		const card = this.setsPage.locator(".card").nth(index);
+		await card.locator("input[type='checkbox']").click();
+	}
+
+	async cancelSelection(): Promise<void> {
+		await this.cancelSelectBtn.click();
+	}
+
+	async waitForDrawerWords(): Promise<void> {
+		const foundText = this.drawer.getByText(/Найдено/);
+		const emptyText = this.drawer.getByText("Нет слов для импорта");
+		await expect(foundText.or(emptyText)).toBeVisible({ timeout: 15_000 });
 	}
 }
