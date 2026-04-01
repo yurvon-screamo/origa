@@ -87,7 +87,7 @@ pub fn QuizOptions(
         >
             <Text size=TextSize::Default>"Не знаю"</Text>
             <Show when=move || !show_result>
-                <span class="text-[var(--fg-muted)] text-xs font-mono">"[Space]"</span>
+                <span class="text-[var(--fg-muted)] text-xs font-mono">"[Пробел]"</span>
             </Show>
         </button>
     }

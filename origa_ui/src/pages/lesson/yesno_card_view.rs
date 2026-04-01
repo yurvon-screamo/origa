@@ -143,18 +143,6 @@ pub fn YesNoCardView(
         }
     });
 
-    let dont_know_btn_class = Signal::derive(move || {
-        if show_result {
-            if dont_know_selected {
-                "quiz-option-dimmed ring-2 ring-[var(--fg-muted)]".to_string()
-            } else {
-                "quiz-option-dimmed opacity-50".to_string()
-            }
-        } else {
-            String::new()
-        }
-    });
-
     let yes_variant = Signal::derive(move || {
         if show_result {
             ButtonVariant::Default
@@ -213,17 +201,7 @@ pub fn YesNoCardView(
                     </Text>
                 </div>
 
-                <div class="grid grid-cols-3 gap-3">
-                    <Button
-                        test_id=Signal::derive(|| "yesno-dont-know-btn".to_string())
-                        variant=Signal::derive(|| ButtonVariant::Default)
-                        class=dont_know_btn_class
-                        disabled=Signal::derive(move || show_result)
-                        on_click=Callback::new(move |_| on_dont_know.run(()))
-                    >
-                        "Не знаю" <span class="hidden sm:inline">"[Space]"</span>
-                    </Button>
-
+                <div class="grid grid-cols-2 gap-3">
                     <Button
                         variant=Signal::derive(|| ButtonVariant::Default)
                         class=no_btn_class
@@ -242,6 +220,29 @@ pub fn YesNoCardView(
                         "Да" <span class="hidden sm:inline">"[2]"</span>
                     </Button>
                 </div>
+                <button
+                    data-testid="yesno-dont-know-btn"
+                    class=move || {
+                        let base = "w-full mt-2 p-2 sm:p-3 border text-center transition-all cursor-pointer flex items-center justify-center gap-2 text-[var(--fg-muted)]";
+                        if dont_know_selected {
+                            format!("{} ring-2 ring-[var(--fg-muted)] bg-[var(--bg-secondary)]", base)
+                        } else if show_result {
+                            format!("{} pointer-events-none opacity-50", base)
+                        } else {
+                            base.to_string()
+                        }
+                    }
+                    on:click=move |_| {
+                        if !show_result {
+                            on_dont_know.run(());
+                        }
+                    }
+                >
+                    <Text size=TextSize::Default>"Не знаю"</Text>
+                    <Show when=move || !show_result>
+                        <span class="text-[var(--fg-muted)] text-xs font-mono">"[Пробел]"</span>
+                    </Show>
+                </button>
 
                 <Show when=move || show_result>
                     <div class="mt-6 text-center">
