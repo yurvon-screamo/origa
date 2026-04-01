@@ -70,13 +70,13 @@ pub fn QuizOptions(
         <button
             data-testid="quiz-dont-know-btn"
             class=move || {
-                let base = "w-full mt-2 p-2 sm:p-3 border text-center transition-all cursor-pointer flex items-center justify-center gap-2 text-[var(--fg-muted)]";
+                let base = "w-full mt-2 p-2 sm:p-4 border text-center transition-all cursor-pointer flex items-center justify-center gap-2";
                 if dont_know_selected {
-                    format!("{} ring-2 ring-[var(--fg-muted)] bg-[var(--bg-secondary)]", base)
+                    format!("{} quiz-option-neutral ring-2 ring-[var(--accent-olive)]", base)
                 } else if show_result {
-                    format!("{} pointer-events-none opacity-50", base)
+                    format!("{} quiz-option-dimmed pointer-events-none", base)
                 } else {
-                    base.to_string()
+                    format!("{} quiz-option-neutral", base)
                 }
             }
             on:click=move |_| {
