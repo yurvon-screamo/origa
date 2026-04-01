@@ -223,13 +223,13 @@ pub fn YesNoCardView(
                 <button
                     data-testid="yesno-dont-know-btn"
                     class=move || {
-                        let base = "w-full mt-2 p-2 sm:p-3 border text-center transition-all cursor-pointer flex items-center justify-center gap-2 text-[var(--fg-muted)]";
+                        let base = "w-full mt-2 p-2 sm:p-4 border text-center transition-all cursor-pointer flex items-center justify-center gap-2";
                         if dont_know_selected {
-                            format!("{} ring-2 ring-[var(--fg-muted)] bg-[var(--bg-secondary)]", base)
+                            format!("{} quiz-option-neutral ring-2 ring-[var(--accent-olive)]", base)
                         } else if show_result {
-                            format!("{} pointer-events-none opacity-50", base)
+                            format!("{} quiz-option-dimmed pointer-events-none", base)
                         } else {
-                            base.to_string()
+                            format!("{} quiz-option-neutral", base)
                         }
                     }
                     on:click=move |_| {
@@ -239,9 +239,7 @@ pub fn YesNoCardView(
                     }
                 >
                     <Text size=TextSize::Default>"Не знаю"</Text>
-                    <Show when=move || !show_result>
-                        <span class="text-[var(--fg-muted)] text-xs font-mono">"[Пробел]"</span>
-                    </Show>
+                    <span class="hidden sm:inline text-[var(--fg-muted)] text-xs font-mono">"[Пробел]"</span>
                 </button>
 
                 <Show when=move || show_result>
