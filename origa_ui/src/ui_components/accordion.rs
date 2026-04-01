@@ -44,8 +44,7 @@ pub fn AccordionItem(
                 <span class="accordion-icon"></span>
             </div>
             <div
-                class="accordion-content"
-                style:max-height=move || if is_open.get() { "200px" } else { "0px" }
+                class=move || format!("accordion-content accordion-max-height {}", if is_open.get() { "accordion-max-height-open" } else { "" })
             >
                 <div class="accordion-body">
                     {_children()}

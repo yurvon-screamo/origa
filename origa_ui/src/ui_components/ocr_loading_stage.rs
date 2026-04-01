@@ -117,24 +117,35 @@ pub fn LoadingStageItem(
 ) -> impl IntoView {
     let test_id_val = move || {
         let val = test_id.get();
-        if val.is_empty() { None } else { Some(val) }
+        if val.is_empty() {
+            None
+        } else {
+            Some(val)
+        }
     };
-    let (icon_class, icon_content, icon_label) = match status {
-        StageStatus::Waiting => ("text-[var(--fg-light)]", "\u{25CB}", "Ожидание"),
-        StageStatus::Active => ("text-[var(--accent-olive)]", "\u{25C9}", "Загрузка"),
-        StageStatus::Completed => ("text-[var(--success)]", "\u{2713}", "Завершено"),
-        StageStatus::Error => ("text-[var(--error)]", "\u{2717}", "Ошибка"),
+    let icon_class = match status {
+        StageStatus::Waiting => "ocr-stage-icon-pending",
+        StageStatus::Active => "ocr-stage-icon-processing",
+        StageStatus::Completed => "ocr-stage-icon-success",
+        StageStatus::Error => "ocr-stage-icon-error",
+    };
+
+    let (icon_content, icon_label) = match status {
+        StageStatus::Waiting => ("\u{25CB}", "Ожидание"),
+        StageStatus::Active => ("\u{25C9}", "Загрузка"),
+        StageStatus::Completed => ("\u{2713}", "Завершено"),
+        StageStatus::Error => ("\u{2717}", "Ошибка"),
     };
 
     let card_class = match status {
-        StageStatus::Active => "bg-[var(--bg-warm)] border border-[var(--accent-olive)]",
-        StageStatus::Error => "bg-[var(--bg-warm)] border border-[var(--error)]",
-        StageStatus::Completed => "bg-[var(--bg-paper)] border border-[var(--border-light)]",
-        StageStatus::Waiting => "bg-[var(--bg-aged)] border border-[var(--border-light)]",
+        StageStatus::Active => "ocr-stage-bg-warm border ocr-stage-border-processing",
+        StageStatus::Error => "ocr-stage-bg-warm border ocr-stage-border-error",
+        StageStatus::Completed => "bg-[var(--bg-paper)] border ocr-stage-border-pending",
+        StageStatus::Waiting => "bg-[var(--bg-aged)] border ocr-stage-border-pending",
     };
 
     let text_class = match status {
-        StageStatus::Waiting => "text-[var(--fg-muted)]",
+        StageStatus::Waiting => "ocr-stage-text-pending",
         _ => "text-[var(--fg-black)]",
     };
 
@@ -169,10 +180,10 @@ pub fn LoadingStageItem(
                     <div class="progress-track">
                         <div
                             class="progress-fill"
-                            style=format!("width: {}%", percent)
+                            style=format!("--progress-width: {}%", percent)
                         ></div>
                     </div>
-                    <div class="text-xs text-[var(--fg-muted)]">{details}</div>
+                    <div class="text-xs ocr-stage-text-pending">{details}</div>
                 </div>
             })
         } else {
@@ -182,7 +193,7 @@ pub fn LoadingStageItem(
 
     let error_view = if status == StageStatus::Error {
         error_message.map(|msg| {
-            view! { <div class="mt-2 text-xs text-[var(--error)]">{msg}</div> }
+            view! { <div class="mt-2 text-xs ocr-stage-text-error">{msg}</div> }
         })
     } else {
         None
@@ -198,7 +209,7 @@ pub fn LoadingStageItem(
                 >{icon_content}</span>
                 <div class="flex-1 min-w-0">
                     <div class=format!("text-sm font-medium {}", text_class)>{title}</div>
-                    <div class="text-xs text-[var(--fg-muted)] mt-0.5">{description}</div>
+                    <div class="text-xs ocr-stage-text-pending mt-0.5">{description}</div>
                     {progress_view}
                     {error_view}
                 </div>

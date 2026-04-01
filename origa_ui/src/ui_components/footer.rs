@@ -27,16 +27,20 @@ pub fn Footer(
 ) -> impl IntoView {
     let test_id_val = move || {
         let val = test_id.get();
-        if val.is_empty() { None } else { Some(val) }
+        if val.is_empty() {
+            None
+        } else {
+            Some(val)
+        }
     };
 
     view! {
-        <footer data-testid=test_id_val class="footer py-16 mt-24">
-            <div class="w-full px-6">
-                <div class="grid md:grid-cols-4 gap-12 mb-12">
-                    <div>
-                        <h4 class="font-serif text-2xl mb-4">{move || _brand.get()}</h4>
-                        <p class="font-mono text-[10px] tracking-widest text-[var(--fg-muted)] leading-relaxed">
+        <footer data-testid=test_id_val class="footer">
+            <div class="footer-container w-full px-6">
+                <div class="footer-grid">
+                    <div class="footer-section">
+                        <h4 class="footer-brand">{move || _brand.get()}</h4>
+                        <p class="footer-tagline">
                             {move || _description.get()}
                         </p>
                     </div>
@@ -47,11 +51,11 @@ pub fn Footer(
                         children=move |section| {
                             let links = section.links.clone();
                             view! {
-                                <div>
-                                    <p class="font-mono text-[9px] tracking-widest text-[var(--fg-muted)] uppercase mb-4">
+                                <div class="footer-section">
+                                    <p class="footer-section-title">
                                         {section.title}
                                     </p>
-                                    <ul class="space-y-2">
+                                    <ul class="footer-nav">
                                         <For
                                             each=move || links.clone()
                                             key=|link| link.label.clone()
@@ -60,7 +64,7 @@ pub fn Footer(
                                                     <li>
                                                         <a
                                                             href=link.href
-                                                            class="font-mono text-xs hover:text-[var(--accent-terracotta)] transition-colors"
+                                                            class="footer-link"
                                                         >
                                                             {link.label}
                                                         </a>
@@ -74,14 +78,14 @@ pub fn Footer(
                         }
                     />
 
-                    <div>
-                        <p class="font-mono text-[9px] tracking-widest text-[var(--fg-muted)] uppercase mb-4">"Newsletter"</p>
+                    <div class="footer-section">
+                        <p class="footer-section-title">"Newsletter"</p>
                         <Search
                             placeholder=move || _newsletter_placeholder.get()
                             class="!pl-4"
                             value=RwSignal::new(String::new())
                         />
-                        <Button class="btn-sm w-full mt-3" variant=ButtonVariant::Filled>
+                        <Button class="btn btn-sm w-full mt-3" variant=ButtonVariant::Filled>
                             "Subscribe"
                         </Button>
                     </div>
@@ -89,18 +93,18 @@ pub fn Footer(
 
                 <Divider class="mb-8" />
 
-                <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-                    <p class="font-mono text-[9px] tracking-widest text-[var(--fg-muted)]">
+                <div class="footer-bottom">
+                    <p class="footer-copyright">
                         "MMXXIV LE STYLE DESIGN SYSTEM"
                     </p>
-                    <div class="flex gap-6">
-                        <a href="#" class="font-mono text-[9px] tracking-widest text-[var(--fg-muted)] hover:text-[var(--fg-black)] transition-colors">
+                    <div class="footer-social">
+                        <a href="#" class="footer-social-link">
                             "Privacy"
                         </a>
-                        <a href="#" class="font-mono text-[9px] tracking-widest text-[var(--fg-muted)] hover:text-[var(--fg-black)] transition-colors">
+                        <a href="#" class="footer-social-link">
                             "Terms"
                         </a>
-                        <a href="#" class="font-mono text-[9px] tracking-widest text-[var(--fg-muted)] hover:text-[var(--fg-black)] transition-colors">
+                        <a href="#" class="footer-social-link">
                             "Cookies"
                         </a>
                     </div>

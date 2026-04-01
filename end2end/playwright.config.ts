@@ -11,7 +11,7 @@ export default defineConfig({
     fullyParallel: false,
     forbidOnly: isCI,
     retries: isCI ? 2 : 1,
-    workers: process.env.CI ? 1 : "100%",
+    workers: 1,
     reporter: [
         [
             "html",

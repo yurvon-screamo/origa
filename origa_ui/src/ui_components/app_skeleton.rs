@@ -9,19 +9,23 @@ pub fn AppSkeleton(
 ) -> impl IntoView {
     let test_id_val = move || {
         let val = test_id.get();
-        if val.is_empty() { None } else { Some(val) }
+        if val.is_empty() {
+            None
+        } else {
+            Some(val)
+        }
     };
 
     view! {
-        <div data-testid=test_id_val class="fixed inset-0 z-[9999] flex items-center justify-center bg-[#f7f4ee]">
-            <div class="w-full max-w-[800px] p-6">
+        <div data-testid=test_id_val class="app-skeleton">
+            <div class="app-skeleton-content">
                 // Header skeleton
                 <div class="mb-8">
                     <Skeleton width="200px".to_string() height="32px".to_string() />
                 </div>
 
                 // Main content skeleton
-                <div class="flex flex-col gap-4">
+                <div class="app-skeleton-lines">
                     // Card skeleton 1
                     <div class="rounded-xl overflow-hidden">
                         <Skeleton width="100%".to_string() height="120px".to_string() />
@@ -33,7 +37,7 @@ pub fn AppSkeleton(
                     </div>
 
                     // List skeleton
-                    <div class="flex flex-col gap-2">
+                    <div class="app-skeleton-lines">
                         <Skeleton width="100%".to_string() height="48px".to_string() />
                         <Skeleton width="100%".to_string() height="48px".to_string() />
                         <Skeleton width="100%".to_string() height="48px".to_string() />

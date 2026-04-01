@@ -33,11 +33,11 @@ pub fn DeleteConfirmModal(
             is_open=is_open
             title=Signal::derive(|| "Удалить карточку?".to_string())
         >
-            <div class="space-y-4">
+            <div class="delete-confirm-modal">
                 <Text size=TextSize::Default variant=TypographyVariant::Muted>
                     "Карточка будет удалена без возможности восстановления."
                 </Text>
-                <div class="flex gap-2 justify-end">
+                <div class="delete-confirm-actions">
                     <Button
                         test_id=cancel_test_id
                         variant=ButtonVariant::Ghost
