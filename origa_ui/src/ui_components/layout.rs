@@ -19,7 +19,11 @@ pub fn PageLayout(
 ) -> impl IntoView {
     let test_id_val = move || {
         let val = test_id.get();
-        if val.is_empty() { None } else { Some(val) }
+        if val.is_empty() {
+            None
+        } else {
+            Some(val)
+        }
     };
 
     view! {
@@ -27,9 +31,9 @@ pub fn PageLayout(
             data-testid=test_id_val
             class=move || {
                 match variant.get() {
-                    PageLayoutVariant::Centered => "min-h-screen flex items-center justify-center p-4 sm:p-6 p-safe",
-                    PageLayoutVariant::Full => "min-h-screen flex flex-col p-4 sm:p-6 p-safe",
-                    PageLayoutVariant::Compact => "min-h-[calc(100vh-4rem)] p-4 sm:p-6 px-safe",
+                    PageLayoutVariant::Centered => "page-layout-centered",
+                    PageLayoutVariant::Full => "page-layout-full",
+                    PageLayoutVariant::Compact => "page-layout-compact",
                 }
             }
         >
@@ -60,23 +64,27 @@ pub fn CardLayout(
 ) -> impl IntoView {
     let test_id_val = move || {
         let val = test_id.get();
-        if val.is_empty() { None } else { Some(val) }
+        if val.is_empty() {
+            None
+        } else {
+            Some(val)
+        }
     };
 
     view! {
         <div
             data-testid=test_id_val
             class=move || {
-                let base = match size.get() {
-                    CardLayoutSize::Small => "max-w-sm w-full mx-auto",
-                    CardLayoutSize::Medium => "max-w-md w-full mx-auto",
-                    CardLayoutSize::Large => "max-w-lg w-full mx-auto",
-                    CardLayoutSize::Adaptive => "w-full",
+                let base_class = match size.get() {
+                    CardLayoutSize::Small => "card-layout-small",
+                    CardLayoutSize::Medium => "card-layout-medium",
+                    CardLayoutSize::Large => "card-layout-large",
+                    CardLayoutSize::Adaptive => "card-layout-adaptive",
                 };
-                format!("{} {}", base, class.get())
+                format!("{} {}", base_class, class.get())
             }
         >
-            <div class="bg-[var(--bg-cream)] border border-[var(--border-dark)] p-4 sm:p-6 lg:p-8">
+            <div class="card-layout-content">
                 {children()}
             </div>
         </div>

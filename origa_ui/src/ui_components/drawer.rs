@@ -19,7 +19,11 @@ pub fn Drawer(
 
     let test_id_val = move || {
         let val = test_id.get();
-        if val.is_empty() { None } else { Some(val) }
+        if val.is_empty() {
+            None
+        } else {
+            Some(val)
+        }
     };
 
     let test_id_close = move || {
@@ -65,7 +69,7 @@ pub fn Drawer(
 
                 <div class="drawer-content" data-testid=test_id_val>
                     {/* Header: фиксированный */}
-                    <div class="flex justify-between items-start mb-6 shrink-0">
+                    <div class="modal-header">
                         <div>
                             <h3 class="font-serif text-2xl mt-1">{move || title.get()}</h3>
                         </div>
@@ -73,7 +77,7 @@ pub fn Drawer(
                             {move || action_button.with_value(|b| b.as_ref().map(|c| c()))}
                             <button
                                 on:click=close_drawer
-                                class="text-[var(--fg-muted)] hover:text-[var(--fg-black)] transition-colors"
+                                class="modal-close-btn"
                                 data-testid=test_id_close
                             >
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">

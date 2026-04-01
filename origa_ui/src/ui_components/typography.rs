@@ -39,21 +39,21 @@ pub fn Heading(
             data-testid=test_id_val
             class=move || {
                 let variant_class = match variant.get() {
-                    TypographyVariant::Primary => "text-[var(--fg-black)]",
-                    TypographyVariant::Muted => "text-[var(--fg-muted)]",
-                    TypographyVariant::Olive => "text-[var(--accent-olive)]",
+                    TypographyVariant::Primary => "text-primary",
+                    TypographyVariant::Muted => "text-muted",
+                    TypographyVariant::Olive => "text-olive",
                 };
 
                 let size_class = match level.get() {
-                    HeadingLevel::H1 => "text-[clamp(1.75rem,6vw,3rem)] leading-tight break-words",
-                    HeadingLevel::H2 => "text-2xl",
-                    HeadingLevel::H3 => "text-xl",
-                    HeadingLevel::H4 => "text-lg",
-                    HeadingLevel::H5 => "text-base",
-                    HeadingLevel::H6 => "text-sm",
+                    HeadingLevel::H1 => "heading-h1",
+                    HeadingLevel::H2 => "heading-h2",
+                    HeadingLevel::H3 => "heading-h3",
+                    HeadingLevel::H4 => "heading-h4",
+                    HeadingLevel::H5 => "heading-h5",
+                    HeadingLevel::H6 => "heading-h6",
                 };
 
-                format!("font-serif font-light tracking-tight {} {} {}", size_class, variant_class, class.get())
+                format!("{} {} {}", size_class, variant_class, class.get())
             }
         >
             {children()}
@@ -88,22 +88,22 @@ pub fn Text(
         <p
             data-testid=test_id_val
             class=move || {
-                let size_class = match size.get() {
-                    TextSize::Default => "text-sm",
-                    TextSize::Small => "text-xs",
-                    TextSize::Large => "text-base",
+                let variant_class = match variant.get() {
+                    TypographyVariant::Primary => "text-primary",
+                    TypographyVariant::Muted => "text-muted",
+                    TypographyVariant::Olive => "text-olive",
                 };
 
-                let variant_class = match variant.get() {
-                    TypographyVariant::Primary => "text-[var(--fg-black)]",
-                    TypographyVariant::Muted => "text-[var(--fg-muted)]",
-                    TypographyVariant::Olive => "text-[var(--accent-olive)]",
+                let size_class = match size.get() {
+                    TextSize::Default => "",
+                    TextSize::Small => "text-xs",
+                    TextSize::Large => "text-base",
                 };
 
                 let uppercase_class = if uppercase.get() { "uppercase" } else { "" };
                 let tracking_class = if tracking_widest.get() { "tracking-widest" } else { "" };
 
-                format!("font-mono {} {} {} {} {}", size_class, variant_class, uppercase_class, tracking_class, class.get())
+                format!("{} {} {} {} {}", size_class, variant_class, uppercase_class, tracking_class, class.get())
             }
         >
             {children()}
@@ -125,7 +125,7 @@ pub fn DisplayText(
     view! {
         <p
             data-testid=test_id_val
-            class=move || format!("font-serif text-[clamp(1.5rem,5vw,2.25rem)] font-light leading-tight break-words text-[var(--fg-black)] {}", class.get())
+            class=move || format!("display-text {}", class.get())
         >
             {children()}
         </p>
