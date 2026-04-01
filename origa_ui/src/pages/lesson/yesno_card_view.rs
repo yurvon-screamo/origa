@@ -1,6 +1,6 @@
 use crate::ui_components::{
-    Button, ButtonVariant, Card, DisplayText, MarkdownText, MarkdownVariant, Text, TextSize,
-    TypographyVariant, get_reading_from_text, is_speech_supported, speak_text,
+    get_reading_from_text, is_speech_supported, speak_text, Button, ButtonVariant, Card,
+    DisplayText, MarkdownText, MarkdownVariant, Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
 use origa::domain::{Card as DomainCard, NativeLanguage, YesNoCard};
@@ -15,6 +15,7 @@ pub enum YesNoResult {
     None,
     Correct,
     Incorrect,
+    DontKnow,
 }
 
 impl YesNoResult {
@@ -34,6 +35,7 @@ impl YesNoResult {
         match self {
             YesNoResult::Correct => "✓ Правильно!",
             YesNoResult::Incorrect => "✗ Неверно",
+            YesNoResult::DontKnow => "— Не знаю",
             YesNoResult::None => "",
         }
     }
@@ -42,6 +44,7 @@ impl YesNoResult {
         match self {
             YesNoResult::Correct => "text-[var(--success)] font-bold",
             YesNoResult::Incorrect => "text-[var(--error)] font-bold",
+            YesNoResult::DontKnow => "text-[var(--fg-muted)] font-bold",
             YesNoResult::None => "",
         }
     }
@@ -53,6 +56,8 @@ pub fn YesNoCardView(
     show_result: bool,
     selected_answer: Option<bool>,
     on_answer: Callback<bool>,
+    on_dont_know: Callback<()>,
+    dont_know_selected: bool,
     native_language: NativeLanguage,
     #[prop(into)] known_kanji: Signal<HashSet<String>>,
 ) -> impl IntoView {
@@ -97,6 +102,9 @@ pub fn YesNoCardView(
     });
 
     let yesno_result = move || {
+        if dont_know_selected && show_result {
+            return YesNoResult::DontKnow;
+        }
         YesNoResult::from_answer(
             is_statement_correct,
             selected_answer.unwrap_or(false),
@@ -129,6 +137,18 @@ pub fn YesNoCardView(
                 "quiz-option-wrong".to_string()
             } else {
                 "quiz-option-dimmed".to_string()
+            }
+        } else {
+            String::new()
+        }
+    });
+
+    let dont_know_btn_class = Signal::derive(move || {
+        if show_result {
+            if dont_know_selected {
+                "quiz-option-dimmed ring-2 ring-[var(--fg-muted)]".to_string()
+            } else {
+                "quiz-option-dimmed opacity-50".to_string()
             }
         } else {
             String::new()
@@ -193,7 +213,17 @@ pub fn YesNoCardView(
                     </Text>
                 </div>
 
-                <div class="grid grid-cols-2 gap-3">
+                <div class="grid grid-cols-3 gap-3">
+                    <Button
+                        test_id=Signal::derive(|| "yesno-dont-know-btn".to_string())
+                        variant=Signal::derive(|| ButtonVariant::Default)
+                        class=dont_know_btn_class
+                        disabled=Signal::derive(move || show_result)
+                        on_click=Callback::new(move |_| on_dont_know.run(()))
+                    >
+                        "Не знаю" <span class="hidden sm:inline">"[Space]"</span>
+                    </Button>
+
                     <Button
                         variant=Signal::derive(|| ButtonVariant::Default)
                         class=no_btn_class
@@ -220,14 +250,16 @@ pub fn YesNoCardView(
                         </Text>
                     </div>
 
-                    <div class="mt-3 text-center">
-                        <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                            {"Правильный ответ: "}
-                            <span class="font-semibold">
-                                {correct_answer_text}
-                            </span>
-                        </Text>
-                    </div>
+                    <Show when=move || !dont_know_selected>
+                        <div class="mt-3 text-center">
+                            <Text size=TextSize::Small variant=TypographyVariant::Muted>
+                                {"Правильный ответ: "}
+                                <span class="font-semibold">
+                                    {correct_answer_text}
+                                </span>
+                            </Text>
+                        </div>
+                    </Show>
                 </Show>
             </div>
         </Card>

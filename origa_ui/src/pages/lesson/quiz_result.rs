@@ -4,6 +4,7 @@ pub enum QuizResult {
     None,
     Correct,
     Incorrect,
+    DontKnow,
 }
 
 #[derive(Clone, Copy, PartialEq, Debug)]
@@ -22,6 +23,8 @@ impl QuizResult {
             QuizResult::Correct => OptionDisplay::Dimmed,
             QuizResult::Incorrect if is_selected => OptionDisplay::Wrong,
             QuizResult::Incorrect => OptionDisplay::Dimmed,
+            QuizResult::DontKnow if is_correct => OptionDisplay::Correct,
+            QuizResult::DontKnow => OptionDisplay::Dimmed,
         }
     }
 

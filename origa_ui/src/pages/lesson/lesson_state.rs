@@ -20,6 +20,7 @@ pub struct LessonState {
     pub review_count: usize,
     pub selected_quiz_option: Option<usize>,
     pub selected_yesno_answer: Option<bool>,
+    pub dont_know_selected: bool,
 }
 
 #[derive(Clone)]

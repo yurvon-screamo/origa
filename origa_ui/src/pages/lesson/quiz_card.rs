@@ -1,6 +1,6 @@
 use crate::ui_components::{
-    Card, DisplayText, FuriganaText, Heading, HeadingLevel, KanjiViewMode, KanjiWritingSection,
-    Text, TextSize, TypographyVariant, get_reading_from_text, is_speech_supported, speak_text,
+    get_reading_from_text, is_speech_supported, speak_text, Card, DisplayText, FuriganaText,
+    Heading, HeadingLevel, KanjiViewMode, KanjiWritingSection, Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
 use origa::domain::{Card as DomainCard, NativeLanguage, QuizCard};
@@ -18,6 +18,8 @@ pub fn QuizCardView(
     show_result: bool,
     selected_option: Option<usize>,
     on_select_option: Callback<usize>,
+    on_dont_know: Callback<()>,
+    dont_know_selected: bool,
     native_language: NativeLanguage,
     #[prop(into)] known_kanji: Signal<HashSet<String>>,
 ) -> impl IntoView {
@@ -34,6 +36,9 @@ pub fn QuizCardView(
         StoredValue::new(quiz_card.options().to_vec());
 
     let quiz_result = move || {
+        if dont_know_selected && show_result {
+            return QuizResult::DontKnow;
+        }
         if let Some(selected) = selected_option {
             let opts = options.get_value();
             if let Some(opt) = opts.get(selected) {
@@ -125,6 +130,8 @@ pub fn QuizCardView(
                     show_result=show_result
                     quiz_result=quiz_result()
                     on_select_option=on_select_option
+                    on_dont_know=on_dont_know
+                    dont_know_selected=dont_know_selected
                     known_kanji=known_kanji
                 />
 

@@ -12,6 +12,8 @@ pub fn QuizOptions(
     show_result: bool,
     quiz_result: QuizResult,
     on_select_option: Callback<usize>,
+    on_dont_know: Callback<()>,
+    dont_know_selected: bool,
     #[prop(into)] known_kanji: Signal<HashSet<String>>,
 ) -> impl IntoView {
     view! {
@@ -65,5 +67,28 @@ pub fn QuizOptions(
                     .collect::<Vec<_>>()
             }}
         </div>
+        <button
+            data-testid="quiz-dont-know-btn"
+            class=move || {
+                let base = "w-full mt-2 p-2 sm:p-3 border text-center transition-all cursor-pointer flex items-center justify-center gap-2 text-[var(--fg-muted)]";
+                if dont_know_selected {
+                    format!("{} ring-2 ring-[var(--fg-muted)] bg-[var(--bg-secondary)]", base)
+                } else if show_result {
+                    format!("{} pointer-events-none opacity-50", base)
+                } else {
+                    base.to_string()
+                }
+            }
+            on:click=move |_| {
+                if !show_result {
+                    on_dont_know.run(());
+                }
+            }
+        >
+            <Text size=TextSize::Default>"Не знаю"</Text>
+            <Show when=move || !show_result>
+                <span class="text-[var(--fg-muted)] text-xs font-mono">"[Space]"</span>
+            </Show>
+        </button>
     }
 }

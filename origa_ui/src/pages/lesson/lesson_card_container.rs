@@ -1,8 +1,10 @@
 use super::keyboard_handler::create_keyboard_handler;
 use super::lesson_card::LessonCard;
 use super::lesson_state::LessonContext;
+use super::on_quiz_select::create_on_quiz_dont_know;
 use super::on_quiz_select::create_on_quiz_select;
 use super::on_rate::create_on_rate_callback;
+use super::on_yesno_select::create_on_yesno_dont_know;
 use super::on_yesno_select::create_on_yesno_select;
 use super::quiz_card::QuizCardView;
 use super::rating_buttons_view::RatingButtonsView;
@@ -33,12 +35,17 @@ pub fn LessonCardContainer() -> impl IntoView {
 
     let on_yesno_select = create_on_yesno_select(lesson_state, on_rate_callback);
 
+    let on_quiz_dont_know = create_on_quiz_dont_know(lesson_state, on_rate_callback);
+    let on_yesno_dont_know = create_on_yesno_dont_know(lesson_state, on_rate_callback);
+
     let handle_keydown = create_keyboard_handler(
         lesson_ctx,
         is_rating,
         on_rate_callback,
         on_quiz_select,
         on_yesno_select,
+        on_quiz_dont_know,
+        on_yesno_dont_know,
         lesson_state,
         show_answer,
     );
@@ -104,8 +111,9 @@ pub fn LessonCardContainer() -> impl IntoView {
                     {move || {
                         current_card_view.get().and_then(|card_view| {
                             if let LessonCardView::Quiz(quiz) = card_view {
-                                let selected_option = lesson_state.get().selected_quiz_option;
-                                let show_result = lesson_state.get().showing_answer;
+                                let state = lesson_state.get();
+                                let selected_option = state.selected_quiz_option;
+                                let show_result = state.showing_answer;
 
                                 Some(view! {
                                     <QuizCardView
@@ -113,6 +121,8 @@ pub fn LessonCardContainer() -> impl IntoView {
                                         show_result=show_result
                                         selected_option=selected_option
                                         on_select_option=on_quiz_select
+                                        on_dont_know=on_quiz_dont_know
+                                        dont_know_selected=state.dont_know_selected
                                         native_language=native_language.get()
                                         known_kanji=Signal::from(known_kanji)
                                     />
@@ -149,8 +159,9 @@ pub fn LessonCardContainer() -> impl IntoView {
                     {move || {
                         current_card_view.get().and_then(|card_view| {
                             if let LessonCardView::YesNo(yesno) = card_view {
-                                let selected_answer = lesson_state.get().selected_yesno_answer;
-                                let show_result = lesson_state.get().showing_answer;
+                                let state = lesson_state.get();
+                                let selected_answer = state.selected_yesno_answer;
+                                let show_result = state.showing_answer;
 
                                 Some(view! {
                                     <YesNoCardView
@@ -158,6 +169,8 @@ pub fn LessonCardContainer() -> impl IntoView {
                                         show_result=show_result
                                         selected_answer=selected_answer
                                         on_answer=on_yesno_select
+                                        on_dont_know=on_yesno_dont_know
+                                        dont_know_selected=state.dont_know_selected
                                         native_language=native_language.get()
                                         known_kanji=Signal::from(known_kanji)
                                     />
