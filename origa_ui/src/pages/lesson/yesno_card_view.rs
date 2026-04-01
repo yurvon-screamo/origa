@@ -30,24 +30,6 @@ impl YesNoResult {
             YesNoResult::Incorrect
         }
     }
-
-    pub fn result_text(&self) -> &'static str {
-        match self {
-            YesNoResult::Correct => "✓ Правильно!",
-            YesNoResult::Incorrect => "✗ Неверно",
-            YesNoResult::DontKnow => "— Не знаю",
-            YesNoResult::None => "",
-        }
-    }
-
-    pub fn result_class(&self) -> &'static str {
-        match self {
-            YesNoResult::Correct => "text-[var(--success)] font-bold",
-            YesNoResult::Incorrect => "text-[var(--error)] font-bold",
-            YesNoResult::DontKnow => "text-[var(--fg-muted)] font-bold",
-            YesNoResult::None => "",
-        }
-    }
 }
 
 #[component]
@@ -243,19 +225,29 @@ pub fn YesNoCardView(
                 </button>
 
                 <Show when=move || show_result>
-                    <div class="mt-6 text-center">
-                        <Text size=TextSize::Default class=move || yesno_result().result_class().to_string()>
-                            {move || yesno_result().result_text()}
-                        </Text>
-                    </div>
+                    <Show when=move || yesno_result() == YesNoResult::Correct>
+                        <div class="mt-6 text-center">
+                            <Text size=TextSize::Default class="text-[var(--success)] font-bold">
+                                "✓ Правильно!"
+                            </Text>
+                        </div>
+                    </Show>
 
-                    <Show when=move || !dont_know_selected>
-                        <div class="mt-3 text-center">
+                    <Show when=move || matches!(yesno_result(), YesNoResult::Incorrect)>
+                        <div class="mt-6 text-center">
                             <Text size=TextSize::Small variant=TypographyVariant::Muted>
                                 {"Правильный ответ: "}
                                 <span class="font-semibold">
                                     {correct_answer_text}
                                 </span>
+                            </Text>
+                        </div>
+                    </Show>
+
+                    <Show when=move || yesno_result() == YesNoResult::DontKnow>
+                        <div class="mt-6 text-center">
+                            <Text size=TextSize::Default class="text-[var(--fg-muted)] font-bold">
+                                "— Не знаю"
                             </Text>
                         </div>
                     </Show>
