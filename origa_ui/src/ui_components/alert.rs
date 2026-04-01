@@ -20,7 +20,11 @@ pub fn Alert(
 ) -> impl IntoView {
     let test_id_val = move || {
         let val = test_id.get();
-        if val.is_empty() { None } else { Some(val) }
+        if val.is_empty() {
+            None
+        } else {
+            Some(val)
+        }
     };
 
     view! {
@@ -55,8 +59,8 @@ pub fn Alert(
                 }}
             </svg>
             <div>
-                <p class="font-mono text-xs tracking-wider">{move || title.get()}</p>
-                <p class="font-mono text-[10px] text-[var(--fg-muted)] mt-1">{move || message.get()}</p>
+                <p class="alert-title">{move || title.get()}</p>
+                <p class="alert-message">{move || message.get()}</p>
             </div>
         </div>
     }

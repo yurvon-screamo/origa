@@ -22,7 +22,11 @@ pub fn Stepper(
 ) -> impl IntoView {
     let test_id_val = move || {
         let val = test_id.get();
-        if val.is_empty() { None } else { Some(val) }
+        if val.is_empty() {
+            None
+        } else {
+            Some(val)
+        }
     };
 
     let step_test_id = move |idx: usize| {
@@ -61,7 +65,7 @@ pub fn Stepper(
                                 data-testid=step_tst_id
                             >
                                 <div class="stepper-number">{step_number}</div>
-                                <span class="stepper-label hidden md:block">{step_label.clone()}</span>
+                                <span class="stepper-label stepper-label-desktop">{step_label.clone()}</span>
                             </div>
                             <Show when=move || idx < steps_len - 1>
                                 <div class=move || {
@@ -69,7 +73,7 @@ pub fn Stepper(
                                     if idx < active_idx {
                                         "stepper-line"
                                     } else {
-                                        "stepper-line opacity-30"
+                                        "stepper-line stepper-line-inactive"
                                     }
                                 }></div>
                             </Show>

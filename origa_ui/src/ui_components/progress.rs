@@ -9,7 +9,11 @@ pub fn ProgressBar(
 ) -> impl IntoView {
     let test_id_val = move || {
         let val = test_id.get();
-        if val.is_empty() { None } else { Some(val) }
+        if val.is_empty() {
+            None
+        } else {
+            Some(val)
+        }
     };
 
     let percentage = move || {
@@ -20,9 +24,9 @@ pub fn ProgressBar(
 
     view! {
         <div data-testid=test_id_val>
-            <div class="flex justify-between mb-2">
-                <span class="font-mono text-[10px] tracking-widest">{move || label.get()}</span>
-                <span class="font-mono text-[10px]">{move || format!("{}%", percentage() as u32)}</span>
+            <div class="progress-header">
+                <span class="progress-label">{move || label.get()}</span>
+                <span class="progress-value">{move || format!("{}%", percentage() as u32)}</span>
             </div>
             <div class="progress-track">
                 <div

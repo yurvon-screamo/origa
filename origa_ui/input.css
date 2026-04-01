@@ -2251,3 +2251,252 @@ input[type="submit"],
 	max-height: 220px;
 	overflow-y: auto;
 }
+
+/* === AUDIT FIX: Component-specific styles === */
+
+/* Alert */
+.alert-title {
+	font-family: "DM Mono", monospace;
+	font-size: 10px;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+}
+
+.alert-message {
+	font-family: "DM Mono", monospace;
+	font-size: 10px;
+	letter-spacing: 0.05em;
+	color: var(--fg-muted);
+	margin-top: 4px;
+}
+
+/* Toast */
+.toast-content {
+	flex: 1;
+}
+
+.toast-title {
+	font-family: "DM Mono", monospace;
+	font-size: 10px;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+}
+
+.toast-message {
+	font-family: "DM Mono", monospace;
+	font-size: 10px;
+	letter-spacing: 0.05em;
+	color: var(--fg-muted);
+	margin-top: 4px;
+}
+
+/* Progress */
+.progress-header {
+	display: flex;
+	justify-content: space-between;
+	margin-bottom: 8px;
+}
+
+.progress-label {
+	font-family: "DM Mono", monospace;
+	font-size: 10px;
+	letter-spacing: 0.15em;
+	text-transform: uppercase;
+}
+
+.progress-value {
+	font-family: "DM Mono", monospace;
+	font-size: 10px;
+}
+
+/* Modal/Drawer */
+.modal-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	margin-bottom: 24px;
+	flex-shrink: 0;
+}
+
+.modal-close-btn {
+	color: var(--fg-muted);
+	transition: color 0.2s ease;
+}
+
+.modal-close-btn:hover {
+	color: var(--fg-black);
+}
+
+/* Stepper */
+.stepper-label-desktop {
+	display: none;
+}
+
+@media (min-width: 768px) {
+	.stepper-label-desktop {
+		display: block;
+	}
+}
+
+.stepper-line-inactive {
+	opacity: 0.3;
+}
+
+/* Typography */
+.heading-h1 {
+	font-family: "Cormorant Garamond", serif;
+	font-weight: 300;
+	font-size: clamp(1.75rem, 6vw, 3rem);
+	line-height: 1.2;
+	word-break: break-words;
+	letter-spacing: -0.02em;
+}
+
+.heading-h2 {
+	font-family: "Cormorant Garamond", serif;
+	font-weight: 300;
+	font-size: 1.5rem;
+}
+
+.heading-h3 {
+	font-family: "Cormorant Garamond", serif;
+	font-weight: 400;
+	font-size: 1.25rem;
+}
+
+.heading-h4 {
+	font-family: "Cormorant Garamond", serif;
+	font-weight: 400;
+	font-size: 1.125rem;
+}
+
+.heading-h5 {
+	font-family: "Cormorant Garamond", serif;
+	font-weight: 500;
+	font-size: 1rem;
+}
+
+.heading-h6 {
+	font-family: "Cormorant Garamond", serif;
+	font-weight: 500;
+	font-size: 0.875rem;
+}
+
+.text-primary {
+	color: var(--fg-black);
+}
+
+.text-muted {
+	color: var(--fg-muted);
+}
+
+.text-olive {
+	color: var(--accent-olive);
+}
+
+.display-text {
+	font-family: "Cormorant Garamond", serif;
+	font-weight: 300;
+	font-size: clamp(1.5rem, 5vw, 2.25rem);
+	line-height: 1.2;
+	word-break: break-words;
+	color: var(--fg-black);
+}
+
+/* Layout */
+.page-layout-centered {
+	min-height: 100vh;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 16px;
+}
+
+@media (min-width: 640px) {
+	.page-layout-centered {
+		padding: 24px;
+	}
+}
+
+.page-layout-full {
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+	padding: 16px;
+}
+
+@media (min-width: 640px) {
+	.page-layout-full {
+		padding: 24px;
+	}
+}
+
+.page-layout-compact {
+	min-height: calc(100vh - 4rem);
+	padding: 16px;
+}
+
+@media (min-width: 640px) {
+	.page-layout-compact {
+		padding: 24px;
+	}
+}
+
+.card-layout-small {
+	max-width: 480px;
+	width: 100%;
+	margin: 0 auto;
+}
+
+.card-layout-medium {
+	max-width: 768px;
+	width: 100%;
+	margin: 0 auto;
+}
+
+.card-layout-large {
+	max-width: 1024px;
+	width: 100%;
+	margin: 0 auto;
+}
+
+.card-layout-adaptive {
+	width: 100%;
+}
+
+.card-layout-content {
+	background: var(--bg-cream);
+	border: 1px solid var(--border-dark);
+	padding: 16px;
+}
+
+@media (min-width: 640px) {
+	.card-layout-content {
+		padding: 24px;
+	}
+}
+
+@media (min-width: 1024px) {
+	.card-layout-content {
+		padding: 32px;
+	}
+}
+
+/* Accordion */
+.accordion-title {
+	font-family: "DM Mono", monospace;
+	font-size: 12px;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+}
+
+.accordion-body {
+	font-family: "DM Mono", monospace;
+	font-size: 12px;
+	color: var(--fg-muted);
+}
+
+/* Collapsible */
+.collapsible-toggle {
+	margin-top: 4px;
+}

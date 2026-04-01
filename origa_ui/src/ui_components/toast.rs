@@ -93,9 +93,9 @@ pub fn Toast(
                     }.into_any(),
                 }}
             </svg>
-            <div class="flex-1">
-                <p class="font-mono text-xs tracking-wider">{toast.title}</p>
-                <p class="font-mono text-[10px] text-[var(--fg-muted)] mt-1">{toast.message}</p>
+            <div class="toast-content">
+                <p class="toast-title">{toast.title}</p>
+                <p class="toast-message">{toast.message}</p>
             </div>
             {move || if toast.closable {
                 view! {
@@ -124,7 +124,11 @@ pub fn ToastContainer(
 ) -> impl IntoView {
     let test_id_val = move || {
         let val = test_id.get();
-        if val.is_empty() { None } else { Some(val) }
+        if val.is_empty() {
+            None
+        } else {
+            Some(val)
+        }
     };
     let closing_toasts = RwSignal::new(HashMap::<usize, bool>::new());
     let disposed = StoredValue::new(());
