@@ -272,6 +272,7 @@ fn select_card_view<R: Rng>(
     lang: &NativeLanguage,
     rng: &mut R,
     allow_writing: bool,
+    allow_yesno: bool,
 ) -> LessonCardView {
     let rand_val = rng.random::<f32>();
     if rand_val < PROB_KANJI_NORMAL {
@@ -279,7 +280,7 @@ fn select_card_view<R: Rng>(
     } else if rand_val < PROB_KANJI_QUIZ {
         LessonCardView::generate_quiz(card.clone(), same_type_cards, lang)
             .unwrap_or_else(|_| LessonCardView::Normal(card.clone()))
-    } else if rand_val < PROB_KANJI_YESNO {
+    } else if allow_yesno && rand_val < PROB_KANJI_YESNO {
         LessonCardView::generate_yesno(card.clone(), same_type_cards, lang, rng)
             .unwrap_or_else(|_| LessonCardView::Normal(card.clone()))
     } else if allow_writing {
@@ -379,13 +380,23 @@ impl<'a> LessonViewGenerator<'a> {
                 }
             },
 
-            (CardType::Radical, false) => {
-                select_card_view(card, same_type_cards, &NativeLanguage::Russian, rng, false)
-            },
+            (CardType::Radical, false) => select_card_view(
+                card,
+                same_type_cards,
+                &NativeLanguage::Russian,
+                rng,
+                false,
+                !memory.is_high_difficulty(),
+            ),
 
-            (CardType::Kanji, false) => {
-                select_card_view(card, same_type_cards, &NativeLanguage::Russian, rng, true)
-            },
+            (CardType::Kanji, false) => select_card_view(
+                card,
+                same_type_cards,
+                &NativeLanguage::Russian,
+                rng,
+                true,
+                !memory.is_high_difficulty(),
+            ),
 
             (_, true) => {
                 let rand_val = rng.random::<f32>();
@@ -402,6 +413,7 @@ impl<'a> LessonViewGenerator<'a> {
             },
 
             (CardType::Vocabulary, false) => {
+                let is_high_difficulty = memory.is_high_difficulty();
                 let eligible_for_advanced_views = memory.is_known_card() || memory.is_in_progress();
                 let rand_val = rng.random::<f32>();
                 if rand_val < PROB_NORMAL_VIEW {
@@ -413,7 +425,7 @@ impl<'a> LessonViewGenerator<'a> {
                         &NativeLanguage::Russian,
                     )
                     .unwrap_or_else(|_| LessonCardView::Normal(card.clone()))
-                } else if rand_val < PROB_YESNO_VIEW {
+                } else if !is_high_difficulty && rand_val < PROB_YESNO_VIEW {
                     LessonCardView::generate_yesno(
                         card.clone(),
                         same_type_cards,
