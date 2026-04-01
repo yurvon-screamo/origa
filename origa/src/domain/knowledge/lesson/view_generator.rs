@@ -702,6 +702,116 @@ mod tests {
                 _ => panic!("Expected Quiz view"),
             }
         }
+
+        mod yesno_view_filtering {
+            use super::*;
+            use crate::domain::memory::{Difficulty, MemoryState, Rating, ReviewLog, Stability};
+            use crate::domain::value_objects::Question;
+            use crate::domain::{Card, StudyCard};
+            use chrono::{Duration, Utc};
+            use rand::{rngs::StdRng, SeedableRng};
+
+            fn create_study_card_with_memory(
+                word: &str,
+                stability: f64,
+                difficulty: f64,
+                interval_days: i64,
+                rating: Rating,
+            ) -> StudyCard {
+                let card = Card::Vocabulary(VocabularyCard::new(
+                    Question::new(word.to_string()).unwrap(),
+                ));
+                let mut study_card = StudyCard::new(card);
+                let memory = MemoryState::new(
+                    Stability::new(stability).unwrap(),
+                    Difficulty::new(difficulty).unwrap(),
+                    Utc::now(),
+                );
+                study_card.add_review(
+                    memory,
+                    ReviewLog::new(rating, Duration::days(interval_days)),
+                );
+                study_card
+            }
+
+            fn create_high_difficulty_card(word: &str) -> StudyCard {
+                let study_card = create_study_card_with_memory(word, 3.0, 7.0, 5, Rating::Hard);
+                assert!(study_card.memory().is_high_difficulty());
+                assert!(!study_card.memory().is_known_card());
+                assert!(!study_card.memory().is_in_progress());
+                study_card
+            }
+
+            fn create_in_progress_card(word: &str) -> StudyCard {
+                let study_card = create_study_card_with_memory(word, 5.0, 3.0, 5, Rating::Good);
+                assert!(study_card.memory().is_in_progress());
+                assert!(!study_card.memory().is_high_difficulty());
+                assert!(!study_card.memory().is_known_card());
+                study_card
+            }
+
+            fn create_knowledge_set_with_vocab(words: &[&str]) -> KnowledgeSet {
+                let mut ks = KnowledgeSet::new();
+                for word in words {
+                    ks.create_card(Card::Vocabulary(VocabularyCard::new(
+                        Question::new(word.to_string()).unwrap(),
+                    )))
+                    .unwrap();
+                }
+                ks
+            }
+
+            const DISTRACTOR_WORDS: &[&str] = &["猫", "犬", "鳥", "魚", "馬", "牛"];
+            const ITERATIONS: u64 = 500;
+
+            fn count_yesno_views(study_card: &StudyCard, ks: &KnowledgeSet) -> (usize, usize) {
+                let generator = LessonViewGenerator::new(ks);
+                let mut yesno_count = 0;
+                let mut other_count = 0;
+
+                for seed in 0..ITERATIONS {
+                    let mut rng = StdRng::seed_from_u64(seed);
+                    let view = generator.apply_view(study_card, study_card.is_new(), &mut rng);
+
+                    match view {
+                        LessonCardView::YesNo(_) => yesno_count += 1,
+                        _ => other_count += 1,
+                    }
+                }
+
+                (yesno_count, other_count)
+            }
+
+            #[test]
+            fn high_difficulty_card_never_gets_yesno_view() {
+                crate::use_cases::init_real_dictionaries();
+
+                let ks = create_knowledge_set_with_vocab(DISTRACTOR_WORDS);
+                let study_card = create_high_difficulty_card("猫");
+
+                let (yesno, _other) = count_yesno_views(&study_card, &ks);
+
+                assert_eq!(
+                yesno, 0,
+                "high_difficulty card should never get YesNo view, got {yesno} YesNo out of {ITERATIONS} iterations"
+            );
+            }
+
+            #[test]
+            fn in_progress_card_can_get_yesno_view() {
+                crate::use_cases::init_real_dictionaries();
+
+                let ks = create_knowledge_set_with_vocab(DISTRACTOR_WORDS);
+                let study_card = create_in_progress_card("猫");
+
+                let (yesno, _other) = count_yesno_views(&study_card, &ks);
+
+                assert!(
+                yesno > 0,
+                "in_progress card should be able to get YesNo view, got 0 YesNo out of {ITERATIONS} iterations"
+            );
+            }
+        }
     }
 
     mod tests_yesno {
