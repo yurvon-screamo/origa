@@ -71,7 +71,7 @@ pub fn Drawer(
                     {/* Header: фиксированный */}
                     <div class="modal-header">
                         <div>
-                            <h3 class="font-serif text-2xl mt-1">{move || title.get()}</h3>
+                            <h3 class="drawer-header">{move || title.get()}</h3>
                         </div>
                         <div class="flex items-center gap-2">
                             {move || action_button.with_value(|b| b.as_ref().map(|c| c()))}

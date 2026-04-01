@@ -31,7 +31,7 @@ pub fn ProgressBar(
             <div class="progress-track">
                 <div
                     class="progress-fill"
-                    style=move || format!("width: {}%", percentage())
+                    style=move || format!("--progress-width: {}%", percentage())
                 ></div>
             </div>
         </div>

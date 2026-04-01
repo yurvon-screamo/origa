@@ -110,7 +110,7 @@ pub fn Modal(
                 <div class=modal_class data-testid=test_id_val>
                     <div class="modal-header">
                         <div>
-                            <h3 class="font-serif text-2xl mt-1">{move || title.get()}</h3>
+                            <h3 class="drawer-header">{move || title.get()}</h3>
                         </div>
                         <button
                             on:click=close_modal_anim

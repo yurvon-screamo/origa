@@ -15,7 +15,11 @@ pub fn UpdateDrawer(
 ) -> impl IntoView {
     let test_id_val = move || {
         let val = test_id.get();
-        if val.is_empty() { None } else { Some(val) }
+        if val.is_empty() {
+            None
+        } else {
+            Some(val)
+        }
     };
 
     let update_btn_test_id = Signal::derive(move || {
@@ -48,11 +52,11 @@ pub fn UpdateDrawer(
 
     view! {
         <div
-            class="fixed inset-0 z-50 flex items-center justify-center bg-black/80"
+            class="update-drawer-backdrop"
             data-testid=test_id_val
         >
-            <Card class="w-full max-w-md mx-4 p-6 bg-[var(--bg-primary)]">
-                <div class="space-y-5">
+            <Card class="update-drawer-content">
+                <div class="update-drawer-body">
                     <Heading level=HeadingLevel::H3 variant=TypographyVariant::Primary>
                         "Доступно обновление"
                     </Heading>
@@ -60,7 +64,7 @@ pub fn UpdateDrawer(
                     <div class="flex items-center gap-3 font-mono text-sm">
                         <span class="text-[var(--fg-muted)]">{current_version}</span>
                         <span class="text-[var(--fg-muted)]">"→"</span>
-                        <span class="text-[var(--accent-olive)] font-semibold">{new_version}</span>
+                        <span class="font-semibold text-[var(--accent-olive)]">{new_version}</span>
                     </div>
 
                     <Text variant=TypographyVariant::Muted>

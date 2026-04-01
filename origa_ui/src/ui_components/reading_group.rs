@@ -11,27 +11,31 @@ pub fn ReadingGroup(
 
     let test_id_val = move || {
         let val = test_id.get();
-        if val.is_empty() { None } else { Some(val) }
+        if val.is_empty() {
+            None
+        } else {
+            Some(val)
+        }
     };
 
     view! {
         <Show when=move || readings.get_value().is_some()>
             <div
-                class="flex gap-4 items-start text-left"
+                class="reading-group"
                 data-testid=test_id_val
             >
-                <div class="w-16 shrink-0 pt-1">
+                <div class="reading-kanji">
                     <Text size=TextSize::Default variant=TypographyVariant::Muted>
                         {label}
                     </Text>
                 </div>
-                <div class="flex gap-2 flex-wrap">
+                <div class="reading-furigana">
                     <For
                         each=readings_list
                         key=|reading| reading.clone()
                         children=move |reading| {
                             view! {
-                                <span class="inline-block px-2 py-1 bg-[var(--bg-aged)] rounded text-sm">
+                                <span class="reading-tag">
                                     {reading}
                                 </span>
                             }

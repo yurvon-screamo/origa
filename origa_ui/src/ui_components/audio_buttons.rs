@@ -15,14 +15,18 @@ pub fn AudioButtons(
 
     let test_id_val = move || {
         let val = test_id.get();
-        if val.is_empty() { None } else { Some(val) }
+        if val.is_empty() {
+            None
+        } else {
+            Some(val)
+        }
     };
 
     view! {
         <Show when=move || has_reading>
-            <div class=move || format!("flex gap-2 {}", class.get())>
+            <div class=move || format!("audio-buttons {}", class.get())>
                 <button
-                    class="p-1 text-[var(--fg-muted)] hover:text-[var(--fg-black)] transition-colors disabled:opacity-30"
+                    class="audio-btn"
                     data-testid=test_id_val
                     on:click={
                         let reading = reading.clone();
@@ -40,7 +44,7 @@ pub fn AudioButtons(
                     <Show when=move || is_playing.get() fallback=|| view! {
                         <Icon icon=icondata::LuVolume width="1em" height="1em" />
                     }>
-                        <span class="inline-block animate-spin" style="animation-duration: 1.5s;">
+                        <span class="audio-btn-spin">
                             <Icon icon=icondata::LuLoader width="1em" height="1em" />
                         </span>
                     </Show>

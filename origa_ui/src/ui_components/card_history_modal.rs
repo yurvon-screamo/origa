@@ -122,7 +122,7 @@ pub fn CardHistoryModal(
             is_open=is_open_rw
             title=Signal::derive(|| "История карточки".to_string())
         >
-            <div class="space-y-4">
+            <div class="card-history-modal">
                 {move || if has_data {
                     view! {
                         <div class="flex justify-center" data-testid=chart_test_id>
@@ -141,7 +141,7 @@ pub fn CardHistoryModal(
                                     let label = review.label();
 
                                     view! {
-                                        <div class="flex justify-between items-center py-1 px-2 rounded bg-[var(--bg-aged)]">
+                                        <div class="card-history-item">
                                             <Text
                                                 size=TextSize::Small
                                                 variant=TypographyVariant::Primary

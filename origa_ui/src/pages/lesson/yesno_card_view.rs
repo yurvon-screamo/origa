@@ -1,6 +1,6 @@
 use crate::ui_components::{
-    get_reading_from_text, is_speech_supported, speak_text, Button, ButtonVariant, Card,
-    DisplayText, MarkdownText, MarkdownVariant, Text, TextSize, TypographyVariant,
+    Button, ButtonVariant, Card, DisplayText, MarkdownText, MarkdownVariant, Text, TextSize,
+    TypographyVariant, get_reading_from_text, is_speech_supported, speak_text,
 };
 use leptos::prelude::*;
 use origa::domain::{Card as DomainCard, NativeLanguage, YesNoCard};
