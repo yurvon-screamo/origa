@@ -11,12 +11,14 @@ pub fn QuizResultDisplay(quiz_result: QuizResult) -> impl IntoView {
                 match quiz_result {
                     QuizResult::Correct => "text-[var(--success)] font-bold".to_string(),
                     QuizResult::Incorrect => "text-[var(--error)] font-bold".to_string(),
+                    QuizResult::DontKnow => "text-[var(--fg-muted)] font-bold".to_string(),
                     QuizResult::None => "".to_string(),
                 }
             }>
                 {move || match quiz_result {
                     QuizResult::Correct => "✓ Правильно!",
                     QuizResult::Incorrect => "✗ Неверно",
+                    QuizResult::DontKnow => "— Не знаю",
                     QuizResult::None => "",
                 }}
             </Text>

@@ -11,6 +11,8 @@ pub fn create_keyboard_handler(
     on_rate_callback: Callback<Rating>,
     on_quiz_select: Callback<usize>,
     on_yesno_select: Callback<bool>,
+    on_quiz_dont_know: Callback<()>,
+    on_yesno_dont_know: Callback<()>,
     lesson_state: RwSignal<LessonState>,
     show_answer: impl Fn() + 'static,
 ) -> impl Fn(KeyboardEvent) {
@@ -47,6 +49,10 @@ pub fn create_keyboard_handler(
                         ev.prevent_default();
                         on_quiz_select.run(3);
                     },
+                    " " => {
+                        ev.prevent_default();
+                        on_quiz_dont_know.run(());
+                    },
                     _ => {},
                 }
                 return;
@@ -61,6 +67,10 @@ pub fn create_keyboard_handler(
                     "2" => {
                         ev.prevent_default();
                         on_yesno_select.run(true);
+                    },
+                    " " => {
+                        ev.prevent_default();
+                        on_yesno_dont_know.run(());
                     },
                     _ => {},
                 }
@@ -87,7 +97,7 @@ pub fn create_keyboard_handler(
             return;
         }
 
-        if key == " " && !state.showing_answer {
+        if key == " " && !state.showing_answer && !is_quiz && !is_yesno {
             ev.prevent_default();
             show_answer();
         }

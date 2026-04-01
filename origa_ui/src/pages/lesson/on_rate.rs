@@ -102,6 +102,7 @@ pub fn create_on_rate_callback(
                         state.showing_answer = false;
                         state.selected_quiz_option = None;
                         state.selected_yesno_answer = None;
+                        state.dont_know_selected = false;
                     }
                 });
 
