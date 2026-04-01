@@ -2,7 +2,7 @@ use crate::domain::OrigaError;
 use crate::domain::Rating;
 use crate::domain::{Difficulty, MemoryHistory, MemoryState, Stability};
 use chrono::{Duration, Utc};
-use rs_fsrs::{Card as FsrsCard, FSRS, Parameters, Rating as FsrsRating, State as FsrsState};
+use rs_fsrs::{Card as FsrsCard, Parameters, Rating as FsrsRating, State as FsrsState, FSRS};
 use serde::Deserialize;
 use serde::Serialize;
 use std::sync::OnceLock;
@@ -109,13 +109,17 @@ pub fn rate_memory(
         RateMode::StandardLesson => srs_service.long_term_fsrs.next(card, now, fsrs_rating),
     };
 
-    let next_review_date = scheduling_info.card.due;
-
-    let interval = next_review_date.signed_duration_since(now);
-    let interval = if interval < Duration::zero() || rating == Rating::Again {
-        Duration::zero()
+    let (next_review_date, interval) = if rating == Rating::Again {
+        (now, Duration::zero())
     } else {
-        interval
+        let next_review_date = scheduling_info.card.due;
+        let interval = next_review_date.signed_duration_since(now);
+        let interval = if interval < Duration::zero() {
+            Duration::zero()
+        } else {
+            interval
+        };
+        (next_review_date, interval)
     };
 
     let stability = Stability::new(scheduling_info.card.stability)?;
@@ -126,4 +130,33 @@ pub fn rate_memory(
         interval,
         memory_state,
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use chrono::Utc;
+
+    #[test]
+    fn rate_memory_again_returns_zero_interval_and_now_as_next_review() {
+        let memory_history = MemoryHistory::new();
+        let before = Utc::now();
+
+        let result = rate_memory(RateMode::StandardLesson, Rating::Again, &memory_history).unwrap();
+
+        let after = Utc::now();
+
+        assert_eq!(result.interval, Duration::zero());
+        let next_review = result.memory_state.next_review_date();
+        assert!(*next_review >= before && *next_review <= after);
+    }
+
+    #[test]
+    fn rate_memory_good_returns_future_next_review_date() {
+        let memory_history = MemoryHistory::new();
+
+        let result = rate_memory(RateMode::StandardLesson, Rating::Good, &memory_history).unwrap();
+
+        assert!(result.interval > Duration::zero());
+    }
 }
