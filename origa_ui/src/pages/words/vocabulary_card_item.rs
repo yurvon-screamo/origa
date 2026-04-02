@@ -65,7 +65,7 @@ pub fn VocabularyCardItem(
         .unwrap_or("-".to_string());
 
     view! {
-        <Card class="p-4">
+        <Card class="p-4" test_id="words-card-item">
             <Heading level=HeadingLevel::H4 class="mb-2">
                 <FuriganaText text=word.clone() known_kanji=known_kanji_for_furigana/>
             </Heading>
@@ -80,7 +80,7 @@ pub fn VocabularyCardItem(
                 {format!("Повтор: {} | Слож: {} | Стаб: {}", next_review, difficulty, stability)}
             </Text>
             <div class="border-t border-[var(--border-dark)] pt-2 mt-2 flex justify-between items-center">
-                <Tag variant=Signal::derive(move || status.tag_variant())>
+                <Tag variant=Signal::derive(move || status.tag_variant()) test_id="words-card-tag">
                     {status.label()}
                 </Tag>
                 <div class="flex items-center gap-2">
@@ -98,6 +98,7 @@ pub fn VocabularyCardItem(
                 on_close=Callback::new(move |_| is_history_open.set(false))
             />
             <DeleteConfirmModal
+                test_id="words-delete-modal"
                 is_open=is_delete_modal_open
                 is_deleting=is_deleting
                 on_confirm=confirm_delete

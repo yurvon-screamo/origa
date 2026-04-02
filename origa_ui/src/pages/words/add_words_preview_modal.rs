@@ -114,6 +114,7 @@ pub fn AddWordsPreviewModal(
         <Drawer
             is_open=is_open
             title=Signal::derive(|| "Добавить слова".to_string())
+            test_id="words-add-drawer"
         >
             <div class="space-y-4">
                 {move || {
@@ -208,6 +209,7 @@ fn PreviewStage(
             <Button
                 variant=ButtonVariant::Ghost
                 on_click=on_cancel
+                test_id="words-drawer-cancel-btn"
             >
                 "Отмена"
             </Button>
@@ -218,6 +220,7 @@ fn PreviewStage(
                         || is_creating.get()
                 })
                 on_click=Callback::new(move |_| on_create.run(()))
+                test_id="words-drawer-add-btn"
             >
                 {move || {
                     if is_creating.get() {
@@ -247,6 +250,7 @@ fn InputStage(
                 value=input_text
                 placeholder=Signal::derive(|| "例えば、本を読みます。".to_string())
                 rows=Signal::derive(|| Some(10))
+                test_id="words-drawer-textarea"
             />
         </div>
         {move || {
@@ -265,6 +269,7 @@ fn InputStage(
                     || is_analyzing.get()
             })
             on_click=Callback::new(move |_| on_analyze.run(()))
+            test_id="words-drawer-analyze-btn"
         >
             {move || {
                 if is_analyzing.get() {

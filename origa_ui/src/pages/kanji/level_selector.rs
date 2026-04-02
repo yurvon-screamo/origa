@@ -7,6 +7,7 @@ pub fn LevelSelector(
     levels: Vec<JapaneseLevel>,
     selected_level: RwSignal<JapaneseLevel>,
     on_select: Callback<JapaneseLevel>,
+    #[prop(optional, into)] test_id_prefix: Signal<String>,
 ) -> impl IntoView {
     view! {
         <div>
@@ -20,10 +21,19 @@ pub fn LevelSelector(
                     children=move |level| {
                         let level_for_btn = level;
                         let is_selected = move || selected_level.get() == level_for_btn;
+                        let btn_test_id = Signal::derive(move || {
+                            let prefix = test_id_prefix.get();
+                            if prefix.is_empty() {
+                                String::new()
+                            } else {
+                                format!("{}-{}", prefix, format!("{:?}", level_for_btn).to_lowercase())
+                            }
+                        });
                         view! {
                             <Button
                                 variant=move || if is_selected() { ButtonVariant::Olive } else { ButtonVariant::Default }
                                 on_click={let on_select = on_select; Callback::new(move |_| on_select.run(level_for_btn))}
+                                test_id=btn_test_id
                             >
                                 {format!("{:?}", level)}
                             </Button>

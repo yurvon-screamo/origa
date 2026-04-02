@@ -83,7 +83,7 @@ pub fn KanjiCardItem(
     let has_examples = !example_words.is_empty();
 
     view! {
-        <Card class="p-4">
+        <Card class="p-4" test_id="kanji-card-item">
             <div class="flex items-start gap-3 mb-2">
                 <span class="text-3xl font-serif">{kanji_char.clone()}</span>
                 <div class="min-w-0 flex-1">

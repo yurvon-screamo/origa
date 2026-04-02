@@ -43,7 +43,7 @@ pub fn SetCard(
     });
 
     view! {
-        <Card class=card_class>
+        <Card class=card_class test_id="sets-card-item">
             <div class="flex items-center justify-between gap-2 mb-2">
                 <div class="flex items-center gap-2 flex-1 min-w-0">
                     <Show when=move || !is_imported>
@@ -92,6 +92,7 @@ fn SetCardButton(
             variant=Signal::derive(|| ButtonVariant::Filled)
             size=ButtonSize::Small
             on_click=Callback::new(move |_| on_import.run((set_id.clone(), title.clone())))
+            test_id="sets-card-import-btn"
         >
             "Импорт"
         </Button>

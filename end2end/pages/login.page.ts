@@ -84,7 +84,9 @@ export class LoginPage extends BasePage {
             await this.fillPassword(password);
             await this.page.waitForTimeout(100);
             await this.submit();
-            await this.page.waitForTimeout(20_000);
+            // Wait for navigation to complete after submit
+            await this.page.waitForLoadState("networkidle", { timeout: 30_000 });
+
             return { success: true };
         }
         catch (error) {
@@ -92,12 +94,12 @@ export class LoginPage extends BasePage {
         }
     }
 
-    async expectLoginSuccess(redirectTo: string | string[] = ["/home", "/onboarding"]): Promise<void> {
+    async expectLoginSuccess(redirectTo: string | string[] = ["/home", "/onboarding"], timeout: number = 60000): Promise<void> {
         const paths = Array.isArray(redirectTo) ? redirectTo : [redirectTo];
         await this.page.waitForURL((url) => {
             const pathname = url.pathname;
             return paths.some(path => pathname.includes(path));
-        });
+        }, { timeout });
     }
 
     async expectErrorMessage(): Promise<string | null> {

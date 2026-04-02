@@ -69,7 +69,7 @@ pub fn GrammarCardItem(
         .unwrap_or("-".to_string());
 
     view! {
-        <Card class="p-4">
+        <Card class="p-4" test_id="grammar-card-item">
             <Heading level=HeadingLevel::H4 class="mb-2">
                 <FuriganaText text=title.clone() known_kanji=known_kanji_for_furigana/>
             </Heading>

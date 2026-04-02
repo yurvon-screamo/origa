@@ -39,9 +39,11 @@ pub fn RulesList(
                 let filtered = filtered_rules();
                 if filtered.is_empty() {
                     view! {
-                        <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                            "Нет правил для выбранного уровня"
-                        </Text>
+                        <div data-testid="grammar-drawer-empty">
+                            <Text size=TextSize::Small variant=TypographyVariant::Muted>
+                                "Нет правил для выбранного уровня"
+                            </Text>
+                        </div>
                     }.into_any()
                 } else {
                     view! {
@@ -52,6 +54,7 @@ pub fn RulesList(
                                 view! {
                                     <RuleItem
                                         rule=rule
+                                        test_id=Signal::derive(|| "grammar-drawer-item".to_string())
                                         native_language=native_language
                                         selected_ids=selected_ids
                                         known_kanji=known_kanji_stored.get_value()

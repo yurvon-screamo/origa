@@ -55,17 +55,17 @@ export class WordsPage extends BasePage {
 		this.emptyState = page.getByTestId("words-empty-state");
 
 		// Add-words drawer
-		this.drawer = page.locator(".drawer-content");
-		this.drawerTextarea = this.drawer.locator("textarea");
-		this.drawerAnalyzeBtn = this.drawer.getByRole("button", { name: "Анализировать" });
-		this.drawerAddBtn = this.drawer.getByRole("button", { name: "Добавить выбранные" });
-		this.drawerCancelBtn = this.drawer.getByRole("button", { name: "Отмена" });
-		this.analyzedWordItems = this.drawer.locator(".overflow-y-auto .group");
+		this.drawer = page.getByTestId("words-add-drawer");
+		this.drawerTextarea = page.getByTestId("words-drawer-textarea");
+		this.drawerAnalyzeBtn = page.getByTestId("words-drawer-analyze-btn");
+		this.drawerAddBtn = page.getByTestId("words-drawer-add-btn");
+		this.drawerCancelBtn = page.getByTestId("words-drawer-cancel-btn");
+		this.analyzedWordItems = this.drawer.getByTestId("words-drawer-item");
 
 		// Delete modal
-		this.deleteModal = page.locator(".modal-content");
-		this.deleteConfirmBtn = this.deleteModal.getByRole("button", { name: "Удалить" });
-		this.deleteCancelBtn = this.deleteModal.getByRole("button", { name: "Отмена" });
+		this.deleteModal = page.getByTestId("words-delete-modal");
+		this.deleteConfirmBtn = page.getByTestId("words-delete-modal-confirm");
+		this.deleteCancelBtn = page.getByTestId("words-delete-modal-cancel");
 	}
 
 	async goto(): Promise<void> {
@@ -102,9 +102,8 @@ export class WordsPage extends BasePage {
 
 	async analyzeText(): Promise<void> {
 		await this.drawerAnalyzeBtn.click();
-		const analyzedItem = this.analyzedWordItems.first();
-		const foundText = this.drawer.getByText(/Найдено/);
-		await expect(analyzedItem.or(foundText)).toBeVisible({ timeout: 10_000 });
+		// Wait for analysis results - the "Найдено" text indicates completion
+		await this.drawer.getByText(/Найдено/).waitFor({ state: "visible", timeout: 10_000 });
 	}
 
 	async selectFirstWord(): Promise<void> {
@@ -123,18 +122,22 @@ export class WordsPage extends BasePage {
 	}
 
 	async selectFilter(name: WordsFilterType): Promise<void> {
-		await this.wordsPage
-			.locator("span", { hasText: new RegExp(`^${name} \\(\\d+\\)$`) })
-			.first()
-			.click();
+		const filterMap: Record<WordsFilterType, string> = {
+			"Все": "all",
+			"Новые": "new",
+			"Сложные": "hard",
+			"В процессе": "in-progress",
+			"Изученные": "learned",
+		};
+		await this.page.getByTestId("words-filter-" + filterMap[name]).click();
 	}
 
 	async getCardCount(): Promise<number> {
-		return this.wordsGrid.locator(".card").count();
+		return this.page.getByTestId("words-card-item").count();
 	}
 
 	async deleteCardByIndex(index: number): Promise<void> {
-		const card = this.wordsGrid.locator(".card").nth(index);
+		const card = this.page.getByTestId("words-card-item").nth(index);
 		await card.locator("button").last().click();
 		await expect(this.deleteModal).toBeVisible({ timeout: 5000 });
 		await this.deleteConfirmBtn.click();
@@ -142,7 +145,7 @@ export class WordsPage extends BasePage {
 	}
 
 	async cancelDeleteCardByIndex(index: number): Promise<void> {
-		const card = this.wordsGrid.locator(".card").nth(index);
+		const card = this.page.getByTestId("words-card-item").nth(index);
 		await card.locator("button").last().click();
 		await expect(this.deleteModal).toBeVisible({ timeout: 5000 });
 		await this.deleteCancelBtn.click();

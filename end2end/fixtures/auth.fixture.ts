@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-empty-object-pattern */
-import { test as base } from "@playwright/test";
+import { test as base, type Page } from "@playwright/test";
 import {
 	getAdminToken,
 	createTestUser,
 	deleteTestUser,
-	loginTestUser,
 } from "./admin";
+import { trailBaseUrl } from "../config";
 
 export const DEFAULT_TEST_PASSWORD = "e2e-test-password-123";
 
@@ -34,12 +34,13 @@ export const test = base.extend<AuthFixture>({
 
 export interface UniqueUserFixture extends AuthFixture {
 	authToken: string;
+	page: Page;
 }
 
 /**
  * Fixture that manages unique test user lifecycle
  * Creates a new user before each test, deletes after test
- * Provides authToken for authenticated requests
+ * Uses UI login for reliable authentication
  */
 export const testWithUniqueUser = base.extend<UniqueUserFixture>({
 	testUserEmail: async ({}, use) => {
@@ -51,7 +52,13 @@ export const testWithUniqueUser = base.extend<UniqueUserFixture>({
 		await use(DEFAULT_TEST_PASSWORD);
 	},
 
-	authToken: async ({ testUserEmail, testUserPassword }, use) => {
+	page: async ({ browser }, use) => {
+		const context = await browser.newContext();
+		const page = await context.newPage();
+		await page.setViewportSize({ width: 1280, height: 720 });
+
+		const userEmail = generateUniqueEmail();
+		const userPassword = DEFAULT_TEST_PASSWORD;
 		let adminToken: string | undefined;
 		let adminCsrfToken: string | undefined;
 		let userUuid: string | undefined;
@@ -61,14 +68,33 @@ export const testWithUniqueUser = base.extend<UniqueUserFixture>({
 			adminToken = adminAuth.token;
 			adminCsrfToken = adminAuth.csrfToken;
 
-			userUuid = await createTestUser(adminToken, adminCsrfToken, testUserEmail, testUserPassword);
-
-			const { token: authToken } = await loginTestUser(testUserEmail, testUserPassword);
-			await use(authToken);
+			userUuid = await createTestUser(adminToken, adminCsrfToken, userEmail, userPassword);
 		} catch (error) {
-			console.error("[fixture] Failed to setup test user:", error);
+			console.error("[fixture] Failed to create test user:", error);
+			throw error;
+		}
+
+		try {
+			// Navigate to the app - it will redirect to login since no session
+			await page.goto("http://localhost:1420");
+			await page.waitForLoadState("networkidle");
+			await page.waitForTimeout(2000);
+
+			// Fill in the login form
+			await page.fill('input[type="email"], input[data-testid="email-input"]', userEmail);
+			await page.fill('input[type="password"], input[data-testid="password-input"]', userPassword);
+			await page.click('button[type="submit"], button[data-testid="login-submit"]');
+			
+			// Wait for navigation
+			await page.waitForLoadState("networkidle");
+			await page.waitForTimeout(3000);
+
+			await use(page);
+		} catch (error) {
+			console.error("[fixture] Error during setup:", error);
 			throw error;
 		} finally {
+			await context.close();
 			if (adminToken && adminCsrfToken && userUuid) {
 				try {
 					await deleteTestUser(adminToken, adminCsrfToken, userUuid);
@@ -77,5 +103,9 @@ export const testWithUniqueUser = base.extend<UniqueUserFixture>({
 				}
 			}
 		}
+	},
+
+	authToken: async ({}, use) => {
+		await use("");
 	},
 });

@@ -76,10 +76,10 @@ export class SetsPage extends BasePage {
 		this.cancelSelectBtn = page.getByTestId("sets-cancel-select-btn");
 
 		// Drawer
-		this.drawer = page.locator(".drawer-content");
-		this.drawerImportBtn = this.drawer.getByRole("button", { name: "Импортировать" });
-		this.drawerCancelBtn = this.drawer.getByRole("button", { name: "Отмена" });
-		this.drawerWordItems = this.drawer.locator(".cursor-pointer");
+		this.drawer = page.getByTestId("sets-import-drawer");
+		this.drawerImportBtn = page.getByTestId("sets-drawer-import-btn");
+		this.drawerCancelBtn = page.getByTestId("sets-drawer-cancel-btn");
+		this.drawerWordItems = this.drawer.getByTestId("sets-drawer-item");
 	}
 
 	async goto(): Promise<void> {
@@ -122,27 +122,27 @@ export class SetsPage extends BasePage {
 	}
 
 	async waitForLoad(): Promise<void> {
-		await expect(this.searchInput).toBeVisible({ timeout: 10_000 });
+		await this.searchInput.waitFor({ state: "visible", timeout: 10_000 });
 	}
 
 	async getSetCardCount(): Promise<number> {
-		return this.setsPage.locator(".card").count();
+		return this.page.getByTestId("sets-card-item").count();
 	}
 
 	async getImportedCardCount(): Promise<number> {
-		return this.setsPage.locator(".card").filter({ hasText: "Импортирован" }).count();
+		return this.page.getByTestId("sets-card-item").filter({ hasText: "Импортирован" }).count();
 	}
 
 	getFirstNonImportedCard(): Locator {
-		return this.setsPage
-			.locator(".card")
-			.filter({ has: this.page.getByRole("button", { name: "Импорт" }) })
+		return this.page
+			.getByTestId("sets-card-item")
+			.filter({ has: this.page.getByTestId("sets-card-import-btn") })
 			.first();
 	}
 
 	async clickImportOnCard(index: number): Promise<void> {
-		const card = this.setsPage.locator(".card").nth(index);
-		await card.getByRole("button", { name: "Импорт" }).click();
+		const card = this.page.getByTestId("sets-card-item").nth(index);
+		await card.getByTestId("sets-card-import-btn").click();
 		await expect(this.drawer).toBeVisible({ timeout: 5_000 });
 	}
 
@@ -156,7 +156,7 @@ export class SetsPage extends BasePage {
 	}
 
 	async selectSetCheckbox(index: number): Promise<void> {
-		const card = this.setsPage.locator(".card").nth(index);
+		const card = this.page.getByTestId("sets-card-item").nth(index);
 		await card.locator("input[type='checkbox']").click();
 	}
 
@@ -165,8 +165,8 @@ export class SetsPage extends BasePage {
 	}
 
 	async waitForDrawerWords(): Promise<void> {
-		const foundText = this.drawer.getByText(/Найдено/);
-		const emptyText = this.drawer.getByText("Нет слов для импорта");
+		const foundText = this.drawer.getByTestId("sets-drawer-found");
+		const emptyText = this.drawer.getByTestId("sets-drawer-empty");
 		await expect(foundText.or(emptyText)).toBeVisible({ timeout: 15_000 });
 	}
 }

@@ -66,6 +66,7 @@ pub fn AddGrammarModal(is_open: RwSignal<bool>, refresh_trigger: RwSignal<u32>) 
         <Drawer
             is_open=is_open
             title=Signal::derive(|| "Добавить грамматику".to_string())
+            test_id="grammar-add-drawer"
             action_button=Arc::new(move || {
                 view! {
                     <Button
@@ -74,6 +75,7 @@ pub fn AddGrammarModal(is_open: RwSignal<bool>, refresh_trigger: RwSignal<u32>) 
                             state.selected_rule_ids.get().is_empty() || state.is_creating.get()
                         })
                         on_click=handlers.on_add
+                        test_id="grammar-drawer-add-btn"
                     >
                         {move || if state.is_creating.get() { "Добавление..." } else { "Добавить" }}
                     </Button>
@@ -85,11 +87,13 @@ pub fn AddGrammarModal(is_open: RwSignal<bool>, refresh_trigger: RwSignal<u32>) 
                     levels=JLPT_LEVELS.to_vec()
                     selected_level=state.selected_level
                     on_select={let state = state.clone(); Callback::new(move |level| state.select_level(level))}
+                    test_id_prefix="grammar-level"
                 />
 
                 <Search
                     value=state.search_query
                     placeholder=Signal::derive(|| "Поиск правила...".to_string())
+                    test_id="grammar-drawer-search"
                 />
 
                 <div>
@@ -104,6 +108,7 @@ pub fn AddGrammarModal(is_open: RwSignal<bool>, refresh_trigger: RwSignal<u32>) 
                                 let state = state.clone();
                                 move |_| state.select_all()
                             })
+                            test_id="grammar-drawer-select-all-btn"
                         >
                             "Выделить все"
                         </Button>

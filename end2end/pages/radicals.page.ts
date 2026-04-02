@@ -43,12 +43,17 @@ export class RadicalsPage extends BasePage {
 	}
 
 	async selectFilter(name: FilterType): Promise<void> {
-		await this.radicalsPage
-			.getByRole("button", { name: new RegExp(`${name} \\(\\d+\\)`) })
-			.click();
+		const filterMap: Record<FilterType, string> = {
+			"Все": "all",
+			"Новые": "new",
+			"Сложные": "hard",
+			"В процессе": "in-progress",
+			"Изученные": "learned",
+		};
+		await this.page.getByTestId("radicals-filter-" + filterMap[name]).click();
 	}
 
 	async getCardCount(): Promise<number> {
-		return this.radicalsGrid.locator(".card").count();
+		return this.page.getByTestId("radicals-card-item").count();
 	}
 }
