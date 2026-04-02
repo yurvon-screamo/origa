@@ -26,6 +26,7 @@ pub fn KanjiItem(
                     if is_selected.get() { "border-[var(--accent-olive)] bg-[var(--bg-aged)]" } else { "border-[var(--border-dark)] bg-[var(--bg-paper)]" }
                 )
             })
+            data-testid="kanji-drawer-item"
             on:click={
                 move |_| {
                     let kanji = kanji_str_for_click.clone();

@@ -62,7 +62,7 @@ pub fn RadicalItem(
     let known_kanji: HashSet<String> = HashSet::new();
 
     view! {
-        <Card class="p-4">
+        <Card class="p-4" test_id="radicals-card-item">
             <div class="flex items-start gap-3 mb-2">
                 <span class="text-3xl font-serif">{question}</span>
                 <div class="min-w-0 flex-1">
@@ -79,7 +79,7 @@ pub fn RadicalItem(
                 on_close=Callback::new(move |_| is_history_open.set(false))
             />
             <div class="border-t border-[var(--border-dark)] pt-2 mt-2 flex justify-between items-center">
-                <Tag variant=Signal::derive(move || status.tag_variant())>
+                <Tag variant=Signal::derive(move || status.tag_variant()) test_id="radicals-card-tag">
                     {status.label()}
                 </Tag>
                 <div class="flex gap-1">

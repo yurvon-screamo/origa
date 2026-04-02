@@ -36,13 +36,13 @@ export class KanjiPage extends BasePage {
 		this.kanjiGrid = page.getByTestId("kanji-grid");
 		this.emptyState = page.getByTestId("kanji-empty-state");
 
-		this.drawer = page.locator(".drawer-content");
-		this.drawerAddBtn = this.drawer.getByRole("button", { name: "Добавить" });
-		this.drawerSelectAllBtn = this.drawer.getByRole("button", { name: "Выделить все" });
+		this.drawer = page.getByTestId("kanji-add-drawer");
+		this.drawerAddBtn = page.getByTestId("kanji-drawer-add-btn");
+		this.drawerSelectAllBtn = page.getByTestId("kanji-drawer-select-all-btn");
 
-		this.deleteModal = page.locator(".modal-content");
-		this.deleteConfirmBtn = page.getByRole("button", { name: "Удалить" });
-		this.deleteCancelBtn = page.getByRole("button", { name: "Отмена" });
+		this.deleteModal = page.getByTestId("kanji-delete-modal");
+		this.deleteConfirmBtn = page.getByTestId("kanji-delete-modal-confirm");
+		this.deleteCancelBtn = page.getByTestId("kanji-delete-modal-cancel");
 	}
 
 	async goto(): Promise<void> {
@@ -73,14 +73,14 @@ export class KanjiPage extends BasePage {
 	}
 
 	async selectLevel(level: KanjiLevel): Promise<void> {
-		await this.drawer.getByRole("button", { name: level }).click();
-		const kanjiItem = this.drawer.locator(".border.cursor-pointer").first();
-		const emptyMsg = this.drawer.getByText("Нет кандзи для выбранного уровня");
+		await this.page.getByTestId("kanji-level-" + level.toLowerCase()).click();
+		const kanjiItem = this.drawer.getByTestId("kanji-drawer-item").first();
+		const emptyMsg = this.drawer.getByTestId("kanji-drawer-empty");
 		await expect(kanjiItem.or(emptyMsg)).toBeVisible({ timeout: 10_000 });
 	}
 
 	async selectKanji(kanji: string): Promise<void> {
-		const item = this.drawer.locator(".border.cursor-pointer", { hasText: kanji });
+		const item = this.drawer.getByTestId("kanji-drawer-item").filter({ hasText: kanji });
 		await expect(item).toBeVisible({ timeout: 5000 });
 		await item.click();
 	}
@@ -95,17 +95,22 @@ export class KanjiPage extends BasePage {
 	}
 
 	async selectFilter(name: FilterType): Promise<void> {
-		await this.kanjiPage
-			.getByRole("button", { name: new RegExp(`${name} \\(\\d+\\)`) })
-			.click();
+		const filterMap: Record<FilterType, string> = {
+			"Все": "all",
+			"Новые": "new",
+			"Сложные": "hard",
+			"В процессе": "in-progress",
+			"Изученные": "learned",
+		};
+		await this.page.getByTestId("kanji-filter-" + filterMap[name]).click();
 	}
 
 	async getCardCount(): Promise<number> {
-		return this.kanjiGrid.locator(".card").count();
+		return this.page.getByTestId("kanji-card-item").count();
 	}
 
 	async deleteCardByIndex(index: number): Promise<void> {
-		const card = this.kanjiGrid.locator(".card").nth(index);
+		const card = this.page.getByTestId("kanji-card-item").nth(index);
 		await card.locator("button").last().click();
 		await expect(this.deleteModal).toBeVisible({ timeout: 5000 });
 		await this.deleteConfirmBtn.click();
@@ -113,7 +118,7 @@ export class KanjiPage extends BasePage {
 	}
 
 	async cancelDeleteCardByIndex(index: number): Promise<void> {
-		const card = this.kanjiGrid.locator(".card").nth(index);
+		const card = this.page.getByTestId("kanji-card-item").nth(index);
 		await card.locator("button").last().click();
 		await expect(this.deleteModal).toBeVisible({ timeout: 5000 });
 		await this.deleteCancelBtn.click();

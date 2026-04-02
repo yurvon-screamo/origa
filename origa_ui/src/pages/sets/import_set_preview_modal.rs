@@ -120,6 +120,7 @@ pub fn ImportSetPreviewModal(
         <Drawer
             is_open=is_open
             title=Signal::derive(move || drawer_title.get())
+            test_id="sets-import-drawer"
         >
             <div class="space-y-4">
                 {move || {
@@ -145,7 +146,7 @@ pub fn ImportSetPreviewModal(
                         }.into_any()
                     } else if groups.is_empty() {
                         view! {
-                            <div class="flex flex-col items-center py-4 gap-3">
+                            <div class="flex flex-col items-center py-4 gap-3" data-testid="sets-drawer-empty">
                                 <Text size=TextSize::Default variant=TypographyVariant::Muted>
                                     "Нет слов для импорта"
                                 </Text>
@@ -157,9 +158,11 @@ pub fn ImportSetPreviewModal(
                         let selected = selected_words;
 
                         view! {
-                            <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                                {move || format!("Найдено {} слов ({} известных)", total_words_count.get(), known_words_count.get())}
-                            </Text>
+                            <div data-testid="sets-drawer-found">
+                                <Text size=TextSize::Small variant=TypographyVariant::Muted>
+                                    {move || format!("Найдено {} слов ({} известных)", total_words_count.get(), known_words_count.get())}
+                                </Text>
+                            </div>
                             <div class="space-y-6 overflow-y-auto max-h-[60vh]">
                                 {groups
                                     .into_iter()
@@ -208,6 +211,7 @@ pub fn ImportSetPreviewModal(
                                 <Button
                                     variant=ButtonVariant::Ghost
                                     on_click=handlers.on_cancel
+                                    test_id="sets-drawer-cancel-btn"
                                 >
                                     "Отмена"
                                 </Button>
@@ -218,6 +222,7 @@ pub fn ImportSetPreviewModal(
                                             || is_importing.get()
                                     })
                                     on_click=Callback::new(move |_| handlers.on_import.run(()))
+                                    test_id="sets-drawer-import-btn"
                                 >
                                     {move || {
                                         if is_importing.get() {

@@ -11,6 +11,7 @@ pub fn RuleItem(
     native_language: NativeLanguage,
     selected_ids: RwSignal<HashSet<Ulid>>,
     known_kanji: HashSet<String>,
+    #[prop(optional, into)] test_id: Signal<String>,
 ) -> impl IntoView {
     let rule_id = *rule.rule_id();
     let is_selected = move || selected_ids.get().contains(&rule_id);
@@ -38,6 +39,7 @@ pub fn RuleItem(
                     "border-[var(--border-dark)] bg-[var(--bg-paper)]"
                 }
             )
+            data-testid=move || test_id.get()
             on:click=on_click
         >
             <div class="font-bold text-sm font-mono"><FuriganaText text=title known_kanji=known_kanji.clone()/></div>

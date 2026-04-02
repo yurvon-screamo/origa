@@ -66,12 +66,14 @@ pub fn AddKanjiModal(is_open: RwSignal<bool>, refresh_trigger: RwSignal<u32>) ->
         <Drawer
             is_open=is_open
             title=Signal::derive(|| "Добавить кандзи".to_string())
+            test_id="kanji-add-drawer"
             action_button=Arc::new(move || {
                 view! {
                     <Button
                         variant=Signal::derive(|| ButtonVariant::Olive)
                         disabled=Signal::derive(move || state.selected_kanji.get().is_empty() || state.is_creating.get())
                         on_click=handlers.on_add
+                        test_id="kanji-drawer-add-btn"
                     >
                         {move || if state.is_creating.get() { "Добавление..." } else { "Добавить" }}
                     </Button>
@@ -83,6 +85,7 @@ pub fn AddKanjiModal(is_open: RwSignal<bool>, refresh_trigger: RwSignal<u32>) ->
                     levels=JLPT_LEVELS.to_vec()
                     selected_level=state.selected_level
                     on_select={let state = state.clone(); Callback::new(move |level| state.select_level(level))}
+                    test_id_prefix="kanji-level"
                 />
 
                 <div>
@@ -97,6 +100,7 @@ pub fn AddKanjiModal(is_open: RwSignal<bool>, refresh_trigger: RwSignal<u32>) ->
                                 let state = state.clone();
                                 move |_| state.select_all()
                             })
+                            test_id="kanji-drawer-select-all-btn"
                         >
                             "Выделить все"
                         </Button>

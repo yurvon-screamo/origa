@@ -39,6 +39,7 @@ pub fn FilterBtn<F: Fn() -> usize + Send + 'static>(
     filter: Filter,
     count: F,
     active: RwSignal<Filter>,
+    #[prop(optional, into)] test_id: Signal<String>,
 ) -> impl IntoView {
     let is_active = Memo::new(move |_| active.get() == filter);
     let filter_for_click = filter;
@@ -47,6 +48,7 @@ pub fn FilterBtn<F: Fn() -> usize + Send + 'static>(
         <Tag
             variant=Signal::derive(move || if is_active.get() { TagVariant::Filled } else { TagVariant::Default })
             class=Signal::derive(|| "cursor-pointer".to_string())
+            test_id=test_id
             on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
                 active.set(filter_for_click);
             })

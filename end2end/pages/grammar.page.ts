@@ -35,14 +35,14 @@ export class GrammarPage extends BasePage {
 		this.grammarGrid = page.getByTestId("grammar-grid");
 		this.emptyState = page.getByTestId("grammar-empty-state");
 
-		this.drawer = page.locator(".drawer-content");
-		this.drawerAddBtn = this.drawer.getByRole("button", { name: "Добавить" });
-		this.drawerSelectAllBtn = this.drawer.getByRole("button", { name: "Выделить все" });
-		this.drawerSearchInput = this.drawer.locator(".search-input");
+		this.drawer = page.getByTestId("grammar-add-drawer");
+		this.drawerAddBtn = page.getByTestId("grammar-drawer-add-btn");
+		this.drawerSelectAllBtn = page.getByTestId("grammar-drawer-select-all-btn");
+		this.drawerSearchInput = page.getByTestId("grammar-drawer-search-input");
 
-		this.deleteModal = page.locator(".modal-content");
-		this.deleteConfirmBtn = page.getByRole("button", { name: "Удалить" });
-		this.deleteCancelBtn = page.getByRole("button", { name: "Отмена" });
+		this.deleteModal = page.getByTestId("grammar-delete-modal");
+		this.deleteConfirmBtn = page.getByTestId("grammar-delete-modal-confirm");
+		this.deleteCancelBtn = page.getByTestId("grammar-delete-modal-cancel");
 	}
 
 	async goto(): Promise<void> {
@@ -70,16 +70,16 @@ export class GrammarPage extends BasePage {
 	}
 
 	async selectLevel(level: GrammarLevel): Promise<void> {
-		await this.drawer.getByRole("button", { name: level }).click();
-		const ruleItem = this.drawer.locator(".border.cursor-pointer").first();
-		const emptyMsg = this.drawer.getByText("Нет правил для выбранного уровня");
+		await this.page.getByTestId("grammar-level-" + level.toLowerCase()).click();
+		const ruleItem = this.drawer.getByTestId("grammar-drawer-item").first();
+		const emptyMsg = this.drawer.getByTestId("grammar-drawer-empty");
 		await expect(ruleItem.or(emptyMsg)).toBeVisible({ timeout: 10_000 });
 	}
 
 	async selectRule(title: string): Promise<void> {
-		const rule = this.drawer.locator(".border.cursor-pointer", { hasText: title });
-		await expect(rule).toBeVisible({ timeout: 5000 });
-		await rule.click();
+		const rule = this.drawer.getByTestId("grammar-drawer-item").filter({ hasText: title });
+		await expect(rule.first()).toBeVisible({ timeout: 5000 });
+		await rule.first().click();
 	}
 
 	async selectAllRules(): Promise<void> {
@@ -92,17 +92,22 @@ export class GrammarPage extends BasePage {
 	}
 
 	async selectFilter(name: FilterType): Promise<void> {
-		await this.grammarPage
-			.getByRole("button", { name: new RegExp(`${name} \\(\\d+\\)`) })
-			.click();
+		const filterMap: Record<FilterType, string> = {
+			"Все": "all",
+			"Новые": "new",
+			"Сложные": "hard",
+			"В процессе": "in-progress",
+			"Изученные": "learned",
+		};
+		await this.page.getByTestId("grammar-filter-" + filterMap[name]).click();
 	}
 
 	async getCardCount(): Promise<number> {
-		return this.grammarGrid.locator(".card").count();
+		return this.page.getByTestId("grammar-card-item").count();
 	}
 
 	async deleteCardByIndex(index: number): Promise<void> {
-		const card = this.grammarGrid.locator(".card").nth(index);
+		const card = this.page.getByTestId("grammar-card-item").nth(index);
 		await card.locator("button").last().click();
 		await expect(this.deleteModal).toBeVisible({ timeout: 5000 });
 		await this.deleteConfirmBtn.click();
@@ -110,7 +115,7 @@ export class GrammarPage extends BasePage {
 	}
 
 	async cancelDeleteCardByIndex(index: number): Promise<void> {
-		const card = this.grammarGrid.locator(".card").nth(index);
+		const card = this.page.getByTestId("grammar-card-item").nth(index);
 		await card.locator("button").last().click();
 		await expect(this.deleteModal).toBeVisible({ timeout: 5000 });
 		await this.deleteCancelBtn.click();

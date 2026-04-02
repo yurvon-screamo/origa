@@ -27,6 +27,7 @@ pub fn SetWordItem(
     view! {
         <div
             class="group flex items-start gap-4 py-3 px-4 border-b border-[var(--border-light)] hover:bg-[var(--bg-aged)] transition-colors cursor-pointer"
+            data-testid="sets-drawer-item"
             on:click=move |_| on_toggle.run(())
         >
             <div class="pt-1">

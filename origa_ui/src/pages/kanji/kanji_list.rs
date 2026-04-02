@@ -12,9 +12,11 @@ pub fn KanjiList(
 ) -> impl IntoView {
     if kanji_list.is_empty() {
         return view! {
-            <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                "Нет кандзи для выбранного уровня (или все уже изучены)"
-            </Text>
+            <div data-testid="kanji-drawer-empty">
+                <Text size=TextSize::Small variant=TypographyVariant::Muted>
+                    "Нет кандзи для выбранного уровня (или все уже изучены)"
+                </Text>
+            </div>
         }
         .into_any();
     }

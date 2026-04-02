@@ -8,7 +8,6 @@ import {
     loginTestUser,
 } from "./admin";
 import { generateUniqueEmail, DEFAULT_TEST_PASSWORD } from "./auth.fixture";
-import { LoginPage } from "../pages/login.page";
 
 /**
  * Extended test with authenticated page fixture
@@ -41,15 +40,19 @@ export const test = base.extend<{
         }
 
         try {
-            const { token: authToken } = await loginTestUser(userEmail, userPassword);
-
-            await page.goto(trailBaseUrl);
-            await page.evaluate((token) => {
-                localStorage.setItem("auth_token", token);
-            }, authToken);
-
+            // Navigate to the app - it will redirect to login since no session
             await page.goto("http://localhost:1420");
             await page.waitForLoadState("networkidle");
+            await page.waitForTimeout(2000);
+
+            // Fill in the login form
+            await page.fill('input[type="email"], input[data-testid="email-input"]', userEmail);
+            await page.fill('input[type="password"], input[data-testid="password-input"]', userPassword);
+            await page.click('button[type="submit"], button[data-testid="login-submit"]');
+            
+            // Wait for navigation
+            await page.waitForLoadState("networkidle");
+            await page.waitForTimeout(3000);
 
             await use(page);
         } finally {
@@ -93,6 +96,7 @@ export const test = base.extend<{
 
 /**
  * Fixture for tests that need a fresh user (no completed onboarding)
+ * Uses UI login for reliability
  */
 export const testWithFreshUser = base.extend<{
     page: Page;
@@ -120,23 +124,24 @@ export const testWithFreshUser = base.extend<{
         }
 
         try {
-            // Login through UI using LoginPage
-            const loginPage = new LoginPage(page);
-            await loginPage.goto();
+            // Navigate to the app - it will redirect to login since no session
+            await page.goto("http://localhost:1420");
+            await page.waitForLoadState("networkidle");
+            await page.waitForTimeout(2000);
 
-            const result = await loginPage.login(uniqueEmail, uniquePassword);
-
-            if (!result.success) {
-                throw new Error(`Login failed: ${result.error}`);
-            }
-
-            // Wait for successful redirect after login
-            await loginPage.expectLoginSuccess();
+            // Fill in the login form
+            await page.fill('input[type="email"], input[data-testid="email-input"]', uniqueEmail);
+            await page.fill('input[type="password"], input[data-testid="password-input"]', uniquePassword);
+            await page.click('button[type="submit"], button[data-testid="login-submit"]');
+            
+            // Wait for navigation
+            await page.waitForLoadState("networkidle");
+            await page.waitForTimeout(3000);
 
             await use(page);
         }
         catch (error) {
-            console.error("[fixture] Failed to login fresh user:", error);
+            console.error("[fixture] Failed to setup authenticated page:", error);
             throw error;
         }
         finally {

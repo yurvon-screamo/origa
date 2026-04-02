@@ -1,4 +1,4 @@
-use super::super::shared::{CardCounts, CardStatus, Filter, FilterBtn, create_delete_callback};
+use super::super::shared::{create_delete_callback, CardCounts, CardStatus, Filter, FilterBtn};
 use super::radical_item::RadicalItem;
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{
@@ -175,11 +175,11 @@ pub fn RadicalsContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
                 />
 
                 <div class="flex flex-wrap gap-2">
-                    <FilterBtn filter=Filter::All count=move || counts.get().total active=filter />
-                    <FilterBtn filter=Filter::New count=move || counts.get().new active=filter />
-                    <FilterBtn filter=Filter::Hard count=move || counts.get().hard active=filter />
-                    <FilterBtn filter=Filter::InProgress count=move || counts.get().in_progress active=filter />
-                    <FilterBtn filter=Filter::Learned count=move || counts.get().learned active=filter />
+                    <FilterBtn filter=Filter::All count=move || counts.get().total active=filter test_id="radicals-filter-all" />
+                    <FilterBtn filter=Filter::New count=move || counts.get().new active=filter test_id="radicals-filter-new" />
+                    <FilterBtn filter=Filter::Hard count=move || counts.get().hard active=filter test_id="radicals-filter-hard" />
+                    <FilterBtn filter=Filter::InProgress count=move || counts.get().in_progress active=filter test_id="radicals-filter-in-progress" />
+                    <FilterBtn filter=Filter::Learned count=move || counts.get().learned active=filter test_id="radicals-filter-learned" />
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4" data-testid="radicals-grid">
