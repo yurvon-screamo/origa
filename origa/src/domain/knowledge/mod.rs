@@ -419,7 +419,7 @@ impl KnowledgeSet {
 mod tests {
     use super::*;
     use crate::domain::memory::MemoryState;
-    use crate::domain::value_objects::{NativeLanguage, Question};
+    use crate::domain::value_objects::Question;
     use chrono::Duration;
 
     fn create_vocab_card(word: &str) -> Card {
