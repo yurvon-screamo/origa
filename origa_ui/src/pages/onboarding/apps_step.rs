@@ -117,7 +117,7 @@ pub fn AppsStep(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoVie
                         children=move |app| {
                             let app_id = app.id.clone();
                             let app_id_for_click = app_id.clone();
-                            let app_id_for_cb = app_id.clone();
+
                             let app_id_for_selected = app_id.clone();
                             let app_name = app.name.clone();
                             let app_desc = app.description.clone();
@@ -132,8 +132,9 @@ pub fn AppsStep(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoVie
 
                             view! {
                                 <Card
+                                    shadow=Signal::derive(|| true)
                                     class=Signal::derive(move || {
-                                        let base = "card card-shadow card-selectable";
+                                        let base = "card-selectable";
                                         if is_selected.get() {
                                             format!("{} selected", base)
                                         } else {
@@ -160,9 +161,7 @@ pub fn AppsStep(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoVie
                                         <Checkbox
                                             checked=Signal::derive(move || is_selected.get())
                                             label=Signal::derive(String::new)
-                                            on_change=Callback::new(move |()| {
-                                                toggle_app.run(app_id_for_cb.clone());
-                                            })
+
                                             test_id=Signal::derive(move || format!("{}-checkbox", app_test_id_for_checkbox.clone()))
                                         />
                                     </div>

@@ -1,7 +1,6 @@
 use super::deim_wasm::ensure_ort_initialized;
 use super::vocab::Vocabulary;
 use crate::domain::OrigaError;
-use as_slice::AsSlice;
 use image::DynamicImage;
 use ort::session::Session;
 use ort_web::ValueExt;
@@ -151,7 +150,7 @@ impl ParseqRecognizer {
                 },
             };
 
-        let shape_slice = shape.as_slice();
+        let shape_slice: &[i64] = shape;
 
         if shape_slice.len() < 3 {
             tracing::warn!("Invalid PARSeq output shape: {:?}", shape_slice);

@@ -13,6 +13,7 @@ pub struct DeleteRequest {
 pub fn create_delete_callback(
     repository: HybridUserRepository,
     toasts: RwSignal<Vec<ToastData>>,
+    refresh_trigger: RwSignal<u32>,
 ) -> (RwSignal<bool>, Callback<DeleteRequest>) {
     let is_deleting = RwSignal::new(false);
     let callback = Callback::new(move |request: DeleteRequest| {
@@ -30,6 +31,7 @@ pub fn create_delete_callback(
                     if disposed.is_disposed() {
                         return;
                     }
+                    refresh_trigger.update(|v| *v += 1);
                     on_success.run(())
                 },
                 Err(e) => {

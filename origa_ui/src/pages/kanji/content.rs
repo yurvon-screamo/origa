@@ -113,7 +113,8 @@ pub fn KanjiContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
         })
     };
 
-    let (is_deleting, on_delete) = create_delete_callback(repository.clone(), toasts);
+    let (is_deleting, on_delete) =
+        create_delete_callback(repository.clone(), toasts, refresh_trigger);
 
     let filtered_cards = Memo::new(move |_| {
         let query = search.get().to_lowercase();

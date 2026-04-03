@@ -148,6 +148,7 @@ pub fn KanjiCardItem(
                 on_close=Callback::new(move |_| is_history_open.set(false))
             />
             <DeleteConfirmModal
+                test_id="kanji-delete-modal"
                 is_open=is_delete_modal_open
                 is_deleting=is_deleting
                 on_confirm=confirm_delete
@@ -183,7 +184,7 @@ pub fn KanjiCardItem(
                             <path d="m15 5 4 4" />
                         </svg>
                     </button>
-                    <DeleteButton on_click=Callback::new(move |_| is_delete_modal_open.set(true)) />
+                    <DeleteButton test_id="kanji-card-item-delete-btn" on_click=Callback::new(move |_| is_delete_modal_open.set(true)) />
                 </div>
             </div>
         </Card>

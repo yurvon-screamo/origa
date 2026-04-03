@@ -93,7 +93,7 @@ pub fn GrammarCardItem(
                         on_click=Callback::new(move |_| on_toggle_favorite.run(card_id))
                     />
                     <HistoryButton on_click=Callback::new(move |_| is_history_open.set(true)) />
-                    <DeleteButton on_click=Callback::new(move |_| is_delete_modal_open.set(true)) />
+                    <DeleteButton test_id="grammar-card-item-delete-btn" on_click=Callback::new(move |_| is_delete_modal_open.set(true)) />
                 </div>
             </div>
             <CardHistoryModal
@@ -102,6 +102,7 @@ pub fn GrammarCardItem(
                 on_close=Callback::new(move |_| is_history_open.set(false))
             />
             <DeleteConfirmModal
+                test_id="grammar-delete-modal"
                 is_open=is_delete_modal_open
                 is_deleting=is_deleting
                 on_confirm=confirm_delete
