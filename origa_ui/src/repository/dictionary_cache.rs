@@ -62,20 +62,6 @@ pub async fn save_kanji_to_cache_rkyv(bytes: &[u8]) -> Result<(), OrigaError> {
 }
 
 // ============================================
-// rkyv-based cache functions for radical
-// ============================================
-
-/// Get cached radical as raw rkyv bytes
-pub async fn get_cached_radical_rkyv() -> Result<Option<Vec<u8>>, OrigaError> {
-    get_cached_bytes(urls().radical).await
-}
-
-/// Save radical to cache as rkyv bytes
-pub async fn save_radical_to_cache_rkyv(bytes: &[u8]) -> Result<(), OrigaError> {
-    save_cached_bytes(urls().radical, bytes).await
-}
-
-// ============================================
 // rkyv-based cache functions for grammar
 // ============================================
 

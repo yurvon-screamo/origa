@@ -1,11 +1,9 @@
 use crate::loaders::{
-    data_loader::{load_grammar, load_kanji, load_radical, load_vocabulary},
+    data_loader::{load_grammar, load_kanji, load_vocabulary},
     dictionary::load_dictionary,
     jlpt_content_loader::load_jlpt_content,
 };
-use crate::pages::{
-    Grammar, Home, Kanji, Lesson, Login, Onboarding, Profile, Radicals, Sets, Words,
-};
+use crate::pages::{Grammar, Home, Kanji, Lesson, Login, Onboarding, Profile, Sets, Words};
 use crate::store::auth_store::AuthStore;
 use crate::ui_components::LoadingOverlay;
 use leptos::prelude::*;
@@ -31,9 +29,6 @@ pub fn start_dictionary_loading(
         }
         if let Err(e) = load_kanji().await {
             tracing::error!("Failed to load kanji: {e}");
-        }
-        if let Err(e) = load_radical().await {
-            tracing::error!("Failed to load radical: {e}");
         }
         if let Err(e) = load_grammar().await {
             tracing::error!("Failed to load grammar: {e}");
@@ -106,7 +101,6 @@ pub fn AppRoutes() -> impl IntoView {
                 <Route path=path!("words") view=|| view! { <ProtectedRoute><Words/></ProtectedRoute> } />
                 <Route path=path!("grammar") view=|| view! { <ProtectedRoute><Grammar/></ProtectedRoute> } />
                 <Route path=path!("kanji") view=|| view! { <ProtectedRoute><Kanji/></ProtectedRoute> } />
-                <Route path=path!("radicals") view=|| view! { <ProtectedRoute><Radicals/></ProtectedRoute> } />
                 <Route path=path!("lesson") view=|| view! { <ProtectedRoute><Lesson/></ProtectedRoute> } />
                 <Route path=path!("sets") view=|| view! { <ProtectedRoute><Sets/></ProtectedRoute> } />
             </Routes>

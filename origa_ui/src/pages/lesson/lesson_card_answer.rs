@@ -1,5 +1,4 @@
 use super::kanji_card_details::{KanjiCardDetails, RadicalDisplay};
-use super::radical_card_details::{RadicalCardDetails, RadicalCardDisplay};
 use crate::ui_components::{
     Button, ButtonVariant, FuriganaText, Heading, HeadingLevel, MarkdownText, MarkdownVariant,
     Text, TextSize, TypographyVariant,
@@ -17,12 +16,10 @@ pub fn LessonCardAnswer(
     content_ref: NodeRef<leptos::html::Div>,
     on_toggle: Callback<()>,
     is_kanji: bool,
-    is_radical: bool,
     is_reversed: bool,
     on_readings: Option<Vec<String>>,
     kun_readings: Option<Vec<String>>,
     radicals: Option<Vec<RadicalDisplay>>,
-    radical: Option<RadicalCardDisplay>,
     example_words: Option<Vec<(String, String)>>,
     grammar_info: Option<GrammarInfo>,
     #[prop(into)] known_kanji: Signal<HashSet<String>>,
@@ -32,14 +29,13 @@ pub fn LessonCardAnswer(
     let on_readings_stored = StoredValue::new(on_readings);
     let kun_readings_stored = StoredValue::new(kun_readings);
     let radicals_stored = StoredValue::new(radicals);
-    let radical_stored = StoredValue::new(radical);
     let examples_stored = StoredValue::new(example_words);
     let grammar_info_stored = StoredValue::new(grammar_info);
 
     view! {
         <div class="text-center">
             <Show
-                when=move || is_kanji || is_radical
+                when=move || is_kanji
                 fallback=move || {
                     view! {
                         <Heading level=HeadingLevel::H3 class="mb-2">
@@ -76,7 +72,7 @@ pub fn LessonCardAnswer(
             >
                 <div class="max-w-max mx-auto space-y-4">
                     <Show
-                        when=move || grammar_info_stored.get_value().is_some() && !is_kanji && !is_radical
+                        when=move || grammar_info_stored.get_value().is_some() && !is_kanji
                     >
                         {move || {
                             grammar_info_stored
@@ -98,39 +94,27 @@ pub fn LessonCardAnswer(
                         when=move || is_kanji
                         fallback=move || {
                             view! {
-                                <Show
-                                    when=move || is_radical
-                                    fallback=move || {
-                                        view! {
-                                            <div class="flex gap-4 items-baseline text-left">
-                                                <div class="w-16 shrink-0">
-                                                    <Text size=TextSize::Default variant=TypographyVariant::Muted>
-                                                        "Ответ:"
-                                                    </Text>
-                                                </div>
-                                                <Show
-                                                    when=move || is_reversed
-                                                    fallback=move || {
-                                                        view! {
-                                                            <MarkdownText
-                                                                content=Signal::derive(move || answer.get_value())
-                                                                variant=Signal::derive(|| MarkdownVariant::Large)
-                                                                known_kanji=known_kanji.get()
-                                                            />
-                                                        }
-                                                    }
-                                                >
-                                                    <FuriganaText text=answer.get_value() known_kanji=known_kanji.get()/>
-                                                </Show>
-                                            </div>
+                                <div class="flex gap-4 items-baseline text-left">
+                                    <div class="w-16 shrink-0">
+                                        <Text size=TextSize::Default variant=TypographyVariant::Muted>
+                                            "Ответ:"
+                                        </Text>
+                                    </div>
+                                    <Show
+                                        when=move || is_reversed
+                                        fallback=move || {
+                                            view! {
+                                                <MarkdownText
+                                                    content=Signal::derive(move || answer.get_value())
+                                                    variant=Signal::derive(|| MarkdownVariant::Large)
+                                                    known_kanji=known_kanji.get()
+                                                />
+                                            }
                                         }
-                                    }
-                                >
-                                    <RadicalCardDetails
-                                        radical={radical_stored.get_value().unwrap()}
-                                        show_details=is_expanded
-                                    />
-                                </Show>
+                                    >
+                                        <FuriganaText text=answer.get_value() known_kanji=known_kanji.get()/>
+                                    </Show>
+                                </div>
                             }
                         }
                     >

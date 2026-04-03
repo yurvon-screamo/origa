@@ -94,7 +94,6 @@ pub fn KanjiCardDetails(
                     <KanjiWritingSection
                         kanji=kanji_stored.get_value()
                         mode=KanjiViewMode::Frames
-                        fallback=None
                     />
                 </div>
             </div>

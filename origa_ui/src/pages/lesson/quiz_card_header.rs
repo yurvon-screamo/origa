@@ -15,7 +15,7 @@ pub fn QuizCardHeader(card_type: CardType, question_text: String) -> impl IntoVi
                     "Тест"
                 </Tag>
             </div>
-            <Show when=move || card_type != CardType::Kanji && card_type != CardType::Radical>
+            <Show when=move || card_type != CardType::Kanji>
                 <AudioButtons
                     text=question_text.clone()
                     class=Signal::derive(|| "".to_string())

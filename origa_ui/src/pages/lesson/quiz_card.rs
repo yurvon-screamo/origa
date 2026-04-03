@@ -1,6 +1,6 @@
 use crate::ui_components::{
-    get_reading_from_text, is_speech_supported, speak_text, Card, DisplayText, FuriganaText,
-    Heading, HeadingLevel, KanjiViewMode, KanjiWritingSection, Text, TextSize, TypographyVariant,
+    Card, DisplayText, FuriganaText, Heading, HeadingLevel, KanjiViewMode, KanjiWritingSection,
+    Text, TextSize, TypographyVariant, get_reading_from_text, is_speech_supported, speak_text,
 };
 use leptos::prelude::*;
 use origa::domain::{Card as DomainCard, NativeLanguage, QuizCard};
@@ -53,7 +53,7 @@ pub fn QuizCardView(
     };
 
     let kanji_for_animation: StoredValue<Option<String>> = StoredValue::new(match &card {
-        DomainCard::Kanji(_) | DomainCard::Radical(_) => Some(
+        DomainCard::Kanji(_) => Some(
             card.question(&lang)
                 .ok()
                 .map(|q| q.text().to_string())
@@ -70,12 +70,7 @@ pub fn QuizCardView(
             .as_ref()
             .map(|ctx| ctx.is_muted.get())
             .unwrap_or(false);
-        if !show_result
-            && card_type != CardType::Kanji
-            && card_type != CardType::Radical
-            && is_speech_supported()
-            && !is_muted
-        {
+        if !show_result && card_type != CardType::Kanji && is_speech_supported() && !is_muted {
             let reading = get_reading_from_text(&question_text);
             let _ = speak_text(&reading, 1.0);
         }
@@ -102,18 +97,13 @@ pub fn QuizCardView(
                         {move || {
                             kanji_for_animation.get_value().map(|kanji: String| {
                                 let kanji_clone = kanji.clone();
-                                let fallback_for_radical = if card_type == CardType::Radical {
-                                    Some(kanji_clone.clone())
-                                } else {
-                                    None
-                                };
                                 view! {
                                     <div class="mb-3 sm:mb-6">
                                         <DisplayText>
                                             {kanji}
                                         </DisplayText>
                                     </div>
-                                    <KanjiWritingSection kanji=kanji_clone mode=KanjiViewMode::Animation fallback=fallback_for_radical />
+                                    <KanjiWritingSection kanji=kanji_clone mode=KanjiViewMode::Animation />
                                 }
                             })
                         }}

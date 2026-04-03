@@ -149,7 +149,6 @@ impl User {
         self.touch();
     }
 
-    /// Пометить несколько наборов как импортированные
     pub fn mark_sets_as_imported(&mut self, set_ids: impl IntoIterator<Item = String>) {
         for set_id in set_ids {
             self.imported_sets.insert(set_id);
@@ -229,7 +228,6 @@ impl User {
                 Card::Kanji(_) => *learned_kanji.entry(level).or_insert(0) += 1,
                 Card::Vocabulary(_) => *learned_words.entry(level).or_insert(0) += 1,
                 Card::Grammar(_) => *learned_grammar.entry(level).or_insert(0) += 1,
-                Card::Radical(_) => {},
             }
         }
 

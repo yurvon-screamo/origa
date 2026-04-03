@@ -6,7 +6,7 @@ pub mod lesson;
 pub mod login;
 pub mod onboarding;
 pub mod profile;
-pub mod radicals;
+
 pub mod sets;
 pub mod shared;
 pub mod words;
@@ -18,6 +18,5 @@ pub use lesson::Lesson;
 pub use login::Login;
 pub use onboarding::Onboarding;
 pub use profile::Profile;
-pub use radicals::Radicals;
 pub use sets::Sets;
 pub use words::Words;

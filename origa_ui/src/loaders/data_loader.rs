@@ -2,9 +2,6 @@ use origa::dictionary::grammar::{
     GrammarData, init_grammar, init_grammar_from_rkyv, is_grammar_loaded,
 };
 use origa::dictionary::kanji::{KanjiData, init_kanji, init_kanji_from_rkyv, is_kanji_loaded};
-use origa::dictionary::radical::{
-    RadicalData, init_radicals, init_radicals_from_rkyv, is_radicals_loaded,
-};
 use origa::dictionary::vocabulary::{
     VOCABULARY_DICTIONARY, VocabularyChunkData, init_vocabulary, init_vocabulary_from_rkyv,
     is_vocabulary_loaded,
@@ -14,15 +11,14 @@ use origa::domain::OrigaError;
 use super::jlpt_content_loader::load_jlpt_content;
 use crate::core::config::public_url;
 use crate::repository::{
-    get_cached_grammar_rkyv, get_cached_kanji_rkyv, get_cached_radical_rkyv,
-    get_cached_vocabulary_rkyv, save_grammar_to_cache_rkyv, save_kanji_to_cache_rkyv,
-    save_radical_to_cache_rkyv, save_vocabulary_to_cache_rkyv,
+    get_cached_grammar_rkyv, get_cached_kanji_rkyv, get_cached_vocabulary_rkyv,
+    save_grammar_to_cache_rkyv, save_kanji_to_cache_rkyv, save_vocabulary_to_cache_rkyv,
 };
 use crate::utils::{fetch_text, yield_to_browser};
 
 #[allow(dead_code)]
 pub fn is_all_data_loaded() -> bool {
-    is_vocabulary_loaded() && is_radicals_loaded() && is_kanji_loaded() && is_grammar_loaded()
+    is_vocabulary_loaded() && is_kanji_loaded() && is_grammar_loaded()
 }
 
 #[allow(dead_code)]
@@ -35,9 +31,8 @@ pub async fn load_all_data() -> Result<(), OrigaError> {
     let start = now_ms();
     tracing::info!("📚 Starting parallel data loading...");
 
-    let (vocab_result, radical_result, kanji_result, grammar_result, jlpt_result) = futures::join!(
+    let (vocab_result, kanji_result, grammar_result, jlpt_result) = futures::join!(
         load_vocabulary(),
-        load_radical(),
         load_kanji(),
         load_grammar(),
         load_jlpt_content()
@@ -47,7 +42,6 @@ pub async fn load_all_data() -> Result<(), OrigaError> {
     tracing::info!("📚 Parallel data loading finished in {:.2}s", elapsed);
 
     vocab_result?;
-    radical_result?;
     kanji_result?;
     grammar_result?;
     jlpt_result?;
@@ -141,58 +135,6 @@ pub async fn load_vocabulary() -> Result<(), OrigaError> {
 
     tracing::info!(
         "📖 Vocabulary loaded from network ({:.2}s)",
-        (now_ms() - start) / 1000.0
-    );
-    Ok(())
-}
-
-pub async fn load_radical() -> Result<(), OrigaError> {
-    if is_radicals_loaded() {
-        tracing::debug!("📖 Radicals already loaded");
-        return Ok(());
-    }
-
-    let start = now_ms();
-    tracing::info!("📖 Loading radicals...");
-
-    // Try rkyv cache first
-    if let Some(bytes) = get_cached_radical_rkyv().await? {
-        tracing::info!("📖 Radicals found in rkyv cache ({} bytes)", bytes.len());
-        yield_to_browser().await;
-        init_radicals_from_rkyv(&bytes)?;
-        tracing::info!(
-            "📖 Radicals loaded from rkyv cache ({:.2}s)",
-            (now_ms() - start) / 1000.0
-        );
-        return Ok(());
-    }
-
-    tracing::debug!("📖 No rkyv cache, loading from network");
-
-    let json = fetch_text(public_url("/public/dictionary/radicals.json")).await?;
-    let data = RadicalData {
-        radicals_json: json,
-    };
-
-    // Serialize before init (takes reference, doesn't move data)
-    let bytes = origa::dictionary::radical::serialize_radicals_to_rkyv(&data).map_err(|e| {
-        OrigaError::RepositoryError {
-            reason: format!("Failed to serialize radicals: {:?}", e),
-        }
-    })?;
-
-    yield_to_browser().await;
-    // Now init takes ownership
-    init_radicals(data)?;
-
-    wasm_bindgen_futures::spawn_local(async move {
-        if let Err(e) = save_radical_to_cache_rkyv(&bytes).await {
-            tracing::warn!("Failed to cache radicals: {:?}", e);
-        }
-    });
-
-    tracing::info!(
-        "📖 Radicals loaded from network ({:.2}s)",
         (now_ms() - start) / 1000.0
     );
     Ok(())

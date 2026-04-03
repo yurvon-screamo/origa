@@ -187,7 +187,7 @@ pub fn KanjiWritingSection(
     kanji: String,
     #[prop(optional)] mode: KanjiViewMode,
     #[prop(optional, into)] test_id: Signal<String>,
-    #[prop(into)] fallback: Option<String>,
+    #[prop(optional)] fallback: Option<String>,
 ) -> impl IntoView {
     let test_id_val = move || {
         let val = test_id.get();
