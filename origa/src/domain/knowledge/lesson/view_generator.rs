@@ -1100,4 +1100,454 @@ mod tests {
             );
         }
     }
+
+    mod quiz_option_and_card_tests {
+        use super::*;
+
+        #[test]
+        fn quiz_option_stores_text_and_correctness() {
+            let option = QuizOption::new("答え".to_string(), true);
+            assert_eq!(option.text(), "答え");
+            assert!(option.is_correct());
+        }
+
+        #[test]
+        fn quiz_option_incorrect() {
+            let option = QuizOption::new(String::new(), false);
+            assert_eq!(option.text(), "");
+            assert!(!option.is_correct());
+        }
+
+        #[test]
+        fn quiz_card_check_answer_correct_index() {
+            let options = vec![
+                QuizOption::new("a".to_string(), false),
+                QuizOption::new("b".to_string(), true),
+                QuizOption::new("c".to_string(), false),
+            ];
+            let card = create_vocab_card("猫");
+            let quiz = QuizCard::new(card, options);
+            assert!(quiz.check_answer(1));
+            assert!(!quiz.check_answer(0));
+            assert!(!quiz.check_answer(2));
+        }
+
+        #[test]
+        fn quiz_card_check_answer_out_of_bounds_returns_false() {
+            let options = vec![QuizOption::new("only".to_string(), true)];
+            let card = create_vocab_card("猫");
+            let quiz = QuizCard::new(card, options);
+            assert!(!quiz.check_answer(5));
+            assert!(!quiz.check_answer(usize::MAX));
+        }
+
+        #[test]
+        fn quiz_card_options_returns_all() {
+            let card = create_vocab_card("猫");
+            let opts = vec![
+                QuizOption::new("a".to_string(), false),
+                QuizOption::new("b".to_string(), true),
+            ];
+            let quiz = QuizCard::new(card, opts);
+            assert_eq!(quiz.options().len(), 2);
+            assert_eq!(quiz.options()[0].text(), "a");
+            assert_eq!(quiz.options()[1].text(), "b");
+        }
+
+        #[test]
+        fn quiz_card_card_returns_inner() {
+            let card = create_vocab_card("猫");
+            let quiz = QuizCard::new(card.clone(), vec![]);
+            assert_eq!(quiz.card(), &card);
+        }
+    }
+
+    mod lesson_card_view_accessors {
+        use super::*;
+
+        #[test]
+        fn card_accessor_for_yesno_variant() {
+            let vocab = create_vocab_card("猫");
+            let yesno = YesNoCard::new(vocab.clone(), "stmt".to_string(), true);
+            assert_eq!(LessonCardView::YesNo(yesno).card(), &vocab);
+        }
+
+        #[test]
+        fn card_accessor_for_writing_variant() {
+            let vocab = create_vocab_card("猫");
+            assert_eq!(LessonCardView::Writing(vocab.clone()).card(), &vocab);
+        }
+
+        #[test]
+        fn grammar_info_returns_some_for_grammar_mutated() {
+            let rule_id = Ulid::new();
+            let info = GrammarInfo::new(Some(rule_id), "Title".into(), "Desc".into());
+            let view = LessonCardView::GrammarMutated {
+                card: create_vocab_card("猫"),
+                grammar_info: info,
+            };
+            let result = view.grammar_info().unwrap();
+            assert_eq!(result.rule_id(), Some(rule_id));
+            assert_eq!(result.title(), "Title");
+            assert_eq!(result.description(), "Desc");
+        }
+
+        #[test]
+        fn grammar_info_returns_none_for_all_other_variants() {
+            let vocab = create_vocab_card("猫");
+            assert!(
+                LessonCardView::Normal(vocab.clone())
+                    .grammar_info()
+                    .is_none()
+            );
+            assert!(
+                LessonCardView::Reversed(vocab.clone())
+                    .grammar_info()
+                    .is_none()
+            );
+            assert!(
+                LessonCardView::Writing(vocab.clone())
+                    .grammar_info()
+                    .is_none()
+            );
+            assert!(
+                LessonCardView::Quiz(QuizCard::new(vocab.clone(), vec![]))
+                    .grammar_info()
+                    .is_none()
+            );
+            let yesno = YesNoCard::new(vocab, "s".into(), true);
+            assert!(LessonCardView::YesNo(yesno).grammar_info().is_none());
+        }
+    }
+
+    mod grammar_card_view_tests {
+        use super::*;
+        use crate::domain::StudyCard;
+        use rand::{SeedableRng, rngs::StdRng};
+
+        fn make_ks() -> KnowledgeSet {
+            let mut ks = KnowledgeSet::new();
+            for w in ["猫", "犬", "鳥"] {
+                ks.create_card(Card::Vocabulary(VocabularyCard::new(
+                    Question::new(w.to_string()).unwrap(),
+                )))
+                .unwrap();
+            }
+            ks
+        }
+
+        #[test]
+        fn grammar_new_card_always_normal() {
+            let rule_id = Ulid::from_string("01KJ9AVWBGC2BT0DMFPDYYFEWB").unwrap();
+            let sc = StudyCard::new(Card::Grammar(GrammarRuleCard::new_test_with_id(rule_id)));
+            let ks = make_ks();
+            let generator = LessonViewGenerator::new(&ks);
+            for seed in 0u64..50 {
+                let mut rng = StdRng::seed_from_u64(seed);
+                assert!(matches!(
+                    generator.apply_view(&sc, true, &mut rng),
+                    LessonCardView::Normal(_)
+                ));
+            }
+        }
+
+        #[test]
+        fn grammar_review_card_always_normal() {
+            let rule_id = Ulid::from_string("01KJ9AVWBGC2BT0DMFPDYYFEWB").unwrap();
+            let sc = StudyCard::new(Card::Grammar(GrammarRuleCard::new_test_with_id(rule_id)));
+            let ks = make_ks();
+            let generator = LessonViewGenerator::new(&ks);
+            for seed in 0u64..50 {
+                let mut rng = StdRng::seed_from_u64(seed);
+                assert!(matches!(
+                    generator.apply_view(&sc, false, &mut rng),
+                    LessonCardView::Normal(_)
+                ));
+            }
+        }
+    }
+
+    mod kanji_view_tests {
+        use super::*;
+        use crate::domain::StudyCard;
+        use crate::domain::knowledge::KanjiCard;
+        use crate::domain::memory::{Difficulty, MemoryState, Rating, ReviewLog, Stability};
+        use chrono::{Duration, Utc};
+        use rand::{SeedableRng, rngs::StdRng};
+
+        fn make_ks() -> KnowledgeSet {
+            let mut ks = KnowledgeSet::new();
+            for k in ["日", "月", "水", "火", "木"] {
+                ks.create_card(Card::Kanji(KanjiCard::new_test(k.to_string())))
+                    .unwrap();
+            }
+            ks
+        }
+
+        fn make_reviewed_kanji(
+            kanji: &str,
+            stability: f64,
+            difficulty: f64,
+            rating: Rating,
+        ) -> StudyCard {
+            let card = Card::Kanji(KanjiCard::new_test(kanji.to_string()));
+            let mut sc = StudyCard::new(card);
+            let mem = MemoryState::new(
+                Stability::new(stability).unwrap(),
+                Difficulty::new(difficulty).unwrap(),
+                Utc::now(),
+            );
+            sc.add_review(mem, ReviewLog::new(rating, Duration::days(5)));
+            sc
+        }
+
+        #[test]
+        fn new_kanji_produces_normal_quiz_and_writing() {
+            crate::use_cases::init_real_dictionaries();
+            let ks = make_ks();
+            let sc = StudyCard::new(Card::Kanji(KanjiCard::new_test("日".to_string())));
+            let generator = LessonViewGenerator::new(&ks);
+            let mut counts = std::collections::HashMap::<&str, usize>::new();
+
+            for seed in 0..300 {
+                let mut rng = StdRng::seed_from_u64(seed);
+                let key = match generator.apply_view(&sc, true, &mut rng) {
+                    LessonCardView::Normal(_) => "normal",
+                    LessonCardView::Quiz(_) => "quiz",
+                    LessonCardView::Writing(_) => "writing",
+                    other => panic!("Unexpected view for new kanji: {:?}", other),
+                };
+                *counts.entry(key).or_default() += 1;
+            }
+
+            assert!(counts.get("normal").copied().unwrap_or(0) > 0);
+            assert!(counts.get("quiz").copied().unwrap_or(0) > 0);
+            assert!(counts.get("writing").copied().unwrap_or(0) > 0);
+        }
+
+        #[test]
+        fn review_kanji_not_high_difficulty_produces_yesno() {
+            crate::use_cases::init_real_dictionaries();
+            let ks = make_ks();
+            let sc = make_reviewed_kanji("日", 5.0, 3.0, Rating::Good);
+            assert!(!sc.memory().is_high_difficulty());
+            let generator = LessonViewGenerator::new(&ks);
+
+            let mut yesno_count = 0;
+            for seed in 0..300 {
+                let mut rng = StdRng::seed_from_u64(seed);
+                if matches!(
+                    generator.apply_view(&sc, false, &mut rng),
+                    LessonCardView::YesNo(_)
+                ) {
+                    yesno_count += 1;
+                }
+            }
+            assert!(
+                yesno_count > 0,
+                "review kanji (not high diff) should get YesNo sometimes"
+            );
+        }
+
+        #[test]
+        fn review_kanji_high_difficulty_never_yesno() {
+            crate::use_cases::init_real_dictionaries();
+            let ks = make_ks();
+            let sc = make_reviewed_kanji("日", 3.0, 7.0, Rating::Hard);
+            assert!(sc.memory().is_high_difficulty());
+            let generator = LessonViewGenerator::new(&ks);
+
+            for seed in 0..300 {
+                let mut rng = StdRng::seed_from_u64(seed);
+                let view = generator.apply_view(&sc, false, &mut rng);
+                assert!(
+                    !matches!(view, LessonCardView::YesNo(_)),
+                    "high-diff kanji should never get YesNo"
+                );
+            }
+        }
+
+        #[test]
+        fn review_kanji_not_high_difficulty_produces_writing() {
+            crate::use_cases::init_real_dictionaries();
+            let ks = make_ks();
+            let sc = make_reviewed_kanji("日", 5.0, 3.0, Rating::Good);
+            let generator = LessonViewGenerator::new(&ks);
+
+            let mut writing_count = 0;
+            for seed in 0..300 {
+                let mut rng = StdRng::seed_from_u64(seed);
+                if matches!(
+                    generator.apply_view(&sc, false, &mut rng),
+                    LessonCardView::Writing(_)
+                ) {
+                    writing_count += 1;
+                }
+            }
+            assert!(
+                writing_count > 0,
+                "review kanji should get Writing sometimes"
+            );
+        }
+    }
+
+    mod new_vocab_view_tests {
+        use super::*;
+        use crate::domain::StudyCard;
+        use rand::{SeedableRng, rngs::StdRng};
+
+        fn make_ks() -> KnowledgeSet {
+            let mut ks = KnowledgeSet::new();
+            for w in ["猫", "犬", "鳥", "魚"] {
+                ks.create_card(Card::Vocabulary(VocabularyCard::new(
+                    Question::new(w.to_string()).unwrap(),
+                )))
+                .unwrap();
+            }
+            ks
+        }
+
+        #[test]
+        fn new_vocab_produces_normal_and_quiz_only() {
+            crate::use_cases::init_real_dictionaries();
+            let ks = make_ks();
+            let sc = StudyCard::new(create_vocab_card("猫"));
+            let generator = LessonViewGenerator::new(&ks);
+            let mut normal = 0;
+            let mut quiz = 0;
+
+            for seed in 0..200 {
+                let mut rng = StdRng::seed_from_u64(seed);
+                match generator.apply_view(&sc, true, &mut rng) {
+                    LessonCardView::Normal(_) => normal += 1,
+                    LessonCardView::Quiz(_) => quiz += 1,
+                    other => panic!("New vocab should be Normal or Quiz, got {:?}", other),
+                }
+            }
+            assert!(normal > 0, "new vocab should sometimes get Normal");
+            assert!(quiz > 0, "new vocab should sometimes get Quiz");
+        }
+    }
+
+    mod generate_quiz_vocab_kanji_tests {
+        use super::*;
+        use crate::domain::knowledge::KanjiCard;
+        use crate::use_cases::init_real_dictionaries;
+
+        #[test]
+        fn generate_quiz_vocab_with_distinct_answers() {
+            init_real_dictionaries();
+            let words = ["猫", "犬", "鳥", "魚"];
+            let cards: Vec<Card> = words.iter().map(|w| create_vocab_card(w)).collect();
+
+            let result = LessonCardView::generate_quiz(
+                cards[0].clone(),
+                &cards[1..],
+                &NativeLanguage::Russian,
+            );
+
+            match result.expect("should succeed") {
+                LessonCardView::Quiz(quiz) => {
+                    assert_eq!(quiz.options().len(), 4);
+                    assert_eq!(quiz.options().iter().filter(|o| o.is_correct()).count(), 1);
+                },
+                other => panic!("Expected Quiz, got {:?}", other),
+            }
+        }
+
+        #[test]
+        fn generate_quiz_vocab_fallback_no_cards() {
+            init_real_dictionaries();
+            let card = create_vocab_card("猫");
+            let result = LessonCardView::generate_quiz(card.clone(), &[], &NativeLanguage::Russian);
+            match result.unwrap() {
+                LessonCardView::Normal(c) => assert_eq!(c, card),
+                other => panic!("Expected Normal, got {:?}", other),
+            }
+        }
+
+        #[test]
+        fn generate_quiz_vocab_fallback_insufficient_distinct() {
+            init_real_dictionaries();
+            let card = create_vocab_card("猫");
+            let same = vec![card.clone()];
+            let result =
+                LessonCardView::generate_quiz(card.clone(), &same, &NativeLanguage::Russian);
+            match result.unwrap() {
+                LessonCardView::Normal(c) => assert_eq!(c, card),
+                other => panic!("Expected Normal, got {:?}", other),
+            }
+        }
+
+        #[test]
+        fn generate_quiz_kanji_with_distinct_answers() {
+            init_real_dictionaries();
+            let kanji_cards: Vec<Card> = ["日", "月", "水", "火"]
+                .iter()
+                .map(|k| Card::Kanji(KanjiCard::new_test(k.to_string())))
+                .collect();
+
+            let result = LessonCardView::generate_quiz(
+                kanji_cards[0].clone(),
+                &kanji_cards[1..],
+                &NativeLanguage::Russian,
+            );
+
+            match result.expect("should succeed") {
+                LessonCardView::Quiz(quiz) => {
+                    assert_eq!(quiz.options().len(), 4);
+                    assert_eq!(quiz.options().iter().filter(|o| o.is_correct()).count(), 1);
+                },
+                other => panic!("Expected Quiz for kanji, got {:?}", other),
+            }
+        }
+    }
+
+    mod generate_yesno_kanji_tests {
+        use super::*;
+        use crate::domain::knowledge::KanjiCard;
+        use crate::use_cases::init_real_dictionaries;
+        use rand::{SeedableRng, rngs::StdRng};
+
+        #[test]
+        fn generate_yesno_kanji_with_distractors() {
+            init_real_dictionaries();
+            let cards: Vec<Card> = ["日", "月", "水", "火"]
+                .iter()
+                .map(|k| Card::Kanji(KanjiCard::new_test(k.to_string())))
+                .collect();
+
+            let mut rng = StdRng::seed_from_u64(42);
+            let result = LessonCardView::generate_yesno(
+                cards[0].clone(),
+                &cards[1..],
+                &NativeLanguage::Russian,
+                &mut rng,
+            );
+
+            match result.expect("should succeed") {
+                LessonCardView::YesNo(yn) => {
+                    assert!(!yn.statement_text().is_empty());
+                },
+                other => panic!("Expected YesNo for kanji, got {:?}", other),
+            }
+        }
+
+        #[test]
+        fn generate_yesno_kanji_fallback_no_distractors() {
+            init_real_dictionaries();
+            let card = Card::Kanji(KanjiCard::new_test("日".to_string()));
+            let mut rng = StdRng::seed_from_u64(42);
+            let result = LessonCardView::generate_yesno(
+                card.clone(),
+                &[],
+                &NativeLanguage::Russian,
+                &mut rng,
+            );
+            match result.unwrap() {
+                LessonCardView::Normal(c) => assert_eq!(c, card),
+                other => panic!("Expected Normal fallback, got {:?}", other),
+            }
+        }
+    }
 }
