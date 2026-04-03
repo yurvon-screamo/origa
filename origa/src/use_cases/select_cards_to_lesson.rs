@@ -24,7 +24,7 @@ impl<'a, R: UserRepository> SelectCardsToLessonUseCase<'a, R> {
 
         debug!(user_id = %user.id(), "Selecting cards to lesson");
 
-        let cards = user.knowledge_set().cards_to_lesson(user.native_language());
+        let cards = user.knowledge_set().cards_to_lesson();
 
         info!(user_id = %user.id(), count = cards.len(), "Cards selected for lesson");
 

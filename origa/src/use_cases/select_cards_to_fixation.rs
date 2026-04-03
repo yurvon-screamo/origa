@@ -24,9 +24,7 @@ impl<'a, R: UserRepository> SelectCardsToFixationUseCase<'a, R> {
             .await?
             .ok_or(OrigaError::CurrentUserNotExist {})?;
 
-        let cards = user
-            .knowledge_set()
-            .cards_to_fixation(user.native_language());
+        let cards = user.knowledge_set().cards_to_fixation();
         info!(count = cards.len(), "Cards selected for fixation");
 
         Ok(cards)
