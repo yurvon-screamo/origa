@@ -179,10 +179,7 @@ impl KnowledgeSet {
         Ok(())
     }
 
-    pub fn cards_to_fixation(
-        &self,
-        _lang: &crate::domain::value_objects::NativeLanguage,
-    ) -> HashMap<Ulid, LessonCardView> {
+    pub fn cards_to_fixation(&self) -> HashMap<Ulid, LessonCardView> {
         let mut cards = self
             .study_cards
             .iter()
@@ -204,10 +201,7 @@ impl KnowledgeSet {
             .collect()
     }
 
-    pub fn cards_to_lesson(
-        &self,
-        _lang: &crate::domain::value_objects::NativeLanguage,
-    ) -> HashMap<Ulid, LessonCardView> {
+    pub fn cards_to_lesson(&self) -> HashMap<Ulid, LessonCardView> {
         let mut all_cards = self.study_cards.iter().collect::<Vec<_>>();
         all_cards.sort_by_key(|(_, card)| card.memory().next_review_date());
 
@@ -451,7 +445,7 @@ mod tests {
 
         knowledge_set.toggle_favorite(card_id).unwrap();
 
-        let result = knowledge_set.cards_to_lesson(&NativeLanguage::Russian);
+        let result = knowledge_set.cards_to_lesson();
         assert!(result.contains_key(&card_id));
     }
 
@@ -473,7 +467,7 @@ mod tests {
             .rate_card(*study2.card_id(), Rating::Easy, RateMode::StandardLesson)
             .unwrap();
 
-        let result = knowledge_set.cards_to_fixation(&NativeLanguage::Russian);
+        let result = knowledge_set.cards_to_fixation();
 
         assert!(result.contains_key(study1.card_id()));
         assert!(!result.contains_key(study2.card_id()));
