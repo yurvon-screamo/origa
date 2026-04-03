@@ -1,6 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 import { testWithFreshUser } from "../fixtures";
-import { KanjiPage, RadicalsPage } from "../pages";
+import { KanjiPage } from "../pages";
 
 async function setupKanjiPage(page: Page): Promise<KanjiPage> {
     await expect(page.getByTestId("onboarding-spinner")).not.toBeVisible({ timeout: 10000 });
@@ -152,15 +152,5 @@ testWithFreshUser.describe("Kanji Page - Navigation", () => {
         await kanjiPage.clickBack();
         await page.waitForURL(/\/home$/, { timeout: 10000 });
         await expect(page).toHaveURL(/\/home$/);
-    });
-
-    testWithFreshUser("should navigate to radicals page", async ({ page }) => {
-        const kanjiPage = await setupKanjiPage(page);
-        await kanjiPage.clickRadicals();
-        await page.waitForURL(/\/radicals$/, { timeout: 10000 });
-        await expect(page).toHaveURL(/\/radicals$/);
-
-        const radicalsPage = new RadicalsPage(page);
-        await radicalsPage.expectRadicalsVisible();
     });
 });

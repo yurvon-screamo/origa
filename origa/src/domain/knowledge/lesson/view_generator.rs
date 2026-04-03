@@ -2,7 +2,7 @@ use crate::dictionary::grammar::get_rule_by_id;
 use crate::domain::knowledge::KnowledgeSet;
 use crate::domain::value_objects::NativeLanguage;
 use crate::domain::{Card, CardType, GrammarRuleCard, MemoryHistory, VocabularyCard};
-use rand::{prelude::IndexedRandom, seq::SliceRandom, Rng};
+use rand::{Rng, prelude::IndexedRandom, seq::SliceRandom};
 use serde::{Deserialize, Serialize};
 use ulid::Ulid;
 
@@ -16,7 +16,6 @@ const PROB_REVERSED_VIEW: f32 = 0.75;
 const PROB_KANJI_NORMAL: f32 = 0.25;
 const PROB_KANJI_QUIZ: f32 = 0.50;
 const PROB_KANJI_YESNO: f32 = 0.70;
-const PROB_RADICAL_NORMAL: f32 = 0.50;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct QuizOption {
@@ -168,7 +167,7 @@ impl LessonCardView {
         lang: &NativeLanguage,
     ) -> Result<Self, crate::domain::OrigaError> {
         match &original_card {
-            Card::Vocabulary(_) | Card::Kanji(_) | Card::Grammar(_) | Card::Radical(_) => {},
+            Card::Vocabulary(_) | Card::Kanji(_) | Card::Grammar(_) => {},
         }
 
         let correct_answer = original_card.answer(lang)?;
@@ -211,7 +210,7 @@ impl LessonCardView {
         rng: &mut impl Rng,
     ) -> Result<Self, crate::domain::OrigaError> {
         match &original_card {
-            Card::Vocabulary(_) | Card::Kanji(_) | Card::Grammar(_) | Card::Radical(_) => {},
+            Card::Vocabulary(_) | Card::Kanji(_) | Card::Grammar(_) => {},
         }
 
         let question = original_card.question(lang)?;
@@ -350,20 +349,6 @@ impl<'a> LessonViewGenerator<'a> {
                 LessonCardView::Normal(card.clone())
             },
 
-            (CardType::Radical, true) => {
-                let rand_val = rng.random::<f32>();
-                if rand_val < PROB_RADICAL_NORMAL {
-                    LessonCardView::Normal(card.clone())
-                } else {
-                    LessonCardView::generate_quiz(
-                        card.clone(),
-                        same_type_cards,
-                        &NativeLanguage::Russian,
-                    )
-                    .unwrap_or_else(|_| LessonCardView::Normal(card.clone()))
-                }
-            },
-
             (CardType::Kanji, true) => {
                 let rand_val = rng.random::<f32>();
                 if rand_val < 0.33 {
@@ -379,15 +364,6 @@ impl<'a> LessonViewGenerator<'a> {
                     LessonCardView::Writing(card.clone())
                 }
             },
-
-            (CardType::Radical, false) => select_card_view(
-                card,
-                same_type_cards,
-                &NativeLanguage::Russian,
-                rng,
-                false,
-                !memory.is_high_difficulty(),
-            ),
 
             (CardType::Kanji, false) => select_card_view(
                 card,
@@ -510,37 +486,6 @@ mod tests {
 
     fn create_grammar_card(rule_id: Ulid) -> Card {
         Card::Grammar(GrammarRuleCard::new(rule_id).unwrap())
-    }
-
-    #[test]
-    fn generate_quiz_can_return_quiz_for_radical() {
-        crate::use_cases::init_real_dictionaries();
-
-        let radical_chars: Vec<char> = vec!['一', '二', '三', '人', '口', '日', '月'];
-        let radical_cards: Vec<Card> = radical_chars
-            .into_iter()
-            .filter_map(|c| crate::domain::knowledge::RadicalCard::new(c).ok())
-            .map(Card::Radical)
-            .collect();
-
-        if radical_cards.len() < 4 {
-            // Not enough radicals in dictionary, test is not applicable
-            return;
-        }
-
-        let lang = NativeLanguage::Russian;
-        let result = LessonCardView::generate_quiz(radical_cards[0].clone(), &radical_cards, &lang);
-
-        match result.unwrap() {
-            LessonCardView::Quiz(quiz) => {
-                assert_eq!(quiz.options().len(), 4);
-                assert!(quiz.options().iter().any(|o| o.is_correct()));
-            },
-            LessonCardView::Normal(_) => {
-                // This is also acceptable if not enough distractors
-            },
-            _ => panic!("Expected Quiz or Normal view for radical"),
-        }
     }
 
     #[test]
@@ -709,7 +654,7 @@ mod tests {
             use crate::domain::value_objects::Question;
             use crate::domain::{Card, StudyCard};
             use chrono::{Duration, Utc};
-            use rand::{rngs::StdRng, SeedableRng};
+            use rand::{SeedableRng, rngs::StdRng};
 
             fn create_study_card_with_memory(
                 word: &str,
@@ -792,9 +737,9 @@ mod tests {
                 let (yesno, _other) = count_yesno_views(&study_card, &ks);
 
                 assert_eq!(
-                yesno, 0,
-                "high_difficulty card should never get YesNo view, got {yesno} YesNo out of {ITERATIONS} iterations"
-            );
+                    yesno, 0,
+                    "high_difficulty card should never get YesNo view, got {yesno} YesNo out of {ITERATIONS} iterations"
+                );
             }
 
             #[test]
@@ -807,16 +752,16 @@ mod tests {
                 let (yesno, _other) = count_yesno_views(&study_card, &ks);
 
                 assert!(
-                yesno > 0,
-                "in_progress card should be able to get YesNo view, got 0 YesNo out of {ITERATIONS} iterations"
-            );
+                    yesno > 0,
+                    "in_progress card should be able to get YesNo view, got 0 YesNo out of {ITERATIONS} iterations"
+                );
             }
         }
     }
 
     mod tests_yesno {
         use super::*;
-        use rand::{rngs::StdRng, SeedableRng};
+        use rand::{SeedableRng, rngs::StdRng};
 
         fn create_vocab_card_with_word(word: &str) -> Card {
             Card::Vocabulary(VocabularyCard::new(
@@ -1018,7 +963,7 @@ mod tests {
         use crate::domain::value_objects::Question;
         use crate::domain::{Card, StudyCard};
         use chrono::{Duration, Utc};
-        use rand::{rngs::StdRng, SeedableRng};
+        use rand::{SeedableRng, rngs::StdRng};
 
         fn create_study_card_with_memory(
             word: &str,

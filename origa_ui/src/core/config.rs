@@ -5,7 +5,6 @@ pub struct Urls {
     pub dictionary: &'static str,
     pub vocabulary: &'static str,
     pub kanji: &'static str,
-    pub radical: &'static str,
     pub grammar: &'static str,
     pub ndlocr_base: &'static str,
 }
@@ -20,7 +19,6 @@ pub fn urls() -> &'static Urls {
             dictionary: "/public/dictionaries/unidic/cache/dictionary-data",
             vocabulary: "/public/dictionary/vocabulary/cache/vocabulary-data",
             kanji: "/public/dictionary/kanji/cache/kanji-data",
-            radical: "/public/dictionary/radical/cache/radical-data",
             grammar: "/public/grammar/cache/grammar-data",
             ndlocr_base: "/public/ndlocr",
         }

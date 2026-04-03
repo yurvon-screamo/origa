@@ -1,6 +1,6 @@
 use crate::domain::{
     OrigaError, Rating, ReviewLog,
-    knowledge::{GrammarRuleCard, KanjiCard, RadicalCard, VocabularyCard},
+    knowledge::{GrammarRuleCard, KanjiCard, VocabularyCard},
     memory::{MemoryHistory, MemoryState},
     value_objects::{Answer, NativeLanguage, Question},
 };
@@ -102,7 +102,6 @@ pub enum Card {
     Vocabulary(VocabularyCard),
     Kanji(KanjiCard),
     Grammar(GrammarRuleCard),
-    Radical(RadicalCard),
 }
 
 impl Card {
@@ -111,7 +110,6 @@ impl Card {
             Card::Vocabulary(card) => Ok(card.word().clone()),
             Card::Kanji(card) => Ok(card.kanji().clone()),
             Card::Grammar(card) => card.title(lang),
-            Card::Radical(card) => Ok(card.question().clone()),
         }
     }
 
@@ -120,12 +118,6 @@ impl Card {
             Card::Vocabulary(card) => card.answer(lang),
             Card::Kanji(card) => card.description(),
             Card::Grammar(card) => card.description(lang),
-            Card::Radical(card) => {
-                let info = card.radical_info()?;
-                Answer::new(info.name().to_string()).map_err(|e| OrigaError::InvalidAnswer {
-                    reason: e.to_string(),
-                })
-            },
         }
     }
 
@@ -134,7 +126,6 @@ impl Card {
             Card::Vocabulary(card) => card.word().text().to_string(),
             Card::Kanji(card) => card.kanji().text().to_string(),
             Card::Grammar(card) => card.rule_id().to_string(),
-            Card::Radical(card) => card.radical_char().to_string(),
         }
     }
 }
@@ -144,7 +135,6 @@ pub enum CardType {
     Vocabulary,
     Kanji,
     Grammar,
-    Radical,
 }
 
 impl From<&Card> for CardType {
@@ -153,7 +143,6 @@ impl From<&Card> for CardType {
             Card::Vocabulary(_) => CardType::Vocabulary,
             Card::Kanji(_) => CardType::Kanji,
             Card::Grammar(_) => CardType::Grammar,
-            Card::Radical(_) => CardType::Radical,
         }
     }
 }
@@ -173,10 +162,6 @@ mod tests {
         KanjiCard::new_test(kanji.to_string())
     }
 
-    fn create_radical_card(radical: char) -> RadicalCard {
-        RadicalCard::new_test(radical)
-    }
-
     fn create_grammar_card(rule_id: Ulid) -> GrammarRuleCard {
         GrammarRuleCard::new_test_with_id(rule_id)
     }
@@ -190,7 +175,6 @@ mod tests {
             #[rstest]
             #[case(Card::Vocabulary(create_vocabulary_card("猫")))]
             #[case(Card::Kanji(create_kanji_card("日")))]
-            #[case(Card::Radical(create_radical_card('一')))]
             #[case(Card::Grammar(create_grammar_card(Ulid::new())))]
             fn creates_study_card_with_card_type(#[case] card: Card) {
                 let study_card = StudyCard::new(card);
@@ -242,7 +226,6 @@ mod tests {
             #[rstest]
             #[case(Card::Vocabulary(create_vocabulary_card("猫")), CardType::Vocabulary)]
             #[case(Card::Kanji(create_kanji_card("日")), CardType::Kanji)]
-            #[case(Card::Radical(create_radical_card('一')), CardType::Radical)]
             #[case(Card::Grammar(create_grammar_card(Ulid::new())), CardType::Grammar)]
             fn returns_card_reference(#[case] card: Card, #[case] expected_type: CardType) {
                 let study_card = StudyCard::new(card);
@@ -512,7 +495,6 @@ mod tests {
             #[rstest]
             #[case(Card::Vocabulary(create_vocabulary_card("猫")), "猫")]
             #[case(Card::Kanji(create_kanji_card("日")), "日")]
-            #[case(Card::Radical(create_radical_card('一')), "一")]
             fn returns_question_for_card(#[case] card: Card, #[case] expected: &str) {
                 let question = card.question(&NativeLanguage::Russian);
 
@@ -552,27 +534,6 @@ mod tests {
 
                 assert!(answer.is_ok());
             }
-
-            #[test]
-            fn returns_answer_for_radical_card() {
-                crate::use_cases::init_real_dictionaries();
-                let radical_card = create_radical_card('一');
-                let card = Card::Radical(radical_card);
-
-                let answer = card.answer(&NativeLanguage::Russian);
-
-                assert!(answer.is_ok());
-                let binding = answer.unwrap();
-                let answer_text = binding.text();
-                assert!(
-                    !answer_text.trim().is_empty(),
-                    "Answer should not be empty or whitespace"
-                );
-                assert_ne!(
-                    answer_text, "一",
-                    "Answer should be the radical name, not the character"
-                );
-            }
         }
 
         mod content_key {
@@ -608,16 +569,6 @@ mod tests {
 
                 assert_eq!(content_key, rule_id.to_string());
             }
-
-            #[test]
-            fn returns_radical_char_for_radical_card() {
-                let radical_card = create_radical_card('一');
-                let card = Card::Radical(radical_card);
-
-                let content_key = card.content_key();
-
-                assert_eq!(content_key, "一");
-            }
         }
     }
 
@@ -631,7 +582,6 @@ mod tests {
             #[case(Card::Vocabulary(create_vocabulary_card("猫")), CardType::Vocabulary)]
             #[case(Card::Kanji(create_kanji_card("日")), CardType::Kanji)]
             #[case(Card::Grammar(create_grammar_card(Ulid::new())), CardType::Grammar)]
-            #[case(Card::Radical(create_radical_card('一')), CardType::Radical)]
             fn converts_card_to_type(#[case] card: Card, #[case] expected_type: CardType) {
                 let card_type = CardType::from(&card);
 

@@ -21,7 +21,6 @@ mod quiz_card_header;
 mod quiz_options;
 mod quiz_result;
 mod quiz_result_display;
-mod radical_card_details;
 mod rating_buttons;
 mod rating_buttons_view;
 mod writing_card;

@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { testWithFreshUser } from "../fixtures";
-import { HomePage, KanjiPage, LoginPage, OnboardingPage, RadicalsPage, WordsPage, GrammarPage } from "../pages";
+import { HomePage, KanjiPage, LoginPage, OnboardingPage, WordsPage, GrammarPage } from "../pages";
 
 /**
  * Onboarding Flow E2E Tests
@@ -261,85 +261,6 @@ testWithFreshUser.describe("Onboarding Flow - N4 with ~50% Progress", () => {
             path: "test-results/onboarding-complete-home.png",
             fullPage: true
         });
-    });
-
-    testWithFreshUser("should import words, kanji, radicals, and grammar sets", async ({ page }: { page: Page }) => {
-        test.setTimeout(180_000);
-        await page.waitForURL(/\/onboarding$/, { timeout: 30_000 });
-        await expect(page.getByTestId("onboarding-spinner")).not.toBeVisible({ timeout: 10000 });
-
-        const onboardingPage = new OnboardingPage(page);
-
-        // Intro → JLPT (select N4) → Apps → Progress → Summary → Import
-        await onboardingPage.goToNextStep();
-        await page.getByTestId("jlpt-option-n4").click();
-        await onboardingPage.goToNextStep();
-
-        // Select all apps
-        await onboardingPage.toggleApp("Migii");
-        await onboardingPage.toggleApp("DuolingoRu");
-        await onboardingPage.toggleApp("DuolingoEn");
-        await onboardingPage.toggleApp("MinnaNoNihongo");
-        await onboardingPage.goToNextStep();
-
-        // Skip progress config (use defaults)
-        await onboardingPage.goToNextStep();
-
-        // Import
-        await onboardingPage.startImport();
-        await expect(page.getByTestId("onboarding-import")).toHaveAttribute("data-loading", "true", { timeout: 5000 });
-        await page.waitForURL(/\/home$/, { timeout: 120_000 });
-
-        // ========================================
-        // Verify imported data on Home
-        // ========================================
-        const homePage = new HomePage(page);
-        await homePage.expectHomeVisible();
-
-        // Home stats should show imported cards
-        await expect(homePage.statTotalCards).toBeVisible({ timeout: 10_000 });
-        const totalCardsText = await homePage.statTotalCards.textContent();
-        const totalCards = parseInt(totalCardsText?.match(/\d+/)?.[0] ?? "0", 10);
-        expect(totalCards).toBeGreaterThan(0);
-
-        // ========================================
-        // Verify Words page has data
-        // ========================================
-        const wordsPage = new WordsPage(page);
-        await wordsPage.goto();
-        await wordsPage.expectWordsVisible();
-
-        await expect(wordsPage.wordsGrid).toBeVisible({ timeout: 10_000 });
-        await expect(wordsPage.emptyState).not.toBeVisible();
-
-        // ========================================
-        // Verify Kanji page has data
-        // ========================================
-        const kanjiPage = new KanjiPage(page);
-        await kanjiPage.goto();
-        await kanjiPage.expectKanjiVisible();
-
-        await expect(kanjiPage.kanjiGrid).toBeVisible({ timeout: 10_000 });
-        await expect(kanjiPage.emptyState).not.toBeVisible();
-
-        // ========================================
-        // Verify Radicals page has data (via Kanji)
-        // ========================================
-        await kanjiPage.clickRadicals();
-        const radicalsPage = new RadicalsPage(page);
-        await radicalsPage.expectRadicalsVisible();
-
-        await expect(radicalsPage.radicalsGrid).toBeVisible({ timeout: 10_000 });
-        await expect(radicalsPage.radicalsEmptyState).not.toBeVisible();
-        // ========================================
-        // Verify Grammar page has data
-        // ========================================
-        const grammarPage = new GrammarPage(page);
-        await grammarPage.goto();
-        await grammarPage.expectGrammarVisible();
-
-        await expect(grammarPage.grammarGrid).toBeVisible({ timeout: 10_000 });
-        await expect(grammarPage.emptyState).not.toBeVisible();
     });
 
     testWithFreshUser("should skip onboarding and redirect to home", async ({ page }: { page: Page }) => {

@@ -114,20 +114,6 @@ async fn well_known_set_minna_nihongo_serialization() {
 }
 
 #[tokio::test]
-async fn create_kanji_card_creates_card_from_dictionary() {
-    init_real_dictionaries();
-    let repo = create_repo().await;
-    let use_case = CreateKanjiCardUseCase::new(&repo);
-
-    let cards = use_case.execute(vec!["人".to_string()]).await.unwrap();
-
-    // CreateKanjiCardUseCase автосоздаёт радикальные карточки
-    assert_eq!(cards.len(), 1);
-    let updated = repo.get_current_user().await.unwrap().unwrap();
-    assert_eq!(updated.knowledge_set().study_cards().len(), 2); // кандзи + радикал
-}
-
-#[tokio::test]
 async fn toggle_favorite_sets_favorite_true() {
     let user = {
         let mut u = User::new(

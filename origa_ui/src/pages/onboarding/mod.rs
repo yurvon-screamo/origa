@@ -203,11 +203,10 @@ pub fn Onboarding() -> impl IntoView {
                 match result {
                     Ok(import_result) => {
                         tracing::info!(
-                            "Imported: {} vocabulary, {} kanji, {} grammar, {} radicals, {} duplicates skipped",
+                            "Imported: {} vocabulary, {} kanji, {} grammar, {} duplicates skipped",
                             import_result.created_vocabulary,
                             import_result.created_kanji,
                             import_result.created_grammar,
-                            import_result.created_radicals,
                             import_result.skipped_duplicates
                         );
                         is_importing.set(false);

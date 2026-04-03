@@ -1,4 +1,3 @@
-use super::radical_card_details::{RadicalCardDetails, RadicalCardDisplay};
 use crate::pages::lesson::kanji_card_details::KanjiCardDetails;
 use crate::pages::lesson::rating_buttons_view::RatingButtonsView;
 use crate::ui_components::{Card, DisplayText, KanjiDrawingPractice, Tag, TagVariant};
@@ -86,26 +85,9 @@ fn extract_kanji_data(kanji: &DomainCard, native_language: NativeLanguage) -> Ka
     }
 }
 
-fn extract_radical_data(radical: &DomainCard) -> Option<RadicalCardDisplay> {
-    let DomainCard::Radical(radical) = radical else {
-        unreachable!()
-    };
-
-    let info = radical.radical_info().ok()?;
-
-    Some(RadicalCardDisplay {
-        symbol: info.radical(),
-        name: info.name().to_string(),
-        description: info.description().to_string(),
-        stroke_count: info.stroke_count(),
-        kanji_examples: info.kanji().to_vec(),
-    })
-}
-
 fn get_card_type(card: &DomainCard) -> (&'static str, TagVariant) {
     match card {
         DomainCard::Kanji(_) => ("Кандзи", TagVariant::Olive),
-        DomainCard::Radical(_) => ("Радикал", TagVariant::Default),
         _ => ("Кандзи", TagVariant::Olive),
     }
 }
@@ -121,60 +103,23 @@ pub fn WritingCard(
 ) -> impl IntoView {
     let (card_type_label, tag_variant) = get_card_type(&card);
 
-    let (
-        symbol_char,
-        display_text,
-        on_readings,
-        kun_readings,
-        radicals,
-        example_words,
-        radical_info,
-    ) = match &card {
-        DomainCard::Kanji(_) => {
-            let data = extract_kanji_data(&card, native_language);
-            (
-                data.symbol,
-                data.description,
-                data.on_readings,
-                data.kun_readings,
-                data.radicals,
-                data.examples,
-                None,
-            )
-        },
-        DomainCard::Radical(_) => {
-            let radical_display = extract_radical_data(&card);
-            match radical_display {
-                Some(display) => (
-                    display.symbol.to_string(),
-                    display.name.clone(),
-                    None,
-                    None,
-                    None,
-                    None,
-                    Some(display),
-                ),
-                None => {
-                    let DomainCard::Radical(radical) = &card else {
-                        unreachable!()
-                    };
-                    (
-                        radical.radical_char().to_string(),
-                        String::new(),
-                        None,
-                        None,
-                        None,
-                        None,
-                        None,
-                    )
-                },
-            }
-        },
-        _ => {
-            return view! { <div>"WritingCard поддерживает только кандзи и радикалы"</div> }
-                .into_any();
-        },
-    };
+    let (symbol_char, display_text, on_readings, kun_readings, radicals, example_words) =
+        match &card {
+            DomainCard::Kanji(_) => {
+                let data = extract_kanji_data(&card, native_language);
+                (
+                    data.symbol,
+                    data.description,
+                    data.on_readings,
+                    data.kun_readings,
+                    data.radicals,
+                    data.examples,
+                )
+            },
+            _ => {
+                return view! { <div>"WritingCard поддерживает только кандзи"</div> }.into_any();
+            },
+        };
 
     let show_details = RwSignal::new(false);
     let show_drawing = RwSignal::new(true);
@@ -199,7 +144,6 @@ pub fn WritingCard(
     let kun_readings_sv = StoredValue::new(kun_readings);
     let radicals_sv = StoredValue::new(radicals);
     let examples_sv = StoredValue::new(example_words);
-    let radical_info_sv = StoredValue::new(radical_info);
     let on_rate_sv = StoredValue::new(on_rate);
     let disabled_sv = StoredValue::new(disabled);
 
@@ -230,29 +174,22 @@ pub fn WritingCard(
                     </div>
                 </Show>
 
-                <Show when=move || show_details.get()>
-                    <Show when=move || radicals_sv.get_value().is_some()>
-                        <KanjiCardDetails
-                            kanji=symbol_sv.get_value()
-                            name=display_text_sv.get_value()
-                            radicals=radicals_sv.get_value()
-                            example_words=examples_sv.get_value()
-                            show_details=is_expanded
-                            on_readings=on_readings_sv.get_value()
-                            kun_readings=kun_readings_sv.get_value()
-                            known_kanji=known_kanji
-                        />
-                    </Show>
+                    <Show when=move || show_details.get()>
+                        <Show when=move || radicals_sv.get_value().is_some()>
+                            <KanjiCardDetails
+                                kanji=symbol_sv.get_value()
+                                name=display_text_sv.get_value()
+                                radicals=radicals_sv.get_value()
+                                example_words=examples_sv.get_value()
+                                show_details=is_expanded
+                                on_readings=on_readings_sv.get_value()
+                                kun_readings=kun_readings_sv.get_value()
+                                known_kanji=known_kanji
+                            />
+                        </Show>
 
-                    <Show when=move || radical_info_sv.get_value().is_some()>
-                        <RadicalCardDetails
-                            radical=radical_info_sv.get_value().unwrap()
-                            show_details=is_expanded
-                        />
+                        <RatingButtonsView on_rate=on_rate_sv.get_value() disabled=disabled_sv.get_value() />
                     </Show>
-
-                    <RatingButtonsView on_rate=on_rate_sv.get_value() disabled=disabled_sv.get_value() />
-                </Show>
             </div>
         </Card>
     }

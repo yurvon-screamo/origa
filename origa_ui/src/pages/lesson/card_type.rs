@@ -7,7 +7,6 @@ pub enum CardType {
     Vocabulary,
     Kanji,
     Grammar,
-    Radical,
 }
 
 impl CardType {
@@ -16,7 +15,6 @@ impl CardType {
             CardType::Vocabulary => "Слово",
             CardType::Kanji => "Кандзи",
             CardType::Grammar => "Грамматика",
-            CardType::Radical => "Радикал",
         }
     }
 
@@ -25,7 +23,6 @@ impl CardType {
             CardType::Vocabulary => TagVariant::Default,
             CardType::Kanji => TagVariant::Olive,
             CardType::Grammar => TagVariant::Terracotta,
-            CardType::Radical => TagVariant::Default,
         }
     }
 }
@@ -36,7 +33,6 @@ impl From<&DomainCard> for CardType {
             DomainCard::Vocabulary(_) => CardType::Vocabulary,
             DomainCard::Kanji(_) => CardType::Kanji,
             DomainCard::Grammar(_) => CardType::Grammar,
-            DomainCard::Radical(_) => CardType::Radical,
         }
     }
 }

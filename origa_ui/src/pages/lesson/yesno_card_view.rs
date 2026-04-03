@@ -57,7 +57,7 @@ pub fn YesNoCardView(
     );
 
     let kanji_for_animation: StoredValue<Option<String>> = StoredValue::new(match &card {
-        DomainCard::Kanji(_) | DomainCard::Radical(_) => Some(
+        DomainCard::Kanji(_) => Some(
             card.question(&lang)
                 .ok()
                 .map(|q| q.text().to_string())
@@ -72,12 +72,7 @@ pub fn YesNoCardView(
             .as_ref()
             .map(|ctx| ctx.is_muted.get())
             .unwrap_or(false);
-        if !show_result
-            && card_type != CardType::Kanji
-            && card_type != CardType::Radical
-            && is_speech_supported()
-            && !is_muted
-        {
+        if !show_result && card_type != CardType::Kanji && is_speech_supported() && !is_muted {
             let reading = get_reading_from_text(&question_text.get_value());
             let _ = speak_text(&reading, 1.0);
         }

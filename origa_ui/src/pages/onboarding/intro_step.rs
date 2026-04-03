@@ -41,13 +41,6 @@ pub fn IntroStep(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoVi
                         "Грамматика"
                     </Text>
                 </Card>
-
-                <Card class=Signal::derive(|| "text-center p-4".to_string()) test_id=Signal::derive(|| "intro-step-card-radicals".to_string())>
-                    <div class="text-4xl mb-2">"部"</div>
-                    <Text size=TextSize::Default variant=TypographyVariant::Primary test_id=Signal::derive(|| "intro-step-radicals-title".to_string())>
-                        "Радикалы"
-                    </Text>
-                </Card>
             </div>
 
             <div class="text-center mt-6">

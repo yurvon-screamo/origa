@@ -47,7 +47,7 @@ pub fn LessonCardQuestion(
                                     {k_clone}
                                 </DisplayText>
                             </div>
-                            <KanjiWritingSection kanji=k mode=KanjiViewMode::Animation fallback=None />
+                            <KanjiWritingSection kanji=k mode=KanjiViewMode::Animation />
                         }
                     })
                 }}

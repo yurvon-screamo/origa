@@ -34,7 +34,6 @@ impl JlptContent {
             CardType::Kanji => &self.kanji_by_level,
             CardType::Vocabulary => &self.words_by_level,
             CardType::Grammar => &self.grammar_by_level,
-            CardType::Radical => return None,
         };
 
         JapaneseLevel::ALL

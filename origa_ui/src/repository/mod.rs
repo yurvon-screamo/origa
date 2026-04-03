@@ -9,9 +9,8 @@ mod trailbase_repository;
 
 pub use dictionary_cache::{
     get_cached_dictionary_rkyv, get_cached_grammar_rkyv, get_cached_kanji_rkyv,
-    get_cached_radical_rkyv, get_cached_vocabulary_rkyv, save_dictionary_to_cache_rkyv,
-    save_grammar_to_cache_rkyv, save_kanji_to_cache_rkyv, save_radical_to_cache_rkyv,
-    save_vocabulary_to_cache_rkyv,
+    get_cached_vocabulary_rkyv, save_dictionary_to_cache_rkyv, save_grammar_to_cache_rkyv,
+    save_kanji_to_cache_rkyv, save_vocabulary_to_cache_rkyv,
 };
 pub use hybrid_repository::HybridUserRepository;
 #[allow(unused_imports)]

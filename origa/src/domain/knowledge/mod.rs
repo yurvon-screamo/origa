@@ -3,7 +3,7 @@ mod daily_history;
 mod grammar;
 mod kanji;
 pub mod lesson;
-mod radical;
+
 mod vocabulary;
 
 pub use card::{Card, CardType, StudyCard};
@@ -13,7 +13,7 @@ pub use kanji::{ExampleKanjiWord, KanjiCard};
 pub use lesson::{
     GrammarInfo, LessonCardView, LessonViewGenerator, QuizCard, QuizOption, YesNoCard,
 };
-pub use radical::RadicalCard;
+
 pub use vocabulary::VocabularyCard;
 
 use std::collections::{HashMap, HashSet};
@@ -168,9 +168,7 @@ impl KnowledgeSet {
             (Card::Grammar(grammar_rule_card), Card::Grammar(existing_grammar_rule_card)) => {
                 grammar_rule_card.rule_id() == existing_grammar_rule_card.rule_id()
             },
-            (Card::Radical(radical_card), Card::Radical(existing_radical_card)) => {
-                radical_card.radical_char() == existing_radical_card.radical_char()
-            },
+
             _ => false,
         }) {
             return Err(OrigaError::DuplicateCard {
