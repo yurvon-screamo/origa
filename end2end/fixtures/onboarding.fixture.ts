@@ -40,19 +40,15 @@ export const test = base.extend<{
         }
 
         try {
-            // Navigate to the app - it will redirect to login since no session
             await page.goto("http://localhost:1420");
-            await page.waitForLoadState("networkidle");
-            await page.waitForTimeout(2000);
+            await page.locator('input[type="email"], input[data-testid="email-input"]').waitFor({ state: "visible", timeout: 30_000 });
 
-            // Fill in the login form
             await page.fill('input[type="email"], input[data-testid="email-input"]', userEmail);
             await page.fill('input[type="password"], input[data-testid="password-input"]', userPassword);
             await page.click('button[type="submit"], button[data-testid="login-submit"]');
             
-            // Wait for navigation
-            await page.waitForLoadState("networkidle");
-            await page.waitForTimeout(3000);
+            await page.waitForURL("**/home**", { timeout: 30_000 }).catch(() => {});
+            await page.waitForTimeout(2000);
 
             await use(page);
         } finally {
@@ -124,19 +120,15 @@ export const testWithFreshUser = base.extend<{
         }
 
         try {
-            // Navigate to the app - it will redirect to login since no session
             await page.goto("http://localhost:1420");
-            await page.waitForLoadState("networkidle");
-            await page.waitForTimeout(2000);
+            await page.locator('input[type="email"], input[data-testid="email-input"]').waitFor({ state: "visible", timeout: 30_000 });
 
-            // Fill in the login form
             await page.fill('input[type="email"], input[data-testid="email-input"]', uniqueEmail);
             await page.fill('input[type="password"], input[data-testid="password-input"]', uniquePassword);
             await page.click('button[type="submit"], button[data-testid="login-submit"]');
             
-            // Wait for navigation
-            await page.waitForLoadState("networkidle");
-            await page.waitForTimeout(3000);
+            await page.waitForURL("**/home**", { timeout: 30_000 }).catch(() => {});
+            await page.waitForTimeout(2000);
 
             await use(page);
         }

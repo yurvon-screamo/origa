@@ -95,7 +95,7 @@ pub fn GrammarContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
         })
     };
 
-    let (is_deleting, on_delete) = create_delete_callback(repository.clone(), toasts);
+    let (is_deleting, on_delete) = create_delete_callback(repository.clone(), toasts, refresh_trigger);
 
     let filtered_cards = Memo::new(move |_| {
         let query = search.get().to_lowercase();
@@ -153,11 +153,11 @@ pub fn GrammarContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
                 />
 
                 <div class="flex flex-wrap gap-2">
-                    <FilterBtn filter=Filter::All count=move || counts.get().total active=filter />
-                    <FilterBtn filter=Filter::New count=move || counts.get().new active=filter />
-                    <FilterBtn filter=Filter::Hard count=move || counts.get().hard active=filter />
-                    <FilterBtn filter=Filter::InProgress count=move || counts.get().in_progress active=filter />
-                    <FilterBtn filter=Filter::Learned count=move || counts.get().learned active=filter />
+                    <FilterBtn filter=Filter::All count=move || counts.get().total active=filter test_id="grammar-filter-all" />
+                    <FilterBtn filter=Filter::New count=move || counts.get().new active=filter test_id="grammar-filter-new" />
+                    <FilterBtn filter=Filter::Hard count=move || counts.get().hard active=filter test_id="grammar-filter-hard" />
+                    <FilterBtn filter=Filter::InProgress count=move || counts.get().in_progress active=filter test_id="grammar-filter-in-progress" />
+                    <FilterBtn filter=Filter::Learned count=move || counts.get().learned active=filter test_id="grammar-filter-learned" />
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4" data-testid="grammar-grid">

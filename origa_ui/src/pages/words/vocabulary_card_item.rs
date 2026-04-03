@@ -89,7 +89,7 @@ pub fn VocabularyCardItem(
                         on_click=Callback::new(move |_| on_toggle_favorite.run(card_id))
                     />
                     <HistoryButton on_click=Callback::new(move |_| is_history_open.set(true)) />
-                    <DeleteButton on_click=Callback::new(move |_| is_delete_modal_open.set(true)) />
+                    <DeleteButton test_id="words-card-item-delete-btn" on_click=Callback::new(move |_| is_delete_modal_open.set(true)) />
                 </div>
             </div>
             <CardHistoryModal

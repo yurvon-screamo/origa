@@ -84,10 +84,7 @@ testWithFreshUser.describe("Onboarding Flow - N4 with ~50% Progress", () => {
 
         // Verify selection is highlighted (check for selected class)
         const n4Option = page.getByTestId("jlpt-option-n4");
-        await expect(n4Option).toHaveClass(/selected|active/, { timeout: 1000 }).catch(() => {
-            // Fallback: just verify it's clickable
-            console.log("N4 selection visual state could not be verified");
-        });
+        await expect(n4Option).toHaveClass(/selected/, { timeout: 5000 });
 
         // Screenshot after selection
         await page.screenshot({
@@ -118,9 +115,7 @@ testWithFreshUser.describe("Onboarding Flow - N4 with ~50% Progress", () => {
 
         // Verify Migii is selected (check checkbox state)
         const migiiCard = page.getByTestId("apps-step-app-Migii");
-        await expect(migiiCard).toHaveClass(/selected/, { timeout: 1000 }).catch(() => {
-            console.log("Migii selected state class not found");
-        });
+        await expect(migiiCard).toHaveClass(/selected/, { timeout: 5000 });
 
         // Select Duolingo 「RU」
         const duolingoRuCheckbox = page.getByTestId("apps-step-app-DuolingoRu-checkbox");
@@ -270,7 +265,7 @@ testWithFreshUser.describe("Onboarding Flow - N4 with ~50% Progress", () => {
 
     testWithFreshUser("should import words, kanji, radicals, and grammar sets", async ({ page }: { page: Page }) => {
         test.setTimeout(180_000);
-        await page.waitForURL(/\/onboarding$/, { timeout: 10000 });
+        await page.waitForURL(/\/onboarding$/, { timeout: 30_000 });
         await expect(page.getByTestId("onboarding-spinner")).not.toBeVisible({ timeout: 10000 });
 
         const onboardingPage = new OnboardingPage(page);
@@ -374,7 +369,7 @@ testWithFreshUser.describe("Onboarding Flow - N4 with ~50% Progress", () => {
     });
 
     testWithFreshUser("should navigate back through steps", async ({ page }: { page: Page }) => {
-        // Wait for redirect after login  
+        // Wait for redirect after login
         await page.waitForLoadState("networkidle");
         await page.waitForTimeout(2000);
 

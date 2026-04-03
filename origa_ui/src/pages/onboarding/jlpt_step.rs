@@ -37,7 +37,11 @@ const JLPT_UI_OPTIONS: &[(Option<JapaneseLevel>, &str, &str)] = &[
 pub fn JlptStep(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoView {
     let test_id_val = move || {
         let val = test_id.get();
-        if val.is_empty() { None } else { Some(val) }
+        if val.is_empty() {
+            None
+        } else {
+            Some(val)
+        }
     };
 
     let state =
@@ -76,7 +80,14 @@ pub fn JlptStep(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoVie
 
                         view! {
                             <div
-                                class="p-4 border cursor-pointer transition-all"
+                                class=move || {
+                                    let base = "p-4 border cursor-pointer transition-all";
+                                    if is_selected.get() {
+                                        format!("{} selected", base)
+                                    } else {
+                                        base.to_string()
+                                    }
+                                }
                                 style=move || {
                                     if is_selected.get() {
                                         "border: 2px solid var(--accent-olive); background: var(--bg-warm)"
