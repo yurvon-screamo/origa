@@ -32,6 +32,18 @@ pub fn ProfileContent() -> impl IntoView {
         selected_language.set(native_language.get());
     });
 
+    let daily_load = Memo::new(move |_| {
+        auth_store
+            .user
+            .with(|u: &Option<User>| u.as_ref().map(|u| *u.daily_load()).unwrap_or_default())
+    });
+
+    let selected_daily_load = RwSignal::new(daily_load.get_untracked());
+
+    Effect::new(move |_| {
+        selected_daily_load.set(daily_load.get());
+    });
+
     let is_saving = RwSignal::new(false);
     let is_logging_out = RwSignal::new(false);
     let is_deleting = RwSignal::new(false);
@@ -41,6 +53,7 @@ pub fn ProfileContent() -> impl IntoView {
     let save_profile = Callback::new(move |_| {
         let repository = auth_store_for_save.repository().clone();
         let language = selected_language.get();
+        let daily_load_val = selected_daily_load.get();
         let is_saving_signal = is_saving;
         let auth_store_clone = auth_store_for_save.clone();
 
@@ -49,7 +62,7 @@ pub fn ProfileContent() -> impl IntoView {
         spawn_local(async move {
             let use_case = UpdateUserProfileUseCase::new(&repository);
 
-            let result = use_case.execute(language, None).await;
+            let result = use_case.execute(language, daily_load_val, None).await;
 
             if disposed.is_disposed() {
                 return;
@@ -105,6 +118,7 @@ pub fn ProfileContent() -> impl IntoView {
             <PersonalDataCard
                 user_name={user_name}
                 selected_language={selected_language}
+                selected_daily_load={selected_daily_load}
                 test_id="profile-personal-data"
             />
 

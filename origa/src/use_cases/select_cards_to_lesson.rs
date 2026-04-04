@@ -24,7 +24,8 @@ impl<'a, R: UserRepository> SelectCardsToLessonUseCase<'a, R> {
 
         debug!(user_id = %user.id(), "Selecting cards to lesson");
 
-        let cards = user.knowledge_set().cards_to_lesson();
+        let daily_new_limit = user.daily_load().new_cards_per_day();
+        let cards = user.knowledge_set().cards_to_lesson(daily_new_limit);
 
         info!(user_id = %user.id(), count = cards.len(), "Cards selected for lesson");
 

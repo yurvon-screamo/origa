@@ -1,5 +1,8 @@
+use crate::pages::shared::DailyLoadSelector;
 use crate::ui_components::{Card, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
+
+use super::onboarding_state::OnboardingState;
 
 #[component]
 pub fn IntroStep(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoView {
@@ -7,6 +10,21 @@ pub fn IntroStep(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoVi
         let val = test_id.get();
         if val.is_empty() { None } else { Some(val) }
     };
+
+    let state =
+        use_context::<RwSignal<OnboardingState>>().expect("OnboardingState context not found");
+
+    let local_load = RwSignal::new(state.get_untracked().daily_load);
+
+    Effect::new(move |_| {
+        let current = local_load.get();
+        state.update(|s| {
+            if s.daily_load != current {
+                s.set_daily_load(current);
+            }
+        });
+    });
+
     view! {
         <div class="intro-step" data-testid=test_id_val>
             <div class="text-center mb-8">
@@ -41,6 +59,21 @@ pub fn IntroStep(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoVi
                         "Грамматика"
                     </Text>
                 </Card>
+            </div>
+
+            <div class="mt-8">
+                <div class="text-center mb-4">
+                    <Text size=TextSize::Default variant=TypographyVariant::Primary test_id=Signal::derive(|| "intro-step-load-title".to_string())>
+                        "Выберите комфортный темп"
+                    </Text>
+                    <div class="mt-1">
+                        <Text size=TextSize::Small variant=TypographyVariant::Muted test_id=Signal::derive(|| "intro-step-load-subtitle".to_string())>
+                            "Вы сможете изменить это позже в профиле"
+                        </Text>
+                    </div>
+                </div>
+
+                <DailyLoadSelector selected_load=local_load />
             </div>
 
             <div class="text-center mt-6">

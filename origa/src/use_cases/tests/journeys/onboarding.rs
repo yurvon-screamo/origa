@@ -30,7 +30,7 @@ async fn update_user_profile_updates_fields() {
     let use_case = UpdateUserProfileUseCase::new(&repo);
 
     use_case
-        .execute(NativeLanguage::English, Some(123456789))
+        .execute(NativeLanguage::English, Default::default(), Some(123456789))
         .await
         .unwrap();
 
@@ -44,7 +44,9 @@ async fn update_user_profile_returns_error_for_nonexistent_user() {
     let repo = InMemoryUserRepository::new();
     let use_case = UpdateUserProfileUseCase::new(&repo);
 
-    let result = use_case.execute(NativeLanguage::English, None).await;
+    let result = use_case
+        .execute(NativeLanguage::English, Default::default(), None)
+        .await;
 
     assert!(matches!(
         result,

@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use super::super::shared::{CardStatus, DeleteRequest};
+use super::super::shared::{CardStatus, DeleteRequest, MarkAsKnownButton};
 use crate::ui_components::{
     Card, CardHistoryModal, CollapsibleDescription, DeleteButton, DeleteConfirmModal,
     FavoriteButton, FuriganaText, Heading, HeadingLevel, HistoryButton, MarkdownText, Tag, Text,
@@ -16,6 +16,7 @@ pub fn GrammarCardItem(
     native_language: NativeLanguage,
     known_kanji: HashSet<String>,
     on_toggle_favorite: Callback<Ulid>,
+    on_mark_as_known: Callback<()>,
     on_delete: Callback<DeleteRequest>,
     is_deleting: Signal<bool>,
 ) -> impl IntoView {
@@ -92,6 +93,12 @@ pub fn GrammarCardItem(
                         is_favorite=Signal::derive(move || is_favorite)
                         on_click=Callback::new(move |_| on_toggle_favorite.run(card_id))
                     />
+                    <Show when=move || status != CardStatus::Learned>
+                        <MarkAsKnownButton
+                            on_click=Callback::new(move |_| on_mark_as_known.run(()))
+                            test_id=Signal::derive(|| "grammar-card-item-mark-known-btn".to_string())
+                        />
+                    </Show>
                     <HistoryButton on_click=Callback::new(move |_| is_history_open.set(true)) />
                     <DeleteButton test_id="grammar-card-item-delete-btn" on_click=Callback::new(move |_| is_delete_modal_open.set(true)) />
                 </div>

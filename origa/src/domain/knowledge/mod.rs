@@ -27,7 +27,6 @@ use rand::seq::SliceRandom;
 use serde::{Deserialize, Serialize};
 use ulid::Ulid;
 
-const NEW_CARDS_LIMIT: usize = 7;
 const HARD_CARDS_LIMIT: usize = 15;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -137,6 +136,16 @@ impl KnowledgeSet {
         &self.lesson_history
     }
 
+    pub fn new_cards_studied_today(&self) -> usize {
+        let today = Utc::now().date_naive();
+        self.lesson_history
+            .iter()
+            .rev()
+            .find(|item| item.timestamp().date_naive() == today)
+            .map(|item| item.new_cards_studied_today() as usize)
+            .unwrap_or(0)
+    }
+
     pub fn get_known_kanji(&self) -> HashSet<String> {
         self.study_cards
             .values()
@@ -237,7 +246,7 @@ impl KnowledgeSet {
             .collect()
     }
 
-    pub fn cards_to_lesson(&self) -> HashMap<Ulid, LessonCardView> {
+    pub fn cards_to_lesson(&self, daily_new_limit: usize) -> HashMap<Ulid, LessonCardView> {
         let mut all_cards = self.study_cards.iter().collect::<Vec<_>>();
         all_cards.sort_by_key(|(_, card)| card.memory().next_review_date());
 
@@ -251,14 +260,32 @@ impl KnowledgeSet {
             .filter(|(_, card)| card.memory().is_due() && card.memory().is_high_difficulty())
             .collect();
 
-        if priority_cards.len() < NEW_CARDS_LIMIT {
-            let allowed_new = NEW_CARDS_LIMIT.saturating_sub(priority_cards.len());
+        let new_cards_studied_today = self.new_cards_studied_today();
+        let remaining_new = daily_new_limit.saturating_sub(new_cards_studied_today);
+
+        // Если remaining_new > 0, но priority_cards уже заняли весь лимит —
+        // новые карты не добавляются, fixation fallback тоже не нужен
+        if remaining_new > 0 && priority_cards.len() < remaining_new {
+            let allowed_new = remaining_new.saturating_sub(priority_cards.len());
             let new_cards = all_cards
                 .iter()
                 .filter(|(_, card)| card.memory().is_new())
                 .take(allowed_new);
 
             priority_cards.extend(new_cards);
+        } else if remaining_new == 0 {
+            let selected_ids: HashSet<_> = priority_cards.iter().map(|(id, _)| **id).collect();
+
+            let mut fixation_fallback: Vec<_> = all_cards
+                .iter()
+                .filter(|(id, card)| {
+                    card.memory().is_high_difficulty() && !selected_ids.contains(id)
+                })
+                .collect();
+
+            fixation_fallback.sort_by_key(|(_, card)| card.memory().next_review_date());
+            fixation_fallback.truncate(daily_new_limit);
+            priority_cards.extend(fixation_fallback);
         }
 
         let known_cards = all_cards.iter().filter(|(_, card)| {
@@ -298,6 +325,8 @@ impl KnowledgeSet {
         mode: RateMode,
     ) -> Result<(), OrigaError> {
         if let Some(card) = self.study_cards.get_mut(&card_id) {
+            let was_new = card.memory().is_new();
+
             let NextReview {
                 interval,
                 memory_state,
@@ -306,7 +335,7 @@ impl KnowledgeSet {
             let review = ReviewLog::new(rating, interval);
             card.add_review(memory_state, review);
             card.handle_favorite_rating(rating);
-            self.update_history(rating);
+            self.update_history(rating, was_new);
             Ok(())
         } else {
             Err(OrigaError::CardNotFound { card_id })
@@ -322,7 +351,7 @@ impl KnowledgeSet {
         }
     }
 
-    fn update_history(&mut self, rating: Rating) {
+    fn update_history(&mut self, rating: Rating, was_new: bool) {
         let mut avg_stability = 0.0;
         let mut avg_difficulty = 0.0;
         let mut total_words = 0;
@@ -352,6 +381,9 @@ impl KnowledgeSet {
             .iter_mut()
             .find(|item| item.timestamp().date_naive() == today)
         {
+            if was_new {
+                existing_item.increment_new_cards_studied();
+            }
             existing_item.update(
                 avg_stability,
                 avg_difficulty,
@@ -361,9 +393,13 @@ impl KnowledgeSet {
                 in_progress_words,
                 high_difficulty_words,
                 rating,
+                existing_item.new_cards_studied_today(),
             );
         } else {
             let mut item = DailyHistoryItem::new();
+            if was_new {
+                item.increment_new_cards_studied();
+            }
             item.update(
                 avg_stability,
                 avg_difficulty,
@@ -373,6 +409,7 @@ impl KnowledgeSet {
                 in_progress_words,
                 high_difficulty_words,
                 rating,
+                item.new_cards_studied_today(),
             );
             self.lesson_history.push(item);
         }
@@ -431,6 +468,7 @@ impl KnowledgeSet {
                 positive,
                 negative,
                 total,
+                0,
             );
         } else {
             let mut item = DailyHistoryItem::new();
@@ -445,6 +483,7 @@ impl KnowledgeSet {
                 positive,
                 negative,
                 total,
+                0,
             );
             self.lesson_history.push(item);
         }
@@ -481,7 +520,7 @@ mod tests {
 
         knowledge_set.toggle_favorite(card_id).unwrap();
 
-        let result = knowledge_set.cards_to_lesson();
+        let result = knowledge_set.cards_to_lesson(10);
         assert!(result.contains_key(&card_id));
     }
 

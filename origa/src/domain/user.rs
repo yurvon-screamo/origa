@@ -5,8 +5,9 @@ use serde::{Deserialize, Serialize};
 use ulid::Ulid;
 
 use crate::domain::{
-    Card, CardType, JapaneseLevel, JlptContent, JlptProgress, KnowledgeSet, NativeLanguage,
-    OrigaError, RateMode, Rating, ScoreContentResult, StudyCard, get_translation, score_content,
+    Card, CardType, DailyLoad, JapaneseLevel, JlptContent, JlptProgress, KnowledgeSet,
+    NativeLanguage, OrigaError, RateMode, Rating, ScoreContentResult, StudyCard, get_translation,
+    score_content,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -30,6 +31,9 @@ pub struct User {
 
     #[serde(default)]
     imported_sets: HashSet<String>,
+
+    #[serde(default)]
+    daily_load: DailyLoad,
 }
 
 impl User {
@@ -48,6 +52,7 @@ impl User {
             telegram_user_id,
             updated_at: Utc::now(),
             imported_sets: HashSet::new(),
+            daily_load: DailyLoad::default(),
         }
     }
 
@@ -62,6 +67,7 @@ impl User {
         knowledge_set: KnowledgeSet,
         updated_at: DateTime<Utc>,
         imported_sets: HashSet<String>,
+        daily_load: DailyLoad,
     ) -> Self {
         Self {
             id,
@@ -73,6 +79,7 @@ impl User {
             knowledge_set,
             updated_at,
             imported_sets,
+            daily_load,
         }
     }
 
@@ -82,6 +89,7 @@ impl User {
         self.native_language = another_user.native_language;
         self.jlpt_progress = another_user.jlpt_progress.clone();
         self.telegram_user_id = another_user.telegram_user_id;
+        self.daily_load = another_user.daily_load;
 
         self.knowledge_set.merge(&another_user.knowledge_set);
 
@@ -134,6 +142,15 @@ impl User {
 
     pub fn set_telegram_user_id(&mut self, telegram_user_id: Option<u64>) {
         self.telegram_user_id = telegram_user_id;
+    }
+
+    pub fn daily_load(&self) -> &DailyLoad {
+        &self.daily_load
+    }
+
+    pub fn set_daily_load(&mut self, daily_load: DailyLoad) {
+        self.daily_load = daily_load;
+        self.touch();
     }
 
     pub fn updated_at(&self) -> &DateTime<Utc> {

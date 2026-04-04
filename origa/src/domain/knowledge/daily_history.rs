@@ -14,6 +14,8 @@ pub struct DailyHistoryItem {
     known_words: usize,
     in_progress_words: usize,
     high_difficulty_words: usize,
+    #[serde(default)]
+    new_cards_studied_today: u32,
     lessons_completed: usize,
 
     positive_ratings: usize,
@@ -38,6 +40,7 @@ impl DailyHistoryItem {
             known_words: 0,
             in_progress_words: 0,
             high_difficulty_words: 0,
+            new_cards_studied_today: 0,
             lessons_completed: 0,
             positive_ratings: 0,
             negative_ratings: 0,
@@ -77,6 +80,14 @@ impl DailyHistoryItem {
         self.high_difficulty_words
     }
 
+    pub fn new_cards_studied_today(&self) -> u32 {
+        self.new_cards_studied_today
+    }
+
+    pub fn increment_new_cards_studied(&mut self) {
+        self.new_cards_studied_today += 1;
+    }
+
     pub fn lessons_completed(&self) -> usize {
         self.lessons_completed
     }
@@ -104,6 +115,7 @@ impl DailyHistoryItem {
         in_progress_words: usize,
         high_difficulty_words: usize,
         rating: Rating,
+        new_cards_studied_today: u32,
     ) {
         self.update_stats(
             avg_stability,
@@ -124,6 +136,7 @@ impl DailyHistoryItem {
                     Rating::Easy | Rating::Good => 0,
                 },
             self.total_ratings + 1,
+            new_cards_studied_today,
         );
         self.lessons_completed += 1;
     }
@@ -141,6 +154,7 @@ impl DailyHistoryItem {
         positive_ratings: usize,
         negative_ratings: usize,
         total_ratings: usize,
+        new_cards_studied_today: u32,
     ) {
         self.avg_stability = Some(avg_stability);
         self.avg_difficulty = Some(avg_difficulty);
@@ -152,6 +166,7 @@ impl DailyHistoryItem {
         self.positive_ratings = positive_ratings;
         self.negative_ratings = negative_ratings;
         self.total_ratings = total_ratings;
+        self.new_cards_studied_today = new_cards_studied_today;
     }
 
     pub fn merge_with(&mut self, other: &DailyHistoryItem) {
@@ -159,6 +174,9 @@ impl DailyHistoryItem {
         self.positive_ratings = self.positive_ratings.max(other.positive_ratings);
         self.negative_ratings = self.negative_ratings.max(other.negative_ratings);
         self.total_ratings = self.total_ratings.max(other.total_ratings);
+        self.new_cards_studied_today = self
+            .new_cards_studied_today
+            .max(other.new_cards_studied_today);
 
         if other.timestamp > self.timestamp {
             self.timestamp = other.timestamp;
@@ -191,6 +209,7 @@ mod tests {
             0,             // positive_ratings
             0,             // negative_ratings
             0,             // total_ratings
+            0,             // new_cards_studied_today
         );
         for _ in 0..lessons {
             item.lessons_completed += 1;
@@ -226,7 +245,7 @@ mod tests {
     fn test_daily_history_item_update() {
         let mut item = DailyHistoryItem::new();
 
-        item.update(0.5, 0.3, 5, 10, 2, 3, 1, Rating::Good);
+        item.update(0.5, 0.3, 5, 10, 2, 3, 1, Rating::Good, 0);
 
         assert_eq!(item.lessons_completed(), 1);
         assert_eq!(item.total_words(), 5);
@@ -298,7 +317,7 @@ mod tests {
         let newer = now + Duration::seconds(100);
         let mut item1 = create_test_item(now, 2, 5, 10);
         let mut item2 = create_test_item(newer, 5, 3, 8);
-        item2.update_stats(0.8, 0.6, 8, 3, 5, 0, 0, 0, 0, 0);
+        item2.update_stats(0.8, 0.6, 8, 3, 5, 0, 0, 0, 0, 0, 0);
 
         item1.merge_with(&item2);
 
@@ -312,7 +331,7 @@ mod tests {
         let older = now - Duration::seconds(100);
         let mut item1 = create_test_item(now, 2, 5, 10);
         let mut item2 = create_test_item(older, 5, 3, 8);
-        item2.update_stats(0.8, 0.6, 8, 3, 5, 0, 0, 0, 0, 0);
+        item2.update_stats(0.8, 0.6, 8, 3, 5, 0, 0, 0, 0, 0, 0);
 
         let stability_before = item1.avg_stability();
         let difficulty_before = item1.avg_difficulty();
@@ -325,7 +344,7 @@ mod tests {
     #[test]
     fn test_update_increments_positive_ratings_on_good() {
         let mut item = DailyHistoryItem::new();
-        item.update(0.5, 0.3, 5, 10, 2, 3, 1, Rating::Good);
+        item.update(0.5, 0.3, 5, 10, 2, 3, 1, Rating::Good, 0);
 
         assert_eq!(item.positive_ratings(), 1);
         assert_eq!(item.negative_ratings(), 0);
@@ -335,7 +354,7 @@ mod tests {
     #[test]
     fn test_update_increments_positive_ratings_on_easy() {
         let mut item = DailyHistoryItem::new();
-        item.update(0.5, 0.3, 5, 10, 2, 3, 1, Rating::Easy);
+        item.update(0.5, 0.3, 5, 10, 2, 3, 1, Rating::Easy, 0);
 
         assert_eq!(item.positive_ratings(), 1);
         assert_eq!(item.negative_ratings(), 0);
@@ -345,7 +364,7 @@ mod tests {
     #[test]
     fn test_update_increments_negative_ratings_on_again() {
         let mut item = DailyHistoryItem::new();
-        item.update(0.5, 0.3, 5, 10, 2, 3, 1, Rating::Again);
+        item.update(0.5, 0.3, 5, 10, 2, 3, 1, Rating::Again, 0);
 
         assert_eq!(item.positive_ratings(), 0);
         assert_eq!(item.negative_ratings(), 1);
@@ -355,7 +374,7 @@ mod tests {
     #[test]
     fn test_update_increments_negative_ratings_on_hard() {
         let mut item = DailyHistoryItem::new();
-        item.update(0.5, 0.3, 5, 10, 2, 3, 1, Rating::Hard);
+        item.update(0.5, 0.3, 5, 10, 2, 3, 1, Rating::Hard, 0);
 
         assert_eq!(item.positive_ratings(), 0);
         assert_eq!(item.negative_ratings(), 1);
@@ -365,9 +384,9 @@ mod tests {
     #[test]
     fn test_update_accumulates_ratings() {
         let mut item = DailyHistoryItem::new();
-        item.update(0.5, 0.3, 5, 10, 2, 3, 1, Rating::Good);
-        item.update(0.5, 0.3, 5, 10, 2, 3, 1, Rating::Easy);
-        item.update(0.5, 0.3, 5, 10, 2, 3, 1, Rating::Again);
+        item.update(0.5, 0.3, 5, 10, 2, 3, 1, Rating::Good, 0);
+        item.update(0.5, 0.3, 5, 10, 2, 3, 1, Rating::Easy, 0);
+        item.update(0.5, 0.3, 5, 10, 2, 3, 1, Rating::Again, 0);
 
         assert_eq!(item.positive_ratings(), 2);
         assert_eq!(item.negative_ratings(), 1);
@@ -378,11 +397,11 @@ mod tests {
     fn test_merge_with_takes_max_ratings() {
         let now = Utc::now();
         let mut item1 = DailyHistoryItem::new();
-        item1.update_stats(0.5, 0.3, 10, 5, 5, 0, 0, 3, 2, 5);
+        item1.update_stats(0.5, 0.3, 10, 5, 5, 0, 0, 3, 2, 5, 0);
         item1.timestamp = now;
 
         let mut item2 = DailyHistoryItem::new();
-        item2.update_stats(0.6, 0.4, 12, 6, 6, 0, 0, 5, 3, 8);
+        item2.update_stats(0.6, 0.4, 12, 6, 6, 0, 0, 5, 3, 8, 0);
         item2.timestamp = now;
 
         item1.merge_with(&item2);
@@ -390,5 +409,31 @@ mod tests {
         assert_eq!(item1.positive_ratings(), 5);
         assert_eq!(item1.negative_ratings(), 3);
         assert_eq!(item1.total_ratings(), 8);
+    }
+
+    #[test]
+    fn test_new_cards_studied_today_default() {
+        let item = DailyHistoryItem::new();
+        assert_eq!(item.new_cards_studied_today(), 0);
+    }
+
+    #[test]
+    fn test_increment_new_cards_studied() {
+        let mut item = DailyHistoryItem::new();
+        item.increment_new_cards_studied();
+        item.increment_new_cards_studied();
+        assert_eq!(item.new_cards_studied_today(), 2);
+    }
+
+    #[test]
+    fn test_merge_with_takes_max_new_cards_studied() {
+        let now = Utc::now();
+        let mut item1 = create_test_item(now, 2, 5, 10);
+        let mut item2 = create_test_item(now, 5, 3, 8);
+        item2.increment_new_cards_studied();
+        item2.increment_new_cards_studied();
+        item2.increment_new_cards_studied();
+        item1.merge_with(&item2);
+        assert_eq!(item1.new_cards_studied_today(), 3);
     }
 }
