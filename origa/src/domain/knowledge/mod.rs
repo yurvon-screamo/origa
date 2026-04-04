@@ -32,10 +32,46 @@ const HARD_CARDS_LIMIT: usize = 15;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct KnowledgeSet {
+    #[serde(deserialize_with = "deserialize_study_cards")]
     study_cards: HashMap<Ulid, StudyCard>,
     #[serde(default)]
     deleted_cards: HashSet<Ulid>,
     lesson_history: Vec<DailyHistoryItem>,
+}
+
+fn deserialize_study_cards<'de, D>(deserializer: D) -> Result<HashMap<Ulid, StudyCard>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    struct StudyCardsVisitor;
+
+    impl<'de> serde::de::Visitor<'de> for StudyCardsVisitor {
+        type Value = HashMap<Ulid, StudyCard>;
+
+        fn expecting(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+            write!(f, "a map of study cards")
+        }
+
+        fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
+        where
+            A: serde::de::MapAccess<'de>,
+        {
+            let mut result = HashMap::new();
+            while let Some(key) = map.next_key::<Ulid>()? {
+                match map.next_value::<StudyCard>() {
+                    Ok(value) => {
+                        result.insert(key, value);
+                    },
+                    Err(e) => {
+                        tracing::warn!("Skipping study card {}: {}", key, e);
+                    },
+                }
+            }
+            Ok(result)
+        }
+    }
+
+    deserializer.deserialize_map(StudyCardsVisitor)
 }
 
 impl Default for KnowledgeSet {
