@@ -28,6 +28,9 @@ pub struct AuthStore {
     /// OAuth flow in progress
     pub is_oauth_loading: RwSignal<bool>,
 
+    /// Last OAuth error message (shown on login page)
+    pub oauth_error: RwSignal<Option<String>>,
+
     /// Sync operation in progress
     pub is_syncing: RwSignal<bool>,
 
@@ -56,6 +59,7 @@ impl AuthStore {
             user: RwSignal::new(None),
             is_checking_session: RwSignal::new(true),
             is_oauth_loading: RwSignal::new(false),
+            oauth_error: RwSignal::new(None),
             is_syncing: RwSignal::new(false),
             is_dictionary_loaded: RwSignal::new(false),
             is_dictionary_loading: RwSignal::new(false),

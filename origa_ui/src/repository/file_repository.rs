@@ -96,12 +96,12 @@ impl FileSystemUserRepository {
 
         let mut users = vec![];
         for value in all_values {
-            let user: User = serde_wasm_bindgen::from_value(value).map_err(|e| {
-                let reason = format!("Failed to deserialize user: {:?}", e);
-                tracing::error!("{}", reason);
-                OrigaError::RepositoryError { reason }
-            })?;
-            users.push(user);
+            match serde_wasm_bindgen::from_value::<User>(value) {
+                Ok(user) => users.push(user),
+                Err(e) => {
+                    tracing::warn!("Skipping corrupted user entry in IndexedDB: {:?}", e);
+                },
+            }
         }
 
         Ok(users)

@@ -1,9 +1,10 @@
 use crate::domain::{
-    OrigaError, Rating, ReviewLog,
     knowledge::{GrammarRuleCard, KanjiCard, VocabularyCard},
     memory::{MemoryHistory, MemoryState},
     value_objects::{Answer, NativeLanguage, Question},
+    OrigaError, Rating, ReviewLog,
 };
+use serde::de::{IgnoredAny, Visitor};
 use serde::{Deserialize, Serialize};
 use ulid::Ulid;
 
@@ -97,11 +98,57 @@ impl StudyCard {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub enum Card {
     Vocabulary(VocabularyCard),
     Kanji(KanjiCard),
     Grammar(GrammarRuleCard),
+}
+
+/// Custom deserializer that gracefully handles unknown variants by consuming
+/// their data via `IgnoredAny` and returning an error.
+/// This ensures the deserialization stream stays in a valid state for
+/// self-describing formats (JSON, serde_wasm_bindgen). Does NOT support
+/// non-self-describing formats like bincode.
+impl<'de> Deserialize<'de> for Card {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        deserializer.deserialize_map(CardVisitor)
+    }
+}
+
+struct CardVisitor;
+
+impl<'de> Visitor<'de> for CardVisitor {
+    type Value = Card;
+
+    fn expecting(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "an externally tagged enum Card")
+    }
+
+    fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
+    where
+        A: serde::de::MapAccess<'de>,
+    {
+        let key: String = map
+            .next_key()?
+            .ok_or_else(|| serde::de::Error::custom("empty map, expected Card variant"))?;
+
+        match key.as_str() {
+            "Vocabulary" => map.next_value().map(Card::Vocabulary),
+            "Kanji" => map.next_value().map(Card::Kanji),
+            "Grammar" => map.next_value().map(Card::Grammar),
+            unknown => {
+                let _ = map.next_value::<IgnoredAny>()?;
+                Err(serde::de::Error::custom(format!(
+                    "unknown variant `{}`, expected one of `Vocabulary`, `Kanji`, `Grammar`",
+                    unknown
+                )))
+            },
+        }
+    }
 }
 
 impl Card {
@@ -587,6 +634,84 @@ mod tests {
 
                 assert_eq!(card_type, expected_type);
             }
+        }
+    }
+
+    mod card_deserialization {
+        use super::*;
+        use crate::domain::knowledge::KnowledgeSet;
+
+        #[test]
+        fn unknown_variant_returns_error() {
+            let json = r#"{"Radical": {"radical": "一"}}"#;
+            let result: Result<Card, _> = serde_json::from_str(json);
+
+            assert!(result.is_err());
+            let err_message = result.unwrap_err().to_string();
+            assert!(
+                err_message.contains("unknown variant `Radical`"),
+                "expected unknown variant error, got: {}",
+                err_message
+            );
+        }
+
+        #[test]
+        fn known_variants_deserialize_correctly() {
+            let vocab = Card::Vocabulary(create_vocabulary_card("猫"));
+            let json = serde_json::to_string(&vocab).unwrap();
+            let de: Card = serde_json::from_str(&json).unwrap();
+            assert_eq!(vocab, de);
+
+            let kanji = Card::Kanji(create_kanji_card("日"));
+            let json = serde_json::to_string(&kanji).unwrap();
+            let de: Card = serde_json::from_str(&json).unwrap();
+            assert_eq!(kanji, de);
+
+            let grammar = Card::Grammar(create_grammar_card(Ulid::new()));
+            let json = serde_json::to_string(&grammar).unwrap();
+            let de: Card = serde_json::from_str(&json).unwrap();
+            assert_eq!(grammar, de);
+        }
+
+        #[test]
+        fn knowledge_set_skips_unknown_variant_card() {
+            let vocab_card = Card::Vocabulary(create_vocabulary_card("猫"));
+            let study_card = StudyCard::new(vocab_card);
+            let valid_id = *study_card.card_id();
+
+            let mut study_cards_map = serde_json::Map::new();
+            study_cards_map.insert(
+                valid_id.to_string(),
+                serde_json::to_value(&study_card).unwrap(),
+            );
+
+            let radical_id = Ulid::new();
+            let mut radical_value = serde_json::to_value(&study_card).unwrap();
+            radical_value.as_object_mut().unwrap().insert(
+                "card_id".to_string(),
+                serde_json::Value::String(radical_id.to_string()),
+            );
+
+            let card_json = serde_json::to_string(&radical_value.get("card").unwrap()).unwrap();
+            let radical_card_json = card_json.replace("\"Vocabulary\"", "\"Radical\"");
+            let radical_card: serde_json::Value = serde_json::from_str(&radical_card_json).unwrap();
+            radical_value
+                .as_object_mut()
+                .unwrap()
+                .insert("card".to_string(), radical_card);
+
+            study_cards_map.insert(radical_id.to_string(), radical_value);
+
+            let ks_value = serde_json::json!({
+                "study_cards": serde_json::Value::Object(study_cards_map),
+                "deleted_cards": [],
+                "lesson_history": []
+            });
+
+            let ks: KnowledgeSet = serde_json::from_value(ks_value).unwrap();
+
+            assert_eq!(ks.study_cards().len(), 1);
+            assert!(ks.study_cards().contains_key(&valid_id));
         }
     }
 }
