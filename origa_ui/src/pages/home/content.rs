@@ -1,6 +1,6 @@
+use super::{calculate_stats, format_delta, format_number, PrimaryStats, SecondaryStats};
 use super::{HistoryModal, HomeSkeleton, JlptProgressCard, JlptSkeleton, StatMetric, StatsGrid};
-use super::{HomeStats, calculate_stats, format_delta, format_number};
-use crate::repository::{HybridUserRepository, set_last_sync_time};
+use crate::repository::{set_last_sync_time, HybridUserRepository};
 use crate::ui_components::{
     Text, TextSize, ToastContainer, ToastData, ToastType, TypographyVariant,
 };
@@ -15,13 +15,17 @@ const SYNC_TOAST_ID: usize = usize::MAX;
 pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoView {
     let test_id_val = move || {
         let val = test_id.get();
-        if val.is_empty() { None } else { Some(val) }
+        if val.is_empty() {
+            None
+        } else {
+            Some(val)
+        }
     };
 
     let repository =
         use_context::<HybridUserRepository>().expect("repository context not provided");
 
-    let stats = RwSignal::new(None::<HomeStats>);
+    let stats = RwSignal::new(None::<(PrimaryStats, SecondaryStats)>);
     let history = RwSignal::new(Vec::<DailyHistoryItem>::new());
     let history_open = RwSignal::new(false);
     let selected_metric = RwSignal::new(StatMetric::TotalCards);
@@ -101,76 +105,20 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                 },
                 Ok(None) => {
                     tracing::warn!("Home: user not found");
-                    stats.set(Some(HomeStats::default()));
+                    stats.set(Some((PrimaryStats::default(), SecondaryStats::default())));
                     is_loading.set(false);
                 },
                 Err(e) => {
                     tracing::error!("Home: get_current_user error: {:?}", e);
-                    stats.set(Some(HomeStats::default()));
+                    stats.set(Some((PrimaryStats::default(), SecondaryStats::default())));
                     is_loading.set(false);
                 },
             }
         });
     });
 
-    let repo_for_reload = repository.clone();
-    Effect::new(move |_| {
-        let repo = repo_for_reload.clone();
-        spawn_local(async move {
-            match repo.get_current_user().await {
-                Ok(Some(user)) => {
-                    if disposed.is_disposed() {
-                        return;
-                    }
-                    let history_items = user.knowledge_set().lesson_history().to_vec();
-                    history.set(history_items.clone());
-                    stats.set(Some(calculate_stats(&history_items)));
-                    jlpt_progress.set(user.jlpt_progress().clone());
-                },
-                Ok(None) => {
-                    tracing::warn!("Home: user not found on reload");
-                },
-                Err(e) => {
-                    tracing::error!("Home: get_current_user error on reload: {:?}", e);
-                },
-            }
-        });
-    });
-
-    let total_cards =
-        Signal::derive(move || format_number(stats.get().map(|s| s.total_cards).unwrap_or(0)));
-    let learned =
-        Signal::derive(move || format_number(stats.get().map(|s| s.learned).unwrap_or(0)));
-    let in_progress =
-        Signal::derive(move || format_number(stats.get().map(|s| s.in_progress).unwrap_or(0)));
-    let new_cards = Signal::derive(move || format_number(stats.get().map(|s| s.new).unwrap_or(0)));
-    let high_difficulty =
-        Signal::derive(move || format_number(stats.get().map(|s| s.high_difficulty).unwrap_or(0)));
-    let positive =
-        Signal::derive(move || format_number(stats.get().map(|s| s.positive).unwrap_or(0)));
-    let negative =
-        Signal::derive(move || format_number(stats.get().map(|s| s.negative).unwrap_or(0)));
-    let total_ratings =
-        Signal::derive(move || format_number(stats.get().map(|s| s.total_ratings).unwrap_or(0)));
-
-    let total_cards_delta =
-        Signal::derive(move || format_delta(stats.get().map(|s| s.total_cards_delta).unwrap_or(0)));
-    let learned_delta =
-        Signal::derive(move || format_delta(stats.get().map(|s| s.learned_delta).unwrap_or(0)));
-    let in_progress_delta =
-        Signal::derive(move || format_delta(stats.get().map(|s| s.in_progress_delta).unwrap_or(0)));
-    let new_delta =
-        Signal::derive(move || format_delta(stats.get().map(|s| s.new_delta).unwrap_or(0)));
-    let high_difficulty_delta = Signal::derive(move || {
-        format_delta(stats.get().map(|s| s.high_difficulty_delta).unwrap_or(0))
-    });
-    let positive_delta =
-        Signal::derive(move || format_delta(stats.get().map(|s| s.positive_delta).unwrap_or(0)));
-    let negative_delta =
-        Signal::derive(move || format_delta(stats.get().map(|s| s.negative_delta).unwrap_or(0)));
-    let total_ratings_delta = Signal::derive(move || {
-        format_delta(stats.get().map(|s| s.total_ratings_delta).unwrap_or(0))
-    });
+    let primary = Signal::derive(move || stats.get().map(|(p, _)| p).unwrap_or_default());
+    let secondary = Signal::derive(move || stats.get().map(|(_, s)| s).unwrap_or_default());
 
     let open_history = move |metric: StatMetric| {
         Callback::new(move |_: ()| {
@@ -221,22 +169,22 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                     fallback=move || view! { <HomeSkeleton /> }
                 >
                     <StatsGrid
-                        total_cards=total_cards
-                        total_cards_delta=total_cards_delta
-                        learned=learned
-                        learned_delta=learned_delta
-                        in_progress=in_progress
-                        in_progress_delta=in_progress_delta
-                        new_cards=new_cards
-                        new_delta=new_delta
-                        high_difficulty=high_difficulty
-                        high_difficulty_delta=high_difficulty_delta
-                        positive=positive
-                        positive_delta=positive_delta
-                        negative=negative
-                        negative_delta=negative_delta
-                        total_ratings=total_ratings
-                        total_ratings_delta=total_ratings_delta
+                        total_cards=Signal::derive(move || format_number(primary.get().total_cards))
+                        total_cards_delta=Signal::derive(move || format_delta(primary.get().total_cards_delta))
+                        learned=Signal::derive(move || format_number(primary.get().learned))
+                        learned_delta=Signal::derive(move || format_delta(primary.get().learned_delta))
+                        in_progress=Signal::derive(move || format_number(primary.get().in_progress))
+                        in_progress_delta=Signal::derive(move || format_delta(primary.get().in_progress_delta))
+                        new_cards=Signal::derive(move || format_number(primary.get().new))
+                        new_delta=Signal::derive(move || format_delta(primary.get().new_delta))
+                        high_difficulty=Signal::derive(move || format_number(secondary.get().high_difficulty))
+                        high_difficulty_delta=Signal::derive(move || format_delta(secondary.get().high_difficulty_delta))
+                        positive=Signal::derive(move || format_number(secondary.get().positive))
+                        positive_delta=Signal::derive(move || format_delta(secondary.get().positive_delta))
+                        negative=Signal::derive(move || format_number(secondary.get().negative))
+                        negative_delta=Signal::derive(move || format_delta(secondary.get().negative_delta))
+                        total_ratings=Signal::derive(move || format_number(secondary.get().total_ratings))
+                        total_ratings_delta=Signal::derive(move || format_delta(secondary.get().total_ratings_delta))
                         open_history=open_history
                         test_id=Signal::derive(move || {
                             let val = test_id.get();

@@ -86,6 +86,7 @@ pub use progress::ProgressBar;
 pub use reading_group::ReadingGroup;
 pub use search::Search;
 pub use skeleton::Skeleton;
+pub use stamp::Stamp;
 pub use stepper::{Stepper, StepperStep};
 pub use tabs::{TabItem, Tabs};
 pub use tag::{Tag, TagVariant};

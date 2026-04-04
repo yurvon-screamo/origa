@@ -12,7 +12,7 @@ pub use content::HomeContent;
 pub use header::HomeHeader;
 pub use history_modal::{HistoryModal, StatMetric};
 pub use home_skeleton::{HomeSkeleton, JlptSkeleton};
-pub use home_stats::{HomeStats, calculate_stats, format_delta, format_number};
+pub use home_stats::{calculate_stats, format_delta, format_number, PrimaryStats, SecondaryStats};
 pub use jlpt_progress_card::JlptProgressCard;
 pub use lesson_buttons_card::LessonButtonsCard;
 pub use stat_card::StatCard;
