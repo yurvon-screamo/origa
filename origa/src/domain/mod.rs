@@ -32,4 +32,4 @@ pub use tokenizer::{
     is_dictionary_loaded, serialize_dictionary_to_rkyv, tokenize_text,
 };
 pub use user::{User, WordKnowledge};
-pub use value_objects::{Answer, JapaneseLevel, NativeLanguage, Question};
+pub use value_objects::{Answer, DailyLoad, JapaneseLevel, NativeLanguage, Question};

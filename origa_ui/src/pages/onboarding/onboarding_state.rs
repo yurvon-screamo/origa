@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
-use origa::domain::JapaneseLevel;
+use origa::domain::{DailyLoad, JapaneseLevel};
 use origa::traits::WellKnownSetMeta;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -10,6 +10,7 @@ pub enum OnboardingStep {
     Apps,
     Progress,
     Summary,
+    Scoring,
 }
 
 impl OnboardingStep {
@@ -20,15 +21,12 @@ impl OnboardingStep {
             OnboardingStep::Apps => 2,
             OnboardingStep::Progress => 3,
             OnboardingStep::Summary => 4,
+            OnboardingStep::Scoring => 5,
         }
     }
 
     pub fn is_first(&self) -> bool {
         matches!(self, OnboardingStep::Intro)
-    }
-
-    pub fn is_last(&self) -> bool {
-        matches!(self, OnboardingStep::Summary)
     }
 
     pub fn next(&self) -> Option<Self> {
@@ -37,7 +35,8 @@ impl OnboardingStep {
             OnboardingStep::Jlpt => Some(OnboardingStep::Apps),
             OnboardingStep::Apps => Some(OnboardingStep::Progress),
             OnboardingStep::Progress => Some(OnboardingStep::Summary),
-            OnboardingStep::Summary => None,
+            OnboardingStep::Summary => Some(OnboardingStep::Scoring),
+            OnboardingStep::Scoring => None,
         }
     }
 
@@ -48,6 +47,7 @@ impl OnboardingStep {
             OnboardingStep::Apps => Some(OnboardingStep::Jlpt),
             OnboardingStep::Progress => Some(OnboardingStep::Apps),
             OnboardingStep::Summary => Some(OnboardingStep::Progress),
+            OnboardingStep::Scoring => Some(OnboardingStep::Summary),
         }
     }
 }
@@ -61,6 +61,7 @@ pub struct OnboardingState {
     pub sets_to_import: Vec<WellKnownSetMeta>,
     pub excluded_sets: HashSet<String>,
     pub available_sets: Vec<WellKnownSetMeta>,
+    pub daily_load: DailyLoad,
 }
 
 impl Default for OnboardingState {
@@ -73,6 +74,7 @@ impl Default for OnboardingState {
             sets_to_import: Vec::new(),
             excluded_sets: HashSet::new(),
             available_sets: Vec::new(),
+            daily_load: DailyLoad::default(),
         }
     }
 }
@@ -93,6 +95,10 @@ impl OnboardingState {
     pub fn set_app_selection(&mut self, app_id: &str, set_id: &str) {
         self.apps_progress
             .insert(app_id.to_string(), set_id.to_string());
+    }
+
+    pub fn set_daily_load(&mut self, daily_load: DailyLoad) {
+        self.daily_load = daily_load;
     }
 
     pub fn add_set_to_import(&mut self, set_meta: WellKnownSetMeta) {
@@ -143,10 +149,6 @@ impl OnboardingState {
         self.current_step.is_first()
     }
 
-    pub fn is_last_step(&self) -> bool {
-        self.current_step.is_last()
-    }
-
     pub fn can_proceed(&self) -> bool {
         match self.current_step {
             OnboardingStep::Intro => true,
@@ -154,6 +156,7 @@ impl OnboardingState {
             OnboardingStep::Apps => true,
             OnboardingStep::Progress => true,
             OnboardingStep::Summary => !self.sets_to_import.is_empty(),
+            OnboardingStep::Scoring => true,
         }
     }
 

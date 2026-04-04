@@ -1,7 +1,7 @@
 use super::trailbase_client::{AuthError, TrailBaseClient};
 use crate::repository::session::{TrailBaseSession, get_session, set_session};
 use chrono::{DateTime, Utc};
-use origa::domain::{NativeLanguage, OrigaError, User};
+use origa::domain::{DailyLoad, NativeLanguage, OrigaError, User};
 use origa::traits::UserRepository;
 use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, RwLock};
@@ -90,6 +90,8 @@ struct UserRow {
     knowledge_set: Option<String>,
     updated_at: DateTime<Utc>,
     imported_sets: Option<String>,
+    #[serde(default)]
+    daily_load: Option<i32>,
 }
 
 impl UserRow {
@@ -124,6 +126,15 @@ impl UserRow {
             knowledge_set,
             self.updated_at,
             imported_sets,
+            match self.daily_load {
+                Some(val) => DailyLoad::from(val),
+                None => {
+                    tracing::warn!(
+                        "User daily_load is None, using default (Medium). DB migration may be needed."
+                    );
+                    DailyLoad::default()
+                },
+            },
         )
     }
 }
@@ -166,6 +177,7 @@ fn user_to_json(user: &User, trailbase_id: &str) -> serde_json::Value {
         "knowledge_set": knowledge_set_json,
         "updated_at": user.updated_at().to_rfc3339(),
         "imported_sets": imported_sets_json,
+        "daily_load": i32::from(*user.daily_load()),
     })
 }
 

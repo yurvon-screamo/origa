@@ -1,4 +1,7 @@
-use super::super::shared::{CardCounts, CardStatus, Filter, FilterBtn, create_delete_callback};
+use super::super::shared::{
+    CardCounts, CardStatus, Filter, FilterBtn, create_delete_callback,
+    create_mark_as_known_callback,
+};
 use super::grammar_card_item::GrammarCardItem;
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{
@@ -95,6 +98,8 @@ pub fn GrammarContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
         })
     };
 
+    let on_mark_as_known = create_mark_as_known_callback(repository.clone(), refresh_trigger);
+
     let (is_deleting, on_delete) =
         create_delete_callback(repository.clone(), toasts, refresh_trigger);
 
@@ -178,12 +183,14 @@ pub fn GrammarContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
                                     each=move || filtered_cards.get()
                                     key=|card| *card.card_id()
                                     children=move |card| {
+                                        let card_id = *card.card_id();
                                         view! {
                                             <GrammarCardItem
                                                 study_card=card
                                                 native_language=native_lang.get()
                                                 known_kanji=known_kanji.get()
                                                 on_toggle_favorite=on_toggle_favorite
+                                                on_mark_as_known=Callback::new(move |_| on_mark_as_known.run(card_id))
                                                 on_delete=on_delete
                                                 is_deleting=is_deleting.into()
                                             />

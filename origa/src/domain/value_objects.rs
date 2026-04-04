@@ -171,6 +171,75 @@ impl From<NativeLanguage> for i32 {
     }
 }
 
+#[derive(Debug, Hash, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
+pub enum DailyLoad {
+    Light,
+    #[default]
+    Medium,
+    Hard,
+    Impossible,
+}
+
+impl DailyLoad {
+    pub fn new_cards_per_day(&self) -> usize {
+        match self {
+            DailyLoad::Light => 5,
+            DailyLoad::Medium => 10,
+            DailyLoad::Hard => 15,
+            DailyLoad::Impossible => 25,
+        }
+    }
+
+    pub fn as_str(&self) -> &str {
+        match self {
+            DailyLoad::Light => "Лёгкий",
+            DailyLoad::Medium => "Средний",
+            DailyLoad::Hard => "Сложный",
+            DailyLoad::Impossible => "Невозможный",
+        }
+    }
+
+    pub fn description(&self) -> &str {
+        match self {
+            DailyLoad::Light => "Несколько минут в день, лёгкая нагрузка для комфортного старта",
+            DailyLoad::Medium => "Около 15 минут в день, сбалансированный темп обучения",
+            DailyLoad::Hard => "Около 30 минут в день, интенсивное обучение для быстрого прогресса",
+            DailyLoad::Impossible => "45+ минут в день, максимальная нагрузка для самых упорных",
+        }
+    }
+
+    pub fn all() -> &'static [DailyLoad] {
+        &[
+            DailyLoad::Light,
+            DailyLoad::Medium,
+            DailyLoad::Hard,
+            DailyLoad::Impossible,
+        ]
+    }
+}
+
+impl From<i32> for DailyLoad {
+    fn from(value: i32) -> Self {
+        match value {
+            0 => DailyLoad::Light,
+            1 => DailyLoad::Medium,
+            2 => DailyLoad::Hard,
+            _ => DailyLoad::Impossible,
+        }
+    }
+}
+
+impl From<DailyLoad> for i32 {
+    fn from(val: DailyLoad) -> Self {
+        match val {
+            DailyLoad::Light => 0,
+            DailyLoad::Medium => 1,
+            DailyLoad::Hard => 2,
+            DailyLoad::Impossible => 3,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -403,5 +472,36 @@ mod tests {
     fn native_language_into_i32(#[case] lang: NativeLanguage, #[case] expected: i32) {
         let result: i32 = lang.into();
         assert_eq!(result, expected);
+    }
+}
+
+#[cfg(test)]
+mod tests_daily_load {
+    use super::*;
+
+    #[test]
+    fn default_is_medium() {
+        assert_eq!(DailyLoad::default(), DailyLoad::Medium);
+    }
+
+    #[test]
+    fn new_cards_per_day_values() {
+        assert_eq!(DailyLoad::Light.new_cards_per_day(), 5);
+        assert_eq!(DailyLoad::Medium.new_cards_per_day(), 10);
+        assert_eq!(DailyLoad::Hard.new_cards_per_day(), 15);
+        assert_eq!(DailyLoad::Impossible.new_cards_per_day(), 25);
+    }
+
+    #[test]
+    fn from_i32_roundtrip() {
+        for val in DailyLoad::all() {
+            let i = i32::from(*val);
+            assert_eq!(DailyLoad::from(i), *val);
+        }
+    }
+
+    #[test]
+    fn from_i32_unknown_falls_back_to_impossible() {
+        assert_eq!(DailyLoad::from(999), DailyLoad::Impossible);
     }
 }

@@ -1,4 +1,4 @@
-use crate::domain::{NativeLanguage, OrigaError};
+use crate::domain::{DailyLoad, NativeLanguage, OrigaError};
 use crate::traits::UserRepository;
 use tracing::{debug, info};
 
@@ -15,6 +15,7 @@ impl<'a, R: UserRepository> UpdateUserProfileUseCase<'a, R> {
     pub async fn execute(
         &self,
         native_language: NativeLanguage,
+        daily_load: DailyLoad,
         telegram_user_id: Option<u64>,
     ) -> Result<(), OrigaError> {
         debug!("Updating user profile");
@@ -26,6 +27,7 @@ impl<'a, R: UserRepository> UpdateUserProfileUseCase<'a, R> {
             .ok_or(OrigaError::CurrentUserNotExist {})?;
 
         user.set_native_language(native_language);
+        user.set_daily_load(daily_load);
         user.set_telegram_user_id(telegram_user_id);
 
         self.repository.save(&user).await?;

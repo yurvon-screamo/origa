@@ -4,6 +4,7 @@ mod apps_step;
 mod intro_step;
 mod jlpt_step;
 mod progress;
+mod scoring_step;
 mod summary_step;
 
 use crate::loaders::WellKnownSetLoaderImpl;
@@ -23,6 +24,7 @@ use origa::domain::User;
 use origa::traits::{UserRepository, WellKnownSetLoader};
 use origa::use_cases::ImportOnboardingSetsUseCase;
 use progress::ProgressStep;
+use scoring_step::ScoringStep;
 use summary_step::SummaryStep;
 
 #[component]
@@ -31,7 +33,6 @@ pub fn Onboarding() -> impl IntoView {
         use_context::<HybridUserRepository>().expect("repository context not provided");
     let navigate = use_navigate();
     let navigate_for_init = navigate.clone();
-    let navigate_for_import = navigate.clone();
     let navigate_for_skip = navigate.clone();
 
     let state = RwSignal::new(OnboardingState::new());
@@ -64,6 +65,10 @@ pub fn Onboarding() -> impl IntoView {
             StepperStep {
                 number: 5,
                 label: "Импорт".to_string(),
+            },
+            StepperStep {
+                number: 6,
+                label: "Оценка".to_string(),
             },
         ]
     });
@@ -145,7 +150,7 @@ pub fn Onboarding() -> impl IntoView {
     let on_skip = {
         let nav = navigate_for_skip.clone();
         let repo = repository.clone();
-        Callback::new(move |_: leptos::ev::MouseEvent| {
+        Callback::new(move |_: ()| {
             let repo = repo.clone();
             let nav = nav.clone();
 
@@ -155,6 +160,7 @@ pub fn Onboarding() -> impl IntoView {
                     return;
                 };
 
+                user.set_daily_load(state.get_untracked().daily_load);
                 user.mark_set_as_imported("__onboarding_skipped__".to_string());
 
                 if let Err(e) = repo.save_sync(&user).await {
@@ -171,11 +177,9 @@ pub fn Onboarding() -> impl IntoView {
     };
 
     let on_start_import = {
-        let nav = navigate_for_import.clone();
         Callback::new(move |_: ()| {
             let repo = repository.clone();
             let loader = WellKnownSetLoaderImpl::new();
-            let nav = nav.clone();
             let disposed = disposed;
             is_importing.set(true);
 
@@ -210,7 +214,21 @@ pub fn Onboarding() -> impl IntoView {
                             import_result.skipped_duplicates
                         );
                         is_importing.set(false);
-                        nav("/home", Default::default());
+
+                        if let Ok(Some(mut user)) = repo.get_current_user().await {
+                            user.set_daily_load(state.get_untracked().daily_load);
+                            if let Err(e) = repo.save_sync(&user).await {
+                                tracing::error!("Failed to save daily_load: {:?}", e);
+                            }
+                        }
+
+                        if disposed.is_disposed() {
+                            return;
+                        }
+
+                        state.update(|s| {
+                            s.go_to_next_step();
+                        });
                     },
                     Err(e) => {
                         tracing::error!("Import failed: {:?}", e);
@@ -259,6 +277,10 @@ pub fn Onboarding() -> impl IntoView {
                             <Show when=move || matches!(state.get().current_step, OnboardingStep::Summary)>
                                 <SummaryStep test_id=Signal::derive(|| "onboarding-summary-step".to_string()) />
                             </Show>
+
+                            <Show when=move || matches!(state.get().current_step, OnboardingStep::Scoring)>
+                                <ScoringStep test_id=Signal::derive(|| "onboarding-scoring-step".to_string()) />
+                            </Show>
                         </div>
 
                         <div class="onboarding-actions mt-8 flex justify-between">
@@ -266,14 +288,19 @@ pub fn Onboarding() -> impl IntoView {
                                 <Show when=move || state.get().is_first_step()>
                                     <Button
                                         variant=ButtonVariant::Ghost
-                                        on_click=on_skip
+                                        on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
+                                            on_skip.run(());
+                                        })
                                         test_id="onboarding-skip"
                                     >
                                         "Пропустить"
                                     </Button>
                                 </Show>
 
-                                <Show when=move || !state.get().is_first_step() && !state.get().is_last_step()>
+                                <Show when=move || !state.get().is_first_step()
+                                    && !matches!(state.get().current_step, OnboardingStep::Summary)
+                                    && !matches!(state.get().current_step, OnboardingStep::Scoring)
+                                >
                                     <Button
                                         variant=ButtonVariant::Ghost
                                         on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
@@ -287,7 +314,9 @@ pub fn Onboarding() -> impl IntoView {
                             </div>
 
                             <div>
-                                <Show when=move || !state.get().is_last_step()>
+                                <Show when=move || !matches!(state.get().current_step, OnboardingStep::Summary)
+                                    && !matches!(state.get().current_step, OnboardingStep::Scoring)
+                                >
                                     <Button
                                         variant=ButtonVariant::Olive
                                         on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
@@ -300,7 +329,7 @@ pub fn Onboarding() -> impl IntoView {
                                     </Button>
                                 </Show>
 
-                                <Show when=move || state.get().is_last_step()>
+                                <Show when=move || matches!(state.get().current_step, OnboardingStep::Summary)>
                                     <Button
                                         variant=ButtonVariant::Olive
                                         on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
@@ -311,6 +340,18 @@ pub fn Onboarding() -> impl IntoView {
                                         attr:data-loading=Signal::derive(move || is_importing.get().to_string())
                                     >
                                         {move || if is_importing.get() { "Импорт..." } else { "Начать импорт" }}
+                                    </Button>
+                                </Show>
+
+                                <Show when=move || matches!(state.get().current_step, OnboardingStep::Scoring)>
+                                    <Button
+                                        variant=ButtonVariant::Olive
+                                        on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
+                                            on_skip.run(());
+                                        })
+                                        test_id="onboarding-finish"
+                                    >
+                                        "Завершить"
                                     </Button>
                                 </Show>
                             </div>
