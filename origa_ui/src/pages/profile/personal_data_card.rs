@@ -38,7 +38,12 @@ pub fn PersonalDataCard(
                         <LanguageSelector selected_language={selected_language} />
                     </div>
 
-                    <DailyLoadSelector selected_load={selected_daily_load} />
+                    <div>
+                        <Text size={TextSize::Large}>
+                            "Темп обучения"
+                        </Text>
+                        <DailyLoadSelector selected_load={selected_daily_load} />
+                    </div>
                 </div>
             </div>
         </Card>

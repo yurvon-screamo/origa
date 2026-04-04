@@ -250,8 +250,20 @@ testWithFreshUser.describe("Onboarding Flow - N4 with ~50% Progress", () => {
         // Verify import button shows loading state
         await expect(page.getByTestId("onboarding-import")).toHaveAttribute("data-loading", "true", { timeout: 5000 });
 
+        // Wait for scoring step to appear after import completes
+        await expect(page.getByTestId("onboarding-scoring-step")).toBeVisible({ timeout: 120_000 });
+
+        // Take screenshot of scoring step
+        await page.screenshot({
+            path: "test-results/onboarding-step-6-scoring.png",
+            fullPage: true
+        });
+
+        // Click "Завершить" to finish onboarding and navigate to home
+        await page.getByTestId("onboarding-finish").click();
+
         // Wait for redirect to home (can take time for import)
-        await page.waitForURL(/\/home$/, { timeout: 120_000 });
+        await page.waitForURL(/\/home$/, { timeout: 30_000 });
 
         // Verify we're on home page
         await expect(page).toHaveURL(/\/home$/);

@@ -3,6 +3,7 @@ mod onboarding_state;
 mod apps_step;
 mod intro_step;
 mod jlpt_step;
+mod load_step;
 mod progress;
 mod scoring_step;
 mod summary_step;
@@ -19,6 +20,7 @@ use jlpt_step::JlptStep;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos_router::hooks::use_navigate;
+use load_step::LoadStep;
 use onboarding_state::{OnboardingState, OnboardingStep};
 use origa::domain::User;
 use origa::traits::{UserRepository, WellKnownSetLoader};
@@ -52,22 +54,26 @@ pub fn Onboarding() -> impl IntoView {
             },
             StepperStep {
                 number: 2,
-                label: "Уровень".to_string(),
+                label: "Темп".to_string(),
             },
             StepperStep {
                 number: 3,
-                label: "Приложения".to_string(),
+                label: "Уровень".to_string(),
             },
             StepperStep {
                 number: 4,
-                label: "Прогресс".to_string(),
+                label: "Приложения".to_string(),
             },
             StepperStep {
                 number: 5,
-                label: "Импорт".to_string(),
+                label: "Прогресс".to_string(),
             },
             StepperStep {
                 number: 6,
+                label: "Импорт".to_string(),
+            },
+            StepperStep {
+                number: 7,
                 label: "Оценка".to_string(),
             },
         ]
@@ -262,6 +268,10 @@ pub fn Onboarding() -> impl IntoView {
                                 <IntroStep test_id=Signal::derive(|| "onboarding-intro-step".to_string()) />
                             </Show>
 
+                            <Show when=move || matches!(state.get().current_step, OnboardingStep::Load)>
+                                <LoadStep test_id=Signal::derive(|| "onboarding-load-step".to_string()) />
+                            </Show>
+
                             <Show when=move || matches!(state.get().current_step, OnboardingStep::Jlpt)>
                                 <JlptStep test_id=Signal::derive(|| "onboarding-jlpt-step".to_string()) />
                             </Show>
@@ -298,7 +308,6 @@ pub fn Onboarding() -> impl IntoView {
                                 </Show>
 
                                 <Show when=move || !state.get().is_first_step()
-                                    && !matches!(state.get().current_step, OnboardingStep::Summary)
                                     && !matches!(state.get().current_step, OnboardingStep::Scoring)
                                 >
                                     <Button
@@ -345,13 +354,13 @@ pub fn Onboarding() -> impl IntoView {
 
                                 <Show when=move || matches!(state.get().current_step, OnboardingStep::Scoring)>
                                     <Button
-                                        variant=ButtonVariant::Olive
+                                        variant=ButtonVariant::Ghost
                                         on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
                                             on_skip.run(());
                                         })
                                         test_id="onboarding-finish"
                                     >
-                                        "Завершить"
+                                        "Пропустить"
                                     </Button>
                                 </Show>
                             </div>
