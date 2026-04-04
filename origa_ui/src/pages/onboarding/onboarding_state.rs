@@ -6,6 +6,7 @@ use origa::traits::WellKnownSetMeta;
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum OnboardingStep {
     Intro,
+    Load,
     Jlpt,
     Apps,
     Progress,
@@ -17,11 +18,12 @@ impl OnboardingStep {
     pub fn as_usize(&self) -> usize {
         match self {
             OnboardingStep::Intro => 0,
-            OnboardingStep::Jlpt => 1,
-            OnboardingStep::Apps => 2,
-            OnboardingStep::Progress => 3,
-            OnboardingStep::Summary => 4,
-            OnboardingStep::Scoring => 5,
+            OnboardingStep::Load => 1,
+            OnboardingStep::Jlpt => 2,
+            OnboardingStep::Apps => 3,
+            OnboardingStep::Progress => 4,
+            OnboardingStep::Summary => 5,
+            OnboardingStep::Scoring => 6,
         }
     }
 
@@ -31,7 +33,8 @@ impl OnboardingStep {
 
     pub fn next(&self) -> Option<Self> {
         match self {
-            OnboardingStep::Intro => Some(OnboardingStep::Jlpt),
+            OnboardingStep::Intro => Some(OnboardingStep::Load),
+            OnboardingStep::Load => Some(OnboardingStep::Jlpt),
             OnboardingStep::Jlpt => Some(OnboardingStep::Apps),
             OnboardingStep::Apps => Some(OnboardingStep::Progress),
             OnboardingStep::Progress => Some(OnboardingStep::Summary),
@@ -43,7 +46,8 @@ impl OnboardingStep {
     pub fn prev(&self) -> Option<Self> {
         match self {
             OnboardingStep::Intro => None,
-            OnboardingStep::Jlpt => Some(OnboardingStep::Intro),
+            OnboardingStep::Load => Some(OnboardingStep::Intro),
+            OnboardingStep::Jlpt => Some(OnboardingStep::Load),
             OnboardingStep::Apps => Some(OnboardingStep::Jlpt),
             OnboardingStep::Progress => Some(OnboardingStep::Apps),
             OnboardingStep::Summary => Some(OnboardingStep::Progress),
@@ -152,6 +156,7 @@ impl OnboardingState {
     pub fn can_proceed(&self) -> bool {
         match self.current_step {
             OnboardingStep::Intro => true,
+            OnboardingStep::Load => true,
             OnboardingStep::Jlpt => true,
             OnboardingStep::Apps => true,
             OnboardingStep::Progress => true,

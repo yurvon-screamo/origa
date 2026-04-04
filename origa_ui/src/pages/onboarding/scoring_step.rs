@@ -1,6 +1,6 @@
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{
-    Button, ButtonVariant, Card, DisplayText, Text, TextSize, TypographyVariant,
+    Button, ButtonVariant, Card, FuriganaText, MarkdownText, Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
 use leptos::task::spawn_local;
@@ -8,6 +8,7 @@ use leptos_use::use_event_listener;
 use origa::domain::{Card as DomainCard, NativeLanguage};
 use origa::traits::UserRepository;
 use origa::use_cases::MarkCardAsKnownUseCase;
+use std::collections::HashSet;
 use ulid::Ulid;
 
 #[derive(Clone)]
@@ -185,6 +186,16 @@ pub fn ScoringStep(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                 <div>
                     <div class="text-center mb-4">
                         <Text
+                            size=TextSize::Large
+                            variant=TypographyVariant::Primary
+                            test_id=Signal::derive(|| "scoring-step-title".to_string())
+                        >
+                            "Настроим обучение!"
+                        </Text>
+                    </div>
+
+                    <div class="text-center mb-2">
+                        <Text
                             size=TextSize::Default
                             variant=TypographyVariant::Muted
                             test_id=Signal::derive(|| "scoring-step-progress".to_string())
@@ -197,24 +208,22 @@ pub fn ScoringStep(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                         </Text>
                     </div>
 
-                    {move || current_card.get().map(|card| {
+                            {move || current_card.get().map(|card| {
                         view! {
                             <Card class=Signal::derive(|| "p-6".to_string())>
                                 <div class="text-center">
-                                    <DisplayText
+                                    <FuriganaText
+                                        text={card.question.clone()}
+                                        known_kanji=HashSet::new()
                                         test_id=Signal::derive(|| "scoring-step-question".to_string())
-                                    >
-                                        {card.question.clone()}
-                                    </DisplayText>
+                                    />
 
                                     <div class="mt-4">
-                                        <Text
-                                            size=TextSize::Default
-                                            variant=TypographyVariant::Muted
+                                        <MarkdownText
+                                            content=Signal::derive(move || card.answer.clone())
+                                            known_kanji=HashSet::new()
                                             test_id=Signal::derive(|| "scoring-step-answer".to_string())
-                                        >
-                                            {card.answer.clone()}
-                                        </Text>
+                                        />
                                     </div>
                                 </div>
 
