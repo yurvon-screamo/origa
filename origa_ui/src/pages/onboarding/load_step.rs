@@ -1,4 +1,4 @@
-use crate::pages::shared::DailyLoadSelector;
+use crate::pages::shared::DailyLoadList;
 use crate::ui_components::{Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 
@@ -29,16 +29,21 @@ pub fn LoadStep(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoVie
         <div class="load-step" data-testid=test_id_val>
             <div class="text-center mb-8">
                 <Text size=TextSize::Large variant=TypographyVariant::Primary test_id=Signal::derive(|| "load-step-title".to_string())>
-                    "Выберите комфортный темп"
+                    "Выберите комфортный темп обучения"
                 </Text>
                 <div class="mt-2">
                     <Text size=TextSize::Default variant=TypographyVariant::Muted test_id=Signal::derive(|| "load-step-subtitle".to_string())>
-                        "Количество новых карточек в день влияет на скорость обучения"
+                        "Выбирайте только тот темп, который вы сможете поддерживать ежедневно."
+                    </Text>
+                </div>
+                <div class="mt-2">
+                    <Text size=TextSize::Small variant=TypographyVariant::Muted test_id=Signal::derive(|| "load-step-subtitle".to_string())>
+                        "Изучение языка - это постоянный процесс, который требует терпения, упорства и дисциплины."
                     </Text>
                 </div>
             </div>
 
-            <DailyLoadSelector selected_load=local_load />
+            <DailyLoadList selected_load=local_load />
 
             <div class="text-center mt-6">
                 <Text size=TextSize::Small variant=TypographyVariant::Muted test_id=Signal::derive(|| "load-step-footer".to_string())>

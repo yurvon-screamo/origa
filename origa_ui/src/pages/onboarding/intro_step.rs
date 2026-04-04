@@ -22,9 +22,15 @@ pub fn IntroStep(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoVi
                 </Text>
                 <div class="mt-2">
                     <Text size=TextSize::Default variant=TypographyVariant::Muted test_id=Signal::derive(|| "intro-step-subtitle".to_string())>
-                        "Origa — приложение для изучения японского языка с интервальными повторениями"
+                        "Origa — это приложение для изучения японского языка по карточкам с интервальными повторениями."
                     </Text>
                 </div>
+
+                <div class="mt-2">
+                      <Text size=TextSize::Small variant=TypographyVariant::Muted test_id=Signal::derive(|| "intro-step-subtitle".to_string())>
+                          "Давайте подберём наборы карточек под ваш уровень и опыт. Это займёт совсем немного времени."
+                      </Text>
+                  </div>
             </div>
 
             <div class="grid grid-cols-3 gap-4 mt-6">
@@ -58,7 +64,7 @@ pub fn IntroStep(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoVi
 
             <div class="text-center mt-6">
                 <Text size=TextSize::Small variant=TypographyVariant::Muted test_id=Signal::derive(|| "intro-step-footer".to_string())>
-                    "Выберите темп обучения на следующем шаге"
+                    "Все это вы сможете изучать в приложении."
                 </Text>
             </div>
         </div>

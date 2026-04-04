@@ -43,6 +43,7 @@ pub fn Onboarding() -> impl IntoView {
     let is_loading = RwSignal::new(true);
     let is_importing = RwSignal::new(false);
     let disposed = StoredValue::new(());
+    let mark_all_trigger: RwSignal<u32> = RwSignal::new(0);
 
     provide_context(state);
 
@@ -289,7 +290,7 @@ pub fn Onboarding() -> impl IntoView {
                             </Show>
 
                             <Show when=move || matches!(state.get().current_step, OnboardingStep::Scoring)>
-                                <ScoringStep test_id=Signal::derive(|| "onboarding-scoring-step".to_string()) />
+                                <ScoringStep test_id=Signal::derive(|| "onboarding-scoring-step".to_string()) mark_all_trigger=mark_all_trigger />
                             </Show>
                         </div>
 
@@ -318,6 +319,18 @@ pub fn Onboarding() -> impl IntoView {
                                         test_id="onboarding-prev"
                                     >
                                         "Назад"
+                                    </Button>
+                                </Show>
+
+                                <Show when=move || matches!(state.get().current_step, OnboardingStep::Scoring)>
+                                    <Button
+                                        variant=ButtonVariant::Ghost
+                                        on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
+                                            on_skip.run(());
+                                        })
+                                        test_id="onboarding-skip-scoring"
+                                    >
+                                        "Пропустить"
                                     </Button>
                                 </Show>
                             </div>
@@ -354,13 +367,13 @@ pub fn Onboarding() -> impl IntoView {
 
                                 <Show when=move || matches!(state.get().current_step, OnboardingStep::Scoring)>
                                     <Button
-                                        variant=ButtonVariant::Ghost
+                                        variant=ButtonVariant::Olive
                                         on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
-                                            on_skip.run(());
+                                            mark_all_trigger.update(|n| *n += 1);
                                         })
-                                        test_id="onboarding-finish"
+                                        test_id="onboarding-mark-all-known"
                                     >
-                                        "Пропустить"
+                                        "Знаю все"
                                     </Button>
                                 </Show>
                             </div>
