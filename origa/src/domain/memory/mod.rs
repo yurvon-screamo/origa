@@ -155,3 +155,59 @@ fn select_later_state(
         },
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use chrono::Duration;
+
+    fn make_review(rating: Rating) -> ReviewLog {
+        ReviewLog::new(rating, Duration::days(1))
+    }
+
+    fn make_state() -> MemoryState {
+        MemoryState::new(
+            Stability::new(5.0).unwrap(),
+            Difficulty::new(3.0).unwrap(),
+            Utc::now(),
+        )
+    }
+
+    #[test]
+    fn easy_review_count_empty_history() {
+        let history = MemoryHistory::new();
+        assert_eq!(history.easy_review_count(), 0);
+    }
+
+    #[test]
+    fn easy_review_count_no_easy_reviews() {
+        let mut history = MemoryHistory::new();
+        let state = make_state();
+        history.add_review(state.clone(), make_review(Rating::Good));
+        history.add_review(state.clone(), make_review(Rating::Hard));
+        history.add_review(state.clone(), make_review(Rating::Again));
+        assert_eq!(history.easy_review_count(), 0);
+    }
+
+    #[test]
+    fn easy_review_count_mixed_reviews() {
+        let mut history = MemoryHistory::new();
+        let state = make_state();
+        history.add_review(state.clone(), make_review(Rating::Easy));
+        history.add_review(state.clone(), make_review(Rating::Good));
+        history.add_review(state.clone(), make_review(Rating::Easy));
+        history.add_review(state.clone(), make_review(Rating::Easy));
+        history.add_review(state.clone(), make_review(Rating::Hard));
+        assert_eq!(history.easy_review_count(), 3);
+    }
+
+    #[test]
+    fn easy_review_count_all_easy() {
+        let mut history = MemoryHistory::new();
+        let state = make_state();
+        for _ in 0..5 {
+            history.add_review(state.clone(), make_review(Rating::Easy));
+        }
+        assert_eq!(history.easy_review_count(), 5);
+    }
+}
