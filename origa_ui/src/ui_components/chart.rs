@@ -1,6 +1,6 @@
 use leptos::prelude::*;
 
-const PADDING: u32 = 40;
+const PADDING: u32 = 55;
 const POINT_RADIUS: u32 = 4;
 
 #[component]
@@ -128,11 +128,12 @@ pub fn LineChart(
                 children=move |(y, value)| {
                     view! {
                         <text
-                            x=PADDING - 20
+                            x=PADDING - 28
                             y=y
                             text_anchor="end"
                             dominant_baseline="middle"
                             fill="var(--fg-muted)"
+                            font_size="9"
                         >
                             {format!("{:.0}", value)}
                         </text>
@@ -154,9 +155,10 @@ pub fn LineChart(
                     view! {
                         <text
                             x=x
-                            y=height - PADDING + 16
+                            y=height - PADDING + 20
                             text_anchor="middle"
                             fill="var(--fg-muted)"
+                            font_size="9"
                         >
                             {label}
                         </text>

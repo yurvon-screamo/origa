@@ -1,9 +1,9 @@
 use super::*;
-use crate::domain::knowledge::lesson::types::{LessonCardView, YesNoCard};
 use crate::domain::knowledge::KanjiCard;
+use crate::domain::knowledge::lesson::types::{LessonCardView, YesNoCard};
 use crate::domain::value_objects::NativeLanguage;
 use crate::use_cases::init_real_dictionaries;
-use rand::{rngs::StdRng, SeedableRng};
+use rand::{SeedableRng, rngs::StdRng};
 
 fn create_vocab_card_with_word(word: &str) -> Card {
     Card::Vocabulary(VocabularyCard::new(

@@ -2,7 +2,7 @@ use super::*;
 use crate::domain::knowledge::lesson::types::LessonCardView;
 use crate::domain::memory::Rating;
 use crate::use_cases::init_real_dictionaries;
-use rand::{rngs::StdRng, SeedableRng};
+use rand::{SeedableRng, rngs::StdRng};
 
 use super::super::LessonViewGenerator;
 

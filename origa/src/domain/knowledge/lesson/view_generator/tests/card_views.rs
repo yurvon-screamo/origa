@@ -1,11 +1,11 @@
 use super::*;
-use crate::domain::knowledge::lesson::types::LessonCardView;
-use crate::domain::knowledge::KanjiCard;
-use crate::domain::memory::{Difficulty, MemoryState, Rating, ReviewLog, Stability};
 use crate::domain::StudyCard;
+use crate::domain::knowledge::KanjiCard;
+use crate::domain::knowledge::lesson::types::LessonCardView;
+use crate::domain::memory::{Difficulty, MemoryState, Rating, ReviewLog, Stability};
 use crate::use_cases::init_real_dictionaries;
 use chrono::{Duration, Utc};
-use rand::{rngs::StdRng, SeedableRng};
+use rand::{SeedableRng, rngs::StdRng};
 
 use super::super::LessonViewGenerator;
 

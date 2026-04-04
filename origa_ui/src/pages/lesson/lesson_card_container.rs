@@ -1,4 +1,4 @@
-use super::keyboard_handler::create_keyboard_handler;
+use super::keyboard_handler::{KeyboardActions, create_keyboard_handler};
 use super::lesson_card::LessonCard;
 use super::lesson_state::LessonContext;
 use super::on_quiz_select::create_on_quiz_dont_know;
@@ -41,13 +41,15 @@ pub fn LessonCardContainer() -> impl IntoView {
     let handle_keydown = create_keyboard_handler(
         lesson_ctx,
         is_rating,
-        on_rate_callback,
-        on_quiz_select,
-        on_yesno_select,
-        on_quiz_dont_know,
-        on_yesno_dont_know,
         lesson_state,
-        show_answer,
+        KeyboardActions {
+            on_rate: on_rate_callback,
+            on_quiz_select,
+            on_yesno_select,
+            on_quiz_dont_know,
+            on_yesno_dont_know,
+            show_answer: Box::new(show_answer),
+        },
     );
 
     let current_card_view = Memo::new(move |_| {

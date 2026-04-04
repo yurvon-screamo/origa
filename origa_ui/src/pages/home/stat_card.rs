@@ -1,27 +1,14 @@
-use crate::ui_components::{
-    Button, ButtonVariant, Card, DisplayText, Text, TextSize, TypographyVariant,
-};
-use leptos::ev::MouseEvent;
+use crate::ui_components::{Card, DisplayText, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 
 #[component]
-pub fn StatCard(
+pub fn QuickStatCard(
     #[prop(into)] title: Signal<String>,
     #[prop(into)] value: Signal<String>,
-    #[prop(into)] subtitle: Signal<String>,
     #[prop(optional, into)] delta: Signal<String>,
-    on_history: Callback<()>,
     #[prop(optional, into)] test_id: Signal<String>,
+    on_card_click: Callback<()>,
 ) -> impl IntoView {
-    let test_id_history = Signal::derive(move || {
-        let val = test_id.get();
-        if val.is_empty() {
-            "stat-history".to_string()
-        } else {
-            format!("{}-history", val)
-        }
-    });
-
     let has_delta = Signal::derive(move || !delta.get().is_empty());
 
     let delta_class = Signal::derive(move || {
@@ -29,52 +16,46 @@ pub fn StatCard(
         if d.is_empty() {
             String::new()
         } else if d.starts_with('-') {
-            "text-sm font-mono text-[var(--error)]".to_string()
+            "text-[var(--error)]".to_string()
         } else {
-            "text-sm font-mono text-[var(--success)]".to_string()
+            "text-[var(--success)]".to_string()
         }
     });
 
-    let test_id_for_card = Signal::derive(move || test_id.get());
-
     view! {
-        <Card class=Signal::derive(|| "p-6".to_string()) test_id=test_id_for_card>
-            <Text
-                size=Signal::derive(|| TextSize::Small)
-                variant=Signal::derive(|| TypographyVariant::Muted)
-                uppercase=Signal::derive(|| true)
-                tracking_widest=Signal::derive(|| true)
-                class=Signal::derive(|| "mb-4".to_string())
+        <div
+            class="cursor-pointer"
+            on:click=move |_: leptos::ev::MouseEvent| on_card_click.run(())
+        >
+            <Card
+                class=Signal::derive(|| "interactive p-4".to_string())
+                test_id=test_id
             >
-                {move || title.get()}
-            </Text>
+                <Text
+                    size=Signal::from(TextSize::Small)
+                    variant=Signal::from(TypographyVariant::Muted)
+                    uppercase=Signal::from(true)
+                    tracking_widest=Signal::from(true)
+                    class=Signal::derive(|| "mb-4".to_string())
+                >
+                    {move || title.get()}
+                </Text>
 
-            <div class="flex items-baseline gap-2 mb-2">
-                <DisplayText class=Signal::derive(|| "".to_string())>
-                    {move || value.get()}
-                </DisplayText>
-                <Show when=move || has_delta.get()>
-                    <span class=move || delta_class.get()>
-                        {move || delta.get()}
-                    </span>
-                </Show>
-            </div>
-
-            <Text
-                size=Signal::derive(|| TextSize::Small)
-                variant=Signal::derive(|| TypographyVariant::Muted)
-                class=Signal::derive(|| "mb-4".to_string())
-            >
-                {move || subtitle.get()}
-            </Text>
-
-            <Button
-                variant=Signal::derive(|| ButtonVariant::Ghost)
-                on_click=Callback::new(move |_: MouseEvent| on_history.run(()))
-                test_id=test_id_history
-            >
-                "История"
-            </Button>
-        </Card>
+                <div class="flex items-baseline gap-2">
+                    <DisplayText class=Signal::derive(String::new)>
+                        {move || value.get()}
+                    </DisplayText>
+                    <Show when=move || has_delta.get()>
+                        <Text
+                            size=Signal::from(TextSize::Small)
+                            class=delta_class
+                            test_id=Signal::derive(|| "delta-badge".to_string())
+                        >
+                            {move || delta.get()}
+                        </Text>
+                    </Show>
+                </div>
+            </Card>
+        </div>
     }
 }

@@ -1,6 +1,6 @@
 use crate::domain::value_objects::NativeLanguage;
 use crate::domain::{Card, OrigaError};
-use rand::{prelude::IndexedRandom, seq::SliceRandom, Rng};
+use rand::{Rng, prelude::IndexedRandom, seq::SliceRandom};
 
 use super::super::types::{LessonCardView, QuizCard, QuizOption, YesNoCard};
 use super::QUIZ_OPTIONS_COUNT;

@@ -39,7 +39,7 @@ mod radio;
 mod reading_group;
 mod search;
 mod skeleton;
-mod stamp;
+
 mod stepper;
 mod tab_button;
 mod table;
@@ -57,6 +57,8 @@ pub use alert::{Alert, AlertType};
 pub use app_skeleton::AppSkeleton;
 pub use audio_buttons::AudioButtons;
 pub use avatar::Avatar;
+#[allow(unused_imports)]
+pub use badge::Badge;
 pub use button::{Button, ButtonSize, ButtonVariant};
 pub use card::Card;
 pub use card_history_modal::CardHistoryModal;
@@ -75,6 +77,7 @@ pub use history_button::HistoryButton;
 pub use input::Input;
 pub use kanji_animation::{KanjiViewMode, KanjiWritingSection};
 pub use kanji_drawing::KanjiDrawingPractice;
+pub use label_frame::LabelFrame;
 pub use layout::{CardLayout, CardLayoutSize, PageLayout, PageLayoutVariant};
 pub use loading::{LoadingOverlay, Spinner};
 pub use markdown::{MarkdownText, MarkdownVariant};
@@ -86,7 +89,7 @@ pub use progress::ProgressBar;
 pub use reading_group::ReadingGroup;
 pub use search::Search;
 pub use skeleton::Skeleton;
-pub use stamp::Stamp;
+
 pub use stepper::{Stepper, StepperStep};
 pub use tabs::{TabItem, Tabs};
 pub use tag::{Tag, TagVariant};
