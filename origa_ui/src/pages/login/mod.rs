@@ -10,8 +10,8 @@ pub use header::LoginHeader;
 
 use crate::store::auth_store::AuthStore;
 use crate::ui_components::{
-    CardLayout, CardLayoutSize, Divider, DividerVariant, PageLayout, PageLayoutVariant, Text,
-    TextSize, TypographyVariant,
+    Alert, AlertType, CardLayout, CardLayoutSize, Divider, DividerVariant, PageLayout,
+    PageLayoutVariant, Text, TextSize, TypographyVariant,
 };
 use email_password_form::EmailPasswordForm;
 use leptos::prelude::*;
@@ -27,6 +27,7 @@ pub fn Login() -> impl IntoView {
     let disposed = StoredValue::new(());
 
     let auth_store_for_effect = auth_store.clone();
+    let auth_store_for_view = auth_store.clone();
     Effect::new({
         let navigate = navigate.clone();
         move |_| {
@@ -43,6 +44,7 @@ pub fn Login() -> impl IntoView {
             let navigate = navigate.clone();
             loading.set(true);
             server_error.set(None);
+            auth_store.oauth_error.set(None);
 
             spawn_local(async move {
                 let result = auth_store.login(&email, &password).await;
@@ -76,6 +78,14 @@ pub fn Login() -> impl IntoView {
                         server_error=server_error
                         test_id=Signal::derive(|| "login-form".to_string())
                     />
+
+                    <Show when=move || auth_store_for_view.oauth_error.get().is_some()>
+                        <Alert
+                            test_id=Signal::derive(|| "oauth-error".to_string())
+                            alert_type=Signal::derive(|| AlertType::Error)
+                            message=Signal::derive(move || auth_store_for_view.oauth_error.get().unwrap_or_default())
+                        />
+                    </Show>
 
                     <div class="flex items-center gap-4">
                         <Divider variant=Signal::derive(|| DividerVariant::Single) class=Signal::derive(|| "flex-1".to_string()) test_id=Signal::derive(|| "login-divider-left".to_string()) />

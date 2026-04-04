@@ -19,6 +19,7 @@ pub fn setup_oauth_listener(auth_store: AuthStore) {
         }
 
         let auth_store = auth_store_clone.clone();
+        auth_store.oauth_error.set(None);
         spawn_local(async move {
             let result = process_oauth_url(&url, &auth_store).await;
             handle_oauth_result(result, &auth_store);
@@ -57,9 +58,10 @@ async fn process_oauth_url(url: &str, auth_store: &AuthStore) -> Result<(), Stri
     Err("Неподдерживаемый формат callback URL".to_string())
 }
 
-fn handle_oauth_result(result: Result<(), String>, _auth_store: &AuthStore) {
+fn handle_oauth_result(result: Result<(), String>, auth_store: &AuthStore) {
     if let Err(e) = result {
         error!("OAuth callback error: {}", e);
+        auth_store.oauth_error.set(Some(e));
         return;
     }
 
@@ -142,6 +144,7 @@ pub fn check_url_oauth_callback(auth_store: &AuthStore) {
 
     let is_oauth_loading = auth_store.is_oauth_loading;
     is_oauth_loading.set(true);
+    auth_store.oauth_error.set(None);
     let auth_store_clone = auth_store.clone();
 
     spawn_local(async move {
@@ -188,6 +191,7 @@ async fn process_oauth_flow(
         Err(e) => {
             is_oauth_loading.set(false);
             error!("OAuth flow failed: {:?}", e);
+            auth_store.oauth_error.set(Some(e.to_string()));
         },
     }
 }
