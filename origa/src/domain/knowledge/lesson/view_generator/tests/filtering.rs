@@ -181,3 +181,99 @@ mod reversed_view_filtering {
         );
     }
 }
+
+mod reversed_view_easy_reviews {
+    use super::*;
+
+    fn create_high_difficulty_card_with_easy_reviews(word: &str, easy_count: usize) -> StudyCard {
+        let card = Card::Vocabulary(VocabularyCard::new(
+            Question::new(word.to_string()).unwrap(),
+        ));
+        let mut study_card = StudyCard::new(card);
+
+        for _ in 0..easy_count {
+            let memory = MemoryState::new(
+                Stability::new(3.0).unwrap(),
+                Difficulty::new(7.0).unwrap(),
+                Utc::now(),
+            );
+            study_card.add_review(memory, ReviewLog::new(Rating::Easy, Duration::days(5)));
+        }
+
+        assert!(study_card.memory().is_high_difficulty());
+        assert!(!study_card.memory().is_known_card());
+        assert!(!study_card.memory().is_in_progress());
+        study_card
+    }
+
+    const DISTRACTOR_WORDS: &[&str] = &["猫", "犬", "鳥", "魚", "馬", "牛"];
+    const ITERATIONS: u64 = 500;
+
+    #[test]
+    fn high_difficulty_with_many_easy_reviews_gets_reversed() {
+        init_real_dictionaries();
+
+        let ks = create_knowledge_set_with_vocab(DISTRACTOR_WORDS);
+        let study_card = create_high_difficulty_card_with_easy_reviews("猫", 3);
+
+        assert_eq!(study_card.memory().easy_review_count(), 3);
+
+        let generator = LessonViewGenerator::new(&ks);
+        let mut reversed_count = 0;
+
+        for seed in 0..ITERATIONS {
+            let mut rng = StdRng::seed_from_u64(seed);
+            if matches!(
+                generator.apply_view(&study_card, false, &mut rng),
+                LessonCardView::Reversed(_)
+            ) {
+                reversed_count += 1;
+            }
+        }
+
+        assert!(
+            reversed_count > 0,
+            "high-difficulty card with 3 Easy reviews should get Reversed view, got {reversed_count} out of {ITERATIONS}"
+        );
+    }
+
+    #[test]
+    fn high_difficulty_with_few_easy_reviews_no_reversed() {
+        init_real_dictionaries();
+
+        let ks = create_knowledge_set_with_vocab(DISTRACTOR_WORDS);
+        let study_card = create_high_difficulty_card_with_easy_reviews("猫", 2);
+
+        assert_eq!(study_card.memory().easy_review_count(), 2);
+
+        let generator = LessonViewGenerator::new(&ks);
+
+        for seed in 0..ITERATIONS {
+            let mut rng = StdRng::seed_from_u64(seed);
+            let view = generator.apply_view(&study_card, false, &mut rng);
+            assert!(
+                !matches!(view, LessonCardView::Reversed(_)),
+                "high-difficulty card with only 2 Easy reviews should not get Reversed view"
+            );
+        }
+    }
+
+    #[test]
+    fn high_difficulty_with_many_easy_reviews_no_grammar_mutated() {
+        init_real_dictionaries();
+
+        let ks = create_knowledge_set_with_vocab(DISTRACTOR_WORDS);
+        let study_card = create_high_difficulty_card_with_easy_reviews("猫", 3);
+
+        let generator = LessonViewGenerator::new(&ks);
+
+        for seed in 0..ITERATIONS {
+            let mut rng = StdRng::seed_from_u64(seed);
+            let view = generator.apply_view(&study_card, false, &mut rng);
+            assert!(
+                !matches!(view, LessonCardView::GrammarMutated { .. }),
+                "high-difficulty card should never get GrammarMutated even with Easy reviews"
+            );
+        }
+    }
+}
