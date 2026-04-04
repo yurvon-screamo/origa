@@ -166,13 +166,30 @@ pub fn tokenize_text(text: &str) -> Result<Vec<TokenInfo>, OrigaError> {
     let token_infos = tokens
         .iter_mut()
         .map(|token| {
-            let lexeme = token.get("lexeme").unwrap_or_default();
-            let orthographic_base_form = if let Some((japanese, _english)) = lexeme.split_once('-')
-            {
-                japanese.to_string()
-            } else {
-                lexeme.to_string()
-            };
+            use crate::domain::JapaneseText;
+
+            let lexeme_raw = token.get("lexeme").unwrap_or_default().to_string();
+            let lexeme_stripped: &str =
+                if let Some((japanese, _english)) = lexeme_raw.split_once('-') {
+                    japanese
+                } else {
+                    &lexeme_raw
+                };
+
+            let orth_base = token
+                .get("orthographic_base_form")
+                .unwrap_or_default()
+                .to_string();
+
+            // Use orthographic_base_form as primary source. For proper nouns (e.g. 名古屋),
+            // orthographic_base_form preserves kanji while lexeme gives katakana reading.
+            // For conjugated hiragana words (e.g. たべ→食べる), lexeme provides the kanji base form.
+            let orthographic_base_form =
+                if lexeme_stripped.contains_kanji() && !orth_base.contains_kanji() {
+                    lexeme_stripped.to_string()
+                } else {
+                    orth_base.to_string()
+                };
 
             let mut part_of_speech: PartOfSpeech = token
                 .get("part_of_speech")
@@ -364,5 +381,14 @@ mod tests {
                 assert_eq!(token.part_of_speech(), &PartOfSpeech::Symbol);
             }
         }
+    }
+
+    #[test]
+    fn should_preserve_kanji_for_proper_nouns() {
+        ensure_dictionary();
+        // City names: lexeme returns katakana reading, orthographic_base_form keeps kanji
+        let tokens = tokenize_text("名古屋 横浜").unwrap();
+        assert_eq!(tokens[0].orthographic_base_form, "名古屋");
+        assert_eq!(tokens[1].orthographic_base_form, "横浜");
     }
 }

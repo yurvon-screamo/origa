@@ -1,22 +1,22 @@
 {
-    "content": {
-        "English": {
-            "description": "Words from module: Находите места и вещи для поездки",
-            "title": "Duolingo 「RU」 - Модуль 1 Раздел 10"
-        },
-        "Russian": {
-            "description": "Слова из модуля: Находите места и вещи для поездки",
-            "title": "Duolingo 「RU」 - Модуль 1 Раздел 10"
-        }
+  "content": {
+    "English": {
+      "description": "Words from module: Находите места и вещи для поездки",
+      "title": "Duolingo 「RU」 - Модуль 1 Раздел 10"
     },
-    "level": "N5",
-    "words": [
-        "パスポート",
-        "其れ",
-        "切符",
-        "地下",
-        "地図",
-        "帽子",
-        "彼処"
-    ]
+    "Russian": {
+      "description": "Слова из модуля: Находите места и вещи для поездки",
+      "title": "Duolingo 「RU」 - Модуль 1 Раздел 10"
+    }
+  },
+  "level": "N5",
+  "words": [
+    "パスポート",
+    "其れ",
+    "切符",
+    "地下",
+    "地図",
+    "帽子",
+    "彼処"
+  ]
 }
