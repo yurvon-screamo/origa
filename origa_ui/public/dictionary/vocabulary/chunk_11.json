@@ -9358,5 +9358,9 @@
     "チョコ": {
         "russian_translation": "- шоколад (кондитерское изделие)\n- шоколадный (цвет, вкус)\n\n> слово является сокращением от «шоколад» (chokorēto) и используется как в значении продукта, так и для описания цвета или вкуса.",
         "english_translation": "- chocolate (the food substance)\n- chocolate-flavored item (e.g., candy, drink, cake)\n\n> note: this is a colloquial abbreviation of \"chokorēto\" (chocolate)."
+    },
+    "秋葉原": {
+        "russian_translation": "- Акихабара (район в Токио)\n- Электронный квартал\n\n> знаменитый район Токио, центр электроники, аниме и отаку-культуры.",
+        "english_translation": "- Akihabara (district in Tokyo known for electronics and anime culture)\n- Electric Town\n\n> one of Tokyo's most famous districts, a hub for electronics shops, anime merchandise, and otaku culture."
     }
 }
