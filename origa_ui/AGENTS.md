@@ -2,7 +2,9 @@
 
 ## Описание
 
-Leptos/WASM фронтенд. Сборка через `trunk`. Для разработки Tauri desktop используйте `cargo tauri dev`.
+Leptos/WASM фронтенд. Сборка через `trunk`.
+
+Для разработки Tauri desktop используйте `cargo tauri dev`.
 
 ## Структура проекта
 
