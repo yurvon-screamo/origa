@@ -153,18 +153,26 @@ mod lesson_card_view_accessors {
     #[test]
     fn grammar_info_returns_none_for_all_other_variants() {
         let vocab = create_vocab_card("猫");
-        assert!(LessonCardView::Normal(vocab.clone())
-            .grammar_info()
-            .is_none());
-        assert!(LessonCardView::Reversed(vocab.clone())
-            .grammar_info()
-            .is_none());
-        assert!(LessonCardView::Writing(vocab.clone())
-            .grammar_info()
-            .is_none());
-        assert!(LessonCardView::Quiz(QuizCard::new(vocab.clone(), vec![]))
-            .grammar_info()
-            .is_none());
+        assert!(
+            LessonCardView::Normal(vocab.clone())
+                .grammar_info()
+                .is_none()
+        );
+        assert!(
+            LessonCardView::Reversed(vocab.clone())
+                .grammar_info()
+                .is_none()
+        );
+        assert!(
+            LessonCardView::Writing(vocab.clone())
+                .grammar_info()
+                .is_none()
+        );
+        assert!(
+            LessonCardView::Quiz(QuizCard::new(vocab.clone(), vec![]))
+                .grammar_info()
+                .is_none()
+        );
         let yesno = YesNoCard::new(vocab, "s".into(), true);
         assert!(LessonCardView::YesNo(yesno).grammar_info().is_none());
     }

@@ -1,6 +1,4 @@
-use crate::ui_components::{
-    Avatar, Button, ButtonVariant, DisplayText, Tag, TagVariant, Text, TextSize, TypographyVariant,
-};
+use crate::ui_components::{Avatar, Button, ButtonVariant, DisplayText};
 use leptos::prelude::*;
 use leptos_router::hooks::use_navigate;
 use origa::domain::User;
@@ -8,31 +6,24 @@ use origa::domain::User;
 #[component]
 pub fn HomeHeader(
     current_user: RwSignal<Option<User>>,
+    #[prop(optional)] drawer_open: Option<RwSignal<bool>>,
     #[prop(optional, into)] test_id: Signal<String>,
 ) -> impl IntoView {
     let test_id_val = move || {
         let val = test_id.get();
-        if val.is_empty() {
-            None
-        } else {
-            Some(val)
+        if val.is_empty() { None } else { Some(val) }
+    };
+
+    let test_id_avatar = super::derive_test_id(test_id, "avatar");
+    let test_id_words = super::derive_test_id(test_id, "words");
+    let test_id_grammar = super::derive_test_id(test_id, "grammar");
+    let test_id_kanji = super::derive_test_id(test_id, "kanji");
+
+    let toggle_drawer = move |_: leptos::ev::MouseEvent| {
+        if let Some(signal) = drawer_open {
+            signal.update(|v| *v = !*v);
         }
     };
-
-    let test_id_jlpt = derive_test_id(test_id, "jlpt");
-    let test_id_avatar = derive_test_id(test_id, "avatar");
-    let test_id_words = derive_test_id(test_id, "words");
-    let test_id_grammar = derive_test_id(test_id, "grammar");
-    let test_id_kanji = derive_test_id(test_id, "kanji");
-    let test_id_greeting = derive_test_id(test_id, "greeting");
-
-    let current_level = move || {
-        current_user
-            .get()
-            .map(|u| u.jlpt_progress().current_level().code().to_string())
-    };
-
-    let username = move || current_user.get().map(|u| u.username().to_string());
 
     let initials = move || current_user.get().map(|u| u.username().to_uppercase());
 
@@ -44,19 +35,9 @@ pub fn HomeHeader(
                         <DisplayText class="font-serif text-2xl font-light tracking-tight whitespace-nowrap">
                             "オリガ"
                         </DisplayText>
-                        <Show when=move || username().is_some()>
-                            <Text
-                                size=TextSize::Small
-                                variant=TypographyVariant::Muted
-                                class="hidden md:inline"
-                                test_id=test_id_greeting
-                            >
-                                {move || username().map(|name| format!("Добро пожаловать, {}!", name))}
-                            </Text>
-                        </Show>
                     </div>
 
-                    // Навигация скрыта на mobile (Drawer в Task-005)
+                    // Навигация скрыта на mobile
                     <div class="hidden md:flex items-center space-x-4">
                         {move || {
                             current_user.get().map(|_| {
@@ -99,30 +80,26 @@ pub fn HomeHeader(
                     </div>
 
                     <div class="flex items-center space-x-3">
-                        {move || {
-                            current_level().map(|level| {
-                                view! {
-                                    <Tag variant=TagVariant::Olive test_id=test_id_jlpt>
-                                        {level}
-                                    </Tag>
-                                }
-                            })
-                        }}
+                        <button
+                            class="md:hidden p-2 cursor-pointer anima-focus-ring"
+                            on:click=toggle_drawer
+                            data-testid="home-hamburger"
+                        >
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M3 12h18M3 6h18M3 18h18" />
+                            </svg>
+                        </button>
 
                         {move || {
                             initials().map(|init| {
                                 let init_for_avatar = init.clone();
                                 view! {
-                                    <Button
-                                        variant=ButtonVariant::Ghost
-                                        test_id=test_id_avatar
-                                        on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
-                                            let navigate = use_navigate();
-                                            navigate("/profile", Default::default());
-                                        })
-                                    >
-                                        <Avatar initials=Signal::derive(move || init_for_avatar.clone()) />
-                                    </Button>
+                                    <div class="anima-avatar-hover" on:click=move |_: leptos::ev::MouseEvent| {
+                                        let navigate = use_navigate();
+                                        navigate("/profile", Default::default());
+                                    }>
+                                        <Avatar test_id=test_id_avatar initials=Signal::derive(move || init_for_avatar.clone()) />
+                                    </div>
                                 }
                             })
                         }}
@@ -131,16 +108,4 @@ pub fn HomeHeader(
             </div>
         </header>
     }
-}
-
-fn derive_test_id(base: Signal<String>, suffix: &str) -> Signal<String> {
-    let suffix = suffix.to_string();
-    Signal::derive(move || {
-        let val = base.get();
-        if val.is_empty() {
-            format!("home-{}", suffix)
-        } else {
-            format!("{}-{}", val, suffix)
-        }
-    })
 }

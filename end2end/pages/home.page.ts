@@ -15,7 +15,7 @@ export class HomePage extends BasePage {
 
     // JLPT Progress
     readonly jlptProgress: Locator;
-    readonly jlptTitle: Locator;
+    readonly jlptStamp: Locator;
 
     // Stats
     readonly statsGrid: Locator;
@@ -24,7 +24,6 @@ export class HomePage extends BasePage {
     readonly fixationButton: Locator;
 
     // Stat cards
-    readonly statTotalCards: Locator;
     readonly statLearned: Locator;
     readonly statInProgress: Locator;
     readonly statNew: Locator;
@@ -37,9 +36,16 @@ export class HomePage extends BasePage {
     readonly historyModal: Locator;
     readonly historyChart: Locator;
 
+    // Navigation
+    readonly navDrawer: Locator;
+    readonly homeHamburger: Locator;
+
     // Loading
     readonly homeLoading: Locator;
     readonly homeSpinner: Locator;
+
+    // Stats toggle
+    readonly toggleDetails: Locator;
 
     constructor(page: Page) {
         super(page);
@@ -57,7 +63,7 @@ export class HomePage extends BasePage {
 
         // JLPT Progress
         this.jlptProgress = page.getByTestId("home-jlpt-progress");
-        this.jlptTitle = page.getByTestId("jlpt-title");
+        this.jlptStamp = page.getByTestId("home-jlpt-progress-stamp");
 
         // Stats
         this.statsGrid = page.getByTestId("home-stats-grid");
@@ -66,7 +72,6 @@ export class HomePage extends BasePage {
         this.fixationButton = page.getByTestId("lesson-buttons-fixation");
 
         // Stat cards
-        this.statTotalCards = page.getByTestId("stat-total-cards");
         this.statLearned = page.getByTestId("stat-learned");
         this.statInProgress = page.getByTestId("stat-in-progress");
         this.statNew = page.getByTestId("stat-new");
@@ -79,9 +84,16 @@ export class HomePage extends BasePage {
         this.historyModal = page.getByTestId("home-history-modal");
         this.historyChart = page.getByTestId("history-chart");
 
+        // Navigation
+        this.navDrawer = page.getByTestId("nav-drawer");
+        this.homeHamburger = page.getByTestId("home-hamburger");
+
         // Loading
         this.homeLoading = page.getByTestId("home-loading");
         this.homeSpinner = page.getByTestId("home-spinner");
+
+        // Stats toggle
+        this.toggleDetails = page.getByTestId("toggle-details");
     }
 
     async goto(): Promise<void> {
@@ -116,7 +128,14 @@ export class HomePage extends BasePage {
 
     async openHistoryForStat(statTestId: string): Promise<void> {
         const statCard = this.page.getByTestId(statTestId);
-        const historyButton = statCard.getByTestId(/-history$/);
-        await historyButton.click();
+        await statCard.click();
+    }
+
+    async toggleDetailedStats(): Promise<void> {
+        await this.toggleDetails.click();
+    }
+
+    async openNavDrawer(): Promise<void> {
+        await this.homeHamburger.click();
     }
 }

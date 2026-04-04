@@ -42,7 +42,7 @@ pub fn Avatar(
 #[component]
 pub fn AvatarGroup(
     #[prop(optional, into)] test_id: Signal<String>,
-    _children: Children,
+    children: Children,
 ) -> impl IntoView {
     let test_id_val = move || {
         let val = test_id.get();
@@ -51,7 +51,7 @@ pub fn AvatarGroup(
 
     view! {
         <div class="avatar-group" data-testid=test_id_val>
-            {_children()}
+            {children()}
         </div>
     }
 }

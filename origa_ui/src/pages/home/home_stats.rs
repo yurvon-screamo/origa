@@ -1,9 +1,20 @@
+use leptos::prelude::*;
 use origa::domain::DailyHistoryItem;
+
+pub fn derive_test_id(base: Signal<String>, suffix: &str) -> Signal<String> {
+    let suffix = suffix.to_string();
+    Signal::derive(move || {
+        let val = base.get();
+        if val.is_empty() {
+            suffix.clone()
+        } else {
+            format!("{}-{}", val, suffix)
+        }
+    })
+}
 
 #[derive(Clone, Default)]
 pub struct PrimaryStats {
-    pub total_cards: usize,
-    pub total_cards_delta: isize,
     pub learned: usize,
     pub learned_delta: isize,
     pub in_progress: usize,
@@ -22,6 +33,17 @@ pub struct SecondaryStats {
     pub negative_delta: isize,
     pub total_ratings: usize,
     pub total_ratings_delta: isize,
+}
+
+#[derive(Clone, Default)]
+pub struct StatsDeltas {
+    pub learned: isize,
+    pub in_progress: isize,
+    pub new: isize,
+    pub high_difficulty: isize,
+    pub positive: isize,
+    pub negative: isize,
+    pub total_ratings: isize,
 }
 
 pub fn format_number(n: usize) -> String {
@@ -52,44 +74,39 @@ pub fn calculate_stats(history: &[DailyHistoryItem]) -> (PrimaryStats, Secondary
 
     (
         PrimaryStats {
-            total_cards: last.total_words(),
-            total_cards_delta: deltas.0,
             learned: last.known_words(),
-            learned_delta: deltas.1,
+            learned_delta: deltas.learned,
             in_progress: last.in_progress_words(),
-            in_progress_delta: deltas.2,
+            in_progress_delta: deltas.in_progress,
             new: last.new_words(),
-            new_delta: deltas.3,
+            new_delta: deltas.new,
         },
         SecondaryStats {
             high_difficulty: last.high_difficulty_words(),
-            high_difficulty_delta: deltas.4,
+            high_difficulty_delta: deltas.high_difficulty,
             positive: last.positive_ratings(),
-            positive_delta: deltas.5,
+            positive_delta: deltas.positive,
             negative: last.negative_ratings(),
-            negative_delta: deltas.6,
+            negative_delta: deltas.negative,
             total_ratings: last.total_ratings(),
-            total_ratings_delta: deltas.7,
+            total_ratings_delta: deltas.total_ratings,
         },
     )
 }
 
-fn compute_deltas(
-    history: &[DailyHistoryItem],
-    last: &DailyHistoryItem,
-) -> (isize, isize, isize, isize, isize, isize, isize, isize) {
+fn compute_deltas(history: &[DailyHistoryItem], last: &DailyHistoryItem) -> StatsDeltas {
     if history.len() < 2 {
-        return (0, 0, 0, 0, 0, 0, 0, 0);
+        return StatsDeltas::default();
     }
     let prev = &history[history.len() - 2];
-    (
-        last.total_words() as isize - prev.total_words() as isize,
-        last.known_words() as isize - prev.known_words() as isize,
-        last.in_progress_words() as isize - prev.in_progress_words() as isize,
-        last.new_words() as isize - prev.new_words() as isize,
-        last.high_difficulty_words() as isize - prev.high_difficulty_words() as isize,
-        last.positive_ratings() as isize - prev.positive_ratings() as isize,
-        last.negative_ratings() as isize - prev.negative_ratings() as isize,
-        last.total_ratings() as isize - prev.total_ratings() as isize,
-    )
+    StatsDeltas {
+        learned: last.known_words() as isize - prev.known_words() as isize,
+        in_progress: last.in_progress_words() as isize - prev.in_progress_words() as isize,
+        new: last.new_words() as isize - prev.new_words() as isize,
+        high_difficulty: last.high_difficulty_words() as isize
+            - prev.high_difficulty_words() as isize,
+        positive: last.positive_ratings() as isize - prev.positive_ratings() as isize,
+        negative: last.negative_ratings() as isize - prev.negative_ratings() as isize,
+        total_ratings: last.total_ratings() as isize - prev.total_ratings() as isize,
+    }
 }

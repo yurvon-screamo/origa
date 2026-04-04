@@ -1,10 +1,12 @@
 pub mod content;
+pub mod content_sync;
 pub mod header;
 pub mod history_modal;
 pub mod home_skeleton;
 pub mod home_stats;
 pub mod jlpt_progress_card;
 pub mod lesson_buttons_card;
+pub mod nav_drawer;
 pub mod stat_card;
 pub mod stats_grid;
 
@@ -12,10 +14,13 @@ pub use content::HomeContent;
 pub use header::HomeHeader;
 pub use history_modal::{HistoryModal, StatMetric};
 pub use home_skeleton::{HomeSkeleton, JlptSkeleton};
-pub use home_stats::{calculate_stats, format_delta, format_number, PrimaryStats, SecondaryStats};
+pub use home_stats::{
+    PrimaryStats, SecondaryStats, calculate_stats, derive_test_id, format_delta, format_number,
+};
 pub use jlpt_progress_card::JlptProgressCard;
 pub use lesson_buttons_card::LessonButtonsCard;
-pub use stat_card::StatCard;
+pub use nav_drawer::NavDrawer;
+pub use stat_card::QuickStatCard;
 pub use stats_grid::StatsGrid;
 
 use crate::store::auth_store::AuthStore;
@@ -36,6 +41,7 @@ pub fn Home() -> impl IntoView {
 
     let current_user: RwSignal<Option<User>> = RwSignal::new(None);
     let is_checking_onboarding = RwSignal::new(true);
+    let drawer_open: RwSignal<bool> = RwSignal::new(false);
     let disposed = StoredValue::new(());
 
     Effect::new({
@@ -82,8 +88,9 @@ pub fn Home() -> impl IntoView {
 
             <Show when=move || !is_checking_onboarding.get()>
                 <div class="flex flex-col pb-16" data-testid="home-content">
-                    <HomeHeader current_user test_id="home-header" />
+                    <HomeHeader current_user drawer_open=drawer_open test_id="home-header" />
                     <HomeContent test_id="home-main" />
+                    <NavDrawer is_open=drawer_open test_id="nav-drawer" />
                 </div>
             </Show>
         </PageLayout>

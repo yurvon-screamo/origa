@@ -5,16 +5,20 @@ use leptos::prelude::*;
 use origa::domain::{LessonCardView, Rating};
 use ulid::Ulid;
 
+pub struct KeyboardActions {
+    pub on_rate: Callback<Rating>,
+    pub on_quiz_select: Callback<usize>,
+    pub on_yesno_select: Callback<bool>,
+    pub on_quiz_dont_know: Callback<()>,
+    pub on_yesno_dont_know: Callback<()>,
+    pub show_answer: Box<dyn Fn()>,
+}
+
 pub fn create_keyboard_handler(
     lesson_ctx: LessonContext,
     is_rating: RwSignal<Option<Ulid>>,
-    on_rate_callback: Callback<Rating>,
-    on_quiz_select: Callback<usize>,
-    on_yesno_select: Callback<bool>,
-    on_quiz_dont_know: Callback<()>,
-    on_yesno_dont_know: Callback<()>,
     lesson_state: RwSignal<LessonState>,
-    show_answer: impl Fn() + 'static,
+    actions: KeyboardActions,
 ) -> impl Fn(KeyboardEvent) {
     move |ev: KeyboardEvent| {
         let key = ev.key();
@@ -32,74 +36,106 @@ pub fn create_keyboard_handler(
 
         if !state.showing_answer {
             if is_quiz {
-                match key.as_str() {
-                    "1" => {
-                        ev.prevent_default();
-                        on_quiz_select.run(0);
-                    },
-                    "2" => {
-                        ev.prevent_default();
-                        on_quiz_select.run(1);
-                    },
-                    "3" => {
-                        ev.prevent_default();
-                        on_quiz_select.run(2);
-                    },
-                    "4" => {
-                        ev.prevent_default();
-                        on_quiz_select.run(3);
-                    },
-                    " " => {
-                        ev.prevent_default();
-                        on_quiz_dont_know.run(());
-                    },
-                    _ => {},
-                }
+                handle_quiz_key(
+                    &ev,
+                    &key,
+                    &actions.on_quiz_select,
+                    &actions.on_quiz_dont_know,
+                );
                 return;
             }
 
             if is_yesno {
-                match key.as_str() {
-                    "1" => {
-                        ev.prevent_default();
-                        on_yesno_select.run(false);
-                    },
-                    "2" => {
-                        ev.prevent_default();
-                        on_yesno_select.run(true);
-                    },
-                    " " => {
-                        ev.prevent_default();
-                        on_yesno_dont_know.run(());
-                    },
-                    _ => {},
-                }
+                handle_yesno_key(
+                    &ev,
+                    &key,
+                    &actions.on_yesno_select,
+                    &actions.on_yesno_dont_know,
+                );
                 return;
             }
         }
 
         if state.showing_answer && !is_quiz && !is_yesno {
-            match key.as_str() {
-                "1" => {
-                    on_rate_callback.run(Rating::Again);
-                },
-                "2" => {
-                    on_rate_callback.run(Rating::Hard);
-                },
-                "3" => {
-                    on_rate_callback.run(Rating::Good);
-                },
-                "4" => {
-                    on_rate_callback.run(Rating::Easy);
-                },
-                _ => {},
-            }
+            handle_rating_key(&key, &actions.on_rate);
             return;
         }
 
         if key == " " && !state.showing_answer && !is_quiz && !is_yesno {
             ev.prevent_default();
-            show_answer();
+            (actions.show_answer)();
         }
+    }
+}
+
+fn handle_quiz_key(
+    ev: &KeyboardEvent,
+    key: &str,
+    on_select: &Callback<usize>,
+    on_dont_know: &Callback<()>,
+) {
+    match key {
+        "1" => {
+            ev.prevent_default();
+            on_select.run(0);
+        },
+        "2" => {
+            ev.prevent_default();
+            on_select.run(1);
+        },
+        "3" => {
+            ev.prevent_default();
+            on_select.run(2);
+        },
+        "4" => {
+            ev.prevent_default();
+            on_select.run(3);
+        },
+        " " => {
+            ev.prevent_default();
+            on_dont_know.run(());
+        },
+        _ => {},
+    }
+}
+
+fn handle_yesno_key(
+    ev: &KeyboardEvent,
+    key: &str,
+    on_select: &Callback<bool>,
+    on_dont_know: &Callback<()>,
+) {
+    match key {
+        "1" => {
+            ev.prevent_default();
+            on_select.run(false);
+        },
+        "2" => {
+            ev.prevent_default();
+            on_select.run(true);
+        },
+        " " => {
+            ev.prevent_default();
+            on_dont_know.run(());
+        },
+        _ => {},
+    }
+}
+
+fn handle_rating_key(key: &str, on_rate: &Callback<Rating>) {
+    match key {
+        "1" => {
+            on_rate.run(Rating::Again);
+        },
+        "2" => {
+            on_rate.run(Rating::Hard);
+        },
+        "3" => {
+            on_rate.run(Rating::Good);
+        },
+        "4" => {
+            on_rate.run(Rating::Easy);
+        },
+        _ => {},
     }
 }

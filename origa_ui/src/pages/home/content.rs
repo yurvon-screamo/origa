@@ -1,25 +1,18 @@
-use super::{calculate_stats, format_delta, format_number, PrimaryStats, SecondaryStats};
+use super::content_sync::run_sync;
 use super::{HistoryModal, HomeSkeleton, JlptProgressCard, JlptSkeleton, StatMetric, StatsGrid};
-use crate::repository::{set_last_sync_time, HybridUserRepository};
-use crate::ui_components::{
-    Text, TextSize, ToastContainer, ToastData, ToastType, TypographyVariant,
-};
+use super::{PrimaryStats, SecondaryStats, calculate_stats};
+use crate::repository::HybridUserRepository;
+use crate::ui_components::{Text, TextSize, ToastContainer, ToastData, TypographyVariant};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::domain::{DailyHistoryItem, JlptProgress};
 use origa::traits::UserRepository;
 
-const SYNC_TOAST_ID: usize = usize::MAX;
-
 #[component]
 pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoView {
     let test_id_val = move || {
         let val = test_id.get();
-        if val.is_empty() {
-            None
-        } else {
-            Some(val)
-        }
+        if val.is_empty() { None } else { Some(val) }
     };
 
     let repository =
@@ -32,61 +25,10 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
     let is_loading = RwSignal::new(true);
     let jlpt_progress = RwSignal::new(JlptProgress::new());
     let toasts: RwSignal<Vec<ToastData>> = RwSignal::new(Vec::new());
-    let repo_for_sync = repository.clone();
     let disposed = StoredValue::new(());
 
-    Effect::new(move |_| {
-        let repo = repo_for_sync.clone();
-
-        toasts.update(|t| {
-            t.push(ToastData {
-                id: SYNC_TOAST_ID,
-                toast_type: ToastType::Info,
-                title: "Синхронизация".to_string(),
-                message: "Синхронизация данных с сервером...".to_string(),
-                duration_ms: None,
-                closable: false,
-            });
-        });
-
-        spawn_local(async move {
-            match repo.merge_current_user().await {
-                Ok(()) => {
-                    if disposed.is_disposed() {
-                        return;
-                    }
-                    toasts.update(|t| t.retain(|toast| toast.id != SYNC_TOAST_ID));
-                    toasts.update(|t| {
-                        t.push(ToastData {
-                            id: t.len(),
-                            toast_type: ToastType::Success,
-                            title: "Синхронизация".to_string(),
-                            message: "Данные успешно синхронизированы".to_string(),
-                            duration_ms: None,
-                            closable: true,
-                        });
-                    });
-                    set_last_sync_time(js_sys::Date::now() as u64 / 1000);
-                },
-                Err(e) => {
-                    if disposed.is_disposed() {
-                        return;
-                    }
-                    toasts.update(|t| t.retain(|toast| toast.id != SYNC_TOAST_ID));
-                    toasts.update(|t| {
-                        t.push(ToastData {
-                            id: t.len(),
-                            toast_type: ToastType::Error,
-                            title: "Ошибка синхронизации".to_string(),
-                            message: e.to_string(),
-                            duration_ms: None,
-                            closable: true,
-                        });
-                    });
-                },
-            }
-        });
-    });
+    let repo_sync = repository.clone();
+    Effect::new(move |_| run_sync(repo_sync.clone(), disposed, toasts));
 
     let repo_for_init = repository.clone();
     Effect::new(move |_| {
@@ -147,8 +89,6 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                     >
                         "Статистика"
                     </Text>
-
-                    <div class="flex items-center gap-2"></div>
                 </div>
 
                 <Show
@@ -159,7 +99,11 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                         jlpt_progress=Signal::derive(move || jlpt_progress.get())
                         test_id=Signal::derive(move || {
                             let val = test_id.get();
-                            if val.is_empty() { "home-jlpt-progress".to_string() } else { format!("{}-jlpt-progress", val) }
+                            if val.is_empty() {
+                                "home-jlpt-progress".to_string()
+                            } else {
+                                format!("{}-jlpt-progress", val)
+                            }
                         })
                     />
                 </Show>
@@ -169,22 +113,8 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                     fallback=move || view! { <HomeSkeleton /> }
                 >
                     <StatsGrid
-                        total_cards=Signal::derive(move || format_number(primary.get().total_cards))
-                        total_cards_delta=Signal::derive(move || format_delta(primary.get().total_cards_delta))
-                        learned=Signal::derive(move || format_number(primary.get().learned))
-                        learned_delta=Signal::derive(move || format_delta(primary.get().learned_delta))
-                        in_progress=Signal::derive(move || format_number(primary.get().in_progress))
-                        in_progress_delta=Signal::derive(move || format_delta(primary.get().in_progress_delta))
-                        new_cards=Signal::derive(move || format_number(primary.get().new))
-                        new_delta=Signal::derive(move || format_delta(primary.get().new_delta))
-                        high_difficulty=Signal::derive(move || format_number(secondary.get().high_difficulty))
-                        high_difficulty_delta=Signal::derive(move || format_delta(secondary.get().high_difficulty_delta))
-                        positive=Signal::derive(move || format_number(secondary.get().positive))
-                        positive_delta=Signal::derive(move || format_delta(secondary.get().positive_delta))
-                        negative=Signal::derive(move || format_number(secondary.get().negative))
-                        negative_delta=Signal::derive(move || format_delta(secondary.get().negative_delta))
-                        total_ratings=Signal::derive(move || format_number(secondary.get().total_ratings))
-                        total_ratings_delta=Signal::derive(move || format_delta(secondary.get().total_ratings_delta))
+                        primary=primary
+                        secondary=secondary
                         open_history=open_history
                         test_id=Signal::derive(move || {
                             let val = test_id.get();
@@ -201,7 +131,11 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                 on_close=close_history
                 test_id=Signal::derive(move || {
                     let val = test_id.get();
-                    if val.is_empty() { "home-history-modal".to_string() } else { format!("{}-history-modal", val) }
+                    if val.is_empty() {
+                        "home-history-modal".to_string()
+                    } else {
+                        format!("{}-history-modal", val)
+                    }
                 })
             />
 
@@ -210,7 +144,11 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                 duration_ms=5000
                 test_id=Signal::derive(move || {
                     let val = test_id.get();
-                    if val.is_empty() { "home-toasts".to_string() } else { format!("{}-toasts", val) }
+                    if val.is_empty() {
+                        "home-toasts".to_string()
+                    } else {
+                        format!("{}-toasts", val)
+                    }
                 })
             />
         </main>

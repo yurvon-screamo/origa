@@ -1,7 +1,7 @@
 use leptos::prelude::*;
 use origa::domain::{CategoryProgress, JlptProgress, LevelProgressDetail};
 
-use crate::ui_components::{Card, DisplayText, Stamp, Tag, TagVariant, Text, TextSize};
+use crate::ui_components::{Card, DisplayText, Tag, TagVariant, Text, TextSize};
 
 #[component]
 pub fn JlptProgressCard(
@@ -26,13 +26,6 @@ pub fn JlptProgressCard(
             class=Signal::derive(|| "p-6 sm:p-8 mb-8".to_string())
             test_id=test_id
         >
-            <div class="flex justify-center mb-6">
-                <Stamp
-                    _text=Signal::derive(move || format!("JLPT {}", current_level.get().code()))
-                    test_id=Signal::derive(move || format!("{}-stamp", test_id.get()))
-                />
-            </div>
-
             <div
                 class="flex items-center gap-4 mb-6"
                 data-testid=move || {
@@ -40,13 +33,22 @@ pub fn JlptProgressCard(
                     if val.is_empty() { None } else { Some(format!("{}-progress", val)) }
                 }
             >
+                <Tag
+                    variant=Signal::from(TagVariant::Default)
+                    test_id=Signal::derive(move || format!("{}-stamp", test_id.get()))
+                >
+                    {move || format!("JLPT {}", current_level.get().code())}
+                </Tag>
                 <div class="flex-1 progress-track">
                     <div
                         class="progress-fill"
                         style=move || format!("width: {:.0}%", overall_pct.get().min(100.0))
                     ></div>
                 </div>
-                <DisplayText test_id=Signal::derive(move || format!("{}-pct", test_id.get()))>
+                <DisplayText
+                    class=Signal::derive(|| "text-sm".to_string())
+                    test_id=Signal::derive(move || format!("{}-pct", test_id.get()))
+                >
                     {move || format!("{:.0}%", overall_pct.get())}
                 </DisplayText>
             </div>
@@ -85,8 +87,8 @@ fn CategoryDetailSection(
                     if val.is_empty() { None } else { Some(format!("{}-toggle", val)) }
                 }
             >
-                <Text size=Signal::from(TextSize::Default)>
-                    <span class="font-semibold">"Детализация по категориям"</span>
+                <Text size=Signal::from(TextSize::Small)>
+                    <span>"Подробнее"</span>
                 </Text>
                 <span class="text-sm transition-transform" class:rotate-180=is_expanded>
                     "▼"
@@ -97,25 +99,25 @@ fn CategoryDetailSection(
                 <div class="mt-4 space-y-4">
                     <Show when=move || kanji.get().is_some()>
                         <CategoryRow
-                            label="漢字 Kanji"
+                            label="漢字 Кандзи"
                             tag_variant=Signal::from(TagVariant::Terracotta)
-                            progress=Signal::derive(move || kanji.get().unwrap())
+                            progress=Signal::derive(move || kanji.get().unwrap_or_default())
                             test_id=Signal::derive(move || format!("{}-kanji", test_id.get()))
                         />
                     </Show>
                     <Show when=move || words.get().is_some()>
                         <CategoryRow
-                            label="言葉 Words"
+                            label="言葉 Слова"
                             tag_variant=Signal::from(TagVariant::Olive)
-                            progress=Signal::derive(move || words.get().unwrap())
+                            progress=Signal::derive(move || words.get().unwrap_or_default())
                             test_id=Signal::derive(move || format!("{}-words", test_id.get()))
                         />
                     </Show>
                     <Show when=move || grammar.get().is_some()>
                         <CategoryRow
-                            label="文法 Grammar"
-                            tag_variant=Signal::from(TagVariant::Default)
-                            progress=Signal::derive(move || grammar.get().unwrap())
+                            label="文法 Грамматика"
+                            tag_variant=Signal::from(TagVariant::Filled)
+                            progress=Signal::derive(move || grammar.get().unwrap_or_default())
                             test_id=Signal::derive(move || format!("{}-grammar", test_id.get()))
                         />
                     </Show>
@@ -143,19 +145,19 @@ fn CategoryRow(
             let val = test_id.get();
             if val.is_empty() { None } else { Some(val) }
         }>
-            <div class="flex items-center gap-3 mb-2">
+            <div class="flex items-center gap-3">
                 <Tag variant=tag_variant test_id=Signal::derive(move || format!("{}-tag", test_id.get()))>
                     {label}
                 </Tag>
-                <Text size=Signal::from(TextSize::Small) class=Signal::derive(|| "ml-auto".to_string())>
+                <div class="flex-1 progress-track">
+                    <div
+                        class="progress-fill"
+                        style=move || format!("width: {:.0}%", pct.get().min(100.0))
+                    ></div>
+                </div>
+                <Text size=Signal::from(TextSize::Small)>
                     {move || stats.get()}
                 </Text>
-            </div>
-            <div class="progress-track">
-                <div
-                    class="progress-fill"
-                    style=move || format!("width: {:.0}%", pct.get().min(100.0))
-                ></div>
             </div>
         </div>
     }

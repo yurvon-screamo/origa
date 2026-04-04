@@ -118,8 +118,8 @@ pub fn HistoryModal(
                                     if val.is_empty() { "history-chart".to_string() } else { format!("{}-chart", val) }
                                 })
                                 data=chart_data
-                                width=380
-                                height=180
+                                width=420
+                                height=200
                             />
                         </div>
                     }.into_any()
