@@ -1,6 +1,7 @@
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{
-    Button, ButtonVariant, Card, FuriganaText, MarkdownText, Text, TextSize, TypographyVariant,
+    AudioButtons, Button, ButtonVariant, Card, FuriganaText, MarkdownText, Text, TextSize,
+    TypographyVariant, get_reading_from_text, is_speech_supported, speak_text,
 };
 use leptos::prelude::*;
 use leptos::task::spawn_local;
@@ -66,7 +67,10 @@ fn build_scoring_cards(
 }
 
 #[component]
-pub fn ScoringStep(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoView {
+pub fn ScoringStep(
+    #[prop(optional, into)] test_id: Signal<String>,
+    #[prop(optional)] mark_all_trigger: RwSignal<u32>,
+) -> impl IntoView {
     let test_id_val = move || {
         let val = test_id.get();
         if val.is_empty() { None } else { Some(val) }
@@ -84,6 +88,9 @@ pub fn ScoringStep(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
     let disposed = StoredValue::new(());
 
     let repo_for_load = repository.clone();
+    let repo_for_know = repository.clone();
+    let repo_for_mark_all = repository.clone();
+
     Effect::new(move |_| {
         let repo = repo_for_load.clone();
         spawn_local(async move {
@@ -132,7 +139,7 @@ pub fn ScoringStep(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
 
         if let Some(scoring_card) = cards.get_untracked().get(idx) {
             let card_id = scoring_card.card_id;
-            let repo = repository.clone();
+            let repo = repo_for_know.clone();
             is_rating.set(true);
 
             spawn_local(async move {
@@ -172,6 +179,65 @@ pub fn ScoringStep(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
     let current_card: Signal<Option<ScoringCard>> =
         Signal::derive(move || cards.get().get(current_index.get()).cloned());
 
+    Effect::new(move |_| {
+        if is_loading.get() || is_completed.get() {
+            return;
+        }
+        if let Some(card) = current_card.get() {
+            if is_speech_supported() {
+                let reading = get_reading_from_text(&card.question);
+                let _ = speak_text(&reading, 1.0);
+            }
+        }
+    });
+
+    {
+        let repo = repo_for_mark_all.clone();
+        let mark_all_disposed = disposed;
+        Effect::new(move |_| {
+            let trigger_val = mark_all_trigger.get();
+            if trigger_val == 0 {
+                return;
+            }
+            if is_loading.get() || is_completed.get() || cards.get().is_empty() {
+                return;
+            }
+
+            let remaining_ids: Vec<Ulid> = cards
+                .get_untracked()
+                .iter()
+                .skip(current_index.get_untracked())
+                .map(|c| c.card_id)
+                .collect();
+
+            if remaining_ids.is_empty() {
+                return;
+            }
+
+            is_rating.set(true);
+
+            let repo = repo.clone();
+            spawn_local(async move {
+                for card_id in &remaining_ids {
+                    let use_case = MarkCardAsKnownUseCase::new(&repo);
+                    if use_case.execute(*card_id).await.is_ok() {
+                        known_count.update(|c| *c += 1);
+                    }
+                    if mark_all_disposed.is_disposed() {
+                        return;
+                    }
+                }
+
+                if mark_all_disposed.is_disposed() {
+                    return;
+                }
+
+                is_rating.set(false);
+                is_completed.set(true);
+            });
+        });
+    }
+
     view! {
         <div class="scoring-step" data-testid=test_id_val>
             <Show when=move || is_loading.get()>
@@ -186,11 +252,11 @@ pub fn ScoringStep(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                 <div>
                     <div class="text-center mb-4">
                         <Text
-                            size=TextSize::Large
-                            variant=TypographyVariant::Primary
-                            test_id=Signal::derive(|| "scoring-step-title".to_string())
+                            size=TextSize::Small
+                            variant=TypographyVariant::Muted
+                            test_id=Signal::derive(|| "scoring-step-hint".to_string())
                         >
-                            "Настроим обучение!"
+                            "Отметьте карточки, которые вы уже знаете"
                         </Text>
                     </div>
 
@@ -212,11 +278,22 @@ pub fn ScoringStep(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                         view! {
                             <Card class=Signal::derive(|| "p-6".to_string())>
                                 <div class="text-center">
-                                    <FuriganaText
-                                        text={card.question.clone()}
-                                        known_kanji=HashSet::new()
-                                        test_id=Signal::derive(|| "scoring-step-question".to_string())
-                                    />
+                                    <div class="relative">
+                                        <div class="text-center">
+                                            <FuriganaText
+                                                text={card.question.clone()}
+                                                known_kanji=HashSet::new()
+                                                test_id=Signal::derive(|| "scoring-step-question".to_string())
+                                            />
+                                        </div>
+                                        <div class="absolute right-0 top-1/2 -translate-y-1/2">
+                                            <AudioButtons
+                                                text=card.question.clone()
+                                                class=Signal::derive(|| "".to_string())
+                                                test_id=Signal::derive(|| "scoring-step-audio".to_string())
+                                            />
+                                        </div>
+                                    </div>
 
                                     <div class="mt-4">
                                         <MarkdownText
@@ -251,16 +328,6 @@ pub fn ScoringStep(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                             </Card>
                         }
                     })}
-
-                    <div class="text-center mt-4">
-                        <Text
-                            size=TextSize::Small
-                            variant=TypographyVariant::Muted
-                            test_id=Signal::derive(|| "scoring-step-hint".to_string())
-                        >
-                            "Отметьте карточки, которые вы уже знаете"
-                        </Text>
-                    </div>
                 </div>
             </Show>
 
