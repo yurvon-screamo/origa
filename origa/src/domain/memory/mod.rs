@@ -61,6 +61,13 @@ impl MemoryHistory {
         &self.reviews
     }
 
+    pub fn easy_review_count(&self) -> usize {
+        self.reviews
+            .iter()
+            .filter(|review| review.rating() == Rating::Easy)
+            .count()
+    }
+
     pub(crate) fn add_review(&mut self, memory_state: MemoryState, review: ReviewLog) {
         self.current_state = Some(memory_state);
         self.reviews.push_back(review);

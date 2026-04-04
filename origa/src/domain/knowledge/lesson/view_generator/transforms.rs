@@ -1,6 +1,6 @@
 use crate::dictionary::grammar::get_rule_by_id;
 use crate::domain::{Card, GrammarRuleCard, VocabularyCard};
-use rand::{Rng, seq::SliceRandom};
+use rand::{seq::SliceRandom, Rng};
 
 use super::super::types::{GrammarInfo, LessonCardView};
 use super::DEFAULT_LANG;

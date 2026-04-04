@@ -25,6 +25,7 @@ const PROB_NEW_KANJI_NORMAL: f32 = 0.33;
 const PROB_NEW_KANJI_QUIZ: f32 = 0.66;
 const PROB_NEW_VOCAB_NORMAL: f32 = 0.50;
 
+const EASY_REVIEWS_FOR_REVERSED: usize = 2;
 const DEFAULT_LANG: NativeLanguage = NativeLanguage::Russian;
 
 pub struct LessonViewGenerator<'a> {
@@ -143,6 +144,8 @@ impl<'a> LessonViewGenerator<'a> {
     ) -> LessonCardView {
         let is_high_difficulty = memory.is_high_difficulty();
         let eligible_for_advanced = memory.is_known_card() || memory.is_in_progress();
+        let eligible_for_reversed =
+            eligible_for_advanced || memory.easy_review_count() > EASY_REVIEWS_FOR_REVERSED;
         let rand_val = rng.random::<f32>();
         if rand_val < PROB_NORMAL_VIEW {
             LessonCardView::Normal(card.clone())
@@ -152,7 +155,7 @@ impl<'a> LessonViewGenerator<'a> {
         } else if !is_high_difficulty && rand_val < PROB_YESNO_VIEW {
             generation::generate_yesno(card.clone(), same_type_cards, &DEFAULT_LANG, rng)
                 .unwrap_or_else(|_| LessonCardView::Normal(card.clone()))
-        } else if eligible_for_advanced && rand_val < PROB_REVERSED_VIEW {
+        } else if eligible_for_reversed && rand_val < PROB_REVERSED_VIEW {
             transforms::apply_reversed(card)
         } else if eligible_for_advanced {
             transforms::apply_grammar_mutated(card, known_grammars, rng)
