@@ -270,8 +270,14 @@ testWithFreshUser.describe("Onboarding Flow - N4 with ~50% Progress", () => {
             fullPage: true
         });
 
-        // Click "Завершить" to finish onboarding and navigate to home
-        await page.getByTestId("onboarding-finish").click();
+        // Click "Знаю все" to mark all cards as known
+        await page.getByTestId("onboarding-mark-all-known").click();
+
+        // Wait for scoring completion message
+        await expect(page.getByTestId("scoring-step-complete")).toBeVisible({ timeout: 60_000 });
+
+        // Click "Пропустить" to finish onboarding and navigate to home
+        await page.getByTestId("onboarding-skip-scoring").click();
 
         // Wait for redirect to home (can take time for import)
         await page.waitForURL(/\/home$/, { timeout: 30_000 });
