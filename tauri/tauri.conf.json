@@ -44,9 +44,7 @@
 			"desktop": {
 				"schemes": ["origa"]
 			},
-			"mobile": {
-				"schemes": ["origa"]
-			}
+			"mobile": ["origa"]
 		},
 		"updater": {
 			"endpoints": [
