@@ -452,6 +452,14 @@ impl KnowledgeSet {
                 Rating::Hard | Rating::Again => (pos, neg + 1, tot + 1),
             });
 
+        let preserved_new_cards = self
+            .lesson_history
+            .iter()
+            .rev()
+            .find(|item| item.timestamp().date_naive() == today)
+            .map(|item| item.new_cards_studied_today())
+            .unwrap_or(0);
+
         if let Some(existing_item) = self
             .lesson_history
             .iter_mut()
@@ -468,7 +476,7 @@ impl KnowledgeSet {
                 positive,
                 negative,
                 total,
-                0,
+                preserved_new_cards,
             );
         } else {
             let mut item = DailyHistoryItem::new();
@@ -483,7 +491,7 @@ impl KnowledgeSet {
                 positive,
                 negative,
                 total,
-                0,
+                preserved_new_cards,
             );
             self.lesson_history.push(item);
         }
@@ -887,5 +895,77 @@ mod tests {
 
         let history_item = &local.lesson_history()[0];
         assert_eq!(history_item.total_words(), 300);
+    }
+
+    #[test]
+    fn recalculate_daily_stats_preserves_new_cards_on_create_card() {
+        let mut knowledge_set = KnowledgeSet::new();
+
+        let mut studied_ids = Vec::new();
+        for i in 0..5 {
+            let card = create_vocab_card(&format!("word{i}"));
+            let study_card = knowledge_set.create_card(card).unwrap();
+            studied_ids.push(*study_card.card_id());
+        }
+
+        for id in studied_ids {
+            knowledge_set
+                .rate_card(id, Rating::Good, RateMode::StandardLesson)
+                .unwrap();
+        }
+
+        assert_eq!(knowledge_set.new_cards_studied_today(), 5);
+
+        knowledge_set
+            .create_card(create_vocab_card("extra"))
+            .unwrap();
+
+        assert_eq!(
+            knowledge_set.new_cards_studied_today(),
+            5,
+            "new_cards_studied_today should be preserved after create_card"
+        );
+
+        for i in 0..10 {
+            knowledge_set
+                .create_card(create_vocab_card(&format!("new{i}")))
+                .unwrap();
+        }
+
+        let lesson_cards = knowledge_set.cards_to_lesson(10);
+        let new_in_lesson = lesson_cards
+            .iter()
+            .filter(|(id, _)| knowledge_set.get_card(**id).unwrap().memory().is_new())
+            .count();
+        assert!(
+            new_in_lesson <= 5,
+            "Expected at most 5 new cards in lesson, got {new_in_lesson}"
+        );
+    }
+
+    #[test]
+    fn recalculate_daily_stats_preserves_new_cards_on_delete_card() {
+        let mut knowledge_set = KnowledgeSet::new();
+
+        let card1 = knowledge_set.create_card(create_vocab_card("a")).unwrap();
+        let card2 = knowledge_set.create_card(create_vocab_card("b")).unwrap();
+        knowledge_set.create_card(create_vocab_card("c")).unwrap();
+
+        knowledge_set
+            .rate_card(*card1.card_id(), Rating::Good, RateMode::StandardLesson)
+            .unwrap();
+        knowledge_set
+            .rate_card(*card2.card_id(), Rating::Good, RateMode::StandardLesson)
+            .unwrap();
+
+        assert_eq!(knowledge_set.new_cards_studied_today(), 2);
+
+        knowledge_set.delete_card(*card1.card_id()).unwrap();
+
+        assert_eq!(
+            knowledge_set.new_cards_studied_today(),
+            2,
+            "new_cards_studied_today should be preserved after delete_card"
+        );
     }
 }
