@@ -64,7 +64,18 @@ testWithFreshUser.describe("Onboarding Flow - N4 with ~50% Progress", () => {
         // Click "Далее" to proceed
         await page.getByTestId("onboarding-next").click();
 
-        // Verify we moved to next step
+        // Verify we moved to Load step
+        await expect(page.getByTestId("onboarding-load-step")).toBeVisible();
+
+        // ========================================
+        // Step 1.5: Load - select daily load
+        // ========================================
+        await expect(page.getByTestId("load-step-title")).toBeVisible();
+
+        // Proceed with default (medium) load
+        await page.getByTestId("onboarding-next").click();
+
+        // Verify we moved to JLPT step
         await expect(page.getByTestId("onboarding-jlpt-step")).toBeVisible();
 
         // ========================================
@@ -320,7 +331,11 @@ testWithFreshUser.describe("Onboarding Flow - N4 with ~50% Progress", () => {
 
         await expect(page.getByTestId("onboarding-spinner")).not.toBeVisible({ timeout: 10000 });
 
-        // Intro → JLPT
+        // Intro → Load
+        await page.getByTestId("onboarding-next").click();
+        await expect(page.getByTestId("onboarding-load-step")).toBeVisible();
+
+        // Load → JLPT
         await page.getByTestId("onboarding-next").click();
         await expect(page.getByTestId("onboarding-jlpt-step")).toBeVisible();
 
@@ -332,6 +347,10 @@ testWithFreshUser.describe("Onboarding Flow - N4 with ~50% Progress", () => {
         // Back to JLPT
         await page.getByTestId("onboarding-prev").click();
         await expect(page.getByTestId("onboarding-jlpt-step")).toBeVisible();
+
+        // Back to Load
+        await page.getByTestId("onboarding-prev").click();
+        await expect(page.getByTestId("onboarding-load-step")).toBeVisible();
 
         // Back to Intro
         await page.getByTestId("onboarding-prev").click();
