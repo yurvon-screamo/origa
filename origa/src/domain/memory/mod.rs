@@ -68,6 +68,13 @@ impl MemoryHistory {
             .count()
     }
 
+    pub fn good_review_count(&self) -> usize {
+        self.reviews
+            .iter()
+            .filter(|review| review.rating() == Rating::Good)
+            .count()
+    }
+
     pub(crate) fn add_review(&mut self, memory_state: MemoryState, review: ReviewLog) {
         self.current_state = Some(memory_state);
         self.reviews.push_back(review);
@@ -209,5 +216,32 @@ mod tests {
             history.add_review(state.clone(), make_review(Rating::Easy));
         }
         assert_eq!(history.easy_review_count(), 5);
+    }
+
+    #[test]
+    fn good_review_count_empty_history() {
+        let history = MemoryHistory::new();
+        assert_eq!(history.good_review_count(), 0);
+    }
+
+    #[test]
+    fn good_review_count_no_good_reviews() {
+        let mut history = MemoryHistory::new();
+        let state = make_state();
+        history.add_review(state.clone(), make_review(Rating::Easy));
+        history.add_review(state.clone(), make_review(Rating::Hard));
+        assert_eq!(history.good_review_count(), 0);
+    }
+
+    #[test]
+    fn good_review_count_mixed_reviews() {
+        let mut history = MemoryHistory::new();
+        let state = make_state();
+        history.add_review(state.clone(), make_review(Rating::Good));
+        history.add_review(state.clone(), make_review(Rating::Easy));
+        history.add_review(state.clone(), make_review(Rating::Good));
+        history.add_review(state.clone(), make_review(Rating::Hard));
+        history.add_review(state.clone(), make_review(Rating::Good));
+        assert_eq!(history.good_review_count(), 3);
     }
 }
