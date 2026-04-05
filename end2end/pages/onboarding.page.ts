@@ -19,6 +19,7 @@ export class OnboardingPage extends BasePage {
 
     // Steps
     readonly introStep: Locator;
+    readonly loadStep: Locator;
     readonly jlptStep: Locator;
     readonly appsStep: Locator;
     readonly progressStep: Locator;
@@ -60,6 +61,7 @@ export class OnboardingPage extends BasePage {
 
         // Steps (actual test IDs from mod.rs)
         this.introStep = page.getByTestId("onboarding-intro-step");
+        this.loadStep = page.getByTestId("onboarding-load-step");
         this.jlptStep = page.getByTestId("onboarding-jlpt-step");
         this.appsStep = page.getByTestId("onboarding-apps-step");
         this.progressStep = page.getByTestId("onboarding-progress-step");
