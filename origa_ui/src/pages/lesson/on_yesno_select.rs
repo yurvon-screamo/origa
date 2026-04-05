@@ -19,8 +19,8 @@ pub fn create_on_yesno_select(
         let card_id = state.card_ids.get(state.current_index);
 
         if let Some(card_id) = card_id
-            && let Some(card_view) = state.cards.get(card_id)
-            && let LessonCardView::YesNo(yesno) = card_view
+            && let Some(lesson_card) = state.cards.get(card_id)
+            && let LessonCardView::YesNo(yesno) = lesson_card.view()
         {
             let is_correct = yesno.check_answer(answer);
             let rating = if is_correct {

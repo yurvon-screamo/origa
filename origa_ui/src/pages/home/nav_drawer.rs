@@ -14,7 +14,6 @@ pub fn NavDrawer(
         <Drawer is_open=is_open title=title test_id=test_id>
             <div class="flex flex-col gap-2">
                 <NavItem href="/lesson" label="Урок" japanese="📚" test_id=super::derive_test_id(nav_test_id, "lesson") />
-                <NavItem href="/lesson?mode=fixation" label="Сложные" japanese="🔄" test_id=super::derive_test_id(nav_test_id, "fixation") />
                 <NavItem href="/words" label="Слова" japanese="言葉" test_id=super::derive_test_id(nav_test_id, "words") />
                 <NavItem href="/grammar" label="Грамматика" japanese="文法" test_id=super::derive_test_id(nav_test_id, "grammar") />
                 <NavItem href="/kanji" label="Кандзи" japanese="漢字" test_id=super::derive_test_id(nav_test_id, "kanji") />

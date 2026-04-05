@@ -1,19 +1,12 @@
 use crate::repository::HybridUserRepository;
 use leptos::prelude::*;
-use origa::domain::{LessonCardView, NativeLanguage};
+use origa::domain::{LessonCard, NativeLanguage};
 use std::collections::{HashMap, HashSet};
 use ulid::Ulid;
 
-#[derive(Clone, Copy, PartialEq, Default, Debug)]
-pub enum LessonMode {
-    #[default]
-    Lesson,
-    Fixation,
-}
-
 #[derive(Clone, PartialEq, Default)]
 pub struct LessonState {
-    pub cards: HashMap<Ulid, LessonCardView>,
+    pub cards: HashMap<Ulid, LessonCard>,
     pub card_ids: Vec<Ulid>,
     pub current_index: usize,
     pub showing_answer: bool,

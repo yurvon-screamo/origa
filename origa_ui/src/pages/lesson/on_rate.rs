@@ -25,21 +25,30 @@ pub fn create_on_rate_callback(
             let is_completed = lesson_ctx.is_completed;
             let is_rating = is_rating;
 
+            let rate_mode = state
+                .cards
+                .get(&card_id)
+                .map(|c| {
+                    if c.is_short_term() {
+                        RateMode::ShortTerm
+                    } else {
+                        RateMode::StandardLesson
+                    }
+                })
+                .unwrap_or(RateMode::StandardLesson);
+
             spawn_local(async move {
                 let use_case = RateCardUseCase::new(&repo);
 
-                if let Err(e) = use_case
-                    .execute(card_id, RateMode::StandardLesson, rating)
-                    .await
-                {
+                if let Err(e) = use_case.execute(card_id, rate_mode, rating).await {
                     warn!(error = ?e, "Failed to rate card");
                 }
 
                 let state_snapshot = lesson_state.get_untracked();
 
-                if let Some(card_view) = state_snapshot.cards.get(&card_id)
+                if let Some(lesson_card) = state_snapshot.cards.get(&card_id)
                     && let origa::domain::LessonCardView::GrammarMutated { grammar_info, .. } =
-                        card_view
+                        lesson_card.view()
                     && let Some(grammar_rule_id) = grammar_info.rule_id()
                 {
                     let grammar_use_case = RateCardUseCase::new(&repo);

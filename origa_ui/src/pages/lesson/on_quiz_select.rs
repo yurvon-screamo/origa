@@ -15,13 +15,13 @@ pub fn create_on_quiz_select(
             state.showing_answer = true;
         });
 
-        if let Some(card_view) = lesson_state.get().cards.get(
+        if let Some(lesson_card) = lesson_state.get().cards.get(
             lesson_state
                 .get()
                 .card_ids
                 .get(lesson_state.get().current_index)
                 .unwrap(),
-        ) && let LessonCardView::Quiz(quiz) = card_view
+        ) && let LessonCardView::Quiz(quiz) = lesson_card.view()
         {
             let is_correct = quiz.check_answer(option_index);
             let rating = if is_correct {

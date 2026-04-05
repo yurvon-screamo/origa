@@ -144,3 +144,38 @@ impl LessonCardView {
         }
     }
 }
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct LessonCard {
+    view: LessonCardView,
+    is_short_term: bool,
+}
+
+impl LessonCard {
+    pub fn new(view: LessonCardView, is_short_term: bool) -> Self {
+        Self {
+            view,
+            is_short_term,
+        }
+    }
+
+    pub fn view(&self) -> &LessonCardView {
+        &self.view
+    }
+
+    pub fn into_view(self) -> LessonCardView {
+        self.view
+    }
+
+    pub fn is_short_term(&self) -> bool {
+        self.is_short_term
+    }
+
+    pub fn card(&self) -> &Card {
+        self.view.card()
+    }
+
+    pub fn grammar_info(&self) -> Option<&GrammarInfo> {
+        self.view.grammar_info()
+    }
+}

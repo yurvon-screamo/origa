@@ -22,7 +22,8 @@ pub struct NextReview {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum RateMode {
-    FixationLesson,
+    #[serde(rename = "FixationLesson")] // обратная совместимость с сериализованными данными
+    ShortTerm,
     StandardLesson,
 }
 
@@ -105,7 +106,7 @@ pub fn rate_memory(
     };
 
     let scheduling_info = match mode {
-        RateMode::FixationLesson => srs_service.short_term_fsrs.next(card, now, fsrs_rating),
+        RateMode::ShortTerm => srs_service.short_term_fsrs.next(card, now, fsrs_rating),
         RateMode::StandardLesson => srs_service.long_term_fsrs.next(card, now, fsrs_rating),
     };
 

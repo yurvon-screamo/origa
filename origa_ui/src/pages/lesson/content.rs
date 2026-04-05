@@ -2,16 +2,15 @@ use super::complete_screen::LessonCompleteScreen;
 use super::header::LessonHeader;
 use super::lesson_card_container::LessonCardContainer;
 use super::lesson_progress_view::LessonProgressView;
-use super::lesson_state::{LessonContext, LessonMode, LessonState};
+use super::lesson_state::{LessonContext, LessonState};
 use crate::repository::HybridUserRepository;
 use crate::store::auth_store::AuthStore;
 use crate::ui_components::{Spinner, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use leptos_router::hooks::use_query_map;
 use origa::domain::NativeLanguage;
 use origa::traits::UserRepository;
-use origa::use_cases::{SelectCardsToFixationUseCase, SelectCardsToLessonUseCase};
+use origa::use_cases::SelectCardsToLessonUseCase;
 use std::collections::HashSet;
 use ulid::Ulid;
 
@@ -20,12 +19,6 @@ pub fn LessonContent() -> impl IntoView {
     let repository =
         use_context::<HybridUserRepository>().expect("repository context not provided");
     let auth_store = use_context::<AuthStore>().expect("AuthStore not provided");
-
-    let query = use_query_map();
-    let mode = match query.read_untracked().get("mode").as_deref() {
-        Some("fixation") => LessonMode::Fixation,
-        _ => LessonMode::Lesson,
-    };
 
     let lesson_state = RwSignal::new(LessonState::default());
     let is_loading = RwSignal::new(true);
@@ -81,26 +74,14 @@ pub fn LessonContent() -> impl IntoView {
         }
 
         let repo = repository.clone();
-        let current_mode = mode;
         spawn_local(async move {
             if is_disposed.is_disposed() {
                 return;
             }
             is_loading.set(true);
 
-            let cards: Result<
-                std::collections::HashMap<ulid::Ulid, origa::domain::LessonCardView>,
-                _,
-            > = match current_mode {
-                LessonMode::Lesson => {
-                    let use_case = SelectCardsToLessonUseCase::new(&repo);
-                    use_case.execute().await
-                },
-                LessonMode::Fixation => {
-                    let use_case = SelectCardsToFixationUseCase::new(&repo);
-                    use_case.execute().await
-                },
-            };
+            let use_case = SelectCardsToLessonUseCase::new(&repo);
+            let cards = use_case.execute().await;
 
             tracing::info!("Cards len: {}", cards.iter().count());
 
