@@ -60,7 +60,6 @@ pub fn run() {
 
             log::info!("[deep-link] listener for 'deep-link://new-url' registered");
 
-            #[cfg(desktop)]
             {
                 let handle_for_startup = app.handle().clone();
                 match app.deep_link().get_current() {

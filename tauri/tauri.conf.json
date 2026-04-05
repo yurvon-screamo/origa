@@ -43,6 +43,9 @@
 		"deep-link": {
 			"desktop": {
 				"schemes": ["origa"]
+			},
+			"mobile": {
+				"schemes": ["origa"]
 			}
 		},
 		"updater": {
