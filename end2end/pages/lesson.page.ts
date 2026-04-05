@@ -58,10 +58,6 @@ export class LessonPage extends BasePage {
         await this.navigate("/lesson");
     }
 
-    async gotoFixation(): Promise<void> {
-        await this.navigate("/lesson?mode=fixation");
-    }
-
     async expectLessonVisible(): Promise<void> {
         await expect(this.lessonPage).toBeVisible();
         await expect(this.lessonCard).toBeVisible();

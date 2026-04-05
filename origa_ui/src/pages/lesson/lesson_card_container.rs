@@ -1,5 +1,5 @@
 use super::keyboard_handler::{KeyboardActions, create_keyboard_handler};
-use super::lesson_card::LessonCard;
+use super::lesson_card::LessonCard as LessonCardComponent;
 use super::lesson_state::LessonContext;
 use super::on_quiz_select::create_on_quiz_dont_know;
 use super::on_quiz_select::create_on_quiz_select;
@@ -11,7 +11,7 @@ use super::rating_buttons_view::RatingButtonsView;
 use super::writing_card::WritingCard;
 use super::yesno_card_view::YesNoCardView;
 use leptos::prelude::*;
-use origa::domain::{GrammarInfo, LessonCardView, NativeLanguage, Rating};
+use origa::domain::{GrammarInfo, LessonCard, LessonCardView, NativeLanguage, Rating};
 use std::collections::HashSet;
 use ulid::Ulid;
 
@@ -52,7 +52,7 @@ pub fn LessonCardContainer() -> impl IntoView {
         },
     );
 
-    let current_card_view = Memo::new(move |_| {
+    let current_lesson_card = Memo::new(move |_| {
         let state = lesson_state.get();
         state
             .card_ids
@@ -62,23 +62,23 @@ pub fn LessonCardContainer() -> impl IntoView {
     });
 
     let is_quiz_mode = Memo::new(move |_| {
-        current_card_view
+        current_lesson_card
             .get()
-            .map(|view| matches!(view, LessonCardView::Quiz(_)))
+            .map(|c| matches!(c.view(), LessonCardView::Quiz(_)))
             .unwrap_or(false)
     });
 
     let is_yesno_mode = Memo::new(move |_| {
-        current_card_view
+        current_lesson_card
             .get()
-            .map(|view| matches!(view, LessonCardView::YesNo(_)))
+            .map(|c| matches!(c.view(), LessonCardView::YesNo(_)))
             .unwrap_or(false)
     });
 
     let is_writing_mode = Memo::new(move |_| {
-        current_card_view
+        current_lesson_card
             .get()
-            .map(|view| matches!(view, LessonCardView::Writing(_)))
+            .map(|c| matches!(c.view(), LessonCardView::Writing(_)))
             .unwrap_or(false)
     });
 
@@ -92,12 +92,12 @@ pub fn LessonCardContainer() -> impl IntoView {
 
     view! {
         <div class="outline-none" tabindex="0" node_ref=container_ref on:keydown=handle_keydown>
-            <Show when=move || current_card_view.get().is_some()>
+            <Show when=move || current_lesson_card.get().is_some()>
                 <Show when=move || !is_quiz_mode.get() && !is_writing_mode.get() && !is_yesno_mode.get()>
                     {move || {
-                        current_card_view.get().map(|card_view| {
+                        current_lesson_card.get().map(|lesson_card| {
                             render_lesson_card(
-                                card_view,
+                                lesson_card,
                                 lesson_state.get().showing_answer,
                                 Callback::new(move |_| show_answer()),
                                 on_rate_callback,
@@ -111,8 +111,8 @@ pub fn LessonCardContainer() -> impl IntoView {
 
                 <Show when=move || is_quiz_mode.get()>
                     {move || {
-                        current_card_view.get().and_then(|card_view| {
-                            if let LessonCardView::Quiz(quiz) = card_view {
+                        current_lesson_card.get().and_then(|lesson_card| {
+                            if let LessonCardView::Quiz(quiz) = lesson_card.into_view() {
                                 let state = lesson_state.get();
                                 let selected_option = state.selected_quiz_option;
                                 let show_result = state.showing_answer;
@@ -138,8 +138,8 @@ pub fn LessonCardContainer() -> impl IntoView {
 
                 <Show when=move || is_writing_mode.get()>
                     {move || {
-                        current_card_view.get().and_then(|card_view| {
-                            if let LessonCardView::Writing(card) = card_view {
+                        current_lesson_card.get().and_then(|lesson_card| {
+                            if let LessonCardView::Writing(card) = lesson_card.into_view() {
                                 Some(view! {
                                     <WritingCard
                                         card=card
@@ -159,8 +159,8 @@ pub fn LessonCardContainer() -> impl IntoView {
 
                 <Show when=move || is_yesno_mode.get()>
                     {move || {
-                        current_card_view.get().and_then(|card_view| {
-                            if let LessonCardView::YesNo(yesno) = card_view {
+                        current_lesson_card.get().and_then(|lesson_card| {
+                            if let LessonCardView::YesNo(yesno) = lesson_card.into_view() {
                                 let state = lesson_state.get();
                                 let selected_answer = state.selected_yesno_answer;
                                 let show_result = state.showing_answer;
@@ -195,7 +195,7 @@ struct LessonCardParams {
 }
 
 fn render_lesson_card(
-    card_view: LessonCardView,
+    lesson_card: LessonCard,
     show_answer: bool,
     on_show_answer: Callback<()>,
     on_rate_callback: Callback<Rating>,
@@ -203,7 +203,7 @@ fn render_lesson_card(
     known_kanji: RwSignal<HashSet<String>>,
     native_language: RwSignal<NativeLanguage>,
 ) -> impl IntoView {
-    let params = match card_view {
+    let params = match lesson_card.into_view() {
         LessonCardView::Normal(card) => LessonCardParams {
             card,
             is_reversed: false,
@@ -225,7 +225,7 @@ fn render_lesson_card(
     };
 
     view! {
-        <LessonCard
+        <LessonCardComponent
             card=params.card
             is_reversed=params.is_reversed
             show_answer=show_answer

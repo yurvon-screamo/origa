@@ -11,7 +11,7 @@ pub use daily_history::DailyHistoryItem;
 pub use grammar::GrammarRuleCard;
 pub use kanji::{ExampleKanjiWord, KanjiCard};
 pub use lesson::{
-    GrammarInfo, LessonCardView, LessonViewGenerator, QuizCard, QuizOption, YesNoCard,
+    GrammarInfo, LessonCard, LessonCardView, LessonViewGenerator, QuizCard, QuizOption, YesNoCard,
 };
 
 pub use vocabulary::VocabularyCard;
@@ -23,11 +23,10 @@ use crate::domain::{
     srs::{NextReview, rate_memory},
 };
 use chrono::Utc;
-use rand::seq::SliceRandom;
 use serde::{Deserialize, Serialize};
 use ulid::Ulid;
 
-const HARD_CARDS_LIMIT: usize = 15;
+const MIN_LESSON_SIZE: usize = 15;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct KnowledgeSet {
@@ -224,29 +223,7 @@ impl KnowledgeSet {
         Ok(())
     }
 
-    pub fn cards_to_fixation(&self) -> HashMap<Ulid, LessonCardView> {
-        let mut cards = self
-            .study_cards
-            .iter()
-            .filter(|(_, card)| card.memory().is_high_difficulty())
-            .collect::<Vec<_>>();
-
-        cards.sort_by_key(|(_, card)| card.memory().next_review_date());
-        cards.reverse();
-
-        cards.truncate(HARD_CARDS_LIMIT);
-
-        let generator = LessonViewGenerator::new(self);
-        cards
-            .iter()
-            .map(|(card_id, study_card)| {
-                let view = generator.apply_view(study_card, study_card.is_new(), &mut rand::rng());
-                (**card_id, view)
-            })
-            .collect()
-    }
-
-    pub fn cards_to_lesson(&self, daily_new_limit: usize) -> HashMap<Ulid, LessonCardView> {
+    pub fn cards_to_lesson(&self, daily_new_limit: usize) -> HashMap<Ulid, LessonCard> {
         let mut all_cards = self.study_cards.iter().collect::<Vec<_>>();
         all_cards.sort_by_key(|(_, card)| card.memory().next_review_date());
 
@@ -255,7 +232,7 @@ impl KnowledgeSet {
             .filter(|(_, card)| card.is_favorite())
             .collect();
 
-        let mut priority_cards: Vec<_> = all_cards
+        let mut selected_cards: Vec<_> = all_cards
             .iter()
             .filter(|(_, card)| card.memory().is_due() && card.memory().is_high_difficulty())
             .collect();
@@ -263,58 +240,71 @@ impl KnowledgeSet {
         let new_cards_studied_today = self.new_cards_studied_today();
         let remaining_new = daily_new_limit.saturating_sub(new_cards_studied_today);
 
-        // Если remaining_new > 0, но priority_cards уже заняли весь лимит —
-        // новые карты не добавляются, fixation fallback тоже не нужен
-        if remaining_new > 0 && priority_cards.len() < remaining_new {
-            let allowed_new = remaining_new.saturating_sub(priority_cards.len());
+        if remaining_new > 0 && selected_cards.len() < remaining_new {
+            let allowed_new = remaining_new.saturating_sub(selected_cards.len());
             let new_cards = all_cards
                 .iter()
                 .filter(|(_, card)| card.memory().is_new())
                 .take(allowed_new);
-
-            priority_cards.extend(new_cards);
-        } else if remaining_new == 0 {
-            let selected_ids: HashSet<_> = priority_cards.iter().map(|(id, _)| **id).collect();
-
-            let mut fixation_fallback: Vec<_> = all_cards
-                .iter()
-                .filter(|(id, card)| {
-                    card.memory().is_high_difficulty() && !selected_ids.contains(id)
-                })
-                .collect();
-
-            fixation_fallback.sort_by_key(|(_, card)| card.memory().next_review_date());
-            fixation_fallback.truncate(daily_new_limit);
-            priority_cards.extend(fixation_fallback);
+            selected_cards.extend(new_cards);
         }
 
         let known_cards = all_cards.iter().filter(|(_, card)| {
             card.memory().is_due()
                 && (card.memory().is_in_progress() || card.memory().is_known_card())
         });
+        selected_cards.extend(known_cards);
 
-        priority_cards.extend(known_cards);
-        priority_cards.shuffle(&mut rand::rng());
+        let selected_ids: HashSet<_> = selected_cards.iter().map(|(id, _)| **id).collect();
+        let favorite_ids: HashSet<_> = favorite_cards.iter().map(|(id, _)| **id).collect();
+        let all_selected_ids: HashSet<_> = selected_ids.union(&favorite_ids).copied().collect();
+
+        let total_normal = all_selected_ids.len();
+        let mut padding_cards = Vec::new();
+        if total_normal < MIN_LESSON_SIZE {
+            let needed = MIN_LESSON_SIZE.saturating_sub(total_normal);
+            let mut candidates: Vec<_> = all_cards
+                .iter()
+                .filter(|(id, card)| {
+                    !all_selected_ids.contains(id) && card.memory().is_high_difficulty()
+                })
+                .collect();
+            candidates.sort_by_key(|(_, card)| card.memory().next_review_date());
+            padding_cards = candidates.into_iter().take(needed).collect();
+        }
+
+        let padding_ids: HashSet<_> = padding_cards.iter().map(|(id, _)| **id).collect();
 
         let generator = LessonViewGenerator::new(self);
 
-        let mut result: Vec<_> = favorite_cards
+        let mut result: Vec<(Ulid, LessonCard)> = favorite_cards
             .iter()
             .map(|(card_id, study_card)| {
                 let view = generator.apply_view(study_card, study_card.is_new(), &mut rand::rng());
-                (**card_id, view)
+                let is_short_term = padding_ids.contains(card_id);
+                (**card_id, LessonCard::new(view, is_short_term))
             })
             .collect();
 
-        let priority_shuffled: Vec<_> = priority_cards
+        let selected_lessons: Vec<_> = selected_cards
             .iter()
             .map(|(card_id, study_card)| {
                 let view = generator.apply_view(study_card, study_card.is_new(), &mut rand::rng());
-                (**card_id, view)
+                let is_short_term = padding_ids.contains(card_id);
+                (**card_id, LessonCard::new(view, is_short_term))
             })
             .collect();
 
-        result.extend(priority_shuffled);
+        let padding_lessons: Vec<_> = padding_cards
+            .iter()
+            .map(|(card_id, study_card)| {
+                let view = generator.apply_view(study_card, study_card.is_new(), &mut rand::rng());
+                (**card_id, LessonCard::new(view, true))
+            })
+            .collect();
+
+        result.extend(selected_lessons);
+        result.extend(padding_lessons);
         result.into_iter().collect()
     }
 
@@ -533,7 +523,7 @@ mod tests {
     }
 
     #[test]
-    fn cards_to_fixation_filters_high_difficulty() {
+    fn cards_to_lesson_includes_high_difficulty_cards() {
         let mut knowledge_set = KnowledgeSet::new();
 
         let card1 = create_vocab_card("猫");
@@ -543,17 +533,16 @@ mod tests {
         let study2 = knowledge_set.create_card(card2).unwrap();
 
         knowledge_set
-            .rate_card(*study1.card_id(), Rating::Again, RateMode::FixationLesson)
+            .rate_card(*study1.card_id(), Rating::Again, RateMode::ShortTerm)
             .unwrap();
 
         knowledge_set
             .rate_card(*study2.card_id(), Rating::Easy, RateMode::StandardLesson)
             .unwrap();
 
-        let result = knowledge_set.cards_to_fixation();
+        let result = knowledge_set.cards_to_lesson(10);
 
         assert!(result.contains_key(study1.card_id()));
-        assert!(!result.contains_key(study2.card_id()));
     }
 
     #[test]

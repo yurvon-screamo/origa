@@ -1,4 +1,4 @@
-use crate::domain::LessonCardView;
+use crate::domain::LessonCard;
 use crate::domain::OrigaError;
 use crate::traits::UserRepository;
 use std::collections::HashMap;
@@ -15,7 +15,7 @@ impl<'a, R: UserRepository> SelectCardsToLessonUseCase<'a, R> {
         Self { repository }
     }
 
-    pub async fn execute(&self) -> Result<HashMap<Ulid, LessonCardView>, OrigaError> {
+    pub async fn execute(&self) -> Result<HashMap<Ulid, LessonCard>, OrigaError> {
         let user = self
             .repository
             .get_current_user()

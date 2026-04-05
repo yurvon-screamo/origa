@@ -21,8 +21,6 @@ export class HomePage extends BasePage {
     readonly statsGrid: Locator;
     readonly lessonButtons: Locator;
     readonly lessonButton: Locator;
-    readonly fixationButton: Locator;
-
     // Stat cards
     readonly statLearned: Locator;
     readonly statInProgress: Locator;
@@ -69,7 +67,6 @@ export class HomePage extends BasePage {
         this.statsGrid = page.getByTestId("home-stats-grid");
         this.lessonButtons = page.getByTestId("lesson-buttons");
         this.lessonButton = page.getByTestId("lesson-buttons-lesson");
-        this.fixationButton = page.getByTestId("lesson-buttons-fixation");
 
         // Stat cards
         this.statLearned = page.getByTestId("stat-learned");
@@ -120,10 +117,6 @@ export class HomePage extends BasePage {
 
     async startLesson(): Promise<void> {
         await this.lessonButton.click();
-    }
-
-    async startFixation(): Promise<void> {
-        await this.fixationButton.click();
     }
 
     async openHistoryForStat(statTestId: string): Promise<void> {
