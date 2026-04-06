@@ -3,9 +3,6 @@ use std::sync::OnceLock;
 pub struct Urls {
     pub base: &'static str,
     pub dictionary: &'static str,
-    pub vocabulary: &'static str,
-    pub kanji: &'static str,
-    pub grammar: &'static str,
     pub ndlocr_base: &'static str,
 }
 
@@ -17,9 +14,6 @@ pub fn urls() -> &'static Urls {
         Urls {
             base,
             dictionary: "/public/dictionaries/unidic/cache/dictionary-data",
-            vocabulary: "/public/dictionary/vocabulary/cache/vocabulary-data",
-            kanji: "/public/dictionary/kanji/cache/kanji-data",
-            grammar: "/public/grammar/cache/grammar-data",
             ndlocr_base: "/public/ndlocr",
         }
     })

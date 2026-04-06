@@ -7,7 +7,7 @@ use crate::domain::{JapaneseLevel, NativeLanguage, OrigaError};
 
 pub static KANJI_DICTIONARY: OnceLock<KanjiDatabase> = OnceLock::new();
 
-#[derive(Clone, Serialize, Deserialize, rkyv::Archive, rkyv::Serialize, rkyv::Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct KanjiData {
     pub kanji_json: String,
 }
@@ -20,30 +20,6 @@ pub fn init_kanji(data: KanjiData) -> Result<(), OrigaError> {
     let db = KanjiDatabase::from_json(&data.kanji_json)?;
     KANJI_DICTIONARY.set(db).ok();
     Ok(())
-}
-
-/// Serialize KanjiData to rkyv bytes
-pub fn serialize_kanji_to_rkyv(data: &KanjiData) -> Result<Vec<u8>, OrigaError> {
-    let bytes =
-        rkyv::to_bytes::<rkyv::rancor::Error>(data).map_err(|e| OrigaError::KradfileError {
-            reason: format!("Failed to serialize kanji: {}", e),
-        })?;
-    Ok(bytes.to_vec())
-}
-
-/// Initialize kanji from rkyv bytes
-pub fn init_kanji_from_rkyv(bytes: &[u8]) -> Result<(), OrigaError> {
-    let archived = rkyv::access::<ArchivedKanjiData, rkyv::rancor::Error>(bytes).map_err(|e| {
-        OrigaError::KradfileError {
-            reason: format!("Failed to validate kanji data: {:?}", e),
-        }
-    })?;
-
-    let data = KanjiData {
-        kanji_json: archived.kanji_json.as_str().to_string(),
-    };
-
-    init_kanji(data)
 }
 
 pub fn is_kanji_loaded() -> bool {
