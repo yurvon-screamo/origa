@@ -284,21 +284,11 @@ testWithFreshUser.describe("Onboarding Flow - N4 with ~50% Progress", () => {
         await page.getByTestId("onboarding-mark-all-known").click();
 
         // Wait for scoring completion message (increased timeout for large card sets)
-        try {
-            await expect(page.getByTestId("scoring-step-complete")).toBeVisible({ timeout: 60_000 });
-        } catch {
-            // Fallback: skip scoring if mark-all didn't work (is_loading race condition)
-            const skipBtn = page.getByTestId("onboarding-skip-scoring");
-            if (await skipBtn.isVisible().catch(() => false)) {
-                await skipBtn.click();
-            }
-        }
+        await expect(page.getByTestId("scoring-step-complete")).toBeVisible({ timeout: 60_000 });
 
-        // Click "Пропустить" to finish onboarding and navigate to home
-        const skipScoringBtn = page.getByTestId("onboarding-skip-scoring");
-        if (await skipScoringBtn.isVisible().catch(() => false)) {
-            await skipScoringBtn.click();
-        }
+        // Click "Завершить" to finish onboarding and navigate to home
+        await expect(page.getByTestId("onboarding-finish")).toBeVisible({ timeout: 5000 });
+        await page.getByTestId("onboarding-finish").click();
 
         // Wait for redirect to home (can take time for import)
         await page.waitForURL(/\/home$/, { timeout: 30_000 });
@@ -554,14 +544,8 @@ testWithFreshUser.describe("Onboarding - Scoring Step", () => {
 
         await page.getByTestId("onboarding-mark-all-known").click();
 
-        try {
-            await expect(page.getByTestId("scoring-step-complete")).toBeVisible({ timeout: 60_000 });
-        } catch {
-            const skipBtn = page.getByTestId("onboarding-skip-scoring");
-            if (await skipBtn.isVisible().catch(() => false)) {
-                await skipBtn.click();
-            }
-        }
+        await expect(page.getByTestId("scoring-step-complete")).toBeVisible({ timeout: 60_000 });
+        await expect(page.getByTestId("onboarding-finish")).toBeVisible();
     });
 
     testWithFreshUser("should mark all remaining as known", async ({ page }) => {
@@ -575,14 +559,8 @@ testWithFreshUser.describe("Onboarding - Scoring Step", () => {
 
         await page.getByTestId("onboarding-mark-all-known").click();
 
-        try {
-            await expect(page.getByTestId("scoring-step-complete")).toBeVisible({ timeout: 60_000 });
-        } catch {
-            const skipBtn = page.getByTestId("onboarding-skip-scoring");
-            if (await skipBtn.isVisible().catch(() => false)) {
-                await skipBtn.click();
-            }
-        }
+        await expect(page.getByTestId("scoring-step-complete")).toBeVisible({ timeout: 60_000 });
+        await expect(page.getByTestId("onboarding-finish")).toBeVisible();
     });
 
     testWithFreshUser("should skip scoring and navigate to home", async ({ page }) => {
