@@ -6,7 +6,7 @@ use super::app_type::{AppType, parse_app_type};
 use super::duolingo_selector::DuolingoProgressSelector;
 use super::migii_selector::MigiiProgressSelector;
 use super::minna_selector::MinnaProgressSelector;
-use super::parsers::{parse_duolingo_modules, parse_migii_lessons, parse_minna_lessons};
+use super::set_parsers::{parse_duolingo_modules, parse_migii_lessons, parse_minna_lessons};
 
 #[component]
 pub fn ProgressStep(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoView {

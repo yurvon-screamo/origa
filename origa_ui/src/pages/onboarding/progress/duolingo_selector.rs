@@ -52,27 +52,16 @@ pub fn DuolingoProgressSelector(
             return;
         }
 
-        web_sys::console::log_1(&"[Duolingo] Effect START".into());
-
         let mods_snapshot: Vec<_> = modules.get_untracked();
         let sets_snapshot: Vec<_> = available_sets.get_untracked();
 
         if let (Some(m), Some(u)) = (module_num, unit_num) {
-            web_sys::console::log_1(
-                &format!("[Duolingo] Processing module {}, unit {}", m, u).into(),
-            );
+            tracing::debug!(module = m, unit = u, "processing Duolingo selection");
             let units_to_import = collect_all_units_to_import(&mods_snapshot, m, u);
-            web_sys::console::log_1(
-                &format!(
-                    "[Duolingo] units_to_import count: {}",
-                    units_to_import.len()
-                )
-                .into(),
-            );
+            tracing::debug!(count = units_to_import.len(), "units to import");
             let aid = app_id_for_effect.clone();
 
             state.update(|s| {
-                web_sys::console::log_1(&"[Duolingo] state.update START".into());
                 s.set_app_selection(&aid, &format!("module_{}_unit_{}", m, u));
                 s.sets_to_import
                     .retain(|set| !is_unit_in_modules(set.id.as_str(), &mods_snapshot));
@@ -84,10 +73,8 @@ pub fn DuolingoProgressSelector(
                 for set_meta in sets_to_add {
                     s.add_set_to_import(set_meta);
                 }
-                web_sys::console::log_1(&"[Duolingo] state.update END".into());
             });
         }
-        web_sys::console::log_1(&"[Duolingo] Effect END".into());
     });
 
     let app_label = if is_ru {

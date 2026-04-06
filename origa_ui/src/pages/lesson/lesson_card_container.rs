@@ -1,10 +1,9 @@
 use super::keyboard_handler::{KeyboardActions, create_keyboard_handler};
 use super::lesson_card::LessonCard as LessonCardComponent;
 use super::lesson_state::LessonContext;
-use super::on_quiz_select::create_on_quiz_dont_know;
+use super::on_dont_know::create_on_dont_know;
 use super::on_quiz_select::create_on_quiz_select;
 use super::on_rate::create_on_rate_callback;
-use super::on_yesno_select::create_on_yesno_dont_know;
 use super::on_yesno_select::create_on_yesno_select;
 use super::quiz_card::QuizCardView;
 use super::rating_buttons_view::RatingButtonsView;
@@ -35,8 +34,8 @@ pub fn LessonCardContainer() -> impl IntoView {
 
     let on_yesno_select = create_on_yesno_select(lesson_state, on_rate_callback);
 
-    let on_quiz_dont_know = create_on_quiz_dont_know(lesson_state, on_rate_callback);
-    let on_yesno_dont_know = create_on_yesno_dont_know(lesson_state, on_rate_callback);
+    let on_quiz_dont_know = create_on_dont_know(lesson_state, on_rate_callback);
+    let on_yesno_dont_know = create_on_dont_know(lesson_state, on_rate_callback);
 
     let handle_keydown = create_keyboard_handler(
         lesson_ctx,

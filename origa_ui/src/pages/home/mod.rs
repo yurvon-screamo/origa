@@ -14,9 +14,7 @@ pub use content::HomeContent;
 pub use header::HomeHeader;
 pub use history_modal::{HistoryModal, StatMetric};
 pub use home_skeleton::{HomeSkeleton, JlptSkeleton};
-pub use home_stats::{
-    PrimaryStats, SecondaryStats, calculate_stats, derive_test_id, format_delta, format_number,
-};
+pub use home_stats::{PrimaryStats, SecondaryStats, calculate_stats, format_delta, format_number};
 pub use jlpt_progress_card::JlptProgressCard;
 pub use lesson_buttons_card::LessonButtonsCard;
 pub use nav_drawer::NavDrawer;

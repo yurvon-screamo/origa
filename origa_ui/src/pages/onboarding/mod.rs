@@ -1,3 +1,4 @@
+mod onboarding_actions;
 mod onboarding_state;
 
 mod apps_step;
@@ -5,6 +6,7 @@ mod intro_step;
 mod jlpt_step;
 mod load_step;
 mod progress;
+mod scoring_helpers;
 mod scoring_step;
 mod summary_step;
 
@@ -21,10 +23,10 @@ use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos_router::hooks::use_navigate;
 use load_step::LoadStep;
+use onboarding_actions::{create_on_skip_callback, create_on_start_import_callback};
 use onboarding_state::{OnboardingState, OnboardingStep};
 use origa::domain::User;
 use origa::traits::{UserRepository, WellKnownSetLoader};
-use origa::use_cases::ImportOnboardingSetsUseCase;
 use progress::ProgressStep;
 use scoring_step::ScoringStep;
 use summary_step::SummaryStep;
@@ -154,97 +156,10 @@ pub fn Onboarding() -> impl IntoView {
         });
     });
 
-    let on_skip = {
-        let nav = navigate_for_skip.clone();
-        let repo = repository.clone();
-        Callback::new(move |_: ()| {
-            let repo = repo.clone();
-            let nav = nav.clone();
+    let on_skip = create_on_skip_callback(repository.clone(), state, disposed, navigate_for_skip);
 
-            spawn_local(async move {
-                let Ok(Some(mut user)) = repo.get_current_user().await else {
-                    tracing::error!("Onboarding skip: get_current_user error");
-                    return;
-                };
-
-                user.set_daily_load(state.get_untracked().daily_load);
-                user.mark_set_as_imported("__onboarding_skipped__".to_string());
-
-                if let Err(e) = repo.save_sync(&user).await {
-                    tracing::error!("Onboarding skip: save error: {:?}", e);
-                    return;
-                }
-
-                if disposed.is_disposed() {
-                    return;
-                }
-                nav("/home", Default::default());
-            });
-        })
-    };
-
-    let on_start_import = {
-        Callback::new(move |_: ()| {
-            let repo = repository.clone();
-            let loader = WellKnownSetLoaderImpl::new();
-            let disposed = disposed;
-            is_importing.set(true);
-
-            spawn_local(async move {
-                let set_ids = state.get().get_final_sets();
-
-                if set_ids.is_empty() {
-                    tracing::warn!("No sets selected for import");
-                    is_importing.set(false);
-                    return;
-                }
-
-                let Some(user) = current_user.get() else {
-                    tracing::error!("User not loaded");
-                    is_importing.set(false);
-                    return;
-                };
-
-                let use_case = ImportOnboardingSetsUseCase::new(&repo, &loader);
-                let result = use_case.execute(user.id(), set_ids).await;
-
-                if disposed.is_disposed() {
-                    return;
-                }
-                match result {
-                    Ok(import_result) => {
-                        tracing::info!(
-                            "Imported: {} vocabulary, {} kanji, {} grammar, {} duplicates skipped",
-                            import_result.created_vocabulary,
-                            import_result.created_kanji,
-                            import_result.created_grammar,
-                            import_result.skipped_duplicates
-                        );
-                        is_importing.set(false);
-
-                        if let Ok(Some(mut user)) = repo.get_current_user().await {
-                            user.set_daily_load(state.get_untracked().daily_load);
-                            if let Err(e) = repo.save_sync(&user).await {
-                                tracing::error!("Failed to save daily_load: {:?}", e);
-                            }
-                        }
-
-                        if disposed.is_disposed() {
-                            return;
-                        }
-
-                        state.update(|s| {
-                            s.go_to_next_step();
-                        });
-                    },
-                    Err(e) => {
-                        tracing::error!("Import failed: {:?}", e);
-                        is_importing.set(false);
-                    },
-                }
-            });
-        })
-    };
+    let on_start_import =
+        create_on_start_import_callback(repository, state, current_user, is_importing, disposed);
 
     let can_proceed = Memo::new(move |_| state.get().can_proceed());
 

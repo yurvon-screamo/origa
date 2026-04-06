@@ -81,23 +81,16 @@ pub fn MigiiProgressSelector(
             return;
         }
 
-        web_sys::console::log_1(&"[Migii] Effect START".into());
-
         let lessons_by_snapshot = lessons_by_level.get_untracked();
         let sets_snapshot: Vec<_> = available_sets.get_untracked();
 
         if let (Some(lvl), Some(lesson_n)) = (level, lesson_num) {
-            web_sys::console::log_1(
-                &format!("[Migii] Processing level {:?}, lesson {}", lvl, lesson_n).into(),
-            );
+            tracing::debug!(level = ?lvl, lesson = lesson_n, "processing Migii selection");
             let ids_to_import =
                 collect_lessons_to_import_all_levels(&lessons_by_snapshot, lvl, lesson_n);
-            web_sys::console::log_1(
-                &format!("[Migii] ids_to_import count: {}", ids_to_import.len()).into(),
-            );
+            tracing::debug!(count = ids_to_import.len(), "lessons to import");
 
             state.update(|s| {
-                web_sys::console::log_1(&"[Migii] state.update START".into());
                 s.set_app_selection("Migii", &format!("{:?}_{}", lvl, lesson_n));
                 // Remove old Migii sets
                 s.sets_to_import
@@ -110,10 +103,8 @@ pub fn MigiiProgressSelector(
                 for set_meta in sets_to_add {
                     s.add_set_to_import(set_meta);
                 }
-                web_sys::console::log_1(&"[Migii] state.update END".into());
             });
         }
-        web_sys::console::log_1(&"[Migii] Effect END".into());
     });
 
     view! {

@@ -6,6 +6,8 @@ mod analyzed_word_item;
 mod content;
 mod header;
 mod image_input_stage;
+mod ocr_file_utils;
+mod ocr_processing;
 mod vocabulary_card_item;
 
 pub use content::WordsContent;

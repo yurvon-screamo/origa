@@ -1,12 +1,10 @@
 use super::add_kanji_modal_handlers::ModalHandlers;
 use super::add_kanji_modal_state::ModalState;
-use super::error_alert::ErrorAlert;
 use super::kanji_list::KanjiList;
-use super::level_selector::LevelSelector;
-use super::selected_count::SelectedCount;
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{
-    Button, ButtonSize, ButtonVariant, Drawer, Spinner, Text, TextSize, TypographyVariant,
+    Button, ButtonSize, ButtonVariant, Drawer, ErrorAlert, LevelSelector, SelectedCount, Spinner,
+    Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
 use leptos::task::spawn_local;

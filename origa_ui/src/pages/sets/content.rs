@@ -5,7 +5,7 @@ use super::types::SetInfo;
 use crate::loaders::WellKnownSetLoaderImpl;
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{
-    Button, ButtonVariant, Input, Spinner, Tag, TagVariant, Text, TextSize, TypographyVariant,
+    Button, ButtonVariant, FilterTag, Input, Spinner, Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
 use leptos::task::spawn_local;
@@ -176,121 +176,65 @@ pub fn SetsContent() -> impl IntoView {
                     />
 
                     <div class="flex flex-wrap gap-2" data-testid="sets-level-filters">
-                        <Tag
-                            variant=Signal::derive(move || {
-                                if level_filter.get() == LevelFilter::All {
-                                    TagVariant::Filled
-                                } else {
-                                    TagVariant::Default
-                                }
-                            })
-                            class=Signal::derive(|| "cursor-pointer".to_string())
-                            test_id="sets-level-all"
+                        <FilterTag
+                            label=LevelFilter::All.label().to_string()
+                            is_active=Signal::derive(move || level_filter.get() == LevelFilter::All)
                             on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
                                 level_filter.set(LevelFilter::All);
                             })
-                        >
-                            {LevelFilter::All.label()}
-                        </Tag>
-                        <Tag
-                            variant=Signal::derive(move || {
-                                if level_filter.get() == LevelFilter::N5 {
-                                    TagVariant::Filled
-                                } else {
-                                    TagVariant::Default
-                                }
-                            })
-                            class=Signal::derive(|| "cursor-pointer".to_string())
-                            test_id="sets-level-n5"
+                            test_id=Signal::derive(|| "sets-level-all".to_string())
+                        />
+                        <FilterTag
+                            label=LevelFilter::N5.label().to_string()
+                            is_active=Signal::derive(move || level_filter.get() == LevelFilter::N5)
                             on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
                                 level_filter.set(LevelFilter::N5);
                             })
-                        >
-                            {LevelFilter::N5.label()}
-                        </Tag>
-                        <Tag
-                            variant=Signal::derive(move || {
-                                if level_filter.get() == LevelFilter::N4 {
-                                    TagVariant::Filled
-                                } else {
-                                    TagVariant::Default
-                                }
-                            })
-                            class=Signal::derive(|| "cursor-pointer".to_string())
-                            test_id="sets-level-n4"
+                            test_id=Signal::derive(|| "sets-level-n5".to_string())
+                        />
+                        <FilterTag
+                            label=LevelFilter::N4.label().to_string()
+                            is_active=Signal::derive(move || level_filter.get() == LevelFilter::N4)
                             on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
                                 level_filter.set(LevelFilter::N4);
                             })
-                        >
-                            {LevelFilter::N4.label()}
-                        </Tag>
-                        <Tag
-                            variant=Signal::derive(move || {
-                                if level_filter.get() == LevelFilter::N3 {
-                                    TagVariant::Filled
-                                } else {
-                                    TagVariant::Default
-                                }
-                            })
-                            class=Signal::derive(|| "cursor-pointer".to_string())
-                            test_id="sets-level-n3"
+                            test_id=Signal::derive(|| "sets-level-n4".to_string())
+                        />
+                        <FilterTag
+                            label=LevelFilter::N3.label().to_string()
+                            is_active=Signal::derive(move || level_filter.get() == LevelFilter::N3)
                             on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
                                 level_filter.set(LevelFilter::N3);
                             })
-                        >
-                            {LevelFilter::N3.label()}
-                        </Tag>
-                        <Tag
-                            variant=Signal::derive(move || {
-                                if level_filter.get() == LevelFilter::N2 {
-                                    TagVariant::Filled
-                                } else {
-                                    TagVariant::Default
-                                }
-                            })
-                            class=Signal::derive(|| "cursor-pointer".to_string())
-                            test_id="sets-level-n2"
+                            test_id=Signal::derive(|| "sets-level-n3".to_string())
+                        />
+                        <FilterTag
+                            label=LevelFilter::N2.label().to_string()
+                            is_active=Signal::derive(move || level_filter.get() == LevelFilter::N2)
                             on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
                                 level_filter.set(LevelFilter::N2);
                             })
-                        >
-                            {LevelFilter::N2.label()}
-                        </Tag>
-                        <Tag
-                            variant=Signal::derive(move || {
-                                if level_filter.get() == LevelFilter::N1 {
-                                    TagVariant::Filled
-                                } else {
-                                    TagVariant::Default
-                                }
-                            })
-                            class=Signal::derive(|| "cursor-pointer".to_string())
-                            test_id="sets-level-n1"
+                            test_id=Signal::derive(|| "sets-level-n2".to_string())
+                        />
+                        <FilterTag
+                            label=LevelFilter::N1.label().to_string()
+                            is_active=Signal::derive(move || level_filter.get() == LevelFilter::N1)
                             on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
                                 level_filter.set(LevelFilter::N1);
                             })
-                        >
-                            {LevelFilter::N1.label()}
-                        </Tag>
+                            test_id=Signal::derive(|| "sets-level-n1".to_string())
+                        />
                     </div>
 
                     <div class="flex flex-wrap gap-2" data-testid="sets-type-filters">
-                        <Tag
-                            variant=Signal::derive(move || {
-                                if type_filter.get().is_all() {
-                                    TagVariant::Filled
-                                } else {
-                                    TagVariant::Default
-                                }
-                            })
-                            class=Signal::derive(|| "cursor-pointer".to_string())
-                            test_id="sets-type-all"
+                        <FilterTag
+                            label="Все типы".to_string()
+                            is_active=Signal::derive(move || type_filter.get().is_all())
                             on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
                                 type_filter.set(TypeFilter::all());
                             })
-                        >
-                            "Все типы"
-                        </Tag>
+                            test_id=Signal::derive(|| "sets-type-all".to_string())
+                        />
                         <For
                             each=move || available_set_types()
                             key=|type_meta: &TypeMeta| type_meta.id.clone()
@@ -301,75 +245,46 @@ pub fn SetsContent() -> impl IntoView {
                                 let label = type_meta.label_ru.clone();
                                 let test_id_val = format!("sets-type-{}", type_id);
                                 view! {
-                                    <Tag
-                                        variant=Signal::derive(move || {
-                                            match &type_filter.get().0 {
-                                                Some(filter_id) if filter_id == &type_id => TagVariant::Filled,
-                                                _ => TagVariant::Default,
-                                            }
+                                    <FilterTag
+                                        label=label.clone()
+                                        is_active=Signal::derive(move || {
+                                            matches!(&type_filter.get().0, Some(filter_id) if filter_id == &type_id)
                                         })
-                                        class=Signal::derive(|| "cursor-pointer".to_string())
-                                        test_id=Signal::derive(move || test_id_val.clone())
                                         on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
                                             type_filter.set(TypeFilter::specific(&type_id_for_click));
                                         })
-                                    >
-                                        {label}
-                                    </Tag>
+                                        test_id=Signal::derive(move || test_id_val.clone())
+                                    />
                                 }
                             }
                         />
                     </div>
 
                     <div class="flex flex-wrap gap-2" data-testid="sets-import-filters">
-                        <Tag
-                            variant=Signal::derive(move || {
-                                if import_filter.get() == ImportFilter::All {
-                                    TagVariant::Filled
-                                } else {
-                                    TagVariant::Default
-                                }
-                            })
-                            class=Signal::derive(|| "cursor-pointer".to_string())
-                            test_id="sets-import-all"
+                        <FilterTag
+                            label=ImportFilter::All.label().to_string()
+                            is_active=Signal::derive(move || import_filter.get() == ImportFilter::All)
                             on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
                                 import_filter.set(ImportFilter::All);
                             })
-                        >
-                            {ImportFilter::All.label()}
-                        </Tag>
-                        <Tag
-                            variant=Signal::derive(move || {
-                                if import_filter.get() == ImportFilter::Imported {
-                                    TagVariant::Filled
-                                } else {
-                                    TagVariant::Default
-                                }
-                            })
-                            class=Signal::derive(|| "cursor-pointer".to_string())
-                            test_id="sets-import-imported"
+                            test_id=Signal::derive(|| "sets-import-all".to_string())
+                        />
+                        <FilterTag
+                            label=ImportFilter::Imported.label().to_string()
+                            is_active=Signal::derive(move || import_filter.get() == ImportFilter::Imported)
                             on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
                                 import_filter.set(ImportFilter::Imported);
                             })
-                        >
-                            {ImportFilter::Imported.label()}
-                        </Tag>
-                        <Tag
-                            variant=Signal::derive(move || {
-                                if import_filter.get() == ImportFilter::New {
-                                    TagVariant::Filled
-                                } else {
-                                    TagVariant::Default
-                                }
-                            })
-                            class=Signal::derive(|| "cursor-pointer".to_string())
-                            test_id="sets-import-new"
+                            test_id=Signal::derive(|| "sets-import-imported".to_string())
+                        />
+                        <FilterTag
+                            label=ImportFilter::New.label().to_string()
+                            is_active=Signal::derive(move || import_filter.get() == ImportFilter::New)
                             on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
                                 import_filter.set(ImportFilter::New);
                             })
-                        >
-                            {ImportFilter::New.label()}
-                        </Tag>
+                            test_id=Signal::derive(|| "sets-import-new".to_string())
+                        />
                     </div>
 
                     <Show when=move || !selected_sets.get().is_empty()>

@@ -1,4 +1,4 @@
-use crate::ui_components::{Avatar, Button, ButtonVariant, DisplayText};
+use crate::ui_components::{Avatar, Button, ButtonVariant, DisplayText, derive_test_id};
 use leptos::prelude::*;
 use leptos_router::hooks::use_navigate;
 use origa::domain::User;
@@ -14,10 +14,10 @@ pub fn HomeHeader(
         if val.is_empty() { None } else { Some(val) }
     };
 
-    let test_id_avatar = super::derive_test_id(test_id, "avatar");
-    let test_id_words = super::derive_test_id(test_id, "words");
-    let test_id_grammar = super::derive_test_id(test_id, "grammar");
-    let test_id_kanji = super::derive_test_id(test_id, "kanji");
+    let test_id_avatar = derive_test_id(test_id, "avatar");
+    let test_id_words = derive_test_id(test_id, "words");
+    let test_id_grammar = derive_test_id(test_id, "grammar");
+    let test_id_kanji = derive_test_id(test_id, "kanji");
 
     let toggle_drawer = move |_: leptos::ev::MouseEvent| {
         if let Some(signal) = drawer_open {

@@ -3690,3 +3690,26 @@ input[type="submit"],
 .animate-spin {
     animation: spin 1s linear infinite;
 }
+
+/* JLPT Step Options */
+.jlpt-option {
+    border: 1px solid var(--border-dark);
+}
+
+.jlpt-option.selected {
+    border: 2px solid var(--accent-olive);
+    background: var(--bg-warm);
+}
+
+.jlpt-option-radio {
+    border: 1px solid var(--border-dark);
+}
+
+.jlpt-option.selected .jlpt-option-radio {
+    border: 1px solid var(--accent-olive);
+}
+
+.jlpt-option-radio-check {
+    inset: 3px;
+    background: var(--fg-black);
+}

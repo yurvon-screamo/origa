@@ -86,13 +86,10 @@ pub fn Dropdown(
     };
 
     let select_item = move |item: DropdownItem| {
-        web_sys::console::log_1(&format!("[Dropdown] select_item: {}", item.value).into());
+        tracing::trace!(value = %item.value, "dropdown item selected");
         selected.set(item.value.clone());
-        web_sys::console::log_1(&"[Dropdown] selected set".into());
         is_open.set(false);
-        web_sys::console::log_1(&"[Dropdown] is_open set to false".into());
         search_query.set(String::new());
-        web_sys::console::log_1(&"[Dropdown] search_query cleared".into());
     };
 
     let close_on_outside = move |ev: leptos::ev::MouseEvent| {
