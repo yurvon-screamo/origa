@@ -1,9 +1,9 @@
 use super::types::BoundingBox;
 use crate::domain::OrigaError;
+use futures::lock::Mutex;
 use image::{DynamicImage, GenericImageView, ImageBuffer, Pixel, Rgb};
 use ort::session::Session;
 use ort_web::ValueExt;
-use std::cell::RefCell;
 
 const CONF_THRESHOLD: f32 = 0.25;
 
@@ -11,7 +11,7 @@ const IMAGENET_MEAN: [f32; 3] = [0.485, 0.456, 0.406];
 const IMAGENET_STD: [f32; 3] = [0.229, 0.224, 0.225];
 
 pub struct DeimDetector {
-    session: RefCell<Session>,
+    session: Mutex<Session>,
     input_size: u32,
 }
 
@@ -24,11 +24,12 @@ pub async fn ensure_ort_initialized() -> Result<(), OrigaError> {
     });
 
     if should_init {
-        let api = ort_web::api(ort_web::FEATURE_NONE)
-            .await
-            .map_err(|e| OrigaError::OcrError {
-                reason: format!("Failed to get ort API: {:?}", e),
-            })?;
+        let api =
+            ort_web::api(ort_web::FEATURE_WEBGPU)
+                .await
+                .map_err(|e| OrigaError::OcrError {
+                    reason: format!("Failed to get ort WebGPU API: {:?}", e),
+                })?;
         ort::set_api(api);
     }
 
@@ -42,6 +43,11 @@ impl DeimDetector {
         let mut builder = Session::builder().map_err(|e| OrigaError::OcrError {
             reason: format!("Failed to create session builder: {:?}", e),
         })?;
+        builder = builder
+            .with_execution_providers([ort::ep::WebGPU::default().build()])
+            .map_err(|e| OrigaError::OcrError {
+                reason: format!("Failed to set execution providers: {:?}", e),
+            })?;
         let session =
             builder
                 .commit_from_memory(model_bytes)
@@ -69,7 +75,7 @@ impl DeimDetector {
         };
 
         Ok(Self {
-            session: RefCell::new(session),
+            session: Mutex::new(session),
             input_size,
         })
     }
@@ -101,7 +107,7 @@ impl DeimDetector {
                 ort::session::RunOptions::new().map_err(|e| OrigaError::OcrError {
                     reason: format!("Failed to create run options: {:?}", e),
                 })?;
-            let mut session = self.session.borrow_mut();
+            let mut session = self.session.lock().await;
             let mut outputs = session
                 .run_async(
                     ort::inputs![
