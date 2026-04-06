@@ -1,54 +1,10 @@
-use origa::dictionary::grammar::{
-    GrammarData, init_grammar, init_grammar_from_rkyv, is_grammar_loaded,
-};
-use origa::dictionary::kanji::{KanjiData, init_kanji, init_kanji_from_rkyv, is_kanji_loaded};
-use origa::dictionary::vocabulary::{
-    VOCABULARY_DICTIONARY, VocabularyChunkData, init_vocabulary, init_vocabulary_from_rkyv,
-    is_vocabulary_loaded,
-};
+use origa::dictionary::grammar::{GrammarData, init_grammar, is_grammar_loaded};
+use origa::dictionary::kanji::{KanjiData, init_kanji, is_kanji_loaded};
+use origa::dictionary::vocabulary::{VocabularyChunkData, init_vocabulary, is_vocabulary_loaded};
 use origa::domain::OrigaError;
 
-use super::jlpt_content_loader::load_jlpt_content;
 use crate::core::config::public_url;
-use crate::repository::{
-    get_cached_grammar_rkyv, get_cached_kanji_rkyv, get_cached_vocabulary_rkyv,
-    save_grammar_to_cache_rkyv, save_kanji_to_cache_rkyv, save_vocabulary_to_cache_rkyv,
-};
 use crate::utils::{fetch_text, yield_to_browser};
-
-#[allow(dead_code)]
-pub fn is_all_data_loaded() -> bool {
-    is_vocabulary_loaded() && is_kanji_loaded() && is_grammar_loaded()
-}
-
-#[allow(dead_code)]
-pub async fn load_all_data() -> Result<(), OrigaError> {
-    if is_all_data_loaded() {
-        tracing::info!("📚 All data already loaded, skipping");
-        return Ok(());
-    }
-
-    let start = now_ms();
-    tracing::info!("📚 Starting parallel data loading...");
-
-    let (vocab_result, kanji_result, grammar_result, jlpt_result) = futures::join!(
-        load_vocabulary(),
-        load_kanji(),
-        load_grammar(),
-        load_jlpt_content()
-    );
-
-    let elapsed = (now_ms() - start) / 1000.0;
-    tracing::info!("📚 Parallel data loading finished in {:.2}s", elapsed);
-
-    vocab_result?;
-    kanji_result?;
-    grammar_result?;
-    jlpt_result?;
-
-    tracing::info!("✅ All data loaded successfully ({:.2}s total)", elapsed);
-    Ok(())
-}
 
 fn now_ms() -> f64 {
     web_sys::window()
@@ -68,21 +24,6 @@ pub async fn load_vocabulary() -> Result<(), OrigaError> {
     let start = now_ms();
     tracing::info!("📖 Loading vocabulary...");
 
-    // Try rkyv cache first
-    if let Some(bytes) = get_cached_vocabulary_rkyv().await? {
-        tracing::info!("📖 Vocabulary found in rkyv cache ({} bytes)", bytes.len());
-        yield_to_browser().await;
-        init_vocabulary_from_rkyv(&bytes)?;
-        tracing::info!(
-            "📖 Vocabulary loaded from rkyv cache ({:.2}s)",
-            (now_ms() - start) / 1000.0
-        );
-        return Ok(());
-    }
-
-    tracing::debug!("📖 No rkyv cache, loading from network");
-
-    let fetch_start = now_ms();
     let chunk_futures: Vec<_> = (1..=11)
         .map(|i| {
             fetch_text(public_url(&format!(
@@ -94,10 +35,6 @@ pub async fn load_vocabulary() -> Result<(), OrigaError> {
 
     let chunks = join_all(chunk_futures).await;
     let chunks: Vec<String> = chunks.into_iter().collect::<Result<Vec<_>, _>>()?;
-    tracing::info!(
-        "📖 Vocabulary chunks fetched ({:.2}s)",
-        (now_ms() - fetch_start) / 1000.0
-    );
 
     let data = VocabularyChunkData {
         chunk_01: chunks[0].clone(),
@@ -116,27 +53,7 @@ pub async fn load_vocabulary() -> Result<(), OrigaError> {
     yield_to_browser().await;
     init_vocabulary(data)?;
 
-    // Save to rkyv cache after initialization
-    // Get the database from global and serialize it
-    if let Some(db) = VOCABULARY_DICTIONARY.get() {
-        let bytes =
-            origa::dictionary::vocabulary::serialize_vocabulary_to_rkyv(db).map_err(|e| {
-                OrigaError::RepositoryError {
-                    reason: format!("Failed to serialize vocabulary: {:?}", e),
-                }
-            })?;
-
-        wasm_bindgen_futures::spawn_local(async move {
-            if let Err(e) = save_vocabulary_to_cache_rkyv(&bytes).await {
-                tracing::warn!("Failed to cache vocabulary: {:?}", e);
-            }
-        });
-    }
-
-    tracing::info!(
-        "📖 Vocabulary loaded from network ({:.2}s)",
-        (now_ms() - start) / 1000.0
-    );
+    tracing::info!("📖 Vocabulary loaded ({:.2}s)", (now_ms() - start) / 1000.0);
     Ok(())
 }
 
@@ -149,44 +66,13 @@ pub async fn load_kanji() -> Result<(), OrigaError> {
     let start = now_ms();
     tracing::info!("📖 Loading kanji...");
 
-    // Try rkyv cache first
-    if let Some(bytes) = get_cached_kanji_rkyv().await? {
-        tracing::info!("📖 Kanji found in rkyv cache ({} bytes)", bytes.len());
-        yield_to_browser().await;
-        init_kanji_from_rkyv(&bytes)?;
-        tracing::info!(
-            "📖 Kanji loaded from rkyv cache ({:.2}s)",
-            (now_ms() - start) / 1000.0
-        );
-        return Ok(());
-    }
-
-    tracing::debug!("📖 No rkyv cache, loading from network");
-
     let json = fetch_text(public_url("/public/dictionary/kanji.json")).await?;
     let data = KanjiData { kanji_json: json };
 
-    // Serialize before init (takes reference, doesn't move data)
-    let bytes = origa::dictionary::kanji::serialize_kanji_to_rkyv(&data).map_err(|e| {
-        OrigaError::RepositoryError {
-            reason: format!("Failed to serialize kanji: {:?}", e),
-        }
-    })?;
-
     yield_to_browser().await;
-    // Now init takes ownership
     init_kanji(data)?;
 
-    wasm_bindgen_futures::spawn_local(async move {
-        if let Err(e) = save_kanji_to_cache_rkyv(&bytes).await {
-            tracing::warn!("Failed to cache kanji: {:?}", e);
-        }
-    });
-
-    tracing::info!(
-        "📖 Kanji loaded from network ({:.2}s)",
-        (now_ms() - start) / 1000.0
-    );
+    tracing::info!("📖 Kanji loaded ({:.2}s)", (now_ms() - start) / 1000.0);
     Ok(())
 }
 
@@ -199,43 +85,12 @@ pub async fn load_grammar() -> Result<(), OrigaError> {
     let start = now_ms();
     tracing::info!("📖 Loading grammar...");
 
-    // Try rkyv cache first
-    if let Some(bytes) = get_cached_grammar_rkyv().await? {
-        tracing::info!("📖 Grammar found in rkyv cache ({} bytes)", bytes.len());
-        yield_to_browser().await;
-        init_grammar_from_rkyv(&bytes)?;
-        tracing::info!(
-            "📖 Grammar loaded from rkyv cache ({:.2}s)",
-            (now_ms() - start) / 1000.0
-        );
-        return Ok(());
-    }
-
-    tracing::debug!("📖 No rkyv cache, loading from network");
-
     let json = fetch_text(public_url("/public/grammar/grammar.json")).await?;
     let data = GrammarData { grammar_json: json };
 
-    // Serialize before init (takes reference, doesn't move data)
-    let bytes = origa::dictionary::grammar::serialize_grammar_to_rkyv(&data).map_err(|e| {
-        OrigaError::RepositoryError {
-            reason: format!("Failed to serialize grammar: {:?}", e),
-        }
-    })?;
-
     yield_to_browser().await;
-    // Now init takes ownership
     init_grammar(data)?;
 
-    wasm_bindgen_futures::spawn_local(async move {
-        if let Err(e) = save_grammar_to_cache_rkyv(&bytes).await {
-            tracing::warn!("Failed to cache grammar: {:?}", e);
-        }
-    });
-
-    tracing::info!(
-        "📖 Grammar loaded from network ({:.2}s)",
-        (now_ms() - start) / 1000.0
-    );
+    tracing::info!("📖 Grammar loaded ({:.2}s)", (now_ms() - start) / 1000.0);
     Ok(())
 }
