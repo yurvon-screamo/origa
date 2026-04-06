@@ -1,38 +1,37 @@
 {
-  "content": {
-    "English": {
-      "description": "Words from section/unit: talk about school",
-      "title": "Duolingo 「EN」 - Section 4 Unit 36"
+    "content": {
+        "English": {
+            "description": "Words from section/unit: talk about school",
+            "title": "Duolingo 「EN」 - Section 4 Unit 36"
+        },
+        "Russian": {
+            "description": "Слова из модуля: talk about school",
+            "title": "Duolingo 「EN」 - Section 4 Unit 36"
+        }
     },
-    "Russian": {
-      "description": "Слова из модуля: talk about school",
-      "title": "Duolingo 「EN」 - Section 4 Unit 36"
-    }
-  },
-  "level": "N4",
-  "words": [
-    "こう",
-    "もう",
-    "始まり",
-    "宿題",
-    "引き",
-    "意味",
-    "授業",
-    "教える",
-    "教科",
-    "易",
-    "易しい",
-    "漢字",
-    "科",
-    "終わり",
-    "葉",
-    "行く",
-    "見る",
-    "覚える",
-    "言葉",
-    "辞",
-    "辞書",
-    "難",
-    "難しい"
-  ]
+    "level": "N4",
+    "words": [
+        "もう",
+        "始まり",
+        "宿題",
+        "引き",
+        "意味",
+        "授業",
+        "教える",
+        "教科",
+        "易",
+        "易しい",
+        "漢字",
+        "科",
+        "終わり",
+        "葉",
+        "行く",
+        "見る",
+        "覚える",
+        "言葉",
+        "辞",
+        "辞書",
+        "難",
+        "難しい"
+    ]
 }
