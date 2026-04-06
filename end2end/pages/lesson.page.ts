@@ -42,6 +42,9 @@ export class LessonPage extends BasePage {
     // Lesson completion
     readonly completeScreen: Locator;
     readonly completeBackBtn: Locator;
+    readonly completeStats: Locator;
+    readonly nextLessonBtn: Locator;
+    readonly homeBtn: Locator;
 
     // Sync indicator
     readonly syncIndicator: Locator;
@@ -95,6 +98,9 @@ export class LessonPage extends BasePage {
         // Lesson completion
         this.completeScreen = page.getByTestId("lesson-complete-screen");
         this.completeBackBtn = page.getByTestId("lesson-complete-back-btn");
+        this.completeStats = page.getByTestId("lesson-complete-stats");
+        this.nextLessonBtn = page.getByTestId("lesson-next-btn");
+        this.homeBtn = page.getByTestId("lesson-home-btn");
 
         // Sync indicator
         this.syncIndicator = page.getByTestId("lesson-sync-indicator");
@@ -159,6 +165,18 @@ export class LessonPage extends BasePage {
 
     async waitForComplete(): Promise<void> {
         await expect(this.completeScreen).toBeVisible({ timeout: 30_000 });
+    }
+
+    async clickNextLesson(): Promise<void> {
+        await this.nextLessonBtn.click();
+    }
+
+    async clickHome(): Promise<void> {
+        await this.homeBtn.click();
+    }
+
+    async expectMuteIcon(): Promise<void> {
+        await expect(this.muteButton.locator("svg")).toBeVisible();
     }
 
     async selectQuizOption(index: number): Promise<void> {

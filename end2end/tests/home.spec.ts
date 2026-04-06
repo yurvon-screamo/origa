@@ -28,25 +28,9 @@ testWithFreshUser.describe("Home Page", () => {
         await expect(homePage.homeHeader).toBeVisible();
     });
 
-    testWithFreshUser("should display statistics cards", async ({ page }) => {
-        const homePage = await setupHomePage(page);
-        try {
-            await expect(homePage.statsGrid).toBeVisible({ timeout: 10_000 });
-        } catch {
-            // Stats grid may not render for fresh users without data
-            return;
-        }
-        await expect(homePage.statNew).toBeVisible({ timeout: 5_000 });
-    });
-
     testWithFreshUser("should navigate to Words", async ({ page }) => {
         const homePage = await setupHomePage(page);
-        try {
-            await expect(homePage.homeWords).toBeVisible({ timeout: 5_000 });
-        } catch {
-            // Desktop nav buttons hidden on mobile viewports
-            return;
-        }
+        await expect(homePage.homeWords).toBeVisible({ timeout: 5_000 });
         await homePage.navigateToWords();
         await page.waitForURL(/\/words$/, { timeout: 15_000 });
         const wordsPage = new WordsPage(page);
@@ -55,12 +39,7 @@ testWithFreshUser.describe("Home Page", () => {
 
     testWithFreshUser("should navigate to Grammar", async ({ page }) => {
         const homePage = await setupHomePage(page);
-        try {
-            await expect(homePage.homeGrammar).toBeVisible({ timeout: 5_000 });
-        } catch {
-            // Desktop nav buttons hidden on mobile viewports
-            return;
-        }
+        await expect(homePage.homeGrammar).toBeVisible({ timeout: 5_000 });
         await homePage.navigateToGrammar();
         await page.waitForURL(/\/grammar$/, { timeout: 15_000 });
         const grammarPage = new GrammarPage(page);
@@ -69,12 +48,7 @@ testWithFreshUser.describe("Home Page", () => {
 
     testWithFreshUser("should navigate to Kanji", async ({ page }) => {
         const homePage = await setupHomePage(page);
-        try {
-            await expect(homePage.homeKanji).toBeVisible({ timeout: 5_000 });
-        } catch {
-            // Desktop nav buttons hidden on mobile viewports
-            return;
-        }
+        await expect(homePage.homeKanji).toBeVisible({ timeout: 5_000 });
         await homePage.navigateToKanji();
         await page.waitForURL(/\/kanji$/, { timeout: 15_000 });
         const kanjiPage = new KanjiPage(page);

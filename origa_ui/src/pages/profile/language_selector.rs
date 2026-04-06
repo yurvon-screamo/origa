@@ -13,10 +13,12 @@ pub fn LanguageSelector(selected_language: RwSignal<NativeLanguage>) -> impl Int
                 key=|lang| format!("{:?}", lang)
                 children=move |lang| {
                     let is_selected = move || selected_language.get() == lang;
+                    let lang_str = format!("{:?}", lang).to_lowercase();
                     view! {
                         <Button
                             variant=move || if is_selected() { ButtonVariant::Olive } else { ButtonVariant::Default }
                             on_click={Callback::new(move |_| selected_language.set(lang))}
+                            test_id=Signal::derive(move || format!("profile-lang-{}", lang_str))
                         >
                             {format!("{:?}", lang)}
                         </Button>

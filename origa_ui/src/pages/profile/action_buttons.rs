@@ -15,7 +15,11 @@ pub fn ActionButtons(
     let show_delete_confirm = RwSignal::new(false);
     let test_id_val = move || {
         let val = test_id.get();
-        if val.is_empty() { None } else { Some(val) }
+        if val.is_empty() {
+            None
+        } else {
+            Some(val)
+        }
     };
 
     view! {
@@ -57,12 +61,14 @@ pub fn ActionButtons(
                                     on_click={on_delete_account}
                                     disabled=is_deleting
                                     class="bg-[var(--error)] hover:bg-[var(--error)]"
+                                    test_id="profile-confirm-delete-btn"
                                 >
                                     {move || if is_deleting.get() { "Удаление..." } else { "Да, удалить аккаунт" }}
                                 </Button>
                                 <Button
                                     variant={ButtonVariant::Ghost}
                                     on_click={Callback::new(move |_| show_delete_confirm.set(false))}
+                                    test_id="profile-cancel-delete-btn"
                                 >
                                     "Отмена"
                                 </Button>

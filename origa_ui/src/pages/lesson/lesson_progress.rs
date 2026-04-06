@@ -17,7 +17,7 @@ pub fn LessonProgress(current: Signal<usize>, total: Signal<usize>) -> impl Into
                 <span class="font-mono text-[10px] tracking-widest uppercase">
                     "Прогресс"
                 </span>
-                <span class="font-mono text-[10px]">
+                <span class="font-mono text-[10px]" data-testid="lesson-progress-text">
                     {move || format!("{}/{}", current.get(), total.get())}
                 </span>
             </div>

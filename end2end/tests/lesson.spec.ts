@@ -79,4 +79,93 @@ testWithFreshUser.describe("Lesson Page", () => {
 
         await lessonPage.waitForComplete();
     });
+
+    testWithFreshUser("should display progress text with card count", async ({ page }) => {
+        test.setTimeout(90_000);
+        const lessonPage = await setupLessonWithCards(page);
+        const progressText = await lessonPage.getProgressText();
+        expect(progressText).toMatch(/^\d+\/\d+$/);
+    });
+
+    testWithFreshUser("should show all rating buttons after revealing answer", async ({ page }) => {
+        test.setTimeout(90_000);
+        const lessonPage = await setupLessonWithCards(page);
+        await lessonPage.showAnswer();
+
+        await expect(lessonPage.ratingAgain).toBeVisible();
+        await expect(lessonPage.ratingHard).toBeVisible();
+        await expect(lessonPage.ratingGood).toBeVisible();
+        await expect(lessonPage.ratingEasy).toBeVisible();
+    });
+
+    testWithFreshUser("should toggle mute button and change state", async ({ page }) => {
+        test.setTimeout(90_000);
+        const lessonPage = await setupLessonWithCards(page);
+        await expect(lessonPage.muteButton).toBeVisible();
+        await expect(lessonPage.muteButton).toHaveAttribute("data-muted", "false");
+
+        await lessonPage.toggleMute();
+        await expect(lessonPage.muteButton).toHaveAttribute("data-muted", "true");
+
+        await lessonPage.toggleMute();
+        await expect(lessonPage.muteButton).toHaveAttribute("data-muted", "false");
+    });
+
+    testWithFreshUser("should show complete screen with stats and navigation buttons", async ({ page }) => {
+        test.setTimeout(120_000);
+        const lessonPage = await setupLessonWithCards(page);
+
+        const alreadyComplete = await lessonPage.completeScreen.isVisible().catch(() => false);
+        if (alreadyComplete) {
+            test.skip();
+            return;
+        }
+
+        for (let i = 0; i < 5; i++) {
+            const isComplete = await lessonPage.completeScreen.isVisible().catch(() => false);
+            if (isComplete) break;
+            try {
+                await lessonPage.showAnswer();
+                await page.waitForTimeout(300);
+                await lessonPage.rate("easy");
+                await page.waitForTimeout(500);
+            } catch {
+                break;
+            }
+        }
+
+        await lessonPage.waitForComplete();
+        await expect(lessonPage.completeStats).toBeVisible();
+        await expect(lessonPage.nextLessonBtn).toBeVisible();
+        await expect(lessonPage.homeBtn).toBeVisible();
+    });
+
+    testWithFreshUser("should navigate to home from complete screen", async ({ page }) => {
+        test.setTimeout(120_000);
+        const lessonPage = await setupLessonWithCards(page);
+
+        const alreadyComplete = await lessonPage.completeScreen.isVisible().catch(() => false);
+        if (alreadyComplete) {
+            test.skip();
+            return;
+        }
+
+        for (let i = 0; i < 5; i++) {
+            const isComplete = await lessonPage.completeScreen.isVisible().catch(() => false);
+            if (isComplete) break;
+            try {
+                await lessonPage.showAnswer();
+                await page.waitForTimeout(300);
+                await lessonPage.rate("easy");
+                await page.waitForTimeout(500);
+            } catch {
+                break;
+            }
+        }
+
+        await lessonPage.waitForComplete();
+        await lessonPage.clickHome();
+        await page.waitForURL(/\/home$/, { timeout: 10_000 });
+    });
+
 });
