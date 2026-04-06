@@ -1,24 +1,23 @@
 {
-  "content": {
-    "English": {
-      "description": "Words from section/unit: get help when traveling",
-      "title": "Duolingo 「EN」 - Section 2 Unit 1"
+    "content": {
+        "English": {
+            "description": "Words from section/unit: get help when traveling",
+            "title": "Duolingo 「EN」 - Section 2 Unit 1"
+        },
+        "Russian": {
+            "description": "Слова из модуля: get help when traveling",
+            "title": "Duolingo 「EN」 - Section 2 Unit 1"
+        }
     },
-    "Russian": {
-      "description": "Слова из модуля: get help when traveling",
-      "title": "Duolingo 「EN」 - Section 2 Unit 1"
-    }
-  },
-  "level": "N5",
-  "words": [
-    "くう",
-    "こう",
-    "パスポート",
-    "切符",
-    "地下",
-    "地図",
-    "無い",
-    "鉄",
-    "鞄"
-  ]
+    "level": "N5",
+    "words": [
+        "くう",
+        "パスポート",
+        "切符",
+        "地下",
+        "地図",
+        "無い",
+        "鉄",
+        "鞄"
+    ]
 }
