@@ -6,6 +6,7 @@
 	"permissions": [
 		"core:default",
 		"core:event:default",
+		"tts:default",
 		"deep-link:default",
 		"updater:default",
 		{

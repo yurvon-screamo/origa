@@ -22,6 +22,7 @@ tauri-build.workspace = true
 [dependencies]
 tauri.workspace = true
 tauri-plugin-opener.workspace = true
+tauri-plugin-tts.workspace = true
 tauri-plugin-deep-link.workspace = true
 tauri-plugin-single-instance.workspace = true
 tauri-plugin-updater = "2"
