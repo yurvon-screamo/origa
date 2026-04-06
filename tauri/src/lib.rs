@@ -25,6 +25,7 @@ pub fn run() {
     builder
         .plugin(tauri_plugin_deep_link::init())
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_tts::init())
         .invoke_handler(tauri::generate_handler![greet])
         .setup(|app| {
             log::info!("[deep-link] setup started");
