@@ -41,6 +41,7 @@ pub fn QuizOptions(
                         view! {
                             <button
                                 class=class
+                                data-testid=format!("quiz-option-{}", index)
                                 on:click=move |_| {
                                     if !show_result {
                                         on_select_option.run(index);

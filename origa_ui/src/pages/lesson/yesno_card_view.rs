@@ -1,6 +1,6 @@
 use crate::ui_components::{
-    Button, ButtonVariant, Card, DisplayText, MarkdownText, MarkdownVariant, Text, TextSize,
-    TypographyVariant, get_reading_from_text, is_speech_supported, speak_text,
+    get_reading_from_text, is_speech_supported, speak_text, Button, ButtonVariant, Card,
+    DisplayText, MarkdownText, MarkdownVariant, Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
 use origa::domain::{Card as DomainCard, NativeLanguage, YesNoCard};
@@ -180,6 +180,7 @@ pub fn YesNoCardView(
 
                 <div class="grid grid-cols-2 gap-3">
                     <Button
+                        test_id=Signal::derive(|| "yesno-no-btn".to_string())
                         variant=Signal::derive(|| ButtonVariant::Default)
                         class=no_btn_class
                         disabled=Signal::derive(move || show_result)
@@ -189,6 +190,7 @@ pub fn YesNoCardView(
                     </Button>
 
                     <Button
+                        test_id=Signal::derive(|| "yesno-yes-btn".to_string())
                         variant=yes_variant
                         class=yes_btn_class
                         disabled=Signal::derive(move || show_result)

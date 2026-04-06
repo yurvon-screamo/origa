@@ -28,4 +28,92 @@ testWithFreshUser.describe("Profile Page", () => {
 
 		await page.waitForURL(/\/home$/, { timeout: 10_000 });
 	});
+
+	testWithFreshUser("should display username in profile title", async ({ page }) => {
+		const profilePage = await setupProfilePage(page);
+		const titleText = await profilePage.profileTitle.textContent();
+		expect(titleText).toContain("Профиль");
+		expect(titleText?.length).toBeGreaterThan("Профиль".length);
+	});
+
+	testWithFreshUser("should display all language options", async ({ page }) => {
+		const profilePage = await setupProfilePage(page);
+		await expect(profilePage.langEnglish).toBeVisible();
+		await expect(profilePage.langRussian).toBeVisible();
+	});
+
+	testWithFreshUser("should display all daily load options", async ({ page }) => {
+		const profilePage = await setupProfilePage(page);
+		await expect(profilePage.loadLight).toBeVisible();
+		await expect(profilePage.loadMedium).toBeVisible();
+		await expect(profilePage.loadHard).toBeVisible();
+		await expect(profilePage.loadImpossible).toBeVisible();
+	});
+
+	testWithFreshUser("should switch language selection", async ({ page }) => {
+		const profilePage = await setupProfilePage(page);
+		await page.mouse.click(0, 0);
+		await profilePage.selectLanguage("english");
+		await expect(profilePage.langEnglish).toHaveClass(/btn-olive/);
+		await expect(profilePage.langRussian).not.toHaveClass(/btn-olive/);
+		await page.mouse.click(0, 0);
+		await profilePage.selectLanguage("russian");
+		await expect(profilePage.langRussian).toHaveClass(/btn-olive/);
+		await expect(profilePage.langEnglish).not.toHaveClass(/btn-olive/);
+	});
+
+	testWithFreshUser("should switch daily load selection", async ({ page }) => {
+		const profilePage = await setupProfilePage(page);
+		await profilePage.selectDailyLoad("hard");
+		await expect(profilePage.loadHard).toHaveClass(/btn-olive/);
+		await expect(profilePage.loadLight).not.toHaveClass(/btn-olive/);
+		await profilePage.selectDailyLoad("light");
+		await expect(profilePage.loadLight).toHaveClass(/btn-olive/);
+		await expect(profilePage.loadHard).not.toHaveClass(/btn-olive/);
+	});
+
+	testWithFreshUser("should show delete confirmation and cancel", async ({ page }) => {
+		const profilePage = await setupProfilePage(page);
+		await profilePage.deleteAccount();
+		await expect(profilePage.confirmDeleteBtn).toBeVisible({ timeout: 5000 });
+		await expect(profilePage.cancelDeleteBtn).toBeVisible();
+		await profilePage.cancelDelete();
+		await expect(profilePage.confirmDeleteBtn).not.toBeVisible({ timeout: 5000 });
+	});
+
+	testWithFreshUser("should display save and logout buttons", async ({ page }) => {
+		const profilePage = await setupProfilePage(page);
+		await expect(page.getByTestId("profile-save-btn")).toBeVisible();
+		await expect(page.getByTestId("profile-logout-btn")).toBeVisible();
+	});
+
+	testWithFreshUser("should display settings card with app info", async ({ page }) => {
+		const profilePage = await setupProfilePage(page);
+		await expect(profilePage.profileSettings).toBeVisible();
+	});
+
+	testWithFreshUser("should persist language after save", async ({ page }) => {
+		test.setTimeout(60_000);
+		const profilePage = await setupProfilePage(page);
+		await page.mouse.click(0, 0);
+		await profilePage.selectLanguage("english");
+		await expect(profilePage.langEnglish).toHaveClass(/btn-olive/);
+		await profilePage.saveProfile();
+		await page.waitForTimeout(2000);
+		await profilePage.goto();
+		await profilePage.expectProfileVisible();
+		await expect(profilePage.langEnglish).toHaveClass(/btn-olive/);
+	});
+
+	testWithFreshUser("should persist daily load after save", async ({ page }) => {
+		test.setTimeout(60_000);
+		const profilePage = await setupProfilePage(page);
+		await profilePage.selectDailyLoad("hard");
+		await expect(profilePage.loadHard).toHaveClass(/btn-olive/);
+		await profilePage.saveProfile();
+		await page.waitForTimeout(2000);
+		await profilePage.goto();
+		await profilePage.expectProfileVisible();
+		await expect(profilePage.loadHard).toHaveClass(/btn-olive/);
+	});
 });

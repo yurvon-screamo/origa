@@ -24,6 +24,7 @@ pub fn LessonHeader() -> impl IntoView {
             <button
                 data-testid="lesson-mute-btn"
                 class="btn btn-ghost px-3 py-2"
+                data-muted=move || if is_muted.get() { "true" } else { "false" }
                 on:click=move |_| toggle_mute()
             >
                 {move || if is_muted.get() {

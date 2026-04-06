@@ -1,8 +1,8 @@
 use super::lesson_state::LessonContext;
 use crate::repository::set_last_sync_time;
 use crate::ui_components::{
-    Button, ButtonVariant, Card, DisplayText, Text, TextSize, ToastContainer, ToastData, ToastType,
-    TypographyVariant, stop_speech,
+    stop_speech, Button, ButtonVariant, Card, DisplayText, Text, TextSize, ToastContainer,
+    ToastData, ToastType, TypographyVariant,
 };
 use leptos::prelude::*;
 use leptos::task::spawn_local;
@@ -139,7 +139,7 @@ pub fn LessonCompleteScreen(is_completed: RwSignal<bool>, review_count: usize) -
 
         <div data-testid="lesson-complete-screen" class="text-center py-8">
             <Card class=Signal::derive(|| "p-6 mb-6".to_string())>
-                <div class="grid grid-cols-1 gap-4">
+                <div class="grid grid-cols-1 gap-4" data-testid="lesson-complete-stats">
                     <div>
                         <Text size=TextSize::Small variant=TypographyVariant::Muted uppercase=true>
                             "Пройдено"
@@ -153,6 +153,7 @@ pub fn LessonCompleteScreen(is_completed: RwSignal<bool>, review_count: usize) -
 
             <div class="flex gap-3 justify-center">
                 <Button
+                    test_id=Signal::derive(|| "lesson-next-btn".to_string())
                     variant=Signal::derive(|| ButtonVariant::Filled)
                     on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
                         go_next_lesson.run(());
@@ -162,6 +163,7 @@ pub fn LessonCompleteScreen(is_completed: RwSignal<bool>, review_count: usize) -
                 </Button>
 
                 <Button
+                    test_id=Signal::derive(|| "lesson-home-btn".to_string())
                     variant=Signal::derive(|| ButtonVariant::Ghost)
                     on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
                         go_home.run(());
