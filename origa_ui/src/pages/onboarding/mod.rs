@@ -38,6 +38,7 @@ pub fn Onboarding() -> impl IntoView {
     let navigate = use_navigate();
     let navigate_for_init = navigate.clone();
     let navigate_for_skip = navigate.clone();
+    let navigate_for_finish = navigate.clone();
 
     let state = RwSignal::new(OnboardingState::new());
     let current_user: RwSignal<Option<User>> = RwSignal::new(None);
@@ -46,6 +47,7 @@ pub fn Onboarding() -> impl IntoView {
     let is_importing = RwSignal::new(false);
     let disposed = StoredValue::new(());
     let mark_all_trigger: RwSignal<u32> = RwSignal::new(0);
+    let scoring_completed: RwSignal<bool> = RwSignal::new(false);
 
     provide_context(state);
 
@@ -161,6 +163,10 @@ pub fn Onboarding() -> impl IntoView {
     let on_start_import =
         create_on_start_import_callback(repository, state, current_user, is_importing, disposed);
 
+    let on_finish = Callback::new(move |_: ()| {
+        navigate_for_finish("/home", Default::default());
+    });
+
     let can_proceed = Memo::new(move |_| state.get().can_proceed());
 
     view! {
@@ -205,7 +211,7 @@ pub fn Onboarding() -> impl IntoView {
                             </Show>
 
                             <Show when=move || matches!(state.get().current_step, OnboardingStep::Scoring)>
-                                <ScoringStep test_id=Signal::derive(|| "onboarding-scoring-step".to_string()) mark_all_trigger=mark_all_trigger />
+                                <ScoringStep test_id=Signal::derive(|| "onboarding-scoring-step".to_string()) mark_all_trigger=mark_all_trigger scoring_completed=scoring_completed />
                             </Show>
                         </div>
 
@@ -237,7 +243,7 @@ pub fn Onboarding() -> impl IntoView {
                                     </Button>
                                 </Show>
 
-                                <Show when=move || matches!(state.get().current_step, OnboardingStep::Scoring)>
+                                <Show when=move || matches!(state.get().current_step, OnboardingStep::Scoring) && !scoring_completed.get()>
                                     <Button
                                         variant=ButtonVariant::Ghost
                                         on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
@@ -280,7 +286,7 @@ pub fn Onboarding() -> impl IntoView {
                                     </Button>
                                 </Show>
 
-                                <Show when=move || matches!(state.get().current_step, OnboardingStep::Scoring)>
+                                <Show when=move || matches!(state.get().current_step, OnboardingStep::Scoring) && !scoring_completed.get()>
                                     <Button
                                         variant=ButtonVariant::Olive
                                         on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
@@ -289,6 +295,18 @@ pub fn Onboarding() -> impl IntoView {
                                         test_id="onboarding-mark-all-known"
                                     >
                                         "Знаю все"
+                                    </Button>
+                                </Show>
+
+                                <Show when=move || matches!(state.get().current_step, OnboardingStep::Scoring) && scoring_completed.get()>
+                                    <Button
+                                        variant=ButtonVariant::Olive
+                                        on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
+                                            on_finish.run(());
+                                        })
+                                        test_id="onboarding-finish"
+                                    >
+                                        "Завершить"
                                     </Button>
                                 </Show>
                             </div>

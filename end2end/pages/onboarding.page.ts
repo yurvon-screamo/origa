@@ -52,6 +52,7 @@ export class OnboardingPage extends BasePage {
     readonly scoringComplete: Locator;
     readonly markAllKnownBtn: Locator;
     readonly skipScoringBtn: Locator;
+    readonly finishButton: Locator;
 
     constructor(page: Page) {
         super(page);
@@ -106,6 +107,7 @@ export class OnboardingPage extends BasePage {
         this.scoringComplete = page.getByTestId("scoring-step-complete");
         this.markAllKnownBtn = page.getByTestId("onboarding-mark-all-known");
         this.skipScoringBtn = page.getByTestId("onboarding-skip-scoring");
+        this.finishButton = page.getByTestId("onboarding-finish");
     }
 
     async goto(): Promise<void> {
@@ -196,6 +198,10 @@ export class OnboardingPage extends BasePage {
 
     async clickSkipScoring(): Promise<void> {
         await this.skipScoringBtn.click();
+    }
+
+    async clickFinish(): Promise<void> {
+        await this.finishButton.click();
     }
 
     async getScoringProgress(): Promise<string> {

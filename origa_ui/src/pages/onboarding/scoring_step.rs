@@ -18,6 +18,7 @@ use super::scoring_helpers::{ScoringCard, build_scoring_cards};
 pub fn ScoringStep(
     #[prop(optional, into)] test_id: Signal<String>,
     #[prop(optional)] mark_all_trigger: RwSignal<u32>,
+    scoring_completed: RwSignal<bool>,
 ) -> impl IntoView {
     let test_id_val = move || {
         let val = test_id.get();
@@ -31,7 +32,7 @@ pub fn ScoringStep(
     let current_index: RwSignal<usize> = RwSignal::new(0);
     let is_loading = RwSignal::new(true);
     let is_rating = RwSignal::new(false);
-    let is_completed = RwSignal::new(false);
+
     let known_count: RwSignal<usize> = RwSignal::new(0);
     let disposed = StoredValue::new(());
 
@@ -62,7 +63,7 @@ pub fn ScoringStep(
             cards.set(scoring_cards);
 
             if total == 0 {
-                is_completed.set(true);
+                scoring_completed.set(true);
             }
 
             is_loading.set(false);
@@ -75,7 +76,7 @@ pub fn ScoringStep(
         let idx = current_index.get_untracked();
         let t = total.get_untracked();
         if idx + 1 >= t {
-            is_completed.set(true);
+            scoring_completed.set(true);
         } else {
             current_index.set(idx + 1);
         }
@@ -103,7 +104,7 @@ pub fn ScoringStep(
                 is_rating.set(false);
 
                 if idx + 1 >= t {
-                    is_completed.set(true);
+                    scoring_completed.set(true);
                 } else {
                     current_index.set(idx + 1);
                 }
@@ -114,7 +115,7 @@ pub fn ScoringStep(
     let kb_on_dont_know = on_dont_know;
     let kb_on_know = on_know;
     let _ = use_event_listener(document(), leptos::ev::keydown, move |ev| {
-        if is_loading.get() || is_rating.get() || is_completed.get() {
+        if is_loading.get() || is_rating.get() || scoring_completed.get() {
             return;
         }
         match ev.key().as_str() {
@@ -128,7 +129,7 @@ pub fn ScoringStep(
         Signal::derive(move || cards.get().get(current_index.get()).cloned());
 
     Effect::new(move |_| {
-        if is_loading.get() || is_completed.get() {
+        if is_loading.get() || scoring_completed.get() {
             return;
         }
         if let Some(card) = current_card.get() {
@@ -147,7 +148,7 @@ pub fn ScoringStep(
             if trigger_val == 0 {
                 return;
             }
-            if is_loading.get() || is_completed.get() || cards.get().is_empty() {
+            if is_loading.get() || scoring_completed.get() || cards.get().is_empty() {
                 return;
             }
 
@@ -181,7 +182,7 @@ pub fn ScoringStep(
                 }
 
                 is_rating.set(false);
-                is_completed.set(true);
+                scoring_completed.set(true);
             });
         });
     }
@@ -196,7 +197,7 @@ pub fn ScoringStep(
                 </div>
             </Show>
 
-            <Show when=move || !is_loading.get() && !is_completed.get()>
+            <Show when=move || !is_loading.get() && !scoring_completed.get()>
                 <div>
                     <div class="text-center mb-4">
                         <Text
@@ -279,7 +280,7 @@ pub fn ScoringStep(
                 </div>
             </Show>
 
-            <Show when=move || is_completed.get()>
+            <Show when=move || scoring_completed.get()>
                 <div class="text-center py-8">
                     <Text
                         size=TextSize::Large
