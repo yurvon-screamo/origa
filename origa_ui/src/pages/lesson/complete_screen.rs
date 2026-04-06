@@ -137,7 +137,7 @@ pub fn LessonCompleteScreen(is_completed: RwSignal<bool>, review_count: usize) -
     view! {
         <ToastContainer toasts=toasts duration_ms=5000 />
 
-        <div class="text-center py-8">
+        <div data-testid="lesson-complete-screen" class="text-center py-8">
             <Card class=Signal::derive(|| "p-6 mb-6".to_string())>
                 <div class="grid grid-cols-1 gap-4">
                     <div>

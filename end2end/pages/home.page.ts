@@ -37,6 +37,9 @@ export class HomePage extends BasePage {
     // Navigation
     readonly navDrawer: Locator;
     readonly homeHamburger: Locator;
+    readonly navDrawerLesson: Locator;
+    readonly navDrawerProfile: Locator;
+    readonly navDrawerWords: Locator;
 
     // Loading
     readonly homeLoading: Locator;
@@ -54,10 +57,10 @@ export class HomePage extends BasePage {
         this.homeHeader = page.getByTestId("home-header");
 
         // Header navigation
-        this.homeAvatar = page.getByTestId("home-avatar");
-        this.homeWords = page.getByTestId("home-words");
-        this.homeGrammar = page.getByTestId("home-grammar");
-        this.homeKanji = page.getByTestId("home-kanji");
+        this.homeAvatar = page.getByTestId("home-header-avatar");
+        this.homeWords = page.getByTestId("home-header-words");
+        this.homeGrammar = page.getByTestId("home-header-grammar");
+        this.homeKanji = page.getByTestId("home-header-kanji");
 
         // JLPT Progress
         this.jlptProgress = page.getByTestId("home-jlpt-progress");
@@ -84,6 +87,9 @@ export class HomePage extends BasePage {
         // Navigation
         this.navDrawer = page.getByTestId("nav-drawer");
         this.homeHamburger = page.getByTestId("home-hamburger");
+        this.navDrawerLesson = page.getByTestId("nav-drawer-lesson");
+        this.navDrawerProfile = page.getByTestId("nav-drawer-profile");
+        this.navDrawerWords = page.getByTestId("nav-drawer-words");
 
         // Loading
         this.homeLoading = page.getByTestId("home-loading");
@@ -130,5 +136,24 @@ export class HomePage extends BasePage {
 
     async openNavDrawer(): Promise<void> {
         await this.homeHamburger.click();
+    }
+
+    async navigateToProfileFromDrawer(): Promise<void> {
+        await this.openNavDrawer();
+        await this.navDrawerProfile.click();
+    }
+
+    async navigateToLessonFromDrawer(): Promise<void> {
+        await this.openNavDrawer();
+        await this.navDrawerLesson.click();
+    }
+
+    async navigateToWordsFromDrawer(): Promise<void> {
+        await this.openNavDrawer();
+        await this.navDrawerWords.click();
+    }
+
+    async closeNavDrawer(): Promise<void> {
+        await this.page.keyboard.press("Escape");
     }
 }

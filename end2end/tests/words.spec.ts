@@ -144,3 +144,35 @@ testWithFreshUser.describe("Words Page - Navigation", () => {
         await setsPage.expectSetsVisible();
     });
 });
+
+testWithFreshUser.describe("Words Page - Mark as Known", () => {
+    testWithFreshUser("should display mark-as-known button on word card", async ({ page }) => {
+        test.setTimeout(60_000);
+        const wordsPage = await setupWordsPage(page);
+        await addFirstWord(wordsPage);
+        await expect(wordsPage.wordsGrid).toBeVisible({ timeout: 10_000 });
+
+        const markKnownBtn = page.getByTestId("words-card-item").first().getByTestId("words-card-item-mark-known-btn");
+        await expect(markKnownBtn).toBeVisible();
+    });
+
+    testWithFreshUser("should mark word as known and show in Learned filter", async ({ page }) => {
+        test.setTimeout(60_000);
+        const wordsPage = await setupWordsPage(page);
+        await addFirstWord(wordsPage);
+        await expect(wordsPage.wordsGrid).toBeVisible({ timeout: 10_000 });
+
+        // Initially in "New" filter
+        await wordsPage.selectFilter("Новые");
+        expect(await wordsPage.getCardCount()).toBeGreaterThanOrEqual(1);
+
+        // Mark as known
+        await wordsPage.markCardAsKnownByIndex(0);
+        await page.waitForTimeout(1000);
+
+        // Now should appear in "Learned" filter
+        await wordsPage.selectFilter("Изученные");
+        await expect(wordsPage.emptyState).not.toBeVisible({ timeout: 5000 });
+        expect(await wordsPage.getCardCount()).toBeGreaterThanOrEqual(1);
+    });
+});

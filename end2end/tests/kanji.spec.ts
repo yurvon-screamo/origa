@@ -154,3 +154,30 @@ testWithFreshUser.describe("Kanji Page - Navigation", () => {
         await expect(page).toHaveURL(/\/home$/);
     });
 });
+
+testWithFreshUser.describe("Kanji Page - Mark as Known", () => {
+    testWithFreshUser("should display mark-as-known button on kanji card", async ({ page }) => {
+        test.setTimeout(60_000);
+        const kanjiPage = await setupKanjiPage(page);
+        await addFirstKanji(kanjiPage);
+        await expect(kanjiPage.kanjiGrid).toBeVisible({ timeout: 10_000 });
+
+        const markKnownBtn = page.getByTestId("kanji-card-item").first().getByTestId("kanji-card-item-mark-known-btn");
+        await expect(markKnownBtn).toBeVisible();
+    });
+
+    testWithFreshUser("should mark kanji as known and show in Learned filter", async ({ page }) => {
+        test.setTimeout(60_000);
+        const kanjiPage = await setupKanjiPage(page);
+        await addFirstKanji(kanjiPage);
+        await expect(kanjiPage.kanjiGrid).toBeVisible({ timeout: 10_000 });
+
+        const markKnownBtn = page.getByTestId("kanji-card-item").first().getByTestId("kanji-card-item-mark-known-btn");
+        await markKnownBtn.click();
+        await page.waitForTimeout(1000);
+
+        await kanjiPage.selectFilter("Изученные");
+        await expect(kanjiPage.emptyState).not.toBeVisible({ timeout: 5000 });
+        expect(await kanjiPage.getCardCount()).toBeGreaterThanOrEqual(1);
+    });
+});

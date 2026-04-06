@@ -55,6 +55,7 @@ pub fn LessonCardQuestion(
 
             <Button
                 variant=Signal::derive(|| ButtonVariant::Filled)
+                test_id=Signal::derive(|| "lesson-show-answer-btn".to_string())
                 on_click=Callback::new(move |_| on_show_answer.run(()))
             >
                 "Показать ответ" <span class="hidden sm:inline">"[Пробел]"</span>

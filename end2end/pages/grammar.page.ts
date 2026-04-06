@@ -121,4 +121,10 @@ export class GrammarPage extends BasePage {
         await this.deleteCancelBtn.click();
         await expect(this.deleteModal).not.toBeVisible({ timeout: 5000 });
     }
+
+    async markCardAsKnownByIndex(index: number): Promise<void> {
+        const card = this.page.getByTestId("grammar-card-item").nth(index);
+        await card.getByTestId("grammar-card-item-mark-known-btn").click();
+        await this.page.waitForTimeout(500);
+    }
 }
