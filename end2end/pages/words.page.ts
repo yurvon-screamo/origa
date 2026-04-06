@@ -151,4 +151,10 @@ export class WordsPage extends BasePage {
         await this.deleteCancelBtn.click();
         await expect(this.deleteModal).not.toBeVisible({ timeout: 5000 });
     }
+
+    async markCardAsKnownByIndex(index: number): Promise<void> {
+        const card = this.page.getByTestId("words-card-item").nth(index);
+        await card.getByTestId("words-card-item-mark-known-btn").click();
+        await this.page.waitForTimeout(500);
+    }
 }

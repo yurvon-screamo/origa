@@ -25,6 +25,7 @@ pub fn ActionButtons(
                     variant={ButtonVariant::Filled}
                     on_click={on_save}
                     disabled=is_saving
+                    test_id="profile-save-btn"
                 >
                     {move || if is_saving.get() { "Сохранение..." } else { "Сохранить изменения" }}
                 </Button>
@@ -33,6 +34,7 @@ pub fn ActionButtons(
                     variant={ButtonVariant::Ghost}
                     on_click={on_logout}
                     disabled=is_logging_out
+                    test_id="profile-logout-btn"
                 >
                     {move || if is_logging_out.get() { "Выход..." } else { "Выйти из аккаунта" }}
                 </Button>
@@ -73,6 +75,7 @@ pub fn ActionButtons(
                             variant={ButtonVariant::Ghost}
                             on_click={Callback::new(move |_| show_delete_confirm.set(true))}
                             class="text-[var(--error)] hover:text-[var(--error)] hover:bg-[var(--error)]/20"
+                            test_id="profile-delete-btn"
                         >
                             "Удалить аккаунт"
                         </Button>

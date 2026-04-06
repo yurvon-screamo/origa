@@ -41,6 +41,18 @@ export class OnboardingPage extends BasePage {
     readonly summaryTitle: Locator;
     readonly summarySubtitle: Locator;
 
+    // Scoring step
+    readonly scoringStep: Locator;
+    readonly scoringHint: Locator;
+    readonly scoringProgress: Locator;
+    readonly scoringQuestion: Locator;
+    readonly scoringAnswer: Locator;
+    readonly scoringDontKnowBtn: Locator;
+    readonly scoringKnowBtn: Locator;
+    readonly scoringComplete: Locator;
+    readonly markAllKnownBtn: Locator;
+    readonly skipScoringBtn: Locator;
+
     constructor(page: Page) {
         super(page);
 
@@ -82,6 +94,18 @@ export class OnboardingPage extends BasePage {
         // Summary step
         this.summaryTitle = page.getByTestId("summary-title");
         this.summarySubtitle = page.getByTestId("summary-subtitle");
+
+        // Scoring step
+        this.scoringStep = page.getByTestId("onboarding-scoring-step");
+        this.scoringHint = page.getByTestId("scoring-step-hint");
+        this.scoringProgress = page.getByTestId("scoring-step-progress");
+        this.scoringQuestion = page.getByTestId("scoring-step-question");
+        this.scoringAnswer = page.getByTestId("scoring-step-answer");
+        this.scoringDontKnowBtn = page.getByTestId("scoring-step-dont-know");
+        this.scoringKnowBtn = page.getByTestId("scoring-step-know");
+        this.scoringComplete = page.getByTestId("scoring-step-complete");
+        this.markAllKnownBtn = page.getByTestId("onboarding-mark-all-known");
+        this.skipScoringBtn = page.getByTestId("onboarding-skip-scoring");
     }
 
     async goto(): Promise<void> {
@@ -94,18 +118,15 @@ export class OnboardingPage extends BasePage {
     }
 
     async selectJlptLevel(level: "N5" | "N4" | "N3" | "N2" | "N1" | "unknown"): Promise<void> {
-        // JLPT options don't have test_ids, use text selector
         await this.page.getByText(level, { exact: false }).first().click();
     }
 
     async toggleApp(appId: string): Promise<void> {
-        // Updated test ID pattern to match actual implementation
         const appCheckbox = this.page.getByTestId(`apps-step-app-${appId}-checkbox`);
         await appCheckbox.click();
     }
 
     async toggleSet(setId: string): Promise<void> {
-        // Updated test ID pattern to match actual implementation
         const setCheckbox = this.page.getByTestId(`summary-step-set-${setId}-checkbox`);
         await setCheckbox.click();
     }
@@ -159,5 +180,25 @@ export class OnboardingPage extends BasePage {
 
     async skipOnboarding(): Promise<void> {
         await this.page.getByTestId("onboarding-skip").click();
+    }
+
+    async clickKnow(): Promise<void> {
+        await this.scoringKnowBtn.click();
+    }
+
+    async clickDontKnow(): Promise<void> {
+        await this.scoringDontKnowBtn.click();
+    }
+
+    async clickMarkAllKnown(): Promise<void> {
+        await this.markAllKnownBtn.click();
+    }
+
+    async clickSkipScoring(): Promise<void> {
+        await this.skipScoringBtn.click();
+    }
+
+    async getScoringProgress(): Promise<string> {
+        return (await this.scoringProgress.textContent()) ?? "";
     }
 }

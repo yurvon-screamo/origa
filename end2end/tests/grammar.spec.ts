@@ -146,3 +146,32 @@ testWithFreshUser.describe("Grammar Page - Search & Filters", () => {
         await expect(page).toHaveURL(/\/home$/);
     });
 });
+
+testWithFreshUser.describe("Grammar Page - Mark as Known", () => {
+    testWithFreshUser("should display mark-as-known button on grammar card", async ({ page }) => {
+        test.setTimeout(60_000);
+        const grammarPage = await setupGrammarPage(page);
+        await grammarPage.openAddModal();
+        await grammarPage.selectRule("～ます");
+        await grammarPage.addSelectedRules();
+        await expect(grammarPage.grammarGrid).toBeVisible({ timeout: 10_000 });
+
+        const markKnownBtn = page.getByTestId("grammar-card-item").first().getByTestId("grammar-card-item-mark-known-btn");
+        await expect(markKnownBtn).toBeVisible();
+    });
+
+    testWithFreshUser("should mark grammar as known and show in Learned filter", async ({ page }) => {
+        test.setTimeout(60_000);
+        const grammarPage = await setupGrammarPage(page);
+        await grammarPage.openAddModal();
+        await grammarPage.selectRule("～ます");
+        await grammarPage.addSelectedRules();
+        await expect(grammarPage.grammarGrid).toBeVisible({ timeout: 10_000 });
+
+        await grammarPage.markCardAsKnownByIndex(0);
+
+        await grammarPage.selectFilter("Изученные");
+        await expect(grammarPage.emptyState).not.toBeVisible({ timeout: 5000 });
+        expect(await grammarPage.getCardCount()).toBeGreaterThanOrEqual(1);
+    });
+});

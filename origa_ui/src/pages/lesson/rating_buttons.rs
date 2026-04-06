@@ -13,6 +13,7 @@ pub fn RatingButtons(
                 variant=Signal::derive(|| ButtonVariant::Default)
                 class=Signal::derive(|| "".to_string())
                 disabled
+                test_id=Signal::derive(|| "lesson-rating-btn-again".to_string())
                 on_click=Callback::new(move |_| on_rate.run(Rating::Again))
             >
                 "Не знаю" <span class="hidden sm:inline">"[1]"</span>
@@ -22,6 +23,7 @@ pub fn RatingButtons(
                 variant=Signal::derive(|| ButtonVariant::Default)
                 class=Signal::derive(|| "".to_string())
                 disabled
+                test_id=Signal::derive(|| "lesson-rating-btn-hard".to_string())
                 on_click=Callback::new(move |_| on_rate.run(Rating::Hard))
             >
                 "Плохо" <span class="hidden sm:inline">"[2]"</span>
@@ -31,6 +33,7 @@ pub fn RatingButtons(
                 variant=Signal::derive(|| ButtonVariant::Olive)
                 class=Signal::derive(|| "".to_string())
                 disabled
+                test_id=Signal::derive(|| "lesson-rating-btn-good".to_string())
                 on_click=Callback::new(move |_| on_rate.run(Rating::Good))
             >
                 "Знаю" <span class="hidden sm:inline">"[3]"</span>
@@ -40,6 +43,7 @@ pub fn RatingButtons(
                 variant=Signal::derive(|| ButtonVariant::Filled)
                 class=Signal::derive(|| "".to_string())
                 disabled
+                test_id=Signal::derive(|| "lesson-rating-btn-easy".to_string())
                 on_click=Callback::new(move |_| on_rate.run(Rating::Easy))
             >
                 "Идеально" <span class="hidden sm:inline">"[4]"</span>
