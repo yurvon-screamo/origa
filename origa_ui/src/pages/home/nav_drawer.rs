@@ -1,4 +1,4 @@
-use crate::ui_components::{Button, ButtonVariant, Drawer, Text, TextSize};
+use crate::ui_components::{Button, ButtonVariant, Drawer, Text, TextSize, derive_test_id};
 use leptos::prelude::*;
 use leptos_router::components::A;
 
@@ -7,17 +7,17 @@ pub fn NavDrawer(
     #[prop(optional)] is_open: RwSignal<bool>,
     #[prop(optional, into)] test_id: Signal<String>,
 ) -> impl IntoView {
-    let nav_test_id = super::derive_test_id(test_id, "nav");
+    let nav_test_id = derive_test_id(test_id, "nav");
     let title = Signal::derive(|| "Навигация".to_string());
 
     view! {
         <Drawer is_open=is_open title=title test_id=test_id>
             <div class="flex flex-col gap-2">
-                <NavItem href="/lesson" label="Урок" japanese="📚" test_id=super::derive_test_id(nav_test_id, "lesson") />
-                <NavItem href="/words" label="Слова" japanese="言葉" test_id=super::derive_test_id(nav_test_id, "words") />
-                <NavItem href="/grammar" label="Грамматика" japanese="文法" test_id=super::derive_test_id(nav_test_id, "grammar") />
-                <NavItem href="/kanji" label="Кандзи" japanese="漢字" test_id=super::derive_test_id(nav_test_id, "kanji") />
-                <NavItem href="/profile" label="Профиль" japanese="👤" test_id=super::derive_test_id(nav_test_id, "profile") />
+                <NavItem href="/lesson" label="Урок" japanese="📚" test_id=derive_test_id(nav_test_id, "lesson") />
+                <NavItem href="/words" label="Слова" japanese="言葉" test_id=derive_test_id(nav_test_id, "words") />
+                <NavItem href="/grammar" label="Грамматика" japanese="文法" test_id=derive_test_id(nav_test_id, "grammar") />
+                <NavItem href="/kanji" label="Кандзи" japanese="漢字" test_id=derive_test_id(nav_test_id, "kanji") />
+                <NavItem href="/profile" label="Профиль" japanese="👤" test_id=derive_test_id(nav_test_id, "profile") />
             </div>
         </Drawer>
     }

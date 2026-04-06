@@ -109,7 +109,6 @@ fn open_oauth_url(provider: OAuthProvider) {
     use crate::repository::TrailBaseClient;
     use crate::repository::trailbase_auth::{generate_pkce_challenge, generate_pkce_verifier};
     use gloo_storage::{LocalStorage, Storage};
-    use web_sys::console;
 
     let redirect_uri = if is_tauri_desktop() {
         "https://origa.uwuwu.net/public/auth/desktop-callback.html".to_string()
@@ -119,21 +118,10 @@ fn open_oauth_url(provider: OAuthProvider) {
         format!("{}/login", base_url)
     };
 
-    console::log_1(&JsValue::from_str(&format!(
-        "Redirect URI: {}",
-        redirect_uri
-    )));
-
     let verifier = generate_pkce_verifier();
-    console::log_1(&JsValue::from_str(&format!(
-        "Generated PKCE verifier: {}",
-        verifier
-    )));
-
     let challenge = generate_pkce_challenge(&verifier);
 
     LocalStorage::set("pkce_verifier", &verifier).ok();
-    console::log_1(&JsValue::from_str("Saved verifier to LocalStorage"));
 
     let client = TrailBaseClient::new();
     let url = client.get_oauth_url(provider.as_str(), &redirect_uri, &challenge);

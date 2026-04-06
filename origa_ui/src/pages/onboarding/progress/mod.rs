@@ -6,6 +6,7 @@ mod migii_selector;
 mod minna_selector;
 mod parsers;
 mod progress_step;
+mod set_parsers;
 mod types;
 
 pub use progress_step::ProgressStep;

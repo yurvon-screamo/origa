@@ -3,13 +3,10 @@ mod add_kanji_modal_handlers;
 mod add_kanji_modal_state;
 mod content;
 mod drawing_drawer;
-mod error_alert;
 mod header;
 mod kanji_card_item;
 mod kanji_item;
 mod kanji_list;
-mod level_selector;
-mod selected_count;
 
 pub use content::KanjiContent;
 pub use drawing_drawer::DrawingDrawer;

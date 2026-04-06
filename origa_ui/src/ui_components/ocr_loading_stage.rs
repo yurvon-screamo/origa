@@ -214,6 +214,7 @@ pub fn LoadingStageItem(
     }
 }
 
+#[derive(Clone, Copy)]
 pub enum StageType {
     Deim,
     Parseq,

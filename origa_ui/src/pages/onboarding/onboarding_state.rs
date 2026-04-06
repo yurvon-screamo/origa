@@ -191,7 +191,7 @@ impl OnboardingState {
                     break;
                 }
 
-                let set_id = format!("jlpt_{}", level_to_str(lvl));
+                let set_id = format!("jlpt_{}", level_to_lowercase(lvl));
                 if let Some(jlpt_set) = self.available_sets.iter().find(|s| s.id == set_id) {
                     self.sets_to_import.push(jlpt_set.clone());
                 }
@@ -200,7 +200,7 @@ impl OnboardingState {
     }
 }
 
-fn level_to_str(level: JapaneseLevel) -> &'static str {
+fn level_to_lowercase(level: JapaneseLevel) -> &'static str {
     match level {
         JapaneseLevel::N5 => "n5",
         JapaneseLevel::N4 => "n4",

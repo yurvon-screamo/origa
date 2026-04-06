@@ -5,36 +5,33 @@ use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos::wasm_bindgen::JsCast;
 use leptos::wasm_bindgen::prelude::*;
-use tracing::error;
-use web_sys::console;
+use tracing::{debug, error, trace, warn};
 
 const LOGIN_PATH: &str = "/login";
 const HOME_PATH: &str = "/home";
 
 pub fn setup_oauth_listener(auth_store: AuthStore) {
-    console::log_1(&"[oauth-listener] setup_oauth_listener() called".into());
+    debug!("setup_oauth_listener() called");
 
     let auth_store_clone = auth_store.clone();
     let callback = Closure::<dyn Fn(JsValue)>::new(move |event: JsValue| {
-        console::log_1(&"[oauth-listener] deep-link-received event fired!".into());
-        console::log_1(&format!("[oauth-listener] raw event: {:?}", event).into());
+        debug!("deep-link-received event fired");
+        trace!(event = ?event, "raw event");
 
         let url = extract_url_from_event(&event);
-        console::log_1(&format!("[oauth-listener] extracted url: '{}'", url).into());
+        debug!(url = %url, "extracted url from event");
 
         if url.is_empty() {
-            console::warn_1(&"[oauth-listener] url is empty, ignoring event".into());
+            warn!("url is empty, ignoring event");
             return;
         }
 
         let auth_store = auth_store_clone.clone();
         auth_store.oauth_error.set(None);
         spawn_local(async move {
-            console::log_1(&format!("[oauth-listener] processing url: {}", url).into());
+            debug!(url = %url, "processing oauth url");
             let result = process_oauth_url(&url, &auth_store).await;
-            console::log_1(
-                &format!("[oauth-listener] process_oauth_url result: {:?}", result).into(),
-            );
+            debug!(result = ?result, "process_oauth_url result");
             handle_oauth_result(result, &auth_store);
         });
     });
@@ -46,118 +43,92 @@ fn extract_url_from_event(event: &JsValue) -> String {
     if let Ok(url_str) = js_sys::Reflect::get(event, &JsValue::from_str("payload"))
         && let Some(s) = url_str.as_string()
     {
-        console::log_1(&format!("[oauth-listener] extracted from event.payload: {}", s).into());
+        trace!(url = %s, "extracted from event.payload");
         return s;
     }
 
     if let Some(s) = event.as_string() {
-        console::log_1(&format!("[oauth-listener] extracted from event.as_string: {}", s).into());
+        trace!(url = %s, "extracted from event.as_string");
         return s;
     }
 
-    error!(
-        "[oauth-listener] Invalid deep-link event format: {:?}",
-        event
-    );
+    error!(event = ?event, "invalid deep-link event format");
     String::new()
 }
 
 async fn process_oauth_url(url: &str, auth_store: &AuthStore) -> Result<(), String> {
     let parsed = url::Url::parse(url);
-    console::log_1(&format!("[oauth-listener] URL parse result: {:?}", parsed).into());
+    trace!(parsed = ?parsed, "URL parse result");
 
     if parsed.is_ok_and(|u| u.query_pairs().any(|(k, _)| k == "code")) {
-        console::log_1(
-            &"[oauth-listener] URL has 'code' param, calling handle_oauth_callback_desktop".into(),
-        );
+        debug!("URL has 'code' param, calling handle_oauth_callback_desktop");
         handle_oauth_callback_desktop(url, auth_store).await?;
         return Ok(());
     }
 
     if let Some(fragment) = url.split('#').nth(1) {
-        console::log_1(
-            &format!(
-                "[oauth-listener] URL has fragment, calling handle_oauth_callback: {}",
-                fragment
-            )
-            .into(),
-        );
+        debug!(fragment = %fragment, "URL has fragment, calling handle_oauth_callback");
         handle_oauth_callback(fragment, auth_store).await?;
         return Ok(());
     }
 
-    console::error_1(
-        &format!(
-            "[oauth-listener] URL has no 'code' param and no fragment: {}",
-            url
-        )
-        .into(),
-    );
+    error!(url = %url, "URL has no 'code' param and no fragment");
     Err("Неподдерживаемый формат callback URL".to_string())
 }
 
 fn handle_oauth_result(result: Result<(), String>, auth_store: &AuthStore) {
     if let Err(e) = result {
-        error!("[oauth-listener] OAuth callback error: {}", e);
-        console::error_1(&format!("[oauth-listener] OAuth error: {}", e).into());
+        error!(error = %e, "OAuth callback error");
         auth_store.oauth_error.set(Some(e));
         return;
     }
 
-    console::log_1(&"[oauth-listener] OAuth success, redirecting to /home".into());
+    debug!("OAuth success, redirecting to /home");
 
     if let Some(window) = web_sys::window()
         && let Err(e) = window.location().set_href(HOME_PATH)
     {
-        error!(
-            "[oauth-listener] Failed to redirect to {}: {:?}",
-            HOME_PATH, e
-        );
+        error!(path = HOME_PATH, error = ?e, "failed to redirect");
     }
 }
 
 fn register_tauri_listener(callback: Closure<dyn Fn(JsValue)>) {
-    console::log_1(&"[oauth-listener] register_tauri_listener() called".into());
+    debug!("register_tauri_listener() called");
 
     let Some(window) = web_sys::window() else {
-        console::error_1(&"[oauth-listener] no window object".into());
+        error!("no window object");
         return;
     };
 
     let Some(tauri_obj) = get_tauri_object(&window) else {
-        console::warn_1(
-            &"[oauth-listener] __TAURI__ not found on window — not in Tauri desktop, skipping"
-                .into(),
-        );
+        warn!("__TAURI__ not found on window — not in Tauri desktop, skipping");
         return;
     };
-    console::log_1(&"[oauth-listener] __TAURI__ found".into());
+    debug!("__TAURI__ found on window");
 
     let Some(event_mod) = get_event_module(tauri_obj.as_ref()) else {
-        console::error_1(&"[oauth-listener] __TAURI__.event not found".into());
+        error!("__TAURI__.event not found");
         return;
     };
-    console::log_1(&"[oauth-listener] __TAURI__.event found".into());
+    debug!("__TAURI__.event found");
 
     let Some(listen_fn) = get_listen_function(&event_mod) else {
-        console::error_1(&"[oauth-listener] __TAURI__.event.listen not found".into());
+        error!("__TAURI__.event.listen not found");
         return;
     };
-    console::log_1(&"[oauth-listener] __TAURI__.event.listen function found".into());
+    debug!("__TAURI__.event.listen function found");
 
     let event_name = JsValue::from_str("deep-link-received");
     let handler = callback.as_ref().clone();
 
     let result = listen_fn.call2(&JsValue::UNDEFINED, &event_name, &handler);
-    console::log_1(&format!("[oauth-listener] listen() call result: {:?}", result).into());
+    trace!(result = ?result, "listen() call result");
 
     if result.is_ok() {
-        console::log_1(
-            &"[oauth-listener] listener registered successfully, forgetting callback".into(),
-        );
+        debug!("listener registered successfully, forgetting callback");
         callback.forget();
     } else {
-        console::error_1(&"[oauth-listener] listen() call FAILED".into());
+        error!("listen() call failed");
     }
 }
 
@@ -248,7 +219,7 @@ async fn process_oauth_flow(
         },
         Err(e) => {
             is_oauth_loading.set(false);
-            error!("OAuth flow failed: {:?}", e);
+            error!(?e, "OAuth flow failed");
             auth_store.oauth_error.set(Some(e.to_string()));
         },
     }
@@ -258,6 +229,6 @@ fn redirect_to_home() {
     if let Some(window) = web_sys::window()
         && let Err(e) = window.location().set_href(HOME_PATH)
     {
-        error!("Failed to redirect to {}: {:?}", HOME_PATH, e);
+        error!(path = HOME_PATH, ?e, "failed to redirect");
     }
 }

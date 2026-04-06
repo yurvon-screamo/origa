@@ -29,10 +29,8 @@ impl ImportPreviewModalState {
     pub fn new() -> Self {
         let repository =
             use_context::<HybridUserRepository>().expect("repository context not provided");
-
         let well_known_loader = WellKnownSetLoaderImpl::new();
         let disposed = StoredValue::new(());
-
         Self {
             preview_words: RwSignal::new(Vec::new()),
             selected_words: RwSignal::new(HashSet::new()),
@@ -62,77 +60,38 @@ impl ImportPreviewModalState {
         selected_words.set(HashSet::new());
         is_loading_preview.set(true);
         error.set(None);
-
         spawn_local(async move {
-            let user = match repository.get_current_user().await {
-                Ok(Some(u)) => u,
-                Ok(None) => {
-                    if disposed.is_disposed() {
-                        return;
-                    }
-                    error.set(Some("Пользователь не найден".to_string()));
-                    is_loading_preview.set(false);
-                    return;
-                },
-                Err(e) => {
-                    if disposed.is_disposed() {
-                        return;
-                    }
-                    error.set(Some(e.to_string()));
-                    is_loading_preview.set(false);
-                    return;
-                },
-            };
-
+            let user =
+                match load_current_user(repository, error, is_loading_preview, disposed).await {
+                    Some(u) => u,
+                    None => return,
+                };
             if disposed.is_disposed() {
                 return;
             }
-
             let set = match well_known_loader.load_set(set_id.clone()).await {
                 Ok(s) => s,
                 Err(e) => {
-                    if disposed.is_disposed() {
-                        return;
+                    if !disposed.is_disposed() {
+                        error.set(Some(e.to_string()));
+                        is_loading_preview.set(false);
                     }
-                    error.set(Some(e.to_string()));
-                    is_loading_preview.set(false);
                     return;
                 },
             };
-
             let set_title = set_ids
                 .get()
                 .first()
-                .map(|id| {
-                    set_titles
-                        .get()
-                        .get(id)
-                        .cloned()
-                        .unwrap_or_else(|| id.clone())
-                })
+                .and_then(|id| set_titles.get().get(id).cloned())
                 .unwrap_or_else(|| set_id.clone());
-
-            let words = set.words();
-            let mut words_preview = Vec::new();
-            for word in words {
-                let knowledge = user.is_word_known(word);
-                words_preview.push(PreviewWord {
-                    word: word.clone(),
-                    meaning: knowledge.meaning,
-                    is_known: knowledge.is_known,
-                    set_id: set_id.clone(),
-                    set_title: set_title.clone(),
-                });
-            }
-
-            if disposed.is_disposed() {
-                return;
-            }
-            let words_to_select: HashSet<String> =
-                words_preview.iter().map(|w| w.word.clone()).collect();
-            preview_words.set(words_preview);
-            selected_words.set(words_to_select);
-            is_loading_preview.set(false);
+            let words_preview = build_set_preview_words(&user, &set_id, &set_title, set.words());
+            finalize_preview(
+                words_preview,
+                preview_words,
+                selected_words,
+                is_loading_preview,
+                disposed,
+            );
         });
     }
 
@@ -157,74 +116,46 @@ impl ImportPreviewModalState {
         error.set(None);
         set_titles.set(set_titles_input);
         state_set_ids.set(set_ids.clone());
-
         spawn_local(async move {
-            let user = match repository.get_current_user().await {
-                Ok(Some(u)) => u,
-                Ok(None) => {
-                    if disposed.is_disposed() {
-                        return;
-                    }
-                    error.set(Some("Пользователь не найден".to_string()));
-                    is_loading_preview.set(false);
-                    return;
-                },
-                Err(e) => {
-                    if disposed.is_disposed() {
-                        return;
-                    }
-                    error.set(Some(e.to_string()));
-                    is_loading_preview.set(false);
-                    return;
-                },
-            };
-
+            let user =
+                match load_current_user(repository, error, is_loading_preview, disposed).await {
+                    Some(u) => u,
+                    None => return,
+                };
             if disposed.is_disposed() {
                 return;
             }
-
-            let sets_result = well_known_loader.load_sets(set_ids.clone()).await;
-            let loaded_sets = match sets_result {
+            let loaded_sets = match well_known_loader.load_sets(set_ids.clone()).await {
                 Ok(sets) => sets,
                 Err(e) => {
-                    if disposed.is_disposed() {
-                        return;
+                    if !disposed.is_disposed() {
+                        error.set(Some(e.to_string()));
+                        is_loading_preview.set(false);
                     }
-                    error.set(Some(e.to_string()));
-                    is_loading_preview.set(false);
                     return;
                 },
             };
-
-            let mut words_preview = Vec::new();
             let titles = set_titles.get();
-
+            let mut words_preview = Vec::new();
             for (set_id, set) in loaded_sets {
                 let set_title = titles
                     .get(&set_id)
                     .cloned()
                     .unwrap_or_else(|| set_id.clone());
-
-                for word in set.words() {
-                    let knowledge = user.is_word_known(word);
-                    words_preview.push(PreviewWord {
-                        word: word.clone(),
-                        meaning: knowledge.meaning,
-                        is_known: knowledge.is_known,
-                        set_id: set_id.clone(),
-                        set_title: set_title.clone(),
-                    });
-                }
+                words_preview.extend(build_set_preview_words(
+                    &user,
+                    &set_id,
+                    &set_title,
+                    set.words(),
+                ));
             }
-
-            if disposed.is_disposed() {
-                return;
-            }
-            let words_to_select: HashSet<String> =
-                words_preview.iter().map(|w| w.word.clone()).collect();
-            preview_words.set(words_preview);
-            selected_words.set(words_to_select);
-            is_loading_preview.set(false);
+            finalize_preview(
+                words_preview,
+                preview_words,
+                selected_words,
+                is_loading_preview,
+                disposed,
+            );
         });
     }
 
@@ -238,9 +169,7 @@ impl ImportPreviewModalState {
 
     pub fn toggle_word(&self, word: String) {
         self.selected_words.update(|selected| {
-            if selected.contains(&word) {
-                selected.remove(&word);
-            } else {
+            if !selected.remove(&word) {
                 selected.insert(word);
             }
         });
@@ -251,43 +180,31 @@ impl ImportPreviewModalState {
     ) -> impl Future<Output = Result<CreateCardsFromAnalysisResult, String>> {
         let selected_words = self.selected_words.get();
         let preview_words = self.preview_words.get();
-
         let set_ids: Vec<String> = preview_words
             .iter()
             .filter(|pw| selected_words.contains(&pw.word))
             .map(|pw| pw.set_id.clone())
             .collect();
-
-        let unique_set_ids: Vec<String> = {
-            let mut unique = Vec::new();
-            let mut seen = HashSet::new();
-            for id in set_ids {
-                if seen.insert(id.clone()) {
-                    unique.push(id);
-                }
-            }
-            unique
-        };
-
+        let unique_set_ids: Vec<String> = set_ids
+            .into_iter()
+            .collect::<HashSet<_>>()
+            .into_iter()
+            .collect();
         let words_to_create: Vec<WordToCreate> = selected_words
             .into_iter()
             .map(|base_form| WordToCreate { base_form })
             .collect();
-
         let repository = self.repository.clone();
         let is_importing = self.is_importing;
         let error = self.error_message;
-
         let set_ids_opt = if unique_set_ids.is_empty() {
             None
         } else {
             Some(unique_set_ids)
         };
-
         async move {
             is_importing.set(true);
             error.set(None);
-
             let use_case = CreateCardsFromAnalysisUseCase::new(&repository);
             match use_case.execute(words_to_create, set_ids_opt).await {
                 Ok(result) => {
@@ -302,4 +219,67 @@ impl ImportPreviewModalState {
             }
         }
     }
+}
+
+async fn load_current_user(
+    repository: HybridUserRepository,
+    error: RwSignal<Option<String>>,
+    is_loading_preview: RwSignal<bool>,
+    disposed: StoredValue<()>,
+) -> Option<origa::domain::User> {
+    let fail = |msg: String| {
+        if disposed.is_disposed() {
+            return;
+        }
+        error.set(Some(msg));
+        is_loading_preview.set(false);
+    };
+    match repository.get_current_user().await {
+        Ok(Some(u)) => Some(u),
+        Ok(None) => {
+            fail("Пользователь не найден".into());
+            None
+        },
+        Err(e) => {
+            fail(e.to_string());
+            None
+        },
+    }
+}
+
+fn finalize_preview(
+    words_preview: Vec<PreviewWord>,
+    preview_words: RwSignal<Vec<PreviewWord>>,
+    selected_words: RwSignal<HashSet<String>>,
+    is_loading_preview: RwSignal<bool>,
+    disposed: StoredValue<()>,
+) {
+    if disposed.is_disposed() {
+        return;
+    }
+    let words_to_select: HashSet<String> = words_preview.iter().map(|w| w.word.clone()).collect();
+    preview_words.set(words_preview);
+    selected_words.set(words_to_select);
+    is_loading_preview.set(false);
+}
+
+fn build_set_preview_words(
+    user: &origa::domain::User,
+    set_id: &str,
+    set_title: &str,
+    set_words: &[String],
+) -> Vec<PreviewWord> {
+    set_words
+        .iter()
+        .map(|word| {
+            let knowledge = user.is_word_known(word);
+            PreviewWord {
+                word: word.clone(),
+                meaning: knowledge.meaning,
+                is_known: knowledge.is_known,
+                set_id: set_id.to_string(),
+                set_title: set_title.to_string(),
+            }
+        })
+        .collect()
 }

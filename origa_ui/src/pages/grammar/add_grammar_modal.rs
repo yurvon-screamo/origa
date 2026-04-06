@@ -1,12 +1,10 @@
 use super::add_grammar_modal_handlers::ModalHandlers;
 use super::add_grammar_modal_state::ModalState;
-use super::error_alert::ErrorAlert;
-use super::level_selector::LevelSelector;
 use super::rules_list::RulesList;
-use super::selected_count::SelectedCount;
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{
-    Button, ButtonSize, ButtonVariant, Drawer, Search, Spinner, Text, TextSize, TypographyVariant,
+    Button, ButtonSize, ButtonVariant, Drawer, ErrorAlert, LevelSelector, Search, SelectedCount,
+    Spinner, Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
 use leptos::task::spawn_local;
@@ -140,7 +138,7 @@ pub fn AddGrammarModal(is_open: RwSignal<bool>, refresh_trigger: RwSignal<u32>) 
                     }}
                 </div>
 
-                <SelectedCount count=Signal::derive(move || state.selected_rule_ids.get().len()) />
+                <SelectedCount count=Signal::derive(move || state.selected_rule_ids.get().len()) label="правил" />
 
                 <ErrorAlert message=state.error_message />
             </div>

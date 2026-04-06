@@ -77,18 +77,11 @@ pub fn JlptStep(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoVie
                         view! {
                             <div
                                 class=move || {
-                                    let base = "p-4 border cursor-pointer transition-all";
+                                    let base = "p-4 border cursor-pointer transition-all jlpt-option";
                                     if is_selected.get() {
                                         format!("{} selected", base)
                                     } else {
                                         base.to_string()
-                                    }
-                                }
-                                style=move || {
-                                    if is_selected.get() {
-                                        "border: 2px solid var(--accent-olive); background: var(--bg-warm)"
-                                    } else {
-                                        "border: 1px solid var(--border-dark)"
                                     }
                                 }
                                 data-testid=format!("jlpt-option-{}", level_code)
@@ -106,21 +99,13 @@ pub fn JlptStep(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoVie
                                         </Text>
                                     </div>
                                     <div
-                                        class="w-5 h-5 border relative flex-shrink-0 transition-all"
-                                        style=move || {
-                                            if is_selected.get() {
-                                                "border: 1px solid var(--accent-olive)"
-                                            } else {
-                                                "border: 1px solid var(--border-dark)"
-                                            }
-                                        }
+                                        class="w-5 h-5 border relative flex-shrink-0 transition-all jlpt-option-radio"
                                     >
                                         {move || {
                                             if is_selected.get() {
                                                 view! {
                                                     <div
-                                                        class="absolute"
-                                                        style="inset: 3px; background: var(--fg-black)"
+                                                        class="absolute jlpt-option-radio-check"
                                                     ></div>
                                                 }.into_any()
                                             } else {

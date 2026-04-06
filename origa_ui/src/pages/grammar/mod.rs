@@ -2,13 +2,10 @@ mod add_grammar_modal;
 mod add_grammar_modal_handlers;
 mod add_grammar_modal_state;
 mod content;
-mod error_alert;
 mod grammar_card_item;
 mod header;
-mod level_selector;
 mod rule_item;
 mod rules_list;
-mod selected_count;
 
 pub use content::GrammarContent;
 pub use header::GrammarHeader;

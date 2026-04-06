@@ -13,6 +13,7 @@ mod lesson_card_question;
 mod lesson_progress;
 mod lesson_progress_view;
 mod lesson_state;
+mod on_dont_know;
 mod on_quiz_select;
 mod on_rate;
 mod on_yesno_select;

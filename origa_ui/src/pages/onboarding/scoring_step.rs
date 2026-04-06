@@ -6,65 +6,13 @@ use crate::ui_components::{
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos_use::use_event_listener;
-use origa::domain::{Card as DomainCard, NativeLanguage};
 use origa::traits::UserRepository;
 use origa::use_cases::MarkCardAsKnownUseCase;
 use std::collections::HashSet;
+
 use ulid::Ulid;
 
-#[derive(Clone)]
-struct ScoringCard {
-    card_id: Ulid,
-    question: String,
-    answer: String,
-}
-
-fn extract_card_data(card: &DomainCard, lang: &NativeLanguage) -> (String, String) {
-    match card {
-        DomainCard::Vocabulary(v) => (
-            v.word().text().to_string(),
-            v.answer(lang)
-                .ok()
-                .map(|a| a.text().to_string())
-                .unwrap_or_else(|| "(нет перевода)".to_string()),
-        ),
-        DomainCard::Kanji(k) => (
-            k.kanji().text().to_string(),
-            k.description()
-                .ok()
-                .map(|a| a.text().to_string())
-                .unwrap_or_else(|| "(нет перевода)".to_string()),
-        ),
-        DomainCard::Grammar(g) => (
-            g.title(lang)
-                .ok()
-                .map(|q| q.text().to_string())
-                .unwrap_or_default(),
-            g.description(lang)
-                .ok()
-                .map(|a| a.text().to_string())
-                .unwrap_or_else(|| "(нет перевода)".to_string()),
-        ),
-    }
-}
-
-fn build_scoring_cards(
-    study_cards: &std::collections::HashMap<Ulid, origa::domain::StudyCard>,
-    lang: &NativeLanguage,
-) -> Vec<ScoringCard> {
-    study_cards
-        .values()
-        .filter(|sc| sc.memory().is_new())
-        .map(|sc| {
-            let (question, answer) = extract_card_data(sc.card(), lang);
-            ScoringCard {
-                card_id: *sc.card_id(),
-                question,
-                answer,
-            }
-        })
-        .collect()
-}
+use super::scoring_helpers::{ScoringCard, build_scoring_cards};
 
 #[component]
 pub fn ScoringStep(
