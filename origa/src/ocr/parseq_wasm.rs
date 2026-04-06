@@ -1,15 +1,15 @@
 use super::deim_wasm::ensure_ort_initialized;
 use super::vocab::Vocabulary;
 use crate::domain::OrigaError;
+use futures::lock::Mutex;
 use image::DynamicImage;
 use ort::session::Session;
 use ort_web::ValueExt;
-use std::cell::RefCell;
 
 const INPUT_HEIGHT: u32 = 16;
 
 pub struct ParseqRecognizer {
-    session: RefCell<Session>,
+    session: Mutex<Session>,
     vocab: Vocabulary,
     input_width: u32,
 }
@@ -25,6 +25,11 @@ impl ParseqRecognizer {
         let mut builder = Session::builder().map_err(|e| OrigaError::OcrError {
             reason: format!("Failed to create session builder: {:?}", e),
         })?;
+        builder = builder
+            .with_execution_providers([ort::ep::WebGPU::default().build()])
+            .map_err(|e| OrigaError::OcrError {
+                reason: format!("Failed to set execution providers: {:?}", e),
+            })?;
         let session =
             builder
                 .commit_from_memory(model_bytes)
@@ -34,7 +39,7 @@ impl ParseqRecognizer {
                 })?;
 
         Ok(Self {
-            session: RefCell::new(session),
+            session: Mutex::new(session),
             vocab: vocab.clone(),
             input_width,
         })
@@ -64,7 +69,7 @@ impl ParseqRecognizer {
             },
         };
 
-        let mut session = self.session.borrow_mut();
+        let mut session = self.session.lock().await;
         let run_options = match ort::session::RunOptions::new() {
             Ok(o) => o,
             Err(e) => {
