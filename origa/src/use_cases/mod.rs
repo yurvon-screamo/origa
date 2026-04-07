@@ -12,8 +12,7 @@ mod select_cards_to_lesson;
 mod toggle_favorite;
 mod update_user_profile;
 
-// TODO: Implement import_anki_pack
-// mod import_anki_pack;
+mod import_anki_pack;
 
 #[cfg(test)]
 mod tests;
@@ -29,6 +28,10 @@ pub use create_kanji_card::CreateKanjiCardUseCase;
 pub use create_vocabulary_card::CreateVocabularyCardUseCase;
 pub use delete_card::DeleteCardUseCase;
 pub use extract_text_from_image::ExtractTextFromImageUseCase;
+pub use import_anki_pack::{
+    AnkiCard, AnkiDeckInfo, AnkiFieldInfo, ImportAnkiPackResult, ImportAnkiPackUseCase,
+    extract_anki_db_bytes, extract_cards, parse_cards, read_anki_database,
+};
 pub use import_onboarding_sets::{ImportOnboardingResult, ImportOnboardingSetsUseCase};
 pub use mark_card_as_known::MarkCardAsKnownUseCase;
 pub use rate_card::RateCardUseCase;

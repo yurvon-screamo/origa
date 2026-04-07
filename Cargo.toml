@@ -40,6 +40,7 @@ ulid = { version = "1.2", features = ["serde"] }
 serde = { version = "1.0", features = ["derive"] }
 chrono = { version = "0.4", features = ["std", "clock", "serde", "wasmbind"] }
 rand = "0.9"
+rusqlite = { version = "0.39", default-features = false }
 thiserror = "2.0"
 sha2 = "0.10"
 
@@ -48,6 +49,7 @@ rs-fsrs = "1.2"
 lindera = { version = "2.2", default-features = false }
 lindera-dictionary = { version = "2.2" }
 flate2 = "1.1"
+zip = "2"
 rkyv = { version = "0.8", features = ["bytecheck"] }
 image = "0.25"
 

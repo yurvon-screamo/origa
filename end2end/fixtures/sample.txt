@@ -1,0 +1,2 @@
+This is a sample text file used as an invalid .apkg file for E2E testing.
+It should trigger an error in the Anki import flow.

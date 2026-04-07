@@ -176,3 +176,42 @@ testWithFreshUser.describe("Words Page - Mark as Known", () => {
         expect(await wordsPage.getCardCount()).toBeGreaterThanOrEqual(1);
     });
 });
+
+testWithFreshUser.describe("Words Page - Anki Import", () => {
+    testWithFreshUser("should display Anki tab in add words drawer", async ({ page }) => {
+        test.setTimeout(60_000);
+        const wordsPage = await setupWordsPage(page);
+
+        await wordsPage.openAddModal();
+        await expect(wordsPage.drawer).toBeVisible({ timeout: 5000 });
+
+        await expect(wordsPage.ankiTab).toBeVisible();
+    });
+
+    testWithFreshUser("should switch to Anki tab and show drop zone", async ({ page }) => {
+        test.setTimeout(60_000);
+        const wordsPage = await setupWordsPage(page);
+
+        await wordsPage.openAddModal();
+        await expect(wordsPage.drawer).toBeVisible({ timeout: 5000 });
+
+        await wordsPage.switchToAnkiTab();
+
+        await expect(wordsPage.ankiDropZone).toBeVisible({ timeout: 5000 });
+    });
+
+    testWithFreshUser("should show error for invalid file", async ({ page }) => {
+        test.setTimeout(60_000);
+        const wordsPage = await setupWordsPage(page);
+
+        await wordsPage.openAddModal();
+        await expect(wordsPage.drawer).toBeVisible({ timeout: 5000 });
+
+        await wordsPage.switchToAnkiTab();
+        await expect(wordsPage.ankiDropZone).toBeVisible({ timeout: 5000 });
+
+        await wordsPage.uploadAnkiFile("fixtures/sample.txt");
+
+        await expect(wordsPage.ankiError).toBeVisible({ timeout: 10_000 });
+    });
+});
