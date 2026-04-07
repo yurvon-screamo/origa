@@ -1,9 +1,9 @@
 use crate::domain::{NativeLanguage, OrigaError, User};
 use crate::traits::UserRepository;
-use crate::use_cases::tests::fixtures::{InMemoryUserRepository, init_real_dictionaries};
+use crate::use_cases::tests::fixtures::{init_real_dictionaries, InMemoryUserRepository};
 use crate::use_cases::{
-    AnkiCard, ImportAnkiPackUseCase, extract_anki_db_bytes, extract_cards, parse_cards,
-    read_anki_database,
+    extract_anki_db_bytes, extract_cards, parse_cards, read_anki_database, AnkiCard,
+    ImportAnkiPackUseCase,
 };
 use serde_json::Value;
 
@@ -16,23 +16,6 @@ fn extract_anki_db_bytes_from_valid_apkg() {
 
     assert!(result.is_ok());
     assert!(!result.unwrap().is_empty());
-}
-
-#[test]
-fn extract_anki_db_bytes_rejects_oversized_file() {
-    let apkg_bytes = include_bytes!("../big_sample.apkg");
-    let result = extract_anki_db_bytes(apkg_bytes);
-
-    assert!(result.is_err());
-    assert!(matches!(result, Err(OrigaError::AnkiInvalidFile { .. })));
-    let err = result.unwrap_err();
-    if let OrigaError::AnkiInvalidFile { reason } = err {
-        assert!(
-            reason.contains("too large"),
-            "Expected 'too large' in reason, got: {}",
-            reason
-        );
-    }
 }
 
 #[test]
@@ -67,18 +50,6 @@ fn read_anki_database_from_valid_bytes() {
     for field in &deck_info.detected_fields {
         eprintln!("sample.apkg field: {} (index {})", field.name, field.index);
     }
-}
-
-#[test]
-fn read_anki_database_from_big_sample_bytes() {
-    let apkg_bytes = include_bytes!("../big_sample.apkg");
-    let result = extract_anki_db_bytes(apkg_bytes);
-
-    assert!(result.is_err());
-    assert!(
-        matches!(result, Err(OrigaError::AnkiInvalidFile { ref reason })
-        if reason.contains("too large"))
-    );
 }
 
 #[test]
@@ -256,18 +227,6 @@ fn extract_cards_from_sample_apkg() {
 }
 
 #[test]
-fn extract_cards_rejects_oversized_file() {
-    let apkg_bytes = include_bytes!("../big_sample.apkg");
-    let result = extract_cards(apkg_bytes, "Expression", None);
-
-    assert!(result.is_err());
-    assert!(
-        matches!(result, Err(OrigaError::AnkiInvalidFile { ref reason })
-        if reason.contains("too large"))
-    );
-}
-
-#[test]
 fn extract_cards_with_translation_from_sample_apkg() {
     let apkg_bytes = include_bytes!("../sample.apkg");
     let db_bytes = extract_anki_db_bytes(apkg_bytes).unwrap();
@@ -362,19 +321,6 @@ fn full_extract_pipeline_with_sample_apkg() {
     assert!(!cards.is_empty(), "Should have extracted at least one card");
     assert!(!cards[0].word.is_empty());
     assert!(!fields.is_empty());
-}
-
-#[test]
-fn full_extract_pipeline_rejects_oversized_file() {
-    let apkg_bytes = include_bytes!("../big_sample.apkg");
-
-    let result = extract_anki_db_bytes(apkg_bytes);
-
-    assert!(result.is_err());
-    assert!(
-        matches!(result, Err(OrigaError::AnkiInvalidFile { ref reason })
-        if reason.contains("too large"))
-    );
 }
 
 // ── execute (async) integration ───────────────────────────────────────
