@@ -5,14 +5,13 @@ mod create_kanji_card;
 mod create_vocabulary_card;
 mod delete_card;
 mod extract_text_from_image;
+mod import_anki_pack;
 mod import_onboarding_sets;
 mod mark_card_as_known;
 mod rate_card;
 mod select_cards_to_lesson;
 mod toggle_favorite;
 mod update_user_profile;
-
-mod import_anki_pack;
 
 #[cfg(test)]
 mod tests;

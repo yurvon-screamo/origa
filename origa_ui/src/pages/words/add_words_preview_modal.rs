@@ -67,20 +67,21 @@ pub fn AddWordsPreviewModal(
     });
 
     let tabs = Signal::derive(|| {
-        vec![
+        let mut items = vec![
             TabItem {
                 id: "text".to_string(),
                 label: "Текст".to_string(),
             },
             TabItem {
-                id: "anki".to_string(),
-                label: "Anki".to_string(),
-            },
-            TabItem {
                 id: "image".to_string(),
                 label: "Изображение".to_string(),
             },
-        ]
+        ];
+        items.push(TabItem {
+            id: "anki".to_string(),
+            label: "Anki".to_string(),
+        });
+        items
     });
 
     Effect::new({
@@ -141,13 +142,15 @@ pub fn AddWordsPreviewModal(
                                                 on_analyze=handlers.on_analyze
                                             />
                                         }.into_any(),
-                                        InputMode::Anki => view! {
-                                            <AnkiImportStage
-                                                is_open=is_open
-                                                refresh_trigger=refresh_trigger
-                                                test_id=Signal::derive(|| "words-drawer-anki".to_string())
-                                            />
-                                        }.into_any(),
+                                        InputMode::Anki => {
+                                            view! {
+                                                <AnkiImportStage
+                                                    is_open=is_open
+                                                    refresh_trigger=refresh_trigger
+                                                    test_id=Signal::derive(|| "words-drawer-anki".to_string())
+                                                />
+                                            }.into_any()
+                                        },
                                         InputMode::Image => view! {
                                             <ImageInputStage
                                                 is_open=is_open
