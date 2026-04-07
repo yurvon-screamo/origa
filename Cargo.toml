@@ -49,7 +49,7 @@ rs-fsrs = "1.2"
 lindera = { version = "2.2", default-features = false }
 lindera-dictionary = { version = "2.2" }
 flate2 = "1.1"
-zip = "2"
+zip = { version = "2", default-features = false, features = ["deflate"] }
 rkyv = { version = "0.8", features = ["bytecheck"] }
 image = "0.25"
 
