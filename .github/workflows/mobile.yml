@@ -26,7 +26,7 @@ jobs:
       matrix:
         include:
           - platform: android
-            os: ubuntu-22.04
+            os: ubuntu-24.04
             rust_targets: wasm32-unknown-unknown,aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
 
     runs-on: ${{ matrix.os }}
@@ -75,7 +75,7 @@ jobs:
         uses: nttld/setup-ndk@v1
         id: setup-ndk
         with:
-          ndk-version: r25b
+          ndk-version: r26b
           local-cache: true
 
       - name: Cache Gradle
