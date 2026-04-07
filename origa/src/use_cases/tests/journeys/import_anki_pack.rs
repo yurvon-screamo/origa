@@ -1,9 +1,9 @@
 use crate::domain::{NativeLanguage, OrigaError, User};
 use crate::traits::UserRepository;
-use crate::use_cases::tests::fixtures::{init_real_dictionaries, InMemoryUserRepository};
+use crate::use_cases::tests::fixtures::{InMemoryUserRepository, init_real_dictionaries};
 use crate::use_cases::{
-    extract_anki_db_bytes, extract_cards, parse_cards, read_anki_database, AnkiCard,
-    ImportAnkiPackUseCase,
+    AnkiCard, ImportAnkiPackUseCase, extract_anki_db_bytes, extract_cards, parse_cards,
+    read_anki_database,
 };
 use serde_json::Value;
 
