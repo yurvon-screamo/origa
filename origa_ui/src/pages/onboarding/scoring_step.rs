@@ -6,6 +6,7 @@ use crate::ui_components::{
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos_use::use_event_listener;
+use origa::domain::{RateMode, Rating};
 use origa::traits::UserRepository;
 use origa::use_cases::MarkCardAsKnownUseCase;
 use std::collections::HashSet;
@@ -148,7 +149,11 @@ pub fn ScoringStep(
             if trigger_val == 0 {
                 return;
             }
-            if is_loading.get() || scoring_completed.get() || cards.get().is_empty() {
+            if is_loading.get()
+                || scoring_completed.get()
+                || cards.get().is_empty()
+                || is_rating.get_untracked()
+            {
                 return;
             }
 
@@ -167,13 +172,26 @@ pub fn ScoringStep(
 
             let repo = repo.clone();
             spawn_local(async move {
+                let Ok(Some(mut user)) = repo.get_current_user().await else {
+                    is_rating.set(false);
+                    return;
+                };
+
+                let mut success_count: usize = 0;
                 for card_id in &remaining_ids {
-                    let use_case = MarkCardAsKnownUseCase::new(&repo);
-                    if use_case.execute(*card_id).await.is_ok() {
-                        known_count.update(|c| *c += 1);
+                    if let Some(study_card) = user.knowledge_set().get_card(*card_id) {
+                        if !study_card.memory().is_new() {
+                            continue;
+                        }
                     }
-                    if mark_all_disposed.is_disposed() {
-                        return;
+
+                    if user
+                        .rate_card(*card_id, Rating::Easy, RateMode::StandardLesson)
+                        .is_ok()
+                    {
+                        success_count += 1;
+                    } else {
+                        tracing::warn!("Failed to rate card {} in batch mark-all", card_id);
                     }
                 }
 
@@ -181,8 +199,14 @@ pub fn ScoringStep(
                     return;
                 }
 
+                if repo.save(&user).await.is_ok() {
+                    known_count.update(|c| *c += success_count);
+                    scoring_completed.set(true);
+                } else {
+                    tracing::error!("Failed to save user after batch mark-all-known");
+                }
+
                 is_rating.set(false);
-                scoring_completed.set(true);
             });
         });
     }
