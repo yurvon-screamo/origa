@@ -1,424 +1,485 @@
+use crate::domain::{NativeLanguage, OrigaError, User};
+use crate::traits::UserRepository;
+use crate::use_cases::tests::fixtures::{InMemoryUserRepository, init_real_dictionaries};
+use crate::use_cases::{
+    AnkiCard, ImportAnkiPackUseCase, extract_anki_db_bytes, extract_cards, parse_cards,
+    read_anki_database,
+};
 use serde_json::Value;
 
-const FIELD_SEPARATOR: char = '\x1f';
-
-fn clean_html_text(raw: &str) -> String {
-    let mut result = String::new();
-    let mut inside_tag = false;
-    let chars: Vec<char> = raw.chars().collect();
-    let mut i = 0;
-
-    while i < chars.len() {
-        if chars[i] == '<' {
-            inside_tag = true;
-            result.push(' ');
-            i += 1;
-            continue;
-        }
-        if chars[i] == '>' && inside_tag {
-            inside_tag = false;
-            i += 1;
-            continue;
-        }
-        if inside_tag {
-            i += 1;
-            continue;
-        }
-        if i + 5 < chars.len()
-            && chars[i] == '&'
-            && chars[i + 1] == 'n'
-            && chars[i + 2] == 'b'
-            && chars[i + 3] == 's'
-            && chars[i + 4] == 'p'
-            && chars[i + 5] == ';'
-        {
-            result.push(' ');
-            i += 6;
-            continue;
-        }
-        result.push(chars[i]);
-        i += 1;
-    }
-
-    result.split_whitespace().collect::<Vec<_>>().join(" ")
-}
-
-fn find_field_indices(
-    models_json: &str,
-    word_tag: &str,
-    translation_tag: Option<&str>,
-) -> Result<(usize, Option<usize>), String> {
-    let models: Value =
-        serde_json::from_str(models_json).map_err(|e| format!("Invalid JSON: {}", e))?;
-
-    let mut word_index = None;
-    let mut translation_index = None;
-
-    if let Some(models_map) = models.as_object() {
-        for (_model_id, model_data) in models_map {
-            if let Some(fields) = model_data["flds"].as_array() {
-                for (index, field) in fields.iter().enumerate() {
-                    if let Some(field_name) = field["name"].as_str() {
-                        let field_name_lower = field_name.to_lowercase();
-                        if field_name_lower == word_tag.to_lowercase() {
-                            word_index = Some(index);
-                        }
-                        if let Some(trans_tag) = translation_tag
-                            && field_name_lower == trans_tag.to_lowercase()
-                        {
-                            translation_index = Some(index);
-                        }
-                    }
-                }
-
-                if word_index.is_some()
-                    && (translation_tag.is_none() || translation_index.is_some())
-                {
-                    break;
-                }
-            }
-        }
-    }
-
-    let word_index =
-        word_index.ok_or_else(|| format!("Field '{}' not found in Anki deck models", word_tag))?;
-
-    Ok((word_index, translation_index))
-}
-
-fn parse_anki_fields(
-    flds_str: &str,
-    word_index: usize,
-    translation_index: Option<usize>,
-) -> (String, Option<String>) {
-    let fields: Vec<&str> = flds_str.split(FIELD_SEPARATOR).collect();
-
-    let raw_word = fields.get(word_index).unwrap_or(&"");
-    let word = clean_html_text(raw_word);
-
-    let translation = if let Some(idx) = translation_index {
-        let raw_translation = fields.get(idx).unwrap_or(&"");
-        let cleaned = clean_html_text(raw_translation);
-        if cleaned.is_empty() {
-            None
-        } else {
-            Some(cleaned)
-        }
-    } else {
-        None
-    };
-
-    (word, translation)
-}
+// ── extract_anki_db_bytes ─────────────────────────────────────────────
 
 #[test]
-fn clean_html_removes_simple_tags() {
-    let input = "<b>太字</b>テスト";
-    let result = clean_html_text(input);
-
-    assert_eq!(result, "太字 テスト");
-}
-
-#[test]
-fn clean_html_removes_nested_tags() {
-    let input = "<div><span>日本語</span></div>";
-    let result = clean_html_text(input);
-
-    assert_eq!(result, "日本語");
-}
-
-#[test]
-fn clean_html_replaces_nbsp() {
-    let input = "test&nbsp;space";
-    let result = clean_html_text(input);
-
-    assert_eq!(result, "test space");
-}
-
-#[test]
-fn clean_html_handles_combined_html_and_nbsp() {
-    let input = "<div>日本語&nbsp;テスト</div>";
-    let result = clean_html_text(input);
-
-    assert_eq!(result, "日本語 テスト");
-}
-
-#[test]
-fn clean_html_handles_multiple_nbsp() {
-    let input = "a&nbsp;b&nbsp;c";
-    let result = clean_html_text(input);
-
-    assert_eq!(result, "a b c");
-}
-
-#[test]
-fn clean_html_preserves_plain_text() {
-    let input = "日本語テスト";
-    let result = clean_html_text(input);
-
-    assert_eq!(result, "日本語テスト");
-}
-
-#[test]
-fn clean_html_trims_whitespace() {
-    let input = "  <b>word</b>  ";
-    let result = clean_html_text(input);
-
-    assert_eq!(result, "word");
-}
-
-#[test]
-fn clean_html_handles_empty_string() {
-    let input = "";
-    let result = clean_html_text(input);
-
-    assert!(result.is_empty());
-}
-
-#[test]
-fn clean_html_handles_complex_html() {
-    let input = "<p class=\"note\">Hello&nbsp;<strong>World</strong></p>";
-    let result = clean_html_text(input);
-
-    assert_eq!(result, "Hello World");
-}
-
-#[test]
-fn find_field_indices_finds_word_field() {
-    let models = r#"{
-        "123": {
-            "flds": [
-                {"name": "Expression"},
-                {"name": "Meaning"}
-            ]
-        }
-    }"#;
-
-    let result = find_field_indices(models, "expression", None);
+fn extract_anki_db_bytes_from_valid_apkg() {
+    let apkg_bytes = include_bytes!("../sample.apkg");
+    let result = extract_anki_db_bytes(apkg_bytes);
 
     assert!(result.is_ok());
-    let (word_index, _) = result.unwrap();
-    assert_eq!(word_index, 0);
+    assert!(!result.unwrap().is_empty());
 }
 
 #[test]
-fn find_field_indices_finds_both_fields() {
-    let models = r#"{
-        "123": {
-            "flds": [
-                {"name": "Expression"},
-                {"name": "Meaning"}
-            ]
-        }
-    }"#;
-
-    let result = find_field_indices(models, "expression", Some("meaning"));
-
-    assert!(result.is_ok());
-    let (word_index, translation_index) = result.unwrap();
-    assert_eq!(word_index, 0);
-    assert_eq!(translation_index, Some(1));
-}
-
-#[test]
-fn find_field_indices_is_case_insensitive() {
-    let models = r#"{
-        "123": {
-            "flds": [
-                {"name": "EXPRESSION"},
-                {"name": "MEANING"}
-            ]
-        }
-    }"#;
-
-    let result = find_field_indices(models, "expression", Some("meaning"));
-
-    assert!(result.is_ok());
-    let (word_index, translation_index) = result.unwrap();
-    assert_eq!(word_index, 0);
-    assert_eq!(translation_index, Some(1));
-}
-
-#[test]
-fn find_field_indices_returns_error_for_missing_field() {
-    let models = r#"{
-        "123": {
-            "flds": [
-                {"name": "Front"},
-                {"name": "Back"}
-            ]
-        }
-    }"#;
-
-    let result = find_field_indices(models, "expression", None);
+fn extract_anki_db_bytes_rejects_oversized_file() {
+    let apkg_bytes = include_bytes!("../big_sample.apkg");
+    let result = extract_anki_db_bytes(apkg_bytes);
 
     assert!(result.is_err());
+    assert!(matches!(result, Err(OrigaError::AnkiInvalidFile { .. })));
     let err = result.unwrap_err();
-    assert!(err.contains("expression"));
+    if let OrigaError::AnkiInvalidFile { reason } = err {
+        assert!(
+            reason.contains("too large"),
+            "Expected 'too large' in reason, got: {}",
+            reason
+        );
+    }
 }
 
 #[test]
-fn find_field_indices_handles_multiple_models() {
-    let models = r#"{
-        "111": {
-            "flds": [
-                {"name": "Front"},
-                {"name": "Back"}
-            ]
-        },
-        "222": {
-            "flds": [
-                {"name": "Expression"},
-                {"name": "Reading"},
-                {"name": "Meaning"}
-            ]
-        }
-    }"#;
-
-    let result = find_field_indices(models, "expression", Some("meaning"));
-
-    assert!(result.is_ok());
-    let (word_index, translation_index) = result.unwrap();
-    assert_eq!(word_index, 0);
-    assert_eq!(translation_index, Some(2));
-}
-
-#[test]
-fn find_field_indices_returns_none_for_missing_translation_when_optional() {
-    let models = r#"{
-        "123": {
-            "flds": [
-                {"name": "Expression"},
-                {"name": "Reading"}
-            ]
-        }
-    }"#;
-
-    let result = find_field_indices(models, "expression", None);
-
-    assert!(result.is_ok());
-    let (_, translation_index) = result.unwrap();
-    assert!(translation_index.is_none());
-}
-
-#[test]
-fn find_field_indices_handles_invalid_json() {
-    let models = "not valid json";
-
-    let result = find_field_indices(models, "expression", None);
+fn extract_anki_db_bytes_from_invalid_data() {
+    let result = extract_anki_db_bytes(b"not a zip");
 
     assert!(result.is_err());
+    assert!(matches!(result, Err(OrigaError::AnkiInvalidFile { .. })));
 }
 
 #[test]
-fn parse_anki_fields_extracts_word_and_translation() {
-    let flds = format!("日本語{}Japanese{}", FIELD_SEPARATOR, FIELD_SEPARATOR);
+fn extract_anki_db_bytes_from_empty_data() {
+    let result = extract_anki_db_bytes(&[]);
 
-    let (word, translation) = parse_anki_fields(&flds, 0, Some(1));
+    assert!(result.is_err());
+    assert!(matches!(result, Err(OrigaError::AnkiInvalidFile { .. })));
+}
 
-    assert_eq!(word, "日本語");
-    assert_eq!(translation, Some("Japanese".to_string()));
+// ── read_anki_database ────────────────────────────────────────────────
+
+#[test]
+fn read_anki_database_from_valid_bytes() {
+    let apkg_bytes = include_bytes!("../sample.apkg");
+    let db_bytes = extract_anki_db_bytes(apkg_bytes).unwrap();
+
+    let result = read_anki_database(&db_bytes);
+
+    assert!(result.is_ok());
+    let deck_info = result.unwrap();
+    assert!(!deck_info.detected_fields.is_empty());
+
+    for field in &deck_info.detected_fields {
+        eprintln!("sample.apkg field: {} (index {})", field.name, field.index);
+    }
 }
 
 #[test]
-fn parse_anki_fields_handles_missing_translation_index() {
-    let flds = format!("日本語{}Japanese{}", FIELD_SEPARATOR, FIELD_SEPARATOR);
+fn read_anki_database_from_big_sample_bytes() {
+    let apkg_bytes = include_bytes!("../big_sample.apkg");
+    let result = extract_anki_db_bytes(apkg_bytes);
 
-    let (word, translation) = parse_anki_fields(&flds, 0, None);
-
-    assert_eq!(word, "日本語");
-    assert!(translation.is_none());
-}
-
-#[test]
-fn parse_anki_fields_cleans_html_in_word() {
-    let flds = format!(
-        "<b>日本語</b>{}Japanese{}",
-        FIELD_SEPARATOR, FIELD_SEPARATOR
+    assert!(result.is_err());
+    assert!(
+        matches!(result, Err(OrigaError::AnkiInvalidFile { ref reason })
+        if reason.contains("too large"))
     );
-
-    let (word, _) = parse_anki_fields(&flds, 0, Some(1));
-
-    assert_eq!(word, "日本語");
 }
 
 #[test]
-fn parse_anki_fields_cleans_html_in_translation() {
-    let flds = format!(
-        "日本語{}<i>Japanese</i>{}",
-        FIELD_SEPARATOR, FIELD_SEPARATOR
-    );
+fn read_anki_database_from_invalid_bytes() {
+    let result = read_anki_database(b"not a database");
 
-    let (_, translation) = parse_anki_fields(&flds, 0, Some(1));
-
-    assert_eq!(translation, Some("Japanese".to_string()));
+    assert!(result.is_err());
+    assert!(matches!(result, Err(OrigaError::AnkiInvalidFile { .. })));
 }
 
-#[test]
-fn parse_anki_fields_handles_empty_word() {
-    let flds = format!("{}Japanese{}", FIELD_SEPARATOR, FIELD_SEPARATOR);
-
-    let (word, _) = parse_anki_fields(&flds, 0, Some(1));
-
-    assert!(word.is_empty());
-}
+// ── parse_cards ───────────────────────────────────────────────────────
 
 #[test]
-fn parse_anki_fields_handles_out_of_bounds_index() {
-    let flds = format!("日本語{}", FIELD_SEPARATOR);
-
-    let (word, translation) = parse_anki_fields(&flds, 0, Some(5));
-
-    assert_eq!(word, "日本語");
-    assert!(translation.is_none() || translation.unwrap().is_empty());
-}
-
-#[test]
-fn field_separator_is_correct() {
-    let test_str = format!("a{}b{}c", FIELD_SEPARATOR, FIELD_SEPARATOR);
-    let parts: Vec<&str> = test_str.split(FIELD_SEPARATOR).collect();
-
-    assert_eq!(parts.len(), 3);
-    assert_eq!(parts[0], "a");
-    assert_eq!(parts[1], "b");
-    assert_eq!(parts[2], "c");
-}
-
-#[test]
-fn parse_multiple_cards_from_fields() {
-    let cards_data = [
-        (
-            format!(
-                "日本語{}Japanese language{}",
-                FIELD_SEPARATOR, FIELD_SEPARATOR
-            ),
-            "日本語",
-            "Japanese language",
-        ),
-        (
-            format!("勉強{}study{}", FIELD_SEPARATOR, FIELD_SEPARATOR),
-            "勉強",
-            "study",
-        ),
-        (
-            format!("<b>太字</b>{}bold{}", FIELD_SEPARATOR, FIELD_SEPARATOR),
-            "太字",
-            "bold",
-        ),
+fn parse_cards_extracts_word_only() {
+    let models = r#"{ "123": { "flds": [
+        {"name": "Expression"}, {"name": "Meaning"}
+    ] } }"#;
+    let notes = vec![
+        format!("{}\x1f{}", "日本語", "Japanese"),
+        format!("{}\x1f{}", "勉強", "study"),
     ];
 
-    for (flds, expected_word, expected_translation) in cards_data {
-        let (word, translation) = parse_anki_fields(&flds, 0, Some(1));
-        assert_eq!(word, expected_word);
-        assert_eq!(translation.unwrap(), expected_translation);
+    let models: Value = serde_json::from_str(models).unwrap();
+    let result = parse_cards(&models, &notes, "expression", None);
+
+    assert!(result.is_ok());
+    let cards = result.unwrap();
+    assert_eq!(cards.len(), 2);
+    assert_eq!(cards[0].word, "日本語");
+    assert!(cards[0].translation.is_none());
+    assert_eq!(cards[1].word, "勉強");
+}
+
+#[test]
+fn parse_cards_extracts_word_and_translation() {
+    let models = r#"{ "123": { "flds": [
+        {"name": "Expression"}, {"name": "Meaning"}
+    ] } }"#;
+    let notes = vec![
+        format!("{}\x1f{}", "日本語", "Japanese"),
+        format!("{}\x1f{}", "勉強", "to study"),
+    ];
+
+    let models: Value = serde_json::from_str(models).unwrap();
+    let result = parse_cards(&models, &notes, "expression", Some("meaning"));
+
+    assert!(result.is_ok());
+    let cards = result.unwrap();
+    assert_eq!(cards.len(), 2);
+    assert_eq!(cards[0].word, "日本語");
+    assert_eq!(cards[0].translation.as_deref(), Some("Japanese"));
+    assert_eq!(cards[1].word, "勉強");
+    assert_eq!(cards[1].translation.as_deref(), Some("to study"));
+}
+
+#[test]
+fn parse_cards_skips_empty_words() {
+    let models = r#"{ "123": { "flds": [
+        {"name": "Expression"}, {"name": "Meaning"}
+    ] } }"#;
+    let notes = vec![
+        format!("{}\x1f{}", "日本語", "Japanese"),
+        format!("{}\x1f{}", "", "empty word"),
+        format!("{}\x1f{}", "勉強", "study"),
+    ];
+
+    let models: Value = serde_json::from_str(models).unwrap();
+    let result = parse_cards(&models, &notes, "expression", Some("meaning"));
+
+    assert!(result.is_ok());
+    let cards = result.unwrap();
+    assert_eq!(cards.len(), 2);
+    assert_eq!(cards[0].word, "日本語");
+    assert_eq!(cards[1].word, "勉強");
+}
+
+#[test]
+fn parse_cards_strips_html_from_fields() {
+    let models = r#"{ "123": { "flds": [
+        {"name": "Expression"}, {"name": "Meaning"}
+    ] } }"#;
+    let notes = vec![format!("{}\x1f{}", "<b>日本語</b>", "<i>Japanese</i>")];
+
+    let models: Value = serde_json::from_str(models).unwrap();
+    let result = parse_cards(&models, &notes, "expression", Some("meaning"));
+
+    assert!(result.is_ok());
+    let cards = result.unwrap();
+    assert_eq!(cards.len(), 1);
+    assert_eq!(cards[0].word, "日本語");
+    assert_eq!(cards[0].translation.as_deref(), Some("Japanese"));
+}
+
+#[test]
+fn parse_cards_is_case_insensitive() {
+    let models = r#"{ "123": { "flds": [
+        {"name": "EXPRESSION"}, {"name": "MEANING"}
+    ] } }"#;
+    let notes = vec![format!("{}\x1f{}", "test", "meaning text")];
+
+    let models: Value = serde_json::from_str(models).unwrap();
+    let result = parse_cards(&models, &notes, "expression", Some("meaning"));
+
+    assert!(result.is_ok());
+    let cards = result.unwrap();
+    assert_eq!(cards.len(), 1);
+    assert_eq!(cards[0].word, "test");
+    assert_eq!(cards[0].translation.as_deref(), Some("meaning text"));
+}
+
+#[test]
+fn parse_cards_returns_error_for_missing_word_field() {
+    let models = r#"{ "123": { "flds": [
+        {"name": "Front"}, {"name": "Back"}
+    ] } }"#;
+    let notes = vec![format!("{}\x1f{}", "hello", "world")];
+
+    let models: Value = serde_json::from_str(models).unwrap();
+    let result = parse_cards(&models, &notes, "expression", None);
+
+    assert!(result.is_err());
+    assert!(matches!(result, Err(OrigaError::AnkiFieldNotFound { .. })));
+}
+
+#[test]
+fn parse_cards_handles_empty_notes() {
+    let models = r#"{ "123": { "flds": [
+        {"name": "Expression"}, {"name": "Meaning"}
+    ] } }"#;
+
+    let models: Value = serde_json::from_str(models).unwrap();
+    let result = parse_cards(&models, &[], "expression", None);
+
+    assert!(result.is_ok());
+    assert!(result.unwrap().is_empty());
+}
+
+// ── extract_cards with real .apkg files ───────────────────────────────
+
+#[test]
+fn extract_cards_from_sample_apkg() {
+    let apkg_bytes = include_bytes!("../sample.apkg");
+    let db_bytes = extract_anki_db_bytes(apkg_bytes).unwrap();
+    let deck_info = read_anki_database(&db_bytes).unwrap();
+
+    let word_field = deck_info
+        .detected_fields
+        .iter()
+        .find(|f| {
+            let n = f.name.to_lowercase();
+            n == "expression" || n == "word" || n == "front"
+        })
+        .or(deck_info.detected_fields.first())
+        .expect("No suitable word field in sample.apkg");
+
+    let result = extract_cards(apkg_bytes, &word_field.name, None);
+
+    assert!(result.is_ok());
+    let (cards, fields) = result.unwrap();
+    assert!(
+        !cards.is_empty(),
+        "Expected at least one card from sample.apkg"
+    );
+    assert!(!fields.is_empty());
+    assert!(!cards[0].word.is_empty());
+
+    eprintln!(
+        "sample.apkg: {} cards, word field: '{}'",
+        cards.len(),
+        word_field.name
+    );
+    for card in &cards {
+        eprintln!("  '{}' -> {:?}", card.word, card.translation);
     }
 }
 
 #[test]
-fn empty_word_is_detected_as_skip_candidate() {
-    let flds = format!("{}translation{}", FIELD_SEPARATOR, FIELD_SEPARATOR);
-    let (word, _) = parse_anki_fields(&flds, 0, Some(1));
+fn extract_cards_rejects_oversized_file() {
+    let apkg_bytes = include_bytes!("../big_sample.apkg");
+    let result = extract_cards(apkg_bytes, "Expression", None);
 
-    let should_skip = word.is_empty();
-    assert!(should_skip);
+    assert!(result.is_err());
+    assert!(
+        matches!(result, Err(OrigaError::AnkiInvalidFile { ref reason })
+        if reason.contains("too large"))
+    );
+}
+
+#[test]
+fn extract_cards_with_translation_from_sample_apkg() {
+    let apkg_bytes = include_bytes!("../sample.apkg");
+    let db_bytes = extract_anki_db_bytes(apkg_bytes).unwrap();
+    let deck_info = read_anki_database(&db_bytes).unwrap();
+
+    let word_field = deck_info
+        .detected_fields
+        .iter()
+        .find(|f| {
+            let n = f.name.to_lowercase();
+            n == "expression" || n == "word" || n == "front"
+        })
+        .or(deck_info.detected_fields.first())
+        .expect("No suitable word field in sample.apkg");
+
+    let translation_field = deck_info.detected_fields.iter().find(|f| {
+        let n = f.name.to_lowercase();
+        n == "meaning" || n == "definition" || n == "back" || n == "translation"
+    });
+
+    let result = extract_cards(
+        apkg_bytes,
+        &word_field.name,
+        translation_field.map(|f| f.name.as_str()),
+    );
+
+    assert!(result.is_ok());
+    let (cards, _) = result.unwrap();
+    assert!(!cards.is_empty());
+
+    if let Some(trans) = translation_field {
+        eprintln!(
+            "sample.apkg: word='{}', trans='{}', {} cards",
+            word_field.name,
+            trans.name,
+            cards.len()
+        );
+        for card in &cards {
+            eprintln!("  '{}' -> {:?}", card.word, card.translation);
+        }
+    }
+}
+
+#[test]
+fn extract_cards_rejects_invalid_zip() {
+    let result = extract_cards(b"not a zip", "Expression", None);
+
+    assert!(result.is_err());
+    assert!(matches!(result, Err(OrigaError::AnkiInvalidFile { .. })));
+}
+
+#[test]
+fn extract_cards_rejects_unknown_field() {
+    let apkg_bytes = include_bytes!("../sample.apkg");
+
+    let result = extract_cards(apkg_bytes, "NonExistentField", None);
+
+    assert!(result.is_err());
+    assert!(matches!(result, Err(OrigaError::AnkiFieldNotFound { .. })));
+}
+
+#[test]
+fn extract_cards_rejects_empty_data() {
+    let result = extract_cards(&[], "Expression", None);
+
+    assert!(result.is_err());
+}
+
+// ── Full pipeline ─────────────────────────────────────────────────────
+
+#[test]
+fn full_extract_pipeline_with_sample_apkg() {
+    let apkg_bytes = include_bytes!("../sample.apkg");
+
+    let db_bytes =
+        extract_anki_db_bytes(apkg_bytes).expect("Failed to extract DB from sample.apkg");
+
+    let deck_info = read_anki_database(&db_bytes).expect("Failed to read database");
+
+    for field in &deck_info.detected_fields {
+        eprintln!("Detected field: {} (index {})", field.name, field.index);
+    }
+
+    let word_field = deck_info
+        .detected_fields
+        .first()
+        .expect("No fields detected");
+
+    let (cards, fields) =
+        extract_cards(apkg_bytes, &word_field.name, None).expect("Failed to extract cards");
+
+    assert!(!cards.is_empty(), "Should have extracted at least one card");
+    assert!(!cards[0].word.is_empty());
+    assert!(!fields.is_empty());
+}
+
+#[test]
+fn full_extract_pipeline_rejects_oversized_file() {
+    let apkg_bytes = include_bytes!("../big_sample.apkg");
+
+    let result = extract_anki_db_bytes(apkg_bytes);
+
+    assert!(result.is_err());
+    assert!(
+        matches!(result, Err(OrigaError::AnkiInvalidFile { ref reason })
+        if reason.contains("too large"))
+    );
+}
+
+// ── execute (async) integration ───────────────────────────────────────
+
+#[tokio::test]
+async fn execute_imports_cards_into_user_collection() {
+    init_real_dictionaries();
+
+    let repo = InMemoryUserRepository::with_user(User::new(
+        "test@example.com".to_string(),
+        NativeLanguage::Russian,
+        None,
+    ));
+    let use_case = ImportAnkiPackUseCase::new(&repo);
+
+    let cards = vec![
+        AnkiCard {
+            word: "日本語".to_string(),
+            translation: Some("Japanese".to_string()),
+        },
+        AnkiCard {
+            word: "勉強".to_string(),
+            translation: Some("study".to_string()),
+        },
+    ];
+
+    let result = use_case.execute(cards).await;
+
+    assert!(result.is_ok());
+    let import_result = result.unwrap();
+    assert!(import_result.total_created_count > 0);
+
+    let user = repo.get_current_user().await.unwrap().unwrap();
+    assert!(!user.knowledge_set().study_cards().is_empty());
+
+    eprintln!(
+        "Created: {}, Skipped: {:?}",
+        import_result.total_created_count, import_result.skipped_words
+    );
+}
+
+#[tokio::test]
+async fn execute_skips_duplicate_cards() {
+    init_real_dictionaries();
+
+    let repo = InMemoryUserRepository::with_user(User::new(
+        "test@example.com".to_string(),
+        NativeLanguage::Russian,
+        None,
+    ));
+    let use_case = ImportAnkiPackUseCase::new(&repo);
+
+    let cards = vec![
+        AnkiCard {
+            word: "日本語".to_string(),
+            translation: Some("Japanese".to_string()),
+        },
+        AnkiCard {
+            word: "日本語".to_string(),
+            translation: Some("Japanese".to_string()),
+        },
+    ];
+
+    let result = use_case.execute(cards).await;
+
+    assert!(result.is_ok());
+    let import_result = result.unwrap();
+    assert!(
+        !import_result.skipped_words.is_empty(),
+        "Duplicate words should be skipped"
+    );
+}
+
+#[tokio::test]
+async fn execute_returns_error_when_no_current_user() {
+    let repo = InMemoryUserRepository::new();
+    let use_case = ImportAnkiPackUseCase::new(&repo);
+
+    let cards = vec![AnkiCard {
+        word: "test".to_string(),
+        translation: None,
+    }];
+
+    let result = use_case.execute(cards).await;
+
+    assert!(result.is_err());
+    assert!(matches!(
+        result,
+        Err(OrigaError::CurrentUserNotExist { .. })
+    ));
+}
+
+#[tokio::test]
+async fn execute_handles_empty_cards_list() {
+    let repo = InMemoryUserRepository::with_user(User::new(
+        "test@example.com".to_string(),
+        NativeLanguage::Russian,
+        None,
+    ));
+    let use_case = ImportAnkiPackUseCase::new(&repo);
+
+    let result = use_case.execute(vec![]).await;
+
+    assert!(result.is_ok());
+    let import_result = result.unwrap();
+    assert_eq!(import_result.total_created_count, 0);
+    assert!(import_result.skipped_words.is_empty());
 }

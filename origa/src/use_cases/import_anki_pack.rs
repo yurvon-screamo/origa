@@ -1,16 +1,18 @@
-use crate::domain::OrigaError;
-use crate::traits::{CreateVocabularyCardUseCase, LlmService, UserRepository};
-use regex::Regex;
+use crate::domain::{Card, OrigaError, VocabularyCard};
+use crate::traits::UserRepository;
 use rusqlite::Connection;
 use serde_json::Value;
-use std::fs::File;
-use std::io::Cursor;
-use std::path::PathBuf;
-use ulid::Ulid;
+use std::io::{Cursor, Read};
+use tracing::{debug, info, warn};
 use zip::ZipArchive;
 
-const ANKI_DATABASE_FILE: &str = "collection.anki21";
-const FIELD_SEPARATOR: char = '\x1f';
+const ANKI_DB_FILES: &[&str] = &[
+    "collection.anki21b",
+    "collection.anki21",
+    "collection.anki2",
+];
+const FIELD_SEP: char = '\x1f';
+const MAX_APKG_SIZE: usize = 50 * 1024 * 1024;
 
 #[derive(Debug, Clone)]
 pub struct AnkiCard {
@@ -18,207 +20,344 @@ pub struct AnkiCard {
     pub translation: Option<String>,
 }
 
+#[derive(Debug, Clone)]
+pub struct AnkiFieldInfo {
+    pub name: String,
+    pub index: usize,
+}
+
+#[derive(Debug, Clone)]
+pub struct AnkiDeckInfo {
+    pub detected_fields: Vec<AnkiFieldInfo>,
+}
+
 pub struct ImportAnkiPackResult {
     pub total_created_count: usize,
     pub skipped_words: Vec<String>,
 }
 
-pub struct ExportAnkiPackUseCase<'a, R: UserRepository, L: LlmService> {
-    repository: &'a R,
-    create_card_use_case: CreateVocabularyCardUseCase<'a, R, L>,
-}
-
-impl<'a, R: UserRepository, L: LlmService> ExportAnkiPackUseCase<'a, R, L> {
-    pub fn new(repository: &'a R, llm_service: &'a L) -> Self {
-        Self {
-            repository,
-            create_card_use_case: CreateVocabularyCardUseCase::new(repository, llm_service),
+pub fn extract_anki_db_bytes(data: &[u8]) -> Result<Vec<u8>, OrigaError> {
+    if data.len() > MAX_APKG_SIZE {
+        return Err(OrigaError::AnkiInvalidFile {
+            reason: format!(
+                "File too large: {} bytes (max {} MB)",
+                data.len(),
+                MAX_APKG_SIZE / 1024 / 1024,
+            ),
+        });
+    }
+    let cursor = Cursor::new(data);
+    let mut archive = ZipArchive::new(cursor).map_err(|e| OrigaError::AnkiInvalidFile {
+        reason: format!("Failed to read ZIP archive: {}", e),
+    })?;
+    for &db_file in ANKI_DB_FILES {
+        if let Ok(mut entry) = archive.by_name(db_file) {
+            let mut bytes = Vec::new();
+            Read::read_to_end(&mut entry, &mut bytes).map_err(|e| OrigaError::AnkiInvalidFile {
+                reason: format!("Failed to read '{}': {}", db_file, e),
+            })?;
+            if !bytes.is_empty() {
+                return Ok(bytes);
+            }
         }
     }
+    Err(OrigaError::AnkiDatabaseNotFound {
+        filename: "collection.anki21/anki21b/anki2".to_string(),
+    })
+}
 
-    pub async fn extract_cards(
-        &self,
-        file_path: &str,
-        word_tag: &str,
-        translation_tag: Option<&str>,
-    ) -> Result<Vec<AnkiCard>, OrigaError> {
-        let bytes = tokio::fs::read(file_path)
-            .await
-            .map_err(|e| OrigaError::RepositoryError {
-                reason: format!("Failed to read file: {}", e),
-            })?;
+pub fn read_anki_database(db_bytes: &[u8]) -> Result<AnkiDeckInfo, OrigaError> {
+    let conn = open_db(db_bytes)?;
+    let models_json = query_models(&conn)?;
+    let models: Value =
+        serde_json::from_str(&models_json).map_err(|e| OrigaError::AnkiInvalidFile {
+            reason: format!("Failed to parse models JSON: {}", e),
+        })?;
+    let detected_fields = detect_fields(&models)?;
+    Ok(AnkiDeckInfo { detected_fields })
+}
 
-        Self::extract_anki_cards(&bytes[..], word_tag, translation_tag).map_err(|e| {
-            OrigaError::RepositoryError {
-                reason: format!("Failed to extract Anki cards: {}", e),
-            }
-        })
+pub fn parse_cards(
+    models: &Value,
+    notes_fields: &[String],
+    word_tag: &str,
+    translation_tag: Option<&str>,
+) -> Result<Vec<AnkiCard>, OrigaError> {
+    let (word_idx, trans_idx) = find_field_indices(models, word_tag, translation_tag)?;
+    let mut cards = Vec::new();
+    for flds in notes_fields {
+        let (word, translation) = parse_fields(flds, word_idx, trans_idx);
+        if !word.is_empty() {
+            cards.push(AnkiCard { word, translation });
+        }
+    }
+    Ok(cards)
+}
+
+pub fn extract_cards(
+    data: &[u8],
+    word_tag: &str,
+    translation_tag: Option<&str>,
+) -> Result<(Vec<AnkiCard>, Vec<AnkiFieldInfo>), OrigaError> {
+    let db_bytes = extract_anki_db_bytes(data)?;
+    let conn = open_db(&db_bytes)?;
+    let models_json = query_models(&conn)?;
+    let notes_fields = query_notes(&conn)?;
+    let models: Value =
+        serde_json::from_str(&models_json).map_err(|e| OrigaError::AnkiInvalidFile {
+            reason: format!("Failed to parse models JSON: {}", e),
+        })?;
+    let detected_fields = detect_fields(&models)?;
+    let cards = parse_cards(&models, &notes_fields, word_tag, translation_tag)?;
+    Ok((cards, detected_fields))
+}
+
+pub struct ImportAnkiPackUseCase<'a, R: UserRepository> {
+    repository: &'a R,
+}
+
+impl<'a, R: UserRepository> ImportAnkiPackUseCase<'a, R> {
+    pub fn new(repository: &'a R) -> Self {
+        Self { repository }
     }
 
-    pub async fn execute(
-        &self,
-        user_id: Ulid,
-        file_path: String,
-        word_tag: String,
-        translation_tag: Option<String>,
-    ) -> Result<ImportAnkiPackResult, OrigaError> {
-        self.repository
-            .find_by_id(user_id)
+    pub async fn execute(&self, cards: Vec<AnkiCard>) -> Result<ImportAnkiPackResult, OrigaError> {
+        let mut user = self
+            .repository
+            .get_current_user()
             .await?
-            .ok_or(OrigaError::UserNotFound { user_id })?;
+            .ok_or(OrigaError::CurrentUserNotExist {})?;
 
-        let cards = self
-            .extract_cards(&file_path, &word_tag, translation_tag.as_deref())
-            .await?;
-
-        self.create_cards_from_anki_cards(user_id, cards).await
-    }
-
-    async fn create_cards_from_anki_cards(
-        &self,
-        user_id: Ulid,
-        cards: Vec<AnkiCard>,
-    ) -> Result<ImportAnkiPackResult, OrigaError> {
-        let mut total_created_count = 0;
-        let mut total_skipped_words = Vec::new();
+        let mut total_created = 0;
+        let mut skipped = Vec::new();
 
         for anki_card in cards {
             let question = anki_card.word.clone();
+            let result = VocabularyCard::from_text(&question, user.native_language());
 
-            match self
-                .create_card_use_case
-                .execute(user_id, question.clone())
-                .await
-            {
-                Ok(_) => {
-                    total_created_count += 1;
-                },
-                Err(OrigaError::DuplicateCard { .. }) => {
-                    total_skipped_words.push(question);
-                },
-                Err(e) => {
-                    return Err(e);
-                },
+            for vocab_card in result.cards {
+                let card = Card::Vocabulary(vocab_card);
+                match user.create_card(card) {
+                    Ok(_) => total_created += 1,
+                    Err(OrigaError::DuplicateCard { question: q }) => {
+                        debug!(word = %q, "Duplicate card, skipping");
+                        skipped.push(q);
+                    },
+                    Err(e) => return Err(e),
+                }
+            }
+            for s in &result.skipped_no_translation {
+                warn!(word = %s, "Translation not found, skipping");
+                skipped.push(s.clone());
             }
         }
 
+        self.repository.save_sync(&user).await?;
+
+        info!(
+            created = total_created,
+            skipped = skipped.len(),
+            "Anki import completed"
+        );
+
         Ok(ImportAnkiPackResult {
-            total_created_count,
-            skipped_words: total_skipped_words,
+            total_created_count: total_created,
+            skipped_words: skipped,
         })
     }
+}
 
-    fn extract_anki_cards(
-        data: &[u8],
-        word_tag: &str,
-        translation_tag: Option<&str>,
-    ) -> Result<Vec<AnkiCard>, Box<dyn std::error::Error>> {
-        let db_path = Self::extract_database_from_zip(data)?;
-        let conn = Connection::open(&db_path)?;
-        let (word_index, translation_index) =
-            Self::find_field_indices(&conn, word_tag, translation_tag)?;
-        let cards = Self::read_cards_from_database(&conn, word_index, translation_index)?;
-        Ok(cards)
+fn open_db(db_bytes: &[u8]) -> Result<Connection, OrigaError> {
+    let mut conn = Connection::open_in_memory().map_err(|e| OrigaError::AnkiInvalidFile {
+        reason: format!("Failed to create in-memory database: {}", e),
+    })?;
+    let sz = db_bytes.len();
+    conn.deserialize_read_exact("main", Cursor::new(db_bytes), sz, true)
+        .map_err(|e| OrigaError::AnkiInvalidFile {
+            reason: format!("Failed to load database from bytes: {}", e),
+        })?;
+    Ok(conn)
+}
+
+fn query_models(conn: &Connection) -> Result<String, OrigaError> {
+    let mut stmt =
+        conn.prepare("SELECT models FROM col")
+            .map_err(|e| OrigaError::AnkiInvalidFile {
+                reason: format!("Failed to query models: {}", e),
+            })?;
+    stmt.query_row([], |row| row.get(0))
+        .map_err(|e| OrigaError::AnkiInvalidFile {
+            reason: format!("Failed to read models: {}", e),
+        })
+}
+
+fn query_notes(conn: &Connection) -> Result<Vec<String>, OrigaError> {
+    let mut stmt =
+        conn.prepare("SELECT flds FROM notes")
+            .map_err(|e| OrigaError::AnkiInvalidFile {
+                reason: format!("Failed to query notes: {}", e),
+            })?;
+    let rows = stmt
+        .query_map([], |row| row.get::<_, String>(0))
+        .map_err(|e| OrigaError::AnkiInvalidFile {
+            reason: format!("Failed to read notes: {}", e),
+        })?;
+    let mut fields = Vec::new();
+    for row in rows {
+        match row {
+            Ok(flds) => fields.push(flds),
+            Err(e) => warn!("Failed to read note field: {}", e),
+        }
     }
+    Ok(fields)
+}
 
-    fn extract_database_from_zip(data: &[u8]) -> Result<PathBuf, Box<dyn std::error::Error>> {
-        let cursor = Cursor::new(data);
-        let mut archive = ZipArchive::new(cursor)?;
-        let mut db_file_entry = archive.by_name(ANKI_DATABASE_FILE)?;
-
-        let temp_dir = tempfile::tempdir()?;
-        let db_path = temp_dir.path().join(ANKI_DATABASE_FILE);
-        let mut temp_db_file = File::create(&db_path)?;
-
-        std::io::copy(&mut db_file_entry, &mut temp_db_file)?;
-        Ok(db_path)
-    }
-
-    fn find_field_indices(
-        conn: &Connection,
-        word_tag: &str,
-        translation_tag: Option<&str>,
-    ) -> Result<(usize, Option<usize>), Box<dyn std::error::Error>> {
-        let mut stmt = conn.prepare("SELECT models FROM col")?;
-        let json_str: String = stmt.query_row([], |row| row.get(0))?;
-        let models: Value = serde_json::from_str(&json_str)?;
-
-        let mut word_index = None;
-        let mut translation_index = None;
-
-        if let Some(models_map) = models.as_object() {
-            for (_model_id, model_data) in models_map {
-                if let Some(fields) = model_data["flds"].as_array() {
-                    for (index, field) in fields.iter().enumerate() {
-                        if let Some(field_name) = field["name"].as_str() {
-                            let field_name_lower = field_name.to_lowercase();
-                            if field_name_lower == word_tag.to_lowercase() {
-                                word_index = Some(index);
-                            }
-                            if let Some(trans_tag) = translation_tag
-                                && field_name_lower == trans_tag.to_lowercase()
-                            {
-                                translation_index = Some(index);
-                            }
+fn detect_fields(models: &Value) -> Result<Vec<AnkiFieldInfo>, OrigaError> {
+    let mut seen = std::collections::HashSet::new();
+    let mut fields = Vec::new();
+    if let Some(map) = models.as_object() {
+        for (_id, data) in map {
+            if let Some(flds) = data["flds"].as_array() {
+                for (i, f) in flds.iter().enumerate() {
+                    if let Some(name) = f["name"].as_str() {
+                        if seen.insert(name.to_string()) {
+                            fields.push(AnkiFieldInfo {
+                                name: name.to_string(),
+                                index: i,
+                            });
                         }
-                    }
-
-                    if word_index.is_some()
-                        && (translation_tag.is_none() || translation_index.is_some())
-                    {
-                        break;
                     }
                 }
             }
         }
-
-        let word_index = word_index
-            .ok_or_else(|| format!("Field '{}' not found in Anki deck models", word_tag))?;
-
-        Ok((word_index, translation_index))
     }
+    Ok(fields)
+}
 
-    fn read_cards_from_database(
-        conn: &Connection,
-        word_index: usize,
-        translation_index: Option<usize>,
-    ) -> Result<Vec<AnkiCard>, Box<dyn std::error::Error>> {
-        let mut stmt = conn.prepare("SELECT flds FROM notes")?;
-        let rows = stmt.query_map([], |row| {
-            let flds: String = row.get(0)?;
-            Ok(flds)
-        })?;
+fn find_field_indices(
+    models: &Value,
+    word_tag: &str,
+    translation_tag: Option<&str>,
+) -> Result<(usize, Option<usize>), OrigaError> {
+    if let Some(map) = models.as_object() {
+        for (_id, data) in map {
+            if let Some(flds) = data["flds"].as_array() {
+                let mut word_idx = None;
+                let mut trans_idx = None;
 
-        let re_html = Regex::new(r"<[^>]*>")?;
-        let re_nbsp = Regex::new(r"&nbsp;")?;
+                for (i, f) in flds.iter().enumerate() {
+                    if let Some(name) = f["name"].as_str() {
+                        let lower = name.to_lowercase();
+                        if lower == word_tag.to_lowercase() {
+                            word_idx = Some(i);
+                        }
+                        if let Some(tag) = translation_tag {
+                            if lower == tag.to_lowercase() {
+                                trans_idx = Some(i);
+                            }
+                        }
+                    }
+                }
 
-        let mut cards = Vec::new();
-
-        for row in rows {
-            let flds_str = row?;
-            let fields: Vec<&str> = flds_str.split(FIELD_SEPARATOR).collect();
-
-            let raw_word = fields.get(word_index).unwrap_or(&"");
-            let word = Self::clean_html_text(raw_word, &re_html, &re_nbsp);
-
-            let translation = if let Some(translation_index) = translation_index {
-                let raw_translation = fields.get(translation_index).unwrap_or(&"");
-                Some(Self::clean_html_text(raw_translation, &re_html, &re_nbsp))
-            } else {
-                None
-            };
-
-            if !word.is_empty() {
-                cards.push(AnkiCard { word, translation });
+                if let Some(idx) = word_idx
+                    && (translation_tag.is_none() || trans_idx.is_some())
+                {
+                    return Ok((idx, trans_idx));
+                }
             }
         }
+    }
+    Err(OrigaError::AnkiFieldNotFound {
+        field_name: word_tag.to_string(),
+    })
+}
 
-        Ok(cards)
+fn parse_fields(flds: &str, word_idx: usize, trans_idx: Option<usize>) -> (String, Option<String>) {
+    let fields: Vec<&str> = flds.split(FIELD_SEP).collect();
+    let word = clean_html(fields.get(word_idx).unwrap_or(&""));
+    let translation = trans_idx.and_then(|idx| {
+        let cleaned = clean_html(fields.get(idx).unwrap_or(&""));
+        if cleaned.is_empty() {
+            None
+        } else {
+            Some(cleaned)
+        }
+    });
+    (word, translation)
+}
+
+fn clean_html(raw: &str) -> String {
+    let mut result = String::with_capacity(raw.len());
+    let mut in_tag = false;
+    let chars: Vec<char> = raw.chars().collect();
+    let mut i = 0;
+
+    while i < chars.len() {
+        match chars[i] {
+            '<' => {
+                in_tag = true;
+                result.push(' ');
+                i += 1;
+            },
+            '>' if in_tag => {
+                in_tag = false;
+                i += 1;
+            },
+            _ if in_tag => {
+                i += 1;
+            },
+            '&' => {
+                if let Some((entity, len)) = try_parse_html_entity(&chars[i..]) {
+                    result.push_str(entity);
+                    i += len;
+                } else {
+                    result.push(chars[i]);
+                    i += 1;
+                }
+            },
+            _ => {
+                result.push(chars[i]);
+                i += 1;
+            },
+        }
     }
 
-    fn clean_html_text(raw: &str, re_html: &Regex, re_nbsp: &Regex) -> String {
-        let no_html = re_html.replace_all(raw, " ");
-        let no_nbsp = re_nbsp.replace_all(&no_html, " ");
-        no_nbsp.trim().to_string()
+    result.split_whitespace().collect::<Vec<_>>().join(" ")
+}
+
+fn try_parse_html_entity(chars: &[char]) -> Option<(&'static str, usize)> {
+    if chars.len() >= 6 && chars[0..6] == ['&', 'n', 'b', 's', 'p', ';'] {
+        return Some((" ", 6));
     }
+    if chars.len() >= 5 && chars[0..5] == ['&', 'a', 'm', 'p', ';'] {
+        return Some(("&", 5));
+    }
+    if chars.len() >= 4 && chars[0..4] == ['&', 'l', 't', ';'] {
+        return Some(("<", 4));
+    }
+    if chars.len() >= 4 && chars[0..4] == ['&', 'g', 't', ';'] {
+        return Some((">", 4));
+    }
+    if chars.len() >= 6 && chars[0..6] == ['&', 'q', 'u', 'o', 't', ';'] {
+        return Some(("\"", 6));
+    }
+    if chars.len() >= 6 && chars[0..6] == ['&', 'a', 'p', 'o', 's', ';'] {
+        return Some(("'", 6));
+    }
+    if chars.len() >= 4 && chars[0] == '&' && chars[1] == '#' {
+        let mut num_str = String::new();
+        let mut j = 2;
+        while j < chars.len() && chars[j].is_ascii_digit() {
+            num_str.push(chars[j]);
+            j += 1;
+        }
+        if j < chars.len() && chars[j] == ';' && !num_str.is_empty() {
+            if let Ok(code_point) = num_str.parse::<u32>() {
+                if let Some(ch) = char::from_u32(code_point) {
+                    return Some((Box::leak(ch.to_string().into_boxed_str()), j + 1));
+                }
+            }
+        }
+    }
+    None
 }

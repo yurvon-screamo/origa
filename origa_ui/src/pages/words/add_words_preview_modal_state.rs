@@ -11,6 +11,7 @@ use std::collections::HashSet;
 pub enum InputMode {
     #[default]
     Text,
+    Anki,
     Image,
 }
 

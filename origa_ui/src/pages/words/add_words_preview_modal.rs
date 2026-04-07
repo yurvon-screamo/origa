@@ -1,6 +1,7 @@
 use crate::pages::words::add_words_preview_modal_handlers::create_preview_modal_handlers;
 use crate::pages::words::add_words_preview_modal_state::{InputMode, PreviewModalState};
 use crate::pages::words::analyzed_word_item::AnalyzedWordItem;
+use crate::pages::words::anki_import_stage::AnkiImportStage;
 use crate::pages::words::image_input_stage::ImageInputStage;
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{
@@ -72,6 +73,10 @@ pub fn AddWordsPreviewModal(
                 label: "Текст".to_string(),
             },
             TabItem {
+                id: "anki".to_string(),
+                label: "Anki".to_string(),
+            },
+            TabItem {
                 id: "image".to_string(),
                 label: "Изображение".to_string(),
             },
@@ -84,6 +89,8 @@ pub fn AddWordsPreviewModal(
             let tab = state.active_tab.get();
             state.input_mode.set(if tab == "image" {
                 InputMode::Image
+            } else if tab == "anki" {
+                InputMode::Anki
             } else {
                 InputMode::Text
             });
@@ -132,6 +139,13 @@ pub fn AddWordsPreviewModal(
                                                 is_analyzing=is_analyzing
                                                 error_message=error_message
                                                 on_analyze=handlers.on_analyze
+                                            />
+                                        }.into_any(),
+                                        InputMode::Anki => view! {
+                                            <AnkiImportStage
+                                                is_open=is_open
+                                                refresh_trigger=refresh_trigger
+                                                test_id=Signal::derive(|| "words-drawer-anki".to_string())
                                             />
                                         }.into_any(),
                                         InputMode::Image => view! {

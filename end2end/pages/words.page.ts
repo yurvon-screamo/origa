@@ -29,6 +29,21 @@ export class WordsPage extends BasePage {
     readonly drawerCancelBtn: Locator;
     readonly analyzedWordItems: Locator;
 
+    // Anki import
+    readonly ankiTab: Locator;
+    readonly ankiDropZone: Locator;
+    readonly ankiFileInput: Locator;
+    readonly ankiFieldWord: Locator;
+    readonly ankiFieldTranslation: Locator;
+    readonly ankiNextBtn: Locator;
+    readonly ankiBackBtn: Locator;
+    readonly ankiImportBtn: Locator;
+    readonly ankiCardCount: Locator;
+    readonly ankiCardList: Locator;
+    readonly ankiDone: Locator;
+    readonly ankiError: Locator;
+    readonly ankiRetryBtn: Locator;
+
     // Delete modal
     readonly deleteModal: Locator;
     readonly deleteConfirmBtn: Locator;
@@ -61,6 +76,21 @@ export class WordsPage extends BasePage {
         this.drawerAddBtn = page.getByTestId("words-drawer-add-btn");
         this.drawerCancelBtn = page.getByTestId("words-drawer-cancel-btn");
         this.analyzedWordItems = this.drawer.getByTestId("words-drawer-item");
+
+        // Anki import
+        this.ankiTab = this.drawer.getByText("Anki");
+        this.ankiDropZone = page.getByTestId("anki-import-drop-zone");
+        this.ankiFileInput = page.getByTestId("anki-import-file-input");
+        this.ankiFieldWord = page.getByTestId("anki-import-field-word");
+        this.ankiFieldTranslation = page.getByTestId("anki-import-field-translation");
+        this.ankiNextBtn = page.getByTestId("anki-import-next-btn");
+        this.ankiBackBtn = page.getByTestId("anki-import-back-btn");
+        this.ankiImportBtn = page.getByTestId("anki-import-import-btn");
+        this.ankiCardCount = page.getByTestId("anki-import-card-count");
+        this.ankiCardList = page.getByTestId("anki-import-card-list");
+        this.ankiDone = page.getByTestId("anki-import-done");
+        this.ankiError = page.getByTestId("anki-import-error");
+        this.ankiRetryBtn = page.getByTestId("anki-import-retry-btn");
 
         // Delete modal
         this.deleteModal = page.getByTestId("words-delete-modal");
@@ -119,6 +149,14 @@ export class WordsPage extends BasePage {
 
     async cancelAddModal(): Promise<void> {
         await this.drawerCancelBtn.click();
+    }
+
+    async switchToAnkiTab(): Promise<void> {
+        await this.ankiTab.click();
+    }
+
+    async uploadAnkiFile(filePath: string): Promise<void> {
+        await this.ankiFileInput.setInputFiles(filePath);
     }
 
     async selectFilter(name: WordsFilterType): Promise<void> {

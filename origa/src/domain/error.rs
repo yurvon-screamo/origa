@@ -33,6 +33,9 @@ pub enum OrigaError {
     DictionaryNotFound { reason: String },
     VocabularyNotFound { word: String },
     OcrError { reason: String },
+    AnkiInvalidFile { reason: String },
+    AnkiDatabaseNotFound { filename: String },
+    AnkiFieldNotFound { field_name: String },
     KanjiNotFound { kanji: String },
     RadicalNotFound { radical: char },
     GrammarRuleNotFound { rule_id: Ulid },
@@ -125,6 +128,15 @@ impl fmt::Display for OrigaError {
             },
             OrigaError::OcrError { reason } => {
                 write!(f, "OCR error: {}", reason)
+            },
+            OrigaError::AnkiInvalidFile { reason } => {
+                write!(f, "Invalid Anki file: {}", reason)
+            },
+            OrigaError::AnkiDatabaseNotFound { filename } => {
+                write!(f, "Database '{}' not found in Anki archive", filename)
+            },
+            OrigaError::AnkiFieldNotFound { field_name } => {
+                write!(f, "Field '{}' not found in Anki deck models", field_name)
             },
             OrigaError::KanjiNotFound { kanji } => {
                 write!(f, "Нет описания для кандзи: {}", kanji)
@@ -494,5 +506,32 @@ mod tests {
             card_id: Ulid::new(),
         };
         let _: &dyn std::error::Error = &error;
+    }
+
+    #[test]
+    fn anki_invalid_file() {
+        let error = OrigaError::AnkiInvalidFile {
+            reason: "not a zip".into(),
+        };
+        assert_display_contains(&error, "Invalid Anki file");
+        assert_serialization_roundtrip(error);
+    }
+
+    #[test]
+    fn anki_database_not_found() {
+        let error = OrigaError::AnkiDatabaseNotFound {
+            filename: "collection.anki21".into(),
+        };
+        assert_display_contains(&error, "collection.anki21");
+        assert_serialization_roundtrip(error);
+    }
+
+    #[test]
+    fn anki_field_not_found() {
+        let error = OrigaError::AnkiFieldNotFound {
+            field_name: "Expression".into(),
+        };
+        assert_display_contains(&error, "Expression");
+        assert_serialization_roundtrip(error);
     }
 }

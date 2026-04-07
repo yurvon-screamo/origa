@@ -17,6 +17,12 @@ struct AppInfo {
 fn get_known_apps() -> Vec<AppInfo> {
     vec![
         AppInfo {
+            id: "Anki".to_string(),
+            name: "Anki".to_string(),
+            description: "Импорт колод из Anki (.apkg)".to_string(),
+            icon: "/public/external_icons/anki.svg",
+        },
+        AppInfo {
             id: "Migii".to_string(),
             name: "Migii".to_string(),
             description: "Приложение для изучения JLPT".to_string(),
@@ -55,6 +61,7 @@ fn get_available_app_ids(available_sets: &[WellKnownSetMeta]) -> HashSet<String>
     }
 
     let mut result: HashSet<String> = HashSet::new();
+    result.insert("Anki".to_string());
 
     for app in get_known_apps() {
         if set_types.contains(&app.id) || (app.id == "MinnaNoNihongo" && has_minna) {
