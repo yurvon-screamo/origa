@@ -14,8 +14,6 @@ use wasm_bindgen::JsCast;
 use web_sys::js_sys::Function;
 use web_sys::{File, HtmlInputElement};
 
-const MAX_APKG_SIZE_BYTES: u64 = 50 * 1024 * 1024;
-
 #[derive(Clone, Copy, PartialEq, Default, Debug)]
 enum Stage {
     #[default]
@@ -101,11 +99,6 @@ pub fn AnkiImportStage(
     });
 
     let process_file = move |file: File| {
-        if file.size() > MAX_APKG_SIZE_BYTES as f64 {
-            stage.set(Stage::Error);
-            error_message.set("Файл слишком большой (макс. 50 МБ)".to_string());
-            return;
-        }
         stage.set(Stage::Loading);
         let disposed = disposed;
 
@@ -337,7 +330,7 @@ pub fn AnkiImportStage(
                                     "Перетащите .apkg файл или нажмите для выбора"
                                 </Text>
                                 <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                                    "Anki колода (макс. 50 МБ)"
+                                    "Anki колода (.apkg)"
                                 </Text>
                             </div>
                         </label>
