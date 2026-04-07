@@ -12,7 +12,6 @@ const ANKI_DB_FILES: &[&str] = &[
     "collection.anki2",
 ];
 const FIELD_SEP: char = '\x1f';
-const MAX_APKG_SIZE: usize = 50 * 1024 * 1024;
 
 #[derive(Debug, Clone)]
 pub struct AnkiCard {
@@ -37,15 +36,6 @@ pub struct ImportAnkiPackResult {
 }
 
 pub fn extract_anki_db_bytes(data: &[u8]) -> Result<Vec<u8>, OrigaError> {
-    if data.len() > MAX_APKG_SIZE {
-        return Err(OrigaError::AnkiInvalidFile {
-            reason: format!(
-                "File too large: {} bytes (max {} MB)",
-                data.len(),
-                MAX_APKG_SIZE / 1024 / 1024,
-            ),
-        });
-    }
     let cursor = Cursor::new(data);
     let mut archive = ZipArchive::new(cursor).map_err(|e| OrigaError::AnkiInvalidFile {
         reason: format!("Failed to read ZIP archive: {}", e),
