@@ -162,6 +162,14 @@ impl ParseqRecognizer {
             return String::new();
         }
 
+        if shape_slice[1] <= 0 || shape_slice[2] <= 0 {
+            tracing::warn!(
+                ?shape_slice,
+                "PARSeq output has dynamic or invalid dimensions"
+            );
+            return String::new();
+        }
+
         let seq_len = shape_slice[1] as usize;
         let vocab_size = shape_slice[2] as usize;
 

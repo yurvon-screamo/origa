@@ -6,6 +6,7 @@ use ort::session::Session;
 use ort_web::ValueExt;
 
 const CONF_THRESHOLD: f32 = 0.25;
+const DEIM_DEFAULT_INPUT_SIZE: u32 = 1024;
 
 const IMAGENET_MEAN: [f32; 3] = [0.485, 0.456, 0.406];
 const IMAGENET_STD: [f32; 3] = [0.229, 0.224, 0.225];
@@ -65,13 +66,22 @@ impl DeimDetector {
 
         let input_size = match input_info.dtype() {
             ort::value::ValueType::Tensor { shape, .. } => {
-                if shape.len() >= 4 {
+                tracing::info!(?shape, "DEIM model input shape");
+                if shape.len() >= 4 && shape[2] > 0 {
                     shape[2] as u32
                 } else {
-                    1024
+                    tracing::warn!(
+                        ?shape,
+                        fallback = DEIM_DEFAULT_INPUT_SIZE,
+                        "DEIM input has dynamic or invalid dimensions, using fallback"
+                    );
+                    DEIM_DEFAULT_INPUT_SIZE
                 }
             },
-            _ => 1024,
+            _ => {
+                tracing::warn!("DEIM input is not a tensor, using fallback input_size");
+                DEIM_DEFAULT_INPUT_SIZE
+            },
         };
 
         Ok(Self {
