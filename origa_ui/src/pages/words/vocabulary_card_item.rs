@@ -14,7 +14,7 @@ use ulid::Ulid;
 #[component]
 pub fn VocabularyCardItem(
     study_card: StudyCard,
-    native_language: NativeLanguage,
+    #[prop(into)] native_language: Signal<NativeLanguage>,
     known_kanji: HashSet<String>,
     on_toggle_favorite: Callback<Ulid>,
     on_mark_as_known: Callback<()>,
@@ -22,7 +22,6 @@ pub fn VocabularyCardItem(
     is_deleting: Signal<bool>,
 ) -> impl IntoView {
     let i18n = use_i18n();
-    let card = study_card.card();
     let card_id = *study_card.card_id();
     let is_favorite = study_card.is_favorite();
     let memory = study_card.memory();
@@ -37,17 +36,23 @@ pub fn VocabularyCardItem(
         })
     });
 
-    let (word, meaning) = match card {
-        DomainCard::Vocabulary(vocab) => (
-            vocab.word().text().to_string(),
-            vocab
-                .answer(&native_language)
+    let word = match study_card.card() {
+        DomainCard::Vocabulary(vocab) => vocab.word().text().to_string(),
+        _ => "?".to_string(),
+    };
+
+    let study_card_for_meaning = study_card.clone();
+    let meaning = Memo::new(move |_| {
+        let lang = native_language.get();
+        match study_card_for_meaning.card() {
+            DomainCard::Vocabulary(vocab) => vocab
+                .answer(&lang)
                 .ok()
                 .map(|a| a.text().to_string())
                 .unwrap_or_default(),
-        ),
-        _ => ("?".to_string(), "?".to_string()),
-    };
+            _ => "?".to_string(),
+        }
+    });
 
     let status = CardStatus::from_study_card(&study_card);
 
@@ -73,7 +78,7 @@ pub fn VocabularyCardItem(
                 <FuriganaText text=word.clone() known_kanji=known_kanji_for_furigana/>
             </Heading>
             <CollapsibleDescription>
-                <MarkdownText content=Signal::derive(move || meaning.clone()) known_kanji=known_kanji_for_markdown/>
+                <MarkdownText content=Signal::derive(move || meaning.get()) known_kanji=known_kanji_for_markdown/>
             </CollapsibleDescription>
             <Text
                 size=TextSize::Small

@@ -37,10 +37,14 @@ impl ModalState {
             }
         });
 
+        let i18n = crate::i18n::use_i18n();
+
         Self {
             selected_level: RwSignal::new(JapaneseLevel::N5),
             available_rules: RwSignal::new(Vec::new()),
-            native_language: RwSignal::new(NativeLanguage::Russian),
+            native_language: RwSignal::new(crate::i18n::locale_to_native_language(
+                &i18n.get_locale(),
+            )),
             selected_rule_ids,
             is_loading_rules: RwSignal::new(false),
             is_creating: RwSignal::new(false),
@@ -55,7 +59,6 @@ impl ModalState {
         let level = self.selected_level.get();
         let repository = self.repository.clone();
         let available_rules = self.available_rules;
-        let native_language = self.native_language;
         let is_loading = self.is_loading_rules;
         let error = self.error_message;
         let disposed = StoredValue::new(());
@@ -69,9 +72,6 @@ impl ModalState {
                     if disposed.is_disposed() {
                         return;
                     }
-                    let lang = *user.native_language();
-                    native_language.set(lang);
-
                     let existing_rule_ids: HashSet<Ulid> = user
                         .knowledge_set()
                         .study_cards()

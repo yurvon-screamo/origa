@@ -27,14 +27,16 @@ impl KanjiCard {
         &self.kanji
     }
 
-    pub fn description(&self) -> Result<Answer, OrigaError> {
+    pub fn description(&self, lang: &NativeLanguage) -> Result<Answer, OrigaError> {
         get_kanji_info(self.kanji.text())
             .map_err(|_| OrigaError::KanjiNotFound {
                 kanji: self.kanji.text().to_string(),
             })
             .and_then(|info| {
-                Answer::new(info.description().to_string()).map_err(|e| OrigaError::InvalidAnswer {
-                    reason: e.to_string(),
+                Answer::new(info.description(lang).to_string()).map_err(|e| {
+                    OrigaError::InvalidAnswer {
+                        reason: e.to_string(),
+                    }
                 })
             })
     }
@@ -145,7 +147,7 @@ mod tests {
     fn description_returns_answer_for_known_kanji() {
         setup();
         let kanji = KanjiCard::new_test("日".to_string());
-        let result = kanji.description();
+        let result = kanji.description(&NativeLanguage::Russian);
         assert!(result.is_ok());
         let answer = result.unwrap();
         assert!(!answer.text().is_empty());

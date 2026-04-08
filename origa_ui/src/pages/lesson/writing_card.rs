@@ -25,7 +25,7 @@ fn extract_kanji_data(kanji: &DomainCard, native_language: NativeLanguage) -> Ka
 
     let symbol = kanji.kanji().text().to_string();
     let description = kanji
-        .description()
+        .description(&native_language)
         .ok()
         .map(|d| d.text().to_string())
         .unwrap_or_default();

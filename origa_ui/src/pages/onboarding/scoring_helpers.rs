@@ -26,7 +26,7 @@ pub(super) fn extract_card_data(
         ),
         DomainCard::Kanji(k) => (
             k.kanji().text().to_string(),
-            k.description()
+            k.description(lang)
                 .ok()
                 .map(|a| a.text().to_string())
                 .unwrap_or_else(no_translation),

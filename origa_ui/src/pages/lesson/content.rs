@@ -9,7 +9,6 @@ use crate::store::auth_store::AuthStore;
 use crate::ui_components::{Spinner, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use origa::domain::NativeLanguage;
 use origa::traits::UserRepository;
 use origa::use_cases::SelectCardsToLessonUseCase;
 use std::collections::HashSet;
@@ -30,10 +29,14 @@ pub fn LessonContent() -> impl IntoView {
     let is_muted = RwSignal::new(false);
     let is_syncing_cards = RwSignal::new(false);
     let known_kanji = RwSignal::new(HashSet::<String>::new());
-    let native_language = RwSignal::new(NativeLanguage::Russian);
+    let native_language = RwSignal::new(crate::i18n::locale_to_native_language(&i18n.get_locale()));
 
     let is_disposed = StoredValue::new(());
     provide_context(is_disposed);
+
+    Effect::new(move |_| {
+        native_language.set(crate::i18n::locale_to_native_language(&i18n.get_locale()));
+    });
 
     let lesson_ctx = LessonContext {
         repository: repository.clone(),
@@ -55,7 +58,6 @@ pub fn LessonContent() -> impl IntoView {
                     return;
                 }
                 known_kanji.set(user.knowledge_set().get_known_kanji());
-                native_language.set(*user.native_language());
             }
         });
     });

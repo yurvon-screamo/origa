@@ -163,7 +163,7 @@ impl Card {
     pub fn answer(&self, lang: &NativeLanguage) -> Result<Answer, OrigaError> {
         match self {
             Card::Vocabulary(card) => card.answer(lang),
-            Card::Kanji(card) => card.description(),
+            Card::Kanji(card) => card.description(lang),
             Card::Grammar(card) => card.description(lang),
         }
     }
