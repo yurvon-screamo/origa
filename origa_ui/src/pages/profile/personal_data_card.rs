@@ -28,7 +28,7 @@ pub fn PersonalDataCard(
 
                 <div class="space-y-4">
                     <LabeledInput
-                        label=td_string!(i18n.get_locale(), profile.username).to_string()
+                        label=i18n.get_keys().profile().username().inner().to_string()
                         value={user_name_signal}
                         disabled={true}
                     />
