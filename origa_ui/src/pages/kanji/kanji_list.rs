@@ -3,11 +3,13 @@ use crate::i18n::{t, use_i18n};
 use crate::ui_components::{Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 use origa::dictionary::kanji::KanjiInfo;
+use origa::domain::NativeLanguage;
 use std::collections::HashSet;
 
 #[component]
 pub fn KanjiList(
     kanji_list: Vec<&'static KanjiInfo>,
+    #[prop(into)] native_language: Signal<NativeLanguage>,
     selected_kanji: RwSignal<HashSet<String>>,
     known_kanji: HashSet<String>,
 ) -> impl IntoView {
@@ -32,6 +34,7 @@ pub fn KanjiList(
                     view! {
                         <KanjiItem
                             kanji_info=kanji_info
+                            native_language=native_language
                             selected_kanji=selected_kanji
                             known_kanji=known_kanji.clone()
                         />

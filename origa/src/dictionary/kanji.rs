@@ -74,7 +74,8 @@ pub struct KanjiInfo {
     kanji: char,
     jlpt: JapaneseLevel,
     used_in: u32,
-    description: String,
+    description_ru: String,
+    description_en: String,
     radicals: Vec<char>,
     popular_words: Vec<String>,
     on_readings: Vec<String>,
@@ -94,8 +95,17 @@ impl KanjiInfo {
         self.used_in
     }
 
-    pub fn description(&self) -> &str {
-        &self.description
+    pub fn description(&self, lang: &NativeLanguage) -> &str {
+        match lang {
+            NativeLanguage::Russian => &self.description_ru,
+            NativeLanguage::English => {
+                if self.description_en.is_empty() {
+                    &self.description_ru
+                } else {
+                    &self.description_en
+                }
+            },
+        }
     }
 
     pub fn radicals_chars(&self) -> &[char] {
@@ -120,13 +130,18 @@ impl KanjiInfo {
     ) -> Vec<PopularWord> {
         use crate::dictionary::vocabulary::VOCABULARY_DICTIONARY;
 
+        let fallback = match native_language {
+            NativeLanguage::Russian => "Перевод не найден",
+            NativeLanguage::English => "Translation not found",
+        };
+
         self.popular_words
             .iter()
             .map(|word| {
                 let translation = VOCABULARY_DICTIONARY
                     .get()
                     .and_then(|db| db.get_translation(word, native_language))
-                    .unwrap_or_else(|| "Перевод не найден".to_string());
+                    .unwrap_or_else(|| fallback.to_string());
                 PopularWord::new(word.clone(), translation)
             })
             .collect()
@@ -158,7 +173,8 @@ impl KanjiDatabase {
                         kanji: kanji_char,
                         jlpt,
                         used_in: k.used_in,
-                        description: k.description,
+                        description_ru: k.description_ru,
+                        description_en: k.description_en,
                         radicals,
                         popular_words: k.popular_words,
                         on_readings: k.on_readings,
@@ -194,7 +210,10 @@ struct KanjiStoredType {
     kanji: String,
     jlpt: String,
     used_in: u32,
-    description: String,
+    #[serde(default)]
+    description_ru: String,
+    #[serde(default)]
+    description_en: String,
     radicals: Vec<String>,
     popular_words: Vec<String>,
     #[serde(default)]
@@ -221,7 +240,8 @@ mod tests {
                     "kanji": "日",
                     "jlpt": "N5",
                     "used_in": 100,
-                    "description": "день, солнце",
+                    "description_ru": "день, солнце",
+                    "description_en": "day, sun",
                     "radicals": ["一", "口"],
                     "popular_words": ["日本", "日曜日"],
                     "on_readings": ["NICHI", "JITSU"],
@@ -231,7 +251,8 @@ mod tests {
                     "kanji": "本",
                     "jlpt": "N5",
                     "used_in": 80,
-                    "description": "книга, основа",
+                    "description_ru": "книга, основа",
+                    "description_en": "book, origin",
                     "radicals": ["木", "一"],
                     "popular_words": ["本", "日本"],
                     "on_readings": ["HON"],
@@ -364,7 +385,7 @@ mod tests {
             let result = get_kanji_info(kanji_str);
             assert!(result.is_ok(), "Should find kanji: {}", kanji_str);
             let info = result.unwrap();
-            assert!(!info.description().is_empty());
+            assert!(!info.description(&NativeLanguage::Russian).is_empty());
             assert!(!info.popular_words().is_empty());
         }
     }
@@ -383,7 +404,8 @@ mod tests {
                 "kanji": "測",
                 "jlpt": "N2",
                 "used_in": 100,
-                "description": "measurement",
+                "description_ru": "измерение",
+                "description_en": "measurement",
                 "radicals": [],
                 "popular_words": []
             }]
@@ -401,7 +423,8 @@ mod tests {
                 "kanji": "一二三四五六七八九十",
                 "jlpt": "N5",
                 "used_in": 100,
-                "description": "numbers",
+                "description_ru": "числа",
+                "description_en": "numbers",
                 "radicals": [],
                 "popular_words": [],
                 "on_readings": [],
@@ -428,7 +451,8 @@ mod tests {
                 "kanji": "木",
                 "jlpt": "N5",
                 "used_in": 100,
-                "description": "tree",
+                "description_ru": "дерево",
+                "description_en": "tree",
                 "radicals": ["木", "一"],
                 "popular_words": [],
                 "on_readings": ["ボク", "モク"],
@@ -446,7 +470,7 @@ mod tests {
         let json = load_real_kanji_json();
         let db = KanjiDatabase::from_json(&json).unwrap();
         let info = db.get_kanji_info("日").unwrap();
-        assert!(!info.description().is_empty());
+        assert!(!info.description(&NativeLanguage::Russian).is_empty());
     }
 
     #[test]
@@ -526,7 +550,8 @@ mod tests {
                 "kanji": "会",
                 "jlpt": "N4",
                 "used_in": 500,
-                "description": "meeting",
+                "description_ru": "встреча",
+                "description_en": "meeting",
                 "radicals": ["人", "云"],
                 "popular_words": ["会社"],
                 "on_readings": ["カイ", "エ"],
@@ -582,7 +607,8 @@ mod tests {
                 "kanji": "日",
                 "jlpt": "N5",
                 "used_in": 100,
-                "description": "day",
+                "description_ru": "день",
+                "description_en": "day",
                 "radicals": ["日"],
                 "popular_words": [],
                 "on_readings": ["ニチ"],

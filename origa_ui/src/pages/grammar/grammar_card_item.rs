@@ -14,7 +14,7 @@ use ulid::Ulid;
 #[component]
 pub fn GrammarCardItem(
     study_card: StudyCard,
-    native_language: NativeLanguage,
+    #[prop(into)] native_language: Signal<NativeLanguage>,
     known_kanji: HashSet<String>,
     on_toggle_favorite: Callback<Ulid>,
     on_mark_as_known: Callback<()>,
@@ -22,7 +22,6 @@ pub fn GrammarCardItem(
     is_deleting: Signal<bool>,
 ) -> impl IntoView {
     let i18n = use_i18n();
-    let card = study_card.card();
     let card_id = *study_card.card_id();
     let is_favorite = study_card.is_favorite();
     let memory = study_card.memory();
@@ -37,21 +36,31 @@ pub fn GrammarCardItem(
         })
     });
 
-    let (title, description) = match card {
-        DomainCard::Grammar(grammar) => (
-            grammar
-                .title(&native_language)
+    let study_card_for_title = study_card.clone();
+    let title = Memo::new(move |_| {
+        let lang = native_language.get();
+        match study_card_for_title.card() {
+            DomainCard::Grammar(grammar) => grammar
+                .title(&lang)
                 .ok()
                 .map(|t| t.text().to_string())
                 .unwrap_or_default(),
-            grammar
-                .description(&native_language)
+            _ => "?".to_string(),
+        }
+    });
+
+    let study_card_for_desc = study_card.clone();
+    let description = Memo::new(move |_| {
+        let lang = native_language.get();
+        match study_card_for_desc.card() {
+            DomainCard::Grammar(grammar) => grammar
+                .description(&lang)
                 .ok()
                 .map(|d| d.text().to_string())
                 .unwrap_or_default(),
-        ),
-        _ => ("?".to_string(), "?".to_string()),
-    };
+            _ => "?".to_string(),
+        }
+    });
 
     let status = CardStatus::from_study_card(&study_card);
 
@@ -74,10 +83,10 @@ pub fn GrammarCardItem(
     view! {
         <Card class="p-4" test_id="grammar-card-item">
             <Heading level=HeadingLevel::H4 class="mb-2">
-                <FuriganaText text=title.clone() known_kanji=known_kanji_for_furigana/>
+                <FuriganaText text=title.get() known_kanji=known_kanji_for_furigana/>
             </Heading>
             <CollapsibleDescription>
-                <MarkdownText content=Signal::derive(move || description.clone()) known_kanji=known_kanji_for_markdown/>
+                <MarkdownText content=Signal::derive(move || description.get()) known_kanji=known_kanji_for_markdown/>
             </CollapsibleDescription>
             <Text
                 size=TextSize::Small

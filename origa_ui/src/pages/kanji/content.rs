@@ -11,7 +11,7 @@ use crate::ui_components::{
 use leptos::either::Either;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use origa::domain::{Card, NativeLanguage, StudyCard, User};
+use origa::domain::{Card, StudyCard, User};
 use origa::traits::UserRepository;
 use origa::use_cases::ToggleFavoriteUseCase;
 use ulid::Ulid;
@@ -76,12 +76,8 @@ pub fn KanjiContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
         );
     });
 
-    let native_lang = Memo::new(move |_| {
-        current_user
-            .get()
-            .map(|u| *u.native_language())
-            .unwrap_or(NativeLanguage::Russian)
-    });
+    let native_lang =
+        Memo::new(move |_| crate::i18n::locale_to_native_language(&i18n.get_locale()));
 
     let known_kanji = Memo::new(move |_| {
         current_user
@@ -210,7 +206,7 @@ pub fn KanjiContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
                                         view! {
                                             <KanjiCardItem
                                                 study_card=card
-                                                native_language=native_lang.get()
+                                                native_language=native_lang
                                                 known_kanji=known_kanji.get()
                                                 on_toggle_favorite=on_toggle_favorite
                                                 on_mark_as_known=Callback::new(move |_| on_mark_as_known.run(card_id))

@@ -50,6 +50,9 @@ pub fn AddKanjiModal(is_open: RwSignal<bool>, refresh_trigger: RwSignal<u32>) ->
             .unwrap_or_default()
     });
 
+    let native_language =
+        Memo::new(move |_| crate::i18n::locale_to_native_language(&i18n.get_locale()));
+
     let state = ModalState::new(is_open, refresh_trigger);
     let handlers = ModalHandlers::new(&state, is_open);
 
@@ -122,6 +125,7 @@ pub fn AddKanjiModal(is_open: RwSignal<bool>, refresh_trigger: RwSignal<u32>) ->
                             view! {
                                 <KanjiList
                                     kanji_list=kanji_list
+                                    native_language=native_language
                                     selected_kanji=state.selected_kanji
                                     known_kanji=known_kanji.get()
                                 />

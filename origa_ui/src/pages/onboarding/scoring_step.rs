@@ -56,7 +56,7 @@ pub fn ScoringStep(
                 return;
             }
 
-            let lang = *user.native_language();
+            let lang = crate::i18n::locale_to_native_language(&i18n_for_load.get_locale());
             let scoring_cards =
                 build_scoring_cards(user.knowledge_set().study_cards(), &lang, i18n_for_load);
 

@@ -15,7 +15,7 @@ use ulid::Ulid;
 #[component]
 pub fn KanjiCardItem(
     study_card: StudyCard,
-    native_language: NativeLanguage,
+    #[prop(into)] native_language: Signal<NativeLanguage>,
     known_kanji: HashSet<String>,
     on_toggle_favorite: Callback<Ulid>,
     on_mark_as_known: Callback<()>,
@@ -23,7 +23,6 @@ pub fn KanjiCardItem(
     is_deleting: Signal<bool>,
 ) -> impl IntoView {
     let i18n = use_i18n();
-    let card = study_card.card();
     let card_id = *study_card.card_id();
     let is_favorite = study_card.is_favorite();
     let memory = study_card.memory();
@@ -39,35 +38,42 @@ pub fn KanjiCardItem(
         })
     });
 
-    let (kanji_char, description, radicals, example_words) = match card {
-        DomainCard::Kanji(kanji_card) => {
-            let radicals_str = kanji_card.radicals_chars().into_iter().collect::<String>();
-            let examples_str = kanji_card
-                .example_words(&native_language)
-                .iter()
-                .map(|w| format!("{} ({})", w.word(), w.meaning()))
-                .collect::<Vec<_>>()
-                .join(", ");
-            (
-                kanji_card.kanji().text().to_string(),
-                kanji_card
-                    .description()
-                    .ok()
-                    .map(|d| d.text().to_string())
-                    .unwrap_or_default(),
-                radicals_str,
-                examples_str,
-            )
-        },
-        _ => (
-            "?".to_string(),
-            "?".to_string(),
-            "".to_string(),
-            "".to_string(),
+    let (kanji_char, radicals) = match study_card.card() {
+        DomainCard::Kanji(kanji_card) => (
+            kanji_card.kanji().text().to_string(),
+            kanji_card.radicals_chars().into_iter().collect::<String>(),
         ),
+        _ => ("?".to_string(), String::new()),
     };
 
     let status = CardStatus::from_study_card(&study_card);
+
+    let study_card_for_desc = study_card.clone();
+    let description = Memo::new(move |_| {
+        let lang = native_language.get();
+        match study_card_for_desc.card() {
+            DomainCard::Kanji(kanji_card) => kanji_card
+                .description(&lang)
+                .ok()
+                .map(|d| d.text().to_string())
+                .unwrap_or_default(),
+            _ => "?".to_string(),
+        }
+    });
+
+    let study_card_for_examples = study_card.clone();
+    let example_words = Memo::new(move |_| {
+        let lang = native_language.get();
+        match study_card_for_examples.card() {
+            DomainCard::Kanji(kanji_card) => kanji_card
+                .example_words(&lang)
+                .iter()
+                .map(|w| format!("{} ({})", w.word(), w.meaning()))
+                .collect::<Vec<_>>()
+                .join(", "),
+            _ => String::new(),
+        }
+    });
 
     let difficulty = memory
         .difficulty()
@@ -84,14 +90,14 @@ pub fn KanjiCardItem(
 
     let kanji_for_animation = StoredValue::new(kanji_char.clone());
     let is_expanded = RwSignal::new(false);
-    let has_examples = !example_words.is_empty();
+    let has_examples = Memo::new(move |_| !example_words.get().is_empty());
 
     view! {
         <Card class="p-4" test_id="kanji-card-item">
             <div class="flex items-start gap-3 mb-2">
                 <span class="text-3xl font-serif">{kanji_char.clone()}</span>
                 <div class="min-w-0 flex-1">
-                    <MarkdownText content=Signal::derive(move || description.clone()) known_kanji=known_kanji.clone()/>
+                    <MarkdownText content=Signal::derive(move || description.get()) known_kanji=known_kanji.clone()/>
                 </div>
             </div>
             {move || {
@@ -107,8 +113,8 @@ pub fn KanjiCardItem(
                 }
             }}
             {move || {
-                if has_examples && is_expanded.get() {
-                    let examples = example_words.clone();
+                if has_examples.get() && is_expanded.get() {
+                    let examples = example_words.get();
                     view! {
                         <div class="mb-1">
                             <MarkdownText content=Signal::derive(move || format!("**{}** {}", i18n.get_keys().shared().examples_label().inner().to_string().replacen("{}", &examples, 1), "")) known_kanji=known_kanji.clone()/>
@@ -128,7 +134,7 @@ pub fn KanjiCardItem(
                     .replacen("{}", &difficulty, 1)
                     .replacen("{}", &stability, 1)}
             </Text>
-            <Show when=move || has_examples>
+            <Show when=move || has_examples.get()>
                 <div class="mt-1 flex items-center gap-3">
                     <Button
                         variant=ButtonVariant::Ghost
