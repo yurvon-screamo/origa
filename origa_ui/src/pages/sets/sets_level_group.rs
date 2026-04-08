@@ -1,6 +1,7 @@
 use super::filters::{TypeFilter, available_set_types};
 use super::sets_type_group::SetsTypeGroup;
 use super::types::SetInfo;
+use crate::i18n::use_i18n;
 use crate::ui_components::{Heading, HeadingLevel};
 use leptos::prelude::*;
 use origa::domain::JapaneseLevel;
@@ -16,6 +17,7 @@ pub fn SetsLevelGroup(
     selected_sets: RwSignal<HashSet<String>>,
     on_toggle_select: Callback<String>,
 ) -> impl IntoView {
+    let i18n = use_i18n();
     let sets_for_level = Memo::new(move |_| {
         sets.get()
             .into_iter()
@@ -44,7 +46,7 @@ pub fn SetsLevelGroup(
                     level=Signal::derive(|| HeadingLevel::H3)
                     class=Signal::derive(|| "mb-4".to_string())
                 >
-                    {format!("Уровень {}", level.code())}
+                    {i18n.get_keys().sets().level_label().inner().to_string().replacen("{}", level.code(), 1)}
                 </Heading>
                     <For
                         each=move || available_types.get()

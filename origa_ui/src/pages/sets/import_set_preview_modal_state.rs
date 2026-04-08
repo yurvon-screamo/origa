@@ -237,7 +237,14 @@ async fn load_current_user(
     match repository.get_current_user().await {
         Ok(Some(u)) => Some(u),
         Ok(None) => {
-            fail("Пользователь не найден".into());
+            fail(
+                crate::i18n::use_i18n()
+                    .get_keys()
+                    .shared()
+                    .user_not_found()
+                    .inner()
+                    .to_string(),
+            );
             None
         },
         Err(e) => {

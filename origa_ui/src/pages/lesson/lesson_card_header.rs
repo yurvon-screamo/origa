@@ -1,3 +1,4 @@
+use crate::i18n::use_i18n;
 use crate::ui_components::{AudioButtons, Tag};
 use leptos::prelude::*;
 use origa::domain::GrammarInfo;
@@ -12,12 +13,13 @@ pub fn LessonCardHeader(
     grammar_info: Option<GrammarInfo>,
     show_answer: bool,
 ) -> impl IntoView {
+    let i18n = use_i18n();
     let grammar_info = StoredValue::new(grammar_info);
     view! {
         <div class="flex items-center justify-between mb-4">
             <div class="flex items-center gap-2">
                 <Tag variant=Signal::derive(move || card_type.tag_variant())>
-                    {card_type.label()}
+                    {card_type.label(&i18n)}
                 </Tag>
                 <Show when=move || show_answer && grammar_info.get_value().is_some()>
                     {move || {

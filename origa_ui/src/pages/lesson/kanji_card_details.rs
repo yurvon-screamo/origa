@@ -1,3 +1,4 @@
+use crate::i18n::*;
 use crate::ui_components::{
     FuriganaText, KanjiViewMode, KanjiWritingSection, MarkdownText, MarkdownVariant, ReadingGroup,
     Text, TextSize, TypographyVariant,
@@ -23,6 +24,7 @@ pub fn KanjiCardDetails(
     kun_readings: Option<Vec<String>>,
     #[prop(into)] known_kanji: Signal<HashSet<String>>,
 ) -> impl IntoView {
+    let i18n = use_i18n();
     let kanji_stored = StoredValue::new(kanji);
     let name_stored = StoredValue::new(name);
     let radicals_stored = StoredValue::new(radicals);
@@ -33,13 +35,13 @@ pub fn KanjiCardDetails(
     view! {
         <Show when=move || show_details.get()>
             <div class="my-6 space-y-4 max-w-max mx-auto">
-                <ReadingGroup label="音読み[онъёми]" readings=on_readings_stored />
-                <ReadingGroup label="訓読み[кунъёми]" readings=kun_readings_stored />
+                <ReadingGroup label=i18n.get_keys().lesson().on_yomi().inner().to_string() readings=on_readings_stored />
+                <ReadingGroup label=i18n.get_keys().lesson().kun_yomi().inner().to_string() readings=kun_readings_stored />
 
                 <div class="flex gap-4 items-start text-left">
                     <div class="w-16 shrink-0">
                         <Text size=TextSize::Default variant=TypographyVariant::Muted>
-                            "Значение"
+                            {t!(i18n, lesson.meaning)}
                         </Text>
                     </div>
                     <div class="flex px-2 py-1">
@@ -53,7 +55,7 @@ pub fn KanjiCardDetails(
                     <div class="flex gap-4 items-start text-left">
                         <div class="w-16 shrink-0">
                             <Text size=TextSize::Default variant=TypographyVariant::Muted>
-                                "Радикалы"
+                                {t!(i18n, lesson.radicals)}
                             </Text>
                         </div>
                         <div class="flex flex-wrap gap-2">
@@ -88,7 +90,7 @@ pub fn KanjiCardDetails(
                 <div class="flex gap-4 items-start text-left">
                     <div class="w-16 shrink-0">
                         <Text size=TextSize::Default variant=TypographyVariant::Muted>
-                            "Написание"
+                            {t!(i18n, lesson.writing)}
                         </Text>
                     </div>
                     <KanjiWritingSection
@@ -101,7 +103,7 @@ pub fn KanjiCardDetails(
             <Show when=move || examples_stored.get_value().is_some()>
                 <div class="my-6">
                     <Text size=TextSize::Default variant=TypographyVariant::Muted class="mb-3 block text-left">
-                        "Примеры слов:"
+                        {t!(i18n, lesson.examples)}
                     </Text>
                     <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-left">
                         {move || {

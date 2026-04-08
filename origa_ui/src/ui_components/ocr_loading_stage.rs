@@ -1,4 +1,6 @@
+use crate::i18n::{Locale, use_i18n};
 use leptos::prelude::*;
+use leptos_i18n::I18nContext;
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum StageStatus {
@@ -115,6 +117,7 @@ pub fn LoadingStageItem(
     #[prop(default = None)] progress: Option<ProgressInfo>,
     #[prop(default = None)] error_message: Option<String>,
 ) -> impl IntoView {
+    let i18n = use_i18n();
     let test_id_val = move || {
         let val = test_id.get();
         if val.is_empty() { None } else { Some(val) }
@@ -126,11 +129,18 @@ pub fn LoadingStageItem(
         StageStatus::Error => "ocr-stage-icon-error",
     };
 
-    let (icon_content, icon_label) = match status {
-        StageStatus::Waiting => ("\u{25CB}", "Ожидание"),
-        StageStatus::Active => ("\u{25C9}", "Загрузка"),
-        StageStatus::Completed => ("\u{2713}", "Завершено"),
-        StageStatus::Error => ("\u{2717}", "Ошибка"),
+    let icon_content = match status {
+        StageStatus::Waiting => "\u{25CB}",
+        StageStatus::Active => "\u{25C9}",
+        StageStatus::Completed => "\u{2713}",
+        StageStatus::Error => "\u{2717}",
+    };
+
+    let icon_label = match status {
+        StageStatus::Waiting => i18n.get_keys().ui().ocr().waiting().inner().to_string(),
+        StageStatus::Active => i18n.get_keys().ui().ocr().loading().inner().to_string(),
+        StageStatus::Completed => i18n.get_keys().ui().ocr().completed().inner().to_string(),
+        StageStatus::Error => i18n.get_keys().ui().ocr().error().inner().to_string(),
     };
 
     let card_class = match status {
@@ -154,9 +164,16 @@ pub fn LoadingStageItem(
             let details = if p.speed_bps > 0 {
                 let speed_mbps = p.speed_bps as f64 / 1_048_576.0;
                 if p.eta_seconds > 0 {
+                    let eta_str = i18n
+                        .get_keys()
+                        .ui()
+                        .seconds_short()
+                        .inner()
+                        .to_string()
+                        .replacen("{}", &p.eta_seconds.to_string(), 1);
                     format!(
-                        "{:.0} MB / {:.0} MB \u{2022} {:.1} MB/s \u{2022} ~{} сек",
-                        loaded_mb, total_mb, speed_mbps, p.eta_seconds
+                        "{:.0} MB / {:.0} MB \u{2022} {:.1} MB/s \u{2022} {}",
+                        loaded_mb, total_mb, speed_mbps, eta_str
                     )
                 } else {
                     format!(
@@ -230,13 +247,23 @@ pub struct StageInfo {
     pub error_message: Option<String>,
 }
 
-pub fn get_stage_info(stage: &OcrLoadingStage, stage_type: StageType) -> StageInfo {
+pub fn get_stage_info(
+    i18n: &I18nContext<Locale>,
+    stage: &OcrLoadingStage,
+    stage_type: StageType,
+) -> StageInfo {
     match stage_type {
         StageType::Deim => match stage {
             OcrLoadingStage::DownloadingDeim { progress } => StageInfo {
                 status: StageStatus::Active,
                 progress: Some(*progress),
-                description: "Deim \u{2022} ~50 MB".into(),
+                description: i18n
+                    .get_keys()
+                    .ui()
+                    .ocr()
+                    .deim_loading()
+                    .inner()
+                    .to_string(),
                 error_message: None,
             },
             OcrLoadingStage::DownloadingParseq { .. }
@@ -245,19 +272,25 @@ pub fn get_stage_info(stage: &OcrLoadingStage, stage_type: StageType) -> StageIn
             | OcrLoadingStage::Completed => StageInfo {
                 status: StageStatus::Completed,
                 progress: None,
-                description: "Deim \u{2022} загружено".into(),
+                description: i18n.get_keys().ui().ocr().deim_loaded().inner().to_string(),
                 error_message: None,
             },
             OcrLoadingStage::Error { stage: s, message } if s == "deim" => StageInfo {
                 status: StageStatus::Error,
                 progress: None,
-                description: "Ошибка загрузки".into(),
+                description: i18n.get_keys().ui().ocr().load_error().inner().to_string(),
                 error_message: Some(message.clone()),
             },
             _ => StageInfo {
                 status: StageStatus::Waiting,
                 progress: None,
-                description: "Deim \u{2022} ~50 MB".into(),
+                description: i18n
+                    .get_keys()
+                    .ui()
+                    .ocr()
+                    .deim_loading()
+                    .inner()
+                    .to_string(),
                 error_message: None,
             },
         },
@@ -268,7 +301,14 @@ pub fn get_stage_info(stage: &OcrLoadingStage, stage_type: StageType) -> StageIn
             } => StageInfo {
                 status: StageStatus::Active,
                 progress: Some(*progress),
-                description: format!("Parseq \u{2022} модель {}/3", current_model),
+                description: i18n
+                    .get_keys()
+                    .ui()
+                    .ocr()
+                    .parseq_model()
+                    .inner()
+                    .to_string()
+                    .replacen("{}", &current_model.to_string(), 1),
                 error_message: None,
             },
             OcrLoadingStage::Initializing { .. }
@@ -276,19 +316,31 @@ pub fn get_stage_info(stage: &OcrLoadingStage, stage_type: StageType) -> StageIn
             | OcrLoadingStage::Completed => StageInfo {
                 status: StageStatus::Completed,
                 progress: None,
-                description: "Parseq \u{2022} загружено".into(),
+                description: i18n
+                    .get_keys()
+                    .ui()
+                    .ocr()
+                    .parseq_loaded()
+                    .inner()
+                    .to_string(),
                 error_message: None,
             },
             OcrLoadingStage::Error { stage: s, message } if s.starts_with("parseq") => StageInfo {
                 status: StageStatus::Error,
                 progress: None,
-                description: "Ошибка загрузки".into(),
+                description: i18n.get_keys().ui().ocr().load_error().inner().to_string(),
                 error_message: Some(message.clone()),
             },
             _ => StageInfo {
                 status: StageStatus::Waiting,
                 progress: None,
-                description: "Parseq \u{2022} ~100 MB".into(),
+                description: i18n
+                    .get_keys()
+                    .ui()
+                    .ocr()
+                    .parseq_loading()
+                    .inner()
+                    .to_string(),
                 error_message: None,
             },
         },
@@ -296,25 +348,44 @@ pub fn get_stage_info(stage: &OcrLoadingStage, stage_type: StageType) -> StageIn
             OcrLoadingStage::Initializing { model_name } => StageInfo {
                 status: StageStatus::Active,
                 progress: None,
-                description: format!("Загрузка {} в память...", model_name),
+                description: i18n
+                    .get_keys()
+                    .ui()
+                    .ocr()
+                    .init_loading()
+                    .inner()
+                    .to_string()
+                    .replacen("{}", model_name, 1),
                 error_message: None,
             },
             OcrLoadingStage::Recognizing | OcrLoadingStage::Completed => StageInfo {
                 status: StageStatus::Completed,
                 progress: None,
-                description: "Модели загружены".into(),
+                description: i18n
+                    .get_keys()
+                    .ui()
+                    .ocr()
+                    .models_loaded()
+                    .inner()
+                    .to_string(),
                 error_message: None,
             },
             OcrLoadingStage::Error { stage: s, message } if s == "init" => StageInfo {
                 status: StageStatus::Error,
                 progress: None,
-                description: "Ошибка инициализации".into(),
+                description: i18n.get_keys().ui().ocr().init_error().inner().to_string(),
                 error_message: Some(message.clone()),
             },
             _ => StageInfo {
                 status: StageStatus::Waiting,
                 progress: None,
-                description: "Ожидание...".into(),
+                description: i18n
+                    .get_keys()
+                    .ui()
+                    .ocr()
+                    .waiting_status()
+                    .inner()
+                    .to_string(),
                 error_message: None,
             },
         },
@@ -322,25 +393,49 @@ pub fn get_stage_info(stage: &OcrLoadingStage, stage_type: StageType) -> StageIn
             OcrLoadingStage::Recognizing => StageInfo {
                 status: StageStatus::Active,
                 progress: None,
-                description: "Обработка изображения...".into(),
+                description: i18n
+                    .get_keys()
+                    .ui()
+                    .ocr()
+                    .processing_image()
+                    .inner()
+                    .to_string(),
                 error_message: None,
             },
             OcrLoadingStage::Completed => StageInfo {
                 status: StageStatus::Completed,
                 progress: None,
-                description: "Завершено".into(),
+                description: i18n
+                    .get_keys()
+                    .ui()
+                    .ocr()
+                    .completed_status()
+                    .inner()
+                    .to_string(),
                 error_message: None,
             },
             OcrLoadingStage::Error { stage: s, message } if s == "recognize" => StageInfo {
                 status: StageStatus::Error,
                 progress: None,
-                description: "Ошибка распознавания".into(),
+                description: i18n
+                    .get_keys()
+                    .ui()
+                    .ocr()
+                    .recognition_error()
+                    .inner()
+                    .to_string(),
                 error_message: Some(message.clone()),
             },
             _ => StageInfo {
                 status: StageStatus::Waiting,
                 progress: None,
-                description: "Ожидание...".into(),
+                description: i18n
+                    .get_keys()
+                    .ui()
+                    .ocr()
+                    .waiting_status()
+                    .inner()
+                    .to_string(),
                 error_message: None,
             },
         },

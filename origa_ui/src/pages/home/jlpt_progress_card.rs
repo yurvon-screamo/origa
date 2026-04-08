@@ -1,3 +1,4 @@
+use crate::i18n::{t, use_i18n};
 use leptos::prelude::*;
 use origa::domain::{CategoryProgress, JlptProgress, LevelProgressDetail};
 
@@ -63,6 +64,7 @@ fn CategoryDetailSection(
     detail: Signal<Option<LevelProgressDetail>>,
     #[prop(optional, into)] test_id: Signal<String>,
 ) -> impl IntoView {
+    let i18n = use_i18n();
     let is_expanded = RwSignal::new(false);
     let kanji = Signal::derive(move || detail.get().map(|d| d.kanji.clone()));
     let words = Signal::derive(move || detail.get().map(|d| d.words.clone()));
@@ -88,7 +90,7 @@ fn CategoryDetailSection(
                 }
             >
                 <Text size=Signal::from(TextSize::Small)>
-                    <span>"Подробнее"</span>
+                    <span>{t!(i18n, home.more)}</span>
                 </Text>
                 <span class="text-sm transition-transform" class:rotate-180=is_expanded>
                     "▼"
@@ -99,7 +101,7 @@ fn CategoryDetailSection(
                 <div class="mt-4 space-y-4">
                     <Show when=move || kanji.get().is_some()>
                         <CategoryRow
-                            label="漢字 Кандзи"
+                            label=Signal::derive(move || i18n.get_keys().home().kanji_label().inner().to_string())
                             tag_variant=Signal::from(TagVariant::Terracotta)
                             progress=Signal::derive(move || kanji.get().unwrap_or_default())
                             test_id=Signal::derive(move || format!("{}-kanji", test_id.get()))
@@ -107,7 +109,7 @@ fn CategoryDetailSection(
                     </Show>
                     <Show when=move || words.get().is_some()>
                         <CategoryRow
-                            label="言葉 Слова"
+                            label=Signal::derive(move || i18n.get_keys().home().words_label().inner().to_string())
                             tag_variant=Signal::from(TagVariant::Olive)
                             progress=Signal::derive(move || words.get().unwrap_or_default())
                             test_id=Signal::derive(move || format!("{}-words", test_id.get()))
@@ -115,7 +117,7 @@ fn CategoryDetailSection(
                     </Show>
                     <Show when=move || grammar.get().is_some()>
                         <CategoryRow
-                            label="文法 Грамматика"
+                            label=Signal::derive(move || i18n.get_keys().home().grammar_label().inner().to_string())
                             tag_variant=Signal::from(TagVariant::Filled)
                             progress=Signal::derive(move || grammar.get().unwrap_or_default())
                             test_id=Signal::derive(move || format!("{}-grammar", test_id.get()))
@@ -129,7 +131,7 @@ fn CategoryDetailSection(
 
 #[component]
 fn CategoryRow(
-    label: &'static str,
+    #[prop(into)] label: Signal<String>,
     tag_variant: Signal<TagVariant>,
     progress: Signal<CategoryProgress>,
     #[prop(optional, into)] test_id: Signal<String>,
@@ -147,7 +149,7 @@ fn CategoryRow(
         }>
             <div class="flex items-center gap-3">
                 <Tag variant=tag_variant test_id=Signal::derive(move || format!("{}-tag", test_id.get()))>
-                    {label}
+                    {move || label.get()}
                 </Tag>
                 <div class="flex-1 progress-track">
                     <div

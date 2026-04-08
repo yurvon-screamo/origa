@@ -1,3 +1,4 @@
+use crate::i18n::{I18nContext, Locale};
 use crate::pages::login::auth_handlers::{handle_oauth_callback, handle_oauth_callback_desktop};
 use crate::store::auth_store::AuthStore;
 use gloo_storage::{LocalStorage, Storage};
@@ -10,7 +11,7 @@ use tracing::{debug, error, trace, warn};
 const LOGIN_PATH: &str = "/login";
 const HOME_PATH: &str = "/home";
 
-pub fn setup_oauth_listener(auth_store: AuthStore) {
+pub fn setup_oauth_listener(auth_store: AuthStore, i18n: I18nContext<Locale>) {
     debug!("setup_oauth_listener() called");
 
     let auth_store_clone = auth_store.clone();
@@ -27,10 +28,11 @@ pub fn setup_oauth_listener(auth_store: AuthStore) {
         }
 
         let auth_store = auth_store_clone.clone();
+        let i18n = i18n;
         auth_store.oauth_error.set(None);
         spawn_local(async move {
             debug!(url = %url, "processing oauth url");
-            let result = process_oauth_url(&url, &auth_store).await;
+            let result = process_oauth_url(&url, &auth_store, &i18n).await;
             debug!(result = ?result, "process_oauth_url result");
             handle_oauth_result(result, &auth_store);
         });
@@ -56,24 +58,33 @@ fn extract_url_from_event(event: &JsValue) -> String {
     String::new()
 }
 
-async fn process_oauth_url(url: &str, auth_store: &AuthStore) -> Result<(), String> {
+async fn process_oauth_url(
+    url: &str,
+    auth_store: &AuthStore,
+    i18n: &I18nContext<Locale>,
+) -> Result<(), String> {
     let parsed = url::Url::parse(url);
     trace!(parsed = ?parsed, "URL parse result");
 
     if parsed.is_ok_and(|u| u.query_pairs().any(|(k, _)| k == "code")) {
         debug!("URL has 'code' param, calling handle_oauth_callback_desktop");
-        handle_oauth_callback_desktop(url, auth_store).await?;
+        handle_oauth_callback_desktop(url, auth_store, i18n).await?;
         return Ok(());
     }
 
     if let Some(fragment) = url.split('#').nth(1) {
         debug!(fragment = %fragment, "URL has fragment, calling handle_oauth_callback");
-        handle_oauth_callback(fragment, auth_store).await?;
+        handle_oauth_callback(fragment, auth_store, i18n).await?;
         return Ok(());
     }
 
     error!(url = %url, "URL has no 'code' param and no fragment");
-    Err("Неподдерживаемый формат callback URL".to_string())
+    Err(i18n
+        .get_keys()
+        .login()
+        .unsupported_callback()
+        .inner()
+        .to_string())
 }
 
 fn handle_oauth_result(result: Result<(), String>, auth_store: &AuthStore) {
@@ -148,7 +159,8 @@ fn get_listen_function(event_mod: &JsValue) -> Option<js_sys::Function> {
         .and_then(|v| v.dyn_into::<js_sys::Function>().ok())
 }
 
-pub fn check_url_oauth_callback(auth_store: &AuthStore) {
+pub fn check_url_oauth_callback(auth_store: &AuthStore, i18n: &I18nContext<Locale>) {
+    let i18n = *i18n;
     let disposed = StoredValue::new(());
     let path = web_sys::window()
         .and_then(|w| w.location().pathname().ok())
@@ -183,6 +195,7 @@ pub fn check_url_oauth_callback(auth_store: &AuthStore) {
             code,
             is_oauth_loading,
             disposed,
+            i18n,
         )
         .await;
     });
@@ -206,8 +219,9 @@ async fn process_oauth_flow(
     code: String,
     is_oauth_loading: RwSignal<bool>,
     disposed: StoredValue<()>,
+    i18n: I18nContext<Locale>,
 ) {
-    let result = auth_store.set_oauth_session(&code, &verifier).await;
+    let result = auth_store.set_oauth_session(&code, &verifier, &i18n).await;
 
     if disposed.is_disposed() {
         return;

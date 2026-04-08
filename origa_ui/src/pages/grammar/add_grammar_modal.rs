@@ -1,6 +1,7 @@
 use super::add_grammar_modal_handlers::ModalHandlers;
 use super::add_grammar_modal_state::ModalState;
 use super::rules_list::RulesList;
+use crate::i18n::{t, use_i18n};
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{
     Button, ButtonSize, ButtonVariant, Drawer, ErrorAlert, LevelSelector, Search, SelectedCount,
@@ -22,6 +23,7 @@ const JLPT_LEVELS: [JapaneseLevel; 5] = [
 
 #[component]
 pub fn AddGrammarModal(is_open: RwSignal<bool>, refresh_trigger: RwSignal<u32>) -> impl IntoView {
+    let i18n = use_i18n();
     let repository =
         use_context::<HybridUserRepository>().expect("repository context not provided");
 
@@ -63,7 +65,7 @@ pub fn AddGrammarModal(is_open: RwSignal<bool>, refresh_trigger: RwSignal<u32>) 
     view! {
         <Drawer
             is_open=is_open
-            title=Signal::derive(|| "Добавить грамматику".to_string())
+            title=Signal::derive(move || i18n.get_keys().grammar_page().add_grammar().inner().to_string())
             test_id="grammar-add-drawer"
             action_button=Arc::new(move || {
                 view! {
@@ -75,7 +77,7 @@ pub fn AddGrammarModal(is_open: RwSignal<bool>, refresh_trigger: RwSignal<u32>) 
                         on_click=handlers.on_add
                         test_id="grammar-drawer-add-btn"
                     >
-                        {move || if state.is_creating.get() { "Добавление..." } else { "Добавить" }}
+                        {move || if state.is_creating.get() { t!(i18n, grammar_page.adding).into_any() } else { t!(i18n, grammar_page.add).into_any() }}
                     </Button>
                 }.into_any()
             })
@@ -90,14 +92,14 @@ pub fn AddGrammarModal(is_open: RwSignal<bool>, refresh_trigger: RwSignal<u32>) 
 
                 <Search
                     value=state.search_query
-                    placeholder=Signal::derive(|| "Поиск правила...".to_string())
+                    placeholder=Signal::derive(move || i18n.get_keys().grammar_page().search_placeholder().inner().to_string())
                     test_id="grammar-drawer-search"
                 />
 
                 <div>
                     <div class="flex items-center justify-between mb-2">
                         <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                            "Доступные правила"
+                            {t!(i18n, grammar_page.available_rules)}
                         </Text>
                         <Button
                             variant=Signal::derive(|| ButtonVariant::Ghost)
@@ -108,7 +110,7 @@ pub fn AddGrammarModal(is_open: RwSignal<bool>, refresh_trigger: RwSignal<u32>) 
                             })
                             test_id="grammar-drawer-select-all-btn"
                         >
-                            "Выделить все"
+                            {t!(i18n, common.select_all)}
                         </Button>
                     </div>
                     {move || {
@@ -120,7 +122,7 @@ pub fn AddGrammarModal(is_open: RwSignal<bool>, refresh_trigger: RwSignal<u32>) 
                                 <div class="flex flex-col items-center py-4 gap-3">
                                     <Spinner />
                                     <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                                        "Поиск правил грамматики..."
+                                        {t!(i18n, grammar_page.searching_rules)}
                                     </Text>
                                 </div>
                             }.into_any()
@@ -138,7 +140,7 @@ pub fn AddGrammarModal(is_open: RwSignal<bool>, refresh_trigger: RwSignal<u32>) 
                     }}
                 </div>
 
-                <SelectedCount count=Signal::derive(move || state.selected_rule_ids.get().len()) label="правил" />
+                <SelectedCount count=Signal::derive(move || state.selected_rule_ids.get().len()) label=Signal::derive(move || i18n.get_keys().grammar_page().rules_count().inner().to_string()) />
 
                 <ErrorAlert message=state.error_message />
             </div>

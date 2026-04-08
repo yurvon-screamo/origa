@@ -1,4 +1,5 @@
 use super::{ActionButtons, PersonalDataCard, SettingsCard};
+use crate::i18n::{native_language_to_locale, use_i18n};
 use crate::store::AuthStore;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
@@ -30,6 +31,13 @@ pub fn ProfileContent() -> impl IntoView {
 
     Effect::new(move |_| {
         selected_language.set(native_language.get());
+    });
+
+    let i18n = use_i18n();
+    let i18n_for_sync = i18n;
+    Effect::new(move |_| {
+        let lang = selected_language.get();
+        i18n_for_sync.set_locale(native_language_to_locale(&lang));
     });
 
     let daily_load = Memo::new(move |_| {

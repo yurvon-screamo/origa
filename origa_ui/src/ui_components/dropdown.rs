@@ -1,3 +1,4 @@
+use crate::i18n::use_i18n;
 use leptos::prelude::*;
 use leptos::wasm_bindgen::JsCast;
 use leptos_use::use_event_listener;
@@ -15,6 +16,7 @@ pub fn Dropdown(
     #[prop(optional, into)] placeholder: Signal<String>,
     #[prop(optional, into)] test_id: Signal<String>,
 ) -> impl IntoView {
+    let i18n = use_i18n();
     let test_id_val = move || {
         let val = test_id.get();
         if val.is_empty() { None } else { Some(val) }
@@ -155,7 +157,7 @@ pub fn Dropdown(
                 <div class="dropdown-search">
                     <input
                         type="text"
-                        placeholder="Поиск..."
+                        placeholder=move || crate::i18n::td_string!(i18n.get_locale(), ui.dropdown_search)
                         node_ref=input_ref
                         data-testid=search_test_id
                         on:input=on_search_input

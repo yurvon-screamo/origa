@@ -1,3 +1,4 @@
+use crate::i18n::use_i18n;
 use crate::ui_components::{MarkdownText, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 use origa::dictionary::kanji::KanjiInfo;
@@ -9,6 +10,7 @@ pub fn KanjiItem(
     selected_kanji: RwSignal<HashSet<String>>,
     known_kanji: HashSet<String>,
 ) -> impl IntoView {
+    let i18n = use_i18n();
     let kanji_str = kanji_info.kanji().to_string();
     let kanji_str_for_click = kanji_str.clone();
     let kanji_str_for_memo = kanji_str.clone();
@@ -45,10 +47,11 @@ pub fn KanjiItem(
                 <div class="flex-1">
                     <MarkdownText content=Signal::derive(move || description.clone()) known_kanji=known_kanji.clone()/>
                     {move || {
+                        let radicals_str = radicals_str.clone();
                         if !radicals_str.is_empty() {
                             view! {
                                 <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                                    {format!("Радикалы: {}", radicals_str)}
+                                    {i18n.get_keys().shared().radicals_label().inner().to_string().replacen("{}", &radicals_str, 1)}
                                 </Text>
                             }.into_any()
                         } else {

@@ -1,4 +1,5 @@
 use super::kanji_card_details::{KanjiCardDetails, RadicalDisplay};
+use crate::i18n::*;
 use crate::ui_components::{
     Button, ButtonVariant, FuriganaText, Heading, HeadingLevel, MarkdownText, MarkdownVariant,
     Text, TextSize, TypographyVariant,
@@ -24,6 +25,7 @@ pub fn LessonCardAnswer(
     grammar_info: Option<GrammarInfo>,
     #[prop(into)] known_kanji: Signal<HashSet<String>>,
 ) -> impl IntoView {
+    let i18n = use_i18n();
     let question = StoredValue::new(question_text);
     let answer = StoredValue::new(answer_text);
     let on_readings_stored = StoredValue::new(on_readings);
@@ -97,7 +99,7 @@ pub fn LessonCardAnswer(
                                 <div class="flex gap-4 items-baseline text-left">
                                     <div class="w-16 shrink-0">
                                         <Text size=TextSize::Default variant=TypographyVariant::Muted>
-                                            "Ответ:"
+                                            {t!(i18n, lesson.answer)}
                                         </Text>
                                     </div>
                                     <Show
@@ -138,7 +140,7 @@ pub fn LessonCardAnswer(
                         variant=ButtonVariant::Ghost
                         on_click=Callback::new(move |_: MouseEvent| on_toggle.run(()))
                     >
-                        {move || if is_expanded.get() { "Свернуть" } else { "Развернуть" }}
+                        {move || if is_expanded.get() { t!(i18n, common.collapse).into_any() } else { t!(i18n, common.expand).into_any() }}
                     </Button>
                 </div>
             </Show>

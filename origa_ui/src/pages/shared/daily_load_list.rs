@@ -1,44 +1,75 @@
+use crate::i18n::{Locale, use_i18n};
 use crate::ui_components::{Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
+use leptos_i18n::I18nContext;
 use origa::domain::DailyLoad;
 
-const DAILY_LOAD_OPTIONS: &[(DailyLoad, &str, &str)] = &[
-    (
-        DailyLoad::Light,
-        "Лёгкий",
-        "Лёгкая нагрузка для комфортного, но медленного обучения. Будьте готовы уделять 10-15 минут в день.",
-    ),
-    (
-        DailyLoad::Medium,
-        "Сбалансированный",
-        "Сбалансированный и комфортный темп обучения. Будьте готовы уделять 25-40 минут в день.",
-    ),
-    (
-        DailyLoad::Hard,
-        "Сложный",
-        "Интенсивное обучение для быстрого прогресса. Будьте готовы уделять 1-2 часа в день.",
-    ),
-    (
-        DailyLoad::Impossible,
-        "Максимальный",
-        "Высочайший уровень нагрузки для достижения максимального прогресса. Будьте готовы уделять 3-5 часов в день.",
-    ),
+const DAILY_LOAD_OPTIONS: &[DailyLoad] = &[
+    DailyLoad::Light,
+    DailyLoad::Medium,
+    DailyLoad::Hard,
+    DailyLoad::Impossible,
 ];
+
+fn load_label(i18n: &I18nContext<Locale>, load: &DailyLoad) -> String {
+    match load {
+        DailyLoad::Light => i18n.get_keys().shared().load_light().inner().to_string(),
+        DailyLoad::Medium => i18n.get_keys().shared().load_medium().inner().to_string(),
+        DailyLoad::Hard => i18n.get_keys().shared().load_hard().inner().to_string(),
+        DailyLoad::Impossible => i18n
+            .get_keys()
+            .shared()
+            .load_impossible()
+            .inner()
+            .to_string(),
+    }
+}
+
+fn load_description(i18n: &I18nContext<Locale>, load: &DailyLoad) -> String {
+    match load {
+        DailyLoad::Light => i18n
+            .get_keys()
+            .shared()
+            .load_light_desc()
+            .inner()
+            .to_string(),
+        DailyLoad::Medium => i18n
+            .get_keys()
+            .shared()
+            .load_medium_desc()
+            .inner()
+            .to_string(),
+        DailyLoad::Hard => i18n
+            .get_keys()
+            .shared()
+            .load_hard_desc()
+            .inner()
+            .to_string(),
+        DailyLoad::Impossible => i18n
+            .get_keys()
+            .shared()
+            .load_impossible_desc()
+            .inner()
+            .to_string(),
+    }
+}
 
 #[component]
 pub fn DailyLoadList(selected_load: RwSignal<DailyLoad>) -> impl IntoView {
+    let i18n = use_i18n();
+
     view! {
         <div class="space-y-3">
             <For
                 each=move || DAILY_LOAD_OPTIONS.iter().enumerate()
                 key=|(idx, _)| *idx
-                children=move |(_idx, (load, label, description))| {
+                children=move |(_idx, load)| {
                     let load = *load;
-                    let label = *label;
-                    let description = *description;
                     let is_selected = Memo::new(move |_| selected_load.get() == load);
                     let load_for_click = load;
                     let load_code = format!("{:?}", load).to_lowercase();
+                    let label = load_label(&i18n, &load);
+                    let description = load_description(&i18n, &load);
 
                     view! {
                         <div

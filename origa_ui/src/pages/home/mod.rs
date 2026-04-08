@@ -21,6 +21,7 @@ pub use nav_drawer::NavDrawer;
 pub use stat_card::QuickStatCard;
 pub use stats_grid::StatsGrid;
 
+use crate::i18n::*;
 use crate::store::auth_store::AuthStore;
 use crate::ui_components::{
     PageLayout, PageLayoutVariant, Spinner, Text, TextSize, TypographyVariant,
@@ -33,6 +34,7 @@ use origa::traits::UserRepository;
 
 #[component]
 pub fn Home() -> impl IntoView {
+    let i18n = use_i18n();
     let auth_store = use_context::<AuthStore>().expect("AuthStore not provided");
     let repository = auth_store.repository().clone();
     let navigate = use_navigate();
@@ -79,7 +81,7 @@ pub fn Home() -> impl IntoView {
                 <div class="flex flex-col items-center justify-center min-h-screen gap-4" data-testid="home-loading">
                     <Spinner test_id="home-spinner" />
                     <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                        "Загрузка..."
+                        {t!(i18n, home.loading)}
                     </Text>
                 </div>
             </Show>

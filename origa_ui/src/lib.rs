@@ -4,6 +4,7 @@ use tracing_wasm::{ConsoleConfig, WASMLayer, WASMLayerConfigBuilder};
 
 pub mod app;
 mod core;
+pub mod i18n;
 mod loaders;
 mod pages;
 mod repository;

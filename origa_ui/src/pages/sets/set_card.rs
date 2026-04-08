@@ -1,4 +1,5 @@
 use super::types::SetInfo;
+use crate::i18n::{t, use_i18n};
 use crate::ui_components::{
     Button, ButtonSize, ButtonVariant, Card, Checkbox, Heading, HeadingLevel, MarkdownText, Tag,
     TagVariant, Text, TextSize, TypographyVariant,
@@ -14,6 +15,7 @@ pub fn SetCard(
     selected_sets: RwSignal<HashSet<String>>,
     on_toggle_select: Callback<String>,
 ) -> impl IntoView {
+    let i18n = use_i18n();
     let description = set_info.description.clone();
     let title_for_display = set_info.title.clone();
     let is_imported = set_info.is_imported;
@@ -69,11 +71,11 @@ pub fn SetCard(
             </div>
             <div class="flex items-center justify-between mt-auto">
                 <Text size=Signal::derive(|| TextSize::Small) variant=Signal::derive(|| TypographyVariant::Muted)>
-                    {word_count.map(|c| format!("{} слов", c)).unwrap_or_default()}
+                    {word_count.map(|c| i18n.get_keys().sets().words_count().inner().to_string().replacen("{}", &c.to_string(), 1)).unwrap_or_default()}
                 </Text>
                 <Show when=move || is_imported>
                     <Tag variant=Signal::derive(|| TagVariant::Olive)>
-                        "Импортирован"
+                        {t!(i18n, sets.imported_tag)}
                     </Tag>
                 </Show>
             </div>
@@ -87,6 +89,7 @@ fn SetCardButton(
     title: String,
     on_import: Callback<(String, String)>,
 ) -> impl IntoView {
+    let i18n = use_i18n();
     view! {
         <Button
             variant=Signal::derive(|| ButtonVariant::Filled)
@@ -94,7 +97,7 @@ fn SetCardButton(
             on_click=Callback::new(move |_| on_import.run((set_id.clone(), title.clone())))
             test_id="sets-card-import-btn"
         >
-            "Импорт"
+            {t!(i18n, common.import)}
         </Button>
     }
 }

@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 
 use super::super::shared::{CardStatus, DeleteRequest, MarkAsKnownButton};
+use crate::i18n::use_i18n;
 use crate::ui_components::{
     Card, CardHistoryModal, CollapsibleDescription, DeleteButton, DeleteConfirmModal,
     FavoriteButton, FuriganaText, Heading, HeadingLevel, HistoryButton, MarkdownText, Tag, Text,
@@ -20,6 +21,7 @@ pub fn GrammarCardItem(
     on_delete: Callback<DeleteRequest>,
     is_deleting: Signal<bool>,
 ) -> impl IntoView {
+    let i18n = use_i18n();
     let card = study_card.card();
     let card_id = *study_card.card_id();
     let is_favorite = study_card.is_favorite();
@@ -82,11 +84,14 @@ pub fn GrammarCardItem(
                 variant=TypographyVariant::Muted
                 class="mt-2"
             >
-                {format!("Повтор: {} | Слож: {} | Стаб: {}", next_review, difficulty, stability)}
+                {i18n.get_keys().shared().card_info().inner().to_string()
+                    .replacen("{}", &next_review, 1)
+                    .replacen("{}", &difficulty, 1)
+                    .replacen("{}", &stability, 1)}
             </Text>
             <div class="border-t border-[var(--border-dark)] pt-2 mt-2 flex justify-between items-center">
                 <Tag variant=Signal::derive(move || status.tag_variant())>
-                    {status.label()}
+                    {status.label(&i18n)}
                 </Tag>
                 <div class="flex items-center gap-2">
                     <FavoriteButton

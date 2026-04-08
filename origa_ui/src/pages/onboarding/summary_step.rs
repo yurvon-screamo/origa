@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use crate::i18n::*;
 use crate::ui_components::{Checkbox, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 use origa::traits::WellKnownSetMeta;
@@ -27,30 +28,56 @@ fn get_type_icon(set_type: &str) -> Option<&'static str> {
     }
 }
 
-fn format_word_count(count: usize) -> String {
-    match count {
-        0 => "0 слов".to_string(),
-        1 => "1 слово".to_string(),
-        n if n < 5 => format!("{} слова", n),
-        n if n < 20 => format!("{} слов", n),
-        n if n % 10 == 1 => format!("{} слово", n),
-        n if n % 10 < 5 => format!("{} слова", n),
-        n => format!("{} слов", n),
+fn format_word_count(i18n: I18nContext<Locale>, count: usize) -> String {
+    let summary = i18n.get_keys().onboarding().summary();
+    if count == 0 {
+        return summary.no_words_count().inner().to_string();
+    }
+    match i18n.get_locale() {
+        Locale::ru => {
+            let template = match count % 10 {
+                1 if count % 100 != 11 => summary.word_single().inner(),
+                2..=4 if !(12..=14).contains(&(count % 100)) => summary.word_dual().inner(),
+                _ => summary.word_plural().inner(),
+            };
+            template.to_string().replace("{count}", &count.to_string())
+        },
+        Locale::en => {
+            let template = if count == 1 {
+                summary.word_single().inner()
+            } else {
+                summary.word_plural().inner()
+            };
+            template.to_string().replace("{count}", &count.to_string())
+        },
     }
 }
 
-fn format_set_count(count: usize) -> String {
-    match count {
-        1 => "1 набор".to_string(),
-        n if n < 5 => format!("{} набора", n),
-        n if n % 10 == 1 && n % 100 != 11 => format!("{} набор", n),
-        n if n % 10 < 5 && (n % 100 < 10 || n % 100 >= 20) => format!("{} набора", n),
-        n => format!("{} наборов", n),
+fn format_set_count(i18n: I18nContext<Locale>, count: usize) -> String {
+    let summary = i18n.get_keys().onboarding().summary();
+    match i18n.get_locale() {
+        Locale::ru => {
+            let template = match count % 10 {
+                1 if count % 100 != 11 => summary.set_single().inner(),
+                2..=4 if !(12..=14).contains(&(count % 100)) => summary.set_dual().inner(),
+                _ => summary.set_plural().inner(),
+            };
+            template.to_string().replace("{count}", &count.to_string())
+        },
+        Locale::en => {
+            let template = if count == 1 {
+                summary.set_single().inner()
+            } else {
+                summary.set_plural().inner()
+            };
+            template.to_string().replace("{count}", &count.to_string())
+        },
     }
 }
 
 #[component]
 pub fn SummaryStep(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoView {
+    let i18n = use_i18n();
     let test_id_val = move || {
         let val = test_id.get();
         if val.is_empty() { None } else { Some(val) }
@@ -105,18 +132,21 @@ pub fn SummaryStep(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
         types
     });
 
+    let i18n_for_summary = i18n;
     view! {
         <div class="summary-step" data-testid=test_id_val>
             <div class="text-center mb-6">
                 <Text size=TextSize::Large variant=TypographyVariant::Primary test_id=Signal::derive(|| "summary-step-title".to_string())>
-                    "Готово к импорту"
+                    {t!(i18n, onboarding.summary.title)}
                 </Text>
                 <div class="mt-2">
                     <Text size=TextSize::Default variant=TypographyVariant::Muted test_id=Signal::derive(|| "summary-step-stats".to_string())>
                         {move || {
                             let count = total_count.get();
                             let word_count = total_word_count.get();
-                            format!("Выбрано {} наборов, {}", count, format_word_count(word_count))
+                            i18n_for_summary.get_keys().onboarding().summary().selected_count().inner().to_string()
+                                .replace("{sets_count}", &count.to_string())
+                                .replace("{words}", &format_word_count(i18n_for_summary, word_count))
                         }}
                     </Text>
                 </div>
@@ -169,12 +199,12 @@ pub fn SummaryStep(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                                             {type_label}
                                         </Text>
                                         <Text size=TextSize::Small variant=TypographyVariant::Muted test_id=Signal::derive(move || format!("summary-step-type-count-{}", set_type_for_id_2.clone()))>
-                                            {move || format!("({})", format_set_count(type_set_count.get()))}
+                                            {move || format!("({})", format_set_count(i18n, type_set_count.get()))}
                                         </Text>
                                     </div>
                                     <div class="flex items-center gap-3">
                                         <Text size=TextSize::Small variant=TypographyVariant::Muted test_id=Signal::derive(move || format!("summary-step-words-{}", set_type_for_id_3.clone()))>
-                                            {move || format_word_count(type_word_count.get())}
+                                            {move || format_word_count(i18n, type_word_count.get())}
                                         </Text>
                                         <div class="accordion-icon"></div>
                                     </div>
@@ -224,7 +254,7 @@ pub fn SummaryStep(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                                                             </Text>
                                                         </span>
                                                         <Text size=TextSize::Small variant=TypographyVariant::Muted test_id=Signal::derive(move || format!("{}-words", set_test_id_3.clone()))>
-                                                            {format_word_count(word_count)}
+                                                            {format_word_count(i18n, word_count)}
                                                         </Text>
                                                     </div>
                                                 }
@@ -241,11 +271,11 @@ pub fn SummaryStep(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
             <Show when=move || total_count.get() == 0>
                 <div class="text-center py-8">
                     <Text size=TextSize::Default variant=TypographyVariant::Muted test_id=Signal::derive(|| "summary-step-empty".to_string())>
-                        "Ничего не выбрано для импорта"
+                        {t!(i18n, onboarding.summary.nothing_selected)}
                     </Text>
                     <div class="mt-2">
                         <Text size=TextSize::Small variant=TypographyVariant::Muted test_id=Signal::derive(|| "summary-step-empty-hint".to_string())>
-                            "Вернитесь на предыдущие шаги, чтобы выбрать наборы"
+                            {t!(i18n, onboarding.summary.nothing_hint)}
                         </Text>
                     </div>
                 </div>

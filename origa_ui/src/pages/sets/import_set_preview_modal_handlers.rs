@@ -1,3 +1,4 @@
+use crate::i18n::use_i18n;
 use crate::ui_components::{ToastData, ToastType};
 use leptos::ev::MouseEvent;
 use leptos::prelude::*;
@@ -18,6 +19,7 @@ pub fn create_import_preview_handlers(
     toasts: RwSignal<Vec<ToastData>>,
     on_import_result: Callback<Vec<String>>,
 ) -> ImportPreviewHandlers {
+    let i18n = use_i18n();
     let state_clone = state.clone();
     let on_word_toggle = Callback::new(move |word: String| {
         state_clone.toggle_word(word);
@@ -64,27 +66,41 @@ pub fn create_import_preview_handlers(
                     let toast_id = toasts.get().len();
                     let message = if result.failed_words.is_empty() {
                         if result.skipped_words.is_empty() {
-                            format!("Успешно создано {} карточек", result.created_cards.len())
+                            i18n.get_keys()
+                                .sets()
+                                .import_success()
+                                .inner()
+                                .to_string()
+                                .replacen("{}", &result.created_cards.len().to_string(), 1)
                         } else {
-                            format!(
-                                "Создано {} карточек, пропущено {} (уже существуют)",
-                                result.created_cards.len(),
-                                result.skipped_words.len()
-                            )
+                            i18n.get_keys()
+                                .sets()
+                                .import_partial()
+                                .inner()
+                                .to_string()
+                                .replacen("{}", &result.created_cards.len().to_string(), 1)
+                                .replacen("{}", &result.skipped_words.len().to_string(), 1)
                         }
                     } else {
-                        format!(
-                            "Создано {} карточек, пропущено {}, ошибок: {}",
-                            result.created_cards.len(),
-                            result.skipped_words.len(),
-                            result.failed_words.len()
-                        )
+                        i18n.get_keys()
+                            .sets()
+                            .import_with_errors()
+                            .inner()
+                            .to_string()
+                            .replacen("{}", &result.created_cards.len().to_string(), 1)
+                            .replacen("{}", &result.skipped_words.len().to_string(), 1)
+                            .replacen("{}", &result.failed_words.len().to_string(), 1)
                     };
 
                     toasts.update(|t| {
                         t.push(ToastData {
                             id: toast_id,
-                            title: "Импорт завершён".to_string(),
+                            title: i18n
+                                .get_keys()
+                                .sets()
+                                .import_complete_title()
+                                .inner()
+                                .to_string(),
                             message,
                             toast_type: ToastType::Success,
                             duration_ms: None,
@@ -103,7 +119,7 @@ pub fn create_import_preview_handlers(
                     toasts.update(|t| {
                         t.push(ToastData {
                             id: toast_id,
-                            title: "Ошибка".to_string(),
+                            title: i18n.get_keys().common().error().inner().to_string(),
                             message: e,
                             toast_type: ToastType::Error,
                             duration_ms: None,

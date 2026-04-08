@@ -1,4 +1,5 @@
 use crate::core::config::public_url;
+use crate::i18n::{t, use_i18n};
 use leptos::ev::PointerEvent;
 use leptos::html::Canvas;
 use leptos::prelude::*;
@@ -78,6 +79,7 @@ pub fn KanjiDrawingPractice(
     #[prop(optional)] on_complete: Option<Callback<()>>,
     #[prop(optional, into)] test_id: Signal<String>,
 ) -> impl IntoView {
+    let i18n = use_i18n();
     let svg_content = LocalResource::new(move || {
         let encoded = urlencoding::encode(&kanji);
         let path = public_url(&format!("/public/kanji_animations/{}.svg", encoded));
@@ -280,14 +282,14 @@ pub fn KanjiDrawingPractice(
                     if load_error.get() {
                         view! {
                             <div class="kanji-drawing-error">
-                                "Анимация для этого кандзи недоступна"
+                                {t!(i18n, kanji_page.animation_unavailable)}
                             </div>
                         }
                         .into_any()
                     } else if is_completed.get() {
                         view! {
                             <div class="kanji-drawing-progress">
-                                "Готово!"
+                                {t!(i18n, kanji_page.done)}
                             </div>
                         }
                         .into_any()
@@ -296,7 +298,9 @@ pub fn KanjiDrawingPractice(
                         let current = current_stroke_index.get() + 1;
                         view! {
                             <div class="kanji-drawing-progress">
-                                {format!("Штрих {} / {}", current, total)}
+                                {i18n.get_keys().kanji_page().stroke_progress().inner().to_string()
+                                    .replacen("{}", &current.to_string(), 1)
+                                    .replacen("{}", &total.to_string(), 1)}
                             </div>
                         }
                         .into_any()

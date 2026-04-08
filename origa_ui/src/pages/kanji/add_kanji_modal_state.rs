@@ -90,7 +90,14 @@ impl ModalState {
                     if disposed.is_disposed() {
                         return;
                     }
-                    error.set(Some("Пользователь не найден".to_string()));
+                    error.set(Some(
+                        crate::i18n::use_i18n()
+                            .get_keys()
+                            .shared()
+                            .user_not_found()
+                            .inner()
+                            .to_string(),
+                    ));
                     is_loading.set(false);
                 },
                 Err(e) => {

@@ -1,4 +1,5 @@
 use super::ocr_processing::{OcrState, ProcessContext, process_file};
+use crate::i18n::{t, use_i18n};
 use crate::ui_components::{
     Alert, AlertType, Button, ButtonVariant, LoadingStageItem, OcrLoadingStage, OcrLoadingState,
     StageType, Text, TextSize, TypographyVariant, get_stage_info,
@@ -9,16 +10,18 @@ use web_sys::js_sys::Function;
 use web_sys::{ClipboardEvent, HtmlInputElement};
 
 fn stage_item_view(
+    i18n: &leptos_i18n::I18nContext<crate::i18n::Locale>,
     stage: RwSignal<OcrLoadingStage>,
     stage_type: StageType,
-    title: &'static str,
+    title: String,
 ) -> impl IntoView {
+    let i18n = *i18n;
     move || {
-        let info = get_stage_info(&stage.get(), stage_type);
+        let info = get_stage_info(&i18n, &stage.get(), stage_type);
         view! {
             <LoadingStageItem
                 status=info.status
-                title=title.to_string()
+                title=title.clone()
                 description=info.description
                 progress=info.progress
                 error_message=info.error_message
@@ -35,6 +38,7 @@ pub fn ImageInputStage(
     on_error: Callback<String>,
     on_switch_to_text: Callback<()>,
 ) -> impl IntoView {
+    let i18n = use_i18n();
     let ocr_state = RwSignal::new(OcrState::Idle);
     let image_preview = RwSignal::new(None::<String>);
     let error_message = RwSignal::new(None::<String>);
@@ -70,6 +74,7 @@ pub fn ImageInputStage(
 
         if let Some(file) = files.get(0) {
             process_file(
+                i18n,
                 file,
                 ProcessContext {
                     image_preview,
@@ -78,8 +83,8 @@ pub fn ImageInputStage(
                     error_message,
                     disposed: disposed_for_file,
                 },
-                on_text_extracted,
                 on_error,
+                on_text_extracted,
             );
         }
     };
@@ -105,6 +110,7 @@ pub fn ImageInputStage(
             && let Some(file) = files.get(0)
         {
             process_file(
+                i18n,
                 file,
                 ProcessContext {
                     image_preview,
@@ -144,7 +150,7 @@ pub fn ImageInputStage(
                     && let Some(files) = clipboard_data.files()
                     && let Some(file) = files.get(0)
                 {
-                    process_file(file, ctx.clone(), on_text_extracted, on_error);
+                    process_file(i18n, file, ctx.clone(), on_error, on_text_extracted);
                 }
             },
         );
@@ -183,14 +189,14 @@ pub fn ImageInputStage(
                         <div class="space-y-4">
                             <h2 class="text-lg font-semibold text-[var(--fg-black)] flex items-center gap-2">
                                 <span class="spinner spinner-sm"></span>
-                                "Подготовка к распознаванию"
+                                {t!(i18n, words.image.preparing)}
                             </h2>
 
                             <div class="space-y-3" role="list">
-                                {stage_item_view(stage, StageType::Deim, "Сегментация текста")}
-                                {stage_item_view(stage, StageType::Parseq, "Распознавание символов")}
-                                {stage_item_view(stage, StageType::Init, "Инициализация моделей")}
-                                {stage_item_view(stage, StageType::Recognize, "Распознавание текста")}
+                                {stage_item_view(&i18n, stage, StageType::Deim, i18n.get_keys().words().image().segmentation().inner().to_string())}
+                                {stage_item_view(&i18n, stage, StageType::Parseq, i18n.get_keys().words().image().recognition().inner().to_string())}
+                                {stage_item_view(&i18n, stage, StageType::Init, i18n.get_keys().words().image().initialization().inner().to_string())}
+                                {stage_item_view(&i18n, stage, StageType::Recognize, i18n.get_keys().words().image().text_recognition().inner().to_string())}
                             </div>
 
                             <div class="flex justify-end pt-2">
@@ -199,7 +205,7 @@ pub fn ImageInputStage(
                                     disabled=Signal::derive(move || ocr_loading_state.cancel_requested.get())
                                     on_click=Callback::new(on_cancel)
                                 >
-                                    {move || if ocr_loading_state.cancel_requested.get() { "Отмена..." } else { "Отменить" }}
+                                    {move || if ocr_loading_state.cancel_requested.get() { t!(i18n, words.image.canceling).into_any() } else { t!(i18n, words.image.cancel).into_any() }}
                                 </Button>
                             </div>
                         </div>
@@ -232,10 +238,10 @@ pub fn ImageInputStage(
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                         </svg>
                                         <Text size=TextSize::Default variant=TypographyVariant::Muted>
-                                            "Перетащите изображение, вставьте из буфера обмена или нажмите для выбора"
+                                            {t!(i18n, words.image.drop_zone)}
                                         </Text>
                                         <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                                            "PNG, JPEG, WebP (макс. 10 MB)"
+                                            {t!(i18n, words.image.file_types)}
                                         </Text>
                                     </div>
                                 </label>
@@ -250,17 +256,17 @@ pub fn ImageInputStage(
                             }}
 
                             {move || {
-                                error_message.get().map(|msg| view! {
+                                error_message.get().map(move |msg| view! {
                                     <Alert
                                         alert_type=Signal::derive(|| AlertType::Warning)
-                                        title=Signal::derive(|| "Не удалось распознать".to_string())
+                                        title=Signal::derive(move || i18n.get_keys().words().image().recognition_failed().inner().to_string())
                                         message=Signal::derive(move || msg.clone())
                                     />
                                     <Button
                                         variant=ButtonVariant::Ghost
                                         on_click=Callback::new(move |_| on_switch_to_text.run(()))
                                     >
-                                        "Ввести текст вручную"
+                                        {t!(i18n, words.image.enter_manually)}
                                     </Button>
                                 })
                             }}

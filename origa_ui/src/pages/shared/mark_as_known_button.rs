@@ -1,3 +1,4 @@
+use crate::i18n::use_i18n;
 use leptos::prelude::*;
 
 #[component]
@@ -5,6 +6,7 @@ pub fn MarkAsKnownButton(
     on_click: Callback<()>,
     #[prop(optional, into)] test_id: Signal<String>,
 ) -> impl IntoView {
+    let i18n = use_i18n();
     let test_id_val = move || {
         let val = test_id.get();
         if val.is_empty() { None } else { Some(val) }
@@ -15,7 +17,7 @@ pub fn MarkAsKnownButton(
             class="cursor-pointer transition-colors duration-200 hover:opacity-70"
             on:click=move |_| on_click.run(())
             data-testid=test_id_val
-            title="Отметить как изученное"
+            title=move || { crate::i18n::td_string!(i18n.get_locale(), shared.mark_as_known) }
         >
             <svg
                 xmlns="http://www.w3.org/2000/svg"

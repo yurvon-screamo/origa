@@ -1,3 +1,4 @@
+use crate::i18n::{t, use_i18n};
 use crate::ui_components::{Button, ButtonSize, ButtonVariant};
 use leptos::ev::MouseEvent;
 use leptos::prelude::*;
@@ -8,6 +9,7 @@ pub fn CollapsibleDescription(
     #[prop(optional, into)] test_id: Signal<String>,
     children: Children,
 ) -> impl IntoView {
+    let i18n = use_i18n();
     let is_expanded = RwSignal::new(!default_collapsed);
     let content_ref = NodeRef::<leptos::html::Div>::new();
     let needs_collapse = RwSignal::new(false);
@@ -51,7 +53,7 @@ pub fn CollapsibleDescription(
                             is_expanded.update(|v| *v = !*v);
                         })
                     >
-                        {move || if is_expanded.get() { "Свернуть" } else { "Развернуть" }}
+                        {move || if is_expanded.get() { t!(i18n, common.collapse).into_any() } else { t!(i18n, common.expand).into_any() }}
                     </Button>
                 </div>
             </Show>

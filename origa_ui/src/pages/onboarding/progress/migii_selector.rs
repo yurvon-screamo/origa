@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use crate::i18n::{t, use_i18n};
 use crate::ui_components::{Card, Dropdown, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 use origa::domain::JapaneseLevel;
@@ -28,16 +29,18 @@ pub fn MigiiProgressSelector(
     lessons_by_level: Signal<HashMap<JapaneseLevel, Vec<MigiiLesson>>>,
     state: RwSignal<OnboardingState>,
 ) -> impl IntoView {
+    let i18n = use_i18n();
     let selected_level = RwSignal::new("none".to_string());
     let selected_lesson = RwSignal::new("none".to_string());
     let available_sets = Signal::derive(move || state.get().available_sets.clone());
 
-    let level_items = build_level_items();
+    let level_items = build_level_items(&i18n);
 
     let parsed_level = Signal::derive(move || parse_level(&selected_level.get()));
 
-    let lesson_items =
-        Signal::derive(move || build_lesson_items(&lessons_by_level.get(), parsed_level.get()));
+    let lesson_items = Signal::derive(move || {
+        build_lesson_items(&i18n, &lessons_by_level.get(), parsed_level.get())
+    });
 
     let import_info = Signal::derive(move || {
         let level = parsed_level.get();
@@ -47,25 +50,60 @@ pub fn MigiiProgressSelector(
             .and_then(|s| s.parse::<usize>().ok());
 
         match (level, lesson) {
-            (Some(JapaneseLevel::N5), Some(n)) => {
-                Some(format!("Будут импортированы: N5 Уроки 1-{}", n))
-            },
-            (Some(JapaneseLevel::N4), Some(n)) => {
-                Some(format!("Будут импортированы: N5 (все) + N4 Уроки 1-{}", n))
-            },
-            (Some(JapaneseLevel::N3), Some(n)) => Some(format!(
-                "Будут импортированы: N5+N4 (все) + N3 Уроки 1-{}",
-                n
-            )),
-            (Some(JapaneseLevel::N2), Some(n)) => Some(format!(
-                "Будут импортированы: N5+N4+N3 (все) + N2 Уроки 1-{}",
-                n
-            )),
-            (Some(JapaneseLevel::N1), Some(n)) => Some(format!(
-                "Будут импортированы: N5+N4+N3+N2 (все) + N1 Уроки 1-{}",
-                n
-            )),
-            (Some(lvl), None) => Some(format!("Выберите урок для {}", level_to_str(lvl))),
+            (Some(JapaneseLevel::N5), Some(n)) => Some(
+                i18n.get_keys()
+                    .onboarding()
+                    .progress()
+                    .import_n5_lessons()
+                    .inner()
+                    .to_string()
+                    .replacen("{}", &n.to_string(), 1),
+            ),
+            (Some(JapaneseLevel::N4), Some(n)) => Some(
+                i18n.get_keys()
+                    .onboarding()
+                    .progress()
+                    .import_n5_all_n4_lessons()
+                    .inner()
+                    .to_string()
+                    .replacen("{}", &n.to_string(), 1),
+            ),
+            (Some(JapaneseLevel::N3), Some(n)) => Some(
+                i18n.get_keys()
+                    .onboarding()
+                    .progress()
+                    .import_n5_n4_all_n3_lessons()
+                    .inner()
+                    .to_string()
+                    .replacen("{}", &n.to_string(), 1),
+            ),
+            (Some(JapaneseLevel::N2), Some(n)) => Some(
+                i18n.get_keys()
+                    .onboarding()
+                    .progress()
+                    .import_n5_n4_n3_all_n2_lessons()
+                    .inner()
+                    .to_string()
+                    .replacen("{}", &n.to_string(), 1),
+            ),
+            (Some(JapaneseLevel::N1), Some(n)) => Some(
+                i18n.get_keys()
+                    .onboarding()
+                    .progress()
+                    .import_n5_n4_n3_n2_all_n1_lessons()
+                    .inner()
+                    .to_string()
+                    .replacen("{}", &n.to_string(), 1),
+            ),
+            (Some(lvl), None) => Some(
+                i18n.get_keys()
+                    .onboarding()
+                    .progress()
+                    .select_lesson_for()
+                    .inner()
+                    .to_string()
+                    .replacen("{}", level_to_str(lvl), 1),
+            ),
             _ => None,
         }
     });
@@ -119,13 +157,13 @@ pub fn MigiiProgressSelector(
             <div class="mt-4 space-y-4">
                 <div>
                     <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                        "Уровень"
+                        {t!(i18n, onboarding.progress.level)}
                     </Text>
                     <div class="mt-2">
                         <Dropdown
                             options=Signal::derive(move || level_items.clone())
                             selected=selected_level
-                            placeholder=Signal::derive(|| "Выберите уровень".to_string())
+                            placeholder=Signal::derive(move || i18n.get_keys().onboarding().progress().select_level().inner().to_string())
                             test_id=Signal::derive(|| "migii-level-dropdown".to_string())
                         />
                     </div>
@@ -134,13 +172,13 @@ pub fn MigiiProgressSelector(
                 <Show when=move || parsed_level.get().is_some()>
                     <div>
                         <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                            "Урок"
+                            {t!(i18n, onboarding.progress.lesson)}
                         </Text>
                     <div class="mt-2">
                         <Dropdown
                             options=lesson_items
                             selected=selected_lesson
-                            placeholder=Signal::derive(|| "Выберите урок".to_string())
+                            placeholder=Signal::derive(move || i18n.get_keys().onboarding().progress().select_lesson().inner().to_string())
                             test_id=Signal::derive(|| "migii-lesson-dropdown".to_string())
                         />
                     </div>

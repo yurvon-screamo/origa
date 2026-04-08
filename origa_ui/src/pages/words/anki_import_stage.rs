@@ -1,3 +1,4 @@
+use crate::i18n::{t, use_i18n};
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{
     Alert, AlertType, Button, ButtonVariant, Dropdown, DropdownItem, Spinner, Text, TextSize,
@@ -66,6 +67,7 @@ pub fn AnkiImportStage(
     refresh_trigger: RwSignal<u32>,
     #[prop(optional, into)] test_id: Signal<String>,
 ) -> impl IntoView {
+    let i18n = use_i18n();
     let repository =
         use_context::<HybridUserRepository>().expect("repository context not provided");
 
@@ -101,6 +103,7 @@ pub fn AnkiImportStage(
     let process_file = move |file: File| {
         stage.set(Stage::Loading);
         let disposed = disposed;
+        let i18n = i18n;
 
         spawn_local(async move {
             let bytes = match read_file_as_bytes(&file).await {
@@ -110,7 +113,15 @@ pub fn AnkiImportStage(
                         return;
                     }
                     stage.set(Stage::Error);
-                    error_message.set(format!("Не удалось прочитать файл: {}", e));
+                    error_message.set(
+                        i18n.get_keys()
+                            .words()
+                            .anki_import()
+                            .file_read_error()
+                            .inner()
+                            .to_string()
+                            .replacen("{}", &e.to_string(), 1),
+                    );
                     return;
                 },
             };
@@ -126,7 +137,14 @@ pub fn AnkiImportStage(
                     }
                     if deck_info.detected_fields.is_empty() {
                         stage.set(Stage::Error);
-                        error_message.set("Поля не найдены в колоде Anki".to_string());
+                        error_message.set(
+                            i18n.get_keys()
+                                .words()
+                                .anki_import()
+                                .fields_not_found()
+                                .inner()
+                                .to_string(),
+                        );
                         return;
                     }
                     detected_fields.set(deck_info.detected_fields);
@@ -137,7 +155,15 @@ pub fn AnkiImportStage(
                         return;
                     }
                     stage.set(Stage::Error);
-                    error_message.set(format!("Не удалось прочитать колоду: {}", e));
+                    error_message.set(
+                        i18n.get_keys()
+                            .words()
+                            .anki_import()
+                            .deck_read_error()
+                            .inner()
+                            .to_string()
+                            .replacen("{}", &e.to_string(), 1),
+                    );
                 },
             }
         });
@@ -207,6 +233,7 @@ pub fn AnkiImportStage(
         let bytes = file_bytes.get_value();
 
         stage.set(Stage::Loading);
+        let i18n = i18n;
 
         spawn_local(async move {
             gloo_timers::future::sleep(std::time::Duration::from_millis(50)).await;
@@ -219,7 +246,14 @@ pub fn AnkiImportStage(
                 Ok((cards, _)) => {
                     if cards.is_empty() {
                         stage.set(Stage::Error);
-                        error_message.set("Карточки не найдены".to_string());
+                        error_message.set(
+                            i18n.get_keys()
+                                .words()
+                                .anki_import()
+                                .cards_not_found()
+                                .inner()
+                                .to_string(),
+                        );
                         return;
                     }
                     extracted_cards.set(cards);
@@ -227,7 +261,15 @@ pub fn AnkiImportStage(
                 },
                 Err(e) => {
                     stage.set(Stage::Error);
-                    error_message.set(format!("Ошибка извлечения карточек: {}", e));
+                    error_message.set(
+                        i18n.get_keys()
+                            .words()
+                            .anki_import()
+                            .extraction_error()
+                            .inner()
+                            .to_string()
+                            .replacen("{}", &e.to_string(), 1),
+                    );
                 },
             }
         });
@@ -249,6 +291,7 @@ pub fn AnkiImportStage(
             let refresh = refresh_trigger;
             let is_open_sig = is_open;
             let disposed = disposed;
+            let i18n = i18n;
 
             spawn_local(async move {
                 let use_case = ImportAnkiPackUseCase::new(&repo);
@@ -267,7 +310,15 @@ pub fn AnkiImportStage(
                             return;
                         }
                         stage.set(Stage::Error);
-                        error_message.set(format!("Ошибка импорта: {}", e));
+                        error_message.set(
+                            i18n.get_keys()
+                                .words()
+                                .anki_import()
+                                .import_error()
+                                .inner()
+                                .to_string()
+                                .replacen("{}", &e.to_string(), 1),
+                        );
                     },
                 }
             });
@@ -327,10 +378,10 @@ pub fn AnkiImportStage(
                                     />
                                 </svg>
                                 <Text variant=TypographyVariant::Muted>
-                                    "Перетащите .apkg файл или нажмите для выбора"
+                                    {t!(i18n, words.anki_import.drop_zone)}
                                 </Text>
                                 <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                                    "Anki колода (.apkg)"
+                                    {t!(i18n, words.anki_import.file_type)}
                                 </Text>
                             </div>
                         </label>
@@ -344,7 +395,7 @@ pub fn AnkiImportStage(
                         data-testid="anki-import-loading"
                     >
                         <Spinner />
-                        <Text variant=TypographyVariant::Muted>"Обработка..."</Text>
+                        <Text variant=TypographyVariant::Muted>{t!(i18n, common.processing)}</Text>
                     </div>
                 }
                 .into_any(),
@@ -357,12 +408,12 @@ pub fn AnkiImportStage(
                                 variant=TypographyVariant::Muted
                                 class=Signal::derive(|| "mb-2".to_string())
                             >
-                                "Поле со словом"
+                                {t!(i18n, words.anki_import.word_field)}
                             </Text>
                             <Dropdown
                                 options=field_options
                                 selected=selected_word_field
-                                placeholder=Signal::derive(|| "Выберите поле".to_string())
+                                placeholder=Signal::derive(move || i18n.get_keys().words().anki_import().select_field().inner().to_string())
                                 test_id=Signal::derive(|| "anki-import-field-word".to_string())
                             />
                         </div>
@@ -372,12 +423,12 @@ pub fn AnkiImportStage(
                                 variant=TypographyVariant::Muted
                                 class=Signal::derive(|| "mb-2".to_string())
                             >
-                                "Поле с переводом (необязательно)"
+                                {t!(i18n, words.anki_import.translation_field)}
                             </Text>
                             <Dropdown
                                 options=field_options
                                 selected=selected_translation_field
-                                placeholder=Signal::derive(|| "Выберите поле".to_string())
+                                placeholder=Signal::derive(move || i18n.get_keys().words().anki_import().select_field().inner().to_string())
                                 test_id=Signal::derive(|| "anki-import-field-translation".to_string())
                             />
                         </div>
@@ -388,7 +439,7 @@ pub fn AnkiImportStage(
                                 on_click=on_next
                                 test_id="anki-import-next-btn"
                             >
-                                "Далее"
+                                {t!(i18n, common.next)}
                             </Button>
                         </div>
                     </div>
@@ -399,10 +450,7 @@ pub fn AnkiImportStage(
                     <div class="space-y-4">
                         <div data-testid="anki-import-card-count">
                             <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                                {move || format!(
-                                    "Найдено {} карточек",
-                                    extracted_cards.get().len()
-                                )}
+                                {i18n.get_keys().words().anki_import().found_cards().inner().to_string().replacen("{}", &extracted_cards.get().len().to_string(), 1)}
                             </Text>
                         </div>
                         <div
@@ -432,14 +480,14 @@ pub fn AnkiImportStage(
                                 on_click=on_back
                                 test_id="anki-import-back-btn"
                             >
-                                "Назад"
+                                {t!(i18n, common.back)}
                             </Button>
                             <Button
                                 variant=ButtonVariant::Olive
                                 on_click=on_import
                                 test_id="anki-import-import-btn"
                             >
-                                "Импорт"
+                                {t!(i18n, common.import)}
                             </Button>
                         </div>
                     </div>
@@ -449,7 +497,7 @@ pub fn AnkiImportStage(
                 Stage::Importing => view! {
                     <div class="flex flex-col items-center gap-3 py-8">
                         <Spinner />
-                        <Text variant=TypographyVariant::Muted>"Импорт..."</Text>
+                        <Text variant=TypographyVariant::Muted>{t!(i18n, common.importing)}</Text>
                     </div>
                 }
                 .into_any(),
@@ -458,9 +506,10 @@ pub fn AnkiImportStage(
                     <div data-testid="anki-import-done">
                         <Alert
                             alert_type=AlertType::Success
-                            title=Signal::derive(|| "Импорт завершён".to_string())
+                            title=Signal::derive(move || i18n.get_keys().words().anki_import().import_complete().inner().to_string())
                             message=Signal::derive(move || {
-                                format!("Импортировано {} карточек", imported_count.get())
+                                i18n.get_keys().words().anki_import().imported_cards().inner().to_string()
+                                    .replacen("{}", &imported_count.get().to_string(), 1)
                             })
                         />
                     </div>
@@ -471,7 +520,7 @@ pub fn AnkiImportStage(
                     <div class="space-y-4" data-testid="anki-import-error">
                         <Alert
                             alert_type=AlertType::Error
-                            title=Signal::derive(|| "Ошибка".to_string())
+                            title=Signal::derive(move || i18n.get_keys().common().error().inner().to_string())
                             message=Signal::derive(move || error_message.get())
                         />
                         <Button
@@ -479,7 +528,7 @@ pub fn AnkiImportStage(
                             on_click=on_retry
                             test_id="anki-import-retry-btn"
                         >
-                            "Попробовать снова"
+                            {t!(i18n, words.anki_import.try_again)}
                         </Button>
                     </div>
                 }

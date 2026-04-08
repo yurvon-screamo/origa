@@ -10,6 +10,7 @@ mod scoring_helpers;
 mod scoring_step;
 mod summary_step;
 
+use crate::i18n::*;
 use crate::loaders::WellKnownSetLoaderImpl;
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{
@@ -33,6 +34,7 @@ use summary_step::SummaryStep;
 
 #[component]
 pub fn Onboarding() -> impl IntoView {
+    let i18n = use_i18n();
     let repository =
         use_context::<HybridUserRepository>().expect("repository context not provided");
     let navigate = use_navigate();
@@ -51,35 +53,37 @@ pub fn Onboarding() -> impl IntoView {
 
     provide_context(state);
 
+    let steps_i18n = i18n;
     let steps: Signal<Vec<StepperStep>> = Signal::derive(move || {
+        let locale = steps_i18n.get_locale();
         vec![
             StepperStep {
                 number: 1,
-                label: "Приветствие".to_string(),
+                label: td_string!(locale, onboarding.steps.greeting).to_string(),
             },
             StepperStep {
                 number: 2,
-                label: "Темп".to_string(),
+                label: td_string!(locale, onboarding.steps.pace).to_string(),
             },
             StepperStep {
                 number: 3,
-                label: "Уровень".to_string(),
+                label: td_string!(locale, onboarding.steps.level).to_string(),
             },
             StepperStep {
                 number: 4,
-                label: "Приложения".to_string(),
+                label: td_string!(locale, onboarding.steps.apps).to_string(),
             },
             StepperStep {
                 number: 5,
-                label: "Прогресс".to_string(),
+                label: td_string!(locale, onboarding.steps.progress).to_string(),
             },
             StepperStep {
                 number: 6,
-                label: "Импорт".to_string(),
+                label: td_string!(locale, onboarding.steps.import).to_string(),
             },
             StepperStep {
                 number: 7,
-                label: "Оценка".to_string(),
+                label: td_string!(locale, onboarding.steps.scoring).to_string(),
             },
         ]
     });
@@ -176,7 +180,7 @@ pub fn Onboarding() -> impl IntoView {
                     <div class="flex flex-col items-center py-8 gap-4">
                         <Spinner test_id="onboarding-spinner" />
                         <Text size=TextSize::Small variant=TypographyVariant::Muted test_id=Signal::derive(|| "onboarding-loading-text".to_string())>
-                            "Загрузка..."
+                            {t!(i18n, onboarding.loading)}
                         </Text>
                     </div>
                 </Show>
@@ -225,7 +229,7 @@ pub fn Onboarding() -> impl IntoView {
                                         })
                                         test_id="onboarding-skip"
                                     >
-                                        "Пропустить"
+                                        {t!(i18n, onboarding.skip)}
                                     </Button>
                                 </Show>
 
@@ -239,7 +243,7 @@ pub fn Onboarding() -> impl IntoView {
                                         })
                                         test_id="onboarding-prev"
                                     >
-                                        "Назад"
+                                        {t!(i18n, onboarding.back)}
                                     </Button>
                                 </Show>
 
@@ -251,7 +255,7 @@ pub fn Onboarding() -> impl IntoView {
                                         })
                                         test_id="onboarding-skip-scoring"
                                     >
-                                        "Пропустить"
+                                        {t!(i18n, onboarding.skip)}
                                     </Button>
                                 </Show>
                             </div>
@@ -268,7 +272,7 @@ pub fn Onboarding() -> impl IntoView {
                                         disabled=Signal::derive(move || !can_proceed.get())
                                         test_id="onboarding-next"
                                     >
-                                        "Далее"
+                                        {t!(i18n, onboarding.next)}
                                     </Button>
                                 </Show>
 
@@ -282,7 +286,7 @@ pub fn Onboarding() -> impl IntoView {
                                         test_id="onboarding-import"
                                         attr:data-loading=Signal::derive(move || is_importing.get().to_string())
                                     >
-                                        {move || if is_importing.get() { "Импорт..." } else { "Начать импорт" }}
+                                        {move || if is_importing.get() { t!(i18n, onboarding.importing).into_any() } else { t!(i18n, onboarding.start_import).into_any() }}
                                     </Button>
                                 </Show>
 
@@ -294,7 +298,7 @@ pub fn Onboarding() -> impl IntoView {
                                         })
                                         test_id="onboarding-mark-all-known"
                                     >
-                                        "Знаю все"
+                                        {t!(i18n, onboarding.know_all)}
                                     </Button>
                                 </Show>
 
@@ -306,7 +310,7 @@ pub fn Onboarding() -> impl IntoView {
                                         })
                                         test_id="onboarding-finish"
                                     >
-                                        "Завершить"
+                                        {t!(i18n, onboarding.finish)}
                                     </Button>
                                 </Show>
                             </div>

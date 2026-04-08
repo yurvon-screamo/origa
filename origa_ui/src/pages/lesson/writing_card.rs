@@ -1,3 +1,4 @@
+use crate::i18n::*;
 use crate::pages::lesson::kanji_card_details::KanjiCardDetails;
 use crate::pages::lesson::rating_buttons_view::RatingButtonsView;
 use crate::ui_components::{Card, DisplayText, KanjiDrawingPractice, Tag, TagVariant};
@@ -85,11 +86,9 @@ fn extract_kanji_data(kanji: &DomainCard, native_language: NativeLanguage) -> Ka
     }
 }
 
-fn get_card_type(card: &DomainCard) -> (&'static str, TagVariant) {
-    match card {
-        DomainCard::Kanji(_) => ("Кандзи", TagVariant::Olive),
-        _ => ("Кандзи", TagVariant::Olive),
-    }
+fn get_card_type(i18n: &I18nContext<Locale>) -> (String, TagVariant) {
+    let label = i18n.get_keys().lesson().kanji().inner().to_string();
+    (label, TagVariant::Olive)
 }
 
 #[component]
@@ -101,7 +100,8 @@ pub fn WritingCard(
     native_language: NativeLanguage,
     #[prop(into)] known_kanji: Signal<HashSet<String>>,
 ) -> impl IntoView {
-    let (card_type_label, tag_variant) = get_card_type(&card);
+    let i18n = use_i18n();
+    let (card_type_label, tag_variant) = get_card_type(&i18n);
 
     let (symbol_char, display_text, on_readings, kun_readings, radicals, example_words) =
         match &card {
@@ -117,7 +117,7 @@ pub fn WritingCard(
                 )
             },
             _ => {
-                return view! { <div>"WritingCard поддерживает только кандзи"</div> }.into_any();
+                return view! { <div>{t!(i18n, lesson.writing_card_kanji_only)}</div> }.into_any();
             },
         };
 

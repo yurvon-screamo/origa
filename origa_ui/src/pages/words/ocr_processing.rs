@@ -41,6 +41,7 @@ pub(super) struct ProcessContext {
 }
 
 pub(super) fn handle_ocr_result(
+    i18n: &leptos_i18n::I18nContext<crate::i18n::Locale>,
     result: Result<String, String>,
     ctx: &ProcessContext,
     on_text_extracted: &Callback<String>,
@@ -48,8 +49,14 @@ pub(super) fn handle_ocr_result(
     match result {
         Ok(text) => {
             if text.trim().is_empty() {
-                let err = "Не удалось распознать текст на изображении.";
-                ctx.error_message.set(Some(err.to_string()));
+                let err = i18n
+                    .get_keys()
+                    .words()
+                    .image()
+                    .text_not_recognized()
+                    .inner()
+                    .to_string();
+                ctx.error_message.set(Some(err.clone()));
                 ctx.ocr_state.set(OcrState::Error);
                 ctx.ocr_loading_state.stage.set(OcrLoadingStage::Error {
                     stage: "recognize".to_string(),
@@ -75,6 +82,7 @@ pub(super) fn handle_ocr_result(
 }
 
 async fn run_ocr_on_data_url(
+    i18n: leptos_i18n::I18nContext<crate::i18n::Locale>,
     data_url: &str,
     ctx: &ProcessContext,
     on_text_extracted: &Callback<String>,
@@ -82,16 +90,17 @@ async fn run_ocr_on_data_url(
     ctx.ocr_state.set(OcrState::Processing);
     ctx.ocr_loading_state.start_time.set(Some(Date::now()));
 
-    let result = process_image_with_ocr(data_url, &ctx.ocr_loading_state).await;
+    let result = process_image_with_ocr(data_url, &ctx.ocr_loading_state, &i18n).await;
 
     if ctx.ocr_loading_state.cancel_requested.get() {
         return;
     }
 
-    handle_ocr_result(result, ctx, on_text_extracted);
+    handle_ocr_result(&i18n, result, ctx, on_text_extracted);
 }
 
 pub(super) fn process_file(
+    i18n: leptos_i18n::I18nContext<crate::i18n::Locale>,
     file: File,
     ctx: ProcessContext,
     on_text_extracted: Callback<String>,
@@ -102,17 +111,28 @@ pub(super) fn process_file(
 
     if !is_image_file(&file) {
         ctx.error_message.set(Some(
-            "Выберите изображение (PNG, JPEG или WebP)".to_string(),
+            i18n.get_keys()
+                .words()
+                .image()
+                .not_image()
+                .inner()
+                .to_string(),
         ));
         return;
     }
 
     let file_size_mb = file.size() / (1024.0 * 1024.0);
     if file_size_mb > MAX_FILE_SIZE_MB {
-        ctx.error_message.set(Some(format!(
-            "Файл слишком большой ({:.1} MB). Максимальный размер: {:.0} MB",
-            file_size_mb, MAX_FILE_SIZE_MB
-        )));
+        ctx.error_message.set(Some(
+            i18n.get_keys()
+                .words()
+                .image()
+                .file_too_large()
+                .inner()
+                .to_string()
+                .replacen("{}", &file_size_mb.to_string(), 1)
+                .replacen("{}", &MAX_FILE_SIZE_MB.to_string(), 1),
+        ));
         return;
     }
 
@@ -127,7 +147,7 @@ pub(super) fn process_file(
                     return;
                 }
                 ctx.image_preview.set(Some(data_url.clone()));
-                run_ocr_on_data_url(&data_url, &ctx, &on_text_extracted).await;
+                run_ocr_on_data_url(i18n, &data_url, &ctx, &on_text_extracted).await;
             },
             Err(e) => {
                 error!(error = %e, "Failed to read file");
@@ -146,6 +166,7 @@ pub(super) fn process_file(
 async fn process_image_with_ocr(
     data_url: &str,
     loading_state: &OcrLoadingState,
+    i18n: &leptos_i18n::I18nContext<crate::i18n::Locale>,
 ) -> Result<String, String> {
     let base64_data = data_url
         .strip_prefix("data:image/")
@@ -161,7 +182,13 @@ async fn process_image_with_ocr(
         Some(m) => m,
         None => {
             if MODEL_LOADING.with(|loading| loading.get()) {
-                return Err("OCR-модель уже загружается, пожалуйста подождите".to_string());
+                return Err(i18n
+                    .get_keys()
+                    .words()
+                    .image()
+                    .model_loading()
+                    .inner()
+                    .to_string());
             }
 
             MODEL_LOADING.with(|loading| loading.set(true));
@@ -231,17 +258,31 @@ async fn process_image_with_ocr(
                 })?;
 
                 if loading_state.cancel_requested.get() {
-                    return Err("Операция отменена".to_string());
+                    return Err(i18n
+                        .get_keys()
+                        .words()
+                        .image()
+                        .operation_canceled()
+                        .inner()
+                        .to_string());
                 }
 
                 loading_state.stage.set(OcrLoadingStage::Initializing {
                     model_name: "OCR models".to_string(),
                 });
 
-                let new_model = init_ocr_model(model_files, loading_state).await?;
+                let new_model = init_ocr_model(model_files, loading_state)
+                    .await
+                    .map_err(|e| e.to_string())?;
 
                 if loading_state.cancel_requested.get() {
-                    return Err("Операция отменена".to_string());
+                    return Err(i18n
+                        .get_keys()
+                        .words()
+                        .image()
+                        .operation_canceled()
+                        .inner()
+                        .to_string());
                 }
 
                 let wrapped = Rc::new(new_model);
@@ -262,7 +303,13 @@ async fn process_image_with_ocr(
     };
 
     if loading_state.cancel_requested.get() {
-        return Err("Операция отменена".to_string());
+        return Err(i18n
+            .get_keys()
+            .words()
+            .image()
+            .operation_canceled()
+            .inner()
+            .to_string());
     }
 
     loading_state.stage.set(OcrLoadingStage::Recognizing);
@@ -273,7 +320,13 @@ async fn process_image_with_ocr(
     let result = execute_ocr(&use_case, model.clone(), &bytes).await;
 
     if loading_state.cancel_requested.get() {
-        return Err("Операция отменена".to_string());
+        return Err(i18n
+            .get_keys()
+            .words()
+            .image()
+            .operation_canceled()
+            .inner()
+            .to_string());
     }
 
     result

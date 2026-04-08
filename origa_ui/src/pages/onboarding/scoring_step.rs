@@ -1,3 +1,4 @@
+use crate::i18n::*;
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{
     AudioButtons, Button, ButtonVariant, Card, FuriganaText, MarkdownText, Text, TextSize,
@@ -21,6 +22,7 @@ pub fn ScoringStep(
     #[prop(optional)] mark_all_trigger: RwSignal<u32>,
     scoring_completed: RwSignal<bool>,
 ) -> impl IntoView {
+    let i18n = use_i18n();
     let test_id_val = move || {
         let val = test_id.get();
         if val.is_empty() { None } else { Some(val) }
@@ -41,6 +43,7 @@ pub fn ScoringStep(
     let repo_for_know = repository.clone();
     let repo_for_mark_all = repository.clone();
 
+    let i18n_for_load = i18n;
     Effect::new(move |_| {
         let repo = repo_for_load.clone();
         spawn_local(async move {
@@ -54,7 +57,8 @@ pub fn ScoringStep(
             }
 
             let lang = *user.native_language();
-            let scoring_cards = build_scoring_cards(user.knowledge_set().study_cards(), &lang);
+            let scoring_cards =
+                build_scoring_cards(user.knowledge_set().study_cards(), &lang, i18n_for_load);
 
             if disposed.is_disposed() {
                 return;
@@ -216,7 +220,7 @@ pub fn ScoringStep(
             <Show when=move || is_loading.get()>
                 <div class="flex flex-col items-center py-8 gap-4">
                     <Text size=TextSize::Default variant=TypographyVariant::Muted>
-                        "Загрузка карточек..."
+                        {t!(i18n, onboarding.scoring.loading)}
                     </Text>
                 </div>
             </Show>
@@ -229,7 +233,7 @@ pub fn ScoringStep(
                             variant=TypographyVariant::Muted
                             test_id=Signal::derive(|| "scoring-step-hint".to_string())
                         >
-                            "Отметьте карточки, которые вы уже знаете"
+                            {t!(i18n, onboarding.scoring.hint)}
                         </Text>
                     </div>
 
@@ -284,7 +288,7 @@ pub fn ScoringStep(
                                         on_click=Callback::new(move |_| on_dont_know.run(()))
                                         test_id=Signal::derive(|| "scoring-step-dont-know".to_string())
                                     >
-                                        "Не знаю"
+                                        {t!(i18n, onboarding.scoring.dont_know)}
                                         <span class="hidden sm:inline text-xs ml-1">"[1]"</span>
                                     </Button>
 
@@ -294,7 +298,7 @@ pub fn ScoringStep(
                                         on_click=Callback::new(move |_| on_know.run(()))
                                         test_id=Signal::derive(|| "scoring-step-know".to_string())
                                     >
-                                        "Знаю"
+                                        {t!(i18n, onboarding.scoring.know)}
                                         <span class="hidden sm:inline text-xs ml-1">"[2]"</span>
                                     </Button>
                                 </div>
@@ -311,7 +315,7 @@ pub fn ScoringStep(
                         variant=TypographyVariant::Primary
                         test_id=Signal::derive(|| "scoring-step-complete".to_string())
                     >
-                        "Отлично!"
+                        {t!(i18n, onboarding.scoring.great)}
                     </Text>
                     <div class="mt-2">
                         <Text
@@ -322,19 +326,22 @@ pub fn ScoringStep(
                             {move || {
                                 let known = known_count.get();
                                 let t = total.get();
+                                let locale = i18n.get_locale();
                                 if t == 0 {
-                                    "Нет новых карточек для оценки".to_string()
+                                    td_string!(locale, onboarding.scoring.no_new_cards).to_string()
                                 } else if known == 0 {
-                                    "Все карточки новые — пора учить!".to_string()
+                                    td_string!(locale, onboarding.scoring.all_new).to_string()
                                 } else {
-                                    format!("Вы знаете {} из {} карточек", known, t)
+                                    td_string!(locale, onboarding.scoring.you_know_count)
+                                        .replace("{known}", &known.to_string())
+                                        .replace("{total}", &t.to_string())
                                 }
                             }}
                         </Text>
                     </div>
                     <div class="mt-2">
                         <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                            "Нажмите «Завершить» чтобы начать обучение"
+                            {t!(i18n, onboarding.scoring.press_finish)}
                         </Text>
                     </div>
                 </div>

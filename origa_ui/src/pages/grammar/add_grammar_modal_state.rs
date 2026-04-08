@@ -92,13 +92,28 @@ impl ModalState {
                     if disposed.is_disposed() {
                         return;
                     }
-                    error.set(Some("Пользователь не найден".to_string()));
+                    error.set(Some(
+                        crate::i18n::use_i18n()
+                            .get_keys()
+                            .shared()
+                            .user_not_found()
+                            .inner()
+                            .to_string(),
+                    ));
                 },
                 Err(e) => {
                     if disposed.is_disposed() {
                         return;
                     }
-                    error.set(Some(format!("Ошибка загрузки пользователя: {}", e)));
+                    error.set(Some(
+                        crate::i18n::use_i18n()
+                            .get_keys()
+                            .shared()
+                            .user_load_error()
+                            .inner()
+                            .to_string()
+                            .replacen("{}", &e.to_string(), 1),
+                    ));
                 },
             }
             if disposed.is_disposed() {

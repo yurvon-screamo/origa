@@ -1,3 +1,4 @@
+use crate::i18n::{t, use_i18n};
 use crate::pages::words::add_words_preview_modal_handlers::create_preview_modal_handlers;
 use crate::pages::words::add_words_preview_modal_state::{InputMode, PreviewModalState};
 use crate::pages::words::analyzed_word_item::AnalyzedWordItem;
@@ -20,6 +21,7 @@ pub fn AddWordsPreviewModal(
     is_open: RwSignal<bool>,
     refresh_trigger: RwSignal<u32>,
 ) -> impl IntoView {
+    let i18n = use_i18n();
     let repository =
         use_context::<HybridUserRepository>().expect("repository context not provided");
 
@@ -66,20 +68,20 @@ pub fn AddWordsPreviewModal(
         }
     });
 
-    let tabs = Signal::derive(|| {
+    let tabs = Signal::derive(move || {
         let mut items = vec![
             TabItem {
                 id: "text".to_string(),
-                label: "Текст".to_string(),
+                label: i18n.get_keys().words().tab_text().inner().to_string(),
             },
             TabItem {
                 id: "image".to_string(),
-                label: "Изображение".to_string(),
+                label: i18n.get_keys().words().tab_image().inner().to_string(),
             },
         ];
         items.push(TabItem {
             id: "anki".to_string(),
-            label: "Anki".to_string(),
+            label: i18n.get_keys().words().tab_anki().inner().to_string(),
         });
         items
     });
@@ -121,7 +123,7 @@ pub fn AddWordsPreviewModal(
     view! {
         <Drawer
             is_open=is_open
-            title=Signal::derive(|| "Добавить слова".to_string())
+            title=Signal::derive(move || i18n.get_keys().words().add_words().inner().to_string())
             test_id="words-add-drawer"
         >
             <div class="space-y-4">
@@ -192,17 +194,16 @@ fn PreviewStage(
     on_cancel: Callback<MouseEvent>,
     on_create: Callback<()>,
 ) -> impl IntoView {
+    let i18n = use_i18n();
     let analyzed_words_count = analyzed_words.len();
     let new_words_count = analyzed_words.iter().filter(|w| !w.is_known).count();
 
     view! {
         <div>
             <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                {format!(
-                    "Найдено {} слов ({} новых)",
-                    analyzed_words_count,
-                    new_words_count
-                )}
+                {i18n.get_keys().words().found_words().inner().to_string()
+                    .replacen("{}", &analyzed_words_count.to_string(), 1)
+                    .replacen("{}", &new_words_count.to_string(), 1)}
             </Text>
         </div>
         <div class="space-y-2 overflow-y-auto">
@@ -228,7 +229,7 @@ fn PreviewStage(
                 on_click=on_cancel
                 test_id="words-drawer-cancel-btn"
             >
-                "Отмена"
+                {t!(i18n, words.cancel)}
             </Button>
             <Button
                 variant=ButtonVariant::Olive
@@ -241,9 +242,9 @@ fn PreviewStage(
             >
                 {move || {
                     if is_creating.get() {
-                        "Создание..."
+                        t!(i18n, words.creating).into_any()
                     } else {
-                        "Добавить выбранные"
+                        t!(i18n, words.add_selected).into_any()
                     }
                 }}
             </Button>
@@ -258,10 +259,11 @@ fn InputStage(
     error_message: RwSignal<Option<String>>,
     on_analyze: Callback<()>,
 ) -> impl IntoView {
+    let i18n = use_i18n();
     view! {
         <div>
             <Text size=TextSize::Small variant=TypographyVariant::Muted class=Signal::derive(|| "mb-2".to_string())>
-                "Введите текст на японском языке"
+                {t!(i18n, words.enter_japanese)}
             </Text>
             <Input
                 value=input_text
@@ -271,10 +273,10 @@ fn InputStage(
             />
         </div>
         {move || {
-            error_message.get().map(|msg| view! {
+            error_message.get().map(move |msg| view! {
                 <Alert
                     alert_type=Signal::derive(|| AlertType::Error)
-                    title=Signal::derive(|| "Ошибка".to_string())
+                    title=Signal::derive(move || i18n.get_keys().words().error().inner().to_string())
                     message=Signal::derive(move || msg.clone())
                 />
             })
@@ -290,9 +292,9 @@ fn InputStage(
         >
             {move || {
                 if is_analyzing.get() {
-                    "Анализ..."
+                    t!(i18n, words.analyzing).into_any()
                 } else {
-                    "Анализировать"
+                    t!(i18n, words.analyze).into_any()
                 }
             }}
         </Button>

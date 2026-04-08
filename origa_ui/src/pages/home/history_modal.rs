@@ -1,6 +1,8 @@
+use crate::i18n::{Locale, t, use_i18n};
 use crate::ui_components::{LineChart, Modal, Text, TextSize, TypographyVariant};
 use chrono::TimeZone;
 use leptos::prelude::*;
+use leptos_i18n::I18nContext;
 use origa::domain::DailyHistoryItem;
 
 #[derive(Clone, Copy, PartialEq)]
@@ -16,16 +18,16 @@ pub enum StatMetric {
 }
 
 impl StatMetric {
-    pub fn title(&self) -> &'static str {
+    pub fn title(&self, i18n: &I18nContext<Locale>) -> String {
         match self {
-            StatMetric::TotalCards => "Всего карточек",
-            StatMetric::Learned => "Изучено",
-            StatMetric::InProgress => "В процессе",
-            StatMetric::New => "Новые",
-            StatMetric::HighDifficulty => "Сложные",
-            StatMetric::PositiveRatings => "Позитивные оценки",
-            StatMetric::NegativeRatings => "Негативные оценки",
-            StatMetric::TotalRatings => "Всего оценок",
+            StatMetric::TotalCards => i18n.get_keys().home().total_cards().inner().to_string(),
+            StatMetric::Learned => i18n.get_keys().home().learned().inner().to_string(),
+            StatMetric::InProgress => i18n.get_keys().home().in_progress().inner().to_string(),
+            StatMetric::New => i18n.get_keys().home().new_items().inner().to_string(),
+            StatMetric::HighDifficulty => i18n.get_keys().home().hard().inner().to_string(),
+            StatMetric::PositiveRatings => i18n.get_keys().home().positive().inner().to_string(),
+            StatMetric::NegativeRatings => i18n.get_keys().home().negative().inner().to_string(),
+            StatMetric::TotalRatings => i18n.get_keys().home().total_ratings().inner().to_string(),
         }
     }
 }
@@ -56,6 +58,7 @@ pub fn HistoryModal(
     on_close: Callback<()>,
     #[prop(optional, into)] test_id: Signal<String>,
 ) -> impl IntoView {
+    let i18n = use_i18n();
     let test_id_val = move || {
         let val = test_id.get();
         if val.is_empty() {
@@ -94,7 +97,7 @@ pub fn HistoryModal(
         on_close.run(());
     });
 
-    let title = move || metric.get().title().to_string();
+    let title = move || metric.get().title(&i18n);
 
     view! {
         <Modal
@@ -134,7 +137,7 @@ pub fn HistoryModal(
                             variant=TypographyVariant::Muted
                             class=Signal::derive(|| "text-center py-8".to_string())
                         >
-                            "Нет данных для отображения"
+                            {t!(i18n, home.no_data)}
                         </Text>
                     }.into_any()
                 }}

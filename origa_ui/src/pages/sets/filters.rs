@@ -1,3 +1,5 @@
+use crate::i18n::Locale;
+use leptos_i18n::I18nContext;
 use origa::domain::JapaneseLevel;
 use origa::traits::{TypeMeta, get_types_meta};
 
@@ -13,14 +15,14 @@ pub enum LevelFilter {
 }
 
 impl LevelFilter {
-    pub fn label(&self) -> &'static str {
+    pub fn label(&self, i18n: &I18nContext<Locale>) -> String {
         match self {
-            LevelFilter::All => "Все уровни",
-            LevelFilter::N5 => "N5",
-            LevelFilter::N4 => "N4",
-            LevelFilter::N3 => "N3",
-            LevelFilter::N2 => "N2",
-            LevelFilter::N1 => "N1",
+            LevelFilter::All => i18n.get_keys().sets().all_levels().inner().to_string(),
+            LevelFilter::N5 => "N5".to_string(),
+            LevelFilter::N4 => "N4".to_string(),
+            LevelFilter::N3 => "N3".to_string(),
+            LevelFilter::N2 => "N2".to_string(),
+            LevelFilter::N1 => "N1".to_string(),
         }
     }
 
@@ -69,11 +71,11 @@ pub enum ImportFilter {
 }
 
 impl ImportFilter {
-    pub fn label(&self) -> &'static str {
+    pub fn label(&self, i18n: &I18nContext<Locale>) -> String {
         match self {
-            ImportFilter::All => "Все",
-            ImportFilter::Imported => "Импортированые",
-            ImportFilter::New => "Новые",
+            ImportFilter::All => i18n.get_keys().sets().all().inner().to_string(),
+            ImportFilter::Imported => i18n.get_keys().sets().filter_imported().inner().to_string(),
+            ImportFilter::New => i18n.get_keys().sets().filter_new_sets().inner().to_string(),
         }
     }
 
@@ -158,13 +160,6 @@ mod tests {
     }
 
     #[test]
-    fn level_filter_labels() {
-        assert_eq!(LevelFilter::All.label(), "Все уровни");
-        assert_eq!(LevelFilter::N5.label(), "N5");
-        assert_eq!(LevelFilter::N1.label(), "N1");
-    }
-
-    #[test]
     fn import_filter_default_is_all() {
         assert_eq!(ImportFilter::default(), ImportFilter::All);
     }
@@ -191,15 +186,7 @@ mod tests {
     }
 
     #[test]
-    fn import_filter_labels() {
-        assert_eq!(ImportFilter::All.label(), "Все");
-        assert_eq!(ImportFilter::Imported.label(), "Импортированые");
-        assert_eq!(ImportFilter::New.label(), "Новые");
-    }
-
-    #[test]
     fn available_set_types_returns_empty_without_meta() {
-        // get_types_meta() returns None by default
         let types = available_set_types();
         assert!(types.is_empty());
     }

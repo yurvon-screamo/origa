@@ -3,6 +3,7 @@ use super::super::shared::{
     create_mark_as_known_callback,
 };
 use super::vocabulary_card_item::VocabularyCardItem;
+use crate::i18n::{t, use_i18n};
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{
     Input, LoadingOverlay, Text, TextSize, ToastContainer, ToastData, TypographyVariant,
@@ -17,6 +18,7 @@ use ulid::Ulid;
 
 #[component]
 pub fn WordsContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
+    let i18n = use_i18n();
     let repository =
         use_context::<HybridUserRepository>().expect("repository context not provided");
 
@@ -152,12 +154,12 @@ pub fn WordsContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
     view! {
         <div class="space-y-4">
             <Show when=move || is_loading.get()>
-                <LoadingOverlay message=Signal::derive(|| "Загрузка...".to_string()) />
+                <LoadingOverlay message=Signal::derive(move || i18n.get_keys().common().loading().inner().to_string()) />
             </Show>
             <Show when=move || !is_loading.get()>
                 <Input
                     value=search
-                    placeholder=Signal::derive(|| "Поиск...".to_string())
+                    placeholder=Signal::derive(move || i18n.get_keys().common().search().inner().to_string())
                     test_id="words-search-input"
                 />
 
@@ -176,7 +178,7 @@ pub fn WordsContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
                             Either::Left(view! {
                                 <div class="col-span-full" data-testid="words-empty-state">
                                     <Text size=TextSize::Default variant=TypographyVariant::Muted>
-                                        "Слов не найдено"
+                                        {t!(i18n, words.words_not_found)}
                                     </Text>
                                 </div>
                             })

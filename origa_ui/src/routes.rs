@@ -21,7 +21,14 @@ pub fn start_dictionary_loading(
     }
 
     is_loading.set(true);
-    progress.set("Загрузка данных...".to_string());
+    progress.set(
+        crate::i18n::use_i18n()
+            .get_keys()
+            .ui()
+            .loading_data()
+            .inner()
+            .to_string(),
+    );
 
     spawn_local(async move {
         if let Err(e) = load_vocabulary().await {
@@ -70,7 +77,14 @@ pub fn ProtectedRoute(children: ChildrenFn) -> impl IntoView {
 
     move || {
         if auth_store.is_loading().get() {
-            let loading_msg: Signal<String> = Signal::derive(|| "Загрузка...".to_string());
+            let loading_msg: Signal<String> = Signal::derive(move || {
+                crate::i18n::use_i18n()
+                    .get_keys()
+                    .common()
+                    .loading()
+                    .inner()
+                    .to_string()
+            });
             view! {
                 <LoadingOverlay message=loading_msg />
             }

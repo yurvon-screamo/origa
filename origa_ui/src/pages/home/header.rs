@@ -1,3 +1,4 @@
+use crate::i18n::*;
 use crate::ui_components::{Avatar, Button, ButtonVariant, DisplayText, derive_test_id};
 use leptos::prelude::*;
 use leptos_router::hooks::use_navigate;
@@ -9,6 +10,7 @@ pub fn HomeHeader(
     #[prop(optional)] drawer_open: Option<RwSignal<bool>>,
     #[prop(optional, into)] test_id: Signal<String>,
 ) -> impl IntoView {
+    let i18n = use_i18n();
     let test_id_val = move || {
         let val = test_id.get();
         if val.is_empty() { None } else { Some(val) }
@@ -51,7 +53,7 @@ pub fn HomeHeader(
                                                 navigate("/words", Default::default());
                                             })
                                         >
-                                            "Слова"
+                                            {t!(i18n, home.words)}
                                         </Button>
                                         <Button
                                             variant=ButtonVariant::Ghost
@@ -61,7 +63,7 @@ pub fn HomeHeader(
                                                 navigate("/grammar", Default::default());
                                             })
                                         >
-                                            "Грамматика"
+                                            {t!(i18n, home.grammar)}
                                         </Button>
                                         <Button
                                             variant=ButtonVariant::Ghost
@@ -71,7 +73,7 @@ pub fn HomeHeader(
                                                 navigate("/kanji", Default::default());
                                             })
                                         >
-                                            "Кандзи"
+                                            {t!(i18n, home.kanji)}
                                         </Button>
                                     </div>
                                 }

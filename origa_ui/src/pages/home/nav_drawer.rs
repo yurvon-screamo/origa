@@ -1,3 +1,4 @@
+use crate::i18n::*;
 use crate::ui_components::{Button, ButtonVariant, Drawer, Text, TextSize, derive_test_id};
 use leptos::prelude::*;
 use leptos_router::components::A;
@@ -7,17 +8,18 @@ pub fn NavDrawer(
     #[prop(optional)] is_open: RwSignal<bool>,
     #[prop(optional, into)] test_id: Signal<String>,
 ) -> impl IntoView {
+    let i18n = use_i18n();
     let nav_test_id = derive_test_id(test_id, "nav");
-    let title = Signal::derive(|| "Навигация".to_string());
+    let title = Signal::derive(move || i18n.get_keys().home().navigation().inner().to_string());
 
     view! {
         <Drawer is_open=is_open title=title test_id=test_id>
             <div class="flex flex-col gap-2">
-                <NavItem href="/lesson" label="Урок" japanese="📚" test_id=derive_test_id(nav_test_id, "lesson") />
-                <NavItem href="/words" label="Слова" japanese="言葉" test_id=derive_test_id(nav_test_id, "words") />
-                <NavItem href="/grammar" label="Грамматика" japanese="文法" test_id=derive_test_id(nav_test_id, "grammar") />
-                <NavItem href="/kanji" label="Кандзи" japanese="漢字" test_id=derive_test_id(nav_test_id, "kanji") />
-                <NavItem href="/profile" label="Профиль" japanese="👤" test_id=derive_test_id(nav_test_id, "profile") />
+                <NavItem href="/lesson" label=i18n.get_keys().home().lesson().inner().to_string() japanese="📚" test_id=derive_test_id(nav_test_id, "lesson") />
+                <NavItem href="/words" label=i18n.get_keys().home().words().inner().to_string() japanese="言葉" test_id=derive_test_id(nav_test_id, "words") />
+                <NavItem href="/grammar" label=i18n.get_keys().home().grammar().inner().to_string() japanese="文法" test_id=derive_test_id(nav_test_id, "grammar") />
+                <NavItem href="/kanji" label=i18n.get_keys().home().kanji().inner().to_string() japanese="漢字" test_id=derive_test_id(nav_test_id, "kanji") />
+                <NavItem href="/profile" label=i18n.get_keys().home().profile().inner().to_string() japanese="👤" test_id=derive_test_id(nav_test_id, "profile") />
             </div>
         </Drawer>
     }
