@@ -190,32 +190,6 @@ impl DailyLoad {
         }
     }
 
-    pub fn as_str(&self) -> &str {
-        match self {
-            DailyLoad::Light => "Лёгкий",
-            DailyLoad::Medium => "Сбалансированный",
-            DailyLoad::Hard => "Сложный",
-            DailyLoad::Impossible => "Максимальный",
-        }
-    }
-
-    pub fn description(&self) -> &str {
-        match self {
-            DailyLoad::Light => {
-                "Лёгкая нагрузка для комфортного, но медленного обучения. Будьте готовы уделять 10-15 минут в день."
-            },
-            DailyLoad::Medium => {
-                "Сбалансированный и комфортный темп обучения. Будьте готовы уделять 25-40 минут в день."
-            },
-            DailyLoad::Hard => {
-                "Интенсивное обучение для быстрого прогресса. Будьте готовы уделять 1-2 часа в день."
-            },
-            DailyLoad::Impossible => {
-                "Высочайший уровень нагрузки для достижения максимального прогресса. Будьте готовы уделять 3-5 часов в день."
-            },
-        }
-    }
-
     pub fn all() -> &'static [DailyLoad] {
         &[
             DailyLoad::Light,
