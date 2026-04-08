@@ -1,3 +1,4 @@
+use crate::i18n::{t, use_i18n};
 use crate::ui_components::{Card, Dropdown, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 
@@ -15,11 +16,12 @@ pub fn DuolingoProgressSelector(
     modules: Signal<Vec<DuolingoModule>>,
     state: RwSignal<OnboardingState>,
 ) -> impl IntoView {
+    let i18n = use_i18n();
     let selected_module = RwSignal::new("none".to_string());
     let selected_unit = RwSignal::new("none".to_string());
     let available_sets = Signal::derive(move || state.get().available_sets.clone());
 
-    let module_items = Signal::derive(move || build_module_items(&modules.get()));
+    let module_items = Signal::derive(move || build_module_items(&i18n, &modules.get()));
 
     let parsed_module = Signal::derive(move || {
         selected_module
@@ -28,7 +30,8 @@ pub fn DuolingoProgressSelector(
             .and_then(|s| s.parse::<usize>().ok())
     });
 
-    let unit_items = Signal::derive(move || build_unit_items(&modules.get(), parsed_module.get()));
+    let unit_items =
+        Signal::derive(move || build_unit_items(&i18n, &modules.get(), parsed_module.get()));
 
     let import_info = Signal::derive(move || {
         let module_num = parsed_module.get();
@@ -36,7 +39,7 @@ pub fn DuolingoProgressSelector(
             .get()
             .strip_prefix("unit_")
             .and_then(|s| s.parse::<usize>().ok());
-        format_import_info(module_num, unit_num)
+        format_import_info(&i18n, module_num, unit_num)
     });
 
     let app_id_for_effect = app_id.clone();
@@ -98,13 +101,13 @@ pub fn DuolingoProgressSelector(
             <div class="mt-4 space-y-4">
                 <div>
                     <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                        "Модуль"
+                        {t!(i18n, onboarding.progress.module)}
                     </Text>
                     <div class="mt-2">
                         <Dropdown
                             options=module_items
                             selected=selected_module
-                            placeholder=Signal::derive(|| "Выберите модуль".to_string())
+                            placeholder=Signal::derive(move || i18n.get_keys().onboarding().progress().select_module().inner().to_string())
                             test_id=Signal::derive(move || format!("{}-module-dropdown", app_id_for_module_dropdown.clone()))
                         />
                     </div>
@@ -113,13 +116,13 @@ pub fn DuolingoProgressSelector(
                 <Show when=move || parsed_module.get().is_some()>
                     <div>
                         <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                            "Раздел"
+                            {t!(i18n, onboarding.progress.section)}
                         </Text>
                         <div class="mt-2">
                             <Dropdown
                                 options=unit_items
                                 selected=selected_unit
-                                placeholder=Signal::derive(|| "Выберите раздел".to_string())
+                                placeholder=Signal::derive(move || i18n.get_keys().onboarding().progress().select_section().inner().to_string())
                                 test_id=Signal::derive({
                                     let app_id = app_id_for_unit_dropdown.clone();
                                     move || format!("{}-unit-dropdown", app_id)

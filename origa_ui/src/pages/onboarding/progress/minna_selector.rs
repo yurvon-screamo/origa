@@ -1,3 +1,4 @@
+use crate::i18n::{t, use_i18n};
 use crate::ui_components::{Card, Dropdown, DropdownItem, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 use origa::domain::JapaneseLevel;
@@ -11,22 +12,31 @@ pub fn MinnaProgressSelector(
     lessons_n4: Signal<Vec<MinnaLesson>>,
     state: RwSignal<OnboardingState>,
 ) -> impl IntoView {
+    let i18n = use_i18n();
     let selected_level = RwSignal::new("none".to_string());
     let selected_lesson = RwSignal::new("none".to_string());
     let available_sets = Signal::derive(move || state.get().available_sets.clone());
 
+    let not_studied_label = i18n
+        .get_keys()
+        .onboarding()
+        .progress()
+        .not_studied()
+        .inner()
+        .to_string();
+
     let level_items = vec![
         DropdownItem {
             value: "none".to_string(),
-            label: "Не изучал".to_string(),
+            label: not_studied_label.clone(),
         },
         DropdownItem {
             value: "N5".to_string(),
-            label: "N5 (Уроки 1-25)".to_string(),
+            label: "N5 (Lessons 1-25)".to_string(),
         },
         DropdownItem {
             value: "N4".to_string(),
-            label: "N4 (Уроки 26-50)".to_string(),
+            label: "N4 (Lessons 26-50)".to_string(),
         },
     ];
 
@@ -40,7 +50,13 @@ pub fn MinnaProgressSelector(
         let level = parsed_level.get();
         let mut items = vec![DropdownItem {
             value: "none".to_string(),
-            label: "Не изучал".to_string(),
+            label: i18n
+                .get_keys()
+                .onboarding()
+                .progress()
+                .not_studied()
+                .inner()
+                .to_string(),
         }];
 
         if let Some(lvl) = level {
@@ -53,7 +69,14 @@ pub fn MinnaProgressSelector(
             for lesson in lessons.iter() {
                 items.push(DropdownItem {
                     value: format!("lesson_{}", lesson.lesson_number),
-                    label: format!("Урок {}", lesson.lesson_number),
+                    label: i18n
+                        .get_keys()
+                        .onboarding()
+                        .progress()
+                        .lesson_number()
+                        .inner()
+                        .to_string()
+                        .replacen("{}", &lesson.lesson_number.to_string(), 1),
                 });
             }
         }
@@ -68,12 +91,24 @@ pub fn MinnaProgressSelector(
             .and_then(|s| s.parse::<usize>().ok());
 
         match (level, lesson_num) {
-            (Some(JapaneseLevel::N5), Some(n)) => {
-                Some(format!("Будут импортированы: Уроки 1-{}", n))
-            },
-            (Some(JapaneseLevel::N4), Some(n)) => {
-                Some(format!("Будут импортированы: Уроки 1-25 + 26-{}", n))
-            },
+            (Some(JapaneseLevel::N5), Some(n)) => Some(
+                i18n.get_keys()
+                    .onboarding()
+                    .progress()
+                    .import_lessons_1_n()
+                    .inner()
+                    .to_string()
+                    .replacen("{}", &n.to_string(), 1),
+            ),
+            (Some(JapaneseLevel::N4), Some(n)) => Some(
+                i18n.get_keys()
+                    .onboarding()
+                    .progress()
+                    .import_lessons_1_25_plus()
+                    .inner()
+                    .to_string()
+                    .replacen("{}", &n.to_string(), 1),
+            ),
             _ => None,
         }
     });
@@ -148,13 +183,13 @@ pub fn MinnaProgressSelector(
 
             <div class="mt-4">
                 <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                    "Уровень"
+                    {t!(i18n, onboarding.progress.level)}
                 </Text>
                 <div class="mt-2">
                     <Dropdown
                         options=Signal::derive(move || level_items.clone())
                         selected=selected_level
-                        placeholder=Signal::derive(|| "Выберите уровень".to_string())
+                        placeholder=Signal::derive(move || i18n.get_keys().onboarding().progress().select_level().inner().to_string())
                         test_id=Signal::derive(|| "minna-level-dropdown".to_string())
                     />
                 </div>
@@ -163,13 +198,13 @@ pub fn MinnaProgressSelector(
             <Show when=move || parsed_level.get().is_some()>
                 <div class="mt-4">
                     <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                        "Урок"
+                        {t!(i18n, onboarding.progress.lesson)}
                     </Text>
                     <div class="mt-2">
                         <Dropdown
                             options=lesson_items
                             selected=selected_lesson
-                            placeholder=Signal::derive(|| "Выберите урок".to_string())
+                            placeholder=Signal::derive(move || i18n.get_keys().onboarding().progress().select_lesson().inner().to_string())
                             test_id=Signal::derive(|| "minna-lesson-dropdown".to_string())
                         />
                     </div>

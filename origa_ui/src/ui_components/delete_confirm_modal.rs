@@ -1,3 +1,4 @@
+use crate::i18n::{t, use_i18n};
 use leptos::prelude::*;
 
 use super::{Button, ButtonVariant, Modal, Spinner, Text, TextSize, TypographyVariant};
@@ -10,6 +11,7 @@ pub fn DeleteConfirmModal(
     on_confirm: Callback<()>,
     on_close: Callback<()>,
 ) -> impl IntoView {
+    let i18n = use_i18n();
     let cancel_test_id = Signal::derive(move || {
         let val = test_id.get();
         if val.is_empty() {
@@ -31,11 +33,11 @@ pub fn DeleteConfirmModal(
         <Modal
             test_id=test_id
             is_open=is_open
-            title=Signal::derive(|| "Удалить карточку?".to_string())
+            title=Signal::derive(move || crate::i18n::use_i18n().get_keys().ui().delete_card().inner().to_string())
         >
             <div class="delete-confirm-modal">
                 <Text size=TextSize::Default variant=TypographyVariant::Muted>
-                    "Карточка будет удалена без возможности восстановления."
+                    {t!(i18n, ui.delete_card_message)}
                 </Text>
                 <div class="delete-confirm-actions">
                     <Button
@@ -44,7 +46,7 @@ pub fn DeleteConfirmModal(
                         disabled=is_deleting
                         on_click=Callback::new(move |_| on_close.run(()))
                     >
-                        "Отмена"
+                        {t!(i18n, common.cancel)}
                     </Button>
                     <Button
                         test_id=confirm_test_id
@@ -57,7 +59,7 @@ pub fn DeleteConfirmModal(
                         {move || if is_deleting.get() {
                             view! { <Spinner /> }.into_any()
                         } else {
-                            "Удалить".into_any()
+                            t!(i18n, common.delete).into_any()
                         }}
                     </Button>
                 </div>

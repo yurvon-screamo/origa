@@ -3,6 +3,7 @@ use super::header::LessonHeader;
 use super::lesson_card_container::LessonCardContainer;
 use super::lesson_progress_view::LessonProgressView;
 use super::lesson_state::{LessonContext, LessonState};
+use crate::i18n::*;
 use crate::repository::HybridUserRepository;
 use crate::store::auth_store::AuthStore;
 use crate::ui_components::{Spinner, Text, TextSize, TypographyVariant};
@@ -16,6 +17,7 @@ use ulid::Ulid;
 
 #[component]
 pub fn LessonContent() -> impl IntoView {
+    let i18n = use_i18n();
     let repository =
         use_context::<HybridUserRepository>().expect("repository context not provided");
     let auth_store = use_context::<AuthStore>().expect("AuthStore not provided");
@@ -93,7 +95,9 @@ pub fn LessonContent() -> impl IntoView {
                 Ok(cards) => {
                     let card_ids: Vec<Ulid> = cards.keys().cloned().collect();
                     if cards.is_empty() {
-                        error_message.set(Some("Нет карточек для изучения".to_string()));
+                        error_message.set(Some(
+                            i18n.get_keys().lesson().no_cards().inner().to_string(),
+                        ));
                     } else {
                         lesson_state.set(LessonState {
                             cards,
@@ -108,7 +112,13 @@ pub fn LessonContent() -> impl IntoView {
                     }
                 },
                 Err(e) => {
-                    error_message.set(Some(format!("Ошибка загрузки карточек: {}", e)));
+                    error_message.set(Some(
+                        i18n.get_keys()
+                            .lesson()
+                            .load_error()
+                            .inner()
+                            .replace("{}", &e.to_string()),
+                    ));
                 },
             }
 
@@ -124,7 +134,7 @@ pub fn LessonContent() -> impl IntoView {
             <div data-testid="lesson-loading" class="flex flex-col items-center py-8 gap-4">
                 <Spinner test_id="lesson-spinner" />
                 <Text size=TextSize::Default variant=TypographyVariant::Muted test_id="lesson-loading-text">
-                    "Подготовка карточек для урока..."
+                    {t!(i18n, lesson.loading)}
                 </Text>
             </div>
         </Show>
@@ -149,7 +159,7 @@ pub fn LessonContent() -> impl IntoView {
                 <Show when=move || is_syncing_cards.get()>
                     <div data-testid="lesson-sync-indicator" class="absolute top-0 right-0 flex items-center gap-1 text-sm text-muted-foreground p-2">
                         <Spinner test_id="lesson-sync-spinner" class=Signal::derive(|| "".to_string()) size=Signal::derive(|| "sm".to_string()) />
-                        "Синхронизация..."
+                        {t!(i18n, lesson.syncing)}
                     </div>
                 </Show>
 

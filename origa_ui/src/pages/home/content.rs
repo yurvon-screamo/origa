@@ -1,6 +1,7 @@
 use super::content_sync::run_sync;
 use super::{HistoryModal, HomeSkeleton, JlptProgressCard, JlptSkeleton, StatMetric, StatsGrid};
 use super::{PrimaryStats, SecondaryStats, calculate_stats};
+use crate::i18n::{t, use_i18n};
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{Text, TextSize, ToastContainer, ToastData, TypographyVariant};
 use leptos::prelude::*;
@@ -10,6 +11,7 @@ use origa::traits::UserRepository;
 
 #[component]
 pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoView {
+    let i18n = use_i18n();
     let test_id_val = move || {
         let val = test_id.get();
         if val.is_empty() { None } else { Some(val) }
@@ -28,7 +30,8 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
     let disposed = StoredValue::new(());
 
     let repo_sync = repository.clone();
-    Effect::new(move |_| run_sync(repo_sync.clone(), disposed, toasts));
+    let i18n_sync = i18n;
+    Effect::new(move |_| run_sync(repo_sync.clone(), disposed, toasts, i18n_sync));
 
     let repo_for_init = repository.clone();
     Effect::new(move |_| {
@@ -87,7 +90,7 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                             if val.is_empty() { "home-stats-title".to_string() } else { val }
                         })
                     >
-                        "Статистика"
+                        {t!(i18n, home.statistics)}
                     </Text>
                 </div>
 

@@ -1,5 +1,6 @@
 use super::{LessonButtonsCard, QuickStatCard, StatMetric};
 use super::{PrimaryStats, SecondaryStats, format_delta, format_number};
+use crate::i18n::{t, use_i18n};
 use crate::ui_components::{Button, ButtonVariant};
 use leptos::prelude::*;
 
@@ -11,6 +12,7 @@ pub fn StatsGrid(
     open_history: impl Fn(StatMetric) -> Callback<()> + Send + Sync + 'static,
     #[prop(optional, into)] test_id: Signal<String>,
 ) -> impl IntoView {
+    let i18n = use_i18n();
     let show_details = RwSignal::new(false);
 
     let test_id_val = move || {
@@ -30,28 +32,28 @@ pub fn StatsGrid(
                 <div class="md:w-3/4">
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
                         <QuickStatCard
-                            title=Signal::derive(|| "Изучено".to_string())
+                            title=Signal::derive(move || i18n.get_keys().home().learned().inner().to_string())
                             value=Signal::derive(move || format_number(primary.get().learned))
                             delta=Signal::derive(move || format_delta(primary.get().learned_delta))
                             on_card_click=open_history(StatMetric::Learned)
                             test_id=Signal::derive(|| "stat-learned".to_string())
                         />
                         <QuickStatCard
-                            title=Signal::derive(|| "В процессе".to_string())
+                            title=Signal::derive(move || i18n.get_keys().home().in_progress().inner().to_string())
                             value=Signal::derive(move || format_number(primary.get().in_progress))
                             delta=Signal::derive(move || format_delta(primary.get().in_progress_delta))
                             on_card_click=open_history(StatMetric::InProgress)
                             test_id=Signal::derive(|| "stat-in-progress".to_string())
                         />
                         <QuickStatCard
-                            title=Signal::derive(|| "Сложные".to_string())
+                            title=Signal::derive(move || i18n.get_keys().home().hard().inner().to_string())
                             value=Signal::derive(move || format_number(secondary.get().high_difficulty))
                             delta=Signal::derive(move || format_delta(secondary.get().high_difficulty_delta))
                             on_card_click=open_history(StatMetric::HighDifficulty)
                             test_id=Signal::derive(|| "stat-high-difficulty".to_string())
                         />
                         <QuickStatCard
-                            title=Signal::derive(|| "Новые".to_string())
+                            title=Signal::derive(move || i18n.get_keys().home().new_items().inner().to_string())
                             value=Signal::derive(move || format_number(primary.get().new))
                             delta=Signal::derive(move || format_delta(primary.get().new_delta))
                             on_card_click=open_history(StatMetric::New)
@@ -68,7 +70,7 @@ pub fn StatsGrid(
                     test_id=Signal::derive(|| "toggle-details".to_string())
                 >
                     <span class="flex items-center gap-2">
-                        "Подробная статистика"
+                        {t!(i18n, home.detailed_stats)}
                         <span class=move || toggle_class.get()>"▼"</span>
                     </span>
                 </Button>
@@ -77,21 +79,21 @@ pub fn StatsGrid(
             <Show when=move || show_details.get()>
                 <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
                     <QuickStatCard
-                        title=Signal::derive(|| "Позитивные".to_string())
+                        title=Signal::derive(move || i18n.get_keys().home().positive().inner().to_string())
                         value=Signal::derive(move || format_number(secondary.get().positive))
                         delta=Signal::derive(move || format_delta(secondary.get().positive_delta))
                         on_card_click=open_history(StatMetric::PositiveRatings)
                         test_id=Signal::derive(|| "stat-positive".to_string())
                     />
                     <QuickStatCard
-                        title=Signal::derive(|| "Негативные".to_string())
+                        title=Signal::derive(move || i18n.get_keys().home().negative().inner().to_string())
                         value=Signal::derive(move || format_number(secondary.get().negative))
                         delta=Signal::derive(move || format_delta(secondary.get().negative_delta))
                         on_card_click=open_history(StatMetric::NegativeRatings)
                         test_id=Signal::derive(|| "stat-negative".to_string())
                     />
                     <QuickStatCard
-                        title=Signal::derive(|| "Всего оценок".to_string())
+                        title=Signal::derive(move || i18n.get_keys().home().total_ratings().inner().to_string())
                         value=Signal::derive(move || format_number(secondary.get().total_ratings))
                         delta=Signal::derive(move || format_delta(secondary.get().total_ratings_delta))
                         on_card_click=open_history(StatMetric::TotalRatings)

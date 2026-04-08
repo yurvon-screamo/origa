@@ -1,5 +1,6 @@
 use std::collections::HashSet;
 
+use crate::i18n::*;
 use crate::ui_components::{Card, Checkbox, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 use origa::traits::WellKnownSetMeta;
@@ -10,7 +11,7 @@ use super::onboarding_state::OnboardingState;
 struct AppInfo {
     id: String,
     name: String,
-    description: String,
+    desc_key: &'static str,
     icon: &'static str,
 }
 
@@ -19,34 +20,46 @@ fn get_known_apps() -> Vec<AppInfo> {
         AppInfo {
             id: "Anki".to_string(),
             name: "Anki".to_string(),
-            description: "Импорт колод из Anki (.apkg)".to_string(),
+            desc_key: "anki",
             icon: "/public/external_icons/anki.svg",
         },
         AppInfo {
             id: "Migii".to_string(),
             name: "Migii".to_string(),
-            description: "Приложение для изучения JLPT".to_string(),
+            desc_key: "migii",
             icon: "/public/external_icons/migii.png",
         },
         AppInfo {
             id: "DuolingoRu".to_string(),
             name: "Duolingo 「RU」".to_string(),
-            description: "Duolingo на русском языке".to_string(),
+            desc_key: "duolingo_ru",
             icon: "/public/external_icons/duolingo.png",
         },
         AppInfo {
             id: "DuolingoEn".to_string(),
             name: "Duolingo 「EN」".to_string(),
-            description: "Duolingo на английском языке".to_string(),
+            desc_key: "duolingo_en",
             icon: "/public/external_icons/duolingo.png",
         },
         AppInfo {
             id: "MinnaNoNihongo".to_string(),
             name: "Minna no Nihongo".to_string(),
-            description: "Учебник японского языка (N5-N4)".to_string(),
+            desc_key: "minna",
             icon: "/public/external_icons/minnanonihongo.png",
         },
     ]
+}
+
+fn app_desc(i18n: I18nContext<Locale>, key: &str) -> String {
+    let locale = i18n.get_locale();
+    match key {
+        "anki" => td_string!(locale, onboarding.apps.anki_desc).to_string(),
+        "migii" => td_string!(locale, onboarding.apps.migii_desc).to_string(),
+        "duolingo_ru" => td_string!(locale, onboarding.apps.duolingo_ru_desc).to_string(),
+        "duolingo_en" => td_string!(locale, onboarding.apps.duolingo_en_desc).to_string(),
+        "minna" => td_string!(locale, onboarding.apps.minna_desc).to_string(),
+        _ => String::new(),
+    }
 }
 
 fn get_available_app_ids(available_sets: &[WellKnownSetMeta]) -> HashSet<String> {
@@ -74,6 +87,7 @@ fn get_available_app_ids(available_sets: &[WellKnownSetMeta]) -> HashSet<String>
 
 #[component]
 pub fn AppsStep(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoView {
+    let i18n = use_i18n();
     let test_id_val = move || {
         let val = test_id.get();
         if val.is_empty() { None } else { Some(val) }
@@ -108,11 +122,11 @@ pub fn AppsStep(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoVie
         <div class="apps-step" data-testid=test_id_val>
             <div class="text-center mb-6">
                 <Text size=TextSize::Large variant=TypographyVariant::Primary test_id=Signal::derive(|| "apps-step-title".to_string())>
-                    "Какие приложения вы используете?"
+                    {t!(i18n, onboarding.apps.title)}
                 </Text>
                 <div class="mt-2">
                     <Text size=TextSize::Small variant=TypographyVariant::Muted test_id=Signal::derive(|| "apps-step-subtitle".to_string())>
-                        "Выберите приложения, в которых вы уже изучали японский. Мы импортируем ваш прогресс."
+                        {t!(i18n, onboarding.apps.subtitle)}
                     </Text>
                 </div>
             </div>
@@ -127,7 +141,7 @@ pub fn AppsStep(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoVie
 
                             let app_id_for_selected = app_id.clone();
                             let app_name = app.name.clone();
-                            let app_desc = app.description.clone();
+                            let app_desc_str = app_desc(i18n, app.desc_key);
                             let app_icon = app.icon;
                             let is_selected = Memo::new(move |_| state.get().selected_apps.contains(&app_id_for_selected));
 
@@ -162,7 +176,7 @@ pub fn AppsStep(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoVie
                                                 {app_name}
                                             </Text>
                                             <Text size=TextSize::Small variant=TypographyVariant::Muted test_id=Signal::derive(move || format!("{}-desc", app_test_id_for_desc.clone()))>
-                                                {app_desc}
+                                                {app_desc_str}
                                             </Text>
                                         </div>
                                         <Checkbox
@@ -181,7 +195,7 @@ pub fn AppsStep(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoVie
             <Show when=move || state.get().selected_apps.is_empty()>
                 <div class="text-center mt-4">
                     <Text size=TextSize::Small variant=TypographyVariant::Muted test_id=Signal::derive(|| "apps-step-skip-hint".to_string())>
-                        "Можно пропустить этот шаг, если вы не использовали другие приложения"
+                        {t!(i18n, onboarding.apps.skip_hint)}
                     </Text>
                 </div>
             </Show>

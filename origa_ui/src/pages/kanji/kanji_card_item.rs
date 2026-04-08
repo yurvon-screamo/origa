@@ -1,5 +1,8 @@
+use std::collections::HashSet;
+
 use super::super::shared::{CardStatus, DeleteRequest, MarkAsKnownButton};
 use super::DrawingDrawer;
+use crate::i18n::{t, use_i18n};
 use crate::ui_components::{
     Button, ButtonSize, ButtonVariant, Card, CardHistoryModal, DeleteButton, DeleteConfirmModal,
     FavoriteButton, HistoryButton, KanjiViewMode, KanjiWritingSection, MarkdownText, Tag, Text,
@@ -7,7 +10,6 @@ use crate::ui_components::{
 };
 use leptos::{ev::MouseEvent, prelude::*};
 use origa::domain::{Card as DomainCard, NativeLanguage, StudyCard};
-use std::collections::HashSet;
 use ulid::Ulid;
 
 #[component]
@@ -20,6 +22,7 @@ pub fn KanjiCardItem(
     on_delete: Callback<DeleteRequest>,
     is_deleting: Signal<bool>,
 ) -> impl IntoView {
+    let i18n = use_i18n();
     let card = study_card.card();
     let card_id = *study_card.card_id();
     let is_favorite = study_card.is_favorite();
@@ -92,10 +95,11 @@ pub fn KanjiCardItem(
                 </div>
             </div>
             {move || {
+                let radicals = radicals.clone();
                 if !radicals.is_empty() {
                     view! {
                         <Text size=TextSize::Small variant=TypographyVariant::Muted class="mb-1">
-                            {format!("Радикалы: {}", radicals)}
+                            {i18n.get_keys().shared().radicals_label().inner().to_string().replacen("{}", &radicals, 1)}
                         </Text>
                     }.into_any()
                 } else {
@@ -107,7 +111,7 @@ pub fn KanjiCardItem(
                     let examples = example_words.clone();
                     view! {
                         <div class="mb-1">
-                            <MarkdownText content=Signal::derive(move || format!("**Примеры:** {}", examples)) known_kanji=known_kanji.clone()/>
+                            <MarkdownText content=Signal::derive(move || format!("**{}** {}", i18n.get_keys().shared().examples_label().inner().to_string().replacen("{}", &examples, 1), "")) known_kanji=known_kanji.clone()/>
                         </div>
                     }.into_any()
                 } else {
@@ -119,7 +123,10 @@ pub fn KanjiCardItem(
                 variant=TypographyVariant::Muted
                 class="mt-2"
             >
-                {format!("Повтор: {} | Слож: {} | Стаб: {}", next_review, difficulty, stability)}
+                {i18n.get_keys().shared().card_info().inner().to_string()
+                    .replacen("{}", &next_review, 1)
+                    .replacen("{}", &difficulty, 1)
+                    .replacen("{}", &stability, 1)}
             </Text>
             <Show when=move || has_examples>
                 <div class="mt-1 flex items-center gap-3">
@@ -130,7 +137,7 @@ pub fn KanjiCardItem(
                             is_expanded.update(|v| *v = !*v);
                         })
                     >
-                        {move || if is_expanded.get() { "Свернуть" } else { "Развернуть" }}
+                        {move || if is_expanded.get() { t!(i18n, common.collapse).into_any() } else { t!(i18n, common.expand).into_any() }}
                     </Button>
                 </div>
             </Show>
@@ -158,7 +165,7 @@ pub fn KanjiCardItem(
             <DrawingDrawer kanji=kanji_char.clone() is_open=drawing_drawer_open />
             <div class="border-t border-[var(--border-dark)] pt-2 mt-2 flex justify-between items-center">
                 <Tag variant=Signal::derive(move || status.tag_variant())>
-                    {status.label()}
+                    {status.label(&i18n)}
                 </Tag>
                 <div class="flex items-center gap-2">
                     <FavoriteButton
@@ -175,7 +182,7 @@ pub fn KanjiCardItem(
                     <button
                         class="cursor-pointer transition-colors duration-200 hover:opacity-70"
                         on:click=move |_| drawing_drawer_open.set(true)
-                        title="Практика прописей"
+                        title=move || i18n.get_keys().kanji_page().practice_writing().inner().to_string()
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"

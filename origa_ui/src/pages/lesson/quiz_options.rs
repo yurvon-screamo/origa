@@ -1,3 +1,4 @@
+use crate::i18n::*;
 use crate::ui_components::{MarkdownText, MarkdownVariant, Text, TextSize};
 use leptos::prelude::*;
 use origa::domain::QuizOption;
@@ -16,6 +17,8 @@ pub fn QuizOptions(
     dont_know_selected: bool,
     #[prop(into)] known_kanji: Signal<HashSet<String>>,
 ) -> impl IntoView {
+    let i18n = use_i18n();
+
     view! {
         <div class="grid grid-cols-2 gap-2 sm:gap-3">
             {move || {
@@ -86,9 +89,9 @@ pub fn QuizOptions(
                 }
             }
         >
-            <Text size=TextSize::Default>"Не знаю"</Text>
+            <Text size=TextSize::Default>{t!(i18n, lesson.dont_know)}</Text>
             <Show when=move || !show_result>
-                <span class="text-[var(--fg-muted)] text-xs font-mono">"[Пробел]"</span>
+                <span class="text-[var(--fg-muted)] text-xs font-mono">{t!(i18n, lesson.space_key)}</span>
             </Show>
         </button>
     }

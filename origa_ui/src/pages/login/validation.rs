@@ -1,15 +1,21 @@
-pub fn validate_email(email: &str) -> Result<(), String> {
+use crate::i18n::{I18nContext, Locale};
+
+pub fn validate_email(i18n: &I18nContext<Locale>, email: &str) -> Result<(), String> {
     let email = email.trim();
     if email.is_empty() {
-        return Err("Введите email".to_string());
+        return Err(i18n.get_keys().login().email_required().inner().to_string());
     }
     if !email.contains('@') || !email.contains('.') {
-        return Err("Некорректный формат email".to_string());
+        return Err(i18n.get_keys().login().email_required().inner().to_string());
     }
     Ok(())
 }
 
-pub fn validate_credentials(email: &str, _password: &str) -> Result<(), String> {
-    validate_email(email)?;
+pub fn validate_credentials(
+    i18n: &I18nContext<Locale>,
+    email: &str,
+    _password: &str,
+) -> Result<(), String> {
+    validate_email(i18n, email)?;
     Ok(())
 }

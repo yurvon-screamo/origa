@@ -36,7 +36,7 @@ pub async fn check_for_updates() -> Option<UpdateInfo> {
         any(target_os = "windows", target_os = "macos", target_os = "linux")
     )))]
     {
-        leptos::logging::log!("Проверка обновлений доступна только в desktop-версии");
+        leptos::logging::log!("Update check is only available in the desktop version");
         None
     }
 }
@@ -54,17 +54,17 @@ async fn check_for_updates_tauri() -> Option<UpdateInfo> {
     let window = web_sys::window();
     let tauri_obj = window
         .as_ref()
-        .and_then(|w| get_js_property(w, "__TAURI__", "Tauri API недоступен"));
+        .and_then(|w| get_js_property(w, "__TAURI__", "Tauri API unavailable"));
     let updater_mod = tauri_obj
         .as_ref()
-        .and_then(|obj| get_js_property(obj, "updater", "Tauri updater модуль недоступен"));
+        .and_then(|obj| get_js_property(obj, "updater", "Tauri updater module unavailable"));
     let check_fn_val = updater_mod
         .as_ref()
-        .and_then(|mod_| get_js_property(mod_, "check", "Tauri updater.check недоступен"));
+        .and_then(|mod_| get_js_property(mod_, "check", "Tauri updater.check unavailable"));
     let check_fn = check_fn_val.as_ref().and_then(|val| {
         let fn_result = val.dyn_into::<js_sys::Function>().ok();
         if fn_result.is_none() {
-            logging::warn!("updater.check не является функцией");
+            logging::warn!("updater.check is not a function");
         }
         fn_result
     });
@@ -80,25 +80,25 @@ async fn check_for_updates_tauri() -> Option<UpdateInfo> {
             match promise_result {
                 Ok(update_result) => {
                     if update_result.is_null() || update_result.is_undefined() {
-                        logging::log!("Обновления не найдены");
+                        logging::log!("No updates found");
                         None
                     } else {
                         parse_update_info(&update_result)
                     }
                 },
                 Err(e) => {
-                    logging::warn!("Ошибка при проверке обновлений: {:?}", e);
+                    logging::warn!("Error checking for updates: {:?}", e);
                     None
                 },
             }
         },
         Some(Err(e)) => {
-            logging::warn!("Ошибка вызова updater.check: {:?}", e);
+            logging::warn!("Error calling updater.check: {:?}", e);
             None
         },
         None => {
             if window.is_none() {
-                logging::warn!("Window недоступен");
+                logging::warn!("Window unavailable");
             }
             None
         },
@@ -142,7 +142,7 @@ where
         any(target_os = "windows", target_os = "macos", target_os = "linux")
     )))]
     {
-        leptos::logging::log!("Загрузка обновлений доступна только в desktop-версии");
+        leptos::logging::log!("Update download is only available in the desktop version");
         Ok(())
     }
 }
@@ -161,20 +161,20 @@ where
     use leptos::wasm_bindgen::closure::Closure;
     use std::sync::Arc;
 
-    let window = web_sys::window().ok_or("Window недоступен")?;
+    let window = web_sys::window().ok_or("Window unavailable")?;
 
     let tauri_obj = js_sys::Reflect::get(&window, &JsValue::from_str("__TAURI__"))
-        .map_err(|_| "Tauri API недоступен")?;
+        .map_err(|_| "Tauri API unavailable")?;
 
     let updater_mod = js_sys::Reflect::get(&tauri_obj, &JsValue::from_str("updater"))
-        .map_err(|_| "Tauri updater модуль недоступен")?;
+        .map_err(|_| "Tauri updater module unavailable")?;
 
     let download_fn = js_sys::Reflect::get(&updater_mod, &JsValue::from_str("downloadAndInstall"))
-        .map_err(|_| "Tauri updater.downloadAndInstall недоступен")?;
+        .map_err(|_| "Tauri updater.downloadAndInstall unavailable")?;
 
     let download_fn = download_fn
         .dyn_into::<js_sys::Function>()
-        .map_err(|_| "updater.downloadAndInstall не является функцией")?;
+        .map_err(|_| "updater.downloadAndInstall is not a function")?;
 
     let on_progress = Arc::new(on_progress);
     let closure = Closure::<dyn Fn(JsValue)>::new(move |event| {
@@ -200,14 +200,14 @@ where
 
     let event_name = JsValue::from_str("tauri://update-download-progress");
     let event_mod = js_sys::Reflect::get(&tauri_obj, &JsValue::from_str("event"))
-        .map_err(|_| "Tauri event модуль недоступен")?;
+        .map_err(|_| "Tauri event module unavailable")?;
 
     let listen_fn = js_sys::Reflect::get(&event_mod, &JsValue::from_str("listen"))
-        .map_err(|_| "Tauri event.listen недоступен")?;
+        .map_err(|_| "Tauri event.listen unavailable")?;
 
     let listen_fn = listen_fn
         .dyn_into::<js_sys::Function>()
-        .map_err(|_| "event.listen не является функцией")?;
+        .map_err(|_| "event.listen is not a function")?;
 
     let _unlisten = listen_fn.call2(&JsValue::UNDEFINED, &event_name, closure.as_ref());
     closure.forget();
@@ -220,8 +220,8 @@ where
             promise
                 .await
                 .map(|_| ())
-                .map_err(|e| format!("Ошибка при загрузке обновления: {:?}", e))
+                .map_err(|e| format!("Error downloading update: {:?}", e))
         },
-        Err(e) => Err(format!("Ошибка вызова downloadAndInstall: {:?}", e)),
+        Err(e) => Err(format!("Error calling downloadAndInstall: {:?}", e)),
     }
 }

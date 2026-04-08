@@ -1,6 +1,8 @@
 use super::card_status::CardStatus;
+use crate::i18n::{Locale, use_i18n};
 use crate::ui_components::{Tag, TagVariant};
 use leptos::prelude::*;
+use leptos_i18n::I18nContext;
 
 #[derive(Clone, Copy, PartialEq, Default)]
 pub enum Filter {
@@ -13,13 +15,23 @@ pub enum Filter {
 }
 
 impl Filter {
-    pub fn label(&self) -> &'static str {
+    pub fn label(&self, i18n: &I18nContext<Locale>) -> String {
         match self {
-            Filter::All => "Все",
-            Filter::New => "Новые",
-            Filter::Hard => "Сложные",
-            Filter::InProgress => "В процессе",
-            Filter::Learned => "Изученные",
+            Filter::All => i18n.get_keys().shared().filter_all().inner().to_string(),
+            Filter::New => i18n.get_keys().shared().filter_new().inner().to_string(),
+            Filter::Hard => i18n.get_keys().shared().filter_hard().inner().to_string(),
+            Filter::InProgress => i18n
+                .get_keys()
+                .shared()
+                .filter_in_progress()
+                .inner()
+                .to_string(),
+            Filter::Learned => i18n
+                .get_keys()
+                .shared()
+                .filter_learned()
+                .inner()
+                .to_string(),
         }
     }
 
@@ -41,6 +53,7 @@ pub fn FilterBtn<F: Fn() -> usize + Send + 'static>(
     active: RwSignal<Filter>,
     #[prop(optional, into)] test_id: Signal<String>,
 ) -> impl IntoView {
+    let i18n = use_i18n();
     let is_active = Memo::new(move |_| active.get() == filter);
     let filter_for_click = filter;
 
@@ -53,7 +66,7 @@ pub fn FilterBtn<F: Fn() -> usize + Send + 'static>(
                 active.set(filter_for_click);
             })
         >
-            {move || format!("{} ({})", filter.label(), count())}
+            {move || format!("{} ({})", filter.label(&i18n), count())}
         </Tag>
     }
 }

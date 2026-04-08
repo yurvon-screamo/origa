@@ -1,15 +1,22 @@
 use std::collections::HashMap;
 
+use crate::i18n::{I18nContext, Locale};
 use crate::ui_components::DropdownItem;
 use origa::domain::JapaneseLevel;
 
 use super::types::MigiiLesson;
 
-pub fn build_level_items() -> Vec<DropdownItem> {
+pub fn build_level_items(i18n: &I18nContext<Locale>) -> Vec<DropdownItem> {
     vec![
         DropdownItem {
             value: "none".to_string(),
-            label: "Не изучал".to_string(),
+            label: i18n
+                .get_keys()
+                .onboarding()
+                .progress()
+                .not_studied()
+                .inner()
+                .to_string(),
         },
         DropdownItem {
             value: "N5".to_string(),
@@ -35,12 +42,19 @@ pub fn build_level_items() -> Vec<DropdownItem> {
 }
 
 pub fn build_lesson_items(
+    i18n: &I18nContext<Locale>,
     lessons_by_level: &HashMap<JapaneseLevel, Vec<MigiiLesson>>,
     selected_level: Option<JapaneseLevel>,
 ) -> Vec<DropdownItem> {
     let mut items = vec![DropdownItem {
         value: "none".to_string(),
-        label: "Не изучал".to_string(),
+        label: i18n
+            .get_keys()
+            .onboarding()
+            .progress()
+            .not_studied()
+            .inner()
+            .to_string(),
     }];
 
     if let Some(lvl) = selected_level
@@ -49,7 +63,14 @@ pub fn build_lesson_items(
         for lesson in lessons {
             items.push(DropdownItem {
                 value: format!("lesson_{}", lesson.lesson_number),
-                label: format!("Урок {}", lesson.lesson_number),
+                label: i18n
+                    .get_keys()
+                    .onboarding()
+                    .progress()
+                    .lesson_number()
+                    .inner()
+                    .to_string()
+                    .replacen("{}", &lesson.lesson_number.to_string(), 1),
             });
         }
     }

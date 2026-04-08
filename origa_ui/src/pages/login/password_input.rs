@@ -1,3 +1,4 @@
+use crate::i18n::*;
 use crate::ui_components::{Input, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 
@@ -9,6 +10,7 @@ pub fn PasswordInput(
     #[prop(optional, into)] name: Signal<String>,
     #[prop(optional, into)] test_id: Signal<String>,
 ) -> impl IntoView {
+    let i18n = use_i18n();
     let show_password = RwSignal::new(false);
 
     let toggle_test_id = Signal::derive(move || {
@@ -32,7 +34,7 @@ pub fn PasswordInput(
     view! {
         <div>
             <Text size=TextSize::Small variant=TypographyVariant::Muted uppercase=true tracking_widest=true class="block mb-2">
-                "Пароль"
+                {t!(i18n, login.password_placeholder)}
             </Text>
             <div class="relative group">
                 <Input

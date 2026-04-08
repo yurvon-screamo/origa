@@ -1,9 +1,10 @@
 use serde::{Deserialize, Serialize};
 use std::env;
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 fn main() {
+    handle_i18n();
     handle_lindera_dictionary();
     generate_well_known_meta();
     println!("cargo:rerun-if-changed=build.rs");
@@ -23,6 +24,27 @@ fn main() {
     println!("cargo:rerun-if-env-changed=ORIGA_COMMIT");
     println!("cargo:rerun-if-env-changed=ORIGA_BUILD_DATE");
     println!("cargo:rerun-if-env-changed=PUBLIC_BASE_URL");
+}
+
+fn handle_i18n() {
+    println!("cargo:rerun-if-changed=locales/en.json");
+    println!("cargo:rerun-if-changed=locales/ru.json");
+
+    let i18n_dir = PathBuf::from(env::var_os("OUT_DIR").unwrap()).join("i18n");
+
+    let cfg = leptos_i18n_build::Config::new("en")
+        .expect("Failed to create i18n config")
+        .add_locale("ru")
+        .expect("Failed to add locale");
+
+    let infos = leptos_i18n_build::TranslationsInfos::parse(cfg)
+        .expect("Failed to parse i18n translations");
+
+    infos.emit_diagnostics();
+    infos.rerun_if_locales_changed();
+    infos
+        .generate_i18n_module(i18n_dir)
+        .expect("Failed to generate i18n module");
 }
 
 fn handle_lindera_dictionary() {

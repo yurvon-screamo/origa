@@ -1,6 +1,7 @@
 use super::add_kanji_modal_handlers::ModalHandlers;
 use super::add_kanji_modal_state::ModalState;
 use super::kanji_list::KanjiList;
+use crate::i18n::{t, use_i18n};
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{
     Button, ButtonSize, ButtonVariant, Drawer, ErrorAlert, LevelSelector, SelectedCount, Spinner,
@@ -22,6 +23,7 @@ const JLPT_LEVELS: [JapaneseLevel; 5] = [
 
 #[component]
 pub fn AddKanjiModal(is_open: RwSignal<bool>, refresh_trigger: RwSignal<u32>) -> impl IntoView {
+    let i18n = use_i18n();
     let repository =
         use_context::<HybridUserRepository>().expect("repository context not provided");
 
@@ -63,7 +65,7 @@ pub fn AddKanjiModal(is_open: RwSignal<bool>, refresh_trigger: RwSignal<u32>) ->
     view! {
         <Drawer
             is_open=is_open
-            title=Signal::derive(|| "Добавить кандзи".to_string())
+            title=Signal::derive(move || i18n.get_keys().kanji_page().add_kanji().inner().to_string())
             test_id="kanji-add-drawer"
             action_button=Arc::new(move || {
                 view! {
@@ -73,7 +75,7 @@ pub fn AddKanjiModal(is_open: RwSignal<bool>, refresh_trigger: RwSignal<u32>) ->
                         on_click=handlers.on_add
                         test_id="kanji-drawer-add-btn"
                     >
-                        {move || if state.is_creating.get() { "Добавление..." } else { "Добавить" }}
+                        {move || if state.is_creating.get() { t!(i18n, kanji_page.adding).into_any() } else { t!(i18n, kanji_page.add).into_any() }}
                     </Button>
                 }.into_any()
             })
@@ -89,7 +91,7 @@ pub fn AddKanjiModal(is_open: RwSignal<bool>, refresh_trigger: RwSignal<u32>) ->
                 <div>
                     <div class="flex items-center justify-between mb-2">
                         <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                            "Доступные кандзи"
+                            {t!(i18n, kanji_page.available_kanji)}
                         </Text>
                         <Button
                             variant=Signal::derive(|| ButtonVariant::Ghost)
@@ -100,7 +102,7 @@ pub fn AddKanjiModal(is_open: RwSignal<bool>, refresh_trigger: RwSignal<u32>) ->
                             })
                             test_id="kanji-drawer-select-all-btn"
                         >
-                            "Выделить все"
+                            {t!(i18n, common.select_all)}
                         </Button>
                     </div>
                     {move || {
@@ -112,7 +114,7 @@ pub fn AddKanjiModal(is_open: RwSignal<bool>, refresh_trigger: RwSignal<u32>) ->
                                 <div class="flex flex-col items-center py-4 gap-3">
                                     <Spinner />
                                     <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                                        "Поиск иероглифов..."
+                                        {t!(i18n, kanji_page.searching_kanji)}
                                     </Text>
                                 </div>
                             }.into_any()

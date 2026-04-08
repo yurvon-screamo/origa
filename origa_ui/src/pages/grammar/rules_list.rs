@@ -1,3 +1,4 @@
+use crate::i18n::{t, use_i18n};
 use crate::ui_components::{Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 use origa::dictionary::grammar::GrammarRule;
@@ -15,6 +16,7 @@ pub fn RulesList(
     search_query: RwSignal<String>,
     known_kanji: HashSet<String>,
 ) -> impl IntoView {
+    let i18n = use_i18n();
     let filtered_rules = move || {
         let query = search_query.get().to_lowercase();
         if query.is_empty() {
@@ -41,7 +43,7 @@ pub fn RulesList(
                     view! {
                         <div data-testid="grammar-drawer-empty">
                             <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                                "Нет правил для выбранного уровня"
+                                {t!(i18n, grammar_page.no_rules_for_level)}
                             </Text>
                         </div>
                     }.into_any()

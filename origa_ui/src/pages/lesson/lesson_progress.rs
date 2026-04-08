@@ -1,7 +1,9 @@
+use crate::i18n::*;
 use leptos::prelude::*;
 
 #[component]
 pub fn LessonProgress(current: Signal<usize>, total: Signal<usize>) -> impl IntoView {
+    let i18n = use_i18n();
     let percentage = move || {
         let t = total.get();
         if t == 0 {
@@ -15,7 +17,7 @@ pub fn LessonProgress(current: Signal<usize>, total: Signal<usize>) -> impl Into
         <div class="mb-3 sm:mb-6">
             <div class="flex justify-between mb-2">
                 <span class="font-mono text-[10px] tracking-widest uppercase">
-                    "Прогресс"
+                    {t!(i18n, lesson.progress)}
                 </span>
                 <span class="font-mono text-[10px]" data-testid="lesson-progress-text">
                     {move || format!("{}/{}", current.get(), total.get())}

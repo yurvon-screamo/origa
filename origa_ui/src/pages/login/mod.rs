@@ -8,6 +8,7 @@ mod validation;
 
 pub use header::LoginHeader;
 
+use crate::i18n::*;
 use crate::store::auth_store::AuthStore;
 use crate::ui_components::{
     Alert, AlertType, CardLayout, CardLayoutSize, Divider, DividerVariant, PageLayout,
@@ -20,6 +21,7 @@ use leptos_router::hooks::use_navigate;
 
 #[component]
 pub fn Login() -> impl IntoView {
+    let i18n = use_i18n();
     let auth_store = use_context::<AuthStore>().expect("AuthStore not provided");
     let navigate = use_navigate();
     let loading = RwSignal::new(false);
@@ -47,7 +49,7 @@ pub fn Login() -> impl IntoView {
             auth_store.oauth_error.set(None);
 
             spawn_local(async move {
-                let result = auth_store.login(&email, &password).await;
+                let result = auth_store.login(&email, &password, &i18n).await;
 
                 if disposed.is_disposed() {
                     return;
@@ -90,7 +92,7 @@ pub fn Login() -> impl IntoView {
                     <div class="flex items-center gap-4">
                         <Divider variant=Signal::derive(|| DividerVariant::Single) class=Signal::derive(|| "flex-1".to_string()) test_id=Signal::derive(|| "login-divider-left".to_string()) />
                         <Text size=TextSize::Small variant=TypographyVariant::Muted class="whitespace-nowrap" test_id=Signal::derive(|| "login-divider-text".to_string())>
-                            "или войти/зарегистрироваться через"
+                            {t!(i18n, login.or_login_with)}
                         </Text>
                         <Divider variant=Signal::derive(|| DividerVariant::Single) class=Signal::derive(|| "flex-1".to_string()) test_id=Signal::derive(|| "login-divider-right".to_string()) />
                     </div>

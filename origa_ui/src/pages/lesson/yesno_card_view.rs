@@ -1,3 +1,4 @@
+use crate::i18n::*;
 use crate::ui_components::{
     Button, ButtonVariant, Card, DisplayText, MarkdownText, MarkdownVariant, Text, TextSize,
     TypographyVariant, get_reading_from_text, is_speech_supported, speak_text,
@@ -43,6 +44,7 @@ pub fn YesNoCardView(
     native_language: NativeLanguage,
     #[prop(into)] known_kanji: Signal<HashSet<String>>,
 ) -> impl IntoView {
+    let i18n = use_i18n();
     let card = yesno_card.card().clone();
     let card_type = CardType::from(&card);
     let lang = native_language;
@@ -130,9 +132,9 @@ pub fn YesNoCardView(
 
     let correct_answer_text = move || {
         if is_statement_correct {
-            "Да"
+            i18n.get_keys().lesson().yes().inner().to_string()
         } else {
-            "Нет"
+            i18n.get_keys().lesson().no().inner().to_string()
         }
     };
 
@@ -174,7 +176,7 @@ pub fn YesNoCardView(
                     </Show>
 
                     <Text size=TextSize::Default variant=TypographyVariant::Muted class="mt-4">
-                        "Верно ли это утверждение?"
+                        {t!(i18n, lesson.is_this_correct)}
                     </Text>
                 </div>
 
@@ -186,7 +188,7 @@ pub fn YesNoCardView(
                         disabled=Signal::derive(move || show_result)
                         on_click=Callback::new(move |_| on_answer.run(false))
                     >
-                        "Нет" <span class="hidden sm:inline">"[1]"</span>
+                        {t!(i18n, lesson.no)} <span class="hidden sm:inline">"[1]"</span>
                     </Button>
 
                     <Button
@@ -196,7 +198,7 @@ pub fn YesNoCardView(
                         disabled=Signal::derive(move || show_result)
                         on_click=Callback::new(move |_| on_answer.run(true))
                     >
-                        "Да" <span class="hidden sm:inline">"[2]"</span>
+                        {t!(i18n, lesson.yes)} <span class="hidden sm:inline">"[2]"</span>
                     </Button>
                 </div>
                 <button
@@ -217,15 +219,15 @@ pub fn YesNoCardView(
                         }
                     }
                 >
-                    <Text size=TextSize::Default>"Не знаю"</Text>
-                    <span class="hidden sm:inline text-[var(--fg-muted)] text-xs font-mono">"[Пробел]"</span>
+                    <Text size=TextSize::Default>{t!(i18n, lesson.dont_know)}</Text>
+                    <span class="hidden sm:inline text-[var(--fg-muted)] text-xs font-mono">{t!(i18n, lesson.space_key)}</span>
                 </button>
 
                 <Show when=move || show_result>
                     <Show when=move || yesno_result() == YesNoResult::Correct>
                         <div class="mt-6 text-center">
                             <Text size=TextSize::Default class="text-[var(--success)] font-bold">
-                                "✓ Правильно!"
+                                {t!(i18n, lesson.correct)}
                             </Text>
                         </div>
                     </Show>
@@ -233,7 +235,7 @@ pub fn YesNoCardView(
                     <Show when=move || matches!(yesno_result(), YesNoResult::Incorrect)>
                         <div class="mt-6 text-center">
                             <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                                {"Правильный ответ: "}
+                                {t!(i18n, lesson.correct_answer)}
                                 <span class="font-semibold">
                                     {correct_answer_text}
                                 </span>
@@ -244,7 +246,7 @@ pub fn YesNoCardView(
                     <Show when=move || yesno_result() == YesNoResult::DontKnow>
                         <div class="mt-6 text-center">
                             <Text size=TextSize::Default class="text-[var(--fg-muted)] font-bold">
-                                "— Не знаю"
+                                {t!(i18n, lesson.dont_know_result)}
                             </Text>
                         </div>
                     </Show>

@@ -3,6 +3,7 @@ use leptos::task::spawn_local;
 use origa::domain::{OrigaError, User};
 use origa::traits::UserRepository;
 
+use crate::i18n::{I18nContext, Locale};
 use crate::pages::login::auth_handlers::get_or_create_profile;
 use crate::repository::{
     AuthError, HybridUserRepository, TrailBaseClient, clear_session, get_session, set_session,
@@ -202,7 +203,12 @@ impl AuthStore {
     // ========================================
 
     /// Login with email/password
-    pub async fn login(&self, email: &str, password: &str) -> Result<(), OrigaError> {
+    pub async fn login(
+        &self,
+        email: &str,
+        password: &str,
+        i18n: &I18nContext<Locale>,
+    ) -> Result<(), OrigaError> {
         self.is_syncing.set(true);
 
         let result = self.client.login_with_email_password(email, password).await;
@@ -213,7 +219,7 @@ impl AuthStore {
                     reason: "Session not found after login".to_string(),
                 })?;
 
-                match get_or_create_profile(self, &session.email).await {
+                match get_or_create_profile(self, &session.email, i18n).await {
                     Ok(user) => {
                         self.user.set(Some(user));
                         self.is_syncing.set(false);
@@ -243,6 +249,7 @@ impl AuthStore {
         &self,
         code: &str,
         pkce_verifier: &str,
+        i18n: &I18nContext<Locale>,
     ) -> Result<(), OrigaError> {
         if self.user.with(|u| u.is_some()) {
             self.is_oauth_loading.set(false);
@@ -265,7 +272,7 @@ impl AuthStore {
                     });
                 }
 
-                match get_or_create_profile(self, &session.email).await {
+                match get_or_create_profile(self, &session.email, i18n).await {
                     Ok(user) => {
                         self.user.set(Some(user));
                         self.is_oauth_loading.set(false);

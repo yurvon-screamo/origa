@@ -1,3 +1,4 @@
+use crate::i18n::{t, use_i18n};
 use leptos::ev::MouseEvent;
 use leptos::prelude::*;
 
@@ -13,6 +14,7 @@ pub fn UpdateDrawer(
     on_update: Callback<()>,
     download_progress: Signal<Option<f32>>,
 ) -> impl IntoView {
+    let i18n = use_i18n();
     let test_id_val = move || {
         let val = test_id.get();
         if val.is_empty() { None } else { Some(val) }
@@ -54,7 +56,7 @@ pub fn UpdateDrawer(
             <Card class="update-drawer-content">
                 <div class="update-drawer-body">
                     <Heading level=HeadingLevel::H3 variant=TypographyVariant::Primary>
-                        "Доступно обновление"
+                        {t!(i18n, ui.update_available)}
                     </Heading>
 
                     <div class="flex items-center gap-3 font-mono text-sm">
@@ -64,7 +66,7 @@ pub fn UpdateDrawer(
                     </div>
 
                     <Text variant=TypographyVariant::Muted>
-                        "Для продолжения работы необходимо обновить приложение."
+                        {t!(i18n, ui.update_required)}
                     </Text>
 
                     <Show
@@ -75,7 +77,7 @@ pub fn UpdateDrawer(
                                     <ProgressBar
                                         value=progress_value
                                         max=100
-                                        label="Загрузка..."
+                                        label=crate::i18n::td_string!(i18n.get_locale(), ui.downloading)
                                     />
                                 </div>
                             }
@@ -89,7 +91,7 @@ pub fn UpdateDrawer(
                                 on_update.run(());
                             })
                         >
-                            "Обновить сейчас"
+                            {t!(i18n, ui.update_now)}
                         </Button>
                     </Show>
                 </div>

@@ -1,3 +1,4 @@
+use crate::i18n::{t, use_i18n};
 use crate::repository::OAuthProvider;
 use leptos::prelude::*;
 use leptos::wasm_bindgen::JsCast;
@@ -5,6 +6,7 @@ use leptos::wasm_bindgen::JsValue;
 
 #[component]
 pub fn OAuthButtons(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoView {
+    let i18n = use_i18n();
     let test_id_val = move || {
         let val = test_id.get();
         if val.is_empty() { None } else { Some(val) }
@@ -39,7 +41,7 @@ pub fn OAuthButtons(#[prop(optional, into)] test_id: Signal<String>) -> impl Int
                 }
             >
                 <GoogleIcon />
-                <span class="text-[var(--fg-black)]">"Войти через Google"</span>
+                <span class="text-[var(--fg-black)]">{t!(i18n, login.google_login)}</span>
             </button>
 
             <button
@@ -51,7 +53,7 @@ pub fn OAuthButtons(#[prop(optional, into)] test_id: Signal<String>) -> impl Int
                 }
             >
                 <YandexIcon />
-                <span class="text-[var(--fg-black)]">"Войти через Yandex"</span>
+                <span class="text-[var(--fg-black)]">{t!(i18n, login.yandex_login)}</span>
             </button>
         </div>
     }

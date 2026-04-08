@@ -1,3 +1,4 @@
+use crate::i18n::*;
 use crate::ui_components::TagVariant;
 use origa::domain::Card as DomainCard;
 
@@ -10,11 +11,11 @@ pub enum CardType {
 }
 
 impl CardType {
-    pub fn label(&self) -> &'static str {
+    pub fn label(&self, i18n: &I18nContext<Locale>) -> String {
         match self {
-            CardType::Vocabulary => "Слово",
-            CardType::Kanji => "Кандзи",
-            CardType::Grammar => "Грамматика",
+            CardType::Vocabulary => i18n.get_keys().lesson().word().inner().to_string(),
+            CardType::Kanji => i18n.get_keys().lesson().kanji().inner().to_string(),
+            CardType::Grammar => i18n.get_keys().lesson().grammar().inner().to_string(),
         }
     }
 

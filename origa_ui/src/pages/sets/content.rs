@@ -2,6 +2,7 @@ use super::filters::{ImportFilter, LevelFilter, TypeFilter, available_set_types}
 use super::import_set_preview_modal::ImportSetPreviewModal;
 use super::sets_level_group::SetsLevelGroup;
 use super::types::SetInfo;
+use crate::i18n::{t, use_i18n};
 use crate::loaders::WellKnownSetLoaderImpl;
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{
@@ -15,6 +16,7 @@ use std::collections::{HashMap, HashSet};
 
 #[component]
 pub fn SetsContent() -> impl IntoView {
+    let i18n = use_i18n();
     let repository =
         use_context::<HybridUserRepository>().expect("repository context not provided");
 
@@ -163,7 +165,7 @@ pub fn SetsContent() -> impl IntoView {
                 <div class="flex flex-col items-center py-8 gap-4" data-testid="sets-loading">
                     <Spinner />
                     <Text size=TextSize::Small variant=TypographyVariant::Muted test_id="sets-loading-text">
-                        "Загрузка списков слов..."
+                        {t!(i18n, sets.loading_sets)}
                     </Text>
                 </div>
             </Show>
@@ -171,13 +173,13 @@ pub fn SetsContent() -> impl IntoView {
                 <div class="space-y-4 mb-6">
                     <Input
                         value=search
-                        placeholder=Signal::derive(|| "Поиск наборов...".to_string())
+                        placeholder=Signal::derive(move || i18n.get_keys().sets().search_sets().inner().to_string())
                         test_id="sets-search-input"
                     />
 
                     <div class="flex flex-wrap gap-2" data-testid="sets-level-filters">
                         <FilterTag
-                            label=LevelFilter::All.label().to_string()
+                            label=LevelFilter::All.label(&i18n)
                             is_active=Signal::derive(move || level_filter.get() == LevelFilter::All)
                             on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
                                 level_filter.set(LevelFilter::All);
@@ -185,7 +187,7 @@ pub fn SetsContent() -> impl IntoView {
                             test_id=Signal::derive(|| "sets-level-all".to_string())
                         />
                         <FilterTag
-                            label=LevelFilter::N5.label().to_string()
+                            label=LevelFilter::N5.label(&i18n)
                             is_active=Signal::derive(move || level_filter.get() == LevelFilter::N5)
                             on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
                                 level_filter.set(LevelFilter::N5);
@@ -193,7 +195,7 @@ pub fn SetsContent() -> impl IntoView {
                             test_id=Signal::derive(|| "sets-level-n5".to_string())
                         />
                         <FilterTag
-                            label=LevelFilter::N4.label().to_string()
+                            label=LevelFilter::N4.label(&i18n)
                             is_active=Signal::derive(move || level_filter.get() == LevelFilter::N4)
                             on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
                                 level_filter.set(LevelFilter::N4);
@@ -201,7 +203,7 @@ pub fn SetsContent() -> impl IntoView {
                             test_id=Signal::derive(|| "sets-level-n4".to_string())
                         />
                         <FilterTag
-                            label=LevelFilter::N3.label().to_string()
+                            label=LevelFilter::N3.label(&i18n)
                             is_active=Signal::derive(move || level_filter.get() == LevelFilter::N3)
                             on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
                                 level_filter.set(LevelFilter::N3);
@@ -209,7 +211,7 @@ pub fn SetsContent() -> impl IntoView {
                             test_id=Signal::derive(|| "sets-level-n3".to_string())
                         />
                         <FilterTag
-                            label=LevelFilter::N2.label().to_string()
+                            label=LevelFilter::N2.label(&i18n)
                             is_active=Signal::derive(move || level_filter.get() == LevelFilter::N2)
                             on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
                                 level_filter.set(LevelFilter::N2);
@@ -217,7 +219,7 @@ pub fn SetsContent() -> impl IntoView {
                             test_id=Signal::derive(|| "sets-level-n2".to_string())
                         />
                         <FilterTag
-                            label=LevelFilter::N1.label().to_string()
+                            label=LevelFilter::N1.label(&i18n)
                             is_active=Signal::derive(move || level_filter.get() == LevelFilter::N1)
                             on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
                                 level_filter.set(LevelFilter::N1);
@@ -228,7 +230,7 @@ pub fn SetsContent() -> impl IntoView {
 
                     <div class="flex flex-wrap gap-2" data-testid="sets-type-filters">
                         <FilterTag
-                            label="Все типы".to_string()
+                            label=i18n.get_keys().sets().all_types().inner().to_string()
                             is_active=Signal::derive(move || type_filter.get().is_all())
                             on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
                                 type_filter.set(TypeFilter::all());
@@ -262,7 +264,7 @@ pub fn SetsContent() -> impl IntoView {
 
                     <div class="flex flex-wrap gap-2" data-testid="sets-import-filters">
                         <FilterTag
-                            label=ImportFilter::All.label().to_string()
+                            label=ImportFilter::All.label(&i18n)
                             is_active=Signal::derive(move || import_filter.get() == ImportFilter::All)
                             on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
                                 import_filter.set(ImportFilter::All);
@@ -270,7 +272,7 @@ pub fn SetsContent() -> impl IntoView {
                             test_id=Signal::derive(|| "sets-import-all".to_string())
                         />
                         <FilterTag
-                            label=ImportFilter::Imported.label().to_string()
+                            label=ImportFilter::Imported.label(&i18n)
                             is_active=Signal::derive(move || import_filter.get() == ImportFilter::Imported)
                             on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
                                 import_filter.set(ImportFilter::Imported);
@@ -278,7 +280,7 @@ pub fn SetsContent() -> impl IntoView {
                             test_id=Signal::derive(|| "sets-import-imported".to_string())
                         />
                         <FilterTag
-                            label=ImportFilter::New.label().to_string()
+                            label=ImportFilter::New.label(&i18n)
                             is_active=Signal::derive(move || import_filter.get() == ImportFilter::New)
                             on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
                                 import_filter.set(ImportFilter::New);
@@ -309,7 +311,7 @@ pub fn SetsContent() -> impl IntoView {
                                     }
                                 })
                             >
-                                {move || format!("Импортировать {} наборов", selected_sets.get().len())}
+                                {move || i18n.get_keys().sets().import_sets().inner().to_string().replacen("{}", &selected_sets.get().len().to_string(), 1)}
                             </Button>
                             <Button
                                 variant=ButtonVariant::Ghost
@@ -318,7 +320,7 @@ pub fn SetsContent() -> impl IntoView {
                                     selected_sets.set(HashSet::new());
                                 })
                             >
-                                "Отменить выбор"
+                                {t!(i18n, sets.cancel_selection)}
                             </Button>
                         </div>
                     </Show>

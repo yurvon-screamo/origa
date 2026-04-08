@@ -1,4 +1,5 @@
 use crate::core::config::public_url;
+use crate::i18n::{t, use_i18n};
 use futures::future::{AbortHandle, abortable};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
@@ -53,6 +54,7 @@ pub fn KanjiAnimation(
     #[prop(optional, into)] test_id: Signal<String>,
     #[prop(into)] fallback: Option<String>,
 ) -> impl IntoView {
+    let i18n = use_i18n();
     let (iteration, set_iteration) = signal(0);
     let abort_handle = Arc::new(Mutex::new(None::<AbortHandle>));
     let disposed = StoredValue::new(());
@@ -150,7 +152,7 @@ pub fn KanjiAnimation(
 
     view! {
         <div data-testid=test_id_val class={container_class}>
-            <Suspense fallback=|| view! { <div class="kanji-loading">"Загрузка..."</div> }>
+            <Suspense fallback=move || view! { <div class="kanji-loading">{t!(i18n, ui.loading_animation)}</div> }>
                 {move || {
                     if iteration.get() % 2 != 0 {
                         return None;

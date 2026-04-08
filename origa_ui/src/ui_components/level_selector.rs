@@ -1,3 +1,4 @@
+use crate::i18n::{t, use_i18n};
 use crate::ui_components::{Button, ButtonVariant, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 use origa::domain::JapaneseLevel;
@@ -9,10 +10,11 @@ pub fn LevelSelector(
     on_select: Callback<JapaneseLevel>,
     #[prop(optional, into)] test_id_prefix: Signal<String>,
 ) -> impl IntoView {
+    let i18n = use_i18n();
     view! {
         <div>
             <Text size=TextSize::Small variant=TypographyVariant::Muted class=Signal::derive(|| "mb-2".to_string())>
-                "Уровень JLPT"
+                {t!(i18n, ui.level_jlpt)}
             </Text>
             <div class="flex flex-wrap gap-2">
                 <For

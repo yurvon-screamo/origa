@@ -1,7 +1,5 @@
-use crate::pages::icons::{
-    CHECK_CIRCLE_ICON, ICON_CLASS_KNOWN, ICON_CLASS_NEW, PLUS_CIRCLE_ICON, TOOLTIP_KNOWN,
-    TOOLTIP_NEW,
-};
+use crate::i18n::{td_string, use_i18n};
+use crate::pages::icons::{CHECK_CIRCLE_ICON, ICON_CLASS_KNOWN, ICON_CLASS_NEW, PLUS_CIRCLE_ICON};
 use crate::ui_components::{Checkbox, FuriganaText, MarkdownText, MarkdownVariant, Tooltip};
 use leptos::prelude::*;
 use origa::use_cases::AnalyzedWord;
@@ -14,13 +12,22 @@ pub fn AnalyzedWordItem(
     known_kanji: HashSet<String>,
     on_toggle: Callback<()>,
 ) -> impl IntoView {
+    let i18n = use_i18n();
     let base_form = analyzed_word.base_form.clone();
     let is_selected = Memo::new(move |_| selected_words.get().contains(&base_form));
 
     let (status_icon, tooltip_text, icon_class) = if analyzed_word.is_known {
-        (CHECK_CIRCLE_ICON, TOOLTIP_KNOWN, ICON_CLASS_KNOWN)
+        (
+            CHECK_CIRCLE_ICON,
+            td_string!(i18n.get_locale(), common.tooltip_known),
+            ICON_CLASS_KNOWN,
+        )
     } else {
-        (PLUS_CIRCLE_ICON, TOOLTIP_NEW, ICON_CLASS_NEW)
+        (
+            PLUS_CIRCLE_ICON,
+            td_string!(i18n.get_locale(), common.tooltip_new),
+            ICON_CLASS_NEW,
+        )
     };
 
     view! {

@@ -1,6 +1,8 @@
+use crate::i18n::{Locale, t, use_i18n};
 use crate::ui_components::{LineChart, Modal, Text, TextSize, TypographyVariant};
 use chrono::{TimeZone, Utc};
 use leptos::prelude::*;
+use leptos_i18n::I18nContext;
 use origa::domain::{MemoryHistory, Rating};
 use ulid::Ulid;
 
@@ -13,12 +15,12 @@ fn rating_color(rating: Rating) -> &'static str {
     }
 }
 
-fn rating_label(rating: Rating) -> &'static str {
+fn rating_label(i18n: &I18nContext<Locale>, rating: Rating) -> String {
     match rating {
-        Rating::Easy => "Легко",
-        Rating::Good => "Хорошо",
-        Rating::Hard => "Сложно",
-        Rating::Again => "Снова",
+        Rating::Easy => i18n.get_keys().shared().rating_easy().inner().to_string(),
+        Rating::Good => i18n.get_keys().shared().rating_good().inner().to_string(),
+        Rating::Hard => i18n.get_keys().shared().rating_hard().inner().to_string(),
+        Rating::Again => i18n.get_keys().shared().rating_again().inner().to_string(),
     }
 }
 
@@ -54,8 +56,8 @@ impl ReviewItem {
         rating_color(self.rating)
     }
 
-    fn label(&self) -> &'static str {
-        rating_label(self.rating)
+    fn label(&self, i18n: &I18nContext<Locale>) -> String {
+        rating_label(i18n, self.rating)
     }
 
     fn date_str(&self) -> String {
@@ -74,6 +76,7 @@ pub fn CardHistoryModal(
     memory: MemoryHistory,
     on_close: Callback<()>,
 ) -> impl IntoView {
+    let i18n = use_i18n();
     let is_open_rw = RwSignal::new(is_open.get_untracked());
 
     Effect::new(move || {
@@ -120,7 +123,7 @@ pub fn CardHistoryModal(
         <Modal
             test_id=test_id
             is_open=is_open_rw
-            title=Signal::derive(|| "История карточки".to_string())
+            title=Signal::derive(move || i18n.get_keys().ui().card_history().inner().to_string())
         >
             <div class="card-history-modal">
                 {move || if has_data {
@@ -138,7 +141,7 @@ pub fn CardHistoryModal(
                                 key=|review| review.id
                                 children=move |review| {
                                     let color_class = review.color_class();
-                                    let label = review.label();
+                                    let label = review.label(&i18n);
 
                                     view! {
                                         <div class="card-history-item">
@@ -172,7 +175,7 @@ pub fn CardHistoryModal(
                             variant=TypographyVariant::Muted
                             class=Signal::derive(|| "text-center py-8".to_string())
                         >
-                            "Карточка ещё не изучалась"
+                            {t!(i18n, ui.card_not_studied)}
                         </Text>
                     }.into_any()
                 }}

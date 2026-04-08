@@ -1,3 +1,4 @@
+use crate::i18n::{t, use_i18n};
 use crate::pages::sets::set_word_item::SetWordItem;
 use crate::pages::sets::types::PreviewWord;
 use crate::repository::HybridUserRepository;
@@ -21,6 +22,7 @@ pub fn ImportSetPreviewModal(
     set_titles: Signal<HashMap<String, String>>,
     on_import_result: Callback<Vec<String>>,
 ) -> impl IntoView {
+    let i18n = use_i18n();
     let repository =
         use_context::<HybridUserRepository>().expect("repository context not provided");
 
@@ -81,9 +83,14 @@ pub fn ImportSetPreviewModal(
                 .get()
                 .get(&ids[0])
                 .cloned()
-                .unwrap_or_else(|| "Импорт набора".to_string())
+                .unwrap_or_else(|| i18n.get_keys().sets().import_set().inner().to_string())
         } else {
-            format!("{} наборов", ids.len())
+            i18n.get_keys()
+                .sets()
+                .import_sets()
+                .inner()
+                .to_string()
+                .replacen("{}", &ids.len().to_string(), 1)
         }
     });
 
@@ -131,7 +138,7 @@ pub fn ImportSetPreviewModal(
                         view! {
                             <Alert
                                 alert_type=Signal::derive(|| AlertType::Error)
-                                title=Signal::derive(|| "Ошибка".to_string())
+                                title=Signal::derive(move || i18n.get_keys().common().error().inner().to_string())
                                 message=Signal::derive(move || error.clone())
                             />
                         }.into_any()
@@ -140,7 +147,7 @@ pub fn ImportSetPreviewModal(
                             <div class="flex flex-col items-center py-4 gap-3">
                                 <Spinner />
                                 <Text size=TextSize::Default variant=TypographyVariant::Muted>
-                                    "Загрузка списка слов..."
+                                    {t!(i18n, sets.loading_words)}
                                 </Text>
                             </div>
                         }.into_any()
@@ -148,7 +155,7 @@ pub fn ImportSetPreviewModal(
                         view! {
                             <div class="flex flex-col items-center py-4 gap-3" data-testid="sets-drawer-empty">
                                 <Text size=TextSize::Default variant=TypographyVariant::Muted>
-                                    "Нет слов для импорта"
+                                    {t!(i18n, sets.no_words)}
                                 </Text>
                             </div>
                         }.into_any()
@@ -160,7 +167,9 @@ pub fn ImportSetPreviewModal(
                         view! {
                             <div data-testid="sets-drawer-found">
                                 <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                                    {move || format!("Найдено {} слов ({} известных)", total_words_count.get(), known_words_count.get())}
+                                    {i18n.get_keys().sets().found_words().inner().to_string()
+                                        .replacen("{}", &total_words_count.get().to_string(), 1)
+                                        .replacen("{}", &known_words_count.get().to_string(), 1)}
                                 </Text>
                             </div>
                             <div class="space-y-6 overflow-y-auto max-h-[60vh]">
@@ -178,7 +187,7 @@ pub fn ImportSetPreviewModal(
                                                 <h3 class="font-semibold text-base mb-3 text-gray-700">
                                                     {title}
                                                     <span class="text-gray-400 font-normal ml-2">
-                                                        {word_count} слов
+                                                        {i18n.get_keys().sets().words_count().inner().to_string().replacen("{}", &word_count.to_string(), 1)}
                                                     </span>
                                                 </h3>
                                                 <div class="space-y-2">
@@ -213,7 +222,7 @@ pub fn ImportSetPreviewModal(
                                     on_click=handlers.on_cancel
                                     test_id="sets-drawer-cancel-btn"
                                 >
-                                    "Отмена"
+                                    {t!(i18n, common.cancel)}
                                 </Button>
                                 <Button
                                     variant=ButtonVariant::Olive
@@ -226,9 +235,9 @@ pub fn ImportSetPreviewModal(
                                 >
                                     {move || {
                                         if is_importing.get() {
-                                            "Импортирование..."
+                                            t!(i18n, sets.importing).into_any()
                                         } else {
-                                            "Импортировать"
+                                            t!(i18n, sets.import_button).into_any()
                                         }
                                     }}
                                 </Button>

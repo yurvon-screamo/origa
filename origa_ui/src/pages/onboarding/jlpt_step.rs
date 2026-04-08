@@ -1,40 +1,46 @@
+use crate::i18n::*;
 use crate::ui_components::{Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 use origa::domain::JapaneseLevel;
 
 use super::onboarding_state::OnboardingState;
 
-const JLPT_UI_OPTIONS: &[(Option<JapaneseLevel>, &str, &str)] = &[
-    (None, "Не знаю", "Начну с самого начала"),
-    (
-        Some(JapaneseLevel::N5),
-        "N5",
-        "Начальный уровень — базовые слова и грамматика",
-    ),
-    (
-        Some(JapaneseLevel::N4),
-        "N4",
-        "Базовый уровень — разговорный японский",
-    ),
-    (
-        Some(JapaneseLevel::N3),
-        "N3",
-        "Средний уровень — повседневное общение",
-    ),
-    (
-        Some(JapaneseLevel::N2),
-        "N2",
-        "Продвинутый — бизнес и формальный японский",
-    ),
-    (
-        Some(JapaneseLevel::N1),
-        "N1",
-        "Эксперт — свободное владение",
-    ),
+const JLPT_UI_OPTIONS: &[Option<JapaneseLevel>] = &[
+    None,
+    Some(JapaneseLevel::N5),
+    Some(JapaneseLevel::N4),
+    Some(JapaneseLevel::N3),
+    Some(JapaneseLevel::N2),
+    Some(JapaneseLevel::N1),
 ];
+
+fn jlpt_label(i18n: I18nContext<Locale>, level: &Option<JapaneseLevel>) -> String {
+    let locale = i18n.get_locale();
+    match level {
+        None => td_string!(locale, onboarding.jlpt.unknown).to_string(),
+        Some(JapaneseLevel::N5) => td_string!(locale, onboarding.jlpt.n5).to_string(),
+        Some(JapaneseLevel::N4) => td_string!(locale, onboarding.jlpt.n4).to_string(),
+        Some(JapaneseLevel::N3) => td_string!(locale, onboarding.jlpt.n3).to_string(),
+        Some(JapaneseLevel::N2) => td_string!(locale, onboarding.jlpt.n2).to_string(),
+        Some(JapaneseLevel::N1) => td_string!(locale, onboarding.jlpt.n1).to_string(),
+    }
+}
+
+fn jlpt_description(i18n: I18nContext<Locale>, level: &Option<JapaneseLevel>) -> String {
+    let locale = i18n.get_locale();
+    match level {
+        None => td_string!(locale, onboarding.jlpt.unknown_desc).to_string(),
+        Some(JapaneseLevel::N5) => td_string!(locale, onboarding.jlpt.n5_desc).to_string(),
+        Some(JapaneseLevel::N4) => td_string!(locale, onboarding.jlpt.n4_desc).to_string(),
+        Some(JapaneseLevel::N3) => td_string!(locale, onboarding.jlpt.n3_desc).to_string(),
+        Some(JapaneseLevel::N2) => td_string!(locale, onboarding.jlpt.n2_desc).to_string(),
+        Some(JapaneseLevel::N1) => td_string!(locale, onboarding.jlpt.n1_desc).to_string(),
+    }
+}
 
 #[component]
 pub fn JlptStep(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoView {
+    let i18n = use_i18n();
     let test_id_val = move || {
         let val = test_id.get();
         if val.is_empty() { None } else { Some(val) }
@@ -53,11 +59,11 @@ pub fn JlptStep(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoVie
         <div class="jlpt-step" data-testid=test_id_val>
             <div class="text-center mb-6">
                 <Text size=TextSize::Large variant=TypographyVariant::Primary test_id=Signal::derive(|| "jlpt-step-title".to_string())>
-                    "Выберите уровень JLPT которого вы хотите достичь"
+                    {t!(i18n, onboarding.jlpt.title)}
                 </Text>
                 <div class="mt-2">
                     <Text size=TextSize::Small variant=TypographyVariant::Muted test_id=Signal::derive(|| "jlpt-step-subtitle".to_string())>
-                        "Мы подберём подходящие наборы для вашего уровня"
+                        {t!(i18n, onboarding.jlpt.subtitle)}
                     </Text>
                 </div>
             </div>
@@ -66,12 +72,12 @@ pub fn JlptStep(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoVie
                 <For
                     each=move || JLPT_UI_OPTIONS.iter().enumerate()
                     key=|(idx, _)| *idx
-                    children=move |(_idx, (level, label, description))| {
+                    children=move |(_idx, level)| {
                         let level = *level;
-                        let label = *label;
-                        let description = *description;
                         let is_selected = Memo::new(move |_| state.get().selected_level == level);
                         let level_for_click = level;
+                        let label = jlpt_label(i18n, &level);
+                        let description = jlpt_description(i18n, &level);
                         let level_code = label.to_lowercase().replace(" ", "-");
 
                         view! {

@@ -1,9 +1,11 @@
+use crate::i18n::*;
 use crate::ui_components::{Button, ButtonVariant, Card, LabelFrame};
 use leptos::prelude::*;
 use leptos_router::components::A;
 
 #[component]
 pub fn LessonButtonsCard(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoView {
+    let i18n = use_i18n();
     let test_id_lesson = Signal::derive(move || {
         let val = test_id.get();
         if val.is_empty() {
@@ -19,7 +21,7 @@ pub fn LessonButtonsCard(#[prop(optional, into)] test_id: Signal<String>) -> imp
                 <div class="flex flex-col gap-3">
                     <A href="/lesson">
                         <Button variant=Signal::from(ButtonVariant::Filled) class="w-full py-2" test_id=test_id_lesson>
-                            "Урок"
+                            {t!(i18n, home.lesson)}
                         </Button>
                     </A>
                 </div>

@@ -1,3 +1,4 @@
+use crate::i18n::{t, use_i18n};
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{
     Alert, AlertType, Button, ButtonVariant, Drawer, Input, Text, TextSize, TypographyVariant,
@@ -8,6 +9,7 @@ use origa::use_cases::CreateVocabularyCardUseCase;
 
 #[component]
 pub fn AddWordModal() -> impl IntoView {
+    let i18n = use_i18n();
     let new_word = RwSignal::new(String::new());
     let is_loading = RwSignal::new(false);
     let error_message = RwSignal::new(None::<String>);
@@ -62,12 +64,12 @@ pub fn AddWordModal() -> impl IntoView {
 
     view! {
         <Drawer
-            title=Signal::derive(|| "Добавить слово".to_string())
+            title=Signal::derive(move || i18n.get_keys().words().add_word().inner().to_string())
         >
             <div class="space-y-4">
                 <div>
                     <Text size=TextSize::Small variant=TypographyVariant::Muted class=Signal::derive(|| "mb-2".to_string())>
-                        "Слово (японский)"
+                        {t!(i18n, words.word_japanese)}
                     </Text>
                     <Input
                         value=new_word
@@ -75,13 +77,13 @@ pub fn AddWordModal() -> impl IntoView {
                     />
                 </div>
                 <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                    "Перевод будет сгенерирован автоматически"
+                    {t!(i18n, words.translation_auto)}
                 </Text>
                 {move || {
-                    error_message.get().map(|msg| view! {
+                    error_message.get().map(move |msg| view! {
                         <Alert
                             alert_type=Signal::derive(|| AlertType::Error)
-                            title=Signal::derive(|| "Ошибка".to_string())
+                            title=Signal::derive(move || i18n.get_keys().common().error().inner().to_string())
                             message=Signal::derive(move || msg.clone())
                         />
                     })
@@ -91,14 +93,14 @@ pub fn AddWordModal() -> impl IntoView {
                         variant=ButtonVariant::Ghost
                         on_click=on_cancel
                     >
-                        "Отмена"
+                        {t!(i18n, common.cancel)}
                     </Button>
                     <Button
                         variant=ButtonVariant::Olive
                         disabled=Signal::derive(move || is_loading.get())
                         on_click=on_add
                     >
-                        {move || if is_loading.get() { "Создание..." } else { "Добавить" }}
+                        {move || if is_loading.get() { t!(i18n, words.creating).into_any() } else { t!(i18n, words.add_word).into_any() }}
                     </Button>
                 </div>
             </div>

@@ -1,4 +1,5 @@
 use super::lesson_state::LessonContext;
+use crate::i18n::*;
 use crate::repository::set_last_sync_time;
 use crate::ui_components::{
     Button, ButtonVariant, Card, DisplayText, Text, TextSize, ToastContainer, ToastData, ToastType,
@@ -13,6 +14,7 @@ const SYNC_TOAST_ID: usize = usize::MAX;
 
 #[component]
 pub fn LessonCompleteScreen(is_completed: RwSignal<bool>, review_count: usize) -> impl IntoView {
+    let i18n = use_i18n();
     let navigate = use_navigate();
     let lesson_ctx = use_context::<LessonContext>().expect("lesson context");
     let is_disposed = use_context::<StoredValue<()>>().expect("is_disposed must be provided");
@@ -31,8 +33,13 @@ pub fn LessonCompleteScreen(is_completed: RwSignal<bool>, review_count: usize) -
                 t.push(ToastData {
                     id: SYNC_TOAST_ID,
                     toast_type: ToastType::Info,
-                    title: "Синхронизация".to_string(),
-                    message: "Сохранение прогресса...".to_string(),
+                    title: i18n.get_keys().lesson().sync().inner().to_string(),
+                    message: i18n
+                        .get_keys()
+                        .lesson()
+                        .saving_progress()
+                        .inner()
+                        .to_string(),
                     duration_ms: None,
                     closable: false,
                 });
@@ -52,8 +59,8 @@ pub fn LessonCompleteScreen(is_completed: RwSignal<bool>, review_count: usize) -
                             t.push(ToastData {
                                 id: t.len(),
                                 toast_type: ToastType::Success,
-                                title: "Сохранено".to_string(),
-                                message: "Прогресс успешно сохранён".to_string(),
+                                title: i18n.get_keys().lesson().saved().inner().to_string(),
+                                message: i18n.get_keys().lesson().saved_desc().inner().to_string(),
                                 duration_ms: Some(3000),
                                 closable: true,
                             });
@@ -69,7 +76,7 @@ pub fn LessonCompleteScreen(is_completed: RwSignal<bool>, review_count: usize) -
                             t.push(ToastData {
                                 id: t.len(),
                                 toast_type: ToastType::Error,
-                                title: "Ошибка синхронизации".to_string(),
+                                title: i18n.get_keys().lesson().sync_error().inner().to_string(),
                                 message: e.to_string(),
                                 duration_ms: Some(5000),
                                 closable: true,
@@ -142,7 +149,7 @@ pub fn LessonCompleteScreen(is_completed: RwSignal<bool>, review_count: usize) -
                 <div class="grid grid-cols-1 gap-4" data-testid="lesson-complete-stats">
                     <div>
                         <Text size=TextSize::Small variant=TypographyVariant::Muted uppercase=true>
-                            "Пройдено"
+                            {t!(i18n, lesson.passed)}
                         </Text>
                         <DisplayText>
                             {review_count}
@@ -159,7 +166,7 @@ pub fn LessonCompleteScreen(is_completed: RwSignal<bool>, review_count: usize) -
                         go_next_lesson.run(());
                     })
                 >
-                    "Следующий урок" <span class="hidden sm:inline">"[Пробел]"</span>
+                    {t!(i18n, lesson.next_lesson)} <span class="hidden sm:inline">{t!(i18n, lesson.space_key)}</span>
                 </Button>
 
                 <Button
@@ -169,7 +176,7 @@ pub fn LessonCompleteScreen(is_completed: RwSignal<bool>, review_count: usize) -
                         go_home.run(());
                     })
                 >
-                    "На главную" <span class="hidden sm:inline">"[Esc]"</span>
+                    {t!(i18n, lesson.go_home)} <span class="hidden sm:inline">"[Esc]"</span>
                 </Button>
             </div>
         </div>

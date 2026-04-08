@@ -1,3 +1,4 @@
+use crate::i18n::*;
 use crate::ui_components::{
     Alert, AlertType, Button, ButtonVariant, Input, Text, TextSize, TypographyVariant,
 };
@@ -12,6 +13,7 @@ pub fn EmailPasswordForm(
     #[prop(optional)] server_error: Option<RwSignal<Option<String>>>,
     on_submit: Callback<(String, String)>,
 ) -> impl IntoView {
+    let i18n = use_i18n();
     let email = RwSignal::new(String::new());
     let password = RwSignal::new(String::new());
     let loading = RwSignal::new(false);
@@ -33,7 +35,7 @@ pub fn EmailPasswordForm(
             se.set(None);
         }
 
-        if let Err(e) = validation::validate_credentials(&email_val, &password_val) {
+        if let Err(e) = validation::validate_credentials(&i18n, &email_val, &password_val) {
             validation_error.set(Some(e));
             return;
         }
@@ -73,7 +75,7 @@ pub fn EmailPasswordForm(
 
             <div>
                 <Text size=TextSize::Small variant=TypographyVariant::Muted uppercase=true tracking_widest=true class="block mb-2">
-                    "Email"
+                    {t!(i18n, login.email_placeholder)}
                 </Text>
                 <Input
                     value=email
@@ -101,7 +103,7 @@ pub fn EmailPasswordForm(
                 class=Signal::derive(|| "w-full".to_string())
                 test_id=Signal::derive(|| "login-submit".to_string())
             >
-                "Войти"
+                {t!(i18n, login.login_button)}
             </Button>
         </form>
     }

@@ -1,3 +1,4 @@
+use crate::i18n::*;
 use crate::ui_components::{
     Card, DisplayText, FuriganaText, Heading, HeadingLevel, KanjiViewMode, KanjiWritingSection,
     Text, TextSize, TypographyVariant, get_reading_from_text, is_speech_supported, speak_text,
@@ -23,6 +24,7 @@ pub fn QuizCardView(
     native_language: NativeLanguage,
     #[prop(into)] known_kanji: Signal<HashSet<String>>,
 ) -> impl IntoView {
+    let i18n = use_i18n();
     let card = quiz_card.card().clone();
     let card_type = CardType::from(&card);
     let lang = native_language;
@@ -110,7 +112,7 @@ pub fn QuizCardView(
                     </Show>
 
                     <Text size=TextSize::Default variant=TypographyVariant::Muted class="mt-4">
-                        "Выберите правильный ответ:"
+                        {t!(i18n, lesson.choose_answer)}
                     </Text>
                 </div>
 

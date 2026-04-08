@@ -1,3 +1,4 @@
+use crate::i18n::*;
 use crate::ui_components::{Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 
@@ -10,6 +11,7 @@ use super::set_parsers::{parse_duolingo_modules, parse_migii_lessons, parse_minn
 
 #[component]
 pub fn ProgressStep(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoView {
+    let i18n = use_i18n();
     let test_id_val = move || {
         let val = test_id.get();
         if val.is_empty() { None } else { Some(val) }
@@ -31,11 +33,11 @@ pub fn ProgressStep(#[prop(optional, into)] test_id: Signal<String>) -> impl Int
         <div class="progress-step" data-testid=test_id_val>
             <div class="text-center mb-6">
                 <Text size=TextSize::Large variant=TypographyVariant::Primary test_id=Signal::derive(|| "progress-step-title".to_string())>
-                    "Ваш прогресс"
+                    {t!(i18n, onboarding.progress.title)}
                 </Text>
                 <div class="mt-2">
                     <Text size=TextSize::Small variant=TypographyVariant::Muted test_id=Signal::derive(|| "progress-step-subtitle".to_string())>
-                        "Выберите пройденные разделы в каждом приложении"
+                        {t!(i18n, onboarding.progress.subtitle)}
                     </Text>
                 </div>
             </div>
@@ -43,11 +45,11 @@ pub fn ProgressStep(#[prop(optional, into)] test_id: Signal<String>) -> impl Int
             <Show when=move || app_list.get().is_empty()>
                 <div class="text-center py-8">
                     <Text size=TextSize::Default variant=TypographyVariant::Muted test_id=Signal::derive(|| "progress-step-empty".to_string())>
-                        "Вы не выбрали ни одно приложение"
+                        {t!(i18n, onboarding.progress.empty)}
                     </Text>
                     <div class="mt-2">
                         <Text size=TextSize::Small variant=TypographyVariant::Muted test_id=Signal::derive(|| "progress-step-empty-hint".to_string())>
-                            "Вернитесь на шаг назад, чтобы выбрать приложения"
+                            {t!(i18n, onboarding.progress.empty_hint)}
                         </Text>
                     </div>
                 </div>

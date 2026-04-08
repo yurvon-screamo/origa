@@ -1,4 +1,5 @@
 use super::lesson_state::LessonContext;
+use crate::i18n::*;
 use crate::ui_components::{Button, ButtonVariant};
 use leptos::prelude::*;
 use leptos_icons::Icon;
@@ -6,6 +7,7 @@ use leptos_router::components::A;
 
 #[component]
 pub fn LessonHeader() -> impl IntoView {
+    let i18n = use_i18n();
     let lesson_ctx = use_context::<LessonContext>().expect("LessonContext not provided");
     let is_muted = lesson_ctx.is_muted;
 
@@ -17,7 +19,7 @@ pub fn LessonHeader() -> impl IntoView {
         <div data-testid="lesson-header" class="flex flex-wrap justify-between items-center gap-4 mb-6">
             <A href="/home">
                 <Button variant=Signal::derive(|| ButtonVariant::Ghost) test_id="lesson-back-btn">
-                    "Назад"
+                    {t!(i18n, common.back)}
                 </Button>
             </A>
 

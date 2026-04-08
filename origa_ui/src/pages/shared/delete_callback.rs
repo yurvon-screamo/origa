@@ -15,6 +15,7 @@ pub fn create_delete_callback(
     toasts: RwSignal<Vec<ToastData>>,
     refresh_trigger: RwSignal<u32>,
 ) -> (RwSignal<bool>, Callback<DeleteRequest>) {
+    let i18n = crate::i18n::use_i18n();
     let is_deleting = RwSignal::new(false);
     let callback = Callback::new(move |request: DeleteRequest| {
         let disposed = StoredValue::new(());
@@ -22,6 +23,7 @@ pub fn create_delete_callback(
         let toasts_clone = toasts;
         let is_deleting_clone = is_deleting;
         let on_success = request.on_success;
+        let i18n = i18n;
 
         is_deleting_clone.set(true);
         spawn_local(async move {
@@ -42,7 +44,7 @@ pub fn create_delete_callback(
                         t.push(ToastData {
                             id: t.len(),
                             toast_type: ToastType::Error,
-                            title: "Ошибка удаления".to_string(),
+                            title: i18n.get_keys().shared().delete_error().inner().to_string(),
                             message: e.to_string(),
                             duration_ms: None,
                             closable: true,

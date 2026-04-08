@@ -1,8 +1,10 @@
+use crate::i18n::*;
 use crate::ui_components::{Heading, HeadingLevel, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 
 #[component]
 pub fn LoginHeader(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoView {
+    let i18n = use_i18n();
     let test_id_val = move || {
         let val = test_id.get();
         if val.is_empty() { None } else { Some(val) }
@@ -32,7 +34,7 @@ pub fn LoginHeader(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                 "オリガ"
             </Heading>
             <Text size=TextSize::Small variant=TypographyVariant::Muted uppercase=true tracking_widest=true test_id=subtitle_test_id>
-                "Изучение японского языка"
+                {t!(i18n, login.subtitle)}
             </Text>
         </div>
     }
