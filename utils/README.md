@@ -78,7 +78,9 @@ utils tokenize-well-known path/to/directory/
 
 ### `find-missing` - Find Missing Vocabulary
 
-Finds vocabulary words from well-known sets that are missing from the dictionary and optionally generates translations using an OpenAI-compatible API.
+Finds vocabulary words from well-known sets that are missing from
+the dictionary and optionally generates translations using an
+OpenAI-compatible API.
 
 ```bash
 # Generate a report of missing vocabulary
