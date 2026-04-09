@@ -25,12 +25,13 @@ pub async fn ensure_ort_initialized() -> Result<(), OrigaError> {
     });
 
     if should_init {
-        let api =
-            ort_web::api(ort_web::FEATURE_WEBGPU)
-                .await
-                .map_err(|e| OrigaError::OcrError {
-                    reason: format!("Failed to get ort WebGPU API: {:?}", e),
-                })?;
+        let dist = ort_web::Dist::new("/ort/")
+            .with_script_name("ort.webgpu.min.js")
+            .with_binary_name("ort-wasm-simd-threaded.jsep.wasm")
+            .with_wrapper_name("ort-wasm-simd-threaded.jsep.mjs");
+        let api = ort_web::api(dist).await.map_err(|e| OrigaError::OcrError {
+            reason: format!("Failed to get ort WebGPU API: {:?}", e),
+        })?;
         ort::set_api(api);
     }
 
