@@ -4,6 +4,7 @@ mod add_words_preview_modal_handlers;
 mod add_words_preview_modal_state;
 mod analyzed_word_item;
 mod anki_import_stage;
+mod audio_input_stage;
 mod content;
 mod header;
 mod image_input_stage;

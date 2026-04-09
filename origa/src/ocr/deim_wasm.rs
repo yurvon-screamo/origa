@@ -26,11 +26,11 @@ pub async fn ensure_ort_initialized() -> Result<(), OrigaError> {
 
     if should_init {
         let dist = ort_web::Dist::new("/ort/")
-            .with_script_name("ort.webgpu.min.js")
-            .with_binary_name("ort-wasm-simd-threaded.jsep.wasm")
-            .with_wrapper_name("ort-wasm-simd-threaded.jsep.mjs");
+            .with_script_name("ort.wasm.min.js")
+            .with_binary_name("ort-wasm-simd-threaded.wasm")
+            .with_wrapper_name("ort-wasm-simd-threaded.mjs");
         let api = ort_web::api(dist).await.map_err(|e| OrigaError::OcrError {
-            reason: format!("Failed to get ort WebGPU API: {:?}", e),
+            reason: format!("Failed to get ort API: {:?}", e),
         })?;
         ort::set_api(api);
     }
@@ -42,14 +42,9 @@ impl DeimDetector {
     pub async fn new(model_bytes: &[u8]) -> Result<Self, OrigaError> {
         ensure_ort_initialized().await?;
 
-        let mut builder = Session::builder().map_err(|e| OrigaError::OcrError {
+        let builder = Session::builder().map_err(|e| OrigaError::OcrError {
             reason: format!("Failed to create session builder: {:?}", e),
         })?;
-        builder = builder
-            .with_execution_providers([ort::ep::WebGPU::default().build()])
-            .map_err(|e| OrigaError::OcrError {
-                reason: format!("Failed to set execution providers: {:?}", e),
-            })?;
         let session =
             builder
                 .commit_from_memory(model_bytes)

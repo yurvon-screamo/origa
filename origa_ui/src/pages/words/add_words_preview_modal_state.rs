@@ -13,6 +13,7 @@ pub enum InputMode {
     Text,
     Anki,
     Image,
+    Audio,
 }
 
 #[derive(Clone)]

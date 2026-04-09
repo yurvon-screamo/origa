@@ -1,3 +1,4 @@
+import * as path from "path";
 import { test, expect, type Page } from "@playwright/test";
 import { testWithFreshUser } from "../fixtures";
 import { WordsPage, SetsPage } from "../pages";
@@ -213,5 +214,35 @@ testWithFreshUser.describe("Words Page - Anki Import", () => {
         await wordsPage.uploadAnkiFile("fixtures/sample.txt");
 
         await expect(wordsPage.ankiError).toBeVisible({ timeout: 10_000 });
+    });
+});
+
+testWithFreshUser.describe("Words Page - OCR Image Recognition", () => {
+    testWithFreshUser("should recognize Japanese text from image via OCR", async ({ page }) => {
+        test.setTimeout(300_000);
+        const wordsPage = await setupWordsPage(page);
+
+        await wordsPage.openAddModal();
+        await expect(wordsPage.drawer).toBeVisible({ timeout: 5000 });
+
+        await wordsPage.switchToImageTab();
+
+        await wordsPage.uploadImageFile(path.resolve(__dirname, "../../origa/src/ocr/ocr_example.jpg"));
+
+        // Wait for OCR to complete and text analysis to finish
+        // OCR downloads models (~50MB), then processes image, then auto-analyzes text
+        await wordsPage.drawer.getByText(/Найдено/).waitFor({ state: "visible", timeout: 240_000 });
+
+        // Verify key Japanese words were recognized (matching origa/src/ocr/tests.rs assertions)
+        const drawerText = await wordsPage.drawer.textContent({ timeout: 5000 });
+
+        expect(drawerText).toContain("れんしゅう");
+        expect(drawerText).toContain("もんだい");
+        expect(drawerText).toContain("ください");
+        expect(drawerText).toContain("トイレ");
+        expect(drawerText).toContain("電車");
+        expect(drawerText).toContain("すみません");
+        expect(drawerText).toContain("田中");
+        expect(drawerText).toContain("会議");
     });
 });

@@ -40,6 +40,8 @@ ort = { workspace = true, default-features = true, features = [
     "download-binaries",
 ] }
 rusqlite = { workspace = true, features = ["bundled", "serialize"] }
+hound.workspace = true
+rustfft.workspace = true
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 ort = { workspace = true, features = ["alternative-backend"] }

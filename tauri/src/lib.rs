@@ -1,9 +1,53 @@
+use base64::Engine;
 use tauri::{Emitter, Listener, Manager};
 use tauri_plugin_deep_link::DeepLinkExt;
 
 #[tauri::command]
 fn greet(name: &str) -> String {
     format!("Hello, {}! You've been greeted from Rust!", name)
+}
+
+#[tauri::command]
+fn transcribe_audio(
+    app: tauri::AppHandle,
+    audio_base64: String,
+    file_name: String,
+) -> Result<String, String> {
+    let model_dir = app
+        .path()
+        .resource_dir()
+        .map_err(|e| format!("Failed to get resource dir: {}", e))?
+        .join("whisper");
+
+    if !model_dir.exists() {
+        return Err(format!(
+            "Whisper model directory not found: {:?}",
+            model_dir
+        ));
+    }
+
+    let bytes = base64::engine::general_purpose::STANDARD
+        .decode(&audio_base64)
+        .map_err(|e| format!("Failed to decode base64 audio: {}", e))?;
+
+    let extension = file_name.rsplit('.').next_back().unwrap_or("wav");
+
+    let temp_path =
+        std::env::temp_dir().join(format!("origa_audio_{}.{}", file_name.len(), extension));
+
+    std::fs::write(&temp_path, &bytes)
+        .map_err(|e| format!("Failed to write temp audio file: {}", e))?;
+
+    let transcriber = origa::stt::WhisperTranscriber::new(&model_dir)
+        .map_err(|e| format!("Failed to initialize Whisper: {}", e))?;
+
+    let text = transcriber
+        .transcribe(&temp_path)
+        .map_err(|e| format!("Transcription failed: {}", e))?;
+
+    let _ = std::fs::remove_file(&temp_path);
+
+    Ok(text)
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -26,7 +70,7 @@ pub fn run() {
         .plugin(tauri_plugin_deep_link::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_tts::init())
-        .invoke_handler(tauri::generate_handler![greet])
+        .invoke_handler(tauri::generate_handler![greet, transcribe_audio])
         .setup(|app| {
             log::info!("[deep-link] setup started");
 

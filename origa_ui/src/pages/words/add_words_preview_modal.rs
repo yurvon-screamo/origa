@@ -3,6 +3,7 @@ use crate::pages::words::add_words_preview_modal_handlers::create_preview_modal_
 use crate::pages::words::add_words_preview_modal_state::{InputMode, PreviewModalState};
 use crate::pages::words::analyzed_word_item::AnalyzedWordItem;
 use crate::pages::words::anki_import_stage::AnkiImportStage;
+use crate::pages::words::audio_input_stage::AudioInputStage;
 use crate::pages::words::image_input_stage::ImageInputStage;
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{
@@ -83,6 +84,10 @@ pub fn AddWordsPreviewModal(
             id: "anki".to_string(),
             label: i18n.get_keys().words().tab_anki().inner().to_string(),
         });
+        items.push(TabItem {
+            id: "audio".to_string(),
+            label: i18n.get_keys().words().tab_audio().inner().to_string(),
+        });
         items
     });
 
@@ -94,6 +99,8 @@ pub fn AddWordsPreviewModal(
                 InputMode::Image
             } else if tab == "anki" {
                 InputMode::Anki
+            } else if tab == "audio" {
+                InputMode::Audio
             } else {
                 InputMode::Text
             });
@@ -132,7 +139,7 @@ pub fn AddWordsPreviewModal(
                     if words.is_empty() {
                         view! {
                             <div class="space-y-4">
-                                <Tabs tabs=tabs active=active_tab />
+                                <Tabs tabs=tabs active=active_tab test_id=Signal::derive(|| "words-add-tabs".to_string()) />
                                 {move || {
                                     let mode = input_mode.get();
                                     match mode {
@@ -156,6 +163,14 @@ pub fn AddWordsPreviewModal(
                                         InputMode::Image => view! {
                                             <ImageInputStage
                                                 is_open=is_open
+                                                on_text_extracted=on_text_extracted
+                                                on_error=on_ocr_error
+                                                on_switch_to_text=on_switch_to_text
+                                            />
+                                        }.into_any(),
+                                        InputMode::Audio => view! {
+                                            <AudioInputStage
+                                                is_open=Signal::derive(move || is_open.get())
                                                 on_text_extracted=on_text_extracted
                                                 on_error=on_ocr_error
                                                 on_switch_to_text=on_switch_to_text

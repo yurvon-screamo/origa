@@ -33,6 +33,7 @@ pub enum OrigaError {
     DictionaryNotFound { reason: String },
     VocabularyNotFound { word: String },
     OcrError { reason: String },
+    SttError { reason: String },
     AnkiInvalidFile { reason: String },
     AnkiDatabaseNotFound { filename: String },
     AnkiFieldNotFound { field_name: String },
@@ -128,6 +129,9 @@ impl fmt::Display for OrigaError {
             },
             OrigaError::OcrError { reason } => {
                 write!(f, "OCR error: {}", reason)
+            },
+            OrigaError::SttError { reason } => {
+                write!(f, "Speech-to-text error: {}", reason)
             },
             OrigaError::AnkiInvalidFile { reason } => {
                 write!(f, "Invalid Anki file: {}", reason)
