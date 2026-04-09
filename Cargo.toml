@@ -55,6 +55,8 @@ image = "0.25"
 
 # OCR / Machine Learning
 ndarray = "0.17"
+hound = "3.5"
+rustfft = "6.2"
 ort = { version = "2.0.0-rc.12", default-features = false }
 ort-web = "0.2.0"
 as-slice = "0.2"

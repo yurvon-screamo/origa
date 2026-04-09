@@ -44,6 +44,10 @@ export class WordsPage extends BasePage {
     readonly ankiError: Locator;
     readonly ankiRetryBtn: Locator;
 
+    // Image/OCR import
+    readonly imageTab: Locator;
+    readonly imageFileInput: Locator;
+
     // Delete modal
     readonly deleteModal: Locator;
     readonly deleteConfirmBtn: Locator;
@@ -91,6 +95,10 @@ export class WordsPage extends BasePage {
         this.ankiDone = page.getByTestId("anki-import-done");
         this.ankiError = page.getByTestId("anki-import-error");
         this.ankiRetryBtn = page.getByTestId("anki-import-retry-btn");
+
+        // Image/OCR import
+        this.imageTab = this.drawer.getByTestId("words-add-tabs-image");
+        this.imageFileInput = this.drawer.locator('input[type="file"][accept*="image"]');
 
         // Delete modal
         this.deleteModal = page.getByTestId("words-delete-modal");
@@ -157,6 +165,14 @@ export class WordsPage extends BasePage {
 
     async uploadAnkiFile(filePath: string): Promise<void> {
         await this.ankiFileInput.setInputFiles(filePath);
+    }
+
+    async switchToImageTab(): Promise<void> {
+        await this.imageTab.click();
+    }
+
+    async uploadImageFile(filePath: string): Promise<void> {
+        await this.imageFileInput.setInputFiles(filePath);
     }
 
     async selectFilter(name: WordsFilterType): Promise<void> {
