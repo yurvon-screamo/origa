@@ -228,11 +228,19 @@ async fn process_image_with_ocr(
                                 .stage
                                 .set(OcrLoadingStage::DownloadingDeim { progress });
                         } else if filename.contains("parseq") {
-                            let current = match stage {
-                                OcrLoadingStage::DownloadingParseq { current_model, .. } => {
-                                    current_model
-                                },
-                                _ => 1,
+                            let current = if filename.contains("parseq-30") {
+                                1
+                            } else if filename.contains("parseq-50") {
+                                2
+                            } else if filename.contains("parseq-100") {
+                                3
+                            } else {
+                                match stage {
+                                    OcrLoadingStage::DownloadingParseq {
+                                        current_model, ..
+                                    } => current_model,
+                                    _ => 1,
+                                }
                             };
                             loading_state_ref
                                 .stage
