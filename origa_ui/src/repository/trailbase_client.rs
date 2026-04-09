@@ -540,6 +540,45 @@ impl TrailBaseClient {
         self.logout().await
     }
 
+    pub async fn change_password(
+        &self,
+        old_password: &str,
+        new_password: &str,
+        new_password_repeat: &str,
+    ) -> Result<(), AuthError> {
+        #[derive(Serialize)]
+        struct ChangePasswordRequest<'a> {
+            old_password: &'a str,
+            new_password: &'a str,
+            new_password_repeat: &'a str,
+        }
+
+        let response = self
+            .request_with_auth(
+                "/api/auth/v1/change_password",
+                Method::POST,
+                Some(&ChangePasswordRequest {
+                    old_password,
+                    new_password,
+                    new_password_repeat,
+                }),
+            )
+            .await?;
+
+        if !response.ok() {
+            let error_text = response
+                .text()
+                .await
+                .unwrap_or_else(|_| "Unknown error".to_string());
+            return Err(AuthError::ApiError(format!(
+                "Password change failed: {}",
+                error_text
+            )));
+        }
+
+        Ok(())
+    }
+
     pub fn records(&self, table_name: &str) -> TrailBaseRecordApi {
         RecordApi::new(self.clone(), table_name.to_string())
     }
