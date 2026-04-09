@@ -49,7 +49,18 @@
         "danger_zone": "Danger zone",
         "delete_confirm_message": "Are you sure? This will delete your account and all data permanently.",
         "language_english": "English",
-        "language_russian": "Russian"
+        "language_russian": "Russian",
+        "password_title": "Password",
+        "current_password": "Current password",
+        "new_password": "New password",
+        "confirm_password": "Confirm new password",
+        "password_hint": "Leave empty if you signed up via Google",
+        "change_password": "Change password",
+        "changing_password": "Changing...",
+        "password_changed": "Password changed successfully",
+        "password_mismatch": "Passwords do not match",
+        "password_too_short": "Password must be at least 8 characters",
+        "password_change_error": "Failed to change password"
     },
     "onboarding": {
         "steps": {

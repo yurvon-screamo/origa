@@ -3,7 +3,7 @@ pub mod email_password_form;
 pub mod header;
 pub mod oauth_buttons;
 pub mod oauth_listeners;
-mod password_input;
+pub mod password_input;
 mod validation;
 
 pub use header::LoginHeader;

@@ -49,7 +49,18 @@
     "danger_zone": "Опасная зона",
     "delete_confirm_message": "Вы уверены? Это действие удалит ваш аккаунт и все данные безвозвратно.",
     "language_english": "English",
-    "language_russian": "Russian"
+    "language_russian": "Russian",
+    "password_title": "Пароль",
+    "current_password": "Текущий пароль",
+    "new_password": "Новый пароль",
+    "confirm_password": "Подтвердите новый пароль",
+    "password_hint": "Оставьте пустым, если вы вошли через Google",
+    "change_password": "Сменить пароль",
+    "changing_password": "Смена...",
+    "password_changed": "Пароль успешно изменён",
+    "password_mismatch": "Пароли не совпадают",
+    "password_too_short": "Пароль должен быть не менее 8 символов",
+    "password_change_error": "Не удалось сменить пароль"
   },
   "onboarding": {
     "steps": {

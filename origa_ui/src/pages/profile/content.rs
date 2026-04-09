@@ -1,4 +1,4 @@
-use super::{ActionButtons, PersonalDataCard, SettingsCard};
+use super::{ActionButtons, PasswordCard, PersonalDataCard, SettingsCard};
 use crate::i18n::{native_language_to_locale, use_i18n};
 use crate::store::AuthStore;
 use leptos::prelude::*;
@@ -123,12 +123,15 @@ pub fn ProfileContent() -> impl IntoView {
 
     view! {
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4" data-testid="profile-content">
-            <PersonalDataCard
-                user_name={user_name}
-                selected_language={selected_language}
-                selected_daily_load={selected_daily_load}
-                test_id="profile-personal-data"
-            />
+            <div class="space-y-4">
+                <PersonalDataCard
+                    user_name={user_name}
+                    selected_language={selected_language}
+                    selected_daily_load={selected_daily_load}
+                    test_id="profile-personal-data"
+                />
+                <PasswordCard test_id="profile-password" />
+            </div>
 
             <div class="space-y-4">
                 <SettingsCard test_id="profile-settings" />

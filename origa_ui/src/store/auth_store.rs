@@ -95,7 +95,6 @@ impl AuthStore {
     }
 
     /// Get TrailBase client for auth operations
-    #[allow(dead_code)]
     pub fn client(&self) -> &TrailBaseClient {
         &self.client
     }

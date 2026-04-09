@@ -5,6 +5,7 @@ use leptos::prelude::*;
 #[component]
 pub fn PasswordInput(
     value: RwSignal<String>,
+    #[prop(optional, into)] label: Signal<String>,
     #[prop(optional, into)] autocomplete: Signal<String>,
     #[prop(optional, into)] id: Signal<String>,
     #[prop(optional, into)] name: Signal<String>,
@@ -34,7 +35,14 @@ pub fn PasswordInput(
     view! {
         <div>
             <Text size=TextSize::Small variant=TypographyVariant::Muted uppercase=true tracking_widest=true class="block mb-2">
-                {t!(i18n, login.password_placeholder)}
+                {move || {
+                    let custom_label = label.get();
+                    if custom_label.is_empty() {
+                        t!(i18n, login.password_placeholder).into_any()
+                    } else {
+                        custom_label.into_any()
+                    }
+                }}
             </Text>
             <div class="relative group">
                 <Input
