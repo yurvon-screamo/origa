@@ -219,7 +219,7 @@ fn argmax_last_position(logits: &Value) -> Result<i64, OrigaError> {
     Ok(best_id)
 }
 
-fn strip_trailing_repeats(text: &str) -> String {
+pub(crate) fn strip_trailing_repeats(text: &str) -> String {
     let chars: Vec<char> = text.chars().collect();
     if chars.len() < 3 {
         return text.to_string();
