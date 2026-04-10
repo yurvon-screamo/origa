@@ -47,6 +47,7 @@ rustfft.workspace = true
 ort = { workspace = true, features = ["alternative-backend"] }
 ort-web.workspace = true
 rusqlite = { workspace = true, features = ["bundled", "serialize"] }
+rustfft = { workspace = true, features = ["wasm_simd"] }
 wasm-bindgen-futures = { workspace = true }
 getrandom = { workspace = true, features = ["wasm_js"] }
 as-slice.workspace = true

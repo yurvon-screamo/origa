@@ -9,6 +9,24 @@ pub struct WhisperTokenizer {
 }
 
 impl WhisperTokenizer {
+    #[cfg(target_arch = "wasm32")]
+    pub fn from_bytes(data: &[u8]) -> Result<Self, String> {
+        let json: serde_json::Value = serde_json::from_slice(data)
+            .map_err(|e| format!("Failed to parse tokenizer JSON: {}", e))?;
+
+        let (id_to_token, token_to_id_map) = build_vocab(&json)?;
+        let special_token_ids = collect_special_ids(&json);
+        let byte_decoder = build_byte_decoder();
+
+        Ok(Self {
+            id_to_token,
+            special_token_ids,
+            token_to_id_map,
+            byte_decoder,
+        })
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
     pub fn from_json_file(path: &Path) -> Result<Self, String> {
         let data = std::fs::read_to_string(path)
             .map_err(|e| format!("Failed to read tokenizer: {}", e))?;
