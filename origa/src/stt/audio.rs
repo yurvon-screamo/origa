@@ -53,7 +53,7 @@ fn read_samples(
     }
 }
 
-fn downmix_to_mono(samples: &[f32], channels: u16) -> Vec<f32> {
+pub(crate) fn downmix_to_mono(samples: &[f32], channels: u16) -> Vec<f32> {
     if channels <= 1 {
         samples.to_vec()
     } else {
@@ -64,7 +64,7 @@ fn downmix_to_mono(samples: &[f32], channels: u16) -> Vec<f32> {
     }
 }
 
-fn resample(samples: &[f32], orig_rate: u32) -> Vec<f32> {
+pub(crate) fn resample(samples: &[f32], orig_rate: u32) -> Vec<f32> {
     if orig_rate == TARGET_RATE {
         return samples.to_vec();
     }
@@ -84,7 +84,7 @@ fn resample(samples: &[f32], orig_rate: u32) -> Vec<f32> {
         .collect()
 }
 
-fn pad_or_trim(samples: &[f32], target_len: usize) -> Vec<f32> {
+pub(crate) fn pad_or_trim(samples: &[f32], target_len: usize) -> Vec<f32> {
     if samples.len() >= target_len {
         samples[..target_len].to_vec()
     } else {
