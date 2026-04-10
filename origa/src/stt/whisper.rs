@@ -7,10 +7,10 @@ use ort::session::{Session, builder::GraphOptimizationLevel};
 use ort::value::Value;
 
 pub use super::audio::load_wav;
-use super::common::{argmax_last_position, build_prompt_tokens, strip_trailing_repeats};
+use super::common::{
+    MAX_DECODE_TOKENS, argmax_last_position, build_prompt_tokens, strip_trailing_repeats,
+};
 pub use super::tokenizer::WhisperTokenizer;
-
-const MAX_DECODE_TOKENS: usize = 220;
 
 pub struct WhisperTranscriber {
     encoder_session: Mutex<Session>,
@@ -134,7 +134,6 @@ fn decode_autoregressive(
     let mut tokens = build_prompt_tokens(tokenizer)?;
     let eos_id = tokenizer
         .token_to_id("<|endoftranscript|>")
-        .or_else(|| tokenizer.token_to_id(""))
         .ok_or_else(|| OrigaError::SttError {
             reason: "Missing EOS token".into(),
         })?;

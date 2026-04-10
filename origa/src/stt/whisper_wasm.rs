@@ -1,13 +1,13 @@
 use std::cell::Cell;
 
-use super::common::{argmax_last_position, build_prompt_tokens, strip_trailing_repeats};
+use super::common::{
+    MAX_DECODE_TOKENS, argmax_last_position, build_prompt_tokens, strip_trailing_repeats,
+};
 use crate::domain::OrigaError;
 use crate::stt::tokenizer::WhisperTokenizer;
 use futures::lock::Mutex;
 use ort::session::RunOptions;
 use ort_web::ValueExt;
-
-const MAX_DECODE_TOKENS: usize = 220;
 
 thread_local! {
     static ORT_INITIALIZED: Cell<bool> = const { Cell::new(false) };

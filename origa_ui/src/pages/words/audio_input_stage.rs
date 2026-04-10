@@ -117,18 +117,10 @@ async fn load_whisper_model_inner(
 }
 
 async fn read_file_bytes(file: &web_sys::File) -> Result<Vec<u8>, String> {
-    let file_reader =
-        web_sys::FileReader::new().map_err(|e| format!("Failed to create FileReader: {:?}", e))?;
-
-    file_reader
-        .read_as_array_buffer(file)
-        .map_err(|e| format!("Failed to read file: {:?}", e))?;
-
-    let load_promise = js_sys::Promise::from(JsValue::from(file_reader.clone()));
-    let array_buffer = wasm_bindgen_futures::JsFuture::from(load_promise)
+    let array_buffer_promise = file.array_buffer();
+    let array_buffer = wasm_bindgen_futures::JsFuture::from(array_buffer_promise)
         .await
-        .map_err(|e| format!("Failed to read file: {:?}", e))?;
-
+        .map_err(|e| format!("Failed to read file data: {:?}", e))?;
     let uint8_array = js_sys::Uint8Array::new(&array_buffer);
     let mut bytes = vec![0u8; uint8_array.length() as usize];
     uint8_array.copy_to(&mut bytes);
@@ -361,7 +353,11 @@ pub(super) fn AudioInputStage(
                             </div>
                             <Button
                                 variant=Signal::derive(|| ButtonVariant::Ghost)
-                                on_click=Callback::new(move |_| audio_state.set(AudioState::Idle))
+                                on_click=Callback::new(move |_| {
+                                    audio_state.set(AudioState::Idle);
+                                    #[cfg(target_arch = "wasm32")]
+                                    WHISPER_LOADING.with(|l| l.set(false));
+                                })
                             >
                                 "Cancel"
                             </Button>

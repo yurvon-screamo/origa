@@ -1,6 +1,8 @@
 use crate::domain::OrigaError;
 use crate::stt::tokenizer::WhisperTokenizer;
 
+pub const MAX_DECODE_TOKENS: usize = 220;
+
 pub fn build_prompt_tokens(tokenizer: &WhisperTokenizer) -> Result<Vec<i64>, OrigaError> {
     let lookup = |name: &str| {
         tokenizer
