@@ -25,11 +25,6 @@ impl ParseqRecognizer {
         let mut builder = Session::builder().map_err(|e| OrigaError::OcrError {
             reason: format!("Failed to create session builder: {:?}", e),
         })?;
-        builder = builder
-            .with_execution_providers([ort::ep::WebGPU::default().build()])
-            .map_err(|e| OrigaError::OcrError {
-                reason: format!("Failed to set execution providers: {:?}", e),
-            })?;
         let session =
             builder
                 .commit_from_memory(model_bytes)

@@ -25,13 +25,11 @@ pub async fn ensure_ort_initialized() -> Result<(), OrigaError> {
     });
 
     if should_init {
-        let dist = ort_web::Dist::new("/ort/")
-            .with_script_name("ort.wasm.min.js")
-            .with_binary_name("ort-wasm-simd-threaded.wasm")
-            .with_wrapper_name("ort-wasm-simd-threaded.mjs");
-        let api = ort_web::api(dist).await.map_err(|e| OrigaError::OcrError {
-            reason: format!("Failed to get ort API: {:?}", e),
-        })?;
+        let api = ort_web::api(ort_web::FEATURE_NONE)
+            .await
+            .map_err(|e| OrigaError::OcrError {
+                reason: format!("Failed to get ort API: {:?}", e),
+            })?;
         ort::set_api(api);
     }
 
