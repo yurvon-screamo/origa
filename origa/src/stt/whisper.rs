@@ -7,6 +7,7 @@ use ort::session::{Session, builder::GraphOptimizationLevel};
 use ort::value::Value;
 
 pub use super::audio::load_wav;
+use super::common::{argmax_last_position, build_prompt_tokens, strip_trailing_repeats};
 pub use super::tokenizer::WhisperTokenizer;
 
 const MAX_DECODE_TOKENS: usize = 220;
@@ -125,23 +126,6 @@ fn run_encoder(
     })
 }
 
-fn build_prompt_tokens(tokenizer: &WhisperTokenizer) -> Result<Vec<i64>, OrigaError> {
-    let lookup = |name: &str| {
-        tokenizer
-            .token_to_id(name)
-            .ok_or_else(|| OrigaError::SttError {
-                reason: format!("Missing token: {}", name),
-            })
-    };
-
-    Ok(vec![
-        lookup("<|startoftranscript|>")?,
-        lookup("<|ja|>")?,
-        lookup("<|transcribe|>")?,
-        lookup("<|notimestamps|>")?,
-    ])
-}
-
 fn decode_autoregressive(
     decoder_session: &Mutex<Session>,
     tokenizer: &WhisperTokenizer,
@@ -193,46 +177,4 @@ fn decode_autoregressive(
     }
 
     Ok(tokens)
-}
-
-fn argmax_last_position(logits: &Value) -> Result<i64, OrigaError> {
-    let (shape, data): (&ort::value::Shape, &[f32]) =
-        logits
-            .try_extract_tensor()
-            .map_err(|e| OrigaError::SttError {
-                reason: format!("Extract logits: {:?}", e),
-            })?;
-
-    let seq_len = shape[1] as usize;
-    let vocab_size = shape[2] as usize;
-    let offset = (seq_len - 1) * vocab_size;
-
-    let mut best_id = 0i64;
-    let mut best_val = f32::NEG_INFINITY;
-    for (i, &val) in data[offset..].iter().enumerate() {
-        if val > best_val {
-            best_val = val;
-            best_id = i as i64;
-        }
-    }
-
-    Ok(best_id)
-}
-
-pub(crate) fn strip_trailing_repeats(text: &str) -> String {
-    let chars: Vec<char> = text.chars().collect();
-    if chars.len() < 3 {
-        return text.to_string();
-    }
-    let last = chars[chars.len() - 1];
-    let second_last = chars[chars.len() - 2];
-    if last != second_last {
-        return text.to_string();
-    }
-    let cutoff = chars
-        .iter()
-        .rposition(|&c| c != last)
-        .map(|pos| pos + 1)
-        .unwrap_or(0);
-    chars[..cutoff].iter().collect()
 }

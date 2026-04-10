@@ -11,6 +11,7 @@ mod mark_card_as_known;
 mod rate_card;
 mod select_cards_to_lesson;
 mod toggle_favorite;
+mod transcribe_audio;
 mod update_user_profile;
 
 #[cfg(test)]
@@ -36,4 +37,5 @@ pub use mark_card_as_known::MarkCardAsKnownUseCase;
 pub use rate_card::RateCardUseCase;
 pub use select_cards_to_lesson::SelectCardsToLessonUseCase;
 pub use toggle_favorite::ToggleFavoriteUseCase;
+pub use transcribe_audio::TranscribeAudioUseCase;
 pub use update_user_profile::UpdateUserProfileUseCase;

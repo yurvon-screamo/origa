@@ -1,4 +1,4 @@
-use super::whisper::strip_trailing_repeats;
+use super::common::strip_trailing_repeats;
 
 #[test]
 fn test_strip_trailing_repeats_no_repeat() {

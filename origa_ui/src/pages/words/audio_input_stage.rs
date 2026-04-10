@@ -1,18 +1,37 @@
 use base64::Engine;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
+#[cfg(target_arch = "wasm32")]
+use origa::stt::WhisperTranscriber;
+#[cfg(target_arch = "wasm32")]
+use std::cell::{Cell, RefCell};
+#[cfg(target_arch = "wasm32")]
+use std::rc::Rc;
+#[cfg(target_arch = "wasm32")]
+use tracing::info;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 
+#[cfg(target_arch = "wasm32")]
+use crate::core::config::whisper_base_url;
+#[cfg(target_arch = "wasm32")]
+use crate::loaders::whisper_model_loader::WhisperModelLoader;
 use crate::ui_components::{Alert, AlertType, Button, ButtonVariant};
 
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
 pub(super) enum AudioState {
     #[default]
     Idle,
+    LoadingModel,
     Processing,
     Ready,
     Error,
+}
+
+#[cfg(target_arch = "wasm32")]
+thread_local! {
+    static CACHED_WHISPER: RefCell<Option<Rc<WhisperTranscriber>>> = const { RefCell::new(None) };
+    static WHISPER_LOADING: Cell<bool> = const { Cell::new(false) };
 }
 
 fn is_tauri() -> bool {
@@ -53,6 +72,161 @@ async fn invoke_tauri_command(cmd: &str, payload: &str) -> Result<String, String
         .ok_or_else(|| format!("{} returned non-string value", cmd))
 }
 
+#[cfg(target_arch = "wasm32")]
+async fn get_or_load_whisper_model(
+    status_text: RwSignal<Option<String>>,
+) -> Result<Rc<WhisperTranscriber>, String> {
+    let cached = CACHED_WHISPER.with(|c| c.borrow().clone());
+    if let Some(model) = cached {
+        return Ok(model);
+    }
+
+    if WHISPER_LOADING.with(|l| l.get()) {
+        return Err("Whisper model is already loading".to_string());
+    }
+
+    WHISPER_LOADING.with(|l| l.set(true));
+    let result = load_whisper_model_inner(status_text).await;
+    WHISPER_LOADING.with(|l| l.set(false));
+    result
+}
+
+#[cfg(target_arch = "wasm32")]
+async fn load_whisper_model_inner(
+    status_text: RwSignal<Option<String>>,
+) -> Result<Rc<WhisperTranscriber>, String> {
+    status_text.set(Some("Downloading Whisper model...".to_string()));
+    info!("Loading Whisper model from CDN");
+
+    let loader = WhisperModelLoader::new(whisper_base_url());
+    let files = loader
+        .load()
+        .await
+        .map_err(|e| format!("Failed to download Whisper model: {:?}", e))?;
+
+    status_text.set(Some("Initializing Whisper model...".to_string()));
+
+    let model = WhisperModelLoader::init_model(files)
+        .await
+        .map_err(|e| format!("Failed to init Whisper model: {:?}", e))?;
+
+    let wrapped = Rc::new(model);
+    CACHED_WHISPER.with(|c| *c.borrow_mut() = Some(wrapped.clone()));
+    info!("Whisper model loaded and cached");
+    Ok(wrapped)
+}
+
+async fn read_file_bytes(file: &web_sys::File) -> Result<Vec<u8>, String> {
+    let file_reader =
+        web_sys::FileReader::new().map_err(|e| format!("Failed to create FileReader: {:?}", e))?;
+
+    file_reader
+        .read_as_array_buffer(file)
+        .map_err(|e| format!("Failed to read file: {:?}", e))?;
+
+    let load_promise = js_sys::Promise::from(JsValue::from(file_reader.clone()));
+    let array_buffer = wasm_bindgen_futures::JsFuture::from(load_promise)
+        .await
+        .map_err(|e| format!("Failed to read file: {:?}", e))?;
+
+    let uint8_array = js_sys::Uint8Array::new(&array_buffer);
+    let mut bytes = vec![0u8; uint8_array.length() as usize];
+    uint8_array.copy_to(&mut bytes);
+    Ok(bytes)
+}
+
+async fn transcribe_via_tauri(file: &web_sys::File, name: &str) -> Result<String, String> {
+    let bytes = read_file_bytes(file).await?;
+    let base64_data = base64::engine::general_purpose::STANDARD.encode(&bytes);
+    let payload = serde_json::json!({
+        "audioBase64": base64_data,
+        "fileName": name
+    })
+    .to_string();
+    invoke_tauri_command("transcribe_audio", &payload).await
+}
+
+#[cfg(target_arch = "wasm32")]
+async fn transcribe_via_wasm(
+    file: &web_sys::File,
+    name: &str,
+    status_text: RwSignal<Option<String>>,
+    audio_state: RwSignal<AudioState>,
+    error_message: RwSignal<Option<String>>,
+) -> Result<String, String> {
+    let model = get_or_load_whisper_model(status_text).await.map_err(|e| {
+        audio_state.set(AudioState::Error);
+        error_message.set(Some(e.clone()));
+        e
+    })?;
+
+    status_text.set(Some(format!("Transcribing {}...", name)));
+    audio_state.set(AudioState::Processing);
+
+    let bytes = read_file_bytes(file).await.map_err(|e| {
+        audio_state.set(AudioState::Error);
+        error_message.set(Some(e.clone()));
+        e
+    })?;
+
+    let use_case = origa::use_cases::TranscribeAudioUseCase::new();
+    use_case
+        .execute(model.clone(), &bytes)
+        .await
+        .map_err(|e| format!("Transcription failed: {:?}", e))
+}
+
+#[cfg(target_arch = "wasm32")]
+fn dispatch_transcription(
+    tauri_available: bool,
+    file: &web_sys::File,
+    name: &str,
+    audio_state_local: RwSignal<AudioState>,
+    status_text_local: RwSignal<Option<String>>,
+    error_message_local: RwSignal<Option<String>>,
+) -> impl std::future::Future<Output = Result<String, String>> {
+    let file = file.clone();
+    let name = name.to_string();
+    async move {
+        if tauri_available {
+            status_text_local.set(Some(format!("Transcribing {}...", name)));
+            audio_state_local.set(AudioState::Processing);
+            transcribe_via_tauri(&file, &name).await
+        } else {
+            transcribe_via_wasm(
+                &file,
+                &name,
+                status_text_local,
+                audio_state_local,
+                error_message_local,
+            )
+            .await
+        }
+    }
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn dispatch_transcription(
+    tauri_available: bool,
+    file: &web_sys::File,
+    name: &str,
+    audio_state_local: RwSignal<AudioState>,
+    status_text_local: RwSignal<Option<String>>,
+    _error_message_local: RwSignal<Option<String>>,
+) -> impl std::future::Future<Output = Result<String, String>> {
+    let file = file.clone();
+    let name = name.to_string();
+    async move {
+        if tauri_available {
+            status_text_local.set(Some(format!("Transcribing {}...", name)));
+            audio_state_local.set(AudioState::Processing);
+            transcribe_via_tauri(&file, &name).await
+        } else {
+            Err("Tauri API not available. Run in Tauri desktop app.".to_string())
+        }
+    }
+}
+
 #[component]
 pub(super) fn AudioInputStage(
     is_open: Signal<bool>,
@@ -74,7 +248,8 @@ pub(super) fn AudioInputStage(
 
     let handle_file = move |file: web_sys::File| {
         let name = file.name();
-        let valid_ext = name.ends_with(".wav")
+        let is_wav = name.ends_with(".wav");
+        let valid_ext = is_wav
             || name.ends_with(".mp3")
             || name.ends_with(".webm")
             || name.ends_with(".m4a")
@@ -96,15 +271,25 @@ pub(super) fn AudioInputStage(
             return;
         }
 
-        if !is_tauri() {
+        let tauri_available = is_tauri();
+
+        #[cfg(target_arch = "wasm32")]
+        if !tauri_available && !is_wav {
             error_message.set(Some(
-                "Audio transcription is only available in the desktop app.".to_string(),
+                "In the browser, only WAV format is supported. \
+                 Please use the desktop app for MP3/WebM/M4A/OGG."
+                    .to_string(),
             ));
             return;
         }
 
-        audio_state.set(AudioState::Processing);
-        status_text.set(Some(format!("Transcribing {}...", name)));
+        if tauri_available {
+            audio_state.set(AudioState::Processing);
+            status_text.set(Some(format!("Transcribing {}...", name)));
+        } else {
+            audio_state.set(AudioState::LoadingModel);
+            status_text.set(Some(format!("Loading model for {}...", name)));
+        }
 
         let on_text_extracted = on_text_extracted;
         let on_error = on_error;
@@ -113,44 +298,16 @@ pub(super) fn AudioInputStage(
         let error_message_local = error_message;
 
         spawn_local(async move {
-            let file_reader = match web_sys::FileReader::new() {
-                Ok(r) => r,
-                Err(_) => {
-                    audio_state_local.set(AudioState::Error);
-                    error_message_local.set(Some("Failed to create file reader".to_string()));
-                    return;
-                },
-            };
+            let result = dispatch_transcription(
+                tauri_available,
+                &file,
+                &name,
+                audio_state_local,
+                status_text_local,
+                error_message_local,
+            )
+            .await;
 
-            if file_reader.read_as_array_buffer(&file).is_err() {
-                audio_state_local.set(AudioState::Error);
-                error_message_local.set(Some("Failed to start reading file".to_string()));
-                return;
-            }
-
-            let load_promise = js_sys::Promise::from(JsValue::from(file_reader));
-            let array_buffer = match wasm_bindgen_futures::JsFuture::from(load_promise).await {
-                Ok(val) => val,
-                Err(e) => {
-                    audio_state_local.set(AudioState::Error);
-                    error_message_local.set(Some(format!("Failed to read file: {:?}", e)));
-                    return;
-                },
-            };
-
-            let uint8_array = js_sys::Uint8Array::new(&array_buffer);
-            let mut bytes = vec![0u8; uint8_array.length() as usize];
-            uint8_array.copy_to(&mut bytes);
-
-            let base64_data = base64::engine::general_purpose::STANDARD.encode(&bytes);
-
-            let payload = serde_json::json!({
-                "audioBase64": base64_data,
-                "fileName": name
-            })
-            .to_string();
-
-            let result = invoke_tauri_command("transcribe_audio", &payload).await;
             match result {
                 Ok(text) => {
                     if text.trim().is_empty() {
@@ -196,7 +353,7 @@ pub(super) fn AudioInputStage(
         <div class="space-y-4">
             {move || {
                 match audio_state.get() {
-                    AudioState::Processing => view! {
+                    AudioState::LoadingModel | AudioState::Processing => view! {
                         <div class="space-y-4">
                             <div class="text-lg font-semibold text-[var(--fg-black)] flex items-center gap-2">
                                 <span class="spinner spinner-sm"></span>
