@@ -244,3 +244,24 @@ testWithFreshUser.describe("Words Page - OCR Image Recognition", () => {
         }
     });
 });
+
+testWithFreshUser.describe("Words Page - Audio Transcription", () => {
+    testWithFreshUser("should transcribe Japanese audio and show word analysis", async ({ page }) => {
+        test.setTimeout(300_000);
+        const wordsPage = await setupWordsPage(page);
+
+        await wordsPage.openAddModal();
+        await expect(wordsPage.drawer).toBeVisible({ timeout: 5000 });
+
+        await wordsPage.switchToAudioTab();
+
+        await wordsPage.uploadAudioFile(path.resolve(__dirname, "../fixtures/standard_sample1.wav"));
+
+        // Wait for Whisper model download + transcription + text analysis
+        await wordsPage.drawer.getByText(/Найдено/).waitFor({ state: "visible", timeout: 240_000 });
+
+        // Verify words were found
+        const drawerText = await wordsPage.drawer.textContent({ timeout: 5000 });
+        expect(drawerText).toContain("Найдено");
+    });
+});

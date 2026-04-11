@@ -126,7 +126,7 @@ impl WhisperTranscriber {
         })?;
 
         let mut outputs = session
-            .run_async(ort::inputs!["mel" => mel_tensor], &run_options)
+            .run_async(ort::inputs!["input_features" => mel_tensor], &run_options)
             .await
             .map_err(|e| OrigaError::SttError {
                 reason: format!("Encoder run: {:?}", e),
@@ -166,12 +166,12 @@ impl WhisperTranscriber {
         hidden_states: &ndarray::Array3<f32>,
     ) -> Result<Vec<i64>, OrigaError> {
         let mut tokens = build_prompt_tokens(&self.tokenizer)?;
-        let eos_id = self
-            .tokenizer
-            .token_to_id("<|endoftranscript|>")
-            .ok_or_else(|| OrigaError::SttError {
-                reason: "Missing EOS token".into(),
-            })?;
+        let eos_id =
+            self.tokenizer
+                .token_to_id("<|endoftext|>")
+                .ok_or_else(|| OrigaError::SttError {
+                    reason: "Missing EOS token".into(),
+                })?;
 
         for _ in 0..MAX_DECODE_TOKENS {
             let input_shape = vec![1usize, tokens.len()];

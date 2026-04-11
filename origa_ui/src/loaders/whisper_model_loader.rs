@@ -81,7 +81,11 @@ impl WhisperModelLoader {
         let cache_name = sanitize_cache_name(&self.cache_name);
         let cache = self.get_cache(&window, &cache_name).await?;
 
-        let filenames = ["encoder_model.onnx", "decoder_model.onnx", "tokenizer.json"];
+        let filenames = [
+            "onnx/encoder_model.onnx",
+            "onnx/decoder_model.onnx",
+            "tokenizer.json",
+        ];
 
         if self.ensure_files_cached(&cache, &filenames).await? {
             info!("Whisper models found in cache, loading...");

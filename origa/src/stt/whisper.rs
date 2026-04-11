@@ -133,7 +133,7 @@ fn decode_autoregressive(
 ) -> Result<Vec<i64>, OrigaError> {
     let mut tokens = build_prompt_tokens(tokenizer)?;
     let eos_id = tokenizer
-        .token_to_id("<|endoftranscript|>")
+        .token_to_id("<|endoftext|>")
         .ok_or_else(|| OrigaError::SttError {
             reason: "Missing EOS token".into(),
         })?;
