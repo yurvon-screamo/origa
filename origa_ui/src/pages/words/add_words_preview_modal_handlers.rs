@@ -32,7 +32,7 @@ pub fn create_preview_modal_handlers(
         let state = state.clone();
         let disposed = state.disposed;
         Callback::new(move |_| {
-            let selected_words_count = state.selected_words.get().len();
+            let selected_words_count = state.selected_words.get_untracked().len();
             if selected_words_count == 0 {
                 return;
             }

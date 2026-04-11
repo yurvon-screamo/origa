@@ -83,8 +83,8 @@ pub fn ImageInputStage(
                     error_message,
                     disposed: disposed_for_file,
                 },
-                on_error,
                 on_text_extracted,
+                on_error,
             );
         }
     };
@@ -150,7 +150,7 @@ pub fn ImageInputStage(
                     && let Some(files) = clipboard_data.files()
                     && let Some(file) = files.get(0)
                 {
-                    process_file(i18n, file, ctx.clone(), on_error, on_text_extracted);
+                    process_file(i18n, file, ctx.clone(), on_text_extracted, on_error);
                 }
             },
         );

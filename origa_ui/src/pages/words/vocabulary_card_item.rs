@@ -85,14 +85,16 @@ pub fn VocabularyCardItem(
                 variant=TypographyVariant::Muted
                 class="mt-2"
             >
-                {i18n.get_keys().shared().card_info().inner().to_string()
-                    .replacen("{}", &next_review, 1)
-                    .replacen("{}", &difficulty, 1)
-                    .replacen("{}", &stability, 1)}
+                {move || {
+                    i18n.get_keys().shared().card_info().inner().to_string()
+                        .replacen("{}", &next_review, 1)
+                        .replacen("{}", &difficulty, 1)
+                        .replacen("{}", &stability, 1)
+                }}
             </Text>
             <div class="border-t border-[var(--border-dark)] pt-2 mt-2 flex justify-between items-center">
                 <Tag variant=Signal::derive(move || status.tag_variant()) test_id="words-card-tag">
-                    {status.label(&i18n)}
+                    {move || status.label(&i18n)}
                 </Tag>
                 <div class="flex items-center gap-2">
                     <FavoriteButton

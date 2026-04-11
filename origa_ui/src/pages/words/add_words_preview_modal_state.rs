@@ -6,6 +6,7 @@ use origa::use_cases::{
     CreateCardsFromAnalysisUseCase, WordToCreate,
 };
 use std::collections::HashSet;
+use tracing::{error, info};
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum InputMode {
@@ -64,7 +65,7 @@ impl PreviewModalState {
     }
 
     pub fn analyze_text(&self) {
-        let text = self.input_text.get();
+        let text = self.input_text.get_untracked();
         let repository = self.repository.clone();
         let analyzed_words = self.analyzed_words;
         let selected_words = self.selected_words;
@@ -75,10 +76,13 @@ impl PreviewModalState {
         is_analyzing.set(true);
         error.set(None);
 
+        info!(text_length = text.len(), "Starting text analysis");
+
         spawn_local(async move {
             let use_case = AnalyzeTextForCardsUseCase::new(&repository);
             match use_case.execute(text).await {
                 Ok(result) => {
+                    info!(word_count = result.words.len(), "Text analysis completed");
                     if disposed.is_disposed() {
                         return;
                     }
@@ -89,6 +93,7 @@ impl PreviewModalState {
                     is_analyzing.set(false);
                 },
                 Err(e) => {
+                    error!(error = %e, "Text analysis failed");
                     if disposed.is_disposed() {
                         return;
                     }
@@ -126,7 +131,7 @@ impl PreviewModalState {
     pub fn create_cards(
         &self,
     ) -> impl Future<Output = Result<CreateCardsFromAnalysisResult, String>> {
-        let selected_words = self.selected_words.get();
+        let selected_words = self.selected_words.get_untracked();
         let words_to_create: Vec<WordToCreate> = selected_words
             .into_iter()
             .map(|base_form| WordToCreate { base_form })

@@ -216,9 +216,11 @@ fn PreviewStage(
     view! {
         <div>
             <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                {i18n.get_keys().words().found_words().inner().to_string()
-                    .replacen("{}", &analyzed_words_count.to_string(), 1)
-                    .replacen("{}", &new_words_count.to_string(), 1)}
+                {move || {
+                    i18n.get_keys().words().found_words().inner().to_string()
+                        .replacen("{}", &analyzed_words_count.to_string(), 1)
+                        .replacen("{}", &new_words_count.to_string(), 1)
+                }}
             </Text>
         </div>
         <div class="space-y-2 overflow-y-auto">
