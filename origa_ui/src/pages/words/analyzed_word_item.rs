@@ -16,18 +16,18 @@ pub fn AnalyzedWordItem(
     let base_form = analyzed_word.base_form.clone();
     let is_selected = Memo::new(move |_| selected_words.get().contains(&base_form));
 
-    let (status_icon, tooltip_text, icon_class) = if analyzed_word.is_known {
-        (
-            CHECK_CIRCLE_ICON,
-            td_string!(i18n.get_locale(), common.tooltip_known),
-            ICON_CLASS_KNOWN,
-        )
+    let (status_icon, icon_class) = if analyzed_word.is_known {
+        (CHECK_CIRCLE_ICON, ICON_CLASS_KNOWN)
     } else {
-        (
-            PLUS_CIRCLE_ICON,
-            td_string!(i18n.get_locale(), common.tooltip_new),
-            ICON_CLASS_NEW,
-        )
+        (PLUS_CIRCLE_ICON, ICON_CLASS_NEW)
+    };
+
+    let tooltip_text = move || {
+        if analyzed_word.is_known {
+            td_string!(i18n.get_locale(), common.tooltip_known).to_string()
+        } else {
+            td_string!(i18n.get_locale(), common.tooltip_new).to_string()
+        }
     };
 
     view! {
@@ -52,7 +52,7 @@ pub fn AnalyzedWordItem(
                         />
                     </div>
 
-                        <Tooltip text=Signal::derive(|| tooltip_text.to_string())>
+                        <Tooltip text=Signal::derive(tooltip_text)>
                         <span class=format!("{} opacity-60 group-hover:opacity-100 transition-opacity", icon_class)
                               inner_html=status_icon
                         />
