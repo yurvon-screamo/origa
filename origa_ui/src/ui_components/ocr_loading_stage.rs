@@ -136,7 +136,7 @@ pub fn LoadingStageItem(
         StageStatus::Error => "\u{2717}",
     };
 
-    let icon_label = match status {
+    let icon_label = move || match status {
         StageStatus::Waiting => i18n.get_keys().ui().ocr().waiting().inner().to_string(),
         StageStatus::Active => i18n.get_keys().ui().ocr().loading().inner().to_string(),
         StageStatus::Completed => i18n.get_keys().ui().ocr().completed().inner().to_string(),
@@ -155,54 +155,56 @@ pub fn LoadingStageItem(
         _ => "text-[var(--fg-black)]",
     };
 
-    let progress_view = progress.and_then(|p| {
-        if status == StageStatus::Active {
-            let percent = p.percent.min(100);
-            let loaded_mb = p.loaded_bytes as f64 / 1_048_576.0;
-            let total_mb = p.total_bytes as f64 / 1_048_576.0;
+    let progress_view = move || {
+        progress.and_then(|p| {
+            if status == StageStatus::Active {
+                let percent = p.percent.min(100);
+                let loaded_mb = p.loaded_bytes as f64 / 1_048_576.0;
+                let total_mb = p.total_bytes as f64 / 1_048_576.0;
 
-            let details = if p.speed_bps > 0 {
-                let speed_mbps = p.speed_bps as f64 / 1_048_576.0;
-                if p.eta_seconds > 0 {
-                    let eta_str = i18n
-                        .get_keys()
-                        .ui()
-                        .seconds_short()
-                        .inner()
-                        .to_string()
-                        .replacen("{}", &p.eta_seconds.to_string(), 1);
-                    format!(
-                        "{:.0} MB / {:.0} MB \u{2022} {:.1} MB/s \u{2022} {}",
-                        loaded_mb, total_mb, speed_mbps, eta_str
-                    )
+                let details = if p.speed_bps > 0 {
+                    let speed_mbps = p.speed_bps as f64 / 1_048_576.0;
+                    if p.eta_seconds > 0 {
+                        let eta_str = i18n
+                            .get_keys()
+                            .ui()
+                            .seconds_short()
+                            .inner()
+                            .to_string()
+                            .replacen("{}", &p.eta_seconds.to_string(), 1);
+                        format!(
+                            "{:.0} MB / {:.0} MB \u{2022} {:.1} MB/s \u{2022} {}",
+                            loaded_mb, total_mb, speed_mbps, eta_str
+                        )
+                    } else {
+                        format!(
+                            "{:.0} MB / {:.0} MB \u{2022} {:.1} MB/s",
+                            loaded_mb, total_mb, speed_mbps
+                        )
+                    }
                 } else {
                     format!(
-                        "{:.0} MB / {:.0} MB \u{2022} {:.1} MB/s",
-                        loaded_mb, total_mb, speed_mbps
+                        "{:.0} MB / {:.0} MB \u{2022} {}%",
+                        loaded_mb, total_mb, percent
                     )
-                }
-            } else {
-                format!(
-                    "{:.0} MB / {:.0} MB \u{2022} {}%",
-                    loaded_mb, total_mb, percent
-                )
-            };
+                };
 
-            Some(view! {
-                <div class="mt-2 space-y-1">
-                    <div class="progress-track">
-                        <div
-                            class="progress-fill"
-                            style=format!("--progress-width: {}%", percent)
-                        ></div>
+                Some(view! {
+                    <div class="mt-2 space-y-1">
+                        <div class="progress-track">
+                            <div
+                                class="progress-fill"
+                                style=format!("--progress-width: {}%", percent)
+                            ></div>
+                        </div>
+                        <div class="text-xs ocr-stage-text-pending">{details}</div>
                     </div>
-                    <div class="text-xs ocr-stage-text-pending">{details}</div>
-                </div>
-            })
-        } else {
-            None
-        }
-    });
+                })
+            } else {
+                None
+            }
+        })
+    };
 
     let error_view = if status == StageStatus::Error {
         error_message.map(|msg| {

@@ -92,7 +92,7 @@ async fn run_ocr_on_data_url(
 
     let result = process_image_with_ocr(data_url, &ctx.ocr_loading_state, &i18n).await;
 
-    if ctx.ocr_loading_state.cancel_requested.get() {
+    if ctx.ocr_loading_state.cancel_requested.get_untracked() {
         return;
     }
 
@@ -143,7 +143,7 @@ pub(super) fn process_file(
                 if ctx.disposed.is_disposed() {
                     return;
                 }
-                if ctx.ocr_loading_state.cancel_requested.get() {
+                if ctx.ocr_loading_state.cancel_requested.get_untracked() {
                     return;
                 }
                 ctx.image_preview.set(Some(data_url.clone()));
@@ -203,8 +203,8 @@ async fn process_image_with_ocr(
                 let loading_state_ref = *loading_state;
                 let progress_callback: ProgressCallback =
                     Rc::new(move |filename, loaded, total| {
-                        let stage = loading_state_ref.stage.get();
-                        let start_time = loading_state_ref.start_time.get();
+                        let stage = loading_state_ref.stage.get_untracked();
+                        let start_time = loading_state_ref.start_time.get_untracked();
 
                         let percent = if total > 0 {
                             ((loaded as f64 / total as f64) * 100.0) as u32
@@ -265,7 +265,7 @@ async fn process_image_with_ocr(
                     format!("Failed to load models: {:?}", e)
                 })?;
 
-                if loading_state.cancel_requested.get() {
+                if loading_state.cancel_requested.get_untracked() {
                     return Err(i18n
                         .get_keys()
                         .words()
@@ -283,7 +283,7 @@ async fn process_image_with_ocr(
                     .await
                     .map_err(|e| e.to_string())?;
 
-                if loading_state.cancel_requested.get() {
+                if loading_state.cancel_requested.get_untracked() {
                     return Err(i18n
                         .get_keys()
                         .words()
@@ -310,7 +310,7 @@ async fn process_image_with_ocr(
         },
     };
 
-    if loading_state.cancel_requested.get() {
+    if loading_state.cancel_requested.get_untracked() {
         return Err(i18n
             .get_keys()
             .words()
@@ -327,7 +327,7 @@ async fn process_image_with_ocr(
 
     let result = execute_ocr(&use_case, model.clone(), &bytes).await;
 
-    if loading_state.cancel_requested.get() {
+    if loading_state.cancel_requested.get_untracked() {
         return Err(i18n
             .get_keys()
             .words()
