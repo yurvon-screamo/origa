@@ -48,6 +48,10 @@ export class WordsPage extends BasePage {
     readonly imageTab: Locator;
     readonly imageFileInput: Locator;
 
+    // Audio import
+    readonly audioTab: Locator;
+    readonly audioFileInput: Locator;
+
     // Delete modal
     readonly deleteModal: Locator;
     readonly deleteConfirmBtn: Locator;
@@ -99,6 +103,10 @@ export class WordsPage extends BasePage {
         // Image/OCR import
         this.imageTab = this.drawer.getByTestId("words-add-tabs-image");
         this.imageFileInput = this.drawer.locator('input[type="file"][accept*="image"]');
+
+        // Audio import
+        this.audioTab = this.drawer.getByTestId("words-add-tabs-audio");
+        this.audioFileInput = this.drawer.locator('input[type="file"][accept*="audio"]');
 
         // Delete modal
         this.deleteModal = page.getByTestId("words-delete-modal");
@@ -173,6 +181,14 @@ export class WordsPage extends BasePage {
 
     async uploadImageFile(filePath: string): Promise<void> {
         await this.imageFileInput.setInputFiles(filePath);
+    }
+
+    async switchToAudioTab(): Promise<void> {
+        await this.audioTab.click();
+    }
+
+    async uploadAudioFile(filePath: string): Promise<void> {
+        await this.audioFileInput.setInputFiles(filePath);
     }
 
     async selectFilter(name: WordsFilterType): Promise<void> {
