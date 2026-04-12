@@ -59,8 +59,9 @@ origa-release.keystore
 tauri/resources/whisper/encoder_model.onnx
 tauri/resources/whisper/decoder_model.onnx
 
-# Whisper HuggingFace models (large safetensors - development only)
+# Whisper local model caches (downloaded from HuggingFace, not needed in repo)
 models/whisper-tiny/
+models/whisper-tiny-onnx/
 
 # ONNX Runtime WASM files (large binary files)
 origa_ui/public/ort/ort-wasm-simd-threaded.wasm
