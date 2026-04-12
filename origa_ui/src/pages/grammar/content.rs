@@ -1,5 +1,5 @@
 use super::super::shared::{
-    CardCounts, CardStatus, Filter, FilterBtn, create_delete_callback,
+    CardCounts, CardStatus, Filter, FilterBtn, LoadMoreButton, create_delete_callback,
     create_mark_as_known_callback,
 };
 use super::grammar_card_item::GrammarCardItem;
@@ -71,6 +71,7 @@ pub fn GrammarContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
     let search = RwSignal::new(String::new());
     let filter = RwSignal::new(Filter::All);
     let toasts: RwSignal<Vec<ToastData>> = RwSignal::new(Vec::new());
+    let visible_count: RwSignal<usize> = RwSignal::new(50);
 
     let on_toggle_favorite = {
         let repo = repository.clone();
@@ -130,6 +131,21 @@ pub fn GrammarContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
             .collect::<Vec<_>>()
     });
 
+    Effect::new(move |_| {
+        let _ = search.get();
+        let _ = filter.get();
+        let _ = all_cards.get();
+        visible_count.set(50);
+    });
+
+    let visible_cards = Memo::new(move |_| {
+        filtered_cards
+            .get()
+            .into_iter()
+            .take(visible_count.get())
+            .collect::<Vec<_>>()
+    });
+
     let counts = Memo::new(move |_| {
         let cards = all_cards.get();
         cards.iter().fold(CardCounts::default(), |mut acc, card| {
@@ -166,7 +182,7 @@ pub fn GrammarContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4" data-testid="grammar-grid">
                     {move || {
-                        let cards = filtered_cards.get();
+                        let cards = visible_cards.get();
                         if cards.is_empty() {
                             Either::Left(view! {
                                 <div class="col-span-full" data-testid="grammar-empty-state">
@@ -178,7 +194,7 @@ pub fn GrammarContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
                         } else {
                             Either::Right(view! {
                                 <For
-                                    each=move || filtered_cards.get()
+                                    each=move || visible_cards.get()
                                     key=|card| *card.card_id()
                                     children=move |card| {
                                         let card_id = *card.card_id();
@@ -199,6 +215,11 @@ pub fn GrammarContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
                         }
                     }}
                 </div>
+                <LoadMoreButton
+                    visible_count=visible_count
+                    total=Signal::derive(move || filtered_cards.get().len())
+                    test_id=Signal::derive(|| "grammar-load-more-btn".to_string())
+                />
                 <ToastContainer toasts=toasts duration_ms=5000 />
             </Show>
         </div>

@@ -181,3 +181,80 @@ testWithFreshUser.describe("Kanji Page - Mark as Known", () => {
         expect(await kanjiPage.getCardCount()).toBeGreaterThanOrEqual(1);
     });
 });
+
+testWithFreshUser.describe("Kanji Page - Pagination", () => {
+    testWithFreshUser("should not show load-more button with few cards", async ({ page }) => {
+        test.setTimeout(60_000);
+        const kanjiPage = await setupKanjiPage(page);
+        await addFirstKanji(kanjiPage);
+        await expect(kanjiPage.kanjiGrid).toBeVisible({ timeout: 10_000 });
+
+        // With only 1 card (< 50), load-more button should NOT be visible
+        await expect(kanjiPage.loadMoreButton).not.toBeVisible();
+    });
+
+    testWithFreshUser("should show load-more button when many kanji exist", async ({ page }) => {
+        test.setTimeout(60_000);
+        const kanjiPage = await setupKanjiPage(page);
+
+        // Add all N5 kanji (~80 kanji, well above the 50 threshold)
+        await kanjiPage.openAddModal();
+        await kanjiPage.selectAllKanji();
+        await kanjiPage.addSelectedKanji();
+
+        await expect(kanjiPage.kanjiGrid).toBeVisible({ timeout: 10_000 });
+
+        // Verify load-more button appears
+        await expect(kanjiPage.loadMoreButton).toBeVisible({ timeout: 5000 });
+
+        // Verify only 50 cards are rendered initially
+        const visibleCount = await kanjiPage.getCardCount();
+        expect(visibleCount).toBe(50);
+    });
+
+    testWithFreshUser("should load more cards on clicking load-more button", async ({ page }) => {
+        test.setTimeout(60_000);
+        const kanjiPage = await setupKanjiPage(page);
+
+        await kanjiPage.openAddModal();
+        await kanjiPage.selectAllKanji();
+        await kanjiPage.addSelectedKanji();
+
+        await expect(kanjiPage.kanjiGrid).toBeVisible({ timeout: 10_000 });
+        await expect(kanjiPage.loadMoreButton).toBeVisible({ timeout: 5000 });
+
+        const initialCount = await kanjiPage.getCardCount();
+        expect(initialCount).toBe(50);
+
+        // Click load more
+        await kanjiPage.clickLoadMore();
+        await page.waitForTimeout(500);
+
+        // More cards should be visible now
+        const newCount = await kanjiPage.getCardCount();
+        expect(newCount).toBeGreaterThan(initialCount);
+    });
+
+    testWithFreshUser("should reset pagination when changing filter", async ({ page }) => {
+        test.setTimeout(60_000);
+        const kanjiPage = await setupKanjiPage(page);
+
+        await kanjiPage.openAddModal();
+        await kanjiPage.selectAllKanji();
+        await kanjiPage.addSelectedKanji();
+
+        await expect(kanjiPage.kanjiGrid).toBeVisible({ timeout: 10_000 });
+        await expect(kanjiPage.loadMoreButton).toBeVisible({ timeout: 5000 });
+
+        // Click load more to expand
+        await kanjiPage.clickLoadMore();
+        await page.waitForTimeout(500);
+        const expandedCount = await kanjiPage.getCardCount();
+        expect(expandedCount).toBeGreaterThan(50);
+
+        // Change filter - should reset visible cards to 50
+        await kanjiPage.selectFilter("Новые");
+        const resetCount = await kanjiPage.getCardCount();
+        expect(resetCount).toBeLessThanOrEqual(50);
+    });
+});

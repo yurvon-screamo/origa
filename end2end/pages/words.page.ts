@@ -57,6 +57,9 @@ export class WordsPage extends BasePage {
     readonly deleteConfirmBtn: Locator;
     readonly deleteCancelBtn: Locator;
 
+    // Pagination
+    readonly loadMoreButton: Locator;
+
     constructor(page: Page) {
         super(page);
 
@@ -112,6 +115,9 @@ export class WordsPage extends BasePage {
         this.deleteModal = page.getByTestId("words-delete-modal");
         this.deleteConfirmBtn = page.getByTestId("words-delete-modal-confirm");
         this.deleteCancelBtn = page.getByTestId("words-delete-modal-cancel");
+
+        // Pagination
+        this.loadMoreButton = page.getByTestId("words-load-more-btn");
     }
 
     async goto(): Promise<void> {
@@ -226,5 +232,13 @@ export class WordsPage extends BasePage {
         const card = this.page.getByTestId("words-card-item").nth(index);
         await card.getByTestId("words-card-item-mark-known-btn").click();
         await this.page.waitForTimeout(500);
+    }
+
+    async isLoadMoreVisible(): Promise<boolean> {
+        return this.loadMoreButton.isVisible();
+    }
+
+    async clickLoadMore(): Promise<void> {
+        await this.loadMoreButton.click();
     }
 }

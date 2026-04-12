@@ -418,7 +418,8 @@
         "radicals_label": "Radicals: {}",
         "examples_label": "Examples: {}",
         "user_not_found": "User not found",
-        "user_load_error": "Error loading user: {}"
+        "user_load_error": "Error loading user: {}",
+        "load_more": "Show more ({})"
     },
     "ui": {
         "card_history": "Card history",
