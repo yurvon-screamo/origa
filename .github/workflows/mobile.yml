@@ -156,8 +156,7 @@ jobs:
           echo "=== NDK content ==="
           ls -la $NDK_HOME || echo "NDK_HOME not accessible"
           echo "=== Start build ==="
-          # stt feature disabled — ort download-binaries not supported for Android cross-compilation
-          cargo tauri android build --no-default-features 2>&1 || (echo "Build failed with exit code $?"; exit 1)
+          cargo tauri android build 2>&1 || (echo "Build failed with exit code $?"; exit 1)
         env:
           NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
           ANDROID_NDK_ROOT: ${{ steps.setup-ndk.outputs.ndk-path }}
