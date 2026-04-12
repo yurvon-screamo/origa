@@ -183,7 +183,21 @@ fn dispatch_transcription(
         if tauri_available {
             status_text_local.set(Some(format!("Transcribing {}...", name)));
             audio_state_local.set(AudioState::Processing);
-            transcribe_via_tauri(&file, &name).await
+            match transcribe_via_tauri(&file, &name).await {
+                Ok(result) => Ok(result),
+                Err(_) => {
+                    tracing::info!("Tauri transcribe_audio unavailable, falling back to WASM");
+                    audio_state_local.set(AudioState::LoadingModel);
+                    transcribe_via_wasm(
+                        &file,
+                        &name,
+                        status_text_local,
+                        audio_state_local,
+                        error_message_local,
+                    )
+                    .await
+                },
+            }
         } else {
             transcribe_via_wasm(
                 &file,
