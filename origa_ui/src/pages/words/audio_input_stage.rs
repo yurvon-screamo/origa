@@ -1,4 +1,3 @@
-use base64::Engine;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 #[cfg(target_arch = "wasm32")]
@@ -10,7 +9,6 @@ use std::rc::Rc;
 #[cfg(target_arch = "wasm32")]
 use tracing::info;
 use wasm_bindgen::JsCast;
-use wasm_bindgen::JsValue;
 
 #[cfg(target_arch = "wasm32")]
 use crate::core::config::whisper_base_url;
@@ -23,6 +21,7 @@ pub(super) enum AudioState {
     #[default]
     Idle,
     LoadingModel,
+    #[allow(dead_code)]
     Processing,
     Ready,
     Error,
@@ -32,44 +31,6 @@ pub(super) enum AudioState {
 thread_local! {
     static CACHED_WHISPER: RefCell<Option<Rc<WhisperTranscriber>>> = const { RefCell::new(None) };
     static WHISPER_LOADING: Cell<bool> = const { Cell::new(false) };
-}
-
-fn is_tauri() -> bool {
-    web_sys::window()
-        .and_then(|w| js_sys::Reflect::get(&w, &JsValue::from_str("__TAURI__")).ok())
-        .is_some_and(|v| !v.is_undefined() && !v.is_null())
-}
-
-fn get_tauri_invoke_fn() -> Option<js_sys::Function> {
-    let window = web_sys::window()?;
-    let tauri_obj = js_sys::Reflect::get(&window, &JsValue::from_str("__TAURI__")).ok()?;
-    let core_mod = js_sys::Reflect::get(&tauri_obj, &JsValue::from_str("core")).ok()?;
-    let invoke_fn = js_sys::Reflect::get(&core_mod, &JsValue::from_str("invoke")).ok()?;
-    invoke_fn.dyn_into::<js_sys::Function>().ok()
-}
-
-async fn invoke_tauri_command(cmd: &str, payload: &str) -> Result<String, String> {
-    let invoke_fn = get_tauri_invoke_fn().ok_or_else(|| "Tauri API not available".to_string())?;
-
-    let args = js_sys::Object::new();
-    js_sys::Reflect::set(
-        &args,
-        &JsValue::from_str("payload"),
-        &JsValue::from_str(payload),
-    )
-    .map_err(|e| format!("Failed to set payload: {:?}", e))?;
-
-    let result = invoke_fn
-        .call2(&JsValue::UNDEFINED, &JsValue::from_str(cmd), &args)
-        .map_err(|e| format!("invoke {} failed: {:?}", cmd, e))?;
-
-    let js_val = wasm_bindgen_futures::JsFuture::from(js_sys::Promise::from(result))
-        .await
-        .map_err(|e| format!("{} error: {:?}", cmd, e))?;
-
-    js_val
-        .as_string()
-        .ok_or_else(|| format!("{} returned non-string value", cmd))
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -116,6 +77,7 @@ async fn load_whisper_model_inner(
     Ok(wrapped)
 }
 
+#[cfg(target_arch = "wasm32")]
 async fn read_file_bytes(file: &web_sys::File) -> Result<Vec<u8>, String> {
     let array_buffer_promise = file.array_buffer();
     let array_buffer = wasm_bindgen_futures::JsFuture::from(array_buffer_promise)
@@ -125,17 +87,6 @@ async fn read_file_bytes(file: &web_sys::File) -> Result<Vec<u8>, String> {
     let mut bytes = vec![0u8; uint8_array.length() as usize];
     uint8_array.copy_to(&mut bytes);
     Ok(bytes)
-}
-
-async fn transcribe_via_tauri(file: &web_sys::File, name: &str) -> Result<String, String> {
-    let bytes = read_file_bytes(file).await?;
-    let base64_data = base64::engine::general_purpose::STANDARD.encode(&bytes);
-    let payload = serde_json::json!({
-        "audioBase64": base64_data,
-        "fileName": name
-    })
-    .to_string();
-    invoke_tauri_command("transcribe_audio", &payload).await
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -170,7 +121,6 @@ async fn transcribe_via_wasm(
 
 #[cfg(target_arch = "wasm32")]
 fn dispatch_transcription(
-    tauri_available: bool,
     file: &web_sys::File,
     name: &str,
     audio_state_local: RwSignal<AudioState>,
@@ -180,57 +130,26 @@ fn dispatch_transcription(
     let file = file.clone();
     let name = name.to_string();
     async move {
-        if tauri_available {
-            status_text_local.set(Some(format!("Transcribing {}...", name)));
-            audio_state_local.set(AudioState::Processing);
-            match transcribe_via_tauri(&file, &name).await {
-                Ok(result) => Ok(result),
-                Err(_) => {
-                    tracing::info!("Tauri transcribe_audio unavailable, falling back to WASM");
-                    audio_state_local.set(AudioState::LoadingModel);
-                    transcribe_via_wasm(
-                        &file,
-                        &name,
-                        status_text_local,
-                        audio_state_local,
-                        error_message_local,
-                    )
-                    .await
-                },
-            }
-        } else {
-            transcribe_via_wasm(
-                &file,
-                &name,
-                status_text_local,
-                audio_state_local,
-                error_message_local,
-            )
-            .await
-        }
+        transcribe_via_wasm(
+            &file,
+            &name,
+            status_text_local,
+            audio_state_local,
+            error_message_local,
+        )
+        .await
     }
 }
 
 #[cfg(not(target_arch = "wasm32"))]
-fn dispatch_transcription(
-    tauri_available: bool,
-    file: &web_sys::File,
-    name: &str,
-    audio_state_local: RwSignal<AudioState>,
-    status_text_local: RwSignal<Option<String>>,
+async fn dispatch_transcription(
+    _file: &web_sys::File,
+    _name: &str,
+    _audio_state_local: RwSignal<AudioState>,
+    _status_text_local: RwSignal<Option<String>>,
     _error_message_local: RwSignal<Option<String>>,
-) -> impl std::future::Future<Output = Result<String, String>> {
-    let file = file.clone();
-    let name = name.to_string();
-    async move {
-        if tauri_available {
-            status_text_local.set(Some(format!("Transcribing {}...", name)));
-            audio_state_local.set(AudioState::Processing);
-            transcribe_via_tauri(&file, &name).await
-        } else {
-            Err("Tauri API not available. Run in Tauri desktop app.".to_string())
-        }
-    }
+) -> Result<String, String> {
+    Err("Speech-to-text requires WASM runtime".to_string())
 }
 
 #[component]
@@ -268,6 +187,14 @@ pub(super) fn AudioInputStage(
             return;
         }
 
+        #[cfg(target_arch = "wasm32")]
+        if !is_wav {
+            error_message.set(Some(
+                "Only WAV format is supported for speech recognition.".to_string(),
+            ));
+            return;
+        }
+
         let max_size_mb = 50.0;
         if file.size() / (1024.0 * 1024.0) > max_size_mb {
             error_message.set(Some(format!(
@@ -277,25 +204,8 @@ pub(super) fn AudioInputStage(
             return;
         }
 
-        let tauri_available = is_tauri();
-
-        #[cfg(target_arch = "wasm32")]
-        if !tauri_available && !is_wav {
-            error_message.set(Some(
-                "In the browser, only WAV format is supported. \
-                 Please use the desktop app for MP3/WebM/M4A/OGG."
-                    .to_string(),
-            ));
-            return;
-        }
-
-        if tauri_available {
-            audio_state.set(AudioState::Processing);
-            status_text.set(Some(format!("Transcribing {}...", name)));
-        } else {
-            audio_state.set(AudioState::LoadingModel);
-            status_text.set(Some(format!("Loading model for {}...", name)));
-        }
+        audio_state.set(AudioState::LoadingModel);
+        status_text.set(Some(format!("Loading model for {}...", name)));
 
         let on_text_extracted = on_text_extracted;
         let on_error = on_error;
@@ -305,7 +215,6 @@ pub(super) fn AudioInputStage(
 
         spawn_local(async move {
             let result = dispatch_transcription(
-                tauri_available,
                 &file,
                 &name,
                 audio_state_local,
@@ -392,7 +301,7 @@ pub(super) fn AudioInputStage(
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 017-7m-7 7h18m-18 0a7 7 0 017 7m0 0a7 7 0 01-7-7m-7 7h18" />
                                         </svg>
                                         <p class="text-sm text-[var(--fg-muted)]">Click or drag to upload audio</p>
-                                        <p class="text-xs text-[var(--fg-muted)]">WAV, MP3, WebM, M4A, OGG (max 50 MB)</p>
+                                        <p class="text-xs text-[var(--fg-muted)]">WAV (max 50 MB)</p>
                                     </div>
                                 </label>
                             </div>

@@ -97,10 +97,9 @@ jobs:
           restore-keys: |
             xwin-${{ runner.os }}-
 
-      # stt feature disabled — ort download-binaries breaks cross-compilation
       - name: Build Tauri app for Windows
         working-directory: tauri
-        run: cargo tauri build --runner cargo-xwin --target x86_64-pc-windows-msvc --no-default-features
+        run: cargo tauri build --runner cargo-xwin --target x86_64-pc-windows-msvc
         env:
           TAURI_BUNDLE_NSIS: "true"
 
@@ -315,10 +314,9 @@ jobs:
       - name: Remove public assets from dist
         run: rm -rf origa_ui/dist/public
 
-      # stt feature disabled — ort download-binaries breaks zig cross-compilation (clang_rt.osx missing)
       - name: Build Tauri app for macOS
         working-directory: tauri
-        run: cargo tauri build --runner cargo-zigbuild --target aarch64-apple-darwin --no-bundle --no-default-features
+        run: cargo tauri build --runner cargo-zigbuild --target aarch64-apple-darwin --no-bundle
 
       - name: Extract signature
         id: signature
