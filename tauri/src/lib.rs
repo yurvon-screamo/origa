@@ -1,3 +1,4 @@
+#[cfg(feature = "stt")]
 use base64::Engine;
 use tauri::{Emitter, Listener, Manager};
 use tauri_plugin_deep_link::DeepLinkExt;
@@ -7,6 +8,7 @@ fn greet(name: &str) -> String {
     format!("Hello, {}! You've been greeted from Rust!", name)
 }
 
+#[cfg(feature = "stt")]
 #[tauri::command]
 fn transcribe_audio(
     app: tauri::AppHandle,
@@ -66,11 +68,18 @@ pub fn run() {
         builder = builder.plugin(tauri_plugin_updater::Builder::new().build());
     }
 
-    builder
+    let builder = builder
         .plugin(tauri_plugin_deep_link::init())
         .plugin(tauri_plugin_opener::init())
-        .plugin(tauri_plugin_tts::init())
-        .invoke_handler(tauri::generate_handler![greet, transcribe_audio])
+        .plugin(tauri_plugin_tts::init());
+
+    #[cfg(feature = "stt")]
+    let builder = builder.invoke_handler(tauri::generate_handler![greet, transcribe_audio]);
+
+    #[cfg(not(feature = "stt"))]
+    let builder = builder.invoke_handler(tauri::generate_handler![greet]);
+
+    builder
         .setup(|app| {
             log::info!("[deep-link] setup started");
 
