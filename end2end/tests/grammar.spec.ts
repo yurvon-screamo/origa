@@ -175,3 +175,74 @@ testWithFreshUser.describe("Grammar Page - Mark as Known", () => {
         expect(await grammarPage.getCardCount()).toBeGreaterThanOrEqual(1);
     });
 });
+
+testWithFreshUser.describe("Grammar Page - Pagination", () => {
+    testWithFreshUser("should not show load-more button with few cards", async ({ page }) => {
+        test.setTimeout(60_000);
+        const grammarPage = await setupGrammarPage(page);
+
+        await grammarPage.openAddModal();
+        await grammarPage.selectRule("～ます");
+        await grammarPage.addSelectedRules();
+        await expect(grammarPage.grammarGrid).toBeVisible({ timeout: 10_000 });
+
+        // With only 1 card (< 50), load-more button should NOT be visible
+        await expect(grammarPage.loadMoreButton).not.toBeVisible();
+    });
+
+    testWithFreshUser("should show load-more button when many grammar rules exist", async ({ page }) => {
+        test.setTimeout(90_000);
+        const grammarPage = await setupGrammarPage(page);
+
+        // Add all N5 grammar rules
+        await grammarPage.openAddModal();
+        await grammarPage.selectAllRules();
+        await grammarPage.addSelectedRules();
+
+        await expect(grammarPage.grammarGrid).toBeVisible({ timeout: 10_000 });
+        const totalCount = await grammarPage.getCardCount();
+
+        // If enough rules to trigger pagination
+        if (totalCount >= 50) {
+            await expect(grammarPage.loadMoreButton).toBeVisible({ timeout: 5000 });
+            expect(totalCount).toBe(50);
+        } else {
+            // Not enough rules for pagination - button should not be visible
+            await expect(grammarPage.loadMoreButton).not.toBeVisible();
+        }
+    });
+
+    testWithFreshUser("should reset pagination when changing filter with many cards", async ({ page }) => {
+        test.setTimeout(90_000);
+        const grammarPage = await setupGrammarPage(page);
+
+        // Add all N5 rules first
+        await grammarPage.openAddModal();
+        await grammarPage.selectAllRules();
+        await grammarPage.addSelectedRules();
+
+        await expect(grammarPage.grammarGrid).toBeVisible({ timeout: 10_000 });
+
+        // Also add N4 rules to get more cards
+        await grammarPage.openAddModal();
+        await grammarPage.selectLevel("N4");
+        await grammarPage.selectAllRules();
+        await grammarPage.addSelectedRules();
+
+        await expect(grammarPage.grammarGrid).toBeVisible({ timeout: 10_000 });
+
+        // Only test if pagination is active
+        if (await grammarPage.isLoadMoreVisible().catch(() => false)) {
+            // Click load more to expand
+            await grammarPage.clickLoadMore();
+            await page.waitForTimeout(500);
+            const expandedCount = await grammarPage.getCardCount();
+            expect(expandedCount).toBeGreaterThan(50);
+
+            // Change filter - should reset visible cards
+            await grammarPage.selectFilter("Новые");
+            const resetCount = await grammarPage.getCardCount();
+            expect(resetCount).toBeLessThanOrEqual(50);
+        }
+    });
+});

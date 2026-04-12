@@ -265,3 +265,15 @@ testWithFreshUser.describe("Words Page - Audio Transcription", () => {
         expect(drawerText).toContain("Найдено");
     });
 });
+
+testWithFreshUser.describe("Words Page - Pagination", () => {
+    testWithFreshUser("should not show load-more button with few cards", async ({ page }) => {
+        test.setTimeout(60_000);
+        const wordsPage = await setupWordsPage(page);
+        await addFirstWord(wordsPage);
+        await expect(wordsPage.wordsGrid).toBeVisible({ timeout: 10_000 });
+
+        // With only a few cards (< 50), load-more button should NOT be visible
+        await expect(wordsPage.loadMoreButton).not.toBeVisible();
+    });
+});

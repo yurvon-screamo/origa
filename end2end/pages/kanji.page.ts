@@ -23,6 +23,9 @@ export class KanjiPage extends BasePage {
     readonly deleteConfirmBtn: Locator;
     readonly deleteCancelBtn: Locator;
 
+    // Pagination
+    readonly loadMoreButton: Locator;
+
     constructor(page: Page) {
         super(page);
 
@@ -43,6 +46,9 @@ export class KanjiPage extends BasePage {
         this.deleteModal = page.getByTestId("kanji-delete-modal");
         this.deleteConfirmBtn = page.getByTestId("kanji-delete-modal-confirm");
         this.deleteCancelBtn = page.getByTestId("kanji-delete-modal-cancel");
+
+        // Pagination
+        this.loadMoreButton = page.getByTestId("kanji-load-more-btn");
     }
 
     async goto(): Promise<void> {
@@ -129,5 +135,13 @@ export class KanjiPage extends BasePage {
         const card = this.page.getByTestId("kanji-card-item").nth(index);
         await card.getByTestId("kanji-card-item-mark-known-btn").click();
         await this.page.waitForTimeout(500);
+    }
+
+    async isLoadMoreVisible(): Promise<boolean> {
+        return this.loadMoreButton.isVisible();
+    }
+
+    async clickLoadMore(): Promise<void> {
+        await this.loadMoreButton.click();
     }
 }
