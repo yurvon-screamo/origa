@@ -8,6 +8,7 @@ use crate::core::config::public_url;
 use crate::utils::fetch_text;
 
 static JLPT_CONTENT: OnceLock<JlptContent> = OnceLock::new();
+static DEFAULT_JLPT_CONTENT: OnceLock<JlptContent> = OnceLock::new();
 
 #[derive(Debug, Deserialize)]
 struct KanjiDictionary {
@@ -233,4 +234,10 @@ pub fn recalculate_user_jlpt_progress(user: &mut origa::domain::User) {
     if let Some(content) = JLPT_CONTENT.get() {
         user.recalculate_jlpt_progress(content);
     }
+}
+
+pub fn get_jlpt_content() -> &'static JlptContent {
+    JLPT_CONTENT
+        .get()
+        .unwrap_or_else(|| DEFAULT_JLPT_CONTENT.get_or_init(JlptContent::new))
 }

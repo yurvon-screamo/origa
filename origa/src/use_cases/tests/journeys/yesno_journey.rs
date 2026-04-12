@@ -2,7 +2,9 @@ use rstest::rstest;
 
 use crate::domain::User;
 use crate::domain::value_objects::Question;
-use crate::domain::{Card, NativeLanguage, RateMode, Rating, VocabularyCard, YesNoCard};
+use crate::domain::{
+    Card, JlptContent, NativeLanguage, RateMode, Rating, VocabularyCard, YesNoCard,
+};
 use crate::traits::UserRepository;
 use crate::use_cases::tests::fixtures::InMemoryUserRepository;
 use crate::use_cases::{RateCardUseCase, SelectCardsToLessonUseCase};
@@ -39,7 +41,7 @@ async fn yesno_journey_correct_answer_results_in_good_rating() {
 
     // Получаем карточки для урока
     let use_case = SelectCardsToLessonUseCase::new(&repo);
-    let cards = use_case.execute().await.unwrap();
+    let cards = use_case.execute(&JlptContent::new()).await.unwrap();
 
     // Берём первую карточку
     let (card_id, first_card_view) = cards.iter().next().unwrap();
@@ -90,7 +92,7 @@ async fn yesno_journey_wrong_answer_results_in_hard_rating() {
 
     // Получаем карточки для урока
     let use_case = SelectCardsToLessonUseCase::new(&repo);
-    let cards = use_case.execute().await.unwrap();
+    let cards = use_case.execute(&JlptContent::new()).await.unwrap();
 
     // Берём первую карточку
     let (card_id, first_card_view) = cards.iter().next().unwrap();
@@ -202,7 +204,7 @@ async fn yesno_journey_transition_to_next_card_after_rating() {
 
     // Получаем карточки для урока
     let select_use_case = SelectCardsToLessonUseCase::new(&repo);
-    let cards = select_use_case.execute().await.unwrap();
+    let cards = select_use_case.execute(&JlptContent::new()).await.unwrap();
 
     assert!(cards.len() >= 3, "Должно быть минимум 3 карточки для теста");
 
@@ -243,7 +245,7 @@ async fn yesno_journey_all_rating_cases(
     let repo = InMemoryUserRepository::with_user(user);
 
     let use_case = SelectCardsToLessonUseCase::new(&repo);
-    let cards = use_case.execute().await.unwrap();
+    let cards = use_case.execute(&JlptContent::new()).await.unwrap();
     let (card_id, first_card_view) = cards.iter().next().unwrap();
     let card = first_card_view.card().clone();
 

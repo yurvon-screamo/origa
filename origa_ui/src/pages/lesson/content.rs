@@ -85,7 +85,8 @@ pub fn LessonContent() -> impl IntoView {
             is_loading.set(true);
 
             let use_case = SelectCardsToLessonUseCase::new(&repo);
-            let cards = use_case.execute().await;
+            let jlpt_content = crate::loaders::get_jlpt_content();
+            let cards = use_case.execute(jlpt_content).await;
 
             tracing::info!("Cards len: {}", cards.iter().count());
 

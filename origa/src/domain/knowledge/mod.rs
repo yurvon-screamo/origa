@@ -19,7 +19,7 @@ pub use vocabulary::VocabularyCard;
 use std::collections::{HashMap, HashSet};
 
 use crate::domain::{
-    OrigaError, RateMode, Rating, ReviewLog,
+    JapaneseLevel, JlptContent, OrigaError, RateMode, Rating, ReviewLog,
     srs::{NextReview, rate_memory},
 };
 use chrono::Utc;
@@ -27,6 +27,9 @@ use serde::{Deserialize, Serialize};
 use ulid::Ulid;
 
 const MIN_LESSON_SIZE: usize = 15;
+
+/// Приоритет карточек без определённого JLPT уровня — ниже всех известных уровней (N1=1)
+const UNKNOWN_JLPT_PRIORITY: u8 = 0;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct KnowledgeSet {
@@ -223,7 +226,11 @@ impl KnowledgeSet {
         Ok(())
     }
 
-    pub fn cards_to_lesson(&self, daily_new_limit: usize) -> HashMap<Ulid, LessonCard> {
+    pub fn cards_to_lesson(
+        &self,
+        daily_new_limit: usize,
+        jlpt_content: &JlptContent,
+    ) -> HashMap<Ulid, LessonCard> {
         let mut all_cards = self.study_cards.iter().collect::<Vec<_>>();
         all_cards.sort_by_key(|(_, card)| card.memory().next_review_date());
 
@@ -242,11 +249,20 @@ impl KnowledgeSet {
 
         if remaining_new > 0 && selected_cards.len() < remaining_new {
             let allowed_new = remaining_new.saturating_sub(selected_cards.len());
-            let new_cards = all_cards
+            let mut new_cards: Vec<_> = all_cards
                 .iter()
                 .filter(|(_, card)| card.memory().is_new())
-                .take(allowed_new);
-            selected_cards.extend(new_cards);
+                .collect();
+            new_cards.sort_by(|(_, card_a), (_, card_b)| {
+                let priority_a = resolve_jlpt_level(card_a.card(), jlpt_content)
+                    .map(|l| l.as_number())
+                    .unwrap_or(UNKNOWN_JLPT_PRIORITY);
+                let priority_b = resolve_jlpt_level(card_b.card(), jlpt_content)
+                    .map(|l| l.as_number())
+                    .unwrap_or(UNKNOWN_JLPT_PRIORITY);
+                compare_by_jlpt_priority((card_a, priority_a), (card_b, priority_b))
+            });
+            selected_cards.extend(new_cards.into_iter().take(allowed_new));
         }
 
         let known_cards = all_cards.iter().filter(|(_, card)| {
@@ -488,9 +504,26 @@ impl KnowledgeSet {
     }
 }
 
+fn resolve_jlpt_level(card: &Card, jlpt_content: &JlptContent) -> Option<JapaneseLevel> {
+    jlpt_content.find_level(&card.content_key(), CardType::from(card))
+}
+
+fn compare_by_jlpt_priority(
+    (card_a, jlpt_a): (&StudyCard, u8),
+    (card_b, jlpt_b): (&StudyCard, u8),
+) -> std::cmp::Ordering {
+    jlpt_b.cmp(&jlpt_a).then_with(|| {
+        card_a
+            .memory()
+            .next_review_date()
+            .cmp(&card_b.memory().next_review_date())
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::domain::JlptContent;
     use crate::domain::memory::MemoryState;
     use crate::domain::value_objects::Question;
     use chrono::Duration;
@@ -518,7 +551,7 @@ mod tests {
 
         knowledge_set.toggle_favorite(card_id).unwrap();
 
-        let result = knowledge_set.cards_to_lesson(10);
+        let result = knowledge_set.cards_to_lesson(10, &JlptContent::new());
         assert!(result.contains_key(&card_id));
     }
 
@@ -540,7 +573,7 @@ mod tests {
             .rate_card(*study2.card_id(), Rating::Easy, RateMode::StandardLesson)
             .unwrap();
 
-        let result = knowledge_set.cards_to_lesson(10);
+        let result = knowledge_set.cards_to_lesson(10, &JlptContent::new());
 
         assert!(result.contains_key(study1.card_id()));
     }
@@ -921,7 +954,7 @@ mod tests {
                 .unwrap();
         }
 
-        let lesson_cards = knowledge_set.cards_to_lesson(10);
+        let lesson_cards = knowledge_set.cards_to_lesson(10, &JlptContent::new());
         let new_in_lesson = lesson_cards
             .iter()
             .filter(|(id, _)| knowledge_set.get_card(**id).unwrap().memory().is_new())
@@ -955,6 +988,126 @@ mod tests {
             knowledge_set.new_cards_studied_today(),
             2,
             "new_cards_studied_today should be preserved after delete_card"
+        );
+    }
+
+    #[test]
+    fn new_cards_sorted_by_jlpt_level() {
+        let mut jlpt_content = JlptContent::new();
+        jlpt_content.words_by_level.insert(
+            JapaneseLevel::N5,
+            ["食べる".to_string()].into_iter().collect(),
+        );
+        jlpt_content.words_by_level.insert(
+            JapaneseLevel::N4,
+            ["走る".to_string()].into_iter().collect(),
+        );
+        jlpt_content.words_by_level.insert(
+            JapaneseLevel::N3,
+            ["挑戦する".to_string()].into_iter().collect(),
+        );
+
+        let mut knowledge_set = KnowledgeSet::new();
+        let study_chousen = knowledge_set
+            .create_card(create_vocab_card("挑戦する"))
+            .unwrap();
+        let study_taberu = knowledge_set
+            .create_card(create_vocab_card("食べる"))
+            .unwrap();
+        let study_hashiru = knowledge_set
+            .create_card(create_vocab_card("走る"))
+            .unwrap();
+
+        let result = knowledge_set.cards_to_lesson(2, &jlpt_content);
+
+        assert!(
+            result.contains_key(study_taberu.card_id()),
+            "食べる (N5) should be selected — highest JLPT priority"
+        );
+        assert!(
+            result.contains_key(study_hashiru.card_id()),
+            "走る (N4) should be selected — second highest JLPT priority"
+        );
+        assert!(
+            !result.contains_key(study_chousen.card_id()),
+            "挑戦する (N3) should not be selected — daily limit reached"
+        );
+    }
+
+    #[test]
+    fn new_cards_unknown_level_go_last() {
+        let mut jlpt_content = JlptContent::new();
+        jlpt_content.words_by_level.insert(
+            JapaneseLevel::N5,
+            ["食べる".to_string()].into_iter().collect(),
+        );
+
+        let mut knowledge_set = KnowledgeSet::new();
+        let study_michigo = knowledge_set
+            .create_card(create_vocab_card("未知語"))
+            .unwrap();
+        let study_taberu = knowledge_set
+            .create_card(create_vocab_card("食べる"))
+            .unwrap();
+
+        let result = knowledge_set.cards_to_lesson(1, &jlpt_content);
+
+        assert!(
+            result.contains_key(study_taberu.card_id()),
+            "食べる (N5) should be selected — known JLPT level"
+        );
+        assert!(
+            !result.contains_key(study_michigo.card_id()),
+            "未知語 (Unknown) should not be selected — unknown level has lowest priority"
+        );
+    }
+
+    #[test]
+    fn new_cards_jlpt_sort_does_not_affect_other_categories() {
+        let mut jlpt_content = JlptContent::new();
+        jlpt_content.words_by_level.insert(
+            JapaneseLevel::N5,
+            ["食べる".to_string()].into_iter().collect(),
+        );
+        jlpt_content.words_by_level.insert(
+            JapaneseLevel::N4,
+            ["走る".to_string()].into_iter().collect(),
+        );
+        jlpt_content
+            .kanji_by_level
+            .insert(JapaneseLevel::N5, ["日".to_string()].into_iter().collect());
+
+        let mut knowledge_set = KnowledgeSet::new();
+        let study_taberu = knowledge_set
+            .create_card(create_vocab_card("食べる"))
+            .unwrap();
+        let study_hashiru = knowledge_set
+            .create_card(create_vocab_card("走る"))
+            .unwrap();
+        let study_nichi = knowledge_set
+            .create_card(Card::Kanji(KanjiCard::new_test("日".to_string())))
+            .unwrap();
+
+        knowledge_set
+            .rate_card(*study_taberu.card_id(), Rating::Again, RateMode::ShortTerm)
+            .unwrap();
+        knowledge_set
+            .toggle_favorite(*study_nichi.card_id())
+            .unwrap();
+
+        let result = knowledge_set.cards_to_lesson(10, &jlpt_content);
+
+        assert!(
+            result.contains_key(study_taberu.card_id()),
+            "食べる (due, high difficulty) should be in lesson"
+        );
+        assert!(
+            result.contains_key(study_hashiru.card_id()),
+            "走る (new, N4) should be in lesson"
+        );
+        assert!(
+            result.contains_key(study_nichi.card_id()),
+            "日 (favorite) should be in lesson"
         );
     }
 }
