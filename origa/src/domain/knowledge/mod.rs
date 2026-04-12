@@ -16,7 +16,8 @@ pub use lesson::{
 
 pub use vocabulary::VocabularyCard;
 
-use std::collections::{HashMap, HashSet};
+use std::cmp::Reverse;
+use std::collections::{BTreeMap, HashMap, HashSet};
 
 use crate::domain::{
     JapaneseLevel, JlptContent, OrigaError, RateMode, Rating, ReviewLog,
@@ -30,6 +31,14 @@ const MIN_LESSON_SIZE: usize = 15;
 
 /// Приоритет карточек без определённого JLPT уровня — ниже всех известных уровней (N1=1)
 const UNKNOWN_JLPT_PRIORITY: u8 = 0;
+
+/// Веса типов карточек для interleaving: Vocab:Kanji:Grammar ≈ 60:20:20.
+/// При добавлении нового варианта в CardType — обновить эту константу.
+const CARD_TYPE_WEIGHTS: [(CardType, usize); 3] = [
+    (CardType::Vocabulary, 3),
+    (CardType::Kanji, 1),
+    (CardType::Grammar, 1),
+];
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct KnowledgeSet {
@@ -242,6 +251,7 @@ impl KnowledgeSet {
         let mut selected_cards: Vec<_> = all_cards
             .iter()
             .filter(|(_, card)| card.memory().is_due() && card.memory().is_high_difficulty())
+            .copied()
             .collect();
 
         let new_cards_studied_today = self.new_cards_studied_today();
@@ -249,26 +259,22 @@ impl KnowledgeSet {
 
         if remaining_new > 0 && selected_cards.len() < remaining_new {
             let allowed_new = remaining_new.saturating_sub(selected_cards.len());
-            let mut new_cards: Vec<_> = all_cards
+            let new_cards: Vec<_> = all_cards
                 .iter()
                 .filter(|(_, card)| card.memory().is_new())
+                .copied()
                 .collect();
-            new_cards.sort_by(|(_, card_a), (_, card_b)| {
-                let priority_a = resolve_jlpt_level(card_a.card(), jlpt_content)
-                    .map(|l| l.as_number())
-                    .unwrap_or(UNKNOWN_JLPT_PRIORITY);
-                let priority_b = resolve_jlpt_level(card_b.card(), jlpt_content)
-                    .map(|l| l.as_number())
-                    .unwrap_or(UNKNOWN_JLPT_PRIORITY);
-                compare_by_jlpt_priority((card_a, priority_a), (card_b, priority_b))
-            });
-            selected_cards.extend(new_cards.into_iter().take(allowed_new));
+            let distributed = distribute_new_cards(new_cards, jlpt_content);
+            selected_cards.extend(distributed.into_iter().take(allowed_new));
         }
 
-        let known_cards = all_cards.iter().filter(|(_, card)| {
-            card.memory().is_due()
-                && (card.memory().is_in_progress() || card.memory().is_known_card())
-        });
+        let known_cards = all_cards
+            .iter()
+            .filter(|(_, card)| {
+                card.memory().is_due()
+                    && (card.memory().is_in_progress() || card.memory().is_known_card())
+            })
+            .copied();
         selected_cards.extend(known_cards);
 
         let selected_ids: HashSet<_> = selected_cards.iter().map(|(id, _)| **id).collect();
@@ -508,16 +514,71 @@ fn resolve_jlpt_level(card: &Card, jlpt_content: &JlptContent) -> Option<Japanes
     jlpt_content.find_level(&card.content_key(), CardType::from(card))
 }
 
-fn compare_by_jlpt_priority(
-    (card_a, jlpt_a): (&StudyCard, u8),
-    (card_b, jlpt_b): (&StudyCard, u8),
-) -> std::cmp::Ordering {
-    jlpt_b.cmp(&jlpt_a).then_with(|| {
-        card_a
-            .memory()
-            .next_review_date()
-            .cmp(&card_b.memory().next_review_date())
-    })
+fn weighted_interleave_by_type<'a>(
+    cards: Vec<(&'a Ulid, &'a StudyCard)>,
+) -> Vec<(&'a Ulid, &'a StudyCard)> {
+    use std::collections::VecDeque;
+
+    let mut queues: HashMap<CardType, VecDeque<(&Ulid, &StudyCard)>> = HashMap::new();
+    for card in cards {
+        let card_type = CardType::from(card.1.card());
+        queues.entry(card_type).or_default().push_back(card);
+    }
+
+    let pattern: Vec<CardType> = CARD_TYPE_WEIGHTS
+        .iter()
+        .flat_map(|(ct, w)| std::iter::repeat(*ct).take(*w))
+        .collect();
+
+    let total_cards: usize = queues.values().map(|q| q.len()).sum();
+    let mut result = Vec::with_capacity(total_cards);
+    let mut pattern_idx = 0;
+    let mut empty_rounds = 0;
+
+    while result.len() < total_cards {
+        let card_type = pattern[pattern_idx % pattern.len()];
+        pattern_idx += 1;
+
+        if let Some(queue) = queues.get_mut(&card_type) {
+            if let Some(card) = queue.pop_front() {
+                result.push(card);
+                empty_rounds = 0;
+                continue;
+            }
+        }
+
+        empty_rounds += 1;
+        // Если за полный цикл паттерна не извлекли ни одной карточки —
+        // значит остались типы, не представленные в CARD_TYPE_WEIGHTS
+        if empty_rounds >= pattern.len() {
+            queues
+                .values_mut()
+                .flat_map(|q| q.drain(..))
+                .for_each(|card| result.push(card));
+            break;
+        }
+    }
+
+    result
+}
+
+fn distribute_new_cards<'a>(
+    new_cards: Vec<(&'a Ulid, &'a StudyCard)>,
+    jlpt_content: &JlptContent,
+) -> Vec<(&'a Ulid, &'a StudyCard)> {
+    // Reverse: N5(5) → наивысший приоритет → первый ключ в BTreeMap
+    let mut groups: BTreeMap<Reverse<u8>, Vec<(&Ulid, &StudyCard)>> = BTreeMap::new();
+    for card in new_cards {
+        let priority = resolve_jlpt_level(card.1.card(), jlpt_content)
+            .map(|l| l.as_number())
+            .unwrap_or(UNKNOWN_JLPT_PRIORITY);
+        groups.entry(Reverse(priority)).or_default().push(card);
+    }
+
+    groups
+        .into_iter()
+        .flat_map(|(_, cards)| weighted_interleave_by_type(cards))
+        .collect()
 }
 
 #[cfg(test)]
@@ -1108,6 +1169,219 @@ mod tests {
         assert!(
             result.contains_key(study_nichi.card_id()),
             "日 (favorite) should be in lesson"
+        );
+    }
+
+    #[test]
+    fn new_cards_interleaved_by_type_within_jlpt_level() {
+        let grammar_rule_id_1 = Ulid::new();
+        let grammar_rule_id_2 = Ulid::new();
+
+        let mut jlpt_content = JlptContent::new();
+        jlpt_content.words_by_level.insert(
+            JapaneseLevel::N5,
+            ["w1", "w2", "w3", "w4", "w5", "w6"]
+                .into_iter()
+                .map(|s| s.to_string())
+                .collect(),
+        );
+        jlpt_content.kanji_by_level.insert(
+            JapaneseLevel::N5,
+            ["k1", "k2"].into_iter().map(|s| s.to_string()).collect(),
+        );
+        jlpt_content.grammar_by_level.insert(
+            JapaneseLevel::N5,
+            [grammar_rule_id_1.to_string(), grammar_rule_id_2.to_string()]
+                .into_iter()
+                .collect(),
+        );
+
+        let mut knowledge_set = KnowledgeSet::new();
+        for word in ["w1", "w2", "w3", "w4", "w5", "w6"] {
+            knowledge_set.create_card(create_vocab_card(word)).unwrap();
+        }
+        knowledge_set
+            .create_card(Card::Kanji(KanjiCard::new_test("k1".to_string())))
+            .unwrap();
+        knowledge_set
+            .create_card(Card::Kanji(KanjiCard::new_test("k2".to_string())))
+            .unwrap();
+        knowledge_set
+            .create_card(Card::Grammar(GrammarRuleCard::new_test_with_id(
+                grammar_rule_id_1,
+            )))
+            .unwrap();
+        knowledge_set
+            .create_card(Card::Grammar(GrammarRuleCard::new_test_with_id(
+                grammar_rule_id_2,
+            )))
+            .unwrap();
+
+        let result = knowledge_set.cards_to_lesson(5, &jlpt_content);
+
+        assert_eq!(result.len(), 5, "Should return exactly 5 cards (limit=5)");
+
+        let has_kanji = result
+            .keys()
+            .any(|id| matches!(knowledge_set.get_card(*id).unwrap().card(), Card::Kanji(_)));
+        let has_grammar = result.keys().any(|id| {
+            matches!(
+                knowledge_set.get_card(*id).unwrap().card(),
+                Card::Grammar(_)
+            )
+        });
+
+        assert!(
+            has_kanji,
+            "Should contain at least one kanji — interleaving distributes types"
+        );
+        assert!(
+            has_grammar,
+            "Should contain at least one grammar — interleaving distributes types"
+        );
+    }
+
+    #[test]
+    fn new_cards_interleave_handles_missing_type() {
+        let mut jlpt_content = JlptContent::new();
+        jlpt_content.words_by_level.insert(
+            JapaneseLevel::N5,
+            ["w1", "w2", "w3", "w4", "w5"]
+                .into_iter()
+                .map(|s| s.to_string())
+                .collect(),
+        );
+
+        let mut knowledge_set = KnowledgeSet::new();
+        for word in ["w1", "w2", "w3", "w4", "w5"] {
+            knowledge_set.create_card(create_vocab_card(word)).unwrap();
+        }
+
+        let result = knowledge_set.cards_to_lesson(5, &jlpt_content);
+
+        assert_eq!(
+            result.len(),
+            5,
+            "All 5 vocab cards should be included when no kanji/grammar exist"
+        );
+    }
+
+    #[test]
+    fn new_cards_interleave_across_jlpt_levels() {
+        let mut jlpt_content = JlptContent::new();
+        jlpt_content.words_by_level.insert(
+            JapaneseLevel::N5,
+            ["n5w1", "n5w2", "n5w3"]
+                .into_iter()
+                .map(|s| s.to_string())
+                .collect(),
+        );
+        jlpt_content.kanji_by_level.insert(
+            JapaneseLevel::N5,
+            ["n5k1"].into_iter().map(|s| s.to_string()).collect(),
+        );
+        jlpt_content.words_by_level.insert(
+            JapaneseLevel::N4,
+            ["n4w1", "n4w2", "n4w3"]
+                .into_iter()
+                .map(|s| s.to_string())
+                .collect(),
+        );
+        jlpt_content.kanji_by_level.insert(
+            JapaneseLevel::N4,
+            ["n4k1"].into_iter().map(|s| s.to_string()).collect(),
+        );
+
+        let mut knowledge_set = KnowledgeSet::new();
+        for word in ["n5w1", "n5w2", "n5w3"] {
+            knowledge_set.create_card(create_vocab_card(word)).unwrap();
+        }
+        knowledge_set
+            .create_card(Card::Kanji(KanjiCard::new_test("n5k1".to_string())))
+            .unwrap();
+        for word in ["n4w1", "n4w2", "n4w3"] {
+            knowledge_set.create_card(create_vocab_card(word)).unwrap();
+        }
+        knowledge_set
+            .create_card(Card::Kanji(KanjiCard::new_test("n4k1".to_string())))
+            .unwrap();
+
+        let result = knowledge_set.cards_to_lesson(4, &jlpt_content);
+
+        assert_eq!(result.len(), 4, "Should return exactly 4 cards (limit=4)");
+
+        let n5_words: HashSet<&str> = ["n5w1", "n5w2", "n5w3"].into_iter().collect();
+        let n5_kanji: &str = "n5k1";
+        let n4_words: HashSet<&str> = ["n4w1", "n4w2", "n4w3"].into_iter().collect();
+        let n4_kanji: &str = "n4k1";
+
+        for id in result.keys() {
+            let card = knowledge_set.get_card(*id).unwrap().card();
+            match card {
+                Card::Vocabulary(v) => {
+                    let word = v.word().text();
+                    assert!(n5_words.contains(word), "{word} should be N5");
+                    assert!(!n4_words.contains(word), "{word} should not be N4");
+                },
+                Card::Kanji(k) => {
+                    let kanji = k.kanji().text();
+                    assert_eq!(kanji, n5_kanji, "Only N5 kanji should be selected");
+                    assert_ne!(kanji, n4_kanji, "N4 kanji should not be selected");
+                },
+                Card::Grammar(_) => panic!("No grammar cards in this test"),
+            }
+        }
+
+        let has_n5_kanji = result
+            .keys()
+            .any(|id| matches!(knowledge_set.get_card(*id).unwrap().card(), Card::Kanji(_)));
+        assert!(
+            has_n5_kanji,
+            "N5 group should include at least one kanji via interleaving"
+        );
+    }
+
+    #[test]
+    fn new_cards_interleave_preserves_jlpt_priority() {
+        let mut jlpt_content = JlptContent::new();
+        jlpt_content.words_by_level.insert(
+            JapaneseLevel::N5,
+            ["n5w1"].into_iter().map(|s| s.to_string()).collect(),
+        );
+        jlpt_content.words_by_level.insert(
+            JapaneseLevel::N4,
+            ["n4w1", "n4w2", "n4w3", "n4w4", "n4w5"]
+                .into_iter()
+                .map(|s| s.to_string())
+                .collect(),
+        );
+
+        let mut knowledge_set = KnowledgeSet::new();
+        let study_n5 = knowledge_set
+            .create_card(create_vocab_card("n5w1"))
+            .unwrap();
+        for word in ["n4w1", "n4w2", "n4w3", "n4w4", "n4w5"] {
+            knowledge_set.create_card(create_vocab_card(word)).unwrap();
+        }
+
+        let result = knowledge_set.cards_to_lesson(3, &jlpt_content);
+
+        assert!(
+            result.contains_key(study_n5.card_id()),
+            "N5 card (n5w1) should be selected — highest JLPT priority"
+        );
+
+        let n4_count = result
+            .keys()
+            .filter(|id| {
+                let card = knowledge_set.get_card(**id).unwrap().card();
+                matches!(card, Card::Vocabulary(v) if v.word().text().starts_with("n4"))
+            })
+            .count();
+
+        assert_eq!(
+            n4_count, 2,
+            "Should contain exactly 2 N4 cards (limit=3 minus 1 N5)"
         );
     }
 }
