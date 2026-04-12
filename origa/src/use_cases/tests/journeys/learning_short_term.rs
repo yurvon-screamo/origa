@@ -1,6 +1,6 @@
 use ulid::Ulid;
 
-use crate::domain::{NativeLanguage, OrigaError, RateMode, Rating, User};
+use crate::domain::{JlptContent, NativeLanguage, OrigaError, RateMode, Rating, User};
 use crate::traits::UserRepository;
 use crate::use_cases::tests::fixtures::{InMemoryUserRepository, create_user_with_vocab_cards};
 use crate::use_cases::{RateCardUseCase, SelectCardsToLessonUseCase};
@@ -27,7 +27,7 @@ async fn select_cards_to_lesson_includes_high_difficulty_cards() {
     let repo = InMemoryUserRepository::with_user(user);
     let use_case = SelectCardsToLessonUseCase::new(&repo);
 
-    let cards = use_case.execute().await.unwrap();
+    let cards = use_case.execute(&JlptContent::new()).await.unwrap();
 
     assert!(!cards.is_empty());
 }
@@ -38,7 +38,7 @@ async fn select_cards_to_lesson_includes_new_cards() {
     let repo = InMemoryUserRepository::with_user(user);
     let use_case = SelectCardsToLessonUseCase::new(&repo);
 
-    let cards = use_case.execute().await.unwrap();
+    let cards = use_case.execute(&JlptContent::new()).await.unwrap();
 
     assert!(!cards.is_empty(), "New cards should be included in lesson");
 }
@@ -52,7 +52,7 @@ async fn select_cards_to_lesson_returns_empty_for_empty_knowledge_set() {
     ));
     let use_case = SelectCardsToLessonUseCase::new(&repo);
 
-    let cards = use_case.execute().await.unwrap();
+    let cards = use_case.execute(&JlptContent::new()).await.unwrap();
 
     assert!(cards.is_empty());
 }
@@ -96,7 +96,7 @@ async fn full_short_term_cycle_processes_all_cards() {
     let select_use_case = SelectCardsToLessonUseCase::new(&repo);
     let rate_use_case = RateCardUseCase::new(&repo);
 
-    let cards = select_use_case.execute().await.unwrap();
+    let cards = select_use_case.execute(&JlptContent::new()).await.unwrap();
     for (card_id, _) in cards {
         rate_use_case
             .execute(card_id, RateMode::ShortTerm, Rating::Good)
@@ -147,7 +147,7 @@ async fn padding_cards_are_marked_as_short_term() {
     let repo = InMemoryUserRepository::with_user(user);
     let use_case = SelectCardsToLessonUseCase::new(&repo);
 
-    let cards = use_case.execute().await.unwrap();
+    let cards = use_case.execute(&JlptContent::new()).await.unwrap();
 
     let short_term_count = cards.iter().filter(|(_, c)| c.is_short_term()).count();
 
