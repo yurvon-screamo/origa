@@ -4,6 +4,7 @@ use super::sets_level_group::SetsLevelGroup;
 use super::types::SetInfo;
 use crate::i18n::{t, use_i18n};
 use crate::loaders::WellKnownSetLoaderImpl;
+use crate::pages::shared::LoadMoreButton;
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{
     Button, ButtonVariant, FilterTag, Input, Spinner, Text, TextSize, TypographyVariant,
@@ -31,6 +32,7 @@ pub fn SetsContent() -> impl IntoView {
     let import_filter = RwSignal::new(ImportFilter::default());
     let search = RwSignal::new(String::new());
     let selected_sets: RwSignal<HashSet<String>> = RwSignal::new(HashSet::new());
+    let visible_count: RwSignal<usize> = RwSignal::new(50);
     let disposed = StoredValue::new(());
 
     let known_kanji = Memo::new(move |_| {
@@ -135,6 +137,23 @@ pub fn SetsContent() -> impl IntoView {
                     || s.description.to_lowercase().contains(&query);
                 matches_level && matches_type && matches_import && matches_search
             })
+            .collect::<Vec<_>>()
+    });
+
+    Effect::new(move |_| {
+        let _ = search.get();
+        let _ = level_filter.get();
+        let _ = type_filter.get();
+        let _ = import_filter.get();
+        let _ = sets.get();
+        visible_count.set(50);
+    });
+
+    let visible_sets = Memo::new(move |_| {
+        filtered_sets
+            .get()
+            .into_iter()
+            .take(visible_count.get())
             .collect::<Vec<_>>()
     });
 
@@ -328,7 +347,7 @@ pub fn SetsContent() -> impl IntoView {
 
                 <SetsLevelGroup
                     level=JapaneseLevel::N5
-                    sets=filtered_sets
+                    sets=visible_sets
                     type_filter=type_filter
                     known_kanji=known_kanji_clone.clone()
                     on_import=on_import
@@ -337,7 +356,7 @@ pub fn SetsContent() -> impl IntoView {
                 />
                 <SetsLevelGroup
                     level=JapaneseLevel::N4
-                    sets=filtered_sets
+                    sets=visible_sets
                     type_filter=type_filter
                     known_kanji=known_kanji_clone.clone()
                     on_import=on_import
@@ -346,7 +365,7 @@ pub fn SetsContent() -> impl IntoView {
                 />
                 <SetsLevelGroup
                     level=JapaneseLevel::N3
-                    sets=filtered_sets
+                    sets=visible_sets
                     type_filter=type_filter
                     known_kanji=known_kanji_clone.clone()
                     on_import=on_import
@@ -355,7 +374,7 @@ pub fn SetsContent() -> impl IntoView {
                 />
                 <SetsLevelGroup
                     level=JapaneseLevel::N2
-                    sets=filtered_sets
+                    sets=visible_sets
                     type_filter=type_filter
                     known_kanji=known_kanji_clone.clone()
                     on_import=on_import
@@ -364,12 +383,17 @@ pub fn SetsContent() -> impl IntoView {
                 />
                 <SetsLevelGroup
                     level=JapaneseLevel::N1
-                    sets=filtered_sets
+                    sets=visible_sets
                     type_filter=type_filter
                     known_kanji=known_kanji_clone.clone()
                     on_import=on_import
                     selected_sets=selected_sets
                     on_toggle_select=on_toggle_select
+                />
+                <LoadMoreButton
+                    visible_count=visible_count
+                    total=Signal::derive(move || filtered_sets.get().len())
+                    test_id=Signal::derive(|| "sets-load-more-btn".to_string())
                 />
             </Show>
             <ImportSetPreviewModal

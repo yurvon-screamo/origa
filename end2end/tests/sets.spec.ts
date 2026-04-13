@@ -145,3 +145,61 @@ testWithFreshUser.describe("Sets Page - Navigation", () => {
         await wordsPage.expectWordsVisible();
     });
 });
+
+testWithFreshUser.describe("Sets Page - Pagination", () => {
+    testWithFreshUser("should not show load-more button with few sets", async ({ page }) => {
+        test.setTimeout(60_000);
+        const setsPage = await setupSetsPage(page);
+
+        // Sets page loads many sets from metadata - check if pagination is needed
+        const totalSets = await setsPage.getSetCardCount();
+
+        if (totalSets < 50) {
+            // With fewer than 50 sets, load-more button should NOT be visible
+            await expect(setsPage.loadMoreButton).not.toBeVisible();
+        } else {
+            // With 50+ sets, load-more should be visible
+            await expect(setsPage.loadMoreButton).toBeVisible({ timeout: 5000 });
+            // Only 50 should be rendered
+            expect(totalSets).toBe(50);
+        }
+    });
+
+    testWithFreshUser("should load more sets on clicking load-more", async ({ page }) => {
+        test.setTimeout(60_000);
+        const setsPage = await setupSetsPage(page);
+
+        // Only test if there are enough sets for pagination
+        if (await setsPage.isLoadMoreVisible().catch(() => false)) {
+            const initialCount = await setsPage.getSetCardCount();
+            expect(initialCount).toBe(50);
+
+            // Click load more
+            await setsPage.clickLoadMore();
+            await page.waitForTimeout(500);
+
+            // More sets should be visible now
+            const newCount = await setsPage.getSetCardCount();
+            expect(newCount).toBeGreaterThan(initialCount);
+        }
+    });
+
+    testWithFreshUser("should reset pagination when changing filter", async ({ page }) => {
+        test.setTimeout(60_000);
+        const setsPage = await setupSetsPage(page);
+
+        // Only test if pagination is active
+        if (await setsPage.isLoadMoreVisible().catch(() => false)) {
+            // Click load more to expand
+            await setsPage.clickLoadMore();
+            await page.waitForTimeout(500);
+            const expandedCount = await setsPage.getSetCardCount();
+            expect(expandedCount).toBeGreaterThan(50);
+
+            // Change filter - should reset visible sets
+            await setsPage.selectLevelFilter("n5");
+            const resetCount = await setsPage.getSetCardCount();
+            expect(resetCount).toBeLessThanOrEqual(50);
+        }
+    });
+});
