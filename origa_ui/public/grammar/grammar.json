@@ -3781,18 +3781,205 @@
             "format_map": null
         },
         {
-            "rule_id": "0001KMBA5W0000000030001AD8",
+            "rule_id": "M087QNW2D06G06MH7JS0SPA4YA",
             "level": "N5",
             "content": {
                 "Russian": {
-                    "title": "数量 - Выражения количества",
-                    "short_description": "Счётные слова",
-                    "md_description": "## Количество — Выражения количества\n\n### Что это?\n\nВ японском языке счётные слова зависят от типа предмета.\n\n---\n\n### Базовые счётные слова\n\n| Тип | Счётное слово | Примеры |\n|-----|---------------|---------|\n| Тонкие предметы | 枚 (まい) | лист бумаги, тарелка |\n| Длинные предметы | 本 (ほん) | книга, ручка, дорога |\n| Маленькие предметы | 個 (こ) | яблоко, камень |\n| Люди | 人 (にん) | люди |\n| Машины/аппараты | 台 (だい) | машина, компьютер |\n| Животные | 匹 (ひき) | кошка, собака |\n| Книги/тома | 冊 (さつ) | книга, журнал |\n| Степи/этажи | 階 (かい) | этаж |\n| Разы | 回 (かい) | раз |\n| Минуты | 分 (ふん) | минута |\n| Часы | 時間 (じかん) | час |\n\n---\n\n### Формула\n\n```\nЧИСЛО + СЧЁТНОЕ СЛОВО + ПРЕДМЕТ\n三枚の紙\nТри листа бумаги\n\n一人の学生\nОдин студент\n```\n\n---\n\n### Чтение чисел\n\n| Число | С чтением ひと/ふた/み/よ/いつ/む/なな/や/ここの/とお |\n|-------|--------------------------------------------------|\n| 1 | 一つ (ひとつ) |\n| 2 | 二つ (ふたつ) |\n| 3 | 三つ (みっつ) |\n| 4 | 四つ (よっつ) |\n| 5 | 五つ (いつつ) |\n| 6 | 六つ (むっつ) |\n| 7 | 七つ (ななつ) |\n| 8 | 八つ (やっつ) |\n| 9 | 九つ (ここのつ) |\n| 10 | 十 (とお) |"
+                    "title": "枚（まい）",
+                    "short_description": "Счётное слово для плоских предметов",
+                    "md_description": "## 枚（まい） — Счётное слово для плоских предметов\n\n### Что это?\n\n`枚`（まい）— счётное слово для **плоских, тонких предметов**: листы бумаги, тарелки, открытки, фотографии, рубашки.\n\n---\n\n### Формула\n\n```\nЧИСЛО + 枚\n三枚（さんまい）— три листа / три штуки\n```\n\n---\n\n### Таблица: 1–10 枚\n\n| Число | Чтение |\n|-------|--------|\n| 1枚 | いちまい |\n| 2枚 | にまい |\n| 3枚 | さんまい |\n| 4枚 | よんまい |\n| 5枚 | ごまい |\n| 6枚 | ろくまい |\n| 7枚 | ななまい |\n| 8枚 | はちまい |\n| 9枚 | きゅうまい |\n| 10枚 | じゅうまい |\n\n---\n\n### Примеры\n\n```\n紙を三枚ください。\nДайте мне три листа бумаги, пожалуйста.\n```\n\n```\nこの切手は五枚あります。\nУ меня есть пять марок.\n```\n\n```\n皿を二枚使いました。\nЯ использовал две тарелки.\n```\n\n---\n\n### 💡 Запомни\n\n枚 используют для всего, что плоское: бумага, тарелки, компакт-диски, футболки, фотографии."
                 },
                 "English": {
-                    "title": "Quantity - Counters",
-                    "short_description": "Counting words",
-                    "md_description": "## Quantity — Counter Words\n\n### What is it?\n\nJapanese uses different counter words depending on the type of object.\n\n---\n\n### Basic counters\n\n| Type | Counter | Examples |\n|-----|---------|---------|\n| Thin objects | 枚 (まい) | paper, plate |\n| Long objects | 本 (ほん) | book, pen, road |\n| Small objects | 個 (こ) | apple, stone |\n| People | 人 (にん) | people |\n| Machines | 台 (だい) | car, computer |\n| Animals | 匹 (ひき) | cat, dog |\n| Books | 冊 (さつ) | book, magazine |\n| Floors | 階 (かい) | floor |\n| Times | 回 (かい) | time |\n| Minutes | 分 (ふん) | minute |\n| Hours | 時間 (じかん) | hour |\n\n---\n\n### Formula\n\n```\nNUMBER + COUNTER + NOUN\n三枚の紙\nThree sheets of paper\n\n一人の学生\nOne student\n```\n\n---\n\n### Reading numbers\n\n| Number | Native Japanese reading |\n|---------|------------------------|\n| 1 | 一つ (ひとつ) |\n| 2 | 二つ (ふたつ) |\n| 3 | 三つ (みっつ) |\n| 4 | 四つ (よっつ) |\n| 5 | 五つ (いつつ) |\n| 6 | 六つ (むっつ) |\n| 7 | 七つ (ななつ) |\n| 8 | 八つ (やっつ) |\n| 9 | 九つ (ここのつ) |\n| 10 | 十 (とお) |"
+                    "title": "枚（まい）",
+                    "short_description": "Counter for flat objects",
+                    "md_description": "## 枚（まい） — Counter for Flat Objects\n\n### What is it?\n\n`枚`（まい）is the counter for **flat, thin objects**: sheets of paper, plates, postcards, photos, shirts.\n\n---\n\n### Formula\n\n```\nNUMBER + 枚\n三枚（さんまい）— three sheets / three flat items\n```\n\n---\n\n### Table: 1–10 枚\n\n| Number | Reading |\n|--------|---------|\n| 1枚 | いちまい |\n| 2枚 | にまい |\n| 3枚 | さんまい |\n| 4枚 | よんまい |\n| 5枚 | ごまい |\n| 6枚 | ろくまい |\n| 7枚 | ななまい |\n| 8枚 | はちまい |\n| 9枚 | きゅうまい |\n| 10枚 | じゅうまい |\n\n---\n\n### Examples\n\n```\n紙を三枚ください。\nPlease give me three sheets of paper.\n```\n\n```\nこの切手は五枚あります。\nI have five stamps.\n```\n\n```\n皿を二枚使いました。\nI used two plates.\n```\n\n---\n\n### 💡 Remember\n\n枚 is used for anything flat: paper, plates, CDs, T-shirts, photographs."
+                }
+            },
+            "format_map": null
+        },
+        {
+            "rule_id": "23VKSQHZCHTKVJP1792738MBB6",
+            "level": "N5",
+            "content": {
+                "Russian": {
+                    "title": "本（ほん）",
+                    "short_description": "Счётное слово для длинных предметов",
+                    "md_description": "## 本（ほん） — Счётное слово для длинных предметов\n\n### Что это?\n\n`本`（ほん/ぽん/ぼん）— счётное слово для **длинных предметов**: ручки, бутылки, дороги, деревья, зонты.\n\n> ⚠️ Чтение меняется в зависимости от числа: ほん, ぽん или ぼん.\n\n---\n\n### Формула\n\n```\nЧИСЛО + 本\n三本（さんぼん）— три штуки (длинных предметов)\n```\n\n---\n\n### Таблица: 1–10 本\n\n| Число | Чтение |\n|-------|--------|\n| 1本 | いっぽん |\n| 2本 | にほん |\n| 3本 | さんぼん |\n| 4本 | よんほん |\n| 5本 | ごほん |\n| 6本 | ろっぽん |\n| 7本 | ななほん |\n| 8本 | はっぽん |\n| 9本 | きゅうほん |\n| 10本 | じゅっぽん |\n\n---\n\n### Примеры\n\n```\nペンを二本買いました。\nЯ купил две ручки.\n```\n\n```\nこの道は長くて、三本あります。\nЗдесь три длинных дороги.\n```\n\n```\nビールを一本ください。\nОдну бутылку пива, пожалуйста.\n```\n\n---\n\n### 💡 Правило чтения\n\n- После いち、ろく、はち、じゅう → **っぽん** (small っ)\n- После さん → **ぼん**\n- Остальные → **ほん**"
+                },
+                "English": {
+                    "title": "本（ほん）",
+                    "short_description": "Counter for long objects",
+                    "md_description": "## 本（ほん） — Counter for Long Objects\n\n### What is it?\n\n`本`（ほん/ぽん/ぼん）is the counter for **long, cylindrical objects**: pens, bottles, roads, trees, umbrellas.\n\n> ⚠️ The reading changes depending on the number: ほん, ぽん, or ぼん.\n\n---\n\n### Formula\n\n```\nNUMBER + 本\n三本（さんぼん）— three long items\n```\n\n---\n\n### Table: 1–10 本\n\n| Number | Reading |\n|--------|---------|\n| 1本 | いっぽん |\n| 2本 | にほん |\n| 3本 | さんぼん |\n| 4本 | よんほん |\n| 5本 | ごほん |\n| 6本 | ろっぽん |\n| 7本 | ななほん |\n| 8本 | はっぽん |\n| 9本 | きゅうほん |\n| 10本 | じゅっぽん |\n\n---\n\n### Examples\n\n```\nペンを二本買いました。\nI bought two pens.\n```\n\n```\nこの道は長くて、三本あります。\nThere are three long roads here.\n```\n\n```\nビールを一本ください。\nOne bottle of beer, please.\n```\n\n---\n\n### 💡 Reading rule\n\n- After いち、ろく、はち、じゅう → **っぽん** (small っ)\n- After さん → **ぼん**\n- Others → **ほん**"
+                }
+            },
+            "format_map": null
+        },
+        {
+            "rule_id": "8XMK5Q5CZMHNTR71A86YWAMCXE",
+            "level": "N5",
+            "content": {
+                "Russian": {
+                    "title": "個（こ）",
+                    "short_description": "Счётное слово для мелких предметов",
+                    "md_description": "## 個（こ） — Счётное слово для мелких предметов\n\n### Что это?\n\n`個`（こ）— счётное слово для **небольших предметов**: яблоки, камни, яйца, конфеты, мячи.\n\n---\n\n### Формула\n\n```\nЧИСЛО + 個\n三個（さんこ）— три штуки (мелких предметов)\n```\n\n---\n\n### Таблица: 1–10 個\n\n| Число | Чтение |\n|-------|--------|\n| 1個 | いっこ |\n| 2個 | にこ |\n| 3個 | さんこ |\n| 4個 | よんこ |\n| 5個 | ごこ |\n| 6個 | ろっこ |\n| 7個 | ななこ |\n| 8個 | はっこ |\n| 9個 | きゅうこ |\n| 10個 | じゅっこ |\n\n---\n\n### Примеры\n\n```\nりんごを三個ください。\nДайте мне три яблока, пожалуйста.\n```\n\n```\n卵を二個買いました。\nЯ купил два яйца.\n```\n\n```\nこの箱にケーキが五個あります。\nВ этой коробке пять пирожных.\n```\n\n---\n\n### 💡 Запомни\n\n個 — универсальное счётное слово для мелких предметов округлой формы."
+                },
+                "English": {
+                    "title": "個（こ）",
+                    "short_description": "Counter for small objects",
+                    "md_description": "## 個（こ） — Counter for Small Objects\n\n### What is it?\n\n`個`（こ）is the counter for **small items**: apples, stones, eggs, candies, balls.\n\n---\n\n### Formula\n\n```\nNUMBER + 個\n三個（さんこ）— three small items\n```\n\n---\n\n### Table: 1–10 個\n\n| Number | Reading |\n|--------|---------|\n| 1個 | いっこ |\n| 2個 | にこ |\n| 3個 | さんこ |\n| 4個 | よんこ |\n| 5個 | ごこ |\n| 6個 | ろっこ |\n| 7個 | ななこ |\n| 8個 | はっこ |\n| 9個 | きゅうこ |\n| 10個 | じゅっこ |\n\n---\n\n### Examples\n\n```\nりんごを三個ください。\nPlease give me three apples.\n```\n\n```\n卵を二個買いました。\nI bought two eggs.\n```\n\n```\nこの箱にケーキが五個あります。\nThere are five cakes in this box.\n```\n\n---\n\n### 💡 Remember\n\n個 is a versatile counter for small, roundish objects."
+                }
+            },
+            "format_map": null
+        },
+        {
+            "rule_id": "87H8JWC7ZG213MSD2CZGZV0QNH",
+            "level": "N5",
+            "content": {
+                "Russian": {
+                    "title": "人（にん）",
+                    "short_description": "Счётное слово для людей",
+                    "md_description": "## 人（にん） — Счётное слово для людей\n\n### Что это?\n\n`人`（にん）— счётное слово для **людей**.\n\n> ⚠️ Исключения: 1人 = ひとり, 2人 = ふたり (японское чтение, не китайское!)\n\n---\n\n### Формула\n\n```\nЧИСЛО + 人\n三人（さんにん）— три человека\n```\n\n---\n\n### Таблица: 1–10 人\n\n| Число | Чтение |\n|-------|--------|\n| 1人 | ひとり |\n| 2人 | ふたり |\n| 3人 | さんにん |\n| 4人 | よにん |\n| 5人 | ごにん |\n| 6人 | ろくにん |\n| 7人 | しちにん / ななにん |\n| 8人 | はちにん |\n| 9人 | きゅうにん |\n| 10人 | じゅうにん |\n\n---\n\n### Примеры\n\n```\n家族は四人です。\nВ моей семье четыре человека.\n```\n\n```\n三人で映画を見に行きました。\nМы втроём ходили в кино.\n```\n\n```\n子供が二人います。\nУ меня двое детей.\n```\n\n---\n\n### 💡 Важное исключение\n\n- `一人` читается **ひとり** (не いちにん!)\n- `二人` читается **ふたり** (не ににん!)\n- С трёх и далее — китайское чтение + にん"
+                },
+                "English": {
+                    "title": "人（にん）",
+                    "short_description": "Counter for people",
+                    "md_description": "## 人（にん） — Counter for People\n\n### What is it?\n\n`人`（にん）is the counter for **people**.\n\n> ⚠️ Exceptions: 1人 = ひとり, 2人 = ふたり (native Japanese reading, not Chinese!)\n\n---\n\n### Formula\n\n```\nNUMBER + 人\n三人（さんにん）— three people\n```\n\n---\n\n### Table: 1–10 人\n\n| Number | Reading |\n|--------|---------|\n| 1人 | ひとり |\n| 2人 | ふたり |\n| 3人 | さんにん |\n| 4人 | よにん |\n| 5人 | ごにん |\n| 6人 | ろくにん |\n| 7人 | しちにん / ななにん |\n| 8人 | はちにん |\n| 9人 | きゅうにん |\n| 10人 | じゅうにん |\n\n---\n\n### Examples\n\n```\n家族は四人です。\nThere are four people in my family.\n```\n\n```\n三人で映画を見に行きました。\nThe three of us went to see a movie.\n```\n\n```\n子供が二人います。\nI have two children.\n```\n\n---\n\n### 💡 Important exceptions\n\n- `一人` is read **ひとり** (not いちにん!)\n- `二人` is read **ふたり** (not ににん!)\n- From 3 onwards — Chinese reading + にん"
+                }
+            },
+            "format_map": null
+        },
+        {
+            "rule_id": "8M3DEYW8G5XV9MK4RHRG0A0XWT",
+            "level": "N5",
+            "content": {
+                "Russian": {
+                    "title": "台（だい）",
+                    "short_description": "Счётное слово для машин и аппаратов",
+                    "md_description": "## 台（だい） — Счётное слово для машин и аппаратов\n\n### Что это?\n\n`台`（だい）— счётное слово для **механизмов, техники, транспорта**: автомобили, компьютеры, телевизоры, кондиционеры.\n\n---\n\n### Формула\n\n```\nЧИСЛО + 台\n三台（さんだい）— три машины / три аппарата\n```\n\n---\n\n### Таблица: 1–10 台\n\n| Число | Чтение |\n|-------|--------|\n| 1台 | いちだい |\n| 2台 | にだい |\n| 3台 | さんだい |\n| 4台 | よんだい |\n| 5台 | ごだい |\n| 6台 | ろくだい |\n| 7台 | ななだい |\n| 8台 | はちだい |\n| 9台 | きゅうだい |\n| 10台 | じゅうだい |\n\n---\n\n### Примеры\n\n```\n車を二台持っています。\nУ меня две машины.\n```\n\n```\nパソコンが三台あります。\nУ меня есть три компьютера.\n```\n\n```\nエアコンを一台買いました。\nЯ купил один кондиционер.\n```\n\n---\n\n### 💡 Запомни\n\n台 используется для любой техники и транспортных средств: автомобили, велосипеды, компьютеры, стиральные машины, телевизоры."
+                },
+                "English": {
+                    "title": "台（だい）",
+                    "short_description": "Counter for machines",
+                    "md_description": "## 台（だい） — Counter for Machines\n\n### What is it?\n\n`台`（だい）is the counter for **machinery, electronics, vehicles**: cars, computers, TVs, air conditioners.\n\n---\n\n### Formula\n\n```\nNUMBER + 台\n三台（さんだい）— three machines / three vehicles\n```\n\n---\n\n### Table: 1–10 台\n\n| Number | Reading |\n|--------|---------|\n| 1台 | いちだい |\n| 2台 | にだい |\n| 3台 | さんだい |\n| 4台 | よんだい |\n| 5台 | ごだい |\n| 6台 | ろくだい |\n| 7台 | ななだい |\n| 8台 | はちだい |\n| 9台 | きゅうだい |\n| 10台 | じゅうだい |\n\n---\n\n### Examples\n\n```\n車を二台持っています。\nI have two cars.\n```\n\n```\nパソコンが三台あります。\nThere are three computers.\n```\n\n```\nエアコンを一台買いました。\nI bought an air conditioner.\n```\n\n---\n\n### 💡 Remember\n\n台 is used for any machinery and vehicles: cars, bicycles, computers, washing machines, TVs."
+                }
+            },
+            "format_map": null
+        },
+        {
+            "rule_id": "91WY2F2RR4FH8VD6HQ69ZMEG37",
+            "level": "N5",
+            "content": {
+                "Russian": {
+                    "title": "匹（ひき）",
+                    "short_description": "Счётное слово для животных",
+                    "md_description": "## 匹（ひき） — Счётное слово для животных\n\n### Что это?\n\n`匹`（ひき/ぴき/びき）— счётное слово для **животных** (обычно небольших): кошки, собаки, рыбы, насекомые.\n\n> ⚠️ Чтение меняется: ひき, ぴき или びき в зависимости от числа.\n\n---\n\n### Формула\n\n```\nЧИСЛО + 匹\n三匹（さんびき）— три животных\n```\n\n---\n\n### Таблица: 1–10 匹\n\n| Число | Чтение |\n|-------|--------|\n| 1匹 | いっぴき |\n| 2匹 | にひき |\n| 3匹 | さんびき |\n| 4匹 | よんひき |\n| 5匹 | ごひき |\n| 6匹 | ろっぴき |\n| 7匹 | ななひき |\n| 8匹 | はっぴき |\n| 9匹 | きゅうひき |\n| 10匹 | じゅっぴき |\n\n---\n\n### Примеры\n\n```\n猫が二匹います。\nУ меня две кошки.\n```\n\n```\n犬を一匹飼っています。\nЯ держу одну собаку.\n```\n\n```\n池に魚が五匹います。\nВ пруду пять рыб.\n```\n\n---\n\n### 💡 Правило чтения\n\n- После いち、ろく、はち、じゅう → **っぴき** (small っ)\n- После さん → **びき**\n- Остальные → **ひき**"
+                },
+                "English": {
+                    "title": "匹（ひき）",
+                    "short_description": "Counter for animals",
+                    "md_description": "## 匹（ひき） — Counter for Animals\n\n### What is it?\n\n`匹`（ひき/ぴき/びき）is the counter for **animals** (typically small to medium): cats, dogs, fish, insects.\n\n> ⚠️ The reading changes: ひき, ぴき, or びき depending on the number.\n\n---\n\n### Formula\n\n```\nNUMBER + 匹\n三匹（さんびき）— three animals\n```\n\n---\n\n### Table: 1–10 匹\n\n| Number | Reading |\n|--------|---------|\n| 1匹 | いっぴき |\n| 2匹 | にひき |\n| 3匹 | さんびき |\n| 4匹 | よんひき |\n| 5匹 | ごひき |\n| 6匹 | ろっぴき |\n| 7匹 | ななひき |\n| 8匹 | はっぴき |\n| 9匹 | きゅうひき |\n| 10匹 | じゅっぴき |\n\n---\n\n### Examples\n\n```\n猫が二匹います。\nI have two cats.\n```\n\n```\n犬を一匹飼っています。\nI keep one dog.\n```\n\n```\n池に魚が五匹います。\nThere are five fish in the pond.\n```\n\n---\n\n### 💡 Reading rule\n\n- After いち、ろく、はち、じゅう → **っぴき** (small っ)\n- After さん → **びき**\n- Others → **ひき**"
+                }
+            },
+            "format_map": null
+        },
+        {
+            "rule_id": "AJ772M7WV27N64XJFSS63DDEQN",
+            "level": "N5",
+            "content": {
+                "Russian": {
+                    "title": "冊（さつ）",
+                    "short_description": "Счётное слово для книг и журналов",
+                    "md_description": "## 冊（さつ） — Счётное слово для книг и журналов\n\n### Что это?\n\n`冊`（さつ）— счётное слово для **книг, журналов, тетрадей**: любые переплетённые или скреплённые печатные издания.\n\n---\n\n### Формула\n\n```\nЧИСЛО + 冊\n三冊（さんさつ）— три книги\n```\n\n---\n\n### Таблица: 1–10 冊\n\n| Число | Чтение |\n|-------|--------|\n| 1冊 | いっさつ |\n| 2冊 | にさつ |\n| 3冊 | さんさつ |\n| 4冊 | よんさつ |\n| 5冊 | ごさつ |\n| 6冊 | ろくさつ |\n| 7冊 | ななさつ |\n| 8冊 | はっさつ |\n| 9冊 | きゅうさつ |\n| 10冊 | じゅっさつ |\n\n---\n\n### Примеры\n\n```\n本を三冊買いました。\nЯ купил три книги.\n```\n\n```\nこの雑誌は何冊ありますか。\nСколько экземпляров этого журнала у вас есть?\n```\n\n```\n日本語の教科書を一冊持っています。\nУ меня есть один учебник японского языка.\n```\n\n---\n\n### 💡 Запомни\n\n- 1冊 = **いっさつ** (не いちさつ!)\n- 8冊 = **はっさつ** (не はちさつ!)\n- 10冊 = **じゅっさつ**"
+                },
+                "English": {
+                    "title": "冊（さつ）",
+                    "short_description": "Counter for books",
+                    "md_description": "## 冊（さつ） — Counter for Books\n\n### What is it?\n\n`冊`（さつ）is the counter for **books, magazines, notebooks**: any bound or stapled printed matter.\n\n---\n\n### Formula\n\n```\nNUMBER + 冊\n三冊（さんさつ）— three books\n```\n\n---\n\n### Table: 1–10 冊\n\n| Number | Reading |\n|--------|---------|\n| 1冊 | いっさつ |\n| 2冊 | にさつ |\n| 3冊 | さんさつ |\n| 4冊 | よんさつ |\n| 5冊 | ごさつ |\n| 6冊 | ろくさつ |\n| 7冊 | ななさつ |\n| 8冊 | はっさつ |\n| 9冊 | きゅうさつ |\n| 10冊 | じゅっさつ |\n\n---\n\n### Examples\n\n```\n本を三冊買いました。\nI bought three books.\n```\n\n```\nこの雑誌は何冊ありますか。\nHow many copies of this magazine do you have?\n```\n\n```\n日本語の教科書を一冊持っています。\nI have one Japanese textbook.\n```\n\n---\n\n### 💡 Remember\n\n- 1冊 = **いっさつ** (not いちさつ!)\n- 8冊 = **はっさつ** (not はちさつ!)\n- 10冊 = **じゅっさつ**"
+                }
+            },
+            "format_map": null
+        },
+        {
+            "rule_id": "Z3CAV76ED87XEVH1ZTZXV5F6C1",
+            "level": "N5",
+            "content": {
+                "Russian": {
+                    "title": "階（かい）",
+                    "short_description": "Счётное слово для этажей",
+                    "md_description": "## 階（かい） — Счётное слово для этажей\n\n### Что это?\n\n`階`（かい/がい）— счётное слово для **этажей зданий**.\n\n> ⚠️ 3階 читается **さんがい** (не さんかい!), и так же для чисел с さん/ぜん.\n\n---\n\n### Формула\n\n```\nЧИСЛО + 階\n三階（さんがい）— третий этаж\n```\n\n---\n\n### Таблица: 1–10 階\n\n| Число | Чтение |\n|-------|--------|\n| 1階 | いっかい |\n| 2階 | にかい |\n| 3階 | さんがい |\n| 4階 | よんかい |\n| 5階 | ごかい |\n| 6階 | ろっかい |\n| 7階 | ななかい |\n| 8階 | はっかい / はちかい |\n| 9階 | きゅうかい |\n| 10階 | じゅっかい |\n\n---\n\n### Примеры\n\n```\n私の部屋は三階にあります。\nМоя комната на третьем этаже.\n```\n\n```\nこのビルは十階建てです。\nЭто здание — десятиэтажное.\n```\n\n```\n一階にコンビニがあります。\nНа первом этаже есть круглосуточный магазин.\n```\n\n---\n\n### 💡 Запомни\n\n- 1階 = **いっかい**\n- 3階 = **さんがい** (изменённое чтение!)\n- 6階 = **ろっかい**\n- 8階 = **はっかい**"
+                },
+                "English": {
+                    "title": "階（かい）",
+                    "short_description": "Counter for floors",
+                    "md_description": "## 階（かい） — Counter for Floors\n\n### What is it?\n\n`階`（かい/がい）is the counter for **building floors/stories**.\n\n> ⚠️ 3階 is read **さんがい** (not さんかい!), and similarly for numbers with さん/ぜん.\n\n---\n\n### Formula\n\n```\nNUMBER + 階\n三階（さんがい）— third floor\n```\n\n---\n\n### Table: 1–10 階\n\n| Number | Reading |\n|--------|---------|\n| 1階 | いっかい |\n| 2階 | にかい |\n| 3階 | さんがい |\n| 4階 | よんかい |\n| 5階 | ごかい |\n| 6階 | ろっかい |\n| 7階 | ななかい |\n| 8階 | はっかい / はちかい |\n| 9階 | きゅうかい |\n| 10階 | じゅっかい |\n\n---\n\n### Examples\n\n```\n私の部屋は三階にあります。\nMy room is on the third floor.\n```\n\n```\nこのビルは十階建てです。\nThis building has ten floors.\n```\n\n```\n一階にコンビニがあります。\nThere's a convenience store on the first floor.\n```\n\n---\n\n### 💡 Remember\n\n- 1階 = **いっかい**\n- 3階 = **さんがい** (changed reading!)\n- 6階 = **ろっかい**\n- 8階 = **はっかい**"
+                }
+            },
+            "format_map": null
+        },
+        {
+            "rule_id": "CZ8SEDYZHP49YJHQ1JGV5Y25KN",
+            "level": "N5",
+            "content": {
+                "Russian": {
+                    "title": "回（かい）",
+                    "short_description": "Счётное слово для раз/частоты",
+                    "md_description": "## 回（かい） — Счётное слово для раз/частоты\n\n### Что это?\n\n`回`（かい）— счётное слово для **количества раз, частоты действий**: «один раз», «два раза», «три раза».\n\n---\n\n### Формула\n\n```\nЧИСЛО + 回\n三回（さんかい）— три раза\n```\n\n---\n\n### Таблица: 1–10 回\n\n| Число | Чтение |\n|-------|--------|\n| 1回 | いっかい |\n| 2回 | にかい |\n| 3回 | さんかい |\n| 4回 | よんかい |\n| 5回 | ごかい |\n| 6回 | ろっかい |\n| 7回 | ななかい |\n| 8回 | はちかい |\n| 9回 | きゅうかい |\n| 10回 | じゅっかい |\n\n---\n\n### Примеры\n\n```\n一週間に三回ジムに行きます。\nЯ хожу в спортзал три раза в неделю.\n```\n\n```\nこの映画を二回見ました。\nЯ смотрел этот фильм два раза.\n```\n\n```\n日本へ一回行ったことがあります。\nЯ бывал в Японии один раз.\n```\n\n---\n\n### ⚠️ Не путай с 階（かい — этаж)\n\n| Слово | Значение | Пример |\n|-------|----------|--------|\n| 回 | раз | 三回（さんかい）— три раза |\n| 階 | этаж | 三階（さんがい）— третий этаж |\n\nОбратите внимание: 3階 = さんがい, но 3回 = さんかい!"
+                },
+                "English": {
+                    "title": "回（かい）",
+                    "short_description": "Counter for times/frequency",
+                    "md_description": "## 回（かい） — Counter for Times/Frequency\n\n### What is it?\n\n`回`（かい）is the counter for **number of times, frequency**: \"once,\" \"twice,\" \"three times.\"\n\n---\n\n### Formula\n\n```\nNUMBER + 回\n三回（さんかい）— three times\n```\n\n---\n\n### Table: 1–10 回\n\n| Number | Reading |\n|--------|---------|\n| 1回 | いっかい |\n| 2回 | にかい |\n| 3回 | さんかい |\n| 4回 | よんかい |\n| 5回 | ごかい |\n| 6回 | ろっかい |\n| 7回 | ななかい |\n| 8回 | はちかい |\n| 9回 | きゅうかい |\n| 10回 | じゅっかい |\n\n---\n\n### Examples\n\n```\n一週間に三回ジムに行きます。\nI go to the gym three times a week.\n```\n\n```\nこの映画を二回見ました。\nI've seen this movie twice.\n```\n\n```\n日本へ一回行ったことがあります。\nI've been to Japan once.\n```\n\n---\n\n### ⚠️ Don't confuse with 階（かい — floor)\n\n| Word | Meaning | Example |\n|------|---------|---------|\n| 回 | time(s) | 三回（さんかい）— three times |\n| 階 | floor | 三階（さんがい）— third floor |\n\nNote: 3階 = さんがい, but 3回 = さんかい!"
+                }
+            },
+            "format_map": null
+        },
+        {
+            "rule_id": "73W7KKDJGX6P7CN9AR2EZZ268X",
+            "level": "N5",
+            "content": {
+                "Russian": {
+                    "title": "分（ふん）",
+                    "short_description": "Счётное слово для минут",
+                    "md_description": "## 分（ふん） — Счётное слово для минут\n\n### Что это?\n\n`分`（ふん/ぷん）— счётное слово для **минут**.\n\n> ⚠️ Чтение меняется: ふん или ぷん в зависимости от числа.\n\n---\n\n### Формула\n\n```\nЧИСЛО + 分\n三分（さんぷん）— три минуты\n```\n\n---\n\n### Таблица: 1–10 分\n\n| Число | Чтение |\n|-------|--------|\n| 1分 | いっぷん |\n| 2分 | にふん |\n| 3分 | さんぷん |\n| 4分 | よんふん |\n| 5分 | ごふん |\n| 6分 | ろっぷん |\n| 7分 | ななふん |\n| 8分 | はっぷん |\n| 9分 | きゅうふん |\n| 10分 | じゅっぷん |\n\n---\n\n### Примеры\n\n```\n駅まで五分かかります。\nДо станции пять минут.\n```\n\n```\nあと三分待ってください。\nПодождите ещё три минуты, пожалуйста.\n```\n\n```\n毎朝三十分散歩します。\nКаждое утро я гуляю 30 минут.\n```\n\n---\n\n### 💡 Правило чтения\n\n- После いち、ろく、はち、じゅう → **っぷん** (small っ)\n- После さん → **ぷん**\n- Остальные → **ふん**"
+                },
+                "English": {
+                    "title": "分（ふん）",
+                    "short_description": "Counter for minutes",
+                    "md_description": "## 分（ふん） — Counter for Minutes\n\n### What is it?\n\n`分`（ふん/ぷん）is the counter for **minutes**.\n\n> ⚠️ The reading changes: ふん or ぷん depending on the number.\n\n---\n\n### Formula\n\n```\nNUMBER + 分\n三分（さんぷん）— three minutes\n```\n\n---\n\n### Table: 1–10 分\n\n| Number | Reading |\n|--------|---------|\n| 1分 | いっぷん |\n| 2分 | にふん |\n| 3分 | さんぷん |\n| 4分 | よんふん |\n| 5分 | ごふん |\n| 6分 | ろっぷん |\n| 7分 | ななふん |\n| 8分 | はっぷん |\n| 9分 | きゅうふん |\n| 10分 | じゅっぷん |\n\n---\n\n### Examples\n\n```\n駅まで五分かかります。\nIt takes five minutes to the station.\n```\n\n```\nあと三分待ってください。\nPlease wait three more minutes.\n```\n\n```\n毎朝三十分散歩します。\nI walk for 30 minutes every morning.\n```\n\n---\n\n### 💡 Reading rule\n\n- After いち、ろく、はち、じゅう → **っぷん** (small っ)\n- After さん → **ぷん**\n- Others → **ふん**"
+                }
+            },
+            "format_map": null
+        },
+        {
+            "rule_id": "WWB5TPKZM0T9NY433H8KP6M8FW",
+            "level": "N5",
+            "content": {
+                "Russian": {
+                    "title": "時間（じかん）",
+                    "short_description": "Счётное слово для часов",
+                    "md_description": "## 時間（じかん） — Счётное слово для часов\n\n### Что это?\n\n`時間`（じかん）— счётное слово для **часов** (продолжительности).\n\n> ⚠️ `時間` = длительность (2時間 = «два часа»), а `時` = момент (2時 = «два часа дня»).\n\n---\n\n### Формула\n\n```\nЧИСЛО + 時間\n三時間（さんじかん）— три часа\n```\n\n---\n\n### Таблица: 1–10 時間\n\n| Число | Чтение |\n|-------|--------|\n| 1時間 | いちじかん |\n| 2時間 | にじかん |\n| 3時間 | さんじかん |\n| 4時間 | よじかん |\n| 5時間 | ごじかん |\n| 6時間 | ろくじかん |\n| 7時間 | しちじかん / ななじかん |\n| 8時間 | はちじかん |\n| 9時間 | くじかん |\n| 10時間 | じゅうじかん |\n\n---\n\n### Примеры\n\n```\n毎日二時間日本語を勉強します。\nКаждый день я учу японский два часа.\n```\n\n```\n東京から大阪まで三時間かかります。\nОт Токио до Осаки три часа.\n```\n\n```\n八時間寝ました。\nЯ спал восемь часов.\n```\n\n---\n\n### ⚠️ Разница: 時間 vs 時\n\n| Слово | Значение | Пример |\n|-------|----------|--------|\n| 時間 | длительность (часов) | 二時間 — два часа (длилось) |\n| 時 | момент времени | 二時 — два часа (время на часах) |"
+                },
+                "English": {
+                    "title": "時間（じかん）",
+                    "short_description": "Counter for hours",
+                    "md_description": "## 時間（じかん） — Counter for Hours\n\n### What is it?\n\n`時間`（じかん）is the counter for **hours** (duration).\n\n> ⚠️ `時間` = duration (2時間 = \"two hours\"), while `時` = point in time (2時 = \"2 o'clock\").\n\n---\n\n### Formula\n\n```\nNUMBER + 時間\n三時間（さんじかん）— three hours\n```\n\n---\n\n### Table: 1–10 時間\n\n| Number | Reading |\n|--------|---------|\n| 1時間 | いちじかん |\n| 2時間 | にじかん |\n| 3時間 | さんじかん |\n| 4時間 | よじかん |\n| 5時間 | ごじかん |\n| 6時間 | ろくじかん |\n| 7時間 | しちじかん / ななじかん |\n| 8時間 | はちじかん |\n| 9時間 | くじかん |\n| 10時間 | じゅうじかん |\n\n---\n\n### Examples\n\n```\n毎日二時間日本語を勉強します。\nI study Japanese for two hours every day.\n```\n\n```\n東京から大阪まで三時間かかります。\nIt takes three hours from Tokyo to Osaka.\n```\n\n```\n八時間寝ました。\nI slept for eight hours.\n```\n\n---\n\n### ⚠️ Difference: 時間 vs 時\n\n| Word | Meaning | Example |\n|------|---------|--------|\n| 時間 | duration (hours) | 二時間 — two hours (it took) |\n| 時 | point in time | 二時 — 2 o'clock (clock time) |"
+                }
+            },
+            "format_map": null
+        },
+        {
+            "rule_id": "V2D80RM8QHD02WWHTJ449WSVW6",
+            "level": "N5",
+            "content": {
+                "Russian": {
+                    "title": "一つ～十 — Японские числительные",
+                    "short_description": "Японские чтения чисел 1–10",
+                    "md_description": "## 一つ～十 — Японские числительные\n\n### Что это?\n\nЯпонские числительные (和語) — традиционный способ счёта с чтениями **ひと、ふた、み...** Используются в повседневной речи для неформального счёта предметов без указания типа.\n\n> ⚠️ Не используются в официальных текстах или при указании точного количества с определённым счётным словом.\n\n---\n\n### Таблица: Японские числительные 1–10\n\n| Число | Чтение | Иероглиф |\n|-------|--------|----------|\n| 1 | ひとつ | 一つ |\n| 2 | ふたつ | 二つ |\n| 3 | みっつ | 三つ |\n| 4 | よっつ | 四つ |\n| 5 | いつつ | 五つ |\n| 6 | むっつ | 六つ |\n| 7 | ななつ | 七つ |\n| 8 | やっつ | 八つ |\n| 9 | ここのつ | 九つ |\n| 10 | とお | 十 |\n\n---\n\n### Примеры\n\n```\nりんごを二つください。\nДайте мне два яблока. (неформально)\n```\n\n```\n子供が三人います。→ 三人（さんにん）— с китайским чтением\nりんごが三つあります。→ 三つ（みっつ）— с японским чтением\n```\n\n```\n一つだけ質問があります。\nУ меня только один вопрос.\n```\n\n```\nもう少し — あと二つ。\nЕщё немного — осталось два.\n```\n\n---\n\n### 💡 Когда использовать?\n\n| Ситуация | Использовать |\n|----------|-------------|\n| Неформальный счёт предметов | 一つ、二つ... |\n| Точное количество с типом | 一枚、二本、三冊... |\n| Номера, даты, официальные числа | いち、に、さん... |\n\n---\n\n### ⚠️ Ограничение\n\nЯпонские числительные (～つ) используются **только для 1–10**. Для чисел больше 10 используйте китайские чтения: じゅういち (11), じゅうに (12) и т.д."
+                },
+                "English": {
+                    "title": "一つ～十 — Native Japanese Numbers",
+                    "short_description": "Japanese readings for numbers 1–10",
+                    "md_description": "## 一つ～十 — Native Japanese Numbers\n\n### What is it?\n\nNative Japanese numbers (和語) — the traditional way of counting with readings **ひと、ふた、み...** Used in everyday speech for informal counting without specifying a counter type.\n\n> ⚠️ Not used in formal writing or when specifying exact quantities with a specific counter.\n\n---\n\n### Table: Native Japanese Numbers 1–10\n\n| Number | Reading | Character |\n|--------|---------|-----------|\n| 1 | ひとつ | 一つ |\n| 2 | ふたつ | 二つ |\n| 3 | みっつ | 三つ |\n| 4 | よっつ | 四つ |\n| 5 | いつつ | 五つ |\n| 6 | むっつ | 六つ |\n| 7 | ななつ | 七つ |\n| 8 | やっつ | 八つ |\n| 9 | ここのつ | 九つ |\n| 10 | とお | 十 |\n\n---\n\n### Examples\n\n```\nりんごを二つください。\nGive me two apples. (informal)\n```\n\n```\n子供が三人います。→ 三人（さんにん）— Chinese reading\nりんごが三つあります。→ 三つ（みっつ）— Japanese reading\n```\n\n```\n一つだけ質問があります。\nI have just one question.\n```\n\n```\nもう少し — あと二つ。\nJust a bit more — two left.\n```\n\n---\n\n### 💡 When to use?\n\n| Situation | Use |\n|-----------|-----|\n| Informal counting of items | 一つ、二つ... |\n| Exact quantity with a type | 一枚、二本、三冊... |\n| Numbers, dates, formal counts | いち、に、さん... |\n\n---\n\n### ⚠️ Limitation\n\nNative Japanese numbers (～つ) are used **only for 1–10**. For numbers above 10, use Chinese readings: じゅういち (11), じゅうに (12), etc."
                 }
             },
             "format_map": null
