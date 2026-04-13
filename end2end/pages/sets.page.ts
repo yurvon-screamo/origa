@@ -40,6 +40,9 @@ export class SetsPage extends BasePage {
     readonly drawerCancelBtn: Locator;
     readonly drawerWordItems: Locator;
 
+    // Pagination
+    readonly loadMoreButton: Locator;
+
     constructor(page: Page) {
         super(page);
 
@@ -80,6 +83,9 @@ export class SetsPage extends BasePage {
         this.drawerImportBtn = page.getByTestId("sets-drawer-import-btn");
         this.drawerCancelBtn = page.getByTestId("sets-drawer-cancel-btn");
         this.drawerWordItems = this.drawer.getByTestId("sets-drawer-item");
+
+        // Pagination
+        this.loadMoreButton = page.getByTestId("sets-load-more-btn");
     }
 
     async goto(): Promise<void> {
@@ -168,5 +174,13 @@ export class SetsPage extends BasePage {
         const foundText = this.drawer.getByTestId("sets-drawer-found");
         const emptyText = this.drawer.getByTestId("sets-drawer-empty");
         await expect(foundText.or(emptyText)).toBeVisible({ timeout: 15_000 });
+    }
+
+    async isLoadMoreVisible(): Promise<boolean> {
+        return this.loadMoreButton.isVisible();
+    }
+
+    async clickLoadMore(): Promise<void> {
+        await this.loadMoreButton.click();
     }
 }
