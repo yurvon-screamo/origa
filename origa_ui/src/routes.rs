@@ -107,7 +107,7 @@ pub fn AppRoutes() -> impl IntoView {
     view! {
         <main class="paper-texture">
             <Routes fallback=|| view! { <Login/> }>
-                <Route path=path!("/") view=Login />
+                <Route path=path!("/") view=|| view! { <ProtectedRoute><Home/></ProtectedRoute> } />
                 <Route path=path!("login") view=Login />
                 <Route path=path!("onboarding") view=|| view! { <ProtectedRoute><Onboarding/></ProtectedRoute> } />
                 <Route path=path!("home") view=|| view! { <ProtectedRoute><Home/></ProtectedRoute> } />
