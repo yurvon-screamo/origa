@@ -71,7 +71,6 @@ pub fn App() -> impl IntoView {
     });
 
     let auth_store_for_oauth = auth_store.clone();
-    let auth_store_for_checking = auth_store.clone();
 
     view! {
         <ConnectivityBanner />
@@ -84,13 +83,9 @@ pub fn App() -> impl IntoView {
             />
         })}
         <ToastContainer toasts=toasts duration_ms=5000 />
-        <Show when=move || auth_store_for_oauth.is_oauth_loading.get() || auth_store_for_checking.is_checking_session.get()>
+        <Show when=move || auth_store_for_oauth.is_oauth_loading.get()>
             {move || {
-                let message = if auth_store_for_oauth.is_oauth_loading.get() {
-                    i18n.get_keys().app().logging_in().inner().to_string()
-                } else {
-                    i18n.get_keys().app().checking_auth().inner().to_string()
-                };
+                let message = i18n.get_keys().app().logging_in().inner().to_string();
                 view! { <LoadingOverlay message=message /> }
             }}
         </Show>

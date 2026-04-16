@@ -84,9 +84,8 @@ impl AuthStore {
     /// Returns a reactive Memo indicating if we're in loading state
     pub fn is_loading(&self) -> Memo<bool> {
         let is_checking_session = self.is_checking_session;
-        let is_oauth_loading = self.is_oauth_loading;
         let is_syncing = self.is_syncing;
-        Memo::new(move |_| is_checking_session.get() || is_oauth_loading.get() || is_syncing.get())
+        Memo::new(move |_| is_checking_session.get() || is_syncing.get())
     }
 
     /// Get repository for use cases
@@ -128,8 +127,8 @@ impl AuthStore {
     // Initialization
     // ========================================
 
-    /// Check existing session from LocalStorage on app start
-    /// Implements proactive refresh logic: attempts refresh if session expires within 5 minutes
+    /// Check existing session from LocalStorage on app start.
+    /// Offline-first: loads user from IndexedDB immediately, validates session in background.
     pub fn check_session(&self) {
         let user_signal = self.user;
         let is_checking = self.is_checking_session;
@@ -141,7 +140,7 @@ impl AuthStore {
         }
 
         let client = self.client.clone();
-        let _repository = self.repository.clone();
+        let repository = self.repository.clone();
         let store = self.clone();
 
         spawn_local(async move {
@@ -153,42 +152,79 @@ impl AuthStore {
                 },
             };
 
-            let needs_refresh = should_refresh_session(session.expires_at);
+            let local_user = repository.get_current_user().await;
 
-            if !needs_refresh {
-                tracing::debug!("Session still valid, loading user");
-                let _ = store.load_user_after_auth(user_signal).await;
-                is_checking.set(false);
-                return;
-            }
-
-            if session.refresh_token.is_empty() {
-                tracing::warn!("Session needs refresh but no refresh_token available");
-                clear_session();
-                is_checking.set(false);
-                return;
-            }
-
-            tracing::debug!("Attempting proactive session refresh");
-            set_refresh_in_progress(true);
-
-            match client.refresh_session(&session.refresh_token).await {
-                Ok(new_session) => {
-                    tracing::info!("Session refreshed successfully");
-                    if let Err(e) = set_session(&new_session) {
-                        tracing::error!("Failed to save refreshed session: {:?}", e);
+            match local_user {
+                Ok(Some(user)) => {
+                    if session.email != user.email() {
+                        tracing::warn!(
+                            "Session email ({}) does not match local user email ({}), fetching from server",
+                            session.email,
+                            user.email()
+                        );
+                        let _ = store.load_user_after_auth(user_signal).await;
+                        is_checking.set(false);
+                        return;
                     }
+                    tracing::debug!("Loaded user from local storage: {}", user.id());
+                    user_signal.set(Some(user));
+                    is_checking.set(false);
+
+                    if should_refresh_session(session.expires_at) {
+                        let client_bg = client.clone();
+                        let user_signal_bg = user_signal;
+                        let is_checking_bg = is_checking;
+                        spawn_local(async move {
+                            if session.refresh_token.is_empty() {
+                                tracing::warn!(
+                                    "Session needs refresh but no refresh_token available"
+                                );
+                                return;
+                            }
+
+                            tracing::debug!("Background session refresh started");
+                            set_refresh_in_progress(true);
+
+                            match client_bg.refresh_session(&session.refresh_token).await {
+                                Ok(new_session) => {
+                                    tracing::info!("Background session refresh succeeded");
+                                    if let Err(e) = set_session(&new_session) {
+                                        tracing::error!(
+                                            "Failed to save refreshed session: {:?}",
+                                            e
+                                        );
+                                    }
+                                    let _ = store.load_user_after_auth(user_signal_bg).await;
+                                },
+                                Err(AuthError::SessionExpired) => {
+                                    tracing::warn!("Session definitively expired, logging out");
+                                    clear_session();
+                                    user_signal_bg.set(None);
+                                    is_checking_bg.set(false);
+                                },
+                                Err(e) => {
+                                    tracing::warn!(
+                                        "Background session refresh failed (will retry later): {:?}",
+                                        e
+                                    );
+                                },
+                            }
+
+                            set_refresh_in_progress(false);
+                        });
+                    }
+                },
+                Ok(None) => {
+                    tracing::debug!("No local user found, fetching from server");
                     let _ = store.load_user_after_auth(user_signal).await;
+                    is_checking.set(false);
                 },
                 Err(e) => {
-                    tracing::error!("Session refresh failed: {:?}", e);
-                    clear_session();
-                    user_signal.set(None);
+                    tracing::error!("Failed to read local user: {:?}", e);
+                    let _ = store.load_user_after_auth(user_signal).await;
+                    is_checking.set(false);
                 },
             }
-
-            set_refresh_in_progress(false);
-            is_checking.set(false);
         });
     }
 
