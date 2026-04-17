@@ -100,7 +100,8 @@ testWithFreshUser.describe("Profile Page", () => {
 		await expect(profilePage.langEnglish).toHaveClass(/btn-olive/);
 		await profilePage.saveProfile();
 		await page.waitForTimeout(2000);
-		await profilePage.goto();
+		await page.reload();
+		await page.waitForURL(/\/profile$/, { timeout: 10_000 });
 		await profilePage.expectProfileVisible();
 		await expect(profilePage.langEnglish).toHaveClass(/btn-olive/);
 	});
@@ -112,7 +113,8 @@ testWithFreshUser.describe("Profile Page", () => {
 		await expect(profilePage.loadHard).toHaveClass(/btn-olive/);
 		await profilePage.saveProfile();
 		await page.waitForTimeout(2000);
-		await profilePage.goto();
+		await page.reload();
+		await page.waitForURL(/\/profile$/, { timeout: 10_000 });
 		await profilePage.expectProfileVisible();
 		await expect(profilePage.loadHard).toHaveClass(/btn-olive/);
 	});

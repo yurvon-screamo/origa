@@ -6,6 +6,7 @@ mod app_skeleton;
 mod audio_buttons;
 mod avatar;
 mod badge;
+mod bottom_nav;
 mod breadcrumbs;
 mod button;
 mod card;
@@ -64,6 +65,8 @@ pub use audio_buttons::AudioButtons;
 pub use avatar::Avatar;
 #[allow(unused_imports)]
 pub use badge::Badge;
+pub use bottom_nav::BottomTabBar;
+#[allow(unused_imports)]
 pub use button::{Button, ButtonSize, ButtonVariant};
 pub use card::Card;
 pub use card_history_modal::CardHistoryModal;
