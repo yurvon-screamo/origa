@@ -1,10 +1,10 @@
 use crate::i18n::*;
 use crate::pages::lesson::kanji_card_details::KanjiCardDetails;
 use crate::pages::lesson::rating_buttons_view::RatingButtonsView;
-use crate::ui_components::{Card, DisplayText, KanjiDrawingPractice, Tag, TagVariant};
-use gloo_timers::future::TimeoutFuture;
+use crate::ui_components::{
+    Card, DisplayText, Heading, HeadingLevel, KanjiDrawingPractice, Tag, TagVariant,
+};
 use leptos::prelude::*;
-use leptos::task::spawn_local;
 use origa::domain::{Card as DomainCard, NativeLanguage, Rating};
 use std::collections::HashSet;
 use tracing::warn;
@@ -122,21 +122,7 @@ pub fn WritingCard(
         };
 
     let show_details = RwSignal::new(false);
-    let show_drawing = RwSignal::new(true);
     let is_expanded = RwSignal::new(true);
-
-    let local_disposed = StoredValue::new(());
-    Effect::new(move |_| {
-        if show_details.get() {
-            spawn_local(async move {
-                TimeoutFuture::new(1500).await;
-                if local_disposed.is_disposed() {
-                    return;
-                }
-                show_drawing.set(false);
-            });
-        }
-    });
 
     let symbol_sv = StoredValue::new(symbol_char);
     let display_text_sv = StoredValue::new(display_text);
@@ -160,7 +146,7 @@ pub fn WritingCard(
                     <DisplayText>{display_text_sv.get_value()}</DisplayText>
                 </div>
 
-                <Show when=move || show_drawing.get() && !show_details.get()>
+                <Show when=move || !show_details.get()>
                     <div class="my-4">
                         <KanjiDrawingPractice
                             kanji=symbol_sv.get_value()
@@ -174,22 +160,24 @@ pub fn WritingCard(
                     </div>
                 </Show>
 
-                    <Show when=move || show_details.get()>
-                        <Show when=move || radicals_sv.get_value().is_some()>
-                            <KanjiCardDetails
-                                kanji=symbol_sv.get_value()
-                                name=display_text_sv.get_value()
-                                radicals=radicals_sv.get_value()
-                                example_words=examples_sv.get_value()
-                                show_details=is_expanded
-                                on_readings=on_readings_sv.get_value()
-                                kun_readings=kun_readings_sv.get_value()
-                                known_kanji=known_kanji
-                            />
-                        </Show>
+                <Show when=move || show_details.get()>
+                    <Heading level=HeadingLevel::H1 class="text-6xl mb-2 text-primary">
+                        {symbol_sv.get_value()}
+                    </Heading>
 
-                        <RatingButtonsView on_rate=on_rate_sv.get_value() disabled=disabled_sv.get_value() />
-                    </Show>
+                    <KanjiCardDetails
+                        kanji=symbol_sv.get_value()
+                        name=display_text_sv.get_value()
+                        radicals=radicals_sv.get_value()
+                        example_words=examples_sv.get_value()
+                        show_details=is_expanded
+                        on_readings=on_readings_sv.get_value()
+                        kun_readings=kun_readings_sv.get_value()
+                        known_kanji=known_kanji
+                    />
+
+                    <RatingButtonsView on_rate=on_rate_sv.get_value() disabled=disabled_sv.get_value() />
+                </Show>
             </div>
         </Card>
     }
