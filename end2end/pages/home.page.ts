@@ -34,12 +34,13 @@ export class HomePage extends BasePage {
     readonly historyModal: Locator;
     readonly historyChart: Locator;
 
-    // Navigation
-    readonly navDrawer: Locator;
-    readonly homeHamburger: Locator;
-    readonly navDrawerLesson: Locator;
-    readonly navDrawerProfile: Locator;
-    readonly navDrawerWords: Locator;
+    // Bottom tab bar navigation (mobile)
+    readonly bottomTabBar: Locator;
+    readonly bottomTabHome: Locator;
+    readonly bottomTabWords: Locator;
+    readonly bottomTabGrammar: Locator;
+    readonly bottomTabKanji: Locator;
+    readonly bottomTabProfile: Locator;
 
     // Loading
     readonly homeLoading: Locator;
@@ -84,12 +85,13 @@ export class HomePage extends BasePage {
         this.historyModal = page.getByTestId("home-history-modal");
         this.historyChart = page.getByTestId("history-chart");
 
-        // Navigation
-        this.navDrawer = page.getByTestId("nav-drawer");
-        this.homeHamburger = page.getByTestId("home-hamburger");
-        this.navDrawerLesson = page.getByTestId("nav-drawer-lesson");
-        this.navDrawerProfile = page.getByTestId("nav-drawer-profile");
-        this.navDrawerWords = page.getByTestId("nav-drawer-words");
+        // Bottom tab bar navigation (mobile)
+        this.bottomTabBar = page.locator(".bottom-tab-bar");
+        this.bottomTabHome = page.getByTestId("bottom-tab-tab-home");
+        this.bottomTabWords = page.getByTestId("bottom-tab-tab-words");
+        this.bottomTabGrammar = page.getByTestId("bottom-tab-tab-grammar");
+        this.bottomTabKanji = page.getByTestId("bottom-tab-tab-kanji");
+        this.bottomTabProfile = page.getByTestId("bottom-tab-tab-profile");
 
         // Loading
         this.homeLoading = page.getByTestId("home-loading");
@@ -134,26 +136,14 @@ export class HomePage extends BasePage {
         await this.toggleDetails.click();
     }
 
-    async openNavDrawer(): Promise<void> {
-        await this.homeHamburger.click();
-    }
-
-    async navigateToProfileFromDrawer(): Promise<void> {
-        await this.openNavDrawer();
-        await this.navDrawerProfile.click();
-    }
-
-    async navigateToLessonFromDrawer(): Promise<void> {
-        await this.openNavDrawer();
-        await this.navDrawerLesson.click();
-    }
-
-    async navigateToWordsFromDrawer(): Promise<void> {
-        await this.openNavDrawer();
-        await this.navDrawerWords.click();
-    }
-
-    async closeNavDrawer(): Promise<void> {
-        await this.page.keyboard.press("Escape");
+    async navigateViaBottomTab(tabName: "home" | "words" | "grammar" | "kanji" | "profile"): Promise<void> {
+        const tabMap: Record<typeof tabName, Locator> = {
+            home: this.bottomTabHome,
+            words: this.bottomTabWords,
+            grammar: this.bottomTabGrammar,
+            kanji: this.bottomTabKanji,
+            profile: this.bottomTabProfile,
+        };
+        await tabMap[tabName].click();
     }
 }

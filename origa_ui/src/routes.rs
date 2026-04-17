@@ -5,7 +5,7 @@ use crate::loaders::{
 };
 use crate::pages::{Grammar, Home, Kanji, Lesson, Login, Onboarding, Profile, Sets, Words};
 use crate::store::auth_store::AuthStore;
-use crate::ui_components::LoadingOverlay;
+use crate::ui_components::{BottomTabBar, LoadingOverlay};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos_router::components::*;
@@ -105,7 +105,7 @@ pub fn ProtectedRoute(children: ChildrenFn) -> impl IntoView {
 #[component]
 pub fn AppRoutes() -> impl IntoView {
     view! {
-        <main class="paper-texture">
+        <main class="paper-texture pb-20 md:pb-0">
             <Routes fallback=|| view! { <Login/> }>
                 <Route path=path!("/") view=|| view! { <ProtectedRoute><Home/></ProtectedRoute> } />
                 <Route path=path!("login") view=Login />
@@ -118,6 +118,7 @@ pub fn AppRoutes() -> impl IntoView {
                 <Route path=path!("lesson") view=|| view! { <ProtectedRoute><Lesson/></ProtectedRoute> } />
                 <Route path=path!("sets") view=|| view! { <ProtectedRoute><Sets/></ProtectedRoute> } />
             </Routes>
+            <BottomTabBar test_id="bottom-tab" />
         </main>
     }
 }

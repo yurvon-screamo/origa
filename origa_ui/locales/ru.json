@@ -222,6 +222,7 @@
   "home": {
     "loading": "Загрузка...",
     "navigation": "Навигация",
+    "home_tab": "Главная",
     "lesson": "Урок",
     "words": "Слова",
     "grammar": "Грамматика",

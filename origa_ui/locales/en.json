@@ -222,6 +222,7 @@
     "home": {
         "loading": "Loading...",
         "navigation": "Navigation",
+        "home_tab": "Home",
         "lesson": "Lesson",
         "words": "Words",
         "grammar": "Grammar",
