@@ -6,6 +6,7 @@ use crate::ui_components::{
 use leptos::prelude::*;
 use origa::domain::{Card as DomainCard, NativeLanguage, QuizCard};
 use std::collections::HashSet;
+use tracing::warn;
 
 use super::card_type::CardType;
 use super::quiz_card_header::QuizCardHeader;
@@ -28,12 +29,19 @@ pub fn QuizCardView(
     let card = quiz_card.card().clone();
     let card_type = CardType::from(&card);
     let lang = native_language;
-    let question = StoredValue::new(
-        card.question(&lang)
-            .ok()
-            .map(|q| q.text().to_string())
-            .unwrap_or_default(),
-    );
+    let question_text = match card.question(&lang) {
+        Ok(q) => q.text().to_string(),
+        Err(e) => {
+            warn!(
+                card_type = ?card_type,
+                content_key = %card.content_key(),
+                error = %e,
+                "Failed to get card question"
+            );
+            String::new()
+        },
+    };
+    let question = StoredValue::new(question_text);
     let options: StoredValue<Vec<origa::domain::QuizOption>> =
         StoredValue::new(quiz_card.options().to_vec());
 
@@ -55,12 +63,21 @@ pub fn QuizCardView(
     };
 
     let kanji_for_animation: StoredValue<Option<String>> = StoredValue::new(match &card {
-        DomainCard::Kanji(_) => Some(
-            card.question(&lang)
-                .ok()
-                .map(|q| q.text().to_string())
-                .unwrap_or_default(),
-        ),
+        DomainCard::Kanji(_) => {
+            let text = match card.question(&lang) {
+                Ok(q) => q.text().to_string(),
+                Err(e) => {
+                    warn!(
+                        card_type = ?card_type,
+                        content_key = %card.content_key(),
+                        error = %e,
+                        "Failed to get card question"
+                    );
+                    String::new()
+                },
+            };
+            Some(text)
+        },
         _ => None,
     });
 

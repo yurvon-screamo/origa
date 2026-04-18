@@ -24,11 +24,17 @@ fn extract_kanji_data(kanji: &DomainCard, native_language: NativeLanguage) -> Ka
     };
 
     let symbol = kanji.kanji().text().to_string();
-    let description = kanji
-        .description(&native_language)
-        .ok()
-        .map(|d| d.text().to_string())
-        .unwrap_or_default();
+    let description = match kanji.description(&native_language) {
+        Ok(d) => d.text().to_string(),
+        Err(e) => {
+            warn!(
+                kanji = %symbol,
+                error = %e,
+                "Failed to get kanji description"
+            );
+            String::new()
+        },
+    };
 
     let on_readings: Option<Vec<String>> = {
         let readings = kanji.on_readings();
