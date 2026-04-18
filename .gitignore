@@ -47,6 +47,9 @@ missing_vocabulary.md
 # Cache
 .cache/
 
+# Graphify knowledge graph output
+graphify-out/
+
 # UniDic dictionary (built by build.rs)
 origa_ui/public/dictionaries/unidic/
 # Android keystore files
