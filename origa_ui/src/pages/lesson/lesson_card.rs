@@ -23,18 +23,33 @@ pub fn LessonCard(
 ) -> impl IntoView {
     let card_type = CardType::from(&card);
     let lang = native_language;
-    let question = StoredValue::new(
-        card.question(&lang)
-            .ok()
-            .map(|q| q.text().to_string())
-            .unwrap_or_default(),
-    );
-    let answer = StoredValue::new(
-        card.answer(&lang)
-            .ok()
-            .map(|a| a.text().to_string())
-            .unwrap_or_default(),
-    );
+    let question_text = match card.question(&lang) {
+        Ok(q) => q.text().to_string(),
+        Err(e) => {
+            tracing::warn!(
+                card_type = ?card_type,
+                content_key = %card.content_key(),
+                error = %e,
+                "Failed to get card question"
+            );
+            String::new()
+        },
+    };
+    let question = StoredValue::new(question_text);
+
+    let answer_text = match card.answer(&lang) {
+        Ok(a) => a.text().to_string(),
+        Err(e) => {
+            tracing::warn!(
+                card_type = ?card_type,
+                content_key = %card.content_key(),
+                error = %e,
+                "Failed to get card answer"
+            );
+            String::new()
+        },
+    };
+    let answer = StoredValue::new(answer_text);
 
     let radicals: Option<Vec<RadicalDisplay>> = match &card {
         DomainCard::Kanji(kanji) => match kanji.radicals_info() {
@@ -100,12 +115,21 @@ pub fn LessonCard(
     let kun_readings_stored = StoredValue::new(kun_readings);
 
     let kanji_for_animation: Option<String> = match &card {
-        DomainCard::Kanji(_) => Some(
-            card.question(&lang)
-                .ok()
-                .map(|q| q.text().to_string())
-                .unwrap_or_default(),
-        ),
+        DomainCard::Kanji(_) => {
+            let text = match card.question(&lang) {
+                Ok(q) => q.text().to_string(),
+                Err(e) => {
+                    tracing::warn!(
+                        card_type = ?card_type,
+                        content_key = %card.content_key(),
+                        error = %e,
+                        "Failed to get kanji for animation"
+                    );
+                    String::new()
+                },
+            };
+            Some(text)
+        },
         _ => None,
     };
     let kanji_stored = StoredValue::new(kanji_for_animation);

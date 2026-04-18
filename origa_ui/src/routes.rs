@@ -34,9 +34,16 @@ pub fn start_dictionary_loading(
         if let Err(e) = load_vocabulary().await {
             tracing::error!("Failed to load vocabulary: {e}");
         }
+
+        // kanji критичен для карточек — одна попытка повтора при ошибке
         if let Err(e) = load_kanji().await {
-            tracing::error!("Failed to load kanji: {e}");
+            tracing::error!("Failed to load kanji dictionary: {e}");
+            tracing::info!("Retrying kanji dictionary load...");
+            if let Err(e) = load_kanji().await {
+                tracing::error!("Failed to load kanji dictionary on retry: {e}");
+            }
         }
+
         if let Err(e) = load_grammar().await {
             tracing::error!("Failed to load grammar: {e}");
         }

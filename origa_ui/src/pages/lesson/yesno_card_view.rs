@@ -6,6 +6,7 @@ use crate::ui_components::{
 use leptos::prelude::*;
 use origa::domain::{Card as DomainCard, NativeLanguage, YesNoCard};
 use std::collections::HashSet;
+use tracing::warn;
 
 use super::card_type::CardType;
 use super::quiz_card_header::QuizCardHeader;
@@ -51,20 +52,35 @@ pub fn YesNoCardView(
     let statement = StoredValue::new(yesno_card.statement_text().to_string());
     let is_statement_correct = yesno_card.is_correct();
 
-    let question_text = StoredValue::new(
-        card.question(&lang)
-            .ok()
-            .map(|q| q.text().to_string())
-            .unwrap_or_default(),
-    );
+    let question_text = StoredValue::new(match card.question(&lang) {
+        Ok(q) => q.text().to_string(),
+        Err(e) => {
+            warn!(
+                card_type = ?card_type,
+                content_key = %card.content_key(),
+                error = %e,
+                "Failed to get card question"
+            );
+            String::new()
+        },
+    });
 
     let kanji_for_animation: StoredValue<Option<String>> = StoredValue::new(match &card {
-        DomainCard::Kanji(_) => Some(
-            card.question(&lang)
-                .ok()
-                .map(|q| q.text().to_string())
-                .unwrap_or_default(),
-        ),
+        DomainCard::Kanji(_) => {
+            let text = match card.question(&lang) {
+                Ok(q) => q.text().to_string(),
+                Err(e) => {
+                    warn!(
+                        card_type = ?card_type,
+                        content_key = %card.content_key(),
+                        error = %e,
+                        "Failed to get card question"
+                    );
+                    String::new()
+                },
+            };
+            Some(text)
+        },
         _ => None,
     });
 
