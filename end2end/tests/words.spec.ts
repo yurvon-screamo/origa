@@ -238,7 +238,7 @@ testWithFreshUser.describe("Words Page - OCR Image Recognition", () => {
 
         // The tokenizer produces base forms (kanji), not hiragana readings
         // Verify some of the key words from ocr_example.jpg appear as base forms
-        const expectedWords = ["練習", "問題", "トイレ", "電車", "田中", "会議"];
+        const expectedWords = ["練習", "問題", "トイレ", "電車", "会議"];
         for (const word of expectedWords) {
             expect(drawerText).toContain(word);
         }

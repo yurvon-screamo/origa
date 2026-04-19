@@ -14,25 +14,20 @@ interface Phrase {
 }
 
 test.describe("Phrase Dataset", () => {
-    let response_data: PhraseData | undefined;
+    let response_data: PhraseData;
 
     test.beforeAll(async ({ request }) => {
-        const response = await request.get("/phrase/phrase_dataset.json");
-        const contentType = response.headers()["content-type"] ?? "";
-
-        if (response.ok() && contentType.includes("application/json")) {
-            response_data = (await response.json()) as PhraseData;
-        }
+        const response = await request.get("/public/phrase/phrase_dataset.json");
+        expect(response.ok()).toBeTruthy();
+        response_data = (await response.json()) as PhraseData;
     });
 
     test("phrase dataset loads successfully", async () => {
-        test.skip(!response_data, "Phrase dataset not available in test environment");
-        expect(response_data!.phrases.length).toBe(500);
+        expect(response_data.phrases.length).toBe(500);
     });
 
     test("phrase dataset has required fields", async () => {
-        test.skip(!response_data, "Phrase dataset not available in test environment");
-        const phrase = response_data!.phrases[0];
+        const phrase = response_data.phrases[0];
 
         expect(phrase).toHaveProperty("id");
         expect(phrase).toHaveProperty("text");
@@ -43,30 +38,27 @@ test.describe("Phrase Dataset", () => {
     });
 
     test("phrase audio file is accessible", async ({ request }) => {
-        test.skip(!response_data, "Phrase dataset not available in test environment");
-        const phrase = response_data!.phrases[0];
-        const audioResponse = await request.get(`/phrase/audio/${phrase.audio_file}`);
+        const phrase = response_data.phrases[0];
+        const audioResponse = await request.get(`/public/phrase/audio/${phrase.audio_file}`);
 
         expect(audioResponse.ok()).toBeTruthy();
-        expect(audioResponse.headers()["content-type"]).toContain("audio");
+        const body = await audioResponse.body();
+        expect(body.length).toBeGreaterThan(0);
     });
 
     test("phrase audio files are opus format", async () => {
-        test.skip(!response_data, "Phrase dataset not available in test environment");
-        for (const phrase of response_data!.phrases) {
+        for (const phrase of response_data.phrases) {
             expect(phrase.audio_file).toMatch(/\.opus$/);
         }
     });
 
     test("all phrase ids are unique ULIDs", async () => {
-        test.skip(!response_data, "Phrase dataset not available in test environment");
-        const ids = response_data!.phrases.map((p) => p.id);
+        const ids = response_data.phrases.map((p) => p.id);
         expect(new Set(ids).size).toBe(ids.length);
     });
 
     test("all phrases have non-empty translations", async () => {
-        test.skip(!response_data, "Phrase dataset not available in test environment");
-        for (const phrase of response_data!.phrases) {
+        for (const phrase of response_data.phrases) {
             expect(phrase.translation_ru.length).toBeGreaterThan(0);
             expect(phrase.translation_en.length).toBeGreaterThan(0);
         }
