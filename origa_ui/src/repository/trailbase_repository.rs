@@ -135,6 +135,7 @@ impl UserRow {
                     DailyLoad::default()
                 },
             },
+            false,
         )
     }
 }

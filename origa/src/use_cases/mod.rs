@@ -10,6 +10,7 @@ mod import_anki_pack;
 mod import_onboarding_sets;
 mod mark_card_as_known;
 mod rate_card;
+mod seed_ready_phrases;
 mod select_cards_to_lesson;
 mod toggle_favorite;
 mod transcribe_audio;
@@ -37,6 +38,7 @@ pub use import_anki_pack::{
 pub use import_onboarding_sets::{ImportOnboardingResult, ImportOnboardingSetsUseCase};
 pub use mark_card_as_known::MarkCardAsKnownUseCase;
 pub use rate_card::RateCardUseCase;
+pub use seed_ready_phrases::SeedReadyPhrasesUseCase;
 pub use select_cards_to_lesson::SelectCardsToLessonUseCase;
 pub use toggle_favorite::ToggleFavoriteUseCase;
 pub use transcribe_audio::TranscribeAudioUseCase;

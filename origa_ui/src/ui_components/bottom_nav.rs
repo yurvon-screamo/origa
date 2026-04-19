@@ -17,6 +17,8 @@ pub fn BottomTabBar(#[prop(optional, into)] test_id: Signal<String>) -> impl Int
     let grammar_label =
         Signal::derive(move || i18n.get_keys().home().grammar().inner().to_string());
     let kanji_label = Signal::derive(move || i18n.get_keys().home().kanji().inner().to_string());
+    let phrases_label =
+        Signal::derive(move || i18n.get_keys().home().phrases().inner().to_string());
     let profile_label =
         Signal::derive(move || i18n.get_keys().home().profile().inner().to_string());
 
@@ -37,6 +39,7 @@ pub fn BottomTabBar(#[prop(optional, into)] test_id: Signal<String>) -> impl Int
     });
     let is_grammar_active = Signal::derive(move || location.pathname.get().starts_with("/grammar"));
     let is_kanji_active = Signal::derive(move || location.pathname.get().starts_with("/kanji"));
+    let is_phrases_active = Signal::derive(move || location.pathname.get().starts_with("/phrases"));
     let is_profile_active = Signal::derive(move || location.pathname.get().starts_with("/profile"));
 
     let test_id_val = move || {
@@ -74,6 +77,13 @@ pub fn BottomTabBar(#[prop(optional, into)] test_id: Signal<String>) -> impl Int
                     label=kanji_label
                     is_active=is_kanji_active
                     test_id=derive_test_id(test_id, "tab-kanji")
+                />
+                <BottomTabItem
+                    href="/phrases"
+                    icon=icondata::LuMessageSquare
+                    label=phrases_label
+                    is_active=is_phrases_active
+                    test_id=derive_test_id(test_id, "tab-phrases")
                 />
                 <BottomTabItem
                     href="/profile"

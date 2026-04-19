@@ -1,0 +1,947 @@
+[
+  {
+    "rule_id": "01KJ9AVWBGAJA156CXB13MGY2Y",
+    "level": "N3",
+    "content": {
+      "Russian": {
+        "title": "〜とく",
+        "short_description": "Разговорное сокращение 〜ておく",
+        "md_description": "## 〜とく — Разговорное сокращение от 〜ておく\n\n### Что это и зачем?\n\n`〜とく` — это **разговорная (кэжуал) версия** грамматики `〜ておく`, которая означает *«сделать что-то заранее, с прицелом на будущее»*. В непринуждённой речи японцы «съедают» слог `て+お` → `と`.\n\n> ⚠️ Используйте только в **разговорной речи** с друзьями и близкими. На собеседовании или при общении с начальником используйте полную форму `〜ておく`.\n\n---\n\n### Образование\n\n```\nТе-форма глагола + おく → とく\n食べておく → 食べとく\n書いておく → 書いとく\n```\n\n| Полная форма | Разговорная форма |\n|---|---|\n| `食べておく` | `食べとく` |\n| `買っておく` | `買っとく` |\n| `調べておく` | `調べとく` |\n| `しておく` | `しとく` |\n\n---\n\n### Примеры\n\n```\n明日の準備、しとくね。\n```\n*Подготовлюсь к завтрашнему дня заранее, ладно.*\n\n```\nチケット買っとかないと、なくなるよ。\n```\n*Если не купить билеты заранее, они закончатся.*\n\n```\nとりあえず連絡先、交換しとこう。\n```\n*Ну давай на всякий случай обменяемся контактами.*\n\n---\n\n### Нюансы\n\n- Отрицание: `〜ておかない` → `〜とかない`\n- Волитивная форма: `〜ておこう` → `〜とこう`\n- В письменной речи и формальных ситуациях всегда пишите полностью: `〜ておく`."
+      },
+      "English": {
+        "title": "〜とく",
+        "short_description": "Casual contraction of 〜ておく",
+        "md_description": "## 〜とく — Casual Contraction of 〜ておく\n\n### What is it?\n\n`〜とく` is the **casual spoken contraction** of `〜ておく`, which expresses doing something *in advance or as preparation for a future situation*. In natural speech, `ておく` is compressed: `て + お` → `と`.\n\n> ⚠️ Use `〜とく` only in **casual conversation** — with friends, family, or close colleagues. In formal situations, always use the full form `〜ておく`.\n\n---\n\n### Formation\n\n```\nTe-form of verb + おく → とく\n食べておく → 食べとく\n書いておく → 書いとく\n```\n\n| Full form | Casual contraction |\n|---|---|\n| `食べておく` | `食べとく` |\n| `買っておく` | `買っとく` |\n| `調べておく` | `調べとく` |\n| `しておく` | `しとく` |\n\n---\n\n### Examples\n\n```\n明日の準備、しとくね。\n```\n*I'll get things ready for tomorrow in advance.*\n\n```\nチケット買っとかないと、なくなるよ。\n```\n*If you don't buy the tickets ahead of time, they'll sell out.*\n\n```\nとりあえず連絡先、交換しとこう。\n```\n*Let's go ahead and exchange contact info, just in case.*\n\n---\n\n### Tips\n\n- Negative form: `〜ておかない` → `〜とかない`\n- Volitional form: `〜ておこう` → `〜とこう`\n- In writing or formal speech, always use the full form `〜ておく`."
+      }
+    },
+    "format_map": {
+      "Verb": [
+        {
+          "VerbToToku": {}
+        }
+      ]
+    }
+  },
+  {
+    "rule_id": "01KJ9AVWBGMPGCDGNH3RST0PXP",
+    "level": "N3",
+    "content": {
+      "Russian": {
+        "title": "〜てる",
+        "short_description": "Разговорное сокращение 〜ている",
+        "md_description": "## 〜てる — Разговорное сокращение от 〜ている\n\n### Что это и зачем?\n\n`〜てる` — это **разговорная форма** грамматики `〜ている`, которая описывает:\n1. **Текущий процесс**: «сейчас делаю»\n2. **Длительное состояние**: «нахожусь в таком состоянии»\n3. **Результат прошлого действия**: «сделал, и теперь так есть»\n\nВ разговорной речи `い` просто выпадает: `〜ている` → `〜てる`.\n\n> ⚠️ Это **только разговорный** вариант. В письменной речи, на экзаменах и в формальных ситуациях пишите `〜ている`.\n\n---\n\n### Образование\n\n```\nТе-форма глагола + いる → てる\n食べている → 食べてる\n読んでいる → 読んでる\n```\n\n| Полная форма | Разговорная |\n|---|---|\n| `食べている` | `食べてる` |\n| `寝ている` | `寝てる` |\n| `結婚している` | `結婚してる` |\n| `壊れている` | `壊れてる` |\n\n---\n\n### Примеры\n\n```\n今、ご飯食べてる。\n```\n*Сейчас ем.*\n\n```\nあの人、誰と話してるの？\n```\n*С кем это она разговаривает?*\n\n```\n彼はもう結婚してるよ。\n```\n*Он уже женат.*\n\n```\n窓、開いてるよ。閉めて。\n```\n*Окно открыто. Закрой его.*\n\n---\n\n### Три значения 〜ている — не путайте!\n\n| Значение | Пример | Перевод |\n|---|---|---|\n| Процесс | `走ってる` | Бегу (прямо сейчас) |\n| Состояние | `眼鏡をかけてる` | Ношу очки |\n| Результат | `財布を落としてる` | Кошелёк потерян (ронял ранее) |"
+      },
+      "English": {
+        "title": "〜てる",
+        "short_description": "Casual contraction of 〜ている",
+        "md_description": "## 〜てる — Casual Contraction of 〜ている\n\n### What is it?\n\n`〜てる` is the **casual spoken contraction** of `〜ている`, which expresses:\n1. **An ongoing action**: \"currently doing something\"\n2. **A lasting state**: \"being in a certain condition\"\n3. **The result of a past action**: \"done something and still in that state\"\n\nThe `い` simply drops in casual speech: `〜ている` → `〜てる`.\n\n> ⚠️ This is **casual only**. In writing, formal situations, or the JLPT, use the full form `〜ている`.\n\n---\n\n### Formation\n\n```\nTe-form + いる → てる\n食べている → 食べてる\n読んでいる → 読んでる\n```\n\n| Full form | Casual form |\n|---|---|\n| `食べている` | `食べてる` |\n| `寝ている` | `寝てる` |\n| `結婚している` | `結婚してる` |\n| `壊れている` | `壊れてる` |\n\n---\n\n### Examples\n\n```\n今、ご飯食べてる。\n```\n*I'm eating right now.*\n\n```\nあの人、誰と話してるの？\n```\n*Who is that person talking to?*\n\n```\n彼はもう結婚してるよ。\n```\n*He's already married.*\n\n```\n窓、開いてるよ。閉めて。\n```\n*The window is open. Close it.*\n\n---\n\n### Three Meanings of 〜ている — Don't Mix Them Up!\n\n| Meaning | Example | Translation |\n|---|---|---|\n| Ongoing action | `走ってる` | (I'm) running right now |\n| Habitual/state | `眼鏡をかけてる` | (I) wear glasses |\n| Resultant state | `財布を落としてる` | (My) wallet is lost |"
+      }
+    },
+    "format_map": {
+      "Verb": [
+        {
+          "VerbToTeru": {}
+        }
+      ]
+    }
+  },
+  {
+    "rule_id": "01KJ9AVWBHE66V8N0M0QMC4FH0",
+    "level": "N3",
+    "content": {
+      "Russian": {
+        "title": "～こと",
+        "short_description": "Номинализация глагола",
+        "md_description": "## ～こと — Номинализация глагола\n\n### Что это и зачем?\n\n`～こと` превращает глагол или глагольное предложение в **существительное** (номинализация). Это позволяет использовать действие как тему предложения, объект другого глагола, и т.д.\n\n> 💡 Думайте о `こと` как о слове **«то, что...»** или **«-ние/-ение»**: `食べること` = «еда» / «то, что ешь» / «приём пищи»\n\n---\n\n### Образование\n\n```\nГлагол (словарная форма) + こと\nГлагол (た-форма) + こと\nГлагол (ない-форма) + こと\n```\n\n| Форма | Пример | Перевод |\n|---|---|---|\n| Словарная + こと | `食べること` | есть / еда |\n| た + こと | `行ったこと` | то, что ходил |\n| ない + こと | `来ないこと` | то, что не приходит |\n\n---\n\n### Примеры\n\n```\n日本語を勉強することが好きです。\n```\n*Мне нравится изучать японский язык.*\n\n```\n彼が来たことを知っていますか。\n```\n*Вы знаете, что он приходил?*\n\n```\nここで食べることは禁止されています。\n```\n*Есть здесь запрещено.*\n\n```\n約束を守ることが大切です。\n```\n*Важно держать обещания.*\n\n---\n\n### こと vs の: в чём разница?\n\n| | `こと` | `の` |\n|---|---|---|\n| Стиль | Формальный, письменный | Разговорный |\n| После глаголов восприятия (見る、聞く、感じる) | ❌ | ✅ |\n| В пословицах и правилах | ✅ | ❌ |\n| В обычной речи | ✅ | ✅ |\n\n```\n彼が走るのが見えた。（○）\n彼が走ることが見えた。（△ — неестественно）\n```\n\n---\n\n### Устойчивые конструкции с こと\n\n- `〜ことがある` — иногда бывает\n- `〜ことができる` — мочь, уметь\n- `〜ことにする` — решить сделать\n- `〜ことになる` — оказаться так, что..."
+      },
+      "English": {
+        "title": "～こと",
+        "short_description": "Verb nominalization",
+        "md_description": "## ～こと — Verb Nominalization\n\n### What is it?\n\n`～こと` turns a verb or verb phrase into a **noun** (nominalization). This lets you use an action as a sentence topic, object, or subject — essentially treating a whole action like a \"thing\".\n\n> 💡 Think of `こと` as the equivalent of English **\"-ing\"** or **\"the fact that...\"**: `食べること` = \"eating\" / \"the act of eating\"\n\n---\n\n### Formation\n\n```\nVerb (dictionary form) + こと\nVerb (た-form) + こと\nVerb (ない-form) + こと\n```\n\n| Form | Example | Meaning |\n|---|---|---|\n| Dict. form + こと | `食べること` | eating / to eat |\n| た + こと | `行ったこと` | the fact that (I) went |\n| ない + こと | `来ないこと` | not coming |\n\n---\n\n### Examples\n\n```\n日本語を勉強することが好きです。\n```\n*I like studying Japanese.*\n\n```\n彼が来たことを知っていますか。\n```\n*Did you know that he came?*\n\n```\nここで食べることは禁止されています。\n```\n*Eating here is prohibited.*\n\n```\n約束を守ることが大切です。\n```\n*It's important to keep promises.*\n\n---\n\n### こと vs の: What's the Difference?\n\n| | `こと` | `の` |\n|---|---|---|\n| Register | Formal, written | Casual, spoken |\n| After perception verbs (見る、聞く、感じる) | ❌ | ✅ |\n| In rules, proverbs, instructions | ✅ | ❌ |\n| General use | ✅ | ✅ |\n\n```\n彼が走るのが見えた。（✅ natural）\n彼が走ることが見えた。（△ unnatural with 見える）\n```\n\n---\n\n### Key Fixed Expressions with こと\n\n- `〜ことがある` — sometimes happens\n- `〜ことができる` — can do / be able to\n- `〜ことにする` — decide to do\n- `〜ことになる` — it turns out that / end up doing"
+      }
+    },
+    "format_map": {
+      "Verb": [
+        {
+          "VerbToTa": {}
+        },
+        {
+          "AddPostfix": {
+            "postfix": "こと"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "rule_id": "01KJ9AVWBHT321YW1PS6W1644B",
+    "level": "N3",
+    "content": {
+      "Russian": {
+        "title": "～の",
+        "short_description": "Номинализация глагола (разговорная)",
+        "md_description": "## ～の — Номинализация глагола (разговорная)\n\n### Что это и зачем?\n\n`～の` — это **разговорный способ номинализации** глаголов, аналогичный `～こと`, но более мягкий и живой. Превращает действие в «вещь», о которой можно говорить.\n\n> 💡 `の` звучит **теплее и естественнее** в устной речи, тогда как `こと` — более формально и книжно.\n\n---\n\n### Образование\n\n```\nГлагол (словарная форма) + の\nГлагол (ない-форма) + の\n```\n\n| Тип | Пример | Перевод |\n|---|---|---|\n| Словарная + の | `泳ぐの` | плавание / то, что плаваешь |\n| ない + の | `食べないの` | то, что не ешь |\n\n---\n\n### Примеры\n\n```\n音楽を聴くのが好きです。\n```\n*Я люблю слушать музыку.*\n\n```\n彼女が笑うのを見た。\n```\n*Я видел, как она смеялась.*\n\n```\n早く起きるのは難しい。\n```\n*Рано вставать — это сложно.*\n\n```\n一人で行くのが怖い。\n```\n*Страшно идти одному.*\n\n---\n\n### Ключевое отличие: こと vs の\n\n| Критерий | こと | の |\n|---|---|---|\n| Стиль | Формальный | Разговорный |\n| После глаголов восприятия (見る、聞く) | ❌ (редко) | ✅ (обязательно) |\n| В объявлениях и правилах | ✅ | ❌ |\n\n> ⚠️ **Важно**: после глаголов восприятия (`見る`, `聞く`, `感じる`) нужно использовать **только の**, не こと!\n\n```\n彼女が歌うのを聞いた。（✅）\n彼女が歌うことを聞いた。（❌ — неправильно!）\n```\n\n---\n\n### の в конце предложения (вопрос / объяснение)\n\nОтдельная функция の: вопрос или объяснение причины:\n```\nどこへ行くの？ (Куда идёшь?)\nお腹が痛いの。 (У меня болит живот — вот почему.)\n```"
+      },
+      "English": {
+        "title": "～の",
+        "short_description": "Verb nominalization (casual)",
+        "md_description": "## ～の — Verb Nominalization (Casual)\n\n### What is it?\n\n`～の` is the **casual, conversational way** to nominalize verbs — similar to `～こと` but warmer and more natural in everyday speech. It turns an action into a \"thing\" you can talk about.\n\n> 💡 `の` feels **natural and soft** in spoken Japanese, while `こと` is more formal and written.\n\n---\n\n### Formation\n\n```\nVerb (dictionary form) + の\nVerb (ない-form) + の\n```\n\n| Type | Example | Meaning |\n|---|---|---|\n| Dict. form + の | `泳ぐの` | swimming / the act of swimming |\n| ない + の | `食べないの` | not eating |\n\n---\n\n### Examples\n\n```\n音楽を聴くのが好きです。\n```\n*I like listening to music.*\n\n```\n彼女が笑うのを見た。\n```\n*I saw her laughing.*\n\n```\n早く起きるのは難しい。\n```\n*Waking up early is hard.*\n\n```\n一人で行くのが怖い。\n```\n*Going alone is scary.*\n\n---\n\n### The Key Rule: こと vs の\n\n| Criterion | こと | の |\n|---|---|---|\n| Register | Formal | Casual |\n| After perception verbs (見る、聞く) | ❌ (unnatural) | ✅ (required) |\n| In rules and written notices | ✅ | ❌ |\n\n> ⚠️ **Critical rule**: After perception verbs (`見る`, `聞く`, `感じる`), always use **の**, never こと!\n\n```\n彼女が歌うのを聞いた。（✅ correct）\n彼女が歌うことを聞いた。（❌ wrong!）\n```\n\n---\n\n### の at Sentence End\n\nNote: の also appears at the end of questions or explanatory sentences (different usage):\n```\nどこへ行くの？ (Where are you going?)\nお腹が痛いの。 (I have a stomachache — that's why.)\n```"
+      }
+    },
+    "format_map": {
+      "Verb": [
+        {
+          "VerbToTa": {}
+        },
+        {
+          "AddPostfix": {
+            "postfix": "の"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "rule_id": "01KJ9AVWBHREWZFFJGA82D8DQ7",
+    "level": "N3",
+    "content": {
+      "Russian": {
+        "title": "～ことができる",
+        "short_description": "Могу сделать",
+        "md_description": "## ～ことができる — Могу сделать / Уметь\n\n### Что это и зачем?\n\n`～ことができる` — формальный способ выразить **способность или возможность** что-то сделать. Это аналог потенциальной формы глагола, но более официальный и чаще встречающийся в письменной речи.\n\n> 💡 `食べることができる` = `食べられる` — смысл одинаковый, но первое звучит **формальнее**.\n\n---\n\n### Образование\n\n```\nГлагол (словарная форма) + ことができる\n```\n\n| Глагол | ことができる форма | Перевод |\n|---|---|---|\n| `話す` | `話すことができる` | могу говорить |\n| `泳ぐ` | `泳ぐことができる` | умею плавать |\n| `運転する` | `運転することができる` | умею водить |\n| `食べる` | `食べることができる` | могу есть |\n\n**Отрицательная форма:**\n```\n動詞辞書形 + ことができない\n話すことができない → не могу говорить\n```\n\n**Прошедшее время:**\n```\n話すことができた → мог говорить\n話すことができなかった → не мог говорить\n```\n\n---\n\n### Примеры\n\n```\n私はピアノを弾くことができます。\n```\n*Я умею играть на пианино.*\n\n```\n彼女は三か国語を話すことができる。\n```\n*Она может говорить на трёх языках.*\n\n```\n子どものころ、泳ぐことができなかった。\n```\n*В детстве я не умел плавать.*\n\n```\nここではタバコを吸うことができません。\n```\n*Здесь курить нельзя.*\n\n---\n\n### ことができる vs Потенциальная форма\n\n| | `ことができる` | Потенциальная форма |\n|---|---|---|\n| Стиль | Формальный | Нейтральный/разговорный |\n| Употребление | Письменный язык, официально | Везде |\n| Пример | `話すことができる` | `話せる` |\n\n> ⚠️ В обычном разговоре японцы чаще скажут `話せる`, чем `話すことができる`. Последнее звучит немного «по-книжному»."
+      },
+      "English": {
+        "title": "～ことができる",
+        "short_description": "Can do / Be able to do",
+        "md_description": "## ～ことができる — Can Do / Be Able To\n\n### What is it?\n\n`～ことができる` is the **formal way to express ability or possibility**. It's the functional equivalent of the potential verb form, but more often found in written language and formal speech.\n\n> 💡 `食べることができる` = `食べられる` — same meaning, but the former is **more formal**.\n\n---\n\n### Formation\n\n```\nVerb (dictionary form) + ことができる\n```\n\n| Verb | ことができる form | Meaning |\n|---|---|---|\n| `話す` | `話すことができる` | can speak |\n| `泳ぐ` | `泳ぐことができる` | can swim |\n| `運転する` | `運転することができる` | can drive |\n| `食べる` | `食べることができる` | can eat |\n\n**Negative form:**\n```\nVerb (dict.) + ことができない\n話すことができない → cannot speak\n```\n\n**Past tense:**\n```\n話すことができた → could speak\n話すことができなかった → could not speak\n```\n\n---\n\n### Examples\n\n```\n私はピアノを弾くことができます。\n```\n*I can play the piano.*\n\n```\n彼女は三か国語を話すことができる。\n```\n*She can speak three languages.*\n\n```\n子どものころ、泳ぐことができなかった。\n```\n*When I was a child, I couldn't swim.*\n\n```\nここではタバコを吸うことができません。\n```\n*You cannot smoke here.*\n\n---\n\n### ことができる vs Potential Form\n\n| | `ことができる` | Potential form |\n|---|---|---|\n| Register | Formal | Neutral/casual |\n| Common in | Writing, official contexts | Everyday speech |\n| Example | `話すことができる` | `話せる` |\n\n> ⚠️ In daily conversation, Japanese speakers usually say `話せる` rather than `話すことができる`. The latter can sound a bit stiff or textbook-like."
+      }
+    },
+    "format_map": {
+      "Verb": [
+        {
+          "VerbToTa": {}
+        },
+        {
+          "AddPostfix": {
+            "postfix": "ことができる"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "rule_id": "01KJ9AVWBH42D4GD52RS1BC50N",
+    "level": "N3",
+    "content": {
+      "Russian": {
+        "title": "～ばいい",
+        "short_description": "Достаточно сделать",
+        "md_description": "## ～ばいい — Достаточно / Нужно просто сделать\n\n### Что это и зачем?\n\n`～ばいい` используется для:\n1. **Совета или рекомендации**: «тебе нужно просто сделать X»\n2. **Решения проблемы**: «достаточно сделать X — и всё»\n3. **Вопроса о том, что делать**: `どうすればいい？` — «что мне делать?»\n\n> 💡 Буквально: «если сделать X — будет хорошо». Звучит мягче, чем прямой приказ.\n\n---\n\n### Образование: ба-форма (условное наклонение)\n\n| Группа | Правило | Пример |\n|---|---|---|\n| Глаголы группы I (う) | う → えば | `書く → 書けば` |\n| Глаголы группы II (る) | る → れば | `食べる → 食べれば` |\n| する | すれば | `勉強すれば` |\n| くる | くれば | `くれば` |\n\n```\nба-форма + いい\n話せば + いい → 話せばいい\n```\n\n---\n\n### Примеры\n\n```\nわからなければ、先生に聞けばいいよ。\n```\n*Если не понимаешь, просто спроси учителя.*\n\n```\nどうすればいいですか。\n```\n*Что мне нужно сделать? / Как быть?*\n\n```\nお金がなければ、借りればいいじゃないか。\n```\n*Если нет денег, можно же просто занять.*\n\n```\n一時間早く起きればいいだけだ。\n```\n*Нужно всего лишь встать на час раньше.*\n\n---\n\n### Нюансы и тон\n\n| Форма | Тон |\n|---|---|\n| `〜ばいい` | Мягкий совет, простое решение |\n| `〜たらいい` | Чуть мягче, разговорнее |\n| `〜なければならない` | Обязанность, «должен» |\n\n> ⚠️ В зависимости от интонации и контекста `〜ばいい` может звучать слегка **саркастично** или **пренебрежительно**: «ну так возьми и сделай». Будьте внимательны к тону!"
+      },
+      "English": {
+        "title": "～ばいい",
+        "short_description": "Should just do",
+        "md_description": "## ～ばいい — Should Just Do / All You Need to Do Is\n\n### What is it?\n\n`～ばいい` is used to:\n1. **Give advice or a simple solution**: \"you just need to do X\"\n2. **Suggest the easiest fix**: \"all it takes is X\"\n3. **Ask what to do**: `どうすればいい？` — \"what should I do?\"\n\n> 💡 Literally: \"if you do X, it'll be fine.\" Softer than a direct command.\n\n---\n\n### Formation: the ば-conditional form\n\n| Group | Rule | Example |\n|---|---|---|\n| Group I (う verbs) | う → えば | `書く → 書けば` |\n| Group II (る verbs) | る → れば | `食べる → 食べれば` |\n| する | すれば | `勉強すれば` |\n| くる | くれば | `くれば` |\n\n```\nば-form + いい\n話せば + いい → 話せばいい\n```\n\n---\n\n### Examples\n\n```\nわからなければ、先生に聞けばいいよ。\n```\n*If you don't understand, just ask the teacher.*\n\n```\nどうすればいいですか。\n```\n*What should I do? / What's the right thing to do here?*\n\n```\nお金がなければ、借りればいいじゃないか。\n```\n*If you don't have money, you can just borrow some, right?*\n\n```\n一時間早く起きればいいだけだ。\n```\n*All you need to do is wake up an hour earlier.*\n\n---\n\n### Nuance & Tone\n\n| Form | Tone |\n|---|---|\n| `〜ばいい` | Mild advice, simple solution |\n| `〜たらいい` | Slightly softer, more casual |\n| `〜なければならない` | Obligation, \"must\" |\n\n> ⚠️ Depending on context and tone of voice, `〜ばいい` can sound **dismissive or sarcastic** — like \"just do it already.\" Be mindful of delivery!"
+      }
+    },
+    "format_map": {
+      "Verb": [
+        {
+          "VerbToBa": {}
+        },
+        {
+          "AddPostfix": {
+            "postfix": "いい"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "rule_id": "01KJ9AVWBHJZ36Z01ACB085C5Z",
+    "level": "N3",
+    "content": {
+      "Russian": {
+        "title": "～なければいい",
+        "short_description": "Можно не делать",
+        "md_description": "## ～なければいい — Можно не делать / Достаточно не делать\n\n### Что это и зачем?\n\n`～なければいい` выражает идею о том, что **достаточно просто не совершать действие** — и всё будет в порядке. Это отрицательный вариант `～ばいい`.\n\n> 💡 Буквально: «если не делать X — всё будет хорошо».\n\n---\n\n### Образование\n\n```\nГлагол (ない-форма) → убираем い → добавляем ければいい\n食べない → 食べなければいい\n行かない → 行かなければいい\n```\n\nИли через отрицательную ба-форму:\n```\n食べなければいい = 食べ**なけれ**ば + いい\n```\n\n| Глагол | なければいい форма |\n|---|---|\n| `行く` | `行かなければいい` |\n| `食べる` | `食べなければいい` |\n| `する` | `しなければいい` |\n| `くる` | `こなければいい` |\n\n---\n\n### Примеры\n\n```\n嫌なら、行かなければいいじゃないか。\n```\n*Если тебе не нравится, можешь просто не ходить.*\n\n```\nダイエットしたいなら、食べなければいい。\n```\n*Если хочешь похудеть, просто не ешь (столько).*\n\n```\n怖いなら、見なければいいんじゃない？\n```\n*Если страшно, просто не смотри.*\n\n---\n\n### Сравнение с похожими конструкциями\n\n| Конструкция | Значение |\n|---|---|\n| `〜なければいい` | Можно просто не делать |\n| `〜なくてもいい` | Не обязательно делать |\n| `〜てはいけない` | Нельзя делать (запрет) |\n\n> ⚠️ `〜なければいい` (можно не делать) ≠ `〜なくてもいい` (не нужно делать). Первое — совет/решение, второе — снятие обязательства."
+      },
+      "English": {
+        "title": "～なければいい",
+        "short_description": "Don't have to do",
+        "md_description": "## ～なければいい — Just Don't Do It / All You Need Is to Not Do\n\n### What is it?\n\n`～なければいい` expresses the idea that **simply not doing something is enough** to make things okay. It's the negative counterpart of `～ばいい`.\n\n> 💡 Literally: \"if you don't do X, it'll be fine.\"\n\n---\n\n### Formation\n\n```\nVerb (ない-form) → replace い with ければいい\n食べない → 食べなければいい\n行かない → 行かなければいい\n```\n\n| Verb | なければいい form |\n|---|---|\n| `行く` | `行かなければいい` |\n| `食べる` | `食べなければいい` |\n| `する` | `しなければいい` |\n| `くる` | `こなければいい` |\n\n---\n\n### Examples\n\n```\n嫌なら、行かなければいいじゃないか。\n```\n*If you don't want to go, just don't go.*\n\n```\nダイエットしたいなら、食べなければいい。\n```\n*If you want to lose weight, just stop eating so much.*\n\n```\n怖いなら、見なければいいんじゃない？\n```\n*If it scares you, just don't watch it.*\n\n---\n\n### Comparison with Similar Forms\n\n| Form | Meaning |\n|---|---|\n| `〜なければいい` | Just don't do it (advice/solution) |\n| `〜なくてもいい` | You don't have to do it (permission) |\n| `〜てはいけない` | You must not do it (prohibition) |\n\n> ⚠️ `〜なければいい` (\"just don't do it\") ≠ `〜なくてもいい` (\"you don't need to do it\"). The first offers a solution; the second removes an obligation."
+      }
+    },
+    "format_map": {
+      "Verb": [
+        {
+          "VerbToNai": {}
+        },
+        {
+          "AddPostfix": {
+            "postfix": "ければいい"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "rule_id": "01KJ9AVWBHAKD2K0QG650B03HR",
+    "level": "N3",
+    "content": {
+      "Russian": {
+        "title": "～たらいい",
+        "short_description": "Хорошо бы сделать",
+        "md_description": "## ～たらいい — Хорошо бы / Советую сделать\n\n### Что это и зачем?\n\n`～たらいい` — мягкий способ:\n1. Дать **совет** или **рекомендацию**\n2. Выразить **пожелание** (хорошо бы...)\n3. Спросить **что делать** (`どうしたらいい？`)\n\nЭто более разговорный и мягкий вариант по сравнению с `～ばいい`.\n\n---\n\n### Образование\n\n```\nта-форма глагола + らいい\n食べた + らいい → 食べたらいい\n行った + らいい → 行ったらいい\n```\n\n| Глагол | た-форма | たらいい |\n|---|---|---|\n| `話す` | `話した` | `話したらいい` |\n| `食べる` | `食べた` | `食べたらいい` |\n| `する` | `した` | `したらいい` |\n| `くる` | `きた` | `きたらいい` |\n\n---\n\n### Примеры\n\n```\n疲れたら、休んだらいいよ。\n```\n*Если устал, стоит отдохнуть.*\n\n```\nどうしたらいいですか。\n```\n*Что мне делать? Как лучше поступить?*\n\n```\n日本語が上手になりたいなら、毎日練習したらいい。\n```\n*Если хочешь хорошо говорить по-японски, советую практиковаться каждый день.*\n\n```\nもっと野菜を食べたらいいと思う。\n```\n*Думаю, тебе стоит есть больше овощей.*\n\n---\n\n### ～たらいい vs ～ばいい vs ～たらどう\n\n| Форма | Оттенок |\n|---|---|\n| `〜たらいい` | Мягкий совет, разговорный |\n| `〜ばいい` | Совет / простое решение |\n| `〜たらどう？` | Предложение, «а почему бы не...?» |\n| `〜たほうがいい` | Более настойчивый совет |"
+      },
+      "English": {
+        "title": "～たらいい",
+        "short_description": "It would be good if",
+        "md_description": "## ～たらいい — It Would Be Good to / You Should\n\n### What is it?\n\n`～たらいい` is a gentle way to:\n1. Give **advice or a suggestion**\n2. Express a **wish** (it would be nice if...)\n3. Ask **what to do** (`どうしたらいい？`)\n\nIt's more conversational and slightly softer than `～ばいい`.\n\n---\n\n### Formation\n\n```\nた-form of verb + らいい\n食べた + らいい → 食べたらいい\n行った + らいい → 行ったらいい\n```\n\n| Verb | た-form | たらいい |\n|---|---|---|\n| `話す` | `話した` | `話したらいい` |\n| `食べる` | `食べた` | `食べたらいい` |\n| `する` | `した` | `したらいい` |\n| `くる` | `きた` | `きたらいい` |\n\n---\n\n### Examples\n\n```\n疲れたら、休んだらいいよ。\n```\n*If you're tired, you should take a break.*\n\n```\nどうしたらいいですか。\n```\n*What should I do? / What's the best thing to do?*\n\n```\n日本語が上手になりたいなら、毎日練習したらいい。\n```\n*If you want to get better at Japanese, you should practice every day.*\n\n```\nもっと野菜を食べたらいいと思う。\n```\n*I think it would be good to eat more vegetables.*\n\n---\n\n### ～たらいい vs ～ばいい vs ～たらどう\n\n| Form | Nuance |\n|---|---|\n| `〜たらいい` | Soft suggestion, casual |\n| `〜ばいい` | Advice / simple solution |\n| `〜たらどう？` | \"Why don't you...?\" — gentle push |\n| `〜たほうがいい` | Stronger recommendation |"
+      }
+    },
+    "format_map": {
+      "Verb": [
+        {
+          "VerbToTara": {}
+        },
+        {
+          "AddPostfix": {
+            "postfix": "いい"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "rule_id": "01KJ9AVWBHWBK2EDJ7E05X3W6N",
+    "level": "N3",
+    "content": {
+      "Russian": {
+        "title": "～とき",
+        "short_description": "Когда / В то время как",
+        "md_description": "## ～とき — Когда / В то время как\n\n### Что это и зачем?\n\n`～とき` означает **«когда»** — указывает на момент или период времени, в который происходит другое действие. Это одна из самых важных временны́х конструкций японского языка.\n\n> 💡 Форма глагола перед `とき` **меняет смысл** — это главное, что нужно запомнить!\n\n---\n\n### Образование и значение форм\n\n| Форма перед とき | Значение | Пример |\n|---|---|---|\n| **Словарная форма** (未来・習慣) | Когда буду делать / делаю (ещё впереди) | `食べるとき` |\n| **た-форма** (完了) | Когда сделал (уже выполнено) | `食べたとき` |\n| **ない-форма** | Когда не делаю | `食べないとき` |\n\n---\n\n### Главное отличие: словарная форма vs た-форма\n\n```\nうちを出るとき、雨が降り始めた。\n```\n*Когда я (только) выходил из дома, начался дождь.* (выход ещё не завершён)\n\n```\nうちを出たとき、雨が降り始めた。\n```\n*Когда я вышел из дома, начался дождь.* (выход уже был завершён)\n\n> ⚠️ Это различие **критически важно** и является частой ошибкой студентов!\n\n---\n\n### Примеры\n\n```\n子どものとき、よく公園で遊んだ。\n```\n*В детстве я часто играл в парке.*\n\n```\n困ったとき、友達に相談する。\n```\n*Когда оказываюсь в трудной ситуации, советуюсь с другом.*\n\n```\n日本に来るとき、おみやげを買った。\n```\n*Когда ехал в Японию, купил сувениры (по дороге).*\n\n```\n日本に来たとき、友達に会った。\n```\n*Когда приехал в Японию, встретился с другом.*"
+      },
+      "English": {
+        "title": "～とき",
+        "short_description": "When / At the time",
+        "md_description": "## ～とき — When / At the Time\n\n### What is it?\n\n`～とき` means **\"when\"** — it indicates the time or moment at which another action takes place. It's one of the most essential temporal expressions in Japanese.\n\n> 💡 The **verb form before とき** changes the meaning significantly — this is the most important thing to get right!\n\n---\n\n### Formation and Meaning by Verb Form\n\n| Form before とき | Meaning | Example |\n|---|---|---|\n| **Dictionary form** | When (about to do / habitual) | `食べるとき` |\n| **た-form** | When (already done) | `食べたとき` |\n| **ない-form** | When (not doing) | `食べないとき` |\n\n---\n\n### The Critical Distinction: Dictionary vs た-form\n\n```\nうちを出るとき、雨が降り始めた。\n```\n*Just as I was leaving the house, it started to rain.* (leaving not yet complete)\n\n```\nうちを出たとき、雨が降り始めた。\n```\n*When I had left the house, it started to rain.* (leaving already complete)\n\n> ⚠️ This distinction is **crucial** and one of the most common mistakes learners make!\n\n---\n\n### Examples\n\n```\n子どものとき、よく公園で遊んだ。\n```\n*When I was a child, I often played at the park.*\n\n```\n困ったとき、友達に相談する。\n```\n*When I'm in trouble, I talk to my friends.*\n\n```\n日本に来るとき、おみやげを買った。\n```\n*When I was coming to Japan, I bought souvenirs (on the way).*\n\n```\n日本に来たとき、友達に会った。\n```\n*When I arrived in Japan, I met my friend.*"
+      }
+    },
+    "format_map": {
+      "Verb": [
+        {
+          "VerbToTa": {}
+        },
+        {
+          "AddPostfix": {
+            "postfix": "とき"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "rule_id": "01KJ9AVWBH60WPD8P7R0ZQ6CDX",
+    "level": "N3",
+    "content": {
+      "Russian": {
+        "title": "～まで",
+        "short_description": "До тех пор как / Пока не",
+        "md_description": "## ～まで — До тех пор пока / Пока не\n\n### Что это и зачем?\n\n`～まで` после глагола означает **«до тех пор пока не произойдёт X»** — указывает на конечную точку продолжающегося действия или состояния.\n\n> 💡 Аналог в русском: «пока не...», «до тех пор пока не...»\n\n---\n\n### Образование\n\n```\nГлагол (словарная форма) + まで\n```\n\n| Тип | Пример | Перевод |\n|---|---|---|\n| Словарная + まで | `終わるまで` | пока не закончится |\n| ない + まで | `来ないまで` | пока не придёт |\n\n---\n\n### Примеры\n\n```\n彼が来るまで、ここで待っています。\n```\n*Буду ждать здесь, пока он не придёт.*\n\n```\n宿題が終わるまで、ゲームはできない。\n```\n*Пока домашнее задание не закончено, в игры нельзя.*\n\n```\n死ぬまで、この仕事を続けるつもりだ。\n```\n*Намерен продолжать эту работу до конца жизни.*\n\n```\n分かるまで、何度でも説明します。\n```\n*Буду объяснять столько раз, сколько нужно, пока не поймёшь.*\n\n---\n\n### まで vs までに\n\n| Частица | Значение | Пример |\n|---|---|---|\n| `まで` | **До этого момента** (процесс длится до X) | `六時まで働く` — работаю до 6 |\n| `までに` | **К этому моменту** (действие должно быть завершено до X) | `六時までに終える` — закончить к 6 |\n\n> ⚠️ Это очень частая ошибка! `まで` = продолжается ДО. `までに` = нужно успеть К."
+      },
+      "English": {
+        "title": "～まで",
+        "short_description": "Until",
+        "md_description": "## ～まで — Until / Up To the Point When\n\n### What is it?\n\n`～まで` after a verb means **\"until X happens\"** — it marks the endpoint of an ongoing action or state.\n\n> 💡 Think of it as: \"keep doing something **until** this event occurs.\"\n\n---\n\n### Formation\n\n```\nVerb (dictionary form) + まで\n```\n\n| Type | Example | Meaning |\n|---|---|---|\n| Dict. form + まで | `終わるまで` | until it ends |\n| ない + まで | `来ないまで` | until (someone) comes |\n\n---\n\n### Examples\n\n```\n彼が来るまで、ここで待っています。\n```\n*I'll wait here until he comes.*\n\n```\n宿題が終わるまで、ゲームはできない。\n```\n*You can't play games until your homework is done.*\n\n```\n死ぬまで、この仕事を続けるつもりだ。\n```\n*I intend to keep doing this work until I die.*\n\n```\n分かるまで、何度でも説明します。\n```\n*I'll explain as many times as it takes until you understand.*\n\n---\n\n### まで vs までに — Critical Difference!\n\n| Particle | Meaning | Example |\n|---|---|---|\n| `まで` | **Until** (action continues up to X) | `六時まで働く` — work until 6 |\n| `までに` | **By** (action must be done before X) | `六時までに終える` — finish by 6 |\n\n> ⚠️ This is one of the most common learner mistakes! `まで` = continuing UNTIL. `までに` = completed BY."
+      }
+    },
+    "format_map": {
+      "Verb": [
+        {
+          "VerbToTa": {}
+        },
+        {
+          "AddPostfix": {
+            "postfix": "まで"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "rule_id": "01KJ9AVWBH0J4W9BH97H4QETJB",
+    "level": "N3",
+    "content": {
+      "Russian": {
+        "title": "～までに",
+        "short_description": "К тому времени как",
+        "md_description": "## ～までに — К тому моменту / Успеть к\n\n### Что это и зачем?\n\n`～までに` указывает на **крайний срок** — действие должно быть завершено **не позднее** указанного момента. Это «дедлайн» в японском языке.\n\n> 💡 Отличие от `まで`: `までに` = **«к тому времени»** (успеть), `まで` = **«до тех пор»** (продолжаться).\n\n---\n\n### Образование\n\n```\nСуществительное / Глагол (словарная форма) + までに\n```\n\n| Тип | Пример | Перевод |\n|---|---|---|\n| Существительное | `月曜日までに` | к понедельнику |\n| Словарная форма | `授業が始まるまでに` | до начала урока |\n\n---\n\n### Примеры\n\n```\n明日までにレポートを提出してください。\n```\n*Пожалуйста, сдайте отчёт до завтрашнего дня.*\n\n```\n試験が始まるまでに、全部勉強しておかないと。\n```\n*Надо всё выучить до начала экзамена.*\n\n```\n五時までに帰ってください。\n```\n*Пожалуйста, вернитесь к 5 часам.*\n\n```\n夏休みが終わるまでに、この本を読み終えたい。\n```\n*Хочу дочитать эту книгу до конца летних каникул.*\n\n---\n\n### Разграничение まで и までに\n\n| | `まで` | `までに` |\n|---|---|---|\n| Действие | **Продолжается** до X | **Завершается** до X |\n| Вопрос | «Сколько длится?» | «К какому сроку?» |\n| Пример | `夜まで働く` (работать до ночи) | `夜までに終える` (закончить к ночи) |"
+      },
+      "English": {
+        "title": "～までに",
+        "short_description": "By the time",
+        "md_description": "## ～までに — By / No Later Than\n\n### What is it?\n\n`～までに` marks a **deadline** — an action must be completed **by** the specified point in time. It's essentially \"by the time\" or \"no later than.\"\n\n> 💡 Key difference: `までに` = **\"by\"** (completed before X), `まで` = **\"until\"** (continuing up to X).\n\n---\n\n### Formation\n\n```\nNoun / Verb (dictionary form) + までに\n```\n\n| Type | Example | Meaning |\n|---|---|---|\n| Noun + までに | `月曜日までに` | by Monday |\n| Dict. verb + までに | `授業が始まるまでに` | before class starts |\n\n---\n\n### Examples\n\n```\n明日までにレポートを提出してください。\n```\n*Please submit the report by tomorrow.*\n\n```\n試験が始まるまでに、全部勉強しておかないと。\n```\n*I need to study everything before the exam starts.*\n\n```\n五時までに帰ってください。\n```\n*Please be back by 5 o'clock.*\n\n```\n夏休みが終わるまでに、この本を読み終えたい。\n```\n*I want to finish reading this book before summer vacation ends.*\n\n---\n\n### まで vs までに — Side by Side\n\n| | `まで` | `までに` |\n|---|---|---|\n| Action | **Continues** until X | **Completes** before X |\n| Question it answers | \"How long does it go on?\" | \"What's the deadline?\" |\n| Example | `夜まで働く` (work until night) | `夜までに終える` (finish by night) |"
+      }
+    },
+    "format_map": {
+      "Verb": [
+        {
+          "VerbToTa": {}
+        },
+        {
+          "AddPostfix": {
+            "postfix": "までに"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "rule_id": "01KJ9AVWBH8MJRMP75BNZ452WT",
+    "level": "N3",
+    "content": {
+      "Russian": {
+        "title": "～たり",
+        "short_description": "Делать и т.д. / То одно, то другое",
+        "md_description": "## ～たり～たりする — То одно, то другое / Делать разные вещи\n\n### Что это и зачем?\n\n`～たり～たりする` используется, когда нужно:\n1. Перечислить **несколько действий** как примеры из списка (не всё, а кое-что)\n2. Описать **чередующиеся** или **непоследовательные** действия\n3. Показать типичные занятия: «делаю то-то, то-то и прочее»\n\n> 💡 Ключевая идея: **«иногда X, иногда Y, и тому подобное»**. `したり` указывает, что список не полный.\n\n---\n\n### Образование\n\n```\nта-форма + り\nした + り = したり\n食べた + り = 食べたり\n```\n\nОбычно конструкция заканчивается на `〜たりする`.\n\n| Глагол | た-форма | たり |\n|---|---|---|\n| `食べる` | `食べた` | `食べたり` |\n| `飲む` | `飲んだ` | `飲んだり` |\n| `見る` | `見た` | `見たり` |\n| `する` | `した` | `したり` |\n\n---\n\n### Примеры\n\n```\n週末は映画を見たり、本を読んだりします。\n```\n*В выходные смотрю фильмы, читаю книги и т.д.*\n\n```\n彼女は泣いたり、笑ったりしていた。\n```\n*Она то плакала, то смеялась.*\n\n```\n子どもたちは走ったり、跳んだり、歌ったりして遊んdul。\n```\n*Дети играли — бегали, прыгали, пели...*\n\n```\n彼は来たり来なかったりする。\n```\n*Он то приходит, то нет.*\n\n---\n\n### Распространённые ошибки\n\n> ⚠️ Не забывайте финальное `する`! `食べたり飲んだり` без `する` — незаконченная конструкция.\n>\n> ⚠️ `〜たり` НЕ перечисляет события по порядку — для этого используйте `〜て форму`. `〜たり` — это примеры, не полный список."
+      },
+      "English": {
+        "title": "～たり",
+        "short_description": "Do things like / Doing this and that",
+        "md_description": "## ～たり～たりする — Doing Things Like... / This and That\n\n### What is it?\n\n`～たり～たりする` is used to:\n1. **List multiple actions as examples** (implying there are more)\n2. Describe **alternating or varied actions**\n3. Show a **non-exhaustive range** of activities\n\n> 💡 Core idea: **\"sometimes X, sometimes Y, and so on.\"** The list is always partial — there's an implied \"etc.\"\n\n---\n\n### Formation\n\n```\nた-form + り\nした + り = したり\n食べた + り = 食べたり\n```\n\nThe construction typically ends with `〜たりする`.\n\n| Verb | た-form | たり |\n|---|---|---|\n| `食べる` | `食べた` | `食べたり` |\n| `飲む` | `飲んだ` | `飲んだり` |\n| `見る` | `見た` | `見たり` |\n| `する` | `した` | `したり` |\n\n---\n\n### Examples\n\n```\n週末は映画を見たり、本を読んだりします。\n```\n*On weekends, I do things like watching movies and reading books.*\n\n```\n彼女は泣いたり、笑ったりしていた。\n```\n*She was alternating between crying and laughing.*\n\n```\n子どもたちは走ったり、跳んだり、歌ったりして遊んだ。\n```\n*The kids played by running, jumping, singing, and so on.*\n\n```\n彼は来たり来なかったりする。\n```\n*He sometimes comes and sometimes doesn't.*\n\n---\n\n### Common Mistakes\n\n> ⚠️ Don't drop the final `する`! `食べたり飲んだり` without `する` leaves the sentence hanging.\n>\n> ⚠️ `〜たり` does **not** list events in sequence — use the て-form for that. `〜たり` is for examples, not a complete ordered list."
+      }
+    },
+    "format_map": {
+      "Verb": [
+        {
+          "VerbToTa": {}
+        },
+        {
+          "AddPostfix": {
+            "postfix": "り"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "rule_id": "01KJ9AVWBHY3YYAR1A1165J9RN",
+    "level": "N3",
+    "content": {
+      "Russian": {
+        "title": "～ないふり",
+        "short_description": "Делать вид, что не делаешь",
+        "md_description": "## ～ないふりをする — Делать вид, что не...\n\n### Что это и зачем?\n\n`～ないふりをする` означает **притворяться**, что не делаешь что-то, или делать вид, что чего-то не знаешь/не замечаешь. Это «игра в незнайку» или «притворство» в японском.\n\n> 💡 `ふり` (振り) = «видимость», «притворство». `ふりをする` = «делать вид».\n\n---\n\n### Образование\n\n```\nГлагол (ない-форма) + ふりをする\n知らない + ふりをする → 知らないふりをする\n聞こえない + ふりをする → 聞こえないふりをする\n```\n\nСвязанная конструкция — **〜ふりをする** (словарная форма — притворяться, что делаешь):\n```\n寝る + ふりをする → 寝るふりをする（притворяться, что спишь）\n```\n\n| Форма | Пример | Значение |\n|---|---|---|\n| ない + ふりをする | `知らないふりをする` | Делать вид, что не знаю |\n| 辞書形 + ふりをする | `寝るふりをする` | Притворяться, что сплю |\n| た + ふりをする | `食べたふりをする` | Делать вид, что поел |\n\n---\n\n### Примеры\n\n```\n彼は私のことを知らないふりをした。\n```\n*Он сделал вид, что не знает меня.*\n\n```\n先生の話が聞こえないふりをしていた。\n```\n*Делала вид, что не слышит слов учителя.*\n\n```\n怖くないふりをして、笑顔を見せた。\n```\n*Притворился, что не боится, и показал улыбку.*\n\n```\n彼女は気づかないふりをしているだけだ。\n```\n*Она просто делает вид, что не замечает.*"
+      },
+      "English": {
+        "title": "～ないふり",
+        "short_description": "Pretend not to",
+        "md_description": "## ～ないふりをする — Pretend Not To\n\n### What is it?\n\n`～ないふりをする` means to **pretend** that you're not doing something, or to act as though you don't know or notice something. It's the \"play dumb\" construction in Japanese.\n\n> 💡 `ふり` (振り) = \"pretense\" / \"act.\" `ふりをする` = \"to pretend\" / \"to act like.\"\n\n---\n\n### Formation\n\n```\nVerb (ない-form) + ふりをする\n知らない + ふりをする → 知らないふりをする\n聞こえない + ふりをする → 聞こえないふりをする\n```\n\nRelated forms — **〜ふりをする** with other verb forms:\n```\n寝る + ふりをする → 寝るふりをする（pretend to sleep）\n食べた + ふりをする → 食べたふりをする（pretend to have eaten）\n```\n\n| Form | Example | Meaning |\n|---|---|---|\n| ない + ふりをする | `知らないふりをする` | Pretend not to know |\n| Dict. form + ふりをする | `寝るふりをする` | Pretend to be sleeping |\n| た + ふりをする | `食べたふりをする` | Pretend to have eaten |\n\n---\n\n### Examples\n\n```\n彼は私のことを知らないふりをした。\n```\n*He pretended not to know me.*\n\n```\n先生の話が聞こえないふりをしていた。\n```\n*She was pretending she couldn't hear the teacher.*\n\n```\n怖くないふりをして、笑顔を見せた。\n```\n*He pretended not to be scared and put on a smile.*\n\n```\n彼女は気づかないふりをしているだけだ。\n```\n*She's just pretending not to notice.*"
+      }
+    },
+    "format_map": {
+      "Verb": [
+        {
+          "VerbToNai": {}
+        },
+        {
+          "AddPostfix": {
+            "postfix": "ふりをする"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "rule_id": "01KJ9AVWBHVS3YAE3S9S8BCAMC",
+    "level": "N3",
+    "content": {
+      "Russian": {
+        "title": "～ことがある",
+        "short_description": "Иногда бывает, что...",
+        "md_description": "## ～ことがある — Иногда бывает / Иногда случается\n\n### Что это и зачем?\n\n`～ことがある` имеет **два совершенно разных значения** в зависимости от формы глагола:\n\n1. **Словарная форма + ことがある** → *Иногда бывает, что...* (текущая привычка)\n2. **た-форма + ことがある** → *Бывало (опыт), есть опыт...* (прошлый опыт)\n\n> ⚠️ Это принципиально разные смыслы! Форма глагола решает всё.\n\n---\n\n### Образование\n\n| Форма | Конструкция | Значение |\n|---|---|---|\n| Словарная | `食べることがある` | Иногда ем |\n| た-форма | `食べたことがある` | Ел раньше (есть опыт) |\n| ない-форма | `食べないことがある` | Иногда не ем |\n\n---\n\n### Примеры — текущая привычка (словарная форма)\n\n```\n忙しいとき、朝ごはんを食べないことがある。\n```\n*Иногда, когда занят, не ем завтрак.*\n\n```\n電車の中で泣いている人を見ることがある。\n```\n*Иногда в поезде замечаю плачущих людей.*\n\n---\n\n### Примеры — опыт (た-форма)\n\n```\n富士山に登ったことがありますか。\n```\n*Вы когда-нибудь поднимались на Фудзи?*\n\n```\n一度も海外に行ったことがない。\n```\n*Я никогда не был за границей.*\n\n```\nスカイダイビングをしたことがある！\n```\n*Я прыгал с парашютом! (в жизни был такой опыт)*\n\n---\n\n### Отрицание\n\n| | Форма |\n|---|---|\n| Нет опыта | `〜たことがない` |\n| Иногда не бывает | `〜ないことがある` |"
+      },
+      "English": {
+        "title": "～ことがある",
+        "short_description": "Sometimes happen",
+        "md_description": "## ～ことがある — Sometimes Happens / Have Had the Experience of\n\n### What is it?\n\n`～ことがある` has **two completely different meanings** depending on the verb form used:\n\n1. **Dictionary form + ことがある** → *Sometimes happens* (current occasional occurrence)\n2. **た-form + ことがある** → *Have had the experience of...* (past experience)\n\n> ⚠️ These are fundamentally different meanings! The verb form makes all the difference.\n\n---\n\n### Formation\n\n| Form | Structure | Meaning |\n|---|---|---|\n| Dictionary | `食べることがある` | I sometimes eat |\n| た-form | `食べたことがある` | I've eaten (before) |\n| ない-form | `食べないことがある` | I sometimes don't eat |\n\n---\n\n### Examples — Occasional Occurrence (dictionary form)\n\n```\n忙しいとき、朝ごはんを食べないことがある。\n```\n*When I'm busy, I sometimes skip breakfast.*\n\n```\n電車の中で泣いている人を見ることがある。\n```\n*I sometimes see people crying on the train.*\n\n---\n\n### Examples — Past Experience (た-form)\n\n```\n富士山に登ったことがありますか。\n```\n*Have you ever climbed Mt. Fuji?*\n\n```\n一度も海外に行ったことがない。\n```\n*I've never been abroad.*\n\n```\nスカイダイビングをしたことがある！\n```\n*I've been skydiving! (I've had that experience)*\n\n---\n\n### Negation\n\n| | Form |\n|---|---|\n| No experience | `〜たことがない` |\n| Occasionally doesn't happen | `〜ないことがある` |"
+      }
+    },
+    "format_map": {
+      "Verb": [
+        {
+          "VerbToTa": {}
+        },
+        {
+          "AddPostfix": {
+            "postfix": "ことがある"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "rule_id": "01KJ9AVWBHRT3WP2WRC12K40CY",
+    "level": "N3",
+    "content": {
+      "Russian": {
+        "title": "～ように言う",
+        "short_description": "Сказать, чтобы сделали",
+        "md_description": "## ～ように言う — Сказать кому-то, чтобы (не) делал\n\n### Что это и зачем?\n\n`～ように言う` используется для **косвенной передачи приказа, просьбы или инструкции**: «сказал ему/ей, чтобы сделал(а) X». Это косвенная речь с инструкцией.\n\n> 💡 Ключевое слово `ように` делает команду **мягче и косвенной**, в отличие от прямой цитации с `と言う`.\n\n---\n\n### Образование\n\n```\nГлагол (словарная форма) + ように言う → сказать, чтобы делал\nГлагол (ない-форма) + ように言う → сказать, чтобы не делал\n```\n\n| Тип | Пример | Перевод |\n|---|---|---|\n| Словарная + ように言う | `早く来るように言った` | Сказал прийти поскорее |\n| ない + ように言う | `騒がないように言った` | Сказал не шуметь |\n\n---\n\n### Примеры\n\n```\n先生は学生に静かにするように言った。\n```\n*Учитель сказал студентам вести себя тихо.*\n\n```\n母に早く帰るように言われた。\n```\n*Мама сказала мне скорей возвращаться домой.*\n\n```\n医者に甘いものを食べないように言われた。\n```\n*Врач сказал не есть сладкое.*\n\n```\n彼女に一人で行かないように言っておいた。\n```\n*Я заранее сказал ей не ходить одной.*\n\n---\n\n### Сравнение с прямой речью\n\n| Форма | Пример | Нюанс |\n|---|---|---|\n| `〜ように言う` | `来るように言った` | Косвенная речь (пересказ) |\n| `〜と言う` | `「来て」と言った` | Прямая цитата |\n\n> `ように言う` — более формальный и нейтральный пересказ инструкций, часто используется в официальных контекстах."
+      },
+      "English": {
+        "title": "～ように言う",
+        "short_description": "Tell someone to do",
+        "md_description": "## ～ように言う — Tell Someone To (Not) Do\n\n### What is it?\n\n`～ように言う` is used for **indirect reported speech of instructions**: \"told someone to do X\" or \"told someone not to do X.\" It's how you pass along commands or requests indirectly.\n\n> 💡 `ように` softens the instruction, making it indirect rather than a direct quoted command.\n\n---\n\n### Formation\n\n```\nVerb (dict. form) + ように言う → tell to do\nVerb (ない-form) + ように言う → tell not to do\n```\n\n| Type | Example | Meaning |\n|---|---|---|\n| Dict. + ように言う | `早く来るように言った` | Told (them) to come quickly |\n| ない + ように言う | `騒がないように言った` | Told (them) not to make noise |\n\n---\n\n### Examples\n\n```\n先生は学生に静かにするように言った。\n```\n*The teacher told the students to be quiet.*\n\n```\n母に早く帰るように言われた。\n```\n*My mom told me to come home soon.*\n\n```\n医者に甘いものを食べないように言われた。\n```\n*The doctor told me not to eat sweets.*\n\n```\n彼女に一人で行かないように言っておいた。\n```\n*I told her in advance not to go alone.*\n\n---\n\n### Indirect vs Direct Speech\n\n| Form | Example | Nuance |\n|---|---|---|\n| `〜ように言う` | `来るように言った` | Indirect (reported instruction) |\n| `〜と言う` | `「来て」と言った` | Direct quotation |\n\n> `ように言う` is the neutral, formal way to report instructions — common in business, school, and official contexts."
+      }
+    },
+    "format_map": {
+      "Verb": [
+        {
+          "VerbToNai": {}
+        },
+        {
+          "AddPostfix": {
+            "postfix": "ように言う"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "rule_id": "01KJ9AVWBHDTTZ8QCZY4JV6DNM",
+    "level": "N3",
+    "content": {
+      "Russian": {
+        "title": "～ように思う",
+        "short_description": "Думаю, что...",
+        "md_description": "## ～ように思う — Думаю, что... / У меня такое ощущение\n\n### Что это и зачем?\n\n`～ように思う` выражает **мягкое субъективное мнение или впечатление**, более неопределённое, чем `〜と思う`. Говорящий как бы говорит «у меня такое ощущение, что...» — без уверенности.\n\n> 💡 `〜と思う` = «я думаю (уверенно)», `〜ように思う` = «мне кажется / у меня складывается такое впечатление».\n\n---\n\n### Образование\n\n```\nГлагол (た / словарная / ない форма) + ように思う\nИ-прилагательное + ように思う\nНа-прилагательное + な + ように思う\nСуществительное + の + ように思う\n```\n\n---\n\n### Примеры\n\n```\n彼は何かを隠しているように思う。\n```\n*Мне кажется, он что-то скрывает.*\n\n```\n最近、日本語が上手くなってきたように思います。\n```\n*Мне кажется, в последнее время мой японский улучшился.*\n\n```\nこのプランはうまくいかないように思うんだが。\n```\n*У меня ощущение, что этот план не сработает.*\n\n```\nあの映画、前に見たことがあるように思う。\n```\n*Мне кажется, я уже видел этот фильм раньше.*\n\n---\n\n### Сравнение со схожими конструкциями\n\n| Конструкция | Уверенность | Пример |\n|---|---|---|\n| `〜と思う` | Средняя | `行くと思う` |\n| `〜ように思う` | Ниже (ощущение) | `行くように思う` |\n| `〜と思われる` | Формальное мнение | `行くと思われる` |\n| `〜気がする` | Интуиция | `行く気がする` |"
+      },
+      "English": {
+        "title": "～ように思う",
+        "short_description": "I think that...",
+        "md_description": "## ～ように思う — It Seems to Me That / I Have the Feeling That\n\n### What is it?\n\n`～ように思う` expresses a **soft, subjective impression** — less certain than `〜と思う`. The speaker is sharing a vague sense or feeling, not a firm opinion.\n\n> 💡 `〜と思う` = \"I think (fairly certain)\", `〜ように思う` = \"I get the impression that...\" / \"It kind of seems like...\"\n\n---\n\n### Formation\n\n```\nVerb (た / dict. / ない form) + ように思う\nい-adj + ように思う\nな-adj + な + ように思う\nNoun + の + ように思う\n```\n\n---\n\n### Examples\n\n```\n彼は何かを隠しているように思う。\n```\n*I get the feeling he's hiding something.*\n\n```\n最近、日本語が上手くなってきたように思います。\n```\n*It seems to me that my Japanese has been improving lately.*\n\n```\nこのプランはうまくいかないように思うんだが。\n```\n*I have a feeling this plan won't work out.*\n\n```\nあの映画、前に見たことがあるように思う。\n```\n*I have the feeling I've seen that movie before.*\n\n---\n\n### Comparison with Similar Forms\n\n| Form | Certainty | Example |\n|---|---|---|\n| `〜と思う` | Medium | `行くと思う` |\n| `〜ように思う` | Lower (impression) | `行くように思う` |\n| `〜と思われる` | Formal opinion | `行くと思われる` |\n| `〜気がする` | Gut feeling | `行く気がする` |"
+      }
+    },
+    "format_map": {
+      "Verb": [
+        {
+          "VerbToTa": {}
+        },
+        {
+          "AddPostfix": {
+            "postfix": "ように思う"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "rule_id": "01KJ9AVWBHPBKJBT82VNRW3XDJ",
+    "level": "N3",
+    "content": {
+      "Russian": {
+        "title": "～てたまらない",
+        "short_description": "Невыносимо...",
+        "md_description": "## ～てたまらない — Невыносимо / Ужасно хочется\n\n### Что это и зачем?\n\n`～てたまらない` выражает **непреодолимое, невыносимое ощущение или желание** — что-то настолько сильное, что с этим невозможно совладать. Это эмоциональная, живая конструкция.\n\n> 💡 `たまらない` (堪らない) = «невыносимо», «не могу вытерпеть». В сочетании с て-формой: «мне так X, что нет сил!»\n\n---\n\n### Образование\n\n```\nТе-форма глагола / прилагательного + たまらない\n```\n\n| Тип | Форма | Пример |\n|---|---|---|\n| Глагол | て-форма + たまらない | `食べたくてたまらない` |\n| И-прилагательное | くて + たまらない | `暑くてたまらない` |\n| На-прилагательное | で + たまらない | `退屈でたまらない` |\n\n---\n\n### Примеры\n\n```\n眠くてたまらない。\n```\n*Безумно хочется спать. Глаза закрываются сами.*\n\n```\n故郷に帰りたくてたまらない。\n```\n*Невыносимо хочется вернуться домой.*\n\n```\n腹が立ってたまらない。\n```\n*Я просто вне себя от злости.*\n\n```\nあのラーメンが食べたくてたまらない。\n```\n*Так хочется этого рамэна — просто мочи нет!*\n\n---\n\n### たまらない vs てしかたない\n\n| Конструкция | Нюанс |\n|---|---|\n| `〜てたまらない` | Сильное, почти физически невыносимое ощущение |\n| `〜てしかたない` | Ничего не поделаешь, само так получается |\n\n> Оба выражения часто взаимозаменяемы, но `たまらない` — чуть эмоциональнее и экспрессивнее."
+      },
+      "English": {
+        "title": "～てたまらない",
+        "short_description": "Can't bear / Dying to",
+        "md_description": "## ～てたまらない — Can't Stand It / Dying To\n\n### What is it?\n\n`～てたまらない` expresses an **overwhelming, almost unbearable feeling or desire** — something so intense you simply can't control or hold back.\n\n> 💡 `たまらない` (堪らない) = \"unbearable\" / \"can't take it.\" Combined with て-form: \"I'm so X that I can't stand it!\"\n\n---\n\n### Formation\n\n```\nTe-form of verb / adjective + たまらない\n```\n\n| Type | Form | Example |\n|---|---|---|\n| Verb | て-form + たまらない | `食べたくてたまらない` |\n| い-adjective | くて + たまらない | `暑くてたまらない` |\n| な-adjective | で + たまらない | `退屈でたまらない` |\n\n---\n\n### Examples\n\n```\n眠くてたまらない。\n```\n*I'm so sleepy I can't take it.*\n\n```\n故郷に帰りたくてたまらない。\n```\n*I'm dying to go back to my hometown.*\n\n```\n腹が立ってたまらない。\n```\n*I'm absolutely furious — I can't contain it.*\n\n```\nあのラーメンが食べたくてたまらない。\n```\n*I'm dying to eat that ramen — I just can't stop thinking about it.*\n\n---\n\n### たまらない vs てしかたない\n\n| Form | Nuance |\n|---|---|\n| `〜てたまらない` | Overwhelming, almost physically unbearable |\n| `〜てしかたない` | Can't help it, it's just happening |\n\n> Both are often interchangeable, but `たまらない` tends to be more emotionally charged and expressive."
+      }
+    },
+    "format_map": {
+      "Verb": [
+        {
+          "VerbToTeForm": {}
+        },
+        {
+          "AddPostfix": {
+            "postfix": "たまらない"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "rule_id": "01KJ9AVWBH2MX6C4KYR7F8CBZH",
+    "level": "N3",
+    "content": {
+      "Russian": {
+        "title": "～てかなわない",
+        "short_description": "Невыносимо / Не могу вынести",
+        "md_description": "## ～てかなわない — Невыносимо / С этим не совладать\n\n### Что это и зачем?\n\n`～てかなわない` выражает ситуацию, когда что-то настолько неприятно или тяжело, что **с этим невозможно справиться** или вынести. Немного архаичнее и формальнее, чем `～てたまらない`, и чаще используется с негативными ощущениями.\n\n> 💡 `かなわない` (叶わない / 敵わない) = «невозможно победить», «не по силам». В этом контексте — «сил нет терпеть».\n\n---\n\n### Образование\n\n```\nТе-форма глагола / прилагательного + かなわない\n```\n\n| Тип | Форма | Пример |\n|---|---|---|\n| Глагол | て-форма + かなわない | `怒られてかなわない` |\n| И-прилагательное | くて + かなわない | `うるさくてかなわない` |\n| На-прилагательное | で + かなわない | `大変でかなわない` |\n\n---\n\n### Примеры\n\n```\nこの暑さにはかなわない。\n```\n*С такой жарой просто не справиться / невыносимо.*\n\n```\nうるさくてかなわない。\n```\n*Невыносимо шумно. Сил нет терпеть.*\n\n```\n毎日残業させられてかなわない。\n```\n*Меня каждый день заставляют оставаться сверхурочно — это невыносимо.*\n\n```\n彼の自慢話にはかなわない。\n```\n*Его хвастовство — выше моих сил.*\n\n---\n\n### Сравнение: たまらない vs かなわない\n\n| | `〜てたまらない` | `〜てかなわない` |\n|---|---|---|\n| Оттенок | Позитивное или негативное | Чаще негативное |\n| Частота | Очень распространено | Менее часто, немного старомодно |\n| Пример | `食べたくてたまらない` (так хочу есть!) | `うるсくてかなわない` (как же шумно!)|"
+      },
+      "English": {
+        "title": "～てかなわない",
+        "short_description": "Can't stand / Unbearable",
+        "md_description": "## ～てかなわない — Can't Stand It / It's Too Much\n\n### What is it?\n\n`～てかなわない` expresses a situation that is so difficult or unpleasant that you simply **can't handle or bear it**. It's slightly more old-fashioned and formal than `～てたまらない`, and tends to appear with negative feelings.\n\n> 💡 `かなわない` (叶わない / 敵わない) = \"no match for\" / \"can't win against.\" Here: \"I can't cope with this.\"\n\n---\n\n### Formation\n\n```\nTe-form of verb / adjective + かなわない\n```\n\n| Type | Form | Example |\n|---|---|---|\n| Verb | て-form + かなわない | `怒られてかなわない` |\n| い-adjective | くて + かなわない | `うるさくてかなわない` |\n| な-adjective | で + かなわない | `大変でかなわない` |\n\n---\n\n### Examples\n\n```\nこの暑さにはかなわない。\n```\n*This heat is just too much to deal with.*\n\n```\nうるさくてかなわない。\n```\n*It's so noisy I can't stand it.*\n\n```\n毎日残業させられてかなわない。\n```\n*Being made to work overtime every day is unbearable.*\n\n```\n彼の自慢話にはかなわない。\n```\n*His constant bragging is beyond what I can take.*\n\n---\n\n### Comparison: たまらない vs かなわない\n\n| | `〜てたまらない` | `〜てかなわない` |\n|---|---|---|\n| Tone | Positive or negative | Usually negative |\n| Frequency | Very common | Less common, slightly dated |\n| Example | `食べたくてたまらない` (dying to eat!) | `うるさくてかなわない` (unbearably noisy!) |"
+      }
+    },
+    "format_map": {
+      "Verb": [
+        {
+          "VerbToTeForm": {}
+        },
+        {
+          "AddPostfix": {
+            "postfix": "かなわない"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "rule_id": "01KJ9AVWBHFWZ27CCQ7KTMEAKR",
+    "level": "N3",
+    "content": {
+      "Russian": {
+        "title": "～だす",
+        "short_description": "Начинать делать что-то внезапно",
+        "md_description": "## ～だす — Начать (внезапно)\n\n### Что это и зачем?\n\n`～だす` — составной глагол, который добавляется к основе другого глагола и означает **«начать делать что-то внезапно, неожиданно»**. В отличие от `～はじめる` (постепенное начало), `だす` подчёркивает **внезапность и неожиданность**.\n\n> 💡 Образ: будто действие «выстреливает наружу» (出す = выпускать, вытаскивать).\n\n---\n\n### Образование\n\n```\nМасу-основа глагола + だす\n```\n\n| Глагол | Основа | Составной |\n|---|---|---|\n| `泣く` | `泣き` | `泣きだす` |\n| `走る` | `走り` | `走りだす` |\n| `笑う` | `笑い` | `笑いだす` |\n| `降る` | `降り` | `降りだす` |\n\n---\n\n### Примеры\n\n```\n急に雨が降りだした。\n```\n*Внезапно пошёл дождь.*\n\n```\n赤ちゃんが突然泣きだした。\n```\n*Младенец вдруг расплакался.*\n\n```\n誰かが笑いだすと、みんな笑いだした。\n```\n*Когда кто-то вдруг засмеялся, все засмеялись.*\n\n```\n彼女は急に走りだした。\n```\n*Она неожиданно сорвалась и побежала.*\n\n---\n\n### ～だす vs ～はじめる vs ～てくる\n\n| Конструкция | Нюанс |\n|---|---|\n| `〜だす` | Внезапное начало |\n| `〜はじめる` | Постепенное или осознанное начало |\n| `〜てくる` | Нарастающее изменение, движение к настоящему |"
+      },
+      "English": {
+        "title": "～だす",
+        "short_description": "To start doing something suddenly",
+        "md_description": "## ～だす — To Suddenly Start Doing\n\n### What is it?\n\n`～だす` is a compound verb suffix meaning **\"to suddenly start doing something\"** — it emphasizes the **abruptness or unexpectedness** of the onset. Unlike `～はじめる` (gradual start), `だす` is all about the sudden burst.\n\n> 💡 Think of it visually: the action \"shoots outward\" (出す = to put out / release).\n\n---\n\n### Formation\n\n```\nMasu-stem of verb + だす\n```\n\n| Verb | Stem | Compound |\n|---|---|---|\n| `泣く` | `泣き` | `泣きだす` |\n| `走る` | `走り` | `走りだす` |\n| `笑う` | `笑い` | `笑いだす` |\n| `降る` | `降り` | `降りだす` |\n\n---\n\n### Examples\n\n```\n急に雨が降りだした。\n```\n*It suddenly started to rain.*\n\n```\n赤ちゃんが突然泣きだした。\n```\n*The baby suddenly burst into tears.*\n\n```\n誰かが笑いだすと、みんな笑いだした。\n```\n*When someone suddenly started laughing, everyone else did too.*\n\n```\n彼女は急に走りだした。\n```\n*She suddenly broke into a run.*\n\n---\n\n### ～だす vs ～はじめる vs ～てくる\n\n| Form | Nuance |\n|---|---|\n| `〜だす` | Sudden, unexpected start |\n| `〜はじめる` | Gradual or intentional start |\n| `〜てくる` | Growing change, movement toward now |"
+      }
+    },
+    "format_map": {
+      "Verb": [
+        {
+          "VerbToStem": {}
+        },
+        {
+          "AddPostfix": {
+            "postfix": "だす"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "rule_id": "01KJ9AVWBHRFYSHYC7SYYVPDYH",
+    "level": "N3",
+    "content": {
+      "Russian": {
+        "title": "～はじめる",
+        "short_description": "Начинать делать что-то",
+        "md_description": "## ～はじめる — Начать делать\n\n### Что это и зачем?\n\n`～はじめる` (始める) означает **«начать что-то делать»** — начало нового действия или процесса. В отличие от `～だす` (внезапно), `はじめる` описывает **осознанное или постепенное** начало.\n\n---\n\n### Образование\n\n```\nМасу-основа глагола + はじめる\n```\n\n| Глагол | Основа | Составной |\n|---|---|---|\n| `食べる` | `食べ` | `食べはじめる` |\n| `走る` | `走り` | `走りはじめる` |\n| `勉強する` | `勉強し` | `勉強しはじめる` |\n| `降る` | `降り` | `降りはじめる` |\n\n---\n\n### Примеры\n\n```\n春になると、花が咲きはじめる。\n```\n*С наступлением весны цветы начинают цвести.*\n\n```\n彼は日本語を勉強しはじめた。\n```\n*Он начал учить японский язык.*\n\n```\n会議は9時に始まりはじめました。\n```\n*Собрание началось в 9 часов.*\n\n```\n子どもたちが騒ぎはじめた。\n```\n*Дети начали шуметь.*\n\n---\n\n### Сравнение составных глаголов начала\n\n| Составной | Нюанс | Пример |\n|---|---|---|\n| `〜はじめる` | Осознанное/постепенное начало | `勉強しはじめた` |\n| `〜だす` | Внезапное, неожиданное начало | `泣きだした` |\n| `〜かける` | Начал, но не закончил | `食べかけた` |"
+      },
+      "English": {
+        "title": "～はじめる",
+        "short_description": "To start doing something",
+        "md_description": "## ～はじめる — To Start Doing\n\n### What is it?\n\n`～はじめる` (始める) means **\"to begin doing something\"** — the start of an action or process. Unlike `～だす` (sudden burst), `はじめる` describes a **gradual or intentional beginning**.\n\n---\n\n### Formation\n\n```\nMasu-stem of verb + はじめる\n```\n\n| Verb | Stem | Compound |\n|---|---|---|\n| `食べる` | `食べ` | `食べはじめる` |\n| `走る` | `走り` | `走りはじめる` |\n| `勉強する` | `勉強し` | `勉強しはじめる` |\n| `降る` | `降り` | `降りはじめる` |\n\n---\n\n### Examples\n\n```\n春になると、花が咲きはじめる。\n```\n*When spring comes, the flowers start to bloom.*\n\n```\n彼は日本語を勉強しはじめた。\n```\n*He started studying Japanese.*\n\n```\n子どもたちが騒ぎはじめた。\n```\n*The children started making noise.*\n\n```\n雪が降りはじめた。\n```\n*Snow began to fall.*\n\n---\n\n### Comparison of Start Compounds\n\n| Compound | Nuance | Example |\n|---|---|---|\n| `〜はじめる` | Gradual / intentional start | `勉強しはじめた` |\n| `〜だす` | Sudden, unexpected start | `泣きだした` |\n| `〜かける` | Started but didn't finish | `食べかけた` |"
+      }
+    },
+    "format_map": {
+      "Verb": [
+        {
+          "VerbToStem": {}
+        },
+        {
+          "AddPostfix": {
+            "postfix": "はじめる"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "rule_id": "01KJ9AVWBHQTYR03M31868R08D",
+    "level": "N3",
+    "content": {
+      "Russian": {
+        "title": "～おわる",
+        "short_description": "Заканчивать делать что-то",
+        "md_description": "## ～おわる — Закончить делать\n\n### Что это и зачем?\n\n`～おわる` (終わる) означает **«завершить, закончить делать что-то»**. Добавляется к основе глагола и указывает на **полное завершение** действия.\n\n---\n\n### Образование\n\n```\nМасу-основа глагола + おわる\n```\n\n| Глагол | Основа | Составной |\n|---|---|---|\n| `食べる` | `食べ` | `食べおわる` |\n| `読む` | `読み` | `読みおわる` |\n| `書く` | `書き` | `書きおわる` |\n| `する` | `し` | `しおわる` |\n\n---\n\n### Примеры\n\n```\nやっと宿題を書きおわった。\n```\n*Наконец-то я дописал домашнее задание.*\n\n```\n本を読みおわったら、貸してください。\n```\n*Когда дочитаешь книгу, одолжи мне.*\n\n```\n食べおわったら、片付けてね。\n```\n*Когда закончишь есть, убери за собой.*\n\n```\n映画が見おわったとき、泣いていた。\n```\n*Когда досмотрел фильм, плакал.*\n\n---\n\n### Похожие составные глаголы завершения\n\n| Составной | Значение |\n|---|---|\n| `〜おわる` | Закончить полностью |\n| `〜きる` | Сделать до конца, сделать полностью |\n| `〜てしまう` | Закончить (с сожалением или облегчением) |\n\n> 💡 `食べきる` и `食べおわる` похожи, но `きる` подчёркивает **«съесть всё до последнего кусочка»**, а `おわる` — просто **«закончить есть»**."
+      },
+      "English": {
+        "title": "～おわる",
+        "short_description": "To finish doing something",
+        "md_description": "## ～おわる — To Finish Doing\n\n### What is it?\n\n`～おわる` (終わる) means **\"to finish doing something\"** — to complete an action fully. It's attached to the masu-stem and signals the **end/completion** of the action.\n\n---\n\n### Formation\n\n```\nMasu-stem of verb + おわる\n```\n\n| Verb | Stem | Compound |\n|---|---|---|\n| `食べる` | `食べ` | `食べおわる` |\n| `読む` | `読み` | `読みおわる` |\n| `書く` | `書き` | `書きおわる` |\n| `する` | `し` | `しおわる` |\n\n---\n\n### Examples\n\n```\nやっと宿題を書きおわった。\n```\n*I finally finished writing my homework.*\n\n```\n本を読みおわったら、貸してください。\n```\n*Once you finish reading the book, please lend it to me.*\n\n```\n食べおわったら、片付けてね。\n```\n*When you finish eating, clean up.*\n\n```\n映画が見おわったとき、泣いていた。\n```\n*When I finished watching the movie, I was in tears.*\n\n---\n\n### Related Completion Compounds\n\n| Compound | Meaning |\n|---|---|\n| `〜おわる` | Finish completely |\n| `〜きる` | Do fully / do to the very end |\n| `〜てしまう` | Finish (with regret or relief) |\n\n> 💡 `食べきる` vs `食べおわる`: `きる` stresses **consuming every last bit**, while `おわる` simply means **\"done eating.\"**"
+      }
+    },
+    "format_map": {
+      "Verb": [
+        {
+          "VerbToStem": {}
+        },
+        {
+          "AddPostfix": {
+            "postfix": "おわる"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "rule_id": "01KJ9AVWBHZ4XDBVBBB4PJC18C",
+    "level": "N3",
+    "content": {
+      "Russian": {
+        "title": "～つづける",
+        "short_description": "Продолжать делать что-то",
+        "md_description": "## ～つづける — Продолжать делать\n\n### Что это и зачем?\n\n`～つづける` (続ける) означает **«продолжать делать что-то без перерыва»**. Описывает **непрерывное продолжение** действия.\n\n---\n\n### Образование\n\n```\nМасу-основа глагола + つづける\n```\n\n| Глагол | Основа | Составной |\n|---|---|---|\n| `走る` | `走り` | `走りつづける` |\n| `働く` | `働き` | `働きつづける` |\n| `勉強する` | `勉強し` | `勉強しつづける` |\n| `愛する` | `愛し` | `愛しつづける` |\n\n---\n\n### Примеры\n\n```\n彼は三時間走りつづけた。\n```\n*Он бежал три часа без остановки.*\n\n```\n夢を信じつづけることが大切だ。\n```\n*Важно продолжать верить в свою мечту.*\n\n```\n彼女はずっと笑いつづけていた。\n```\n*Она всё время продолжала смеяться.*\n\n```\n雨は一週間降りつづいた。\n```\n*Дождь шёл непрерывно целую неделю.*\n\n---\n\n### Нюансы: つづける vs つづく\n\n| Глагол | Значение | Пример |\n|---|---|---|\n| `〜つづける` (続ける) | **Переходный**: продолжать делать (сам) | `勉強しつづける` |\n| `〜つづく` (続く) | **Непереходный**: продолжаться (само) | `雨がつづく` |"
+      },
+      "English": {
+        "title": "～つづける",
+        "short_description": "To continue doing something",
+        "md_description": "## ～つづける — To Keep Doing / To Continue\n\n### What is it?\n\n`～つづける` (続ける) means **\"to continue doing something without stopping\"** — an uninterrupted, sustained action.\n\n---\n\n### Formation\n\n```\nMasu-stem of verb + つづける\n```\n\n| Verb | Stem | Compound |\n|---|---|---|\n| `走る` | `走り` | `走りつづける` |\n| `働く` | `働き` | `働きつづける` |\n| `勉強する` | `勉強し` | `勉強しつづける` |\n| `愛する` | `愛し` | `愛しつづける` |\n\n---\n\n### Examples\n\n```\n彼は三時間走りつづけた。\n```\n*He kept running for three hours straight.*\n\n```\n夢を信じつづけることが大切だ。\n```\n*It's important to keep believing in your dream.*\n\n```\n彼女はずっと笑いつづけていた。\n```\n*She kept on laughing the whole time.*\n\n```\n雨は一週間降りつづいた。\n```\n*The rain continued for a whole week without stopping.*\n\n---\n\n### Nuance: つづける vs つづく\n\n| Verb | Meaning | Example |\n|---|---|---|\n| `〜つづける` (続ける) | **Transitive**: actively keep doing | `勉強しつづける` |\n| `〜つづく` (続く) | **Intransitive**: continue on its own | `雨がつづく` |"
+      }
+    },
+    "format_map": {
+      "Verb": [
+        {
+          "VerbToStem": {}
+        },
+        {
+          "AddPostfix": {
+            "postfix": "つづける"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "rule_id": "01KJ9AVWBHNND4VKPG4VKB4DMC",
+    "level": "N3",
+    "content": {
+      "Russian": {
+        "title": "～わすれる",
+        "short_description": "Забыть сделать что-то",
+        "md_description": "## ～わすれる — Забыть сделать\n\n### Что это и зачем?\n\n`～わすれる` (忘れる) означает **«забыть сделать что-то»** — упустить из виду, не выполнить действие из-за забывчивости.\n\n> ⚠️ Не путайте с `〜を忘れる` (забыть вещь): `財布を忘れた` (забыл кошелёк) vs `財布を持っていくのを忘れた` (забыл взять кошелёк).\n\n---\n\n### Образование\n\n```\nМасу-основа глагола + わすれる\n```\n\n| Глагол | Основа | Составной |\n|---|---|---|\n| `飲む` | `飲み` | `飲みわすれる` |\n| `書く` | `書き` | `書きわすれる` |\n| `連絡する` | `連絡し` | `連絡しわすれる` |\n| `電気を消す` | `消し` | `消しわすれる` |\n\n---\n\n### Примеры\n\n```\n薬を飲みわすれた。\n```\n*Забыл выпить лекарство.*\n\n```\n宿題を出しわすれてしまった。\n```\n*Я забыл сдать домашнее задание.*\n\n```\n名前を書きわすれないようにしてください。\n```\n*Пожалуйста, не забудьте написать имя.*\n\n```\n電気を消しわすれた！\n```\n*Я забыл выключить свет!*\n\n---\n\n### Похожие конструкции\n\n| | Конструкция | Пример |\n|---|---|---|\n| Составной глагол | `〜わすれる` | `書きわすれる` |\n| Номинализация | `〜のを忘れる` | `書くのを忘れる` |\n\n> Оба варианта верны и взаимозаменяемы. `〜わすれる` звучит немного компактнее."
+      },
+      "English": {
+        "title": "～わすれる",
+        "short_description": "To forget to do something",
+        "md_description": "## ～わすれる — To Forget to Do\n\n### What is it?\n\n`～わすれる` (忘れる) means **\"to forget to do something\"** — failing to carry out an action due to forgetfulness.\n\n> ⚠️ Don't confuse with `〜を忘れる` (forget a thing): `財布を忘れた` (forgot my wallet) vs `財布を持っていくのを忘れた` (forgot to bring my wallet).\n\n---\n\n### Formation\n\n```\nMasu-stem of verb + わすれる\n```\n\n| Verb | Stem | Compound |\n|---|---|---|\n| `飲む` | `飲み` | `飲みわすれる` |\n| `書く` | `書き` | `書きわすれる` |\n| `連絡する` | `連絡し` | `連絡しわすれる` |\n| `消す` | `消し` | `消しわすれる` |\n\n---\n\n### Examples\n\n```\n薬を飲みわすれた。\n```\n*I forgot to take my medicine.*\n\n```\n宿題を出しわすれてしまった。\n```\n*I forgot to hand in my homework.*\n\n```\n名前を書きわすれないようにしてください。\n```\n*Please don't forget to write your name.*\n\n```\n電気を消しわすれた！\n```\n*I forgot to turn off the lights!*\n\n---\n\n### Alternative Form\n\n| | Structure | Example |\n|---|---|---|\n| Compound verb | `〜わすれる` | `書きわすれる` |\n| Nominalized | `〜のを忘れる` | `書くのを忘れる` |\n\n> Both forms are correct and interchangeable. `〜わすれる` is slightly more compact."
+      }
+    },
+    "format_map": {
+      "Verb": [
+        {
+          "VerbToStem": {}
+        },
+        {
+          "AddPostfix": {
+            "postfix": "わすれる"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "rule_id": "01KJ9AVWBHATEBZQ77Z5FBXHCP",
+    "level": "N3",
+    "content": {
+      "Russian": {
+        "title": "～あう",
+        "short_description": "Делать что-то вместе / друг с другом",
+        "md_description": "## ～あう — Делать вместе / Взаимно\n\n### Что это и зачем?\n\n`～あう` (合う) — составной глагол, выражающий **взаимность или совместность**: оба (или все) делают что-то **друг с другом**, **вместе**, **взаимно**.\n\n> 💡 `あう` (合う) = «подходить, совпадать». В составном: «делать X взаимно, навстречу друг другу».\n\n---\n\n### Образование\n\n```\nМасу-основа глагола + あう\n```\n\n| Глагол | Основа | Составной |\n|---|---|---|\n| `助ける` | `助け` | `助けあう` |\n| `愛する` | `愛し` | `愛しあう` |\n| `話す` | `話し` | `話しあう` |\n| `支える` | `支え` | `支えあう` |\n\n---\n\n### Примеры\n\n```\n二人は愛しあっている。\n```\n*Они любят друг друга.*\n\n```\n友達と話しあって、解決策を見つけた。\n```\n*Обсудили с другом ситуацию и нашли решение.*\n\n```\n地域の人々は助けあって生活している。\n```\n*Жители района живут, помогая друг другу.*\n\n```\n意見をぶつけあうことが大切だ。\n```\n*Важно открыто обмениваться мнениями.*\n\n---\n\n### Популярные глаголы с あう\n\n| Составной | Значение |\n|---|---|\n| `話しあう` | Обсуждать, говорить вместе |\n| `助けあう` | Помогать друг другу |\n| `愛しあう` | Любить друг друга |\n| `ぶつかりあう` | Сталкиваться, конфликтовать |\n| `支えあう` | Поддерживать друг друга |"
+      },
+      "English": {
+        "title": "～あう",
+        "short_description": "To do something together / with each other",
+        "md_description": "## ～あう — To Do Mutually / Together\n\n### What is it?\n\n`～あう` (合う) is a compound suffix that adds the meaning of **mutuality or reciprocity**: both (or all) parties do something **to/with each other**, **together**.\n\n> 💡 `あう` (合う) = \"to match / to fit.\" As a suffix: \"to do X toward each other.\"\n\n---\n\n### Formation\n\n```\nMasu-stem of verb + あう\n```\n\n| Verb | Stem | Compound |\n|---|---|---|\n| `助ける` | `助け` | `助けあう` |\n| `愛する` | `愛し` | `愛しあう` |\n| `話す` | `話し` | `話しあう` |\n| `支える` | `支え` | `支えあう` |\n\n---\n\n### Examples\n\n```\n二人は愛しあっている。\n```\n*The two of them love each other.*\n\n```\n友達と話しあって、解決策を見つけた。\n```\n*I talked it over with my friend and we found a solution.*\n\n```\n地域の人々は助けあって生活している。\n```\n*The community members live by helping each other.*\n\n```\n意見をぶつけあうことが大切だ。\n```\n*It's important to exchange opinions openly with each other.*\n\n---\n\n### Common Compound Verbs with あう\n\n| Compound | Meaning |\n|---|---|\n| `話しあう` | Discuss together |\n| `助けあう` | Help each other |\n| `愛しあう` | Love each other |\n| `ぶつかりあう` | Clash / come into conflict |\n| `支えあう` | Support each other |"
+      }
+    },
+    "format_map": {
+      "Verb": [
+        {
+          "VerbToStem": {}
+        },
+        {
+          "AddPostfix": {
+            "postfix": "あう"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "rule_id": "01KJ9AVWBHWREH4Z4FER3BM22B",
+    "level": "N3",
+    "content": {
+      "Russian": {
+        "title": "～かえる",
+        "short_description": "Переделывать / менять",
+        "md_description": "## ～かえる — Переделать / Поменять\n\n### Что это и зачем?\n\n`～かえる` (変える・替える・換える・返る) как составной элемент означает **«переделать, изменить, заменить»** что-то. К основному действию добавляется идея **«сделать заново или по-другому»**.\n\n> 💡 Буквально: «сделать X и поменять (результат)».\n\n---\n\n### Образование\n\n```\nМасу-основа глагола + かえる\n```\n\n| Глагол | Основа | Составной |\n|---|---|---|\n| `書く` | `書き` | `書きかえる` |\n| `作る` | `作り` | `作りかえる` |\n| `読む` | `読み` | `読みかえる` |\n| `並べる` | `並べ` | `並べかえる` |\n\n---\n\n### Примеры\n\n```\nレポートを書きかえた。\n```\n*Я переписал отчёт.*\n\n```\n部屋を作りかえるつもりだ。\n```\n*Собираюсь переделать комнату.*\n\n```\n間違えたので、もう一度書きかえてください。\n```\n*Вы ошиблись, пожалуйста, перепишите снова.*\n\n```\n単語を並べかえて、正しい文を作りなさい。\n```\n*Переставьте слова и составьте правильное предложение.*\n\n---\n\n### Популярные глаголы с かえる\n\n| Составной | Значение |\n|---|---|\n| `書きかえる` | Переписать |\n| `作りかえる` | Переделать, перестроить |\n| `読みかえる` | Перечитать |\n| `並べかえる` | Переставить, переупорядочить |\n| `組みかえる` | Перегруппировать, перестроить |\n\n> 💡 Часто встречается в контексте учёбы: задания на `並べかえ` (расположить слова в правильном порядке) — одно из типичных упражнений на экзамене JLPT!"
+      },
+      "English": {
+        "title": "～かえる",
+        "short_description": "To redo / change something",
+        "md_description": "## ～かえる — To Redo / Change / Replace\n\n### What is it?\n\n`～かえる` (変える・替える・換える) as a compound suffix means **\"to redo, change, or replace\"** something. It adds the idea of **\"doing the action over in a new way\"** to the main verb.\n\n> 💡 Think of it as: \"do X and change/replace the result.\"\n\n---\n\n### Formation\n\n```\nMasu-stem of verb + かえる\n```\n\n| Verb | Stem | Compound |\n|---|---|---|\n| `書く` | `書き` | `書きかえる` |\n| `作る` | `作り` | `作りかえる` |\n| `読む` | `読み` | `読みかえる` |\n| `並べる` | `並べ` | `並べかえる` |\n\n---\n\n### Examples\n\n```\nレポートを書きかえた。\n```\n*I rewrote the report.*\n\n```\n部屋を作りかえるつもりだ。\n```\n*I'm planning to redo / remodel the room.*\n\n```\n間違えたので、もう一度書きかえてください。\n```\n*You made a mistake — please rewrite it.*\n\n```\n単語を並べかえて、正しい文を作りなさい。\n```\n*Rearrange the words to make a correct sentence.*\n\n---\n\n### Common Compound Verbs with かえる\n\n| Compound | Meaning |\n|---|---|\n| `書きかえる` | Rewrite |\n| `作りかえる` | Remake / remodel |\n| `読みかえる` | Reread |\n| `並べかえる` | Rearrange |\n| `組みかえる` | Reorganize / restructure |\n\n> 💡 `並べかえ` problems (put words in the correct order) are a classic JLPT exam question type — so knowing this compound is directly useful for test prep!"
+      }
+    },
+    "format_map": {
+      "Verb": [
+        {
+          "VerbToStem": {}
+        },
+        {
+          "AddPostfix": {
+            "postfix": "かえる"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "rule_id": "01KJ9AVWBHB682Y403GNC8A5EG",
+    "level": "N5",
+    "content": {
+      "Russian": {
+        "title": "〜は〜です",
+        "short_description": "Базовая структура предложения с существительными",
+        "md_description": "AはBです - А есть B. Базовая структура для утверждения."
+      },
+      "English": {
+        "title": "〜は〜です",
+        "short_description": "Basic sentence structure with nouns",
+        "md_description": "AはBです - A is B. Basic structure for statements."
+      }
+    },
+    "format_map": null
+  },
+  {
+    "rule_id": "01KJ9AVWBH97AQPCCN72986XC2",
+    "level": "N5",
+    "content": {
+      "Russian": {
+        "title": "〜は〜じゃありません",
+        "short_description": "Отрицание с существительными",
+        "md_description": "AはBじゃありません - А не есть B. Отрицательная форма."
+      },
+      "English": {
+        "title": "〜は〜じゃありません",
+        "short_description": "Negative form with nouns",
+        "md_description": "AはBじゃありません - A is not B. Negative form."
+      }
+    },
+    "format_map": null
+  },
+  {
+    "rule_id": "01KJ9AVWBHHQZVVB94N9K0XATS",
+    "level": "N5",
+    "content": {
+      "Russian": {
+        "title": "〜は〜ですか",
+        "short_description": "Вопрос с существительными",
+        "md_description": "AはBですか - А есть B? Вопросительная форма."
+      },
+      "English": {
+        "title": "〜は〜ですか",
+        "short_description": "Question form with nouns",
+        "md_description": "AはBですか - Is A B? Question form."
+      }
+    },
+    "format_map": null
+  },
+  {
+    "rule_id": "01KJ9AVWBH2KVQY4Y97N3JHWSD",
+    "level": "N5",
+    "content": {
+      "Russian": {
+        "title": "の",
+        "short_description": "Выражение принадлежности между существительными",
+        "md_description": "AのB - B принадлежит A. Выражает принадлежность, отношение."
+      },
+      "English": {
+        "title": "の",
+        "short_description": "Expressing belonging between nouns",
+        "md_description": "AのB - B belongs to A. Expresses possession, relationship."
+      }
+    },
+    "format_map": null
+  },
+  {
+    "rule_id": "01KJ9AVWBH1FCFM51BM2AXZ0C2",
+    "level": "N5",
+    "content": {
+      "Russian": {
+        "title": "も",
+        "short_description": "Выражение 'тоже' с существительными",
+        "md_description": "AもBです - А тоже B. Частицаも заменяетは для выражения 'тоже'."
+      },
+      "English": {
+        "title": "も",
+        "short_description": "Expressing 'also' with nouns",
+        "md_description": "AもBです - A is also B. Particle も replaces は to express 'also'."
+      }
+    },
+    "format_map": null
+  },
+  {
+    "rule_id": "01KJ9AVWBHBPCR5J7CVA8JK8KF",
+    "level": "N5",
+    "content": {
+      "Russian": {
+        "title": "これ/それ/あれ",
+        "short_description": "Указание на предметы",
+        "md_description": "これ - этот (близко), それ - тот (рядом с собеседником), あれ - тот (далеко)."
+      },
+      "English": {
+        "title": "これ/それ/あれ",
+        "short_description": "Pointing to objects",
+        "md_description": "これ - this one (close), それ - that one (near listener), あれ - that one (far)."
+      }
+    },
+    "format_map": null
+  },
+  {
+    "rule_id": "01KJ9AVWBHJJSFC592FJPGMBQM",
+    "level": "N5",
+    "content": {
+      "Russian": {
+        "title": "この/その/あの",
+        "short_description": "Указание с последующим существительным",
+        "md_description": "このN - этот N, そのN - тот N (рядом), あのN - тот N (далеко)."
+      },
+      "English": {
+        "title": "この/その/あの",
+        "short_description": "Pointing with following noun",
+        "md_description": "このN - this N, そのN - that N (near), あのN - that N (far)."
+      }
+    },
+    "format_map": null
+  },
+  {
+    "rule_id": "01KJ9AVWBHYS1J2P938B40R0EJ",
+    "level": "N5",
+    "content": {
+      "Russian": {
+        "title": "ここは〜です",
+        "short_description": "Указание места",
+        "md_description": "ここは場所です - Здесь есть (место). Используется для указания мест."
+      },
+      "English": {
+        "title": "ここは〜です",
+        "short_description": "Indicating location",
+        "md_description": "ここは場所です - Here is (place). Used for indicating locations."
+      }
+    },
+    "format_map": null
+  },
+  {
+    "rule_id": "0001KMBA5W0000000000001AD8",
+    "level": "N5",
+    "content": {
+      "Russian": {
+        "title": "は (тема)",
+        "short_description": "Частица темы",
+        "md_description": "## は — Частица темы\n\n### Что это?\n\n`は` помечает тему предложения.\n\n### Примеры\n\n```\n私は学生です。\nЯ студент.\n```"
+      },
+      "English": {
+        "title": "は (topic)",
+        "short_description": "Topic particle",
+        "md_description": "## は — Topic Marker\n\n### What is it?\n\n`は` marks the topic of a sentence.\n\n### Examples\n\n```\n私は学生です。\nI am a student.\n```"
+      }
+    },
+    "format_map": null
+  },
+  {
+    "rule_id": "0001KMBA5W0000000004001AD8",
+    "level": "N5",
+    "content": {
+      "Russian": {
+        "title": "が (субъект)",
+        "short_description": "Частица субъекта",
+        "md_description": "## が — Частица субъекта\n\n### Что это?\n\n`が` помечает грамматический субъект.\n\n### Примеры\n\n```\n雨が降っています。\nИдёт дождь.\n```"
+      },
+      "English": {
+        "title": "が (subject)",
+        "short_description": "Subject particle",
+        "md_description": "## が — Subject Particle\n\n### What is it?\n\n`が` marks the grammatical subject.\n\n### Examples\n\n```\n雨が降っています。\nIt is raining.\n```"
+      }
+    },
+    "format_map": null
+  },
+  {
+    "rule_id": "0001KMBA5W0000000008001AD8",
+    "level": "N5",
+    "content": {
+      "Russian": {
+        "title": "を (объект)",
+        "short_description": "Частица объекта",
+        "md_description": "## を — Частица объекта\n\n### Что это?\n\n`を` помечает прямой объект.\n\n### Примеры\n\n```\nご飯を食べます。\nЕм еду.\n```"
+      },
+      "English": {
+        "title": "を (object)",
+        "short_description": "Object particle",
+        "md_description": "## を — Object Particle\n\n### What is it?\n\n`を` marks the direct object.\n\n### Examples\n\n```\nご飯を食べます。\nI eat rice.\n```"
+      }
+    },
+    "format_map": null
+  },
+  {
+    "rule_id": "0001KMBA5W000000000C001AD8",
+    "level": "N5",
+    "content": {
+      "Russian": {
+        "title": "に (направление)",
+        "short_description": "Частица направления",
+        "md_description": "## に — Частица направления\n\n### Что это?\n\n`に` указывает направление или время.\n\n### Примеры\n\n```\n日本に行きます。\nЕду в Японию.\n```"
+      },
+      "English": {
+        "title": "に (direction)",
+        "short_description": "Direction particle",
+        "md_description": "## に — Direction Particle\n\n### What is it?\n\n`に` indicates direction or time.\n\n### Examples\n\n```\n日本に行きます。\nI go to Japan.\n```"
+      }
+    },
+    "format_map": null
+  },
+  {
+    "rule_id": "0001KMBA5W000000000G001AD8",
+    "level": "N5",
+    "content": {
+      "Russian": {
+        "title": "で (место)",
+        "short_description": "Частица места действия",
+        "md_description": "## で — Частица места действия\n\n### Что это?\n\n`で` указывает место действия.\n\n### Примеры\n\n```\n公園で遊びます。\nИграю в парке.\n```"
+      },
+      "English": {
+        "title": "で (place)",
+        "short_description": "Place of action particle",
+        "md_description": "## で — Place of Action Particle\n\n### What is it?\n\n`で` indicates where an action takes place.\n\n### Examples\n\n```\n公園で遊びます。\nI play in the park.\n```"
+      }
+    },
+    "format_map": null
+  },
+  {
+    "rule_id": "0001KMBA5W000000000M001AD8",
+    "level": "N5",
+    "content": {
+      "Russian": {
+        "title": "と (с)",
+        "short_description": "Частица совместности",
+        "md_description": "## と — Частица совместности\n\n### Что это?\n\n`と` указывает, с кем действие выполняется.\n\n### Примеры\n\n```\n友達と行きます。\nИду с другом.\n```"
+      },
+      "English": {
+        "title": "と (with)",
+        "short_description": "With particle",
+        "md_description": "## と — With Particle\n\n### What is it?\n\n`と` indicates doing something with someone.\n\n### Examples\n\n```\n友達と行きます。\nI go with a friend.\n```"
+      }
+    },
+    "format_map": null
+  },
+  {
+    "rule_id": "0001KMBA5W000000000R001AD8",
+    "level": "N5",
+    "content": {
+      "Russian": {
+        "title": "も (тоже)",
+        "short_description": "Частица \"тоже\"",
+        "md_description": "## も — Частица \"тоже\"\n\n### Что это?\n\n`も` означает \"тоже\" или \"также\".\n\n### Примеры\n\n```\n私も学生です。\nЯ тоже студент.\n```"
+      },
+      "English": {
+        "title": "も (also)",
+        "short_description": "Also particle",
+        "md_description": "## も — Also Particle\n\n### What is it?\n\n`も` means \"also\" or \"too\".\n\n### Examples\n\n```\n私も学生です。\nI am also a student.\n```"
+      }
+    },
+    "format_map": null
+  }
+]

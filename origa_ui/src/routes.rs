@@ -4,18 +4,24 @@ use crate::loaders::{
     jlpt_content_loader::load_jlpt_content,
     phrase_loader::load_phrases,
 };
-use crate::pages::{Grammar, Home, Kanji, Lesson, Login, Onboarding, Profile, Sets, Words};
+use crate::pages::{
+    Grammar, Home, Kanji, Lesson, Login, Onboarding, Phrases, Profile, Sets, Words,
+};
 use crate::store::auth_store::AuthStore;
 use crate::ui_components::{BottomTabBar, LoadingOverlay};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos_router::components::*;
 use leptos_router::path;
+use origa::use_cases::SeedReadyPhrasesUseCase;
+
+use crate::repository::HybridUserRepository;
 
 pub fn start_dictionary_loading(
     auth_store: AuthStore,
     is_loading: RwSignal<bool>,
     progress: RwSignal<String>,
+    repository: HybridUserRepository,
 ) {
     if is_loading.get() {
         return;
@@ -58,6 +64,12 @@ pub fn start_dictionary_loading(
             tracing::error!("Failed to load dictionary: {e}");
         }
 
+        // Миграция: создание PhraseCard для ранее изученных слов
+        let seed_use_case = SeedReadyPhrasesUseCase::new(&repository);
+        if let Err(e) = seed_use_case.execute().await {
+            tracing::warn!("Failed to seed ready phrases: {e}");
+        }
+
         auth_store.set_dictionary_loaded();
         is_loading.set(false);
         progress.set(String::new());
@@ -81,7 +93,12 @@ pub fn ProtectedRoute(children: ChildrenFn) -> impl IntoView {
                 && !auth_store.is_dictionary_loaded.get()
                 && !is_loading.get()
             {
-                start_dictionary_loading(auth_store.clone(), is_loading, progress);
+                start_dictionary_loading(
+                    auth_store.clone(),
+                    is_loading,
+                    progress,
+                    use_context::<HybridUserRepository>().expect("repository context not provided"),
+                );
             }
         }
     });
@@ -125,6 +142,7 @@ pub fn AppRoutes() -> impl IntoView {
                 <Route path=path!("profile") view=|| view! { <ProtectedRoute><Profile/></ProtectedRoute> } />
                 <Route path=path!("words") view=|| view! { <ProtectedRoute><Words/></ProtectedRoute> } />
                 <Route path=path!("grammar") view=|| view! { <ProtectedRoute><Grammar/></ProtectedRoute> } />
+                <Route path=path!("phrases") view=|| view! { <ProtectedRoute><Phrases/></ProtectedRoute> } />
                 <Route path=path!("kanji") view=|| view! { <ProtectedRoute><Kanji/></ProtectedRoute> } />
                 <Route path=path!("lesson") view=|| view! { <ProtectedRoute><Lesson/></ProtectedRoute> } />
                 <Route path=path!("sets") view=|| view! { <ProtectedRoute><Sets/></ProtectedRoute> } />
