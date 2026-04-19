@@ -299,6 +299,12 @@ input[type="submit"],
     border-color: var(--accent-terracotta);
 }
 
+.tag-sage {
+    background: var(--accent-sage);
+    color: var(--bg-paper);
+    border-color: var(--accent-sage);
+}
+
 .checkbox-container {
     display: flex;
     align-items: center;

@@ -8,7 +8,8 @@ use clap::Parser;
 
 use crate::cli::{Cli, Commands};
 use crate::commands::{
-    run_build_phrase_dataset, run_find_missing, run_ndlocr, run_tokenize, run_tokenize_well_known,
+    run_build_phrase_dataset, run_find_missing, run_migrate_phrase_dataset, run_ndlocr,
+    run_tokenize, run_tokenize_well_known,
 };
 
 #[tokio::main]
@@ -55,6 +56,7 @@ async fn main() {
             output,
             min_tokens,
         } => run_build_phrase_dataset(input, output, min_tokens),
+        Commands::MigratePhraseDataset { dataset } => run_migrate_phrase_dataset(dataset),
     };
 
     if let Err(e) = result {

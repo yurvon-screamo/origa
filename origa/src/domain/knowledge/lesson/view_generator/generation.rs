@@ -11,7 +11,7 @@ pub(crate) fn generate_quiz(
     lang: &NativeLanguage,
 ) -> Result<LessonCardView, OrigaError> {
     match &original_card {
-        Card::Vocabulary(_) | Card::Kanji(_) | Card::Grammar(_) => {},
+        Card::Vocabulary(_) | Card::Kanji(_) | Card::Grammar(_) | Card::Phrase(_) => {},
     }
 
     let correct_answer = original_card.answer(lang)?;
@@ -54,7 +54,7 @@ pub(crate) fn generate_yesno(
     rng: &mut impl Rng,
 ) -> Result<LessonCardView, OrigaError> {
     match &original_card {
-        Card::Vocabulary(_) | Card::Kanji(_) | Card::Grammar(_) => {},
+        Card::Vocabulary(_) | Card::Kanji(_) | Card::Grammar(_) | Card::Phrase(_) => {},
     }
 
     let question = original_card.question(lang)?;
@@ -89,4 +89,53 @@ pub(crate) fn generate_yesno(
         statement_text,
         is_correct,
     )))
+}
+
+pub(crate) fn generate_phrase_quiz(
+    original_card: Card,
+    same_type_cards: &[Card],
+    lang: &NativeLanguage,
+) -> Option<LessonCardView> {
+    let phrase_card = match &original_card {
+        Card::Phrase(pc) => pc,
+        Card::Vocabulary(_) | Card::Kanji(_) | Card::Grammar(_) => return None,
+    };
+
+    let audio_file = phrase_card.audio_file().ok()?;
+    let correct_text = original_card.answer(lang).ok()?.text().to_string();
+
+    let mut distractors: Vec<String> = same_type_cards
+        .iter()
+        .filter_map(|c| match c {
+            Card::Phrase(_) => c
+                .answer(lang)
+                .ok()
+                .map(|a| a.text().to_string())
+                .filter(|text| text != &correct_text),
+            Card::Vocabulary(_) | Card::Kanji(_) | Card::Grammar(_) => None,
+        })
+        .collect();
+
+    if distractors.is_empty() {
+        return None;
+    }
+
+    distractors.shuffle(&mut rand::rng());
+
+    let max_distractors = QUIZ_OPTIONS_COUNT.saturating_sub(1);
+    let selected: Vec<String> = distractors.into_iter().take(max_distractors).collect();
+
+    let mut options: Vec<QuizOption> = selected
+        .into_iter()
+        .map(|text| QuizOption::new(text, false))
+        .collect();
+
+    options.push(QuizOption::new(correct_text, true));
+    options.shuffle(&mut rand::rng());
+
+    Some(LessonCardView::PhraseListen {
+        card: original_card,
+        audio_file,
+        options,
+    })
 }

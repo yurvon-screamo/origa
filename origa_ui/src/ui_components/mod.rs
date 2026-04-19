@@ -4,6 +4,7 @@ mod accordion;
 mod alert;
 mod app_skeleton;
 mod audio_buttons;
+mod audio_player;
 mod avatar;
 mod badge;
 mod bottom_nav;
@@ -62,6 +63,7 @@ pub use alert::{Alert, AlertType};
 #[allow(unused_imports)]
 pub use app_skeleton::AppSkeleton;
 pub use audio_buttons::AudioButtons;
+pub use audio_player::AudioPlayer;
 pub use avatar::Avatar;
 #[allow(unused_imports)]
 pub use badge::Badge;

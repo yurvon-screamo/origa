@@ -5,10 +5,12 @@ use super::on_dont_know::create_on_dont_know;
 use super::on_quiz_select::create_on_quiz_select;
 use super::on_rate::create_on_rate_callback;
 use super::on_yesno_select::create_on_yesno_select;
+use super::phrase_card::PhraseCardView;
 use super::quiz_card::QuizCardView;
 use super::rating_buttons_view::RatingButtonsView;
 use super::writing_card::WritingCard;
 use super::yesno_card_view::YesNoCardView;
+use crate::pages::lesson::card_type::CardType;
 use leptos::prelude::*;
 use origa::domain::{GrammarInfo, LessonCard, LessonCardView, NativeLanguage, Rating};
 use std::collections::HashSet;
@@ -81,6 +83,13 @@ pub fn LessonCardContainer() -> impl IntoView {
             .unwrap_or(false)
     });
 
+    let is_phrase_listen_mode = Memo::new(move |_| {
+        current_lesson_card
+            .get()
+            .map(|c| matches!(c.view(), LessonCardView::PhraseListen { .. }))
+            .unwrap_or(false)
+    });
+
     let container_ref = NodeRef::<leptos::html::Div>::new();
 
     Effect::new(move |_| {
@@ -92,7 +101,7 @@ pub fn LessonCardContainer() -> impl IntoView {
     view! {
         <div class="outline-none" tabindex="0" node_ref=container_ref on:keydown=handle_keydown>
             <Show when=move || current_lesson_card.get().is_some()>
-                <Show when=move || !is_quiz_mode.get() && !is_writing_mode.get() && !is_yesno_mode.get()>
+                <Show when=move || !is_quiz_mode.get() && !is_writing_mode.get() && !is_yesno_mode.get() && !is_phrase_listen_mode.get()>
                     {move || {
                         current_lesson_card.get().map(|lesson_card| {
                             render_lesson_card(
@@ -182,6 +191,37 @@ pub fn LessonCardContainer() -> impl IntoView {
                         })
                     }}
                 </Show>
+
+                <Show when=move || is_phrase_listen_mode.get()>
+                    {move || {
+                        current_lesson_card.get().and_then(|lesson_card| {
+                            if let LessonCardView::PhraseListen { card, audio_file, options } = lesson_card.into_view() {
+                                let state = lesson_state.get();
+                                let selected_option = state.selected_quiz_option;
+                                let show_result = state.showing_answer;
+                                let card_type = CardType::from(&card);
+                                let phrase_text = card.question(&native_language.get()).ok().map(|q| q.text().to_string());
+
+                                Some(view! {
+                                    <PhraseCardView
+                                        card_type=card_type
+                                        audio_file=audio_file
+                                        options=options
+                                        show_result=show_result
+                                        selected_option=selected_option
+                                        on_select_option=on_quiz_select
+                                        on_dont_know=on_quiz_dont_know
+                                        dont_know_selected=state.dont_know_selected
+                                        phrase_text=phrase_text
+                                        known_kanji=Signal::from(known_kanji)
+                                    />
+                                })
+                            } else {
+                                None
+                            }
+                        })
+                    }}
+                </Show>
             </Show>
         </div>
     }
@@ -218,7 +258,10 @@ fn render_lesson_card(
             is_reversed: false,
             grammar_info: Some(grammar_info),
         },
-        LessonCardView::Quiz(_) | LessonCardView::Writing(_) | LessonCardView::YesNo(_) => {
+        LessonCardView::Quiz(_)
+        | LessonCardView::Writing(_)
+        | LessonCardView::YesNo(_)
+        | LessonCardView::PhraseListen { .. } => {
             return view! { <div/> }.into_any();
         },
     };

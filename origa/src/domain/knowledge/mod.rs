@@ -4,6 +4,8 @@ mod grammar;
 mod kanji;
 pub mod lesson;
 
+mod phrase;
+
 mod vocabulary;
 
 pub use card::{Card, CardType, StudyCard};
@@ -13,7 +15,7 @@ pub use kanji::{ExampleKanjiWord, KanjiCard};
 pub use lesson::{
     GrammarInfo, LessonCard, LessonCardView, LessonViewGenerator, QuizCard, QuizOption, YesNoCard,
 };
-
+pub use phrase::PhraseCard;
 pub use vocabulary::VocabularyCard;
 
 use std::cmp::Reverse;
@@ -32,12 +34,13 @@ const MIN_LESSON_SIZE: usize = 15;
 /// Приоритет карточек без определённого JLPT уровня — ниже всех известных уровней (N1=1)
 const UNKNOWN_JLPT_PRIORITY: u8 = 0;
 
-/// Веса типов карточек для interleaving: Vocab:Kanji:Grammar ≈ 60:20:20.
+/// Веса типов карточек для interleaving: Vocab:Kanji:Grammar:Phrase ≈ 50:17:17:17.
 /// При добавлении нового варианта в CardType — обновить эту константу.
-const CARD_TYPE_WEIGHTS: [(CardType, usize); 3] = [
+const CARD_TYPE_WEIGHTS: [(CardType, usize); 4] = [
     (CardType::Vocabulary, 3),
     (CardType::Kanji, 1),
     (CardType::Grammar, 1),
+    (CardType::Phrase, 1),
 ];
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -223,6 +226,9 @@ impl KnowledgeSet {
             },
             (Card::Grammar(grammar_rule_card), Card::Grammar(existing_grammar_rule_card)) => {
                 grammar_rule_card.rule_id() == existing_grammar_rule_card.rule_id()
+            },
+            (Card::Phrase(phrase_card), Card::Phrase(existing_phrase_card)) => {
+                phrase_card.phrase_id() == existing_phrase_card.phrase_id()
             },
 
             _ => false,
@@ -1329,6 +1335,7 @@ mod tests {
                     assert_ne!(kanji, n4_kanji, "N4 kanji should not be selected");
                 },
                 Card::Grammar(_) => panic!("No grammar cards in this test"),
+                Card::Phrase(_) => panic!("No phrase cards in this test"),
             }
         }
 

@@ -37,9 +37,12 @@ pub fn create_keyboard_handler(
         let is_yesno = current_card
             .map(|c| matches!(c.view(), LessonCardView::YesNo(_)))
             .unwrap_or(false);
+        let is_phrase_listen = current_card
+            .map(|c| matches!(c.view(), LessonCardView::PhraseListen { .. }))
+            .unwrap_or(false);
 
         if !state.showing_answer {
-            if is_quiz {
+            if is_quiz || is_phrase_listen {
                 handle_quiz_key(
                     &ev,
                     &key,
@@ -60,12 +63,12 @@ pub fn create_keyboard_handler(
             }
         }
 
-        if state.showing_answer && !is_quiz && !is_yesno {
+        if state.showing_answer && !is_quiz && !is_yesno && !is_phrase_listen {
             handle_rating_key(&key, &actions.on_rate);
             return;
         }
 
-        if key == " " && !state.showing_answer && !is_quiz && !is_yesno {
+        if key == " " && !state.showing_answer && !is_quiz && !is_yesno && !is_phrase_listen {
             ev.prevent_default();
             (actions.show_answer)();
         }

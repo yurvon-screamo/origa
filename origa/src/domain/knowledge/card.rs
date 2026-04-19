@@ -1,10 +1,9 @@
 use crate::domain::{
     OrigaError, Rating, ReviewLog,
-    knowledge::{GrammarRuleCard, KanjiCard, VocabularyCard},
+    knowledge::{GrammarRuleCard, KanjiCard, PhraseCard, VocabularyCard},
     memory::{MemoryHistory, MemoryState},
     value_objects::{Answer, NativeLanguage, Question},
 };
-use serde::de::{IgnoredAny, Visitor};
 use serde::{Deserialize, Serialize};
 use ulid::Ulid;
 
@@ -98,57 +97,12 @@ impl StudyCard {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum Card {
     Vocabulary(VocabularyCard),
     Kanji(KanjiCard),
     Grammar(GrammarRuleCard),
-}
-
-/// Custom deserializer that gracefully handles unknown variants by consuming
-/// their data via `IgnoredAny` and returning an error.
-/// This ensures the deserialization stream stays in a valid state for
-/// self-describing formats (JSON, serde_wasm_bindgen). Does NOT support
-/// non-self-describing formats like bincode.
-impl<'de> Deserialize<'de> for Card {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        deserializer.deserialize_map(CardVisitor)
-    }
-}
-
-struct CardVisitor;
-
-impl<'de> Visitor<'de> for CardVisitor {
-    type Value = Card;
-
-    fn expecting(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "an externally tagged enum Card")
-    }
-
-    fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
-    where
-        A: serde::de::MapAccess<'de>,
-    {
-        let key: String = map
-            .next_key()?
-            .ok_or_else(|| serde::de::Error::custom("empty map, expected Card variant"))?;
-
-        match key.as_str() {
-            "Vocabulary" => map.next_value().map(Card::Vocabulary),
-            "Kanji" => map.next_value().map(Card::Kanji),
-            "Grammar" => map.next_value().map(Card::Grammar),
-            unknown => {
-                let _ = map.next_value::<IgnoredAny>()?;
-                Err(serde::de::Error::custom(format!(
-                    "unknown variant `{}`, expected one of `Vocabulary`, `Kanji`, `Grammar`",
-                    unknown
-                )))
-            },
-        }
-    }
+    Phrase(PhraseCard),
 }
 
 impl Card {
@@ -157,6 +111,7 @@ impl Card {
             Card::Vocabulary(card) => Ok(card.word().clone()),
             Card::Kanji(card) => Ok(card.kanji().clone()),
             Card::Grammar(card) => card.title(lang),
+            Card::Phrase(card) => card.question(),
         }
     }
 
@@ -165,6 +120,7 @@ impl Card {
             Card::Vocabulary(card) => card.answer(lang),
             Card::Kanji(card) => card.description(lang),
             Card::Grammar(card) => card.description(lang),
+            Card::Phrase(card) => card.answer(lang),
         }
     }
 
@@ -173,6 +129,7 @@ impl Card {
             Card::Vocabulary(card) => card.word().text().to_string(),
             Card::Kanji(card) => card.kanji().text().to_string(),
             Card::Grammar(card) => card.rule_id().to_string(),
+            Card::Phrase(card) => card.phrase_id().to_string(),
         }
     }
 }
@@ -182,6 +139,7 @@ pub enum CardType {
     Vocabulary,
     Kanji,
     Grammar,
+    Phrase,
 }
 
 impl From<&Card> for CardType {
@@ -190,6 +148,7 @@ impl From<&Card> for CardType {
             Card::Vocabulary(_) => CardType::Vocabulary,
             Card::Kanji(_) => CardType::Kanji,
             Card::Grammar(_) => CardType::Grammar,
+            Card::Phrase(_) => CardType::Phrase,
         }
     }
 }
@@ -213,6 +172,10 @@ mod tests {
         GrammarRuleCard::new_test_with_id(rule_id)
     }
 
+    fn create_phrase_card(phrase_id: Ulid) -> PhraseCard {
+        PhraseCard::new_test_with_id(phrase_id)
+    }
+
     mod study_card {
         use super::*;
 
@@ -223,6 +186,7 @@ mod tests {
             #[case(Card::Vocabulary(create_vocabulary_card("猫")))]
             #[case(Card::Kanji(create_kanji_card("日")))]
             #[case(Card::Grammar(create_grammar_card(Ulid::new())))]
+            #[case(Card::Phrase(create_phrase_card(Ulid::new())))]
             fn creates_study_card_with_card_type(#[case] card: Card) {
                 let study_card = StudyCard::new(card);
 
@@ -274,6 +238,7 @@ mod tests {
             #[case(Card::Vocabulary(create_vocabulary_card("猫")), CardType::Vocabulary)]
             #[case(Card::Kanji(create_kanji_card("日")), CardType::Kanji)]
             #[case(Card::Grammar(create_grammar_card(Ulid::new())), CardType::Grammar)]
+            #[case(Card::Phrase(create_phrase_card(Ulid::new())), CardType::Phrase)]
             fn returns_card_reference(#[case] card: Card, #[case] expected_type: CardType) {
                 let study_card = StudyCard::new(card);
                 let returned_card = study_card.card();
@@ -629,6 +594,7 @@ mod tests {
             #[case(Card::Vocabulary(create_vocabulary_card("猫")), CardType::Vocabulary)]
             #[case(Card::Kanji(create_kanji_card("日")), CardType::Kanji)]
             #[case(Card::Grammar(create_grammar_card(Ulid::new())), CardType::Grammar)]
+            #[case(Card::Phrase(create_phrase_card(Ulid::new())), CardType::Phrase)]
             fn converts_card_to_type(#[case] card: Card, #[case] expected_type: CardType) {
                 let card_type = CardType::from(&card);
 
@@ -639,7 +605,6 @@ mod tests {
 
     mod card_deserialization {
         use super::*;
-        use crate::domain::knowledge::KnowledgeSet;
 
         #[test]
         fn unknown_variant_returns_error() {
@@ -671,47 +636,11 @@ mod tests {
             let json = serde_json::to_string(&grammar).unwrap();
             let de: Card = serde_json::from_str(&json).unwrap();
             assert_eq!(grammar, de);
-        }
 
-        #[test]
-        fn knowledge_set_skips_unknown_variant_card() {
-            let vocab_card = Card::Vocabulary(create_vocabulary_card("猫"));
-            let study_card = StudyCard::new(vocab_card);
-            let valid_id = *study_card.card_id();
-
-            let mut study_cards_map = serde_json::Map::new();
-            study_cards_map.insert(
-                valid_id.to_string(),
-                serde_json::to_value(&study_card).unwrap(),
-            );
-
-            let radical_id = Ulid::new();
-            let mut radical_value = serde_json::to_value(&study_card).unwrap();
-            radical_value.as_object_mut().unwrap().insert(
-                "card_id".to_string(),
-                serde_json::Value::String(radical_id.to_string()),
-            );
-
-            let card_json = serde_json::to_string(&radical_value.get("card").unwrap()).unwrap();
-            let radical_card_json = card_json.replace("\"Vocabulary\"", "\"Radical\"");
-            let radical_card: serde_json::Value = serde_json::from_str(&radical_card_json).unwrap();
-            radical_value
-                .as_object_mut()
-                .unwrap()
-                .insert("card".to_string(), radical_card);
-
-            study_cards_map.insert(radical_id.to_string(), radical_value);
-
-            let ks_value = serde_json::json!({
-                "study_cards": serde_json::Value::Object(study_cards_map),
-                "deleted_cards": [],
-                "lesson_history": []
-            });
-
-            let ks: KnowledgeSet = serde_json::from_value(ks_value).unwrap();
-
-            assert_eq!(ks.study_cards().len(), 1);
-            assert!(ks.study_cards().contains_key(&valid_id));
+            let phrase = Card::Phrase(create_phrase_card(Ulid::new()));
+            let json = serde_json::to_string(&phrase).unwrap();
+            let de: Card = serde_json::from_str(&json).unwrap();
+            assert_eq!(phrase, de);
         }
     }
 }

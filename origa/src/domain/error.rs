@@ -44,6 +44,8 @@ pub enum OrigaError {
     TranslationNotFound { word: String, lang: NativeLanguage },
     AccountDeletionFailed { reason: String },
     NetworkError { url: String, reason: String },
+    PhraseParseError { reason: String },
+    PhraseNotFound { phrase_id: Ulid },
 }
 
 impl fmt::Display for OrigaError {
@@ -166,6 +168,12 @@ impl fmt::Display for OrigaError {
             },
             OrigaError::NetworkError { url, reason } => {
                 write!(f, "Network error fetching {}: {}", url, reason)
+            },
+            OrigaError::PhraseParseError { reason } => {
+                write!(f, "Phrase parse error: {}", reason)
+            },
+            OrigaError::PhraseNotFound { phrase_id } => {
+                write!(f, "Phrase not found: {}", phrase_id)
             },
         }
     }
@@ -510,6 +518,14 @@ mod tests {
             card_id: Ulid::new(),
         };
         let _: &dyn std::error::Error = &error;
+    }
+
+    #[test]
+    fn phrase_not_found() {
+        let phrase_id = Ulid::new();
+        let error = OrigaError::PhraseNotFound { phrase_id };
+        assert_display_contains(&error, &phrase_id.to_string());
+        assert_serialization_roundtrip(error);
     }
 
     #[test]

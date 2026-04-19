@@ -113,4 +113,11 @@ pub enum Commands {
         #[arg(long, default_value = "2")]
         min_tokens: usize,
     },
+
+    /// Migrate phrase dataset from numeric ids to ULID
+    MigratePhraseDataset {
+        /// Path to phrase_dataset.json
+        #[arg(short, long)]
+        dataset: PathBuf,
+    },
 }

@@ -21,8 +21,8 @@ pub use jlpt_content::{JlptContent, JlptContentError};
 pub use jlpt_progress::{CategoryProgress, JlptProgress, LevelProgressDetail};
 pub use knowledge::{
     Card, CardType, DailyHistoryItem, ExampleKanjiWord, GrammarInfo, GrammarRuleCard, KanjiCard,
-    KnowledgeSet, LessonCard, LessonCardView, LessonViewGenerator, QuizCard, QuizOption, StudyCard,
-    VocabularyCard, YesNoCard,
+    KnowledgeSet, LessonCard, LessonCardView, LessonViewGenerator, PhraseCard, QuizCard,
+    QuizOption, StudyCard, VocabularyCard, YesNoCard,
 };
 pub use memory::{Difficulty, MemoryHistory, MemoryState, Rating, ReviewLog, Stability};
 pub use score_content::ScoreContentResult;

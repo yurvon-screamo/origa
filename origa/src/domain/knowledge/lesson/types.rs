@@ -123,6 +123,11 @@ pub enum LessonCardView {
         grammar_info: GrammarInfo,
     },
     Writing(Card),
+    PhraseListen {
+        card: Card,
+        audio_file: String,
+        options: Vec<QuizOption>,
+    },
 }
 
 impl LessonCardView {
@@ -131,7 +136,8 @@ impl LessonCardView {
             LessonCardView::Normal(card)
             | LessonCardView::Reversed(card)
             | LessonCardView::GrammarMutated { card, .. }
-            | LessonCardView::Writing(card) => card,
+            | LessonCardView::Writing(card)
+            | LessonCardView::PhraseListen { card, .. } => card,
             LessonCardView::Quiz(quiz) => quiz.card(),
             LessonCardView::YesNo(yc) => yc.card(),
         }
@@ -140,7 +146,12 @@ impl LessonCardView {
     pub fn grammar_info(&self) -> Option<&GrammarInfo> {
         match self {
             LessonCardView::GrammarMutated { grammar_info, .. } => Some(grammar_info),
-            _ => None,
+            LessonCardView::Normal(_)
+            | LessonCardView::Quiz(_)
+            | LessonCardView::YesNo(_)
+            | LessonCardView::Reversed(_)
+            | LessonCardView::Writing(_)
+            | LessonCardView::PhraseListen { .. } => None,
         }
     }
 }
