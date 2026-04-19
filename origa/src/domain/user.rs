@@ -34,6 +34,9 @@ pub struct User {
 
     #[serde(default)]
     daily_load: DailyLoad,
+
+    #[serde(default)]
+    phrases_seeded: bool,
 }
 
 impl User {
@@ -53,6 +56,7 @@ impl User {
             updated_at: Utc::now(),
             imported_sets: HashSet::new(),
             daily_load: DailyLoad::default(),
+            phrases_seeded: false,
         }
     }
 
@@ -68,6 +72,7 @@ impl User {
         updated_at: DateTime<Utc>,
         imported_sets: HashSet<String>,
         daily_load: DailyLoad,
+        phrases_seeded: bool,
     ) -> Self {
         Self {
             id,
@@ -80,6 +85,7 @@ impl User {
             updated_at,
             imported_sets,
             daily_load,
+            phrases_seeded,
         }
     }
 
@@ -179,6 +185,15 @@ impl User {
 
     pub fn imported_sets(&self) -> &HashSet<String> {
         &self.imported_sets
+    }
+
+    pub fn phrases_seeded(&self) -> bool {
+        self.phrases_seeded
+    }
+
+    pub fn set_phrases_seeded(&mut self, value: bool) {
+        self.phrases_seeded = value;
+        self.touch();
     }
 
     pub fn is_word_known(&self, word: &str) -> WordKnowledge {

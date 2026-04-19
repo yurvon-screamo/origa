@@ -228,6 +228,7 @@
         "words": "Words",
         "grammar": "Grammar",
         "kanji": "Kanji",
+        "phrases": "Phrases",
         "profile": "Profile",
         "statistics": "Statistics",
         "learned": "Learned",
@@ -422,6 +423,9 @@
         "user_not_found": "User not found",
         "user_load_error": "Error loading user: {}",
         "load_more": "Show more ({})"
+    },
+    "phrases": {
+        "not_found": "No phrases found"
     },
     "ui": {
         "card_history": "Card history",

@@ -19,6 +19,7 @@ pub fn HomeHeader(
     let test_id_words = derive_test_id(test_id, "words");
     let test_id_grammar = derive_test_id(test_id, "grammar");
     let test_id_kanji = derive_test_id(test_id, "kanji");
+    let test_id_phrases = derive_test_id(test_id, "phrases");
 
     let initials = move || current_user.get().map(|u| u.username().to_uppercase());
 
@@ -67,6 +68,16 @@ pub fn HomeHeader(
                                             })
                                         >
                                             {t!(i18n, home.kanji)}
+                                        </Button>
+                                        <Button
+                                            variant=ButtonVariant::Ghost
+                                            test_id=test_id_phrases
+                                            on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
+                                                let navigate = use_navigate();
+                                                navigate("/phrases", Default::default());
+                                            })
+                                        >
+                                            {t!(i18n, home.phrases)}
                                         </Button>
                                     </div>
                                 }

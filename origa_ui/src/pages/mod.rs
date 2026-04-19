@@ -5,6 +5,7 @@ pub mod kanji;
 pub mod lesson;
 pub mod login;
 pub mod onboarding;
+pub mod phrases;
 pub mod profile;
 
 pub mod sets;
@@ -17,6 +18,7 @@ pub use kanji::Kanji;
 pub use lesson::Lesson;
 pub use login::Login;
 pub use onboarding::Onboarding;
+pub use phrases::Phrases;
 pub use profile::Profile;
 pub use sets::Sets;
 pub use words::Words;

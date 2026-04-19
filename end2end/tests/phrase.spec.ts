@@ -1,4 +1,6 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
+import { PhrasesPage } from "../pages";
+import { testWithFreshUser } from "../fixtures";
 
 interface PhraseData {
     phrases: Phrase[];
@@ -62,5 +64,61 @@ test.describe("Phrase Dataset", () => {
             expect(phrase.translation_ru.length).toBeGreaterThan(0);
             expect(phrase.translation_en.length).toBeGreaterThan(0);
         }
+    });
+});
+
+test.describe("Phrases Navigation", () => {
+    test("bottom nav has Phrases tab", async ({ page }) => {
+        await page.goto("/home");
+        await page.waitForLoadState("domcontentloaded");
+
+        const phrasesTab = page.getByTestId("tab-phrases");
+        await expect(phrasesTab).toBeVisible({ timeout: 10000 });
+    });
+
+    test("navigating to /phrases shows phrases page", async ({ page }) => {
+        await page.goto("/phrases");
+        await page.waitForLoadState("domcontentloaded");
+
+        const url = page.url();
+        expect(url).toContain("phrases");
+    });
+});
+
+async function setupPhrasesPage(page: Page): Promise<PhrasesPage> {
+    await expect(page.getByTestId("onboarding-spinner")).not.toBeVisible({ timeout: 10000 });
+    await page.getByTestId("onboarding-skip").click();
+    await page.waitForURL(/\/home$/, { timeout: 10000 });
+
+    const phrasesPage = new PhrasesPage(page);
+    await phrasesPage.goto();
+    await phrasesPage.expectPhrasesVisible();
+    return phrasesPage;
+}
+
+testWithFreshUser.describe("Phrases Page", () => {
+    testWithFreshUser("should display empty state for new user", async ({ page }) => {
+        const phrasesPage = await setupPhrasesPage(page);
+        await expect(phrasesPage.emptyState).toBeVisible();
+    });
+
+    testWithFreshUser("should navigate back to home", async ({ page }) => {
+        const phrasesPage = await setupPhrasesPage(page);
+        await phrasesPage.clickBack();
+        await page.waitForURL(/\/home$/, { timeout: 10000 });
+        await expect(page).toHaveURL(/\/home$/);
+    });
+
+    testWithFreshUser("should show filter buttons", async ({ page }) => {
+        const phrasesPage = await setupPhrasesPage(page);
+
+        await expect(page.getByTestId("phrases-filter-all")).toBeVisible();
+        await expect(page.getByTestId("phrases-filter-new")).toBeVisible();
+        await expect(page.getByTestId("phrases-filter-learned")).toBeVisible();
+    });
+
+    testWithFreshUser("should show search input", async ({ page }) => {
+        const phrasesPage = await setupPhrasesPage(page);
+        await expect(phrasesPage.searchInput).toBeVisible();
     });
 });
