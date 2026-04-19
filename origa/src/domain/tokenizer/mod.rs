@@ -197,6 +197,15 @@ pub fn tokenize_text(text: &str) -> Result<Vec<TokenInfo>, OrigaError> {
                 .parse()
                 .unwrap_or(PartOfSpeech::Unspecified);
 
+            if part_of_speech == PartOfSpeech::Noun {
+                let pos_subcategory = token
+                    .get("part_of_speech_subcategory_1")
+                    .unwrap_or_default();
+                if pos_subcategory == "固有名詞" {
+                    part_of_speech = PartOfSpeech::ProperNoun;
+                }
+            }
+
             // Force symbol POS if base form is just a symbol
             if orthographic_base_form == "*"
                 || orthographic_base_form == "×"
@@ -390,5 +399,20 @@ mod tests {
         let tokens = tokenize_text("名古屋 横浜").unwrap();
         assert_eq!(tokens[0].orthographic_base_form, "名古屋");
         assert_eq!(tokens[1].orthographic_base_form, "横浜");
+    }
+
+    #[test]
+    fn should_detect_proper_noun() {
+        ensure_dictionary();
+        let tokens = tokenize_text("名古屋").unwrap();
+        assert_eq!(tokens[0].part_of_speech(), &PartOfSpeech::ProperNoun);
+        assert!(!tokens[0].part_of_speech().is_vocabulary_word());
+    }
+
+    #[test]
+    fn should_detect_common_noun_as_noun_not_proper() {
+        ensure_dictionary();
+        let tokens = tokenize_text("食べ物").unwrap();
+        assert_eq!(tokens[0].part_of_speech(), &PartOfSpeech::Noun);
     }
 }

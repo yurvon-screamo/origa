@@ -17,6 +17,7 @@ pub enum PartOfSpeech {
     Particle,
     AuxiliaryVerb,
     Pronoun,
+    ProperNoun,
     Numeral,
     Determiner,
     Unspecified,
@@ -221,6 +222,11 @@ mod tests {
         }
 
         #[test]
+        fn returns_false_for_proper_noun() {
+            assert!(!PartOfSpeech::ProperNoun.is_vocabulary_word());
+        }
+
+        #[test]
         fn returns_true_for_verb() {
             assert!(PartOfSpeech::Verb.is_vocabulary_word());
         }
@@ -324,6 +330,13 @@ mod tests {
             let json = serde_json::to_string(&PartOfSpeech::Noun).unwrap();
             let decoded: PartOfSpeech = serde_json::from_str(&json).unwrap();
             assert_eq!(PartOfSpeech::Noun, decoded);
+        }
+
+        #[test]
+        fn roundtrip_proper_noun() {
+            let json = serde_json::to_string(&PartOfSpeech::ProperNoun).unwrap();
+            let decoded: PartOfSpeech = serde_json::from_str(&json).unwrap();
+            assert_eq!(PartOfSpeech::ProperNoun, decoded);
         }
 
         #[test]
