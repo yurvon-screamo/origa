@@ -24,3 +24,4 @@ serde.workspace = true
 tokio = { workspace = true, features = ["full"] }
 reqwest = { workspace = true, features = ["json"] }
 futures.workspace = true
+ulid.workspace = true

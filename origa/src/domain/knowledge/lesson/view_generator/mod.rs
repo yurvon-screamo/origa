@@ -25,6 +25,9 @@ const PROB_NEW_KANJI_NORMAL: f32 = 0.33;
 const PROB_NEW_KANJI_QUIZ: f32 = 0.66;
 const PROB_NEW_VOCAB_NORMAL: f32 = 0.50;
 
+const PROB_NEW_PHRASE_NORMAL: f32 = 0.50;
+const PROB_REVIEW_PHRASE_NORMAL: f32 = 0.15;
+
 const EASY_REVIEWS_FOR_REVERSED: usize = 2;
 const GOOD_REVIEWS_FOR_REVERSED: usize = 4;
 const DEFAULT_LANG: NativeLanguage = NativeLanguage::Russian;
@@ -79,6 +82,7 @@ impl<'a> LessonViewGenerator<'a> {
                 study_card.memory(),
                 rng,
             ),
+            CardType::Phrase => self.select_phrase_view(card, same_type_cards, is_new, rng),
         }
     }
 
@@ -164,5 +168,39 @@ impl<'a> LessonViewGenerator<'a> {
         } else {
             LessonCardView::Normal(card.clone())
         }
+    }
+
+    fn select_phrase_view<R: Rng>(
+        &self,
+        card: &Card,
+        same_type_cards: &[Card],
+        is_new: bool,
+        rng: &mut R,
+    ) -> LessonCardView {
+        let rand_val = rng.random::<f32>();
+        let normal_threshold = if is_new {
+            PROB_NEW_PHRASE_NORMAL
+        } else {
+            PROB_REVIEW_PHRASE_NORMAL
+        };
+
+        if rand_val < normal_threshold {
+            return LessonCardView::Normal(card.clone());
+        }
+
+        generation::generate_phrase_quiz(card.clone(), same_type_cards, &DEFAULT_LANG)
+            .unwrap_or_else(|| match card {
+                Card::Phrase(phrase_card) => {
+                    let audio_file = phrase_card.audio_file().unwrap_or_default();
+                    LessonCardView::PhraseListen {
+                        card: card.clone(),
+                        audio_file,
+                        options: vec![],
+                    }
+                },
+                Card::Vocabulary(_) | Card::Kanji(_) | Card::Grammar(_) => {
+                    LessonCardView::Normal(card.clone())
+                },
+            })
     }
 }

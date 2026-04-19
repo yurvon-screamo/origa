@@ -8,6 +8,7 @@ pub enum CardType {
     Vocabulary,
     Kanji,
     Grammar,
+    Phrase,
 }
 
 impl CardType {
@@ -16,6 +17,7 @@ impl CardType {
             CardType::Vocabulary => i18n.get_keys().lesson().word().inner().to_string(),
             CardType::Kanji => i18n.get_keys().lesson().kanji().inner().to_string(),
             CardType::Grammar => i18n.get_keys().lesson().grammar().inner().to_string(),
+            CardType::Phrase => i18n.get_keys().lesson().phrase().inner().to_string(),
         }
     }
 
@@ -24,6 +26,7 @@ impl CardType {
             CardType::Vocabulary => TagVariant::Default,
             CardType::Kanji => TagVariant::Olive,
             CardType::Grammar => TagVariant::Terracotta,
+            CardType::Phrase => TagVariant::Sage,
         }
     }
 }
@@ -34,6 +37,7 @@ impl From<&DomainCard> for CardType {
             DomainCard::Vocabulary(_) => CardType::Vocabulary,
             DomainCard::Kanji(_) => CardType::Kanji,
             DomainCard::Grammar(_) => CardType::Grammar,
+            DomainCard::Phrase(_) => CardType::Phrase,
         }
     }
 }

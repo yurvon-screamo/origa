@@ -1,9 +1,10 @@
 use super::lesson_state::LessonContext;
+use crate::hooks::phrase_checker;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::domain::{Card, RateMode, Rating};
 use origa::traits::UserRepository;
-use origa::use_cases::{CreateGrammarCardUseCase, RateCardUseCase};
+use origa::use_cases::{CreateGrammarCardUseCase, CreatePhraseCardUseCase, RateCardUseCase};
 use tracing::warn;
 use ulid::Ulid;
 
@@ -89,6 +90,31 @@ pub fn create_on_rate_callback(
                                     .await
                             {
                                 warn!(error = ?e, "Failed to rate newly created grammar card during dual rating");
+                            }
+                        }
+                    }
+                }
+
+                if rating != Rating::Again {
+                    if let Some(user) = repo.get_current_user().await.ok().flatten() {
+                        let study_card = user.knowledge_set().study_cards().get(&card_id);
+                        if let Some(sc) = study_card {
+                            if let Card::Vocabulary(vocab) = sc.card() {
+                                let word = vocab.word().text().to_string();
+                                let ready_phrases = phrase_checker::find_ready_phrases(
+                                    &word,
+                                    user.knowledge_set().study_cards(),
+                                );
+
+                                if !ready_phrases.is_empty() {
+                                    let create_phrase_use_case =
+                                        CreatePhraseCardUseCase::new(&repo);
+                                    if let Err(e) =
+                                        create_phrase_use_case.execute(ready_phrases).await
+                                    {
+                                        warn!(error = ?e, "Failed to create phrase cards");
+                                    }
+                                }
                             }
                         }
                     }

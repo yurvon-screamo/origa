@@ -17,6 +17,7 @@ mod on_dont_know;
 mod on_quiz_select;
 mod on_rate;
 mod on_yesno_select;
+mod phrase_card;
 mod quiz_card;
 mod quiz_card_header;
 mod quiz_options;

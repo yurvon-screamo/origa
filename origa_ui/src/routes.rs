@@ -2,6 +2,7 @@ use crate::loaders::{
     data_loader::{load_grammar, load_kanji, load_vocabulary},
     dictionary::load_dictionary,
     jlpt_content_loader::load_jlpt_content,
+    phrase_loader::load_phrases,
 };
 use crate::pages::{Grammar, Home, Kanji, Lesson, Login, Onboarding, Profile, Sets, Words};
 use crate::store::auth_store::AuthStore;
@@ -46,6 +47,9 @@ pub fn start_dictionary_loading(
 
         if let Err(e) = load_grammar().await {
             tracing::error!("Failed to load grammar: {e}");
+        }
+        if let Err(e) = load_phrases().await {
+            tracing::error!("Failed to load phrases: {e}");
         }
         if let Err(e) = load_jlpt_content().await {
             tracing::error!("Failed to load jlpt_content: {e}");

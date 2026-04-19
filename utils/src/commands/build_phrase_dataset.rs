@@ -6,24 +6,26 @@ use std::collections::{HashMap, HashSet};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::time::Instant;
+use ulid::Ulid;
 
 const PROGRESS_INTERVAL: usize = 10_000;
 const MAX_RANKED_MISSING: usize = 200;
 
 #[derive(Deserialize)]
 struct Transcription {
-    id: u64,
+    #[serde(rename = "id")]
+    _id: u64,
     text: String,
-    audio_ref: String,
+    #[serde(rename = "audio_ref")]
+    _audio_ref: String,
 }
 
 #[derive(Serialize)]
 struct PhraseEntry {
-    id: u64,
+    id: String,
     text: String,
-    audio_ref: String,
+    audio_file: String,
     tokens: Vec<String>,
-    token_count: usize,
 }
 
 #[derive(Serialize)]
@@ -345,17 +347,17 @@ pub fn run_build_phrase_dataset(
                 &mut lost_by_missing,
             );
         } else {
-            let token_count = analysis.vocab_bases.len();
+            let ulid = Ulid::new();
+            let ulid_str = ulid.to_string();
             for base in &analysis.vocab_bases {
                 all_unique_tokens.insert(base.clone());
             }
-            total_tokens_in_passed += token_count;
+            total_tokens_in_passed += analysis.vocab_bases.len();
             passed_phrases.push(PhraseEntry {
-                id: tr.id,
+                id: ulid_str.clone(),
                 text: tr.text.clone(),
-                audio_ref: tr.audio_ref.clone(),
+                audio_file: format!("{}.mp3", ulid_str),
                 tokens: analysis.vocab_bases,
-                token_count,
             });
         }
 

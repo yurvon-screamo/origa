@@ -41,6 +41,16 @@ pub(super) fn extract_card_data(
                 .map(|a| a.text().to_string())
                 .unwrap_or_else(no_translation),
         ),
+        DomainCard::Phrase(p) => (
+            p.question()
+                .ok()
+                .map(|q| q.text().to_string())
+                .unwrap_or_default(),
+            p.answer(lang)
+                .ok()
+                .map(|a| a.text().to_string())
+                .unwrap_or_else(no_translation),
+        ),
     }
 }
 

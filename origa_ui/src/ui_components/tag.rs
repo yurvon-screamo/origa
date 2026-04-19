@@ -7,6 +7,7 @@ pub enum TagVariant {
     Filled,
     Olive,
     Terracotta,
+    Sage,
 }
 
 #[component]
@@ -22,6 +23,7 @@ pub fn Tag(
         TagVariant::Filled => "tag-filled",
         TagVariant::Olive => "tag-olive",
         TagVariant::Terracotta => "tag-terracotta",
+        TagVariant::Sage => "tag-sage",
     };
 
     let is_clickable = on_click.is_some();

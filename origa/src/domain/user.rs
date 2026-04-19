@@ -245,6 +245,7 @@ impl User {
                 Card::Kanji(_) => *learned_kanji.entry(level).or_insert(0) += 1,
                 Card::Vocabulary(_) => *learned_words.entry(level).or_insert(0) += 1,
                 Card::Grammar(_) => *learned_grammar.entry(level).or_insert(0) += 1,
+                Card::Phrase(_) => *learned_words.entry(level).or_insert(0) += 1,
             }
         }
 
