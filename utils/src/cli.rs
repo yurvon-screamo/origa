@@ -98,4 +98,19 @@ pub enum Commands {
         #[arg(long)]
         english_only: bool,
     },
+
+    /// Build phrase dataset from transcriptions
+    BuildPhraseDataset {
+        /// Input JSON file with transcriptions
+        #[arg(short, long)]
+        input: PathBuf,
+
+        /// Output directory for results
+        #[arg(short, long)]
+        output: PathBuf,
+
+        /// Minimum vocabulary tokens per phrase
+        #[arg(long, default_value = "2")]
+        min_tokens: usize,
+    },
 }

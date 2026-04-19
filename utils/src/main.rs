@@ -7,7 +7,9 @@ mod utils;
 use clap::Parser;
 
 use crate::cli::{Cli, Commands};
-use crate::commands::{run_find_missing, run_ndlocr, run_tokenize, run_tokenize_well_known};
+use crate::commands::{
+    run_build_phrase_dataset, run_find_missing, run_ndlocr, run_tokenize, run_tokenize_well_known,
+};
 
 #[tokio::main]
 async fn main() {
@@ -48,6 +50,11 @@ async fn main() {
             )
             .await
         },
+        Commands::BuildPhraseDataset {
+            input,
+            output,
+            min_tokens,
+        } => run_build_phrase_dataset(input, output, min_tokens),
     };
 
     if let Err(e) = result {
