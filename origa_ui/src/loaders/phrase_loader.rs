@@ -20,7 +20,7 @@ pub async fn load_phrases() -> Result<(), OrigaError> {
     let start = now_ms();
     tracing::info!("📖 Loading phrases...");
 
-    let json = fetch_text(public_url("/phrase/phrase_dataset.json")).await?;
+    let json = fetch_text(public_url("/public/phrase/phrase_dataset.json")).await?;
 
     yield_to_browser().await;
     init_phrases(&json)?;
