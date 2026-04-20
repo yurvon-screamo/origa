@@ -63,7 +63,7 @@ pub fn LessonCardAnswer(
                     }
                 }
             >
-                <Heading level=HeadingLevel::H1 class="text-6xl mb-2 text-primary">
+                <Heading level=HeadingLevel::H1 class="text-6xl mb-2 text-primary text-center">
                     {question.get_value()}
                 </Heading>
             </Show>
