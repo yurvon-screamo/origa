@@ -10499,6 +10499,46 @@
       ],
       "translation_ru": "Так что вы должны показать ему лицо, как можно больше, потому что когда он слаб, он может быть сильным только тогда, когда кто-то приходит.",
       "translation_en": "So, you should show your face as much as you can, because when you're weak, you're brave just to have someone come along."
+    },
+    {
+      "id": "01KPMJE4XSQ04X8NYZDH2RJYET",
+      "text": "わかっておる",
+      "audio_file": "",
+      "tokens": ["分かる", "居る"],
+      "translation_ru": "Понимаю",
+      "translation_en": "I understand"
+    },
+    {
+      "id": "01KPMJE4XSNJVFZEZBCNGB6X0H",
+      "text": "失礼します",
+      "audio_file": "",
+      "tokens": ["失礼", "為る"],
+      "translation_ru": "Простите за беспокойство",
+      "translation_en": "Excuse me"
+    },
+    {
+      "id": "01KPMJE4XS9ZQE42961QDYNVFZ",
+      "text": "どうかしましたか？",
+      "audio_file": "",
+      "tokens": ["どう", "為る"],
+      "translation_ru": "Что-то случилось?",
+      "translation_en": "Is something wrong?"
+    },
+    {
+      "id": "01KPMJE4XSZAT4GWXPGBNHTW0R",
+      "text": "は～い任せてください",
+      "audio_file": "",
+      "tokens": ["任せる", "下さる"],
+      "translation_ru": "Оставьте это мне",
+      "translation_en": "Leave it to me"
+    },
+    {
+      "id": "01KPMJE4XSF3DXGR8722HZC849",
+      "text": "魔法は使ったのか？",
+      "audio_file": "",
+      "tokens": ["魔法", "使う"],
+      "translation_ru": "Ты использовал магию?",
+      "translation_en": "Did you use magic?"
     }
   ]
 }
