@@ -1,7 +1,7 @@
 use std::sync::OnceLock;
 use ulid::Ulid;
 
-use crate::dictionary::phrase::init_phrases;
+use crate::dictionary::phrase::{cache_phrase_details, init_phrase_index};
 use crate::domain::{Card, NativeLanguage, OrigaError, PhraseCard, StudyCard, User};
 use crate::traits::UserRepository;
 use crate::use_cases::CreatePhraseCardUseCase;
@@ -11,8 +11,21 @@ static PHRASE_INIT: OnceLock<()> = OnceLock::new();
 
 fn init_test_phrases() {
     PHRASE_INIT.get_or_init(|| {
-        let json = r#"{"phrases":[{"id":"01KPJ5S3N1DRFFD236Z4EZ03HJ","text":"test hello","audio_file":"01KPJ5S3N1DRFFD236Z4EZ03HJ.opus","tokens":["test","hello"],"translation_ru":"Privet mir","translation_en":"Hello world"},{"id":"01KPJ5S3N1DRFFD236Z4EZ03HK","text":"test bye","audio_file":"01KPJ5S3N1DRFFD236Z4EZ03HK.opus","tokens":["test","bye"],"translation_ru":"Do svidaniya mir","translation_en":"Goodbye world"},{"id":"01KPJ5S3N1DRFFD236Z4EZ03HN","text":"test morning","audio_file":"01KPJ5S3N1DRFFD236Z4EZ03HN.opus","tokens":["test","morning"],"translation_ru":"Dobroe utro","translation_en":"Good morning"},{"id":"01KPJ5S3N1DRFFD236Z4EZ03HM","text":"test thanks","audio_file":"01KPJ5S3N1DRFFD236Z4EZ03HM.opus","tokens":["test","thanks"]}]}"#;
-        init_phrases(json).expect("Failed to init test phrases");
+        let index_json = r#"{"v":1,"h":"test","total":4,"phrases":[
+            {"i":"01KPJ5S3N1DRFFD236Z4EZ03HJ","t":["test","hello"],"c":0},
+            {"i":"01KPJ5S3N1DRFFD236Z4EZ03HK","t":["test","bye"],"c":0},
+            {"i":"01KPJ5S3N1DRFFD236Z4EZ03HN","t":["test","morning"],"c":0},
+            {"i":"01KPJ5S3N1DRFFD236Z4EZ03HM","t":["test","thanks"],"c":0}
+        ]}"#;
+        init_phrase_index(index_json).expect("Failed to init phrase index");
+
+        let chunk_json = r#"[
+            {"i":"01KPJ5S3N1DRFFD236Z4EZ03HJ","x":"test hello","ru":"Privet mir","en":"Hello world"},
+            {"i":"01KPJ5S3N1DRFFD236Z4EZ03HK","x":"test bye","ru":"Do svidaniya mir","en":"Goodbye world"},
+            {"i":"01KPJ5S3N1DRFFD236Z4EZ03HN","x":"test morning","ru":"Dobroe utro","en":"Good morning"},
+            {"i":"01KPJ5S3N1DRFFD236Z4EZ03HM","x":"test thanks"}
+        ]"#;
+        cache_phrase_details(0, chunk_json).expect("Failed to cache phrase details");
     });
 }
 
@@ -118,43 +131,41 @@ async fn create_phrase_card_duplicate_returns_error() {
 async fn create_phrase_card_question_returns_text() {
     setup();
 
-    let phrase_card = PhraseCard::new(phrase_id_hello()).expect("Failed to create PhraseCard");
+    let phrase_card = PhraseCard::new(phrase_id_hello());
     let question = phrase_card.question().expect("Failed to get question");
 
-    assert_eq!(question.text(), "test hello");
+    assert_eq!(question, "test hello");
 }
 
 #[tokio::test]
 async fn create_phrase_card_answer_returns_translation() {
     setup();
 
-    let phrase_card = PhraseCard::new(phrase_id_hello()).expect("Failed to create PhraseCard");
+    let phrase_card = PhraseCard::new(phrase_id_hello());
 
     let answer_ru = phrase_card
         .answer(&NativeLanguage::Russian)
         .expect("Failed to get Russian answer");
-    assert_eq!(answer_ru.text(), "Privet mir");
+    assert_eq!(answer_ru, "Privet mir");
 
     let answer_en = phrase_card
         .answer(&NativeLanguage::English)
         .expect("Failed to get English answer");
-    assert_eq!(answer_en.text(), "Hello world");
+    assert_eq!(answer_en, "Hello world");
 }
 
 #[tokio::test]
 async fn create_phrase_card_answer_fallback_to_text() {
     setup();
 
-    let phrase_card = PhraseCard::new(phrase_id_no_translation())
-        .expect("Failed to create PhraseCard without translation");
+    let phrase_card = PhraseCard::new(phrase_id_no_translation());
 
     let answer = phrase_card
         .answer(&NativeLanguage::Russian)
         .expect("Failed to get answer");
 
     assert_eq!(
-        answer.text(),
-        "test thanks",
+        answer, "test thanks",
         "Answer should fall back to Japanese text when translation is missing"
     );
 }
@@ -191,7 +202,7 @@ async fn create_multiple_phrase_cards() {
 async fn phrase_card_serialization_roundtrip() {
     setup();
 
-    let phrase_card = PhraseCard::new(phrase_id_hello()).expect("Failed to create PhraseCard");
+    let phrase_card = PhraseCard::new(phrase_id_hello());
     let study_card = StudyCard::new(Card::Phrase(phrase_card.clone()));
 
     let json = serde_json::to_string(&study_card).expect("Failed to serialize");
@@ -205,7 +216,7 @@ async fn phrase_card_serialization_roundtrip() {
 async fn phrase_card_content_key_is_phrase_id() {
     setup();
 
-    let phrase_card = PhraseCard::new(phrase_id_hello()).expect("Failed to create PhraseCard");
+    let phrase_card = PhraseCard::new(phrase_id_hello());
     let card = Card::Phrase(phrase_card);
 
     assert_eq!(
@@ -213,14 +224,4 @@ async fn phrase_card_content_key_is_phrase_id() {
         "01KPJ5S3N1DRFFD236Z4EZ03HJ",
         "content_key should return phrase_id as string"
     );
-}
-
-#[tokio::test]
-async fn phrase_card_audio_file_returns_opus_path() {
-    setup();
-
-    let phrase_card = PhraseCard::new(phrase_id_hello()).expect("Failed to create PhraseCard");
-    let audio = phrase_card.audio_file().expect("Failed to get audio_file");
-
-    assert_eq!(audio, "01KPJ5S3N1DRFFD236Z4EZ03HJ.opus");
 }

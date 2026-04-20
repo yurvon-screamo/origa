@@ -111,7 +111,14 @@ impl Card {
             Card::Vocabulary(card) => Ok(card.word().clone()),
             Card::Kanji(card) => Ok(card.kanji().clone()),
             Card::Grammar(card) => card.title(lang),
-            Card::Phrase(card) => card.question(),
+            Card::Phrase(card) => {
+                let text = card.question().ok_or(OrigaError::PhraseNotFound {
+                    phrase_id: *card.phrase_id(),
+                })?;
+                Question::new(text).map_err(|e| OrigaError::InvalidQuestion {
+                    reason: e.to_string(),
+                })
+            },
         }
     }
 
@@ -120,7 +127,14 @@ impl Card {
             Card::Vocabulary(card) => card.answer(lang),
             Card::Kanji(card) => card.description(lang),
             Card::Grammar(card) => card.description(lang),
-            Card::Phrase(card) => card.answer(lang),
+            Card::Phrase(card) => {
+                let text = card.answer(lang).ok_or(OrigaError::PhraseNotFound {
+                    phrase_id: *card.phrase_id(),
+                })?;
+                Answer::new(text).map_err(|e| OrigaError::InvalidAnswer {
+                    reason: e.to_string(),
+                })
+            },
         }
     }
 

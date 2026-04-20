@@ -39,6 +39,11 @@ pub fn public_url(path: &str) -> String {
     }
 }
 
+pub fn cdn_url(path: &str) -> String {
+    let base = env!("CDN_BASE_URL");
+    format!("{}{}", base.trim_end_matches('/'), path)
+}
+
 pub fn ndlocr_base_url() -> String {
     public_url(urls().ndlocr_base)
 }
