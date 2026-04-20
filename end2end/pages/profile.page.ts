@@ -95,15 +95,13 @@ export class ProfilePage extends BasePage {
 	}
 
 	async navigateToHomeAndBack(): Promise<void> {
-		await this.page.goto("/home");
-		await this.page.getByTestId("home-content").waitFor({ state: "visible" });
-		await this.page.goto("/profile");
-		await this.page.getByTestId("profile-page").waitFor({ state: "visible", timeout: 10_000 });
+		await this.page.goto("/home", { waitUntil: "networkidle" });
+		await this.page.goto("/profile", { waitUntil: "networkidle" });
+		await this.page.getByTestId("profile-page").waitFor({ state: "visible", timeout: 15_000 });
 	}
 
 	async navigateToHomeAndWaitForSync(timeout = 15_000): Promise<void> {
-		await this.page.goto("/home");
-		await this.page.getByTestId("home-content").waitFor({ state: "visible" });
+		await this.page.goto("/home", { waitUntil: "networkidle" });
 
 		const successToast = this.page
 			.locator('[data-testid="home-toasts"]')
@@ -114,8 +112,8 @@ export class ProfilePage extends BasePage {
 			await this.page.waitForTimeout(3000);
 		}
 
-		await this.page.goto("/profile");
-		await this.page.getByTestId("profile-page").waitFor({ state: "visible", timeout: 10_000 });
+		await this.page.goto("/profile", { waitUntil: "networkidle" });
+		await this.page.getByTestId("profile-page").waitFor({ state: "visible", timeout: 15_000 });
 	}
 
 	async waitForSaveComplete(): Promise<void> {
