@@ -30,7 +30,7 @@ impl<'a, R: UserRepository> UpdateUserProfileUseCase<'a, R> {
         user.set_daily_load(daily_load);
         user.set_telegram_user_id(telegram_user_id);
 
-        self.repository.save(&user).await?;
+        self.repository.save_sync(&user).await?;
 
         info!("User profile updated");
         Ok(())
