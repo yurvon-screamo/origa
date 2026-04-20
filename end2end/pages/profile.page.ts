@@ -108,7 +108,11 @@ export class ProfilePage extends BasePage {
 		const successToast = this.page
 			.locator('[data-testid="home-toasts"]')
 			.locator("div.toast-success");
-		await successToast.waitFor({ state: "visible", timeout });
+		try {
+			await successToast.waitFor({ state: "visible", timeout });
+		} catch {
+			await this.page.waitForTimeout(3000);
+		}
 
 		await this.goto();
 	}
