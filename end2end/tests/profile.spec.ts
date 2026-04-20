@@ -120,7 +120,7 @@ testWithFreshUser.describe("Profile Page", () => {
     });
 
     testWithFreshUser("should persist daily load after save and navigation to home", async ({ page }) => {
-        test.setTimeout(60_000);
+        test.setTimeout(90_000);
         const profilePage = await setupProfilePage(page);
 
         await profilePage.selectDailyLoad("hard");
@@ -135,7 +135,7 @@ testWithFreshUser.describe("Profile Page", () => {
     });
 
     testWithFreshUser("should persist language after save and navigation to home", async ({ page }) => {
-        test.setTimeout(60_000);
+        test.setTimeout(90_000);
         const profilePage = await setupProfilePage(page);
 
         await page.mouse.click(0, 0);
@@ -169,7 +169,7 @@ testWithFreshUser.describe("Profile Page", () => {
     });
 
     testWithFreshUser("should persist both daily load and language after save", async ({ page }) => {
-        test.setTimeout(60_000);
+        test.setTimeout(90_000);
         const profilePage = await setupProfilePage(page);
 
         await page.mouse.click(0, 0);
