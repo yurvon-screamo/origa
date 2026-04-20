@@ -131,8 +131,8 @@ pub fn CardHistoryModal(
                         <div class="flex justify-center" data-testid=chart_test_id>
                             <LineChart
                                 data=chart_data
-                                width=380
-                                height=150
+                                width=520
+                                height=200
                             />
                         </div>
                         <div class="overflow-y-auto space-y-2">

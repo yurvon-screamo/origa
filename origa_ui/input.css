@@ -492,7 +492,7 @@ input[type="submit"],
     background: var(--bg-paper);
     border: 1px solid var(--border-dark);
     padding: 32px;
-    max-width: 480px;
+    max-width: 640px;
     width: 90%;
     z-index: 101;
 }
@@ -1204,7 +1204,7 @@ input[type="submit"],
     color: var(--fg-muted);
     opacity: 0.6;
     transition: opacity var(--anima-duration-normal) var(--anima-ease-paper),
-                transform var(--anima-duration-fast) var(--anima-ease-paper);
+        transform var(--anima-duration-fast) var(--anima-ease-paper);
     position: relative;
     text-decoration: none;
 }

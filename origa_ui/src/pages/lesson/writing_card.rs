@@ -167,7 +167,7 @@ pub fn WritingCard(
                 </Show>
 
                 <Show when=move || show_details.get()>
-                    <Heading level=HeadingLevel::H1 class="text-6xl mb-2 text-primary">
+                    <Heading level=HeadingLevel::H1 class="text-6xl mb-2 text-primary text-center">
                         {symbol_sv.get_value()}
                     </Heading>
 
