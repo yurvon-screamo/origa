@@ -78,6 +78,18 @@ impl UserRepository for HybridUserRepository {
         self.local.save(&user_clone).await?;
         tracing::info!("save_sync: Local save completed");
 
+        match self.remote.save(&user_clone).await {
+            Ok(_) => {
+                tracing::info!("save_sync: Remote save completed");
+            },
+            Err(e) => {
+                tracing::error!(
+                    "save_sync: Remote save failed: {:?}. Local save is still valid.",
+                    e
+                );
+            },
+        }
+
         match self.merge_current_user().await {
             Ok(_) => {
                 tracing::info!("save_sync: Remote sync completed");
