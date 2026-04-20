@@ -95,9 +95,7 @@ export class ProfilePage extends BasePage {
 	}
 
 	async navigateToHomeAndBack(): Promise<void> {
-		await this.page.goto("/home", { waitUntil: "networkidle" });
-		await this.page.goto("/profile", { waitUntil: "networkidle" });
-		await this.page.getByTestId("profile-page").waitFor({ state: "visible", timeout: 15_000 });
+		await this.navigateToHomeAndWaitForSync();
 	}
 
 	async navigateToHomeAndWaitForSync(timeout = 15_000): Promise<void> {
