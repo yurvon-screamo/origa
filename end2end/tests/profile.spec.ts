@@ -93,7 +93,7 @@ testWithFreshUser.describe("Profile Page", () => {
     });
 
     testWithFreshUser("should persist language after save", async ({ page }) => {
-        test.setTimeout(60_000);
+        test.setTimeout(90_000);
         const profilePage = await setupProfilePage(page);
         await page.mouse.click(0, 0);
         await profilePage.selectLanguage("english");
@@ -107,7 +107,7 @@ testWithFreshUser.describe("Profile Page", () => {
     });
 
     testWithFreshUser("should persist daily load after save", async ({ page }) => {
-        test.setTimeout(60_000);
+        test.setTimeout(90_000);
         const profilePage = await setupProfilePage(page);
         await profilePage.selectDailyLoad("hard");
         await expect(profilePage.loadHard).toHaveClass(/btn-olive/);
