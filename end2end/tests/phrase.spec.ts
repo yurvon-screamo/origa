@@ -25,7 +25,7 @@ test.describe("Phrase Dataset", () => {
     });
 
     test("phrase dataset loads successfully", async () => {
-        expect(response_data.phrases.length).toBe(500);
+        expect(response_data.phrases.length).toBe(505);
     });
 
     test("phrase dataset has required fields", async () => {

@@ -425,7 +425,8 @@
         "load_more": "Show more ({})"
     },
     "phrases": {
-        "not_found": "No phrases found"
+        "not_found": "No phrases found",
+        "hint": "Phrase cards are auto-created when you learn all words in a phrase"
     },
     "ui": {
         "card_history": "Card history",
