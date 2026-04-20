@@ -51,4 +51,5 @@ export default defineConfig({
         stderr: "pipe",
     },
     globalSetup: "./global-setup.ts",
+    globalTeardown: "./global-teardown.ts",
 });

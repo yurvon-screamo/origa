@@ -1,30 +1,11 @@
 import type { FullConfig } from "@playwright/test";
-
-const FETCH_TIMEOUT_MS = 30000;
+import { fetchWithTimeout } from "./helpers/http";
+import { cleanupOrphanedAccounts } from "./helpers/cleanup";
 
 interface GlobalSetupConfig {
     trailBaseUrl: string;
     adminEmail: string;
     adminPassword: string;
-}
-
-async function fetchWithTimeout(
-    url: string,
-    options: RequestInit,
-    timeout: number = FETCH_TIMEOUT_MS,
-): Promise<Response> {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeout);
-
-    try {
-        const response = await fetch(url, {
-            ...options,
-            signal: controller.signal,
-        });
-        return response;
-    } finally {
-        clearTimeout(timeoutId);
-    }
 }
 
 /**
@@ -89,6 +70,13 @@ export default async function globalSetup(_config: FullConfig): Promise<void> {
         console.error("      ORIGA_ADMIN_PASSWORD=your-admin-password");
         console.error("\n");
         throw new Error("Admin credentials required for E2E tests");
+    }
+
+    console.log("[global-setup] Cleaning up orphaned test accounts...");
+    try {
+        await cleanupOrphanedAccounts("global-setup");
+    } catch (error) {
+        console.error("[global-setup] ⚠ Cleanup failed (non-fatal):", error);
     }
 
     console.log("[global-setup] Setup complete.");
