@@ -93,4 +93,27 @@ export class ProfilePage extends BasePage {
 	async cancelDelete(): Promise<void> {
 		await this.cancelDeleteBtn.click();
 	}
+
+	async navigateToHomeAndBack(): Promise<void> {
+		await this.page.goto("/home");
+		await this.page.getByTestId("home-content").waitFor({ state: "visible" });
+		await this.goto();
+		await this.expectProfileVisible();
+	}
+
+	async navigateToHomeAndWaitForSync(timeout = 15_000): Promise<void> {
+		await this.page.goto("/home");
+		await this.page.getByTestId("home-content").waitFor({ state: "visible" });
+
+		const successToast = this.page
+			.locator('[data-testid="home-toasts"]')
+			.locator("div.toast-success");
+		await successToast.waitFor({ state: "visible", timeout });
+
+		await this.goto();
+	}
+
+	async waitForSaveComplete(): Promise<void> {
+		await expect(this.page.getByTestId("profile-save-btn")).toBeEnabled({ timeout: 10_000 });
+	}
 }

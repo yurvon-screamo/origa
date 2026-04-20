@@ -118,4 +118,70 @@ testWithFreshUser.describe("Profile Page", () => {
         await profilePage.expectProfileVisible();
         await expect(profilePage.loadHard).toHaveClass(/btn-olive/);
     });
+
+    testWithFreshUser("should persist daily load after save and navigation to home", async ({ page }) => {
+        test.setTimeout(60_000);
+        const profilePage = await setupProfilePage(page);
+
+        await profilePage.selectDailyLoad("hard");
+        await expect(profilePage.loadHard).toHaveClass(/btn-olive/);
+
+        await profilePage.saveProfile();
+        await profilePage.waitForSaveComplete();
+
+        await profilePage.navigateToHomeAndBack();
+
+        await expect(profilePage.loadHard).toHaveClass(/btn-olive/);
+    });
+
+    testWithFreshUser("should persist language after save and navigation to home", async ({ page }) => {
+        test.setTimeout(60_000);
+        const profilePage = await setupProfilePage(page);
+
+        await page.mouse.click(0, 0);
+        await profilePage.selectLanguage("english");
+        await expect(profilePage.langEnglish).toHaveClass(/btn-olive/);
+
+        await profilePage.saveProfile();
+        await profilePage.waitForSaveComplete();
+
+        await profilePage.navigateToHomeAndBack();
+
+        await expect(profilePage.langEnglish).toHaveClass(/btn-olive/);
+    });
+
+    // Regression: catches merge_current_user() data loss bug
+    testWithFreshUser("should persist daily load after merge triggered by home sync", async ({ page }) => {
+        test.setTimeout(90_000);
+        const profilePage = await setupProfilePage(page);
+
+        await profilePage.selectDailyLoad("impossible");
+        await expect(profilePage.loadImpossible).toHaveClass(/btn-olive/);
+
+        await profilePage.saveProfile();
+        await profilePage.waitForSaveComplete();
+
+        await profilePage.navigateToHomeAndWaitForSync();
+
+        await profilePage.expectProfileVisible();
+
+        await expect(profilePage.loadImpossible).toHaveClass(/btn-olive/);
+    });
+
+    testWithFreshUser("should persist both daily load and language after save", async ({ page }) => {
+        test.setTimeout(60_000);
+        const profilePage = await setupProfilePage(page);
+
+        await page.mouse.click(0, 0);
+        await profilePage.selectLanguage("english");
+        await profilePage.selectDailyLoad("hard");
+
+        await profilePage.saveProfile();
+        await profilePage.waitForSaveComplete();
+
+        await profilePage.navigateToHomeAndBack();
+
+        await expect(profilePage.langEnglish).toHaveClass(/btn-olive/);
+        await expect(profilePage.loadHard).toHaveClass(/btn-olive/);
+    });
 });
