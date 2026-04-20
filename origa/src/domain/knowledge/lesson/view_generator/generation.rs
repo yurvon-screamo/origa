@@ -101,7 +101,7 @@ pub(crate) fn generate_phrase_quiz(
         Card::Vocabulary(_) | Card::Kanji(_) | Card::Grammar(_) => return None,
     };
 
-    let audio_file = phrase_card.audio_file().ok()?;
+    let audio_file = format!("{}.opus", phrase_card.phrase_id());
     let correct_text = original_card.answer(lang).ok()?.text().to_string();
 
     let mut distractors: Vec<String> = same_type_cards

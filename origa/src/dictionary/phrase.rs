@@ -1,4 +1,5 @@
-use std::{collections::HashMap, sync::OnceLock};
+use std::collections::{HashMap, HashSet};
+use std::sync::{OnceLock, RwLock};
 
 use serde::Deserialize;
 use ulid::Ulid;
@@ -6,244 +7,375 @@ use ulid::Ulid;
 use crate::domain::OrigaError;
 use crate::domain::value_objects::NativeLanguage;
 
-pub static PHRASE_DATABASE: OnceLock<PhraseDatabase> = OnceLock::new();
+pub static PHRASE_INDEX: OnceLock<PhraseIndex> = OnceLock::new();
 
-#[derive(Debug, Clone, Deserialize)]
-pub struct PhraseEntry {
-    id: Ulid,
-    text: String,
-    audio_file: String,
-    tokens: Vec<String>,
-    #[serde(default)]
-    translation_ru: Option<String>,
-    #[serde(default)]
-    translation_en: Option<String>,
+pub static PHRASE_DATA: OnceLock<RwLock<PhraseDataCache>> = OnceLock::new();
+
+pub struct PhraseIndex {
+    entries: HashMap<Ulid, IndexEntry>,
+    token_to_phrases: HashMap<String, Vec<Ulid>>,
+    all_ids: HashSet<Ulid>,
+    version: u32,
+    hash: String,
 }
 
-impl PhraseEntry {
+pub struct IndexEntry {
+    id: Ulid,
+    tokens: Vec<String>,
+    chunk_id: u32,
+}
+
+impl IndexEntry {
     pub fn id(&self) -> &Ulid {
         &self.id
-    }
-
-    pub fn text(&self) -> &str {
-        &self.text
-    }
-
-    pub fn audio_file(&self) -> &str {
-        &self.audio_file
     }
 
     pub fn tokens(&self) -> &[String] {
         &self.tokens
     }
 
-    pub fn translation(&self, lang: &NativeLanguage) -> Option<&str> {
-        match lang {
-            NativeLanguage::Russian => self.translation_ru.as_deref(),
-            NativeLanguage::English => self.translation_en.as_deref(),
-        }
+    pub fn chunk_id(&self) -> u32 {
+        self.chunk_id
     }
-
-    fn normalize_audio_file(&mut self) {
-        if self.audio_file.ends_with(".mp3") {
-            self.audio_file = self.audio_file.replace(".mp3", ".opus");
-        }
-    }
-}
-
-#[derive(Debug)]
-pub struct PhraseDatabase {
-    phrases: HashMap<Ulid, PhraseEntry>,
-    token_to_phrases: HashMap<String, Vec<Ulid>>,
 }
 
 #[derive(Deserialize)]
-struct PhraseDataset {
-    phrases: Vec<PhraseEntry>,
+struct IndexFile {
+    #[serde(rename = "v")]
+    version: u32,
+    #[serde(rename = "h")]
+    hash: String,
+    #[serde(rename = "phrases")]
+    phrases: Vec<IndexEntryRaw>,
 }
 
-impl PhraseDatabase {
-    fn from_json(json: &str) -> Result<Self, OrigaError> {
-        let dataset = serde_json::from_str::<PhraseDataset>(json).map_err(|e| {
-            OrigaError::PhraseParseError {
-                reason: format!("Failed to parse phrase dataset: {}", e),
-            }
-        })?;
+#[derive(Deserialize)]
+struct IndexEntryRaw {
+    #[serde(rename = "i")]
+    id: Ulid,
+    #[serde(rename = "t")]
+    tokens: Vec<String>,
+    #[serde(rename = "c")]
+    chunk_id: u32,
+}
 
-        let mut phrases = HashMap::with_capacity(dataset.phrases.len());
+impl PhraseIndex {
+    fn from_json(json: &str) -> Result<Self, OrigaError> {
+        let file: IndexFile =
+            serde_json::from_str(json).map_err(|e| OrigaError::PhraseParseError {
+                reason: format!("Failed to parse phrase index: {}", e),
+            })?;
+
+        let mut entries = HashMap::with_capacity(file.phrases.len());
         let mut token_to_phrases: HashMap<String, Vec<Ulid>> = HashMap::new();
 
-        for mut entry in dataset.phrases {
-            entry.normalize_audio_file();
-            for token in &entry.tokens {
-                token_to_phrases
-                    .entry(token.clone())
-                    .or_default()
-                    .push(entry.id);
+        for raw in file.phrases {
+            let id = raw.id;
+            for token in &raw.tokens {
+                token_to_phrases.entry(token.clone()).or_default().push(id);
             }
-            let id = entry.id;
-            phrases.insert(id, entry);
+            entries.insert(
+                id,
+                IndexEntry {
+                    id,
+                    tokens: raw.tokens,
+                    chunk_id: raw.chunk_id,
+                },
+            );
         }
 
+        let all_ids: HashSet<Ulid> = entries.keys().copied().collect();
+
         Ok(Self {
-            phrases,
+            entries,
             token_to_phrases,
+            all_ids,
+            version: file.version,
+            hash: file.hash,
         })
     }
 
-    fn get_phrase_by_id(&self, id: &Ulid) -> Option<&PhraseEntry> {
-        self.phrases.get(id)
+    fn get_entry(&self, id: &Ulid) -> Option<&IndexEntry> {
+        self.entries.get(id)
     }
 
-    fn get_phrases_by_token(&self, token: &str) -> Vec<&PhraseEntry> {
+    fn get_phrases_by_token(&self, token: &str) -> Vec<&IndexEntry> {
         self.token_to_phrases
             .get(token)
-            .map(|ids| ids.iter().filter_map(|id| self.phrases.get(id)).collect())
+            .map(|ids| ids.iter().filter_map(|id| self.entries.get(id)).collect())
             .unwrap_or_default()
     }
 
-    fn iter_phrases(&self) -> impl Iterator<Item = &PhraseEntry> {
-        self.phrases.values()
+    fn iter_entries(&self) -> impl Iterator<Item = &IndexEntry> {
+        self.entries.values()
+    }
+
+    fn all_ids(&self) -> &HashSet<Ulid> {
+        &self.all_ids
     }
 }
 
-pub fn init_phrases(json: &str) -> Result<(), OrigaError> {
-    let db = PhraseDatabase::from_json(json)?;
-    PHRASE_DATABASE
-        .set(db)
+#[derive(Clone)]
+pub struct PhraseDetail {
+    pub id: Ulid,
+    pub text: String,
+    pub translation_ru: Option<String>,
+    pub translation_en: Option<String>,
+}
+
+impl PhraseDetail {
+    pub fn translation(&self, lang: &crate::domain::value_objects::NativeLanguage) -> Option<&str> {
+        match lang {
+            crate::domain::value_objects::NativeLanguage::Russian => self.translation_ru.as_deref(),
+            crate::domain::value_objects::NativeLanguage::English => self.translation_en.as_deref(),
+        }
+    }
+}
+
+pub struct PhraseDataCache {
+    details: HashMap<Ulid, PhraseDetail>,
+    loaded_chunks: HashSet<u32>,
+}
+
+impl PhraseDataCache {
+    fn new() -> Self {
+        Self {
+            details: HashMap::new(),
+            loaded_chunks: HashSet::new(),
+        }
+    }
+
+    fn get_detail(&self, id: &Ulid) -> Option<&PhraseDetail> {
+        self.details.get(id)
+    }
+
+    fn insert_chunk(&mut self, chunk_id: u32, details: Vec<PhraseDetail>) {
+        self.loaded_chunks.insert(chunk_id);
+        for detail in details {
+            self.details.insert(detail.id, detail);
+        }
+    }
+
+    fn is_chunk_loaded(&self, chunk_id: u32) -> bool {
+        self.loaded_chunks.contains(&chunk_id)
+    }
+}
+
+#[derive(Deserialize)]
+struct DetailRaw {
+    #[serde(rename = "i")]
+    id: Ulid,
+    #[serde(rename = "x")]
+    text: String,
+    #[serde(rename = "ru")]
+    translation_ru: Option<String>,
+    #[serde(rename = "en")]
+    translation_en: Option<String>,
+}
+
+pub fn init_phrase_index(json: &str) -> Result<(), OrigaError> {
+    let _ = PHRASE_DATA.set(RwLock::new(PhraseDataCache::new()));
+
+    let index = PhraseIndex::from_json(json)?;
+    PHRASE_INDEX
+        .set(index)
         .map_err(|_| OrigaError::PhraseParseError {
-            reason: "Phrase database already initialized".to_string(),
+            reason: "Phrase index already initialized".to_string(),
         })
 }
 
 pub fn is_phrases_loaded() -> bool {
-    PHRASE_DATABASE.get().is_some()
+    PHRASE_INDEX.get().is_some()
 }
 
-pub fn get_phrase_by_id(id: &Ulid) -> Option<&'static PhraseEntry> {
-    PHRASE_DATABASE.get().and_then(|db| db.get_phrase_by_id(id))
-}
-
-pub fn get_phrases_by_token(token: &str) -> Vec<&'static PhraseEntry> {
-    PHRASE_DATABASE
+pub fn get_phrases_by_token(token: &str) -> Vec<&'static IndexEntry> {
+    PHRASE_INDEX
         .get()
-        .map(|db| db.get_phrases_by_token(token))
+        .map(|idx| idx.get_phrases_by_token(token))
         .unwrap_or_default()
 }
 
-pub fn iter_phrases() -> Option<impl Iterator<Item = &'static PhraseEntry>> {
-    PHRASE_DATABASE.get().map(|db| db.iter_phrases())
+pub fn get_chunk_id(id: &Ulid) -> Option<u32> {
+    PHRASE_INDEX
+        .get()
+        .and_then(|idx| idx.get_entry(id).map(|e| e.chunk_id))
+}
+
+pub fn iter_index_entries() -> Option<impl Iterator<Item = &'static IndexEntry>> {
+    PHRASE_INDEX.get().map(|idx| idx.iter_entries())
+}
+
+pub fn get_all_index_ids() -> HashSet<Ulid> {
+    PHRASE_INDEX
+        .get()
+        .map(|idx| idx.all_ids().clone())
+        .unwrap_or_default()
+}
+
+pub fn index_version() -> (u32, String) {
+    PHRASE_INDEX
+        .get()
+        .map(|idx| (idx.version, idx.hash.clone()))
+        .unwrap_or((0, String::new()))
+}
+
+pub fn cache_phrase_details(chunk_id: u32, json: &str) -> Result<(), OrigaError> {
+    let raw_list: Vec<DetailRaw> =
+        serde_json::from_str(json).map_err(|e| OrigaError::PhraseParseError {
+            reason: format!("Failed to parse phrase chunk: {}", e),
+        })?;
+
+    let details: Vec<PhraseDetail> = raw_list
+        .into_iter()
+        .map(|r| PhraseDetail {
+            id: r.id,
+            text: r.text,
+            translation_ru: r.translation_ru,
+            translation_en: r.translation_en,
+        })
+        .collect();
+
+    let cache = PHRASE_DATA
+        .get()
+        .ok_or_else(|| OrigaError::PhraseParseError {
+            reason: "Phrase data cache not initialized".to_string(),
+        })?;
+
+    let mut guard = cache.write().unwrap_or_else(|e| e.into_inner());
+
+    guard.insert_chunk(chunk_id, details);
+    Ok(())
+}
+
+pub fn get_cached_phrase_detail(id: &Ulid) -> Option<PhraseDetail> {
+    let cache = PHRASE_DATA.get()?;
+    let guard = cache.read().unwrap_or_else(|e| e.into_inner());
+    guard.get_detail(id).cloned()
+}
+
+pub fn get_phrase_text(id: &Ulid) -> Option<String> {
+    let cache = PHRASE_DATA.get()?;
+    let guard = cache.read().unwrap_or_else(|e| e.into_inner());
+    guard.get_detail(id).map(|d| d.text.clone())
+}
+
+pub fn get_phrase_translation(id: &Ulid, lang: &NativeLanguage) -> Option<String> {
+    let cache = PHRASE_DATA.get()?;
+    let guard = cache.read().unwrap_or_else(|e| e.into_inner());
+    guard.get_detail(id).and_then(|d| match lang {
+        NativeLanguage::Russian => d.translation_ru.clone(),
+        NativeLanguage::English => d.translation_en.clone(),
+    })
+}
+
+pub fn is_chunk_loaded(chunk_id: u32) -> bool {
+    PHRASE_DATA
+        .get()
+        .map(|cache| {
+            let guard = cache.read().unwrap_or_else(|e| e.into_inner());
+            guard.is_chunk_loaded(chunk_id)
+        })
+        .unwrap_or(false)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    fn test_json_single() -> &'static str {
-        r#"{"phrases":[{"id":"01KPJ5S3N1DRFFD236Z4EZ03HJ","text":"こんにちは世界","audio_file":"01KPJ5S3N1DRFFD236Z4EZ03HJ.mp3","tokens":["こんにちは","世界"],"translation_ru":"Привет мир","translation_en":"Hello world"}]}"#
+    fn test_index_json() -> &'static str {
+        r#"{"v":1,"h":"test","total":2,"phrases":[{"i":"01KPJ5S3N1DRFFD236Z4EZ03HJ","t":["hello","world"],"c":0},{"i":"01KPJ5S3N1DRFFD236Z4EZ03HK","t":["goodbye","world"],"c":0}]}"#
     }
 
-    fn test_json_multiple() -> &'static str {
-        r#"{"phrases":[
-            {"id":"01KPJ5S3N1DRFFD236Z4EZ03HJ","text":"こんにちは世界","audio_file":"01KPJ5S3N1DRFFD236Z4EZ03HJ.mp3","tokens":["こんにちは","世界"],"translation_ru":"Привет мир","translation_en":"Hello world"},
-            {"id":"01KPJ5S3N1DRFFD236Z4EZ03HK","text":"さようなら世界","audio_file":"01KPJ5S3N1DRFFD236Z4EZ03HK.mp3","tokens":["さようなら","世界"],"translation_ru":"Прощай мир","translation_en":"Goodbye world"}
-        ]}"#
-    }
-
-    fn test_json_without_translations() -> &'static str {
-        r#"{"phrases":[{"id":"01KPJ5S3N1DRFFD236Z4EZ03HJ","text":"こんにちは世界","audio_file":"01KPJ5S3N1DRFFD236Z4EZ03HJ.mp3","tokens":["こんにちは","世界"]}]}"#
-    }
-
-    fn fresh_db(json: &str) -> PhraseDatabase {
-        PhraseDatabase::from_json(json).expect("valid JSON should parse")
+    fn test_chunk_json() -> &'static str {
+        r#"[{"i":"01KPJ5S3N1DRFFD236Z4EZ03HJ","x":"Hello world","ru":"Привет мир","en":"Hello world"},{"i":"01KPJ5S3N1DRFFD236Z4EZ03HK","x":"Goodbye world","ru":"Прощай мир","en":"Goodbye world"}]"#
     }
 
     #[test]
-    fn init_phrases_valid_json() {
-        let db = fresh_db(test_json_single());
-        assert_eq!(db.phrases.len(), 1);
-        assert_eq!(db.token_to_phrases.len(), 2);
+    fn init_phrase_index_valid_json() {
+        let index = PhraseIndex::from_json(test_index_json()).expect("valid JSON should parse");
+        let entries: Vec<_> = index.iter_entries().collect();
+        assert_eq!(entries.len(), 2);
+        assert_eq!(index.token_to_phrases.len(), 3);
     }
 
     #[test]
-    fn init_phrases_invalid_json() {
-        let result = PhraseDatabase::from_json("not json");
+    fn init_phrase_index_invalid_json() {
+        let result = PhraseIndex::from_json("not json");
         assert!(result.is_err());
     }
 
     #[test]
-    fn get_phrase_by_id_found() {
-        let db = fresh_db(test_json_single());
+    fn get_entry_found() {
+        let index = PhraseIndex::from_json(test_index_json()).expect("valid JSON");
         let id = Ulid::from_string("01KPJ5S3N1DRFFD236Z4EZ03HJ").expect("valid ULID");
-        let entry = db.get_phrase_by_id(&id);
+        let entry = index.get_entry(&id);
         assert!(entry.is_some());
-        assert_eq!(entry.expect("entry").text(), "こんにちは世界");
+        assert_eq!(entry.expect("entry").tokens(), &["hello", "world"]);
     }
 
     #[test]
-    fn get_phrase_by_id_not_found() {
-        let db = fresh_db(test_json_single());
+    fn get_entry_not_found() {
+        let index = PhraseIndex::from_json(test_index_json()).expect("valid JSON");
         let missing_id = Ulid::new();
-        assert!(db.get_phrase_by_id(&missing_id).is_none());
+        assert!(index.get_entry(&missing_id).is_none());
     }
 
     #[test]
     fn get_phrases_by_token_found() {
-        let db = fresh_db(test_json_single());
-        let results = db.get_phrases_by_token("こんにちは");
-        assert_eq!(results.len(), 1);
-        assert_eq!(results[0].text(), "こんにちは世界");
-    }
-
-    #[test]
-    fn get_phrases_by_token_not_found() {
-        let db = fresh_db(test_json_single());
-        let results = db.get_phrases_by_token("存在しない");
-        assert!(results.is_empty());
-    }
-
-    #[test]
-    fn get_phrases_by_token_multiple() {
-        let db = fresh_db(test_json_multiple());
-        let results = db.get_phrases_by_token("世界");
+        let index = PhraseIndex::from_json(test_index_json()).expect("valid JSON");
+        let results = index.get_phrases_by_token("world");
         assert_eq!(results.len(), 2);
     }
 
     #[test]
-    fn iter_phrases_count() {
-        let db = fresh_db(test_json_multiple());
-        assert_eq!(db.iter_phrases().count(), 2);
+    fn get_phrases_by_token_not_found() {
+        let index = PhraseIndex::from_json(test_index_json()).expect("valid JSON");
+        let results = index.get_phrases_by_token(" nonexistent");
+        assert!(results.is_empty());
     }
 
     #[test]
-    fn translation_returns_correct_lang() {
-        let db = fresh_db(test_json_single());
-        let id = Ulid::from_string("01KPJ5S3N1DRFFD236Z4EZ03HJ").unwrap();
-        let entry = db.get_phrase_by_id(&id).unwrap();
-        assert_eq!(
-            entry.translation(&NativeLanguage::Russian),
-            Some("Привет мир")
-        );
-        assert_eq!(
-            entry.translation(&NativeLanguage::English),
-            Some("Hello world")
-        );
+    fn all_ids_returns_all() {
+        let index = PhraseIndex::from_json(test_index_json()).expect("valid JSON");
+        let ids = index.all_ids();
+        assert_eq!(ids.len(), 2);
     }
 
     #[test]
-    fn translation_returns_none_when_missing() {
-        let db = fresh_db(test_json_without_translations());
-        let id = Ulid::from_string("01KPJ5S3N1DRFFD236Z4EZ03HJ").unwrap();
-        let entry = db.get_phrase_by_id(&id).unwrap();
-        assert_eq!(entry.translation(&NativeLanguage::Russian), None);
-        assert_eq!(entry.translation(&NativeLanguage::English), None);
+    fn index_version_returns_values() {
+        let index = PhraseIndex::from_json(test_index_json()).expect("valid JSON");
+        assert_eq!(index.version, 1);
+        assert_eq!(index.hash, "test");
     }
 
     #[test]
-    fn audio_file_mp3_replaced_with_opus() {
-        let db = fresh_db(test_json_single());
-        let id = Ulid::from_string("01KPJ5S3N1DRFFD236Z4EZ03HJ").unwrap();
-        let entry = db.get_phrase_by_id(&id).unwrap();
-        assert_eq!(entry.audio_file(), "01KPJ5S3N1DRFFD236Z4EZ03HJ.opus");
+    fn cache_phrase_details_works() {
+        let mut cache = PhraseDataCache::new();
+        let id = Ulid::from_string("01KPJ5S3N1DRFFD236Z4EZ03HJ").expect("valid ULID");
+
+        assert!(!cache.is_chunk_loaded(0));
+        assert!(cache.get_detail(&id).is_none());
+
+        let details = vec![PhraseDetail {
+            id,
+            text: "Hello world".to_string(),
+            translation_ru: Some("Привет мир".to_string()),
+            translation_en: Some("Hello world".to_string()),
+        }];
+        cache.insert_chunk(0, details);
+
+        assert!(cache.is_chunk_loaded(0));
+        let detail = cache.get_detail(&id).expect("detail should exist");
+        assert_eq!(detail.text, "Hello world");
+    }
+
+    #[test]
+    fn parse_chunk_json() {
+        let raw_list: Vec<DetailRaw> =
+            serde_json::from_str(test_chunk_json()).expect("valid chunk JSON");
+        assert_eq!(raw_list.len(), 2);
+        assert_eq!(raw_list[0].text, "Hello world");
+        assert_eq!(raw_list[0].translation_ru, Some("Привет мир".to_string()));
+        assert!(raw_list[0].translation_en.is_some());
     }
 }

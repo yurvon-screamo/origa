@@ -4,7 +4,7 @@ use std::collections::HashSet;
 use tracing::info;
 use ulid::Ulid;
 
-use crate::dictionary::phrase::{get_phrases_by_token, is_phrases_loaded};
+use crate::dictionary::phrase::{get_all_index_ids, get_phrases_by_token, is_phrases_loaded};
 use crate::domain::{Card, OrigaError, PhraseCard, StudyCard};
 use crate::traits::UserRepository;
 
@@ -25,11 +25,19 @@ impl<'a, R: UserRepository> SeedReadyPhrasesUseCase<'a, R> {
             .await?
             .ok_or(OrigaError::CurrentUserNotExist {})?;
 
+        let orphaned_removed = remove_orphaned_phrase_cards(&mut user);
+
         if user.phrases_seeded() {
+            if orphaned_removed > 0 {
+                self.repository.save(&user).await?;
+            }
             return Ok(0);
         }
 
         if !is_phrases_loaded() {
+            if orphaned_removed > 0 {
+                self.repository.save(&user).await?;
+            }
             return Ok(0);
         }
 
@@ -41,15 +49,9 @@ impl<'a, R: UserRepository> SeedReadyPhrasesUseCase<'a, R> {
 
         let mut created_count = 0;
         for phrase_id in &ready_phrase_ids {
-            match PhraseCard::new(*phrase_id) {
-                Ok(phrase_card) => {
-                    if user.create_card(Card::Phrase(phrase_card)).is_ok() {
-                        created_count += 1;
-                    }
-                },
-                Err(e) => {
-                    tracing::warn!(error = ?e, "Skipping phrase card during seeding");
-                },
+            let phrase_card = PhraseCard::new(*phrase_id);
+            if user.create_card(Card::Phrase(phrase_card)).is_ok() {
+                created_count += 1;
             }
         }
 
@@ -90,6 +92,39 @@ fn collect_existing_phrase_ids(study_cards: &HashMap<Ulid, StudyCard>) -> HashSe
             }
         })
         .collect()
+}
+
+fn remove_orphaned_phrase_cards(user: &mut crate::domain::User) -> usize {
+    if !is_phrases_loaded() {
+        return 0;
+    }
+
+    let valid_ids = get_all_index_ids();
+
+    let orphaned_card_ids: Vec<Ulid> = user
+        .knowledge_set()
+        .study_cards()
+        .iter()
+        .filter_map(|(card_id, sc)| {
+            if let Card::Phrase(phrase_card) = sc.card() {
+                if !valid_ids.contains(phrase_card.phrase_id()) {
+                    return Some(*card_id);
+                }
+            }
+            None
+        })
+        .collect();
+
+    let count = orphaned_card_ids.len();
+    if count > 0 {
+        info!(count, "Removing orphaned phrase cards");
+        for card_id in &orphaned_card_ids {
+            if user.delete_card(*card_id).is_err() {
+                tracing::warn!(%card_id, "Failed to delete orphaned phrase card");
+            }
+        }
+    }
+    count
 }
 
 fn find_ready_phrases(

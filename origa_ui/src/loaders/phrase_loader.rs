@@ -1,7 +1,7 @@
-use origa::dictionary::phrase::{init_phrases, is_phrases_loaded};
+use origa::dictionary::phrase::{init_phrase_index, is_phrases_loaded, iter_index_entries};
 use origa::domain::OrigaError;
 
-use crate::core::config::public_url;
+use crate::core::config::cdn_url;
 use crate::utils::{fetch_text, yield_to_browser};
 
 fn now_ms() -> f64 {
@@ -13,18 +13,26 @@ fn now_ms() -> f64 {
 
 pub async fn load_phrases() -> Result<(), OrigaError> {
     if is_phrases_loaded() {
-        tracing::debug!("📖 Phrases already loaded");
+        tracing::debug!("Phrases already loaded");
         return Ok(());
     }
 
     let start = now_ms();
-    tracing::info!("📖 Loading phrases...");
+    tracing::info!("Loading phrases...");
 
-    let json = fetch_text(public_url("/public/phrase/phrase_dataset.json")).await?;
+    let json = fetch_text(&cdn_url("/phrases/phrase_index.json")).await?;
 
     yield_to_browser().await;
-    init_phrases(&json)?;
+    init_phrase_index(&json)?;
 
-    tracing::info!("📖 Phrases loaded ({:.2}s)", (now_ms() - start) / 1000.0);
+    let total = iter_index_entries()
+        .map(|entries| entries.count())
+        .unwrap_or(0);
+
+    tracing::info!(
+        "Phrases index loaded: {} phrases ({:.2}s)",
+        total,
+        (now_ms() - start) / 1000.0
+    );
     Ok(())
 }

@@ -25,8 +25,7 @@ pub fn PhraseCardView(
     #[prop(into)] known_kanji: Signal<HashSet<String>>,
 ) -> impl IntoView {
     let i18n = use_i18n();
-    let audio_src =
-        crate::core::config::public_url(&format!("/public/phrase/audio/{}", audio_file));
+    let audio_src = crate::core::config::cdn_url(&format!("/phrases/audio/{}", audio_file));
     let options_stored = StoredValue::new(options);
     let phrase_text_stored = StoredValue::new(phrase_text);
 

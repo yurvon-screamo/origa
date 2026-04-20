@@ -14,16 +14,22 @@ fn main() {
     let commit = option_env!("ORIGA_COMMIT").unwrap_or("unknown");
     let build_date = option_env!("ORIGA_BUILD_DATE").unwrap_or("unknown");
     let public_base_url = option_env!("PUBLIC_BASE_URL").unwrap_or("");
+    let cdn_base_url = env!(
+        "CDN_BASE_URL",
+        "CDN_BASE_URL environment variable is required. Set it to your CDN base URL (e.g. https://t3.storageapi.dev/stored-breadbox-fk2diaux)"
+    );
 
     println!("cargo:rustc-env=ORIGA_VERSION={}", version);
     println!("cargo:rustc-env=ORIGA_COMMIT={}", commit);
     println!("cargo:rustc-env=ORIGA_BUILD_DATE={}", build_date);
     println!("cargo:rustc-env=PUBLIC_BASE_URL={}", public_base_url);
+    println!("cargo:rustc-env=CDN_BASE_URL={}", cdn_base_url);
 
     println!("cargo:rerun-if-env-changed=ORIGA_VERSION");
     println!("cargo:rerun-if-env-changed=ORIGA_COMMIT");
     println!("cargo:rerun-if-env-changed=ORIGA_BUILD_DATE");
     println!("cargo:rerun-if-env-changed=PUBLIC_BASE_URL");
+    println!("cargo:rerun-if-env-changed=CDN_BASE_URL");
 }
 
 fn handle_i18n() {

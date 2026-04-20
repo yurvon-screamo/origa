@@ -1,3 +1,4 @@
+use crate::dictionary::phrase::get_chunk_id;
 use crate::domain::OrigaError;
 use crate::domain::{Card, PhraseCard, StudyCard};
 use crate::traits::UserRepository;
@@ -25,7 +26,8 @@ impl<'a, R: UserRepository> CreatePhraseCardUseCase<'a, R> {
 
         let mut cards = vec![];
         for id in phrase_ids {
-            let card = Card::Phrase(PhraseCard::new(id)?);
+            validate_phrase_exists(&id)?;
+            let card = Card::Phrase(PhraseCard::new(id));
             let created = user.create_card(card)?;
             info!(card_id = %created.card_id(), "Phrase card created");
             cards.push(created);
@@ -34,4 +36,11 @@ impl<'a, R: UserRepository> CreatePhraseCardUseCase<'a, R> {
         self.repository.save(&user).await?;
         Ok(cards)
     }
+}
+
+fn validate_phrase_exists(id: &Ulid) -> Result<(), OrigaError> {
+    if get_chunk_id(id).is_none() {
+        return Err(OrigaError::PhraseNotFound { phrase_id: *id });
+    }
+    Ok(())
 }

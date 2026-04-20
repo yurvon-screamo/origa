@@ -36,15 +36,14 @@ pub fn PhraseCardItem(
         })
     });
 
-    let (phrase_text, audio_file) = match study_card.card() {
+    let (phrase_text, audio_src) = match study_card.card() {
         DomainCard::Phrase(phrase_card) => {
-            let text = phrase_card
-                .question()
-                .ok()
-                .map(|q| q.text().to_string())
-                .unwrap_or_default();
-            let audio = phrase_card.audio_file().ok().unwrap_or_default();
-            (text, audio)
+            let text = phrase_card.question().unwrap_or_default();
+            let src = crate::core::config::cdn_url(&format!(
+                "/phrases/audio/{}.opus",
+                phrase_card.phrase_id()
+            ));
+            (text, src)
         },
         _ => (String::new(), String::new()),
     };
@@ -53,22 +52,13 @@ pub fn PhraseCardItem(
     let meaning = Memo::new(move |_| {
         let lang = native_language.get();
         match study_card_for_meaning.card() {
-            DomainCard::Phrase(phrase_card) => phrase_card
-                .answer(&lang)
-                .ok()
-                .map(|a| a.text().to_string())
-                .unwrap_or_default(),
+            DomainCard::Phrase(phrase_card) => phrase_card.answer(&lang).unwrap_or_default(),
             _ => String::new(),
         }
     });
 
     let status = CardStatus::from_study_card(&study_card);
-    let has_audio = !audio_file.is_empty();
-    let audio_src = if has_audio {
-        crate::core::config::public_url(&format!("/public/phrase/audio/{}", audio_file))
-    } else {
-        String::new()
-    };
+    let has_audio = !audio_src.is_empty();
 
     let difficulty = memory
         .difficulty()
