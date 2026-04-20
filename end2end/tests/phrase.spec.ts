@@ -68,7 +68,7 @@ test.describe("Phrase Dataset", () => {
 });
 
 test.describe("Phrases Navigation", () => {
-    test("bottom nav has Phrases tab", async ({ page }) => {
+    testWithFreshUser("bottom nav has Phrases tab", async ({ page }) => {
         await page.goto("/home");
         await page.waitForLoadState("domcontentloaded");
 
@@ -76,7 +76,7 @@ test.describe("Phrases Navigation", () => {
         await expect(phrasesTab).toBeVisible({ timeout: 10000 });
     });
 
-    test("navigating to /phrases shows phrases page", async ({ page }) => {
+    testWithFreshUser("navigating to /phrases shows phrases page", async ({ page }) => {
         await page.goto("/phrases");
         await page.waitForLoadState("domcontentloaded");
 

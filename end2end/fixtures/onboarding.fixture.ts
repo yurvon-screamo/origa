@@ -4,7 +4,7 @@ import { trailBaseUrl } from "../config";
 import {
     getAdminToken,
     createTestUser,
-    deleteTestUser,
+    deleteTestUserWithRetry,
     loginTestUser,
 } from "./admin";
 import { generateUniqueEmail, DEFAULT_TEST_PASSWORD } from "./auth.fixture";
@@ -55,9 +55,9 @@ export const test = base.extend<{
             await context.close();
             if (adminToken && adminCsrfToken && userUuid) {
                 try {
-                    await deleteTestUser(adminToken, adminCsrfToken, userUuid);
+                    await deleteTestUserWithRetry(adminToken, adminCsrfToken, userUuid, userEmail);
                 } catch (error) {
-                    console.error("[fixture] Failed to cleanup test user");
+                    console.error(`[fixture] Failed to cleanup test user: ${userEmail} (${userUuid})`, error);
                 }
             }
         }
@@ -81,9 +81,9 @@ export const test = base.extend<{
         } finally {
             if (adminToken && adminCsrfToken && userUuid) {
                 try {
-                    await deleteTestUser(adminToken, adminCsrfToken, userUuid);
+                    await deleteTestUserWithRetry(adminToken, adminCsrfToken, userUuid, userEmail);
                 } catch (error) {
-                    console.error("[fixture] Failed to cleanup test user");
+                    console.error(`[fixture] Failed to cleanup test user: ${userEmail} (${userUuid})`, error);
                 }
             }
         }
@@ -140,9 +140,9 @@ export const testWithFreshUser = base.extend<{
             await context.close();
             if (adminToken && adminCsrfToken && userUuid) {
                 try {
-                    await deleteTestUser(adminToken, adminCsrfToken, userUuid);
+                    await deleteTestUserWithRetry(adminToken, adminCsrfToken, userUuid, uniqueEmail);
                 } catch (error) {
-                    console.error("[fixture] Failed to cleanup fresh user");
+                    console.error(`[fixture] Failed to cleanup fresh user: ${uniqueEmail} (${userUuid})`, error);
                 }
             }
         }

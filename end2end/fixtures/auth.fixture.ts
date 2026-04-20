@@ -3,7 +3,7 @@ import { test as base, type Page } from "@playwright/test";
 import {
 	getAdminToken,
 	createTestUser,
-	deleteTestUser,
+	deleteTestUserWithRetry,
 } from "./admin";
 import { trailBaseUrl } from "../config";
 
@@ -93,9 +93,9 @@ export const testWithUniqueUser = base.extend<UniqueUserFixture>({
 			await context.close();
 			if (adminToken && adminCsrfToken && userUuid) {
 				try {
-					await deleteTestUser(adminToken, adminCsrfToken, userUuid);
+					await deleteTestUserWithRetry(adminToken, adminCsrfToken, userUuid, userEmail);
 				} catch (error) {
-					console.error("[fixture] Failed to cleanup test user");
+					console.error(`[fixture] Failed to cleanup test user: ${userEmail} (${userUuid})`, error);
 				}
 			}
 		}
