@@ -97,8 +97,8 @@ export class ProfilePage extends BasePage {
 	async navigateToHomeAndBack(): Promise<void> {
 		await this.page.goto("/home");
 		await this.page.getByTestId("home-content").waitFor({ state: "visible" });
-		await this.goto();
-		await this.expectProfileVisible();
+		await this.page.goto("/profile");
+		await this.page.getByTestId("profile-page").waitFor({ state: "visible", timeout: 10_000 });
 	}
 
 	async navigateToHomeAndWaitForSync(timeout = 15_000): Promise<void> {
@@ -114,7 +114,8 @@ export class ProfilePage extends BasePage {
 			await this.page.waitForTimeout(3000);
 		}
 
-		await this.goto();
+		await this.page.goto("/profile");
+		await this.page.getByTestId("profile-page").waitFor({ state: "visible", timeout: 10_000 });
 	}
 
 	async waitForSaveComplete(): Promise<void> {
