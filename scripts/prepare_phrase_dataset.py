@@ -123,6 +123,8 @@ def build_phrase_records(phrases: list[dict]) -> list[dict]:
             "ulid": ulid,
             "tokens": phrase.get("tokens", []),
             "text": phrase.get("text", ""),
+            "translation_ru": phrase.get("translation_ru"),
+            "translation_en": phrase.get("translation_en"),
         })
 
         if (idx + 1) % PROGRESS_INTERVAL == 0:
@@ -184,8 +186,8 @@ def write_chunks(output_dir: Path, records: list[dict], chunk_size: int) -> list
             {
                 "i": rec["ulid"],
                 "x": rec["text"],
-                "ru": None,
-                "en": None,
+                "ru": rec.get("translation_ru"),
+                "en": rec.get("translation_en"),
             }
             for rec in chunk_records
         ]
