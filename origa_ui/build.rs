@@ -18,18 +18,33 @@ fn main() {
         "CDN_BASE_URL",
         "CDN_BASE_URL environment variable is required. Set it to your CDN base URL (e.g. https://t3.storageapi.dev/stored-breadbox-fk2diaux)"
     );
+    let cdn_access_key = env!(
+        "CDN_ACCESS_KEY",
+        "CDN_ACCESS_KEY environment variable is required"
+    );
+    let cdn_secret_key = env!(
+        "CDN_SECRET_KEY",
+        "CDN_SECRET_KEY environment variable is required"
+    );
+    let cdn_region = option_env!("CDN_REGION").unwrap_or("auto");
 
     println!("cargo:rustc-env=ORIGA_VERSION={}", version);
     println!("cargo:rustc-env=ORIGA_COMMIT={}", commit);
     println!("cargo:rustc-env=ORIGA_BUILD_DATE={}", build_date);
     println!("cargo:rustc-env=PUBLIC_BASE_URL={}", public_base_url);
     println!("cargo:rustc-env=CDN_BASE_URL={}", cdn_base_url);
+    println!("cargo:rustc-env=CDN_ACCESS_KEY={}", cdn_access_key);
+    println!("cargo:rustc-env=CDN_SECRET_KEY={}", cdn_secret_key);
+    println!("cargo:rustc-env=CDN_REGION={}", cdn_region);
 
     println!("cargo:rerun-if-env-changed=ORIGA_VERSION");
     println!("cargo:rerun-if-env-changed=ORIGA_COMMIT");
     println!("cargo:rerun-if-env-changed=ORIGA_BUILD_DATE");
     println!("cargo:rerun-if-env-changed=PUBLIC_BASE_URL");
     println!("cargo:rerun-if-env-changed=CDN_BASE_URL");
+    println!("cargo:rerun-if-env-changed=CDN_ACCESS_KEY");
+    println!("cargo:rerun-if-env-changed=CDN_SECRET_KEY");
+    println!("cargo:rerun-if-env-changed=CDN_REGION");
 }
 
 fn handle_i18n() {

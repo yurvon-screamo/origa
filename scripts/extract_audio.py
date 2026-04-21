@@ -3,53 +3,73 @@ r"""Extract audio from HF dataset cache (joujiboi/japanese-anime-speech-v2).
 
 Uses pyarrow directly to read Arrow files from the HuggingFace cache.
 Avoids the datasets library which crashes with torchcodec DLL on Windows.
+Converts MP3 to Opus (16k mono) via ffmpeg pipe — no intermediate files.
 
 Usage:
     scripts/.venv/Scripts/python.exe scripts/extract_audio.py
     scripts/.venv/Scripts/python.exe scripts/extract_audio.py --cache-dir D:\hf_cache
-    scripts/.venv/Scripts/python.exe scripts/extract_audio.py --phrases my_phrases.json
+    scripts/.venv/Scripts/python.exe scripts/extract_audio.py --count 100
 """
 
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
-import os
+import subprocess
 import sys
 import time
 from pathlib import Path
 
 import pyarrow
 import pyarrow.ipc as ipc
+from tqdm import tqdm
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = SCRIPT_DIR.parent
-DEFAULT_PHRASES = PROJECT_ROOT / "phrase_dataset" / "selected_phrases.json"
-DEFAULT_OUTPUT = PROJECT_ROOT / "origa_ui" / "public" / "phrase" / "audio"
+
+DEFAULT_PHRASES = PROJECT_ROOT / "phrase_dataset" / "phrase_dataset.json"
+DEFAULT_OUTPUT = PROJECT_ROOT / "phrase_dataset" / "audio"
 INDEX_FILE = SCRIPT_DIR / "transcription_index.json"
+
+PROGRESS_INTERVAL = 1000
+
+_CROCKFORD_BASE32 = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"
+
+
+def encode_ulid(raw: bytes) -> str:
+    if len(raw) != 16:
+        raise ValueError(f"Expected 16 bytes, got {len(raw)}")
+    value = int.from_bytes(raw, byteorder="big")
+    chars: list[str] = []
+    for _ in range(26):
+        chars.append(_CROCKFORD_BASE32[value & 0x1F])
+        value >>= 5
+    return "".join(reversed(chars))
+
+
+def make_ulid(numeric_id: int) -> str:
+    hash_bytes = hashlib.sha256(str(numeric_id).encode()).digest()[:10]
+    raw = b"\x00" * 6 + hash_bytes
+    return encode_ulid(raw)
 
 
 def default_cache_dir() -> Path:
-    """Return the default HF datasets cache directory."""
     return Path.home() / ".cache" / "huggingface" / "datasets"
 
 
 def find_arrow_files(cache_dir: Path) -> list[Path]:
-    """Find Arrow files inside joujiboi/japanese-anime-speech-v2 cache dirs."""
     if not cache_dir.exists():
         return []
-
     results: list[Path] = []
     for arrow_path in cache_dir.rglob("*.arrow"):
         path_str = arrow_path.as_posix().lower()
         if "joujiboi" in path_str or "japanese-anime-speech" in path_str:
             results.append(arrow_path)
-
     return sorted(results)
 
 
 def load_index() -> dict[str, str]:
-    """Load transcription -> arrow_file mapping from disk."""
     if not INDEX_FILE.exists():
         return {}
     with INDEX_FILE.open("r", encoding="utf-8") as f:
@@ -57,13 +77,11 @@ def load_index() -> dict[str, str]:
 
 
 def save_index(index: dict[str, str]) -> None:
-    """Persist transcription index to disk."""
     with INDEX_FILE.open("w", encoding="utf-8") as f:
         json.dump(index, f, ensure_ascii=False, indent=2)
 
 
 def read_arrow_table(arrow_path: Path) -> pyarrow.Table:
-    """Read an Arrow file using RecordBatchStreamReader."""
     with arrow_path.open("rb") as f:
         reader = ipc.open_stream(f)
         return reader.read_all()
@@ -73,7 +91,6 @@ def build_index_from_arrow(
     arrow_files: list[Path],
     existing_index: dict[str, str],
 ) -> dict[str, str]:
-    """Scan Arrow files for transcriptions not yet in the index."""
     total = len(arrow_files)
     new_entries = 0
 
@@ -110,7 +127,6 @@ def build_index_from_arrow(
 
 
 def extract_audio_bytes(arrow_path: Path, transcription: str) -> bytes | None:
-    """Extract audio bytes for a matching transcription from an Arrow file."""
     table = read_arrow_table(arrow_path)
     transcription_col = table.column("transcription")
     audio_col = table.column("audio")
@@ -127,7 +143,6 @@ def extract_audio_bytes(arrow_path: Path, transcription: str) -> bytes | None:
 
 
 def _decode_audio(raw: object) -> bytes | None:
-    """Handle both dict{bytes: ...} and raw bytes formats."""
     if isinstance(raw, bytes):
         return raw
     if isinstance(raw, dict):
@@ -140,8 +155,23 @@ def _decode_audio(raw: object) -> bytes | None:
     return None
 
 
+def convert_mp3_to_opus(mp3_bytes: bytes) -> bytes:
+    result = subprocess.run(
+        [
+            "ffmpeg", "-i", "pipe:0",
+            "-c:a", "libopus", "-b:a", "16k", "-ac", "1",
+            "-vn", "-f", "opus", "pipe:1",
+        ],
+        input=mp3_bytes,
+        capture_output=True,
+        timeout=30,
+    )
+    if result.returncode != 0:
+        return b""
+    return result.stdout
+
+
 def load_phrases(path: Path) -> list[dict]:
-    """Load selected phrases JSON file."""
     if not path.exists():
         print(f"ERROR: Phrases file not found: {path}", file=sys.stderr)
         sys.exit(1)
@@ -149,18 +179,17 @@ def load_phrases(path: Path) -> list[dict]:
     with path.open("r", encoding="utf-8") as f:
         data = json.load(f)
 
-    # Handle both {"phrases": [...]} and [...] formats
     if isinstance(data, dict):
         phrases = data.get("phrases")
         if phrases is None:
-            print("ERROR: JSON must have phrases key or be an array", file=sys.stderr)
+            print("ERROR: JSON must have 'phrases' key or be an array", file=sys.stderr)
             sys.exit(1)
         return phrases
 
     if isinstance(data, list):
         return data
 
-    print("ERROR: Expected JSON array or object with phrases key", file=sys.stderr)
+    print("ERROR: Expected JSON array or object with 'phrases' key", file=sys.stderr)
     sys.exit(1)
 
 
@@ -168,7 +197,6 @@ def find_audio_for_phrase(
     phrase: dict,
     index: dict[str, str],
 ) -> tuple[bytes | None, str]:
-    """Try to find audio for a phrase. Returns (audio_bytes, status)."""
     text = phrase.get("text", "").strip()
     if not text:
         return None, "no_text"
@@ -190,19 +218,19 @@ def find_audio_for_phrase(
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Extract audio from HF dataset cache for selected phrases"
+        description="Extract audio from HF dataset cache, convert to Opus"
     )
     parser.add_argument(
         "--phrases",
         type=Path,
         default=DEFAULT_PHRASES,
-        help="Path to selected_phrases.json",
+        help="Path to phrase_dataset.json",
     )
     parser.add_argument(
         "--output",
         type=Path,
         default=DEFAULT_OUTPUT,
-        help="Output directory",
+        help="Output directory for .opus files",
     )
     parser.add_argument(
         "--cache-dir",
@@ -215,6 +243,12 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Force rebuild the transcription index from scratch",
     )
+    parser.add_argument(
+        "--count",
+        type=int,
+        default=None,
+        help="Limit number of phrases to process (for testing)",
+    )
     return parser.parse_args()
 
 
@@ -222,7 +256,10 @@ def main() -> None:
     args = parse_args()
 
     phrases = load_phrases(args.phrases)
-    print(f"Loaded {len(phrases)} phrases from {args.phrases}")
+    if args.count is not None:
+        phrases = phrases[: args.count]
+    total = len(phrases)
+    print(f"Loaded {total} phrases from {args.phrases}")
 
     cache_dir = args.cache_dir or default_cache_dir()
     print(f"Searching for Arrow files in: {cache_dir}")
@@ -251,51 +288,78 @@ def main() -> None:
     output_dir: Path = args.output
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    counts = {"found": 0, "skipped": 0, "missing": 0}
-    total = len(phrases)
+    counts: dict[str, int] = {"found": 0, "skipped": 0, "missing": 0, "errors": 0}
     t_start = time.monotonic()
 
+    pbar = tqdm(phrases, desc="Extracting", unit="file",
+                bar_format="{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}] {postfix}")
+
     for i, phrase in enumerate(phrases, 1):
-        phrase_id = phrase.get("id")
-        text = phrase.get("text", "")
-        output_file = output_dir / f"{phrase_id:05d}.mp3"
+        numeric_id = phrase.get("id")
+        ulid = make_ulid(numeric_id)
+        output_file = output_dir / f"{ulid}.opus"
 
         if output_file.exists() and output_file.stat().st_size > 0:
             counts["skipped"] += 1
-            if i % 100 == 0 or i == total:
-                elapsed = time.monotonic() - t_start
-                print(
-                    f"  [{i}/{total}] skipped (exists) | "
-                    f"f={counts['found']} s={counts['skipped']} m={counts['missing']} "
-                    f"({elapsed:.1f}s)"
-                )
+            pbar.set_postfix_str(f"f={counts['found']} s={counts['skipped']} m={counts['missing']}")
+            pbar.update(1)
             continue
 
         audio, status = find_audio_for_phrase(phrase, index)
 
         if audio is None:
             counts["missing"] += 1
-            print(f"  [{i}/{total}] MISSING id={phrase_id}: {text[:50]} ({status})")
+            pbar.set_postfix_str(f"f={counts['found']} s={counts['skipped']} m={counts['missing']}")
+            pbar.update(1)
             continue
 
-        output_file.write_bytes(audio)
+        opus = convert_mp3_to_opus(audio)
+        if not opus:
+            counts["errors"] += 1
+            pbar.write(f"FFMPEG_ERROR id={numeric_id} ulid={ulid}")
+            pbar.update(1)
+            continue
+
+        output_file.write_bytes(opus)
         counts["found"] += 1
+        pbar.set_postfix_str(f"f={counts['found']} s={counts['skipped']} m={counts['missing']}")
+        pbar.update(1)
 
-        if counts["found"] % 50 == 0 or i == total:
-            elapsed = time.monotonic() - t_start
-            print(
-                f"  [{i}/{total}] extracted id={phrase_id} | "
-                f"f={counts['found']} s={counts['skipped']} m={counts['missing']} "
-                f"({elapsed:.1f}s)"
-            )
-
+    pbar.close()
     elapsed = time.monotonic() - t_start
+    _print_summary(total, counts, elapsed, output_dir)
+
+
+def _print_progress(
+    i: int,
+    total: int,
+    counts: dict[str, int],
+    t_start: float,
+    missing_id: int | None = None,
+) -> None:
+    elapsed = time.monotonic() - t_start
+    suffix = f" (last missing: id={missing_id})" if missing_id else ""
+    print(
+        f"  [{i}/{total}] "
+        f"f={counts['found']} s={counts['skipped']} "
+        f"m={counts['missing']} e={counts['errors']} "
+        f"({elapsed:.1f}s){suffix}"
+    )
+
+
+def _print_summary(
+    total: int,
+    counts: dict[str, int],
+    elapsed: float,
+    output_dir: Path,
+) -> None:
     print()
     print("=" * 60)
     print(f"  Total:   {total}")
     print(f"  Found:   {counts['found']}")
     print(f"  Skipped: {counts['skipped']}")
     print(f"  Missing: {counts['missing']}")
+    print(f"  Errors:  {counts['errors']}")
     print(f"  Time:    {elapsed:.1f}s")
     print(f"  Output:  {output_dir}")
     print("=" * 60)
