@@ -70,3 +70,5 @@ models/whisper-tiny-onnx/
 origa_ui/public/ort/ort-wasm-simd-threaded.wasm
 origa_ui/public/ort/ort-wasm-simd-threaded.mjs
 origa_ui/public/ort/ort.wasm.min.js
+phrase_dataset/dist/
+phrase_dataset/phrase_dataset.json
