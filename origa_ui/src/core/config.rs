@@ -62,7 +62,7 @@ fn get_current_date() -> String {
     }
     #[cfg(not(target_arch = "wasm32"))]
     {
-        "20260421".to_string()
+        chrono::Utc::now().format("%Y%m%d").to_string()
     }
 }
 
@@ -71,7 +71,8 @@ fn to_hex(bytes: &[u8]) -> String {
 }
 
 fn hmac_sha256(key: &[u8], data: &[u8]) -> Vec<u8> {
-    let mut mac = HmacSha256::new_from_slice(key).expect("HMAC can accept any key size");
+    let mut mac = HmacSha256::new_from_slice(key)
+        .expect("invariant: HMAC-SHA256 accepts any key length per RFC 2104");
     mac.update(data);
     mac.finalize().into_bytes().to_vec()
 }
@@ -102,7 +103,7 @@ fn build_canonical_query(credential: &str, timestamp: &str, user_query: Option<&
                 continue;
             }
             if let Some((key, value)) = pair.split_once('=') {
-                params.push((key, value.to_string()));
+                params.push((key, urlencoding::encode(value).to_string()));
             } else {
                 params.push((pair, String::new()));
             }
