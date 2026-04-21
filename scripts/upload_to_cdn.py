@@ -52,7 +52,7 @@ PUBLIC_READ_POLICY = {
     ],
 }
 
-PROGRESS_INTERVAL = 100
+PROGRESS_INTERVAL = 10
 
 CACHE_INDEX = "public, max-age=86400"
 CACHE_IMMUTABLE = "public, max-age=31536000, immutable"
@@ -177,7 +177,7 @@ def upload_single(
         return "skipped"
 
     try:
-        extra = {"CacheControl": cache_control}
+        extra = {"CacheControl": cache_control, "ACL": "public-read"}
 
         if gzip_json:
             body = gzip.compress(local.read_bytes())
@@ -195,9 +195,8 @@ def upload_single(
 
 def file_exists_on_cdn(client, key: str, local: Path) -> bool:
     try:
-        resp = client.head_object(Bucket=BUCKET, Key=key)
-        remote_size = resp.get("ContentLength", -1)
-        return remote_size == local.stat().st_size
+        client.head_object(Bucket=BUCKET, Key=key)
+        return True
     except client.exceptions.ClientError:
         return False
     except Exception:
