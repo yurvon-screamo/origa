@@ -120,7 +120,9 @@ origa/
 
 ## CDN / S3 Storage
 
-Статический контент (словари, вокабуляр, грамматика, кандзи, OCR модели, SVG, аудио фраз) хранится на Railway Storage (S3-совместимый).
+Статический контент (словари, вокабуляр, грамматика, кандзи,
+OCR модели, SVG, аудио фраз) хранится на
+Railway Storage (S3-совместимый).
 
 ### Доступ через AWS CLI
 
@@ -154,7 +156,7 @@ aws s3 rm $BUCKET/path/to/file
 ### Что на CDN
 
 | Путь | Описание |
-|---|---|
+| --- | --- |
 | `dictionary/` | Кандзи, радикалы, вокабуляр (JSON chunks) |
 | `dictionaries/` | UniDic токенизатор (бинарные файлы) |
 | `grammar/` | Грамматические правила |
@@ -173,7 +175,10 @@ aws s3 rm $BUCKET/path/to/file
 
 ### Доступ из приложения
 
-Все CDN-запросы идут через SigV4 presigned URLs (приватный бакет). См. `origa/src/traits/cdn_provider.rs` (трейт) и `origa_ui/src/repository/cdn_provider.rs` (реализация: CacheApi → CDN fallback).
+Все CDN-запросы идут через SigV4 presigned URLs (приватный бакет).
+См. `origa/src/traits/cdn_provider.rs` (трейт)
+и `origa_ui/src/repository/cdn_provider.rs`
+(реализация: CacheApi → CDN fallback).
 
 ## Развёртывание
 
