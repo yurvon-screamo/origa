@@ -53,7 +53,8 @@ utils ndlocr \
 **Options:**
 
 - `-i, --input <INPUT>` - Input image path (required)
-- `--detector <DETECTOR>` - Detector model path (default: `../ndlocr-lite/src/model/deim-s-1024x1024.onnx`)
+- `--detector <DETECTOR>` - Detector model path
+  (default: `../ndlocr-lite/src/model/deim-s-1024x1024.onnx`)
 - `--rec30 <REC30>` - Parseq 30 model path
 - `--rec50 <REC50>` - Parseq 50 model path
 - `--rec100 <REC100>` - Parseq
@@ -62,7 +63,8 @@ utils ndlocr \
 
 ### `tokenize-well-known` - Batch Process JSON Files
 
-Batch processes JSON files in well_known_set format, updating the words arrays with tokenized vocabulary.
+Batch processes JSON files in well_known_set format, updating
+the words arrays with tokenized vocabulary.
 
 ```bash
 # Process a single file
@@ -108,19 +110,24 @@ utils find-missing \
 
 **Options:**
 
-- `-o, --output <OUTPUT>` - Output path for the markdown report (default: `missing_vocabulary.md` in project root)
+- `-o, --output <OUTPUT>` - Output path for the markdown report
+  (default: `missing_vocabulary.md` in project root)
 - `-g, --generate` - Auto-generate missing words with translations
-- `--api-base <API_BASE>` - OpenAI API base URL (default: `http://10.2.11.6:8001/v1`)
+- `--api-base <API_BASE>` - OpenAI API base URL
+  (default: `http://10.2.11.6:8001/v1`)
 - `--api-key <API_KEY>` - OpenAI API key (default: `none`)
-- `-w, --workers <WORKERS>` - Number of concurrent translation requests (default: `32`)
+- `-w, --workers <WORKERS>` - Number of concurrent translation
+  requests (default: `32`)
 - `--chunk-size <CHUNK_SIZE>` - Chunk size for processing (default: `512`)
 - `--russian-only` - Only translate to Russian
 - `--english-only` - Only translate to English
 
 ### `generate-grammar` - Generate Grammar Rule Descriptions
 
-Generates markdown descriptions for Japanese grammar rules using an LLM (OpenAI-compatible API).
-Russian and English descriptions are generated in **separate API calls** to ensure native-quality output for each language.
+Generates markdown descriptions for Japanese grammar rules using
+an LLM (OpenAI-compatible API).
+Russian and English descriptions are generated in **separate API calls**
+to ensure native-quality output for each language.
 
 ```bash
 # Generate description for a single rule
@@ -149,9 +156,11 @@ utils generate-grammar --all --grammar-path path/to/grammar.json
 - `rule_id` - Rule ID to generate (omit with `--all` for batch mode)
 - `--all` - Generate descriptions for all rules
 - `--level <LEVEL>` - Filter by JLPT level (N5, N4, N3) — use with `--all`
-- `--api-base <API_BASE>` - OpenAI API base URL (default: `http://10.2.11.6:8001/v1`)
+- `--api-base <API_BASE>` - OpenAI API base URL
+  (default: `http://10.2.11.6:8001/v1`)
 - `--api-key <API_KEY>` - OpenAI API key (default: `none`)
-- `-w, --workers <WORKERS>` - Number of concurrent workers (default: `1`, sequential)
+- `-w, --workers <WORKERS>` - Number of concurrent workers
+  (default: `1`, sequential)
 - `--dry-run` - Show what would be done without making changes
 - `--grammar-path <PATH>` - Custom path to grammar.json
 
@@ -164,7 +173,8 @@ utils generate-grammar --all --grammar-path path/to/grammar.json
 
 ### `validate-dictionary` - Validate Vocabulary Translations
 
-Validates vocabulary dictionary translations by sending each word + translation to an LLM for Y/N correctness check.
+Validates vocabulary dictionary translations by sending each word +
+translation to an LLM for Y/N correctness check.
 
 ```bash
 # Dry run — see how many words would be checked
@@ -177,7 +187,8 @@ utils validate-dictionary --api-key YOUR_KEY
 utils validate-dictionary --api-key YOUR_KEY --resume
 
 # Validate with custom model and limit
-utils validate-dictionary --api-key YOUR_KEY --model qwen/qwen3.5-flash --limit 100
+utils validate-dictionary --api-key YOUR_KEY \
+  --model qwen/qwen3.5-flash --limit 100
 
 # Custom output path
 utils validate-dictionary --api-key YOUR_KEY -o results/invalid.jsonl
@@ -185,8 +196,10 @@ utils validate-dictionary --api-key YOUR_KEY -o results/invalid.jsonl
 
 **Options:**
 
-- `--api-key <API_KEY>` - OpenRouter API key (required, or set `OPENROUTER_API_KEY` env var)
-- `--api-base <API_BASE>` - API base URL (default: `https://openrouter.ai/api/v1`)
+- `--api-key <API_KEY>` - OpenRouter API key (required, or set
+  `OPENROUTER_API_KEY` env var)
+- `--api-base <API_BASE>` - API base URL
+  (default: `https://openrouter.ai/api/v1`)
 - `--model <MODEL>` - LLM model (default: `qwen/qwen3.5-flash`)
 - `-w, --workers <WORKERS>` - Concurrent requests (default: `8`)
 - `-o, --output <OUTPUT>` - Output JSONL progress file path
@@ -219,7 +232,9 @@ utils find-missing --help
 ## Dictionary Requirements
 
 The `tokenize
-`, `tokenize-well-known`, and `find-missing` commands require a Japanese dictionary (UniDic) to be available. The CLI will search for the dictionary in the following locations:
+,`tokenize-well-known`, and`find-missing` commands require a Japanese
+dictionary (UniDic) to be available. The CLI will search for the
+dictionary in the following locations:
 
 1. `origa_ui/public/dictionaries/unidic/` (relative to project root)
 2. `CARGO_MANIFEST_DIR/../origa_ui/public/dictionaries/unidic/`

@@ -1,3 +1,6 @@
+# Translation Prompt (EN)
+
+```xml
 <prompt>
   <task>
     You are a professional Japanese lexicographer. Your task: provide accurate, minimal yet comprehensive meanings of the Japanese word in English.
@@ -109,3 +112,4 @@
     </instruction>
   </conversation>
 </prompt>
+```

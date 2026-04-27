@@ -1,3 +1,6 @@
+# Grammar Description Prompt (EN)
+
+````xml
 <prompt>
   <task>
     You are a professional Japanese language teacher and linguist. Your task: create a detailed description of a Japanese grammar rule in English for a JLPT student.
@@ -54,3 +57,4 @@
     </instruction>
   </conversation>
 </prompt>
+````
