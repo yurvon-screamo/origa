@@ -168,10 +168,6 @@ pub enum Commands {
         #[arg(short, long, default_value = "N5")]
         level: String,
 
-        /// Output language: russian/ru or english/en
-        #[arg(short, long, default_value = "russian")]
-        language: String,
-
         /// Optional rule name from grammar index for additional context
         #[arg(long)]
         rule_name_from_index: Option<String>,
@@ -186,17 +182,29 @@ pub enum Commands {
         #[arg(long)]
         all: bool,
 
+        /// Rule indices to regenerate (comma-separated, e.g. "153,176,202,193")
+        #[arg(long)]
+        indices: Option<String>,
+
         /// Filter by JLPT level (N5, N4, N3) — use with --all
         #[arg(long)]
         level: Option<String>,
 
-        /// OpenAI API base URL
+        /// OpenAI-compatible API base URL
         #[arg(long, default_value = "http://10.2.11.6:8001/v1")]
         api_base: String,
 
-        /// OpenAI API key
+        /// API key
         #[arg(long, default_value = "none")]
         api_key: String,
+
+        /// LLM model to use (e.g. "minimax/minimax-m2.5:free")
+        #[arg(long)]
+        model: Option<String>,
+
+        /// Enable reasoning with high effort
+        #[arg(long)]
+        reasoning: bool,
 
         /// Number of concurrent workers (0 = sequential)
         #[arg(short = 'w', long, default_value = "1")]
