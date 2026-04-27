@@ -1,11 +1,9 @@
 use std::time::Duration;
 
-use crate::api::prompts::{
-    get_english_translation_prompt, get_grammar_english_prompt, get_grammar_russian_prompt,
-    get_russian_translation_prompt,
-};
+use crate::api::prompts::{get_grammar_prompt, get_translation_prompt};
 use crate::api::types::{
-    ChatMessage, ChatRequest, ChatResponse, GrammarContent, ReasoningConfig, VocabularyEntry,
+    BilingualGrammarContent, BilingualTranslation, ChatMessage, ChatRequest, ChatResponse,
+    ReasoningConfig, VocabularyEntry,
 };
 use origa::domain::OrigaError;
 
@@ -63,11 +61,16 @@ async fn send_chat_request(
         })
 }
 
-fn extract_translation(response: ChatResponse) -> Option<String> {
-    response
-        .choices
-        .first()
-        .map(|choice| choice.message.content.trim().to_string())
+fn strip_json_fences(text: &str) -> &str {
+    let trimmed = text.trim();
+    if trimmed.starts_with("```json") && trimmed.ends_with("```") {
+        &trimmed[7..trimmed.len() - 3]
+    } else if trimmed.starts_with("```") && trimmed.ends_with("```") {
+        &trimmed[3..trimmed.len() - 3]
+    } else {
+        trimmed
+    }
+    .trim()
 }
 
 async fn send_chat_request_with_retry(
@@ -117,38 +120,37 @@ async fn send_chat_request_with_retry(
     })
 }
 
-/// Translates a word to a single language using the API
-async fn translate_to_language(
-    word: &str,
-    api_base: &str,
-    api_key: &str,
-    language: &str,
-) -> Result<Option<String>, OrigaError> {
-    let client = reqwest::Client::new();
+fn parse_bilingual_translation(raw: &str) -> Result<BilingualTranslation, OrigaError> {
+    let cleaned = strip_json_fences(raw);
 
-    let prompt = match language {
-        "russian" => get_russian_translation_prompt(word),
-        "english" => get_english_translation_prompt(word),
-        _ => return Ok(None),
-    };
-
-    let request = create_chat_request(prompt);
-    let response = send_chat_request(&client, api_base, api_key, &request).await?;
-
-    match extract_translation(response) {
-        Some(translation) => Ok(Some(translation)),
-        None => {
-            tracing::warn!(
-                "API returned empty translation for '{}' to {}",
-                word,
-                language
-            );
-            Ok(None)
-        },
-    }
+    serde_json::from_str(cleaned).map_err(|e| {
+        tracing::error!(
+            "Failed to parse bilingual translation JSON: {}. Raw: {}...",
+            e,
+            &raw[..raw.len().min(200)]
+        );
+        OrigaError::LlmError {
+            reason: format!("Failed to parse bilingual translation JSON response: {}", e),
+        }
+    })
 }
 
-/// Translates a word to Russian and/or English using the API
+fn parse_bilingual_grammar_response(raw: &str) -> Result<BilingualGrammarContent, OrigaError> {
+    let cleaned = strip_json_fences(raw);
+
+    serde_json::from_str(cleaned).map_err(|e| {
+        tracing::error!(
+            "Failed to parse bilingual grammar JSON: {}. Raw: {}...",
+            e,
+            &raw[..raw.len().min(200)]
+        );
+        OrigaError::LlmError {
+            reason: format!("Failed to parse bilingual grammar JSON response: {}", e),
+        }
+    })
+}
+
+/// Translates a word to both Russian and English using a single API call
 pub async fn translate_word(
     word: &str,
     api_base: &str,
@@ -162,26 +164,36 @@ pub async fn translate_word(
         found_in_sets: None,
     };
 
-    if to_russian {
-        entry.russian_translation =
-            translate_to_language(word, api_base, api_key, "russian").await?;
+    if !to_russian && !to_english {
+        return Ok(entry);
     }
 
-    if to_english {
-        entry.english_translation =
-            translate_to_language(word, api_base, api_key, "english").await?;
+    let prompt = get_translation_prompt(word);
+    let client = reqwest::Client::new();
+    let request = create_chat_request(prompt);
+    let response = send_chat_request(&client, api_base, api_key, &request).await?;
+
+    let raw = response
+        .choices
+        .first()
+        .map(|choice| choice.message.content.trim().to_string());
+
+    match raw {
+        Some(content) => {
+            let bilingual = parse_bilingual_translation(&content)?;
+            if to_russian {
+                entry.russian_translation = Some(bilingual.ru);
+            }
+            if to_english {
+                entry.english_translation = Some(bilingual.en);
+            }
+        },
+        None => {
+            tracing::warn!("API returned empty translation for '{}'", word);
+        },
     }
 
     Ok(entry)
-}
-
-pub async fn send_generic_chat(
-    api_base: &str,
-    api_key: &str,
-    prompt: String,
-    max_tokens: u32,
-) -> Result<String, OrigaError> {
-    send_generic_chat_with_model(api_base, api_key, prompt, max_tokens, "llm".to_string()).await
 }
 
 pub async fn send_generic_chat_with_model(
@@ -190,6 +202,7 @@ pub async fn send_generic_chat_with_model(
     prompt: String,
     max_tokens: u32,
     model: String,
+    reasoning: Option<ReasoningConfig>,
 ) -> Result<String, OrigaError> {
     let client = reqwest::Client::new();
     let request = ChatRequest {
@@ -202,7 +215,7 @@ pub async fn send_generic_chat_with_model(
         temperature: 0.3,
         top_p: 0.9,
         presence_penalty: 0.0,
-        reasoning: None,
+        reasoning,
     };
 
     let response = send_chat_request_with_retry(&client, api_base, api_key, &request, 3).await?;
@@ -214,18 +227,6 @@ pub async fn send_generic_chat_with_model(
         .ok_or_else(|| OrigaError::LlmError {
             reason: "Empty response from API".to_string(),
         })
-}
-
-fn strip_json_fences(text: &str) -> &str {
-    let trimmed = text.trim();
-    if trimmed.starts_with("```json") && trimmed.ends_with("```") {
-        &trimmed[7..trimmed.len() - 3]
-    } else if trimmed.starts_with("```") && trimmed.ends_with("```") {
-        &trimmed[3..trimmed.len() - 3]
-    } else {
-        trimmed
-    }
-    .trim()
 }
 
 pub async fn validate_translation(
@@ -256,7 +257,7 @@ pub async fn validate_translation(
         temperature: 0.0,
         top_p: 1.0,
         presence_penalty: 0.0,
-        reasoning: Some(ReasoningConfig { enabled: false }),
+        reasoning: Some(ReasoningConfig::disabled()),
     };
 
     let max_parse_retries = 3;
@@ -306,39 +307,31 @@ fn parse_validation_response(raw: &str) -> Option<bool> {
     }
 }
 
-fn parse_grammar_response(raw: &str) -> Result<GrammarContent, OrigaError> {
-    let cleaned = strip_json_fences(raw);
-
-    serde_json::from_str(cleaned).map_err(|e| {
-        tracing::error!(
-            "Failed to parse grammar JSON: {}. Raw: {}...",
-            e,
-            &raw[..raw.len().min(200)]
-        );
-        OrigaError::LlmError {
-            reason: format!("Failed to parse grammar JSON response: {}", e),
-        }
-    })
-}
-
+/// Generates grammar description in both English and Russian
 pub async fn generate_grammar_description(
     api_base: &str,
     api_key: &str,
+    model: &str,
     title: &str,
     level: &str,
     rule_name_from_index: Option<&str>,
-    language: &str,
-) -> Result<GrammarContent, OrigaError> {
-    let prompt = match language {
-        "russian" => get_grammar_russian_prompt(title, level, rule_name_from_index),
-        "english" => get_grammar_english_prompt(title, level, rule_name_from_index),
-        _ => {
-            return Err(OrigaError::LlmError {
-                reason: format!("Unsupported language: {}", language),
-            });
-        },
+    reasoning: Option<ReasoningConfig>,
+) -> Result<BilingualGrammarContent, OrigaError> {
+    let input = crate::api::prompts::GrammarPromptInput {
+        title,
+        level,
+        rule_name_from_index,
     };
 
-    let raw = send_generic_chat(api_base, api_key, prompt, 4000).await?;
-    parse_grammar_response(&raw)
+    let prompt = get_grammar_prompt(&input);
+    let raw = send_generic_chat_with_model(
+        api_base,
+        api_key,
+        prompt,
+        6000,
+        model.to_string(),
+        reasoning,
+    )
+    .await?;
+    parse_bilingual_grammar_response(&raw)
 }

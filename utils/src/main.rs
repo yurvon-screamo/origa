@@ -88,28 +88,33 @@ async fn main() {
         Commands::GenerateGrammarPrompt {
             title,
             level,
-            language,
             rule_name_from_index,
-        } => run_generate_grammar_prompt(title, level, language, rule_name_from_index),
+        } => run_generate_grammar_prompt(title, level, rule_name_from_index),
         Commands::GenerateGrammar {
             rule_id,
             all,
+            indices,
             level,
             api_base,
             api_key,
             workers,
             dry_run,
             grammar_path,
+            model,
+            reasoning,
         } => {
             run_generate_grammar(
                 rule_id,
                 all,
+                indices,
                 level,
                 api_base,
                 api_key,
                 workers,
                 dry_run,
                 grammar_path,
+                model,
+                reasoning,
             )
             .await
         },

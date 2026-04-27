@@ -7,10 +7,32 @@ pub struct ChatMessage {
     pub content: String,
 }
 
+/// Reasoning effort levels for OpenRouter API
+#[derive(Debug, Clone, Copy, Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum ReasoningEffort {
+    Low,
+    High,
+}
+
 /// Reasoning configuration for OpenRouter API
-#[derive(Debug, Serialize)]
+#[derive(Debug, Clone, Serialize)]
 pub struct ReasoningConfig {
-    pub enabled: bool,
+    pub effort: ReasoningEffort,
+}
+
+impl ReasoningConfig {
+    pub fn high() -> Self {
+        Self {
+            effort: ReasoningEffort::High,
+        }
+    }
+
+    pub fn disabled() -> Self {
+        Self {
+            effort: ReasoningEffort::Low,
+        }
+    }
 }
 
 /// Request to chat completions API
@@ -61,4 +83,18 @@ pub struct GrammarContent {
     pub title: String,
     pub short_description: String,
     pub md_description: String,
+}
+
+/// Bilingual grammar content (EN + RU)
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct BilingualGrammarContent {
+    pub en: GrammarContent,
+    pub ru: GrammarContent,
+}
+
+/// Bilingual translation (EN + RU)
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct BilingualTranslation {
+    pub en: String,
+    pub ru: String,
 }
