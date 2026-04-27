@@ -1,5 +1,4 @@
-use crate::loaders::WellKnownSetLoaderImpl;
-use crate::repository::HybridUserRepository;
+use crate::repository::cdn_provider;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos_router::NavigateOptions;
@@ -10,7 +9,7 @@ use origa::use_cases::ImportOnboardingSetsUseCase;
 use super::onboarding_state::OnboardingState;
 
 pub(super) fn create_on_skip_callback<N>(
-    repository: HybridUserRepository,
+    repository: crate::repository::HybridUserRepository,
     state: RwSignal<OnboardingState>,
     disposed: StoredValue<()>,
     navigate: N,
@@ -45,7 +44,7 @@ where
 }
 
 pub(super) fn create_on_start_import_callback(
-    repository: HybridUserRepository,
+    repository: crate::repository::HybridUserRepository,
     state: RwSignal<OnboardingState>,
     current_user: RwSignal<Option<User>>,
     is_importing: RwSignal<bool>,
@@ -53,7 +52,7 @@ pub(super) fn create_on_start_import_callback(
 ) -> Callback<()> {
     Callback::new(move |_: ()| {
         let repo = repository.clone();
-        let loader = WellKnownSetLoaderImpl::new();
+        let cdn = cdn_provider();
         let disposed = disposed;
         is_importing.set(true);
 
@@ -72,7 +71,7 @@ pub(super) fn create_on_start_import_callback(
                 return;
             };
 
-            let use_case = ImportOnboardingSetsUseCase::new(&repo, &loader);
+            let use_case = ImportOnboardingSetsUseCase::new(&repo, cdn);
             let result = use_case.execute(user.id(), set_ids).await;
 
             if disposed.is_disposed() {

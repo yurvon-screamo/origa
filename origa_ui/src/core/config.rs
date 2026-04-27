@@ -11,7 +11,6 @@ const PRESIGNED_TTL_SECS: u32 = 604800;
 pub struct Urls {
     pub base: &'static str,
     pub dictionary: &'static str,
-    pub ndlocr_base: &'static str,
     #[cfg(target_arch = "wasm32")]
     pub whisper_base: &'static str,
 }
@@ -24,13 +23,13 @@ pub fn urls() -> &'static Urls {
         Urls {
             base,
             dictionary: "/public/dictionaries/unidic/cache/dictionary-data",
-            ndlocr_base: "/public/ndlocr",
             #[cfg(target_arch = "wasm32")]
             whisper_base: "https://huggingface.co/onnx-community/whisper-tiny/resolve/main",
         }
     })
 }
 
+#[expect(dead_code, reason = "public_url зарезервирован для не-CDN статики")]
 pub fn public_url(path: &str) -> String {
     if !path.starts_with('/') {
         tracing::warn!(
@@ -204,10 +203,6 @@ pub fn cdn_url(path: &str) -> String {
     }
 
     url
-}
-
-pub fn ndlocr_base_url() -> String {
-    public_url(urls().ndlocr_base)
 }
 
 #[cfg(target_arch = "wasm32")]

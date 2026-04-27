@@ -1,8 +1,9 @@
-use crate::core::config::public_url;
 use crate::i18n::{t, use_i18n};
+use crate::repository::cdn_provider;
 use futures::future::{AbortHandle, abortable};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
+use origa::traits::CdnProvider;
 use std::sync::{Arc, Mutex};
 
 #[derive(Clone, Copy, PartialEq, Default)]
@@ -62,9 +63,9 @@ pub fn KanjiAnimation(
     let encoded = urlencoding::encode(&kanji);
     let svg_path = match mode {
         KanjiViewMode::Animation => {
-            public_url(&format!("/public/kanji_animations/{}.svg", encoded))
+            format!("kanji_animations/{}.svg", encoded)
         },
-        KanjiViewMode::Frames => public_url(&format!("/public/kanji_frames/{}.svg", encoded)),
+        KanjiViewMode::Frames => format!("kanji_frames/{}.svg", encoded),
     };
 
     let container_class = match mode {
@@ -76,17 +77,8 @@ pub fn KanjiAnimation(
         let path = svg_path.clone();
 
         async move {
-            use leptos::wasm_bindgen::JsCast;
-            use wasm_bindgen_futures::JsFuture;
-
-            let window = web_sys::window()?;
-            let resp = JsFuture::from(window.fetch_with_str(&path)).await.ok()?;
-            let response = resp.dyn_into::<web_sys::Response>().ok()?;
-            if !response.ok() {
-                return None;
-            }
-            let text = JsFuture::from(response.text().ok()?).await.ok()?;
-            text.as_string()
+            let cdn = cdn_provider();
+            cdn.fetch_text(&path).await.ok()
         }
     });
 

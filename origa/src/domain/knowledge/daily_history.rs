@@ -1,4 +1,4 @@
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, Duration, Utc};
 use serde::{Deserialize, Serialize};
 
 use crate::domain::memory::Rating;
@@ -184,6 +184,41 @@ impl DailyHistoryItem {
             self.avg_difficulty = other.avg_difficulty;
         }
     }
+}
+
+/// Оценивает дату завершения изучения всех оставшихся новых карточек
+/// на основе средней дневной скорости за последние 10 дней (исключая текущий).
+/// Возвращает `None` если нет оставшихся карточек или недостаточно данных.
+pub fn estimate_completion_date(
+    history: &[DailyHistoryItem],
+    new_cards_remaining: usize,
+) -> Option<DateTime<Utc>> {
+    if new_cards_remaining == 0 {
+        return None;
+    }
+
+    let today = Utc::now().date_naive();
+
+    let studied: Vec<&DailyHistoryItem> = history
+        .iter()
+        .rev()
+        .filter(|item| item.timestamp().date_naive() != today)
+        .take(10)
+        .filter(|item| item.new_cards_studied_today() > 0)
+        .collect();
+
+    if studied.is_empty() {
+        return None;
+    }
+
+    let total: u32 = studied
+        .iter()
+        .map(|item| item.new_cards_studied_today())
+        .sum();
+    let avg = total as f64 / studied.len() as f64;
+    let days = (new_cards_remaining as f64 / avg * 1.15).ceil() as i64;
+
+    Some(Utc::now() + Duration::days(days))
 }
 
 #[cfg(test)]
@@ -435,5 +470,94 @@ mod tests {
         item2.increment_new_cards_studied();
         item1.merge_with(&item2);
         assert_eq!(item1.new_cards_studied_today(), 3);
+    }
+
+    fn create_test_item_with_new_studied(
+        timestamp: DateTime<Utc>,
+        new_studied: u32,
+    ) -> DailyHistoryItem {
+        let mut item = DailyHistoryItem::new();
+        item.timestamp = timestamp;
+        for _ in 0..new_studied {
+            item.increment_new_cards_studied();
+        }
+        item
+    }
+
+    #[test]
+    fn test_estimate_returns_none_when_no_new_cards() {
+        let history = vec![create_test_item_with_new_studied(
+            Utc::now() - Duration::days(1),
+            5,
+        )];
+        assert!(estimate_completion_date(&history, 0).is_none());
+    }
+
+    #[test]
+    fn test_estimate_returns_none_when_no_history() {
+        assert!(estimate_completion_date(&[], 100).is_none());
+    }
+
+    #[test]
+    fn test_estimate_returns_none_when_all_zero_studied() {
+        let history = vec![create_test_item_with_new_studied(
+            Utc::now() - Duration::days(1),
+            0,
+        )];
+        assert!(estimate_completion_date(&history, 100).is_none());
+    }
+
+    #[test]
+    fn test_estimate_returns_none_when_excludes_today() {
+        let history = vec![create_test_item_with_new_studied(Utc::now(), 10)];
+        assert!(estimate_completion_date(&history, 100).is_none());
+    }
+
+    #[test]
+    fn test_estimate_basic_calculation() {
+        let history = vec![create_test_item_with_new_studied(
+            Utc::now() - Duration::days(1),
+            5,
+        )];
+        let result = estimate_completion_date(&history, 50);
+        assert!(result.is_some());
+        let expected = Utc::now() + Duration::days(12);
+        assert_eq!(result.unwrap().date_naive(), expected.date_naive());
+    }
+
+    #[test]
+    fn test_estimate_averages_over_multiple_days() {
+        let history = vec![
+            create_test_item_with_new_studied(Utc::now() - Duration::days(2), 10),
+            create_test_item_with_new_studied(Utc::now() - Duration::days(1), 20),
+        ];
+        let result = estimate_completion_date(&history, 30);
+        assert!(result.is_some());
+        let expected = Utc::now() + Duration::days(3);
+        assert_eq!(result.unwrap().date_naive(), expected.date_naive());
+    }
+
+    #[test]
+    fn test_estimate_skips_zero_study_days() {
+        let history = vec![
+            create_test_item_with_new_studied(Utc::now() - Duration::days(3), 10),
+            create_test_item_with_new_studied(Utc::now() - Duration::days(2), 0),
+            create_test_item_with_new_studied(Utc::now() - Duration::days(1), 10),
+        ];
+        let result = estimate_completion_date(&history, 20);
+        assert!(result.is_some());
+        let expected = Utc::now() + Duration::days(3);
+        assert_eq!(result.unwrap().date_naive(), expected.date_naive());
+    }
+
+    #[test]
+    fn test_estimate_uses_last_10_non_today_records() {
+        let history: Vec<DailyHistoryItem> = (1..=15)
+            .map(|i| create_test_item_with_new_studied(Utc::now() - Duration::days(i), 5))
+            .collect();
+        let result = estimate_completion_date(&history, 50);
+        assert!(result.is_some());
+        let expected = Utc::now() + Duration::days(12);
+        assert_eq!(result.unwrap().date_naive(), expected.date_naive());
     }
 }

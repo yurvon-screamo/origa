@@ -2,9 +2,10 @@ use origa::dictionary::grammar::{GrammarData, init_grammar, is_grammar_loaded};
 use origa::dictionary::kanji::{KanjiData, init_kanji, is_kanji_loaded};
 use origa::dictionary::vocabulary::{VocabularyChunkData, init_vocabulary, is_vocabulary_loaded};
 use origa::domain::OrigaError;
+use origa::traits::CdnProvider;
 
-use crate::core::config::public_url;
-use crate::utils::{fetch_text, yield_to_browser};
+use crate::repository::cdn_provider;
+use crate::utils::yield_to_browser;
 
 fn now_ms() -> f64 {
     web_sys::window()
@@ -24,12 +25,12 @@ pub async fn load_vocabulary() -> Result<(), OrigaError> {
     let start = now_ms();
     tracing::info!("📖 Loading vocabulary...");
 
+    let cdn = cdn_provider();
+
     let chunk_futures: Vec<_> = (1..=11)
         .map(|i| {
-            fetch_text(public_url(&format!(
-                "/public/dictionary/vocabulary/chunk_{:02}.json",
-                i
-            )))
+            let path = format!("dictionary/vocabulary/chunk_{:02}.json", i);
+            async move { cdn.fetch_text(&path).await }
         })
         .collect();
 
@@ -66,7 +67,8 @@ pub async fn load_kanji() -> Result<(), OrigaError> {
     let start = now_ms();
     tracing::info!("📖 Loading kanji...");
 
-    let json = fetch_text(public_url("/public/dictionary/kanji.json")).await?;
+    let cdn = cdn_provider();
+    let json = cdn.fetch_text("dictionary/kanji.json").await?;
     let data = KanjiData { kanji_json: json };
 
     yield_to_browser().await;
@@ -85,7 +87,8 @@ pub async fn load_grammar() -> Result<(), OrigaError> {
     let start = now_ms();
     tracing::info!("📖 Loading grammar...");
 
-    let json = fetch_text(public_url("/public/grammar/grammar.json")).await?;
+    let cdn = cdn_provider();
+    let json = cdn.fetch_text("grammar/grammar.json").await?;
     let data = GrammarData { grammar_json: json };
 
     yield_to_browser().await;

@@ -7,6 +7,12 @@ pub struct ChatMessage {
     pub content: String,
 }
 
+/// Reasoning configuration for OpenRouter API
+#[derive(Debug, Serialize)]
+pub struct ReasoningConfig {
+    pub enabled: bool,
+}
+
 /// Request to chat completions API
 #[derive(Debug, Serialize)]
 pub struct ChatRequest {
@@ -16,6 +22,8 @@ pub struct ChatRequest {
     pub temperature: f32,
     pub top_p: f32,
     pub presence_penalty: f32,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reasoning: Option<ReasoningConfig>,
 }
 
 /// Response from chat completions API
@@ -45,4 +53,12 @@ pub struct VocabularyEntry {
     pub english_translation: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub found_in_sets: Option<Vec<String>>,
+}
+
+/// Grammar rule content for a single language
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GrammarContent {
+    pub title: String,
+    pub short_description: String,
+    pub md_description: String,
 }

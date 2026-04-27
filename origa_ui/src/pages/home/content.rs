@@ -1,13 +1,23 @@
-use super::content_sync::run_sync;
+use super::content_sync::{
+    run_sync, show_sync_error_toast, show_sync_success_toast, show_sync_toast,
+};
 use super::{HistoryModal, HomeSkeleton, JlptProgressCard, JlptSkeleton, StatMetric, StatsGrid};
 use super::{PrimaryStats, SecondaryStats, calculate_stats};
-use crate::i18n::{t, use_i18n};
-use crate::repository::HybridUserRepository;
+use crate::i18n::{Locale, t, use_i18n};
+use crate::repository::{HybridUserRepository, set_last_sync_time};
 use crate::ui_components::{Text, TextSize, ToastContainer, ToastData, TypographyVariant};
+use chrono::Datelike;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use origa::domain::{DailyHistoryItem, JlptProgress};
+use origa::domain::{DailyHistoryItem, JlptProgress, estimate_completion_date};
 use origa::traits::UserRepository;
+
+const MONTHS_RU: [&str; 12] = [
+    "янв", "фев", "мар", "апр", "май", "июн", "июл", "авг", "сен", "окт", "ноя", "дек",
+];
+const MONTHS_EN: [&str; 12] = [
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+];
 
 #[component]
 pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoView {
@@ -29,10 +39,6 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
     let toasts: RwSignal<Vec<ToastData>> = RwSignal::new(Vec::new());
     let disposed = StoredValue::new(());
 
-    let repo_sync = repository.clone();
-    let i18n_sync = i18n;
-    Effect::new(move |_| run_sync(repo_sync.clone(), disposed, toasts, i18n_sync));
-
     let repo_for_init = repository.clone();
     Effect::new(move |_| {
         let repo = repo_for_init.clone();
@@ -49,11 +55,16 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                     is_loading.set(false);
                 },
                 Ok(None) => {
-                    tracing::warn!("Home: user not found");
+                    if disposed.is_disposed() {
+                        return;
+                    }
                     stats.set(Some((PrimaryStats::default(), SecondaryStats::default())));
                     is_loading.set(false);
                 },
                 Err(e) => {
+                    if disposed.is_disposed() {
+                        return;
+                    }
                     tracing::error!("Home: get_current_user error: {:?}", e);
                     stats.set(Some((PrimaryStats::default(), SecondaryStats::default())));
                     is_loading.set(false);
@@ -62,8 +73,62 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
         });
     });
 
+    let repo_sync = repository.clone();
+    let i18n_sync = i18n;
+    Effect::new(move |_| {
+        let repo = repo_sync.clone();
+        let i18n = i18n_sync;
+        spawn_local(async move {
+            show_sync_toast(toasts, i18n);
+
+            match run_sync(repo).await {
+                Ok(Some(user)) => {
+                    if disposed.is_disposed() {
+                        return;
+                    }
+                    let history_items = user.knowledge_set().lesson_history().to_vec();
+                    history.set(history_items.clone());
+                    stats.set(Some(calculate_stats(&history_items)));
+                    jlpt_progress.set(user.jlpt_progress().clone());
+                    show_sync_success_toast(toasts, i18n);
+                    set_last_sync_time(js_sys::Date::now() as u64 / 1000);
+                },
+                Ok(None) => {
+                    if disposed.is_disposed() {
+                        return;
+                    }
+                    show_sync_success_toast(toasts, i18n);
+                    set_last_sync_time(js_sys::Date::now() as u64 / 1000);
+                },
+                Err(e) => {
+                    if disposed.is_disposed() {
+                        return;
+                    }
+                    tracing::error!("Home: sync error: {:?}", e);
+                    show_sync_error_toast(toasts, i18n, &e);
+                },
+            }
+        });
+    });
+
     let primary = Signal::derive(move || stats.get().map(|(p, _)| p).unwrap_or_default());
     let secondary = Signal::derive(move || stats.get().map(|(_, s)| s).unwrap_or_default());
+
+    let completion_badge = Signal::derive(move || {
+        let history_data = history.get();
+        let new_count = stats.get().map(|(p, _)| p.new).unwrap_or(0);
+
+        estimate_completion_date(&history_data, new_count).map(|date| {
+            let day = date.day();
+            let month_idx = date.month0() as usize;
+            let month_names = if i18n.get_locale() == Locale::ru {
+                &MONTHS_RU[..]
+            } else {
+                &MONTHS_EN[..]
+            };
+            format!("~{} {}", day, month_names[month_idx])
+        })
+    });
 
     let open_history = move |metric: StatMetric| {
         Callback::new(move |_: ()| {
@@ -118,6 +183,7 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                     <StatsGrid
                         primary=primary
                         secondary=secondary
+                        completion_badge=completion_badge
                         open_history=open_history
                         test_id=Signal::derive(move || {
                             let val = test_id.get();

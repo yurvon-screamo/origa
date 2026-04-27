@@ -1,7 +1,7 @@
 use crate::i18n::Locale;
 use leptos_i18n::I18nContext;
 use origa::domain::JapaneseLevel;
-use origa::traits::{TypeMeta, get_types_meta};
+use origa::domain::{TypeMeta, get_types_meta};
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Default)]
 pub enum LevelFilter {

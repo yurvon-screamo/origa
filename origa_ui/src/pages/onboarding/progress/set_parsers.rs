@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use origa::domain::JapaneseLevel;
-use origa::traits::WellKnownSetMeta;
+use origa::domain::WellKnownSetMeta;
 
 use super::parsers::{parse_duolingo_module_unit, parse_migii_level_lesson, parse_minna_lesson};
 use super::types::{DuolingoModule, DuolingoUnit, MigiiLesson, MinnaLesson};

@@ -1,5 +1,7 @@
 use crate::i18n::*;
-use crate::ui_components::{Heading, HeadingLevel, Text, TextSize, TypographyVariant};
+use crate::ui_components::{
+    Heading, HeadingLevel, Logo, LogoSize, Text, TextSize, TypographyVariant,
+};
 use leptos::prelude::*;
 
 #[component]
@@ -30,6 +32,7 @@ pub fn LoginHeader(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
 
     view! {
         <div class="text-center mb-10" data-testid=test_id_val>
+            <Logo size=LogoSize::Lg class=Signal::derive(|| "mx-auto mb-6".to_string()) />
             <Heading level=HeadingLevel::H1 variant=TypographyVariant::Primary class="mb-3 whitespace-nowrap" test_id=title_test_id>
                 "オリガ"
             </Heading>

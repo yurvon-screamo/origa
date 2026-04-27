@@ -11,6 +11,7 @@ mod srs;
 mod tokenizer;
 mod user;
 pub(crate) mod value_objects;
+mod well_known_set;
 
 pub use crate::dictionary::grammar::{GrammarRule, get_rule_by_id, iter_grammar_rules};
 pub use crate::dictionary::vocabulary::get_translation;
@@ -22,7 +23,7 @@ pub use jlpt_progress::{CategoryProgress, JlptProgress, LevelProgressDetail};
 pub use knowledge::{
     Card, CardType, DailyHistoryItem, ExampleKanjiWord, GrammarInfo, GrammarRuleCard, KanjiCard,
     KnowledgeSet, LessonCard, LessonCardView, LessonViewGenerator, PhraseCard, QuizCard,
-    QuizOption, StudyCard, VocabularyCard, YesNoCard,
+    QuizOption, StudyCard, VocabularyCard, YesNoCard, estimate_completion_date,
 };
 pub use memory::{Difficulty, MemoryHistory, MemoryState, Rating, ReviewLog, Stability};
 pub use score_content::ScoreContentResult;
@@ -33,3 +34,7 @@ pub use tokenizer::{
 };
 pub use user::{User, WordKnowledge};
 pub use value_objects::{Answer, DailyLoad, JapaneseLevel, NativeLanguage, Question};
+pub use well_known_set::{
+    SetType, TypeMeta, TypesMeta, WellKnownSet, WellKnownSetMeta, get_types_meta, id_to_set_type,
+    resolve_set_path, set_types_meta,
+};

@@ -22,6 +22,10 @@ tracing-subscriber.workspace = true
 serde_json.workspace = true
 serde.workspace = true
 tokio = { workspace = true, features = ["full"] }
-reqwest = { workspace = true, features = ["json"] }
+reqwest = { workspace = true, features = ["json", "blocking"] }
 futures.workspace = true
 ulid.workspace = true
+hmac.workspace = true
+sha2.workspace = true
+chrono.workspace = true
+urlencoding.workspace = true

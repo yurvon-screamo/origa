@@ -40,6 +40,7 @@ output_*
 trimmed_*
 concatenated_*
 missing_vocabulary.md
+**__pycache__
 
 # Logs
 *.log
@@ -66,9 +67,5 @@ tauri/resources/whisper/decoder_model.onnx
 models/whisper-tiny/
 models/whisper-tiny-onnx/
 
-# ONNX Runtime WASM files (large binary files)
-origa_ui/public/ort/ort-wasm-simd-threaded.wasm
-origa_ui/public/ort/ort-wasm-simd-threaded.mjs
-origa_ui/public/ort/ort.wasm.min.js
-phrase_dataset/dist/
-phrase_dataset/phrase_dataset.json
+# cdn
+cdn

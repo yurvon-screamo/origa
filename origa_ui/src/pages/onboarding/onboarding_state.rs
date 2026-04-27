@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 
+use origa::domain::WellKnownSetMeta;
 use origa::domain::{DailyLoad, JapaneseLevel};
-use origa::traits::WellKnownSetMeta;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum OnboardingStep {

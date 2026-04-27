@@ -1,6 +1,6 @@
 use crate::i18n::use_i18n;
 use crate::store::auth_store::AuthStore;
-use crate::ui_components::derive_test_id;
+use crate::ui_components::{Logo, LogoSize, derive_test_id};
 use leptos::prelude::*;
 use leptos_icons::Icon;
 use leptos_router::components::A;
@@ -53,6 +53,7 @@ pub fn BottomTabBar(#[prop(optional, into)] test_id: Signal<String>) -> impl Int
                 <BottomTabItem
                     href="/home"
                     icon=icondata::LuHouse
+                    use_logo=true
                     label=home_label
                     is_active=is_home_active
                     test_id=derive_test_id(test_id, "tab-home")
@@ -101,6 +102,7 @@ pub fn BottomTabBar(#[prop(optional, into)] test_id: Signal<String>) -> impl Int
 fn BottomTabItem(
     #[prop(into)] href: String,
     icon: icondata::Icon,
+    #[prop(optional)] use_logo: bool,
     #[prop(into)] label: Signal<String>,
     #[prop(into)] is_active: Signal<bool>,
     #[prop(optional, into)] test_id: Signal<String>,
@@ -120,7 +122,11 @@ fn BottomTabItem(
 
     view! {
         <A href=href attr:class=class attr:data-testid=test_id_val attr:aria-current=move || if is_active.get() { "page" } else { "false" }>
-            <Icon icon=icon width="24" height="24" />
+            {if use_logo {
+                view! { <Logo size=LogoSize::Sm /> }.into_any()
+            } else {
+                view! { <Icon icon=icon width="24" height="24" /> }.into_any()
+            }}
             <span class="bottom-tab-item-label">{label}</span>
         </A>
     }

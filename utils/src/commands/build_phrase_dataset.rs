@@ -284,10 +284,7 @@ pub fn run_build_phrase_dataset(
     tracing::info!("Loading tokenizer...");
     load_dictionary()?;
 
-    let mut base_path = get_base_path();
-    if base_path.ends_with("utils") {
-        base_path.pop();
-    }
+    let base_path = get_base_path();
 
     tracing::info!("Loading vocabulary...");
     let vocabulary = load_vocabulary_dictionary(&base_path)?;

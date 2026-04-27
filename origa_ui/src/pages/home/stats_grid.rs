@@ -8,6 +8,7 @@ use leptos::prelude::*;
 pub fn StatsGrid(
     primary: Signal<PrimaryStats>,
     secondary: Signal<SecondaryStats>,
+    completion_badge: Signal<Option<String>>,
     // Send + Sync требуются leptos view! для children closures
     open_history: impl Fn(StatMetric) -> Callback<()> + Send + Sync + 'static,
     #[prop(optional, into)] test_id: Signal<String>,
@@ -56,6 +57,7 @@ pub fn StatsGrid(
                             title=Signal::derive(move || i18n.get_keys().home().new_items().inner().to_string())
                             value=Signal::derive(move || format_number(primary.get().new))
                             delta=Signal::derive(move || format_delta(primary.get().new_delta))
+                            badge=completion_badge
                             on_card_click=open_history(StatMetric::New)
                             test_id=Signal::derive(|| "stat-new".to_string())
                         />

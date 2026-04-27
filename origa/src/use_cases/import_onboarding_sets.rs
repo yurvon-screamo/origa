@@ -5,8 +5,10 @@ use tracing::{debug, info, warn};
 use crate::dictionary::grammar::get_rules_by_level;
 use crate::domain::{
     Card, GrammarRuleCard, JapaneseLevel, KanjiCard, OrigaError, StudyCard, VocabularyCard,
+    WellKnownSet,
 };
-use crate::traits::{UserRepository, WellKnownSetLoader, id_to_set_type};
+use crate::domain::{id_to_set_type, resolve_set_path};
+use crate::traits::{CdnProvider, UserRepository};
 
 pub struct ImportOnboardingResult {
     pub imported_set_ids: Vec<String>,
@@ -18,14 +20,14 @@ pub struct ImportOnboardingResult {
 }
 
 #[derive(Clone)]
-pub struct ImportOnboardingSetsUseCase<'a, R: UserRepository, L: WellKnownSetLoader> {
+pub struct ImportOnboardingSetsUseCase<'a, R: UserRepository, C: CdnProvider> {
     repository: &'a R,
-    loader: &'a L,
+    cdn: &'a C,
 }
 
-impl<'a, R: UserRepository, L: WellKnownSetLoader> ImportOnboardingSetsUseCase<'a, R, L> {
-    pub fn new(repository: &'a R, loader: &'a L) -> Self {
-        Self { repository, loader }
+impl<'a, R: UserRepository, C: CdnProvider> ImportOnboardingSetsUseCase<'a, R, C> {
+    pub fn new(repository: &'a R, cdn: &'a C) -> Self {
+        Self { repository, cdn }
     }
 
     pub async fn execute(
@@ -48,7 +50,7 @@ impl<'a, R: UserRepository, L: WellKnownSetLoader> ImportOnboardingSetsUseCase<'
         let current_level = user.current_japanese_level();
         let native_language = *user.native_language();
 
-        let sets = self.loader.load_sets(set_ids.clone()).await?;
+        let sets = self.load_sets_via_cdn(&set_ids).await?;
 
         let mut result = ImportOnboardingResult {
             imported_set_ids: Vec::new(),
@@ -130,6 +132,31 @@ impl<'a, R: UserRepository, L: WellKnownSetLoader> ImportOnboardingSetsUseCase<'
         );
 
         Ok(result)
+    }
+
+    async fn load_sets_via_cdn(
+        &self,
+        set_ids: &[String],
+    ) -> Result<Vec<(String, WellKnownSet)>, OrigaError> {
+        #[derive(serde::Deserialize)]
+        struct SetData {
+            level: JapaneseLevel,
+            words: Vec<String>,
+        }
+
+        let mut results = Vec::new();
+        for id in set_ids {
+            let path = resolve_set_path(id);
+            let json = self.cdn.fetch_text(&path).await?;
+
+            let data: SetData =
+                serde_json::from_str(&json).map_err(|e| OrigaError::WellKnownSetParseError {
+                    reason: format!("Error parsing {}: {}", id, e),
+                })?;
+
+            results.push((id.clone(), WellKnownSet::new(data.level, data.words)));
+        }
+        Ok(results)
     }
 
     fn create_vocabulary_card(

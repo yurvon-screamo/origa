@@ -1,4 +1,4 @@
-use crate::ui_components::{Card, DisplayText, Text, TextSize, TypographyVariant};
+use crate::ui_components::{Badge, Card, DisplayText, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 
 #[component]
@@ -6,6 +6,7 @@ pub fn QuickStatCard(
     #[prop(into)] title: Signal<String>,
     #[prop(into)] value: Signal<String>,
     #[prop(optional, into)] delta: Signal<String>,
+    #[prop(optional, into)] badge: Signal<Option<String>>,
     #[prop(optional, into)] test_id: Signal<String>,
     on_card_click: Callback<()>,
 ) -> impl IntoView {
@@ -53,6 +54,14 @@ pub fn QuickStatCard(
                         >
                             {move || delta.get()}
                         </Text>
+                    </Show>
+                    <Show when=move || badge.get().is_some()>
+                        <Badge
+                            _class=Signal::derive(|| "badge-info text-xs ml-2".to_string())
+                            test_id=Signal::derive(|| "completion-badge".to_string())
+                        >
+                            {move || badge.get().unwrap_or_default()}
+                        </Badge>
                     </Show>
                 </div>
             </Card>

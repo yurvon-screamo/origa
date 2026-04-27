@@ -5,10 +5,10 @@ use origa::dictionary::phrase::{
     is_chunk_loaded,
 };
 use origa::domain::OrigaError;
+use origa::traits::CdnProvider;
 use ulid::Ulid;
 
-use crate::core::config::cdn_url;
-use crate::utils::fetch_text;
+use crate::repository::cdn_provider;
 
 #[expect(dead_code, reason = "lazy-load для будущих задач")]
 pub async fn load_phrase_detail(phrase_id: Ulid) -> Result<PhraseDetail, OrigaError> {
@@ -20,8 +20,9 @@ pub async fn load_phrase_detail(phrase_id: Ulid) -> Result<PhraseDetail, OrigaEr
 
     if !is_chunk_loaded(chunk_id) {
         let (_, hash) = index_version();
-        let url = cdn_url(&format!("/phrases/data/p{:04}.json?v={}", chunk_id, hash));
-        let json = fetch_text(&url).await?;
+        let path = format!("phrases/data/p{:04}.json?v={}", chunk_id, hash);
+        let cdn = cdn_provider();
+        let json = cdn.fetch_text(&path).await?;
         cache_phrase_details(chunk_id, &json)?;
     }
 
@@ -42,9 +43,10 @@ pub async fn load_phrase_details_batch(ids: &[Ulid]) -> Vec<Result<PhraseDetail,
     }
 
     let (_, hash) = index_version();
+    let cdn = cdn_provider();
     for chunk_id in &chunks_to_load {
-        let url = cdn_url(&format!("/phrases/data/p{:04}.json?v={}", chunk_id, hash));
-        match fetch_text(&url).await {
+        let path = format!("phrases/data/p{:04}.json?v={}", chunk_id, hash);
+        match cdn.fetch_text(&path).await {
             Ok(json) => {
                 if let Err(e) = cache_phrase_details(*chunk_id, &json) {
                     tracing::warn!("Failed to cache chunk {}: {e}", chunk_id);

@@ -1,85 +1,89 @@
-use std::{io, path::PathBuf};
+use std::collections::HashMap;
+use std::future::Future;
 
-use super::get_public_dir;
-use crate::domain::{JapaneseLevel, OrigaError};
-use crate::traits::{WellKnownSet, WellKnownSetLoader, WellKnownSetMeta, resolve_set_path};
+use crate::domain::OrigaError;
+use crate::traits::CdnProvider;
 
-pub struct FileWellKnownSetLoader {
-    public_dir: PathBuf,
+pub struct MockCdnProvider {
+    texts: HashMap<String, String>,
+    bytes: HashMap<String, Vec<u8>>,
 }
 
-impl FileWellKnownSetLoader {
+impl MockCdnProvider {
     pub fn new() -> Self {
         Self {
-            public_dir: get_public_dir(),
+            texts: HashMap::new(),
+            bytes: HashMap::new(),
         }
+    }
+
+    pub fn with_text(mut self, path: &str, content: &str) -> Self {
+        self.texts.insert(path.to_string(), content.to_string());
+        self
+    }
+
+    pub fn with_bytes(mut self, path: &str, data: Vec<u8>) -> Self {
+        self.bytes.insert(path.to_string(), data);
+        self
     }
 }
 
-impl Default for FileWellKnownSetLoader {
+impl Default for MockCdnProvider {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl WellKnownSetLoader for FileWellKnownSetLoader {
-    async fn load_meta_list(&self) -> Result<Vec<WellKnownSetMeta>, OrigaError> {
-        let path = self
-            .public_dir
-            .join("domain")
-            .join("well_known_set")
-            .join("well_known_sets_meta.json");
-
-        if !path.exists() {
-            return Err(OrigaError::WellKnownSetNotFound {
-                set_id: "well_known_sets_meta.json".to_string(),
+impl CdnProvider for MockCdnProvider {
+    fn fetch_text(&self, path: &str) -> impl Future<Output = Result<String, OrigaError>> {
+        let result = self
+            .texts
+            .get(path)
+            .cloned()
+            .ok_or_else(|| OrigaError::NetworkError {
+                url: path.to_string(),
+                reason: "Not found in mock".to_string(),
             });
-        }
-
-        let json = std::fs::read_to_string(&path).map_err(|e| {
-            if e.kind() == io::ErrorKind::NotFound {
-                OrigaError::WellKnownSetNotFound {
-                    set_id: "well_known_sets_meta.json".to_string(),
-                }
-            } else {
-                OrigaError::WellKnownSetParseError {
-                    reason: format!("Failed to read meta list: {}", e),
-                }
-            }
-        })?;
-        serde_json::from_str(&json).map_err(|e| OrigaError::WellKnownSetParseError {
-            reason: format!("Failed to parse meta list: {}", e),
-        })
+        async move { result }
     }
 
-    async fn load_set(&self, id: String) -> Result<WellKnownSet, OrigaError> {
-        #[derive(serde::Deserialize)]
-        struct SetData {
-            level: JapaneseLevel,
-            words: Vec<String>,
-        }
+    fn fetch_bytes(&self, path: &str) -> impl Future<Output = Result<Vec<u8>, OrigaError>> {
+        let result = self
+            .bytes
+            .get(path)
+            .cloned()
+            .ok_or_else(|| OrigaError::NetworkError {
+                url: path.to_string(),
+                reason: "Not found in mock".to_string(),
+            });
+        async move { result }
+    }
+}
 
-        let path = self.public_dir.join(resolve_set_path(&id));
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-        if !path.exists() {
-            return Err(OrigaError::WellKnownSetNotFound { set_id: id.clone() });
-        }
+    #[tokio::test]
+    async fn mock_cdn_returns_configured_text() {
+        let cdn = MockCdnProvider::new().with_text("test.json", r#"{"ok":true}"#);
+        let result: Result<String, OrigaError> = cdn.fetch_text("test.json").await;
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), r#"{"ok":true}"#);
+    }
 
-        let json = std::fs::read_to_string(&path).map_err(|e| {
-            if e.kind() == io::ErrorKind::NotFound {
-                OrigaError::WellKnownSetNotFound { set_id: id.clone() }
-            } else {
-                OrigaError::WellKnownSetParseError {
-                    reason: format!("Failed to read set {}: {}", id, e),
-                }
-            }
-        })?;
+    #[tokio::test]
+    async fn mock_cdn_returns_error_for_missing_text() {
+        let cdn = MockCdnProvider::new();
+        let result: Result<String, OrigaError> = cdn.fetch_text("missing.json").await;
+        assert!(result.is_err());
+    }
 
-        let data: SetData =
-            serde_json::from_str(&json).map_err(|e| OrigaError::WellKnownSetParseError {
-                reason: format!("Failed to parse set {}: {}", id, e),
-            })?;
-
-        Ok(WellKnownSet::new(data.level, data.words))
+    #[tokio::test]
+    async fn mock_cdn_returns_configured_bytes() {
+        let cdn = MockCdnProvider::new().with_bytes("model.bin", vec![1, 2, 3]);
+        let result: Result<Vec<u8>, OrigaError> = cdn.fetch_bytes("model.bin").await;
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), vec![1, 2, 3]);
     }
 }
