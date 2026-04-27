@@ -1,16 +1,13 @@
 use futures::future::join_all;
-use origa::{
-    domain::{JapaneseLevel, OrigaError},
-    traits::{
-        TypesMeta, WellKnownSet, WellKnownSetLoader, WellKnownSetMeta, get_types_meta,
-        resolve_set_path, set_types_meta,
-    },
+use origa::domain::{
+    JapaneseLevel, OrigaError, TypesMeta, WellKnownSet, WellKnownSetMeta, get_types_meta,
+    resolve_set_path, set_types_meta,
 };
+use origa::traits::CdnProvider;
 use serde::Deserialize;
 use std::sync::OnceLock;
 
-use crate::core::config::public_url;
-use crate::utils::fetch_text;
+use crate::repository::cdn_provider;
 
 static META_CACHE: OnceLock<Vec<WellKnownSetMeta>> = OnceLock::new();
 
@@ -42,47 +39,39 @@ impl WellKnownSetLoaderImpl {
     pub fn new() -> Self {
         Self
     }
-}
 
-impl Default for WellKnownSetLoaderImpl {
-    fn default() -> Self {
-        Self::new()
+    async fn ensure_types_loaded() -> Result<(), OrigaError> {
+        if get_types_meta().is_some() {
+            return Ok(());
+        }
+        let cdn = cdn_provider();
+        let json = cdn
+            .fetch_text("well_known_set/well_known_types_meta.json")
+            .await?;
+        let types_meta: TypesMeta =
+            serde_json::from_str(&json).map_err(|e| OrigaError::WellKnownSetParseError {
+                reason: format!("Error parsing types meta: {}", e),
+            })?;
+        set_types_meta(types_meta);
+        Ok(())
     }
-}
 
-async fn ensure_types_loaded() -> Result<(), OrigaError> {
-    if get_types_meta().is_some() {
-        return Ok(());
-    }
-    let json = fetch_text(public_url(
-        "/public/domain/well_known_set/well_known_types_meta.json",
-    ))
-    .await?;
-    let types_meta: TypesMeta =
-        serde_json::from_str(&json).map_err(|e| OrigaError::WellKnownSetParseError {
-            reason: format!("Error parsing types meta: {}", e),
-        })?;
-    set_types_meta(types_meta);
-    Ok(())
-}
-
-impl WellKnownSetLoader for WellKnownSetLoaderImpl {
-    async fn load_meta_list(&self) -> Result<Vec<WellKnownSetMeta>, OrigaError> {
-        ensure_types_loaded().await?;
+    pub async fn load_meta_list(&self) -> Result<Vec<WellKnownSetMeta>, OrigaError> {
+        Self::ensure_types_loaded().await?;
 
         if let Some(cached) = META_CACHE.get() {
             return Ok(cached.clone());
         }
-        let json = fetch_text(public_url(
-            "/public/domain/well_known_set/well_known_sets_meta.json",
-        ))
-        .await?;
+        let cdn = cdn_provider();
+        let json = cdn
+            .fetch_text("well_known_set/well_known_sets_meta.json")
+            .await?;
         let meta_list = parse_well_known_meta_list(&json)?;
         let _ = META_CACHE.set(meta_list.clone());
         Ok(meta_list)
     }
 
-    async fn load_set(&self, id: String) -> Result<WellKnownSet, OrigaError> {
+    pub async fn load_set(&self, id: String) -> Result<WellKnownSet, OrigaError> {
         let meta_list = self.load_meta_list().await?;
         let _meta = meta_list.iter().find(|m| m.id == id).ok_or_else(|| {
             OrigaError::WellKnownSetParseError {
@@ -90,17 +79,21 @@ impl WellKnownSetLoader for WellKnownSetLoaderImpl {
             }
         })?;
         let path = resolve_set_path(&id);
-        let json = fetch_text(public_url(&format!("/public/{}", path))).await?;
+        let cdn = cdn_provider();
+        let json = cdn.fetch_text(&path).await?;
         parse_well_known_set(&json, &id)
     }
 
-    async fn load_sets(&self, ids: Vec<String>) -> Result<Vec<(String, WellKnownSet)>, OrigaError> {
+    pub async fn load_sets(
+        &self,
+        ids: Vec<String>,
+    ) -> Result<Vec<(String, WellKnownSet)>, OrigaError> {
         let futures: Vec<_> = ids
             .into_iter()
             .map(|id| {
                 let id_clone = id.clone();
                 async move {
-                    let set = self.load_set(id_clone.clone()).await?;
+                    let set = Self::load_set_owned(id_clone.clone()).await?;
                     Ok::<_, OrigaError>((id_clone, set))
                 }
             })
@@ -112,5 +105,16 @@ impl WellKnownSetLoader for WellKnownSetLoaderImpl {
             .collect::<Result<Vec<_>, _>>()?;
 
         Ok(results)
+    }
+
+    async fn load_set_owned(id: String) -> Result<WellKnownSet, OrigaError> {
+        let loader = Self::new();
+        loader.load_set(id).await
+    }
+}
+
+impl Default for WellKnownSetLoaderImpl {
+    fn default() -> Self {
+        Self::new()
     }
 }

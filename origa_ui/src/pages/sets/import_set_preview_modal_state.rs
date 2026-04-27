@@ -3,7 +3,7 @@ use crate::pages::sets::types::PreviewWord;
 use crate::repository::HybridUserRepository;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use origa::traits::{UserRepository, WellKnownSetLoader};
+use origa::traits::UserRepository;
 use origa::use_cases::{
     CreateCardsFromAnalysisResult, CreateCardsFromAnalysisUseCase, WordToCreate,
 };

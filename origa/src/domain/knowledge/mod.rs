@@ -9,7 +9,7 @@ mod phrase;
 mod vocabulary;
 
 pub use card::{Card, CardType, StudyCard};
-pub use daily_history::DailyHistoryItem;
+pub use daily_history::{DailyHistoryItem, estimate_completion_date};
 pub use grammar::GrammarRuleCard;
 pub use kanji::{ExampleKanjiWord, KanjiCard};
 pub use lesson::{

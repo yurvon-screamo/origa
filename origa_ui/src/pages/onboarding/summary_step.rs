@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use crate::i18n::*;
 use crate::ui_components::{Checkbox, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
-use origa::traits::WellKnownSetMeta;
+use origa::domain::WellKnownSetMeta;
 
 use super::onboarding_state::OnboardingState;
 

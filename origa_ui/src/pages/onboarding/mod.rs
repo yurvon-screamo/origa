@@ -27,7 +27,7 @@ use load_step::LoadStep;
 use onboarding_actions::{create_on_skip_callback, create_on_start_import_callback};
 use onboarding_state::{OnboardingState, OnboardingStep};
 use origa::domain::User;
-use origa::traits::{UserRepository, WellKnownSetLoader};
+use origa::traits::UserRepository;
 use progress::ProgressStep;
 use scoring_step::ScoringStep;
 use summary_step::SummaryStep;

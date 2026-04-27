@@ -2,10 +2,10 @@ use std::sync::OnceLock;
 
 use origa::domain::JlptContent;
 use origa::domain::{JapaneseLevel, OrigaError};
+use origa::traits::CdnProvider;
 use serde::Deserialize;
 
-use crate::core::config::public_url;
-use crate::utils::fetch_text;
+use crate::repository::cdn_provider;
 
 static JLPT_CONTENT: OnceLock<JlptContent> = OnceLock::new();
 static DEFAULT_JLPT_CONTENT: OnceLock<JlptContent> = OnceLock::new();
@@ -94,7 +94,8 @@ async fn load_content() -> Result<JlptContent, OrigaError> {
 
 async fn load_kanji(content: &mut JlptContent) -> Result<(), OrigaError> {
     let start = now_ms();
-    let json = fetch_text(public_url("/public/dictionary/kanji.json")).await?;
+    let cdn = cdn_provider();
+    let json = cdn.fetch_text("dictionary/kanji.json").await?;
     tracing::info!(
         "📖 JLPT kanji.json fetched ({:.2}s)",
         (now_ms() - start) / 1000.0
@@ -145,13 +146,12 @@ async fn load_words(content: &mut JlptContent) -> Result<(), OrigaError> {
     ];
 
     let start = now_ms();
+    let cdn = cdn_provider();
     let fetch_futures: Vec<_> = levels
         .iter()
         .map(|(_, filename)| {
-            fetch_text(public_url(&format!(
-                "/public/domain/well_known_set/{}",
-                filename
-            )))
+            let path = format!("well_known_set/{}", filename);
+            async move { cdn.fetch_text(&path).await }
         })
         .collect();
 
@@ -190,7 +190,8 @@ async fn load_words(content: &mut JlptContent) -> Result<(), OrigaError> {
 
 async fn load_grammar(content: &mut JlptContent) -> Result<(), OrigaError> {
     let start = now_ms();
-    let json = fetch_text(public_url("/public/grammar/grammar.json")).await?;
+    let cdn = cdn_provider();
+    let json = cdn.fetch_text("grammar/grammar.json").await?;
     tracing::info!(
         "📖 JLPT grammar.json fetched ({:.2}s)",
         (now_ms() - start) / 1000.0
@@ -233,6 +234,8 @@ async fn load_grammar(content: &mut JlptContent) -> Result<(), OrigaError> {
 pub fn recalculate_user_jlpt_progress(user: &mut origa::domain::User) {
     if let Some(content) = JLPT_CONTENT.get() {
         user.recalculate_jlpt_progress(content);
+    } else {
+        tracing::warn!("JLPT content not loaded, skipping progress recalculation");
     }
 }
 

@@ -4,7 +4,6 @@ use std::fs;
 use std::io::Read;
 use std::path::PathBuf;
 
-/// Decompresses deflate-compressed data
 fn decompress(data: Vec<u8>) -> Result<Vec<u8>, OrigaError> {
     let mut decoder = DeflateDecoder::new(&data[..]);
     let mut decompressed = Vec::new();
@@ -16,7 +15,48 @@ fn decompress(data: Vec<u8>) -> Result<Vec<u8>, OrigaError> {
     Ok(decompressed)
 }
 
-/// Loads the UniDic dictionary if not already loaded
+const DICT_FILES: &[&str] = &[
+    "char_def.bin",
+    "matrix.mtx",
+    "dict.da",
+    "dict.vals",
+    "unk.bin",
+    "dict.wordsidx",
+    "dict.words",
+    "metadata.json",
+];
+
+const CDN_DICT_PATH: &str = "/public/dictionaries/unidic/cache/dictionary-data";
+
+fn cache_dir() -> PathBuf {
+    PathBuf::from("target/cdn-cache")
+}
+
+fn download_from_cdn(cache: &std::path::Path) -> Result<(), OrigaError> {
+    let base_url =
+        crate::signing::cdn_url(CDN_DICT_PATH).map_err(|e| OrigaError::TokenizerError {
+            reason: format!("CDN signing failed: {e}"),
+        })?;
+
+    let client = reqwest::blocking::Client::new();
+    for &name in DICT_FILES {
+        let url = format!("{base_url}/{name}");
+        let resp = client
+            .get(&url)
+            .send()
+            .and_then(|r| r.error_for_status())
+            .and_then(|r| r.bytes())
+            .map_err(|e| OrigaError::TokenizerError {
+                reason: format!("Failed to download {name} from CDN: {e}"),
+            })?;
+        fs::write(cache.join(name), &resp).map_err(|e| OrigaError::TokenizerError {
+            reason: format!("Failed to write {name}: {e}"),
+        })?;
+    }
+
+    Ok(())
+}
+
 pub fn load_dictionary() -> Result<(), OrigaError> {
     if is_dictionary_loaded() {
         return Ok(());
@@ -44,7 +84,6 @@ pub fn load_dictionary() -> Result<(), OrigaError> {
     init_dictionary(data)
 }
 
-/// Finds the dictionary directory path
 fn find_dictionary_directory() -> Result<PathBuf, OrigaError> {
     let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap_or_else(|_| ".".to_string());
     let mut dict_dir = PathBuf::from(manifest_dir);
@@ -59,15 +98,28 @@ fn find_dictionary_directory() -> Result<PathBuf, OrigaError> {
         .join("dictionaries")
         .join("unidic");
 
-    if !dict_dir.exists() {
-        dict_dir = PathBuf::from("origa_ui/public/dictionaries/unidic");
+    if dict_dir.exists() {
+        return Ok(dict_dir);
     }
 
-    if !dict_dir.exists() {
-        return Err(OrigaError::TokenizerError {
-            reason: format!("Dictionary directory not found: {}", dict_dir.display()),
-        });
+    dict_dir = PathBuf::from("origa_ui/public/dictionaries/unidic");
+    if dict_dir.exists() {
+        return Ok(dict_dir);
     }
 
-    Ok(dict_dir)
+    let cache = cache_dir();
+    if cache.exists() {
+        tracing::info!("using cached CDN dictionary from {}", cache.display());
+        return Ok(cache);
+    }
+
+    tracing::info!("local dictionary not found, downloading from CDN...");
+    fs::create_dir_all(&cache).map_err(|e| OrigaError::TokenizerError {
+        reason: format!("Failed to create cache dir: {e}"),
+    })?;
+
+    download_from_cdn(&cache)?;
+    tracing::info!("dictionary cached to {}", cache.display());
+
+    Ok(cache)
 }

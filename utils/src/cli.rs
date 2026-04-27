@@ -120,4 +120,124 @@ pub enum Commands {
         #[arg(short, long)]
         dataset: PathBuf,
     },
+
+    /// Validate vocabulary dictionary translations using LLM
+    ValidateDictionary {
+        /// OpenRouter API key (required, or set OPENROUTER_API_KEY env var)
+        #[arg(long, env = "OPENROUTER_API_KEY")]
+        api_key: String,
+
+        /// OpenAI-compatible API base URL
+        #[arg(long, default_value = "https://openrouter.ai/api/v1")]
+        api_base: String,
+
+        /// LLM model to use
+        #[arg(long, default_value = "google/gemini-2.0-flash-001")]
+        model: String,
+
+        /// Number of concurrent validation requests
+        #[arg(short = 'w', long, default_value = "8")]
+        workers: usize,
+
+        /// Output path for JSONL progress file (default: invalid_vocabulary.jsonl in project root)
+        #[arg(short, long)]
+        output: Option<PathBuf>,
+
+        /// Show what would be done without making API calls
+        #[arg(long)]
+        dry_run: bool,
+
+        /// Limit number of words to validate
+        #[arg(long)]
+        limit: Option<usize>,
+    },
+
+    /// CDN operations (upload, list)
+    Cdn {
+        #[command(subcommand)]
+        command: CdnCommands,
+    },
+
+    /// Print a grammar prompt to stdout without calling the LLM
+    GenerateGrammarPrompt {
+        /// Grammar pattern title (e.g. ～ます, ～てください)
+        #[arg(short, long)]
+        title: String,
+
+        /// JLPT level (N5, N4, N3, N2, N1)
+        #[arg(short, long, default_value = "N5")]
+        level: String,
+
+        /// Output language: russian/ru or english/en
+        #[arg(short, long, default_value = "russian")]
+        language: String,
+
+        /// Optional rule name from grammar index for additional context
+        #[arg(long)]
+        rule_name_from_index: Option<String>,
+    },
+
+    /// Generate grammar rule descriptions using LLM
+    GenerateGrammar {
+        /// Rule ID to generate (omit with --all for batch mode)
+        rule_id: Option<String>,
+
+        /// Generate descriptions for all rules
+        #[arg(long)]
+        all: bool,
+
+        /// Filter by JLPT level (N5, N4, N3) — use with --all
+        #[arg(long)]
+        level: Option<String>,
+
+        /// OpenAI API base URL
+        #[arg(long, default_value = "http://10.2.11.6:8001/v1")]
+        api_base: String,
+
+        /// OpenAI API key
+        #[arg(long, default_value = "none")]
+        api_key: String,
+
+        /// Number of concurrent workers (0 = sequential)
+        #[arg(short = 'w', long, default_value = "1")]
+        workers: usize,
+
+        /// Show what would be done without making changes
+        #[arg(long)]
+        dry_run: bool,
+
+        /// Custom path to grammar.json
+        #[arg(long)]
+        grammar_path: Option<PathBuf>,
+    },
+}
+
+#[derive(Subcommand)]
+pub enum CdnCommands {
+    /// Recursively upload files from directory to CDN
+    Upload {
+        /// Directory to upload
+        dir: PathBuf,
+    },
+
+    /// Upload audio files with parallel workers
+    UploadAudio {
+        /// Directory with audio files
+        dir: PathBuf,
+
+        /// Number of parallel workers
+        #[arg(short, long, default_value = "50")]
+        workers: usize,
+
+        /// File with list of failed keys to retry
+        #[arg(long)]
+        only_failed: Option<PathBuf>,
+    },
+
+    /// List CDN objects
+    List {
+        /// Key prefix filter
+        #[arg(short, long)]
+        prefix: Option<String>,
+    },
 }

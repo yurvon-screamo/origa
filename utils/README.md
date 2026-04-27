@@ -117,6 +117,88 @@ utils find-missing \
 - `--russian-only` - Only translate to Russian
 - `--english-only` - Only translate to English
 
+### `generate-grammar` - Generate Grammar Rule Descriptions
+
+Generates markdown descriptions for Japanese grammar rules using an LLM (OpenAI-compatible API).
+Russian and English descriptions are generated in **separate API calls** to ensure native-quality output for each language.
+
+```bash
+# Generate description for a single rule
+utils generate-grammar --rule-id 01KJ9AVWBGC2BT0DMFPDYYFEWB
+
+# Dry run: see what rules would be processed
+utils generate-grammar --all --dry-run
+
+# Regenerate all N5 rules
+utils generate-grammar --all --level N5
+
+# Regenerate all rules
+utils generate-grammar --all
+
+# Custom API endpoint
+utils generate-grammar --all \
+  --api-base http://localhost:8000/v1 \
+  --api-key your-api-key
+
+# Custom grammar.json path
+utils generate-grammar --all --grammar-path path/to/grammar.json
+```
+
+**Options:**
+
+- `rule_id` - Rule ID to generate (omit with `--all` for batch mode)
+- `--all` - Generate descriptions for all rules
+- `--level <LEVEL>` - Filter by JLPT level (N5, N4, N3) — use with `--all`
+- `--api-base <API_BASE>` - OpenAI API base URL (default: `http://10.2.11.6:8001/v1`)
+- `--api-key <API_KEY>` - OpenAI API key (default: `none`)
+- `-w, --workers <WORKERS>` - Number of concurrent workers (default: `1`, sequential)
+- `--dry-run` - Show what would be done without making changes
+- `--grammar-path <PATH>` - Custom path to grammar.json
+
+**Notes:**
+
+- The command saves after **each rule** (crash-safe)
+- 1-second delay between rules (rate limiting)
+- RU and EN descriptions are generated in separate LLM calls
+- Existing `rule_id`, `level`, and `format_map` are preserved
+
+### `validate-dictionary` - Validate Vocabulary Translations
+
+Validates vocabulary dictionary translations by sending each word + translation to an LLM for Y/N correctness check.
+
+```bash
+# Dry run — see how many words would be checked
+utils validate-dictionary --api-key YOUR_KEY --dry-run
+
+# Validate all vocabulary with 8 workers
+utils validate-dictionary --api-key YOUR_KEY
+
+# Resume interrupted validation
+utils validate-dictionary --api-key YOUR_KEY --resume
+
+# Validate with custom model and limit
+utils validate-dictionary --api-key YOUR_KEY --model qwen/qwen3.5-flash --limit 100
+
+# Custom output path
+utils validate-dictionary --api-key YOUR_KEY -o results/invalid.jsonl
+```
+
+**Options:**
+
+- `--api-key <API_KEY>` - OpenRouter API key (required, or set `OPENROUTER_API_KEY` env var)
+- `--api-base <API_BASE>` - API base URL (default: `https://openrouter.ai/api/v1`)
+- `--model <MODEL>` - LLM model (default: `qwen/qwen3.5-flash`)
+- `-w, --workers <WORKERS>` - Concurrent requests (default: `8`)
+- `-o, --output <OUTPUT>` - Output JSONL progress file path
+- `--dry-run` - Estimate without API calls
+- `--resume` - Resume from previous run
+- `--limit <LIMIT>` - Max words to validate
+
+**Output:**
+
+- `.jsonl` file — append-only progress (crash-safe)
+- `.json` file — final summary with list of invalid words for re-generation
+
 ## Getting Help
 
 To see all available commands:

@@ -33,6 +33,7 @@ mod label_frame;
 mod layout;
 mod level_selector;
 mod loading;
+mod logo;
 mod markdown;
 mod modal;
 mod navbar;
@@ -92,6 +93,7 @@ pub use label_frame::LabelFrame;
 pub use layout::{CardLayout, CardLayoutSize, PageLayout, PageLayoutVariant};
 pub use level_selector::LevelSelector;
 pub use loading::{LoadingOverlay, Spinner};
+pub use logo::{Logo, LogoSize};
 pub use markdown::{MarkdownText, MarkdownVariant};
 pub use modal::Modal;
 pub use ocr_loading_stage::{

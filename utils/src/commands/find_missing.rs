@@ -1,5 +1,5 @@
-use crate::api::VocabularyEntry;
 use crate::api::translate_word;
+use crate::api::VocabularyEntry;
 use crate::dictionary::load_dictionary;
 use crate::utils::{collect_json_files, get_base_path};
 use origa::domain::OrigaError;
@@ -274,11 +274,7 @@ pub async fn run_find_missing(
     russian_only: bool,
     english_only: bool,
 ) -> Result<(), OrigaError> {
-    // Get workspace root (go up from utils directory)
-    let mut base_path = get_base_path();
-    if base_path.ends_with("utils") {
-        base_path.pop();
-    }
+    let base_path = get_base_path();
 
     load_dictionary()?;
 

@@ -1,3 +1,4 @@
+mod cdn_provider;
 mod dictionary_cache;
 mod file_repository;
 mod hybrid_repository;
@@ -6,6 +7,8 @@ pub mod trailbase_auth;
 pub mod trailbase_client;
 mod trailbase_records;
 mod trailbase_repository;
+
+pub use cdn_provider::cdn as cdn_provider;
 
 pub use dictionary_cache::{get_cached_dictionary_rkyv, save_dictionary_to_cache_rkyv};
 pub use hybrid_repository::HybridUserRepository;

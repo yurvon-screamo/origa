@@ -40,7 +40,12 @@ pub fn get_base_path() -> PathBuf {
     let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap_or_else(|_| ".".to_string());
     let mut path = PathBuf::from(manifest_dir);
 
-    if path.ends_with("tokenizer") {
+    if path.ends_with("tokenizer")
+        || path.ends_with("utils")
+        || path.ends_with("origa")
+        || path.ends_with("origa_ui")
+        || path.ends_with("tauri")
+    {
         path.pop();
     }
 

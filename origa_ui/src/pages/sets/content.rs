@@ -11,8 +11,9 @@ use crate::ui_components::{
 };
 use leptos::prelude::*;
 use leptos::task::spawn_local;
+use origa::domain::TypeMeta;
 use origa::domain::{JapaneseLevel, User};
-use origa::traits::{TypeMeta, UserRepository, WellKnownSetLoader};
+use origa::traits::UserRepository;
 use std::collections::{HashMap, HashSet};
 
 #[component]

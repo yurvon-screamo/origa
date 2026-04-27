@@ -1,13 +1,13 @@
-use crate::core::config::public_url;
 use crate::i18n::{t, use_i18n};
+use crate::repository::cdn_provider;
 use leptos::ev::PointerEvent;
 use leptos::html::Canvas;
 use leptos::prelude::*;
 use leptos::wasm_bindgen::JsCast;
+use origa::traits::CdnProvider;
 use std::sync::{Arc, Mutex};
 use tracing::debug;
 use wasm_bindgen::prelude::*;
-use wasm_bindgen_futures::JsFuture;
 use web_sys::CanvasRenderingContext2d;
 use web_sys::js_sys::Array;
 
@@ -82,8 +82,11 @@ pub fn KanjiDrawingPractice(
     let i18n = use_i18n();
     let svg_content = LocalResource::new(move || {
         let encoded = urlencoding::encode(&kanji);
-        let path = public_url(&format!("/public/kanji_animations/{}.svg", encoded));
-        async move { fetch_svg(&path).await }
+        let path = format!("kanji_animations/{}.svg", encoded);
+        async move {
+            let cdn = cdn_provider();
+            cdn.fetch_text(&path).await.ok()
+        }
     });
 
     let strokes = RwSignal::new(Vec::<StrokeData>::new());
@@ -328,13 +331,6 @@ pub fn KanjiDrawingPractice(
             </div>
         </div>
     }
-}
-async fn fetch_svg(path: &str) -> Option<String> {
-    let window = web_sys::window()?;
-    let resp = JsFuture::from(window.fetch_with_str(path)).await.ok()?;
-    let resp = resp.dyn_into::<web_sys::Response>().ok()?;
-    let text = JsFuture::from(resp.text().ok()?).await.ok()?;
-    text.as_string()
 }
 fn parse_stroke_paths(svg: &str) -> Vec<StrokeData> {
     let mut strokes = Vec::new();

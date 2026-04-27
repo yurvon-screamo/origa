@@ -1,8 +1,9 @@
 use origa::dictionary::phrase::{init_phrase_index, is_phrases_loaded, iter_index_entries};
 use origa::domain::OrigaError;
+use origa::traits::CdnProvider;
 
-use crate::core::config::cdn_url;
-use crate::utils::{fetch_text, yield_to_browser};
+use crate::repository::cdn_provider;
+use crate::utils::yield_to_browser;
 
 fn now_ms() -> f64 {
     web_sys::window()
@@ -20,7 +21,8 @@ pub async fn load_phrases() -> Result<(), OrigaError> {
     let start = now_ms();
     tracing::info!("Loading phrases...");
 
-    let json = fetch_text(&cdn_url("/phrases/phrase_index.json")).await?;
+    let cdn = cdn_provider();
+    let json = cdn.fetch_text("phrases/phrase_index.json").await?;
 
     yield_to_browser().await;
     init_phrase_index(&json)?;

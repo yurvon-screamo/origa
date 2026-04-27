@@ -28,28 +28,37 @@ impl HybridUserRepository {
         let local_result = self.local.get_current_user().await?;
 
         match (remote_result, local_result) {
-            // Remote есть, local нет → создаём local из remote
             (Some(remote_data), None) => {
                 tracing::info!("Creating local user from remote");
-                self.local.save(&remote_data.0).await?;
+                self.save_local_and_sync_remote(&remote_data.0).await?;
             },
-            // Local есть, remote нет → создаём remote из local
             (None, Some(local_user)) => {
                 tracing::info!("Creating remote user from local");
                 self.remote.save(&local_user).await?;
             },
-            // Оба есть → выполняем merge
             (Some(remote_data), Some(mut local_user)) => {
                 local_user.merge(&remote_data.0);
-                self.local.save(&local_user).await?;
-                self.remote.save(&local_user).await?;
+                self.save_local_and_sync_remote(&local_user).await?;
             },
-            // Оба отсутствуют → warn и выходим
             (None, None) => {
                 tracing::warn!("No user found locally or remotely");
             },
         }
 
+        Ok(())
+    }
+
+    async fn save_local_and_sync_remote(&self, user: &User) -> Result<(), OrigaError> {
+        self.local.save(user).await?;
+
+        let updated_user =
+            self.local
+                .get_current_user()
+                .await?
+                .ok_or_else(|| OrigaError::RepositoryError {
+                    reason: "User not found after local save".to_string(),
+                })?;
+        self.remote.save(&updated_user).await?;
         Ok(())
     }
 }
@@ -60,14 +69,9 @@ impl UserRepository for HybridUserRepository {
     }
 
     async fn save(&self, user: &User) -> Result<(), OrigaError> {
-        let mut user_clone = user.clone();
-
-        recalculate_user_jlpt_progress(&mut user_clone);
-        tracing::info!("save: Starting save for user {}", user_clone.id());
-
-        self.local.save(&user_clone).await?;
+        tracing::info!("save: Starting save for user {}", user.id());
+        self.local.save(user).await?;
         tracing::info!("save: Local save completed");
-
         Ok(())
     }
 

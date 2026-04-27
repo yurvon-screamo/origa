@@ -93,7 +93,6 @@ impl User {
         self.email = another_user.email.clone();
         self.username = another_user.username.clone();
         self.native_language = another_user.native_language;
-        self.jlpt_progress = another_user.jlpt_progress.clone();
         self.telegram_user_id = another_user.telegram_user_id;
         self.daily_load = another_user.daily_load;
 
@@ -499,6 +498,49 @@ mod tests {
         assert!(user1.is_set_imported("set-2"));
         assert!(user1.is_set_imported("set-3"));
         assert_eq!(user1.imported_sets().len(), 3);
+    }
+
+    #[test]
+    fn user_merge_preserves_jlpt_progress() {
+        // Arrange
+        let mut user1 = User::new(
+            "user1@example.com".to_string(),
+            NativeLanguage::Russian,
+            None,
+        );
+
+        let mut user2 = User::new(
+            "user2@example.com".to_string(),
+            NativeLanguage::Russian,
+            None,
+        );
+
+        let complete = crate::domain::jlpt_progress::LevelProgressDetail {
+            kanji: crate::domain::jlpt_progress::CategoryProgress {
+                learned: 100,
+                total: 100,
+            },
+            words: crate::domain::jlpt_progress::CategoryProgress {
+                learned: 100,
+                total: 100,
+            },
+            grammar: crate::domain::jlpt_progress::CategoryProgress {
+                learned: 100,
+                total: 100,
+            },
+        };
+        user2
+            .jlpt_progress
+            .update_level(JapaneseLevel::N5, complete);
+
+        let progress_before = user1.jlpt_progress().clone();
+
+        // Act
+        user1.merge(&user2);
+
+        // Assert
+        assert_eq!(user1.jlpt_progress(), &progress_before);
+        assert_eq!(user1.current_japanese_level(), JapaneseLevel::N5);
     }
 
     #[test]

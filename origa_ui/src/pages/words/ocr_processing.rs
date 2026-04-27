@@ -198,7 +198,7 @@ async fn process_image_with_ocr(
                 info!("Loading OCR and Layout models");
 
                 let config =
-                    ModelConfig::new(crate::core::config::ndlocr_base_url(), "ndlocr-model-");
+                    ModelConfig::new(crate::core::config::cdn_url("/ndlocr"), "ndlocr-model-");
 
                 let loading_state_ref = *loading_state;
                 let progress_callback: ProgressCallback =
