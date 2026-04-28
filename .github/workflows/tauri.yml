@@ -1,444 +1,443 @@
 name: Build Tauri App
 
 on:
-  push:
-    branches:
-      - master
-    tags:
-      - "v*.*.*"
-  workflow_dispatch:
+    push:
+        branches:
+            - master
+        tags:
+            - "v*.*.*"
+    workflow_dispatch:
 
 env:
-  CARGO_TERM_COLOR: always
+    CARGO_TERM_COLOR: always
 
 jobs:
-  version:
-    uses: ./.github/workflows/version.yml
+    version:
+        uses: ./.github/workflows/version.yml
 
-  build-windows:
-    name: Build Windows
-    needs: [version]
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/rust-cross/cargo-zigbuild
-    permissions:
-      contents: write
-    outputs:
-      signature: ${{ steps.signature.outputs.signature }}
-    env:
-      ORIGA_VERSION: ${{ needs.version.outputs.version }}
-      ORIGA_COMMIT: ${{ needs.version.outputs.commit_sha }}
-      ORIGA_BUILD_DATE: ${{ needs.version.outputs.build_date }}
-      TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-      TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-      XWIN_CACHE_DIR: ${{ github.workspace }}/.xwin-cache
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup cargo cache
-        uses: Swatinem/rust-cache@v2
-        with:
-          cache-all-crates: true
-          cache-targets: false
-          shared-key: origa-cross-build
-          save-if: ${{ github.ref == 'refs/heads/master' }}
-
-      - name: Cache UniDic dictionary
-        uses: actions/cache@v4
-        with:
-          path: origa_ui/public/dictionaries/unidic
-          key: unidic-dict-v1-${{ hashFiles('origa_ui/build.rs') }}
-          restore-keys: unidic-dict-v1-
-          save-if: ${{ github.ref == 'refs/heads/master' }}
-
-      - name: Update version in config files
+    build-windows:
+        name: Build Windows
+        needs: [version]
+        runs-on: ubuntu-latest
+        container:
+            image: ghcr.io/rust-cross/cargo-zigbuild
+        permissions:
+            contents: write
+        outputs:
+            signature: ${{ steps.signature.outputs.signature }}
         env:
-          VERSION: ${{ needs.version.outputs.version_base }}
-        run: |
-          # Обновить версию в Cargo.toml (workspace)
-          sed -i 's/^version = ".*"/version = "'${VERSION}'"/' Cargo.toml
+            ORIGA_VERSION: ${{ needs.version.outputs.version }}
+            ORIGA_COMMIT: ${{ needs.version.outputs.commit_sha }}
+            ORIGA_BUILD_DATE: ${{ needs.version.outputs.build_date }}
+            TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+            TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+            XWIN_CACHE_DIR: ${{ github.workspace }}/.xwin-cache
 
-          # Обновить версию в tauri.conf.json
-          sed -i 's/"version": ".*"/"version": "'${VERSION}'"/' tauri/tauri.conf.json
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
 
-          echo "Updated version to ${VERSION}"
+            - name: Setup cargo cache
+              uses: Swatinem/rust-cache@v2
+              with:
+                  cache-all-crates: true
+                  cache-targets: false
+                  shared-key: origa-cross-build
+                  save-if: ${{ github.ref == 'refs/heads/master' }}
 
-      - name: Install build dependencies
-        run: apt-get update && apt-get install -y nsis clang lld llvm protobuf-compiler
+            - name: Cache UniDic dictionary
+              uses: actions/cache@v4
+              with:
+                  path: origa_ui/public/dictionaries/unidic
+                  key: unidic-dict-v1-${{ hashFiles('origa_ui/build.rs') }}
+                  restore-keys: unidic-dict-v1-
+                  save-if: ${{ github.ref == 'refs/heads/master' }}
 
-      - name: Setup Rust targets
-        run: rustup target add x86_64-pc-windows-msvc wasm32-unknown-unknown
+            - name: Update version in config files
+              env:
+                  VERSION: ${{ needs.version.outputs.version_base }}
+              run: |
+                  # Обновить версию в Cargo.toml (workspace)
+                  sed -i 's/^version = ".*"/version = "'${VERSION}'"/' Cargo.toml
 
-      - name: Install cargo-binstall
-        run: |
-          curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
-          cargo binstall trunk tauri-cli cargo-xwin --no-confirm --force
+                  # Обновить версию в tauri.conf.json
+                  sed -i 's/"version": ".*"/"version": "'${VERSION}'"/' tauri/tauri.conf.json
 
-      - name: Add cargo bin to PATH
-        run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+                  echo "Updated version to ${VERSION}"
 
-      - name: Build frontend
-        working-directory: origa_ui
-        run: trunk build --release
+            - name: Install build dependencies
+              run: apt-get update && apt-get install -y nsis clang lld llvm protobuf-compiler
+
+            - name: Setup Rust targets
+              run: rustup target add x86_64-pc-windows-msvc wasm32-unknown-unknown
+
+            - name: Install cargo-binstall
+              run: |
+                  curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
+                  cargo binstall trunk tauri-cli cargo-xwin --no-confirm --force
+
+            - name: Add cargo bin to PATH
+              run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+            - name: Build frontend
+              working-directory: origa_ui
+              run: trunk build --release
+              env:
+                  TRAILBASE_URL: ${{ vars.TRAILBASE_URL }}
+                  ORIGA_PUBLIC_BASE_URL: ${{ vars.TRAILBASE_URL }}
+                  ORIGA_CDN_BASE_URL: ${{ vars.CDN_BASE_URL }}
+                  ORIGA_CDN_REGION: ${{ vars.CDN_REGION }}
+
+            - name: Remove public assets from dist
+              run: rm -rf origa_ui/dist/public
+
+            - name: Cache cargo-xwin MSVC CRT
+              uses: actions/cache@v4
+              with:
+                  path: ${{ github.workspace }}/.xwin-cache
+                  key: xwin-${{ runner.os }}-x86_64-pc-windows-msvc-v17
+                  restore-keys: |
+                      xwin-${{ runner.os }}-
+
+            - name: Build Tauri app for Windows
+              working-directory: tauri
+              run: cargo tauri build --runner cargo-xwin --target x86_64-pc-windows-msvc
+              env:
+                  TAURI_BUNDLE_NSIS: "true"
+
+            - name: Rename artifacts for latest release
+              if: needs.version.outputs.version_type != 'stable'
+              working-directory: target/x86_64-pc-windows-msvc/release/bundle
+              run: |
+                  # Rename NSIS
+                  for f in nsis/*.exe; do mv "$f" "nsis/origa_latest_x64-setup.exe"; done
+                  for f in nsis/*.sig; do mv "$f" "nsis/origa_latest_x64-setup.exe.sig"; done
+
+            - name: Extract signature
+              id: signature
+              shell: bash
+              run: |
+                  SIG_FILE=$(ls target/x86_64-pc-windows-msvc/release/bundle/nsis/*.sig 2>/dev/null | head -1 || true)
+                  if [ -n "$SIG_FILE" ] && [ -f "$SIG_FILE" ]; then
+                    SIG_CONTENT=$(cat "$SIG_FILE")
+                    echo "signature=${SIG_CONTENT}" >> $GITHUB_OUTPUT
+                  else
+                    echo "signature=" >> $GITHUB_OUTPUT
+                  fi
+
+            - name: Upload Windows artifacts
+              uses: actions/upload-artifact@v4
+              with:
+                  name: windows-build
+                  path: |
+                      **/bundle/nsis/*.exe
+                      **/bundle/nsis/*.sig
+                  retention-days: 7
+
+    build-linux:
+        name: Build Linux
+        needs: [version]
+        runs-on: ubuntu-24.04
+        permissions:
+            contents: write
+        outputs:
+            signature: ${{ steps.signature.outputs.signature }}
         env:
-          TRAILBASE_URL: ${{ vars.TRAILBASE_URL }}
-          PUBLIC_BASE_URL: ${{ vars.TRAILBASE_URL }}
-          CDN_BASE_URL: ${{ vars.CDN_BASE_URL }}
-          CDN_ACCESS_KEY: ${{ secrets.CDN_ACCESS_KEY }}
-          CDN_SECRET_KEY: ${{ secrets.CDN_SECRET_KEY }}
-          CDN_REGION: ${{ vars.CDN_REGION }}
+            ORIGA_VERSION: ${{ needs.version.outputs.version }}
+            ORIGA_COMMIT: ${{ needs.version.outputs.commit_sha }}
+            ORIGA_BUILD_DATE: ${{ needs.version.outputs.build_date }}
+            TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+            TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
 
-      - name: Remove public assets from dist
-        run: rm -rf origa_ui/dist/public
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
 
-      - name: Cache cargo-xwin MSVC CRT
-        uses: actions/cache@v4
-        with:
-          path: ${{ github.workspace }}/.xwin-cache
-          key: xwin-${{ runner.os }}-x86_64-pc-windows-msvc-v17
-          restore-keys: |
-            xwin-${{ runner.os }}-
+            - name: Cache UniDic dictionary
+              uses: actions/cache@v4
+              with:
+                  path: origa_ui/public/dictionaries/unidic
+                  key: unidic-dict-v1-${{ hashFiles('origa_ui/build.rs') }}
+                  restore-keys: unidic-dict-v1-
+                  save-if: ${{ github.ref == 'refs/heads/master' }}
 
-      - name: Build Tauri app for Windows
-        working-directory: tauri
-        run: cargo tauri build --runner cargo-xwin --target x86_64-pc-windows-msvc
+            - name: Update version in config files
+              env:
+                  VERSION: ${{ needs.version.outputs.version_base }}
+              run: |
+                  # Обновить версию в Cargo.toml (workspace)
+                  sed -i 's/^version = ".*"/version = "'${VERSION}'"/' Cargo.toml
+
+                  # Обновить версию в tauri.conf.json
+                  sed -i 's/"version": ".*"/"version": "'${VERSION}'"/' tauri/tauri.conf.json
+
+                  echo "Updated version to ${VERSION}"
+
+            - name: Cache APT packages
+              uses: awalsh128/cache-apt-pkgs-action@latest
+              with:
+                  packages: libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+                      protobuf-compiler libspeechd-dev
+                  version: 1.0
+
+            - name: Install mold linker
+              uses: rui314/setup-mold@v1
+
+            - name: Setup Rust with caching
+              uses: ./.github/actions/setup-rust
+              with:
+                  targets: x86_64-unknown-linux-gnu,wasm32-unknown-unknown
+                  shared-key: origa-linux
+
+            - name: Setup frontend tools
+              uses: ./.github/actions/setup-frontend
+              with:
+                  tools: trunk tauri-cli
+                  cache-key-suffix: linux
+
+            - name: Add cargo bin to PATH
+              run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+            - name: Build frontend
+              working-directory: origa_ui
+              run: trunk build --release
+              env:
+                  TRAILBASE_URL: ${{ vars.TRAILBASE_URL }}
+                  ORIGA_PUBLIC_BASE_URL: ${{ vars.TRAILBASE_URL }}
+                  ORIGA_CDN_BASE_URL: ${{ vars.CDN_BASE_URL }}
+                  ORIGA_CDN_REGION: ${{ vars.CDN_REGION }}
+
+            - name: Remove public assets from dist
+              run: rm -rf origa_ui/dist/public
+
+            - name: Build Tauri app for Linux
+              working-directory: tauri
+              run: cargo tauri build --target x86_64-unknown-linux-gnu
+
+            - name: Rename artifacts for latest release
+              if: needs.version.outputs.version_type != 'stable'
+              working-directory: target/x86_64-unknown-linux-gnu/release/bundle
+              run: |
+                  # Rename AppImage
+                  for f in appimage/*.AppImage; do mv "$f" "appimage/origa_latest_amd64.AppImage"; done
+                  for f in appimage/*.sig; do mv "$f" "appimage/origa_latest_amd64.AppImage.sig"; done
+                  # Rename DEB
+                  for f in deb/*.deb; do mv "$f" "deb/origa_latest_amd64.deb"; done
+
+            - name: Extract signature
+              id: signature
+              shell: bash
+              run: |
+                  SIG_FILE=$(ls target/x86_64-unknown-linux-gnu/release/bundle/appimage/*.sig 2>/dev/null | head -1 || true)
+                  if [ -n "$SIG_FILE" ] && [ -f "$SIG_FILE" ]; then
+                    SIG_CONTENT=$(cat "$SIG_FILE")
+                    echo "signature=${SIG_CONTENT}" >> $GITHUB_OUTPUT
+                  else
+                    echo "signature=" >> $GITHUB_OUTPUT
+                  fi
+
+            - name: Upload Linux artifacts
+              uses: actions/upload-artifact@v4
+              with:
+                  name: linux-build
+                  path: |
+                      **/bundle/appimage/*.AppImage
+                      **/bundle/appimage/*.sig
+                      **/bundle/deb/*.deb
+                  retention-days: 7
+
+    build-macos:
+        name: Build macOS
+        needs: [version]
+        runs-on: ubuntu-latest
+        container:
+            image: ghcr.io/rust-cross/cargo-zigbuild
+        permissions:
+            contents: write
+        outputs:
+            signature: ${{ steps.signature.outputs.signature }}
         env:
-          TAURI_BUNDLE_NSIS: "true"
+            ORIGA_VERSION: ${{ needs.version.outputs.version }}
+            ORIGA_COMMIT: ${{ needs.version.outputs.commit_sha }}
+            ORIGA_BUILD_DATE: ${{ needs.version.outputs.build_date }}
+            TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+            TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
 
-      - name: Rename artifacts for latest release
-        if: needs.version.outputs.version_type != 'stable'
-        working-directory: target/x86_64-pc-windows-msvc/release/bundle
-        run: |
-          # Rename NSIS
-          for f in nsis/*.exe; do mv "$f" "nsis/origa_latest_x64-setup.exe"; done
-          for f in nsis/*.sig; do mv "$f" "nsis/origa_latest_x64-setup.exe.sig"; done
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
 
-      - name: Extract signature
-        id: signature
-        shell: bash
-        run: |
-          SIG_FILE=$(ls target/x86_64-pc-windows-msvc/release/bundle/nsis/*.sig 2>/dev/null | head -1 || true)
-          if [ -n "$SIG_FILE" ] && [ -f "$SIG_FILE" ]; then
-            SIG_CONTENT=$(cat "$SIG_FILE")
-            echo "signature=${SIG_CONTENT}" >> $GITHUB_OUTPUT
-          else
-            echo "signature=" >> $GITHUB_OUTPUT
-          fi
+            - name: Setup cargo cache
+              uses: Swatinem/rust-cache@v2
+              with:
+                  cache-all-crates: true
+                  cache-targets: false
+                  shared-key: origa-cross-build
+                  save-if: ${{ github.ref == 'refs/heads/master' }}
 
-      - name: Upload Windows artifacts
-        uses: actions/upload-artifact@v4
+            - name: Cache UniDic dictionary
+              uses: actions/cache@v4
+              with:
+                  path: origa_ui/public/dictionaries/unidic
+                  key: unidic-dict-v1-${{ hashFiles('origa_ui/build.rs') }}
+                  restore-keys: unidic-dict-v1-
+                  save-if: ${{ github.ref == 'refs/heads/master' }}
+
+            - name: Update version in config files
+              env:
+                  VERSION: ${{ needs.version.outputs.version_base }}
+              run: |
+                  # Обновить версию в Cargo.toml (workspace)
+                  sed -i 's/^version = ".*"/version = "'${VERSION}'"/' Cargo.toml
+
+                  # Обновить версию в tauri.conf.json
+                  sed -i 's/"version": ".*"/"version": "'${VERSION}'"/' tauri/tauri.conf.json
+
+                  echo "Updated version to ${VERSION}"
+
+            - name: Install build dependencies
+              run: apt-get update && apt-get install -y zip protobuf-compiler
+
+            - name: Setup Rust targets
+              run: rustup target add x86_64-apple-darwin aarch64-apple-darwin
+                  wasm32-unknown-unknown
+
+            - name: Install cargo-binstall
+              run: |
+                  curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
+                  cargo binstall trunk tauri-cli --no-confirm --force
+
+            - name: Add cargo bin to PATH
+              run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+            - name: Build frontend
+              working-directory: origa_ui
+              run: trunk build --release
+              env:
+                  TRAILBASE_URL: ${{ vars.TRAILBASE_URL }}
+                  ORIGA_PUBLIC_BASE_URL: ${{ vars.TRAILBASE_URL }}
+                  ORIGA_CDN_BASE_URL: ${{ vars.CDN_BASE_URL }}
+                  ORIGA_CDN_REGION: ${{ vars.CDN_REGION }}
+
+            - name: Remove public assets from dist
+              run: rm -rf origa_ui/dist/public
+
+            - name: Build Tauri app for macOS
+              working-directory: tauri
+              run: cargo tauri build --runner cargo-zigbuild --target aarch64-apple-darwin
+                  --no-bundle
+
+            - name: Extract signature
+              id: signature
+              shell: bash
+              run: echo "signature=" >> $GITHUB_OUTPUT
+
+            - name: Create macOS app bundle
+              run: |
+                  mkdir -p Origa.app/Contents/MacOS
+                  mkdir -p Origa.app/Contents/Resources
+                  cp target/aarch64-apple-darwin/release/origa-app Origa.app/Contents/MacOS/origa
+                  cat > Origa.app/Contents/Info.plist << EOF
+                  <?xml version="1.0" encoding="UTF-8"?>
+                  <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+                  <plist version="1.0">
+                  <dict>
+                    <key>CFBundleIdentifier</key>
+                    <string>net.uwuwu.origa</string>
+                    <key>CFBundleName</key>
+                    <string>Origa</string>
+                    <key>CFBundleDisplayName</key>
+                    <string>Origa</string>
+                    <key>CFBundleVersion</key>
+                    <string>${{ needs.version.outputs.version }}</string>
+                    <key>CFBundleShortVersionString</key>
+                    <string>${{ needs.version.outputs.version }}</string>
+                    <key>CFBundleExecutable</key>
+                    <string>origa</string>
+                    <key>CFBundlePackageType</key>
+                    <string>APPL</string>
+                  </dict>
+                  </plist>
+                  EOF
+                  chmod +x Origa.app/Contents/MacOS/origa
+                  zip -r Origa-macos-arm64.zip Origa.app
+
+            - name: Upload macOS artifacts
+              uses: actions/upload-artifact@v4
+              with:
+                  name: macos-build
+                  path: Origa-macos-arm64.zip
+                  retention-days: 7
+
+    generate-latest-json:
+        name: Generate latest.json
+        needs: [version, build-windows, build-linux, build-macos]
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+        steps:
+            - name: Generate latest.json
+              env:
+                  VERSION: ${{ needs.version.outputs.version }}
+                  VERSION_TYPE: ${{ needs.version.outputs.version_type }}
+                  WIN_SIG: ${{ needs.build-windows.outputs.signature }}
+                  LINUX_SIG: ${{ needs.build-linux.outputs.signature }}
+              run: |
+                  if [ "$VERSION_TYPE" != "stable" ]; then
+                    FILE_VERSION="latest"
+                  else
+                    FILE_VERSION="${VERSION}"
+                  fi
+                  cat > latest.json << EOF
+                  {
+                    "version": "${VERSION}",
+                    "notes": "Release ${VERSION}",
+                    "pub_date": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+                    "platforms": {
+                      "windows-x86_64": {
+                        "signature": "${WIN_SIG}",
+                        "url": "https://github.com/yurvon-screamo/origa/releases/download/${FILE_VERSION}/origa_${FILE_VERSION}_x64-setup.exe"
+                      },
+                      "linux-x86_64": {
+                        "signature": "${LINUX_SIG}",
+                        "url": "https://github.com/yurvon-screamo/origa/releases/download/${FILE_VERSION}/origa_${FILE_VERSION}_amd64.AppImage"
+                      }
+                    }
+                  }
+                  EOF
+                  cat latest.json
+
+            - name: Upload latest.json artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: latest-json
+                  path: latest.json
+                  retention-days: 7
+
+    release:
+        name: Update Latest Release
+        needs: [version, build-windows, build-linux, build-macos, generate-latest-json]
+        uses: ./.github/workflows/reusable-release.yml
         with:
-          name: windows-build
-          path: |
-            **/bundle/nsis/*.exe
-            **/bundle/nsis/*.sig
-          retention-days: 7
+            tag-name: ${{ needs.version.outputs.version_type == 'stable' &&
+                needs.version.outputs.version || 'latest' }}
+            release-name: ${{ needs.version.outputs.version_type == 'stable' &&
+                format('Release {0}', needs.version.outputs.version) || 'Latest
+                Build' }}
+            version-type: ${{ needs.version.outputs.version_type }}
+            make-latest: ${{ needs.version.outputs.version_type == 'stable' }}
+            prerelease: ${{ needs.version.outputs.version_type != 'stable' }}
+            body: |
+                Автоматическая сборка от ${{ github.sha }}
 
-  build-linux:
-    name: Build Linux
-    needs: [version]
-    runs-on: ubuntu-24.04
-    permissions:
-      contents: write
-    outputs:
-      signature: ${{ steps.signature.outputs.signature }}
-    env:
-      ORIGA_VERSION: ${{ needs.version.outputs.version }}
-      ORIGA_COMMIT: ${{ needs.version.outputs.commit_sha }}
-      ORIGA_BUILD_DATE: ${{ needs.version.outputs.build_date }}
-      TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-      TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+                ## Windows
+                - `origa_*_x64-setup.exe` - NSIS инсталлятор
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+                ## Linux
+                - `*.AppImage` - Portable версия
+                - `*.deb` - Debian/Ubuntu пакет
 
-      - name: Cache UniDic dictionary
-        uses: actions/cache@v4
-        with:
-          path: origa_ui/public/dictionaries/unidic
-          key: unidic-dict-v1-${{ hashFiles('origa_ui/build.rs') }}
-          restore-keys: unidic-dict-v1-
-          save-if: ${{ github.ref == 'refs/heads/master' }}
-
-      - name: Update version in config files
-        env:
-          VERSION: ${{ needs.version.outputs.version_base }}
-        run: |
-          # Обновить версию в Cargo.toml (workspace)
-          sed -i 's/^version = ".*"/version = "'${VERSION}'"/' Cargo.toml
-
-          # Обновить версию в tauri.conf.json
-          sed -i 's/"version": ".*"/"version": "'${VERSION}'"/' tauri/tauri.conf.json
-
-          echo "Updated version to ${VERSION}"
-
-      - name: Cache APT packages
-        uses: awalsh128/cache-apt-pkgs-action@latest
-        with:
-          packages: libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf protobuf-compiler libspeechd-dev
-          version: 1.0
-
-      - name: Install mold linker
-        uses: rui314/setup-mold@v1
-
-      - name: Setup Rust with caching
-        uses: ./.github/actions/setup-rust
-        with:
-          targets: x86_64-unknown-linux-gnu,wasm32-unknown-unknown
-          shared-key: origa-linux
-
-      - name: Setup frontend tools
-        uses: ./.github/actions/setup-frontend
-        with:
-          tools: trunk tauri-cli
-          cache-key-suffix: linux
-
-      - name: Add cargo bin to PATH
-        run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-
-      - name: Build frontend
-        working-directory: origa_ui
-        run: trunk build --release
-        env:
-          TRAILBASE_URL: ${{ vars.TRAILBASE_URL }}
-          PUBLIC_BASE_URL: ${{ vars.TRAILBASE_URL }}
-          CDN_BASE_URL: ${{ vars.CDN_BASE_URL }}
-          CDN_ACCESS_KEY: ${{ secrets.CDN_ACCESS_KEY }}
-          CDN_SECRET_KEY: ${{ secrets.CDN_SECRET_KEY }}
-          CDN_REGION: ${{ vars.CDN_REGION }}
-
-      - name: Remove public assets from dist
-        run: rm -rf origa_ui/dist/public
-
-      - name: Build Tauri app for Linux
-        working-directory: tauri
-        run: cargo tauri build --target x86_64-unknown-linux-gnu
-
-      - name: Rename artifacts for latest release
-        if: needs.version.outputs.version_type != 'stable'
-        working-directory: target/x86_64-unknown-linux-gnu/release/bundle
-        run: |
-          # Rename AppImage
-          for f in appimage/*.AppImage; do mv "$f" "appimage/origa_latest_amd64.AppImage"; done
-          for f in appimage/*.sig; do mv "$f" "appimage/origa_latest_amd64.AppImage.sig"; done
-          # Rename DEB
-          for f in deb/*.deb; do mv "$f" "deb/origa_latest_amd64.deb"; done
-
-      - name: Extract signature
-        id: signature
-        shell: bash
-        run: |
-          SIG_FILE=$(ls target/x86_64-unknown-linux-gnu/release/bundle/appimage/*.sig 2>/dev/null | head -1 || true)
-          if [ -n "$SIG_FILE" ] && [ -f "$SIG_FILE" ]; then
-            SIG_CONTENT=$(cat "$SIG_FILE")
-            echo "signature=${SIG_CONTENT}" >> $GITHUB_OUTPUT
-          else
-            echo "signature=" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Upload Linux artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: linux-build
-          path: |
-            **/bundle/appimage/*.AppImage
-            **/bundle/appimage/*.sig
-            **/bundle/deb/*.deb
-          retention-days: 7
-
-  build-macos:
-    name: Build macOS
-    needs: [version]
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/rust-cross/cargo-zigbuild
-    permissions:
-      contents: write
-    outputs:
-      signature: ${{ steps.signature.outputs.signature }}
-    env:
-      ORIGA_VERSION: ${{ needs.version.outputs.version }}
-      ORIGA_COMMIT: ${{ needs.version.outputs.commit_sha }}
-      ORIGA_BUILD_DATE: ${{ needs.version.outputs.build_date }}
-      TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-      TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup cargo cache
-        uses: Swatinem/rust-cache@v2
-        with:
-          cache-all-crates: true
-          cache-targets: false
-          shared-key: origa-cross-build
-          save-if: ${{ github.ref == 'refs/heads/master' }}
-
-      - name: Cache UniDic dictionary
-        uses: actions/cache@v4
-        with:
-          path: origa_ui/public/dictionaries/unidic
-          key: unidic-dict-v1-${{ hashFiles('origa_ui/build.rs') }}
-          restore-keys: unidic-dict-v1-
-          save-if: ${{ github.ref == 'refs/heads/master' }}
-
-      - name: Update version in config files
-        env:
-          VERSION: ${{ needs.version.outputs.version_base }}
-        run: |
-          # Обновить версию в Cargo.toml (workspace)
-          sed -i 's/^version = ".*"/version = "'${VERSION}'"/' Cargo.toml
-
-          # Обновить версию в tauri.conf.json
-          sed -i 's/"version": ".*"/"version": "'${VERSION}'"/' tauri/tauri.conf.json
-
-          echo "Updated version to ${VERSION}"
-
-      - name: Install build dependencies
-        run: apt-get update && apt-get install -y zip protobuf-compiler
-
-      - name: Setup Rust targets
-        run: rustup target add x86_64-apple-darwin aarch64-apple-darwin wasm32-unknown-unknown
-
-      - name: Install cargo-binstall
-        run: |
-          curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
-          cargo binstall trunk tauri-cli --no-confirm --force
-
-      - name: Add cargo bin to PATH
-        run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-
-      - name: Build frontend
-        working-directory: origa_ui
-        run: trunk build --release
-        env:
-          TRAILBASE_URL: ${{ vars.TRAILBASE_URL }}
-          PUBLIC_BASE_URL: ${{ vars.TRAILBASE_URL }}
-          CDN_BASE_URL: ${{ vars.CDN_BASE_URL }}
-          CDN_ACCESS_KEY: ${{ secrets.CDN_ACCESS_KEY }}
-          CDN_SECRET_KEY: ${{ secrets.CDN_SECRET_KEY }}
-          CDN_REGION: ${{ vars.CDN_REGION }}
-
-      - name: Remove public assets from dist
-        run: rm -rf origa_ui/dist/public
-
-      - name: Build Tauri app for macOS
-        working-directory: tauri
-        run: cargo tauri build --runner cargo-zigbuild --target aarch64-apple-darwin --no-bundle
-
-      - name: Extract signature
-        id: signature
-        shell: bash
-        run: echo "signature=" >> $GITHUB_OUTPUT
-
-      - name: Create macOS app bundle
-        run: |
-          mkdir -p Origa.app/Contents/MacOS
-          mkdir -p Origa.app/Contents/Resources
-          cp target/aarch64-apple-darwin/release/origa-app Origa.app/Contents/MacOS/origa
-          cat > Origa.app/Contents/Info.plist << EOF
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-            <key>CFBundleIdentifier</key>
-            <string>net.uwuwu.origa</string>
-            <key>CFBundleName</key>
-            <string>Origa</string>
-            <key>CFBundleDisplayName</key>
-            <string>Origa</string>
-            <key>CFBundleVersion</key>
-            <string>${{ needs.version.outputs.version }}</string>
-            <key>CFBundleShortVersionString</key>
-            <string>${{ needs.version.outputs.version }}</string>
-            <key>CFBundleExecutable</key>
-            <string>origa</string>
-            <key>CFBundlePackageType</key>
-            <string>APPL</string>
-          </dict>
-          </plist>
-          EOF
-          chmod +x Origa.app/Contents/MacOS/origa
-          zip -r Origa-macos-arm64.zip Origa.app
-
-      - name: Upload macOS artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: macos-build
-          path: Origa-macos-arm64.zip
-          retention-days: 7
-
-  generate-latest-json:
-    name: Generate latest.json
-    needs: [version, build-windows, build-linux, build-macos]
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Generate latest.json
-        env:
-          VERSION: ${{ needs.version.outputs.version }}
-          VERSION_TYPE: ${{ needs.version.outputs.version_type }}
-          WIN_SIG: ${{ needs.build-windows.outputs.signature }}
-          LINUX_SIG: ${{ needs.build-linux.outputs.signature }}
-        run: |
-          if [ "$VERSION_TYPE" != "stable" ]; then
-            FILE_VERSION="latest"
-          else
-            FILE_VERSION="${VERSION}"
-          fi
-          cat > latest.json << EOF
-          {
-            "version": "${VERSION}",
-            "notes": "Release ${VERSION}",
-            "pub_date": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
-            "platforms": {
-              "windows-x86_64": {
-                "signature": "${WIN_SIG}",
-                "url": "https://github.com/yurvon-screamo/origa/releases/download/${FILE_VERSION}/origa_${FILE_VERSION}_x64-setup.exe"
-              },
-              "linux-x86_64": {
-                "signature": "${LINUX_SIG}",
-                "url": "https://github.com/yurvon-screamo/origa/releases/download/${FILE_VERSION}/origa_${FILE_VERSION}_amd64.AppImage"
-              }
-            }
-          }
-          EOF
-          cat latest.json
-
-      - name: Upload latest.json artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: latest-json
-          path: latest.json
-          retention-days: 7
-
-  release:
-    name: Update Latest Release
-    needs:
-      [version, build-windows, build-linux, build-macos, generate-latest-json]
-    uses: ./.github/workflows/reusable-release.yml
-    with:
-      tag-name: ${{ needs.version.outputs.version_type == 'stable' && needs.version.outputs.version || 'latest' }}
-      release-name: ${{ needs.version.outputs.version_type == 'stable' && format('Release {0}', needs.version.outputs.version) || 'Latest Build' }}
-      version-type: ${{ needs.version.outputs.version_type }}
-      make-latest: ${{ needs.version.outputs.version_type == 'stable' }}
-      prerelease: ${{ needs.version.outputs.version_type != 'stable' }}
-      body: |
-        Автоматическая сборка от ${{ github.sha }}
-
-        ## Windows
-        - `origa_*_x64-setup.exe` - NSIS инсталлятор
-
-        ## Linux
-        - `*.AppImage` - Portable версия
-        - `*.deb` - Debian/Ubuntu пакет
-
-        ## macOS
-        - `Origa-macos-arm64.zip` - Apple Silicon
-    permissions:
-      contents: write
+                ## macOS
+                - `Origa-macos-arm64.zip` - Apple Silicon
+        permissions:
+            contents: write
