@@ -65,9 +65,10 @@ fn handle_lindera_dictionary() {
     let out_dir = env::var("OUT_DIR").unwrap();
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
     let public_dict_dir = Path::new(&manifest_dir)
-        .join("public")
-        .join("dictionaries")
-        .join("unidic");
+        .join("..")
+        .join("..")
+        .join("cdn")
+        .join("dictionaries");
 
     if public_dict_dir.exists() {
         let dict_da = public_dict_dir.join("dict.da");
