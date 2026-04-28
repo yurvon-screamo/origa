@@ -15,19 +15,6 @@ fn decompress(data: Vec<u8>) -> Result<Vec<u8>, OrigaError> {
     Ok(decompressed)
 }
 
-const DICT_FILES: &[&str] = &[
-    "char_def.bin",
-    "matrix.mtx",
-    "dict.da",
-    "dict.vals",
-    "unk.bin",
-    "dict.wordsidx",
-    "dict.words",
-    "metadata.json",
-];
-
-const CDN_DICT_PATH: &str = "/public/dictionaries/unidic/cache/dictionary-data";
-
 fn cache_dir() -> PathBuf {
     PathBuf::from("target/cdn-cache")
 }
@@ -67,17 +54,8 @@ fn find_dictionary_directory() -> Result<PathBuf, OrigaError> {
         dict_dir.pop();
     }
 
-    dict_dir = dict_dir
-        .join("origa_ui")
-        .join("public")
-        .join("dictionaries")
-        .join("unidic");
+    dict_dir = dict_dir.join("cdn").join("dictionaries");
 
-    if dict_dir.exists() {
-        return Ok(dict_dir);
-    }
-
-    dict_dir = PathBuf::from("origa_ui/public/dictionaries/unidic");
     if dict_dir.exists() {
         return Ok(dict_dir);
     }

@@ -16,10 +16,7 @@ async fn test_japanese_ocr_e2e() {
         .expect("Failed to get workspace root")
         .to_path_buf();
 
-    let ndlocr_model_dir = workspace_root
-        .join("origa_ui")
-        .join("public")
-        .join("ndlocr");
+    let ndlocr_model_dir = workspace_root.join("cdn").join("ndlocr");
 
     let deim = fs::read(ndlocr_model_dir.join("deim.onnx"))
         .await

@@ -9,13 +9,12 @@ use std::path::PathBuf;
 
 use crate::domain::{Card, NativeLanguage, Question, User, VocabularyCard};
 
-pub fn get_public_dir() -> PathBuf {
+pub fn get_cdn_dir() -> PathBuf {
     let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR not set");
     PathBuf::from(manifest_dir)
         .parent()
         .expect("Failed to get parent directory of CARGO_MANIFEST_DIR")
-        .join("origa_ui")
-        .join("public")
+        .join("cdn")
 }
 
 pub fn create_test_vocab_card(word: &str) -> Card {

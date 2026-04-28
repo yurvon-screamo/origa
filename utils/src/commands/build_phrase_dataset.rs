@@ -76,11 +76,7 @@ struct PhraseAnalysis {
 
 fn load_vocabulary_dictionary(base_path: &Path) -> Result<HashSet<String>, OrigaError> {
     let mut words = HashSet::new();
-    let vocab_path = base_path
-        .join("origa_ui")
-        .join("public")
-        .join("dictionary")
-        .join("vocabulary");
+    let vocab_path = base_path.join("cdn").join("dictionary");
 
     if !vocab_path.exists() {
         return Err(OrigaError::TokenizerError {

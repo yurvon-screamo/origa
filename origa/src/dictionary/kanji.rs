@@ -268,8 +268,7 @@ mod tests {
     }
 
     fn load_real_kanji_json() -> String {
-        let kanji_path =
-            Path::new(env!("CARGO_MANIFEST_DIR")).join("../origa_ui/public/dictionary/kanji.json");
+        let kanji_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("../cdn/dictionary/kanji.json");
 
         if kanji_path.exists() {
             std::fs::read_to_string(&kanji_path).expect("Failed to read kanji.json")
@@ -280,8 +279,8 @@ mod tests {
 
     fn ensure_test_dictionary_loaded() {
         if !is_kanji_loaded() {
-            let kanji_path = Path::new(env!("CARGO_MANIFEST_DIR"))
-                .join("../origa_ui/public/dictionary/kanji.json");
+            let kanji_path =
+                Path::new(env!("CARGO_MANIFEST_DIR")).join("../cdn/dictionary/kanji.json");
 
             if kanji_path.exists() {
                 let kanji_json =

@@ -15,11 +15,7 @@ use tokio::time::sleep;
 /// Loads vocabulary dictionary from chunk files
 fn load_vocabulary_dictionary(base_path: &Path) -> Result<HashSet<String>, OrigaError> {
     let mut words = HashSet::new();
-    let vocab_path = base_path
-        .join("origa_ui")
-        .join("public")
-        .join("dictionary")
-        .join("vocabulary");
+    let vocab_path = base_path.join("cdn").join("dictionary");
 
     if !vocab_path.exists() {
         tracing::warn!("Vocabulary directory not found: {}", vocab_path.display());
@@ -52,11 +48,7 @@ fn load_vocabulary_dictionary(base_path: &Path) -> Result<HashSet<String>, Origa
 /// Loads well-known sets from JSON files
 fn load_well_known_sets(base_path: &Path) -> Result<HashMap<String, HashSet<String>>, OrigaError> {
     let mut sets = HashMap::new();
-    let well_known_path = base_path
-        .join("origa_ui")
-        .join("public")
-        .join("domain")
-        .join("well_known_set");
+    let well_known_path = base_path.join("cdn").join("well_known_set");
 
     let files = collect_json_files(&well_known_path)?;
 
@@ -225,8 +217,7 @@ fn save_dictionary(
     base_path: &Path,
 ) -> Result<(), OrigaError> {
     let dict_path = base_path
-        .join("origa_ui")
-        .join("public")
+        .join("cdn")
         .join("dictionaries")
         .join("missing_vocabulary.json");
 
