@@ -218,6 +218,37 @@ pub enum Commands {
         #[arg(long)]
         grammar_path: Option<PathBuf>,
     },
+
+    /// Regenerate translations for invalid vocabulary words
+    RegenerateInvalid {
+        /// Path to JSONL progress file from validate-dictionary
+        #[arg(short, long)]
+        input: PathBuf,
+
+        /// OpenAI-compatible API base URL
+        #[arg(long, default_value = "http://10.2.11.6:8001/v1")]
+        api_base: String,
+
+        /// API key
+        #[arg(long, default_value = "none")]
+        api_key: String,
+
+        /// Number of concurrent translation requests
+        #[arg(short = 'w', long, default_value = "8")]
+        workers: usize,
+
+        /// Show what would be done without making changes
+        #[arg(long)]
+        dry_run: bool,
+
+        /// Only translate to Russian
+        #[arg(long)]
+        russian_only: bool,
+
+        /// Only translate to English
+        #[arg(long)]
+        english_only: bool,
+    },
 }
 
 #[derive(Subcommand)]
