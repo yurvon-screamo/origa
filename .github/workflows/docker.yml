@@ -63,6 +63,8 @@ jobs:
                       ORIGA_VERSION=${{ needs.version.outputs.version }}
                       ORIGA_COMMIT=${{ needs.version.outputs.commit_sha }}
                       ORIGA_BUILD_DATE=${{ needs.version.outputs.build_date }}
+                      ORIGA_CDN_BASE_URL=${{ vars.CDN_BASE_URL }}
+                      ORIGA_CDN_REGION=${{ vars.CDN_REGION }}
 
     deploy-to-railway:
         name: Deploy to Railway
