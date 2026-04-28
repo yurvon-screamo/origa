@@ -1,13 +1,6 @@
 use std::collections::HashMap;
 use std::sync::{Mutex, OnceLock};
 
-use hmac::{Hmac, Mac};
-use sha2::{Digest, Sha256};
-
-type HmacSha256 = Hmac<Sha256>;
-
-const PRESIGNED_TTL_SECS: u32 = 604800;
-
 pub struct Urls {
     pub base: &'static str,
     pub dictionary: &'static str,
@@ -65,88 +58,11 @@ fn get_current_date() -> String {
     }
 }
 
-fn to_hex(bytes: &[u8]) -> String {
-    bytes.iter().map(|b| format!("{b:02x}")).collect()
-}
-
-fn hmac_sha256(key: &[u8], data: &[u8]) -> Vec<u8> {
-    let mut mac = HmacSha256::new_from_slice(key)
-        .expect("invariant: HMAC-SHA256 accepts any key length per RFC 2104");
-    mac.update(data);
-    mac.finalize().into_bytes().to_vec()
-}
-
-fn split_base_url(base: &str) -> (&str, &str) {
-    let without_scheme = base.strip_prefix("https://").unwrap_or(base);
-    let (host, path) = without_scheme
-        .split_once('/')
-        .unwrap_or((without_scheme, ""));
-    (host, path)
-}
-
-fn build_canonical_query(credential: &str, timestamp: &str, user_query: Option<&str>) -> String {
-    let mut params: Vec<(&str, String)> = vec![
-        ("X-Amz-Algorithm", "AWS4-HMAC-SHA256".to_string()),
-        (
-            "X-Amz-Credential",
-            urlencoding::encode(credential).to_string(),
-        ),
-        ("X-Amz-Date", timestamp.to_string()),
-        ("X-Amz-Expires", PRESIGNED_TTL_SECS.to_string()),
-        ("X-Amz-SignedHeaders", "host".to_string()),
-    ];
-
-    if let Some(query) = user_query {
-        for pair in query.split('&') {
-            if pair.is_empty() {
-                continue;
-            }
-            if let Some((key, value)) = pair.split_once('=') {
-                params.push((key, urlencoding::encode(value).to_string()));
-            } else {
-                params.push((pair, String::new()));
-            }
-        }
-    }
-
-    params.sort_by(|a, b| a.0.cmp(b.0));
-    params
-        .iter()
-        .map(|(k, v)| {
-            if v.is_empty() {
-                (*k).to_string()
-            } else {
-                format!("{k}={v}")
-            }
-        })
-        .collect::<Vec<_>>()
-        .join("&")
-}
-
-fn build_canonical_request(canonical_path: &str, query: &str, host: &str) -> String {
-    format!(
-        "GET\n{}\n{}\nhost:{}\n\nhost\nUNSIGNED-PAYLOAD",
-        canonical_path, query, host,
-    )
-}
-
-fn derive_signing_key(date: &str, region: &str, secret: &str) -> Vec<u8> {
-    let k_date = hmac_sha256(format!("AWS4{}", secret).as_bytes(), date.as_bytes());
-    let k_region = hmac_sha256(&k_date, region.as_bytes());
-    let k_service = hmac_sha256(&k_region, b"s3");
-    hmac_sha256(&k_service, b"aws4_request")
-}
-
-struct SigningResult {
-    signature: String,
-    canonical_query: String,
-}
-
 pub fn cdn_url(path: &str) -> String {
     let base = env!("ORIGA_CDN_BASE_URL").trim_end_matches('/');
     let date = get_current_date();
 
-    let (clean_path, user_query) = match path.split_once('?') {
+    let (clean_path, _user_query) = match path.split_once('?') {
         Some((p, q)) => (p, Some(q)),
         None => (path, None),
     };
