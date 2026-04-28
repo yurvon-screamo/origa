@@ -23,6 +23,7 @@ fn create_chat_request_with_model(prompt: String, model: String) -> ChatRequest 
         top_p: 0.9,
         presence_penalty: 0.0,
         reasoning: None,
+        chat_template_kwargs: None,
     }
 }
 
@@ -216,6 +217,7 @@ pub async fn send_generic_chat_with_model(
         top_p: 0.9,
         presence_penalty: 0.0,
         reasoning,
+        chat_template_kwargs: None,
     };
 
     let response = send_chat_request_with_retry(&client, api_base, api_key, &request, 3).await?;
@@ -257,7 +259,8 @@ pub async fn validate_translation(
         temperature: 0.0,
         top_p: 1.0,
         presence_penalty: 0.0,
-        reasoning: Some(ReasoningConfig::disabled()),
+        reasoning: None,
+        chat_template_kwargs: Some(serde_json::json!({"preserve_thinking": false})),
     };
 
     let max_parse_retries = 3;

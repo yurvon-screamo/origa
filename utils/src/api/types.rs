@@ -11,7 +11,6 @@ pub struct ChatMessage {
 #[derive(Debug, Clone, Copy, Serialize)]
 #[serde(rename_all = "lowercase")]
 pub enum ReasoningEffort {
-    Low,
     High,
 }
 
@@ -27,12 +26,6 @@ impl ReasoningConfig {
             effort: ReasoningEffort::High,
         }
     }
-
-    pub fn disabled() -> Self {
-        Self {
-            effort: ReasoningEffort::Low,
-        }
-    }
 }
 
 /// Request to chat completions API
@@ -46,6 +39,8 @@ pub struct ChatRequest {
     pub presence_penalty: f32,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reasoning: Option<ReasoningConfig>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub chat_template_kwargs: Option<serde_json::Value>,
 }
 
 /// Response from chat completions API

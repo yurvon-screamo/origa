@@ -11,8 +11,8 @@ use origa::domain::OrigaError;
 use crate::cli::{CdnCommands, Cli, Commands};
 use crate::commands::{
     run_build_phrase_dataset, run_find_missing, run_generate_grammar, run_generate_grammar_prompt,
-    run_list, run_migrate_phrase_dataset, run_ndlocr, run_tokenize, run_tokenize_well_known,
-    run_upload, run_upload_audio, run_validate_dictionary,
+    run_list, run_migrate_phrase_dataset, run_ndlocr, run_regenerate_invalid, run_tokenize,
+    run_tokenize_well_known, run_upload, run_upload_audio, run_validate_dictionary,
 };
 
 #[tokio::main]
@@ -115,6 +115,26 @@ async fn main() {
                 grammar_path,
                 model,
                 reasoning,
+            )
+            .await
+        },
+        Commands::RegenerateInvalid {
+            input,
+            api_base,
+            api_key,
+            workers,
+            dry_run,
+            russian_only,
+            english_only,
+        } => {
+            run_regenerate_invalid(
+                input,
+                api_base,
+                api_key,
+                workers,
+                dry_run,
+                russian_only,
+                english_only,
             )
             .await
         },
