@@ -66,9 +66,18 @@ fn handle_lindera_dictionary() {
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
     let public_dict_dir = Path::new(&manifest_dir)
         .join("..")
-        .join("..")
         .join("cdn")
         .join("dictionaries");
+
+    println!(
+        "cargo:warning=Looking for dictionary at: {}",
+        public_dict_dir.display()
+    );
+    println!("cargo:warning=Exists: {}", public_dict_dir.exists());
+    println!(
+        "cargo:warning=dict.da exists: {}",
+        public_dict_dir.join("dict.da").exists()
+    );
 
     if public_dict_dir.exists() {
         let dict_da = public_dict_dir.join("dict.da");
@@ -257,8 +266,8 @@ fn load_json(path: &Path) -> WellKnownSet {
 fn generate_well_known_meta() {
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
     let base_dir = Path::new(&manifest_dir)
-        .join("public")
-        .join("domain")
+        .join("..")
+        .join("cdn")
         .join("well_known_set");
     let output_file = base_dir.join("well_known_sets_meta.json");
 

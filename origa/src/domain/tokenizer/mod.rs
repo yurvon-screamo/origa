@@ -256,10 +256,8 @@ mod tests {
         let dict_dir = std::path::PathBuf::from(manifest_dir)
             .parent()
             .unwrap()
-            .join("origa_ui")
-            .join("public")
-            .join("dictionaries")
-            .join("unidic");
+            .join("cdn")
+            .join("dictionaries");
 
         let decompress = |data: Vec<u8>| -> Vec<u8> {
             let mut decoder = DeflateDecoder::new(&data[..]);

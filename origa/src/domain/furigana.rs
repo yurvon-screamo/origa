@@ -166,20 +166,16 @@ mod tests {
                 PathBuf::from(manifest_dir)
                     .parent()
                     .unwrap()
-                    .join("origa_ui")
-                    .join("public")
+                    .join("cdn")
                     .join("dictionaries")
-                    .join("unidic")
             }
         } else {
             let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
             PathBuf::from(manifest_dir)
                 .parent()
                 .unwrap()
-                .join("origa_ui")
-                .join("public")
+                .join("cdn")
                 .join("dictionaries")
-                .join("unidic")
         };
 
         let read_file = |name: &str| fs::read(dict_dir.join(name)).unwrap();

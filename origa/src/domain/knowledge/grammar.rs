@@ -96,8 +96,7 @@ mod tests {
             let grammar_path = std::path::PathBuf::from(manifest_dir)
                 .parent()
                 .expect("Failed to get parent directory")
-                .join("origa_ui")
-                .join("public")
+                .join("cdn")
                 .join("grammar")
                 .join("grammar.json");
 
