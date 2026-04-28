@@ -105,7 +105,6 @@ jobs:
                   path: origa_ui/public/dictionaries/unidic
                   key: unidic-dict-v1-${{ hashFiles('origa_ui/build.rs') }}
                   restore-keys: unidic-dict-v1-
-                  save-if: ${{ github.ref == 'refs/heads/master' }}
 
             - name: Build frontend
               working-directory: origa_ui
