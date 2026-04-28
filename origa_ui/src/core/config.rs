@@ -19,7 +19,7 @@ static URLS: OnceLock<Urls> = OnceLock::new();
 
 pub fn urls() -> &'static Urls {
     URLS.get_or_init(|| {
-        let base = env!("PUBLIC_BASE_URL");
+        let base = env!("ORIGA_PUBLIC_BASE_URL");
         Urls {
             base,
             dictionary: "/public/dictionaries/unidic/cache/dictionary-data",
@@ -142,37 +142,8 @@ struct SigningResult {
     canonical_query: String,
 }
 
-fn compute_signing(clean_path: &str, user_query: Option<&str>) -> SigningResult {
-    let date = get_current_date();
-    let region = env!("CDN_REGION");
-    let secret = env!("CDN_SECRET_KEY");
-    let access_key = env!("CDN_ACCESS_KEY");
-    let base = env!("CDN_BASE_URL").trim_end_matches('/');
-    let (host, base_path) = split_base_url(base);
-
-    let canonical_path = format!("/{}{}", base_path, clean_path);
-    let timestamp = format!("{}T000000Z", date);
-    let credential = format!("{}/{}/{}/s3/aws4_request", access_key, date, region);
-    let canonical_query = build_canonical_query(&credential, &timestamp, user_query);
-    let canonical_request = build_canonical_request(&canonical_path, &canonical_query, host);
-
-    let request_hash = to_hex(&Sha256::digest(canonical_request.as_bytes()));
-    let string_to_sign = format!(
-        "AWS4-HMAC-SHA256\n{}\n{}/{}/s3/aws4_request\n{}",
-        timestamp, date, region, request_hash,
-    );
-
-    let signing_key = derive_signing_key(&date, region, secret);
-    let signature = hmac_sha256(&signing_key, string_to_sign.as_bytes());
-
-    SigningResult {
-        signature: to_hex(&signature),
-        canonical_query,
-    }
-}
-
 pub fn cdn_url(path: &str) -> String {
-    let base = env!("CDN_BASE_URL").trim_end_matches('/');
+    let base = env!("ORIGA_CDN_BASE_URL").trim_end_matches('/');
     let date = get_current_date();
 
     let (clean_path, user_query) = match path.split_once('?') {
@@ -190,12 +161,7 @@ pub fn cdn_url(path: &str) -> String {
         }
     }
 
-    let result = compute_signing(clean_path, user_query);
-
-    let url = format!(
-        "{}{}?{}&X-Amz-Signature={}",
-        base, clean_path, result.canonical_query, result.signature,
-    );
+    let url = format!("{}{}", base, clean_path,);
 
     {
         let mut guard = cache.lock().expect("signing cache lock");

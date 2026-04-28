@@ -1,5 +1,4 @@
 mod build_phrase_dataset;
-mod cdn;
 mod find_missing;
 mod generate_grammar;
 mod generate_grammar_prompt;
@@ -11,7 +10,6 @@ mod tokenize_well_known;
 mod validate_dictionary;
 
 pub use build_phrase_dataset::run_build_phrase_dataset;
-pub use cdn::{run_list, run_upload, run_upload_audio};
 pub use find_missing::run_find_missing;
 pub use generate_grammar::run_generate_grammar;
 pub use generate_grammar_prompt::run_generate_grammar_prompt;

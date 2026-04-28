@@ -152,12 +152,6 @@ pub enum Commands {
         limit: Option<usize>,
     },
 
-    /// CDN operations (upload, list)
-    Cdn {
-        #[command(subcommand)]
-        command: CdnCommands,
-    },
-
     /// Print a grammar prompt to stdout without calling the LLM
     GenerateGrammarPrompt {
         /// Grammar pattern title (e.g. ～ます, ～てください)
@@ -248,35 +242,5 @@ pub enum Commands {
         /// Only translate to English
         #[arg(long)]
         english_only: bool,
-    },
-}
-
-#[derive(Subcommand)]
-pub enum CdnCommands {
-    /// Recursively upload files from directory to CDN
-    Upload {
-        /// Directory to upload
-        dir: PathBuf,
-    },
-
-    /// Upload audio files with parallel workers
-    UploadAudio {
-        /// Directory with audio files
-        dir: PathBuf,
-
-        /// Number of parallel workers
-        #[arg(short, long, default_value = "50")]
-        workers: usize,
-
-        /// File with list of failed keys to retry
-        #[arg(long)]
-        only_failed: Option<PathBuf>,
-    },
-
-    /// List CDN objects
-    List {
-        /// Key prefix filter
-        #[arg(short, long)]
-        prefix: Option<String>,
     },
 }

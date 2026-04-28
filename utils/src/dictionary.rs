@@ -32,31 +32,6 @@ fn cache_dir() -> PathBuf {
     PathBuf::from("target/cdn-cache")
 }
 
-fn download_from_cdn(cache: &std::path::Path) -> Result<(), OrigaError> {
-    let base_url =
-        crate::signing::cdn_url(CDN_DICT_PATH).map_err(|e| OrigaError::TokenizerError {
-            reason: format!("CDN signing failed: {e}"),
-        })?;
-
-    let client = reqwest::blocking::Client::new();
-    for &name in DICT_FILES {
-        let url = format!("{base_url}/{name}");
-        let resp = client
-            .get(&url)
-            .send()
-            .and_then(|r| r.error_for_status())
-            .and_then(|r| r.bytes())
-            .map_err(|e| OrigaError::TokenizerError {
-                reason: format!("Failed to download {name} from CDN: {e}"),
-            })?;
-        fs::write(cache.join(name), &resp).map_err(|e| OrigaError::TokenizerError {
-            reason: format!("Failed to write {name}: {e}"),
-        })?;
-    }
-
-    Ok(())
-}
-
 pub fn load_dictionary() -> Result<(), OrigaError> {
     if is_dictionary_loaded() {
         return Ok(());
@@ -113,13 +88,6 @@ fn find_dictionary_directory() -> Result<PathBuf, OrigaError> {
         return Ok(cache);
     }
 
-    tracing::info!("local dictionary not found, downloading from CDN...");
-    fs::create_dir_all(&cache).map_err(|e| OrigaError::TokenizerError {
-        reason: format!("Failed to create cache dir: {e}"),
-    })?;
-
-    download_from_cdn(&cache)?;
-    tracing::info!("dictionary cached to {}", cache.display());
-
+    tracing::error!("local dictionary not found, you need to download from CDN");
     Ok(cache)
 }

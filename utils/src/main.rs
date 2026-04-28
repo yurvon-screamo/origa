@@ -2,17 +2,15 @@ mod api;
 mod cli;
 mod commands;
 mod dictionary;
-mod signing;
 mod utils;
 
 use clap::Parser;
-use origa::domain::OrigaError;
 
-use crate::cli::{CdnCommands, Cli, Commands};
+use crate::cli::{Cli, Commands};
 use crate::commands::{
     run_build_phrase_dataset, run_find_missing, run_generate_grammar, run_generate_grammar_prompt,
-    run_list, run_migrate_phrase_dataset, run_ndlocr, run_regenerate_invalid, run_tokenize,
-    run_tokenize_well_known, run_upload, run_upload_audio, run_validate_dictionary,
+    run_migrate_phrase_dataset, run_ndlocr, run_regenerate_invalid, run_tokenize,
+    run_tokenize_well_known, run_validate_dictionary,
 };
 
 #[tokio::main]
@@ -60,20 +58,6 @@ async fn main() {
             min_tokens,
         } => run_build_phrase_dataset(input, output, min_tokens),
         Commands::MigratePhraseDataset { dataset } => run_migrate_phrase_dataset(dataset),
-        Commands::Cdn { command } => {
-            let result: Result<(), Box<dyn std::error::Error>> = match command {
-                CdnCommands::Upload { dir } => run_upload(dir).await,
-                CdnCommands::UploadAudio {
-                    dir,
-                    workers,
-                    only_failed,
-                } => run_upload_audio(dir, workers, only_failed).await,
-                CdnCommands::List { prefix } => run_list(prefix).await,
-            };
-            result.map_err(|e| OrigaError::TokenizerError {
-                reason: e.to_string(),
-            })
-        },
         Commands::ValidateDictionary {
             api_key,
             api_base,
