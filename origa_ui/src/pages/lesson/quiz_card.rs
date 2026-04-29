@@ -14,6 +14,13 @@ use super::quiz_options::QuizOptions;
 use super::quiz_result::QuizResult;
 use super::quiz_result_display::QuizResultDisplay;
 
+#[derive(Clone, Copy, Default, PartialEq)]
+pub enum QuizVariant {
+    #[default]
+    Meaning,
+    Reading,
+}
+
 #[component]
 pub fn QuizCardView(
     quiz_card: QuizCard,
@@ -24,6 +31,7 @@ pub fn QuizCardView(
     dont_know_selected: bool,
     native_language: NativeLanguage,
     #[prop(into)] known_kanji: Signal<HashSet<String>>,
+    #[prop(optional)] quiz_variant: QuizVariant,
 ) -> impl IntoView {
     let i18n = use_i18n();
     let card = quiz_card.card().clone();
@@ -100,6 +108,7 @@ pub fn QuizCardView(
             <QuizCardHeader
                 card_type=card_type
                 question_text=question.get_value()
+                quiz_variant=quiz_variant
             />
 
             <div class="flex-1 flex flex-col justify-center">
@@ -129,7 +138,10 @@ pub fn QuizCardView(
                     </Show>
 
                     <Text size=TextSize::Default variant=TypographyVariant::Muted class="mt-4">
-                        {t!(i18n, lesson.choose_answer)}
+                        {match quiz_variant {
+                            QuizVariant::Meaning => t!(i18n, lesson.choose_answer).into_any(),
+                            QuizVariant::Reading => t!(i18n, lesson.choose_reading).into_any(),
+                        }}
                     </Text>
                 </div>
 

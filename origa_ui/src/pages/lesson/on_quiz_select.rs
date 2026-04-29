@@ -21,8 +21,10 @@ pub fn create_on_quiz_select(
                 .card_ids
                 .get(lesson_state.get().current_index)
                 .unwrap(),
-        ) && let LessonCardView::Quiz(quiz) = lesson_card.view()
-        {
+        ) && let Some(quiz) = match lesson_card.view() {
+            LessonCardView::Quiz(q) | LessonCardView::KanjiReadingQuiz(q) => Some(q),
+            _ => None,
+        } {
             let is_correct = quiz.check_answer(option_index);
             let rating = if is_correct {
                 Rating::Good

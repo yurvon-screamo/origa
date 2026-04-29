@@ -57,6 +57,9 @@ fn lesson_card_view_card_returns_inner_card() {
 
     let quiz = LessonCardView::Quiz(QuizCard::new(vocab.clone(), vec![]));
     assert_eq!(quiz.card(), &vocab);
+
+    let reading_quiz = LessonCardView::KanjiReadingQuiz(QuizCard::new(vocab.clone(), vec![]));
+    assert_eq!(reading_quiz.card(), &vocab);
 }
 
 mod quiz_option_and_card_tests {
@@ -170,6 +173,12 @@ mod lesson_card_view_accessors {
         );
         assert!(
             LessonCardView::Quiz(QuizCard::new(vocab.clone(), vec![]))
+                .grammar_info()
+                .is_none()
+        );
+        let reading_quiz = QuizCard::new(vocab.clone(), vec![]);
+        assert!(
+            LessonCardView::KanjiReadingQuiz(reading_quiz)
                 .grammar_info()
                 .is_none()
         );

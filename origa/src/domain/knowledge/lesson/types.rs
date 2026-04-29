@@ -128,6 +128,7 @@ pub enum LessonCardView {
         audio_file: String,
         options: Vec<QuizOption>,
     },
+    KanjiReadingQuiz(QuizCard),
 }
 
 impl LessonCardView {
@@ -140,6 +141,7 @@ impl LessonCardView {
             | LessonCardView::PhraseListen { card, .. } => card,
             LessonCardView::Quiz(quiz) => quiz.card(),
             LessonCardView::YesNo(yc) => yc.card(),
+            LessonCardView::KanjiReadingQuiz(quiz) => quiz.card(),
         }
     }
 
@@ -151,7 +153,8 @@ impl LessonCardView {
             | LessonCardView::YesNo(_)
             | LessonCardView::Reversed(_)
             | LessonCardView::Writing(_)
-            | LessonCardView::PhraseListen { .. } => None,
+            | LessonCardView::PhraseListen { .. }
+            | LessonCardView::KanjiReadingQuiz(_) => None,
         }
     }
 }

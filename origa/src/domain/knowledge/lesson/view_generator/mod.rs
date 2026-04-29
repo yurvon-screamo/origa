@@ -17,9 +17,10 @@ const PROB_QUIZ_VIEW: f32 = 0.30;
 const PROB_YESNO_VIEW: f32 = 0.50;
 const PROB_REVERSED_VIEW: f32 = 0.75;
 
-const PROB_KANJI_NORMAL: f32 = 0.25;
-const PROB_KANJI_QUIZ: f32 = 0.50;
-const PROB_KANJI_YESNO: f32 = 0.70;
+const PROB_KANJI_NORMAL: f32 = 0.20;
+const PROB_KANJI_READING_QUIZ: f32 = 0.40;
+const PROB_KANJI_QUIZ: f32 = 0.55;
+const PROB_KANJI_YESNO: f32 = 0.75;
 
 const PROB_NEW_KANJI_NORMAL: f32 = 0.33;
 const PROB_NEW_KANJI_QUIZ: f32 = 0.66;
@@ -113,6 +114,9 @@ impl<'a> LessonViewGenerator<'a> {
         let rand_val = rng.random::<f32>();
         if rand_val < PROB_KANJI_NORMAL {
             LessonCardView::Normal(card.clone())
+        } else if !memory.is_high_difficulty() && rand_val < PROB_KANJI_READING_QUIZ {
+            generation::generate_kanji_reading_quiz(card.clone(), same_type_cards)
+                .unwrap_or_else(|_| LessonCardView::Normal(card.clone()))
         } else if rand_val < PROB_KANJI_QUIZ {
             generation::generate_quiz(card.clone(), same_type_cards, &DEFAULT_LANG)
                 .unwrap_or_else(|_| LessonCardView::Normal(card.clone()))
