@@ -114,6 +114,10 @@ mod tests {
         Ulid::from_string("01KJ9AVWBGC2BT0DMFPDYYFEWB").expect("Invalid ULID")
     }
 
+    fn get_verb_rule_id() -> Ulid {
+        Ulid::from_string("01G00000000000000024000000").expect("Invalid ULID")
+    }
+
     mod new {
         use super::*;
 
@@ -221,7 +225,7 @@ mod tests {
             let binding = desc.unwrap();
             let text = binding.text();
             assert!(!text.is_empty());
-            assert!(text.contains("ます"));
+            assert!(text.contains("です"));
         }
 
         #[test]
@@ -237,7 +241,7 @@ mod tests {
             let binding = desc.unwrap();
             let text = binding.text();
             assert!(!text.is_empty());
-            assert!(text.contains("ます"));
+            assert!(text.contains("です"));
         }
 
         #[test]
@@ -262,7 +266,7 @@ mod tests {
         fn returns_parts_of_speech_for_rule_with_format_map() {
             init_test_grammar();
 
-            let rule_id = get_first_rule_id();
+            let rule_id = get_verb_rule_id();
             let card = GrammarRuleCard::new(rule_id).expect("Failed to create card");
 
             let parts = card.apply_to();
@@ -387,7 +391,7 @@ mod tests {
             init_test_grammar();
 
             let rule_id1 = get_first_rule_id();
-            let rule_id2 = Ulid::from_string("01KJ9AVWBG78GHSKKD8W1YHJB3").expect("Invalid ULID");
+            let rule_id2 = Ulid::from_string("01G00000000000000004000000").expect("Invalid ULID");
 
             let card1 = GrammarRuleCard::new(rule_id1).expect("Failed to create card1");
             let card2 = GrammarRuleCard::new(rule_id2).expect("Failed to create card2");

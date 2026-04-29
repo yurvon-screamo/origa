@@ -21,9 +21,9 @@ mod grammar_quiz {
         let grammar_card = create_grammar_card(grammar_rule_id);
 
         let rule_ids = vec![
-            "01KJ9AVWBG78GHSKKD8W1YHJB3",
-            "01KJ9AVWBG1AAJZXRGA499R44W",
-            "01KJ9AVWBG865E0F72RYM7F34B",
+            "01G00000000000000004000000",
+            "01G00000000000000008000000",
+            "01G0000000000000000C000000",
         ];
         let other_cards: Vec<Card> = rule_ids
             .into_iter()
@@ -76,9 +76,9 @@ mod grammar_quiz {
         let grammar_card = create_grammar_card(grammar_rule_id);
 
         let rule_ids = vec![
-            "01KJ9AVWBG78GHSKKD8W1YHJB3",
-            "01KJ9AVWBG1AAJZXRGA499R44W",
-            "01KJ9AVWBG865E0F72RYM7F34B",
+            "01G00000000000000004000000",
+            "01G00000000000000008000000",
+            "01G0000000000000000C000000",
         ];
         let other_cards: Vec<Card> = rule_ids
             .into_iter()
