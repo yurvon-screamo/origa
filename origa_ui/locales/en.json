@@ -195,6 +195,8 @@
         "phrase": "Phrase",
         "quiz": "Quiz",
         "choose_answer": "Choose the correct answer:",
+        "choose_reading": "Choose the correct reading:",
+        "reading": "Reading",
         "dont_know": "Don't know",
         "correct": "✓ Correct!",
         "incorrect": "✗ Incorrect",

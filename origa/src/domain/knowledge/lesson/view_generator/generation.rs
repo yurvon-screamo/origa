@@ -1,3 +1,4 @@
+use crate::dictionary::kanji::get_kanji_info;
 use crate::domain::value_objects::NativeLanguage;
 use crate::domain::{Card, OrigaError};
 use rand::{Rng, prelude::IndexedRandom, seq::SliceRandom};
@@ -138,4 +139,73 @@ pub(crate) fn generate_phrase_quiz(
         audio_file,
         options,
     })
+}
+
+pub(crate) fn generate_kanji_reading_quiz(
+    original_card: Card,
+    same_type_cards: &[Card],
+) -> Result<LessonCardView, OrigaError> {
+    let kanji_card = match &original_card {
+        Card::Kanji(kc) => kc,
+        Card::Vocabulary(_) | Card::Grammar(_) | Card::Phrase(_) => {
+            return Ok(LessonCardView::Normal(original_card));
+        },
+    };
+
+    let kanji_str = kanji_card.kanji().text();
+    let info = match get_kanji_info(kanji_str) {
+        Ok(info) => info,
+        Err(_) => return Ok(LessonCardView::Normal(original_card)),
+    };
+
+    let mut all_readings: Vec<String> = info.on_readings().to_vec();
+    all_readings.extend(info.kun_readings().iter().cloned());
+
+    if all_readings.is_empty() {
+        return Ok(LessonCardView::Normal(original_card));
+    }
+
+    let target_readings: std::collections::HashSet<String> = all_readings.iter().cloned().collect();
+
+    let correct_reading = all_readings
+        .choose(&mut rand::rng())
+        .expect("all_readings guaranteed non-empty after is_empty check")
+        .clone();
+
+    let mut distractors: Vec<String> = same_type_cards
+        .iter()
+        .filter_map(|c| match c {
+            Card::Kanji(kc) => {
+                let other_info = get_kanji_info(kc.kanji().text()).ok()?;
+                let mut readings = other_info.on_readings().to_vec();
+                readings.extend(other_info.kun_readings().iter().cloned());
+                Some(readings)
+            },
+            Card::Vocabulary(_) | Card::Grammar(_) | Card::Phrase(_) => None,
+        })
+        .flatten()
+        .filter(|r| !target_readings.contains(r))
+        .collect();
+
+    let mut seen = std::collections::HashSet::new();
+    distractors.retain(|r| seen.insert(r.clone()));
+
+    distractors.shuffle(&mut rand::rng());
+
+    if distractors.len() < 3 {
+        return Ok(LessonCardView::Normal(original_card));
+    }
+
+    let selected_distractors: Vec<String> = distractors.into_iter().take(3).collect();
+
+    let mut options: Vec<QuizOption> = selected_distractors
+        .into_iter()
+        .map(|text| QuizOption::new(text, false))
+        .collect();
+
+    options.push(QuizOption::new(correct_reading, true));
+    options.shuffle(&mut rand::rng());
+
+    let quiz = QuizCard::new(original_card, options);
+    Ok(LessonCardView::KanjiReadingQuiz(quiz))
 }

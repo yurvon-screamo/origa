@@ -32,7 +32,12 @@ pub fn create_keyboard_handler(
         let current_card = current_card_id.and_then(|id| state.cards.get(id));
 
         let is_quiz = current_card
-            .map(|c| matches!(c.view(), LessonCardView::Quiz(_)))
+            .map(|c| {
+                matches!(
+                    c.view(),
+                    LessonCardView::Quiz(_) | LessonCardView::KanjiReadingQuiz(_)
+                )
+            })
             .unwrap_or(false);
         let is_yesno = current_card
             .map(|c| matches!(c.view(), LessonCardView::YesNo(_)))
