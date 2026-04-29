@@ -263,15 +263,35 @@ impl KnowledgeSet {
         let new_cards_studied_today = self.new_cards_studied_today();
         let remaining_new = daily_new_limit.saturating_sub(new_cards_studied_today);
 
-        if remaining_new > 0 && selected_cards.len() < remaining_new {
-            let allowed_new = remaining_new.saturating_sub(selected_cards.len());
-            let new_cards: Vec<_> = all_cards
-                .iter()
-                .filter(|(_, card)| card.memory().is_new())
-                .copied()
-                .collect();
+        let new_cards: Vec<_> = all_cards
+            .iter()
+            .filter(|(_, card)| card.memory().is_new())
+            .copied()
+            .collect();
+
+        if !new_cards.is_empty() {
             let distributed = distribute_new_cards(new_cards, jlpt_content);
-            selected_cards.extend(distributed.into_iter().take(allowed_new));
+            let allowed_limited = if remaining_new > selected_cards.len() {
+                remaining_new.saturating_sub(selected_cards.len())
+            } else {
+                0
+            };
+            let mut limited_taken = 0;
+
+            for card in distributed {
+                let card_type = CardType::from(card.1.card());
+                match card_type {
+                    CardType::Phrase => {
+                        selected_cards.push(card);
+                    },
+                    CardType::Vocabulary | CardType::Kanji | CardType::Grammar => {
+                        if limited_taken < allowed_limited {
+                            selected_cards.push(card);
+                            limited_taken += 1;
+                        }
+                    },
+                }
+            }
         }
 
         let known_cards = all_cards
@@ -344,6 +364,7 @@ impl KnowledgeSet {
     ) -> Result<(), OrigaError> {
         if let Some(card) = self.study_cards.get_mut(&card_id) {
             let was_new = card.memory().is_new();
+            let is_phrase = matches!(card.card(), Card::Phrase(_));
 
             let NextReview {
                 interval,
@@ -353,7 +374,7 @@ impl KnowledgeSet {
             let review = ReviewLog::new(rating, interval);
             card.add_review(memory_state, review);
             card.handle_favorite_rating(rating);
-            self.update_history(rating, was_new);
+            self.update_history(rating, was_new, is_phrase);
             Ok(())
         } else {
             Err(OrigaError::CardNotFound { card_id })
@@ -369,7 +390,7 @@ impl KnowledgeSet {
         }
     }
 
-    fn update_history(&mut self, rating: Rating, was_new: bool) {
+    fn update_history(&mut self, rating: Rating, was_new: bool, is_phrase: bool) {
         let mut avg_stability = 0.0;
         let mut avg_difficulty = 0.0;
         let mut total_words = 0;
@@ -378,7 +399,11 @@ impl KnowledgeSet {
         let mut in_progress_words = 0;
         let mut high_difficulty_words = 0;
 
-        for memory in self.study_cards.values().map(|x| x.memory()) {
+        for study_card in self.study_cards.values() {
+            if matches!(study_card.card(), Card::Phrase(_)) {
+                continue;
+            }
+            let memory = study_card.memory();
             avg_stability += memory.stability().map(|x| x.value()).unwrap_or(0.0);
             avg_difficulty += memory.difficulty().map(|x| x.value()).unwrap_or(0.0);
             total_words += 1;
@@ -386,6 +411,10 @@ impl KnowledgeSet {
             new_words += memory.is_new() as usize;
             in_progress_words += memory.is_in_progress() as usize;
             high_difficulty_words += memory.is_high_difficulty() as usize;
+        }
+
+        if total_words == 0 {
+            return;
         }
 
         avg_stability /= total_words as f64;
@@ -399,36 +428,71 @@ impl KnowledgeSet {
             .iter_mut()
             .find(|item| item.timestamp().date_naive() == today)
         {
-            if was_new {
+            if was_new && !is_phrase {
                 existing_item.increment_new_cards_studied();
             }
-            existing_item.update(
-                avg_stability,
-                avg_difficulty,
-                total_words,
-                known_words,
-                new_words,
-                in_progress_words,
-                high_difficulty_words,
-                rating,
-                existing_item.new_cards_studied_today(),
-            );
+            let new_cards_today = existing_item.new_cards_studied_today();
+
+            if is_phrase {
+                existing_item.update_stats(
+                    avg_stability,
+                    avg_difficulty,
+                    total_words,
+                    known_words,
+                    new_words,
+                    in_progress_words,
+                    high_difficulty_words,
+                    existing_item.positive_ratings(),
+                    existing_item.negative_ratings(),
+                    existing_item.total_ratings(),
+                    new_cards_today,
+                );
+            } else {
+                existing_item.update(
+                    avg_stability,
+                    avg_difficulty,
+                    total_words,
+                    known_words,
+                    new_words,
+                    in_progress_words,
+                    high_difficulty_words,
+                    rating,
+                    new_cards_today,
+                );
+            }
         } else {
             let mut item = DailyHistoryItem::new();
-            if was_new {
+            if was_new && !is_phrase {
                 item.increment_new_cards_studied();
             }
-            item.update(
-                avg_stability,
-                avg_difficulty,
-                total_words,
-                known_words,
-                new_words,
-                in_progress_words,
-                high_difficulty_words,
-                rating,
-                item.new_cards_studied_today(),
-            );
+
+            if is_phrase {
+                item.update_stats(
+                    avg_stability,
+                    avg_difficulty,
+                    total_words,
+                    known_words,
+                    new_words,
+                    in_progress_words,
+                    high_difficulty_words,
+                    0,
+                    0,
+                    0,
+                    item.new_cards_studied_today(),
+                );
+            } else {
+                item.update(
+                    avg_stability,
+                    avg_difficulty,
+                    total_words,
+                    known_words,
+                    new_words,
+                    in_progress_words,
+                    high_difficulty_words,
+                    rating,
+                    item.new_cards_studied_today(),
+                );
+            }
             self.lesson_history.push(item);
         }
     }
@@ -442,7 +506,11 @@ impl KnowledgeSet {
         let mut in_progress_words = 0;
         let mut high_difficulty_words = 0;
 
-        for memory in self.study_cards.values().map(|x| x.memory()) {
+        for study_card in self.study_cards.values() {
+            if matches!(study_card.card(), Card::Phrase(_)) {
+                continue;
+            }
+            let memory = study_card.memory();
             avg_stability += memory.stability().map(|x| x.value()).unwrap_or(0.0);
             avg_difficulty += memory.difficulty().map(|x| x.value()).unwrap_or(0.0);
             total_words += 1;
@@ -463,6 +531,7 @@ impl KnowledgeSet {
         let (positive, negative, total) = self
             .study_cards
             .values()
+            .filter(|card| !matches!(card.card(), Card::Phrase(_)))
             .flat_map(|card| card.memory().reviews())
             .filter(|review| review.timestamp().date_naive() == today)
             .fold((0, 0, 0), |(pos, neg, tot), review| match review.rating() {
@@ -1389,6 +1458,123 @@ mod tests {
         assert_eq!(
             n4_count, 2,
             "Should contain exactly 2 N4 cards (limit=3 minus 1 N5)"
+        );
+    }
+
+    #[test]
+    fn phrase_new_cards_not_limited() {
+        let mut knowledge_set = KnowledgeSet::new();
+        for _ in 0..20 {
+            let phrase_id = Ulid::new();
+            knowledge_set
+                .create_card(Card::Phrase(PhraseCard::new_test_with_id(phrase_id)))
+                .unwrap();
+        }
+        for i in 0..5 {
+            knowledge_set
+                .create_card(create_vocab_card(&format!("vocab{i}")))
+                .unwrap();
+        }
+
+        let result = knowledge_set.cards_to_lesson(3, &JlptContent::new());
+
+        let phrase_count = result
+            .keys()
+            .filter(|id| matches!(knowledge_set.get_card(**id).unwrap().card(), Card::Phrase(_)))
+            .count();
+        let vocab_count = result
+            .keys()
+            .filter(|id| {
+                matches!(knowledge_set.get_card(**id).unwrap().card(), Card::Vocabulary(_))
+            })
+            .count();
+
+        assert_eq!(phrase_count, 20, "All 20 Phrase cards should be included");
+        assert!(
+            vocab_count <= 3,
+            "Vocab cards should respect daily limit, got {vocab_count}"
+        );
+        assert!(
+            result.len() >= 20,
+            "Total should be at least 20 (all phrases), got {}",
+            result.len()
+        );
+    }
+
+    #[test]
+    fn phrase_does_not_increment_new_cards_studied() {
+        let mut knowledge_set = KnowledgeSet::new();
+        let mut phrase_ids = Vec::new();
+        for _ in 0..5 {
+            let phrase_id = Ulid::new();
+            let study_card = knowledge_set
+                .create_card(Card::Phrase(PhraseCard::new_test_with_id(phrase_id)))
+                .unwrap();
+            phrase_ids.push(*study_card.card_id());
+        }
+
+        for id in phrase_ids {
+            knowledge_set
+                .rate_card(id, Rating::Good, RateMode::StandardLesson)
+                .unwrap();
+        }
+
+        assert_eq!(
+            knowledge_set.new_cards_studied_today(),
+            0,
+            "Phrase cards should not increment new_cards_studied_today"
+        );
+    }
+
+    #[test]
+    fn phrase_excluded_from_stats() {
+        let mut knowledge_set = KnowledgeSet::new();
+        let phrase_id = Ulid::new();
+        let phrase_study = knowledge_set
+            .create_card(Card::Phrase(PhraseCard::new_test_with_id(phrase_id)))
+            .unwrap();
+        let vocab_study = knowledge_set.create_card(create_vocab_card("猫")).unwrap();
+
+        knowledge_set
+            .rate_card(*phrase_study.card_id(), Rating::Good, RateMode::StandardLesson)
+            .unwrap();
+        knowledge_set
+            .rate_card(*vocab_study.card_id(), Rating::Good, RateMode::StandardLesson)
+            .unwrap();
+
+        let history_item = &knowledge_set.lesson_history()[0];
+        assert_eq!(
+            history_item.total_words(),
+            1,
+            "Only vocab should be counted in total_words"
+        );
+        assert_eq!(
+            history_item.lessons_completed(),
+            1,
+            "Only vocab should increment lessons_completed"
+        );
+    }
+
+    #[test]
+    fn limited_types_still_respect_daily_limit() {
+        let mut knowledge_set = KnowledgeSet::new();
+        for i in 0..10 {
+            knowledge_set
+                .create_card(create_vocab_card(&format!("vocab{i}")))
+                .unwrap();
+        }
+        for i in 0..10 {
+            knowledge_set
+                .create_card(Card::Kanji(KanjiCard::new_test(format!("kanji{i}"))))
+                .unwrap();
+        }
+
+        let result = knowledge_set.cards_to_lesson(5, &JlptContent::new());
+
+        assert!(
+            result.len() <= 5,
+            "Vocab + Kanji should respect daily limit of 5, got {}",
+            result.len()
         );
     }
 }
