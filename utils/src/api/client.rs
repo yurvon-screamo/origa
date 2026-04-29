@@ -121,6 +121,17 @@ async fn send_chat_request_with_retry(
     })
 }
 
+fn truncate_str(s: &str, max_bytes: usize) -> &str {
+    if s.len() <= max_bytes {
+        return s;
+    }
+    let mut end = max_bytes;
+    while end > 0 && !s.is_char_boundary(end) {
+        end -= 1;
+    }
+    &s[..end]
+}
+
 fn parse_bilingual_translation(raw: &str) -> Result<BilingualTranslation, OrigaError> {
     let cleaned = strip_json_fences(raw);
 
@@ -128,7 +139,7 @@ fn parse_bilingual_translation(raw: &str) -> Result<BilingualTranslation, OrigaE
         tracing::error!(
             "Failed to parse bilingual translation JSON: {}. Raw: {}...",
             e,
-            &raw[..raw.len().min(200)]
+            truncate_str(raw, 200)
         );
         OrigaError::LlmError {
             reason: format!("Failed to parse bilingual translation JSON response: {}", e),
@@ -143,7 +154,7 @@ fn parse_bilingual_grammar_response(raw: &str) -> Result<BilingualGrammarContent
         tracing::error!(
             "Failed to parse bilingual grammar JSON: {}. Raw: {}...",
             e,
-            &raw[..raw.len().min(200)]
+            truncate_str(raw, 200)
         );
         OrigaError::LlmError {
             reason: format!("Failed to parse bilingual grammar JSON response: {}", e),
