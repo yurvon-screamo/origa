@@ -428,7 +428,7 @@ mod tests {
         let card = create_vocab_card("猫");
         let lang = NativeLanguage::Russian;
 
-        let rule_id = ulid::Ulid::from_string("01KJ9AVWBGW9JTQNV2RXVNVWXR").expect("Invalid ULID");
+        let rule_id = ulid::Ulid::from_string("01G00000000000000024000000").expect("Invalid ULID");
         let rule = crate::dictionary::grammar::get_rule_by_id(&rule_id).expect("Rule not found");
         let result = card.with_grammar_rule(rule, &lang);
 
@@ -441,7 +441,7 @@ mod tests {
         let card = create_vocab_card("食べる");
         let lang = NativeLanguage::Russian;
 
-        let rule_id = ulid::Ulid::from_string("01KJ9AVWBGW9JTQNV2RXVNVWXR").expect("Invalid ULID");
+        let rule_id = ulid::Ulid::from_string("01G00000000000000024000000").expect("Invalid ULID");
         let rule = crate::dictionary::grammar::get_rule_by_id(&rule_id).expect("Rule not found");
         let result = card.with_grammar_rule(rule, &lang);
 
