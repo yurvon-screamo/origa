@@ -249,24 +249,64 @@ pub async fn run_generate_grammar(
 
             async move {
                 let _permit = permit.await.expect("Semaphore error");
-                let result = generate_grammar_description(
-                    &api_base,
-                    &api_key,
-                    &model,
-                    &rule_info.title,
-                    &rule_info.level,
-                    None,
-                    reasoning_config,
-                )
-                .await;
 
-                tracing::info!(
-                    "[{}/{}] Generated: {} ({})",
-                    task_index + 1,
-                    total,
-                    rule_info.title,
-                    rule_info.level
-                );
+                const MAX_RETRIES: u32 = 3;
+                let mut result = Err(OrigaError::TokenizerError {
+                    reason: "not attempted".to_string(),
+                });
+
+                for attempt in 0..MAX_RETRIES {
+                    let res = generate_grammar_description(
+                        &api_base,
+                        &api_key,
+                        &model,
+                        &rule_info.title,
+                        &rule_info.level,
+                        None,
+                        reasoning_config.clone(),
+                    )
+                    .await;
+
+                    match res {
+                        Ok(_) => {
+                            result = res;
+                            break;
+                        },
+                        Err(e) => {
+                            if attempt + 1 < MAX_RETRIES {
+                                tracing::warn!(
+                                    "[{}/{}] {} ({}) failed (attempt {}/{}): {}, retrying...",
+                                    task_index + 1,
+                                    total,
+                                    rule_info.title,
+                                    rule_info.level,
+                                    attempt + 1,
+                                    MAX_RETRIES,
+                                    e,
+                                );
+                            }
+                        },
+                    }
+                }
+
+                if result.is_err() {
+                    tracing::error!(
+                        "[{}/{}] {} ({}) failed after {} attempts",
+                        task_index + 1,
+                        total,
+                        rule_info.title,
+                        rule_info.level,
+                        MAX_RETRIES,
+                    );
+                } else {
+                    tracing::info!(
+                        "[{}/{}] Generated: {} ({})",
+                        task_index + 1,
+                        total,
+                        rule_info.title,
+                        rule_info.level
+                    );
+                }
 
                 (task_index, rule_info.index, result)
             }
