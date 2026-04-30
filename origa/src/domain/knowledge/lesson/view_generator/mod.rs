@@ -29,6 +29,8 @@ const PROB_NEW_VOCAB_NORMAL: f32 = 0.50;
 const PROB_NEW_PHRASE_NORMAL: f32 = 0.50;
 const PROB_REVIEW_PHRASE_NORMAL: f32 = 0.15;
 
+const PROB_GRAMMAR_QUIZ: f32 = 0.50;
+
 const EASY_REVIEWS_FOR_REVERSED: usize = 2;
 const GOOD_REVIEWS_FOR_REVERSED: usize = 4;
 const DEFAULT_LANG: NativeLanguage = NativeLanguage::Russian;
@@ -68,6 +70,15 @@ impl<'a> LessonViewGenerator<'a> {
             .collect();
 
         match card_type {
+            CardType::Grammar if !is_new => {
+                let rand_val = rng.random::<f32>();
+                if rand_val < PROB_GRAMMAR_QUIZ {
+                    generation::generate_grammar_quiz(card.clone(), self.knowledge_set)
+                        .unwrap_or_else(|_| LessonCardView::Normal(card.clone()))
+                } else {
+                    LessonCardView::Normal(card.clone())
+                }
+            },
             CardType::Grammar => LessonCardView::Normal(card.clone()),
             CardType::Kanji if is_new => self.select_new_kanji_view(card, same_type_cards, rng),
             CardType::Kanji => {

@@ -35,7 +35,9 @@ pub fn create_keyboard_handler(
             .map(|c| {
                 matches!(
                     c.view(),
-                    LessonCardView::Quiz(_) | LessonCardView::KanjiReadingQuiz(_)
+                    LessonCardView::Quiz(_)
+                        | LessonCardView::KanjiReadingQuiz(_)
+                        | LessonCardView::GrammarQuiz(_)
                 )
             })
             .unwrap_or(false);

@@ -1,21 +1,30 @@
 use std::collections::HashSet;
 
 use super::super::shared::{CardStatus, DeleteRequest, MarkAsKnownButton};
-use crate::i18n::use_i18n;
+use super::grammar_quiz_modal::GrammarQuizModal;
+use crate::i18n::{t, use_i18n};
 use crate::ui_components::{
     Card, CardHistoryModal, CollapsibleDescription, DeleteButton, DeleteConfirmModal,
     FavoriteButton, FuriganaText, Heading, HeadingLevel, HistoryButton, MarkdownText, Tag, Text,
     TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
-use origa::domain::{Card as DomainCard, NativeLanguage, StudyCard};
+use origa::domain::{Card as DomainCard, NativeLanguage, StudyCard, User, get_rule_by_id};
 use ulid::Ulid;
+
+fn extract_grammar_rule(study_card: &StudyCard) -> Option<&'static origa::domain::GrammarRule> {
+    match study_card.card() {
+        DomainCard::Grammar(grammar) => get_rule_by_id(grammar.rule_id()),
+        _ => None,
+    }
+}
 
 #[component]
 pub fn GrammarCardItem(
     study_card: StudyCard,
     #[prop(into)] native_language: Signal<NativeLanguage>,
     known_kanji: HashSet<String>,
+    user: Option<User>,
     on_toggle_favorite: Callback<Ulid>,
     on_mark_as_known: Callback<()>,
     on_delete: Callback<DeleteRequest>,
@@ -29,12 +38,16 @@ pub fn GrammarCardItem(
 
     let is_history_open = RwSignal::new(false);
     let is_delete_modal_open = RwSignal::new(false);
+    let is_quiz_open = RwSignal::new(false);
     let confirm_delete = Callback::new(move |_| {
         on_delete.run(DeleteRequest {
             card_id,
             on_success: Callback::new(move |_| is_delete_modal_open.set(false)),
         })
     });
+
+    let grammar_rule = extract_grammar_rule(&study_card);
+    let has_quiz = grammar_rule.map(|r| r.has_format_map()).unwrap_or(false);
 
     let study_card_for_title = study_card.clone();
     let title = Memo::new(move |_| {
@@ -80,6 +93,9 @@ pub fn GrammarCardItem(
         .map(|d| d.format("%d.%m.%Y").to_string())
         .unwrap_or("-".to_string());
 
+    let quiz_rule = grammar_rule;
+    let quiz_user: StoredValue<Option<User>> = StoredValue::new(user);
+
     view! {
         <Card class="p-4" test_id="grammar-card-item">
             <Heading level=HeadingLevel::H4 class="mb-2">
@@ -103,6 +119,15 @@ pub fn GrammarCardItem(
                     {status.label(&i18n)}
                 </Tag>
                 <div class="flex items-center gap-2">
+                    <Show when=move || has_quiz && quiz_user.get_value().is_some() && quiz_rule.is_some()>
+                        <button
+                            class="text-sm text-[var(--accent-olive)] hover:underline cursor-pointer"
+                            data-testid="grammar-card-practice-btn"
+                            on:click=move |_| is_quiz_open.set(true)
+                        >
+                            {t!(i18n, grammar_page.practice)}
+                        </button>
+                    </Show>
                     <FavoriteButton
                         is_favorite=Signal::derive(move || is_favorite)
                         on_click=Callback::new(move |_| on_toggle_favorite.run(card_id))
@@ -129,6 +154,21 @@ pub fn GrammarCardItem(
                 on_confirm=confirm_delete
                 on_close=Callback::new(move |_| is_delete_modal_open.set(false))
             />
+            <Show when=move || is_quiz_open.get() && quiz_rule.is_some() && quiz_user.get_value().is_some()>
+                {move || {
+                    let rule = quiz_rule?;
+                    let user = quiz_user.get_value()?;
+                    Some(view! {
+                        <GrammarQuizModal
+                            rule=rule
+                            native_language=native_language
+                            user=user
+                            is_open=Signal::derive(move || is_quiz_open.get())
+                            on_close=Callback::new(move |_| is_quiz_open.set(false))
+                        />
+                    }.into_any())
+                }}
+            </Show>
         </Card>
     }
 }

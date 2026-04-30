@@ -13,7 +13,8 @@ pub use daily_history::{DailyHistoryItem, estimate_completion_date};
 pub use grammar::GrammarRuleCard;
 pub use kanji::{ExampleKanjiWord, KanjiCard};
 pub use lesson::{
-    GrammarInfo, LessonCard, LessonCardView, LessonViewGenerator, QuizCard, QuizOption, YesNoCard,
+    GrammarInfo, GrammarQuizCard, LessonCard, LessonCardView, LessonViewGenerator, QuizCard,
+    QuizOption, YesNoCard,
 };
 pub use phrase::PhraseCard;
 pub use vocabulary::VocabularyCard;
@@ -1480,12 +1481,20 @@ mod tests {
 
         let phrase_count = result
             .keys()
-            .filter(|id| matches!(knowledge_set.get_card(**id).unwrap().card(), Card::Phrase(_)))
+            .filter(|id| {
+                matches!(
+                    knowledge_set.get_card(**id).unwrap().card(),
+                    Card::Phrase(_)
+                )
+            })
             .count();
         let vocab_count = result
             .keys()
             .filter(|id| {
-                matches!(knowledge_set.get_card(**id).unwrap().card(), Card::Vocabulary(_))
+                matches!(
+                    knowledge_set.get_card(**id).unwrap().card(),
+                    Card::Vocabulary(_)
+                )
             })
             .count();
 
@@ -1536,10 +1545,18 @@ mod tests {
         let vocab_study = knowledge_set.create_card(create_vocab_card("猫")).unwrap();
 
         knowledge_set
-            .rate_card(*phrase_study.card_id(), Rating::Good, RateMode::StandardLesson)
+            .rate_card(
+                *phrase_study.card_id(),
+                Rating::Good,
+                RateMode::StandardLesson,
+            )
             .unwrap();
         knowledge_set
-            .rate_card(*vocab_study.card_id(), Rating::Good, RateMode::StandardLesson)
+            .rate_card(
+                *vocab_study.card_id(),
+                Rating::Good,
+                RateMode::StandardLesson,
+            )
             .unwrap();
 
         let history_item = &knowledge_set.lesson_history()[0];

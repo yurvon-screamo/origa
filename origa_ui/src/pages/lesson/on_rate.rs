@@ -48,9 +48,16 @@ pub fn create_on_rate_callback(
                 let state_snapshot = lesson_state.get_untracked();
 
                 if let Some(lesson_card) = state_snapshot.cards.get(&card_id)
-                    && let origa::domain::LessonCardView::GrammarMutated { grammar_info, .. } =
-                        lesson_card.view()
-                    && let Some(grammar_rule_id) = grammar_info.rule_id()
+                    && let grammar_rule_id = match lesson_card.view() {
+                        origa::domain::LessonCardView::GrammarMutated { grammar_info, .. } => {
+                            grammar_info.rule_id()
+                        },
+                        origa::domain::LessonCardView::GrammarQuiz(gq) => {
+                            gq.grammar_info().rule_id()
+                        },
+                        _ => None,
+                    }
+                    && let Some(grammar_rule_id) = grammar_rule_id
                 {
                     let grammar_use_case = RateCardUseCase::new(&repo);
 

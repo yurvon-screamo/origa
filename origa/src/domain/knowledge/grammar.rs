@@ -59,6 +59,12 @@ impl GrammarRuleCard {
             .map(|rule| rule.apply_to())
             .unwrap_or_default()
     }
+
+    pub fn has_format_map(&self) -> bool {
+        get_rule_by_id(&self.rule_id)
+            .map(|rule| rule.has_format_map())
+            .unwrap_or(false)
+    }
 }
 
 impl GrammarRuleCard {

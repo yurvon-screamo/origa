@@ -23,6 +23,7 @@ pub fn create_on_quiz_select(
                 .unwrap(),
         ) && let Some(quiz) = match lesson_card.view() {
             LessonCardView::Quiz(q) | LessonCardView::KanjiReadingQuiz(q) => Some(q),
+            LessonCardView::GrammarQuiz(gq) => Some(gq.quiz()),
             _ => None,
         } {
             let is_correct = quiz.check_answer(option_index);

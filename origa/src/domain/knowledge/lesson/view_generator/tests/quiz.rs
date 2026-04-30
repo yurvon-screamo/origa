@@ -106,6 +106,97 @@ mod grammar_quiz {
     }
 }
 
+mod generate_grammar_quiz_tests {
+    use super::*;
+    use crate::domain::RateMode;
+
+    fn get_verb_rule_id() -> Ulid {
+        init_real_dictionaries();
+        Ulid::from_string("01G00000000000000024000000").expect("Invalid ULID")
+    }
+
+    fn get_non_format_map_rule_id() -> Ulid {
+        init_real_dictionaries();
+        Ulid::from_string("01KJ9AVWBGC2BT0DMFPDYYFEWB").expect("Invalid ULID")
+    }
+
+    fn create_known_vocab_set(word: &str) -> crate::domain::knowledge::KnowledgeSet {
+        let mut ks = crate::domain::knowledge::KnowledgeSet::new();
+        let card = Card::Vocabulary(crate::domain::VocabularyCard::new(
+            crate::domain::value_objects::Question::new(word.to_string()).unwrap(),
+        ));
+        let study_card = ks.create_card(card).unwrap();
+        let id = *study_card.card_id();
+        ks.rate_card(id, Rating::Easy, RateMode::StandardLesson)
+            .unwrap();
+        ks.rate_card(id, Rating::Easy, RateMode::StandardLesson)
+            .unwrap();
+        ks
+    }
+
+    #[test]
+    fn grammar_quiz_falls_back_to_normal_without_format_map() {
+        init_real_dictionaries();
+
+        let rule_id = get_non_format_map_rule_id();
+        let grammar_card = create_grammar_card(rule_id);
+
+        let ks = crate::domain::knowledge::KnowledgeSet::new();
+        let result = generation::generate_grammar_quiz(grammar_card.clone(), &ks);
+
+        match result.unwrap() {
+            LessonCardView::Normal(card) => assert_eq!(card, grammar_card),
+            other => panic!("Expected Normal, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn grammar_quiz_generates_quiz_with_format_map() {
+        init_real_dictionaries();
+
+        let rule_id = get_verb_rule_id();
+        let grammar_card = create_grammar_card(rule_id);
+
+        let ks = create_known_vocab_set("食べる");
+
+        let result = generation::generate_grammar_quiz(grammar_card, &ks);
+        let view = result.expect("should succeed");
+
+        match &view {
+            LessonCardView::GrammarQuiz(gq) => {
+                assert_eq!(gq.quiz().options().len(), 4);
+                assert_eq!(
+                    gq.quiz()
+                        .options()
+                        .iter()
+                        .filter(|o| o.is_correct())
+                        .count(),
+                    1
+                );
+                assert!(!gq.word_text().is_empty());
+                assert!(gq.grammar_info().rule_id().is_some());
+            },
+            other => panic!("Expected GrammarQuiz, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn grammar_quiz_falls_back_without_known_vocab() {
+        init_real_dictionaries();
+
+        let rule_id = get_verb_rule_id();
+        let grammar_card = create_grammar_card(rule_id);
+
+        let ks = crate::domain::knowledge::KnowledgeSet::new();
+        let result = generation::generate_grammar_quiz(grammar_card.clone(), &ks);
+
+        match result.unwrap() {
+            LessonCardView::Normal(card) => assert_eq!(card, grammar_card),
+            other => panic!("Expected Normal, got {:?}", other),
+        }
+    }
+}
+
 mod generate_quiz_vocab_kanji_tests {
     use super::*;
 
