@@ -98,6 +98,13 @@ pub fn LessonCardContainer() -> impl IntoView {
             .unwrap_or(false)
     });
 
+    let is_grammar_quiz_mode = Memo::new(move |_| {
+        current_lesson_card
+            .get()
+            .map(|c| matches!(c.view(), LessonCardView::GrammarQuiz(_)))
+            .unwrap_or(false)
+    });
+
     let container_ref = NodeRef::<leptos::html::Div>::new();
 
     Effect::new(move |_| {
@@ -109,7 +116,7 @@ pub fn LessonCardContainer() -> impl IntoView {
     view! {
         <div class="outline-none" tabindex="0" node_ref=container_ref on:keydown=handle_keydown>
             <Show when=move || current_lesson_card.get().is_some()>
-                <Show when=move || !is_quiz_mode.get() && !is_writing_mode.get() && !is_yesno_mode.get() && !is_phrase_listen_mode.get() && !is_kanji_reading_quiz_mode.get()>
+                <Show when=move || !is_quiz_mode.get() && !is_writing_mode.get() && !is_yesno_mode.get() && !is_phrase_listen_mode.get() && !is_kanji_reading_quiz_mode.get() && !is_grammar_quiz_mode.get()>
                     {move || {
                         current_lesson_card.get().map(|lesson_card| {
                             render_lesson_card(
@@ -258,6 +265,33 @@ pub fn LessonCardContainer() -> impl IntoView {
                         })
                     }}
                 </Show>
+
+                <Show when=move || is_grammar_quiz_mode.get()>
+                    {move || {
+                        current_lesson_card.get().and_then(|lesson_card| {
+                            if let LessonCardView::GrammarQuiz(gq) = lesson_card.into_view() {
+                                let state = lesson_state.get();
+                                let selected_option = state.selected_quiz_option;
+                                let show_result = state.showing_answer;
+
+                                Some(view! {
+                                    <QuizCardView
+                                        quiz_card=gq.quiz().clone()
+                                        show_result=show_result
+                                        selected_option=selected_option
+                                        on_select_option=on_quiz_select
+                                        on_dont_know=on_quiz_dont_know
+                                        dont_know_selected=state.dont_know_selected
+                                        native_language=native_language.get()
+                                        known_kanji=Signal::from(known_kanji)
+                                    />
+                                })
+                            } else {
+                                None
+                            }
+                        })
+                    }}
+                </Show>
             </Show>
         </div>
     }
@@ -298,7 +332,8 @@ fn render_lesson_card(
         | LessonCardView::Writing(_)
         | LessonCardView::YesNo(_)
         | LessonCardView::PhraseListen { .. }
-        | LessonCardView::KanjiReadingQuiz(_) => {
+        | LessonCardView::KanjiReadingQuiz(_)
+        | LessonCardView::GrammarQuiz(_) => {
             return view! { <div/> }.into_any();
         },
     };

@@ -113,6 +113,41 @@ impl GrammarInfo {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct GrammarQuizCard {
+    card: Card,
+    grammar_info: GrammarInfo,
+    word_text: String,
+    quiz: QuizCard,
+}
+
+impl GrammarQuizCard {
+    pub fn new(card: Card, grammar_info: GrammarInfo, word_text: String, quiz: QuizCard) -> Self {
+        Self {
+            card,
+            grammar_info,
+            word_text,
+            quiz,
+        }
+    }
+
+    pub fn card(&self) -> &Card {
+        &self.card
+    }
+
+    pub fn grammar_info(&self) -> &GrammarInfo {
+        &self.grammar_info
+    }
+
+    pub fn word_text(&self) -> &str {
+        &self.word_text
+    }
+
+    pub fn quiz(&self) -> &QuizCard {
+        &self.quiz
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum LessonCardView {
     Normal(Card),
     Quiz(QuizCard),
@@ -129,6 +164,7 @@ pub enum LessonCardView {
         options: Vec<QuizOption>,
     },
     KanjiReadingQuiz(QuizCard),
+    GrammarQuiz(GrammarQuizCard),
 }
 
 impl LessonCardView {
@@ -142,12 +178,14 @@ impl LessonCardView {
             LessonCardView::Quiz(quiz) => quiz.card(),
             LessonCardView::YesNo(yc) => yc.card(),
             LessonCardView::KanjiReadingQuiz(quiz) => quiz.card(),
+            LessonCardView::GrammarQuiz(gq) => gq.card(),
         }
     }
 
     pub fn grammar_info(&self) -> Option<&GrammarInfo> {
         match self {
             LessonCardView::GrammarMutated { grammar_info, .. } => Some(grammar_info),
+            LessonCardView::GrammarQuiz(gq) => Some(gq.grammar_info()),
             LessonCardView::Normal(_)
             | LessonCardView::Quiz(_)
             | LessonCardView::YesNo(_)

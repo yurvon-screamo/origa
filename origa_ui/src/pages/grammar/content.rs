@@ -203,6 +203,7 @@ pub fn GrammarContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
                                                 study_card=card
                                                 native_language=native_lang
                                                 known_kanji=known_kanji.get()
+                                                user=current_user.get()
                                                 on_toggle_favorite=on_toggle_favorite
                                                 on_mark_as_known=Callback::new(move |_| on_mark_as_known.run(card_id))
                                                 on_delete=on_delete

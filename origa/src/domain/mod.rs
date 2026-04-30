@@ -17,13 +17,15 @@ pub use crate::dictionary::grammar::{GrammarRule, get_rule_by_id, iter_grammar_r
 pub use crate::dictionary::vocabulary::get_translation;
 pub use error::OrigaError;
 pub use furigana::{FuriganaSegment, furiganize_segments, furiganize_text, furiganize_text_html};
+pub use grammar::apply_format_actions;
 pub use japanese::{JapaneseChar, JapaneseText, filter_japanese_text};
 pub use jlpt_content::{JlptContent, JlptContentError};
 pub use jlpt_progress::{CategoryProgress, JlptProgress, LevelProgressDetail};
 pub use knowledge::{
-    Card, CardType, DailyHistoryItem, ExampleKanjiWord, GrammarInfo, GrammarRuleCard, KanjiCard,
-    KnowledgeSet, LessonCard, LessonCardView, LessonViewGenerator, PhraseCard, QuizCard,
-    QuizOption, StudyCard, VocabularyCard, YesNoCard, estimate_completion_date,
+    Card, CardType, DailyHistoryItem, ExampleKanjiWord, GrammarInfo, GrammarQuizCard,
+    GrammarRuleCard, KanjiCard, KnowledgeSet, LessonCard, LessonCardView, LessonViewGenerator,
+    PhraseCard, QuizCard, QuizOption, StudyCard, VocabularyCard, YesNoCard,
+    estimate_completion_date,
 };
 pub use memory::{Difficulty, MemoryHistory, MemoryState, Rating, ReviewLog, Stability};
 pub use score_content::ScoreContentResult;

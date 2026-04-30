@@ -139,6 +139,144 @@ pub enum FormatAction {
     },
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FormatActionGroup {
+    Verb,
+    IAdjective,
+    NaAdjective,
+    Universal,
+}
+
+impl FormatAction {
+    pub fn group(&self) -> FormatActionGroup {
+        match self {
+            FormatAction::AdjectiveRemovePostfix {}
+            | FormatAction::AdjectiveToKunai {}
+            | FormatAction::AdjectiveToKatta {}
+            | FormatAction::AdjectiveToKunakatta {}
+            | FormatAction::AdjectiveToKute {}
+            | FormatAction::AdjectiveToKu {}
+            | FormatAction::AdjectiveToKereba {}
+            | FormatAction::AdjectiveToSou {}
+            | FormatAction::AdjectiveToSugiru {} => FormatActionGroup::IAdjective,
+
+            FormatAction::AdjectiveToNa {}
+            | FormatAction::AdjectiveToDe {}
+            | FormatAction::AdjectiveToNara {}
+            | FormatAction::AdjectiveToSouNa {}
+            | FormatAction::AdjectiveToNasasou {}
+            | FormatAction::AdjectiveToGaru {} => FormatActionGroup::NaAdjective,
+
+            FormatAction::VerbToTeForm {}
+            | FormatAction::VerbToMainView {}
+            | FormatAction::VerbToMasu {}
+            | FormatAction::VerbToMasen {}
+            | FormatAction::VerbToMashita {}
+            | FormatAction::VerbToMasenDeshita {}
+            | FormatAction::VerbToMashou {}
+            | FormatAction::VerbToStem {}
+            | FormatAction::VerbToTa {}
+            | FormatAction::VerbToNai {}
+            | FormatAction::VerbToTara {}
+            | FormatAction::VerbToBa {}
+            | FormatAction::VerbToPotential {}
+            | FormatAction::VerbToPassive {}
+            | FormatAction::VerbToCausative {}
+            | FormatAction::VerbToCausativePassive {}
+            | FormatAction::VerbToImperative {}
+            | FormatAction::VerbToVolitional {}
+            | FormatAction::VerbToSou {}
+            | FormatAction::VerbToZu {}
+            | FormatAction::VerbToTai {}
+            | FormatAction::VerbToYasui {}
+            | FormatAction::VerbToNikui {}
+            | FormatAction::VerbToSugiru {}
+            | FormatAction::VerbToChau {}
+            | FormatAction::VerbToToku {}
+            | FormatAction::VerbToTeru {}
+            | FormatAction::VerbToONinarimasu {}
+            | FormatAction::VerbToOKudasai {}
+            | FormatAction::VerbToOShimasu {} => FormatActionGroup::Verb,
+
+            FormatAction::ReplacePostfix { .. }
+            | FormatAction::AddPostfix { .. }
+            | FormatAction::RemovePostfix { .. } => FormatActionGroup::Universal,
+        }
+    }
+
+    pub fn all_verb_actions() -> &'static [FormatAction] {
+        &[
+            FormatAction::VerbToTeForm {},
+            FormatAction::VerbToMainView {},
+            FormatAction::VerbToMasu {},
+            FormatAction::VerbToMasen {},
+            FormatAction::VerbToMashita {},
+            FormatAction::VerbToMasenDeshita {},
+            FormatAction::VerbToMashou {},
+            FormatAction::VerbToStem {},
+            FormatAction::VerbToTa {},
+            FormatAction::VerbToNai {},
+            FormatAction::VerbToTara {},
+            FormatAction::VerbToBa {},
+            FormatAction::VerbToPotential {},
+            FormatAction::VerbToPassive {},
+            FormatAction::VerbToCausative {},
+            FormatAction::VerbToCausativePassive {},
+            FormatAction::VerbToImperative {},
+            FormatAction::VerbToVolitional {},
+            FormatAction::VerbToSou {},
+            FormatAction::VerbToZu {},
+            FormatAction::VerbToTai {},
+            FormatAction::VerbToYasui {},
+            FormatAction::VerbToNikui {},
+            FormatAction::VerbToSugiru {},
+            FormatAction::VerbToChau {},
+            FormatAction::VerbToToku {},
+            FormatAction::VerbToTeru {},
+            FormatAction::VerbToONinarimasu {},
+            FormatAction::VerbToOKudasai {},
+            FormatAction::VerbToOShimasu {},
+        ]
+    }
+
+    pub fn all_i_adjective_actions() -> &'static [FormatAction] {
+        &[
+            FormatAction::AdjectiveRemovePostfix {},
+            FormatAction::AdjectiveToKunai {},
+            FormatAction::AdjectiveToKatta {},
+            FormatAction::AdjectiveToKunakatta {},
+            FormatAction::AdjectiveToKute {},
+            FormatAction::AdjectiveToKu {},
+            FormatAction::AdjectiveToKereba {},
+            FormatAction::AdjectiveToSou {},
+            FormatAction::AdjectiveToSugiru {},
+        ]
+    }
+
+    pub fn all_na_adjective_actions() -> &'static [FormatAction] {
+        &[
+            FormatAction::AdjectiveToNa {},
+            FormatAction::AdjectiveToDe {},
+            FormatAction::AdjectiveToNara {},
+            FormatAction::AdjectiveToSouNa {},
+            FormatAction::AdjectiveToNasasou {},
+            FormatAction::AdjectiveToGaru {},
+        ]
+    }
+
+    /// Returns all FormatActions from the same group, excluding self.
+    /// Returns empty Vec for Universal group.
+    pub fn mutation_alternatives(&self) -> Vec<&'static FormatAction> {
+        let all: &[FormatAction] = match self.group() {
+            FormatActionGroup::Verb => Self::all_verb_actions(),
+            FormatActionGroup::IAdjective => Self::all_i_adjective_actions(),
+            FormatActionGroup::NaAdjective => Self::all_na_adjective_actions(),
+            FormatActionGroup::Universal => return Vec::new(),
+        };
+        all.iter().filter(|a| !std::ptr::eq(*a, self)).collect()
+    }
+}
+
 impl GrammarRule {
     #[cfg(test)]
     pub fn new(
@@ -178,6 +316,10 @@ impl GrammarRule {
         self.format_map.as_ref()
     }
 
+    pub fn format_actions_for_pos(&self, pos: &PartOfSpeech) -> Option<&Vec<FormatAction>> {
+        self.format_map.as_ref()?.get(pos)
+    }
+
     pub fn has_format_map(&self) -> bool {
         self.format_map.is_some()
     }
@@ -212,5 +354,90 @@ mod tests {
     #[test]
     fn grammar_rules_should_not_be_loaded_before_init() {
         assert!(!is_grammar_loaded());
+    }
+}
+
+#[cfg(test)]
+mod tests_format_action_group {
+    use super::*;
+
+    #[test]
+    fn verb_actions_are_classified_correctly() {
+        assert_eq!(FormatAction::VerbToMasu {}.group(), FormatActionGroup::Verb);
+        assert_eq!(
+            FormatAction::VerbToTeForm {}.group(),
+            FormatActionGroup::Verb
+        );
+        assert_eq!(FormatAction::VerbToNai {}.group(), FormatActionGroup::Verb);
+    }
+
+    #[test]
+    fn i_adjective_actions_are_classified_correctly() {
+        assert_eq!(
+            FormatAction::AdjectiveToKunai {}.group(),
+            FormatActionGroup::IAdjective
+        );
+        assert_eq!(
+            FormatAction::AdjectiveToKatta {}.group(),
+            FormatActionGroup::IAdjective
+        );
+    }
+
+    #[test]
+    fn na_adjective_actions_are_classified_correctly() {
+        assert_eq!(
+            FormatAction::AdjectiveToNa {}.group(),
+            FormatActionGroup::NaAdjective
+        );
+        assert_eq!(
+            FormatAction::AdjectiveToDe {}.group(),
+            FormatActionGroup::NaAdjective
+        );
+    }
+
+    #[test]
+    fn universal_actions_are_classified_correctly() {
+        assert_eq!(
+            FormatAction::ReplacePostfix {
+                old_postfix: "a".into(),
+                new_postfix: "b".into()
+            }
+            .group(),
+            FormatActionGroup::Universal
+        );
+    }
+
+    #[test]
+    fn mutation_alternatives_excludes_self() {
+        let action = FormatAction::VerbToMasu {};
+        let alternatives = action.mutation_alternatives();
+        assert!(!alternatives.iter().any(|a| std::ptr::eq(*a, &action)));
+        assert!(!alternatives.is_empty());
+    }
+
+    #[test]
+    fn universal_has_no_mutation_alternatives() {
+        let action = FormatAction::AddPostfix {
+            postfix: "test".into(),
+        };
+        assert!(action.mutation_alternatives().is_empty());
+    }
+
+    #[test]
+    fn all_verb_actions_count() {
+        assert!(FormatAction::all_verb_actions().len() >= 25);
+    }
+
+    #[test]
+    fn group_matches_all_lists_exhaustively() {
+        for action in FormatAction::all_verb_actions() {
+            assert_eq!(action.group(), FormatActionGroup::Verb);
+        }
+        for action in FormatAction::all_i_adjective_actions() {
+            assert_eq!(action.group(), FormatActionGroup::IAdjective);
+        }
+        for action in FormatAction::all_na_adjective_actions() {
+            assert_eq!(action.group(), FormatActionGroup::NaAdjective);
+        }
     }
 }
