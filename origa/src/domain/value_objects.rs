@@ -173,29 +173,35 @@ impl From<NativeLanguage> for i32 {
 
 #[derive(Debug, Hash, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub enum DailyLoad {
+    Minimal,
     Light,
     #[default]
     Medium,
     Hard,
     Impossible,
+    Insane,
 }
 
 impl DailyLoad {
     pub fn new_cards_per_day(&self) -> usize {
         match self {
+            DailyLoad::Minimal => 3,
             DailyLoad::Light => 5,
             DailyLoad::Medium => 10,
             DailyLoad::Hard => 15,
             DailyLoad::Impossible => 25,
+            DailyLoad::Insane => 35,
         }
     }
 
     pub fn all() -> &'static [DailyLoad] {
         &[
+            DailyLoad::Minimal,
             DailyLoad::Light,
             DailyLoad::Medium,
             DailyLoad::Hard,
             DailyLoad::Impossible,
+            DailyLoad::Insane,
         ]
     }
 }
@@ -203,10 +209,13 @@ impl DailyLoad {
 impl From<i32> for DailyLoad {
     fn from(value: i32) -> Self {
         match value {
-            0 => DailyLoad::Light,
-            1 => DailyLoad::Medium,
-            2 => DailyLoad::Hard,
-            _ => DailyLoad::Impossible,
+            0 => DailyLoad::Minimal,
+            1 => DailyLoad::Light,
+            2 => DailyLoad::Medium,
+            3 => DailyLoad::Hard,
+            4 => DailyLoad::Impossible,
+            5 => DailyLoad::Insane,
+            _ => DailyLoad::Medium,
         }
     }
 }
@@ -214,10 +223,12 @@ impl From<i32> for DailyLoad {
 impl From<DailyLoad> for i32 {
     fn from(val: DailyLoad) -> Self {
         match val {
-            DailyLoad::Light => 0,
-            DailyLoad::Medium => 1,
-            DailyLoad::Hard => 2,
-            DailyLoad::Impossible => 3,
+            DailyLoad::Minimal => 0,
+            DailyLoad::Light => 1,
+            DailyLoad::Medium => 2,
+            DailyLoad::Hard => 3,
+            DailyLoad::Impossible => 4,
+            DailyLoad::Insane => 5,
         }
     }
 }
@@ -468,10 +479,12 @@ mod tests_daily_load {
 
     #[test]
     fn new_cards_per_day_values() {
+        assert_eq!(DailyLoad::Minimal.new_cards_per_day(), 3);
         assert_eq!(DailyLoad::Light.new_cards_per_day(), 5);
         assert_eq!(DailyLoad::Medium.new_cards_per_day(), 10);
         assert_eq!(DailyLoad::Hard.new_cards_per_day(), 15);
         assert_eq!(DailyLoad::Impossible.new_cards_per_day(), 25);
+        assert_eq!(DailyLoad::Insane.new_cards_per_day(), 35);
     }
 
     #[test]
@@ -483,7 +496,7 @@ mod tests_daily_load {
     }
 
     #[test]
-    fn from_i32_unknown_falls_back_to_impossible() {
-        assert_eq!(DailyLoad::from(999), DailyLoad::Impossible);
+    fn from_i32_unknown_falls_back_to_medium() {
+        assert_eq!(DailyLoad::from(999), DailyLoad::Medium);
     }
 }

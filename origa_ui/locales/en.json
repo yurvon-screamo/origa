@@ -344,7 +344,14 @@
         "rules_count": "rules",
         "header": "Grammar",
         "no_rules_for_level": "No rules for the selected level",
-        "not_found": "No grammar patterns found"
+        "not_found": "No grammar patterns found",
+        "practice": "Practice",
+        "quiz_question": "Conjugate {}:",
+        "quiz_next": "Next",
+        "quiz_correct": "Correct!",
+        "quiz_wrong": "Wrong",
+        "quiz_close": "Close",
+        "quiz_no_words": "No suitable words found for practice"
     },
     "kanji_page": {
         "add_kanji": "Add kanji",
@@ -413,6 +420,10 @@
         "load_hard_desc": "Intensive learning for quick progress. Be ready to spend 1-2 hours a day.",
         "load_impossible": "Maximum",
         "load_impossible_desc": "Highest load level for maximum progress. Be ready to spend 3-5 hours a day.",
+        "load_minimal": "Minimal",
+        "load_minimal_desc": "Minimal load for casual learning. Just 5-10 minutes a day.",
+        "load_insane": "Insane",
+        "load_insane_desc": "Extreme load for maximum progress. Be ready to spend 5+ hours a day.",
         "mark_as_known": "Mark as learned",
         "delete_error": "Delete error",
         "rating_easy": "Easy",

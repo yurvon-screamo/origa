@@ -15,10 +15,12 @@ export class ProfilePage extends BasePage {
 	readonly langEnglish: Locator;
 	readonly langRussian: Locator;
 
+	readonly loadMinimal: Locator;
 	readonly loadLight: Locator;
 	readonly loadMedium: Locator;
 	readonly loadHard: Locator;
 	readonly loadImpossible: Locator;
+	readonly loadInsane: Locator;
 
 	readonly confirmDeleteBtn: Locator;
 	readonly cancelDeleteBtn: Locator;
@@ -39,10 +41,12 @@ export class ProfilePage extends BasePage {
 		this.langEnglish = page.getByTestId("profile-lang-english");
 		this.langRussian = page.getByTestId("profile-lang-russian");
 
+		this.loadMinimal = page.getByTestId("profile-load-minimal");
 		this.loadLight = page.getByTestId("profile-load-light");
 		this.loadMedium = page.getByTestId("profile-load-medium");
 		this.loadHard = page.getByTestId("profile-load-hard");
 		this.loadImpossible = page.getByTestId("profile-load-impossible");
+		this.loadInsane = page.getByTestId("profile-load-insane");
 
 		this.confirmDeleteBtn = page.getByTestId("profile-confirm-delete-btn");
 		this.cancelDeleteBtn = page.getByTestId("profile-cancel-delete-btn");
@@ -68,12 +72,14 @@ export class ProfilePage extends BasePage {
 		await btn.click();
 	}
 
-	async selectDailyLoad(load: "light" | "medium" | "hard" | "impossible"): Promise<void> {
+	async selectDailyLoad(load: "minimal" | "light" | "medium" | "hard" | "impossible" | "insane"): Promise<void> {
 		const btns: Record<string, Locator> = {
+			minimal: this.loadMinimal,
 			light: this.loadLight,
 			medium: this.loadMedium,
 			hard: this.loadHard,
 			impossible: this.loadImpossible,
+			insane: this.loadInsane,
 		};
 		await btns[load].click();
 	}
