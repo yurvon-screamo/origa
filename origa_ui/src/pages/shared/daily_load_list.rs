@@ -5,14 +5,17 @@ use leptos_i18n::I18nContext;
 use origa::domain::DailyLoad;
 
 const DAILY_LOAD_OPTIONS: &[DailyLoad] = &[
+    DailyLoad::Minimal,
     DailyLoad::Light,
     DailyLoad::Medium,
     DailyLoad::Hard,
     DailyLoad::Impossible,
+    DailyLoad::Insane,
 ];
 
 fn load_label(i18n: &I18nContext<Locale>, load: &DailyLoad) -> String {
     match load {
+        DailyLoad::Minimal => i18n.get_keys().shared().load_minimal().inner().to_string(),
         DailyLoad::Light => i18n.get_keys().shared().load_light().inner().to_string(),
         DailyLoad::Medium => i18n.get_keys().shared().load_medium().inner().to_string(),
         DailyLoad::Hard => i18n.get_keys().shared().load_hard().inner().to_string(),
@@ -22,11 +25,18 @@ fn load_label(i18n: &I18nContext<Locale>, load: &DailyLoad) -> String {
             .load_impossible()
             .inner()
             .to_string(),
+        DailyLoad::Insane => i18n.get_keys().shared().load_insane().inner().to_string(),
     }
 }
 
 fn load_description(i18n: &I18nContext<Locale>, load: &DailyLoad) -> String {
     match load {
+        DailyLoad::Minimal => i18n
+            .get_keys()
+            .shared()
+            .load_minimal_desc()
+            .inner()
+            .to_string(),
         DailyLoad::Light => i18n
             .get_keys()
             .shared()
@@ -49,6 +59,12 @@ fn load_description(i18n: &I18nContext<Locale>, load: &DailyLoad) -> String {
             .get_keys()
             .shared()
             .load_impossible_desc()
+            .inner()
+            .to_string(),
+        DailyLoad::Insane => i18n
+            .get_keys()
+            .shared()
+            .load_insane_desc()
             .inner()
             .to_string(),
     }
