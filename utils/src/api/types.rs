@@ -17,13 +17,24 @@ pub enum ReasoningEffort {
 /// Reasoning configuration for OpenRouter API
 #[derive(Debug, Clone, Serialize)]
 pub struct ReasoningConfig {
-    pub effort: ReasoningEffort,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub effort: Option<ReasoningEffort>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub enabled: Option<bool>,
 }
 
 impl ReasoningConfig {
     pub fn high() -> Self {
         Self {
-            effort: ReasoningEffort::High,
+            effort: Some(ReasoningEffort::High),
+            enabled: None,
+        }
+    }
+
+    pub fn disabled() -> Self {
+        Self {
+            effort: None,
+            enabled: Some(false),
         }
     }
 }
@@ -58,7 +69,8 @@ pub struct ChatChoice {
 /// Content of a chat message
 #[derive(Debug, Deserialize)]
 pub struct ChatMessageContent {
-    pub content: String,
+    #[serde(default)]
+    pub content: Option<String>,
 }
 
 /// Entry in the vocabulary dictionary with translations

@@ -54,12 +54,23 @@ async fn send_chat_request(
         });
     }
 
-    response
-        .json()
+    let body = response
+        .text()
         .await
         .map_err(|e| OrigaError::TokenizerError {
+            reason: format!("Failed to read API response body: {}", e),
+        })?;
+
+    serde_json::from_str::<ChatResponse>(&body).map_err(|e| {
+        tracing::error!(
+            "Failed to parse API response (model: {}). Body: {}",
+            request.model,
+            truncate_str(&body, 500)
+        );
+        OrigaError::TokenizerError {
             reason: format!("Failed to parse API response: {}", e),
-        })
+        }
+    })
 }
 
 fn strip_json_fences(text: &str) -> &str {
@@ -188,7 +199,8 @@ pub async fn translate_word(
     let raw = response
         .choices
         .first()
-        .map(|choice| choice.message.content.trim().to_string());
+        .and_then(|choice| choice.message.content.as_deref())
+        .map(|s| s.trim().to_string());
 
     match raw {
         Some(content) => {
@@ -236,7 +248,8 @@ pub async fn send_generic_chat_with_model(
     response
         .choices
         .first()
-        .map(|choice| choice.message.content.trim().to_string())
+        .and_then(|choice| choice.message.content.as_deref())
+        .map(|s| s.trim().to_string())
         .ok_or_else(|| OrigaError::LlmError {
             reason: "Empty response from API".to_string(),
         })
@@ -256,12 +269,12 @@ pub async fn validate_translation(
         messages: vec![
             ChatMessage {
                 role: "system".to_string(),
-                content: "You are a translation validator. Respond with exactly one character: Y if the translation is correct, N if it is not. Never output anything else.".to_string(),
+                content: "You are a Japanese dictionary translation validator. Your task is to check whether the translations accurately reflect the meaning of the Japanese word.\n\nRespond with Y if the translations are reasonably correct (even if incomplete or slightly different in style).\nRespond with N ONLY if the translations contain a clear factual error, describe a completely different word, or are hallucinated/gibberish.\n\nMinor differences in phrasing, incomplete definitions, or stylistic choices are NOT reasons to mark as N.\nOnly respond with Y or N, nothing else.".to_string(),
             },
             ChatMessage {
                 role: "user".to_string(),
                 content: format!(
-                    "Japanese word: {}\nRussian translation: {}\nEnglish translation: {}\nIs the translation correct? Y/N:",
+                    "Japanese word: {}\nRussian translation: {}\nEnglish translation: {}\nIs the translation factually correct? Y/N:",
                     word, russian_translation, english_translation
                 ),
             },
@@ -270,8 +283,8 @@ pub async fn validate_translation(
         temperature: 0.0,
         top_p: 1.0,
         presence_penalty: 0.0,
-        reasoning: None,
-        chat_template_kwargs: Some(serde_json::json!({"preserve_thinking": false})),
+        reasoning: Some(ReasoningConfig::disabled()),
+        chat_template_kwargs: None,
     };
 
     let max_parse_retries = 3;
@@ -282,7 +295,8 @@ pub async fn validate_translation(
         let raw = response
             .choices
             .first()
-            .map(|choice| choice.message.content.trim().to_string())
+            .and_then(|choice| choice.message.content.as_deref())
+            .map(|s| s.trim().to_string())
             .unwrap_or_default();
 
         match parse_validation_response(&raw) {
