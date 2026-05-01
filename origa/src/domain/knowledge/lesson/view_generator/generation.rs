@@ -1,9 +1,11 @@
-use crate::dictionary::grammar::{FormatAction, FormatActionGroup, get_rule_by_id};
+use crate::dictionary::grammar::get_rule_by_id;
 use crate::dictionary::kanji::get_kanji_info;
 use crate::domain::grammar::apply_format_actions;
 use crate::domain::knowledge::KnowledgeSet;
 use crate::domain::value_objects::NativeLanguage;
-use crate::domain::{Card, OrigaError, PartOfSpeech};
+use crate::domain::{
+    Card, OrigaError, PartOfSpeech, find_known_vocab_words_for_pos, generate_grammar_distractors,
+};
 use rand::{Rng, prelude::IndexedRandom, seq::SliceRandom};
 
 use super::super::types::{
@@ -250,13 +252,13 @@ pub(crate) fn generate_grammar_quiz(
             reason: "No supported part of speech".to_string(),
         })?;
 
-    let matching_vocab = find_known_vocab_for_pos(knowledge_set, &applicable_pos);
+    let matching_vocab = find_known_vocab_words_for_pos(knowledge_set, &applicable_pos);
     if matching_vocab.is_empty() {
         return Ok(LessonCardView::Normal(original_card));
     }
 
     let mut rng = rand::rng();
-    let (_vocab_card, word_text) = matching_vocab
+    let word_text = matching_vocab
         .choose(&mut rng)
         .expect("matching_vocab guaranteed non-empty")
         .clone();
@@ -268,7 +270,7 @@ pub(crate) fn generate_grammar_quiz(
     let correct_text = apply_format_actions(&word_text, rules, &applicable_pos)?;
 
     let needed_distractors = QUIZ_OPTIONS_COUNT.saturating_sub(1);
-    let distractors = generate_distractors(
+    let distractors = generate_grammar_distractors(
         rules,
         &word_text,
         &applicable_pos,
@@ -311,87 +313,3 @@ pub(crate) fn generate_grammar_quiz(
 }
 
 const DEFAULT_LANG: NativeLanguage = NativeLanguage::Russian;
-
-fn find_known_vocab_for_pos(
-    knowledge_set: &KnowledgeSet,
-    pos: &PartOfSpeech,
-) -> Vec<(crate::domain::VocabularyCard, String)> {
-    knowledge_set
-        .study_cards()
-        .values()
-        .filter(|sc| sc.memory().is_known_card() || sc.memory().is_in_progress())
-        .filter_map(|sc| match sc.card() {
-            Card::Vocabulary(v) => {
-                let word = v.word().text().to_string();
-                let vocab_pos = v.part_of_speech().ok()?;
-                if vocab_pos == *pos {
-                    Some((v.clone(), word))
-                } else {
-                    None
-                }
-            },
-            _ => None,
-        })
-        .collect()
-}
-
-fn generate_distractors(
-    rules: &[FormatAction],
-    source_word: &str,
-    pos: &PartOfSpeech,
-    correct_text: &str,
-    count: usize,
-    rng: &mut impl Rng,
-) -> Vec<String> {
-    let mut distractors = Vec::new();
-    let mut seen = std::collections::HashSet::new();
-    seen.insert(correct_text.to_string());
-
-    let mut attempts = 0;
-    let max_attempts = count * 10;
-
-    while distractors.len() < count && attempts < max_attempts {
-        attempts += 1;
-
-        if let Some(distractor) = apply_mutated_pattern(rules, source_word, pos, rng) {
-            if !seen.contains(&distractor) {
-                seen.insert(distractor.clone());
-                distractors.push(distractor);
-            }
-        }
-    }
-
-    distractors
-}
-
-fn apply_mutated_pattern(
-    rules: &[FormatAction],
-    source_word: &str,
-    pos: &PartOfSpeech,
-    rng: &mut impl Rng,
-) -> Option<String> {
-    let mutable_indices: Vec<usize> = rules
-        .iter()
-        .enumerate()
-        .filter(|(_, a)| a.group() != FormatActionGroup::Universal)
-        .map(|(i, _)| i)
-        .collect();
-
-    if mutable_indices.is_empty() {
-        return None;
-    }
-
-    let idx = mutable_indices.choose(rng)?;
-    let original_action = &rules[*idx];
-    let alternatives = original_action.mutation_alternatives();
-
-    if alternatives.is_empty() {
-        return None;
-    }
-
-    let alternative = alternatives.choose(rng)?;
-    let mut mutated_rules: Vec<FormatAction> = rules.to_vec();
-    mutated_rules[*idx] = (*alternative).clone();
-
-    apply_format_actions(source_word, &mutated_rules, pos).ok()
-}
