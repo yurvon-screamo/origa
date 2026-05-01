@@ -1,5 +1,6 @@
 pub(crate) mod forms_adjective;
 pub(crate) mod forms_verb;
+pub mod quiz_generation;
 
 use crate::dictionary::grammar::{FormatAction, GrammarRule};
 use crate::domain::grammar::forms_adjective::{

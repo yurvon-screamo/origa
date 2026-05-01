@@ -1,11 +1,8 @@
-use std::collections::HashSet;
-
 use crate::i18n::use_i18n;
 use crate::ui_components::{Modal, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
-use origa::dictionary::grammar::{FormatAction, FormatActionGroup};
 use origa::domain::{
-    Card as DomainCard, GrammarRule, NativeLanguage, PartOfSpeech, User, apply_format_actions,
+    GrammarRule, NativeLanguage, User, find_known_vocab_words_for_pos, generate_grammar_distractors,
 };
 use rand::prelude::{IndexedRandom, SliceRandom};
 
@@ -15,27 +12,11 @@ enum QuizState {
     Answered { selected: usize, correct: bool },
 }
 
-fn find_matching_vocab(user: &User, pos: &PartOfSpeech) -> Vec<String> {
-    user.knowledge_set()
-        .study_cards()
-        .values()
-        .filter(|sc| sc.memory().is_known_card() || sc.memory().is_in_progress())
-        .filter_map(|sc| match sc.card() {
-            DomainCard::Vocabulary(v) => {
-                let word = v.word().text().to_string();
-                let vocab_pos = v.part_of_speech().ok()?;
-                if vocab_pos == *pos { Some(word) } else { None }
-            },
-            _ => None,
-        })
-        .collect()
-}
-
 fn generate_question(rule: &GrammarRule, user: &User) -> Option<(String, Vec<String>, usize)> {
     let supported_pos = rule.apply_to();
     let pos = supported_pos.first()?.clone();
 
-    let matching_vocab = find_matching_vocab(user, &pos);
+    let matching_vocab = find_known_vocab_words_for_pos(user.knowledge_set(), &pos);
     if matching_vocab.is_empty() {
         return None;
     }
@@ -46,7 +27,11 @@ fn generate_question(rule: &GrammarRule, user: &User) -> Option<(String, Vec<Str
     let correct = rule.format(&word, &pos).ok()?;
     let actions = rule.format_actions_for_pos(&pos)?;
 
-    let distractors = generate_distractors(actions, &word, &pos, &correct, &mut rng);
+    let distractors = generate_grammar_distractors(actions, &word, &pos, &correct, 3, &mut rng);
+
+    if distractors.len() < 3 {
+        return None;
+    }
 
     let mut options: Vec<String> = distractors;
     options.push(correct.clone());
@@ -54,63 +39,6 @@ fn generate_question(rule: &GrammarRule, user: &User) -> Option<(String, Vec<Str
     let correct_index = options.iter().position(|o| *o == correct)?;
 
     Some((word, options, correct_index))
-}
-
-fn generate_distractors(
-    rules: &[FormatAction],
-    source_word: &str,
-    pos: &PartOfSpeech,
-    correct_text: &str,
-    rng: &mut impl rand::Rng,
-) -> Vec<String> {
-    let mut distractors = Vec::new();
-    let mut seen = HashSet::new();
-    seen.insert(correct_text.to_string());
-
-    for _ in 0..30 {
-        if distractors.len() >= 3 {
-            break;
-        }
-        if let Some(d) = apply_mutated_pattern(rules, source_word, pos, rng) {
-            if !seen.contains(&d) {
-                seen.insert(d.clone());
-                distractors.push(d);
-            }
-        }
-    }
-
-    distractors
-}
-
-fn apply_mutated_pattern(
-    rules: &[FormatAction],
-    source_word: &str,
-    pos: &PartOfSpeech,
-    rng: &mut impl rand::Rng,
-) -> Option<String> {
-    let mutable_indices: Vec<usize> = rules
-        .iter()
-        .enumerate()
-        .filter(|(_, a)| a.group() != FormatActionGroup::Universal)
-        .map(|(i, _)| i)
-        .collect();
-
-    if mutable_indices.is_empty() {
-        return None;
-    }
-
-    let idx = mutable_indices.choose(rng)?;
-    let original_action = &rules[*idx];
-    let alternatives = original_action.mutation_alternatives();
-    if alternatives.is_empty() {
-        return None;
-    }
-
-    let alternative = alternatives.choose(rng)?;
-    let mut mutated: Vec<FormatAction> = rules.to_vec();
-    mutated[*idx] = (*alternative).clone();
-
-    apply_format_actions(source_word, &mutated, pos).ok()
 }
 
 #[component]
