@@ -1,5 +1,7 @@
 use leptos::prelude::*;
 
+use crate::core::config::public_url;
+
 #[derive(Clone, Copy, PartialEq, Default, Debug)]
 pub enum LogoSize {
     #[default]
@@ -8,10 +10,10 @@ pub enum LogoSize {
 }
 
 impl LogoSize {
-    fn src(&self) -> &'static str {
+    fn src(&self) -> String {
         match self {
-            LogoSize::Sm => "/public/logo-32.png",
-            LogoSize::Lg => "/public/logo-128.png",
+            LogoSize::Sm => public_url("/public/logo-32.png"),
+            LogoSize::Lg => public_url("/public/logo-128.png"),
         }
     }
 

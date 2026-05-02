@@ -15,14 +15,13 @@ pub fn urls() -> &'static Urls {
         let base = env!("ORIGA_PUBLIC_BASE_URL");
         Urls {
             base,
-            dictionary: "/public/dictionaries/unidic/cache/dictionary-data",
+            dictionary: "dictionaries/unidic/cache/dictionary-data",
             #[cfg(target_arch = "wasm32")]
             whisper_base: "https://huggingface.co/onnx-community/whisper-tiny/resolve/main",
         }
     })
 }
 
-#[expect(dead_code, reason = "public_url зарезервирован для не-CDN статики")]
 pub fn public_url(path: &str) -> String {
     if !path.starts_with('/') {
         tracing::warn!(

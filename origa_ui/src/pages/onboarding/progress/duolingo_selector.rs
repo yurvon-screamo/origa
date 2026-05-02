@@ -1,3 +1,4 @@
+use crate::core::config::public_url;
 use crate::i18n::{t, use_i18n};
 use crate::ui_components::{Card, Dropdown, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
@@ -92,7 +93,7 @@ pub fn DuolingoProgressSelector(
     view! {
         <Card class=Signal::derive(|| "p-4".to_string())>
             <div class="flex items-center gap-3 mb-2">
-                <img src="/public/external_icons/duolingo.png" class="w-12 h-12 object-contain" alt="Duolingo" />
+                <img src=public_url("/public/external_icons/duolingo.png") class="w-12 h-12 object-contain" alt="Duolingo" />
                 <Text size=TextSize::Default variant=TypographyVariant::Primary>
                     {app_label}
                 </Text>

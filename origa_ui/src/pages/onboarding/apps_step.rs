@@ -1,5 +1,6 @@
 use std::collections::HashSet;
 
+use crate::core::config::public_url;
 use crate::i18n::*;
 use crate::ui_components::{Card, Checkbox, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
@@ -12,7 +13,7 @@ struct AppInfo {
     id: String,
     name: String,
     desc_key: &'static str,
-    icon: &'static str,
+    icon: String,
 }
 
 fn get_known_apps() -> Vec<AppInfo> {
@@ -21,31 +22,31 @@ fn get_known_apps() -> Vec<AppInfo> {
             id: "Anki".to_string(),
             name: "Anki".to_string(),
             desc_key: "anki",
-            icon: "/public/external_icons/anki.svg",
+            icon: public_url("/public/external_icons/anki.svg"),
         },
         AppInfo {
             id: "Migii".to_string(),
             name: "Migii".to_string(),
             desc_key: "migii",
-            icon: "/public/external_icons/migii.png",
+            icon: public_url("/public/external_icons/migii.png"),
         },
         AppInfo {
             id: "DuolingoRu".to_string(),
             name: "Duolingo 「RU」".to_string(),
             desc_key: "duolingo_ru",
-            icon: "/public/external_icons/duolingo.png",
+            icon: public_url("/public/external_icons/duolingo.png"),
         },
         AppInfo {
             id: "DuolingoEn".to_string(),
             name: "Duolingo 「EN」".to_string(),
             desc_key: "duolingo_en",
-            icon: "/public/external_icons/duolingo.png",
+            icon: public_url("/public/external_icons/duolingo.png"),
         },
         AppInfo {
             id: "MinnaNoNihongo".to_string(),
             name: "Minna no Nihongo".to_string(),
             desc_key: "minna",
-            icon: "/public/external_icons/minnanonihongo.png",
+            icon: public_url("/public/external_icons/minnanonihongo.png"),
         },
     ]
 }

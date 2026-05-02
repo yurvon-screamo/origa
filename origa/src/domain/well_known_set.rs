@@ -69,14 +69,14 @@ pub fn id_to_set_type(id: &str) -> SetType {
 
 pub fn resolve_set_path(id: &str) -> String {
     if id.contains("..") || id.contains('/') {
-        return format!("well_known_set/{}.json", id);
+        return format!("domain/well_known_set/{}.json", id);
     }
 
     if let Some(level) = id.strip_prefix("jlpt_") {
-        format!("well_known_set/jlpt_{}.json", level)
+        format!("domain/well_known_set/jlpt_{}.json", level)
     } else if let Some(rest) = id.strip_prefix("migii_") {
         let level = rest.split('_').next().unwrap_or("");
-        format!("well_known_set/migii/{}/{}.json", level, id)
+        format!("domain/well_known_set/migii/{}/{}.json", level, id)
     } else if let Some(rest) = id.strip_prefix("duolingo_") {
         let level = rest.split('_').next().unwrap_or("");
         let parts: Vec<&str> = rest.split('_').collect();
@@ -88,13 +88,13 @@ pub fn resolve_set_path(id: &str) -> String {
         } else {
             rest.to_string()
         };
-        format!("well_known_set/duolingo/{}/{}.json", level, filename)
+        format!("domain/well_known_set/duolingo/{}/{}.json", level, filename)
     } else if id.starts_with("minna_n5_") {
-        format!("well_known_set/minna_n5/{}.json", id)
+        format!("domain/well_known_set/minna_n5/{}.json", id)
     } else if id.starts_with("minna_n4_") {
-        format!("well_known_set/minna_n4/{}.json", id)
+        format!("domain/well_known_set/minna_n4/{}.json", id)
     } else {
-        format!("well_known_set/{}.json", id)
+        format!("domain/well_known_set/{}.json", id)
     }
 }
 
@@ -184,24 +184,30 @@ mod tests {
     }
 
     #[rstest]
-    #[case("jlpt_n5", "well_known_set/jlpt_n5.json")]
-    #[case("jlpt_n4", "well_known_set/jlpt_n4.json")]
-    #[case("migii_n5_basic", "well_known_set/migii/n5/migii_n5_basic.json")]
-    #[case("migii_n4_grammar", "well_known_set/migii/n4/migii_n4_grammar.json")]
-    #[case("duolingo_n5_animals", "well_known_set/duolingo/n5/n5_animals.json")]
-    #[case("duolingo_n4_verbs", "well_known_set/duolingo/n4/n4_verbs.json")]
+    #[case("jlpt_n5", "domain/well_known_set/jlpt_n5.json")]
+    #[case("jlpt_n4", "domain/well_known_set/jlpt_n4.json")]
+    #[case("migii_n5_basic", "domain/well_known_set/migii/n5/migii_n5_basic.json")]
+    #[case(
+        "migii_n4_grammar",
+        "domain/well_known_set/migii/n4/migii_n4_grammar.json"
+    )]
+    #[case(
+        "duolingo_n5_animals",
+        "domain/well_known_set/duolingo/n5/n5_animals.json"
+    )]
+    #[case("duolingo_n4_verbs", "domain/well_known_set/duolingo/n4/n4_verbs.json")]
     #[case(
         "duolingo_n5_duolingo_ru_n5_1",
-        "well_known_set/duolingo/n5/duolingo_ru_n5_1.json"
+        "domain/well_known_set/duolingo/n5/duolingo_ru_n5_1.json"
     )]
     #[case(
         "duolingo_n4_duolingo_jp_n4_2",
-        "well_known_set/duolingo/n4/duolingo_jp_n4_2.json"
+        "domain/well_known_set/duolingo/n4/duolingo_jp_n4_2.json"
     )]
-    #[case("minna_n5_01", "well_known_set/minna_n5/minna_n5_01.json")]
-    #[case("minna_n4_26", "well_known_set/minna_n4/minna_n4_26.json")]
-    #[case("spy_family_s1", "well_known_set/spy_family_s1.json")]
-    #[case("random_id", "well_known_set/random_id.json")]
+    #[case("minna_n5_01", "domain/well_known_set/minna_n5/minna_n5_01.json")]
+    #[case("minna_n4_26", "domain/well_known_set/minna_n4/minna_n4_26.json")]
+    #[case("spy_family_s1", "domain/well_known_set/spy_family_s1.json")]
+    #[case("random_id", "domain/well_known_set/random_id.json")]
     fn test_resolve_set_path_formats(#[case] id: &str, #[case] expected: &str) {
         assert_eq!(resolve_set_path(id), expected);
     }
@@ -210,7 +216,7 @@ mod tests {
     fn test_resolve_set_path_handles_special_characters() {
         let id_with_dots = "test..dots";
         let path = resolve_set_path(id_with_dots);
-        assert!(path.starts_with("well_known_set/"));
+        assert!(path.starts_with("domain/well_known_set/"));
         assert!(path.ends_with(".json"));
     }
 
