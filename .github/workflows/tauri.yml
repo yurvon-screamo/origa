@@ -84,8 +84,8 @@ jobs:
               env:
                   TRAILBASE_URL: ${{ vars.TRAILBASE_URL }}
                   ORIGA_PUBLIC_BASE_URL: ${{ vars.TRAILBASE_URL }}
-                  ORIGA_CDN_BASE_URL: ${{ vars.CDN_BASE_URL }}
-                  ORIGA_CDN_REGION: ${{ vars.CDN_REGION }}
+                  ORIGA_CDN_BASE_URL: ${{ vars.ORIGA_CDN_BASE_URL }}
+                  ORIGA_CDN_REGION: ${{ vars.ORIGA_CDN_REGION }}
 
             - name: Remove public assets from dist
               run: rm -rf origa_ui/dist/public
@@ -202,8 +202,8 @@ jobs:
               env:
                   TRAILBASE_URL: ${{ vars.TRAILBASE_URL }}
                   ORIGA_PUBLIC_BASE_URL: ${{ vars.TRAILBASE_URL }}
-                  ORIGA_CDN_BASE_URL: ${{ vars.CDN_BASE_URL }}
-                  ORIGA_CDN_REGION: ${{ vars.CDN_REGION }}
+                  ORIGA_CDN_BASE_URL: ${{ vars.ORIGA_CDN_BASE_URL }}
+                  ORIGA_CDN_REGION: ${{ vars.ORIGA_CDN_REGION }}
 
             - name: Remove public assets from dist
               run: rm -rf origa_ui/dist/public
@@ -313,8 +313,8 @@ jobs:
               env:
                   TRAILBASE_URL: ${{ vars.TRAILBASE_URL }}
                   ORIGA_PUBLIC_BASE_URL: ${{ vars.TRAILBASE_URL }}
-                  ORIGA_CDN_BASE_URL: ${{ vars.CDN_BASE_URL }}
-                  ORIGA_CDN_REGION: ${{ vars.CDN_REGION }}
+                  ORIGA_CDN_BASE_URL: ${{ vars.ORIGA_CDN_BASE_URL }}
+                  ORIGA_CDN_REGION: ${{ vars.ORIGA_CDN_REGION }}
 
             - name: Remove public assets from dist
               run: rm -rf origa_ui/dist/public
