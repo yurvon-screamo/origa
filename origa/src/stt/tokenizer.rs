@@ -1,4 +1,5 @@
 use std::collections::{HashMap, HashSet};
+#[cfg(not(target_arch = "wasm32"))]
 use std::path::Path;
 
 pub struct WhisperTokenizer {

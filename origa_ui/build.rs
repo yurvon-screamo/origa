@@ -271,6 +271,10 @@ fn generate_well_known_meta() {
         .join("well_known_set");
     let output_file = base_dir.join("well_known_sets_meta.json");
 
+    if !base_dir.exists() {
+        return;
+    }
+
     // Rerun if any JSON file in well_known_set changes
     println!(
         "cargo:rerun-if-changed={}",
