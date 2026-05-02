@@ -10,8 +10,8 @@ pub enum LogoSize {
 impl LogoSize {
     fn src(&self) -> &'static str {
         match self {
-            LogoSize::Sm => "/logo-32.png",
-            LogoSize::Lg => "/logo-128.png",
+            LogoSize::Sm => "/public/logo-32.png",
+            LogoSize::Lg => "/public/logo-128.png",
         }
     }
 
