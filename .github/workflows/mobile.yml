@@ -111,6 +111,8 @@ jobs:
               run: trunk build --release
               env:
                   ORIGA_PUBLIC_BASE_URL: ${{ vars.TRAILBASE_URL }}
+                  ORIGA_CDN_BASE_URL: ${{ vars.CDN_BASE_URL }}
+                  ORIGA_CDN_REGION: ${{ vars.CDN_REGION }}
 
             - name: Remove public assets from dist (mobile lazy loading)
               if: matrix.platform == 'android'
