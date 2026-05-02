@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use crate::core::config::public_url;
 use crate::i18n::*;
 use crate::ui_components::{Checkbox, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
@@ -18,12 +19,12 @@ fn get_type_label(set_type: &str) -> String {
     }
 }
 
-fn get_type_icon(set_type: &str) -> Option<&'static str> {
+fn get_type_icon(set_type: &str) -> Option<String> {
     match set_type {
-        "Migii" => Some("/public/external_icons/migii.png"),
-        "DuolingoRu" => Some("/public/external_icons/duolingo.png"),
-        "DuolingoEn" => Some("/public/external_icons/duolingo.png"),
-        "MinnaNoNihongo" => Some("/public/external_icons/minnanonihongo.png"),
+        "Migii" => Some(public_url("/public/external_icons/migii.png")),
+        "DuolingoRu" => Some(public_url("/public/external_icons/duolingo.png")),
+        "DuolingoEn" => Some(public_url("/public/external_icons/duolingo.png")),
+        "MinnaNoNihongo" => Some(public_url("/public/external_icons/minnanonihongo.png")),
         _ => None,
     }
 }

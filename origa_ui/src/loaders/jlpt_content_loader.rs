@@ -150,7 +150,7 @@ async fn load_words(content: &mut JlptContent) -> Result<(), OrigaError> {
     let fetch_futures: Vec<_> = levels
         .iter()
         .map(|(_, filename)| {
-            let path = format!("well_known_set/{}", filename);
+            let path = format!("domain/well_known_set/{}", filename);
             async move { cdn.fetch_text(&path).await }
         })
         .collect();

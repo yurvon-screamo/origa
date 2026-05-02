@@ -1,3 +1,4 @@
+use crate::core::config::public_url;
 use crate::i18n::{t, use_i18n};
 use crate::ui_components::{Card, Dropdown, DropdownItem, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
@@ -172,7 +173,7 @@ pub fn MinnaProgressSelector(
         <Card class=Signal::derive(|| "p-4".to_string())>
             <div class="flex items-center gap-3 mb-2">
                 <img
-                    src="/public/external_icons/minnanonihongo.png"
+                    src=public_url("/public/external_icons/minnanonihongo.png")
                     class="w-12 h-12 object-contain"
                     alt="Minna no Nihongo"
                 />

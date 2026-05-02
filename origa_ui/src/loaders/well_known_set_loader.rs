@@ -46,7 +46,7 @@ impl WellKnownSetLoaderImpl {
         }
         let cdn = cdn_provider();
         let json = cdn
-            .fetch_text("well_known_set/well_known_types_meta.json")
+            .fetch_text("domain/well_known_set/well_known_types_meta.json")
             .await?;
         let types_meta: TypesMeta =
             serde_json::from_str(&json).map_err(|e| OrigaError::WellKnownSetParseError {
@@ -64,7 +64,7 @@ impl WellKnownSetLoaderImpl {
         }
         let cdn = cdn_provider();
         let json = cdn
-            .fetch_text("well_known_set/well_known_sets_meta.json")
+            .fetch_text("domain/well_known_set/well_known_sets_meta.json")
             .await?;
         let meta_list = parse_well_known_meta_list(&json)?;
         let _ = META_CACHE.set(meta_list.clone());
