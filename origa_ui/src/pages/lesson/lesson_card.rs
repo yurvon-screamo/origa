@@ -1,4 +1,4 @@
-use crate::ui_components::{Card, get_reading_from_text, is_speech_supported, speak_text};
+use crate::ui_components::{Card, is_speech_supported, speak_word};
 use leptos::prelude::*;
 use origa::domain::{Card as DomainCard, GrammarInfo, NativeLanguage};
 use std::collections::HashSet;
@@ -152,8 +152,7 @@ pub fn LessonCard(
             && is_speech_supported()
             && !is_muted
         {
-            let reading = get_reading_from_text(&question.get_value());
-            let _ = speak_text(&reading, 1.0);
+            speak_word(&question.get_value(), 1.0);
         }
     });
 
@@ -169,8 +168,7 @@ pub fn LessonCard(
             && is_speech_supported()
             && !is_muted
         {
-            let reading = get_reading_from_text(&answer.get_value());
-            let _ = speak_text(&reading, 1.0);
+            speak_word(&answer.get_value(), 1.0);
         }
     });
 

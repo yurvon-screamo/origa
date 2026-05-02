@@ -1,7 +1,7 @@
 use leptos::prelude::*;
 use leptos_icons::Icon;
 
-use crate::ui_components::{get_reading_from_text, is_speech_supported, speak_text_with_callback};
+use crate::ui_components::{get_reading_from_text, is_speech_supported, speak_word_with_callback};
 
 #[component]
 pub fn AudioButtons(
@@ -9,8 +9,7 @@ pub fn AudioButtons(
     #[prop(optional, into)] class: Signal<String>,
     #[prop(optional, into)] test_id: Signal<String>,
 ) -> impl IntoView {
-    let reading = get_reading_from_text(&text);
-    let has_reading = !reading.is_empty();
+    let has_reading = !get_reading_from_text(&text).is_empty();
     let is_playing = RwSignal::new(false);
 
     let test_id_val = move || {
@@ -25,11 +24,11 @@ pub fn AudioButtons(
                     class="audio-btn"
                     data-testid=test_id_val
                     on:click={
-                        let reading = reading.clone();
+                        let text = text.clone();
                         move |_| {
                             if is_speech_supported() && !is_playing.get() {
                                 is_playing.set(true);
-                                let _ = speak_text_with_callback(&reading, 1.0, move || {
+                                speak_word_with_callback(&text, 1.0, move || {
                                     is_playing.set(false);
                                 });
                             }

@@ -46,6 +46,7 @@ pub enum OrigaError {
     NetworkError { url: String, reason: String },
     PhraseParseError { reason: String },
     PhraseNotFound { phrase_id: Ulid },
+    PitchAudioParseError { reason: String },
 }
 
 impl fmt::Display for OrigaError {
@@ -174,6 +175,9 @@ impl fmt::Display for OrigaError {
             },
             OrigaError::PhraseNotFound { phrase_id } => {
                 write!(f, "Phrase not found: {}", phrase_id)
+            },
+            OrigaError::PitchAudioParseError { reason } => {
+                write!(f, "Pitch audio parse error: {}", reason)
             },
         }
     }
@@ -552,6 +556,15 @@ mod tests {
             field_name: "Expression".into(),
         };
         assert_display_contains(&error, "Expression");
+        assert_serialization_roundtrip(error);
+    }
+
+    #[test]
+    fn pitch_audio_parse_error() {
+        let error = OrigaError::PitchAudioParseError {
+            reason: "invalid format".into(),
+        };
+        assert_display_contains(&error, "Pitch audio parse error");
         assert_serialization_roundtrip(error);
     }
 }

@@ -3,6 +3,7 @@ use crate::loaders::{
     dictionary::load_dictionary,
     jlpt_content_loader::load_jlpt_content,
     phrase_loader::load_phrases,
+    pitch_audio_loader::load_pitch_audio,
 };
 use crate::pages::{
     Grammar, Home, Kanji, Lesson, Login, Onboarding, Phrases, Profile, Sets, Words,
@@ -56,6 +57,9 @@ pub fn start_dictionary_loading(
         }
         if let Err(e) = load_phrases().await {
             tracing::error!("Failed to load phrases: {e}");
+        }
+        if let Err(e) = load_pitch_audio().await {
+            tracing::warn!("Failed to load pitch audio index: {e}");
         }
         if let Err(e) = load_jlpt_content().await {
             tracing::error!("Failed to load jlpt_content: {e}");
