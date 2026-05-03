@@ -93,14 +93,14 @@ fn collect_known_vocabulary_words(study_cards: &HashMap<Ulid, StudyCard>) -> Has
         .collect()
 }
 
-fn compute_known_words_hash(known_words: &HashSet<String>) -> u64 {
+fn compute_known_words_hash(known_words: &HashSet<String>) -> u32 {
     let mut words: Vec<&String> = known_words.iter().collect();
     words.sort();
     let mut hasher = std::collections::hash_map::DefaultHasher::new();
     for word in &words {
         word.hash(&mut hasher);
     }
-    hasher.finish()
+    hasher.finish() as u32
 }
 
 fn collect_existing_phrase_ids(study_cards: &HashMap<Ulid, StudyCard>) -> HashSet<Ulid> {

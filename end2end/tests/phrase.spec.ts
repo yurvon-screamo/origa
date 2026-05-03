@@ -122,3 +122,77 @@ testWithFreshUser.describe("Phrases Page", () => {
         await expect(phrasesPage.searchInput).toBeVisible();
     });
 });
+
+async function waitForScoringReady(page: Page, timeout = 30_000): Promise<void> {
+    await Promise.race([
+        page.getByTestId("scoring-step-hint").waitFor({ state: "visible", timeout }),
+        page.getByTestId("scoring-step-complete").waitFor({ state: "visible", timeout }),
+    ]).catch(() => {});
+}
+
+async function completeFullOnboarding(page: Page): Promise<void> {
+    await page.goto("http://localhost:1420/");
+
+    try {
+        await page.waitForURL(/\/onboarding$/, { timeout: 30_000 });
+    } catch {
+        if (page.url().includes("/home")) return;
+    }
+
+    if (page.url().includes("/home")) return;
+
+    await expect(page.getByTestId("onboarding-spinner")).not.toBeVisible({ timeout: 10_000 });
+
+    // Intro → Load
+    await page.getByTestId("onboarding-next").click();
+    await expect(page.getByTestId("onboarding-load-step")).toBeVisible();
+
+    // Load → JLPT (default medium load)
+    await page.getByTestId("onboarding-next").click();
+    await expect(page.getByTestId("onboarding-jlpt-step")).toBeVisible();
+
+    // JLPT: select N5
+    await page.getByTestId("jlpt-option-n5").click();
+    await expect(page.getByTestId("jlpt-option-n5")).toHaveClass(/selected/, { timeout: 5000 });
+    await page.getByTestId("onboarding-next").click();
+    await expect(page.getByTestId("onboarding-apps-step")).toBeVisible();
+
+    // Apps: skip (no selection)
+    await page.getByTestId("onboarding-next").click();
+    await expect(page.getByTestId("onboarding-progress-step")).toBeVisible();
+
+    // Progress: skip (no configuration)
+    await page.getByTestId("onboarding-next").click();
+    await expect(page.getByTestId("onboarding-summary-step")).toBeVisible();
+
+    // Summary → Import
+    await page.getByTestId("onboarding-import").click();
+    await expect(page.getByTestId("onboarding-scoring-step")).toBeVisible({ timeout: 120_000 });
+
+    await waitForScoringReady(page);
+    await page.waitForTimeout(1000);
+
+    // Mark all known
+    await page.getByTestId("onboarding-mark-all-known").click();
+    await expect(page.getByTestId("scoring-step-complete")).toBeVisible({ timeout: 60_000 });
+
+    // Finish
+    await page.getByTestId("onboarding-finish").click();
+    await page.waitForURL(/\/home$/, { timeout: 30_000 });
+}
+
+testWithFreshUser.describe("Phrases after full onboarding", () => {
+    testWithFreshUser("should show phrase cards after completing onboarding with N5", async ({ page }) => {
+        test.setTimeout(300_000);
+
+        await completeFullOnboarding(page);
+        await expect(page).toHaveURL(/\/home$/);
+
+        const phrasesPage = new PhrasesPage(page);
+        await phrasesPage.goto();
+        await phrasesPage.expectPhrasesVisible();
+
+        // CDN loading may take time for phrase data
+        await expect(phrasesPage.emptyState).not.toBeVisible({ timeout: 30_000 });
+    });
+});

@@ -23,6 +23,11 @@ pub struct User {
     username: String,
     native_language: NativeLanguage,
     jlpt_progress: JlptProgress,
+    #[serde(
+        default,
+        serialize_with = "crate::domain::serde_utils::option_u64_as_string::serialize",
+        deserialize_with = "crate::domain::serde_utils::option_u64_as_string::deserialize"
+    )]
     telegram_user_id: Option<u64>,
     knowledge_set: KnowledgeSet,
 
@@ -36,7 +41,7 @@ pub struct User {
     daily_load: DailyLoad,
 
     #[serde(default)]
-    known_vocab_hash: u64,
+    known_vocab_hash: u32,
 }
 
 impl User {
@@ -72,7 +77,7 @@ impl User {
         updated_at: DateTime<Utc>,
         imported_sets: HashSet<String>,
         daily_load: DailyLoad,
-        known_vocab_hash: u64,
+        known_vocab_hash: u32,
     ) -> Self {
         Self {
             id,
@@ -186,11 +191,11 @@ impl User {
         &self.imported_sets
     }
 
-    pub fn known_vocab_hash(&self) -> u64 {
+    pub fn known_vocab_hash(&self) -> u32 {
         self.known_vocab_hash
     }
 
-    pub fn set_known_vocab_hash(&mut self, hash: u64) {
+    pub fn set_known_vocab_hash(&mut self, hash: u32) {
         self.known_vocab_hash = hash;
         self.touch();
     }
