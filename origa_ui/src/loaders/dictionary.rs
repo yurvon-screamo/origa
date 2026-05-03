@@ -90,14 +90,14 @@ async fn load_dictionary_from_network() -> Result<DictionaryData, OrigaError> {
     tracing::info!("📖 Fetching dictionary files...");
 
     let files = [
-        ("char_def", "dictionaries/unidic/char_def.bin"),
-        ("matrix", "dictionaries/unidic/matrix.mtx"),
-        ("dict_da", "dictionaries/unidic/dict.da"),
-        ("dict_vals", "dictionaries/unidic/dict.vals"),
-        ("unk", "dictionaries/unidic/unk.bin"),
-        ("words_idx", "dictionaries/unidic/dict.wordsidx"),
-        ("words", "dictionaries/unidic/dict.words"),
-        ("metadata", "dictionaries/unidic/metadata.json"),
+        ("char_def", "dictionaries/char_def.bin"),
+        ("matrix", "dictionaries/matrix.mtx"),
+        ("dict_da", "dictionaries/dict.da"),
+        ("dict_vals", "dictionaries/dict.vals"),
+        ("unk", "dictionaries/unk.bin"),
+        ("words_idx", "dictionaries/dict.wordsidx"),
+        ("words", "dictionaries/dict.words"),
+        ("metadata", "dictionaries/metadata.json"),
     ];
 
     let fetch_start = now_ms();

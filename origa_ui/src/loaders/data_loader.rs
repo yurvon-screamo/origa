@@ -29,7 +29,7 @@ pub async fn load_vocabulary() -> Result<(), OrigaError> {
 
     let chunk_futures: Vec<_> = (1..=11)
         .map(|i| {
-            let path = format!("dictionary/vocabulary/chunk_{:02}.json", i);
+            let path = format!("dictionary/chunk_{:02}.json", i);
             async move { cdn.fetch_text(&path).await }
         })
         .collect();
