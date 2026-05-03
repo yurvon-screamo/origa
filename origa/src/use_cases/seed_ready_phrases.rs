@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
+use std::hash::{Hash, Hasher};
 
 use tracing::info;
 use ulid::Ulid;
@@ -25,26 +26,35 @@ impl<'a, R: UserRepository> SeedReadyPhrasesUseCase<'a, R> {
             .await?
             .ok_or(OrigaError::CurrentUserNotExist {})?;
 
+        if !is_phrases_loaded() {
+            return Ok(0);
+        }
+
         let orphaned_removed = remove_orphaned_phrase_cards(&mut user);
 
-        if user.phrases_seeded() {
+        let known_words = {
+            let study_cards = user.knowledge_set().study_cards();
+            collect_known_vocabulary_words(study_cards)
+        };
+
+        if known_words.is_empty() {
             if orphaned_removed > 0 {
                 self.repository.save(&user).await?;
             }
             return Ok(0);
         }
 
-        if !is_phrases_loaded() {
+        let current_hash = compute_known_words_hash(&known_words);
+        if current_hash == user.known_vocab_hash() {
             if orphaned_removed > 0 {
+                user.set_known_vocab_hash(current_hash);
                 self.repository.save(&user).await?;
             }
             return Ok(0);
         }
 
         let study_cards = user.knowledge_set().study_cards();
-        let known_words = collect_known_vocabulary_words(study_cards);
         let existing_phrase_ids = collect_existing_phrase_ids(study_cards);
-
         let ready_phrase_ids = find_ready_phrases(&known_words, &existing_phrase_ids);
 
         let mut created_count = 0;
@@ -55,12 +65,14 @@ impl<'a, R: UserRepository> SeedReadyPhrasesUseCase<'a, R> {
             }
         }
 
-        user.set_phrases_seeded(true);
+        user.set_known_vocab_hash(current_hash);
         self.repository.save(&user).await?;
 
         info!(
             created = created_count,
-            "Seeded ready phrase cards for existing user"
+            orphaned_removed = orphaned_removed,
+            known_vocab_count = known_words.len(),
+            "Seeded ready phrase cards"
         );
 
         Ok(created_count)
@@ -79,6 +91,16 @@ fn collect_known_vocabulary_words(study_cards: &HashMap<Ulid, StudyCard>) -> Has
             None
         })
         .collect()
+}
+
+fn compute_known_words_hash(known_words: &HashSet<String>) -> u64 {
+    let mut words: Vec<&String> = known_words.iter().collect();
+    words.sort();
+    let mut hasher = std::collections::hash_map::DefaultHasher::new();
+    for word in &words {
+        word.hash(&mut hasher);
+    }
+    hasher.finish()
 }
 
 fn collect_existing_phrase_ids(study_cards: &HashMap<Ulid, StudyCard>) -> HashSet<Ulid> {

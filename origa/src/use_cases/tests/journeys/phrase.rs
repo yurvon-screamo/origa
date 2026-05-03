@@ -2,9 +2,12 @@ use std::sync::OnceLock;
 use ulid::Ulid;
 
 use crate::dictionary::phrase::{cache_phrase_details, init_phrase_index};
-use crate::domain::{Card, NativeLanguage, OrigaError, PhraseCard, StudyCard, User};
+use crate::domain::{
+    Card, NativeLanguage, OrigaError, PhraseCard, RateMode, Rating, StudyCard, User,
+};
 use crate::traits::UserRepository;
 use crate::use_cases::CreatePhraseCardUseCase;
+use crate::use_cases::SeedReadyPhrasesUseCase;
 use crate::use_cases::tests::fixtures::{InMemoryUserRepository, init_real_dictionaries};
 
 static PHRASE_INIT: OnceLock<()> = OnceLock::new();
@@ -223,5 +226,83 @@ async fn phrase_card_content_key_is_phrase_id() {
         card.content_key(),
         "01KPJ5S3N1DRFFD236Z4EZ03HJ",
         "content_key should return phrase_id as string"
+    );
+}
+
+fn create_user_with_known_words(words: &[&str]) -> User {
+    let mut user = User::new(
+        "seed-test@example.com".to_string(),
+        NativeLanguage::Russian,
+        None,
+    );
+
+    for word in words {
+        let card = crate::use_cases::tests::fixtures::create_test_vocab_card(word);
+        let study_card = user.create_card(card).expect("Failed to create vocab card");
+        user.rate_card(
+            *study_card.card_id(),
+            Rating::Easy,
+            RateMode::StandardLesson,
+        )
+        .expect("Failed to rate card");
+    }
+
+    user
+}
+
+#[tokio::test]
+async fn seed_ready_phrases_repeated_execute_returns_zero() {
+    setup();
+
+    let user = create_user_with_known_words(&["test", "hello"]);
+    let repo = InMemoryUserRepository::with_user(user);
+    let use_case = SeedReadyPhrasesUseCase::new(&repo);
+
+    let first = use_case.execute().await.expect("First execute failed");
+    assert!(first > 0, "First seed should create phrase cards");
+
+    let second = use_case.execute().await.expect("Second execute failed");
+    assert_eq!(
+        second, 0,
+        "Repeated seed should return 0 (snapshot unchanged)"
+    );
+}
+
+#[tokio::test]
+async fn seed_ready_phrases_finds_new_phrases_after_more_known_words() {
+    setup();
+
+    let user = create_user_with_known_words(&["test"]);
+    let repo = InMemoryUserRepository::with_user(user);
+    let use_case = SeedReadyPhrasesUseCase::new(&repo);
+
+    let first = use_case.execute().await.expect("First execute failed");
+    assert_eq!(
+        first, 0,
+        "No ready phrases when only one token of a multi-token phrase is known"
+    );
+
+    {
+        let mut saved = repo
+            .get_current_user()
+            .await
+            .expect("repo error")
+            .expect("user exists");
+        let card = crate::use_cases::tests::fixtures::create_test_vocab_card("hello");
+        let study_card = saved.create_card(card).expect("Failed to create card");
+        saved
+            .rate_card(
+                *study_card.card_id(),
+                Rating::Easy,
+                RateMode::StandardLesson,
+            )
+            .expect("Failed to rate");
+        repo.save(&saved).await.expect("Failed to save");
+    }
+
+    let second = use_case.execute().await.expect("Second execute failed");
+    assert!(
+        second > 0,
+        "Seed should find new phrases after more words become known"
     );
 }
