@@ -31,6 +31,8 @@ use serde::{Deserialize, Serialize};
 use ulid::Ulid;
 
 const MIN_LESSON_SIZE: usize = 15;
+const MAX_LESSON_SIZE: usize = 50;
+const PHRASE_NEW_LIMIT: usize = 10;
 
 /// Приоритет карточек без определённого JLPT уровня — ниже всех известных уровней (N1=1)
 const UNKNOWN_JLPT_PRIORITY: u8 = 0;
@@ -255,9 +257,11 @@ impl KnowledgeSet {
             .filter(|(_, card)| card.is_favorite())
             .collect();
 
+        let high_diff_limit = MAX_LESSON_SIZE.saturating_sub(favorite_cards.len());
         let mut selected_cards: Vec<_> = all_cards
             .iter()
             .filter(|(_, card)| card.memory().is_due() && card.memory().is_high_difficulty())
+            .take(high_diff_limit)
             .copied()
             .collect();
 
@@ -272,18 +276,25 @@ impl KnowledgeSet {
 
         if !new_cards.is_empty() {
             let distributed = distribute_new_cards(new_cards, jlpt_content);
-            let allowed_limited = if remaining_new > selected_cards.len() {
+            let available =
+                MAX_LESSON_SIZE.saturating_sub(selected_cards.len() + favorite_cards.len());
+            let daily_remaining = if remaining_new > selected_cards.len() {
                 remaining_new.saturating_sub(selected_cards.len())
             } else {
                 0
             };
+            let allowed_limited = daily_remaining.min(available);
             let mut limited_taken = 0;
 
+            let mut phrase_taken = 0;
             for card in distributed {
                 let card_type = CardType::from(card.1.card());
                 match card_type {
                     CardType::Phrase => {
-                        selected_cards.push(card);
+                        if phrase_taken < PHRASE_NEW_LIMIT {
+                            selected_cards.push(card);
+                            phrase_taken += 1;
+                        }
                     },
                     CardType::Vocabulary | CardType::Kanji | CardType::Grammar => {
                         if limited_taken < allowed_limited {
@@ -295,14 +306,20 @@ impl KnowledgeSet {
             }
         }
 
-        let known_cards = all_cards
-            .iter()
-            .filter(|(_, card)| {
-                card.memory().is_due()
-                    && (card.memory().is_in_progress() || card.memory().is_known_card())
-            })
-            .copied();
-        selected_cards.extend(known_cards);
+        let current_count = selected_cards.len() + favorite_cards.len();
+        if current_count < MAX_LESSON_SIZE {
+            let remaining = MAX_LESSON_SIZE.saturating_sub(current_count);
+            let known_cards: Vec<_> = all_cards
+                .iter()
+                .filter(|(_, card)| {
+                    card.memory().is_due()
+                        && (card.memory().is_in_progress() || card.memory().is_known_card())
+                })
+                .take(remaining)
+                .copied()
+                .collect();
+            selected_cards.extend(known_cards);
+        }
 
         let selected_ids: HashSet<_> = selected_cards.iter().map(|(id, _)| **id).collect();
         let favorite_ids: HashSet<_> = favorite_cards.iter().map(|(id, _)| **id).collect();
@@ -1463,7 +1480,7 @@ mod tests {
     }
 
     #[test]
-    fn phrase_new_cards_not_limited() {
+    fn phrase_new_cards_limited() {
         let mut knowledge_set = KnowledgeSet::new();
         for _ in 0..20 {
             let phrase_id = Ulid::new();
@@ -1498,14 +1515,17 @@ mod tests {
             })
             .count();
 
-        assert_eq!(phrase_count, 20, "All 20 Phrase cards should be included");
+        assert!(
+            phrase_count <= 10,
+            "Phrase cards should be limited to PHRASE_NEW_LIMIT, got {phrase_count}"
+        );
         assert!(
             vocab_count <= 3,
             "Vocab cards should respect daily limit, got {vocab_count}"
         );
         assert!(
-            result.len() >= 20,
-            "Total should be at least 20 (all phrases), got {}",
+            result.len() <= 50,
+            "Total should not exceed MAX_LESSON_SIZE, got {}",
             result.len()
         );
     }
@@ -1591,6 +1611,55 @@ mod tests {
         assert!(
             result.len() <= 5,
             "Vocab + Kanji should respect daily limit of 5, got {}",
+            result.len()
+        );
+    }
+
+    #[test]
+    fn lesson_size_respects_max_limit() {
+        let mut knowledge_set = KnowledgeSet::new();
+
+        for i in 0..100 {
+            let study_card = knowledge_set
+                .create_card(create_vocab_card(&format!("word{i}")))
+                .unwrap();
+            knowledge_set
+                .rate_card(
+                    *study_card.card_id(),
+                    Rating::Easy,
+                    RateMode::StandardLesson,
+                )
+                .unwrap();
+        }
+
+        let result = knowledge_set.cards_to_lesson(100, &JlptContent::new());
+
+        assert!(
+            result.len() <= 50,
+            "Total lesson size should not exceed MAX_LESSON_SIZE, got {}",
+            result.len()
+        );
+    }
+
+    #[test]
+    fn high_difficulty_cards_respect_max_lesson_size() {
+        let mut knowledge_set = KnowledgeSet::new();
+
+        // 100 карточек — все high-difficulty и due (rated Again + ShortTerm)
+        for i in 0..100 {
+            let study_card = knowledge_set
+                .create_card(create_vocab_card(&format!("hard{i}")))
+                .unwrap();
+            knowledge_set
+                .rate_card(*study_card.card_id(), Rating::Again, RateMode::ShortTerm)
+                .unwrap();
+        }
+
+        let result = knowledge_set.cards_to_lesson(10, &JlptContent::new());
+
+        assert!(
+            result.len() <= 50,
+            "High-difficulty cards should be capped at MAX_LESSON_SIZE, got {}",
             result.len()
         );
     }

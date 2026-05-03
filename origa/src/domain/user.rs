@@ -36,7 +36,7 @@ pub struct User {
     daily_load: DailyLoad,
 
     #[serde(default)]
-    phrases_seeded: bool,
+    known_vocab_hash: u64,
 }
 
 impl User {
@@ -56,7 +56,7 @@ impl User {
             updated_at: Utc::now(),
             imported_sets: HashSet::new(),
             daily_load: DailyLoad::default(),
-            phrases_seeded: false,
+            known_vocab_hash: 0,
         }
     }
 
@@ -72,7 +72,7 @@ impl User {
         updated_at: DateTime<Utc>,
         imported_sets: HashSet<String>,
         daily_load: DailyLoad,
-        phrases_seeded: bool,
+        known_vocab_hash: u64,
     ) -> Self {
         Self {
             id,
@@ -85,7 +85,7 @@ impl User {
             updated_at,
             imported_sets,
             daily_load,
-            phrases_seeded,
+            known_vocab_hash,
         }
     }
 
@@ -186,12 +186,12 @@ impl User {
         &self.imported_sets
     }
 
-    pub fn phrases_seeded(&self) -> bool {
-        self.phrases_seeded
+    pub fn known_vocab_hash(&self) -> u64 {
+        self.known_vocab_hash
     }
 
-    pub fn set_phrases_seeded(&mut self, value: bool) {
-        self.phrases_seeded = value;
+    pub fn set_known_vocab_hash(&mut self, hash: u64) {
+        self.known_vocab_hash = hash;
         self.touch();
     }
 

@@ -92,6 +92,8 @@ struct UserRow {
     imported_sets: Option<String>,
     #[serde(default)]
     daily_load: Option<i32>,
+    #[serde(default)]
+    known_vocab_hash: Option<i64>,
 }
 
 impl UserRow {
@@ -135,7 +137,7 @@ impl UserRow {
                     DailyLoad::default()
                 },
             },
-            false,
+            self.known_vocab_hash.unwrap_or(0) as u64,
         )
     }
 }
@@ -179,6 +181,7 @@ fn user_to_json(user: &User, trailbase_id: &str) -> serde_json::Value {
         "updated_at": user.updated_at().to_rfc3339(),
         "imported_sets": imported_sets_json,
         "daily_load": i32::from(*user.daily_load()),
+        "known_vocab_hash": user.known_vocab_hash() as i64,
     })
 }
 
