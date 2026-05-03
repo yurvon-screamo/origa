@@ -42,7 +42,7 @@ pub fn Logo(
             width=size.dimensions().0
             height=size.dimensions().1
             alt="Origa"
-            class=move || class.get()
+            class=move || format!("rounded-full overflow-hidden {}", class.get())
             data-testid=test_id_val
         />
     }

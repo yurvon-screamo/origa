@@ -1,7 +1,5 @@
 use crate::i18n::*;
-use crate::ui_components::{
-    Avatar, Button, ButtonVariant, DisplayText, Logo, LogoSize, derive_test_id,
-};
+use crate::ui_components::{Avatar, Button, ButtonVariant, Logo, LogoSize, derive_test_id};
 use leptos::prelude::*;
 use leptos_router::hooks::use_navigate;
 use origa::domain::User;
@@ -31,9 +29,6 @@ pub fn HomeHeader(
                 <div class="flex items-center justify-between min-h-16">
                     <div class="flex items-center space-x-3">
                         <Logo size=LogoSize::Sm />
-                        <DisplayText class="font-serif text-2xl font-light tracking-tight whitespace-nowrap">
-                            "オリガ"
-                        </DisplayText>
                     </div>
 
                     // Навигация скрыта на mobile
