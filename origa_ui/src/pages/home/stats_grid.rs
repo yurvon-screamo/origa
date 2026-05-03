@@ -1,5 +1,5 @@
-use super::{LessonButtonsCard, QuickStatCard, StatMetric};
 use super::{PrimaryStats, SecondaryStats, format_delta, format_number};
+use super::{QuickStatCard, StatMetric};
 use crate::i18n::{t, use_i18n};
 use crate::ui_components::{Button, ButtonVariant};
 use leptos::prelude::*;
@@ -26,43 +26,36 @@ pub fn StatsGrid(
 
     view! {
         <div data-testid=test_id_val>
-            <div class="flex flex-col md:flex-row gap-6 mb-6">
-                <div class="md:w-1/4">
-                    <LessonButtonsCard test_id=Signal::derive(|| "lesson-buttons".to_string()) />
-                </div>
-                <div class="md:w-3/4">
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                        <QuickStatCard
-                            title=Signal::derive(move || i18n.get_keys().home().learned().inner().to_string())
-                            value=Signal::derive(move || format_number(primary.get().learned))
-                            delta=Signal::derive(move || format_delta(primary.get().learned_delta))
-                            on_card_click=open_history(StatMetric::Learned)
-                            test_id=Signal::derive(|| "stat-learned".to_string())
-                        />
-                        <QuickStatCard
-                            title=Signal::derive(move || i18n.get_keys().home().in_progress().inner().to_string())
-                            value=Signal::derive(move || format_number(primary.get().in_progress))
-                            delta=Signal::derive(move || format_delta(primary.get().in_progress_delta))
-                            on_card_click=open_history(StatMetric::InProgress)
-                            test_id=Signal::derive(|| "stat-in-progress".to_string())
-                        />
-                        <QuickStatCard
-                            title=Signal::derive(move || i18n.get_keys().home().hard().inner().to_string())
-                            value=Signal::derive(move || format_number(secondary.get().high_difficulty))
-                            delta=Signal::derive(move || format_delta(secondary.get().high_difficulty_delta))
-                            on_card_click=open_history(StatMetric::HighDifficulty)
-                            test_id=Signal::derive(|| "stat-high-difficulty".to_string())
-                        />
-                        <QuickStatCard
-                            title=Signal::derive(move || i18n.get_keys().home().new_items().inner().to_string())
-                            value=Signal::derive(move || format_number(primary.get().new))
-                            delta=Signal::derive(move || format_delta(primary.get().new_delta))
-                            badge=completion_badge
-                            on_card_click=open_history(StatMetric::New)
-                            test_id=Signal::derive(|| "stat-new".to_string())
-                        />
-                    </div>
-                </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+                <QuickStatCard
+                    title=Signal::derive(move || i18n.get_keys().home().learned().inner().to_string())
+                    value=Signal::derive(move || format_number(primary.get().learned))
+                    delta=Signal::derive(move || format_delta(primary.get().learned_delta))
+                    on_card_click=open_history(StatMetric::Learned)
+                    test_id=Signal::derive(|| "stat-learned".to_string())
+                />
+                <QuickStatCard
+                    title=Signal::derive(move || i18n.get_keys().home().in_progress().inner().to_string())
+                    value=Signal::derive(move || format_number(primary.get().in_progress))
+                    delta=Signal::derive(move || format_delta(primary.get().in_progress_delta))
+                    on_card_click=open_history(StatMetric::InProgress)
+                    test_id=Signal::derive(|| "stat-in-progress".to_string())
+                />
+                <QuickStatCard
+                    title=Signal::derive(move || i18n.get_keys().home().hard().inner().to_string())
+                    value=Signal::derive(move || format_number(secondary.get().high_difficulty))
+                    delta=Signal::derive(move || format_delta(secondary.get().high_difficulty_delta))
+                    on_card_click=open_history(StatMetric::HighDifficulty)
+                    test_id=Signal::derive(|| "stat-high-difficulty".to_string())
+                />
+                <QuickStatCard
+                    title=Signal::derive(move || i18n.get_keys().home().new_items().inner().to_string())
+                    value=Signal::derive(move || format_number(primary.get().new))
+                    delta=Signal::derive(move || format_delta(primary.get().new_delta))
+                    badge=completion_badge
+                    on_card_click=open_history(StatMetric::New)
+                    test_id=Signal::derive(|| "stat-new".to_string())
+                />
             </div>
 
             <div class="mb-4">

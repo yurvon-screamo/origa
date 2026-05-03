@@ -1,5 +1,4 @@
 use crate::i18n::*;
-use crate::ui_components::{Button, ButtonVariant, Card, LabelFrame};
 use leptos::prelude::*;
 use leptos_router::components::A;
 
@@ -16,16 +15,21 @@ pub fn LessonButtonsCard(#[prop(optional, into)] test_id: Signal<String>) -> imp
     });
 
     view! {
-        <Card shadow=Signal::from(true) class=Signal::derive(|| "flex flex-col justify-center".to_string()) test_id=test_id>
-            <LabelFrame test_id=Signal::derive(|| "lesson-frame".to_string())>
-                <div class="flex flex-col gap-3">
-                    <A href="/lesson">
-                        <Button variant=Signal::from(ButtonVariant::Filled) class="w-full py-2" test_id=test_id_lesson>
-                            {t!(i18n, home.lesson)}
-                        </Button>
-                    </A>
-                </div>
-            </LabelFrame>
-        </Card>
+        <div data-testid=move || {
+            let val = test_id.get();
+            if val.is_empty() { None } else { Some(val) }
+        }>
+            <A href="/lesson">
+                <button
+                    class="btn btn-olive w-full h-16 py-0 flex items-center justify-center card-shadow"
+                    data-testid=move || {
+                        let val = test_id_lesson.get();
+                        if val.is_empty() { None } else { Some(val) }
+                    }
+                >
+                    {t!(i18n, home.lesson)}
+                </button>
+            </A>
+        </div>
     }
 }

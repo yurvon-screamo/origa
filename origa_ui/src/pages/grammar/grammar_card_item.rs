@@ -1,34 +1,24 @@
 use std::collections::HashSet;
 
-use super::super::shared::{CardStatus, DeleteRequest, MarkAsKnownButton};
-use super::grammar_quiz_modal::GrammarQuizModal;
-use crate::i18n::{t, use_i18n};
+use super::super::shared::{CardStatus, DeleteRequest};
+use crate::i18n::use_i18n;
 use crate::ui_components::{
-    Card, CardHistoryModal, CollapsibleDescription, DeleteButton, DeleteConfirmModal,
-    FavoriteButton, FuriganaText, Heading, HeadingLevel, HistoryButton, MarkdownText, Tag, Text,
-    TextSize, TypographyVariant,
+    Card, CardActionBar, CardHistoryModal, DeleteConfirmModal, FuriganaText, Heading, HeadingLevel,
 };
 use leptos::prelude::*;
-use origa::domain::{Card as DomainCard, NativeLanguage, StudyCard, User, get_rule_by_id};
+use origa::domain::{Card as DomainCard, NativeLanguage, StudyCard};
 use ulid::Ulid;
-
-fn extract_grammar_rule(study_card: &StudyCard) -> Option<&'static origa::domain::GrammarRule> {
-    match study_card.card() {
-        DomainCard::Grammar(grammar) => get_rule_by_id(grammar.rule_id()),
-        _ => None,
-    }
-}
 
 #[component]
 pub fn GrammarCardItem(
     study_card: StudyCard,
     #[prop(into)] native_language: Signal<NativeLanguage>,
     known_kanji: HashSet<String>,
-    user: Option<User>,
     on_toggle_favorite: Callback<Ulid>,
     on_mark_as_known: Callback<()>,
     on_delete: Callback<DeleteRequest>,
     is_deleting: Signal<bool>,
+    #[prop(into)] on_open_detail: Callback<()>,
 ) -> impl IntoView {
     let i18n = use_i18n();
     let card_id = *study_card.card_id();
@@ -38,16 +28,12 @@ pub fn GrammarCardItem(
 
     let is_history_open = RwSignal::new(false);
     let is_delete_modal_open = RwSignal::new(false);
-    let is_quiz_open = RwSignal::new(false);
     let confirm_delete = Callback::new(move |_| {
         on_delete.run(DeleteRequest {
             card_id,
             on_success: Callback::new(move |_| is_delete_modal_open.set(false)),
         })
     });
-
-    let grammar_rule = extract_grammar_rule(&study_card);
-    let has_quiz = grammar_rule.map(|r| r.has_format_map()).unwrap_or(false);
 
     let study_card_for_title = study_card.clone();
     let title = Memo::new(move |_| {
@@ -75,100 +61,52 @@ pub fn GrammarCardItem(
         }
     });
 
+    let preview_text = Memo::new(move |_| {
+        let truncated: String = description.get().chars().take(120).collect();
+        truncated
+    });
+
     let status = CardStatus::from_study_card(&study_card);
 
-    let known_kanji_for_furigana = known_kanji.clone();
-    let known_kanji_for_markdown = known_kanji;
-
-    let difficulty = memory
-        .difficulty()
-        .map(|d| format!("{:.1}", d.value()))
-        .unwrap_or("-".to_string());
-    let stability = memory
-        .stability()
-        .map(|s| format!("{:.1}", s.value()))
-        .unwrap_or("-".to_string());
-    let next_review = memory
-        .next_review_date()
-        .map(|d| d.format("%d.%m.%Y").to_string())
-        .unwrap_or("-".to_string());
-
-    let quiz_rule = grammar_rule;
-    let quiz_user: StoredValue<Option<User>> = StoredValue::new(user);
+    let status_tag_variant = Signal::derive(move || status.tag_variant());
+    let status_label = Signal::derive(move || status.label(&i18n));
+    let show_mark_as_known = Signal::derive(move || status != CardStatus::Learned);
 
     view! {
-        <Card class="p-4" test_id="grammar-card-item">
-            <Heading level=HeadingLevel::H4 class="mb-2">
-                <FuriganaText text=title.get() known_kanji=known_kanji_for_furigana/>
+        <Card
+            class="p-4 cursor-pointer"
+            test_id="grammar-card-item"
+            on:click=move |_: leptos::ev::MouseEvent| on_open_detail.run(())
+        >
+            <Heading level=HeadingLevel::H4 class="mb-1">
+                <FuriganaText text=title.get() known_kanji=known_kanji/>
             </Heading>
-            <CollapsibleDescription>
-                <MarkdownText content=Signal::derive(move || description.get()) known_kanji=known_kanji_for_markdown/>
-            </CollapsibleDescription>
-            <Text
-                size=TextSize::Small
-                variant=TypographyVariant::Muted
-                class="mt-2"
-            >
-                {i18n.get_keys().shared().card_info().inner().to_string()
-                    .replacen("{}", &next_review, 1)
-                    .replacen("{}", &difficulty, 1)
-                    .replacen("{}", &stability, 1)}
-            </Text>
-            <div class="border-t border-[var(--border-dark)] pt-2 mt-2 flex justify-between items-center">
-                <Tag variant=Signal::derive(move || status.tag_variant())>
-                    {status.label(&i18n)}
-                </Tag>
-                <div class="flex items-center gap-2">
-                    <Show when=move || has_quiz && quiz_user.get_value().is_some() && quiz_rule.is_some()>
-                        <button
-                            class="text-sm text-[var(--accent-olive)] hover:underline cursor-pointer"
-                            data-testid="grammar-card-practice-btn"
-                            on:click=move |_| is_quiz_open.set(true)
-                        >
-                            {t!(i18n, grammar_page.practice)}
-                        </button>
-                    </Show>
-                    <FavoriteButton
-                        is_favorite=Signal::derive(move || is_favorite)
-                        on_click=Callback::new(move |_| on_toggle_favorite.run(card_id))
-                    />
-                    <Show when=move || status != CardStatus::Learned>
-                        <MarkAsKnownButton
-                            on_click=Callback::new(move |_| on_mark_as_known.run(()))
-                            test_id=Signal::derive(|| "grammar-card-item-mark-known-btn".to_string())
-                        />
-                    </Show>
-                    <HistoryButton on_click=Callback::new(move |_| is_history_open.set(true)) />
-                    <DeleteButton test_id="grammar-card-item-delete-btn" on_click=Callback::new(move |_| is_delete_modal_open.set(true)) />
-                </div>
-            </div>
-            <CardHistoryModal
-                is_open=Signal::derive(move || is_history_open.get())
-                memory=memory_clone.clone()
-                on_close=Callback::new(move |_| is_history_open.set(false))
+            <p class="text-sm text-[var(--fg-muted)] mt-1 line-clamp-2">
+                {preview_text}
+            </p>
+            <CardActionBar
+                tag_variant=status_tag_variant
+                tag_label=status_label
+                is_favorite=Signal::derive(move || is_favorite)
+                on_toggle_favorite=Callback::new(move |_| on_toggle_favorite.run(card_id))
+                show_mark_as_known=show_mark_as_known
+                on_mark_as_known=Callback::new(move |_| on_mark_as_known.run(()))
+                on_history=Callback::new(move |_| is_history_open.set(true))
+                on_delete=Callback::new(move |_| is_delete_modal_open.set(true))
+                test_id=Signal::derive(|| "grammar-card-item".to_string())
             />
-            <DeleteConfirmModal
-                test_id="grammar-delete-modal"
-                is_open=is_delete_modal_open
-                is_deleting=is_deleting
-                on_confirm=confirm_delete
-                on_close=Callback::new(move |_| is_delete_modal_open.set(false))
-            />
-            <Show when=move || is_quiz_open.get() && quiz_rule.is_some() && quiz_user.get_value().is_some()>
-                {move || {
-                    let rule = quiz_rule?;
-                    let user = quiz_user.get_value()?;
-                    Some(view! {
-                        <GrammarQuizModal
-                            rule=rule
-                            native_language=native_language
-                            user=user
-                            is_open=Signal::derive(move || is_quiz_open.get())
-                            on_close=Callback::new(move |_| is_quiz_open.set(false))
-                        />
-                    }.into_any())
-                }}
-            </Show>
         </Card>
+        <CardHistoryModal
+            is_open=Signal::derive(move || is_history_open.get())
+            memory=memory_clone.clone()
+            on_close=Callback::new(move |_| is_history_open.set(false))
+        />
+        <DeleteConfirmModal
+            test_id="grammar-delete-modal"
+            is_open=is_delete_modal_open
+            is_deleting=is_deleting
+            on_confirm=confirm_delete
+            on_close=Callback::new(move |_| is_delete_modal_open.set(false))
+        />
     }
 }

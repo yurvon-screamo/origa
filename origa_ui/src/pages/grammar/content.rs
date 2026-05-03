@@ -3,6 +3,7 @@ use super::super::shared::{
     create_mark_as_known_callback,
 };
 use super::grammar_card_item::GrammarCardItem;
+use super::grammar_detail_drawer::GrammarDetailDrawer;
 use crate::i18n::{t, use_i18n};
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{
@@ -72,6 +73,7 @@ pub fn GrammarContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
     let filter = RwSignal::new(Filter::All);
     let toasts: RwSignal<Vec<ToastData>> = RwSignal::new(Vec::new());
     let visible_count: RwSignal<usize> = RwSignal::new(50);
+    let selected_card: RwSignal<Option<StudyCard>> = RwSignal::new(None);
 
     let on_toggle_favorite = {
         let repo = repository.clone();
@@ -160,6 +162,8 @@ pub fn GrammarContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
         })
     });
 
+    let on_close_detail = Callback::new(move |_: ()| selected_card.set(None));
+
     view! {
         <div class="space-y-4">
             <Show when=move || is_loading.get()>
@@ -198,16 +202,17 @@ pub fn GrammarContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
                                     key=|card| *card.card_id()
                                     children=move |card| {
                                         let card_id = *card.card_id();
+                                        let card_for_detail = card.clone();
                                         view! {
                                             <GrammarCardItem
                                                 study_card=card
                                                 native_language=native_lang
                                                 known_kanji=known_kanji.get()
-                                                user=current_user.get()
                                                 on_toggle_favorite=on_toggle_favorite
                                                 on_mark_as_known=Callback::new(move |_| on_mark_as_known.run(card_id))
                                                 on_delete=on_delete
                                                 is_deleting=is_deleting.into()
+                                                on_open_detail=Callback::new(move |_| selected_card.set(Some(card_for_detail.clone())))
                                             />
                                         }
                                     }
@@ -224,5 +229,25 @@ pub fn GrammarContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
                 <ToastContainer toasts=toasts duration_ms=5000 />
             </Show>
         </div>
+
+        <Show when=move || selected_card.get().is_some()>
+            {move || {
+                let card = selected_card.get()?;
+                let card_id = *card.card_id();
+                Some(view! {
+                    <GrammarDetailDrawer
+                        study_card=card
+                        native_language=native_lang
+                        known_kanji=known_kanji.get()
+                        user=current_user.get()
+                        on_toggle_favorite=on_toggle_favorite
+                        on_mark_as_known=Callback::new(move |_| on_mark_as_known.run(card_id))
+                        on_delete=on_delete
+                        is_deleting=is_deleting.into()
+                        on_close=on_close_detail
+                    />
+                }.into_any())
+            }}
+        </Show>
     }
 }
