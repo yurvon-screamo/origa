@@ -2,8 +2,7 @@ use crate::i18n::*;
 use crate::pages::login::password_input::PasswordInput;
 use crate::store::AuthStore;
 use crate::ui_components::{
-    Alert, AlertType, Button, ButtonVariant, Card, Heading, HeadingLevel, Text, TextSize,
-    TypographyVariant,
+    Alert, AlertType, Button, ButtonVariant, Card, Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
 use leptos::task::spawn_local;
@@ -13,6 +12,7 @@ pub fn PasswordCard(#[prop(optional, into)] test_id: Signal<String>) -> impl Int
     let i18n = use_i18n();
     let auth_store = use_context::<AuthStore>().expect("AuthStore not provided");
 
+    let is_expanded = RwSignal::new(false);
     let current_password = RwSignal::new(String::new());
     let new_password = RwSignal::new(String::new());
     let confirm_password = RwSignal::new(String::new());
@@ -20,8 +20,7 @@ pub fn PasswordCard(#[prop(optional, into)] test_id: Signal<String>) -> impl Int
     let error_message = RwSignal::<Option<String>>::new(None);
     let success_message = RwSignal::<Option<String>>::new(None);
 
-    let on_submit = move || {
-        let i18n = i18n;
+    let on_submit = Callback::new(move |_| {
         let client = auth_store.client().clone();
         let old = current_password.get();
         let new_pwd = new_password.get();
@@ -66,76 +65,88 @@ pub fn PasswordCard(#[prop(optional, into)] test_id: Signal<String>) -> impl Int
             }
             is_changing.set(false);
         });
-    };
+    });
 
     view! {
         <Card test_id=test_id>
-            <div class="space-y-6">
-                <Heading level=HeadingLevel::H2>
-                    {t!(i18n, profile.password_title)}
-                </Heading>
-
-                <div class="space-y-4">
-                    <PasswordInput
-                        value=current_password
-                        label=Signal::derive(move || {
-                            td_string!(i18n.get_locale(), profile.current_password).to_string()
-                        })
-                        autocomplete=Signal::derive(|| "current-password".to_string())
-                        test_id=Signal::derive(|| "current-password".to_string())
-                    />
-
-                    <PasswordInput
-                        value=new_password
-                        label=Signal::derive(move || {
-                            td_string!(i18n.get_locale(), profile.new_password).to_string()
-                        })
-                        autocomplete=Signal::derive(|| "new-password".to_string())
-                        test_id=Signal::derive(|| "new-password".to_string())
-                    />
-
-                    <PasswordInput
-                        value=confirm_password
-                        label=Signal::derive(move || {
-                            td_string!(i18n.get_locale(), profile.confirm_password).to_string()
-                        })
-                        autocomplete=Signal::derive(|| "new-password".to_string())
-                        test_id=Signal::derive(|| "confirm-password".to_string())
-                    />
+            <div>
+                <div
+                    class="flex items-center justify-between cursor-pointer select-none"
+                    on:click=move |_| is_expanded.update(|v| *v = !*v)
+                >
+                    <Text size=TextSize::Large>
+                        {t!(i18n, profile.password_title)}
+                    </Text>
+                    <span class="text-[var(--fg-muted)] text-sm font-mono">
+                        {move || if is_expanded.get() { "▲" } else { "▼" }}
+                    </span>
                 </div>
 
-                <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                    {t!(i18n, profile.password_hint)}
-                </Text>
+                <Show when=move || is_expanded.get()>
+                    <div class="space-y-6 pt-6">
+                        <div class="space-y-4">
+                            <PasswordInput
+                                value=current_password
+                                label=Signal::derive(move || {
+                                    td_string!(i18n.get_locale(), profile.current_password).to_string()
+                                })
+                                autocomplete=Signal::derive(|| "current-password".to_string())
+                                test_id=Signal::derive(|| "current-password".to_string())
+                            />
 
-                <Show when=move || error_message.get().is_some()>
-                    <Alert
-                        alert_type=Signal::from(AlertType::Error)
-                        message=Signal::derive(move || error_message.get().unwrap_or_default())
-                        test_id="password-error"
-                    />
+                            <PasswordInput
+                                value=new_password
+                                label=Signal::derive(move || {
+                                    td_string!(i18n.get_locale(), profile.new_password).to_string()
+                                })
+                                autocomplete=Signal::derive(|| "new-password".to_string())
+                                test_id=Signal::derive(|| "new-password".to_string())
+                            />
+
+                            <PasswordInput
+                                value=confirm_password
+                                label=Signal::derive(move || {
+                                    td_string!(i18n.get_locale(), profile.confirm_password).to_string()
+                                })
+                                autocomplete=Signal::derive(|| "new-password".to_string())
+                                test_id=Signal::derive(|| "confirm-password".to_string())
+                            />
+                        </div>
+
+                        <Text size=TextSize::Small variant=TypographyVariant::Muted>
+                            {t!(i18n, profile.password_hint)}
+                        </Text>
+
+                        <Show when=move || error_message.get().is_some()>
+                            <Alert
+                                alert_type=Signal::from(AlertType::Error)
+                                message=Signal::derive(move || error_message.get().unwrap_or_default())
+                                test_id="password-error"
+                            />
+                        </Show>
+
+                        <Show when=move || success_message.get().is_some()>
+                            <Alert
+                                alert_type=Signal::from(AlertType::Success)
+                                message=Signal::derive(move || success_message.get().unwrap_or_default())
+                                test_id="password-success"
+                            />
+                        </Show>
+
+                        <Button
+                            variant=ButtonVariant::Filled
+                            on_click=on_submit
+                            disabled=Signal::derive(move || is_changing.get())
+                            test_id="change-password-btn"
+                        >
+                            {move || if is_changing.get() {
+                                t!(i18n, profile.changing_password).into_any()
+                            } else {
+                                t!(i18n, profile.change_password).into_any()
+                            }}
+                        </Button>
+                    </div>
                 </Show>
-
-                <Show when=move || success_message.get().is_some()>
-                    <Alert
-                        alert_type=Signal::from(AlertType::Success)
-                        message=Signal::derive(move || success_message.get().unwrap_or_default())
-                        test_id="password-success"
-                    />
-                </Show>
-
-                <Button
-                    variant=ButtonVariant::Filled
-                    on_click=Callback::new(move |_| on_submit())
-                    disabled=Signal::derive(move || is_changing.get())
-                    test_id="change-password-btn"
-                >
-                    {move || if is_changing.get() {
-                        t!(i18n, profile.changing_password).into_any()
-                    } else {
-                        t!(i18n, profile.change_password).into_any()
-                    }}
-                </Button>
             </div>
         </Card>
     }

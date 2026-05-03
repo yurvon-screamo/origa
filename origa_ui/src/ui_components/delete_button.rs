@@ -12,9 +12,10 @@ pub fn DeleteButton(
 
     view! {
         <button
-            class="delete-button"
+            class="icon-btn icon-btn-danger delete-button"
             on:click=move |_| on_click.run(())
             data-testid=test_id_val
+            aria-label="Delete card"
         >
             <svg
                 xmlns="http://www.w3.org/2000/svg"

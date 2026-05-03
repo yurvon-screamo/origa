@@ -14,10 +14,11 @@ pub fn MarkAsKnownButton(
 
     view! {
         <button
-            class="cursor-pointer transition-colors duration-200 hover:opacity-70"
+            class="icon-btn"
             on:click=move |_| on_click.run(())
             data-testid=test_id_val
             title=move || { crate::i18n::td_string!(i18n.get_locale(), shared.mark_as_known) }
+            aria-label=move || { crate::i18n::td_string!(i18n.get_locale(), shared.mark_as_known) }
         >
             <svg
                 xmlns="http://www.w3.org/2000/svg"

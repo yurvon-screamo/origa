@@ -22,12 +22,13 @@ pub fn ActionButtons(
 
     view! {
         <div class="space-y-4" data-testid=test_id_val>
-            <div class="flex flex-wrap gap-4">
+            <div class="flex flex-wrap gap-4 md:static sticky bottom-[80px] bg-[var(--bg-cream)] py-3 -mx-3 px-3 md:bg-transparent md:py-0 md:-mx-0 md:px-0 z-10">
                 <Button
                     variant={ButtonVariant::Filled}
                     on_click={on_save}
                     disabled=is_saving
                     test_id="profile-save-btn"
+                    class="w-full md:w-auto"
                 >
                     {move || if is_saving.get() { t!(i18n, common.saving).into_any() } else { t!(i18n, profile.save_changes).into_any() }}
                 </Button>
@@ -49,7 +50,7 @@ pub fn ActionButtons(
 
                 {move || if show_delete_confirm.get() {
                     view! {
-                        <div class="p-4 bg-[var(--error)]/20 border border-[var(--error)]/30 rounded-lg">
+                        <div class="border border-[var(--error)] p-4 mt-2">
                             <p class="text-[var(--error)] text-sm mb-3">
                                 {t!(i18n, profile.delete_confirm_message)}
                             </p>
@@ -78,7 +79,7 @@ pub fn ActionButtons(
                         <Button
                             variant={ButtonVariant::Ghost}
                             on_click={Callback::new(move |_| show_delete_confirm.set(true))}
-                            class="text-[var(--error)] hover:text-[var(--error)] hover:bg-[var(--error)]/20"
+                            class="text-[var(--fg-muted)] hover:text-[var(--error)] hover:bg-[var(--error)]/10"
                             test_id="profile-delete-btn"
                         >
                             {t!(i18n, profile.delete_account)}

@@ -11,6 +11,7 @@ mod bottom_nav;
 mod breadcrumbs;
 mod button;
 mod card;
+mod card_action_bar;
 mod card_history_modal;
 mod chart;
 mod checkbox;
@@ -73,6 +74,8 @@ pub use bottom_nav::BottomTabBar;
 #[allow(unused_imports)]
 pub use button::{Button, ButtonSize, ButtonVariant};
 pub use card::Card;
+#[allow(unused_imports)]
+pub use card_action_bar::CardActionBar;
 pub use card_history_modal::CardHistoryModal;
 pub use chart::LineChart;
 pub use checkbox::Checkbox;
@@ -90,6 +93,7 @@ pub use history_button::HistoryButton;
 pub use input::Input;
 pub use kanji_animation::{KanjiViewMode, KanjiWritingSection};
 pub use kanji_drawing::KanjiDrawingPractice;
+#[allow(unused_imports)]
 pub use label_frame::LabelFrame;
 pub use layout::{CardLayout, CardLayoutSize, PageLayout, PageLayoutVariant};
 pub use level_selector::LevelSelector;

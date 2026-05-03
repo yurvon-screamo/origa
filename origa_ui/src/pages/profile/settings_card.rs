@@ -1,14 +1,18 @@
 use crate::core::version;
 use crate::i18n::*;
-use crate::ui_components::{Card, Text, TextSize};
+use crate::ui_components::{Text, TextSize};
 use leptos::prelude::*;
 
 #[component]
 pub fn SettingsCard(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoView {
     let i18n = use_i18n();
+    let test_id_val = move || {
+        let val = test_id.get();
+        if val.is_empty() { None } else { Some(val) }
+    };
 
     view! {
-        <Card test_id=test_id>
+        <div class="border border-[var(--border-light)] p-4" data-testid=test_id_val>
             <div class="space-y-4">
                 <div class="space-y-2">
                     <Text size={TextSize::Large}>
@@ -30,6 +34,6 @@ pub fn SettingsCard(#[prop(optional, into)] test_id: Signal<String>) -> impl Int
                     </div>
                 </div>
             </div>
-        </Card>
+        </div>
     }
 }

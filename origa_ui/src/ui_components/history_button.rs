@@ -12,9 +12,10 @@ pub fn HistoryButton(
 
     view! {
         <button
-            class="history-button"
+            class="icon-btn history-button"
             on:click=move |_| on_click.run(())
             data-testid=test_id_val
+            aria-label="Card history"
         >
             <svg
                 xmlns="http://www.w3.org/2000/svg"

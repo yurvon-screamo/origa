@@ -3,6 +3,7 @@ mod add_grammar_modal_handlers;
 mod add_grammar_modal_state;
 mod content;
 mod grammar_card_item;
+mod grammar_detail_drawer;
 mod grammar_quiz_modal;
 mod header;
 mod rule_item;

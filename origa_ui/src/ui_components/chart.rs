@@ -18,6 +18,17 @@ pub fn LineChart(
     let chart_width = width - PADDING * 2;
     let chart_height = height - PADDING * 2;
 
+    let is_flat_line = move || {
+        let items = data.get();
+        if items.is_empty() {
+            return false;
+        }
+        let values: Vec<f64> = items.iter().map(|(_, v)| *v).collect();
+        let min_val = values.iter().cloned().fold(f64::INFINITY, f64::min);
+        let max_val = values.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+        (max_val - min_val).abs() < 0.001
+    };
+
     let normalized_points = move || {
         let items = data.get();
         if items.is_empty() {
@@ -87,14 +98,41 @@ pub fn LineChart(
         let min_val = values.iter().cloned().fold(f64::INFINITY, f64::min);
         let max_val = values.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
 
-        (0..=4)
+        if (max_val - min_val).abs() < 0.001 {
+            let y = PADDING as f64 + chart_height as f64 / 2.0;
+            return vec![(y, min_val)];
+        }
+
+        let tick_count = if chart_height < 100 {
+            2
+        } else if chart_height < 160 {
+            3
+        } else {
+            4
+        };
+
+        let mut ticks: Vec<(f64, f64)> = (0..=tick_count)
             .map(|i| {
-                let ratio = i as f64 / 4.0;
+                let ratio = i as f64 / tick_count as f64;
                 let y = PADDING as f64 + chart_height as f64 * (1.0 - ratio);
                 let value = min_val + (max_val - min_val) * ratio;
                 (y, value)
             })
-            .collect::<Vec<_>>()
+            .collect();
+
+        let min_gap = 16.0f64;
+        ticks.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap_or(std::cmp::Ordering::Equal));
+        let mut deduped: Vec<(f64, f64)> = Vec::new();
+        for (y, value) in ticks {
+            if deduped
+                .last()
+                .map_or(true, |(last_y, _)| (y - *last_y).abs() >= min_gap)
+            {
+                deduped.push((y, value));
+            }
+        }
+
+        deduped
     };
 
     let class_str = move || format!("{} chart-container", class.get());
@@ -131,7 +169,7 @@ pub fn LineChart(
                             x=PADDING - 28
                             y=y
                             text_anchor="end"
-                            dominant_baseline="middle"
+                            dominant_baseline="central"
                             fill="var(--fg-muted)"
                             font_size="9"
                         >
@@ -173,22 +211,46 @@ pub fn LineChart(
                 stroke-linecap="round"
                 stroke-linejoin="round"
             />
-            <For
-                each=move || normalized_points()
-                key=|(x, y)| ((*x * 1000.0) as i64, (*y * 1000.0) as i64)
-                children=move |(x, y)| {
-                    view! {
-                        <circle
-                            cx=x
-                            cy=y
-                            r=POINT_RADIUS
-                            fill="var(--accent-olive)"
-                            stroke="var(--bg-paper)"
-                            stroke-width="2"
-                        />
+            <Show when=move || is_flat_line()>
+                <line
+                    x1=PADDING
+                    y1=move || {
+                        let items = data.get();
+                        if items.is_empty() {
+                            return (PADDING + chart_height / 2) as f64;
+                        }
+                        PADDING as f64 + chart_height as f64 / 2.0
                     }
-                }
-            />
+                    x2=width - PADDING
+                    y2=move || {
+                        let items = data.get();
+                        if items.is_empty() {
+                            return (PADDING + chart_height / 2) as f64;
+                        }
+                        PADDING as f64 + chart_height as f64 / 2.0
+                    }
+                    stroke="var(--border-light)"
+                    stroke-dasharray="4,4"
+                />
+            </Show>
+            <Show when=move || !is_flat_line()>
+                <For
+                    each=move || normalized_points()
+                    key=|(x, y)| ((*x * 1000.0) as i64, (*y * 1000.0) as i64)
+                    children=move |(x, y)| {
+                        view! {
+                            <circle
+                                cx=x
+                                cy=y
+                                r=POINT_RADIUS
+                                fill="var(--accent-olive)"
+                                stroke="var(--bg-paper)"
+                                stroke-width="2"
+                            />
+                        }
+                    }
+                />
+            </Show>
         </svg>
     }
 }

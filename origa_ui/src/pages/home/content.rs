@@ -1,7 +1,10 @@
 use super::content_sync::{
     run_sync, show_sync_error_toast, show_sync_success_toast, show_sync_toast,
 };
-use super::{HistoryModal, HomeSkeleton, JlptProgressCard, JlptSkeleton, StatMetric, StatsGrid};
+use super::{
+    HistoryModal, HomeSkeleton, JlptProgressCard, JlptSkeleton, LessonButtonsCard, StatMetric,
+    StatsGrid,
+};
 use super::{PrimaryStats, SecondaryStats, calculate_stats};
 use crate::i18n::{Locale, t, use_i18n};
 use crate::repository::{HybridUserRepository, set_last_sync_time};
@@ -158,6 +161,12 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                         {t!(i18n, home.statistics)}
                     </Text>
                 </div>
+
+                <Show when=move || !is_loading.get()>
+                    <div class="mb-6">
+                        <LessonButtonsCard test_id=Signal::derive(|| "lesson-buttons".to_string()) />
+                    </div>
+                </Show>
 
                 <Show
                     when=move || !is_loading.get()

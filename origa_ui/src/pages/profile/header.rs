@@ -9,26 +9,22 @@ pub fn ProfileHeader(username: Signal<String>) -> impl IntoView {
     let navigate = use_navigate();
 
     view! {
-        <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
-            <div class="flex flex-col items-center space-y-4 flex-1">
-                <Heading level=HeadingLevel::H1 test_id="profile-title">
-                    {move || {
-                        let title = i18n.get_keys().profile().title().inner().to_string();
-                        title.replace("{username}", &username.get())
-                    }}
-                </Heading>
-            </div>
-            <div class="flex items-center gap-2">
-                <Button
-                    variant=ButtonVariant::Ghost
-                    test_id="profile-back-btn"
-                    on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
-                        navigate("/home", Default::default());
-                    })
-                >
-                    {t!(i18n, common.back)}
-                </Button>
-            </div>
+        <div class="flex items-center gap-4 mb-8">
+            <Button
+                variant=ButtonVariant::Ghost
+                test_id="profile-back-btn"
+                on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
+                    navigate("/home", Default::default());
+                })
+            >
+                {t!(i18n, common.back)}
+            </Button>
+            <Heading level=HeadingLevel::H1 test_id="profile-title">
+                {move || {
+                    let title = i18n.get_keys().profile().title().inner().to_string();
+                    title.replace("{username}", &username.get())
+                }}
+            </Heading>
         </div>
     }
 }

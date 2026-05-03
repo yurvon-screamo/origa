@@ -43,7 +43,7 @@ pub fn QuickStatCard(
                 </Text>
 
                 <div class="flex items-baseline gap-2">
-                    <DisplayText class=Signal::derive(String::new)>
+                    <DisplayText class=Signal::derive(|| "font-serif text-2xl".to_string())>
                         {move || value.get()}
                     </DisplayText>
                     <Show when=move || has_delta.get()>

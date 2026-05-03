@@ -13,9 +13,10 @@ pub fn FavoriteButton(
 
     view! {
         <button
-            class="favorite-button"
+            class="icon-btn favorite-button"
             on:click=move |_| on_click.run(())
             data-testid=test_id_val
+            aria-label="Toggle favorite"
         >
             <svg
                 xmlns="http://www.w3.org/2000/svg"

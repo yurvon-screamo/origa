@@ -1,11 +1,10 @@
 use std::collections::HashSet;
 
-use super::super::shared::{CardStatus, DeleteRequest, MarkAsKnownButton};
+use super::super::shared::{CardStatus, DeleteRequest};
 use crate::i18n::use_i18n;
 use crate::ui_components::{
-    Card, CardHistoryModal, CollapsibleDescription, DeleteButton, DeleteConfirmModal,
-    FavoriteButton, FuriganaText, Heading, HeadingLevel, HistoryButton, MarkdownText, Tag, Text,
-    TextSize, TypographyVariant,
+    Card, CardActionBar, CardHistoryModal, CollapsibleDescription, DeleteConfirmModal,
+    FuriganaText, Heading, HeadingLevel, MarkdownText, Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
 use origa::domain::{Card as DomainCard, NativeLanguage, StudyCard};
@@ -92,25 +91,17 @@ pub fn VocabularyCardItem(
                         .replacen("{}", &stability, 1)
                 }}
             </Text>
-            <div class="border-t border-[var(--border-dark)] pt-2 mt-2 flex justify-between items-center">
-                <Tag variant=Signal::derive(move || status.tag_variant()) test_id="words-card-tag">
-                    {move || status.label(&i18n)}
-                </Tag>
-                <div class="flex items-center gap-2">
-                    <FavoriteButton
-                        is_favorite=Signal::derive(move || is_favorite)
-                        on_click=Callback::new(move |_| on_toggle_favorite.run(card_id))
-                    />
-                    <Show when=move || status != CardStatus::Learned>
-                        <MarkAsKnownButton
-                            on_click=Callback::new(move |_| on_mark_as_known.run(()))
-                            test_id=Signal::derive(|| "words-card-item-mark-known-btn".to_string())
-                        />
-                    </Show>
-                    <HistoryButton on_click=Callback::new(move |_| is_history_open.set(true)) />
-                    <DeleteButton test_id="words-card-item-delete-btn" on_click=Callback::new(move |_| is_delete_modal_open.set(true)) />
-                </div>
-            </div>
+            <CardActionBar
+                tag_variant=Signal::derive(move || status.tag_variant())
+                tag_label=Signal::derive(move || status.label(&i18n))
+                is_favorite=Signal::derive(move || is_favorite)
+                on_toggle_favorite=Callback::new(move |_| on_toggle_favorite.run(card_id))
+                on_mark_as_known=Callback::new(move |_| on_mark_as_known.run(()))
+                show_mark_as_known=Signal::derive(move || status != CardStatus::Learned)
+                on_history=Callback::new(move |_| is_history_open.set(true))
+                on_delete=Callback::new(move |_| is_delete_modal_open.set(true))
+                test_id=Signal::derive(|| "words-card-item".to_string())
+            />
             <CardHistoryModal
                 is_open=Signal::derive(move || is_history_open.get())
                 memory=memory_clone.clone()
