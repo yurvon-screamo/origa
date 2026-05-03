@@ -7,6 +7,7 @@ mod jlpt_progress;
 mod knowledge;
 mod memory;
 mod score_content;
+mod serde_utils;
 mod srs;
 mod tokenizer;
 mod user;
