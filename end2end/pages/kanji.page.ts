@@ -23,7 +23,6 @@ export class KanjiPage extends BasePage {
     readonly deleteConfirmBtn: Locator;
     readonly deleteCancelBtn: Locator;
 
-    // Pagination
     readonly loadMoreButton: Locator;
 
     constructor(page: Page) {
@@ -47,7 +46,6 @@ export class KanjiPage extends BasePage {
         this.deleteConfirmBtn = page.getByTestId("kanji-delete-modal-confirm");
         this.deleteCancelBtn = page.getByTestId("kanji-delete-modal-cancel");
 
-        // Pagination
         this.loadMoreButton = page.getByTestId("kanji-load-more-btn");
     }
 
@@ -100,7 +98,20 @@ export class KanjiPage extends BasePage {
         await expect(this.drawer).not.toBeVisible({ timeout: 15_000 });
     }
 
+    async closeDetailDrawer(): Promise<void> {
+        const drawer = this.page.getByTestId("kanji-detail-drawer");
+        if (await drawer.isVisible().catch(() => false)) {
+            await this.page.evaluate(() => {
+                const el = document.querySelector('[data-testid="kanji-detail-drawer-close"]') as HTMLElement;
+                if (el) el.click();
+            });
+            await drawer.waitFor({ state: "hidden", timeout: 5000 }).catch(() => {});
+            await this.page.waitForTimeout(500);
+        }
+    }
+
     async selectFilter(name: FilterType): Promise<void> {
+        await this.closeDetailDrawer();
         const filterMap: Record<FilterType, string> = {
             "Все": "all",
             "Новые": "new",
@@ -116,25 +127,35 @@ export class KanjiPage extends BasePage {
     }
 
     async deleteCardByIndex(index: number): Promise<void> {
-        const card = this.page.getByTestId("kanji-card-item").nth(index);
-        await card.getByTestId("kanji-card-item-delete-btn").click();
+        await this.clickCardActionBtn(index, "kanji-card-item-delete-btn");
         await expect(this.deleteModal).toBeVisible({ timeout: 5000 });
         await this.deleteConfirmBtn.click();
         await expect(this.deleteModal).not.toBeVisible({ timeout: 10_000 });
     }
 
     async cancelDeleteCardByIndex(index: number): Promise<void> {
-        const card = this.page.getByTestId("kanji-card-item").nth(index);
-        await card.getByTestId("kanji-card-item-delete-btn").click();
+        await this.clickCardActionBtn(index, "kanji-card-item-delete-btn");
         await expect(this.deleteModal).toBeVisible({ timeout: 5000 });
         await this.deleteCancelBtn.click();
         await expect(this.deleteModal).not.toBeVisible({ timeout: 5000 });
     }
 
     async markCardAsKnownByIndex(index: number): Promise<void> {
-        const card = this.page.getByTestId("kanji-card-item").nth(index);
-        await card.getByTestId("kanji-card-item-mark-known-btn").click();
+        await this.clickCardActionBtn(index, "kanji-card-item-mark-known-btn");
         await this.page.waitForTimeout(500);
+    }
+
+    // Dispatch a non-bubbling click via evaluate() to prevent the event
+    // from reaching the parent card's on:click handler which opens the detail drawer
+    private async clickCardActionBtn(index: number, btnTestId: string): Promise<void> {
+        const selector = `[data-testid="kanji-card-item"]:nth-of-type(${index + 1}) [data-testid="${btnTestId}"]`;
+        await this.page.evaluate((sel: string) => {
+            const el = document.querySelector(sel) as HTMLElement;
+            if (el) {
+                el.dispatchEvent(new MouseEvent("click", { bubbles: false }));
+            }
+        }, selector);
+        await this.page.waitForTimeout(300);
     }
 
     async isLoadMoreVisible(): Promise<boolean> {
