@@ -33,8 +33,8 @@ pub fn deserialize_u64_from_str_or_num<'de, D: serde::Deserializer<'de>>(
 }
 
 pub mod option_u64_as_string {
-    use serde::de;
     use super::{deserialize_u64_from_str_or_num, serialize_u64_as_string};
+    use serde::de;
 
     pub fn serialize<S: serde::Serializer>(val: &Option<u64>, s: S) -> Result<S::Ok, S::Error> {
         match val {

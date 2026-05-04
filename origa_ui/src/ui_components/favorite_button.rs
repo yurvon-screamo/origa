@@ -14,7 +14,10 @@ pub fn FavoriteButton(
     view! {
         <button
             class="icon-btn favorite-button"
-            on:click=move |_| on_click.run(())
+            on:click=move |ev: leptos::ev::MouseEvent| {
+                ev.stop_propagation();
+                on_click.run(());
+            }
             data-testid=test_id_val
             aria-label="Toggle favorite"
         >
