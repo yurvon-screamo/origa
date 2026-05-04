@@ -1,6 +1,6 @@
 use super::super::shared::{
     CardCounts, CardStatus, Filter, FilterBtn, LoadMoreButton, create_delete_callback,
-    create_mark_as_known_callback,
+    create_mark_as_known_callback, create_toggle_favorite_callback,
 };
 use super::grammar_card_item::GrammarCardItem;
 use super::grammar_detail_drawer::GrammarDetailDrawer;
@@ -14,8 +14,6 @@ use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::domain::{StudyCard, User};
 use origa::traits::UserRepository;
-use origa::use_cases::ToggleFavoriteUseCase;
-use ulid::Ulid;
 
 #[component]
 pub fn GrammarContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
@@ -75,27 +73,8 @@ pub fn GrammarContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
     let visible_count: RwSignal<usize> = RwSignal::new(50);
     let selected_card: RwSignal<Option<StudyCard>> = RwSignal::new(None);
 
-    let on_toggle_favorite = {
-        let repo = repository.clone();
-        let refresh = refresh_trigger;
-
-        Callback::new(move |card_id: Ulid| {
-            let repository = repo.clone();
-            let user_signal = current_user;
-
-            spawn_local(async move {
-                let use_case = ToggleFavoriteUseCase::new(&repository);
-                if use_case.execute(card_id).await.is_ok() {
-                    user_signal.update(|u| {
-                        if let Some(user) = u {
-                            let _ = user.toggle_favorite(card_id);
-                        }
-                    });
-                    refresh.update(|v| *v += 1);
-                }
-            });
-        })
-    };
+    let on_toggle_favorite =
+        create_toggle_favorite_callback(repository.clone(), current_user, refresh_trigger);
 
     let on_mark_as_known = create_mark_as_known_callback(repository.clone(), refresh_trigger);
 

@@ -7,6 +7,7 @@ mod delete_callback;
 mod mark_as_known_button;
 mod mark_known_callback;
 mod pagination;
+mod toggle_favorite_callback;
 
 pub use card_counts::CardCounts;
 pub use card_filter::{Filter, FilterBtn};
@@ -17,3 +18,4 @@ pub use delete_callback::{DeleteRequest, create_delete_callback};
 pub use mark_as_known_button::MarkAsKnownButton;
 pub use mark_known_callback::create_mark_as_known_callback;
 pub use pagination::LoadMoreButton;
+pub use toggle_favorite_callback::create_toggle_favorite_callback;
