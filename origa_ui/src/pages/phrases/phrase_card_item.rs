@@ -119,18 +119,18 @@ pub fn PhraseCardItem(
                     test_id=Signal::derive(|| "phrases-card-item".to_string())
                 />
             </div>
-            <CardHistoryModal
-                is_open=Signal::derive(move || is_history_open.get())
-                memory=memory_clone.clone()
-                on_close=Callback::new(move |_| is_history_open.set(false))
-            />
-            <DeleteConfirmModal
-                test_id="phrases-delete-modal"
-                is_open=is_delete_modal_open
-                is_deleting=is_deleting
-                on_confirm=confirm_delete
-                on_close=Callback::new(move |_| is_delete_modal_open.set(false))
-            />
         </Card>
+        <CardHistoryModal
+            is_open=Signal::derive(move || is_history_open.get())
+            memory=memory_clone.clone()
+            on_close=Callback::new(move |_| is_history_open.set(false))
+        />
+        <DeleteConfirmModal
+            test_id="phrases-delete-modal"
+            is_open=is_delete_modal_open
+            is_deleting=is_deleting
+            on_confirm=confirm_delete
+            on_close=Callback::new(move |_| is_delete_modal_open.set(false))
+        />
     }
 }
