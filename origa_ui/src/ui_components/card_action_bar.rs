@@ -22,7 +22,7 @@ pub fn CardActionBar(
     let mark_known_visible = move || show_mark_as_known.get();
 
     view! {
-        <div class="card-action-bar">
+        <div class="card-action-bar" on:click=move |ev: leptos::ev::MouseEvent| ev.stop_propagation()>
             <Tag variant=tag_variant>{tag_label}</Tag>
             <div class="card-action-toolbar" role="toolbar" aria-label="Card actions">
                 {move || {
