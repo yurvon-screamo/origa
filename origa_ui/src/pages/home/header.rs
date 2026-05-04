@@ -24,7 +24,7 @@ pub fn HomeHeader(
     let initials = move || current_user.get().map(|u| u.username().to_uppercase());
 
     view! {
-        <header class="border-b border-[var(--border-dark)] bg-[var(--bg-cream)]" data-testid=test_id_val>
+        <header class="border-b border-[var(--border-dark)] bg-[var(--bg-cream)] hidden md:block" data-testid=test_id_val>
             <div class="px-4 sm:px-6 lg:px-8 py-3">
                 <div class="flex items-center justify-between min-h-16">
                     <div class="flex items-center space-x-3">

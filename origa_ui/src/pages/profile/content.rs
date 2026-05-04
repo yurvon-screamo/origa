@@ -122,24 +122,28 @@ pub fn ProfileContent() -> impl IntoView {
     });
 
     view! {
-        <div class="max-w-2xl mx-auto space-y-6 pb-24 md:pb-8" data-testid="profile-content">
-            <PersonalDataCard
-                user_name={user_name}
-                selected_language={selected_language}
-                selected_daily_load={selected_daily_load}
-                test_id="profile-personal-data"
-            />
-            <PasswordCard test_id="profile-password" />
-            <SettingsCard test_id="profile-settings" />
-            <ActionButtons
-                on_save={save_profile}
-                on_logout={logout}
-                on_delete_account={delete_account}
-                is_saving={Signal::derive(move || is_saving.get())}
-                is_deleting={Signal::derive(move || is_deleting.get())}
-                is_logging_out={Signal::derive(move || is_logging_out.get())}
-                test_id="profile-actions"
-            />
+        <div class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 pb-24 md:pb-8" data-testid="profile-content">
+            <div class="space-y-6">
+                <PersonalDataCard
+                    user_name={user_name}
+                    selected_language={selected_language}
+                    selected_daily_load={selected_daily_load}
+                    test_id="profile-personal-data"
+                />
+                <SettingsCard test_id="profile-settings" />
+            </div>
+            <div class="space-y-6">
+                <PasswordCard test_id="profile-password" />
+                <ActionButtons
+                    on_save={save_profile}
+                    on_logout={logout}
+                    on_delete_account={delete_account}
+                    is_saving={Signal::derive(move || is_saving.get())}
+                    is_deleting={Signal::derive(move || is_deleting.get())}
+                    is_logging_out={Signal::derive(move || is_logging_out.get())}
+                    test_id="profile-actions"
+                />
+            </div>
         </div>
     }
 }

@@ -109,7 +109,7 @@ pub fn HistoryModal(
                 {move || if has_data() {
                     view! {
                         <div
-                            class="flex justify-center"
+                            class="flex justify-center h-56"
                             data-testid=move || {
                                 let val = test_id.get();
                                 if val.is_empty() { None } else { Some(format!("{}-chart", val)) }
@@ -121,8 +121,6 @@ pub fn HistoryModal(
                                     if val.is_empty() { "history-chart".to_string() } else { format!("{}-chart", val) }
                                 })
                                 data=chart_data
-                                width=520
-                                height=260
                             />
                         </div>
                     }.into_any()

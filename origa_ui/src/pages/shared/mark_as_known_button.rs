@@ -15,7 +15,10 @@ pub fn MarkAsKnownButton(
     view! {
         <button
             class="icon-btn"
-            on:click=move |_| on_click.run(())
+            on:click=move |ev: leptos::ev::MouseEvent| {
+                ev.stop_propagation();
+                on_click.run(());
+            }
             data-testid=test_id_val
             title=move || { crate::i18n::td_string!(i18n.get_locale(), shared.mark_as_known) }
             aria-label=move || { crate::i18n::td_string!(i18n.get_locale(), shared.mark_as_known) }

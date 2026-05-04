@@ -1178,6 +1178,9 @@ input[type="submit"],
     border-top: 1px solid var(--border-dark);
     display: flex;
     z-index: 50;
+    width: 100%;
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
 }
 
 .bottom-tab-bar::after {
@@ -1207,6 +1210,7 @@ input[type="submit"],
         transform var(--anima-duration-fast) var(--anima-ease-paper);
     position: relative;
     text-decoration: none;
+    min-width: 0;
 }
 
 .bottom-tab-item:hover {
@@ -3851,5 +3855,11 @@ input[type="submit"],
     .icon-btn {
         min-width: 36px;
         min-height: 36px;
+    }
+}
+
+@media (max-width: 360px) {
+    .bottom-tab-item-label {
+        display: none;
     }
 }

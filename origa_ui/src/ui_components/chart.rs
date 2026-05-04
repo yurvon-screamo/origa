@@ -1,6 +1,6 @@
 use leptos::prelude::*;
 
-const PADDING: u32 = 55;
+const PADDING: u32 = 64;
 const POINT_RADIUS: u32 = 4;
 
 #[component]
@@ -35,16 +35,34 @@ pub fn LineChart(
             return Vec::new();
         }
 
+        if items.len() == 1 {
+            return vec![(
+                width as f64 / 2.0,
+                PADDING as f64 + chart_height as f64 / 2.0,
+            )];
+        }
+
         let values: Vec<f64> = items.iter().map(|(_, v)| *v).collect();
         let min_val = values.iter().cloned().fold(f64::INFINITY, f64::min);
         let max_val = values.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
         let range = (max_val - min_val).max(1.0);
 
-        let step_x = if items.len() > 1 {
-            chart_width as f64 / (items.len() - 1) as f64
-        } else {
-            0.0
-        };
+        if items.len() == 2 {
+            let usable_width = chart_width as f64 * 0.5;
+            let offset_x = PADDING as f64 + chart_width as f64 * 0.25;
+            return items
+                .iter()
+                .enumerate()
+                .map(|(i, (_, value))| {
+                    let x = offset_x + i as f64 * usable_width;
+                    let y = PADDING as f64 + chart_height as f64
+                        - ((value - min_val) / range) * chart_height as f64;
+                    (x, y)
+                })
+                .collect::<Vec<_>>();
+        }
+
+        let step_x = chart_width as f64 / (items.len() - 1) as f64;
 
         items
             .iter()
@@ -72,11 +90,24 @@ pub fn LineChart(
             return Vec::new();
         }
 
-        let step_x = if items.len() > 1 {
-            chart_width as f64 / (items.len() - 1) as f64
-        } else {
-            0.0
-        };
+        if items.len() == 1 {
+            return vec![(width as f64 / 2.0, items[0].0.clone())];
+        }
+
+        if items.len() == 2 {
+            let usable_width = chart_width as f64 * 0.5;
+            let offset_x = PADDING as f64 + chart_width as f64 * 0.25;
+            return items
+                .iter()
+                .enumerate()
+                .map(|(i, (label, _))| {
+                    let x = offset_x + i as f64 * usable_width;
+                    (x, label.clone())
+                })
+                .collect::<Vec<_>>();
+        }
+
+        let step_x = chart_width as f64 / (items.len() - 1) as f64;
 
         items
             .iter()
@@ -135,12 +166,11 @@ pub fn LineChart(
         deduped
     };
 
-    let class_str = move || format!("{} chart-container", class.get());
+    let class_str = move || format!("{} chart-container w-full h-full", class.get());
 
     view! {
         <svg
-            width=width
-            height=height
+            viewBox=format!("0 0 {} {}", width, height)
             class=class_str
             data-testid=test_id_val
         >
@@ -233,7 +263,7 @@ pub fn LineChart(
                     stroke-dasharray="4,4"
                 />
             </Show>
-            <Show when=move || !is_flat_line()>
+            <Show when=move || !is_flat_line() || data.get().len() == 1>
                 <For
                     each=move || normalized_points()
                     key=|(x, y)| ((*x * 1000.0) as i64, (*y * 1000.0) as i64)

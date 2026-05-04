@@ -1,5 +1,6 @@
 use crate::i18n::*;
 use leptos::prelude::*;
+use leptos_icons::Icon;
 use leptos_router::components::A;
 
 #[component]
@@ -13,23 +14,27 @@ pub fn LessonButtonsCard(#[prop(optional, into)] test_id: Signal<String>) -> imp
             format!("{}-lesson", val)
         }
     });
-
     view! {
         <div data-testid=move || {
             let val = test_id.get();
             if val.is_empty() { None } else { Some(val) }
         }>
-            <A href="/lesson">
-                <button
-                    class="btn btn-olive w-full h-16 py-0 flex items-center justify-center card-shadow"
-                    data-testid=move || {
-                        let val = test_id_lesson.get();
-                        if val.is_empty() { None } else { Some(val) }
-                    }
-                >
-                    {t!(i18n, home.lesson)}
-                </button>
-            </A>
+            <div class="max-w-sm mx-auto">
+                <A href="/lesson">
+                    <button
+                        class="btn btn-olive w-full h-16 py-0 flex items-center justify-center card-shadow"
+                        data-testid=move || {
+                            let val = test_id_lesson.get();
+                            if val.is_empty() { None } else { Some(val) }
+                        }
+                    >
+                        <div class="flex items-center gap-2">
+                            <Icon icon=icondata::LuBookOpen width="20" height="20" />
+                            {t!(i18n, home.lesson)}
+                        </div>
+                    </button>
+                </A>
+            </div>
         </div>
     }
 }

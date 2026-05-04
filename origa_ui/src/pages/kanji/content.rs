@@ -95,23 +95,21 @@ pub fn KanjiContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
 
     let on_toggle_favorite = {
         let repo = repository.clone();
+        let refresh = refresh_trigger;
 
         Callback::new(move |card_id: Ulid| {
             let repository = repo.clone();
             let user_signal = current_user;
-            let disposed = StoredValue::new(());
 
             spawn_local(async move {
                 let use_case = ToggleFavoriteUseCase::new(&repository);
                 if use_case.execute(card_id).await.is_ok() {
-                    if disposed.is_disposed() {
-                        return;
-                    }
                     user_signal.update(|u| {
                         if let Some(user) = u {
                             let _ = user.toggle_favorite(card_id);
                         }
                     });
+                    refresh.update(|v| *v += 1);
                 }
             });
         })
@@ -203,7 +201,7 @@ pub fn KanjiContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
                     <FilterBtn filter=Filter::Learned count=move || counts.get().learned active=filter test_id="kanji-filter-learned" />
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4" data-testid="kanji-grid">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 items-stretch" data-testid="kanji-grid">
                     {move || {
                         let cards = visible_cards.get();
                         if cards.is_empty() {
@@ -218,14 +216,14 @@ pub fn KanjiContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
                             Either::Right(view! {
                                 <For
                                     each=move || visible_cards.get()
-                                    key=|card| *card.card_id()
+                                    key=|card| format!("{}-{}", card.card_id(), card.is_favorite())
                                     children=move |card| {
                                         let card_id = *card.card_id();
                                         let card_for_detail = card.clone();
                                         view! {
                                             <KanjiCardItem
                                                 study_card=card
-                                                native_language=native_lang
+                                                _native_language=native_lang
                                                 on_toggle_favorite=on_toggle_favorite
                                                 on_mark_as_known=Callback::new(move |_| on_mark_as_known.run(card_id))
                                                 on_delete=on_delete

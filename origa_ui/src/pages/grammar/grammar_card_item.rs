@@ -48,24 +48,6 @@ pub fn GrammarCardItem(
         }
     });
 
-    let study_card_for_desc = study_card.clone();
-    let description = Memo::new(move |_| {
-        let lang = native_language.get();
-        match study_card_for_desc.card() {
-            DomainCard::Grammar(grammar) => grammar
-                .description(&lang)
-                .ok()
-                .map(|d| d.text().to_string())
-                .unwrap_or_default(),
-            _ => "?".to_string(),
-        }
-    });
-
-    let preview_text = Memo::new(move |_| {
-        let truncated: String = description.get().chars().take(120).collect();
-        truncated
-    });
-
     let status = CardStatus::from_study_card(&study_card);
 
     let status_tag_variant = Signal::derive(move || status.tag_variant());
@@ -74,27 +56,28 @@ pub fn GrammarCardItem(
 
     view! {
         <Card
-            class="p-4 cursor-pointer"
+            class="p-4 cursor-pointer h-full flex flex-col"
             test_id="grammar-card-item"
             on:click=move |_: leptos::ev::MouseEvent| on_open_detail.run(())
         >
-            <Heading level=HeadingLevel::H4 class="mb-1">
-                <FuriganaText text=title.get() known_kanji=known_kanji/>
-            </Heading>
-            <p class="text-sm text-[var(--fg-muted)] mt-1 line-clamp-2">
-                {preview_text}
-            </p>
-            <CardActionBar
-                tag_variant=status_tag_variant
-                tag_label=status_label
-                is_favorite=Signal::derive(move || is_favorite)
-                on_toggle_favorite=Callback::new(move |_| on_toggle_favorite.run(card_id))
-                show_mark_as_known=show_mark_as_known
-                on_mark_as_known=Callback::new(move |_| on_mark_as_known.run(()))
-                on_history=Callback::new(move |_| is_history_open.set(true))
-                on_delete=Callback::new(move |_| is_delete_modal_open.set(true))
-                test_id=Signal::derive(|| "grammar-card-item".to_string())
-            />
+            <div class="flex-1 min-h-0">
+                <Heading level=HeadingLevel::H4 class="mb-1">
+                    <FuriganaText text=title.get() known_kanji=known_kanji/>
+                </Heading>
+            </div>
+            <div class="mt-auto shrink-0 pt-3">
+                <CardActionBar
+                    tag_variant=status_tag_variant
+                    tag_label=status_label
+                    is_favorite=Signal::derive(move || is_favorite)
+                    on_toggle_favorite=Callback::new(move |_| on_toggle_favorite.run(card_id))
+                    show_mark_as_known=show_mark_as_known
+                    on_mark_as_known=Callback::new(move |_| on_mark_as_known.run(()))
+                    on_history=Callback::new(move |_| is_history_open.set(true))
+                    on_delete=Callback::new(move |_| is_delete_modal_open.set(true))
+                    test_id=Signal::derive(|| "grammar-card-item".to_string())
+                />
+            </div>
         </Card>
         <CardHistoryModal
             is_open=Signal::derive(move || is_history_open.get())
