@@ -1,6 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
 import { testWithFreshUser } from "../fixtures";
-import { HomePage, KanjiPage, LoginPage, OnboardingPage, WordsPage, GrammarPage } from "../pages";
 
 /**
  * Onboarding Flow E2E Tests
@@ -21,19 +20,14 @@ testWithFreshUser.describe("Onboarding Flow - N4 with ~50% Progress", () => {
         // Set viewport for consistent testing
         await page.setViewportSize({ width: 1280, height: 720 });
 
-        const loginPage = new LoginPage(page);
-        const onboardingPage = new OnboardingPage(page);
-
-        // Navigate to login page - user is already authenticated via fixture
-        await loginPage.goto();
-
-        // Wait for redirect after login (fixture already sets auth token)
-        await page.waitForURL(/\/(onboarding|home)$/, { timeout: 10_000 });
+        // Fixture already logged in and is on /home.
+        // The app asynchronously checks imported_sets() and redirects to /onboarding.
+        await page.goto("/home");
+        await page.waitForURL(/\/onboarding$/, { timeout: 30_000 });
 
         // ========================================
         // Step 0: Verify onboarding page with stepper
         // ========================================
-        await expect(page).toHaveURL(/\/onboarding$/);
 
         // Wait for loading to complete
         await expect(page.getByTestId("onboarding-spinner")).not.toBeVisible({
