@@ -1,14 +1,17 @@
-#![allow(dead_code)]
-
+#[allow(dead_code)]
 mod accordion;
 mod alert;
+#[allow(dead_code)]
 mod app_skeleton;
 mod audio_buttons;
 mod audio_player;
+#[allow(dead_code)]
 mod avatar;
 mod badge;
 mod bottom_nav;
+#[allow(dead_code)]
 mod breadcrumbs;
+#[allow(dead_code)]
 mod button;
 mod card;
 mod card_action_bar;
@@ -19,28 +22,38 @@ mod collapsible;
 mod connectivity_banner;
 mod delete_button;
 mod delete_confirm_modal;
+#[allow(dead_code)]
 mod divider;
 mod drawer;
 mod dropdown;
 mod error_alert;
 mod favorite_button;
+#[allow(dead_code)]
 mod footer;
 mod furigana;
 mod history_button;
 mod input;
 mod kanji_animation;
+#[allow(dead_code)]
 mod kanji_drawing;
+#[allow(dead_code)]
 mod label_frame;
+#[allow(dead_code)]
 mod layout;
 mod level_selector;
 mod loading;
 mod logo;
 mod markdown;
 mod modal;
+#[allow(dead_code)]
 mod navbar;
+#[allow(dead_code)]
 mod ocr_loading_stage;
+mod page_header;
+#[allow(dead_code)]
 mod pagination;
 mod progress;
+#[allow(dead_code)]
 mod radio;
 mod reading_group;
 mod search;
@@ -48,16 +61,22 @@ mod selected_count;
 mod skeleton;
 
 mod filter_tag;
+#[allow(dead_code)]
 mod stepper;
+#[allow(dead_code)]
 mod tab_button;
+#[allow(dead_code)]
 mod table;
 mod tabs;
 mod tag;
 mod test_id;
 mod text_to_speech;
+#[allow(dead_code)]
 mod toast;
+#[allow(dead_code)]
 mod toggle;
 mod tooltip;
+#[allow(dead_code)]
 mod typography;
 mod update_drawer;
 mod word_audio;
@@ -104,6 +123,7 @@ pub use modal::Modal;
 pub use ocr_loading_stage::{
     LoadingStageItem, OcrLoadingStage, OcrLoadingState, ProgressInfo, StageType, get_stage_info,
 };
+pub use page_header::PageHeader;
 pub use progress::ProgressBar;
 pub use reading_group::ReadingGroup;
 pub use search::Search;
