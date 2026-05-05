@@ -49,7 +49,7 @@ pub fn BottomTabBar(#[prop(optional, into)] test_id: Signal<String>) -> impl Int
 
     view! {
         <Show when=move || is_visible.get()>
-            <nav class="bottom-tab-bar md:hidden" data-testid=test_id_val>
+            <nav class="bottom-tab-bar lg:hidden" data-testid=test_id_val>
                 <BottomTabItem
                     href="/home"
                     icon=icondata::LuHouse

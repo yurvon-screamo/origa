@@ -21,11 +21,9 @@ testWithFreshUser.describe("Profile Page", () => {
         await expect(profilePage.profileContent).toBeVisible();
     });
 
-    testWithFreshUser("should navigate back to home", async ({ page }) => {
+    testWithFreshUser("should navigate to home via sidebar", async ({ page }) => {
         const profilePage = await setupProfilePage(page);
-
-        await profilePage.clickBack();
-
+        await page.getByTestId("sidebar-item-home").click();
         await page.waitForURL(/\/home$/, { timeout: 10_000 });
     });
 

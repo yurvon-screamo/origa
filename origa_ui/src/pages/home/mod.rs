@@ -1,6 +1,5 @@
 pub mod content;
 pub mod content_sync;
-pub mod header;
 pub mod history_modal;
 pub mod home_skeleton;
 pub mod home_stats;
@@ -10,7 +9,6 @@ pub mod stat_card;
 pub mod stats_grid;
 
 pub use content::HomeContent;
-pub use header::HomeHeader;
 pub use history_modal::{HistoryModal, StatMetric};
 pub use home_skeleton::{HomeSkeleton, JlptSkeleton};
 pub use home_stats::{PrimaryStats, SecondaryStats, calculate_stats, format_delta, format_number};
@@ -85,7 +83,6 @@ pub fn Home() -> impl IntoView {
 
             <Show when=move || !is_checking_onboarding.get()>
                 <div class="flex flex-col" data-testid="home-content">
-                    <HomeHeader current_user test_id="home-header" />
                     <HomeContent test_id="home-main" />
                 </div>
             </Show>

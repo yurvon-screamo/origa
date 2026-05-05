@@ -38,15 +38,15 @@ testWithFreshUser.describe("Phrases Page", () => {
         await expect(phrasesPage.emptyState).toBeVisible();
     });
 
-    testWithFreshUser("should navigate back to home", async ({ page }) => {
-        const phrasesPage = await setupPhrasesPage(page);
-        await phrasesPage.clickBack();
-        await page.waitForURL(/\/home$/, { timeout: 10000 });
+    testWithFreshUser("should navigate to home via sidebar", async ({ page }) => {
+        await setupPhrasesPage(page);
+        await page.getByTestId("sidebar-item-home").click();
+        await page.waitForURL(/\/home$/, { timeout: 10_000 });
         await expect(page).toHaveURL(/\/home$/);
     });
 
     testWithFreshUser("should show filter buttons", async ({ page }) => {
-        const phrasesPage = await setupPhrasesPage(page);
+        await setupPhrasesPage(page);
 
         await expect(page.getByTestId("phrases-filter-all")).toBeVisible();
         await expect(page.getByTestId("phrases-filter-new")).toBeVisible();

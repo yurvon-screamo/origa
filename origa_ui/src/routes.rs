@@ -9,11 +9,13 @@ use crate::pages::{
     Grammar, Home, Kanji, Lesson, Login, Onboarding, Phrases, Profile, Sets, Words,
 };
 use crate::store::auth_store::AuthStore;
-use crate::ui_components::{BottomTabBar, LoadingOverlay};
+use crate::ui_components::{BottomTabBar, LoadingOverlay, Sidebar};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos_router::components::*;
 use leptos_router::path;
+use origa::domain::User;
+use origa::traits::UserRepository;
 use origa::use_cases::SeedReadyPhrasesUseCase;
 
 use crate::repository::HybridUserRepository;
@@ -136,8 +138,25 @@ pub fn ProtectedRoute(children: ChildrenFn) -> impl IntoView {
 
 #[component]
 pub fn AppRoutes() -> impl IntoView {
+    let auth_store = use_context::<AuthStore>().expect("AuthStore not provided");
+    let repository = auth_store.repository().clone();
+    let current_user: RwSignal<Option<User>> = RwSignal::new(None);
+
+    Effect::new({
+        let repository = repository.clone();
+        move |_| {
+            let repository = repository.clone();
+            spawn_local(async move {
+                if let Ok(Some(user)) = repository.get_current_user().await {
+                    current_user.set(Some(user));
+                }
+            });
+        }
+    });
+
     view! {
-        <main class="paper-texture pb-20 md:pb-0">
+        <Sidebar current_user test_id="sidebar" />
+        <main class="paper-texture main-with-sidebar pb-20 lg:pb-0">
             <Routes fallback=|| view! { <Login/> }>
                 <Route path=path!("/") view=|| view! { <ProtectedRoute><Home/></ProtectedRoute> } />
                 <Route path=path!("login") view=Login />
