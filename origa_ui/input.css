@@ -6,10 +6,10 @@
 
 :root {
     /* Colors */
-    --bg-cream: #efe4d0;
-    --bg-paper: #efe4d0;
-    --bg-aged: #e5dac8;
-    --bg-warm: #e5dac8;
+    --bg-cream: #f7f4ee;
+    --bg-paper: #fdfbf7;
+    --bg-aged: #ede8dd;
+    --bg-warm: #f0ebe1;
     --fg-black: #1a1915;
     --fg-muted: #6b665a;
     --fg-light: #9a9590;
@@ -1536,7 +1536,7 @@ input[type="submit"],
 .loading-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(253, 251, 247, 0.9);
+    background: color-mix(in srgb, var(--bg-paper) 90%, transparent);
     display: flex;
     flex-direction: column;
     align-items: center;
