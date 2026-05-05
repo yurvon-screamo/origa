@@ -55,17 +55,19 @@ testWithFreshUser.describe("Home Page", () => {
         await kanjiPage.expectKanjiVisible();
     });
 
-    testWithFreshUser("should display lesson button inline with JLPT progress", async ({ page }) => {
+    testWithFreshUser("should display lesson button next to JLPT progress", async ({ page }) => {
         const homePage = await setupHomePage(page);
         await expect(homePage.lessonButton).toBeVisible({ timeout: 10_000 });
 
-        // Verify lesson button is inside the JLPT progress card (identified by JLPT text content)
         const jlptCard = page.locator(".card").filter({ hasText: /JLPT/ });
         await expect(jlptCard).toBeVisible({ timeout: 10_000 });
 
-        // Verify lesson button is within the JLPT card
+        // Lesson button is a sibling of the JLPT card, NOT nested inside it
         const lessonBtnInCard = jlptCard.locator("[data-testid='lesson-buttons-lesson']");
-        await expect(lessonBtnInCard).toBeVisible();
+        await expect(lessonBtnInCard).not.toBeVisible();
+
+        const lessonButton = page.locator("[data-testid='lesson-buttons-lesson']");
+        await expect(lessonButton).toBeVisible();
     });
 
     testWithFreshUser("should navigate to lesson from home page", async ({ page }) => {
