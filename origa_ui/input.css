@@ -2584,12 +2584,12 @@ input[type="submit"],
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    padding: 16px;
+    padding: 8px;
 }
 
 @media (min-width: 640px) {
     .page-layout-full {
-        padding: 24px;
+        padding: 16px;
     }
 }
 

@@ -14,7 +14,7 @@ pub fn Phrases() -> impl IntoView {
 
     view! {
         <PageLayout variant=PageLayoutVariant::Full test_id="phrases-page">
-            <CardLayout size=CardLayoutSize::Adaptive class="px-4 py-8" test_id="phrases-card">
+            <CardLayout size=CardLayoutSize::Adaptive test_id="phrases-card">
                 <PhrasesHeader />
                 <PhrasesContent refresh_trigger=refresh_trigger />
             </CardLayout>

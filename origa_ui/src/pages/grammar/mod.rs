@@ -21,7 +21,7 @@ pub fn Grammar() -> impl IntoView {
 
     view! {
         <PageLayout variant=PageLayoutVariant::Full test_id="grammar-page">
-            <CardLayout size=CardLayoutSize::Adaptive class="px-4 py-8" test_id="grammar-card">
+            <CardLayout size=CardLayoutSize::Adaptive test_id="grammar-card">
                 <GrammarHeader refresh_trigger=refresh_trigger />
                 <GrammarContent refresh_trigger=refresh_trigger />
             </CardLayout>
