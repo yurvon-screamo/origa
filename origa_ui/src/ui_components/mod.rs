@@ -28,8 +28,6 @@ mod drawer;
 mod dropdown;
 mod error_alert;
 mod favorite_button;
-#[allow(dead_code)]
-mod footer;
 mod furigana;
 mod history_button;
 mod input;
@@ -45,8 +43,7 @@ mod loading;
 mod logo;
 mod markdown;
 mod modal;
-#[allow(dead_code)]
-mod navbar;
+mod nav_config;
 #[allow(dead_code)]
 mod ocr_loading_stage;
 mod page_header;
@@ -58,6 +55,7 @@ mod radio;
 mod reading_group;
 mod search;
 mod selected_count;
+mod sidebar;
 mod skeleton;
 
 mod filter_tag;
@@ -120,6 +118,7 @@ pub use loading::{LoadingOverlay, Spinner};
 pub use logo::{Logo, LogoSize};
 pub use markdown::{MarkdownText, MarkdownVariant};
 pub use modal::Modal;
+pub use nav_config::NavRoute;
 pub use ocr_loading_stage::{
     LoadingStageItem, OcrLoadingStage, OcrLoadingState, ProgressInfo, StageType, get_stage_info,
 };
@@ -128,6 +127,7 @@ pub use progress::ProgressBar;
 pub use reading_group::ReadingGroup;
 pub use search::Search;
 pub use selected_count::SelectedCount;
+pub use sidebar::Sidebar;
 pub use skeleton::Skeleton;
 
 pub use filter_tag::FilterTag;

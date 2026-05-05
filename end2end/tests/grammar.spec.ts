@@ -139,9 +139,9 @@ testWithFreshUser.describe("Grammar Page - Search & Filters", () => {
         await expect(grammarPage.emptyState).toBeVisible({ timeout: 5000 });
     });
 
-    testWithFreshUser("should navigate back to home", async ({ page }) => {
+    testWithFreshUser("should navigate to home via sidebar", async ({ page }) => {
         const grammarPage = await setupGrammarPage(page);
-        await grammarPage.clickBack();
+        await page.getByTestId("sidebar-item-home").click();
         await page.waitForURL(/\/home$/, { timeout: 10000 });
         await expect(page).toHaveURL(/\/home$/);
     });

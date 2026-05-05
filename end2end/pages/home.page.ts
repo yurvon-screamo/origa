@@ -5,13 +5,16 @@ export class HomePage extends BasePage {
     // Page structure
     readonly homePage: Locator;
     readonly homeContent: Locator;
-    readonly homeHeader: Locator;
 
-    // Header navigation
-    readonly homeAvatar: Locator;
-    readonly homeWords: Locator;
-    readonly homeGrammar: Locator;
-    readonly homeKanji: Locator;
+    // Sidebar navigation
+    readonly sidebar: Locator;
+    readonly sidebarAvatar: Locator;
+    readonly sidebarHome: Locator;
+    readonly sidebarWords: Locator;
+    readonly sidebarGrammar: Locator;
+    readonly sidebarKanji: Locator;
+    readonly sidebarPhrases: Locator;
+    readonly sidebarProfile: Locator;
 
     // JLPT Progress
     readonly jlptProgress: Locator;
@@ -55,13 +58,16 @@ export class HomePage extends BasePage {
         // Page structure
         this.homePage = page.getByTestId("home-page");
         this.homeContent = page.getByTestId("home-content");
-        this.homeHeader = page.getByTestId("home-header");
 
-        // Header navigation
-        this.homeAvatar = page.getByTestId("home-header-avatar");
-        this.homeWords = page.getByTestId("home-header-words");
-        this.homeGrammar = page.getByTestId("home-header-grammar");
-        this.homeKanji = page.getByTestId("home-header-kanji");
+        // Sidebar navigation
+        this.sidebar = page.getByTestId("sidebar");
+        this.sidebarAvatar = page.getByTestId("sidebar-avatar");
+        this.sidebarHome = page.getByTestId("sidebar-item-home");
+        this.sidebarWords = page.getByTestId("sidebar-item-words");
+        this.sidebarGrammar = page.getByTestId("sidebar-item-grammar");
+        this.sidebarKanji = page.getByTestId("sidebar-item-kanji");
+        this.sidebarPhrases = page.getByTestId("sidebar-item-phrases");
+        this.sidebarProfile = page.getByTestId("sidebar-item-profile");
 
         // JLPT Progress
         this.jlptProgress = page.getByTestId("home-jlpt-progress");
@@ -108,19 +114,19 @@ export class HomePage extends BasePage {
     async expectHomeVisible(): Promise<void> {
         await expect(this.homePage).toBeVisible();
         await expect(this.homeContent).toBeVisible();
-        await expect(this.homeHeader).toBeVisible();
+        await expect(this.sidebar).toBeVisible();
     }
 
     async navigateToWords(): Promise<void> {
-        await this.homeWords.click();
+        await this.sidebarWords.click();
     }
 
     async navigateToGrammar(): Promise<void> {
-        await this.homeGrammar.click();
+        await this.sidebarGrammar.click();
     }
 
     async navigateToKanji(): Promise<void> {
-        await this.homeKanji.click();
+        await this.sidebarKanji.click();
     }
 
     async startLesson(): Promise<void> {

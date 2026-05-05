@@ -10,7 +10,7 @@ pub fn KanjiHeader(refresh_trigger: RwSignal<u32>) -> impl IntoView {
 
     view! {
         <PageHeader
-            back_path="/home".to_string()
+            back_path="".to_string()
             back_label=Signal::derive(move || i18n.get_keys().common().back().inner().to_string())
             title=Signal::derive(move || i18n.get_keys().kanji_page().header().inner().to_string())
             test_id="kanji"

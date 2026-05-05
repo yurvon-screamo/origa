@@ -8,7 +8,7 @@ pub fn ProfileHeader(username: Signal<String>) -> impl IntoView {
 
     view! {
         <PageHeader
-            back_path="/home".to_string()
+            back_path="".to_string()
             back_label=Signal::derive(move || i18n.get_keys().common().back().inner().to_string())
             title=Signal::derive(move || {
                 let title = i18n.get_keys().profile().title().inner().to_string();
