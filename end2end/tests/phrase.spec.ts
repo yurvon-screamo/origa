@@ -137,4 +137,30 @@ testWithFreshUser.describe("Phrases after full onboarding", () => {
         // CDN loading may take time for phrase data
         await expect(phrasesPage.emptyState).not.toBeVisible({ timeout: 30_000 });
     });
+
+    testWithFreshUser("phrase cards should display Japanese text and meaning after data loads", async ({ page }) => {
+        test.setTimeout(300_000);
+
+        await completeFullOnboarding(page);
+        await expect(page).toHaveURL(/\/home$/);
+
+        const phrasesPage = new PhrasesPage(page);
+        await phrasesPage.goto();
+        await phrasesPage.expectPhrasesVisible();
+
+        // Wait for phrase data to load from CDN
+        await expect(phrasesPage.emptyState).not.toBeVisible({ timeout: 30_000 });
+
+        // Verify that at least one card has rendered with content
+        const firstCard = phrasesPage.cardItem.first();
+        await expect(firstCard).toBeVisible({ timeout: 30_000 });
+
+        // CRITICAL: Verify phrase text is NOT empty (reproduces the bug)
+        const phraseText = firstCard.getByTestId("phrases-card-text");
+        await expect(phraseText).toContainText(/\S/, { timeout: 30_000 });
+
+        // Verify meaning/translation is present
+        const meaning = firstCard.getByTestId("phrases-card-meaning");
+        await expect(meaning).toContainText(/\S/, { timeout: 30_000 });
+    });
 });

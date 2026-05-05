@@ -12,6 +12,7 @@ export class PhrasesPage extends BasePage {
     readonly phrasesGrid: Locator;
     readonly emptyState: Locator;
     readonly loadMoreButton: Locator;
+    readonly cardItem: Locator;
 
     constructor(page: Page) {
         super(page);
@@ -24,6 +25,7 @@ export class PhrasesPage extends BasePage {
         this.phrasesGrid = page.getByTestId("phrases-grid");
         this.emptyState = page.getByTestId("phrases-empty-state");
         this.loadMoreButton = page.getByTestId("phrases-load-more-btn");
+        this.cardItem = page.getByTestId("phrases-card-item");
     }
 
     async goto(): Promise<void> {
@@ -52,7 +54,7 @@ export class PhrasesPage extends BasePage {
     }
 
     async getCardCount(): Promise<number> {
-        return this.page.getByTestId("phrases-card-item").count();
+        return this.cardItem.count();
     }
 
     async clickBack(): Promise<void> {
