@@ -1,7 +1,10 @@
 use super::content_sync::{
     run_sync, show_sync_error_toast, show_sync_success_toast, show_sync_toast,
 };
-use super::{HistoryModal, HomeSkeleton, JlptProgressCard, JlptSkeleton, StatMetric, StatsGrid};
+use super::{
+    HistoryModal, HomeSkeleton, JlptProgressCard, JlptSkeleton, LessonButtonsCard, StatMetric,
+    StatsGrid,
+};
 use super::{PrimaryStats, SecondaryStats, calculate_stats};
 use crate::i18n::{Locale, t, use_i18n};
 use crate::repository::{HybridUserRepository, set_last_sync_time};
@@ -163,18 +166,22 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                     when=move || !is_loading.get()
                     fallback=move || view! { <JlptSkeleton /> }
                 >
-                    <JlptProgressCard
-                        jlpt_progress=Signal::derive(move || jlpt_progress.get())
-                        show_lesson_button=true
-                        test_id=Signal::derive(move || {
-                            let val = test_id.get();
-                            if val.is_empty() {
-                                "home-jlpt-progress".to_string()
-                            } else {
-                                format!("{}-jlpt-progress", val)
-                            }
-                        })
-                    />
+                    <div class="flex items-stretch gap-4 mb-6 sm:mb-8">
+                        <LessonButtonsCard test_id=Signal::derive(|| "lesson-buttons".to_string()) />
+                        <div class="flex-1">
+                            <JlptProgressCard
+                                jlpt_progress=Signal::derive(move || jlpt_progress.get())
+                                test_id=Signal::derive(move || {
+                                    let val = test_id.get();
+                                    if val.is_empty() {
+                                        "home-jlpt-progress".to_string()
+                                    } else {
+                                        format!("{}-jlpt-progress", val)
+                                    }
+                                })
+                            />
+                        </div>
+                    </div>
                 </Show>
 
                 <Show
