@@ -1,9 +1,8 @@
 use super::lesson_state::LessonContext;
-use crate::i18n::*;
-use crate::ui_components::{Button, ButtonVariant};
+use crate::i18n::use_i18n;
+use crate::ui_components::PageHeader;
 use leptos::prelude::*;
 use leptos_icons::Icon;
-use leptos_router::components::A;
 
 #[component]
 pub fn LessonHeader() -> impl IntoView {
@@ -16,13 +15,11 @@ pub fn LessonHeader() -> impl IntoView {
     };
 
     view! {
-        <div data-testid="lesson-header" class="flex flex-wrap justify-between items-center gap-4 mb-6">
-            <A href="/home">
-                <Button variant=Signal::derive(|| ButtonVariant::Ghost) test_id="lesson-back-btn">
-                    {t!(i18n, common.back)}
-                </Button>
-            </A>
-
+        <PageHeader
+            back_path="/home".to_string()
+            back_label=Signal::derive(move || i18n.get_keys().common().back().inner().to_string())
+            test_id="lesson"
+        >
             <button
                 data-testid="lesson-mute-btn"
                 class="btn btn-ghost px-3 py-2"
@@ -30,11 +27,13 @@ pub fn LessonHeader() -> impl IntoView {
                 on:click=move |_| toggle_mute()
             >
                 {move || if is_muted.get() {
-                    view! { <Icon icon=icondata::LuVolumeX width="1.25em" height="1.25em" /> }.into_any()
+                    view! { <Icon icon=icondata::LuVolumeX width="1.25em" height="1.25em" /> }
+                        .into_any()
                 } else {
-                    view! { <Icon icon=icondata::LuVolume2 width="1.25em" height="1.25em" /> }.into_any()
+                    view! { <Icon icon=icondata::LuVolume2 width="1.25em" height="1.25em" /> }
+                        .into_any()
                 }}
             </button>
-        </div>
+        </PageHeader>
     }
 }
