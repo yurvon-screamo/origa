@@ -104,7 +104,7 @@ pub fn KanjiContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
         let current_filter = filter.get();
         let lang = native_lang.get();
 
-        all_cards
+        let mut cards: Vec<_> = all_cards
             .get()
             .into_iter()
             .filter(|card| {
@@ -128,7 +128,9 @@ pub fn KanjiContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
                 let matches_filter = current_filter.matches(CardStatus::from_study_card(card));
                 matches_search && matches_filter
             })
-            .collect::<Vec<_>>()
+            .collect();
+        cards.sort_by_key(|c| *c.card_id());
+        cards
     });
 
     Effect::new(move |_| {
@@ -195,7 +197,7 @@ pub fn KanjiContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
                             Either::Right(view! {
                                 <For
                                     each=move || visible_cards.get()
-                                    key=|card| format!("{}-{}", card.card_id(), card.is_favorite())
+                                    key=|card| card.card_id().to_string()
                                     children=move |card| {
                                         let card_id = *card.card_id();
                                         let card_for_detail = card.clone();
