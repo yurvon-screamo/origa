@@ -54,4 +54,24 @@ testWithFreshUser.describe("Home Page", () => {
         const kanjiPage = new KanjiPage(page);
         await kanjiPage.expectKanjiVisible();
     });
+
+    testWithFreshUser("should display lesson button inline with JLPT progress", async ({ page }) => {
+        const homePage = await setupHomePage(page);
+        await expect(homePage.lessonButton).toBeVisible({ timeout: 10_000 });
+
+        // Verify lesson button is inside the JLPT progress card (identified by JLPT text content)
+        const jlptCard = page.locator(".card").filter({ hasText: /JLPT/ });
+        await expect(jlptCard).toBeVisible({ timeout: 10_000 });
+
+        // Verify lesson button is within the JLPT card
+        const lessonBtnInCard = jlptCard.locator("[data-testid='lesson-buttons-lesson']");
+        await expect(lessonBtnInCard).toBeVisible();
+    });
+
+    testWithFreshUser("should navigate to lesson from home page", async ({ page }) => {
+        const homePage = await setupHomePage(page);
+        await expect(homePage.lessonButton).toBeVisible({ timeout: 10_000 });
+        await homePage.startLesson();
+        await page.waitForURL(/\/lesson$/, { timeout: 15_000 });
+    });
 });
