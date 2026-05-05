@@ -24,7 +24,7 @@ pub fn Words() -> impl IntoView {
 
     view! {
         <PageLayout variant=PageLayoutVariant::Full test_id="words-page">
-            <CardLayout size=CardLayoutSize::Adaptive class="px-4 py-8" test_id="words-card">
+            <CardLayout size=CardLayoutSize::Adaptive test_id="words-card">
                 <WordsHeader refresh_trigger=refresh_trigger />
                 <WordsContent refresh_trigger=refresh_trigger />
             </CardLayout>

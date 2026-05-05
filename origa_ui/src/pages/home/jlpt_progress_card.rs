@@ -1,13 +1,15 @@
 use crate::i18n::{t, use_i18n};
+use crate::ui_components::{Card, DisplayText, Tag, TagVariant, Text, TextSize};
 use leptos::prelude::*;
 use origa::domain::{CategoryProgress, JlptProgress, LevelProgressDetail};
 
-use crate::ui_components::{Card, DisplayText, Tag, TagVariant, Text, TextSize};
+use super::LessonButtonsCard;
 
 #[component]
 pub fn JlptProgressCard(
     jlpt_progress: Signal<JlptProgress>,
     #[prop(optional, into)] test_id: Signal<String>,
+    #[prop(default = true)] show_lesson_button: bool,
 ) -> impl IntoView {
     let current_level = Signal::derive(move || jlpt_progress.get().current_level());
     let level_detail = Signal::derive(move || {
@@ -24,16 +26,19 @@ pub fn JlptProgressCard(
     view! {
         <Card
             shadow=Signal::from(true)
-            class=Signal::derive(|| "p-6 sm:p-8 mb-8".to_string())
+            class=Signal::derive(|| "p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8".to_string())
             test_id=test_id
         >
             <div
-                class="flex items-center gap-4 mb-6"
+                class="flex items-center gap-2 sm:gap-4 mb-6"
                 data-testid=move || {
                     let val = test_id.get();
                     if val.is_empty() { None } else { Some(format!("{}-progress", val)) }
                 }
             >
+                <Show when=move || show_lesson_button>
+                    <LessonButtonsCard test_id=Signal::derive(|| "lesson-buttons".to_string()) />
+                </Show>
                 <Tag
                     variant=Signal::from(TagVariant::Default)
                     test_id=Signal::derive(move || format!("{}-stamp", test_id.get()))

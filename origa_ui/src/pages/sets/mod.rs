@@ -20,7 +20,7 @@ use leptos::prelude::*;
 pub fn Sets() -> impl IntoView {
     view! {
         <PageLayout variant=PageLayoutVariant::Full test_id="sets-page">
-            <CardLayout size=CardLayoutSize::Adaptive class="px-4 py-8" test_id="sets-card">
+            <CardLayout size=CardLayoutSize::Adaptive test_id="sets-card">
                 <SetsHeader />
                 <SetsContent />
             </CardLayout>

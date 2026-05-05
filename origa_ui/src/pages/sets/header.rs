@@ -22,7 +22,7 @@ pub fn SetsHeader() -> impl IntoView {
                 <Icon icon=LuArrowLeft width="16" height="16" />
                 {t!(i18n, common.back)}
             </Button>
-            <Heading level=HeadingLevel::H2 test_id="sets-title">
+            <Heading level=HeadingLevel::H1 test_id="sets-title">
                 {t!(i18n, sets.header)}
             </Heading>
         </div>

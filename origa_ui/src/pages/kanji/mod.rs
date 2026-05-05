@@ -20,7 +20,7 @@ pub fn Kanji() -> impl IntoView {
 
     view! {
         <PageLayout variant=PageLayoutVariant::Full test_id="kanji-page">
-            <CardLayout size=CardLayoutSize::Adaptive class="px-4 py-8" test_id="kanji-card">
+            <CardLayout size=CardLayoutSize::Adaptive test_id="kanji-card">
                 <KanjiHeader refresh_trigger=refresh_trigger />
                 <KanjiContent refresh_trigger=refresh_trigger />
             </CardLayout>

@@ -12,8 +12,7 @@ pub enum PageLayoutVariant {
 #[component]
 pub fn PageLayout(
     #[prop(optional, into)] variant: Signal<PageLayoutVariant>,
-    #[prop(optional, into, default = "w-full px-4 sm:px-6 lg:px-8".to_string().into())]
-    container_class: Signal<String>,
+    #[prop(optional, into, default = "w-full".to_string().into())] container_class: Signal<String>,
     #[prop(optional, into)] test_id: Signal<String>,
     children: Children,
 ) -> impl IntoView {
