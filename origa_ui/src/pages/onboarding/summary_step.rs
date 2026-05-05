@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use std::collections::HashMap;
 
 use crate::core::config::public_url;
@@ -7,6 +8,45 @@ use leptos::prelude::*;
 use origa::domain::WellKnownSetMeta;
 
 use super::onboarding_state::OnboardingState;
+
+fn consume_digits(chars: &mut std::iter::Peekable<impl Iterator<Item = char>>) -> u64 {
+    let mut num = 0u64;
+    while let Some(d) = chars.peek() {
+        if let Some(digit) = d.to_digit(10) {
+            num = num * 10 + digit as u64;
+            chars.next();
+        } else {
+            break;
+        }
+    }
+    num
+}
+
+fn natural_cmp(a: &str, b: &str) -> Ordering {
+    let mut a_chars = a.chars().peekable();
+    let mut b_chars = b.chars().peekable();
+
+    loop {
+        match (
+            a_chars.peek().is_some_and(|c| c.is_ascii_digit()),
+            b_chars.peek().is_some_and(|c| c.is_ascii_digit()),
+        ) {
+            (true, true) => match consume_digits(&mut a_chars).cmp(&consume_digits(&mut b_chars)) {
+                Ordering::Equal => continue,
+                ord => return ord,
+            },
+            _ => match (a_chars.next(), b_chars.next()) {
+                (Some(ca), Some(cb)) => match ca.cmp(&cb) {
+                    Ordering::Equal => continue,
+                    ord => return ord,
+                },
+                (Some(_), None) => return Ordering::Greater,
+                (None, Some(_)) => return Ordering::Less,
+                (None, None) => return Ordering::Equal,
+            },
+        }
+    }
+}
 
 fn get_type_label(set_type: &str) -> String {
     match set_type {
@@ -96,7 +136,7 @@ pub fn SummaryStep(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
             result.entry(set.set_type.clone()).or_default().push(set);
         }
         for sets in result.values_mut() {
-            sets.sort_by(|a, b| a.title_ru.cmp(&b.title_ru));
+            sets.sort_by(|a, b| natural_cmp(&a.title_ru, &b.title_ru));
         }
         result
     });
@@ -282,5 +322,63 @@ pub fn SummaryStep(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                 </div>
             </Show>
         </div>
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::cmp::Ordering;
+
+    #[test]
+    fn section_2_before_section_10() {
+        assert_eq!(
+            natural_cmp("Модуль 1 Раздел 2", "Модуль 1 Раздел 10"),
+            Ordering::Less
+        );
+    }
+
+    #[test]
+    fn ascending_sections() {
+        assert_eq!(
+            natural_cmp("Модуль 1 Раздел 1", "Модуль 1 Раздел 2"),
+            Ordering::Less
+        );
+        assert_eq!(
+            natural_cmp("Модуль 1 Раздел 2", "Модуль 1 Раздел 10"),
+            Ordering::Less
+        );
+    }
+
+    #[test]
+    fn pure_text_sorts_lexicographically() {
+        assert_eq!(natural_cmp("abc", "abd"), Ordering::Less);
+        assert_eq!(natural_cmp("abd", "abc"), Ordering::Greater);
+        assert_eq!(natural_cmp("abc", "abc"), Ordering::Equal);
+    }
+
+    #[test]
+    fn mixed_text_and_numbers() {
+        assert_eq!(natural_cmp("abc10", "abc2"), Ordering::Greater);
+        assert_eq!(natural_cmp("abc2", "abc10"), Ordering::Less);
+    }
+
+    #[test]
+    fn numbers_at_start() {
+        assert_eq!(natural_cmp("10 item", "2 item"), Ordering::Greater);
+        assert_eq!(natural_cmp("2 item", "10 item"), Ordering::Less);
+    }
+
+    #[test]
+    fn empty_strings() {
+        assert_eq!(natural_cmp("", ""), Ordering::Equal);
+        assert_eq!(natural_cmp("", "a"), Ordering::Less);
+        assert_eq!(natural_cmp("a", ""), Ordering::Greater);
+    }
+
+    #[test]
+    fn single_element() {
+        assert_eq!(natural_cmp("a", "a"), Ordering::Equal);
+        assert_eq!(natural_cmp("a", "b"), Ordering::Less);
     }
 }
