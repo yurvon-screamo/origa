@@ -4,6 +4,7 @@ use super::super::shared::{
 };
 use super::phrase_card_item::PhraseCardItem;
 use crate::i18n::{t, use_i18n};
+use crate::loaders::phrase_data_loader::load_phrase_details_batch;
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{
     Input, LoadingOverlay, Text, TextSize, ToastContainer, ToastData, TypographyVariant,
@@ -13,6 +14,7 @@ use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::domain::{Card, StudyCard, User};
 use origa::traits::UserRepository;
+use ulid::Ulid;
 
 #[component]
 pub fn PhrasesContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
@@ -41,7 +43,34 @@ pub fn PhrasesContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
                         .iter()
                         .filter(|(_, card)| matches!(card.card(), Card::Phrase(_)))
                         .map(|(_, card)| card.clone())
+                        .collect::<Vec<_>>();
+
+                    let phrase_ids: Vec<Ulid> = cards
+                        .iter()
+                        .filter_map(|card| {
+                            if let Card::Phrase(pc) = card.card() {
+                                Some(*pc.phrase_id())
+                            } else {
+                                None
+                            }
+                        })
                         .collect();
+
+                    if !phrase_ids.is_empty() {
+                        let results = load_phrase_details_batch(&phrase_ids).await;
+                        let failed = results.iter().filter(|r| r.is_err()).count();
+                        if failed > 0 {
+                            tracing::warn!(
+                                failed,
+                                total = phrase_ids.len(),
+                                "Some phrase data chunks failed to load"
+                            );
+                        }
+                    }
+
+                    if disposed.is_disposed() {
+                        return;
+                    }
                     all_cards.set(cards);
                     current_user.set(Some(user));
                     is_loading.set(false);

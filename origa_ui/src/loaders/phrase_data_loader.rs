@@ -29,7 +29,6 @@ pub async fn load_phrase_detail(phrase_id: Ulid) -> Result<PhraseDetail, OrigaEr
     get_cached_phrase_detail(&phrase_id).ok_or(OrigaError::PhraseNotFound { phrase_id })
 }
 
-#[expect(dead_code, reason = "batch lazy-load для будущих задач")]
 pub async fn load_phrase_details_batch(ids: &[Ulid]) -> Vec<Result<PhraseDetail, OrigaError>> {
     let mut chunks_to_load: HashSet<u32> = HashSet::new();
     for id in ids {

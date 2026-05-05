@@ -80,7 +80,7 @@ pub fn PhraseCardItem(
             <div class="flex-1 min-h-0">
                 <div class="flex items-start justify-between gap-2 mb-2">
                     <Heading level=HeadingLevel::H4 class="flex-1">
-                        <FuriganaText text=phrase_text.clone() known_kanji=known_kanji_for_furigana/>
+                        <FuriganaText text=phrase_text.clone() known_kanji=known_kanji_for_furigana test_id=Signal::derive(|| "phrases-card-text".to_string())/>
                     </Heading>
                     <Show when=move || has_audio>
                         <AudioPlayer
@@ -91,7 +91,7 @@ pub fn PhraseCardItem(
                     </Show>
                 </div>
                 <CollapsibleDescription>
-                    <MarkdownText content=Signal::derive(move || meaning.get()) known_kanji=known_kanji_for_markdown/>
+                    <MarkdownText content=Signal::derive(move || meaning.get()) known_kanji=known_kanji_for_markdown test_id=Signal::derive(|| "phrases-card-meaning".to_string())/>
                 </CollapsibleDescription>
                 <Text
                     size=TextSize::Small
