@@ -118,6 +118,7 @@ pub use loading::{LoadingOverlay, Spinner};
 pub use logo::{Logo, LogoSize};
 pub use markdown::{MarkdownText, MarkdownVariant};
 pub use modal::Modal;
+#[expect(unused_imports, reason = "заготовка для будущей навигации")]
 pub use nav_config::NavRoute;
 pub use ocr_loading_stage::{
     LoadingStageItem, OcrLoadingStage, OcrLoadingState, ProgressInfo, StageType, get_stage_info,

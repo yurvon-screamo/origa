@@ -8,6 +8,7 @@ pub enum NavRoute {
     Profile,
 }
 
+#[expect(dead_code, reason = "заготовка для будущей навигации")]
 impl NavRoute {
     pub const fn href(self) -> &'static str {
         match self {
@@ -35,7 +36,7 @@ impl NavRoute {
         matches!(self, Self::Home)
     }
 
-    pub fn label(self, i18n: &crate::i18n::I18n) -> String {
+    pub fn label(self, i18n: &leptos_i18n::I18nContext<crate::i18n::Locale>) -> String {
         let keys = i18n.get_keys();
         match self {
             Self::Home => keys.home().home_tab().inner().to_string(),
