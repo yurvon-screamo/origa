@@ -2,8 +2,7 @@ use super::content_sync::{
     run_sync, show_sync_error_toast, show_sync_success_toast, show_sync_toast,
 };
 use super::{
-    HistoryModal, HomeSkeleton, JlptProgressCard, JlptSkeleton, LessonButtonsCard, StatMetric,
-    StatsGrid,
+    HistoryModal, HomeSkeleton, JlptProgressCard, JlptSkeleton, StatMetric, StatsGrid, WelcomeCard,
 };
 use super::{PrimaryStats, SecondaryStats, calculate_stats};
 use crate::i18n::{Locale, t, use_i18n};
@@ -40,6 +39,7 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
     let is_loading = RwSignal::new(true);
     let jlpt_progress = RwSignal::new(JlptProgress::new());
     let toasts: RwSignal<Vec<ToastData>> = RwSignal::new(Vec::new());
+    let user_name: RwSignal<String> = RwSignal::new(String::new());
     let disposed = StoredValue::new(());
 
     let repo_for_init = repository.clone();
@@ -51,6 +51,7 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                     if disposed.is_disposed() {
                         return;
                     }
+                    user_name.set(user.username().to_string());
                     let history_items = user.knowledge_set().lesson_history().to_vec();
                     history.set(history_items.clone());
                     stats.set(Some(calculate_stats(&history_items)));
@@ -147,6 +148,32 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
     view! {
         <main class="flex-1" data-testid=test_id_val>
             <div class="py-6 sm:py-8">
+                <div class="mb-8 sm:mb-12">
+                    <WelcomeCard
+                        username=Signal::from(user_name)
+                        test_id=Signal::derive(|| "home-welcome".to_string())
+                    />
+                </div>
+
+                <Show
+                    when=move || !is_loading.get()
+                    fallback=move || view! { <JlptSkeleton /> }
+                >
+                    <div class="mb-6 sm:mb-8">
+                        <JlptProgressCard
+                            jlpt_progress=Signal::derive(move || jlpt_progress.get())
+                            test_id=Signal::derive(move || {
+                                let val = test_id.get();
+                                if val.is_empty() {
+                                    "home-jlpt-progress".to_string()
+                                } else {
+                                    format!("{}-jlpt-progress", val)
+                                }
+                            })
+                        />
+                    </div>
+                </Show>
+
                 <div class="flex items-center justify-between mb-6">
                     <Text
                         size=TextSize::Small
@@ -161,28 +188,6 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                         {t!(i18n, home.statistics)}
                     </Text>
                 </div>
-
-                <Show
-                    when=move || !is_loading.get()
-                    fallback=move || view! { <JlptSkeleton /> }
-                >
-                    <div class="flex items-stretch gap-4 mb-6 sm:mb-8">
-                        <LessonButtonsCard test_id=Signal::derive(|| "lesson-buttons".to_string()) />
-                        <div class="flex-1">
-                            <JlptProgressCard
-                                jlpt_progress=Signal::derive(move || jlpt_progress.get())
-                                test_id=Signal::derive(move || {
-                                    let val = test_id.get();
-                                    if val.is_empty() {
-                                        "home-jlpt-progress".to_string()
-                                    } else {
-                                        format!("{}-jlpt-progress", val)
-                                    }
-                                })
-                            />
-                        </div>
-                    </div>
-                </Show>
 
                 <Show
                     when=move || !is_loading.get()

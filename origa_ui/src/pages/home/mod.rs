@@ -4,18 +4,18 @@ pub mod history_modal;
 pub mod home_skeleton;
 pub mod home_stats;
 pub mod jlpt_progress_card;
-pub mod lesson_buttons_card;
 pub mod stat_card;
 pub mod stats_grid;
+pub mod welcome_card;
 
 pub use content::HomeContent;
 pub use history_modal::{HistoryModal, StatMetric};
 pub use home_skeleton::{HomeSkeleton, JlptSkeleton};
 pub use home_stats::{PrimaryStats, SecondaryStats, calculate_stats, format_delta, format_number};
 pub use jlpt_progress_card::JlptProgressCard;
-pub use lesson_buttons_card::LessonButtonsCard;
 pub use stat_card::QuickStatCard;
 pub use stats_grid::StatsGrid;
+pub use welcome_card::WelcomeCard;
 
 use crate::i18n::*;
 use crate::store::auth_store::AuthStore;
