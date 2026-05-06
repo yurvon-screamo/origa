@@ -501,13 +501,15 @@ Badge — это "штамп на полях". Без рамки, приглуш
 Визуальная шкала интерактивности (Paper Gradient).
 Чем "тяжелее" элемент визуально, тем он интерактивнее.
 
-| Уровень | Компонент | Рамка | Фон | Текст | Интерактивный |
-|---------|-----------|-------|-----|-------|---------------|
-| 0 | Inline | None | None | `fg-muted` | Нет |
-| 1 | Badge | None | `bg-aged` | `fg-muted` | Нет |
-| 2 | Tag | `border-light` | `bg-paper` | `fg-muted` | Нет |
-| 3 | Chip (tag-clickable) | `border-dark` | `bg-paper` | `fg-black` | Да |
-| 4 | Button | `border-dark` | `bg-paper` | `fg-black` | Да |
+<!-- markdownlint-disable MD013 -->
+| Уровень | Компонент            | Рамка          | Фон       | Текст      | Интерактивный |
+|---------|----------------------|----------------|-----------|------------|---------------|
+| 0       | Inline               | None           | None      | `fg-muted` | Нет           |
+| 1       | Badge                | None           | `bg-aged` | `fg-muted` | Нет           |
+| 2       | Tag                  | `border-light` | `bg-paper`| `fg-muted` | Нет           |
+| 3       | Chip (tag-clickable) | `border-dark`  | `bg-paper`| `fg-black` | Да            |
+| 4       | Button               | `border-dark`  | `bg-paper`| `fg-black` | Да            |
+<!-- markdownlint-enable MD013 -->
 
 Принцип: чёрная рамка (`border-dark`) = можно нажать.
 Светлая рамка или отсутствие рамки = нельзя нажать.
