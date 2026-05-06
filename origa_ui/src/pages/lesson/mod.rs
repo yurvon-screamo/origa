@@ -37,7 +37,7 @@ use leptos::prelude::*;
 pub fn Lesson() -> impl IntoView {
     view! {
         <PageLayout variant=PageLayoutVariant::Full test_id="lesson-page">
-            <CardLayout size=CardLayoutSize::Adaptive test_id="lesson-card" class="px-4 py-8">
+            <CardLayout size=CardLayoutSize::Medium test_id="lesson-card" class="py-8">
                 <LessonContent />
             </CardLayout>
         </PageLayout>

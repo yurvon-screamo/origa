@@ -69,6 +69,16 @@ impl NavRoute {
         ]
     }
 
+    pub const fn sidebar_routes() -> &'static [NavRoute; 5] {
+        &[
+            Self::Home,
+            Self::Words,
+            Self::Grammar,
+            Self::Kanji,
+            Self::Phrases,
+        ]
+    }
+
     pub const fn test_id_suffix(self) -> &'static str {
         match self {
             Self::Home => "tab-home",

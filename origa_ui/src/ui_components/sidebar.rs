@@ -36,16 +36,18 @@ pub fn Sidebar(
             .unwrap_or_default()
     });
 
+    let username_display = Signal::derive(move || {
+        current_user
+            .with(|u| u.as_ref().map(|u| u.username().to_string()))
+            .unwrap_or_default()
+    });
+
     view! {
         <Show when=move || is_visible.get()>
             <aside class="sidebar" data-testid=test_id_val>
-                <div class="sidebar-logo">
-                    <Logo size=LogoSize::Sm test_id=derive_test_id(test_id, "logo") />
-                </div>
-                <div class="border-b border-[var(--border-light)] mx-6"></div>
-                <nav class="sidebar-nav">
+                <nav class="sidebar-nav pt-6">
                     <For
-                        each=NavRoute::all
+                        each=NavRoute::sidebar_routes
                         key=|route| format!("{:?}", route)
                         children=move |route: &NavRoute| {
                             let i18n = use_i18n();
@@ -70,12 +72,18 @@ pub fn Sidebar(
                 </nav>
                 <div class="flex-1"></div>
                 <div class="sidebar-footer">
-                    <A href="/profile" attr:class="anima-avatar-hover">
+                    <A
+                        href="/profile"
+                        attr:class="flex items-center gap-3 px-4 py-3 hover:bg-[var(--bg-aged)] transition-colors rounded-lg"
+                    >
                         <Avatar
                             size=Signal::derive(move || AvatarSize::Small)
                             initials=avatar_initials
                             test_id=derive_test_id(test_id, "avatar")
                         />
+                        <span class="font-mono text-[11px] uppercase tracking-widest text-[var(--fg-black)]">
+                            {username_display}
+                        </span>
                     </A>
                 </div>
             </aside>
