@@ -17,7 +17,6 @@ pub fn FilterTag(
                     TagVariant::Default
                 }
             })
-            class=Signal::derive(|| "cursor-pointer".to_string())
             test_id=test_id
             on_click=on_click
         >

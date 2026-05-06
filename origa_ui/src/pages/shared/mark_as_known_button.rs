@@ -14,7 +14,7 @@ pub fn MarkAsKnownButton(
 
     view! {
         <button
-            class="icon-btn"
+            class="icon-btn anima-press"
             on:click=move |ev: leptos::ev::MouseEvent| {
                 ev.stop_propagation();
                 on_click.run(());

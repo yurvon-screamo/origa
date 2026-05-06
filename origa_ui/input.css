@@ -100,7 +100,9 @@ input[type="submit"],
     background: var(--bg-paper);
     color: var(--fg-black);
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background-color var(--anima-duration-normal) var(--anima-ease-paper),
+                color var(--anima-duration-normal) var(--anima-ease-paper),
+                border-color var(--anima-duration-normal) var(--anima-ease-paper);
     position: relative;
     display: inline-flex;
     align-items: center;
@@ -123,7 +125,7 @@ input[type="submit"],
     inset: 2px;
     border: 1px solid var(--border-dark);
     opacity: 0;
-    transition: opacity 0.2s ease;
+    transition: opacity var(--anima-duration-normal) var(--anima-ease-paper);
     pointer-events: none;
 }
 
@@ -140,10 +142,6 @@ input[type="submit"],
 .btn:hover {
     background: var(--fg-black);
     color: var(--bg-paper);
-}
-
-.btn:active {
-    transform: scale(0.98);
 }
 
 .btn:disabled {
@@ -217,7 +215,7 @@ input[type="submit"],
     background: var(--bg-paper);
     color: var(--fg-black);
     width: 100%;
-    transition: all 0.2s ease;
+    transition: box-shadow var(--anima-duration-normal) var(--anima-ease-paper), background-color var(--anima-duration-normal) var(--anima-ease-paper), color var(--anima-duration-normal) var(--anima-ease-paper);
 }
 
 .input-field:focus {
@@ -259,7 +257,7 @@ input[type="submit"],
 
 .card-selectable {
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background-color var(--anima-duration-normal) var(--anima-ease-paper), border-color var(--anima-duration-normal) var(--anima-ease-paper);
 }
 
 .card-selectable:hover {
@@ -277,8 +275,9 @@ input[type="submit"],
     letter-spacing: 0.2em;
     text-transform: uppercase;
     padding: 6px 12px;
-    border: 1px solid var(--border-dark);
+    border: 1px solid var(--border-light);
     background: var(--bg-paper);
+    color: var(--fg-muted);
     display: inline-block;
 }
 
@@ -305,6 +304,86 @@ input[type="submit"],
     border-color: var(--accent-sage);
 }
 
+/* Clickable Tag — интерактивный фильтр/chip */
+.tag-clickable {
+    border-color: var(--border-dark);
+    color: var(--fg-black);
+    background: var(--bg-paper);
+    cursor: pointer;
+    position: relative;
+    transition: transform var(--anima-duration-fast) var(--anima-ease-paper),
+                background-color var(--anima-duration-normal) var(--anima-ease-paper),
+                color var(--anima-duration-normal) var(--anima-ease-paper),
+                border-color var(--anima-duration-normal) var(--anima-ease-paper);
+}
+
+.tag-clickable::before {
+    content: "";
+    position: absolute;
+    inset: 2px;
+    border: 1px solid var(--border-dark);
+    opacity: 0;
+    transition: opacity var(--anima-duration-normal) var(--anima-ease-paper);
+    pointer-events: none;
+}
+
+.tag-clickable:hover::before { opacity: 1; }
+
+.tag-clickable:hover {
+    background: var(--fg-black);
+    color: var(--bg-paper);
+    transform: translateY(-1px);
+}
+
+.tag-clickable:active {
+    transform: translateY(1px) scale(0.98);
+}
+
+/* Цветные варианты clickable */
+
+.tag-clickable.tag-filled {
+    background: var(--fg-black);
+    color: var(--bg-paper);
+    border-color: var(--fg-black);
+}
+.tag-clickable.tag-filled:hover {
+    background: var(--bg-paper);
+    color: var(--fg-black);
+}
+
+.tag-clickable.tag-olive {
+    background: var(--accent-olive);
+    color: var(--bg-paper);
+    border-color: var(--accent-olive);
+}
+.tag-clickable.tag-olive:hover {
+    background: var(--bg-paper);
+    color: var(--accent-olive);
+}
+.tag-clickable.tag-olive::before { border-color: var(--accent-olive); }
+
+.tag-clickable.tag-terracotta {
+    background: var(--accent-terracotta);
+    color: var(--bg-paper);
+    border-color: var(--accent-terracotta);
+}
+.tag-clickable.tag-terracotta:hover {
+    background: var(--bg-paper);
+    color: var(--accent-terracotta);
+}
+.tag-clickable.tag-terracotta::before { border-color: var(--accent-terracotta); }
+
+.tag-clickable.tag-sage {
+    background: var(--accent-sage);
+    color: var(--bg-paper);
+    border-color: var(--accent-sage);
+}
+.tag-clickable.tag-sage:hover {
+    background: var(--bg-paper);
+    color: var(--accent-sage);
+}
+.tag-clickable.tag-sage::before { border-color: var(--accent-sage); }
+
 .checkbox-container {
     display: flex;
     align-items: center;
@@ -324,7 +403,7 @@ input[type="submit"],
     border: 1px solid var(--border-dark);
     position: relative;
     flex-shrink: 0;
-    transition: all 0.2s ease;
+    transition: background-color var(--anima-duration-normal) var(--anima-ease-paper);
 }
 
 .checkbox-container input:checked+.checkbox-box::after {
@@ -358,7 +437,7 @@ input[type="submit"],
     border-radius: 50%;
     position: relative;
     flex-shrink: 0;
-    transition: all 0.2s ease;
+    transition: background-color var(--anima-duration-normal) var(--anima-ease-paper);
 }
 
 .radio-container input:checked+.radio-box::after {
@@ -391,7 +470,7 @@ input[type="submit"],
     height: 24px;
     border: 1px solid var(--border-dark);
     position: relative;
-    transition: all 0.3s ease;
+    transition: background-color var(--anima-duration-slow) var(--anima-ease-paper), border-color var(--anima-duration-slow) var(--anima-ease-paper);
 }
 
 .toggle-track::after {
@@ -403,7 +482,7 @@ input[type="submit"],
     background: var(--bg-paper);
     top: 3px;
     left: 3px;
-    transition: all 0.3s ease;
+    transition: left var(--anima-duration-slow) var(--anima-ease-paper), background-color var(--anima-duration-slow) var(--anima-ease-paper);
 }
 
 .toggle-container input:checked+.toggle-track {
@@ -432,8 +511,9 @@ input[type="submit"],
     font-size: 10px;
     letter-spacing: 0.05em;
     padding: 2px 8px;
-    border: 1px solid var(--border-dark);
-    background: var(--bg-paper);
+    border: none;
+    background: var(--bg-aged);
+    color: var(--fg-muted);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -615,7 +695,7 @@ input[type="submit"],
     width: 100%;
     text-align: left;
     position: relative;
-    transition: all 0.2s ease;
+    transition: background-color var(--anima-duration-normal) var(--anima-ease-paper), color var(--anima-duration-normal) var(--anima-ease-paper), border-color var(--anima-duration-normal) var(--anima-ease-paper);
 }
 
 .dropdown-trigger::after {
@@ -629,7 +709,7 @@ input[type="submit"],
     border-left: 4px solid transparent;
     border-right: 4px solid transparent;
     border-top: 4px solid var(--fg-black);
-    transition: transform 0.2s ease;
+    transition: transform var(--anima-duration-normal) var(--anima-ease-paper);
 }
 
 .dropdown.active .dropdown-trigger::after {
@@ -646,7 +726,7 @@ input[type="submit"],
     opacity: 0;
     visibility: hidden;
     transform: translateY(-10px);
-    transition: all 0.2s ease;
+    transition: opacity var(--anima-duration-normal) var(--anima-ease-paper), visibility var(--anima-duration-normal) var(--anima-ease-paper), transform var(--anima-duration-normal) var(--anima-ease-paper);
     z-index: 50;
     max-height: 280px;
     overflow-y: auto;
@@ -665,7 +745,7 @@ input[type="submit"],
     text-transform: uppercase;
     padding: 12px 16px;
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: background-color var(--anima-duration-fast) var(--anima-ease-paper), color var(--anima-duration-fast) var(--anima-ease-paper);
     border-bottom: 1px solid var(--border-light);
 }
 
@@ -778,7 +858,7 @@ input[type="submit"],
     font-family: "DM Mono", monospace;
     font-size: 12px;
     background: var(--bg-paper);
-    transition: all 0.3s ease;
+    transition: background-color var(--anima-duration-slow) var(--anima-ease-paper), border-color var(--anima-duration-slow) var(--anima-ease-paper), color var(--anima-duration-slow) var(--anima-ease-paper);
 }
 
 .stepper-step.active .stepper-number {
@@ -830,7 +910,7 @@ input[type="submit"],
     cursor: pointer;
     position: relative;
     color: var(--fg-muted);
-    transition: all 0.2s ease;
+    transition: color var(--anima-duration-normal) var(--anima-ease-paper);
     background: transparent;
     border: none;
 }
@@ -844,7 +924,7 @@ input[type="submit"],
     height: 2px;
     background: var(--fg-black);
     transform: scaleX(0);
-    transition: transform 0.3s ease;
+    transition: transform var(--anima-duration-slow) var(--anima-ease-paper);
 }
 
 .tab:hover {
@@ -879,7 +959,7 @@ input[type="submit"],
     text-align: center;
     opacity: 0;
     visibility: hidden;
-    transition: all 0.2s ease;
+    transition: opacity var(--anima-duration-normal) var(--anima-ease-paper), visibility var(--anima-duration-normal) var(--anima-ease-paper);
     z-index: 50;
 }
 
@@ -920,7 +1000,7 @@ input[type="submit"],
     align-items: center;
     cursor: pointer;
     background: var(--bg-paper);
-    transition: all 0.2s ease;
+    transition: background-color var(--anima-duration-normal) var(--anima-ease-paper);
 }
 
 .accordion-header:hover {
@@ -939,7 +1019,7 @@ input[type="submit"],
     content: "";
     position: absolute;
     background: var(--fg-black);
-    transition: all 0.3s ease;
+    transition: transform var(--anima-duration-slow) var(--anima-ease-paper), opacity var(--anima-duration-slow) var(--anima-ease-paper);
 }
 
 .accordion-icon::before {
@@ -1070,7 +1150,9 @@ input[type="submit"],
     font-family: "DM Mono", monospace;
     font-size: 12px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: transform var(--anima-duration-fast) var(--anima-ease-paper),
+                background-color var(--anima-duration-normal) var(--anima-ease-paper),
+                color var(--anima-duration-normal) var(--anima-ease-paper);
 }
 
 .pagination-btn:hover {
@@ -1101,7 +1183,7 @@ input[type="submit"],
 .breadcrumbs a {
     color: var(--fg-muted);
     text-decoration: none;
-    transition: color 0.2s ease;
+    transition: color var(--anima-duration-normal) var(--anima-ease-paper);
 }
 
 .breadcrumbs a:hover {
@@ -1123,7 +1205,7 @@ input[type="submit"],
     border: 1px solid var(--border-dark);
     background: var(--bg-paper);
     width: 100%;
-    transition: all 0.2s ease;
+    transition: box-shadow var(--anima-duration-normal) var(--anima-ease-paper);
 }
 
 .search-input:focus {
@@ -1201,7 +1283,8 @@ input[type="submit"],
     color: var(--fg-muted);
     opacity: 0.6;
     transition: opacity var(--anima-duration-normal) var(--anima-ease-paper),
-        transform var(--anima-duration-fast) var(--anima-ease-paper);
+        color var(--anima-duration-normal) var(--anima-ease-paper),
+        background-color var(--anima-duration-normal) var(--anima-ease-paper);
     position: relative;
     text-decoration: none;
     min-width: 0;
@@ -1209,10 +1292,6 @@ input[type="submit"],
 
 .bottom-tab-item:hover {
     opacity: 0.8;
-}
-
-.bottom-tab-item:active {
-    transform: scale(0.95);
 }
 
 .bottom-tab-item.active {
@@ -1289,9 +1368,9 @@ input[type="submit"],
     opacity: 0.6;
     cursor: pointer;
     text-decoration: none;
-    transition: color 150ms ease,
-                background-color 150ms ease,
-                opacity 150ms ease;
+    transition: opacity var(--anima-duration-normal) var(--anima-ease-paper),
+                color var(--anima-duration-normal) var(--anima-ease-paper),
+                background-color var(--anima-duration-normal) var(--anima-ease-paper);
 }
 
 .sidebar-item:hover {
@@ -1375,7 +1454,7 @@ input[type="submit"],
 
 .furigana-hidden .furigana-rt {
     opacity: 0;
-    transition: opacity 0.2s ease;
+    transition: opacity var(--anima-duration-normal) var(--anima-ease-paper);
 }
 
 .furigana-hidden:hover .furigana-rt {
@@ -1669,7 +1748,7 @@ input[type="submit"],
 }
 
 .btn-text {
-    transition: opacity 0.2s ease;
+    transition: opacity var(--anima-duration-normal) var(--anima-ease-paper);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1723,7 +1802,7 @@ input[type="submit"],
     cursor: pointer;
     padding: 0;
     color: var(--fg-muted);
-    transition: color 0.2s ease;
+    transition: color var(--anima-duration-normal) var(--anima-ease-paper);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1890,7 +1969,7 @@ input[type="submit"],
     background: var(--bg-paper);
     color: var(--fg-black);
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background-color var(--anima-duration-normal) var(--anima-ease-paper), color var(--anima-duration-normal) var(--anima-ease-paper);
 }
 
 .kanji-drawing-reset-btn:hover {
@@ -1930,9 +2009,10 @@ input[type="submit"],
    ============================================
 
    Использование: добавьте классы вида anima-* к элементам
-   Например: <div class="card anima-card-lift">
+   Например: <div class="card anima-lift">
 
    Категории:
+   - Standard: anima-press, anima-lift, anima-reveal
    - Hover: anima-card-lift, anima-tag-hover, anima-link-typewriter, anima-btn-press
    - Entrance: anima-modal-enter, anima-backdrop-enter, anima-toast-bounce
    - Exit: anima-modal-exit, anima-backdrop-exit, anima-toast-exit
@@ -1946,8 +2026,41 @@ input[type="submit"],
    ============================================
 */
 
+/* === STANDARD ANIMATION SYSTEM === */
+
+/* Press — для кнопок/действий ("нажатие клавиши пишущей машинки") */
+.anima-press {
+    transition: transform var(--anima-duration-fast) var(--anima-ease-paper);
+}
+
+.anima-press:active {
+    transform: translateY(1px) scale(0.98);
+}
+
+/* Lift — для карточек/объектов ("поднятие листа бумаги") */
+.anima-lift {
+    transition: transform var(--anima-duration-normal) var(--anima-ease-paper),
+                box-shadow var(--anima-duration-normal) var(--anima-ease-paper);
+}
+
+.anima-lift:hover {
+    transform: translateY(-2px);
+}
+
+.anima-lift:active {
+    transform: translateY(0);
+}
+
+/* Reveal — для навигации ("маркер на тексте", без движения) */
+.anima-reveal {
+    transition: opacity var(--anima-duration-normal) var(--anima-ease-paper),
+                color var(--anima-duration-normal) var(--anima-ease-paper),
+                background-color var(--anima-duration-normal) var(--anima-ease-paper);
+}
+
 /* === 1. HOVER АНИМАЦИИ === */
 
+/* Deprecated: use anima-lift */
 /* Карточка приподнимается при hover */
 .anima-card-lift {
     transition: transform var(--anima-duration-normal) var(--anima-ease-paper),
@@ -1963,6 +2076,7 @@ input[type="submit"],
     transition: transform var(--anima-duration-normal) var(--anima-ease-paper);
 }
 
+/* Deprecated: use tag-clickable */
 /* Тег - наклон при hover */
 .anima-tag-hover {
     transition: transform var(--anima-duration-fast) var(--anima-ease-paper);
@@ -1995,10 +2109,11 @@ input[type="submit"],
     transform: scaleX(1);
 }
 
+/* Deprecated: use anima-press */
 /* Кнопка - нажатие */
 .anima-btn-press:active {
     transform: translateY(1px);
-    transition: transform var(--anima-duration-fast) ease;
+    transition: transform var(--anima-duration-fast) var(--anima-ease-paper);
 }
 
 /* Аватар - масштабирование при hover */
@@ -2118,7 +2233,7 @@ input[type="submit"],
 .anima-focus-ring:focus-visible {
     outline: 2px solid var(--accent-terracotta);
     outline-offset: 2px;
-    transition: outline-offset var(--anima-duration-fast) ease;
+    transition: outline-offset var(--anima-duration-fast) var(--anima-ease-paper);
 }
 
 /* === 5. МИКРОВЗАИМОДЕЙСТВИЯ === */
@@ -2183,7 +2298,7 @@ input[type="submit"],
     background: currentColor;
     transform: scaleX(0);
     transform-origin: left;
-    transition: transform var(--anima-duration-normal) ease;
+    transition: transform var(--anima-duration-normal) var(--anima-ease-paper);
 }
 
 .anima-strikethrough.active::after {
@@ -2468,46 +2583,9 @@ input[type="submit"],
     }
 }
 
-/* === SEARCHABLE DROPDOWN === */
-
-.dropdown-menu {
+/* Searchable dropdown overrides */
+.searchable .dropdown-menu {
     max-height: 280px;
-    overflow-y: auto;
-}
-
-.dropdown-search {
-    padding: 8px 12px;
-    border-bottom: 1px solid var(--border-light);
-    position: sticky;
-    top: 0;
-    background: var(--bg-paper);
-    z-index: 1;
-}
-
-.dropdown-search input {
-    width: 100%;
-    padding: 8px 12px;
-    border: 1px solid var(--border-dark);
-    background: var(--bg-paper);
-    font-family: "DM Mono", monospace;
-    font-size: 11px;
-    letter-spacing: 0.05em;
-}
-
-.dropdown-search input:focus {
-    outline: none;
-    box-shadow: 2px 2px 0 var(--border-dark);
-}
-
-.dropdown-search input::placeholder {
-    color: var(--fg-muted);
-    text-transform: uppercase;
-    font-size: 9px;
-    letter-spacing: 0.1em;
-}
-
-.dropdown-items {
-    max-height: 220px;
     overflow-y: auto;
 }
 
@@ -2579,7 +2657,7 @@ input[type="submit"],
 
 .modal-close-btn {
     color: var(--fg-muted);
-    transition: color 0.2s ease;
+    transition: color var(--anima-duration-normal) var(--anima-ease-paper);
 }
 
 .modal-close-btn:hover {
@@ -2938,7 +3016,7 @@ input[type="submit"],
 
 .audio-btn {
     color: var(--fg-muted);
-    transition: color 0.2s ease;
+    transition: color var(--anima-duration-normal) var(--anima-ease-paper);
 }
 
 .audio-btn:hover {
@@ -3002,7 +3080,7 @@ input[type="submit"],
 /* Delete button */
 .delete-button {
     cursor: pointer;
-    transition: opacity 0.2s ease;
+    transition: opacity var(--anima-duration-normal) var(--anima-ease-paper);
 }
 
 .delete-button:hover {
@@ -3017,7 +3095,7 @@ input[type="submit"],
 /* Favorite button */
 .favorite-button {
     cursor: pointer;
-    transition: opacity 0.2s ease;
+    transition: opacity var(--anima-duration-normal) var(--anima-ease-paper);
 }
 
 .favorite-button:hover {
@@ -3032,7 +3110,7 @@ input[type="submit"],
 /* History button */
 .history-button {
     cursor: pointer;
-    transition: opacity 0.2s ease;
+    transition: opacity var(--anima-duration-normal) var(--anima-ease-paper);
 }
 
 .history-button:hover {
@@ -3249,14 +3327,6 @@ input[type="submit"],
 
 .font-semibold {
     font-weight: 600;
-}
-
-.font-serif {
-    font-family: "Cormorant Garamond", serif;
-}
-
-.font-mono {
-    font-family: "DM Mono", monospace;
 }
 
 /* Layout extras */
@@ -3579,10 +3649,6 @@ input[type="submit"],
     display: block;
 }
 
-.cursor-pointer {
-    cursor: pointer;
-}
-
 .transition {
     transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
@@ -3720,13 +3786,6 @@ input[type="submit"],
     }
 }
 
-/* Spinner animation */
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
 .animate-spin {
     animation: spin 1s linear infinite;
 }
@@ -3783,16 +3842,14 @@ input[type="submit"],
     background: transparent;
     color: var(--fg-black);
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background-color var(--anima-duration-normal) var(--anima-ease-paper),
+                border-color var(--anima-duration-normal) var(--anima-ease-paper),
+                color var(--anima-duration-normal) var(--anima-ease-paper);
 }
 
 .icon-btn:hover {
     background: var(--bg-aged);
     border-color: var(--border-dark);
-}
-
-.icon-btn:active {
-    transform: scale(0.95);
 }
 
 .icon-btn-danger:hover {
