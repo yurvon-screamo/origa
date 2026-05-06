@@ -5,6 +5,7 @@ pub fn Card(
     #[prop(optional, into)] test_id: Signal<String>,
     #[prop(optional, into)] class: Signal<String>,
     #[prop(optional, into)] shadow: Signal<bool>,
+    #[prop(optional, into)] borderless: Signal<bool>,
     children: Children,
 ) -> impl IntoView {
     let test_id_val = move || {
@@ -14,7 +15,7 @@ pub fn Card(
 
     view! {
         <div class=move || {
-            let base_class = "card";
+            let base_class = if borderless.get() { "card border-none" } else { "card" };
             let shadow_class = "card-shadow";
             let user_class = class.get();
             let is_interactive = user_class.contains("cursor-pointer") || user_class.contains("interactive");

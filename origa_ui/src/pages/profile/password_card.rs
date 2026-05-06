@@ -68,7 +68,7 @@ pub fn PasswordCard(#[prop(optional, into)] test_id: Signal<String>) -> impl Int
     });
 
     view! {
-        <Card test_id=test_id>
+        <Card test_id=test_id borderless=Signal::from(true)>
             <div>
                 <div
                     class="flex items-center justify-between cursor-pointer select-none"
