@@ -1,5 +1,32 @@
+use std::cell::RefCell;
+
 use leptos::prelude::*;
 use leptos_icons::Icon;
+
+thread_local! {
+    static STOP_CALLBACK: RefCell<Option<Box<dyn Fn()>>> = const { RefCell::new(None) };
+}
+
+fn stop_other_audio() {
+    STOP_CALLBACK.with(|cell| {
+        if let Some(stop) = cell.borrow().as_ref() {
+            stop();
+        }
+    });
+}
+
+fn register_as_active(stop_fn: Box<dyn Fn()>) {
+    STOP_CALLBACK.with(|cell| {
+        *cell.borrow_mut() = Some(stop_fn);
+    });
+}
+
+#[derive(Clone, Copy, PartialEq)]
+enum PlaybackState {
+    Idle,
+    Loading,
+    Playing,
+}
 
 #[component]
 pub fn AudioPlayer(
@@ -8,7 +35,11 @@ pub fn AudioPlayer(
     #[prop(optional, into)] test_id: Signal<String>,
 ) -> impl IntoView {
     let audio_ref = NodeRef::<leptos::html::Audio>::new();
-    let is_playing = RwSignal::new(false);
+    let state = RwSignal::new(if autoplay {
+        PlaybackState::Loading
+    } else {
+        PlaybackState::Idle
+    });
 
     let test_id_val = move || {
         let val = test_id.get();
@@ -18,26 +49,66 @@ pub fn AudioPlayer(
     Effect::new(move |_| {
         if autoplay {
             if let Some(audio) = audio_ref.get() {
+                register_as_active(Box::new({
+                    let state = state;
+                    let audio_ref = audio_ref;
+                    move || {
+                        if let Some(a) = audio_ref.get() {
+                            let _ = a.pause();
+                        }
+                        state.set(PlaybackState::Idle);
+                    }
+                }));
                 let _ = audio.play();
-                is_playing.set(true);
+                state.set(PlaybackState::Loading);
             }
         }
     });
 
     let toggle_play = move |_| {
         if let Some(audio) = audio_ref.get() {
-            if is_playing.get() {
-                let _ = audio.pause();
-                is_playing.set(false);
-            } else {
-                let _ = audio.play();
-                is_playing.set(true);
+            match state.get() {
+                PlaybackState::Playing => {
+                    let _ = audio.pause();
+                    state.set(PlaybackState::Idle);
+                },
+                _ => {
+                    stop_other_audio();
+                    register_as_active(Box::new({
+                        let state = state;
+                        let audio_ref = audio_ref;
+                        move || {
+                            if let Some(a) = audio_ref.get() {
+                                let _ = a.pause();
+                            }
+                            state.set(PlaybackState::Idle);
+                        }
+                    }));
+                    state.set(PlaybackState::Loading);
+                    let _ = audio.play();
+                },
             }
         }
     };
 
+    let on_playing = move |_| {
+        state.set(PlaybackState::Playing);
+    };
+
+    let on_waiting = move |_| {
+        state.set(PlaybackState::Loading);
+    };
+
+    let on_pause = move |_| {
+        state.set(PlaybackState::Idle);
+    };
+
     let on_ended = move |_| {
-        is_playing.set(false);
+        state.set(PlaybackState::Idle);
+    };
+
+    let on_error = move |_| {
+        state.set(PlaybackState::Idle);
     };
 
     view! {
@@ -46,17 +117,32 @@ pub fn AudioPlayer(
                 node_ref=audio_ref
                 src=src.clone()
                 preload="none"
+                on:playing=on_playing
+                on:waiting=on_waiting
+                on:pause=on_pause
                 on:ended=on_ended
+                on:error=on_error
             />
             <button
                 class="audio-player-btn p-3 sm:p-4 rounded-full border transition-all cursor-pointer hover:bg-[var(--bg-hover)]"
                 on:click=toggle_play
             >
-                <Show when=move || is_playing.get() fallback=|| view! {
-                    <Icon icon=icondata::LuPlay width="1.5em" height="1.5em" />
-                }>
-                    <Icon icon=icondata::LuPause width="1.5em" height="1.5em" />
-                </Show>
+                {move || match state.get() {
+                    PlaybackState::Idle => view! {
+                        <Icon icon=icondata::LuPlay width="1.5em" height="1.5em" />
+                    }
+                    .into_any(),
+                    PlaybackState::Loading => view! {
+                        <span class="animate-spin inline-flex">
+                            <Icon icon=icondata::LuLoader width="1.5em" height="1.5em" />
+                        </span>
+                    }
+                    .into_any(),
+                    PlaybackState::Playing => view! {
+                        <Icon icon=icondata::LuPause width="1.5em" height="1.5em" />
+                    }
+                    .into_any(),
+                }}
             </button>
         </div>
     }
