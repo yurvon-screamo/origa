@@ -18,7 +18,7 @@ pub fn Card(
             let shadow_class = "card-shadow";
             let user_class = class.get();
             let is_interactive = user_class.contains("cursor-pointer") || user_class.contains("interactive");
-            let anima_class = if is_interactive { "anima-card-lift" } else { "" };
+            let anima_class = if is_interactive { "anima-lift" } else { "" };
 
             if shadow.get() {
                 format!("{} {} {} {}", base_class, shadow_class, anima_class, user_class)

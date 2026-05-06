@@ -19,7 +19,7 @@ pub fn PhrasesHeader() -> impl IntoView {
                 })
                 test_id=Signal::derive(|| "phrases-info-tooltip".to_string())
             >
-                <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-[var(--bg-aged)] text-[var(--fg-muted)] text-xs cursor-help" data-testid="phrases-info-icon">
+                <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-[var(--bg-aged)] text-[var(--fg-muted)] text-xs" data-testid="phrases-info-icon">
                     "i"
                 </span>
             </Tooltip>

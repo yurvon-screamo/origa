@@ -27,8 +27,19 @@ pub fn Tag(
     };
 
     let is_clickable = on_click.is_some();
-    let anima_class = if is_clickable { "anima-tag-hover" } else { "" };
-    let full_class = move || format!("tag {} {} {}", variant_class(), anima_class, class.get());
+    let interactive_class = if is_clickable {
+        "tag-clickable anima-focus-ring"
+    } else {
+        ""
+    };
+    let full_class = move || {
+        format!(
+            "tag {} {} {}",
+            variant_class(),
+            interactive_class,
+            class.get()
+        )
+    };
 
     let test_id_val = move || {
         let val = test_id.get();

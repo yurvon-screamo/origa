@@ -427,6 +427,11 @@ Placeholder всегда uppercase с letter-spacing — это фирменны
 
 ### Tag
 
+Категориальная метка. Бывает интерактивной (фильтр/переключатель)
+и неинтерактивной (статус/категория).
+
+**Non-interactive Tag** (без `on_click`):
+
 ```css
 .tag {
   font-family: "DM Mono", monospace;
@@ -434,12 +439,78 @@ Placeholder всегда uppercase с letter-spacing — это фирменны
   letter-spacing: 0.2em;
   text-transform: uppercase;
   padding: 6px 12px;
-  border: 1px solid var(--border-dark);
+  border: 1px solid var(--border-light);
   background: var(--bg-paper);
+  color: var(--fg-muted);
 }
 ```
 
+Светлая рамка и тусклый текст — визуально "лёгкий" элемент.
+Не имеет hover-эффектов. Рендерится как `<span>`.
+
+**Clickable Tag** (с `on_click`, класс `tag-clickable`):
+
+```css
+.tag-clickable {
+  border-color: var(--border-dark);
+  color: var(--fg-black);
+  cursor: pointer;
+}
+.tag-clickable:hover {
+  background: var(--fg-black);
+  color: var(--bg-paper);
+  transform: translateY(-1px);
+}
+.tag-clickable:active {
+  transform: translateY(1px) scale(0.98);
+}
+```
+
+Чёрная рамка, color flip hover, press-эффект на active.
+Рендерится как `<button>`. Имеет `::before` inner border на hover
+и `anima-focus-ring` для keyboard navigation.
+
 Варианты: `tag-filled`, `tag-olive`, `tag-terracotta`, `tag-sage`.
+Все варианты инвертируются на hover (color flip).
+
+### Badge
+
+Неинтерактивный статус-индикатор. Никогда не кликабельный.
+
+```css
+.badge {
+  font-family: "DM Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  padding: 2px 8px;
+  border: none;
+  background: var(--bg-aged);
+  color: var(--fg-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+}
+```
+
+Badge — это "штамп на полях". Без рамки, приглушённые цвета.
+Никогда не имеет `cursor: pointer` или hover-эффектов.
+
+### Interaction Hierarchy
+
+Визуальная шкала интерактивности (Paper Gradient).
+Чем "тяжелее" элемент визуально, тем он интерактивнее.
+
+| Уровень | Компонент | Рамка | Фон | Текст | Интерактивный |
+|---------|-----------|-------|-----|-------|---------------|
+| 0 | Inline | None | None | `fg-muted` | Нет |
+| 1 | Badge | None | `bg-aged` | `fg-muted` | Нет |
+| 2 | Tag | `border-light` | `bg-paper` | `fg-muted` | Нет |
+| 3 | Chip (tag-clickable) | `border-dark` | `bg-paper` | `fg-black` | Да |
+| 4 | Button | `border-dark` | `bg-paper` | `fg-black` | Да |
+
+Принцип: чёрная рамка (`border-dark`) = можно нажать.
+Светлая рамка или отсутствие рамки = нельзя нажать.
 
 ### Furigana
 
@@ -469,8 +540,11 @@ Furigana (ромуадзи/кана) — DM Mono в 50% размера.
 
 ### Категории
 
-- **Hover**: `anima-card-lift`, `anima-tag-hover`,
-  `anima-link-typewriter`, `anima-btn-press`,
+- **Standard**: `anima-press` (кнопки), `anima-lift` (карточки),
+  `anima-reveal` (навигация) — унифицированные hover/active эффекты
+- **Hover**: `anima-card-lift` (deprecated→anima-lift),
+  `anima-tag-hover` (deprecated→tag-clickable),
+  `anima-link-typewriter`, `anima-btn-press` (deprecated→anima-press),
   `anima-avatar-hover` — Микро-интеракции при наведении
 - **Entrance**: `anima-modal-enter`,
   `anima-backdrop-enter`, `anima-toast-bounce`,
@@ -499,6 +573,25 @@ Furigana (ромуадзи/кана) — DM Mono в 50% размера.
 - `anima-ease-out-back`:
   `cubic-bezier(0.34, 1.56, 0.64, 1)` —
   Bounce эффекты (toast)
+
+### Standard Animation Classes
+
+Три уровня анимаций для разных семантических ролей:
+
+- **anima-press** — кнопки и действия.
+  Физическая метафора: клавиша пишущей машинки.
+  Active: `translateY(1px) scale(0.98)`.
+  Применяется к: Button, IconBtn, Pagination.
+
+- **anima-lift** — карточки и объекты.
+  Физическая метафора: лист бумаги приподнимается.
+  Hover: `translateY(-2px)`. Active: `translateY(0)`.
+  Применяется к: Card (interactive).
+
+- **anima-reveal** — навигация и ссылки.
+  Физическая метафора: маркер выделяет пункт.
+  Только opacity/color/bg transition, без transform.
+  Применяется к: Sidebar, BottomTab, Breadcrumbs.
 
 ### Accessibility
 

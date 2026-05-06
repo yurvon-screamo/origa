@@ -13,7 +13,7 @@ pub fn FavoriteButton(
 
     view! {
         <button
-            class="icon-btn favorite-button"
+            class="icon-btn anima-press favorite-button"
             on:click=move |ev: leptos::ev::MouseEvent| {
                 ev.stop_propagation();
                 on_click.run(());

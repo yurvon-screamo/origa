@@ -56,7 +56,7 @@ pub fn Button(
                 };
                 let loading_class = if loading.get() { "btn-loading" } else { "" };
                 let focus_ring = "anima-focus-ring";
-                let btn_press = "anima-btn-press";
+                let btn_press = "anima-press";
                 format!("btn {} {} {} {} {} {}", v, s, class.get(), loading_class, focus_ring, btn_press)
             }
             disabled=move || disabled.get() || loading.get()
