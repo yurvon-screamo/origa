@@ -139,7 +139,6 @@ pub fn PhrasesContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
     Effect::new(move |_| {
         let _ = search.get();
         let _ = filter.get();
-        let _ = all_cards.get();
         visible_count.set(50);
     });
 

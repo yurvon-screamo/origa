@@ -1,6 +1,5 @@
 mod action_buttons;
 mod content;
-mod header;
 mod labeled_input;
 mod language_selector;
 mod password_card;
@@ -9,7 +8,6 @@ mod settings_card;
 
 pub use action_buttons::ActionButtons;
 pub use content::ProfileContent;
-pub use header::ProfileHeader;
 pub use labeled_input::LabeledInput;
 pub use language_selector::LanguageSelector;
 pub use password_card::PasswordCard;
@@ -49,7 +47,6 @@ pub fn Profile() -> impl IntoView {
     view! {
         <PageLayout variant=PageLayoutVariant::Full test_id="profile-page">
             <CardLayout size=CardLayoutSize::Adaptive test_id="profile-card">
-                <ProfileHeader username=Signal::derive(move || username.get()) />
                 <ProfileContent />
             </CardLayout>
         </PageLayout>

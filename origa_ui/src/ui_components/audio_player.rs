@@ -9,7 +9,6 @@ pub fn AudioPlayer(
 ) -> impl IntoView {
     let audio_ref = NodeRef::<leptos::html::Audio>::new();
     let is_playing = RwSignal::new(false);
-    let has_loaded = RwSignal::new(false);
 
     let test_id_val = move || {
         let val = test_id.get();
@@ -21,7 +20,6 @@ pub fn AudioPlayer(
             if let Some(audio) = audio_ref.get() {
                 let _ = audio.play();
                 is_playing.set(true);
-                has_loaded.set(true);
             }
         }
     });
@@ -32,7 +30,6 @@ pub fn AudioPlayer(
                 let _ = audio.pause();
                 is_playing.set(false);
             } else {
-                has_loaded.set(true);
                 let _ = audio.play();
                 is_playing.set(true);
             }
@@ -47,8 +44,8 @@ pub fn AudioPlayer(
         <div class="audio-player flex items-center justify-center" data-testid=test_id_val>
             <audio
                 node_ref=audio_ref
-                src=move || if has_loaded.get() || autoplay { src.clone() } else { String::new() }
-                preload=move || if autoplay { "auto" } else { "none" }
+                src=src.clone()
+                preload="none"
                 on:ended=on_ended
             />
             <button
