@@ -8,7 +8,6 @@ pub enum NavRoute {
     Profile,
 }
 
-#[expect(dead_code, reason = "заготовка для будущей навигации")]
 impl NavRoute {
     pub const fn href(self) -> &'static str {
         match self {
@@ -72,12 +71,12 @@ impl NavRoute {
 
     pub const fn test_id_suffix(self) -> &'static str {
         match self {
-            Self::Home => "home",
-            Self::Words => "words",
-            Self::Grammar => "grammar",
-            Self::Kanji => "kanji",
-            Self::Phrases => "phrases",
-            Self::Profile => "profile",
+            Self::Home => "tab-home",
+            Self::Words => "tab-words",
+            Self::Grammar => "tab-grammar",
+            Self::Kanji => "tab-kanji",
+            Self::Phrases => "tab-phrases",
+            Self::Profile => "tab-profile",
         }
     }
 }

@@ -22,13 +22,13 @@ pub fn ActionButtons(
 
     view! {
         <div class="space-y-4" data-testid=test_id_val>
-            <div class="flex flex-wrap gap-4 md:static sticky bottom-[80px] bg-[var(--bg-cream)] py-3 -mx-3 px-3 md:bg-transparent md:py-0 md:-mx-0 md:px-0 z-10">
+            <div class="flex gap-4">
                 <Button
                     variant={ButtonVariant::Filled}
                     on_click={on_save}
                     disabled=is_saving
                     test_id="profile-save-btn"
-                    class="w-full md:w-auto"
+                    class="flex-1 md:flex-none"
                 >
                     {move || if is_saving.get() { t!(i18n, common.saving).into_any() } else { t!(i18n, profile.save_changes).into_any() }}
                 </Button>
@@ -38,12 +38,13 @@ pub fn ActionButtons(
                     on_click={on_logout}
                     disabled=is_logging_out
                     test_id="profile-logout-btn"
+                    class="flex-1 md:flex-none"
                 >
                     {move || if is_logging_out.get() { t!(i18n, profile.logging_out).into_any() } else { t!(i18n, profile.logout).into_any() }}
                 </Button>
             </div>
 
-            <div class="pt-4 border-t border-[var(--border-light)]">
+            <div class="border-t border-[var(--border-light)] pt-4">
                 <Text size={TextSize::Small} variant={TypographyVariant::Muted} class="block mb-3">
                     {t!(i18n, profile.danger_zone)}
                 </Text>

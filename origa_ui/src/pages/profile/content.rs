@@ -131,9 +131,6 @@ pub fn ProfileContent() -> impl IntoView {
                     test_id="profile-personal-data"
                 />
                 <SettingsCard test_id="profile-settings" />
-            </div>
-            <div class="space-y-6">
-                <PasswordCard test_id="profile-password" />
                 <ActionButtons
                     on_save={save_profile}
                     on_logout={logout}
@@ -143,6 +140,9 @@ pub fn ProfileContent() -> impl IntoView {
                     is_logging_out={Signal::derive(move || is_logging_out.get())}
                     test_id="profile-actions"
                 />
+            </div>
+            <div class="space-y-6">
+                <PasswordCard test_id="profile-password" />
             </div>
         </div>
     }
