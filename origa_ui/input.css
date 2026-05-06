@@ -243,6 +243,10 @@ input[type="submit"],
     position: relative;
 }
 
+.border-none {
+    border: none;
+}
+
 .card-shadow::after {
     content: "";
     position: absolute;
@@ -1416,6 +1420,13 @@ input[type="submit"],
 .main-with-sidebar {
     margin-left: 192px;
     min-height: 100vh;
+}
+
+@media (min-width: 1024px) {
+    .lesson-no-sidebar {
+        margin-left: -192px;
+        width: calc(100% + 192px);
+    }
 }
 
 @media (max-width: 1023px) {

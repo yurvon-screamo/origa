@@ -30,16 +30,15 @@ mod yesno_card_view;
 
 pub use content::LessonContent;
 
-use crate::ui_components::{CardLayout, CardLayoutSize, PageLayout, PageLayoutVariant};
 use leptos::prelude::*;
 
 #[component]
 pub fn Lesson() -> impl IntoView {
     view! {
-        <PageLayout variant=PageLayoutVariant::Full test_id="lesson-page">
-            <CardLayout size=CardLayoutSize::Medium test_id="lesson-card" class="py-8">
+        <div class="lesson-no-sidebar min-h-screen py-8" data-testid="lesson-page">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8" data-testid="lesson-card">
                 <LessonContent />
-            </CardLayout>
-        </PageLayout>
+            </div>
+        </div>
     }
 }

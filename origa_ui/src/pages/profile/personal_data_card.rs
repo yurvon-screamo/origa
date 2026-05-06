@@ -20,7 +20,7 @@ pub fn PersonalDataCard(
     });
 
     view! {
-        <Card test_id=test_id>
+        <Card test_id=test_id borderless=Signal::from(true)>
             <div class="space-y-6">
                 <Heading level={HeadingLevel::H2}>
                     {t!(i18n, profile.personal_data)}

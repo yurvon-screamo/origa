@@ -32,13 +32,11 @@ pub fn Sidebar(
 
     let avatar_initials = Signal::derive(move || {
         current_user
-            .with(|u| u.as_ref().map(|u| u.username().to_uppercase()))
-            .unwrap_or_default()
-    });
-
-    let username_display = Signal::derive(move || {
-        current_user
-            .with(|u| u.as_ref().map(|u| u.username().to_string()))
+            .with(|u| {
+                u.as_ref()
+                    .and_then(|u| u.username().chars().next())
+                    .map(|c| c.to_uppercase().to_string())
+            })
             .unwrap_or_default()
     });
 
@@ -81,9 +79,6 @@ pub fn Sidebar(
                             initials=avatar_initials
                             test_id=derive_test_id(test_id, "avatar")
                         />
-                        <span class="font-mono text-[11px] uppercase tracking-widest text-[var(--fg-black)]">
-                            {username_display}
-                        </span>
                     </A>
                 </div>
             </aside>

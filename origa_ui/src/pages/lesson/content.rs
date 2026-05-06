@@ -4,11 +4,13 @@ use super::lesson_card_container::LessonCardContainer;
 use super::lesson_progress_view::LessonProgressView;
 use super::lesson_state::{LessonContext, LessonState};
 use crate::i18n::*;
+use crate::loaders::phrase_data_loader::load_phrase_details_batch;
 use crate::repository::HybridUserRepository;
 use crate::store::auth_store::AuthStore;
 use crate::ui_components::{Spinner, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
+use origa::domain::Card;
 use origa::traits::UserRepository;
 use origa::use_cases::SelectCardsToLessonUseCase;
 use std::collections::HashSet;
@@ -96,6 +98,29 @@ pub fn LessonContent() -> impl IntoView {
 
             match cards {
                 Ok(cards) => {
+                    let phrase_ids: Vec<Ulid> = cards
+                        .values()
+                        .filter_map(|lc| {
+                            if let Card::Phrase(pc) = lc.view().card() {
+                                Some(*pc.phrase_id())
+                            } else {
+                                None
+                            }
+                        })
+                        .collect();
+
+                    if !phrase_ids.is_empty() {
+                        let results = load_phrase_details_batch(&phrase_ids).await;
+                        let failed = results.iter().filter(|r| r.is_err()).count();
+                        if failed > 0 {
+                            tracing::warn!(
+                                failed,
+                                total = phrase_ids.len(),
+                                "Some phrase chunks failed to load for lesson"
+                            );
+                        }
+                    }
+
                     let card_ids: Vec<Ulid> = cards.keys().cloned().collect();
                     if cards.is_empty() {
                         error_message.set(Some(
