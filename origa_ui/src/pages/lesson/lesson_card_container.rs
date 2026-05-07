@@ -13,7 +13,6 @@ use super::rating_buttons_view::RatingButtonsView;
 use super::writing_card::WritingCard;
 use super::yesno_card_view::YesNoCardView;
 use crate::pages::lesson::card_type::CardType;
-use crate::ui_components::AudioPlayer;
 use leptos::prelude::*;
 use origa::domain::{Card, GrammarInfo, LessonCard, LessonCardView, NativeLanguage, Rating};
 use std::collections::HashSet;
@@ -353,13 +352,13 @@ fn render_lesson_card(
     let is_phrase = matches!(params.card, Card::Phrase(_));
 
     if is_phrase {
-        let phrase_audio_src = StoredValue::new(match &params.card {
+        let phrase_audio_src = match &params.card {
             Card::Phrase(pc) => Some(crate::core::config::cdn_url(&format!(
                 "/phrases/audio/{}.opus",
                 pc.phrase_id()
             ))),
             _ => None,
-        });
+        };
 
         view! {
             <LessonCardComponent
@@ -370,20 +369,8 @@ fn render_lesson_card(
                 grammar_info=params.grammar_info
                 native_language=native_language.get()
                 known_kanji=Signal::from(known_kanji)
+                audio_src=phrase_audio_src
             />
-
-            <Show when=move || !show_answer>
-                {move || match phrase_audio_src.get_value() {
-                    Some(src) => view! {
-                        <AudioPlayer
-                            src=src
-                            autoplay=true
-                            test_id=Signal::derive(|| "phrase-normal-audio".to_string())
-                        />
-                    }.into_any(),
-                    None => ().into_any(),
-                }}
-            </Show>
 
             <Show when=move || show_answer>
                 <PhraseRatingButtons
@@ -404,6 +391,7 @@ fn render_lesson_card(
                 grammar_info=params.grammar_info
                 native_language=native_language.get()
                 known_kanji=Signal::from(known_kanji)
+                audio_src=None
             />
 
             <Show when=move || show_answer>

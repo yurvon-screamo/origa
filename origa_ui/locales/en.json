@@ -444,9 +444,6 @@
         "not_found": "No phrases found",
         "hint": "Phrase cards are auto-created when you learn all words in a phrase"
     },
-    "translator": {
-        "hint_text": "Click or tap any word to see meaning and reading"
-    },
     "ui": {
         "card_history": "Card history",
         "card_not_studied": "Card hasn't been studied yet",

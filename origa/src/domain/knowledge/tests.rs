@@ -1021,3 +1021,59 @@ fn high_difficulty_cards_respect_max_lesson_size() {
         result.len()
     );
 }
+
+#[test]
+fn phrases_added_after_core_cards() {
+    let mut knowledge_set = KnowledgeSet::new();
+
+    // 20 due core cards (high-difficulty via Again + ShortTerm)
+    for i in 0..20 {
+        let study_card = knowledge_set
+            .create_card(create_vocab_card(&format!("core{i}")))
+            .unwrap();
+        knowledge_set
+            .rate_card(*study_card.card_id(), Rating::Again, RateMode::ShortTerm)
+            .unwrap();
+    }
+
+    // 10 due phrase cards
+    for _ in 0..10 {
+        let phrase_id = Ulid::new();
+        let study_card = knowledge_set
+            .create_card(Card::Phrase(PhraseCard::new_test_with_id(phrase_id)))
+            .unwrap();
+        knowledge_set
+            .rate_card(*study_card.card_id(), Rating::Again, RateMode::ShortTerm)
+            .unwrap();
+    }
+
+    let result = knowledge_set.cards_to_lesson(100, &JlptContent::new());
+
+    let core_count = result
+        .keys()
+        .filter(|id| {
+            !matches!(
+                knowledge_set.get_card(**id).unwrap().card(),
+                Card::Phrase(_)
+            )
+        })
+        .count();
+    let phrase_count = result
+        .keys()
+        .filter(|id| {
+            matches!(
+                knowledge_set.get_card(**id).unwrap().card(),
+                Card::Phrase(_)
+            )
+        })
+        .count();
+
+    assert_eq!(
+        core_count, 20,
+        "All 20 due core cards should be in lesson, got {core_count}"
+    );
+    assert_eq!(
+        phrase_count, 10,
+        "All 10 due phrase cards should be added beyond core, got {phrase_count}"
+    );
+}
