@@ -1,5 +1,4 @@
 use std::collections::HashSet;
-use std::sync::Arc;
 
 use crate::i18n::{t, use_i18n};
 use crate::pages::lesson::LessonContext;
@@ -11,6 +10,7 @@ use leptos_use::use_event_listener;
 use origa::domain::{TokenTranslation, lookup_tokens_translations, tokenize_text};
 
 const HINT_SEEN_KEY: &str = "origa_translator_hint_seen";
+const HINT_TTL_MS: u64 = 30 * 24 * 60 * 60 * 1000;
 
 fn has_kanji(text: &str) -> bool {
     text.chars().any(|c| {
@@ -22,12 +22,22 @@ fn has_kanji(text: &str) -> bool {
 }
 
 fn get_hint_seen() -> bool {
-    web_sys::window()
+    let Some(value) = web_sys::window()
         .and_then(|w| w.local_storage().ok())
         .flatten()
         .and_then(|ls| ls.get_item(HINT_SEEN_KEY).ok())
         .flatten()
-        .is_some()
+    else {
+        return false;
+    };
+    if value == "true" {
+        return true;
+    }
+    let Ok(timestamp) = value.parse::<u64>() else {
+        return false;
+    };
+    let now = js_sys::Date::now() as u64;
+    now.saturating_sub(timestamp) < HINT_TTL_MS
 }
 
 fn set_hint_seen() {
@@ -35,7 +45,8 @@ fn set_hint_seen() {
         .and_then(|w| w.local_storage().ok())
         .flatten()
     {
-        let _ = ls.set_item(HINT_SEEN_KEY, "true");
+        let now = js_sys::Date::now() as u64;
+        let _ = ls.set_item(HINT_SEEN_KEY, &now.to_string());
     }
 }
 
@@ -80,7 +91,7 @@ pub fn TranslatorText(
         is_loaded.set(true);
     });
 
-    {
+    if !get_hint_seen() {
         let dismissed = show_hint;
         spawn_local(async move {
             gloo_timers::future::TimeoutFuture::new(6000).await;
@@ -150,7 +161,6 @@ pub fn TranslatorText(
                         let reading = token.reading.clone();
                         let base_form = token.base_form.clone();
                         let translation_text = token.translation.clone();
-                        let translation_arc: Arc<Option<String>> = Arc::new(translation_text.clone());
                         let clickable = token.pos.is_vocabulary_word();
                         let has_kanji = has_kanji(&surface);
                         let show_base = base_form != surface;
@@ -212,8 +222,8 @@ pub fn TranslatorText(
                                                     }}
                                                     <MarkdownText
                                                         content=Signal::derive({
-                                                            let arc = translation_arc.clone();
-                                                            move || arc.as_ref().clone().unwrap_or_default()
+                                                            let text = translation_text.clone();
+                                                            move || text.clone().unwrap_or_default()
                                                         })
                                                         known_kanji=HashSet::new()
                                                         variant=Signal::derive(|| MarkdownVariant::Compact)

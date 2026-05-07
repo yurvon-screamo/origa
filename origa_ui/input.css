@@ -33,8 +33,11 @@
     --accent: var(--accent-olive);
     --muted: var(--fg-muted);
 
+    --accent-olive-subtle: rgba(61, 69, 53, 0.4);
+
     /* Animation Timing */
     --anima-duration-fast: 100ms;
+    --anima-duration-medium: 150ms;
     --anima-duration-normal: 200ms;
     --anima-duration-slow: 300ms;
     --anima-duration-entrance: 350ms;
@@ -1520,8 +1523,8 @@ input[type="submit"],
     position: relative;
     display: inline;
     cursor: pointer;
-    border-bottom: 1px dotted rgba(61, 69, 53, 0.4);
-    transition: background-color 150ms linear, border-color 150ms linear;
+    border-bottom: 1px dotted var(--accent-olive-subtle);
+    transition: background-color var(--anima-duration-medium) linear, border-color var(--anima-duration-medium) linear;
 }
 
 .token-word:hover,

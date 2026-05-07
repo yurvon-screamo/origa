@@ -346,7 +346,7 @@ fn render_lesson_card(
         | LessonCardView::PhraseListen { .. }
         | LessonCardView::KanjiReadingQuiz(_)
         | LessonCardView::GrammarQuiz(_) => {
-            return view! { <div/> }.into_any();
+            return ().into_any();
         },
     };
 
@@ -381,7 +381,7 @@ fn render_lesson_card(
                             test_id=Signal::derive(|| "phrase-normal-audio".to_string())
                         />
                     }.into_any(),
-                    None => view! { <div/> }.into_any(),
+                    None => ().into_any(),
                 }}
             </Show>
 
