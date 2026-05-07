@@ -1,45 +1,47 @@
+use std::collections::HashSet;
+use std::sync::Arc;
+
+use crate::i18n::{t, use_i18n};
 use crate::pages::lesson::LessonContext;
-use crate::ui_components::{Tag, TagVariant};
+use crate::ui_components::{MarkdownText, MarkdownVariant};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos::wasm_bindgen::JsCast;
 use leptos_use::use_event_listener;
-use origa::domain::{PartOfSpeech, TokenTranslation, lookup_tokens_translations, tokenize_text};
+use origa::domain::{TokenTranslation, lookup_tokens_translations, tokenize_text};
 
-fn pos_display(pos: &PartOfSpeech) -> &'static str {
-    match pos {
-        PartOfSpeech::Verb => "verb",
-        PartOfSpeech::Noun => "noun",
-        PartOfSpeech::IAdjective => "i-adj",
-        PartOfSpeech::NaAdjective => "na-adj",
-        PartOfSpeech::Adverb => "adverb",
-        PartOfSpeech::Particle => "particle",
-        PartOfSpeech::AuxiliaryVerb => "aux",
-        PartOfSpeech::Pronoun => "pronoun",
-        PartOfSpeech::ProperNoun => "name",
-        PartOfSpeech::Numeral => "num",
-        PartOfSpeech::Conjunction => "conj",
-        PartOfSpeech::PreNounAdjectival => "pre-adj",
-        PartOfSpeech::Interjection => "interj",
-        PartOfSpeech::Determiner => "det",
-        _ => "",
+const HINT_SEEN_KEY: &str = "origa_translator_hint_seen";
+
+fn has_kanji(text: &str) -> bool {
+    text.chars().any(|c| {
+        matches!(
+            c,
+            '\u{4E00}'..='\u{9FFF}' | '\u{3400}'..='\u{4DBF}' | '\u{F900}'..='\u{FAFF}'
+        )
+    })
+}
+
+fn get_hint_seen() -> bool {
+    web_sys::window()
+        .and_then(|w| w.local_storage().ok())
+        .flatten()
+        .and_then(|ls| ls.get_item(HINT_SEEN_KEY).ok())
+        .flatten()
+        .is_some()
+}
+
+fn set_hint_seen() {
+    if let Some(ls) = web_sys::window()
+        .and_then(|w| w.local_storage().ok())
+        .flatten()
+    {
+        let _ = ls.set_item(HINT_SEEN_KEY, "true");
     }
 }
 
-fn pos_tag_variant(pos: &PartOfSpeech) -> TagVariant {
-    match pos {
-        PartOfSpeech::Verb | PartOfSpeech::AuxiliaryVerb => TagVariant::Terracotta,
-        PartOfSpeech::IAdjective | PartOfSpeech::NaAdjective => TagVariant::Sage,
-        PartOfSpeech::Particle => TagVariant::Olive,
-        _ => TagVariant::Default,
-    }
-}
-
-fn is_clickable(pos: &PartOfSpeech) -> bool {
-    !matches!(
-        pos,
-        PartOfSpeech::Symbol | PartOfSpeech::Whitespace | PartOfSpeech::AuxiliarySymbol
-    )
+fn dismiss_hint(dismissed: RwSignal<bool>) {
+    dismissed.set(true);
+    set_hint_seen();
 }
 
 #[component]
@@ -62,9 +64,11 @@ pub fn TranslatorText(
         .into_any();
     };
 
+    let i18n = use_i18n();
     let translations: RwSignal<Vec<TokenTranslation>> = RwSignal::new(vec![]);
     let expanded: RwSignal<Option<usize>> = RwSignal::new(None);
     let is_loaded: RwSignal<bool> = RwSignal::new(false);
+    let show_hint: RwSignal<bool> = RwSignal::new(!get_hint_seen());
     let container_ref = NodeRef::<leptos::html::Span>::new();
 
     let text_for_spawn = text.clone();
@@ -75,6 +79,16 @@ pub fn TranslatorText(
         translations.set(lookup_tokens_translations(&tokens, &lang));
         is_loaded.set(true);
     });
+
+    {
+        let dismissed = show_hint;
+        spawn_local(async move {
+            gloo_timers::future::TimeoutFuture::new(6000).await;
+            if !dismissed.get() {
+                dismiss_hint(dismissed);
+            }
+        });
+    }
 
     let _ = use_event_listener(document(), leptos::ev::click, {
         move |ev: leptos::ev::MouseEvent| {
@@ -88,6 +102,9 @@ pub fn TranslatorText(
             }
             if should_close {
                 expanded.set(None);
+                if show_hint.get() {
+                    dismiss_hint(show_hint);
+                }
             }
         }
     });
@@ -104,6 +121,13 @@ pub fn TranslatorText(
 
     let indexed = move || -> Vec<(usize, TokenTranslation)> {
         translations.get().into_iter().enumerate().collect()
+    };
+
+    let first_clickable_idx = move || {
+        translations
+            .get()
+            .iter()
+            .position(|t| t.pos.is_vocabulary_word())
     };
 
     view! {
@@ -126,11 +150,23 @@ pub fn TranslatorText(
                         let reading = token.reading.clone();
                         let base_form = token.base_form.clone();
                         let translation_text = token.translation.clone();
-                        let pos = token.pos.clone();
-                        let pos_label = pos_display(&pos);
-                        let tag_variant = pos_tag_variant(&pos);
+                        let translation_arc: Arc<Option<String>> = Arc::new(translation_text.clone());
+                        let clickable = token.pos.is_vocabulary_word();
+                        let has_kanji = has_kanji(&surface);
                         let show_base = base_form != surface;
-                        let clickable = is_clickable(&pos);
+
+                        let surface_view = if has_kanji {
+                            view! {
+                                <ruby class="furigana-ruby">
+                                    {surface.clone()}
+                                    <rp>"("</rp>
+                                    <rt class="furigana-rt">{reading.clone()}</rt>
+                                    <rp>")"</rp>
+                                </ruby>
+                            }.into_any()
+                        } else {
+                            view! { <span>{surface.clone()}</span> }.into_any()
+                        };
 
                         if clickable {
                             view! {
@@ -143,39 +179,46 @@ pub fn TranslatorText(
                                 }>
                                     <span
                                         class="token-surface"
+                                        tabindex="0"
                                         on:click=move |ev: leptos::ev::MouseEvent| {
                                             ev.stop_propagation();
                                             expanded.update(|e| {
                                                 *e = if *e == Some(idx) { None } else { Some(idx) };
                                             });
                                         }
+                                        on:keydown=move |ev: leptos::ev::KeyboardEvent| {
+                                            if ev.key() == "Enter" || ev.key() == " " {
+                                                ev.prevent_default();
+                                                expanded.update(|e| {
+                                                    *e = if *e == Some(idx) { None } else { Some(idx) };
+                                                });
+                                            }
+                                        }
                                     >
-                                        {surface}
+                                        {surface_view}
                                     </span>
                                     {move || {
                                         if expanded.get() == Some(idx) {
                                             view! {
                                                 <div class="token-popup" on:click=move |ev: leptos::ev::MouseEvent| ev.stop_propagation()>
-                                                    <span class="token-popup-reading">{reading.clone()}</span>
+                                                    <div class="token-popup-surface">{surface.clone()}</div>
+                                                    <div class="token-popup-reading">{reading.clone()}</div>
                                                     {if show_base {
                                                         view! {
-                                                            <span class="token-popup-base">{base_form.clone()}</span>
+                                                            <div class="token-popup-reading">{base_form.clone()}</div>
                                                         }.into_any()
                                                     } else {
                                                         ().into_any()
                                                     }}
-                                                    <span class="token-popup-translation">
-                                                        {translation_text.clone().unwrap_or_else(|| "—".to_string())}
-                                                    </span>
-                                                    {if !pos_label.is_empty() {
-                                                        view! {
-                                                            <Tag variant=Signal::derive(move || tag_variant)>
-                                                                {pos_label}
-                                                            </Tag>
-                                                        }.into_any()
-                                                    } else {
-                                                        ().into_any()
-                                                    }}
+                                                    <MarkdownText
+                                                        content=Signal::derive({
+                                                            let arc = translation_arc.clone();
+                                                            move || arc.as_ref().clone().unwrap_or_default()
+                                                        })
+                                                        known_kanji=HashSet::new()
+                                                        variant=Signal::derive(|| MarkdownVariant::Compact)
+                                                        furigana=false
+                                                    />
                                                 </div>
                                             }.into_any()
                                         } else {
@@ -191,6 +234,18 @@ pub fn TranslatorText(
                         }
                     }
                 />
+                <Show when=move || show_hint.get() && is_loaded.get()>
+                    {move || {
+                        let hint_idx = first_clickable_idx();
+                        hint_idx.map(|_| {
+                            view! {
+                                <span class="translator-hint" role="status" aria-live="polite">
+                                    {t!(i18n, translator.hint_text)}
+                                </span>
+                            }.into_any()
+                        }).unwrap_or_else(|| ().into_any())
+                    }}
+                </Show>
             </Show>
         </span>
     }.into_any()
