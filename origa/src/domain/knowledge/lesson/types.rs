@@ -1,7 +1,10 @@
+use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
 use ulid::Ulid;
 
 use crate::domain::Card;
+use crate::domain::knowledge::card::CardType;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct QuizOption {
@@ -229,5 +232,104 @@ impl LessonCard {
 
     pub fn grammar_info(&self) -> Option<&GrammarInfo> {
         self.view.grammar_info()
+    }
+
+    fn card_type(&self) -> CardType {
+        CardType::from(self.view.card())
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct LessonData {
+    pub cards: Vec<(Ulid, LessonCard)>,
+    pub core_count: usize,
+}
+
+impl LessonData {
+    pub fn card_ids(&self) -> Vec<Ulid> {
+        self.cards.iter().map(|(id, _)| *id).collect()
+    }
+
+    pub fn cards_map(&self) -> HashMap<Ulid, LessonCard> {
+        self.cards
+            .iter()
+            .map(|(id, card)| (*id, card.clone()))
+            .collect()
+    }
+
+    pub fn total_count(&self) -> usize {
+        self.cards.len()
+    }
+
+    pub fn phrase_count(&self) -> usize {
+        self.cards
+            .iter()
+            .filter(|(_, lc)| lc.card_type() == CardType::Phrase)
+            .count()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.cards.is_empty()
+    }
+
+    pub fn contains_key(&self, id: &Ulid) -> bool {
+        self.cards.iter().any(|(card_id, _)| card_id == id)
+    }
+
+    pub fn len(&self) -> usize {
+        self.cards.len()
+    }
+
+    pub fn get(&self, id: &Ulid) -> Option<&LessonCard> {
+        self.cards
+            .iter()
+            .find(|(card_id, _)| card_id == id)
+            .map(|(_, card)| card)
+    }
+
+    pub fn keys(&self) -> impl Iterator<Item = &Ulid> {
+        self.cards.iter().map(|(id, _)| id)
+    }
+
+    pub fn values(&self) -> impl Iterator<Item = &LessonCard> {
+        self.cards.iter().map(|(_, card)| card)
+    }
+
+    pub fn iter(&self) -> impl Iterator<Item = (&Ulid, &LessonCard)> {
+        self.cards.iter().map(|(id, card)| (id, card))
+    }
+
+    pub fn into_cards(self) -> Vec<(Ulid, LessonCard)> {
+        self.cards
+    }
+
+    pub fn reorder_core_first_phrases_last(cards: Vec<(Ulid, LessonCard)>) -> Self {
+        let mut core = Vec::new();
+        let mut phrases = Vec::new();
+
+        for entry in cards {
+            if entry.1.card_type() == CardType::Phrase {
+                phrases.push(entry);
+            } else {
+                core.push(entry);
+            }
+        }
+
+        let core_count = core.len();
+        core.extend(phrases);
+
+        Self {
+            cards: core,
+            core_count,
+        }
+    }
+}
+
+impl IntoIterator for LessonData {
+    type Item = (Ulid, LessonCard);
+    type IntoIter = std::vec::IntoIter<(Ulid, LessonCard)>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.cards.into_iter()
     }
 }

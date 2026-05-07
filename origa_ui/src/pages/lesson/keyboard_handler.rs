@@ -2,7 +2,7 @@ use super::lesson_state::LessonContext;
 use super::lesson_state::LessonState;
 use leptos::ev::KeyboardEvent;
 use leptos::prelude::*;
-use origa::domain::{LessonCardView, Rating};
+use origa::domain::{Card, LessonCardView, Rating};
 use ulid::Ulid;
 
 pub struct KeyboardActions {
@@ -12,6 +12,7 @@ pub struct KeyboardActions {
     pub on_quiz_dont_know: Callback<()>,
     pub on_yesno_dont_know: Callback<()>,
     pub show_answer: Box<dyn Fn()>,
+    pub on_next_card: Callback<()>,
 }
 
 pub fn create_keyboard_handler(
@@ -25,6 +26,13 @@ pub fn create_keyboard_handler(
         let state = lesson_state.get();
 
         if lesson_ctx.is_completed.get() || is_rating.get().is_some() {
+            return;
+        }
+
+        // Приоритет: если ждём нажатия "Далее" — Space вызывает on_next_card
+        if state.waiting_for_next && key == " " {
+            ev.prevent_default();
+            actions.on_next_card.run(());
             return;
         }
 
@@ -46,6 +54,9 @@ pub fn create_keyboard_handler(
             .unwrap_or(false);
         let is_phrase_listen = current_card
             .map(|c| matches!(c.view(), LessonCardView::PhraseListen { .. }))
+            .unwrap_or(false);
+        let is_phrase_normal = current_card
+            .map(|c| matches!(c.card(), Card::Phrase(_)))
             .unwrap_or(false);
 
         if !state.showing_answer {
@@ -71,7 +82,7 @@ pub fn create_keyboard_handler(
         }
 
         if state.showing_answer && !is_quiz && !is_yesno && !is_phrase_listen {
-            handle_rating_key(&key, &actions.on_rate);
+            handle_rating_key(&key, &actions.on_rate, is_phrase_normal);
             return;
         }
 
@@ -136,18 +147,22 @@ fn handle_yesno_key(
     }
 }
 
-fn handle_rating_key(key: &str, on_rate: &Callback<Rating>) {
+fn handle_rating_key(key: &str, on_rate: &Callback<Rating>, is_phrase: bool) {
     match key {
         "1" => {
             on_rate.run(Rating::Again);
         },
         "2" => {
-            on_rate.run(Rating::Hard);
+            on_rate.run(if is_phrase {
+                Rating::Good
+            } else {
+                Rating::Hard
+            });
         },
-        "3" => {
+        "3" if !is_phrase => {
             on_rate.run(Rating::Good);
         },
-        "4" => {
+        "4" if !is_phrase => {
             on_rate.run(Rating::Easy);
         },
         _ => {},

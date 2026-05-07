@@ -27,16 +27,17 @@ pub use jlpt_content::{JlptContent, JlptContentError};
 pub use jlpt_progress::{CategoryProgress, JlptProgress, LevelProgressDetail};
 pub use knowledge::{
     Card, CardType, DailyHistoryItem, ExampleKanjiWord, GrammarInfo, GrammarQuizCard,
-    GrammarRuleCard, KanjiCard, KnowledgeSet, LessonCard, LessonCardView, LessonViewGenerator,
-    PhraseCard, QuizCard, QuizOption, StudyCard, VocabularyCard, YesNoCard,
+    GrammarRuleCard, KanjiCard, KnowledgeSet, LessonCard, LessonCardView, LessonData,
+    LessonViewGenerator, PhraseCard, QuizCard, QuizOption, StudyCard, VocabularyCard, YesNoCard,
     estimate_completion_date,
 };
 pub use memory::{Difficulty, MemoryHistory, MemoryState, Rating, ReviewLog, Stability};
 pub use score_content::ScoreContentResult;
 pub use srs::RateMode;
 pub use tokenizer::{
-    DictionaryData, PartOfSpeech, TokenInfo, init_dictionary, init_dictionary_from_rkyv,
-    is_dictionary_loaded, serialize_dictionary_to_rkyv, tokenize_text,
+    DictionaryData, PartOfSpeech, TokenInfo, TokenTranslation, init_dictionary,
+    init_dictionary_from_rkyv, is_dictionary_loaded, lookup_tokens_translations,
+    serialize_dictionary_to_rkyv, tokenize_text,
 };
 pub use user::{User, WordKnowledge};
 pub use value_objects::{Answer, DailyLoad, JapaneseLevel, NativeLanguage, Question};

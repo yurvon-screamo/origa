@@ -1,8 +1,6 @@
-use crate::domain::{JlptContent, LessonCard, OrigaError};
+use crate::domain::{JlptContent, LessonData, OrigaError};
 use crate::traits::UserRepository;
-use std::collections::HashMap;
 use tracing::{debug, info};
-use ulid::Ulid;
 
 #[derive(Clone)]
 pub struct SelectCardsToLessonUseCase<'a, R: UserRepository> {
@@ -14,10 +12,7 @@ impl<'a, R: UserRepository> SelectCardsToLessonUseCase<'a, R> {
         Self { repository }
     }
 
-    pub async fn execute(
-        &self,
-        jlpt_content: &JlptContent,
-    ) -> Result<HashMap<Ulid, LessonCard>, OrigaError> {
+    pub async fn execute(&self, jlpt_content: &JlptContent) -> Result<LessonData, OrigaError> {
         let user = self
             .repository
             .get_current_user()
@@ -27,12 +22,12 @@ impl<'a, R: UserRepository> SelectCardsToLessonUseCase<'a, R> {
         debug!(user_id = %user.id(), "Selecting cards to lesson");
 
         let daily_new_limit = user.daily_load().new_cards_per_day();
-        let cards = user
+        let lesson_data = user
             .knowledge_set()
             .cards_to_lesson(daily_new_limit, jlpt_content);
 
-        info!(user_id = %user.id(), count = cards.len(), "Cards selected for lesson");
+        info!(user_id = %user.id(), count = lesson_data.total_count(), "Cards selected for lesson");
 
-        Ok(cards)
+        Ok(lesson_data)
     }
 }

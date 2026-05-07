@@ -22,6 +22,7 @@ pub fn LessonCard(
     #[prop(into)] known_kanji: Signal<HashSet<String>>,
 ) -> impl IntoView {
     let card_type = CardType::from(&card);
+    let is_phrase = card_type == CardType::Phrase;
     let lang = native_language;
     let question_text = match card.question(&lang) {
         Ok(q) => q.text().to_string(),
@@ -212,6 +213,7 @@ pub fn LessonCard(
                         content_ref=content_ref
                         on_toggle=on_toggle
                         is_kanji=card_type == CardType::Kanji
+                        is_phrase
                         is_reversed=is_reversed
                         on_readings=on_readings_stored.get_value()
                         kun_readings=kun_readings_stored.get_value()

@@ -220,7 +220,10 @@
         "no": "No",
         "is_this_correct": "Is this statement correct?",
         "correct_answer": "Correct answer: ",
-        "space_key": "[Space]"
+        "space_key": "[Space]",
+        "next": "Next →",
+        "did_not_understand": "Didn't understand",
+        "understood": "Understood"
     },
     "home": {
         "loading": "Loading...",

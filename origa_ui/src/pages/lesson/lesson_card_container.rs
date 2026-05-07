@@ -6,6 +6,7 @@ use super::on_quiz_select::create_on_quiz_select;
 use super::on_rate::create_on_rate_callback;
 use super::on_yesno_select::create_on_yesno_select;
 use super::phrase_card::PhraseCardView;
+use super::phrase_rating_buttons::PhraseRatingButtons;
 use super::quiz_card::QuizCardView;
 use super::quiz_card::QuizVariant;
 use super::rating_buttons_view::RatingButtonsView;
@@ -13,7 +14,7 @@ use super::writing_card::WritingCard;
 use super::yesno_card_view::YesNoCardView;
 use crate::pages::lesson::card_type::CardType;
 use leptos::prelude::*;
-use origa::domain::{GrammarInfo, LessonCard, LessonCardView, NativeLanguage, Rating};
+use origa::domain::{Card, GrammarInfo, LessonCard, LessonCardView, NativeLanguage, Rating};
 use std::collections::HashSet;
 use ulid::Ulid;
 
@@ -40,6 +41,11 @@ pub fn LessonCardContainer() -> impl IntoView {
     let on_quiz_dont_know = create_on_dont_know(lesson_state, on_rate_callback);
     let on_yesno_dont_know = create_on_dont_know(lesson_state, on_rate_callback);
 
+    let on_next_card = Callback::new(move |_: ()| {
+        let rating = lesson_state.get().pending_rating.unwrap_or(Rating::Good);
+        on_rate_callback.run(rating);
+    });
+
     let handle_keydown = create_keyboard_handler(
         lesson_ctx,
         is_rating,
@@ -51,6 +57,7 @@ pub fn LessonCardContainer() -> impl IntoView {
             on_quiz_dont_know,
             on_yesno_dont_know,
             show_answer: Box::new(show_answer),
+            on_next_card,
         },
     );
 
@@ -229,6 +236,8 @@ pub fn LessonCardContainer() -> impl IntoView {
                                         dont_know_selected=state.dont_know_selected
                                         phrase_text=phrase_text
                                         known_kanji=Signal::from(known_kanji)
+                                        waiting_for_next=state.waiting_for_next
+                                        on_next_card=on_next_card
                                     />
                                 })
                             } else {
@@ -338,23 +347,46 @@ fn render_lesson_card(
         },
     };
 
-    view! {
-        <LessonCardComponent
-            card=params.card
-            is_reversed=params.is_reversed
-            show_answer=show_answer
-            on_show_answer=on_show_answer
-            grammar_info=params.grammar_info
-            native_language=native_language.get()
-            known_kanji=Signal::from(known_kanji)
-        />
+    let is_phrase = matches!(params.card, Card::Phrase(_));
 
-        <Show when=move || show_answer>
-            <RatingButtonsView
+    if is_phrase {
+        view! {
+            <LessonCardComponent
+                card=params.card
+                is_reversed=params.is_reversed
+                show_answer=true
+                on_show_answer=on_show_answer
+                grammar_info=params.grammar_info
+                native_language=native_language.get()
+                known_kanji=Signal::from(known_kanji)
+            />
+
+            <PhraseRatingButtons
                 on_rate=on_rate_callback
                 disabled=Signal::derive(move || is_rating.get().is_some())
+                test_id=Signal::derive(|| "lesson-phrase-rating".to_string())
             />
-        </Show>
+        }
+        .into_any()
+    } else {
+        view! {
+            <LessonCardComponent
+                card=params.card
+                is_reversed=params.is_reversed
+                show_answer
+                on_show_answer=on_show_answer
+                grammar_info=params.grammar_info
+                native_language=native_language.get()
+                known_kanji=Signal::from(known_kanji)
+            />
+
+            <Show when=move || show_answer>
+                <RatingButtonsView
+                    on_rate=on_rate_callback
+                    disabled=Signal::derive(move || is_rating.get().is_some())
+                />
+            </Show>
+        }
+        .into_any()
     }
-    .into_any()
 }

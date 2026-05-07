@@ -13,8 +13,8 @@ pub use daily_history::{DailyHistoryItem, estimate_completion_date};
 pub use grammar::GrammarRuleCard;
 pub use kanji::{ExampleKanjiWord, KanjiCard};
 pub use lesson::{
-    GrammarInfo, GrammarQuizCard, LessonCard, LessonCardView, LessonViewGenerator, QuizCard,
-    QuizOption, YesNoCard,
+    GrammarInfo, GrammarQuizCard, LessonCard, LessonCardView, LessonData, LessonViewGenerator,
+    QuizCard, QuizOption, YesNoCard,
 };
 pub use phrase::PhraseCard;
 pub use vocabulary::VocabularyCard;
@@ -248,7 +248,7 @@ impl KnowledgeSet {
         &self,
         daily_new_limit: usize,
         jlpt_content: &JlptContent,
-    ) -> HashMap<Ulid, LessonCard> {
+    ) -> LessonData {
         let mut all_cards = self.study_cards.iter().collect::<Vec<_>>();
         all_cards.sort_by_key(|(_, card)| card.memory().next_review_date());
 
@@ -371,7 +371,7 @@ impl KnowledgeSet {
 
         result.extend(selected_lessons);
         result.extend(padding_lessons);
-        result.into_iter().collect()
+        LessonData::reorder_core_first_phrases_last(result)
     }
 
     pub(crate) fn rate_card(
@@ -383,11 +383,16 @@ impl KnowledgeSet {
         if let Some(card) = self.study_cards.get_mut(&card_id) {
             let was_new = card.memory().is_new();
             let is_phrase = matches!(card.card(), Card::Phrase(_));
+            let effective_mode = if is_phrase {
+                RateMode::PhraseReview
+            } else {
+                mode
+            };
 
             let NextReview {
                 interval,
                 memory_state,
-            } = rate_memory(mode, rating, card.memory())?;
+            } = rate_memory(effective_mode, rating, card.memory())?;
 
             let review = ReviewLog::new(rating, interval);
             card.add_review(memory_state, review);

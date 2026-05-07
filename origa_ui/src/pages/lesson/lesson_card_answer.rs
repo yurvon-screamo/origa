@@ -2,7 +2,7 @@ use super::kanji_card_details::{KanjiCardDetails, RadicalDisplay};
 use crate::i18n::*;
 use crate::ui_components::{
     Button, ButtonVariant, FuriganaText, Heading, HeadingLevel, MarkdownText, MarkdownVariant,
-    Text, TextSize, TypographyVariant,
+    Text, TextSize, TranslatorText, TypographyVariant,
 };
 use leptos::{ev::MouseEvent, prelude::*};
 use origa::domain::GrammarInfo;
@@ -17,6 +17,7 @@ pub fn LessonCardAnswer(
     content_ref: NodeRef<leptos::html::Div>,
     on_toggle: Callback<()>,
     is_kanji: bool,
+    is_phrase: bool,
     is_reversed: bool,
     on_readings: Option<Vec<String>>,
     kun_readings: Option<Vec<String>>,
@@ -44,12 +45,18 @@ pub fn LessonCardAnswer(
                             <Show
                                 when=move || is_reversed
                                 fallback=move || {
-                                    view! {
-                                        <FuriganaText
-                                            text=question.get_value()
-                                            known_kanji=known_kanji.get()
-                                            class=Signal::derive(|| "text-3xl leading-snug".to_string())
-                                        />
+                                    if is_phrase {
+                                        view! {
+                                            <TranslatorText text=question.get_value() />
+                                        }.into_any()
+                                    } else {
+                                        view! {
+                                            <FuriganaText
+                                                text=question.get_value()
+                                                known_kanji=known_kanji.get()
+                                                class=Signal::derive(|| "text-3xl leading-snug".to_string())
+                                            />
+                                        }.into_any()
                                     }
                                 }
                             >

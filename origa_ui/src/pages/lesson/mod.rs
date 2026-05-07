@@ -18,6 +18,7 @@ mod on_quiz_select;
 mod on_rate;
 mod on_yesno_select;
 mod phrase_card;
+mod phrase_rating_buttons;
 mod quiz_card;
 mod quiz_card_header;
 mod quiz_options;
@@ -29,6 +30,7 @@ mod writing_card;
 mod yesno_card_view;
 
 pub use content::LessonContent;
+pub use lesson_state::LessonContext;
 
 use leptos::prelude::*;
 

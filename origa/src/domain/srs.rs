@@ -12,6 +12,7 @@ static FSRS_SERVICE: OnceLock<FsrsSrsService> = OnceLock::new();
 struct FsrsSrsService {
     short_term_fsrs: FSRS,
     long_term_fsrs: FSRS,
+    phrase_review_fsrs: FSRS,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -25,6 +26,8 @@ pub enum RateMode {
     #[serde(rename = "FixationLesson")] // обратная совместимость с сериализованными данными
     ShortTerm,
     StandardLesson,
+    #[serde(rename = "PhraseReview")]
+    PhraseReview,
 }
 
 impl FsrsSrsService {
@@ -43,9 +46,25 @@ impl FsrsSrsService {
             ..Default::default()
         };
 
+        // w[0..4] × 3 — повышенная начальная стабильность для фраз
+        let phrase_review_weights: [f64; 19] = [
+            1.2216, 3.5487, 9.3786, 46.4166, 7.2102, 0.5316, 1.0651, 0.0234, 1.616, 0.1544, 1.0824,
+            1.9813, 0.0953, 0.2975, 2.2042, 0.2407, 2.9466, 0.5034, 0.6567,
+        ];
+
+        let phrase_review_parameters = Parameters {
+            request_retention: 0.92,
+            maximum_interval: 365,
+            enable_fuzz: true,
+            enable_short_term: true,
+            w: phrase_review_weights,
+            ..Default::default()
+        };
+
         Self {
             long_term_fsrs: FSRS::new(long_term_parameters),
             short_term_fsrs: FSRS::new(short_term_parameters),
+            phrase_review_fsrs: FSRS::new(phrase_review_parameters),
         }
     }
 }
@@ -108,6 +127,7 @@ pub fn rate_memory(
     let scheduling_info = match mode {
         RateMode::ShortTerm => srs_service.short_term_fsrs.next(card, now, fsrs_rating),
         RateMode::StandardLesson => srs_service.long_term_fsrs.next(card, now, fsrs_rating),
+        RateMode::PhraseReview => srs_service.phrase_review_fsrs.next(card, now, fsrs_rating),
     };
 
     let (next_review_date, interval) = if rating == Rating::Again {
@@ -159,5 +179,43 @@ mod tests {
         let result = rate_memory(RateMode::StandardLesson, Rating::Good, &memory_history).unwrap();
 
         assert!(result.interval > Duration::zero());
+    }
+
+    #[test]
+    fn phrase_review_again_returns_zero_interval() {
+        let memory_history = MemoryHistory::new();
+
+        let result = rate_memory(RateMode::PhraseReview, Rating::Again, &memory_history).unwrap();
+
+        assert_eq!(result.interval, Duration::zero());
+    }
+
+    #[test]
+    fn phrase_review_good_returns_positive_interval() {
+        let memory_history = MemoryHistory::new();
+
+        let result = rate_memory(RateMode::PhraseReview, Rating::Good, &memory_history).unwrap();
+
+        assert!(result.interval > Duration::zero());
+    }
+
+    #[test]
+    fn phrase_review_easy_gives_longer_interval_than_standard() {
+        let memory_history = MemoryHistory::new();
+
+        let standard =
+            rate_memory(RateMode::StandardLesson, Rating::Easy, &memory_history).unwrap();
+        let phrase = rate_memory(RateMode::PhraseReview, Rating::Easy, &memory_history).unwrap();
+
+        assert!(phrase.interval > standard.interval);
+    }
+
+    #[test]
+    fn phrase_review_serde_roundtrip() {
+        let original = RateMode::PhraseReview;
+        let json = serde_json::to_string(&original).unwrap();
+        assert_eq!(json, "\"PhraseReview\"");
+        let deserialized: RateMode = serde_json::from_str(&json).unwrap();
+        assert_eq!(deserialized, original);
     }
 }
