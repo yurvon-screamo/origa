@@ -3,11 +3,16 @@ Phrase validation script using LLM API.
 
 Validates phrases from CDN phrases dataset for educational relevance.
 Criteria for invalidation (N):
-- Sound-only phrases (laughing, gasping, etc.)
-- Sexual content
+- Sound-only phrases (laughing, gasping, moaning without words)
+- Sexual content (explicit or euphemistic)
+
+Features:
+- Checkpoint every 100 phrases (auto-resume by ID on restart)
+- Graceful shutdown on SIGINT/SIGTERM
 
 Usage:
     python scripts/validate_phrases.py --api-key <KEY> --input cdn/phrases/data
+    python scripts/validate_phrases.py --api-key <KEY> --input cdn/phrases/data --output v3_report.json
 
 Requirements:
     pip install requests tqdm
@@ -19,35 +24,42 @@ import requests
 import sys
 import os
 import time
+import signal
 from pathlib import Path
 from dataclasses import dataclass, field
 from typing import Optional
 from datetime import datetime
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor, as_completed, Future
 from tqdm import tqdm
 
 
-PHRASE_VALIDATION_PROMPT = """You are a Japanese language educational content validator.
-Your task is to determine if a phrase is suitable for language learning.
+PHRASE_VALIDATION_PROMPT = """You validate Japanese phrases for a language learning app.
 
-## Valid phrases (Y):
-- Complete sentences with meaningful content
-- Phrases that convey information, emotions, or actions
-- Useful expressions for communication
+Y = keep, N = remove.
 
-## Invalid phrases (N) - should be removed:
-1. **Sound-only phrases**: Just sounds like laughing (あはは, うふふ, ケラケラ), gasping (あっ, んっ), or other non-verbal expressions that don't carry educational meaning
-2. **Sexual content**: Phrases with sexual undertones or adult content
+## Y (keep)
+Normal sentences, exclamations, onomatopoeia, animal sounds.
+Sounds + speech mixed = Y (e.g. "あはは、すごいね").
+Normal body descriptions = Y (e.g. "お腹を揉む", "汗が出た").
 
-Return ONLY a single character: Y or N.
-- Y = phrase is valid for educational use
-- N = phrase should be removed from dataset
+## N (remove)
+1. Moaning/gasping with no real words (あっ, んっ, はぁっ only).
+2. Sexual content — explicit OR euphemistic. A phrase is sexual when it clearly describes a sex act, even if using indirect language. Examples of euphemistic sexual content:
+   - "こんなに奥まで入って" (so deep inside me)
+   - "もうイっちゃう" (I'm coming)
+   - "中に出さないで" (don't come inside)
+   - "気持ちいい…もっと" (feels good... more) — when combined with moaning/breathing
+   - "熱いの…まだ出して" (it's hot... keep going)
+   - "お兄ちゃんと一つになりたい" (I want to become one with brother) — sexual euphemism
 
-Phrase to evaluate: {phrase}
+Key: if the phrase reads as a sex scene line, it's N regardless of whether explicit words are used.
 
-Translation (if available): {translation}
+Return only Y or N.
 
-Your answer (Y/N):"""
+Phrase: {phrase}
+Translation: {translation}
+
+Y/N:"""
 
 
 @dataclass
@@ -60,92 +72,104 @@ class PhraseValidationResult:
     is_valid: bool
 
 
-@dataclass
-class ValidationReport:
-    total_phrases: int = 0
-    valid_phrases: int = 0
-    invalid_phrases: int = 0
-    results: list = field(default_factory=list)
+class Checkpoint:
+    def __init__(self, output_path: Path):
+        self.path = output_path.with_suffix(".checkpoint.json")
+        self.seen_ids: set[str] = set()
+        self.results: list[PhraseValidationResult] = []
+        self._load()
+
+    def _load(self):
+        if not self.path.exists():
+            return
+        with open(self.path, encoding="utf-8") as f:
+            data = json.load(f)
+        for r in data.get("results", []):
+            self.seen_ids.add(r["id"])
+            self.results.append(PhraseValidationResult(
+                id=r["id"],
+                text=r["text"],
+                translation_ru=r["translation_ru"],
+                translation_en=r["translation_en"],
+                llm_response=r["llm_response"],
+                is_valid=r["is_valid"],
+            ))
+
+    def save(self):
+        output = {
+            "updated_at": datetime.now().isoformat(),
+            "seen_count": len(self.seen_ids),
+            "results": [
+                {
+                    "id": r.id,
+                    "text": r.text,
+                    "translation_ru": r.translation_ru,
+                    "translation_en": r.translation_en,
+                    "llm_response": r.llm_response,
+                    "is_valid": r.is_valid,
+                }
+                for r in self.results
+            ],
+        }
+        with open(self.path, "w", encoding="utf-8") as f:
+            json.dump(output, f, ensure_ascii=False)
+
+    def add(self, result: PhraseValidationResult, flush_every: int = 100):
+        self.seen_ids.add(result.id)
+        self.results.append(result)
+        if len(self.results) % flush_every == 0:
+            self.save()
+
+    def is_seen(self, phrase_id: str) -> bool:
+        return phrase_id in self.seen_ids
+
+    def cleanup(self):
+        if self.path.exists():
+            self.path.unlink()
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Validate phrases for educational relevance using LLM"
     )
-    parser.add_argument(
-        "--api-key",
-        required=True,
-        help="API key for LLM provider",
-    )
+    parser.add_argument("--api-key", required=True, help="API key for LLM provider")
     parser.add_argument(
         "--api-base",
         default=os.getenv("LLM_API_BASE", "https://openrouter.ai/api/v1"),
-        help="API base URL (default: https://openrouter.ai/api/v1)",
+        help="API base URL",
     )
     parser.add_argument(
         "--model",
         default=os.getenv("LLM_MODEL", "google/gemini-2.5-flash-lite"),
-        help="Model to use (default: google/gemini-2.5-flash-lite)",
+        help="Model to use",
     )
-    parser.add_argument(
-        "--input",
-        required=True,
-        help="Path to phrases data directory or index file",
-    )
-    parser.add_argument(
-        "--output",
-        default="validation_report.json",
-        help="Output report file path (default: validation_report.json)",
-    )
-    parser.add_argument(
-        "--workers",
-        type=int,
-        default=10,
-        help="Number of concurrent workers (default: 10)",
-    )
-    parser.add_argument(
-        "--max-phrases",
-        type=int,
-        default=None,
-        help="Maximum number of phrases to process (default: all)",
-    )
-    parser.add_argument(
-        "--resume-from",
-        type=int,
-        default=0,
-        help="Resume from phrase index (for continuing interrupted validation)",
-    )
+    parser.add_argument("--input", required=True, help="Path to phrases data directory")
+    parser.add_argument("--output", default="validation_report.json", help="Output report file")
+    parser.add_argument("--workers", type=int, default=10, help="Concurrent workers")
+    parser.add_argument("--max-phrases", type=int, default=None, help="Max phrases to process")
     return parser.parse_args()
 
 
 def collect_json_files(input_path: Path) -> list[Path]:
-    """Collect all JSON files from input path."""
     if input_path.is_file():
         return [input_path]
-    elif input_path.is_dir():
-        json_files = []
-        for p in sorted(input_path.rglob("p*.json")):
-            if p.is_file():
-                json_files.append(p)
-        return json_files
-    else:
-        raise ValueError(f"Input path not found: {input_path}")
+    if input_path.is_dir():
+        return sorted(input_path.rglob("p*.json"))
+    raise ValueError(f"Input path not found: {input_path}")
 
 
 def load_phrases_from_file(file_path: Path) -> list[dict]:
-    """Load phrases from a single JSON file."""
     with open(file_path, encoding="utf-8") as f:
         data = json.load(f)
-
-    phrases = []
-    for item in data:
-        phrases.append({
+    return [
+        {
             "id": item.get("i", ""),
             "text": item.get("x", ""),
             "translation_ru": item.get("ru", ""),
             "translation_en": item.get("en", ""),
-        })
-    return phrases
+        }
+        for item in data
+    ]
 
 
 def validate_single_phrase(
@@ -154,7 +178,6 @@ def validate_single_phrase(
     model: str,
     phrase: dict,
 ) -> PhraseValidationResult:
-    """Validate a single phrase using LLM API."""
     prompt = PHRASE_VALIDATION_PROMPT.format(
         phrase=phrase["text"],
         translation=phrase.get("translation_en", "") or phrase.get("translation_ru", ""),
@@ -167,15 +190,12 @@ def validate_single_phrase(
 
     payload = {
         "model": model,
-        "messages": [
-            {"role": "user", "content": prompt}
-        ],
+        "messages": [{"role": "user", "content": prompt}],
         "max_tokens": 5,
         "temperature": 0.0,
     }
 
-    max_retries = 3
-    for attempt in range(max_retries):
+    for attempt in range(3):
         try:
             response = requests.post(
                 f"{api_base}/chat/completions",
@@ -185,10 +205,7 @@ def validate_single_phrase(
             )
 
             if response.status_code == 429:
-                # Rate limited - wait and retry
-                wait_time = (attempt + 1) * 5
-                print(f"  Rate limited, waiting {wait_time}s...")
-                time.sleep(wait_time)
+                time.sleep((attempt + 1) * 5)
                 continue
 
             if response.status_code != 200:
@@ -197,12 +214,17 @@ def validate_single_phrase(
                     text=phrase["text"],
                     translation_ru=phrase["translation_ru"],
                     translation_en=phrase["translation_en"],
-                    llm_response=f"HTTP {response.status_code}: {response.text[:200]}",
-                    is_valid=True,  # Assume valid on error
+                    llm_response=f"HTTP {response.status_code}",
+                    is_valid=True,
                 )
 
             data = response.json()
-            content = data.get("choices", [{}])[0].get("message", {}).get("content", "").strip()
+            content = (
+                data.get("choices", [{}])[0]
+                .get("message", {})
+                .get("content", "")
+                .strip()
+            )
             is_valid = content.upper().startswith("Y")
 
             return PhraseValidationResult(
@@ -215,15 +237,14 @@ def validate_single_phrase(
             )
 
         except requests.exceptions.Timeout:
-            if attempt < max_retries - 1:
-                print(f"  Timeout, retry {attempt + 1}/{max_retries}")
+            if attempt < 2:
                 continue
             return PhraseValidationResult(
                 id=phrase["id"],
                 text=phrase["text"],
                 translation_ru=phrase["translation_ru"],
                 translation_en=phrase["translation_en"],
-                llm_response="Timeout after retries",
+                llm_response="Timeout",
                 is_valid=True,
             )
         except Exception as e:
@@ -232,23 +253,21 @@ def validate_single_phrase(
                 text=phrase["text"],
                 translation_ru=phrase["translation_ru"],
                 translation_en=phrase["translation_en"],
-                llm_response=f"Error: {str(e)}",
+                llm_response=f"Error: {e}",
                 is_valid=True,
             )
 
-    # All retries exhausted
     return PhraseValidationResult(
         id=phrase["id"],
         text=phrase["text"],
         translation_ru=phrase["translation_ru"],
         translation_en=phrase["translation_en"],
-        llm_response="All retries exhausted",
+        llm_response="Retries exhausted",
         is_valid=True,
     )
 
 
 def process_phrase(args: tuple) -> PhraseValidationResult:
-    """Wrapper for processing a single phrase (for ThreadPoolExecutor)."""
     api_base, api_key, model, phrase = args
     return validate_single_phrase(api_base, api_key, model, phrase)
 
@@ -260,67 +279,80 @@ def validate_phrases(
     input_path: Path,
     workers: int,
     max_phrases: Optional[int],
-    resume_from: int,
-) -> ValidationReport:
-    """Main validation loop using thread pool."""
-    report = ValidationReport()
+    output_path: Path,
+) -> None:
+    checkpoint = Checkpoint(output_path)
+    if checkpoint.seen_ids:
+        print(f"Resuming from checkpoint: {len(checkpoint.seen_ids)} phrases already processed")
 
     json_files = collect_json_files(input_path)
-    print(f"Found {len(json_files)} JSON files to process")
+    print(f"Found {len(json_files)} JSON files")
 
     all_phrases: list[dict] = []
-
     for json_file in json_files:
         phrases = load_phrases_from_file(json_file)
         all_phrases.extend(phrases)
 
-    # Apply limits
-    if resume_from > 0:
-        all_phrases = all_phrases[resume_from:]
-        print(f"Resuming from index {resume_from}, {len(all_phrases)} phrases remaining")
+    # Skip already processed
+    all_phrases = [p for p in all_phrases if not checkpoint.is_seen(p["id"])]
+    print(f"Phrases to process: {len(all_phrases)} (skipped {len(checkpoint.seen_ids)} already done)")
 
     if max_phrases:
         all_phrases = all_phrases[:max_phrases]
         print(f"Limited to {max_phrases} phrases")
 
-    report.total_phrases = len(all_phrases)
+    valid_count = sum(1 for r in checkpoint.results if r.is_valid)
+    invalid_count = sum(1 for r in checkpoint.results if not r.is_valid)
 
-    # Prepare arguments for parallel processing
-    task_args = [
-        (api_base, api_key, model, phrase)
-        for phrase in all_phrases
-    ]
+    shutdown_requested = False
 
-    # Process with thread pool
+    def on_signal(signum, frame):
+        nonlocal shutdown_requested
+        if not shutdown_requested:
+            shutdown_requested = True
+            print(f"\nSignal received, finishing current requests and saving checkpoint...")
+
+    signal.signal(signal.SIGINT, on_signal)
+    signal.signal(signal.SIGTERM, on_signal)
+
+    task_args = [(api_base, api_key, model, phrase) for phrase in all_phrases]
+
     with ThreadPoolExecutor(max_workers=workers) as executor:
-        futures = {executor.submit(process_phrase, arg): i for i, arg in enumerate(task_args)}
+        futures: dict[Future, int] = {
+            executor.submit(process_phrase, arg): i for i, arg in enumerate(task_args)
+        }
 
-        with tqdm(total=len(all_phrases), desc="Validating phrases") as pbar:
+        with tqdm(total=len(all_phrases), desc="Validating") as pbar:
             for future in as_completed(futures):
+                if shutdown_requested:
+                    future.cancel()
+                    continue
+
                 result = future.result()
-                report.results.append(result)
+                checkpoint.add(result)
                 if result.is_valid:
-                    report.valid_phrases += 1
+                    valid_count += 1
                 else:
-                    report.invalid_phrases += 1
+                    invalid_count += 1
                 pbar.update(1)
 
-    return report
+    # Save final checkpoint
+    checkpoint.save()
 
+    # Build final report
+    invalid_phrases = [r for r in checkpoint.results if not r.is_valid]
 
-def save_report(report: ValidationReport, output_path: Path):
-    """Save validation report to JSON file."""
-    invalid_phrases = [r for r in report.results if not r.is_valid]
-
-    output = {
+    report = {
         "generated_at": datetime.now().isoformat(),
+        "prompt_version": "v3",
         "summary": {
-            "total_phrases": report.total_phrases,
-            "valid_phrases": report.valid_phrases,
-            "invalid_phrases": report.invalid_phrases,
+            "total_phrases": len(checkpoint.results),
+            "valid_phrases": valid_count,
+            "invalid_phrases": invalid_count,
             "invalid_percentage": (
-                round(report.invalid_phrases / report.total_phrases * 100, 2)
-                if report.total_phrases > 0 else 0
+                round(invalid_count / len(checkpoint.results) * 100, 2)
+                if checkpoint.results
+                else 0
             ),
         },
         "invalid_phrase_ids": [p.id for p in invalid_phrases],
@@ -337,13 +369,14 @@ def save_report(report: ValidationReport, output_path: Path):
     }
 
     with open(output_path, "w", encoding="utf-8") as f:
-        json.dump(output, f, ensure_ascii=False, indent=2)
+        json.dump(report, f, ensure_ascii=False, indent=2)
+
+    checkpoint.cleanup()
 
     print(f"\nReport saved to: {output_path}")
-    print(f"Total phrases: {report.total_phrases}")
-    print(f"Valid: {report.valid_phrases}")
-    print(f"Invalid (to delete): {report.invalid_phrases}")
-    print(f"Invalid percentage: {output['summary']['invalid_percentage']}%")
+    print(f"Total: {len(checkpoint.results)}")
+    print(f"Valid: {valid_count}")
+    print(f"Invalid: {invalid_count} ({report['summary']['invalid_percentage']}%)")
 
 
 def main():
@@ -354,23 +387,23 @@ def main():
         print(f"Error: Input path not found: {input_path}")
         sys.exit(1)
 
-    print(f"Starting phrase validation...")
+    output_path = Path(args.output)
+
+    print(f"Phrase validation v3")
     print(f"API Base: {args.api_base}")
     print(f"Model: {args.model}")
     print(f"Workers: {args.workers}")
+    print(f"Output: {output_path}")
 
-    report = validate_phrases(
+    validate_phrases(
         api_base=args.api_base,
         api_key=args.api_key,
         model=args.model,
         input_path=input_path,
         workers=args.workers,
         max_phrases=args.max_phrases,
-        resume_from=args.resume_from,
+        output_path=output_path,
     )
-
-    output_path = Path(args.output)
-    save_report(report, output_path)
 
 
 if __name__ == "__main__":
