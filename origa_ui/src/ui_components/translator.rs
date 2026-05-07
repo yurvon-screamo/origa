@@ -1,6 +1,5 @@
 use std::collections::HashSet;
 
-use crate::i18n::{t, use_i18n};
 use crate::pages::lesson::LessonContext;
 use crate::ui_components::{MarkdownText, MarkdownVariant};
 use leptos::prelude::*;
@@ -9,9 +8,6 @@ use leptos::wasm_bindgen::JsCast;
 use leptos_use::use_event_listener;
 use origa::domain::{TokenTranslation, lookup_tokens_translations, tokenize_text};
 
-const HINT_SEEN_KEY: &str = "origa_translator_hint_seen";
-const HINT_TTL_MS: u64 = 30 * 24 * 60 * 60 * 1000;
-
 fn has_kanji(text: &str) -> bool {
     text.chars().any(|c| {
         matches!(
@@ -19,40 +15,6 @@ fn has_kanji(text: &str) -> bool {
             '\u{4E00}'..='\u{9FFF}' | '\u{3400}'..='\u{4DBF}' | '\u{F900}'..='\u{FAFF}'
         )
     })
-}
-
-fn get_hint_seen() -> bool {
-    let Some(value) = web_sys::window()
-        .and_then(|w| w.local_storage().ok())
-        .flatten()
-        .and_then(|ls| ls.get_item(HINT_SEEN_KEY).ok())
-        .flatten()
-    else {
-        return false;
-    };
-    if value == "true" {
-        return true;
-    }
-    let Ok(timestamp) = value.parse::<u64>() else {
-        return false;
-    };
-    let now = js_sys::Date::now() as u64;
-    now.saturating_sub(timestamp) < HINT_TTL_MS
-}
-
-fn set_hint_seen() {
-    if let Some(ls) = web_sys::window()
-        .and_then(|w| w.local_storage().ok())
-        .flatten()
-    {
-        let now = js_sys::Date::now() as u64;
-        let _ = ls.set_item(HINT_SEEN_KEY, &now.to_string());
-    }
-}
-
-fn dismiss_hint(dismissed: RwSignal<bool>) {
-    dismissed.set(true);
-    set_hint_seen();
 }
 
 #[component]
@@ -75,11 +37,9 @@ pub fn TranslatorText(
         .into_any();
     };
 
-    let i18n = use_i18n();
     let translations: RwSignal<Vec<TokenTranslation>> = RwSignal::new(vec![]);
     let expanded: RwSignal<Option<usize>> = RwSignal::new(None);
     let is_loaded: RwSignal<bool> = RwSignal::new(false);
-    let show_hint: RwSignal<bool> = RwSignal::new(!get_hint_seen());
     let container_ref = NodeRef::<leptos::html::Span>::new();
 
     let text_for_spawn = text.clone();
@@ -90,16 +50,6 @@ pub fn TranslatorText(
         translations.set(lookup_tokens_translations(&tokens, &lang));
         is_loaded.set(true);
     });
-
-    if !get_hint_seen() {
-        let dismissed = show_hint;
-        spawn_local(async move {
-            gloo_timers::future::TimeoutFuture::new(6000).await;
-            if !dismissed.get() {
-                dismiss_hint(dismissed);
-            }
-        });
-    }
 
     let _ = use_event_listener(document(), leptos::ev::click, {
         move |ev: leptos::ev::MouseEvent| {
@@ -113,9 +63,6 @@ pub fn TranslatorText(
             }
             if should_close {
                 expanded.set(None);
-                if show_hint.get() {
-                    dismiss_hint(show_hint);
-                }
             }
         }
     });
@@ -132,13 +79,6 @@ pub fn TranslatorText(
 
     let indexed = move || -> Vec<(usize, TokenTranslation)> {
         translations.get().into_iter().enumerate().collect()
-    };
-
-    let first_clickable_idx = move || {
-        translations
-            .get()
-            .iter()
-            .position(|t| t.pos.is_vocabulary_word())
     };
 
     view! {
@@ -244,18 +184,6 @@ pub fn TranslatorText(
                         }
                     }
                 />
-                <Show when=move || show_hint.get() && is_loaded.get()>
-                    {move || {
-                        let hint_idx = first_clickable_idx();
-                        hint_idx.map(|_| {
-                            view! {
-                                <span class="translator-hint" role="status" aria-live="polite">
-                                    {t!(i18n, translator.hint_text)}
-                                </span>
-                            }.into_any()
-                        }).unwrap_or_else(|| ().into_any())
-                    }}
-                </Show>
             </Show>
         </span>
     }.into_any()

@@ -34,6 +34,7 @@ pub fn QuizCardHeader(
             <Show when=move || card_type != CardType::Kanji>
                 <AudioButtons
                     text=question_text.clone()
+                    audio_src=None
                     class=Signal::derive(|| "".to_string())
                 />
             </Show>

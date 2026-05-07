@@ -20,6 +20,7 @@ pub fn LessonCard(
     grammar_info: Option<GrammarInfo>,
     native_language: NativeLanguage,
     #[prop(into)] known_kanji: Signal<HashSet<String>>,
+    #[prop(into)] audio_src: Option<String>,
 ) -> impl IntoView {
     let card_type = CardType::from(&card);
     let is_phrase = card_type == CardType::Phrase;
@@ -192,6 +193,7 @@ pub fn LessonCard(
                 question_text=if is_reversed { answer.get_value() } else { question.get_value() }
                 grammar_info=grammar_info.clone()
                 show_answer=show_answer
+                audio_src=audio_src
             />
 
             <div class="flex-1 flex flex-col justify-center">
