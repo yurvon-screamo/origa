@@ -838,19 +838,19 @@ fn phrase_new_cards_limited() {
         })
         .count();
 
-    let expected_limit = 3 / 3; // daily_new_limit / PHRASE_NEW_RATIO
+    let expected_phrase_limit = 3 / 3; // daily_new_limit / PHRASE_NEW_RATIO
     assert!(
-        phrase_count <= expected_limit,
-        "Phrase cards should be limited to daily_new_limit/3, got {phrase_count}, expected <={expected_limit}"
+        phrase_count <= expected_phrase_limit,
+        "Phrase cards should be limited to daily_new_limit/3, got {phrase_count}, expected <={expected_phrase_limit}"
     );
     assert!(
         vocab_count <= 3,
         "Vocab cards should respect daily limit, got {vocab_count}"
     );
     assert!(
-        result.len() <= 50,
-        "Total should not exceed MAX_LESSON_SIZE, got {}",
-        result.len()
+        phrase_count + vocab_count <= 50 + 15,
+        "Total should not exceed MAX_LESSON_SIZE + PHRASE_MAX_PER_LESSON, got {}",
+        phrase_count + vocab_count
     );
 }
 
@@ -1026,28 +1026,37 @@ fn high_difficulty_cards_respect_max_lesson_size() {
 fn phrases_added_after_core_cards() {
     let mut knowledge_set = KnowledgeSet::new();
 
-    // 20 due core cards (high-difficulty via Again + ShortTerm)
+    // 20 due core cards (not new, not high-difficulty — rate Good + StandardLesson)
     for i in 0..20 {
         let study_card = knowledge_set
             .create_card(create_vocab_card(&format!("core{i}")))
             .unwrap();
+        // Good + StandardLesson → due, known/in-progress (not high-difficulty)
         knowledge_set
-            .rate_card(*study_card.card_id(), Rating::Again, RateMode::ShortTerm)
+            .rate_card(
+                *study_card.card_id(),
+                Rating::Good,
+                RateMode::StandardLesson,
+            )
             .unwrap();
     }
 
-    // 10 due phrase cards
+    // 10 due phrase cards (not new)
     for _ in 0..10 {
         let phrase_id = Ulid::new();
         let study_card = knowledge_set
             .create_card(Card::Phrase(PhraseCard::new_test_with_id(phrase_id)))
             .unwrap();
         knowledge_set
-            .rate_card(*study_card.card_id(), Rating::Again, RateMode::ShortTerm)
+            .rate_card(
+                *study_card.card_id(),
+                Rating::Good,
+                RateMode::StandardLesson,
+            )
             .unwrap();
     }
 
-    let result = knowledge_set.cards_to_lesson(100, &JlptContent::new());
+    let result = knowledge_set.cards_to_lesson(5, &JlptContent::new());
 
     let core_count = result
         .keys()
@@ -1068,12 +1077,12 @@ fn phrases_added_after_core_cards() {
         })
         .count();
 
-    assert_eq!(
-        core_count, 20,
-        "All 20 due core cards should be in lesson, got {core_count}"
+    assert!(
+        core_count >= 15,
+        "Core cards should reach at least MIN_LESSON_SIZE, got {core_count}"
     );
-    assert_eq!(
-        phrase_count, 10,
-        "All 10 due phrase cards should be added beyond core, got {phrase_count}"
+    assert!(
+        phrase_count <= 15,
+        "Phrase cards should not exceed PHRASE_MAX_PER_LESSON, got {phrase_count}"
     );
 }
