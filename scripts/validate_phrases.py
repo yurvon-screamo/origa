@@ -7,8 +7,8 @@ Criteria for invalidation (N):
 - Sexual content (explicit or euphemistic)
 
 Features:
-- Checkpoint every 100 phrases (auto-resume by ID on restart)
-- Graceful shutdown on SIGINT/SIGTERM
+- Checkpoint every batch (auto-resume by ID on restart)
+- Graceful shutdown on Ctrl+C
 
 Usage:
     python scripts/validate_phrases.py --api-key <KEY> --input cdn/phrases/data
@@ -26,7 +26,7 @@ import os
 import time
 import signal
 from pathlib import Path
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Optional
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed, Future
@@ -74,26 +74,71 @@ class PhraseValidationResult:
 
 class Checkpoint:
     def __init__(self, output_path: Path):
+        self.output_path = output_path
         self.path = output_path.with_suffix(".checkpoint.json")
         self.seen_ids: set[str] = set()
         self.results: list[PhraseValidationResult] = []
         self._load()
 
     def _load(self):
-        if not self.path.exists():
+        # Try checkpoint first, then fall back to final report
+        load_path = None
+        if self.path.exists():
+            load_path = self.path
+        elif self.output_path.exists():
+            load_path = self.output_path
+            print(f"No checkpoint found, resuming from final report: {load_path}")
+
+        if not load_path:
             return
-        with open(self.path, encoding="utf-8") as f:
+
+        with open(load_path, encoding="utf-8") as f:
             data = json.load(f)
-        for r in data.get("results", []):
-            self.seen_ids.add(r["id"])
-            self.results.append(PhraseValidationResult(
-                id=r["id"],
-                text=r["text"],
-                translation_ru=r["translation_ru"],
-                translation_en=r["translation_en"],
-                llm_response=r["llm_response"],
-                is_valid=r["is_valid"],
-            ))
+
+        # Report format: invalid_phrases_details + processed_phrase_ids
+        # Checkpoint format: results[]
+        if "results" in data:
+            results = data["results"]
+            for r in results:
+                phrase_id = r.get("id", "")
+                if not phrase_id or phrase_id in self.seen_ids:
+                    continue
+                self.seen_ids.add(phrase_id)
+                self.results.append(PhraseValidationResult(
+                    id=phrase_id,
+                    text=r.get("text", ""),
+                    translation_ru=r.get("translation_ru", ""),
+                    translation_en=r.get("translation_en", ""),
+                    llm_response=r.get("llm_response", ""),
+                    is_valid=r.get("is_valid", True),
+                ))
+        elif "processed_phrase_ids" in data:
+            # Resume from final report — load all processed IDs
+            invalid_ids = set(data.get("invalid_phrase_ids", []))
+            invalid_details = {d["id"]: d for d in data.get("invalid_phrases_details", [])}
+            for phrase_id in data["processed_phrase_ids"]:
+                if phrase_id in self.seen_ids:
+                    continue
+                self.seen_ids.add(phrase_id)
+                if phrase_id in invalid_details:
+                    d = invalid_details[phrase_id]
+                    self.results.append(PhraseValidationResult(
+                        id=phrase_id,
+                        text=d.get("text", ""),
+                        translation_ru=d.get("translation_ru", ""),
+                        translation_en=d.get("translation_en", ""),
+                        llm_response=d.get("llm_response", ""),
+                        is_valid=False,
+                    ))
+                else:
+                    self.results.append(PhraseValidationResult(
+                        id=phrase_id,
+                        text="",
+                        translation_ru="",
+                        translation_en="",
+                        llm_response="",
+                        is_valid=True,
+                    ))
 
     def save(self):
         output = {
@@ -111,14 +156,16 @@ class Checkpoint:
                 for r in self.results
             ],
         }
-        with open(self.path, "w", encoding="utf-8") as f:
+        tmp = self.path.with_suffix(".tmp")
+        with open(tmp, "w", encoding="utf-8") as f:
             json.dump(output, f, ensure_ascii=False)
+        tmp.replace(self.path)
 
-    def add(self, result: PhraseValidationResult, flush_every: int = 100):
-        self.seen_ids.add(result.id)
-        self.results.append(result)
-        if len(self.results) % flush_every == 0:
-            self.save()
+    def add_batch(self, batch: list[PhraseValidationResult]):
+        for r in batch:
+            self.seen_ids.add(r.id)
+            self.results.append(r)
+        self.save()
 
     def is_seen(self, phrase_id: str) -> bool:
         return phrase_id in self.seen_ids
@@ -310,36 +357,47 @@ def validate_phrases(
         nonlocal shutdown_requested
         if not shutdown_requested:
             shutdown_requested = True
-            print(f"\nSignal received, finishing current requests and saving checkpoint...")
+            print(f"\nSignal received, saving checkpoint and stopping...")
 
     signal.signal(signal.SIGINT, on_signal)
     signal.signal(signal.SIGTERM, on_signal)
 
-    task_args = [(api_base, api_key, model, phrase) for phrase in all_phrases]
+    # Process in batches of workers * 2 to avoid memory/queue bloat
+    batch_size = workers * 2
+    total = len(all_phrases)
 
-    with ThreadPoolExecutor(max_workers=workers) as executor:
-        futures: dict[Future, int] = {
-            executor.submit(process_phrase, arg): i for i, arg in enumerate(task_args)
-        }
+    with tqdm(total=total, desc="Validating") as pbar:
+        with ThreadPoolExecutor(max_workers=workers) as executor:
+            offset = 0
+            while offset < total and not shutdown_requested:
+                batch_phrases = all_phrases[offset : offset + batch_size]
+                futures = {
+                    executor.submit(
+                        process_phrase,
+                        (api_base, api_key, model, phrase),
+                    ): phrase
+                    for phrase in batch_phrases
+                }
 
-        with tqdm(total=len(all_phrases), desc="Validating") as pbar:
-            for future in as_completed(futures):
-                if shutdown_requested:
-                    future.cancel()
-                    continue
+                batch_results: list[PhraseValidationResult] = []
+                for future in as_completed(futures):
+                    if shutdown_requested:
+                        break
+                    result = future.result()
+                    batch_results.append(result)
+                    if result.is_valid:
+                        valid_count += 1
+                    else:
+                        invalid_count += 1
+                    pbar.update(1)
 
-                result = future.result()
-                checkpoint.add(result)
-                if result.is_valid:
-                    valid_count += 1
-                else:
-                    invalid_count += 1
-                pbar.update(1)
+                # Save checkpoint after each batch
+                if batch_results:
+                    checkpoint.add_batch(batch_results)
 
-    # Save final checkpoint
-    checkpoint.save()
+                offset += batch_size
 
-    # Build final report
+    # Save final report
     invalid_phrases = [r for r in checkpoint.results if not r.is_valid]
 
     report = {
@@ -355,6 +413,7 @@ def validate_phrases(
                 else 0
             ),
         },
+        "total_phrases": len(checkpoint.results),
         "invalid_phrase_ids": [p.id for p in invalid_phrases],
         "invalid_phrases_details": [
             {
@@ -366,12 +425,13 @@ def validate_phrases(
             }
             for p in invalid_phrases
         ],
+        "processed_phrase_ids": [r.id for r in checkpoint.results],
     }
 
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(report, f, ensure_ascii=False, indent=2)
 
-    checkpoint.cleanup()
+    # Keep checkpoint for potential resume, don't delete
 
     print(f"\nReport saved to: {output_path}")
     print(f"Total: {len(checkpoint.results)}")
