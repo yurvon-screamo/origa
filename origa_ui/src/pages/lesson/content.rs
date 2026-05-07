@@ -32,6 +32,7 @@ pub fn LessonContent() -> impl IntoView {
     let is_syncing_cards = RwSignal::new(false);
     let known_kanji = RwSignal::new(HashSet::<String>::new());
     let native_language = RwSignal::new(crate::i18n::locale_to_native_language(&i18n.get_locale()));
+    let core_count_signal = RwSignal::new(0usize);
 
     let is_disposed = StoredValue::new(());
     provide_context(is_disposed);
@@ -48,6 +49,7 @@ pub fn LessonContent() -> impl IntoView {
         is_muted,
         known_kanji,
         native_language,
+        core_count: core_count_signal,
     };
     provide_context(lesson_ctx);
 
@@ -88,19 +90,18 @@ pub fn LessonContent() -> impl IntoView {
 
             let use_case = SelectCardsToLessonUseCase::new(&repo);
             let jlpt_content = crate::loaders::get_jlpt_content();
-            let cards = use_case.execute(jlpt_content).await;
-
-            tracing::info!("Cards len: {}", cards.iter().count());
+            let cards_result = use_case.execute(jlpt_content).await;
 
             if is_disposed.is_disposed() {
                 return;
             }
 
-            match cards {
-                Ok(cards) => {
-                    let phrase_ids: Vec<Ulid> = cards
-                        .values()
-                        .filter_map(|lc| {
+            match cards_result {
+                Ok(lesson_data) => {
+                    let phrase_ids: Vec<Ulid> = lesson_data
+                        .cards
+                        .iter()
+                        .filter_map(|(_, lc)| {
                             if let Card::Phrase(pc) = lc.view().card() {
                                 Some(*pc.phrase_id())
                             } else {
@@ -121,7 +122,10 @@ pub fn LessonContent() -> impl IntoView {
                         }
                     }
 
-                    let card_ids: Vec<Ulid> = cards.keys().cloned().collect();
+                    let card_ids = lesson_data.card_ids();
+                    let cards = lesson_data.cards_map();
+                    let core_count = lesson_data.core_count;
+                    core_count_signal.set(core_count);
                     if cards.is_empty() {
                         error_message.set(Some(
                             i18n.get_keys().lesson().no_cards().inner().to_string(),
@@ -136,6 +140,9 @@ pub fn LessonContent() -> impl IntoView {
                             selected_quiz_option: None,
                             selected_yesno_answer: None,
                             dont_know_selected: false,
+                            core_count,
+                            waiting_for_next: false,
+                            pending_rating: None,
                         });
                     }
                 },

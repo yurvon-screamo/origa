@@ -74,6 +74,7 @@ mod toast;
 #[allow(dead_code)]
 mod toggle;
 mod tooltip;
+mod translator;
 #[allow(dead_code)]
 mod typography;
 mod update_drawer;
@@ -130,6 +131,7 @@ pub use search::Search;
 pub use selected_count::SelectedCount;
 pub use sidebar::Sidebar;
 pub use skeleton::Skeleton;
+pub use translator::TranslatorText;
 
 pub use filter_tag::FilterTag;
 pub use stepper::{Stepper, StepperStep};

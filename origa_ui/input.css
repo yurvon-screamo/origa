@@ -838,6 +838,40 @@ input[type="submit"],
     transition: width 0.5s ease;
 }
 
+.progress-container {
+    position: relative;
+}
+
+.progress-track-lesson {
+    height: 3px;
+    border: 1px solid var(--border-light);
+    background: var(--bg-aged);
+    position: relative;
+    overflow: hidden;
+}
+
+.progress-fill-core {
+    height: 100%;
+    background: var(--fg-black);
+    transition: width 0.5s ease;
+}
+
+.progress-fill-phrase {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    background: var(--accent-sage);
+    transition: width 0.5s ease, left 0.5s ease;
+}
+
+.progress-divider {
+    position: absolute;
+    top: -3px;
+    width: 1px;
+    height: 8px;
+    background: var(--border-dark);
+}
+
 .stepper {
     display: flex;
     align-items: center;
@@ -1470,6 +1504,71 @@ input[type="submit"],
 
 .furigana-hidden:hover .furigana-rt {
     opacity: 1;
+}
+
+/* === Translator Text === */
+.translator-text {
+    display: inline;
+    font-family: "Cormorant Garamond", serif;
+}
+
+.translator-loading {
+    opacity: 0.6;
+}
+
+.token-word {
+    position: relative;
+    display: inline;
+    cursor: pointer;
+    border-bottom: 1px dotted var(--border-light);
+    transition: background-color var(--anima-duration-normal) var(--anima-ease-paper),
+                border-color var(--anima-duration-normal) var(--anima-ease-paper);
+}
+
+.token-word:hover {
+    background: var(--bg-warm);
+}
+
+.token-word-active {
+    border-bottom: 2px solid var(--fg-black);
+}
+
+.token-surface {
+    font-family: "Cormorant Garamond", serif;
+}
+
+.token-plain {
+    font-family: "Cormorant Garamond", serif;
+}
+
+.token-popup {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 10;
+    border: 1px solid var(--border-dark);
+    background: var(--bg-paper);
+    padding: 8px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 120px;
+}
+
+.token-popup-reading {
+    font-family: "DM Mono", monospace;
+    font-size: 11px;
+    color: var(--fg-muted);
+}
+
+.token-popup-base {
+    font-family: "DM Mono", monospace;
+    font-size: 12px;
+}
+
+.token-popup-translation {
+    font-family: "DM Mono", monospace;
+    font-size: 12px;
 }
 
 .kanji-animation-container {

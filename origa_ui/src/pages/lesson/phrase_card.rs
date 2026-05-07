@@ -1,7 +1,7 @@
 use crate::i18n::*;
 use crate::ui_components::{
     AudioPlayer, Card, MarkdownText, MarkdownVariant, Tag, TagVariant, Text, TextSize,
-    TypographyVariant,
+    TranslatorText, TypographyVariant,
 };
 use leptos::prelude::*;
 use origa::domain::QuizOption;
@@ -23,6 +23,8 @@ pub fn PhraseCardView(
     dont_know_selected: bool,
     phrase_text: Option<String>,
     #[prop(into)] known_kanji: Signal<HashSet<String>>,
+    waiting_for_next: bool,
+    on_next_card: Callback<()>,
 ) -> impl IntoView {
     let i18n = use_i18n();
     let audio_src = crate::core::config::cdn_url(&format!("/phrases/audio/{}", audio_file));
@@ -161,14 +163,27 @@ pub fn PhraseCardView(
                 <Show when=move || show_result>
                     {move || match phrase_text_stored.get_value() {
                         Some(text) => view! {
-                            <div class="mt-4 p-3 bg-[var(--bg-secondary)] rounded-lg text-center">
-                                <Text size=TextSize::Default class="text-[var(--fg-primary)]">
-                                    {text}
-                                </Text>
+                            <div class="mt-4 p-3 bg-[var(--bg-secondary)] text-center">
+                                <TranslatorText text=text />
                             </div>
                         }.into_any(),
                         None => view! { <div/> }.into_any(),
                     }}
+                </Show>
+
+                <Show when=move || waiting_for_next && show_result>
+                    <div class="mt-4 flex justify-center">
+                        <button
+                            data-testid="phrase-next-btn"
+                            class="w-full p-3 bg-[var(--fg-black)] text-[var(--bg-paper)] border border-[var(--border-dark)] font-['DM_Mono'] text-[9px] uppercase tracking-[0.1em] cursor-pointer flex items-center justify-center gap-2"
+                            on:click=move |_| {
+                                on_next_card.run(());
+                            }
+                        >
+                            <span>{t!(i18n, lesson.next)}</span>
+                            <span class="text-[var(--fg-light)]">{t!(i18n, lesson.space_key)}</span>
+                        </button>
+                    </div>
                 </Show>
             </div>
         </Card>

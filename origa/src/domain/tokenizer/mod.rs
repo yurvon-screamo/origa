@@ -1,8 +1,10 @@
 mod part_of_speech;
+pub mod translation;
 
 use std::sync::OnceLock;
 
 pub use part_of_speech::PartOfSpeech;
+pub use translation::{TokenTranslation, lookup_tokens_translations};
 
 use crate::domain::OrigaError;
 

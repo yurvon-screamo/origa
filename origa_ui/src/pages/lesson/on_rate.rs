@@ -30,7 +30,10 @@ pub fn create_on_rate_callback(
                 .cards
                 .get(&card_id)
                 .map(|c| {
-                    if c.is_short_term() {
+                    let is_phrase = state.current_index >= state.core_count;
+                    if is_phrase {
+                        RateMode::PhraseReview
+                    } else if c.is_short_term() {
                         RateMode::ShortTerm
                     } else {
                         RateMode::StandardLesson
@@ -136,6 +139,8 @@ pub fn create_on_rate_callback(
                     let total = state.card_ids.len();
 
                     state.review_count += 1;
+                    state.waiting_for_next = false;
+                    state.pending_rating = None;
 
                     if next_index >= total {
                         is_completed.set(true);
