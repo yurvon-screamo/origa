@@ -1,7 +1,7 @@
 use crate::i18n::*;
 use crate::ui_components::{
-    AudioPlayer, Card, MarkdownText, MarkdownVariant, Tag, TagVariant, Text, TextSize,
-    TranslatorText, TypographyVariant,
+    AudioPlayer, Button, ButtonVariant, Card, MarkdownText, MarkdownVariant, Tag, TagVariant, Text,
+    TextSize, TranslatorText, TypographyVariant,
 };
 use leptos::prelude::*;
 use origa::domain::QuizOption;
@@ -22,6 +22,7 @@ pub fn PhraseCardView(
     on_dont_know: Callback<()>,
     dont_know_selected: bool,
     phrase_text: Option<String>,
+    phrase_translation: Option<String>,
     #[prop(into)] known_kanji: Signal<HashSet<String>>,
     waiting_for_next: bool,
     on_next_card: Callback<()>,
@@ -30,6 +31,7 @@ pub fn PhraseCardView(
     let audio_src = crate::core::config::cdn_url(&format!("/phrases/audio/{}", audio_file));
     let options_stored = StoredValue::new(options);
     let phrase_text_stored = StoredValue::new(phrase_text);
+    let phrase_translation_stored = StoredValue::new(phrase_translation);
 
     let quiz_result = move || {
         if dont_know_selected && show_result {
@@ -130,33 +132,31 @@ pub fn PhraseCardView(
                             .collect::<Vec<_>>()
                     }}
                 </div>
-                <button
-                    data-testid="quiz-dont-know-btn"
-                    class=move || {
-                        let base = "w-full mt-2 p-2 sm:p-4 border text-center transition-all cursor-pointer flex items-center justify-center gap-2";
-                        if dont_know_selected {
-                            format!("{} quiz-option-neutral ring-2 ring-[var(--accent-olive)]", base)
-                        } else if show_result {
-                            format!("{} quiz-option-dimmed pointer-events-none", base)
-                        } else {
-                            format!("{} quiz-option-neutral", base)
+                <Show when=move || !show_result>
+                    <button
+                        data-testid="quiz-dont-know-btn"
+                        class=move || {
+                            let base = "w-full mt-2 p-2 sm:p-4 border text-center transition-all cursor-pointer flex items-center justify-center gap-2";
+                            if dont_know_selected {
+                                format!("{} quiz-option-neutral ring-2 ring-[var(--accent-olive)]", base)
+                            } else {
+                                format!("{} quiz-option-neutral", base)
+                            }
                         }
-                    }
-                    on:click=move |_| {
-                        if !show_result {
-                            on_dont_know.run(());
+                        on:click=move |_| {
+                            if !show_result {
+                                on_dont_know.run(());
+                            }
                         }
-                    }
-                >
-                    <Text size=TextSize::Default>{t!(i18n, lesson.dont_know)}</Text>
-                    <Show when=move || !show_result>
+                    >
+                        <Text size=TextSize::Default>{t!(i18n, lesson.dont_know)}</Text>
                         <span class="text-[var(--fg-muted)] text-xs font-mono">
                             {t!(i18n, lesson.space_key)}
                         </span>
-                    </Show>
-                </button>
+                    </button>
+                </Show>
 
-                <Show when=move || show_result && quiz_result() != QuizResult::DontKnow>
+                <Show when=move || show_result>
                     <QuizResultDisplay quiz_result=quiz_result() />
                 </Show>
 
@@ -171,18 +171,32 @@ pub fn PhraseCardView(
                     }}
                 </Show>
 
+                <Show when=move || show_result>
+                    {move || match phrase_translation_stored.get_value() {
+                        Some(translation) => view! {
+                            <div class="mt-2 p-3 bg-[var(--bg-secondary)] text-center">
+                                <MarkdownText
+                                    content=Signal::derive(move || translation.clone())
+                                    variant=Signal::derive(|| MarkdownVariant::Default)
+                                    known_kanji=HashSet::new()
+                                    furigana=false
+                                />
+                            </div>
+                        }.into_any(),
+                        None => view! { <div/> }.into_any(),
+                    }}
+                </Show>
+
                 <Show when=move || waiting_for_next && show_result>
                     <div class="mt-4 flex justify-center">
-                        <button
-                            data-testid="phrase-next-btn"
-                            class="w-full p-3 bg-[var(--fg-black)] text-[var(--bg-paper)] border border-[var(--border-dark)] font-['DM_Mono'] text-[9px] uppercase tracking-[0.1em] cursor-pointer flex items-center justify-center gap-2"
-                            on:click=move |_| {
-                                on_next_card.run(());
-                            }
+                        <Button
+                            variant=Signal::derive(|| ButtonVariant::Filled)
+                            on_click=Callback::new(move |_| on_next_card.run(()))
+                            test_id=Signal::derive(|| "phrase-next-btn".to_string())
                         >
                             <span>{t!(i18n, lesson.next)}</span>
                             <span class="text-[var(--fg-light)]">{t!(i18n, lesson.space_key)}</span>
-                        </button>
+                        </Button>
                     </div>
                 </Show>
             </div>

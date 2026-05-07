@@ -13,6 +13,7 @@ use super::rating_buttons_view::RatingButtonsView;
 use super::writing_card::WritingCard;
 use super::yesno_card_view::YesNoCardView;
 use crate::pages::lesson::card_type::CardType;
+use crate::ui_components::AudioPlayer;
 use leptos::prelude::*;
 use origa::domain::{Card, GrammarInfo, LessonCard, LessonCardView, NativeLanguage, Rating};
 use std::collections::HashSet;
@@ -223,6 +224,7 @@ pub fn LessonCardContainer() -> impl IntoView {
                                 let show_result = state.showing_answer;
                                 let card_type = CardType::from(&card);
                                 let phrase_text = card.question(&native_language.get()).ok().map(|q| q.text().to_string());
+                                let phrase_translation = card.answer(&native_language.get()).ok().map(|a| a.text().to_string());
 
                                 Some(view! {
                                     <PhraseCardView
@@ -235,6 +237,7 @@ pub fn LessonCardContainer() -> impl IntoView {
                                         on_dont_know=on_quiz_dont_know
                                         dont_know_selected=state.dont_know_selected
                                         phrase_text=phrase_text
+                                        phrase_translation=phrase_translation
                                         known_kanji=Signal::from(known_kanji)
                                         waiting_for_next=state.waiting_for_next
                                         on_next_card=on_next_card
@@ -350,22 +353,45 @@ fn render_lesson_card(
     let is_phrase = matches!(params.card, Card::Phrase(_));
 
     if is_phrase {
+        let phrase_audio_src = StoredValue::new(match &params.card {
+            Card::Phrase(pc) => Some(crate::core::config::cdn_url(&format!(
+                "/phrases/audio/{}.opus",
+                pc.phrase_id()
+            ))),
+            _ => None,
+        });
+
         view! {
             <LessonCardComponent
                 card=params.card
                 is_reversed=params.is_reversed
-                show_answer=true
+                show_answer
                 on_show_answer=on_show_answer
                 grammar_info=params.grammar_info
                 native_language=native_language.get()
                 known_kanji=Signal::from(known_kanji)
             />
 
-            <PhraseRatingButtons
-                on_rate=on_rate_callback
-                disabled=Signal::derive(move || is_rating.get().is_some())
-                test_id=Signal::derive(|| "lesson-phrase-rating".to_string())
-            />
+            <Show when=move || !show_answer>
+                {move || match phrase_audio_src.get_value() {
+                    Some(src) => view! {
+                        <AudioPlayer
+                            src=src
+                            autoplay=true
+                            test_id=Signal::derive(|| "phrase-normal-audio".to_string())
+                        />
+                    }.into_any(),
+                    None => view! { <div/> }.into_any(),
+                }}
+            </Show>
+
+            <Show when=move || show_answer>
+                <PhraseRatingButtons
+                    on_rate=on_rate_callback
+                    disabled=Signal::derive(move || is_rating.get().is_some())
+                    test_id=Signal::derive(|| "lesson-phrase-rating".to_string())
+                />
+            </Show>
         }
         .into_any()
     } else {

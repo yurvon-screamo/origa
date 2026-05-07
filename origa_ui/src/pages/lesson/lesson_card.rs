@@ -150,6 +150,7 @@ pub fn LessonCard(
         if !show_answer
             && !is_reversed
             && card_type != CardType::Kanji
+            && card_type != CardType::Phrase
             && is_speech_supported()
             && !is_muted
         {
