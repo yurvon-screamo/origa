@@ -32,7 +32,7 @@ use ulid::Ulid;
 
 const MIN_LESSON_SIZE: usize = 15;
 const MAX_LESSON_SIZE: usize = 50;
-const PHRASE_NEW_LIMIT: usize = 10;
+const PHRASE_NEW_RATIO: usize = 3;
 
 /// Приоритет карточек без определённого JLPT уровня — ниже всех известных уровней (N1=1)
 const UNKNOWN_JLPT_PRIORITY: u8 = 0;
@@ -163,6 +163,16 @@ impl KnowledgeSet {
             .unwrap_or(0)
     }
 
+    pub fn phrase_cards_studied_today(&self) -> usize {
+        let today = Utc::now().date_naive();
+        self.lesson_history
+            .iter()
+            .rev()
+            .find(|item| item.timestamp().date_naive() == today)
+            .map(|item| item.phrase_cards_studied_today() as usize)
+            .unwrap_or(0)
+    }
+
     pub fn get_known_kanji(&self) -> HashSet<String> {
         self.study_cards
             .values()
@@ -287,11 +297,12 @@ impl KnowledgeSet {
             let mut limited_taken = 0;
 
             let mut phrase_taken = 0;
+            let phrase_new_limit = daily_new_limit / PHRASE_NEW_RATIO;
             for card in distributed {
                 let card_type = CardType::from(card.1.card());
                 match card_type {
                     CardType::Phrase => {
-                        if phrase_taken < PHRASE_NEW_LIMIT {
+                        if phrase_taken < phrase_new_limit {
                             selected_cards.push(card);
                             phrase_taken += 1;
                         }
@@ -454,7 +465,11 @@ impl KnowledgeSet {
             if was_new && !is_phrase {
                 existing_item.increment_new_cards_studied();
             }
+            if was_new && is_phrase {
+                existing_item.increment_phrase_cards_studied();
+            }
             let new_cards_today = existing_item.new_cards_studied_today();
+            let phrase_cards_today = existing_item.phrase_cards_studied_today();
 
             if is_phrase {
                 existing_item.update_stats(
@@ -469,6 +484,7 @@ impl KnowledgeSet {
                     existing_item.negative_ratings(),
                     existing_item.total_ratings(),
                     new_cards_today,
+                    phrase_cards_today,
                 );
             } else {
                 existing_item.update(
@@ -481,12 +497,16 @@ impl KnowledgeSet {
                     high_difficulty_words,
                     rating,
                     new_cards_today,
+                    phrase_cards_today,
                 );
             }
         } else {
             let mut item = DailyHistoryItem::new();
             if was_new && !is_phrase {
                 item.increment_new_cards_studied();
+            }
+            if was_new && is_phrase {
+                item.increment_phrase_cards_studied();
             }
 
             if is_phrase {
@@ -502,6 +522,7 @@ impl KnowledgeSet {
                     0,
                     0,
                     item.new_cards_studied_today(),
+                    item.phrase_cards_studied_today(),
                 );
             } else {
                 item.update(
@@ -514,6 +535,7 @@ impl KnowledgeSet {
                     high_difficulty_words,
                     rating,
                     item.new_cards_studied_today(),
+                    item.phrase_cards_studied_today(),
                 );
             }
             self.lesson_history.push(item);
@@ -570,6 +592,14 @@ impl KnowledgeSet {
             .map(|item| item.new_cards_studied_today())
             .unwrap_or(0);
 
+        let preserved_phrase_cards = self
+            .lesson_history
+            .iter()
+            .rev()
+            .find(|item| item.timestamp().date_naive() == today)
+            .map(|item| item.phrase_cards_studied_today())
+            .unwrap_or(0);
+
         if let Some(existing_item) = self
             .lesson_history
             .iter_mut()
@@ -587,6 +617,7 @@ impl KnowledgeSet {
                 negative,
                 total,
                 preserved_new_cards,
+                preserved_phrase_cards,
             );
         } else {
             let mut item = DailyHistoryItem::new();
@@ -602,6 +633,7 @@ impl KnowledgeSet {
                 negative,
                 total,
                 preserved_new_cards,
+                preserved_phrase_cards,
             );
             self.lesson_history.push(item);
         }
@@ -1520,9 +1552,10 @@ mod tests {
             })
             .count();
 
+        let expected_limit = 3 / 3; // daily_new_limit / PHRASE_NEW_RATIO
         assert!(
-            phrase_count <= 10,
-            "Phrase cards should be limited to PHRASE_NEW_LIMIT, got {phrase_count}"
+            phrase_count <= expected_limit,
+            "Phrase cards should be limited to daily_new_limit/3, got {phrase_count}, expected <={expected_limit}"
         );
         assert!(
             vocab_count <= 3,

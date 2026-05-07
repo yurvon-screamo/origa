@@ -204,18 +204,6 @@ impl<'a> LessonViewGenerator<'a> {
         }
 
         generation::generate_phrase_quiz(card.clone(), same_type_cards, &DEFAULT_LANG)
-            .unwrap_or_else(|| match card {
-                Card::Phrase(phrase_card) => {
-                    let audio_file = format!("{}.opus", phrase_card.phrase_id());
-                    LessonCardView::PhraseListen {
-                        card: card.clone(),
-                        audio_file,
-                        options: vec![],
-                    }
-                },
-                Card::Vocabulary(_) | Card::Kanji(_) | Card::Grammar(_) => {
-                    LessonCardView::Normal(card.clone())
-                },
-            })
+            .unwrap_or_else(|| LessonCardView::Normal(card.clone()))
     }
 }
