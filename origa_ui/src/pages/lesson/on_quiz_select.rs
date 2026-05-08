@@ -24,32 +24,40 @@ pub fn create_on_quiz_select(
                 .card_ids
                 .get(lesson_state.get().current_index)
                 .unwrap(),
-        ) && let Some(quiz) = match lesson_card.view() {
-            LessonCardView::Quiz(q) | LessonCardView::KanjiReadingQuiz(q) => Some(q),
-            LessonCardView::GrammarQuiz(gq) => Some(gq.quiz()),
-            _ => None,
-        } {
-            let is_correct = quiz.check_answer(option_index);
-            let rating = if is_correct {
-                Rating::Good
-            } else {
-                Rating::Hard
+        ) {
+            let is_correct = match lesson_card.view() {
+                LessonCardView::Quiz(q) | LessonCardView::KanjiReadingQuiz(q) => {
+                    Some(q.check_answer(option_index))
+                },
+                LessonCardView::GrammarQuiz(gq) => Some(gq.quiz().check_answer(option_index)),
+                LessonCardView::PhraseListen { options, .. } => {
+                    options.get(option_index).map(|o| o.is_correct())
+                },
+                _ => None,
             };
 
-            if is_phrase {
-                lesson_state.update(|state| {
-                    state.waiting_for_next = true;
-                    state.pending_rating = Some(rating);
-                });
-            } else {
-                let on_rate_clone = on_rate_callback;
-                spawn_local(async move {
-                    gloo_timers::future::TimeoutFuture::new(1500).await;
-                    if is_disposed.is_disposed() {
-                        return;
-                    }
-                    on_rate_clone.run(rating);
-                });
+            if let Some(is_correct) = is_correct {
+                let rating = if is_correct {
+                    Rating::Good
+                } else {
+                    Rating::Hard
+                };
+
+                if is_phrase {
+                    lesson_state.update(|state| {
+                        state.waiting_for_next = true;
+                        state.pending_rating = Some(rating);
+                    });
+                } else {
+                    let on_rate_clone = on_rate_callback;
+                    spawn_local(async move {
+                        gloo_timers::future::TimeoutFuture::new(1500).await;
+                        if is_disposed.is_disposed() {
+                            return;
+                        }
+                        on_rate_clone.run(rating);
+                    });
+                }
             }
         }
     })

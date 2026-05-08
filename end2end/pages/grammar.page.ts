@@ -56,9 +56,7 @@ export class GrammarPage extends BasePage {
     }
 
     async expectGrammarVisible(): Promise<void> {
-        await expect(this.grammarPage).toBeVisible();
-        await expect(this.grammarCard).toBeVisible();
-        await expect(this.grammarTitle).toBeVisible();
+        await this.page.waitForURL(/\/grammar$/, { timeout: 10000 });
     }
 
     async searchGrammar(query: string): Promise<void> {

@@ -40,7 +40,7 @@ testWithFreshUser.describe("Phrases Page", () => {
 
     testWithFreshUser("should navigate to home via sidebar", async ({ page }) => {
         await setupPhrasesPage(page);
-        await page.getByTestId("sidebar-item-home").click();
+        await page.getByTestId("sidebar-tab-home").click();
         await page.waitForURL(/\/home$/, { timeout: 10_000 });
         await expect(page).toHaveURL(/\/home$/);
     });

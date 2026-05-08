@@ -4,8 +4,6 @@ import { BasePage } from "./base.page";
 export class ProfilePage extends BasePage {
 	readonly profilePage: Locator;
 	readonly profileCard: Locator;
-	readonly profileTitle: Locator;
-	readonly profileBackBtn: Locator;
 	readonly profileContent: Locator;
 
 	readonly profilePersonalData: Locator;
@@ -30,8 +28,6 @@ export class ProfilePage extends BasePage {
 
 		this.profilePage = page.getByTestId("profile-page");
 		this.profileCard = page.getByTestId("profile-card");
-		this.profileTitle = page.getByTestId("profile-title");
-		this.profileBackBtn = page.getByTestId("profile-back-btn");
 		this.profileContent = page.getByTestId("profile-content");
 
 		this.profilePersonalData = page.getByTestId("profile-personal-data");
@@ -59,12 +55,7 @@ export class ProfilePage extends BasePage {
 	async expectProfileVisible(): Promise<void> {
 		await expect(this.profilePage).toBeVisible();
 		await expect(this.profileCard).toBeVisible();
-		await expect(this.profileTitle).toBeVisible();
 		await expect(this.profileContent).toBeVisible();
-	}
-
-	async clickBack(): Promise<void> {
-		await this.profileBackBtn.click();
 	}
 
 	async selectLanguage(lang: "english" | "russian"): Promise<void> {

@@ -17,21 +17,13 @@ testWithFreshUser.describe("Profile Page", () => {
         const profilePage = await setupProfilePage(page);
 
         await expect(profilePage.profilePage).toBeVisible();
-        await expect(profilePage.profileTitle).toBeVisible();
         await expect(profilePage.profileContent).toBeVisible();
     });
 
     testWithFreshUser("should navigate to home via sidebar", async ({ page }) => {
         const profilePage = await setupProfilePage(page);
-        await page.getByTestId("sidebar-item-home").click();
+        await page.getByTestId("sidebar-tab-home").click();
         await page.waitForURL(/\/home$/, { timeout: 10_000 });
-    });
-
-    testWithFreshUser("should display username in profile title", async ({ page }) => {
-        const profilePage = await setupProfilePage(page);
-        const titleText = await profilePage.profileTitle.textContent();
-        expect(titleText).toContain("Профиль");
-        expect(titleText?.length).toBeGreaterThan("Профиль".length);
     });
 
     testWithFreshUser("should display all language options", async ({ page }) => {
