@@ -1,0 +1,72 @@
+{
+  "total_reviewed": 1380,
+  "real_invalid_count": 9,
+  "false_positive_count": 1371,
+  "real_invalid_ids": [
+    "000000000001AKHKGM6KMBV2W5",
+    "00000000000YGMVK6FN400Z4CV",
+    "00000000001KHE14M73E93Z5CV",
+    "00000000001ZP28PJKTRC61SSM",
+    "00000000003H8FX62TKTVGPKHH",
+    "0000000000431NP44PF763FZJ8",
+    "0000000000EAHGYZ695A21CCDT",
+    "0000000000MN03ZJEZTDZM05F5",
+    "0000000000T7B3BBGXJQ7GPNYB"
+  ],
+  "real_invalid_details": [
+    {
+      "id": "000000000001AKHKGM6KMBV2W5",
+      "text": "なっ、何を言っているのかしら？わたしがちはちはより先にイくわけないわ",
+      "en": "What are you saying? I can't get ahead of myself.",
+      "rule": "Rule 2 - Explicit keyword: イくわ"
+    },
+    {
+      "id": "00000000000YGMVK6FN400Z4CV",
+      "text": "エーリカさん。南蛮とは、そのような破廉恥な風習が公然とまかり通るような場所なのですか？",
+      "en": "Erica, is the southern barbarian a place where such disgraceful customs are openly manifested?",
+      "rule": "Rule 2 - Explicit keyword: 破廉恥"
+    },
+    {
+      "id": "00000000001KHE14M73E93Z5CV",
+      "text": "あれは最初のせーえきを受け止めるためだったから。本番はここからだよ？",
+      "en": "That was to take the first shot.",
+      "rule": "Rule 2 - Explicit keyword: せーえき"
+    },
+    {
+      "id": "00000000001ZP28PJKTRC61SSM",
+      "text": "そのまんまんを、リコにどうしてくれるのかな？",
+      "en": "How can you give Rico that?",
+      "rule": "Rule 6 - まんまん (needs manual review)"
+    },
+    {
+      "id": "00000000003H8FX62TKTVGPKHH",
+      "text": "ろ、ローター",
+      "en": "The lottery is open.",
+      "rule": "Rule 2 - Explicit keyword: ローター"
+    },
+    {
+      "id": "0000000000431NP44PF763FZJ8",
+      "text": "あたしをこんなにいかせたんだから",
+      "en": "You've got me so far.",
+      "rule": "Rule 2 - Explicit keyword: いかせ"
+    },
+    {
+      "id": "0000000000EAHGYZ695A21CCDT",
+      "text": "ゆうくんのせーえき、飲みたいな",
+      "en": "I'm going to drink it.",
+      "rule": "Rule 2 - Explicit keyword: せーえき"
+    },
+    {
+      "id": "0000000000MN03ZJEZTDZM05F5",
+      "text": "このままシャワー浴びれば…せーえきなんてすぐ落ちるのに",
+      "en": "If you showered like this, you would fall off the toilet.",
+      "rule": "Rule 2 - Explicit keyword: せーえき"
+    },
+    {
+      "id": "0000000000T7B3BBGXJQ7GPNYB",
+      "text": "ふふ。これさえあれば夜中に出歩いても平気ね。お化けも怖くないわ",
+      "en": "Even with these, you're comfortable walking out at night, and you're not afraid of ghosts.",
+      "rule": "Rule 4 - 中に出/中に注 (unambiguous sexual euphemism)"
+    }
+  ]
+}

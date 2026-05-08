@@ -72,19 +72,19 @@ pub fn WelcomeCard(
     view! {
         <div class="py-6 sm:py-8" data-testid=test_id_val>
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div>
+                <div class="flex flex-wrap items-baseline gap-x-2">
                     <div class="font-serif text-2xl sm:text-3xl text-[var(--fg-black)]">
                         {move || greeting.get()} ", "
                         <span class="text-[var(--accent-olive)]">{move || username.get()}</span>
                     </div>
-                    <div class="font-mono text-xs tracking-widest uppercase text-[var(--fg-muted)] mt-2">
+                    <div class="font-mono text-xs tracking-widest uppercase text-[var(--fg-muted)]">
                         {move || subline.get()}
                     </div>
                 </div>
                 <div class="shrink-0">
                     <A href="/lesson">
                         <button
-                            class="btn btn-olive flex items-center justify-center gap-2 w-full sm:w-auto sm:min-w-[200px] px-6 py-4 sm:px-8 sm:py-5"
+                            class="btn btn-olive flex items-center justify-center gap-2 w-full sm:w-auto sm:min-w-[240px] px-6 py-2 sm:px-8 sm:py-3"
                             data-testid=move || Some(lesson_test_id.get())
                         >
                             <Icon icon=icondata::LuBookOpen width="16" height="16" />
