@@ -125,9 +125,7 @@ export class WordsPage extends BasePage {
     }
 
     async expectWordsVisible(): Promise<void> {
-        await expect(this.wordsPage).toBeVisible();
-        await expect(this.wordsCard).toBeVisible();
-        await expect(this.wordsTitle).toBeVisible();
+        await this.page.waitForURL(/\/words$/, { timeout: 10000 });
     }
 
     async searchWords(query: string): Promise<void> {

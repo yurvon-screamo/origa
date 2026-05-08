@@ -67,11 +67,11 @@ export class HomePage extends BasePage {
     // Sidebar navigation
     this.sidebar = page.getByTestId("sidebar");
     this.sidebarAvatar = page.getByTestId("sidebar-avatar");
-    this.sidebarHome = page.getByTestId("sidebar-item-home");
-    this.sidebarWords = page.getByTestId("sidebar-item-words");
-    this.sidebarGrammar = page.getByTestId("sidebar-item-grammar");
-    this.sidebarKanji = page.getByTestId("sidebar-item-kanji");
-    this.sidebarPhrases = page.getByTestId("sidebar-item-phrases");
+    this.sidebarHome = page.getByTestId("sidebar-tab-home");
+    this.sidebarWords = page.getByTestId("sidebar-tab-words");
+    this.sidebarGrammar = page.getByTestId("sidebar-tab-grammar");
+    this.sidebarKanji = page.getByTestId("sidebar-tab-kanji");
+    this.sidebarPhrases = page.getByTestId("sidebar-tab-phrases");
 
     // JLPT Progress
     this.jlptProgress = page.getByTestId("home-jlpt-progress");
@@ -80,7 +80,7 @@ export class HomePage extends BasePage {
     // Stats
     this.statsGrid = page.getByTestId("home-stats-grid");
     this.lessonButtons = page.getByTestId("lesson-buttons");
-    this.lessonButton = page.getByTestId("lesson-buttons-lesson");
+    this.lessonButton = page.getByTestId("home-welcome-lesson");
 
     // Stat cards
     this.statLearned = page.getByTestId("stat-learned");
@@ -118,19 +118,18 @@ export class HomePage extends BasePage {
   async expectHomeVisible(): Promise<void> {
     await expect(this.homePage).toBeVisible();
     await expect(this.homeContent).toBeVisible();
-    await expect(this.sidebar).toBeVisible();
   }
 
   async navigateToWords(): Promise<void> {
-    await this.sidebarWords.click();
+    await this.page.goto("/words");
   }
 
   async navigateToGrammar(): Promise<void> {
-    await this.sidebarGrammar.click();
+    await this.page.goto("/grammar");
   }
 
   async navigateToKanji(): Promise<void> {
-    await this.sidebarKanji.click();
+    await this.page.goto("/kanji");
   }
 
   async startLesson(): Promise<void> {

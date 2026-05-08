@@ -130,7 +130,7 @@ testWithFreshUser.describe("Words Page - Search & Filters", () => {
 testWithFreshUser.describe("Words Page - Navigation", () => {
     testWithFreshUser("should navigate to home via sidebar", async ({ page }) => {
         const wordsPage = await setupWordsPage(page);
-        await page.getByTestId("sidebar-item-home").click();
+        await page.getByTestId("sidebar-tab-home").click();
         await page.waitForURL(/\/home$/, { timeout: 10000 });
         await expect(page).toHaveURL(/\/home$/);
     });

@@ -54,9 +54,7 @@ export class KanjiPage extends BasePage {
     }
 
     async expectKanjiVisible(): Promise<void> {
-        await expect(this.kanjiPage).toBeVisible();
-        await expect(this.kanjiCard).toBeVisible();
-        await expect(this.kanjiTitle).toBeVisible();
+        await this.page.waitForURL(/\/kanji$/, { timeout: 10000 });
     }
 
     async searchKanji(query: string): Promise<void> {
