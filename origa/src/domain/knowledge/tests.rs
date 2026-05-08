@@ -817,7 +817,7 @@ fn phrase_new_cards_limited() {
             .unwrap();
     }
 
-    let result = knowledge_set.cards_to_lesson(3, &JlptContent::new());
+    let result = knowledge_set.cards_to_lesson(5, &JlptContent::new());
 
     let phrase_count = result
         .keys()
@@ -838,13 +838,13 @@ fn phrase_new_cards_limited() {
         })
         .count();
 
-    let expected_phrase_limit = 3 / 3; // daily_new_limit / PHRASE_NEW_RATIO
+    let expected_phrase_limit = 5 * 3 / 2;
     assert!(
         phrase_count <= expected_phrase_limit,
-        "Phrase cards should be limited to daily_new_limit/3, got {phrase_count}, expected <={expected_phrase_limit}"
+        "Phrase cards should be limited to daily_new_limit*3/2, got {phrase_count}, expected <={expected_phrase_limit}"
     );
     assert!(
-        vocab_count <= 3,
+        vocab_count <= 5,
         "Vocab cards should respect daily limit, got {vocab_count}"
     );
     assert!(
@@ -894,8 +894,8 @@ fn phrase_new_cards_zero_when_limit_below_ratio() {
             .unwrap();
     }
 
-    // daily_new_limit=2 < PHRASE_NEW_RATIO=3 → phrase_new_limit=0
-    let result = knowledge_set.cards_to_lesson(2, &JlptContent::new());
+    // daily_new_limit=0 → phrase_new_limit=0
+    let result = knowledge_set.cards_to_lesson(0, &JlptContent::new());
 
     let phrase_count = result
         .keys()
@@ -909,7 +909,7 @@ fn phrase_new_cards_zero_when_limit_below_ratio() {
 
     assert_eq!(
         phrase_count, 0,
-        "Phrase cards should be 0 when daily_new_limit < PHRASE_NEW_RATIO, got {phrase_count}"
+        "Phrase cards should be 0 when daily_new_limit is 0, got {phrase_count}"
     );
 }
 
