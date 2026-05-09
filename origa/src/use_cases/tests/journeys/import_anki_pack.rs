@@ -407,10 +407,7 @@ async fn execute_returns_error_when_no_current_user() {
     let result = use_case.execute(cards).await;
 
     assert!(result.is_err());
-    assert!(matches!(
-        result,
-        Err(OrigaError::CurrentUserNotExist { .. })
-    ));
+    assert!(matches!(result, Err(OrigaError::CurrentUserNotExist)));
 }
 
 #[tokio::test]

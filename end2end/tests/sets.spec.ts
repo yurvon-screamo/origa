@@ -1,11 +1,10 @@
 import { expect, test, type Page } from "@playwright/test";
 import { testWithFreshUser } from "../fixtures";
+import { skipOnboarding } from "../helpers/navigation";
 import { SetsPage } from "../pages";
 
 async function setupSetsPage(page: Page): Promise<SetsPage> {
-    await expect(page.getByTestId("onboarding-spinner")).not.toBeVisible({ timeout: 10000 });
-    await page.getByTestId("onboarding-skip").click();
-    await page.waitForURL(/\/home$/, { timeout: 10000 });
+    await skipOnboarding(page);
 
     const setsPage = new SetsPage(page);
     await setsPage.goto();
@@ -14,12 +13,10 @@ async function setupSetsPage(page: Page): Promise<SetsPage> {
     return setsPage;
 }
 
-async function importFirstSet(setsPage: SetsPage, page: Page): Promise<void> {
+async function importFirstSet(setsPage: SetsPage): Promise<void> {
     await setsPage.clickImportOnCard(0);
     await setsPage.waitForDrawerWords();
     await setsPage.importFromDrawer();
-    // Wait for the UI to update after import
-    await page.waitForTimeout(1000);
     await setsPage.waitForLoad();
 }
 
@@ -35,7 +32,7 @@ testWithFreshUser.describe("Sets Page - Import", () => {
         test.setTimeout(60_000);
         const setsPage = await setupSetsPage(page);
         const countBefore = await setsPage.getImportedCardCount();
-        await importFirstSet(setsPage, page);
+        await importFirstSet(setsPage);
         // Check that count increased OR that the filter shows imported
         const countAfter = await setsPage.getImportedCardCount();
         expect(countAfter).toBeGreaterThanOrEqual(countBefore);
@@ -67,7 +64,6 @@ testWithFreshUser.describe("Sets Page - Import", () => {
             await expect(setsPage.drawer).toBeVisible();
             await setsPage.importFromDrawer();
             await expect(setsPage.drawer).not.toBeVisible({ timeout: 30_000 });
-            await page.waitForTimeout(1000);
             await setsPage.waitForLoad();
         }
     });
@@ -164,7 +160,7 @@ testWithFreshUser.describe("Sets Page - Pagination", () => {
 
             // Click load more
             await setsPage.clickLoadMore();
-            await page.waitForTimeout(500);
+            await expect(page.getByTestId("sets-card-item").nth(initialCount)).toBeVisible({ timeout: 5000 });
 
             // More sets should be visible now
             const newCount = await setsPage.getSetCardCount();
@@ -180,7 +176,7 @@ testWithFreshUser.describe("Sets Page - Pagination", () => {
         if (await setsPage.isLoadMoreVisible().catch(() => false)) {
             // Click load more to expand
             await setsPage.clickLoadMore();
-            await page.waitForTimeout(500);
+            await expect(page.getByTestId("sets-card-item").nth(50)).toBeVisible({ timeout: 5000 });
             const expandedCount = await setsPage.getSetCardCount();
             expect(expandedCount).toBeGreaterThan(50);
 

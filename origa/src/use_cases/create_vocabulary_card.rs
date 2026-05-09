@@ -30,7 +30,7 @@ impl<'a, R: UserRepository> CreateVocabularyCardUseCase<'a, R> {
             .repository
             .get_current_user()
             .await?
-            .ok_or(OrigaError::CurrentUserNotExist {})?;
+            .ok_or(OrigaError::CurrentUserNotExist)?;
 
         let result = self.create(&mut user, question_text).await?;
 

@@ -91,10 +91,6 @@ impl StudyCard {
             .perfect_streak_since_known
             .max(other.perfect_streak_since_known);
     }
-
-    pub fn shuffle_card(&self) -> Card {
-        self.card.clone()
-    }
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -308,33 +304,6 @@ mod tests {
                 let study_card = StudyCard::new(card);
 
                 assert_eq!(study_card.perfect_streak_since_known(), 0);
-            }
-        }
-
-        mod shuffle_card {
-            use super::*;
-
-            #[test]
-            fn returns_cloned_card() {
-                let vocab_card = create_vocabulary_card("猫");
-                let card = Card::Vocabulary(vocab_card.clone());
-                let study_card = StudyCard::new(card);
-
-                let shuffled = study_card.shuffle_card();
-
-                assert_eq!(shuffled, Card::Vocabulary(vocab_card));
-            }
-
-            #[test]
-            fn shuffled_card_is_independent_from_study_card() {
-                let vocab_card = create_vocabulary_card("猫");
-                let card = Card::Vocabulary(vocab_card);
-                let study_card = StudyCard::new(card);
-
-                let _shuffled = study_card.shuffle_card();
-
-                let original_card = study_card.card();
-                assert!(matches!(original_card, Card::Vocabulary(_)));
             }
         }
 

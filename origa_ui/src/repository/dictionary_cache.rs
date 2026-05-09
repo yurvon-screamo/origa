@@ -33,12 +33,7 @@ async fn open_cache() -> Result<web_sys::Cache, OrigaError> {
     Ok(cache)
 }
 
-fn now_ms() -> f64 {
-    web_sys::window()
-        .and_then(|w| w.performance())
-        .map(|p| p.now())
-        .unwrap_or(0.0)
-}
+use crate::utils::now_ms;
 
 /// Get cached dictionary as raw rkyv bytes
 pub async fn get_cached_dictionary_rkyv() -> Result<Option<Vec<u8>>, OrigaError> {

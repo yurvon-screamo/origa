@@ -17,7 +17,7 @@ impl<'a, R: UserRepository> SelectCardsToLessonUseCase<'a, R> {
             .repository
             .get_current_user()
             .await?
-            .ok_or(OrigaError::CurrentUserNotExist {})?;
+            .ok_or(OrigaError::CurrentUserNotExist)?;
 
         debug!(user_id = %user.id(), "Selecting cards to lesson");
 

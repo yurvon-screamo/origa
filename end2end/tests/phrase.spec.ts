@@ -1,6 +1,7 @@
 import { test, expect, type Page } from "@playwright/test";
 import { PhrasesPage } from "../pages";
 import { testWithFreshUser } from "../fixtures";
+import { skipOnboarding } from "../helpers/navigation";
 
 test.describe("Phrases Navigation", () => {
     testWithFreshUser("bottom nav has Phrases tab", async ({ page }) => {
@@ -22,9 +23,7 @@ test.describe("Phrases Navigation", () => {
 });
 
 async function setupPhrasesPage(page: Page): Promise<PhrasesPage> {
-    await expect(page.getByTestId("onboarding-spinner")).not.toBeVisible({ timeout: 10000 });
-    await page.getByTestId("onboarding-skip").click();
-    await page.waitForURL(/\/home$/, { timeout: 10000 });
+    await skipOnboarding(page);
 
     const phrasesPage = new PhrasesPage(page);
     await phrasesPage.goto();
@@ -112,7 +111,6 @@ async function completeFullOnboarding(page: Page): Promise<void> {
     await expect(page.getByTestId("onboarding-scoring-step")).toBeVisible({ timeout: 120_000 });
 
     await waitForScoringReady(page);
-    await page.waitForTimeout(1000);
 
     // Mark all known
     await page.getByTestId("onboarding-mark-all-known").click();
@@ -162,5 +160,52 @@ testWithFreshUser.describe("Phrases after full onboarding", () => {
         // Verify meaning/translation is present
         const meaning = firstCard.getByTestId("phrases-card-meaning");
         await expect(meaning).toContainText(/\S/, { timeout: 30_000 });
+    });
+
+    testWithFreshUser("should search and filter phrases after onboarding", async ({ page }) => {
+        test.setTimeout(300_000);
+
+        await completeFullOnboarding(page);
+        await expect(page).toHaveURL(/\/home$/);
+
+        const phrasesPage = new PhrasesPage(page);
+        await phrasesPage.goto();
+        await phrasesPage.expectPhrasesVisible();
+
+        await expect(phrasesPage.emptyState).not.toBeVisible({ timeout: 30_000 });
+        const countAll = await phrasesPage.getCardCount();
+        expect(countAll).toBeGreaterThan(0);
+
+        // Search with non-matching query
+        await phrasesPage.searchPhrases("xyznonexistent");
+        await expect(phrasesPage.emptyState).toBeVisible({ timeout: 5_000 });
+
+        // Clear search — cards should reappear
+        await phrasesPage.searchPhrases("");
+        await expect(phrasesPage.emptyState).not.toBeVisible({ timeout: 5_000 });
+        const countAfterClear = await phrasesPage.getCardCount();
+        expect(countAfterClear).toBe(countAll);
+    });
+
+    testWithFreshUser("should filter phrases by status after onboarding", async ({ page }) => {
+        test.setTimeout(300_000);
+
+        await completeFullOnboarding(page);
+        await expect(page).toHaveURL(/\/home$/);
+
+        const phrasesPage = new PhrasesPage(page);
+        await phrasesPage.goto();
+        await phrasesPage.expectPhrasesVisible();
+
+        await expect(phrasesPage.emptyState).not.toBeVisible({ timeout: 30_000 });
+
+        // "New" filter should show phrases (all are new after onboarding)
+        await phrasesPage.selectFilter("Новые");
+        const newCount = await phrasesPage.getCardCount();
+        expect(newCount).toBeGreaterThan(0);
+
+        // "Learned" filter should show empty (nothing learned yet)
+        await phrasesPage.selectFilter("Изученные");
+        await expect(phrasesPage.emptyState).toBeVisible({ timeout: 5_000 });
     });
 });

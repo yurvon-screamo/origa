@@ -32,7 +32,6 @@ mod furigana;
 mod history_button;
 mod input;
 mod kanji_animation;
-#[allow(dead_code)]
 mod kanji_drawing;
 #[allow(dead_code)]
 mod label_frame;

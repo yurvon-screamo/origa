@@ -37,7 +37,7 @@ impl<'a, R: UserRepository> CreateCardsFromAnalysisUseCase<'a, R> {
             .repository
             .get_current_user()
             .await?
-            .ok_or(OrigaError::CurrentUserNotExist {})?;
+            .ok_or(OrigaError::CurrentUserNotExist)?;
 
         let mut created_cards = Vec::new();
         let mut skipped_words = Vec::new();

@@ -32,7 +32,7 @@ impl<'a, R: UserRepository> RateCardUseCase<'a, R> {
             .repository
             .get_current_user()
             .await?
-            .ok_or(OrigaError::CurrentUserNotExist {})?;
+            .ok_or(OrigaError::CurrentUserNotExist)?;
 
         user.rate_card(card_id, rating, mode)?;
 

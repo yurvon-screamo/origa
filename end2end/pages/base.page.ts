@@ -13,13 +13,10 @@ export abstract class BasePage {
 
 	async waitForLoad(): Promise<void> {
 		await this.page.waitForLoadState("domcontentloaded");
-		await this.page.waitForTimeout(500);
-		await this.page.evaluate(() => {
-			const overlays = document.querySelectorAll(".loading-overlay");
-			overlays.forEach((el) => {
-				(el as HTMLElement).style.display = "none";
-			});
-		});
+		await this.page
+			.locator(".loading-overlay")
+			.waitFor({ state: "hidden", timeout: 5000 })
+			.catch(() => {});
 		try {
 			await this.page.waitForSelector("input, button", {
 				state: "visible",

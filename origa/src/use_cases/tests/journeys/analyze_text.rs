@@ -152,10 +152,7 @@ async fn analyze_text_without_user_returns_error() {
 
     let result = use_case.execute("テスト".to_string()).await;
 
-    assert!(matches!(
-        result,
-        Err(OrigaError::CurrentUserNotExist { .. })
-    ));
+    assert!(matches!(result, Err(OrigaError::CurrentUserNotExist)));
 }
 
 #[tokio::test]

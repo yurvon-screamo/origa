@@ -6,8 +6,6 @@ use origa::{
 use ulid::Ulid;
 use wasm_bindgen::JsValue;
 
-use crate::loaders::recalculate_user_jlpt_progress;
-
 const DB_NAME: &str = "origa";
 const DB_VERSION: u32 = 1;
 const STORE_NAME: &str = "users";
@@ -115,9 +113,6 @@ impl UserRepository for FileSystemUserRepository {
     }
 
     async fn save(&self, user: &User) -> Result<(), OrigaError> {
-        let mut user_clone = user.clone();
-        recalculate_user_jlpt_progress(&mut user_clone);
-
         let db = open_database().await?;
 
         let transaction = db
@@ -134,8 +129,8 @@ impl UserRepository for FileSystemUserRepository {
             OrigaError::RepositoryError { reason }
         })?;
 
-        let key = user_key(user_clone.id());
-        let value = serde_wasm_bindgen::to_value(&user_clone).map_err(|e| {
+        let key = user_key(user.id());
+        let value = serde_wasm_bindgen::to_value(&user).map_err(|e| {
             let reason = format!("Failed to serialize user: {:?}", e);
             tracing::error!("{}", reason);
             OrigaError::RepositoryError { reason }

@@ -20,7 +20,7 @@ impl<'a, R: UserRepository> ToggleFavoriteUseCase<'a, R> {
             .repository
             .get_current_user()
             .await?
-            .ok_or(OrigaError::CurrentUserNotExist {})?;
+            .ok_or(OrigaError::CurrentUserNotExist)?;
 
         user.toggle_favorite(card_id)?;
 

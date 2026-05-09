@@ -4,16 +4,16 @@ use crate::ui_components::{
     Alert, AlertType, Button, ButtonVariant, Dropdown, DropdownItem, Spinner, Text, TextSize,
     TypographyVariant,
 };
+use crate::utils::file::read_file_as_bytes;
+use crate::utils::use_drag_and_drop;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::use_cases::{
     AnkiCard, AnkiFieldInfo, ImportAnkiPackUseCase, extract_cards, read_anki_database,
 };
-use std::cell::RefCell;
-use std::rc::Rc;
+use std::sync::Arc;
 use wasm_bindgen::JsCast;
-use web_sys::js_sys::Function;
-use web_sys::{File, HtmlInputElement};
+use web_sys::HtmlInputElement;
 
 #[derive(Clone, Copy, PartialEq, Default, Debug)]
 enum Stage {
@@ -25,40 +25,6 @@ enum Stage {
     Importing,
     Done,
     Error,
-}
-
-async fn read_file_as_bytes(file: &File) -> Result<Vec<u8>, String> {
-    let reader = web_sys::FileReader::new().map_err(|e| format!("FileReader error: {:?}", e))?;
-    let reader_clone = reader.clone();
-    let (tx, rx) = futures::channel::oneshot::channel();
-    let tx = Rc::new(RefCell::new(Some(tx)));
-
-    let closure = wasm_bindgen::closure::Closure::<dyn FnMut()>::new(move || {
-        if let Some(tx) = tx.borrow_mut().take() {
-            let _ = tx.send(());
-        }
-    });
-    if let Some(func) = closure.as_ref().dyn_ref::<Function>() {
-        reader.set_onloadend(Some(func));
-    }
-    closure.forget();
-
-    reader
-        .read_as_array_buffer(file)
-        .map_err(|e| format!("read_as_array_buffer error: {:?}", e))?;
-
-    rx.await.map_err(|_| "File read cancelled".to_string())?;
-
-    let result = reader_clone
-        .result()
-        .map_err(|e| format!("FileReader result error: {:?}", e))?;
-    let array_buffer: js_sys::ArrayBuffer = result
-        .dyn_into()
-        .map_err(|_| "Result is not an ArrayBuffer".to_string())?;
-    let uint8_array = js_sys::Uint8Array::new(&array_buffer);
-    let mut bytes = vec![0u8; uint8_array.length() as usize];
-    uint8_array.copy_to(&mut bytes);
-    Ok(bytes)
 }
 
 #[component]
@@ -79,9 +45,79 @@ pub fn AnkiImportStage(
     let selected_translation_field = RwSignal::new(String::new());
     let extracted_cards = RwSignal::new(Vec::<AnkiCard>::new());
     let imported_count = RwSignal::new(0usize);
-    let is_drag_over = RwSignal::new(false);
     let disposed = StoredValue::new(());
+    let on_drop_file: Arc<dyn Fn(web_sys::File) + Send + Sync> =
+        Arc::new(move |file: web_sys::File| {
+            stage.set(Stage::Loading);
 
+            spawn_local(async move {
+                let bytes = match read_file_as_bytes(&file).await {
+                    Ok(b) => b,
+                    Err(e) => {
+                        if disposed.is_disposed() {
+                            return;
+                        }
+                        stage.set(Stage::Error);
+                        error_message.set(
+                            i18n.get_keys()
+                                .words()
+                                .anki_import()
+                                .file_read_error()
+                                .inner()
+                                .to_string()
+                                .replacen("{}", &e.to_string(), 1),
+                        );
+                        return;
+                    },
+                };
+                if disposed.is_disposed() {
+                    return;
+                }
+                file_bytes.set_value(bytes.clone());
+
+                match read_anki_database(&bytes) {
+                    Ok(deck_info) => {
+                        if disposed.is_disposed() {
+                            return;
+                        }
+                        if deck_info.detected_fields.is_empty() {
+                            stage.set(Stage::Error);
+                            error_message.set(
+                                i18n.get_keys()
+                                    .words()
+                                    .anki_import()
+                                    .fields_not_found()
+                                    .inner()
+                                    .to_string(),
+                            );
+                            return;
+                        }
+                        detected_fields.set(deck_info.detected_fields);
+                        stage.set(Stage::FieldSelect);
+                    },
+                    Err(e) => {
+                        if disposed.is_disposed() {
+                            return;
+                        }
+                        stage.set(Stage::Error);
+                        error_message.set(
+                            i18n.get_keys()
+                                .words()
+                                .anki_import()
+                                .deck_read_error()
+                                .inner()
+                                .to_string()
+                                .replacen("{}", &e.to_string(), 1),
+                        );
+                    },
+                }
+            });
+        });
+    let dd = use_drag_and_drop(on_drop_file);
+    let is_drag_over = dd.is_drag_over();
+    let dd_on_drag_over = dd.on_drag_over();
+    let dd_on_drag_leave = dd.on_drag_leave();
+    let dd_on_drop = dd.on_drop();
     let test_id_val = move || {
         let val = test_id.get();
         if val.is_empty() { None } else { Some(val) }
@@ -100,75 +136,6 @@ pub fn AnkiImportStage(
         }
     });
 
-    let process_file = move |file: File| {
-        stage.set(Stage::Loading);
-        let disposed = disposed;
-        let i18n = i18n;
-
-        spawn_local(async move {
-            let bytes = match read_file_as_bytes(&file).await {
-                Ok(b) => b,
-                Err(e) => {
-                    if disposed.is_disposed() {
-                        return;
-                    }
-                    stage.set(Stage::Error);
-                    error_message.set(
-                        i18n.get_keys()
-                            .words()
-                            .anki_import()
-                            .file_read_error()
-                            .inner()
-                            .to_string()
-                            .replacen("{}", &e.to_string(), 1),
-                    );
-                    return;
-                },
-            };
-            if disposed.is_disposed() {
-                return;
-            }
-            file_bytes.set_value(bytes.clone());
-
-            match read_anki_database(&bytes) {
-                Ok(deck_info) => {
-                    if disposed.is_disposed() {
-                        return;
-                    }
-                    if deck_info.detected_fields.is_empty() {
-                        stage.set(Stage::Error);
-                        error_message.set(
-                            i18n.get_keys()
-                                .words()
-                                .anki_import()
-                                .fields_not_found()
-                                .inner()
-                                .to_string(),
-                        );
-                        return;
-                    }
-                    detected_fields.set(deck_info.detected_fields);
-                    stage.set(Stage::FieldSelect);
-                },
-                Err(e) => {
-                    if disposed.is_disposed() {
-                        return;
-                    }
-                    stage.set(Stage::Error);
-                    error_message.set(
-                        i18n.get_keys()
-                            .words()
-                            .anki_import()
-                            .deck_read_error()
-                            .inner()
-                            .to_string()
-                            .replacen("{}", &e.to_string(), 1),
-                    );
-                },
-            }
-        });
-    };
-
     let on_file_change = move |ev: leptos::ev::Event| {
         let target = match ev.target() {
             Some(t) => t,
@@ -183,28 +150,7 @@ pub fn AnkiImportStage(
             None => return,
         };
         if let Some(file) = files.get(0) {
-            process_file(file);
-        }
-    };
-
-    let on_drag_over = move |ev: leptos::ev::DragEvent| {
-        ev.prevent_default();
-        is_drag_over.set(true);
-    };
-
-    let on_drag_leave = move |ev: leptos::ev::DragEvent| {
-        ev.prevent_default();
-        is_drag_over.set(false);
-    };
-
-    let on_drop = move |ev: leptos::ev::DragEvent| {
-        ev.prevent_default();
-        is_drag_over.set(false);
-        if let Some(dt) = ev.data_transfer()
-            && let Some(files) = dt.files()
-            && let Some(file) = files.get(0)
-        {
-            process_file(file);
+            dd.call_on_drop_file(file);
         }
     };
 
@@ -350,9 +296,9 @@ pub fn AnkiImportStage(
                                 )
                             }
                         }
-                        on:dragover=on_drag_over
-                        on:dragleave=on_drag_leave
-                        on:drop=on_drop
+                        on:dragover=dd_on_drag_over
+                        on:dragleave=dd_on_drag_leave
+                        on:drop=dd_on_drop
                         data-testid="anki-import-drop-zone"
                     >
                         <label class="cursor-pointer">

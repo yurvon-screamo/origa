@@ -1,5 +1,5 @@
 use crate::repository::{cdn_provider, get_cached_dictionary_rkyv, save_dictionary_to_cache_rkyv};
-use crate::utils::yield_to_browser;
+use crate::utils::{now_ms, yield_to_browser};
 use flate2::read::DeflateDecoder;
 use origa::domain::{
     DictionaryData, OrigaError, init_dictionary, init_dictionary_from_rkyv, is_dictionary_loaded,
@@ -65,13 +65,6 @@ pub async fn load_dictionary() -> Result<(), OrigaError> {
         (now_ms() - start) / 1000.0
     );
     Ok(())
-}
-
-fn now_ms() -> f64 {
-    web_sys::window()
-        .and_then(|w| w.performance())
-        .map(|p| p.now())
-        .unwrap_or(0.0)
 }
 
 async fn fetch_file(field: &str, path: &str) -> Result<(String, Vec<u8>), OrigaError> {

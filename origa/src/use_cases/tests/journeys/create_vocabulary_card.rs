@@ -38,10 +38,7 @@ async fn create_vocabulary_card_returns_error_for_nonexistent_user() {
 
     let result = use_case.execute("あい変わらず".to_string()).await;
 
-    assert!(matches!(
-        result,
-        Err(OrigaError::CurrentUserNotExist { .. })
-    ));
+    assert!(matches!(result, Err(OrigaError::CurrentUserNotExist)));
 }
 
 #[tokio::test]

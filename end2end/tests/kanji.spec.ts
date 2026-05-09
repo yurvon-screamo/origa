@@ -1,11 +1,10 @@
 import { test, expect, type Page } from "@playwright/test";
 import { testWithFreshUser } from "../fixtures";
+import { skipOnboarding } from "../helpers/navigation";
 import { KanjiPage } from "../pages";
 
 async function setupKanjiPage(page: Page): Promise<KanjiPage> {
-    await expect(page.getByTestId("onboarding-spinner")).not.toBeVisible({ timeout: 10000 });
-    await page.getByTestId("onboarding-skip").click();
-    await page.waitForURL(/\/home$/, { timeout: 10000 });
+    await skipOnboarding(page);
 
     const kanjiPage = new KanjiPage(page);
     await kanjiPage.goto();
@@ -64,7 +63,6 @@ testWithFreshUser.describe("Kanji Page - CRUD", () => {
 
         await kanjiPage.openAddModal();
         await kanjiPage.selectAllKanji();
-        // Click add without checking selection text - verify by result
         await kanjiPage.addSelectedKanji();
 
         await expect(kanjiPage.kanjiGrid).toBeVisible({ timeout: 10_000 });
@@ -81,8 +79,7 @@ testWithFreshUser.describe("Kanji Page - CRUD", () => {
         expect(countBefore).toBeGreaterThan(0);
 
         await kanjiPage.deleteCardByIndex(0);
-        await page.waitForTimeout(1000);
-        expect(await kanjiPage.getCardCount()).toBe(countBefore - 1);
+        await expect.poll(() => kanjiPage.getCardCount()).toBe(countBefore - 1);
     });
 
     testWithFreshUser("should cancel card deletion", async ({ page }) => {
@@ -174,7 +171,6 @@ testWithFreshUser.describe("Kanji Page - Mark as Known", () => {
 
         const markKnownBtn = page.getByTestId("kanji-card-item").first().getByTestId("kanji-card-item-mark-known-btn");
         await markKnownBtn.click();
-        await page.waitForTimeout(1000);
 
         await kanjiPage.selectFilter("Изученные");
         await expect(kanjiPage.emptyState).not.toBeVisible({ timeout: 5000 });
@@ -228,7 +224,7 @@ testWithFreshUser.describe("Kanji Page - Pagination", () => {
 
         // Click load more
         await kanjiPage.clickLoadMore();
-        await page.waitForTimeout(500);
+        await expect(page.getByTestId("kanji-card-item").nth(initialCount)).toBeVisible({ timeout: 5000 });
 
         // More cards should be visible now
         const newCount = await kanjiPage.getCardCount();
@@ -248,7 +244,7 @@ testWithFreshUser.describe("Kanji Page - Pagination", () => {
 
         // Click load more to expand
         await kanjiPage.clickLoadMore();
-        await page.waitForTimeout(500);
+        await expect(page.getByTestId("kanji-card-item").nth(50)).toBeVisible({ timeout: 5000 });
         const expandedCount = await kanjiPage.getCardCount();
         expect(expandedCount).toBeGreaterThan(50);
 
@@ -256,5 +252,54 @@ testWithFreshUser.describe("Kanji Page - Pagination", () => {
         await kanjiPage.selectFilter("Новые");
         const resetCount = await kanjiPage.getCardCount();
         expect(resetCount).toBeLessThanOrEqual(50);
+    });
+});
+
+testWithFreshUser.describe("Kanji Page - Detail Drawer", () => {
+    testWithFreshUser("should open detail drawer when clicking kanji card", async ({ page }) => {
+        test.setTimeout(60_000);
+        const kanjiPage = await setupKanjiPage(page);
+        await addFirstKanji(kanjiPage);
+        await expect(kanjiPage.kanjiGrid).toBeVisible({ timeout: 10_000 });
+
+        const firstCard = page.getByTestId("kanji-card-item").first();
+        await firstCard.click();
+
+        const detailDrawer = page.getByTestId("kanji-detail-drawer");
+        await expect(detailDrawer).toBeVisible({ timeout: 5_000 });
+    });
+
+    testWithFreshUser("should display content in detail drawer", async ({ page }) => {
+        test.setTimeout(60_000);
+        const kanjiPage = await setupKanjiPage(page);
+        await addFirstKanji(kanjiPage);
+        await expect(kanjiPage.kanjiGrid).toBeVisible({ timeout: 10_000 });
+
+        const firstCard = page.getByTestId("kanji-card-item").first();
+        await firstCard.click();
+
+        const detailDrawer = page.getByTestId("kanji-detail-drawer");
+        await expect(detailDrawer).toBeVisible({ timeout: 5_000 });
+
+        // Drawer should contain some text content (kanji details)
+        const drawerText = await detailDrawer.textContent({ timeout: 5_000 });
+        expect(drawerText).toBeTruthy();
+        expect(drawerText!.length).toBeGreaterThan(0);
+    });
+
+    testWithFreshUser("should close detail drawer via close button", async ({ page }) => {
+        test.setTimeout(60_000);
+        const kanjiPage = await setupKanjiPage(page);
+        await addFirstKanji(kanjiPage);
+        await expect(kanjiPage.kanjiGrid).toBeVisible({ timeout: 10_000 });
+
+        const firstCard = page.getByTestId("kanji-card-item").first();
+        await firstCard.click();
+
+        const detailDrawer = page.getByTestId("kanji-detail-drawer");
+        await expect(detailDrawer).toBeVisible({ timeout: 5_000 });
+
+        await kanjiPage.closeDetailDrawer();
+        await expect(detailDrawer).not.toBeVisible({ timeout: 5_000 });
     });
 });

@@ -28,7 +28,7 @@ mod grammar_card_view_tests {
         let rule_id = ulid::Ulid::from_string("01KJ9AVWBGC2BT0DMFPDYYFEWB").unwrap();
         let sc = StudyCard::new(Card::Grammar(GrammarRuleCard::new_test_with_id(rule_id)));
         let ks = make_ks();
-        let generator = LessonViewGenerator::new(&ks);
+        let mut generator = LessonViewGenerator::new(&ks);
         for seed in 0u64..50 {
             let mut rng = StdRng::seed_from_u64(seed);
             assert!(matches!(
@@ -43,7 +43,7 @@ mod grammar_card_view_tests {
         let rule_id = ulid::Ulid::from_string("01KJ9AVWBGC2BT0DMFPDYYFEWB").unwrap();
         let sc = StudyCard::new(Card::Grammar(GrammarRuleCard::new_test_with_id(rule_id)));
         let ks = make_ks();
-        let generator = LessonViewGenerator::new(&ks);
+        let mut generator = LessonViewGenerator::new(&ks);
         for seed in 0u64..50 {
             let mut rng = StdRng::seed_from_u64(seed);
             assert!(matches!(
@@ -88,7 +88,7 @@ mod kanji_view_tests {
         init_real_dictionaries();
         let ks = make_ks();
         let sc = StudyCard::new(Card::Kanji(KanjiCard::new_test("日".to_string())));
-        let generator = LessonViewGenerator::new(&ks);
+        let mut generator = LessonViewGenerator::new(&ks);
         let mut counts = std::collections::HashMap::<&str, usize>::new();
 
         for seed in 0..300 {
@@ -113,7 +113,7 @@ mod kanji_view_tests {
         let ks = make_ks();
         let sc = make_reviewed_kanji("日", 5.0, 3.0, Rating::Good);
         assert!(!sc.memory().is_high_difficulty());
-        let generator = LessonViewGenerator::new(&ks);
+        let mut generator = LessonViewGenerator::new(&ks);
 
         let mut yesno_count = 0;
         for seed in 0..300 {
@@ -137,7 +137,7 @@ mod kanji_view_tests {
         let ks = make_ks();
         let sc = make_reviewed_kanji("日", 3.0, 7.0, Rating::Hard);
         assert!(sc.memory().is_high_difficulty());
-        let generator = LessonViewGenerator::new(&ks);
+        let mut generator = LessonViewGenerator::new(&ks);
 
         for seed in 0..300 {
             let mut rng = StdRng::seed_from_u64(seed);
@@ -154,7 +154,7 @@ mod kanji_view_tests {
         init_real_dictionaries();
         let ks = make_ks();
         let sc = make_reviewed_kanji("日", 5.0, 3.0, Rating::Good);
-        let generator = LessonViewGenerator::new(&ks);
+        let mut generator = LessonViewGenerator::new(&ks);
 
         let mut writing_count = 0;
         for seed in 0..300 {
@@ -192,7 +192,7 @@ mod new_vocab_view_tests {
         init_real_dictionaries();
         let ks = make_ks();
         let sc = StudyCard::new(create_vocab_card("猫"));
-        let generator = LessonViewGenerator::new(&ks);
+        let mut generator = LessonViewGenerator::new(&ks);
         let mut normal = 0;
         let mut quiz = 0;
 

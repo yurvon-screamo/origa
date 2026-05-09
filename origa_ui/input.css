@@ -33,7 +33,10 @@
     --accent: var(--accent-olive);
     --muted: var(--fg-muted);
 
-    --accent-olive-subtle: rgba(61, 69, 53, 0.4);
+    --accent-olive-subtle: color-mix(in srgb, var(--accent-olive) 40%, transparent);
+    --backdrop: color-mix(in srgb, var(--fg-black) 60%, transparent);
+    --token-highlight: #D2D5C3;
+    --token-highlight-active: #D2D5C3;
 
     /* Animation Timing */
     --anima-duration-fast: 100ms;
@@ -50,6 +53,31 @@
     --safe-bottom: env(safe-area-inset-bottom, 0px);
     --safe-left: env(safe-area-inset-left, 0px);
     --safe-right: env(safe-area-inset-right, 0px);
+
+    /* Spacing */
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 16px;
+    --space-lg: 24px;
+    --space-xl: 32px;
+    --space-xxl: 48px;
+    --space-xxxl: 64px;
+
+    --font-serif: "Cormorant Garamond", serif;
+    --font-mono: "DM Mono", monospace;
+
+    /* Rounded */
+    --rounded-none: 0px;
+    --rounded-sm: 2px;
+    --rounded-md: 4px;
+    --rounded-lg: 8px;
+    --rounded-full: 50%;
+
+    /* Shadows */
+    --shadow-offset-x: 6px;
+    --shadow-offset-y: 6px;
+    --shadow-color: var(--border-dark);
+    --shadow-offset-lg: 8px;
 }
 
 * {
@@ -57,7 +85,7 @@
 }
 
 body {
-    font-family: "DM Mono", monospace;
+    font-family: var(--font-mono);
     background-color: var(--bg-cream);
     color: var(--fg-black);
     line-height: 1.6;
@@ -76,11 +104,11 @@ input[type="submit"],
 }
 
 .font-serif {
-    font-family: "Cormorant Garamond", serif;
+    font-family: var(--font-serif);
 }
 
 .font-mono {
-    font-family: "DM Mono", monospace;
+    font-family: var(--font-mono);
 }
 
 .paper-texture::before {
@@ -94,7 +122,7 @@ input[type="submit"],
 }
 
 .btn {
-    font-family: "DM Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 9px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
@@ -104,8 +132,8 @@ input[type="submit"],
     color: var(--fg-black);
     cursor: pointer;
     transition: background-color var(--anima-duration-normal) var(--anima-ease-paper),
-                color var(--anima-duration-normal) var(--anima-ease-paper),
-                border-color var(--anima-duration-normal) var(--anima-ease-paper);
+        color var(--anima-duration-normal) var(--anima-ease-paper),
+        border-color var(--anima-duration-normal) var(--anima-ease-paper);
     position: relative;
     display: inline-flex;
     align-items: center;
@@ -189,7 +217,7 @@ input[type="submit"],
 }
 
 .btn-ghost::before {
-    display: none;
+    /* display: none; — removed per design system, inherits base .btn::before */
 }
 
 .btn-sm {
@@ -210,7 +238,7 @@ input[type="submit"],
 }
 
 .input-field {
-    font-family: "DM Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 12px;
     letter-spacing: 0.05em;
     padding: 12px 16px;
@@ -253,11 +281,11 @@ input[type="submit"],
 .card-shadow::after {
     content: "";
     position: absolute;
-    bottom: -6px;
-    right: -6px;
+    bottom: calc(-1 * var(--shadow-offset-y));
+    right: calc(-1 * var(--shadow-offset-x));
     width: 100%;
     height: 100%;
-    border: 1px solid var(--border-dark);
+    border: 1px solid var(--shadow-color);
     z-index: -1;
     background: var(--bg-aged);
 }
@@ -277,7 +305,7 @@ input[type="submit"],
 }
 
 .tag {
-    font-family: "DM Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 9px;
     letter-spacing: 0.2em;
     text-transform: uppercase;
@@ -319,9 +347,9 @@ input[type="submit"],
     cursor: pointer;
     position: relative;
     transition: transform var(--anima-duration-fast) var(--anima-ease-paper),
-                background-color var(--anima-duration-normal) var(--anima-ease-paper),
-                color var(--anima-duration-normal) var(--anima-ease-paper),
-                border-color var(--anima-duration-normal) var(--anima-ease-paper);
+        background-color var(--anima-duration-normal) var(--anima-ease-paper),
+        color var(--anima-duration-normal) var(--anima-ease-paper),
+        border-color var(--anima-duration-normal) var(--anima-ease-paper);
 }
 
 .tag-clickable::before {
@@ -334,7 +362,9 @@ input[type="submit"],
     pointer-events: none;
 }
 
-.tag-clickable:hover::before { opacity: 1; }
+.tag-clickable:hover::before {
+    opacity: 1;
+}
 
 .tag-clickable:hover {
     background: var(--fg-black);
@@ -353,6 +383,7 @@ input[type="submit"],
     color: var(--bg-paper);
     border-color: var(--fg-black);
 }
+
 .tag-clickable.tag-filled:hover {
     background: var(--bg-paper);
     color: var(--fg-black);
@@ -363,33 +394,45 @@ input[type="submit"],
     color: var(--bg-paper);
     border-color: var(--accent-olive);
 }
+
 .tag-clickable.tag-olive:hover {
     background: var(--bg-paper);
     color: var(--accent-olive);
 }
-.tag-clickable.tag-olive::before { border-color: var(--accent-olive); }
+
+.tag-clickable.tag-olive::before {
+    border-color: var(--accent-olive);
+}
 
 .tag-clickable.tag-terracotta {
     background: var(--accent-terracotta);
     color: var(--bg-paper);
     border-color: var(--accent-terracotta);
 }
+
 .tag-clickable.tag-terracotta:hover {
     background: var(--bg-paper);
     color: var(--accent-terracotta);
 }
-.tag-clickable.tag-terracotta::before { border-color: var(--accent-terracotta); }
+
+.tag-clickable.tag-terracotta::before {
+    border-color: var(--accent-terracotta);
+}
 
 .tag-clickable.tag-sage {
     background: var(--accent-sage);
     color: var(--bg-paper);
     border-color: var(--accent-sage);
 }
+
 .tag-clickable.tag-sage:hover {
     background: var(--bg-paper);
     color: var(--accent-sage);
 }
-.tag-clickable.tag-sage::before { border-color: var(--accent-sage); }
+
+.tag-clickable.tag-sage::before {
+    border-color: var(--accent-sage);
+}
 
 .checkbox-container {
     display: flex;
@@ -441,7 +484,7 @@ input[type="submit"],
     width: 20px;
     height: 20px;
     border: 1px solid var(--border-dark);
-    border-radius: 50%;
+    border-radius: var(--rounded-full);
     position: relative;
     flex-shrink: 0;
     transition: background-color var(--anima-duration-normal) var(--anima-ease-paper);
@@ -452,7 +495,7 @@ input[type="submit"],
     position: absolute;
     inset: 4px;
     background: var(--fg-black);
-    border-radius: 50%;
+    border-radius: var(--rounded-full);
 }
 
 .radio-container:hover .radio-box {
@@ -514,7 +557,7 @@ input[type="submit"],
 }
 
 .badge {
-    font-family: "DM Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 10px;
     letter-spacing: 0.05em;
     padding: 2px 8px;
@@ -543,7 +586,7 @@ input[type="submit"],
 }
 
 .stamp {
-    font-family: "Cormorant Garamond", serif;
+    font-family: var(--font-serif);
     font-size: 11px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
@@ -565,7 +608,7 @@ input[type="submit"],
 .modal-backdrop {
     position: fixed;
     inset: 0;
-    background: rgba(26, 25, 21, 0.6);
+    background: var(--backdrop);
     z-index: 100;
     padding-top: env(safe-area-inset-top, 0px);
     padding-bottom: env(safe-area-inset-bottom, 0px);
@@ -587,11 +630,11 @@ input[type="submit"],
 .modal-content::after {
     content: "";
     position: absolute;
-    bottom: -8px;
-    right: -8px;
+    bottom: calc(-1 * var(--shadow-offset-lg));
+    right: calc(-1 * var(--shadow-offset-lg));
     width: 100%;
     height: 100%;
-    border: 1px solid var(--border-dark);
+    border: 1px solid var(--shadow-color);
     z-index: -1;
     background: var(--bg-aged);
 }
@@ -690,7 +733,7 @@ input[type="submit"],
 }
 
 .dropdown-trigger {
-    font-family: "DM Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 11px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
@@ -746,7 +789,7 @@ input[type="submit"],
 }
 
 .dropdown-item {
-    font-family: "DM Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 11px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
@@ -779,7 +822,7 @@ input[type="submit"],
     padding: 8px 12px;
     border: 1px solid var(--border-dark);
     background: var(--bg-paper);
-    font-family: "DM Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 11px;
     letter-spacing: 0.05em;
 }
@@ -896,7 +939,7 @@ input[type="submit"],
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: "DM Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 12px;
     background: var(--bg-paper);
     transition: background-color var(--anima-duration-slow) var(--anima-ease-paper), border-color var(--anima-duration-slow) var(--anima-ease-paper), color var(--anima-duration-slow) var(--anima-ease-paper);
@@ -914,7 +957,7 @@ input[type="submit"],
 }
 
 .stepper-label {
-    font-family: "DM Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 10px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
@@ -943,7 +986,7 @@ input[type="submit"],
 }
 
 .tab {
-    font-family: "DM Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 11px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
@@ -993,7 +1036,7 @@ input[type="submit"],
     background: var(--fg-black);
     color: var(--bg-paper);
     padding: 8px 12px;
-    font-family: "DM Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 10px;
     letter-spacing: 0.05em;
     white-space: nowrap;
@@ -1110,7 +1153,7 @@ input[type="submit"],
 }
 
 .table th {
-    font-family: "DM Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 9px;
     letter-spacing: 0.15em;
     text-transform: uppercase;
@@ -1122,7 +1165,7 @@ input[type="submit"],
 }
 
 .table td {
-    font-family: "DM Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 12px;
     padding: 12px 16px;
     border-bottom: 1px solid var(--border-light);
@@ -1143,7 +1186,7 @@ input[type="submit"],
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: "DM Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 12px;
     letter-spacing: 0.05em;
     background: var(--bg-paper);
@@ -1190,12 +1233,12 @@ input[type="submit"],
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: "DM Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 12px;
     cursor: pointer;
     transition: transform var(--anima-duration-fast) var(--anima-ease-paper),
-                background-color var(--anima-duration-normal) var(--anima-ease-paper),
-                color var(--anima-duration-normal) var(--anima-ease-paper);
+        background-color var(--anima-duration-normal) var(--anima-ease-paper),
+        color var(--anima-duration-normal) var(--anima-ease-paper);
 }
 
 .pagination-btn:hover {
@@ -1217,7 +1260,7 @@ input[type="submit"],
     display: flex;
     align-items: center;
     gap: 8px;
-    font-family: "DM Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 10px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
@@ -1242,7 +1285,7 @@ input[type="submit"],
 }
 
 .search-input {
-    font-family: "DM Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 12px;
     padding: 12px 16px 12px 44px;
     border: 1px solid var(--border-dark);
@@ -1362,7 +1405,7 @@ input[type="submit"],
 }
 
 .bottom-tab-item-label {
-    font-family: "DM Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 10px;
     letter-spacing: 0.05em;
     line-height: 1;
@@ -1403,7 +1446,7 @@ input[type="submit"],
     align-items: center;
     gap: 12px;
     padding: 12px 24px;
-    font-family: "DM Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.1em;
@@ -1412,8 +1455,8 @@ input[type="submit"],
     cursor: pointer;
     text-decoration: none;
     transition: opacity var(--anima-duration-normal) var(--anima-ease-paper),
-                color var(--anima-duration-normal) var(--anima-ease-paper),
-                background-color var(--anima-duration-normal) var(--anima-ease-paper);
+        color var(--anima-duration-normal) var(--anima-ease-paper),
+        background-color var(--anima-duration-normal) var(--anima-ease-paper);
 }
 
 .sidebar-item:hover {
@@ -1445,7 +1488,7 @@ input[type="submit"],
 }
 
 .sidebar-item-label {
-    font-family: "DM Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 11px;
 }
 
@@ -1472,6 +1515,7 @@ input[type="submit"],
     .sidebar {
         display: none !important;
     }
+
     .main-with-sidebar {
         margin-left: 0;
     }
@@ -1488,18 +1532,18 @@ input[type="submit"],
 }
 
 .furigana-ruby {
-    font-family: "Cormorant Garamond", serif;
+    font-family: var(--font-serif);
     ruby-align: center;
 }
 
 .furigana-rt {
-    font-family: "DM Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 0.5em;
     color: var(--fg-muted);
 }
 
 .furigana-plain {
-    font-family: "Cormorant Garamond", serif;
+    font-family: var(--font-serif);
 }
 
 .furigana-hidden .furigana-rt {
@@ -1514,7 +1558,7 @@ input[type="submit"],
 /* === Translator Text === */
 .translator-text {
     display: inline;
-    font-family: "Cormorant Garamond", serif;
+    font-family: var(--font-serif);
 }
 
 .translator-loading {
@@ -1531,7 +1575,7 @@ input[type="submit"],
 
 .token-word:hover,
 .token-word:focus-visible {
-    background: #D2D5C3;
+    background: var(--token-highlight);
     border-bottom: 1px solid var(--accent-olive);
     outline: none;
 }
@@ -1543,7 +1587,7 @@ input[type="submit"],
 
 .token-word-active {
     border-bottom: 1px solid var(--accent-olive);
-    background: #D2D5C3;
+    background: var(--token-highlight-active);
 }
 
 .token-plain {
@@ -1566,22 +1610,22 @@ input[type="submit"],
 .token-popup::after {
     content: "";
     position: absolute;
-    bottom: -4px;
-    right: -4px;
+    bottom: calc(-1 * var(--shadow-offset-y));
+    right: calc(-1 * var(--shadow-offset-x));
     width: 100%;
     height: 100%;
-    border: 1px solid var(--border-dark);
+    border: 1px solid var(--shadow-color);
     background: var(--bg-aged);
     z-index: -1;
 }
 
 .token-popup-surface {
-    font-family: "Cormorant Garamond", serif;
+    font-family: var(--font-serif);
     font-size: 20px;
 }
 
 .token-popup-reading {
-    font-family: "DM Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 11px;
     color: var(--fg-muted);
 }
@@ -1669,7 +1713,7 @@ input[type="submit"],
 }
 
 .markdown-text {
-    font-family: "DM Mono", monospace;
+    font-family: var(--font-mono);
     color: var(--fg-black);
     line-height: 1.6;
     overflow-wrap: break-word;
@@ -1683,7 +1727,7 @@ input[type="submit"],
 .markdown-text h4,
 .markdown-text h5,
 .markdown-text h6 {
-    font-family: "Cormorant Garamond", serif;
+    font-family: var(--font-serif);
     font-weight: 500;
     margin: 0.5em 0;
     color: var(--fg-black);
@@ -1736,7 +1780,7 @@ input[type="submit"],
 }
 
 .markdown-text code {
-    font-family: "DM Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 0.9em;
     background: var(--bg-aged);
     padding: 0.1em 0.3em;
@@ -1812,7 +1856,7 @@ input[type="submit"],
     height: 24px;
     border: 2px solid var(--border-light);
     border-top-color: var(--fg-black);
-    border-radius: 50%;
+    border-radius: var(--rounded-full);
     animation: spinner-rotate 0.8s linear infinite;
 }
 
@@ -1847,7 +1891,7 @@ input[type="submit"],
 }
 
 .loading-overlay-message {
-    font-family: "DM Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 11px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
@@ -1865,7 +1909,7 @@ input[type="submit"],
     height: 14px;
     border: 2px solid var(--border-light);
     border-top-color: currentColor;
-    border-radius: 50%;
+    border-radius: var(--rounded-full);
     animation: spinner-rotate 0.8s linear infinite;
     position: absolute;
     left: 50%;
@@ -1948,7 +1992,7 @@ input[type="submit"],
     height: 16px;
     border: 2px solid var(--fg-muted);
     border-top-color: transparent;
-    border-radius: 50%;
+    border-radius: var(--rounded-full);
     animation: spin 1s linear infinite;
 }
 
@@ -2060,7 +2104,7 @@ input[type="submit"],
 .kanji-drawing-info {
     text-align: center;
     margin: 15px 0;
-    font-family: "DM Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 11px;
     letter-spacing: 0.15em;
     text-transform: uppercase;
@@ -2070,7 +2114,7 @@ input[type="submit"],
 .kanji-drawing-success {
     color: var(--success);
     font-size: 14px;
-    font-family: "DM Mono", monospace;
+    font-family: var(--font-mono);
 }
 
 .kanji-drawing-progress {
@@ -2085,7 +2129,7 @@ input[type="submit"],
 
 .kanji-drawing-reset-btn {
     position: relative;
-    font-family: "DM Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 11px;
     letter-spacing: 0.2em;
     text-transform: uppercase;
@@ -2114,7 +2158,7 @@ input[type="submit"],
     text-align: center;
     padding: 40px;
     color: var(--fg-muted);
-    font-family: "DM Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 11px;
     letter-spacing: 0.15em;
     text-transform: uppercase;
@@ -2123,7 +2167,7 @@ input[type="submit"],
 .kanji-drawing-error {
     text-align: center;
     padding: 40px;
-    font-family: "DM Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 11px;
     letter-spacing: 0.15em;
     color: var(--error);
@@ -2165,7 +2209,7 @@ input[type="submit"],
 /* Lift — для карточек/объектов ("поднятие листа бумаги") */
 .anima-lift {
     transition: transform var(--anima-duration-normal) var(--anima-ease-paper),
-                box-shadow var(--anima-duration-normal) var(--anima-ease-paper);
+        box-shadow var(--anima-duration-normal) var(--anima-ease-paper);
 }
 
 .anima-lift:hover {
@@ -2179,8 +2223,8 @@ input[type="submit"],
 /* Reveal — для навигации ("маркер на тексте", без движения) */
 .anima-reveal {
     transition: opacity var(--anima-duration-normal) var(--anima-ease-paper),
-                color var(--anima-duration-normal) var(--anima-ease-paper),
-                background-color var(--anima-duration-normal) var(--anima-ease-paper);
+        color var(--anima-duration-normal) var(--anima-ease-paper),
+        background-color var(--anima-duration-normal) var(--anima-ease-paper);
 }
 
 /* === 1. HOVER АНИМАЦИИ === */
@@ -2197,7 +2241,7 @@ input[type="submit"],
 }
 
 .anima-card-lift:hover.card-shadow::after {
-    transform: translate(8px, 8px);
+    transform: translate(var(--shadow-offset-x), var(--shadow-offset-y));
     transition: transform var(--anima-duration-normal) var(--anima-ease-paper);
 }
 
@@ -2686,7 +2730,7 @@ input[type="submit"],
     align-items: center;
     justify-content: center;
     gap: 8px;
-    font-family: "DM Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 11px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
@@ -2718,14 +2762,14 @@ input[type="submit"],
 
 /* Alert */
 .alert-title {
-    font-family: "DM Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 10px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
 }
 
 .alert-message {
-    font-family: "DM Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 10px;
     letter-spacing: 0.05em;
     color: var(--fg-muted);
@@ -2738,14 +2782,14 @@ input[type="submit"],
 }
 
 .toast-title {
-    font-family: "DM Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 10px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
 }
 
 .toast-message {
-    font-family: "DM Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 10px;
     letter-spacing: 0.05em;
     color: var(--fg-muted);
@@ -2760,14 +2804,14 @@ input[type="submit"],
 }
 
 .progress-label {
-    font-family: "DM Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 10px;
     letter-spacing: 0.15em;
     text-transform: uppercase;
 }
 
 .progress-value {
-    font-family: "DM Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 10px;
 }
 
@@ -2806,7 +2850,7 @@ input[type="submit"],
 
 /* Typography */
 .heading-h1 {
-    font-family: "Cormorant Garamond", serif;
+    font-family: var(--font-serif);
     font-weight: 300;
     font-size: clamp(1.75rem, 6vw, 3rem);
     line-height: 1.2;
@@ -2815,31 +2859,31 @@ input[type="submit"],
 }
 
 .heading-h2 {
-    font-family: "Cormorant Garamond", serif;
+    font-family: var(--font-serif);
     font-weight: 300;
     font-size: 1.5rem;
 }
 
 .heading-h3 {
-    font-family: "Cormorant Garamond", serif;
+    font-family: var(--font-serif);
     font-weight: 400;
     font-size: 1.25rem;
 }
 
 .heading-h4 {
-    font-family: "Cormorant Garamond", serif;
+    font-family: var(--font-serif);
     font-weight: 400;
     font-size: 1.125rem;
 }
 
 .heading-h5 {
-    font-family: "Cormorant Garamond", serif;
+    font-family: var(--font-serif);
     font-weight: 500;
     font-size: 1rem;
 }
 
 .heading-h6 {
-    font-family: "Cormorant Garamond", serif;
+    font-family: var(--font-serif);
     font-weight: 500;
     font-size: 0.875rem;
 }
@@ -2857,7 +2901,7 @@ input[type="submit"],
 }
 
 .display-text {
-    font-family: "Cormorant Garamond", serif;
+    font-family: var(--font-serif);
     font-weight: 300;
     font-size: clamp(1.5rem, 5vw, 2.25rem);
     line-height: 1.2;
@@ -2945,14 +2989,14 @@ input[type="submit"],
 
 /* Accordion */
 .accordion-title {
-    font-family: "DM Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 12px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
 }
 
 .accordion-body {
-    font-family: "DM Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 12px;
     color: var(--fg-muted);
 }
@@ -2992,7 +3036,7 @@ input[type="submit"],
 
 /* Banner text */
 .banner-text {
-    font-family: "DM Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 11px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
@@ -3003,7 +3047,7 @@ input[type="submit"],
     text-align: center;
     padding: 40px;
     color: var(--fg-muted);
-    font-family: "DM Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 11px;
     letter-spacing: 0.15em;
     text-transform: uppercase;
@@ -3023,7 +3067,7 @@ input[type="submit"],
 }
 
 .tab-button-text {
-    font-family: "DM Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 10px;
     letter-spacing: 0.05em;
     text-transform: uppercase;
@@ -3066,7 +3110,6 @@ input[type="submit"],
     display: inline-block;
     padding: 4px 8px;
     background: var(--bg-aged);
-    border-radius: 2px;
     font-size: 12px;
 }
 
@@ -3128,7 +3171,6 @@ input[type="submit"],
 
 .app-skeleton-line {
     height: 16px;
-    border-radius: 4px;
 }
 
 /* Audio buttons */
@@ -3167,11 +3209,10 @@ input[type="submit"],
     align-items: center;
     padding: 8px 12px;
     background: var(--bg-aged);
-    border-radius: 2px;
 }
 
 .card-history-date {
-    font-family: "DM Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 11px;
 }
 
@@ -3179,7 +3220,7 @@ input[type="submit"],
     display: flex;
     align-items: center;
     gap: 16px;
-    font-family: "DM Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 11px;
     text-align: center;
 }
@@ -3187,14 +3228,14 @@ input[type="submit"],
 .card-history-empty {
     padding: 32px;
     text-align: center;
-    font-family: "DM Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 12px;
     color: var(--fg-muted);
 }
 
 /* Chart */
 .chart-container {
-    font-family: "DM Mono", monospace;
+    font-family: var(--font-mono);
 }
 
 .chart-label {
@@ -3261,7 +3302,7 @@ input[type="submit"],
 
 /* Drawer header */
 .drawer-header {
-    font-family: "Cormorant Garamond", serif;
+    font-family: var(--font-serif);
     font-size: 24px;
     margin-top: 4px;
 }
@@ -3280,18 +3321,18 @@ input[type="submit"],
 }
 
 .ocr-stage-title {
-    font-family: "DM Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 12px;
     font-weight: 500;
 }
 
 .ocr-stage-status {
-    font-family: "DM Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 11px;
 }
 
 .ocr-stage-description {
-    font-family: "DM Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 11px;
     color: var(--fg-muted);
 }
@@ -3369,7 +3410,7 @@ input[type="submit"],
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(0, 0, 0, 0.5);
+    background: var(--backdrop);
 }
 
 .update-drawer-content {
@@ -3394,7 +3435,7 @@ input[type="submit"],
 }
 
 .update-drawer-title {
-    font-family: "DM Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 14px;
     font-weight: 600;
     color: var(--accent-olive);
@@ -3407,7 +3448,7 @@ input[type="submit"],
 }
 
 .update-drawer-info {
-    font-family: "DM Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 12px;
     color: var(--fg-muted);
 }
@@ -3695,11 +3736,11 @@ input[type="submit"],
 }
 
 .rounded {
-    border-radius: 2px;
+    border-radius: var(--rounded-sm);
 }
 
 .rounded-xl {
-    border-radius: 8px;
+    border-radius: var(--rounded-lg);
 }
 
 .overflow-hidden {
@@ -3838,7 +3879,7 @@ input[type="submit"],
 }
 
 .bg-black\/80 {
-    background: rgba(0, 0, 0, 0.8);
+    background: color-mix(in srgb, var(--fg-black) 80%, transparent);
 }
 
 .border {
@@ -3967,8 +4008,8 @@ input[type="submit"],
     color: var(--fg-black);
     cursor: pointer;
     transition: background-color var(--anima-duration-normal) var(--anima-ease-paper),
-                border-color var(--anima-duration-normal) var(--anima-ease-paper),
-                color var(--anima-duration-normal) var(--anima-ease-paper);
+        border-color var(--anima-duration-normal) var(--anima-ease-paper),
+        color var(--anima-duration-normal) var(--anima-ease-paper);
 }
 
 .icon-btn:hover {
@@ -3992,4 +4033,22 @@ input[type="submit"],
     .bottom-tab-item-label {
         display: none;
     }
+}
+
+/* ============================================
+   THEME SYSTEM
+   ============================================
+   Default (light) theme lives in :root.
+   Future themes override via data-theme attribute:
+   <html data-theme="dark">
+   ============================================
+*/
+
+[data-theme] {
+    /* Structural hook: all tokens inherit from :root by default.
+       Override specific --* variables in named themes below. */
+}
+
+[data-theme="dark"] {
+    /* Placeholder: add dark palette overrides here */
 }

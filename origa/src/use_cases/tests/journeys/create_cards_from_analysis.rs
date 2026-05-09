@@ -63,10 +63,7 @@ async fn create_cards_from_analysis_returns_error_when_user_not_found() {
 
     let result = use_case.execute(words, None).await;
 
-    assert!(matches!(
-        result,
-        Err(OrigaError::CurrentUserNotExist { .. })
-    ));
+    assert!(matches!(result, Err(OrigaError::CurrentUserNotExist)));
 }
 
 #[tokio::test]

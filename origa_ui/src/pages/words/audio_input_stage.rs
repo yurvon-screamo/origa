@@ -12,9 +12,12 @@ use wasm_bindgen::JsCast;
 
 #[cfg(target_arch = "wasm32")]
 use crate::core::config::whisper_base_url;
+use crate::i18n::use_i18n;
 #[cfg(target_arch = "wasm32")]
 use crate::loaders::whisper_model_loader::WhisperModelLoader;
 use crate::ui_components::{Alert, AlertType, Button, ButtonVariant};
+#[cfg(target_arch = "wasm32")]
+use crate::utils::file::read_file_as_bytes;
 
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
 pub(super) enum AudioState {
@@ -35,6 +38,7 @@ thread_local! {
 
 #[cfg(target_arch = "wasm32")]
 async fn get_or_load_whisper_model(
+    i18n: leptos_i18n::I18nContext<crate::i18n::Locale>,
     status_text: RwSignal<Option<String>>,
 ) -> Result<Rc<WhisperTranscriber>, String> {
     let cached = CACHED_WHISPER.with(|c| c.borrow().clone());
@@ -47,13 +51,14 @@ async fn get_or_load_whisper_model(
     }
 
     WHISPER_LOADING.with(|l| l.set(true));
-    let result = load_whisper_model_inner(status_text).await;
+    let result = load_whisper_model_inner(i18n, status_text).await;
     WHISPER_LOADING.with(|l| l.set(false));
     result
 }
 
 #[cfg(target_arch = "wasm32")]
 async fn load_whisper_model_inner(
+    i18n: leptos_i18n::I18nContext<crate::i18n::Locale>,
     status_text: RwSignal<Option<String>>,
 ) -> Result<Rc<WhisperTranscriber>, String> {
     status_text.set(Some("Downloading Whisper model...".to_string()));
@@ -78,35 +83,34 @@ async fn load_whisper_model_inner(
 }
 
 #[cfg(target_arch = "wasm32")]
-async fn read_file_bytes(file: &web_sys::File) -> Result<Vec<u8>, String> {
-    let array_buffer_promise = file.array_buffer();
-    let array_buffer = wasm_bindgen_futures::JsFuture::from(array_buffer_promise)
-        .await
-        .map_err(|e| format!("Failed to read file data: {:?}", e))?;
-    let uint8_array = js_sys::Uint8Array::new(&array_buffer);
-    let mut bytes = vec![0u8; uint8_array.length() as usize];
-    uint8_array.copy_to(&mut bytes);
-    Ok(bytes)
-}
-
-#[cfg(target_arch = "wasm32")]
 async fn transcribe_via_wasm(
+    i18n: leptos_i18n::I18nContext<crate::i18n::Locale>,
     file: &web_sys::File,
     name: &str,
     status_text: RwSignal<Option<String>>,
     audio_state: RwSignal<AudioState>,
     error_message: RwSignal<Option<String>>,
 ) -> Result<String, String> {
-    let model = get_or_load_whisper_model(status_text).await.map_err(|e| {
-        audio_state.set(AudioState::Error);
-        error_message.set(Some(e.clone()));
-        e
-    })?;
+    let model = get_or_load_whisper_model(i18n, status_text)
+        .await
+        .map_err(|e| {
+            audio_state.set(AudioState::Error);
+            error_message.set(Some(e.clone()));
+            e
+        })?;
 
-    status_text.set(Some(format!("Transcribing {}...", name)));
+    status_text.set(Some(
+        i18n.get_keys()
+            .words()
+            .audio()
+            .loading_model()
+            .inner()
+            .to_string()
+            .replacen("{}", name, 1),
+    ));
     audio_state.set(AudioState::Processing);
 
-    let bytes = read_file_bytes(file).await.map_err(|e| {
+    let bytes = read_file_as_bytes(file).await.map_err(|e| {
         audio_state.set(AudioState::Error);
         error_message.set(Some(e.clone()));
         e
@@ -121,6 +125,7 @@ async fn transcribe_via_wasm(
 
 #[cfg(target_arch = "wasm32")]
 fn dispatch_transcription(
+    i18n: leptos_i18n::I18nContext<crate::i18n::Locale>,
     file: &web_sys::File,
     name: &str,
     audio_state_local: RwSignal<AudioState>,
@@ -131,6 +136,7 @@ fn dispatch_transcription(
     let name = name.to_string();
     async move {
         transcribe_via_wasm(
+            i18n,
             &file,
             &name,
             status_text_local,
@@ -143,6 +149,7 @@ fn dispatch_transcription(
 
 #[cfg(not(target_arch = "wasm32"))]
 async fn dispatch_transcription(
+    _i18n: leptos_i18n::I18nContext<crate::i18n::Locale>,
     _file: &web_sys::File,
     _name: &str,
     _audio_state_local: RwSignal<AudioState>,
@@ -159,6 +166,7 @@ pub(super) fn AudioInputStage(
     on_error: Callback<String>,
     on_switch_to_text: Callback<()>,
 ) -> impl IntoView {
+    let i18n = use_i18n();
     let audio_state = RwSignal::new(AudioState::Idle);
     let error_message = RwSignal::new(None::<String>);
     let status_text = RwSignal::new(None::<String>);
@@ -190,31 +198,51 @@ pub(super) fn AudioInputStage(
         #[cfg(target_arch = "wasm32")]
         if !is_wav {
             error_message.set(Some(
-                "Only WAV format is supported for speech recognition.".to_string(),
+                i18n.get_keys()
+                    .words()
+                    .audio()
+                    .wav_only()
+                    .inner()
+                    .to_string(),
             ));
             return;
         }
 
         let max_size_mb = 50.0;
         if file.size() / (1024.0 * 1024.0) > max_size_mb {
-            error_message.set(Some(format!(
-                "Audio file is too large. Maximum size is {} MB.",
-                max_size_mb
-            )));
+            error_message.set(Some(
+                i18n.get_keys()
+                    .words()
+                    .audio()
+                    .file_too_large()
+                    .inner()
+                    .to_string()
+                    .replacen("{}", &max_size_mb.to_string(), 1),
+            ));
             return;
         }
 
         audio_state.set(AudioState::LoadingModel);
-        status_text.set(Some(format!("Loading model for {}...", name)));
+        status_text.set(Some(
+            i18n.get_keys()
+                .words()
+                .audio()
+                .loading_model()
+                .inner()
+                .to_string()
+                .replacen("{}", &name, 1),
+        ));
 
         let on_text_extracted = on_text_extracted;
         let on_error = on_error;
         let audio_state_local = audio_state;
         let status_text_local = status_text;
         let error_message_local = error_message;
+        let i18n_for_dispatch = i18n;
 
         spawn_local(async move {
             let result = dispatch_transcription(
+                i18n_for_dispatch,
                 &file,
                 &name,
                 audio_state_local,
@@ -227,8 +255,15 @@ pub(super) fn AudioInputStage(
                 Ok(text) => {
                     if text.trim().is_empty() {
                         audio_state_local.set(AudioState::Error);
-                        error_message_local
-                            .set(Some("No speech detected in the audio.".to_string()));
+                        error_message_local.set(Some(
+                            i18n_for_dispatch
+                                .get_keys()
+                                .words()
+                                .audio()
+                                .no_speech()
+                                .inner()
+                                .to_string(),
+                        ));
                     } else {
                         audio_state_local.set(AudioState::Ready);
                         status_text_local.set(None);
@@ -272,7 +307,7 @@ pub(super) fn AudioInputStage(
                         <div class="space-y-4">
                             <div class="text-lg font-semibold text-[var(--fg-black)] flex items-center gap-2">
                                 <span class="spinner spinner-sm"></span>
-                                {move || status_text.get().unwrap_or_else(|| "Processing audio...".to_string())}
+                                {move || status_text.get().unwrap_or_else(|| i18n.get_keys().words().audio().processing().inner().to_string())}
                             </div>
                             <Button
                                 variant=Signal::derive(|| ButtonVariant::Ghost)
@@ -282,7 +317,7 @@ pub(super) fn AudioInputStage(
                                     WHISPER_LOADING.with(|l| l.set(false));
                                 })
                             >
-                                "Cancel"
+                                {i18n.get_keys().common().cancel().inner().to_string()}
                             </Button>
                         </div>
                     }.into_any(),
@@ -300,24 +335,24 @@ pub(super) fn AudioInputStage(
                                         <svg class="mx-auto h-12 w-12 text-[var(--fg-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 017-7m-7 7h18m-18 0a7 7 0 017 7m0 0a7 7 0 01-7-7m-7 7h18" />
                                         </svg>
-                                        <p class="text-sm text-[var(--fg-muted)]">Click or drag to upload audio</p>
-                                        <p class="text-xs text-[var(--fg-muted)]">WAV (max 50 MB)</p>
+                                        <p class="text-sm text-[var(--fg-muted)]">{i18n.get_keys().words().audio().drop_zone().inner().to_string()}</p>
+                                        <p class="text-xs text-[var(--fg-muted)]">{i18n.get_keys().words().audio().file_type().inner().to_string()}</p>
                                     </div>
                                 </label>
                             </div>
                             {move || {
-                                error_message.get().map(|msg| view! {
+                                error_message.get().map(move |msg| view! {
                                     <div>
                                         <Alert
                                             alert_type=Signal::derive(|| AlertType::Warning)
-                                            title=Signal::derive(|| "Transcription failed".to_string())
+                                            title=Signal::derive(move || i18n.get_keys().words().audio().transcription_failed().inner().to_string())
                                             message=Signal::derive(move || msg.clone())
                                         />
                                         <Button
                                             variant=ButtonVariant::Ghost
                                             on_click=Callback::new(move |_| on_switch_to_text.run(()))
                                         >
-                                            "Enter text manually"
+                                            {i18n.get_keys().words().audio().enter_manually().inner().to_string()}
                                         </Button>
                                     </div>
                                 })

@@ -103,7 +103,6 @@ export class GrammarPage extends BasePage {
                 if (el) el.click();
             });
             await drawer.waitFor({ state: "hidden", timeout: 5000 }).catch(() => {});
-            await this.page.waitForTimeout(500);
         }
     }
 
@@ -139,7 +138,6 @@ export class GrammarPage extends BasePage {
 
     async markCardAsKnownByIndex(index: number): Promise<void> {
         await this.clickCardActionBtn(index, "grammar-card-item-mark-known-btn");
-        await this.page.waitForTimeout(500);
     }
 
     private async clickCardActionBtn(index: number, btnTestId: string): Promise<void> {
@@ -150,7 +148,6 @@ export class GrammarPage extends BasePage {
                 el.dispatchEvent(new MouseEvent("click", { bubbles: false }));
             }
         }, selector);
-        await this.page.waitForTimeout(300);
     }
 
     async isLoadMoreVisible(): Promise<boolean> {

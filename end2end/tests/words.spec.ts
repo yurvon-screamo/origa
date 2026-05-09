@@ -1,12 +1,11 @@
 import * as path from "path";
 import { test, expect, type Page } from "@playwright/test";
 import { testWithFreshUser } from "../fixtures";
+import { skipOnboarding } from "../helpers/navigation";
 import { WordsPage, SetsPage } from "../pages";
 
 async function setupWordsPage(page: Page): Promise<WordsPage> {
-    await expect(page.getByTestId("onboarding-spinner")).not.toBeVisible({ timeout: 10000 });
-    await page.getByTestId("onboarding-skip").click();
-    await page.waitForURL(/\/home$/, { timeout: 10000 });
+    await skipOnboarding(page);
 
     const wordsPage = new WordsPage(page);
     await wordsPage.goto();
@@ -60,8 +59,7 @@ testWithFreshUser.describe("Words Page - CRUD", () => {
         expect(countBefore).toBeGreaterThan(0);
 
         await wordsPage.deleteCardByIndex(0);
-        await page.waitForTimeout(500);
-        expect(await wordsPage.getCardCount()).toBe(countBefore - 1);
+        await expect.poll(() => wordsPage.getCardCount()).toBe(countBefore - 1);
     });
 
     testWithFreshUser("should cancel card deletion", async ({ page }) => {
@@ -169,7 +167,6 @@ testWithFreshUser.describe("Words Page - Mark as Known", () => {
 
         // Mark as known
         await wordsPage.markCardAsKnownByIndex(0);
-        await page.waitForTimeout(1000);
 
         // Now should appear in "Learned" filter
         await wordsPage.selectFilter("Изученные");
@@ -214,6 +211,28 @@ testWithFreshUser.describe("Words Page - Anki Import", () => {
         await wordsPage.uploadAnkiFile("fixtures/sample.txt");
 
         await expect(wordsPage.ankiError).toBeVisible({ timeout: 10_000 });
+    });
+
+    // Requires a valid .apkg fixture file to test successful import flow:
+    // upload → field select → preview → confirm → cards appear in list
+    testWithFreshUser.skip("should import cards from valid .apkg file", async ({ page }) => {
+        test.setTimeout(120_000);
+        const wordsPage = await setupWordsPage(page);
+
+        await wordsPage.openAddModal();
+        await wordsPage.switchToAnkiTab();
+
+        // NOTE: Requires a minimal .apkg fixture file
+        await wordsPage.uploadAnkiFile("fixtures/sample.apkg");
+
+        await expect(wordsPage.ankiCardCount).toBeVisible({ timeout: 10_000 });
+        await expect(wordsPage.ankiCardList).toBeVisible();
+
+        await wordsPage.ankiImportBtn.click();
+        await expect(wordsPage.ankiDone).toBeVisible({ timeout: 30_000 });
+
+        const cardCount = await wordsPage.getCardCount();
+        expect(cardCount).toBeGreaterThan(0);
     });
 });
 

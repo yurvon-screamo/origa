@@ -34,7 +34,7 @@ pub fn should_refresh_session(expires_at: u64) -> bool {
 }
 
 pub fn current_timestamp() -> u64 {
-    chrono::Utc::now().timestamp() as u64
+    chrono::Utc::now().timestamp().max(0) as u64
 }
 
 fn trailbase_url() -> &'static str {
@@ -186,7 +186,7 @@ impl TrailBaseClient {
             .map_err(|e| AuthError::ApiError(format!("Failed to decode JWT: {}", e)))?;
 
         let now = current_timestamp();
-        let expires_at = now.saturating_add(3600);
+        let expires_at = claims.expires_at(now.saturating_add(3600));
 
         let session = TrailBaseSession {
             auth_token: token_response.auth_token,
@@ -237,7 +237,7 @@ impl TrailBaseClient {
             .map_err(|e| AuthError::ApiError(format!("Failed to decode JWT: {}", e)))?;
 
         let now = current_timestamp();
-        let expires_at = now.saturating_add(3600);
+        let expires_at = claims.expires_at(now.saturating_add(3600));
 
         let session = TrailBaseSession {
             auth_token: token_response.auth_token,
@@ -276,7 +276,7 @@ impl TrailBaseClient {
         let claims = decode_jwt_claims(&auth_token)?;
 
         let now = current_timestamp();
-        let expires_at = now.saturating_add(3600);
+        let expires_at = claims.expires_at(now.saturating_add(3600));
 
         let session = TrailBaseSession {
             auth_token,
@@ -318,7 +318,7 @@ impl TrailBaseClient {
             .map_err(|e| AuthError::ApiError(format!("Failed to decode JWT: {}", e)))?;
 
         let now = current_timestamp();
-        let expires_at = now.saturating_add(3600);
+        let expires_at = claims.expires_at(now.saturating_add(3600));
 
         let session = TrailBaseSession {
             auth_token: token_response.auth_token,
@@ -377,6 +377,51 @@ impl TrailBaseClient {
         }
     }
 
+    async fn ensure_fresh_session(
+        &self,
+        session: TrailBaseSession,
+        label: &str,
+    ) -> Result<TrailBaseSession, AuthError> {
+        use crate::repository::session::get_session;
+
+        if !should_refresh_session(session.expires_at) {
+            return Ok(session);
+        }
+
+        if session.refresh_token.is_empty() {
+            return Err(AuthError::SessionExpired);
+        }
+
+        self.wait_for_refresh_completion(REFRESH_TIMEOUT_MS).await?;
+
+        let session_after_wait = get_session().ok_or(AuthError::SessionExpired)?;
+
+        if session_after_wait.expires_at != session.expires_at {
+            debug!("{}: Session refreshed by concurrent request", label);
+            return Ok(session_after_wait);
+        }
+
+        let acquired =
+            REFRESH_IN_PROGRESS.compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst);
+
+        if acquired.is_ok() {
+            debug!("{}: Acquired refresh lock", label);
+
+            let result = self
+                .refresh_session(&session_after_wait.refresh_token)
+                .await;
+
+            set_refresh_in_progress(false);
+            debug!("{}: Released refresh lock", label);
+
+            result
+        } else {
+            debug!("{}: Another concurrent refresh in progress, waiting", label);
+            self.wait_for_refresh_completion(REFRESH_TIMEOUT_MS).await?;
+            self.get_fresh_session(session).await
+        }
+    }
+
     async fn _request_with_auth_impl<T: Serialize>(
         &self,
         path: &str,
@@ -386,118 +431,31 @@ impl TrailBaseClient {
         use crate::repository::session::get_session;
 
         let session = get_session().ok_or(AuthError::SessionExpired)?;
+        let session = self.ensure_fresh_session(session, "pre-request").await?;
 
-        let session = if should_refresh_session(session.expires_at) {
-            if session.refresh_token.is_empty() {
-                return Err(AuthError::SessionExpired);
-            }
-
-            self.wait_for_refresh_completion(REFRESH_TIMEOUT_MS).await?;
-
-            let session_after_wait = get_session().ok_or(AuthError::SessionExpired)?;
-
-            if session_after_wait.expires_at != session.expires_at {
-                debug!("Session refreshed by concurrent request");
-                session_after_wait
-            } else {
-                let acquired = REFRESH_IN_PROGRESS.compare_exchange(
-                    false,
-                    true,
-                    Ordering::SeqCst,
-                    Ordering::SeqCst,
-                );
-
-                if acquired.is_ok() {
-                    debug!("Acquired refresh lock");
-
-                    let result = self
-                        .refresh_session(&session_after_wait.refresh_token)
-                        .await;
-
-                    set_refresh_in_progress(false);
-
-                    debug!("Released refresh lock");
-
-                    result?
-                } else {
-                    debug!("Another concurrent refresh in progress, waiting");
-                    self.wait_for_refresh_completion(REFRESH_TIMEOUT_MS).await?;
-                    self.get_fresh_session(session).await?
-                }
-            }
-        } else {
-            session
-        };
-
-        let mut headers = HashMap::new();
-        let auth_header = format!("Bearer {}", session.auth_token);
-        headers.insert("Authorization".to_string(), auth_header);
-        headers.insert("Content-Type".to_string(), "application/json".to_string());
+        let headers = build_auth_headers(&session.auth_token);
 
         let response = self
             .fetch(path, method.clone(), body, Some(headers))
             .await?;
 
-        if response.status() == 401 {
-            let session = get_session().ok_or(AuthError::SessionExpired)?;
-            if session.refresh_token.is_empty() {
-                return Err(AuthError::SessionExpired);
-            }
-
-            self.wait_for_refresh_completion(REFRESH_TIMEOUT_MS).await?;
-
-            let session_after_wait = get_session().ok_or(AuthError::SessionExpired)?;
-
-            let refreshed = if session_after_wait.expires_at != session.expires_at {
-                debug!("Session refreshed by concurrent request on 401");
-                session_after_wait
-            } else {
-                let acquired = REFRESH_IN_PROGRESS.compare_exchange(
-                    false,
-                    true,
-                    Ordering::SeqCst,
-                    Ordering::SeqCst,
-                );
-
-                if acquired.is_ok() {
-                    debug!("Acquired refresh lock on 401");
-
-                    let result = self
-                        .refresh_session(&session_after_wait.refresh_token)
-                        .await;
-
-                    set_refresh_in_progress(false);
-
-                    debug!("Released refresh lock on 401");
-
-                    result?
-                } else {
-                    debug!("Another concurrent refresh in progress on 401, waiting");
-                    self.wait_for_refresh_completion(REFRESH_TIMEOUT_MS).await?;
-                    self.get_fresh_session(session).await?
-                }
-            };
-
-            let mut headers = HashMap::new();
-            let auth_header = format!("Bearer {}", refreshed.auth_token);
-            headers.insert("Authorization".to_string(), auth_header);
-            headers.insert("Content-Type".to_string(), "application/json".to_string());
-
-            self.fetch(path, method, body, Some(headers)).await
-        } else {
-            Ok(response)
+        if response.status() != 401 {
+            return Ok(response);
         }
+
+        let session = get_session().ok_or(AuthError::SessionExpired)?;
+        let refreshed = self.ensure_fresh_session(session, "401-retry").await?;
+
+        let headers = build_auth_headers(&refreshed.auth_token);
+
+        self.fetch(path, method, body, Some(headers)).await
     }
 
     pub async fn logout(&self) -> Result<(), String> {
         use crate::repository::session::{clear_session, get_session};
 
         if let Some(session) = get_session() {
-            let auth_header = format!("Bearer {}", session.auth_token);
-            let headers = HashMap::from([
-                ("Authorization".to_string(), auth_header),
-                ("Content-Type".to_string(), "application/json".to_string()),
-            ]);
+            let headers = build_auth_headers(&session.auth_token);
             let _ = self
                 .fetch(
                     "/api/auth/v1/logout",
@@ -588,6 +546,16 @@ impl Default for TrailBaseClient {
     fn default() -> Self {
         Self::new()
     }
+}
+
+fn build_auth_headers(auth_token: &str) -> HashMap<String, String> {
+    let mut headers = HashMap::new();
+    headers.insert(
+        "Authorization".to_string(),
+        format!("Bearer {}", auth_token),
+    );
+    headers.insert("Content-Type".to_string(), "application/json".to_string());
+    headers
 }
 
 #[allow(async_fn_in_trait)]

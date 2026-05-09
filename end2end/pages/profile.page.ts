@@ -96,7 +96,7 @@ export class ProfilePage extends BasePage {
 	}
 
 	async navigateToHomeAndWaitForSync(timeout = 15_000): Promise<void> {
-		await this.page.goto("/home", { waitUntil: "networkidle" });
+		await this.page.goto("/home", { waitUntil: "domcontentloaded" });
 
 		const successToast = this.page
 			.locator('[data-testid="home-toasts"]')
@@ -104,10 +104,10 @@ export class ProfilePage extends BasePage {
 		try {
 			await successToast.waitFor({ state: "visible", timeout });
 		} catch {
-			await this.page.waitForTimeout(3000);
+			// Sync may have completed before page loaded
 		}
 
-		await this.page.goto("/profile", { waitUntil: "networkidle" });
+		await this.page.goto("/profile", { waitUntil: "domcontentloaded" });
 		await this.page.getByTestId("profile-page").waitFor({ state: "visible", timeout: 15_000 });
 	}
 

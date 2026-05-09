@@ -1,11 +1,10 @@
 import { test, expect, type Page } from "@playwright/test";
-import { testWithFreshUser } from "../fixtures";
-import { ProfilePage } from "../pages";
+import { testWithFreshUser, testWithUniqueUser } from "../fixtures";
+import { skipOnboarding } from "../helpers/navigation";
+import { LoginPage, ProfilePage } from "../pages";
 
 async function setupProfilePage(page: Page): Promise<ProfilePage> {
-    await expect(page.getByTestId("onboarding-spinner")).not.toBeVisible({ timeout: 10_000 });
-    await page.getByTestId("onboarding-skip").click();
-    await expect(page.getByTestId("home-content")).toBeVisible({ timeout: 30_000 });
+    await skipOnboarding(page);
     const profilePage = new ProfilePage(page);
     await profilePage.goto();
     await profilePage.expectProfileVisible();
@@ -89,7 +88,7 @@ testWithFreshUser.describe("Profile Page", () => {
         await profilePage.selectLanguage("english");
         await expect(profilePage.langEnglish).toHaveClass(/btn-olive/);
         await profilePage.saveProfile();
-        await page.waitForTimeout(2000);
+        await profilePage.waitForSaveComplete();
         await page.reload();
         await profilePage.waitForLoad();
         await profilePage.expectProfileVisible();
@@ -102,7 +101,7 @@ testWithFreshUser.describe("Profile Page", () => {
         await profilePage.selectDailyLoad("hard");
         await expect(profilePage.loadHard).toHaveClass(/btn-olive/);
         await profilePage.saveProfile();
-        await page.waitForTimeout(2000);
+        await profilePage.waitForSaveComplete();
         await page.reload();
         await profilePage.waitForLoad();
         await profilePage.expectProfileVisible();
@@ -173,5 +172,34 @@ testWithFreshUser.describe("Profile Page", () => {
 
         await expect(profilePage.langEnglish).toHaveClass(/btn-olive/);
         await expect(profilePage.loadHard).toHaveClass(/btn-olive/);
+    });
+
+    testWithFreshUser("should logout and redirect to login page", async ({ page }) => {
+        const profilePage = await setupProfilePage(page);
+
+        await page.getByTestId("profile-logout-btn").click();
+
+        const loginPage = new LoginPage(page);
+        await expect(loginPage.loginPage).toBeVisible({ timeout: 10_000 });
+        await expect(page).toHaveURL(/\/login/);
+    });
+});
+
+testWithUniqueUser.describe("Profile - Account Deletion", () => {
+    testWithUniqueUser("should delete account and redirect to login", async ({ page }) => {
+        await skipOnboarding(page);
+
+        const profilePage = new ProfilePage(page);
+        await profilePage.goto();
+        await profilePage.expectProfileVisible();
+
+        await profilePage.deleteAccount();
+        await expect(profilePage.confirmDeleteBtn).toBeVisible({ timeout: 5000 });
+
+        await profilePage.confirmDelete();
+
+        const loginPage = new LoginPage(page);
+        await expect(loginPage.loginPage).toBeVisible({ timeout: 10_000 });
+        await expect(page).toHaveURL(/\/login/);
     });
 });
