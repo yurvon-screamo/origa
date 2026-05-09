@@ -222,7 +222,7 @@ testWithFreshUser.describe("Words Page - Anki Import", () => {
         await wordsPage.openAddModal();
         await wordsPage.switchToAnkiTab();
 
-        // NOTE: Requires a minimal .apkg fixture file
+        // Requires a minimal .apkg fixture file for import testing
         await wordsPage.uploadAnkiFile("fixtures/sample.apkg");
 
         await expect(wordsPage.ankiCardCount).toBeVisible({ timeout: 10_000 });

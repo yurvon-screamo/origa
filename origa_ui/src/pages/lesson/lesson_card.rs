@@ -159,6 +159,35 @@ pub fn LessonCard(
         }
     });
 
+    let phrase_audio: StoredValue<Option<web_sys::HtmlAudioElement>> = StoredValue::new(None);
+    let phrase_audio_src = audio_src.clone();
+    let lesson_ctx_phrase = lesson_ctx.clone();
+    Effect::new(move |_| {
+        let is_muted = lesson_ctx_phrase
+            .as_ref()
+            .map(|ctx| ctx.is_muted.get())
+            .unwrap_or(false);
+        if !show_answer && is_phrase && !is_muted {
+            if let Some(ref src) = phrase_audio_src {
+                phrase_audio.update_value(|prev| {
+                    if let Some(a) = prev.take() {
+                        let _ = a.pause();
+                    }
+                });
+                if let Ok(audio) = web_sys::HtmlAudioElement::new_with_src(src) {
+                    let _ = audio.play();
+                    phrase_audio.set_value(Some(audio));
+                }
+            }
+        } else {
+            phrase_audio.update_value(|prev| {
+                if let Some(a) = prev.take() {
+                    let _ = a.pause();
+                }
+            });
+        }
+    });
+
     let lesson_ctx_tts_reversed = lesson_ctx.clone();
     Effect::new(move |_| {
         let is_muted = lesson_ctx_tts_reversed

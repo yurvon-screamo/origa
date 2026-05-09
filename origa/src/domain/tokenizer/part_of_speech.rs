@@ -32,6 +32,7 @@ impl PartOfSpeech {
         matches!(
             self,
             PartOfSpeech::Noun
+                | PartOfSpeech::ProperNoun
                 | PartOfSpeech::Verb
                 | PartOfSpeech::IAdjective
                 | PartOfSpeech::NaAdjective
@@ -222,8 +223,8 @@ mod tests {
         }
 
         #[test]
-        fn returns_false_for_proper_noun() {
-            assert!(!PartOfSpeech::ProperNoun.is_vocabulary_word());
+        fn returns_true_for_proper_noun() {
+            assert!(PartOfSpeech::ProperNoun.is_vocabulary_word());
         }
 
         #[test]

@@ -554,7 +554,6 @@ fn build_auth_headers(auth_token: &str) -> HashMap<String, String> {
         "Authorization".to_string(),
         format!("Bearer {}", auth_token),
     );
-    headers.insert("Content-Type".to_string(), "application/json".to_string());
     headers
 }
 

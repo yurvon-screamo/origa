@@ -37,7 +37,7 @@ use leptos::prelude::*;
 #[component]
 pub fn Lesson() -> impl IntoView {
     view! {
-        <div class="lesson-no-sidebar min-h-screen py-8" data-testid="lesson-page">
+        <div class="min-h-screen py-8" data-testid="lesson-page">
             <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8" data-testid="lesson-card">
                 <LessonContent />
             </div>

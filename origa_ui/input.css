@@ -1504,13 +1504,6 @@ input[type="submit"],
     min-height: 100vh;
 }
 
-@media (min-width: 1024px) {
-    .lesson-no-sidebar {
-        margin-left: -192px;
-        width: calc(100% + 192px);
-    }
-}
-
 @media (max-width: 1023px) {
     .sidebar {
         display: none !important;
