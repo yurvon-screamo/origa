@@ -19,6 +19,7 @@ pub enum QuizVariant {
     #[default]
     Meaning,
     Reading,
+    Grammar,
 }
 
 #[component]
@@ -141,6 +142,7 @@ pub fn QuizCardView(
                         {match quiz_variant {
                             QuizVariant::Meaning => t!(i18n, lesson.choose_answer).into_any(),
                             QuizVariant::Reading => t!(i18n, lesson.choose_reading).into_any(),
+                            QuizVariant::Grammar => t!(i18n, lesson.choose_grammar).into_any(),
                         }}
                     </Text>
                 </div>

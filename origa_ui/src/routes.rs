@@ -13,6 +13,7 @@ use crate::ui_components::{BottomTabBar, LoadingOverlay, Sidebar};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos_router::components::*;
+use leptos_router::hooks::use_location;
 use leptos_router::path;
 use origa::domain::User;
 use origa::traits::UserRepository;
@@ -141,6 +142,7 @@ pub fn AppRoutes() -> impl IntoView {
     let auth_store = use_context::<AuthStore>().expect("AuthStore not provided");
     let repository = auth_store.repository().clone();
     let current_user: RwSignal<Option<User>> = RwSignal::new(None);
+    let location = use_location();
 
     Effect::new({
         let repository = repository.clone();
@@ -154,9 +156,27 @@ pub fn AppRoutes() -> impl IntoView {
         }
     });
 
+    let sidebar_visible = Signal::derive(move || {
+        let authenticated = auth_store.is_authenticated().get();
+        let path = location.pathname.get();
+        let hidden_path = path == "/lesson" || path == "/onboarding";
+        let has_user = current_user.with(|u| u.is_some());
+        authenticated && !hidden_path && has_user
+    });
+
+    let main_class = move || {
+        if sidebar_visible.get() {
+            "paper-texture main-with-sidebar pb-20 lg:pb-0".to_string()
+        } else {
+            "paper-texture pb-20 lg:pb-0".to_string()
+        }
+    };
+
     view! {
-        <Sidebar current_user test_id="sidebar" />
-        <main class="paper-texture main-with-sidebar pb-20 lg:pb-0">
+        <Show when=move || sidebar_visible.get()>
+            <Sidebar current_user test_id="sidebar" />
+        </Show>
+        <main class=main_class>
             <Routes fallback=|| view! { <Login/> }>
                 <Route path=path!("/") view=|| view! { <ProtectedRoute><Home/></ProtectedRoute> } />
                 <Route path=path!("login") view=Login />

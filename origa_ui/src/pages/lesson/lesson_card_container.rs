@@ -295,6 +295,7 @@ pub fn LessonCardContainer() -> impl IntoView {
                                         dont_know_selected=state.dont_know_selected
                                         native_language=native_language.get()
                                         known_kanji=Signal::from(known_kanji)
+                                        quiz_variant=QuizVariant::Grammar
                                     />
                                 })
                             } else {

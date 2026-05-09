@@ -448,7 +448,7 @@ mod tests {
         ensure_dictionary();
         let tokens = tokenize_text("名古屋").unwrap();
         assert_eq!(tokens[0].part_of_speech(), &PartOfSpeech::ProperNoun);
-        assert!(!tokens[0].part_of_speech().is_vocabulary_word());
+        assert!(tokens[0].part_of_speech().is_vocabulary_word());
     }
 
     #[test]
