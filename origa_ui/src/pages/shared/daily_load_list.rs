@@ -9,8 +9,8 @@ const DAILY_LOAD_OPTIONS: &[DailyLoad] = &[
     DailyLoad::Light,
     DailyLoad::Medium,
     DailyLoad::Hard,
-    DailyLoad::Impossible,
-    DailyLoad::Insane,
+    DailyLoad::Heavy,
+    DailyLoad::Maximum,
 ];
 
 fn load_label(i18n: &I18nContext<Locale>, load: &DailyLoad) -> String {
@@ -19,13 +19,8 @@ fn load_label(i18n: &I18nContext<Locale>, load: &DailyLoad) -> String {
         DailyLoad::Light => i18n.get_keys().shared().load_light().inner().to_string(),
         DailyLoad::Medium => i18n.get_keys().shared().load_medium().inner().to_string(),
         DailyLoad::Hard => i18n.get_keys().shared().load_hard().inner().to_string(),
-        DailyLoad::Impossible => i18n
-            .get_keys()
-            .shared()
-            .load_impossible()
-            .inner()
-            .to_string(),
-        DailyLoad::Insane => i18n.get_keys().shared().load_insane().inner().to_string(),
+        DailyLoad::Heavy => i18n.get_keys().shared().load_heavy().inner().to_string(),
+        DailyLoad::Maximum => i18n.get_keys().shared().load_maximum().inner().to_string(),
     }
 }
 
@@ -55,16 +50,16 @@ fn load_description(i18n: &I18nContext<Locale>, load: &DailyLoad) -> String {
             .load_hard_desc()
             .inner()
             .to_string(),
-        DailyLoad::Impossible => i18n
+        DailyLoad::Heavy => i18n
             .get_keys()
             .shared()
-            .load_impossible_desc()
+            .load_heavy_desc()
             .inner()
             .to_string(),
-        DailyLoad::Insane => i18n
+        DailyLoad::Maximum => i18n
             .get_keys()
             .shared()
-            .load_insane_desc()
+            .load_maximum_desc()
             .inner()
             .to_string(),
     }

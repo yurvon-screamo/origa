@@ -1,11 +1,10 @@
 import { test, expect, type Page } from "@playwright/test";
 import { testWithFreshUser } from "../fixtures";
+import { skipOnboarding } from "../helpers/navigation";
 import { HomePage, LessonPage, WordsPage } from "../pages";
 
 async function setupLessonWithCards(page: Page): Promise<LessonPage> {
-    await expect(page.getByTestId("onboarding-spinner")).not.toBeVisible({ timeout: 10000 });
-    await page.getByTestId("onboarding-skip").click();
-    await page.waitForURL(/\/home$/, { timeout: 10000 });
+    await skipOnboarding(page);
 
     const wordsPage = new WordsPage(page);
     await wordsPage.goto();
@@ -30,6 +29,22 @@ async function setupLessonWithCards(page: Page): Promise<LessonPage> {
     await expect(lessonPage.showAnswerBtn).toBeVisible({ timeout: 15_000 });
 
     return lessonPage;
+}
+
+async function rateCardUntilDone(lessonPage: LessonPage, rating: "again" | "hard" | "good" | "easy", maxCards = 5): Promise<void> {
+    for (let i = 0; i < maxCards; i++) {
+        const isComplete = await lessonPage.completeScreen.isVisible().catch(() => false);
+        if (isComplete) break;
+        try {
+            await lessonPage.showAnswer();
+            await lessonPage.rate(rating);
+            await expect(
+                lessonPage.showAnswerBtn.or(lessonPage.completeScreen)
+            ).toBeVisible({ timeout: 5000 });
+        } catch {
+            break;
+        }
+    }
 }
 
 testWithFreshUser.describe("Lesson Page", () => {
@@ -64,18 +79,7 @@ testWithFreshUser.describe("Lesson Page", () => {
             return;
         }
 
-        for (let i = 0; i < 5; i++) {
-            const isComplete = await lessonPage.completeScreen.isVisible().catch(() => false);
-            if (isComplete) break;
-            try {
-                await lessonPage.showAnswer();
-                await page.waitForTimeout(300);
-                await lessonPage.rate("easy");
-                await page.waitForTimeout(500);
-            } catch {
-                break;
-            }
-        }
+        await rateCardUntilDone(lessonPage, "easy");
 
         await lessonPage.waitForComplete();
     });
@@ -121,18 +125,7 @@ testWithFreshUser.describe("Lesson Page", () => {
             return;
         }
 
-        for (let i = 0; i < 5; i++) {
-            const isComplete = await lessonPage.completeScreen.isVisible().catch(() => false);
-            if (isComplete) break;
-            try {
-                await lessonPage.showAnswer();
-                await page.waitForTimeout(300);
-                await lessonPage.rate("easy");
-                await page.waitForTimeout(500);
-            } catch {
-                break;
-            }
-        }
+        await rateCardUntilDone(lessonPage, "easy");
 
         await lessonPage.waitForComplete();
         await expect(lessonPage.completeStats).toBeVisible();
@@ -150,22 +143,37 @@ testWithFreshUser.describe("Lesson Page", () => {
             return;
         }
 
-        for (let i = 0; i < 5; i++) {
-            const isComplete = await lessonPage.completeScreen.isVisible().catch(() => false);
-            if (isComplete) break;
-            try {
-                await lessonPage.showAnswer();
-                await page.waitForTimeout(300);
-                await lessonPage.rate("easy");
-                await page.waitForTimeout(500);
-            } catch {
-                break;
-            }
-        }
+        await rateCardUntilDone(lessonPage, "easy");
 
         await lessonPage.waitForComplete();
         await lessonPage.clickHome();
         await page.waitForURL(/\/home$/, { timeout: 10_000 });
     });
+});
 
+testWithFreshUser.describe("Lesson Page - Quiz Format", () => {
+    // Quiz format requires specific card types that present multiple-choice options
+    // instead of the standard "show answer + rate" flow.
+    // These cards are created via onboarding import with quiz-enabled sets.
+    testWithFreshUser.skip("should display quiz options for quiz-format cards", async ({ page }) => {
+        test.setTimeout(120_000);
+        const lessonPage = await setupLessonWithCards(page);
+
+        await expect(lessonPage.quizOptions[0]).toBeVisible({ timeout: 10_000 });
+        await expect(lessonPage.quizOptions[1]).toBeVisible();
+        await expect(lessonPage.quizOptions[2]).toBeVisible();
+        await expect(lessonPage.quizOptions[3]).toBeVisible();
+
+        await lessonPage.selectQuizOption(0);
+    });
+
+    testWithFreshUser.skip("should display yes/no buttons for yesno-format cards", async ({ page }) => {
+        test.setTimeout(120_000);
+        const lessonPage = await setupLessonWithCards(page);
+
+        await expect(lessonPage.yesnoYesBtn).toBeVisible({ timeout: 10_000 });
+        await expect(lessonPage.yesnoNoBtn).toBeVisible();
+
+        await lessonPage.yesnoYesBtn.click();
+    });
 });

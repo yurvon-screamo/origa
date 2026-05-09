@@ -7,6 +7,76 @@ use super::daily_history::DailyStatsUpdate;
 use super::{Card, DailyHistoryItem, StudyCard};
 use crate::domain::Rating;
 
+struct ComputedStats {
+    avg_stability: f64,
+    avg_difficulty: f64,
+    total_words: usize,
+    known_words: usize,
+    new_words: usize,
+    in_progress_words: usize,
+    high_difficulty_words: usize,
+}
+
+impl ComputedStats {
+    fn compute(study_cards: &HashMap<Ulid, StudyCard>) -> Option<Self> {
+        let mut stats = Self {
+            avg_stability: 0.0,
+            avg_difficulty: 0.0,
+            total_words: 0,
+            known_words: 0,
+            new_words: 0,
+            in_progress_words: 0,
+            high_difficulty_words: 0,
+        };
+
+        for study_card in study_cards.values() {
+            if matches!(study_card.card(), Card::Phrase(_)) {
+                continue;
+            }
+            let memory = study_card.memory();
+            stats.avg_stability += memory.stability().map(|x| x.value()).unwrap_or(0.0);
+            stats.avg_difficulty += memory.difficulty().map(|x| x.value()).unwrap_or(0.0);
+            stats.total_words += 1;
+            stats.known_words += memory.is_known_card() as usize;
+            stats.new_words += memory.is_new() as usize;
+            stats.in_progress_words += memory.is_in_progress() as usize;
+            stats.high_difficulty_words += memory.is_high_difficulty() as usize;
+        }
+
+        if stats.total_words == 0 {
+            return None;
+        }
+
+        stats.avg_stability /= stats.total_words as f64;
+        stats.avg_difficulty /= stats.total_words as f64;
+        Some(stats)
+    }
+
+    fn to_daily_update(
+        &self,
+        positive_ratings: usize,
+        negative_ratings: usize,
+        total_ratings: usize,
+        new_cards_studied_today: u32,
+        phrase_cards_studied_today: u32,
+    ) -> DailyStatsUpdate {
+        DailyStatsUpdate {
+            avg_stability: self.avg_stability,
+            avg_difficulty: self.avg_difficulty,
+            total_words: self.total_words,
+            known_words: self.known_words,
+            new_words: self.new_words,
+            in_progress_words: self.in_progress_words,
+            high_difficulty_words: self.high_difficulty_words,
+            positive_ratings,
+            negative_ratings,
+            total_ratings,
+            new_cards_studied_today,
+            phrase_cards_studied_today,
+        }
+    }
+}
+
 pub(crate) fn update_history(
     study_cards: &HashMap<Ulid, StudyCard>,
     lesson_history: &mut Vec<DailyHistoryItem>,
@@ -14,37 +84,12 @@ pub(crate) fn update_history(
     was_new: bool,
     is_phrase: bool,
 ) {
-    let mut avg_stability = 0.0;
-    let mut avg_difficulty = 0.0;
-    let mut total_words = 0;
-    let mut known_words = 0;
-    let mut new_words = 0;
-    let mut in_progress_words = 0;
-    let mut high_difficulty_words = 0;
+    let stats = match ComputedStats::compute(study_cards) {
+        Some(s) => s,
+        None => return,
+    };
 
-    for study_card in study_cards.values() {
-        if matches!(study_card.card(), Card::Phrase(_)) {
-            continue;
-        }
-        let memory = study_card.memory();
-        avg_stability += memory.stability().map(|x| x.value()).unwrap_or(0.0);
-        avg_difficulty += memory.difficulty().map(|x| x.value()).unwrap_or(0.0);
-        total_words += 1;
-        known_words += memory.is_known_card() as usize;
-        new_words += memory.is_new() as usize;
-        in_progress_words += memory.is_in_progress() as usize;
-        high_difficulty_words += memory.is_high_difficulty() as usize;
-    }
-
-    if total_words == 0 {
-        return;
-    }
-
-    avg_stability /= total_words as f64;
-    avg_difficulty /= total_words as f64;
-
-    let now = Utc::now();
-    let today = now.date_naive();
+    let today = Utc::now().date_naive();
 
     if let Some(existing_item) = lesson_history
         .iter_mut()
@@ -56,42 +101,19 @@ pub(crate) fn update_history(
         if was_new && is_phrase {
             existing_item.increment_phrase_cards_studied();
         }
-        let new_cards_today = existing_item.new_cards_studied_today();
-        let phrase_cards_today = existing_item.phrase_cards_studied_today();
+
+        let update = stats.to_daily_update(
+            existing_item.positive_ratings(),
+            existing_item.negative_ratings(),
+            existing_item.total_ratings(),
+            existing_item.new_cards_studied_today(),
+            existing_item.phrase_cards_studied_today(),
+        );
 
         if is_phrase {
-            existing_item.update_stats(DailyStatsUpdate {
-                avg_stability,
-                avg_difficulty,
-                total_words,
-                known_words,
-                new_words,
-                in_progress_words,
-                high_difficulty_words,
-                positive_ratings: existing_item.positive_ratings(),
-                negative_ratings: existing_item.negative_ratings(),
-                total_ratings: existing_item.total_ratings(),
-                new_cards_studied_today: new_cards_today,
-                phrase_cards_studied_today: phrase_cards_today,
-            });
+            existing_item.update_stats(update);
         } else {
-            existing_item.update(
-                DailyStatsUpdate {
-                    avg_stability,
-                    avg_difficulty,
-                    total_words,
-                    known_words,
-                    new_words,
-                    in_progress_words,
-                    high_difficulty_words,
-                    positive_ratings: existing_item.positive_ratings(),
-                    negative_ratings: existing_item.negative_ratings(),
-                    total_ratings: existing_item.total_ratings(),
-                    new_cards_studied_today: new_cards_today,
-                    phrase_cards_studied_today: phrase_cards_today,
-                },
-                rating,
-            );
+            existing_item.update(update, rating);
         }
     } else {
         let mut item = DailyHistoryItem::new();
@@ -102,39 +124,18 @@ pub(crate) fn update_history(
             item.increment_phrase_cards_studied();
         }
 
+        let update = stats.to_daily_update(
+            0,
+            0,
+            0,
+            item.new_cards_studied_today(),
+            item.phrase_cards_studied_today(),
+        );
+
         if is_phrase {
-            item.update_stats(DailyStatsUpdate {
-                avg_stability,
-                avg_difficulty,
-                total_words,
-                known_words,
-                new_words,
-                in_progress_words,
-                high_difficulty_words,
-                positive_ratings: 0,
-                negative_ratings: 0,
-                total_ratings: 0,
-                new_cards_studied_today: item.new_cards_studied_today(),
-                phrase_cards_studied_today: item.phrase_cards_studied_today(),
-            });
+            item.update_stats(update);
         } else {
-            item.update(
-                DailyStatsUpdate {
-                    avg_stability,
-                    avg_difficulty,
-                    total_words,
-                    known_words,
-                    new_words,
-                    in_progress_words,
-                    high_difficulty_words,
-                    positive_ratings: 0,
-                    negative_ratings: 0,
-                    total_ratings: 0,
-                    new_cards_studied_today: item.new_cards_studied_today(),
-                    phrase_cards_studied_today: item.phrase_cards_studied_today(),
-                },
-                rating,
-            );
+            item.update(update, rating);
         }
         lesson_history.push(item);
     }
@@ -144,34 +145,10 @@ pub(crate) fn recalculate_daily_stats(
     study_cards: &HashMap<Ulid, StudyCard>,
     lesson_history: &mut Vec<DailyHistoryItem>,
 ) {
-    let mut avg_stability = 0.0;
-    let mut avg_difficulty = 0.0;
-    let mut total_words = 0;
-    let mut known_words = 0;
-    let mut new_words = 0;
-    let mut in_progress_words = 0;
-    let mut high_difficulty_words = 0;
-
-    for study_card in study_cards.values() {
-        if matches!(study_card.card(), Card::Phrase(_)) {
-            continue;
-        }
-        let memory = study_card.memory();
-        avg_stability += memory.stability().map(|x| x.value()).unwrap_or(0.0);
-        avg_difficulty += memory.difficulty().map(|x| x.value()).unwrap_or(0.0);
-        total_words += 1;
-        known_words += memory.is_known_card() as usize;
-        new_words += memory.is_new() as usize;
-        in_progress_words += memory.is_in_progress() as usize;
-        high_difficulty_words += memory.is_high_difficulty() as usize;
-    }
-
-    if total_words == 0 {
-        return;
-    }
-
-    avg_stability /= total_words as f64;
-    avg_difficulty /= total_words as f64;
+    let stats = match ComputedStats::compute(study_cards) {
+        Some(s) => s,
+        None => return,
+    };
 
     let today = Utc::now().date_naive();
     let (positive, negative, total) = study_cards
@@ -198,40 +175,22 @@ pub(crate) fn recalculate_daily_stats(
         .map(|item| item.phrase_cards_studied_today())
         .unwrap_or(0);
 
+    let update = stats.to_daily_update(
+        positive,
+        negative,
+        total,
+        preserved_new_cards,
+        preserved_phrase_cards,
+    );
+
     if let Some(existing_item) = lesson_history
         .iter_mut()
         .find(|item| item.timestamp().date_naive() == today)
     {
-        existing_item.update_stats(DailyStatsUpdate {
-            avg_stability,
-            avg_difficulty,
-            total_words,
-            known_words,
-            new_words,
-            in_progress_words,
-            high_difficulty_words,
-            positive_ratings: positive,
-            negative_ratings: negative,
-            total_ratings: total,
-            new_cards_studied_today: preserved_new_cards,
-            phrase_cards_studied_today: preserved_phrase_cards,
-        });
+        existing_item.update_stats(update);
     } else {
         let mut item = DailyHistoryItem::new();
-        item.update_stats(DailyStatsUpdate {
-            avg_stability,
-            avg_difficulty,
-            total_words,
-            known_words,
-            new_words,
-            in_progress_words,
-            high_difficulty_words,
-            positive_ratings: positive,
-            negative_ratings: negative,
-            total_ratings: total,
-            new_cards_studied_today: preserved_new_cards,
-            phrase_cards_studied_today: preserved_phrase_cards,
-        });
+        item.update_stats(update);
         lesson_history.push(item);
     }
 }

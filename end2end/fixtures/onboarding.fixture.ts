@@ -1,93 +1,30 @@
-/* eslint-disable @typescript-eslint/no-empty-object-pattern */
+/* eslint-disable @typescript-eslint/no-empty-object-type */
 import { test as base, type Page } from "@playwright/test";
-import { trailBaseUrl } from "../config";
-import {
-    getAdminToken,
-    createTestUser,
-    deleteTestUserWithRetry,
-    loginTestUser,
-} from "./admin";
-import { generateUniqueEmail, DEFAULT_TEST_PASSWORD } from "./auth.fixture";
+import { setupTestUser, withAuthenticatedPage } from "../helpers/auth";
+import { loginTestUser } from "./admin";
 
 /**
  * Extended test with authenticated page fixture
  * Manages test user lifecycle and authentication
  */
 export const test = base.extend<{
-    authenticatedPage: Page;
-    authToken: string;
+	authenticatedPage: Page;
+	authToken: string;
 }>({
-    authenticatedPage: async ({ browser }, use) => {
-        const context = await browser.newContext();
-        const page = await context.newPage();
-        await page.setViewportSize({ width: 1280, height: 720 });
+	authenticatedPage: async ({ browser }, use) => {
+		await withAuthenticatedPage(browser, use);
+	},
 
-        const userEmail = generateUniqueEmail();
-        const userPassword = DEFAULT_TEST_PASSWORD;
-        let adminToken: string | undefined;
-        let adminCsrfToken: string | undefined;
-        let userUuid: string | undefined;
+	authToken: async ({}, use) => {
+		const userCtx = await setupTestUser();
 
-        try {
-            const adminAuth = await getAdminToken();
-            adminToken = adminAuth.token;
-            adminCsrfToken = adminAuth.csrfToken;
-
-            userUuid = await createTestUser(adminToken, adminCsrfToken, userEmail, userPassword);
-        } catch (error) {
-            console.error("[fixture] Failed to setup test user:", error);
-            throw error;
-        }
-
-        try {
-            await page.goto("http://localhost:1420");
-            await page.locator('input[type="email"], input[data-testid="email-input"]').waitFor({ state: "visible", timeout: 30_000 });
-
-            await page.fill('input[type="email"], input[data-testid="email-input"]', userEmail);
-            await page.fill('input[type="password"], input[data-testid="password-input"]', userPassword);
-            await page.click('button[type="submit"], button[data-testid="login-submit"]');
-            
-            await page.waitForURL("**/home**", { timeout: 30_000 }).catch(() => {});
-            await page.waitForTimeout(2000);
-
-            await use(page);
-        } finally {
-            await context.close();
-            if (adminToken && adminCsrfToken && userUuid) {
-                try {
-                    await deleteTestUserWithRetry(adminToken, adminCsrfToken, userUuid, userEmail);
-                } catch (error) {
-                    console.error(`[fixture] Failed to cleanup test user: ${userEmail} (${userUuid})`, error);
-                }
-            }
-        }
-    },
-
-    authToken: async ({ }, use) => {
-        const userEmail = generateUniqueEmail();
-        const userPassword = DEFAULT_TEST_PASSWORD;
-        let adminToken: string | undefined;
-        let adminCsrfToken: string | undefined;
-        let userUuid: string | undefined;
-
-        try {
-            const adminAuth = await getAdminToken();
-            adminToken = adminAuth.token;
-            adminCsrfToken = adminAuth.csrfToken;
-
-            userUuid = await createTestUser(adminToken, adminCsrfToken, userEmail, userPassword);
-            const { token } = await loginTestUser(userEmail, userPassword);
-            await use(token);
-        } finally {
-            if (adminToken && adminCsrfToken && userUuid) {
-                try {
-                    await deleteTestUserWithRetry(adminToken, adminCsrfToken, userUuid, userEmail);
-                } catch (error) {
-                    console.error(`[fixture] Failed to cleanup test user: ${userEmail} (${userUuid})`, error);
-                }
-            }
-        }
-    },
+		try {
+			const { token } = await loginTestUser(userCtx.email, userCtx.password);
+			await use(token);
+		} finally {
+			await userCtx.cleanup();
+		}
+	},
 });
 
 /**
@@ -95,56 +32,9 @@ export const test = base.extend<{
  * Uses UI login for reliability
  */
 export const testWithFreshUser = base.extend<{
-    page: Page;
+	page: Page;
 }>({
-    page: async ({ browser }, use) => {
-        const context = await browser.newContext();
-        const page = await context.newPage();
-        await page.setViewportSize({ width: 1280, height: 720 });
-
-        const uniqueEmail = generateUniqueEmail();
-        const uniquePassword = DEFAULT_TEST_PASSWORD;
-        let adminToken: string | undefined;
-        let adminCsrfToken: string | undefined;
-        let userUuid: string | undefined;
-
-        try {
-            const adminAuth = await getAdminToken();
-            adminToken = adminAuth.token;
-            adminCsrfToken = adminAuth.csrfToken;
-
-            userUuid = await createTestUser(adminToken, adminCsrfToken, uniqueEmail, uniquePassword);
-        } catch (error) {
-            console.error("[fixture] Failed to create fresh user:", error);
-            throw error;
-        }
-
-        try {
-            await page.goto("http://localhost:1420");
-            await page.locator('input[type="email"], input[data-testid="email-input"]').waitFor({ state: "visible", timeout: 30_000 });
-
-            await page.fill('input[type="email"], input[data-testid="email-input"]', uniqueEmail);
-            await page.fill('input[type="password"], input[data-testid="password-input"]', uniquePassword);
-            await page.click('button[type="submit"], button[data-testid="login-submit"]');
-            
-            await page.waitForURL("**/home**", { timeout: 30_000 }).catch(() => {});
-            await page.waitForTimeout(2000);
-
-            await use(page);
-        }
-        catch (error) {
-            console.error("[fixture] Failed to setup authenticated page:", error);
-            throw error;
-        }
-        finally {
-            await context.close();
-            if (adminToken && adminCsrfToken && userUuid) {
-                try {
-                    await deleteTestUserWithRetry(adminToken, adminCsrfToken, userUuid, uniqueEmail);
-                } catch (error) {
-                    console.error(`[fixture] Failed to cleanup fresh user: ${uniqueEmail} (${userUuid})`, error);
-                }
-            }
-        }
-    },
+	page: async ({ browser }, use) => {
+		await withAuthenticatedPage(browser, use);
+	},
 });

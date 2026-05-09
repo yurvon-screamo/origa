@@ -38,7 +38,7 @@ impl<'a, R: UserRepository> AnalyzeTextForCardsUseCase<'a, R> {
             .repository
             .get_current_user()
             .await?
-            .ok_or(OrigaError::CurrentUserNotExist {})?;
+            .ok_or(OrigaError::CurrentUserNotExist)?;
 
         let tokens = tokenize_text(text.as_str())?;
 

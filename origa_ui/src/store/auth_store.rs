@@ -403,7 +403,7 @@ impl AuthStore {
                 self.user.set(Some(user));
                 Ok(())
             },
-            Ok(None) => Err(OrigaError::CurrentUserNotExist {}),
+            Ok(None) => Err(OrigaError::CurrentUserNotExist),
             Err(e) => Err(e),
         }
     }

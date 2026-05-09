@@ -1,11 +1,10 @@
 import { test, expect, type Page } from "@playwright/test";
 import { testWithFreshUser } from "../fixtures";
+import { skipOnboarding } from "../helpers/navigation";
 import { GrammarPage } from "../pages";
 
 async function setupGrammarPage(page: Page): Promise<GrammarPage> {
-    await expect(page.getByTestId("onboarding-spinner")).not.toBeVisible({ timeout: 10000 });
-    await page.getByTestId("onboarding-skip").click();
-    await page.waitForURL(/\/home$/, { timeout: 10000 });
+    await skipOnboarding(page);
 
     const grammarPage = new GrammarPage(page);
     await grammarPage.goto();
@@ -77,9 +76,7 @@ testWithFreshUser.describe("Grammar Page - CRUD", () => {
         expect(countBefore).toBeGreaterThan(0);
 
         await grammarPage.deleteCardByIndex(0);
-        // Wait for UI to update after deletion
-        await page.waitForTimeout(500);
-        expect(await grammarPage.getCardCount()).toBe(countBefore - 1);
+        await expect.poll(() => grammarPage.getCardCount()).toBe(countBefore - 1);
     });
 
     testWithFreshUser("should cancel card deletion", async ({ page }) => {
@@ -235,7 +232,7 @@ testWithFreshUser.describe("Grammar Page - Pagination", () => {
         if (await grammarPage.isLoadMoreVisible().catch(() => false)) {
             // Click load more to expand
             await grammarPage.clickLoadMore();
-            await page.waitForTimeout(500);
+            await expect(page.getByTestId("grammar-card-item").nth(50)).toBeVisible({ timeout: 5000 });
             const expandedCount = await grammarPage.getCardCount();
             expect(expandedCount).toBeGreaterThan(50);
 

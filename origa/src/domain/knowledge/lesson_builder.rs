@@ -226,7 +226,7 @@ fn build_lesson_result(
     knowledge_set: &KnowledgeSet,
 ) -> LessonData {
     let padding_ids: HashSet<_> = padding_cards.iter().map(|(id, _)| **id).collect();
-    let generator = LessonViewGenerator::new(knowledge_set);
+    let mut generator = LessonViewGenerator::new(knowledge_set);
 
     let favorite_lessons: Vec<_> = favorite_cards
         .iter()

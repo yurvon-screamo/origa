@@ -1,196 +1,90 @@
 use serde::{Deserialize, Serialize};
-use std::fmt;
 use ulid::Ulid;
 
 use super::value_objects::NativeLanguage;
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, thiserror::Error)]
 pub enum OrigaError {
-    CurrentUserNotExist {},
+    #[error("Current user does not exist")]
+    CurrentUserNotExist,
+    #[error("Card with id {card_id} not found")]
     CardNotFound { card_id: Ulid },
+    #[error("Card with question '{question}' already exists")]
     DuplicateCard { question: String },
+    #[error("Invalid question: {reason}")]
     InvalidQuestion { reason: String },
+    #[error("Invalid answer: {reason}")]
     InvalidAnswer { reason: String },
+    #[error("Invalid stability: {reason}")]
     InvalidStability { reason: String },
+    #[error("Invalid difficulty: {reason}")]
     InvalidDifficulty { reason: String },
+    #[error("Invalid memory state: {reason}")]
     InvalidMemoryState { reason: String },
+    #[error("SRS calculation failed: {reason}")]
     SrsCalculationFailed { reason: String },
+    #[error("Repository error: {reason}")]
     RepositoryError { reason: String },
+    #[error("Embedding error: {reason}")]
     EmbeddingError { reason: String },
+    #[error("LLM error: {reason}")]
     LlmError { reason: String },
+    #[error("Settings error: {reason}")]
     SettingsError { reason: String },
+    #[error("Furigana error: {reason}")]
     FuriganaError { reason: String },
+    #[error("Translation error: {reason}")]
     TranslationError { reason: String },
+    #[error("Kradfile error: {reason}")]
     KradfileError { reason: String },
+    #[error("Vocabulary parse error: {reason}")]
     VocabularyParseError { reason: String },
+    #[error("Invalid values: {reason}")]
     InvalidValues { reason: String },
+    #[error("Tokenizer error: {reason}")]
     TokenizerError { reason: String },
+    #[error("Grammar rule format error: {reason}")]
     GrammarFormatError { reason: String },
+    #[error("Grammar parse error: {reason}")]
     GrammarParseError { reason: String },
+    #[error("Well-known set parse error: {reason}")]
     WellKnownSetParseError { reason: String },
+    #[error("Well-known set '{set_id}' not found")]
     WellKnownSetNotFound { set_id: String },
+    #[error("Session expired, please login again")]
     SessionExpired,
+    #[error("Dictionary not found: {reason}")]
     DictionaryNotFound { reason: String },
+    #[error("Translation not found for word: {word}")]
     VocabularyNotFound { word: String },
+    #[error("OCR error: {reason}")]
     OcrError { reason: String },
+    #[error("Speech-to-text error: {reason}")]
     SttError { reason: String },
+    #[error("Invalid Anki file: {reason}")]
     AnkiInvalidFile { reason: String },
+    #[error("Database '{filename}' not found in Anki archive")]
     AnkiDatabaseNotFound { filename: String },
+    #[error("Field '{field_name}' not found in Anki deck models")]
     AnkiFieldNotFound { field_name: String },
+    #[error("No description for kanji: {kanji}")]
     KanjiNotFound { kanji: String },
-    RadicalNotFound { radical: char },
+    #[error("Grammar rule not found: {rule_id}")]
     GrammarRuleNotFound { rule_id: Ulid },
+    #[error("Grammar rule {rule_id} content not found for language {lang}")]
     GrammarContentNotFound { rule_id: Ulid, lang: NativeLanguage },
+    #[error("No translation for: {word} ({lang})")]
     TranslationNotFound { word: String, lang: NativeLanguage },
+    #[error("Failed to delete account: {reason}")]
     AccountDeletionFailed { reason: String },
+    #[error("Network error fetching {url}: {reason}")]
     NetworkError { url: String, reason: String },
+    #[error("Phrase parse error: {reason}")]
     PhraseParseError { reason: String },
+    #[error("Phrase not found: {phrase_id}")]
     PhraseNotFound { phrase_id: Ulid },
+    #[error("Pitch audio parse error: {reason}")]
     PitchAudioParseError { reason: String },
-}
-
-impl fmt::Display for OrigaError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            OrigaError::CurrentUserNotExist {} => {
-                write!(f, "Current user does not exist")
-            },
-            OrigaError::CardNotFound { card_id } => {
-                write!(f, "Card with id {} not found", card_id)
-            },
-            OrigaError::DuplicateCard { question } => {
-                write!(f, "Card with question '{}' already exists", question)
-            },
-            OrigaError::InvalidQuestion { reason } => {
-                write!(f, "Invalid question: {}", reason)
-            },
-            OrigaError::InvalidAnswer { reason } => {
-                write!(f, "Invalid answer: {}", reason)
-            },
-            OrigaError::InvalidStability { reason } => {
-                write!(f, "Invalid stability: {}", reason)
-            },
-            OrigaError::InvalidDifficulty { reason } => {
-                write!(f, "Invalid difficulty: {}", reason)
-            },
-            OrigaError::InvalidMemoryState { reason } => {
-                write!(f, "Invalid memory state: {}", reason)
-            },
-            OrigaError::SrsCalculationFailed { reason } => {
-                write!(f, "SRS calculation failed: {}", reason)
-            },
-            OrigaError::RepositoryError { reason } => {
-                write!(f, "Repository error: {}", reason)
-            },
-            OrigaError::EmbeddingError { reason } => {
-                write!(f, "Embedding error: {}", reason)
-            },
-            OrigaError::LlmError { reason } => {
-                write!(f, "LLM error: {}", reason)
-            },
-            OrigaError::SettingsError { reason } => {
-                write!(f, "Settings error: {}", reason)
-            },
-            OrigaError::FuriganaError { reason } => {
-                write!(f, "Furigana error: {}", reason)
-            },
-            OrigaError::TranslationError { reason } => {
-                write!(f, "Translation error: {}", reason)
-            },
-            OrigaError::KradfileError { reason } => {
-                write!(f, "Kradfile error: {}", reason)
-            },
-            OrigaError::VocabularyParseError { reason } => {
-                write!(f, "Vocabulary parse error: {}", reason)
-            },
-            OrigaError::InvalidValues { reason } => {
-                write!(f, "Invalid values: {}", reason)
-            },
-            OrigaError::TokenizerError { reason } => {
-                write!(f, "Tokenizer error: {}", reason)
-            },
-            OrigaError::GrammarFormatError { reason } => {
-                write!(f, "Grammar rule format error: {}", reason)
-            },
-            OrigaError::GrammarParseError { reason } => {
-                write!(f, "Grammar parse error: {}", reason)
-            },
-            OrigaError::WellKnownSetParseError { reason } => {
-                write!(f, "WellKnownSetError: {}", reason)
-            },
-            OrigaError::WellKnownSetNotFound { set_id } => {
-                write!(f, "WellKnownSet '{}' not found", set_id)
-            },
-            OrigaError::SessionExpired => {
-                write!(f, "Session expired, please login again")
-            },
-            OrigaError::DictionaryNotFound { reason } => {
-                write!(f, "Dictionary not found: {}", reason)
-            },
-            OrigaError::VocabularyNotFound { word } => {
-                write!(f, "Translation not found for word: {}", word)
-            },
-            OrigaError::OcrError { reason } => {
-                write!(f, "OCR error: {}", reason)
-            },
-            OrigaError::SttError { reason } => {
-                write!(f, "Speech-to-text error: {}", reason)
-            },
-            OrigaError::AnkiInvalidFile { reason } => {
-                write!(f, "Invalid Anki file: {}", reason)
-            },
-            OrigaError::AnkiDatabaseNotFound { filename } => {
-                write!(f, "Database '{}' not found in Anki archive", filename)
-            },
-            OrigaError::AnkiFieldNotFound { field_name } => {
-                write!(f, "Field '{}' not found in Anki deck models", field_name)
-            },
-            OrigaError::KanjiNotFound { kanji } => {
-                write!(f, "Нет описания для кандзи: {}", kanji)
-            },
-            OrigaError::RadicalNotFound { radical } => {
-                write!(f, "Радикал не найден: {}", radical)
-            },
-            OrigaError::GrammarRuleNotFound { rule_id } => {
-                write!(f, "Правило грамматики не найдено: {}", rule_id)
-            },
-            OrigaError::GrammarContentNotFound { rule_id, lang } => {
-                write!(
-                    f,
-                    "Контент правила {} не найден для языка {}",
-                    rule_id, lang
-                )
-            },
-            OrigaError::TranslationNotFound { word, lang } => {
-                write!(f, "Нет перевода для: {} ({})", word, lang)
-            },
-            OrigaError::AccountDeletionFailed { reason } => {
-                write!(f, "Failed to delete account: {}", reason)
-            },
-            OrigaError::NetworkError { url, reason } => {
-                write!(f, "Network error fetching {}: {}", url, reason)
-            },
-            OrigaError::PhraseParseError { reason } => {
-                write!(f, "Phrase parse error: {}", reason)
-            },
-            OrigaError::PhraseNotFound { phrase_id } => {
-                write!(f, "Phrase not found: {}", phrase_id)
-            },
-            OrigaError::PitchAudioParseError { reason } => {
-                write!(f, "Pitch audio parse error: {}", reason)
-            },
-        }
-    }
-}
-
-impl std::error::Error for OrigaError {}
-
-impl From<ort::Error> for OrigaError {
-    fn from(error: ort::Error) -> Self {
-        OrigaError::OcrError {
-            reason: error.to_string(),
-        }
-    }
 }
 
 #[cfg(test)]
@@ -215,7 +109,7 @@ mod tests {
 
     #[test]
     fn current_user_not_exist() {
-        let error = OrigaError::CurrentUserNotExist {};
+        let error = OrigaError::CurrentUserNotExist;
         assert_display_contains(&error, "Current user does not exist");
         assert_serialization_roundtrip(error);
     }
@@ -405,7 +299,7 @@ mod tests {
         let error = OrigaError::WellKnownSetParseError {
             reason: "invalid id".into(),
         };
-        assert_display_contains(&error, "WellKnownSetError");
+        assert_display_contains(&error, "Well-known set parse error");
         assert_serialization_roundtrip(error);
     }
 
@@ -458,13 +352,6 @@ mod tests {
             kanji: "日".into()
         };
         assert_display_contains(&error, "日");
-        assert_serialization_roundtrip(error);
-    }
-
-    #[test]
-    fn radical_not_found() {
-        let error = OrigaError::RadicalNotFound { radical: '一' };
-        assert_display_contains(&error, "一");
         assert_serialization_roundtrip(error);
     }
 

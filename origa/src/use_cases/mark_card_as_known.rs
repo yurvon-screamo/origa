@@ -20,7 +20,7 @@ impl<'a, R: UserRepository> MarkCardAsKnownUseCase<'a, R> {
             .repository
             .get_current_user()
             .await?
-            .ok_or(OrigaError::CurrentUserNotExist {})?;
+            .ok_or(OrigaError::CurrentUserNotExist)?;
 
         if let Some(study_card) = user.knowledge_set().get_card(card_id) {
             if !study_card.memory().is_new() {

@@ -20,7 +20,7 @@ impl<'a, R: UserRepository> DeleteCardUseCase<'a, R> {
             .repository
             .get_current_user()
             .await?
-            .ok_or(OrigaError::CurrentUserNotExist {})?;
+            .ok_or(OrigaError::CurrentUserNotExist)?;
 
         user.delete_card(card_id)?;
 

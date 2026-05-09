@@ -41,10 +41,10 @@ impl<'a, R: UserRepository, C: CdnProvider> ImportOnboardingSetsUseCase<'a, R, C
             .repository
             .get_current_user()
             .await?
-            .ok_or(OrigaError::CurrentUserNotExist {})?;
+            .ok_or(OrigaError::CurrentUserNotExist)?;
 
         if user.id() != user_id {
-            return Err(OrigaError::CurrentUserNotExist {});
+            return Err(OrigaError::CurrentUserNotExist);
         }
 
         let current_level = user.current_japanese_level();

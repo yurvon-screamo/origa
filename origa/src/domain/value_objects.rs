@@ -178,8 +178,8 @@ pub enum DailyLoad {
     #[default]
     Medium,
     Hard,
-    Impossible,
-    Insane,
+    Heavy,
+    Maximum,
 }
 
 impl DailyLoad {
@@ -189,8 +189,8 @@ impl DailyLoad {
             DailyLoad::Light => 10,
             DailyLoad::Medium => 15,
             DailyLoad::Hard => 25,
-            DailyLoad::Impossible => 35,
-            DailyLoad::Insane => 50,
+            DailyLoad::Heavy => 35,
+            DailyLoad::Maximum => 50,
         }
     }
 
@@ -200,8 +200,8 @@ impl DailyLoad {
             DailyLoad::Light,
             DailyLoad::Medium,
             DailyLoad::Hard,
-            DailyLoad::Impossible,
-            DailyLoad::Insane,
+            DailyLoad::Heavy,
+            DailyLoad::Maximum,
         ]
     }
 }
@@ -213,8 +213,8 @@ impl From<i32> for DailyLoad {
             1 => DailyLoad::Light,
             2 => DailyLoad::Medium,
             3 => DailyLoad::Hard,
-            4 => DailyLoad::Impossible,
-            5 => DailyLoad::Insane,
+            4 => DailyLoad::Heavy,
+            5 => DailyLoad::Maximum,
             _ => DailyLoad::Medium,
         }
     }
@@ -227,8 +227,8 @@ impl From<DailyLoad> for i32 {
             DailyLoad::Light => 1,
             DailyLoad::Medium => 2,
             DailyLoad::Hard => 3,
-            DailyLoad::Impossible => 4,
-            DailyLoad::Insane => 5,
+            DailyLoad::Heavy => 4,
+            DailyLoad::Maximum => 5,
         }
     }
 }
@@ -483,8 +483,8 @@ mod tests_daily_load {
         assert_eq!(DailyLoad::Light.new_cards_per_day(), 10);
         assert_eq!(DailyLoad::Medium.new_cards_per_day(), 15);
         assert_eq!(DailyLoad::Hard.new_cards_per_day(), 25);
-        assert_eq!(DailyLoad::Impossible.new_cards_per_day(), 35);
-        assert_eq!(DailyLoad::Insane.new_cards_per_day(), 50);
+        assert_eq!(DailyLoad::Heavy.new_cards_per_day(), 35);
+        assert_eq!(DailyLoad::Maximum.new_cards_per_day(), 50);
     }
 
     #[test]

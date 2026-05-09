@@ -4,7 +4,9 @@ use crate::ui_components::{
     Alert, AlertType, Button, ButtonVariant, LoadingStageItem, OcrLoadingStage, OcrLoadingState,
     StageType, Text, TextSize, TypographyVariant, get_stage_info,
 };
+use crate::utils::use_drag_and_drop;
 use leptos::prelude::*;
+use std::sync::Arc;
 use wasm_bindgen::JsCast;
 use web_sys::js_sys::Function;
 use web_sys::{ClipboardEvent, HtmlInputElement};
@@ -42,7 +44,6 @@ pub fn ImageInputStage(
     let ocr_state = RwSignal::new(OcrState::Idle);
     let image_preview = RwSignal::new(None::<String>);
     let error_message = RwSignal::new(None::<String>);
-    let is_drag_over = RwSignal::new(false);
     let ocr_loading_state = OcrLoadingState::new();
     let disposed = StoredValue::new(());
 
@@ -55,6 +56,29 @@ pub fn ImageInputStage(
             error_message.set(None);
         }
     });
+
+    let on_drop_file: Arc<dyn Fn(web_sys::File) + Send + Sync> =
+        Arc::new(move |file: web_sys::File| {
+            process_file(
+                i18n,
+                file,
+                ProcessContext {
+                    image_preview,
+                    ocr_state,
+                    ocr_loading_state,
+                    error_message,
+                    disposed,
+                },
+                on_text_extracted,
+                on_error,
+            );
+        });
+
+    let dd = use_drag_and_drop(on_drop_file);
+    let is_drag_over = dd.is_drag_over();
+    let dd_on_drag_over = dd.on_drag_over();
+    let dd_on_drag_leave = dd.on_drag_leave();
+    let dd_on_drop = dd.on_drop();
 
     let ocr_loading_state_for_file = ocr_loading_state;
     let disposed_for_file = disposed;
@@ -82,42 +106,6 @@ pub fn ImageInputStage(
                     ocr_loading_state: ocr_loading_state_for_file,
                     error_message,
                     disposed: disposed_for_file,
-                },
-                on_text_extracted,
-                on_error,
-            );
-        }
-    };
-
-    let ocr_loading_state_for_drag = ocr_loading_state;
-    let disposed_for_drag = disposed;
-    let on_drag_over = move |ev: leptos::ev::DragEvent| {
-        ev.prevent_default();
-        is_drag_over.set(true);
-    };
-
-    let on_drag_leave = move |ev: leptos::ev::DragEvent| {
-        ev.prevent_default();
-        is_drag_over.set(false);
-    };
-
-    let on_drop = move |ev: leptos::ev::DragEvent| {
-        ev.prevent_default();
-        is_drag_over.set(false);
-
-        if let Some(data_transfer) = ev.data_transfer()
-            && let Some(files) = data_transfer.files()
-            && let Some(file) = files.get(0)
-        {
-            process_file(
-                i18n,
-                file,
-                ProcessContext {
-                    image_preview,
-                    ocr_state,
-                    ocr_loading_state: ocr_loading_state_for_drag,
-                    error_message,
-                    disposed: disposed_for_drag,
                 },
                 on_text_extracted,
                 on_error,
@@ -222,9 +210,9 @@ pub fn ImageInputStage(
                                         format!("{} border-[var(--border-light)] hover:border-[var(--accent-olive)]/50", base)
                                     }
                                 }
-                                on:dragover=on_drag_over
-                                on:dragleave=on_drag_leave
-                                on:drop=on_drop
+                                on:dragover=dd_on_drag_over
+                                on:dragleave=dd_on_drag_leave
+                                on:drop=dd_on_drop
                             >
                                 <label class="cursor-pointer">
                                     <input

@@ -1,3 +1,6 @@
+use std::collections::HashMap;
+
+use crate::dictionary::kanji::KanjiInfo;
 use crate::domain::knowledge::KnowledgeSet;
 use crate::domain::value_objects::NativeLanguage;
 use crate::domain::{Card, CardType, GrammarRuleCard, MemoryHistory};
@@ -37,30 +40,15 @@ const DEFAULT_LANG: NativeLanguage = NativeLanguage::Russian;
 
 pub struct LessonViewGenerator<'a> {
     knowledge_set: &'a KnowledgeSet,
+    cards_by_type: HashMap<CardType, Vec<Card>>,
+    known_grammars: Vec<GrammarRuleCard>,
+    kanji_cache: HashMap<String, &'static KanjiInfo>,
 }
 
 impl<'a> LessonViewGenerator<'a> {
     pub fn new(knowledge_set: &'a KnowledgeSet) -> Self {
-        Self { knowledge_set }
-    }
-
-    pub fn apply_view(
-        &self,
-        study_card: &crate::domain::StudyCard,
-        is_new: bool,
-        rng: &mut impl Rng,
-    ) -> LessonCardView {
-        let card = study_card.card();
-        let card_type = CardType::from(card);
-
-        let cards_by_type = self.knowledge_set.build_cards_by_type();
-        let same_type_cards = cards_by_type
-            .get(&card_type)
-            .map(|v| v.as_slice())
-            .unwrap_or(&[]);
-
-        let known_grammars: Vec<_> = self
-            .knowledge_set
+        let cards_by_type = knowledge_set.build_cards_by_type();
+        let known_grammars: Vec<_> = knowledge_set
             .study_cards()
             .values()
             .filter_map(|x| match x.card() {
@@ -68,6 +56,30 @@ impl<'a> LessonViewGenerator<'a> {
                 _ => None,
             })
             .collect();
+
+        Self {
+            knowledge_set,
+            cards_by_type,
+            known_grammars,
+            kanji_cache: HashMap::new(),
+        }
+    }
+
+    fn same_type_cards(&self, card_type: &CardType) -> &[Card] {
+        self.cards_by_type
+            .get(card_type)
+            .map(|v| v.as_slice())
+            .unwrap_or(&[])
+    }
+
+    pub fn apply_view(
+        &mut self,
+        study_card: &crate::domain::StudyCard,
+        is_new: bool,
+        rng: &mut impl Rng,
+    ) -> LessonCardView {
+        let card = study_card.card();
+        let card_type = CardType::from(card);
 
         match card_type {
             CardType::Grammar if !is_new => {
@@ -80,21 +92,36 @@ impl<'a> LessonViewGenerator<'a> {
                 }
             },
             CardType::Grammar => LessonCardView::Normal(card.clone()),
-            CardType::Kanji if is_new => self.select_new_kanji_view(card, same_type_cards, rng),
+            CardType::Kanji if is_new => {
+                let same_type_cards = self.same_type_cards(&card_type);
+                self.select_new_kanji_view(card, same_type_cards, rng)
+            },
             CardType::Kanji => {
-                self.select_review_kanji_view(card, same_type_cards, study_card.memory(), rng)
+                let same_type_cards: &[Card] = self
+                    .cards_by_type
+                    .get(&card_type)
+                    .map(|v| v.as_slice())
+                    .unwrap_or(&[]);
+                Self::select_review_kanji_view(
+                    card,
+                    same_type_cards,
+                    study_card.memory(),
+                    &mut self.kanji_cache,
+                    rng,
+                )
             },
             CardType::Vocabulary if is_new => {
+                let same_type_cards = self.same_type_cards(&card_type);
                 self.select_new_vocab_view(card, same_type_cards, rng)
             },
-            CardType::Vocabulary => self.select_review_vocab_view(
-                card,
-                same_type_cards,
-                &known_grammars,
-                study_card.memory(),
-                rng,
-            ),
-            CardType::Phrase => self.select_phrase_view(card, same_type_cards, is_new, rng),
+            CardType::Vocabulary => {
+                let same_type_cards = self.same_type_cards(&card_type);
+                self.select_review_vocab_view(card, same_type_cards, study_card.memory(), rng)
+            },
+            CardType::Phrase => {
+                let same_type_cards = self.same_type_cards(&card_type);
+                self.select_phrase_view(card, same_type_cards, is_new, rng)
+            },
         }
     }
 
@@ -116,17 +143,17 @@ impl<'a> LessonViewGenerator<'a> {
     }
 
     fn select_review_kanji_view<R: Rng>(
-        &self,
         card: &Card,
         same_type_cards: &[Card],
         memory: &MemoryHistory,
+        kanji_cache: &mut HashMap<String, &'static KanjiInfo>,
         rng: &mut R,
     ) -> LessonCardView {
         let rand_val = rng.random::<f32>();
         if rand_val < PROB_KANJI_NORMAL {
             LessonCardView::Normal(card.clone())
         } else if !memory.is_high_difficulty() && rand_val < PROB_KANJI_READING_QUIZ {
-            generation::generate_kanji_reading_quiz(card.clone(), same_type_cards)
+            generation::generate_kanji_reading_quiz(card.clone(), same_type_cards, kanji_cache)
                 .unwrap_or_else(|_| LessonCardView::Normal(card.clone()))
         } else if rand_val < PROB_KANJI_QUIZ {
             generation::generate_quiz(card.clone(), same_type_cards, &DEFAULT_LANG)
@@ -158,7 +185,6 @@ impl<'a> LessonViewGenerator<'a> {
         &self,
         card: &Card,
         same_type_cards: &[Card],
-        known_grammars: &[GrammarRuleCard],
         memory: &MemoryHistory,
         rng: &mut R,
     ) -> LessonCardView {
@@ -179,7 +205,7 @@ impl<'a> LessonViewGenerator<'a> {
         } else if eligible_for_reversed && rand_val < PROB_REVERSED_VIEW {
             transforms::apply_reversed(card)
         } else if eligible_for_advanced {
-            transforms::apply_grammar_mutated(card, known_grammars, rng)
+            transforms::apply_grammar_mutated(card, &self.known_grammars, rng)
         } else {
             LessonCardView::Normal(card.clone())
         }

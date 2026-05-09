@@ -229,8 +229,8 @@ testWithFreshUser.describe("Onboarding Flow - N4 with ~50% Progress", () => {
         const accordionHeader = page.getByTestId('summary-step-accordion-header').first();
         if (await accordionHeader.isVisible().catch(() => false)) {
             await accordionHeader.click();
-            // Verify content collapses/expands
-            await page.waitForTimeout(300); // Wait for animation
+            // CSS accordion animation requires brief wait
+            await page.waitForTimeout(300);
         }
 
         // Test set toggle checkbox (optional - deselect then reselect)
@@ -261,12 +261,7 @@ testWithFreshUser.describe("Onboarding Flow - N4 with ~50% Progress", () => {
         await expect(page.getByTestId("onboarding-scoring-step")).toBeVisible({ timeout: 120_000 });
 
         // Wait for scoring step to finish loading cards
-        // scoring-step-hint appears when cards are loaded, scoring-step-complete when 0 new cards
         await waitForScoringStepReady(page);
-
-        // Wait for scoring step to be fully loaded (cards loaded, not loading state)
-        await expect(page.getByTestId("scoring-step-hint")).toBeVisible({ timeout: 30_000 });
-        await page.waitForTimeout(1000);
 
         // Take screenshot of scoring step
         await page.screenshot({
@@ -298,16 +293,8 @@ testWithFreshUser.describe("Onboarding Flow - N4 with ~50% Progress", () => {
     });
 
     testWithFreshUser("should skip onboarding and redirect to home", async ({ page }: { page: Page }) => {
-        // Wait for redirect after login
-        await page.waitForLoadState("networkidle");
-        await page.waitForTimeout(2000);
-
-        // Wait for either home or onboarding
-        try {
-            await page.waitForURL(/\/(home|onboarding)/, { timeout: 10_000 });
-        } catch {
-            // URL didn't match, continue anyway
-        }
+        // Fixture already logged in — wait for navigation to complete
+        await page.waitForURL(/\/(home|onboarding)/, { timeout: 30_000 });
 
         // If on home already, skip is done
         if (page.url().includes("/home")) {
@@ -324,20 +311,13 @@ testWithFreshUser.describe("Onboarding Flow - N4 with ~50% Progress", () => {
     });
 
     testWithFreshUser("should navigate back through steps", async ({ page }: { page: Page }) => {
-        // Wait for redirect after login
-        await page.waitForLoadState("networkidle");
-        await page.waitForTimeout(2000);
+        // Fixture already logged in — wait for navigation to complete
+        await page.waitForURL(/\/(home|onboarding)/, { timeout: 30_000 });
 
-        // Wait for onboarding URL
-        try {
-            await page.waitForURL(/\/onboarding$/, { timeout: 10_000 });
-        } catch {
-            // If we're not on onboarding, check if we're on home (skip onboarding might be automatic)
-            if (page.url().includes("/home")) {
-                // Onboarding was skipped, test can't proceed
-                test.skip();
-                return;
-            }
+        // If we're not on onboarding, check if we're on home (skip onboarding might be automatic)
+        if (page.url().includes("/home")) {
+            test.skip();
+            return;
         }
 
         await expect(page.getByTestId("onboarding-spinner")).not.toBeVisible({ timeout: 10_000 });
@@ -506,7 +486,7 @@ testWithFreshUser.describe("Onboarding - Scoring Step", () => {
         const progressBefore = await page.getByTestId("scoring-step-progress").textContent();
 
         await page.getByTestId("scoring-step-dont-know").click();
-        await page.waitForTimeout(500);
+        await expect(page.getByTestId("scoring-step-progress")).not.toHaveText(progressBefore ?? '', { timeout: 5000 });
 
         const progressAfter = await page.getByTestId("scoring-step-progress").textContent();
         expect(progressAfter).not.toBe(progressBefore);
@@ -518,7 +498,10 @@ testWithFreshUser.describe("Onboarding - Scoring Step", () => {
         test.skip(!reachedScoring, "User redirected to home, cannot reach scoring step");
 
         await page.getByTestId("scoring-step-know").click();
-        await page.waitForTimeout(500);
+        await Promise.race([
+            page.getByTestId("scoring-step-dont-know").waitFor({ state: "visible", timeout: 5000 }),
+            page.getByTestId("scoring-step-complete").waitFor({ state: "visible", timeout: 5000 }),
+        ]).catch(() => {});
 
         await expect(page.getByTestId("scoring-step-progress")).toBeVisible();
     });
@@ -532,7 +515,10 @@ testWithFreshUser.describe("Onboarding - Scoring Step", () => {
             const dontKnowBtn = page.getByTestId("scoring-step-dont-know");
             if (await dontKnowBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
                 await dontKnowBtn.click();
-                await page.waitForTimeout(500);
+                await Promise.race([
+                    page.getByTestId("scoring-step-dont-know").waitFor({ state: "visible", timeout: 5000 }),
+                    page.getByTestId("scoring-step-complete").waitFor({ state: "visible", timeout: 5000 }),
+                ]).catch(() => {});
             }
         }
 
@@ -549,7 +535,6 @@ testWithFreshUser.describe("Onboarding - Scoring Step", () => {
 
         // Ensure scoring step is fully loaded before clicking mark-all
         await expect(page.getByTestId("scoring-step-hint")).toBeVisible({ timeout: 30_000 });
-        await page.waitForTimeout(1000);
 
         await page.getByTestId("onboarding-mark-all-known").click();
 

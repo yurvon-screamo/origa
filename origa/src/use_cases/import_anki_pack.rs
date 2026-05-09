@@ -116,7 +116,7 @@ impl<'a, R: UserRepository> ImportAnkiPackUseCase<'a, R> {
             .repository
             .get_current_user()
             .await?
-            .ok_or(OrigaError::CurrentUserNotExist {})?;
+            .ok_or(OrigaError::CurrentUserNotExist)?;
 
         let mut total_created = 0;
         let mut skipped = Vec::new();

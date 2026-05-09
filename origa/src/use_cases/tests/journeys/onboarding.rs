@@ -48,8 +48,5 @@ async fn update_user_profile_returns_error_for_nonexistent_user() {
         .execute(NativeLanguage::English, Default::default(), None)
         .await;
 
-    assert!(matches!(
-        result,
-        Err(OrigaError::CurrentUserNotExist { .. })
-    ));
+    assert!(matches!(result, Err(OrigaError::CurrentUserNotExist)));
 }

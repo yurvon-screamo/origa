@@ -1,4 +1,5 @@
 use crate::i18n::*;
+use crate::loaders::recalculate_user_jlpt_progress;
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{
     AudioButtons, Button, ButtonVariant, Card, FuriganaText, MarkdownText, Text, TextSize,
@@ -203,6 +204,7 @@ pub fn ScoringStep(
                     return;
                 }
 
+                recalculate_user_jlpt_progress(&mut user);
                 if repo.save(&user).await.is_ok() {
                     known_count.update(|c| *c += success_count);
                     scoring_completed.set(true);

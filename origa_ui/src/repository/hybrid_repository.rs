@@ -5,7 +5,6 @@ use origa::{
     traits::UserRepository,
 };
 
-use crate::loaders::recalculate_user_jlpt_progress;
 use crate::repository::file_repository::FileSystemUserRepository;
 use crate::repository::trailbase_repository::TrailBaseUserRepository;
 
@@ -76,13 +75,10 @@ impl UserRepository for HybridUserRepository {
     }
 
     async fn save_sync(&self, user: &User) -> Result<(), OrigaError> {
-        let mut user_clone = user.clone();
-        recalculate_user_jlpt_progress(&mut user_clone);
-
-        self.local.save(&user_clone).await?;
+        self.local.save(user).await?;
         tracing::info!("save_sync: Local save completed");
 
-        match self.remote.save(&user_clone).await {
+        match self.remote.save(user).await {
             Ok(_) => {
                 tracing::info!("save_sync: Remote save completed");
             },

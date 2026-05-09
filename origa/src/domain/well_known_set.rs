@@ -67,35 +67,55 @@ pub fn id_to_set_type(id: &str) -> SetType {
     }
 }
 
+fn resolve_jlpt_path(id: &str) -> Option<String> {
+    let level = id.strip_prefix("jlpt_")?;
+    Some(format!("well_known_set/jlpt_{}.json", level))
+}
+
+fn resolve_migii_path(id: &str) -> Option<String> {
+    let rest = id.strip_prefix("migii_")?;
+    let level = rest.split('_').next().unwrap_or("");
+    Some(format!("well_known_set/migii/{}/{}.json", level, id))
+}
+
+fn resolve_duolingo_path(id: &str) -> Option<String> {
+    let rest = id.strip_prefix("duolingo_")?;
+    let level = rest.split('_').next().unwrap_or("");
+    let parts: Vec<&str> = rest.split('_').collect();
+    let remaining = parts.iter().skip(1).copied().collect::<Vec<_>>().join("_");
+    let filename = if remaining.starts_with("duolingo_") {
+        remaining
+    } else if parts.len() >= 3 {
+        parts[2..].join("_")
+    } else {
+        rest.to_string()
+    };
+    Some(format!(
+        "well_known_set/duolingo/{}/{}.json",
+        level, filename
+    ))
+}
+
+fn resolve_minna_path(id: &str) -> Option<String> {
+    if id.strip_prefix("minna_n5_").is_some() {
+        return Some(format!("well_known_set/minna_n5/{}.json", id));
+    }
+    if id.strip_prefix("minna_n4_").is_some() {
+        return Some(format!("well_known_set/minna_n4/{}.json", id));
+    }
+    None
+}
+
 pub fn resolve_set_path(id: &str) -> String {
     if id.contains("..") || id.contains('/') {
         return format!("well_known_set/{}.json", id);
     }
 
-    if let Some(level) = id.strip_prefix("jlpt_") {
-        format!("well_known_set/jlpt_{}.json", level)
-    } else if let Some(rest) = id.strip_prefix("migii_") {
-        let level = rest.split('_').next().unwrap_or("");
-        format!("well_known_set/migii/{}/{}.json", level, id)
-    } else if let Some(rest) = id.strip_prefix("duolingo_") {
-        let level = rest.split('_').next().unwrap_or("");
-        let parts: Vec<&str> = rest.split('_').collect();
-        let remaining = parts.iter().skip(1).copied().collect::<Vec<_>>().join("_");
-        let filename = if remaining.starts_with("duolingo_") {
-            remaining
-        } else if parts.len() >= 3 {
-            parts[2..].join("_")
-        } else {
-            rest.to_string()
-        };
-        format!("well_known_set/duolingo/{}/{}.json", level, filename)
-    } else if id.starts_with("minna_n5_") {
-        format!("well_known_set/minna_n5/{}.json", id)
-    } else if id.starts_with("minna_n4_") {
-        format!("well_known_set/minna_n4/{}.json", id)
-    } else {
-        format!("well_known_set/{}.json", id)
-    }
+    resolve_jlpt_path(id)
+        .or_else(|| resolve_migii_path(id))
+        .or_else(|| resolve_duolingo_path(id))
+        .or_else(|| resolve_minna_path(id))
+        .unwrap_or_else(|| format!("well_known_set/{}.json", id))
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

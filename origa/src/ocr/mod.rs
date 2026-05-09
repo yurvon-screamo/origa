@@ -24,6 +24,14 @@ mod parseq_wasm;
 #[cfg(test)]
 mod tests;
 
+impl From<ort::Error> for crate::domain::OrigaError {
+    fn from(error: ort::Error) -> Self {
+        crate::domain::OrigaError::OcrError {
+            reason: error.to_string(),
+        }
+    }
+}
+
 pub use config::ModelConfig;
 pub use reading_order::sort_reading_order;
 pub use types::BoundingBox;

@@ -21,7 +21,7 @@ impl<'a, R: UserRepository> CreateGrammarCardUseCase<'a, R> {
             .repository
             .get_current_user()
             .await?
-            .ok_or(OrigaError::CurrentUserNotExist {})?;
+            .ok_or(OrigaError::CurrentUserNotExist)?;
 
         let mut cards = vec![];
         for id in rule_ids {

@@ -1,4 +1,5 @@
 use std::collections::{HashMap, HashSet};
+use std::hash::Hash;
 
 use ulid::Ulid;
 
@@ -7,7 +8,6 @@ use crate::domain::{Card, JapaneseChar, OrigaError, StudyCard, tokenize_text};
 pub struct ScoreContentResult {
     unknown_words: Vec<String>,
     unknown_kanji: Vec<String>,
-
     known_words: Vec<String>,
     known_kanji: Vec<String>,
 }
@@ -30,55 +30,53 @@ impl ScoreContentResult {
     }
 }
 
+fn classify_items<T: Eq + Hash>(
+    items: impl IntoIterator<Item = T>,
+    cards: &HashMap<Ulid, StudyCard>,
+    is_known: impl Fn(&T, &StudyCard) -> bool,
+) -> (Vec<T>, Vec<T>) {
+    let mut known = vec![];
+    let mut unknown = vec![];
+    for item in items {
+        if cards.values().any(|c| is_known(&item, c)) {
+            known.push(item);
+        } else {
+            unknown.push(item);
+        }
+    }
+    (known, unknown)
+}
+
 pub fn score_content(
     content: &str,
     cards: &HashMap<Ulid, StudyCard>,
 ) -> Result<ScoreContentResult, OrigaError> {
-    let mut result = ScoreContentResult {
-        known_words: vec![],
-        unknown_words: vec![],
-
-        known_kanji: vec![],
-        unknown_kanji: vec![],
-    };
-
-    content
-        .chars()
-        .filter(|c| c.is_kanji())
-        .map(|x| x.to_string())
-        .collect::<HashSet<_>>()
-        .iter()
-        .for_each(|kanji| {
-            let is_known = cards.values().any(|x| match x.card() {
-                Card::Kanji(card) => card.kanji().text() == *kanji && x.memory().is_known_card(),
-                _ => false,
-            });
-
-            match is_known {
-                true => result.known_kanji.push(kanji.to_string()),
-                false => result.unknown_kanji.push(kanji.to_string()),
-            }
+    let unique_kanji: HashSet<char> = content.chars().filter(|c| c.is_kanji()).collect();
+    let (known_kanji, unknown_kanji) =
+        classify_items(unique_kanji, cards, |kanji, card| match card.card() {
+            Card::Kanji(c) => {
+                c.kanji().text() == kanji.to_string() && card.memory().is_known_card()
+            },
+            _ => false,
         });
 
-    tokenize_text(content)?
+    let unique_words: HashSet<String> = tokenize_text(content)?
         .iter()
         .filter(|token| token.part_of_speech().is_vocabulary_word())
         .map(|token| token.orthographic_base_form().to_string())
-        .collect::<HashSet<_>>()
-        .iter()
-        .for_each(|word| {
-            let is_known = cards.values().any(|x| match x.card() {
-                Card::Vocabulary(card) => card.word().text() == *word && x.memory().is_known_card(),
-                _ => false,
-            });
-
-            match is_known {
-                true => result.known_words.push(word.to_string()),
-                false => result.unknown_words.push(word.to_string()),
-            }
+        .collect();
+    let (known_words, unknown_words) =
+        classify_items(unique_words, cards, |word, card| match card.card() {
+            Card::Vocabulary(c) => c.word().text() == *word && card.memory().is_known_card(),
+            _ => false,
         });
 
-    Ok(result)
+    Ok(ScoreContentResult {
+        known_kanji: known_kanji.into_iter().map(|c| c.to_string()).collect(),
+        unknown_kanji: unknown_kanji.into_iter().map(|c| c.to_string()).collect(),
+        known_words,
+        unknown_words,
+    })
 }
 
 #[cfg(test)]

@@ -1,10 +1,12 @@
 use super::*;
+use crate::dictionary::kanji::KanjiInfo;
 use crate::domain::knowledge::KanjiCard;
 use crate::domain::knowledge::lesson::types::LessonCardView;
 use crate::domain::memory::{Difficulty, MemoryState, Rating, ReviewLog, Stability};
 use crate::use_cases::init_real_dictionaries;
 use chrono::{Duration, Utc};
 use rand::{SeedableRng, rngs::StdRng};
+use std::collections::HashMap;
 
 use super::super::LessonViewGenerator;
 
@@ -41,8 +43,10 @@ fn generate_reading_quiz_with_sufficient_distractors() {
     init_real_dictionaries();
 
     let cards = create_kanji_cards(&["日", "月", "水", "火", "木"]);
+    let mut kanji_cache: HashMap<String, &'static KanjiInfo> = HashMap::new();
 
-    let result = generation::generate_kanji_reading_quiz(cards[0].clone(), &cards[1..]);
+    let result =
+        generation::generate_kanji_reading_quiz(cards[0].clone(), &cards[1..], &mut kanji_cache);
 
     match result.expect("should succeed") {
         LessonCardView::KanjiReadingQuiz(quiz) => {
@@ -58,8 +62,9 @@ fn generate_reading_quiz_fallback_insufficient_cards() {
     init_real_dictionaries();
 
     let cards = create_kanji_cards(&["日"]);
+    let mut kanji_cache: HashMap<String, &'static KanjiInfo> = HashMap::new();
 
-    let result = generation::generate_kanji_reading_quiz(cards[0].clone(), &[]);
+    let result = generation::generate_kanji_reading_quiz(cards[0].clone(), &[], &mut kanji_cache);
 
     match result.unwrap() {
         LessonCardView::Normal(c) => assert_eq!(c, cards[0]),
@@ -72,8 +77,9 @@ fn generate_reading_quiz_fallback_no_readings() {
     init_real_dictionaries();
 
     let card = Card::Kanji(KanjiCard::new_test("𛀀".to_string()));
+    let mut kanji_cache: HashMap<String, &'static KanjiInfo> = HashMap::new();
 
-    let result = generation::generate_kanji_reading_quiz(card.clone(), &[]);
+    let result = generation::generate_kanji_reading_quiz(card.clone(), &[], &mut kanji_cache);
 
     match result.unwrap() {
         LessonCardView::Normal(c) => assert_eq!(c, card),
@@ -89,8 +95,10 @@ fn generate_reading_quiz_filters_all_target_readings() {
     init_real_dictionaries();
 
     let cards = create_kanji_cards(&["日", "月", "水", "火"]);
+    let mut kanji_cache: HashMap<String, &'static KanjiInfo> = HashMap::new();
 
-    let result = generation::generate_kanji_reading_quiz(cards[0].clone(), &cards[1..]);
+    let result =
+        generation::generate_kanji_reading_quiz(cards[0].clone(), &cards[1..], &mut kanji_cache);
 
     let info = crate::dictionary::kanji::get_kanji_info("日").unwrap();
     let target_readings: std::collections::HashSet<String> = info
@@ -129,7 +137,7 @@ fn review_kanji_produces_reading_quiz() {
     let ks = make_kanji_knowledge_set(&["日", "月", "水", "火", "木"]);
     let sc = make_reviewed_kanji("日", 5.0, 3.0, Rating::Good);
     assert!(!sc.memory().is_high_difficulty());
-    let generator = LessonViewGenerator::new(&ks);
+    let mut generator = LessonViewGenerator::new(&ks);
 
     let mut count = 0;
     for seed in 0..300 {
@@ -150,7 +158,7 @@ fn new_kanji_never_reading_quiz() {
 
     let ks = make_kanji_knowledge_set(&["日", "月", "水", "火", "木"]);
     let sc = StudyCard::new(Card::Kanji(KanjiCard::new_test("日".to_string())));
-    let generator = LessonViewGenerator::new(&ks);
+    let mut generator = LessonViewGenerator::new(&ks);
 
     for seed in 0..300 {
         let mut rng = StdRng::seed_from_u64(seed);
@@ -169,7 +177,7 @@ fn high_difficulty_never_reading_quiz() {
     let ks = make_kanji_knowledge_set(&["日", "月", "水", "火", "木"]);
     let sc = make_reviewed_kanji("日", 3.0, 7.0, Rating::Hard);
     assert!(sc.memory().is_high_difficulty());
-    let generator = LessonViewGenerator::new(&ks);
+    let mut generator = LessonViewGenerator::new(&ks);
 
     for seed in 0..300 {
         let mut rng = StdRng::seed_from_u64(seed);

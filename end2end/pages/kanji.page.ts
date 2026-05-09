@@ -96,17 +96,16 @@ export class KanjiPage extends BasePage {
         await expect(this.drawer).not.toBeVisible({ timeout: 15_000 });
     }
 
-    async closeDetailDrawer(): Promise<void> {
-        const drawer = this.page.getByTestId("kanji-detail-drawer");
-        if (await drawer.isVisible().catch(() => false)) {
-            await this.page.evaluate(() => {
-                const el = document.querySelector('[data-testid="kanji-detail-drawer-close"]') as HTMLElement;
-                if (el) el.click();
-            });
-            await drawer.waitFor({ state: "hidden", timeout: 5000 }).catch(() => {});
-            await this.page.waitForTimeout(500);
-        }
-    }
+	async closeDetailDrawer(): Promise<void> {
+		const drawer = this.page.getByTestId("kanji-detail-drawer");
+		if (await drawer.isVisible().catch(() => false)) {
+			await this.page.evaluate(() => {
+				const el = document.querySelector('[data-testid="kanji-detail-drawer-close"]') as HTMLElement;
+				if (el) el.click();
+			});
+			await drawer.waitFor({ state: "hidden", timeout: 5000 }).catch(() => {});
+		}
+	}
 
     async selectFilter(name: FilterType): Promise<void> {
         await this.closeDetailDrawer();
@@ -140,7 +139,6 @@ export class KanjiPage extends BasePage {
 
     async markCardAsKnownByIndex(index: number): Promise<void> {
         await this.clickCardActionBtn(index, "kanji-card-item-mark-known-btn");
-        await this.page.waitForTimeout(500);
     }
 
     // Dispatch a non-bubbling click via evaluate() to prevent the event
@@ -153,7 +151,6 @@ export class KanjiPage extends BasePage {
                 el.dispatchEvent(new MouseEvent("click", { bubbles: false }));
             }
         }, selector);
-        await this.page.waitForTimeout(300);
     }
 
     async isLoadMoreVisible(): Promise<boolean> {

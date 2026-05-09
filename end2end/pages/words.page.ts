@@ -229,7 +229,6 @@ export class WordsPage extends BasePage {
     async markCardAsKnownByIndex(index: number): Promise<void> {
         const card = this.page.getByTestId("words-card-item").nth(index);
         await card.getByTestId("words-card-item-mark-known-btn").click();
-        await this.page.waitForTimeout(500);
     }
 
     async isLoadMoreVisible(): Promise<boolean> {

@@ -106,10 +106,10 @@ mod tests {
                 .join("grammar")
                 .join("grammar.json");
 
-            eprintln!("Reading grammar from: {:?}", grammar_path);
+            tracing::debug!("Reading grammar from: {:?}", grammar_path);
             let grammar_json =
                 std::fs::read_to_string(&grammar_path).expect("Failed to read grammar.json");
-            eprintln!("Read {} bytes from grammar.json", grammar_json.len());
+            tracing::debug!("Read {} bytes from grammar.json", grammar_json.len());
 
             let grammar_data = GrammarData { grammar_json };
             init_grammar(grammar_data).expect("Failed to init grammar rules");

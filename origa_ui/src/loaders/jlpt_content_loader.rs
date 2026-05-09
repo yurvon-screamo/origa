@@ -1,25 +1,17 @@
 use std::sync::OnceLock;
 
+use origa::dictionary::grammar::GRAMMAR_RULES;
+use origa::dictionary::kanji::KANJI_DICTIONARY;
 use origa::domain::JlptContent;
 use origa::domain::{JapaneseLevel, OrigaError};
 use origa::traits::CdnProvider;
 use serde::Deserialize;
 
 use crate::repository::cdn_provider;
+use crate::utils::now_ms;
 
 static JLPT_CONTENT: OnceLock<JlptContent> = OnceLock::new();
 static DEFAULT_JLPT_CONTENT: OnceLock<JlptContent> = OnceLock::new();
-
-#[derive(Debug, Deserialize)]
-struct KanjiDictionary {
-    kanji: Vec<KanjiEntry>,
-}
-
-#[derive(Debug, Deserialize)]
-struct KanjiEntry {
-    kanji: String,
-    jlpt: String,
-}
 
 #[derive(Debug, Deserialize)]
 struct JlptWordsFile {
@@ -28,110 +20,93 @@ struct JlptWordsFile {
     words: Vec<String>,
 }
 
-#[derive(Debug, Deserialize)]
-struct GrammarDictionary {
-    grammar: Vec<GrammarEntry>,
-}
-
-#[derive(Debug, Deserialize)]
-struct GrammarEntry {
-    rule_id: String,
-    level: String,
-}
-
 pub async fn load_jlpt_content() -> Result<(), OrigaError> {
     if JLPT_CONTENT.get().is_some() {
-        tracing::debug!("📖 JLPT content already loaded");
+        tracing::debug!("JLPT content already loaded");
         return Ok(());
     }
 
     let start = now_ms();
-    tracing::info!("📖 Loading JLPT content...");
+    tracing::info!("Loading JLPT content...");
 
     let content = load_content().await?;
 
     let _ = JLPT_CONTENT.set(content);
-    tracing::info!(
-        "📖 JLPT content loaded ({:.2}s)",
-        (now_ms() - start) / 1000.0
-    );
+    tracing::info!("JLPT content loaded ({:.2}s)", (now_ms() - start) / 1000.0);
     Ok(())
-}
-
-fn now_ms() -> f64 {
-    web_sys::window()
-        .and_then(|w| w.performance())
-        .map(|p| p.now())
-        .unwrap_or(0.0)
 }
 
 async fn load_content() -> Result<JlptContent, OrigaError> {
     let mut content = JlptContent::new();
 
     let start = now_ms();
-    load_kanji(&mut content).await?;
+    build_kanji_index(&mut content);
     tracing::info!(
-        "📖 JLPT: kanji loaded ({:.2}s)",
+        "JLPT: kanji index built from domain ({:.2}s)",
+        (now_ms() - start) / 1000.0
+    );
+
+    let start = now_ms();
+    build_grammar_index(&mut content);
+    tracing::info!(
+        "JLPT: grammar index built from domain ({:.2}s)",
         (now_ms() - start) / 1000.0
     );
 
     let start = now_ms();
     load_words(&mut content).await?;
-    tracing::info!(
-        "📖 JLPT: words loaded ({:.2}s)",
-        (now_ms() - start) / 1000.0
-    );
-
-    let start = now_ms();
-    load_grammar(&mut content).await?;
-    tracing::info!(
-        "📖 JLPT: grammar loaded ({:.2}s)",
-        (now_ms() - start) / 1000.0
-    );
+    tracing::info!("JLPT: words loaded ({:.2}s)", (now_ms() - start) / 1000.0);
 
     Ok(content)
 }
 
-async fn load_kanji(content: &mut JlptContent) -> Result<(), OrigaError> {
-    let start = now_ms();
-    let cdn = cdn_provider();
-    let json = cdn.fetch_text("dictionary/kanji.json").await?;
-    tracing::info!(
-        "📖 JLPT kanji.json fetched ({:.2}s)",
-        (now_ms() - start) / 1000.0
-    );
+fn build_kanji_index(content: &mut JlptContent) {
+    let Some(db) = KANJI_DICTIONARY.get() else {
+        tracing::warn!("JLPT: kanji dictionary not loaded, skipping kanji index");
+        return;
+    };
 
-    let parse_start = now_ms();
-    let data: KanjiDictionary =
-        serde_json::from_str(&json).map_err(|e| OrigaError::RepositoryError {
-            reason: format!("Failed to parse kanji.json: {}", e),
-        })?;
-    tracing::info!(
-        "📖 JLPT kanji.json parsed ({:.2}s)",
-        (now_ms() - parse_start) / 1000.0
-    );
-
-    let process_start = now_ms();
-    for entry in data.kanji {
-        if let Ok(level) = entry.jlpt.parse::<JapaneseLevel>() {
-            content
-                .kanji_by_level
-                .entry(level)
-                .or_default()
-                .insert(entry.kanji);
+    for level in JapaneseLevel::ALL {
+        let kanji_list = db.get_kanji_list(&level);
+        let set: std::collections::HashSet<String> =
+            kanji_list.iter().map(|k| k.kanji().to_string()).collect();
+        if !set.is_empty() {
+            content.kanji_by_level.insert(level, set);
         }
     }
+
     tracing::info!(
-        "📖 JLPT kanji processed ({} entries, {:.2}s)",
+        "JLPT kanji indexed ({} entries)",
         content
             .kanji_by_level
             .values()
             .map(|s| s.len())
-            .sum::<usize>(),
-        (now_ms() - process_start) / 1000.0
+            .sum::<usize>()
     );
+}
 
-    Ok(())
+fn build_grammar_index(content: &mut JlptContent) {
+    let Some(rules) = GRAMMAR_RULES.get() else {
+        tracing::warn!("JLPT: grammar rules not loaded, skipping grammar index");
+        return;
+    };
+
+    for rule in rules.iter() {
+        content
+            .grammar_by_level
+            .entry(*rule.level())
+            .or_default()
+            .insert(rule.rule_id().to_string());
+    }
+
+    tracing::info!(
+        "JLPT grammar indexed ({} entries)",
+        content
+            .grammar_by_level
+            .values()
+            .map(|s| s.len())
+            .sum::<usize>()
+    );
 }
 
 async fn load_words(content: &mut JlptContent) -> Result<(), OrigaError> {
@@ -157,7 +132,7 @@ async fn load_words(content: &mut JlptContent) -> Result<(), OrigaError> {
 
     let results = join_all(fetch_futures).await;
     tracing::info!(
-        "📖 JLPT words files fetched ({:.2}s)",
+        "JLPT words files fetched ({:.2}s)",
         (now_ms() - start) / 1000.0
     );
 
@@ -172,11 +147,11 @@ async fn load_words(content: &mut JlptContent) -> Result<(), OrigaError> {
                 .entry(*level)
                 .or_default()
                 .extend(data.words);
-            tracing::debug!("📖 JLPT {:?} words: {}", level, count);
+            tracing::debug!("JLPT {:?} words: {}", level, count);
         }
     }
     tracing::info!(
-        "📖 JLPT words processed ({} total, {:.2}s)",
+        "JLPT words processed ({} total, {:.2}s)",
         content
             .words_by_level
             .values()
@@ -188,49 +163,6 @@ async fn load_words(content: &mut JlptContent) -> Result<(), OrigaError> {
     Ok(())
 }
 
-async fn load_grammar(content: &mut JlptContent) -> Result<(), OrigaError> {
-    let start = now_ms();
-    let cdn = cdn_provider();
-    let json = cdn.fetch_text("grammar/grammar.json").await?;
-    tracing::info!(
-        "📖 JLPT grammar.json fetched ({:.2}s)",
-        (now_ms() - start) / 1000.0
-    );
-
-    let parse_start = now_ms();
-    let data: GrammarDictionary =
-        serde_json::from_str(&json).map_err(|e| OrigaError::RepositoryError {
-            reason: format!("Failed to parse grammar.json: {}", e),
-        })?;
-    tracing::info!(
-        "📖 JLPT grammar.json parsed ({:.2}s)",
-        (now_ms() - parse_start) / 1000.0
-    );
-
-    let process_start = now_ms();
-    for entry in data.grammar {
-        if let Ok(level) = entry.level.parse::<JapaneseLevel>() {
-            content
-                .grammar_by_level
-                .entry(level)
-                .or_default()
-                .insert(entry.rule_id);
-        }
-    }
-    tracing::info!(
-        "📖 JLPT grammar processed ({} entries, {:.2}s)",
-        content
-            .grammar_by_level
-            .values()
-            .map(|s| s.len())
-            .sum::<usize>(),
-        (now_ms() - process_start) / 1000.0
-    );
-
-    Ok(())
-}
-
-// TODO: to domain
 pub fn recalculate_user_jlpt_progress(user: &mut origa::domain::User) {
     if let Some(content) = JLPT_CONTENT.get() {
         user.recalculate_jlpt_progress(content);

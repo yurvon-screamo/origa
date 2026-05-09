@@ -24,7 +24,7 @@ impl<'a, R: UserRepository> UpdateUserProfileUseCase<'a, R> {
             .repository
             .get_current_user()
             .await?
-            .ok_or(OrigaError::CurrentUserNotExist {})?;
+            .ok_or(OrigaError::CurrentUserNotExist)?;
 
         user.set_native_language(native_language);
         user.set_daily_load(daily_load);

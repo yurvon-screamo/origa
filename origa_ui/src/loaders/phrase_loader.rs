@@ -3,14 +3,7 @@ use origa::domain::OrigaError;
 use origa::traits::CdnProvider;
 
 use crate::repository::cdn_provider;
-use crate::utils::yield_to_browser;
-
-fn now_ms() -> f64 {
-    web_sys::window()
-        .and_then(|w| w.performance())
-        .map(|p| p.now())
-        .unwrap_or(0.0)
-}
+use crate::utils::{now_ms, yield_to_browser};
 
 pub async fn load_phrases() -> Result<(), OrigaError> {
     if is_phrases_loaded() {

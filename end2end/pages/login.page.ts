@@ -80,12 +80,12 @@ export class LoginPage extends BasePage {
     ): Promise<{ success: boolean; error?: string }> {
         try {
             await this.fillEmail(email);
-            await this.page.waitForTimeout(100);
             await this.fillPassword(password);
-            await this.page.waitForTimeout(100);
             await this.submit();
-            // Wait for navigation to complete after submit
-            await this.page.waitForLoadState("networkidle", { timeout: 30_000 });
+            await this.page.waitForURL(
+                (url) => !url.pathname.includes("/login"),
+                { timeout: 10_000 },
+            );
 
             return { success: true };
         }

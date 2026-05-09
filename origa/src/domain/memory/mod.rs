@@ -89,7 +89,7 @@ impl MemoryHistory {
         !self.is_new() && self.next_review_date() <= Some(&Utc::now())
     }
 
-    /// Карта изучение которой еще не началось``
+    /// Карта, изучение которой еще не началось
     pub fn is_new(&self) -> bool {
         self.current_state.is_none()
     }
@@ -243,5 +243,194 @@ mod tests {
         history.add_review(state.clone(), make_review(Rating::Hard));
         history.add_review(state.clone(), make_review(Rating::Good));
         assert_eq!(history.good_review_count(), 3);
+    }
+
+    // --- is_due ---
+
+    #[test]
+    fn is_due_true_when_next_review_in_past() {
+        // Arrange
+        let past = Utc::now() - Duration::days(1);
+        let state = MemoryState::new(
+            Stability::new(5.0).unwrap(),
+            Difficulty::new(3.0).unwrap(),
+            past,
+        );
+        let mut history = MemoryHistory::new();
+        history.add_review(state, make_review(Rating::Good));
+
+        // Act & Assert
+        assert!(history.is_due());
+    }
+
+    #[test]
+    fn is_due_false_when_next_review_in_future() {
+        // Arrange
+        let future = Utc::now() + Duration::days(1);
+        let state = MemoryState::new(
+            Stability::new(5.0).unwrap(),
+            Difficulty::new(3.0).unwrap(),
+            future,
+        );
+        let mut history = MemoryHistory::new();
+        history.add_review(state, make_review(Rating::Good));
+
+        // Act & Assert
+        assert!(!history.is_due());
+    }
+
+    #[test]
+    fn is_due_false_when_no_memory_state() {
+        // Arrange
+        let history = MemoryHistory::new();
+
+        // Act & Assert
+        assert!(!history.is_due());
+    }
+
+    // --- is_high_difficulty ---
+
+    #[test]
+    fn is_high_difficulty_true_above_threshold() {
+        // Arrange
+        let state = MemoryState::new(
+            Stability::new(5.0).unwrap(),
+            Difficulty::new(HIGH_DIFFICULTY_THRESHOLD + 0.1).unwrap(),
+            Utc::now(),
+        );
+        let mut history = MemoryHistory::new();
+        history.add_review(state, make_review(Rating::Hard));
+
+        // Act & Assert
+        assert!(history.is_high_difficulty());
+    }
+
+    #[test]
+    fn is_high_difficulty_false_below_threshold() {
+        // Arrange
+        let state = MemoryState::new(
+            Stability::new(5.0).unwrap(),
+            Difficulty::new(HIGH_DIFFICULTY_THRESHOLD - 0.1).unwrap(),
+            Utc::now(),
+        );
+        let mut history = MemoryHistory::new();
+        history.add_review(state, make_review(Rating::Good));
+
+        // Act & Assert
+        assert!(!history.is_high_difficulty());
+    }
+
+    #[test]
+    fn is_high_difficulty_false_when_no_memory_state() {
+        // Arrange
+        let history = MemoryHistory::new();
+
+        // Act & Assert
+        assert!(!history.is_high_difficulty());
+    }
+
+    // --- is_in_progress ---
+
+    #[test]
+    fn is_in_progress_true_when_stability_below_threshold() {
+        // Arrange
+        let state = MemoryState::new(
+            Stability::new(KNOWN_CARD_STABILITY_THRESHOLD - 0.1).unwrap(),
+            Difficulty::new(3.0).unwrap(),
+            Utc::now() + Duration::days(1),
+        );
+        let mut history = MemoryHistory::new();
+        history.add_review(state, make_review(Rating::Good));
+
+        // Act & Assert
+        assert!(history.is_in_progress());
+    }
+
+    #[test]
+    fn is_in_progress_false_when_stability_above_threshold() {
+        // Arrange
+        let state = MemoryState::new(
+            Stability::new(KNOWN_CARD_STABILITY_THRESHOLD + 0.1).unwrap(),
+            Difficulty::new(3.0).unwrap(),
+            Utc::now() + Duration::days(1),
+        );
+        let mut history = MemoryHistory::new();
+        history.add_review(state, make_review(Rating::Good));
+
+        // Act & Assert
+        assert!(!history.is_in_progress());
+    }
+
+    #[test]
+    fn is_in_progress_false_when_no_memory_state() {
+        // Arrange
+        let history = MemoryHistory::new();
+
+        // Act & Assert
+        assert!(!history.is_in_progress());
+    }
+
+    // --- merge ---
+
+    #[test]
+    fn merge_empty_with_non_empty_result_is_non_empty() {
+        // Arrange
+        let mut empty = MemoryHistory::new();
+        let state = make_state();
+        let mut non_empty = MemoryHistory::new();
+        non_empty.add_review(state, make_review(Rating::Good));
+
+        // Act
+        empty.merge(&non_empty);
+
+        // Assert
+        assert!(empty.memory_state().is_some());
+        assert_eq!(empty.reviews().len(), 1);
+    }
+
+    #[test]
+    fn merge_non_empty_with_empty_result_is_non_empty() {
+        // Arrange
+        let state = make_state();
+        let mut non_empty = MemoryHistory::new();
+        non_empty.add_review(state, make_review(Rating::Good));
+        let original_state = non_empty.memory_state().cloned();
+        let empty = MemoryHistory::new();
+
+        // Act
+        non_empty.merge(&empty);
+
+        // Assert
+        assert_eq!(non_empty.memory_state(), original_state.as_ref());
+        assert_eq!(non_empty.reviews().len(), 1);
+    }
+
+    #[test]
+    fn merge_both_with_reviews_combines_and_deduplicates() {
+        // Arrange
+        let state1 = MemoryState::new(
+            Stability::new(3.0).unwrap(),
+            Difficulty::new(2.0).unwrap(),
+            Utc::now() - Duration::days(2),
+        );
+        let state2 = MemoryState::new(
+            Stability::new(5.0).unwrap(),
+            Difficulty::new(4.0).unwrap(),
+            Utc::now(),
+        );
+
+        let mut history_a = MemoryHistory::new();
+        history_a.add_review(state1, make_review(Rating::Good));
+
+        let mut history_b = MemoryHistory::new();
+        history_b.add_review(state2, make_review(Rating::Easy));
+
+        // Act
+        history_a.merge(&history_b);
+
+        // Assert — два уникальных review
+        assert_eq!(history_a.reviews().len(), 2);
+        // select_later_state выбирает state с более поздним last_review_date
+        assert_eq!(history_a.memory_state().unwrap().difficulty().value(), 4.0);
     }
 }

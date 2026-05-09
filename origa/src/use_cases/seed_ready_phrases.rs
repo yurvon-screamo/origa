@@ -24,7 +24,7 @@ impl<'a, R: UserRepository> SeedReadyPhrasesUseCase<'a, R> {
             .repository
             .get_current_user()
             .await?
-            .ok_or(OrigaError::CurrentUserNotExist {})?;
+            .ok_or(OrigaError::CurrentUserNotExist)?;
 
         if !is_phrases_loaded() {
             return Ok(0);

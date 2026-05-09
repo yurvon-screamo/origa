@@ -1,0 +1,99 @@
+import { type Browser, type Page } from "@playwright/test";
+import {
+	getAdminToken,
+	createTestUser,
+	deleteTestUserWithRetry,
+} from "../fixtures/admin";
+
+export const DEFAULT_TEST_PASSWORD = "e2e-test-password-123";
+
+export function generateUniqueEmail(): string {
+	const timestamp = Date.now();
+	const random = Math.random().toString(36).substring(2, 8);
+	return `e2e-${timestamp}-${random}@origa.local`;
+}
+
+export interface TestUserContext {
+	email: string;
+	password: string;
+	userUuid: string;
+	adminToken: string;
+	adminCsrfToken: string;
+	cleanup: () => Promise<void>;
+}
+
+export async function setupTestUser(options?: {
+	email?: string;
+	password?: string;
+}): Promise<TestUserContext> {
+	const email = options?.email ?? generateUniqueEmail();
+	const password = options?.password ?? DEFAULT_TEST_PASSWORD;
+
+	const adminAuth = await getAdminToken();
+	const userUuid = await createTestUser(
+		adminAuth.token,
+		adminAuth.csrfToken,
+		email,
+		password,
+	);
+
+	return {
+		email,
+		password,
+		userUuid,
+		adminToken: adminAuth.token,
+		adminCsrfToken: adminAuth.csrfToken,
+		cleanup: async () => {
+			await deleteTestUserWithRetry(
+				adminAuth.token,
+				adminAuth.csrfToken,
+				userUuid,
+				email,
+			);
+		},
+	};
+}
+
+export async function uiLogin(
+	page: Page,
+	email: string,
+	password: string,
+): Promise<void> {
+	await page.goto("http://localhost:1420");
+	await page
+		.locator('input[type="email"], input[data-testid="email-input"]')
+		.waitFor({ state: "visible", timeout: 30_000 });
+
+	await page.fill(
+		'input[type="email"], input[data-testid="email-input"]',
+		email,
+	);
+	await page.fill(
+		'input[type="password"], input[data-testid="password-input"]',
+		password,
+	);
+	await page.click(
+		'button[type="submit"], button[data-testid="login-submit"]',
+	);
+
+	await page.waitForURL(/\/(home|onboarding)/, { timeout: 30_000 });
+}
+
+export async function withAuthenticatedPage(
+	browser: Browser,
+	use: (page: Page) => Promise<void>,
+): Promise<void> {
+	const context = await browser.newContext();
+	const page = await context.newPage();
+	await page.setViewportSize({ width: 1280, height: 720 });
+
+	const userCtx = await setupTestUser();
+
+	try {
+		await uiLogin(page, userCtx.email, userCtx.password);
+		await use(page);
+	} finally {
+		await context.close();
+		await userCtx.cleanup();
+	}
+}

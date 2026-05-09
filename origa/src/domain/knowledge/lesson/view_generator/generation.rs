@@ -1,5 +1,5 @@
 use crate::dictionary::grammar::get_rule_by_id;
-use crate::dictionary::kanji::get_kanji_info;
+use crate::dictionary::kanji::{KanjiInfo, get_kanji_info};
 use crate::domain::grammar::apply_format_actions;
 use crate::domain::knowledge::KnowledgeSet;
 use crate::domain::value_objects::NativeLanguage;
@@ -7,6 +7,7 @@ use crate::domain::{
     Card, OrigaError, PartOfSpeech, find_known_vocab_words_for_pos, generate_grammar_distractors,
 };
 use rand::{Rng, prelude::IndexedRandom, seq::SliceRandom};
+use std::collections::HashMap;
 
 use super::super::types::{
     GrammarInfo, GrammarQuizCard, LessonCardView, QuizCard, QuizOption, YesNoCard,
@@ -151,6 +152,7 @@ pub(crate) fn generate_phrase_quiz(
 pub(crate) fn generate_kanji_reading_quiz(
     original_card: Card,
     same_type_cards: &[Card],
+    kanji_cache: &mut HashMap<String, &'static KanjiInfo>,
 ) -> Result<LessonCardView, OrigaError> {
     let kanji_card = match &original_card {
         Card::Kanji(kc) => kc,
@@ -160,7 +162,7 @@ pub(crate) fn generate_kanji_reading_quiz(
     };
 
     let kanji_str = kanji_card.kanji().text();
-    let info = match get_kanji_info(kanji_str) {
+    let info = match cached_kanji_info(kanji_str, kanji_cache) {
         Ok(info) => info,
         Err(_) => return Ok(LessonCardView::Normal(original_card)),
     };
@@ -183,7 +185,7 @@ pub(crate) fn generate_kanji_reading_quiz(
         .iter()
         .filter_map(|c| match c {
             Card::Kanji(kc) => {
-                let other_info = get_kanji_info(kc.kanji().text()).ok()?;
+                let other_info = cached_kanji_info(kc.kanji().text(), kanji_cache).ok()?;
                 let mut readings = other_info.on_readings().to_vec();
                 readings.extend(other_info.kun_readings().iter().cloned());
                 Some(readings)
@@ -215,6 +217,17 @@ pub(crate) fn generate_kanji_reading_quiz(
 
     let quiz = QuizCard::new(original_card, options);
     Ok(LessonCardView::KanjiReadingQuiz(quiz))
+}
+
+fn cached_kanji_info<'a>(
+    kanji: &str,
+    cache: &'a mut HashMap<String, &'static KanjiInfo>,
+) -> Result<&'a KanjiInfo, OrigaError> {
+    if !cache.contains_key(kanji) {
+        let info = get_kanji_info(kanji)?;
+        cache.insert(kanji.to_string(), info);
+    }
+    Ok(cache[kanji])
 }
 
 pub(crate) fn generate_grammar_quiz(

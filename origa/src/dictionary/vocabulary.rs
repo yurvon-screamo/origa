@@ -130,3 +130,138 @@ impl VocabularyDatabase {
         self.vocabulary_map.get(word)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::domain::NativeLanguage;
+
+    fn empty_chunk_data_with(chunk_01: &str) -> VocabularyChunkData {
+        let empty = "{}".to_string();
+        VocabularyChunkData {
+            chunk_01: chunk_01.to_string(),
+            chunk_02: empty.clone(),
+            chunk_03: empty.clone(),
+            chunk_04: empty.clone(),
+            chunk_05: empty.clone(),
+            chunk_06: empty.clone(),
+            chunk_07: empty.clone(),
+            chunk_08: empty.clone(),
+            chunk_09: empty.clone(),
+            chunk_10: empty.clone(),
+            chunk_11: empty,
+        }
+    }
+
+    fn make_valid_chunk_json() -> String {
+        r#"{
+            "猫": {
+                "level": "N5",
+                "russian_translation": "кошка",
+                "english_translation": "cat"
+            },
+            "犬": {
+                "level": "N5",
+                "russian_translation": "собака",
+                "english_translation": "dog"
+            }
+        }"#
+        .to_string()
+    }
+
+    #[test]
+    fn from_chunks_valid_json_loads_entries() {
+        // Arrange
+        let data = empty_chunk_data_with(&make_valid_chunk_json());
+
+        // Act
+        let db = VocabularyDatabase::from_chunks(data).unwrap();
+
+        // Assert
+        assert!(db.get_vocabulary_info("猫").is_some());
+        assert!(db.get_vocabulary_info("犬").is_some());
+        assert!(db.get_vocabulary_info("魚").is_none());
+    }
+
+    #[test]
+    fn from_chunks_strips_bom_prefix() {
+        // Arrange
+        let json_with_bom = format!("\u{FEFF}{}", make_valid_chunk_json());
+        let data = empty_chunk_data_with(&json_with_bom);
+
+        // Act
+        let db = VocabularyDatabase::from_chunks(data).unwrap();
+
+        // Assert
+        assert!(db.get_vocabulary_info("猫").is_some());
+    }
+
+    #[test]
+    fn from_chunks_empty_all_chunks_succeeds() {
+        // Arrange
+        let empty = "{}".to_string();
+        let data = VocabularyChunkData {
+            chunk_01: empty.clone(),
+            chunk_02: empty.clone(),
+            chunk_03: empty.clone(),
+            chunk_04: empty.clone(),
+            chunk_05: empty.clone(),
+            chunk_06: empty.clone(),
+            chunk_07: empty.clone(),
+            chunk_08: empty.clone(),
+            chunk_09: empty.clone(),
+            chunk_10: empty.clone(),
+            chunk_11: empty,
+        };
+
+        // Act
+        let db = VocabularyDatabase::from_chunks(data).unwrap();
+
+        // Assert
+        assert!(db.get_vocabulary_info("anything").is_none());
+    }
+
+    #[test]
+    fn get_translation_found_returns_correct_language() {
+        // Arrange
+        let data = empty_chunk_data_with(&make_valid_chunk_json());
+        let db = VocabularyDatabase::from_chunks(data).unwrap();
+
+        // Act
+        let ru = db.get_translation("猫", &NativeLanguage::Russian);
+        let en = db.get_translation("猫", &NativeLanguage::English);
+
+        // Assert
+        assert_eq!(ru.as_deref(), Some("кошка"));
+        assert_eq!(en.as_deref(), Some("cat"));
+    }
+
+    #[test]
+    fn get_translation_not_found_returns_none() {
+        // Arrange
+        let data = empty_chunk_data_with(&make_valid_chunk_json());
+        let db = VocabularyDatabase::from_chunks(data).unwrap();
+
+        // Act
+        let result = db.get_translation("魚", &NativeLanguage::Russian);
+
+        // Assert
+        assert!(result.is_none());
+    }
+
+    #[test]
+    fn from_chunks_invalid_json_returns_error() {
+        // Arrange
+        let data = empty_chunk_data_with("not valid json");
+
+        // Act
+        let result = VocabularyDatabase::from_chunks(data);
+
+        // Assert
+        assert!(result.is_err());
+        assert!(matches!(
+            result,
+            Err(OrigaError::VocabularyParseError { .. })
+        ));
+    }
+}

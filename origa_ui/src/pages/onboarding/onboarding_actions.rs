@@ -1,3 +1,4 @@
+use crate::loaders::recalculate_user_jlpt_progress;
 use crate::repository::cdn_provider;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
@@ -29,6 +30,7 @@ where
 
             user.set_daily_load(state.get_untracked().daily_load);
             user.mark_set_as_imported("__onboarding_skipped__".to_string());
+            recalculate_user_jlpt_progress(&mut user);
 
             if let Err(e) = repo.save_sync(&user).await {
                 tracing::error!("Onboarding skip: save error: {:?}", e);
@@ -90,6 +92,7 @@ pub(super) fn create_on_start_import_callback(
 
                     if let Ok(Some(mut user)) = repo.get_current_user().await {
                         user.set_daily_load(state.get_untracked().daily_load);
+                        recalculate_user_jlpt_progress(&mut user);
                         if let Err(e) = repo.save_sync(&user).await {
                             tracing::error!("Failed to save daily_load: {:?}", e);
                         }

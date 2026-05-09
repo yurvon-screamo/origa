@@ -22,16 +22,16 @@ pub fn DailyLoadSelector(selected_load: RwSignal<DailyLoad>) -> impl IntoView {
                         DailyLoad::Light => i18n.get_keys().shared().load_light().inner().to_string(),
                         DailyLoad::Medium => i18n.get_keys().shared().load_medium().inner().to_string(),
                         DailyLoad::Hard => i18n.get_keys().shared().load_hard().inner().to_string(),
-                        DailyLoad::Impossible => i18n.get_keys().shared().load_impossible().inner().to_string(),
-                        DailyLoad::Insane => i18n.get_keys().shared().load_insane().inner().to_string(),
+                        DailyLoad::Heavy => i18n.get_keys().shared().load_heavy().inner().to_string(),
+                        DailyLoad::Maximum => i18n.get_keys().shared().load_maximum().inner().to_string(),
                     };
                     let description = match load {
                         DailyLoad::Minimal => i18n.get_keys().shared().load_minimal_desc().inner().to_string(),
                         DailyLoad::Light => i18n.get_keys().shared().load_light_desc().inner().to_string(),
                         DailyLoad::Medium => i18n.get_keys().shared().load_medium_desc().inner().to_string(),
                         DailyLoad::Hard => i18n.get_keys().shared().load_hard_desc().inner().to_string(),
-                        DailyLoad::Impossible => i18n.get_keys().shared().load_impossible_desc().inner().to_string(),
-                        DailyLoad::Insane => i18n.get_keys().shared().load_insane_desc().inner().to_string(),
+                        DailyLoad::Heavy => i18n.get_keys().shared().load_heavy_desc().inner().to_string(),
+                        DailyLoad::Maximum => i18n.get_keys().shared().load_maximum_desc().inner().to_string(),
                     };
 
                     view! {

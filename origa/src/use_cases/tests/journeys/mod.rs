@@ -6,6 +6,7 @@ mod grammar;
 mod import_anki_pack;
 mod learning_lesson;
 mod learning_short_term;
+mod mark_card_as_known;
 mod onboarding;
 mod phrase;
 mod yesno_journey;

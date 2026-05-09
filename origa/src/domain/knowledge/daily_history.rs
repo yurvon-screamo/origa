@@ -183,6 +183,9 @@ impl DailyHistoryItem {
     }
 }
 
+// 15% буфер для оценки даты завершения
+const ESTIMATION_SAFETY_FACTOR: f64 = 1.15;
+
 /// Оценивает дату завершения изучения всех оставшихся новых карточек
 /// на основе средней дневной скорости за последние 10 дней (исключая текущий).
 /// Возвращает `None` если нет оставшихся карточек или недостаточно данных.
@@ -213,7 +216,7 @@ pub fn estimate_completion_date(
         .map(|item| item.new_cards_studied_today())
         .sum();
     let avg = total as f64 / studied.len() as f64;
-    let days = (new_cards_remaining as f64 / avg * 1.15).ceil() as i64;
+    let days = (new_cards_remaining as f64 / avg * ESTIMATION_SAFETY_FACTOR).ceil() as i64;
 
     Some(Utc::now() + Duration::days(days))
 }
