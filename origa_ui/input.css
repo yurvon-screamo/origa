@@ -1002,6 +1002,8 @@ input[type="submit"],
     visibility: hidden;
     transition: opacity var(--anima-duration-normal) var(--anima-ease-paper), visibility var(--anima-duration-normal) var(--anima-ease-paper);
     z-index: 50;
+    /* Prevent invisible tooltip from intercepting pointer events */
+    pointer-events: none;
 }
 
 .tooltip::after {

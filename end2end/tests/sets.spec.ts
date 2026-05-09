@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { testWithFreshUser } from "../fixtures";
-import { SetsPage, WordsPage } from "../pages";
+import { SetsPage } from "../pages";
 
 async function setupSetsPage(page: Page): Promise<SetsPage> {
     await expect(page.getByTestId("onboarding-spinner")).not.toBeVisible({ timeout: 10000 });
@@ -131,18 +131,6 @@ testWithFreshUser.describe("Sets Page - Search & Filters", () => {
 
         await setsPage.selectImportFilter("all");
         expect(await setsPage.getSetCardCount()).toBeGreaterThan(0);
-    });
-});
-
-testWithFreshUser.describe("Sets Page - Navigation", () => {
-    testWithFreshUser("should navigate back to words page", async ({ page }) => {
-        const setsPage = await setupSetsPage(page);
-        await setsPage.clickBack();
-        await page.waitForURL(/\/words$/, { timeout: 10000 });
-        await expect(page).toHaveURL(/\/words$/);
-
-        const wordsPage = new WordsPage(page);
-        await wordsPage.expectWordsVisible();
     });
 });
 

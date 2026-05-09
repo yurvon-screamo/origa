@@ -30,7 +30,7 @@ pub fn PageHeader(
     });
 
     view! {
-        <div class="flex items-center gap-3 mb-6">
+        <div class="flex items-center gap-3 mb-6" data-testid=move || format!("{}-header", test_id.get())>
             <Show when=move || !back_path.get().is_empty()>
                 <Button
                     variant=ButtonVariant::Ghost
