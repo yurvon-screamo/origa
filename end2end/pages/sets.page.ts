@@ -7,9 +7,6 @@ export class SetsPage extends BasePage {
     readonly setsCard: Locator;
     readonly setsTitle: Locator;
 
-    // Navigation
-    readonly backBtn: Locator;
-
     // Loading
     readonly loading: Locator;
     readonly loadingText: Locator;
@@ -50,9 +47,6 @@ export class SetsPage extends BasePage {
         this.setsPage = page.getByTestId("sets-page");
         this.setsCard = page.getByTestId("sets-card");
         this.setsTitle = page.getByTestId("sets-title");
-
-        // Navigation
-        this.backBtn = page.getByTestId("sets-back-btn");
 
         // Loading
         this.loading = page.getByTestId("sets-loading");
@@ -112,10 +106,6 @@ export class SetsPage extends BasePage {
 
     async selectImportFilter(filter: string): Promise<void> {
         await this.page.getByTestId(`sets-import-${filter.toLowerCase()}`).click();
-    }
-
-    async clickBack(): Promise<void> {
-        await this.backBtn.click();
     }
 
     async clickImportSelected(): Promise<void> {
