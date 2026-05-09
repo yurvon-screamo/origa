@@ -6,7 +6,7 @@ use std::sync::OnceLock;
 pub use part_of_speech::PartOfSpeech;
 pub use translation::{TokenTranslation, lookup_tokens_translations};
 
-use crate::domain::OrigaError;
+use crate::domain::{JapaneseChar, OrigaError};
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct TokenInfo {
@@ -153,89 +153,131 @@ fn init_tokenizer() -> Result<(), OrigaError> {
 }
 
 pub fn tokenize_text(text: &str) -> Result<Vec<TokenInfo>, OrigaError> {
-    let tokenizer = TOKENIZER.get().ok_or(OrigaError::TokenizerError {
-        reason: "Dictionary not loaded. Call init_dictionary() first.".to_string(),
-    })?;
+    let mut result = Vec::new();
+    let mut current_segment = String::new();
+    let mut is_current_japanese = false;
 
-    let filtered_text = crate::domain::filter_japanese_text(text);
-    let mut tokens =
-        tokenizer
-            .tokenize(&filtered_text)
+    for ch in text.chars() {
+        let is_japanese = ch.is_japanese();
+
+        if current_segment.is_empty() {
+            is_current_japanese = is_japanese;
+            current_segment.push(ch);
+        } else if is_japanese == is_current_japanese {
+            current_segment.push(ch);
+        } else {
+            flush_segment(&current_segment, is_current_japanese, &mut result)?;
+            current_segment = ch.to_string();
+            is_current_japanese = is_japanese;
+        }
+    }
+
+    if !current_segment.is_empty() {
+        flush_segment(&current_segment, is_current_japanese, &mut result)?;
+    }
+
+    Ok(result)
+}
+
+fn flush_segment(
+    segment: &str,
+    is_japanese: bool,
+    result: &mut Vec<TokenInfo>,
+) -> Result<(), OrigaError> {
+    if is_japanese {
+        let tokenizer = TOKENIZER.get().ok_or(OrigaError::TokenizerError {
+            reason: "Dictionary not loaded. Call init_dictionary() first.".to_string(),
+        })?;
+        let mut tokens = tokenizer
+            .tokenize(segment)
             .map_err(|e| OrigaError::TokenizerError {
                 reason: e.to_string(),
             })?;
+        for token in tokens.iter_mut() {
+            result.push(token_to_token_info(token));
+        }
+    } else {
+        let is_whitespace = segment.chars().all(|c| c.is_whitespace());
+        result.push(non_japanese_token(segment, is_whitespace));
+    }
+    Ok(())
+}
 
-    let token_infos = tokens
-        .iter_mut()
-        .map(|token| {
-            use crate::domain::JapaneseText;
+fn token_to_token_info(token: &mut lindera::token::Token) -> TokenInfo {
+    use crate::domain::JapaneseText;
 
-            let lexeme_raw = token.get("lexeme").unwrap_or_default().to_string();
-            let lexeme_stripped: &str =
-                if let Some((japanese, _english)) = lexeme_raw.split_once('-') {
-                    japanese
-                } else {
-                    &lexeme_raw
-                };
+    let lexeme_raw = token.get("lexeme").unwrap_or_default().to_string();
+    let lexeme_stripped: &str = if let Some((japanese, _english)) = lexeme_raw.split_once('-') {
+        japanese
+    } else {
+        &lexeme_raw
+    };
 
-            let orth_base = token
-                .get("orthographic_base_form")
-                .unwrap_or_default()
-                .to_string();
+    let orth_base = token
+        .get("orthographic_base_form")
+        .unwrap_or_default()
+        .to_string();
 
-            // Use orthographic_base_form as primary source. For proper nouns (e.g. 名古屋),
-            // orthographic_base_form preserves kanji while lexeme gives katakana reading.
-            // For conjugated hiragana words (e.g. たべ→食べる), lexeme provides the kanji base form.
-            let orthographic_base_form =
-                if lexeme_stripped.contains_kanji() && !orth_base.contains_kanji() {
-                    lexeme_stripped.to_string()
-                } else {
-                    orth_base.to_string()
-                };
+    let orthographic_base_form = if lexeme_stripped.contains_kanji() && !orth_base.contains_kanji()
+    {
+        lexeme_stripped.to_string()
+    } else {
+        orth_base.to_string()
+    };
 
-            let mut part_of_speech: PartOfSpeech = token
-                .get("part_of_speech")
-                .unwrap_or_default()
-                .parse()
-                .unwrap_or(PartOfSpeech::Unspecified);
+    let mut part_of_speech: PartOfSpeech = token
+        .get("part_of_speech")
+        .unwrap_or_default()
+        .parse()
+        .unwrap_or(PartOfSpeech::Unspecified);
 
-            if part_of_speech == PartOfSpeech::Noun {
-                let pos_subcategory = token
-                    .get("part_of_speech_subcategory_1")
-                    .unwrap_or_default();
-                if pos_subcategory == "固有名詞" {
-                    part_of_speech = PartOfSpeech::ProperNoun;
-                }
-            }
+    if part_of_speech == PartOfSpeech::Noun {
+        let pos_subcategory = token
+            .get("part_of_speech_subcategory_1")
+            .unwrap_or_default();
+        if pos_subcategory == "固有名詞" {
+            part_of_speech = PartOfSpeech::ProperNoun;
+        }
+    }
 
-            // Force symbol POS if base form is just a symbol
-            if orthographic_base_form == "*"
-                || orthographic_base_form == "×"
-                || orthographic_base_form == "•"
-            {
-                part_of_speech = PartOfSpeech::Symbol;
-            }
+    if orthographic_base_form == "*"
+        || orthographic_base_form == "×"
+        || orthographic_base_form == "•"
+    {
+        part_of_speech = PartOfSpeech::Symbol;
+    }
 
-            TokenInfo {
-                orthographic_base_form,
-                phonological_base_form: token
-                    .get("phonological_base_form")
-                    .unwrap_or_default()
-                    .to_string(),
-                orthographic_surface_form: token
-                    .get("orthographic_surface_form")
-                    .unwrap_or_default()
-                    .to_string(),
-                phonological_surface_form: token
-                    .get("phonological_surface_form")
-                    .unwrap_or_default()
-                    .to_string(),
-                part_of_speech,
-            }
-        })
-        .collect();
+    TokenInfo {
+        orthographic_base_form,
+        phonological_base_form: token
+            .get("phonological_base_form")
+            .unwrap_or_default()
+            .to_string(),
+        orthographic_surface_form: token
+            .get("orthographic_surface_form")
+            .unwrap_or_default()
+            .to_string(),
+        phonological_surface_form: token
+            .get("phonological_surface_form")
+            .unwrap_or_default()
+            .to_string(),
+        part_of_speech,
+    }
+}
 
-    Ok(token_infos)
+fn non_japanese_token(segment: &str, is_whitespace: bool) -> TokenInfo {
+    let pos = if is_whitespace {
+        PartOfSpeech::Whitespace
+    } else {
+        PartOfSpeech::Symbol
+    };
+    TokenInfo {
+        orthographic_base_form: segment.to_string(),
+        phonological_base_form: segment.to_string(),
+        orthographic_surface_form: segment.to_string(),
+        phonological_surface_form: segment.to_string(),
+        part_of_speech: pos,
+    }
 }
 
 #[cfg(test)]
@@ -395,10 +437,10 @@ mod tests {
     #[test]
     fn should_preserve_kanji_for_proper_nouns() {
         ensure_dictionary();
-        // City names: lexeme returns katakana reading, orthographic_base_form keeps kanji
         let tokens = tokenize_text("名古屋 横浜").unwrap();
         assert_eq!(tokens[0].orthographic_base_form, "名古屋");
-        assert_eq!(tokens[1].orthographic_base_form, "横浜");
+        assert_eq!(tokens[1].part_of_speech(), &PartOfSpeech::Whitespace);
+        assert_eq!(tokens[2].orthographic_base_form, "横浜");
     }
 
     #[test]
@@ -414,5 +456,61 @@ mod tests {
         ensure_dictionary();
         let tokens = tokenize_text("食べ物").unwrap();
         assert_eq!(tokens[0].part_of_speech(), &PartOfSpeech::Noun);
+    }
+
+    #[test]
+    fn should_preserve_digits_in_tokenization() {
+        ensure_dictionary();
+        let tokens = tokenize_text("第3課").unwrap();
+        let digit_token = tokens.iter().find(|t| t.orthographic_surface_form() == "3");
+        assert!(
+            digit_token.is_some(),
+            "Expected digit token '3', got: {:?}",
+            tokens
+                .iter()
+                .map(|t| t.orthographic_surface_form())
+                .collect::<Vec<_>>()
+        );
+        assert_eq!(digit_token.unwrap().part_of_speech(), &PartOfSpeech::Symbol);
+    }
+
+    #[test]
+    fn should_preserve_non_japanese_as_symbol() {
+        ensure_dictionary();
+        let tokens = tokenize_text("hello食べ物world").unwrap();
+        let hello_token = tokens
+            .iter()
+            .find(|t| t.orthographic_surface_form() == "hello");
+        assert!(hello_token.is_some());
+        assert_eq!(hello_token.unwrap().part_of_speech(), &PartOfSpeech::Symbol);
+        let world_token = tokens
+            .iter()
+            .find(|t| t.orthographic_surface_form() == "world");
+        assert!(world_token.is_some());
+        assert_eq!(world_token.unwrap().part_of_speech(), &PartOfSpeech::Symbol);
+    }
+
+    #[test]
+    fn should_handle_only_non_japanese() {
+        ensure_dictionary();
+        let tokens = tokenize_text("123").unwrap();
+        assert_eq!(tokens.len(), 1);
+        assert_eq!(tokens[0].orthographic_surface_form(), "123");
+        assert_eq!(tokens[0].part_of_speech(), &PartOfSpeech::Symbol);
+    }
+
+    #[test]
+    fn should_handle_empty_text() {
+        ensure_dictionary();
+        let tokens = tokenize_text("").unwrap();
+        assert!(tokens.is_empty());
+    }
+
+    #[test]
+    fn should_handle_whitespace_as_whitespace_pos() {
+        ensure_dictionary();
+        let tokens = tokenize_text("   ").unwrap();
+        assert_eq!(tokens.len(), 1);
+        assert_eq!(tokens[0].part_of_speech(), &PartOfSpeech::Whitespace);
     }
 }

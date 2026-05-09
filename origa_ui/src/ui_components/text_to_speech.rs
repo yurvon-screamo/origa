@@ -5,7 +5,7 @@ use leptos::task::spawn_local;
 use leptos::wasm_bindgen::JsCast;
 use leptos::wasm_bindgen::JsValue;
 use leptos::wasm_bindgen::closure::Closure;
-use origa::domain::{filter_japanese_text, furiganize_segments};
+use origa::domain::furiganize_segments;
 use tracing::warn;
 use web_sys::js_sys::Function;
 use web_sys::{SpeechSynthesisUtterance, SpeechSynthesisVoice, window};
@@ -240,11 +240,10 @@ pub fn get_reading_from_text(text: &str) -> String {
 }
 
 pub fn get_reading_from_text_with_known_kanji(text: &str, known_kanji: &HashSet<String>) -> String {
-    let filtered_text = filter_japanese_text(text);
-    if filtered_text.is_empty() {
+    if text.trim().is_empty() {
         return String::new();
     }
-    furiganize_segments(&filtered_text, known_kanji)
+    furiganize_segments(text, known_kanji)
         .map(|segments| {
             segments
                 .iter()
@@ -255,7 +254,7 @@ pub fn get_reading_from_text_with_known_kanji(text: &str, known_kanji: &HashSet<
                 })
                 .collect::<String>()
         })
-        .unwrap_or_else(|_| filtered_text)
+        .unwrap_or_else(|_| text.to_string())
 }
 
 fn get_japanese_voice(synthesis: &web_sys::SpeechSynthesis) -> Option<SpeechSynthesisVoice> {

@@ -45,25 +45,6 @@ impl JapaneseText for str {
     }
 }
 
-pub fn filter_japanese_text(text: &str) -> String {
-    text.chars()
-        .map(|c| {
-            if c.is_japanese() || is_cjk_punctuation(c) {
-                c
-            } else {
-                ' '
-            }
-        })
-        .collect::<String>()
-        .split_whitespace()
-        .collect::<Vec<&str>>()
-        .join(" ")
-}
-
-fn is_cjk_punctuation(c: char) -> bool {
-    ('\u{3000}'..='\u{303F}').contains(&c)
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -111,40 +92,5 @@ mod tests {
         assert_eq!(input.is_japanese(), expected_is_japanese);
         assert_eq!(input.contains_japanese(), expected_contains_japanese);
         assert_eq!(input.contains_kanji(), expected_contains_kanji);
-    }
-
-    #[rstest]
-    #[case("こんにちは世界", "こんにちは世界")]
-    #[case("Hello Worldこんにちは", "こんにちは")]
-    #[case("日本語123テスト", "日本語 テスト")]
-    #[case("Test", "")]
-    #[case("あいうえお", "あいうえお")]
-    #[case("  ", "")]
-    fn test_filter_japanese_text(#[case] input: &str, #[case] expected: &str) {
-        let result = filter_japanese_text(input);
-        assert_eq!(result, expected);
-    }
-
-    #[test]
-    fn test_mixed_text_with_punctuation() {
-        let input = "こんにちは、世界！";
-        let result = filter_japanese_text(input);
-        assert_eq!(result, "こんにちは、世界");
-    }
-
-    #[test]
-    fn test_cjk_punctuation_preservation() {
-        let text_with_punctuation = "こんにちは。テスト。";
-        let result = filter_japanese_text(text_with_punctuation);
-        assert!(result.contains("。"));
-        assert!(result.contains("こんにちは"));
-        assert!(result.contains("テスト"));
-    }
-
-    #[test]
-    fn test_multiple_spaces_collapsed() {
-        let input = "こんにちは  世界   テスト";
-        let result = filter_japanese_text(input);
-        assert_eq!(result, "こんにちは 世界 テスト");
     }
 }
