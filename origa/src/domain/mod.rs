@@ -22,7 +22,7 @@ pub use grammar::apply_format_actions;
 pub use grammar::quiz_generation::{
     apply_mutated_pattern, find_known_vocab_words_for_pos, generate_grammar_distractors,
 };
-pub use japanese::{JapaneseChar, JapaneseText, filter_japanese_text};
+pub use japanese::{JapaneseChar, JapaneseText};
 pub use jlpt_content::{JlptContent, JlptContentError};
 pub use jlpt_progress::{CategoryProgress, JlptProgress, LevelProgressDetail};
 pub use knowledge::{
