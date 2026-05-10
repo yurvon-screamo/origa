@@ -92,6 +92,7 @@ testWithFreshUser.describe("Home Page - Stats & JLPT Progress", () => {
     const homePage = new HomePage(page);
     await homePage.goto();
     await expect(homePage.homePage).toBeVisible({ timeout: 15_000 });
+    await expect(homePage.statsGrid).toBeVisible({ timeout: 20_000 });
     return homePage;
   }
 
