@@ -36,7 +36,7 @@ testWithFreshUser.describe("Profile Page", () => {
         await expect(profilePage.loadLight).toBeVisible();
         await expect(profilePage.loadMedium).toBeVisible();
         await expect(profilePage.loadHard).toBeVisible();
-        await expect(profilePage.loadImpossible).toBeVisible();
+        await expect(profilePage.loadHeavy).toBeVisible();
     });
 
     testWithFreshUser("should switch language selection", async ({ page }) => {
@@ -144,8 +144,8 @@ testWithFreshUser.describe("Profile Page", () => {
         test.setTimeout(90_000);
         const profilePage = await setupProfilePage(page);
 
-        await profilePage.selectDailyLoad("impossible");
-        await expect(profilePage.loadImpossible).toHaveClass(/btn-olive/);
+        await profilePage.selectDailyLoad("heavy");
+        await expect(profilePage.loadHeavy).toHaveClass(/btn-olive/);
 
         await profilePage.saveProfile();
         await profilePage.waitForSaveComplete();
@@ -154,7 +154,7 @@ testWithFreshUser.describe("Profile Page", () => {
 
         await profilePage.expectProfileVisible();
 
-        await expect(profilePage.loadImpossible).toHaveClass(/btn-olive/);
+        await expect(profilePage.loadHeavy).toHaveClass(/btn-olive/);
     });
 
     testWithFreshUser("should persist both daily load and language after save", async ({ page }) => {

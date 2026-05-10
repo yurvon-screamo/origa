@@ -97,7 +97,7 @@ pub fn ProfileContent() -> impl IntoView {
 
         spawn_local(async move {
             let _ = auth_store_clone.logout().await;
-            nav("/", Default::default());
+            nav("/login", Default::default());
         });
     });
 
@@ -105,19 +105,15 @@ pub fn ProfileContent() -> impl IntoView {
     let delete_account = Callback::new(move |_| {
         let nav = navigate_for_delete.clone();
         let auth_store_clone = auth_store_for_delete.clone();
-        let is_deleting_signal = is_deleting;
 
-        is_deleting_signal.set(true);
+        is_deleting.set(true);
 
         spawn_local(async move {
-            if auth_store_clone.delete_account().await.is_ok() {
-                if disposed.is_disposed() {
-                    return;
-                }
-                nav("/", Default::default());
-            } else {
-                is_deleting_signal.set(false);
+            let _ = auth_store_clone.delete_account().await;
+            if disposed.is_disposed() {
+                return;
             }
+            nav("/login", Default::default());
         });
     });
 

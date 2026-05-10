@@ -162,14 +162,7 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                     <div class="mb-6 sm:mb-8">
                         <JlptProgressCard
                             jlpt_progress=Signal::derive(move || jlpt_progress.get())
-                            test_id=Signal::derive(move || {
-                                let val = test_id.get();
-                                if val.is_empty() {
-                                    "home-jlpt-progress".to_string()
-                                } else {
-                                    format!("{}-jlpt-progress", val)
-                                }
-                            })
+                            test_id=Signal::derive(|| "home-jlpt-progress".to_string())
                         />
                     </div>
                 </Show>
@@ -198,10 +191,7 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                         secondary=secondary
                         completion_badge=completion_badge
                         open_history=open_history
-                        test_id=Signal::derive(move || {
-                            let val = test_id.get();
-                            if val.is_empty() { "home-stats-grid".to_string() } else { val }
-                        })
+                        test_id=Signal::derive(|| "home-stats-grid".to_string())
                     />
                 </Show>
             </div>
