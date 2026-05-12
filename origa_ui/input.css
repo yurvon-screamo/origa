@@ -1503,6 +1503,9 @@ input[type="submit"],
 
 .sidebar-footer .avatar-sm {
     flex-shrink: 0;
+    display: block;
+    text-align: center;
+    line-height: 30px;
 }
 
 .main-with-sidebar {

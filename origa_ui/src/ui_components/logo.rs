@@ -6,6 +6,7 @@ use crate::core::config::public_url;
 pub enum LogoSize {
     #[default]
     Sm,
+    Md,
     Lg,
 }
 
@@ -13,6 +14,7 @@ impl LogoSize {
     fn src(&self) -> String {
         match self {
             LogoSize::Sm => public_url("/public/logo-32.png"),
+            LogoSize::Md => public_url("/public/logo-128.png"),
             LogoSize::Lg => public_url("/public/logo-128.png"),
         }
     }
@@ -20,6 +22,7 @@ impl LogoSize {
     fn dimensions(&self) -> (u32, u32) {
         match self {
             LogoSize::Sm => (32, 32),
+            LogoSize::Md => (32, 32),
             LogoSize::Lg => (96, 96),
         }
     }
