@@ -129,7 +129,9 @@ pub fn ProfileContent() -> impl IntoView {
             </div>
             <div class="space-y-6">
                 <PasswordCard test_id="profile-password" />
+                <div class="divider"></div>
                 <SettingsCard test_id="profile-settings" />
+                <div class="divider"></div>
                 <ActionButtons
                     on_save={save_profile}
                     on_logout={logout}
