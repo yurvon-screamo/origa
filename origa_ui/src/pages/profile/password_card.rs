@@ -2,7 +2,7 @@ use crate::i18n::*;
 use crate::pages::login::password_input::PasswordInput;
 use crate::store::AuthStore;
 use crate::ui_components::{
-    Alert, AlertType, Button, ButtonVariant, Card, Text, TextSize, TypographyVariant,
+    Alert, AlertType, Button, ButtonVariant, Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
 use leptos::task::spawn_local;
@@ -67,8 +67,13 @@ pub fn PasswordCard(#[prop(optional, into)] test_id: Signal<String>) -> impl Int
         });
     });
 
+    let test_id_val = move || {
+        let val = test_id.get();
+        if val.is_empty() { None } else { Some(val) }
+    };
+
     view! {
-        <Card test_id=test_id borderless=Signal::from(true)>
+        <div data-testid=test_id_val class="p-6 space-y-0">
             <div>
                 <div
                     class="flex items-center justify-between cursor-pointer select-none"
@@ -148,6 +153,6 @@ pub fn PasswordCard(#[prop(optional, into)] test_id: Signal<String>) -> impl Int
                     </div>
                 </Show>
             </div>
-        </Card>
+        </div>
     }
 }

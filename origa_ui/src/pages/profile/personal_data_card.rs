@@ -1,7 +1,7 @@
 use super::{LabeledInput, LanguageSelector};
 use crate::i18n::*;
 use crate::pages::shared::DailyLoadSelector;
-use crate::ui_components::{Card, Heading, HeadingLevel, Text, TextSize};
+use crate::ui_components::{Heading, HeadingLevel, Text, TextSize};
 use leptos::prelude::*;
 use origa::domain::{DailyLoad, NativeLanguage};
 
@@ -19,8 +19,13 @@ pub fn PersonalDataCard(
         user_name_signal.set(user_name.get());
     });
 
+    let test_id_val = move || {
+        let val = test_id.get();
+        if val.is_empty() { None } else { Some(val) }
+    };
+
     view! {
-        <Card test_id=test_id borderless=Signal::from(true)>
+        <div data-testid=test_id_val class="p-6 space-y-0">
             <div class="space-y-6">
                 <Heading level={HeadingLevel::H2}>
                     {t!(i18n, profile.personal_data)}
@@ -48,6 +53,6 @@ pub fn PersonalDataCard(
                     </div>
                 </div>
             </div>
-        </Card>
+        </div>
     }
 }
