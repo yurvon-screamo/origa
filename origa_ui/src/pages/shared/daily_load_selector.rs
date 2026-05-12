@@ -35,23 +35,18 @@ pub fn DailyLoadSelector(selected_load: RwSignal<DailyLoad>) -> impl IntoView {
                     };
 
                     view! {
-                        <div class="flex flex-col items-center gap-1">
-                            <Tooltip text=Signal::derive(move || description.clone())>
-                                <Button
-                                    variant=move || if is_selected() { ButtonVariant::Olive } else { ButtonVariant::Default }
-                                    on_click=Callback::new(move |_| selected_load.set(load_for_click))
-                                    test_id=Signal::derive(move || format!("profile-load-{}", load_id))
-                                >
-                                    <span class="inline-flex items-center">
-                                        {label}
-                                        <span inner_html=INFO_ICON />
-                                    </span>
-                                </Button>
-                            </Tooltip>
-                            <span class="font-mono text-[10px] text-[var(--fg-muted)]">
-                                {format!("~{}", load.new_cards_per_day())}
-                            </span>
-                        </div>
+                        <Tooltip text=Signal::derive(move || description.clone())>
+                            <Button
+                                variant=move || if is_selected() { ButtonVariant::Olive } else { ButtonVariant::Default }
+                                on_click=Callback::new(move |_| selected_load.set(load_for_click))
+                                test_id=Signal::derive(move || format!("profile-load-{}", load_id))
+                            >
+                                <span class="inline-flex items-center">
+                                    {label}
+                                    <span inner_html=INFO_ICON />
+                                </span>
+                            </Button>
+                        </Tooltip>
                     }
                 }
             />

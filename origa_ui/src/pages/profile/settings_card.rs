@@ -12,7 +12,7 @@ pub fn SettingsCard(#[prop(optional, into)] test_id: Signal<String>) -> impl Int
     };
 
     view! {
-        <div class="p-4" data-testid=test_id_val>
+        <div class="p-6" data-testid=test_id_val>
             <div class="space-y-4">
                 <div class="space-y-2">
                     <Text size={TextSize::Large}>
