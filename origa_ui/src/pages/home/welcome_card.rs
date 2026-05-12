@@ -37,14 +37,6 @@ fn get_greeting(is_ru: bool) -> &'static str {
     }
 }
 
-fn get_subline(is_ru: bool) -> &'static str {
-    if is_ru {
-        "Готовы к занятию?"
-    } else {
-        "Ready to study?"
-    }
-}
-
 #[component]
 pub fn WelcomeCard(
     username: Signal<String>,
@@ -53,7 +45,6 @@ pub fn WelcomeCard(
     let i18n = use_i18n();
     let is_ru = Signal::derive(move || i18n.get_locale() == Locale::ru);
     let greeting = Signal::derive(move || get_greeting(is_ru.get()));
-    let subline = Signal::derive(move || get_subline(is_ru.get()));
 
     let test_id_val = move || {
         let val = test_id.get();
@@ -77,14 +68,11 @@ pub fn WelcomeCard(
                         {move || greeting.get()} ", "
                         <span class="text-[var(--accent-olive)]">{move || username.get()}</span>
                     </div>
-                    <div class="font-mono text-xs tracking-widest uppercase text-[var(--fg-muted)]">
-                        {move || subline.get()}
-                    </div>
                 </div>
                 <div class="shrink-0">
                     <A href="/lesson">
                         <button
-                            class="btn btn-olive flex items-center justify-center gap-2 w-full sm:w-auto sm:min-w-[240px] px-6 py-2 sm:px-8 sm:py-3"
+                            class="btn btn-olive flex items-center justify-center gap-2 w-full sm:w-auto sm:min-w-[280px] px-6 py-1 sm:px-10 sm:py-1.5"
                             data-testid=move || Some(lesson_test_id.get())
                         >
                             <Icon icon=icondata::LuBookOpen width="16" height="16" />
