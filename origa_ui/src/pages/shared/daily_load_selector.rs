@@ -9,7 +9,7 @@ pub fn DailyLoadSelector(selected_load: RwSignal<DailyLoad>) -> impl IntoView {
     let i18n = use_i18n();
 
     view! {
-        <div class="flex flex-wrap justify-start gap-2 mt-2">
+        <div class="flex flex-wrap justify-start gap-3 mt-2">
             <For
                 each=move || DailyLoad::all().to_vec()
                 key=|load| format!("{:?}", load)
@@ -35,18 +35,23 @@ pub fn DailyLoadSelector(selected_load: RwSignal<DailyLoad>) -> impl IntoView {
                     };
 
                     view! {
-                        <Tooltip text=Signal::derive(move || description.clone())>
-                            <Button
-                                variant=move || if is_selected() { ButtonVariant::Olive } else { ButtonVariant::Default }
-                                on_click=Callback::new(move |_| selected_load.set(load_for_click))
-                                test_id=Signal::derive(move || format!("profile-load-{}", load_id))
-                            >
-                                <span class="inline-flex items-center">
-                                    {label}
-                                    <span inner_html=INFO_ICON />
-                                </span>
-                            </Button>
-                        </Tooltip>
+                        <div class="flex flex-col items-center gap-1">
+                            <Tooltip text=Signal::derive(move || description.clone())>
+                                <Button
+                                    variant=move || if is_selected() { ButtonVariant::Olive } else { ButtonVariant::Default }
+                                    on_click=Callback::new(move |_| selected_load.set(load_for_click))
+                                    test_id=Signal::derive(move || format!("profile-load-{}", load_id))
+                                >
+                                    <span class="inline-flex items-center">
+                                        {label}
+                                        <span inner_html=INFO_ICON />
+                                    </span>
+                                </Button>
+                            </Tooltip>
+                            <span class="font-mono text-[10px] text-[var(--fg-muted)]">
+                                {format!("~{}", load.new_cards_per_day())}
+                            </span>
+                        </div>
                     }
                 }
             />

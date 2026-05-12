@@ -423,6 +423,7 @@
         "load_maximum_desc": "Extreme load for maximum progress. Be ready to spend 5+ hours a day.",
         "load_minimal": "Minimal",
         "load_minimal_desc": "Minimal load for casual learning. Just 5-10 minutes a day.",
+        "favorite": "Toggle favorite",
         "mark_as_known": "Mark as learned",
         "delete_error": "Delete error",
         "rating_easy": "Easy",

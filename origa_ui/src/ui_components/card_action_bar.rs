@@ -1,5 +1,6 @@
+use crate::i18n::use_i18n;
 use crate::pages::shared::MarkAsKnownButton;
-use crate::ui_components::{DeleteButton, FavoriteButton, HistoryButton, Tag, TagVariant};
+use crate::ui_components::{DeleteButton, FavoriteButton, HistoryButton, Tag, TagVariant, Tooltip};
 use leptos::prelude::*;
 
 #[component]
@@ -20,6 +21,7 @@ pub fn CardActionBar(
     let delete_test_id = Signal::derive(move || format!("{}-delete-btn", test_id.get()));
 
     let mark_known_visible = move || show_mark_as_known.get();
+    let i18n = use_i18n();
 
     view! {
         <div class="card-action-bar" on:click=move |ev: leptos::ev::MouseEvent| ev.stop_propagation()>
@@ -28,11 +30,13 @@ pub fn CardActionBar(
                 {move || {
                     match on_toggle_favorite {
                         Some(cb) => view! {
-                            <FavoriteButton
-                                is_favorite=is_favorite
-                                on_click=cb
-                                test_id=favorite_test_id
-                            />
+                            <Tooltip text=Signal::derive(move || crate::i18n::td_string!(i18n.get_locale(), shared.favorite))>
+                                <FavoriteButton
+                                    is_favorite=is_favorite
+                                    on_click=cb
+                                    test_id=favorite_test_id
+                                />
+                            </Tooltip>
                         }
                             .into_any(),
                         None => ().into_any(),
@@ -41,13 +45,15 @@ pub fn CardActionBar(
                 {move || {
                     match on_mark_as_known {
                         Some(cb) => view! {
-                            <span
-                                style:visibility=move || if mark_known_visible() { "visible" } else { "hidden" }
-                                aria-hidden=move || if mark_known_visible() { "false" } else { "true" }
-                            >
+                        <span
+                            style:visibility=move || if mark_known_visible() { "visible" } else { "hidden" }
+                            aria-hidden=move || if mark_known_visible() { "false" } else { "true" }
+                        >
+                            <Tooltip text=Signal::derive(move || crate::i18n::td_string!(i18n.get_locale(), shared.mark_as_known))>
                                 <MarkAsKnownButton on_click=cb test_id=mark_known_test_id />
-                            </span>
-                        }
+                            </Tooltip>
+                        </span>
+                    }
                             .into_any(),
                         None => ().into_any(),
                     }
@@ -55,7 +61,9 @@ pub fn CardActionBar(
                 {move || {
                     match on_history {
                         Some(cb) => view! {
-                            <HistoryButton on_click=cb test_id=history_test_id />
+                            <Tooltip text=Signal::derive(move || crate::i18n::td_string!(i18n.get_locale(), ui.card_history))>
+                                <HistoryButton on_click=cb test_id=history_test_id />
+                            </Tooltip>
                         }
                             .into_any(),
                         None => ().into_any(),
@@ -64,7 +72,9 @@ pub fn CardActionBar(
                 {move || {
                     match on_delete {
                         Some(cb) => view! {
-                            <DeleteButton on_click=cb test_id=delete_test_id />
+                            <Tooltip text=Signal::derive(move || crate::i18n::td_string!(i18n.get_locale(), common.delete))>
+                                <DeleteButton on_click=cb test_id=delete_test_id />
+                            </Tooltip>
                         }
                             .into_any(),
                         None => ().into_any(),

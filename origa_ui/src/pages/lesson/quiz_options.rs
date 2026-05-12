@@ -51,20 +51,18 @@ pub fn QuizOptions(
                                     }
                                 }
                             >
-                                <div class="flex items-start justify-between gap-2">
-                                    <Text size=TextSize::Default>
-                                        <MarkdownText
-                                            content=Signal::derive(move || option_text.clone())
-                                            variant=MarkdownVariant::Compact
-                                            known_kanji=known_kanji.get()
-                                        />
-                                    </Text>
-                                    <Show when=move || !show_result>
-                                        <span class="text-[var(--fg-muted)] text-xs font-mono shrink-0">
-                                            {key_hint.clone()}
-                                        </span>
-                                    </Show>
-                                </div>
+                                <Text size=TextSize::Default>
+                                    <MarkdownText
+                                        content=Signal::derive(move || option_text.clone())
+                                        variant=MarkdownVariant::Compact
+                                        known_kanji=known_kanji.get()
+                                    />
+                                </Text>
+                                <Show when=move || !show_result>
+                                    <span class="absolute top-1 right-2 text-[var(--fg-muted)] text-xs font-mono opacity-50 pointer-events-none">
+                                        {key_hint.clone()}
+                                    </span>
+                                </Show>
                             </button>
                         }
                     })
