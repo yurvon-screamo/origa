@@ -40,6 +40,18 @@ pub fn Sidebar(
             .unwrap_or_default()
     });
 
+    let profile_active =
+        Signal::derive(move || NavRoute::Profile.is_active(&location.pathname.get()));
+    let i18n_profile = use_i18n();
+    let profile_label = Signal::derive(move || NavRoute::Profile.label(&i18n_profile));
+    let profile_class = Signal::derive(move || {
+        if profile_active.get() {
+            "sidebar-item active".to_string()
+        } else {
+            "sidebar-item".to_string()
+        }
+    });
+
     view! {
         <Show when=move || is_visible.get()>
             <aside class="sidebar" data-testid=test_id_val>
@@ -71,14 +83,17 @@ pub fn Sidebar(
                 <div class="flex-1"></div>
                 <div class="sidebar-footer">
                     <A
-                        href="/profile"
-                        attr:class="flex items-center gap-3 px-4 py-3 hover:bg-[var(--bg-aged)] transition-colors rounded-lg"
+                        href=NavRoute::Profile.href().to_string()
+                        attr:class=profile_class
+                        attr:data-testid=derive_test_id(test_id, NavRoute::Profile.test_id_suffix())
+                        attr:aria-current=move || if profile_active.get() { "page" } else { "false" }
                     >
                         <Avatar
                             size=Signal::derive(move || AvatarSize::Small)
                             initials=avatar_initials
                             test_id=derive_test_id(test_id, "avatar")
                         />
+                        <span class="sidebar-item-label">{profile_label}</span>
                     </A>
                 </div>
             </aside>
