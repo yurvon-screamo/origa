@@ -37,6 +37,14 @@ fn get_greeting(is_ru: bool) -> &'static str {
     }
 }
 
+fn get_subline(is_ru: bool) -> &'static str {
+    if is_ru {
+        "Готовы к занятию?"
+    } else {
+        "Ready to study?"
+    }
+}
+
 #[component]
 pub fn WelcomeCard(
     username: Signal<String>,
@@ -45,6 +53,7 @@ pub fn WelcomeCard(
     let i18n = use_i18n();
     let is_ru = Signal::derive(move || i18n.get_locale() == Locale::ru);
     let greeting = Signal::derive(move || get_greeting(is_ru.get()));
+    let subline = Signal::derive(move || get_subline(is_ru.get()));
 
     let test_id_val = move || {
         let val = test_id.get();
@@ -63,11 +72,11 @@ pub fn WelcomeCard(
     view! {
         <div class="py-6 sm:py-8" data-testid=test_id_val>
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div class="flex flex-wrap items-baseline gap-x-2">
-                    <div class="font-serif text-2xl sm:text-3xl text-[var(--fg-black)]">
-                        {move || greeting.get()} ", "
-                        <span class="text-[var(--accent-olive)]">{move || username.get()}</span>
-                    </div>
+                <div class="font-serif text-2xl sm:text-3xl text-[var(--fg-black)]">
+                    {move || greeting.get()} ", "
+                    <span class="text-[var(--accent-olive)]">{move || username.get()}</span>
+                    ". "
+                    <span class="text-[var(--fg-muted)]">{move || subline.get()}</span>
                 </div>
                 <div class="shrink-0">
                     <A href="/lesson">

@@ -131,7 +131,7 @@ fn SidebarNavItem(
             attr:aria-current=move || if is_active.get() { "page" } else { "false" }
         >
             {if use_logo {
-                view! { <Logo size=LogoSize::Sm /> }.into_any()
+                view! { <Logo size=LogoSize::Md /> }.into_any()
             } else {
                 view! { <Icon icon=icon width="20" height="20" /> }.into_any()
             }}
