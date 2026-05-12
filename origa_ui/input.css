@@ -78,6 +78,15 @@
     --shadow-offset-y: 6px;
     --shadow-color: var(--border-dark);
     --shadow-offset-lg: 8px;
+
+    /* Typography Scale */
+    --text-2xs: 11px;
+    --text-xs: 14px;
+    --text-sm: 16px;
+    --text-label: 13px;
+    --text-label-sm: 11px;
+    --text-body: 14px;
+    --text-lg: 18px;
 }
 
 * {
@@ -123,10 +132,10 @@ input[type="submit"],
 
 .btn {
     font-family: var(--font-mono);
-    font-size: 10px;
+    font-size: var(--text-label-sm);
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    padding: 8px 12px;
+    padding: 10px 16px;
     border: 1px solid var(--border-dark);
     background: var(--bg-paper);
     color: var(--fg-black);
@@ -144,9 +153,9 @@ input[type="submit"],
 
 @media (min-width: 640px) {
     .btn {
-        font-size: 12px;
+        font-size: var(--text-label);
         letter-spacing: 0.15em;
-        padding: 14px 28px;
+        padding: 16px 32px;
     }
 }
 
@@ -162,7 +171,7 @@ input[type="submit"],
 
 @media (min-width: 640px) {
     .btn::before {
-        inset: 3px;
+        inset: 4px;
     }
 }
 
@@ -221,27 +230,27 @@ input[type="submit"],
 }
 
 .btn-sm {
-    padding: 6px 10px;
-    font-size: 9px;
+    padding: 8px 12px;
+    font-size: var(--text-2xs);
 }
 
 @media (min-width: 640px) {
     .btn-sm {
-        padding: 8px 16px;
-        font-size: 10px;
+        padding: 10px 20px;
+        font-size: var(--text-label-sm);
     }
 }
 
 .btn-lg {
-    padding: 18px 36px;
-    font-size: 12px;
+    padding: 20px 40px;
+    font-size: var(--text-label);
 }
 
 .input-field {
     font-family: var(--font-mono);
-    font-size: 12px;
+    font-size: var(--text-body);
     letter-spacing: 0.05em;
-    padding: 12px 16px;
+    padding: 14px 18px;
     border: 1px solid var(--border-dark);
     background: var(--bg-paper);
     color: var(--fg-black);
@@ -257,7 +266,7 @@ input[type="submit"],
 .input-field::placeholder {
     color: var(--fg-muted);
     text-transform: uppercase;
-    font-size: 10px;
+    font-size: var(--text-body);
     letter-spacing: 0.1em;
 }
 
@@ -270,7 +279,7 @@ input[type="submit"],
 .card {
     background: var(--bg-paper);
     border: 1px solid var(--border-dark);
-    padding: 24px;
+    padding: 28px;
     position: relative;
 }
 
@@ -306,10 +315,10 @@ input[type="submit"],
 
 .tag {
     font-family: var(--font-mono);
-    font-size: 10px;
+    font-size: var(--text-label-sm);
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    padding: 6px 12px;
+    padding: 8px 14px;
     border: 1px solid var(--border-light);
     background: var(--bg-paper);
     color: var(--fg-muted);
@@ -448,8 +457,8 @@ input[type="submit"],
 }
 
 .checkbox-box {
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
     border: 1px solid var(--border-dark);
     position: relative;
     flex-shrink: 0;
@@ -459,7 +468,7 @@ input[type="submit"],
 .checkbox-container input:checked+.checkbox-box::after {
     content: "";
     position: absolute;
-    inset: 4px;
+    inset: 5px;
     background: var(--fg-black);
 }
 
@@ -481,8 +490,8 @@ input[type="submit"],
 }
 
 .radio-box {
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
     border: 1px solid var(--border-dark);
     border-radius: var(--rounded-full);
     position: relative;
@@ -493,7 +502,7 @@ input[type="submit"],
 .radio-container input:checked+.radio-box::after {
     content: "";
     position: absolute;
-    inset: 4px;
+    inset: 5px;
     background: var(--fg-black);
     border-radius: var(--rounded-full);
 }
@@ -516,8 +525,8 @@ input[type="submit"],
 }
 
 .toggle-track {
-    width: 44px;
-    height: 24px;
+    width: 48px;
+    height: 28px;
     border: 1px solid var(--border-dark);
     position: relative;
     transition: background-color var(--anima-duration-slow) var(--anima-ease-paper), border-color var(--anima-duration-slow) var(--anima-ease-paper);
@@ -526,12 +535,12 @@ input[type="submit"],
 .toggle-track::after {
     content: "";
     position: absolute;
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
     border: 1px solid var(--border-dark);
     background: var(--bg-paper);
-    top: 3px;
-    left: 3px;
+    top: 4px;
+    left: 4px;
     transition: left var(--anima-duration-slow) var(--anima-ease-paper), background-color var(--anima-duration-slow) var(--anima-ease-paper);
 }
 
@@ -540,7 +549,7 @@ input[type="submit"],
 }
 
 .toggle-container input:checked+.toggle-track::after {
-    left: 23px;
+    left: 27px;
     background: var(--bg-paper);
 }
 
@@ -558,9 +567,9 @@ input[type="submit"],
 
 .badge {
     font-family: var(--font-mono);
-    font-size: 12px;
+    font-size: var(--text-body);
     letter-spacing: 0.05em;
-    padding: 2px 8px;
+    padding: 4px 10px;
     border: none;
     background: var(--bg-aged);
     color: var(--fg-muted);
@@ -587,10 +596,10 @@ input[type="submit"],
 
 .stamp {
     font-family: var(--font-serif);
-    font-size: 11px;
+    font-size: var(--text-label);
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    padding: 8px 16px;
+    padding: 10px 18px;
     border: 2px solid var(--accent-terracotta);
     color: var(--accent-terracotta);
     transform: rotate(-3deg);
@@ -621,7 +630,7 @@ input[type="submit"],
     transform: translate(-50%, -50%);
     background: var(--bg-paper);
     border: 1px solid var(--border-dark);
-    padding: 32px;
+    padding: 36px;
     max-width: 640px;
     width: 90%;
     z-index: 101;
@@ -665,7 +674,7 @@ input[type="submit"],
     background: var(--bg-paper);
     border: 1px solid var(--border-dark);
     z-index: 101;
-    padding: 32px;
+    padding: 36px;
     display: flex;
     flex-direction: column;
 }
@@ -734,7 +743,7 @@ input[type="submit"],
 
 .dropdown-trigger {
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: var(--text-label);
     letter-spacing: 0.1em;
     text-transform: uppercase;
     padding: 12px 40px 12px 16px;
@@ -790,7 +799,7 @@ input[type="submit"],
 
 .dropdown-item {
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: var(--text-label);
     letter-spacing: 0.1em;
     text-transform: uppercase;
     padding: 12px 16px;
@@ -823,7 +832,7 @@ input[type="submit"],
     border: 1px solid var(--border-dark);
     background: var(--bg-paper);
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: var(--text-label);
     letter-spacing: 0.05em;
 }
 
@@ -835,7 +844,7 @@ input[type="submit"],
 .dropdown-search input::placeholder {
     color: var(--fg-muted);
     text-transform: uppercase;
-    font-size: 9px;
+    font-size: var(--text-2xs);
     letter-spacing: 0.1em;
 }
 
@@ -933,14 +942,14 @@ input[type="submit"],
 }
 
 .stepper-number {
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     border: 1px solid var(--border-dark);
     display: flex;
     align-items: center;
     justify-content: center;
     font-family: var(--font-mono);
-    font-size: 12px;
+    font-size: var(--text-body);
     background: var(--bg-paper);
     transition: background-color var(--anima-duration-slow) var(--anima-ease-paper), border-color var(--anima-duration-slow) var(--anima-ease-paper), color var(--anima-duration-slow) var(--anima-ease-paper);
 }
@@ -958,7 +967,7 @@ input[type="submit"],
 
 .stepper-label {
     font-family: var(--font-mono);
-    font-size: 10px;
+    font-size: var(--text-label-sm);
     letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--fg-muted);
@@ -987,7 +996,7 @@ input[type="submit"],
 
 .tab {
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: var(--text-label);
     letter-spacing: 0.1em;
     text-transform: uppercase;
     padding: 12px 24px;
@@ -1037,7 +1046,7 @@ input[type="submit"],
     color: var(--bg-paper);
     padding: 8px 12px;
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: var(--text-label);
     letter-spacing: 0.05em;
     white-space: nowrap;
     text-align: center;
@@ -1154,7 +1163,7 @@ input[type="submit"],
 
 .table th {
     font-family: var(--font-mono);
-    font-size: 9px;
+    font-size: var(--text-2xs);
     letter-spacing: 0.15em;
     text-transform: uppercase;
     text-align: left;
@@ -1166,7 +1175,7 @@ input[type="submit"],
 
 .table td {
     font-family: var(--font-mono);
-    font-size: 12px;
+    font-size: var(--text-body);
     padding: 12px 16px;
     border-bottom: 1px solid var(--border-light);
 }
@@ -1180,14 +1189,14 @@ input[type="submit"],
 }
 
 .avatar {
-    min-width: 48px;
-    height: 48px;
+    min-width: 56px;
+    height: 56px;
     border: 1px solid var(--border-dark);
     display: flex;
     align-items: center;
     justify-content: center;
     font-family: var(--font-mono);
-    font-size: 12px;
+    font-size: var(--text-body);
     letter-spacing: 0.05em;
     background: var(--bg-paper);
     padding: 0 12px;
@@ -1195,17 +1204,17 @@ input[type="submit"],
 }
 
 .avatar-sm {
-    min-width: 32px;
-    height: 32px;
-    font-size: 10px;
+    min-width: 40px;
+    height: 40px;
+    font-size: var(--text-body);
     padding: 0 8px;
     line-height: 1;
 }
 
 .avatar-lg {
-    min-width: 64px;
-    height: 64px;
-    font-size: 14px;
+    min-width: 72px;
+    height: 72px;
+    font-size: var(--text-sm);
     padding: 0 16px;
 }
 
@@ -1228,15 +1237,15 @@ input[type="submit"],
 }
 
 .pagination-btn {
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     border: 1px solid var(--border-dark);
     background: var(--bg-paper);
     display: flex;
     align-items: center;
     justify-content: center;
     font-family: var(--font-mono);
-    font-size: 12px;
+    font-size: var(--text-body);
     cursor: pointer;
     transition: transform var(--anima-duration-fast) var(--anima-ease-paper),
         background-color var(--anima-duration-normal) var(--anima-ease-paper),
@@ -1263,7 +1272,7 @@ input[type="submit"],
     align-items: center;
     gap: 8px;
     font-family: var(--font-mono);
-    font-size: 10px;
+    font-size: var(--text-label-sm);
     letter-spacing: 0.1em;
     text-transform: uppercase;
 }
@@ -1288,8 +1297,8 @@ input[type="submit"],
 
 .search-input {
     font-family: var(--font-mono);
-    font-size: 12px;
-    padding: 12px 16px 12px 44px;
+    font-size: var(--text-body);
+    padding: 14px 18px 14px 48px;
     border: 1px solid var(--border-dark);
     background: var(--bg-paper);
     width: 100%;
@@ -1336,7 +1345,7 @@ input[type="submit"],
     bottom: 0;
     left: 0;
     right: 0;
-    height: 64px;
+    height: 72px;
     padding-bottom: env(safe-area-inset-bottom, 0px);
     background: var(--bg-cream);
     border-top: 1px solid var(--border-dark);
@@ -1408,7 +1417,7 @@ input[type="submit"],
 
 .bottom-tab-item-label {
     font-family: var(--font-mono);
-    font-size: 10px;
+    font-size: var(--text-label-sm);
     letter-spacing: 0.05em;
     line-height: 1;
 }
@@ -1418,7 +1427,7 @@ input[type="submit"],
     position: fixed;
     top: 0;
     left: 0;
-    width: 192px;
+    width: 220px;
     height: 100vh;
     background-color: var(--bg-cream);
     border-right: 1px solid var(--border-dark);
@@ -1449,7 +1458,7 @@ input[type="submit"],
     gap: 12px;
     padding: 12px 24px;
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: var(--text-label);
     text-transform: uppercase;
     letter-spacing: 0.1em;
     color: var(--fg-muted);
@@ -1491,7 +1500,7 @@ input[type="submit"],
 
 .sidebar-item-label {
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: var(--text-label);
     line-height: 1;
 }
 
@@ -1509,7 +1518,7 @@ input[type="submit"],
 }
 
 .main-with-sidebar {
-    margin-left: 192px;
+    margin-left: 220px;
     min-height: 100vh;
 }
 
@@ -1628,7 +1637,7 @@ input[type="submit"],
 
 .token-popup-reading {
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: var(--text-label);
     color: var(--fg-muted);
 }
 
@@ -1842,15 +1851,15 @@ input[type="submit"],
 }
 
 .prose-xs {
-    font-size: 10px;
+    font-size: var(--text-label-sm);
 }
 
 .prose-sm {
-    font-size: 12px;
+    font-size: var(--text-body);
 }
 
 .prose-lg {
-    font-size: 16px;
+    font-size: var(--text-lg);
 }
 
 .spinner {
@@ -1894,7 +1903,7 @@ input[type="submit"],
 
 .loading-overlay-message {
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: var(--text-label);
     letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--fg-muted);
@@ -2107,7 +2116,7 @@ input[type="submit"],
     text-align: center;
     margin: 15px 0;
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: var(--text-label);
     letter-spacing: 0.15em;
     text-transform: uppercase;
     color: var(--fg-muted);
@@ -2115,7 +2124,7 @@ input[type="submit"],
 
 .kanji-drawing-success {
     color: var(--success);
-    font-size: 14px;
+    font-size: var(--text-sm);
     font-family: var(--font-mono);
 }
 
@@ -2132,7 +2141,7 @@ input[type="submit"],
 .kanji-drawing-reset-btn {
     position: relative;
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: var(--text-label);
     letter-spacing: 0.2em;
     text-transform: uppercase;
     padding: 12px 24px;
@@ -2161,7 +2170,7 @@ input[type="submit"],
     padding: 40px;
     color: var(--fg-muted);
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: var(--text-label);
     letter-spacing: 0.15em;
     text-transform: uppercase;
 }
@@ -2170,7 +2179,7 @@ input[type="submit"],
     text-align: center;
     padding: 40px;
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: var(--text-label);
     letter-spacing: 0.15em;
     color: var(--error);
 }
@@ -2733,7 +2742,7 @@ input[type="submit"],
     justify-content: center;
     gap: 8px;
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: var(--text-label);
     letter-spacing: 0.1em;
     text-transform: uppercase;
     border-bottom: 1px solid var(--border-dark);
@@ -2741,7 +2750,7 @@ input[type="submit"],
 }
 
 .banner-icon {
-    font-size: 14px;
+    font-size: var(--text-sm);
 }
 
 @keyframes slideDown {
@@ -2765,14 +2774,14 @@ input[type="submit"],
 /* Alert */
 .alert-title {
     font-family: var(--font-mono);
-    font-size: 10px;
+    font-size: var(--text-label-sm);
     letter-spacing: 0.1em;
     text-transform: uppercase;
 }
 
 .alert-message {
     font-family: var(--font-mono);
-    font-size: 10px;
+    font-size: var(--text-label-sm);
     letter-spacing: 0.05em;
     color: var(--fg-muted);
     margin-top: 4px;
@@ -2785,14 +2794,14 @@ input[type="submit"],
 
 .toast-title {
     font-family: var(--font-mono);
-    font-size: 10px;
+    font-size: var(--text-label-sm);
     letter-spacing: 0.1em;
     text-transform: uppercase;
 }
 
 .toast-message {
     font-family: var(--font-mono);
-    font-size: 10px;
+    font-size: var(--text-label-sm);
     letter-spacing: 0.05em;
     color: var(--fg-muted);
     margin-top: 4px;
@@ -2807,14 +2816,14 @@ input[type="submit"],
 
 .progress-label {
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: var(--text-label);
     letter-spacing: 0.15em;
     text-transform: uppercase;
 }
 
 .progress-value {
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: var(--text-label);
 }
 
 /* Modal/Drawer */
@@ -2992,14 +3001,14 @@ input[type="submit"],
 /* Accordion */
 .accordion-title {
     font-family: var(--font-mono);
-    font-size: 12px;
+    font-size: var(--text-body);
     letter-spacing: 0.1em;
     text-transform: uppercase;
 }
 
 .accordion-body {
     font-family: var(--font-mono);
-    font-size: 12px;
+    font-size: var(--text-body);
     color: var(--fg-muted);
 }
 
@@ -3039,7 +3048,7 @@ input[type="submit"],
 /* Banner text */
 .banner-text {
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: var(--text-label);
     letter-spacing: 0.1em;
     text-transform: uppercase;
 }
@@ -3050,7 +3059,7 @@ input[type="submit"],
     padding: 40px;
     color: var(--fg-muted);
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: var(--text-label);
     letter-spacing: 0.15em;
     text-transform: uppercase;
 }
@@ -3070,7 +3079,7 @@ input[type="submit"],
 
 .tab-button-text {
     font-family: var(--font-mono);
-    font-size: 10px;
+    font-size: var(--text-label-sm);
     letter-spacing: 0.05em;
     text-transform: uppercase;
     margin-top: 4px;
@@ -3112,7 +3121,7 @@ input[type="submit"],
     display: inline-block;
     padding: 4px 8px;
     background: var(--bg-aged);
-    font-size: 12px;
+    font-size: var(--text-body);
 }
 
 /* Progress inline width helper */
@@ -3128,7 +3137,7 @@ input[type="submit"],
 }
 
 .accordion-max-height-open {
-    max-height: 200px;
+    max-height: 240px;
 }
 
 /* Skeleton base */
@@ -3215,7 +3224,7 @@ input[type="submit"],
 
 .card-history-date {
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: var(--text-label);
 }
 
 .card-history-stats {
@@ -3223,7 +3232,7 @@ input[type="submit"],
     align-items: center;
     gap: 16px;
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: var(--text-label);
     text-align: center;
 }
 
@@ -3231,7 +3240,7 @@ input[type="submit"],
     padding: 32px;
     text-align: center;
     font-family: var(--font-mono);
-    font-size: 12px;
+    font-size: var(--text-body);
     color: var(--fg-muted);
 }
 
@@ -3241,7 +3250,7 @@ input[type="submit"],
 }
 
 .chart-label {
-    font-size: 10px;
+    font-size: var(--text-label-sm);
 }
 
 /* Delete button */
@@ -3324,18 +3333,18 @@ input[type="submit"],
 
 .ocr-stage-title {
     font-family: var(--font-mono);
-    font-size: 12px;
+    font-size: var(--text-body);
     font-weight: 500;
 }
 
 .ocr-stage-status {
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: var(--text-label);
 }
 
 .ocr-stage-description {
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: var(--text-label);
     color: var(--fg-muted);
 }
 
@@ -3438,7 +3447,7 @@ input[type="submit"],
 
 .update-drawer-title {
     font-family: var(--font-mono);
-    font-size: 14px;
+    font-size: var(--text-sm);
     font-weight: 600;
     color: var(--accent-olive);
 }
@@ -3451,17 +3460,17 @@ input[type="submit"],
 
 .update-drawer-info {
     font-family: var(--font-mono);
-    font-size: 12px;
+    font-size: var(--text-body);
     color: var(--fg-muted);
 }
 
 /* Typography extras */
 .text-xs {
-    font-size: 12px;
+    font-size: var(--text-body);
 }
 
 .text-sm {
-    font-size: 14px;
+    font-size: var(--text-sm);
 }
 
 .text-xl {
@@ -4000,8 +4009,8 @@ input[type="submit"],
 }
 
 .icon-btn {
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -4026,8 +4035,8 @@ input[type="submit"],
 
 @media (max-width: 639px) {
     .icon-btn {
-        min-width: 36px;
-        min-height: 36px;
+        min-width: 40px;
+        min-height: 40px;
     }
 }
 

@@ -43,26 +43,26 @@ typography:
     lineHeight: 1.2
   body-lg:
     fontFamily: "DM Mono"
-    fontSize: "14px"
+    fontSize: "16px"
     fontWeight: 400
     lineHeight: 1.6
     letterSpacing: "0.02em"
   body-md:
     fontFamily: "DM Mono"
-    fontSize: "12px"
+    fontSize: "14px"
     fontWeight: 400
     lineHeight: 1.6
     letterSpacing: "0.05em"
   label-md:
     fontFamily: "DM Mono"
-    fontSize: "11px"
+    fontSize: "13px"
     fontWeight: 400
     lineHeight: 1
     letterSpacing: "0.1em"
     textTransform: uppercase
   label-sm:
     fontFamily: "DM Mono"
-    fontSize: "10px"
+    fontSize: "11px"
     fontWeight: 400
     lineHeight: 1
     letterSpacing: "0.15em"
@@ -96,9 +96,9 @@ components:
     borderWidth: "1px"
     borderColor: "{colors.fg-black}"
     borderRadius: "{rounded.none}"
-    padding: "8px 12px"
+    padding: "10px 16px"
     fontFamily: "{typography.label-md.fontFamily}"
-    fontSize: "10px"
+    fontSize: "11px"
     textTransform: uppercase
     letterSpacing: "0.1em"
   button-secondary:
@@ -107,9 +107,9 @@ components:
     borderWidth: "1px"
     borderColor: "{colors.border-dark}"
     borderRadius: "{rounded.none}"
-    padding: "8px 12px"
+    padding: "10px 16px"
     fontFamily: "{typography.label-md.fontFamily}"
-    fontSize: "10px"
+    fontSize: "11px"
   button-olive:
     backgroundColor: "{colors.accent-olive}"
     textColor: "{colors.bg-paper}"
@@ -121,15 +121,15 @@ components:
     borderWidth: "1px"
     borderColor: "{colors.border-dark}"
     borderRadius: "{rounded.none}"
-    padding: "12px 16px"
+    padding: "14px 18px"
     fontFamily: "{typography.body-md.fontFamily}"
-    fontSize: "12px"
+    fontSize: "14px"
     focusShadow: "4px 4px 0 {colors.border-dark}"
   card:
     backgroundColor: "{colors.bg-paper}"
     borderWidth: "1px"
     borderColor: "{colors.border-dark}"
-    padding: "24px"
+    padding: "28px"
     shadowOffsetX: "6px"
     shadowOffsetY: "6px"
     shadowBorderWidth: "1px"
@@ -139,9 +139,9 @@ components:
     textColor: "{colors.fg-black}"
     borderWidth: "1px"
     borderColor: "{colors.border-dark}"
-    padding: "6px 12px"
+    padding: "8px 14px"
     fontFamily: "{typography.label-md.fontFamily}"
-    fontSize: "10px"
+    fontSize: "11px"
     textTransform: uppercase
     letterSpacing: "0.2em"
   tag-olive:
@@ -159,7 +159,7 @@ components:
     borderWidth: "1px"
     borderColor: "{colors.border-dark}"
     borderRadius: "{rounded.none}"
-    padding: "32px"
+    padding: "36px"
     maxWidth: "640px"
     shadowOffset: "8px"
     shadowBackground: "{colors.bg-aged}"
@@ -224,18 +224,29 @@ Origa — минималистичный интерфейс для прилож�
 
 ## Typography
 
+### CSS Variables (Typography Scale)
+
+Все размеры шрифтов используют CSS custom properties из `:root`:
+
+- `--text-2xs: 11px` — мельчайшие лейблы
+- `--text-label-sm: 11px` — малые лейблы, кнопки mobile
+- `--text-label: 13px` — основные лейблы, sidebar, dropdown
+- `--text-body: 14px` — основной текст, input, table
+- `--text-sm: 16px` — увеличенный текст
+- `--text-xs: 14px` — utility class
+
 ### Система шрифтов
 
 - **Display**: Cormorant Garamond, 300,
   clamp(1.75rem, 6vw, 3rem) — H1, hero titles
 - **Heading**: Cormorant Garamond, 400-500,
   1.25–1.5rem — H2–H6, Japanese text display
-- **Body**: DM Mono, 400, 12px —
-  Основной текст, описания
-- **Label**: DM Mono, 400, 9–11px —
-  Кнопки, теги, навигация
-- **Mono**: DM Mono, 400-500, 11px —
-  Код, технические данные
+- **Body**: DM Mono, 400, 14px —
+   Основной текст, описания
+- **Label**: DM Mono, 400, 11–13px —
+   Кнопки, теги, навигация
+- **Mono**: DM Mono, 400-500, 13px —
+   Код, технические данные
 
 ### Правила типографики
 
@@ -245,7 +256,7 @@ Origa — минималистичный интерфейс для прилож�
   `text-transform: uppercase` + `letter-spacing: 0.1em` —
   это создаёт эффект печатного набора.
 - **Размеры шрифта для UI-компонентов** никогда не превышают
-  12px — приложение использует очень мелкий, плотный
+  14px — приложение использует очень мелкий, плотный
   типографический масштаб.
 
 ## Layout & Spacing
@@ -301,15 +312,15 @@ Card Shadow:
 ## Shapes
 
 - **Buttons**: Прямоугольники,
-  padding `8px 12px` (mobile) / `14px 28px` (desktop).
+   padding `10px 16px` (mobile) / `16px 32px` (desktop).
 - **Inputs**: Прямоугольники, focus-эффект —
-  `box-shadow: 4px 4px 0 var(--border-dark)`.
+   `box-shadow: 4px 4px 0 var(--border-dark)`.
 - **Tags**: Inline-flex, прямоугольные,
-  плотный letter-spacing.
-- **Checkbox/Radio**: Square (20×20) / Circle (20×20),
-  checked через inset square/circle.
-- **Toggle**: Square track (44×24),
-  square thumb with border.
+   плотный letter-spacing.
+- **Checkbox/Radio**: Square (22×22) / Circle (22×22),
+   checked через inset square/circle.
+- **Toggle**: Square track (48×28),
+   square thumb with border.
 
 **Запрещено**: `border-radius` на основных компонентах
 (карточки, кнопки, модальные окна, формы).
@@ -321,10 +332,10 @@ Card Shadow:
 ```css
 .btn {
   font-family: "DM Mono", monospace;
-  font-size: 9px;
+  font-size: 11px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  padding: 8px 12px;
+  padding: 10px 16px;
   border: 1px solid var(--border-dark);
   background: var(--bg-paper);
   color: var(--fg-black);
@@ -353,7 +364,7 @@ Hover-эффект: псевдо-элемент `::before` с
 .card {
   background: var(--bg-paper);
   border: 1px solid var(--border-dark);
-  padding: 24px;
+  padding: 28px;
   position: relative;
 }
 ```
@@ -379,7 +390,7 @@ Hover-эффект: псевдо-элемент `::before` с
   transform: translate(-50%, -50%);
   background: var(--bg-paper);
   border: 1px solid var(--border-dark);
-  padding: 32px;
+  padding: 36px;
   max-width: 640px;
   width: 90%;
   z-index: 101;
@@ -402,8 +413,8 @@ Hover-эффект: псевдо-элемент `::before` с
 ```css
 .input-field {
   font-family: "DM Mono", monospace;
-  font-size: 12px;
-  padding: 12px 16px;
+  font-size: 14px;
+  padding: 14px 18px;
   border: 1px solid var(--border-dark);
   background: var(--bg-paper);
   color: var(--fg-black);
@@ -418,7 +429,7 @@ Hover-эффект: псевдо-элемент `::before` с
 .input-field::placeholder {
   color: var(--fg-muted);
   text-transform: uppercase;
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 0.1em;
 }
 ```
@@ -435,10 +446,10 @@ Placeholder всегда uppercase с letter-spacing — это фирменны
 ```css
 .tag {
   font-family: "DM Mono", monospace;
-  font-size: 9px;
+  font-size: 11px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  padding: 6px 12px;
+  padding: 8px 14px;
   border: 1px solid var(--border-light);
   background: var(--bg-paper);
   color: var(--fg-muted);
@@ -480,9 +491,9 @@ Placeholder всегда uppercase с letter-spacing — это фирменны
 ```css
 .badge {
   font-family: "DM Mono", monospace;
-  font-size: 10px;
+  font-size: 14px;
   letter-spacing: 0.05em;
-  padding: 2px 8px;
+  padding: 4px 10px;
   border: none;
   background: var(--bg-aged);
   color: var(--fg-muted);
@@ -632,8 +643,8 @@ Furigana (ромуадзи/кана) — DM Mono в 50% размера.
   только Cormorant Garamond и DM Mono.
 - **Не создавайте полупрозрачные фоны** для overlay, кроме
   `modal-backdrop` и `loading-overlay`.
-- **Не задавайте font-size > 12px** для интерфейсных элементов
-  (кнопки, навигация, теги). Body-текст: 12px, labels: 9–11px.
+- **Не задавайте font-size > 14px** для интерфейсных элементов
+  (кнопки, навигация, теги). Body-текст: 14px, labels: 11–13px.
 
 ## Paper Texture
 
@@ -662,7 +673,7 @@ pseudo-element с SVG noise:
 ```css
 .stamp {
   font-family: "Cormorant Garamond", serif;
-  font-size: 11px;
+  font-size: 13px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   padding: 8px 16px;
