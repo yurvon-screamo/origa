@@ -1191,6 +1191,7 @@ input[type="submit"],
     letter-spacing: 0.05em;
     background: var(--bg-paper);
     padding: 0 12px;
+    line-height: 1;
 }
 
 .avatar-sm {
@@ -1198,6 +1199,7 @@ input[type="submit"],
     height: 32px;
     font-size: 10px;
     padding: 0 8px;
+    line-height: 1;
 }
 
 .avatar-lg {
@@ -1490,6 +1492,7 @@ input[type="submit"],
 .sidebar-item-label {
     font-family: var(--font-mono);
     font-size: 11px;
+    line-height: 1;
 }
 
 .sidebar-footer {
