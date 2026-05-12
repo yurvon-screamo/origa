@@ -123,7 +123,7 @@ input[type="submit"],
 
 .btn {
     font-family: var(--font-mono);
-    font-size: 9px;
+    font-size: 10px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     padding: 8px 12px;
@@ -144,7 +144,7 @@ input[type="submit"],
 
 @media (min-width: 640px) {
     .btn {
-        font-size: 11px;
+        font-size: 12px;
         letter-spacing: 0.15em;
         padding: 14px 28px;
     }
@@ -222,13 +222,13 @@ input[type="submit"],
 
 .btn-sm {
     padding: 6px 10px;
-    font-size: 8px;
+    font-size: 9px;
 }
 
 @media (min-width: 640px) {
     .btn-sm {
         padding: 8px 16px;
-        font-size: 9px;
+        font-size: 10px;
     }
 }
 
@@ -306,7 +306,7 @@ input[type="submit"],
 
 .tag {
     font-family: var(--font-mono);
-    font-size: 9px;
+    font-size: 10px;
     letter-spacing: 0.2em;
     text-transform: uppercase;
     padding: 6px 12px;
@@ -558,7 +558,7 @@ input[type="submit"],
 
 .badge {
     font-family: var(--font-mono);
-    font-size: 10px;
+    font-size: 12px;
     letter-spacing: 0.05em;
     padding: 2px 8px;
     border: none;
@@ -1037,7 +1037,7 @@ input[type="submit"],
     color: var(--bg-paper);
     padding: 8px 12px;
     font-family: var(--font-mono);
-    font-size: 10px;
+    font-size: 11px;
     letter-spacing: 0.05em;
     white-space: nowrap;
     text-align: center;
@@ -1478,7 +1478,7 @@ input[type="submit"],
     position: absolute;
     left: 0;
     top: 50%;
-    width: 2px;
+    width: 3px;
     height: 24px;
     background-color: var(--fg-black);
     transform: translateY(-50%);
@@ -2807,14 +2807,14 @@ input[type="submit"],
 
 .progress-label {
     font-family: var(--font-mono);
-    font-size: 10px;
+    font-size: 11px;
     letter-spacing: 0.15em;
     text-transform: uppercase;
 }
 
 .progress-value {
     font-family: var(--font-mono);
-    font-size: 10px;
+    font-size: 11px;
 }
 
 /* Modal/Drawer */

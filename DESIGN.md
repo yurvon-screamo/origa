@@ -62,7 +62,7 @@ typography:
     textTransform: uppercase
   label-sm:
     fontFamily: "DM Mono"
-    fontSize: "9px"
+    fontSize: "10px"
     fontWeight: 400
     lineHeight: 1
     letterSpacing: "0.15em"
@@ -98,7 +98,7 @@ components:
     borderRadius: "{rounded.none}"
     padding: "8px 12px"
     fontFamily: "{typography.label-md.fontFamily}"
-    fontSize: "9px"
+    fontSize: "10px"
     textTransform: uppercase
     letterSpacing: "0.1em"
   button-secondary:
@@ -109,7 +109,7 @@ components:
     borderRadius: "{rounded.none}"
     padding: "8px 12px"
     fontFamily: "{typography.label-md.fontFamily}"
-    fontSize: "9px"
+    fontSize: "10px"
   button-olive:
     backgroundColor: "{colors.accent-olive}"
     textColor: "{colors.bg-paper}"
@@ -141,7 +141,7 @@ components:
     borderColor: "{colors.border-dark}"
     padding: "6px 12px"
     fontFamily: "{typography.label-md.fontFamily}"
-    fontSize: "9px"
+    fontSize: "10px"
     textTransform: uppercase
     letterSpacing: "0.2em"
   tag-olive:
