@@ -54,7 +54,7 @@ pub fn QuizOptions(
                                 <Text size=TextSize::Default>
                                     <MarkdownText
                                         content=Signal::derive(move || option_text.clone())
-                                        variant=MarkdownVariant::Compact
+                                        variant=MarkdownVariant::Default
                                         known_kanji=known_kanji.get()
                                     />
                                 </Text>
