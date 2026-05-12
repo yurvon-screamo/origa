@@ -4,6 +4,7 @@ use crate::domain::{
     memory::{MemoryHistory, MemoryState},
     value_objects::{Answer, NativeLanguage, Question},
 };
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use ulid::Ulid;
 
@@ -16,6 +17,8 @@ pub struct StudyCard {
     is_favorite: bool,
     #[serde(default)]
     perfect_streak_since_known: u8,
+    #[serde(default)]
+    favorite_changed_at: Option<DateTime<Utc>>,
 }
 
 impl StudyCard {
@@ -26,6 +29,7 @@ impl StudyCard {
             memory_history: MemoryHistory::default(),
             is_favorite: false,
             perfect_streak_since_known: 0,
+            favorite_changed_at: None,
         }
     }
 
@@ -45,6 +49,10 @@ impl StudyCard {
         self.is_favorite
     }
 
+    pub fn favorite_changed_at(&self) -> Option<&DateTime<Utc>> {
+        self.favorite_changed_at.as_ref()
+    }
+
     pub fn is_new(&self) -> bool {
         self.memory_history.is_new()
     }
@@ -53,12 +61,18 @@ impl StudyCard {
         self.perfect_streak_since_known
     }
 
+    #[cfg(test)]
+    pub(crate) fn set_favorite_changed_at(&mut self, ts: Option<DateTime<Utc>>) {
+        self.favorite_changed_at = ts;
+    }
+
     pub(crate) fn add_review(&mut self, memory_state: MemoryState, review: ReviewLog) {
         self.memory_history.add_review(memory_state, review);
     }
 
     pub(crate) fn toggle_favorite(&mut self) {
         self.is_favorite = !self.is_favorite;
+        self.favorite_changed_at = Some(Utc::now());
         if !self.is_favorite {
             self.perfect_streak_since_known = 0;
         }
@@ -74,6 +88,7 @@ impl StudyCard {
                 self.perfect_streak_since_known += 1;
                 if self.perfect_streak_since_known >= 5 {
                     self.is_favorite = false;
+                    self.favorite_changed_at = Some(Utc::now());
                     self.perfect_streak_since_known = 0;
                 }
             },
@@ -86,7 +101,31 @@ impl StudyCard {
 
     pub fn merge(&mut self, other: &StudyCard) {
         self.memory_history.merge(&other.memory_history);
-        self.is_favorite = self.is_favorite || other.is_favorite;
+
+        match (self.favorite_changed_at, other.favorite_changed_at) {
+            (Some(self_ts), Some(other_ts)) => {
+                if other_ts > self_ts {
+                    self.is_favorite = other.is_favorite;
+                    self.favorite_changed_at = other.favorite_changed_at;
+                    if !self.is_favorite {
+                        self.perfect_streak_since_known = 0;
+                    }
+                }
+            },
+            (None, Some(_)) => {
+                self.is_favorite = other.is_favorite;
+                self.favorite_changed_at = other.favorite_changed_at;
+                if !self.is_favorite {
+                    self.perfect_streak_since_known = 0;
+                }
+            },
+            (Some(_), None) => {},
+            (None, None) => {
+                // Обратная совместимость: старые данные без timestamp
+                self.is_favorite = self.is_favorite || other.is_favorite;
+            },
+        }
+
         self.perfect_streak_since_known = self
             .perfect_streak_since_known
             .max(other.perfect_streak_since_known);
@@ -335,12 +374,13 @@ mod tests {
             }
 
             #[test]
-            fn merges_favorite_status_with_or() {
+            fn merge_with_none_timestamps_uses_or_fallback() {
                 let card = Card::Vocabulary(create_vocabulary_card("猫"));
                 let mut study_card1 = StudyCard::new(card.clone());
                 let mut study_card2 = StudyCard::new(card);
 
                 study_card2.toggle_favorite();
+                study_card2.set_favorite_changed_at(None);
 
                 assert!(!study_card1.is_favorite());
 
@@ -356,7 +396,9 @@ mod tests {
                 let mut study_card2 = StudyCard::new(card);
 
                 study_card1.toggle_favorite();
+                study_card1.set_favorite_changed_at(None);
                 study_card2.toggle_favorite();
+                study_card2.set_favorite_changed_at(None);
 
                 assert!(study_card1.is_favorite());
 
@@ -404,6 +446,133 @@ mod tests {
                 study_card1.merge(&study_card2);
 
                 assert_eq!(study_card1.perfect_streak_since_known(), 3);
+            }
+
+            #[test]
+            fn merge_unfavorite_wins_with_newer_timestamp() {
+                let card = Card::Vocabulary(create_vocabulary_card("猫"));
+                let mut study_card1 = StudyCard::new(card.clone());
+                let mut study_card2 = StudyCard::new(card);
+
+                let t1 = Utc::now() - Duration::seconds(60);
+                let t2 = Utc::now();
+
+                study_card1.toggle_favorite();
+                study_card1.set_favorite_changed_at(Some(t1));
+                study_card2.toggle_favorite();
+                study_card2.toggle_favorite();
+                study_card2.set_favorite_changed_at(Some(t2));
+
+                assert!(study_card1.is_favorite());
+                assert!(!study_card2.is_favorite());
+
+                study_card1.merge(&study_card2);
+
+                assert!(!study_card1.is_favorite());
+                assert_eq!(study_card1.favorite_changed_at(), Some(&t2));
+            }
+
+            #[test]
+            fn merge_keeps_favorite_with_newer_timestamp() {
+                let card = Card::Vocabulary(create_vocabulary_card("猫"));
+                let mut study_card1 = StudyCard::new(card.clone());
+                let mut study_card2 = StudyCard::new(card);
+
+                let t1 = Utc::now() - Duration::seconds(60);
+                let t2 = Utc::now();
+
+                study_card1.toggle_favorite();
+                study_card1.toggle_favorite();
+                study_card1.set_favorite_changed_at(Some(t2));
+                study_card2.toggle_favorite();
+                study_card2.set_favorite_changed_at(Some(t1));
+
+                assert!(!study_card1.is_favorite());
+                assert!(study_card2.is_favorite());
+
+                study_card1.merge(&study_card2);
+
+                assert!(!study_card1.is_favorite());
+            }
+
+            #[test]
+            fn merge_takes_side_with_timestamp_when_other_has_none() {
+                let card = Card::Vocabulary(create_vocabulary_card("猫"));
+                let mut study_card1 = StudyCard::new(card.clone());
+                let mut study_card2 = StudyCard::new(card);
+
+                let ts = Utc::now();
+
+                study_card2.toggle_favorite();
+                study_card2.set_favorite_changed_at(Some(ts));
+
+                assert!(!study_card1.is_favorite());
+
+                study_card1.merge(&study_card2);
+
+                assert!(study_card1.is_favorite());
+            }
+
+            #[test]
+            fn merge_keeps_self_when_self_has_timestamp_and_other_none() {
+                let card = Card::Vocabulary(create_vocabulary_card("猫"));
+                let mut study_card1 = StudyCard::new(card.clone());
+                let mut study_card2 = StudyCard::new(card);
+
+                let ts = Utc::now();
+
+                study_card1.toggle_favorite();
+                study_card1.toggle_favorite();
+                study_card1.set_favorite_changed_at(Some(ts));
+                study_card2.toggle_favorite();
+                study_card2.set_favorite_changed_at(None);
+
+                assert!(!study_card1.is_favorite());
+                assert!(study_card2.is_favorite());
+
+                study_card1.merge(&study_card2);
+
+                assert!(!study_card1.is_favorite());
+            }
+
+            #[test]
+            fn toggle_favorite_updates_timestamp() {
+                let card = Card::Vocabulary(create_vocabulary_card("猫"));
+                let mut study_card = StudyCard::new(card);
+
+                assert!(study_card.favorite_changed_at().is_none());
+
+                study_card.toggle_favorite();
+
+                assert!(study_card.favorite_changed_at().is_some());
+            }
+
+            #[test]
+            fn handle_favorite_rating_updates_timestamp_on_auto_unfavorite() {
+                let card = Card::Vocabulary(create_vocabulary_card("猫"));
+                let mut study_card = StudyCard::new(card);
+
+                let memory_state = crate::domain::memory::MemoryState::new(
+                    crate::domain::memory::Stability::new(15.0).unwrap(),
+                    crate::domain::memory::Difficulty::new(2.0).unwrap(),
+                    Utc::now(),
+                );
+                study_card.add_review(
+                    memory_state,
+                    crate::domain::memory::ReviewLog::new(
+                        crate::domain::memory::Rating::Good,
+                        Duration::days(1),
+                    ),
+                );
+                study_card.toggle_favorite();
+                assert!(study_card.is_favorite());
+
+                for _ in 0..5 {
+                    study_card.handle_favorite_rating(crate::domain::memory::Rating::Easy);
+                }
+
+                assert!(!study_card.is_favorite());
+                assert!(study_card.favorite_changed_at().is_some());
             }
         }
 

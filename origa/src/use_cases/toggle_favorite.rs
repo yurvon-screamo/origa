@@ -30,7 +30,7 @@ impl<'a, R: UserRepository> ToggleFavoriteUseCase<'a, R> {
             .map(|c| c.is_favorite())
             .unwrap_or(false);
 
-        self.repository.save(&user).await?;
+        self.repository.save_sync(&user).await?;
 
         Ok(is_favorite)
     }

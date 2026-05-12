@@ -243,3 +243,51 @@ testWithFreshUser.describe("Grammar Page - Pagination", () => {
         }
     });
 });
+
+testWithFreshUser.describe("Grammar Page - Favorite Sync", () => {
+    testWithFreshUser("should persist un-favorite after sync", async ({ page }) => {
+        test.setTimeout(90_000);
+        const grammarPage = await setupGrammarPage(page);
+
+        // Add a grammar rule
+        await grammarPage.openAddModal();
+        await grammarPage.selectRule("～ます");
+        await grammarPage.addSelectedRules();
+        await expect(grammarPage.grammarGrid).toBeVisible({ timeout: 10_000 });
+
+        // Verify initially NOT favorited
+        expect(await grammarPage.isFavorited(0)).toBe(false);
+
+        // Set to favorited
+        await grammarPage.toggleFavoriteByIndex(0);
+        expect(await grammarPage.isFavorited(0)).toBe(true);
+
+        // Navigate to Home — triggers sync with server
+        await page.getByTestId("sidebar-tab-home").click();
+        await page.waitForURL(/\/home$/, { timeout: 10000 });
+
+        // Navigate back to Grammar
+        await grammarPage.goto();
+        await grammarPage.expectGrammarVisible();
+        await expect(grammarPage.grammarGrid).toBeVisible({ timeout: 10_000 });
+
+        // Verify favorite persisted after sync
+        expect(await grammarPage.isFavorited(0)).toBe(true);
+
+        // Un-favorite
+        await grammarPage.toggleFavoriteByIndex(0);
+        expect(await grammarPage.isFavorited(0)).toBe(false);
+
+        // Navigate to Home — triggers sync with server
+        await page.getByTestId("sidebar-tab-home").click();
+        await page.waitForURL(/\/home$/, { timeout: 10000 });
+
+        // Navigate back to Grammar
+        await grammarPage.goto();
+        await grammarPage.expectGrammarVisible();
+        await expect(grammarPage.grammarGrid).toBeVisible({ timeout: 10_000 });
+
+        // Verify UN-favorite persisted after sync (this was the bug)
+        expect(await grammarPage.isFavorited(0)).toBe(false);
+    });
+});
