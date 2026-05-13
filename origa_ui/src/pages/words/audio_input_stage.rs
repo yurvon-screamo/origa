@@ -323,7 +323,7 @@ pub(super) fn AudioInputStage(
                     }.into_any(),
                     _ => view! {
                         <>
-                            <div class="border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer border-[var(--border-light)] hover:border-[var(--accent-olive)]/50">
+                            <div class="border-2 border-dashed p-8 text-center transition-colors cursor-pointer border-[var(--border-dark)] hover:border-[var(--accent-olive)]/50">
                                 <label class="cursor-pointer">
                                     <input
                                         type="file"

@@ -34,7 +34,7 @@ pub fn OAuthButtons(#[prop(optional, into)] test_id: Signal<String>) -> impl Int
         <div class="space-y-3" data-testid=test_id_val>
             <button
                 type="button"
-                class="w-full flex items-center justify-center gap-3 px-4 py-3 border border-[var(--border-dark)] rounded-lg bg-[var(--bg-cream)] hover:bg-[var(--bg-aged)] transition-colors"
+                class="w-full flex items-center justify-center gap-3 px-4 py-3 border border-[var(--border-dark)] bg-[var(--bg-cream)] hover:bg-[var(--bg-aged)] transition-colors"
                 data-testid=google_test_id
                 on:click=move |_: leptos::ev::MouseEvent| {
                     open_oauth_url(OAuthProvider::Google);
@@ -46,7 +46,7 @@ pub fn OAuthButtons(#[prop(optional, into)] test_id: Signal<String>) -> impl Int
 
             <button
                 type="button"
-                class="w-full flex items-center justify-center gap-3 px-4 py-3 border border-[var(--border-dark)] rounded-lg bg-[var(--bg-cream)] hover:bg-[var(--bg-aged)] transition-colors"
+                class="w-full flex items-center justify-center gap-3 px-4 py-3 border border-[var(--border-dark)] bg-[var(--bg-cream)] hover:bg-[var(--bg-aged)] transition-colors"
                 data-testid=yandex_test_id
                 on:click=move |_: leptos::ev::MouseEvent| {
                     open_oauth_url(OAuthProvider::Yandex);
