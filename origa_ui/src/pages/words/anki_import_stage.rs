@@ -283,7 +283,7 @@ pub fn AnkiImportStage(
                 Stage::Idle => view! {
                     <div
                         class=move || {
-                            let base = "border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer";
+                            let base = "border-2 border-dashed p-8 text-center transition-colors cursor-pointer";
                             if is_drag_over.get() {
                                 format!(
                                     "{} border-[var(--accent-olive)] bg-[var(--accent-olive)]/10",
@@ -291,7 +291,7 @@ pub fn AnkiImportStage(
                                 )
                             } else {
                                 format!(
-                                    "{} border-[var(--border-light)] hover:border-[var(--accent-olive)]/50",
+                                    "{} border-[var(--border-dark)] hover:border-[var(--accent-olive)]/50",
                                     base
                                 )
                             }

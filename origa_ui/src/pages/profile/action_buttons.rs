@@ -44,7 +44,7 @@ pub fn ActionButtons(
                 </Button>
             </div>
 
-            <div class="border-t border-[var(--border-light)] pt-4">
+            <div class="border-t border-[var(--border-dark)] pt-4">
                 <Text size={TextSize::Small} variant={TypographyVariant::Muted} class="block mb-3">
                     {t!(i18n, profile.danger_zone)}
                 </Text>

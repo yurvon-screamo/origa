@@ -203,11 +203,11 @@ pub fn ImageInputStage(
                         <>
                             <div
                                 class=move || {
-                                    let base = "border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer";
+                                    let base = "border-2 border-dashed p-8 text-center transition-colors cursor-pointer";
                                     if is_drag_over.get() {
                                         format!("{} border-[var(--accent-olive)] bg-[var(--accent-olive)]/10", base)
                                     } else {
-                                        format!("{} border-[var(--border-light)] hover:border-[var(--accent-olive)]/50", base)
+                                        format!("{} border-[var(--border-dark)] hover:border-[var(--accent-olive)]/50", base)
                                     }
                                 }
                                 on:dragover=dd_on_drag_over
@@ -238,7 +238,7 @@ pub fn ImageInputStage(
                             {move || {
                                 image_preview.get().map(|src| view! {
                                     <div class="relative">
-                                        <img src=src class="max-h-64 mx-auto rounded-lg shadow-md" alt="Preview" />
+                                        <img src=src class="max-h-64 mx-auto shadow-md" alt="Preview" />
                                     </div>
                                 })
                             }}
