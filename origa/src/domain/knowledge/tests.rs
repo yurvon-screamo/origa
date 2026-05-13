@@ -838,17 +838,17 @@ fn phrase_new_cards_limited() {
         })
         .count();
 
-    let expected_phrase_limit = 5 * 3 / 2;
+    let expected_phrase_limit = 5 * 2;
     assert!(
         phrase_count <= expected_phrase_limit,
-        "Phrase cards should be limited to daily_new_limit*3/2, got {phrase_count}, expected <={expected_phrase_limit}"
+        "Phrase cards should be limited to daily_new_limit*2, got {phrase_count}, expected <={expected_phrase_limit}"
     );
     assert!(
         vocab_count <= 5,
         "Vocab cards should respect daily limit, got {vocab_count}"
     );
     assert!(
-        phrase_count + vocab_count <= 50 + 15,
+        phrase_count + vocab_count <= 50 + 7,
         "Total should not exceed MAX_LESSON_SIZE + PHRASE_MAX_PER_LESSON, got {}",
         phrase_count + vocab_count
     );
@@ -1082,7 +1082,7 @@ fn phrases_added_after_core_cards() {
         "Core cards should reach at least MIN_LESSON_SIZE, got {core_count}"
     );
     assert!(
-        phrase_count <= 15,
+        phrase_count <= 7,
         "Phrase cards should not exceed PHRASE_MAX_PER_LESSON, got {phrase_count}"
     );
 }
