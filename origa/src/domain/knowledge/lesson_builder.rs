@@ -9,13 +9,12 @@ use crate::domain::{JapaneseLevel, JlptContent};
 
 const MIN_LESSON_SIZE: usize = 15;
 const MAX_LESSON_SIZE: usize = 50;
-const PHRASE_NEW_RATIO_NUM: usize = 3;
-const PHRASE_NEW_RATIO_DEN: usize = 2;
+const PHRASE_NEW_RATIO: usize = 2;
 
 /// Приоритет карточек без определённого JLPT уровня — ниже всех известных уровней (N1=1)
 const UNKNOWN_JLPT_PRIORITY: u8 = 0;
 
-const PHRASE_MAX_PER_LESSON: usize = 15;
+const PHRASE_MAX_PER_LESSON: usize = 7;
 
 /// Веса типов карточек для interleaving: Vocab:Kanji:Grammar ≈ 60:20:20.
 /// При добавлении нового варианта в CardType — обновить эту константу.
@@ -175,7 +174,7 @@ fn collect_phrase_cards<'a>(
     knowledge_set: &KnowledgeSet,
     daily_new_limit: usize,
 ) -> Vec<(&'a Ulid, &'a StudyCard)> {
-    let phrase_new_limit = daily_new_limit * PHRASE_NEW_RATIO_NUM / PHRASE_NEW_RATIO_DEN;
+    let phrase_new_limit = daily_new_limit * PHRASE_NEW_RATIO;
     let phrase_cards_studied = knowledge_set.phrase_cards_studied_today();
     let phrase_new_remaining = phrase_new_limit.saturating_sub(phrase_cards_studied);
 
