@@ -149,7 +149,7 @@ pub fn is_speech_supported() -> bool {
     window().and_then(|w| w.speech_synthesis().ok()).is_some()
 }
 
-pub fn speak_text(text: &str, rate: f32) -> Result<(), String> {
+pub fn speak_tts_text(text: &str, rate: f32) -> Result<(), String> {
     if text.is_empty() {
         return Ok(());
     }
@@ -185,7 +185,7 @@ pub fn speak_text(text: &str, rate: f32) -> Result<(), String> {
     Ok(())
 }
 
-pub fn speak_text_with_callback<F>(text: &str, rate: f32, on_end: F) -> Result<(), String>
+pub fn speak_tts_text_with_callback<F>(text: &str, rate: f32, on_end: F) -> Result<(), String>
 where
     F: FnMut() + 'static,
 {

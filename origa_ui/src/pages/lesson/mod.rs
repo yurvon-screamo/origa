@@ -1,4 +1,4 @@
-mod card_type;
+pub mod card_type;
 mod complete_screen;
 mod content;
 mod grammar_info_badge;

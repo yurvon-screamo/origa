@@ -1,5 +1,5 @@
 use crate::ui_components::{
-    Card, get_reading_from_text, is_speech_supported, speak_text, speak_word,
+    Card, get_reading_from_text, is_speech_supported, speak_tts_text, speak_word,
 };
 use leptos::prelude::*;
 use std::cell::RefCell;
@@ -195,7 +195,7 @@ pub fn LessonCard(
                     let on_error = Closure::<dyn FnMut()>::new(move || {
                         tracing::warn!("CDN phrase audio failed, falling back to TTS");
                         let reading = get_reading_from_text(&question_val);
-                        let _ = speak_text(&reading, 1.0);
+                        let _ = speak_tts_text(&reading, 1.0);
                     });
                     let _ = audio.add_event_listener_with_callback(
                         "error",
