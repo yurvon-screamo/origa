@@ -19,22 +19,38 @@ pub(super) fn extract_card_data(
     let locale = i18n.get_locale();
     let no_translation = || td_string!(locale, common.no_translation).to_string();
     match card {
-        DomainCard::Vocabulary(v) => (v.word().text().to_string(), v.answer(lang)
+        DomainCard::Vocabulary(v) => (
+            v.word().text().to_string(),
+            v.answer(lang)
                 .ok()
                 .map(|a| a.text().to_string())
-                .unwrap_or_else(no_translation), CardType::Vocabulary),
-        DomainCard::Kanji(k) => (k.kanji().text().to_string(), k.description(lang)
+                .unwrap_or_else(no_translation),
+            CardType::Vocabulary,
+        ),
+        DomainCard::Kanji(k) => (
+            k.kanji().text().to_string(),
+            k.description(lang)
                 .ok()
                 .map(|a| a.text().to_string())
-                .unwrap_or_else(no_translation), CardType::Kanji),
-        DomainCard::Grammar(g) => (g.title(lang)
+                .unwrap_or_else(no_translation),
+            CardType::Kanji,
+        ),
+        DomainCard::Grammar(g) => (
+            g.title(lang)
                 .ok()
                 .map(|q| q.text().to_string())
-                .unwrap_or_default(), g.description(lang)
+                .unwrap_or_default(),
+            g.description(lang)
                 .ok()
                 .map(|a| a.text().to_string())
-                .unwrap_or_else(no_translation), CardType::Grammar),
-        DomainCard::Phrase(p) => (p.question().unwrap_or_default(), p.answer(lang).unwrap_or_else(no_translation), CardType::Phrase),
+                .unwrap_or_else(no_translation),
+            CardType::Grammar,
+        ),
+        DomainCard::Phrase(p) => (
+            p.question().unwrap_or_default(),
+            p.answer(lang).unwrap_or_else(no_translation),
+            CardType::Phrase,
+        ),
     }
 }
 
