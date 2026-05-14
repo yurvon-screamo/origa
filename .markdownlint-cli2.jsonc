@@ -1,0 +1,8 @@
+{
+  "globs": [
+    "**/*.md",
+    "!**/node_modules/**",
+    "!**/target/**",
+    "!**/graphify-out/**"
+  ]
+}
