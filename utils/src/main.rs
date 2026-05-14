@@ -8,9 +8,9 @@ use clap::Parser;
 
 use crate::cli::{Cli, Commands};
 use crate::commands::{
-    run_build_phrase_dataset, run_find_missing, run_generate_grammar, run_generate_grammar_prompt,
-    run_migrate_phrase_dataset, run_ndlocr, run_regenerate_invalid, run_tokenize,
-    run_tokenize_well_known, run_validate_dictionary,
+    run_build_phrase_dataset, run_dedup_kanji_readings, run_find_missing, run_generate_grammar,
+    run_generate_grammar_prompt, run_migrate_phrase_dataset, run_ndlocr, run_patch_kanji_readings,
+    run_regenerate_invalid, run_tokenize, run_tokenize_well_known, run_validate_dictionary,
 };
 
 #[tokio::main]
@@ -122,6 +122,12 @@ async fn main() {
             )
             .await
         },
+        Commands::DedupKanjiReadings { input, dry_run } => run_dedup_kanji_readings(input, dry_run),
+        Commands::PatchKanjiReadings {
+            input,
+            patches,
+            dry_run,
+        } => run_patch_kanji_readings(input, patches, dry_run),
     };
 
     if let Err(e) = result {

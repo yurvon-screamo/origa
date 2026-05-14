@@ -1,6 +1,6 @@
 use crate::repository::HybridUserRepository;
 use leptos::prelude::*;
-use origa::domain::{LessonCard, NativeLanguage, Rating};
+use origa::domain::{LessonCard, MultiQuizResult, NativeLanguage, Rating};
 use std::collections::{HashMap, HashSet};
 use ulid::Ulid;
 
@@ -17,6 +17,9 @@ pub struct LessonState {
     pub core_count: usize,
     pub waiting_for_next: bool,
     pub pending_rating: Option<Rating>,
+    pub selected_quiz_options: HashSet<usize>,
+    pub multi_quiz_submitted: bool,
+    pub multi_result: Option<MultiQuizResult>,
 }
 
 #[derive(Clone)]
@@ -26,7 +29,7 @@ pub struct LessonContext {
     pub is_completed: RwSignal<bool>,
     pub reload_trigger: RwSignal<u32>,
     pub is_muted: RwSignal<bool>,
-    pub known_kanji: RwSignal<HashSet<String>>,
+    pub known_kanji: RwSignal<HashSet<char>>,
     pub native_language: RwSignal<NativeLanguage>,
     pub core_count: RwSignal<usize>,
 }

@@ -10,7 +10,7 @@ use std::collections::HashSet;
 #[component]
 pub fn SetCard(
     set_info: SetInfo,
-    known_kanji: HashSet<String>,
+    known_kanji: HashSet<char>,
     on_import: Callback<(String, String)>,
     selected_sets: RwSignal<HashSet<String>>,
     on_toggle_select: Callback<String>,

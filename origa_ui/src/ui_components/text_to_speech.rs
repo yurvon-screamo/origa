@@ -239,7 +239,7 @@ pub fn get_reading_from_text(text: &str) -> String {
     get_reading_from_text_with_known_kanji(text, &HashSet::new())
 }
 
-pub fn get_reading_from_text_with_known_kanji(text: &str, known_kanji: &HashSet<String>) -> String {
+pub fn get_reading_from_text_with_known_kanji(text: &str, known_kanji: &HashSet<char>) -> String {
     if text.trim().is_empty() {
         return String::new();
     }

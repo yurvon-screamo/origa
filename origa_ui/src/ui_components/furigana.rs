@@ -6,11 +6,14 @@ use origa::domain::{FuriganaSegment, furiganize_segments};
 #[component]
 pub fn FuriganaText(
     #[prop(into)] text: String,
-    known_kanji: HashSet<String>,
+    known_kanji: HashSet<char>,
     #[prop(optional, into, default = String::new().into())] class: Signal<String>,
     #[prop(optional, into)] test_id: Signal<String>,
 ) -> impl IntoView {
-    let segments = move || furiganize_segments(&text, &known_kanji).unwrap_or_else(|_| vec![]);
+    let segments = move || {
+        furiganize_segments(&text, &known_kanji)
+            .unwrap_or_else(|_| vec![FuriganaSegment::new(text.clone(), None, false)])
+    };
 
     let test_id_val = move || {
         let val = test_id.get();

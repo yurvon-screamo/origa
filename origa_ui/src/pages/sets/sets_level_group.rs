@@ -12,7 +12,7 @@ pub fn SetsLevelGroup(
     level: JapaneseLevel,
     sets: Memo<Vec<SetInfo>>,
     type_filter: RwSignal<TypeFilter>,
-    known_kanji: HashSet<String>,
+    known_kanji: HashSet<char>,
     on_import: Callback<(String, String)>,
     selected_sets: RwSignal<HashSet<String>>,
     on_toggle_select: Callback<String>,

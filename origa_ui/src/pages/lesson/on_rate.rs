@@ -13,7 +13,9 @@ pub fn create_on_rate_callback(
     lesson_ctx: LessonContext,
     is_rating: RwSignal<Option<Ulid>>,
 ) -> Callback<Rating> {
-    let is_disposed = use_context::<StoredValue<()>>().expect("is_disposed must be provided");
+    let Some(is_disposed) = use_context::<StoredValue<()>>() else {
+        return Callback::new(move |_: Rating| {});
+    };
 
     Callback::new(move |rating: Rating| {
         let state = lesson_state.get_untracked();
@@ -150,6 +152,9 @@ pub fn create_on_rate_callback(
                         state.selected_quiz_option = None;
                         state.selected_yesno_answer = None;
                         state.dont_know_selected = false;
+                        state.selected_quiz_options.clear();
+                        state.multi_quiz_submitted = false;
+                        state.multi_result = None;
                     }
                 });
 

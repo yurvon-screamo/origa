@@ -23,7 +23,7 @@ pub fn PhraseCardView(
     dont_know_selected: bool,
     phrase_text: Option<String>,
     phrase_translation: Option<String>,
-    #[prop(into)] known_kanji: Signal<HashSet<String>>,
+    #[prop(into)] known_kanji: Signal<HashSet<char>>,
     waiting_for_next: bool,
     on_next_card: Callback<()>,
 ) -> impl IntoView {

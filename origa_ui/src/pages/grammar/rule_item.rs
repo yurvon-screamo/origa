@@ -10,7 +10,7 @@ pub fn RuleItem(
     rule: &'static GrammarRule,
     native_language: NativeLanguage,
     selected_ids: RwSignal<HashSet<Ulid>>,
-    known_kanji: HashSet<String>,
+    known_kanji: HashSet<char>,
     #[prop(optional, into)] test_id: Signal<String>,
 ) -> impl IntoView {
     let rule_id = *rule.rule_id();

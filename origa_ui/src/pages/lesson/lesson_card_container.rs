@@ -3,6 +3,8 @@ use super::lesson_card::LessonCard as LessonCardComponent;
 use super::lesson_state::LessonContext;
 use super::on_dont_know::create_on_dont_know;
 use super::on_quiz_select::create_on_quiz_select;
+use super::on_quiz_submit::create_on_quiz_submit;
+use super::on_quiz_toggle::create_on_quiz_toggle;
 use super::on_rate::create_on_rate_callback;
 use super::on_yesno_select::create_on_yesno_select;
 use super::phrase_card::PhraseCardView;
@@ -38,6 +40,9 @@ pub fn LessonCardContainer() -> impl IntoView {
 
     let on_yesno_select = create_on_yesno_select(lesson_state, on_rate_callback);
 
+    let on_quiz_toggle = create_on_quiz_toggle(lesson_state);
+    let on_quiz_submit = create_on_quiz_submit(lesson_state, on_rate_callback);
+
     let on_quiz_dont_know = create_on_dont_know(lesson_state, on_rate_callback);
     let on_yesno_dont_know = create_on_dont_know(lesson_state, on_rate_callback);
 
@@ -56,6 +61,8 @@ pub fn LessonCardContainer() -> impl IntoView {
             on_yesno_select,
             on_quiz_dont_know,
             on_yesno_dont_know,
+            on_quiz_toggle,
+            on_quiz_submit,
             show_answer: Box::new(show_answer),
             on_next_card,
         },
@@ -256,6 +263,9 @@ pub fn LessonCardContainer() -> impl IntoView {
                                 let state = lesson_state.get();
                                 let selected_option = state.selected_quiz_option;
                                 let show_result = state.showing_answer;
+                                let selected_options = state.selected_quiz_options.clone();
+                                let multi_submitted = state.multi_quiz_submitted;
+                                let multi_result = state.multi_result;
 
                                 Some(view! {
                                     <QuizCardView
@@ -268,6 +278,11 @@ pub fn LessonCardContainer() -> impl IntoView {
                                         native_language=native_language.get()
                                         known_kanji=Signal::from(known_kanji)
                                         quiz_variant=QuizVariant::Reading
+                                        selected_options=Signal::derive(move || selected_options.clone())
+                                        multi_submitted=multi_submitted
+                                        multi_result=multi_result
+                                        on_toggle=on_quiz_toggle
+                                        on_submit=on_quiz_submit
                                     />
                                 })
                             } else {
@@ -321,7 +336,7 @@ fn render_lesson_card(
     on_show_answer: Callback<()>,
     on_rate_callback: Callback<Rating>,
     is_rating: RwSignal<Option<Ulid>>,
-    known_kanji: RwSignal<HashSet<String>>,
+    known_kanji: RwSignal<HashSet<char>>,
     native_language: RwSignal<NativeLanguage>,
 ) -> impl IntoView {
     let params = match lesson_card.into_view() {

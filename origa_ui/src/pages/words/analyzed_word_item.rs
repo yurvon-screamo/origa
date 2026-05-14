@@ -9,7 +9,7 @@ use std::collections::HashSet;
 pub fn AnalyzedWordItem(
     analyzed_word: AnalyzedWord,
     selected_words: RwSignal<HashSet<String>>,
-    known_kanji: HashSet<String>,
+    known_kanji: HashSet<char>,
     on_toggle: Callback<()>,
 ) -> impl IntoView {
     let i18n = use_i18n();

@@ -1,5 +1,6 @@
 mod error;
 mod furigana;
+mod furigana_annotator;
 pub(crate) mod grammar;
 mod japanese;
 mod jlpt_content;
@@ -18,6 +19,7 @@ pub use crate::dictionary::grammar::{GrammarRule, get_rule_by_id, iter_grammar_r
 pub use crate::dictionary::vocabulary::get_translation;
 pub use error::OrigaError;
 pub use furigana::{FuriganaSegment, furiganize_segments, furiganize_text, furiganize_text_html};
+pub use furigana_annotator::{AnnotatedSpan, annotate_text};
 pub use grammar::apply_format_actions;
 pub use grammar::quiz_generation::{
     apply_mutated_pattern, find_known_vocab_words_for_pos, generate_grammar_distractors,
@@ -28,8 +30,8 @@ pub use jlpt_progress::{CategoryProgress, JlptProgress, LevelProgressDetail};
 pub use knowledge::{
     Card, CardType, DailyHistoryItem, ExampleKanjiWord, GrammarInfo, GrammarQuizCard,
     GrammarRuleCard, KanjiCard, KnowledgeSet, LessonCard, LessonCardView, LessonData,
-    LessonViewGenerator, PhraseCard, QuizCard, QuizOption, StudyCard, VocabularyCard, YesNoCard,
-    estimate_completion_date,
+    LessonViewGenerator, MultiQuizResult, PhraseCard, QuizCard, QuizMode, QuizOption, StudyCard,
+    VocabularyCard, YesNoCard, estimate_completion_date,
 };
 pub use memory::{Difficulty, MemoryHistory, MemoryState, Rating, ReviewLog, Stability};
 pub use score_content::ScoreContentResult;

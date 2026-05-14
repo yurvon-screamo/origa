@@ -219,7 +219,12 @@
         "space_key": "[Space]",
         "next": "Next →",
         "did_not_understand": "Didn't understand",
-        "understood": "Understood"
+        "understood": "Understood",
+        "choose_all_readings": "Select all readings of this kanji:",
+        "check": "Check",
+        "multi_perfect": "✓ All readings selected!",
+        "multi_partial": "Some readings missed or extra options selected",
+        "enter_key": "[Enter]"
     },
     "home": {
         "loading": "Loading...",

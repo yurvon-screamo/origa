@@ -16,8 +16,12 @@ const SYNC_TOAST_ID: usize = usize::MAX;
 pub fn LessonCompleteScreen(is_completed: RwSignal<bool>, review_count: usize) -> impl IntoView {
     let i18n = use_i18n();
     let navigate = use_navigate();
-    let lesson_ctx = use_context::<LessonContext>().expect("lesson context");
-    let is_disposed = use_context::<StoredValue<()>>().expect("is_disposed must be provided");
+    let Some(lesson_ctx) = use_context::<LessonContext>() else {
+        return ().into_any();
+    };
+    let Some(is_disposed) = use_context::<StoredValue<()>>() else {
+        return ().into_any();
+    };
     let is_syncing = RwSignal::new(false);
     let toasts: RwSignal<Vec<ToastData>> = RwSignal::new(Vec::new());
 
@@ -181,4 +185,5 @@ pub fn LessonCompleteScreen(is_completed: RwSignal<bool>, review_count: usize) -
             </div>
         </div>
     }
+    .into_any()
 }

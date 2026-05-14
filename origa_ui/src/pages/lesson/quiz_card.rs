@@ -4,13 +4,14 @@ use crate::ui_components::{
     Text, TextSize, TypographyVariant, get_reading_from_text, is_speech_supported, speak_text,
 };
 use leptos::prelude::*;
-use origa::domain::{Card as DomainCard, NativeLanguage, QuizCard};
+use origa::domain::{Card as DomainCard, MultiQuizResult, NativeLanguage, QuizCard, QuizMode};
 use std::collections::HashSet;
 use tracing::warn;
 
 use super::card_type::CardType;
 use super::quiz_card_header::QuizCardHeader;
 use super::quiz_options::QuizOptions;
+use super::quiz_options_multi::QuizOptionsMulti;
 use super::quiz_result::QuizResult;
 use super::quiz_result_display::QuizResultDisplay;
 
@@ -31,8 +32,15 @@ pub fn QuizCardView(
     on_dont_know: Callback<()>,
     dont_know_selected: bool,
     native_language: NativeLanguage,
-    #[prop(into)] known_kanji: Signal<HashSet<String>>,
+    #[prop(into)] known_kanji: Signal<HashSet<char>>,
     #[prop(optional)] quiz_variant: QuizVariant,
+    #[prop(into, default = Signal::derive(|| HashSet::new()))] selected_options: Signal<
+        HashSet<usize>,
+    >,
+    #[prop(default = false)] multi_submitted: bool,
+    #[prop(default = None)] multi_result: Option<MultiQuizResult>,
+    #[prop(default = Callback::new(|_: usize| {}))] on_toggle: Callback<usize>,
+    #[prop(default = Callback::new(|_: ()| {}))] on_submit: Callback<()>,
 ) -> impl IntoView {
     let i18n = use_i18n();
     let card = quiz_card.card().clone();
@@ -53,6 +61,7 @@ pub fn QuizCardView(
     let question = StoredValue::new(question_text);
     let options: StoredValue<Vec<origa::domain::QuizOption>> =
         StoredValue::new(quiz_card.options().to_vec());
+    let multi_result_stored = StoredValue::new(multi_result);
 
     let quiz_result = move || {
         if dont_know_selected && show_result {
@@ -104,6 +113,8 @@ pub fn QuizCardView(
         }
     });
 
+    let is_multi = quiz_card.mode() == QuizMode::Multi;
+
     view! {
         <Card class=Signal::derive(|| "p-4 sm:p-6 min-h-[250px] sm:min-h-[300px] flex flex-col".to_string()) shadow=Signal::derive(|| true)>
             <QuizCardHeader
@@ -139,27 +150,60 @@ pub fn QuizCardView(
                     </Show>
 
                     <Text size=TextSize::Default variant=TypographyVariant::Muted class="mt-4">
-                        {match quiz_variant {
-                            QuizVariant::Meaning => t!(i18n, lesson.choose_answer).into_any(),
-                            QuizVariant::Reading => t!(i18n, lesson.choose_reading).into_any(),
-                            QuizVariant::Grammar => t!(i18n, lesson.choose_grammar).into_any(),
+                        {if is_multi {
+                            t!(i18n, lesson.choose_all_readings).into_any()
+                        } else {
+                            match quiz_variant {
+                                QuizVariant::Meaning => t!(i18n, lesson.choose_answer).into_any(),
+                                QuizVariant::Reading => t!(i18n, lesson.choose_reading).into_any(),
+                                QuizVariant::Grammar => t!(i18n, lesson.choose_grammar).into_any(),
+                            }
                         }}
                     </Text>
                 </div>
 
-                <QuizOptions
-                    options=options.get_value()
-                    selected_option=selected_option
-                    show_result=show_result
-                    quiz_result=quiz_result()
-                    on_select_option=on_select_option
-                    on_dont_know=on_dont_know
-                    dont_know_selected=dont_know_selected
-                    known_kanji=known_kanji
-                />
+                <Show when=move || is_multi>
+                    <QuizOptionsMulti
+                        options=options.get_value()
+                        selected_options=selected_options.get()
+                        show_result=show_result
+                        multi_submitted=multi_submitted
+                        multi_result=multi_result_stored.get_value()
+                        on_toggle=on_toggle
+                        on_submit=on_submit
+                        on_dont_know=on_dont_know
+                        dont_know_selected=dont_know_selected
+                        known_kanji=known_kanji
+                    />
+                    <Show when=move || multi_submitted>
+                        {move || {
+                            multi_result_stored
+                                .get_value()
+                                .map(|r| {
+                                    let result = QuizResult::from_multi_result(&r);
+                                    view! {
+                                        <QuizResultDisplay quiz_result=result />
+                                    }
+                                })
+                        }}
+                    </Show>
+                </Show>
 
-                <Show when=move || show_result && quiz_result() != QuizResult::DontKnow>
-                    <QuizResultDisplay quiz_result=quiz_result() />
+                <Show when=move || !is_multi>
+                    <QuizOptions
+                        options=options.get_value()
+                        selected_option=selected_option
+                        show_result=show_result
+                        quiz_result=quiz_result()
+                        on_select_option=on_select_option
+                        on_dont_know=on_dont_know
+                        dont_know_selected=dont_know_selected
+                        known_kanji=known_kanji
+                    />
+
+                    <Show when=move || show_result && quiz_result() != QuizResult::DontKnow>
+                        <QuizResultDisplay quiz_result=quiz_result() />
+                    </Show>
                 </Show>
             </div>
         </Card>

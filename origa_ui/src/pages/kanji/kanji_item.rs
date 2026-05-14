@@ -10,7 +10,7 @@ pub fn KanjiItem(
     kanji_info: &'static KanjiInfo,
     #[prop(into)] native_language: Signal<NativeLanguage>,
     selected_kanji: RwSignal<HashSet<String>>,
-    known_kanji: HashSet<String>,
+    known_kanji: HashSet<char>,
 ) -> impl IntoView {
     let i18n = use_i18n();
     let kanji_str = kanji_info.kanji().to_string();

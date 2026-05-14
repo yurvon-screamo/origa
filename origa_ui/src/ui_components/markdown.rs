@@ -29,7 +29,7 @@ fn render_markdown(content: &str) -> String {
 
 const SKIP_TAGS: &[&str] = &["pre", "ruby", "rt", "rp"];
 
-fn add_furigana_to_html(html: &str, known_kanji: &HashSet<String>) -> String {
+fn add_furigana_to_html(html: &str, known_kanji: &HashSet<char>) -> String {
     let document = Html::parse_document(html);
     let mut result = String::new();
 
@@ -37,7 +37,7 @@ fn add_furigana_to_html(html: &str, known_kanji: &HashSet<String>) -> String {
         node_ref: NodeRef<'_, Node>,
         output: &mut String,
         in_skip: bool,
-        known_kanji: &HashSet<String>,
+        known_kanji: &HashSet<char>,
     ) {
         match node_ref.value() {
             Node::Text(text) => {
@@ -85,7 +85,7 @@ fn add_furigana_to_html(html: &str, known_kanji: &HashSet<String>) -> String {
 #[component]
 pub fn MarkdownText(
     #[prop(into)] content: Signal<String>,
-    known_kanji: HashSet<String>,
+    known_kanji: HashSet<char>,
     #[prop(optional, into)] variant: Signal<MarkdownVariant>,
     #[prop(optional, into)] class: Signal<String>,
     #[prop(optional, default = true)] furigana: bool,

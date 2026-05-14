@@ -1,46 +1,46 @@
 # AGENTS.md - Origa E2E Testing (`end2end`)
 
-## Описание
+## Description
 
-Playwright E2E тесты. TypeScript + @playwright/test.
+Playwright E2E tests. TypeScript + @playwright/test.
 
-## Быстрые команды
+## Quick Commands
 
 ```bash
-# Все тесты
+# All tests
 npm test
 
-# Headed режим (видимый браузер)
+# Headed mode (visible browser)
 npm test:headed
 
-# Только Chrome
+# Chrome only
 npm test:chrome
 
-# Показать отчёт
+# Show report
 npm report
 ```
 
-## Важно
+## Important
 
-- Сервер (Tauri/TrailBase) запускается **автоматически** перед тестами через `global-setup.ts`
-- Вручную запускать сервер **не нужно**
-- Тесты работают в headless режиме по умолчанию
+- The server (Tauri/TrailBase) is started **automatically** before tests via `global-setup.ts`
+- You do **not** need to start the server manually
+- Tests run in headless mode by default
 
-## Структура проекта
+## Project Structure
 
 ```text
 end2end/
-├── config.ts           # Конфигурация тестовых пользователей
-├── global-setup.ts     # Запуск сервера перед тестами
-├── playwright.config.ts # Playwright конфигурация
+├── config.ts           # Test user configuration
+├── global-setup.ts     # Server startup before tests
+├── playwright.config.ts # Playwright configuration
 ├── pages/              # Page objects
-├── tests/               # Playwright тесты
-└── .env                 # Локальные переменные (gitignored)
+├── tests/               # Playwright tests
+└── .env                 # Local variables (gitignored)
 ```
 
 ## Page Objects
 
-Используйте паттерн Page Object из `pages/`:
+Use the Page Object pattern from `pages/`:
 
 ```typescript
 import { Page } from '@playwright/test';
@@ -56,9 +56,9 @@ export class LoginPage {
 }
 ```
 
-## Конфигурация
+## Configuration
 
-Тестовые пользователи в `config.ts`:
+Test users in `config.ts`:
 
 ```typescript
 export const TEST_USERS = {

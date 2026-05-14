@@ -7,7 +7,9 @@ pub fn create_on_yesno_select(
     lesson_state: RwSignal<LessonState>,
     on_rate_callback: Callback<Rating>,
 ) -> Callback<bool> {
-    let is_disposed = use_context::<StoredValue<()>>().expect("is_disposed must be provided");
+    let Some(is_disposed) = use_context::<StoredValue<()>>() else {
+        return Callback::new(move |_: bool| {});
+    };
 
     Callback::new(move |answer: bool| {
         lesson_state.update(|state| {

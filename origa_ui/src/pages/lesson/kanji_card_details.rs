@@ -22,7 +22,7 @@ pub fn KanjiCardDetails(
     #[prop(into)] show_details: Signal<bool>,
     on_readings: Option<Vec<String>>,
     kun_readings: Option<Vec<String>>,
-    #[prop(into)] known_kanji: Signal<HashSet<String>>,
+    #[prop(into)] known_kanji: Signal<HashSet<char>>,
 ) -> impl IntoView {
     let i18n = use_i18n();
     let kanji_stored = StoredValue::new(kanji);
