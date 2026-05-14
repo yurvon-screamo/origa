@@ -2550,17 +2550,15 @@ input[type="submit"],
 @keyframes anima-furigana-show {
     from {
         opacity: 0;
-        transform: translateY(4px);
     }
 
     to {
         opacity: 1;
-        transform: translateY(0);
     }
 }
 
 .anima-furigana-show {
-    animation: anima-furigana-show var(--anima-duration-fast) ease forwards;
+    animation: anima-furigana-show var(--anima-duration-fast) ease;
 }
 
 /* === 8. STAGGER (каскадное появление) === */
