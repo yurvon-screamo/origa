@@ -256,10 +256,14 @@ impl KnowledgeSet {
         if let Some(card) = self.study_cards.get_mut(&card_id) {
             let was_new = card.memory().is_new();
             let is_phrase = matches!(card.card(), Card::Phrase(_));
-            let effective_mode = if is_phrase {
-                RateMode::PhraseReview
-            } else {
-                mode
+            let effective_mode = match mode {
+                RateMode::ShortTerm | RateMode::OnboardingScoring => mode,
+                _ => match card.card() {
+                    Card::Phrase(_) => RateMode::PhraseReview,
+                    Card::Grammar(_) => RateMode::GrammarReview,
+                    Card::Kanji(_) => RateMode::KanjiReview,
+                    Card::Vocabulary(_) => mode,
+                },
             };
 
             let NextReview {

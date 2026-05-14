@@ -2,7 +2,7 @@ use super::lesson_state::LessonContext;
 use crate::hooks::phrase_checker;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use origa::domain::{Card, RateMode, Rating};
+use origa::domain::{Card, CardType, RateMode, Rating};
 use origa::traits::UserRepository;
 use origa::use_cases::{CreateGrammarCardUseCase, CreatePhraseCardUseCase, RateCardUseCase};
 use tracing::warn;
@@ -38,7 +38,11 @@ pub fn create_on_rate_callback(
                     } else if c.is_short_term() {
                         RateMode::ShortTerm
                     } else {
-                        RateMode::StandardLesson
+                        match CardType::from(c.card()) {
+                            CardType::Grammar => RateMode::GrammarReview,
+                            CardType::Kanji => RateMode::KanjiReview,
+                            CardType::Vocabulary | CardType::Phrase => RateMode::StandardLesson,
+                        }
                     }
                 })
                 .unwrap_or(RateMode::StandardLesson);
@@ -82,7 +86,7 @@ pub fn create_on_rate_callback(
 
                         if let Some(grammar_card_id) = grammar_card_id {
                             if let Err(e) = grammar_use_case
-                                .execute(grammar_card_id, RateMode::StandardLesson, rating)
+                                .execute(grammar_card_id, RateMode::GrammarReview, rating)
                                 .await
                             {
                                 warn!(error = ?e, "Failed to rate grammar card during dual rating");
@@ -96,7 +100,7 @@ pub fn create_on_rate_callback(
                                 && let Err(e) = grammar_use_case
                                     .execute(
                                         *grammar_card.card_id(),
-                                        RateMode::StandardLesson,
+                                        RateMode::GrammarReview,
                                         rating,
                                     )
                                     .await
