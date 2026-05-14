@@ -190,7 +190,7 @@ pub fn ScoringStep(
                     }
 
                     if user
-                        .rate_card(*card_id, Rating::Easy, RateMode::StandardLesson)
+                        .rate_card(*card_id, Rating::Easy, RateMode::OnboardingScoring)
                         .is_ok()
                     {
                         success_count += 1;

@@ -29,7 +29,7 @@ impl<'a, R: UserRepository> MarkCardAsKnownUseCase<'a, R> {
             }
         }
 
-        user.rate_card(card_id, Rating::Easy, RateMode::StandardLesson)?;
+        user.rate_card(card_id, Rating::Easy, RateMode::OnboardingScoring)?;
 
         self.repository.save(&user).await?;
 

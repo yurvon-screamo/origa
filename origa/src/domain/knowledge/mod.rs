@@ -270,7 +270,7 @@ impl KnowledgeSet {
             let review = ReviewLog::new(rating, interval);
             card.add_review(memory_state, review);
             card.handle_favorite_rating(rating);
-            self.update_history(rating, was_new, is_phrase);
+            self.update_history(rating, was_new, is_phrase, mode);
             Ok(())
         } else {
             Err(OrigaError::CardNotFound { card_id })
@@ -284,13 +284,14 @@ impl KnowledgeSet {
             .ok_or(OrigaError::CardNotFound { card_id })
     }
 
-    fn update_history(&mut self, rating: Rating, was_new: bool, is_phrase: bool) {
+    fn update_history(&mut self, rating: Rating, was_new: bool, is_phrase: bool, mode: RateMode) {
         stats_updater::update_history(
             &self.study_cards,
             &mut self.lesson_history,
             rating,
             was_new,
             is_phrase,
+            mode,
         );
     }
 
