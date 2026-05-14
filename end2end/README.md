@@ -24,7 +24,7 @@ npx playwright install
 Copy `.env.example` to `.env` and configure:
 
 | Variable | Description | Default |
-|----------|-------------|---------|
+| ---------- | ------------- | --------- |
 | `TRAILBASE_URL` | TrailBase API URL | `https://origa.uwuwu.net` |
 | `ORIGA_ADMIN_EMAIL` | Admin email for user management | `admin@localhost` |
 | `ORIGA_ADMIN_PASSWORD` | Admin password (required for user creation) | _(required)_ |
@@ -75,7 +75,7 @@ The `webServer` configuration in `playwright.config.ts` will automatically start
 
 ## Project Structure
 
-```
+```text
 end2end/
 ├── global-setup.ts      # Authentication and test setup
 ├── playwright.config.ts # Playwright configuration
