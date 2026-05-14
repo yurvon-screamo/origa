@@ -303,3 +303,20 @@ testWithFreshUser.describe("Kanji Page - Detail Drawer", () => {
         await expect(detailDrawer).not.toBeVisible({ timeout: 5_000 });
     });
 });
+
+testWithFreshUser.describe("Kanji Page - Favorite Instant UI Update", () => {
+    testWithFreshUser("should update favorite icon immediately after toggle", async ({ page }) => {
+        test.setTimeout(90_000);
+        const kanjiPage = await setupKanjiPage(page);
+        await addFirstKanji(kanjiPage);
+        await expect(kanjiPage.kanjiGrid).toBeVisible({ timeout: 10_000 });
+
+        expect(await kanjiPage.isFavorited(0)).toBe(false);
+
+        await kanjiPage.toggleFavoriteByIndex(0);
+        expect(await kanjiPage.isFavorited(0)).toBe(true);
+
+        await kanjiPage.toggleFavoriteByIndex(0);
+        expect(await kanjiPage.isFavorited(0)).toBe(false);
+    });
+});

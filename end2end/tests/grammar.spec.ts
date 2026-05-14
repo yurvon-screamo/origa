@@ -291,3 +291,23 @@ testWithFreshUser.describe("Grammar Page - Favorite Sync", () => {
         expect(await grammarPage.isFavorited(0)).toBe(false);
     });
 });
+
+testWithFreshUser.describe("Grammar Page - Favorite Instant UI Update", () => {
+    testWithFreshUser("should update favorite icon immediately after toggle", async ({ page }) => {
+        test.setTimeout(90_000);
+        const grammarPage = await setupGrammarPage(page);
+
+        await grammarPage.openAddModal();
+        await grammarPage.selectRule("～ます");
+        await grammarPage.addSelectedRules();
+        await expect(grammarPage.grammarGrid).toBeVisible({ timeout: 10_000 });
+
+        expect(await grammarPage.isFavorited(0)).toBe(false);
+
+        await grammarPage.toggleFavoriteByIndex(0);
+        expect(await grammarPage.isFavorited(0)).toBe(true);
+
+        await grammarPage.toggleFavoriteByIndex(0);
+        expect(await grammarPage.isFavorited(0)).toBe(false);
+    });
+});

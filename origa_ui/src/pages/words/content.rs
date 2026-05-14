@@ -176,7 +176,7 @@ pub fn WordsContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
                             Either::Right(view! {
                                 <For
                                     each=move || visible_cards.get()
-                                    key=|card| card.card_id().to_string()
+                                    key=|card| format!("{}-{}", card.card_id(), card.is_favorite())
                                     children=move |card| {
                                         let card_id = *card.card_id();
                                         view! {
