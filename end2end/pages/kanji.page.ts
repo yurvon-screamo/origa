@@ -160,4 +160,26 @@ export class KanjiPage extends BasePage {
     async clickLoadMore(): Promise<void> {
         await this.loadMoreButton.click();
     }
+
+    async getFavoriteButton(index: number): Promise<Locator> {
+        const card = this.page.getByTestId("kanji-card-item").nth(index);
+        return card.getByTestId("kanji-card-item-favorite-btn");
+    }
+
+    async isFavorited(index: number): Promise<boolean> {
+        const btn = await this.getFavoriteButton(index);
+        const filledPath = btn.locator('svg path[fill="currentColor"]');
+        return filledPath.isVisible().catch(() => false);
+    }
+
+    async toggleFavoriteByIndex(index: number): Promise<void> {
+        const selector = `[data-testid="kanji-card-item"]:nth-of-type(${index + 1}) [data-testid="kanji-card-item-favorite-btn"]`;
+        await this.page.evaluate((sel: string) => {
+            const el = document.querySelector(sel) as HTMLElement;
+            if (el) {
+                el.dispatchEvent(new MouseEvent("click", { bubbles: false }));
+            }
+        }, selector);
+        await this.page.waitForTimeout(500);
+    }
 }

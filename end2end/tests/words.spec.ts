@@ -296,3 +296,20 @@ testWithFreshUser.describe("Words Page - Pagination", () => {
         await expect(wordsPage.loadMoreButton).not.toBeVisible();
     });
 });
+
+testWithFreshUser.describe("Words Page - Favorite Instant UI Update", () => {
+    testWithFreshUser("should update favorite icon immediately after toggle", async ({ page }) => {
+        test.setTimeout(90_000);
+        const wordsPage = await setupWordsPage(page);
+        await addFirstWord(wordsPage);
+        await expect(wordsPage.wordsGrid).toBeVisible({ timeout: 10_000 });
+
+        expect(await wordsPage.isFavorited(0)).toBe(false);
+
+        await wordsPage.toggleFavoriteByIndex(0);
+        expect(await wordsPage.isFavorited(0)).toBe(true);
+
+        await wordsPage.toggleFavoriteByIndex(0);
+        expect(await wordsPage.isFavorited(0)).toBe(false);
+    });
+});

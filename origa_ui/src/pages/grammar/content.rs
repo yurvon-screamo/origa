@@ -142,6 +142,18 @@ pub fn GrammarContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
 
     let on_close_detail = Callback::new(move |_: ()| selected_card.set(None));
 
+    let all_cards_for_selected = all_cards;
+    let selected_card_id: Memo<Option<ulid::Ulid>> =
+        Memo::new(move |_| selected_card.get().map(|c| *c.card_id()));
+    Effect::new(move |_| {
+        if let Some(id) = selected_card_id.get() {
+            let cards = all_cards_for_selected.get();
+            if let Some(updated) = cards.iter().find(|c| *c.card_id() == id) {
+                selected_card.set(Some(updated.clone()));
+            }
+        }
+    });
+
     view! {
         <div class="space-y-4">
             <Show when=move || is_loading.get()>
@@ -177,7 +189,7 @@ pub fn GrammarContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
                             Either::Right(view! {
                                 <For
                                     each=move || visible_cards.get()
-                                    key=|card| card.card_id().to_string()
+                                    key=|card| format!("{}-{}", card.card_id(), card.is_favorite())
                                     children=move |card| {
                                         let card_id = *card.card_id();
                                         let card_for_detail = card.clone();
