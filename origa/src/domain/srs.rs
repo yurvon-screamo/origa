@@ -13,6 +13,8 @@ struct FsrsSrsService {
     short_term_fsrs: FSRS,
     long_term_fsrs: FSRS,
     phrase_review_fsrs: FSRS,
+    grammar_fsrs: FSRS,
+    kanji_fsrs: FSRS,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -30,6 +32,8 @@ pub enum RateMode {
     PhraseReview,
     #[serde(rename = "OnboardingScoring")]
     OnboardingScoring,
+    GrammarReview,
+    KanjiReview,
 }
 
 impl FsrsSrsService {
@@ -63,10 +67,28 @@ impl FsrsSrsService {
             ..Default::default()
         };
 
+        let grammar_review_parameters = Parameters {
+            request_retention: 0.92,
+            maximum_interval: 60,
+            enable_fuzz: true,
+            enable_short_term: true,
+            ..Default::default()
+        };
+
+        let kanji_review_parameters = Parameters {
+            request_retention: 0.92,
+            maximum_interval: 60,
+            enable_fuzz: true,
+            enable_short_term: true,
+            ..Default::default()
+        };
+
         Self {
             long_term_fsrs: FSRS::new(long_term_parameters),
             short_term_fsrs: FSRS::new(short_term_parameters),
             phrase_review_fsrs: FSRS::new(phrase_review_parameters),
+            grammar_fsrs: FSRS::new(grammar_review_parameters),
+            kanji_fsrs: FSRS::new(kanji_review_parameters),
         }
     }
 }
@@ -132,6 +154,8 @@ pub fn rate_memory(
             srs_service.long_term_fsrs.next(card, now, fsrs_rating)
         },
         RateMode::PhraseReview => srs_service.phrase_review_fsrs.next(card, now, fsrs_rating),
+        RateMode::GrammarReview => srs_service.grammar_fsrs.next(card, now, fsrs_rating),
+        RateMode::KanjiReview => srs_service.kanji_fsrs.next(card, now, fsrs_rating),
     };
 
     let (next_review_date, interval) = if rating == Rating::Again {
@@ -230,5 +254,81 @@ mod tests {
         assert_eq!(json, "\"OnboardingScoring\"");
         let deserialized: RateMode = serde_json::from_str(&json).unwrap();
         assert_eq!(deserialized, original);
+    }
+
+    #[test]
+    fn grammar_review_serde_roundtrip() {
+        let original = RateMode::GrammarReview;
+        let json = serde_json::to_string(&original).unwrap();
+        assert_eq!(json, "\"GrammarReview\"");
+        let deserialized: RateMode = serde_json::from_str(&json).unwrap();
+        assert_eq!(deserialized, original);
+    }
+
+    #[test]
+    fn kanji_review_serde_roundtrip() {
+        let original = RateMode::KanjiReview;
+        let json = serde_json::to_string(&original).unwrap();
+        assert_eq!(json, "\"KanjiReview\"");
+        let deserialized: RateMode = serde_json::from_str(&json).unwrap();
+        assert_eq!(deserialized, original);
+    }
+
+    #[test]
+    fn grammar_review_again_returns_zero_interval() {
+        let memory_history = MemoryHistory::new();
+
+        let result = rate_memory(RateMode::GrammarReview, Rating::Again, &memory_history).unwrap();
+
+        assert_eq!(result.interval, Duration::zero());
+    }
+
+    #[test]
+    fn kanji_review_again_returns_zero_interval() {
+        let memory_history = MemoryHistory::new();
+
+        let result = rate_memory(RateMode::KanjiReview, Rating::Again, &memory_history).unwrap();
+
+        assert_eq!(result.interval, Duration::zero());
+    }
+
+    #[test]
+    fn grammar_review_good_returns_positive_interval() {
+        let memory_history = MemoryHistory::new();
+
+        let result = rate_memory(RateMode::GrammarReview, Rating::Good, &memory_history).unwrap();
+
+        assert!(result.interval > Duration::zero());
+    }
+
+    #[test]
+    fn kanji_review_good_returns_positive_interval() {
+        let memory_history = MemoryHistory::new();
+
+        let result = rate_memory(RateMode::KanjiReview, Rating::Good, &memory_history).unwrap();
+
+        assert!(result.interval > Duration::zero());
+    }
+
+    #[test]
+    fn grammar_review_easy_gives_shorter_or_equal_interval_than_standard() {
+        let memory_history = MemoryHistory::new();
+
+        let standard =
+            rate_memory(RateMode::StandardLesson, Rating::Easy, &memory_history).unwrap();
+        let grammar = rate_memory(RateMode::GrammarReview, Rating::Easy, &memory_history).unwrap();
+
+        assert!(grammar.interval <= standard.interval);
+    }
+
+    #[test]
+    fn kanji_review_easy_gives_shorter_or_equal_interval_than_standard() {
+        let memory_history = MemoryHistory::new();
+
+        let standard =
+            rate_memory(RateMode::StandardLesson, Rating::Easy, &memory_history).unwrap();
+        let kanji = rate_memory(RateMode::KanjiReview, Rating::Easy, &memory_history).unwrap();
+
+        assert!(kanji.interval <= standard.interval);
     }
 }
