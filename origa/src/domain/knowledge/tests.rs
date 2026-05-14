@@ -1086,3 +1086,39 @@ fn phrases_added_after_core_cards() {
         "Phrase cards should not exceed PHRASE_MAX_PER_LESSON, got {phrase_count}"
     );
 }
+
+#[test]
+fn onboarding_scoring_does_not_consume_daily_limit() {
+    let mut knowledge_set = KnowledgeSet::new();
+    let mut all_ids = Vec::new();
+
+    for i in 0..20 {
+        let card = create_vocab_card(&format!("word{i}"));
+        let study_card = knowledge_set.create_card(card).unwrap();
+        all_ids.push(*study_card.card_id());
+    }
+
+    for id in &all_ids[..13] {
+        knowledge_set
+            .rate_card(*id, Rating::Easy, RateMode::OnboardingScoring)
+            .unwrap();
+    }
+
+    assert_eq!(
+        knowledge_set.new_cards_studied_today(),
+        0,
+        "OnboardingScoring should not increment new_cards_studied_today"
+    );
+
+    let result = knowledge_set.cards_to_lesson(15, &JlptContent::new());
+
+    let new_in_lesson = result
+        .iter()
+        .filter(|(id, _)| knowledge_set.get_card(**id).unwrap().memory().is_new())
+        .count();
+
+    assert_eq!(
+        new_in_lesson, 7,
+        "All 7 remaining new cards should be in lesson (not limited by onboarding), got {new_in_lesson}"
+    );
+}

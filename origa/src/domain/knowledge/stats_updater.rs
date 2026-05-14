@@ -5,7 +5,7 @@ use ulid::Ulid;
 
 use super::daily_history::DailyStatsUpdate;
 use super::{Card, DailyHistoryItem, StudyCard};
-use crate::domain::Rating;
+use crate::domain::{RateMode, Rating};
 
 struct ComputedStats {
     avg_stability: f64,
@@ -83,6 +83,7 @@ pub(crate) fn update_history(
     rating: Rating,
     was_new: bool,
     is_phrase: bool,
+    mode: RateMode,
 ) {
     let stats = match ComputedStats::compute(study_cards) {
         Some(s) => s,
@@ -95,7 +96,7 @@ pub(crate) fn update_history(
         .iter_mut()
         .find(|item| item.timestamp().date_naive() == today)
     {
-        if was_new && !is_phrase {
+        if was_new && !is_phrase && mode != RateMode::OnboardingScoring {
             existing_item.increment_new_cards_studied();
         }
         if was_new && is_phrase {
@@ -117,7 +118,7 @@ pub(crate) fn update_history(
         }
     } else {
         let mut item = DailyHistoryItem::new();
-        if was_new && !is_phrase {
+        if was_new && !is_phrase && mode != RateMode::OnboardingScoring {
             item.increment_new_cards_studied();
         }
         if was_new && is_phrase {

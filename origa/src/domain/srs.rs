@@ -28,6 +28,8 @@ pub enum RateMode {
     StandardLesson,
     #[serde(rename = "PhraseReview")]
     PhraseReview,
+    #[serde(rename = "OnboardingScoring")]
+    OnboardingScoring,
 }
 
 impl FsrsSrsService {
@@ -126,7 +128,9 @@ pub fn rate_memory(
 
     let scheduling_info = match mode {
         RateMode::ShortTerm => srs_service.short_term_fsrs.next(card, now, fsrs_rating),
-        RateMode::StandardLesson => srs_service.long_term_fsrs.next(card, now, fsrs_rating),
+        RateMode::StandardLesson | RateMode::OnboardingScoring => {
+            srs_service.long_term_fsrs.next(card, now, fsrs_rating)
+        },
         RateMode::PhraseReview => srs_service.phrase_review_fsrs.next(card, now, fsrs_rating),
     };
 
@@ -215,6 +219,15 @@ mod tests {
         let original = RateMode::PhraseReview;
         let json = serde_json::to_string(&original).unwrap();
         assert_eq!(json, "\"PhraseReview\"");
+        let deserialized: RateMode = serde_json::from_str(&json).unwrap();
+        assert_eq!(deserialized, original);
+    }
+
+    #[test]
+    fn onboarding_scoring_serde_roundtrip() {
+        let original = RateMode::OnboardingScoring;
+        let json = serde_json::to_string(&original).unwrap();
+        assert_eq!(json, "\"OnboardingScoring\"");
         let deserialized: RateMode = serde_json::from_str(&json).unwrap();
         assert_eq!(deserialized, original);
     }
