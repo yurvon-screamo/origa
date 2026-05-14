@@ -1,6 +1,6 @@
 use super::*;
 use crate::domain::knowledge::lesson::types::{
-    GrammarInfo, LessonCardView, QuizCard, QuizOption, YesNoCard,
+    GrammarInfo, LessonCardView, QuizCard, QuizMode, QuizOption, YesNoCard,
 };
 use ulid::Ulid;
 
@@ -55,10 +55,11 @@ fn lesson_card_view_card_returns_inner_card() {
     };
     assert_eq!(mutated.card(), &vocab);
 
-    let quiz = LessonCardView::Quiz(QuizCard::new(vocab.clone(), vec![]));
+    let quiz = LessonCardView::Quiz(QuizCard::new(vocab.clone(), vec![], QuizMode::Single));
     assert_eq!(quiz.card(), &vocab);
 
-    let reading_quiz = LessonCardView::KanjiReadingQuiz(QuizCard::new(vocab.clone(), vec![]));
+    let reading_quiz =
+        LessonCardView::KanjiReadingQuiz(QuizCard::new(vocab.clone(), vec![], QuizMode::Single));
     assert_eq!(reading_quiz.card(), &vocab);
 }
 
@@ -67,14 +68,14 @@ mod quiz_option_and_card_tests {
 
     #[test]
     fn quiz_option_stores_text_and_correctness() {
-        let option = QuizOption::new("答え".to_string(), true);
+        let option = QuizOption::new_simple("答え".to_string(), true);
         assert_eq!(option.text(), "答え");
         assert!(option.is_correct());
     }
 
     #[test]
     fn quiz_option_incorrect() {
-        let option = QuizOption::new(String::new(), false);
+        let option = QuizOption::new_simple(String::new(), false);
         assert_eq!(option.text(), "");
         assert!(!option.is_correct());
     }
@@ -82,12 +83,12 @@ mod quiz_option_and_card_tests {
     #[test]
     fn quiz_card_check_answer_correct_index() {
         let options = vec![
-            QuizOption::new("a".to_string(), false),
-            QuizOption::new("b".to_string(), true),
-            QuizOption::new("c".to_string(), false),
+            QuizOption::new_simple("a".to_string(), false),
+            QuizOption::new_simple("b".to_string(), true),
+            QuizOption::new_simple("c".to_string(), false),
         ];
         let card = create_vocab_card("猫");
-        let quiz = QuizCard::new(card, options);
+        let quiz = QuizCard::new(card, options, QuizMode::Single);
         assert!(quiz.check_answer(1));
         assert!(!quiz.check_answer(0));
         assert!(!quiz.check_answer(2));
@@ -95,9 +96,9 @@ mod quiz_option_and_card_tests {
 
     #[test]
     fn quiz_card_check_answer_out_of_bounds_returns_false() {
-        let options = vec![QuizOption::new("only".to_string(), true)];
+        let options = vec![QuizOption::new_simple("only".to_string(), true)];
         let card = create_vocab_card("猫");
-        let quiz = QuizCard::new(card, options);
+        let quiz = QuizCard::new(card, options, QuizMode::Single);
         assert!(!quiz.check_answer(5));
         assert!(!quiz.check_answer(usize::MAX));
     }
@@ -106,10 +107,10 @@ mod quiz_option_and_card_tests {
     fn quiz_card_options_returns_all() {
         let card = create_vocab_card("猫");
         let opts = vec![
-            QuizOption::new("a".to_string(), false),
-            QuizOption::new("b".to_string(), true),
+            QuizOption::new_simple("a".to_string(), false),
+            QuizOption::new_simple("b".to_string(), true),
         ];
-        let quiz = QuizCard::new(card, opts);
+        let quiz = QuizCard::new(card, opts, QuizMode::Single);
         assert_eq!(quiz.options().len(), 2);
         assert_eq!(quiz.options()[0].text(), "a");
         assert_eq!(quiz.options()[1].text(), "b");
@@ -118,7 +119,7 @@ mod quiz_option_and_card_tests {
     #[test]
     fn quiz_card_card_returns_inner() {
         let card = create_vocab_card("猫");
-        let quiz = QuizCard::new(card.clone(), vec![]);
+        let quiz = QuizCard::new(card.clone(), vec![], QuizMode::Single);
         assert_eq!(quiz.card(), &card);
     }
 }
@@ -172,11 +173,11 @@ mod lesson_card_view_accessors {
                 .is_none()
         );
         assert!(
-            LessonCardView::Quiz(QuizCard::new(vocab.clone(), vec![]))
+            LessonCardView::Quiz(QuizCard::new(vocab.clone(), vec![], QuizMode::Single))
                 .grammar_info()
                 .is_none()
         );
-        let reading_quiz = QuizCard::new(vocab.clone(), vec![]);
+        let reading_quiz = QuizCard::new(vocab.clone(), vec![], QuizMode::Single);
         assert!(
             LessonCardView::KanjiReadingQuiz(reading_quiz)
                 .grammar_info()
@@ -184,5 +185,23 @@ mod lesson_card_view_accessors {
         );
         let yesno = YesNoCard::new(vocab, "s".into(), true);
         assert!(LessonCardView::YesNo(yesno).grammar_info().is_none());
+    }
+}
+
+mod legacy_deserialization_tests {
+    use crate::domain::knowledge::lesson::types::{QuizCard, QuizMode};
+
+    #[test]
+    fn deserialize_legacy_quiz_card_without_mode_and_tag() {
+        let json = r#"{
+            "card": {"Vocabulary": {"word": {"text": "猫"}}},
+            "options": [{"text": "test", "is_correct": true}]
+        }"#;
+
+        let quiz: QuizCard = serde_json::from_str(json).expect("deserialization should succeed");
+        assert_eq!(quiz.mode(), QuizMode::Single);
+        assert_eq!(quiz.options().len(), 1);
+        assert!(quiz.options()[0].is_correct());
+        assert!(quiz.options()[0].tag().is_none());
     }
 }

@@ -1,28 +1,28 @@
 # AGENTS.md - Origa Frontend (`origa_ui` crate)
 
-## Описание
+## Description
 
-Leptos/WASM фронтенд. Сборка через `trunk`.
+Leptos/WASM frontend. Built with `trunk`.
 
-Для разработки Tauri desktop используйте `cargo tauri dev`.
+For Tauri desktop development, use `cargo tauri dev`.
 
-## Структура проекта
+## Project Structure
 
 ```text
 origa_ui/src/
-├── core/               # Ядро: маршрутизация, контекст приложения
-├── ui_components/     # Базовые UI компоненты (кнопки, карточки и т.д.)
-├── pages/             # Страницы (home, lesson, sets, profile, login, etc.)
-├── repository/        # TrailBase/IndexedDB клиент (async data)
+├── core/               # Core: routing, application context
+├── ui_components/     # Base UI components (buttons, cards, etc.)
+├── pages/             # Pages (home, lesson, sets, profile, login, etc.)
+├── repository/        # TrailBase/IndexedDB client (async data)
 ├── store/             # Leptos reactive state (Romer)
 └── loaders/           # Async data loaders
 ```
 
 ## UI Components
 
-### test_id Паттерн (обязательно для всех интерактивных компонентов)
+### test_id Pattern (required for all interactive components)
 
-Все интерактивные компоненты **должны** получать `test_id: Signal<String>` prop.
+All interactive components **must** accept a `test_id: Signal<String>` prop.
 
 ```rust
 #[component]
@@ -38,31 +38,31 @@ pub fn Button(
 }
 ```
 
-## Ключевые соглашения
+## Key Conventions
 
-### Пропсы
+### Props
 
-- Все опциональные пропсы с `#[prop(optional, into)]`
-- Signal для реактивных пропсов: `test_id: Signal<String>`
-- Никогда не используйте `web_sys` напрямую для DOM
+- All optional props with `#[prop(optional, into)]`
+- Signal for reactive props: `test_id: Signal<String>`
+- Never use `web_sys` directly for DOM
 
-### Async данные
+### Async Data
 
-- Используйте `create_resource` для серверных данных
-- Repository паттерн через `Repository` trait
-- Loader функции в `loaders/`
+- Use `create_resource` for server data
+- Repository pattern via `Repository` trait
+- Loader functions in `loaders/`
 
-### Логирование
+### Logging
 
 ```rust
-// ✅ Хорошо: tracing для WASM
+// ✅ Good: tracing for WASM
 tracing::info!("Card loaded: {id}");
 
-// ❌ Плохо: console.log
+// ❌ Bad: console.log
 web_sys::console::log_1(&"message".into());
 ```
 
-## Разработка
+## Development
 
 ```bash
 # Frontend only (WASM)
@@ -75,7 +75,7 @@ cd tauri && cargo tauri dev
 cd origa_ui && trunk build --release
 ```
 
-## Тестирование
+## Testing
 
 ```bash
 cargo test -p origa_ui

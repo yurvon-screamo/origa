@@ -1,59 +1,59 @@
 # AGENTS.md - Origa Core (`origa` crate)
 
-## Описание
+## Description
 
-Бизнес-логика приложения: доменные модели, use cases, traits, OCR, словарь.
+Business logic of the application: domain models, use cases, traits, OCR, dictionary.
 
-## Структура проекта
+## Project Structure
 
 ```text
 origa/src/
-├── domain/           # Доменные модели и ошибки (thiserror)
+├── domain/           # Domain models and errors (thiserror)
 ├── use_cases/        # Business logic workflows
 ├── traits/           # Abstracts (Repository, OCR, etc.)
 ├── ocr/              # NDLOCR-Lite implementation
-└── dictionary/       # Лингвистический модуль (lindera)
+└── dictionary/       # Linguistic module (lindera)
 ```
 
-## Ключевые соглашения
+## Key Conventions
 
-### Обработка ошибок
+### Error Handling
 
 ```rust
-// ✅ Хорошо: thiserror для доменных ошибок
+// ✅ Good: thiserror for domain errors
 #[derive(Debug, thiserror::Error)]
 pub enum CardError {
     #[error("Card not found: {0}")]
     NotFound(ULID),
 }
 
-// ❌ Плохо: unwrap в production
+// ❌ Bad: unwrap in production
 card.unwrap();
 ```
 
-### Типизация
+### Typing
 
-- Все публичные функции должны иметь явные типы
-- Никаких `()` вместо Result где возможна ошибка
+- All public functions must have explicit types
+- No `()` instead of Result where an error is possible
 
-### Логирование
+### Logging
 
-- Используйте `tracing` для всех логов
+- Use `tracing` for all logs
 
 ```rust
 tracing::info!("Creating card {id}");
 tracing::error!("Failed to process OCR: {err}");
 ```
 
-## Тестирование
+## Testing
 
 ```bash
-# Все тесты крейта
+# All crate tests
 cargo test -p origa
 
-# Конкретный тест
+# Specific test
 cargo test -p origa --test test_name
 
-# С выводом println
+# With println output
 cargo test -p origa -- --nocapture
 ```

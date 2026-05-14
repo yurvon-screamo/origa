@@ -203,7 +203,7 @@ pub fn AddWordsPreviewModal(
 fn PreviewStage(
     analyzed_words: Vec<AnalyzedWord>,
     selected_words: RwSignal<std::collections::HashSet<String>>,
-    known_kanji: std::collections::HashSet<String>,
+    known_kanji: std::collections::HashSet<char>,
     is_creating: RwSignal<bool>,
     on_word_toggle: Callback<String>,
     on_cancel: Callback<MouseEvent>,

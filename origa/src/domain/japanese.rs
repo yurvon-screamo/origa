@@ -13,7 +13,7 @@ pub trait JapaneseText {
 
 impl JapaneseChar for char {
     fn is_japanese(&self) -> bool {
-        self.is_hiragana() || self.is_katakana() || self.is_kanji()
+        self.is_hiragana() || self.is_katakana() || self.is_kanji() || is_cjk_punctuation(*self)
     }
 
     fn is_hiragana(&self) -> bool {
@@ -29,6 +29,14 @@ impl JapaneseChar for char {
             || ('\u{3400}'..='\u{4DBF}').contains(self)
             || ('\u{20000}'..='\u{2A6DF}').contains(self)
     }
+}
+
+fn is_cjk_punctuation(c: char) -> bool {
+    ('\u{3000}'..='\u{303F}').contains(&c)
+        || matches!(
+            c,
+            '\u{3005}' | '\u{309D}' | '\u{309E}' | '\u{30FD}' | '\u{30FE}'
+        )
 }
 
 impl JapaneseText for str {
@@ -74,6 +82,50 @@ mod tests {
         assert_eq!(input.is_katakana(), is_katakana);
         assert_eq!(input.is_kanji(), is_kanji);
         assert_eq!(input.is_japanese(), is_japanese);
+    }
+
+    #[rstest]
+    #[case('。', false, false, false, true)]
+    #[case('、', false, false, false, true)]
+    #[case('「', false, false, false, true)]
+    #[case('」', false, false, false, true)]
+    #[case('・', false, true, false, true)]
+    #[case('々', false, false, false, true)]
+    #[case('ー', false, true, false, true)]
+    fn test_cjk_punctuation_classification(
+        #[case] input: char,
+        #[case] is_hiragana: bool,
+        #[case] is_katakana: bool,
+        #[case] is_kanji: bool,
+        #[case] is_japanese: bool,
+    ) {
+        assert_eq!(input.is_hiragana(), is_hiragana);
+        assert_eq!(input.is_katakana(), is_katakana);
+        assert_eq!(input.is_kanji(), is_kanji);
+        assert_eq!(input.is_japanese(), is_japanese);
+    }
+
+    #[test]
+    fn test_cjk_punctuation_is_japanese() {
+        let chars = [
+            '。', '、', '「', '」', '『', '』', '【', '】', '〜', '々', '・', 'ー',
+        ];
+        for ch in chars {
+            assert!(
+                ch.is_japanese(),
+                "'{}' (U+{:04X}) should be Japanese",
+                ch,
+                ch as u32
+            );
+        }
+    }
+
+    #[test]
+    fn test_cjk_punctuation_not_hiragana_katakana_kanji() {
+        assert!(!'。'.is_hiragana());
+        assert!(!'。'.is_katakana());
+        assert!(!'。'.is_kanji());
+        assert!(!'々'.is_kanji());
     }
 
     #[rstest]

@@ -104,7 +104,7 @@ pub fn WritingCard(
     #[prop(optional)] on_show_answer: Option<Callback<()>>,
     #[prop(into)] disabled: Signal<bool>,
     native_language: NativeLanguage,
-    #[prop(into)] known_kanji: Signal<HashSet<String>>,
+    #[prop(into)] known_kanji: Signal<HashSet<char>>,
 ) -> impl IntoView {
     let i18n = use_i18n();
     let (card_type_label, tag_variant) = get_card_type(&i18n);

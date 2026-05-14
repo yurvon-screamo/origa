@@ -15,7 +15,7 @@ pub fn QuizOptions(
     on_select_option: Callback<usize>,
     on_dont_know: Callback<()>,
     dont_know_selected: bool,
-    #[prop(into)] known_kanji: Signal<HashSet<String>>,
+    #[prop(into)] known_kanji: Signal<HashSet<char>>,
 ) -> impl IntoView {
     let i18n = use_i18n();
 

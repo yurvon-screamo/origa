@@ -1,6 +1,7 @@
 use crate::loaders::{
     data_loader::{load_grammar, load_kanji, load_vocabulary},
     dictionary::load_dictionary,
+    furigana_dict_loader::load_furigana_dict,
     jlpt_content_loader::load_jlpt_content,
     phrase_loader::load_phrases,
     pitch_audio_loader::load_pitch_audio,
@@ -69,6 +70,9 @@ pub fn start_dictionary_loading(
         }
         if let Err(e) = load_dictionary().await {
             tracing::error!("Failed to load dictionary: {e}");
+        }
+        if let Err(e) = load_furigana_dict().await {
+            tracing::warn!("Failed to load furigana dictionary: {e}");
         }
 
         // Миграция: создание PhraseCard для ранее изученных слов

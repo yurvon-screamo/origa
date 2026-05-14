@@ -14,7 +14,7 @@ pub fn RulesList(
     native_language: NativeLanguage,
     selected_ids: RwSignal<HashSet<Ulid>>,
     search_query: RwSignal<String>,
-    known_kanji: HashSet<String>,
+    known_kanji: HashSet<char>,
 ) -> impl IntoView {
     let i18n = use_i18n();
     let filtered_rules = move || {

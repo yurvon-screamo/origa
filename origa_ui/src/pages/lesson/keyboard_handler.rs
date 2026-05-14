@@ -2,7 +2,7 @@ use super::lesson_state::LessonContext;
 use super::lesson_state::LessonState;
 use leptos::ev::KeyboardEvent;
 use leptos::prelude::*;
-use origa::domain::{Card, LessonCardView, Rating};
+use origa::domain::{Card, LessonCardView, QuizMode, Rating};
 use ulid::Ulid;
 
 pub struct KeyboardActions {
@@ -11,6 +11,8 @@ pub struct KeyboardActions {
     pub on_yesno_select: Callback<bool>,
     pub on_quiz_dont_know: Callback<()>,
     pub on_yesno_dont_know: Callback<()>,
+    pub on_quiz_toggle: Callback<usize>,
+    pub on_quiz_submit: Callback<()>,
     pub show_answer: Box<dyn Fn()>,
     pub on_next_card: Callback<()>,
 }
@@ -39,6 +41,14 @@ pub fn create_keyboard_handler(
         let current_card_id = state.card_ids.get(state.current_index);
         let current_card = current_card_id.and_then(|id| state.cards.get(id));
 
+        let is_multi_quiz = current_card
+            .map(|c| {
+                matches!(c.view(),
+                    LessonCardView::KanjiReadingQuiz(q) if q.mode() == QuizMode::Multi
+                )
+            })
+            .unwrap_or(false);
+
         let is_quiz = current_card
             .map(|c| {
                 matches!(
@@ -61,12 +71,22 @@ pub fn create_keyboard_handler(
 
         if !state.showing_answer {
             if is_quiz || is_phrase_listen {
-                handle_quiz_key(
-                    &ev,
-                    &key,
-                    &actions.on_quiz_select,
-                    &actions.on_quiz_dont_know,
-                );
+                if is_multi_quiz {
+                    handle_multi_quiz_key(
+                        &ev,
+                        &key,
+                        &actions.on_quiz_toggle,
+                        &actions.on_quiz_submit,
+                        &actions.on_quiz_dont_know,
+                    );
+                } else {
+                    handle_quiz_key(
+                        &ev,
+                        &key,
+                        &actions.on_quiz_select,
+                        &actions.on_quiz_dont_know,
+                    );
+                }
                 return;
             }
 
@@ -99,22 +119,35 @@ fn handle_quiz_key(
     on_select: &Callback<usize>,
     on_dont_know: &Callback<()>,
 ) {
+    if let Some(index) = key.parse::<usize>().ok().filter(|&i| (1..=4).contains(&i)) {
+        ev.prevent_default();
+        on_select.run(index - 1);
+        return;
+    }
+
+    if key == " " {
+        ev.prevent_default();
+        on_dont_know.run(());
+    }
+}
+
+fn handle_multi_quiz_key(
+    ev: &KeyboardEvent,
+    key: &str,
+    on_toggle: &Callback<usize>,
+    on_submit: &Callback<()>,
+    on_dont_know: &Callback<()>,
+) {
+    if let Some(index) = key.parse::<usize>().ok().filter(|&i| (1..=8).contains(&i)) {
+        ev.prevent_default();
+        on_toggle.run(index - 1);
+        return;
+    }
+
     match key {
-        "1" => {
+        "Enter" => {
             ev.prevent_default();
-            on_select.run(0);
-        },
-        "2" => {
-            ev.prevent_default();
-            on_select.run(1);
-        },
-        "3" => {
-            ev.prevent_default();
-            on_select.run(2);
-        },
-        "4" => {
-            ev.prevent_default();
-            on_select.run(3);
+            on_submit.run(());
         },
         " " => {
             ev.prevent_default();

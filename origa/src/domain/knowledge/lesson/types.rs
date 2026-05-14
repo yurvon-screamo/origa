@@ -5,16 +5,31 @@ use ulid::Ulid;
 
 use crate::domain::Card;
 use crate::domain::knowledge::card::CardType;
+use crate::domain::memory::Rating;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct QuizOption {
     text: String,
     is_correct: bool,
+    #[serde(default)]
+    tag: Option<String>,
 }
 
 impl QuizOption {
-    pub fn new(text: String, is_correct: bool) -> Self {
-        Self { text, is_correct }
+    pub fn new(text: String, is_correct: bool, tag: Option<String>) -> Self {
+        Self {
+            text,
+            is_correct,
+            tag,
+        }
+    }
+
+    pub fn new_simple(text: String, is_correct: bool) -> Self {
+        Self {
+            text,
+            is_correct,
+            tag: None,
+        }
     }
 
     pub fn text(&self) -> &str {
@@ -24,17 +39,34 @@ impl QuizOption {
     pub fn is_correct(&self) -> bool {
         self.is_correct
     }
+
+    pub fn tag(&self) -> Option<&str> {
+        self.tag.as_deref()
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+pub enum QuizMode {
+    #[default]
+    Single,
+    Multi,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct QuizCard {
     card: Card,
     options: Vec<QuizOption>,
+    #[serde(default)]
+    mode: QuizMode,
 }
 
 impl QuizCard {
-    pub fn new(card: Card, options: Vec<QuizOption>) -> Self {
-        Self { card, options }
+    pub fn new(card: Card, options: Vec<QuizOption>, mode: QuizMode) -> Self {
+        Self {
+            card,
+            options,
+            mode,
+        }
     }
 
     pub fn card(&self) -> &Card {
@@ -45,11 +77,76 @@ impl QuizCard {
         &self.options
     }
 
+    pub fn mode(&self) -> QuizMode {
+        self.mode
+    }
+
     pub fn check_answer(&self, index: usize) -> bool {
         self.options
             .get(index)
             .map(|o| o.is_correct())
             .unwrap_or(false)
+    }
+
+    pub fn check_multi_answers(&self, selected: &[usize]) -> MultiQuizResult {
+        let correct_indices: Vec<usize> = self
+            .options
+            .iter()
+            .enumerate()
+            .filter(|(_, o)| o.is_correct())
+            .map(|(i, _)| i)
+            .collect();
+
+        let selected_set: std::collections::HashSet<usize> = selected.iter().copied().collect();
+        let correct_set: std::collections::HashSet<usize> =
+            correct_indices.iter().copied().collect();
+
+        let correct_selections: Vec<usize> = selected
+            .iter()
+            .filter(|&&i| correct_set.contains(&i))
+            .copied()
+            .collect();
+
+        let missed: Vec<usize> = correct_indices
+            .iter()
+            .filter(|&&i| !selected_set.contains(&i))
+            .copied()
+            .collect();
+
+        let wrong_selections: Vec<usize> = selected
+            .iter()
+            .filter(|&&i| !correct_set.contains(&i))
+            .copied()
+            .collect();
+
+        let is_perfect = missed.is_empty() && wrong_selections.is_empty();
+
+        MultiQuizResult {
+            correct_selections,
+            missed,
+            wrong_selections,
+            is_perfect,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct MultiQuizResult {
+    pub correct_selections: Vec<usize>,
+    pub missed: Vec<usize>,
+    pub wrong_selections: Vec<usize>,
+    pub is_perfect: bool,
+}
+
+impl MultiQuizResult {
+    pub fn rating(&self) -> Rating {
+        if self.is_perfect {
+            Rating::Good
+        } else if !self.correct_selections.is_empty() {
+            Rating::Hard
+        } else {
+            Rating::Again
+        }
     }
 }
 

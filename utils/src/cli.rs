@@ -213,6 +213,32 @@ pub enum Commands {
         grammar_path: Option<PathBuf>,
     },
 
+    /// Remove duplicate readings from kanji dictionary
+    DedupKanjiReadings {
+        /// Path to kanji.json
+        #[arg(short, long, default_value = "cdn/dictionary/kanji.json")]
+        input: PathBuf,
+
+        /// Show what would be changed without writing
+        #[arg(long)]
+        dry_run: bool,
+    },
+
+    /// Apply targeted reading removal patches to kanji dictionary
+    PatchKanjiReadings {
+        /// Path to kanji.json
+        #[arg(short, long, default_value = "cdn/dictionary/kanji.json")]
+        input: PathBuf,
+
+        /// Path to patches JSON file
+        #[arg(short, long, default_value = "cdn/dictionary/kanji_patches.json")]
+        patches: PathBuf,
+
+        /// Show what would be changed without writing
+        #[arg(long)]
+        dry_run: bool,
+    },
+
     /// Regenerate translations for invalid vocabulary words
     RegenerateInvalid {
         /// Path to JSONL progress file from validate-dictionary

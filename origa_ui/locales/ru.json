@@ -216,10 +216,15 @@
     "no": "Нет",
     "is_this_correct": "Верно ли это утверждение?",
     "correct_answer": "Правильный ответ: ",
-    "space_key": "[Пробел]",
-    "next": "Далее →",
-    "did_not_understand": "Не понял",
-    "understood": "Понял"
+        "space_key": "[Пробел]",
+        "next": "Далее →",
+        "did_not_understand": "Не понял",
+        "understood": "Понял",
+        "choose_all_readings": "Выберите все чтения этого кандзи:",
+        "check": "Проверить",
+        "multi_perfect": "✓ Все чтения выбраны!",
+        "multi_partial": "Есть пропущенные или лишние варианты",
+        "enter_key": "[Enter]"
   },
   "home": {
     "loading": "Загрузка...",

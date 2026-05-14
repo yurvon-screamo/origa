@@ -12,15 +12,21 @@ pub fn QuizResultDisplay(quiz_result: QuizResult) -> impl IntoView {
         <div class="mt-6 text-center">
             <Text size=TextSize::Default class=move || {
                 match quiz_result {
-                    QuizResult::Correct => "text-[var(--success)] font-bold".to_string(),
-                    QuizResult::Incorrect => "text-[var(--error)] font-bold".to_string(),
+                    QuizResult::Correct | QuizResult::MultiCorrect => {
+                        "text-[var(--success)] font-bold".to_string()
+                    },
+                    QuizResult::Incorrect | QuizResult::MultiPartial => {
+                        "text-[var(--error)] font-bold".to_string()
+                    },
                     QuizResult::DontKnow => "text-[var(--fg-muted)] font-bold".to_string(),
                     QuizResult::None => "".to_string(),
                 }
             }>
                 {move || match quiz_result {
                     QuizResult::Correct => t!(i18n, lesson.correct).into_any(),
+                    QuizResult::MultiCorrect => t!(i18n, lesson.multi_perfect).into_any(),
                     QuizResult::Incorrect => t!(i18n, lesson.incorrect).into_any(),
+                    QuizResult::MultiPartial => t!(i18n, lesson.multi_partial).into_any(),
                     QuizResult::DontKnow => t!(i18n, lesson.dont_know_result).into_any(),
                     QuizResult::None => "".into_any(),
                 }}

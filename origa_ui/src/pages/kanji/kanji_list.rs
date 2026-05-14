@@ -11,7 +11,7 @@ pub fn KanjiList(
     kanji_list: Vec<&'static KanjiInfo>,
     #[prop(into)] native_language: Signal<NativeLanguage>,
     selected_kanji: RwSignal<HashSet<String>>,
-    known_kanji: HashSet<String>,
+    known_kanji: HashSet<char>,
 ) -> impl IntoView {
     let i18n = use_i18n();
     if kanji_list.is_empty() {

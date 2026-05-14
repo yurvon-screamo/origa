@@ -30,7 +30,7 @@ pub fn LessonCard(
     on_show_answer: Callback<()>,
     grammar_info: Option<GrammarInfo>,
     native_language: NativeLanguage,
-    #[prop(into)] known_kanji: Signal<HashSet<String>>,
+    #[prop(into)] known_kanji: Signal<HashSet<char>>,
     #[prop(into)] audio_src: Option<String>,
 ) -> impl IntoView {
     let card_type = CardType::from(&card);

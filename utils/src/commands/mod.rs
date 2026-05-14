@@ -1,20 +1,25 @@
 mod build_phrase_dataset;
+mod dedup_kanji_readings;
 mod find_missing;
 mod generate_grammar;
 mod generate_grammar_prompt;
+mod kanji_common;
 mod migrate_phrase_dataset;
 mod ndlocr;
+mod patch_kanji_readings;
 mod regenerate_invalid;
 mod tokenize;
 mod tokenize_well_known;
 mod validate_dictionary;
 
 pub use build_phrase_dataset::run_build_phrase_dataset;
+pub use dedup_kanji_readings::run_dedup_kanji_readings;
 pub use find_missing::run_find_missing;
 pub use generate_grammar::run_generate_grammar;
 pub use generate_grammar_prompt::run_generate_grammar_prompt;
 pub use migrate_phrase_dataset::run_migrate_phrase_dataset;
 pub use ndlocr::run_ndlocr;
+pub use patch_kanji_readings::run_patch_kanji_readings;
 pub use regenerate_invalid::run_regenerate_invalid;
 pub use tokenize::run_tokenize;
 pub use tokenize_well_known::run_tokenize_well_known;

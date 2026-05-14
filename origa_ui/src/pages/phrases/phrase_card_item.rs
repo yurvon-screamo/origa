@@ -14,7 +14,7 @@ use ulid::Ulid;
 pub fn PhraseCardItem(
     study_card: StudyCard,
     #[prop(into)] native_language: Signal<NativeLanguage>,
-    known_kanji: HashSet<String>,
+    known_kanji: HashSet<char>,
     on_toggle_favorite: Callback<Ulid>,
     on_mark_as_known: Callback<()>,
     on_delete: Callback<DeleteRequest>,

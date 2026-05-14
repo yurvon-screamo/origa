@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kanji Reading Quiz — All Readings Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-cream: #f7f4ee;
+  --bg-paper: #fdfbf7;
+  --bg-aged: #ede8dd;
+  --bg-warm: #f0ebe1;
+  --fg-black: #1a1915;
+  --fg-muted: #6b665a;
+  --fg-light: #9a9590;
+  --border-light: #d4cfc3;
+  --border-dark: #1a1915;
+  --accent-olive: #3d4535;
+  --accent-terracotta: #a65d3f;
+  --accent-gold: #8b7355;
+  --accent-sage: #6b7b5e;
+  --success: #4a6b4a;
+  --success-bg: #e8ede8;
+  --error: #8b4545;
+  --error-bg: #ede3e3;
+  --hint-bg: #eae6dc;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--bg-cream);
+  color: var(--fg-black);
+  font-family: "DM Mono", monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  letter-spacing: 0.02em;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.quiz-card {
+  background: var(--bg-paper);
+  border: 1px solid var(--border-dark);
+  position: relative;
+  max-width: 480px;
+  width: 100%;
+  padding: 28px;
+}
+
+.quiz-card::after {
+  content: "";
+  position: absolute;
+  bottom: -6px;
+  right: -6px;
+  width: 100%;
+  height: 100%;
+  border: 1px solid var(--border-dark);
+  background: var(--bg-aged);
+  z-index: -1;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.tag {
+  font-family: "DM Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 6px 12px;
+  border: 1px solid var(--border-dark);
+  background: var(--bg-paper);
+  color: var(--fg-black);
+}
+
+.tag-filled {
+  background: var(--accent-olive);
+  border-color: var(--accent-olive);
+  color: var(--bg-paper);
+}
+
+.tag-reading {
+  background: var(--accent-terracotta);
+  border-color: var(--accent-terracotta);
+  color: var(--bg-paper);
+}
+
+/* ===== Kanji Display ===== */
+.kanji-display {
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.kanji-character {
+  font-family: "Cormorant Garamond", serif;
+  font-size: clamp(64px, 15vw, 96px);
+  font-weight: 300;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--fg-black);
+}
+
+/* ===== Instruction ===== */
+.instruction {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.instruction-text {
+  font-family: "DM Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+/* ===== Progress Indicator ===== */
+.progress-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  padding: 10px 14px;
+  border: 1px solid var(--border-light);
+  background: var(--bg-warm);
+}
+
+.progress-text {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  flex: 1;
+}
+
+.progress-count {
+  font-family: "DM Mono", monospace;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--fg-black);
+}
+
+.progress-count .num-selected {
+  color: var(--accent-olive);
+}
+
+/* ===== Reading Groups ===== */
+.reading-group {
+  margin-bottom: 16px;
+}
+
+.reading-group:last-of-type {
+  margin-bottom: 0;
+}
+
+.group-label {
+  font-family: "DM Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--fg-light);
+  margin-bottom: 8px;
+  padding-left: 2px;
+}
+
+.group-label .reading-type-jp {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 13px;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  margin-right: 6px;
+}
+
+.options-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ===== Option Chip ===== */
+.option-chip {
+  font-family: "DM Mono", monospace;
+  font-size: 14px;
+  letter-spacing: 0.05em;
+  padding: 8px 16px;
+  border: 1px solid var(--border-dark);
+  background: var(--bg-paper);
+  color: var(--fg-black);
+  cursor: pointer;
+  transition: all 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  position: relative;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.option-chip:hover {
+  background: var(--fg-black);
+  color: var(--bg-paper);
+}
+
+.option-chip:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+.option-chip.selected {
+  background: var(--accent-olive);
+  border-color: var(--accent-olive);
+  color: var(--bg-paper);
+}
+
+.option-chip.selected:hover {
+  background: var(--fg-black);
+  border-color: var(--fg-black);
+}
+
+/* ===== Result States ===== */
+.option-chip.result-correct {
+  background: var(--success);
+  border-color: var(--success);
+  color: var(--bg-paper);
+  cursor: default;
+}
+
+.option-chip.result-correct:hover {
+  background: var(--success);
+  border-color: var(--success);
+  color: var(--bg-paper);
+}
+
+.option-chip.result-wrong {
+  background: var(--error);
+  border-color: var(--error);
+  color: var(--bg-paper);
+  cursor: default;
+}
+
+.option-chip.result-wrong:hover {
+  background: var(--error);
+  border-color: var(--error);
+  color: var(--bg-paper);
+}
+
+.option-chip.result-missed {
+  background: var(--hint-bg);
+  border-color: var(--accent-gold);
+  color: var(--accent-gold);
+  cursor: default;
+}
+
+.option-chip.result-missed::after {
+  content: "missed";
+  position: absolute;
+  top: -8px;
+  right: -4px;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: var(--accent-gold);
+  color: var(--bg-paper);
+  padding: 1px 5px;
+}
+
+.option-chip.result-dimmed {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.option-chip.result-dimmed:hover {
+  background: var(--bg-paper);
+  color: var(--fg-black);
+  opacity: 0.4;
+}
+
+/* ===== Confirm Button ===== */
+.confirm-area {
+  margin-top: 20px;
+}
+
+.confirm-btn {
+  font-family: "DM Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 12px 24px;
+  border: 1px solid var(--border-dark);
+  background: var(--fg-black);
+  color: var(--bg-paper);
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.confirm-btn:hover {
+  background: var(--accent-olive);
+  border-color: var(--accent-olive);
+}
+
+.confirm-btn:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+.confirm-btn:disabled {
+  background: var(--bg-aged);
+  border-color: var(--border-light);
+  color: var(--fg-light);
+  cursor: default;
+}
+
+.confirm-btn:disabled:hover {
+  background: var(--bg-aged);
+  border-color: var(--border-light);
+  color: var(--fg-light);
+}
+
+/* ===== Dont Know Button ===== */
+.dont-know-btn {
+  font-family: "DM Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 10px 16px;
+  border: 1px solid var(--border-light);
+  background: transparent;
+  color: var(--fg-muted);
+  cursor: pointer;
+  width: 100%;
+  margin-top: 8px;
+  transition: all 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.dont-know-btn:hover {
+  border-color: var(--border-dark);
+  color: var(--fg-black);
+}
+
+/* ===== Result Display ===== */
+.result-display {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.result-text {
+  font-family: "DM Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.result-text.correct {
+  color: var(--success);
+}
+
+.result-text.partial {
+  color: var(--accent-gold);
+}
+
+.result-text.incorrect {
+  color: var(--error);
+}
+
+.result-text.dont-know {
+  color: var(--fg-muted);
+}
+
+/* ===== Reading Summary (shown in results) ===== */
+.reading-summary {
+  margin-top: 16px;
+  padding: 14px;
+  border: 1px solid var(--border-light);
+  background: var(--bg-warm);
+}
+
+.summary-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.summary-row:last-child {
+  margin-bottom: 0;
+}
+
+.summary-label {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fg-light);
+  min-width: 80px;
+}
+
+.summary-values {
+  font-family: "DM Mono", monospace;
+  font-size: 13px;
+  color: var(--fg-black);
+}
+
+/* ===== Keyboard Hints ===== */
+.kbd-hint {
+  font-size: 10px;
+  color: var(--fg-light);
+  letter-spacing: 0.05em;
+}
+
+/* ===== Demo Controls ===== */
+.demo-controls {
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  z-index: 10;
+}
+
+.demo-btn {
+  font-family: "DM Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 8px 14px;
+  border: 1px solid var(--border-dark);
+  background: var(--bg-paper);
+  color: var(--fg-black);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.demo-btn:hover {
+  background: var(--fg-black);
+  color: var(--bg-paper);
+}
+
+.demo-btn.active {
+  background: var(--accent-olive);
+  border-color: var(--accent-olive);
+  color: var(--bg-paper);
+}
+
+/* ===== Accessibility ===== */
+.option-chip:focus-visible,
+.confirm-btn:focus-visible,
+.dont-know-btn:focus-visible {
+  outline: 2px solid var(--accent-olive);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ===== Animations ===== */
+@keyframes anima-stamp {
+  0% { transform: scale(1.6) rotate(-4deg); opacity: 0; }
+  60% { transform: scale(0.95) rotate(0deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+.result-text {
+  animation: anima-stamp 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes anima-chip-appear {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.option-chip {
+  animation: anima-chip-appear 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* Staggered entrance */
+.option-chip:nth-child(1) { animation-delay: 0ms; }
+.option-chip:nth-child(2) { animation-delay: 30ms; }
+.option-chip:nth-child(3) { animation-delay: 60ms; }
+.option-chip:nth-child(4) { animation-delay: 90ms; }
+.option-chip:nth-child(5) { animation-delay: 120ms; }
+.option-chip:nth-child(6) { animation-delay: 150ms; }
+.option-chip:nth-child(7) { animation-delay: 180ms; }
+.option-chip:nth-child(8) { animation-delay: 210ms; }
+</style>
+</head>
+<body>
+
+<!-- ===== STATE 1: Initial (selecting) ===== -->
+<div id="state-initial" class="quiz-card">
+  <div class="card-header">
+    <div style="display:flex; gap:6px; align-items:center;">
+      <span class="tag tag-filled">Kanji</span>
+      <span class="tag tag-reading">Reading</span>
+    </div>
+  </div>
+
+  <div class="kanji-display">
+    <div class="kanji-character">日</div>
+  </div>
+
+  <div class="instruction">
+    <span class="instruction-text">Select all readings</span>
+  </div>
+
+  <div class="progress-bar">
+    <span class="progress-text">Selected</span>
+    <span class="progress-count"><span class="num-selected" id="selected-count">0</span> / 4</span>
+  </div>
+
+  <div class="reading-group">
+    <div class="group-label">
+      <span class="reading-type-jp">音読み</span> on'yomi
+    </div>
+    <div class="options-grid" id="onyomi-grid">
+      <button class="option-chip" data-correct="true" onclick="toggleChip(this)">ニチ</button>
+      <button class="option-chip" data-correct="true" onclick="toggleChip(this)">ジツ</button>
+      <button class="option-chip" data-correct="false" onclick="toggleChip(this)">カ</button>
+    </div>
+  </div>
+
+  <div class="reading-group">
+    <div class="group-label">
+      <span class="reading-type-jp">訓読み</span> kun'yomi
+    </div>
+    <div class="options-grid" id="kunyomi-grid">
+      <button class="option-chip" data-correct="true" onclick="toggleChip(this)">ひ</button>
+      <button class="option-chip" data-correct="true" onclick="toggleChip(this)">び</button>
+      <button class="option-chip" data-correct="false" onclick="toggleChip(this)">ほし</button>
+      <button class="option-chip" data-correct="false" onclick="toggleChip(this)">き</button>
+      <button class="option-chip" data-correct="false" onclick="toggleChip(this)">しゅく</button>
+    </div>
+  </div>
+
+  <div class="confirm-area">
+    <button class="confirm-btn" id="confirm-btn" disabled onclick="showResult()">
+      Confirm — Enter ↵
+    </button>
+    <button class="dont-know-btn" onclick="showDontKnow()">
+      Don't know — Space
+    </button>
+  </div>
+</div>
+
+<!-- ===== STATE 2: All Correct ===== -->
+<div id="state-correct" class="quiz-card" style="display:none">
+  <div class="card-header">
+    <div style="display:flex; gap:6px; align-items:center;">
+      <span class="tag tag-filled">Kanji</span>
+      <span class="tag tag-reading">Reading</span>
+    </div>
+  </div>
+
+  <div class="kanji-display">
+    <div class="kanji-character">日</div>
+  </div>
+
+  <div class="instruction">
+    <span class="instruction-text">Select all readings</span>
+  </div>
+
+  <div class="progress-bar">
+    <span class="progress-text">Result</span>
+    <span class="progress-count" style="color: var(--success);">4 / 4</span>
+  </div>
+
+  <div class="reading-group">
+    <div class="group-label">
+      <span class="reading-type-jp">音読み</span> on'yomi
+    </div>
+    <div class="options-grid">
+      <button class="option-chip result-correct">ニチ</button>
+      <button class="option-chip result-correct">ジツ</button>
+      <button class="option-chip result-dimmed">カ</button>
+    </div>
+  </div>
+
+  <div class="reading-group">
+    <div class="group-label">
+      <span class="reading-type-jp">訓読み</span> kun'yomi
+    </div>
+    <div class="options-grid">
+      <button class="option-chip result-correct">ひ</button>
+      <button class="option-chip result-correct">び</button>
+      <button class="option-chip result-dimmed">ほし</button>
+      <button class="option-chip result-dimmed">き</button>
+      <button class="option-chip result-dimmed">しゅく</button>
+    </div>
+  </div>
+
+  <div class="result-display">
+    <div class="result-text correct">Correct — all readings found</div>
+  </div>
+</div>
+
+<!-- ===== STATE 3: Partial (some correct, some missed, some wrong) ===== -->
+<div id="state-partial" class="quiz-card" style="display:none">
+  <div class="card-header">
+    <div style="display:flex; gap:6px; align-items:center;">
+      <span class="tag tag-filled">Kanji</span>
+      <span class="tag tag-reading">Reading</span>
+    </div>
+  </div>
+
+  <div class="kanji-display">
+    <div class="kanji-character">日</div>
+  </div>
+
+  <div class="instruction">
+    <span class="instruction-text">Select all readings</span>
+  </div>
+
+  <div class="progress-bar">
+    <span class="progress-text">Result</span>
+    <span class="progress-count" style="color: var(--accent-gold);">3 / 4</span>
+  </div>
+
+  <div class="reading-group">
+    <div class="group-label">
+      <span class="reading-type-jp">音読み</span> on'yomi
+    </div>
+    <div class="options-grid">
+      <button class="option-chip result-correct">ニチ</button>
+      <button class="option-chip result-missed">ジツ</button>
+      <button class="option-chip result-wrong">カ</button>
+    </div>
+  </div>
+
+  <div class="reading-group">
+    <div class="group-label">
+      <span class="reading-type-jp">訓読み</span> kun'yomi
+    </div>
+    <div class="options-grid">
+      <button class="option-chip result-correct">ひ</button>
+      <button class="option-chip result-correct">び</button>
+      <button class="option-chip result-dimmed">ほし</button>
+      <button class="option-chip result-dimmed">き</button>
+      <button class="option-chip result-dimmed">しゅく</button>
+    </div>
+  </div>
+
+  <div class="result-display">
+    <div class="result-text partial">Partial — 3 of 4 correct</div>
+  </div>
+
+  <div class="reading-summary">
+    <div class="summary-row">
+      <span class="summary-label">音読み</span>
+      <span class="summary-values">ニチ、ジツ</span>
+    </div>
+    <div class="summary-row">
+      <span class="summary-label">訓読み</span>
+      <span class="summary-values">ひ、び</span>
+    </div>
+  </div>
+</div>
+
+<!-- ===== STATE 4: Wrong (selected only distractors) ===== -->
+<div id="state-wrong" class="quiz-card" style="display:none">
+  <div class="card-header">
+    <div style="display:flex; gap:6px; align-items:center;">
+      <span class="tag tag-filled">Kanji</span>
+      <span class="tag tag-reading">Reading</span>
+    </div>
+  </div>
+
+  <div class="kanji-display">
+    <div class="kanji-character">日</div>
+  </div>
+
+  <div class="instruction">
+    <span class="instruction-text">Select all readings</span>
+  </div>
+
+  <div class="progress-bar">
+    <span class="progress-text">Result</span>
+    <span class="progress-count" style="color: var(--error);">0 / 4</span>
+  </div>
+
+  <div class="reading-group">
+    <div class="group-label">
+      <span class="reading-type-jp">音読み</span> on'yomi
+    </div>
+    <div class="options-grid">
+      <button class="option-chip result-missed">ニチ</button>
+      <button class="option-chip result-missed">ジツ</button>
+      <button class="option-chip result-wrong">カ</button>
+    </div>
+  </div>
+
+  <div class="reading-group">
+    <div class="group-label">
+      <span class="reading-type-jp">訓読み</span> kun'yomi
+    </div>
+    <div class="options-grid">
+      <button class="option-chip result-missed">ひ</button>
+      <button class="option-chip result-missed">び</button>
+      <button class="option-chip result-wrong">ほし</button>
+      <button class="option-chip result-wrong">き</button>
+      <button class="option-chip result-dimmed">しゅく</button>
+    </div>
+  </div>
+
+  <div class="result-display">
+    <div class="result-text incorrect">Incorrect</div>
+  </div>
+
+  <div class="reading-summary">
+    <div class="summary-row">
+      <span class="summary-label">音読み</span>
+      <span class="summary-values">ニチ、ジツ</span>
+    </div>
+    <div class="summary-row">
+      <span class="summary-label">訓読み</span>
+      <span class="summary-values">ひ、び</span>
+    </div>
+  </div>
+</div>
+
+<!-- ===== STATE 5: Don't Know ===== -->
+<div id="state-dont-know" class="quiz-card" style="display:none">
+  <div class="card-header">
+    <div style="display:flex; gap:6px; align-items:center;">
+      <span class="tag tag-filled">Kanji</span>
+      <span class="tag tag-reading">Reading</span>
+    </div>
+  </div>
+
+  <div class="kanji-display">
+    <div class="kanji-character">日</div>
+  </div>
+
+  <div class="instruction">
+    <span class="instruction-text">Select all readings</span>
+  </div>
+
+  <div class="progress-bar">
+    <span class="progress-text">Answer</span>
+    <span class="progress-count" style="color: var(--fg-muted);">—</span>
+  </div>
+
+  <div class="reading-group">
+    <div class="group-label">
+      <span class="reading-type-jp">音読み</span> on'yomi
+    </div>
+    <div class="options-grid">
+      <button class="option-chip result-correct">ニチ</button>
+      <button class="option-chip result-correct">ジツ</button>
+      <button class="option-chip result-dimmed">カ</button>
+    </div>
+  </div>
+
+  <div class="reading-group">
+    <div class="group-label">
+      <span class="reading-type-jp">訓読み</span> kun'yomi
+    </div>
+    <div class="options-grid">
+      <button class="option-chip result-correct">ひ</button>
+      <button class="option-chip result-correct">び</button>
+      <button class="option-chip result-dimmed">ほし</button>
+      <button class="option-chip result-dimmed">き</button>
+      <button class="option-chip result-dimmed">しゅく</button>
+    </div>
+  </div>
+
+  <div class="result-display">
+    <div class="result-text dont-know">Don't know</div>
+  </div>
+
+  <div class="reading-summary">
+    <div class="summary-row">
+      <span class="summary-label">音読み</span>
+      <span class="summary-values">ニチ、ジツ</span>
+    </div>
+    <div class="summary-row">
+      <span class="summary-label">訓読み</span>
+      <span class="summary-values">ひ、び</span>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Demo Navigation ===== -->
+<div class="demo-controls">
+  <button class="demo-btn active" onclick="showState('initial')">Selecting</button>
+  <button class="demo-btn" onclick="showState('correct')">Correct</button>
+  <button class="demo-btn" onclick="showState('partial')">Partial</button>
+  <button class="demo-btn" onclick="showState('wrong')">Wrong</button>
+  <button class="demo-btn" onclick="showState('dont-know')">Don't know</button>
+</div>
+
+<script>
+function showState(id) {
+  document.querySelectorAll('.quiz-card').forEach(el => el.style.display = 'none');
+  document.getElementById('state-' + id).style.display = 'block';
+  document.querySelectorAll('.demo-btn').forEach(btn => btn.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+function toggleChip(el) {
+  el.classList.toggle('selected');
+  const count = document.querySelectorAll('#state-initial .option-chip.selected').length;
+  document.getElementById('selected-count').textContent = count;
+  document.getElementById('confirm-btn').disabled = count === 0;
+}
+
+function showResult() {
+  // Demo: show partial state
+  showStateById('partial');
+}
+
+function showDontKnow() {
+  showStateById('dont-know');
+}
+
+function showStateById(id) {
+  document.querySelectorAll('.quiz-card').forEach(el => el.style.display = 'none');
+  document.getElementById('state-' + id).style.display = 'block';
+  document.querySelectorAll('.demo-btn').forEach(btn => btn.classList.remove('active'));
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    const count = document.querySelectorAll('#state-initial .option-chip.selected').length;
+    if (count > 0) showResult();
+  }
+  if (e.key === ' ') {
+    e.preventDefault();
+    showDontKnow();
+  }
+});
+</script>
+</body>
+</html>

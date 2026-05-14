@@ -30,7 +30,7 @@ pub fn LessonContent() -> impl IntoView {
     let reload_trigger = RwSignal::new(0u32);
     let is_muted = RwSignal::new(false);
     let is_syncing_cards = RwSignal::new(false);
-    let known_kanji = RwSignal::new(HashSet::<String>::new());
+    let known_kanji = RwSignal::new(HashSet::<char>::new());
     let native_language = RwSignal::new(crate::i18n::locale_to_native_language(&i18n.get_locale()));
     let core_count_signal = RwSignal::new(0usize);
 
@@ -143,6 +143,9 @@ pub fn LessonContent() -> impl IntoView {
                             core_count,
                             waiting_for_next: false,
                             pending_rating: None,
+                            selected_quiz_options: HashSet::new(),
+                            multi_quiz_submitted: false,
+                            multi_result: None,
                         });
                     }
                 },

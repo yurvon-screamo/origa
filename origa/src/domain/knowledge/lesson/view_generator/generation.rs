@@ -10,7 +10,7 @@ use rand::{Rng, prelude::IndexedRandom, seq::SliceRandom};
 use std::collections::HashMap;
 
 use super::super::types::{
-    GrammarInfo, GrammarQuizCard, LessonCardView, QuizCard, QuizOption, YesNoCard,
+    GrammarInfo, GrammarQuizCard, LessonCardView, QuizCard, QuizMode, QuizOption, YesNoCard,
 };
 use super::QUIZ_OPTIONS_COUNT;
 
@@ -46,13 +46,16 @@ pub(crate) fn generate_quiz(
 
     let mut options: Vec<QuizOption> = selected_distractors
         .into_iter()
-        .map(|text| QuizOption::new(text, false))
+        .map(|text| QuizOption::new_simple(text, false))
         .collect();
 
-    options.push(QuizOption::new(correct_answer.text().to_string(), true));
+    options.push(QuizOption::new_simple(
+        correct_answer.text().to_string(),
+        true,
+    ));
     options.shuffle(&mut rand::rng());
 
-    let quiz = QuizCard::new(original_card, options);
+    let quiz = QuizCard::new(original_card, options, QuizMode::Single);
     Ok(LessonCardView::Quiz(quiz))
 }
 
@@ -136,10 +139,10 @@ pub(crate) fn generate_phrase_quiz(
 
     let mut options: Vec<QuizOption> = selected
         .into_iter()
-        .map(|text| QuizOption::new(text, false))
+        .map(|text| QuizOption::new_simple(text, false))
         .collect();
 
-    options.push(QuizOption::new(correct_text, true));
+    options.push(QuizOption::new_simple(correct_text, true));
     options.shuffle(&mut rand::rng());
 
     Some(LessonCardView::PhraseListen {
@@ -167,20 +170,59 @@ pub(crate) fn generate_kanji_reading_quiz(
         Err(_) => return Ok(LessonCardView::Normal(original_card)),
     };
 
-    let mut all_readings: Vec<String> = info.on_readings().to_vec();
-    all_readings.extend(info.kun_readings().iter().cloned());
+    let on_readings = info.on_readings();
+    let kun_readings = info.kun_readings();
+    let total_readings = on_readings.len() + kun_readings.len();
 
-    if all_readings.is_empty() {
+    if total_readings == 0 || total_readings > 6 {
         return Ok(LessonCardView::Normal(original_card));
     }
 
-    let target_readings: std::collections::HashSet<String> = all_readings.iter().cloned().collect();
+    let target_readings: Vec<String> = on_readings
+        .iter()
+        .chain(kun_readings.iter())
+        .cloned()
+        .collect();
 
-    let correct_reading = all_readings
-        .choose(&mut rand::rng())
-        .expect("all_readings guaranteed non-empty after is_empty check")
-        .clone();
+    let mut options: Vec<QuizOption> = on_readings
+        .iter()
+        .map(|r| QuizOption::new(r.clone(), true, Some("ON".to_string())))
+        .chain(
+            kun_readings
+                .iter()
+                .map(|r| QuizOption::new(r.clone(), true, Some("KUN".to_string()))),
+        )
+        .collect();
 
+    let correct_count = options.len();
+
+    let mut distractors: Vec<String> =
+        collect_distractors(same_type_cards, &target_readings, kanji_cache);
+
+    if distractors.len() < 2 {
+        return Ok(LessonCardView::Normal(original_card));
+    }
+
+    let max_distractors = 8usize.saturating_sub(correct_count);
+    distractors.truncate(max_distractors);
+
+    let distractor_options: Vec<QuizOption> = distractors
+        .into_iter()
+        .map(|text| QuizOption::new_simple(text, false))
+        .collect();
+
+    options.extend(distractor_options);
+    options.shuffle(&mut rand::rng());
+
+    let quiz = QuizCard::new(original_card, options, QuizMode::Multi);
+    Ok(LessonCardView::KanjiReadingQuiz(quiz))
+}
+
+fn collect_distractors(
+    same_type_cards: &[Card],
+    target_readings: &[String],
+    kanji_cache: &mut HashMap<String, &'static KanjiInfo>,
+) -> Vec<String> {
     let mut distractors: Vec<String> = same_type_cards
         .iter()
         .filter_map(|c| match c {
@@ -198,25 +240,9 @@ pub(crate) fn generate_kanji_reading_quiz(
 
     let mut seen = std::collections::HashSet::new();
     distractors.retain(|r| seen.insert(r.clone()));
-
     distractors.shuffle(&mut rand::rng());
 
-    if distractors.len() < 3 {
-        return Ok(LessonCardView::Normal(original_card));
-    }
-
-    let selected_distractors: Vec<String> = distractors.into_iter().take(3).collect();
-
-    let mut options: Vec<QuizOption> = selected_distractors
-        .into_iter()
-        .map(|text| QuizOption::new(text, false))
-        .collect();
-
-    options.push(QuizOption::new(correct_reading, true));
-    options.shuffle(&mut rand::rng());
-
-    let quiz = QuizCard::new(original_card, options);
-    Ok(LessonCardView::KanjiReadingQuiz(quiz))
+    distractors
 }
 
 fn cached_kanji_info<'a>(
@@ -298,12 +324,12 @@ pub(crate) fn generate_grammar_quiz(
 
     let mut options: Vec<QuizOption> = distractors
         .into_iter()
-        .map(|text| QuizOption::new(text, false))
+        .map(|text| QuizOption::new_simple(text, false))
         .collect();
-    options.push(QuizOption::new(correct_text, true));
+    options.push(QuizOption::new_simple(correct_text, true));
     options.shuffle(&mut rng);
 
-    let quiz = QuizCard::new(original_card.clone(), options);
+    let quiz = QuizCard::new(original_card.clone(), options, QuizMode::Single);
 
     let grammar_title = grammar_rule_card
         .title(&DEFAULT_LANG)

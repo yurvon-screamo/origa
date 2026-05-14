@@ -23,7 +23,7 @@ fn extract_grammar_rule(study_card: &StudyCard) -> Option<&'static origa::domain
 pub fn GrammarDetailDrawer(
     study_card: StudyCard,
     #[prop(into)] native_language: Signal<NativeLanguage>,
-    known_kanji: HashSet<String>,
+    known_kanji: HashSet<char>,
     user: Option<User>,
     on_toggle_favorite: Callback<Ulid>,
     on_mark_as_known: Callback<()>,
@@ -85,7 +85,7 @@ pub fn GrammarDetailDrawer(
     let has_quiz = grammar_rule.map(|r| r.has_format_map()).unwrap_or(false);
     let quiz_rule = grammar_rule;
     let quiz_user: StoredValue<Option<User>> = StoredValue::new(user);
-    let known_kanji_stored: StoredValue<HashSet<String>> = StoredValue::new(known_kanji);
+    let known_kanji_stored: StoredValue<HashSet<char>> = StoredValue::new(known_kanji);
 
     let difficulty = memory
         .difficulty()

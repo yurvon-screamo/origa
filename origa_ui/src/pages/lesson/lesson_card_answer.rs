@@ -24,7 +24,7 @@ pub fn LessonCardAnswer(
     radicals: Option<Vec<RadicalDisplay>>,
     example_words: Option<Vec<(String, String)>>,
     grammar_info: Option<GrammarInfo>,
-    #[prop(into)] known_kanji: Signal<HashSet<String>>,
+    #[prop(into)] known_kanji: Signal<HashSet<char>>,
 ) -> impl IntoView {
     let i18n = use_i18n();
     let question = StoredValue::new(question_text);

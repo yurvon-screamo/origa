@@ -16,7 +16,7 @@ pub use grammar::GrammarRuleCard;
 pub use kanji::{ExampleKanjiWord, KanjiCard};
 pub use lesson::{
     GrammarInfo, GrammarQuizCard, LessonCard, LessonCardView, LessonData, LessonViewGenerator,
-    QuizCard, QuizOption, YesNoCard,
+    MultiQuizResult, QuizCard, QuizMode, QuizOption, YesNoCard,
 };
 pub use phrase::PhraseCard;
 pub use vocabulary::VocabularyCard;
@@ -158,12 +158,12 @@ impl KnowledgeSet {
             .unwrap_or(0)
     }
 
-    pub fn get_known_kanji(&self) -> HashSet<String> {
+    pub fn get_known_kanji(&self) -> HashSet<char> {
         self.study_cards
             .values()
             .filter_map(|study_card| match study_card.card() {
                 Card::Kanji(kanji_card) if study_card.memory().is_known_card() => {
-                    Some(kanji_card.kanji().text().to_string())
+                    kanji_card.kanji().text().chars().next()
                 },
                 _ => None,
             })
