@@ -88,7 +88,6 @@ pub(super) fn create_on_start_import_callback(
                         import_result.created_grammar,
                         import_result.skipped_duplicates
                     );
-                    is_importing.set(false);
 
                     if let Ok(Some(mut user)) = repo.get_current_user().await {
                         user.set_daily_load(state.get_untracked().daily_load);
@@ -105,6 +104,7 @@ pub(super) fn create_on_start_import_callback(
                     state.update(|s| {
                         s.go_to_next_step();
                     });
+                    is_importing.set(false);
                 },
                 Err(e) => {
                     tracing::error!("Import failed: {:?}", e);

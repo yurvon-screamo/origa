@@ -2,8 +2,8 @@ use crate::i18n::*;
 use crate::loaders::recalculate_user_jlpt_progress;
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{
-    AudioButtons, Button, ButtonVariant, Card, FuriganaText, MarkdownText, Text, TextSize,
-    TypographyVariant, get_reading_from_text, is_speech_supported, speak_text,
+    AudioButtons, Button, ButtonVariant, Card, FuriganaText, MarkdownText, Tag, Text, TextSize,
+    TypographyVariant, is_speech_supported, speak_word,
 };
 use leptos::prelude::*;
 use leptos::task::spawn_local;
@@ -140,8 +140,7 @@ pub fn ScoringStep(
         }
         if let Some(card) = current_card.get() {
             if is_speech_supported() {
-                let reading = get_reading_from_text(&card.question);
-                let _ = speak_text(&reading, 1.0);
+                speak_word(&card.question, 1.0);
             }
         }
     });
@@ -259,6 +258,11 @@ pub fn ScoringStep(
                                 <div class="text-center">
                                     <div class="relative">
                                         <div class="text-center">
+                                            <Tag variant=Signal::derive(move || card.card_type.tag_variant())>
+                                                {card.card_type.label(&i18n)}
+                                            </Tag>
+                                        </div>
+                                        <div class="text-center mt-2">
                                             <FuriganaText
                                                 text={card.question.clone()}
                                                 known_kanji=HashSet::new()

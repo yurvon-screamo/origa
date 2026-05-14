@@ -1,7 +1,7 @@
 use crate::i18n::*;
 use crate::ui_components::{
     Button, ButtonVariant, Card, DisplayText, MarkdownText, MarkdownVariant, Text, TextSize,
-    TypographyVariant, get_reading_from_text, is_speech_supported, speak_text,
+    TypographyVariant, get_reading_from_text, is_speech_supported, speak_tts_text,
 };
 use leptos::prelude::*;
 use origa::domain::{Card as DomainCard, NativeLanguage, YesNoCard};
@@ -92,7 +92,7 @@ pub fn YesNoCardView(
             .unwrap_or(false);
         if !show_result && card_type != CardType::Kanji && is_speech_supported() && !is_muted {
             let reading = get_reading_from_text(&question_text.get_value());
-            let _ = speak_text(&reading, 1.0);
+            let _ = speak_tts_text(&reading, 1.0);
         }
     });
 
