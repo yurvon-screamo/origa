@@ -1122,3 +1122,84 @@ fn onboarding_scoring_does_not_consume_daily_limit() {
         "All 7 remaining new cards should be in lesson (not limited by onboarding), got {new_in_lesson}"
     );
 }
+
+#[test]
+fn favorite_card_appears_once_when_due_high_difficulty() {
+    let mut knowledge_set = KnowledgeSet::new();
+    let card = create_vocab_card("猫");
+    let study_card = knowledge_set.create_card(card).unwrap();
+    let card_id = *study_card.card_id();
+
+    knowledge_set
+        .rate_card(card_id, Rating::Again, RateMode::ShortTerm)
+        .unwrap();
+
+    knowledge_set.toggle_favorite(card_id).unwrap();
+
+    let result = knowledge_set.cards_to_lesson(10, &JlptContent::new());
+
+    let count = result
+        .card_ids()
+        .iter()
+        .filter(|id| **id == card_id)
+        .count();
+    assert_eq!(
+        count, 1,
+        "Favorite card should appear exactly once, got {count}"
+    );
+}
+
+#[test]
+fn favorite_card_appears_once_when_new() {
+    let mut knowledge_set = KnowledgeSet::new();
+
+    for i in 0..5 {
+        knowledge_set
+            .create_card(create_vocab_card(&format!("filler{i}")))
+            .unwrap();
+    }
+
+    let card = create_vocab_card("犬");
+    let study_card = knowledge_set.create_card(card).unwrap();
+    let card_id = *study_card.card_id();
+
+    knowledge_set.toggle_favorite(card_id).unwrap();
+
+    let result = knowledge_set.cards_to_lesson(10, &JlptContent::new());
+
+    let count = result
+        .card_ids()
+        .iter()
+        .filter(|id| **id == card_id)
+        .count();
+    assert_eq!(
+        count, 1,
+        "Favorite new card should appear exactly once, got {count}"
+    );
+}
+
+#[test]
+fn favorite_card_appears_once_when_due_known() {
+    let mut knowledge_set = KnowledgeSet::new();
+    let card = create_vocab_card("鳥");
+    let study_card = knowledge_set.create_card(card).unwrap();
+    let card_id = *study_card.card_id();
+
+    knowledge_set
+        .rate_card(card_id, Rating::Good, RateMode::StandardLesson)
+        .unwrap();
+
+    knowledge_set.toggle_favorite(card_id).unwrap();
+
+    let result = knowledge_set.cards_to_lesson(10, &JlptContent::new());
+
+    let count = result
+        .card_ids()
+        .iter()
+        .filter(|id| **id == card_id)
+        .count();
+    assert_eq!(
+        count, 1,
+        "Favorite due+known card should appear exactly once, got {count}"
+    );
+}

@@ -38,16 +38,18 @@ pub(crate) fn build_lesson(
         .copied()
         .collect();
 
-    let mut selected_cards = collect_core_high_difficulty(&all_cards, &favorite_cards);
+    let favorite_ids: HashSet<Ulid> = favorite_cards.iter().map(|(id, _)| **id).collect();
+
+    let mut selected_cards = collect_core_high_difficulty(&all_cards, &favorite_ids);
     collect_core_new_cards(
         &all_cards,
         &mut selected_cards,
-        &favorite_cards,
+        &favorite_ids,
         knowledge_set.new_cards_studied_today(),
         daily_new_limit,
         jlpt_content,
     );
-    fill_core_due_known(&all_cards, &mut selected_cards, &favorite_cards);
+    fill_core_due_known(&all_cards, &mut selected_cards, &favorite_ids);
 
     let all_selected_ids = build_selected_ids(&selected_cards, &favorite_cards);
     let padding_cards = collect_padding(&all_cards, &all_selected_ids);
@@ -70,13 +72,14 @@ pub(crate) fn build_lesson(
 
 fn collect_core_high_difficulty<'a>(
     all_cards: &[(&'a Ulid, &'a StudyCard)],
-    favorite_cards: &[(&'a Ulid, &'a StudyCard)],
+    favorite_ids: &HashSet<Ulid>,
 ) -> Vec<(&'a Ulid, &'a StudyCard)> {
-    let limit = MAX_LESSON_SIZE.saturating_sub(favorite_cards.len());
+    let limit = MAX_LESSON_SIZE.saturating_sub(favorite_ids.len());
     all_cards
         .iter()
-        .filter(|(_, card)| {
-            !matches!(card.card(), Card::Phrase(_))
+        .filter(|(id, card)| {
+            !favorite_ids.contains(id)
+                && !matches!(card.card(), Card::Phrase(_))
                 && card.memory().is_due()
                 && card.memory().is_high_difficulty()
         })
@@ -88,14 +91,18 @@ fn collect_core_high_difficulty<'a>(
 fn collect_core_new_cards<'a>(
     all_cards: &[(&'a Ulid, &'a StudyCard)],
     selected_cards: &mut Vec<(&'a Ulid, &'a StudyCard)>,
-    favorite_cards: &[(&'a Ulid, &'a StudyCard)],
+    favorite_ids: &HashSet<Ulid>,
     new_cards_studied_today: usize,
     daily_new_limit: usize,
     jlpt_content: &JlptContent,
 ) {
     let new_core_cards: Vec<_> = all_cards
         .iter()
-        .filter(|(_, card)| !matches!(card.card(), Card::Phrase(_)) && card.memory().is_new())
+        .filter(|(id, card)| {
+            !favorite_ids.contains(id)
+                && !matches!(card.card(), Card::Phrase(_))
+                && card.memory().is_new()
+        })
         .copied()
         .collect();
 
@@ -104,7 +111,7 @@ fn collect_core_new_cards<'a>(
     }
 
     let distributed = distribute_new_cards(new_core_cards, jlpt_content);
-    let available = MAX_LESSON_SIZE.saturating_sub(selected_cards.len() + favorite_cards.len());
+    let available = MAX_LESSON_SIZE.saturating_sub(selected_cards.len() + favorite_ids.len());
     let daily_remaining = daily_new_limit
         .saturating_sub(new_cards_studied_today)
         .saturating_sub(
@@ -126,9 +133,9 @@ fn collect_core_new_cards<'a>(
 fn fill_core_due_known<'a>(
     all_cards: &[(&'a Ulid, &'a StudyCard)],
     selected_cards: &mut Vec<(&'a Ulid, &'a StudyCard)>,
-    favorite_cards: &[(&'a Ulid, &'a StudyCard)],
+    favorite_ids: &HashSet<Ulid>,
 ) {
-    let current_count = selected_cards.len() + favorite_cards.len();
+    let current_count = selected_cards.len() + favorite_ids.len();
     let remaining = MAX_LESSON_SIZE.saturating_sub(current_count);
     if remaining == 0 {
         return;
@@ -136,8 +143,9 @@ fn fill_core_due_known<'a>(
 
     let due_known: Vec<_> = all_cards
         .iter()
-        .filter(|(_, card)| {
-            !matches!(card.card(), Card::Phrase(_))
+        .filter(|(id, card)| {
+            !favorite_ids.contains(id)
+                && !matches!(card.card(), Card::Phrase(_))
                 && card.memory().is_due()
                 && (card.memory().is_in_progress() || card.memory().is_known_card())
         })
