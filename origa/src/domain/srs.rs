@@ -41,45 +41,35 @@ impl FsrsSrsService {
         let short_term_parameters = Parameters {
             request_retention: 0.95,
             maximum_interval: 1, // 1 day for short-term learning sessions
-            enable_fuzz: true,
-            enable_short_term: false,
+            enable_fuzz: false,
             ..Default::default()
         };
 
         let long_term_parameters = Parameters {
+            request_retention: 0.85,
+            maximum_interval: 180,
             enable_fuzz: true,
-            enable_short_term: true,
             ..Default::default()
         };
 
-        // w[0..4] × 3 — повышенная начальная стабильность для фраз
-        let phrase_review_weights: [f64; 19] = [
-            1.2216, 3.5487, 9.3786, 46.4166, 7.2102, 0.5316, 1.0651, 0.0234, 1.616, 0.1544, 1.0824,
-            1.9813, 0.0953, 0.2975, 2.2042, 0.2407, 2.9466, 0.5034, 0.6567,
-        ];
-
         let phrase_review_parameters = Parameters {
-            request_retention: 0.92,
+            request_retention: 0.70,
             maximum_interval: 365,
             enable_fuzz: true,
-            enable_short_term: true,
-            w: phrase_review_weights,
             ..Default::default()
         };
 
         let grammar_review_parameters = Parameters {
-            request_retention: 0.92,
+            request_retention: 0.90,
             maximum_interval: 60,
             enable_fuzz: true,
-            enable_short_term: true,
             ..Default::default()
         };
 
         let kanji_review_parameters = Parameters {
-            request_retention: 0.92,
-            maximum_interval: 60,
+            request_retention: 0.90,
+            maximum_interval: 90,
             enable_fuzz: true,
-            enable_short_term: true,
             ..Default::default()
         };
 
