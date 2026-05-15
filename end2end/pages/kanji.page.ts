@@ -141,14 +141,15 @@ export class KanjiPage extends BasePage {
         await this.clickCardActionBtn(index, "kanji-card-item-mark-known-btn");
     }
 
-    // Dispatch a non-bubbling click via evaluate() to prevent the event
-    // from reaching the parent card's on:click handler which opens the detail drawer
+    // Buttons use stop_propagation() in the component, so a bubbling click
+    // won't reach the parent card's on:click handler that opens the detail drawer.
+    // Leptos event delegation requires bubbles: true for the handler to fire.
     private async clickCardActionBtn(index: number, btnTestId: string): Promise<void> {
         const selector = `[data-testid="kanji-card-item"]:nth-of-type(${index + 1}) [data-testid="${btnTestId}"]`;
         await this.page.evaluate((sel: string) => {
             const el = document.querySelector(sel) as HTMLElement;
             if (el) {
-                el.dispatchEvent(new MouseEvent("click", { bubbles: false }));
+                el.dispatchEvent(new MouseEvent("click", { bubbles: true }));
             }
         }, selector);
     }
@@ -173,13 +174,9 @@ export class KanjiPage extends BasePage {
     }
 
     async toggleFavoriteByIndex(index: number): Promise<void> {
-        const selector = `[data-testid="kanji-card-item"]:nth-of-type(${index + 1}) [data-testid="kanji-card-item-favorite-btn"]`;
-        await this.page.evaluate((sel: string) => {
-            const el = document.querySelector(sel) as HTMLElement;
-            if (el) {
-                el.dispatchEvent(new MouseEvent("click", { bubbles: false }));
-            }
-        }, selector);
-        await this.page.waitForTimeout(500);
+        const card = this.page.getByTestId("kanji-card-item").nth(index);
+        const btn = card.getByTestId("kanji-card-item-favorite-btn");
+        await btn.dispatchEvent("click");
+        await this.page.waitForTimeout(1000);
     }
 }

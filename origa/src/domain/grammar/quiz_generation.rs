@@ -2,10 +2,81 @@ use std::collections::HashSet;
 
 use rand::Rng;
 use rand::prelude::IndexedRandom;
+use rand::prelude::SliceRandom;
 
-use crate::dictionary::grammar::{FormatAction, FormatActionGroup};
+use crate::dictionary::grammar::{FormatAction, FormatActionGroup, GrammarRule};
 use crate::domain::knowledge::KnowledgeSet;
-use crate::domain::{Card, PartOfSpeech, apply_format_actions};
+use crate::domain::{Card, OrigaError, PartOfSpeech, apply_format_actions};
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct GrammarPracticeQuestion {
+    word_text: String,
+    options: Vec<String>,
+    correct_index: usize,
+}
+
+impl GrammarPracticeQuestion {
+    pub fn word_text(&self) -> &str {
+        &self.word_text
+    }
+
+    pub fn options(&self) -> &[String] {
+        &self.options
+    }
+
+    pub fn correct_index(&self) -> usize {
+        self.correct_index
+    }
+}
+
+pub fn generate_grammar_practice_questions(
+    rule: &GrammarRule,
+    knowledge_set: &KnowledgeSet,
+    count: usize,
+    rng: &mut impl Rng,
+) -> Result<Vec<GrammarPracticeQuestion>, OrigaError> {
+    let pos = rule
+        .apply_to()
+        .into_iter()
+        .next()
+        .ok_or_else(|| OrigaError::GrammarFormatError {
+            reason: "Rule has no supported parts of speech".to_string(),
+        })?;
+
+    let mut words = find_known_vocab_words_for_pos(knowledge_set, &pos);
+    words.shuffle(rng);
+
+    let selected_words: Vec<String> = words.into_iter().take(count).collect();
+
+    let mut questions = Vec::with_capacity(selected_words.len());
+
+    for word in selected_words {
+        let correct = rule.format(&word, &pos)?;
+
+        let actions = match rule.format_actions_for_pos(&pos) {
+            Some(a) => a,
+            None => continue,
+        };
+
+        let distractors = generate_grammar_distractors(actions, &word, &pos, &correct, 3, rng);
+
+        if distractors.len() < 3 {
+            continue;
+        }
+
+        let mut options = distractors;
+        let correct_index = rng.random_range(0..=options.len());
+        options.insert(correct_index, correct);
+
+        questions.push(GrammarPracticeQuestion {
+            word_text: word,
+            options,
+            correct_index,
+        });
+    }
+
+    Ok(questions)
+}
 
 pub fn find_known_vocab_words_for_pos(
     knowledge_set: &KnowledgeSet,
@@ -148,5 +219,179 @@ mod tests {
         let ks = KnowledgeSet::new();
         let result = find_known_vocab_words_for_pos(&ks, &PartOfSpeech::Verb);
         assert!(result.is_empty());
+    }
+
+    mod generate_grammar_practice_questions {
+        use super::*;
+        use crate::dictionary::grammar::{FormatAction, GrammarRule, GrammarRuleContent};
+        use crate::domain::knowledge::VocabularyCard;
+        use crate::domain::memory::{MemoryState, ReviewLog};
+        use crate::domain::value_objects::{NativeLanguage, Question};
+        use crate::domain::{JapaneseLevel, Rating};
+        use chrono::Duration;
+        use std::collections::HashMap;
+        use ulid::Ulid;
+
+        fn create_verb_rule() -> GrammarRule {
+            GrammarRule::new(
+                Ulid::new(),
+                JapaneseLevel::N5,
+                HashMap::from([(
+                    NativeLanguage::English,
+                    GrammarRuleContent::new(
+                        "Test Masu".to_string(),
+                        "Test desc".to_string(),
+                        "# Test".to_string(),
+                    ),
+                )]),
+                Some(HashMap::from([(
+                    PartOfSpeech::Verb,
+                    vec![FormatAction::VerbToMasu {}],
+                )])),
+            )
+        }
+
+        fn create_known_vocab_card(word: &str) -> Card {
+            Card::Vocabulary(VocabularyCard::new(
+                Question::new(word.to_string()).unwrap(),
+            ))
+        }
+
+        fn add_known_vocab(ks: &mut KnowledgeSet, word: &str) {
+            let mut study_card = ks.create_card(create_known_vocab_card(word)).unwrap();
+
+            let memory = MemoryState::new(
+                crate::domain::memory::Stability::new(15.0).unwrap(),
+                crate::domain::memory::Difficulty::new(2.0).unwrap(),
+                chrono::Utc::now(),
+            );
+            study_card.add_review(memory, ReviewLog::new(Rating::Good, Duration::days(1)));
+        }
+
+        #[test]
+        fn returns_error_when_no_supported_pos() {
+            let rule = GrammarRule::new(
+                Ulid::new(),
+                JapaneseLevel::N5,
+                HashMap::from([(
+                    NativeLanguage::English,
+                    GrammarRuleContent::new(
+                        "Empty".to_string(),
+                        "No POS".to_string(),
+                        "# Empty".to_string(),
+                    ),
+                )]),
+                None,
+            );
+
+            let ks = KnowledgeSet::new();
+            let result = generate_grammar_practice_questions(&rule, &ks, 3, &mut rand::rng());
+
+            assert!(result.is_err());
+            assert!(matches!(
+                result.unwrap_err(),
+                OrigaError::GrammarFormatError { .. }
+            ));
+        }
+
+        #[test]
+        fn returns_empty_for_empty_knowledge_set() {
+            crate::use_cases::init_real_dictionaries();
+
+            let rule = create_verb_rule();
+            let ks = KnowledgeSet::new();
+            let result = generate_grammar_practice_questions(&rule, &ks, 3, &mut rand::rng());
+
+            assert!(result.unwrap().is_empty());
+        }
+
+        #[test]
+        fn practice_questions_have_unique_words() {
+            crate::use_cases::init_real_dictionaries();
+
+            let rule = create_verb_rule();
+            let mut ks = KnowledgeSet::new();
+
+            for word in ["行く", "食べる", "飲む", "読む", "書く"] {
+                add_known_vocab(&mut ks, word);
+            }
+
+            let questions =
+                generate_grammar_practice_questions(&rule, &ks, 5, &mut rand::rng()).unwrap();
+
+            let words: HashSet<&str> = questions.iter().map(|q| q.word_text()).collect();
+            assert_eq!(
+                words.len(),
+                questions.len(),
+                "All word texts must be unique"
+            );
+        }
+
+        #[test]
+        fn returns_fewer_when_not_enough_words() {
+            crate::use_cases::init_real_dictionaries();
+
+            let rule = create_verb_rule();
+            let mut ks = KnowledgeSet::new();
+
+            add_known_vocab(&mut ks, "行く");
+            add_known_vocab(&mut ks, "食べる");
+
+            let questions =
+                generate_grammar_practice_questions(&rule, &ks, 10, &mut rand::rng()).unwrap();
+
+            assert!(
+                questions.len() <= 2,
+                "Expected at most 2 questions, got {}",
+                questions.len()
+            );
+        }
+
+        #[test]
+        fn correct_answer_is_at_correct_index() {
+            crate::use_cases::init_real_dictionaries();
+
+            let rule = create_verb_rule();
+            let mut ks = KnowledgeSet::new();
+
+            for word in ["行く", "食べる", "飲む"] {
+                add_known_vocab(&mut ks, word);
+            }
+
+            let questions =
+                generate_grammar_practice_questions(&rule, &ks, 3, &mut rand::rng()).unwrap();
+
+            for q in &questions {
+                let correct = &q.options[q.correct_index];
+                let expected = rule.format(q.word_text(), &PartOfSpeech::Verb).unwrap();
+                assert_eq!(
+                    correct, &expected,
+                    "Option at correct_index should be the formatted word"
+                );
+            }
+        }
+
+        #[test]
+        fn each_question_has_four_options() {
+            crate::use_cases::init_real_dictionaries();
+
+            let rule = create_verb_rule();
+            let mut ks = KnowledgeSet::new();
+
+            for word in ["行く", "食べる", "飲む", "読む"] {
+                add_known_vocab(&mut ks, word);
+            }
+
+            let questions =
+                generate_grammar_practice_questions(&rule, &ks, 4, &mut rand::rng()).unwrap();
+
+            for q in &questions {
+                assert_eq!(
+                    q.options.len(),
+                    4,
+                    "Each question must have exactly 4 options (1 correct + 3 distractors)"
+                );
+            }
+        }
     }
 }

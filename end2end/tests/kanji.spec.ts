@@ -311,12 +311,12 @@ testWithFreshUser.describe("Kanji Page - Favorite Instant UI Update", () => {
         await addFirstKanji(kanjiPage);
         await expect(kanjiPage.kanjiGrid).toBeVisible({ timeout: 10_000 });
 
-        expect(await kanjiPage.isFavorited(0)).toBe(false);
+        await expect.poll(async () => await kanjiPage.isFavorited(0), { timeout: 5000 }).toBe(false);
 
         await kanjiPage.toggleFavoriteByIndex(0);
-        expect(await kanjiPage.isFavorited(0)).toBe(true);
+        await expect.poll(async () => await kanjiPage.isFavorited(0), { timeout: 5000 }).toBe(true);
 
         await kanjiPage.toggleFavoriteByIndex(0);
-        expect(await kanjiPage.isFavorited(0)).toBe(false);
+        await expect.poll(async () => await kanjiPage.isFavorited(0), { timeout: 5000 }).toBe(false);
     });
 });

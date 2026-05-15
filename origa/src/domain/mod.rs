@@ -22,7 +22,8 @@ pub use furigana::{FuriganaSegment, furiganize_segments, furiganize_text, furiga
 pub use furigana_annotator::{AnnotatedSpan, annotate_text};
 pub use grammar::apply_format_actions;
 pub use grammar::quiz_generation::{
-    apply_mutated_pattern, find_known_vocab_words_for_pos, generate_grammar_distractors,
+    GrammarPracticeQuestion, apply_mutated_pattern, find_known_vocab_words_for_pos,
+    generate_grammar_distractors, generate_grammar_practice_questions,
 };
 pub use japanese::{JapaneseChar, JapaneseText};
 pub use jlpt_content::{JlptContent, JlptContentError};

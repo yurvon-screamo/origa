@@ -2,7 +2,7 @@ use std::collections::HashSet;
 use std::sync::Arc;
 
 use super::super::shared::{CardStatus, DeleteRequest};
-use super::grammar_quiz_modal::GrammarQuizModal;
+use super::grammar_practice_modal::GrammarPracticeModal;
 use crate::i18n::{t, use_i18n};
 use crate::ui_components::{
     CardActionBar, CardHistoryModal, DeleteConfirmModal, Drawer, FuriganaText, Heading,
@@ -40,7 +40,7 @@ pub fn GrammarDetailDrawer(
     let is_open = RwSignal::new(true);
     let is_history_open = RwSignal::new(false);
     let is_delete_modal_open = RwSignal::new(false);
-    let is_quiz_open = RwSignal::new(false);
+    let is_practice_open = RwSignal::new(false);
 
     let confirm_delete = Callback::new(move |_| {
         on_delete.run(DeleteRequest {
@@ -118,17 +118,25 @@ pub fn GrammarDetailDrawer(
 
     let practice_label = t!(i18n, grammar_page.practice);
     let practice_fn: ChildrenFn = Arc::new(move || {
+        let label = practice_label;
         view! {
-            <Show when=move || has_quiz && quiz_user.get_value().is_some() && quiz_rule.is_some()>
+            <Show when=move || quiz_user.get_value().is_some() && quiz_rule.is_some()>
                 <button
-                    class="btn btn-olive text-sm cursor-pointer"
+                    class=move || if has_quiz {
+                        "btn btn-olive text-sm cursor-pointer".to_string()
+                    } else {
+                        "btn btn-olive text-sm opacity-50 cursor-not-allowed".to_string()
+                    }
+                    disabled=!has_quiz
                     data-testid="grammar-card-practice-btn"
                     on:click=move |ev: leptos::ev::MouseEvent| {
                         ev.stop_propagation();
-                        is_quiz_open.set(true);
+                        if has_quiz {
+                            is_practice_open.set(true);
+                        }
                     }
                 >
-                    {practice_label}
+                    {label}
                 </button>
             </Show>
         }
@@ -186,17 +194,17 @@ pub fn GrammarDetailDrawer(
             on_confirm=confirm_delete
             on_close=Callback::new(move |_| is_delete_modal_open.set(false))
         />
-        <Show when=move || is_quiz_open.get() && quiz_rule.is_some() && quiz_user.get_value().is_some()>
+        <Show when=move || is_practice_open.get() && quiz_rule.is_some() && quiz_user.get_value().is_some()>
             {move || {
                 let rule = quiz_rule?;
                 let user = quiz_user.get_value()?;
                 Some(view! {
-                    <GrammarQuizModal
+                    <GrammarPracticeModal
                         rule=rule
                         native_language=native_language
                         user=user
-                        is_open=Signal::derive(move || is_quiz_open.get())
-                        on_close=Callback::new(move |_| is_quiz_open.set(false))
+                        is_open=Signal::derive(move || is_practice_open.get())
+                        on_close=Callback::new(move |_| is_practice_open.set(false))
                     />
                 }.into_any())
             }}

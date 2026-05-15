@@ -26,6 +26,17 @@ export class GrammarPage extends BasePage {
     // Pagination
     readonly loadMoreButton: Locator;
 
+    // Practice mode
+    readonly practiceModal: Locator;
+    readonly practiceProgress: Locator;
+    readonly practiceCorrectCount: Locator;
+    readonly practiceOptions: readonly [Locator, Locator, Locator, Locator];
+    readonly practiceNextBtn: Locator;
+    readonly practiceCloseBtn: Locator;
+    readonly practiceComplete: Locator;
+    readonly practiceAgainBtn: Locator;
+    readonly practiceNoWords: Locator;
+
     constructor(page: Page) {
         super(page);
 
@@ -49,6 +60,22 @@ export class GrammarPage extends BasePage {
 
         // Pagination
         this.loadMoreButton = page.getByTestId("grammar-load-more-btn");
+
+        // Practice mode
+        this.practiceModal = page.getByTestId("grammar-practice-modal");
+        this.practiceProgress = page.getByTestId("grammar-practice-progress");
+        this.practiceCorrectCount = page.getByTestId("grammar-practice-correct-count");
+        this.practiceOptions = [
+            page.getByTestId("grammar-practice-option-0"),
+            page.getByTestId("grammar-practice-option-1"),
+            page.getByTestId("grammar-practice-option-2"),
+            page.getByTestId("grammar-practice-option-3"),
+        ] as const;
+        this.practiceNextBtn = page.getByTestId("grammar-practice-next-btn");
+        this.practiceCloseBtn = page.getByTestId("grammar-practice-close-btn");
+        this.practiceComplete = page.getByTestId("grammar-practice-complete");
+        this.practiceAgainBtn = page.getByTestId("grammar-practice-again-btn");
+        this.practiceNoWords = page.getByTestId("grammar-practice-no-words");
     }
 
     async goto(): Promise<void> {
@@ -152,14 +179,10 @@ export class GrammarPage extends BasePage {
     }
 
     async toggleFavoriteByIndex(index: number): Promise<void> {
-        const selector = `[data-testid="grammar-card-item"]:nth-of-type(${index + 1}) [data-testid="grammar-card-item-favorite-btn"]`;
-        await this.page.evaluate((sel: string) => {
-            const el = document.querySelector(sel) as HTMLElement;
-            if (el) {
-                el.dispatchEvent(new MouseEvent("click", { bubbles: false }));
-            }
-        }, selector);
-        await this.page.waitForTimeout(500);
+        const card = this.page.getByTestId("grammar-card-item").nth(index);
+        const btn = card.getByTestId("grammar-card-item-favorite-btn");
+        await btn.dispatchEvent("click");
+        await this.page.waitForTimeout(1000);
     }
 
     private async clickCardActionBtn(index: number, btnTestId: string): Promise<void> {
@@ -167,9 +190,32 @@ export class GrammarPage extends BasePage {
         await this.page.evaluate((sel: string) => {
             const el = document.querySelector(sel) as HTMLElement;
             if (el) {
-                el.dispatchEvent(new MouseEvent("click", { bubbles: false }));
+                el.dispatchEvent(new MouseEvent("click", { bubbles: true }));
             }
         }, selector);
+    }
+
+    async openPracticeForCard(index: number): Promise<void> {
+        const card = this.page.getByTestId("grammar-card-item").nth(index);
+        await card.click();
+        const detailDrawer = this.page.getByTestId("grammar-detail-drawer");
+        await expect(detailDrawer).toBeVisible({ timeout: 5000 });
+        const practiceBtn = this.page.getByTestId("grammar-card-practice-btn");
+        await expect(practiceBtn).toBeVisible({ timeout: 5000 });
+        await practiceBtn.click();
+    }
+
+    async isPracticeButtonDisabled(): Promise<boolean> {
+        const btn = this.page.getByTestId("grammar-card-practice-btn");
+        return btn.isDisabled();
+    }
+
+    async selectPracticeOption(index: number): Promise<void> {
+        await this.practiceOptions[index].click();
+    }
+
+    async clickPracticeNext(): Promise<void> {
+        await this.practiceNextBtn.click();
     }
 
     async isLoadMoreVisible(): Promise<boolean> {

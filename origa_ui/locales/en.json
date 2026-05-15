@@ -361,7 +361,15 @@
         "quiz_correct": "Correct!",
         "quiz_wrong": "Wrong",
         "quiz_close": "Close",
-        "quiz_no_words": "No suitable words found for practice"
+        "quiz_no_words": "No suitable words found for practice",
+        "practice_start": "Practice",
+        "practice_progress": "{} / {}",
+        "practice_correct_count": "Correct: {}",
+        "practice_complete": "Practice Complete!",
+        "practice_complete_stats": "{} out of {} correct",
+        "practice_again": "Try Again",
+        "practice_close": "Close",
+        "practice_no_words": "Not enough words for practice mode"
     },
     "kanji_page": {
         "add_kanji": "Add kanji",

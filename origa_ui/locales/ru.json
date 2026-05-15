@@ -361,7 +361,15 @@
     "quiz_correct": "Правильно!",
     "quiz_wrong": "Неправильно",
     "quiz_close": "Закрыть",
-    "quiz_no_words": "Нет подходящих слов для тренировки"
+    "quiz_no_words": "Нет подходящих слов для тренировки",
+    "practice_start": "Тренировка",
+    "practice_progress": "{} / {}",
+    "practice_correct_count": "Правильных: {}",
+    "practice_complete": "Тренировка завершена!",
+    "practice_complete_stats": "{} из {} правильно",
+    "practice_again": "Ещё раз",
+    "practice_close": "Закрыть",
+    "practice_no_words": "Недостаточно слов для тренировки"
   },
   "kanji_page": {
     "add_kanji": "Добавить кандзи",
