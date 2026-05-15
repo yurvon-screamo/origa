@@ -3,6 +3,7 @@ use leptos_icons::Icon;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::prelude::Closure;
 
+use super::word_audio::{register_audio, stop_current_audio, store_closure};
 use crate::ui_components::{get_reading_from_text, is_speech_supported, speak_word_with_callback};
 
 #[component]
@@ -22,6 +23,10 @@ pub fn AudioButtons(
         if val.is_empty() { None } else { Some(val) }
     };
 
+    on_cleanup(move || {
+        stop_current_audio();
+    });
+
     view! {
         <Show when=move || has_content>
             <div class=move || format!("audio-buttons {}", class.get())>
@@ -35,17 +40,26 @@ pub fn AudioButtons(
                             if is_playing.get() { return; }
                             is_playing.set(true);
                             if let Some(audio_url) = &src {
+                                stop_current_audio();
                                 let Ok(audio) = web_sys::HtmlAudioElement::new_with_src(audio_url) else {
                                     is_playing.set(false);
                                     return;
                                 };
-                                let on_end = Closure::<dyn Fn()>::new(move || {
-                                    is_playing.set(false);
+                                let is_playing_clone = is_playing;
+                                let on_end = Closure::<dyn FnMut()>::new(move || {
+                                    is_playing_clone.set(false);
                                 });
                                 audio.set_onended(Some(on_end.as_ref().unchecked_ref()));
-                                on_end.forget();
+                                store_closure(on_end);
+
+                                let is_playing_clone2 = is_playing;
+                                register_audio(audio.clone(), Some(Box::new(move || {
+                                    is_playing_clone2.set(false);
+                                })));
+
                                 let _ = audio.play();
                             } else if is_speech_supported() {
+                                stop_current_audio();
                                 speak_word_with_callback(&text, 1.0, move || {
                                     is_playing.set(false);
                                 });

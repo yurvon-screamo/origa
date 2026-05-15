@@ -1,28 +1,48 @@
 use std::cell::RefCell;
-use std::rc::Rc;
 
 use leptos::wasm_bindgen::JsCast;
 use leptos::wasm_bindgen::closure::Closure;
 use origa::dictionary::pitch_audio::get_audio_for_word;
 use tracing::warn;
 
-use super::{get_reading_from_text, speak_tts_text, speak_tts_text_with_callback};
+use super::{get_reading_from_text, speak_tts_text, speak_tts_text_with_callback, stop_speech};
 use crate::core::config::cdn_url;
 
+struct ActiveAudio {
+    element: web_sys::HtmlAudioElement,
+    on_stop: Option<Box<dyn Fn()>>,
+}
+
 thread_local! {
-    static CURRENT_AUDIO: RefCell<Option<web_sys::HtmlAudioElement>> = const { RefCell::new(None) };
+    static CURRENT_AUDIO: RefCell<Option<ActiveAudio>> = const { RefCell::new(None) };
     static AUDIO_CLOSURES: RefCell<Vec<Closure<dyn FnMut()>>> = RefCell::new(Vec::new());
 }
 
-fn stop_current_audio() {
+pub fn stop_current_audio() {
     CURRENT_AUDIO.with(|cell| {
-        if let Some(audio) = cell.borrow().as_ref() {
-            let _ = audio.pause();
-            audio.set_src("");
+        if let Some(active) = cell.borrow_mut().take() {
+            if let Some(on_stop) = active.on_stop {
+                on_stop();
+            }
+            let _ = active.element.pause();
+            active.element.set_src("");
         }
     });
     AUDIO_CLOSURES.with(|cell| {
         cell.borrow_mut().clear();
+    });
+    let _ = stop_speech();
+}
+
+pub fn register_audio(element: web_sys::HtmlAudioElement, on_stop: Option<Box<dyn Fn()>>) {
+    CURRENT_AUDIO.with(|cell| {
+        *cell.borrow_mut() = Some(ActiveAudio { element, on_stop });
+    });
+}
+
+pub fn store_closure(closure: Closure<dyn FnMut()>) {
+    AUDIO_CLOSURES.with(|cell| {
+        cell.borrow_mut().push(closure);
     });
 }
 
@@ -37,8 +57,12 @@ fn create_and_play_audio(word: &str) -> Option<web_sys::HtmlAudioElement> {
 
     stop_current_audio();
 
+    let audio_clone = audio.clone();
     CURRENT_AUDIO.with(|cell| {
-        *cell.borrow_mut() = Some(audio.clone());
+        *cell.borrow_mut() = Some(ActiveAudio {
+            element: audio_clone,
+            on_stop: None,
+        });
     });
 
     let _ = audio.play();
@@ -88,7 +112,7 @@ where
         },
     };
 
-    let callback = Rc::new(RefCell::new(Some(on_end)));
+    let callback = std::rc::Rc::new(RefCell::new(Some(on_end)));
 
     let cb_ended = callback.clone();
     let on_ended = Closure::<dyn FnMut()>::new(move || {

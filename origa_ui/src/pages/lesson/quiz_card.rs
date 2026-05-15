@@ -1,7 +1,7 @@
 use crate::i18n::*;
 use crate::ui_components::{
     Card, DisplayText, FuriganaText, Heading, HeadingLevel, KanjiViewMode, KanjiWritingSection,
-    Text, TextSize, TypographyVariant, is_speech_supported, speak_word,
+    Text, TextSize, TypographyVariant, is_speech_supported, speak_word, stop_current_audio,
 };
 use leptos::prelude::*;
 use origa::domain::{Card as DomainCard, MultiQuizResult, NativeLanguage, QuizCard, QuizMode};
@@ -112,6 +112,10 @@ pub fn QuizCardView(
         if !show_result && card_type != CardType::Kanji && is_speech_supported() && !is_muted {
             speak_word(&question_text, 1.0);
         }
+    });
+
+    on_cleanup(move || {
+        stop_current_audio();
     });
 
     let is_multi = quiz_card.mode() == QuizMode::Multi;
