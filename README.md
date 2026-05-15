@@ -10,6 +10,22 @@
 
 Spaced repetition algorithms (FSRS), built-in OCR, text and audio recognition — everything runs locally on your device, with no data sent to the cloud.
 
+![Origa main dashboard](.media/en.hero.png)
+
+---
+
+## 🎯 Principles
+
+* **Learn from your own content** — you choose what to study. The app adapts to what you already know and what you're reading, watching, or listening to right now.
+* **Smart algorithms** — FSRS spaced repetition system (like Anki) optimizes review intervals for each word.
+* **Privacy** — all AI models and data processing run locally, nothing is sent to the cloud.
+* **Offline-first** — full functionality without internet.
+* **Cross-platform** — Web, Windows, Linux, macOS, Android.
+* **Learn in your language** — interface and dictionaries in Russian and English (more languages planned).
+* **JLPT analytics** — track your current level and forecast your progress.
+
+![Origa overview](.media/en.all_in_one.png)
+
 ---
 
 ## ✨ Features
@@ -43,17 +59,7 @@ Spaced repetition algorithms (FSRS), built-in OCR, text and audio recognition �
 * Listening and speech comprehension practice.
 * Immersion in conversational and everyday Japanese.
 
----
-
-## 🎯 Principles
-
-* **Learn from your own content** — you choose what to study. The app adapts to what you already know and what you're reading, watching, or listening to right now.
-* **Smart algorithms** — FSRS spaced repetition system (like Anki) optimizes review intervals for each word.
-* **Privacy** — all AI models and data processing run locally, nothing is sent to the cloud.
-* **Offline-first** — full functionality without internet.
-* **Cross-platform** — Web, Windows, Linux, macOS, Android.
-* **Learn in your language** — interface and dictionaries in Russian and English (more languages planned).
-* **JLPT analytics** — track your current level and forecast your progress.
+![Origa learning interface](.media/en.learn.png)
 
 ---
 
