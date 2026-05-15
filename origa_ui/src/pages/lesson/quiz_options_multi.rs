@@ -1,5 +1,5 @@
 use crate::i18n::*;
-use crate::ui_components::{MarkdownText, MarkdownVariant, Text, TextSize};
+use crate::ui_components::{Button, ButtonVariant, MarkdownText, MarkdownVariant, Text, TextSize};
 use leptos::prelude::*;
 use origa::domain::{MultiQuizResult, QuizOption};
 use std::collections::HashSet;
@@ -18,6 +18,8 @@ pub fn QuizOptionsMulti(
     on_dont_know: Callback<()>,
     dont_know_selected: bool,
     #[prop(into)] known_kanji: Signal<HashSet<char>>,
+    #[prop(default = false)] waiting_for_next: bool,
+    #[prop(default = Callback::new(|_: ()| {}))] on_next_card: Callback<()>,
 ) -> impl IntoView {
     let i18n = use_i18n();
     let selected_options_stored = StoredValue::new(selected_options);
@@ -62,11 +64,18 @@ pub fn QuizOptionsMulti(
             <button
                 data-testid="quiz-submit-btn"
                 class=move || {
-                    let base = "w-full mt-2 p-2 sm:p-4 border text-center transition-all flex items-center justify-center gap-2";
+                    let base = "w-full mt-2 p-2 sm:p-4 border text-center transition-all flex items-center justify-center gap-2 font-serif font-medium";
                     if selected_options_stored.get_value().is_empty() {
-                        format!("{} opacity-40 cursor-not-allowed border-[var(--border-dark)] bg-[var(--bg-paper)] text-[var(--fg-black)]", base)
+                        format!("{} opacity-40 cursor-not-allowed border-[var(--border-dark)] bg-[var(--bg-paper)]", base)
                     } else {
-                        format!("{} cursor-pointer bg-[var(--fg-black)] text-[var(--bg-paper)] border-[var(--fg-black)] hover:bg-[var(--bg-paper)] hover:text-[var(--fg-black)]", base)
+                        format!("{} cursor-pointer bg-[var(--fg-black)] border-[var(--fg-black)] hover:opacity-80", base)
+                    }
+                }
+                style=move || {
+                    if selected_options_stored.get_value().is_empty() {
+                        "color: var(--fg-black)".to_string()
+                    } else {
+                        "color: var(--bg-paper)".to_string()
                     }
                 }
                 disabled=move || selected_options_stored.get_value().is_empty()
@@ -74,7 +83,7 @@ pub fn QuizOptionsMulti(
                     on_submit.run(());
                 }
             >
-                <Text size=TextSize::Default>{t!(i18n, lesson.check)}</Text>
+                <span>{t!(i18n, lesson.check)}</span>
                 <span class="text-xs font-mono opacity-50">{t!(i18n, lesson.enter_key)}</span>
             </button>
         </Show>
@@ -103,6 +112,19 @@ pub fn QuizOptionsMulti(
                     <span class="text-[var(--fg-muted)] text-xs font-mono">{t!(i18n, lesson.space_key)}</span>
                 </Show>
             </button>
+        </Show>
+
+        <Show when=move || waiting_for_next && multi_submitted>
+            <div class="mt-4 flex justify-center">
+                <Button
+                    variant=Signal::derive(|| ButtonVariant::Filled)
+                    on_click=Callback::new(move |_| on_next_card.run(()))
+                    test_id=Signal::derive(|| "quiz-next-btn".to_string())
+                >
+                    <span>{t!(i18n, lesson.next)}</span>
+                    <span class="text-[var(--fg-light)]">{t!(i18n, lesson.space_key)}</span>
+                </Button>
+            </div>
         </Show>
     }
 }
