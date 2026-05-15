@@ -162,6 +162,28 @@ export class WordsPage extends BasePage {
         await firstItem.click();
     }
 
+    async selectAllAnalyzedWords(): Promise<void> {
+        const count = await this.analyzedWordItems.count();
+        for (let i = 0; i < count; i++) {
+            const item = this.analyzedWordItems.nth(i);
+            await item.waitFor({ state: "visible", timeout: 3000 });
+            await item.click();
+            await this.page.waitForTimeout(200);
+        }
+    }
+
+    async markAllCardsAsKnown(): Promise<void> {
+        const count = await this.getCardCount();
+        for (let i = 0; i < count; i++) {
+            const card = this.page.getByTestId("words-card-item").nth(i);
+            const btn = card.getByTestId("words-card-item-mark-known-btn");
+            if (await btn.isVisible().catch(() => false)) {
+                await btn.click();
+                await this.page.waitForTimeout(300);
+            }
+        }
+    }
+
     async addSelectedWords(): Promise<void> {
         await this.drawerAddBtn.click({ timeout: 5000 });
         await expect(this.drawer).not.toBeVisible({ timeout: 15_000 });

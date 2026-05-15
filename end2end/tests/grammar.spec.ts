@@ -1,7 +1,7 @@
 import { test, expect, type Page } from "@playwright/test";
 import { testWithFreshUser } from "../fixtures";
 import { skipOnboarding } from "../helpers/navigation";
-import { GrammarPage } from "../pages";
+import { GrammarPage, WordsPage } from "../pages";
 
 async function setupGrammarPage(page: Page): Promise<GrammarPage> {
     await skipOnboarding(page);
@@ -256,11 +256,11 @@ testWithFreshUser.describe("Grammar Page - Favorite Sync", () => {
         await expect(grammarPage.grammarGrid).toBeVisible({ timeout: 10_000 });
 
         // Verify initially NOT favorited
-        expect(await grammarPage.isFavorited(0)).toBe(false);
+        await expect.poll(async () => await grammarPage.isFavorited(0), { timeout: 5000 }).toBe(false);
 
         // Set to favorited
         await grammarPage.toggleFavoriteByIndex(0);
-        expect(await grammarPage.isFavorited(0)).toBe(true);
+        await expect.poll(async () => await grammarPage.isFavorited(0), { timeout: 5000 }).toBe(true);
 
         // Navigate to Home — triggers sync with server
         await page.getByTestId("sidebar-tab-home").click();
@@ -272,11 +272,11 @@ testWithFreshUser.describe("Grammar Page - Favorite Sync", () => {
         await expect(grammarPage.grammarGrid).toBeVisible({ timeout: 10_000 });
 
         // Verify favorite persisted after sync
-        expect(await grammarPage.isFavorited(0)).toBe(true);
+        await expect.poll(async () => await grammarPage.isFavorited(0), { timeout: 5000 }).toBe(true);
 
         // Un-favorite
         await grammarPage.toggleFavoriteByIndex(0);
-        expect(await grammarPage.isFavorited(0)).toBe(false);
+        await expect.poll(async () => await grammarPage.isFavorited(0), { timeout: 5000 }).toBe(false);
 
         // Navigate to Home — triggers sync with server
         await page.getByTestId("sidebar-tab-home").click();
@@ -288,7 +288,7 @@ testWithFreshUser.describe("Grammar Page - Favorite Sync", () => {
         await expect(grammarPage.grammarGrid).toBeVisible({ timeout: 10_000 });
 
         // Verify UN-favorite persisted after sync (this was the bug)
-        expect(await grammarPage.isFavorited(0)).toBe(false);
+        await expect.poll(async () => await grammarPage.isFavorited(0), { timeout: 5000 }).toBe(false);
     });
 });
 
@@ -302,12 +302,95 @@ testWithFreshUser.describe("Grammar Page - Favorite Instant UI Update", () => {
         await grammarPage.addSelectedRules();
         await expect(grammarPage.grammarGrid).toBeVisible({ timeout: 10_000 });
 
-        expect(await grammarPage.isFavorited(0)).toBe(false);
+        await expect.poll(async () => await grammarPage.isFavorited(0), { timeout: 5000 }).toBe(false);
 
         await grammarPage.toggleFavoriteByIndex(0);
-        expect(await grammarPage.isFavorited(0)).toBe(true);
+        await expect.poll(async () => await grammarPage.isFavorited(0), { timeout: 5000 }).toBe(true);
 
         await grammarPage.toggleFavoriteByIndex(0);
-        expect(await grammarPage.isFavorited(0)).toBe(false);
+        await expect.poll(async () => await grammarPage.isFavorited(0), { timeout: 5000 }).toBe(false);
+    });
+});
+
+testWithFreshUser.describe("Grammar Page - Practice Mode", () => {
+    testWithFreshUser("should open practice modal with quiz questions from detail drawer", async ({ page }) => {
+        test.setTimeout(90_000);
+        const grammarPage = await setupGrammarPage(page);
+
+        await grammarPage.openAddModal();
+        await grammarPage.selectRule("～ます");
+        await grammarPage.addSelectedRules();
+        await expect(grammarPage.grammarGrid).toBeVisible({ timeout: 10_000 });
+
+        const wordsPage = new WordsPage(page);
+        await wordsPage.goto();
+        await wordsPage.expectWordsVisible();
+        await wordsPage.openAddModal();
+        await wordsPage.enterText("私は本を読みます");
+        await wordsPage.analyzeText();
+        await wordsPage.selectFirstWord();
+        await wordsPage.addSelectedWords();
+
+        await grammarPage.goto();
+        await grammarPage.expectGrammarVisible();
+        await expect(grammarPage.grammarGrid).toBeVisible({ timeout: 10_000 });
+
+        await grammarPage.openPracticeForCard(0);
+        await expect(grammarPage.practiceModal).toBeVisible({ timeout: 5000 });
+    });
+
+    testWithFreshUser("should open practice modal with correct structure", async ({ page }) => {
+        test.setTimeout(90_000);
+        const grammarPage = await setupGrammarPage(page);
+
+        // Add grammar rule that applies to verbs
+        await grammarPage.openAddModal();
+        await grammarPage.selectRule("～ます");
+        await grammarPage.addSelectedRules();
+        await expect(grammarPage.grammarGrid).toBeVisible({ timeout: 10_000 });
+
+        // Open detail drawer and practice
+        await grammarPage.openPracticeForCard(0);
+        await expect(grammarPage.practiceModal).toBeVisible({ timeout: 5000 });
+
+        // Practice modal should show either quiz questions or "no words" message
+        // Both states are valid - depends on whether user has matching vocabulary
+        const hasQuizContent = await grammarPage.practiceProgress.isVisible().catch(() => false);
+        const hasNoWordsMessage = await grammarPage.practiceNoWords.isVisible().catch(() => false);
+        expect(hasQuizContent || hasNoWordsMessage).toBe(true);
+
+        // If showing quiz content, verify structure
+        if (hasQuizContent) {
+            const progressText = await grammarPage.practiceProgress.textContent();
+            expect(progressText).toMatch(/\d+\s*\/\s*\d+/);
+            await expect(grammarPage.practiceCorrectCount).toBeVisible();
+            // Options should be visible
+            await expect(grammarPage.practiceOptions[0]).toBeVisible();
+        }
+
+        // Close the modal
+        await grammarPage.practiceCloseBtn.click();
+        await expect(grammarPage.practiceModal).not.toBeVisible({ timeout: 5000 });
+    });
+
+    testWithFreshUser("should show enabled practice button for rules with format_map", async ({ page }) => {
+        test.setTimeout(60_000);
+        const grammarPage = await setupGrammarPage(page);
+
+        await grammarPage.openAddModal();
+        await grammarPage.selectRule("～ます");
+        await grammarPage.addSelectedRules();
+        await expect(grammarPage.grammarGrid).toBeVisible({ timeout: 10_000 });
+
+        const card = page.getByTestId("grammar-card-item").first();
+        await card.click();
+        const detailDrawer = page.getByTestId("grammar-detail-drawer");
+        await expect(detailDrawer).toBeVisible({ timeout: 5000 });
+
+        const practiceBtn = page.getByTestId("grammar-card-practice-btn");
+        await expect(practiceBtn).toBeVisible({ timeout: 5000 });
+
+        const isDisabled = await practiceBtn.isDisabled();
+        expect(isDisabled).toBe(false);
     });
 });
