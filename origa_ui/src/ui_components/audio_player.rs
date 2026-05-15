@@ -1,25 +1,8 @@
-use std::cell::RefCell;
-
 use leptos::prelude::*;
 use leptos_icons::Icon;
+use wasm_bindgen::JsCast;
 
-thread_local! {
-    static STOP_CALLBACK: RefCell<Option<Box<dyn Fn()>>> = const { RefCell::new(None) };
-}
-
-fn stop_other_audio() {
-    STOP_CALLBACK.with(|cell| {
-        if let Some(stop) = cell.borrow().as_ref() {
-            stop();
-        }
-    });
-}
-
-fn register_as_active(stop_fn: Box<dyn Fn()>) {
-    STOP_CALLBACK.with(|cell| {
-        *cell.borrow_mut() = Some(stop_fn);
-    });
-}
+use super::word_audio::{register_audio, stop_current_audio};
 
 #[derive(Clone, Copy, PartialEq)]
 enum PlaybackState {
@@ -49,16 +32,14 @@ pub fn AudioPlayer(
     Effect::new(move |_| {
         if autoplay {
             if let Some(audio) = audio_ref.get() {
-                register_as_active(Box::new({
-                    let state = state;
-                    let audio_ref = audio_ref;
-                    move || {
-                        if let Some(a) = audio_ref.get() {
-                            let _ = a.pause();
-                        }
-                        state.set(PlaybackState::Idle);
-                    }
-                }));
+                stop_current_audio();
+                let state_clone = state;
+                register_audio(
+                    audio.clone().unchecked_into(),
+                    Some(Box::new(move || {
+                        state_clone.set(PlaybackState::Idle);
+                    })),
+                );
                 let _ = audio.play();
                 state.set(PlaybackState::Loading);
             }
@@ -73,23 +54,28 @@ pub fn AudioPlayer(
                     state.set(PlaybackState::Idle);
                 },
                 _ => {
-                    stop_other_audio();
-                    register_as_active(Box::new({
-                        let state = state;
-                        let audio_ref = audio_ref;
-                        move || {
-                            if let Some(a) = audio_ref.get() {
+                    stop_current_audio();
+                    let state_clone = state;
+                    let audio_ref_clone = audio_ref;
+                    register_audio(
+                        audio.clone().unchecked_into(),
+                        Some(Box::new(move || {
+                            if let Some(a) = audio_ref_clone.get() {
                                 let _ = a.pause();
                             }
-                            state.set(PlaybackState::Idle);
-                        }
-                    }));
+                            state_clone.set(PlaybackState::Idle);
+                        })),
+                    );
                     state.set(PlaybackState::Loading);
                     let _ = audio.play();
                 },
             }
         }
     };
+
+    on_cleanup(move || {
+        stop_current_audio();
+    });
 
     let on_playing = move |_| {
         state.set(PlaybackState::Playing);

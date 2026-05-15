@@ -1,19 +1,14 @@
 use crate::ui_components::{
-    Card, get_reading_from_text, is_speech_supported, speak_tts_text, speak_word,
+    Card, get_reading_from_text, is_speech_supported, register_audio, speak_tts_text, speak_word,
+    stop_current_audio, store_closure,
 };
 use leptos::prelude::*;
-use std::cell::RefCell;
 
 use leptos::wasm_bindgen::JsCast;
 use leptos::wasm_bindgen::closure::Closure;
 use origa::domain::{Card as DomainCard, GrammarInfo, NativeLanguage};
 use std::collections::HashSet;
 use tracing;
-
-thread_local! {
-    static PHRASE_AUDIO_CLOSURES: RefCell<Vec<Closure<dyn FnMut()>>> =
-        const { RefCell::new(Vec::new()) };
-}
 
 use super::card_type::CardType;
 use super::kanji_card_details::RadicalDisplay;
@@ -170,7 +165,6 @@ pub fn LessonCard(
         }
     });
 
-    let phrase_audio: StoredValue<Option<web_sys::HtmlAudioElement>> = StoredValue::new(None);
     let phrase_audio_src = audio_src.clone();
     let lesson_ctx_phrase = lesson_ctx.clone();
 
@@ -181,15 +175,9 @@ pub fn LessonCard(
             .unwrap_or(false);
         if !show_answer && is_phrase && !is_muted {
             if let Some(ref src) = phrase_audio_src {
-                phrase_audio.update_value(|prev| {
-                    if let Some(a) = prev.take() {
-                        let _ = a.pause();
-                    }
-                });
+                stop_current_audio();
                 if let Ok(audio) = web_sys::HtmlAudioElement::new_with_src(src) {
                     let _ = audio.set_attribute("preload", "auto");
-
-                    PHRASE_AUDIO_CLOSURES.with(|cell| cell.borrow_mut().clear());
 
                     let question_val = question.get_value();
                     let on_error = Closure::<dyn FnMut()>::new(move || {
@@ -201,19 +189,14 @@ pub fn LessonCard(
                         "error",
                         on_error.as_ref().unchecked_ref(),
                     );
-                    PHRASE_AUDIO_CLOSURES.with(|cell| cell.borrow_mut().push(on_error));
+                    store_closure(on_error);
 
                     let _ = audio.play();
-                    phrase_audio.set_value(Some(audio));
+                    register_audio(audio, None);
                 }
             }
         } else {
-            phrase_audio.update_value(|prev| {
-                if let Some(a) = prev.take() {
-                    let _ = a.pause();
-                }
-            });
-            PHRASE_AUDIO_CLOSURES.with(|cell| cell.borrow_mut().clear());
+            stop_current_audio();
         }
     });
 
@@ -242,6 +225,10 @@ pub fn LessonCard(
 
     let on_toggle = Callback::new(move |()| {
         is_expanded.update(|v| *v = !*v);
+    });
+
+    on_cleanup(move || {
+        stop_current_audio();
     });
 
     view! {
