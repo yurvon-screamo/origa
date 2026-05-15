@@ -41,6 +41,8 @@ pub fn QuizCardView(
     #[prop(default = None)] multi_result: Option<MultiQuizResult>,
     #[prop(default = Callback::new(|_: usize| {}))] on_toggle: Callback<usize>,
     #[prop(default = Callback::new(|_: ()| {}))] on_submit: Callback<()>,
+    #[prop(default = false)] waiting_for_next: bool,
+    #[prop(default = Callback::new(|_: ()| {}))] on_next_card: Callback<()>,
 ) -> impl IntoView {
     let i18n = use_i18n();
     let card = quiz_card.card().clone();
@@ -173,6 +175,8 @@ pub fn QuizCardView(
                         on_dont_know=on_dont_know
                         dont_know_selected=dont_know_selected
                         known_kanji=known_kanji
+                        waiting_for_next=waiting_for_next
+                        on_next_card=on_next_card
                     />
                     <Show when=move || multi_submitted>
                         {move || {

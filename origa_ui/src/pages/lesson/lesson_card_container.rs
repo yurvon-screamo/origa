@@ -283,6 +283,8 @@ pub fn LessonCardContainer() -> impl IntoView {
                                         multi_result=multi_result
                                         on_toggle=on_quiz_toggle
                                         on_submit=on_quiz_submit
+                                        waiting_for_next=state.waiting_for_next
+                                        on_next_card=on_next_card
                                     />
                                 })
                             } else {
