@@ -7,6 +7,7 @@ mod audio_buttons;
 mod audio_player;
 #[allow(dead_code)]
 mod avatar;
+#[allow(dead_code)]
 mod badge;
 mod bottom_nav;
 #[allow(dead_code)]
@@ -42,6 +43,7 @@ mod loading;
 mod logo;
 mod markdown;
 mod modal;
+mod multi_line_chart;
 mod nav_config;
 #[allow(dead_code)]
 mod ocr_loading_stage;
@@ -118,6 +120,7 @@ pub use loading::{LoadingOverlay, Spinner};
 pub use logo::{Logo, LogoSize};
 pub use markdown::{MarkdownText, MarkdownVariant};
 pub use modal::Modal;
+pub use multi_line_chart::{ChartLine, MultiLineChart};
 #[expect(unused_imports, reason = "заготовка для будущей навигации")]
 pub use nav_config::NavRoute;
 pub use ocr_loading_stage::{

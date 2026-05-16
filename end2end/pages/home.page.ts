@@ -22,22 +22,24 @@ export class HomePage extends BasePage {
   readonly jlptProgress: Locator;
   readonly jlptStamp: Locator;
 
-  // Stats
-  readonly statsGrid: Locator;
-  readonly lessonButtons: Locator;
+  // Lesson
   readonly lessonButton: Locator;
-  // Stat cards
-  readonly statLearned: Locator;
-  readonly statInProgress: Locator;
-  readonly statNew: Locator;
-  readonly statHighDifficulty: Locator;
-  readonly statPositive: Locator;
-  readonly statNegative: Locator;
-  readonly statTotalRatings: Locator;
 
-  // History modal
-  readonly historyModal: Locator;
-  readonly historyChart: Locator;
+  // Category Progress Grid
+  readonly categoryGrid: Locator;
+  readonly categoryKanji: Locator;
+  readonly categoryWords: Locator;
+  readonly categoryGrammar: Locator;
+
+  // Today Overview
+  readonly todayOverview: Locator;
+  readonly todayTotalCount: Locator;
+
+  // Activity Chart
+  readonly activityChart: Locator;
+
+  // Recent Study
+  readonly recentStudy: Locator;
 
   // Bottom tab bar navigation (mobile)
   readonly bottomTabBar: Locator;
@@ -50,9 +52,6 @@ export class HomePage extends BasePage {
   // Loading
   readonly homeLoading: Locator;
   readonly homeSpinner: Locator;
-
-  // Stats toggle
-  readonly toggleDetails: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -77,23 +76,26 @@ export class HomePage extends BasePage {
     this.jlptProgress = page.getByTestId("home-jlpt-progress");
     this.jlptStamp = page.getByTestId("home-jlpt-progress-stamp");
 
-    // Stats
-    this.statsGrid = page.getByTestId("home-stats-grid");
-    this.lessonButtons = page.getByTestId("lesson-buttons");
+    // Lesson
     this.lessonButton = page.getByTestId("home-welcome-lesson");
 
-    // Stat cards
-    this.statLearned = page.getByTestId("stat-learned");
-    this.statInProgress = page.getByTestId("stat-in-progress");
-    this.statNew = page.getByTestId("stat-new");
-    this.statHighDifficulty = page.getByTestId("stat-high-difficulty");
-    this.statPositive = page.getByTestId("stat-positive");
-    this.statNegative = page.getByTestId("stat-negative");
-    this.statTotalRatings = page.getByTestId("stat-total-ratings");
+    // Category Progress Grid
+    this.categoryGrid = page.getByTestId("home-category-grid");
+    this.categoryKanji = page.getByTestId("home-category-grid-kanji");
+    this.categoryWords = page.getByTestId("home-category-grid-words");
+    this.categoryGrammar = page.getByTestId("home-category-grid-grammar");
 
-    // History modal
-    this.historyModal = page.getByTestId("home-history-modal");
-    this.historyChart = page.getByTestId("history-chart");
+    // Today Overview
+    this.todayOverview = page.getByTestId("home-today-overview");
+    this.todayTotalCount = this.todayOverview.locator(
+      ".font-serif.text-\\[48px\\]",
+    );
+
+    // Activity Chart
+    this.activityChart = page.getByTestId("home-activity-chart");
+
+    // Recent Study
+    this.recentStudy = page.getByTestId("home-recent-study");
 
     // Bottom tab bar navigation (mobile)
     this.bottomTabBar = page.locator(".bottom-tab-bar");
@@ -106,9 +108,6 @@ export class HomePage extends BasePage {
     // Loading
     this.homeLoading = page.getByTestId("home-loading");
     this.homeSpinner = page.getByTestId("home-spinner");
-
-    // Stats toggle
-    this.toggleDetails = page.getByTestId("toggle-details");
   }
 
   async goto(): Promise<void> {
@@ -134,15 +133,6 @@ export class HomePage extends BasePage {
 
   async startLesson(): Promise<void> {
     await this.lessonButton.click();
-  }
-
-  async openHistoryForStat(statTestId: string): Promise<void> {
-    const statCard = this.page.getByTestId(statTestId);
-    await statCard.click();
-  }
-
-  async toggleDetailedStats(): Promise<void> {
-    await this.toggleDetails.click();
   }
 
   async navigateViaBottomTab(
