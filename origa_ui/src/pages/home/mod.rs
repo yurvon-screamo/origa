@@ -1,20 +1,25 @@
+pub mod activity_chart;
+pub mod category_grid;
 pub mod content;
 pub mod content_sync;
-pub mod history_modal;
+pub mod dashboard_stats;
 pub mod home_skeleton;
-pub mod home_stats;
 pub mod jlpt_progress_card;
-pub mod stat_card;
-pub mod stats_grid;
+pub mod recent_study;
+pub mod today_overview;
 pub mod welcome_card;
 
+pub use activity_chart::ActivityChart;
+pub use category_grid::CategoryProgressGrid;
 pub use content::HomeContent;
-pub use history_modal::{HistoryModal, StatMetric};
-pub use home_skeleton::{HomeSkeleton, JlptSkeleton};
-pub use home_stats::{PrimaryStats, SecondaryStats, calculate_stats, format_delta, format_number};
+pub use dashboard_stats::{
+    ActivityDataPoint, RecentlyStudiedItem, TodayOverview, compute_30day_chart_data,
+    compute_recent_studied, compute_today_overview,
+};
+pub use home_skeleton::JlptSkeleton;
 pub use jlpt_progress_card::JlptProgressCard;
-pub use stat_card::QuickStatCard;
-pub use stats_grid::StatsGrid;
+pub use recent_study::RecentStudyList;
+pub use today_overview::TodayOverviewCard;
 pub use welcome_card::WelcomeCard;
 
 use crate::i18n::*;

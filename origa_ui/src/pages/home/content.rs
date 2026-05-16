@@ -2,24 +2,17 @@ use super::content_sync::{
     run_sync, show_sync_error_toast, show_sync_success_toast, show_sync_toast,
 };
 use super::{
-    HistoryModal, HomeSkeleton, JlptProgressCard, JlptSkeleton, StatMetric, StatsGrid, WelcomeCard,
+    ActivityChart, ActivityDataPoint, CategoryProgressGrid, JlptProgressCard, JlptSkeleton,
+    RecentStudyList, RecentlyStudiedItem, TodayOverview, TodayOverviewCard, WelcomeCard,
+    compute_30day_chart_data, compute_recent_studied, compute_today_overview,
 };
-use super::{PrimaryStats, SecondaryStats, calculate_stats};
-use crate::i18n::{Locale, t, use_i18n};
+use crate::i18n::use_i18n;
 use crate::repository::{HybridUserRepository, set_last_sync_time};
-use crate::ui_components::{Text, TextSize, ToastContainer, ToastData, TypographyVariant};
-use chrono::Datelike;
+use crate::ui_components::{ToastContainer, ToastData};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use origa::domain::{DailyHistoryItem, JlptProgress, estimate_completion_date};
+use origa::domain::JlptProgress;
 use origa::traits::UserRepository;
-
-const MONTHS_RU: [&str; 12] = [
-    "янв", "фев", "мар", "апр", "май", "июн", "июл", "авг", "сен", "окт", "ноя", "дек",
-];
-const MONTHS_EN: [&str; 12] = [
-    "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-];
 
 #[component]
 pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoView {
@@ -32,14 +25,14 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
     let repository =
         use_context::<HybridUserRepository>().expect("repository context not provided");
 
-    let stats = RwSignal::new(None::<(PrimaryStats, SecondaryStats)>);
-    let history = RwSignal::new(Vec::<DailyHistoryItem>::new());
-    let history_open = RwSignal::new(false);
-    let selected_metric = RwSignal::new(StatMetric::TotalCards);
-    let is_loading = RwSignal::new(true);
     let jlpt_progress = RwSignal::new(JlptProgress::new());
-    let toasts: RwSignal<Vec<ToastData>> = RwSignal::new(Vec::new());
+    let today_overview = RwSignal::new(TodayOverview::default());
+    let recent_studied = RwSignal::new(Vec::<RecentlyStudiedItem>::new());
+    let chart_data = RwSignal::new(Vec::<ActivityDataPoint>::new());
+
+    let is_loading = RwSignal::new(true);
     let user_name: RwSignal<String> = RwSignal::new(String::new());
+    let toasts: RwSignal<Vec<ToastData>> = RwSignal::new(Vec::new());
     let disposed = StoredValue::new(());
 
     let repo_for_init = repository.clone();
@@ -52,17 +45,20 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                         return;
                     }
                     user_name.set(user.username().to_string());
-                    let history_items = user.knowledge_set().lesson_history().to_vec();
-                    history.set(history_items.clone());
-                    stats.set(Some(calculate_stats(&history_items)));
+
+                    let ks = user.knowledge_set();
                     jlpt_progress.set(user.jlpt_progress().clone());
+
+                    today_overview.set(compute_today_overview(ks));
+                    recent_studied.set(compute_recent_studied(ks, user.native_language(), 10));
+                    chart_data.set(compute_30day_chart_data(ks.lesson_history()));
+
                     is_loading.set(false);
                 },
                 Ok(None) => {
                     if disposed.is_disposed() {
                         return;
                     }
-                    stats.set(Some((PrimaryStats::default(), SecondaryStats::default())));
                     is_loading.set(false);
                 },
                 Err(e) => {
@@ -70,7 +66,6 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                         return;
                     }
                     tracing::error!("Home: get_current_user error: {:?}", e);
-                    stats.set(Some((PrimaryStats::default(), SecondaryStats::default())));
                     is_loading.set(false);
                 },
             }
@@ -90,10 +85,11 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                     if disposed.is_disposed() {
                         return;
                     }
-                    let history_items = user.knowledge_set().lesson_history().to_vec();
-                    history.set(history_items.clone());
-                    stats.set(Some(calculate_stats(&history_items)));
+                    let ks = user.knowledge_set();
                     jlpt_progress.set(user.jlpt_progress().clone());
+                    today_overview.set(compute_today_overview(ks));
+                    recent_studied.set(compute_recent_studied(ks, user.native_language(), 10));
+                    chart_data.set(compute_30day_chart_data(ks.lesson_history()));
                     show_sync_success_toast(toasts, i18n);
                     set_last_sync_time(js_sys::Date::now() as u64 / 1000);
                 },
@@ -115,113 +111,63 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
         });
     });
 
-    let primary = Signal::derive(move || stats.get().map(|(p, _)| p).unwrap_or_default());
-    let secondary = Signal::derive(move || stats.get().map(|(_, s)| s).unwrap_or_default());
-
-    let completion_badge = Signal::derive(move || {
-        let history_data = history.get();
-        let new_count = stats.get().map(|(p, _)| p.new).unwrap_or(0);
-
-        estimate_completion_date(&history_data, new_count).map(|date| {
-            let day = date.day();
-            let month_idx = date.month0() as usize;
-            let month_names = if i18n.get_locale() == Locale::ru {
-                &MONTHS_RU[..]
-            } else {
-                &MONTHS_EN[..]
-            };
-            format!("~{} {}", day, month_names[month_idx])
-        })
+    let current_level = Signal::derive(move || jlpt_progress.get().current_level());
+    let level_detail = Signal::derive(move || {
+        let level = current_level.get();
+        jlpt_progress.get().level_progress(level).cloned()
     });
-
-    let open_history = move |metric: StatMetric| {
-        Callback::new(move |_: ()| {
-            selected_metric.set(metric);
-            history_open.set(true);
-        })
-    };
-
-    let close_history = Callback::new(move |_: ()| {
-        history_open.set(false);
-    });
+    let kanji_progress =
+        Signal::derive(move || level_detail.get().map(|d| d.kanji).unwrap_or_default());
+    let words_progress =
+        Signal::derive(move || level_detail.get().map(|d| d.words).unwrap_or_default());
+    let grammar_progress =
+        Signal::derive(move || level_detail.get().map(|d| d.grammar).unwrap_or_default());
 
     view! {
         <main class="flex-1" data-testid=test_id_val>
-            <div class="py-6 sm:py-8">
-                <div class="mb-8 sm:mb-12">
-                    <WelcomeCard
-                        username=Signal::from(user_name)
-                        test_id=Signal::derive(|| "home-welcome".to_string())
-                    />
-                </div>
+            <div class="py-6 sm:py-8 space-y-6 sm:space-y-8">
+                <WelcomeCard
+                    username=Signal::from(user_name)
+                    test_id=Signal::derive(|| "home-welcome".to_string())
+                />
 
                 <Show
                     when=move || !is_loading.get()
                     fallback=move || view! { <JlptSkeleton /> }
                 >
-                    <div class="mb-6 sm:mb-8">
-                        <JlptProgressCard
-                            jlpt_progress=Signal::derive(move || jlpt_progress.get())
-                            test_id=Signal::derive(|| "home-jlpt-progress".to_string())
-                        />
-                    </div>
-                </Show>
+                    <JlptProgressCard
+                        jlpt_progress=Signal::derive(move || jlpt_progress.get())
+                        test_id=Signal::derive(|| "home-jlpt-progress".to_string())
+                    />
 
-                <div class="flex items-center justify-between mb-6">
-                    <Text
-                        size=TextSize::Small
-                        variant=TypographyVariant::Muted
-                        uppercase=true
-                        tracking_widest=true
-                        test_id=Signal::derive(move || {
-                            let val = test_id.get();
-                            if val.is_empty() { "home-stats-title".to_string() } else { val }
-                        })
-                    >
-                        {t!(i18n, home.statistics)}
-                    </Text>
-                </div>
+                    <CategoryProgressGrid
+                        kanji_progress=kanji_progress
+                        words_progress=words_progress
+                        grammar_progress=grammar_progress
+                        test_id=Signal::derive(|| "home-category-grid".to_string())
+                    />
 
-                <Show
-                    when=move || !is_loading.get()
-                    fallback=move || view! { <HomeSkeleton /> }
-                >
-                    <StatsGrid
-                        primary=primary
-                        secondary=secondary
-                        completion_badge=completion_badge
-                        open_history=open_history
-                        test_id=Signal::derive(|| "home-stats-grid".to_string())
+                    <TodayOverviewCard
+                        overview=Signal::derive(move || today_overview.get())
+                        test_id=Signal::derive(|| "home-today-overview".to_string())
+                    />
+
+                    <ActivityChart
+                        chart_data=Signal::derive(move || chart_data.get())
+                        test_id=Signal::derive(|| "home-activity-chart".to_string())
+                    />
+
+                    <RecentStudyList
+                        items=Signal::derive(move || recent_studied.get())
+                        test_id=Signal::derive(|| "home-recent-study".to_string())
                     />
                 </Show>
             </div>
 
-            <HistoryModal
-                is_open=Signal::derive(move || history_open.get())
-                metric=Signal::derive(move || selected_metric.get())
-                history=Signal::derive(move || history.get())
-                on_close=close_history
-                test_id=Signal::derive(move || {
-                    let val = test_id.get();
-                    if val.is_empty() {
-                        "home-history-modal".to_string()
-                    } else {
-                        format!("{}-history-modal", val)
-                    }
-                })
-            />
-
             <ToastContainer
                 toasts=toasts
                 duration_ms=5000
-                test_id=Signal::derive(move || {
-                    let val = test_id.get();
-                    if val.is_empty() {
-                        "home-toasts".to_string()
-                    } else {
-                        format!("{}-toasts", val)
-                    }
-                })
+                test_id=Signal::derive(|| "home-toasts".to_string())
             />
         </main>
     }
