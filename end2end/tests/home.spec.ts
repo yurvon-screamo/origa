@@ -81,10 +81,15 @@ testWithFreshUser.describe("Home Page", () => {
   });
 
   testWithFreshUser(
-    "should display category progress grid",
+    "should expand JLPT details to show categories",
     async ({ page }) => {
       const homePage = await setupHomePage(page);
-      await expect(homePage.categoryGrid).toBeVisible({ timeout: 10_000 });
+      await expect(homePage.jlptProgress).toBeVisible({ timeout: 10_000 });
+      const toggle = page.getByTestId("home-jlpt-progress-toggle");
+      await expect(toggle).toBeVisible();
+      await toggle.click();
+      const expandedCategories = page.getByTestId("home-jlpt-progress-expanded");
+      await expect(expandedCategories).toBeVisible({ timeout: 5_000 });
     },
   );
 

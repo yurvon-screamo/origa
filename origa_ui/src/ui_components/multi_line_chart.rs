@@ -280,7 +280,7 @@ pub fn MultiLineChart(
                                     text_anchor="end"
                                     dominant_baseline="central"
                                     fill="var(--fg-muted)"
-                                    font_size="9"
+                                    font_size="11"
                                     font_family="DM Mono"
                                 >
                                     {format!("{:.0}", value)}
@@ -300,7 +300,7 @@ pub fn MultiLineChart(
                                     y=height - PADDING_BOTTOM + 16
                                     text_anchor="middle"
                                     fill="var(--fg-muted)"
-                                    font_size="9"
+                                    font_size="11"
                                 >
                                     {label}
                                 </text>

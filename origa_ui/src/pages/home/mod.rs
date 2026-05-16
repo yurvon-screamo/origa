@@ -10,7 +10,6 @@ pub mod today_overview;
 pub mod welcome_card;
 
 pub use activity_chart::ActivityChart;
-pub use category_grid::CategoryProgressGrid;
 pub use content::HomeContent;
 pub use dashboard_stats::{
     ActivityDataPoint, RecentlyStudiedItem, TodayOverview, compute_30day_chart_data,

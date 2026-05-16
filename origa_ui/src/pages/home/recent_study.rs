@@ -37,29 +37,24 @@ pub fn RecentStudyList(
             </Show>
 
             <Show when=move || !is_empty.get()>
-                <div
-                    class="flex gap-3 overflow-x-auto pb-2 mt-3"
-                    style="scroll-snap-type: x mandatory"
-                >
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mt-3">
                     <For
                         each=move || items.get()
                         key=|item| item.card_id.clone()
                         children=move |item| {
                             view! {
                                 <Card
-                                    class=Signal::derive(|| "min-w-[180px] max-w-[220px] flex-shrink-0 p-4".to_string())
+                                    class=Signal::derive(|| "p-4".to_string())
                                     test_id=Signal::derive(move || format!("recent-{}", item.card_id))
                                 >
-                                    <div style="scroll-snap-align: start">
-                                        <div class="font-serif text-[28px] text-[var(--fg-black)] leading-tight">
-                                            {item.japanese}
-                                        </div>
-                                        <div class="font-mono text-[12px] text-[var(--fg-muted)] mt-1">
-                                            {item.reading}
-                                        </div>
-                                        <div class="font-mono text-[11px] text-[var(--fg-light)] mt-2 line-clamp-2">
-                                            {item.meaning}
-                                        </div>
+                                    <div class="font-serif text-[24px] text-[var(--fg-black)] leading-tight">
+                                        {item.japanese}
+                                    </div>
+                                    <div class="font-mono text-[12px] text-[var(--fg-muted)] mt-1">
+                                        {item.reading}
+                                    </div>
+                                    <div class="font-mono text-[11px] text-[var(--fg-light)] mt-2 line-clamp-2">
+                                        {item.meaning}
                                     </div>
                                 </Card>
                             }

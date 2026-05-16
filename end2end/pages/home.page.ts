@@ -25,12 +25,6 @@ export class HomePage extends BasePage {
   // Lesson
   readonly lessonButton: Locator;
 
-  // Category Progress Grid
-  readonly categoryGrid: Locator;
-  readonly categoryKanji: Locator;
-  readonly categoryWords: Locator;
-  readonly categoryGrammar: Locator;
-
   // Today Overview
   readonly todayOverview: Locator;
   readonly todayTotalCount: Locator;
@@ -79,16 +73,10 @@ export class HomePage extends BasePage {
     // Lesson
     this.lessonButton = page.getByTestId("home-welcome-lesson");
 
-    // Category Progress Grid
-    this.categoryGrid = page.getByTestId("home-category-grid");
-    this.categoryKanji = page.getByTestId("home-category-grid-kanji");
-    this.categoryWords = page.getByTestId("home-category-grid-words");
-    this.categoryGrammar = page.getByTestId("home-category-grid-grammar");
-
     // Today Overview
     this.todayOverview = page.getByTestId("home-today-overview");
     this.todayTotalCount = this.todayOverview.locator(
-      ".font-serif.text-\\[48px\\]",
+      ".font-serif.text-\[48px\]",
     );
 
     // Activity Chart

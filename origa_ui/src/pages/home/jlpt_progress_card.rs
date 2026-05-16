@@ -1,7 +1,8 @@
 use crate::i18n::{t, use_i18n};
+use crate::pages::home::category_grid::CategoryProgressGrid;
 use crate::ui_components::{Card, DisplayText, Tag, TagVariant, Text, TextSize};
 use leptos::prelude::*;
-use origa::domain::{CategoryProgress, JlptProgress, LevelProgressDetail};
+use origa::domain::{JlptProgress, LevelProgressDetail};
 
 #[component]
 pub fn JlptProgressCard(
@@ -83,6 +84,9 @@ fn CategoryDetailSection(
             <button
                 class="flex items-center justify-between w-full cursor-pointer select-none"
                 on:click=move |_| is_expanded.update(|v| *v = !*v)
+                aria-expanded=move || is_expanded.get()
+                aria-controls=move || format!("{}-panel", test_id.get())
+                id=move || format!("{}-toggle", test_id.get())
                 data-testid=move || {
                     let val = test_id.get();
                     if val.is_empty() { None } else { Some(format!("{}-toggle", val)) }
@@ -91,75 +95,21 @@ fn CategoryDetailSection(
                 <Text size=Signal::from(TextSize::Small)>
                     <span>{t!(i18n, home.more)}</span>
                 </Text>
-                <span class="text-sm transition-transform" class:rotate-180=is_expanded>
+                <span class="text-sm transition-transform" class:rotate-180=is_expanded aria-hidden="true">
                     "▼"
                 </span>
             </button>
 
             <Show when=move || is_expanded.get()>
-                <div class="mt-4 space-y-4">
-                    <Show when=move || kanji.get().is_some()>
-                        <CategoryRow
-                            label=Signal::derive(move || i18n.get_keys().home().kanji_label().inner().to_string())
-                            tag_variant=Signal::from(TagVariant::Terracotta)
-                            progress=Signal::derive(move || kanji.get().unwrap_or_default())
-                            test_id=Signal::derive(move || format!("{}-kanji", test_id.get()))
-                        />
-                    </Show>
-                    <Show when=move || words.get().is_some()>
-                        <CategoryRow
-                            label=Signal::derive(move || i18n.get_keys().home().words_label().inner().to_string())
-                            tag_variant=Signal::from(TagVariant::Olive)
-                            progress=Signal::derive(move || words.get().unwrap_or_default())
-                            test_id=Signal::derive(move || format!("{}-words", test_id.get()))
-                        />
-                    </Show>
-                    <Show when=move || grammar.get().is_some()>
-                        <CategoryRow
-                            label=Signal::derive(move || i18n.get_keys().home().grammar_label().inner().to_string())
-                            tag_variant=Signal::from(TagVariant::Filled)
-                            progress=Signal::derive(move || grammar.get().unwrap_or_default())
-                            test_id=Signal::derive(move || format!("{}-grammar", test_id.get()))
-                        />
-                    </Show>
+                <div class="mt-4" id=move || format!("{}-panel", test_id.get()) role="region" aria-labelledby=move || format!("{}-toggle", test_id.get())>
+                    <CategoryProgressGrid
+                        kanji_progress=Signal::derive(move || kanji.get().unwrap_or_default())
+                        words_progress=Signal::derive(move || words.get().unwrap_or_default())
+                        grammar_progress=Signal::derive(move || grammar.get().unwrap_or_default())
+                        test_id=Signal::derive(move || format!("{}-expanded", test_id.get()))
+                    />
                 </div>
             </Show>
-        </div>
-    }
-}
-
-#[component]
-fn CategoryRow(
-    #[prop(into)] label: Signal<String>,
-    tag_variant: Signal<TagVariant>,
-    progress: Signal<CategoryProgress>,
-    #[prop(optional, into)] test_id: Signal<String>,
-) -> impl IntoView {
-    let pct = Signal::derive(move || progress.get().percentage());
-    let stats = Signal::derive(move || {
-        let p = progress.get();
-        format!("{}/{} ({:.0}%)", p.learned, p.total, pct.get())
-    });
-
-    view! {
-        <div class="category-progress" data-testid=move || {
-            let val = test_id.get();
-            if val.is_empty() { None } else { Some(val) }
-        }>
-            <div class="flex items-center gap-3">
-                <Tag variant=tag_variant test_id=Signal::derive(move || format!("{}-tag", test_id.get()))>
-                    {move || label.get()}
-                </Tag>
-                <div class="flex-1 progress-track">
-                    <div
-                        class="progress-fill"
-                        style=move || format!("width: {:.0}%", pct.get().min(100.0))
-                    ></div>
-                </div>
-                <Text size=Signal::from(TextSize::Small)>
-                    {move || stats.get()}
-                </Text>
-            </div>
         </div>
     }
 }

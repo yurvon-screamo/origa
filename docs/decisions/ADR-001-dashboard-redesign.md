@@ -76,3 +76,19 @@ DailyHistoryItem contains aggregate data (not per-type). Three lines:
 - Removed 3 files (~310 lines), added 6 new files (~900 lines), net +590 lines
 - E2E tests updated to match new selectors
 - All 17 i18n keys added for ru/en locales
+
+## Update v2 (2026-05-16)
+
+### Changes
+
+1. **CategoryProgressGrid moved inside JlptProgressCard accordion**: Instead of a separate block, categories now expand under "Подробнее" toggle inside the JLPT card. Improves information hierarchy and reduces vertical scroll.
+2. **Phrase cards excluded from TodayOverview**: `CardType::Phrase` cards are no longer counted in "Обзор на сегодня" statistics, matching the mockup which shows only core study items.
+3. **MultiLineChart axis font**: Increased from 9px to 11px for better readability per DESIGN.md.
+4. **RecentStudyList layout**: Replaced horizontal scroll with CSS grid (`grid-cols-2/3/5`) for instant visibility of all items without scrolling.
+5. **Two-column layout**: `TodayOverviewCard` and `ActivityChart` now sit side-by-side on desktop (`5fr / 7fr`), stacking vertically on mobile.
+
+### Accessibility improvements
+
+- JLPT accordion toggle: `aria-expanded`, `aria-controls`, `role="region"`
+- Decorative elements: `aria-hidden="true"` on status dot and chevron
+- Removed dead reactive signals reducing memory footprint
