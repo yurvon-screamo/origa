@@ -51,7 +51,10 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
 
                     today_overview.set(compute_today_overview(ks));
                     recent_studied.set(compute_recent_studied(ks, user.native_language(), 10));
-                    chart_data.set(compute_30day_chart_data(ks.lesson_history()));
+                    chart_data.set(compute_30day_chart_data(
+                        ks.lesson_history(),
+                        user.native_language(),
+                    ));
 
                     is_loading.set(false);
                 },
@@ -89,7 +92,10 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                     jlpt_progress.set(user.jlpt_progress().clone());
                     today_overview.set(compute_today_overview(ks));
                     recent_studied.set(compute_recent_studied(ks, user.native_language(), 10));
-                    chart_data.set(compute_30day_chart_data(ks.lesson_history()));
+                    chart_data.set(compute_30day_chart_data(
+                        ks.lesson_history(),
+                        user.native_language(),
+                    ));
                     show_sync_success_toast(toasts, i18n);
                     set_last_sync_time(js_sys::Date::now() as u64 / 1000);
                 },
@@ -128,7 +134,7 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                         test_id=Signal::derive(|| "home-jlpt-progress".to_string())
                     />
 
-                    <div class="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(280px,5fr)_minmax(360px,7fr)] lg:gap-8">
+                    <div class="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(280px,5fr)_minmax(360px,7fr)] lg:gap-8 items-start">
                         <TodayOverviewCard
                             overview=Signal::derive(move || today_overview.get())
                             test_id=Signal::derive(|| "home-today-overview".to_string())

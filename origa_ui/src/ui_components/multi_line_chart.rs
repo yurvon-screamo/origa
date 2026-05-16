@@ -1,6 +1,6 @@
 use leptos::prelude::*;
 
-const PADDING_LEFT: u32 = 40;
+const PADDING_LEFT: u32 = 56;
 const PADDING_BOTTOM: u32 = 32;
 const PADDING_TOP: u32 = 16;
 
@@ -41,6 +41,14 @@ fn compute_global_bounds(lines: &[ChartLine]) -> (f64, f64) {
     }
 
     (min_val, max_val)
+}
+
+fn format_axis_value(v: f64) -> String {
+    if v >= 1000.0 {
+        format!("{:.1}k", v / 1000.0)
+    } else {
+        format!("{:.0}", v)
+    }
 }
 
 #[component]
@@ -275,15 +283,15 @@ pub fn MultiLineChart(
                         children=move |(y, value)| {
                             view! {
                                 <text
-                                    x=PADDING_LEFT - 28
+                                    x=PADDING_LEFT - 10
                                     y=y
                                     text_anchor="end"
                                     dominant_baseline="central"
                                     fill="var(--fg-muted)"
-                                    font_size="11"
+                                    font_size="8"
                                     font_family="DM Mono"
                                 >
-                                    {format!("{:.0}", value)}
+                                    {format_axis_value(value)}
                                 </text>
                             }
                         }
@@ -297,10 +305,10 @@ pub fn MultiLineChart(
                             view! {
                                 <text
                                     x=x
-                                    y=height - PADDING_BOTTOM + 16
+                                    y=height - PADDING_BOTTOM + 14
                                     text_anchor="middle"
                                     fill="var(--fg-muted)"
-                                    font_size="11"
+                                    font_size="8"
                                 >
                                     {label}
                                 </text>
@@ -347,7 +355,7 @@ pub fn MultiLineChart(
             </Show>
 
             // Legend below SVG
-            <div class="flex justify-center gap-4 mt-3">
+            <div class="flex justify-center gap-5 mt-4">
                 <For
                     each=move || legend_items()
                     key=|(key, _, _)| key.clone()
@@ -358,7 +366,7 @@ pub fn MultiLineChart(
                                     class="inline-block"
                                     style=format!("width:12px;height:2px;background-color:{}", color)
                                 ></span>
-                                <span class="font-mono text-[11px]" style="color:var(--fg-muted)">
+                                <span class="font-mono text-[12px] uppercase tracking-[0.1em]" style="color:var(--fg-muted)">
                                     {label}
                                 </span>
                             </div>

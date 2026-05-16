@@ -29,7 +29,7 @@ pub fn TodayOverviewCard(
     let has_new_items = Signal::derive(move || overview.get().new_count > 0);
 
     view! {
-        <Card shadow=true class=Signal::derive(|| "p-6".to_string()) test_id=test_id>
+        <Card shadow=true class=Signal::derive(|| "p-8".to_string()) test_id=test_id>
             <div data-testid=test_id_val>
                 <Text
                     size=TextSize::Small
@@ -40,9 +40,9 @@ pub fn TodayOverviewCard(
                     {t!(i18n, home.today_overview)}
                 </Text>
 
-                <div class="flex items-start justify-between mt-3">
+                <div class="flex items-start gap-4 mt-3">
                     <div class="flex flex-col">
-                        <DisplayText class=Signal::derive(|| "font-serif text-[48px] font-light leading-none".to_string())>
+                        <DisplayText class=Signal::derive(|| "font-serif text-[48px] font-light leading-tight mb-1".to_string())>
                             {move || total.get().to_string()}
                         </DisplayText>
                         <Text
@@ -61,7 +61,7 @@ pub fn TodayOverviewCard(
                         </Text>
                     </div>
 
-                    <div class="flex flex-col items-end gap-1">
+                    <div class="flex flex-col gap-1">
                         <div class="flex items-center gap-2">
                             <span class="font-mono text-[11px] uppercase text-[var(--fg-muted)]">
                                 {t!(i18n, home.status_good)}

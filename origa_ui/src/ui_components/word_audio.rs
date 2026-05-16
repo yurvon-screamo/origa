@@ -1,6 +1,5 @@
 use std::cell::RefCell;
 
-use leptos::wasm_bindgen::JsCast;
 use leptos::wasm_bindgen::closure::Closure;
 use origa::dictionary::pitch_audio::get_audio_for_word;
 use tracing::warn;
@@ -11,11 +10,11 @@ use crate::core::config::cdn_url;
 struct ActiveAudio {
     element: web_sys::HtmlAudioElement,
     on_stop: Option<Box<dyn Fn()>>,
+    closures: Vec<Closure<dyn FnMut()>>,
 }
 
 thread_local! {
     static CURRENT_AUDIO: RefCell<Option<ActiveAudio>> = const { RefCell::new(None) };
-    static AUDIO_CLOSURES: RefCell<Vec<Closure<dyn FnMut()>>> = RefCell::new(Vec::new());
 }
 
 pub fn stop_current_audio() {
@@ -24,25 +23,22 @@ pub fn stop_current_audio() {
             if let Some(on_stop) = active.on_stop {
                 on_stop();
             }
+            active.element.set_onended(None);
+            active.element.set_onerror(None);
             let _ = active.element.pause();
             active.element.set_src("");
         }
     });
-    AUDIO_CLOSURES.with(|cell| {
-        cell.borrow_mut().clear();
-    });
     let _ = stop_speech();
 }
 
-pub fn register_audio(element: web_sys::HtmlAudioElement, on_stop: Option<Box<dyn Fn()>>) {
+pub fn register_audio(
+    element: web_sys::HtmlAudioElement,
+    on_stop: Option<Box<dyn Fn()>>,
+    closures: Vec<Closure<dyn FnMut()>>,
+) {
     CURRENT_AUDIO.with(|cell| {
-        *cell.borrow_mut() = Some(ActiveAudio { element, on_stop });
-    });
-}
-
-pub fn store_closure(closure: Closure<dyn FnMut()>) {
-    AUDIO_CLOSURES.with(|cell| {
-        cell.borrow_mut().push(closure);
+        *cell.borrow_mut() = Some(ActiveAudio { element, on_stop, closures });
     });
 }
 
@@ -57,13 +53,7 @@ fn create_and_play_audio(word: &str) -> Option<web_sys::HtmlAudioElement> {
 
     stop_current_audio();
 
-    let audio_clone = audio.clone();
-    CURRENT_AUDIO.with(|cell| {
-        *cell.borrow_mut() = Some(ActiveAudio {
-            element: audio_clone,
-            on_stop: None,
-        });
-    });
+    register_audio(audio.clone(), None, vec![]);
 
     let _ = audio.play();
     Some(audio)
@@ -89,10 +79,9 @@ pub fn speak_word(word: &str, rate: f32) {
         let reading = get_reading_from_text(&word_owned);
         let _ = speak_tts_text(&reading, rate);
     });
-    let _ = audio.add_event_listener_with_callback("error", on_error.as_ref().unchecked_ref());
-    AUDIO_CLOSURES.with(|cell| {
-        cell.borrow_mut().push(on_error);
-    });
+    audio.set_onerror(Some(on_error.as_ref().unchecked_ref()));
+
+    register_audio(audio, None, vec![on_error]);
 }
 
 pub fn speak_word_with_callback<F>(word: &str, rate: f32, on_end: F)
@@ -120,10 +109,7 @@ where
             cb();
         }
     });
-    let _ = audio.add_event_listener_with_callback("ended", on_ended.as_ref().unchecked_ref());
-    AUDIO_CLOSURES.with(|cell| {
-        cell.borrow_mut().push(on_ended);
-    });
+    audio.set_onended(Some(on_ended.as_ref().unchecked_ref()));
 
     let cb_error = callback.clone();
     let word_owned = word.to_string();
@@ -134,8 +120,7 @@ where
             let _ = speak_tts_text_with_callback(&reading, rate, cb);
         }
     });
-    let _ = audio.add_event_listener_with_callback("error", on_error.as_ref().unchecked_ref());
-    AUDIO_CLOSURES.with(|cell| {
-        cell.borrow_mut().push(on_error);
-    });
+    audio.set_onerror(Some(on_error.as_ref().unchecked_ref()));
+
+    register_audio(audio, None, vec![on_ended, on_error]);
 }

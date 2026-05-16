@@ -20,7 +20,7 @@ pub fn CategoryProgressGrid(
     };
 
     view! {
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4" data-testid=grid_test_id>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-stretch" data-testid=grid_test_id>
             <CategoryCard
                 href="/kanji"
                 icon=CategoryIcon::Kanji
@@ -101,19 +101,21 @@ fn CategoryCard(
     };
 
     view! {
-        <A href=move || href.get()>
+        <A href=move || href.get() attr:class="block h-full">
             <Card
                 shadow=Signal::from(true)
-                class=Signal::derive(|| "interactive p-5".to_string())
+                class=Signal::derive(|| "interactive p-5 h-full".to_string())
                 test_id=test_id
             >
-                <div data-testid=card_test_id>
-                    {icon_view}
-                    <div class="font-mono text-[11px] uppercase tracking-[0.15em] text-[var(--fg-muted)] mt-4">
-                        {move || label.get()}
-                    </div>
-                    <div class="font-serif text-2xl text-[var(--fg-black)] mt-2">
-                        {move || stats.get()}
+                <div data-testid=card_test_id class="flex flex-col h-full justify-between">
+                    <div>
+                        {icon_view}
+                        <div class="font-mono text-[11px] uppercase tracking-[0.15em] text-[var(--fg-muted)] mt-4">
+                            {move || label.get()}
+                        </div>
+                        <div class="font-serif text-2xl text-[var(--fg-black)] mt-2">
+                            {move || stats.get()}
+                        </div>
                     </div>
                     <div class="progress-track mt-3">
                         <div
