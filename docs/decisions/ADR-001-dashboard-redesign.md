@@ -31,7 +31,7 @@ The redesign follows a dark-theme mockup while preserving the existing design sy
 
 ### Data Flow
 
-```
+```text
 User (from IndexedDB via HybridUserRepository)
     ├── knowledge_set.study_cards() → compute_today_overview(), compute_recent_studied()
     ├── knowledge_set.lesson_history() → compute_30day_chart_data()
