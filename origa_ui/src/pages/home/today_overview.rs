@@ -1,6 +1,6 @@
 use super::dashboard_stats::TodayOverview;
 use crate::i18n::{t, td_string, use_i18n};
-use crate::ui_components::{Card, DisplayText, Tag, TagVariant, Text, TextSize, TypographyVariant};
+use crate::ui_components::{Card, DisplayText, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 
 #[component]
@@ -40,14 +40,11 @@ pub fn TodayOverviewCard(
                     {t!(i18n, home.today_overview)}
                 </Text>
 
-                <div class="flex items-center gap-3 mt-3">
+                <div class="flex items-start justify-between mt-3">
                     <div class="flex flex-col">
                         <DisplayText class=Signal::derive(|| "font-serif text-[48px] font-light leading-none".to_string())>
                             {move || total.get().to_string()}
                         </DisplayText>
-                    </div>
-
-                    <div class="flex flex-col gap-1 flex-1">
                         <Text
                             size=TextSize::Small
                             variant=TypographyVariant::Muted
@@ -62,12 +59,18 @@ pub fn TodayOverviewCard(
                                 }
                             }}
                         </Text>
+                    </div>
 
-                        <Tag variant=TagVariant::Olive>
-                            {t!(i18n, home.status_good)}
-                            " "
+                    <div class="flex flex-col items-end gap-1">
+                        <div class="flex items-center gap-2">
+                            <span class="font-mono text-[11px] uppercase text-[var(--fg-muted)]">
+                                {t!(i18n, home.status_good)}
+                            </span>
+                            <span class="w-2 h-2 bg-[var(--accent-olive)]" aria-hidden="true"></span>
+                        </div>
+                        <span class="font-mono text-[11px] uppercase text-[var(--fg-light)]">
                             {t!(i18n, home.fsrs_status)}
-                        </Tag>
+                        </span>
                     </div>
                 </div>
 

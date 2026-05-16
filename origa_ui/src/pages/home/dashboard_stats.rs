@@ -1,5 +1,5 @@
 use chrono::TimeZone;
-use origa::domain::{Card, DailyHistoryItem, KnowledgeSet, NativeLanguage};
+use origa::domain::{Card, CardType, DailyHistoryItem, KnowledgeSet, NativeLanguage};
 
 #[derive(Clone, Default)]
 pub struct TodayOverview {
@@ -34,6 +34,11 @@ pub fn compute_today_overview(knowledge_set: &KnowledgeSet) -> TodayOverview {
     let mut overview = TodayOverview::default();
 
     for study_card in knowledge_set.study_cards().values() {
+        let card = study_card.card();
+        // Skip phrase cards — they are not part of core study statistics
+        if matches!(CardType::from(card), CardType::Phrase) {
+            continue;
+        }
         let memory = study_card.memory();
         if memory.is_new() {
             overview.new_count += 1;

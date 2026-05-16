@@ -2,9 +2,9 @@ use super::content_sync::{
     run_sync, show_sync_error_toast, show_sync_success_toast, show_sync_toast,
 };
 use super::{
-    ActivityChart, ActivityDataPoint, CategoryProgressGrid, JlptProgressCard, JlptSkeleton,
-    RecentStudyList, RecentlyStudiedItem, TodayOverview, TodayOverviewCard, WelcomeCard,
-    compute_30day_chart_data, compute_recent_studied, compute_today_overview,
+    ActivityChart, ActivityDataPoint, JlptProgressCard, JlptSkeleton, RecentStudyList,
+    RecentlyStudiedItem, TodayOverview, TodayOverviewCard, WelcomeCard, compute_30day_chart_data,
+    compute_recent_studied, compute_today_overview,
 };
 use crate::i18n::use_i18n;
 use crate::repository::{HybridUserRepository, set_last_sync_time};
@@ -111,18 +111,6 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
         });
     });
 
-    let current_level = Signal::derive(move || jlpt_progress.get().current_level());
-    let level_detail = Signal::derive(move || {
-        let level = current_level.get();
-        jlpt_progress.get().level_progress(level).cloned()
-    });
-    let kanji_progress =
-        Signal::derive(move || level_detail.get().map(|d| d.kanji).unwrap_or_default());
-    let words_progress =
-        Signal::derive(move || level_detail.get().map(|d| d.words).unwrap_or_default());
-    let grammar_progress =
-        Signal::derive(move || level_detail.get().map(|d| d.grammar).unwrap_or_default());
-
     view! {
         <main class="flex-1" data-testid=test_id_val>
             <div class="py-6 sm:py-8 space-y-6 sm:space-y-8">
@@ -140,22 +128,16 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                         test_id=Signal::derive(|| "home-jlpt-progress".to_string())
                     />
 
-                    <CategoryProgressGrid
-                        kanji_progress=kanji_progress
-                        words_progress=words_progress
-                        grammar_progress=grammar_progress
-                        test_id=Signal::derive(|| "home-category-grid".to_string())
-                    />
-
-                    <TodayOverviewCard
-                        overview=Signal::derive(move || today_overview.get())
-                        test_id=Signal::derive(|| "home-today-overview".to_string())
-                    />
-
-                    <ActivityChart
-                        chart_data=Signal::derive(move || chart_data.get())
-                        test_id=Signal::derive(|| "home-activity-chart".to_string())
-                    />
+                    <div class="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(280px,5fr)_minmax(360px,7fr)] lg:gap-8">
+                        <TodayOverviewCard
+                            overview=Signal::derive(move || today_overview.get())
+                            test_id=Signal::derive(|| "home-today-overview".to_string())
+                        />
+                        <ActivityChart
+                            chart_data=Signal::derive(move || chart_data.get())
+                            test_id=Signal::derive(|| "home-activity-chart".to_string())
+                        />
+                    </div>
 
                     <RecentStudyList
                         items=Signal::derive(move || recent_studied.get())
