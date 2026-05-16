@@ -1,5 +1,12 @@
-use chrono::TimeZone;
+use chrono::{Datelike, TimeZone};
 use origa::domain::{Card, CardType, DailyHistoryItem, KnowledgeSet, NativeLanguage};
+
+const RU_MONTHS_SHORT: [&str; 12] = [
+    "янв", "фев", "мар", "апр", "май", "июн", "июл", "авг", "сен", "окт", "ноя", "дек",
+];
+const EN_MONTHS_SHORT: [&str; 12] = [
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+];
 
 #[derive(Clone, Default)]
 pub struct TodayOverview {
@@ -74,12 +81,15 @@ pub fn compute_recent_studied(
         .map(|(sc, _)| {
             let card = sc.card();
 
-            let japanese = match card {
-                Card::Vocabulary(v) => v.word().text().to_string(),
-                Card::Kanji(k) => k.kanji().text().to_string(),
-                Card::Grammar(g) => g.rule_id().to_string(),
-                Card::Phrase(p) => p.phrase_id().to_string(),
-            };
+            let japanese = card
+                .question(lang)
+                .map(|q| q.text().to_string())
+                .unwrap_or_else(|_| match card {
+                    Card::Vocabulary(v) => v.word().text().to_string(),
+                    Card::Kanji(k) => k.kanji().text().to_string(),
+                    Card::Grammar(g) => g.rule_id().to_string(),
+                    Card::Phrase(p) => p.phrase_id().to_string(),
+                });
 
             let meaning = card
                 .answer(lang)
@@ -101,7 +111,10 @@ pub fn compute_recent_studied(
         .collect()
 }
 
-pub fn compute_30day_chart_data(history: &[DailyHistoryItem]) -> Vec<ActivityDataPoint> {
+pub fn compute_30day_chart_data(
+    history: &[DailyHistoryItem],
+    lang: &NativeLanguage,
+) -> Vec<ActivityDataPoint> {
     let mut items: Vec<_> = history.to_vec();
     items.sort_by_key(|a| a.timestamp());
 
@@ -111,8 +124,14 @@ pub fn compute_30day_chart_data(history: &[DailyHistoryItem]) -> Vec<ActivityDat
         .skip(start)
         .map(|item| {
             let local = chrono::Local.from_utc_datetime(&item.timestamp().naive_utc());
+            let day = local.day();
+            let month_idx = (local.month0() as usize).min(11);
+            let month_str = match lang {
+                NativeLanguage::Russian => RU_MONTHS_SHORT[month_idx],
+                _ => EN_MONTHS_SHORT[month_idx],
+            };
             ActivityDataPoint {
-                date_label: local.format("%d %b").to_string(),
+                date_label: format!("{} {}", day, month_str),
                 learned: item.known_words() as f64,
                 in_progress: item.in_progress_words() as f64,
                 new_count: item.new_words() as f64,

@@ -149,5 +149,5 @@ pub use tooltip::Tooltip;
 pub use typography::{DisplayText, Heading, HeadingLevel, Text, TextSize, TypographyVariant};
 pub use update_drawer::UpdateDrawer;
 pub use word_audio::{
-    register_audio, speak_word, speak_word_with_callback, stop_current_audio, store_closure,
+    register_audio, speak_word, speak_word_with_callback, stop_current_audio,
 };

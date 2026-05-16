@@ -1,6 +1,6 @@
 use crate::ui_components::{
     Card, get_reading_from_text, is_speech_supported, register_audio, speak_tts_text, speak_word,
-    stop_current_audio, store_closure,
+    stop_current_audio,
 };
 use leptos::prelude::*;
 
@@ -185,14 +185,10 @@ pub fn LessonCard(
                         let reading = get_reading_from_text(&question_val);
                         let _ = speak_tts_text(&reading, 1.0);
                     });
-                    let _ = audio.add_event_listener_with_callback(
-                        "error",
-                        on_error.as_ref().unchecked_ref(),
-                    );
-                    store_closure(on_error);
+                    audio.set_onerror(Some(on_error.as_ref().unchecked_ref()));
 
                     let _ = audio.play();
-                    register_audio(audio, None);
+                    register_audio(audio, None, vec![on_error]);
                 }
             }
         } else {
