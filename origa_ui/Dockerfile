@@ -56,6 +56,7 @@ COPY utils/Cargo.toml ./utils/
 COPY tauri/Cargo.toml ./tauri/
 COPY origa/Cargo.toml ./origa/
 COPY origa_ui/Cargo.toml ./origa_ui/
+COPY .cargo .cargo
 
 RUN mkdir -p origa/src && echo "pub fn dummy() {}" > origa/src/lib.rs && \
     mkdir -p origa_ui/src && echo "pub fn dummy() {}" > origa_ui/src/lib.rs && \
