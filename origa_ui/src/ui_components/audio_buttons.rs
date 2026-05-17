@@ -3,7 +3,7 @@ use leptos_icons::Icon;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::prelude::Closure;
 
-use super::word_audio::{register_audio, stop_current_audio, store_closure};
+use super::word_audio::{register_audio, stop_current_audio};
 use crate::ui_components::{get_reading_from_text, is_speech_supported, speak_word_with_callback};
 
 #[component]
@@ -50,12 +50,10 @@ pub fn AudioButtons(
                                     is_playing_clone.set(false);
                                 });
                                 audio.set_onended(Some(on_end.as_ref().unchecked_ref()));
-                                store_closure(on_end);
-
                                 let is_playing_clone2 = is_playing;
                                 register_audio(audio.clone(), Some(Box::new(move || {
                                     is_playing_clone2.set(false);
-                                })));
+                                })), vec![on_end]);
 
                                 let _ = audio.play();
                             } else if is_speech_supported() {

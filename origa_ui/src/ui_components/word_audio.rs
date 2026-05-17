@@ -1,5 +1,6 @@
 use std::cell::RefCell;
 
+use leptos::wasm_bindgen::JsCast;
 use leptos::wasm_bindgen::closure::Closure;
 use origa::dictionary::pitch_audio::get_audio_for_word;
 use tracing::warn;
@@ -10,7 +11,7 @@ use crate::core::config::cdn_url;
 struct ActiveAudio {
     element: web_sys::HtmlAudioElement,
     on_stop: Option<Box<dyn Fn()>>,
-    closures: Vec<Closure<dyn FnMut()>>,
+    _closures: Vec<Closure<dyn FnMut()>>,
 }
 
 thread_local! {
@@ -38,7 +39,11 @@ pub fn register_audio(
     closures: Vec<Closure<dyn FnMut()>>,
 ) {
     CURRENT_AUDIO.with(|cell| {
-        *cell.borrow_mut() = Some(ActiveAudio { element, on_stop, closures });
+        *cell.borrow_mut() = Some(ActiveAudio {
+            element,
+            on_stop,
+            _closures: closures,
+        });
     });
 }
 

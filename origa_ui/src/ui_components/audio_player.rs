@@ -39,6 +39,7 @@ pub fn AudioPlayer(
                     Some(Box::new(move || {
                         state_clone.set(PlaybackState::Idle);
                     })),
+                    vec![],
                 );
                 let _ = audio.play();
                 state.set(PlaybackState::Loading);
@@ -65,6 +66,7 @@ pub fn AudioPlayer(
                             }
                             state_clone.set(PlaybackState::Idle);
                         })),
+                        vec![],
                     );
                     state.set(PlaybackState::Loading);
                     let _ = audio.play();
