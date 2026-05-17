@@ -128,8 +128,8 @@ pub fn CardHistoryModal(
             <div class="card-history-modal">
                 {move || if has_data {
                     view! {
-                        <div class="flex justify-center h-56" data-testid=chart_test_id>
-                            <LineChart data=chart_data />
+                        <div class="w-full h-44" data-testid=chart_test_id>
+                            <LineChart data=chart_data width=560 height=180 />
                         </div>
                         <div class="flex-1 min-h-0 overflow-y-auto space-y-2">
                             <For
