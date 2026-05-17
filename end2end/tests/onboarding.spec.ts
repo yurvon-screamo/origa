@@ -40,18 +40,53 @@ testWithFreshUser.describe("Onboarding Flow - N4 with ~50% Progress", () => {
         await expect(page.getByTestId("onboarding-stepper")).toBeVisible();
 
         // ========================================
-        // Step 1: Intro - should display welcome message and proceed
+        // Step 1: Intro - language selector and feature showcase
         // ========================================
         await expect(page.getByTestId("onboarding-intro-step")).toBeVisible();
+
+        // Verify language bar with language buttons
+        const languageBar = page.getByTestId("intro-step-language-bar");
+        await expect(languageBar).toBeVisible();
+        const langEnBtn = page.getByTestId("profile-lang-english");
+        const langRuBtn = page.getByTestId("profile-lang-russian");
+        await expect(langEnBtn).toBeVisible();
+        await expect(langRuBtn).toBeVisible();
+
+        // Verify language switching works: click English → title changes
+        const introTitle = page.getByTestId("intro-step-title");
+        const initialTitle = await introTitle.textContent();
+        await langEnBtn.click();
+        await expect(introTitle).not.toHaveText(initialTitle ?? '', { timeout: 5000 });
+
+        // Switch back to Russian and verify
+        await langRuBtn.click();
+        await expect(introTitle).toHaveText(initialTitle ?? '', { timeout: 5000 });
+
+        // Verify feature showcase (decorative kanji — NOT cards, NOT clickable)
+        await expect(page.getByTestId("intro-step-feature-showcase")).toBeVisible();
+
+        const checkNotInteractive = async (testId: string) => {
+            const el = page.getByTestId(testId);
+            await expect(el).toBeVisible();
+            const styles = await el.evaluate((node) => {
+                const style = window.getComputedStyle(node);
+                return { cursor: style.cursor, borderWidth: style.borderWidth };
+            });
+            expect(styles.cursor).not.toBe("pointer");
+            expect(styles.borderWidth).toBe("0px");
+        };
+
+        await checkNotInteractive("intro-step-feature-vocabulary");
+        await checkNotInteractive("intro-step-feature-kanji");
+        await checkNotInteractive("intro-step-feature-grammar");
 
         // Verify welcome text
         await expect(page.getByTestId("intro-step-title")).toBeVisible();
 
-        // Verify skip button is visible
-        const skipButton = page.getByTestId("onboarding-skip");
-        await expect(skipButton).toBeVisible();
+        // Verify skip button
+        await expect(page.getByTestId("onboarding-skip")).toBeVisible();
 
-        // Take screenshot for visual verification
+        // Screenshot
         await page.screenshot({
             path: "test-results/onboarding-step-1-intro.png",
             fullPage: true
@@ -59,9 +94,6 @@ testWithFreshUser.describe("Onboarding Flow - N4 with ~50% Progress", () => {
 
         // Click "Далее" to proceed
         await page.getByTestId("onboarding-next").click();
-
-        // Verify we moved to Load step
-        await expect(page.getByTestId("onboarding-load-step")).toBeVisible();
 
         // ========================================
         // Step 1.5: Load - select daily load

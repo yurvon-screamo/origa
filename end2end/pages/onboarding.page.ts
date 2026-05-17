@@ -29,6 +29,17 @@ export class OnboardingPage extends BasePage {
     readonly introTitle: Locator;
     readonly introSubtitle: Locator;
 
+    // Intro step — language
+    readonly introLanguageBar: Locator;
+    readonly languageEnButton: Locator;
+    readonly languageRuButton: Locator;
+
+    // Intro step — feature showcase
+    readonly introFeatureShowcase: Locator;
+    readonly introFeatureVocabulary: Locator;
+    readonly introFeatureKanji: Locator;
+    readonly introFeatureGrammar: Locator;
+
     // JLPT step
     readonly jlptTitle: Locator;
     readonly jlptSubtitle: Locator;
@@ -83,6 +94,17 @@ export class OnboardingPage extends BasePage {
         // Intro step
         this.introTitle = page.getByTestId("intro-title");
         this.introSubtitle = page.getByTestId("intro-subtitle");
+
+        // Intro step — language
+        this.introLanguageBar = page.getByTestId("intro-step-language-bar");
+        this.languageEnButton = page.getByTestId("profile-lang-english");
+        this.languageRuButton = page.getByTestId("profile-lang-russian");
+
+        // Intro step — feature showcase
+        this.introFeatureShowcase = page.getByTestId("intro-step-feature-showcase");
+        this.introFeatureVocabulary = page.getByTestId("intro-step-feature-vocabulary");
+        this.introFeatureKanji = page.getByTestId("intro-step-feature-kanji");
+        this.introFeatureGrammar = page.getByTestId("intro-step-feature-grammar");
 
         // JLPT step
         this.jlptTitle = page.getByTestId("jlpt-title");
