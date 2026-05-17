@@ -67,6 +67,7 @@ pub fn compute_recent_studied(
     let mut cards_with_date: Vec<_> = knowledge_set
         .study_cards()
         .values()
+        .filter(|sc| !matches!(CardType::from(sc.card()), CardType::Phrase))
         .filter_map(|sc| {
             let last_review = sc.memory().last_review_date()?;
             Some((sc, last_review))
