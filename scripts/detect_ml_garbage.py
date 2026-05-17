@@ -30,12 +30,10 @@ _CYR_VOWELS_RE = re.compile(r'[аеёиоуыэюя]', re.IGNORECASE)
 _CYR_CONSONANTS_RE = re.compile(r'[бвгджзйклмнпрстфхцчшщ]', re.IGNORECASE)
 _NON_TEXT_RE = re.compile(r'[^a-zа-яё\s\.,!?;:()\[\]«»"\'\-]', re.IGNORECASE)
 
-_TOKEN_SPLIT_RE = re.compile(r'[ ,.!?;:()\[\]]+')
+_TOKEN_SPLIT_RE = re.compile(r'[ ,.!?;:()\[\]\n\t]+')
 _JP_TOKEN_SPLIT_RE = re.compile(r'[ ,.!?;:()\[\]、「」。、！？\n]+')
 
 _EXEMPT_NEAR_EMPTY = frozenset({'no', 'ok', 'да', 'нет'})
-
-
 
 # ── Detectors ──────────────────────────────────────────────────────
 
@@ -209,11 +207,11 @@ def classify_phrase(phrase: dict) -> tuple[str, list[str], list[str]]:
 
 # ── Chunk processing ───────────────────────────────────────────────
 
-def process_chunk(path: Path, chunk_num: int) -> dict:
+def process_chunk(path: Path, chunk_num: int) -> tuple[dict, int]:
     """
-    Process a single chunk file. Returns a dict with:
-      - critical: list of (phrase_id, reasons)
-      - warning: list of (phrase_id, reasons, lang)
+    Process a single chunk file. Returns a tuple of:
+      - result dict with 'critical' and 'warning' lists
+      - phrase_count (int)
     """
     result = {
         'critical': [],
@@ -225,7 +223,7 @@ def process_chunk(path: Path, chunk_num: int) -> dict:
             phrases = json.load(f)
     except (json.JSONDecodeError, OSError) as exc:
         print(f"Warning: skipping {path} — {exc}")
-        return result
+        return result, 0
 
     for phrase in phrases:
         classification, ru_issues, en_issues = classify_phrase(phrase)
@@ -239,7 +237,7 @@ def process_chunk(path: Path, chunk_num: int) -> dict:
             if en_issues:
                 result['warning'].append((phrase['i'], en_issues, 'en'))
 
-    return result
+    return result, len(phrases)
 
 
 # ── Report building ────────────────────────────────────────────────
@@ -281,7 +279,7 @@ def build_report(
 
     return {
         'generated_at': datetime.now(timezone.utc).isoformat(),
-        'script_version': '1.3',
+        'script_version': '1.4',
         'summary': {
             'total_phrases': total_phrases,
             'critical': critical_count,
@@ -352,16 +350,14 @@ def main() -> None:
     total_phrases = 0
 
     for chunk_path in chunk_files:
-        chunk_num = int(chunk_path.stem[1:])  # p0000 -> 0
-        result = process_chunk(chunk_path, chunk_num)
-        chunk_results[chunk_num] = result
-
         try:
-            with open(chunk_path, encoding='utf-8') as f:
-                phrase_count = len(json.load(f))
-        except (json.JSONDecodeError, OSError):
-            phrase_count = 0
+            chunk_num = int(chunk_path.stem[1:])
+        except ValueError:
+            print(f"Warning: skipping file with unexpected name: {chunk_path.name}")
+            continue
 
+        result, phrase_count = process_chunk(chunk_path, chunk_num)
+        chunk_results[chunk_num] = result
         total_phrases += phrase_count
 
         if args.verbose:

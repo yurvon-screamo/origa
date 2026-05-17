@@ -16,6 +16,7 @@ Requirements:
 import json
 import argparse
 import os
+import tempfile
 import hashlib
 from pathlib import Path
 from datetime import datetime
@@ -70,8 +71,10 @@ def remove_from_chunk(chunk_path: Path, invalid_ids: set[str], dry_run: bool) ->
         return {"path": str(chunk_path), "removed": 0}
 
     if not dry_run:
-        with open(chunk_path, "w", encoding="utf-8") as f:
-            json.dump(filtered, f, ensure_ascii=False, separators=(",", ":"))
+        tmp_fd, tmp_path = tempfile.mkstemp(dir=chunk_path.parent, suffix='.tmp')
+        with os.fdopen(tmp_fd, 'w', encoding='utf-8') as f:
+            json.dump(filtered, f, ensure_ascii=False, separators=(',', ':'))
+        os.replace(tmp_path, chunk_path)
 
     return {"path": str(chunk_path), "removed": removed_count}
 
@@ -81,17 +84,28 @@ def remove_from_index(index_path: Path, invalid_ids: set[str], dry_run: bool) ->
     with open(index_path, encoding="utf-8") as f:
         data = json.load(f)
 
-    original_count = len(data["phrases"])
-    data["phrases"] = [p for p in data["phrases"] if p["i"] not in invalid_ids]
+    phrases = data.get("phrases", [])
+    if not phrases:
+        print("Warning: phrase_index.json has no 'phrases' array")
+        return {"path": str(index_path), "removed": 0, "new_total": 0}
+
+    original_count = len(phrases)
+    data["phrases"] = [p for p in phrases if p["i"] not in invalid_ids]
     removed_count = original_count - len(data["phrases"])
 
     # Recalculate total
     data["total"] = len(data["phrases"])
     data["h"] = compute_hash(data["phrases"])
+    data["v"] = data.get("v", 1) + 1
+
+    if not verify_hash_consistency(data):
+        print("Error: hash consistency check failed after update!")
 
     if not dry_run:
-        with open(index_path, "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, separators=(",", ":"))
+        tmp_fd, tmp_path = tempfile.mkstemp(dir=index_path.parent, suffix='.tmp')
+        with os.fdopen(tmp_fd, 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, separators=(',', ':'))
+        os.replace(tmp_path, index_path)
 
     return {"path": str(index_path), "removed": removed_count, "new_total": len(data["phrases"])}
 
@@ -122,6 +136,16 @@ def compute_hash(phrases: list) -> str:
     entries.sort(key=lambda e: e["i"])
     serialized = json.dumps(entries, ensure_ascii=False, separators=(",", ":"), sort_keys=False)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+
+
+def verify_hash_consistency(data: dict) -> bool:
+    """Verify that the stored hash matches the actual phrases."""
+    expected = compute_hash(data["phrases"])
+    actual = data.get("h", "")
+    if expected != actual:
+        print(f"Warning: hash mismatch! Expected {expected[:16]}..., got {actual[:16]}...")
+        return False
+    return True
 
 
 def main():
