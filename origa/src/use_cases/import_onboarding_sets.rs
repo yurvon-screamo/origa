@@ -247,6 +247,13 @@ impl<'a, R: UserRepository, C: CdnProvider> ImportOnboardingSetsUseCase<'a, R, C
                 match user.create_card(card) {
                     Ok(study_card) => {
                         debug!(kanji = %kanji_char, "Kanji card created");
+
+                        let companions = user.create_companion_vocab_cards(kanji_char);
+                        result.created_vocabulary += companions.len();
+                        if !companions.is_empty() {
+                            debug!(kanji = %kanji_char, companions = companions.len(), "Companion vocab cards created during onboarding");
+                        }
+
                         Ok(study_card)
                     },
                     Err(OrigaError::DuplicateCard { question }) => {
