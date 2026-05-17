@@ -90,18 +90,6 @@ impl UserRepository for HybridUserRepository {
             },
         }
 
-        match self.merge_current_user().await {
-            Ok(_) => {
-                tracing::info!("save_sync: Remote sync completed");
-            },
-            Err(e) => {
-                tracing::error!(
-                    "save_sync: Remote sync failed: {:?}. Local save is still valid.",
-                    e
-                );
-            },
-        }
-
         Ok(())
     }
 

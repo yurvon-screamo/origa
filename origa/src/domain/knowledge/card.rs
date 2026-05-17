@@ -15,8 +15,8 @@ pub struct StudyCard {
     memory_history: MemoryHistory,
     #[serde(default)]
     is_favorite: bool,
-    #[serde(default)]
-    perfect_streak_since_known: u8,
+    #[serde(default, rename = "perfect_streak_since_known")]
+    favorite_easy_streak: u8,
     #[serde(default)]
     favorite_changed_at: Option<DateTime<Utc>>,
 }
@@ -28,7 +28,7 @@ impl StudyCard {
             card,
             memory_history: MemoryHistory::default(),
             is_favorite: false,
-            perfect_streak_since_known: 0,
+            favorite_easy_streak: 0,
             favorite_changed_at: None,
         }
     }
@@ -57,8 +57,8 @@ impl StudyCard {
         self.memory_history.is_new()
     }
 
-    pub fn perfect_streak_since_known(&self) -> u8 {
-        self.perfect_streak_since_known
+    pub fn favorite_easy_streak(&self) -> u8 {
+        self.favorite_easy_streak
     }
 
     #[cfg(test)]
@@ -74,27 +74,27 @@ impl StudyCard {
         self.is_favorite = !self.is_favorite;
         self.favorite_changed_at = Some(Utc::now());
         if !self.is_favorite {
-            self.perfect_streak_since_known = 0;
+            self.favorite_easy_streak = 0;
         }
     }
 
     pub(crate) fn handle_favorite_rating(&mut self, rating: Rating) {
-        if !self.is_favorite || !self.memory_history.is_known_card() {
+        if !self.is_favorite {
             return;
         }
 
         match rating {
             Rating::Easy => {
-                self.perfect_streak_since_known += 1;
-                if self.perfect_streak_since_known >= 5 {
+                self.favorite_easy_streak += 1;
+                if self.favorite_easy_streak >= 5 {
                     self.is_favorite = false;
                     self.favorite_changed_at = Some(Utc::now());
-                    self.perfect_streak_since_known = 0;
+                    self.favorite_easy_streak = 0;
                 }
             },
             Rating::Good => {},
             Rating::Hard | Rating::Again => {
-                self.perfect_streak_since_known = 0;
+                self.favorite_easy_streak = 0;
             },
         }
     }
@@ -108,7 +108,7 @@ impl StudyCard {
                     self.is_favorite = other.is_favorite;
                     self.favorite_changed_at = other.favorite_changed_at;
                     if !self.is_favorite {
-                        self.perfect_streak_since_known = 0;
+                        self.favorite_easy_streak = 0;
                     }
                 }
             },
@@ -116,7 +116,7 @@ impl StudyCard {
                 self.is_favorite = other.is_favorite;
                 self.favorite_changed_at = other.favorite_changed_at;
                 if !self.is_favorite {
-                    self.perfect_streak_since_known = 0;
+                    self.favorite_easy_streak = 0;
                 }
             },
             (Some(_), None) => {},
@@ -126,9 +126,7 @@ impl StudyCard {
             },
         }
 
-        self.perfect_streak_since_known = self
-            .perfect_streak_since_known
-            .max(other.perfect_streak_since_known);
+        self.favorite_easy_streak = self.favorite_easy_streak.max(other.favorite_easy_streak);
     }
 }
 
@@ -242,7 +240,7 @@ mod tests {
                 assert!(!study_card.card_id().is_nil());
                 assert!(study_card.is_new());
                 assert!(!study_card.is_favorite());
-                assert_eq!(study_card.perfect_streak_since_known(), 0);
+                assert_eq!(study_card.favorite_easy_streak(), 0);
             }
 
             #[test]
@@ -334,7 +332,7 @@ mod tests {
             }
         }
 
-        mod perfect_streak_since_known {
+        mod favorite_easy_streak {
             use super::*;
 
             #[test]
@@ -342,7 +340,7 @@ mod tests {
                 let card = Card::Vocabulary(create_vocabulary_card("猫"));
                 let study_card = StudyCard::new(card);
 
-                assert_eq!(study_card.perfect_streak_since_known(), 0);
+                assert_eq!(study_card.favorite_easy_streak(), 0);
             }
         }
 
@@ -408,7 +406,7 @@ mod tests {
             }
 
             #[test]
-            fn takes_max_perfect_streak_since_known() {
+            fn takes_max_favorite_easy_streak() {
                 let card = Card::Vocabulary(create_vocabulary_card("猫"));
                 let mut study_card1 = StudyCard::new(card.clone());
                 let mut study_card2 = StudyCard::new(card);
@@ -428,7 +426,7 @@ mod tests {
                 study_card1.toggle_favorite();
                 study_card1.handle_favorite_rating(crate::domain::memory::Rating::Easy);
                 study_card1.handle_favorite_rating(crate::domain::memory::Rating::Easy);
-                assert_eq!(study_card1.perfect_streak_since_known(), 2);
+                assert_eq!(study_card1.favorite_easy_streak(), 2);
 
                 study_card2.add_review(
                     memory_state,
@@ -441,11 +439,11 @@ mod tests {
                 study_card2.handle_favorite_rating(crate::domain::memory::Rating::Easy);
                 study_card2.handle_favorite_rating(crate::domain::memory::Rating::Easy);
                 study_card2.handle_favorite_rating(crate::domain::memory::Rating::Easy);
-                assert_eq!(study_card2.perfect_streak_since_known(), 3);
+                assert_eq!(study_card2.favorite_easy_streak(), 3);
 
                 study_card1.merge(&study_card2);
 
-                assert_eq!(study_card1.perfect_streak_since_known(), 3);
+                assert_eq!(study_card1.favorite_easy_streak(), 3);
             }
 
             #[test]
@@ -590,8 +588,8 @@ mod tests {
                 assert_eq!(study_card.card_id(), deserialized.card_id());
                 assert_eq!(study_card.is_favorite(), deserialized.is_favorite());
                 assert_eq!(
-                    study_card.perfect_streak_since_known(),
-                    deserialized.perfect_streak_since_known()
+                    study_card.favorite_easy_streak(),
+                    deserialized.favorite_easy_streak()
                 );
             }
 
@@ -642,10 +640,10 @@ mod tests {
                 let deserialized: StudyCard = serde_json::from_str(&json).unwrap();
 
                 assert_eq!(
-                    study_card.perfect_streak_since_known(),
-                    deserialized.perfect_streak_since_known()
+                    study_card.favorite_easy_streak(),
+                    deserialized.favorite_easy_streak()
                 );
-                assert_eq!(1, deserialized.perfect_streak_since_known());
+                assert_eq!(1, deserialized.favorite_easy_streak());
             }
         }
     }

@@ -75,10 +75,6 @@ pub fn AudioPlayer(
         }
     };
 
-    on_cleanup(move || {
-        stop_current_audio();
-    });
-
     let on_playing = move |_| {
         state.set(PlaybackState::Playing);
     };

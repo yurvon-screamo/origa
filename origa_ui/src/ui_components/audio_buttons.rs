@@ -23,10 +23,6 @@ pub fn AudioButtons(
         if val.is_empty() { None } else { Some(val) }
     };
 
-    on_cleanup(move || {
-        stop_current_audio();
-    });
-
     view! {
         <Show when=move || has_content>
             <div class=move || format!("audio-buttons {}", class.get())>
