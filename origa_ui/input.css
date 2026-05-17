@@ -3245,6 +3245,7 @@ input[type="submit"],
 /* Chart */
 .chart-container {
     font-family: var(--font-mono);
+    overflow: hidden;
 }
 
 .chart-label {

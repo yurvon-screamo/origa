@@ -134,7 +134,7 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                         test_id=Signal::derive(|| "home-jlpt-progress".to_string())
                     />
 
-                    <div class="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(280px,5fr)_minmax(360px,7fr)] lg:gap-8 items-start">
+                    <div class="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(280px,5fr)_minmax(360px,7fr)] lg:gap-8">
                         <TodayOverviewCard
                             overview=Signal::derive(move || today_overview.get())
                             test_id=Signal::derive(|| "home-today-overview".to_string())

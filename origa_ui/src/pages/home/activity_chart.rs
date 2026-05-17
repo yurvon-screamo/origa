@@ -49,7 +49,7 @@ pub fn ActivityChart(
     let has_enough_data = move || chart_data.get().len() >= 2;
 
     view! {
-        <Card shadow=true class=Signal::derive(|| "p-6".to_string()) test_id=test_id>
+        <Card shadow=true class=Signal::derive(|| "p-6 h-full".to_string()) test_id=test_id>
             <Text
                 size=TextSize::Small
                 variant=TypographyVariant::Muted
@@ -59,18 +59,21 @@ pub fn ActivityChart(
                 {t!(i18n, home.activity_30days)}
             </Text>
 
-            <div class="mt-4">
+            <div class="mt-4 flex-1 flex flex-col min-h-0">
                 <Show when=move || has_enough_data()>
-                    <MultiLineChart
-                        lines=lines
-                        width=400
-                        height=200
-                        empty_text=Signal::derive(move || td_string!(i18n.get_locale(), home.no_data).to_string())
-                    />
+                    <div class="flex-1 min-h-0">
+                        <MultiLineChart
+                            lines=lines
+                            width=400
+                            height=200
+                            class=Signal::derive(|| "h-full".to_string())
+                            empty_text=Signal::derive(move || td_string!(i18n.get_locale(), home.no_data).to_string())
+                        />
+                    </div>
                 </Show>
 
                 <Show when=move || !has_enough_data()>
-                    <div class="flex items-center justify-center h-[200px]">
+                    <div class="flex items-center justify-center flex-1">
                         <Text size=TextSize::Small variant=TypographyVariant::Muted>
                             {t!(i18n, home.no_data)}
                         </Text>

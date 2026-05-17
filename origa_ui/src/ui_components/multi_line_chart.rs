@@ -1,6 +1,7 @@
 use leptos::prelude::*;
 
 const PADDING_LEFT: u32 = 56;
+const PADDING_RIGHT: u32 = 16;
 const PADDING_BOTTOM: u32 = 32;
 const PADDING_TOP: u32 = 16;
 
@@ -65,7 +66,7 @@ pub fn MultiLineChart(
         if val.is_empty() { None } else { Some(val) }
     };
 
-    let chart_width = width - PADDING_LEFT - 10;
+    let chart_width = width - PADDING_LEFT - PADDING_RIGHT;
     let chart_height = height - PADDING_TOP - PADDING_BOTTOM;
 
     let y_ticks = move || {
@@ -270,7 +271,7 @@ pub fn MultiLineChart(
                     <line
                         x1=PADDING_LEFT
                         y1=height - PADDING_BOTTOM
-                        x2=width - 10
+                        x2=width - PADDING_RIGHT
                         y2=height - PADDING_BOTTOM
                         stroke="var(--border-light)"
                         stroke-width="1"
@@ -309,6 +310,7 @@ pub fn MultiLineChart(
                                     text_anchor="middle"
                                     fill="var(--fg-muted)"
                                     font_size="8"
+                                    font_family="DM Mono"
                                 >
                                     {label}
                                 </text>
