@@ -1,7 +1,8 @@
 use leptos::prelude::*;
 
-const PADDING: u32 = 64;
+const PADDING: u32 = 32;
 const POINT_RADIUS: u32 = 4;
+const MAX_X_LABELS: usize = 6;
 
 #[component]
 pub fn LineChart(
@@ -47,21 +48,6 @@ pub fn LineChart(
         let max_val = values.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
         let range = (max_val - min_val).max(1.0);
 
-        if items.len() == 2 {
-            let usable_width = chart_width as f64 * 0.5;
-            let offset_x = PADDING as f64 + chart_width as f64 * 0.25;
-            return items
-                .iter()
-                .enumerate()
-                .map(|(i, (_, value))| {
-                    let x = offset_x + i as f64 * usable_width;
-                    let y = PADDING as f64 + chart_height as f64
-                        - ((value - min_val) / range) * chart_height as f64;
-                    (x, y)
-                })
-                .collect::<Vec<_>>();
-        }
-
         let step_x = chart_width as f64 / (items.len() - 1) as f64;
 
         items
@@ -94,29 +80,28 @@ pub fn LineChart(
             return vec![(width as f64 / 2.0, items[0].0.clone())];
         }
 
-        if items.len() == 2 {
-            let usable_width = chart_width as f64 * 0.5;
-            let offset_x = PADDING as f64 + chart_width as f64 * 0.25;
-            return items
-                .iter()
-                .enumerate()
-                .map(|(i, (label, _))| {
-                    let x = offset_x + i as f64 * usable_width;
-                    (x, label.clone())
-                })
-                .collect::<Vec<_>>();
-        }
-
         let step_x = chart_width as f64 / (items.len() - 1) as f64;
 
-        items
+        let all_labels: Vec<(f64, String)> = items
             .iter()
             .enumerate()
             .map(|(i, (label, _))| {
                 let x = PADDING as f64 + i as f64 * step_x;
                 (x, label.clone())
             })
-            .collect::<Vec<_>>()
+            .collect();
+
+        if all_labels.len() <= MAX_X_LABELS {
+            return all_labels;
+        }
+
+        let step = (all_labels.len() - 1) as f64 / (MAX_X_LABELS - 1) as f64;
+        (0..MAX_X_LABELS)
+            .map(|i| {
+                let idx = (i as f64 * step).round() as usize;
+                all_labels[idx].clone()
+            })
+            .collect()
     };
 
     let y_ticks = move || {
@@ -196,7 +181,7 @@ pub fn LineChart(
                 children=move |(y, value)| {
                     view! {
                         <text
-                            x=PADDING - 28
+                            x=PADDING - 22
                             y=y
                             text_anchor="end"
                             dominant_baseline="central"
@@ -223,10 +208,10 @@ pub fn LineChart(
                     view! {
                         <text
                             x=x
-                            y=height - PADDING + 20
+                            y=height - PADDING + 14
                             text_anchor="middle"
                             fill="var(--fg-muted)"
-                            font_size="9"
+                            font_size="7"
                         >
                             {label}
                         </text>
