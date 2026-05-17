@@ -64,15 +64,13 @@ The `kanji_companions.rs` module contains `add_kanji_companions()`, called after
 
 ## Files Changed
 
-| File | Change |
-|------|--------|
-| `origa/src/domain/knowledge/vocabulary.rs` | `from_known_word()` public constructor |
-| `origa/src/domain/knowledge/mod.rs` | `create_companion_vocab_cards()`, `MAX_COMPANION_WORDS = 3` |
-| `origa/src/domain/user.rs` | Proxy method to `KnowledgeSet::create_companion_vocab_cards()` |
-| `origa/src/domain/knowledge/kanji_companions.rs` | **NEW** — `add_kanji_companions()`, `MAX_COMPANION_CARDS_PER_LESSON = 15` |
-| `origa/src/use_cases/create_kanji_card.rs` | Companion creation after kanji card creation |
-| `origa/src/use_cases/import_onboarding_sets.rs` | Companion creation during onboarding import |
-| `origa/src/use_cases/migrate_kanji_companions.rs` | **NEW** — Migration use case for existing users |
+- `origa/src/domain/knowledge/vocabulary.rs` — `from_known_word()` public constructor
+- `origa/src/domain/knowledge/mod.rs` — `create_companion_vocab_cards()`, `MAX_COMPANION_WORDS = 3`
+- `origa/src/domain/user.rs` — Proxy method to `KnowledgeSet::create_companion_vocab_cards()`
+- `origa/src/domain/knowledge/kanji_companions.rs` — **NEW** — `add_kanji_companions()`, `MAX_COMPANION_CARDS_PER_LESSON = 15`
+- `origa/src/use_cases/create_kanji_card.rs` — Companion creation after kanji card creation
+- `origa/src/use_cases/import_onboarding_sets.rs` — Companion creation during onboarding import
+- `origa/src/use_cases/migrate_kanji_companions.rs` — **NEW** — Migration use case for existing users
 
 ## Alternatives Considered
 
