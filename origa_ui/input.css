@@ -3210,6 +3210,9 @@ input[type="submit"],
     display: flex;
     flex-direction: column;
     gap: 16px;
+    /* modal-content padding (72px) + modal-header (~48px) + buffer (~40px) */
+    max-height: calc(85vh - 160px);
+    overflow: hidden;
 }
 
 .card-history-item {
