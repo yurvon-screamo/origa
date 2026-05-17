@@ -14,6 +14,7 @@ use super::quiz_card::QuizVariant;
 use super::rating_buttons_view::RatingButtonsView;
 use super::writing_card::WritingCard;
 use super::yesno_card_view::YesNoCardView;
+use crate::ui_components::stop_current_audio;
 use crate::pages::lesson::card_type::CardType;
 use leptos::prelude::*;
 use origa::domain::{Card, GrammarInfo, LessonCard, LessonCardView, NativeLanguage, Rating};
@@ -120,6 +121,10 @@ pub fn LessonCardContainer() -> impl IntoView {
     });
 
     let container_ref = NodeRef::<leptos::html::Div>::new();
+
+    on_cleanup(move || {
+        stop_current_audio();
+    });
 
     Effect::new(move |_| {
         if let Some(el) = container_ref.get() {

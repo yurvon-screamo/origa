@@ -68,9 +68,9 @@ fn handle_favorite_rating_easy_increases_streak() {
     );
     study_card.toggle_favorite();
 
-    assert_eq!(study_card.perfect_streak_since_known(), 0);
+    assert_eq!(study_card.favorite_easy_streak(), 0);
     study_card.handle_favorite_rating(Rating::Easy);
-    assert_eq!(study_card.perfect_streak_since_known(), 1);
+    assert_eq!(study_card.favorite_easy_streak(), 1);
 }
 
 #[test]
@@ -87,10 +87,10 @@ fn handle_favorite_rating_good_does_not_change_streak() {
     study_card.toggle_favorite();
 
     study_card.handle_favorite_rating(Rating::Easy);
-    assert_eq!(study_card.perfect_streak_since_known(), 1);
+    assert_eq!(study_card.favorite_easy_streak(), 1);
 
     study_card.handle_favorite_rating(Rating::Good);
-    assert_eq!(study_card.perfect_streak_since_known(), 1);
+    assert_eq!(study_card.favorite_easy_streak(), 1);
 }
 
 #[test]
@@ -107,10 +107,10 @@ fn handle_favorite_rating_hard_resets_streak() {
     study_card.toggle_favorite();
 
     study_card.handle_favorite_rating(Rating::Easy);
-    assert_eq!(study_card.perfect_streak_since_known(), 1);
+    assert_eq!(study_card.favorite_easy_streak(), 1);
 
     study_card.handle_favorite_rating(Rating::Hard);
-    assert_eq!(study_card.perfect_streak_since_known(), 0);
+    assert_eq!(study_card.favorite_easy_streak(), 0);
 }
 
 #[test]
@@ -127,10 +127,10 @@ fn handle_favorite_rating_again_resets_streak() {
     study_card.toggle_favorite();
 
     study_card.handle_favorite_rating(Rating::Easy);
-    assert_eq!(study_card.perfect_streak_since_known(), 1);
+    assert_eq!(study_card.favorite_easy_streak(), 1);
 
     study_card.handle_favorite_rating(Rating::Again);
-    assert_eq!(study_card.perfect_streak_since_known(), 0);
+    assert_eq!(study_card.favorite_easy_streak(), 0);
 }
 
 #[test]
@@ -155,7 +155,7 @@ fn handle_favorite_rating_five_easy_removes_favorite() {
 
     study_card.handle_favorite_rating(Rating::Easy);
     assert!(!study_card.is_favorite());
-    assert_eq!(study_card.perfect_streak_since_known(), 0);
+    assert_eq!(study_card.favorite_easy_streak(), 0);
 }
 
 #[test]
@@ -172,28 +172,28 @@ fn handle_favorite_rating_good_does_not_interrupt_accumulation() {
     study_card.toggle_favorite();
 
     study_card.handle_favorite_rating(Rating::Easy);
-    assert_eq!(study_card.perfect_streak_since_known(), 1);
+    assert_eq!(study_card.favorite_easy_streak(), 1);
 
     study_card.handle_favorite_rating(Rating::Good);
-    assert_eq!(study_card.perfect_streak_since_known(), 1);
+    assert_eq!(study_card.favorite_easy_streak(), 1);
 
     study_card.handle_favorite_rating(Rating::Easy);
-    assert_eq!(study_card.perfect_streak_since_known(), 2);
+    assert_eq!(study_card.favorite_easy_streak(), 2);
 
     study_card.handle_favorite_rating(Rating::Good);
-    assert_eq!(study_card.perfect_streak_since_known(), 2);
+    assert_eq!(study_card.favorite_easy_streak(), 2);
 
     study_card.handle_favorite_rating(Rating::Easy);
-    assert_eq!(study_card.perfect_streak_since_known(), 3);
+    assert_eq!(study_card.favorite_easy_streak(), 3);
 
     study_card.handle_favorite_rating(Rating::Good);
-    assert_eq!(study_card.perfect_streak_since_known(), 3);
+    assert_eq!(study_card.favorite_easy_streak(), 3);
 
     study_card.handle_favorite_rating(Rating::Easy);
-    assert_eq!(study_card.perfect_streak_since_known(), 4);
+    assert_eq!(study_card.favorite_easy_streak(), 4);
 
     study_card.handle_favorite_rating(Rating::Good);
-    assert_eq!(study_card.perfect_streak_since_known(), 4);
+    assert_eq!(study_card.favorite_easy_streak(), 4);
 
     study_card.handle_favorite_rating(Rating::Easy);
     assert!(!study_card.is_favorite());
@@ -213,22 +213,64 @@ fn handle_favorite_rating_non_favorited_does_nothing() {
 
     assert!(!study_card.is_favorite());
 
-    let initial_streak = study_card.perfect_streak_since_known();
+    let initial_streak = study_card.favorite_easy_streak();
     study_card.handle_favorite_rating(Rating::Easy);
-    assert_eq!(study_card.perfect_streak_since_known(), initial_streak);
+    assert_eq!(study_card.favorite_easy_streak(), initial_streak);
 }
 
 #[test]
-fn handle_favorite_rating_unknown_card_does_nothing() {
+fn handle_favorite_rating_new_card_increments_streak() {
     let mut knowledge_set = KnowledgeSet::new();
     let card = create_vocab_card("猫");
     let mut study_card = knowledge_set.create_card(card).unwrap();
 
     study_card.toggle_favorite();
 
-    let initial_streak = study_card.perfect_streak_since_known();
+    assert_eq!(study_card.favorite_easy_streak(), 0);
     study_card.handle_favorite_rating(Rating::Easy);
-    assert_eq!(study_card.perfect_streak_since_known(), initial_streak);
+    assert_eq!(study_card.favorite_easy_streak(), 1);
+}
+
+#[test]
+fn handle_favorite_rating_new_card_auto_unfavorite_after_five_easy() {
+    let mut knowledge_set = KnowledgeSet::new();
+    let card = create_vocab_card("猫");
+    let mut study_card = knowledge_set.create_card(card).unwrap();
+
+    assert!(study_card.is_new());
+    study_card.toggle_favorite();
+    assert!(study_card.is_favorite());
+
+    for _ in 0..5 {
+        study_card.handle_favorite_rating(Rating::Easy);
+    }
+
+    assert!(!study_card.is_favorite());
+    assert_eq!(study_card.favorite_easy_streak(), 0);
+}
+
+#[test]
+fn handle_favorite_rating_high_difficulty_auto_unfavorite_after_five_easy() {
+    let mut knowledge_set = KnowledgeSet::new();
+    let card = create_vocab_card("猫");
+    let mut study_card = knowledge_set.create_card(card).unwrap();
+
+    let memory = MemoryState::new(
+        crate::domain::memory::Stability::new(15.0).unwrap(),
+        crate::domain::memory::Difficulty::new(7.0).unwrap(),
+        chrono::Utc::now(),
+    );
+    study_card.add_review(memory, ReviewLog::new(Rating::Good, Duration::days(1)));
+
+    study_card.toggle_favorite();
+    assert!(study_card.is_favorite());
+
+    for _ in 0..5 {
+        study_card.handle_favorite_rating(Rating::Easy);
+    }
+
+    assert!(!study_card.is_favorite());
+    assert_eq!(study_card.favorite_easy_streak(), 0);
 }
 
 #[test]

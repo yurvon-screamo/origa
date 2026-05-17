@@ -191,7 +191,7 @@ pub fn LessonCard(
                     register_audio(audio, None, vec![on_error]);
                 }
             }
-        } else {
+        } else if is_phrase || show_answer {
             stop_current_audio();
         }
     });
@@ -221,10 +221,6 @@ pub fn LessonCard(
 
     let on_toggle = Callback::new(move |()| {
         is_expanded.update(|v| *v = !*v);
-    });
-
-    on_cleanup(move || {
-        stop_current_audio();
     });
 
     view! {
