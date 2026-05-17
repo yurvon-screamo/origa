@@ -29,8 +29,8 @@ pub fn TodayOverviewCard(
     let has_new_items = Signal::derive(move || overview.get().new_count > 0);
 
     view! {
-        <Card shadow=true class=Signal::derive(|| "p-8".to_string()) test_id=test_id>
-            <div data-testid=test_id_val>
+        <Card shadow=true class=Signal::derive(|| "p-8 h-full".to_string()) test_id=test_id>
+            <div data-testid=test_id_val class="flex flex-col h-full">
                 <Text
                     size=TextSize::Small
                     variant=TypographyVariant::Muted
