@@ -26,8 +26,10 @@ use leptos_router::hooks::use_navigate;
 use load_step::LoadStep;
 use onboarding_actions::{create_on_skip_callback, create_on_start_import_callback};
 use onboarding_state::{OnboardingState, OnboardingStep};
+use origa::domain::NativeLanguage;
 use origa::domain::User;
 use origa::traits::UserRepository;
+use origa::use_cases::UpdateUserProfileUseCase;
 use progress::ProgressStep;
 use scoring_step::ScoringStep;
 use summary_step::SummaryStep;
@@ -35,6 +37,9 @@ use summary_step::SummaryStep;
 #[component]
 pub fn Onboarding() -> impl IntoView {
     let i18n = use_i18n();
+    let selected_language: RwSignal<NativeLanguage> =
+        RwSignal::new(locale_to_native_language(&i18n.get_locale()));
+
     let repository =
         use_context::<HybridUserRepository>().expect("repository context not provided");
     let navigate = use_navigate();
@@ -50,8 +55,53 @@ pub fn Onboarding() -> impl IntoView {
     let disposed = StoredValue::new(());
     let mark_all_trigger: RwSignal<u32> = RwSignal::new(0);
     let scoring_completed: RwSignal<bool> = RwSignal::new(false);
+    let lang_initialized = RwSignal::new(false);
 
     provide_context(state);
+
+    let i18n_for_lang = i18n;
+    Effect::new(move |_| {
+        let lang = selected_language.get();
+        i18n_for_lang.set_locale(native_language_to_locale(&lang));
+    });
+
+    let lang_for_init = selected_language;
+    let current_user_for_lang = current_user;
+    let lang_init_flag = lang_initialized;
+    Effect::new(move |_| {
+        if let Some(user) = current_user_for_lang.get() {
+            lang_for_init.set(*user.native_language());
+            lang_init_flag.set(true);
+        }
+    });
+
+    let disposed_for_lang = disposed;
+    let repo_for_lang = repository.clone();
+    let lang_signal_for_save = selected_language;
+    let current_user_for_save = current_user;
+    let lang_init_flag_for_save = lang_initialized;
+    Effect::new(move |_| {
+        let lang = lang_signal_for_save.get();
+        if !lang_init_flag_for_save.get() {
+            return;
+        }
+        let disposed = disposed_for_lang;
+        let repo = repo_for_lang.clone();
+        let current_user = current_user_for_save;
+        spawn_local(async move {
+            if disposed.is_disposed() {
+                return;
+            }
+            if let Some(user) = current_user.get() {
+                let use_case = UpdateUserProfileUseCase::new(&repo);
+                let daily_load = *user.daily_load();
+                let telegram_id = user.telegram_user_id().copied();
+                if let Err(e) = use_case.execute(lang, daily_load, telegram_id).await {
+                    tracing::error!("Failed to save language on onboarding: {:?}", e);
+                }
+            }
+        });
+    });
 
     let steps_i18n = i18n;
     let steps: Signal<Vec<StepperStep>> = Signal::derive(move || {
@@ -191,7 +241,7 @@ pub fn Onboarding() -> impl IntoView {
 
                         <div class="onboarding-content mt-8">
                             <Show when=move || matches!(state.get().current_step, OnboardingStep::Intro)>
-                                <IntroStep test_id=Signal::derive(|| "onboarding-intro-step".to_string()) />
+                                <IntroStep selected_language=selected_language test_id=Signal::derive(|| "onboarding-intro-step".to_string()) />
                             </Show>
 
                             <Show when=move || matches!(state.get().current_step, OnboardingStep::Load)>

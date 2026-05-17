@@ -4176,3 +4176,17 @@ input[type="submit"],
 .status-card--difficult .status-progress-fill {
     background: var(--accent-terracotta);
 }
+
+/* Studied today list */
+.study-list-container {
+    max-height: 480px;
+    overflow-y: auto;
+}
+
+.study-list-item {
+    border-bottom: 1px solid var(--border-light);
+}
+
+.study-list-item:last-child {
+    border-bottom: none;
+}
