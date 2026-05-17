@@ -30,8 +30,8 @@ impl VocabularyCard {
         }
     }
 
-    /// Приватный helper для создания одной карточки с валидацией
-    fn try_from_word(word: &str, lang: &NativeLanguage) -> Result<Self, OrigaError> {
+    /// Creates a card from a single known word after validating that a translation exists.
+    pub fn from_known_word(word: &str, lang: &NativeLanguage) -> Result<Self, OrigaError> {
         Self::validate_translation(word, lang)?;
         let question = Question::new(word.to_string())?;
         Ok(Self {
@@ -63,7 +63,7 @@ impl VocabularyCard {
 
             let word_text = token.orthographic_base_form();
 
-            match Self::try_from_word(word_text, lang) {
+            match Self::from_known_word(word_text, lang) {
                 Ok(card) => cards.push(card),
                 Err(_) => skipped.push(word_text.to_string()),
             }
@@ -493,6 +493,55 @@ mod tests {
         let cloned = card.clone();
 
         assert_eq!(card, cloned);
+    }
+
+    #[test]
+    fn from_known_word_creates_card_for_valid_word() {
+        init_real_dictionaries();
+        let lang = NativeLanguage::Russian;
+
+        let card = VocabularyCard::from_known_word("猫", &lang);
+
+        assert!(card.is_ok());
+        assert_eq!(card.unwrap().word().text(), "猫");
+    }
+
+    #[test]
+    fn from_known_word_returns_error_for_unknown_word() {
+        init_real_dictionaries();
+        let lang = NativeLanguage::Russian;
+
+        let result = VocabularyCard::from_known_word("存在しない言葉", &lang);
+
+        assert!(result.is_err());
+        assert!(matches!(
+            result.unwrap_err(),
+            OrigaError::VocabularyNotFound { .. }
+        ));
+    }
+
+    #[test]
+    fn from_known_word_returns_error_for_empty_word() {
+        init_real_dictionaries();
+        let lang = NativeLanguage::Russian;
+
+        let result = VocabularyCard::from_known_word("", &lang);
+
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn from_known_word_card_answers_with_translation() {
+        init_real_dictionaries();
+        let lang = NativeLanguage::Russian;
+
+        let card = VocabularyCard::from_known_word("猫", &lang).unwrap();
+        let answer = card.answer(&lang);
+
+        assert!(answer.is_ok());
+        let binding = answer.unwrap();
+        let text = binding.text();
+        assert!(text.contains("кошка") || text.contains("кот"));
     }
 
     #[test]

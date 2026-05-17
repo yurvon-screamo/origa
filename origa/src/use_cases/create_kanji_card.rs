@@ -27,6 +27,10 @@ impl<'a, R: UserRepository> CreateKanjiCardUseCase<'a, R> {
             let created = user.create_card(card)?;
             info!(kanji = %kanji, "Kanji card created");
             cards.push(created);
+
+            let companions = user.create_companion_vocab_cards(&kanji);
+            info!(kanji = %kanji, companions = companions.len(), "Companion vocab cards created");
+            cards.extend(companions);
         }
 
         self.repository.save(&user).await?;

@@ -2,6 +2,7 @@ mod card;
 mod daily_history;
 mod grammar;
 mod kanji;
+mod kanji_companions;
 pub mod lesson;
 mod lesson_builder;
 mod phrase;
@@ -26,10 +27,13 @@ use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use ulid::Ulid;
 
+use crate::dictionary::kanji::get_kanji_info;
 use crate::domain::{
-    JlptContent, OrigaError, RateMode, Rating, ReviewLog,
+    JlptContent, NativeLanguage, OrigaError, RateMode, Rating, ReviewLog,
     srs::{NextReview, rate_memory},
 };
+
+pub(crate) const MAX_COMPANION_WORDS: usize = 3;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct KnowledgeSet {
@@ -244,7 +248,8 @@ impl KnowledgeSet {
         daily_new_limit: usize,
         jlpt_content: &JlptContent,
     ) -> LessonData {
-        lesson_builder::build_lesson(self, daily_new_limit, jlpt_content)
+        let lesson = lesson_builder::build_lesson(self, daily_new_limit, jlpt_content);
+        kanji_companions::add_kanji_companions(lesson, self)
     }
 
     pub(crate) fn rate_card(
@@ -297,6 +302,42 @@ impl KnowledgeSet {
             is_phrase,
             mode,
         );
+    }
+
+    pub fn create_companion_vocab_cards(
+        &mut self,
+        kanji_char: &str,
+        native_language: &NativeLanguage,
+    ) -> Vec<StudyCard> {
+        let kanji_info = match get_kanji_info(kanji_char) {
+            Ok(info) => info,
+            Err(_) => {
+                tracing::debug!(kanji = %kanji_char, "Kanji not found, skipping companion creation");
+                return Vec::new();
+            },
+        };
+
+        let mut created = Vec::new();
+        for word in kanji_info.popular_words().iter().take(MAX_COMPANION_WORDS) {
+            match VocabularyCard::from_known_word(word, native_language) {
+                Ok(vocab_card) => match self.create_card(Card::Vocabulary(vocab_card)) {
+                    Ok(study_card) => {
+                        tracing::debug!(kanji = %kanji_char, word = %word, "Companion vocab card created");
+                        created.push(study_card);
+                    },
+                    Err(OrigaError::DuplicateCard { .. }) => {
+                        tracing::debug!(kanji = %kanji_char, word = %word, "Companion already exists, skipping");
+                    },
+                    Err(e) => {
+                        tracing::warn!(kanji = %kanji_char, word = %word, error = %e, "Failed to create companion card");
+                    },
+                },
+                Err(_) => {
+                    tracing::debug!(kanji = %kanji_char, word = %word, "No translation for companion word, skipping");
+                },
+            }
+        }
+        created
     }
 
     fn recalculate_daily_stats(&mut self) {

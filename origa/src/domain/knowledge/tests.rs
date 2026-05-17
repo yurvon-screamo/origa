@@ -1203,3 +1203,82 @@ fn favorite_card_appears_once_when_due_known() {
         "Favorite due+known card should appear exactly once, got {count}"
     );
 }
+
+mod companion_vocab_cards {
+    use super::*;
+    use crate::domain::NativeLanguage;
+    use crate::use_cases::init_real_dictionaries;
+
+    #[test]
+    fn create_companion_vocab_cards_creates_cards_for_known_kanji() {
+        init_real_dictionaries();
+
+        let mut knowledge_set = KnowledgeSet::new();
+        let created = knowledge_set.create_companion_vocab_cards("日", &NativeLanguage::Russian);
+
+        assert!(
+            !created.is_empty(),
+            "Should create at least one companion card for 日"
+        );
+        assert!(
+            created.len() <= 3,
+            "Should create at most MAX_COMPANION_WORDS (3) cards, got {}",
+            created.len()
+        );
+
+        for study_card in &created {
+            assert!(
+                matches!(study_card.card(), Card::Vocabulary(_)),
+                "All companion cards should be vocabulary cards"
+            );
+        }
+    }
+
+    #[test]
+    fn create_companion_vocab_cards_returns_empty_for_unknown_kanji() {
+        init_real_dictionaries();
+
+        let mut knowledge_set = KnowledgeSet::new();
+        let created = knowledge_set.create_companion_vocab_cards("∃", &NativeLanguage::Russian);
+
+        assert!(
+            created.is_empty(),
+            "Should return empty vec for unknown kanji"
+        );
+    }
+
+    #[test]
+    fn create_companion_vocab_cards_skips_duplicates() {
+        init_real_dictionaries();
+
+        let mut knowledge_set = KnowledgeSet::new();
+        let first = knowledge_set.create_companion_vocab_cards("日", &NativeLanguage::Russian);
+        let second = knowledge_set.create_companion_vocab_cards("日", &NativeLanguage::Russian);
+
+        assert!(
+            !first.is_empty(),
+            "First call should create companion cards"
+        );
+        assert!(
+            second.is_empty(),
+            "Second call should return empty vec (all duplicates)"
+        );
+    }
+
+    #[test]
+    fn create_companion_vocab_cards_creates_fewer_than_max() {
+        init_real_dictionaries();
+
+        let mut knowledge_set = KnowledgeSet::new();
+
+        let kanji_info = crate::dictionary::kanji::get_kanji_info("一").unwrap();
+        let popular_count = kanji_info.popular_words().len();
+
+        let created = knowledge_set.create_companion_vocab_cards("一", &NativeLanguage::Russian);
+
+        assert!(
+            created.len() <= popular_count.min(3),
+            "Should create at most min(popular_words, MAX_COMPANION_WORDS) cards"
+        );
+    }
+}

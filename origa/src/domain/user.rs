@@ -237,6 +237,11 @@ impl User {
         self.knowledge_set.create_card(card)
     }
 
+    pub fn create_companion_vocab_cards(&mut self, kanji_char: &str) -> Vec<StudyCard> {
+        self.knowledge_set
+            .create_companion_vocab_cards(kanji_char, &self.native_language)
+    }
+
     pub fn score_content(&self, content: &str) -> Result<ScoreContentResult, OrigaError> {
         score_content::score_content(content, self.knowledge_set().study_cards())
     }
