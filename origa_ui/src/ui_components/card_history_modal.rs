@@ -131,7 +131,7 @@ pub fn CardHistoryModal(
                         <div class="flex justify-center h-56" data-testid=chart_test_id>
                             <LineChart data=chart_data />
                         </div>
-                        <div class="overflow-y-auto space-y-2">
+                        <div class="flex-1 min-h-0 overflow-y-auto space-y-2">
                             <For
                                 each=move || reviews_signal.get()
                                 key=|review| review.id
