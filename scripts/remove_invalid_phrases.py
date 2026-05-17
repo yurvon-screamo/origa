@@ -87,6 +87,7 @@ def remove_from_index(index_path: Path, invalid_ids: set[str], dry_run: bool) ->
 
     # Recalculate total
     data["total"] = len(data["phrases"])
+    data["h"] = compute_hash(data["phrases"])
 
     if not dry_run:
         with open(index_path, "w", encoding="utf-8") as f:
@@ -110,6 +111,17 @@ def remove_audio_files(audio_dir: Path, invalid_ids: set[str], dry_run: bool) ->
             not_found += 1
 
     return {"removed": removed, "not_found": not_found}
+
+
+def compute_hash(phrases: list) -> str:
+    """Compute SHA-256 of JSON-serialized index entries, matching Rust build_phrase_dataset logic."""
+    entries = []
+    for p in phrases:
+        entry = {"i": p["i"], "t": p.get("t", []), "c": p.get("c", 0)}
+        entries.append(entry)
+    entries.sort(key=lambda e: e["i"])
+    serialized = json.dumps(entries, ensure_ascii=False, separators=(",", ":"), sort_keys=False)
+    return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
 
 
 def main():
