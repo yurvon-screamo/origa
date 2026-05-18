@@ -14,6 +14,10 @@ pub struct TodayOverview {
     pub learned_count: usize,
     pub in_progress_count: usize,
     pub difficult_count: usize,
+    pub new_delta: Option<i32>,
+    pub learned_delta: Option<i32>,
+    pub in_progress_delta: Option<i32>,
+    pub difficult_delta: Option<i32>,
 }
 
 impl TodayOverview {
@@ -41,7 +45,10 @@ pub struct ActivityDataPoint {
     pub difficult: f64,
 }
 
-pub fn compute_today_overview(knowledge_set: &KnowledgeSet) -> TodayOverview {
+pub fn compute_today_overview(
+    knowledge_set: &KnowledgeSet,
+    history: &[DailyHistoryItem],
+) -> TodayOverview {
     let mut overview = TodayOverview::default();
 
     for study_card in knowledge_set.study_cards().values() {
@@ -59,6 +66,27 @@ pub fn compute_today_overview(knowledge_set: &KnowledgeSet) -> TodayOverview {
         } else {
             overview.in_progress_count += 1;
         }
+    }
+
+    if history.len() >= 2 {
+        let mut sorted: Vec<_> = history.to_vec();
+        sorted.sort_by_key(|a| a.timestamp());
+        let today = sorted.last().expect("last item exists");
+        let yesterday = sorted
+            .iter()
+            .rev()
+            .nth(1)
+            .expect("second-to-last item exists");
+
+        overview.new_delta = Some((today.new_words() as i64 - yesterday.new_words() as i64) as i32);
+        overview.learned_delta =
+            Some((today.known_words() as i64 - yesterday.known_words() as i64) as i32);
+        overview.in_progress_delta =
+            Some((today.in_progress_words() as i64 - yesterday.in_progress_words() as i64) as i32);
+        overview.difficult_delta = Some(
+            (today.high_difficulty_words() as i64 - yesterday.high_difficulty_words() as i64)
+                as i32,
+        );
     }
 
     overview
@@ -176,6 +204,36 @@ pub fn compute_30day_chart_data(
             }
         })
         .collect()
+}
+
+#[derive(Clone, Default)]
+pub struct RatingRatio {
+    pub percentage: u8,
+    pub positive_count: usize,
+    pub negative_count: usize,
+}
+
+pub fn compute_rating_ratio(history: &[DailyHistoryItem]) -> Option<RatingRatio> {
+    let mut positive = 0usize;
+    let mut negative = 0usize;
+
+    for item in history {
+        positive += item.positive_ratings();
+        negative += item.negative_ratings();
+    }
+
+    let total = positive + negative;
+    if total == 0 {
+        return None;
+    }
+
+    let percentage = (positive as f64 / total as f64 * 100.0).round() as u8;
+
+    Some(RatingRatio {
+        percentage,
+        positive_count: positive,
+        negative_count: negative,
+    })
 }
 
 #[derive(Clone, Default)]

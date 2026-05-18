@@ -3,9 +3,9 @@ use super::content_sync::{
 };
 use super::{
     ActivityChart, ActivityDataPoint, CompletionForecast, JlptProgressCard, JlptSkeleton,
-    RecentlyStudiedItem, StudiedTodayList, TodayOverview, TodayOverviewCard, WelcomeCard,
-    compute_30day_chart_data, compute_completion_forecast, compute_studied_today,
-    compute_today_overview,
+    RatingRatio, RecentlyStudiedItem, StudiedTodayList, TodayOverview, TodayOverviewCard,
+    WelcomeCard, compute_30day_chart_data, compute_completion_forecast, compute_rating_ratio,
+    compute_studied_today, compute_today_overview,
 };
 use crate::i18n::use_i18n;
 use crate::repository::{HybridUserRepository, set_last_sync_time};
@@ -31,6 +31,7 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
     let today_overview = RwSignal::new(TodayOverview::default());
     let recent_studied = RwSignal::new(Vec::<RecentlyStudiedItem>::new());
     let chart_data = RwSignal::new(Vec::<ActivityDataPoint>::new());
+    let rating_ratio: RwSignal<Option<RatingRatio>> = RwSignal::new(None);
     let known_kanji: RwSignal<HashSet<char>> = RwSignal::new(HashSet::new());
     let forecast: RwSignal<CompletionForecast> = RwSignal::new(CompletionForecast::default());
 
@@ -54,12 +55,13 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                     jlpt_progress.set(user.jlpt_progress().clone());
                     known_kanji.set(ks.get_known_kanji());
 
-                    today_overview.set(compute_today_overview(ks));
+                    today_overview.set(compute_today_overview(ks, ks.lesson_history()));
                     recent_studied.set(compute_studied_today(ks, user.native_language()));
                     chart_data.set(compute_30day_chart_data(
                         ks.lesson_history(),
                         user.native_language(),
                     ));
+                    rating_ratio.set(compute_rating_ratio(ks.lesson_history()));
                     forecast.set(compute_completion_forecast(
                         ks,
                         ks.lesson_history(),
@@ -101,12 +103,13 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                     let ks = user.knowledge_set();
                     jlpt_progress.set(user.jlpt_progress().clone());
                     known_kanji.set(ks.get_known_kanji());
-                    today_overview.set(compute_today_overview(ks));
+                    today_overview.set(compute_today_overview(ks, ks.lesson_history()));
                     recent_studied.set(compute_studied_today(ks, user.native_language()));
                     chart_data.set(compute_30day_chart_data(
                         ks.lesson_history(),
                         user.native_language(),
                     ));
+                    rating_ratio.set(compute_rating_ratio(ks.lesson_history()));
                     forecast.set(compute_completion_forecast(
                         ks,
                         ks.lesson_history(),
@@ -158,6 +161,7 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                         />
                         <ActivityChart
                             chart_data=Signal::derive(move || chart_data.get())
+                            rating_ratio=Signal::derive(move || rating_ratio.get())
                             test_id=Signal::derive(|| "home-activity-chart".to_string())
                         />
                     </div>

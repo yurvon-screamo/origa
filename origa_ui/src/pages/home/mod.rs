@@ -12,9 +12,9 @@ pub mod welcome_card;
 pub use activity_chart::ActivityChart;
 pub use content::HomeContent;
 pub use dashboard_stats::{
-    ActivityDataPoint, CompletionForecast, RecentlyStudiedItem, TodayOverview,
-    compute_30day_chart_data, compute_completion_forecast, compute_studied_today,
-    compute_today_overview,
+    ActivityDataPoint, CompletionForecast, RatingRatio, RecentlyStudiedItem, TodayOverview,
+    compute_30day_chart_data, compute_completion_forecast, compute_rating_ratio,
+    compute_studied_today, compute_today_overview,
 };
 pub use home_skeleton::JlptSkeleton;
 pub use jlpt_progress_card::JlptProgressCard;

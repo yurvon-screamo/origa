@@ -3,6 +3,26 @@ use crate::i18n::{t, td_string, use_i18n};
 use crate::ui_components::{Card, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 
+fn delta_color(delta: i32) -> &'static str {
+    if delta > 0 {
+        "var(--success)"
+    } else if delta < 0 {
+        "var(--error)"
+    } else {
+        "var(--fg-muted)"
+    }
+}
+
+fn format_delta(delta: i32) -> String {
+    if delta > 0 {
+        format!("▲ +{}", delta)
+    } else if delta < 0 {
+        format!("▼ {}", delta)
+    } else {
+        "0".to_string()
+    }
+}
+
 #[component]
 pub fn TodayOverviewCard(
     overview: Signal<TodayOverview>,
@@ -16,6 +36,11 @@ pub fn TodayOverviewCard(
     let learned_count = Signal::derive(move || overview.get().learned_count);
     let in_progress_count = Signal::derive(move || overview.get().in_progress_count);
     let difficult_count = Signal::derive(move || overview.get().difficult_count);
+
+    let new_delta = Signal::derive(move || overview.get().new_delta);
+    let learned_delta = Signal::derive(move || overview.get().learned_delta);
+    let in_progress_delta = Signal::derive(move || overview.get().in_progress_delta);
+    let difficult_delta = Signal::derive(move || overview.get().difficult_delta);
 
     let max_count = Signal::derive(move || {
         let ov = overview.get();
@@ -87,7 +112,17 @@ pub fn TodayOverviewCard(
 
                 <div class="status-grid mt-4">
                     <div class="status-card status-card--new">
-                        <span class="status-number">{move || new_count.get()}</span>
+                        <div class="status-number">
+                            <span>{move || new_count.get()}</span>
+                            <Show when=move || new_delta.get().is_some()>
+                                <span
+                                    class="status-delta"
+                                    style=move || format!("color: {}", delta_color(new_delta.get().unwrap_or(0)))
+                                >
+                                    {move || format_delta(new_delta.get().unwrap_or(0))}
+                                </span>
+                            </Show>
+                        </div>
                         <span class="status-label">{t!(i18n, home.new_status)}</span>
                         <div class="status-progress">
                             <div
@@ -98,7 +133,17 @@ pub fn TodayOverviewCard(
                     </div>
 
                     <div class="status-card status-card--learned">
-                        <span class="status-number">{move || learned_count.get()}</span>
+                        <div class="status-number">
+                            <span>{move || learned_count.get()}</span>
+                            <Show when=move || learned_delta.get().is_some()>
+                                <span
+                                    class="status-delta"
+                                    style=move || format!("color: {}", delta_color(learned_delta.get().unwrap_or(0)))
+                                >
+                                    {move || format_delta(learned_delta.get().unwrap_or(0))}
+                                </span>
+                            </Show>
+                        </div>
                         <span class="status-label">{t!(i18n, home.learned_status)}</span>
                         <div class="status-progress">
                             <div
@@ -109,7 +154,20 @@ pub fn TodayOverviewCard(
                     </div>
 
                     <div class="status-card status-card--in-progress">
-                        <span class="status-number">{move || in_progress_count.get()}</span>
+                        <div class="status-number">
+                            <span>{move || in_progress_count.get()}</span>
+                            <Show when=move || in_progress_delta.get().is_some()>
+                                <span
+                                    class="status-delta"
+                                    style=move || format!(
+                                        "color: {}",
+                                        delta_color(in_progress_delta.get().unwrap_or(0))
+                                    )
+                                >
+                                    {move || format_delta(in_progress_delta.get().unwrap_or(0))}
+                                </span>
+                            </Show>
+                        </div>
                         <span class="status-label">{t!(i18n, home.in_progress_status)}</span>
                         <div class="status-progress">
                             <div
@@ -120,7 +178,20 @@ pub fn TodayOverviewCard(
                     </div>
 
                     <div class="status-card status-card--difficult">
-                        <span class="status-number">{move || difficult_count.get()}</span>
+                        <div class="status-number">
+                            <span>{move || difficult_count.get()}</span>
+                            <Show when=move || difficult_delta.get().is_some()>
+                                <span
+                                    class="status-delta"
+                                    style=move || format!(
+                                        "color: {}",
+                                        delta_color(difficult_delta.get().unwrap_or(0))
+                                    )
+                                >
+                                    {move || format_delta(difficult_delta.get().unwrap_or(0))}
+                                </span>
+                            </Show>
+                        </div>
                         <span class="status-label">{t!(i18n, home.difficult_status)}</span>
                         <div class="status-progress">
                             <div

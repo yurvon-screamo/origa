@@ -4094,6 +4094,15 @@ input[type="submit"],
     font-size: 28px;
     line-height: 1;
     color: var(--fg-black);
+    display: flex;
+    align-items: baseline;
+}
+
+.status-delta {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    margin-left: auto;
 }
 
 .status-label {
