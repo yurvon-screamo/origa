@@ -118,6 +118,9 @@ pub fn ActivityChart(
                                 format!("width:6px;height:6px;background:{}", color)
                             }
                         ></span>
+                        <span class="font-mono text-[11px] text-[var(--fg-muted)]">
+                            {t!(i18n, home.rating_accuracy)}
+                        </span>
                         <span
                             class="font-mono text-[13px]"
                             style=move || format!("color:{}", ratio_color.get())
