@@ -1,7 +1,5 @@
 use crate::i18n::*;
-use crate::ui_components::{
-    Card, FuriganaText, NativeLanguageToggle, Tag, TagVariant, Text, TextSize, TypographyVariant,
-};
+use crate::ui_components::{NativeLanguageToggle, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 use origa::domain::NativeLanguage;
 
@@ -31,54 +29,6 @@ pub fn IntroStep(
                     {t!(i18n, onboarding.intro.subtitle)}
                 </Text>
             </div>
-
-            <div class="feature-grid grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6" data-testid="intro-step-feature-showcase">
-                <Card shadow=true class="p-4 text-left" test_id="intro-step-feature-vocabulary">
-                    <div class="flex items-center gap-2 mb-3">
-                        <Tag variant=Signal::derive(|| TagVariant::Default) test_id=Signal::derive(|| "intro-step-tag-vocabulary".to_string())>
-                            {t!(i18n, onboarding.intro.vocabulary)}
-                        </Tag>
-                        <div class="text-2xl">
-                            <FuriganaText text="語彙".to_string() known_kanji=Default::default() />
-                        </div>
-                    </div>
-                    <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                        {t!(i18n, onboarding.intro.vocabulary_desc)}
-                    </Text>
-                </Card>
-
-                <Card shadow=true class="p-4 text-left" test_id="intro-step-feature-kanji">
-                    <div class="flex items-center gap-2 mb-3">
-                        <Tag variant=Signal::derive(|| TagVariant::Olive) test_id=Signal::derive(|| "intro-step-tag-kanji".to_string())>
-                            {t!(i18n, onboarding.intro.kanji)}
-                        </Tag>
-                        <div class="text-2xl">
-                            <FuriganaText text="漢字".to_string() known_kanji=Default::default() />
-                        </div>
-                    </div>
-                    <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                        {t!(i18n, onboarding.intro.kanji_desc)}
-                    </Text>
-                </Card>
-
-                <Card shadow=true class="p-4 text-left" test_id="intro-step-feature-grammar">
-                    <div class="flex items-center gap-2 mb-3">
-                        <Tag variant=Signal::derive(|| TagVariant::Terracotta) test_id=Signal::derive(|| "intro-step-tag-grammar".to_string())>
-                            {t!(i18n, onboarding.intro.grammar)}
-                        </Tag>
-                        <div class="text-2xl">
-                            <FuriganaText text="文法".to_string() known_kanji=Default::default() />
-                        </div>
-                    </div>
-                    <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                        {t!(i18n, onboarding.intro.grammar_desc)}
-                    </Text>
-                </Card>
-            </div>
-
-            <Text size=TextSize::Small variant=TypographyVariant::Muted test_id="intro-step-footer">
-                {t!(i18n, onboarding.intro.footer)}
-            </Text>
         </div>
     }
 }
