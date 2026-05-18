@@ -1,6 +1,6 @@
 use leptos::prelude::*;
 
-const PADDING_LEFT: u32 = 80;
+const PADDING_LEFT: u32 = 64;
 const PADDING_RIGHT: u32 = 24;
 const PADDING_BOTTOM: u32 = 48;
 const PADDING_TOP: u32 = 24;
@@ -284,12 +284,12 @@ pub fn MultiLineChart(
                         children=move |(y, value)| {
                             view! {
                                 <text
-                                    x=PADDING_LEFT - 36
+                                    x=PADDING_LEFT - 44
                                     y=y
                                     text_anchor="end"
                                     dominant_baseline="central"
                                     fill="var(--fg-muted)"
-                                    font_size="10"
+                                    font_size="12"
                                     font_family="DM Mono"
                                 >
                                     {format_axis_value(value)}
@@ -309,7 +309,7 @@ pub fn MultiLineChart(
                                     y=height - PADDING_BOTTOM + 20
                                     text_anchor="middle"
                                     fill="var(--fg-muted)"
-                                    font_size="10"
+                                    font_size="12"
                                     font_family="DM Mono"
                                 >
                                     {label}
