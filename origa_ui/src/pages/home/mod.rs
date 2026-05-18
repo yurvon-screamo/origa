@@ -3,6 +3,7 @@ pub mod category_grid;
 pub mod content;
 pub mod content_sync;
 pub mod dashboard_stats;
+pub mod forecast_card;
 pub mod home_skeleton;
 pub mod jlpt_progress_card;
 pub mod recent_study;
@@ -12,12 +13,13 @@ pub mod welcome_card;
 pub use activity_chart::ActivityChart;
 pub use content::HomeContent;
 pub use dashboard_stats::{
-    ActivityDataPoint, RecentlyStudiedItem, TodayOverview, compute_30day_chart_data,
-    compute_recent_studied, compute_today_overview,
+    ActivityDataPoint, CompletionForecast, RecentlyStudiedItem, TodayOverview,
+    compute_30day_chart_data, compute_completion_forecast, compute_studied_today,
+    compute_today_overview,
 };
 pub use home_skeleton::JlptSkeleton;
 pub use jlpt_progress_card::JlptProgressCard;
-pub use recent_study::RecentStudyList;
+pub use recent_study::StudiedTodayList;
 pub use today_overview::TodayOverviewCard;
 pub use welcome_card::WelcomeCard;
 

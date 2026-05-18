@@ -17,16 +17,30 @@ pub fn TodayOverviewCard(
 
     let total = Signal::derive(move || overview.get().total());
     let new_count = Signal::derive(move || overview.get().new_count);
-    let learning_count = Signal::derive(move || overview.get().learning_count);
-    let review_count = Signal::derive(move || overview.get().review_count);
+    let learned_count = Signal::derive(move || overview.get().learned_count);
+    let in_progress_count = Signal::derive(move || overview.get().in_progress_count);
+    let difficult_count = Signal::derive(move || overview.get().difficult_count);
+    let due_today = Signal::derive(move || overview.get().due_today_count);
 
-    let progress_pct = Signal::derive(move || {
+    let max_count = Signal::derive(move || {
         let ov = overview.get();
-        let t = ov.total().max(1);
-        (ov.review_count as f64 / t as f64 * 100.0).min(100.0)
+        ov.new_count
+            .max(ov.learned_count)
+            .max(ov.in_progress_count)
+            .max(ov.difficult_count)
+            .max(1)
     });
 
-    let has_new_items = Signal::derive(move || overview.get().new_count > 0);
+    let progress_pct = move |count: usize| -> String {
+        if count == 0 {
+            "0%".to_string()
+        } else {
+            let pct = (count as f64 / max_count.get() as f64 * 100.0).min(100.0);
+            format!("{:.0}%", pct)
+        }
+    };
+
+    let show_due = Signal::derive(move || due_today.get() > 0);
 
     view! {
         <Card shadow=true class=Signal::derive(|| "p-8 h-full".to_string()) test_id=test_id>
@@ -40,75 +54,64 @@ pub fn TodayOverviewCard(
                     {t!(i18n, home.today_overview)}
                 </Text>
 
-                <div class="flex items-start gap-4 mt-3">
-                    <div class="flex flex-col">
-                        <DisplayText class=Signal::derive(|| "font-serif text-[48px] font-light leading-tight mb-1".to_string())>
-                            {move || total.get().to_string()}
-                        </DisplayText>
-                        <Text
-                            size=TextSize::Small
-                            variant=TypographyVariant::Muted
-                            uppercase=true
-                        >
+                <div class="flex flex-col mt-2">
+                    <DisplayText class=Signal::derive(|| "font-serif text-[48px] font-light leading-tight".to_string())>
+                        {move || total.get().to_string()}
+                    </DisplayText>
+
+                    <Show when=move || show_due.get()>
+                        <Text size=TextSize::Small variant=TypographyVariant::Muted>
                             {move || {
                                 let locale = i18n.get_locale();
-                                if has_new_items.get() {
-                                    td_string!(locale, home.today_study_items).to_string()
-                                } else {
-                                    td_string!(locale, home.today_review_items).to_string()
-                                }
+                                format!("{} {}", due_today.get(), td_string!(locale, home.due_today))
                             }}
                         </Text>
-                    </div>
+                    </Show>
+                </div>
 
-                    <div class="flex flex-col gap-1">
-                        <div class="flex items-center gap-2">
-                            <span class="font-mono text-[11px] uppercase text-[var(--fg-muted)]">
-                                {t!(i18n, home.status_good)}
-                            </span>
-                            <span class="w-2 h-2 bg-[var(--accent-olive)]" aria-hidden="true"></span>
+                <div class="status-grid mt-4">
+                    <div class="status-card">
+                        <span class="status-number">{move || new_count.get()}</span>
+                        <span class="status-label">{t!(i18n, home.new_status)}</span>
+                        <div class="status-progress">
+                            <div
+                                class="status-progress-fill"
+                                style=move || format!("width: {}", progress_pct(new_count.get()))
+                            ></div>
                         </div>
-                        <span class="font-mono text-[11px] uppercase text-[var(--fg-light)]">
-                            {t!(i18n, home.fsrs_status)}
-                        </span>
-                    </div>
-                </div>
-
-                <div class="progress-track mt-4">
-                    <div
-                        class="progress-fill"
-                        style=move || format!("width: {:.0}%", progress_pct.get())
-                    ></div>
-                </div>
-
-                <div class="border-t border-[var(--border-light)] my-4"></div>
-
-                <div class="flex gap-6">
-                    <div class="flex flex-col">
-                        <span class="font-serif text-xl text-[var(--accent-terracotta)]">
-                            {move || new_count.get().to_string()}
-                        </span>
-                        <span class="font-mono text-[11px] uppercase text-[var(--fg-muted)]">
-                            {t!(i18n, home.new_status)}
-                        </span>
                     </div>
 
-                    <div class="flex flex-col">
-                        <span class="font-serif text-xl text-[var(--accent-gold)]">
-                            {move || learning_count.get().to_string()}
-                        </span>
-                        <span class="font-mono text-[11px] uppercase text-[var(--fg-muted)]">
-                            {t!(i18n, home.learning_status)}
-                        </span>
+                    <div class="status-card">
+                        <span class="status-number">{move || learned_count.get()}</span>
+                        <span class="status-label">{t!(i18n, home.learned_status)}</span>
+                        <div class="status-progress">
+                            <div
+                                class="status-progress-fill"
+                                style=move || format!("width: {}", progress_pct(learned_count.get()))
+                            ></div>
+                        </div>
                     </div>
 
-                    <div class="flex flex-col">
-                        <span class="font-serif text-xl text-[var(--accent-sage)]">
-                            {move || review_count.get().to_string()}
-                        </span>
-                        <span class="font-mono text-[11px] uppercase text-[var(--fg-muted)]">
-                            {t!(i18n, home.review_status)}
-                        </span>
+                    <div class="status-card">
+                        <span class="status-number">{move || in_progress_count.get()}</span>
+                        <span class="status-label">{t!(i18n, home.in_progress_status)}</span>
+                        <div class="status-progress">
+                            <div
+                                class="status-progress-fill"
+                                style=move || format!("width: {}", progress_pct(in_progress_count.get()))
+                            ></div>
+                        </div>
+                    </div>
+
+                    <div class="status-card status-card--difficult">
+                        <span class="status-number">{move || difficult_count.get()}</span>
+                        <span class="status-label">{t!(i18n, home.difficult_status)}</span>
+                        <div class="status-progress">
+                            <div
+                                class="status-progress-fill"
+                                style=move || format!("width: {}", progress_pct(difficult_count.get()))
+                            ></div>
+                        </div>
                     </div>
                 </div>
             </div>

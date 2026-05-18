@@ -17,6 +17,7 @@ pub fn ActivityChart(
         let learned_label = td_string!(locale, home.line_learned).to_string();
         let in_progress_label = td_string!(locale, home.line_in_progress).to_string();
         let new_label = td_string!(locale, home.line_new).to_string();
+        let difficult_label = td_string!(locale, home.line_difficult).to_string();
 
         vec![
             ChartLine {
@@ -32,7 +33,7 @@ pub fn ActivityChart(
                     .iter()
                     .map(|d| (d.date_label.clone(), d.in_progress))
                     .collect(),
-                color: "var(--accent-terracotta)".to_string(),
+                color: "var(--accent-olive)".to_string(),
                 label: in_progress_label,
             },
             ChartLine {
@@ -40,8 +41,16 @@ pub fn ActivityChart(
                     .iter()
                     .map(|d| (d.date_label.clone(), d.new_count))
                     .collect(),
-                color: "var(--fg-black)".to_string(),
+                color: "var(--accent-gold)".to_string(),
                 label: new_label,
+            },
+            ChartLine {
+                data: data
+                    .iter()
+                    .map(|d| (d.date_label.clone(), d.difficult))
+                    .collect(),
+                color: "var(--accent-terracotta)".to_string(),
+                label: difficult_label,
             },
         ]
     });
