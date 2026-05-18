@@ -296,7 +296,8 @@
     "token_exchange_error": "Ошибка обмена токена: {}",
     "google_login": "Войти через Google",
     "yandex_login": "Войти через Yandex",
-    "unsupported_callback": "Неподдерживаемый формат callback URL"
+    "unsupported_callback": "Неподдерживаемый формат callback URL",
+    "language_aria_label": "Выберите язык"
   },
   "words": {
     "add_words": "Добавить слова",

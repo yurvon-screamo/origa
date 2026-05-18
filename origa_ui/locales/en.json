@@ -296,7 +296,8 @@
         "token_exchange_error": "Token exchange error: {}",
         "google_login": "Sign in with Google",
         "yandex_login": "Sign in with Yandex",
-        "unsupported_callback": "Unsupported callback URL format"
+        "unsupported_callback": "Unsupported callback URL format",
+        "language_aria_label": "Select language"
     },
     "words": {
         "add_words": "Add words",
