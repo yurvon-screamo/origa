@@ -1,4 +1,4 @@
-use super::dashboard_stats::ActivityDataPoint;
+use super::dashboard_stats::{ActivityDataPoint, RatingRatio};
 use crate::i18n::{t, td_string, use_i18n};
 use crate::ui_components::{Card, ChartLine, MultiLineChart, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
@@ -6,9 +6,27 @@ use leptos::prelude::*;
 #[component]
 pub fn ActivityChart(
     chart_data: Signal<Vec<ActivityDataPoint>>,
+    rating_ratio: Signal<Option<RatingRatio>>,
     #[prop(optional, into)] test_id: Signal<String>,
 ) -> impl IntoView {
     let i18n = use_i18n();
+
+    let ratio_color = Signal::derive(move || {
+        rating_ratio
+            .get()
+            .map(|r| {
+                if r.percentage > 60 {
+                    "var(--success)"
+                } else {
+                    "var(--error)"
+                }
+            })
+            .unwrap_or("var(--fg-muted)")
+    });
+
+    let ratio_pct = Signal::derive(move || rating_ratio.get().map(|r| r.percentage).unwrap_or(0));
+
+    let has_ratio = Signal::derive(move || rating_ratio.get().is_some());
 
     let lines = Signal::derive(move || {
         let data = chart_data.get();
@@ -71,14 +89,44 @@ pub fn ActivityChart(
 
     view! {
         <Card shadow=true class=Signal::derive(|| "p-6 h-full".to_string()) test_id=test_id>
-            <Text
-                size=TextSize::Small
-                variant=TypographyVariant::Muted
-                uppercase=true
-                tracking_widest=true
-            >
-                {t!(i18n, home.activity_30days)}
-            </Text>
+            <div class="flex items-center justify-between">
+                <Text
+                    size=TextSize::Small
+                    variant=TypographyVariant::Muted
+                    uppercase=true
+                    tracking_widest=true
+                >
+                    {t!(i18n, home.activity_30days)}
+                </Text>
+                <Show when=move || has_ratio.get()>
+                    <div
+                        class="flex items-center gap-1.5 px-2.5 py-1"
+                        style="background: var(--bg-aged);"
+                        title=move || {
+                            rating_ratio.get().map(|r| {
+                                format!(
+                                    "Easy/Good: {} · Hard/Again: {}",
+                                    r.positive_count, r.negative_count
+                                )
+                            }).unwrap_or_default()
+                        }
+                    >
+                        <span
+                            class="inline-block"
+                            style=move || {
+                                let color = ratio_color.get();
+                                format!("width:6px;height:6px;background:{}", color)
+                            }
+                        ></span>
+                        <span
+                            class="font-mono text-[13px]"
+                            style=move || format!("color:{}", ratio_color.get())
+                        >
+                            {move || format!("{}%", ratio_pct.get())}
+                        </span>
+                    </div>
+                </Show>
+            </div>
 
             <div class="mt-4 flex-1 flex flex-col min-h-0">
                 <Show when=move || has_enough_data()>
