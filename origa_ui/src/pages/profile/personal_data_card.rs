@@ -1,7 +1,7 @@
-use super::{LabeledInput, LanguageSelector};
+use super::LabeledInput;
 use crate::i18n::*;
 use crate::pages::shared::DailyLoadSelector;
-use crate::ui_components::{Heading, HeadingLevel, Text, TextSize};
+use crate::ui_components::{Heading, HeadingLevel, NativeLanguageToggle, Text, TextSize};
 use leptos::prelude::*;
 use origa::domain::{DailyLoad, NativeLanguage};
 
@@ -38,11 +38,11 @@ pub fn PersonalDataCard(
                         disabled={true}
                     />
 
-                    <div>
+                    <div class="flex justify-between items-baseline">
                         <Text size={TextSize::Large}>
                             {t!(i18n, profile.interface_language)}
                         </Text>
-                        <LanguageSelector selected_language={selected_language} />
+                        <NativeLanguageToggle selected_language={selected_language} test_id=Signal::derive(|| "profile-lang-toggle".to_string()) />
                     </div>
 
                     <div>

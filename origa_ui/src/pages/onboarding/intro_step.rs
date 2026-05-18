@@ -1,7 +1,6 @@
 use crate::i18n::*;
-use crate::pages::profile::LanguageSelector;
 use crate::ui_components::{
-    Card, FuriganaText, Tag, TagVariant, Text, TextSize, TypographyVariant,
+    Card, FuriganaText, NativeLanguageToggle, Tag, TagVariant, Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
 use origa::domain::NativeLanguage;
@@ -20,11 +19,8 @@ pub fn IntroStep(
     view! {
         <div data-testid=test_id_val class="intro-step max-w-xl mx-auto text-center">
             <div class="intro-welcome flex flex-col items-center gap-4 mb-8">
-                <div class="intro-language-controls flex flex-col sm:flex-row items-center gap-3" data-testid="intro-step-language-bar">
-                    <Text size=TextSize::Small variant=TypographyVariant::Muted uppercase=true tracking_widest=true>
-                        {t!(i18n, profile.interface_language)}
-                    </Text>
-                    <LanguageSelector selected_language=selected_language />
+                <div class="flex justify-end w-full mb-2" data-testid="intro-step-language-bar">
+                    <NativeLanguageToggle selected_language=selected_language test_id=Signal::derive(|| "intro-lang-toggle".to_string()) />
                 </div>
 
                 <Text size=TextSize::Large variant=TypographyVariant::Primary test_id="intro-step-title">

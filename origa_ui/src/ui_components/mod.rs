@@ -36,6 +36,7 @@ mod kanji_animation;
 mod kanji_drawing;
 #[allow(dead_code)]
 mod label_frame;
+mod language_toggle;
 #[allow(dead_code)]
 mod layout;
 mod level_selector;
@@ -114,6 +115,7 @@ pub use kanji_animation::{KanjiViewMode, KanjiWritingSection};
 pub use kanji_drawing::KanjiDrawingPractice;
 #[allow(unused_imports)]
 pub use label_frame::LabelFrame;
+pub use language_toggle::NativeLanguageToggle;
 pub use layout::{CardLayout, CardLayoutSize, PageLayout, PageLayoutVariant};
 pub use level_selector::LevelSelector;
 pub use loading::{LoadingOverlay, Spinner};

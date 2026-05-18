@@ -24,7 +24,8 @@
         "deleting": "Deleting...",
         "processing": "Processing...",
         "tooltip_known": "Already in dictionary",
-        "tooltip_new": "New word"
+        "tooltip_new": "New word",
+        "language_aria_label": "Select language"
     },
     "app": {
         "logging_in": "Logging in..."
@@ -297,8 +298,7 @@
         "token_exchange_error": "Token exchange error: {}",
         "google_login": "Sign in with Google",
         "yandex_login": "Sign in with Yandex",
-        "unsupported_callback": "Unsupported callback URL format",
-        "language_aria_label": "Select language"
+        "unsupported_callback": "Unsupported callback URL format"
     },
     "words": {
         "add_words": "Add words",
