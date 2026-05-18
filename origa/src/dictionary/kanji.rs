@@ -1,6 +1,6 @@
 use std::{collections::HashMap, sync::OnceLock};
 
-use serde::{de, Deserialize, Serialize};
+use serde::{Deserialize, Serialize, de};
 use tracing::debug;
 
 use crate::domain::{JapaneseLevel, NativeLanguage, OrigaError};
@@ -691,9 +691,18 @@ mod tests {
         }"#;
         let db = KanjiDatabase::from_json(json).unwrap();
         let info = db.get_kanji_info("日").unwrap();
-        assert_eq!(info.description(&NativeLanguage::Russian), "день".to_string());
-        assert_eq!(info.description(&NativeLanguage::English), "day".to_string());
-        assert_eq!(info.descriptions(&NativeLanguage::Russian), &["день".to_string()]);
+        assert_eq!(
+            info.description(&NativeLanguage::Russian),
+            "день".to_string()
+        );
+        assert_eq!(
+            info.description(&NativeLanguage::English),
+            "day".to_string()
+        );
+        assert_eq!(
+            info.descriptions(&NativeLanguage::Russian),
+            &["день".to_string()]
+        );
     }
 
     #[test]
@@ -713,7 +722,10 @@ mod tests {
         }"#;
         let db = KanjiDatabase::from_json(json).unwrap();
         let info = db.get_kanji_info("可").unwrap();
-        assert_eq!(info.description(&NativeLanguage::Russian), "хороший, возможный");
+        assert_eq!(
+            info.description(&NativeLanguage::Russian),
+            "хороший, возможный"
+        );
         assert_eq!(info.description(&NativeLanguage::English), "good, possible");
         assert_eq!(info.descriptions(&NativeLanguage::Russian).len(), 2);
     }

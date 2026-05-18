@@ -256,28 +256,24 @@ pub fn ScoringStep(
                         view! {
                             <Card class=Signal::derive(|| "p-6".to_string())>
                                 <div class="text-center">
-                                    <div class="relative">
-                                        <div class="text-center">
-                                            <Tag variant=Signal::derive(move || card.card_type.tag_variant())>
-                                                {card.card_type.label(&i18n)}
-                                            </Tag>
-                                        </div>
-                                        <div class="text-center mt-2">
-                                            <FuriganaText
-                                                text={card.question.clone()}
-                                                known_kanji=HashSet::new()
-                                                test_id=Signal::derive(|| "scoring-step-question".to_string())
-                                            />
-                                        </div>
-                                        <div class="absolute right-0 top-1/2 -translate-y-1/2">
-                                            <AudioButtons
-                                                text=card.question.clone()
-                                                audio_src=None
-                                                class=Signal::derive(|| "".to_string())
-                                                test_id=Signal::derive(|| "scoring-step-audio".to_string())
-                                            />
-                                        </div>
+                                <div class="flex items-center gap-2 justify-center relative">
+                                    <Tag variant=Signal::derive(move || card.card_type.tag_variant())>
+                                        {card.card_type.label(&i18n)}
+                                    </Tag>
+                                    <FuriganaText
+                                        text={card.question.clone()}
+                                        known_kanji=HashSet::new()
+                                        test_id=Signal::derive(|| "scoring-step-question".to_string())
+                                    />
+                                    <div class="absolute right-0 top-1/2 -translate-y-1/2">
+                                        <AudioButtons
+                                            text=card.question.clone()
+                                            audio_src=None
+                                            class=Signal::derive(|| "".to_string())
+                                            test_id=Signal::derive(|| "scoring-step-audio".to_string())
+                                        />
                                     </div>
+                                </div>
 
                                     <div class="mt-4">
                                         <MarkdownText
