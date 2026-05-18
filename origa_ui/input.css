@@ -4190,3 +4190,16 @@ input[type="submit"],
 .study-list-item:last-child {
     border-bottom: none;
 }
+
+/* Completion forecast */
+.forecast-progress {
+    height: 4px;
+    background: var(--bg-aged);
+    width: 100%;
+}
+
+.forecast-progress-fill {
+    height: 100%;
+    background: var(--accent-olive);
+    transition: width 0.5s ease;
+}

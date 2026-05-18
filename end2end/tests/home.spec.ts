@@ -107,4 +107,9 @@ testWithFreshUser.describe("Home Page", () => {
     const homePage = await setupHomePage(page);
     await expect(homePage.recentStudy).toBeVisible({ timeout: 10_000 });
   });
+
+  testWithFreshUser("should display completion forecast", async ({ page }) => {
+    const homePage = await setupHomePage(page);
+    await expect(homePage.forecastCard).toBeVisible({ timeout: 10_000 });
+  });
 });

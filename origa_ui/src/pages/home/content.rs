@@ -1,10 +1,12 @@
 use super::content_sync::{
     run_sync, show_sync_error_toast, show_sync_success_toast, show_sync_toast,
 };
+use super::forecast_card::CompletionForecastCard;
 use super::{
-    ActivityChart, ActivityDataPoint, JlptProgressCard, JlptSkeleton, RecentStudyList,
-    RecentlyStudiedItem, TodayOverview, TodayOverviewCard, WelcomeCard, compute_30day_chart_data,
-    compute_recent_studied, compute_today_overview,
+    ActivityChart, ActivityDataPoint, CompletionForecast, JlptProgressCard, JlptSkeleton,
+    RecentlyStudiedItem, StudiedTodayList, TodayOverview, TodayOverviewCard, WelcomeCard,
+    compute_30day_chart_data, compute_completion_forecast, compute_studied_today,
+    compute_today_overview,
 };
 use crate::i18n::use_i18n;
 use crate::repository::{HybridUserRepository, set_last_sync_time};
@@ -13,6 +15,7 @@ use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::domain::JlptProgress;
 use origa::traits::UserRepository;
+use std::collections::HashSet;
 
 #[component]
 pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoView {
@@ -29,6 +32,8 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
     let today_overview = RwSignal::new(TodayOverview::default());
     let recent_studied = RwSignal::new(Vec::<RecentlyStudiedItem>::new());
     let chart_data = RwSignal::new(Vec::<ActivityDataPoint>::new());
+    let known_kanji: RwSignal<HashSet<char>> = RwSignal::new(HashSet::new());
+    let forecast: RwSignal<CompletionForecast> = RwSignal::new(CompletionForecast::default());
 
     let is_loading = RwSignal::new(true);
     let user_name: RwSignal<String> = RwSignal::new(String::new());
@@ -48,10 +53,16 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
 
                     let ks = user.knowledge_set();
                     jlpt_progress.set(user.jlpt_progress().clone());
+                    known_kanji.set(ks.get_known_kanji());
 
                     today_overview.set(compute_today_overview(ks));
-                    recent_studied.set(compute_recent_studied(ks, user.native_language(), 10));
+                    recent_studied.set(compute_studied_today(ks, user.native_language()));
                     chart_data.set(compute_30day_chart_data(
+                        ks.lesson_history(),
+                        user.native_language(),
+                    ));
+                    forecast.set(compute_completion_forecast(
+                        ks,
                         ks.lesson_history(),
                         user.native_language(),
                     ));
@@ -90,9 +101,15 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                     }
                     let ks = user.knowledge_set();
                     jlpt_progress.set(user.jlpt_progress().clone());
+                    known_kanji.set(ks.get_known_kanji());
                     today_overview.set(compute_today_overview(ks));
-                    recent_studied.set(compute_recent_studied(ks, user.native_language(), 10));
+                    recent_studied.set(compute_studied_today(ks, user.native_language()));
                     chart_data.set(compute_30day_chart_data(
+                        ks.lesson_history(),
+                        user.native_language(),
+                    ));
+                    forecast.set(compute_completion_forecast(
+                        ks,
                         ks.lesson_history(),
                         user.native_language(),
                     ));
@@ -145,8 +162,14 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                         />
                     </div>
 
-                    <RecentStudyList
+                    <CompletionForecastCard
+                        forecast=Signal::derive(move || forecast.get())
+                        test_id=Signal::derive(|| "home-completion-forecast".to_string())
+                    />
+
+                    <StudiedTodayList
                         items=Signal::derive(move || recent_studied.get())
+                        known_kanji=Signal::derive(move || known_kanji.get())
                         test_id=Signal::derive(|| "home-recent-study".to_string())
                     />
                 </Show>
