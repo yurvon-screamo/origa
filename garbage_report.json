@@ -1,25 +1,14 @@
 {
-  "generated_at": "2026-05-17T20:21:29.437246+00:00",
-  "script_version": "1.3",
+  "generated_at": "2026-05-17T20:41:12.314732+00:00",
+  "script_version": "1.4",
   "summary": {
-    "total_phrases": 160880,
-    "critical": 1,
+    "total_phrases": 160879,
+    "critical": 0,
     "warning": 15,
     "ok": 160864
   },
-  "invalid_phrase_ids": [
-    "000000000000FDWZY3QZTSHSV2"
-  ],
-  "invalid_phrases_details": [
-    {
-      "i": "000000000000FDWZY3QZTSHSV2",
-      "chunk": 0,
-      "reasons": [
-        "length_anomaly",
-        "repetition_collapse"
-      ]
-    }
-  ],
+  "invalid_phrase_ids": [],
+  "invalid_phrases_details": [],
   "warning_phrase_ids": [
     "000000000000NMWR6D0A278FCB",
     "000000000001J74JV2GWVFZBJM",
