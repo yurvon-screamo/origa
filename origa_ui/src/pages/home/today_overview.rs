@@ -10,11 +10,6 @@ pub fn TodayOverviewCard(
 ) -> impl IntoView {
     let i18n = use_i18n();
 
-    let test_id_val = move || {
-        let val = test_id.get();
-        if val.is_empty() { None } else { Some(val) }
-    };
-
     let total = Signal::derive(move || overview.get().total());
     let new_count = Signal::derive(move || overview.get().new_count);
     let learned_count = Signal::derive(move || overview.get().learned_count);
@@ -44,7 +39,7 @@ pub fn TodayOverviewCard(
 
     view! {
         <Card shadow=true class=Signal::derive(|| "p-8 h-full".to_string()) test_id=test_id>
-            <div data-testid=test_id_val class="flex flex-col h-full">
+            <div class="flex flex-col h-full">
                 <Text
                     size=TextSize::Small
                     variant=TypographyVariant::Muted
