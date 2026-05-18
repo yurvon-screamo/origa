@@ -75,7 +75,6 @@ pub fn ActivityChart(
                             lines=lines
                             width=400
                             height=200
-                            class=Signal::derive(|| "h-full".to_string())
                             empty_text=Signal::derive(move || td_string!(i18n.get_locale(), home.no_data).to_string())
                         />
                     </div>

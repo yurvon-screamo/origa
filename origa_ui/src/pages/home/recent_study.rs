@@ -1,19 +1,10 @@
 use super::dashboard_stats::RecentlyStudiedItem;
-use crate::i18n::{t, use_i18n};
+use crate::i18n::{t, td_string, use_i18n};
 use crate::ui_components::{
-    MarkdownText, MarkdownVariant, Tag, TagVariant, Text, TextSize, TypographyVariant,
+    Card, MarkdownText, MarkdownVariant, Tag, TagVariant, Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
 use std::collections::HashSet;
-
-fn card_type_tag(card_type: &str) -> (TagVariant, &'static str) {
-    match card_type {
-        "kanji" => (TagVariant::Olive, "KANJI"),
-        "vocabulary" => (TagVariant::Sage, "WORDS"),
-        "grammar" => (TagVariant::Terracotta, "GRAMMAR"),
-        _ => (TagVariant::Olive, "KANJI"),
-    }
-}
 
 #[component]
 pub fn StudiedTodayList(
@@ -33,21 +24,11 @@ pub fn StudiedTodayList(
 
     view! {
         <div data-testid=test_id_val>
-            <div class="flex items-center gap-2 mb-1">
-                <Text
-                    size=TextSize::Small
-                    variant=TypographyVariant::Muted
-                    uppercase=true
-                    tracking_widest=true
-                >
+            <div class="flex items-center gap-2 mb-4">
+                <Text size=TextSize::Small variant=TypographyVariant::Muted uppercase=true tracking_widest=true>
                     {t!(i18n, home.studied_today)}
                 </Text>
-                <Text
-                    size=TextSize::Small
-                    variant=TypographyVariant::Muted
-                    uppercase=true
-                    tracking_widest=true
-                >
+                <Text size=TextSize::Small variant=TypographyVariant::Muted uppercase=true tracking_widest=true>
                     {move || count.get()}
                 </Text>
             </div>
@@ -61,40 +42,60 @@ pub fn StudiedTodayList(
             </Show>
 
             <Show when=move || !is_empty.get()>
-                <ul class="study-list-container mt-3" style="list-style: none; padding: 0; margin: 0;">
-                    <For
-                        each=move || items.get()
-                        key=|item| item.card_id.clone()
-                        children=move |item| {
-                            let (tag_variant, tag_label) = card_type_tag(&item.card_type);
-                            let is_furigana = item.card_type != "grammar";
-                            view! {
-                                <li class="study-list-item">
-                                    <div class="flex items-start gap-3 py-3">
-                                        <Tag
-                                            variant=Signal::derive(move || tag_variant)
-                                            test_id=Signal::derive(String::new)
-                                        >
-                                            {tag_label}
-                                        </Tag>
-                                        <div class="flex-1 min-w-0">
+                <div class="studied-grid-container">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 items-stretch">
+                        <For
+                            each=move || items.get()
+                            key=|item| item.card_id.clone()
+                            children=move |item| {
+                                let card_type = item.card_type.clone();
+
+                                let tag_variant = match card_type.as_str() {
+                                    "kanji" => TagVariant::Olive,
+                                    "vocabulary" => TagVariant::Sage,
+                                    "grammar" => TagVariant::Terracotta,
+                                    _ => TagVariant::Olive,
+                                };
+
+                                let tag_label = Signal::derive(move || {
+                                    let locale = i18n.get_locale();
+                                    match card_type.as_str() {
+                                        "kanji" => td_string!(locale, home.badge_kanji).to_string(),
+                                        "vocabulary" => td_string!(locale, home.badge_words).to_string(),
+                                        "grammar" => td_string!(locale, home.badge_grammar).to_string(),
+                                        _ => td_string!(locale, home.badge_kanji).to_string(),
+                                    }
+                                });
+
+                                let is_furigana = item.card_type != "grammar";
+
+                                view! {
+                                    <Card class=Signal::derive(|| "p-4 h-full flex flex-col".to_string()) test_id=Signal::derive(String::new)>
+                                        <div class="flex items-start gap-2 mb-2">
+                                            <Tag variant=Signal::derive(move || tag_variant) test_id=Signal::derive(String::new)>
+                                                {move || tag_label.get()}
+                                            </Tag>
+                                        </div>
+                                        <div class="flex-1 min-h-0">
                                             <MarkdownText
                                                 content=Signal::derive(move || item.japanese.clone())
                                                 known_kanji=known_kanji.get()
                                                 furigana=is_furigana
                                                 variant=Signal::derive(|| MarkdownVariant::Compact)
-                                            test_id=Signal::derive(String::new)
+                                                test_id=Signal::derive(String::new)
                                             />
-                                            <div class="font-mono text-[11px] text-[var(--fg-muted)] mt-1">
-                                                {item.meaning.clone()}
-                                            </div>
                                         </div>
-                                    </div>
-                                </li>
+                                        <div class="mt-auto pt-2">
+                                            <span class="font-mono text-[11px] text-[var(--fg-muted)]">
+                                                {item.meaning.clone()}
+                                            </span>
+                                        </div>
+                                    </Card>
+                                }
                             }
-                        }
-                    />
-                </ul>
+                        />
+                    </div>
+                </div>
             </Show>
         </div>
     }
