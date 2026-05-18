@@ -57,6 +57,18 @@ pub fn ActivityChart(
 
     let has_enough_data = move || chart_data.get().len() >= 2;
 
+    let is_mobile = RwSignal::new(false);
+    Effect::new(move |_| {
+        let width = web_sys::window()
+            .and_then(|w| w.inner_width().ok())
+            .and_then(|v: wasm_bindgen::JsValue| v.as_f64())
+            .unwrap_or(800.0);
+        is_mobile.set(width < 768.0);
+    });
+
+    let empty_text =
+        Signal::derive(move || td_string!(i18n.get_locale(), home.no_data).to_string());
+
     view! {
         <Card shadow=true class=Signal::derive(|| "p-6 h-full".to_string()) test_id=test_id>
             <Text
@@ -71,12 +83,24 @@ pub fn ActivityChart(
             <div class="mt-4 flex-1 flex flex-col min-h-0">
                 <Show when=move || has_enough_data()>
                     <div class="flex-1 min-h-0">
-                        <MultiLineChart
-                            lines=lines
-                            width=600
-                            height=300
-                            empty_text=Signal::derive(move || td_string!(i18n.get_locale(), home.no_data).to_string())
-                        />
+                        // Mobile: viewBox 400x280 → at 400px container scale ~1x, font 12→12px
+                        <Show when=move || is_mobile.get()>
+                            <MultiLineChart
+                                lines=lines
+                                width=400
+                                height=280
+                                empty_text=empty_text
+                            />
+                        </Show>
+                        // Desktop: viewBox 600x300 → at 670px container scale ~1.1x, font 12→13px
+                        <Show when=move || !is_mobile.get()>
+                            <MultiLineChart
+                                lines=lines
+                                width=600
+                                height=300
+                                empty_text=empty_text
+                            />
+                        </Show>
                     </div>
                 </Show>
 
