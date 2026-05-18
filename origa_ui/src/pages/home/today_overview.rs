@@ -3,13 +3,13 @@ use crate::i18n::{t, td_string, use_i18n};
 use crate::ui_components::{Card, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 
-fn delta_color(delta: i32) -> &'static str {
-    if delta > 0 {
-        "var(--success)"
-    } else if delta < 0 {
-        "var(--error)"
-    } else {
+fn delta_color(delta: i32, is_positive_good: bool) -> &'static str {
+    if delta == 0 {
         "var(--fg-muted)"
+    } else if is_positive_good == (delta > 0) {
+        "var(--success)"
+    } else {
+        "var(--error)"
     }
 }
 
@@ -117,7 +117,7 @@ pub fn TodayOverviewCard(
                             <Show when=move || new_delta.get().is_some()>
                                 <span
                                     class="status-delta"
-                                    style=move || format!("color: {}", delta_color(new_delta.get().unwrap_or(0)))
+                                    style=move || format!("color: {}", delta_color(new_delta.get().unwrap_or(0), false))
                                 >
                                     {move || format_delta(new_delta.get().unwrap_or(0))}
                                 </span>
@@ -138,7 +138,7 @@ pub fn TodayOverviewCard(
                             <Show when=move || learned_delta.get().is_some()>
                                 <span
                                     class="status-delta"
-                                    style=move || format!("color: {}", delta_color(learned_delta.get().unwrap_or(0)))
+                                    style=move || format!("color: {}", delta_color(learned_delta.get().unwrap_or(0), true))
                                 >
                                     {move || format_delta(learned_delta.get().unwrap_or(0))}
                                 </span>
@@ -161,7 +161,7 @@ pub fn TodayOverviewCard(
                                     class="status-delta"
                                     style=move || format!(
                                         "color: {}",
-                                        delta_color(in_progress_delta.get().unwrap_or(0))
+                                        delta_color(in_progress_delta.get().unwrap_or(0), false)
                                     )
                                 >
                                     {move || format_delta(in_progress_delta.get().unwrap_or(0))}
@@ -185,7 +185,7 @@ pub fn TodayOverviewCard(
                                     class="status-delta"
                                     style=move || format!(
                                         "color: {}",
-                                        delta_color(difficult_delta.get().unwrap_or(0))
+                                        delta_color(difficult_delta.get().unwrap_or(0), false)
                                     )
                                 >
                                     {move || format_delta(difficult_delta.get().unwrap_or(0))}

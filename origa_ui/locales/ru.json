@@ -275,7 +275,8 @@
     "badge_kanji": "Кандзи",
     "badge_words": "Слова",
     "badge_grammar": "Грамматика",
-    "cards_suffix": "карточек"
+    "cards_suffix": "карточек",
+    "rating_accuracy": "Точность"
     },
   "login": {
     "or_login_with": "или войти/зарегистрироваться через",

@@ -275,7 +275,8 @@
         "badge_kanji": "Kanji",
         "badge_words": "Words",
         "badge_grammar": "Grammar",
-        "cards_suffix": "cards"
+        "cards_suffix": "cards",
+        "rating_accuracy": "Accuracy"
     },
     "login": {
         "or_login_with": "or sign in / register with",
