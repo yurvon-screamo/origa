@@ -73,8 +73,8 @@ pub fn ActivityChart(
                     <div class="flex-1 min-h-0">
                         <MultiLineChart
                             lines=lines
-                            width=400
-                            height=200
+                            width=600
+                            height=300
                             empty_text=Signal::derive(move || td_string!(i18n.get_locale(), home.no_data).to_string())
                         />
                     </div>
