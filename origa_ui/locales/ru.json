@@ -24,7 +24,8 @@
     "deleting": "Удаление...",
     "processing": "Обработка...",
     "tooltip_known": "Уже в словаре",
-    "tooltip_new": "Новое слово"
+    "tooltip_new": "Новое слово",
+    "language_aria_label": "Выберите язык"
   },
   "app": {
     "logging_in": "Вход..."
@@ -297,8 +298,7 @@
     "token_exchange_error": "Ошибка обмена токена: {}",
     "google_login": "Войти через Google",
     "yandex_login": "Войти через Yandex",
-    "unsupported_callback": "Неподдерживаемый формат callback URL",
-    "language_aria_label": "Выберите язык"
+    "unsupported_callback": "Неподдерживаемый формат callback URL"
   },
   "words": {
     "add_words": "Добавить слова",
