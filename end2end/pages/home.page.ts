@@ -35,9 +35,6 @@ export class HomePage extends BasePage {
   // Recent Study
   readonly recentStudy: Locator;
 
-  // Completion forecast
-  readonly forecastCard: Locator;
-
   // Bottom tab bar navigation (mobile)
   readonly bottomTabBar: Locator;
   readonly bottomTabHome: Locator;
@@ -87,9 +84,6 @@ export class HomePage extends BasePage {
 
     // Recent Study
     this.recentStudy = page.getByTestId("home-recent-study");
-
-    // Completion forecast
-    this.forecastCard = page.getByTestId("home-completion-forecast");
 
     // Bottom tab bar navigation (mobile)
     this.bottomTabBar = page.locator(".bottom-tab-bar");

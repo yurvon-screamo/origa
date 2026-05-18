@@ -3,7 +3,6 @@ pub mod category_grid;
 pub mod content;
 pub mod content_sync;
 pub mod dashboard_stats;
-pub mod forecast_card;
 pub mod home_skeleton;
 pub mod jlpt_progress_card;
 pub mod recent_study;

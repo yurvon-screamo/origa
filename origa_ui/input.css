@@ -4177,29 +4177,8 @@ input[type="submit"],
     background: var(--accent-terracotta);
 }
 
-/* Studied today list */
-.study-list-container {
-    max-height: 480px;
+/* Studied today grid */
+.studied-grid-container {
+    max-height: 600px;
     overflow-y: auto;
-}
-
-.study-list-item {
-    border-bottom: 1px solid var(--border-light);
-}
-
-.study-list-item:last-child {
-    border-bottom: none;
-}
-
-/* Completion forecast */
-.forecast-progress {
-    height: 4px;
-    background: var(--bg-aged);
-    width: 100%;
-}
-
-.forecast-progress-fill {
-    height: 100%;
-    background: var(--accent-olive);
-    transition: width 0.5s ease;
 }

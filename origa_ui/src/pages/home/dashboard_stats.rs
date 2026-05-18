@@ -14,7 +14,6 @@ pub struct TodayOverview {
     pub learned_count: usize,
     pub in_progress_count: usize,
     pub difficult_count: usize,
-    pub due_today_count: usize,
 }
 
 impl TodayOverview {
@@ -53,19 +52,10 @@ pub fn compute_today_overview(knowledge_set: &KnowledgeSet) -> TodayOverview {
             overview.new_count += 1;
         } else if memory.is_high_difficulty() {
             overview.difficult_count += 1;
-            if memory.is_due() {
-                overview.due_today_count += 1;
-            }
         } else if memory.is_known_card() {
             overview.learned_count += 1;
-            if memory.is_due() {
-                overview.due_today_count += 1;
-            }
         } else {
             overview.in_progress_count += 1;
-            if memory.is_due() {
-                overview.due_today_count += 1;
-            }
         }
     }
 
@@ -170,10 +160,6 @@ pub struct CompletionForecast {
     pub days_remaining: Option<usize>,
     pub is_all_studied: bool,
     pub target_date_label: String,
-    pub cards_per_day: f64,
-    pub progress_pct: f64,
-    pub total_cards: usize,
-    pub known_cards: usize,
 }
 
 pub fn compute_completion_forecast(
@@ -185,7 +171,6 @@ pub fn compute_completion_forecast(
 
     let mut new_cards_remaining = 0usize;
     let mut total_cards = 0usize;
-    let mut known_cards = 0usize;
 
     for study_card in knowledge_set.study_cards().values() {
         let card = study_card.card();
@@ -193,23 +178,14 @@ pub fn compute_completion_forecast(
             continue;
         }
         total_cards += 1;
-        let memory = study_card.memory();
-        if memory.is_new() {
+        if study_card.memory().is_new() {
             new_cards_remaining += 1;
-        } else if memory.is_known_card() {
-            known_cards += 1;
         }
     }
 
-    let progress_pct = if total_cards > 0 {
-        (known_cards as f64 / total_cards as f64) * 100.0
-    } else {
-        0.0
-    };
-
     let is_all_studied = total_cards > 0 && new_cards_remaining == 0;
 
-    let (days_remaining, target_date_label, cards_per_day) = if new_cards_remaining > 0 {
+    let (days_remaining, target_date_label) = if new_cards_remaining > 0 {
         match estimate_completion_date(history, new_cards_remaining) {
             Some(date) => {
                 let local = chrono::Local.from_utc_datetime(&date.naive_utc());
@@ -225,32 +201,17 @@ pub fn compute_completion_forecast(
                 let duration = date.signed_duration_since(now);
                 let days = (duration.num_hours() as f64 / 24.0).ceil().max(1.0) as usize;
 
-                let recent: Vec<_> = history
-                    .iter()
-                    .filter(|h| h.new_cards_studied_today() > 0)
-                    .collect();
-                let cpd = if recent.is_empty() {
-                    0.0
-                } else {
-                    let total_new: u32 = recent.iter().map(|h| h.new_cards_studied_today()).sum();
-                    total_new as f64 / recent.len() as f64
-                };
-
-                (Some(days), date_label, cpd)
+                (Some(days), date_label)
             },
-            None => (None, String::new(), 0.0),
+            None => (None, String::new()),
         }
     } else {
-        (None, String::new(), 0.0)
+        (None, String::new())
     };
 
     CompletionForecast {
         days_remaining,
         is_all_studied,
         target_date_label,
-        cards_per_day,
-        progress_pct,
-        total_cards,
-        known_cards,
     }
 }

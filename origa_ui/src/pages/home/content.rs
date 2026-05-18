@@ -1,7 +1,6 @@
 use super::content_sync::{
     run_sync, show_sync_error_toast, show_sync_success_toast, show_sync_toast,
 };
-use super::forecast_card::CompletionForecastCard;
 use super::{
     ActivityChart, ActivityDataPoint, CompletionForecast, JlptProgressCard, JlptSkeleton,
     RecentlyStudiedItem, StudiedTodayList, TodayOverview, TodayOverviewCard, WelcomeCard,
@@ -154,6 +153,7 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                     <div class="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(280px,5fr)_minmax(360px,7fr)] lg:gap-8">
                         <TodayOverviewCard
                             overview=Signal::derive(move || today_overview.get())
+                            forecast=Signal::derive(move || forecast.get())
                             test_id=Signal::derive(|| "home-today-overview".to_string())
                         />
                         <ActivityChart
@@ -161,11 +161,6 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                             test_id=Signal::derive(|| "home-activity-chart".to_string())
                         />
                     </div>
-
-                    <CompletionForecastCard
-                        forecast=Signal::derive(move || forecast.get())
-                        test_id=Signal::derive(|| "home-completion-forecast".to_string())
-                    />
 
                     <StudiedTodayList
                         items=Signal::derive(move || recent_studied.get())

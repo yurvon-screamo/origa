@@ -233,14 +233,14 @@ pub fn MultiLineChart(
             .collect::<Vec<_>>()
     };
 
-    let class_str = move || format!("{} chart-container w-full h-full", class.get());
+    let class_str = move || format!("{} chart-container w-full", class.get());
     let has_data = move || lines.get().iter().any(|l| !l.data.is_empty());
 
     view! {
         <div data-testid=test_id_val>
             <Show when=move || !has_data()>
-                <div class="flex items-center justify-center" style=format!("width:{}px;height:{}px", width, height)>
-                    <svg viewBox=format!("0 0 {} {}", width, height) class=class_str>
+                <div class="flex items-center justify-center" style="width:100%">
+                    <svg viewBox=format!("0 0 {} {}", width, height) class=class_str preserveAspectRatio="xMidYMid meet" style="width:100%;height:auto;">
                         <text
                             x=format!("{}", width / 2)
                             y=format!("{}", height / 2)
@@ -257,7 +257,7 @@ pub fn MultiLineChart(
             </Show>
 
             <Show when=move || has_data()>
-                <svg viewBox=format!("0 0 {} {}", width, height) class=class_str>
+                <svg viewBox=format!("0 0 {} {}", width, height) class=class_str preserveAspectRatio="xMidYMid meet" style="width:100%;height:auto;">
                     // Y-axis
                     <line
                         x1=PADDING_LEFT
