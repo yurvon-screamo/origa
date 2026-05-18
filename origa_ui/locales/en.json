@@ -84,7 +84,10 @@
             "vocabulary": "Words",
             "kanji": "Kanji",
             "grammar": "Grammar",
-            "footer": "You'll be able to study all of this in the app."
+            "footer": "You'll be able to study all of this in the app.",
+            "vocabulary_desc": "Built-in dictionaries with examples",
+            "kanji_desc": "Furigana, radicals and stroke order",
+            "grammar_desc": "Grammar reference with context"
         },
         "load": {
             "title": "Choose a comfortable learning pace",

@@ -39,6 +39,10 @@ export class OnboardingPage extends BasePage {
     readonly introFeatureVocabulary: Locator;
     readonly introFeatureKanji: Locator;
     readonly introFeatureGrammar: Locator;
+    // Intro step — feature tags
+    readonly introTagVocabulary: Locator;
+    readonly introTagKanji: Locator;
+    readonly introTagGrammar: Locator;
 
     // JLPT step
     readonly jlptTitle: Locator;
@@ -92,8 +96,8 @@ export class OnboardingPage extends BasePage {
         this.summaryStep = page.getByTestId("onboarding-summary-step");
 
         // Intro step
-        this.introTitle = page.getByTestId("intro-title");
-        this.introSubtitle = page.getByTestId("intro-subtitle");
+        this.introTitle = page.getByTestId("intro-step-title");
+        this.introSubtitle = page.getByTestId("intro-step-subtitle");
 
         // Intro step — language
         this.introLanguageBar = page.getByTestId("intro-step-language-bar");
@@ -105,6 +109,10 @@ export class OnboardingPage extends BasePage {
         this.introFeatureVocabulary = page.getByTestId("intro-step-feature-vocabulary");
         this.introFeatureKanji = page.getByTestId("intro-step-feature-kanji");
         this.introFeatureGrammar = page.getByTestId("intro-step-feature-grammar");
+        // Intro step — feature tags
+        this.introTagVocabulary = page.getByTestId("intro-step-tag-vocabulary");
+        this.introTagKanji = page.getByTestId("intro-step-tag-kanji");
+        this.introTagGrammar = page.getByTestId("intro-step-tag-grammar");
 
         // JLPT step
         this.jlptTitle = page.getByTestId("jlpt-title");
