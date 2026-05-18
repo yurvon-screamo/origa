@@ -1,6 +1,6 @@
 use super::dashboard_stats::{CompletionForecast, TodayOverview};
 use crate::i18n::{t, td_string, use_i18n};
-use crate::ui_components::{Card, DisplayText, Text, TextSize, TypographyVariant};
+use crate::ui_components::{Card, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 
 #[component]
@@ -41,24 +41,24 @@ pub fn TodayOverviewCard(
     });
 
     view! {
-        <Card shadow=true class=Signal::derive(|| "p-8 h-full".to_string()) test_id=test_id>
+        <Card shadow=true class=Signal::derive(|| "p-6 h-full".to_string()) test_id=test_id>
             <div class="flex flex-col h-full">
-                <div class="flex items-baseline gap-3">
+                <div class="flex items-center">
                     <Text
                         size=TextSize::Small
                         variant=TypographyVariant::Muted
                         uppercase=true
                         tracking_widest=true
                     >
-                        {t!(i18n, home.total_label)}
-                    </Text>
-
-                    <DisplayText class=Signal::derive(|| "font-serif text-[28px] font-light leading-tight".to_string())>
-                        {move || total.get().to_string()}
-                    </DisplayText>
-
-                    <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                        {t!(i18n, home.cards_suffix)}
+                        {move || {
+                            let locale = i18n.get_locale();
+                            format!(
+                                "{} {} {}",
+                                td_string!(locale, home.total_label),
+                                total.get(),
+                                td_string!(locale, home.cards_suffix)
+                            )
+                        }}
                     </Text>
 
                     <div class="ml-auto">
