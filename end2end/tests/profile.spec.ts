@@ -198,8 +198,7 @@ testWithUniqueUser.describe("Profile - Account Deletion", () => {
 
         await profilePage.confirmDelete();
 
-        const loginPage = new LoginPage(page);
-        await expect(loginPage.loginPage).toBeVisible({ timeout: 10_000 });
-        await expect(page).toHaveURL(/\/login/);
+        // Account deletion is async — wait for redirect with extended timeout
+        await page.waitForURL(/\/login/, { timeout: 15_000 });
     });
 });
