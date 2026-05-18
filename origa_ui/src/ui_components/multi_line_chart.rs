@@ -284,7 +284,7 @@ pub fn MultiLineChart(
                         children=move |(y, value)| {
                             view! {
                                 <text
-                                    x=PADDING_LEFT - 6
+                                    x=PADDING_LEFT - 14
                                     y=y
                                     text_anchor="end"
                                     dominant_baseline="central"
