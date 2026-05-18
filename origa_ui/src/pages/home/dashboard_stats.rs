@@ -28,6 +28,8 @@ pub struct RecentlyStudiedItem {
     pub card_type: String,
     pub japanese: String,
     pub meaning: String,
+    pub reading: Option<String>,
+    pub short_description: Option<String>,
 }
 
 #[derive(Clone)]
@@ -115,11 +117,32 @@ pub fn compute_studied_today(
                 CardType::Phrase => "vocabulary",
             };
 
+            let (reading, short_description) = match card {
+                Card::Kanji(k) => {
+                    let on = k.on_readings();
+                    let kun = k.kun_readings();
+                    let reading = if on.is_empty() && kun.is_empty() {
+                        None
+                    } else {
+                        let parts: Vec<String> = on.iter().chain(kun.iter()).cloned().collect();
+                        Some(parts.join("、"))
+                    };
+                    (reading, None)
+                },
+                Card::Grammar(g) => {
+                    let short_desc = g.short_description(lang).map(|a| a.text().to_string()).ok();
+                    (None, short_desc)
+                },
+                _ => (None, None),
+            };
+
             RecentlyStudiedItem {
                 card_id: sc.card_id().to_string(),
                 card_type: card_type.to_string(),
                 japanese,
                 meaning,
+                reading,
+                short_description,
             }
         })
         .collect()

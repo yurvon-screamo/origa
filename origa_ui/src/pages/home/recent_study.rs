@@ -50,6 +50,8 @@ pub fn StudiedTodayList(
                             let card_type = item.card_type.clone();
                             let japanese = item.japanese.clone();
                             let meaning = item.meaning.clone();
+                            let reading = item.reading.clone();
+                            let short_description = item.short_description.clone();
 
                             let tag_variant = match card_type.as_str() {
                                 "kanji" => TagVariant::Olive,
@@ -59,7 +61,7 @@ pub fn StudiedTodayList(
                             };
 
                             let is_furigana = card_type.as_str() != "grammar";
-                            let is_not_grammar = card_type.as_str() != "grammar";
+                            let is_grammar = card_type.as_str() == "grammar";
 
                             let card_type_for_label = card_type.clone();
                             let tag_label = Signal::derive(move || {
@@ -72,31 +74,46 @@ pub fn StudiedTodayList(
                                 }
                             });
 
-                            // Create Signals BEFORE view! to avoid FnOnce issues
+                            let reading_text = reading.unwrap_or_default();
+                            let has_reading = !reading_text.is_empty();
+
+                            let description_text = if is_grammar {
+                                short_description.unwrap_or_default()
+                            } else {
+                                meaning
+                            };
+                            let has_description = !description_text.is_empty();
+
                             let japanese_signal: Signal<String> = Signal::derive(move || japanese.clone());
-                            let meaning_signal: Signal<String> = Signal::derive(move || meaning.clone());
+                            let description_signal: Signal<String> = Signal::derive(move || description_text.clone());
+                            let reading_signal: Signal<String> = Signal::derive(move || reading_text.clone());
                             let known_kanji_val = known_kanji.get();
 
                             view! {
                                 <Card class=Signal::derive(|| "p-4 h-full flex flex-col".to_string()) test_id=Signal::derive(String::new)>
-                                    <div class="flex items-center gap-2 mb-2">
-                                        <Tag variant=Signal::derive(move || tag_variant) class=Signal::derive(|| "text-[10px]".to_string()) test_id=Signal::derive(String::new)>
-                                            {move || tag_label.get()}
-                                        </Tag>
+                                    <div class="flex items-start justify-between gap-2">
                                         <div class="flex-1 min-w-0">
                                             <MarkdownText
                                                 content=japanese_signal
                                                 known_kanji=known_kanji_val
                                                 furigana=is_furigana
-                                                variant=Signal::derive(|| MarkdownVariant::Default)
+                                                variant=Signal::derive(|| MarkdownVariant::Large)
                                                 test_id=Signal::derive(String::new)
                                             />
+                                            <Show when=move || has_reading>
+                                                <div class="font-mono text-[11px] text-[var(--fg-muted)] mt-0.5">
+                                                    {move || reading_signal.get()}
+                                                </div>
+                                            </Show>
                                         </div>
+                                        <Tag variant=Signal::derive(move || tag_variant) class=Signal::derive(|| "text-[10px] shrink-0".to_string()) test_id=Signal::derive(String::new)>
+                                            {move || tag_label.get()}
+                                        </Tag>
                                     </div>
-                                    <Show when=move || is_not_grammar>
-                                        <div class="mt-auto pt-2 line-clamp-3">
+                                    <Show when=move || has_description>
+                                        <div class="line-clamp-2 mt-1">
                                             <MarkdownText
-                                                content=meaning_signal
+                                                content=description_signal
                                                 known_kanji=HashSet::new()
                                                 furigana=false
                                                 variant=Signal::derive(|| MarkdownVariant::Compact)

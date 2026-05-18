@@ -271,7 +271,8 @@
         "start_lesson": "Start Lesson",
         "badge_kanji": "Kanji",
         "badge_words": "Words",
-        "badge_grammar": "Grammar"
+        "badge_grammar": "Grammar",
+        "cards_suffix": "cards"
     },
     "login": {
         "or_login_with": "or sign in / register with",
