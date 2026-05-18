@@ -10,7 +10,9 @@ mod scoring_helpers;
 mod scoring_step;
 mod summary_step;
 
-use crate::i18n::*;
+use crate::i18n::{
+    Locale, locale_to_native_language, native_language_to_locale, t, td_string, use_i18n,
+};
 use crate::loaders::WellKnownSetLoaderImpl;
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{
@@ -37,6 +39,7 @@ use summary_step::SummaryStep;
 #[component]
 pub fn Onboarding() -> impl IntoView {
     let i18n = use_i18n();
+    let current_locale: RwSignal<Locale> = RwSignal::new(i18n.get_locale());
     let selected_language: RwSignal<NativeLanguage> =
         RwSignal::new(locale_to_native_language(&i18n.get_locale()));
 
@@ -60,9 +63,12 @@ pub fn Onboarding() -> impl IntoView {
     provide_context(state);
 
     let i18n_for_lang = i18n;
+    let locale_for_sync = current_locale;
     Effect::new(move |_| {
         let lang = selected_language.get();
-        i18n_for_lang.set_locale(native_language_to_locale(&lang));
+        let locale = native_language_to_locale(&lang);
+        i18n_for_lang.set_locale(locale);
+        locale_for_sync.set(locale);
     });
 
     let lang_for_init = selected_language;
@@ -103,9 +109,8 @@ pub fn Onboarding() -> impl IntoView {
         });
     });
 
-    let steps_i18n = i18n;
     let steps: Signal<Vec<StepperStep>> = Signal::derive(move || {
-        let locale = steps_i18n.get_locale();
+        let locale = current_locale.get();
         vec![
             StepperStep {
                 number: 1,

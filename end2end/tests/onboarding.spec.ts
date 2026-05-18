@@ -40,11 +40,11 @@ testWithFreshUser.describe("Onboarding Flow - N4 with ~50% Progress", () => {
         await expect(page.getByTestId("onboarding-stepper")).toBeVisible();
 
         // ========================================
-        // Step 1: Intro - language selector and feature showcase
+        // Step 1: Intro - language selector and feature cards
         // ========================================
         await expect(page.getByTestId("onboarding-intro-step")).toBeVisible();
 
-        // Verify language bar with language buttons
+        // Language bar with label and selector
         const languageBar = page.getByTestId("intro-step-language-bar");
         await expect(languageBar).toBeVisible();
         const langEnBtn = page.getByTestId("profile-lang-english");
@@ -52,38 +52,37 @@ testWithFreshUser.describe("Onboarding Flow - N4 with ~50% Progress", () => {
         await expect(langEnBtn).toBeVisible();
         await expect(langRuBtn).toBeVisible();
 
-        // Verify language switching works: click English → title changes
+        // Language switching: click EN → title changes
         const introTitle = page.getByTestId("intro-step-title");
         const initialTitle = await introTitle.textContent();
         await langEnBtn.click();
         await expect(introTitle).not.toHaveText(initialTitle ?? '', { timeout: 5000 });
 
-        // Switch back to Russian and verify
+        // Switch back to Russian
         await langRuBtn.click();
         await expect(introTitle).toHaveText(initialTitle ?? '', { timeout: 5000 });
 
-        // Verify feature showcase (decorative kanji — NOT cards, NOT clickable)
+        // Feature cards: vocabulary, kanji, grammar
         await expect(page.getByTestId("intro-step-feature-showcase")).toBeVisible();
 
-        const checkNotInteractive = async (testId: string) => {
-            const el = page.getByTestId(testId);
-            await expect(el).toBeVisible();
-            const styles = await el.evaluate((node) => {
-                const style = window.getComputedStyle(node);
-                return { cursor: style.cursor, borderWidth: style.borderWidth };
-            });
-            expect(styles.cursor).not.toBe("pointer");
-            expect(styles.borderWidth).toBe("0px");
-        };
+        // Verify each card is a proper Card (has shadow via ::after) with Tag
+        for (const testId of ["intro-step-feature-vocabulary", "intro-step-feature-kanji", "intro-step-feature-grammar"]) {
+            const card = page.getByTestId(testId);
+            await expect(card).toBeVisible();
+            // Card should have border
+            const borderWidth = await card.evaluate((el) => window.getComputedStyle(el).borderWidth);
+            expect(borderWidth).not.toBe("0px");
+        }
 
-        await checkNotInteractive("intro-step-feature-vocabulary");
-        await checkNotInteractive("intro-step-feature-kanji");
-        await checkNotInteractive("intro-step-feature-grammar");
+        // Verify Tag elements inside cards
+        await expect(page.getByTestId("intro-step-tag-vocabulary")).toBeVisible();
+        await expect(page.getByTestId("intro-step-tag-kanji")).toBeVisible();
+        await expect(page.getByTestId("intro-step-tag-grammar")).toBeVisible();
 
-        // Verify welcome text
+        // Welcome text
         await expect(page.getByTestId("intro-step-title")).toBeVisible();
 
-        // Verify skip button
+        // Skip button
         await expect(page.getByTestId("onboarding-skip")).toBeVisible();
 
         // Screenshot
@@ -92,7 +91,7 @@ testWithFreshUser.describe("Onboarding Flow - N4 with ~50% Progress", () => {
             fullPage: true
         });
 
-        // Click "Далее" to proceed
+        // Proceed to next step
         await page.getByTestId("onboarding-next").click();
 
         // ========================================
