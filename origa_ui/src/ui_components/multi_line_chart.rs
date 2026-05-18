@@ -1,9 +1,9 @@
 use leptos::prelude::*;
 
-const PADDING_LEFT: u32 = 36;
-const PADDING_RIGHT: u32 = 16;
-const PADDING_BOTTOM: u32 = 32;
-const PADDING_TOP: u32 = 16;
+const PADDING_LEFT: u32 = 80;
+const PADDING_RIGHT: u32 = 24;
+const PADDING_BOTTOM: u32 = 48;
+const PADDING_TOP: u32 = 24;
 
 #[derive(Clone)]
 pub struct ChartLine {
@@ -247,7 +247,7 @@ pub fn MultiLineChart(
                             text_anchor="middle"
                             dominant_baseline="central"
                             fill="var(--fg-muted)"
-                            font_size="12"
+                            font_size="16"
                             font_family="DM Mono"
                         >
                             {move || empty_text.get()}
@@ -284,12 +284,12 @@ pub fn MultiLineChart(
                         children=move |(y, value)| {
                             view! {
                                 <text
-                                    x=PADDING_LEFT - 14
+                                    x=PADDING_LEFT - 36
                                     y=y
                                     text_anchor="end"
                                     dominant_baseline="central"
                                     fill="var(--fg-muted)"
-                                    font_size="5"
+                                    font_size="10"
                                     font_family="DM Mono"
                                 >
                                     {format_axis_value(value)}
@@ -306,10 +306,10 @@ pub fn MultiLineChart(
                             view! {
                                 <text
                                     x=x
-                                    y=height - PADDING_BOTTOM + 14
+                                    y=height - PADDING_BOTTOM + 20
                                     text_anchor="middle"
                                     fill="var(--fg-muted)"
-                                    font_size="5"
+                                    font_size="10"
                                     font_family="DM Mono"
                                 >
                                     {label}
@@ -345,7 +345,7 @@ pub fn MultiLineChart(
                                 <circle
                                     cx=data.x
                                     cy=data.y
-                                    r=3
+                                    r=4
                                     fill=data.color
                                     stroke="var(--bg-paper)"
                                     stroke-width="2"
