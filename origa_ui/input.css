@@ -4176,9 +4176,3 @@ input[type="submit"],
 .status-card--difficult .status-progress-fill {
     background: var(--accent-terracotta);
 }
-
-/* Studied today grid */
-.studied-grid-container {
-    max-height: 600px;
-    overflow-y: auto;
-}

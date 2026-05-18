@@ -43,7 +43,7 @@ pub fn TodayOverviewCard(
     view! {
         <Card shadow=true class=Signal::derive(|| "p-8 h-full".to_string()) test_id=test_id>
             <div class="flex flex-col h-full">
-                <div class="flex items-center">
+                <div class="flex items-baseline gap-3">
                     <Text
                         size=TextSize::Small
                         variant=TypographyVariant::Muted
@@ -52,6 +52,16 @@ pub fn TodayOverviewCard(
                     >
                         {t!(i18n, home.today_overview)}
                     </Text>
+
+                    <div class="flex items-baseline gap-1">
+                        <DisplayText class=Signal::derive(|| "font-serif text-[32px] font-light leading-tight".to_string())>
+                            {move || total.get().to_string()}
+                        </DisplayText>
+
+                        <Text size=TextSize::Small variant=TypographyVariant::Muted>
+                            {t!(i18n, home.total_label)}
+                        </Text>
+                    </div>
 
                     <div class="ml-auto">
                         <Show when=move || forecast.get().days_remaining.is_some()>
@@ -75,16 +85,6 @@ pub fn TodayOverviewCard(
                             </span>
                         </Show>
                     </div>
-                </div>
-
-                <div class="flex flex-col mt-2">
-                    <DisplayText class=Signal::derive(|| "font-serif text-[48px] font-light leading-tight".to_string())>
-                        {move || total.get().to_string()}
-                    </DisplayText>
-
-                    <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                        {t!(i18n, home.total_label)}
-                    </Text>
                 </div>
 
                 <div class="status-grid mt-4">
