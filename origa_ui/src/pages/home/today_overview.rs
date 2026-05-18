@@ -50,18 +50,16 @@ pub fn TodayOverviewCard(
                         uppercase=true
                         tracking_widest=true
                     >
-                        {t!(i18n, home.today_overview)}
+                        {t!(i18n, home.total_label)}
                     </Text>
 
-                    <div class="flex items-baseline gap-1">
-                        <DisplayText class=Signal::derive(|| "font-serif text-[32px] font-light leading-tight".to_string())>
-                            {move || total.get().to_string()}
-                        </DisplayText>
+                    <DisplayText class=Signal::derive(|| "font-serif text-[28px] font-light leading-tight".to_string())>
+                        {move || total.get().to_string()}
+                    </DisplayText>
 
-                        <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                            {t!(i18n, home.total_label)}
-                        </Text>
-                    </div>
+                    <Text size=TextSize::Small variant=TypographyVariant::Muted>
+                        {t!(i18n, home.cards_suffix)}
+                    </Text>
 
                     <div class="ml-auto">
                         <Show when=move || forecast.get().days_remaining.is_some()>
@@ -88,7 +86,7 @@ pub fn TodayOverviewCard(
                 </div>
 
                 <div class="status-grid mt-4">
-                    <div class="status-card">
+                    <div class="status-card status-card--new">
                         <span class="status-number">{move || new_count.get()}</span>
                         <span class="status-label">{t!(i18n, home.new_status)}</span>
                         <div class="status-progress">
@@ -99,7 +97,7 @@ pub fn TodayOverviewCard(
                         </div>
                     </div>
 
-                    <div class="status-card">
+                    <div class="status-card status-card--learned">
                         <span class="status-number">{move || learned_count.get()}</span>
                         <span class="status-label">{t!(i18n, home.learned_status)}</span>
                         <div class="status-progress">
@@ -110,7 +108,7 @@ pub fn TodayOverviewCard(
                         </div>
                     </div>
 
-                    <div class="status-card">
+                    <div class="status-card status-card--in-progress">
                         <span class="status-number">{move || in_progress_count.get()}</span>
                         <span class="status-label">{t!(i18n, home.in_progress_status)}</span>
                         <div class="status-progress">

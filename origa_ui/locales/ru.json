@@ -271,7 +271,8 @@
     "start_lesson": "Начать занятие",
     "badge_kanji": "Кандзи",
     "badge_words": "Слова",
-    "badge_grammar": "Грамматика"
+    "badge_grammar": "Грамматика",
+    "cards_suffix": "карточек"
     },
   "login": {
     "or_login_with": "или войти/зарегистрироваться через",
