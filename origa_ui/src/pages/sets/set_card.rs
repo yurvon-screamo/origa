@@ -4,8 +4,8 @@ use crate::ui_components::{
     Button, ButtonSize, ButtonVariant, Card, Checkbox, Heading, HeadingLevel, MarkdownText, Tag,
     TagVariant, Text, TextSize, TypographyVariant,
 };
-use ButtonVariant::{Ghost, Olive};
 use leptos::prelude::*;
+use leptos_icons::Icon;
 use std::collections::HashSet;
 
 #[component]
@@ -91,16 +91,20 @@ fn SetCardButton(
     is_imported: bool,
 ) -> impl IntoView {
     let i18n = use_i18n();
-    let variant = if is_imported { Ghost } else { Olive };
+    let (variant, test_id) = if is_imported {
+        (ButtonVariant::Ghost, "sets-card-reimport-btn")
+    } else {
+        (ButtonVariant::Olive, "sets-card-import-btn")
+    };
     view! {
         <Button
-            variant=Signal::derive(move || variant)
+            variant=variant
             size=ButtonSize::Small
             on_click=Callback::new(move |_| on_import.run((set_id.clone(), title.clone())))
-            test_id="sets-card-import-btn"
+            test_id=test_id
         >
             {if is_imported {
-                t!(i18n, sets.reimport).into_any()
+                view! { <Icon icon=icondata::LuRefreshCw width="1em" height="1em" /> }.into_any()
             } else {
                 t!(i18n, common.import).into_any()
             }}
