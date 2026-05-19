@@ -405,7 +405,7 @@ pub fn SetsContent() -> impl IntoView {
                     if !imported_ids.is_empty() {
                         sets.update(|list| {
                             for set in list.iter_mut() {
-                                if imported_ids.contains(&set.set_id) {
+                                if imported_ids.contains(&set.set_id) && !set.is_imported {
                                     set.is_imported = true;
                                 }
                             }
