@@ -22,8 +22,13 @@ pub fn init_grammar(data: GrammarData) -> Result<(), OrigaError> {
         return Ok(());
     }
 
+    let json = data
+        .grammar_json
+        .strip_prefix('\u{FEFF}')
+        .unwrap_or(&data.grammar_json);
+
     let content: GrammarStoreValue =
-        serde_json::from_str(&data.grammar_json).map_err(|e| OrigaError::GrammarParseError {
+        serde_json::from_str(json).map_err(|e| OrigaError::GrammarParseError {
             reason: format!("Failed to parse grammar.json: {}", e),
         })?;
 
