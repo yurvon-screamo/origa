@@ -179,7 +179,8 @@ mod tests {
     fn add_kanji_companions_respects_max_limit() {
         init_real_dictionaries();
 
-        let kanji_chars = ["人", "魅", "誤", "姓", "剤", "干", "唐", "伴"];
+        let kanji_chars = ["人", "日", "年", "大", "出", "見", "食", "飲", "行", "来",
+            "読", "書", "話", "聞", "買", "立", "走", "歩", "待", "使"];
 
         let mut ks = KnowledgeSet::new();
         let mut lesson_card_ids = Vec::new();
