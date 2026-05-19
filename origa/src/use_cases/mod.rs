@@ -1,4 +1,5 @@
 mod analyze_text_for_cards;
+mod cleanup_kanji_companions;
 mod create_cards_from_analysis;
 mod create_grammar_card;
 mod create_kanji_card;
@@ -23,6 +24,7 @@ mod tests;
 pub use tests::fixtures::init_real_dictionaries;
 
 pub use analyze_text_for_cards::{AnalyzeTextForCardsUseCase, AnalyzeTextResult, AnalyzedWord};
+pub use cleanup_kanji_companions::{CleanupKanjiCompanionsUseCase, CleanupResult};
 pub use create_cards_from_analysis::{
     CreateCardsFromAnalysisResult, CreateCardsFromAnalysisUseCase, WordToCreate,
 };
