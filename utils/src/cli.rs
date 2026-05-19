@@ -114,13 +114,6 @@ pub enum Commands {
         min_tokens: usize,
     },
 
-    /// Migrate phrase dataset from numeric ids to ULID
-    MigratePhraseDataset {
-        /// Path to phrase_dataset.json
-        #[arg(short, long)]
-        dataset: PathBuf,
-    },
-
     /// Validate vocabulary dictionary translations using LLM
     ValidateDictionary {
         /// OpenRouter API key (required, or set OPENROUTER_API_KEY env var)

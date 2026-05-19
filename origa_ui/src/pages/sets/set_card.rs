@@ -4,6 +4,7 @@ use crate::ui_components::{
     Button, ButtonSize, ButtonVariant, Card, Checkbox, Heading, HeadingLevel, MarkdownText, Tag,
     TagVariant, Text, TextSize, TypographyVariant,
 };
+use ButtonVariant::{Ghost, Olive};
 use leptos::prelude::*;
 use std::collections::HashSet;
 
@@ -58,13 +59,12 @@ pub fn SetCard(
                         {title_for_display}
                     </Heading>
                 </div>
-                <Show when=move || !is_imported>
-                    <SetCardButton
-                        set_id=set_info.set_id.clone()
-                        title=set_info.title.clone()
-                        on_import=on_import
-                    />
-                </Show>
+                <SetCardButton
+                    set_id=set_info.set_id.clone()
+                    title=set_info.title.clone()
+                    on_import=on_import
+                    is_imported=is_imported
+                />
             </div>
             <div class="flex-1 min-h-0 mb-3">
                 <MarkdownText content=Signal::derive(move || description.clone()) known_kanji=known_kanji.clone()/>
@@ -88,16 +88,22 @@ fn SetCardButton(
     set_id: String,
     title: String,
     on_import: Callback<(String, String)>,
+    is_imported: bool,
 ) -> impl IntoView {
     let i18n = use_i18n();
+    let variant = if is_imported { Ghost } else { Olive };
     view! {
         <Button
-            variant=Signal::derive(|| ButtonVariant::Filled)
+            variant=Signal::derive(move || variant)
             size=ButtonSize::Small
             on_click=Callback::new(move |_| on_import.run((set_id.clone(), title.clone())))
             test_id="sets-card-import-btn"
         >
-            {t!(i18n, common.import)}
+            {if is_imported {
+                t!(i18n, sets.reimport).into_any()
+            } else {
+                t!(i18n, common.import).into_any()
+            }}
         </Button>
     }
 }
