@@ -1,5 +1,4 @@
 mod analyze_text_for_cards;
-mod cleanup_kanji_companions;
 mod create_cards_from_analysis;
 mod create_grammar_card;
 mod create_kanji_card;
@@ -10,7 +9,6 @@ mod extract_text_from_image;
 mod import_anki_pack;
 mod import_onboarding_sets;
 mod mark_card_as_known;
-mod migrate_kanji_companions;
 mod rate_card;
 mod seed_ready_phrases;
 mod select_cards_to_lesson;
@@ -24,7 +22,6 @@ mod tests;
 pub use tests::fixtures::init_real_dictionaries;
 
 pub use analyze_text_for_cards::{AnalyzeTextForCardsUseCase, AnalyzeTextResult, AnalyzedWord};
-pub use cleanup_kanji_companions::{CleanupKanjiCompanionsUseCase, CleanupResult};
 pub use create_cards_from_analysis::{
     CreateCardsFromAnalysisResult, CreateCardsFromAnalysisUseCase, WordToCreate,
 };
@@ -40,7 +37,6 @@ pub use import_anki_pack::{
 };
 pub use import_onboarding_sets::{ImportOnboardingResult, ImportOnboardingSetsUseCase};
 pub use mark_card_as_known::MarkCardAsKnownUseCase;
-pub use migrate_kanji_companions::{MigrateKanjiCompanionsUseCase, MigrationResult};
 pub use rate_card::RateCardUseCase;
 pub use seed_ready_phrases::SeedReadyPhrasesUseCase;
 pub use select_cards_to_lesson::SelectCardsToLessonUseCase;

@@ -436,7 +436,8 @@
         "import_success": "Successfully created {} cards",
         "import_partial": "Created {} cards, skipped {} (already exist)",
         "import_with_errors": "Created {} cards, skipped {}, errors: {}",
-        "import_complete_title": "Import complete"
+        "import_complete_title": "Import complete",
+        "reimport": "Re-import"
     },
     "shared": {
         "filter_all": "All",

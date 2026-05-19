@@ -436,7 +436,8 @@
     "import_success": "Успешно создано {} карточек",
     "import_partial": "Создано {} карточек, пропущено {} (уже существуют)",
     "import_with_errors": "Создано {} карточек, пропущено {}, ошибок: {}",
-    "import_complete_title": "Импорт завершён"
+    "import_complete_title": "Импорт завершён",
+    "reimport": "Повторить"
   },
   "shared": {
     "filter_all": "Все",
