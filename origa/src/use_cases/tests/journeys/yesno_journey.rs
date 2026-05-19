@@ -130,10 +130,9 @@ async fn yesno_journey_wrong_answer_results_in_hard_rating() {
         !study_card.memory().is_new(),
         "Карточка не должна быть новой после рейтинга"
     );
-    // При Hard рейтинге карточка должна иметь высокую сложность
     assert!(
-        study_card.memory().is_high_difficulty(),
-        "Карточка должна иметь высокую сложность после Hard рейтинга"
+        study_card.memory().is_in_progress(),
+        "Карточка должна быть в процессе изучения после Hard рейтинга"
     );
 }
 

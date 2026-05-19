@@ -4,13 +4,13 @@ pub use value::{Difficulty, MemoryState, Rating, ReviewLog, Stability};
 
 use std::collections::{HashSet, VecDeque};
 
-use chrono::{DateTime, TimeDelta, Utc};
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use ulid::Ulid;
 
-const KNOWN_CARD_STABILITY_THRESHOLD: f64 = 10.0;
-const HIGH_DIFFICULTY_THRESHOLD: f64 = 5.0;
-const MAX_DAYS_INTERVAL_THRESHOLD: i64 = 10;
+const KNOWN_CARD_STABILITY_THRESHOLD: f64 = 21.0;
+const HIGH_DIFFICULTY_THRESHOLD: f64 = 7.0;
+const HIGH_DIFFICULTY_STABILITY_CAP: f64 = 7.0;
 
 #[derive(Debug, Clone, PartialEq, PartialOrd, Serialize, Deserialize)]
 pub struct MemoryHistory {
@@ -34,13 +34,6 @@ impl MemoryHistory {
 
     pub fn memory_state(&self) -> Option<&MemoryState> {
         self.current_state.as_ref()
-    }
-
-    pub fn latest_interval(&self) -> TimeDelta {
-        self.reviews
-            .back()
-            .map(|x| x.interval())
-            .unwrap_or(TimeDelta::zero())
     }
 
     pub fn stability(&self) -> Option<&Stability> {
@@ -96,10 +89,12 @@ impl MemoryHistory {
 
     /// Карта которая имеет высокую сложность
     pub fn is_high_difficulty(&self) -> bool {
-        self.latest_interval().num_days() <= MAX_DAYS_INTERVAL_THRESHOLD
+        self.difficulty()
+            .map(|d| d.value() >= HIGH_DIFFICULTY_THRESHOLD)
+            .unwrap_or(false)
             && self
-                .difficulty()
-                .map(|difficulty| difficulty.value() >= HIGH_DIFFICULTY_THRESHOLD)
+                .stability()
+                .map(|s| s.value() < HIGH_DIFFICULTY_STABILITY_CAP)
                 .unwrap_or(false)
     }
 
@@ -327,6 +322,32 @@ mod tests {
 
         // Act & Assert
         assert!(!history.is_high_difficulty());
+    }
+
+    #[test]
+    fn is_high_difficulty_false_when_stability_above_cap() {
+        let state = MemoryState::new(
+            Stability::new(HIGH_DIFFICULTY_STABILITY_CAP + 1.0).unwrap(),
+            Difficulty::new(HIGH_DIFFICULTY_THRESHOLD + 0.1).unwrap(),
+            Utc::now(),
+        );
+        let mut history = MemoryHistory::new();
+        history.add_review(state, make_review(Rating::Hard));
+
+        assert!(!history.is_high_difficulty());
+    }
+
+    #[test]
+    fn is_high_difficulty_true_when_stability_below_cap() {
+        let state = MemoryState::new(
+            Stability::new(HIGH_DIFFICULTY_STABILITY_CAP - 1.0).unwrap(),
+            Difficulty::new(HIGH_DIFFICULTY_THRESHOLD + 0.1).unwrap(),
+            Utc::now(),
+        );
+        let mut history = MemoryHistory::new();
+        history.add_review(state, make_review(Rating::Hard));
+
+        assert!(history.is_high_difficulty());
     }
 
     // --- is_in_progress ---

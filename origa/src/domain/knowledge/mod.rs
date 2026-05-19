@@ -343,4 +343,19 @@ impl KnowledgeSet {
     fn recalculate_daily_stats(&mut self) {
         stats_updater::recalculate_daily_stats(&self.study_cards, &mut self.lesson_history);
     }
+
+    #[cfg(test)]
+    pub fn mark_card_as_known_directly(&mut self, card_id: Ulid) {
+        use crate::domain::memory::{Difficulty, MemoryState, Rating, ReviewLog, Stability};
+        use chrono::{Duration, Utc};
+
+        if let Some(card) = self.study_cards.get_mut(&card_id) {
+            let memory = MemoryState::new(
+                Stability::new(22.0).unwrap(),
+                Difficulty::new(3.0).unwrap(),
+                Utc::now() + Duration::days(30),
+            );
+            card.add_review(memory, ReviewLog::new(Rating::Good, Duration::days(22)));
+        }
+    }
 }

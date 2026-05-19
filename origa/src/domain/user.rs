@@ -146,6 +146,11 @@ impl User {
         &self.knowledge_set
     }
 
+    #[cfg(test)]
+    pub fn knowledge_set_mut(&mut self) -> &mut KnowledgeSet {
+        &mut self.knowledge_set
+    }
+
     pub fn telegram_user_id(&self) -> Option<&u64> {
         self.telegram_user_id.as_ref()
     }
@@ -380,6 +385,8 @@ mod tests {
             RateMode::StandardLesson,
         )
         .unwrap();
+        user.knowledge_set_mut()
+            .mark_card_as_known_directly(*study_card1.card_id());
 
         let content =
             create_test_content_with_words(&[("猫", JapaneseLevel::N5), ("犬", JapaneseLevel::N5)]);

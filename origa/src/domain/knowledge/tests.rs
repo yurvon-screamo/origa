@@ -13,7 +13,7 @@ fn create_vocab_card(word: &str) -> Card {
 
 fn create_known_memory_state() -> MemoryState {
     MemoryState::new(
-        crate::domain::memory::Stability::new(15.0).unwrap(),
+        crate::domain::memory::Stability::new(22.0).unwrap(),
         crate::domain::memory::Difficulty::new(2.0).unwrap(),
         chrono::Utc::now(),
     )
@@ -256,7 +256,7 @@ fn handle_favorite_rating_high_difficulty_auto_unfavorite_after_five_easy() {
     let mut study_card = knowledge_set.create_card(card).unwrap();
 
     let memory = MemoryState::new(
-        crate::domain::memory::Stability::new(15.0).unwrap(),
+        crate::domain::memory::Stability::new(5.0).unwrap(),
         crate::domain::memory::Difficulty::new(7.0).unwrap(),
         chrono::Utc::now(),
     );
@@ -1068,33 +1068,22 @@ fn high_difficulty_cards_respect_max_lesson_size() {
 fn phrases_added_after_core_cards() {
     let mut knowledge_set = KnowledgeSet::new();
 
-    // 20 due core cards (not new, not high-difficulty — rate Good + StandardLesson)
     for i in 0..20 {
         let study_card = knowledge_set
             .create_card(create_vocab_card(&format!("core{i}")))
             .unwrap();
-        // Good + StandardLesson → due, known/in-progress (not high-difficulty)
         knowledge_set
-            .rate_card(
-                *study_card.card_id(),
-                Rating::Good,
-                RateMode::StandardLesson,
-            )
+            .rate_card(*study_card.card_id(), Rating::Again, RateMode::ShortTerm)
             .unwrap();
     }
 
-    // 10 due phrase cards (not new)
     for _ in 0..10 {
         let phrase_id = Ulid::new();
         let study_card = knowledge_set
             .create_card(Card::Phrase(PhraseCard::new_test_with_id(phrase_id)))
             .unwrap();
         knowledge_set
-            .rate_card(
-                *study_card.card_id(),
-                Rating::Good,
-                RateMode::StandardLesson,
-            )
+            .rate_card(*study_card.card_id(), Rating::Again, RateMode::ShortTerm)
             .unwrap();
     }
 

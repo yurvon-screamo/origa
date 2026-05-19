@@ -119,11 +119,11 @@ mod tests {
     }
 
     fn set_card_as_known(study_card: &mut StudyCard) {
-        let stability = Stability::new(15.0).unwrap();
+        let stability = Stability::new(22.0).unwrap();
         let difficulty = Difficulty::new(3.0).unwrap();
         let next_review = Utc::now() + Duration::days(30);
         let memory_state = MemoryState::new(stability, difficulty, next_review);
-        let review = ReviewLog::new(Rating::Good, Duration::days(15));
+        let review = ReviewLog::new(Rating::Good, Duration::days(22));
         study_card.add_review(memory_state, review);
     }
 

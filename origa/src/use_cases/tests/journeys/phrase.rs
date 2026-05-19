@@ -245,6 +245,8 @@ fn create_user_with_known_words(words: &[&str]) -> User {
             RateMode::StandardLesson,
         )
         .expect("Failed to rate card");
+        user.knowledge_set_mut()
+            .mark_card_as_known_directly(*study_card.card_id());
     }
 
     user
@@ -297,6 +299,9 @@ async fn seed_ready_phrases_finds_new_phrases_after_more_known_words() {
                 RateMode::StandardLesson,
             )
             .expect("Failed to rate");
+        saved
+            .knowledge_set_mut()
+            .mark_card_as_known_directly(*study_card.card_id());
         repo.save(&saved).await.expect("Failed to save");
     }
 
