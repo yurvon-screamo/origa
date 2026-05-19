@@ -89,7 +89,7 @@ mod reversed_view_filtering {
     }
 
     fn create_known_card(word: &str) -> StudyCard {
-        let study_card = create_study_card_with_memory(word, 15.0, 2.0, 20, Rating::Easy);
+        let study_card = create_study_card_with_memory(word, 22.0, 2.0, 20, Rating::Easy);
         assert!(study_card.memory().is_known_card());
         assert!(!study_card.memory().is_high_difficulty());
         assert!(!study_card.memory().is_in_progress());
