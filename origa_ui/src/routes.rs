@@ -18,7 +18,7 @@ use leptos_router::hooks::use_location;
 use leptos_router::path;
 use origa::domain::User;
 use origa::traits::UserRepository;
-use origa::use_cases::SeedReadyPhrasesUseCase;
+use origa::use_cases::{MigrateKanjiCompanionsUseCase, SeedReadyPhrasesUseCase};
 
 use crate::repository::HybridUserRepository;
 
@@ -79,6 +79,13 @@ pub fn start_dictionary_loading(
         let seed_use_case = SeedReadyPhrasesUseCase::new(&repository);
         if let Err(e) = seed_use_case.execute().await {
             tracing::warn!("Failed to seed ready phrases: {e}");
+        }
+
+        // Миграция: обновление companion-карточек для существующих кандзи
+        // после изменения popular_words в kanji.json
+        let migration_use_case = MigrateKanjiCompanionsUseCase::new(&repository);
+        if let Err(e) = migration_use_case.execute().await {
+            tracing::warn!("Failed to migrate kanji companions: {e}");
         }
 
         auth_store.set_dictionary_loaded();
