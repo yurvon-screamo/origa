@@ -1,5 +1,6 @@
 use origa::dictionary::grammar::{GrammarData, init_grammar, is_grammar_loaded};
 use origa::dictionary::kanji::{KanjiData, init_kanji, is_kanji_loaded};
+use origa::dictionary::radical::{RadicalData, init_radicals, is_radicals_loaded};
 use origa::dictionary::vocabulary::{VocabularyChunkData, init_vocabulary, is_vocabulary_loaded};
 use origa::domain::OrigaError;
 use origa::traits::CdnProvider;
@@ -88,5 +89,27 @@ pub async fn load_grammar() -> Result<(), OrigaError> {
     init_grammar(data)?;
 
     tracing::info!("📖 Grammar loaded ({:.2}s)", (now_ms() - start) / 1000.0);
+    Ok(())
+}
+
+pub async fn load_radicals() -> Result<(), OrigaError> {
+    if is_radicals_loaded() {
+        tracing::debug!("📖 Radicals already loaded");
+        return Ok(());
+    }
+
+    let start = now_ms();
+    tracing::info!("📖 Loading radicals...");
+
+    let cdn = cdn_provider();
+    let json = cdn.fetch_text("dictionary/radicals.json").await?;
+    let data = RadicalData {
+        radicals_json: json,
+    };
+
+    yield_to_browser().await;
+    init_radicals(data)?;
+
+    tracing::info!("📖 Radicals loaded ({:.2}s)", (now_ms() - start) / 1000.0);
     Ok(())
 }

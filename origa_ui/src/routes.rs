@@ -1,5 +1,5 @@
 use crate::loaders::{
-    data_loader::{load_grammar, load_kanji, load_vocabulary},
+    data_loader::{load_grammar, load_kanji, load_radicals, load_vocabulary},
     dictionary::load_dictionary,
     furigana_dict_loader::load_furigana_dict,
     jlpt_content_loader::load_jlpt_content,
@@ -53,6 +53,15 @@ pub fn start_dictionary_loading(
             tracing::info!("Retrying kanji dictionary load...");
             if let Err(e) = load_kanji().await {
                 tracing::error!("Failed to load kanji dictionary on retry: {e}");
+            }
+        }
+
+        // radicals критичен для карточек кандзи — одна попытка повтора при ошибке
+        if let Err(e) = load_radicals().await {
+            tracing::error!("Failed to load radicals: {e}");
+            tracing::info!("Retrying radicals load...");
+            if let Err(e) = load_radicals().await {
+                tracing::error!("Failed to load radicals on retry: {e}");
             }
         }
 
