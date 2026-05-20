@@ -382,7 +382,7 @@ fn multi_rating_returns_good_for_perfect() {
 }
 
 #[test]
-fn multi_rating_returns_hard_for_partial() {
+fn multi_rating_returns_again_for_partial() {
     init_real_dictionaries();
 
     let quiz = extract_quiz(generate_reading_quiz_for("日", &["月", "水", "火"]).unwrap());
@@ -396,7 +396,7 @@ fn multi_rating_returns_hard_for_partial() {
 
     let partial = vec![correct_indices[0]];
     let result = quiz.check_multi_answers(&partial);
-    assert_eq!(result.rating(), Rating::Hard);
+    assert_eq!(result.rating(), Rating::Again);
 }
 
 #[test]

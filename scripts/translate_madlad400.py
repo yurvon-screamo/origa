@@ -150,6 +150,8 @@ def translate_batch(
                 input_ids=inputs["input_ids"],
                 attention_mask=inputs["attention_mask"],
                 max_new_tokens=128,
+                repetition_penalty=1.2,
+                no_repeat_ngram_size=3,
             )
 
         decoded = tokenizer.batch_decode(outputs, skip_special_tokens=True)
@@ -174,6 +176,8 @@ def translate_single(
             input_ids=inputs["input_ids"],
             attention_mask=inputs["attention_mask"],
             max_new_tokens=128,
+            repetition_penalty=1.2,
+            no_repeat_ngram_size=3,
         )
     return tokenizer.decode(outputs[0], skip_special_tokens=True)
 
