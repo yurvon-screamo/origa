@@ -8,7 +8,7 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use ulid::Ulid;
 
-const KNOWN_CARD_STABILITY_THRESHOLD: f64 = 21.0;
+pub(crate) const KNOWN_CARD_STABILITY_THRESHOLD: f64 = 21.0;
 const HIGH_DIFFICULTY_THRESHOLD: f64 = 7.0;
 const HIGH_DIFFICULTY_STABILITY_CAP: f64 = 7.0;
 

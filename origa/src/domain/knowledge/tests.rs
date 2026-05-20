@@ -1,7 +1,7 @@
 use super::*;
 use crate::domain::JapaneseLevel;
 use crate::domain::JlptContent;
-use crate::domain::memory::MemoryState;
+use crate::domain::memory::{KNOWN_CARD_STABILITY_THRESHOLD, MemoryState};
 use crate::domain::value_objects::Question;
 use chrono::Duration;
 
@@ -13,7 +13,7 @@ fn create_vocab_card(word: &str) -> Card {
 
 fn create_known_memory_state() -> MemoryState {
     MemoryState::new(
-        crate::domain::memory::Stability::new(22.0).unwrap(),
+        crate::domain::memory::Stability::new(KNOWN_CARD_STABILITY_THRESHOLD + 1.0).unwrap(),
         crate::domain::memory::Difficulty::new(2.0).unwrap(),
         chrono::Utc::now(),
     )
@@ -1065,7 +1065,7 @@ fn high_difficulty_cards_respect_max_lesson_size() {
 }
 
 #[test]
-fn phrases_added_after_core_cards() {
+fn phrases_added_after_core_cards_learning() {
     let mut knowledge_set = KnowledgeSet::new();
 
     for i in 0..20 {
@@ -1085,6 +1085,56 @@ fn phrases_added_after_core_cards() {
         knowledge_set
             .rate_card(*study_card.card_id(), Rating::Again, RateMode::ShortTerm)
             .unwrap();
+    }
+
+    let result = knowledge_set.cards_to_lesson(5, &JlptContent::new());
+
+    let core_count = result
+        .keys()
+        .filter(|id| {
+            !matches!(
+                knowledge_set.get_card(**id).unwrap().card(),
+                Card::Phrase(_)
+            )
+        })
+        .count();
+    let phrase_count = result
+        .keys()
+        .filter(|id| {
+            matches!(
+                knowledge_set.get_card(**id).unwrap().card(),
+                Card::Phrase(_)
+            )
+        })
+        .count();
+
+    assert!(
+        core_count >= 15,
+        "Core cards should reach at least MIN_LESSON_SIZE, got {core_count}"
+    );
+    assert!(
+        phrase_count <= 7,
+        "Phrase cards should not exceed PHRASE_MAX_PER_LESSON, got {phrase_count}"
+    );
+}
+
+#[test]
+fn phrases_added_after_core_cards_review() {
+    let mut knowledge_set = KnowledgeSet::new();
+
+    for i in 0..20 {
+        let study_card = knowledge_set
+            .create_card(create_vocab_card(&format!("core{i}")))
+            .unwrap();
+        knowledge_set.mark_card_as_known_directly(*study_card.card_id());
+    }
+
+    for _ in 0..10 {
+        let phrase_id = Ulid::new();
+        let study_card = knowledge_set
+            .create_card(Card::Phrase(PhraseCard::new_test_with_id(phrase_id)))
+            .unwrap();
+        knowledge_set.mark_card_as_known_directly(*study_card.card_id());
     }
 
     let result = knowledge_set.cards_to_lesson(5, &JlptContent::new());
