@@ -2,7 +2,7 @@ use super::lesson_state::LessonContext;
 use super::lesson_state::LessonState;
 use leptos::ev::KeyboardEvent;
 use leptos::prelude::*;
-use origa::domain::{Card, LessonCardView, QuizMode, Rating};
+use origa::domain::{LessonCardView, QuizMode, Rating};
 use ulid::Ulid;
 
 pub struct KeyboardActions {
@@ -65,10 +65,6 @@ pub fn create_keyboard_handler(
         let is_phrase_listen = current_card
             .map(|c| matches!(c.view(), LessonCardView::PhraseListen { .. }))
             .unwrap_or(false);
-        let is_phrase_normal = current_card
-            .map(|c| matches!(c.card(), Card::Phrase(_)))
-            .unwrap_or(false);
-
         if !state.showing_answer {
             if is_quiz || is_phrase_listen {
                 if is_multi_quiz {
@@ -102,7 +98,7 @@ pub fn create_keyboard_handler(
         }
 
         if state.showing_answer && !is_quiz && !is_yesno && !is_phrase_listen {
-            handle_rating_key(&key, &actions.on_rate, is_phrase_normal);
+            handle_rating_key(&key, &actions.on_rate);
             return;
         }
 
@@ -180,23 +176,13 @@ fn handle_yesno_key(
     }
 }
 
-fn handle_rating_key(key: &str, on_rate: &Callback<Rating>, is_phrase: bool) {
+fn handle_rating_key(key: &str, on_rate: &Callback<Rating>) {
     match key {
         "1" => {
             on_rate.run(Rating::Again);
         },
         "2" => {
-            on_rate.run(if is_phrase {
-                Rating::Good
-            } else {
-                Rating::Hard
-            });
-        },
-        "3" if !is_phrase => {
             on_rate.run(Rating::Good);
-        },
-        "4" if !is_phrase => {
-            on_rate.run(Rating::Easy);
         },
         _ => {},
     }

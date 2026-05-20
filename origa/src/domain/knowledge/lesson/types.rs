@@ -142,8 +142,6 @@ impl MultiQuizResult {
     pub fn rating(&self) -> Rating {
         if self.is_perfect {
             Rating::Good
-        } else if !self.correct_selections.is_empty() {
-            Rating::Hard
         } else {
             Rating::Again
         }

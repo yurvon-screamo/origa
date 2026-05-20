@@ -28,7 +28,7 @@ pub fn create_on_yesno_select(
             let rating = if is_correct {
                 Rating::Good
             } else {
-                Rating::Hard
+                Rating::Again
             };
 
             let on_rate_clone = on_rate_callback;

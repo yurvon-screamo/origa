@@ -1,7 +1,7 @@
 import { Page, Locator, expect } from "@playwright/test";
 import { BasePage } from "./base.page";
 
-type Rating = "again" | "hard" | "good" | "easy";
+type Rating = "again" | "good";
 
 export class LessonPage extends BasePage {
     // Page structure
@@ -27,9 +27,7 @@ export class LessonPage extends BasePage {
     // Card interaction
     readonly showAnswerBtn: Locator;
     readonly ratingAgain: Locator;
-    readonly ratingHard: Locator;
     readonly ratingGood: Locator;
-    readonly ratingEasy: Locator;
     readonly progressText: Locator;
 
     // Quiz
@@ -78,9 +76,7 @@ export class LessonPage extends BasePage {
         // Card interaction
         this.showAnswerBtn = page.getByTestId("lesson-show-answer-btn");
         this.ratingAgain = page.getByTestId("lesson-rating-btn-again");
-        this.ratingHard = page.getByTestId("lesson-rating-btn-hard");
         this.ratingGood = page.getByTestId("lesson-rating-btn-good");
-        this.ratingEasy = page.getByTestId("lesson-rating-btn-easy");
         this.progressText = page.getByTestId("lesson-progress-text");
 
         // Quiz
@@ -108,9 +104,7 @@ export class LessonPage extends BasePage {
 
         this.ratingMap = {
             again: this.ratingAgain,
-            hard: this.ratingHard,
             good: this.ratingGood,
-            easy: this.ratingEasy,
         };
     }
 

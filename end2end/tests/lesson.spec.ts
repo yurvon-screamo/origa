@@ -31,7 +31,7 @@ async function setupLessonWithCards(page: Page): Promise<LessonPage> {
     return lessonPage;
 }
 
-async function rateCardUntilDone(lessonPage: LessonPage, rating: "again" | "hard" | "good" | "easy", maxCards = 5): Promise<void> {
+async function rateCardUntilDone(lessonPage: LessonPage, rating: "again" | "good", maxCards = 5): Promise<void> {
     for (let i = 0; i < maxCards; i++) {
         const isComplete = await lessonPage.completeScreen.isVisible().catch(() => false);
         if (isComplete) break;
@@ -79,7 +79,7 @@ testWithFreshUser.describe("Lesson Page", () => {
             return;
         }
 
-        await rateCardUntilDone(lessonPage, "easy");
+        await rateCardUntilDone(lessonPage, "good");
 
         await lessonPage.waitForComplete();
     });
@@ -91,15 +91,13 @@ testWithFreshUser.describe("Lesson Page", () => {
         expect(progressText).toMatch(/^\d+\/\d+$/);
     });
 
-    testWithFreshUser("should show all rating buttons after revealing answer", async ({ page }) => {
+    testWithFreshUser("should show rating buttons after revealing answer", async ({ page }) => {
         test.setTimeout(90_000);
         const lessonPage = await setupLessonWithCards(page);
         await lessonPage.showAnswer();
 
         await expect(lessonPage.ratingAgain).toBeVisible();
-        await expect(lessonPage.ratingHard).toBeVisible();
         await expect(lessonPage.ratingGood).toBeVisible();
-        await expect(lessonPage.ratingEasy).toBeVisible();
     });
 
     testWithFreshUser("should toggle mute button and change state", async ({ page }) => {
@@ -125,7 +123,7 @@ testWithFreshUser.describe("Lesson Page", () => {
             return;
         }
 
-        await rateCardUntilDone(lessonPage, "easy");
+        await rateCardUntilDone(lessonPage, "good");
 
         await lessonPage.waitForComplete();
         await expect(lessonPage.completeStats).toBeVisible();
@@ -143,7 +141,7 @@ testWithFreshUser.describe("Lesson Page", () => {
             return;
         }
 
-        await rateCardUntilDone(lessonPage, "easy");
+        await rateCardUntilDone(lessonPage, "good");
 
         await lessonPage.waitForComplete();
         await lessonPage.clickHome();

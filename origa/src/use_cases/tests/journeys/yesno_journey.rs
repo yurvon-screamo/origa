@@ -62,7 +62,7 @@ async fn yesno_journey_correct_answer_results_in_good_rating() {
     let rating = if is_answer_correct {
         Rating::Good
     } else {
-        Rating::Hard
+        Rating::Again
     };
 
     // Рейтинг карточки
@@ -82,7 +82,7 @@ async fn yesno_journey_correct_answer_results_in_good_rating() {
 }
 
 #[tokio::test]
-async fn yesno_journey_wrong_answer_results_in_hard_rating() {
+async fn yesno_journey_wrong_answer_results_in_again_rating() {
     crate::use_cases::init_real_dictionaries();
 
     // Arrange: создаём пользователя с реальными японскими словами
@@ -109,11 +109,11 @@ async fn yesno_journey_wrong_answer_results_in_hard_rating() {
     let is_answer_correct = yesno.check_answer(user_said_yes);
     assert!(!is_answer_correct, "Ответ должен быть неправильным");
 
-    // Неправильный ответ → Rating::Hard
+    // Неправильный ответ → Rating::Again
     let rating = if is_answer_correct {
         Rating::Good
     } else {
-        Rating::Hard
+        Rating::Again
     };
 
     // Рейтинг карточки
@@ -123,7 +123,7 @@ async fn yesno_journey_wrong_answer_results_in_hard_rating() {
         .await
         .unwrap();
 
-    // Assert: карточка получила рейтинг Hard
+    // Assert: карточка получила рейтинг Again
     let updated = repo.get_current_user().await.unwrap().unwrap();
     let study_card = updated.knowledge_set().get_card(*card_id).unwrap();
     assert!(
@@ -131,8 +131,8 @@ async fn yesno_journey_wrong_answer_results_in_hard_rating() {
         "Карточка не должна быть новой после рейтинга"
     );
     assert!(
-        study_card.memory().is_in_progress(),
-        "Карточка должна быть в процессе изучения после Hard рейтинга"
+        study_card.memory().is_high_difficulty(),
+        "Карточка должна быть с высокой сложностью после Again рейтинга"
     );
 }
 
@@ -227,9 +227,9 @@ async fn yesno_journey_transition_to_next_card_after_rating() {
 
 #[rstest]
 #[case::correct_yes_on_true_statement(true, true, Rating::Good)]
-#[case::wrong_no_on_true_statement(false, true, Rating::Hard)]
+#[case::wrong_no_on_true_statement(false, true, Rating::Again)]
 #[case::correct_no_on_false_statement(false, false, Rating::Good)]
-#[case::wrong_yes_on_false_statement(true, false, Rating::Hard)]
+#[case::wrong_yes_on_false_statement(true, false, Rating::Again)]
 #[tokio::test]
 async fn yesno_journey_all_rating_cases(
     #[case] user_said_yes: bool,
@@ -259,7 +259,7 @@ async fn yesno_journey_all_rating_cases(
     let actual_rating = if is_answer_correct {
         Rating::Good
     } else {
-        Rating::Hard
+        Rating::Again
     };
 
     assert_eq!(

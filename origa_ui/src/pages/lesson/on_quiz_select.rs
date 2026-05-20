@@ -44,7 +44,7 @@ pub fn create_on_quiz_select(
                 let rating = if is_correct {
                     Rating::Good
                 } else {
-                    Rating::Hard
+                    Rating::Again
                 };
 
                 if is_phrase {
