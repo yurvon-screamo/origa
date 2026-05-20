@@ -346,16 +346,22 @@ impl KnowledgeSet {
 
     #[cfg(test)]
     pub fn mark_card_as_known_directly(&mut self, card_id: Ulid) {
-        use crate::domain::memory::{Difficulty, MemoryState, Rating, ReviewLog, Stability};
+        use crate::domain::memory::{
+            Difficulty, KNOWN_CARD_STABILITY_THRESHOLD, MemoryState, Rating, ReviewLog, Stability,
+        };
         use chrono::{Duration, Utc};
 
         if let Some(card) = self.study_cards.get_mut(&card_id) {
+            let stability = KNOWN_CARD_STABILITY_THRESHOLD + 1.0;
             let memory = MemoryState::new(
-                Stability::new(22.0).unwrap(),
+                Stability::new(stability).unwrap(),
                 Difficulty::new(3.0).unwrap(),
-                Utc::now() + Duration::days(30),
+                Utc::now() - Duration::days(1),
             );
-            card.add_review(memory, ReviewLog::new(Rating::Good, Duration::days(22)));
+            card.add_review(
+                memory,
+                ReviewLog::new(Rating::Good, Duration::days(stability as i64)),
+            );
         }
     }
 }
