@@ -34,7 +34,7 @@ pub use knowledge::{
     LessonViewGenerator, MultiQuizResult, PhraseCard, QuizCard, QuizMode, QuizOption, StudyCard,
     VocabularyCard, YesNoCard, estimate_completion_date,
 };
-pub use memory::{Difficulty, MemoryHistory, MemoryState, Rating, ReviewLog, Stability};
+pub use memory::{CardState, Difficulty, MemoryHistory, MemoryState, Rating, ReviewLog, Stability};
 pub use score_content::ScoreContentResult;
 pub use srs::RateMode;
 pub use tokenizer::{

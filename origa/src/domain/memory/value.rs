@@ -5,11 +5,22 @@ use chrono::{DateTime, Duration, Utc};
 use serde::{Deserialize, Serialize};
 use ulid::Ulid;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, Default)]
+pub enum CardState {
+    New,
+    Learning,
+    #[default]
+    Review,
+    Relearning,
+}
+
 #[derive(Debug, Clone, PartialEq, PartialOrd, Serialize, Deserialize)]
 pub struct MemoryState {
     stability: Stability,
     difficulty: Difficulty,
     next_review_date: DateTime<Utc>,
+    #[serde(default)]
+    card_state: CardState,
 }
 
 impl MemoryState {
@@ -22,6 +33,21 @@ impl MemoryState {
             stability,
             difficulty,
             next_review_date,
+            card_state: CardState::Review,
+        }
+    }
+
+    pub fn with_card_state(
+        stability: Stability,
+        difficulty: Difficulty,
+        next_review_date: DateTime<Utc>,
+        card_state: CardState,
+    ) -> Self {
+        Self {
+            stability,
+            difficulty,
+            next_review_date,
+            card_state,
         }
     }
 
@@ -35,6 +61,10 @@ impl MemoryState {
 
     pub fn next_review_date(&self) -> &DateTime<Utc> {
         &self.next_review_date
+    }
+
+    pub fn card_state(&self) -> CardState {
+        self.card_state
     }
 }
 
@@ -263,5 +293,35 @@ mod tests {
     fn test_rating_debug(#[case] rating: Rating, #[case] expected: &str) {
         let debug = format!("{:?}", rating);
         assert!(debug.contains(expected));
+    }
+
+    #[test]
+    fn memory_state_deserialize_without_card_state_defaults_to_review() {
+        let json = r#"{
+            "stability": {"value": 10.0},
+            "difficulty": {"value": 5.0},
+            "next_review_date": "2025-01-01T00:00:00Z"
+        }"#;
+
+        let state: MemoryState = serde_json::from_str(json).unwrap();
+        assert_eq!(state.card_state(), CardState::Review);
+        assert_eq!(state.stability().value(), 10.0);
+        assert_eq!(state.difficulty().value(), 5.0);
+    }
+
+    #[test]
+    fn memory_state_roundtrip_with_card_state() {
+        let original = MemoryState::with_card_state(
+            Stability::new(15.0).unwrap(),
+            Difficulty::new(3.0).unwrap(),
+            chrono::Utc::now(),
+            CardState::Learning,
+        );
+
+        let json = serde_json::to_string(&original).unwrap();
+        let deserialized: MemoryState = serde_json::from_str(&json).unwrap();
+
+        assert_eq!(deserialized.card_state(), CardState::Learning);
+        assert_eq!(deserialized.stability().value(), 15.0);
     }
 }

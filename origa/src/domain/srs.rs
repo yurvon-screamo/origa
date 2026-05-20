@@ -1,6 +1,6 @@
 use crate::domain::OrigaError;
 use crate::domain::Rating;
-use crate::domain::{Difficulty, MemoryHistory, MemoryState, Stability};
+use crate::domain::{CardState, Difficulty, MemoryHistory, MemoryState, Stability};
 use chrono::{Duration, Utc};
 use rs_fsrs::{Card as FsrsCard, FSRS, Parameters, Rating as FsrsRating, State as FsrsState};
 use serde::Deserialize;
@@ -83,6 +83,24 @@ impl FsrsSrsService {
     }
 }
 
+fn to_fsrs_state(card_state: CardState) -> FsrsState {
+    match card_state {
+        CardState::New => FsrsState::New,
+        CardState::Learning => FsrsState::Learning,
+        CardState::Review => FsrsState::Review,
+        CardState::Relearning => FsrsState::Relearning,
+    }
+}
+
+fn to_card_state(fsrs_state: FsrsState) -> CardState {
+    match fsrs_state {
+        FsrsState::New => CardState::New,
+        FsrsState::Learning => CardState::Learning,
+        FsrsState::Review => CardState::Review,
+        FsrsState::Relearning => CardState::Relearning,
+    }
+}
+
 pub fn rate_memory(
     mode: RateMode,
     rating: Rating,
@@ -124,7 +142,7 @@ pub fn rate_memory(
             scheduled_days,
             reps,
             lapses,
-            state: FsrsState::Review,
+            state: to_fsrs_state(memory_state.card_state()),
             last_review: last_review_date,
         }
     } else {
@@ -148,22 +166,19 @@ pub fn rate_memory(
         RateMode::KanjiReview => srs_service.kanji_fsrs.next(card, now, fsrs_rating),
     };
 
-    let (next_review_date, interval) = if rating == Rating::Again {
-        (now, Duration::zero())
+    let next_review_date = scheduling_info.card.due;
+    let interval = next_review_date.signed_duration_since(now);
+    let interval = if interval < Duration::zero() {
+        Duration::zero()
     } else {
-        let next_review_date = scheduling_info.card.due;
-        let interval = next_review_date.signed_duration_since(now);
-        let interval = if interval < Duration::zero() {
-            Duration::zero()
-        } else {
-            interval
-        };
-        (next_review_date, interval)
+        interval
     };
 
     let stability = Stability::new(scheduling_info.card.stability)?;
     let difficulty = Difficulty::new(scheduling_info.card.difficulty)?;
-    let memory_state = MemoryState::new(stability, difficulty, next_review_date);
+    let card_state = to_card_state(scheduling_info.card.state);
+    let memory_state =
+        MemoryState::with_card_state(stability, difficulty, next_review_date, card_state);
 
     Ok(NextReview {
         interval,
@@ -177,7 +192,7 @@ mod tests {
     use chrono::Utc;
 
     #[test]
-    fn rate_memory_again_returns_zero_interval_and_now_as_next_review() {
+    fn rate_memory_again_on_new_card_returns_short_interval_and_learning_state() {
         let memory_history = MemoryHistory::new();
         let before = Utc::now();
 
@@ -185,9 +200,14 @@ mod tests {
 
         let after = Utc::now();
 
-        assert_eq!(result.interval, Duration::zero());
+        assert!(
+            result.interval >= Duration::zero() && result.interval <= Duration::minutes(1),
+            "New card with Again should have interval <= 1 minute, got {:?}",
+            result.interval
+        );
         let next_review = result.memory_state.next_review_date();
-        assert!(*next_review >= before && *next_review <= after);
+        assert!(*next_review >= before && *next_review <= after + Duration::minutes(1));
+        assert_eq!(result.memory_state.card_state(), CardState::Learning);
     }
 
     #[test]
@@ -200,12 +220,17 @@ mod tests {
     }
 
     #[test]
-    fn phrase_review_again_returns_zero_interval() {
+    fn phrase_review_again_returns_short_interval() {
         let memory_history = MemoryHistory::new();
 
         let result = rate_memory(RateMode::PhraseReview, Rating::Again, &memory_history).unwrap();
 
-        assert_eq!(result.interval, Duration::zero());
+        assert!(
+            result.interval >= Duration::zero() && result.interval <= Duration::minutes(1),
+            "New card with Again should have interval <= 1 minute, got {:?}",
+            result.interval
+        );
+        assert_eq!(result.memory_state.card_state(), CardState::Learning);
     }
 
     #[test]
@@ -265,21 +290,29 @@ mod tests {
     }
 
     #[test]
-    fn grammar_review_again_returns_zero_interval() {
+    fn grammar_review_again_returns_short_interval() {
         let memory_history = MemoryHistory::new();
 
         let result = rate_memory(RateMode::GrammarReview, Rating::Again, &memory_history).unwrap();
 
-        assert_eq!(result.interval, Duration::zero());
+        assert!(
+            result.interval >= Duration::zero() && result.interval <= Duration::minutes(1),
+            "New card with Again should have interval <= 1 minute, got {:?}",
+            result.interval
+        );
     }
 
     #[test]
-    fn kanji_review_again_returns_zero_interval() {
+    fn kanji_review_again_returns_short_interval() {
         let memory_history = MemoryHistory::new();
 
         let result = rate_memory(RateMode::KanjiReview, Rating::Again, &memory_history).unwrap();
 
-        assert_eq!(result.interval, Duration::zero());
+        assert!(
+            result.interval >= Duration::zero() && result.interval <= Duration::minutes(1),
+            "New card with Again should have interval <= 1 minute, got {:?}",
+            result.interval
+        );
     }
 
     #[test]
@@ -320,5 +353,83 @@ mod tests {
         let kanji = rate_memory(RateMode::KanjiReview, Rating::Easy, &memory_history).unwrap();
 
         assert!(kanji.interval <= standard.interval);
+    }
+
+    #[test]
+    fn new_card_good_transitions_to_learning() {
+        let memory_history = MemoryHistory::new();
+        let result = rate_memory(RateMode::StandardLesson, Rating::Good, &memory_history).unwrap();
+
+        assert_eq!(result.memory_state.card_state(), CardState::Learning);
+        assert!(
+            result.interval >= Duration::zero(),
+            "Learning card should have non-negative interval"
+        );
+    }
+
+    #[test]
+    fn new_card_easy_transitions_to_review() {
+        let memory_history = MemoryHistory::new();
+        let result = rate_memory(RateMode::StandardLesson, Rating::Easy, &memory_history).unwrap();
+
+        assert_eq!(result.memory_state.card_state(), CardState::Review);
+        assert!(result.interval > Duration::days(0));
+    }
+
+    #[test]
+    fn review_card_again_transitions_to_relearning() {
+        let mut history = MemoryHistory::new();
+        let state = MemoryState::with_card_state(
+            Stability::new(10.0).unwrap(),
+            Difficulty::new(5.0).unwrap(),
+            Utc::now() - chrono::Duration::days(5),
+            CardState::Review,
+        );
+        history.add_review(
+            state,
+            crate::domain::ReviewLog::new(Rating::Good, chrono::Duration::days(5)),
+        );
+
+        let result = rate_memory(RateMode::StandardLesson, Rating::Again, &history).unwrap();
+
+        assert_eq!(result.memory_state.card_state(), CardState::Relearning);
+    }
+
+    #[test]
+    fn learning_card_good_graduates_to_review() {
+        let mut history = MemoryHistory::new();
+        let state = MemoryState::with_card_state(
+            Stability::new(3.0).unwrap(),
+            Difficulty::new(5.0).unwrap(),
+            Utc::now(),
+            CardState::Learning,
+        );
+        history.add_review(
+            state,
+            crate::domain::ReviewLog::new(Rating::Good, chrono::Duration::zero()),
+        );
+
+        let result = rate_memory(RateMode::StandardLesson, Rating::Good, &history).unwrap();
+
+        assert_eq!(result.memory_state.card_state(), CardState::Review);
+    }
+
+    #[test]
+    fn relearning_card_good_returns_to_review() {
+        let mut history = MemoryHistory::new();
+        let state = MemoryState::with_card_state(
+            Stability::new(2.0).unwrap(),
+            Difficulty::new(7.0).unwrap(),
+            Utc::now(),
+            CardState::Relearning,
+        );
+        history.add_review(
+            state,
+            crate::domain::ReviewLog::new(Rating::Again, chrono::Duration::zero()),
+        );
+
+        let result = rate_memory(RateMode::StandardLesson, Rating::Good, &history).unwrap();
+
+        assert_eq!(result.memory_state.card_state(), CardState::Review);
     }
 }
