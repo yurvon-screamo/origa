@@ -1,6 +1,6 @@
 mod value;
 
-pub use value::{Difficulty, MemoryState, Rating, ReviewLog, Stability};
+pub use value::{CardState, Difficulty, MemoryState, Rating, ReviewLog, Stability};
 
 use std::collections::{HashSet, VecDeque};
 
