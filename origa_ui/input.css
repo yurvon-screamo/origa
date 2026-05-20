@@ -279,7 +279,6 @@ input[type="submit"],
 .card {
     background: var(--bg-paper);
     border: 1px solid var(--border-dark);
-    padding: 28px;
     position: relative;
 }
 
