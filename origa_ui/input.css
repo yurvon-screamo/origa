@@ -4013,7 +4013,18 @@ input[type="submit"],
     display: flex;
     align-items: center;
     gap: 2px;
-    flex-shrink: 0;
+}
+
+.card-action-toolbar .icon-btn {
+    width: 32px;
+    height: 32px;
+}
+
+.card-action-bar .tag {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .icon-btn {
