@@ -43,12 +43,12 @@ testWithFreshUser.describe("Profile Page", () => {
         const profilePage = await setupProfilePage(page);
         await page.mouse.click(0, 0);
         await profilePage.selectLanguage("english");
-        await expect(profilePage.langEnglish).toHaveClass(/btn-olive/);
-        await expect(profilePage.langRussian).not.toHaveClass(/btn-olive/);
+        await expect(profilePage.langEnglish).toHaveAttribute("aria-current", "true");
+        await expect(profilePage.langRussian).toHaveAttribute("aria-current", "false");
         await page.mouse.click(0, 0);
         await profilePage.selectLanguage("russian");
-        await expect(profilePage.langRussian).toHaveClass(/btn-olive/);
-        await expect(profilePage.langEnglish).not.toHaveClass(/btn-olive/);
+        await expect(profilePage.langRussian).toHaveAttribute("aria-current", "true");
+        await expect(profilePage.langEnglish).toHaveAttribute("aria-current", "false");
     });
 
     testWithFreshUser("should switch daily load selection", async ({ page }) => {
@@ -86,13 +86,13 @@ testWithFreshUser.describe("Profile Page", () => {
         const profilePage = await setupProfilePage(page);
         await page.mouse.click(0, 0);
         await profilePage.selectLanguage("english");
-        await expect(profilePage.langEnglish).toHaveClass(/btn-olive/);
+        await expect(profilePage.langEnglish).toHaveAttribute("aria-current", "true");
         await profilePage.saveProfile();
         await profilePage.waitForSaveComplete();
         await page.reload();
         await profilePage.waitForLoad();
         await profilePage.expectProfileVisible();
-        await expect(profilePage.langEnglish).toHaveClass(/btn-olive/);
+        await expect(profilePage.langEnglish).toHaveAttribute("aria-current", "true");
     });
 
     testWithFreshUser("should persist daily load after save", async ({ page }) => {
@@ -129,14 +129,14 @@ testWithFreshUser.describe("Profile Page", () => {
 
         await page.mouse.click(0, 0);
         await profilePage.selectLanguage("english");
-        await expect(profilePage.langEnglish).toHaveClass(/btn-olive/);
+        await expect(profilePage.langEnglish).toHaveAttribute("aria-current", "true");
 
         await profilePage.saveProfile();
         await profilePage.waitForSaveComplete();
 
         await profilePage.navigateToHomeAndBack();
 
-        await expect(profilePage.langEnglish).toHaveClass(/btn-olive/);
+        await expect(profilePage.langEnglish).toHaveAttribute("aria-current", "true");
     });
 
     // Regression: catches merge_current_user() data loss bug
@@ -170,7 +170,7 @@ testWithFreshUser.describe("Profile Page", () => {
 
         await profilePage.navigateToHomeAndBack();
 
-        await expect(profilePage.langEnglish).toHaveClass(/btn-olive/);
+        await expect(profilePage.langEnglish).toHaveAttribute("aria-current", "true");
         await expect(profilePage.loadHard).toHaveClass(/btn-olive/);
     });
 

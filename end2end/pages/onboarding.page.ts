@@ -101,8 +101,8 @@ export class OnboardingPage extends BasePage {
 
         // Intro step — language
         this.introLanguageBar = page.getByTestId("intro-step-language-bar");
-        this.languageEnButton = page.getByTestId("profile-lang-english");
-        this.languageRuButton = page.getByTestId("profile-lang-russian");
+        this.languageEnButton = page.getByTestId("lang-toggle-en");
+        this.languageRuButton = page.getByTestId("lang-toggle-ru");
 
         // Intro step — feature showcase
         this.introFeatureShowcase = page.getByTestId("intro-step-feature-showcase");

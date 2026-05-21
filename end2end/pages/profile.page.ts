@@ -34,8 +34,8 @@ export class ProfilePage extends BasePage {
 		this.profileSettings = page.getByTestId("profile-settings");
 		this.profileActions = page.getByTestId("profile-actions");
 
-		this.langEnglish = page.getByTestId("profile-lang-english");
-		this.langRussian = page.getByTestId("profile-lang-russian");
+		this.langEnglish = page.getByTestId("lang-toggle-en");
+		this.langRussian = page.getByTestId("lang-toggle-ru");
 
 		this.loadMinimal = page.getByTestId("profile-load-minimal");
 		this.loadLight = page.getByTestId("profile-load-light");
