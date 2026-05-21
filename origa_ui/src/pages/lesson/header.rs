@@ -25,14 +25,14 @@ pub fn LessonHeader() -> impl IntoView {
     let back_label = Signal::derive(move || i18n.get_keys().common().back().inner().to_string());
 
     view! {
-        <div class="flex items-center gap-3 mb-2" data-testid="lesson-header">
+        <div class="flex items-center gap-2 mb-2" data-testid="lesson-header">
             <button
                 data-testid="lesson-back-btn"
-                class="btn btn-ghost px-3 py-2 flex items-center gap-1.5 shrink-0"
+                class="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors shrink-0 cursor-pointer"
                 on:click=move |_| navigate("/home", Default::default())
             >
-                <Icon icon=icondata::LuArrowLeft width="1.25em" height="1.25em" />
-                <span class="text-sm">{back_label}</span>
+                <Icon icon=icondata::LuArrowLeft width="14" height="14" />
+                <span class="font-mono text-[11px] tracking-widest uppercase">{back_label}</span>
             </button>
 
             <div class="flex-1 min-w-0">
@@ -41,15 +41,15 @@ pub fn LessonHeader() -> impl IntoView {
 
             <button
                 data-testid="lesson-mute-btn"
-                class="btn btn-ghost px-3 py-2 shrink-0"
+                class="p-1.5 text-muted-foreground hover:text-foreground transition-colors shrink-0 cursor-pointer"
                 data-muted=move || if is_muted.get() { "true" } else { "false" }
                 on:click=move |_| toggle_mute()
             >
                 {move || if is_muted.get() {
-                    view! { <Icon icon=icondata::LuVolumeX width="1.25em" height="1.25em" /> }
+                    view! { <Icon icon=icondata::LuVolumeX width="16" height="16" /> }
                         .into_any()
                 } else {
-                    view! { <Icon icon=icondata::LuVolume2 width="1.25em" height="1.25em" /> }
+                    view! { <Icon icon=icondata::LuVolume2 width="16" height="16" /> }
                         .into_any()
                 }}
             </button>

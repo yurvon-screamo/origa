@@ -47,8 +47,8 @@ testWithFreshUser.describe("Onboarding Flow - N4 with ~50% Progress", () => {
         // Language bar with label and selector
         const languageBar = page.getByTestId("intro-step-language-bar");
         await expect(languageBar).toBeVisible();
-        const langEnBtn = page.getByTestId("profile-lang-english");
-        const langRuBtn = page.getByTestId("profile-lang-russian");
+        const langEnBtn = page.getByTestId("lang-toggle-en");
+        const langRuBtn = page.getByTestId("lang-toggle-ru");
         await expect(langEnBtn).toBeVisible();
         await expect(langRuBtn).toBeVisible();
 
