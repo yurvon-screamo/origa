@@ -16,6 +16,7 @@ pub enum ButtonSize {
     Default,
     Small,
 
+    #[expect(dead_code, reason = "design system API")]
     Large,
 }
 

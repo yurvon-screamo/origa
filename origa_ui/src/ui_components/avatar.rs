@@ -7,6 +7,7 @@ pub enum AvatarSize {
 
     Small,
 
+    #[expect(dead_code, reason = "design system API")]
     Large,
 }
 
@@ -35,23 +36,6 @@ pub fn Avatar(
             data-testid=test_id_val
         >
             {move || initials.get()}
-        </div>
-    }
-}
-
-#[component]
-pub fn AvatarGroup(
-    #[prop(optional, into)] test_id: Signal<String>,
-    children: Children,
-) -> impl IntoView {
-    let test_id_val = move || {
-        let val = test_id.get();
-        if val.is_empty() { None } else { Some(val) }
-    };
-
-    view! {
-        <div class="avatar-group" data-testid=test_id_val>
-            {children()}
         </div>
     }
 }

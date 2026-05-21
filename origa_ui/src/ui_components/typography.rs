@@ -7,6 +7,7 @@ pub enum HeadingLevel {
     H3,
     H4,
 
+    #[expect(dead_code, reason = "design system API")]
     H5,
     #[default]
     H6,
@@ -18,6 +19,7 @@ pub enum TypographyVariant {
     Primary,
     Muted,
 
+    #[expect(dead_code, reason = "design system API")]
     Olive,
 }
 

@@ -7,6 +7,7 @@ pub mod trailbase_auth;
 pub mod trailbase_client;
 mod trailbase_records;
 mod trailbase_repository;
+pub mod trailbase_session;
 
 pub use cdn_provider::cdn as cdn_provider;
 

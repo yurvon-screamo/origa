@@ -6,6 +6,7 @@ pub enum PageLayoutVariant {
     Centered,
     Full,
 
+    #[expect(dead_code, reason = "design system API")]
     Compact,
 }
 
@@ -41,10 +42,13 @@ pub fn PageLayout(
 
 #[derive(Clone, Copy, PartialEq, Debug, Default)]
 pub enum CardLayoutSize {
+    #[expect(dead_code, reason = "design system API")]
     Small,
 
+    #[expect(dead_code, reason = "design system API")]
     Medium,
 
+    #[expect(dead_code, reason = "design system API")]
     Large,
     #[default]
     Adaptive,

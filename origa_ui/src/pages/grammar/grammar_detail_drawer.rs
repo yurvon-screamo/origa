@@ -9,10 +9,11 @@ use crate::ui_components::{
     HeadingLevel, MarkdownText, Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
-use origa::domain::{Card as DomainCard, NativeLanguage, StudyCard, User, get_rule_by_id};
+use origa::dictionary::grammar::{GrammarRule, get_rule_by_id};
+use origa::domain::{Card as DomainCard, NativeLanguage, StudyCard, User};
 use ulid::Ulid;
 
-fn extract_grammar_rule(study_card: &StudyCard) -> Option<&'static origa::domain::GrammarRule> {
+fn extract_grammar_rule(study_card: &StudyCard) -> Option<&'static GrammarRule> {
     match study_card.card() {
         DomainCard::Grammar(grammar) => get_rule_by_id(grammar.rule_id()),
         _ => None,

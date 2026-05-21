@@ -6,6 +6,10 @@ use leptos::task::spawn_local;
 use origa::traits::CdnProvider;
 use std::sync::{Arc, Mutex};
 
+fn safe_lock<T>(mutex: &Mutex<T>) -> std::sync::MutexGuard<'_, T> {
+    mutex.lock().unwrap_or_else(|e| e.into_inner())
+}
+
 #[derive(Clone, Copy, PartialEq, Default)]
 pub enum KanjiViewMode {
     #[default]
@@ -23,7 +27,9 @@ fn add_animation_delays(svg_html: &str, stroke_time: f32) -> (String, usize) {
         result.push_str(&svg_html[pos..abs_start]);
 
         let rest = &svg_html[abs_start..];
-        let tag_end = rest.find('>').unwrap();
+        let Some(tag_end) = rest.find('>') else {
+            break;
+        };
         let path_tag = &rest[..=tag_end];
 
         if path_tag.contains("class=\"bg\"") || path_tag.contains("class='bg'") {
@@ -87,7 +93,7 @@ pub fn KanjiAnimation(
 
     Effect::new(move |_| {
         // Cancel previous timer if exists
-        if let Some(handle) = abort_handle_clone.lock().unwrap().take() {
+        if let Some(handle) = safe_lock(&abort_handle_clone).take() {
             handle.abort();
         }
 
@@ -104,7 +110,7 @@ pub fn KanjiAnimation(
                     set_iteration.try_update(|n| *n += 1);
                 };
                 let (abortable, handle) = abortable(future);
-                *abort_handle_clone2.lock().unwrap() = Some(handle);
+                *safe_lock(&abort_handle_clone2) = Some(handle);
                 let _ = abortable.await;
             });
         } else if let Some(Some(svg_html)) = svg_content.get()
@@ -124,7 +130,7 @@ pub fn KanjiAnimation(
                     set_iteration.try_update(|n| *n += 1);
                 };
                 let (abortable, handle) = abortable(future);
-                *abort_handle_clone2.lock().unwrap() = Some(handle);
+                *safe_lock(&abort_handle_clone2) = Some(handle);
                 let _ = abortable.await;
             });
         }
@@ -132,7 +138,7 @@ pub fn KanjiAnimation(
 
     let abort_handle_cleanup = abort_handle.clone();
     on_cleanup(move || {
-        if let Some(handle) = abort_handle_cleanup.lock().unwrap().take() {
+        if let Some(handle) = safe_lock(&abort_handle_cleanup).take() {
             handle.abort();
         }
     });

@@ -5,17 +5,10 @@ use chrono::{Duration, Utc};
 use rs_fsrs::{Card as FsrsCard, FSRS, Parameters, Rating as FsrsRating, State as FsrsState};
 use serde::Deserialize;
 use serde::Serialize;
+use std::collections::HashMap;
 use std::sync::OnceLock;
 
 static FSRS_SERVICE: OnceLock<FsrsSrsService> = OnceLock::new();
-
-struct FsrsSrsService {
-    short_term_fsrs: FSRS,
-    long_term_fsrs: FSRS,
-    phrase_review_fsrs: FSRS,
-    grammar_fsrs: FSRS,
-    kanji_fsrs: FSRS,
-}
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct NextReview {
@@ -23,9 +16,9 @@ pub struct NextReview {
     pub memory_state: MemoryState,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum RateMode {
-    #[serde(rename = "FixationLesson")] // обратная совместимость с сериализованными данными
+    #[serde(rename = "FixationLesson")] // backward compatibility with serialized data
     ShortTerm,
     StandardLesson,
     #[serde(rename = "PhraseReview")]
@@ -36,50 +29,77 @@ pub enum RateMode {
     KanjiReview,
 }
 
+const ALL_RATE_MODES: [RateMode; 6] = [
+    RateMode::ShortTerm,
+    RateMode::StandardLesson,
+    RateMode::PhraseReview,
+    RateMode::OnboardingScoring,
+    RateMode::GrammarReview,
+    RateMode::KanjiReview,
+];
+
+struct SrsConfig {
+    request_retention: f64,
+    maximum_interval: i32,
+    enable_fuzz: bool,
+}
+
+impl SrsConfig {
+    fn for_mode(mode: RateMode) -> Self {
+        match mode {
+            RateMode::ShortTerm => Self {
+                request_retention: 0.95,
+                maximum_interval: 1,
+                enable_fuzz: false,
+            },
+            RateMode::StandardLesson | RateMode::OnboardingScoring => Self {
+                request_retention: 0.85,
+                maximum_interval: 180,
+                enable_fuzz: true,
+            },
+            RateMode::PhraseReview => Self {
+                request_retention: 0.70,
+                maximum_interval: 365,
+                enable_fuzz: true,
+            },
+            RateMode::GrammarReview => Self {
+                request_retention: 0.90,
+                maximum_interval: 60,
+                enable_fuzz: true,
+            },
+            RateMode::KanjiReview => Self {
+                request_retention: 0.90,
+                maximum_interval: 90,
+                enable_fuzz: true,
+            },
+        }
+    }
+
+    fn to_parameters(&self) -> Parameters {
+        Parameters {
+            request_retention: self.request_retention,
+            maximum_interval: self.maximum_interval,
+            enable_fuzz: self.enable_fuzz,
+            ..Default::default()
+        }
+    }
+}
+
+struct FsrsSrsService {
+    engines: HashMap<RateMode, FSRS>,
+}
+
 impl FsrsSrsService {
     fn new() -> Self {
-        let short_term_parameters = Parameters {
-            request_retention: 0.95,
-            maximum_interval: 1, // 1 day for short-term learning sessions
-            enable_fuzz: false,
-            ..Default::default()
-        };
+        let engines = ALL_RATE_MODES
+            .iter()
+            .map(|&mode| {
+                let config = SrsConfig::for_mode(mode);
+                (mode, FSRS::new(config.to_parameters()))
+            })
+            .collect();
 
-        let long_term_parameters = Parameters {
-            request_retention: 0.85,
-            maximum_interval: 180,
-            enable_fuzz: true,
-            ..Default::default()
-        };
-
-        let phrase_review_parameters = Parameters {
-            request_retention: 0.70,
-            maximum_interval: 365,
-            enable_fuzz: true,
-            ..Default::default()
-        };
-
-        let grammar_review_parameters = Parameters {
-            request_retention: 0.90,
-            maximum_interval: 60,
-            enable_fuzz: true,
-            ..Default::default()
-        };
-
-        let kanji_review_parameters = Parameters {
-            request_retention: 0.90,
-            maximum_interval: 90,
-            enable_fuzz: true,
-            ..Default::default()
-        };
-
-        Self {
-            long_term_fsrs: FSRS::new(long_term_parameters),
-            short_term_fsrs: FSRS::new(short_term_parameters),
-            phrase_review_fsrs: FSRS::new(phrase_review_parameters),
-            grammar_fsrs: FSRS::new(grammar_review_parameters),
-            kanji_fsrs: FSRS::new(kanji_review_parameters),
-        }
+        Self { engines }
     }
 }
 
@@ -156,15 +176,11 @@ pub fn rate_memory(
         Rating::Easy => FsrsRating::Easy,
     };
 
-    let scheduling_info = match mode {
-        RateMode::ShortTerm => srs_service.short_term_fsrs.next(card, now, fsrs_rating),
-        RateMode::StandardLesson | RateMode::OnboardingScoring => {
-            srs_service.long_term_fsrs.next(card, now, fsrs_rating)
-        },
-        RateMode::PhraseReview => srs_service.phrase_review_fsrs.next(card, now, fsrs_rating),
-        RateMode::GrammarReview => srs_service.grammar_fsrs.next(card, now, fsrs_rating),
-        RateMode::KanjiReview => srs_service.kanji_fsrs.next(card, now, fsrs_rating),
-    };
+    let engine = srs_service
+        .engines
+        .get(&mode)
+        .expect("all RateMode variants are pre-initialized in FsrsSrsService");
+    let scheduling_info = engine.next(card, now, fsrs_rating);
 
     let next_review_date = scheduling_info.card.due;
     let interval = next_review_date.signed_duration_since(now);

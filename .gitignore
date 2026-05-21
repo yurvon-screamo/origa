@@ -40,6 +40,10 @@ output_*
 trimmed_*
 concatenated_*
 missing_vocabulary.md
+*_report.json
+*_report.*.json
+standard_sample*.wav
+temp_*/
 **__pycache__
 
 # Logs

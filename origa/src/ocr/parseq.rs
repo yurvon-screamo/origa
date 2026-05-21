@@ -1,13 +1,11 @@
+use super::shared::{parseq_postprocess, parseq_preprocess};
+use super::vocab::Vocabulary;
 use crate::domain::OrigaError;
 use image::DynamicImage;
-use ort::session::{Session, SessionOutputs, builder::GraphOptimizationLevel};
+use ort::session::{Session, builder::GraphOptimizationLevel};
 use ort::value::Value;
 use std::path::Path;
 use std::sync::Mutex;
-
-use super::vocab::Vocabulary;
-
-const INPUT_HEIGHT: u32 = 16;
 
 pub struct ParseqRecognizer {
     session: Mutex<Session>,
@@ -47,7 +45,7 @@ impl ParseqRecognizer {
             return String::new();
         }
 
-        let input_array = match self.preprocess(image) {
+        let input_array = match parseq_preprocess(image, self.input_width) {
             Ok(t) => t,
             Err(e) => {
                 tracing::warn!("PARSeq preprocessing failed: {}", e);
@@ -65,7 +63,7 @@ impl ParseqRecognizer {
 
         match self.session.lock() {
             Ok(mut session) => match session.run(ort::inputs!["images" => input_tensor]) {
-                Ok(outputs) => self.postprocess(&outputs),
+                Ok(outputs) => parseq_postprocess(&outputs, &self.vocab),
                 Err(e) => {
                     tracing::warn!("PARSeq inference failed: {:?}", e);
                     String::new()
@@ -76,100 +74,5 @@ impl ParseqRecognizer {
                 String::new()
             },
         }
-    }
-
-    fn preprocess(&self, image: &DynamicImage) -> Result<ndarray::Array4<f32>, OrigaError> {
-        let (mut img_w, mut img_h) = (image.width(), image.height());
-
-        let rotated = if img_h > img_w {
-            std::mem::swap(&mut img_w, &mut img_h);
-            true
-        } else {
-            false
-        };
-
-        let target_width = self.input_width;
-
-        let resized = if rotated {
-            let rotated_img = image.rotate270();
-            image::imageops::resize(
-                &rotated_img,
-                target_width,
-                INPUT_HEIGHT,
-                image::imageops::FilterType::Triangle,
-            )
-        } else {
-            image::imageops::resize(
-                image,
-                target_width,
-                INPUT_HEIGHT,
-                image::imageops::FilterType::Triangle,
-            )
-        };
-
-        let mut tensor =
-            ndarray::Array4::<f32>::zeros((1, 3, INPUT_HEIGHT as usize, target_width as usize));
-
-        for y in 0..INPUT_HEIGHT as usize {
-            for x in 0..target_width as usize {
-                let pixel = resized.get_pixel(x as u32, y as u32);
-                for c in 0..3 {
-                    let val = pixel[2 - c] as f32 / 127.5 - 1.0;
-                    tensor[[0, c, y, x]] = val;
-                }
-            }
-        }
-
-        Ok(tensor)
-    }
-
-    fn postprocess(&self, outputs: &SessionOutputs) -> String {
-        let logits_value: &Value = &outputs[0];
-
-        let (shape, logits_data): (&ort::value::Shape, &[f32]) =
-            match logits_value.try_extract_tensor() {
-                Ok(t) => t,
-                Err(e) => {
-                    tracing::warn!("Failed to extract PARSeq output tensor: {:?}", e);
-                    return String::new();
-                },
-            };
-
-        if shape.len() < 3 {
-            tracing::warn!("Invalid PARSeq output shape: {:?}", shape);
-            return String::new();
-        }
-
-        if shape[1] <= 0 || shape[2] <= 0 {
-            tracing::warn!(?shape, "PARSeq output has dynamic or invalid dimensions");
-            return String::new();
-        }
-
-        let seq_len = shape[1] as usize;
-        let vocab_size = shape[2] as usize;
-
-        let mut indices = Vec::with_capacity(seq_len);
-
-        for t in 0..seq_len {
-            let mut max_idx = 0;
-            let mut max_val = f32::NEG_INFINITY;
-            for v in 0..vocab_size {
-                let val = logits_data[t * vocab_size + v];
-                if val > max_val {
-                    max_val = val;
-                    max_idx = v;
-                }
-            }
-            indices.push(max_idx as i64);
-        }
-
-        let end_pos = indices
-            .iter()
-            .position(|&idx| idx == 0)
-            .unwrap_or(indices.len());
-
-        let valid_indices: Vec<i64> = indices[..end_pos].to_vec();
-
-        self.vocab.decode(&valid_indices)
     }
 }

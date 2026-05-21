@@ -93,3 +93,113 @@ pub fn urlencoding_decode(s: &str) -> String {
         .map(|cow| cow.into_owned())
         .unwrap_or_else(|_| s.to_string())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn make_jwt(payload: &str) -> String {
+        let header = base64::engine::general_purpose::URL_SAFE_NO_PAD
+            .encode(r#"{"alg":"HS256","typ":"JWT"}"#);
+        let payload_b64 = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(payload);
+        format!("{}.{}.signature", header, payload_b64)
+    }
+
+    #[test]
+    fn decode_jwt_extracts_sub_from_valid_token() {
+        let token = make_jwt(r#"{"sub":"user123","email":"test@test.com","exp":9999999999}"#);
+
+        let claims = decode_jwt_claims(&token).unwrap();
+
+        assert_eq!(claims.sub, "user123");
+        assert_eq!(claims.email.as_deref(), Some("test@test.com"));
+    }
+
+    #[test]
+    fn decode_jwt_rejects_expired_token() {
+        let token = make_jwt(r#"{"sub":"user123","exp":1}"#);
+
+        let result = decode_jwt_claims(&token);
+
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("expired"));
+    }
+
+    #[test]
+    fn decode_jwt_rejects_invalid_format() {
+        assert!(decode_jwt_claims("invalid").is_err());
+        assert!(decode_jwt_claims("only.two").is_err());
+        assert!(decode_jwt_claims("").is_err());
+    }
+
+    #[test]
+    fn decode_jwt_rejects_malformed_payload() {
+        let token = format!(
+            "{}.{}.sig",
+            base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(r#"{"alg":"HS256"}"#),
+            base64::engine::general_purpose::URL_SAFE_NO_PAD.encode("not json")
+        );
+
+        assert!(decode_jwt_claims(&token).is_err());
+    }
+
+    #[test]
+    fn pkce_verifier_has_required_length() {
+        let verifier = generate_pkce_verifier();
+
+        assert_eq!(verifier.len(), 64);
+    }
+
+    #[test]
+    fn pkce_challenge_is_deterministic_for_same_verifier() {
+        let verifier = "test_verifier_123";
+
+        let challenge1 = generate_pkce_challenge(verifier);
+        let challenge2 = generate_pkce_challenge(verifier);
+
+        assert_eq!(challenge1, challenge2);
+    }
+
+    #[test]
+    fn pkce_challenge_differs_for_different_verifiers() {
+        let challenge1 = generate_pkce_challenge("verifier_a");
+        let challenge2 = generate_pkce_challenge("verifier_b");
+
+        assert_ne!(challenge1, challenge2);
+    }
+
+    #[test]
+    fn urlencoding_decode_handles_percent_encoded_input() {
+        assert_eq!(urlencoding_decode("hello%20world"), "hello world");
+        assert_eq!(urlencoding_decode("test%40example.com"), "test@example.com");
+    }
+
+    #[test]
+    fn urlencoding_decode_returns_original_on_invalid_input() {
+        assert_eq!(urlencoding_decode("%E0%A4%A"), "%E0%A4%A");
+    }
+
+    #[test]
+    fn oauth_provider_as_str_returns_correct_values() {
+        assert_eq!(OAuthProvider::Google.as_str(), "google");
+        assert_eq!(OAuthProvider::Yandex.as_str(), "yandex");
+    }
+
+    #[test]
+    fn jwt_claims_expires_at_returns_exp_when_present() {
+        let token = make_jwt(r#"{"sub":"u","exp":9999999999}"#);
+
+        let claims = decode_jwt_claims(&token).unwrap();
+
+        assert_eq!(claims.expires_at(0), 9999999999);
+    }
+
+    #[test]
+    fn jwt_claims_expires_at_returns_fallback_when_absent() {
+        let token = make_jwt(r#"{"sub":"u"}"#);
+
+        let claims = decode_jwt_claims(&token).unwrap();
+
+        assert_eq!(claims.expires_at(42), 42);
+    }
+}

@@ -88,10 +88,7 @@ pub(crate) fn generate_yesno(
             return Ok(LessonCardView::Normal(original_card));
         }
 
-        distractors
-            .choose(rng)
-            .expect("distractors guaranteed non-empty after is_empty check")
-            .clone()
+        distractors.choose(rng).unwrap_or(&distractors[0]).clone()
     };
 
     let statement_text = format!("{} \n {}", question.text(), statement_answer);
@@ -273,13 +270,9 @@ pub(crate) fn generate_grammar_quiz(
         }
     })?;
 
-    if !rule.has_format_map() {
+    let Some(format_map) = rule.format_map() else {
         return Ok(LessonCardView::Normal(original_card));
-    }
-
-    let format_map = rule
-        .format_map()
-        .expect("has_format_map guaranteed Some above");
+    };
 
     let supported_pos: Vec<&PartOfSpeech> = format_map.keys().collect();
     let applicable_pos = grammar_rule_card
@@ -299,12 +292,12 @@ pub(crate) fn generate_grammar_quiz(
     let mut rng = rand::rng();
     let word_text = matching_vocab
         .choose(&mut rng)
-        .expect("matching_vocab guaranteed non-empty")
+        .unwrap_or(&matching_vocab[0])
         .clone();
 
-    let rules = format_map
-        .get(&applicable_pos)
-        .expect("applicable_pos is from format_map keys");
+    let Some(rules) = format_map.get(&applicable_pos) else {
+        return Ok(LessonCardView::Normal(original_card));
+    };
 
     let correct_text = apply_format_actions(&word_text, rules, &applicable_pos)?;
 

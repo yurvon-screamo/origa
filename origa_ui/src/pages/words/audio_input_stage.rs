@@ -24,7 +24,7 @@ pub(super) enum AudioState {
     #[default]
     Idle,
     LoadingModel,
-    #[allow(dead_code)]
+    #[expect(dead_code, reason = "used only in wasm builds")]
     Processing,
     Ready,
     Error,

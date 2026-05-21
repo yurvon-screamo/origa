@@ -298,7 +298,7 @@ fn clean_html(raw: &str) -> String {
             },
             '&' => {
                 if let Some((entity, len)) = try_parse_html_entity(&chars[i..]) {
-                    result.push_str(entity);
+                    result.push_str(&entity);
                     i += len;
                 } else {
                     result.push(chars[i]);
@@ -315,24 +315,24 @@ fn clean_html(raw: &str) -> String {
     result.split_whitespace().collect::<Vec<_>>().join(" ")
 }
 
-fn try_parse_html_entity(chars: &[char]) -> Option<(&'static str, usize)> {
+fn try_parse_html_entity(chars: &[char]) -> Option<(String, usize)> {
     if chars.len() >= 6 && chars[0..6] == ['&', 'n', 'b', 's', 'p', ';'] {
-        return Some((" ", 6));
+        return Some((" ".to_string(), 6));
     }
     if chars.len() >= 5 && chars[0..5] == ['&', 'a', 'm', 'p', ';'] {
-        return Some(("&", 5));
+        return Some(("&".to_string(), 5));
     }
     if chars.len() >= 4 && chars[0..4] == ['&', 'l', 't', ';'] {
-        return Some(("<", 4));
+        return Some(("<".to_string(), 4));
     }
     if chars.len() >= 4 && chars[0..4] == ['&', 'g', 't', ';'] {
-        return Some((">", 4));
+        return Some((">".to_string(), 4));
     }
     if chars.len() >= 6 && chars[0..6] == ['&', 'q', 'u', 'o', 't', ';'] {
-        return Some(("\"", 6));
+        return Some(("\"".to_string(), 6));
     }
     if chars.len() >= 6 && chars[0..6] == ['&', 'a', 'p', 'o', 's', ';'] {
-        return Some(("'", 6));
+        return Some(("'".to_string(), 6));
     }
     if chars.len() >= 4 && chars[0] == '&' && chars[1] == '#' {
         let mut num_str = String::new();
@@ -344,7 +344,7 @@ fn try_parse_html_entity(chars: &[char]) -> Option<(&'static str, usize)> {
         if j < chars.len() && chars[j] == ';' && !num_str.is_empty() {
             if let Ok(code_point) = num_str.parse::<u32>() {
                 if let Some(ch) = char::from_u32(code_point) {
-                    return Some((Box::leak(ch.to_string().into_boxed_str()), j + 1));
+                    return Some((ch.to_string(), j + 1));
                 }
             }
         }

@@ -347,10 +347,7 @@ mod tests {
 
     #[test]
     fn init_kanji_invalid_json_error() {
-        let data = KanjiData {
-            kanji_json: create_invalid_json(),
-        };
-        let result = init_kanji(data);
+        let result = KanjiDatabase::from_json(&create_invalid_json());
         assert!(result.is_err());
         assert!(matches!(result, Err(OrigaError::KradfileError { .. })));
     }

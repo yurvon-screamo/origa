@@ -1,4 +1,5 @@
-use crate::domain::{JapaneseLevel, NativeLanguage, User, iter_grammar_rules};
+use crate::dictionary::grammar::iter_grammar_rules;
+use crate::domain::{JapaneseLevel, NativeLanguage, User};
 use crate::traits::UserRepository;
 use crate::use_cases::CreateGrammarCardUseCase;
 use crate::use_cases::tests::fixtures::{InMemoryUserRepository, init_real_dictionaries};

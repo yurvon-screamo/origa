@@ -21,7 +21,7 @@
 			}
 		],
 		"security": {
-			"csp": null
+			"csp": "default-src 'self'; script-src 'self'; connect-src 'self' https://storage.yandexcloud.net https://origa.uwuwu.net https://huggingface.co; img-src 'self' data: blob: https://storage.yandexcloud.net; media-src 'self' blob: https://storage.yandexcloud.net; style-src 'self' 'unsafe-inline'; font-src 'self'; form-action 'self' https://accounts.google.com https://oauth.yandex.ru; frame-ancestors 'none'"
 		}
 	},
 	"bundle": {
