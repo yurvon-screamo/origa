@@ -1,7 +1,6 @@
 use super::complete_screen::LessonCompleteScreen;
 use super::header::LessonHeader;
 use super::lesson_card_container::LessonCardContainer;
-use super::lesson_progress_view::LessonProgressView;
 use super::lesson_state::{LessonContext, LessonState};
 use crate::i18n::*;
 use crate::loaders::phrase_data_loader::load_phrase_details_batch;
@@ -201,7 +200,6 @@ pub fn LessonContent() -> impl IntoView {
                     </div>
                 </Show>
 
-                <LessonProgressView />
                 <LessonCardContainer />
             </div>
         </Show>

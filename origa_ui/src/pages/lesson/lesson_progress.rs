@@ -1,4 +1,3 @@
-use crate::i18n::*;
 use leptos::prelude::*;
 
 #[component]
@@ -7,8 +6,6 @@ pub fn LessonProgress(
     total: Signal<usize>,
     #[prop(optional, into)] core_count: Signal<usize>,
 ) -> impl IntoView {
-    let i18n = use_i18n();
-
     let has_phrases = move || {
         let cc = core_count.get();
         let t = total.get();
@@ -75,11 +72,8 @@ pub fn LessonProgress(
     };
 
     view! {
-        <div class="mb-3 sm:mb-6">
-            <div class="flex justify-between mb-2">
-                <span class="font-mono text-[10px] tracking-widest uppercase">
-                    {t!(i18n, lesson.progress)}
-                </span>
+        <div>
+            <div class="flex justify-end mb-1">
                 <span class="font-mono text-[10px]" data-testid="lesson-progress-text">
                     {label_text}
                 </span>
