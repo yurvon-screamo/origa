@@ -56,6 +56,7 @@ pub fn AudioPlayer(
                 },
                 _ => {
                     stop_current_audio();
+                    audio.set_current_time(0.0);
                     let state_clone = state;
                     let audio_ref_clone = audio_ref;
                     register_audio(
