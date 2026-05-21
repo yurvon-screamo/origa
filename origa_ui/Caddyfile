@@ -20,5 +20,5 @@
         path *.html /
     }
     header @html Cache-Control "no-cache, no-store, must-revalidate"
-    header @html Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' wasm-unsafe-eval; connect-src 'self' https://storage.yandexcloud.net https://origa.uwuwu.net https://huggingface.co; img-src 'self' data: blob: https://storage.yandexcloud.net; media-src 'self' blob: https://storage.yandexcloud.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; form-action 'self' https://accounts.google.com https://oauth.yandex.ru; frame-ancestors 'none'"
+    header @html Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' unsafe-eval; connect-src 'self' https://storage.yandexcloud.net https://origa.uwuwu.net https://huggingface.co; img-src 'self' data: blob: https://storage.yandexcloud.net; media-src 'self' blob: https://storage.yandexcloud.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; form-action 'self' https://accounts.google.com https://oauth.yandex.ru; frame-ancestors 'none'"
 }
