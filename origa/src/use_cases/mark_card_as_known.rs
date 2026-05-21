@@ -1,4 +1,4 @@
-use crate::domain::{OrigaError, RateMode, Rating};
+use crate::domain::OrigaError;
 use crate::traits::UserRepository;
 use tracing::{debug, info};
 use ulid::Ulid;
@@ -29,7 +29,7 @@ impl<'a, R: UserRepository> MarkCardAsKnownUseCase<'a, R> {
             }
         }
 
-        user.rate_card(card_id, Rating::Easy, RateMode::OnboardingScoring)?;
+        user.mark_card_as_known(card_id)?;
 
         self.repository.save(&user).await?;
 

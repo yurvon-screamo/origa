@@ -344,8 +344,7 @@ impl KnowledgeSet {
         stats_updater::recalculate_daily_stats(&self.study_cards, &mut self.lesson_history);
     }
 
-    #[cfg(test)]
-    pub fn mark_card_as_known_directly(&mut self, card_id: Ulid) {
+    pub fn mark_card_as_known(&mut self, card_id: Ulid) -> Result<(), OrigaError> {
         use crate::domain::memory::{
             Difficulty, KNOWN_CARD_STABILITY_THRESHOLD, MemoryState, Rating, ReviewLog, Stability,
         };
@@ -360,8 +359,12 @@ impl KnowledgeSet {
             );
             card.add_review(
                 memory,
-                ReviewLog::new(Rating::Good, Duration::days(stability as i64)),
+                ReviewLog::new(Rating::Easy, Duration::days(stability as i64)),
             );
+            card.handle_favorite_rating(Rating::Easy);
+            Ok(())
+        } else {
+            Err(OrigaError::CardNotFound { card_id })
         }
     }
 }
