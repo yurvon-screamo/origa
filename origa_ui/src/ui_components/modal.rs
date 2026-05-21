@@ -71,7 +71,9 @@ pub fn Modal(
                     is_open_clone.set(false);
                     is_closing.set(false);
                     if let Some(on_close) = on_close_inner {
-                        on_close.run(leptos::ev::MouseEvent::new("click").unwrap());
+                        if let Ok(ev) = leptos::ev::MouseEvent::new("click") {
+                            on_close.run(ev);
+                        }
                     }
                 });
             }

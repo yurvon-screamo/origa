@@ -15,9 +15,7 @@ mod user;
 pub(crate) mod value_objects;
 mod well_known_set;
 
-pub use crate::dictionary::grammar::{GrammarRule, get_rule_by_id, iter_grammar_rules};
-pub use crate::dictionary::vocabulary::get_translation;
-pub use error::OrigaError;
+pub use error::{ErrorCategory, OrigaError};
 pub use furigana::{FuriganaSegment, furiganize_segments, furiganize_text, furiganize_text_html};
 pub use furigana_annotator::{AnnotatedSpan, annotate_text};
 pub use grammar::apply_format_actions;

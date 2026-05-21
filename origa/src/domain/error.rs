@@ -3,6 +3,13 @@ use ulid::Ulid;
 
 use super::value_objects::NativeLanguage;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum ErrorCategory {
+    Domain,
+    Infrastructure,
+    Import,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, thiserror::Error)]
 pub enum OrigaError {
     #[error("Current user does not exist")]
@@ -85,6 +92,67 @@ pub enum OrigaError {
     PhraseNotFound { phrase_id: Ulid },
     #[error("Pitch audio parse error: {reason}")]
     PitchAudioParseError { reason: String },
+}
+
+impl OrigaError {
+    pub fn category(&self) -> ErrorCategory {
+        match self {
+            Self::CurrentUserNotExist
+            | Self::CardNotFound { .. }
+            | Self::DuplicateCard { .. }
+            | Self::InvalidQuestion { .. }
+            | Self::InvalidAnswer { .. }
+            | Self::InvalidStability { .. }
+            | Self::InvalidDifficulty { .. }
+            | Self::InvalidMemoryState { .. }
+            | Self::SrsCalculationFailed { .. }
+            | Self::FuriganaError { .. }
+            | Self::VocabularyParseError { .. }
+            | Self::InvalidValues { .. }
+            | Self::TokenizerError { .. }
+            | Self::GrammarFormatError { .. }
+            | Self::GrammarParseError { .. }
+            | Self::WellKnownSetParseError { .. }
+            | Self::WellKnownSetNotFound { .. }
+            | Self::SessionExpired
+            | Self::DictionaryNotFound { .. }
+            | Self::VocabularyNotFound { .. }
+            | Self::KanjiNotFound { .. }
+            | Self::GrammarRuleNotFound { .. }
+            | Self::GrammarContentNotFound { .. }
+            | Self::TranslationNotFound { .. }
+            | Self::PhraseParseError { .. }
+            | Self::PhraseNotFound { .. }
+            | Self::PitchAudioParseError { .. }
+            | Self::AccountDeletionFailed { .. } => ErrorCategory::Domain,
+
+            Self::RepositoryError { .. }
+            | Self::EmbeddingError { .. }
+            | Self::LlmError { .. }
+            | Self::SettingsError { .. }
+            | Self::OcrError { .. }
+            | Self::SttError { .. }
+            | Self::NetworkError { .. }
+            | Self::TranslationError { .. } => ErrorCategory::Infrastructure,
+
+            Self::KradfileError { .. }
+            | Self::AnkiInvalidFile { .. }
+            | Self::AnkiDatabaseNotFound { .. }
+            | Self::AnkiFieldNotFound { .. } => ErrorCategory::Import,
+        }
+    }
+
+    pub fn is_domain(&self) -> bool {
+        self.category() == ErrorCategory::Domain
+    }
+
+    pub fn is_infrastructure(&self) -> bool {
+        self.category() == ErrorCategory::Infrastructure
+    }
+
+    pub fn is_import(&self) -> bool {
+        self.category() == ErrorCategory::Import
+    }
 }
 
 #[cfg(test)]
@@ -453,5 +521,236 @@ mod tests {
         };
         assert_display_contains(&error, "Pitch audio parse error");
         assert_serialization_roundtrip(error);
+    }
+
+    #[test]
+    fn domain_category() {
+        assert_eq!(
+            OrigaError::CurrentUserNotExist.category(),
+            ErrorCategory::Domain
+        );
+        assert!(OrigaError::CurrentUserNotExist.is_domain());
+        assert!(!OrigaError::CurrentUserNotExist.is_infrastructure());
+        assert!(!OrigaError::CurrentUserNotExist.is_import());
+
+        assert_eq!(
+            OrigaError::CardNotFound {
+                card_id: Ulid::new()
+            }
+            .category(),
+            ErrorCategory::Domain
+        );
+        assert_eq!(
+            OrigaError::DuplicateCard {
+                question: "q".into()
+            }
+            .category(),
+            ErrorCategory::Domain
+        );
+        assert_eq!(
+            OrigaError::SrsCalculationFailed {
+                reason: "overflow".into()
+            }
+            .category(),
+            ErrorCategory::Domain
+        );
+        assert_eq!(
+            OrigaError::TokenizerError {
+                reason: "missing".into()
+            }
+            .category(),
+            ErrorCategory::Domain
+        );
+        assert_eq!(
+            OrigaError::PhraseNotFound {
+                phrase_id: Ulid::new()
+            }
+            .category(),
+            ErrorCategory::Domain
+        );
+    }
+
+    #[test]
+    fn infrastructure_category() {
+        assert_eq!(
+            OrigaError::OcrError {
+                reason: "corrupt".into()
+            }
+            .category(),
+            ErrorCategory::Infrastructure
+        );
+        assert!(
+            !OrigaError::OcrError {
+                reason: "corrupt".into()
+            }
+            .is_domain()
+        );
+        assert!(
+            OrigaError::OcrError {
+                reason: "corrupt".into()
+            }
+            .is_infrastructure()
+        );
+        assert!(
+            !OrigaError::OcrError {
+                reason: "corrupt".into()
+            }
+            .is_import()
+        );
+
+        assert_eq!(
+            OrigaError::NetworkError {
+                url: "https://x.com".into(),
+                reason: "timeout".into()
+            }
+            .category(),
+            ErrorCategory::Infrastructure
+        );
+        assert_eq!(
+            OrigaError::RepositoryError {
+                reason: "io".into()
+            }
+            .category(),
+            ErrorCategory::Infrastructure
+        );
+    }
+
+    #[test]
+    fn import_category() {
+        assert_eq!(
+            OrigaError::AnkiInvalidFile {
+                reason: "bad".into()
+            }
+            .category(),
+            ErrorCategory::Import
+        );
+        assert!(
+            !OrigaError::AnkiInvalidFile {
+                reason: "bad".into()
+            }
+            .is_domain()
+        );
+        assert!(
+            !OrigaError::AnkiInvalidFile {
+                reason: "bad".into()
+            }
+            .is_infrastructure()
+        );
+        assert!(
+            OrigaError::AnkiInvalidFile {
+                reason: "bad".into()
+            }
+            .is_import()
+        );
+
+        assert_eq!(
+            OrigaError::KradfileError {
+                reason: "missing".into()
+            }
+            .category(),
+            ErrorCategory::Import
+        );
+        assert_eq!(
+            OrigaError::AnkiDatabaseNotFound {
+                filename: "db".into()
+            }
+            .category(),
+            ErrorCategory::Import
+        );
+        assert_eq!(
+            OrigaError::AnkiFieldNotFound {
+                field_name: "f".into()
+            }
+            .category(),
+            ErrorCategory::Import
+        );
+    }
+
+    #[test]
+    fn every_variant_has_category() {
+        let all_domain = [
+            OrigaError::CurrentUserNotExist,
+            OrigaError::CardNotFound {
+                card_id: Ulid::new(),
+            },
+            OrigaError::DuplicateCard {
+                question: "q".into(),
+            },
+            OrigaError::InvalidQuestion { reason: "r".into() },
+            OrigaError::InvalidAnswer { reason: "r".into() },
+            OrigaError::InvalidStability { reason: "r".into() },
+            OrigaError::InvalidDifficulty { reason: "r".into() },
+            OrigaError::InvalidMemoryState { reason: "r".into() },
+            OrigaError::SrsCalculationFailed { reason: "r".into() },
+            OrigaError::FuriganaError { reason: "r".into() },
+            OrigaError::VocabularyParseError { reason: "r".into() },
+            OrigaError::InvalidValues { reason: "r".into() },
+            OrigaError::TokenizerError { reason: "r".into() },
+            OrigaError::GrammarFormatError { reason: "r".into() },
+            OrigaError::GrammarParseError { reason: "r".into() },
+            OrigaError::WellKnownSetParseError { reason: "r".into() },
+            OrigaError::WellKnownSetNotFound { set_id: "s".into() },
+            OrigaError::SessionExpired,
+            OrigaError::DictionaryNotFound { reason: "r".into() },
+            OrigaError::VocabularyNotFound { word: "w".into() },
+            OrigaError::KanjiNotFound { kanji: "k".into() },
+            OrigaError::GrammarRuleNotFound {
+                rule_id: Ulid::new(),
+            },
+            OrigaError::GrammarContentNotFound {
+                rule_id: Ulid::new(),
+                lang: NativeLanguage::Russian,
+            },
+            OrigaError::TranslationNotFound {
+                word: "w".into(),
+                lang: NativeLanguage::Russian,
+            },
+            OrigaError::PhraseParseError { reason: "r".into() },
+            OrigaError::PhraseNotFound {
+                phrase_id: Ulid::new(),
+            },
+            OrigaError::PitchAudioParseError { reason: "r".into() },
+            OrigaError::AccountDeletionFailed { reason: "r".into() },
+        ];
+        for error in &all_domain {
+            assert!(error.is_domain(), "{error:?} should be Domain");
+        }
+
+        let all_infrastructure = [
+            OrigaError::RepositoryError { reason: "r".into() },
+            OrigaError::EmbeddingError { reason: "r".into() },
+            OrigaError::LlmError { reason: "r".into() },
+            OrigaError::SettingsError { reason: "r".into() },
+            OrigaError::OcrError { reason: "r".into() },
+            OrigaError::SttError { reason: "r".into() },
+            OrigaError::NetworkError {
+                url: "u".into(),
+                reason: "r".into(),
+            },
+            OrigaError::TranslationError { reason: "r".into() },
+        ];
+        for error in &all_infrastructure {
+            assert!(
+                error.is_infrastructure(),
+                "{error:?} should be Infrastructure"
+            );
+        }
+
+        let all_import = [
+            OrigaError::KradfileError { reason: "r".into() },
+            OrigaError::AnkiInvalidFile { reason: "r".into() },
+            OrigaError::AnkiDatabaseNotFound {
+                filename: "f".into(),
+            },
+            OrigaError::AnkiFieldNotFound {
+                field_name: "f".into(),
+            },
+        ];
+        for error in &all_import {
+            assert!(error.is_import(), "{error:?} should be Import");
+        }
+
+        let total = all_domain.len() + all_infrastructure.len() + all_import.len();
+        assert_eq!(total, 40, "all 40 variants must be covered");
     }
 }

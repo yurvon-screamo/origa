@@ -8,6 +8,7 @@ pub enum ToastType {
     Info,
     Success,
 
+    #[expect(dead_code, reason = "design system API")]
     Warning,
     Error,
 }

@@ -4,10 +4,10 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use ulid::Ulid;
 
+use crate::dictionary::vocabulary::get_translation;
 use crate::domain::{
     Card, CardType, DailyLoad, JapaneseLevel, JlptContent, JlptProgress, KnowledgeSet,
-    NativeLanguage, OrigaError, RateMode, Rating, ScoreContentResult, StudyCard, get_translation,
-    score_content,
+    NativeLanguage, OrigaError, RateMode, Rating, ScoreContentResult, StudyCard, score_content,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

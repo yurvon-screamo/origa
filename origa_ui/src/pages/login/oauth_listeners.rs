@@ -178,10 +178,9 @@ pub fn check_url_oauth_callback(auth_store: &AuthStore, i18n: &I18nContext<Local
         return;
     };
 
-    let verifier = get_and_delete_verifier();
-    if verifier.is_none() {
+    let Some(verifier) = get_and_delete_verifier() else {
         return;
-    }
+    };
 
     let is_oauth_loading = auth_store.is_oauth_loading;
     is_oauth_loading.set(true);
@@ -191,7 +190,7 @@ pub fn check_url_oauth_callback(auth_store: &AuthStore, i18n: &I18nContext<Local
     spawn_local(async move {
         process_oauth_flow(
             auth_store_clone,
-            verifier.unwrap(),
+            verifier,
             code,
             is_oauth_loading,
             disposed,

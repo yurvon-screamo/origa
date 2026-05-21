@@ -6,6 +6,7 @@ pub struct StepperStep {
     pub label: String,
 }
 
+#[expect(dead_code, reason = "design system API")]
 #[derive(Clone, Copy, PartialEq, Default, Debug)]
 pub enum StepStatus {
     #[default]

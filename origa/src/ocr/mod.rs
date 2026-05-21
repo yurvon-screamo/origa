@@ -1,5 +1,6 @@
 mod config;
 mod reading_order;
+mod shared;
 mod types;
 mod vocab;
 
@@ -34,6 +35,7 @@ impl From<ort::Error> for crate::domain::OrigaError {
 
 pub use config::ModelConfig;
 pub use reading_order::sort_reading_order;
+pub use shared::ModelFiles;
 pub use types::BoundingBox;
 pub use vocab::Vocabulary;
 
@@ -42,7 +44,7 @@ pub use cascade::CascadeRecognizer;
 #[cfg(not(target_arch = "wasm32"))]
 pub use deim::DeimDetector;
 #[cfg(not(target_arch = "wasm32"))]
-pub use model::{JapaneseOCRModel, ModelFiles};
+pub use model::JapaneseOCRModel;
 #[cfg(not(target_arch = "wasm32"))]
 pub use parseq::ParseqRecognizer;
 
@@ -51,6 +53,6 @@ pub use cascade_wasm::CascadeRecognizer;
 #[cfg(target_arch = "wasm32")]
 pub use deim_wasm::DeimDetector;
 #[cfg(target_arch = "wasm32")]
-pub use model_wasm::{JapaneseOCRModel, ModelFiles};
+pub use model_wasm::JapaneseOCRModel;
 #[cfg(target_arch = "wasm32")]
 pub use parseq_wasm::ParseqRecognizer;

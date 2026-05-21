@@ -32,9 +32,12 @@ impl ConnectivityStore {
                 stored_closure_ptr.set_value(Some(closure_ptr));
 
                 on_cleanup(move || {
-                    let closure_ptr = stored_closure_ptr.get_value().unwrap();
-                    w.remove_event_listener_with_callback("online", &closure_ptr)
-                        .ok();
+                    if let Some(closure_ptr) = stored_closure_ptr.get_value() {
+                        w.remove_event_listener_with_callback("online", &closure_ptr)
+                            .ok();
+                    } else {
+                        tracing::debug!("online cleanup skipped: closure not stored");
+                    }
                     stored_closure.set_value(None);
                     stored_closure_ptr.set_value(None);
                 });
@@ -58,9 +61,12 @@ impl ConnectivityStore {
                 stored_closure_ptr.set_value(Some(closure_ptr));
 
                 on_cleanup(move || {
-                    let closure_ptr = stored_closure_ptr.get_value().unwrap();
-                    w.remove_event_listener_with_callback("offline", &closure_ptr)
-                        .ok();
+                    if let Some(closure_ptr) = stored_closure_ptr.get_value() {
+                        w.remove_event_listener_with_callback("offline", &closure_ptr)
+                            .ok();
+                    } else {
+                        tracing::debug!("offline cleanup skipped: closure not stored");
+                    }
                     stored_closure.set_value(None);
                     stored_closure_ptr.set_value(None);
                 });

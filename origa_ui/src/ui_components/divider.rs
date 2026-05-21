@@ -5,6 +5,7 @@ pub enum DividerVariant {
     #[default]
     Single,
 
+    #[expect(dead_code, reason = "design system API")]
     Double,
 }
 

@@ -7,7 +7,7 @@ use crate::i18n::{I18nContext, Locale};
 use crate::pages::login::auth_handlers::get_or_create_profile;
 use crate::repository::{
     AuthError, HybridUserRepository, TrailBaseClient, clear_session, get_session, set_session,
-    trailbase_client::{is_refresh_in_progress, set_refresh_in_progress, should_refresh_session},
+    trailbase_session::{is_refresh_in_progress, set_refresh_in_progress, should_refresh_session},
 };
 
 /// AuthStore - centralized authentication state management
@@ -425,9 +425,7 @@ impl AuthStore {
         self.is_checking_session.set(false);
     }
 
-    /// Process an error and handle session expiry if needed
-    /// Returns true if error was session expiry (and was handled)
-    #[allow(dead_code)]
+    #[expect(dead_code, reason = "prepared for future error handling")]
     pub fn handle_error_if_session_expired(&self, error: &AuthError) -> bool {
         match error {
             AuthError::SessionExpired => {

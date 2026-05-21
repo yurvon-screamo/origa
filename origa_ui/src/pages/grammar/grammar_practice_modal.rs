@@ -1,8 +1,9 @@
 use crate::i18n::use_i18n;
 use crate::ui_components::{Modal, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
+use origa::dictionary::grammar::GrammarRule;
 use origa::domain::{
-    GrammarPracticeQuestion, GrammarRule, NativeLanguage, User, generate_grammar_practice_questions,
+    GrammarPracticeQuestion, NativeLanguage, User, generate_grammar_practice_questions,
 };
 use rand::rng;
 
