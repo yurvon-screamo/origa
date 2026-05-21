@@ -24,7 +24,7 @@ pub(super) enum AudioState {
     #[default]
     Idle,
     LoadingModel,
-    #[expect(dead_code, reason = "used only in wasm builds")]
+    #[allow(dead_code)]
     Processing,
     Ready,
     Error,
@@ -58,7 +58,7 @@ async fn get_or_load_whisper_model(
 
 #[cfg(target_arch = "wasm32")]
 async fn load_whisper_model_inner(
-    i18n: leptos_i18n::I18nContext<crate::i18n::Locale>,
+    _i18n: leptos_i18n::I18nContext<crate::i18n::Locale>,
     status_text: RwSignal<Option<String>>,
 ) -> Result<Rc<WhisperTranscriber>, String> {
     status_text.set(Some("Downloading Whisper model...".to_string()));
