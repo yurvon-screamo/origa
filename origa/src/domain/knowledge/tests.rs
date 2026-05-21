@@ -1126,7 +1126,9 @@ fn phrases_added_after_core_cards_review() {
         let study_card = knowledge_set
             .create_card(create_vocab_card(&format!("core{i}")))
             .unwrap();
-        knowledge_set.mark_card_as_known_directly(*study_card.card_id());
+        knowledge_set
+            .mark_card_as_known(*study_card.card_id())
+            .unwrap();
     }
 
     for _ in 0..10 {
@@ -1134,7 +1136,9 @@ fn phrases_added_after_core_cards_review() {
         let study_card = knowledge_set
             .create_card(Card::Phrase(PhraseCard::new_test_with_id(phrase_id)))
             .unwrap();
-        knowledge_set.mark_card_as_known_directly(*study_card.card_id());
+        knowledge_set
+            .mark_card_as_known(*study_card.card_id())
+            .unwrap();
     }
 
     let result = knowledge_set.cards_to_lesson(5, &JlptContent::new());

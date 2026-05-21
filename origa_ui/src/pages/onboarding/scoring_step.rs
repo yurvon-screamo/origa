@@ -8,7 +8,6 @@ use crate::ui_components::{
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos_use::use_event_listener;
-use origa::domain::{RateMode, Rating};
 use origa::traits::UserRepository;
 use origa::use_cases::MarkCardAsKnownUseCase;
 use std::collections::HashSet;
@@ -189,10 +188,7 @@ pub fn ScoringStep(
                         }
                     }
 
-                    if user
-                        .rate_card(*card_id, Rating::Easy, RateMode::OnboardingScoring)
-                        .is_ok()
-                    {
+                    if user.mark_card_as_known(*card_id).is_ok() {
                         success_count += 1;
                     } else {
                         tracing::warn!("Failed to rate card {} in batch mark-all", card_id);

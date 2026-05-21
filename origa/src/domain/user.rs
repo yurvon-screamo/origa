@@ -234,6 +234,10 @@ impl User {
         self.knowledge_set.rate_card(card_id, rating, mode)
     }
 
+    pub fn mark_card_as_known(&mut self, card_id: Ulid) -> Result<(), OrigaError> {
+        self.knowledge_set.mark_card_as_known(card_id)
+    }
+
     pub fn delete_card(&mut self, card_id: Ulid) -> Result<(), OrigaError> {
         self.knowledge_set.delete_card(card_id)
     }
@@ -386,7 +390,8 @@ mod tests {
         )
         .unwrap();
         user.knowledge_set_mut()
-            .mark_card_as_known_directly(*study_card1.card_id());
+            .mark_card_as_known(*study_card1.card_id())
+            .unwrap();
 
         let content =
             create_test_content_with_words(&[("猫", JapaneseLevel::N5), ("犬", JapaneseLevel::N5)]);
