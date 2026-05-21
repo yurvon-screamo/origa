@@ -1,28 +1,47 @@
+use super::lesson_progress::LessonProgress;
 use super::lesson_state::LessonContext;
 use crate::i18n::use_i18n;
-use crate::ui_components::PageHeader;
 use leptos::prelude::*;
 use leptos_icons::Icon;
+use leptos_router::hooks::use_navigate;
 
 #[component]
 pub fn LessonHeader() -> impl IntoView {
     let i18n = use_i18n();
+    let navigate = use_navigate();
     let lesson_ctx = use_context::<LessonContext>().expect("LessonContext not provided");
     let is_muted = lesson_ctx.is_muted;
+    let lesson_state = lesson_ctx.lesson_state;
+    let core_count = lesson_ctx.core_count;
 
     let toggle_mute = move || {
         is_muted.update(|m| *m = !*m);
     };
 
+    let current = Signal::derive(move || lesson_state.get().current_index + 1);
+    let total = Signal::derive(move || lesson_state.get().card_ids.len());
+    let core_count_signal = Signal::derive(move || core_count.get());
+
+    let back_label = Signal::derive(move || i18n.get_keys().common().back().inner().to_string());
+
     view! {
-        <PageHeader
-            back_path="/home".to_string()
-            back_label=Signal::derive(move || i18n.get_keys().common().back().inner().to_string())
-            test_id="lesson"
-        >
+        <div class="flex items-center gap-3 mb-2" data-testid="lesson-header">
+            <button
+                data-testid="lesson-back-btn"
+                class="btn btn-ghost px-3 py-2 flex items-center gap-1.5 shrink-0"
+                on:click=move |_| navigate("/home", Default::default())
+            >
+                <Icon icon=icondata::LuArrowLeft width="1.25em" height="1.25em" />
+                <span class="text-sm">{back_label}</span>
+            </button>
+
+            <div class="flex-1 min-w-0">
+                <LessonProgress current=current total=total core_count=core_count_signal />
+            </div>
+
             <button
                 data-testid="lesson-mute-btn"
-                class="btn btn-ghost px-3 py-2"
+                class="btn btn-ghost px-3 py-2 shrink-0"
                 data-muted=move || if is_muted.get() { "true" } else { "false" }
                 on:click=move |_| toggle_mute()
             >
@@ -34,6 +53,6 @@ pub fn LessonHeader() -> impl IntoView {
                         .into_any()
                 }}
             </button>
-        </PageHeader>
+        </div>
     }
 }

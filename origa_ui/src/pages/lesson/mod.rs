@@ -11,7 +11,6 @@ mod lesson_card_container;
 mod lesson_card_header;
 mod lesson_card_question;
 mod lesson_progress;
-mod lesson_progress_view;
 mod lesson_state;
 mod on_dont_know;
 mod on_quiz_select;
@@ -40,8 +39,8 @@ use leptos::prelude::*;
 #[component]
 pub fn Lesson() -> impl IntoView {
     view! {
-        <div class="min-h-screen py-8" data-testid="lesson-page">
-            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8" data-testid="lesson-card">
+        <div class="min-h-screen py-4" data-testid="lesson-page">
+            <div class="max-w-6xl mx-auto px-2 sm:px-4" data-testid="lesson-card">
                 <LessonContent />
             </div>
         </div>
