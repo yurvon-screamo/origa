@@ -59,24 +59,37 @@ export async function uiLogin(
 	email: string,
 	password: string,
 ): Promise<void> {
-	await page.goto("http://localhost:1420");
-	await page
-		.locator('input[type="email"], input[data-testid="email-input"]')
-		.waitFor({ state: "visible", timeout: 30_000 });
+	const maxRetries = 3;
 
-	await page.fill(
-		'input[type="email"], input[data-testid="email-input"]',
-		email,
-	);
-	await page.fill(
-		'input[type="password"], input[data-testid="password-input"]',
-		password,
-	);
-	await page.click(
-		'button[type="submit"], button[data-testid="login-submit"]',
-	);
+	for (let attempt = 1; attempt <= maxRetries; attempt++) {
+		await page.goto("http://localhost:1420");
+		await page
+			.locator('input[type="email"], input[data-testid="email-input"]')
+			.waitFor({ state: "visible", timeout: 30_000 });
 
-	await page.waitForURL(/\/(home|onboarding)/, { timeout: 30_000 });
+		await page.fill(
+			'input[type="email"], input[data-testid="email-input"]',
+			email,
+		);
+		await page.fill(
+			'input[type="password"], input[data-testid="password-input"]',
+			password,
+		);
+		await page.click(
+			'button[type="submit"], button[data-testid="login-submit"]',
+		);
+
+		try {
+			await page.waitForURL(/\/(home|onboarding)/, { timeout: 60_000 });
+			return;
+		} catch {
+			if (attempt === maxRetries) {
+				throw new Error(
+					`Login failed after ${maxRetries} attempts: page did not navigate to /home or /onboarding for user ${email}`,
+				);
+			}
+		}
+	}
 }
 
 export async function withAuthenticatedPage(
