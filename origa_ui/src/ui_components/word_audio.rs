@@ -19,17 +19,15 @@ thread_local! {
 }
 
 pub fn stop_current_audio() {
-    CURRENT_AUDIO.with(|cell| {
-        if let Some(active) = cell.borrow_mut().take() {
-            if let Some(on_stop) = active.on_stop {
-                on_stop();
-            }
-            active.element.set_onended(None);
-            active.element.set_onerror(None);
-            let _ = active.element.pause();
-            active.element.set_src("");
+    let prev = CURRENT_AUDIO.with(|cell| cell.borrow_mut().take());
+    if let Some(active) = prev {
+        if let Some(on_stop) = active.on_stop {
+            on_stop();
         }
-    });
+        active.element.set_onended(None);
+        active.element.set_onerror(None);
+        let _ = active.element.pause();
+    }
     let _ = stop_speech();
 }
 
