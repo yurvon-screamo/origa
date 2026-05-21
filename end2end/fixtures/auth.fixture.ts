@@ -1,6 +1,6 @@
-/* eslint-disable @typescript-eslint/no-empty-object-type */
 import { test as base, type Page } from "@playwright/test";
-import { setupTestUser, withAuthenticatedPage } from "../helpers/auth";
+import { setupTestUser, uiLogin, DEFAULT_TEST_PASSWORD } from "../helpers/auth";
+import { loginTestUser } from "./admin";
 
 export interface AuthFixture {
 	testUserEmail: string;
@@ -37,14 +37,24 @@ export const testWithUniqueUser = base.extend<UniqueUserFixture>({
 	},
 
 	testUserPassword: async ({}, use) => {
-		await use("");
+		await use(DEFAULT_TEST_PASSWORD);
 	},
 
-	page: async ({ browser }, use) => {
-		await withAuthenticatedPage(browser, use);
+	page: async ({ browser, testUserEmail, testUserPassword }, use) => {
+		const context = await browser.newContext();
+		const page = await context.newPage();
+		await page.setViewportSize({ width: 1280, height: 720 });
+
+		try {
+			await uiLogin(page, testUserEmail, testUserPassword);
+			await use(page);
+		} finally {
+			await context.close();
+		}
 	},
 
-	authToken: async ({}, use) => {
-		await use("");
+	authToken: async ({ testUserEmail, testUserPassword }, use) => {
+		const { token } = await loginTestUser(testUserEmail, testUserPassword);
+		await use(token);
 	},
 });

@@ -62,22 +62,7 @@ testWithFreshUser.describe("Onboarding Flow - N4 with ~50% Progress", () => {
         await langRuBtn.click();
         await expect(introTitle).toHaveText(initialTitle ?? '', { timeout: 5000 });
 
-        // Feature cards: vocabulary, kanji, grammar
-        await expect(page.getByTestId("intro-step-feature-showcase")).toBeVisible();
-
-        // Verify each card is a proper Card (has shadow via ::after) with Tag
-        for (const testId of ["intro-step-feature-vocabulary", "intro-step-feature-kanji", "intro-step-feature-grammar"]) {
-            const card = page.getByTestId(testId);
-            await expect(card).toBeVisible();
-            // Card should have border
-            const borderWidth = await card.evaluate((el) => window.getComputedStyle(el).borderWidth);
-            expect(borderWidth).not.toBe("0px");
-        }
-
-        // Verify Tag elements inside cards
-        await expect(page.getByTestId("intro-step-tag-vocabulary")).toBeVisible();
-        await expect(page.getByTestId("intro-step-tag-kanji")).toBeVisible();
-        await expect(page.getByTestId("intro-step-tag-grammar")).toBeVisible();
+        // (Feature cards removed from IntroStep - no longer in UI)
 
         // Welcome text
         await expect(page.getByTestId("intro-step-title")).toBeVisible();

@@ -149,10 +149,10 @@ testWithFreshUser.describe("Lesson Page", () => {
     });
 });
 
+// SKIP REASON: Quiz and YesNo card types require quiz-enabled sets imported via onboarding.
+// Current setupLessonWithCards() creates standard cards only — these tests need
+// dedicated test data (quiz-enabled word sets) to produce quiz/yesno card formats.
 testWithFreshUser.describe("Lesson Page - Quiz Format", () => {
-    // Quiz format requires specific card types that present multiple-choice options
-    // instead of the standard "show answer + rate" flow.
-    // These cards are created via onboarding import with quiz-enabled sets.
     testWithFreshUser.skip("should display quiz options for quiz-format cards", async ({ page }) => {
         test.setTimeout(120_000);
         const lessonPage = await setupLessonWithCards(page);
