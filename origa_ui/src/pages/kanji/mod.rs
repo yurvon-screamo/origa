@@ -4,12 +4,13 @@ mod add_kanji_modal_state;
 mod content;
 mod header;
 mod kanji_card_item;
-mod kanji_detail_drawer;
+mod kanji_detail;
 mod kanji_item;
 mod kanji_list;
 
 pub use content::KanjiContent;
 pub use header::KanjiHeader;
+pub use kanji_detail::KanjiDetail;
 
 use crate::ui_components::{CardLayout, CardLayoutSize, PageLayout, PageLayoutVariant};
 use leptos::prelude::*;

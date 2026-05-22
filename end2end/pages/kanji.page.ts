@@ -23,6 +23,7 @@ export class KanjiPage extends BasePage {
     readonly deleteConfirmBtn: Locator;
     readonly deleteCancelBtn: Locator;
 
+    readonly detailPage: Locator;
     readonly loadMoreButton: Locator;
 
     constructor(page: Page) {
@@ -47,6 +48,8 @@ export class KanjiPage extends BasePage {
         this.deleteCancelBtn = page.getByTestId("kanji-delete-modal-cancel");
 
         this.loadMoreButton = page.getByTestId("kanji-load-more-btn");
+
+        this.detailPage = page.getByTestId("kanji-detail");
     }
 
     async goto(): Promise<void> {
@@ -96,19 +99,16 @@ export class KanjiPage extends BasePage {
         await expect(this.drawer).not.toBeVisible({ timeout: 15_000 });
     }
 
-	async closeDetailDrawer(): Promise<void> {
-		const drawer = this.page.getByTestId("kanji-detail-drawer");
-		if (await drawer.isVisible().catch(() => false)) {
-			await this.page.evaluate(() => {
-				const el = document.querySelector('[data-testid="kanji-detail-drawer-close"]') as HTMLElement;
-				if (el) el.click();
-			});
-			await drawer.waitFor({ state: "hidden", timeout: 5000 }).catch(() => {});
-		}
-	}
+    async expectDetailPageVisible(): Promise<void> {
+        await this.page.waitForURL(/\/kanji\//, { timeout: 5_000 });
+        await expect(this.detailPage).toBeVisible({ timeout: 5_000 });
+    }
+
+    async goBack(): Promise<void> {
+        await this.page.goBack();
+    }
 
     async selectFilter(name: FilterType): Promise<void> {
-        await this.closeDetailDrawer();
         const filterMap: Record<FilterType, string> = {
             "Все": "all",
             "Новые": "new",
@@ -142,7 +142,7 @@ export class KanjiPage extends BasePage {
     }
 
     // Buttons use stop_propagation() in the component, so a bubbling click
-    // won't reach the parent card's on:click handler that opens the detail drawer.
+    // won't reach the parent card's on:click handler that navigates to detail page.
     // Leptos event delegation requires bubbles: true for the handler to fire.
     private async clickCardActionBtn(index: number, btnTestId: string): Promise<void> {
         const selector = `[data-testid="kanji-card-item"]:nth-of-type(${index + 1}) [data-testid="${btnTestId}"]`;

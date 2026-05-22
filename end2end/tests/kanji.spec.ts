@@ -14,7 +14,7 @@ async function setupKanjiPage(page: Page): Promise<KanjiPage> {
 
 async function addFirstKanji(kanjiPage: KanjiPage): Promise<void> {
     await kanjiPage.openAddModal();
-    const firstKanji = kanjiPage.drawer.locator(".border.cursor-pointer").first();
+    const firstKanji = kanjiPage.drawer.getByTestId("kanji-drawer-item").first();
     await expect(firstKanji).toBeVisible({ timeout: 10_000 });
     await firstKanji.click();
     await kanjiPage.addSelectedKanji();
@@ -40,14 +40,14 @@ testWithFreshUser.describe("Kanji Page - CRUD", () => {
         const kanjiPage = await setupKanjiPage(page);
 
         await kanjiPage.openAddModal();
-        const firstN5 = kanjiPage.drawer.locator(".border.cursor-pointer").first();
+        const firstN5 = kanjiPage.drawer.getByTestId("kanji-drawer-item").first();
         await expect(firstN5).toBeVisible({ timeout: 10_000 });
         await firstN5.click();
         await kanjiPage.addSelectedKanji();
 
         await kanjiPage.openAddModal();
         await kanjiPage.selectLevel("N4");
-        const firstN4 = kanjiPage.drawer.locator(".border.cursor-pointer").first();
+        const firstN4 = kanjiPage.drawer.getByTestId("kanji-drawer-item").first();
         if (await firstN4.isVisible().catch(() => false)) {
             await firstN4.click();
             await kanjiPage.addSelectedKanji();
@@ -100,7 +100,7 @@ testWithFreshUser.describe("Kanji Page - Search & Filters", () => {
         const kanjiPage = await setupKanjiPage(page);
 
         await kanjiPage.openAddModal();
-        const items = kanjiPage.drawer.locator(".border.cursor-pointer");
+        const items = kanjiPage.drawer.getByTestId("kanji-drawer-item");
         const first = items.first();
         const second = items.nth(1);
         await expect(first).toBeVisible({ timeout: 10_000 });
@@ -255,8 +255,8 @@ testWithFreshUser.describe("Kanji Page - Pagination", () => {
     });
 });
 
-testWithFreshUser.describe("Kanji Page - Detail Drawer", () => {
-    testWithFreshUser("should open detail drawer when clicking kanji card", async ({ page }) => {
+testWithFreshUser.describe("Kanji Page - Detail Page", () => {
+    testWithFreshUser("should navigate to detail page when clicking kanji card", async ({ page }) => {
         test.setTimeout(60_000);
         const kanjiPage = await setupKanjiPage(page);
         await addFirstKanji(kanjiPage);
@@ -265,11 +265,12 @@ testWithFreshUser.describe("Kanji Page - Detail Drawer", () => {
         const firstCard = page.getByTestId("kanji-card-item").first();
         await firstCard.click();
 
-        const detailDrawer = page.getByTestId("kanji-detail-drawer");
-        await expect(detailDrawer).toBeVisible({ timeout: 5_000 });
+        await page.waitForURL(/\/kanji\//, { timeout: 5_000 });
+        const detailPage = page.getByTestId("kanji-detail");
+        await expect(detailPage).toBeVisible({ timeout: 5_000 });
     });
 
-    testWithFreshUser("should display content in detail drawer", async ({ page }) => {
+    testWithFreshUser("should display content on detail page", async ({ page }) => {
         test.setTimeout(60_000);
         const kanjiPage = await setupKanjiPage(page);
         await addFirstKanji(kanjiPage);
@@ -278,16 +279,16 @@ testWithFreshUser.describe("Kanji Page - Detail Drawer", () => {
         const firstCard = page.getByTestId("kanji-card-item").first();
         await firstCard.click();
 
-        const detailDrawer = page.getByTestId("kanji-detail-drawer");
-        await expect(detailDrawer).toBeVisible({ timeout: 5_000 });
+        await page.waitForURL(/\/kanji\//, { timeout: 5_000 });
+        const detailPage = page.getByTestId("kanji-detail");
+        await expect(detailPage).toBeVisible({ timeout: 5_000 });
 
-        // Drawer should contain some text content (kanji details)
-        const drawerText = await detailDrawer.textContent({ timeout: 5_000 });
-        expect(drawerText).toBeTruthy();
-        expect(drawerText!.length).toBeGreaterThan(0);
+        const pageText = await detailPage.textContent({ timeout: 5_000 });
+        expect(pageText).toBeTruthy();
+        expect(pageText!.length).toBeGreaterThan(0);
     });
 
-    testWithFreshUser("should close detail drawer via close button", async ({ page }) => {
+    testWithFreshUser("should navigate back to kanji list via back button", async ({ page }) => {
         test.setTimeout(60_000);
         const kanjiPage = await setupKanjiPage(page);
         await addFirstKanji(kanjiPage);
@@ -296,11 +297,11 @@ testWithFreshUser.describe("Kanji Page - Detail Drawer", () => {
         const firstCard = page.getByTestId("kanji-card-item").first();
         await firstCard.click();
 
-        const detailDrawer = page.getByTestId("kanji-detail-drawer");
-        await expect(detailDrawer).toBeVisible({ timeout: 5_000 });
+        await page.waitForURL(/\/kanji\//, { timeout: 5_000 });
 
-        await kanjiPage.closeDetailDrawer();
-        await expect(detailDrawer).not.toBeVisible({ timeout: 5_000 });
+        await page.goBack();
+        await page.waitForURL(/\/kanji$/, { timeout: 5_000 });
+        await expect(kanjiPage.kanjiGrid).toBeVisible({ timeout: 5_000 });
     });
 });
 

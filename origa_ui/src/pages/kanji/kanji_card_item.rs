@@ -12,7 +12,7 @@ const RADICALS_MAX_LEN: usize = 20;
 #[component]
 pub fn KanjiCardItem(
     study_card: StudyCard,
-    #[prop(into)] _native_language: Signal<NativeLanguage>,
+    #[prop(into)] native_language: Signal<NativeLanguage>,
     on_toggle_favorite: Callback<Ulid>,
     on_mark_as_known: Callback<()>,
     on_delete: Callback<DeleteRequest>,
@@ -43,6 +43,16 @@ pub fn KanjiCardItem(
         _ => ("?".to_string(), String::new()),
     };
 
+    let study_card_for_answer = study_card.clone();
+    let answer_text = Memo::new(move |_| {
+        let lang = native_language.get();
+        study_card_for_answer
+            .card()
+            .answer(&lang)
+            .map(|a| a.text().to_string())
+            .unwrap_or_default()
+    });
+
     let status = CardStatus::from_study_card(&study_card);
 
     let show_radicals = !radicals.is_empty() && radicals.len() <= RADICALS_MAX_LEN;
@@ -61,10 +71,15 @@ pub fn KanjiCardItem(
     view! {
         <Card class="p-4 cursor-pointer h-full flex flex-col" test_id="kanji-card-item" on:click=move |_: leptos::ev::MouseEvent| on_open_detail.run(())>
             <div class="flex-1 min-h-0 flex items-start gap-3">
-                <div class="w-12 h-12 flex items-center justify-center border border-[var(--border-dark)] bg-[var(--bg-paper)] shrink-0">
-                    <span class="text-2xl font-serif">{kanji_char}</span>
+                <div class="w-16 h-16 flex items-center justify-center border border-[var(--border-dark)] bg-[var(--bg-paper)] shrink-0">
+                    <span class="text-4xl font-serif">{kanji_char}</span>
                 </div>
                 <div class="min-w-0 flex-1">
+                    <Show when=move || !answer_text.get().is_empty()>
+                        <Text size=TextSize::Small variant=TypographyVariant::Muted class=Signal::derive(|| "mt-0.5".to_string())>
+                            {move || answer_text.get()}
+                        </Text>
+                    </Show>
                     <Show when=move || show_radicals>
                         <Text size=TextSize::Small variant=TypographyVariant::Muted class=Signal::derive(|| "mt-0.5".to_string())>
                             {radicals_text}

@@ -1031,6 +1031,41 @@ input[type="submit"],
     transform: scaleX(1);
 }
 
+/* Underline Tabs variant */
+.tabs--underline {
+    display: flex;
+    border-bottom: 1px solid var(--border-dark);
+    overflow-x: auto;
+    -webkit-scrollbar: none;
+    scrollbar-width: none;
+    gap: 0;
+    padding: 0;
+    background: transparent;
+}
+
+.tabs--underline .tab {
+    font-family: var(--font-mono);
+    font-size: var(--text-label-sm, 11px);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 12px 16px;
+    color: var(--fg-muted);
+    border-bottom: 2px solid transparent;
+    transition: color 0.2s ease, border-color 0.2s ease;
+    white-space: nowrap;
+    background: transparent;
+}
+
+.tabs--underline .tab:hover {
+    color: var(--fg-black);
+}
+
+.tabs--underline .tab.active {
+    color: var(--fg-black);
+    border-bottom-color: var(--fg-black);
+    background: transparent;
+}
+
 .tooltip-container {
     position: relative;
     display: inline-block;
@@ -4066,18 +4101,23 @@ input[type="submit"],
 /* CardActionBar */
 .card-action-bar {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 8px;
+    flex-direction: column;
+    gap: 4px;
     border-top: 1px solid var(--border-dark);
     padding-top: 8px;
     margin-top: 8px;
     min-height: 32px;
 }
 
+.card-action-status {
+    display: flex;
+    padding: 4px 0 0;
+}
+
 .card-action-toolbar {
     display: flex;
     align-items: center;
+    justify-content: flex-end;
     gap: 2px;
 }
 
@@ -4087,10 +4127,7 @@ input[type="submit"],
 }
 
 .card-action-bar .tag {
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .icon-btn {
@@ -4255,4 +4292,172 @@ input[type="submit"],
 
 .status-card--difficult .status-label {
     color: var(--accent-terracotta);
+}
+
+/* Kanji Detail Page */
+.kanji-detail-layout {
+    display: grid;
+    gap: 32px;
+}
+
+.kanji-detail-desktop {
+    display: block;
+}
+
+.kanji-detail-mobile {
+    display: none;
+}
+
+@media (min-width: 1024px) {
+    .kanji-detail-layout {
+        grid-template-columns: 400px 1fr;
+    }
+
+    .kanji-detail-left {
+        position: sticky;
+        top: 80px;
+        align-self: start;
+        border-right: 1px solid var(--border-light);
+        padding-right: 32px;
+    }
+}
+
+@media (max-width: 1023px) {
+    .kanji-detail-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .kanji-detail-left {
+        border-right: none;
+        padding-right: 0;
+    }
+
+    .kanji-detail-desktop {
+        display: none;
+    }
+
+    .kanji-detail-mobile {
+        display: block;
+    }
+}
+
+.kanji-detail-hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+.kanji-detail-hero-kanji {
+    width: 120px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-dark);
+    background: var(--bg-paper);
+    position: relative;
+    font-family: var(--font-serif);
+    font-size: 72px;
+}
+
+@media (max-width: 1023px) {
+    .kanji-detail-hero-kanji {
+        width: 96px;
+        height: 96px;
+        font-size: 56px;
+    }
+}
+
+.kanji-detail-hero-kanji::after {
+    content: "";
+    position: absolute;
+    bottom: -6px;
+    right: -6px;
+    width: 100%;
+    height: 100%;
+    border: 1px solid var(--border-dark);
+    z-index: -1;
+    background: var(--bg-aged);
+}
+
+.kanji-detail-section {
+    padding-top: 24px;
+    margin-top: 24px;
+    border-top: 1px solid var(--border-light);
+}
+
+.kanji-detail-section-title {
+    font-family: var(--font-mono);
+    font-size: var(--text-label-sm, 11px);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+    margin-bottom: 12px;
+}
+
+.kanji-detail-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 16px;
+}
+
+/* === Kanji Grid (Add Kanji Drawer) === */
+.kanji-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+    gap: 8px;
+}
+
+.kanji-grid-tile {
+    position: relative;
+    border: 1px solid var(--border-dark);
+    padding: 10px 6px;
+    text-align: center;
+    cursor: pointer;
+    background: var(--bg-paper);
+    transition: background-color var(--anima-duration-normal) var(--anima-ease-paper);
+}
+
+.kanji-grid-tile:hover {
+    background: var(--bg-aged);
+}
+
+.kanji-grid-tile--selected {
+    border-color: var(--accent-olive);
+    background: var(--bg-warm);
+}
+
+.kanji-grid-tile--known {
+    opacity: 0.45;
+}
+
+.kanji-grid-tile-char {
+    font-family: var(--font-serif);
+    font-size: 24px;
+    display: block;
+    line-height: 1.2;
+}
+
+.kanji-grid-tile-meaning {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--fg-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: block;
+    margin-top: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.kanji-grid-tile-check {
+    position: absolute;
+    top: 2px;
+    right: 4px;
+    font-size: 12px;
+    color: var(--accent-olive);
+    font-weight: bold;
 }

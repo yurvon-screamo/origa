@@ -3,7 +3,6 @@ use super::super::shared::{
     create_mark_as_known_callback, create_toggle_favorite_callback,
 };
 use super::kanji_card_item::KanjiCardItem;
-use super::kanji_detail_drawer::KanjiDetailDrawer;
 use crate::i18n::{t, use_i18n};
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{
@@ -12,6 +11,7 @@ use crate::ui_components::{
 use leptos::either::Either;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
+use leptos_router::hooks::use_navigate;
 use origa::domain::{Card, StudyCard, User};
 use origa::traits::UserRepository;
 
@@ -59,6 +59,8 @@ pub fn KanjiContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
     let is_loading = RwSignal::new(true);
     let all_cards: RwSignal<Vec<StudyCard>> = RwSignal::new(Vec::new());
 
+    let navigate = StoredValue::new(use_navigate());
+
     let repo_for_init = repository.clone();
     Effect::new(move |_| {
         load_user_data(repo_for_init.clone(), current_user, all_cards, is_loading);
@@ -78,18 +80,10 @@ pub fn KanjiContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
     let native_lang =
         Memo::new(move |_| crate::i18n::locale_to_native_language(&i18n.get_locale()));
 
-    let known_kanji = Memo::new(move |_| {
-        current_user
-            .get()
-            .map(|u| u.knowledge_set().get_known_kanji())
-            .unwrap_or_default()
-    });
-
     let search = RwSignal::new(String::new());
     let filter = RwSignal::new(Filter::All);
     let toasts: RwSignal<Vec<ToastData>> = RwSignal::new(Vec::new());
     let visible_count: RwSignal<usize> = RwSignal::new(50);
-    let selected_card: RwSignal<Option<StudyCard>> = RwSignal::new(None);
 
     let on_toggle_favorite =
         create_toggle_favorite_callback(repository.clone(), current_user, refresh_trigger);
@@ -161,18 +155,6 @@ pub fn KanjiContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
         })
     });
 
-    let all_cards_for_selected = all_cards;
-    let selected_card_id: Memo<Option<ulid::Ulid>> =
-        Memo::new(move |_| selected_card.get().map(|c| *c.card_id()));
-    Effect::new(move |_| {
-        if let Some(id) = selected_card_id.get() {
-            let cards = all_cards_for_selected.get();
-            if let Some(updated) = cards.iter().find(|c| *c.card_id() == id) {
-                selected_card.set(Some(updated.clone()));
-            }
-        }
-    });
-
     view! {
         <div class="space-y-4">
             <Show when=move || is_loading.get()>
@@ -211,16 +193,20 @@ pub fn KanjiContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
                                     key=|card| format!("{}-{}", card.card_id(), card.is_favorite())
                                     children=move |card| {
                                         let card_id = *card.card_id();
-                                        let card_for_detail = card.clone();
+                                        let card_id_for_nav = *card.card_id();
+                                        let nav_store = navigate;
                                         view! {
                                             <KanjiCardItem
                                                 study_card=card
-                                                _native_language=native_lang
+                                                native_language=native_lang
                                                 on_toggle_favorite=on_toggle_favorite
                                                 on_mark_as_known=Callback::new(move |_| on_mark_as_known.run(card_id))
                                                 on_delete=on_delete
                                                 is_deleting=is_deleting.into()
-                                                on_open_detail=Callback::new(move |_| selected_card.set(Some(card_for_detail.clone())))
+                                                on_open_detail=Callback::new(move |_| {
+                                                    let nav = nav_store.get_value();
+                                                    nav(&format!("/kanji/{}", card_id_for_nav), Default::default());
+                                                })
                                             />
                                         }
                                     }
@@ -235,25 +221,6 @@ pub fn KanjiContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
                     test_id=Signal::derive(|| "kanji-load-more-btn".to_string())
                 />
                 <ToastContainer toasts=toasts duration_ms=5000 />
-
-                <Show when=move || selected_card.get().is_some()>
-                    {move || {
-                        let card = selected_card.get()?;
-                        let card_id = *card.card_id();
-                        Some(view! {
-                            <KanjiDetailDrawer
-                                study_card=card
-                                native_language=native_lang
-                                known_kanji=known_kanji.get()
-                                on_toggle_favorite=on_toggle_favorite
-                                on_mark_as_known=Callback::new(move |_| on_mark_as_known.run(card_id))
-                                on_delete=on_delete
-                                is_deleting=is_deleting.into()
-                                on_close=Callback::new(move |_| selected_card.set(None))
-                            />
-                        }.into_any())
-                    }}
-                </Show>
             </Show>
         </div>
     }
