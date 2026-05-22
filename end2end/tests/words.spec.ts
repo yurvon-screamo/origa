@@ -262,7 +262,7 @@ testWithFreshUser.describe("Words Page - OCR Image Recognition", () => {
 
         // Wait for OCR to complete and text analysis to finish
         // OCR downloads models (~50MB), then processes image, then auto-analyzes text
-        await wordsPage.drawer.getByText(/Найдено/).waitFor({ state: "visible", timeout: 600_000 });
+        await wordsPage.drawer.getByText(/Найдено/).waitFor({ state: "visible", timeout: 1_200_000 });
 
         // Verify key Japanese words were recognized from the test image
         const drawerText = await wordsPage.drawer.textContent({ timeout: 5000 });
@@ -293,7 +293,7 @@ testWithFreshUser.describe("Words Page - Audio Transcription", () => {
         await wordsPage.uploadAudioFile(path.resolve(__dirname, "../fixtures/standard_sample1.wav"));
 
         // Wait for Whisper model download + transcription + text analysis
-        await wordsPage.drawer.getByText(/Найдено/).waitFor({ state: "visible", timeout: 600_000 });
+        await wordsPage.drawer.getByText(/Найдено/).waitFor({ state: "visible", timeout: 1_200_000 });
 
         // Verify words were found
         const drawerText = await wordsPage.drawer.textContent({ timeout: 5000 });
