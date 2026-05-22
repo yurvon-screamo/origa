@@ -103,13 +103,18 @@ def write_json_atomic(path: Path, data: list[dict]) -> None:
 
 def translate_text(client: openai.OpenAI, model: str, text: str, target_lang: str) -> str:
     prompt = f"<<<source>>>ja<<<target>>>{target_lang}<<<text>>>{text}"
-    response = client.completions.create(
+    response = client.chat.completions.create(
         model=model,
-        prompt=prompt,
+        messages=[
+            {
+                "role": "user",
+                "content": prompt,
+            }
+        ],
         max_tokens=200,
         temperature=0.0,
     )
-    return response.choices[0].text.strip()
+    return response.choices[0].message.content.strip()
 
 
 def translate_phrase(

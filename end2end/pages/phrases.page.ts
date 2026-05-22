@@ -32,10 +32,11 @@ export class PhrasesPage extends BasePage {
         await this.navigate("/phrases");
     }
 
-    async expectPhrasesVisible(): Promise<void> {
-        await expect(this.phrasesPage).toBeVisible();
-        await expect(this.phrasesCard).toBeVisible();
-        await expect(this.phrasesTitle).toBeVisible();
+    async expectPhrasesVisible(timeout = 30_000): Promise<void> {
+        // Leptos WASM hydration may take several seconds after navigation
+        await expect(this.phrasesPage).toBeVisible({ timeout });
+        await expect(this.phrasesCard).toBeVisible({ timeout });
+        await expect(this.phrasesTitle).toBeVisible({ timeout });
     }
 
     async searchPhrases(query: string): Promise<void> {
