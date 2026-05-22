@@ -226,6 +226,8 @@
         "check": "Check",
         "multi_perfect": "✓ All readings selected!",
         "multi_partial": "Some readings missed or extra options selected",
+        "missed_options": "Missed:",
+        "extra_options": "Extra:",
         "enter_key": "[Enter]"
     },
     "home": {

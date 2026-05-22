@@ -227,15 +227,12 @@ impl OptionDisplay {
             },
             OptionDisplay::Wrong => {
                 format!(
-                    "{} border-[var(--error)] border-l-4 border-l-[var(--error)] bg-[var(--bg-warm)] pointer-events-none",
+                    "{} border-[var(--error)] border-l-4 border-l-[var(--error)] bg-[var(--bg-warm)] pointer-events-none anima-shake",
                     base
                 )
             },
             OptionDisplay::Missed => {
-                format!(
-                    "{} border-dashed border-[var(--success)] border-l-solid border-l-4 border-l-[var(--success)] bg-[var(--bg-warm)] pointer-events-none",
-                    base
-                )
+                format!("{} quiz-option-missed pointer-events-none", base)
             },
             OptionDisplay::Dimmed => {
                 format!("{} opacity-50 pointer-events-none", base)

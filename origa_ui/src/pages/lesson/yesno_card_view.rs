@@ -131,7 +131,7 @@ pub fn YesNoCardView(
             if !is_statement_correct {
                 "quiz-option-correct".to_string()
             } else if no_selected {
-                "quiz-option-wrong".to_string()
+                "quiz-option-wrong anima-shake".to_string()
             } else {
                 "quiz-option-dimmed".to_string()
             }
@@ -145,7 +145,7 @@ pub fn YesNoCardView(
             if is_statement_correct {
                 "quiz-option-correct".to_string()
             } else if yes_selected {
-                "quiz-option-wrong".to_string()
+                "quiz-option-wrong anima-shake".to_string()
             } else {
                 "quiz-option-dimmed".to_string()
             }

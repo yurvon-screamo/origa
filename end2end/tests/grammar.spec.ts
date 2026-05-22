@@ -137,7 +137,7 @@ testWithFreshUser.describe("Grammar Page - Search & Filters", () => {
     });
 
     testWithFreshUser("should navigate to home via sidebar", async ({ page }) => {
-        const grammarPage = await setupGrammarPage(page);
+        await setupGrammarPage(page);
         await page.getByTestId("sidebar-tab-home").click();
         await page.waitForURL(/\/home$/, { timeout: 10000 });
         await expect(page).toHaveURL(/\/home$/);

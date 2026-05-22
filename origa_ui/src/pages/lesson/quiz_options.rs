@@ -37,7 +37,13 @@ pub fn QuizOptions(
                             ""
                         };
 
-                        let class = format!("{} {} {} {}", base_class, disabled_class, result_class, selected_ring);
+                        let shake_class = if show_result && is_selected && matches!(quiz_result, QuizResult::Incorrect) {
+                            "anima-shake"
+                        } else {
+                            ""
+                        };
+
+                        let class = format!("{} {} {} {} {}", base_class, disabled_class, result_class, selected_ring, shake_class);
                         let key_hint = format!("[{}]", index + 1);
                         let option_text = option.text().to_string();
 
