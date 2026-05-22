@@ -196,6 +196,11 @@ match.file_patterns = ["**/origa_ui/**"]
 set.level = "medium"
 
 [[triage]]
+match.plugins = ["ripgrep"]
+match.file_patterns = ["**/end2end/**"]
+set.ignored = true
+
+[[triage]]
 match.plugins = ["clippy"]
 match.rules = ["clippy::arc_with_dispatch"]
 set.level = "low"
