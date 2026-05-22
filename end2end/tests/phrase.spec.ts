@@ -164,9 +164,12 @@ testWithFreshUser.describe("Phrases after full onboarding", () => {
 
         const phrasesPage = new PhrasesPage(page);
         await phrasesPage.goto();
+        await page.waitForURL(/\/phrases$/, { timeout: 10_000 });
+        await page.waitForLoadState("networkidle");
+        // Wait for WASM hydration to complete (Leptos renders after JS loads)
+        await page.locator(".loading-spinner").waitFor({ state: "hidden", timeout: 30_000 }).catch(() => {});
         await phrasesPage.expectPhrasesVisible();
 
-        // CDN loading may take time for phrase data
         await expect(phrasesPage.emptyState).not.toBeVisible({ timeout: 30_000 });
     });
 
@@ -178,6 +181,10 @@ testWithFreshUser.describe("Phrases after full onboarding", () => {
 
         const phrasesPage = new PhrasesPage(page);
         await phrasesPage.goto();
+        await page.waitForURL(/\/phrases$/, { timeout: 10_000 });
+        await page.waitForLoadState("networkidle");
+        // Wait for WASM hydration to complete (Leptos renders after JS loads)
+        await page.locator(".loading-spinner").waitFor({ state: "hidden", timeout: 30_000 }).catch(() => {});
         await phrasesPage.expectPhrasesVisible();
 
         // Wait for phrase data to load from CDN
@@ -189,7 +196,7 @@ testWithFreshUser.describe("Phrases after full onboarding", () => {
 
         // CRITICAL: Verify phrase text is NOT empty (reproduces the bug)
         const phraseText = firstCard.getByTestId("phrases-card-text");
-        await expect(phraseText).toContainText(/\S/, { timeout: 30_000 });
+        await expect(phraseText).toContainText(/\S/, { timeout: 60_000 });
 
         // Verify meaning/translation is present
         const meaning = firstCard.getByTestId("phrases-card-meaning");
@@ -204,6 +211,10 @@ testWithFreshUser.describe("Phrases after full onboarding", () => {
 
         const phrasesPage = new PhrasesPage(page);
         await phrasesPage.goto();
+        await page.waitForURL(/\/phrases$/, { timeout: 10_000 });
+        await page.waitForLoadState("networkidle");
+        // Wait for WASM hydration to complete (Leptos renders after JS loads)
+        await page.locator(".loading-spinner").waitFor({ state: "hidden", timeout: 30_000 }).catch(() => {});
         await phrasesPage.expectPhrasesVisible();
 
         await expect(phrasesPage.emptyState).not.toBeVisible({ timeout: 30_000 });
@@ -229,6 +240,10 @@ testWithFreshUser.describe("Phrases after full onboarding", () => {
 
         const phrasesPage = new PhrasesPage(page);
         await phrasesPage.goto();
+        await page.waitForURL(/\/phrases$/, { timeout: 10_000 });
+        await page.waitForLoadState("networkidle");
+        // Wait for WASM hydration to complete (Leptos renders after JS loads)
+        await page.locator(".loading-spinner").waitFor({ state: "hidden", timeout: 30_000 }).catch(() => {});
         await phrasesPage.expectPhrasesVisible();
 
         await expect(phrasesPage.emptyState).not.toBeVisible({ timeout: 30_000 });
