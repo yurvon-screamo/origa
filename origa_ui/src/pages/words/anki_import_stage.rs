@@ -9,7 +9,8 @@ use crate::utils::use_drag_and_drop;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::use_cases::{
-    AnkiCard, AnkiFieldInfo, ImportAnkiPackUseCase, extract_cards, read_anki_database,
+    AnkiCard, AnkiFieldInfo, ImportAnkiPackUseCase, extract_anki_db_bytes, extract_cards,
+    read_anki_database,
 };
 use std::sync::Arc;
 use wasm_bindgen::JsCast;
@@ -75,7 +76,26 @@ pub fn AnkiImportStage(
                 }
                 file_bytes.set_value(bytes.clone());
 
-                match read_anki_database(&bytes) {
+                let db_bytes = match extract_anki_db_bytes(&bytes) {
+                    Ok(b) => b,
+                    Err(e) => {
+                        if disposed.is_disposed() {
+                            return;
+                        }
+                        stage.set(Stage::Error);
+                        error_message.set(
+                            i18n.get_keys()
+                                .words()
+                                .anki_import()
+                                .deck_read_error()
+                                .inner()
+                                .to_string()
+                                .replacen("{}", &e.to_string(), 1),
+                        );
+                        return;
+                    },
+                };
+                match read_anki_database(&db_bytes) {
                     Ok(deck_info) => {
                         if disposed.is_disposed() {
                             return;
