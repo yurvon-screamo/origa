@@ -4,8 +4,8 @@ use super::kanji_list::KanjiList;
 use crate::i18n::{t, use_i18n};
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{
-    Button, ButtonSize, ButtonVariant, Drawer, ErrorAlert, LevelSelector, SelectedCount, Spinner,
-    Text, TextSize, TypographyVariant,
+    Button, ButtonSize, ButtonVariant, Drawer, ErrorAlert, Input, LevelSelector, SelectedCount,
+    Spinner, Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
 use leptos::task::spawn_local;
@@ -56,6 +56,24 @@ pub fn AddKanjiModal(is_open: RwSignal<bool>, refresh_trigger: RwSignal<u32>) ->
     let state = ModalState::new(is_open, refresh_trigger);
     let handlers = ModalHandlers::new(&state, is_open);
 
+    let filtered_kanji = Memo::new(move |_| {
+        let query = state.search_query.get().to_lowercase();
+        let kanji_list = state.available_kanji.get();
+        let lang = native_language.get();
+        if query.is_empty() {
+            kanji_list
+        } else {
+            kanji_list
+                .into_iter()
+                .filter(|k| {
+                    let kanji_str = k.kanji().to_string().to_lowercase();
+                    let desc = k.description(&lang).to_string().to_lowercase();
+                    kanji_str.contains(&query) || desc.contains(&query)
+                })
+                .collect()
+        }
+    });
+
     Effect::new({
         let state = state.clone();
         move |_| {
@@ -91,6 +109,12 @@ pub fn AddKanjiModal(is_open: RwSignal<bool>, refresh_trigger: RwSignal<u32>) ->
                     test_id_prefix="kanji-level"
                 />
 
+                <Input
+                    value=state.search_query
+                    placeholder=Signal::derive(move || i18n.get_keys().common().search().inner().to_string())
+                    test_id="kanji-drawer-search"
+                />
+
                 <div>
                     <div class="flex items-center justify-between mb-2">
                         <Text size=TextSize::Small variant=TypographyVariant::Muted>
@@ -110,7 +134,6 @@ pub fn AddKanjiModal(is_open: RwSignal<bool>, refresh_trigger: RwSignal<u32>) ->
                     </div>
                     {move || {
                         let is_loading = state.is_loading_kanji.get();
-                        let kanji_list = state.available_kanji.get();
 
                         if is_loading {
                             view! {
@@ -122,6 +145,7 @@ pub fn AddKanjiModal(is_open: RwSignal<bool>, refresh_trigger: RwSignal<u32>) ->
                                 </div>
                             }.into_any()
                         } else {
+                            let kanji_list = filtered_kanji.get();
                             view! {
                                 <KanjiList
                                     kanji_list=kanji_list

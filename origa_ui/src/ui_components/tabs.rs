@@ -11,7 +11,13 @@ pub fn Tabs(
     #[prop(into)] tabs: Signal<Vec<TabItem>>,
     #[prop(optional)] active: RwSignal<String>,
     #[prop(optional, into)] test_id: Signal<String>,
+    #[prop(optional, into)] class: String,
 ) -> impl IntoView {
+    let extra_class = if class.is_empty() {
+        String::new()
+    } else {
+        format!(" {class}")
+    };
     let test_id_val = move || {
         let val = test_id.get();
         if val.is_empty() { None } else { Some(val) }
@@ -31,7 +37,7 @@ pub fn Tabs(
     };
 
     view! {
-        <div class="tabs" data-testid=test_id_val>
+        <div class=format!("tabs{extra_class}") data-testid=test_id_val>
             <For
                 each=move || tabs.get()
                 key=|tab| tab.id.clone()

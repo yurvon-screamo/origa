@@ -26,7 +26,7 @@ pub fn KanjiList(
     }
 
     view! {
-        <div class="space-y-2 overflow-y-auto">
+        <div class="kanji-grid overflow-y-auto">
             <For
                 each=move || kanji_list.clone()
                 key=|kanji| kanji.kanji().to_string()

@@ -15,6 +15,7 @@ pub mod words;
 pub use grammar::Grammar;
 pub use home::Home;
 pub use kanji::Kanji;
+pub use kanji::KanjiDetail;
 pub use lesson::Lesson;
 pub use login::Login;
 pub use onboarding::Onboarding;

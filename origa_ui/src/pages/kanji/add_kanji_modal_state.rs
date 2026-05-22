@@ -16,6 +16,7 @@ pub struct ModalState {
     pub error_message: RwSignal<Option<String>>,
     pub repository: HybridUserRepository,
     pub refresh_trigger: RwSignal<u32>,
+    pub search_query: RwSignal<String>,
 }
 
 impl ModalState {
@@ -43,6 +44,7 @@ impl ModalState {
             error_message: RwSignal::new(None),
             repository,
             refresh_trigger,
+            search_query: RwSignal::new(String::new()),
         }
     }
 
@@ -114,6 +116,7 @@ impl ModalState {
     pub fn select_level(&self, level: JapaneseLevel) {
         self.selected_level.set(level);
         self.selected_kanji.set(HashSet::new());
+        self.search_query.set(String::new());
         self.load_kanji();
     }
 
