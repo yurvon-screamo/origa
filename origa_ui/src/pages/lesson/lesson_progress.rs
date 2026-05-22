@@ -72,18 +72,12 @@ pub fn LessonProgress(
     };
 
     view! {
-        <div>
-            <div class="flex justify-end mb-1">
-                <span class="font-mono text-[10px]" data-testid="lesson-progress-text">
-                    {label_text}
-                </span>
-            </div>
-
+        <div class="flex items-center gap-2 w-full">
             <Show
                 when=has_phrases
                 fallback=move || {
                     view! {
-                        <div class="progress-track-lesson">
+                        <div class="flex-1 progress-track-lesson">
                             <div
                                 class="progress-fill-core"
                                 style=move || format!("width: {}%", single_fill_width() as u32)
@@ -92,7 +86,7 @@ pub fn LessonProgress(
                     }
                 }
             >
-                <div class="progress-container">
+                <div class="flex-1 progress-container">
                     <div class="progress-track-lesson">
                         <div
                             class="progress-fill-core"
@@ -116,6 +110,10 @@ pub fn LessonProgress(
                     ></div>
                 </div>
             </Show>
+
+            <span class="font-mono text-[10px] shrink-0" data-testid="lesson-progress-text">
+                {label_text}
+            </span>
         </div>
     }
 }
