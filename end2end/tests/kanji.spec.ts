@@ -145,7 +145,7 @@ testWithFreshUser.describe("Kanji Page - Search & Filters", () => {
 
 testWithFreshUser.describe("Kanji Page - Navigation", () => {
     testWithFreshUser("should navigate to home via sidebar", async ({ page }) => {
-        const kanjiPage = await setupKanjiPage(page);
+        await setupKanjiPage(page);
         await page.getByTestId("sidebar-tab-home").click();
         await page.waitForURL(/\/home$/, { timeout: 10000 });
         await expect(page).toHaveURL(/\/home$/);

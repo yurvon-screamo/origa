@@ -73,12 +73,6 @@ testWithFreshUser.describe("Lesson Page", () => {
         test.setTimeout(120_000);
         const lessonPage = await setupLessonWithCards(page);
 
-        const alreadyComplete = await lessonPage.completeScreen.isVisible().catch(() => false);
-        if (alreadyComplete) {
-            test.skip();
-            return;
-        }
-
         await rateCardUntilDone(lessonPage, "good");
 
         await lessonPage.waitForComplete();
@@ -117,12 +111,6 @@ testWithFreshUser.describe("Lesson Page", () => {
         test.setTimeout(120_000);
         const lessonPage = await setupLessonWithCards(page);
 
-        const alreadyComplete = await lessonPage.completeScreen.isVisible().catch(() => false);
-        if (alreadyComplete) {
-            test.skip();
-            return;
-        }
-
         await rateCardUntilDone(lessonPage, "good");
 
         await lessonPage.waitForComplete();
@@ -135,43 +123,10 @@ testWithFreshUser.describe("Lesson Page", () => {
         test.setTimeout(120_000);
         const lessonPage = await setupLessonWithCards(page);
 
-        const alreadyComplete = await lessonPage.completeScreen.isVisible().catch(() => false);
-        if (alreadyComplete) {
-            test.skip();
-            return;
-        }
-
         await rateCardUntilDone(lessonPage, "good");
 
         await lessonPage.waitForComplete();
         await lessonPage.clickHome();
         await page.waitForURL(/\/home$/, { timeout: 10_000 });
-    });
-});
-
-// SKIP REASON: Quiz and YesNo card types require quiz-enabled sets imported via onboarding.
-// Current setupLessonWithCards() creates standard cards only — these tests need
-// dedicated test data (quiz-enabled word sets) to produce quiz/yesno card formats.
-testWithFreshUser.describe("Lesson Page - Quiz Format", () => {
-    testWithFreshUser.skip("should display quiz options for quiz-format cards", async ({ page }) => {
-        test.setTimeout(120_000);
-        const lessonPage = await setupLessonWithCards(page);
-
-        await expect(lessonPage.quizOptions[0]).toBeVisible({ timeout: 10_000 });
-        await expect(lessonPage.quizOptions[1]).toBeVisible();
-        await expect(lessonPage.quizOptions[2]).toBeVisible();
-        await expect(lessonPage.quizOptions[3]).toBeVisible();
-
-        await lessonPage.selectQuizOption(0);
-    });
-
-    testWithFreshUser.skip("should display yes/no buttons for yesno-format cards", async ({ page }) => {
-        test.setTimeout(120_000);
-        const lessonPage = await setupLessonWithCards(page);
-
-        await expect(lessonPage.yesnoYesBtn).toBeVisible({ timeout: 10_000 });
-        await expect(lessonPage.yesnoNoBtn).toBeVisible();
-
-        await lessonPage.yesnoYesBtn.click();
     });
 });

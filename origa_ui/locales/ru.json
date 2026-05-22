@@ -226,6 +226,8 @@
     "check": "Проверить",
     "multi_perfect": "✓ Все чтения выбраны!",
     "multi_partial": "Есть пропущенные или лишние варианты",
+    "missed_options": "Пропущено:",
+    "extra_options": "Лишнее:",
     "enter_key": "[Enter]"
   },
   "home": {

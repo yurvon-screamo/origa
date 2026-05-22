@@ -330,12 +330,6 @@ testWithFreshUser.describe("Onboarding Flow - N4 with ~50% Progress", () => {
         // Fixture already logged in — wait for navigation to complete
         await page.waitForURL(/\/(home|onboarding)/, { timeout: 30_000 });
 
-        // If we're not on onboarding, check if we're on home (skip onboarding might be automatic)
-        if (page.url().includes("/home")) {
-            test.skip();
-            return;
-        }
-
         await expect(page.getByTestId("onboarding-spinner")).not.toBeVisible({ timeout: 10_000 });
 
         // Intro → Load
@@ -483,7 +477,7 @@ testWithFreshUser.describe("Onboarding - Scoring Step", () => {
     testWithFreshUser("should display scoring step with cards after import", async ({ page }) => {
         test.setTimeout(300_000);
         const reachedScoring = await completeOnboardingToScoring(page);
-        test.skip(!reachedScoring, "User redirected to home, cannot reach scoring step");
+        expect(reachedScoring).toBeTruthy();
 
         await expect(page.getByTestId("onboarding-scoring-step")).toBeVisible();
         await expect(page.getByTestId("scoring-step-hint")).toBeVisible();
@@ -497,7 +491,7 @@ testWithFreshUser.describe("Onboarding - Scoring Step", () => {
     testWithFreshUser("should skip card with 'Don't Know' button", async ({ page }) => {
         test.setTimeout(300_000);
         const reachedScoring = await completeOnboardingToScoring(page);
-        test.skip(!reachedScoring, "User redirected to home, cannot reach scoring step");
+        expect(reachedScoring).toBeTruthy();
 
         const progressBefore = await page.getByTestId("scoring-step-progress").textContent();
 
@@ -511,7 +505,7 @@ testWithFreshUser.describe("Onboarding - Scoring Step", () => {
     testWithFreshUser("should mark card as known with 'Know' button", async ({ page }) => {
         test.setTimeout(300_000);
         const reachedScoring = await completeOnboardingToScoring(page);
-        test.skip(!reachedScoring, "User redirected to home, cannot reach scoring step");
+        expect(reachedScoring).toBeTruthy();
 
         await page.getByTestId("scoring-step-know").click();
         await Promise.race([
@@ -525,7 +519,7 @@ testWithFreshUser.describe("Onboarding - Scoring Step", () => {
     testWithFreshUser("should complete scoring when all cards processed", async ({ page }) => {
         test.setTimeout(300_000);
         const reachedScoring = await completeOnboardingToScoring(page);
-        test.skip(!reachedScoring, "User redirected to home, cannot reach scoring step");
+        expect(reachedScoring).toBeTruthy();
 
         for (let i = 0; i < 3; i++) {
             const dontKnowBtn = page.getByTestId("scoring-step-dont-know");
@@ -547,7 +541,7 @@ testWithFreshUser.describe("Onboarding - Scoring Step", () => {
     testWithFreshUser("should mark all remaining as known", async ({ page }) => {
         test.setTimeout(300_000);
         const reachedScoring = await completeOnboardingToScoring(page);
-        test.skip(!reachedScoring, "User redirected to home, cannot reach scoring step");
+        expect(reachedScoring).toBeTruthy();
 
         // Ensure scoring step is fully loaded before clicking mark-all
         await expect(page.getByTestId("scoring-step-hint")).toBeVisible({ timeout: 30_000 });
@@ -561,7 +555,7 @@ testWithFreshUser.describe("Onboarding - Scoring Step", () => {
     testWithFreshUser("should skip scoring and navigate to home", async ({ page }) => {
         test.setTimeout(300_000);
         const reachedScoring = await completeOnboardingToScoring(page);
-        test.skip(!reachedScoring, "User redirected to home, cannot reach scoring step");
+        expect(reachedScoring).toBeTruthy();
 
         await page.getByTestId("onboarding-skip-scoring").click();
         await page.waitForURL(/\/home$/, { timeout: 30_000 });

@@ -196,7 +196,11 @@ pub fn QuizCardView(
                                 .map(|r| {
                                     let result = QuizResult::from_multi_result(&r);
                                     view! {
-                                        <QuizResultDisplay quiz_result=result />
+                                        <QuizResultDisplay
+                                            quiz_result=result
+                                            multi_result=multi_result_stored.get_value()
+                                            options=options.get_value()
+                                        />
                                     }
                                 })
                         }}

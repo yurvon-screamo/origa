@@ -98,15 +98,8 @@ async function completeFullOnboarding(page: Page): Promise<void> {
     await page.getByTestId("onboarding-next").click();
     await expect(page.getByTestId("onboarding-summary-step")).toBeVisible();
 
-    // Check if import button is enabled (may be disabled if no sets selected)
-    const importBtn = page.getByTestId("onboarding-import");
-    const isEnabled = await importBtn.isEnabled().catch(() => false);
-    if (!isEnabled) {
-        test.skip();
-        return;
-    }
-
     // Summary → Import
+    const importBtn = page.getByTestId("onboarding-import");
     await importBtn.click();
     await expect(page.getByTestId("onboarding-scoring-step")).toBeVisible({ timeout: 120_000 });
 
