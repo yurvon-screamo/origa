@@ -74,7 +74,7 @@ pub fn Login() -> impl IntoView {
 
     view! {
         <PageLayout variant=PageLayoutVariant::Full test_id=Signal::derive(|| "login-page".to_string())>
-            <CardLayout size=CardLayoutSize::Adaptive class="px-4 py-8" test_id=Signal::derive(|| "login-card".to_string())>
+            <CardLayout size=CardLayoutSize::Adaptive class="px-4 pt-4 pb-8" test_id=Signal::derive(|| "login-card".to_string())>
                 <LoginLanguageToggle test_id=Signal::derive(|| "login-lang-toggle".to_string()) />
                 <LoginHeader />
                 <div class="space-y-6">
