@@ -31,6 +31,8 @@ pub fn LessonCard(
     let card_type = CardType::from(&card);
     let is_phrase = card_type == CardType::Phrase;
     let lang = native_language;
+    let is_na_adj = super::na_adjective_helper::is_na_adjective_card(&card);
+
     let question_text = match card.question(&lang) {
         Ok(q) => q.text().to_string(),
         Err(e) => {
@@ -43,7 +45,12 @@ pub fn LessonCard(
             String::new()
         },
     };
-    let question = StoredValue::new(question_text);
+    let question = StoredValue::new(question_text.clone());
+    let display_question = StoredValue::new(if is_na_adj {
+        super::na_adjective_helper::append_na_suffix(&question_text)
+    } else {
+        question_text.clone()
+    });
 
     let answer_text = match card.answer(&lang) {
         Ok(a) => a.text().to_string(),
@@ -227,7 +234,7 @@ pub fn LessonCard(
         <Card class=Signal::derive(|| "p-4 sm:p-6 min-h-[250px] sm:min-h-[300px] flex flex-col".to_string()) shadow=Signal::derive(|| true)>
             <LessonCardHeader
                 card_type=card_type
-                question_text=if is_reversed { answer.get_value() } else { question.get_value() }
+                question_text=if is_reversed { answer.get_value() } else { display_question.get_value() }
                 grammar_info=grammar_info.clone()
                 show_answer=show_answer
                 audio_src=audio_src
@@ -236,7 +243,7 @@ pub fn LessonCard(
             <div class="flex-1 flex flex-col justify-center">
                 <Show when=move || !show_answer>
                     <LessonCardQuestion
-                        question_text=question.get_value()
+                        question_text=display_question.get_value()
                         kanji=kanji_stored.get_value()
                         is_reversed=is_reversed
                         on_show_answer=on_show_answer
@@ -246,7 +253,7 @@ pub fn LessonCard(
 
                 <Show when=move || show_answer>
                     <LessonCardAnswer
-                        question_text=question.get_value()
+                        question_text=display_question.get_value()
                         answer_text=answer.get_value()
                         is_expanded=is_expanded
                         needs_collapse=needs_collapse

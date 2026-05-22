@@ -12,6 +12,7 @@ mod lesson_card_header;
 mod lesson_card_question;
 mod lesson_progress;
 mod lesson_state;
+mod na_adjective_helper;
 mod on_dont_know;
 mod on_quiz_select;
 mod on_quiz_submit;
