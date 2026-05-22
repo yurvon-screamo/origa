@@ -49,10 +49,17 @@ pub fn YesNoCardView(
     let card = yesno_card.card().clone();
     let card_type = CardType::from(&card);
     let lang = native_language;
-    let statement = StoredValue::new(yesno_card.statement_text().to_string());
+    let is_na_adj = super::na_adjective_helper::is_na_adjective_card(&card);
+
+    let statement_text_raw = yesno_card.statement_text().to_string();
+    let statement = StoredValue::new(if is_na_adj {
+        super::na_adjective_helper::append_na_suffix(&statement_text_raw)
+    } else {
+        statement_text_raw.clone()
+    });
     let is_statement_correct = yesno_card.is_correct();
 
-    let question_text = StoredValue::new(match card.question(&lang) {
+    let question_text_raw = match card.question(&lang) {
         Ok(q) => q.text().to_string(),
         Err(e) => {
             warn!(
@@ -63,6 +70,12 @@ pub fn YesNoCardView(
             );
             String::new()
         },
+    };
+    let question_text = StoredValue::new(question_text_raw.clone());
+    let display_question = StoredValue::new(if is_na_adj {
+        super::na_adjective_helper::append_na_suffix(&question_text_raw)
+    } else {
+        question_text_raw
     });
 
     let kanji_for_animation: StoredValue<Option<String>> = StoredValue::new(match &card {
@@ -161,7 +174,7 @@ pub fn YesNoCardView(
         <Card class=Signal::derive(|| "p-4 sm:p-6 min-h-[250px] sm:min-h-[300px] flex flex-col".to_string()) shadow=Signal::derive(|| true)>
             <QuizCardHeader
                 card_type=card_type
-                question_text=question_text.get_value()
+                question_text=display_question.get_value()
             />
 
             <div class="flex-1 flex flex-col justify-center">

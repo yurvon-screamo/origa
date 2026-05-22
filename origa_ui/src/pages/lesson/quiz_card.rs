@@ -48,6 +48,8 @@ pub fn QuizCardView(
     let card = quiz_card.card().clone();
     let card_type = CardType::from(&card);
     let lang = native_language;
+    let is_na_adj = super::na_adjective_helper::is_na_adjective_card(&card);
+
     let question_text = match card.question(&lang) {
         Ok(q) => q.text().to_string(),
         Err(e) => {
@@ -60,7 +62,12 @@ pub fn QuizCardView(
             String::new()
         },
     };
-    let question = StoredValue::new(question_text);
+    let question = StoredValue::new(question_text.clone());
+    let display_question = StoredValue::new(if is_na_adj {
+        super::na_adjective_helper::append_na_suffix(&question_text)
+    } else {
+        question_text.clone()
+    });
     let options: StoredValue<Vec<origa::domain::QuizOption>> =
         StoredValue::new(quiz_card.options().to_vec());
     let multi_result_stored = StoredValue::new(multi_result);
@@ -124,7 +131,7 @@ pub fn QuizCardView(
         <Card class=Signal::derive(|| "p-4 sm:p-6 min-h-[250px] sm:min-h-[300px] flex flex-col".to_string()) shadow=Signal::derive(|| true)>
             <QuizCardHeader
                 card_type=card_type
-                question_text=question.get_value()
+                question_text=display_question.get_value()
                 quiz_variant=quiz_variant
             />
 
@@ -133,7 +140,7 @@ pub fn QuizCardView(
                     <Show when=move || kanji_for_animation.get_value().is_none()>
                         <div class="mb-4">
                             <Heading level=HeadingLevel::H2>
-                                <FuriganaText text=question.get_value() known_kanji=known_kanji.get()/>
+                                <FuriganaText text=display_question.get_value() known_kanji=known_kanji.get()/>
                             </Heading>
                         </div>
                     </Show>
