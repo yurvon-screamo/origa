@@ -213,9 +213,7 @@ testWithFreshUser.describe("Words Page - Anki Import", () => {
         await expect(wordsPage.ankiError).toBeVisible({ timeout: 10_000 });
     });
 
-    // FIXME: rusqlite::Connection::deserialize does not work in WASM —
-    // "file is not a database" error. Need to replace with SQL dump approach or pure Rust SQLite parser.
-    testWithFreshUser.skip("should import cards from valid .apkg file", async ({ page }) => {
+    testWithFreshUser("should import cards from valid .apkg file", async ({ page }) => {
         test.setTimeout(120_000);
         const wordsPage = await setupWordsPage(page);
 
@@ -224,21 +222,35 @@ testWithFreshUser.describe("Words Page - Anki Import", () => {
 
         await wordsPage.uploadAnkiFile("fixtures/sample.apkg");
 
+        // Wait for field selection stage (Anki deck parsed successfully)
+        await expect(wordsPage.ankiFieldWord).toBeVisible({ timeout: 30_000 });
+
+        // Select "Expression" as the word field
+        await wordsPage.ankiFieldWord.click();
+        await page.getByTestId("anki-import-field-word-option-Expression").click();
+
+        // Click "Next" to proceed to card preview
+        await wordsPage.ankiNextBtn.click();
+
+        // Verify card preview is shown
         await expect(wordsPage.ankiCardCount).toBeVisible({ timeout: 30_000 });
         await expect(wordsPage.ankiCardList).toBeVisible();
 
+        // Import cards
         await wordsPage.ankiImportBtn.click();
-        await expect(wordsPage.ankiDone).toBeVisible({ timeout: 30_000 });
 
+        // Wait for import to complete — drawer closes and cards appear on page
+        await expect(wordsPage.drawer).not.toBeVisible({ timeout: 30_000 });
+
+        // Verify imported cards are visible on the words page
         const cardCount = await wordsPage.getCardCount();
         expect(cardCount).toBeGreaterThan(0);
     });
 });
 
 testWithFreshUser.describe("Words Page - OCR Image Recognition", () => {
-    // FIXME: OCR WASM model initialization takes >10min in headless Chrome
-    testWithFreshUser.skip("should recognize Japanese text from image via OCR", async ({ page }) => {
-        test.setTimeout(600_000);
+    testWithFreshUser("should recognize Japanese text from image via OCR", async ({ page }) => {
+        test.setTimeout(1_200_000);
         const wordsPage = await setupWordsPage(page);
 
         await wordsPage.openAddModal();
@@ -269,9 +281,8 @@ testWithFreshUser.describe("Words Page - OCR Image Recognition", () => {
 });
 
 testWithFreshUser.describe("Words Page - Audio Transcription", () => {
-    // FIXME: Whisper WASM model download + init takes >10min in headless Chrome
-    testWithFreshUser.skip("should transcribe Japanese audio and show word analysis", async ({ page }) => {
-        test.setTimeout(600_000);
+    testWithFreshUser("should transcribe Japanese audio and show word analysis", async ({ page }) => {
+        test.setTimeout(1_200_000);
         const wordsPage = await setupWordsPage(page);
 
         await wordsPage.openAddModal();
