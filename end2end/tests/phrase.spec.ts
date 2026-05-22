@@ -75,7 +75,7 @@ async function completeFullOnboarding(page: Page): Promise<void> {
     await page.getByTestId("onboarding-next").click();
     await expect(page.getByTestId("onboarding-load-step")).toBeVisible();
 
-    // Load → JLPT (default medium load)
+    // Load → JLPT
     await page.getByTestId("onboarding-next").click();
     await expect(page.getByTestId("onboarding-jlpt-step")).toBeVisible();
 
@@ -85,16 +85,57 @@ async function completeFullOnboarding(page: Page): Promise<void> {
     await page.getByTestId("onboarding-next").click();
     await expect(page.getByTestId("onboarding-apps-step")).toBeVisible();
 
-    // Apps: try selecting Migii if available
+    // Apps: select all available apps to maximize phrase coverage
     const migiiCheckbox = page.getByTestId("apps-step-app-Migii-checkbox");
     if (await migiiCheckbox.isVisible().catch(() => false)) {
         await migiiCheckbox.click();
     }
 
+    const duolingoRuCheckbox = page.getByTestId("apps-step-app-DuolingoRu-checkbox");
+    if (await duolingoRuCheckbox.isVisible().catch(() => false)) {
+        await duolingoRuCheckbox.click();
+    }
+
+    const minnaCheckbox = page.getByTestId("apps-step-app-MinnaNoNihongo-checkbox");
+    if (await minnaCheckbox.isVisible().catch(() => false)) {
+        await minnaCheckbox.click();
+    }
+
     await page.getByTestId("onboarding-next").click();
     await expect(page.getByTestId("onboarding-progress-step")).toBeVisible();
 
-    // Progress: skip
+    // Progress: configure each selected app
+    const migiiLevelDropdown = page.getByTestId("migii-level-dropdown");
+    if (await migiiLevelDropdown.isVisible().catch(() => false)) {
+        await migiiLevelDropdown.click();
+        await page.getByTestId("migii-level-dropdown-option-N4").click();
+
+        const migiiLessonDropdown = page.getByTestId("migii-lesson-dropdown");
+        await migiiLessonDropdown.click();
+        await page.getByTestId("migii-lesson-dropdown-option-lesson_10").click();
+    }
+
+    const duolingoRuModuleDropdown = page.getByTestId("DuolingoRu-module-dropdown");
+    if (await duolingoRuModuleDropdown.isVisible().catch(() => false)) {
+        await duolingoRuModuleDropdown.click();
+        await page.getByTestId("DuolingoRu-module-dropdown-option-module_1").click();
+
+        const duolingoRuUnitDropdown = page.getByTestId("DuolingoRu-unit-dropdown");
+        await duolingoRuUnitDropdown.click();
+        await page.getByTestId("DuolingoRu-unit-dropdown-option-unit_10").click();
+    }
+
+    const minnaLevelDropdown = page.getByTestId("minna-level-dropdown");
+    if (await minnaLevelDropdown.isVisible().catch(() => false)) {
+        await minnaLevelDropdown.click();
+        await page.getByTestId("minna-level-dropdown-option-N4").click();
+
+        const minnaLessonDropdown = page.getByTestId("minna-lesson-dropdown");
+        await minnaLessonDropdown.click();
+        await page.getByTestId("minna-lesson-dropdown-option-lesson_38").click();
+    }
+
+    // Progress → Summary
     await page.getByTestId("onboarding-next").click();
     await expect(page.getByTestId("onboarding-summary-step")).toBeVisible();
 
