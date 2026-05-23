@@ -1,3 +1,4 @@
+use crate::core::tauri;
 use crate::i18n::{I18nContext, Locale};
 use crate::pages::login::auth_handlers::{handle_oauth_callback, handle_oauth_callback_desktop};
 use crate::store::auth_store::AuthStore;
@@ -108,28 +109,11 @@ fn handle_oauth_result(result: Result<(), String>, auth_store: &AuthStore) {
 fn register_tauri_listener(callback: Closure<dyn Fn(JsValue)>) {
     debug!("register_tauri_listener() called");
 
-    let Some(window) = web_sys::window() else {
-        error!("no window object");
+    let Some(listen_fn) = tauri::event_listen_fn() else {
+        warn!("__TAURI__.event.listen not available — not in Tauri, skipping");
         return;
     };
-
-    let Some(tauri_obj) = get_tauri_object(&window) else {
-        warn!("__TAURI__ not found on window — not in Tauri desktop, skipping");
-        return;
-    };
-    debug!("__TAURI__ found on window");
-
-    let Some(event_mod) = get_event_module(tauri_obj.as_ref()) else {
-        error!("__TAURI__.event not found");
-        return;
-    };
-    debug!("__TAURI__.event found");
-
-    let Some(listen_fn) = get_listen_function(&event_mod) else {
-        error!("__TAURI__.event.listen not found");
-        return;
-    };
-    debug!("__TAURI__.event.listen function found");
+    debug!("__TAURI__.event.listen found");
 
     let event_name = JsValue::from_str("deep-link-received");
     let handler = callback.as_ref().clone();
@@ -148,25 +132,8 @@ fn register_tauri_listener(callback: Closure<dyn Fn(JsValue)>) {
 fn check_pending_deep_link(auth_store: AuthStore, i18n: I18nContext<Locale>) {
     debug!("check_pending_deep_link() called");
 
-    let Some(window) = web_sys::window() else {
-        debug!("no window object");
-        return;
-    };
-    let Some(tauri_obj) = get_tauri_object(&window) else {
-        debug!("__TAURI__ not found — not in Tauri, skipping pending deep-link check");
-        return;
-    };
-
-    let Ok(core) = js_sys::Reflect::get(&tauri_obj, &JsValue::from_str("core")) else {
-        warn!("__TAURI__.core not found");
-        return;
-    };
-    let Ok(invoke_fn) = js_sys::Reflect::get(&core, &JsValue::from_str("invoke")) else {
-        warn!("__TAURI__.core.invoke not found");
-        return;
-    };
-    let Ok(invoke_fn) = invoke_fn.dyn_into::<js_sys::Function>() else {
-        warn!("__TAURI__.core.invoke is not a function");
+    let Some(invoke_fn) = tauri::invoke_fn() else {
+        debug!("__TAURI__.core.invoke not available — not in Tauri, skipping");
         return;
     };
 
@@ -210,22 +177,6 @@ fn check_pending_deep_link(auth_store: AuthStore, i18n: I18nContext<Locale>) {
     let _ = promise.then2(&on_resolve, &on_reject);
     on_resolve.forget();
     on_reject.forget();
-}
-
-fn get_tauri_object(window: &web_sys::Window) -> Option<js_sys::Object> {
-    js_sys::Reflect::get(window, &JsValue::from_str("__TAURI__"))
-        .ok()
-        .and_then(|v| v.dyn_into::<js_sys::Object>().ok())
-}
-
-fn get_event_module(tauri_obj: &JsValue) -> Option<JsValue> {
-    js_sys::Reflect::get(tauri_obj, &JsValue::from_str("event")).ok()
-}
-
-fn get_listen_function(event_mod: &JsValue) -> Option<js_sys::Function> {
-    js_sys::Reflect::get(event_mod, &JsValue::from_str("listen"))
-        .ok()
-        .and_then(|v| v.dyn_into::<js_sys::Function>().ok())
 }
 
 pub fn check_url_oauth_callback(auth_store: &AuthStore, i18n: &I18nContext<Locale>) {

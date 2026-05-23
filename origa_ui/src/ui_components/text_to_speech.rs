@@ -1,6 +1,7 @@
 use std::cell::{Cell, RefCell};
 use std::collections::HashSet;
 
+use crate::core::tauri;
 use leptos::task::spawn_local;
 use leptos::wasm_bindgen::JsCast;
 use leptos::wasm_bindgen::JsValue;
@@ -15,43 +16,13 @@ thread_local! {
     static TTS_LISTENER_REGISTERED: Cell<bool> = const { Cell::new(false) };
 }
 
-fn is_tauri() -> bool {
-    web_sys::window()
-        .and_then(|w| js_sys::Reflect::get(&w, &JsValue::from_str("__TAURI__")).ok())
-        .is_some_and(|v| !v.is_undefined() && !v.is_null())
-}
-
-fn get_tauri_invoke_fn() -> Result<js_sys::Function, String> {
-    let window = web_sys::window().ok_or("Window not available")?;
-    let tauri_obj = js_sys::Reflect::get(&window, &JsValue::from_str("__TAURI__"))
-        .map_err(|_| "Tauri API not available")?;
-    let core_mod = js_sys::Reflect::get(&tauri_obj, &JsValue::from_str("core"))
-        .map_err(|_| "Tauri core module not available")?;
-    js_sys::Reflect::get(&core_mod, &JsValue::from_str("invoke"))
-        .map_err(|_| "Tauri core.invoke not available")?
-        .dyn_into::<js_sys::Function>()
-        .map_err(|_| "core.invoke is not a function".to_string())
-}
-
 fn ensure_tauri_listener_registered() {
     TTS_LISTENER_REGISTERED.with(|flag| {
         if flag.get() {
             return;
         }
 
-        let Some(window) = web_sys::window() else {
-            return;
-        };
-        let Ok(tauri_obj) = js_sys::Reflect::get(&window, &JsValue::from_str("__TAURI__")) else {
-            return;
-        };
-        let Ok(event_mod) = js_sys::Reflect::get(&tauri_obj, &JsValue::from_str("event")) else {
-            return;
-        };
-        let Ok(listen_fn) = js_sys::Reflect::get(&event_mod, &JsValue::from_str("listen")) else {
-            return;
-        };
-        let Ok(listen_fn) = listen_fn.dyn_into::<js_sys::Function>() else {
+        let Some(listen_fn) = tauri::event_listen_fn() else {
             return;
         };
 
@@ -71,7 +42,7 @@ fn ensure_tauri_listener_registered() {
 }
 
 async fn invoke_tauri_speak(text: &str, rate: f32) -> Result<(), String> {
-    let invoke_fn = get_tauri_invoke_fn()?;
+    let invoke_fn = tauri::invoke_fn().ok_or("Tauri invoke not available")?;
 
     let payload = js_sys::Object::new();
     js_sys::Reflect::set(
@@ -130,7 +101,7 @@ async fn invoke_tauri_speak(text: &str, rate: f32) -> Result<(), String> {
 }
 
 async fn invoke_tauri_stop() -> Result<(), String> {
-    let invoke_fn = get_tauri_invoke_fn()?;
+    let invoke_fn = tauri::invoke_fn().ok_or("Tauri invoke not available")?;
 
     let result = invoke_fn
         .call1(&JsValue::UNDEFINED, &JsValue::from_str("plugin:tts|stop"))
@@ -143,7 +114,7 @@ async fn invoke_tauri_stop() -> Result<(), String> {
 }
 
 pub fn is_speech_supported() -> bool {
-    if is_tauri() {
+    if tauri::is_tauri() {
         return true;
     }
     window().and_then(|w| w.speech_synthesis().ok()).is_some()
@@ -154,7 +125,7 @@ pub fn speak_tts_text(text: &str, rate: f32) -> Result<(), String> {
         return Ok(());
     }
 
-    if is_tauri() {
+    if tauri::is_tauri() {
         let text_owned = text.to_string();
         spawn_local(async move {
             if let Err(e) = invoke_tauri_speak(&text_owned, rate).await {
@@ -193,7 +164,7 @@ where
         return Ok(());
     }
 
-    if is_tauri() {
+    if tauri::is_tauri() {
         let text_owned = text.to_string();
         TTS_CALLBACK.with(|cell| {
             *cell.borrow_mut() = Some(Box::new(on_end));
@@ -270,7 +241,7 @@ fn get_japanese_voice(synthesis: &web_sys::SpeechSynthesis) -> Option<SpeechSynt
 }
 
 pub fn stop_speech() -> Result<(), String> {
-    if is_tauri() {
+    if tauri::is_tauri() {
         spawn_local(async {
             if let Err(e) = invoke_tauri_stop().await {
                 warn!("TTS stop error: {}", e);

@@ -46,15 +46,12 @@ pub async fn check_for_updates() -> Option<UpdateInfo> {
     any(target_os = "windows", target_os = "macos", target_os = "linux")
 ))]
 async fn check_for_updates_tauri() -> Option<UpdateInfo> {
-    use super::version::VERSION;
+    use super::tauri;
     use leptos::logging;
     use leptos::wasm_bindgen::JsCast;
     use leptos::wasm_bindgen::JsValue;
 
-    let window = web_sys::window();
-    let tauri_obj = window
-        .as_ref()
-        .and_then(|w| get_js_property(w, "__TAURI__", "Tauri API unavailable"));
+    let tauri_obj = tauri::tauri_object();
     let updater_mod = tauri_obj
         .as_ref()
         .and_then(|obj| get_js_property(obj, "updater", "Tauri updater module unavailable"));
@@ -97,7 +94,7 @@ async fn check_for_updates_tauri() -> Option<UpdateInfo> {
             None
         },
         None => {
-            if window.is_none() {
+            if web_sys::window().is_none() {
                 logging::warn!("Window unavailable");
             }
             None
@@ -155,16 +152,13 @@ async fn download_and_install_tauri<F>(on_progress: F) -> Result<(), String>
 where
     F: Fn(u8) + Send + Sync + 'static,
 {
-    use leptos::logging;
+    use super::tauri;
     use leptos::wasm_bindgen::JsCast;
     use leptos::wasm_bindgen::JsValue;
     use leptos::wasm_bindgen::closure::Closure;
     use std::sync::Arc;
 
-    let window = web_sys::window().ok_or("Window unavailable")?;
-
-    let tauri_obj = js_sys::Reflect::get(&window, &JsValue::from_str("__TAURI__"))
-        .map_err(|_| "Tauri API unavailable")?;
+    let tauri_obj = tauri::tauri_object().ok_or("Tauri API unavailable")?;
 
     let updater_mod = js_sys::Reflect::get(&tauri_obj, &JsValue::from_str("updater"))
         .map_err(|_| "Tauri updater module unavailable")?;
@@ -199,15 +193,8 @@ where
     });
 
     let event_name = JsValue::from_str("tauri://update-download-progress");
-    let event_mod = js_sys::Reflect::get(&tauri_obj, &JsValue::from_str("event"))
-        .map_err(|_| "Tauri event module unavailable")?;
 
-    let listen_fn = js_sys::Reflect::get(&event_mod, &JsValue::from_str("listen"))
-        .map_err(|_| "Tauri event.listen unavailable")?;
-
-    let listen_fn = listen_fn
-        .dyn_into::<js_sys::Function>()
-        .map_err(|_| "event.listen is not a function")?;
+    let listen_fn = tauri::event_listen_fn().ok_or("Tauri event.listen unavailable")?;
 
     let _unlisten = listen_fn.call2(&JsValue::UNDEFINED, &event_name, closure.as_ref());
     closure.forget();
