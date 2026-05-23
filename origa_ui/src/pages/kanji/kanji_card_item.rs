@@ -1,9 +1,10 @@
 use super::super::shared::{CardStatus, DeleteRequest};
 use crate::i18n::use_i18n;
 use crate::ui_components::{
-    Card, CardActionBar, CardHistoryModal, DeleteConfirmModal, Text, TextSize, TypographyVariant,
+    CardActionBar, CardHistoryModal, DeleteConfirmModal, Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
+use leptos_router::components::A;
 use origa::domain::{Card as DomainCard, NativeLanguage, StudyCard};
 use ulid::Ulid;
 
@@ -17,7 +18,6 @@ pub fn KanjiCardItem(
     on_mark_as_known: Callback<()>,
     on_delete: Callback<DeleteRequest>,
     is_deleting: Signal<bool>,
-    #[prop(into)] on_open_detail: Callback<()>,
 ) -> impl IntoView {
     let i18n = use_i18n();
     let card_id = *study_card.card_id();
@@ -69,8 +69,8 @@ pub fn KanjiCardItem(
     });
 
     view! {
-        <Card class="p-4 cursor-pointer h-full flex flex-col" test_id="kanji-card-item" on:click=move |_: leptos::ev::MouseEvent| on_open_detail.run(())>
-            <div class="flex-1 min-h-0 flex items-start gap-3">
+        <div class="card anima-lift p-4 h-full flex flex-col" data-testid="kanji-card-item">
+            <A href=format!("/kanji/{}", card_id) attr:class="flex-1 flex items-start gap-3 no-underline cursor-pointer min-h-[100px]">
                 <div class="w-16 h-16 flex items-center justify-center border border-[var(--border-dark)] bg-[var(--bg-paper)] shrink-0">
                     <span class="text-4xl font-serif">{kanji_char}</span>
                 </div>
@@ -86,7 +86,7 @@ pub fn KanjiCardItem(
                         </Text>
                     </Show>
                 </div>
-            </div>
+            </A>
             <div class="mt-auto shrink-0 pt-3">
                 <CardActionBar
                     tag_variant=Signal::derive(move || status.tag_variant())
@@ -100,7 +100,7 @@ pub fn KanjiCardItem(
                     test_id=Signal::derive(|| "kanji-card-item".to_string())
                 />
             </div>
-        </Card>
+        </div>
         <DeleteConfirmModal
             test_id="kanji-delete-modal"
             is_open=is_delete_modal_open
