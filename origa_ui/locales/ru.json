@@ -409,7 +409,16 @@
     "worksheets": "Прописи: {}",
     "animation_unavailable": "Анимация для этого кандзи недоступна",
     "stroke_progress": "Штрих {} / {}",
-    "done": "Готово!"
+    "done": "Готово!",
+    "writing_practice": "Практика написания",
+    "stroke_order": "Порядок черт",
+    "vocabulary": "Словарь",
+    "radicals": "Радикалы",
+    "on_reading": "ОН",
+    "kun_reading": "КУН",
+    "tab_overview": "Обзор",
+    "tab_writing": "Написание",
+    "tab_stats": "Статистика"
   },
   "sets": {
     "header": "Наборы карточек",
