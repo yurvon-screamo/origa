@@ -1,5 +1,14 @@
+use std::sync::Mutex;
+
 use tauri::{Emitter, Listener, Manager};
 use tauri_plugin_deep_link::DeepLinkExt;
+
+struct PendingDeepLink(Mutex<Option<String>>);
+
+#[tauri::command]
+fn get_pending_deep_link(state: tauri::State<'_, PendingDeepLink>) -> Option<String> {
+    state.0.lock().unwrap_or_else(|e| e.into_inner()).take()
+}
 
 #[tauri::command]
 fn greet(name: &str) -> String {
@@ -26,7 +35,8 @@ pub fn run() {
         .plugin(tauri_plugin_deep_link::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_tts::init())
-        .invoke_handler(tauri::generate_handler![greet])
+        .manage(PendingDeepLink(Mutex::new(None)))
+        .invoke_handler(tauri::generate_handler![greet, get_pending_deep_link])
         .setup(|app| {
             log::info!("[deep-link] setup started");
 
@@ -62,7 +72,7 @@ pub fn run() {
             log::info!("[deep-link] listener for 'deep-link://new-url' registered");
 
             {
-                let handle_for_startup = app.handle().clone();
+                let pending = app.state::<PendingDeepLink>();
                 match app.deep_link().get_current() {
                     Ok(Some(urls)) => {
                         log::info!(
@@ -70,8 +80,9 @@ pub fn run() {
                             urls.len()
                         );
                         if let Some(url) = urls.first() {
-                            log::info!("[deep-link] emitting startup deep-link-received: {}", url);
-                            let _ = handle_for_startup.emit("deep-link-received", url.to_string());
+                            log::info!("[deep-link] saved startup deep-link to pending: {}", url);
+                            *pending.0.lock().unwrap_or_else(|e| e.into_inner()) =
+                                Some(url.to_string());
                         }
                     },
                     Ok(None) => {

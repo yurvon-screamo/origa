@@ -110,18 +110,8 @@ jobs:
               working-directory: origa_ui
               run: trunk build --release
               env:
-                  ORIGA_PUBLIC_BASE_URL: ${{ vars.TRAILBASE_URL }}
                   ORIGA_CDN_BASE_URL: ${{ vars.ORIGA_CDN_BASE_URL }}
                   ORIGA_CDN_REGION: ${{ vars.ORIGA_CDN_REGION }}
-
-            - name: Remove public assets from dist (mobile lazy loading)
-              if: matrix.platform == 'android'
-              working-directory: origa_ui
-              run: |
-                  echo "Removing public/ from dist/ for mobile lazy loading..."
-                  rm -rf dist/public/
-                  echo "Remaining dist/ contents:"
-                  ls -la dist/
 
             - name: Decode Android Keystore
               if: matrix.platform == 'android' && github.event_name != 'pull_request'

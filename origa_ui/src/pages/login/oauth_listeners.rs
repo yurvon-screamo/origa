@@ -39,6 +39,8 @@ pub fn setup_oauth_listener(auth_store: AuthStore, i18n: I18nContext<Locale>) {
     });
 
     register_tauri_listener(callback);
+
+    check_pending_deep_link(auth_store, i18n);
 }
 
 fn extract_url_from_event(event: &JsValue) -> String {
@@ -141,6 +143,73 @@ fn register_tauri_listener(callback: Closure<dyn Fn(JsValue)>) {
     } else {
         error!("listen() call failed");
     }
+}
+
+fn check_pending_deep_link(auth_store: AuthStore, i18n: I18nContext<Locale>) {
+    debug!("check_pending_deep_link() called");
+
+    let Some(window) = web_sys::window() else {
+        debug!("no window object");
+        return;
+    };
+    let Some(tauri_obj) = get_tauri_object(&window) else {
+        debug!("__TAURI__ not found — not in Tauri, skipping pending deep-link check");
+        return;
+    };
+
+    let Ok(core) = js_sys::Reflect::get(&tauri_obj, &JsValue::from_str("core")) else {
+        warn!("__TAURI__.core not found");
+        return;
+    };
+    let Ok(invoke_fn) = js_sys::Reflect::get(&core, &JsValue::from_str("invoke")) else {
+        warn!("__TAURI__.core.invoke not found");
+        return;
+    };
+    let Ok(invoke_fn) = invoke_fn.dyn_into::<js_sys::Function>() else {
+        warn!("__TAURI__.core.invoke is not a function");
+        return;
+    };
+
+    let Ok(result) = invoke_fn.call1(
+        &JsValue::UNDEFINED,
+        &JsValue::from_str("get_pending_deep_link"),
+    ) else {
+        warn!("get_pending_deep_link invoke call failed");
+        return;
+    };
+    let Ok(promise) = result.dyn_into::<js_sys::Promise>() else {
+        warn!("get_pending_deep_link did not return a Promise");
+        return;
+    };
+
+    let auth_store_clone = auth_store.clone();
+    let i18n_clone = i18n;
+
+    let on_resolve = Closure::<dyn FnMut(JsValue)>::new(move |value: JsValue| {
+        let url = value.as_string().unwrap_or_default();
+        if url.is_empty() {
+            debug!("no pending deep-link");
+            return;
+        }
+        debug!(url = %url, "processing pending deep-link from cold start");
+
+        let auth_store = auth_store_clone.clone();
+        let i18n = i18n_clone;
+        auth_store.oauth_error.set(None);
+        spawn_local(async move {
+            let result = process_oauth_url(&url, &auth_store, &i18n).await;
+            debug!(result = ?result, "pending deep-link process result");
+            handle_oauth_result(result, &auth_store);
+        });
+    });
+
+    let on_reject = Closure::<dyn FnMut(JsValue)>::new(|err: JsValue| {
+        warn!(?err, "get_pending_deep_link promise rejected");
+    });
+
+    let _ = promise.then2(&on_resolve, &on_reject);
+    on_resolve.forget();
+    on_reject.forget();
 }
 
 fn get_tauri_object(window: &web_sys::Window) -> Option<js_sys::Object> {
