@@ -1,7 +1,7 @@
+use crate::core::tauri;
 use crate::i18n::{t, use_i18n};
 use crate::repository::OAuthProvider;
 use leptos::prelude::*;
-use leptos::wasm_bindgen::JsCast;
 use leptos::wasm_bindgen::JsValue;
 
 #[component]
@@ -59,48 +59,24 @@ pub fn OAuthButtons(#[prop(optional, into)] test_id: Signal<String>) -> impl Int
     }
 }
 
-fn is_tauri() -> bool {
-    let Some(window) = web_sys::window() else {
-        return false;
-    };
-    js_sys::Reflect::get(&window, &JsValue::from_str("__TAURI__"))
-        .is_ok_and(|v| !v.is_undefined() && !v.is_null())
-}
-
 fn open_url_external(url: &str) {
     let Some(window) = web_sys::window() else {
         return;
     };
 
-    if !is_tauri() {
+    if !tauri::is_tauri() {
         let _ = window.location().set_href(url);
         return;
     }
 
-    let Ok(tauri_obj) = js_sys::Reflect::get(&window, &JsValue::from_str("__TAURI__")) else {
-        let _ = window.open_with_url_and_target(url, "_blank");
-        return;
-    };
-
-    let Ok(opener) = js_sys::Reflect::get(&tauri_obj, &JsValue::from_str("opener")) else {
-        let _ = window.open_with_url_and_target(url, "_blank");
-        return;
-    };
-
-    let Ok(open_url_fn) = js_sys::Reflect::get(&opener, &JsValue::from_str("openUrl")) else {
-        let _ = window.open_with_url_and_target(url, "_blank");
-        return;
-    };
-
-    let Ok(open_url_fn) = open_url_fn.dyn_into::<js_sys::Function>() else {
-        let _ = window.open_with_url_and_target(url, "_blank");
-        return;
-    };
-
-    if open_url_fn
-        .call1(&JsValue::UNDEFINED, &JsValue::from_str(url))
-        .is_err()
-    {
+    if let Some(open_url_fn) = tauri::opener_open_url_fn() {
+        if open_url_fn
+            .call1(&JsValue::UNDEFINED, &JsValue::from_str(url))
+            .is_err()
+        {
+            let _ = window.open_with_url_and_target(url, "_blank");
+        }
+    } else {
         let _ = window.open_with_url_and_target(url, "_blank");
     }
 }
@@ -110,7 +86,7 @@ fn open_oauth_url(provider: OAuthProvider) {
     use crate::repository::trailbase_auth::{generate_pkce_challenge, generate_pkce_verifier};
     use gloo_storage::{LocalStorage, Storage};
 
-    let redirect_uri = if is_tauri() {
+    let redirect_uri = if tauri::is_tauri() {
         "https://origa.uwuwu.net/public/auth/desktop-callback.html".to_string()
     } else {
         let window = web_sys::window().expect("window not available");
