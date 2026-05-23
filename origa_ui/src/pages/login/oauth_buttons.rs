@@ -59,14 +59,12 @@ pub fn OAuthButtons(#[prop(optional, into)] test_id: Signal<String>) -> impl Int
     }
 }
 
-fn is_tauri_desktop() -> bool {
+fn is_tauri() -> bool {
     let Some(window) = web_sys::window() else {
         return false;
     };
-    js_sys::Reflect::get(&window, &JsValue::from_str("isTauri"))
-        .ok()
-        .and_then(|v| v.as_bool())
-        .unwrap_or(false)
+    js_sys::Reflect::get(&window, &JsValue::from_str("__TAURI__"))
+        .is_ok_and(|v| !v.is_undefined() && !v.is_null())
 }
 
 fn open_url_external(url: &str) {
@@ -74,7 +72,7 @@ fn open_url_external(url: &str) {
         return;
     };
 
-    if !is_tauri_desktop() {
+    if !is_tauri() {
         let _ = window.location().set_href(url);
         return;
     }
@@ -112,7 +110,7 @@ fn open_oauth_url(provider: OAuthProvider) {
     use crate::repository::trailbase_auth::{generate_pkce_challenge, generate_pkce_verifier};
     use gloo_storage::{LocalStorage, Storage};
 
-    let redirect_uri = if is_tauri_desktop() {
+    let redirect_uri = if is_tauri() {
         "https://origa.uwuwu.net/public/auth/desktop-callback.html".to_string()
     } else {
         let window = web_sys::window().expect("window not available");

@@ -409,7 +409,16 @@
         "worksheets": "Worksheets: {}",
         "animation_unavailable": "Animation not available for this kanji",
         "stroke_progress": "Stroke {} / {}",
-        "done": "Done!"
+        "done": "Done!",
+        "writing_practice": "Writing Practice",
+        "stroke_order": "Stroke Order",
+        "vocabulary": "Vocabulary",
+        "radicals": "Radicals",
+        "on_reading": "ON",
+        "kun_reading": "KUN",
+        "tab_overview": "Overview",
+        "tab_writing": "Writing",
+        "tab_stats": "Stats"
     },
     "sets": {
         "header": "Card sets",
