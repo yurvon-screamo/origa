@@ -11,7 +11,6 @@ use crate::ui_components::{
 use leptos::either::Either;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use leptos_router::hooks::use_navigate;
 use origa::domain::{Card, StudyCard, User};
 use origa::traits::UserRepository;
 
@@ -58,8 +57,6 @@ pub fn KanjiContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
     let current_user: RwSignal<Option<User>> = RwSignal::new(None);
     let is_loading = RwSignal::new(true);
     let all_cards: RwSignal<Vec<StudyCard>> = RwSignal::new(Vec::new());
-
-    let navigate = StoredValue::new(use_navigate());
 
     let repo_for_init = repository.clone();
     Effect::new(move |_| {
@@ -192,21 +189,15 @@ pub fn KanjiContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
                                     each=move || visible_cards.get()
                                     key=|card| format!("{}-{}", card.card_id(), card.is_favorite())
                                     children=move |card| {
-                                        let card_id = *card.card_id();
-                                        let card_id_for_nav = *card.card_id();
-                                        let nav_store = navigate;
+                                        let card_id_for_callbacks = *card.card_id();
                                         view! {
                                             <KanjiCardItem
                                                 study_card=card
                                                 native_language=native_lang
                                                 on_toggle_favorite=on_toggle_favorite
-                                                on_mark_as_known=Callback::new(move |_| on_mark_as_known.run(card_id))
+                                                on_mark_as_known=Callback::new(move |_| on_mark_as_known.run(card_id_for_callbacks))
                                                 on_delete=on_delete
                                                 is_deleting=is_deleting.into()
-                                                on_open_detail=Callback::new(move |_| {
-                                                    let nav = nav_store.get_value();
-                                                    nav(&format!("/kanji/{}", card_id_for_nav), Default::default());
-                                                })
                                             />
                                         }
                                     }

@@ -262,11 +262,11 @@ testWithFreshUser.describe("Kanji Page - Detail Page", () => {
         await addFirstKanji(kanjiPage);
         await expect(kanjiPage.kanjiGrid).toBeVisible({ timeout: 10_000 });
 
-        const firstCard = page.getByTestId("kanji-card-item").first();
-        await firstCard.click();
+        const kanjiLink = page.locator('a[href*="/kanji/"]').first();
+        await kanjiLink.click();
 
         await page.waitForURL(/\/kanji\//, { timeout: 5_000 });
-        const detailPage = page.getByTestId("kanji-detail");
+        const detailPage = page.getByTestId("kanji-detail-header");
         await expect(detailPage).toBeVisible({ timeout: 5_000 });
     });
 
@@ -276,11 +276,11 @@ testWithFreshUser.describe("Kanji Page - Detail Page", () => {
         await addFirstKanji(kanjiPage);
         await expect(kanjiPage.kanjiGrid).toBeVisible({ timeout: 10_000 });
 
-        const firstCard = page.getByTestId("kanji-card-item").first();
-        await firstCard.click();
+        const kanjiLink = page.locator('a[href*="/kanji/"]').first();
+        await kanjiLink.click();
 
         await page.waitForURL(/\/kanji\//, { timeout: 5_000 });
-        const detailPage = page.getByTestId("kanji-detail");
+        const detailPage = page.getByTestId("kanji-detail-header");
         await expect(detailPage).toBeVisible({ timeout: 5_000 });
 
         const pageText = await detailPage.textContent({ timeout: 5_000 });
@@ -294,8 +294,8 @@ testWithFreshUser.describe("Kanji Page - Detail Page", () => {
         await addFirstKanji(kanjiPage);
         await expect(kanjiPage.kanjiGrid).toBeVisible({ timeout: 10_000 });
 
-        const firstCard = page.getByTestId("kanji-card-item").first();
-        await firstCard.click();
+        const kanjiLink = page.locator('a[href*="/kanji/"]').first();
+        await kanjiLink.click();
 
         await page.waitForURL(/\/kanji\//, { timeout: 5_000 });
 
