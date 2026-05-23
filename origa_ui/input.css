@@ -4332,34 +4332,29 @@ input[type="submit"],
 /* Desktop Grid */
 .kanji-detail-grid {
     display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
     gap: 24px;
 }
 
-@media (min-width: 1024px) {
-    .kanji-detail-grid {
-        grid-template-columns: 1fr 1fr;
-        grid-template-rows: auto auto;
-    }
+.kanji-detail-hero-cell {
+    grid-column: 1;
+    grid-row: 1;
+}
 
-    .kanji-detail-hero-cell {
-        grid-column: 1;
-        grid-row: 1;
-    }
+.kanji-detail-practice-cell {
+    grid-column: 2;
+    grid-row: 1;
+}
 
-    .kanji-detail-practice-cell {
-        grid-column: 2;
-        grid-row: 1;
-    }
+.kanji-detail-stroke-cell {
+    grid-column: 1;
+    grid-row: 2;
+}
 
-    .kanji-detail-stroke-cell {
-        grid-column: 1;
-        grid-row: 2;
-    }
-
-    .kanji-detail-vocab-cell {
-        grid-column: 2;
-        grid-row: 2;
-    }
+.kanji-detail-vocab-cell {
+    grid-column: 2;
+    grid-row: 2;
 }
 
 /* Hero Card */
@@ -4543,33 +4538,17 @@ input[type="submit"],
 }
 
 /* Desktop / Mobile visibility */
-.kanji-detail-desktop {
-    display: block;
-}
-
 .kanji-detail-mobile {
     display: none;
 }
 
 @media (max-width: 1023px) {
     .kanji-detail-desktop {
-        display: none;
+        display: none !important;
     }
 
     .kanji-detail-mobile {
-        display: block;
-    }
-
-    .kanji-detail-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .kanji-detail-hero-cell,
-    .kanji-detail-practice-cell,
-    .kanji-detail-stroke-cell,
-    .kanji-detail-vocab-cell {
-        grid-column: 1;
-        grid-row: auto;
+        display: block !important;
     }
 }
 
