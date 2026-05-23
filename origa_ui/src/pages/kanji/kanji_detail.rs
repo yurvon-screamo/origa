@@ -8,11 +8,12 @@ use crate::i18n::use_i18n;
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{
     CardActionBar, CardHistoryModal, DeleteConfirmModal, KanjiDrawingPractice, KanjiViewMode,
-    KanjiWritingSection, LoadingOverlay, MarkdownText, PageHeader, TabItem, Tabs, Text, TextSize,
+    KanjiWritingSection, LoadingOverlay, MarkdownText, TabItem, Tabs, Tag, Text, TextSize,
     TypographyVariant,
 };
 use leptos::prelude::*;
 use leptos::task::spawn_local;
+use leptos_router::components::A;
 use leptos_router::hooks::{use_navigate, use_params_map};
 use origa::domain::{Card as DomainCard, StudyCard, User};
 use origa::traits::UserRepository;
@@ -130,13 +131,20 @@ pub fn KanjiDetail() -> impl IntoView {
     let is_history_open = RwSignal::new(false);
     let navigate = StoredValue::new(use_navigate());
 
-    let back_label = Signal::derive(move || i18n.get_keys().home().kanji().inner().to_string());
-
     let not_found_text =
         Signal::derive(move || i18n.get_keys().kanji_page().not_found().inner().to_string());
 
     let loading_text =
         Signal::derive(move || i18n.get_keys().common().loading().inner().to_string());
+
+    let breadcrumbs_kanji_label = Signal::derive(move || {
+        i18n.get_keys()
+            .home()
+            .kanji()
+            .inner()
+            .to_string()
+            .to_uppercase()
+    });
 
     let active_tab: RwSignal<String> = RwSignal::new("overview".to_string());
     let tab_items = Signal::derive(|| {
@@ -157,12 +165,6 @@ pub fn KanjiDetail() -> impl IntoView {
     });
 
     view! {
-        <PageHeader
-            back_path=Signal::derive(|| "/kanji".to_string())
-            back_label=back_label
-            test_id=Signal::derive(|| "kanji-detail".to_string())
-        />
-
         <Show when=move || is_loading.get()>
             <LoadingOverlay message=loading_text />
         </Show>
@@ -184,12 +186,19 @@ pub fn KanjiDetail() -> impl IntoView {
 
                 let status = CardStatus::from_study_card(&card);
 
-                let (kanji_char, radicals) = match card.card() {
+                let (kanji_char, radicals, on_readings, kun_readings) = match card.card() {
                     DomainCard::Kanji(kanji_card) => (
                         kanji_card.kanji().text().to_string(),
                         kanji_card.radicals_chars().into_iter().collect::<String>(),
+                        kanji_card.on_readings().join("、"),
+                        kanji_card.kun_readings().join("、"),
                     ),
-                    _ => ("?".to_string(), String::new()),
+                    _ => (
+                        "?".to_string(),
+                        String::new(),
+                        String::new(),
+                        String::new(),
+                    ),
                 };
 
                 let card_for_desc = card.clone();
@@ -294,18 +303,39 @@ pub fn KanjiDetail() -> impl IntoView {
 
                 let active_tab_cell = active_tab;
 
+                let on_readings_stored: StoredValue<String> =
+                    StoredValue::new(on_readings.clone());
+                let kun_readings_stored: StoredValue<String> =
+                    StoredValue::new(kun_readings.clone());
+                let on_readings_mobile: StoredValue<String> =
+                    StoredValue::new(on_readings.clone());
+                let kun_readings_mobile: StoredValue<String> =
+                    StoredValue::new(kun_readings.clone());
+                let kanji_char_stored = kanji_char.clone();
+                let breadcrumbs_label = breadcrumbs_kanji_label;
+
                 Some(view! {
-                    // Desktop layout (current 2-column)
-                    <div class="kanji-detail-layout kanji-detail-desktop">
-                        <div class="kanji-detail-left">
-                            <KanjiDetailHero
+                    // Breadcrumbs
+                    <div class="kanji-breadcrumbs">
+                        <A href="/kanji">{breadcrumbs_label}</A>
+                        <span class="kanji-breadcrumbs-separator">"/"</span>
+                        <span class="kanji-breadcrumbs-current">
+                            {kanji_char_stored}
+                        </span>
+                    </div>
+
+                    // Desktop: 2x2 grid
+                    <div class="kanji-detail-grid kanji-detail-desktop">
+                        // Hero cell (top-left)
+                        <div class="kanji-detail-hero-cell">
+                            <KanjiDetailHeroCard
                                 kanji_stored=kanji_stored
                                 answer_text=answer_text
+                                on_readings=on_readings_stored
+                                kun_readings=kun_readings_stored
+                                description=description
                                 has_radicals=has_radicals
                                 radicals_stored=radicals_stored
-                            />
-
-                            <CardActionBar
                                 tag_variant=Signal::derive(move || status.tag_variant())
                                 tag_label=Signal::derive(move || status.label(&i18n))
                                 is_favorite=Signal::derive(move || is_favorite)
@@ -316,52 +346,126 @@ pub fn KanjiDetail() -> impl IntoView {
                                 on_delete=Callback::new(move |_| is_delete_modal_open.set(true))
                                 test_id=Signal::derive(|| "kanji-detail-actions".to_string())
                             />
+                        </div>
 
-                            <div class="kanji-detail-section">
+                        // Practice cell (top-right)
+                        <div class="kanji-detail-practice-cell">
+                            <div class="kanji-detail-section-card">
+                                <div class="kanji-detail-section-title">"WRITING PRACTICE"</div>
+                                <KanjiDrawingPractice kanji=kanji_stored.get_value() />
+                            </div>
+                        </div>
+
+                        // Stroke Order cell (bottom-left)
+                        <div class="kanji-detail-stroke-cell">
+                            <div class="kanji-detail-section-card">
+                                <div class="kanji-detail-section-title">"STROKE ORDER"</div>
                                 <KanjiWritingSection
                                     kanji=kanji_stored.get_value()
                                     mode=KanjiViewMode::Frames
                                 />
                             </div>
-
-                            <div class="kanji-detail-section">
-                                <KanjiDrawingPractice kanji=kanji_stored.get_value() />
-                            </div>
                         </div>
 
-                        <KanjiDetailRightColumn
-                            description=description
-                            has_radicals=has_radicals
-                            radicals_stored=radicals_stored
-                            radicals_heading=radicals_heading
-                            has_examples=has_examples
-                            examples_heading=examples_heading
-                            example_words=example_words
-                            stats_text=stats_text
-                            known_kanji=known_kanji.get()
-                        />
+                        // Vocabulary cell (bottom-right)
+                        <div class="kanji-detail-vocab-cell">
+                            <div class="kanji-detail-section-card">
+                                <div class="kanji-detail-section-title">"VOCABULARY"</div>
+                                <Show when=move || has_examples.get()>
+                                    <div class="kanji-vocab-list">
+                                        <For
+                                            each=move || example_words.get()
+                                            key=|(word, _)| word.clone()
+                                            children=move |(word, meaning): (String, String)| {
+                                                view! {
+                                                    <div class="kanji-vocab-item">
+                                                        <div class="kanji-vocab-item-kanji">
+                                                            {word.chars().next().unwrap_or('?').to_string()}
+                                                        </div>
+                                                        <div>
+                                                            <div class="kanji-vocab-item-reading">
+                                                                {word}
+                                                            </div>
+                                                            <div class="kanji-vocab-item-meaning">
+                                                                {meaning}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                }
+                                            }
+                                        />
+                                    </div>
+                                </Show>
+                            </div>
+                        </div>
                     </div>
 
-                    // Mobile layout (hero + tabs)
+                    // Mobile: hero card + tabs
                     <div class="kanji-detail-mobile">
-                        <KanjiDetailHero
-                            kanji_stored=kanji_stored
-                            answer_text=answer_text
-                            has_radicals=has_radicals
-                            radicals_stored=radicals_stored
-                        />
-
-                        <CardActionBar
-                            tag_variant=Signal::derive(move || status.tag_variant())
-                            tag_label=Signal::derive(move || status.label(&i18n))
-                            is_favorite=Signal::derive(move || is_favorite)
-                            on_toggle_favorite=Callback::new(move |_| on_toggle_favorite.run(card_id_for_fav))
-                            show_mark_as_known=Signal::derive(move || status != CardStatus::Learned)
-                            on_mark_as_known=Callback::new(move |_| on_mark_as_known.run(card_id_for_known))
-                            on_history=Callback::new(move |_| is_history_open.set(true))
-                            on_delete=Callback::new(move |_| is_delete_modal_open.set(true))
-                            test_id=Signal::derive(|| "kanji-detail-actions-mobile".to_string())
-                        />
+                        <div class="kanji-detail-hero-card" style="margin-bottom:16px">
+                            <div class="kanji-detail-hero-header">
+                                <div
+                                    class="kanji-detail-hero-kanji"
+                                    style="width:72px;height:72px;font-size:40px"
+                                >
+                                    {kanji_stored.get_value()}
+                                </div>
+                                <div class="kanji-detail-hero-info">
+                                    <div class="kanji-detail-hero-meaning">
+                                        {answer_text}
+                                    </div>
+                                    <div class="kanji-detail-hero-readings">
+                                        <Show when=move || !on_readings_mobile.get_value().is_empty()>
+                                            <div class="kanji-detail-hero-reading">
+                                                <span class="kanji-detail-hero-reading-label">
+                                                    "ON"
+                                                </span>
+                                                {on_readings_mobile.get_value()}
+                                            </div>
+                                        </Show>
+                                        <Show when=move || !kun_readings_mobile.get_value().is_empty()>
+                                            <div class="kanji-detail-hero-reading">
+                                                <span class="kanji-detail-hero-reading-label">
+                                                    "KUN"
+                                                </span>
+                                                {kun_readings_mobile.get_value()}
+                                            </div>
+                                        </Show>
+                                    </div>
+                                </div>
+                                <div class="kanji-detail-hero-badge">
+                                    <Tag variant=Signal::derive(move || status.tag_variant())>
+                                        {move || status.label(&i18n)}
+                                    </Tag>
+                                </div>
+                            </div>
+                            <div class="kanji-detail-hero-actions">
+                                <CardActionBar
+                                    tag_variant=Signal::derive(move || status.tag_variant())
+                                    tag_label=Signal::derive(move || status.label(&i18n))
+                                    is_favorite=Signal::derive(move || is_favorite)
+                                    on_toggle_favorite=Callback::new(move |_| {
+                                        on_toggle_favorite.run(card_id_for_fav)
+                                    })
+                                    show_mark_as_known=Signal::derive(move || {
+                                        status != CardStatus::Learned
+                                    })
+                                    on_mark_as_known=Callback::new(move |_| {
+                                        on_mark_as_known.run(card_id_for_known)
+                                    })
+                                    on_history=Callback::new(move |_| {
+                                        is_history_open.set(true)
+                                    })
+                                    on_delete=Callback::new(move |_| {
+                                        is_delete_modal_open.set(true)
+                                    })
+                                    test_id=Signal::derive(|| {
+                                        "kanji-detail-actions-mobile".to_string()
+                                    })
+                                    show_tag=Signal::derive(|| false)
+                                />
+                            </div>
+                        </div>
 
                         <div class="kanji-detail-section">
                             <Tabs
@@ -373,7 +477,7 @@ pub fn KanjiDetail() -> impl IntoView {
                         </div>
 
                         <Show when=move || active_tab_cell.get() == "overview">
-                            <KanjiDetailRightColumn
+                            <MobileOverview
                                 description=description
                                 has_radicals=has_radicals
                                 radicals_stored=radicals_stored
@@ -381,7 +485,6 @@ pub fn KanjiDetail() -> impl IntoView {
                                 has_examples=has_examples
                                 examples_heading=examples_heading
                                 example_words=example_words
-                                stats_text=stats_text
                                 known_kanji=known_kanji.get()
                             />
                         </Show>
@@ -393,7 +496,6 @@ pub fn KanjiDetail() -> impl IntoView {
                                     mode=KanjiViewMode::Frames
                                 />
                             </div>
-
                             <div class="kanji-detail-section">
                                 <KanjiDrawingPractice kanji=kanji_stored.get_value() />
                             </div>
@@ -427,31 +529,100 @@ pub fn KanjiDetail() -> impl IntoView {
 }
 
 #[component]
-fn KanjiDetailHero(
+fn KanjiDetailHeroCard(
     kanji_stored: StoredValue<String>,
     answer_text: Memo<String>,
+    on_readings: StoredValue<String>,
+    kun_readings: StoredValue<String>,
+    description: Memo<String>,
     has_radicals: bool,
     radicals_stored: StoredValue<String>,
+    #[prop(into)] tag_variant: Signal<crate::ui_components::TagVariant>,
+    #[prop(into)] tag_label: Signal<String>,
+    #[prop(optional)] is_favorite: Signal<bool>,
+    on_toggle_favorite: Callback<()>,
+    #[prop(optional)] show_mark_as_known: Signal<bool>,
+    on_mark_as_known: Callback<()>,
+    on_history: Callback<()>,
+    on_delete: Callback<()>,
+    #[prop(optional, into)] test_id: Signal<String>,
 ) -> impl IntoView {
     view! {
-        <div class="kanji-detail-hero">
-            <div class="kanji-detail-hero-kanji">
-                {kanji_stored.get_value()}
+        <div class="kanji-detail-hero-card">
+            <div class="kanji-detail-hero-header">
+                <div class="kanji-detail-hero-kanji">{kanji_stored.get_value()}</div>
+                <div class="kanji-detail-hero-info">
+                    <div class="kanji-detail-hero-meaning">{answer_text}</div>
+                    <div class="kanji-detail-hero-readings">
+                        <Show when=move || !on_readings.get_value().is_empty()>
+                            <div class="kanji-detail-hero-reading">
+                                <span class="kanji-detail-hero-reading-label">"ON"</span>
+                                {on_readings.get_value()}
+                            </div>
+                        </Show>
+                        <Show when=move || !kun_readings.get_value().is_empty()>
+                            <div class="kanji-detail-hero-reading">
+                                <span class="kanji-detail-hero-reading-label">"KUN"</span>
+                                {kun_readings.get_value()}
+                            </div>
+                        </Show>
+                    </div>
+                </div>
+                <div class="kanji-detail-hero-badge">
+                    <Tag variant=tag_variant>{tag_label}</Tag>
+                </div>
             </div>
-            <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                {answer_text}
-            </Text>
-            <Show when=move || has_radicals>
-                <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                    {radicals_stored.get_value()}
-                </Text>
+
+            <Show when=move || !description.get().is_empty()>
+                <div style="margin-top:12px">
+                    <MarkdownText
+                        content=Signal::derive(move || description.get())
+                        known_kanji=HashSet::new()
+                    />
+                </div>
             </Show>
+
+            <Show when=move || has_radicals>
+                <div style="margin-top:12px">
+                    <span
+                        style="font-family:var(--font-mono);font-size:var(--text-2xs,11px);\
+                               text-transform:uppercase;letter-spacing:0.1em;\
+                               color:var(--fg-muted);margin-right:8px"
+                    >
+                        "RADICALS"
+                    </span>
+                    <span
+                        style="font-family:var(--font-serif);font-size:var(--text-sm,16px);\
+                               color:var(--fg-black)"
+                    >
+                        {radicals_stored.get_value()}
+                    </span>
+                </div>
+            </Show>
+
+            <div class="kanji-detail-hero-actions">
+                <CardActionBar
+                    tag_variant=Signal::derive(move || {
+                        use crate::ui_components::TagVariant;
+                        TagVariant::Default
+                    })
+                    tag_label=Signal::derive(String::new)
+                    is_favorite=is_favorite
+                    on_toggle_favorite=on_toggle_favorite
+                    show_mark_as_known=show_mark_as_known
+                    on_mark_as_known=on_mark_as_known
+                    on_history=on_history
+                    on_delete=on_delete
+                    test_id=test_id
+                    show_tag=Signal::derive(|| false)
+                />
+            </div>
         </div>
     }
 }
 
 #[component]
-fn KanjiDetailRightColumn(
+fn MobileOverview(
     description: Memo<String>,
     has_radicals: bool,
     radicals_stored: StoredValue<String>,
@@ -459,57 +630,50 @@ fn KanjiDetailRightColumn(
     has_examples: Memo<bool>,
     examples_heading: Signal<String>,
     example_words: Memo<Vec<(String, String)>>,
-    stats_text: Signal<String>,
     known_kanji: HashSet<char>,
 ) -> impl IntoView {
     view! {
-        <div class="kanji-detail-right">
-            <Show when=move || !description.get().is_empty()>
-                <div class="kanji-detail-section">
-                    <MarkdownText
-                        content=Signal::derive(move || description.get())
-                        known_kanji=known_kanji.clone()
-                    />
-                </div>
-            </Show>
-
-            <Show when=move || has_radicals>
-                <div class="kanji-detail-section">
-                    <div class="kanji-detail-section-title">
-                        {radicals_heading}
-                    </div>
-                    <Text size=TextSize::Default variant=TypographyVariant::Primary>
-                        {radicals_stored.get_value()}
-                    </Text>
-                </div>
-            </Show>
-
-            <Show when=move || has_examples.get()>
-                <div class="kanji-detail-section">
-                    <div class="kanji-detail-section-title">
-                        {examples_heading}
-                    </div>
-                    <div class="space-y-1">
-                        <For
-                            each=move || example_words.get()
-                            key=|(word, _)| word.clone()
-                            children=move |(word, meaning): (String, String)| {
-                                view! {
-                                    <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                                        {format!("{} — {}", word, meaning)}
-                                    </Text>
-                                }
-                            }
-                        />
-                    </div>
-                </div>
-            </Show>
-
+        <Show when=move || !description.get().is_empty()>
             <div class="kanji-detail-section">
-                <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                    {stats_text}
+                <MarkdownText
+                    content=Signal::derive(move || description.get())
+                    known_kanji=known_kanji.clone()
+                />
+            </div>
+        </Show>
+
+        <Show when=move || has_radicals>
+            <div class="kanji-detail-section">
+                <div class="kanji-detail-section-title">{radicals_heading}</div>
+                <Text size=TextSize::Default variant=TypographyVariant::Primary>
+                    {radicals_stored.get_value()}
                 </Text>
             </div>
-        </div>
+        </Show>
+
+        <Show when=move || has_examples.get()>
+            <div class="kanji-detail-section">
+                <div class="kanji-detail-section-title">{examples_heading}</div>
+                <div class="kanji-vocab-list">
+                    <For
+                        each=move || example_words.get()
+                        key=|(word, _)| word.clone()
+                        children=move |(word, meaning): (String, String)| {
+                            view! {
+                                <div class="kanji-vocab-item">
+                                    <div class="kanji-vocab-item-kanji">
+                                        {word.chars().next().unwrap_or('?').to_string()}
+                                    </div>
+                                    <div>
+                                        <div class="kanji-vocab-item-reading">{word}</div>
+                                        <div class="kanji-vocab-item-meaning">{meaning}</div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    />
+                </div>
+            </div>
+        </Show>
     }
 }

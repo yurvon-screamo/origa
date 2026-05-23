@@ -1,8 +1,6 @@
 use super::super::shared::{CardStatus, DeleteRequest};
 use crate::i18n::use_i18n;
-use crate::ui_components::{
-    CardActionBar, CardHistoryModal, DeleteConfirmModal, Text, TextSize, TypographyVariant,
-};
+use crate::ui_components::{CardActionBar, CardHistoryModal, DeleteConfirmModal, Tag, TagVariant};
 use leptos::prelude::*;
 use leptos_router::components::A;
 use origa::domain::{Card as DomainCard, NativeLanguage, StudyCard};
@@ -69,36 +67,41 @@ pub fn KanjiCardItem(
     });
 
     view! {
-        <div class="card anima-lift p-4 h-full flex flex-col" data-testid="kanji-card-item">
-            <A href=format!("/kanji/{}", card_id) attr:class="flex-1 flex items-start gap-3 no-underline cursor-pointer min-h-[100px]">
-                <div class="w-16 h-16 flex items-center justify-center border border-[var(--border-dark)] bg-[var(--bg-paper)] shrink-0">
-                    <span class="text-4xl font-serif">{kanji_char}</span>
+        <div class="kanji-card anima-lift" data-testid="kanji-card-item">
+            <div class="kanji-card-badge">
+                <Tag variant=Signal::derive(move || status.tag_variant())>
+                    {move || status.label(&i18n)}
+                </Tag>
+            </div>
+            <A href=format!("/kanji/{}", card_id) attr:class="kanji-card-link">
+                <div class="kanji-card-kanji-box">
+                    <span class="kanji-card-kanji-char">{kanji_char}</span>
                 </div>
-                <div class="min-w-0 flex-1">
+                <div class="kanji-card-content">
                     <Show when=move || !answer_text.get().is_empty()>
-                        <Text size=TextSize::Small variant=TypographyVariant::Muted class=Signal::derive(|| "mt-0.5".to_string())>
-                            {move || answer_text.get()}
-                        </Text>
+                        <span class="kanji-card-answer">{move || answer_text.get()}</span>
                     </Show>
                     <Show when=move || show_radicals>
-                        <Text size=TextSize::Small variant=TypographyVariant::Muted class=Signal::derive(|| "mt-0.5".to_string())>
-                            {radicals_text}
-                        </Text>
+                        <span class="kanji-card-radicals">{radicals_text}</span>
                     </Show>
                 </div>
             </A>
-            <div class="mt-auto shrink-0 pt-3">
-                <CardActionBar
-                    tag_variant=Signal::derive(move || status.tag_variant())
-                    tag_label=Signal::derive(move || status.label(&i18n))
-                    is_favorite=Signal::derive(move || is_favorite)
-                    on_toggle_favorite=Callback::new(move |_| on_toggle_favorite.run(card_id))
-                    show_mark_as_known=Signal::derive(move || status != CardStatus::Learned)
-                    on_mark_as_known=Callback::new(move |_| on_mark_as_known.run(()))
-                    on_history=Callback::new(move |_| is_history_open.set(true))
-                    on_delete=Callback::new(move |_| is_delete_modal_open.set(true))
-                    test_id=Signal::derive(|| "kanji-card-item".to_string())
-                />
+            <div class="kanji-card-divider"></div>
+            <div class="kanji-card-footer">
+                <div class="kanji-card-actions" style="margin-left: auto">
+                    <CardActionBar
+                        tag_variant=TagVariant::default()
+                        tag_label=Signal::derive(|| "".to_string())
+                        is_favorite=Signal::derive(move || is_favorite)
+                        on_toggle_favorite=Callback::new(move |_| on_toggle_favorite.run(card_id))
+                        show_mark_as_known=Signal::derive(move || status != CardStatus::Learned)
+                        on_mark_as_known=Callback::new(move |_| on_mark_as_known.run(()))
+                        on_history=Callback::new(move |_| is_history_open.set(true))
+                        on_delete=Callback::new(move |_| is_delete_modal_open.set(true))
+                        test_id=Signal::derive(|| "kanji-card-item".to_string())
+                        show_tag=Signal::derive(|| false)
+                    />
+                </div>
             </div>
         </div>
         <DeleteConfirmModal

@@ -113,7 +113,7 @@ testWithFreshUser.describe("Kanji Page - Search & Filters", () => {
         await kanjiPage.addSelectedKanji();
         await expect(kanjiPage.kanjiGrid).toBeVisible({ timeout: 10_000 });
 
-        const firstKanjiChar = await kanjiPage.kanjiGrid.locator(".card").first().locator(".font-serif").first().textContent();
+        const firstKanjiChar = await kanjiPage.kanjiGrid.locator(".kanji-card-kanji-char").first().textContent();
         if (firstKanjiChar) {
             await kanjiPage.searchKanji(firstKanjiChar.trim());
             await expect(kanjiPage.emptyState).not.toBeVisible();
@@ -266,8 +266,8 @@ testWithFreshUser.describe("Kanji Page - Detail Page", () => {
         await kanjiLink.click();
 
         await page.waitForURL(/\/kanji\//, { timeout: 5_000 });
-        const detailPage = page.getByTestId("kanji-detail-header");
-        await expect(detailPage).toBeVisible({ timeout: 5_000 });
+        const breadcrumbs = page.locator(".kanji-breadcrumbs");
+        await expect(breadcrumbs).toBeVisible({ timeout: 5_000 });
     });
 
     testWithFreshUser("should display content on detail page", async ({ page }) => {
@@ -280,12 +280,11 @@ testWithFreshUser.describe("Kanji Page - Detail Page", () => {
         await kanjiLink.click();
 
         await page.waitForURL(/\/kanji\//, { timeout: 5_000 });
-        const detailPage = page.getByTestId("kanji-detail-header");
-        await expect(detailPage).toBeVisible({ timeout: 5_000 });
+        const breadcrumbs = page.locator(".kanji-breadcrumbs");
+        await expect(breadcrumbs).toBeVisible({ timeout: 5_000 });
 
-        const pageText = await detailPage.textContent({ timeout: 5_000 });
-        expect(pageText).toBeTruthy();
-        expect(pageText!.length).toBeGreaterThan(0);
+        const heroCard = page.locator(".kanji-detail-hero-card");
+        await expect(heroCard).toBeVisible({ timeout: 5_000 });
     });
 
     testWithFreshUser("should navigate back to kanji list via back button", async ({ page }) => {
