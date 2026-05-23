@@ -14,6 +14,7 @@ pub fn CardActionBar(
     #[prop(optional, into)] on_history: Option<Callback<()>>,
     #[prop(optional, into)] on_delete: Option<Callback<()>>,
     #[prop(optional, into)] test_id: Signal<String>,
+    #[prop(optional, into)] show_tag: Signal<bool>,
 ) -> impl IntoView {
     let favorite_test_id = Signal::derive(move || format!("{}-favorite-btn", test_id.get()));
     let mark_known_test_id = Signal::derive(move || format!("{}-mark-known-btn", test_id.get()));
@@ -25,9 +26,11 @@ pub fn CardActionBar(
 
     view! {
         <div class="card-action-bar" on:click=move |ev: leptos::ev::MouseEvent| ev.stop_propagation()>
-            <div class="card-action-status">
-                <Tag variant=tag_variant>{tag_label}</Tag>
-            </div>
+            <Show when=move || show_tag.get()>
+                <div class="card-action-status">
+                    <Tag variant=tag_variant>{tag_label}</Tag>
+                </div>
+            </Show>
             <div class="card-action-toolbar" role="toolbar" aria-label="Card actions">
                 {move || {
                     match on_toggle_favorite {
