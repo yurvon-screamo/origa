@@ -1,82 +1,132 @@
-# AGENTS.md - Origa Frontend (`origa_ui` crate)
+# AGENTS.md — `origa_ui` crate
 
-## Description
+Leptos 0.8 / WASM frontend for Origa (Japanese learning app). CSR mode only. Rust edition 2024.
+For full-app dev: `cd tauri && cargo tauri dev`. Frontend-only: `cd origa_ui && trunk serve`.
 
-Leptos/WASM frontend. Built with `trunk`.
-
-For Tauri desktop development, use `cargo tauri dev`.
-
-## Project Structure
+## Source Structure
 
 ```text
 origa_ui/src/
-├── core/               # Core: routing, application context
-├── ui_components/     # Base UI components (buttons, cards, etc.)
-├── pages/             # Pages (home, lesson, sets, profile, login, etc.)
-├── repository/        # TrailBase/IndexedDB client (async data)
-├── store/             # Leptos reactive state (Romer)
-└── loaders/           # Async data loaders
+├── lib.rs, main.rs, app.rs, i18n.rs, routes.rs
+├── core/              # config, updater, version (build.rs env vars)
+├── ui_components/     # 54 components (button, card, modal, sidebar, furigana,
+│                      #   kanji_animation, audio_player, toast, skeleton, search...)
+├── pages/             # home, login, onboarding, lesson, profile, words,
+│                      #   kanji, grammar, phrases, sets, shared
+├── repository/        # HybridUserRepository (TrailBase + IndexedDB),
+│                      #   CDN provider, dictionary cache, session mgmt
+├── store/             # AuthStore (auth state, dict loading, repo ref),
+│                      #   connectivity (online/offline)
+├── loaders/           # async data init (dictionaries, models, kanji,
+│                      #   vocabulary, grammar, phrases, pitch audio)
+├── hooks/             # custom Leptos hooks (phrase_checker)
+└── utils/             # fetch, file (OPFS), time, drag_drop, yield_
 ```
 
-## UI Components
+## Key Dependencies
 
-### test_id Pattern (required for all interactive components)
+| Purpose            | Crate                    |
+|--------------------|--------------------------|
+| UI framework       | Leptos 0.8 (CSR)         |
+| Routing            | leptos_router 0.8        |
+| Reactive utilities | leptos-use 0.18          |
+| i18n               | leptos_i18n 0.6          |
+| Client storage     | `idb` (IndexedDB), OPFS  |
+| WASM utilities     | `gloo`, `web-sys`        |
+| HTTP client        | TrailBase REST API       |
+| Build tool         | `trunk`                  |
 
-All interactive components **must** accept a `test_id: Signal<String>` prop.
+## Leptos 0.8 Patterns
 
 ```rust
+// Signals — core reactivity
+let count = RwSignal::new(0);
+let derived: Signal<i32> = Signal::derive(move || count.get() * 2);
+
+// Effects — side reactions
+Effect::new(move |_| { tracing::info!("Count: {}", count.get()); });
+
+// Async tasks
+spawn_local(async move { /* async operations */ });
+
+// Components — ALL interactive components MUST accept test_id
 #[component]
-pub fn Button(
+pub fn MyComponent(
     #[prop(optional, into)] test_id: Signal<String>,
-    // ...
+    children: ChildrenFn,
 ) -> impl IntoView {
     view! {
-        <button data-testid=move || test_id.get()>
+        <div data-testid=move || test_id.get()>
             {children()}
-        </button>
+        </div>
     }
 }
+
+// Context — global state
+let auth = use_context::<AuthStore>().expect("AuthStore not provided");
 ```
 
-## Key Conventions
+## Conventions
 
 ### Props
 
-- All optional props with `#[prop(optional, into)]`
-- Signal for reactive props: `test_id: Signal<String>`
-- Never use `web_sys` directly for DOM
+- All optional props: `#[prop(optional, into)]`; reactive props: `Signal<T>` or `RwSignal<T>`
 
 ### Async Data
 
-- Use `create_resource` for server data
-- Repository pattern via `Repository` trait
-- Loader functions in `loaders/`
+- `spawn_local` for fire-and-forget async; `create_resource` for reactive data-fetching
+- Loader functions in `loaders/` handle async data initialization
+
+### State Management
+
+- `AuthStore` — auth state, dictionary loading status, repository reference
+- `RwSignal<T>` for read-write state; `Signal<T>` for derived; `provide_context`/`use_context`
+
+### i18n
+
+```rust
+let i18n = crate::i18n::use_i18n();
+let text = i18n.get_keys().ui().loading_data().inner().to_string();
+```
+
+Translations compiled at build time by `leptos_i18n_build`.
 
 ### Logging
 
-```rust
-// ✅ Good: tracing for WASM
-tracing::info!("Card loaded: {id}");
+- **Always:** `tracing::info!("Card loaded: {id}");`
+- **Never:** `web_sys::console::log_1` or `console_log!`
 
-// ❌ Bad: console.log
-web_sys::console::log_1(&"message".into());
-```
+### Styling
+
+- Read `DESIGN.md` for the complete design system
+- No `border-radius` on components; no `box-shadow` with blur (only hard offset shadows)
+- Fonts: Cormorant Garamond (headings) + DM Mono (UI); animation prefix: `anima-*`
+
+## Routing
+
+Routes defined in `routes.rs`: `/` (home), `/login`, `/onboarding`, `/profile`,
+`/words`, `/grammar`, `/phrases`, `/kanji`, `/kanji/:id`, `/lesson`, `/sets`.
+`ProtectedRoute` wraps authenticated pages — auto-redirects to Login, triggers dictionary loading.
+
+## Build System
+
+`build.rs` handles at compile time: i18n compilation, Lindera dictionary (UniDic),
+well-known set metadata, and env vars (`ORIGA_CDN_BASE_URL` required, plus optional
+`ORIGA_CDN_REGION`, `ORIGA_VERSION`, `ORIGA_COMMIT`, `ORIGA_BUILD_DATE`, `ORIGA_PUBLIC_BASE_URL`).
 
 ## Development
 
-```bash
-# Frontend only (WASM)
-cd origa_ui && trunk serve
-
-# Tauri desktop (full app)
-cd tauri && cargo tauri dev
-
-# Production build
-cd origa_ui && trunk build --release
+```powershell
+$env:ORIGA_CDN_BASE_URL = "https://storage.yandexcloud.net/origa-data"  # REQUIRED
+cd tauri && cargo tauri dev          # full app (recommended)
+cd origa_ui && trunk serve           # frontend only
 ```
 
 ## Testing
 
-```bash
+```powershell
 cargo test -p origa_ui
+cargo test -p origa_ui -- --nocapture  # with output
 ```
+
+Uses `rstest` for parameterized tests.

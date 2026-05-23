@@ -1,89 +1,96 @@
-# AGENTS.md - Origa Development Guide
+# AGENTS.md — Origa
 
-## Project Overview
+**Origa** — приложение для изучения японского языка (FSRS, OCR, STT, токенизация).
+Репозиторий: <https://github.com/yurvon-screamo/origa>
 
-Origa — приложение для изучения японского языка с интервальными повторениями (FSRS),
-OCR и токенизацией.
-**Tech stack**: Rust workspace (крейты `origa`, `origa_ui`, `tokenizer`),
-Leptos/WASM, Tauri v2.
-**Архитектура**: Clean Architecture (Use Cases → Domain → Traits).
+## Стек
+
+| Слой           | Технология                                                                |
+|----------------|---------------------------------------------------------------------------|
+| Workspace      | Rust 2024 edition, id `net.uwwu.origa`                                    |
+| Бизнес-логика  | `origa/` — Clean Architecture (Use Cases → Domain → Traits)               |
+| Frontend       | `origa_ui/` — Leptos 0.8, CSR/WASM, trunk                                 |
+| Desktop        | `tauri/` — Tauri v2 (Windows, Linux, macOS)                               |
+| E2E            | `end2end/` — Playwright (TypeScript)                                      |
+| Утилиты        | `utils/`, `scripts/` (Python)                                             |
 
 ## Структура проекта
 
-- `origa/` — бизнес-логика (domain, use_cases, traits, ocr, dictionary)
-- `origa_ui/` — Leptos frontend (WASM)
-- `tauri/` — Tauri v2 desktop app
-- `end2end/` — Playwright E2E тесты
-- `utils/` — CLI утилиты
+```text
+origa/       — domain, use_cases, traits, ocr, stt, dictionary
+origa_ui/    — Leptos 0.8 frontend (WASM)
+tauri/       — Tauri v2 desktop app
+end2end/     — Playwright E2E тесты
+utils/       — CLI утилиты
+cdn/         — статический контент (dictionaries, grammar, kanji_animations, ndlocr, phrases, pitch, well_known_set)
+scripts/     — Python скрипты обработки данных
+docs/        — документация (decisions/)
+models/      — ML модели
+```
 
-## Команды
+## Среда разработки
 
-### Разработка
-
-```bash
+```powershell
+$env:ORIGA_CDN_BASE_URL = "https://storage.yandexcloud.net/origa-data"  # ОБЯЗАТЕЛЬНО
 cd tauri && cargo tauri dev
 ```
 
-### Тестирование
+### Переменные окружения (compile-time, `build.rs`)
 
-```bash
-# Все тесты
-cargo test --workspace
+Обязательная: `ORIGA_CDN_BASE_URL`. Опциональные: `ORIGA_CDN_REGION`, `ORIGA_VERSION`,
+`ORIGA_COMMIT`, `ORIGA_BUILD_DATE`, `ORIGA_PUBLIC_BASE_URL`, `TRAILBASE_URL`.
 
-# Тесты конкретного крейта
-cargo test -p origa
-cargo test -p origa_ui
+## Команды
+
+```powershell
+cargo test --workspace                              # все тесты
+cargo test -p origa -- --nocapture                  # с выводом
+cargo clippy --workspace --all-targets -- -D warnings
+cargo fmt --check && cargo fmt
 ```
 
-## Стиль кода и соглашения
+Тесты: `rstest` (параметризованные). Конфиги: `.rustfmt.toml` (max_width=100), `clippy.toml` (complexity=25).
 
-### Обработка ошибок
+## Ключевые зависимости
 
-- Используйте `thiserror` для ошибок домена
-- Никогда не используйте `unwrap()` в production-коде
-- Никогда не используйте `#[async_trait]` — используйте async fn напрямую
+`rs-fsrs` (FSRS), `ort` + NDLOCR-Lite (OCR), `ort` + `rustfft` (Whisper STT),
+`lindera` + UniDic (токенизация), `serde`/`bincode`/`rkyv` (сериализация),
+`rusqlite` (БД), Leptos 0.8 + `leptos_router`/`leptos-use`/`leptos_i18n` (frontend),
+`sha2`/`hmac` (TrailBase auth), `tracing`/`tracing-wasm` (логирование).
+Плагины: opener, tts, deep-link (`origa://`), single-instance, updater, process.
 
-### Комментарии и документация
+## CDN / S3
 
-- `///` (doc comments) — только когда действительно нужны
-- Код должен быть самодокументируемым через понятные имена
-- Никогда не используйте `#[allow(dead_code)]`
+Yandex Cloud Storage (`s3://origa-data`), CDN URL вшивается через `build.rs`.
+Трейт: `origa/src/traits/cdn_provider.rs`, реализация: `origa_ui/src/repository/cdn_provider.rs`.
 
-### Логирование
+```powershell
+aws s3 sync cdn/ s3://origa-data --profile yandex --endpoint-url https://storage.yandexcloud.net
+```
 
-- Используйте `tracing` для логирования
-- Никогда не оставляйте `println!` или `console.log` в коде
+## CI/CD
 
-## Критические границы
+Workflows: `tauri.yml`, `version.yml`, `reusable-release.yml`, `mobile.yml`, `docker.yml`, `cleanup-cache.yml`.
+Targets: Windows x86_64, Linux x86_64, macOS aarch64. Релиз при push `master` + tag `v*.*.*`.
 
-### ✅ ВСЕГДА делайте
+## Границы
 
-- Запускайте `cargo clippy --workspace --all-targets -- -D warnings` перед коммитом
-- Форматируйте код через `cargo fmt` перед коммитом
-- Проходите все тесты (`cargo test --workspace`) перед коммитом
+### ✅ ВСЕГДА
+
+- `cargo clippy --workspace --all-targets -- -D warnings` + `cargo fmt` + `cargo test --workspace` перед коммитом
+- `ORIGA_CDN_BASE_URL` установлена перед сборкой
 
 ### ⚠️ СПРОСИТЕ СНАЧАЛА
 
-- Изменения в `Cargo.toml` (workspace dependencies)
-- Изменения в CI/CD (`.github/workflows/`)
-- Изменения в domain layer (`origa/src/domain/`)
+- Изменения в `Cargo.toml` (workspace deps), `.github/workflows/`, `origa/src/domain/`, линтер-конфигах
 
-### 🚫 НИКОГДА не делайте
+### 🚫 НИКОГДА
 
-- Не коммитьте без прохождения всех тестов
-- Не используйте `unwrap()` в production-коде
-- Не используйте `#[async_trait]` и `#[allow(dead_code)]`
-- Не коммитьте `println!` / `console.log`
-- Не удаляйте тесты
+- Коммит без тестов / `unwrap()` в production / `#[async_trait]` / `#[allow(dead_code)]`
+- `println!` / `console.log` в production / удаление тестов
+- Sans-serif шрифты (только Cormorant Garamond + DM Mono)
+- `border-radius` на основных UI / `box-shadow` с blur (только жёсткие offset-тени)
 
-## CDN / S3 Storage
+## Git
 
-Статический контент (словари, вокабуляр, грамматика, кандзи, OCR модели, SVG, аудио фраз)
-хранится на Yandex Cloud Storage (S3-совместимый). Bucket: `s3://origa-data`.
-
-CDN URL бейкается в WASM на этапе компиляции через `build.rs`.
-Для запуска dev: `$env:ORIGA_CDN_BASE_URL = "https://storage.yandexcloud.net/origa-data"`.
-
-Управление CDN через `aws s3 sync` с профилем `yandex`, endpoint `https://storage.yandexcloud.net`.
-
-CDN трейт: `origa/src/traits/cdn_provider.rs`, реализация: `origa_ui/src/repository/cdn_provider.rs`.
+Коммиты на английском. Ветка: `master`. Теги: `v*.*.*` для релизов.
