@@ -4554,6 +4554,10 @@ input[type="submit"],
     .kanji-detail-mobile {
         display: block !important;
     }
+
+    .kanji-detail-top-bar .card-action-bar {
+        display: none;
+    }
 }
 
 /* Legacy section separator (used in mobile tabs) */

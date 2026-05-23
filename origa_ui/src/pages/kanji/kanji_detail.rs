@@ -283,24 +283,6 @@ pub fn KanjiDetail() -> impl IntoView {
                 let card_id_for_known = card_id;
                 let card_id_for_fav = card_id;
 
-                let radicals_heading = Signal::derive(move || {
-                    i18n.get_keys()
-                        .shared()
-                        .radicals_label()
-                        .inner()
-                        .to_string()
-                        .replacen("{}", "", 1)
-                });
-
-                let examples_heading = Signal::derive(move || {
-                    i18n.get_keys()
-                        .shared()
-                        .examples_label()
-                        .inner()
-                        .to_string()
-                        .replacen("{}", "", 1)
-                });
-
                 let stats_text = Signal::derive(move || {
                     i18n.get_keys()
                         .shared()
@@ -326,16 +308,16 @@ pub fn KanjiDetail() -> impl IntoView {
                 let breadcrumbs_label = breadcrumbs_kanji_label;
 
                 let writing_practice_title = Signal::derive(move || {
-                    i18n.get_keys().kanji_page().writing_practice().inner().to_string().to_uppercase()
+                    i18n.get_keys().kanji_page().writing_practice().inner().to_string()
                 });
                 let stroke_order_title = Signal::derive(move || {
-                    i18n.get_keys().kanji_page().stroke_order().inner().to_string().to_uppercase()
+                    i18n.get_keys().kanji_page().stroke_order().inner().to_string()
                 });
                 let vocabulary_title = Signal::derive(move || {
-                    i18n.get_keys().kanji_page().vocabulary().inner().to_string().to_uppercase()
+                    i18n.get_keys().kanji_page().vocabulary().inner().to_string()
                 });
                 let radicals_title = Signal::derive(move || {
-                    i18n.get_keys().kanji_page().radicals().inner().to_string().to_uppercase()
+                    i18n.get_keys().kanji_page().radicals().inner().to_string()
                 });
                 let on_label = Signal::derive(move || {
                     i18n.get_keys().kanji_page().on_reading().inner().to_string()
@@ -521,9 +503,9 @@ pub fn KanjiDetail() -> impl IntoView {
                                 description=description
                                 has_radicals=has_radicals
                                 radicals_stored=radicals_stored
-                                radicals_heading=radicals_heading
+                                radicals_title=radicals_title
                                 has_examples=has_examples
-                                examples_heading=examples_heading
+                                vocabulary_title=vocabulary_title
                                 example_words=example_words
                                 known_kanji=known_kanji.get()
                             />
@@ -645,9 +627,9 @@ fn MobileOverview(
     description: Memo<String>,
     has_radicals: bool,
     radicals_stored: StoredValue<String>,
-    radicals_heading: Signal<String>,
+    #[prop(into)] radicals_title: Signal<String>,
     has_examples: Memo<bool>,
-    examples_heading: Signal<String>,
+    #[prop(into)] vocabulary_title: Signal<String>,
     example_words: Memo<Vec<(String, String)>>,
     known_kanji: HashSet<char>,
 ) -> impl IntoView {
@@ -663,7 +645,7 @@ fn MobileOverview(
 
         <Show when=move || has_radicals>
             <div class="kanji-detail-section">
-                <div class="kanji-detail-section-title">{radicals_heading}</div>
+                <div class="kanji-detail-section-title">{radicals_title}</div>
                 <Text size=TextSize::Default variant=TypographyVariant::Primary>
                     {radicals_stored.get_value()}
                 </Text>
@@ -672,7 +654,7 @@ fn MobileOverview(
 
         <Show when=move || has_examples.get()>
             <div class="kanji-detail-section">
-                <div class="kanji-detail-section-title">{examples_heading}</div>
+                <div class="kanji-detail-section-title">{vocabulary_title}</div>
                 <div class="kanji-vocab-list">
                     <For
                         each=move || example_words.get()
