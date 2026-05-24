@@ -64,8 +64,16 @@ cargo fmt --check && cargo fmt
 Yandex Cloud Storage (`s3://origa-data`), CDN URL вшивается через `build.rs`.
 Трейт: `origa/src/traits/cdn_provider.rs`, реализация: `origa_ui/src/repository/cdn_provider.rs`.
 
+Все объекты — статические и immutable, поэтому `Cache-Control: public, max-age=31536000, immutable`.
+
 ```powershell
-aws s3 sync cdn/ s3://origa-data --profile yandex --endpoint-url https://storage.yandexcloud.net
+aws s3 sync cdn/ s3://origa-data --profile yandex --endpoint-url https://storage.yandexcloud.net --cache-control "public, max-age=31536000, immutable"
+```
+
+Обновить Cache-Control на существующих объектах (one-time):
+
+```powershell
+aws s3 cp s3://origa-data/ s3://origa-data/ --profile yandex --endpoint-url https://storage.yandexcloud.net --recursive --metadata-directive REPLACE --cache-control "public, max-age=31536000, immutable"
 ```
 
 ## CI/CD

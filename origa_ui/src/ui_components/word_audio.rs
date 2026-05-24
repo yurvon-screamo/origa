@@ -6,7 +6,6 @@ use origa::dictionary::pitch_audio::get_audio_for_word;
 use tracing::warn;
 
 use super::{get_reading_from_text, speak_tts_text, speak_tts_text_with_callback, stop_speech};
-use crate::core::config::cdn_url;
 
 struct ActiveAudio {
     element: web_sys::HtmlAudioElement,
@@ -48,7 +47,7 @@ pub fn register_audio(
 fn create_and_play_audio(word: &str) -> Option<web_sys::HtmlAudioElement> {
     let entry = get_audio_for_word(word)?;
     let path = format!("/{}", entry.cdn_path());
-    let url = cdn_url(&path);
+    let url = crate::repository::cdn_provider::resolve_audio_url(&path);
 
     let audio = web_sys::HtmlAudioElement::new().ok()?;
     audio.set_src(&url);

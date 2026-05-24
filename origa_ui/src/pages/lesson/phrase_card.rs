@@ -28,7 +28,7 @@ pub fn PhraseCardView(
     on_next_card: Callback<()>,
 ) -> impl IntoView {
     let i18n = use_i18n();
-    let audio_src = crate::core::config::cdn_url(&format!("/phrases/audio/{}", audio_file));
+    let audio_src = crate::repository::cdn_provider::resolve_audio_url(&format!("phrases/audio/{}", audio_file));
     let options_stored = StoredValue::new(options);
     let phrase_text_stored = StoredValue::new(phrase_text);
     let phrase_translation_stored = StoredValue::new(phrase_translation);
