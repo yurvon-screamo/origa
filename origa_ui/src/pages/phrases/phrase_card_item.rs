@@ -38,8 +38,8 @@ pub fn PhraseCardItem(
     let (phrase_text, audio_src) = match study_card.card() {
         DomainCard::Phrase(phrase_card) => {
             let text = phrase_card.question().unwrap_or_default();
-            let src = crate::core::config::cdn_url(&format!(
-                "/phrases/audio/{}.opus",
+            let src = crate::repository::cdn_provider::resolve_audio_url(&format!(
+                "phrases/audio/{}.opus",
                 phrase_card.phrase_id()
             ));
             (text, src)

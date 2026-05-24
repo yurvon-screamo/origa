@@ -1,4 +1,4 @@
-mod cdn_provider;
+pub mod cdn_provider;
 mod dictionary_cache;
 mod file_repository;
 mod hybrid_repository;

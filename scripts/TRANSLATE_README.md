@@ -1,106 +1,136 @@
-# TranslateGemma 4B — Batch Translation of 158K Japanese Phrases
+# TranslateGemma 12B — Batch Translation of 158K Japanese Phrases
 
 ## Overview
 
-Regenerate EN and RU translations for all 158,332 Japanese phrases using TranslateGemma 4B via vLLM on A100 80GB.
+Regenerate EN and RU translations for all 158,332 Japanese phrases using
+TranslateGemma 12B via vLLM served in Docker on a remote A100 80GB GPU.
+
+The translation script runs on your **local machine** and connects to the
+vLLM API on the A100 host over the network.
+
+## Architecture
+
+```text
+Local machine                          A100 host (10.2.11.6)
+┌──────────────────────┐               ┌─────────────────────────────┐
+│ translate_transla-   │  HTTP :8000   │  Docker container           │
+│ tegemma.py           │──────────────▶│  vLLM + TranslateGemma 12B  │
+│ (Python, openai,    │               │  ~24.5 GB BF16              │
+│  tqdm)               │               │  A100 80 GB VRAM            │
+└──────────────────────┘               └─────────────────────────────┘
+```
 
 ## Prerequisites
 
 - SSH access: `turbin_y@10.2.11.6`
-- Python 3.10+
-- vLLM installed: `pip install vllm openai`
-- A100 GPU with 80GB VRAM
+- Docker installed on the A100 host
+- Python 3.10+ with `openai` and `tqdm` on your local machine
 
-## Step 1: Transfer files to A100
+## Step 1: Transfer phrase data to A100
 
 ```bash
-# From your local machine:
-scp scripts/translate_translategemma.py turbin_y@10.2.11.6:~/origa_translate/
 scp -r cdn/phrases/data/ turbin_y@10.2.11.6:~/origa_translate/phrases/data/
 ```
 
-## Step 2: Install dependencies on A100
+## Step 2: Start Docker vLLM on A100
 
 ```bash
 ssh turbin_y@10.2.11.6
-pip install vllm openai tqdm
-```
 
-## Step 3: Start vLLM server
-
-```bash
-# In tmux/screen (this takes ~2 min to load model):
-vllm serve Infomaniak-AI/vllm-translategemma-4b-it \
+# In tmux/screen (model download + load takes ~5 min):
+docker run --gpus all \
+  --ipc=host \
+  -p 8000:8000 \
+  -v ~/.cache/huggingface:/root/.cache/huggingface \
+  vllm/vllm-openai:latest \
+  --model Infomaniak-AI/vllm-translategemma-12b-it \
   --tensor-parallel-size 1 \
   --max-model-len 2048 \
   --dtype bfloat16 \
-  --gpu-memory-utilization 0.9
+  --gpu-memory-utilization 0.9 \
+  --host 0.0.0.0 \
+  --port 8000
 ```
 
 Wait until you see: `Uvicorn running on http://0.0.0.0:8000`
 
-Verify it works:
+Verify from the A100 host:
 
 ```bash
-curl http://localhost:8000/v1/completions \
-  -H "Content-Type: application/json" \
-  -d '{"model":"Infomaniak-AI/vllm-translategemma-4b-it","prompt":"<<<source>>>ja<<<target>>>ru<<<text>>>こんにちは","max_tokens":50,"temperature":0.0}'
+curl http://localhost:8000/v1/models
 ```
 
-## Step 4: Run translation
+## Step 3: Run translation from your LOCAL machine
 
 ```bash
-# In another tmux/screen:
-cd ~/origa_translate
-
-python translate_translategemma.py \
-  --input phrases/data \
-  --output output \
+python scripts/translate_translategemma.py \
+  --input cdn/phrases/data \
+  --output output_phrases \
   --workers 50 \
-  --languages en,ru
+  --languages en,ru \
+  --api-url http://10.2.11.6:8000/v1
 ```
 
-## Step 5: Monitor progress
+## Step 4: Monitor progress
 
 ```bash
-# Check output files:
-ls output/p*.json | wc -l
+# Output files count:
+ls output_phrases/p*.json | wc -l
 
-# Check checkpoint:
+# Checkpoint:
 cat checkpoint_translate.json | python -m json.tool | head -5
 
-# GPU usage:
-nvidia-smi
+# GPU usage on A100:
+ssh turbin_y@10.2.11.6 nvidia-smi
 ```
 
-## Step 6: Retrieve results
+## Step 5: Retrieve results
 
 ```bash
-# From your local machine:
 scp turbin_y@10.2.11.6:~/origa_translate/output/p*.json cdn/phrases/data/
 ```
 
+Or, if running locally with `--output` pointing to a local dir, results are
+already on your machine.
+
 ## Resume after interruption
 
-Just re-run the same command — checkpoint tracks completed files:
+Just re-run the same command — the checkpoint file tracks completed chunks:
 
 ```bash
-python translate_translategemma.py \
-  --input phrases/data --output output --workers 50 --languages en,ru
+python scripts/translate_translategemma.py \
+  --input cdn/phrases/data \
+  --output output_phrases \
+  --workers 50 \
+  --languages en,ru \
+  --api-url http://10.2.11.6:8000/v1
 ```
+
+If the Docker container died, restart it (Step 2) first. The checkpoint
+ensures no already-translated file is reprocessed.
 
 ## Performance estimates
 
-- Model: TranslateGemma 4B (~5GB BF16 on A100)
+- Model: TranslateGemma 12B (~24.5 GB BF16 on A100)
 - Workers: 50 concurrent requests
-- Speed: ~5-10 phrases/sec on A100 with vLLM
-- Total time: ~4-8 hours for 158K phrases
-- VRAM: ~8-10 GB (leaves room for KV cache)
+- Speed: ~4-8 phrases/sec on A100 with vLLM (12B is slower than 4B)
+- Total time: ~7-10 hours for 158K phrases × 2 languages
+- VRAM: ~28-32 GB (model + KV cache, fits comfortably on 80 GB A100)
 
 ## Troubleshooting
 
-**vLLM OOM**: Reduce `--gpu-memory-utilization` to 0.8, or reduce `--workers` to 20.
+**vLLM OOM in Docker**: Reduce `--gpu-memory-utilization` to `0.8`, or add
+`--enforce-eager` to skip CUDA graph capture.
 
-**Connection refused**: Make sure vLLM server is running on port 8000.
+**Docker container exits**: Check `docker logs <container_id>`. Common causes
+include missing GPU driver or insufficient VRAM.
 
-**Slow performance**: Increase `--workers` to 100. vLLM handles queuing internally.
+**Connection refused from local machine**: Ensure Docker publishes port 8000
+(`-p 8000:8000`) and the A100 firewall allows inbound TCP on 8000.
+
+**Slow translation**: Try increasing `--workers` to 100. vLLM handles request
+queuing and batching internally.
+
+**Model not downloading**: The first Docker run downloads ~24.5 GB. Use the
+HuggingFace cache volume (`-v ~/.cache/huggingface:/root/.cache/huggingface`)
+so subsequent runs start faster.

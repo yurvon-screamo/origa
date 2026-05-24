@@ -1,6 +1,9 @@
+use std::collections::HashMap;
 use std::future::Future;
+use std::sync::Mutex;
 use std::sync::OnceLock;
 
+use leptos::task::spawn_local;
 use leptos::wasm_bindgen::JsCast;
 use origa::domain::OrigaError;
 use origa::traits::CdnProvider;
@@ -16,6 +19,14 @@ static CDN_PROVIDER: OnceLock<CacheFirstCdnProvider> = OnceLock::new();
 
 pub fn cdn() -> &'static CacheFirstCdnProvider {
     CDN_PROVIDER.get_or_init(|| CacheFirstCdnProvider)
+}
+
+static BLOB_URL_CACHE: OnceLock<Mutex<HashMap<String, String>>> = OnceLock::new();
+
+const MAX_BLOB_URL_CACHE_SIZE: usize = 500;
+
+fn blob_url_cache() -> &'static Mutex<HashMap<String, String>> {
+    BLOB_URL_CACHE.get_or_init(|| Mutex::new(HashMap::new()))
 }
 
 async fn open_cache() -> Result<web_sys::Cache, OrigaError> {
@@ -241,4 +252,65 @@ impl CdnProvider for CacheFirstCdnProvider {
             Ok(bytes)
         }
     }
+}
+
+pub fn get_cached_blob_url(path: &str) -> Option<String> {
+    let key = ensure_leading_slash(path);
+    let cache = blob_url_cache().lock().ok()?;
+    cache.get(&key).cloned()
+}
+
+pub async fn prefetch_blob_url(path: &str) -> Result<String, OrigaError> {
+    let key = ensure_leading_slash(path);
+
+    if let Some(blob_url) = get_cached_blob_url(&key) {
+        return Ok(blob_url);
+    }
+
+    let bytes = cdn().fetch_bytes(&key).await?;
+
+    let blob_options = web_sys::BlobPropertyBag::new();
+    blob_options.set_type("audio/opus");
+
+    let uint8_array = js_sys::Uint8Array::new_with_length(bytes.len() as u32);
+    uint8_array.copy_from(&bytes);
+    let parts = js_sys::Array::of1(&uint8_array);
+    let blob = web_sys::Blob::new_with_u8_array_sequence_and_options(&parts, &blob_options)
+        .map_err(|e| OrigaError::RepositoryError {
+            reason: format!("Failed to create audio Blob: {:?}", e),
+        })?;
+
+    let blob_url = web_sys::Url::create_object_url_with_blob(&blob).map_err(|e| {
+        OrigaError::RepositoryError {
+            reason: format!("Failed to create blob URL: {:?}", e),
+        }
+    })?;
+
+    {
+        let mut cache = blob_url_cache().lock().map_err(|e| OrigaError::RepositoryError {
+            reason: format!("Failed to lock blob URL cache: {:?}", e),
+        })?;
+        if cache.len() < MAX_BLOB_URL_CACHE_SIZE {
+            cache.insert(key, blob_url.clone());
+        }
+    }
+
+    Ok(blob_url)
+}
+
+pub fn resolve_audio_url(path: &str) -> String {
+    let key = ensure_leading_slash(path);
+
+    if let Some(blob_url) = get_cached_blob_url(&key) {
+        return blob_url;
+    }
+
+    let path_owned = key.clone();
+    spawn_local(async move {
+        if let Err(e) = prefetch_blob_url(&path_owned).await {
+            tracing::warn!(path = %path_owned, error = ?e, "Failed to prefetch blob URL");
+        }
+    });
+
+    cdn_url(&key)
 }
