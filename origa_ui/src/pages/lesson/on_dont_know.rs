@@ -29,6 +29,7 @@ pub fn create_on_dont_know(
             state.showing_answer = true;
             state.selected_quiz_options.clear();
             state.multi_result = None;
+            state.multi_quiz_submitted = true;
         });
 
         if is_phrase || is_multi_quiz {
