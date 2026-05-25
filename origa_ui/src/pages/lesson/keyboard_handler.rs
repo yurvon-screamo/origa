@@ -74,6 +74,7 @@ pub fn create_keyboard_handler(
                         &actions.on_quiz_toggle,
                         &actions.on_quiz_submit,
                         &actions.on_quiz_dont_know,
+                        !state.selected_quiz_options.is_empty(),
                     );
                 } else {
                     handle_quiz_key(
@@ -133,6 +134,7 @@ fn handle_multi_quiz_key(
     on_toggle: &Callback<usize>,
     on_submit: &Callback<()>,
     on_dont_know: &Callback<()>,
+    has_selections: bool,
 ) {
     if let Some(index) = key.parse::<usize>().ok().filter(|&i| (1..=8).contains(&i)) {
         ev.prevent_default();
@@ -147,7 +149,11 @@ fn handle_multi_quiz_key(
         },
         " " => {
             ev.prevent_default();
-            on_dont_know.run(());
+            if has_selections {
+                on_submit.run(());
+            } else {
+                on_dont_know.run(());
+            }
         },
         _ => {},
     }
