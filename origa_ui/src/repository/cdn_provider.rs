@@ -287,9 +287,11 @@ pub async fn prefetch_blob_url(path: &str) -> Result<String, OrigaError> {
     })?;
 
     {
-        let mut cache = blob_url_cache().lock().map_err(|e| OrigaError::RepositoryError {
-            reason: format!("Failed to lock blob URL cache: {:?}", e),
-        })?;
+        let mut cache = blob_url_cache()
+            .lock()
+            .map_err(|e| OrigaError::RepositoryError {
+                reason: format!("Failed to lock blob URL cache: {:?}", e),
+            })?;
         if cache.len() < MAX_BLOB_URL_CACHE_SIZE {
             cache.insert(key, blob_url.clone());
         }

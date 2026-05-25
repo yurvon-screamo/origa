@@ -376,10 +376,9 @@ fn render_lesson_card(
 
     if is_phrase {
         let phrase_audio_src = match &params.card {
-            Card::Phrase(pc) => Some(crate::repository::cdn_provider::resolve_audio_url(&format!(
-                "phrases/audio/{}.opus",
-                pc.phrase_id()
-            ))),
+            Card::Phrase(pc) => Some(crate::repository::cdn_provider::resolve_audio_url(
+                &format!("phrases/audio/{}.opus", pc.phrase_id()),
+            )),
             _ => None,
         };
 
