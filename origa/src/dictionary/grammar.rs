@@ -1,4 +1,4 @@
-use std::{collections::HashMap, sync::OnceLock};
+use std::{collections::HashMap, collections::HashSet, sync::OnceLock};
 
 use serde::{Deserialize, Serialize};
 use ulid::Ulid;
@@ -41,6 +41,13 @@ pub fn init_grammar(data: GrammarData) -> Result<(), OrigaError> {
 
 pub fn is_grammar_loaded() -> bool {
     GRAMMAR_RULES.get().is_some()
+}
+
+pub fn get_all_rule_ids() -> HashSet<Ulid> {
+    GRAMMAR_RULES
+        .get()
+        .map(|rules| rules.iter().map(|r| *r.rule_id()).collect())
+        .unwrap_or_default()
 }
 
 pub fn get_rule_by_id(rule_id: &Ulid) -> Option<&'static GrammarRule> {
