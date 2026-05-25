@@ -31,7 +31,8 @@ pub fn LessonCard(
     let card_type = CardType::from(&card);
     let is_phrase = card_type == CardType::Phrase;
     let lang = native_language;
-    let is_na_adj = super::na_adjective_helper::is_na_adjective_card(&card);
+    let is_na_adj =
+        grammar_info.is_none() && super::na_adjective_helper::is_na_adjective_card(&card);
 
     let question_text = match card.question(&lang) {
         Ok(q) => q.text().to_string(),

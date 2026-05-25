@@ -14,7 +14,7 @@ const PHRASE_NEW_RATIO: usize = 2;
 /// Приоритет карточек без определённого JLPT уровня — ниже всех известных уровней (N1=1)
 const UNKNOWN_JLPT_PRIORITY: u8 = 0;
 
-const PHRASE_MAX_PER_LESSON: usize = 7;
+const PHRASE_MAX_PER_LESSON: usize = 5;
 
 /// Веса типов карточек для interleaving: Vocab:Kanji:Grammar ≈ 60:20:20.
 /// При добавлении нового варианта в CardType — обновить эту константу.
