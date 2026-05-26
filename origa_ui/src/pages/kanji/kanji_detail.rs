@@ -360,7 +360,6 @@ pub fn KanjiDetail() -> impl IntoView {
                                     answer_text=answer_text
                                     on_readings=on_readings_stored
                                     kun_readings=kun_readings_stored
-                                    description=description
                                     has_radicals=has_radicals
                                     radicals_stored=radicals_stored
                                     radicals_title=radicals_title
@@ -557,7 +556,6 @@ fn KanjiDetailHeroCard(
     answer_text: Memo<String>,
     on_readings: StoredValue<String>,
     kun_readings: StoredValue<String>,
-    description: Memo<String>,
     has_radicals: bool,
     radicals_stored: StoredValue<String>,
     #[prop(into)] tag_variant: Signal<crate::ui_components::TagVariant>,
@@ -591,15 +589,6 @@ fn KanjiDetailHeroCard(
                     <Tag variant=tag_variant>{tag_label}</Tag>
                 </div>
             </div>
-
-            <Show when=move || !description.get().is_empty()>
-                <div style="margin-top:12px">
-                    <MarkdownText
-                        content=Signal::derive(move || description.get())
-                        known_kanji=HashSet::new()
-                    />
-                </div>
-            </Show>
 
             <Show when=move || has_radicals>
                 <div style="margin-top:12px">
