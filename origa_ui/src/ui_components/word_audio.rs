@@ -2,7 +2,7 @@ use std::cell::RefCell;
 
 use leptos::wasm_bindgen::JsCast;
 use leptos::wasm_bindgen::closure::Closure;
-use origa::dictionary::pitch_audio::get_audio_for_word;
+use origa::dictionary::pitch_audio::get_audio_for_reading;
 use tracing::warn;
 
 use super::{get_reading_from_text, speak_tts_text, speak_tts_text_with_callback, stop_speech};
@@ -44,8 +44,22 @@ pub fn register_audio(
     });
 }
 
+fn kata_to_hira(text: &str) -> String {
+    text.chars()
+        .map(|c| {
+            if ('\u{30A1}'..='\u{30F6}').contains(&c) {
+                char::from_u32(c as u32 - 0x60).unwrap_or(c)
+            } else {
+                c
+            }
+        })
+        .collect()
+}
+
 fn create_and_play_audio(word: &str) -> Option<web_sys::HtmlAudioElement> {
-    let entry = get_audio_for_word(word)?;
+    let reading = get_reading_from_text(word);
+    let reading_hira = kata_to_hira(&reading);
+    let entry = get_audio_for_reading(word, &reading_hira)?;
     let path = format!("/{}", entry.cdn_path());
     let url = crate::repository::cdn_provider::resolve_audio_url(&path);
 
