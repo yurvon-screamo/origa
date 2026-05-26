@@ -4778,12 +4778,7 @@ input[type="submit"],
 
 /* Expanded container */
 .fsrs-metrics--expanded {
-    display: flex;
-    flex-direction: column;
     gap: 16px;
-    font-family: "DM Mono", monospace;
-    font-size: 11px;
-    letter-spacing: 0.05em;
 }
 
 /* Single compact metric */
@@ -4823,7 +4818,6 @@ input[type="submit"],
     height: 4px;
     background: var(--bg-aged);
     position: relative;
-    display: inline-block;
     flex-shrink: 0;
 }
 
