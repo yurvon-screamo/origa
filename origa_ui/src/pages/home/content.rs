@@ -138,7 +138,7 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
 
     view! {
         <main class="flex-1" data-testid=test_id_val>
-            <div class="py-6 sm:py-8 space-y-6 sm:space-y-8">
+            <div class="py-4 sm:py-5 space-y-6 sm:space-y-8">
                 <WelcomeCard
                     username=Signal::from(user_name)
                     test_id=Signal::derive(|| "home-welcome".to_string())
