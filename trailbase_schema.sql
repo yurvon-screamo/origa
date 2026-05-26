@@ -1,5 +1,5 @@
 -- TrailBase user table schema for Origa
--- Execute this SQL in TrailBase SQL Editor (/_/admin/editor)
+-- Execute this SQL in TrailBase SQL Editor (/_/admin/editor) 
 
 CREATE TABLE user (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
