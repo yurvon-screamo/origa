@@ -4103,9 +4103,6 @@ input[type="submit"],
     display: flex;
     flex-direction: column;
     gap: 4px;
-    border-top: 1px solid var(--border-dark);
-    padding-top: 8px;
-    margin-top: 8px;
     min-height: 32px;
 }
 
