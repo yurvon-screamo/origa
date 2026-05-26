@@ -1,6 +1,8 @@
 use super::super::shared::{CardStatus, DeleteRequest};
 use crate::i18n::use_i18n;
-use crate::ui_components::{CardActionBar, CardHistoryModal, DeleteConfirmModal, Tag, TagVariant};
+use crate::ui_components::{
+    CardActionBar, CardHistoryModal, DeleteConfirmModal, FsrsMetrics, Tag, TagVariant,
+};
 use leptos::prelude::*;
 use leptos_router::components::A;
 use origa::domain::{Card as DomainCard, NativeLanguage, StudyCard};
@@ -88,7 +90,12 @@ pub fn KanjiCardItem(
             </A>
             <div class="kanji-card-divider"></div>
             <div class="kanji-card-footer">
-                <div class="kanji-card-actions" style="margin-left: auto">
+                <FsrsMetrics
+                    difficulty=memory.difficulty().map(|d| d.value())
+                    stability=memory.stability().map(|s| s.value())
+                    test_id=Signal::derive(|| "kanji-card-fsrs".to_string())
+                />
+                <div class="kanji-card-actions">
                     <CardActionBar
                         tag_variant=TagVariant::default()
                         tag_label=Signal::derive(|| "".to_string())

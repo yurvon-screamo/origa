@@ -7,9 +7,9 @@ use super::super::shared::{
 use crate::i18n::use_i18n;
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{
-    CardActionBar, CardHistoryModal, DeleteConfirmModal, KanjiDrawingPractice, KanjiViewMode,
-    KanjiWritingSection, LoadingOverlay, MarkdownText, TabItem, Tabs, Tag, Text, TextSize,
-    TypographyVariant,
+    CardActionBar, CardHistoryModal, DeleteConfirmModal, FsrsMetrics, FsrsMetricsMode,
+    KanjiDrawingPractice, KanjiViewMode, KanjiWritingSection, LoadingOverlay, MarkdownText,
+    TabItem, Tabs, Tag, Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
 use leptos::task::spawn_local;
@@ -252,14 +252,6 @@ pub fn KanjiDetail() -> impl IntoView {
                 let radicals_stored: StoredValue<String> = StoredValue::new(radicals.clone());
                 let has_examples = Memo::new(move |_| !example_words.get().is_empty());
 
-                let difficulty = memory
-                    .difficulty()
-                    .map(|d| format!("{:.1}", d.value()))
-                    .unwrap_or("-".to_string());
-                let stability = memory
-                    .stability()
-                    .map(|s| format!("{:.1}", s.value()))
-                    .unwrap_or("-".to_string());
                 let next_review = memory
                     .next_review_date()
                     .map(|d| d.format("%d.%m.%Y").to_string())
@@ -282,17 +274,6 @@ pub fn KanjiDetail() -> impl IntoView {
                 let kanji_stored: StoredValue<String> = StoredValue::new(kanji_char.clone());
                 let card_id_for_known = card_id;
                 let card_id_for_fav = card_id;
-
-                let stats_text = Signal::derive(move || {
-                    i18n.get_keys()
-                        .shared()
-                        .card_info()
-                        .inner()
-                        .to_string()
-                        .replacen("{}", &next_review, 1)
-                        .replacen("{}", &difficulty, 1)
-                        .replacen("{}", &stability, 1)
-                });
 
                 let active_tab_cell = active_tab;
 
@@ -336,6 +317,11 @@ pub fn KanjiDetail() -> impl IntoView {
                                 {kanji_char_stored}
                             </span>
                         </div>
+                        <FsrsMetrics
+                            difficulty=memory.difficulty().map(|d| d.value())
+                            stability=memory.stability().map(|s| s.value())
+                            test_id=Signal::derive(|| "kanji-detail-fsrs".to_string())
+                        />
                         <CardActionBar
                             tag_variant=Signal::derive(move || status.tag_variant())
                             tag_label=Signal::derive(move || status.label(&i18n))
@@ -461,6 +447,11 @@ pub fn KanjiDetail() -> impl IntoView {
                                 </div>
                             </div>
                             <div class="kanji-detail-hero-actions">
+                                <FsrsMetrics
+                                    difficulty=memory.difficulty().map(|d| d.value())
+                                    stability=memory.stability().map(|s| s.value())
+                                    test_id=Signal::derive(|| "kanji-detail-fsrs-mobile".to_string())
+                                />
                                 <CardActionBar
                                     tag_variant=Signal::derive(move || status.tag_variant())
                                     tag_label=Signal::derive(move || status.label(&i18n))
@@ -524,9 +515,13 @@ pub fn KanjiDetail() -> impl IntoView {
 
                         <Show when=move || active_tab_cell.get() == "stats">
                             <div class="kanji-detail-section">
-                                <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                                    {stats_text}
-                                </Text>
+                                <FsrsMetrics
+                                    difficulty=memory.difficulty().map(|d| d.value())
+                                    stability=memory.stability().map(|s| s.value())
+                                    next_review_date=next_review.clone()
+                                    mode=FsrsMetricsMode::Expanded
+                                    test_id=Signal::derive(|| "kanji-detail-fsrs-expanded".to_string())
+                                />
                             </div>
                         </Show>
                     </div>
