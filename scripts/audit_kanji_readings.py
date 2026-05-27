@@ -258,6 +258,10 @@ def main():
                 removed_readings_detail.append({"kanji": kanji, "reading": r, "type": "kun", "reason": "dead_in_jmdict"})
                 total_kun_removed += 1
 
+        # Backup alive readings for safety net (Phase 4b)
+        alive_on_backup = list(new_on)
+        alive_kun_backup = list(new_kun)
+
         # Phase 3a: Remove broken popular_words and non-JLPT words
         new_popular = []
         for w in entry.get("popular_words", []):
@@ -317,6 +321,12 @@ def main():
                 total_kun_removed += 1
             change["readings_removed"].append({"reading": reading, "type": rtype})
             removed_readings_detail.append({"kanji": kanji, "reading": reading, "type": rtype, "reason": "no_jlpt_covering_word"})
+
+        # Phase 4b: Safety net — never leave a kanji with 0 readings
+        if not new_on and not new_kun and (alive_on_backup or alive_kun_backup):
+            new_on = alive_on_backup
+            new_kun = alive_kun_backup
+            change["readings_restored"] = len(new_on) + len(new_kun)
 
         # Step 5: Fill remaining slots with JLPT words
         final_readings_count = len(new_on) + len(new_kun)
