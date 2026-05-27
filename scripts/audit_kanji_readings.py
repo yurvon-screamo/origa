@@ -127,6 +127,47 @@ def reading_matches_kun(kun: str, alive_set: set[str]) -> bool:
     return False
 
 
+def word_covers_reading(
+    word: str, kanji: str, reading_hira: str, reading_type: str, furigana_lookup: dict[str, list[tuple[str, str]]]
+) -> bool:
+    """Check if a word demonstrates the given reading for the kanji."""
+    if kanji not in word:
+        return False
+    entries = furigana_lookup.get(word, [])
+    if not entries:
+        return False
+    for _full_reading, spans_str in entries:
+        for pos, span_reading in parse_furigana_spans(word, spans_str):
+            if word[pos] == kanji:
+                span_hira = span_reading
+                if reading_type == "on":
+                    if span_hira == reading_hira or span_hira.startswith(reading_hira) or reading_hira.startswith(span_hira):
+                        return True
+                else:
+                    prefix = reading_hira.split(".")[0] if "." in reading_hira else reading_hira
+                    if span_hira.startswith(prefix) or prefix.startswith(span_hira):
+                        return True
+    return False
+
+
+def build_furigana_lookup(path: Path) -> dict[str, list[tuple[str, str]]]:
+    """Build word → [(full_reading, spans_str), ...] from JmdictFurigana."""
+    lookup: dict[str, list[tuple[str, str]]] = defaultdict(list)
+    with open(path, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.rstrip("\n\r")
+            if not line or "|" not in line:
+                continue
+            parts = line.split("|")
+            if len(parts) < 3:
+                continue
+            word = parts[0]
+            full_reading = parts[1]
+            spans_str = parts[2]
+            lookup[word].append((full_reading, spans_str))
+    return lookup
+
+
 def main():
     parser = argparse.ArgumentParser(description="Kanji readings audit")
     parser.add_argument("--apply", action="store_true", help="Apply changes to kanji.json")
@@ -139,6 +180,10 @@ def main():
     print("Phase 1: Building alive-readings index from JmdictFurigana...")
     alive_readings = build_alive_readings(FURIGANA_PATH)
     print(f"  Kanji chars with alive readings: {len(alive_readings)}")
+
+    print("Phase 1b: Building furigana lookup for reading-coverage matching...")
+    furigana_lookup = build_furigana_lookup(FURIGANA_PATH)
+    print(f"  Words in furigana lookup: {len(furigana_lookup)}")
 
     print("Loading chunk files...")
     chunks = load_chunks()
@@ -209,46 +254,83 @@ def main():
                 change["words_removed"].append(w)
                 total_words_removed += 1
 
-        # Count remaining readings for Phase 4 word-need calculation
+        # Phase 4: Smart word selection — ensure every reading is covered by a popular_word
         all_remaining_readings = [(r, "on") for r in new_on] + [(r, "kun") for r in new_kun]
 
-        # Phase 4: Add replacement popular_words from JLPT lists and chunks
-        words_needed = max(len(all_remaining_readings), 1)
+        # Step 1: Check which readings are already covered by existing popular_words
+        covered_readings: set[int] = set()  # indices into all_remaining_readings
+        for i, (reading, rtype) in enumerate(all_remaining_readings):
+            r_hira = kata_to_hira(reading) if rtype == "on" else reading
+            if any(word_covers_reading(w, kanji, r_hira, rtype, furigana_lookup) for w in new_popular):
+                covered_readings.add(i)
+
+        # Step 2: For uncovered readings, find covering words from JLPT lists + chunks
+        uncovered = [(i, r, rt) for i, (r, rt) in enumerate(all_remaining_readings) if i not in covered_readings]
+
+        # Build candidate pool (same as before: JLPT priority, then chunk fallback)
+        kanji_in_chunks = [
+            w for w in chunks if kanji in w and chunks[w].get("russian_translation", "").strip()
+        ]
+        jlpt_candidates: list[tuple[str, int]] = []
+        for lvl in JLPT_ORDER:
+            lvl_words = jlpt_lists.get(lvl, [])
+            for w in lvl_words:
+                if w in chunks and kanji in w and chunks[w].get("russian_translation", "").strip():
+                    if w not in new_popular and w not in [c[0] for c in jlpt_candidates]:
+                        priority = abs(jlpt_priority(jlpt) - jlpt_priority(lvl))
+                        jlpt_candidates.append((w, priority))
+        
+        chunk_candidates: list[tuple[str, int]] = []
+        for w in kanji_in_chunks:
+            if w not in new_popular and w not in [c[0] for c in jlpt_candidates]:
+                has_okurigana = any(ord(c) >= 0x3040 and ord(c) <= 0x309F for c in w)
+                kanji_count = sum(1 for c in w if is_kanji(c))
+                if kanji_count == 1 and has_okurigana:
+                    priority = 10
+                elif kanji_count == 1:
+                    priority = 11
+                elif kanji_count > 1:
+                    priority = 20
+                else:
+                    priority = 30
+                chunk_candidates.append((w, priority))
+
+        # Step 3: For each uncovered reading, find the best covering word
+        for idx, reading, rtype in uncovered:
+            r_hira = kata_to_hira(reading) if rtype == "on" else reading
+            best_word = None
+            best_priority = 999
+            for w, p in jlpt_candidates + chunk_candidates:
+                if w in new_popular:
+                    continue
+                if word_covers_reading(w, kanji, r_hira, rtype, furigana_lookup):
+                    if p < best_priority:
+                        best_word = w
+                        best_priority = p
+            if best_word:
+                new_popular.append(best_word)
+                change["words_added"].append(best_word)
+                total_words_added += 1
+                covered_readings.add(idx)
+
+        # Step 4: Remove readings that STILL have no covering word
+        still_uncovered = [(i, r, rt) for i, (r, rt) in enumerate(all_remaining_readings) if i not in covered_readings]
+        for idx, reading, rtype in still_uncovered:
+            if rtype == "on":
+                new_on.remove(reading)
+                total_on_removed += 1
+            else:
+                new_kun.remove(reading)
+                total_kun_removed += 1
+            change["readings_removed"].append({"reading": reading, "type": rtype})
+            removed_readings_detail.append({"kanji": kanji, "reading": reading, "type": rtype, "reason": "no_covering_word_in_chunks"})
+
+        # Step 5: Fill remaining slots up to max(remaining_readings, 1) with JLPT/chunk words
+        final_readings_count = len(new_on) + len(new_kun)
+        words_needed = max(final_readings_count, 1)
         if len(new_popular) < words_needed:
-            kanji_in_chunks = [
-                w for w in chunks if kanji in w and chunks[w].get("russian_translation", "").strip()
-            ]
-
-            candidates: list[tuple[str, int]] = []
-
-            # From JLPT lists — priority by level proximity
-            for lvl in JLPT_ORDER:
-                lvl_words = jlpt_lists.get(lvl, [])
-                for w in lvl_words:
-                    if w in chunks and kanji in w and chunks[w].get("russian_translation", "").strip():
-                        if w not in new_popular and w not in [c[0] for c in candidates]:
-                            priority = abs(jlpt_priority(jlpt) - jlpt_priority(lvl))
-                            candidates.append((w, priority))
-
-            # From chunks — prefer single-kanji and okurigana words for kun, compounds for on
-            for w in kanji_in_chunks:
-                if w not in new_popular and w not in [c[0] for c in candidates]:
-                    has_okurigana = any(
-                        ord(c) >= 0x3040 and ord(c) <= 0x309F for c in w
-                    )
-                    kanji_count = sum(1 for c in w if is_kanji(c))
-                    if kanji_count == 1 and has_okurigana:
-                        priority = 10
-                    elif kanji_count == 1:
-                        priority = 11
-                    elif kanji_count > 1:
-                        priority = 20
-                    else:
-                        priority = 30
-                    candidates.append((w, priority))
-
-            candidates.sort(key=lambda x: (x[1], x[0]))
-            for w, _p in candidates:
+            all_candidates = sorted(jlpt_candidates + chunk_candidates, key=lambda x: (x[1], x[0]))
+            for w, _p in all_candidates:
                 if len(new_popular) >= words_needed:
                     break
                 if w not in new_popular:
