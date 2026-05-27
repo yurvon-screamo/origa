@@ -69,20 +69,28 @@ pub fn GrammarDetailDrawer(
 
     let title_signal = Signal::derive(move || title.get());
 
-    let study_card_for_desc = study_card.clone();
-    let description = Memo::new(move |_| {
-        let lang = native_language.get();
-        match study_card_for_desc.card() {
-            DomainCard::Grammar(grammar) => grammar
-                .description(&lang)
-                .ok()
-                .map(|d| d.text().to_string())
-                .unwrap_or_default(),
-            _ => "?".to_string(),
-        }
-    });
-
     let grammar_rule = extract_grammar_rule(&study_card);
+
+    let explanation = Memo::new(move |_| {
+        grammar_rule.map(|r| r.content(&native_language.get()).explanation().to_string())
+    });
+    let how_to_form = Memo::new(move |_| {
+        grammar_rule.map(|r| r.content(&native_language.get()).how_to_form().to_string())
+    });
+    let examples = Memo::new(move |_| {
+        grammar_rule.map(|r| r.content(&native_language.get()).examples().to_string())
+    });
+    let nuances = Memo::new(move |_| {
+        grammar_rule.map(|r| r.content(&native_language.get()).nuances().to_string())
+    });
+    let pro_tip = Memo::new(move |_| {
+        grammar_rule.map(|r| r.content(&native_language.get()).pro_tip().to_string())
+    });
+    let related_patterns = Memo::new(move |_| {
+        grammar_rule.and_then(|r| {
+            r.content(&native_language.get()).related_patterns().map(|s| s.to_string())
+        })
+    });
     let has_quiz = grammar_rule.map(|r| r.has_format_map()).unwrap_or(false);
     let quiz_rule = grammar_rule;
     let quiz_user: StoredValue<Option<User>> = StoredValue::new(user);
@@ -161,10 +169,47 @@ pub fn GrammarDetailDrawer(
                     </Heading>
                 </div>
 
-                <MarkdownText
-                    content=Signal::derive(move || description.get())
-                    known_kanji=known_kanji_stored.get_value()
-                />
+                <Show when=move || explanation.get().is_some_and(|s| !s.is_empty())>
+                    <MarkdownText
+                        content=Signal::derive(move || explanation.get().unwrap_or_default())
+                        known_kanji=known_kanji_stored.get_value()
+                    />
+                </Show>
+
+                <Show when=move || how_to_form.get().is_some_and(|s| !s.is_empty())>
+                    <MarkdownText
+                        content=Signal::derive(move || how_to_form.get().unwrap_or_default())
+                        known_kanji=known_kanji_stored.get_value()
+                    />
+                </Show>
+
+                <Show when=move || examples.get().is_some_and(|s| !s.is_empty())>
+                    <MarkdownText
+                        content=Signal::derive(move || examples.get().unwrap_or_default())
+                        known_kanji=known_kanji_stored.get_value()
+                    />
+                </Show>
+
+                <Show when=move || nuances.get().is_some_and(|s| !s.is_empty())>
+                    <MarkdownText
+                        content=Signal::derive(move || nuances.get().unwrap_or_default())
+                        known_kanji=known_kanji_stored.get_value()
+                    />
+                </Show>
+
+                <Show when=move || pro_tip.get().is_some_and(|s| !s.is_empty())>
+                    <MarkdownText
+                        content=Signal::derive(move || pro_tip.get().unwrap_or_default())
+                        known_kanji=known_kanji_stored.get_value()
+                    />
+                </Show>
+
+                <Show when=move || related_patterns.get().is_some_and(|s| !s.is_empty())>
+                    <MarkdownText
+                        content=Signal::derive(move || related_patterns.get().unwrap_or_default())
+                        known_kanji=known_kanji_stored.get_value()
+                    />
+                </Show>
 
                 <Text size=TextSize::Small variant=TypographyVariant::Muted>
                     {card_info_text}

@@ -89,7 +89,13 @@ pub struct VocabularyEntry {
 pub struct GrammarContent {
     pub title: String,
     pub short_description: String,
-    pub md_description: String,
+    pub explanation: String,
+    pub how_to_form: String,
+    pub examples: String,
+    pub nuances: String,
+    pub pro_tip: String,
+    #[serde(default)]
+    pub related_patterns: Option<String>,
 }
 
 /// Bilingual grammar content (EN + RU)

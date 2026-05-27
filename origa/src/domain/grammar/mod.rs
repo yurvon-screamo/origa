@@ -125,7 +125,12 @@ mod tests {
                 GrammarRuleContent::new(
                     "Test Rule".to_string(),
                     "Test description".to_string(),
-                    "# Test".to_string(),
+                    "Explanation".to_string(),
+                    "How to form".to_string(),
+                    "Examples".to_string(),
+                    "Nuances".to_string(),
+                    "Pro tip".to_string(),
+                    None,
                 ),
             )]),
             Some(format_map),

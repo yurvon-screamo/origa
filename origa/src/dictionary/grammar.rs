@@ -87,7 +87,13 @@ pub struct GrammarRule {
 pub struct GrammarRuleContent {
     title: String,
     short_description: String,
-    md_description: String,
+    explanation: String,
+    how_to_form: String,
+    examples: String,
+    nuances: String,
+    pro_tip: String,
+    #[serde(default)]
+    related_patterns: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -338,11 +344,27 @@ impl GrammarRule {
 }
 
 impl GrammarRuleContent {
-    pub fn new(title: String, short_description: String, md_description: String) -> Self {
+    #[cfg(test)]
+    #[allow(clippy::too_many_arguments)]
+    pub fn new(
+        title: String,
+        short_description: String,
+        explanation: String,
+        how_to_form: String,
+        examples: String,
+        nuances: String,
+        pro_tip: String,
+        related_patterns: Option<String>,
+    ) -> Self {
         Self {
             title,
             short_description,
-            md_description,
+            explanation,
+            how_to_form,
+            examples,
+            nuances,
+            pro_tip,
+            related_patterns,
         }
     }
 
@@ -354,8 +376,42 @@ impl GrammarRuleContent {
         &self.short_description
     }
 
-    pub fn md_description(&self) -> &str {
-        &self.md_description
+    pub fn explanation(&self) -> &str {
+        &self.explanation
+    }
+
+    pub fn how_to_form(&self) -> &str {
+        &self.how_to_form
+    }
+
+    pub fn examples(&self) -> &str {
+        &self.examples
+    }
+
+    pub fn nuances(&self) -> &str {
+        &self.nuances
+    }
+
+    pub fn pro_tip(&self) -> &str {
+        &self.pro_tip
+    }
+
+    pub fn related_patterns(&self) -> Option<&str> {
+        self.related_patterns.as_deref()
+    }
+
+    pub fn full_description(&self) -> String {
+        let mut parts = vec![
+            format!("### {}", self.explanation),
+            format!("### {}", self.how_to_form),
+            format!("### {}", self.examples),
+            format!("### {}", self.nuances),
+            format!("### {}", self.pro_tip),
+        ];
+        if let Some(ref rp) = self.related_patterns {
+            parts.push(format!("### {}", rp));
+        }
+        parts.join("\n\n")
     }
 }
 

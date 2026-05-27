@@ -48,10 +48,20 @@ struct RuleInfo {
 struct GeneratedContent {
     ru_title: String,
     ru_short_description: String,
-    ru_md_description: String,
+    ru_explanation: String,
+    ru_how_to_form: String,
+    ru_examples: String,
+    ru_nuances: String,
+    ru_pro_tip: String,
+    ru_related_patterns: Option<String>,
     en_title: String,
     en_short_description: String,
-    en_md_description: String,
+    en_explanation: String,
+    en_how_to_form: String,
+    en_examples: String,
+    en_nuances: String,
+    en_pro_tip: String,
+    en_related_patterns: Option<String>,
 }
 
 fn collect_rules(
@@ -134,13 +144,34 @@ fn extract_title(rule: &Value) -> String {
         .to_string()
 }
 
-fn update_rule_content(rule: &mut Value, language: &str, title: &str, short_desc: &str, md: &str) {
+#[allow(clippy::too_many_arguments)]
+fn update_rule_content(
+    rule: &mut Value,
+    language: &str,
+    title: &str,
+    short_desc: &str,
+    explanation: &str,
+    how_to_form: &str,
+    examples: &str,
+    nuances: &str,
+    pro_tip: &str,
+    related_patterns: Option<&str>,
+) {
     let content = rule.get_mut("content").and_then(|c| c.get_mut(language));
 
     if let Some(lang_obj) = content {
         lang_obj["title"] = Value::String(title.to_string());
         lang_obj["short_description"] = Value::String(short_desc.to_string());
-        lang_obj["md_description"] = Value::String(md.to_string());
+        lang_obj["explanation"] = Value::String(explanation.to_string());
+        lang_obj["how_to_form"] = Value::String(how_to_form.to_string());
+        lang_obj["examples"] = Value::String(examples.to_string());
+        lang_obj["nuances"] = Value::String(nuances.to_string());
+        lang_obj["pro_tip"] = Value::String(pro_tip.to_string());
+        if let Some(rp) = related_patterns {
+            lang_obj["related_patterns"] = Value::String(rp.to_string());
+        } else {
+            lang_obj.as_object_mut().map(|obj| obj.remove("related_patterns"));
+        }
     }
 }
 
@@ -325,10 +356,20 @@ pub async fn run_generate_grammar(
                     Ok(GeneratedContent {
                         ru_title: bilingual.ru.title,
                         ru_short_description: bilingual.ru.short_description,
-                        ru_md_description: bilingual.ru.md_description,
+                        ru_explanation: bilingual.ru.explanation,
+                        ru_how_to_form: bilingual.ru.how_to_form,
+                        ru_examples: bilingual.ru.examples,
+                        ru_nuances: bilingual.ru.nuances,
+                        ru_pro_tip: bilingual.ru.pro_tip,
+                        ru_related_patterns: bilingual.ru.related_patterns,
                         en_title: bilingual.en.title,
                         en_short_description: bilingual.en.short_description,
-                        en_md_description: bilingual.en.md_description,
+                        en_explanation: bilingual.en.explanation,
+                        en_how_to_form: bilingual.en.how_to_form,
+                        en_examples: bilingual.en.examples,
+                        en_nuances: bilingual.en.nuances,
+                        en_pro_tip: bilingual.en.pro_tip,
+                        en_related_patterns: bilingual.en.related_patterns,
                     }),
                 ));
             },
@@ -367,14 +408,24 @@ pub async fn run_generate_grammar(
                 "Russian",
                 &content.ru_title,
                 &content.ru_short_description,
-                &content.ru_md_description,
+                &content.ru_explanation,
+                &content.ru_how_to_form,
+                &content.ru_examples,
+                &content.ru_nuances,
+                &content.ru_pro_tip,
+                content.ru_related_patterns.as_deref(),
             );
             update_rule_content(
                 rule,
                 "English",
                 &content.en_title,
                 &content.en_short_description,
-                &content.en_md_description,
+                &content.en_explanation,
+                &content.en_how_to_form,
+                &content.en_examples,
+                &content.en_nuances,
+                &content.en_pro_tip,
+                content.en_related_patterns.as_deref(),
             );
         }
     }
