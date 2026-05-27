@@ -20,7 +20,7 @@ import sys
 import tempfile
 from pathlib import Path
 
-ROOT = Path(r"D:\origa_worktree\origa")
+ROOT = Path(__file__).resolve().parent.parent
 
 DB_PATH = ROOT / "tmp" / "pitch_sources" / "entries.db"
 FURIGANA_PATH = ROOT / "cdn" / "dictionaries" / "JmdictFurigana.txt"
@@ -36,7 +36,6 @@ VALID_SOURCES = {"nhk16", "daijisen"}
 
 PITCH_RE = re.compile(r"\[(\d+)\]")
 HASH_LEN = 16
-PROGRESS_INTERVAL = 1000
 CACHE_SAVE_INTERVAL = 5000
 
 MEDIA_DIRS: dict[str, Path] = {
@@ -252,7 +251,9 @@ def resolve_mp3_path(source: str, db_file: str) -> Path | None:
 
 def convert_mp3_to_opus(mp3_path: Path) -> tuple[str | None, str]:
     """Convert a single mp3 file to opus. Returns (opus_hash, error_message)."""
-    tmp_opus = Path(tempfile.mktemp(suffix=".opus"))
+    tmp_opus_file = tempfile.NamedTemporaryFile(suffix=".opus", delete=False)
+    tmp_opus_file.close()
+    tmp_opus = Path(tmp_opus_file.name)
     try:
         cmd = [
             "ffmpeg", "-loglevel", "error",
@@ -379,7 +380,7 @@ def build_v3_entries(
         opus_hash = file_map[pair]
         entries[index_key] = {
             "f": f"{opus_hash}.opus",
-            "p": pitch if pitch is not None else 0,
+            "p": pitch,
         }
 
     # Pass 1: Composite keys "expression|reading" for ALL (expression, reading) pairs

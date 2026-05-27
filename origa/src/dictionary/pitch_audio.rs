@@ -94,6 +94,8 @@ pub fn is_pitch_audio_loaded() -> bool {
     PITCH_AUDIO_INDEX.get().is_some()
 }
 
+/// Simple word lookup. Prefer [`get_audio_for_reading`] which uses tokenizer
+/// reading for correct pitch matching.
 pub fn get_audio_for_word(word: &str) -> Option<&'static PitchAudioEntry> {
     PITCH_AUDIO_INDEX.get().and_then(|idx| idx.get_entry(word))
 }
@@ -222,5 +224,23 @@ mod tests {
         // plain "役" should return kanji fallback
         let kanji = index.get_entry("役").expect("should exist");
         assert_eq!(kanji.file(), "fallback.opus");
+    }
+
+    #[test]
+    fn get_audio_for_reading_fallback_chain_integration() {
+        // Init once — if already set by another test, that's fine
+        let _ = init_pitch_audio_index(test_index_v3_json());
+
+        // Composite key match
+        let entry = get_audio_for_reading("役", "やく").expect("composite should match");
+        assert_eq!(entry.file(), "yaku.opus");
+
+        // Kana fallback (no composite for this reading in test data)
+        let entry = get_audio_for_reading("NotExist", "えき").expect("kana fallback");
+        assert_eq!(entry.file(), "eki_kana.opus");
+
+        // Kanji fallback
+        let entry = get_audio_for_reading("役", "NotExist").expect("kanji fallback");
+        assert_eq!(entry.file(), "fallback.opus");
     }
 }
