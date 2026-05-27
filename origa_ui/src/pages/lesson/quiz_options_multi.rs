@@ -64,53 +64,25 @@ pub fn QuizOptionsMulti(
             <button
                 data-testid="quiz-submit-btn"
                 class=move || {
-                    let base = "w-full mt-2 p-2 sm:p-4 border text-center transition-all flex items-center justify-center gap-2 font-serif font-medium";
-                    if selected_options_stored.get_value().is_empty() {
-                        format!("{} opacity-40 cursor-not-allowed border-[var(--border-dark)] bg-[var(--bg-paper)]", base)
-                    } else {
-                        format!("{} cursor-pointer bg-[var(--fg-black)] border-[var(--fg-black)] hover:opacity-80", base)
-                    }
+                    let base = "w-full mt-2 p-2 sm:p-4 border text-center transition-all cursor-pointer flex items-center justify-center gap-2 font-serif font-medium";
+                    format!("{} cursor-pointer bg-[var(--fg-black)] border-[var(--fg-black)] hover:opacity-80", base)
                 }
-                style=move || {
-                    if selected_options_stored.get_value().is_empty() {
-                        "color: var(--fg-black)".to_string()
-                    } else {
-                        "color: var(--bg-paper)".to_string()
-                    }
-                }
-                disabled=move || selected_options_stored.get_value().is_empty()
+                style="color: var(--bg-paper)"
                 on:click=move |_| {
-                    on_submit.run(());
-                }
-            >
-                <span>{t!(i18n, lesson.check)}</span>
-                <span class="text-xs font-mono opacity-50">{t!(i18n, lesson.enter_key)}</span>
-            </button>
-        </Show>
-
-        <Show when=move || !multi_submitted>
-            <button
-                data-testid="quiz-dont-know-btn"
-                class=move || {
-                    let base = "w-full mt-2 p-2 sm:p-4 border text-center transition-all cursor-pointer flex items-center justify-center gap-2";
-                    if dont_know_selected {
-                        format!("{} quiz-option-neutral ring-2 ring-[var(--accent-olive)]", base)
-                    } else if show_result {
-                        format!("{} quiz-option-dimmed pointer-events-none", base)
-                    } else {
-                        format!("{} quiz-option-neutral", base)
-                    }
-                }
-                on:click=move |_| {
-                    if !show_result {
+                    if selected_options_stored.get_value().is_empty() {
                         on_dont_know.run(());
+                    } else {
+                        on_submit.run(());
                     }
                 }
             >
-                <Text size=TextSize::Default>{t!(i18n, lesson.dont_know)}</Text>
-                <Show when=move || !show_result>
-                    <span class="text-[var(--fg-muted)] text-xs font-mono">{t!(i18n, lesson.space_key)}</span>
+                <Show when=move || selected_options_stored.get_value().is_empty()>
+                    <span>{t!(i18n, lesson.dont_know)}</span>
                 </Show>
+                <Show when=move || !selected_options_stored.get_value().is_empty()>
+                    <span>{t!(i18n, lesson.check)}</span>
+                </Show>
+                <span class="text-xs font-mono opacity-50">{t!(i18n, lesson.space_key)}</span>
             </button>
         </Show>
 
