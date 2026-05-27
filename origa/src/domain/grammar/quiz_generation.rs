@@ -241,7 +241,12 @@ mod tests {
                     GrammarRuleContent::new(
                         "Test Masu".to_string(),
                         "Test desc".to_string(),
-                        "# Test".to_string(),
+                        "Explanation".to_string(),
+                        "How to form".to_string(),
+                        "Examples".to_string(),
+                        "Nuances".to_string(),
+                        "Pro tip".to_string(),
+                        None,
                     ),
                 )]),
                 Some(HashMap::from([(
@@ -278,7 +283,12 @@ mod tests {
                     GrammarRuleContent::new(
                         "Empty".to_string(),
                         "No POS".to_string(),
-                        "# Empty".to_string(),
+                        "Explanation".to_string(),
+                        "How to form".to_string(),
+                        "Examples".to_string(),
+                        "Nuances".to_string(),
+                        "Pro tip".to_string(),
+                        None,
                     ),
                 )]),
                 None,

@@ -47,11 +47,46 @@ impl GrammarRuleCard {
     }
 
     pub fn description(&self, lang: &NativeLanguage) -> Result<Answer, OrigaError> {
-        get_content!(self, lang, md_description, Answer::new)
+        let rule = get_rule_by_id(&self.rule_id).ok_or(OrigaError::GrammarRuleNotFound {
+            rule_id: self.rule_id,
+        })?;
+        let text = rule.content(lang).full_description();
+        if text.is_empty() {
+            return Err(OrigaError::GrammarContentNotFound {
+                rule_id: self.rule_id,
+                lang: *lang,
+            });
+        }
+        Answer::new(text)
     }
 
     pub fn short_description(&self, lang: &NativeLanguage) -> Result<Answer, OrigaError> {
         get_content!(self, lang, short_description, Answer::new)
+    }
+
+    pub fn explanation(&self, lang: &NativeLanguage) -> Result<Answer, OrigaError> {
+        get_content!(self, lang, explanation, Answer::new)
+    }
+
+    pub fn how_to_form(&self, lang: &NativeLanguage) -> Result<Answer, OrigaError> {
+        get_content!(self, lang, how_to_form, Answer::new)
+    }
+
+    pub fn examples(&self, lang: &NativeLanguage) -> Result<Answer, OrigaError> {
+        get_content!(self, lang, examples, Answer::new)
+    }
+
+    pub fn nuances(&self, lang: &NativeLanguage) -> Result<Answer, OrigaError> {
+        get_content!(self, lang, nuances, Answer::new)
+    }
+
+    pub fn pro_tip(&self, lang: &NativeLanguage) -> Result<Answer, OrigaError> {
+        get_content!(self, lang, pro_tip, Answer::new)
+    }
+
+    pub fn related_patterns(&self, lang: &NativeLanguage) -> Option<&str> {
+        let rule = get_rule_by_id(&self.rule_id)?;
+        rule.content(lang).related_patterns()
     }
 
     pub fn apply_to(&self) -> Vec<PartOfSpeech> {
