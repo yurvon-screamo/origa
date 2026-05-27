@@ -1,7 +1,7 @@
 {
   "summary": {
     "total_kanji": 2135,
-    "kanji_modified": 1649,
+    "kanji_modified": 1625,
     "readings_removed": 1896,
     "on_readings_removed": 864,
     "kun_readings_removed": 1032,
@@ -1689,11 +1689,14 @@
       "words_added": [
         "ばか野郎"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "ロウ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "ばか野郎"
-      ]
+      ],
+      "readings_restored": 1
     },
     "業": {
       "jlpt": "N4",
@@ -4645,11 +4648,17 @@
       "words_added": [
         "夏藤"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "トウ",
+        "ドウ"
+      ],
+      "final_kun_readings": [
+        "ふじ"
+      ],
       "final_popular_words": [
         "夏藤"
-      ]
+      ],
+      "readings_restored": 3
     },
     "論": {
       "jlpt": "N3",
@@ -5244,11 +5253,16 @@
       "words_added": [
         "入り江"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "コウ"
+      ],
+      "final_kun_readings": [
+        "え"
+      ],
       "final_popular_words": [
         "入り江"
-      ]
+      ],
+      "readings_restored": 2
     },
     "西": {
       "jlpt": "N5",
@@ -7620,11 +7634,14 @@
       "words_added": [
         "中佐"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "サ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "中佐"
-      ]
+      ],
+      "readings_restored": 1
     },
     "紀": {
       "jlpt": "N1",
@@ -8852,11 +8869,16 @@
       "words_added": [
         "岡"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "コウ"
+      ],
+      "final_kun_readings": [
+        "おか"
+      ],
       "final_popular_words": [
         "岡"
-      ]
+      ],
+      "readings_restored": 2
     },
     "熱": {
       "jlpt": "N3",
@@ -9170,11 +9192,14 @@
       "words_added": [
         "昭代"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "ショウ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "昭代"
-      ]
+      ],
+      "readings_restored": 1
     },
     "越": {
       "jlpt": "N3",
@@ -9706,11 +9731,17 @@
       "words_added": [
         "宮崎"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "キ"
+      ],
+      "final_kun_readings": [
+        "さき",
+        "みさき"
+      ],
       "final_popular_words": [
         "宮崎"
-      ]
+      ],
+      "readings_restored": 3
     },
     "省": {
       "jlpt": "N2",
@@ -12913,11 +12944,18 @@
       "words_added": [
         "加奈陀"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ナ",
+        "ナイ"
+      ],
+      "final_kun_readings": [
+        "いかん",
+        "からなし"
+      ],
       "final_popular_words": [
         "加奈陀"
-      ]
+      ],
+      "readings_restored": 4
     },
     "推": {
       "jlpt": "N1",
@@ -14027,11 +14065,14 @@
       "words_added": [
         "一陣"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "ジン"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "一陣"
-      ]
+      ],
+      "readings_restored": 1
     },
     "薄": {
       "jlpt": "N2",
@@ -14083,11 +14124,16 @@
       "words_added": [
         "京阪"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ハン"
+      ],
+      "final_kun_readings": [
+        "さか"
+      ],
       "final_popular_words": [
         "京阪"
-      ]
+      ],
+      "readings_restored": 2
     },
     "閉": {
       "jlpt": "N3",
@@ -14188,11 +14234,16 @@
       "words_added": [
         "三韓"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "カン"
+      ],
+      "final_kun_readings": [
+        "から"
+      ],
       "final_popular_words": [
         "三韓"
-      ]
+      ],
+      "readings_restored": 2
     },
     "夕": {
       "jlpt": "N4",
@@ -14401,22 +14452,6 @@
         "午前"
       ]
     },
-    "般": {
-      "jlpt": "N2",
-      "readings_removed": [
-        {
-          "reading": "ハン",
-          "type": "on"
-        }
-      ],
-      "words_removed": [],
-      "words_added": [],
-      "final_on_readings": [],
-      "final_kun_readings": [],
-      "final_popular_words": [
-        "一般"
-      ]
-    },
     "湯": {
       "jlpt": "N2",
       "readings_removed": [],
@@ -14588,11 +14623,14 @@
       "words_added": [
         "列藩"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "ハン"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "列藩"
-      ]
+      ],
+      "readings_restored": 1
     },
     "骨": {
       "jlpt": "N2",
@@ -15004,11 +15042,20 @@
       "words_added": [
         "弥々"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ミ",
+        "ビ"
+      ],
+      "final_kun_readings": [
+        "や",
+        "いや",
+        "いよいよ",
+        "わたる"
+      ],
       "final_popular_words": [
         "弥々"
-      ]
+      ],
+      "readings_restored": 6
     },
     "融": {
       "jlpt": "N1",
@@ -15113,11 +15160,14 @@
       "words_added": [
         "翌々年"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "ヨク"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "翌々年"
-      ]
+      ],
+      "readings_restored": 1
     },
     "旧": {
       "jlpt": "N2",
@@ -15199,11 +15249,16 @@
       "words_added": [
         "しだれ柳"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "リュウ"
+      ],
+      "final_kun_readings": [
+        "やなぎ"
+      ],
       "final_popular_words": [
         "しだれ柳"
-      ]
+      ],
+      "readings_restored": 2
     },
     "拠": {
       "jlpt": "N1",
@@ -15485,11 +15540,16 @@
       "words_added": [
         "上帝"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "テイ"
+      ],
+      "final_kun_readings": [
+        "みかど"
+      ],
       "final_popular_words": [
         "上帝"
-      ]
+      ],
+      "readings_restored": 2
     },
     "賀": {
       "jlpt": "N1",
@@ -16970,10 +17030,13 @@
         "川瀬"
       ],
       "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_kun_readings": [
+        "せ"
+      ],
       "final_popular_words": [
         "川瀬"
-      ]
+      ],
+      "readings_restored": 1
     },
     "互": {
       "jlpt": "N3",
@@ -17313,11 +17376,16 @@
       "words_added": [
         "津々浦々"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ホ"
+      ],
+      "final_kun_readings": [
+        "うら"
+      ],
       "final_popular_words": [
         "津々浦々"
-      ]
+      ],
+      "readings_restored": 2
     },
     "沈": {
       "jlpt": "N2",
@@ -17879,11 +17947,16 @@
       "words_added": [
         "たたき斬る"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ザン"
+      ],
+      "final_kun_readings": [
+        "きる"
+      ],
       "final_popular_words": [
         "たたき斬る"
-      ]
+      ],
+      "readings_restored": 2
     },
     "躍": {
       "jlpt": "N1",
@@ -18192,11 +18265,16 @@
       "words_added": [
         "一視同仁"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "ジン",
+        "ニ",
+        "ニン"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "一視同仁"
-      ]
+      ],
+      "readings_restored": 3
     },
     "衝": {
       "jlpt": "N1",
@@ -18561,11 +18639,17 @@
       "words_added": [
         "お忍び"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ニン"
+      ],
+      "final_kun_readings": [
+        "しのぶ",
+        "しのばせる"
+      ],
       "final_popular_words": [
         "お忍び"
-      ]
+      ],
+      "readings_restored": 3
     },
     "狂": {
       "jlpt": "N1",
@@ -18685,11 +18769,19 @@
       "words_added": [
         "亢竜"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "リュウ",
+        "リョウ",
+        "ロウ"
+      ],
+      "final_kun_readings": [
+        "たつ",
+        "いせ"
+      ],
       "final_popular_words": [
         "亢竜"
-      ]
+      ],
+      "readings_restored": 5
     },
     "脇": {
       "jlpt": "N2",
@@ -18864,11 +18956,16 @@
       "words_added": [
         "大熊座"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ユウ"
+      ],
+      "final_kun_readings": [
+        "くま"
+      ],
       "final_popular_words": [
         "大熊座"
-      ]
+      ],
+      "readings_restored": 2
     },
     "梅": {
       "jlpt": "N1",
@@ -18949,11 +19046,14 @@
       "words_added": [
         "俊傑"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "シュン"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "俊傑"
-      ]
+      ],
+      "readings_restored": 1
     },
     "汚": {
       "jlpt": "N2",
@@ -19347,11 +19447,16 @@
       "words_added": [
         "亜富汗斯坦"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "カン"
+      ],
+      "final_kun_readings": [
+        "あせ"
+      ],
       "final_popular_words": [
         "亜富汗斯坦"
-      ]
+      ],
+      "readings_restored": 2
     },
     "恥": {
       "jlpt": "N3",
@@ -19433,11 +19538,14 @@
       "words_added": [
         "鉄砲"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "ホウ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "鉄砲"
-      ]
+      ],
+      "readings_restored": 1
     },
     "謀": {
       "jlpt": "N1",
@@ -19473,11 +19581,19 @@
       "words_added": [
         "主謀者"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ボウ",
+        "ム"
+      ],
+      "final_kun_readings": [
+        "はかる",
+        "たばかる",
+        "はかりごと"
+      ],
       "final_popular_words": [
         "主謀者"
-      ]
+      ],
+      "readings_restored": 5
     },
     "懐": {
       "jlpt": "N1",
@@ -19815,11 +19931,18 @@
       "words_added": [
         "丸木舟"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "シュウ"
+      ],
+      "final_kun_readings": [
+        "ふね",
+        "ふな",
+        "ぶね"
+      ],
       "final_popular_words": [
         "丸木舟"
-      ]
+      ],
+      "readings_restored": 4
     },
     "闇": {
       "jlpt": "N2",
@@ -20023,11 +20146,16 @@
       "words_added": [
         "不丹"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "タン"
+      ],
+      "final_kun_readings": [
+        "に"
+      ],
       "final_popular_words": [
         "不丹"
-      ]
+      ],
+      "readings_restored": 2
     },
     "亜": {
       "jlpt": "N1",
@@ -20078,11 +20206,18 @@
       "words_added": [
         "お亀"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "キ",
+        "キュウ",
+        "キン"
+      ],
+      "final_kun_readings": [
+        "かめ"
+      ],
       "final_popular_words": [
         "お亀"
-      ]
+      ],
+      "readings_restored": 4
     },
     "沼": {
       "jlpt": "N1",
@@ -20192,11 +20327,18 @@
         "うさん臭い"
       ],
       "words_added": [],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "シュウ"
+      ],
+      "final_kun_readings": [
+        "くさい",
+        "におう",
+        "におい"
+      ],
       "final_popular_words": [
         "生臭い"
-      ]
+      ],
+      "readings_restored": 4
     },
     "慶": {
       "jlpt": "N1",
@@ -20217,11 +20359,16 @@
       "words_added": [
         "余慶"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ケイ"
+      ],
+      "final_kun_readings": [
+        "よろこび"
+      ],
       "final_popular_words": [
         "余慶"
-      ]
+      ],
+      "readings_restored": 2
     },
     "距": {
       "jlpt": "N1",
@@ -20384,11 +20531,14 @@
       "words_added": [
         "興隆"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "リュウ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "興隆"
-      ]
+      ],
+      "readings_restored": 1
     },
     "裂": {
       "jlpt": "N1",
@@ -20501,11 +20651,16 @@
       "words_added": [
         "一帳羅"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ラ"
+      ],
+      "final_kun_readings": [
+        "うすもの"
+      ],
       "final_popular_words": [
         "一帳羅"
-      ]
+      ],
+      "readings_restored": 2
     },
     "揮": {
       "jlpt": "N1",
@@ -20642,11 +20797,16 @@
       "words_added": [
         "あり塚"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "チョウ"
+      ],
+      "final_kun_readings": [
+        "つか"
+      ],
       "final_popular_words": [
         "あり塚"
-      ]
+      ],
+      "readings_restored": 2
     },
     "盤": {
       "jlpt": "N1",
@@ -20703,11 +20863,15 @@
       "words_added": [
         "児曹"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "ソウ",
+        "ゾウ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "児曹"
-      ]
+      ],
+      "readings_restored": 2
     },
     "尽": {
       "jlpt": "N1",
@@ -20924,11 +21088,16 @@
       "words_added": [
         "唐"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "トウ"
+      ],
+      "final_kun_readings": [
+        "から"
+      ],
       "final_popular_words": [
         "唐"
-      ]
+      ],
+      "readings_restored": 2
     },
     "狭": {
       "jlpt": "N1",
@@ -21061,11 +21230,14 @@
       "words_added": [
         "人爵"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "シャク"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "人爵"
-      ]
+      ],
+      "readings_restored": 1
     },
     "択": {
       "jlpt": "N1",
@@ -21209,11 +21381,16 @@
       "words_added": [
         "丹頂鶴"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "カク"
+      ],
+      "final_kun_readings": [
+        "つる"
+      ],
       "final_popular_words": [
         "丹頂鶴"
-      ]
+      ],
+      "readings_restored": 2
     },
     "虚": {
       "jlpt": "N1",
@@ -21402,26 +21579,6 @@
       ],
       "final_popular_words": [
         "摩擦"
-      ]
-    },
-    "菊": {
-      "jlpt": "N1",
-      "readings_removed": [
-        {
-          "reading": "キク",
-          "type": "on"
-        }
-      ],
-      "words_removed": [
-        "ひな菊"
-      ],
-      "words_added": [
-        "ひな菊"
-      ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
-      "final_popular_words": [
-        "ひな菊"
       ]
     },
     "緑": {
@@ -21619,11 +21776,16 @@
         "邦人"
       ],
       "words_added": [],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ホウ"
+      ],
+      "final_kun_readings": [
+        "くに"
+      ],
       "final_popular_words": [
         "連邦"
-      ]
+      ],
+      "readings_restored": 2
     },
     "揚": {
       "jlpt": "N1",
@@ -21654,11 +21816,18 @@
       "words_added": [
         "さつま揚げ"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ヨウ"
+      ],
+      "final_kun_readings": [
+        "あげる",
+        "あげ",
+        "あがる"
+      ],
       "final_popular_words": [
         "さつま揚げ"
-      ]
+      ],
+      "readings_restored": 4
     },
     "卓": {
       "jlpt": "N1",
@@ -21691,11 +21860,14 @@
       "words_added": [
         "一騎"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "キ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "一騎"
-      ]
+      ],
+      "readings_restored": 1
     },
     "姫": {
       "jlpt": "N1",
@@ -21716,11 +21888,16 @@
       "words_added": [
         "一姫二太郎"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "キ"
+      ],
+      "final_kun_readings": [
+        "ひめ"
+      ],
       "final_popular_words": [
         "一姫二太郎"
-      ]
+      ],
+      "readings_restored": 2
     },
     "畳": {
       "jlpt": "N2",
@@ -21765,11 +21942,17 @@
       "words_added": [
         "せん孔機"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "コウ",
+        "ク"
+      ],
+      "final_kun_readings": [
+        "あな"
+      ],
       "final_popular_words": [
         "せん孔機"
-      ]
+      ],
+      "readings_restored": 3
     },
     "耐": {
       "jlpt": "N1",
@@ -21817,11 +22000,18 @@
       "words_added": [
         "呉須"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ス",
+        "シュ"
+      ],
+      "final_kun_readings": [
+        "すべからく",
+        "すべし"
+      ],
       "final_popular_words": [
         "呉須"
-      ]
+      ],
+      "readings_restored": 4
     },
     "脈": {
       "jlpt": "N1",
@@ -21917,11 +22107,15 @@
       "words_added": [
         "亭"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "テイ",
+        "チン"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "亭"
-      ]
+      ],
+      "readings_restored": 2
     },
     "貫": {
       "jlpt": "N1",
@@ -22169,11 +22363,16 @@
       "words_added": [
         "変幻"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ゲン"
+      ],
+      "final_kun_readings": [
+        "まぼろし"
+      ],
       "final_popular_words": [
         "変幻"
-      ]
+      ],
+      "readings_restored": 2
     },
     "祝": {
       "jlpt": "N2",
@@ -22788,11 +22987,15 @@
       "words_added": [
         "冊"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "サツ",
+        "サク"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "冊"
-      ]
+      ],
+      "readings_restored": 2
     },
     "賛": {
       "jlpt": "N3",
@@ -23076,11 +23279,14 @@
       "words_added": [
         "叔母"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "シュク"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "叔母"
-      ]
+      ],
+      "readings_restored": 1
     },
     "託": {
       "jlpt": "N1",
@@ -23503,11 +23709,14 @@
       "words_added": [
         "兇賊"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "ゾク"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "兇賊"
-      ]
+      ],
+      "readings_restored": 1
     },
     "荘": {
       "jlpt": "N1",
@@ -23553,11 +23762,16 @@
       "words_added": [
         "刀匠"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ショウ"
+      ],
+      "final_kun_readings": [
+        "たくみ"
+      ],
       "final_popular_words": [
         "刀匠"
-      ]
+      ],
+      "readings_restored": 2
     },
     "悔": {
       "jlpt": "N1",
@@ -23692,11 +23906,16 @@
         "併し"
       ],
       "words_added": [],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ヘイ"
+      ],
+      "final_kun_readings": [
+        "あわせる"
+      ],
       "final_popular_words": [
         "合併"
-      ]
+      ],
+      "readings_restored": 2
     },
     "崇": {
       "jlpt": "N1",
@@ -23789,11 +24008,15 @@
       "words_added": [
         "分岐"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "キ",
+        "ギ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "分岐"
-      ]
+      ],
+      "readings_restored": 2
     },
     "筒": {
       "jlpt": "N2",
@@ -23979,26 +24202,6 @@
         "焦げる"
       ]
     },
-    "剛": {
-      "jlpt": "N1",
-      "readings_removed": [
-        {
-          "reading": "ゴウ",
-          "type": "on"
-        }
-      ],
-      "words_removed": [
-        "剛"
-      ],
-      "words_added": [
-        "剛"
-      ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
-      "final_popular_words": [
-        "剛"
-      ]
-    },
     "紫": {
       "jlpt": "N1",
       "readings_removed": [
@@ -24051,10 +24254,13 @@
         "利鎌"
       ],
       "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_kun_readings": [
+        "かま"
+      ],
       "final_popular_words": [
         "利鎌"
-      ]
+      ],
+      "readings_restored": 1
     },
     "稼": {
       "jlpt": "N1",
@@ -24177,11 +24383,14 @@
       "words_added": [
         "安泰"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "タイ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "安泰"
-      ]
+      ],
+      "readings_restored": 1
     },
     "翼": {
       "jlpt": "N1",
@@ -24301,26 +24510,6 @@
       "final_popular_words": [
         "是非",
         "是正"
-      ]
-    },
-    "偵": {
-      "jlpt": "N1",
-      "readings_removed": [
-        {
-          "reading": "テイ",
-          "type": "on"
-        }
-      ],
-      "words_removed": [
-        "偵察"
-      ],
-      "words_added": [
-        "偵察"
-      ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
-      "final_popular_words": [
-        "偵察"
       ]
     },
     "澄": {
@@ -24460,11 +24649,14 @@
       "words_added": [
         "三つ紋"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "モン"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "三つ紋"
-      ]
+      ],
+      "readings_restored": 1
     },
     "煮": {
       "jlpt": "N1",
@@ -24511,11 +24703,16 @@
       "words_added": [
         "芳しい"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ホウ"
+      ],
+      "final_kun_readings": [
+        "かんばしい"
+      ],
       "final_popular_words": [
         "芳しい"
-      ]
+      ],
+      "readings_restored": 2
     },
     "刷": {
       "jlpt": "N2",
@@ -24611,11 +24808,16 @@
       "words_added": [
         "嗜虐"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ギャク"
+      ],
+      "final_kun_readings": [
+        "しいたげる"
+      ],
       "final_popular_words": [
         "嗜虐"
-      ]
+      ],
+      "readings_restored": 2
     },
     "喉": {
       "jlpt": "N1",
@@ -24699,11 +24901,14 @@
       "words_added": [
         "亜成層圏"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "ケン"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "亜成層圏"
-      ]
+      ],
+      "readings_restored": 1
     },
     "卵": {
       "jlpt": "N2",
@@ -24768,11 +24973,16 @@
       "words_added": [
         "一生涯"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ガイ"
+      ],
+      "final_kun_readings": [
+        "はて"
+      ],
       "final_popular_words": [
         "一生涯"
-      ]
+      ],
+      "readings_restored": 2
     },
     "貞": {
       "jlpt": "N1",
@@ -24798,11 +25008,17 @@
       "words_added": [
         "不貞"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "テイ",
+        "ジョウ"
+      ],
+      "final_kun_readings": [
+        "さだ"
+      ],
       "final_popular_words": [
         "不貞"
-      ]
+      ],
+      "readings_restored": 3
     },
     "堅": {
       "jlpt": "N1",
@@ -24843,11 +25059,14 @@
       "words_added": [
         "不倫"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "リン"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "不倫"
-      ]
+      ],
+      "readings_restored": 1
     },
     "壇": {
       "jlpt": "N1",
@@ -24974,11 +25193,16 @@
       "words_added": [
         "体貌"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ボウ"
+      ],
+      "final_kun_readings": [
+        "かたち"
+      ],
       "final_popular_words": [
         "体貌"
-      ]
+      ],
+      "readings_restored": 2
     },
     "塞": {
       "jlpt": "N1",
@@ -25164,11 +25388,17 @@
       "words_added": [
         "三尺"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "シャク",
+        "セキ"
+      ],
+      "final_kun_readings": [
+        "さし"
+      ],
       "final_popular_words": [
         "三尺"
-      ]
+      ],
+      "readings_restored": 3
     },
     "罰": {
       "jlpt": "N1",
@@ -25237,11 +25467,16 @@
       "words_added": [
         "ご朱印"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "シュ"
+      ],
+      "final_kun_readings": [
+        "あけ"
+      ],
       "final_popular_words": [
         "ご朱印"
-      ]
+      ],
+      "readings_restored": 2
     },
     "召": {
       "jlpt": "N2",
@@ -25415,11 +25650,17 @@
       "words_added": [
         "ご不浄"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ジョウ"
+      ],
+      "final_kun_readings": [
+        "きよめる",
+        "きよい"
+      ],
       "final_popular_words": [
         "ご不浄"
-      ]
+      ],
+      "readings_restored": 3
     },
     "酷": {
       "jlpt": "N1",
@@ -25596,11 +25837,16 @@
         "喫う"
       ],
       "words_added": [],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "キツ"
+      ],
+      "final_kun_readings": [
+        "のむ"
+      ],
       "final_popular_words": [
         "喫茶"
-      ]
+      ],
+      "readings_restored": 2
     },
     "棚": {
       "jlpt": "N1",
@@ -25857,11 +26103,16 @@
         "匹"
       ],
       "words_added": [],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ヒツ"
+      ],
+      "final_kun_readings": [
+        "ひき"
+      ],
       "final_popular_words": [
         "匹敵"
-      ]
+      ],
+      "readings_restored": 2
     },
     "綿": {
       "jlpt": "N2",
@@ -26051,11 +26302,16 @@
       "words_added": [
         "合い駒"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ク"
+      ],
+      "final_kun_readings": [
+        "こま"
+      ],
       "final_popular_words": [
         "合い駒"
-      ]
+      ],
+      "readings_restored": 2
     },
     "凍": {
       "jlpt": "N2",
@@ -26195,11 +26451,17 @@
       "words_added": [
         "不摂生"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "セツ",
+        "ショウ"
+      ],
+      "final_kun_readings": [
+        "とる"
+      ],
       "final_popular_words": [
         "不摂生"
-      ]
+      ],
+      "readings_restored": 3
     },
     "拍": {
       "jlpt": "N1",
@@ -26448,11 +26710,17 @@
       "words_added": [
         "地鎮祭"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "チン"
+      ],
+      "final_kun_readings": [
+        "しずめる",
+        "しずまる"
+      ],
       "final_popular_words": [
         "地鎮祭"
-      ]
+      ],
+      "readings_restored": 3
     },
     "雷": {
       "jlpt": "N1",
@@ -26615,11 +26883,18 @@
       "words_added": [
         "湧きあがる"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ユウ",
+        "ヨウ",
+        "ユ"
+      ],
+      "final_kun_readings": [
+        "わく"
+      ],
       "final_popular_words": [
         "湧きあがる"
-      ]
+      ],
+      "readings_restored": 4
     },
     "棋": {
       "jlpt": "N1",
@@ -26637,11 +26912,16 @@
         "棋"
       ],
       "words_added": [],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "キ"
+      ],
+      "final_kun_readings": [
+        "ご"
+      ],
       "final_popular_words": [
         "将棋"
-      ]
+      ],
+      "readings_restored": 2
     },
     "巧": {
       "jlpt": "N1",
@@ -26711,11 +26991,16 @@
       "words_added": [
         "夾竹桃"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "トウ"
+      ],
+      "final_kun_readings": [
+        "もも"
+      ],
       "final_popular_words": [
         "夾竹桃"
-      ]
+      ],
+      "readings_restored": 2
     },
     "隔": {
       "jlpt": "N1",
@@ -26838,11 +27123,16 @@
         "疾患"
       ],
       "words_added": [],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "シツ"
+      ],
+      "final_kun_readings": [
+        "はやい"
+      ],
       "final_popular_words": [
         "疾っく"
-      ]
+      ],
+      "readings_restored": 2
     },
     "塾": {
       "jlpt": "N1",
@@ -26885,11 +27175,17 @@
       "words_added": [
         "干潟"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "セキ"
+      ],
+      "final_kun_readings": [
+        "かた",
+        "がた"
+      ],
       "final_popular_words": [
         "干潟"
-      ]
+      ],
+      "readings_restored": 3
     },
     "湿": {
       "jlpt": "N2",
@@ -26928,11 +27224,14 @@
       "words_added": [
         "相撲"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "ボク"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "相撲"
-      ]
+      ],
+      "readings_restored": 1
     },
     "塊": {
       "jlpt": "N1",
@@ -26958,11 +27257,17 @@
       "words_added": [
         "ひと塊"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "カイ"
+      ],
+      "final_kun_readings": [
+        "かたまり",
+        "つちくれ"
+      ],
       "final_popular_words": [
         "ひと塊"
-      ]
+      ],
+      "readings_restored": 3
     },
     "絞": {
       "jlpt": "N1",
@@ -27041,11 +27346,16 @@
       "words_added": [
         "さつま芋"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ウ"
+      ],
+      "final_kun_readings": [
+        "いも"
+      ],
       "final_popular_words": [
         "さつま芋"
-      ]
+      ],
+      "readings_restored": 2
     },
     "陳": {
       "jlpt": "N1",
@@ -27107,10 +27417,14 @@
         "実葛"
       ],
       "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_kun_readings": [
+        "つづら",
+        "くず"
+      ],
       "final_popular_words": [
         "実葛"
-      ]
+      ],
+      "readings_restored": 2
     },
     "傘": {
       "jlpt": "N1",
@@ -27347,11 +27661,16 @@
       "words_added": [
         "俱梨伽羅"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "リ"
+      ],
+      "final_kun_readings": [
+        "なし"
+      ],
       "final_popular_words": [
         "俱梨伽羅"
-      ]
+      ],
+      "readings_restored": 2
     },
     "癖": {
       "jlpt": "N1",
@@ -27550,26 +27869,6 @@
         "耕地"
       ]
     },
-    "炉": {
-      "jlpt": "N1",
-      "readings_removed": [
-        {
-          "reading": "ロ",
-          "type": "on"
-        }
-      ],
-      "words_removed": [
-        "るつぼ炉"
-      ],
-      "words_added": [
-        "るつぼ炉"
-      ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
-      "final_popular_words": [
-        "るつぼ炉"
-      ]
-    },
     "棟": {
       "jlpt": "N1",
       "readings_removed": [
@@ -27612,11 +27911,16 @@
       "words_added": [
         "晶洞"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ドウ"
+      ],
+      "final_kun_readings": [
+        "ほら"
+      ],
       "final_popular_words": [
         "晶洞"
-      ]
+      ],
+      "readings_restored": 2
     },
     "狩": {
       "jlpt": "N1",
@@ -27637,11 +27941,16 @@
       "words_added": [
         "きのこ狩り"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "シュ"
+      ],
+      "final_kun_readings": [
+        "かる"
+      ],
       "final_popular_words": [
         "きのこ狩り"
-      ]
+      ],
+      "readings_restored": 2
     },
     "陛": {
       "jlpt": "N1",
@@ -27657,11 +27966,14 @@
       "words_added": [
         "今上陛下"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "ヘイ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "今上陛下"
-      ]
+      ],
+      "readings_restored": 1
     },
     "潔": {
       "jlpt": "N1",
@@ -27717,11 +28029,14 @@
       "words_added": [
         "不祥"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "ショウ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "不祥"
-      ]
+      ],
+      "readings_restored": 1
     },
     "曽": {
       "jlpt": "N1",
@@ -27756,11 +28071,19 @@
       "words_added": [
         "曽孫"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ソウ",
+        "ソ",
+        "ゾウ"
+      ],
+      "final_kun_readings": [
+        "かつ",
+        "かつて"
+      ],
       "final_popular_words": [
         "曽孫"
-      ]
+      ],
+      "readings_restored": 5
     },
     "抽": {
       "jlpt": "N1",
@@ -27932,11 +28255,17 @@
       "words_added": [
         "下貼"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "テン",
+        "チョウ"
+      ],
+      "final_kun_readings": [
+        "はる"
+      ],
       "final_popular_words": [
         "下貼"
-      ]
+      ],
+      "readings_restored": 3
     },
     "拉": {
       "jlpt": "N1",
@@ -27967,11 +28296,18 @@
       "words_added": [
         "亜拉毘亜"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ラツ",
+        "ラ"
+      ],
+      "final_kun_readings": [
+        "らっする",
+        "ひしぐ"
+      ],
       "final_popular_words": [
         "亜拉毘亜"
-      ]
+      ],
+      "readings_restored": 4
     },
     "帆": {
       "jlpt": "N1",
@@ -27992,11 +28328,16 @@
       "words_added": [
         "三角帆"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ハン"
+      ],
+      "final_kun_readings": [
+        "ほ"
+      ],
       "final_popular_words": [
         "三角帆"
-      ]
+      ],
+      "readings_restored": 2
     },
     "挿": {
       "jlpt": "N1",
@@ -28022,11 +28363,17 @@
       "words_added": [
         "一輪挿"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ソウ"
+      ],
+      "final_kun_readings": [
+        "さす",
+        "はさむ"
+      ],
       "final_popular_words": [
         "一輪挿"
-      ]
+      ],
+      "readings_restored": 3
     },
     "翻": {
       "jlpt": "N1",
@@ -28171,11 +28518,16 @@
         "珠"
       ],
       "words_added": [],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "シュ"
+      ],
+      "final_kun_readings": [
+        "たま"
+      ],
       "final_popular_words": [
         "真珠"
-      ]
+      ],
+      "readings_restored": 2
     },
     "蓄": {
       "jlpt": "N1",
@@ -28338,11 +28690,17 @@
       "words_added": [
         "午后"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "コウ",
+        "ゴ"
+      ],
+      "final_kun_readings": [
+        "きさき"
+      ],
       "final_popular_words": [
         "午后"
-      ]
+      ],
+      "readings_restored": 3
     },
     "粘": {
       "jlpt": "N1",
@@ -28378,11 +28736,14 @@
       "words_added": [
         "お披露目"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "ヒ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "お披露目"
-      ]
+      ],
+      "readings_restored": 1
     },
     "徐": {
       "jlpt": "N1",
@@ -28427,11 +28788,17 @@
       "words_added": [
         "喜悦"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "エツ"
+      ],
+      "final_kun_readings": [
+        "よろこぶ",
+        "よろこばす"
+      ],
       "final_popular_words": [
         "喜悦"
-      ]
+      ],
+      "readings_restored": 3
     },
     "堪": {
       "jlpt": "N1",
@@ -28841,11 +29208,16 @@
       "words_added": [
         "后妃"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ヒ"
+      ],
+      "final_kun_readings": [
+        "きさき"
+      ],
       "final_popular_words": [
         "后妃"
-      ]
+      ],
+      "readings_restored": 2
     },
     "裾": {
       "jlpt": "N1",
@@ -28934,11 +29306,16 @@
       "words_added": [
         "古拙"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "セツ"
+      ],
+      "final_kun_readings": [
+        "つたない"
+      ],
       "final_popular_words": [
         "古拙"
-      ]
+      ],
+      "readings_restored": 2
     },
     "恒": {
       "jlpt": "N1",
@@ -28964,11 +29341,17 @@
       "words_added": [
         "士篤恒"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "コウ"
+      ],
+      "final_kun_readings": [
+        "つね",
+        "つねに"
+      ],
       "final_popular_words": [
         "士篤恒"
-      ]
+      ],
+      "readings_restored": 3
     },
     "暦": {
       "jlpt": "N1",
@@ -29038,11 +29421,14 @@
       "words_added": [
         "主宰"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "サイ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "主宰"
-      ]
+      ],
+      "readings_restored": 1
     },
     "蛮": {
       "jlpt": "N1",
@@ -29058,11 +29444,14 @@
       "words_added": [
         "南蛮"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "バン"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "南蛮"
-      ]
+      ],
+      "readings_restored": 1
     },
     "窮": {
       "jlpt": "N1",
@@ -29257,11 +29646,17 @@
       "words_added": [
         "全癒"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ユ"
+      ],
+      "final_kun_readings": [
+        "いえる",
+        "いやす"
+      ],
       "final_popular_words": [
         "全癒"
-      ]
+      ],
+      "readings_restored": 3
     },
     "鬱": {
       "jlpt": "N1",
@@ -29330,11 +29725,14 @@
       "words_added": [
         "彰徳"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "ショウ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "彰徳"
-      ]
+      ],
+      "readings_restored": 1
     },
     "肺": {
       "jlpt": "N1",
@@ -29369,11 +29767,16 @@
         "傑れる"
       ],
       "words_added": [],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ケツ"
+      ],
+      "final_kun_readings": [
+        "すぐれる"
+      ],
       "final_popular_words": [
         "傑作"
-      ]
+      ],
+      "readings_restored": 2
     },
     "拘": {
       "jlpt": "N1",
@@ -29459,11 +29862,16 @@
       "words_added": [
         "妖しい"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ヨウ"
+      ],
+      "final_kun_readings": [
+        "あやしい"
+      ],
       "final_popular_words": [
         "妖しい"
-      ]
+      ],
+      "readings_restored": 2
     },
     "豚": {
       "jlpt": "N1",
@@ -29592,11 +30000,14 @@
       "words_added": [
         "妓楼"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "ロウ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "妓楼"
-      ]
+      ],
+      "readings_restored": 1
     },
     "捉": {
       "jlpt": "N1",
@@ -29617,11 +30028,16 @@
       "words_added": [
         "手捉み"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ソク"
+      ],
+      "final_kun_readings": [
+        "とらえる"
+      ],
       "final_popular_words": [
         "手捉み"
-      ]
+      ],
+      "readings_restored": 2
     },
     "漬": {
       "jlpt": "N1",
@@ -29652,11 +30068,18 @@
       "words_added": [
         "お茶漬"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "シ"
+      ],
+      "final_kun_readings": [
+        "つける",
+        "つかる",
+        "づけ"
+      ],
       "final_popular_words": [
         "お茶漬"
-      ]
+      ],
+      "readings_restored": 4
     },
     "飽": {
       "jlpt": "N1",
@@ -29722,11 +30145,14 @@
       "words_added": [
         "党閥"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "バツ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "党閥"
-      ]
+      ],
+      "readings_restored": 1
     },
     "旋": {
       "jlpt": "N1",
@@ -29742,11 +30168,14 @@
       "words_added": [
         "凱旋"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "セン"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "凱旋"
-      ]
+      ],
+      "readings_restored": 1
     },
     "坪": {
       "jlpt": "N1",
@@ -29763,10 +30192,13 @@
         "地坪"
       ],
       "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_kun_readings": [
+        "つぼ"
+      ],
       "final_popular_words": [
         "地坪"
-      ]
+      ],
+      "readings_restored": 1
     },
     "崖": {
       "jlpt": "N1",
@@ -29812,11 +30244,17 @@
       "words_added": [
         "おん鶏"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ケイ"
+      ],
+      "final_kun_readings": [
+        "にわとり",
+        "とり"
+      ],
       "final_popular_words": [
         "おん鶏"
-      ]
+      ],
+      "readings_restored": 3
     },
     "鈍": {
       "jlpt": "N2",
@@ -29941,11 +30379,16 @@
       "words_added": [
         "喪"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ソウ"
+      ],
+      "final_kun_readings": [
+        "も"
+      ],
       "final_popular_words": [
         "喪"
-      ]
+      ],
+      "readings_restored": 2
     },
     "墨": {
       "jlpt": "N1",
@@ -29983,11 +30426,15 @@
       "words_added": [
         "免疫"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "エキ",
+        "ヤク"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "免疫"
-      ]
+      ],
+      "readings_restored": 2
     },
     "遍": {
       "jlpt": "N1",
@@ -30119,11 +30566,17 @@
       "words_added": [
         "じゃん拳"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ケン",
+        "ゲン"
+      ],
+      "final_kun_readings": [
+        "こぶし"
+      ],
       "final_popular_words": [
         "じゃん拳"
-      ]
+      ],
+      "readings_restored": 3
     },
     "乙": {
       "jlpt": "N1",
@@ -30164,11 +30617,14 @@
       "words_added": [
         "発酵"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "コウ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "発酵"
-      ]
+      ],
+      "readings_restored": 1
     },
     "堤": {
       "jlpt": "N1",
@@ -30229,11 +30685,16 @@
       "words_added": [
         "仏桑花"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ソウ"
+      ],
+      "final_kun_readings": [
+        "くわ"
+      ],
       "final_popular_words": [
         "仏桑花"
-      ]
+      ],
+      "readings_restored": 2
     },
     "虜": {
       "jlpt": "N1",
@@ -30294,11 +30755,20 @@
       "words_added": [
         "もの乞い"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "コツ",
+        "キツ",
+        "キ",
+        "キケ",
+        "コチ"
+      ],
+      "final_kun_readings": [
+        "こう"
+      ],
       "final_popular_words": [
         "もの乞い"
-      ]
+      ],
+      "readings_restored": 6
     },
     "恭": {
       "jlpt": "N1",
@@ -30319,11 +30789,16 @@
       "words_added": [
         "恭しい"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "キョウ"
+      ],
+      "final_kun_readings": [
+        "うやうやしい"
+      ],
       "final_popular_words": [
         "恭しい"
-      ]
+      ],
+      "readings_restored": 2
     },
     "鐘": {
       "jlpt": "N1",
@@ -30397,11 +30872,16 @@
       "words_added": [
         "仁慈"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ジ"
+      ],
+      "final_kun_readings": [
+        "いつくしむ"
+      ],
       "final_popular_words": [
         "仁慈"
-      ]
+      ],
+      "readings_restored": 2
     },
     "径": {
       "jlpt": "N1",
@@ -30465,11 +30945,14 @@
       "words_added": [
         "抱擁"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "ヨウ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "抱擁"
-      ]
+      ],
+      "readings_restored": 1
     },
     "郭": {
       "jlpt": "N1",
@@ -30490,11 +30973,16 @@
       "words_added": [
         "一郭"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "カク"
+      ],
+      "final_kun_readings": [
+        "くるわ"
+      ],
       "final_popular_words": [
         "一郭"
-      ]
+      ],
+      "readings_restored": 2
     },
     "呪": {
       "jlpt": "N1",
@@ -30535,11 +31023,20 @@
       "words_added": [
         "呪い"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ジュ",
+        "ズ"
+      ],
+      "final_kun_readings": [
+        "まじなう",
+        "のろい",
+        "まじない",
+        "のろう"
+      ],
       "final_popular_words": [
         "呪い"
-      ]
+      ],
+      "readings_restored": 6
     },
     "砕": {
       "jlpt": "N1",
@@ -30593,11 +31090,14 @@
       "words_added": [
         "勃々"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "ボツ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "勃々"
-      ]
+      ],
+      "readings_restored": 1
     },
     "翁": {
       "jlpt": "N1",
@@ -30618,11 +31118,16 @@
       "words_added": [
         "不倒翁"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "オウ"
+      ],
+      "final_kun_readings": [
+        "おきな"
+      ],
       "final_popular_words": [
         "不倒翁"
-      ]
+      ],
+      "readings_restored": 2
     },
     "絹": {
       "jlpt": "N1",
@@ -30818,11 +31323,16 @@
       "words_added": [
         "土塁"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ルイ"
+      ],
+      "final_kun_readings": [
+        "とりで"
+      ],
       "final_popular_words": [
         "土塁"
-      ]
+      ],
+      "readings_restored": 2
     },
     "滴": {
       "jlpt": "N2",
@@ -30871,11 +31381,17 @@
       "words_added": [
         "今暁"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ギョウ",
+        "キョウ"
+      ],
+      "final_kun_readings": [
+        "あかつき"
+      ],
       "final_popular_words": [
         "今暁"
-      ]
+      ],
+      "readings_restored": 3
     },
     "胴": {
       "jlpt": "N1",
@@ -31012,11 +31528,16 @@
       "words_added": [
         "傷痕"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "コン"
+      ],
+      "final_kun_readings": [
+        "あと"
+      ],
       "final_popular_words": [
         "傷痕"
-      ]
+      ],
+      "readings_restored": 2
     },
     "怠": {
       "jlpt": "N1",
@@ -31061,11 +31582,16 @@
       "words_added": [
         "一弦琴"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ゲン"
+      ],
+      "final_kun_readings": [
+        "つる"
+      ],
       "final_popular_words": [
         "一弦琴"
-      ]
+      ],
+      "readings_restored": 2
     },
     "泡": {
       "jlpt": "N1",
@@ -31136,11 +31662,17 @@
       "words_added": [
         "乱伐"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "バツ"
+      ],
+      "final_kun_readings": [
+        "きる",
+        "うつ"
+      ],
       "final_popular_words": [
         "乱伐"
-      ]
+      ],
+      "readings_restored": 3
     },
     "餅": {
       "jlpt": "N1",
@@ -31198,22 +31730,6 @@
         "符号"
       ]
     },
-    "厄": {
-      "jlpt": "N1",
-      "readings_removed": [
-        {
-          "reading": "ヤク",
-          "type": "on"
-        }
-      ],
-      "words_removed": [],
-      "words_added": [],
-      "final_on_readings": [],
-      "final_kun_readings": [],
-      "final_popular_words": [
-        "厄介"
-      ]
-    },
     "奔": {
       "jlpt": "N1",
       "readings_removed": [
@@ -31233,11 +31749,16 @@
       "words_added": [
         "出奔"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ホン"
+      ],
+      "final_kun_readings": [
+        "はしる"
+      ],
       "final_popular_words": [
         "出奔"
-      ]
+      ],
+      "readings_restored": 2
     },
     "瞳": {
       "jlpt": "N1",
@@ -31295,11 +31816,16 @@
       "words_added": [
         "椎"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ツイ"
+      ],
+      "final_kun_readings": [
+        "つち"
+      ],
       "final_popular_words": [
         "椎"
-      ]
+      ],
+      "readings_restored": 2
     },
     "懇": {
       "jlpt": "N1",
@@ -31320,11 +31846,16 @@
       "words_added": [
         "別懇"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "コン"
+      ],
+      "final_kun_readings": [
+        "ねんごろ"
+      ],
       "final_popular_words": [
         "別懇"
-      ]
+      ],
+      "readings_restored": 2
     },
     "唄": {
       "jlpt": "N1",
@@ -31350,11 +31881,17 @@
       "words_added": [
         "唄"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "バイ"
+      ],
+      "final_kun_readings": [
+        "うた",
+        "うたう"
+      ],
       "final_popular_words": [
         "唄"
-      ]
+      ],
+      "readings_restored": 3
     },
     "渦": {
       "jlpt": "N1",
@@ -31420,11 +31957,17 @@
       "words_added": [
         "争覇"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ハ",
+        "ハク"
+      ],
+      "final_kun_readings": [
+        "はたがしら"
+      ],
       "final_popular_words": [
         "争覇"
-      ]
+      ],
+      "readings_restored": 3
     },
     "呈": {
       "jlpt": "N1",
@@ -31508,11 +32051,18 @@
       "words_added": [
         "売淫"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "イン"
+      ],
+      "final_kun_readings": [
+        "みだら",
+        "みだれる",
+        "みだり"
+      ],
       "final_popular_words": [
         "売淫"
-      ]
+      ],
+      "readings_restored": 4
     },
     "懲": {
       "jlpt": "N1",
@@ -31557,11 +32107,16 @@
       "words_added": [
         "つづれ錦"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "キン"
+      ],
+      "final_kun_readings": [
+        "にしき"
+      ],
       "final_popular_words": [
         "つづれ錦"
-      ]
+      ],
+      "readings_restored": 2
     },
     "猟": {
       "jlpt": "N1",
@@ -31587,11 +32142,17 @@
       "words_added": [
         "不猟"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "リョウ"
+      ],
+      "final_kun_readings": [
+        "かり",
+        "かる"
+      ],
       "final_popular_words": [
         "不猟"
-      ]
+      ],
+      "readings_restored": 3
     },
     "幣": {
       "jlpt": "N1",
@@ -31636,11 +32197,17 @@
       "words_added": [
         "先附"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "フ"
+      ],
+      "final_kun_readings": [
+        "つける",
+        "つく"
+      ],
       "final_popular_words": [
         "先附"
-      ]
+      ],
+      "readings_restored": 3
     },
     "箇": {
       "jlpt": "N1",
@@ -31763,11 +32330,16 @@
       "words_added": [
         "叫喚"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "カン"
+      ],
+      "final_kun_readings": [
+        "わめく"
+      ],
       "final_popular_words": [
         "叫喚"
-      ]
+      ],
+      "readings_restored": 2
     },
     "紺": {
       "jlpt": "N1",
@@ -31810,11 +32382,17 @@
       "words_added": [
         "何某"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ボウ"
+      ],
+      "final_kun_readings": [
+        "それがし",
+        "なにがし"
+      ],
       "final_popular_words": [
         "何某"
-      ]
+      ],
+      "readings_restored": 3
     },
     "鋼": {
       "jlpt": "N1",
@@ -31855,11 +32433,16 @@
       "words_added": [
         "媒"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "バイ"
+      ],
+      "final_kun_readings": [
+        "なこうど"
+      ],
       "final_popular_words": [
         "媒"
-      ]
+      ],
+      "readings_restored": 2
     },
     "妬": {
       "jlpt": "N1",
@@ -31919,11 +32502,16 @@
       "words_added": [
         "土窯"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ヨウ"
+      ],
+      "final_kun_readings": [
+        "かま"
+      ],
       "final_popular_words": [
         "土窯"
-      ]
+      ],
+      "readings_restored": 2
     },
     "侯": {
       "jlpt": "N1",
@@ -31939,31 +32527,14 @@
       "words_added": [
         "侯"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "コウ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "侯"
-      ]
-    },
-    "隻": {
-      "jlpt": "N2",
-      "readings_removed": [
-        {
-          "reading": "セキ",
-          "type": "on"
-        }
       ],
-      "words_removed": [
-        "一隻"
-      ],
-      "words_added": [
-        "一隻"
-      ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
-      "final_popular_words": [
-        "一隻"
-      ]
+      "readings_restored": 1
     },
     "釜": {
       "jlpt": "N1",
@@ -32060,26 +32631,6 @@
         "嗅ぐ"
       ]
     },
-    "壌": {
-      "jlpt": "N1",
-      "readings_removed": [
-        {
-          "reading": "ジョウ",
-          "type": "on"
-        }
-      ],
-      "words_removed": [
-        "土壌"
-      ],
-      "words_added": [
-        "土壌"
-      ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
-      "final_popular_words": [
-        "土壌"
-      ]
-    },
     "尼": {
       "jlpt": "N1",
       "readings_removed": [
@@ -32099,11 +32650,16 @@
       "words_added": [
         "修道尼"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ニ"
+      ],
+      "final_kun_readings": [
+        "あま"
+      ],
       "final_popular_words": [
         "修道尼"
-      ]
+      ],
+      "readings_restored": 2
     },
     "肢": {
       "jlpt": "N1",
@@ -32119,11 +32675,14 @@
       "words_added": [
         "上肢"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "シ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "上肢"
-      ]
+      ],
+      "readings_restored": 1
     },
     "赦": {
       "jlpt": "N1",
@@ -32144,11 +32703,16 @@
       "words_added": [
         "大赦"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "シャ"
+      ],
+      "final_kun_readings": [
+        "ゆるす"
+      ],
       "final_popular_words": [
         "大赦"
-      ]
+      ],
+      "readings_restored": 2
     },
     "酬": {
       "jlpt": "N1",
@@ -32188,11 +32752,16 @@
         "戴く"
       ],
       "words_added": [],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "タイ"
+      ],
+      "final_kun_readings": [
+        "いただく"
+      ],
       "final_popular_words": [
         "頂戴"
-      ]
+      ],
+      "readings_restored": 2
     },
     "詠": {
       "jlpt": "N1",
@@ -32218,11 +32787,17 @@
       "words_added": [
         "ご詠歌"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "エイ"
+      ],
+      "final_kun_readings": [
+        "よむ",
+        "うたう"
+      ],
       "final_popular_words": [
         "ご詠歌"
-      ]
+      ],
+      "readings_restored": 3
     },
     "斗": {
       "jlpt": "N1",
@@ -32243,11 +32818,15 @@
       "words_added": [
         "不斗"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "ト",
+        "トウ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "不斗"
-      ]
+      ],
+      "readings_restored": 2
     },
     "殻": {
       "jlpt": "N1",
@@ -32272,26 +32851,6 @@
       "final_popular_words": [
         "貝殻",
         "殻"
-      ]
-    },
-    "墳": {
-      "jlpt": "N1",
-      "readings_removed": [
-        {
-          "reading": "フン",
-          "type": "on"
-        }
-      ],
-      "words_removed": [
-        "古墳"
-      ],
-      "words_added": [
-        "古墳"
-      ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
-      "final_popular_words": [
-        "古墳"
       ]
     },
     "炊": {
@@ -32454,11 +33013,15 @@
       "words_added": [
         "滋る"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "ジ",
+        "シ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "滋る"
-      ]
+      ],
+      "readings_restored": 2
     },
     "儒": {
       "jlpt": "N1",
@@ -32474,11 +33037,14 @@
       "words_added": [
         "侏儒"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "ジュ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "侏儒"
-      ]
+      ],
+      "readings_restored": 1
     },
     "沸": {
       "jlpt": "N2",
@@ -32555,11 +33121,19 @@
       "words_added": [
         "宿怨"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "エン",
+        "オン"
+      ],
+      "final_kun_readings": [
+        "うらむ",
+        "うらみ",
+        "うらめしい"
+      ],
       "final_popular_words": [
         "宿怨"
-      ]
+      ],
+      "readings_restored": 5
     },
     "曇": {
       "jlpt": "N2",
@@ -32617,11 +33191,14 @@
       "words_added": [
         "長閑"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "カン"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "長閑"
-      ]
+      ],
+      "readings_restored": 1
     },
     "錠": {
       "jlpt": "N1",
@@ -32684,11 +33261,17 @@
       "words_added": [
         "寝醒める"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "セイ"
+      ],
+      "final_kun_readings": [
+        "さます",
+        "さめる"
+      ],
       "final_popular_words": [
         "寝醒める"
-      ]
+      ],
+      "readings_restored": 3
     },
     "詣": {
       "jlpt": "N1",
@@ -32719,11 +33302,18 @@
       "words_added": [
         "初詣"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ケイ"
+      ],
+      "final_kun_readings": [
+        "けいする",
+        "まいる",
+        "もうでる"
+      ],
       "final_popular_words": [
         "初詣"
-      ]
+      ],
+      "readings_restored": 4
     },
     "胎": {
       "jlpt": "N1",
@@ -32739,11 +33329,14 @@
       "words_added": [
         "受胎"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "タイ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "受胎"
-      ]
+      ],
+      "readings_restored": 1
     },
     "窟": {
       "jlpt": "N1",
@@ -32769,11 +33362,17 @@
       "words_added": [
         "仙窟"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "クツ"
+      ],
+      "final_kun_readings": [
+        "いわや",
+        "あな"
+      ],
       "final_popular_words": [
         "仙窟"
-      ]
+      ],
+      "readings_restored": 3
     },
     "巾": {
       "jlpt": "N1",
@@ -32841,11 +33440,18 @@
       "words_added": [
         "一周忌"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "キ"
+      ],
+      "final_kun_readings": [
+        "いむ",
+        "いみ",
+        "いまわしい"
+      ],
       "final_popular_words": [
         "一周忌"
-      ]
+      ],
+      "readings_restored": 4
     },
     "骸": {
       "jlpt": "N1",
@@ -32866,11 +33472,16 @@
       "words_added": [
         "亡き骸"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ガイ"
+      ],
+      "final_kun_readings": [
+        "むくろ"
+      ],
       "final_popular_words": [
         "亡き骸"
-      ]
+      ],
+      "readings_restored": 2
     },
     "弄": {
       "jlpt": "N1",
@@ -32921,30 +33532,14 @@
       ],
       "words_added": [],
       "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_kun_readings": [
+        "そねむ",
+        "ねたむ"
+      ],
       "final_popular_words": [
         "嫉妬"
-      ]
-    },
-    "粛": {
-      "jlpt": "N1",
-      "readings_removed": [
-        {
-          "reading": "シュク",
-          "type": "on"
-        }
       ],
-      "words_removed": [
-        "厳粛"
-      ],
-      "words_added": [
-        "厳粛"
-      ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
-      "final_popular_words": [
-        "厳粛"
-      ]
+      "readings_restored": 2
     },
     "罵": {
       "jlpt": "N1",
@@ -32985,11 +33580,16 @@
       "words_added": [
         "免囚"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "シュウ"
+      ],
+      "final_kun_readings": [
+        "とらわれる"
+      ],
       "final_popular_words": [
         "免囚"
-      ]
+      ],
+      "readings_restored": 2
     },
     "肯": {
       "jlpt": "N2",
@@ -33031,26 +33631,6 @@
         "乾燥"
       ]
     },
-    "搭": {
-      "jlpt": "N1",
-      "readings_removed": [
-        {
-          "reading": "トウ",
-          "type": "on"
-        }
-      ],
-      "words_removed": [
-        "搭乗"
-      ],
-      "words_added": [
-        "搭乗"
-      ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
-      "final_popular_words": [
-        "搭乗"
-      ]
-    },
     "諭": {
       "jlpt": "N1",
       "readings_removed": [
@@ -33070,11 +33650,16 @@
       "words_added": [
         "上諭"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ユ"
+      ],
+      "final_kun_readings": [
+        "さとす"
+      ],
       "final_popular_words": [
         "上諭"
-      ]
+      ],
+      "readings_restored": 2
     },
     "璧": {
       "jlpt": "N1",
@@ -33092,11 +33677,16 @@
         "双璧"
       ],
       "words_added": [],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ヘキ"
+      ],
+      "final_kun_readings": [
+        "たま"
+      ],
       "final_popular_words": [
         "完璧"
-      ]
+      ],
+      "readings_restored": 2
     },
     "阜": {
       "jlpt": "N1",
@@ -33117,11 +33707,15 @@
       "words_added": [
         "岐阜"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "フ",
+        "フウ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "岐阜"
-      ]
+      ],
+      "readings_restored": 2
     },
     "喝": {
       "jlpt": "N1",
@@ -33137,11 +33731,14 @@
       "words_added": [
         "どう喝"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "カツ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "どう喝"
-      ]
+      ],
+      "readings_restored": 1
     },
     "享": {
       "jlpt": "N1",
@@ -33197,11 +33794,14 @@
       "words_added": [
         "世嗣"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "シ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "世嗣"
-      ]
+      ],
+      "readings_restored": 1
     },
     "勅": {
       "jlpt": "N1",
@@ -33222,11 +33822,16 @@
       "words_added": [
         "勅"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "チョク"
+      ],
+      "final_kun_readings": [
+        "みことのり"
+      ],
       "final_popular_words": [
         "勅"
-      ]
+      ],
+      "readings_restored": 2
     },
     "篤": {
       "jlpt": "N1",
@@ -33247,11 +33852,16 @@
       "words_added": [
         "危篤"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "トク"
+      ],
+      "final_kun_readings": [
+        "あつい"
+      ],
       "final_popular_words": [
         "危篤"
-      ]
+      ],
+      "readings_restored": 2
     },
     "勲": {
       "jlpt": "N1",
@@ -33272,11 +33882,16 @@
       "words_added": [
         "偉勲"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "クン"
+      ],
+      "final_kun_readings": [
+        "いさお"
+      ],
       "final_popular_words": [
         "偉勲"
-      ]
+      ],
+      "readings_restored": 2
     },
     "埼": {
       "jlpt": "N1",
@@ -33298,10 +33913,14 @@
         "埼"
       ],
       "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_kun_readings": [
+        "さき",
+        "さい"
+      ],
       "final_popular_words": [
         "埼"
-      ]
+      ],
+      "readings_restored": 2
     },
     "伎": {
       "jlpt": "N1",
@@ -33332,11 +33951,18 @@
       "words_added": [
         "伎"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ギ",
+        "キ"
+      ],
+      "final_kun_readings": [
+        "わざ",
+        "わざおぎ"
+      ],
       "final_popular_words": [
         "伎"
-      ]
+      ],
+      "readings_restored": 4
     },
     "詐": {
       "jlpt": "N1",
@@ -33459,11 +34085,16 @@
       "words_added": [
         "不肖"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ショウ"
+      ],
+      "final_kun_readings": [
+        "あやかる"
+      ],
       "final_popular_words": [
         "不肖"
-      ]
+      ],
+      "readings_restored": 2
     },
     "詮": {
       "jlpt": "N1",
@@ -33489,11 +34120,17 @@
       "words_added": [
         "所詮"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "セン"
+      ],
+      "final_kun_readings": [
+        "せんずる",
+        "かい"
+      ],
       "final_popular_words": [
         "所詮"
-      ]
+      ],
+      "readings_restored": 3
     },
     "零": {
       "jlpt": "N2",
@@ -33535,11 +34172,16 @@
       "words_added": [
         "ころ柿"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "シ"
+      ],
+      "final_kun_readings": [
+        "かき"
+      ],
       "final_popular_words": [
         "ころ柿"
-      ]
+      ],
+      "readings_restored": 2
     },
     "芯": {
       "jlpt": "N1",
@@ -33616,11 +34258,16 @@
       "words_added": [
         "薫"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "クン"
+      ],
+      "final_kun_readings": [
+        "かおる"
+      ],
       "final_popular_words": [
         "薫"
-      ]
+      ],
+      "readings_restored": 2
     },
     "隷": {
       "jlpt": "N1",
@@ -33641,11 +34288,16 @@
       "words_added": [
         "奴隷"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "レイ"
+      ],
+      "final_kun_readings": [
+        "しもべ"
+      ],
       "final_popular_words": [
         "奴隷"
-      ]
+      ],
+      "readings_restored": 2
     },
     "俵": {
       "jlpt": "N1",
@@ -33777,26 +34429,6 @@
         "憧れる"
       ]
     },
-    "帥": {
-      "jlpt": "N1",
-      "readings_removed": [
-        {
-          "reading": "スイ",
-          "type": "on"
-        }
-      ],
-      "words_removed": [
-        "元帥"
-      ],
-      "words_added": [
-        "元帥"
-      ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
-      "final_popular_words": [
-        "元帥"
-      ]
-    },
     "漆": {
       "jlpt": "N1",
       "readings_removed": [
@@ -33816,11 +34448,16 @@
       "words_added": [
         "乾漆"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "シツ"
+      ],
+      "final_kun_readings": [
+        "うるし"
+      ],
       "final_popular_words": [
         "乾漆"
-      ]
+      ],
+      "readings_restored": 2
     },
     "酌": {
       "jlpt": "N1",
@@ -33841,11 +34478,16 @@
       "words_added": [
         "お酌"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "シャク"
+      ],
+      "final_kun_readings": [
+        "くむ"
+      ],
       "final_popular_words": [
         "お酌"
-      ]
+      ],
+      "readings_restored": 2
     },
     "頓": {
       "jlpt": "N1",
@@ -33871,11 +34513,17 @@
       "words_added": [
         "停頓"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "トン"
+      ],
+      "final_kun_readings": [
+        "とんと",
+        "とみに"
+      ],
       "final_popular_words": [
         "停頓"
-      ]
+      ],
+      "readings_restored": 3
     },
     "渇": {
       "jlpt": "N1",
@@ -33896,11 +34544,16 @@
       "words_added": [
         "枯渇"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "カツ"
+      ],
+      "final_kun_readings": [
+        "かわく"
+      ],
       "final_popular_words": [
         "枯渇"
-      ]
+      ],
+      "readings_restored": 2
     },
     "慕": {
       "jlpt": "N1",
@@ -33966,11 +34619,17 @@
       "words_added": [
         "せん妄"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "モウ",
+        "ボウ"
+      ],
+      "final_kun_readings": [
+        "みだりに"
+      ],
       "final_popular_words": [
         "せん妄"
-      ]
+      ],
+      "readings_restored": 3
     },
     "匿": {
       "jlpt": "N1",
@@ -33991,11 +34650,16 @@
       "words_added": [
         "包み匿す"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "トク"
+      ],
+      "final_kun_readings": [
+        "かくまう"
+      ],
       "final_popular_words": [
         "包み匿す"
-      ]
+      ],
+      "readings_restored": 2
     },
     "渓": {
       "jlpt": "N1",
@@ -34021,11 +34685,17 @@
       "words_added": [
         "渓"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ケイ"
+      ],
+      "final_kun_readings": [
+        "たに",
+        "たにがわ"
+      ],
       "final_popular_words": [
         "渓"
-      ]
+      ],
+      "readings_restored": 3
     },
     "侮": {
       "jlpt": "N1",
@@ -34064,11 +34734,14 @@
       "words_added": [
         "延髄"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "ズイ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "延髄"
-      ]
+      ],
+      "readings_restored": 1
     },
     "薪": {
       "jlpt": "N1",
@@ -34094,11 +34767,17 @@
       "words_added": [
         "臥薪嘗胆"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "シン"
+      ],
+      "final_kun_readings": [
+        "たきぎ",
+        "まき"
+      ],
       "final_popular_words": [
         "臥薪嘗胆"
-      ]
+      ],
+      "readings_restored": 3
     },
     "轄": {
       "jlpt": "N1",
@@ -34119,11 +34798,16 @@
       "words_added": [
         "分轄"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "カツ"
+      ],
+      "final_kun_readings": [
+        "くさび"
+      ],
       "final_popular_words": [
         "分轄"
-      ]
+      ],
+      "readings_restored": 2
     },
     "牙": {
       "jlpt": "N1",
@@ -34154,11 +34838,18 @@
       "words_added": [
         "勃牙利"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ガ",
+        "ゲ"
+      ],
+      "final_kun_readings": [
+        "きば",
+        "は"
+      ],
       "final_popular_words": [
         "勃牙利"
-      ]
+      ],
+      "readings_restored": 4
     },
     "咽": {
       "jlpt": "N1",
@@ -34204,11 +34895,21 @@
       "words_added": [
         "咽"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "イン",
+        "エン",
+        "エツ"
+      ],
+      "final_kun_readings": [
+        "むせぶ",
+        "むせる",
+        "のど",
+        "のむ"
+      ],
       "final_popular_words": [
         "咽"
-      ]
+      ],
+      "readings_restored": 7
     },
     "逐": {
       "jlpt": "N1",
@@ -34224,11 +34925,14 @@
       "words_added": [
         "放逐"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "チク"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "放逐"
-      ]
+      ],
+      "readings_restored": 1
     },
     "嘲": {
       "jlpt": "N1",
@@ -34246,11 +34950,16 @@
         "嘲笑"
       ],
       "words_added": [],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "チョウ"
+      ],
+      "final_kun_readings": [
+        "あざける"
+      ],
       "final_popular_words": [
         "嘲笑う"
-      ]
+      ],
+      "readings_restored": 2
     },
     "墜": {
       "jlpt": "N1",
@@ -34313,11 +35022,16 @@
       "words_added": [
         "川施餓鬼"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ガ"
+      ],
+      "final_kun_readings": [
+        "うえる"
+      ],
       "final_popular_words": [
         "川施餓鬼"
-      ]
+      ],
+      "readings_restored": 2
     },
     "挫": {
       "jlpt": "N1",
@@ -34343,11 +35057,17 @@
       "words_added": [
         "挫く"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ザ"
+      ],
+      "final_kun_readings": [
+        "くじく",
+        "くじける"
+      ],
       "final_popular_words": [
         "挫く"
-      ]
+      ],
+      "readings_restored": 3
     },
     "錬": {
       "jlpt": "N1",
@@ -34368,11 +35088,16 @@
       "words_added": [
         "修錬"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "レン"
+      ],
+      "final_kun_readings": [
+        "ねる"
+      ],
       "final_popular_words": [
         "修錬"
-      ]
+      ],
+      "readings_restored": 2
     },
     "桟": {
       "jlpt": "N1",
@@ -34493,11 +35218,16 @@
       "words_added": [
         "伴侶"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "リョ"
+      ],
+      "final_kun_readings": [
+        "とも"
+      ],
       "final_popular_words": [
         "伴侶"
-      ]
+      ],
+      "readings_restored": 2
     },
     "艇": {
       "jlpt": "N1",
@@ -34513,11 +35243,14 @@
       "words_added": [
         "内火艇"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "テイ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "内火艇"
-      ]
+      ],
+      "readings_restored": 1
     },
     "丼": {
       "jlpt": "N1",
@@ -34555,11 +35288,16 @@
       "words_added": [
         "堕する"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ダ"
+      ],
+      "final_kun_readings": [
+        "おちる"
+      ],
       "final_popular_words": [
         "堕する"
-      ]
+      ],
+      "readings_restored": 2
     },
     "瘍": {
       "jlpt": "N1",
@@ -34575,11 +35313,14 @@
       "words_added": [
         "悪性腫瘍"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "ヨウ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "悪性腫瘍"
-      ]
+      ],
+      "readings_restored": 1
     },
     "槽": {
       "jlpt": "N1",
@@ -34600,11 +35341,16 @@
       "words_added": [
         "槽"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ソウ"
+      ],
+      "final_kun_readings": [
+        "ふね"
+      ],
       "final_popular_words": [
         "槽"
-      ]
+      ],
+      "readings_restored": 2
     },
     "憩": {
       "jlpt": "N1",
@@ -34717,11 +35463,18 @@
       "words_added": [
         "橋畔"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ハン"
+      ],
+      "final_kun_readings": [
+        "あぜ",
+        "くろ",
+        "ほとり"
+      ],
       "final_popular_words": [
         "橋畔"
-      ]
+      ],
+      "readings_restored": 4
     },
     "睦": {
       "jlpt": "N1",
@@ -34752,11 +35505,18 @@
       "words_added": [
         "和睦"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ボク"
+      ],
+      "final_kun_readings": [
+        "むつまじい",
+        "むつむ",
+        "むつぶ"
+      ],
       "final_popular_words": [
         "和睦"
-      ]
+      ],
+      "readings_restored": 4
     },
     "唆": {
       "jlpt": "N1",
@@ -34782,11 +35542,17 @@
       "words_added": [
         "唆す"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "サ"
+      ],
+      "final_kun_readings": [
+        "そそる",
+        "そそのかす"
+      ],
       "final_popular_words": [
         "唆す"
-      ]
+      ],
+      "readings_restored": 3
     },
     "悼": {
       "jlpt": "N1",
@@ -34807,11 +35573,16 @@
       "words_added": [
         "哀悼"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "トウ"
+      ],
+      "final_kun_readings": [
+        "いたむ"
+      ],
       "final_popular_words": [
         "哀悼"
-      ]
+      ],
+      "readings_restored": 2
     },
     "吏": {
       "jlpt": "N1",
@@ -34891,11 +35662,14 @@
       "words_added": [
         "肝腎"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "ジン"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "肝腎"
-      ]
+      ],
+      "readings_restored": 1
     },
     "梗": {
       "jlpt": "N1",
@@ -34911,11 +35685,14 @@
       "words_added": [
         "桔梗"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "コウ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "桔梗"
-      ]
+      ],
+      "readings_restored": 1
     },
     "瑠": {
       "jlpt": "N1",
@@ -34931,11 +35708,14 @@
       "words_added": [
         "大瑠璃"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "ル"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "大瑠璃"
-      ]
+      ],
+      "readings_restored": 1
     },
     "羨": {
       "jlpt": "N1",
@@ -34971,11 +35751,14 @@
       "words_added": [
         "運搬"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "ハン"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "運搬"
-      ]
+      ],
+      "readings_restored": 1
     },
     "酎": {
       "jlpt": "N1",
@@ -34996,11 +35779,15 @@
       "words_added": [
         "焼酎"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "チュウ",
+        "チュ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "焼酎"
-      ]
+      ],
+      "readings_restored": 2
     },
     "畿": {
       "jlpt": "N1",
@@ -35016,11 +35803,14 @@
       "words_added": [
         "五畿内"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "キ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "五畿内"
-      ]
+      ],
+      "readings_restored": 1
     },
     "宵": {
       "jlpt": "N1",
@@ -35041,11 +35831,16 @@
       "words_added": [
         "今宵"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ショウ"
+      ],
+      "final_kun_readings": [
+        "よい"
+      ],
       "final_popular_words": [
         "今宵"
-      ]
+      ],
+      "readings_restored": 2
     },
     "拐": {
       "jlpt": "N1",
@@ -35062,11 +35857,14 @@
       "words_added": [
         "拐う"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "カイ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "拐う"
-      ]
+      ],
+      "readings_restored": 1
     },
     "醸": {
       "jlpt": "N1",
@@ -35087,11 +35885,16 @@
       "words_added": [
         "ビール醸造"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ジョウ"
+      ],
+      "final_kun_readings": [
+        "かもす"
+      ],
       "final_popular_words": [
         "ビール醸造"
-      ]
+      ],
+      "readings_restored": 2
     },
     "猶": {
       "jlpt": "N1",
@@ -35186,11 +35989,15 @@
       "words_added": [
         "内分泌"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "ヒツ",
+        "ヒ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "内分泌"
-      ]
+      ],
+      "readings_restored": 2
     },
     "愁": {
       "jlpt": "N1",
@@ -35241,11 +36048,17 @@
       "words_added": [
         "夭逝"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "セイ"
+      ],
+      "final_kun_readings": [
+        "ゆく",
+        "いく"
+      ],
       "final_popular_words": [
         "夭逝"
-      ]
+      ],
+      "readings_restored": 3
     },
     "朽": {
       "jlpt": "N1",
@@ -35281,11 +36094,14 @@
       "words_added": [
         "亜硫酸塩"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "リュウ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "亜硫酸塩"
-      ]
+      ],
+      "readings_restored": 1
     },
     "瞭": {
       "jlpt": "N1",
@@ -35328,11 +36144,17 @@
       "words_added": [
         "摸擬"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ギ"
+      ],
+      "final_kun_readings": [
+        "まがい",
+        "もどき"
+      ],
       "final_popular_words": [
         "摸擬"
-      ]
+      ],
+      "readings_restored": 3
     },
     "叙": {
       "jlpt": "N1",
@@ -35348,11 +36170,14 @@
       "words_added": [
         "倒叙"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "ジョ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "倒叙"
-      ]
+      ],
+      "readings_restored": 1
     },
     "弊": {
       "jlpt": "N1",
@@ -35368,11 +36193,14 @@
       "words_added": [
         "余弊"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "ヘイ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "余弊"
-      ]
+      ],
+      "readings_restored": 1
     },
     "累": {
       "jlpt": "N1",
@@ -35388,11 +36216,14 @@
       "words_added": [
         "係累"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "ルイ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "係累"
-      ]
+      ],
+      "readings_restored": 1
     },
     "煩": {
       "jlpt": "N1",
@@ -35431,26 +36262,6 @@
         "煩わしい"
       ]
     },
-    "踪": {
-      "jlpt": "N1",
-      "readings_removed": [
-        {
-          "reading": "ソウ",
-          "type": "on"
-        }
-      ],
-      "words_removed": [
-        "失踪"
-      ],
-      "words_added": [
-        "失踪"
-      ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
-      "final_popular_words": [
-        "失踪"
-      ]
-    },
     "藻": {
       "jlpt": "N1",
       "readings_removed": [
@@ -35470,11 +36281,16 @@
       "words_added": [
         "けい藻土"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ソウ"
+      ],
+      "final_kun_readings": [
+        "も"
+      ],
       "final_popular_words": [
         "けい藻土"
-      ]
+      ],
+      "readings_restored": 2
     },
     "蚊": {
       "jlpt": "N1",
@@ -35511,10 +36327,13 @@
         "栃"
       ],
       "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_kun_readings": [
+        "とち"
+      ],
       "final_popular_words": [
         "栃"
-      ]
+      ],
+      "readings_restored": 1
     },
     "且": {
       "jlpt": "N1",
@@ -35565,11 +36384,17 @@
       "words_added": [
         "再鋳"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "チュウ",
+        "イ"
+      ],
+      "final_kun_readings": [
+        "いる"
+      ],
       "final_popular_words": [
         "再鋳"
-      ]
+      ],
+      "readings_restored": 3
     },
     "叱": {
       "jlpt": "N1",
@@ -35615,11 +36440,17 @@
       "words_added": [
         "掩蔽"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ヘイ"
+      ],
+      "final_kun_readings": [
+        "おおう",
+        "おおい"
+      ],
       "final_popular_words": [
         "掩蔽"
-      ]
+      ],
+      "readings_restored": 3
     },
     "茨": {
       "jlpt": "N1",
@@ -35640,11 +36471,16 @@
       "words_added": [
         "猿捕茨"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "シ"
+      ],
+      "final_kun_readings": [
+        "いばら"
+      ],
       "final_popular_words": [
         "猿捕茨"
-      ]
+      ],
+      "readings_restored": 2
     },
     "棺": {
       "jlpt": "N1",
@@ -35660,11 +36496,14 @@
       "words_added": [
         "入棺"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "カン"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "入棺"
-      ]
+      ],
+      "readings_restored": 1
     },
     "慄": {
       "jlpt": "N1",
@@ -35685,11 +36524,16 @@
       "words_added": [
         "慄く"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "リツ"
+      ],
+      "final_kun_readings": [
+        "おののく"
+      ],
       "final_popular_words": [
         "慄く"
-      ]
+      ],
+      "readings_restored": 2
     },
     "傲": {
       "jlpt": "N1",
@@ -35710,11 +36554,16 @@
       "words_added": [
         "倨傲"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ゴウ"
+      ],
+      "final_kun_readings": [
+        "おごる"
+      ],
       "final_popular_words": [
         "倨傲"
-      ]
+      ],
+      "readings_restored": 2
     },
     "硝": {
       "jlpt": "N1",
@@ -35730,27 +36579,14 @@
       "words_added": [
         "灰硝石"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "ショウ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "灰硝石"
-      ]
-    },
-    "舶": {
-      "jlpt": "N1",
-      "readings_removed": [
-        {
-          "reading": "ハク",
-          "type": "on"
-        }
       ],
-      "words_removed": [],
-      "words_added": [],
-      "final_on_readings": [],
-      "final_kun_readings": [],
-      "final_popular_words": [
-        "船舶"
-      ]
+      "readings_restored": 1
     },
     "租": {
       "jlpt": "N1",
@@ -35766,11 +36602,14 @@
       "words_added": [
         "免租"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "ソ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "免租"
-      ]
+      ],
+      "readings_restored": 1
     },
     "謹": {
       "jlpt": "N1",
@@ -35791,11 +36630,16 @@
       "words_added": [
         "不謹慎"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "キン"
+      ],
+      "final_kun_readings": [
+        "つつしむ"
+      ],
       "final_popular_words": [
         "不謹慎"
-      ]
+      ],
+      "readings_restored": 2
     },
     "抹": {
       "jlpt": "N1",
@@ -35811,11 +36655,14 @@
       "words_added": [
         "一抹"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "マツ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "一抹"
-      ]
+      ],
+      "readings_restored": 1
     },
     "虹": {
       "jlpt": "N1",
@@ -35885,11 +36732,17 @@
       "words_added": [
         "唐臼"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "キュウ"
+      ],
+      "final_kun_readings": [
+        "うす",
+        "うすづく"
+      ],
       "final_popular_words": [
         "唐臼"
-      ]
+      ],
+      "readings_restored": 3
     },
     "喩": {
       "jlpt": "N1",
@@ -35910,11 +36763,16 @@
       "words_added": [
         "喩え"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ユ"
+      ],
+      "final_kun_readings": [
+        "たとえる"
+      ],
       "final_popular_words": [
         "喩え"
-      ]
+      ],
+      "readings_restored": 2
     },
     "萎": {
       "jlpt": "N1",
@@ -35973,22 +36831,6 @@
         "蛍光"
       ]
     },
-    "窒": {
-      "jlpt": "N1",
-      "readings_removed": [
-        {
-          "reading": "チツ",
-          "type": "on"
-        }
-      ],
-      "words_removed": [],
-      "words_added": [],
-      "final_on_readings": [],
-      "final_kun_readings": [],
-      "final_popular_words": [
-        "窒息"
-      ]
-    },
     "腺": {
       "jlpt": "N1",
       "readings_removed": [
@@ -36003,11 +36845,14 @@
       "words_added": [
         "リンパ腺"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "セン"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "リンパ腺"
-      ]
+      ],
+      "readings_restored": 1
     },
     "桁": {
       "jlpt": "N1",
@@ -36063,11 +36908,14 @@
       "words_added": [
         "冶工"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "ヤ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "冶工"
-      ]
+      ],
+      "readings_restored": 1
     },
     "羞": {
       "jlpt": "N1",
@@ -36132,11 +36980,17 @@
       "words_added": [
         "危惧"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ク",
+        "グ"
+      ],
+      "final_kun_readings": [
+        "おそれる"
+      ],
       "final_popular_words": [
         "危惧"
-      ]
+      ],
+      "readings_restored": 3
     },
     "寡": {
       "jlpt": "N1",
@@ -36152,11 +37006,14 @@
       "words_added": [
         "多寡"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "カ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "多寡"
-      ]
+      ],
+      "readings_restored": 1
     },
     "畝": {
       "jlpt": "N1",
@@ -36185,11 +37042,18 @@
       "words_added": [
         "田畝"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ボウ",
+        "ホ"
+      ],
+      "final_kun_readings": [
+        "せ",
+        "うね"
+      ],
       "final_popular_words": [
         "田畝"
-      ]
+      ],
+      "readings_restored": 4
     },
     "淑": {
       "jlpt": "N1",
@@ -36210,11 +37074,16 @@
       "words_added": [
         "淑女"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "シュク"
+      ],
+      "final_kun_readings": [
+        "しとやか"
+      ],
       "final_popular_words": [
         "淑女"
-      ]
+      ],
+      "readings_restored": 2
     },
     "嫡": {
       "jlpt": "N1",
@@ -36235,11 +37104,15 @@
       "words_added": [
         "嫡出"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "チャク",
+        "テキ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "嫡出"
-      ]
+      ],
+      "readings_restored": 2
     },
     "屯": {
       "jlpt": "N1",
@@ -36260,11 +37133,16 @@
       "words_added": [
         "屯"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "トン"
+      ],
+      "final_kun_readings": [
+        "たむろ"
+      ],
       "final_popular_words": [
         "屯"
-      ]
+      ],
+      "readings_restored": 2
     },
     "糾": {
       "jlpt": "N1",
@@ -36285,11 +37163,16 @@
       "words_added": [
         "糾う"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "キュウ"
+      ],
+      "final_kun_readings": [
+        "ただす"
+      ],
       "final_popular_words": [
         "糾う"
-      ]
+      ],
+      "readings_restored": 2
     },
     "遡": {
       "jlpt": "N1",
@@ -36330,11 +37213,14 @@
       "words_added": [
         "陪乗"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "バイ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "陪乗"
-      ]
+      ],
+      "readings_restored": 1
     },
     "雌": {
       "jlpt": "N1",
@@ -36384,11 +37270,17 @@
       "words_added": [
         "両舷"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ゲン"
+      ],
+      "final_kun_readings": [
+        "ふなばた",
+        "ふなべり"
+      ],
       "final_popular_words": [
         "両舷"
-      ]
+      ],
+      "readings_restored": 3
     },
     "霜": {
       "jlpt": "N1",
@@ -36424,11 +37316,14 @@
       "words_added": [
         "殉じる"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "ジュン"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "殉じる"
-      ]
+      ],
+      "readings_restored": 1
     },
     "紡": {
       "jlpt": "N1",
@@ -36479,31 +37374,18 @@
       "words_added": [
         "突っ慳貪"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "タン",
+        "ドン",
+        "トン"
+      ],
+      "final_kun_readings": [
+        "むさぼる"
+      ],
       "final_popular_words": [
         "突っ慳貪"
-      ]
-    },
-    "庸": {
-      "jlpt": "N1",
-      "readings_removed": [
-        {
-          "reading": "ヨウ",
-          "type": "on"
-        }
       ],
-      "words_removed": [
-        "中庸"
-      ],
-      "words_added": [
-        "中庸"
-      ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
-      "final_popular_words": [
-        "中庸"
-      ]
+      "readings_restored": 4
     },
     "韻": {
       "jlpt": "N1",
@@ -36519,11 +37401,14 @@
       "words_added": [
         "余韻"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "イン"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "余韻"
-      ]
+      ],
+      "readings_restored": 1
     },
     "搾": {
       "jlpt": "N1",
@@ -36544,11 +37429,16 @@
       "words_added": [
         "あっ搾"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "サク"
+      ],
+      "final_kun_readings": [
+        "しぼる"
+      ],
       "final_popular_words": [
         "あっ搾"
-      ]
+      ],
+      "readings_restored": 2
     },
     "刹": {
       "jlpt": "N1",
@@ -36569,11 +37459,15 @@
       "words_added": [
         "一刹那"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "セツ",
+        "サツ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "一刹那"
-      ]
+      ],
+      "readings_restored": 2
     },
     "采": {
       "jlpt": "N1",
@@ -36589,11 +37483,14 @@
       "words_added": [
         "喝采"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "サイ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "喝采"
-      ]
+      ],
+      "readings_restored": 1
     },
     "堆": {
       "jlpt": "N1",
@@ -36619,11 +37516,17 @@
       "words_added": [
         "中堆石"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "タイ",
+        "ツイ"
+      ],
+      "final_kun_readings": [
+        "うずたかい"
+      ],
       "final_popular_words": [
         "中堆石"
-      ]
+      ],
+      "readings_restored": 3
     },
     "禍": {
       "jlpt": "N1",
@@ -36644,11 +37547,16 @@
       "words_added": [
         "兵禍"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "カ"
+      ],
+      "final_kun_readings": [
+        "わざわい"
+      ],
       "final_popular_words": [
         "兵禍"
-      ]
+      ],
+      "readings_restored": 2
     },
     "煎": {
       "jlpt": "N1",
@@ -36674,11 +37582,17 @@
       "words_added": [
         "乾煎り"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "セン"
+      ],
+      "final_kun_readings": [
+        "せんじる",
+        "いる"
+      ],
       "final_popular_words": [
         "乾煎り"
-      ]
+      ],
+      "readings_restored": 3
     },
     "姻": {
       "jlpt": "N1",
@@ -36694,11 +37608,14 @@
       "words_added": [
         "姻戚"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "イン"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "姻戚"
-      ]
+      ],
+      "readings_restored": 1
     },
     "斑": {
       "jlpt": "N1",
@@ -36743,11 +37660,17 @@
       "words_added": [
         "冥々"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "メイ",
+        "ミョウ"
+      ],
+      "final_kun_readings": [
+        "くらい"
+      ],
       "final_popular_words": [
         "冥々"
-      ]
+      ],
+      "readings_restored": 3
     },
     "抄": {
       "jlpt": "N1",
@@ -36763,31 +37686,14 @@
       "words_added": [
         "抄"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "ショウ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "抄"
-      ]
-    },
-    "拷": {
-      "jlpt": "N1",
-      "readings_removed": [
-        {
-          "reading": "ゴウ",
-          "type": "on"
-        }
       ],
-      "words_removed": [
-        "拷問"
-      ],
-      "words_added": [
-        "拷問"
-      ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
-      "final_popular_words": [
-        "拷問"
-      ]
+      "readings_restored": 1
     },
     "旺": {
       "jlpt": "N1",
@@ -36808,11 +37714,16 @@
       "words_added": [
         "旺ん"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "オウ"
+      ],
+      "final_kun_readings": [
+        "さかん"
+      ],
       "final_popular_words": [
         "旺ん"
-      ]
+      ],
+      "readings_restored": 2
     },
     "准": {
       "jlpt": "N1",
@@ -36828,11 +37739,14 @@
       "words_added": [
         "准える"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "ジュン"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "准える"
-      ]
+      ],
+      "readings_restored": 1
     },
     "勾": {
       "jlpt": "N1",
@@ -36853,11 +37767,16 @@
       "words_added": [
         "下り勾配"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "コウ"
+      ],
+      "final_kun_readings": [
+        "まがる"
+      ],
       "final_popular_words": [
         "下り勾配"
-      ]
+      ],
+      "readings_restored": 2
     },
     "廉": {
       "jlpt": "N1",
@@ -36873,11 +37792,14 @@
       "words_added": [
         "一廉"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "レン"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "一廉"
-      ]
+      ],
+      "readings_restored": 1
     },
     "礁": {
       "jlpt": "N1",
@@ -36893,11 +37815,14 @@
       "words_added": [
         "さんご礁"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "ショウ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "さんご礁"
-      ]
+      ],
+      "readings_restored": 1
     },
     "壱": {
       "jlpt": "N1",
@@ -36918,11 +37843,15 @@
       "words_added": [
         "壱"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "イチ",
+        "イツ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "壱"
-      ]
+      ],
+      "readings_restored": 2
     },
     "麺": {
       "jlpt": "N1",
@@ -36938,11 +37867,14 @@
       "words_added": [
         "入麺"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "メン"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "入麺"
-      ]
+      ],
+      "readings_restored": 1
     },
     "升": {
       "jlpt": "N1",
@@ -36963,11 +37895,16 @@
       "words_added": [
         "升"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ショウ"
+      ],
+      "final_kun_readings": [
+        "ます"
+      ],
       "final_popular_words": [
         "升"
-      ]
+      ],
+      "readings_restored": 2
     },
     "卸": {
       "jlpt": "N1",
@@ -36993,11 +37930,17 @@
       "words_added": [
         "たな卸"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "シャ"
+      ],
+      "final_kun_readings": [
+        "おろす",
+        "おろし"
+      ],
       "final_popular_words": [
         "たな卸"
-      ]
+      ],
+      "readings_restored": 3
     },
     "耗": {
       "jlpt": "N1",
@@ -37030,11 +37973,14 @@
       "words_added": [
         "内謁"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "エツ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "内謁"
-      ]
+      ],
+      "readings_restored": 1
     },
     "璃": {
       "jlpt": "N1",
@@ -37050,11 +37996,14 @@
       "words_added": [
         "大瑠璃"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "リ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "大瑠璃"
-      ]
+      ],
+      "readings_restored": 1
     },
     "坑": {
       "jlpt": "N1",
@@ -37070,31 +38019,14 @@
       "words_added": [
         "たて坑"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "コウ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "たて坑"
-      ]
-    },
-    "串": {
-      "jlpt": "N1",
-      "readings_removed": [
-        {
-          "reading": "くし",
-          "type": "kun"
-        }
       ],
-      "words_removed": [
-        "串"
-      ],
-      "words_added": [
-        "串"
-      ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
-      "final_popular_words": [
-        "串"
-      ]
+      "readings_restored": 1
     },
     "弔": {
       "jlpt": "N1",
@@ -37120,11 +38052,17 @@
       "words_added": [
         "弔い"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "チョウ"
+      ],
+      "final_kun_readings": [
+        "とむらう",
+        "とぶらう"
+      ],
       "final_popular_words": [
         "弔い"
-      ]
+      ],
+      "readings_restored": 3
     },
     "賓": {
       "jlpt": "N1",
@@ -37145,11 +38083,16 @@
       "words_added": [
         "主賓"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ヒン"
+      ],
+      "final_kun_readings": [
+        "まろうど"
+      ],
       "final_popular_words": [
         "主賓"
-      ]
+      ],
+      "readings_restored": 2
     },
     "塡": {
       "jlpt": "N1",
@@ -37175,11 +38118,17 @@
       "words_added": [
         "充塡"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "テン"
+      ],
+      "final_kun_readings": [
+        "はまる",
+        "はめる"
+      ],
       "final_popular_words": [
         "充塡"
-      ]
+      ],
+      "readings_restored": 3
     },
     "嚇": {
       "jlpt": "N1",
@@ -37200,11 +38149,16 @@
       "words_added": [
         "嚇々"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "カク"
+      ],
+      "final_kun_readings": [
+        "おどす"
+      ],
       "final_popular_words": [
         "嚇々"
-      ]
+      ],
+      "readings_restored": 2
     },
     "濫": {
       "jlpt": "N1",
@@ -37245,11 +38199,14 @@
       "words_added": [
         "俸祿"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "ホウ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "俸祿"
-      ]
+      ],
+      "readings_restored": 1
     },
     "凸": {
       "jlpt": "N1",
@@ -37292,11 +38249,17 @@
       "words_added": [
         "無脊椎動物"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "セキ"
+      ],
+      "final_kun_readings": [
+        "せ",
+        "せい"
+      ],
       "final_popular_words": [
         "無脊椎動物"
-      ]
+      ],
+      "readings_restored": 3
     },
     "詔": {
       "jlpt": "N1",
@@ -37317,11 +38280,16 @@
       "words_added": [
         "大詔"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ショウ"
+      ],
+      "final_kun_readings": [
+        "みことのり"
+      ],
       "final_popular_words": [
         "大詔"
-      ]
+      ],
+      "readings_restored": 2
     },
     "緻": {
       "jlpt": "N1",
@@ -37337,11 +38305,14 @@
       "words_added": [
         "不縹緻"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "チ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "不縹緻"
-      ]
+      ],
+      "readings_restored": 1
     },
     "凹": {
       "jlpt": "N1",
@@ -37388,11 +38359,17 @@
       "words_added": [
         "同盟罷業"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ヒ"
+      ],
+      "final_kun_readings": [
+        "まかり",
+        "やめる"
+      ],
       "final_popular_words": [
         "同盟罷業"
-      ]
+      ],
+      "readings_restored": 3
     },
     "漸": {
       "jlpt": "N1",
@@ -37440,11 +38417,15 @@
         "賦課"
       ],
       "words_added": [],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "フ",
+        "ブ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "月賦"
-      ]
+      ],
+      "readings_restored": 2
     },
     "褐": {
       "jlpt": "N1",
@@ -37460,11 +38441,14 @@
       "words_added": [
         "暗褐色"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "カツ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "暗褐色"
-      ]
+      ],
+      "readings_restored": 1
     },
     "辣": {
       "jlpt": "N1",
@@ -37480,31 +38464,14 @@
       "words_added": [
         "悪辣"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "ラツ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "悪辣"
-      ]
-    },
-    "摯": {
-      "jlpt": "N1",
-      "readings_removed": [
-        {
-          "reading": "シ",
-          "type": "on"
-        }
       ],
-      "words_removed": [
-        "真摯"
-      ],
-      "words_added": [
-        "真摯"
-      ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
-      "final_popular_words": [
-        "真摯"
-      ]
+      "readings_restored": 1
     },
     "汎": {
       "jlpt": "N1",
@@ -37520,11 +38487,14 @@
       "words_added": [
         "広汎"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "ハン"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "広汎"
-      ]
+      ],
+      "readings_restored": 1
     },
     "斥": {
       "jlpt": "N1",
@@ -37545,11 +38515,16 @@
       "words_added": [
         "ひん斥"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "セキ"
+      ],
+      "final_kun_readings": [
+        "しりぞける"
+      ],
       "final_popular_words": [
         "ひん斥"
-      ]
+      ],
+      "readings_restored": 2
     },
     "厘": {
       "jlpt": "N1",
@@ -37565,11 +38540,14 @@
       "words_added": [
         "一分一厘"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "リン"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "一分一厘"
-      ]
+      ],
+      "readings_restored": 1
     },
     "矯": {
       "jlpt": "N1",
@@ -37590,11 +38568,16 @@
       "words_added": [
         "奇矯"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "キョウ"
+      ],
+      "final_kun_readings": [
+        "ためる"
+      ],
       "final_popular_words": [
         "奇矯"
-      ]
+      ],
+      "readings_restored": 2
     },
     "毀": {
       "jlpt": "N1",
@@ -37630,11 +38613,19 @@
       "words_added": [
         "刃毀れ"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "キ"
+      ],
+      "final_kun_readings": [
+        "こぼつ",
+        "こわす",
+        "こぼれる",
+        "こわれる"
+      ],
       "final_popular_words": [
         "刃毀れ"
-      ]
+      ],
+      "readings_restored": 5
     },
     "窃": {
       "jlpt": "N1",
@@ -37655,11 +38646,16 @@
       "words_added": [
         "ひょう窃"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "セツ"
+      ],
+      "final_kun_readings": [
+        "ひそか"
+      ],
       "final_popular_words": [
         "ひょう窃"
-      ]
+      ],
+      "readings_restored": 2
     },
     "遵": {
       "jlpt": "N1",
@@ -37675,11 +38671,14 @@
       "words_added": [
         "遵う"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "ジュン"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "遵う"
-      ]
+      ],
+      "readings_restored": 1
     },
     "賂": {
       "jlpt": "N1",
@@ -37705,11 +38704,17 @@
       "words_added": [
         "賂"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ロ"
+      ],
+      "final_kun_readings": [
+        "まいない",
+        "まいなう"
+      ],
       "final_popular_words": [
         "賂"
-      ]
+      ],
+      "readings_restored": 3
     },
     "惰": {
       "jlpt": "N1",
@@ -37725,11 +38730,14 @@
       "words_added": [
         "勤惰"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "ダ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "勤惰"
-      ]
+      ],
+      "readings_restored": 1
     },
     "蚕": {
       "jlpt": "N1",
@@ -37755,11 +38763,17 @@
       "words_added": [
         "天蚕"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "サン"
+      ],
+      "final_kun_readings": [
+        "かいこ",
+        "こ"
+      ],
       "final_popular_words": [
         "天蚕"
-      ]
+      ],
+      "readings_restored": 3
     },
     "諧": {
       "jlpt": "N1",
@@ -37775,11 +38789,14 @@
       "words_added": [
         "俳諧"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "カイ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "俳諧"
-      ]
+      ],
+      "readings_restored": 1
     },
     "倹": {
       "jlpt": "N1",
@@ -37815,11 +38832,14 @@
       "words_added": [
         "交款"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "カン"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "交款"
-      ]
+      ],
+      "readings_restored": 1
     },
     "媛": {
       "jlpt": "N1",
@@ -37840,11 +38860,16 @@
       "words_added": [
         "媛"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "エン"
+      ],
+      "final_kun_readings": [
+        "ひめ"
+      ],
       "final_popular_words": [
         "媛"
-      ]
+      ],
+      "readings_restored": 2
     },
     "憾": {
       "jlpt": "N1",
@@ -37865,11 +38890,16 @@
       "words_added": [
         "憾み"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "カン"
+      ],
+      "final_kun_readings": [
+        "うらむ"
+      ],
       "final_popular_words": [
         "憾み"
-      ]
+      ],
+      "readings_restored": 2
     },
     "哺": {
       "jlpt": "N1",
@@ -37885,11 +38915,14 @@
       "words_added": [
         "反哺"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "ホ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "反哺"
-      ]
+      ],
+      "readings_restored": 1
     },
     "衷": {
       "jlpt": "N1",
@@ -37925,26 +38958,6 @@
         "語彙"
       ]
     },
-    "迭": {
-      "jlpt": "N1",
-      "readings_removed": [
-        {
-          "reading": "テツ",
-          "type": "on"
-        }
-      ],
-      "words_removed": [
-        "更迭"
-      ],
-      "words_added": [
-        "更迭"
-      ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
-      "final_popular_words": [
-        "更迭"
-      ]
-    },
     "嘱": {
       "jlpt": "N1",
       "readings_removed": [
@@ -37959,11 +38972,14 @@
       "words_added": [
         "依嘱"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "ショク"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "依嘱"
-      ]
+      ],
+      "readings_restored": 1
     },
     "恣": {
       "jlpt": "N1",
@@ -37984,11 +39000,16 @@
       "words_added": [
         "恣"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "シ"
+      ],
+      "final_kun_readings": [
+        "ほしいまま"
+      ],
       "final_popular_words": [
         "恣"
-      ]
+      ],
+      "readings_restored": 2
     },
     "墾": {
       "jlpt": "N1",
@@ -38009,11 +39030,16 @@
       "words_added": [
         "切り墾く"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "コン"
+      ],
+      "final_kun_readings": [
+        "ひらく"
+      ],
       "final_popular_words": [
         "切り墾く"
-      ]
+      ],
+      "readings_restored": 2
     },
     "逓": {
       "jlpt": "N1",
@@ -38029,31 +39055,14 @@
       "words_added": [
         "逓伝"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "テイ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "逓伝"
-      ]
-    },
-    "劾": {
-      "jlpt": "N1",
-      "readings_removed": [
-        {
-          "reading": "ガイ",
-          "type": "on"
-        }
       ],
-      "words_removed": [
-        "弾劾"
-      ],
-      "words_added": [
-        "弾劾"
-      ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
-      "final_popular_words": [
-        "弾劾"
-      ]
+      "readings_restored": 1
     },
     "沃": {
       "jlpt": "N1",
@@ -38074,11 +39083,15 @@
       "words_added": [
         "沃土"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "ヨウ",
+        "ヨク"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "沃土"
-      ]
+      ],
+      "readings_restored": 2
     },
     "塑": {
       "jlpt": "N1",
@@ -38094,11 +39107,14 @@
       "words_added": [
         "可塑"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "ソ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "可塑"
-      ]
+      ],
+      "readings_restored": 1
     },
     "痘": {
       "jlpt": "N1",
@@ -38114,11 +39130,14 @@
       "words_added": [
         "天然痘"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "トウ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "天然痘"
-      ]
+      ],
+      "readings_restored": 1
     },
     "憬": {
       "jlpt": "N1",
@@ -38139,31 +39158,16 @@
       "words_added": [
         "憧憬"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ケイ"
+      ],
+      "final_kun_readings": [
+        "あこがれる"
+      ],
       "final_popular_words": [
         "憧憬"
-      ]
-    },
-    "朕": {
-      "jlpt": "N1",
-      "readings_removed": [
-        {
-          "reading": "チン",
-          "type": "on"
-        }
       ],
-      "words_removed": [
-        "朕"
-      ],
-      "words_added": [
-        "朕"
-      ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
-      "final_popular_words": [
-        "朕"
-      ]
+      "readings_restored": 2
     },
     "虞": {
       "jlpt": "N1",
@@ -38184,11 +39188,16 @@
       "words_added": [
         "不虞"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "グ"
+      ],
+      "final_kun_readings": [
+        "おそれ"
+      ],
       "final_popular_words": [
         "不虞"
-      ]
+      ],
+      "readings_restored": 2
     },
     "丙": {
       "jlpt": "N1",
@@ -38209,31 +39218,16 @@
       "words_added": [
         "丙"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ヘイ"
+      ],
+      "final_kun_readings": [
+        "ひのえ"
+      ],
       "final_popular_words": [
         "丙"
-      ]
-    },
-    "斤": {
-      "jlpt": "N1",
-      "readings_removed": [
-        {
-          "reading": "キン",
-          "type": "on"
-        }
       ],
-      "words_removed": [
-        "斤"
-      ],
-      "words_added": [
-        "斤"
-      ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
-      "final_popular_words": [
-        "斤"
-      ]
+      "readings_restored": 2
     },
     "捗": {
       "jlpt": "N1",
@@ -38279,11 +39273,17 @@
       "words_added": [
         "弐"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ニ",
+        "ジ"
+      ],
+      "final_kun_readings": [
+        "ふたつ"
+      ],
       "final_popular_words": [
         "弐"
-      ]
+      ],
+      "readings_restored": 3
     },
     "訃": {
       "jlpt": "N1",
@@ -38299,11 +39299,14 @@
       "words_added": [
         "訃"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "フ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "訃"
-      ]
+      ],
+      "readings_restored": 1
     },
     "謄": {
       "jlpt": "N1",
@@ -38319,11 +39322,14 @@
       "words_added": [
         "戸籍謄本"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "トウ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "戸籍謄本"
-      ]
+      ],
+      "readings_restored": 1
     },
     "繭": {
       "jlpt": "N1",
@@ -38344,11 +39350,16 @@
       "words_added": [
         "二つ繭"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ケン"
+      ],
+      "final_kun_readings": [
+        "まゆ"
+      ],
       "final_popular_words": [
         "二つ繭"
-      ]
+      ],
+      "readings_restored": 2
     },
     "璽": {
       "jlpt": "N1",
@@ -38364,11 +39375,14 @@
       "words_added": [
         "剣璽"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "ジ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "剣璽"
-      ]
+      ],
+      "readings_restored": 1
     },
     "頒": {
       "jlpt": "N1",
@@ -38393,31 +39407,17 @@
       "words_added": [
         "頒布"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "ハン"
+      ],
+      "final_kun_readings": [
+        "わかつ",
+        "わける"
+      ],
       "final_popular_words": [
         "頒布"
-      ]
-    },
-    "錮": {
-      "jlpt": "N1",
-      "readings_removed": [
-        {
-          "reading": "コ",
-          "type": "on"
-        }
       ],
-      "words_removed": [
-        "禁錮"
-      ],
-      "words_added": [
-        "禁錮"
-      ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
-      "final_popular_words": [
-        "禁錮"
-      ]
+      "readings_restored": 3
     },
     "籠": {
       "jlpt": "N1",
@@ -38456,11 +39456,14 @@
       "words_added": [
         "楷"
       ],
-      "final_on_readings": [],
+      "final_on_readings": [
+        "カイ"
+      ],
       "final_kun_readings": [],
       "final_popular_words": [
         "楷"
-      ]
+      ],
+      "readings_restored": 1
     },
     "頰": {
       "jlpt": "N1",
@@ -38486,11 +39489,17 @@
       "words_added": [
         "頰"
       ],
-      "final_on_readings": [],
-      "final_kun_readings": [],
+      "final_on_readings": [
+        "キョウ"
+      ],
+      "final_kun_readings": [
+        "ほお",
+        "ほほ"
+      ],
       "final_popular_words": [
         "頰"
-      ]
+      ],
+      "readings_restored": 3
     }
   },
   "removed_readings_detail": [
