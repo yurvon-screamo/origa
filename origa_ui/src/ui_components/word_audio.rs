@@ -47,6 +47,8 @@ pub fn register_audio(
 fn kata_to_hira(text: &str) -> String {
     text.chars()
         .map(|c| {
+            // Standard katakana range (Katakana small aio -> Ka). Does not cover
+            // extended katakana (ヷヸヹヺ) which never appear in dictionary readings.
             if ('\u{30A1}'..='\u{30F6}').contains(&c) {
                 char::from_u32(c as u32 - 0x60).unwrap_or(c)
             } else {
@@ -139,4 +141,42 @@ where
     audio.set_onerror(Some(on_error.as_ref().unchecked_ref()));
 
     register_audio(audio, None, vec![on_ended, on_error]);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn kata_to_hira_converts_standard() {
+        assert_eq!(kata_to_hira("ヤク"), "やく");
+        assert_eq!(kata_to_hira("ア"), "あ");
+        assert_eq!(kata_to_hira("ン"), "ん");
+    }
+
+    #[test]
+    fn kata_to_hira_preserves_hiragana() {
+        assert_eq!(kata_to_hira("やく"), "やく");
+    }
+
+    #[test]
+    fn kata_to_hira_preserves_other() {
+        assert_eq!(kata_to_hira("hello"), "hello");
+        assert_eq!(kata_to_hira("123"), "123");
+    }
+
+    #[test]
+    fn kata_to_hira_empty() {
+        assert_eq!(kata_to_hira(""), "");
+    }
+
+    #[test]
+    fn kata_to_hira_mixed() {
+        assert_eq!(kata_to_hira("ヤクabc"), "やくabc");
+    }
+
+    #[test]
+    fn kata_to_hira_long_vowel_mark() {
+        assert_eq!(kata_to_hira("バー"), "ばー");
+    }
 }
