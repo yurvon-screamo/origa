@@ -11,6 +11,7 @@ mod import_onboarding_sets;
 mod mark_card_as_known;
 mod migrate_kanji_companions;
 mod rate_card;
+mod removed_popular_words;
 mod seed_ready_phrases;
 mod select_cards_to_lesson;
 mod toggle_favorite;

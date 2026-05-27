@@ -1,10 +1,14 @@
-use tracing::{debug, info};
+use std::collections::HashSet;
+use tracing::{debug, info, warn};
 
 use crate::domain::{Card, OrigaError};
 use crate::traits::UserRepository;
 
+use super::removed_popular_words::REMOVED_POPULAR_WORDS;
+
 pub struct MigrationResult {
     pub kanji_count: usize,
+    pub companions_deleted: usize,
     pub companions_created: usize,
 }
 
@@ -25,6 +29,8 @@ impl<'a, R: UserRepository> MigrateKanjiCompanionsUseCase<'a, R> {
             .await?
             .ok_or(OrigaError::CurrentUserNotExist)?;
 
+        let removed_set: HashSet<&str> = REMOVED_POPULAR_WORDS.iter().copied().collect();
+
         let kanji_chars: Vec<String> = user
             .knowledge_set()
             .study_cards()
@@ -40,11 +46,66 @@ impl<'a, R: UserRepository> MigrateKanjiCompanionsUseCase<'a, R> {
 
         info!(
             kanji_count = kanji_chars.len(),
+            removed_words_count = removed_set.len(),
             "Starting kanji companion migration"
         );
 
+        let total_deleted = Self::delete_removed_companions(&mut user, &removed_set);
+        let total_created = Self::create_missing_companions(&mut user, &kanji_chars);
+
+        self.repository.save_sync(&user).await?;
+
+        info!(
+            kanji_count = kanji_chars.len(),
+            companions_deleted = total_deleted,
+            companions_created = total_created,
+            "Kanji companion migration completed"
+        );
+
+        Ok(MigrationResult {
+            kanji_count: kanji_chars.len(),
+            companions_deleted: total_deleted,
+            companions_created: total_created,
+        })
+    }
+
+    fn delete_removed_companions(
+        user: &mut crate::domain::User,
+        removed_set: &HashSet<&str>,
+    ) -> usize {
+        let cards_to_delete: Vec<_> = user
+            .knowledge_set()
+            .study_cards()
+            .iter()
+            .filter(|(_, sc)| {
+                if let Card::Vocabulary(vocab) = sc.card() {
+                    removed_set.contains(vocab.word().text())
+                } else {
+                    false
+                }
+            })
+            .map(|(id, _)| *id)
+            .collect();
+
+        let mut total_deleted = 0;
+        for card_id in &cards_to_delete {
+            match user.delete_card(*card_id) {
+                Ok(()) => {
+                    total_deleted += 1;
+                    debug!(card_id = %card_id, "Deleted stale companion card");
+                },
+                Err(OrigaError::CardNotFound { .. }) => {},
+                Err(e) => {
+                    warn!(card_id = %card_id, error = %e, "Failed to delete companion card");
+                },
+            }
+        }
+        total_deleted
+    }
+
+    fn create_missing_companions(user: &mut crate::domain::User, kanji_chars: &[String]) -> usize {
         let mut total_created = 0;
-        for kanji_char in &kanji_chars {
+        for kanji_char in kanji_chars {
             let created = user.create_companion_vocab_cards(kanji_char);
             if !created.is_empty() {
                 debug!(
@@ -55,19 +116,7 @@ impl<'a, R: UserRepository> MigrateKanjiCompanionsUseCase<'a, R> {
             }
             total_created += created.len();
         }
-
-        self.repository.save_sync(&user).await?;
-
-        info!(
-            kanji_count = kanji_chars.len(),
-            companions_created = total_created,
-            "Kanji companion migration completed"
-        );
-
-        Ok(MigrationResult {
-            kanji_count: kanji_chars.len(),
-            companions_created: total_created,
-        })
+        total_created
     }
 }
 
@@ -146,5 +195,6 @@ mod tests {
 
         assert_eq!(result.kanji_count, 0);
         assert_eq!(result.companions_created, 0);
+        assert_eq!(result.companions_deleted, 0);
     }
 }
