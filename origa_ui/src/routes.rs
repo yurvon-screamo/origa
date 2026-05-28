@@ -43,6 +43,10 @@ pub fn start_dictionary_loading(
     );
 
     spawn_local(async move {
+        if let Err(e) = crate::repository::cache_manager::check_and_invalidate().await {
+            tracing::warn!("Cache manifest check failed: {e}");
+        }
+
         if let Err(e) = load_vocabulary().await {
             tracing::error!("Failed to load vocabulary: {e}");
         }

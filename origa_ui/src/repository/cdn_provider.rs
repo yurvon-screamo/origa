@@ -11,7 +11,7 @@ use wasm_bindgen_futures::JsFuture;
 
 use crate::core::config::cdn_url;
 
-const CACHE_NAME: &str = "origa-cdn-v1";
+pub const CDN_CACHE_NAME: &str = "origa-cdn-v1";
 
 pub struct CacheFirstCdnProvider;
 
@@ -39,7 +39,7 @@ async fn open_cache() -> Result<web_sys::Cache, OrigaError> {
     })?;
 
     let cache =
-        JsFuture::from(caches.open(CACHE_NAME))
+        JsFuture::from(caches.open(CDN_CACHE_NAME))
             .await
             .map_err(|e| OrigaError::RepositoryError {
                 reason: format!("Failed to open cache: {:?}", e),
