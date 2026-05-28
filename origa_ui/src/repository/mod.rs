@@ -1,3 +1,4 @@
+pub mod cache_manager;
 pub mod cdn_provider;
 mod dictionary_cache;
 mod file_repository;
