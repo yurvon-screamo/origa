@@ -117,7 +117,7 @@ well-known set metadata, and env vars (`ORIGA_CDN_BASE_URL` required, plus optio
 ## Development
 
 ```powershell
-$env:ORIGA_CDN_BASE_URL = "https://storage.yandexcloud.net/origa-data"  # REQUIRED
+$env:ORIGA_CDN_BASE_URL = "https://aws-s3-public-proxy-production-0429.up.railway.app"  # REQUIRED
 cd tauri && cargo tauri dev          # full app (recommended)
 cd origa_ui && trunk serve           # frontend only
 ```

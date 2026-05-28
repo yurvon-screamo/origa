@@ -16,7 +16,7 @@ fn main() {
     let public_base_url = option_env!("ORIGA_PUBLIC_BASE_URL").unwrap_or("");
     let cdn_base_url = env!(
         "ORIGA_CDN_BASE_URL",
-        "ORIGA_CDN_BASE_URL environment variable is required. Set it to your CDN base URL (e.g. https://storage.yandexcloud.net/origa-data)"
+        "ORIGA_CDN_BASE_URL environment variable is required. Set it to your CDN base URL (e.g. https://aws-s3-public-proxy-production-0429.up.railway.app)"
     );
     let cdn_region = option_env!("ORIGA_CDN_REGION").unwrap_or("auto");
 
@@ -497,3 +497,5 @@ fn generate_well_known_meta() {
         output_file.display()
     );
 }
+
+
