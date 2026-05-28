@@ -170,7 +170,9 @@ fn update_rule_content(
         if let Some(rp) = related_patterns {
             lang_obj["related_patterns"] = Value::String(rp.to_string());
         } else {
-            lang_obj.as_object_mut().map(|obj| obj.remove("related_patterns"));
+            lang_obj
+                .as_object_mut()
+                .map(|obj| obj.remove("related_patterns"));
         }
     }
 }
