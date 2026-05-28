@@ -31,7 +31,7 @@ models/      — ML модели
 ## Среда разработки
 
 ```powershell
-$env:ORIGA_CDN_BASE_URL = "https://storage.yandexcloud.net/origa-data"  # ОБЯЗАТЕЛЬНО
+$env:ORIGA_CDN_BASE_URL = "https://aws-s3-public-proxy-production-0429.up.railway.app"  # ОБЯЗАТЕЛЬНО
 cd tauri && cargo tauri dev
 ```
 
@@ -61,19 +61,22 @@ cargo fmt --check && cargo fmt
 
 ## CDN / S3
 
-Yandex Cloud Storage (`s3://origa-data`), CDN URL вшивается через `build.rs`.
+T3 Storage (`s3://adaptable-foodbox-ucep7wx`), CDN URL вшивается через `build.rs`.
 Трейт: `origa/src/traits/cdn_provider.rs`, реализация: `origa_ui/src/repository/cdn_provider.rs`.
 
 Все объекты — статические и immutable, поэтому `Cache-Control: public, max-age=31536000, immutable`.
 
 ```powershell
-aws s3 sync cdn/ s3://origa-data --profile yandex --endpoint-url https://storage.yandexcloud.net --cache-control "public, max-age=31536000, immutable"
+python scripts/deploy_cdn.py            # генерация манифеста + инкрементальный деплой
+python scripts/deploy_cdn.py --dry-run  # показать что будет залито
 ```
+
+Манифест (`manifest.json`) содержит SHA256 хеши 32 версионных файлов и позволяет клиенту обнаруживать обновления. Деплоится с `Cache-Control: no-cache` (единственное исключение из immutable-политики).
 
 Обновить Cache-Control на существующих объектах (one-time):
 
 ```powershell
-aws s3 cp s3://origa-data/ s3://origa-data/ --profile yandex --endpoint-url https://storage.yandexcloud.net --recursive --metadata-directive REPLACE --cache-control "public, max-age=31536000, immutable"
+aws s3 cp s3://adaptable-foodbox-ucep7wx/ s3://adaptable-foodbox-ucep7wx/ --profile origa --endpoint-url https://t3.storageapi.dev --recursive --metadata-directive REPLACE --cache-control "public, max-age=31536000, immutable"
 ```
 
 ## CI/CD
