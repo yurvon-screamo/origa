@@ -88,7 +88,9 @@ pub fn GrammarDetailDrawer(
     });
     let related_patterns = Memo::new(move |_| {
         grammar_rule.and_then(|r| {
-            r.content(&native_language.get()).related_patterns().map(|s| s.to_string())
+            r.content(&native_language.get())
+                .related_patterns()
+                .map(|s| s.to_string())
         })
     });
     let has_quiz = grammar_rule.map(|r| r.has_format_map()).unwrap_or(false);
