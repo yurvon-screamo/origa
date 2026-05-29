@@ -262,4 +262,27 @@ pub enum Commands {
         #[arg(long)]
         english_only: bool,
     },
+
+    /// Enrich phrase index with grammar rule detection
+    EnrichPhrasesWithGrammar {
+        /// Input phrase_index.json path
+        #[arg(short, long)]
+        input: PathBuf,
+
+        /// Directory containing chunk data files (p*.json)
+        #[arg(long)]
+        chunks_dir: PathBuf,
+
+        /// Path to grammar.json
+        #[arg(short, long)]
+        grammar: PathBuf,
+
+        /// Output enriched phrase_index.json path
+        #[arg(short, long)]
+        output: PathBuf,
+
+        /// Dictionary directory for tokenizer (optional, uses default path)
+        #[arg(long)]
+        dictionary_dir: Option<PathBuf>,
+    },
 }

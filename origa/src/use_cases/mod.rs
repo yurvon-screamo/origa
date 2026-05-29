@@ -42,6 +42,7 @@ pub use mark_card_as_known::MarkCardAsKnownUseCase;
 pub use migrate_kanji_companions::{MigrateKanjiCompanionsUseCase, MigrationResult};
 pub use rate_card::RateCardUseCase;
 pub use seed_ready_phrases::SeedReadyPhrasesUseCase;
+pub use seed_ready_phrases::collect_known_grammar_rules;
 pub use select_cards_to_lesson::SelectCardsToLessonUseCase;
 pub use toggle_favorite::ToggleFavoriteUseCase;
 pub use transcribe_audio::TranscribeAudioUseCase;

@@ -1,6 +1,7 @@
 use serde::Serialize;
 
 use super::{PartOfSpeech, TokenInfo};
+use crate::dictionary::grammar::GRAMMAR_RULES;
 use crate::dictionary::vocabulary::get_translation;
 use crate::domain::NativeLanguage;
 
@@ -11,6 +12,7 @@ pub struct TokenTranslation {
     pub reading: String,
     pub pos: PartOfSpeech,
     pub translation: Option<String>,
+    pub grammar_label: Option<String>,
 }
 
 pub fn lookup_tokens_translations(
@@ -22,6 +24,11 @@ pub fn lookup_tokens_translations(
         .map(|token| {
             let base_form = token.orthographic_base_form().to_string();
             let translation = get_translation(&base_form, native_language);
+            let grammar_label = resolve_grammar_label(
+                token.orthographic_surface_form(),
+                token.part_of_speech(),
+                native_language,
+            );
 
             TokenTranslation {
                 surface_form: token.orthographic_surface_form().to_string(),
@@ -29,9 +36,30 @@ pub fn lookup_tokens_translations(
                 reading: token.phonological_surface_form().to_string(),
                 pos: token.part_of_speech().clone(),
                 translation,
+                grammar_label,
             }
         })
         .collect()
+}
+
+fn resolve_grammar_label(
+    surface: &str,
+    pos: &PartOfSpeech,
+    native_language: &NativeLanguage,
+) -> Option<String> {
+    if pos.is_vocabulary_word() {
+        return None;
+    }
+
+    let rules = GRAMMAR_RULES.get()?;
+    for rule in rules.iter() {
+        for group in rule.keywords().iter() {
+            if group.iter().any(|kw| surface == kw) {
+                return Some(rule.content(native_language).title().to_string());
+            }
+        }
+    }
+    None
 }
 
 #[cfg(test)]

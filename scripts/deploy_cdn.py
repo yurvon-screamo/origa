@@ -95,16 +95,30 @@ def s3_uri(key: str) -> str:
     return f"s3://{S3_BUCKET}/{key}"
 
 
+def run_aws_raw(args: list[str]) -> subprocess.CompletedProcess[str]:
+    cmd = ["aws", *args]
+    try:
+        return subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            shell=True,
+        )
+    except FileNotFoundError:
+        print(
+            "ERROR: 'aws' CLI not found. Install:"
+            " https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+
 def run_aws(args: list[str], dry_run: bool) -> subprocess.CompletedProcess[str]:
     if dry_run:
         print(f"  [DRY-RUN] aws {' '.join(args)}")
         return subprocess.CompletedProcess(args, 0, "", "")
 
-    result = subprocess.run(
-        ["aws", *args],
-        capture_output=True,
-        text=True,
-    )
+    result = run_aws_raw(args)
     if result.returncode != 0:
         print(f"ERROR: aws {' '.join(args)}", file=sys.stderr)
         print(result.stderr, file=sys.stderr)
@@ -116,30 +130,20 @@ def download_remote_manifest(dry_run: bool) -> dict[str, object] | None:
     with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as tmp:
         tmp_path = Path(tmp.name)
 
-    result = subprocess.run(
-        [
-            "aws",
-            "s3",
-            "cp",
-            s3_uri("manifest.json"),
-            str(tmp_path),
-            "--profile",
-            S3_PROFILE,
-            "--endpoint-url",
-            S3_ENDPOINT,
-        ],
-        capture_output=True,
-        text=True,
-    )
+    if dry_run:
+        print("  [DRY-RUN] would download remote manifest")
+        return None
+
+    result = run_aws_raw([
+        "s3", "cp", s3_uri("manifest.json"), str(tmp_path),
+        "--profile", S3_PROFILE, "--endpoint-url", S3_ENDPOINT,
+    ])
 
     if result.returncode != 0:
         if "404" in result.stderr or "NoSuchKey" in result.stderr:
-            print("Remote manifest not found (first deployment)")
+            print("  Remote manifest not found (first deployment)")
             return None
-        if dry_run:
-            print("  [DRY-RUN] assuming no remote manifest exists")
-            return None
-        print(f"ERROR: failed to download remote manifest", file=sys.stderr)
+        print("ERROR: failed to download remote manifest", file=sys.stderr)
         print(result.stderr, file=sys.stderr)
         sys.exit(1)
 
