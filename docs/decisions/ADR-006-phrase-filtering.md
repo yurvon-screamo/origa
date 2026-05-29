@@ -19,7 +19,7 @@ Additionally, some phrases contained tokens not present in the vocabulary dictio
 Four filtering strategies were evaluated on the full dataset using sudachipy for POS tagging:
 
 | Strategy | Removed | False Positive Estimate |
-|----------|---------|------------------------|
+| :--- | :--- | :--- |
 | Token count ≥ 3 | 20,027 (12.7%) | Too aggressive — removes all 2-token phrases |
 | POS combinations (verb OR noun+adj OR noun+adv) | 12,584 (8.0%) | ~50% false positives — removes adj-only phrases, pron+adj, copula-dropped sentences |
 | Combined (≤2 tokens AND no verb AND no adj) | 6,345 (4.0%) | 82.6% false positives — ignores copula (だ/です) and particles in full text |
