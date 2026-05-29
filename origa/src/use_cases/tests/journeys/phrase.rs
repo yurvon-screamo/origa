@@ -3,7 +3,8 @@ use ulid::Ulid;
 
 use crate::dictionary::phrase::{cache_phrase_details, init_phrase_index};
 use crate::domain::{
-    Card, NativeLanguage, OrigaError, PhraseCard, RateMode, Rating, StudyCard, User,
+    Card, GrammarRuleCard, NativeLanguage, OrigaError, PhraseCard, RateMode, Rating, StudyCard,
+    User,
 };
 use crate::traits::UserRepository;
 use crate::use_cases::CreatePhraseCardUseCase;
@@ -12,12 +13,20 @@ use crate::use_cases::tests::fixtures::{InMemoryUserRepository, init_real_dictio
 
 static PHRASE_INIT: OnceLock<()> = OnceLock::new();
 
+fn grammar_rule_id_1() -> Ulid {
+    Ulid::from_string("01KJ9AVWBGC2BT0DMFPDYYFEWB").expect("valid ULID")
+}
+
+fn grammar_rule_id_2() -> Ulid {
+    Ulid::from_string("01G00000000000000024000000").expect("valid ULID")
+}
+
 fn init_test_phrases() {
     PHRASE_INIT.get_or_init(|| {
         let index_json = r#"{"v":1,"h":"test","total":4,"phrases":[
             {"i":"01KPJ5S3N1DRFFD236Z4EZ03HJ","t":["test","hello"],"c":0},
-            {"i":"01KPJ5S3N1DRFFD236Z4EZ03HK","t":["test","bye"],"c":0},
-            {"i":"01KPJ5S3N1DRFFD236Z4EZ03HN","t":["test","morning"],"c":0},
+            {"i":"01KPJ5S3N1DRFFD236Z4EZ03HK","t":["test","bye"],"c":0,"g":["01KJ9AVWBGC2BT0DMFPDYYFEWB"]},
+            {"i":"01KPJ5S3N1DRFFD236Z4EZ03HN","t":["test","morning"],"c":0,"g":["01KJ9AVWBGC2BT0DMFPDYYFEWB","01G00000000000000024000000"]},
             {"i":"01KPJ5S3N1DRFFD236Z4EZ03HM","t":["test","thanks"],"c":0}
         ]}"#;
         init_phrase_index(index_json).expect("Failed to init phrase index");
@@ -253,6 +262,15 @@ fn create_user_with_known_words(words: &[&str]) -> User {
     user
 }
 
+fn add_known_grammar_card(user: &mut User, rule_id: Ulid) {
+    let study_card = user
+        .create_card(Card::Grammar(GrammarRuleCard::new_test_with_id(rule_id)))
+        .expect("Failed to create grammar card");
+    user.knowledge_set_mut()
+        .mark_card_as_known(*study_card.card_id())
+        .expect("Failed to mark grammar card as known");
+}
+
 #[tokio::test]
 async fn seed_ready_phrases_repeated_execute_returns_zero() {
     setup();
@@ -311,5 +329,151 @@ async fn seed_ready_phrases_finds_new_phrases_after_more_known_words() {
     assert!(
         second > 0,
         "Seed should find new phrases after more words become known"
+    );
+}
+
+#[tokio::test]
+async fn t4_1_phrase_without_grammar_rules_included_when_tokens_known() {
+    setup();
+
+    let user = create_user_with_known_words(&["test", "hello"]);
+    let repo = InMemoryUserRepository::with_user(user);
+    let use_case = SeedReadyPhrasesUseCase::new(&repo);
+
+    let count = use_case.execute().await.expect("Execute failed");
+
+    let saved = repo
+        .get_current_user()
+        .await
+        .expect("repo error")
+        .expect("user exists");
+
+    let has_hello_phrase = saved
+        .knowledge_set()
+        .study_cards()
+        .values()
+        .any(|sc| matches!(sc.card(), Card::Phrase(p) if *p.phrase_id() == phrase_id_hello()));
+
+    assert!(
+        has_hello_phrase,
+        "Phrase without grammar rules should be seeded"
+    );
+    assert!(count > 0);
+}
+
+#[tokio::test]
+async fn t4_2_phrase_with_known_grammar_rules_included() {
+    setup();
+
+    let user = create_user_with_known_words(&["test", "bye"]);
+    let repo = InMemoryUserRepository::with_user(user);
+    let use_case = SeedReadyPhrasesUseCase::new(&repo);
+
+    let count = use_case.execute().await.expect("Execute failed");
+
+    let saved = repo
+        .get_current_user()
+        .await
+        .expect("repo error")
+        .expect("user exists");
+
+    let has_bye_phrase =
+        saved.knowledge_set().study_cards().values().any(
+            |sc| matches!(sc.card(), Card::Phrase(p) if *p.phrase_id() == phrase_id_goodbye()),
+        );
+
+    assert!(
+        !has_bye_phrase,
+        "Phrase with unknown grammar rule should NOT be seeded"
+    );
+    assert_eq!(count, 0, "No phrases should be seeded");
+}
+
+#[tokio::test]
+async fn t4_4_phrase_with_partial_grammar_known_excluded() {
+    setup();
+
+    let mut user = create_user_with_known_words(&["test", "morning"]);
+    add_known_grammar_card(&mut user, grammar_rule_id_1());
+
+    let repo = InMemoryUserRepository::with_user(user);
+    let use_case = SeedReadyPhrasesUseCase::new(&repo);
+
+    let count = use_case.execute().await.expect("Execute failed");
+
+    let saved = repo
+        .get_current_user()
+        .await
+        .expect("repo error")
+        .expect("user exists");
+
+    let has_morning_phrase =
+        saved.knowledge_set().study_cards().values().any(
+            |sc| matches!(sc.card(), Card::Phrase(p) if *p.phrase_id() == phrase_id_morning()),
+        );
+
+    assert!(
+        !has_morning_phrase,
+        "Phrase with only partial grammar rules known should NOT be seeded"
+    );
+    assert_eq!(count, 0, "No phrases should be seeded");
+}
+
+#[tokio::test]
+async fn t4_5_all_grammar_rules_known_includes_phrase() {
+    setup();
+
+    let mut user = create_user_with_known_words(&["test", "morning"]);
+    add_known_grammar_card(&mut user, grammar_rule_id_1());
+    add_known_grammar_card(&mut user, grammar_rule_id_2());
+
+    let repo = InMemoryUserRepository::with_user(user);
+    let use_case = SeedReadyPhrasesUseCase::new(&repo);
+
+    let count = use_case.execute().await.expect("Execute failed");
+
+    let saved = repo
+        .get_current_user()
+        .await
+        .expect("repo error")
+        .expect("user exists");
+
+    let has_morning_phrase =
+        saved.knowledge_set().study_cards().values().any(
+            |sc| matches!(sc.card(), Card::Phrase(p) if *p.phrase_id() == phrase_id_morning()),
+        );
+
+    assert!(
+        has_morning_phrase,
+        "Phrase with all grammar rules known should be seeded"
+    );
+    assert!(count > 0);
+}
+
+#[tokio::test]
+async fn t4_6_combined_hash_changes_when_grammar_becomes_known() {
+    setup();
+
+    let user = create_user_with_known_words(&["test", "bye"]);
+    let repo = InMemoryUserRepository::with_user(user);
+    let use_case = SeedReadyPhrasesUseCase::new(&repo);
+
+    let first = use_case.execute().await.expect("First execute failed");
+    assert_eq!(first, 0, "No phrases seeded without known grammar");
+
+    {
+        let mut saved = repo
+            .get_current_user()
+            .await
+            .expect("repo error")
+            .expect("user exists");
+        add_known_grammar_card(&mut saved, grammar_rule_id_1());
+        repo.save(&saved).await.expect("Failed to save");
+    }
+
+    let second = use_case.execute().await.expect("Second execute failed");
+    assert!(
+        second > 0,
+        "New grammar knowledge should trigger re-seeding and find the phrase"
     );
 }

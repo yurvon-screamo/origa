@@ -38,9 +38,12 @@ impl<'a, R: UserRepository> SeedReadyPhrasesUseCase<'a, R> {
 
         let orphaned_removed = remove_orphaned_phrase_cards(&mut user);
 
-        let known_words = {
+        let (known_words, known_grammar) = {
             let study_cards = user.knowledge_set().study_cards();
-            collect_known_vocabulary_words(study_cards)
+            (
+                collect_known_vocabulary_words(study_cards),
+                collect_known_grammar_rules(study_cards),
+            )
         };
 
         if known_words.is_empty() {
@@ -50,7 +53,7 @@ impl<'a, R: UserRepository> SeedReadyPhrasesUseCase<'a, R> {
             return Ok(0);
         }
 
-        let current_hash = compute_known_words_hash(&known_words);
+        let current_hash = compute_combined_hash(&known_words, &known_grammar);
         if current_hash == user.known_vocab_hash() {
             if orphaned_removed > 0 || grammar_orphaned_removed > 0 {
                 user.set_known_vocab_hash(current_hash);
@@ -61,7 +64,8 @@ impl<'a, R: UserRepository> SeedReadyPhrasesUseCase<'a, R> {
 
         let study_cards = user.knowledge_set().study_cards();
         let existing_phrase_ids = collect_existing_phrase_ids(study_cards);
-        let ready_phrase_ids = find_ready_phrases(&known_words, &existing_phrase_ids);
+        let ready_phrase_ids =
+            find_ready_phrases(&known_words, &known_grammar, &existing_phrase_ids);
 
         let mut created_count = 0;
         for phrase_id in &ready_phrase_ids {
@@ -100,13 +104,37 @@ fn collect_known_vocabulary_words(study_cards: &HashMap<Ulid, StudyCard>) -> Has
         .collect()
 }
 
-fn compute_known_words_hash(known_words: &HashSet<String>) -> u32 {
+pub fn collect_known_grammar_rules(study_cards: &HashMap<Ulid, StudyCard>) -> HashSet<Ulid> {
+    study_cards
+        .values()
+        .filter_map(|sc| {
+            if let Card::Grammar(grammar_card) = sc.card() {
+                if sc.memory().is_known_card() {
+                    return Some(*grammar_card.rule_id());
+                }
+            }
+            None
+        })
+        .collect()
+}
+
+fn compute_combined_hash(known_words: &HashSet<String>, known_grammar: &HashSet<Ulid>) -> u32 {
+    use std::collections::hash_map::DefaultHasher;
+
+    let mut hasher = DefaultHasher::new();
+
     let mut words: Vec<&String> = known_words.iter().collect();
     words.sort();
-    let mut hasher = std::collections::hash_map::DefaultHasher::new();
     for word in &words {
         word.hash(&mut hasher);
     }
+
+    let mut rules: Vec<&Ulid> = known_grammar.iter().collect();
+    rules.sort();
+    for rule in &rules {
+        rule.hash(&mut hasher);
+    }
+
     hasher.finish() as u32
 }
 
@@ -191,6 +219,7 @@ fn remove_orphaned_grammar_cards(user: &mut crate::domain::User) -> usize {
 
 fn find_ready_phrases(
     known_words: &HashSet<String>,
+    known_grammar: &HashSet<Ulid>,
     existing_phrase_ids: &HashSet<Ulid>,
 ) -> Vec<Ulid> {
     let mut seen_phrase_ids: HashSet<Ulid> = HashSet::new();
@@ -209,9 +238,20 @@ fn find_ready_phrases(
                 .iter()
                 .all(|token| known_words.contains(token));
 
-            if all_tokens_known {
-                result.push(*phrase_id);
+            if !all_tokens_known {
+                continue;
             }
+
+            let grammar_ready = entry
+                .grammar_rules()
+                .iter()
+                .all(|rule_id| known_grammar.contains(rule_id));
+
+            if !grammar_ready {
+                continue;
+            }
+
+            result.push(*phrase_id);
         }
     }
 
@@ -359,6 +399,99 @@ mod tests {
             remaining
                 .values()
                 .any(|sc| matches!(sc.card(), Card::Phrase(_)))
+        );
+    }
+
+    #[test]
+    fn collect_known_grammar_rules_returns_empty_for_no_grammar_cards() {
+        let mut user = create_test_user();
+        user.create_card(Card::Vocabulary(crate::domain::VocabularyCard::new(
+            crate::domain::value_objects::Question::new("test".to_string()).unwrap(),
+        )))
+        .unwrap();
+
+        let study_cards = user.knowledge_set().study_cards();
+        let result = collect_known_grammar_rules(study_cards);
+
+        assert!(result.is_empty());
+    }
+
+    #[test]
+    fn collect_known_grammar_rules_returns_ids_for_known_grammar_cards() {
+        let mut user = create_test_user();
+        let rule_id = Ulid::new();
+        let study_card = user
+            .create_card(Card::Grammar(GrammarRuleCard::new_test_with_id(rule_id)))
+            .unwrap();
+        user.knowledge_set_mut()
+            .mark_card_as_known(*study_card.card_id())
+            .unwrap();
+
+        let study_cards = user.knowledge_set().study_cards();
+        let result = collect_known_grammar_rules(study_cards);
+
+        assert_eq!(result.len(), 1);
+        assert!(result.contains(&rule_id));
+    }
+
+    #[test]
+    fn collect_known_grammar_rules_excludes_unknown_grammar_cards() {
+        let mut user = create_test_user();
+        let rule_id = Ulid::new();
+        user.create_card(Card::Grammar(GrammarRuleCard::new_test_with_id(rule_id)))
+            .unwrap();
+
+        let study_cards = user.knowledge_set().study_cards();
+        let result = collect_known_grammar_rules(study_cards);
+
+        assert!(
+            result.is_empty(),
+            "New (not-yet-known) grammar cards should be excluded"
+        );
+    }
+
+    #[test]
+    fn compute_combined_hash_differs_when_grammar_changes() {
+        let words: HashSet<String> = ["hello".to_string(), "test".to_string()]
+            .into_iter()
+            .collect();
+
+        let grammar_empty: HashSet<Ulid> = HashSet::new();
+        let grammar_with_rule: HashSet<Ulid> = [Ulid::new()].into_iter().collect();
+
+        let hash_empty = compute_combined_hash(&words, &grammar_empty);
+        let hash_with_rule = compute_combined_hash(&words, &grammar_with_rule);
+
+        assert_ne!(
+            hash_empty, hash_with_rule,
+            "Hash should change when grammar rules are added"
+        );
+    }
+
+    #[test]
+    fn compute_combined_hash_same_for_identical_inputs() {
+        let words: HashSet<String> = ["hello".to_string()].into_iter().collect();
+        let rules: HashSet<Ulid> = [Ulid::from_string("01KPG000000000000000000001").unwrap()]
+            .into_iter()
+            .collect();
+
+        let hash1 = compute_combined_hash(&words, &rules);
+        let hash2 = compute_combined_hash(&words, &rules);
+
+        assert_eq!(hash1, hash2);
+    }
+
+    #[test]
+    fn compute_combined_hash_differs_from_words_only_hash() {
+        let words: HashSet<String> = ["hello".to_string()].into_iter().collect();
+        let rules: HashSet<Ulid> = [Ulid::new()].into_iter().collect();
+
+        let hash_words_only = compute_combined_hash(&words, &HashSet::new());
+        let hash_with_grammar = compute_combined_hash(&words, &rules);
+
+        assert_ne!(
+            hash_words_only, hash_with_grammar,
+            "Combined hash should differ from words-only hash"
         );
     }
 }

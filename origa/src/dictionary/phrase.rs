@@ -23,6 +23,7 @@ pub struct IndexEntry {
     id: Ulid,
     tokens: Vec<String>,
     chunk_id: u32,
+    grammar_rules: Vec<Ulid>,
 }
 
 impl IndexEntry {
@@ -36,6 +37,10 @@ impl IndexEntry {
 
     pub fn chunk_id(&self) -> u32 {
         self.chunk_id
+    }
+
+    pub fn grammar_rules(&self) -> &[Ulid] {
+        &self.grammar_rules
     }
 }
 
@@ -57,6 +62,8 @@ struct IndexEntryRaw {
     tokens: Vec<String>,
     #[serde(rename = "c")]
     chunk_id: u32,
+    #[serde(rename = "g", default)]
+    grammar_rules: Option<Vec<String>>,
 }
 
 impl PhraseIndex {
@@ -74,12 +81,19 @@ impl PhraseIndex {
             for token in &raw.tokens {
                 token_to_phrases.entry(token.clone()).or_default().push(id);
             }
+            let grammar_rules: Vec<Ulid> = raw
+                .grammar_rules
+                .unwrap_or_default()
+                .into_iter()
+                .filter_map(|s| Ulid::from_string(&s).ok())
+                .collect();
             entries.insert(
                 id,
                 IndexEntry {
                     id,
                     tokens: raw.tokens,
                     chunk_id: raw.chunk_id,
+                    grammar_rules,
                 },
             );
         }
@@ -286,6 +300,10 @@ mod tests {
         r#"{"v":1,"h":"test","total":2,"phrases":[{"i":"01KPJ5S3N1DRFFD236Z4EZ03HJ","t":["hello","world"],"c":0},{"i":"01KPJ5S3N1DRFFD236Z4EZ03HK","t":["goodbye","world"],"c":0}]}"#
     }
 
+    fn test_index_json_with_grammar() -> &'static str {
+        r#"{"v":1,"h":"test","total":1,"phrases":[{"i":"01KPJ5S3N1DRFFD236Z4EZ03HJ","t":["hello","world"],"c":0,"g":["01KPJ5S3N1DRFFD236Z4EZ03HK","01KPJ5S3N1DRFFD236Z4EZ03HM"]}]}"#
+    }
+
     fn test_chunk_json() -> &'static str {
         r#"[{"i":"01KPJ5S3N1DRFFD236Z4EZ03HJ","x":"Hello world","ru":"Привет мир","en":"Hello world"},{"i":"01KPJ5S3N1DRFFD236Z4EZ03HK","x":"Goodbye world","ru":"Прощай мир","en":"Goodbye world"}]"#
     }
@@ -377,5 +395,38 @@ mod tests {
         assert_eq!(raw_list[0].text, "Hello world");
         assert_eq!(raw_list[0].translation_ru, Some("Привет мир".to_string()));
         assert!(raw_list[0].translation_en.is_some());
+    }
+
+    #[test]
+    fn grammar_rules_parsed_from_g_field() {
+        let index = PhraseIndex::from_json(test_index_json_with_grammar()).expect("valid JSON");
+        let id = Ulid::from_string("01KPJ5S3N1DRFFD236Z4EZ03HJ").expect("valid ULID");
+        let entry = index.get_entry(&id).expect("entry should exist");
+        assert_eq!(entry.grammar_rules().len(), 2);
+        assert_eq!(
+            entry.grammar_rules()[0],
+            Ulid::from_string("01KPJ5S3N1DRFFD236Z4EZ03HK").unwrap()
+        );
+        assert_eq!(
+            entry.grammar_rules()[1],
+            Ulid::from_string("01KPJ5S3N1DRFFD236Z4EZ03HM").unwrap()
+        );
+    }
+
+    #[test]
+    fn grammar_rules_empty_when_g_field_absent() {
+        let index = PhraseIndex::from_json(test_index_json()).expect("valid JSON");
+        let id = Ulid::from_string("01KPJ5S3N1DRFFD236Z4EZ03HJ").expect("valid ULID");
+        let entry = index.get_entry(&id).expect("entry should exist");
+        assert!(entry.grammar_rules().is_empty());
+    }
+
+    #[test]
+    fn grammar_rules_accessor_returns_slice() {
+        let index = PhraseIndex::from_json(test_index_json_with_grammar()).expect("valid JSON");
+        let id = Ulid::from_string("01KPJ5S3N1DRFFD236Z4EZ03HJ").expect("valid ULID");
+        let entry = index.get_entry(&id).expect("entry should exist");
+        let rules = entry.grammar_rules();
+        assert_eq!(rules.len(), 2);
     }
 }

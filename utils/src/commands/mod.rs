@@ -1,5 +1,6 @@
 mod build_phrase_dataset;
 mod dedup_kanji_readings;
+mod enrich_phrases_with_grammar;
 mod find_missing;
 mod generate_grammar;
 mod generate_grammar_prompt;
@@ -13,6 +14,7 @@ mod validate_dictionary;
 
 pub use build_phrase_dataset::run_build_phrase_dataset;
 pub use dedup_kanji_readings::run_dedup_kanji_readings;
+pub use enrich_phrases_with_grammar::run_enrich_phrases_with_grammar;
 pub use find_missing::run_find_missing;
 pub use generate_grammar::run_generate_grammar;
 pub use generate_grammar_prompt::run_generate_grammar_prompt;

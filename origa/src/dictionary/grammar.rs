@@ -81,6 +81,8 @@ pub struct GrammarRule {
     level: JapaneseLevel,
     content: HashMap<NativeLanguage, GrammarRuleContent>,
     format_map: Option<HashMap<PartOfSpeech, Vec<FormatAction>>>,
+    #[serde(default)]
+    keywords: Vec<Vec<String>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -308,6 +310,24 @@ impl GrammarRule {
             level,
             content,
             format_map,
+            keywords: vec![],
+        }
+    }
+
+    #[cfg(test)]
+    pub fn new_with_keywords(
+        rule_id: Ulid,
+        level: JapaneseLevel,
+        content: HashMap<NativeLanguage, GrammarRuleContent>,
+        format_map: Option<HashMap<PartOfSpeech, Vec<FormatAction>>>,
+        keywords: Vec<Vec<String>>,
+    ) -> Self {
+        Self {
+            rule_id,
+            level,
+            content,
+            format_map,
+            keywords,
         }
     }
 
@@ -340,6 +360,10 @@ impl GrammarRule {
 
     pub fn has_format_map(&self) -> bool {
         self.format_map.is_some()
+    }
+
+    pub fn keywords(&self) -> &[Vec<String>] {
+        &self.keywords
     }
 }
 
