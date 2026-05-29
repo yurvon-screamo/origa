@@ -1262,18 +1262,18 @@ mod tests {
         }
 
         #[test]
-        fn f12_nakereba_bug_reveal_not_detected() {
+        fn f12_nakereba_wrong_chain_reveal_not_detected() {
             let rules = all_test_rules();
             let tokens = vec![make_verb_token("行く")];
             let result = detect_format_map_rules("行かなければなりません", &tokens, &rules);
             assert!(
                 !result.contains(&nakereba_id()),
-                "BUG: なければなりません should NOT be detected due to wrong format_map chain, got: {:?}",
+                "REGRESSION: なければなりません should NOT be detected due to wrong format_map chain, got: {:?}",
                 result
             );
         }
 
-        // F12_FIX: Verify that ReplacePostfix fixes the nai-chain bug.
+        // F12_FIX: Verify that ReplacePostfix fixes the nai-chain issue.
         // Rule uses: [VerbToNai, ReplacePostfix { old: "ない", new: "なければなりません" }]
         #[test]
         fn f12_fix_nakereba_now_detected_with_replace_postfix() {
