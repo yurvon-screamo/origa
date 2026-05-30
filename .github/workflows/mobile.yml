@@ -1,10 +1,11 @@
 name: Mobile Build
 
 on:
-    workflow_run:
-        workflows: ["Build Tauri App"]
-        types:
-            - completed
+    push:
+        branches:
+            - master
+        tags:
+            - 'v*.*.*'
     workflow_dispatch:
 
 concurrency:
@@ -23,7 +24,6 @@ jobs:
         uses: ./.github/workflows/version.yml
 
     build:
-        if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
         needs: [version]
         strategy:
             fail-fast: false
@@ -178,7 +178,6 @@ jobs:
 
     release:
         name: Update Latest Release
-        if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
         needs: [version, build]
         uses: ./.github/workflows/reusable-release.yml
         with:
