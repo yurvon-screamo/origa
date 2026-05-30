@@ -1,0 +1,132 @@
+name: CI
+
+on:
+    pull_request:
+        branches: [master]
+    push:
+        branches: [master]
+        paths-ignore: ['docs/**', '*.md', 'scripts/**', 'cdn/**']
+    workflow_dispatch:
+
+concurrency:
+    group: ci-${{ github.ref }}
+    cancel-in-progress: true
+
+env:
+    CARGO_TERM_COLOR: always
+
+jobs:
+    lint:
+        name: Lint
+        runs-on: ubuntu-24.04
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Setup Rust
+              uses: ./.github/actions/setup-rust
+              with:
+                  shared-key: origa-ci
+
+            - name: Check formatting
+              run: cargo fmt --check --all
+
+            - name: Run clippy
+              run: cargo clippy --workspace --all-targets -- -D warnings
+
+    test:
+        name: Test
+        runs-on: ubuntu-24.04
+        env:
+            ORIGA_CDN_BASE_URL: ${{ vars.ORIGA_CDN_BASE_URL }}
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Cache APT packages
+              uses: awalsh128/cache-apt-pkgs-action@latest
+              with:
+                  packages: libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+                      protobuf-compiler libspeechd-dev
+                  version: 1.0
+
+            - name: Setup Rust
+              uses: ./.github/actions/setup-rust
+              with:
+                  targets: wasm32-unknown-unknown
+                  shared-key: origa-ci
+
+            - name: Cache UniDic dictionary
+              uses: actions/cache@v4
+              with:
+                  path: origa_ui/public/dictionaries/unidic
+                  key: unidic-dict-v1-${{ hashFiles('origa_ui/build.rs') }}
+                  restore-keys: unidic-dict-v1-
+
+            - name: Run tests
+              run: cargo test --workspace
+
+    e2e:
+        name: E2E Tests
+        if: github.event_name == 'workflow_dispatch'
+        runs-on: ubuntu-24.04
+        env:
+            ORIGA_CDN_BASE_URL: ${{ vars.ORIGA_CDN_BASE_URL }}
+            TRAILBASE_URL: ${{ vars.ORIGA_CDN_BASE_URL }}
+            ORIGA_ADMIN_EMAIL: ${{ secrets.ORIGA_ADMIN_EMAIL }}
+            ORIGA_ADMIN_PASSWORD: ${{ secrets.ORIGA_ADMIN_PASSWORD }}
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Cache APT packages
+              uses: awalsh128/cache-apt-pkgs-action@latest
+              with:
+                  packages: libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+                      protobuf-compiler libspeechd-dev
+                  version: 1.0
+
+            - name: Setup Rust
+              uses: ./.github/actions/setup-rust
+              with:
+                  targets: wasm32-unknown-unknown
+                  shared-key: origa-ci
+
+            - name: Setup Frontend
+              uses: ./.github/actions/setup-frontend
+              with:
+                  tools: trunk
+
+            - name: Cache UniDic dictionary
+              uses: actions/cache@v4
+              with:
+                  path: origa_ui/public/dictionaries/unidic
+                  key: unidic-dict-v1-${{ hashFiles('origa_ui/build.rs') }}
+                  restore-keys: unidic-dict-v1-
+
+            - name: Install Node.js dependencies
+              working-directory: end2end
+              run: npm ci
+
+            - name: Install Playwright browsers
+              run: npx playwright install --with-deps chromium
+              working-directory: end2end
+
+            - name: Run Playwright tests
+              working-directory: end2end
+              run: npx playwright test
+
+            - name: Upload Playwright report
+              if: failure()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: playwright-report
+                  path: end2end/playwright-report/
+                  retention-days: 7
+
+    check:
+        name: CI Gate
+        needs: [lint, test]
+        runs-on: ubuntu-latest
+        steps:
+            - run: echo "All checks passed"
