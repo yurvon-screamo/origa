@@ -15,6 +15,7 @@ use super::dictionary_cache::RKYV_CACHE_NAME;
 #[cfg(target_arch = "wasm32")]
 const MANIFEST_CACHE_KEY: &str = "__origa_cache_manifest__";
 
+#[cfg_attr(not(target_arch = "wasm32"), allow(dead_code))]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CacheManifest {
     pub version: u32,
@@ -41,8 +42,21 @@ pub async fn check_and_invalidate() -> Result<(), OrigaError> {
     let local = get_local_manifest(&cache).await;
 
     let Some(local) = local else {
+        let all_paths: Vec<String> = remote.files.keys().cloned().collect();
+        invalidate_stale_entries(&cache, &all_paths).await;
+
+        let has_dict = all_paths.iter().any(|p| p.starts_with("dictionaries/"));
+        if has_dict {
+            if let Err(e) = invalidate_rkyv_dictionary().await {
+                tracing::warn!(error = ?e, "Failed to invalidate rkyv dictionary cache");
+            }
+        }
+
         save_local_manifest(&cache, &remote).await?;
-        tracing::info!("First run — saved initial cache manifest");
+        tracing::info!(
+            invalidated = all_paths.len(),
+            "First run — cleared pre-manifest cache entries"
+        );
         return Ok(());
     };
 
@@ -183,6 +197,7 @@ async fn get_local_manifest(cache: &web_sys::Cache) -> Option<CacheManifest> {
         .ok()
 }
 
+#[cfg_attr(not(target_arch = "wasm32"), allow(dead_code))]
 fn find_stale_entries(local: &CacheManifest, remote: &CacheManifest) -> Vec<String> {
     local
         .files
@@ -350,7 +365,7 @@ mod tests {
         };
         let remote = CacheManifest {
             version: 2,
-            files: files,
+            files,
         };
 
         let stale = find_stale_entries(&local, &remote);
