@@ -1,24 +1,37 @@
 <!doctype html>
 <html lang="ru">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="theme-color" content="#3d4535" />
+        <meta
+            name="description"
+            content="Japanese language learning application"
+        />
+        <meta
+            http-equiv="Content-Security-Policy"
+            content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://s3-proxy-production-52e3.up.railway.app https://origa.uwuwu.net https://huggingface.co; img-src 'self' data: blob: https://s3-proxy-production-52e3.up.railway.app; media-src 'self' blob: https://s3-proxy-production-52e3.up.railway.app; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; form-action 'self' https://accounts.google.com https://oauth.yandex.ru"
+        />
 
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#3d4535" />
-  <meta name="description" content="Japanese language learning application" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://aws-s3-public-proxy-production-0429.up.railway.app https://origa.uwuwu.net https://huggingface.co; img-src 'self' data: blob: https://aws-s3-public-proxy-production-0429.up.railway.app; media-src 'self' blob: https://aws-s3-public-proxy-production-0429.up.railway.app; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; form-action 'self' https://accounts.google.com https://oauth.yandex.ru" />
+        <title>オリガ</title>
 
-  <title>オリガ</title>
+        <link rel="icon" type="image/png" href="public/logo.png" />
+        <link
+            data-trunk
+            rel="tailwind-css"
+            href="input.css"
+            data-integrity="none"
+        />
+        <link data-trunk rel="copy-dir" href="public" />
+        <link
+            data-trunk
+            rel="rust"
+            data-target-name="origa_ui_bin"
+            data-wasm-opt="z"
+            data-integrity="none"
+            data-wasm-opt-params="--enable-bulk-memory --enable-nontrapping-float-to-int --enable-simd --enable-sign-ext"
+        />
+    </head>
 
-  <link rel="icon" type="image/png" href="public/logo.png" />
-  <link data-trunk rel="tailwind-css" href="input.css" data-integrity="none" />
-  <link data-trunk rel="copy-dir" href="public" />
-  <link data-trunk rel="rust" data-target-name="origa_ui_bin" data-wasm-opt="z" data-integrity="none"
-    data-wasm-opt-params="--enable-bulk-memory --enable-nontrapping-float-to-int --enable-simd --enable-sign-ext" />
-
-</head>
-
-<body class="min-h-screen paper-texture">
-</body>
-
+    <body class="min-h-screen paper-texture"></body>
 </html>
