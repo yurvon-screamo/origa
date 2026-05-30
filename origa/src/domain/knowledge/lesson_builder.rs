@@ -342,7 +342,7 @@ fn distribute_new_cards<'a>(
     }
 
     groups
-        .into_iter()
-        .flat_map(|(_, cards)| weighted_interleave_by_type(cards))
+        .into_values()
+        .flat_map(|cards| weighted_interleave_by_type(cards))
         .collect()
 }
