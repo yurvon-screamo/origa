@@ -102,7 +102,6 @@ def run_aws_raw(args: list[str]) -> subprocess.CompletedProcess[str]:
             cmd,
             capture_output=True,
             text=True,
-            shell=True,
         )
     except FileNotFoundError:
         print(
