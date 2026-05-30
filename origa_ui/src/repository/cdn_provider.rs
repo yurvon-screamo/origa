@@ -38,12 +38,11 @@ async fn open_cache() -> Result<web_sys::Cache, OrigaError> {
         reason: format!("Cache API not available: {:?}", e),
     })?;
 
-    let cache =
-        JsFuture::from(caches.open(CDN_CACHE_NAME))
-            .await
-            .map_err(|e| OrigaError::RepositoryError {
-                reason: format!("Failed to open cache: {:?}", e),
-            })?;
+    let cache = JsFuture::from(caches.open(CDN_CACHE_NAME))
+        .await
+        .map_err(|e| OrigaError::RepositoryError {
+            reason: format!("Failed to open cache: {:?}", e),
+        })?;
 
     cache.dyn_into().map_err(|e| OrigaError::RepositoryError {
         reason: format!("Failed to cast Cache: {:?}", e),
