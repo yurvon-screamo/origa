@@ -264,3 +264,183 @@ mod generate_quiz_vocab_kanji_tests {
         }
     }
 }
+
+mod generate_quiz_pos_filter_tests {
+    use super::*;
+    use crate::domain::knowledge::lesson::types::LessonCardView;
+    use crate::domain::value_objects::NativeLanguage;
+    use crate::use_cases::init_real_dictionaries;
+    use std::collections::HashSet;
+
+    #[test]
+    fn generate_quiz_prefers_same_pos_distractors() {
+        init_real_dictionaries();
+
+        let verbs: Vec<Card> = ["食べる", "飲む", "読む", "書く"]
+            .iter()
+            .map(|w| create_vocab_card(w))
+            .collect();
+
+        let nouns: Vec<Card> = ["猫", "犬", "鳥"]
+            .iter()
+            .map(|w| create_vocab_card(w))
+            .collect();
+
+        let mut pool: Vec<Card> = verbs[1..].to_vec();
+        pool.extend(nouns.clone());
+
+        let verb_answers: HashSet<String> = verbs[1..]
+            .iter()
+            .filter_map(|c| c.answer(&NativeLanguage::Russian).ok())
+            .map(|a| a.text().to_string())
+            .collect();
+
+        let noun_answers: HashSet<String> = nouns
+            .iter()
+            .filter_map(|c| c.answer(&NativeLanguage::Russian).ok())
+            .map(|a| a.text().to_string())
+            .collect();
+
+        for _ in 0..20 {
+            let result =
+                generation::generate_quiz(verbs[0].clone(), &pool, &NativeLanguage::Russian);
+
+            match result.expect("should succeed") {
+                LessonCardView::Quiz(quiz) => {
+                    for option in quiz.options().iter().filter(|o| !o.is_correct()) {
+                        assert!(
+                            verb_answers.contains(option.text()),
+                            "Distractor '{}' should be a verb translation, got noun",
+                            option.text()
+                        );
+                        assert!(
+                            !noun_answers.contains(option.text()),
+                            "Distractor '{}' should not be a noun translation",
+                            option.text()
+                        );
+                    }
+                },
+                other => panic!("Expected Quiz, got {:?}", other),
+            }
+        }
+    }
+
+    #[test]
+    fn generate_quiz_falls_back_to_other_pos() {
+        init_real_dictionaries();
+
+        let verb = create_vocab_card("食べる");
+        let nouns: Vec<Card> = ["猫", "犬", "鳥"]
+            .iter()
+            .map(|w| create_vocab_card(w))
+            .collect();
+
+        let result = generation::generate_quiz(verb, &nouns, &NativeLanguage::Russian);
+
+        match result.expect("should succeed") {
+            LessonCardView::Quiz(quiz) => {
+                assert_eq!(quiz.options().len(), 4);
+                assert_eq!(quiz.options().iter().filter(|o| o.is_correct()).count(), 1);
+            },
+            other => panic!("Expected Quiz with fallback, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn generate_quiz_all_same_pos() {
+        init_real_dictionaries();
+
+        let verbs: Vec<Card> = ["食べる", "飲む", "読む", "書く"]
+            .iter()
+            .map(|w| create_vocab_card(w))
+            .collect();
+
+        let result =
+            generation::generate_quiz(verbs[0].clone(), &verbs[1..], &NativeLanguage::Russian);
+
+        match result.expect("should succeed") {
+            LessonCardView::Quiz(quiz) => {
+                assert_eq!(quiz.options().len(), 4);
+                assert_eq!(quiz.options().iter().filter(|o| o.is_correct()).count(), 1);
+            },
+            other => panic!("Expected Quiz, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn generate_yesno_prefers_same_pos_distractor() {
+        init_real_dictionaries();
+        use rand::{SeedableRng, rngs::StdRng};
+
+        let verbs: Vec<Card> = ["食べる", "飲む", "読む"]
+            .iter()
+            .map(|w| create_vocab_card(w))
+            .collect();
+
+        let nouns: Vec<Card> = ["猫", "犬", "鳥"]
+            .iter()
+            .map(|w| create_vocab_card(w))
+            .collect();
+
+        let mut pool: Vec<Card> = verbs[1..].to_vec();
+        pool.extend(nouns.clone());
+
+        let noun_answers: HashSet<String> = nouns
+            .iter()
+            .filter_map(|c| c.answer(&NativeLanguage::Russian).ok())
+            .map(|a| a.text().to_string())
+            .collect();
+
+        let mut noun_used_count = 0;
+        let iterations = 100;
+
+        for seed in 0..iterations {
+            let mut rng = StdRng::seed_from_u64(seed);
+            let result = generation::generate_yesno(
+                verbs[0].clone(),
+                &pool,
+                &NativeLanguage::Russian,
+                &mut rng,
+            );
+
+            if let Ok(LessonCardView::YesNo(yn)) = result {
+                if !yn.is_correct() {
+                    let uses_noun = noun_answers
+                        .iter()
+                        .any(|na| yn.statement_text().contains(na));
+                    if uses_noun {
+                        noun_used_count += 1;
+                    }
+                }
+            }
+        }
+
+        assert!(
+            noun_used_count == 0,
+            "No noun distractors when same-POS verbs available, got {}",
+            noun_used_count
+        );
+    }
+
+    #[test]
+    fn generate_yesno_falls_back_to_other_pos() {
+        init_real_dictionaries();
+        use rand::{SeedableRng, rngs::StdRng};
+
+        let verb = create_vocab_card("食べる");
+        let nouns: Vec<Card> = ["猫", "犬", "鳥"]
+            .iter()
+            .map(|w| create_vocab_card(w))
+            .collect();
+
+        let mut rng = StdRng::seed_from_u64(42);
+        let result = generation::generate_yesno(verb, &nouns, &NativeLanguage::Russian, &mut rng);
+
+        match result.expect("should succeed") {
+            LessonCardView::YesNo(yn) => {
+                assert!(!yn.statement_text().is_empty());
+            },
+            other => panic!("Expected YesNo with fallback, got {:?}", other),
+        }
+    }
+}
