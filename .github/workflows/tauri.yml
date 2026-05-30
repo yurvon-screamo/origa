@@ -1,12 +1,19 @@
 name: Build Tauri App
 
 on:
+    pull_request:
+        branches:
+            - master
     push:
         branches:
             - master
         tags:
             - "v*.*.*"
     workflow_dispatch:
+
+concurrency:
+    group: tauri-${{ github.ref }}
+    cancel-in-progress: true
 
 env:
     CARGO_TERM_COLOR: always
@@ -356,6 +363,7 @@ jobs:
 
     generate-latest-json:
         name: Generate latest.json
+        if: github.event_name == 'push'
         needs: [version, build-windows, build-linux, build-macos]
         runs-on: ubuntu-latest
         permissions:
@@ -373,23 +381,29 @@ jobs:
                   else
                     FILE_VERSION="${VERSION}"
                   fi
-                  cat > latest.json << EOF
-                  {
-                    "version": "${VERSION}",
-                    "notes": "Release ${VERSION}",
-                    "pub_date": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
-                    "platforms": {
-                      "windows-x86_64": {
-                        "signature": "${WIN_SIG}",
-                        "url": "https://github.com/yurvon-screamo/origa/releases/download/${FILE_VERSION}/origa_${FILE_VERSION}_x64-setup.exe"
-                      },
-                      "linux-x86_64": {
-                        "signature": "${LINUX_SIG}",
-                        "url": "https://github.com/yurvon-screamo/origa/releases/download/${FILE_VERSION}/origa_${FILE_VERSION}_amd64.AppImage"
+                  jq -n \
+                    --arg version "$VERSION" \
+                    --arg notes "Release $VERSION" \
+                    --arg pub_date "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+                    --arg win_sig "$WIN_SIG" \
+                    --arg linux_sig "$LINUX_SIG" \
+                    --arg win_url "https://github.com/yurvon-screamo/origa/releases/download/${FILE_VERSION}/origa_${FILE_VERSION}_x64-setup.exe" \
+                    --arg linux_url "https://github.com/yurvon-screamo/origa/releases/download/${FILE_VERSION}/origa_${FILE_VERSION}_amd64.AppImage" \
+                    '{
+                      version: $version,
+                      notes: $notes,
+                      pub_date: $pub_date,
+                      platforms: {
+                        "windows-x86_64": {
+                          signature: $win_sig,
+                          url: $win_url
+                        },
+                        "linux-x86_64": {
+                          signature: $linux_sig,
+                          url: $linux_url
+                        }
                       }
-                    }
-                  }
-                  EOF
+                    }' > latest.json
                   cat latest.json
 
             - name: Upload latest.json artifact
@@ -401,16 +415,17 @@ jobs:
 
     release:
         name: Update Latest Release
+        if: github.event_name == 'push'
         needs: [version, build-windows, build-linux, build-macos, generate-latest-json]
         uses: ./.github/workflows/reusable-release.yml
         with:
             tag-name: ${{ needs.version.outputs.version_type == 'stable' &&
                 needs.version.outputs.version || 'latest' }}
             release-name: ${{ needs.version.outputs.version_type == 'stable' &&
-                format('Release {0}', needs.version.outputs.version) || 'Latest
-                Build' }}
+                format('Release {0}', needs.version.outputs.version) || format('Latest
+                Build ({0})', needs.version.outputs.version) }}
             version-type: ${{ needs.version.outputs.version_type }}
-            make-latest: ${{ needs.version.outputs.version_type == 'stable' }}
+            make-latest: true
             prerelease: ${{ needs.version.outputs.version_type != 'stable' }}
             body: |
                 Автоматическая сборка от ${{ github.sha }}
