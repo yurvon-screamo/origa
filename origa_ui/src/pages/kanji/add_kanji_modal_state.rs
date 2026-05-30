@@ -68,8 +68,8 @@ impl ModalState {
                     let learned_kanji: HashSet<String> = user
                         .knowledge_set()
                         .study_cards()
-                        .iter()
-                        .filter_map(|(_, card)| {
+                        .values()
+                        .filter_map(|card| {
                             if let Card::Kanji(kanji_card) = card.card() {
                                 Some(kanji_card.kanji().text().to_string())
                             } else {
