@@ -25,20 +25,16 @@ pub(crate) fn generate_quiz(
 
     let correct_answer = original_card.answer(lang)?;
 
-    let mut distractors: Vec<String> = same_type_cards
-        .iter()
-        .filter_map(|c| {
-            c.answer(lang)
-                .ok()
-                .filter(|a| a.text() != correct_answer.text())
-        })
-        .map(|a| a.text().to_string())
-        .collect();
-
-    distractors.shuffle(&mut rand::rng());
     let needed_distractors = QUIZ_OPTIONS_COUNT.saturating_sub(1);
-    let selected_distractors: Vec<String> =
-        distractors.into_iter().take(needed_distractors).collect();
+    let mut rng = rand::rng();
+    let selected_distractors = collect_pos_filtered_distractors(
+        &original_card,
+        same_type_cards,
+        correct_answer.text(),
+        lang,
+        needed_distractors,
+        &mut rng,
+    );
 
     if selected_distractors.len() < needed_distractors {
         return Ok(LessonCardView::Normal(original_card));
@@ -59,6 +55,54 @@ pub(crate) fn generate_quiz(
     Ok(LessonCardView::Quiz(quiz))
 }
 
+fn collect_pos_filtered_distractors(
+    original_card: &Card,
+    same_type_cards: &[Card],
+    correct_answer_text: &str,
+    lang: &NativeLanguage,
+    needed: usize,
+    rng: &mut impl Rng,
+) -> Vec<String> {
+    let target_pos: Option<PartOfSpeech> = match original_card {
+        Card::Vocabulary(vc) => vc.part_of_speech().ok(),
+        _ => None,
+    };
+
+    let (mut same_pos, mut other): (Vec<String>, Vec<String>) = (Vec::new(), Vec::new());
+
+    for card in same_type_cards {
+        let answer_text = match card.answer(lang).ok() {
+            Some(a) if a.text() != correct_answer_text => a.text().to_string(),
+            _ => continue,
+        };
+
+        match target_pos {
+            Some(ref pos) => {
+                let card_pos = match card {
+                    Card::Vocabulary(vc) => vc.part_of_speech().ok(),
+                    _ => None,
+                };
+                if card_pos.as_ref() == Some(pos) {
+                    same_pos.push(answer_text);
+                } else {
+                    other.push(answer_text);
+                }
+            },
+            None => same_pos.push(answer_text),
+        }
+    }
+
+    same_pos.shuffle(rng);
+    other.shuffle(rng);
+
+    let mut result: Vec<String> = same_pos.into_iter().take(needed).collect();
+    if result.len() < needed {
+        result.extend(other.into_iter().take(needed - result.len()));
+    }
+
+    result
+}
+
 pub(crate) fn generate_yesno(
     original_card: Card,
     same_type_cards: &[Card],
@@ -77,18 +121,18 @@ pub(crate) fn generate_yesno(
     let statement_answer = if is_correct {
         correct_answer.text().to_string()
     } else {
-        let distractors: Vec<_> = same_type_cards
-            .iter()
-            .filter_map(|c| c.answer(lang).ok())
-            .filter(|a| a.text() != correct_answer.text())
-            .map(|a| a.text().to_string())
-            .collect();
-
-        if distractors.is_empty() {
+        let distractors = collect_pos_filtered_distractors(
+            &original_card,
+            same_type_cards,
+            correct_answer.text(),
+            lang,
+            1,
+            rng,
+        );
+        let Some(statement_answer) = distractors.into_iter().next() else {
             return Ok(LessonCardView::Normal(original_card));
-        }
-
-        distractors.choose(rng).unwrap_or(&distractors[0]).clone()
+        };
+        statement_answer
     };
 
     let statement_text = format!("{} \n {}", question.text(), statement_answer);
