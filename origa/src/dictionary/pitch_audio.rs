@@ -235,13 +235,19 @@ mod tests {
     fn get_audio_for_reading_fallback_chain_integration() {
         let index = PitchAudioIndex::from_json(test_index_v3_json()).expect("valid JSON");
 
-        let entry = index.find_audio_for_reading("役", "やく").expect("composite should match");
+        let entry = index
+            .find_audio_for_reading("役", "やく")
+            .expect("composite should match");
         assert_eq!(entry.file(), "yaku.opus");
 
-        let entry = index.find_audio_for_reading("NotExist", "えき").expect("kana fallback");
+        let entry = index
+            .find_audio_for_reading("NotExist", "えき")
+            .expect("kana fallback");
         assert_eq!(entry.file(), "eki_kana.opus");
 
-        let entry = index.find_audio_for_reading("役", "NotExist").expect("kanji fallback");
+        let entry = index
+            .find_audio_for_reading("役", "NotExist")
+            .expect("kanji fallback");
         assert_eq!(entry.file(), "fallback.opus");
     }
 }
