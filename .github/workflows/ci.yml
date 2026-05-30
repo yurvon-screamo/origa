@@ -19,13 +19,23 @@ jobs:
     lint:
         name: Lint
         runs-on: ubuntu-24.04
+        env:
+            ORIGA_CDN_BASE_URL: ${{ vars.ORIGA_CDN_BASE_URL }}
         steps:
             - name: Checkout repository
               uses: actions/checkout@v4
 
+            - name: Cache APT packages
+              uses: awalsh128/cache-apt-pkgs-action@latest
+              with:
+                  packages: libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+                      protobuf-compiler libspeechd-dev
+                  version: 1.0
+
             - name: Setup Rust
               uses: ./.github/actions/setup-rust
               with:
+                  targets: wasm32-unknown-unknown
                   shared-key: origa-ci
 
             - name: Check formatting
@@ -62,6 +72,28 @@ jobs:
                   path: origa_ui/public/dictionaries/unidic
                   key: unidic-dict-v1-${{ hashFiles('origa_ui/build.rs') }}
                   restore-keys: unidic-dict-v1-
+
+            - name: Download test CDN data
+              env:
+                  CDN_BASE: ${{ vars.ORIGA_CDN_BASE_URL }}
+              run: |
+                  mkdir -p cdn/dictionaries cdn/dictionary cdn/grammar
+                  
+                  # Lindera tokenizer data
+                  for f in char_def.bin matrix.mtx dict.da dict.vals unk.bin dict.wordsidx dict.words metadata.json; do
+                    curl -sSf -o "cdn/dictionaries/$f" "${CDN_BASE}/dictionaries/$f" || echo "Warning: failed to download $f"
+                  done
+                  
+                  # Vocabulary chunks + kanji + radicals
+                  for f in chunk_01.json chunk_02.json chunk_03.json chunk_04.json chunk_05.json chunk_06.json chunk_07.json chunk_08.json chunk_09.json chunk_10.json chunk_11.json kanji.json radicals.json; do
+                    curl -sSf -o "cdn/dictionary/$f" "${CDN_BASE}/dictionary/$f" || echo "Warning: failed to download $f"
+                  done
+                  
+                  # Grammar
+                  curl -sSf -o "cdn/grammar/grammar.json" "${CDN_BASE}/grammar/grammar.json" || echo "Warning: failed to download grammar.json"
+                  
+                  echo "Downloaded CDN test data:"
+                  find cdn -type f | head -30
 
             - name: Run tests
               run: cargo test --workspace
