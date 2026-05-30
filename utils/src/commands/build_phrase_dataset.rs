@@ -162,7 +162,7 @@ fn build_missing_words_ranked(
         })
         .collect();
 
-    entries.sort_by(|a, b| b.frequency.cmp(&a.frequency));
+    entries.sort_by_key(|b| std::cmp::Reverse(b.frequency));
     entries.truncate(MAX_RANKED_MISSING);
     entries
 }
