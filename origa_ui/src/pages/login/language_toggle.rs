@@ -5,7 +5,9 @@ use leptos::prelude::*;
 #[component]
 pub fn LoginLanguageToggle(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoView {
     let i18n = use_i18n();
-    let selected_language = RwSignal::new(locale_to_native_language(&i18n.get_locale()));
+    let selected_language = RwSignal::new(locale_to_native_language(
+        &i18n.get_locale_untracked(),
+    ));
 
     Effect::new(move |_| {
         let lang = selected_language.get();
