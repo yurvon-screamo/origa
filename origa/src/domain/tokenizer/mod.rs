@@ -39,6 +39,19 @@ impl TokenInfo {
     }
 }
 
+#[cfg(test)]
+impl TokenInfo {
+    pub fn new_test(base: &str, pos: PartOfSpeech) -> Self {
+        Self {
+            orthographic_base_form: base.to_string(),
+            phonological_base_form: base.to_string(),
+            orthographic_surface_form: base.to_string(),
+            phonological_surface_form: base.to_string(),
+            part_of_speech: pos,
+        }
+    }
+}
+
 #[derive(
     Clone, serde::Serialize, serde::Deserialize, rkyv::Archive, rkyv::Serialize, rkyv::Deserialize,
 )]

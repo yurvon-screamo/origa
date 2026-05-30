@@ -18,6 +18,9 @@ use crate::domain::grammar::forms_verb::{
 };
 use crate::domain::{OrigaError, PartOfSpeech, grammar::forms_adjective::adjective_remove_postfix};
 
+use crate::domain::tokenizer::TokenInfo;
+use ulid::Ulid;
+
 pub fn apply_format_actions(
     source_word: &str,
     actions: &[FormatAction],
@@ -106,13 +109,76 @@ impl GrammarRule {
     }
 }
 
+pub fn detect_format_map_rules(
+    text: &str,
+    tokens: &[TokenInfo],
+    rules: &[GrammarRule],
+) -> Vec<Ulid> {
+    let mut detected = std::collections::HashSet::new();
+
+    for token in tokens {
+        if !token.part_of_speech().is_vocabulary_word() {
+            continue;
+        }
+
+        let base = token.orthographic_base_form();
+        let pos = token.part_of_speech();
+
+        for rule in rules {
+            if let Ok(formatted) = rule.format(base, pos) {
+                if formatted != base && text.contains(&formatted) {
+                    detected.insert(*rule.rule_id());
+                }
+            }
+        }
+    }
+
+    detected.into_iter().collect()
+}
+
+pub fn detect_keyword_rules(text: &str, rules: &[GrammarRule]) -> Vec<Ulid> {
+    let mut detected = std::collections::HashSet::new();
+
+    for rule in rules {
+        let keyword_groups = rule.keywords();
+        if keyword_groups.is_empty() {
+            continue;
+        }
+
+        let all_groups_match = keyword_groups.iter().all(|group| {
+            if group.is_empty() {
+                return false;
+            }
+            group.iter().any(|keyword| text.contains(keyword))
+        });
+
+        if all_groups_match {
+            detected.insert(*rule.rule_id());
+        }
+    }
+
+    detected.into_iter().collect()
+}
+
+pub fn detect_grammar_rules_in_text(
+    text: &str,
+    tokens: &[TokenInfo],
+    rules: &[GrammarRule],
+) -> Vec<Ulid> {
+    let mut result = std::collections::HashSet::new();
+
+    result.extend(detect_format_map_rules(text, tokens, rules));
+    result.extend(detect_keyword_rules(text, rules));
+
+    result.into_iter().collect()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::dictionary::grammar::{FormatAction, GrammarRule, GrammarRuleContent};
     use crate::domain::{JapaneseLevel, NativeLanguage, PartOfSpeech};
     use std::collections::HashMap;
-    use ulid::Ulid;
 
     fn create_rule_with_format_map(
         format_map: HashMap<PartOfSpeech, Vec<FormatAction>>,
@@ -836,6 +902,817 @@ mod tests {
             let result = rule.format("高い", &PartOfSpeech::IAdjective);
 
             assert_eq!(result.unwrap(), "高くなるです");
+        }
+    }
+
+    fn make_verb_token(base: &str) -> TokenInfo {
+        TokenInfo::new_test(base, PartOfSpeech::Verb)
+    }
+
+    fn make_iadj_token(base: &str) -> TokenInfo {
+        TokenInfo::new_test(base, PartOfSpeech::IAdjective)
+    }
+
+    fn make_naadj_token(base: &str) -> TokenInfo {
+        TokenInfo::new_test(base, PartOfSpeech::NaAdjective)
+    }
+
+    fn make_particle_token(base: &str) -> TokenInfo {
+        TokenInfo::new_test(base, PartOfSpeech::Particle)
+    }
+
+    fn make_rule(id: &str, format_map: HashMap<PartOfSpeech, Vec<FormatAction>>) -> GrammarRule {
+        GrammarRule::new(
+            Ulid::from_string(id).unwrap(),
+            JapaneseLevel::N5,
+            HashMap::from([(
+                NativeLanguage::English,
+                GrammarRuleContent::new(
+                    "Test".to_string(),
+                    "Test".to_string(),
+                    "Test".to_string(),
+                    "Test".to_string(),
+                    "Test".to_string(),
+                    "Test".to_string(),
+                    "Test".to_string(),
+                    None,
+                ),
+            )]),
+            Some(format_map),
+        )
+    }
+
+    fn make_keyword_rule(id: &str, keywords: Vec<Vec<String>>) -> GrammarRule {
+        GrammarRule::new_with_keywords(
+            Ulid::from_string(id).unwrap(),
+            JapaneseLevel::N5,
+            HashMap::from([(
+                NativeLanguage::English,
+                GrammarRuleContent::new(
+                    "Test".to_string(),
+                    "Test".to_string(),
+                    "Test".to_string(),
+                    "Test".to_string(),
+                    "Test".to_string(),
+                    "Test".to_string(),
+                    "Test".to_string(),
+                    None,
+                ),
+            )]),
+            None,
+            keywords,
+        )
+    }
+
+    mod detect_format_map_rules {
+        use super::*;
+
+        fn all_test_rules() -> Vec<GrammarRule> {
+            vec![
+                make_rule(
+                    "01H00000000000000000000001",
+                    HashMap::from([(PartOfSpeech::Verb, vec![FormatAction::VerbToTeForm {}])]),
+                ),
+                make_rule(
+                    "01H00000000000000000000002",
+                    HashMap::from([(PartOfSpeech::Verb, vec![FormatAction::VerbToTa {}])]),
+                ),
+                make_rule(
+                    "01H00000000000000000000003",
+                    HashMap::from([(PartOfSpeech::Verb, vec![FormatAction::VerbToMasu {}])]),
+                ),
+                make_rule(
+                    "01H00000000000000000000004",
+                    HashMap::from([(PartOfSpeech::Verb, vec![FormatAction::VerbToNai {}])]),
+                ),
+                make_rule(
+                    "01H00000000000000000000005",
+                    HashMap::from([(
+                        PartOfSpeech::Verb,
+                        vec![
+                            FormatAction::VerbToTeForm {},
+                            FormatAction::AddPostfix {
+                                postfix: "ください".to_string(),
+                            },
+                        ],
+                    )]),
+                ),
+                make_rule(
+                    "01H00000000000000000000006",
+                    HashMap::from([(
+                        PartOfSpeech::Verb,
+                        vec![
+                            FormatAction::VerbToTeForm {},
+                            FormatAction::AddPostfix {
+                                postfix: "います".to_string(),
+                            },
+                        ],
+                    )]),
+                ),
+                make_rule(
+                    "01H00000000000000000000007",
+                    HashMap::from([(
+                        PartOfSpeech::Verb,
+                        vec![
+                            FormatAction::VerbToStem {},
+                            FormatAction::AddPostfix {
+                                postfix: "ながら".to_string(),
+                            },
+                        ],
+                    )]),
+                ),
+                make_rule(
+                    "01H00000000000000000000008",
+                    HashMap::from([(
+                        PartOfSpeech::Verb,
+                        vec![
+                            FormatAction::VerbToNai {},
+                            FormatAction::AddPostfix {
+                                postfix: "ければなりません".to_string(),
+                            },
+                        ],
+                    )]),
+                ),
+                make_rule(
+                    "01H00000000000000000000009",
+                    HashMap::from([(
+                        PartOfSpeech::Verb,
+                        vec![
+                            FormatAction::VerbToTai {},
+                            FormatAction::AddPostfix {
+                                postfix: "です".to_string(),
+                            },
+                        ],
+                    )]),
+                ),
+                make_rule(
+                    "01H00000000000000000000010",
+                    HashMap::from([(
+                        PartOfSpeech::IAdjective,
+                        vec![FormatAction::AddPostfix {
+                            postfix: "です".to_string(),
+                        }],
+                    )]),
+                ),
+                make_rule(
+                    "01H00000000000000000000011",
+                    HashMap::from([(
+                        PartOfSpeech::NaAdjective,
+                        vec![FormatAction::AddPostfix {
+                            postfix: "です".to_string(),
+                        }],
+                    )]),
+                ),
+                make_rule(
+                    "01H00000000000000000000012",
+                    HashMap::from([(
+                        PartOfSpeech::IAdjective,
+                        vec![FormatAction::AdjectiveToSugiru {}],
+                    )]),
+                ),
+                make_rule(
+                    "01H00000000000000000000013",
+                    HashMap::from([(PartOfSpeech::Verb, vec![FormatAction::VerbToPotential {}])]),
+                ),
+                make_rule(
+                    "01H00000000000000000000014",
+                    HashMap::from([(
+                        PartOfSpeech::IAdjective,
+                        vec![FormatAction::AdjectiveToKute {}],
+                    )]),
+                ),
+            ]
+        }
+
+        fn te_id() -> Ulid {
+            Ulid::from_string("01H00000000000000000000001").unwrap()
+        }
+        fn ta_id() -> Ulid {
+            Ulid::from_string("01H00000000000000000000002").unwrap()
+        }
+        fn masu_id() -> Ulid {
+            Ulid::from_string("01H00000000000000000000003").unwrap()
+        }
+        fn nai_id() -> Ulid {
+            Ulid::from_string("01H00000000000000000000004").unwrap()
+        }
+        fn tekudasai_id() -> Ulid {
+            Ulid::from_string("01H00000000000000000000005").unwrap()
+        }
+        fn teimasu_id() -> Ulid {
+            Ulid::from_string("01H00000000000000000000006").unwrap()
+        }
+        fn nagara_id() -> Ulid {
+            Ulid::from_string("01H00000000000000000000007").unwrap()
+        }
+        fn nakereba_id() -> Ulid {
+            Ulid::from_string("01H00000000000000000000008").unwrap()
+        }
+        fn taidesu_id() -> Ulid {
+            Ulid::from_string("01H00000000000000000000009").unwrap()
+        }
+        fn iadj_desu_id() -> Ulid {
+            Ulid::from_string("01H00000000000000000000010").unwrap()
+        }
+        fn naadj_desu_id() -> Ulid {
+            Ulid::from_string("01H00000000000000000000011").unwrap()
+        }
+        fn iadj_sugiru_id() -> Ulid {
+            Ulid::from_string("01H00000000000000000000012").unwrap()
+        }
+        fn potential_id() -> Ulid {
+            Ulid::from_string("01H00000000000000000000013").unwrap()
+        }
+        fn iadj_kute_id() -> Ulid {
+            Ulid::from_string("01H00000000000000000000014").unwrap()
+        }
+
+        #[test]
+        fn f01_detects_te_form_ichidan() {
+            let rules = all_test_rules();
+            let tokens = vec![make_verb_token("食べる")];
+            let result = detect_format_map_rules("食べている人", &tokens, &rules);
+            assert!(
+                result.contains(&te_id()),
+                "Should detect te-form, got: {:?}",
+                result
+            );
+        }
+
+        #[test]
+        fn f02_detects_ta_form_ichidan() {
+            let rules = all_test_rules();
+            let tokens = vec![make_verb_token("食べる")];
+            let result = detect_format_map_rules("食べた", &tokens, &rules);
+            assert!(
+                result.contains(&ta_id()),
+                "Should detect ta-form, got: {:?}",
+                result
+            );
+        }
+
+        #[test]
+        fn f03_detects_masu_form() {
+            let rules = all_test_rules();
+            let tokens = vec![make_verb_token("食べる")];
+            let result = detect_format_map_rules("食べます", &tokens, &rules);
+            assert!(
+                result.contains(&masu_id()),
+                "Should detect masu, got: {:?}",
+                result
+            );
+        }
+
+        #[test]
+        fn f04_detects_nai_form() {
+            let rules = all_test_rules();
+            let tokens = vec![make_verb_token("食べる")];
+            let result = detect_format_map_rules("食べない", &tokens, &rules);
+            assert!(
+                result.contains(&nai_id()),
+                "Should detect nai, got: {:?}",
+                result
+            );
+        }
+
+        #[test]
+        fn f05_detects_te_form_godan_ku() {
+            let rules = all_test_rules();
+            let tokens = vec![make_verb_token("行く")];
+            let result = detect_format_map_rules("行って", &tokens, &rules);
+            assert!(
+                result.contains(&te_id()),
+                "Should detect te-form for 行く, got: {:?}",
+                result
+            );
+        }
+
+        #[test]
+        fn f06_detects_te_form_godan_su() {
+            let rules = all_test_rules();
+            let tokens = vec![make_verb_token("話す")];
+            let result = detect_format_map_rules("話して", &tokens, &rules);
+            assert!(
+                result.contains(&te_id()),
+                "Should detect te-form for 話す, got: {:?}",
+                result
+            );
+        }
+
+        #[test]
+        fn f07_detects_te_form_godan_gu() {
+            let rules = all_test_rules();
+            let tokens = vec![make_verb_token("泳ぐ")];
+            let result = detect_format_map_rules("泳いで", &tokens, &rules);
+            assert!(
+                result.contains(&te_id()),
+                "Should detect te-form for 泳ぐ, got: {:?}",
+                result
+            );
+        }
+
+        #[test]
+        fn f08_detects_ta_form_godan_ku() {
+            let rules = all_test_rules();
+            let tokens = vec![make_verb_token("書く")];
+            let result = detect_format_map_rules("書いた", &tokens, &rules);
+            assert!(
+                result.contains(&ta_id()),
+                "Should detect ta-form for 書く, got: {:?}",
+                result
+            );
+        }
+
+        #[test]
+        fn f09_detects_te_form_and_tekudasai() {
+            let rules = all_test_rules();
+            let tokens = vec![make_verb_token("食べる")];
+            let result = detect_format_map_rules("食べてください", &tokens, &rules);
+            assert!(result.contains(&te_id()), "Should detect te-form");
+            assert!(
+                result.contains(&tekudasai_id()),
+                "Should detect てください, got: {:?}",
+                result
+            );
+        }
+
+        #[test]
+        fn f10_detects_te_form_and_teimasu() {
+            let rules = all_test_rules();
+            let tokens = vec![make_verb_token("食べる")];
+            let result = detect_format_map_rules("食べています", &tokens, &rules);
+            assert!(result.contains(&te_id()), "Should detect te-form");
+            assert!(
+                result.contains(&teimasu_id()),
+                "Should detect ています, got: {:?}",
+                result
+            );
+        }
+
+        #[test]
+        fn f11_detects_nagara() {
+            let rules = all_test_rules();
+            let tokens = vec![make_verb_token("食べる")];
+            let result = detect_format_map_rules("食べながら", &tokens, &rules);
+            assert!(
+                result.contains(&nagara_id()),
+                "Should detect ながら, got: {:?}",
+                result
+            );
+        }
+
+        #[test]
+        fn f12_nakereba_wrong_chain_reveal_not_detected() {
+            let rules = all_test_rules();
+            let tokens = vec![make_verb_token("行く")];
+            let result = detect_format_map_rules("行かなければなりません", &tokens, &rules);
+            assert!(
+                !result.contains(&nakereba_id()),
+                "REGRESSION: なければなりません should NOT be detected due to wrong format_map chain, got: {:?}",
+                result
+            );
+        }
+
+        // F12_FIX: Verify that ReplacePostfix fixes the nai-chain issue.
+        // Rule uses: [VerbToNai, ReplacePostfix { old: "ない", new: "なければなりません" }]
+        #[test]
+        fn f12_fix_nakereba_now_detected_with_replace_postfix() {
+            let nakereba_fixed = make_rule(
+                "01H00000000000000000000015",
+                HashMap::from([(
+                    PartOfSpeech::Verb,
+                    vec![
+                        FormatAction::VerbToNai {},
+                        FormatAction::ReplacePostfix {
+                            old_postfix: "ない".to_string(),
+                            new_postfix: "なければなりません".to_string(),
+                        },
+                    ],
+                )]),
+            );
+            let mut rules = all_test_rules();
+            rules.push(nakereba_fixed);
+
+            let nakereba_fixed_id = Ulid::from_string("01H00000000000000000000015").unwrap();
+            let tokens = vec![make_verb_token("行く")];
+            let result = detect_format_map_rules("行かなければなりません", &tokens, &rules);
+            assert!(
+                result.contains(&nakereba_fixed_id),
+                "ReplacePostfix should detect なければなりません, got: {:?}",
+                result
+            );
+        }
+
+        #[test]
+        fn f13_detects_tai_desu() {
+            let rules = all_test_rules();
+            let tokens = vec![make_verb_token("食べる")];
+            let result = detect_format_map_rules("食べたいです", &tokens, &rules);
+            assert!(
+                result.contains(&taidesu_id()),
+                "Should detect たいです, got: {:?}",
+                result
+            );
+        }
+
+        #[test]
+        fn f14_detects_iadj_desu() {
+            let rules = all_test_rules();
+            let tokens = vec![make_iadj_token("高い")];
+            let result = detect_format_map_rules("高いです", &tokens, &rules);
+            assert!(
+                result.contains(&iadj_desu_id()),
+                "Should detect IAdj+です, got: {:?}",
+                result
+            );
+        }
+
+        #[test]
+        fn f15_detects_naadj_desu() {
+            let rules = all_test_rules();
+            let tokens = vec![make_naadj_token("静か")];
+            let result = detect_format_map_rules("静かです", &tokens, &rules);
+            assert!(
+                result.contains(&naadj_desu_id()),
+                "Should detect NaAdj+です, got: {:?}",
+                result
+            );
+        }
+
+        #[test]
+        fn f16_detects_iadj_sugiru() {
+            let rules = all_test_rules();
+            let tokens = vec![make_iadj_token("高い")];
+            let result = detect_format_map_rules("高すぎる", &tokens, &rules);
+            assert!(
+                result.contains(&iadj_sugiru_id()),
+                "Should detect IAdj+すぎる, got: {:?}",
+                result
+            );
+        }
+
+        #[test]
+        fn f17_no_kunai_rule_returns_empty() {
+            let rules = all_test_rules();
+            let tokens = vec![make_iadj_token("高い")];
+            let result = detect_format_map_rules("高くない", &tokens, &rules);
+            assert!(
+                result.is_empty(),
+                "No AdjectiveToKunai rule exists, should return empty, got: {:?}",
+                result
+            );
+        }
+
+        #[test]
+        fn f18_detects_te_form_suru() {
+            let rules = all_test_rules();
+            let tokens = vec![make_verb_token("する")];
+            let result = detect_format_map_rules("している", &tokens, &rules);
+            assert!(
+                result.contains(&te_id()),
+                "Should detect te-form for する, got: {:?}",
+                result
+            );
+        }
+
+        #[test]
+        fn f19_detects_ta_form_kuru() {
+            let rules = all_test_rules();
+            let tokens = vec![make_verb_token("くる")];
+            let result = detect_format_map_rules("きた", &tokens, &rules);
+            assert!(
+                result.contains(&ta_id()),
+                "Should detect ta-form for くる, got: {:?}",
+                result
+            );
+        }
+
+        #[test]
+        fn f20_detects_potential_suru() {
+            let rules = all_test_rules();
+            let tokens = vec![make_verb_token("する")];
+            let result = detect_format_map_rules("できる", &tokens, &rules);
+            assert!(
+                result.contains(&potential_id()),
+                "Should detect potential for する, got: {:?}",
+                result
+            );
+        }
+
+        #[test]
+        fn f21_base_form_only_returns_empty() {
+            let rules = all_test_rules();
+            let tokens = vec![make_verb_token("食べる")];
+            let result = detect_format_map_rules("猫は魚を食べる", &tokens, &rules);
+            assert!(
+                result.is_empty(),
+                "Base form should not match any rule, got: {:?}",
+                result
+            );
+        }
+
+        #[test]
+        fn f22_iadj_base_without_postfix() {
+            let rules = all_test_rules();
+            let tokens = vec![make_iadj_token("高い")];
+            let result = detect_format_map_rules("高い", &tokens, &rules);
+            assert!(
+                result.is_empty(),
+                "高い without postfix should not match, got: {:?}",
+                result
+            );
+        }
+
+        #[test]
+        fn f23_naadj_da_not_desu() {
+            let rules = all_test_rules();
+            let tokens = vec![make_naadj_token("静か")];
+            let result = detect_format_map_rules("静かだ", &tokens, &rules);
+            assert!(
+                result.is_empty(),
+                "静かだ should not match 静かです rule, got: {:?}",
+                result
+            );
+        }
+
+        #[test]
+        fn f24_base_form_verb_nomu() {
+            let rules = all_test_rules();
+            let tokens = vec![make_verb_token("飲む")];
+            let result = detect_format_map_rules("水を飲む", &tokens, &rules);
+            assert!(
+                result.is_empty(),
+                "Base form 飲む should not match any rule, got: {:?}",
+                result
+            );
+        }
+
+        #[test]
+        fn f25_multiple_tokens_multiple_rules() {
+            let rules = all_test_rules();
+            let tokens = vec![make_verb_token("食べる"), make_verb_token("飲む")];
+            let result = detect_format_map_rules("食べて飲んだ", &tokens, &rules);
+            assert!(
+                result.contains(&te_id()),
+                "Should detect te-form from 食べる"
+            );
+            assert!(
+                result.contains(&ta_id()),
+                "Should detect ta-form from 飲む, got: {:?}",
+                result
+            );
+        }
+
+        #[test]
+        fn f26_multiple_iadj_rules() {
+            let rules = all_test_rules();
+            let tokens = vec![make_iadj_token("高い"), make_iadj_token("美味しい")];
+            let result = detect_format_map_rules("高くて美味しいです", &tokens, &rules);
+            assert!(
+                result.contains(&iadj_kute_id()),
+                "Should detect くて from 高い"
+            );
+            assert!(
+                result.contains(&iadj_desu_id()),
+                "Should detect いです from 美味しい, got: {:?}",
+                result
+            );
+        }
+    }
+
+    mod detect_keyword_rules {
+        use super::*;
+
+        #[test]
+        fn k01_detects_nagara_keyword() {
+            let rules = vec![make_keyword_rule(
+                "01H00000000000000000000020",
+                vec![vec!["ながら".to_string()]],
+            )];
+            let result = detect_keyword_rules("食べながら勉強する", &rules);
+            assert_eq!(result.len(), 1);
+        }
+
+        #[test]
+        fn k02_no_keyword_match() {
+            let rules = vec![make_keyword_rule(
+                "01H00000000000000000000020",
+                vec![vec!["ながら".to_string()]],
+            )];
+            let result = detect_keyword_rules("猫は魚だ", &rules);
+            assert!(result.is_empty());
+        }
+
+        #[test]
+        fn k03_detects_teiru_keyword() {
+            let rules = vec![make_keyword_rule(
+                "01H00000000000000000000021",
+                vec![vec!["ている".to_string(), "てる".to_string()]],
+            )];
+            let result = detect_keyword_rules("食べている", &rules);
+            assert_eq!(result.len(), 1);
+        }
+
+        #[test]
+        fn k04_detects_teru_variation() {
+            let rules = vec![make_keyword_rule(
+                "01H00000000000000000000021",
+                vec![vec!["ている".to_string(), "てる".to_string()]],
+            )];
+            let result = detect_keyword_rules("食べてる", &rules);
+            assert_eq!(result.len(), 1);
+        }
+
+        #[test]
+        fn k05_and_logic_all_groups_required() {
+            let rules = vec![make_keyword_rule(
+                "01H00000000000000000000022",
+                vec![vec!["しか".to_string()], vec!["ない".to_string()]],
+            )];
+            let result = detect_keyword_rules("残念だが普通の焼酎しかない", &rules);
+            assert_eq!(result.len(), 1, "Both しか and ない present → match");
+
+            let result2 = detect_keyword_rules("普通の焼酎しか", &rules);
+            assert!(result2.is_empty(), "Only しか, missing ない → no match");
+        }
+
+        #[test]
+        fn k06_empty_keywords_skipped() {
+            let rules = vec![make_keyword_rule("01H00000000000000000000023", vec![])];
+            let result = detect_keyword_rules("何かテキスト", &rules);
+            assert!(result.is_empty());
+        }
+
+        #[test]
+        fn k07_empty_inner_group_skipped() {
+            let rules = vec![make_keyword_rule(
+                "01H00000000000000000000024",
+                vec![vec![]],
+            )];
+            let result = detect_keyword_rules("何かテキスト", &rules);
+            assert!(
+                result.is_empty(),
+                "Empty inner group should not match, got: {:?}",
+                result
+            );
+        }
+    }
+
+    mod detect_grammar_rules_in_text {
+        use super::*;
+
+        fn all_test_rules() -> Vec<GrammarRule> {
+            vec![
+                make_rule(
+                    "01H00000000000000000000001",
+                    HashMap::from([(PartOfSpeech::Verb, vec![FormatAction::VerbToTeForm {}])]),
+                ),
+                make_rule(
+                    "01H00000000000000000000002",
+                    HashMap::from([(PartOfSpeech::Verb, vec![FormatAction::VerbToTa {}])]),
+                ),
+                make_rule(
+                    "01H00000000000000000000003",
+                    HashMap::from([(PartOfSpeech::Verb, vec![FormatAction::VerbToMasu {}])]),
+                ),
+                make_rule(
+                    "01H00000000000000000000004",
+                    HashMap::from([(PartOfSpeech::Verb, vec![FormatAction::VerbToNai {}])]),
+                ),
+                make_rule(
+                    "01H00000000000000000000005",
+                    HashMap::from([(
+                        PartOfSpeech::Verb,
+                        vec![
+                            FormatAction::VerbToTeForm {},
+                            FormatAction::AddPostfix {
+                                postfix: "ください".to_string(),
+                            },
+                        ],
+                    )]),
+                ),
+                make_rule(
+                    "01H00000000000000000000006",
+                    HashMap::from([(
+                        PartOfSpeech::Verb,
+                        vec![
+                            FormatAction::VerbToTeForm {},
+                            FormatAction::AddPostfix {
+                                postfix: "います".to_string(),
+                            },
+                        ],
+                    )]),
+                ),
+                make_rule(
+                    "01H00000000000000000000007",
+                    HashMap::from([(
+                        PartOfSpeech::Verb,
+                        vec![
+                            FormatAction::VerbToStem {},
+                            FormatAction::AddPostfix {
+                                postfix: "ながら".to_string(),
+                            },
+                        ],
+                    )]),
+                ),
+                make_rule(
+                    "01H00000000000000000000008",
+                    HashMap::from([(
+                        PartOfSpeech::Verb,
+                        vec![
+                            FormatAction::VerbToNai {},
+                            FormatAction::AddPostfix {
+                                postfix: "ければなりません".to_string(),
+                            },
+                        ],
+                    )]),
+                ),
+                make_rule(
+                    "01H00000000000000000000009",
+                    HashMap::from([(
+                        PartOfSpeech::Verb,
+                        vec![
+                            FormatAction::VerbToTai {},
+                            FormatAction::AddPostfix {
+                                postfix: "です".to_string(),
+                            },
+                        ],
+                    )]),
+                ),
+                make_rule(
+                    "01H00000000000000000000010",
+                    HashMap::from([(
+                        PartOfSpeech::IAdjective,
+                        vec![FormatAction::AddPostfix {
+                            postfix: "です".to_string(),
+                        }],
+                    )]),
+                ),
+                make_rule(
+                    "01H00000000000000000000011",
+                    HashMap::from([(
+                        PartOfSpeech::NaAdjective,
+                        vec![FormatAction::AddPostfix {
+                            postfix: "です".to_string(),
+                        }],
+                    )]),
+                ),
+                make_rule(
+                    "01H00000000000000000000012",
+                    HashMap::from([(
+                        PartOfSpeech::IAdjective,
+                        vec![FormatAction::AdjectiveToSugiru {}],
+                    )]),
+                ),
+                make_rule(
+                    "01H00000000000000000000013",
+                    HashMap::from([(PartOfSpeech::Verb, vec![FormatAction::VerbToPotential {}])]),
+                ),
+                make_rule(
+                    "01H00000000000000000000014",
+                    HashMap::from([(
+                        PartOfSpeech::IAdjective,
+                        vec![FormatAction::AdjectiveToKute {}],
+                    )]),
+                ),
+            ]
+        }
+
+        #[test]
+        fn e01_empty_tokens_returns_empty() {
+            let rules = all_test_rules();
+            let result = detect_grammar_rules_in_text("", &[], &rules);
+            assert!(result.is_empty());
+        }
+
+        #[test]
+        fn e02_particle_not_vocabulary() {
+            let rules = all_test_rules();
+            let tokens = vec![make_particle_token("は")];
+            let result = detect_grammar_rules_in_text("は", &tokens, &rules);
+            assert!(result.is_empty());
+        }
+
+        #[test]
+        fn e03_combined_format_and_keyword_deduped() {
+            let fm_rule = make_rule(
+                "01H00000000000000000000030",
+                HashMap::from([(PartOfSpeech::Verb, vec![FormatAction::VerbToTeForm {}])]),
+            );
+            let kw_rule = make_keyword_rule(
+                "01H00000000000000000000031",
+                vec![vec!["ながら".to_string()]],
+            );
+            let rules = vec![fm_rule, kw_rule];
+
+            let tokens = vec![make_verb_token("食べる")];
+            let result = detect_grammar_rules_in_text("食べてながら", &tokens, &rules);
+            assert_eq!(
+                result.len(),
+                2,
+                "Should detect both format_map te-form and keyword ながら, got: {:?}",
+                result
+            );
         }
     }
 }

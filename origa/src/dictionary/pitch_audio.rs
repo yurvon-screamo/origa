@@ -79,6 +79,14 @@ impl PitchAudioIndex {
     fn get_entry(&self, word: &str) -> Option<&PitchAudioEntry> {
         self.entries.get(word)
     }
+
+    /// Lookup by word+reading with fallback chain: "word|reading" → "reading" → "word".
+    pub fn find_audio_for_reading(&self, word: &str, reading: &str) -> Option<&PitchAudioEntry> {
+        let composite = format!("{}|{}", word, reading);
+        self.get_entry(&composite)
+            .or_else(|| self.get_entry(reading))
+            .or_else(|| self.get_entry(word))
+    }
 }
 
 pub fn init_pitch_audio_index(json: &str) -> Result<(), OrigaError> {
@@ -103,12 +111,9 @@ pub fn get_audio_for_word(word: &str) -> Option<&'static PitchAudioEntry> {
 /// Lookup pitch audio by word and reading (from tokenizer).
 /// Tries: "word|reading" → "reading" → "word".
 pub fn get_audio_for_reading(word: &str, reading: &str) -> Option<&'static PitchAudioEntry> {
-    PITCH_AUDIO_INDEX.get().and_then(|idx| {
-        let composite = format!("{}|{}", word, reading);
-        idx.get_entry(&composite)
-            .or_else(|| idx.get_entry(reading))
-            .or_else(|| idx.get_entry(word))
-    })
+    PITCH_AUDIO_INDEX
+        .get()
+        .and_then(|idx| idx.find_audio_for_reading(word, reading))
 }
 
 pub fn pitch_audio_version() -> u32 {
@@ -228,19 +233,15 @@ mod tests {
 
     #[test]
     fn get_audio_for_reading_fallback_chain_integration() {
-        // Init once — if already set by another test, that's fine
-        let _ = init_pitch_audio_index(test_index_v3_json());
+        let index = PitchAudioIndex::from_json(test_index_v3_json()).expect("valid JSON");
 
-        // Composite key match
-        let entry = get_audio_for_reading("役", "やく").expect("composite should match");
+        let entry = index.find_audio_for_reading("役", "やく").expect("composite should match");
         assert_eq!(entry.file(), "yaku.opus");
 
-        // Kana fallback (no composite for this reading in test data)
-        let entry = get_audio_for_reading("NotExist", "えき").expect("kana fallback");
+        let entry = index.find_audio_for_reading("NotExist", "えき").expect("kana fallback");
         assert_eq!(entry.file(), "eki_kana.opus");
 
-        // Kanji fallback
-        let entry = get_audio_for_reading("役", "NotExist").expect("kanji fallback");
+        let entry = index.find_audio_for_reading("役", "NotExist").expect("kanji fallback");
         assert_eq!(entry.file(), "fallback.opus");
     }
 }

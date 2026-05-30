@@ -131,7 +131,7 @@ def compute_hash(phrases: list) -> str:
     """Compute SHA-256 of JSON-serialized index entries, matching Rust build_phrase_dataset logic."""
     entries = []
     for p in phrases:
-        entry = {"i": p["i"], "t": p.get("t", []), "c": p.get("c", 0)}
+        entry = {"i": p["i"], "t": p.get("t", []), "c": p.get("c", 0), "g": p.get("g", [])}
         entries.append(entry)
     entries.sort(key=lambda e: e["i"])
     serialized = json.dumps(entries, ensure_ascii=False, separators=(",", ":"), sort_keys=False)

@@ -5,7 +5,7 @@ use origa::domain::{DictionaryData, OrigaError};
 
 use crate::core::config::urls;
 
-const CACHE_NAME: &str = "origa-dictionary-rkyv-v2";
+pub const RKYV_CACHE_NAME: &str = "origa-dictionary-rkyv-v2";
 
 async fn open_cache() -> Result<web_sys::Cache, OrigaError> {
     let window = web_sys::window().ok_or_else(|| OrigaError::RepositoryError {
@@ -22,7 +22,7 @@ async fn open_cache() -> Result<web_sys::Cache, OrigaError> {
             reason: format!("Failed to cast CacheStorage: {:?}", e),
         })?;
 
-    let cache_promise = caches.open(CACHE_NAME);
+    let cache_promise = caches.open(RKYV_CACHE_NAME);
     let cache: web_sys::Cache = JsFuture::from(cache_promise)
         .await
         .map_err(|e| OrigaError::RepositoryError {
