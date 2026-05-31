@@ -4,6 +4,14 @@ import { fetchWithTimeout } from "./helpers/http";
 import { cleanupOrphanedAccounts } from "./helpers/cleanup";
 import { execSync } from "child_process";
 
+// Add ~/.local/bin to PATH for trail CLI
+if (process.platform === "win32" || process.platform === "linux" || process.platform === "darwin") {
+    const home = process.env.HOME || process.env.USERPROFILE || "";
+    if (home) {
+        process.env.PATH = `${home}/.local/bin${process.platform === "win32" ? ";" : ":"}${process.env.PATH || ""}`;
+    }
+}
+
 const TRAILBASE_PORT = 4000;
 const TRAILBASE_URL = `http://127.0.0.1:${TRAILBASE_PORT}`;
 const ADMIN_EMAIL = "admin@localhost";
