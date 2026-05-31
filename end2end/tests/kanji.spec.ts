@@ -283,7 +283,7 @@ testWithFreshUser.describe("Kanji Page - Detail Page", () => {
         const breadcrumbs = page.locator(".kanji-breadcrumbs");
         await expect(breadcrumbs).toBeVisible({ timeout: 5_000 });
 
-        const heroCard = page.locator(".kanji-detail-hero-card");
+        const heroCard = page.locator(".kanji-detail-hero-card").first();
         await expect(heroCard).toBeVisible({ timeout: 5_000 });
     });
 
