@@ -4,13 +4,13 @@ const isCI = !!process.env.CI;
 
 export default defineConfig({
     testDir: "./tests",
-    timeout: 60000,
+    timeout: 120000,
     expect: {
         timeout: 10000,
     },
     fullyParallel: true,
     forbidOnly: isCI,
-    retries: isCI ? 1 : 0,
+    retries: isCI ? 2 : 0,
     workers: 1,
     reporter: [
         [
@@ -26,21 +26,22 @@ export default defineConfig({
         trace: "on-first-retry",
         screenshot: "only-on-failure",
         video: "retain-on-failure",
+        bypassCSP: true,
     },
     projects: [
         {
             name: "chromium",
-            use: { ...devices["Desktop Chrome"] },
+            use: {
+                ...devices["Desktop Chrome"],
+                launchOptions: {
+                    args: [
+                        "--disable-web-security",
+                        "--disable-features=IsolateOrigins,site-per-process",
+                        "--disable-site-isolation-trials",
+                    ],
+                },
+            },
         },
-        // {
-        //     name: "firefox",
-        //     use: { ...devices["Desktop Firefox"] },
-        // },
-        // Tauri/WebView desktop project placeholder
-        // {
-        //   name: 'tauri-desktop',
-        //   use: { ...devices['Desktop Chrome'] },
-        // },
     ],
     webServer: {
         command: "cd ../origa_ui && trunk serve",

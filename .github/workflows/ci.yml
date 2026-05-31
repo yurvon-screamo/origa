@@ -100,13 +100,13 @@ jobs:
 
     e2e:
         name: E2E Tests
-        if: github.event_name == 'workflow_dispatch'
         runs-on: ubuntu-24.04
         env:
             ORIGA_CDN_BASE_URL: ${{ vars.ORIGA_CDN_BASE_URL }}
-            TRAILBASE_URL: ${{ vars.ORIGA_CDN_BASE_URL }}
+            TRAILBASE_URL: https://origa.uwuwu.net
             ORIGA_ADMIN_EMAIL: ${{ secrets.ORIGA_ADMIN_EMAIL }}
             ORIGA_ADMIN_PASSWORD: ${{ secrets.ORIGA_ADMIN_PASSWORD }}
+            CI: "true"
         steps:
             - name: Checkout repository
               uses: actions/checkout@v4
