@@ -7,6 +7,7 @@ data
 
 # Node
 package-lock.json
+!end2end/package-lock.json
 node_modules
 
 # Playwright / E2E Tests
