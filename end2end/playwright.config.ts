@@ -43,14 +43,28 @@ export default defineConfig({
             },
         },
     ],
-    webServer: {
-        command: "cd ../origa_ui && trunk serve",
-        url: "http://localhost:1420",
-        reuseExistingServer: !isCI,
-        timeout: 600000,
-        stdout: "pipe",
-        stderr: "pipe",
-    },
+    webServer: [
+        {
+            command: "npx serve ../../cdn -p 8080 --no-clipboard",
+            port: 8080,
+            reuseExistingServer: !isCI,
+            timeout: 30000,
+            stdout: "pipe",
+            stderr: "pipe",
+        },
+        {
+            command: "cd ../origa_ui && trunk serve",
+            port: 1420,
+            reuseExistingServer: !isCI,
+            timeout: 600000,
+            stdout: "pipe",
+            stderr: "pipe",
+            env: {
+                ORIGA_CDN_BASE_URL: "http://localhost:8080",
+                TRAILBASE_URL: "http://127.0.0.1:4000",
+            },
+        },
+    ],
     globalSetup: "./global-setup.ts",
     globalTeardown: "./global-teardown.ts",
 });
