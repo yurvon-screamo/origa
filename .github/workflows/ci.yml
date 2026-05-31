@@ -102,10 +102,10 @@ jobs:
         name: E2E Tests
         runs-on: ubuntu-24.04
         env:
-            ORIGA_CDN_BASE_URL: ${{ vars.ORIGA_CDN_BASE_URL }}
-            TRAILBASE_URL: https://origa.uwuwu.net
-            ORIGA_ADMIN_EMAIL: ${{ secrets.ORIGA_ADMIN_EMAIL }}
-            ORIGA_ADMIN_PASSWORD: ${{ secrets.ORIGA_ADMIN_PASSWORD }}
+            ORIGA_CDN_BASE_URL: http://localhost:8080
+            TRAILBASE_URL: http://localhost:4000
+            ORIGA_ADMIN_EMAIL: admin@localhost
+            ORIGA_ADMIN_PASSWORD: secret
             CI: "true"
         steps:
             - name: Checkout repository
@@ -135,6 +135,42 @@ jobs:
                   path: origa_ui/public/dictionaries/unidic
                   key: unidic-dict-v1-${{ hashFiles('origa_ui/build.rs') }}
                   restore-keys: unidic-dict-v1-
+
+            - name: Install TrailBase
+              run: |
+                  curl -sSfL https://trailbase.io/install.sh | sh
+                  echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+            - name: Download CDN data for E2E
+              env:
+                  CDN_BASE: ${{ vars.ORIGA_CDN_BASE_URL }}
+              run: |
+                  mkdir -p cdn/dictionaries cdn/dictionary cdn/grammar
+                  mkdir -p cdn/well_known_set cdn/kanji cdn/phrases cdn/pitch
+                  
+                  # Lindera tokenizer data
+                  for f in char_def.bin matrix.mtx dict.da dict.vals unk.bin dict.wordsidx dict.words metadata.json; do
+                    curl -sSf -o "cdn/dictionaries/$f" "${CDN_BASE}/dictionaries/$f" || echo "Warning: failed to download $f"
+                  done
+                  
+                  # Vocabulary chunks + kanji + radicals
+                  for f in chunk_01.json chunk_02.json chunk_03.json chunk_04.json chunk_05.json chunk_06.json chunk_07.json chunk_08.json chunk_09.json chunk_10.json chunk_11.json kanji.json radicals.json; do
+                    curl -sSf -o "cdn/dictionary/$f" "${CDN_BASE}/dictionary/$f" || echo "Warning: failed to download $f"
+                  done
+                  
+                  # Grammar
+                  curl -sSf -o "cdn/grammar/grammar.json" "${CDN_BASE}/grammar/grammar.json" || echo "Warning: failed to download grammar.json"
+                  
+                  # Well-known sets
+                  curl -sSf -o "cdn/well_known_set/well_known_sets_meta.json" "${CDN_BASE}/well_known_set/well_known_sets_meta.json" || echo "Warning: failed"
+                  curl -sSf -o "cdn/well_known_set/well_known_types_meta.json" "${CDN_BASE}/well_known_set/well_known_types_meta.json" || echo "Warning: failed"
+                  
+                  # Kanji
+                  curl -sSf -o "cdn/kanji/kanji.json" "${CDN_BASE}/kanji/kanji.json" || echo "Warning: failed"
+                  curl -sSf -o "cdn/kanji/radicals.json" "${CDN_BASE}/kanji/radicals.json" || echo "Warning: failed"
+                  
+                  echo "Downloaded CDN data:"
+                  find cdn -type f | head -30
 
             - name: Install Node.js dependencies
               working-directory: end2end
