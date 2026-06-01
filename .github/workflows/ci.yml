@@ -64,6 +64,48 @@ jobs:
                   path: cdn/
                   retention-days: 1
 
+    mobile-lint:
+        name: Mobile Lint
+        runs-on: ubuntu-24.04
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Cache APT packages
+              uses: awalsh128/cache-apt-pkgs-action@latest
+              with:
+                  packages: libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+                      protobuf-compiler libspeechd-dev
+                  version: 1.0
+
+            - name: Setup Java
+              uses: actions/setup-java@v4
+              with:
+                  distribution: temurin
+                  java-version: 21
+
+            - name: Setup Android SDK
+              uses: android-actions/setup-android@v3
+
+            - name: Setup Android NDK
+              uses: nttld/setup-ndk@v1
+              id: setup-ndk
+              with:
+                  ndk-version: r26b
+                  local-cache: true
+
+            - name: Setup Rust
+              uses: ./.github/actions/setup-rust
+              with:
+                  targets: wasm32-unknown-unknown,aarch64-linux-android
+                  shared-key: origa-ci
+
+            - name: Run clippy (Android)
+              env:
+                  NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+                  ANDROID_NDK_ROOT: ${{ steps.setup-ndk.outputs.ndk-path }}
+              run: cargo clippy --workspace --target aarch64-linux-android -- -D warnings
+
     test:
         name: Test
         needs: cdn-download
@@ -289,7 +331,7 @@ jobs:
 
     check:
         name: CI Gate
-        needs: [lint, test, e2e, docker-build]
+        needs: [lint, mobile-lint, test, e2e, docker-build]
         runs-on: ubuntu-latest
         steps:
             - run: echo "All checks passed"
