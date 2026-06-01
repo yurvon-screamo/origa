@@ -28,7 +28,7 @@ fn cards_to_lesson_includes_favorite_cards() {
 
     knowledge_set.toggle_favorite(card_id).unwrap();
 
-    let result = knowledge_set.cards_to_lesson(10, &JlptContent::new());
+    let result = knowledge_set.cards_to_lesson(10, &JlptContent::new(), JapaneseLevel::N5);
     assert!(result.contains_key(&card_id));
 }
 
@@ -50,7 +50,7 @@ fn cards_to_lesson_includes_high_difficulty_cards() {
         .rate_card(*study2.card_id(), Rating::Easy, RateMode::StandardLesson)
         .unwrap();
 
-    let result = knowledge_set.cards_to_lesson(10, &JlptContent::new());
+    let result = knowledge_set.cards_to_lesson(10, &JlptContent::new(), JapaneseLevel::N5);
 
     assert!(result.contains_key(study1.card_id()));
 }
@@ -473,7 +473,7 @@ fn recalculate_daily_stats_preserves_new_cards_on_create_card() {
             .unwrap();
     }
 
-    let lesson_cards = knowledge_set.cards_to_lesson(10, &JlptContent::new());
+    let lesson_cards = knowledge_set.cards_to_lesson(10, &JlptContent::new(), JapaneseLevel::N5);
     let new_in_lesson = lesson_cards
         .iter()
         .filter(|(id, _)| knowledge_set.get_card(**id).unwrap().memory().is_new())
@@ -537,7 +537,7 @@ fn new_cards_sorted_by_jlpt_level() {
         .create_card(create_vocab_card("走る"))
         .unwrap();
 
-    let result = knowledge_set.cards_to_lesson(2, &jlpt_content);
+    let result = knowledge_set.cards_to_lesson(2, &jlpt_content, JapaneseLevel::N5);
 
     assert!(
         result.contains_key(study_taberu.card_id()),
@@ -569,7 +569,7 @@ fn new_cards_unknown_level_go_last() {
         .create_card(create_vocab_card("食べる"))
         .unwrap();
 
-    let result = knowledge_set.cards_to_lesson(1, &jlpt_content);
+    let result = knowledge_set.cards_to_lesson(1, &jlpt_content, JapaneseLevel::N5);
 
     assert!(
         result.contains_key(study_taberu.card_id()),
@@ -614,7 +614,7 @@ fn new_cards_jlpt_sort_does_not_affect_other_categories() {
         .toggle_favorite(*study_nichi.card_id())
         .unwrap();
 
-    let result = knowledge_set.cards_to_lesson(10, &jlpt_content);
+    let result = knowledge_set.cards_to_lesson(10, &jlpt_content, JapaneseLevel::N5);
 
     assert!(
         result.contains_key(study_taberu.card_id()),
@@ -675,7 +675,7 @@ fn new_cards_interleaved_by_type_within_jlpt_level() {
         )))
         .unwrap();
 
-    let result = knowledge_set.cards_to_lesson(5, &jlpt_content);
+    let result = knowledge_set.cards_to_lesson(5, &jlpt_content, JapaneseLevel::N5);
 
     assert_eq!(result.len(), 5, "Should return exactly 5 cards (limit=5)");
 
@@ -715,7 +715,7 @@ fn new_cards_interleave_handles_missing_type() {
         knowledge_set.create_card(create_vocab_card(word)).unwrap();
     }
 
-    let result = knowledge_set.cards_to_lesson(5, &jlpt_content);
+    let result = knowledge_set.cards_to_lesson(5, &jlpt_content, JapaneseLevel::N5);
 
     assert_eq!(
         result.len(),
@@ -764,7 +764,7 @@ fn new_cards_interleave_across_jlpt_levels() {
         .create_card(Card::Kanji(KanjiCard::new_test("n4k1".to_string())))
         .unwrap();
 
-    let result = knowledge_set.cards_to_lesson(4, &jlpt_content);
+    let result = knowledge_set.cards_to_lesson(4, &jlpt_content, JapaneseLevel::N5);
 
     assert_eq!(result.len(), 4, "Should return exactly 4 cards (limit=4)");
 
@@ -823,7 +823,7 @@ fn new_cards_interleave_preserves_jlpt_priority() {
         knowledge_set.create_card(create_vocab_card(word)).unwrap();
     }
 
-    let result = knowledge_set.cards_to_lesson(3, &jlpt_content);
+    let result = knowledge_set.cards_to_lesson(3, &jlpt_content, JapaneseLevel::N5);
 
     assert!(
         result.contains_key(study_n5.card_id()),
@@ -859,7 +859,7 @@ fn phrase_new_cards_limited() {
             .unwrap();
     }
 
-    let result = knowledge_set.cards_to_lesson(5, &JlptContent::new());
+    let result = knowledge_set.cards_to_lesson(5, &JlptContent::new(), JapaneseLevel::N5);
 
     let phrase_count = result
         .keys()
@@ -937,7 +937,7 @@ fn phrase_new_cards_zero_when_limit_below_ratio() {
     }
 
     // daily_new_limit=0 → phrase_new_limit=0
-    let result = knowledge_set.cards_to_lesson(0, &JlptContent::new());
+    let result = knowledge_set.cards_to_lesson(0, &JlptContent::new(), JapaneseLevel::N5);
 
     let phrase_count = result
         .keys()
@@ -1006,7 +1006,7 @@ fn limited_types_still_respect_daily_limit() {
             .unwrap();
     }
 
-    let result = knowledge_set.cards_to_lesson(5, &JlptContent::new());
+    let result = knowledge_set.cards_to_lesson(5, &JlptContent::new(), JapaneseLevel::N5);
 
     assert!(
         result.len() <= 5,
@@ -1032,7 +1032,7 @@ fn lesson_size_respects_max_limit() {
             .unwrap();
     }
 
-    let result = knowledge_set.cards_to_lesson(100, &JlptContent::new());
+    let result = knowledge_set.cards_to_lesson(100, &JlptContent::new(), JapaneseLevel::N5);
 
     assert!(
         result.len() <= 50,
@@ -1055,7 +1055,7 @@ fn high_difficulty_cards_respect_max_lesson_size() {
             .unwrap();
     }
 
-    let result = knowledge_set.cards_to_lesson(10, &JlptContent::new());
+    let result = knowledge_set.cards_to_lesson(10, &JlptContent::new(), JapaneseLevel::N5);
 
     assert!(
         result.len() <= 50,
@@ -1087,7 +1087,7 @@ fn phrases_added_after_core_cards_learning() {
             .unwrap();
     }
 
-    let result = knowledge_set.cards_to_lesson(5, &JlptContent::new());
+    let result = knowledge_set.cards_to_lesson(5, &JlptContent::new(), JapaneseLevel::N5);
 
     let core_count = result
         .keys()
@@ -1141,7 +1141,7 @@ fn phrases_added_after_core_cards_review() {
             .unwrap();
     }
 
-    let result = knowledge_set.cards_to_lesson(5, &JlptContent::new());
+    let result = knowledge_set.cards_to_lesson(5, &JlptContent::new(), JapaneseLevel::N5);
 
     let core_count = result
         .keys()
@@ -1195,7 +1195,7 @@ fn onboarding_scoring_does_not_consume_daily_limit() {
         "OnboardingScoring should not increment new_cards_studied_today"
     );
 
-    let result = knowledge_set.cards_to_lesson(15, &JlptContent::new());
+    let result = knowledge_set.cards_to_lesson(15, &JlptContent::new(), JapaneseLevel::N5);
 
     let new_in_lesson = result
         .iter()
@@ -1221,7 +1221,7 @@ fn favorite_card_appears_once_when_due_high_difficulty() {
 
     knowledge_set.toggle_favorite(card_id).unwrap();
 
-    let result = knowledge_set.cards_to_lesson(10, &JlptContent::new());
+    let result = knowledge_set.cards_to_lesson(10, &JlptContent::new(), JapaneseLevel::N5);
 
     let count = result
         .card_ids()
@@ -1250,7 +1250,7 @@ fn favorite_card_appears_once_when_new() {
 
     knowledge_set.toggle_favorite(card_id).unwrap();
 
-    let result = knowledge_set.cards_to_lesson(10, &JlptContent::new());
+    let result = knowledge_set.cards_to_lesson(10, &JlptContent::new(), JapaneseLevel::N5);
 
     let count = result
         .card_ids()
@@ -1276,7 +1276,7 @@ fn favorite_card_appears_once_when_due_known() {
 
     knowledge_set.toggle_favorite(card_id).unwrap();
 
-    let result = knowledge_set.cards_to_lesson(10, &JlptContent::new());
+    let result = knowledge_set.cards_to_lesson(10, &JlptContent::new(), JapaneseLevel::N5);
 
     let count = result
         .card_ids()

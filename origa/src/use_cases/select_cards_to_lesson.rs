@@ -22,9 +22,10 @@ impl<'a, R: UserRepository> SelectCardsToLessonUseCase<'a, R> {
         debug!(user_id = %user.id(), "Selecting cards to lesson");
 
         let daily_new_limit = user.daily_load().new_cards_per_day();
-        let lesson_data = user
-            .knowledge_set()
-            .cards_to_lesson(daily_new_limit, jlpt_content);
+        let user_level = user.current_japanese_level();
+        let lesson_data =
+            user.knowledge_set()
+                .cards_to_lesson(daily_new_limit, jlpt_content, user_level);
 
         info!(user_id = %user.id(), count = lesson_data.total_count(), "Cards selected for lesson");
 
