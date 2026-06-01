@@ -125,6 +125,9 @@ testWithFreshUser.describe("Onboarding Flow - N4 with ~50% Progress", () => {
         await expect(page.getByTestId("onboarding-apps-step")).toBeVisible();
         await expect(page.getByTestId("apps-step-title")).toBeVisible();
 
+        // Wait for apps to load from CDN (filtered_apps is populated async)
+        await expect(page.getByTestId("apps-step-app-Migii-checkbox")).toBeVisible({ timeout: 15_000 });
+
         // Take screenshot before selections
         await page.screenshot({
             path: "test-results/onboarding-step-3-apps-before.png",
@@ -133,7 +136,6 @@ testWithFreshUser.describe("Onboarding Flow - N4 with ~50% Progress", () => {
 
         // Select Migii
         const migiiCheckbox = page.getByTestId("apps-step-app-Migii-checkbox");
-        await expect(migiiCheckbox).toBeVisible();
         await migiiCheckbox.click();
 
         // Verify Migii is selected (check checkbox state)

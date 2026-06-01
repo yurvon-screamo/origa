@@ -54,3 +54,9 @@ runs:
         curl -sSf -o "cdn/pitch/index.json" "${CDN_BASE}/pitch/index.json" || echo "Warning: failed"
         curl -sSf -o "cdn/manifest.json" "${CDN_BASE}/manifest.json" || echo "Warning: failed"
         curl -sSf -o "cdn/dictionaries/JmdictFurigana.txt" "${CDN_BASE}/dictionaries/JmdictFurigana.txt" || echo "Warning: failed"
+
+        # NDLOCR model files (~146 MB total)
+        mkdir -p cdn/ndlocr
+        for f in deim.onnx parseq-30.onnx parseq-50.onnx parseq-100.onnx vocab.txt; do
+          curl -sSf -o "cdn/ndlocr/$f" "${CDN_BASE}/ndlocr/$f" || echo "Warning: failed ndlocr/$f"
+        done
