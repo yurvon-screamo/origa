@@ -4307,6 +4307,10 @@ input[type="submit"],
     margin-bottom: 16px;
 }
 
+.kanji-detail-top-bar .fsrs-bar {
+    width: 80px;
+}
+
 .kanji-breadcrumbs {
     display: flex;
     align-items: center;
@@ -4467,6 +4471,10 @@ input[type="submit"],
     border-top: 1px solid var(--border-light);
     justify-content: space-between;
     align-items: center;
+}
+
+.kanji-detail-hero-actions .fsrs-bar {
+    width: 80px;
 }
 
 /* Section Card */
@@ -4753,14 +4761,14 @@ input[type="submit"],
 /* === Kanji Card Badge === */
 .kanji-card-badge {
     position: absolute;
-    top: 8px;
+    top: 12px;
     right: 8px;
     z-index: 10;
 }
 
 .kanji-card-badge .tag {
-    font-size: 10px;
-    padding: 4px 8px;
+    font-size: 9px;
+    padding: 2px 6px;
     letter-spacing: 0.1em;
 }
 
@@ -4809,7 +4817,7 @@ input[type="submit"],
     letter-spacing: 0.1em;
     text-transform: uppercase;
     flex-shrink: 0;
-    min-width: 12px;
+    min-width: 16px;
 }
 
 /* Fill-bar */
@@ -4846,7 +4854,6 @@ input[type="submit"],
 .fsrs-value {
     font-variant-numeric: tabular-nums;
     color: var(--fg-black);
-    min-width: 24px;
     text-align: right;
 }
 

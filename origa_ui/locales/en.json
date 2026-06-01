@@ -481,6 +481,8 @@
         "fsrs_next_review": "Next review",
         "fsrs_difficulty": "Difficulty",
         "fsrs_stability": "Stability",
+        "fsrs_difficulty_short": "D",
+        "fsrs_stability_short": "S",
         "radicals_label": "Radicals: {}",
         "examples_label": "Examples: {}",
         "user_not_found": "User not found",

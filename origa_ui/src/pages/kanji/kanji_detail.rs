@@ -8,8 +8,8 @@ use crate::i18n::use_i18n;
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{
     CardActionBar, CardHistoryModal, DeleteConfirmModal, FsrsMetrics, FsrsMetricsMode,
-    KanjiDrawingPractice, KanjiViewMode, KanjiWritingSection, LoadingOverlay, MarkdownText,
-    TabItem, Tabs, Tag, Text, TextSize, TypographyVariant,
+    FuriganaText, KanjiDrawingPractice, KanjiViewMode, KanjiWritingSection, LoadingOverlay,
+    MarkdownText, TabItem, Tabs, Tag, Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
 use leptos::task::spawn_local;
@@ -371,10 +371,10 @@ pub fn KanjiDetail() -> impl IntoView {
                                                             </div>
                                                             <div>
                                                                 <div class="kanji-vocab-item-reading">
-                                                                    {word}
+                                                                    <FuriganaText text=word.clone() known_kanji=known_kanji.get()/>
                                                                 </div>
                                                                 <div class="kanji-vocab-item-meaning">
-                                                                    {meaning}
+                                                                    <MarkdownText content=Signal::derive(move || meaning.clone()) known_kanji=known_kanji.get()/>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -617,12 +617,14 @@ fn MobileOverview(
     example_words: Memo<Vec<(String, String)>>,
     known_kanji: HashSet<char>,
 ) -> impl IntoView {
+    let known_kanji_stored = StoredValue::new(known_kanji);
+
     view! {
         <Show when=move || !description.get().is_empty()>
             <div class="kanji-detail-section">
                 <MarkdownText
                     content=Signal::derive(move || description.get())
-                    known_kanji=known_kanji.clone()
+                    known_kanji=known_kanji_stored.get_value()
                 />
             </div>
         </Show>
@@ -650,8 +652,12 @@ fn MobileOverview(
                                         {word.chars().next().unwrap_or('?').to_string()}
                                     </div>
                                     <div>
-                                        <div class="kanji-vocab-item-reading">{word}</div>
-                                        <div class="kanji-vocab-item-meaning">{meaning}</div>
+                                        <div class="kanji-vocab-item-reading">
+                                            <FuriganaText text=word.clone() known_kanji=known_kanji_stored.get_value()/>
+                                        </div>
+                                        <div class="kanji-vocab-item-meaning">
+                                            <MarkdownText content=Signal::derive(move || meaning.clone()) known_kanji=known_kanji_stored.get_value()/>
+                                        </div>
                                     </div>
                                 </div>
                             }
