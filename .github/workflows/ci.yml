@@ -91,7 +91,22 @@ jobs:
                   
                   # Grammar
                   curl -sSf -o "cdn/grammar/grammar.json" "${CDN_BASE}/grammar/grammar.json" || echo "Warning: failed to download grammar.json"
-                  
+
+                  # Well-known sets meta + JLPT sets
+                  mkdir -p cdn/well_known_set
+                  curl -sSf -o "cdn/well_known_set/well_known_sets_meta.json" "${CDN_BASE}/well_known_set/well_known_sets_meta.json" || echo "Warning: failed"
+                  curl -sSf -o "cdn/well_known_set/well_known_types_meta.json" "${CDN_BASE}/well_known_set/well_known_types_meta.json" || echo "Warning: failed"
+                  for level in n5 n4 n3 n2 n1; do
+                    curl -sSf -o "cdn/well_known_set/jlpt_${level}.json" "${CDN_BASE}/well_known_set/jlpt_${level}.json" || echo "Warning: failed to download jlpt_${level}.json"
+                  done
+
+                  # Phrase index
+                  mkdir -p cdn/phrases
+                  curl -sSf -o "cdn/phrases/phrase_index.json" "${CDN_BASE}/phrases/phrase_index.json" || echo "Warning: failed"
+
+                  # Furigana dictionary
+                  curl -sSf -o "cdn/dictionaries/JmdictFurigana.txt" "${CDN_BASE}/dictionaries/JmdictFurigana.txt" || echo "Warning: failed"
+
                   echo "Downloaded CDN test data:"
                   find cdn -type f | head -30
 
@@ -168,6 +183,23 @@ jobs:
                   # Kanji
                   curl -sSf -o "cdn/kanji/kanji.json" "${CDN_BASE}/kanji/kanji.json" || echo "Warning: failed"
                   curl -sSf -o "cdn/kanji/radicals.json" "${CDN_BASE}/kanji/radicals.json" || echo "Warning: failed"
+                  
+                  # Manifest
+                  curl -sSf -o "cdn/manifest.json" "${CDN_BASE}/manifest.json" || echo "Warning: failed"
+                  
+                  # Furigana dictionary
+                  curl -sSf -o "cdn/dictionaries/JmdictFurigana.txt" "${CDN_BASE}/dictionaries/JmdictFurigana.txt" || echo "Warning: failed"
+                  
+                  # JLPT sets (needed for onboarding)
+                  for level in n5 n4 n3 n2 n1; do
+                    curl -sSf -o "cdn/well_known_set/jlpt_${level}.json" "${CDN_BASE}/well_known_set/jlpt_${level}.json" || echo "Warning: failed to download jlpt_${level}.json"
+                  done
+                  
+                  # Phrase index (needed for phrase card creation)
+                  curl -sSf -o "cdn/phrases/phrase_index.json" "${CDN_BASE}/phrases/phrase_index.json" || echo "Warning: failed"
+                  
+                  # Pitch accent index
+                  curl -sSf -o "cdn/pitch/index.json" "${CDN_BASE}/pitch/index.json" || echo "Warning: failed"
                   
                   echo "Downloaded CDN data:"
                   find cdn -type f | head -30
