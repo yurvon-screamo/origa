@@ -1,6 +1,6 @@
 use super::super::shared::{
     CardCounts, CardStatus, Filter, FilterBtn, LoadMoreButton, create_delete_callback,
-    create_mark_as_known_callback, create_toggle_favorite_callback,
+    create_toggle_favorite_callback,
 };
 use super::kanji_card_item::KanjiCardItem;
 use crate::i18n::{t, use_i18n};
@@ -84,8 +84,6 @@ pub fn KanjiContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
 
     let on_toggle_favorite =
         create_toggle_favorite_callback(repository.clone(), current_user, refresh_trigger);
-
-    let on_mark_as_known = create_mark_as_known_callback(repository.clone(), refresh_trigger);
 
     let (is_deleting, on_delete) =
         create_delete_callback(repository.clone(), toasts, refresh_trigger);
@@ -189,13 +187,11 @@ pub fn KanjiContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
                                     each=move || visible_cards.get()
                                     key=|card| format!("{}-{}", card.card_id(), card.is_favorite())
                                     children=move |card| {
-                                        let card_id_for_callbacks = *card.card_id();
                                         view! {
                                             <KanjiCardItem
                                                 study_card=card
                                                 native_language=native_lang
                                                 on_toggle_favorite=on_toggle_favorite
-                                                on_mark_as_known=Callback::new(move |_| on_mark_as_known.run(card_id_for_callbacks))
                                                 on_delete=on_delete
                                                 is_deleting=is_deleting.into()
                                             />
