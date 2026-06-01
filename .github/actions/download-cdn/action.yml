@@ -5,7 +5,7 @@ inputs:
   cache-key:
     description: "Cache key prefix"
     required: false
-    default: "cdn-data-v1"
+    default: "cdn-data-v4"
   cdn-base-url:
     description: "CDN base URL for downloading files"
     required: true
@@ -27,7 +27,7 @@ runs:
         CDN_BASE: ${{ inputs.cdn-base-url }}
       run: |
         mkdir -p cdn/dictionaries cdn/dictionary cdn/grammar
-        mkdir -p cdn/well_known_set cdn/phrases cdn/pitch
+        mkdir -p cdn/well_known_set cdn/phrases cdn/pitch cdn/ndlocr
 
         # Lindera tokenizer data
         for f in char_def.bin matrix.mtx dict.da dict.vals unk.bin dict.wordsidx dict.words metadata.json; do
@@ -56,25 +56,42 @@ runs:
         curl -sSf -o "cdn/dictionaries/JmdictFurigana.txt" "${CDN_BASE}/dictionaries/JmdictFurigana.txt" || echo "Warning: failed"
 
         # NDLOCR model files (~146 MB total)
-        mkdir -p cdn/ndlocr
         for f in deim.onnx parseq-30.onnx parseq-50.onnx parseq-100.onnx vocab.txt; do
           curl -sSf -o "cdn/ndlocr/$f" "${CDN_BASE}/ndlocr/$f" || echo "Warning: failed ndlocr/$f"
         done
 
-        # Verify critical files are non-empty
+    - name: Verify CDN data
+      shell: bash
+      run: |
         echo "Verifying CDN downloads..."
         MISSING=0
-        for f in well_known_set/well_known_sets_meta.json well_known_set/well_known_types_meta.json dictionaries/metadata.json grammar/grammar.json manifest.json; do
+        declare -A MIN_SIZES
+        MIN_SIZES["well_known_set/well_known_sets_meta.json"]=100000
+        MIN_SIZES["well_known_set/well_known_types_meta.json"]=100
+        MIN_SIZES["dictionaries/metadata.json"]=100
+        MIN_SIZES["grammar/grammar.json"]=1000
+        MIN_SIZES["manifest.json"]=100
+
+        for f in "${!MIN_SIZES[@]}"; do
+          min_size=${MIN_SIZES[$f]}
           if [ ! -s "cdn/$f" ]; then
             echo "ERROR: cdn/$f is missing or empty!"
             MISSING=$((MISSING + 1))
+            continue
+          fi
+          actual_size=$(wc -c < "cdn/$f")
+          if [ "$actual_size" -lt "$min_size" ]; then
+            echo "ERROR: cdn/$f is too small ($actual_size < $min_size bytes) — corrupted!"
+            MISSING=$((MISSING + 1))
           else
-            SIZE=$(wc -c < "cdn/$f")
-            echo "  OK: cdn/$f ($SIZE bytes)"
+            echo "  OK: cdn/$f ($actual_size bytes, min $min_size)"
           fi
         done
+
         if [ "$MISSING" -gt 0 ]; then
-          echo "FATAL: $MISSING critical CDN files are missing. CDN_BASE=$CDN_BASE"
+          echo "FATAL: $MISSING critical CDN files are missing or corrupted."
+          echo "Removing corrupted cache directory..."
+          rm -rf cdn
           exit 1
         fi
         echo "All critical CDN files verified."
