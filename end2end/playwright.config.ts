@@ -54,7 +54,7 @@ export default defineConfig({
         },
         {
             command: isCI
-                ? "npx serve ../origa_ui/dist -p 1420 --no-clipboard"
+                ? "npx serve ../origa_ui/dist -s -p 1420 --no-clipboard"
                 : "cd ../origa_ui && trunk serve",
             port: 1420,
             reuseExistingServer: !isCI,

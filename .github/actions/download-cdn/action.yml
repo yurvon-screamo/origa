@@ -1,0 +1,56 @@
+name: "Download CDN Data"
+description: "Download and cache CDN test data (dictionaries, grammar, etc.)"
+
+inputs:
+  cache-key:
+    description: "Cache key prefix"
+    required: false
+    default: "cdn-data-v1"
+  cdn-base-url:
+    description: "CDN base URL for downloading files"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Cache CDN data
+      uses: actions/cache@v4
+      id: cache-cdn
+      with:
+        path: cdn
+        key: ${{ inputs.cache-key }}
+
+    - name: Download CDN data
+      if: steps.cache-cdn.outputs.cache-hit != 'true'
+      shell: bash
+      env:
+        CDN_BASE: ${{ inputs.cdn-base-url }}
+      run: |
+        mkdir -p cdn/dictionaries cdn/dictionary cdn/grammar
+        mkdir -p cdn/well_known_set cdn/phrases cdn/pitch
+
+        # Lindera tokenizer data
+        for f in char_def.bin matrix.mtx dict.da dict.vals unk.bin dict.wordsidx dict.words metadata.json; do
+          curl -sSf -o "cdn/dictionaries/$f" "${CDN_BASE}/dictionaries/$f" || echo "Warning: failed $f"
+        done
+
+        # Vocabulary chunks + kanji + radicals
+        for f in chunk_01.json chunk_02.json chunk_03.json chunk_04.json chunk_05.json chunk_06.json chunk_07.json chunk_08.json chunk_09.json chunk_10.json chunk_11.json kanji.json radicals.json; do
+          curl -sSf -o "cdn/dictionary/$f" "${CDN_BASE}/dictionary/$f" || echo "Warning: failed $f"
+        done
+
+        # Grammar
+        curl -sSf -o "cdn/grammar/grammar.json" "${CDN_BASE}/grammar/grammar.json" || echo "Warning: failed grammar"
+
+        # Well-known sets
+        curl -sSf -o "cdn/well_known_set/well_known_sets_meta.json" "${CDN_BASE}/well_known_set/well_known_sets_meta.json" || echo "Warning: failed"
+        curl -sSf -o "cdn/well_known_set/well_known_types_meta.json" "${CDN_BASE}/well_known_set/well_known_types_meta.json" || echo "Warning: failed"
+        for level in n5 n4 n3 n2 n1; do
+          curl -sSf -o "cdn/well_known_set/jlpt_${level}.json" "${CDN_BASE}/well_known_set/jlpt_${level}.json" || echo "Warning: failed jlpt_${level}"
+        done
+
+        # Phrase + pitch + manifest + furigana
+        curl -sSf -o "cdn/phrases/phrase_index.json" "${CDN_BASE}/phrases/phrase_index.json" || echo "Warning: failed"
+        curl -sSf -o "cdn/pitch/index.json" "${CDN_BASE}/pitch/index.json" || echo "Warning: failed"
+        curl -sSf -o "cdn/manifest.json" "${CDN_BASE}/manifest.json" || echo "Warning: failed"
+        curl -sSf -o "cdn/dictionaries/JmdictFurigana.txt" "${CDN_BASE}/dictionaries/JmdictFurigana.txt" || echo "Warning: failed"
