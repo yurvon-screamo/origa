@@ -53,7 +53,9 @@ export default defineConfig({
             stderr: "pipe",
         },
         {
-            command: "cd ../origa_ui && trunk serve",
+            command: isCI
+                ? "npx serve ../origa_ui/dist -p 1420 --no-clipboard"
+                : "cd ../origa_ui && trunk serve",
             port: 1420,
             reuseExistingServer: !isCI,
             timeout: 600000,
