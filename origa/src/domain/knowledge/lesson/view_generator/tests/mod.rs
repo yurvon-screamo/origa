@@ -8,6 +8,7 @@ use ulid::Ulid;
 
 mod card_views;
 mod filtering;
+mod kanji_radical_quiz;
 mod kanji_reading_quiz;
 mod quiz;
 mod types;
