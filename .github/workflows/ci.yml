@@ -76,7 +76,7 @@ jobs:
             - name: Download CDN data
               uses: ./.github/actions/download-cdn
               with:
-                  cache-key: cdn-data-v6
+                  cache-key: cdn-data-v7
                   cdn-base-url: ${{ vars.ORIGA_CDN_BASE_URL }}
 
             - name: Run tests
@@ -120,7 +120,7 @@ jobs:
             - name: Download CDN data
               uses: ./.github/actions/download-cdn
               with:
-                  cache-key: cdn-data-v6
+                  cache-key: cdn-data-v7
                   cdn-base-url: ${{ vars.ORIGA_CDN_BASE_URL }}
 
             - name: Build WASM
@@ -175,7 +175,7 @@ jobs:
             - name: Download CDN data
               uses: ./.github/actions/download-cdn
               with:
-                  cache-key: cdn-data-v6
+                  cache-key: cdn-data-v7
                   cdn-base-url: ${{ vars.ORIGA_CDN_BASE_URL }}
 
             - name: Install TrailBase
