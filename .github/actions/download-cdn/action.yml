@@ -5,7 +5,7 @@ inputs:
   cache-key:
     description: "Cache key prefix"
     required: false
-    default: "cdn-data-v6"
+    default: "cdn-data-v7"
   cdn-base-url:
     description: "CDN base URL for downloading files"
     required: true
@@ -70,8 +70,6 @@ runs:
         CDN_BASE: ${{ inputs.cdn-base-url }}
       run: |
         set -e
-        mkdir -p cdn/dictionaries cdn/dictionary cdn/grammar
-        mkdir -p cdn/well_known_set cdn/phrases cdn/pitch cdn/ndlocr
 
         dl() {
           local file="$1"
@@ -89,67 +87,20 @@ runs:
           return 1
         }
 
-        # Lindera tokenizer data
-        for f in char_def.bin matrix.mtx dict.da dict.vals unk.bin dict.wordsidx dict.words metadata.json; do
-          dl "cdn/dictionaries/$f" "${CDN_BASE}/dictionaries/$f"
-        done
-
-        # Vocabulary chunks + kanji + radicals
-        for f in chunk_01.json chunk_02.json chunk_03.json chunk_04.json chunk_05.json chunk_06.json chunk_07.json chunk_08.json chunk_09.json chunk_10.json chunk_11.json kanji.json radicals.json; do
-          dl "cdn/dictionary/$f" "${CDN_BASE}/dictionary/$f"
-        done
-
-        # Grammar
-        dl "cdn/grammar/grammar.json" "${CDN_BASE}/grammar/grammar.json"
-
-        # Well-known sets
-        dl "cdn/well_known_set/well_known_sets_meta.json" "${CDN_BASE}/well_known_set/well_known_sets_meta.json"
-        dl "cdn/well_known_set/well_known_types_meta.json" "${CDN_BASE}/well_known_set/well_known_types_meta.json"
-        for level in n5 n4 n3 n2 n1; do
-          dl "cdn/well_known_set/jlpt_${level}.json" "${CDN_BASE}/well_known_set/jlpt_${level}.json"
-        done
-
-        # Phrase + pitch + manifest + furigana
-        dl "cdn/phrases/phrase_index.json" "${CDN_BASE}/phrases/phrase_index.json"
-        dl "cdn/pitch/index.json" "${CDN_BASE}/pitch/index.json"
-        dl "cdn/manifest.json" "${CDN_BASE}/manifest.json"
-        dl "cdn/dictionaries/JmdictFurigana.txt" "${CDN_BASE}/dictionaries/JmdictFurigana.txt"
-
-        # NDLOCR model files
-        for f in deim.onnx parseq-30.onnx parseq-50.onnx parseq-100.onnx vocab.txt; do
-          dl "cdn/ndlocr/$f" "${CDN_BASE}/ndlocr/$f"
-        done
-
-        # Set files (migii, minna, duolingo, etc.) from manifest
-        python3 -c "
-        import json
-        with open('cdn/well_known_set/well_known_sets_meta.json') as f:
-            sets = json.load(f)
-        for m in sets:
-            sid = m['id']
-            if sid.startswith('jlpt_'):
-                print(f'well_known_set/{sid}.json')
-            elif sid.startswith('migii_'):
-                level = sid.split('_')[1]
-                print(f'well_known_set/migii/{level}/{sid}.json')
-            elif sid.startswith('minna_n5_'):
-                print(f'well_known_set/minna_n5/{sid}.json')
-            elif sid.startswith('minna_n4_'):
-                print(f'well_known_set/minna_n4/{sid}.json')
-            elif sid.startswith('duolingo_'):
-                rest = sid[9:]
-                level = rest.split('_')[0]
-                filename = rest[len(level)+1:]
-                print(f'well_known_set/duolingo/{level}/{filename}.json')
-            elif sid.startswith('spy_family_'):
-                print(f'well_known_set/spy_family/{sid}.json')
-            else:
-                print(f'well_known_set/{sid}.json')
-        " | while read -r path; do
-            mkdir -p "cdn/$(dirname "$path")"
-            dl "cdn/$path" "${CDN_BASE}/$path" || true
-        done
-        echo "Set files download complete"
+        TOTAL=$(wc -l < end2end/cdn-manifest.txt)
+        echo "Downloading $TOTAL CDN files from manifest..."
+        OK=0
+        FAIL=0
+        while IFS= read -r path; do
+          [ -z "$path" ] && continue
+          mkdir -p "cdn/$(dirname "$path")"
+          if dl "cdn/$path" "${CDN_BASE}/$path"; then
+            OK=$((OK + 1))
+          else
+            FAIL=$((FAIL + 1))
+          fi
+        done < end2end/cdn-manifest.txt
+        echo "Downloaded $OK/$TOTAL files ($FAIL failed)"
 
     - name: Final verification
       shell: bash
