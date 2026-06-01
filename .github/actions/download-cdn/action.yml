@@ -1,0 +1,142 @@
+name: "Download CDN Data"
+description: "Download and cache CDN test data with integrity verification"
+
+inputs:
+  cache-key:
+    description: "Cache key prefix"
+    required: false
+    default: "cdn-data-v7"
+  cdn-base-url:
+    description: "CDN base URL for downloading files"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Cache CDN data
+      uses: actions/cache@v4
+      id: cache-cdn
+      with:
+        path: cdn
+        key: ${{ inputs.cache-key }}
+
+    - name: Verify cached data
+      id: verify
+      shell: bash
+      run: |
+        if [ "${{ steps.cache-cdn.outputs.cache-hit }}" != "true" ]; then
+          echo "cache_miss=true" >> $GITHUB_OUTPUT
+          exit 0
+        fi
+        echo "Cache hit — verifying integrity..."
+        ERRORS=0
+        # IMPORTANT: keep in sync with Final verification MIN_SIZES below
+        declare -A MIN_SIZES
+        MIN_SIZES["well_known_set/well_known_sets_meta.json"]=100000
+        MIN_SIZES["well_known_set/well_known_types_meta.json"]=100
+        MIN_SIZES["dictionaries/metadata.json"]=100
+        MIN_SIZES["grammar/grammar.json"]=1000
+        MIN_SIZES["manifest.json"]=100
+        MIN_SIZES["dictionaries/JmdictFurigana.txt"]=1000
+        MIN_SIZES["phrases/phrase_index.json"]=100
+        MIN_SIZES["pitch/index.json"]=100
+
+        for f in "${!MIN_SIZES[@]}"; do
+          min_size=${MIN_SIZES[$f]}
+          if [ ! -s "cdn/$f" ]; then
+            echo "MISSING: cdn/$f"
+            ERRORS=$((ERRORS + 1))
+            continue
+          fi
+          actual_size=$(wc -c < "cdn/$f")
+          if [ "$actual_size" -lt "$min_size" ]; then
+            echo "CORRUPTED: cdn/$f ($actual_size < $min_size bytes)"
+            ERRORS=$((ERRORS + 1))
+          fi
+        done
+
+        if [ "$ERRORS" -gt 0 ]; then
+          echo "Cache corrupted — will re-download"
+          rm -rf cdn
+          echo "cache_miss=true" >> $GITHUB_OUTPUT
+        else
+          echo "Cache verified OK"
+          echo "cache_miss=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Download CDN data
+      if: steps.verify.outputs.cache_miss == 'true'
+      shell: bash
+      env:
+        CDN_BASE: ${{ inputs.cdn-base-url }}
+      run: |
+        set -euo pipefail
+
+        dl() {
+          local file="$1"
+          local url="$2"
+          local retries=3
+          for i in $(seq 1 $retries); do
+            if curl -sSf --connect-timeout 10 --max-time 120 -o "$file" "$url" && [ -s "$file" ]; then
+              return 0
+            fi
+            echo "Retry $i/$retries for $(basename $file)"
+            rm -f "$file"
+            sleep 2
+          done
+          echo "FAILED: $file after $retries attempts"
+          return 1
+        }
+
+        TOTAL=$(wc -l < end2end/cdn-manifest.txt)
+        echo "Downloading $TOTAL CDN files from manifest..."
+        OK=0
+        FAIL=0
+        while IFS= read -r path; do
+          [ -z "$path" ] && continue
+          mkdir -p "cdn/$(dirname "$path")"
+          if dl "cdn/$path" "${CDN_BASE}/$path"; then
+            OK=$((OK + 1))
+          else
+            FAIL=$((FAIL + 1))
+          fi
+        done < end2end/cdn-manifest.txt
+        echo "Downloaded $OK/$TOTAL files ($FAIL failed)"
+
+    - name: Final verification
+      shell: bash
+      run: |
+        echo "Verifying CDN data..."
+        ERRORS=0
+        # IMPORTANT: keep in sync with Verify cached data MIN_SIZES above
+        declare -A MIN_SIZES
+        MIN_SIZES["well_known_set/well_known_sets_meta.json"]=100000
+        MIN_SIZES["well_known_set/well_known_types_meta.json"]=100
+        MIN_SIZES["dictionaries/metadata.json"]=100
+        MIN_SIZES["grammar/grammar.json"]=1000
+        MIN_SIZES["manifest.json"]=100
+        MIN_SIZES["dictionaries/JmdictFurigana.txt"]=1000
+        MIN_SIZES["phrases/phrase_index.json"]=100
+        MIN_SIZES["pitch/index.json"]=100
+
+        for f in "${!MIN_SIZES[@]}"; do
+          min_size=${MIN_SIZES[$f]}
+          if [ ! -s "cdn/$f" ]; then
+            echo "ERROR: cdn/$f is missing or empty!"
+            ERRORS=$((ERRORS + 1))
+            continue
+          fi
+          actual_size=$(wc -c < "cdn/$f")
+          if [ "$actual_size" -lt "$min_size" ]; then
+            echo "ERROR: cdn/$f too small ($actual_size < $min_size) — corrupted!"
+            ERRORS=$((ERRORS + 1))
+          else
+            echo "  OK: cdn/$f ($actual_size bytes)"
+          fi
+        done
+
+        if [ "$ERRORS" -gt 0 ]; then
+          echo "FATAL: $ERRORS critical files failed verification"
+          exit 1
+        fi
+        echo "All critical CDN files verified."

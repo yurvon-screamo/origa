@@ -34,7 +34,7 @@ pub async fn check_and_invalidate() -> Result<(), OrigaError> {
         Err(e) => {
             tracing::warn!(error = ?e, "Failed to fetch remote manifest, skipping invalidation");
             return Ok(());
-        }
+        },
     };
 
     let cache = open_cdn_cache().await?;
@@ -79,10 +79,7 @@ pub async fn check_and_invalidate() -> Result<(), OrigaError> {
 
     save_local_manifest(&cache, &remote).await?;
 
-    tracing::info!(
-        stale_count = stale.len(),
-        "Cache invalidated"
-    );
+    tracing::info!(stale_count = stale.len(), "Cache invalidated");
 
     Ok(())
 }
@@ -115,10 +112,13 @@ async fn fetch_remote_manifest() -> Result<CacheManifest, OrigaError> {
             reason: format!("Network error: {:?}", e),
         })?;
 
-    let response: web_sys::Response = resp_value.dyn_into().map_err(|e| OrigaError::NetworkError {
-        url: url.clone(),
-        reason: format!("Failed to cast response: {:?}", e),
-    })?;
+    let response: web_sys::Response =
+        resp_value
+            .dyn_into()
+            .map_err(|e| OrigaError::NetworkError {
+                url: url.clone(),
+                reason: format!("Failed to cast response: {:?}", e),
+            })?;
 
     if response.status() == 404 {
         return Err(OrigaError::RepositoryError {
@@ -141,9 +141,11 @@ async fn fetch_remote_manifest() -> Result<CacheManifest, OrigaError> {
         reason: format!("Failed to read response text: {:?}", e),
     })?;
 
-    let text_str = text.as_string().ok_or_else(|| OrigaError::RepositoryError {
-        reason: "Response text is not a string".to_string(),
-    })?;
+    let text_str = text
+        .as_string()
+        .ok_or_else(|| OrigaError::RepositoryError {
+            reason: "Response text is not a string".to_string(),
+        })?;
 
     serde_json::from_str(&text_str).map_err(|e| OrigaError::RepositoryError {
         reason: format!("Failed to parse manifest JSON: {:?}", e),
@@ -202,11 +204,9 @@ fn find_stale_entries(local: &CacheManifest, remote: &CacheManifest) -> Vec<Stri
     local
         .files
         .iter()
-        .filter(|(path, local_hash)| {
-            match remote.files.get(*path) {
-                Some(remote_hash) => *local_hash != remote_hash,
-                None => true,
-            }
+        .filter(|(path, local_hash)| match remote.files.get(*path) {
+            Some(remote_hash) => *local_hash != remote_hash,
+            None => true,
         })
         .map(|(path, _)| path.clone())
         .collect()
@@ -219,10 +219,10 @@ async fn invalidate_stale_entries(cache: &web_sys::Cache, stale_paths: &[String]
             Ok(result) => {
                 let deleted = result.is_truthy();
                 tracing::debug!(path = %path, deleted = deleted, "Cache entry invalidation");
-            }
+            },
             Err(e) => {
                 tracing::warn!(path = %path, error = ?e, "Failed to delete cache entry");
-            }
+            },
         }
     }
 }
@@ -283,12 +283,10 @@ async fn save_local_manifest(
     response_init.set_status(200);
     response_init.set_status_text("OK");
 
-    let response =
-        web_sys::Response::new_with_opt_blob_and_init(Some(&blob), &response_init).map_err(
-            |e| OrigaError::RepositoryError {
-                reason: format!("Failed to create manifest response: {:?}", e),
-            },
-        )?;
+    let response = web_sys::Response::new_with_opt_blob_and_init(Some(&blob), &response_init)
+        .map_err(|e| OrigaError::RepositoryError {
+            reason: format!("Failed to create manifest response: {:?}", e),
+        })?;
 
     let request = web_sys::Request::new_with_str(MANIFEST_CACHE_KEY).map_err(|e| {
         OrigaError::RepositoryError {
@@ -363,10 +361,7 @@ mod tests {
             version: 1,
             files: files.clone(),
         };
-        let remote = CacheManifest {
-            version: 2,
-            files,
-        };
+        let remote = CacheManifest { version: 2, files };
 
         let stale = find_stale_entries(&local, &remote);
         assert!(stale.is_empty());

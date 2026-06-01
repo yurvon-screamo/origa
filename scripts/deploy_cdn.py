@@ -96,7 +96,7 @@ def s3_uri(key: str) -> str:
 
 
 def run_aws_raw(args: list[str]) -> subprocess.CompletedProcess[str]:
-    cmd = ["aws", *args]
+    cmd = ["pwsh", "-Command", "aws", *args]
     try:
         return subprocess.run(
             cmd,
@@ -105,8 +105,7 @@ def run_aws_raw(args: list[str]) -> subprocess.CompletedProcess[str]:
         )
     except FileNotFoundError:
         print(
-            "ERROR: 'aws' CLI not found. Install:"
-            " https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html",
+            "ERROR: 'aws' CLI not found.",
             file=sys.stderr,
         )
         sys.exit(1)
@@ -133,10 +132,18 @@ def download_remote_manifest(dry_run: bool) -> dict[str, object] | None:
         print("  [DRY-RUN] would download remote manifest")
         return None
 
-    result = run_aws_raw([
-        "s3", "cp", s3_uri("manifest.json"), str(tmp_path),
-        "--profile", S3_PROFILE, "--endpoint-url", S3_ENDPOINT,
-    ])
+    result = run_aws_raw(
+        [
+            "s3",
+            "cp",
+            s3_uri("manifest.json"),
+            str(tmp_path),
+            "--profile",
+            S3_PROFILE,
+            "--endpoint-url",
+            S3_ENDPOINT,
+        ]
+    )
 
     if result.returncode != 0:
         if "404" in result.stderr or "NoSuchKey" in result.stderr:
@@ -296,15 +303,15 @@ def main() -> None:
             print(f"    + {path}")
 
     # Step 4: Upload changed versioned files
-    print(f"\nStep 4: Uploading changed versioned files...")
+    print("\nStep 4: Uploading changed versioned files...")
     upload_versioned_files(cdn_dir, changed, dry_run)
 
     # Step 5: Sync immutable directories
-    print(f"\nStep 5: Syncing immutable directories...")
+    print("\nStep 5: Syncing immutable directories...")
     sync_immutable_dirs(cdn_dir, dry_run)
 
     # Step 6: Upload manifest
-    print(f"\nStep 6: Uploading manifest...")
+    print("\nStep 6: Uploading manifest...")
     upload_manifest(cdn_dir, dry_run)
 
     print("\nDone!")

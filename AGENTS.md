@@ -7,7 +7,7 @@
 
 | Слой           | Технология                                                                |
 |----------------|---------------------------------------------------------------------------|
-| Workspace      | Rust 2024 edition, id `net.uwwu.origa`                                    |
+| Workspace      | Rust 2024 edition, id `net.uwuwu.origa`                                   |
 | Бизнес-логика  | `origa/` — Clean Architecture (Use Cases → Domain → Traits)               |
 | Frontend       | `origa_ui/` — Leptos 0.8, CSR/WASM, trunk                                 |
 | Desktop        | `tauri/` — Tauri v2 (Windows, Linux, macOS)                               |

@@ -1,0 +1,260 @@
+name: CI
+
+on:
+    pull_request:
+        branches: [master]
+    push:
+        branches: [master]
+        paths-ignore: ['docs/**', '*.md', 'scripts/**', 'cdn/**']
+    workflow_dispatch:
+
+concurrency:
+    group: ci-${{ github.ref }}
+    cancel-in-progress: true
+
+env:
+    CARGO_TERM_COLOR: always
+
+jobs:
+    lint:
+        name: Lint
+        runs-on: ubuntu-24.04
+        env:
+            ORIGA_CDN_BASE_URL: ${{ vars.ORIGA_CDN_BASE_URL }}
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Cache APT packages
+              uses: awalsh128/cache-apt-pkgs-action@latest
+              with:
+                  packages: libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+                      protobuf-compiler libspeechd-dev
+                  version: 1.0
+
+            - name: Setup Rust
+              uses: ./.github/actions/setup-rust
+              with:
+                  targets: wasm32-unknown-unknown
+                  shared-key: origa-ci
+
+            - name: Check formatting
+              run: cargo fmt --check --all
+
+            - name: Run clippy
+              run: cargo clippy --workspace --all-targets -- -D warnings
+
+    test:
+        name: Test
+        runs-on: ubuntu-24.04
+        env:
+            ORIGA_CDN_BASE_URL: ${{ vars.ORIGA_CDN_BASE_URL }}
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Cache APT packages
+              uses: awalsh128/cache-apt-pkgs-action@latest
+              with:
+                  packages: libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+                      protobuf-compiler libspeechd-dev
+                  version: 1.0
+
+            - name: Setup Rust
+              uses: ./.github/actions/setup-rust
+              with:
+                  targets: wasm32-unknown-unknown
+                  shared-key: origa-ci
+
+            - name: Cache UniDic dictionary
+              uses: actions/cache@v4
+              with:
+                  path: origa_ui/public/dictionaries/unidic
+                  key: unidic-dict-v1-${{ hashFiles('origa_ui/build.rs') }}
+                  restore-keys: unidic-dict-v1-
+
+            - name: Download CDN data
+              uses: ./.github/actions/download-cdn
+              with:
+                  cache-key: cdn-data-v7-${{ hashFiles('end2end/cdn-manifest.txt') }}
+                  cdn-base-url: ${{ vars.ORIGA_CDN_BASE_URL }}
+
+            - name: Run tests
+              run: cargo test --workspace
+
+    e2e-build:
+        name: E2E Build
+        runs-on: ubuntu-24.04
+        env:
+            ORIGA_CDN_BASE_URL: http://localhost:8080
+            TRAILBASE_URL: http://localhost:4000
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Cache APT packages
+              uses: awalsh128/cache-apt-pkgs-action@latest
+              with:
+                  packages: libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+                      protobuf-compiler libspeechd-dev
+                  version: 1.0
+
+            - name: Setup Rust
+              uses: ./.github/actions/setup-rust
+              with:
+                  targets: wasm32-unknown-unknown
+                  shared-key: origa-ci
+
+            - name: Setup Frontend
+              uses: ./.github/actions/setup-frontend
+              with:
+                  tools: trunk
+
+            - name: Download CDN data
+              uses: ./.github/actions/download-cdn
+              with:
+                  cache-key: cdn-data-v7-${{ hashFiles('end2end/cdn-manifest.txt') }}
+                  cdn-base-url: ${{ vars.ORIGA_CDN_BASE_URL }}
+
+            - name: Upload CDN artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: cdn-data
+                  path: cdn/
+                  retention-days: 1
+
+            - name: Build WASM
+              run: cd origa_ui && trunk build --release
+              env:
+                  ORIGA_CDN_BASE_URL: http://localhost:8080
+                  TRAILBASE_URL: http://localhost:4000
+
+            - name: Upload WASM artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: wasm-dist
+                  path: origa_ui/dist/
+                  retention-days: 1
+
+    e2e:
+        name: E2E (${{ matrix.spec }})
+        needs: e2e-build
+        runs-on: ubuntu-24.04
+        strategy:
+            fail-fast: false
+            matrix:
+                spec:
+                    - auth
+                    - grammar
+                    - home
+                    - kanji
+                    - lesson
+                    - navigation
+                    - onboarding
+                    - phrase
+                    - profile
+                    - session
+                    - sets
+                    - words
+        env:
+            ORIGA_CDN_BASE_URL: http://localhost:8080
+            TRAILBASE_URL: http://localhost:4000
+            ORIGA_ADMIN_EMAIL: admin@localhost
+            ORIGA_ADMIN_PASSWORD: secret
+            CI: "true"
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Download WASM artifact
+              uses: actions/download-artifact@v4
+              with:
+                  name: wasm-dist
+                  path: origa_ui/dist/
+
+            - name: Download CDN artifact
+              uses: actions/download-artifact@v4
+              with:
+                  name: cdn-data
+                  path: cdn/
+
+            - name: Install TrailBase
+              run: |
+                  tmp=$(mktemp) && curl -sSfL -o "$tmp" https://trailbase.io/install.sh && bash "$tmp"
+                  echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+            - name: Install Node.js dependencies
+              working-directory: end2end
+              run: npm ci
+
+            - name: Install Playwright browsers
+              run: npx playwright install --with-deps chromium
+              working-directory: end2end
+
+            - name: Run E2E test (${{ matrix.spec }})
+              working-directory: end2end
+              run: npx playwright test tests/${{ matrix.spec }}.spec.ts --project=chromium
+
+            - name: Upload blob report
+              if: always()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: blob-report-${{ matrix.spec }}
+                  path: end2end/blob-report/
+                  retention-days: 7
+
+
+    e2e-report:
+        name: E2E Report
+        needs: e2e
+        if: always() && needs.e2e.result != 'cancelled'
+        runs-on: ubuntu-24.04
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Install Node.js dependencies
+              working-directory: end2end
+              run: npm ci
+
+            - name: Install Playwright browsers
+              run: npx playwright install --with-deps chromium
+              working-directory: end2end
+
+            - name: Download all blob reports
+              uses: actions/download-artifact@v4
+              with:
+                  pattern: blob-report-*
+                  path: end2end/all-blob-reports/
+
+            - name: Flatten blob reports
+              working-directory: end2end/all-blob-reports
+              run: |
+                  count=$(find . -mindepth 2 -type f | wc -l)
+                  if [ "$count" -eq 0 ]; then
+                    echo "No blob reports found — skipping merge"
+                    exit 0
+                  fi
+                  find . -mindepth 2 -type f | while read -r f; do
+                      dir_name=$(basename "$(dirname "$f")")
+                      mv "$f" "./${dir_name}_$(basename "$f")"
+                  done
+
+            - name: Merge blob reports
+              working-directory: end2end
+              run: npx playwright merge-reports --reporter=html ./all-blob-reports
+
+            - name: Upload merged Playwright report
+              if: always()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: playwright-report-merged
+                  path: end2end/playwright-report/
+                  retention-days: 30
+
+    check:
+        name: CI Gate
+        needs: [lint, test, e2e]
+        runs-on: ubuntu-latest
+        steps:
+            - run: echo "All checks passed"

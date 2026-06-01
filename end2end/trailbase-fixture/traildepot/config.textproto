@@ -1,0 +1,18 @@
+server {
+  application_name: "Origa E2E Test"
+  site_url: "http://127.0.0.1:4000"
+  logs_retention_sec: 604800
+}
+auth {
+  auth_token_ttl_sec: 86400
+  refresh_token_ttl_sec: 86400
+  password_minimal_length: 4
+}
+record_apis: [
+  {
+    name: "user"
+    table_name: "user"
+    acl_world: [READ, CREATE, UPDATE, DELETE]
+    acl_authenticated: [READ, CREATE, UPDATE, DELETE]
+  }
+]
