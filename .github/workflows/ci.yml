@@ -138,7 +138,7 @@ jobs:
 
             - name: Install TrailBase
               run: |
-                  curl -sSfL https://trailbase.io/install.sh | sh
+                  curl -sSfL https://trailbase.io/install.sh | bash
                   echo "$HOME/.local/bin" >> $GITHUB_PATH
 
             - name: Download CDN data for E2E
