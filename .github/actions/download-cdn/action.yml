@@ -60,3 +60,21 @@ runs:
         for f in deim.onnx parseq-30.onnx parseq-50.onnx parseq-100.onnx vocab.txt; do
           curl -sSf -o "cdn/ndlocr/$f" "${CDN_BASE}/ndlocr/$f" || echo "Warning: failed ndlocr/$f"
         done
+
+        # Verify critical files are non-empty
+        echo "Verifying CDN downloads..."
+        MISSING=0
+        for f in well_known_set/well_known_sets_meta.json well_known_set/well_known_types_meta.json dictionaries/metadata.json grammar/grammar.json manifest.json; do
+          if [ ! -s "cdn/$f" ]; then
+            echo "ERROR: cdn/$f is missing or empty!"
+            MISSING=$((MISSING + 1))
+          else
+            SIZE=$(wc -c < "cdn/$f")
+            echo "  OK: cdn/$f ($SIZE bytes)"
+          fi
+        done
+        if [ "$MISSING" -gt 0 ]; then
+          echo "FATAL: $MISSING critical CDN files are missing. CDN_BASE=$CDN_BASE"
+          exit 1
+        fi
+        echo "All critical CDN files verified."
