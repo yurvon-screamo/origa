@@ -37,6 +37,13 @@ runs:
         which trunk
         trunk --version
 
+    - name: Cache trunk tools
+      id: trunk-cache
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/trunk
+        key: trunk-tools-v1
+
     - name: Cache UniDic dictionary
       id: unidic-cache
       uses: actions/cache@v4
