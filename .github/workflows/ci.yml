@@ -116,6 +116,13 @@ jobs:
                   cache-key: cdn-data-v7-${{ hashFiles('end2end/cdn-manifest.txt') }}
                   cdn-base-url: ${{ vars.ORIGA_CDN_BASE_URL }}
 
+            - name: Upload CDN artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: cdn-data
+                  path: cdn/
+                  retention-days: 1
+
             - name: Build WASM
               run: cd origa_ui && trunk build --release
               env:
@@ -165,11 +172,11 @@ jobs:
                   name: wasm-dist
                   path: origa_ui/dist/
 
-            - name: Download CDN data
-              uses: ./.github/actions/download-cdn
+            - name: Download CDN artifact
+              uses: actions/download-artifact@v4
               with:
-                  cache-key: cdn-data-v7-${{ hashFiles('end2end/cdn-manifest.txt') }}
-                  cdn-base-url: ${{ vars.ORIGA_CDN_BASE_URL }}
+                  name: cdn-data
+                  path: cdn/
 
             - name: Install TrailBase
               run: |
