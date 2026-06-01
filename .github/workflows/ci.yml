@@ -73,7 +73,15 @@ jobs:
                   key: unidic-dict-v1-${{ hashFiles('origa_ui/build.rs') }}
                   restore-keys: unidic-dict-v1-
 
+            - name: Cache CDN data
+              uses: actions/cache@v4
+              id: cache-cdn-test
+              with:
+                  path: cdn
+                  key: cdn-test-data-v1
+
             - name: Download test CDN data
+              if: steps.cache-cdn-test.outputs.cache-hit != 'true'
               env:
                   CDN_BASE: ${{ vars.ORIGA_CDN_BASE_URL }}
               run: |
@@ -114,8 +122,24 @@ jobs:
               run: cargo test --workspace
 
     e2e:
-        name: E2E Tests
+        name: E2E (${{ matrix.spec }})
         runs-on: ubuntu-24.04
+        strategy:
+            fail-fast: false
+            matrix:
+                spec:
+                    - auth
+                    - grammar
+                    - home
+                    - kanji
+                    - lesson
+                    - navigation
+                    - onboarding
+                    - phrase
+                    - profile
+                    - session
+                    - sets
+                    - words
         env:
             ORIGA_CDN_BASE_URL: http://localhost:8080
             TRAILBASE_URL: http://localhost:4000
@@ -156,53 +180,50 @@ jobs:
                   curl -sSfL https://trailbase.io/install.sh | bash
                   echo "$HOME/.local/bin" >> $GITHUB_PATH
 
+            - name: Cache CDN data
+              uses: actions/cache@v4
+              id: cache-cdn-e2e
+              with:
+                  path: cdn
+                  key: cdn-e2e-data-v1
+
             - name: Download CDN data for E2E
+              if: steps.cache-cdn-e2e.outputs.cache-hit != 'true'
               env:
                   CDN_BASE: ${{ vars.ORIGA_CDN_BASE_URL }}
               run: |
                   mkdir -p cdn/dictionaries cdn/dictionary cdn/grammar
-                  mkdir -p cdn/well_known_set cdn/kanji cdn/phrases cdn/pitch
-                  
+                  mkdir -p cdn/well_known_set cdn/phrases cdn/pitch
+
                   # Lindera tokenizer data
                   for f in char_def.bin matrix.mtx dict.da dict.vals unk.bin dict.wordsidx dict.words metadata.json; do
                     curl -sSf -o "cdn/dictionaries/$f" "${CDN_BASE}/dictionaries/$f" || echo "Warning: failed to download $f"
                   done
-                  
+
                   # Vocabulary chunks + kanji + radicals
                   for f in chunk_01.json chunk_02.json chunk_03.json chunk_04.json chunk_05.json chunk_06.json chunk_07.json chunk_08.json chunk_09.json chunk_10.json chunk_11.json kanji.json radicals.json; do
                     curl -sSf -o "cdn/dictionary/$f" "${CDN_BASE}/dictionary/$f" || echo "Warning: failed to download $f"
                   done
-                  
+
                   # Grammar
-                  curl -sSf -o "cdn/grammar/grammar.json" "${CDN_BASE}/grammar/grammar.json" || echo "Warning: failed to download grammar.json"
-                  
+                  curl -sSf -o "cdn/grammar/grammar.json" "${CDN_BASE}/grammar/grammar.json" || echo "Warning: failed"
+
                   # Well-known sets
                   curl -sSf -o "cdn/well_known_set/well_known_sets_meta.json" "${CDN_BASE}/well_known_set/well_known_sets_meta.json" || echo "Warning: failed"
                   curl -sSf -o "cdn/well_known_set/well_known_types_meta.json" "${CDN_BASE}/well_known_set/well_known_types_meta.json" || echo "Warning: failed"
-                  
-                  # Kanji
-                  curl -sSf -o "cdn/kanji/kanji.json" "${CDN_BASE}/kanji/kanji.json" || echo "Warning: failed"
-                  curl -sSf -o "cdn/kanji/radicals.json" "${CDN_BASE}/kanji/radicals.json" || echo "Warning: failed"
-                  
-                  # Manifest
-                  curl -sSf -o "cdn/manifest.json" "${CDN_BASE}/manifest.json" || echo "Warning: failed"
-                  
-                  # Furigana dictionary
-                  curl -sSf -o "cdn/dictionaries/JmdictFurigana.txt" "${CDN_BASE}/dictionaries/JmdictFurigana.txt" || echo "Warning: failed"
-                  
-                  # JLPT sets (needed for onboarding)
                   for level in n5 n4 n3 n2 n1; do
-                    curl -sSf -o "cdn/well_known_set/jlpt_${level}.json" "${CDN_BASE}/well_known_set/jlpt_${level}.json" || echo "Warning: failed to download jlpt_${level}.json"
+                    curl -sSf -o "cdn/well_known_set/jlpt_${level}.json" "${CDN_BASE}/well_known_set/jlpt_${level}.json" || echo "Warning: failed"
                   done
-                  
-                  # Phrase index (needed for phrase card creation)
+
+                  # Phrase index
                   curl -sSf -o "cdn/phrases/phrase_index.json" "${CDN_BASE}/phrases/phrase_index.json" || echo "Warning: failed"
-                  
+
                   # Pitch accent index
                   curl -sSf -o "cdn/pitch/index.json" "${CDN_BASE}/pitch/index.json" || echo "Warning: failed"
-                  
-                  echo "Downloaded CDN data:"
-                  find cdn -type f | head -30
+
+                  # Manifest + Furigana
+                  curl -sSf -o "cdn/manifest.json" "${CDN_BASE}/manifest.json" || echo "Warning: failed"
+                  curl -sSf -o "cdn/dictionaries/JmdictFurigana.txt" "${CDN_BASE}/dictionaries/JmdictFurigana.txt" || echo "Warning: failed"
 
             - name: Install Node.js dependencies
               working-directory: end2end
@@ -212,21 +233,21 @@ jobs:
               run: npx playwright install --with-deps chromium
               working-directory: end2end
 
-            - name: Run Playwright tests
+            - name: Run E2E test (${{ matrix.spec }})
               working-directory: end2end
-              run: npx playwright test
+              run: npx playwright test tests/${{ matrix.spec }}.spec.ts --project=chromium --reporter=line
 
             - name: Upload Playwright report
               if: failure()
               uses: actions/upload-artifact@v4
               with:
-                  name: playwright-report
+                  name: playwright-report-${{ matrix.spec }}
                   path: end2end/playwright-report/
                   retention-days: 7
 
     check:
         name: CI Gate
-        needs: [lint, test]
+        needs: [lint, test, e2e]
         runs-on: ubuntu-latest
         steps:
             - run: echo "All checks passed"
