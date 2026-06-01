@@ -1,8 +1,6 @@
 use super::super::shared::{CardStatus, DeleteRequest};
 use crate::i18n::use_i18n;
-use crate::ui_components::{
-    CardActionBar, CardHistoryModal, DeleteConfirmModal, FsrsMetrics, Tag, TagVariant,
-};
+use crate::ui_components::{CardActionBar, DeleteConfirmModal, FsrsMetrics, Tag, TagVariant};
 use leptos::prelude::*;
 use leptos_router::components::A;
 use origa::domain::{Card as DomainCard, NativeLanguage, StudyCard};
@@ -15,7 +13,6 @@ pub fn KanjiCardItem(
     study_card: StudyCard,
     #[prop(into)] native_language: Signal<NativeLanguage>,
     on_toggle_favorite: Callback<Ulid>,
-    on_mark_as_known: Callback<()>,
     on_delete: Callback<DeleteRequest>,
     is_deleting: Signal<bool>,
 ) -> impl IntoView {
@@ -23,9 +20,7 @@ pub fn KanjiCardItem(
     let card_id = *study_card.card_id();
     let is_favorite = study_card.is_favorite();
     let memory = study_card.memory();
-    let memory_clone = memory.clone();
 
-    let is_history_open = RwSignal::new(false);
     let is_delete_modal_open = RwSignal::new(false);
 
     let confirm_delete = Callback::new(move |_| {
@@ -101,9 +96,6 @@ pub fn KanjiCardItem(
                         tag_label=Signal::derive(|| "".to_string())
                         is_favorite=Signal::derive(move || is_favorite)
                         on_toggle_favorite=Callback::new(move |_| on_toggle_favorite.run(card_id))
-                        show_mark_as_known=Signal::derive(move || status != CardStatus::Learned)
-                        on_mark_as_known=Callback::new(move |_| on_mark_as_known.run(()))
-                        on_history=Callback::new(move |_| is_history_open.set(true))
                         on_delete=Callback::new(move |_| is_delete_modal_open.set(true))
                         test_id=Signal::derive(|| "kanji-card-item".to_string())
                         show_tag=Signal::derive(|| false)
@@ -117,11 +109,6 @@ pub fn KanjiCardItem(
             is_deleting=is_deleting
             on_confirm=confirm_delete
             on_close=Callback::new(move |_| is_delete_modal_open.set(false))
-        />
-        <CardHistoryModal
-            is_open=Signal::derive(move || is_history_open.get())
-            memory=memory_clone.clone()
-            on_close=Callback::new(move |_| is_history_open.set(false))
         />
     }
 }
