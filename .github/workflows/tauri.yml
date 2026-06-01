@@ -79,7 +79,7 @@ jobs:
 
             - name: Install cargo-binstall
               run: |
-                  curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
+                  tmp=$(mktemp) && curl -L --proto '=https' --tlsv1.2 -sSf -o "$tmp" https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh && bash "$tmp"
                   cargo binstall trunk tauri-cli cargo-xwin --no-confirm --force
 
             - name: Add cargo bin to PATH
@@ -300,7 +300,7 @@ jobs:
 
             - name: Install cargo-binstall
               run: |
-                  curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
+                  tmp=$(mktemp) && curl -L --proto '=https' --tlsv1.2 -sSf -o "$tmp" https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh && bash "$tmp"
                   cargo binstall trunk tauri-cli --no-confirm --force
 
             - name: Add cargo bin to PATH
