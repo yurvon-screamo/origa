@@ -29,6 +29,8 @@ export default defineConfig({
                 ...devices["Desktop Chrome"],
                 launchOptions: {
                     args: [
+                        // Required for WASM: fetch() from localhost:1420 to localhost:8080
+                        // needs CORS bypass since serve doesn't set CORS headers
                         "--disable-web-security",
                         "--disable-features=IsolateOrigins,site-per-process",
                         "--disable-site-isolation-trials",

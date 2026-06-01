@@ -4,8 +4,6 @@ import { testWithFreshUser } from "../fixtures";
 import { skipOnboarding } from "../helpers/navigation";
 import { WordsPage, SetsPage } from "../pages";
 
-test.describe.configure({ mode: "serial" });
-
 async function setupWordsPage(page: Page): Promise<WordsPage> {
     await skipOnboarding(page);
 
@@ -24,6 +22,7 @@ async function addFirstWord(wordsPage: WordsPage): Promise<void> {
 }
 
 testWithFreshUser.describe("Words Page - CRUD", () => {
+    test.describe.configure({ mode: "serial" });
     testWithFreshUser("should display empty state for new user", async ({ page }) => {
         const wordsPage = await setupWordsPage(page);
         await expect(wordsPage.emptyState).toBeVisible();
