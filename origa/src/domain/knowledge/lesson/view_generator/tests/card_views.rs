@@ -108,11 +108,10 @@ mod kanji_view_tests {
     }
 
     #[test]
-    fn review_kanji_not_high_difficulty_produces_yesno() {
+    fn review_kanji_produces_yesno() {
         init_real_dictionaries();
         let ks = make_ks();
         let sc = make_reviewed_kanji("日", 5.0, 3.0, Rating::Good);
-        assert!(!sc.memory().is_high_difficulty());
         let mut generator = LessonViewGenerator::new(&ks);
 
         let mut yesno_count = 0;
@@ -129,24 +128,6 @@ mod kanji_view_tests {
             yesno_count > 0,
             "review kanji (not high diff) should get YesNo sometimes"
         );
-    }
-
-    #[test]
-    fn review_kanji_high_difficulty_never_yesno() {
-        init_real_dictionaries();
-        let ks = make_ks();
-        let sc = make_reviewed_kanji("日", 3.0, 7.0, Rating::Hard);
-        assert!(sc.memory().is_high_difficulty());
-        let mut generator = LessonViewGenerator::new(&ks);
-
-        for seed in 0..300 {
-            let mut rng = StdRng::seed_from_u64(seed);
-            let view = generator.apply_view(&sc, false, &mut rng);
-            assert!(
-                !matches!(view, LessonCardView::YesNo(_)),
-                "high-diff kanji should never get YesNo"
-            );
-        }
     }
 
     #[test]

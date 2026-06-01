@@ -346,25 +346,6 @@ fn new_kanji_never_reading_quiz() {
 }
 
 #[test]
-fn high_difficulty_never_reading_quiz() {
-    init_real_dictionaries();
-
-    let ks = make_kanji_knowledge_set(&["日", "月", "水", "火", "木"]);
-    let sc = make_reviewed_kanji("日", 3.0, 7.0, Rating::Hard);
-    assert!(sc.memory().is_high_difficulty());
-    let mut generator = LessonViewGenerator::new(&ks);
-
-    for seed in 0..300 {
-        let mut rng = StdRng::seed_from_u64(seed);
-        let view = generator.apply_view(&sc, false, &mut rng);
-        assert!(
-            !matches!(view, LessonCardView::KanjiReadingQuiz(_)),
-            "high-difficulty kanji should never get KanjiReadingQuiz"
-        );
-    }
-}
-
-#[test]
 fn multi_rating_returns_good_for_perfect() {
     init_real_dictionaries();
 

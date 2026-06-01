@@ -262,6 +262,7 @@ pub enum LessonCardView {
         options: Vec<QuizOption>,
     },
     KanjiReadingQuiz(QuizCard),
+    KanjiRadicalQuiz(QuizCard),
     GrammarQuiz(GrammarQuizCard),
 }
 
@@ -276,6 +277,7 @@ impl LessonCardView {
             LessonCardView::Quiz(quiz) => quiz.card(),
             LessonCardView::YesNo(yc) => yc.card(),
             LessonCardView::KanjiReadingQuiz(quiz) => quiz.card(),
+            LessonCardView::KanjiRadicalQuiz(quiz) => quiz.card(),
             LessonCardView::GrammarQuiz(gq) => gq.card(),
         }
     }
@@ -290,7 +292,8 @@ impl LessonCardView {
             | LessonCardView::Reversed(_)
             | LessonCardView::Writing(_)
             | LessonCardView::PhraseListen { .. }
-            | LessonCardView::KanjiReadingQuiz(_) => None,
+            | LessonCardView::KanjiReadingQuiz(_)
+            | LessonCardView::KanjiRadicalQuiz(_) => None,
         }
     }
 }
