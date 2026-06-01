@@ -20,28 +20,18 @@ export default defineConfig({
         trace: "on-first-retry",
         screenshot: "only-on-failure",
         video: "retain-on-failure",
-        bypassCSP: true,
     },
     projects: [
         {
             name: "chromium",
             use: {
                 ...devices["Desktop Chrome"],
-                launchOptions: {
-                    args: [
-                        // Required for WASM: fetch() from localhost:1420 to localhost:8080
-                        // needs CORS bypass since serve doesn't set CORS headers
-                        "--disable-web-security",
-                        "--disable-features=IsolateOrigins,site-per-process",
-                        "--disable-site-isolation-trials",
-                    ],
-                },
             },
         },
     ],
     webServer: [
         {
-            command: "npx serve ../cdn -p 8080 --no-clipboard",
+            command: "npx serve ../cdn -p 8080 --no-clipboard --cors",
             port: 8080,
             reuseExistingServer: !isCI,
             timeout: 30000,
