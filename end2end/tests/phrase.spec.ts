@@ -85,11 +85,11 @@ async function completeFullOnboarding(page: Page): Promise<void> {
     await page.getByTestId("onboarding-next").click();
     await expect(page.getByTestId("onboarding-apps-step")).toBeVisible();
 
-    // Apps: select all available apps to maximize phrase coverage
+    // Apps: wait for CDN-loaded apps to appear, then select all available
+    await expect(page.getByTestId("apps-step-app-Migii-checkbox")).toBeVisible({ timeout: 15_000 });
+
     const migiiCheckbox = page.getByTestId("apps-step-app-Migii-checkbox");
-    if (await migiiCheckbox.isVisible().catch(() => false)) {
-        await migiiCheckbox.click();
-    }
+    await migiiCheckbox.click();
 
     const duolingoRuCheckbox = page.getByTestId("apps-step-app-DuolingoRu-checkbox");
     if (await duolingoRuCheckbox.isVisible().catch(() => false)) {
