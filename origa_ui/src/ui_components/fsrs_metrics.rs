@@ -59,8 +59,8 @@ fn stability_fill(s: f64) -> f64 {
     (s / 30.0).min(1.0) * 100.0
 }
 
-fn difficulty_color_class(d: f64, s: f64) -> &'static str {
-    if d >= 7.0 && s < 7.0 {
+fn difficulty_color_class(d: f64) -> &'static str {
+    if d >= 7.0 {
         "fsrs-bar--terracotta"
     } else if d >= 4.0 {
         "fsrs-bar--gold"
@@ -70,7 +70,7 @@ fn difficulty_color_class(d: f64, s: f64) -> &'static str {
 }
 
 fn stability_color_class(s: f64) -> &'static str {
-    if s > 21.0 {
+    if s >= 21.0 {
         "fsrs-bar--olive"
     } else if s >= 7.0 {
         "fsrs-bar--gold"
@@ -94,29 +94,44 @@ pub fn FsrsMetrics(
     };
 
     match mode {
-        FsrsMetricsMode::Compact => view! {
-            <span class="fsrs-metrics" role="group" aria-label="FSRS metrics" data-testid=test_id_val>
-                <CompactMetric
-                    label="D"
-                    value=difficulty
-                    fill_fn=difficulty_fill
-                    color_fn=move |d, s| difficulty_color_class(d, s)
-                    other_value=stability
-                    aria_label="Difficulty"
-                    aria_max="10"
-                />
-                <CompactMetric
-                    label="S"
-                    value=stability
-                    fill_fn=stability_fill
-                    color_fn=move |_, s| stability_color_class(s)
-                    other_value=difficulty
-                    aria_label="Stability"
-                    aria_max="30"
-                />
-            </span>
-        }
-        .into_any(),
+        FsrsMetricsMode::Compact => {
+            let difficulty_short = i18n
+                .get_keys()
+                .shared()
+                .fsrs_difficulty_short()
+                .inner()
+                .to_string();
+            let stability_short = i18n
+                .get_keys()
+                .shared()
+                .fsrs_stability_short()
+                .inner()
+                .to_string();
+
+            view! {
+                <span class="fsrs-metrics" role="group" aria-label="FSRS metrics" data-testid=test_id_val>
+                    <CompactMetric
+                        label=difficulty_short
+                        value=difficulty
+                        fill_fn=difficulty_fill
+                        color_fn=move |d, _| difficulty_color_class(d)
+                        other_value=stability
+                        aria_label="Difficulty"
+                        aria_max="10"
+                    />
+                    <CompactMetric
+                        label=stability_short
+                        value=stability
+                        fill_fn=stability_fill
+                        color_fn=move |_, s| stability_color_class(s)
+                        other_value=difficulty
+                        aria_label="Stability"
+                        aria_max="30"
+                    />
+                </span>
+            }
+                .into_any()
+        },
         FsrsMetricsMode::Expanded => {
             let next_review_label = i18n
                 .get_keys()
@@ -158,7 +173,7 @@ pub fn FsrsMetrics(
                         label=difficulty_label
                         value=difficulty
                         fill_fn=difficulty_fill
-                        color_fn=move |d, s| difficulty_color_class(d, s)
+                        color_fn=move |d, _| difficulty_color_class(d)
                         other_value=stability
                         aria_label="Difficulty"
                         aria_max="10"
@@ -174,14 +189,14 @@ pub fn FsrsMetrics(
                     />
                 </div>
             }
-                .into_any()
-        }
+            .into_any()
+        },
     }
 }
 
 #[component]
 fn CompactMetric(
-    #[prop(into)] label: &'static str,
+    #[prop(into)] label: String,
     value: Option<f64>,
     fill_fn: fn(f64) -> f64,
     color_fn: impl Fn(f64, f64) -> &'static str + 'static,
@@ -205,7 +220,6 @@ fn CompactMetric(
                 class=format!("fsrs-bar {color_class}", color_class = data.color_class)
                 style=format!("--fsrs-fill: {fill_pct:.0}%", fill_pct = data.fill_pct)
             ></span>
-            <span class=data.value_class>{data.value_display}</span>
         </span>
     }
 }
@@ -243,5 +257,46 @@ fn ExpandedMetric(
                 <span class=data.value_class>{data.value_display}</span>
             </div>
         </div>
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_difficulty_color_class() {
+        assert_eq!(difficulty_color_class(8.0), "fsrs-bar--terracotta");
+        assert_eq!(difficulty_color_class(7.0), "fsrs-bar--terracotta");
+        assert_eq!(difficulty_color_class(5.0), "fsrs-bar--gold");
+        assert_eq!(difficulty_color_class(4.0), "fsrs-bar--gold");
+        assert_eq!(difficulty_color_class(2.0), "fsrs-bar--olive");
+        assert_eq!(difficulty_color_class(0.0), "fsrs-bar--olive");
+    }
+
+    #[test]
+    fn test_stability_color_class() {
+        assert_eq!(stability_color_class(25.0), "fsrs-bar--olive");
+        assert_eq!(stability_color_class(21.0), "fsrs-bar--olive");
+        assert_eq!(stability_color_class(10.0), "fsrs-bar--gold");
+        assert_eq!(stability_color_class(7.0), "fsrs-bar--gold");
+        assert_eq!(stability_color_class(3.0), "fsrs-bar--terracotta");
+        assert_eq!(stability_color_class(0.0), "fsrs-bar--terracotta");
+    }
+
+    #[test]
+    fn test_difficulty_fill() {
+        assert_eq!(difficulty_fill(5.0), 50.0);
+        assert_eq!(difficulty_fill(10.0), 100.0);
+        assert_eq!(difficulty_fill(15.0), 100.0);
+        assert_eq!(difficulty_fill(0.0), 0.0);
+    }
+
+    #[test]
+    fn test_stability_fill() {
+        assert_eq!(stability_fill(15.0), 50.0);
+        assert_eq!(stability_fill(30.0), 100.0);
+        assert_eq!(stability_fill(45.0), 100.0);
+        assert_eq!(stability_fill(0.0), 0.0);
     }
 }
