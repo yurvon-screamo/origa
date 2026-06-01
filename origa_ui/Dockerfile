@@ -97,6 +97,9 @@ FROM trailbase/trailbase:0.24.3
 USER root
 WORKDIR /app
 
+ARG ORIGA_CDN_BASE_URL
+ENV ORIGA_CDN_BASE_URL=${ORIGA_CDN_BASE_URL}
+
 # hadolint ignore=DL3018
 RUN apk add --no-cache curl
 
