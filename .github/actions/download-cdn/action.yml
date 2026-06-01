@@ -143,8 +143,9 @@ runs:
                 print(f'well_known_set/{sid}.json')
         " | while read -r path; do
             mkdir -p "cdn/$(dirname "$path")"
-            dl "cdn/$path" "${CDN_BASE}/$path"
+            dl "cdn/$path" "${CDN_BASE}/$path" || true
         done
+        echo "Set files download complete"
 
     - name: Final verification
       shell: bash
