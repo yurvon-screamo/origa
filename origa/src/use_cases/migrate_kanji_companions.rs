@@ -34,8 +34,8 @@ impl<'a, R: UserRepository> MigrateKanjiCompanionsUseCase<'a, R> {
         let kanji_chars: Vec<String> = user
             .knowledge_set()
             .study_cards()
-            .iter()
-            .filter_map(|(_, study_card)| {
+            .values()
+            .filter_map(|study_card| {
                 if let Card::Kanji(kanji_card) = study_card.card() {
                     Some(kanji_card.kanji().text().to_string())
                 } else {

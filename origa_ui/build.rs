@@ -497,5 +497,3 @@ fn generate_well_known_meta() {
         output_file.display()
     );
 }
-
-

@@ -21,7 +21,7 @@ runs:
     - name: Install cargo-binstall
       shell: bash
       run: |
-        curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
+        tmp=$(mktemp) && curl -L --proto '=https' --tlsv1.2 -sSf -o "$tmp" https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh && bash "$tmp"
 
     - name: Add cargo bin to PATH
       shell: bash
@@ -37,6 +37,13 @@ runs:
         which trunk
         trunk --version
 
+    - name: Cache trunk tools
+      id: trunk-cache
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/trunk
+        key: trunk-tools-v1
+
     - name: Cache UniDic dictionary
       id: unidic-cache
       uses: actions/cache@v4
@@ -45,4 +52,3 @@ runs:
         key: unidic-dict-v1-${{ hashFiles('origa_ui/build.rs') }}
         restore-keys: |
           unidic-dict-v1-
-        save-if: ${{ github.ref == 'refs/heads/master' }}

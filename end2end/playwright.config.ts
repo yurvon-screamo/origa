@@ -10,46 +10,59 @@ export default defineConfig({
     },
     fullyParallel: true,
     forbidOnly: isCI,
-    retries: isCI ? 1 : 0,
-    workers: 1,
-    reporter: [
-        [
-            "html",
-            {
-                open: "on-failure",
-                host: "0.0.0.0",
-            },
-        ],
-    ],
+    retries: isCI ? 2 : 0,
+    workers: isCI ? 2 : 1,
+    reporter: isCI
+        ? [["blob", { outputDir: "blob-report" }]]
+        : [["html", { open: "on-failure", host: "0.0.0.0" }]],
     use: {
         baseURL: "http://localhost:1420",
         trace: "on-first-retry",
         screenshot: "only-on-failure",
         video: "retain-on-failure",
+        bypassCSP: true,
     },
     projects: [
         {
             name: "chromium",
-            use: { ...devices["Desktop Chrome"] },
+            use: {
+                ...devices["Desktop Chrome"],
+                launchOptions: {
+                    args: [
+                        // Required for WASM: fetch() from localhost:1420 to localhost:8080
+                        // needs CORS bypass since serve doesn't set CORS headers
+                        "--disable-web-security",
+                        "--disable-features=IsolateOrigins,site-per-process",
+                        "--disable-site-isolation-trials",
+                    ],
+                },
+            },
         },
-        // {
-        //     name: "firefox",
-        //     use: { ...devices["Desktop Firefox"] },
-        // },
-        // Tauri/WebView desktop project placeholder
-        // {
-        //   name: 'tauri-desktop',
-        //   use: { ...devices['Desktop Chrome'] },
-        // },
     ],
-    webServer: {
-        command: "cd ../origa_ui && trunk serve",
-        url: "http://localhost:1420",
-        reuseExistingServer: !isCI,
-        timeout: 600000,
-        stdout: "pipe",
-        stderr: "pipe",
-    },
+    webServer: [
+        {
+            command: "npx serve ../cdn -p 8080 --no-clipboard",
+            port: 8080,
+            reuseExistingServer: !isCI,
+            timeout: 30000,
+            stdout: "pipe",
+            stderr: "pipe",
+        },
+        {
+            command: isCI
+                ? "npx serve ../origa_ui/dist -s -p 1420 --no-clipboard"
+                : "cd ../origa_ui && trunk serve",
+            port: 1420,
+            reuseExistingServer: !isCI,
+            timeout: 600000,
+            stdout: "pipe",
+            stderr: "pipe",
+            env: {
+                ORIGA_CDN_BASE_URL: "http://localhost:8080",
+                TRAILBASE_URL: "http://127.0.0.1:4000",
+            },
+        },
+    ],
     globalSetup: "./global-setup.ts",
     globalTeardown: "./global-teardown.ts",
 });

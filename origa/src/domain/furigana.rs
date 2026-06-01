@@ -556,7 +556,7 @@ mod tests {
 大人|おとな|0-1:おとな
 指|ゆび|0:ゆび
 ";
-            crate::dictionary::furigana_dict::init_furigana_dict(content).unwrap();
+            let _ = crate::dictionary::furigana_dict::init_furigana_dict(content);
         }
     }
 

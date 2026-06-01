@@ -22,6 +22,7 @@ async function addFirstWord(wordsPage: WordsPage): Promise<void> {
 }
 
 testWithFreshUser.describe("Words Page - CRUD", () => {
+    test.describe.configure({ mode: "serial" });
     testWithFreshUser("should display empty state for new user", async ({ page }) => {
         const wordsPage = await setupWordsPage(page);
         await expect(wordsPage.emptyState).toBeVisible();

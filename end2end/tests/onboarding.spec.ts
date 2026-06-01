@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { testWithFreshUser } from "../fixtures";
+import { waitForScoringReady } from "../helpers/onboarding";
 
 /**
  * Onboarding Flow E2E Tests
@@ -125,6 +126,9 @@ testWithFreshUser.describe("Onboarding Flow - N4 with ~50% Progress", () => {
         await expect(page.getByTestId("onboarding-apps-step")).toBeVisible();
         await expect(page.getByTestId("apps-step-title")).toBeVisible();
 
+        // Wait for apps to load from CDN (filtered_apps is populated async)
+        await expect(page.getByTestId("apps-step-app-Migii-checkbox")).toBeVisible({ timeout: 30_000 });
+
         // Take screenshot before selections
         await page.screenshot({
             path: "test-results/onboarding-step-3-apps-before.png",
@@ -133,7 +137,6 @@ testWithFreshUser.describe("Onboarding Flow - N4 with ~50% Progress", () => {
 
         // Select Migii
         const migiiCheckbox = page.getByTestId("apps-step-app-Migii-checkbox");
-        await expect(migiiCheckbox).toBeVisible();
         await migiiCheckbox.click();
 
         // Verify Migii is selected (check checkbox state)
@@ -277,7 +280,7 @@ testWithFreshUser.describe("Onboarding Flow - N4 with ~50% Progress", () => {
         await expect(page.getByTestId("onboarding-scoring-step")).toBeVisible({ timeout: 120_000 });
 
         // Wait for scoring step to finish loading cards
-        await waitForScoringStepReady(page);
+        await waitForScoringReady(page);
 
         // Take screenshot of scoring step
         await page.screenshot({
@@ -360,26 +363,13 @@ testWithFreshUser.describe("Onboarding Flow - N4 with ~50% Progress", () => {
 });
 
 /**
- * Waits for the scoring step to finish loading.
- * Resolves when either:
- * - `scoring-step-hint` is visible (cards loaded, ready for scoring)
- * - `scoring-step-complete` is visible (0 new cards or already completed)
- */
-async function waitForScoringStepReady(page: Page, timeout = 30_000): Promise<void> {
-    await Promise.race([
-        page.getByTestId("scoring-step-hint").waitFor({ state: "visible", timeout }),
-        page.getByTestId("scoring-step-complete").waitFor({ state: "visible", timeout }),
-    ]).catch(() => {});
-}
-
-/**
  * Helper: completes onboarding from login through import, stops at scoring step.
  * Navigates: Intro → Load → JLPT (N4) → Apps → Progress → Summary → Import → Scoring
  *
  * Returns `true` if scoring step was reached and is ready, `false` if redirected to /home.
  */
 async function completeOnboardingToScoring(page: Page): Promise<boolean> {
-    await page.goto("http://localhost:1420/");
+    await page.goto("/");
 
     try {
         await page.waitForURL(/\/onboarding$/, { timeout: 30_000 });
@@ -468,7 +458,7 @@ async function completeOnboardingToScoring(page: Page): Promise<boolean> {
     await expect(page.getByTestId("onboarding-scoring-step")).toBeVisible({ timeout: 120_000 });
 
     // Wait for scoring step to finish loading cards before returning
-    await waitForScoringStepReady(page);
+    await waitForScoringReady(page);
 
     return true;
 }

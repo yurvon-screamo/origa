@@ -1,55 +1,55 @@
 {
-	"$schema": "https://schema.tauri.app/config/2",
-	"productName": "Origa",
-	"version": "0.1.0",
-	"identifier": "net.uwuwu.origa",
-	"build": {
-		"beforeDevCommand": {
-			"script": "trunk serve",
-			"cwd": "../origa_ui"
-		},
-		"devUrl": "http://localhost:1420",
-		"frontendDist": "../origa_ui/dist"
-	},
-	"app": {
-		"withGlobalTauri": true,
-		"windows": [
-			{
-				"title": "Origa 「オリガ」",
-				"width": 800,
-				"height": 600
-			}
-		],
-		"security": {
-			"csp": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://aws-s3-public-proxy-production-0429.up.railway.app https://origa.uwuwu.net https://huggingface.co; img-src 'self' data: blob: https://aws-s3-public-proxy-production-0429.up.railway.app; media-src 'self' blob: https://aws-s3-public-proxy-production-0429.up.railway.app; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; form-action 'self' https://accounts.google.com https://oauth.yandex.ru; frame-ancestors 'none'"
-		}
-	},
-	"bundle": {
-		"active": true,
-		"targets": "all",
-		"createUpdaterArtifacts": true,
-		"icon": [
-			"icons/32x32.png",
-			"icons/128x128.png",
-			"icons/128x128@2x.png",
-			"icons/icon.icns",
-			"icons/icon.ico"
-		],
-		"android": {},
-		"iOS": {}
-	},
-	"plugins": {
-		"opener": {},
-		"deep-link": {
-			"desktop": {
-				"schemes": ["origa"]
-			}
-		},
-		"updater": {
-			"endpoints": [
-				"https://github.com/yurvon-screamo/origa/releases/latest/download/latest.json"
-			],
-			"pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEUxN0Y5QzY3MURBMDRCOUQKUldTZFM2QWRaNXgvNFpZUUJTWkFtOXkyOUVYMFZQRXBiUVN2cXBrZFZ6aTNNZmdPazVFNHUyRjcK"
-		}
-	}
+    "$schema": "https://schema.tauri.app/config/2",
+    "productName": "Origa",
+    "version": "0.1.0",
+    "identifier": "net.uwuwu.origa",
+    "build": {
+        "beforeDevCommand": {
+            "script": "trunk serve",
+            "cwd": "../origa_ui"
+        },
+        "devUrl": "http://localhost:1420",
+        "frontendDist": "../origa_ui/dist"
+    },
+    "app": {
+        "withGlobalTauri": true,
+        "windows": [
+            {
+                "title": "Origa 「オリガ」",
+                "width": 800,
+                "height": 600
+            }
+        ],
+        "security": {
+            "csp": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://s3-proxy-production-52e3.up.railway.app https://origa.uwuwu.net https://huggingface.co; img-src 'self' data: blob: https://s3-proxy-production-52e3.up.railway.app; media-src 'self' blob: https://s3-proxy-production-52e3.up.railway.app; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; form-action 'self' https://accounts.google.com https://oauth.yandex.ru; frame-ancestors 'none'"
+        }
+    },
+    "bundle": {
+        "active": true,
+        "targets": "all",
+        "createUpdaterArtifacts": true,
+        "icon": [
+            "icons/32x32.png",
+            "icons/128x128.png",
+            "icons/128x128@2x.png",
+            "icons/icon.icns",
+            "icons/icon.ico"
+        ],
+        "android": {},
+        "iOS": {}
+    },
+    "plugins": {
+        "opener": {},
+        "deep-link": {
+            "desktop": {
+                "schemes": ["origa"]
+            }
+        },
+        "updater": {
+            "endpoints": [
+                "https://github.com/yurvon-screamo/origa/releases/latest/download/latest.json"
+            ],
+            "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEUxN0Y5QzY3MURBMDRCOUQKUldTZFM2QWRaNXgvNFpZUUJTWkFtOXkyOUVYMFZQRXBiUVN2cXBrZFZ6aTNNZmdPazVFNHUyRjcK"
+        }
+    }
 }

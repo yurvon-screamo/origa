@@ -20,5 +20,5 @@
         path *.html /
     }
     header @html Cache-Control "no-cache, no-store, must-revalidate"
-    header @html Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://aws-s3-public-proxy-production-0429.up.railway.app https://origa.uwuwu.net https://huggingface.co; img-src 'self' data: blob: https://aws-s3-public-proxy-production-0429.up.railway.app; media-src 'self' blob: https://aws-s3-public-proxy-production-0429.up.railway.app; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; form-action 'self' https://accounts.google.com https://oauth.yandex.ru; frame-ancestors 'none'"
+    header @html Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://s3-proxy-production-52e3.up.railway.app https://origa.uwuwu.net https://huggingface.co; img-src 'self' data: blob: https://s3-proxy-production-52e3.up.railway.app; media-src 'self' blob: https://s3-proxy-production-52e3.up.railway.app; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; form-action 'self' https://accounts.google.com https://oauth.yandex.ru; frame-ancestors 'none'"
 }
