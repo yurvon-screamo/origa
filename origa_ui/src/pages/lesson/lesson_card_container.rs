@@ -120,6 +120,13 @@ pub fn LessonCardContainer() -> impl IntoView {
             .unwrap_or(false)
     });
 
+    let is_kanji_radical_quiz_mode = Memo::new(move |_| {
+        current_lesson_card
+            .get()
+            .map(|c| matches!(c.view(), LessonCardView::KanjiRadicalQuiz(_)))
+            .unwrap_or(false)
+    });
+
     let container_ref = NodeRef::<leptos::html::Div>::new();
 
     on_cleanup(move || {
@@ -135,7 +142,7 @@ pub fn LessonCardContainer() -> impl IntoView {
     view! {
         <div class="outline-none" tabindex="0" node_ref=container_ref on:keydown=handle_keydown>
             <Show when=move || current_lesson_card.get().is_some()>
-                <Show when=move || !is_quiz_mode.get() && !is_writing_mode.get() && !is_yesno_mode.get() && !is_phrase_listen_mode.get() && !is_kanji_reading_quiz_mode.get() && !is_grammar_quiz_mode.get()>
+                <Show when=move || !is_quiz_mode.get() && !is_writing_mode.get() && !is_yesno_mode.get() && !is_phrase_listen_mode.get() && !is_kanji_reading_quiz_mode.get() && !is_grammar_quiz_mode.get() && !is_kanji_radical_quiz_mode.get()>
                     {move || {
                         current_lesson_card.get().map(|lesson_card| {
                             render_lesson_card(
@@ -326,6 +333,44 @@ pub fn LessonCardContainer() -> impl IntoView {
                         })
                     }}
                 </Show>
+
+                <Show when=move || is_kanji_radical_quiz_mode.get()>
+                    {move || {
+                        current_lesson_card.get().and_then(|lesson_card| {
+                            if let LessonCardView::KanjiRadicalQuiz(quiz) = lesson_card.into_view() {
+                                let state = lesson_state.get();
+                                let selected_option = state.selected_quiz_option;
+                                let show_result = state.showing_answer;
+                                let selected_options = state.selected_quiz_options.clone();
+                                let multi_submitted = state.multi_quiz_submitted;
+                                let multi_result = state.multi_result;
+
+                                Some(view! {
+                                    <QuizCardView
+                                        quiz_card=quiz
+                                        show_result=show_result
+                                        selected_option=selected_option
+                                        on_select_option=on_quiz_select
+                                        on_dont_know=on_quiz_dont_know
+                                        dont_know_selected=state.dont_know_selected
+                                        native_language=native_language.get()
+                                        known_kanji=Signal::from(known_kanji)
+                                        quiz_variant=QuizVariant::Radicals
+                                        selected_options=Signal::derive(move || selected_options.clone())
+                                        multi_submitted=multi_submitted
+                                        multi_result=multi_result
+                                        on_toggle=on_quiz_toggle
+                                        on_submit=on_quiz_submit
+                                        waiting_for_next=state.waiting_for_next
+                                        on_next_card=on_next_card
+                                    />
+                                })
+                            } else {
+                                None
+                            }
+                        })
+                    }}
+                </Show>
             </Show>
         </div>
     }
@@ -367,6 +412,7 @@ fn render_lesson_card(
         | LessonCardView::YesNo(_)
         | LessonCardView::PhraseListen { .. }
         | LessonCardView::KanjiReadingQuiz(_)
+        | LessonCardView::KanjiRadicalQuiz(_)
         | LessonCardView::GrammarQuiz(_) => {
             return ().into_any();
         },

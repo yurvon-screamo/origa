@@ -25,8 +25,10 @@ pub fn create_on_quiz_submit(
             return;
         };
 
-        let LessonCardView::KanjiReadingQuiz(quiz) = lesson_card.view() else {
-            return;
+        let quiz = match lesson_card.view() {
+            LessonCardView::KanjiReadingQuiz(q) => q,
+            LessonCardView::KanjiRadicalQuiz(q) => q,
+            _ => return,
         };
 
         let is_multi_quiz = quiz.mode() == QuizMode::Multi;
