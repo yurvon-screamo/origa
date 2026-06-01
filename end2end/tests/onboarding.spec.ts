@@ -126,20 +126,6 @@ testWithFreshUser.describe("Onboarding Flow - N4 with ~50% Progress", () => {
         await expect(page.getByTestId("apps-step-title")).toBeVisible();
 
         // Wait for apps to load from CDN (filtered_apps is populated async)
-        // Take debug screenshot to see what apps are rendered
-        await page.screenshot({
-            path: "test-results/onboarding-step-3-apps-debug.png",
-            fullPage: true
-        });
-
-        // Log what app cards exist on the page
-        const appCards = await page.locator('[data-testid^="apps-step-app-"]').all();
-        console.log(`[DEBUG] Found ${appCards.length} app cards on page`);
-        for (const card of appCards) {
-            const testId = await card.getAttribute('data-testid');
-            console.log(`[DEBUG] App card: ${testId}`);
-        }
-
         await expect(page.getByTestId("apps-step-app-Migii-checkbox")).toBeVisible({ timeout: 30_000 });
 
         // Take screenshot before selections
