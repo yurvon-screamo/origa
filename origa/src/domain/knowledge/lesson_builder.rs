@@ -8,7 +8,7 @@ use super::{Card, CardType, KnowledgeSet, StudyCard};
 use crate::domain::{JapaneseLevel, JlptContent};
 
 const MIN_LESSON_SIZE: usize = 15;
-const MAX_LESSON_SIZE: usize = 50;
+pub(crate) const MAX_LESSON_SIZE: usize = 50;
 const PHRASE_NEW_RATIO: usize = 2;
 
 /// Приоритет карточек без определённого JLPT уровня — ниже всех известных уровней (N1=1)

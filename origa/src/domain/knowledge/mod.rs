@@ -29,7 +29,7 @@ use ulid::Ulid;
 
 use crate::dictionary::kanji::get_kanji_info;
 use crate::domain::{
-    JlptContent, NativeLanguage, OrigaError, RateMode, Rating, ReviewLog,
+    JapaneseLevel, JlptContent, NativeLanguage, OrigaError, RateMode, Rating, ReviewLog,
     srs::{NextReview, rate_memory},
 };
 
@@ -247,9 +247,10 @@ impl KnowledgeSet {
         &self,
         daily_new_limit: usize,
         jlpt_content: &JlptContent,
+        user_level: JapaneseLevel,
     ) -> LessonData {
         let lesson = lesson_builder::build_lesson(self, daily_new_limit, jlpt_content);
-        kanji_companions::add_kanji_companions(lesson, self)
+        kanji_companions::add_kanji_companions(lesson, self, user_level)
     }
 
     pub(crate) fn rate_card(
