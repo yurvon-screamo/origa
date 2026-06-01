@@ -180,7 +180,7 @@ jobs:
 
             - name: Install TrailBase
               run: |
-                  curl -sSfL https://trailbase.io/install.sh | bash
+                  tmp=$(mktemp) && curl -sSfL -o "$tmp" https://trailbase.io/install.sh && bash "$tmp"
                   echo "$HOME/.local/bin" >> $GITHUB_PATH
 
             - name: Install Node.js dependencies
