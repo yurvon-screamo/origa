@@ -45,7 +45,7 @@ export default defineConfig({
     ],
     webServer: [
         {
-            command: "npx serve ../../cdn -p 8080 --no-clipboard",
+            command: "npx serve ../cdn -p 8080 --no-clipboard",
             port: 8080,
             reuseExistingServer: !isCI,
             timeout: 30000,
