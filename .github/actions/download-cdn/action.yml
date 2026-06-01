@@ -120,6 +120,43 @@ runs:
           dl "cdn/ndlocr/$f" "${CDN_BASE}/ndlocr/$f"
         done
 
+        # Set files (migii, minna, duolingo, etc.) from manifest
+        python3 -c "
+        import urllib.request, json, os, sys
+        cdn_base = os.environ['CDN_BASE']
+        with open('cdn/well_known_set/well_known_sets_meta.json') as f:
+            sets = json.load(f)
+        def resolve_path(sid):
+            if sid.startswith('jlpt_'):
+                return f'well_known_set/{sid}.json'
+            if sid.startswith('migii_'):
+                level = sid.split('_')[1] if len(sid.split('_')) > 1 else 'unknown'
+                return f'well_known_set/migii/{level}/{sid}.json'
+            if sid.startswith('minna_n5_'):
+                return f'well_known_set/minna_n5/{sid}.json'
+            if sid.startswith('minna_n4_'):
+                return f'well_known_set/minna_n4/{sid}.json'
+            if sid.startswith('duolingo_'):
+                level = sid[10:].split('_')[0]
+                return f'well_known_set/duolingo/{level}/{sid}.json'
+            return f'well_known_set/{sid}.json'
+        ok = fail = 0
+        for m in sets:
+            sid = m['id']
+            path = resolve_path(sid)
+            local = f'cdn/{path}'
+            os.makedirs(os.path.dirname(local), exist_ok=True)
+            try:
+                urllib.request.urlretrieve(f'{cdn_base}/{path}', local)
+                ok += 1
+            except Exception:
+                fail += 1
+        print(f'Set files: {ok}/{len(sets)} OK, {fail} failed')
+        if fail > len(sets) // 2:
+            print(f'FATAL: too many failures ({fail}/{len(sets)})')
+            sys.exit(1)
+        "
+
     - name: Final verification
       shell: bash
       run: |
