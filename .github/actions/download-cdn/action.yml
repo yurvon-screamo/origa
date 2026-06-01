@@ -137,8 +137,12 @@ runs:
             elif sid.startswith('minna_n4_'):
                 print(f'well_known_set/minna_n4/{sid}.json')
             elif sid.startswith('duolingo_'):
-                level = sid[10:].split('_')[0]
-                print(f'well_known_set/duolingo/{level}/{sid}.json')
+                rest = sid[9:]
+                level = rest.split('_')[0]
+                filename = rest[len(level)+1:]
+                print(f'well_known_set/duolingo/{level}/{filename}.json')
+            elif sid.startswith('spy_family_'):
+                print(f'well_known_set/spy_family/{sid}.json')
             else:
                 print(f'well_known_set/{sid}.json')
         " | while read -r path; do
