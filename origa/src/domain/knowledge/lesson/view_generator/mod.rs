@@ -9,6 +9,7 @@ use rand::Rng;
 use super::types::LessonCardView;
 
 mod generation;
+mod kanji_radical_quiz;
 #[cfg(test)]
 mod tests;
 mod transforms;
@@ -20,10 +21,11 @@ const PROB_QUIZ_VIEW: f32 = 0.30;
 const PROB_YESNO_VIEW: f32 = 0.50;
 const PROB_REVERSED_VIEW: f32 = 0.75;
 
-const PROB_KANJI_NORMAL: f32 = 0.20;
-const PROB_KANJI_READING_QUIZ: f32 = 0.40;
-const PROB_KANJI_QUIZ: f32 = 0.55;
-const PROB_KANJI_YESNO: f32 = 0.75;
+const PROB_KANJI_NORMAL: f32 = 1.0 / 6.0;
+const PROB_KANJI_READING_QUIZ: f32 = 2.0 / 6.0;
+const PROB_KANJI_RADICAL_QUIZ: f32 = 3.0 / 6.0;
+const PROB_KANJI_QUIZ: f32 = 4.0 / 6.0;
+const PROB_KANJI_YESNO: f32 = 5.0 / 6.0;
 
 const PROB_NEW_KANJI_NORMAL: f32 = 0.33;
 const PROB_NEW_KANJI_QUIZ: f32 = 0.66;
@@ -102,13 +104,7 @@ impl<'a> LessonViewGenerator<'a> {
                     .get(&card_type)
                     .map(|v| v.as_slice())
                     .unwrap_or(&[]);
-                Self::select_review_kanji_view(
-                    card,
-                    same_type_cards,
-                    study_card.memory(),
-                    &mut self.kanji_cache,
-                    rng,
-                )
+                Self::select_review_kanji_view(card, same_type_cards, &mut self.kanji_cache, rng)
             },
             CardType::Vocabulary if is_new => {
                 let same_type_cards = self.same_type_cards(&card_type);
@@ -145,20 +141,22 @@ impl<'a> LessonViewGenerator<'a> {
     fn select_review_kanji_view<R: Rng>(
         card: &Card,
         same_type_cards: &[Card],
-        memory: &MemoryHistory,
         kanji_cache: &mut HashMap<String, &'static KanjiInfo>,
         rng: &mut R,
     ) -> LessonCardView {
         let rand_val = rng.random::<f32>();
         if rand_val < PROB_KANJI_NORMAL {
             LessonCardView::Normal(card.clone())
-        } else if !memory.is_high_difficulty() && rand_val < PROB_KANJI_READING_QUIZ {
+        } else if rand_val < PROB_KANJI_READING_QUIZ {
             generation::generate_kanji_reading_quiz(card.clone(), same_type_cards, kanji_cache)
+                .unwrap_or_else(|_| LessonCardView::Normal(card.clone()))
+        } else if rand_val < PROB_KANJI_RADICAL_QUIZ {
+            kanji_radical_quiz::generate_kanji_radical_quiz(card.clone(), kanji_cache)
                 .unwrap_or_else(|_| LessonCardView::Normal(card.clone()))
         } else if rand_val < PROB_KANJI_QUIZ {
             generation::generate_quiz(card.clone(), same_type_cards, &DEFAULT_LANG)
                 .unwrap_or_else(|_| LessonCardView::Normal(card.clone()))
-        } else if !memory.is_high_difficulty() && rand_val < PROB_KANJI_YESNO {
+        } else if rand_val < PROB_KANJI_YESNO {
             generation::generate_yesno(card.clone(), same_type_cards, &DEFAULT_LANG, rng)
                 .unwrap_or_else(|_| LessonCardView::Normal(card.clone()))
         } else {

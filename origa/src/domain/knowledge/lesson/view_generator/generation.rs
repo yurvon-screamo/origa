@@ -286,7 +286,7 @@ fn collect_distractors(
     distractors
 }
 
-fn cached_kanji_info<'a>(
+pub(crate) fn cached_kanji_info<'a>(
     kanji: &str,
     cache: &'a mut HashMap<String, &'static KanjiInfo>,
 ) -> Result<&'a KanjiInfo, OrigaError> {
