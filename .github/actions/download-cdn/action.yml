@@ -1,5 +1,5 @@
 name: "Download CDN Data"
-description: "Download and cache CDN test data (dictionaries, grammar, etc.)"
+description: "Download and cache CDN test data with integrity verification"
 
 inputs:
   cache-key:
@@ -20,50 +20,15 @@ runs:
         path: cdn
         key: ${{ inputs.cache-key }}
 
-    - name: Download CDN data
-      if: steps.cache-cdn.outputs.cache-hit != 'true'
-      shell: bash
-      env:
-        CDN_BASE: ${{ inputs.cdn-base-url }}
-      run: |
-        mkdir -p cdn/dictionaries cdn/dictionary cdn/grammar
-        mkdir -p cdn/well_known_set cdn/phrases cdn/pitch cdn/ndlocr
-
-        # Lindera tokenizer data
-        for f in char_def.bin matrix.mtx dict.da dict.vals unk.bin dict.wordsidx dict.words metadata.json; do
-          curl -sSf -o "cdn/dictionaries/$f" "${CDN_BASE}/dictionaries/$f" || echo "Warning: failed $f"
-        done
-
-        # Vocabulary chunks + kanji + radicals
-        for f in chunk_01.json chunk_02.json chunk_03.json chunk_04.json chunk_05.json chunk_06.json chunk_07.json chunk_08.json chunk_09.json chunk_10.json chunk_11.json kanji.json radicals.json; do
-          curl -sSf -o "cdn/dictionary/$f" "${CDN_BASE}/dictionary/$f" || echo "Warning: failed $f"
-        done
-
-        # Grammar
-        curl -sSf -o "cdn/grammar/grammar.json" "${CDN_BASE}/grammar/grammar.json" || echo "Warning: failed grammar"
-
-        # Well-known sets
-        curl -sSf -o "cdn/well_known_set/well_known_sets_meta.json" "${CDN_BASE}/well_known_set/well_known_sets_meta.json" || echo "Warning: failed"
-        curl -sSf -o "cdn/well_known_set/well_known_types_meta.json" "${CDN_BASE}/well_known_set/well_known_types_meta.json" || echo "Warning: failed"
-        for level in n5 n4 n3 n2 n1; do
-          curl -sSf -o "cdn/well_known_set/jlpt_${level}.json" "${CDN_BASE}/well_known_set/jlpt_${level}.json" || echo "Warning: failed jlpt_${level}"
-        done
-
-        # Phrase + pitch + manifest + furigana
-        curl -sSf -o "cdn/phrases/phrase_index.json" "${CDN_BASE}/phrases/phrase_index.json" || echo "Warning: failed"
-        curl -sSf -o "cdn/pitch/index.json" "${CDN_BASE}/pitch/index.json" || echo "Warning: failed"
-        curl -sSf -o "cdn/manifest.json" "${CDN_BASE}/manifest.json" || echo "Warning: failed"
-        curl -sSf -o "cdn/dictionaries/JmdictFurigana.txt" "${CDN_BASE}/dictionaries/JmdictFurigana.txt" || echo "Warning: failed"
-
-        # NDLOCR model files (~146 MB total)
-        for f in deim.onnx parseq-30.onnx parseq-50.onnx parseq-100.onnx vocab.txt; do
-          curl -sSf -o "cdn/ndlocr/$f" "${CDN_BASE}/ndlocr/$f" || echo "Warning: failed ndlocr/$f"
-        done
-
-    - name: Verify CDN data
+    - name: Verify cached data
+      id: verify
       shell: bash
       run: |
-        echo "Verifying CDN downloads..."
+        if [ "${{ steps.cache-cdn.outputs.cache-hit }}" != "true" ]; then
+          echo "cache_miss=true" >> $GITHUB_OUTPUT
+          exit 0
+        fi
+        echo "Cache hit — verifying integrity..."
         MISSING=0
         declare -A MIN_SIZES
         MIN_SIZES["well_known_set/well_known_sets_meta.json"]=100000
@@ -75,23 +40,114 @@ runs:
         for f in "${!MIN_SIZES[@]}"; do
           min_size=${MIN_SIZES[$f]}
           if [ ! -s "cdn/$f" ]; then
-            echo "ERROR: cdn/$f is missing or empty!"
+            echo "MISSING: cdn/$f"
             MISSING=$((MISSING + 1))
             continue
           fi
           actual_size=$(wc -c < "cdn/$f")
           if [ "$actual_size" -lt "$min_size" ]; then
-            echo "ERROR: cdn/$f is too small ($actual_size < $min_size bytes) — corrupted!"
+            echo "CORRUPTED: cdn/$f ($actual_size < $min_size bytes)"
             MISSING=$((MISSING + 1))
-          else
-            echo "  OK: cdn/$f ($actual_size bytes, min $min_size)"
           fi
         done
 
         if [ "$MISSING" -gt 0 ]; then
-          echo "FATAL: $MISSING critical CDN files are missing or corrupted."
-          echo "Removing corrupted cache directory..."
+          echo "Cache corrupted — will re-download"
           rm -rf cdn
+          echo "cache_miss=true" >> $GITHUB_OUTPUT
+        else
+          echo "Cache verified OK"
+          echo "cache_miss=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Download CDN data
+      if: steps.verify.outputs.cache_miss == 'true'
+      shell: bash
+      env:
+        CDN_BASE: ${{ inputs.cdn-base-url }}
+      run: |
+        mkdir -p cdn/dictionaries cdn/dictionary cdn/grammar
+        mkdir -p cdn/well_known_set cdn/phrases cdn/pitch cdn/ndlocr
+
+        # Download with retry
+        dl() {
+          local file="$1"
+          local url="$2"
+          local retries=3
+          for i in $(seq 1 $retries); do
+            if curl -sSf --connect-timeout 10 --max-time 120 -o "$file" "$url"; then
+              if [ -s "$file" ]; then
+                return 0
+              fi
+            fi
+            echo "Retry $i/$retries for $file"
+            sleep 2
+          done
+          echo "FAILED: $file after $retries attempts"
+          return 1
+        }
+
+        # Lindera tokenizer data
+        for f in char_def.bin matrix.mtx dict.da dict.vals unk.bin dict.wordsidx dict.words metadata.json; do
+          dl "cdn/dictionaries/$f" "${CDN_BASE}/dictionaries/$f" || true
+        done
+
+        # Vocabulary chunks + kanji + radicals
+        for f in chunk_01.json chunk_02.json chunk_03.json chunk_04.json chunk_05.json chunk_06.json chunk_07.json chunk_08.json chunk_09.json chunk_10.json chunk_11.json kanji.json radicals.json; do
+          dl "cdn/dictionary/$f" "${CDN_BASE}/dictionary/$f" || true
+        done
+
+        # Grammar
+        dl "cdn/grammar/grammar.json" "${CDN_BASE}/grammar/grammar.json" || true
+
+        # Well-known sets (critical — must succeed)
+        dl "cdn/well_known_set/well_known_sets_meta.json" "${CDN_BASE}/well_known_set/well_known_sets_meta.json" || exit 1
+        dl "cdn/well_known_set/well_known_types_meta.json" "${CDN_BASE}/well_known_set/well_known_types_meta.json" || exit 1
+        for level in n5 n4 n3 n2 n1; do
+          dl "cdn/well_known_set/jlpt_${level}.json" "${CDN_BASE}/well_known_set/jlpt_${level}.json" || true
+        done
+
+        # Phrase + pitch + manifest + furigana
+        dl "cdn/phrases/phrase_index.json" "${CDN_BASE}/phrases/phrase_index.json" || true
+        dl "cdn/pitch/index.json" "${CDN_BASE}/pitch/index.json" || true
+        dl "cdn/manifest.json" "${CDN_BASE}/manifest.json" || true
+        dl "cdn/dictionaries/JmdictFurigana.txt" "${CDN_BASE}/dictionaries/JmdictFurigana.txt" || true
+
+        # NDLOCR model files
+        for f in deim.onnx parseq-30.onnx parseq-50.onnx parseq-100.onnx vocab.txt; do
+          dl "cdn/ndlocr/$f" "${CDN_BASE}/ndlocr/$f" || true
+        done
+
+    - name: Final verification
+      shell: bash
+      run: |
+        echo "Verifying CDN data..."
+        ERRORS=0
+        declare -A MIN_SIZES
+        MIN_SIZES["well_known_set/well_known_sets_meta.json"]=100000
+        MIN_SIZES["well_known_set/well_known_types_meta.json"]=100
+        MIN_SIZES["dictionaries/metadata.json"]=100
+        MIN_SIZES["grammar/grammar.json"]=1000
+        MIN_SIZES["manifest.json"]=100
+
+        for f in "${!MIN_SIZES[@]}"; do
+          min_size=${MIN_SIZES[$f]}
+          if [ ! -s "cdn/$f" ]; then
+            echo "ERROR: cdn/$f is missing or empty!"
+            ERRORS=$((ERRORS + 1))
+            continue
+          fi
+          actual_size=$(wc -c < "cdn/$f")
+          if [ "$actual_size" -lt "$min_size" ]; then
+            echo "ERROR: cdn/$f too small ($actual_size < $min_size) — corrupted!"
+            ERRORS=$((ERRORS + 1))
+          else
+            echo "  OK: cdn/$f ($actual_size bytes)"
+          fi
+        done
+
+        if [ "$ERRORS" -gt 0 ]; then
+          echo "FATAL: $ERRORS critical files failed verification"
           exit 1
         fi
         echo "All critical CDN files verified."
