@@ -227,6 +227,10 @@ jobs:
                   pattern: blob-report-*
                   path: end2end/all-blob-reports/
 
+            - name: Flatten blob reports
+              working-directory: end2end/all-blob-reports
+              run: find . -mindepth 2 -type f -exec mv {} . \;
+
             - name: Merge blob reports
               working-directory: end2end
               run: npx playwright merge-reports --reporter=html ./all-blob-reports
