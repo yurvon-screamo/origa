@@ -12,15 +12,9 @@ export default defineConfig({
     forbidOnly: isCI,
     retries: isCI ? 2 : 0,
     workers: isCI ? 2 : 1,
-    reporter: [
-        [
-            "html",
-            {
-                open: "on-failure",
-                host: "0.0.0.0",
-            },
-        ],
-    ],
+    reporter: isCI
+        ? [["blob", { outputDir: "blob-report" }]]
+        : [["html", { open: "on-failure", host: "0.0.0.0" }]],
     use: {
         baseURL: "http://localhost:1420",
         trace: "on-first-retry",

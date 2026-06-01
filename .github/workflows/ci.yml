@@ -193,16 +193,51 @@ jobs:
 
             - name: Run E2E test (${{ matrix.spec }})
               working-directory: end2end
-              run: npx playwright test tests/${{ matrix.spec }}.spec.ts --project=chromium --reporter=line
+              run: npx playwright test tests/${{ matrix.spec }}.spec.ts --project=chromium
 
-            - name: Upload Playwright report
-              if: failure()
+            - name: Upload blob report
+              if: always()
               uses: actions/upload-artifact@v4
               with:
-                  name: playwright-report-${{ matrix.spec }}
-                  path: end2end/playwright-report/
+                  name: blob-report-${{ matrix.spec }}
+                  path: end2end/blob-report/
                   retention-days: 7
 
+
+    e2e-report:
+        name: E2E Report
+        needs: e2e
+        if: always()
+        runs-on: ubuntu-24.04
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Install Node.js dependencies
+              working-directory: end2end
+              run: npm ci
+
+            - name: Install Playwright browsers
+              run: npx playwright install --with-deps chromium
+              working-directory: end2end
+
+            - name: Download all blob reports
+              uses: actions/download-artifact@v4
+              with:
+                  pattern: blob-report-*
+                  path: end2end/all-blob-reports/
+
+            - name: Merge blob reports
+              working-directory: end2end
+              run: npx playwright merge-reports --reporter=html ./all-blob-reports
+
+            - name: Upload merged Playwright report
+              if: always()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: playwright-report-merged
+                  path: end2end/playwright-report/
+                  retention-days: 30
 
     check:
         name: CI Gate
