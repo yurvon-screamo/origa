@@ -30,6 +30,7 @@ runs:
         fi
         echo "Cache hit — verifying integrity..."
         ERRORS=0
+        # IMPORTANT: keep in sync with Final verification MIN_SIZES below
         declare -A MIN_SIZES
         MIN_SIZES["well_known_set/well_known_sets_meta.json"]=100000
         MIN_SIZES["well_known_set/well_known_types_meta.json"]=100
@@ -69,7 +70,7 @@ runs:
       env:
         CDN_BASE: ${{ inputs.cdn-base-url }}
       run: |
-        set -e
+        set -euo pipefail
 
         dl() {
           local file="$1"
@@ -107,6 +108,7 @@ runs:
       run: |
         echo "Verifying CDN data..."
         ERRORS=0
+        # IMPORTANT: keep in sync with Verify cached data MIN_SIZES above
         declare -A MIN_SIZES
         MIN_SIZES["well_known_set/well_known_sets_meta.json"]=100000
         MIN_SIZES["well_known_set/well_known_types_meta.json"]=100

@@ -26,7 +26,7 @@ jobs:
               uses: actions/checkout@v4
 
             - name: Cache APT packages
-              uses: awalsh128/cache-apt-pkgs-action@latest
+              uses: awalsh128/cache-apt-pkgs-action@v1.4.2
               with:
                   packages: libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
                       protobuf-compiler libspeechd-dev
@@ -54,7 +54,7 @@ jobs:
               uses: actions/checkout@v4
 
             - name: Cache APT packages
-              uses: awalsh128/cache-apt-pkgs-action@latest
+              uses: awalsh128/cache-apt-pkgs-action@v1.4.2
               with:
                   packages: libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
                       protobuf-compiler libspeechd-dev
@@ -76,7 +76,7 @@ jobs:
             - name: Download CDN data
               uses: ./.github/actions/download-cdn
               with:
-                  cache-key: cdn-data-v7
+                  cache-key: cdn-data-v7-${{ hashFiles('end2end/cdn-manifest.txt') }}
                   cdn-base-url: ${{ vars.ORIGA_CDN_BASE_URL }}
 
             - name: Run tests
@@ -93,7 +93,7 @@ jobs:
               uses: actions/checkout@v4
 
             - name: Cache APT packages
-              uses: awalsh128/cache-apt-pkgs-action@latest
+              uses: awalsh128/cache-apt-pkgs-action@v1.4.2
               with:
                   packages: libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
                       protobuf-compiler libspeechd-dev
@@ -110,17 +110,10 @@ jobs:
               with:
                   tools: trunk
 
-            - name: Cache UniDic dictionary
-              uses: actions/cache@v4
-              with:
-                  path: origa_ui/public/dictionaries/unidic
-                  key: unidic-dict-v1-${{ hashFiles('origa_ui/build.rs') }}
-                  restore-keys: unidic-dict-v1-
-
             - name: Download CDN data
               uses: ./.github/actions/download-cdn
               with:
-                  cache-key: cdn-data-v7
+                  cache-key: cdn-data-v7-${{ hashFiles('end2end/cdn-manifest.txt') }}
                   cdn-base-url: ${{ vars.ORIGA_CDN_BASE_URL }}
 
             - name: Build WASM
@@ -175,7 +168,7 @@ jobs:
             - name: Download CDN data
               uses: ./.github/actions/download-cdn
               with:
-                  cache-key: cdn-data-v7
+                  cache-key: cdn-data-v7-${{ hashFiles('end2end/cdn-manifest.txt') }}
                   cdn-base-url: ${{ vars.ORIGA_CDN_BASE_URL }}
 
             - name: Install TrailBase
@@ -207,7 +200,7 @@ jobs:
     e2e-report:
         name: E2E Report
         needs: e2e
-        if: always()
+        if: always() && needs.e2e.result != 'cancelled'
         runs-on: ubuntu-24.04
         steps:
             - name: Checkout repository
@@ -229,7 +222,16 @@ jobs:
 
             - name: Flatten blob reports
               working-directory: end2end/all-blob-reports
-              run: find . -mindepth 2 -type f -exec mv {} . \;
+              run: |
+                  count=$(find . -mindepth 2 -type f | wc -l)
+                  if [ "$count" -eq 0 ]; then
+                    echo "No blob reports found — skipping merge"
+                    exit 0
+                  fi
+                  find . -mindepth 2 -type f | while read -r f; do
+                      dir_name=$(basename "$(dirname "$f")")
+                      mv "$f" "./${dir_name}_$(basename "$f")"
+                  done
 
             - name: Merge blob reports
               working-directory: end2end

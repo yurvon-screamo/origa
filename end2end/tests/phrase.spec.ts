@@ -2,6 +2,7 @@ import { test, expect, type Page } from "@playwright/test";
 import { PhrasesPage } from "../pages";
 import { testWithFreshUser } from "../fixtures";
 import { skipOnboarding } from "../helpers/navigation";
+import { waitForScoringReady } from "../helpers/onboarding";
 
 test.describe("Phrases Navigation", () => {
     testWithFreshUser("bottom nav has Phrases tab", async ({ page }) => {
@@ -57,13 +58,6 @@ testWithFreshUser.describe("Phrases Page", () => {
         await expect(phrasesPage.searchInput).toBeVisible();
     });
 });
-
-async function waitForScoringReady(page: Page, timeout = 30_000): Promise<void> {
-    await Promise.race([
-        page.getByTestId("scoring-step-hint").waitFor({ state: "visible", timeout }),
-        page.getByTestId("scoring-step-complete").waitFor({ state: "visible", timeout }),
-    ]).catch(() => {});
-}
 
 async function completeFullOnboarding(page: Page): Promise<void> {
     await page.goto("/home");

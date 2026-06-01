@@ -3,6 +3,8 @@ import type { FullConfig } from "@playwright/test";
 import { fetchWithTimeout } from "./helpers/http";
 import { cleanupOrphanedAccounts } from "./helpers/cleanup";
 import { execSync } from "child_process";
+import * as fs from "fs";
+import * as path from "path";
 
 // Add ~/.local/bin to PATH for trail CLI
 if (process.platform === "win32" || process.platform === "linux" || process.platform === "darwin") {
@@ -110,6 +112,9 @@ async function startTrailBase(): Promise<void> {
 
     // Don't let parent process wait for child
     proc.unref();
+
+    // Save PID for cleanup in teardown
+    fs.writeFileSync(path.join(__dirname, ".trailbase.pid"), String(proc.pid));
 
     console.log("[global-setup] Waiting for TrailBase to be ready...");
     const ready = await waitForTrailBase();
