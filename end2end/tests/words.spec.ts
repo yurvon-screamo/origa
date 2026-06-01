@@ -4,6 +4,8 @@ import { testWithFreshUser } from "../fixtures";
 import { skipOnboarding } from "../helpers/navigation";
 import { WordsPage, SetsPage } from "../pages";
 
+test.describe.configure({ mode: "serial" });
+
 async function setupWordsPage(page: Page): Promise<WordsPage> {
     await skipOnboarding(page);
 
