@@ -44,8 +44,29 @@ jobs:
             - name: Run clippy
               run: cargo clippy --workspace --all-targets -- -D warnings
 
+    cdn-download:
+        name: Download CDN
+        runs-on: ubuntu-24.04
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Download CDN data
+              uses: ./.github/actions/download-cdn
+              with:
+                  cache-key: cdn-data-v7-${{ hashFiles('end2end/cdn-manifest.txt') }}
+                  cdn-base-url: ${{ vars.ORIGA_CDN_BASE_URL }}
+
+            - name: Upload CDN artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: cdn-data
+                  path: cdn/
+                  retention-days: 1
+
     test:
         name: Test
+        needs: cdn-download
         runs-on: ubuntu-24.04
         env:
             ORIGA_CDN_BASE_URL: ${{ vars.ORIGA_CDN_BASE_URL }}
@@ -73,17 +94,18 @@ jobs:
                   key: unidic-dict-v1-${{ hashFiles('origa_ui/build.rs') }}
                   restore-keys: unidic-dict-v1-
 
-            - name: Download CDN data
-              uses: ./.github/actions/download-cdn
+            - name: Download CDN artifact
+              uses: actions/download-artifact@v4
               with:
-                  cache-key: cdn-data-v7-${{ hashFiles('end2end/cdn-manifest.txt') }}
-                  cdn-base-url: ${{ vars.ORIGA_CDN_BASE_URL }}
+                  name: cdn-data
+                  path: cdn/
 
             - name: Run tests
               run: cargo test --workspace
 
     e2e-build:
         name: E2E Build
+        needs: cdn-download
         runs-on: ubuntu-24.04
         env:
             ORIGA_CDN_BASE_URL: http://localhost:8080
@@ -110,18 +132,11 @@ jobs:
               with:
                   tools: trunk
 
-            - name: Download CDN data
-              uses: ./.github/actions/download-cdn
-              with:
-                  cache-key: cdn-data-v7-${{ hashFiles('end2end/cdn-manifest.txt') }}
-                  cdn-base-url: ${{ vars.ORIGA_CDN_BASE_URL }}
-
-            - name: Upload CDN artifact
-              uses: actions/upload-artifact@v4
+            - name: Download CDN artifact
+              uses: actions/download-artifact@v4
               with:
                   name: cdn-data
                   path: cdn/
-                  retention-days: 1
 
             - name: Build WASM
               run: cd origa_ui && trunk build --release
@@ -232,7 +247,7 @@ jobs:
               run: |
                   count=$(find . -mindepth 2 -type f | wc -l)
                   if [ "$count" -eq 0 ]; then
-                    echo "No blob reports found — skipping merge"
+                    echo "No blob reports found - skipping merge"
                     exit 0
                   fi
                   find . -mindepth 2 -type f | while read -r f; do
@@ -252,9 +267,29 @@ jobs:
                   path: end2end/playwright-report/
                   retention-days: 30
 
+    docker-build:
+        name: Docker Build
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v3
+
+            - name: Build Docker image
+              uses: docker/build-push-action@v6
+              with:
+                  context: .
+                  file: ./origa_ui/Dockerfile
+                  push: false
+                  cache-from: type=registry,ref=ghcr.io/yurvon-screamo/origa:buildcache
+                  build-args: |
+                      ORIGA_CDN_BASE_URL=${{ vars.ORIGA_CDN_BASE_URL }}
+
     check:
         name: CI Gate
-        needs: [lint, test, e2e]
+        needs: [lint, test, e2e, docker-build]
         runs-on: ubuntu-latest
         steps:
             - run: echo "All checks passed"
