@@ -5,7 +5,7 @@ use std::collections::HashSet;
 #[component]
 pub fn GrammarDetailHeroCard(
     title_stored: StoredValue<String>,
-    answer_text: Memo<String>,
+    short_description: Memo<String>,
     #[prop(into)] tag_variant: Signal<crate::ui_components::TagVariant>,
     #[prop(into)] tag_label: Signal<String>,
     known_kanji: HashSet<char>,
@@ -21,8 +21,8 @@ pub fn GrammarDetailHeroCard(
                         known_kanji=known_kanji_stored.get_value()
                     />
                 </div>
-                <Show when=move || !answer_text.get().is_empty()>
-                    <div class="grammar-detail-hero-meaning">{answer_text}</div>
+                <Show when=move || !short_description.get().is_empty()>
+                    <div class="grammar-detail-hero-meaning">{short_description}</div>
                 </Show>
                 <div class="grammar-detail-hero-badge">
                     <Tag variant=tag_variant>{tag_label}</Tag>
