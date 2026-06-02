@@ -22,7 +22,23 @@ env:
 
 jobs:
     version:
-        uses: ./.github/workflows/version.yml
+        runs-on: ubuntu-latest
+        outputs:
+            version: ${{ steps.version.outputs.version }}
+            version_base: ${{ steps.version.outputs.version_base }}
+            version_type: ${{ steps.version.outputs.version_type }}
+            commit_sha: ${{ steps.version.outputs.commit_sha }}
+            commit_short: ${{ steps.version.outputs.commit_short }}
+            build_date: ${{ steps.version.outputs.build_date }}
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+                  filter: blob:none
+
+            - name: Calculate version
+              id: version
+              uses: ./.github/actions/version
 
     build-windows:
         name: Build Windows
@@ -67,16 +83,9 @@ jobs:
                   restore-keys: unidic-dict-v1-
 
             - name: Update version in config files
-              env:
-                  VERSION: ${{ needs.version.outputs.version_base }}
-              run: |
-                  # Обновить версию в Cargo.toml (workspace)
-                  sed -i 's/^version = ".*"/version = "'${VERSION}'"/' Cargo.toml
-
-                  # Обновить версию в tauri.conf.json
-                  sed -i 's/"version": ".*"/"version": "'${VERSION}'"/' tauri/tauri.conf.json
-
-                  echo "Updated version to ${VERSION}"
+              uses: ./.github/actions/update-version
+              with:
+                  version: ${{ needs.version.outputs.version_base }}
 
             - name: Install build dependencies
               run: apt-get update && apt-get install -y nsis clang lld llvm protobuf-compiler
@@ -167,29 +176,16 @@ jobs:
             - name: Checkout repository
               uses: actions/checkout@v4
 
-            - name: Cache UniDic dictionary
-              uses: actions/cache@v4
-              with:
-                  path: origa_ui/public/dictionaries/unidic
-                  key: unidic-dict-v1-${{ hashFiles('origa_ui/build.rs') }}
-                  restore-keys: unidic-dict-v1-
-
             - name: Update version in config files
-              env:
-                  VERSION: ${{ needs.version.outputs.version_base }}
-              run: |
-                  # Обновить версию в Cargo.toml (workspace)
-                  sed -i 's/^version = ".*"/version = "'${VERSION}'"/' Cargo.toml
-
-                  # Обновить версию в tauri.conf.json
-                  sed -i 's/"version": ".*"/"version": "'${VERSION}'"/' tauri/tauri.conf.json
-
-                  echo "Updated version to ${VERSION}"
+              uses: ./.github/actions/update-version
+              with:
+                  version: ${{ needs.version.outputs.version_base }}
 
             - name: Cache APT packages
               uses: awalsh128/cache-apt-pkgs-action@latest
               with:
-                  packages: libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+                  packages:
+                      libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
                       protobuf-compiler libspeechd-dev
                   version: 1.0
 
@@ -297,16 +293,9 @@ jobs:
                   restore-keys: unidic-dict-v1-
 
             - name: Update version in config files
-              env:
-                  VERSION: ${{ needs.version.outputs.version_base }}
-              run: |
-                  # Обновить версию в Cargo.toml (workspace)
-                  sed -i 's/^version = ".*"/version = "'${VERSION}'"/' Cargo.toml
-
-                  # Обновить версию в tauri.conf.json
-                  sed -i 's/"version": ".*"/"version": "'${VERSION}'"/' tauri/tauri.conf.json
-
-                  echo "Updated version to ${VERSION}"
+              uses: ./.github/actions/update-version
+              with:
+                  version: ${{ needs.version.outputs.version_base }}
 
             - name: Install build dependencies
               run: apt-get update && apt-get install -y zip protobuf-compiler
@@ -333,7 +322,8 @@ jobs:
 
             - name: Build Tauri app for macOS
               working-directory: tauri
-              run: cargo tauri build --runner cargo-zigbuild --target aarch64-apple-darwin
+              run:
+                  cargo tauri build --runner cargo-zigbuild --target aarch64-apple-darwin
                   --no-bundle
 
             - name: Extract signature
@@ -378,7 +368,6 @@ jobs:
                   path: Origa-macos-arm64.zip
                   retention-days: 7
 
-
     build-android:
         name: Build Android
         needs: [version]
@@ -397,12 +386,9 @@ jobs:
               uses: actions/checkout@v4
 
             - name: Update version in config files
-              env:
-                  VERSION: ${{ needs.version.outputs.version_base }}
-              run: |
-                  sed -i 's/^version = ".*"/version = "'${VERSION}'"/' Cargo.toml
-                  sed -i 's/"version": ".*"/"version": "'${VERSION}'"/' tauri/tauri.conf.json
-                  echo "Updated version to ${VERSION}"
+              uses: ./.github/actions/update-version
+              with:
+                  version: ${{ needs.version.outputs.version_base }}
 
             - name: Install system dependencies
               run: |
@@ -450,13 +436,6 @@ jobs:
 
             - name: Add cargo bin to PATH
               run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-
-            - name: Cache UniDic dictionary
-              uses: actions/cache@v4
-              with:
-                  path: origa_ui/public/dictionaries/unidic
-                  key: unidic-dict-v1-${{ hashFiles('origa_ui/build.rs') }}
-                  restore-keys: unidic-dict-v1-
 
             - name: Build frontend
               working-directory: origa_ui
@@ -577,31 +556,57 @@ jobs:
             github.event_name == 'push' ||
             github.event_name == 'workflow_dispatch' ||
             (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
-        needs: [version, build-windows, build-linux, build-macos, build-android, generate-latest-json]
-        uses: ./.github/workflows/reusable-release.yml
-        with:
-            tag-name: ${{ needs.version.outputs.version_type == 'stable' &&
-                needs.version.outputs.version || 'latest' }}
-            release-name: ${{ needs.version.outputs.version_type == 'stable' &&
-                format('Release {0}', needs.version.outputs.version) || format('Latest
-                Build ({0})', needs.version.outputs.version) }}
-            version-type: ${{ needs.version.outputs.version_type }}
-            make-latest: true
-            prerelease: ${{ needs.version.outputs.version_type != 'stable' }}
-            body: |
-                Автоматическая сборка от ${{ github.sha }}
-
-                ## Windows
-                - `origa_*_x64-setup.exe` - NSIS инсталлятор
-
-                ## Linux
-                - `*.AppImage` - Portable версия
-                - `*.deb` - Debian/Ubuntu пакет
-
-                ## macOS
-                - `Origa-macos-arm64.zip` - Apple Silicon
-
-                ## Android
-                - `origa-latest.apk` - Android APK
+        needs:
+            [
+                version,
+                build-windows,
+                build-linux,
+                build-macos,
+                build-android,
+                generate-latest-json,
+            ]
+        runs-on: ubuntu-latest
         permissions:
             contents: write
+        steps:
+            - name: Download all artifacts
+              uses: actions/download-artifact@v4
+              with:
+                  path: artifacts
+
+            - name: Prepare release assets
+              run: |
+                  mkdir -p release_assets
+                  find artifacts -type f -exec mv {} release_assets/ \;
+                  echo "Release assets content:"
+                  ls -la release_assets/
+
+            - name: Update latest release
+              uses: softprops/action-gh-release@v2
+              with:
+                  tag_name:
+                      ${{ needs.version.outputs.version_type == 'stable' &&
+                      needs.version.outputs.version || 'latest' }}
+                  name: ${{ needs.version.outputs.version_type == 'stable' &&
+                      format('Release {0}', needs.version.outputs.version) || format('Latest
+                      Build ({0})', needs.version.outputs.version) }}
+                  body: |
+                      Автоматическая сборка от ${{ github.sha }}
+
+                      ## Windows
+                      - `origa_*_x64-setup.exe` - NSIS инсталлятор
+
+                      ## Linux
+                      - `*.AppImage` - Portable версия
+                      - `*.deb` - Debian/Ubuntu пакет
+
+                      ## macOS
+                      - `Origa-macos-arm64.zip` - Apple Silicon
+
+                      ## Android
+                      - `origa-latest.apk` - Android APK
+                  generate_release_notes: true
+                  files: release_assets/*
+                  prerelease: ${{ needs.version.outputs.version_type != 'stable' }}
+                  draft: false
+                  make_latest: true
