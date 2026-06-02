@@ -54,7 +54,7 @@ pub fn PhrasesContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
     let empty_message =
         Signal::derive(move || td_string!(i18n.get_locale(), phrases.not_found).to_string());
 
-    card_list_view(ctx, false, "phrases", empty_message, move |card| {
+    card_list_view(ctx, false, "phrases", empty_message, None, move |card| {
         let ctx = ctx_for_render.clone();
         let card_id = *card.card_id();
         view! {

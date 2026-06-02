@@ -22,7 +22,7 @@ pub fn GrammarContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
     let empty_message =
         Signal::derive(move || td_string!(i18n.get_locale(), grammar_page.not_found).to_string());
 
-    card_list_view(ctx, true, "grammar", empty_message, move |card| {
+    card_list_view(ctx, true, "grammar", empty_message, None, move |card| {
         let ctx = ctx_for_render.clone();
         let card_id = *card.card_id();
         view! {

@@ -5007,22 +5007,22 @@ input[type="submit"],
 
 .word-card-body {
     display: flex;
+    flex-direction: column;
     flex: 1;
-    padding: 10px 20px;
-    gap: 16px;
+    padding: 20px;
+    gap: 12px;
 }
 
 .word-card-word-box {
-    min-width: 64px;
-    min-height: 64px;
+    width: 100%;
+    min-height: 48px;
     display: flex;
     align-items: center;
     justify-content: center;
     border: 1px solid var(--border-dark);
     background: var(--bg-paper);
-    flex-shrink: 0;
     position: relative;
-    padding: 4px 8px;
+    padding: 8px 16px;
 }
 
 .word-card-word-box::after {
@@ -5038,7 +5038,6 @@ input[type="submit"],
 }
 
 .word-card-content {
-    flex: 0 1 auto;
     min-width: 0;
     display: flex;
     flex-direction: column;
