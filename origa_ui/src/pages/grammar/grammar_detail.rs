@@ -257,7 +257,7 @@ pub fn GrammarDetail() -> impl IntoView {
     });
 
     view! {
-        <div class="grammar-detail-container">
+        <div class="grammar-detail-container" data-testid="grammar-detail-container">
             <Show when=move || is_loading.get()>
                 <LoadingOverlay message=loading_text />
             </Show>
@@ -344,8 +344,8 @@ pub fn GrammarDetail() -> impl IntoView {
 
                     Some(view! {
                         <div class="grammar-detail-top-bar">
-                            <div class="grammar-breadcrumbs">
-                                <A href="/grammar">{breadcrumbs_label_val}</A>
+                            <div class="grammar-breadcrumbs" data-testid="grammar-detail-breadcrumbs">
+                                <A href="/grammar" attr:data-testid="grammar-detail-breadcrumbs-back">{breadcrumbs_label_val}</A>
                                 <span class="grammar-breadcrumbs-separator">"/"</span>
                                 <span class="grammar-breadcrumbs-current">
                                     {title_stored.get_value()}

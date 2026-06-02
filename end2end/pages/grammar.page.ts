@@ -37,6 +37,16 @@ export class GrammarPage extends BasePage {
     readonly practiceAgainBtn: Locator;
     readonly practiceNoWords: Locator;
 
+    // Detail page
+    readonly detailContainer: Locator;
+    readonly detailBreadcrumbs: Locator;
+    readonly detailBreadcrumbsBack: Locator;
+    readonly detailPracticeBtn: Locator;
+    readonly detailFsrs: Locator;
+    readonly detailActions: Locator;
+    readonly detailDeleteModal: Locator;
+    readonly detailDeleteConfirmBtn: Locator;
+
     constructor(page: Page) {
         super(page);
 
@@ -76,6 +86,16 @@ export class GrammarPage extends BasePage {
         this.practiceComplete = page.getByTestId("grammar-practice-complete");
         this.practiceAgainBtn = page.getByTestId("grammar-practice-again-btn");
         this.practiceNoWords = page.getByTestId("grammar-practice-no-words");
+
+        // Detail page
+        this.detailContainer = page.getByTestId("grammar-detail-container");
+        this.detailBreadcrumbs = page.getByTestId("grammar-detail-breadcrumbs");
+        this.detailBreadcrumbsBack = page.getByTestId("grammar-detail-breadcrumbs-back");
+        this.detailPracticeBtn = page.getByTestId("grammar-detail-practice-btn");
+        this.detailFsrs = page.getByTestId("grammar-detail-fsrs");
+        this.detailActions = page.getByTestId("grammar-detail-actions");
+        this.detailDeleteModal = page.getByTestId("grammar-detail-delete-modal");
+        this.detailDeleteConfirmBtn = page.getByTestId("grammar-detail-delete-modal-confirm");
     }
 
     async goto(): Promise<void> {
@@ -122,19 +142,15 @@ export class GrammarPage extends BasePage {
         await expect(this.drawer).not.toBeVisible({ timeout: 15_000 });
     }
 
-    async closeDetailDrawer(): Promise<void> {
-        const drawer = this.page.getByTestId("grammar-detail-drawer");
-        if (await drawer.isVisible().catch(() => false)) {
-            await this.page.evaluate(() => {
-                const el = document.querySelector('[data-testid="grammar-detail-drawer-close"]') as HTMLElement;
-                if (el) el.click();
-            });
-            await drawer.waitFor({ state: "hidden", timeout: 5000 }).catch(() => {});
+    async navigateBackToList(): Promise<void> {
+        if (this.page.url().match(/\/grammar\/.+/)) {
+            await this.page.goBack();
+            await this.page.waitForURL(/\/grammar$/, { timeout: 5000 });
         }
     }
 
     async selectFilter(name: FilterType): Promise<void> {
-        await this.closeDetailDrawer();
+        await this.navigateBackToList();
         const filterMap: Record<FilterType, string> = {
             "Все": "all",
             "Новые": "new",
@@ -198,16 +214,15 @@ export class GrammarPage extends BasePage {
     async openPracticeForCard(index: number): Promise<void> {
         const card = this.page.getByTestId("grammar-card-item").nth(index);
         await card.click();
-        const detailDrawer = this.page.getByTestId("grammar-detail-drawer");
-        await expect(detailDrawer).toBeVisible({ timeout: 5000 });
-        const practiceBtn = this.page.getByTestId("grammar-card-practice-btn");
-        await expect(practiceBtn).toBeVisible({ timeout: 5000 });
-        await practiceBtn.click();
+        await this.page.waitForURL(/\/grammar\/.+/, { timeout: 5000 });
+        await expect(this.detailPracticeBtn).toBeVisible({ timeout: 5000 });
+        await this.detailPracticeBtn.click();
     }
 
-    async isPracticeButtonDisabled(): Promise<boolean> {
-        const btn = this.page.getByTestId("grammar-card-practice-btn");
-        return btn.isDisabled();
+    async navigateToDetail(index: number): Promise<void> {
+        const card = this.page.getByTestId("grammar-card-item").nth(index);
+        await card.click();
+        await this.page.waitForURL(/\/grammar\/.+/, { timeout: 5000 });
     }
 
     async selectPracticeOption(index: number): Promise<void> {

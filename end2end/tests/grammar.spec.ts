@@ -313,7 +313,7 @@ testWithFreshUser.describe("Grammar Page - Favorite Instant UI Update", () => {
 });
 
 testWithFreshUser.describe("Grammar Page - Practice Mode", () => {
-    testWithFreshUser("should open practice modal with quiz questions from detail drawer", async ({ page }) => {
+    testWithFreshUser("should open practice modal with quiz questions from detail page", async ({ page }) => {
         test.setTimeout(90_000);
         const grammarPage = await setupGrammarPage(page);
 
@@ -349,7 +349,7 @@ testWithFreshUser.describe("Grammar Page - Practice Mode", () => {
         await grammarPage.addSelectedRules();
         await expect(grammarPage.grammarGrid).toBeVisible({ timeout: 10_000 });
 
-        // Open detail drawer and practice
+        // Open detail page and practice
         await grammarPage.openPracticeForCard(0);
         await expect(grammarPage.practiceModal).toBeVisible({ timeout: 5000 });
 
@@ -373,7 +373,7 @@ testWithFreshUser.describe("Grammar Page - Practice Mode", () => {
         await expect(grammarPage.practiceModal).not.toBeVisible({ timeout: 5000 });
     });
 
-    testWithFreshUser("should show enabled practice button for rules with format_map", async ({ page }) => {
+    testWithFreshUser("should show enabled practice button for rules with format_map on detail page", async ({ page }) => {
         test.setTimeout(60_000);
         const grammarPage = await setupGrammarPage(page);
 
@@ -382,15 +382,78 @@ testWithFreshUser.describe("Grammar Page - Practice Mode", () => {
         await grammarPage.addSelectedRules();
         await expect(grammarPage.grammarGrid).toBeVisible({ timeout: 10_000 });
 
-        const card = page.getByTestId("grammar-card-item").first();
-        await card.click();
-        const detailDrawer = page.getByTestId("grammar-detail-drawer");
-        await expect(detailDrawer).toBeVisible({ timeout: 5000 });
+        await grammarPage.navigateToDetail(0);
 
-        const practiceBtn = page.getByTestId("grammar-card-practice-btn");
-        await expect(practiceBtn).toBeVisible({ timeout: 5000 });
-
-        const isDisabled = await practiceBtn.isDisabled();
+        await expect(grammarPage.detailPracticeBtn).toBeVisible({ timeout: 5000 });
+        const isDisabled = await grammarPage.detailPracticeBtn.isDisabled();
         expect(isDisabled).toBe(false);
+    });
+});
+
+testWithFreshUser.describe("Grammar Page - Detail Page", () => {
+    testWithFreshUser("should navigate to grammar detail page on card click", async ({ page }) => {
+        test.setTimeout(60_000);
+        const grammarPage = await setupGrammarPage(page);
+
+        await grammarPage.openAddModal();
+        await grammarPage.selectRule("～ます");
+        await grammarPage.addSelectedRules();
+        await expect(grammarPage.grammarGrid).toBeVisible({ timeout: 10_000 });
+
+        await grammarPage.navigateToDetail(0);
+        await expect(page).toHaveURL(/\/grammar\//);
+    });
+
+    testWithFreshUser("should display grammar detail page content", async ({ page }) => {
+        test.setTimeout(60_000);
+        const grammarPage = await setupGrammarPage(page);
+
+        await grammarPage.openAddModal();
+        await grammarPage.selectRule("～ます");
+        await grammarPage.addSelectedRules();
+        await expect(grammarPage.grammarGrid).toBeVisible({ timeout: 10_000 });
+
+        await grammarPage.navigateToDetail(0);
+
+        await expect(grammarPage.detailContainer).toBeVisible({ timeout: 5000 });
+        await expect(grammarPage.detailBreadcrumbs).toBeVisible();
+        await expect(grammarPage.detailFsrs).toBeVisible();
+    });
+
+    testWithFreshUser("should navigate back via breadcrumbs", async ({ page }) => {
+        test.setTimeout(60_000);
+        const grammarPage = await setupGrammarPage(page);
+
+        await grammarPage.openAddModal();
+        await grammarPage.selectRule("～ます");
+        await grammarPage.addSelectedRules();
+        await expect(grammarPage.grammarGrid).toBeVisible({ timeout: 10_000 });
+
+        await grammarPage.navigateToDetail(0);
+
+        await grammarPage.detailBreadcrumbsBack.click();
+        await page.waitForURL(/\/grammar$/, { timeout: 5000 });
+        await expect(page).toHaveURL(/\/grammar$/);
+    });
+
+    testWithFreshUser("should delete card from detail page and redirect to list", async ({ page }) => {
+        test.setTimeout(60_000);
+        const grammarPage = await setupGrammarPage(page);
+
+        await grammarPage.openAddModal();
+        await grammarPage.selectRule("～ます");
+        await grammarPage.addSelectedRules();
+        await expect(grammarPage.grammarGrid).toBeVisible({ timeout: 10_000 });
+
+        await grammarPage.navigateToDetail(0);
+
+        const deleteBtn = grammarPage.detailActions.getByTestId("grammar-detail-actions-delete-btn");
+        await deleteBtn.click();
+
+        await expect(grammarPage.detailDeleteModal).toBeVisible({ timeout: 5000 });
+        await grammarPage.detailDeleteConfirmBtn.click();
+
+        await page.waitForURL(/\/grammar$/, { timeout: 10_000 });
+        await expect(page).toHaveURL(/\/grammar$/);
     });
 });
