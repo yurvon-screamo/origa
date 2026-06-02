@@ -4675,7 +4675,6 @@ input[type="submit"],
     gap: 16px;
     text-decoration: none;
     color: inherit;
-    min-height: 120px;
 }
 
 .kanji-card-kanji-box {
