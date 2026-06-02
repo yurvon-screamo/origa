@@ -394,7 +394,16 @@
     "practice_complete_stats": "{} из {} правильно",
     "practice_again": "Ещё раз",
     "practice_close": "Закрыть",
-    "practice_no_words": "Недостаточно слов для тренировки"
+    "practice_no_words": "Недостаточно слов для тренировки",
+    "tab_overview": "Обзор",
+    "tab_practice": "Тренировка",
+    "tab_stats": "Статистика",
+    "explanation": "Объяснение",
+    "how_to_form": "Как образовать",
+    "examples": "Примеры",
+    "nuances": "Нюансы",
+    "pro_tip": "Совет",
+    "related_patterns": "Связанные конструкции"
   },
   "kanji_page": {
     "add_kanji": "Добавить кандзи",

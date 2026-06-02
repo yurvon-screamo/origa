@@ -4291,6 +4291,230 @@ input[type="submit"],
     color: var(--accent-terracotta);
 }
 
+/* === Grammar Detail Page — Redesigned === */
+
+.grammar-detail-container {
+    padding: 24px 32px;
+}
+
+.grammar-detail-top-bar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-light);
+    margin-bottom: 16px;
+}
+
+.grammar-detail-top-bar .fsrs-bar {
+    width: 80px;
+}
+
+.grammar-breadcrumbs {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs, 11px);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+}
+
+.grammar-breadcrumbs a {
+    color: var(--fg-muted);
+    text-decoration: none;
+    transition: color var(--anima-duration-normal) var(--anima-ease-paper);
+}
+
+.grammar-breadcrumbs a:hover {
+    color: var(--fg-black);
+}
+
+.grammar-breadcrumbs-separator {
+    color: var(--fg-light);
+}
+
+.grammar-breadcrumbs-current {
+    color: var(--fg-black);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.grammar-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 24px;
+}
+
+.grammar-detail-left-col {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.grammar-detail-practice-cell {
+    display: flex;
+    flex-direction: column;
+}
+
+.grammar-detail-practice-cell > .grammar-detail-section-card {
+    flex: 1;
+}
+
+.grammar-detail-hero-card {
+    background: var(--bg-paper);
+    border: 1px solid var(--border-dark);
+    padding: 24px;
+    position: relative;
+}
+
+.grammar-detail-hero-card::after {
+    content: "";
+    position: absolute;
+    bottom: -6px;
+    right: -6px;
+    width: 100%;
+    height: 100%;
+    border: 1px solid var(--border-dark);
+    z-index: -1;
+    background: var(--bg-aged);
+}
+
+.grammar-detail-hero-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.grammar-detail-hero-kanji {
+    width: 96px;
+    height: 96px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-dark);
+    background: var(--bg-paper);
+    position: relative;
+    flex-shrink: 0;
+}
+
+.grammar-detail-hero-kanji::after {
+    content: "";
+    position: absolute;
+    bottom: -4px;
+    right: -4px;
+    width: 100%;
+    height: 100%;
+    border: 1px solid var(--border-dark);
+    z-index: -1;
+    background: var(--bg-aged);
+}
+
+.grammar-detail-hero-form {
+    font-family: var(--font-serif);
+    font-size: 56px;
+    line-height: 1;
+    color: var(--fg-black);
+}
+
+.grammar-detail-hero-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.grammar-detail-hero-meaning {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm, 16px);
+    color: var(--fg-black);
+    line-height: 1.4;
+}
+
+.grammar-detail-hero-badge {
+    flex-shrink: 0;
+}
+
+.grammar-detail-hero-badge .tag {
+    font-size: 10px;
+    padding: 4px 8px;
+}
+
+.grammar-detail-hero-actions {
+    display: flex;
+    gap: 8px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-light);
+    justify-content: space-between;
+    align-items: center;
+}
+
+.grammar-detail-hero-actions .fsrs-bar {
+    width: 80px;
+}
+
+.grammar-detail-section-card {
+    background: var(--bg-paper);
+    border: 1px solid var(--border-dark);
+    padding: 24px;
+    position: relative;
+}
+
+.grammar-detail-section-card::after {
+    content: "";
+    position: absolute;
+    bottom: -6px;
+    right: -6px;
+    width: 100%;
+    height: 100%;
+    border: 1px solid var(--border-dark);
+    z-index: -1;
+    background: var(--bg-aged);
+}
+
+.grammar-detail-section-title {
+    font-family: var(--font-mono);
+    font-size: var(--text-label-sm, 11px);
+    letter-spacing: 0.08em;
+    text-transform: none;
+    color: var(--fg-muted);
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.grammar-detail-section {
+    padding-top: 24px;
+    margin-top: 24px;
+    border-top: 1px solid var(--border-light);
+}
+
+.grammar-detail-mobile {
+    display: none;
+}
+
+@media (max-width: 1023px) {
+    .grammar-detail-container {
+        padding: 16px;
+    }
+
+    .grammar-detail-desktop {
+        display: none !important;
+    }
+
+    .grammar-detail-mobile {
+        display: block !important;
+    }
+
+    .grammar-detail-top-bar .card-action-bar {
+        display: none;
+    }
+}
+
 /* === Kanji Detail — Redesigned === */
 
 .kanji-detail-container {
@@ -4770,6 +4994,322 @@ input[type="submit"],
     font-size: 9px;
     padding: 2px 6px;
     letter-spacing: 0.1em;
+}
+
+/* === Word Card Item — Redesigned === */
+.word-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: var(--bg-paper);
+    border: 1px solid var(--border-dark);
+    position: relative;
+    transition: transform var(--anima-duration-normal) var(--anima-ease-paper);
+}
+
+.word-card::after {
+    content: "";
+    position: absolute;
+    bottom: calc(-1 * var(--shadow-offset-y));
+    right: calc(-1 * var(--shadow-offset-x));
+    width: 100%;
+    height: 100%;
+    border: 1px solid var(--border-dark);
+    z-index: -1;
+    background: var(--bg-aged);
+}
+
+.word-card:hover {
+    transform: translateY(-2px);
+}
+
+.word-card-body {
+    display: flex;
+    flex: 1;
+    padding: 10px 20px;
+    gap: 16px;
+}
+
+.word-card-word-box {
+    min-width: 64px;
+    min-height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-dark);
+    background: var(--bg-paper);
+    flex-shrink: 0;
+    position: relative;
+    padding: 4px 8px;
+}
+
+.word-card-word-box::after {
+    content: "";
+    position: absolute;
+    bottom: -4px;
+    right: -4px;
+    width: 100%;
+    height: 100%;
+    border: 1px solid var(--border-dark);
+    z-index: -1;
+    background: var(--bg-aged);
+}
+
+.word-card-content {
+    flex: 0 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-self: flex-start;
+    gap: 4px;
+}
+
+.word-card-meaning {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm, 16px);
+    color: var(--fg-black);
+    line-height: 1.4;
+}
+
+.word-card-divider {
+    height: 1px;
+    background: var(--border-light);
+    margin: 0 20px;
+}
+
+.word-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    gap: 12px;
+}
+
+.word-card-badge {
+    position: absolute;
+    top: 6px;
+    right: 4px;
+    z-index: 10;
+}
+
+.word-card-badge .tag {
+    font-size: 9px;
+    padding: 2px 6px;
+    letter-spacing: 0.1em;
+}
+
+.word-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+/* === Phrase Card Item — Redesigned === */
+.phrase-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: var(--bg-paper);
+    border: 1px solid var(--border-dark);
+    position: relative;
+    transition: transform var(--anima-duration-normal) var(--anima-ease-paper);
+}
+
+.phrase-card::after {
+    content: "";
+    position: absolute;
+    bottom: calc(-1 * var(--shadow-offset-y));
+    right: calc(-1 * var(--shadow-offset-x));
+    width: 100%;
+    height: 100%;
+    border: 1px solid var(--border-dark);
+    z-index: -1;
+    background: var(--bg-aged);
+}
+
+.phrase-card:hover {
+    transform: translateY(-2px);
+}
+
+.phrase-card-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    padding: 10px 20px;
+    gap: 8px;
+}
+
+.phrase-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.phrase-card-phrase {
+    font-family: var(--font-serif);
+    font-size: var(--text-lg, 20px);
+    line-height: 1.3;
+    color: var(--fg-black);
+    flex: 1;
+    min-width: 0;
+}
+
+.phrase-card-audio {
+    flex-shrink: 0;
+}
+
+.phrase-card-content {
+    flex: 0 1 auto;
+    min-width: 0;
+}
+
+.phrase-card-divider {
+    height: 1px;
+    background: var(--border-light);
+    margin: 0 20px;
+}
+
+.phrase-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    gap: 12px;
+}
+
+.phrase-card-badge {
+    position: absolute;
+    top: 6px;
+    right: 4px;
+    z-index: 10;
+}
+
+.phrase-card-badge .tag {
+    font-size: 9px;
+    padding: 2px 6px;
+    letter-spacing: 0.1em;
+}
+
+.phrase-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+/* === Grammar Card Item — Redesigned === */
+.grammar-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: var(--bg-paper);
+    border: 1px solid var(--border-dark);
+    position: relative;
+    transition: transform var(--anima-duration-normal) var(--anima-ease-paper);
+}
+
+.grammar-card::after {
+    content: "";
+    position: absolute;
+    bottom: calc(-1 * var(--shadow-offset-y));
+    right: calc(-1 * var(--shadow-offset-x));
+    width: 100%;
+    height: 100%;
+    border: 1px solid var(--border-dark);
+    z-index: -1;
+    background: var(--bg-aged);
+}
+
+.grammar-card:hover {
+    transform: translateY(-2px);
+}
+
+.grammar-card-link {
+    display: flex;
+    flex: 1;
+    padding: 10px 20px;
+    gap: 16px;
+    text-decoration: none;
+    color: inherit;
+}
+
+.grammar-card-rule-box {
+    min-width: 64px;
+    min-height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-dark);
+    background: var(--bg-paper);
+    flex-shrink: 0;
+    position: relative;
+    padding: 4px 8px;
+}
+
+.grammar-card-rule-box::after {
+    content: "";
+    position: absolute;
+    bottom: -4px;
+    right: -4px;
+    width: 100%;
+    height: 100%;
+    border: 1px solid var(--border-dark);
+    z-index: -1;
+    background: var(--bg-aged);
+}
+
+.grammar-card-content {
+    flex: 0 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-self: flex-start;
+    gap: 4px;
+}
+
+.grammar-card-answer {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm, 16px);
+    color: var(--fg-black);
+    line-height: 1.4;
+}
+
+.grammar-card-divider {
+    height: 1px;
+    background: var(--border-light);
+    margin: 0 20px;
+}
+
+.grammar-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    gap: 12px;
+}
+
+.grammar-card-badge {
+    position: absolute;
+    top: 6px;
+    right: 4px;
+    z-index: 10;
+}
+
+.grammar-card-badge .tag {
+    font-size: 9px;
+    padding: 2px 6px;
+    letter-spacing: 0.1em;
+}
+
+.grammar-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
 }
 
 /* === FSRS Metrics Component === */

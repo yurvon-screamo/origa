@@ -394,7 +394,16 @@
         "practice_complete_stats": "{} out of {} correct",
         "practice_again": "Try Again",
         "practice_close": "Close",
-        "practice_no_words": "Not enough words for practice mode"
+        "practice_no_words": "Not enough words for practice mode",
+        "tab_overview": "Overview",
+        "tab_practice": "Practice",
+        "tab_stats": "Stats",
+        "explanation": "Explanation",
+        "how_to_form": "How to form",
+        "examples": "Examples",
+        "nuances": "Nuances",
+        "pro_tip": "Pro tip",
+        "related_patterns": "Related patterns"
     },
     "kanji_page": {
         "add_kanji": "Add kanji",
