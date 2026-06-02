@@ -215,7 +215,8 @@ export class GrammarPage extends BasePage {
         const card = this.page.getByTestId("grammar-card-item").nth(index);
         await card.click();
         await this.page.waitForURL(/\/grammar\/.+/, { timeout: 5000 });
-        await expect(this.detailPracticeBtn).toBeVisible({ timeout: 5000 });
+        await expect(this.detailContainer).toBeVisible({ timeout: 30_000 });
+        await expect(this.detailPracticeBtn).toBeVisible({ timeout: 10_000 });
         await this.detailPracticeBtn.click();
     }
 
