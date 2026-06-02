@@ -33,7 +33,7 @@ pub(crate) struct AuthTokenResponse {
 
 fn trailbase_url() -> &'static str {
     static TRAILBASE_URL: OnceLock<&str> = OnceLock::new();
-    TRAILBASE_URL.get_or_init(|| option_env!("TRAILBASE_URL").unwrap_or("https://origa.uwuwu.net"))
+    TRAILBASE_URL.get_or_init(|| env!("TRAILBASE_URL"))
 }
 
 #[derive(Clone, Debug)]

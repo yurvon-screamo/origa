@@ -83,7 +83,7 @@ async fn process_oauth_url(
 
     error!(url = %url, "URL has no 'code' param and no fragment");
     Err(i18n
-        .get_keys()
+        .get_keys_untracked()
         .login()
         .unsupported_callback()
         .inner()

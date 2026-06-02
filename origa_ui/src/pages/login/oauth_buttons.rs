@@ -87,7 +87,7 @@ fn open_oauth_url(provider: OAuthProvider) {
     use gloo_storage::{LocalStorage, Storage};
 
     let redirect_uri = if tauri::is_tauri() {
-        "https://origa.uwuwu.net/public/auth/desktop-callback.html".to_string()
+        crate::core::config::public_url("/public/auth/desktop-callback.html")
     } else {
         let window = web_sys::window().expect("window not available");
         let base_url = window.location().origin().unwrap_or_default();

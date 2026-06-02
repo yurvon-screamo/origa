@@ -31,7 +31,7 @@ models/      — ML модели
 ## Среда разработки
 
 ```powershell
-$env:ORIGA_CDN_BASE_URL = "https://aws-s3-public-proxy-production-0429.up.railway.app"  # ОБЯЗАТЕЛЬНО
+$env:ORIGA_CDN_BASE_URL = "https://s3-proxy-production-52e3.up.railway.app"  # ОБЯЗАТЕЛЬНО
 cd tauri && cargo tauri dev
 ```
 

@@ -4301,7 +4301,7 @@ input[type="submit"],
 .kanji-detail-top-bar {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    gap: 16px;
     padding: 8px 0;
     border-bottom: 1px solid var(--border-light);
     margin-bottom: 16px;
@@ -4314,6 +4314,7 @@ input[type="submit"],
 .kanji-breadcrumbs {
     display: flex;
     align-items: center;
+    flex: 1;
     gap: 8px;
     font-family: var(--font-mono);
     font-size: var(--text-2xs, 11px);
@@ -4500,8 +4501,8 @@ input[type="submit"],
 .kanji-detail-section-title {
     font-family: var(--font-mono);
     font-size: var(--text-label-sm, 11px);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    text-transform: none;
     color: var(--fg-muted);
     margin-bottom: 16px;
     padding-bottom: 8px;
@@ -4548,8 +4549,7 @@ input[type="submit"],
     font-family: var(--font-mono);
     font-size: var(--text-2xs, 11px);
     color: var(--fg-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.02em;
 }
 
 /* Desktop / Mobile visibility */
@@ -4671,11 +4671,10 @@ input[type="submit"],
 .kanji-card-link {
     display: flex;
     flex: 1;
-    padding: 20px;
+    padding: 10px 20px;
     gap: 16px;
     text-decoration: none;
     color: inherit;
-    min-height: 120px;
 }
 
 .kanji-card-kanji-box {
@@ -4710,11 +4709,12 @@ input[type="submit"],
 }
 
 .kanji-card-content {
-    flex: 1;
+    flex: 0 1 auto;
     min-width: 0;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
+    align-self: flex-start;
     gap: 4px;
 }
 
@@ -4761,8 +4761,8 @@ input[type="submit"],
 /* === Kanji Card Badge === */
 .kanji-card-badge {
     position: absolute;
-    top: 12px;
-    right: 8px;
+    top: 6px;
+    right: 4px;
     z-index: 10;
 }
 
@@ -4817,7 +4817,8 @@ input[type="submit"],
     letter-spacing: 0.1em;
     text-transform: uppercase;
     flex-shrink: 0;
-    min-width: 16px;
+    width: 28px;
+    text-align: right;
 }
 
 /* Fill-bar */

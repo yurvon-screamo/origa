@@ -33,7 +33,7 @@ pub fn PersonalDataCard(
 
                 <div class="space-y-4">
                     <LabeledInput
-                        label=i18n.get_keys().profile().username().inner().to_string()
+                        label=i18n.get_keys_untracked().profile().username().inner().to_string()
                         value={user_name_signal}
                         disabled={true}
                     />

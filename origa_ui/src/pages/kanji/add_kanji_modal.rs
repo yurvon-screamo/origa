@@ -68,7 +68,12 @@ pub fn AddKanjiModal(is_open: RwSignal<bool>, refresh_trigger: RwSignal<u32>) ->
                 .filter(|k| {
                     let kanji_str = k.kanji().to_string().to_lowercase();
                     let desc = k.description(&lang).to_string().to_lowercase();
-                    kanji_str.contains(&query) || desc.contains(&query)
+                    let on_readings = k.on_readings().join(" ").to_lowercase();
+                    let kun_readings = k.kun_readings().join(" ").to_lowercase();
+                    kanji_str.contains(&query)
+                        || desc.contains(&query)
+                        || on_readings.contains(&query)
+                        || kun_readings.contains(&query)
                 })
                 .collect()
         }

@@ -1,6 +1,7 @@
 use leptos::prelude::*;
 
 use crate::i18n::use_i18n;
+use crate::ui_components::Tooltip;
 
 #[derive(Clone, Copy, PartialEq, Default, Debug)]
 pub enum FsrsMetricsMode {
@@ -95,16 +96,30 @@ pub fn FsrsMetrics(
 
     match mode {
         FsrsMetricsMode::Compact => {
-            let difficulty_short = i18n
+            let difficulty_short = Signal::derive(move || {
+                i18n.get_keys()
+                    .shared()
+                    .fsrs_difficulty_short()
+                    .inner()
+                    .to_string()
+            });
+            let stability_short = Signal::derive(move || {
+                i18n.get_keys()
+                    .shared()
+                    .fsrs_stability_short()
+                    .inner()
+                    .to_string()
+            });
+            let difficulty_full = i18n
                 .get_keys()
                 .shared()
-                .fsrs_difficulty_short()
+                .fsrs_difficulty()
                 .inner()
                 .to_string();
-            let stability_short = i18n
+            let stability_full = i18n
                 .get_keys()
                 .shared()
-                .fsrs_stability_short()
+                .fsrs_stability()
                 .inner()
                 .to_string();
 
@@ -112,6 +127,7 @@ pub fn FsrsMetrics(
                 <span class="fsrs-metrics" role="group" aria-label="FSRS metrics" data-testid=test_id_val>
                     <CompactMetric
                         label=difficulty_short
+                        tooltip_text=difficulty_full
                         value=difficulty
                         fill_fn=difficulty_fill
                         color_fn=move |d, _| difficulty_color_class(d)
@@ -121,6 +137,7 @@ pub fn FsrsMetrics(
                     />
                     <CompactMetric
                         label=stability_short
+                        tooltip_text=stability_full
                         value=stability
                         fill_fn=stability_fill
                         color_fn=move |_, s| stability_color_class(s)
@@ -133,24 +150,27 @@ pub fn FsrsMetrics(
                 .into_any()
         },
         FsrsMetricsMode::Expanded => {
-            let next_review_label = i18n
-                .get_keys()
-                .shared()
-                .fsrs_next_review()
-                .inner()
-                .to_string();
-            let difficulty_label = i18n
-                .get_keys()
-                .shared()
-                .fsrs_difficulty()
-                .inner()
-                .to_string();
-            let stability_label = i18n
-                .get_keys()
-                .shared()
-                .fsrs_stability()
-                .inner()
-                .to_string();
+            let next_review_label = Signal::derive(move || {
+                i18n.get_keys()
+                    .shared()
+                    .fsrs_next_review()
+                    .inner()
+                    .to_string()
+            });
+            let difficulty_label = Signal::derive(move || {
+                i18n.get_keys()
+                    .shared()
+                    .fsrs_difficulty()
+                    .inner()
+                    .to_string()
+            });
+            let stability_label = Signal::derive(move || {
+                i18n.get_keys()
+                    .shared()
+                    .fsrs_stability()
+                    .inner()
+                    .to_string()
+            });
 
             view! {
                 <div
@@ -163,7 +183,7 @@ pub fn FsrsMetrics(
                         .map(|date| {
                             view! {
                                 <div class="fsrs-metric--expanded">
-                                    <span class="fsrs-label">{next_review_label.clone()}</span>
+                                    <span class="fsrs-label">{move || next_review_label.get()}</span>
                                     <span class="fsrs-value fsrs-value--date">{date}</span>
                                 </div>
                             }
@@ -196,7 +216,8 @@ pub fn FsrsMetrics(
 
 #[component]
 fn CompactMetric(
-    #[prop(into)] label: String,
+    #[prop(into)] label: Signal<String>,
+    #[prop(into)] tooltip_text: String,
     value: Option<f64>,
     fill_fn: fn(f64) -> f64,
     color_fn: impl Fn(f64, f64) -> &'static str + 'static,
@@ -207,26 +228,28 @@ fn CompactMetric(
     let data = compute_metric_data(value, fill_fn, &color_fn, other_value);
 
     view! {
-        <span
-            class="fsrs-metric"
-            role="meter"
-            aria-label=aria_label
-            aria-valuenow=data.aria_valuenow
-            aria-valuemin="0"
-            aria-valuemax=aria_max
-        >
-            <span class="fsrs-label">{label}</span>
+        <Tooltip text=Signal::derive(move || tooltip_text.clone())>
             <span
-                class=format!("fsrs-bar {color_class}", color_class = data.color_class)
-                style=format!("--fsrs-fill: {fill_pct:.0}%", fill_pct = data.fill_pct)
-            ></span>
-        </span>
+                class="fsrs-metric"
+                role="meter"
+                aria-label=aria_label
+                aria-valuenow=data.aria_valuenow
+                aria-valuemin="0"
+                aria-valuemax=aria_max
+            >
+                <span class="fsrs-label">{move || label.get()}</span>
+                <span
+                    class=format!("fsrs-bar {color_class}", color_class = data.color_class)
+                    style=format!("--fsrs-fill: {fill_pct:.0}%", fill_pct = data.fill_pct)
+                ></span>
+            </span>
+        </Tooltip>
     }
 }
 
 #[component]
 fn ExpandedMetric(
-    #[prop(into)] label: String,
+    #[prop(into)] label: Signal<String>,
     value: Option<f64>,
     fill_fn: fn(f64) -> f64,
     color_fn: impl Fn(f64, f64) -> &'static str + 'static,
@@ -238,7 +261,7 @@ fn ExpandedMetric(
 
     view! {
         <div class="fsrs-metric--expanded">
-            <span class="fsrs-label">{label}</span>
+            <span class="fsrs-label">{move || label.get()}</span>
             <div
                 class="fsrs-metric-row"
                 role="meter"

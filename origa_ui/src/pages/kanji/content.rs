@@ -1,6 +1,6 @@
 use super::super::shared::{
     CardCounts, CardStatus, Filter, FilterBtn, LoadMoreButton, create_delete_callback,
-    create_toggle_favorite_callback,
+    create_mark_as_known_callback,
 };
 use super::kanji_card_item::KanjiCardItem;
 use crate::i18n::{t, use_i18n};
@@ -13,6 +13,8 @@ use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::domain::{Card, StudyCard, User};
 use origa::traits::UserRepository;
+use origa::use_cases::ToggleFavoriteUseCase;
+use ulid::Ulid;
 
 fn load_user_data(
     repository: HybridUserRepository,
@@ -58,20 +60,10 @@ pub fn KanjiContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
     let is_loading = RwSignal::new(true);
     let all_cards: RwSignal<Vec<StudyCard>> = RwSignal::new(Vec::new());
 
-    let repo_for_init = repository.clone();
-    Effect::new(move |_| {
-        load_user_data(repo_for_init.clone(), current_user, all_cards, is_loading);
-    });
-
-    let repo_for_refresh = repository.clone();
+    let repo_for_effect = repository.clone();
     Effect::new(move |_| {
         let _ = refresh_trigger.get();
-        load_user_data(
-            repo_for_refresh.clone(),
-            current_user,
-            all_cards,
-            is_loading,
-        );
+        load_user_data(repo_for_effect.clone(), current_user, all_cards, is_loading);
     });
 
     let native_lang =
@@ -82,8 +74,46 @@ pub fn KanjiContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
     let toasts: RwSignal<Vec<ToastData>> = RwSignal::new(Vec::new());
     let visible_count: RwSignal<usize> = RwSignal::new(50);
 
-    let on_toggle_favorite =
-        create_toggle_favorite_callback(repository.clone(), current_user, refresh_trigger);
+    let on_toggle_favorite = {
+        let repo = repository.clone();
+        let all_cards_fav = all_cards;
+        let current_user_fav = current_user;
+        Callback::new(move |card_id: Ulid| {
+            // Optimistic UI update FIRST (instant, local cards only)
+            all_cards_fav.update(|cards| {
+                for card in cards.iter_mut() {
+                    if *card.card_id() == card_id {
+                        card.toggle_favorite();
+                    }
+                }
+            });
+            // THEN API call
+            let repo = repo.clone();
+            let refresh = refresh_trigger;
+            spawn_local(async move {
+                let use_case = ToggleFavoriteUseCase::new(&repo);
+                if use_case.execute(card_id).await.is_ok() {
+                    current_user_fav.update(|u| {
+                        if let Some(user) = u {
+                            let _ = user.toggle_favorite(card_id);
+                        }
+                    });
+                    refresh.update(|v| *v += 1);
+                } else {
+                    // Rollback optimistic update on error
+                    all_cards_fav.update(|cards| {
+                        for card in cards.iter_mut() {
+                            if *card.card_id() == card_id {
+                                card.toggle_favorite();
+                            }
+                        }
+                    });
+                }
+            });
+        })
+    };
+
+    let on_mark_as_known = create_mark_as_known_callback(repository.clone(), refresh_trigger);
 
     let (is_deleting, on_delete) =
         create_delete_callback(repository.clone(), toasts, refresh_trigger);
@@ -170,7 +200,7 @@ pub fn KanjiContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
                     <FilterBtn filter=Filter::Learned count=move || counts.get().learned active=filter test_id="kanji-filter-learned" />
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 items-stretch" data-testid="kanji-grid">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 items-start" data-testid="kanji-grid">
                     {move || {
                         let cards = visible_cards.get();
                         if cards.is_empty() {
@@ -192,6 +222,7 @@ pub fn KanjiContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
                                                 study_card=card
                                                 native_language=native_lang
                                                 on_toggle_favorite=on_toggle_favorite
+                                                on_mark_as_known=on_mark_as_known
                                                 on_delete=on_delete
                                                 is_deleting=is_deleting.into()
                                             />

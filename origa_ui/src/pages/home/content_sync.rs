@@ -9,12 +9,19 @@ use origa::traits::UserRepository;
 const SYNC_TOAST_ID: usize = usize::MAX;
 
 pub fn show_sync_toast(toasts: RwSignal<Vec<ToastData>>, i18n: I18nContext<Locale>) {
+    let title = i18n.get_keys_untracked().home().sync().inner().to_string();
+    let message = i18n
+        .get_keys_untracked()
+        .home()
+        .sync_data()
+        .inner()
+        .to_string();
     toasts.update(|t| {
         t.push(ToastData {
             id: SYNC_TOAST_ID,
             toast_type: ToastType::Info,
-            title: i18n.get_keys().home().sync().inner().to_string(),
-            message: i18n.get_keys().home().sync_data().inner().to_string(),
+            title,
+            message,
             duration_ms: None,
             closable: false,
         });
@@ -22,13 +29,20 @@ pub fn show_sync_toast(toasts: RwSignal<Vec<ToastData>>, i18n: I18nContext<Local
 }
 
 pub fn show_sync_success_toast(toasts: RwSignal<Vec<ToastData>>, i18n: I18nContext<Locale>) {
+    let title = i18n.get_keys_untracked().home().sync().inner().to_string();
+    let message = i18n
+        .get_keys_untracked()
+        .home()
+        .sync_success()
+        .inner()
+        .to_string();
     toasts.update(|t| t.retain(|toast| toast.id != SYNC_TOAST_ID));
     toasts.update(|t| {
         t.push(ToastData {
             id: t.len(),
             toast_type: ToastType::Success,
-            title: i18n.get_keys().home().sync().inner().to_string(),
-            message: i18n.get_keys().home().sync_success().inner().to_string(),
+            title,
+            message,
             duration_ms: None,
             closable: true,
         });
@@ -40,12 +54,18 @@ pub fn show_sync_error_toast(
     i18n: I18nContext<Locale>,
     error: &OrigaError,
 ) {
+    let title = i18n
+        .get_keys_untracked()
+        .home()
+        .sync_error()
+        .inner()
+        .to_string();
     toasts.update(|t| t.retain(|toast| toast.id != SYNC_TOAST_ID));
     toasts.update(|t| {
         t.push(ToastData {
             id: t.len(),
             toast_type: ToastType::Error,
-            title: i18n.get_keys().home().sync_error().inner().to_string(),
+            title,
             message: error.to_string(),
             duration_ms: None,
             closable: true,

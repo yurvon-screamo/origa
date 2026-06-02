@@ -1,13 +1,18 @@
-import { spawn, type ChildProcess } from "child_process";
+import { spawn } from "child_process";
 import type { FullConfig } from "@playwright/test";
 import { fetchWithTimeout } from "./helpers/http";
-import { cleanupOrphanedAccounts } from "./helpers/cleanup";
+import { cleanupOrphanedAccountsWithToken } from "./helpers/cleanup";
 import { execSync } from "child_process";
 import * as fs from "fs";
 import * as path from "path";
+import { getTrailBaseUrl } from "./config";
 
 // Add ~/.local/bin to PATH for trail CLI
-if (process.platform === "win32" || process.platform === "linux" || process.platform === "darwin") {
+if (
+    process.platform === "win32" ||
+    process.platform === "linux" ||
+    process.platform === "darwin"
+) {
     const home = process.env.HOME || process.env.USERPROFILE || "";
     if (home) {
         process.env.PATH = `${home}/.local/bin${process.platform === "win32" ? ";" : ":"}${process.env.PATH || ""}`;
@@ -15,15 +20,15 @@ if (process.platform === "win32" || process.platform === "linux" || process.plat
 }
 
 const TRAILBASE_PORT = 4000;
-const TRAILBASE_URL = `http://127.0.0.1:${TRAILBASE_PORT}`;
-const ADMIN_EMAIL = "admin@localhost";
-const ADMIN_PASSWORD = "secret";
 
-async function waitForTrailBase(maxRetries = 30, intervalMs = 1000): Promise<boolean> {
+async function waitForTrailBase(
+    maxRetries = 30,
+    intervalMs = 1000,
+): Promise<boolean> {
     for (let i = 0; i < maxRetries; i++) {
         try {
             const response = await fetchWithTimeout(
-                `${TRAILBASE_URL}/api/healthcheck`,
+                `${getTrailBaseUrl()}/api/healthcheck`,
                 {},
                 5000,
             );
@@ -40,25 +45,10 @@ async function waitForTrailBase(maxRetries = 30, intervalMs = 1000): Promise<boo
 
 async function isTrailBaseRunning(): Promise<boolean> {
     try {
-        const response = await fetchWithTimeout(`${TRAILBASE_URL}/api/healthcheck`, {}, 3000);
-        return response.ok;
-    } catch {
-        return false;
-    }
-}
-
-async function verifyAdminCredentials(): Promise<boolean> {
-    try {
         const response = await fetchWithTimeout(
-            `${TRAILBASE_URL}/api/auth/v1/login`,
-            {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    email: ADMIN_EMAIL,
-                    password: ADMIN_PASSWORD,
-                }),
-            },
+            `${getTrailBaseUrl()}/api/healthcheck`,
+            {},
+            3000,
         );
         return response.ok;
     } catch {
@@ -66,10 +56,47 @@ async function verifyAdminCredentials(): Promise<boolean> {
     }
 }
 
+async function getAdminToken(): Promise<{ token: string; csrfToken: string }> {
+    const adminEmail = process.env.ORIGA_ADMIN_EMAIL || "admin@localhost";
+    const adminPassword = process.env.ORIGA_ADMIN_PASSWORD;
+
+    if (!adminPassword) {
+        throw new Error(
+            "ORIGA_ADMIN_PASSWORD is not set. Configure it in .env file.",
+        );
+    }
+
+    const response = await fetchWithTimeout(
+        `${getTrailBaseUrl()}/api/auth/v1/login`,
+        {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                email: adminEmail,
+                password: adminPassword,
+            }),
+        },
+    );
+
+    if (!response.ok) {
+        throw new Error(`Admin login failed: ${response.status}`);
+    }
+
+    const data = (await response.json()) as {
+        auth_token: string;
+        csrf_token: string;
+    };
+    if (!data.csrf_token) {
+        throw new Error("Admin login response missing csrf_token");
+    }
+
+    return { token: data.auth_token, csrfToken: data.csrf_token };
+}
+
 function setAdminPassword(): void {
     try {
         execSync(
-            `trail user change-password ${ADMIN_EMAIL} ${ADMIN_PASSWORD}`,
+            `trail user change-password ${process.env.ORIGA_ADMIN_EMAIL || "admin@localhost"} ${process.env.ORIGA_ADMIN_PASSWORD}`,
             {
                 cwd: `${__dirname}/trailbase-fixture`,
                 stdio: "pipe",
@@ -78,19 +105,18 @@ function setAdminPassword(): void {
         );
         console.log("[global-setup] ✓ Admin password set to known value");
     } catch (error) {
-        console.error("[global-setup] ⚠ Failed to change admin password:", error);
+        console.error(
+            "[global-setup] ⚠ Failed to change admin password:",
+            error,
+        );
     }
 }
 
 async function startTrailBase(): Promise<void> {
     console.log("[global-setup] Starting local TrailBase...");
-    console.log(`  - URL: ${TRAILBASE_URL}`);
+    console.log(`  - URL: ${getTrailBaseUrl()}`);
 
-    const args = [
-        "run",
-        "--dev",
-        "--address", `127.0.0.1:${TRAILBASE_PORT}`,
-    ];
+    const args = ["run", "--dev", "--address", `127.0.0.1:${TRAILBASE_PORT}`];
 
     const proc = spawn("trail", args, {
         cwd: `${__dirname}/trailbase-fixture`,
@@ -124,13 +150,8 @@ async function startTrailBase(): Promise<void> {
     console.log("[global-setup] ✓ TrailBase is ready");
 }
 
-export default async function globalSetup(_config: FullConfig): Promise<void> {
+export default async function globalSetup(_: FullConfig): Promise<void> {
     console.log("[global-setup] Starting E2E test setup...");
-
-    // Set environment variables for tests
-    process.env.TRAILBASE_URL = TRAILBASE_URL;
-    process.env.ORIGA_ADMIN_EMAIL = ADMIN_EMAIL;
-    process.env.ORIGA_ADMIN_PASSWORD = ADMIN_PASSWORD;
 
     // Start local TrailBase if not already running
     const running = await isTrailBaseRunning();
@@ -142,20 +163,19 @@ export default async function globalSetup(_config: FullConfig): Promise<void> {
         setAdminPassword();
     }
 
-    // Verify admin credentials
-    console.log("[global-setup] Verifying admin credentials...");
-    const adminOk = await verifyAdminCredentials();
+    // Login as admin — single login reused for verification + cleanup
+    console.log("[global-setup] Logging in as admin...");
+    const adminAuth = await getAdminToken();
+    console.log("[global-setup] ✓ Admin credentials verified");
 
-    if (adminOk) {
-        console.log("[global-setup] ✓ Admin credentials verified");
-    } else {
-        throw new Error("Admin credentials verification failed. Check TrailBase setup.");
-    }
-
-    // Cleanup orphaned test accounts
+    // Cleanup orphaned test accounts — reuse admin token (no second login)
     console.log("[global-setup] Cleaning up orphaned test accounts...");
     try {
-        await cleanupOrphanedAccounts("global-setup");
+        await cleanupOrphanedAccountsWithToken(
+            "global-setup",
+            adminAuth.token,
+            adminAuth.csrfToken,
+        );
     } catch (error) {
         console.error("[global-setup] ⚠ Cleanup failed (non-fatal):", error);
     }

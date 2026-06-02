@@ -7,9 +7,6 @@
         "test:ui": "playwright test --ui",
         "test:headed": "playwright test --headed",
         "test:debug": "playwright test --debug",
-        "test:chrome": "playwright test --project=chromium",
-        "test:chrome:headed": "playwright test --project=chromium --headed",
-        "test:chrome:ui": "playwright test --project=chromium --ui",
         "report": "playwright show-report --host 0.0.0.0 --port 9323"
     },
     "devDependencies": {
@@ -20,5 +17,8 @@
         "serve": "^14.2.6",
         "typescript": "^5.6.0",
         "typescript-eslint": "^8.58.0"
+    },
+    "dependencies": {
+        "dotenv": "^17.4.2"
     }
 }
