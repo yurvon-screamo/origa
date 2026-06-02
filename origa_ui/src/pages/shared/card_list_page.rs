@@ -123,6 +123,7 @@ pub fn card_list_view<F>(
     sort_cards: bool,
     test_id_prefix: &'static str,
     empty_message: Signal<String>,
+    grid_classes: Option<&'static str>,
     render_card: F,
 ) -> AnyView
 where
@@ -226,7 +227,7 @@ where
                     <FilterBtn filter=Filter::Learned count=move || counts.get().learned active=filter test_id=format!("{test_id_prefix}-filter-learned") />
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 items-start" data-testid=move || grid_id.get()>
+                <div class=grid_classes.unwrap_or("grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 items-start") data-testid=move || grid_id.get()>
                     {move || {
                         let cards = visible_cards.get();
                         if cards.is_empty() {
