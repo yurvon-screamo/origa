@@ -79,10 +79,28 @@ pub fn KanjiContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
         let all_cards_fav = all_cards;
         let current_user_fav = current_user;
         Callback::new(move |card_id: Ulid| {
+            // Optimistic UI update FIRST (instant, local cards only)
+            all_cards_fav.update(|cards| {
+                for card in cards.iter_mut() {
+                    if *card.card_id() == card_id {
+                        card.toggle_favorite();
+                    }
+                }
+            });
+            // THEN API call
             let repo = repo.clone();
+            let refresh = refresh_trigger;
             spawn_local(async move {
                 let use_case = ToggleFavoriteUseCase::new(&repo);
                 if use_case.execute(card_id).await.is_ok() {
+                    current_user_fav.update(|u| {
+                        if let Some(user) = u {
+                            let _ = user.toggle_favorite(card_id);
+                        }
+                    });
+                    refresh.update(|v| *v += 1);
+                } else {
+                    // Rollback optimistic update on error
                     all_cards_fav.update(|cards| {
                         for card in cards.iter_mut() {
                             if *card.card_id() == card_id {
@@ -90,12 +108,6 @@ pub fn KanjiContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
                             }
                         }
                     });
-                    current_user_fav.update(|u| {
-                        if let Some(user) = u {
-                            let _ = user.toggle_favorite(card_id);
-                        }
-                    });
-                    refresh_trigger.update(|v| *v += 1);
                 }
             });
         })
