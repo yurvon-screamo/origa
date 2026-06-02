@@ -4346,7 +4346,7 @@ input[type="submit"],
 .grammar-detail-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    grid-template-rows: auto auto;
+    align-items: start;
     gap: 24px;
 }
 
