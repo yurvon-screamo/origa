@@ -198,7 +198,11 @@ jobs:
 
             - name: Install TrailBase
               run: |
-                  tmp=$(mktemp) && curl -sSfL -o "$tmp" https://trailbase.io/install.sh && bash "$tmp"
+                  for i in 1 2 3; do
+                    tmp=$(mktemp) && curl -sSfL -o "$tmp" https://trailbase.io/install.sh && bash "$tmp" && break
+                    echo "Attempt $i failed, retrying..."
+                    sleep 5
+                  done
                   echo "$HOME/.local/bin" >> $GITHUB_PATH
 
             - name: Install Node.js dependencies
