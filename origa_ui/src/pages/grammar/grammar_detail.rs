@@ -287,13 +287,9 @@ pub fn GrammarDetail() -> impl IntoView {
                         _ => "?".to_string(),
                     };
 
-                    let card_for_answer = card.clone();
-                    let answer_text = Memo::new(move |_| {
-                        let lang = native_lang.get();
-                        card_for_answer
-                            .card()
-                            .answer(&lang)
-                            .map(|a| a.text().to_string())
+                    let short_description = Memo::new(move |_| {
+                        grammar_rule
+                            .map(|r| r.content(&native_lang.get()).short_description().to_string())
                             .unwrap_or_default()
                     });
 
@@ -372,6 +368,25 @@ pub fn GrammarDetail() -> impl IntoView {
                                 test_id=Signal::derive(|| "grammar-detail-actions".to_string())
                                 show_tag=Signal::derive(|| false)
                             />
+                            <Show when=move || current_user.get().is_some() && grammar_rule.is_some()>
+                                <button
+                                    class=move || if has_quiz {
+                                        "btn btn-olive text-sm cursor-pointer"
+                                    } else {
+                                        "btn btn-olive text-sm opacity-50 cursor-not-allowed"
+                                    }
+                                    disabled=!has_quiz
+                                    data-testid="grammar-detail-practice-btn"
+                                    on:click=move |ev| {
+                                        ev.stop_propagation();
+                                        if has_quiz {
+                                            is_practice_open.set(true);
+                                        }
+                                    }
+                                >
+                                    {practice_label}
+                                </button>
+                            </Show>
                         </div>
 
                         // Desktop layout
@@ -379,7 +394,7 @@ pub fn GrammarDetail() -> impl IntoView {
                             <div class="grammar-detail-left-col">
                                 <GrammarDetailHeroCard
                                     title_stored=title_stored
-                                    answer_text=answer_text
+                                    short_description=short_description
                                     tag_variant=Signal::derive(move || status.tag_variant())
                                     tag_label=Signal::derive(move || status.label(&i18n))
                                     known_kanji=known_kanji_stored.get_value()
@@ -395,11 +410,11 @@ pub fn GrammarDetail() -> impl IntoView {
                                     </div>
                                 </Show>
 
-                                <Show when=move || how_to_form.get().is_some_and(|s| !s.is_empty())>
+                                <Show when=move || examples.get().is_some_and(|s| !s.is_empty())>
                                     <div class="grammar-detail-section-card">
-                                        <div class="grammar-detail-section-title">{how_to_form_title}</div>
+                                        <div class="grammar-detail-section-title">{examples_title}</div>
                                         <MarkdownText
-                                            content=Signal::derive(move || how_to_form.get().unwrap_or_default())
+                                            content=Signal::derive(move || examples.get().unwrap_or_default())
                                             known_kanji=known_kanji_stored.get_value()
                                         />
                                     </div>
@@ -407,34 +422,11 @@ pub fn GrammarDetail() -> impl IntoView {
                             </div>
 
                             <div class="grammar-detail-right-col">
-                                <div class="grammar-detail-section-card">
-                                    <div class="grammar-detail-section-title">{practice_title}</div>
-                                    <Show when=move || current_user.get().is_some() && grammar_rule.is_some()>
-                                        <button
-                                            class=move || if has_quiz {
-                                                "btn btn-olive text-sm cursor-pointer".to_string()
-                                            } else {
-                                                "btn btn-olive text-sm opacity-50 cursor-not-allowed".to_string()
-                                            }
-                                            disabled=!has_quiz
-                                            data-testid="grammar-detail-practice-btn"
-                                            on:click=move |ev| {
-                                                ev.stop_propagation();
-                                                if has_quiz {
-                                                    is_practice_open.set(true);
-                                                }
-                                            }
-                                        >
-                                            {practice_label}
-                                        </button>
-                                    </Show>
-                                </div>
-
-                                <Show when=move || examples.get().is_some_and(|s| !s.is_empty())>
+                                <Show when=move || how_to_form.get().is_some_and(|s| !s.is_empty())>
                                     <div class="grammar-detail-section-card">
-                                        <div class="grammar-detail-section-title">{examples_title}</div>
+                                        <div class="grammar-detail-section-title">{how_to_form_title}</div>
                                         <MarkdownText
-                                            content=Signal::derive(move || examples.get().unwrap_or_default())
+                                            content=Signal::derive(move || how_to_form.get().unwrap_or_default())
                                             known_kanji=known_kanji_stored.get_value()
                                         />
                                     </div>
@@ -482,8 +474,8 @@ pub fn GrammarDetail() -> impl IntoView {
                                             known_kanji=known_kanji_stored.get_value()
                                         />
                                     </div>
-                                    <Show when=move || !answer_text.get().is_empty()>
-                                        <div class="grammar-detail-hero-meaning">{answer_text}</div>
+                                    <Show when=move || !short_description.get().is_empty()>
+                                        <div class="grammar-detail-hero-meaning">{short_description}</div>
                                     </Show>
                                     <div class="grammar-detail-hero-badge">
                                         <Tag variant=Signal::derive(move || status.tag_variant())>
