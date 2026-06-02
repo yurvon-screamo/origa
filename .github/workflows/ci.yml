@@ -21,6 +21,7 @@ jobs:
         runs-on: ubuntu-24.04
         env:
             ORIGA_CDN_BASE_URL: ${{ vars.ORIGA_CDN_BASE_URL }}
+            TRAILBASE_URL: ${{ vars.TRAILBASE_URL }}
         steps:
             - name: Checkout repository
               uses: actions/checkout@v4
@@ -71,6 +72,7 @@ jobs:
         runs-on: ubuntu-24.04
         env:
             ORIGA_CDN_BASE_URL: ${{ vars.ORIGA_CDN_BASE_URL }}
+            TRAILBASE_URL: ${{ vars.TRAILBASE_URL }}
         steps:
             - name: Checkout repository
               uses: actions/checkout@v4

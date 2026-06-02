@@ -11,7 +11,7 @@ pub fn build_level_items(i18n: &I18nContext<Locale>) -> Vec<DropdownItem> {
         DropdownItem {
             value: "none".to_string(),
             label: i18n
-                .get_keys()
+                .get_keys_untracked()
                 .onboarding()
                 .progress()
                 .not_studied()
@@ -49,7 +49,7 @@ pub fn build_lesson_items(
     let mut items = vec![DropdownItem {
         value: "none".to_string(),
         label: i18n
-            .get_keys()
+            .get_keys_untracked()
             .onboarding()
             .progress()
             .not_studied()
@@ -64,7 +64,7 @@ pub fn build_lesson_items(
             items.push(DropdownItem {
                 value: format!("lesson_{}", lesson.lesson_number),
                 label: i18n
-                    .get_keys()
+                    .get_keys_untracked()
                     .onboarding()
                     .progress()
                     .lesson_number()

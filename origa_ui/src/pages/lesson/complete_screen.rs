@@ -37,9 +37,14 @@ pub fn LessonCompleteScreen(is_completed: RwSignal<bool>, review_count: usize) -
                 t.push(ToastData {
                     id: SYNC_TOAST_ID,
                     toast_type: ToastType::Info,
-                    title: i18n.get_keys().lesson().sync().inner().to_string(),
+                    title: i18n
+                        .get_keys_untracked()
+                        .lesson()
+                        .sync()
+                        .inner()
+                        .to_string(),
                     message: i18n
-                        .get_keys()
+                        .get_keys_untracked()
                         .lesson()
                         .saving_progress()
                         .inner()
@@ -63,8 +68,18 @@ pub fn LessonCompleteScreen(is_completed: RwSignal<bool>, review_count: usize) -
                             t.push(ToastData {
                                 id: t.len(),
                                 toast_type: ToastType::Success,
-                                title: i18n.get_keys().lesson().saved().inner().to_string(),
-                                message: i18n.get_keys().lesson().saved_desc().inner().to_string(),
+                                title: i18n
+                                    .get_keys_untracked()
+                                    .lesson()
+                                    .saved()
+                                    .inner()
+                                    .to_string(),
+                                message: i18n
+                                    .get_keys_untracked()
+                                    .lesson()
+                                    .saved_desc()
+                                    .inner()
+                                    .to_string(),
                                 duration_ms: Some(3000),
                                 closable: true,
                             });
@@ -80,7 +95,12 @@ pub fn LessonCompleteScreen(is_completed: RwSignal<bool>, review_count: usize) -
                             t.push(ToastData {
                                 id: t.len(),
                                 toast_type: ToastType::Error,
-                                title: i18n.get_keys().lesson().sync_error().inner().to_string(),
+                                title: i18n
+                                    .get_keys_untracked()
+                                    .lesson()
+                                    .sync_error()
+                                    .inner()
+                                    .to_string(),
                                 message: e.to_string(),
                                 duration_ms: Some(5000),
                                 closable: true,

@@ -94,7 +94,7 @@ impl ModalState {
                     }
                     error.set(Some(
                         crate::i18n::use_i18n()
-                            .get_keys()
+                            .get_keys_untracked()
                             .shared()
                             .user_not_found()
                             .inner()
@@ -107,7 +107,7 @@ impl ModalState {
                     }
                     error.set(Some(
                         crate::i18n::use_i18n()
-                            .get_keys()
+                            .get_keys_untracked()
                             .shared()
                             .user_load_error()
                             .inner()

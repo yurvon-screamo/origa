@@ -15,7 +15,7 @@ pub async fn get_or_create_profile(
         .merge_current_user()
         .await
         .map_err(|e| {
-            i18n.get_keys()
+            i18n.get_keys_untracked()
                 .login()
                 .sync_profile_error()
                 .inner()
@@ -28,7 +28,7 @@ pub async fn get_or_create_profile(
             let new_user = User::new(email.to_string(), NativeLanguage::Russian, None);
 
             auth_store.repository().save(&new_user).await.map_err(|e| {
-                i18n.get_keys()
+                i18n.get_keys_untracked()
                     .login()
                     .create_profile_error()
                     .inner()
@@ -40,14 +40,14 @@ pub async fn get_or_create_profile(
                 .get_current_user()
                 .await
                 .map_err(|e| {
-                    i18n.get_keys()
+                    i18n.get_keys_untracked()
                         .login()
                         .load_profile_error()
                         .inner()
                         .replace("{}", &e.to_string())
                 })?
                 .ok_or_else(|| {
-                    i18n.get_keys()
+                    i18n.get_keys_untracked()
                         .login()
                         .profile_not_found()
                         .inner()
@@ -55,7 +55,7 @@ pub async fn get_or_create_profile(
                 })
         },
         Err(e) => Err(i18n
-            .get_keys()
+            .get_keys_untracked()
             .login()
             .load_profile_error()
             .inner()
@@ -70,7 +70,7 @@ pub async fn handle_oauth_callback(
 ) -> Result<User, String> {
     let session = TrailBaseClient::parse_tokens_from_url(url_fragment)?;
     set_session(&session).map_err(|e| {
-        i18n.get_keys()
+        i18n.get_keys_untracked()
             .login()
             .save_session_error()
             .inner()
@@ -79,7 +79,7 @@ pub async fn handle_oauth_callback(
 
     if session.email.is_empty() {
         return Err(i18n
-            .get_keys()
+            .get_keys_untracked()
             .login()
             .email_not_in_token()
             .inner()
@@ -119,7 +119,7 @@ pub async fn handle_oauth_callback_desktop(
         .exchange_auth_code_for_session(&code, &verifier)
         .await
         .map_err(|e| {
-            i18n.get_keys()
+            i18n.get_keys_untracked()
                 .login()
                 .token_exchange_error()
                 .inner()
@@ -127,7 +127,7 @@ pub async fn handle_oauth_callback_desktop(
         })?;
 
     set_session(&session).map_err(|e| {
-        i18n.get_keys()
+        i18n.get_keys_untracked()
             .login()
             .save_session_error()
             .inner()
@@ -136,7 +136,7 @@ pub async fn handle_oauth_callback_desktop(
 
     if session.email.is_empty() {
         return Err(i18n
-            .get_keys()
+            .get_keys_untracked()
             .login()
             .email_not_in_token()
             .inner()

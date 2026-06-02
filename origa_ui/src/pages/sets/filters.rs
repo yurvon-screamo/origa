@@ -17,7 +17,12 @@ pub enum LevelFilter {
 impl LevelFilter {
     pub fn label(&self, i18n: &I18nContext<Locale>) -> String {
         match self {
-            LevelFilter::All => i18n.get_keys().sets().all_levels().inner().to_string(),
+            LevelFilter::All => i18n
+                .get_keys_untracked()
+                .sets()
+                .all_levels()
+                .inner()
+                .to_string(),
             LevelFilter::N5 => "N5".to_string(),
             LevelFilter::N4 => "N4".to_string(),
             LevelFilter::N3 => "N3".to_string(),
@@ -73,9 +78,19 @@ pub enum ImportFilter {
 impl ImportFilter {
     pub fn label(&self, i18n: &I18nContext<Locale>) -> String {
         match self {
-            ImportFilter::All => i18n.get_keys().sets().all().inner().to_string(),
-            ImportFilter::Imported => i18n.get_keys().sets().filter_imported().inner().to_string(),
-            ImportFilter::New => i18n.get_keys().sets().filter_new_sets().inner().to_string(),
+            ImportFilter::All => i18n.get_keys_untracked().sets().all().inner().to_string(),
+            ImportFilter::Imported => i18n
+                .get_keys_untracked()
+                .sets()
+                .filter_imported()
+                .inner()
+                .to_string(),
+            ImportFilter::New => i18n
+                .get_keys_untracked()
+                .sets()
+                .filter_new_sets()
+                .inner()
+                .to_string(),
         }
     }
 

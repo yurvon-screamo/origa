@@ -14,10 +14,30 @@ pub enum CardType {
 impl CardType {
     pub fn label(&self, i18n: &I18nContext<Locale>) -> String {
         match self {
-            CardType::Vocabulary => i18n.get_keys().lesson().word().inner().to_string(),
-            CardType::Kanji => i18n.get_keys().lesson().kanji().inner().to_string(),
-            CardType::Grammar => i18n.get_keys().lesson().grammar().inner().to_string(),
-            CardType::Phrase => i18n.get_keys().lesson().phrase().inner().to_string(),
+            CardType::Vocabulary => i18n
+                .get_keys_untracked()
+                .lesson()
+                .word()
+                .inner()
+                .to_string(),
+            CardType::Kanji => i18n
+                .get_keys_untracked()
+                .lesson()
+                .kanji()
+                .inner()
+                .to_string(),
+            CardType::Grammar => i18n
+                .get_keys_untracked()
+                .lesson()
+                .grammar()
+                .inner()
+                .to_string(),
+            CardType::Phrase => i18n
+                .get_keys_untracked()
+                .lesson()
+                .phrase()
+                .inner()
+                .to_string(),
         }
     }
 
