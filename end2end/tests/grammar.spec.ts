@@ -384,7 +384,10 @@ testWithFreshUser.describe("Grammar Page - Practice Mode", () => {
 
         await grammarPage.navigateToDetail(0);
 
-        await expect(grammarPage.detailPracticeBtn).toBeVisible({ timeout: 5000 });
+        // Wait for detail page content to fully load (async WASM data fetch)
+        await expect(grammarPage.detailContainer).toBeVisible({ timeout: 30_000 });
+
+        await expect(grammarPage.detailPracticeBtn).toBeVisible({ timeout: 10_000 });
         const isDisabled = await grammarPage.detailPracticeBtn.isDisabled();
         expect(isDisabled).toBe(false);
     });
@@ -415,7 +418,8 @@ testWithFreshUser.describe("Grammar Page - Detail Page", () => {
 
         await grammarPage.navigateToDetail(0);
 
-        await expect(grammarPage.detailContainer).toBeVisible({ timeout: 5000 });
+        // Wait for detail page content to fully load (async WASM data fetch)
+        await expect(grammarPage.detailContainer).toBeVisible({ timeout: 30_000 });
         await expect(grammarPage.detailBreadcrumbs).toBeVisible();
         await expect(grammarPage.detailFsrs).toBeVisible();
     });
@@ -430,6 +434,9 @@ testWithFreshUser.describe("Grammar Page - Detail Page", () => {
         await expect(grammarPage.grammarGrid).toBeVisible({ timeout: 10_000 });
 
         await grammarPage.navigateToDetail(0);
+
+        // Wait for detail page content to fully load (async WASM data fetch)
+        await expect(grammarPage.detailContainer).toBeVisible({ timeout: 30_000 });
 
         await grammarPage.detailBreadcrumbsBack.click();
         await page.waitForURL(/\/grammar$/, { timeout: 5000 });
@@ -447,7 +454,12 @@ testWithFreshUser.describe("Grammar Page - Detail Page", () => {
 
         await grammarPage.navigateToDetail(0);
 
+        // Wait for detail page content to fully load (async WASM data fetch)
+        await expect(grammarPage.detailContainer).toBeVisible({ timeout: 30_000 });
+
+        // Now CardActionBar should be rendered
         const deleteBtn = grammarPage.detailActions.getByTestId("grammar-detail-actions-delete-btn");
+        await expect(deleteBtn).toBeVisible({ timeout: 10_000 });
         await deleteBtn.click();
 
         await expect(grammarPage.detailDeleteModal).toBeVisible({ timeout: 5000 });
