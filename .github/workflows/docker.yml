@@ -7,7 +7,7 @@ on:
         branches: [master]
     push:
         tags:
-            - 'v*.*.*'
+            - "v*.*.*"
     workflow_dispatch:
 
 concurrency:
@@ -20,7 +20,23 @@ env:
 
 jobs:
     version:
-        uses: ./.github/workflows/version.yml
+        runs-on: ubuntu-latest
+        outputs:
+            version: ${{ steps.version.outputs.version }}
+            version_base: ${{ steps.version.outputs.version_base }}
+            version_type: ${{ steps.version.outputs.version_type }}
+            commit_sha: ${{ steps.version.outputs.commit_sha }}
+            commit_short: ${{ steps.version.outputs.commit_short }}
+            build_date: ${{ steps.version.outputs.build_date }}
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+                  filter: blob:none
+
+            - name: Calculate version
+              id: version
+              uses: ./.github/actions/version
 
     build-and-push:
         name: Build and Push Docker Image
