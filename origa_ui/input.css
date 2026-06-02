@@ -5230,23 +5230,23 @@ input[type="submit"],
 .grammar-card-link {
     display: flex;
     flex: 1;
-    padding: 10px 20px;
-    gap: 16px;
+    padding: 20px;
+    justify-content: center;
+    align-items: center;
     text-decoration: none;
     color: inherit;
 }
 
 .grammar-card-rule-box {
-    min-width: 64px;
+    width: 100%;
     min-height: 64px;
     display: flex;
     align-items: center;
     justify-content: center;
     border: 1px solid var(--border-dark);
     background: var(--bg-paper);
-    flex-shrink: 0;
     position: relative;
-    padding: 4px 8px;
+    padding: 12px 16px;
 }
 
 .grammar-card-rule-box::after {
@@ -5259,23 +5259,6 @@ input[type="submit"],
     border: 1px solid var(--border-dark);
     z-index: -1;
     background: var(--bg-aged);
-}
-
-.grammar-card-content {
-    flex: 0 1 auto;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-self: flex-start;
-    gap: 4px;
-}
-
-.grammar-card-answer {
-    font-family: var(--font-mono);
-    font-size: var(--text-sm, 16px);
-    color: var(--fg-black);
-    line-height: 1.4;
 }
 
 .grammar-card-divider {
