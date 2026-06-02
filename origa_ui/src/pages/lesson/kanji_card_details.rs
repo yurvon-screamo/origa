@@ -35,8 +35,8 @@ pub fn KanjiCardDetails(
     view! {
         <Show when=move || show_details.get()>
             <div class="my-6 space-y-4 max-w-max mx-auto">
-                <ReadingGroup label=i18n.get_keys().lesson().on_yomi().inner().to_string() readings=on_readings_stored />
-                <ReadingGroup label=i18n.get_keys().lesson().kun_yomi().inner().to_string() readings=kun_readings_stored />
+                <ReadingGroup label=Signal::derive(move || i18n.get_keys().lesson().on_yomi().inner().to_string()) readings=on_readings_stored />
+                <ReadingGroup label=Signal::derive(move || i18n.get_keys().lesson().kun_yomi().inner().to_string()) readings=kun_readings_stored />
 
                 <div class="flex gap-4 items-start text-left">
                     <div class="w-16 shrink-0">

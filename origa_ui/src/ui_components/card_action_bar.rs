@@ -51,7 +51,7 @@ pub fn CardActionBar(
                     match on_mark_as_known {
                         Some(cb) => view! {
                         <span
-                            style:visibility=move || if mark_known_visible() { "visible" } else { "hidden" }
+                            style:display=move || if mark_known_visible() { "inline-flex" } else { "none" }
                             aria-hidden=move || if mark_known_visible() { "false" } else { "true" }
                         >
                             <Tooltip text=Signal::derive(move || crate::i18n::td_string!(i18n.get_locale(), shared.mark_as_known))>

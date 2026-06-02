@@ -66,14 +66,14 @@ pub fn create_import_preview_handlers(
                     let toast_id = toasts.get().len();
                     let message = if result.failed_words.is_empty() {
                         if result.skipped_words.is_empty() {
-                            i18n.get_keys()
+                            i18n.get_keys_untracked()
                                 .sets()
                                 .import_success()
                                 .inner()
                                 .to_string()
                                 .replacen("{}", &result.created_cards.len().to_string(), 1)
                         } else {
-                            i18n.get_keys()
+                            i18n.get_keys_untracked()
                                 .sets()
                                 .import_partial()
                                 .inner()
@@ -82,7 +82,7 @@ pub fn create_import_preview_handlers(
                                 .replacen("{}", &result.skipped_words.len().to_string(), 1)
                         }
                     } else {
-                        i18n.get_keys()
+                        i18n.get_keys_untracked()
                             .sets()
                             .import_with_errors()
                             .inner()
@@ -96,7 +96,7 @@ pub fn create_import_preview_handlers(
                         t.push(ToastData {
                             id: toast_id,
                             title: i18n
-                                .get_keys()
+                                .get_keys_untracked()
                                 .sets()
                                 .import_complete_title()
                                 .inner()
@@ -119,7 +119,12 @@ pub fn create_import_preview_handlers(
                     toasts.update(|t| {
                         t.push(ToastData {
                             id: toast_id,
-                            title: i18n.get_keys().common().error().inner().to_string(),
+                            title: i18n
+                                .get_keys_untracked()
+                                .common()
+                                .error()
+                                .inner()
+                                .to_string(),
                             message: e,
                             toast_type: ToastType::Error,
                             duration_ms: None,

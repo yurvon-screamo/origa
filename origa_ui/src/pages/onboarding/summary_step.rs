@@ -70,11 +70,11 @@ fn get_type_icon(set_type: &str) -> Option<String> {
 }
 
 fn format_word_count(i18n: I18nContext<Locale>, count: usize) -> String {
-    let summary = i18n.get_keys().onboarding().summary();
+    let summary = i18n.get_keys_untracked().onboarding().summary();
     if count == 0 {
         return summary.no_words_count().inner().to_string();
     }
-    match i18n.get_locale() {
+    match i18n.get_locale_untracked() {
         Locale::ru => {
             let template = match count % 10 {
                 1 if count % 100 != 11 => summary.word_single().inner(),
@@ -95,8 +95,8 @@ fn format_word_count(i18n: I18nContext<Locale>, count: usize) -> String {
 }
 
 fn format_set_count(i18n: I18nContext<Locale>, count: usize) -> String {
-    let summary = i18n.get_keys().onboarding().summary();
-    match i18n.get_locale() {
+    let summary = i18n.get_keys_untracked().onboarding().summary();
+    match i18n.get_locale_untracked() {
         Locale::ru => {
             let template = match count % 10 {
                 1 if count % 100 != 11 => summary.set_single().inner(),

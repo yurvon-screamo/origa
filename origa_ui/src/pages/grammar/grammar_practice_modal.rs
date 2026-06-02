@@ -176,52 +176,48 @@ pub fn GrammarPracticeModal(
         option_classes(index, answer_state.get(), correct_index)
     };
 
-    let no_words_text = Signal::derive({
-        let text = i18n
-            .get_keys()
+    let no_words_text = Signal::derive(move || {
+        i18n.get_keys()
             .grammar_page()
             .practice_no_words()
             .inner()
-            .to_string();
-        move || text.clone()
+            .to_string()
     });
 
-    let close_text = Signal::derive({
-        let text = i18n
-            .get_keys()
+    let close_text = Signal::derive(move || {
+        i18n.get_keys()
             .grammar_page()
             .practice_close()
             .inner()
-            .to_string();
-        move || text.clone()
+            .to_string()
     });
 
-    let next_text = Signal::derive({
-        let text = i18n
-            .get_keys()
+    let next_text = Signal::derive(move || {
+        i18n.get_keys()
             .grammar_page()
             .quiz_next()
             .inner()
-            .to_string();
-        move || text.clone()
+            .to_string()
     });
 
-    let correct_label = i18n
-        .get_keys()
-        .grammar_page()
-        .quiz_correct()
-        .inner()
-        .to_string();
-    let wrong_label = i18n
-        .get_keys()
-        .grammar_page()
-        .quiz_wrong()
-        .inner()
-        .to_string();
+    let correct_label = Signal::derive(move || {
+        i18n.get_keys()
+            .grammar_page()
+            .quiz_correct()
+            .inner()
+            .to_string()
+    });
+    let wrong_label = Signal::derive(move || {
+        i18n.get_keys()
+            .grammar_page()
+            .quiz_wrong()
+            .inner()
+            .to_string()
+    });
 
     let result_text = Memo::new(move |_| match answer_state.get() {
-        AnswerState::Answered { correct: true, .. } => correct_label.clone(),
-        AnswerState::Answered { correct: false, .. } => wrong_label.clone(),
+        AnswerState::Answered { correct: true, .. } => correct_label.get(),
+        AnswerState::Answered { correct: false, .. } => wrong_label.get(),
         AnswerState::Idle => String::new(),
     });
 

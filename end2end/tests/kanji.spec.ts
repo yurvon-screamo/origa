@@ -278,6 +278,54 @@ testWithFreshUser.describe("Kanji Page - Detail Page", () => {
     });
 });
 
+testWithFreshUser.describe("Kanji Page - Mark as Known", () => {
+    testWithFreshUser("should display mark-as-known button on kanji card", async ({ page }) => {
+        test.setTimeout(60_000);
+        const kanjiPage = await setupKanjiPage(page);
+        await addFirstKanji(kanjiPage);
+        await expect(kanjiPage.kanjiGrid).toBeVisible({ timeout: 10_000 });
+
+        const markKnownBtn = page.getByTestId("kanji-card-item-mark-known-btn").first();
+        await expect(markKnownBtn).toBeVisible();
+    });
+
+    testWithFreshUser("should mark kanji as known and show in Learned filter", async ({ page }) => {
+        test.setTimeout(60_000);
+        const kanjiPage = await setupKanjiPage(page);
+        await addFirstKanji(kanjiPage);
+        await expect(kanjiPage.kanjiGrid).toBeVisible({ timeout: 10_000 });
+
+        await kanjiPage.selectFilter("Новые");
+        expect(await kanjiPage.getCardCount()).toBeGreaterThanOrEqual(1);
+
+        await kanjiPage.markCardAsKnownByIndex(0);
+
+        await kanjiPage.selectFilter("Изученные");
+        await expect(kanjiPage.emptyState).not.toBeVisible({ timeout: 5000 });
+        expect(await kanjiPage.getCardCount()).toBeGreaterThanOrEqual(1);
+    });
+
+    testWithFreshUser("should hide mark-as-known button for already learned kanji", async ({ page }) => {
+        test.setTimeout(60_000);
+        const kanjiPage = await setupKanjiPage(page);
+        await addFirstKanji(kanjiPage);
+        await expect(kanjiPage.kanjiGrid).toBeVisible({ timeout: 10_000 });
+
+        // Pre-condition: mark-as-known button must exist before we test hiding it
+        const markKnownBtn = page.getByTestId("kanji-card-item-mark-known-btn").first();
+        await expect(markKnownBtn).toBeVisible();
+
+        // Click mark-as-known
+        await kanjiPage.markCardAsKnownByIndex(0);
+
+        // Wait for card to re-render with learned status
+        await page.waitForTimeout(1000);
+
+        // After marking as known, the button should be hidden
+        await expect(markKnownBtn).not.toBeVisible();
+    });
+});
+
 testWithFreshUser.describe("Kanji Page - Favorite Instant UI Update", () => {
     testWithFreshUser("should update favorite icon immediately after toggle", async ({ page }) => {
         test.setTimeout(90_000);
@@ -287,10 +335,22 @@ testWithFreshUser.describe("Kanji Page - Favorite Instant UI Update", () => {
 
         await expect.poll(async () => await kanjiPage.isFavorited(0), { timeout: 5000 }).toBe(false);
 
-        await kanjiPage.toggleFavoriteByIndex(0);
-        await expect.poll(async () => await kanjiPage.isFavorited(0), { timeout: 5000 }).toBe(true);
+        // Toggle to favorite — strict 1000ms timeout verifies optimistic UI update
+        const card = page.getByTestId("kanji-card-item").nth(0);
+        const btn = card.getByTestId("kanji-card-item-favorite-btn");
+        await btn.dispatchEvent("click");
+        await expect.poll(async () => await kanjiPage.isFavorited(0), { timeout: 1000 }).toBe(true);
 
-        await kanjiPage.toggleFavoriteByIndex(0);
-        await expect.poll(async () => await kanjiPage.isFavorited(0), { timeout: 5000 }).toBe(false);
+        // Wait for background reload and verify persistence
+        await page.waitForTimeout(2000);
+        await expect.poll(async () => await kanjiPage.isFavorited(0), { timeout: 1000 }).toBe(true);
+
+        // Toggle back to unfavorite
+        await btn.dispatchEvent("click");
+        await expect.poll(async () => await kanjiPage.isFavorited(0), { timeout: 1000 }).toBe(false);
+
+        // Verify persistence after reload
+        await page.waitForTimeout(2000);
+        await expect.poll(async () => await kanjiPage.isFavorited(0), { timeout: 1000 }).toBe(false);
     });
 });

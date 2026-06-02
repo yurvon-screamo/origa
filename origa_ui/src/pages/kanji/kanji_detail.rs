@@ -2,7 +2,6 @@ use std::collections::HashSet;
 
 use super::super::shared::{
     CardStatus, DeleteRequest, create_delete_callback, create_mark_as_known_callback,
-    create_toggle_favorite_callback,
 };
 use crate::i18n::use_i18n;
 use crate::repository::HybridUserRepository;
@@ -17,6 +16,7 @@ use leptos_router::components::A;
 use leptos_router::hooks::{use_navigate, use_params_map};
 use origa::domain::{Card as DomainCard, StudyCard, User};
 use origa::traits::UserRepository;
+use origa::use_cases::ToggleFavoriteUseCase;
 use ulid::Ulid;
 
 fn load_study_card(
@@ -80,14 +80,15 @@ pub fn KanjiDetail() -> impl IntoView {
     let is_loading = RwSignal::new(true);
     let refresh_trigger = RwSignal::new(0u32);
 
-    let repo_for_init = repository.clone();
+    let repo_for_effect = repository.clone();
     Effect::new(move |_| {
+        let _ = refresh_trigger.get();
         let Some(card_id) = card_id_result.get() else {
             is_loading.set(false);
             return;
         };
         load_study_card(
-            repo_for_init.clone(),
+            repo_for_effect.clone(),
             card_id,
             study_card,
             current_user,
@@ -95,23 +96,36 @@ pub fn KanjiDetail() -> impl IntoView {
         );
     });
 
-    let repo_for_refresh = repository.clone();
+    let is_favorite_signal: RwSignal<bool> = RwSignal::new(false);
+
     Effect::new(move |_| {
-        let _ = refresh_trigger.get();
-        let Some(card_id) = card_id_result.get() else {
-            return;
-        };
-        load_study_card(
-            repo_for_refresh.clone(),
-            card_id,
-            study_card,
-            current_user,
-            is_loading,
-        );
+        if let Some(card) = study_card.get() {
+            is_favorite_signal.set(card.is_favorite());
+        }
     });
 
-    let on_toggle_favorite =
-        create_toggle_favorite_callback(repository.clone(), current_user, refresh_trigger);
+    let on_toggle_favorite = {
+        let repo = repository.clone();
+        let current_user_fav = current_user;
+        let refresh = refresh_trigger;
+        Callback::new(move |card_id: Ulid| {
+            is_favorite_signal.update(|f| *f = !*f);
+            let repo = repo.clone();
+            spawn_local(async move {
+                let use_case = ToggleFavoriteUseCase::new(&repo);
+                if use_case.execute(card_id).await.is_ok() {
+                    current_user_fav.update(|u| {
+                        if let Some(user) = u {
+                            let _ = user.toggle_favorite(card_id);
+                        }
+                    });
+                    refresh.update(|v| *v += 1);
+                } else {
+                    is_favorite_signal.update(|f| *f = !*f);
+                }
+            });
+        })
+    };
     let on_mark_as_known = create_mark_as_known_callback(repository.clone(), refresh_trigger);
     let toasts: RwSignal<Vec<crate::ui_components::ToastData>> = RwSignal::new(Vec::new());
     let (is_deleting, on_delete) =
@@ -192,7 +206,6 @@ pub fn KanjiDetail() -> impl IntoView {
             {move || {
                 let card = study_card.get()?;
                 let card_id = *card.card_id();
-                let is_favorite = card.is_favorite();
                 let memory = card.memory().clone();
 
                 let status = CardStatus::from_study_card(&card);
@@ -325,7 +338,7 @@ pub fn KanjiDetail() -> impl IntoView {
                         <CardActionBar
                             tag_variant=Signal::derive(move || status.tag_variant())
                             tag_label=Signal::derive(move || status.label(&i18n))
-                            is_favorite=Signal::derive(move || is_favorite)
+                            is_favorite=is_favorite_signal.into()
                             on_toggle_favorite=Callback::new(move |_| on_toggle_favorite.run(card_id_for_fav))
                             show_mark_as_known=Signal::derive(move || status != CardStatus::Learned)
                             on_mark_as_known=Callback::new(move |_| on_mark_as_known.run(card_id_for_known))
@@ -455,7 +468,7 @@ pub fn KanjiDetail() -> impl IntoView {
                                 <CardActionBar
                                     tag_variant=Signal::derive(move || status.tag_variant())
                                     tag_label=Signal::derive(move || status.label(&i18n))
-                                    is_favorite=Signal::derive(move || is_favorite)
+                                    is_favorite=is_favorite_signal.into()
                                     on_toggle_favorite=Callback::new(move |_| {
                                         on_toggle_favorite.run(card_id_for_fav)
                                     })
