@@ -2,53 +2,53 @@ name: "Setup Frontend"
 description: "Install cargo-binstall, trunk, tauri-cli and cache UniDic dictionary"
 
 inputs:
-  tools:
-    description: "Space-separated list of tools to install via cargo-binstall"
-    required: false
-    default: "trunk tauri-cli"
-  cache-key-suffix:
-    description: "Suffix for cache keys (e.g., platform identifier)"
-    required: false
+    tools:
+        description: "Space-separated list of tools to install via cargo-binstall"
+        required: false
+        default: "trunk tauri-cli"
+    cache-key-suffix:
+        description: "Suffix for cache keys (e.g., platform identifier)"
+        required: false
 
 outputs:
-  unidic-cache-hit:
-    description: "Whether UniDic dictionary cache was hit"
-    value: ${{ steps.unidic-cache.outputs.cache-hit }}
+    unidic-cache-hit:
+        description: "Whether UniDic dictionary cache was hit"
+        value: ${{ steps.unidic-cache.outputs.cache-hit }}
 
 runs:
-  using: "composite"
-  steps:
-    - name: Install cargo-binstall
-      shell: bash
-      run: |
-        tmp=$(mktemp) && curl -L --proto '=https' --tlsv1.2 -sSf -o "$tmp" https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh && bash "$tmp"
+    using: "composite"
+    steps:
+        - name: Install cargo-binstall
+          shell: bash
+          run: |
+              tmp=$(mktemp) && curl -L --proto '=https' --tlsv1.2 -sSf -o "$tmp" https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh && bash "$tmp"
 
-    - name: Add cargo bin to PATH
-      shell: bash
-      run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+        - name: Add cargo bin to PATH
+          shell: bash
+          run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
 
-    - name: Install tools via cargo-binstall
-      shell: bash
-      run: cargo binstall ${{ inputs.tools }} --no-confirm --force
+        - name: Install tools via cargo-binstall
+          shell: bash
+          run: cargo binstall ${{ inputs.tools }} --no-confirm --force
 
-    - name: Verify trunk installation
-      shell: bash
-      run: |
-        which trunk
-        trunk --version
+        - name: Verify trunk installation
+          shell: bash
+          run: |
+              which trunk
+              trunk --version
 
-    - name: Cache trunk tools
-      id: trunk-cache
-      uses: actions/cache@v4
-      with:
-        path: ~/.cache/trunk
-        key: trunk-tools-v1
+        - name: Cache trunk tools
+          id: trunk-cache
+          uses: actions/cache@v4
+          with:
+              path: ~/.cache/trunk
+              key: trunk-tools-v1-${{ inputs.cache-key-suffix }}
 
-    - name: Cache UniDic dictionary
-      id: unidic-cache
-      uses: actions/cache@v4
-      with:
-        path: origa_ui/public/dictionaries/unidic
-        key: unidic-dict-v1-${{ hashFiles('origa_ui/build.rs') }}
-        restore-keys: |
-          unidic-dict-v1-
+        - name: Cache UniDic dictionary
+          id: unidic-cache
+          uses: actions/cache@v4
+          with:
+              path: origa_ui/public/dictionaries/unidic
+              key: unidic-dict-v1-${{ hashFiles('origa_ui/build.rs') }}
+              restore-keys: |
+                  unidic-dict-v1-

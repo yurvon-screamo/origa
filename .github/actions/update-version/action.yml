@@ -1,0 +1,19 @@
+name: "Update Version"
+description: "Update version in Cargo.toml and tauri.conf.json"
+
+inputs:
+  version:
+    description: "Version string to set (e.g. 0.3.0)"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Update version in config files
+      shell: bash
+      env:
+        VERSION: ${{ inputs.version }}
+      run: |
+          sed -i 's/^version = ".*"/version = "'${VERSION}'"/' Cargo.toml
+          sed -i 's/"version": ".*"/"version": "'${VERSION}'"/' tauri/tauri.conf.json
+          echo "Updated version to ${VERSION}"

@@ -1,0 +1,85 @@
+name: "Calculate Version"
+description: "Compute version, commit info, and build date from git tags and branch state"
+
+outputs:
+    version:
+        description: "Full version (0.3.0 or 0.2.1-alpha.3)"
+        value: ${{ steps.calc.outputs.version }}
+    version_base:
+        description: "Base version without suffix (0.3.0 or 0.2.1)"
+        value: ${{ steps.calc.outputs.version_base }}
+    version_type:
+        description: "Version type (stable or alpha)"
+        value: ${{ steps.calc.outputs.version_type }}
+    commit_sha:
+        description: "Full commit SHA"
+        value: ${{ steps.calc.outputs.commit_sha }}
+    commit_short:
+        description: "Short commit SHA (7 chars)"
+        value: ${{ steps.calc.outputs.commit_short }}
+    build_date:
+        description: "Build date (YYYY-MM-DD)"
+        value: ${{ steps.calc.outputs.build_date }}
+
+runs:
+    using: "composite"
+    steps:
+        - name: Verify git history
+          shell: bash
+          run: |
+              if ! git rev-parse HEAD~1 &>/dev/null; then
+                echo "::error::Shallow clone detected. Use fetch-depth: 0 in checkout."
+                exit 1
+              fi
+
+        - name: Calculate version
+          id: calc
+          shell: bash
+          run: |
+              COMMIT_SHA="${{ github.sha }}"
+              COMMIT_SHORT="${COMMIT_SHA:0:7}"
+              BUILD_DATE=$(date -u +'%Y-%m-%d')
+
+              echo "commit_sha=${COMMIT_SHA}" >> $GITHUB_OUTPUT
+              echo "commit_short=${COMMIT_SHORT}" >> $GITHUB_OUTPUT
+              echo "build_date=${BUILD_DATE}" >> $GITHUB_OUTPUT
+
+              if [[ "${{ github.ref_type }}" == "tag" && "${{ github.ref_name }}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+                VERSION="${{ github.ref_name }}"
+                VERSION="${VERSION#v}"
+                VERSION_TYPE="stable"
+
+                echo "version=${VERSION}" >> $GITHUB_OUTPUT
+                echo "version_base=${VERSION}" >> $GITHUB_OUTPUT
+                echo "version_type=${VERSION_TYPE}" >> $GITHUB_OUTPUT
+              else
+                VERSION_TYPE="alpha"
+
+                LATEST_TAG=$(git describe --tags --match "v*" --abbrev=0 2>/dev/null || echo "")
+
+                if [[ -z "$LATEST_TAG" ]]; then
+                  MAJOR=0
+                  MINOR=1
+                  PATCH=0
+                  COMMIT_COUNT=0
+                else
+                  TAG_VERSION="${LATEST_TAG#v}"
+
+                  IFS='.' read -r MAJOR MINOR PATCH <<< "$TAG_VERSION"
+
+                  MAJOR=${MAJOR:-0}
+                  MINOR=${MINOR:-0}
+                  PATCH=${PATCH:-0}
+
+                  PATCH=$((PATCH + 1))
+
+                  COMMIT_COUNT=$(git rev-list --count "${LATEST_TAG}..HEAD")
+                fi
+
+                VERSION_BASE="${MAJOR}.${MINOR}.${PATCH}"
+                VERSION="${VERSION_BASE}-alpha.${COMMIT_COUNT}"
+
+                echo "version=${VERSION}" >> $GITHUB_OUTPUT
+                echo "version_base=${VERSION_BASE}" >> $GITHUB_OUTPUT
+                echo "version_type=${VERSION_TYPE}" >> $GITHUB_OUTPUT
+              fi
