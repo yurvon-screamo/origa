@@ -127,7 +127,11 @@ pub fn LessonContent() -> impl IntoView {
                     core_count_signal.set(core_count);
                     if cards.is_empty() {
                         error_message.set(Some(
-                            i18n.get_keys().lesson().no_cards().inner().to_string(),
+                            i18n.get_keys_untracked()
+                                .lesson()
+                                .no_cards()
+                                .inner()
+                                .to_string(),
                         ));
                     } else {
                         lesson_state.set(LessonState {
@@ -150,7 +154,7 @@ pub fn LessonContent() -> impl IntoView {
                 },
                 Err(e) => {
                     error_message.set(Some(
-                        i18n.get_keys()
+                        i18n.get_keys_untracked()
                             .lesson()
                             .load_error()
                             .inner()

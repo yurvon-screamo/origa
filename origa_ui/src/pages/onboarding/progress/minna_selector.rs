@@ -19,7 +19,7 @@ pub fn MinnaProgressSelector(
     let available_sets = Signal::derive(move || state.get().available_sets.clone());
 
     let not_studied_label = i18n
-        .get_keys()
+        .get_keys_untracked()
         .onboarding()
         .progress()
         .not_studied()

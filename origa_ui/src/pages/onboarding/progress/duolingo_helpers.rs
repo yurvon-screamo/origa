@@ -10,7 +10,7 @@ pub fn build_module_items(
     let mut items = vec![DropdownItem {
         value: "none".to_string(),
         label: i18n
-            .get_keys()
+            .get_keys_untracked()
             .onboarding()
             .progress()
             .not_studied()
@@ -21,7 +21,7 @@ pub fn build_module_items(
         items.push(DropdownItem {
             value: format!("module_{}", module.module_number),
             label: i18n
-                .get_keys()
+                .get_keys_untracked()
                 .onboarding()
                 .progress()
                 .module_number()
@@ -41,7 +41,7 @@ pub fn build_unit_items(
     let mut items = vec![DropdownItem {
         value: "none".to_string(),
         label: i18n
-            .get_keys()
+            .get_keys_untracked()
             .onboarding()
             .progress()
             .not_studied()
@@ -56,7 +56,7 @@ pub fn build_unit_items(
             items.push(DropdownItem {
                 value: format!("unit_{}", unit.unit_number),
                 label: i18n
-                    .get_keys()
+                    .get_keys_untracked()
                     .onboarding()
                     .progress()
                     .section_number()
@@ -76,7 +76,7 @@ pub fn format_import_info(
 ) -> Option<String> {
     match (module_num, unit_num) {
         (Some(1), Some(u)) => Some(
-            i18n.get_keys()
+            i18n.get_keys_untracked()
                 .onboarding()
                 .progress()
                 .import_module_section()
@@ -85,7 +85,7 @@ pub fn format_import_info(
                 .replacen("{}", &u.to_string(), 1),
         ),
         (Some(m), Some(u)) if m > 1 => Some(
-            i18n.get_keys()
+            i18n.get_keys_untracked()
                 .onboarding()
                 .progress()
                 .import_modules_section()
@@ -96,7 +96,7 @@ pub fn format_import_info(
                 .replacen("{}", &u.to_string(), 1),
         ),
         (Some(m), None) => Some(
-            i18n.get_keys()
+            i18n.get_keys_untracked()
                 .onboarding()
                 .progress()
                 .select_section_in_module()

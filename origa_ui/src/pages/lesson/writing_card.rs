@@ -93,7 +93,12 @@ fn extract_kanji_data(kanji: &DomainCard, native_language: NativeLanguage) -> Ka
 }
 
 fn get_card_type(i18n: &I18nContext<Locale>) -> (String, TagVariant) {
-    let label = i18n.get_keys().lesson().kanji().inner().to_string();
+    let label = i18n
+        .get_keys_untracked()
+        .lesson()
+        .kanji()
+        .inner()
+        .to_string();
     (label, TagVariant::Olive)
 }
 

@@ -250,7 +250,7 @@ pub fn SetsContent() -> impl IntoView {
 
                     <div class="flex flex-wrap gap-2" data-testid="sets-type-filters">
                         <FilterTag
-                            label=i18n.get_keys().sets().all_types().inner().to_string()
+                            label=i18n.get_keys_untracked().sets().all_types().inner().to_string()
                             is_active=Signal::derive(move || type_filter.get().is_all())
                             on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
                                 type_filter.set(TypeFilter::all());
