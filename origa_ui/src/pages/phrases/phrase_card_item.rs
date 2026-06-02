@@ -71,7 +71,7 @@ pub fn PhraseCardItem(
             </div>
             <div class="phrase-card-body">
                 <div class="phrase-card-header">
-                    <div class="phrase-card-phrase">
+                    <div class="phrase-card-phrase" data-testid="phrases-card-phrase">
                         <FuriganaText
                             text=phrase_text
                             known_kanji=known_kanji_for_furigana
