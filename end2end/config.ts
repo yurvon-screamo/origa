@@ -1,3 +1,9 @@
-// Test users are created dynamically via admin API in fixtures (see helpers/auth.ts)
-export const trailBaseUrl =
-    process.env.TRAILBASE_URL || "https://origa.uwuwu.net";
+import "dotenv/config";
+
+export function getTrailBaseUrl(): string {
+    const url = process.env.TRAILBASE_URL;
+    if (!url) {
+        throw new Error("TRAILBASE_URL is not set. Configure it in .env file.");
+    }
+    return url;
+}
