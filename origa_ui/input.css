@@ -4301,7 +4301,6 @@ input[type="submit"],
 .kanji-detail-top-bar {
     display: flex;
     align-items: center;
-    justify-content: space-between;
     gap: 16px;
     padding: 8px 0;
     border-bottom: 1px solid var(--border-light);
@@ -4315,6 +4314,7 @@ input[type="submit"],
 .kanji-breadcrumbs {
     display: flex;
     align-items: center;
+    flex: 1;
     gap: 8px;
     font-family: var(--font-mono);
     font-size: var(--text-2xs, 11px);
@@ -4502,6 +4502,7 @@ input[type="submit"],
     font-family: var(--font-mono);
     font-size: var(--text-label-sm, 11px);
     letter-spacing: 0.08em;
+    text-transform: none;
     color: var(--fg-muted);
     margin-bottom: 16px;
     padding-bottom: 8px;
@@ -4671,7 +4672,7 @@ input[type="submit"],
 .kanji-card-link {
     display: flex;
     flex: 1;
-    padding: 16px 20px;
+    padding: 10px 20px;
     gap: 16px;
     text-decoration: none;
     color: inherit;
@@ -4817,7 +4818,8 @@ input[type="submit"],
     letter-spacing: 0.1em;
     text-transform: uppercase;
     flex-shrink: 0;
-    min-width: 24px;
+    width: 28px;
+    text-align: right;
 }
 
 /* Fill-bar */
