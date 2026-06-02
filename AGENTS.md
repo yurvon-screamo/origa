@@ -81,7 +81,7 @@ aws s3 cp s3://adaptable-foodbox-ucep7wx/ s3://adaptable-foodbox-ucep7wx/ --prof
 
 ## CI/CD
 
-Workflows: `tauri.yml`, `version.yml`, `reusable-release.yml`, `mobile.yml`, `docker.yml`, `cleanup-cache.yml`.
+Workflows: `tauri.yml`, `mobile.yml`, `docker.yml`, `cleanup-cache.yml`.
 Targets: Windows x86_64, Linux x86_64, macOS aarch64. Релиз при push `master` + tag `v*.*.*`.
 
 ## Границы

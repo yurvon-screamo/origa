@@ -5,7 +5,7 @@ on:
         branches: [master]
     push:
         branches: [master]
-        paths-ignore: ['docs/**', '*.md', 'scripts/**', 'cdn/**']
+        paths-ignore: ["docs/**", "*.md", "scripts/**", "cdn/**"]
     workflow_dispatch:
 
 concurrency:
@@ -28,7 +28,8 @@ jobs:
             - name: Cache APT packages
               uses: awalsh128/cache-apt-pkgs-action@latest
               with:
-                  packages: libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+                  packages:
+                      libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
                       protobuf-compiler libspeechd-dev
                   version: 1.0
 
@@ -77,7 +78,8 @@ jobs:
             - name: Cache APT packages
               uses: awalsh128/cache-apt-pkgs-action@latest
               with:
-                  packages: libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+                  packages:
+                      libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
                       protobuf-compiler libspeechd-dev
                   version: 1.0
 
@@ -117,7 +119,8 @@ jobs:
             - name: Cache APT packages
               uses: awalsh128/cache-apt-pkgs-action@latest
               with:
-                  packages: libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+                  packages:
+                      libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
                       protobuf-compiler libspeechd-dev
                   version: 1.0
 
@@ -195,7 +198,11 @@ jobs:
 
             - name: Install TrailBase
               run: |
-                  tmp=$(mktemp) && curl -sSfL -o "$tmp" https://trailbase.io/install.sh && bash "$tmp"
+                  for i in 1 2 3; do
+                    tmp=$(mktemp) && curl -sSfL -o "$tmp" https://trailbase.io/install.sh && bash "$tmp" && break
+                    echo "Attempt $i failed, retrying..."
+                    sleep 5
+                  done
                   echo "$HOME/.local/bin" >> $GITHUB_PATH
 
             - name: Install Node.js dependencies
@@ -217,7 +224,6 @@ jobs:
                   name: blob-report-${{ matrix.spec }}
                   path: end2end/blob-report/
                   retention-days: 7
-
 
     e2e-report:
         name: E2E Report
@@ -269,6 +275,7 @@ jobs:
 
     docker-build:
         name: Docker Build
+        if: github.event_name == 'pull_request'
         runs-on: ubuntu-latest
         steps:
             - name: Checkout repository
@@ -290,6 +297,12 @@ jobs:
     check:
         name: CI Gate
         needs: [lint, test, e2e, docker-build]
+        if: >
+            always() &&
+            needs.lint.result == 'success' &&
+            needs.test.result == 'success' &&
+            needs.e2e.result == 'success' &&
+            (needs.docker-build.result == 'success' || needs.docker-build.result == 'skipped')
         runs-on: ubuntu-latest
         steps:
             - run: echo "All checks passed"
