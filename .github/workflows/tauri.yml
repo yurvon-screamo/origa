@@ -441,6 +441,7 @@ jobs:
               working-directory: origa_ui
               run: trunk build --release
               env:
+                  TRAILBASE_URL: ${{ vars.TRAILBASE_URL }}
                   ORIGA_CDN_BASE_URL: ${{ vars.ORIGA_CDN_BASE_URL }}
                   ORIGA_CDN_REGION: ${{ vars.ORIGA_CDN_REGION }}
 

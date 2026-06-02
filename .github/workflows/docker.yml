@@ -92,6 +92,7 @@ jobs:
                       ORIGA_BUILD_DATE=${{ needs.version.outputs.build_date }}
                       ORIGA_CDN_BASE_URL=${{ vars.ORIGA_CDN_BASE_URL }}
                       ORIGA_CDN_REGION=${{ vars.ORIGA_CDN_REGION }}
+                      TRAILBASE_URL=${{ vars.TRAILBASE_URL }}
 
     deploy-to-railway:
         name: Deploy to Railway
