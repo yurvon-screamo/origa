@@ -13,6 +13,7 @@ pub mod shared;
 pub mod words;
 
 pub use grammar::Grammar;
+pub use grammar::GrammarDetail;
 pub use home::Home;
 pub use kanji::Kanji;
 pub use kanji::KanjiDetail;
