@@ -10,7 +10,8 @@ use crate::i18n::use_i18n;
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{
     CardActionBar, CardHistoryModal, DeleteConfirmModal, FsrsMetrics, FsrsMetricsMode,
-    LoadingOverlay, MarkdownText, TabItem, Tabs, Tag, Text, TextSize, TypographyVariant,
+    FuriganaText, LoadingOverlay, MarkdownText, TabItem, Tabs, Tag, Text, TextSize,
+    TypographyVariant,
 };
 use leptos::prelude::*;
 use leptos::task::spawn_local;
@@ -384,24 +385,28 @@ pub fn GrammarDetail() -> impl IntoView {
                                     known_kanji=known_kanji_stored.get_value()
                                 />
 
-                                <GrammarDesktopSections
-                                    explanation=explanation
-                                    how_to_form=how_to_form
-                                    examples=examples
-                                    nuances=nuances
-                                    pro_tip=pro_tip
-                                    related_patterns=related_patterns
-                                    explanation_title=explanation_title
-                                    how_to_form_title=how_to_form_title
-                                    examples_title=examples_title
-                                    nuances_title=nuances_title
-                                    pro_tip_title=pro_tip_title
-                                    related_title=related_title
-                                    known_kanji=known_kanji_stored.get_value()
-                                />
+                                <Show when=move || explanation.get().is_some_and(|s| !s.is_empty())>
+                                    <div class="grammar-detail-section-card">
+                                        <div class="grammar-detail-section-title">{explanation_title}</div>
+                                        <MarkdownText
+                                            content=Signal::derive(move || explanation.get().unwrap_or_default())
+                                            known_kanji=known_kanji_stored.get_value()
+                                        />
+                                    </div>
+                                </Show>
+
+                                <Show when=move || how_to_form.get().is_some_and(|s| !s.is_empty())>
+                                    <div class="grammar-detail-section-card">
+                                        <div class="grammar-detail-section-title">{how_to_form_title}</div>
+                                        <MarkdownText
+                                            content=Signal::derive(move || how_to_form.get().unwrap_or_default())
+                                            known_kanji=known_kanji_stored.get_value()
+                                        />
+                                    </div>
+                                </Show>
                             </div>
 
-                            <div class="grammar-detail-practice-cell">
+                            <div class="grammar-detail-right-col">
                                 <div class="grammar-detail-section-card">
                                     <div class="grammar-detail-section-title">{practice_title}</div>
                                     <Show when=move || current_user.get().is_some() && grammar_rule.is_some()>
@@ -424,6 +429,46 @@ pub fn GrammarDetail() -> impl IntoView {
                                         </button>
                                     </Show>
                                 </div>
+
+                                <Show when=move || examples.get().is_some_and(|s| !s.is_empty())>
+                                    <div class="grammar-detail-section-card">
+                                        <div class="grammar-detail-section-title">{examples_title}</div>
+                                        <MarkdownText
+                                            content=Signal::derive(move || examples.get().unwrap_or_default())
+                                            known_kanji=known_kanji_stored.get_value()
+                                        />
+                                    </div>
+                                </Show>
+
+                                <Show when=move || nuances.get().is_some_and(|s| !s.is_empty())>
+                                    <div class="grammar-detail-section-card">
+                                        <div class="grammar-detail-section-title">{nuances_title}</div>
+                                        <MarkdownText
+                                            content=Signal::derive(move || nuances.get().unwrap_or_default())
+                                            known_kanji=known_kanji_stored.get_value()
+                                        />
+                                    </div>
+                                </Show>
+
+                                <Show when=move || pro_tip.get().is_some_and(|s| !s.is_empty())>
+                                    <div class="grammar-detail-section-card">
+                                        <div class="grammar-detail-section-title">{pro_tip_title}</div>
+                                        <MarkdownText
+                                            content=Signal::derive(move || pro_tip.get().unwrap_or_default())
+                                            known_kanji=known_kanji_stored.get_value()
+                                        />
+                                    </div>
+                                </Show>
+
+                                <Show when=move || related_patterns.get().is_some_and(|s| !s.is_empty())>
+                                    <div class="grammar-detail-section-card">
+                                        <div class="grammar-detail-section-title">{related_title}</div>
+                                        <MarkdownText
+                                            content=Signal::derive(move || related_patterns.get().unwrap_or_default())
+                                            known_kanji=known_kanji_stored.get_value()
+                                        />
+                                    </div>
+                                </Show>
                             </div>
                         </div>
 
@@ -431,14 +476,15 @@ pub fn GrammarDetail() -> impl IntoView {
                         <div class="grammar-detail-mobile">
                             <div class="grammar-detail-hero-card" style="margin-bottom:16px">
                                 <div class="grammar-detail-hero-header">
-                                    <div class="grammar-detail-hero-kanji" style="width:72px;height:72px">
-                                        <span class="grammar-detail-hero-form" style="font-size:40px">
-                                            {title_stored.get_value()}
-                                        </span>
+                                    <div class="grammar-detail-hero-form" style="font-size:28px">
+                                        <FuriganaText
+                                            text=title_stored.get_value()
+                                            known_kanji=known_kanji_stored.get_value()
+                                        />
                                     </div>
-                                    <div class="grammar-detail-hero-info">
+                                    <Show when=move || !answer_text.get().is_empty()>
                                         <div class="grammar-detail-hero-meaning">{answer_text}</div>
-                                    </div>
+                                    </Show>
                                     <div class="grammar-detail-hero-badge">
                                         <Tag variant=Signal::derive(move || status.tag_variant())>
                                             {move || status.label(&i18n)}
@@ -564,86 +610,5 @@ pub fn GrammarDetail() -> impl IntoView {
                 }}
             </Show>
         </div>
-    }
-}
-
-#[component]
-fn GrammarDesktopSections(
-    explanation: Memo<Option<String>>,
-    how_to_form: Memo<Option<String>>,
-    examples: Memo<Option<String>>,
-    nuances: Memo<Option<String>>,
-    pro_tip: Memo<Option<String>>,
-    related_patterns: Memo<Option<String>>,
-    #[prop(into)] explanation_title: Signal<String>,
-    #[prop(into)] how_to_form_title: Signal<String>,
-    #[prop(into)] examples_title: Signal<String>,
-    #[prop(into)] nuances_title: Signal<String>,
-    #[prop(into)] pro_tip_title: Signal<String>,
-    #[prop(into)] related_title: Signal<String>,
-    known_kanji: HashSet<char>,
-) -> impl IntoView {
-    let known_kanji_stored = StoredValue::new(known_kanji);
-
-    view! {
-        <Show when=move || explanation.get().is_some_and(|s| !s.is_empty())>
-            <div class="grammar-detail-section-card">
-                <div class="grammar-detail-section-title">{explanation_title}</div>
-                <MarkdownText
-                    content=Signal::derive(move || explanation.get().unwrap_or_default())
-                    known_kanji=known_kanji_stored.get_value()
-                />
-            </div>
-        </Show>
-
-        <Show when=move || how_to_form.get().is_some_and(|s| !s.is_empty())>
-            <div class="grammar-detail-section-card">
-                <div class="grammar-detail-section-title">{how_to_form_title}</div>
-                <MarkdownText
-                    content=Signal::derive(move || how_to_form.get().unwrap_or_default())
-                    known_kanji=known_kanji_stored.get_value()
-                />
-            </div>
-        </Show>
-
-        <Show when=move || examples.get().is_some_and(|s| !s.is_empty())>
-            <div class="grammar-detail-section-card">
-                <div class="grammar-detail-section-title">{examples_title}</div>
-                <MarkdownText
-                    content=Signal::derive(move || examples.get().unwrap_or_default())
-                    known_kanji=known_kanji_stored.get_value()
-                />
-            </div>
-        </Show>
-
-        <Show when=move || nuances.get().is_some_and(|s| !s.is_empty())>
-            <div class="grammar-detail-section-card">
-                <div class="grammar-detail-section-title">{nuances_title}</div>
-                <MarkdownText
-                    content=Signal::derive(move || nuances.get().unwrap_or_default())
-                    known_kanji=known_kanji_stored.get_value()
-                />
-            </div>
-        </Show>
-
-        <Show when=move || pro_tip.get().is_some_and(|s| !s.is_empty())>
-            <div class="grammar-detail-section-card">
-                <div class="grammar-detail-section-title">{pro_tip_title}</div>
-                <MarkdownText
-                    content=Signal::derive(move || pro_tip.get().unwrap_or_default())
-                    known_kanji=known_kanji_stored.get_value()
-                />
-            </div>
-        </Show>
-
-        <Show when=move || related_patterns.get().is_some_and(|s| !s.is_empty())>
-            <div class="grammar-detail-section-card">
-                <div class="grammar-detail-section-title">{related_title}</div>
-                <MarkdownText
-                    content=Signal::derive(move || related_patterns.get().unwrap_or_default())
-                    known_kanji=known_kanji_stored.get_value()
-                />
-            </div>
-        </Show>
     }
 }

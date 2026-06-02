@@ -2,7 +2,9 @@ use std::collections::HashSet;
 
 use super::super::shared::{CardStatus, DeleteRequest};
 use crate::i18n::use_i18n;
-use crate::ui_components::{CardActionBar, DeleteConfirmModal, FsrsMetrics, FuriganaText, Tag, TagVariant};
+use crate::ui_components::{
+    CardActionBar, DeleteConfirmModal, FsrsMetrics, FuriganaText, Tag, TagVariant,
+};
 use leptos::prelude::*;
 use leptos_router::components::A;
 use origa::domain::{Card as DomainCard, NativeLanguage, StudyCard};
