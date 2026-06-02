@@ -356,18 +356,20 @@ pub fn GrammarDetail() -> impl IntoView {
                                 stability=memory.stability().map(|s| s.value())
                                 test_id=Signal::derive(|| "grammar-detail-fsrs".to_string())
                             />
-                            <CardActionBar
-                                tag_variant=Signal::derive(move || status.tag_variant())
-                                tag_label=Signal::derive(move || status.label(&i18n))
-                                is_favorite=is_favorite_signal.into()
-                                on_toggle_favorite=Callback::new(move |_| on_toggle_favorite.run(card_id_for_fav))
-                                show_mark_as_known=Signal::derive(move || status != CardStatus::Learned)
-                                on_mark_as_known=Callback::new(move |_| on_mark_as_known.run(card_id_for_known))
-                                on_history=Callback::new(move |_| is_history_open.set(true))
-                                on_delete=Callback::new(move |_| is_delete_modal_open.set(true))
-                                test_id=Signal::derive(|| "grammar-detail-actions".to_string())
-                                show_tag=Signal::derive(|| false)
-                            />
+                            <div data-testid="grammar-detail-actions">
+                                <CardActionBar
+                                    tag_variant=Signal::derive(move || status.tag_variant())
+                                    tag_label=Signal::derive(move || status.label(&i18n))
+                                    is_favorite=is_favorite_signal.into()
+                                    on_toggle_favorite=Callback::new(move |_| on_toggle_favorite.run(card_id_for_fav))
+                                    show_mark_as_known=Signal::derive(move || status != CardStatus::Learned)
+                                    on_mark_as_known=Callback::new(move |_| on_mark_as_known.run(card_id_for_known))
+                                    on_history=Callback::new(move |_| is_history_open.set(true))
+                                    on_delete=Callback::new(move |_| is_delete_modal_open.set(true))
+                                    test_id=Signal::derive(|| "grammar-detail-actions".to_string())
+                                    show_tag=Signal::derive(|| false)
+                                />
+                            </div>
                             <Show when=move || current_user.get().is_some() && grammar_rule.is_some()>
                                 <button
                                     class=move || if has_quiz {
@@ -489,18 +491,20 @@ pub fn GrammarDetail() -> impl IntoView {
                                         stability=memory.stability().map(|s| s.value())
                                         test_id=Signal::derive(|| "grammar-detail-fsrs-mobile".to_string())
                                     />
-                                    <CardActionBar
-                                        tag_variant=Signal::derive(move || status.tag_variant())
-                                        tag_label=Signal::derive(move || status.label(&i18n))
-                                        is_favorite=is_favorite_signal.into()
-                                        on_toggle_favorite=Callback::new(move |_| on_toggle_favorite.run(card_id_for_fav))
-                                        show_mark_as_known=Signal::derive(move || status != CardStatus::Learned)
-                                        on_mark_as_known=Callback::new(move |_| on_mark_as_known.run(card_id_for_known))
-                                        on_history=Callback::new(move |_| is_history_open.set(true))
-                                        on_delete=Callback::new(move |_| is_delete_modal_open.set(true))
-                                        test_id=Signal::derive(|| "grammar-detail-actions-mobile".to_string())
-                                        show_tag=Signal::derive(|| false)
-                                    />
+                                    <div data-testid="grammar-detail-actions-mobile">
+                                        <CardActionBar
+                                            tag_variant=Signal::derive(move || status.tag_variant())
+                                            tag_label=Signal::derive(move || status.label(&i18n))
+                                            is_favorite=is_favorite_signal.into()
+                                            on_toggle_favorite=Callback::new(move |_| on_toggle_favorite.run(card_id_for_fav))
+                                            show_mark_as_known=Signal::derive(move || status != CardStatus::Learned)
+                                            on_mark_as_known=Callback::new(move |_| on_mark_as_known.run(card_id_for_known))
+                                            on_history=Callback::new(move |_| is_history_open.set(true))
+                                            on_delete=Callback::new(move |_| is_delete_modal_open.set(true))
+                                            test_id=Signal::derive(|| "grammar-detail-actions-mobile".to_string())
+                                            show_tag=Signal::derive(|| false)
+                                        />
+                                    </div>
                                 </div>
                             </div>
 
