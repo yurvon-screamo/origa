@@ -25,7 +25,7 @@ pub fn CardActionBar(
     let i18n = use_i18n();
 
     view! {
-        <div class="card-action-bar" on:click=move |ev: leptos::ev::MouseEvent| ev.stop_propagation()>
+        <div class="card-action-bar" data-testid=move || test_id.get() on:click=move |ev: leptos::ev::MouseEvent| ev.stop_propagation()>
             <Show when=move || show_tag.get()>
                 <div class="card-action-status">
                     <Tag variant=tag_variant>{tag_label}</Tag>
