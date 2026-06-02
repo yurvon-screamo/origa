@@ -13,6 +13,7 @@ pub fn KanjiCardItem(
     study_card: StudyCard,
     #[prop(into)] native_language: Signal<NativeLanguage>,
     on_toggle_favorite: Callback<Ulid>,
+    on_mark_as_known: Callback<Ulid>,
     on_delete: Callback<DeleteRequest>,
     is_deleting: Signal<bool>,
 ) -> impl IntoView {
@@ -49,6 +50,7 @@ pub fn KanjiCardItem(
     });
 
     let status = CardStatus::from_study_card(&study_card);
+    let show_mark_as_known = status != CardStatus::Learned;
 
     let show_radicals = !radicals.is_empty() && radicals.len() <= RADICALS_MAX_LEN;
     let radicals_text = Signal::derive({
@@ -96,6 +98,8 @@ pub fn KanjiCardItem(
                         tag_label=Signal::derive(|| "".to_string())
                         is_favorite=Signal::derive(move || is_favorite)
                         on_toggle_favorite=Callback::new(move |_| on_toggle_favorite.run(card_id))
+                        show_mark_as_known=Signal::derive(move || show_mark_as_known)
+                        on_mark_as_known=Callback::new(move |_| on_mark_as_known.run(card_id))
                         on_delete=Callback::new(move |_| is_delete_modal_open.set(true))
                         test_id=Signal::derive(|| "kanji-card-item".to_string())
                         show_tag=Signal::derive(|| false)

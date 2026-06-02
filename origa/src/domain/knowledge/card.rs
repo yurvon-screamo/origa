@@ -70,7 +70,7 @@ impl StudyCard {
         self.memory_history.add_review(memory_state, review);
     }
 
-    pub(crate) fn toggle_favorite(&mut self) {
+    pub fn toggle_favorite(&mut self) {
         self.is_favorite = !self.is_favorite;
         self.favorite_changed_at = Some(Utc::now());
         if !self.is_favorite {

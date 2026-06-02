@@ -80,29 +80,15 @@ pub fn KanjiDetail() -> impl IntoView {
     let is_loading = RwSignal::new(true);
     let refresh_trigger = RwSignal::new(0u32);
 
-    let repo_for_init = repository.clone();
+    let repo_for_effect = repository.clone();
     Effect::new(move |_| {
+        let _ = refresh_trigger.get();
         let Some(card_id) = card_id_result.get() else {
             is_loading.set(false);
             return;
         };
         load_study_card(
-            repo_for_init.clone(),
-            card_id,
-            study_card,
-            current_user,
-            is_loading,
-        );
-    });
-
-    let repo_for_refresh = repository.clone();
-    Effect::new(move |_| {
-        let _ = refresh_trigger.get();
-        let Some(card_id) = card_id_result.get() else {
-            return;
-        };
-        load_study_card(
-            repo_for_refresh.clone(),
+            repo_for_effect.clone(),
             card_id,
             study_card,
             current_user,

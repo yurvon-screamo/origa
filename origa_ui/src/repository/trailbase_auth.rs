@@ -60,8 +60,7 @@ pub fn decode_jwt_claims(token: &str) -> Result<JwtClaims, String> {
     // для некоторых auth flow (OIDC). Когда iss присутствует и не из доверенных
     // — логируем warning, но не блокируем, т.к. все запросы идут к известному серверу.
     if let Some(ref iss) = claims.iss {
-        let is_trusted =
-            iss == "trailbase" || iss == env!("TRAILBASE_URL");
+        let is_trusted = iss == "trailbase" || iss == env!("TRAILBASE_URL");
         if !is_trusted {
             tracing::warn!("Untrusted JWT issuer: {}", iss);
         }
