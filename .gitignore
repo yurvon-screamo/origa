@@ -16,6 +16,8 @@ playwright-report/
 playwright/.cache/
 .blob-report/
 .trace/
+end2end/.trailbase.pid
+end2end/.cdn.pid
 
 # IDE
 .vscode/
