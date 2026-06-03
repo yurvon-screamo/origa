@@ -25,7 +25,8 @@
     "processing": "Обработка...",
     "tooltip_known": "Уже в словаре",
     "tooltip_new": "Новое слово",
-    "language_aria_label": "Выберите язык"
+    "language_aria_label": "Выберите язык",
+    "more_details": "Подробнее"
   },
   "app": {
     "logging_in": "Вход..."
