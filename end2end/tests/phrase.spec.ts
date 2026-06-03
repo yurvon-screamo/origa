@@ -187,9 +187,9 @@ testWithFreshUser.describe("Phrases after full onboarding", () => {
         const firstCard = phrasesPage.cardItem.first();
         await expect(firstCard).toBeVisible({ timeout: 30_000 });
 
-        // Heading component always renders <h1> with class heading-h4
-        const cardHeading = firstCard.locator("h1.heading-h4").first();
-        await expect(cardHeading).toBeAttached({ timeout: 30_000 });
+        // Card has phrase text with furigana (ruby elements)
+        const phraseText = firstCard.getByTestId("phrases-card-phrase");
+        await expect(phraseText).toBeAttached({ timeout: 30_000 });
     });
 
     testWithFreshUser("should search and filter phrases after onboarding", async ({ page }) => {

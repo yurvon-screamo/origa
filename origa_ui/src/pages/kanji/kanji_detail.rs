@@ -14,7 +14,7 @@ use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos_router::components::A;
 use leptos_router::hooks::{use_navigate, use_params_map};
-use origa::domain::{Card as DomainCard, StudyCard, User};
+use origa::domain::{Card as DomainCard, CardAnswer, StudyCard, User};
 use origa::traits::UserRepository;
 use origa::use_cases::ToggleFavoriteUseCase;
 use ulid::Ulid;
@@ -229,11 +229,13 @@ pub fn KanjiDetail() -> impl IntoView {
                 let description = Memo::new(move |_| {
                     let lang = native_lang.get();
                     match card_for_desc.card() {
-                        DomainCard::Kanji(kanji_card) => kanji_card
-                            .description(&lang)
-                            .ok()
-                            .map(|d| d.text().to_string())
-                            .unwrap_or_default(),
+                        DomainCard::Kanji(kanji_card) => match kanji_card.description(&lang).ok() {
+                            Some(CardAnswer::Vocabulary { translations, .. }) => {
+                                translations.join(", ")
+                            },
+                            Some(CardAnswer::Text(s)) => s,
+                            None => String::new(),
+                        },
                         _ => String::new(),
                     }
                 });
@@ -241,11 +243,13 @@ pub fn KanjiDetail() -> impl IntoView {
                 let card_for_answer = card.clone();
                 let answer_text = Memo::new(move |_| {
                     let lang = native_lang.get();
-                    card_for_answer
-                        .card()
-                        .answer(&lang)
-                        .map(|a| a.text().to_string())
-                        .unwrap_or_default()
+                    match card_for_answer.card().answer(&lang).ok() {
+                        Some(CardAnswer::Vocabulary { translations, .. }) => {
+                            translations.join(", ")
+                        },
+                        Some(CardAnswer::Text(s)) => s,
+                        None => String::new(),
+                    }
                 });
 
                 let card_for_examples = card.clone();

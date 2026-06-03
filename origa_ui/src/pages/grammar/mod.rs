@@ -3,13 +3,16 @@ mod add_grammar_modal_handlers;
 mod add_grammar_modal_state;
 mod content;
 mod grammar_card_item;
-mod grammar_detail_drawer;
+mod grammar_detail;
+mod grammar_detail_hero_card;
+mod grammar_detail_mobile;
 mod grammar_practice_modal;
 mod header;
 mod rule_item;
 mod rules_list;
 
 pub use content::GrammarContent;
+pub use grammar_detail::GrammarDetail;
 pub use header::GrammarHeader;
 
 use crate::ui_components::{CardLayout, CardLayoutSize, PageLayout, PageLayoutVariant};

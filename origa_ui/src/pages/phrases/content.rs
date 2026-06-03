@@ -16,7 +16,13 @@ pub fn PhrasesContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
     let repository =
         use_context::<HybridUserRepository>().expect("repository context not provided");
 
-    let on_cards_loaded: CardsLoadedCallback = Arc::new(|cards: &[StudyCard]| {
+    let initial_load_done = RwSignal::new(false);
+    let refresh_for_reload = refresh_trigger;
+    let on_cards_loaded: CardsLoadedCallback = Arc::new(move |cards: &[StudyCard]| {
+        if initial_load_done.get() {
+            return;
+        }
+
         let phrase_ids: Vec<Ulid> = cards
             .iter()
             .filter_map(|card| {
@@ -29,6 +35,8 @@ pub fn PhrasesContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
             .collect();
 
         if !phrase_ids.is_empty() {
+            let refresh = refresh_for_reload;
+            let done = initial_load_done;
             spawn_local(async move {
                 let results = load_phrase_details_batch(&phrase_ids).await;
                 let failed = results.iter().filter(|r| r.is_err()).count();
@@ -39,6 +47,8 @@ pub fn PhrasesContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
                         "Some phrase data chunks failed to load"
                     );
                 }
+                done.set(true);
+                refresh.update(|n| *n += 1);
             });
         }
     });
@@ -54,7 +64,13 @@ pub fn PhrasesContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
     let empty_message =
         Signal::derive(move || td_string!(i18n.get_locale(), phrases.not_found).to_string());
 
-    card_list_view(ctx, false, "phrases", empty_message, move |card| {
+    card_list_view(
+        ctx,
+        true,
+        "phrases",
+        empty_message,
+        Some("grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 items-start"),
+        move |card| {
         let ctx = ctx_for_render.clone();
         let card_id = *card.card_id();
         view! {

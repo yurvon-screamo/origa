@@ -3,6 +3,8 @@
     "version": "0.1.0",
     "private": true,
     "scripts": {
+        "trailbase:start": "cd trailbase-fixture && trail run --dev --address 127.0.0.1:4000",
+        "trailbase:stop": "taskkill /f /im trail.exe 2>nul || true",
         "test": "playwright test",
         "test:ui": "playwright test --ui",
         "test:headed": "playwright test --headed",

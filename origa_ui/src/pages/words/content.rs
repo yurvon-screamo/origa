@@ -22,7 +22,7 @@ pub fn WordsContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
     let empty_message =
         Signal::derive(move || td_string!(i18n.get_locale(), words.words_not_found).to_string());
 
-    card_list_view(ctx, true, "words", empty_message, move |card| {
+    card_list_view(ctx, true, "words", empty_message, Some("grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 items-start"), move |card| {
         let ctx = ctx_for_render.clone();
         let card_id = *card.card_id();
         view! {

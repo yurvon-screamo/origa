@@ -2,7 +2,9 @@ import type { FullConfig } from "@playwright/test";
 import * as fs from "fs";
 import * as path from "path";
 
-export default async function globalTeardown(_config: FullConfig): Promise<void> {
+export default async function globalTeardown(
+    _config: FullConfig,
+): Promise<void> {
     console.log("[global-teardown] Starting teardown...");
 
     // Kill TrailBase process

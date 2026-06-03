@@ -568,18 +568,18 @@ mod tests {
 
         let ta = segments
             .iter()
-            .find(|s| s.text() == "食" && s.reading() == Some("たべ"));
+            .find(|s| s.text() == "食" && s.reading() == Some("タベ"));
         assert!(
             ta.is_some(),
-            "expected segment '食' with reading 'たべ', got: {segments:?}"
+            "expected segment '食' with reading 'タベ', got: {segments:?}"
         );
 
         let mo = segments
             .iter()
-            .find(|s| s.text() == "物" && s.reading() == Some("もの"));
+            .find(|s| s.text() == "物" && s.reading() == Some("モノ"));
         assert!(
             mo.is_some(),
-            "expected segment '物' with reading 'もの', got: {segments:?}"
+            "expected segment '物' with reading 'モノ', got: {segments:?}"
         );
     }
 

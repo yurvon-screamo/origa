@@ -101,7 +101,7 @@ pub fn YesNoCardView(
     Effect::new(move |_| {
         let is_muted = lesson_ctx
             .as_ref()
-            .map(|ctx| ctx.is_muted.get())
+            .map(|ctx| ctx.is_muted.get_untracked())
             .unwrap_or(false);
         if !show_result && card_type != CardType::Kanji && is_speech_supported() && !is_muted {
             speak_word(&question_text.get_value(), 1.0);

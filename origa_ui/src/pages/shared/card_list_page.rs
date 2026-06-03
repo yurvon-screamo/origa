@@ -13,13 +13,14 @@ use crate::ui_components::{
 use leptos::either::Either;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use origa::domain::{Card, NativeLanguage, StudyCard, User};
+use origa::domain::{Card, CardAnswer, NativeLanguage, StudyCard, User};
 use origa::traits::UserRepository;
 
 pub type CardsLoadedCallback = Arc<dyn Fn(&[StudyCard]) + Send + Sync>;
 
 #[derive(Clone)]
 pub struct CardListContext {
+    #[allow(dead_code)]
     pub current_user: RwSignal<Option<User>>,
     pub native_lang: Memo<NativeLanguage>,
     pub known_kanji: Memo<HashSet<char>>,
@@ -75,9 +76,11 @@ pub fn create_card_list_context(
                 },
                 Ok(None) => {
                     tracing::warn!("CardListPage: user not found");
+                    is_loading.set(false);
                 },
                 Err(e) => {
                     tracing::error!("CardListPage: get_current_user error: {:?}", e);
+                    is_loading.set(false);
                 },
             }
         });
@@ -122,6 +125,7 @@ pub fn card_list_view<F>(
     sort_cards: bool,
     test_id_prefix: &'static str,
     empty_message: Signal<String>,
+    grid_classes: Option<&'static str>,
     render_card: F,
 ) -> AnyView
 where
@@ -149,16 +153,28 @@ where
                 let matches_search = query.is_empty() || {
                     let card_inner = card.card();
                     let question = card_inner.question(&lang);
-                    let answer = card_inner.answer(&lang);
 
-                    if let Ok(question) = question
-                        && let Ok(answer) = answer
-                    {
-                        question.text().to_lowercase().contains(&query)
-                            || answer.text().to_lowercase().contains(&query)
-                    } else {
-                        false
-                    }
+                    let matches_question = question
+                        .ok()
+                        .is_some_and(|q| q.text().to_lowercase().contains(&query));
+
+                    let matches_answer = match card_inner.answer(&lang).ok() {
+                        Some(CardAnswer::Vocabulary {
+                            translations,
+                            description,
+                        }) => {
+                            translations
+                                .iter()
+                                .any(|t| t.to_lowercase().contains(&query))
+                                || description
+                                    .as_ref()
+                                    .is_some_and(|d| d.to_lowercase().contains(&query))
+                        },
+                        Some(CardAnswer::Text(s)) => s.to_lowercase().contains(&query),
+                        None => false,
+                    };
+
+                    matches_question || matches_answer
                 };
                 let matches_filter = current_filter.matches(CardStatus::from_study_card(card));
                 matches_search && matches_filter
@@ -225,7 +241,7 @@ where
                     <FilterBtn filter=Filter::Learned count=move || counts.get().learned active=filter test_id=format!("{test_id_prefix}-filter-learned") />
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 items-stretch" data-testid=move || grid_id.get()>
+                <div class=grid_classes.unwrap_or("grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 items-start") data-testid=move || grid_id.get()>
                     {move || {
                         let cards = visible_cards.get();
                         if cards.is_empty() {

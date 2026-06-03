@@ -85,6 +85,7 @@ pub fn speak_word(word: &str, rate: f32) {
     let audio = match create_and_play_audio(word) {
         Some(a) => a,
         None => {
+            stop_current_audio();
             let reading = get_reading_from_text(word);
             let _ = speak_tts_text(&reading, rate);
             return;
@@ -113,6 +114,7 @@ where
     let audio = match create_and_play_audio(word) {
         Some(a) => a,
         None => {
+            stop_current_audio();
             let reading = get_reading_from_text(word);
             let _ = speak_tts_text_with_callback(&reading, rate, on_end);
             return;
