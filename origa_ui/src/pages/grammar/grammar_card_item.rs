@@ -47,6 +47,19 @@ pub fn GrammarCardItem(
         }
     });
 
+    let study_card_for_desc = study_card.clone();
+    let short_description = Memo::new(move |_| {
+        let lang = native_language.get();
+        match study_card_for_desc.card() {
+            DomainCard::Grammar(grammar) => grammar
+                .short_description(&lang)
+                .ok()
+                .and_then(|t| t.translations().first().cloned())
+                .unwrap_or_default(),
+            _ => String::new(),
+        }
+    });
+
     let status = CardStatus::from_study_card(&study_card);
     let show_mark_as_known = status != CardStatus::Learned;
 
@@ -61,6 +74,11 @@ pub fn GrammarCardItem(
                 <div class="grammar-card-rule-box">
                     <FuriganaText text=title.get() known_kanji=known_kanji/>
                 </div>
+                <Show when=move || !short_description.get().is_empty()>
+                    <div class="grammar-card-content">
+                        <p class="grammar-card-short-desc">{move || short_description.get()}</p>
+                    </div>
+                </Show>
             </A>
             <div class="grammar-card-divider"></div>
             <div class="grammar-card-footer">

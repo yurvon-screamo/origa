@@ -5172,12 +5172,12 @@ input[type="submit"],
 }
 
 .phrase-card-audio .audio-player-btn {
-    padding: 6px;
+    padding: 8px;
 }
 
 .phrase-card-audio .audio-player-btn svg {
-    width: 1em;
-    height: 1em;
+    width: 1.2em;
+    height: 1.2em;
 }
 
 .phrase-card-content {
@@ -5248,10 +5248,11 @@ input[type="submit"],
 
 .grammar-card-link {
     display: flex;
+    flex-direction: column;
     flex: 1;
     padding: 20px;
     justify-content: center;
-    align-items: center;
+    align-items: stretch;
     text-decoration: none;
     color: inherit;
 }
@@ -5278,6 +5279,19 @@ input[type="submit"],
     border: 1px solid var(--border-dark);
     z-index: -1;
     background: var(--bg-aged);
+}
+
+.grammar-card-content {
+    padding: 0 20px 10px;
+}
+
+.grammar-card-short-desc {
+    font-family: var(--font-serif);
+    font-size: var(--text-sm, 16px);
+    color: var(--fg-muted);
+    font-style: italic;
+    line-height: 1.5;
+    margin: 0;
 }
 
 .grammar-card-divider {

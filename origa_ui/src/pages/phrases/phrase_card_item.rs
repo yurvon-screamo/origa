@@ -4,7 +4,7 @@ use super::super::shared::{CardStatus, DeleteRequest};
 use crate::i18n::use_i18n;
 use crate::ui_components::{
     AudioPlayer, CardActionBar, CardHistoryModal, CollapsibleDescription, DeleteConfirmModal,
-    FsrsMetrics, FuriganaText, MarkdownText, Tag, TagVariant,
+    FsrsMetrics, MarkdownText, Tag, TagVariant, TranslatorText,
 };
 use leptos::prelude::*;
 use origa::domain::{Card as DomainCard, NativeLanguage, StudyCard};
@@ -59,8 +59,7 @@ pub fn PhraseCardItem(
 
     let status = CardStatus::from_study_card(&study_card);
     let has_audio = !audio_src.is_empty();
-    let known_kanji_for_furigana = known_kanji;
-    let known_kanji_for_markdown = known_kanji_for_furigana.clone();
+    let known_kanji_for_markdown = known_kanji;
 
     view! {
         <div class="phrase-card anima-lift" data-testid="phrases-card-item">
@@ -72,9 +71,9 @@ pub fn PhraseCardItem(
             <div class="phrase-card-body">
                 <div class="phrase-card-header">
                     <div class="phrase-card-phrase" data-testid="phrases-card-phrase">
-                        <FuriganaText
+                        <TranslatorText
                             text=phrase_text
-                            known_kanji=known_kanji_for_furigana
+                            native_language=native_language
                             test_id=Signal::derive(|| "phrases-card-text".to_string())
                         />
                     </div>
