@@ -1,3 +1,4 @@
+use super::grammar_details_expand::GrammarDetailsExpand;
 use super::kanji_card_details::{KanjiCardDetails, RadicalDisplay};
 use crate::i18n::*;
 use crate::ui_components::{
@@ -34,6 +35,8 @@ pub fn LessonCardAnswer(
     let radicals_stored = StoredValue::new(radicals);
     let examples_stored = StoredValue::new(example_words);
     let grammar_info_stored = StoredValue::new(grammar_info);
+    // Only meaningful when grammar_info contains a rule_id — controls "More details" expand
+    let is_grammar_expanded = RwSignal::new(false);
 
     view! {
         <div class="text-center">
@@ -81,7 +84,13 @@ pub fn LessonCardAnswer(
             >
                 <div class="max-w-max mx-auto space-y-4">
                     <Show
-                        when=move || grammar_info_stored.get_value().is_some() && !is_kanji
+                        when=move || {
+                            grammar_info_stored
+                                .get_value()
+                                .as_ref()
+                                .is_some_and(|info| !info.description().is_empty())
+                                && !is_kanji
+                        }
                     >
                         {move || {
                             grammar_info_stored
@@ -140,6 +149,30 @@ pub fn LessonCardAnswer(
                     </Show>
                 </div>
             </div>
+
+            <Show
+                when=move || grammar_info_stored
+                    .get_value()
+                    .as_ref()
+                    .is_some_and(|info| info.rule_id().is_some())
+                    && !is_kanji
+            >
+                {move || {
+                    grammar_info_stored
+                        .get_value()
+                        .as_ref()
+                        .map(|info| {
+                            let rule_id = info.rule_id().unwrap();
+                            view! {
+                                <GrammarDetailsExpand
+                                    rule_id
+                                    is_expanded=is_grammar_expanded
+                                    known_kanji=known_kanji.get()
+                                />
+                            }
+                        })
+                }}
+            </Show>
 
             <Show when=move || needs_collapse.get()>
                 <div class="mt-2">
