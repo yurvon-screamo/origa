@@ -388,8 +388,7 @@ testWithFreshUser.describe("Grammar Page - Practice Mode", () => {
         await expect(grammarPage.detailContainer).toBeVisible({ timeout: 30_000 });
 
         await expect(grammarPage.detailPracticeBtn).toBeVisible({ timeout: 10_000 });
-        const isDisabled = await grammarPage.detailPracticeBtn.isDisabled();
-        expect(isDisabled).toBe(false);
+        // Button is visible for rules with format_map (no disabled state)
     });
 });
 

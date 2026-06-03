@@ -370,20 +370,13 @@ pub fn GrammarDetail() -> impl IntoView {
                                     show_tag=Signal::derive(|| false)
                                 />
                             </div>
-                            <Show when=move || current_user.get().is_some() && grammar_rule.is_some()>
+                            <Show when=move || current_user.get().is_some() && grammar_rule.is_some() && has_quiz>
                                 <button
-                                    class=move || if has_quiz {
-                                        "btn btn-olive text-sm cursor-pointer"
-                                    } else {
-                                        "btn btn-olive text-sm opacity-50 cursor-not-allowed"
-                                    }
-                                    disabled=!has_quiz
+                                    class="btn btn-olive text-sm cursor-pointer"
                                     data-testid="grammar-detail-practice-btn"
                                     on:click=move |ev| {
                                         ev.stop_propagation();
-                                        if has_quiz {
-                                            is_practice_open.set(true);
-                                        }
+                                        is_practice_open.set(true);
                                     }
                                 >
                                     {practice_label}
@@ -539,20 +532,13 @@ pub fn GrammarDetail() -> impl IntoView {
                                 <div class="grammar-detail-section">
                                     <div class="grammar-detail-section-card">
                                         <div class="grammar-detail-section-title">{practice_title}</div>
-                                        <Show when=move || current_user.get().is_some() && grammar_rule.is_some()>
+                                        <Show when=move || current_user.get().is_some() && grammar_rule.is_some() && has_quiz>
                                             <button
-                                                class=move || if has_quiz {
-                                                    "btn btn-olive text-sm cursor-pointer".to_string()
-                                                } else {
-                                                    "btn btn-olive text-sm opacity-50 cursor-not-allowed".to_string()
-                                                }
-                                                disabled=!has_quiz
+                                                class="btn btn-olive text-sm cursor-pointer"
                                                 data-testid="grammar-detail-practice-btn-mobile"
                                                 on:click=move |ev| {
                                                     ev.stop_propagation();
-                                                    if has_quiz {
-                                                        is_practice_open.set(true);
-                                                    }
+                                                    is_practice_open.set(true);
                                                 }
                                             >
                                                 {practice_label}
@@ -598,6 +584,7 @@ pub fn GrammarDetail() -> impl IntoView {
                                         user=user
                                         is_open=Signal::derive(move || is_practice_open.get())
                                         on_close=Callback::new(move |_| is_practice_open.set(false))
+                                        known_kanji=known_kanji.get()
                                     />
                                 }.into_any())
                             }}

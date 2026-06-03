@@ -1,6 +1,7 @@
 use crate::i18n::use_i18n;
-use crate::ui_components::{Modal, Text, TextSize, TypographyVariant};
+use crate::ui_components::{FuriganaText, Modal, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
+use leptos_use::use_event_listener;
 use origa::dictionary::grammar::GrammarRule;
 use origa::domain::{
     GrammarPracticeQuestion, NativeLanguage, User, generate_grammar_practice_questions,
@@ -62,8 +63,10 @@ pub fn GrammarPracticeModal(
     user: User,
     #[prop(into)] is_open: Signal<bool>,
     on_close: Callback<()>,
+    known_kanji: std::collections::HashSet<char>,
 ) -> impl IntoView {
     let i18n = use_i18n();
+    let known_kanji = StoredValue::new(known_kanji);
 
     let is_open_rw = RwSignal::new(is_open.get_untracked());
     Effect::new(move || {
@@ -247,6 +250,39 @@ pub fn GrammarPracticeModal(
         }
     });
 
+    let _ = use_event_listener(
+        document(),
+        leptos::ev::keydown,
+        move |ev: leptos::ev::KeyboardEvent| {
+            if !is_open_rw.get() || !has_questions.get() {
+                return;
+            }
+
+            let key = ev.key();
+
+            if is_completed.get() {
+                if key == " " {
+                    ev.prevent_default();
+                    reset.run(());
+                }
+                return;
+            }
+
+            if selected.get().is_none() {
+                if let Some(index) = key.parse::<usize>().ok().filter(|&i| (1..=4).contains(&i)) {
+                    ev.prevent_default();
+                    on_option_click(index - 1);
+                    return;
+                }
+            }
+
+            if selected.get().is_some() && key == " " {
+                ev.prevent_default();
+                on_next();
+            }
+        },
+    );
+
     view! {
         <Modal
             test_id=Signal::derive(|| "grammar-practice-modal".to_string())
@@ -309,17 +345,29 @@ pub fn GrammarPracticeModal(
                         ></div>
                     </div>
 
-                    <Text size=TextSize::Default variant=TypographyVariant::Primary>
+                    <div class="text-[length:var(--text-default)] text-[var(--fg)]">
                         {move || {
+                            let template = i18n
+                                .get_keys()
+                                .grammar_page()
+                                .quiz_question()
+                                .inner()
+                                .to_string();
                             let word = current_question
                                 .get()
                                 .as_ref()
                                 .map(|q| q.word_text().to_string())
                                 .unwrap_or_default();
-                            i18n.get_keys().grammar_page().quiz_question().inner().to_string()
-                                .replacen("{}", &word, 1)
+                            let parts: Vec<&str> = template.splitn(2, "{}").collect();
+                            let before = parts.first().copied().unwrap_or("");
+                            let after = parts.get(1).copied().unwrap_or("");
+                            view! {
+                                <span>{before.to_string()}</span>
+                                <FuriganaText text=word known_kanji=known_kanji.get_value()/>
+                                <span>{after.to_string()}</span>
+                            }
                         }}
-                    </Text>
+                    </div>
 
                     <div class="grid grid-cols-2 gap-2">
                         <button
@@ -327,36 +375,48 @@ pub fn GrammarPracticeModal(
                             data-testid="grammar-practice-option-0"
                             on:click=move |_| on_option_click(0)
                         >
-                            <Text size=TextSize::Default>
-                                {move || option_0.get().unwrap_or_default()}
-                            </Text>
+                            {move || view! {
+                                <FuriganaText
+                                    text=option_0.get().unwrap_or_default()
+                                    known_kanji=known_kanji.get_value()
+                                />
+                            }}
                         </button>
                         <button
                             class=move || option_class(1)
                             data-testid="grammar-practice-option-1"
                             on:click=move |_| on_option_click(1)
                         >
-                            <Text size=TextSize::Default>
-                                {move || option_1.get().unwrap_or_default()}
-                            </Text>
+                            {move || view! {
+                                <FuriganaText
+                                    text=option_1.get().unwrap_or_default()
+                                    known_kanji=known_kanji.get_value()
+                                />
+                            }}
                         </button>
                         <button
                             class=move || option_class(2)
                             data-testid="grammar-practice-option-2"
                             on:click=move |_| on_option_click(2)
                         >
-                            <Text size=TextSize::Default>
-                                {move || option_2.get().unwrap_or_default()}
-                            </Text>
+                            {move || view! {
+                                <FuriganaText
+                                    text=option_2.get().unwrap_or_default()
+                                    known_kanji=known_kanji.get_value()
+                                />
+                            }}
                         </button>
                         <button
                             class=move || option_class(3)
                             data-testid="grammar-practice-option-3"
                             on:click=move |_| on_option_click(3)
                         >
-                            <Text size=TextSize::Default>
-                                {move || option_3.get().unwrap_or_default()}
-                            </Text>
+                            {move || view! {
+                                <FuriganaText
+                                    text=option_3.get().unwrap_or_default()
+                                    known_kanji=known_kanji.get_value()
+                                />
+                            }}
                         </button>
                     </div>
 
