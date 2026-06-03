@@ -34,11 +34,6 @@ pub fn QuizCardHeader(
                             {t!(i18n, lesson.grammar)}
                         </Tag>
                     }.into_any(),
-                    super::quiz_card::QuizVariant::Radicals => view! {
-                        <Tag variant=Signal::derive(move || TagVariant::Filled)>
-                            {t!(i18n, lesson.radicals)}
-                        </Tag>
-                    }.into_any(),
                 }}
             </div>
             <Show when=move || card_type != CardType::Kanji>
