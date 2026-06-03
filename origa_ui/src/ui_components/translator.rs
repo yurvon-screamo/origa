@@ -6,7 +6,7 @@ use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos::wasm_bindgen::JsCast;
 use leptos_use::use_event_listener;
-use origa::domain::{TokenTranslation, lookup_tokens_translations, tokenize_text};
+use origa::domain::{NativeLanguage, TokenTranslation, lookup_tokens_translations, tokenize_text};
 
 fn has_kanji(text: &str) -> bool {
     text.chars().any(|c| {
@@ -22,13 +22,17 @@ pub fn TranslatorText(
     #[prop(into)] text: String,
     #[prop(optional, into, default = String::new().into())] class: Signal<String>,
     #[prop(optional, into)] test_id: Signal<String>,
+    #[prop(optional, into)] native_language: Option<Signal<NativeLanguage>>,
 ) -> impl IntoView {
     let test_id_val = move || {
         let val = test_id.get();
         if val.is_empty() { None } else { Some(val) }
     };
 
-    let Some(ctx) = use_context::<LessonContext>() else {
+    let native_lang: Option<Signal<NativeLanguage>> = native_language
+        .or_else(|| use_context::<LessonContext>().map(|ctx| ctx.native_language.into()));
+
+    let Some(native_lang) = native_lang else {
         return view! {
             <span class=move || format!("translator-text {}", class.get()) data-testid=test_id_val>
                 <span class="translator-loading font-serif">{text.clone()}</span>
@@ -43,7 +47,6 @@ pub fn TranslatorText(
     let container_ref = NodeRef::<leptos::html::Span>::new();
 
     let text_for_spawn = text.clone();
-    let native_lang = ctx.native_language;
     spawn_local(async move {
         let lang = native_lang.get();
         let tokens = tokenize_text(&text_for_spawn).unwrap_or_default();

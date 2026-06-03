@@ -6,6 +6,7 @@ use crate::i18n::{td_string, use_i18n};
 use crate::loaders::phrase_data_loader::load_phrase_details_batch;
 use crate::repository::HybridUserRepository;
 use leptos::prelude::*;
+use leptos::task::spawn_local;
 use origa::domain::{Card, StudyCard};
 use ulid::Ulid;
 
@@ -15,7 +16,13 @@ pub fn PhrasesContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
     let repository =
         use_context::<HybridUserRepository>().expect("repository context not provided");
 
-    let on_cards_loaded: CardsLoadedCallback = Arc::new(|cards: &[StudyCard]| {
+    let initial_load_done = RwSignal::new(false);
+    let refresh_for_reload = refresh_trigger;
+    let on_cards_loaded: CardsLoadedCallback = Arc::new(move |cards: &[StudyCard]| {
+        if initial_load_done.get() {
+            return;
+        }
+
         let phrase_ids: Vec<Ulid> = cards
             .iter()
             .filter_map(|card| {
@@ -27,8 +34,10 @@ pub fn PhrasesContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
             })
             .collect();
 
-        Box::pin(async move {
-            if !phrase_ids.is_empty() {
+        if !phrase_ids.is_empty() {
+            let refresh = refresh_for_reload;
+            let done = initial_load_done;
+            spawn_local(async move {
                 let results = load_phrase_details_batch(&phrase_ids).await;
                 let failed = results.iter().filter(|r| r.is_err()).count();
                 if failed > 0 {
@@ -38,8 +47,10 @@ pub fn PhrasesContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
                         "Some phrase data chunks failed to load"
                     );
                 }
-            }
-        })
+                done.set(true);
+                refresh.update(|n| *n += 1);
+            });
+        }
     });
 
     let ctx = create_card_list_context(
@@ -55,7 +66,7 @@ pub fn PhrasesContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
 
     card_list_view(
         ctx,
-        false,
+        true,
         "phrases",
         empty_message,
         Some("grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 items-start"),
