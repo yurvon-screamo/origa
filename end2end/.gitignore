@@ -5,3 +5,5 @@ playwright/.cache/
 dist/
 .env
 *.log
+.trailbase.pid
+.cdn.pid

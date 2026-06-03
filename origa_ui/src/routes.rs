@@ -170,7 +170,9 @@ pub fn AppRoutes() -> impl IntoView {
 
     Effect::new({
         let repository = repository.clone();
+        let auth_store_for_effect = auth_store.clone();
         move |_| {
+            let _ = auth_store_for_effect.is_authenticated().get();
             let repository = repository.clone();
             spawn_local(async move {
                 if let Ok(Some(user)) = repository.get_current_user().await {
