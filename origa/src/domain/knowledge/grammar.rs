@@ -2,7 +2,7 @@ use crate::dictionary::grammar::get_rule_by_id;
 use crate::domain::OrigaError;
 use crate::domain::{
     tokenizer::PartOfSpeech,
-    value_objects::{Answer, NativeLanguage, Question},
+    value_objects::{CardAnswer, NativeLanguage, Question},
 };
 use serde::{Deserialize, Serialize};
 use ulid::Ulid;
@@ -46,7 +46,7 @@ impl GrammarRuleCard {
         get_content!(self, lang, title, Question::new)
     }
 
-    pub fn description(&self, lang: &NativeLanguage) -> Result<Answer, OrigaError> {
+    pub fn description(&self, lang: &NativeLanguage) -> Result<CardAnswer, OrigaError> {
         let rule = get_rule_by_id(&self.rule_id).ok_or(OrigaError::GrammarRuleNotFound {
             rule_id: self.rule_id,
         })?;
@@ -57,31 +57,33 @@ impl GrammarRuleCard {
                 lang: *lang,
             });
         }
-        Answer::new(text)
+        CardAnswer::text(text.to_string()).map_err(|e| OrigaError::InvalidAnswer {
+            reason: e.to_string(),
+        })
     }
 
-    pub fn short_description(&self, lang: &NativeLanguage) -> Result<Answer, OrigaError> {
-        get_content!(self, lang, short_description, Answer::new)
+    pub fn short_description(&self, lang: &NativeLanguage) -> Result<CardAnswer, OrigaError> {
+        get_content!(self, lang, short_description, CardAnswer::text)
     }
 
-    pub fn explanation(&self, lang: &NativeLanguage) -> Result<Answer, OrigaError> {
-        get_content!(self, lang, explanation, Answer::new)
+    pub fn explanation(&self, lang: &NativeLanguage) -> Result<CardAnswer, OrigaError> {
+        get_content!(self, lang, explanation, CardAnswer::text)
     }
 
-    pub fn how_to_form(&self, lang: &NativeLanguage) -> Result<Answer, OrigaError> {
-        get_content!(self, lang, how_to_form, Answer::new)
+    pub fn how_to_form(&self, lang: &NativeLanguage) -> Result<CardAnswer, OrigaError> {
+        get_content!(self, lang, how_to_form, CardAnswer::text)
     }
 
-    pub fn examples(&self, lang: &NativeLanguage) -> Result<Answer, OrigaError> {
-        get_content!(self, lang, examples, Answer::new)
+    pub fn examples(&self, lang: &NativeLanguage) -> Result<CardAnswer, OrigaError> {
+        get_content!(self, lang, examples, CardAnswer::text)
     }
 
-    pub fn nuances(&self, lang: &NativeLanguage) -> Result<Answer, OrigaError> {
-        get_content!(self, lang, nuances, Answer::new)
+    pub fn nuances(&self, lang: &NativeLanguage) -> Result<CardAnswer, OrigaError> {
+        get_content!(self, lang, nuances, CardAnswer::text)
     }
 
-    pub fn pro_tip(&self, lang: &NativeLanguage) -> Result<Answer, OrigaError> {
-        get_content!(self, lang, pro_tip, Answer::new)
+    pub fn pro_tip(&self, lang: &NativeLanguage) -> Result<CardAnswer, OrigaError> {
+        get_content!(self, lang, pro_tip, CardAnswer::text)
     }
 
     pub fn related_patterns(&self, lang: &NativeLanguage) -> Option<&str> {
@@ -263,10 +265,13 @@ mod tests {
             let desc = card.description(&NativeLanguage::Russian);
 
             assert!(desc.is_ok());
-            let binding = desc.unwrap();
-            let text = binding.text();
-            assert!(!text.is_empty());
-            assert!(text.contains("です"));
+            match desc.unwrap() {
+                CardAnswer::Text(s) => {
+                    assert!(!s.is_empty());
+                    assert!(s.contains("です"));
+                },
+                other => panic!("Expected Text variant, got {:?}", other),
+            }
         }
 
         #[test]
@@ -279,10 +284,13 @@ mod tests {
             let desc = card.description(&NativeLanguage::English);
 
             assert!(desc.is_ok());
-            let binding = desc.unwrap();
-            let text = binding.text();
-            assert!(!text.is_empty());
-            assert!(text.contains("です"));
+            match desc.unwrap() {
+                CardAnswer::Text(s) => {
+                    assert!(!s.is_empty());
+                    assert!(s.contains("です"));
+                },
+                other => panic!("Expected Text variant, got {:?}", other),
+            }
         }
 
         #[test]
@@ -295,7 +303,10 @@ mod tests {
             let title = card.title(&NativeLanguage::Russian).unwrap();
             let desc = card.description(&NativeLanguage::Russian).unwrap();
 
-            assert!(desc.text().len() > title.text().len());
+            match desc {
+                CardAnswer::Text(s) => assert!(s.len() > title.text().len()),
+                other => panic!("Expected Text variant, got {:?}", other),
+            }
         }
     }
 
@@ -330,7 +341,10 @@ mod tests {
             let short_desc = card.short_description(&NativeLanguage::Russian);
 
             assert!(short_desc.is_ok());
-            assert!(!short_desc.unwrap().text().is_empty());
+            match short_desc.unwrap() {
+                CardAnswer::Text(s) => assert!(!s.is_empty()),
+                other => panic!("Expected Text variant, got {:?}", other),
+            }
         }
 
         #[test]
@@ -343,7 +357,10 @@ mod tests {
             let short_desc = card.short_description(&NativeLanguage::English);
 
             assert!(short_desc.is_ok());
-            assert!(!short_desc.unwrap().text().is_empty());
+            match short_desc.unwrap() {
+                CardAnswer::Text(s) => assert!(!s.is_empty()),
+                other => panic!("Expected Text variant, got {:?}", other),
+            }
         }
 
         #[test]
@@ -356,7 +373,10 @@ mod tests {
             let short_desc = card.short_description(&NativeLanguage::Russian).unwrap();
             let full_desc = card.description(&NativeLanguage::Russian).unwrap();
 
-            assert!(short_desc.text().len() < full_desc.text().len());
+            match (short_desc, full_desc) {
+                (CardAnswer::Text(s), CardAnswer::Text(f)) => assert!(s.len() < f.len()),
+                _ => panic!("Expected Text variants"),
+            }
         }
 
         #[test]

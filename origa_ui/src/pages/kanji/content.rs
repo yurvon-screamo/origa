@@ -11,7 +11,7 @@ use crate::ui_components::{
 use leptos::either::Either;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use origa::domain::{Card, StudyCard, User};
+use origa::domain::{Card, CardAnswer, StudyCard, User};
 use origa::traits::UserRepository;
 use origa::use_cases::ToggleFavoriteUseCase;
 use ulid::Ulid;
@@ -135,13 +135,14 @@ pub fn KanjiContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
                         .map(|q| q.text().to_string())
                         .unwrap_or_default()
                         .to_lowercase();
-                    let meaning = card
-                        .card()
-                        .answer(&lang)
-                        .ok()
-                        .map(|a| a.text().to_string())
-                        .unwrap_or_default()
-                        .to_lowercase();
+                    let meaning = match card.card().answer(&lang).ok() {
+                        Some(CardAnswer::Vocabulary { translations, .. }) => {
+                            translations.join(", ")
+                        },
+                        Some(CardAnswer::Text(s)) => s,
+                        None => String::new(),
+                    }
+                    .to_lowercase();
                     kanji_text.contains(&query) || meaning.contains(&query)
                 };
                 let matches_filter = current_filter.matches(CardStatus::from_study_card(card));

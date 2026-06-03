@@ -112,6 +112,19 @@ function setAdminPassword(): void {
     }
 }
 
+function killExistingTrailBase(): void {
+    try {
+        if (process.platform === "win32") {
+            execSync("taskkill /f /im trail.exe", { stdio: "pipe" });
+        } else {
+            execSync("pkill -f 'trail run'", { stdio: "pipe" });
+        }
+        console.log("[global-setup] ✓ Killed existing TrailBase process");
+    } catch {
+        // No process found — that's fine
+    }
+}
+
 async function startTrailBase(): Promise<void> {
     console.log("[global-setup] Starting local TrailBase...");
     console.log(`  - URL: ${getTrailBaseUrl()}`);
@@ -153,15 +166,10 @@ async function startTrailBase(): Promise<void> {
 export default async function globalSetup(_: FullConfig): Promise<void> {
     console.log("[global-setup] Starting E2E test setup...");
 
-    // Start local TrailBase if not already running
-    const running = await isTrailBaseRunning();
-    if (running) {
-        console.log("[global-setup] ✓ TrailBase already running");
-    } else {
-        await startTrailBase();
-        // Set known admin password after first start
-        setAdminPassword();
-    }
+    // Always kill existing TrailBase and start fresh to avoid stale state
+    killExistingTrailBase();
+    setAdminPassword();
+    await startTrailBase();
 
     // Login as admin — single login reused for verification + cleanup
     console.log("[global-setup] Logging in as admin...");

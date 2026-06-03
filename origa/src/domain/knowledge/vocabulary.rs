@@ -1,9 +1,9 @@
 use crate::dictionary::grammar::GrammarRule;
 use crate::dictionary::kanji::{KanjiInfo, get_kanji_info};
-use crate::dictionary::vocabulary::get_translation;
+use crate::dictionary::vocabulary::{get_description, get_translation, get_translations};
 use crate::domain::japanese::JapaneseChar;
 use crate::domain::tokenizer::{PartOfSpeech, tokenize_text};
-use crate::domain::{Answer, JapaneseLevel, NativeLanguage, OrigaError, Question};
+use crate::domain::{CardAnswer, JapaneseLevel, NativeLanguage, OrigaError, Question};
 use serde::{Deserialize, Serialize};
 use tracing::warn;
 
@@ -93,25 +93,26 @@ impl VocabularyCard {
         self.word.clone()
     }
 
-    pub fn answer(&self, lang: &NativeLanguage) -> Result<Answer, OrigaError> {
+    pub fn answer(&self, lang: &NativeLanguage) -> Result<CardAnswer, OrigaError> {
         if let Some(ref original) = self.reverse_side {
-            return Answer::new(original.text().to_string()).map_err(|e| {
+            return CardAnswer::text(original.text().to_string()).map_err(|e| {
                 OrigaError::InvalidAnswer {
                     reason: e.to_string(),
                 }
             });
         }
 
-        get_translation(self.word.text(), lang)
-            .ok_or_else(|| OrigaError::TranslationNotFound {
+        let translations = get_translations(self.word.text(), lang).ok_or_else(|| {
+            OrigaError::TranslationNotFound {
                 word: self.word.text().to_string(),
                 lang: *lang,
-            })
-            .and_then(|t| {
-                Answer::new(t).map_err(|e| OrigaError::InvalidAnswer {
-                    reason: e.to_string(),
-                })
-            })
+            }
+        })?;
+        let description = get_description(self.word.text(), lang);
+
+        CardAnswer::vocabulary(translations, description).map_err(|e| OrigaError::InvalidAnswer {
+            reason: e.to_string(),
+        })
     }
 
     pub fn get_kanji_cards(&self, current_level: &JapaneseLevel) -> Vec<&KanjiInfo> {
@@ -155,7 +156,10 @@ impl VocabularyCard {
     }
 
     pub fn revert(&self, lang: &NativeLanguage) -> Result<Self, OrigaError> {
-        let meaning_text = self.answer(lang)?.text().to_string();
+        let meaning_text = match self.answer(lang)? {
+            CardAnswer::Vocabulary { translations, .. } => translations.join(", "),
+            CardAnswer::Text(s) => s,
+        };
         Ok(Self {
             word: Question::new(meaning_text)?,
             reverse_side: Some(self.word.clone()),
@@ -218,9 +222,14 @@ mod tests {
         let answer = card.answer(&lang);
 
         assert!(answer.is_ok());
-        let binding = answer.unwrap();
-        let answer_text = binding.text();
-        assert!(answer_text.contains("кошка") || answer_text.contains("кот"));
+        let answer = answer.unwrap();
+        assert!(
+            answer
+                .translations()
+                .iter()
+                .any(|t| t.contains("кошка") || t.contains("кот")),
+            "Expected answer to contain 'кошка' or 'кот'"
+        );
     }
 
     #[test]
@@ -250,7 +259,10 @@ mod tests {
         let answer = card.answer(&NativeLanguage::Russian);
 
         assert!(answer.is_ok());
-        assert_eq!(answer.unwrap().text(), "кошка");
+        match answer.unwrap() {
+            CardAnswer::Text(s) => assert_eq!(s, "кошка"),
+            other => panic!("Expected Text variant, got {:?}", other),
+        }
     }
 
     #[test]
@@ -258,10 +270,10 @@ mod tests {
         init_real_dictionaries();
         let card = create_vocab_card("猫");
 
-        let russian_binding = card.answer(&NativeLanguage::Russian).unwrap();
-        let russian_text = russian_binding.text().to_string();
-        let english_binding = card.answer(&NativeLanguage::English).unwrap();
-        let english_text = english_binding.text().to_string();
+        let russian = card.answer(&NativeLanguage::Russian).unwrap();
+        let russian_text = russian.translations().join(", ");
+        let english = card.answer(&NativeLanguage::English).unwrap();
+        let english_text = english.translations().join(", ");
 
         assert_ne!(russian_text, english_text);
     }
@@ -415,11 +427,10 @@ mod tests {
             question.text().contains("кошка") || question.text().contains("кот"),
             "question should return translation after revert"
         );
-        assert_eq!(
-            answer.text(),
-            original_word,
-            "answer should return original japanese word after revert"
-        );
+        match answer {
+            CardAnswer::Text(s) => assert_eq!(s, original_word),
+            other => panic!("Expected Text variant for reversed answer, got {:?}", other),
+        }
     }
 
     #[test]
@@ -448,7 +459,12 @@ mod tests {
         assert!(result.is_ok());
         let (mutated_card, _) = result.unwrap();
         let answer = mutated_card.answer(&lang).unwrap();
-        assert!(answer.text().contains("есть") || answer.text().contains("кушать"));
+        match answer {
+            CardAnswer::Text(s) => {
+                assert!(s.contains("есть") || s.contains("кушать"));
+            },
+            other => panic!("Expected Text variant for grammar rule, got {:?}", other),
+        }
     }
 
     #[test]
@@ -539,9 +555,14 @@ mod tests {
         let answer = card.answer(&lang);
 
         assert!(answer.is_ok());
-        let binding = answer.unwrap();
-        let text = binding.text();
-        assert!(text.contains("кошка") || text.contains("кот"));
+        let answer = answer.unwrap();
+        assert!(
+            answer
+                .translations()
+                .iter()
+                .any(|t| t.contains("кошка") || t.contains("кот")),
+            "Expected translation to contain 'кошка' or 'кот'"
+        );
     }
 
     #[test]

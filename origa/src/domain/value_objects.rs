@@ -27,26 +27,69 @@ impl Question {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct Answer {
-    text: String,
+pub enum CardAnswer {
+    Vocabulary {
+        translations: Vec<String>,
+        description: Option<String>,
+    },
+    Text(String),
 }
 
-impl Answer {
-    pub fn new(text: String) -> Result<Self, OrigaError> {
-        let text = text.trim();
-        if text.is_empty() {
+impl CardAnswer {
+    pub fn text(s: String) -> Result<Self, OrigaError> {
+        let trimmed = s.trim().to_string();
+        if trimmed.is_empty() {
             return Err(OrigaError::InvalidAnswer {
                 reason: "Answer text cannot be empty".to_string(),
             });
         }
+        Ok(CardAnswer::Text(trimmed))
+    }
 
-        Ok(Self {
-            text: text.to_string(),
+    pub fn vocabulary(
+        translations: Vec<String>,
+        description: Option<String>,
+    ) -> Result<Self, OrigaError> {
+        let non_empty: Vec<String> = translations
+            .into_iter()
+            .map(|t| t.trim().to_string())
+            .filter(|t| !t.is_empty())
+            .collect();
+        if non_empty.is_empty() {
+            return Err(OrigaError::InvalidAnswer {
+                reason: "Vocabulary answer must have at least one translation".to_string(),
+            });
+        }
+        let desc = description.and_then(|d| {
+            let trimmed = d.trim().to_string();
+            if trimmed.is_empty() {
+                None
+            } else {
+                Some(trimmed)
+            }
+        });
+        Ok(CardAnswer::Vocabulary {
+            translations: non_empty,
+            description: desc,
         })
     }
 
-    pub fn text(&self) -> &str {
-        &self.text
+    pub fn translations(&self) -> &[String] {
+        match self {
+            CardAnswer::Vocabulary { translations, .. } => translations,
+            CardAnswer::Text(s) => std::slice::from_ref(s),
+        }
+    }
+
+    pub fn description(&self) -> Option<&str> {
+        match self {
+            CardAnswer::Vocabulary { description, .. } => description.as_deref(),
+            CardAnswer::Text(_) => None,
+        }
+    }
+
+    pub fn is_vocabulary(&self) -> bool {
+        matches!(self, CardAnswer::Vocabulary { .. })
     }
 }
 
@@ -237,6 +280,7 @@ impl From<DailyLoad> for i32 {
 mod tests {
     use super::*;
     use rstest::rstest;
+    use serde_json;
 
     // Question tests
     #[test]
@@ -263,29 +307,115 @@ mod tests {
         assert!(matches!(result, Err(OrigaError::InvalidQuestion { .. })));
     }
 
-    // Answer tests
+    // CardAnswer::text tests
     #[test]
-    fn answer_new_success() {
-        let answer = Answer::new("valid text".to_string()).unwrap();
-        assert_eq!(answer.text(), "valid text");
+    fn card_answer_text_success() {
+        let answer = CardAnswer::text("hello".to_string()).unwrap();
+        assert_eq!(answer, CardAnswer::Text("hello".to_string()));
     }
 
     #[test]
-    fn answer_new_trims_whitespace() {
-        let answer = Answer::new("  trimmed  ".to_string()).unwrap();
-        assert_eq!(answer.text(), "trimmed");
+    fn card_answer_text_trims_whitespace() {
+        let answer = CardAnswer::text("  hello  ".to_string()).unwrap();
+        assert_eq!(answer, CardAnswer::Text("hello".to_string()));
     }
 
     #[test]
-    fn answer_new_empty_string_error() {
-        let result = Answer::new("".to_string());
+    fn card_answer_text_empty_string_error() {
+        let result = CardAnswer::text("".to_string());
         assert!(matches!(result, Err(OrigaError::InvalidAnswer { .. })));
     }
 
     #[test]
-    fn answer_new_whitespace_only_error() {
-        let result = Answer::new("   ".to_string());
+    fn card_answer_text_whitespace_only_error() {
+        let result = CardAnswer::text("   ".to_string());
         assert!(matches!(result, Err(OrigaError::InvalidAnswer { .. })));
+    }
+
+    // CardAnswer::vocabulary tests
+    #[test]
+    fn card_answer_vocabulary_success() {
+        let answer = CardAnswer::vocabulary(vec!["cat".to_string()], None).unwrap();
+        assert!(answer.is_vocabulary());
+        assert_eq!(answer.translations(), &["cat".to_string()]);
+        assert_eq!(answer.description(), None);
+    }
+
+    #[test]
+    fn card_answer_vocabulary_empty_translations_error() {
+        let result = CardAnswer::vocabulary(vec![], None);
+        assert!(matches!(result, Err(OrigaError::InvalidAnswer { .. })));
+    }
+
+    #[test]
+    fn card_answer_vocabulary_filters_empty_translations() {
+        let result = CardAnswer::vocabulary(vec!["".to_string(), "  ".to_string()], None);
+        assert!(matches!(result, Err(OrigaError::InvalidAnswer { .. })));
+    }
+
+    #[test]
+    fn card_answer_vocabulary_with_description() {
+        let answer =
+            CardAnswer::vocabulary(vec!["cat".to_string()], Some("feline animal".to_string()))
+                .unwrap();
+        assert_eq!(answer.description(), Some("feline animal"));
+    }
+
+    #[test]
+    fn card_answer_vocabulary_trims_description() {
+        let answer =
+            CardAnswer::vocabulary(vec!["cat".to_string()], Some("  feline  ".to_string()))
+                .unwrap();
+        assert_eq!(answer.description(), Some("feline"));
+    }
+
+    #[test]
+    fn card_answer_vocabulary_empty_description_becomes_none() {
+        let answer =
+            CardAnswer::vocabulary(vec!["cat".to_string()], Some("   ".to_string())).unwrap();
+        assert_eq!(answer.description(), None);
+    }
+
+    // CardAnswer::translations() for Text variant
+    #[test]
+    fn card_answer_text_translations_returns_single() {
+        let answer = CardAnswer::text("hello".to_string()).unwrap();
+        assert_eq!(answer.translations(), &["hello".to_string()]);
+    }
+
+    // CardAnswer::description() for Text variant
+    #[test]
+    fn card_answer_text_description_is_none() {
+        let answer = CardAnswer::text("hello".to_string()).unwrap();
+        assert!(answer.description().is_none());
+    }
+
+    // CardAnswer::is_vocabulary
+    #[test]
+    fn card_answer_text_is_not_vocabulary() {
+        let answer = CardAnswer::text("hello".to_string()).unwrap();
+        assert!(!answer.is_vocabulary());
+    }
+
+    // Serde roundtrip
+    #[test]
+    fn card_answer_text_serde_roundtrip() {
+        let answer = CardAnswer::text("hello".to_string()).unwrap();
+        let json = serde_json::to_string(&answer).unwrap();
+        let deserialized: CardAnswer = serde_json::from_str(&json).unwrap();
+        assert_eq!(answer, deserialized);
+    }
+
+    #[test]
+    fn card_answer_vocabulary_serde_roundtrip() {
+        let answer = CardAnswer::vocabulary(
+            vec!["cat".to_string(), "feline".to_string()],
+            Some("a small domesticated carnivorous mammal".to_string()),
+        )
+        .unwrap();
+        let json = serde_json::to_string(&answer).unwrap();
+        let deserialized: CardAnswer = serde_json::from_str(&json).unwrap();
+        assert_eq!(answer, deserialized);
     }
 
     // JapaneseLevel::from_str tests

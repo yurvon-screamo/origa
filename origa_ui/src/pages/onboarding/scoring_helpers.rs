@@ -1,6 +1,6 @@
 use crate::i18n::*;
 use crate::pages::lesson::card_type::CardType;
-use origa::domain::{Card as DomainCard, NativeLanguage};
+use origa::domain::{Card as DomainCard, CardAnswer, NativeLanguage};
 use ulid::Ulid;
 
 #[derive(Clone)]
@@ -21,18 +21,20 @@ pub(super) fn extract_card_data(
     match card {
         DomainCard::Vocabulary(v) => (
             v.word().text().to_string(),
-            v.answer(lang)
-                .ok()
-                .map(|a| a.text().to_string())
-                .unwrap_or_else(no_translation),
+            match v.answer(lang).ok() {
+                Some(CardAnswer::Vocabulary { translations, .. }) => translations.join(", "),
+                Some(CardAnswer::Text(s)) => s,
+                None => no_translation(),
+            },
             CardType::Vocabulary,
         ),
         DomainCard::Kanji(k) => (
             k.kanji().text().to_string(),
-            k.description(lang)
-                .ok()
-                .map(|a| a.text().to_string())
-                .unwrap_or_else(no_translation),
+            match k.description(lang).ok() {
+                Some(CardAnswer::Vocabulary { translations, .. }) => translations.join(", "),
+                Some(CardAnswer::Text(s)) => s,
+                None => no_translation(),
+            },
             CardType::Kanji,
         ),
         DomainCard::Grammar(g) => (
@@ -40,10 +42,11 @@ pub(super) fn extract_card_data(
                 .ok()
                 .map(|q| q.text().to_string())
                 .unwrap_or_default(),
-            g.description(lang)
-                .ok()
-                .map(|a| a.text().to_string())
-                .unwrap_or_else(no_translation),
+            match g.description(lang).ok() {
+                Some(CardAnswer::Vocabulary { translations, .. }) => translations.join(", "),
+                Some(CardAnswer::Text(s)) => s,
+                None => no_translation(),
+            },
             CardType::Grammar,
         ),
         DomainCard::Phrase(p) => (

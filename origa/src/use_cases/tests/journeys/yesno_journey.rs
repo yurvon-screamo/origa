@@ -3,11 +3,18 @@ use rstest::rstest;
 use crate::domain::User;
 use crate::domain::value_objects::Question;
 use crate::domain::{
-    Card, JlptContent, NativeLanguage, RateMode, Rating, VocabularyCard, YesNoCard,
+    Card, CardAnswer, JlptContent, NativeLanguage, RateMode, Rating, VocabularyCard, YesNoCard,
 };
 use crate::traits::UserRepository;
 use crate::use_cases::tests::fixtures::InMemoryUserRepository;
 use crate::use_cases::{RateCardUseCase, SelectCardsToLessonUseCase};
+
+fn answer_display_text(answer: &CardAnswer) -> String {
+    match answer {
+        CardAnswer::Vocabulary { translations, .. } => translations.join(", "),
+        CardAnswer::Text(s) => s.clone(),
+    }
+}
 
 fn create_user_with_real_vocab_cards(words: &[&str]) -> User {
     let mut user = User::new(
@@ -50,7 +57,7 @@ async fn yesno_journey_correct_answer_results_in_good_rating() {
     // Создаём YesNo с верным утверждением (is_correct = true)
     let question = card.question(&NativeLanguage::Russian).unwrap();
     let answer = card.answer(&NativeLanguage::Russian).unwrap();
-    let statement_text = format!("{} – {}", question.text(), answer.text());
+    let statement_text = format!("{} – {}", question.text(), answer_display_text(&answer));
     let yesno = create_yesno_card_with_words(card.clone(), statement_text, true);
 
     // Act: пользователь отвечает "Да" на верное утверждение
@@ -101,7 +108,7 @@ async fn yesno_journey_wrong_answer_results_in_again_rating() {
     // Создаём YesNo с верным утверждением (is_correct = true)
     let question = card.question(&NativeLanguage::Russian).unwrap();
     let answer = card.answer(&NativeLanguage::Russian).unwrap();
-    let statement_text = format!("{} – {}", question.text(), answer.text());
+    let statement_text = format!("{} – {}", question.text(), answer_display_text(&answer));
     let yesno = create_yesno_card_with_words(card.clone(), statement_text, true);
 
     // Act: пользователь отвечает "Нет" на верное утверждение (неправильно)
@@ -251,7 +258,7 @@ async fn yesno_journey_all_rating_cases(
     // Создаём YesNo карточку с нужным значением is_correct
     let question = card.question(&NativeLanguage::Russian).unwrap();
     let answer = card.answer(&NativeLanguage::Russian).unwrap();
-    let statement_text = format!("{} – {}", question.text(), answer.text());
+    let statement_text = format!("{} – {}", question.text(), answer_display_text(&answer));
     let yesno = create_yesno_card_with_words(card, statement_text, statement_is_correct);
 
     // Act: Проверяем ответ и определяем рейтинг
