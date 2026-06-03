@@ -44,7 +44,6 @@ pub fn create_keyboard_handler(
         let is_multi_quiz = current_card
             .map(|c| {
                 matches!(c.view(), LessonCardView::KanjiReadingQuiz(q) if q.mode() == QuizMode::Multi)
-                    || matches!(c.view(), LessonCardView::KanjiRadicalQuiz(q) if q.mode() == QuizMode::Multi)
             })
             .unwrap_or(false);
 
@@ -54,7 +53,6 @@ pub fn create_keyboard_handler(
                     c.view(),
                     LessonCardView::Quiz(_)
                         | LessonCardView::KanjiReadingQuiz(_)
-                        | LessonCardView::KanjiRadicalQuiz(_)
                         | LessonCardView::GrammarQuiz(_)
                 )
             })

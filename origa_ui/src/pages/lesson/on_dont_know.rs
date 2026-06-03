@@ -16,7 +16,6 @@ pub fn create_on_dont_know(
             .and_then(|id| state.cards.get(id))
             .map(|c| {
                 matches!(c.view(), LessonCardView::KanjiReadingQuiz(q) if q.mode() == QuizMode::Multi)
-                    || matches!(c.view(), LessonCardView::KanjiRadicalQuiz(q) if q.mode() == QuizMode::Multi)
             })
             .unwrap_or(false);
 

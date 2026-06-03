@@ -9,7 +9,6 @@ use rand::Rng;
 use super::types::LessonCardView;
 
 mod generation;
-mod kanji_radical_quiz;
 #[cfg(test)]
 mod tests;
 mod transforms;
@@ -21,11 +20,10 @@ const PROB_QUIZ_VIEW: f32 = 0.30;
 const PROB_YESNO_VIEW: f32 = 0.50;
 const PROB_REVERSED_VIEW: f32 = 0.75;
 
-const PROB_KANJI_NORMAL: f32 = 1.0 / 6.0;
-const PROB_KANJI_READING_QUIZ: f32 = 2.0 / 6.0;
-const PROB_KANJI_RADICAL_QUIZ: f32 = 3.0 / 6.0;
-const PROB_KANJI_QUIZ: f32 = 4.0 / 6.0;
-const PROB_KANJI_YESNO: f32 = 5.0 / 6.0;
+const PROB_KANJI_NORMAL: f32 = 1.0 / 5.0;
+const PROB_KANJI_READING_QUIZ: f32 = 2.0 / 5.0;
+const PROB_KANJI_QUIZ: f32 = 3.0 / 5.0;
+const PROB_KANJI_YESNO: f32 = 4.0 / 5.0;
 
 const PROB_NEW_KANJI_NORMAL: f32 = 0.33;
 const PROB_NEW_KANJI_QUIZ: f32 = 0.66;
@@ -149,9 +147,6 @@ impl<'a> LessonViewGenerator<'a> {
             LessonCardView::Normal(card.clone())
         } else if rand_val < PROB_KANJI_READING_QUIZ {
             generation::generate_kanji_reading_quiz(card.clone(), same_type_cards, kanji_cache)
-                .unwrap_or_else(|_| LessonCardView::Normal(card.clone()))
-        } else if rand_val < PROB_KANJI_RADICAL_QUIZ {
-            kanji_radical_quiz::generate_kanji_radical_quiz(card.clone(), kanji_cache)
                 .unwrap_or_else(|_| LessonCardView::Normal(card.clone()))
         } else if rand_val < PROB_KANJI_QUIZ {
             generation::generate_quiz(card.clone(), same_type_cards, &DEFAULT_LANG)

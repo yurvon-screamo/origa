@@ -21,7 +21,6 @@ pub enum QuizVariant {
     Meaning,
     Reading,
     Grammar,
-    Radicals,
 }
 
 #[component]
@@ -165,14 +164,11 @@ pub fn QuizCardView(
                     <Text size=TextSize::Default variant=TypographyVariant::Muted class="mt-4">
                         {if is_multi && quiz_variant == QuizVariant::Reading {
                             t!(i18n, lesson.choose_all_readings).into_any()
-                        } else if is_multi && quiz_variant == QuizVariant::Radicals {
-                            t!(i18n, lesson.choose_all_radicals).into_any()
                         } else {
                             match quiz_variant {
                                 QuizVariant::Meaning => t!(i18n, lesson.choose_answer).into_any(),
                                 QuizVariant::Reading => t!(i18n, lesson.choose_reading).into_any(),
                                 QuizVariant::Grammar => t!(i18n, lesson.choose_grammar).into_any(),
-                                QuizVariant::Radicals => t!(i18n, lesson.choose_all_radicals).into_any(),
                             }
                         }}
                     </Text>
