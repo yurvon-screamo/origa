@@ -8,7 +8,7 @@ pub fn WordTranslations(
 ) -> impl IntoView {
     view! {
         <div class="word-translations" data-testid=move || test_id.get()>
-            <ol class="word-translations-list">
+            <ul class="word-translations-list">
                 {move || {
                     translations
                         .get()
@@ -16,7 +16,7 @@ pub fn WordTranslations(
                         .map(|t| view! { <li class="word-translations-item">{t}</li> })
                         .collect::<Vec<_>>()
                 }}
-            </ol>
+            </ul>
             <Show when=move || description.get().is_some_and(|d| !d.is_empty())>
                 <div class="word-translations-desc">
                     {move || description.get().unwrap_or_default()}
