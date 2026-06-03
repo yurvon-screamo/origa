@@ -39,9 +39,9 @@ use summary_step::SummaryStep;
 #[component]
 pub fn Onboarding() -> impl IntoView {
     let i18n = use_i18n();
-    let current_locale: RwSignal<Locale> = RwSignal::new(i18n.get_locale());
+    let current_locale: RwSignal<Locale> = RwSignal::new(i18n.get_locale_untracked());
     let selected_language: RwSignal<NativeLanguage> =
-        RwSignal::new(locale_to_native_language(&i18n.get_locale()));
+        RwSignal::new(locale_to_native_language(&i18n.get_locale_untracked()));
 
     let repository =
         use_context::<HybridUserRepository>().expect("repository context not provided");
@@ -98,7 +98,7 @@ pub fn Onboarding() -> impl IntoView {
             if disposed.is_disposed() {
                 return;
             }
-            if let Some(user) = current_user.get() {
+            if let Some(user) = current_user.get_untracked() {
                 let use_case = UpdateUserProfileUseCase::new(&repo);
                 let daily_load = *user.daily_load();
                 let telegram_id = user.telegram_user_id().copied();

@@ -2,7 +2,7 @@ use crate::domain::{
     OrigaError, Rating, ReviewLog,
     knowledge::{GrammarRuleCard, KanjiCard, PhraseCard, VocabularyCard},
     memory::{MemoryHistory, MemoryState},
-    value_objects::{Answer, NativeLanguage, Question},
+    value_objects::{CardAnswer, NativeLanguage, Question},
 };
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
@@ -155,7 +155,7 @@ impl Card {
         }
     }
 
-    pub fn answer(&self, lang: &NativeLanguage) -> Result<Answer, OrigaError> {
+    pub fn answer(&self, lang: &NativeLanguage) -> Result<CardAnswer, OrigaError> {
         match self {
             Card::Vocabulary(card) => card.answer(lang),
             Card::Kanji(card) => card.description(lang),
@@ -164,7 +164,7 @@ impl Card {
                 let text = card.answer(lang).ok_or(OrigaError::PhraseNotFound {
                     phrase_id: *card.phrase_id(),
                 })?;
-                Answer::new(text).map_err(|e| OrigaError::InvalidAnswer {
+                CardAnswer::text(text).map_err(|e| OrigaError::InvalidAnswer {
                     reason: e.to_string(),
                 })
             },
@@ -677,12 +677,13 @@ mod tests {
                 let answer = card.answer(&NativeLanguage::Russian);
 
                 assert!(answer.is_ok());
-                let binding = answer.unwrap();
-                let answer_text = binding.text();
+                let answer = answer.unwrap();
                 assert!(
-                    answer_text.contains("кошка") || answer_text.contains("кот"),
-                    "Expected answer to contain 'кошка' or 'кот', got: {}",
-                    answer_text
+                    answer
+                        .translations()
+                        .iter()
+                        .any(|t| t.contains("кошка") || t.contains("кот")),
+                    "Expected answer to contain 'кошка' or 'кот'"
                 );
             }
 

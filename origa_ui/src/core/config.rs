@@ -4,8 +4,6 @@ use std::sync::{Mutex, OnceLock};
 pub struct Urls {
     pub base: &'static str,
     pub dictionary: &'static str,
-    #[cfg(target_arch = "wasm32")]
-    pub whisper_base: &'static str,
 }
 
 static URLS: OnceLock<Urls> = OnceLock::new();
@@ -16,8 +14,6 @@ pub fn urls() -> &'static Urls {
         Urls {
             base,
             dictionary: "dictionaries/unidic/cache/dictionary-data",
-            #[cfg(target_arch = "wasm32")]
-            whisper_base: "https://huggingface.co/onnx-community/whisper-tiny/resolve/main",
         }
     })
 }
@@ -88,5 +84,5 @@ pub fn cdn_url(path: &str) -> String {
 
 #[cfg(target_arch = "wasm32")]
 pub fn whisper_base_url() -> String {
-    urls().whisper_base.to_string()
+    cdn_url("/whisper")
 }

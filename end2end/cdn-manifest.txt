@@ -699,3 +699,6 @@ well_known_set/spy_family/spy_family_s01_e11.json
 well_known_set/spy_family/spy_family_s01_e12.json
 well_known_set/well_known_sets_meta.json
 well_known_set/well_known_types_meta.json
+whisper/onnx/decoder_model.onnx
+whisper/onnx/encoder_model.onnx
+whisper/tokenizer.json

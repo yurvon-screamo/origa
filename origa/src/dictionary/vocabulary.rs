@@ -1,16 +1,82 @@
 use std::{collections::HashMap, sync::OnceLock};
 
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 use crate::domain::{NativeLanguage, OrigaError};
 
 pub static VOCABULARY_DICTIONARY: OnceLock<VocabularyDatabase> = OnceLock::new();
 
+#[derive(Clone, Deserialize)]
+#[serde(untagged)]
+enum TranslationValue {
+    Structured { t: Vec<String>, d: String },
+    Raw(String),
+}
+
+impl TranslationValue {
+    fn into_translations_and_description(self) -> (Vec<String>, Option<String>) {
+        match self {
+            TranslationValue::Structured { t, d } => {
+                let desc = if d.trim().is_empty() {
+                    None
+                } else {
+                    Some(d.trim().to_string())
+                };
+                (t, desc)
+            },
+            TranslationValue::Raw(s) => {
+                tracing::warn!(
+                    "Legacy vocabulary format detected, consider migrating to structured format"
+                );
+                parse_legacy_translation(&s)
+            },
+        }
+    }
+}
+
+fn parse_legacy_translation(text: &str) -> (Vec<String>, Option<String>) {
+    let mut translations = Vec::new();
+    let mut description_parts = Vec::new();
+
+    for line in text.lines() {
+        let trimmed = line.trim();
+        if trimmed.is_empty() {
+            continue;
+        }
+        if let Some(t) = trimmed.strip_prefix("- ") {
+            if !t.is_empty() {
+                translations.push(t.to_string());
+            }
+        } else if let Some(d) = trimmed.strip_prefix("> ") {
+            if !d.is_empty() {
+                description_parts.push(d.to_string());
+            }
+        } else if !translations.is_empty() {
+            description_parts.push(trimmed.to_string());
+        } else {
+            translations.push(trimmed.to_string());
+        }
+    }
+
+    if translations.is_empty() && !text.trim().is_empty() {
+        translations.push(text.trim().to_string());
+    }
+
+    let description = if description_parts.is_empty() {
+        None
+    } else {
+        Some(description_parts.join(" "))
+    };
+    (translations, description)
+}
+
 #[derive(Debug, Clone)]
 pub struct VocabularyInfo {
     word: String,
-    russian_translation: String,
-    english_translation: String,
+    ru_translations: Vec<String>,
+    ru_description: Option<String>,
+    en_translations: Vec<String>,
+    en_description: Option<String>,
 }
 
 impl VocabularyInfo {
@@ -18,28 +84,69 @@ impl VocabularyInfo {
         &self.word
     }
 
-    pub fn russian_translation(&self) -> &str {
-        &self.russian_translation
+    pub fn russian_translation(&self) -> String {
+        self.ru_translations
+            .iter()
+            .map(|t| format!("- {}", t))
+            .collect::<Vec<_>>()
+            .join("\n")
     }
 
-    pub fn english_translation(&self) -> &str {
-        &self.english_translation
+    pub fn english_translation(&self) -> String {
+        self.en_translations
+            .iter()
+            .map(|t| format!("- {}", t))
+            .collect::<Vec<_>>()
+            .join("\n")
+    }
+
+    pub fn ru_translations(&self) -> &[String] {
+        &self.ru_translations
+    }
+
+    pub fn en_translations(&self) -> &[String] {
+        &self.en_translations
+    }
+
+    pub fn ru_description(&self) -> Option<&str> {
+        self.ru_description.as_deref()
+    }
+
+    pub fn en_description(&self) -> Option<&str> {
+        self.en_description.as_deref()
+    }
+
+    pub fn translations(&self, lang: &NativeLanguage) -> &[String] {
+        match lang {
+            NativeLanguage::Russian => &self.ru_translations,
+            NativeLanguage::English => &self.en_translations,
+        }
+    }
+
+    pub fn description(&self, lang: &NativeLanguage) -> Option<&str> {
+        match lang {
+            NativeLanguage::Russian => self.ru_description.as_deref(),
+            NativeLanguage::English => self.en_description.as_deref(),
+        }
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Deserialize)]
 struct VocabularyEntryStoredType {
+    #[expect(dead_code)]
     #[serde(default)]
     level: Option<String>,
-    russian_translation: String,
-    english_translation: String,
+    russian_translation: Option<String>,
+    english_translation: Option<String>,
+    ru: Option<TranslationValue>,
+    en: Option<TranslationValue>,
 }
 
 pub struct VocabularyDatabase {
     vocabulary_map: HashMap<String, VocabularyInfo>,
 }
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Deserialize)]
 pub struct VocabularyChunkData {
     pub chunk_01: String,
     pub chunk_02: String,
@@ -73,6 +180,43 @@ pub fn get_translation(word: &str, native_language: &NativeLanguage) -> Option<S
         .and_then(|db| db.get_translation(word, native_language))
 }
 
+pub fn get_translations(word: &str, native_language: &NativeLanguage) -> Option<Vec<String>> {
+    VOCABULARY_DICTIONARY
+        .get()
+        .and_then(|db| db.get_translations(word, native_language))
+}
+
+pub fn get_description(word: &str, native_language: &NativeLanguage) -> Option<String> {
+    VOCABULARY_DICTIONARY
+        .get()
+        .and_then(|db| db.get_description(word, native_language))
+}
+
+fn resolve_translations(
+    entry: &VocabularyEntryStoredType,
+    lang: TranslationLang,
+) -> (Vec<String>, Option<String>) {
+    let (structured, raw) = match lang {
+        TranslationLang::Ru => (&entry.ru, &entry.russian_translation),
+        TranslationLang::En => (&entry.en, &entry.english_translation),
+    };
+
+    if let Some(tv) = structured {
+        return tv.clone().into_translations_and_description();
+    }
+
+    if let Some(raw_str) = raw {
+        return parse_legacy_translation(raw_str);
+    }
+
+    (vec![], None)
+}
+
+enum TranslationLang {
+    Ru,
+    En,
+}
+
 impl VocabularyDatabase {
     fn from_chunks(data: VocabularyChunkData) -> Result<Self, OrigaError> {
         fn strip_bom(json: &str) -> &str {
@@ -103,12 +247,19 @@ impl VocabularyDatabase {
         let vocabulary_map = vocabulary_data
             .into_iter()
             .map(|(word, entry)| {
+                let (ru_translations, ru_description) =
+                    resolve_translations(&entry, TranslationLang::Ru);
+                let (en_translations, en_description) =
+                    resolve_translations(&entry, TranslationLang::En);
+
                 (
                     word.clone(),
                     VocabularyInfo {
                         word,
-                        russian_translation: entry.russian_translation,
-                        english_translation: entry.english_translation,
+                        ru_translations,
+                        ru_description,
+                        en_translations,
+                        en_description,
                     },
                 )
             })
@@ -121,9 +272,25 @@ impl VocabularyDatabase {
         self.vocabulary_map
             .get(word)
             .map(|info| match native_language {
-                NativeLanguage::Russian => info.russian_translation.clone(),
-                NativeLanguage::English => info.english_translation.clone(),
+                NativeLanguage::Russian => info.russian_translation(),
+                NativeLanguage::English => info.english_translation(),
             })
+    }
+
+    pub fn get_translations(
+        &self,
+        word: &str,
+        native_language: &NativeLanguage,
+    ) -> Option<Vec<String>> {
+        self.vocabulary_map
+            .get(word)
+            .map(|info| info.translations(native_language).to_vec())
+    }
+
+    pub fn get_description(&self, word: &str, native_language: &NativeLanguage) -> Option<String> {
+        self.vocabulary_map
+            .get(word)
+            .and_then(|info| info.description(native_language).map(|s| s.to_string()))
     }
 
     pub fn get_vocabulary_info(&self, word: &str) -> Option<&VocabularyInfo> {
@@ -157,8 +324,8 @@ mod tests {
         r#"{
             "猫": {
                 "level": "N5",
-                "russian_translation": "кошка",
-                "english_translation": "cat"
+                "russian_translation": "- кошка\n- кот",
+                "english_translation": "- cat"
             },
             "犬": {
                 "level": "N5",
@@ -169,36 +336,77 @@ mod tests {
         .to_string()
     }
 
+    fn make_structured_chunk_json() -> String {
+        r#"{
+            "猫": {
+                "level": "N5",
+                "ru": { "t": ["кошка", "кот"], "d": "домашнее животное" },
+                "en": { "t": ["cat"], "d": "" }
+            },
+            "犬": {
+                "level": "N5",
+                "ru": { "t": ["собака"], "d": "" },
+                "en": { "t": ["dog"], "d": "domestic animal" }
+            }
+        }"#
+        .to_string()
+    }
+
+    fn make_mixed_chunk_json() -> String {
+        r#"{
+            "猫": {
+                "level": "N5",
+                "russian_translation": "- кошка\n- кот",
+                "english_translation": "- cat"
+            },
+            "犬": {
+                "level": "N5",
+                "ru": { "t": ["собака"], "d": "" },
+                "en": { "t": ["dog"], "d": "" }
+            }
+        }"#
+        .to_string()
+    }
+
     #[test]
     fn from_chunks_valid_json_loads_entries() {
-        // Arrange
         let data = empty_chunk_data_with(&make_valid_chunk_json());
-
-        // Act
         let db = VocabularyDatabase::from_chunks(data).unwrap();
-
-        // Assert
         assert!(db.get_vocabulary_info("猫").is_some());
         assert!(db.get_vocabulary_info("犬").is_some());
         assert!(db.get_vocabulary_info("魚").is_none());
     }
 
     #[test]
-    fn from_chunks_strips_bom_prefix() {
-        // Arrange
-        let json_with_bom = format!("\u{FEFF}{}", make_valid_chunk_json());
-        let data = empty_chunk_data_with(&json_with_bom);
+    fn from_chunks_structured_format_loads_entries() {
+        let data = empty_chunk_data_with(&make_structured_chunk_json());
+        let db = VocabularyDatabase::from_chunks(data).unwrap();
+        assert!(db.get_vocabulary_info("猫").is_some());
+        assert!(db.get_vocabulary_info("犬").is_some());
+    }
 
-        // Act
+    #[test]
+    fn from_chunks_mixed_formats_work() {
+        let data = empty_chunk_data_with(&make_mixed_chunk_json());
         let db = VocabularyDatabase::from_chunks(data).unwrap();
 
-        // Assert
+        let cat_ru = db.get_translation("猫", &NativeLanguage::Russian).unwrap();
+        assert!(cat_ru.contains("кошка"));
+
+        let dog_ru = db.get_translation("犬", &NativeLanguage::Russian).unwrap();
+        assert!(dog_ru.contains("собака"));
+    }
+
+    #[test]
+    fn from_chunks_strips_bom_prefix() {
+        let json_with_bom = format!("\u{FEFF}{}", make_valid_chunk_json());
+        let data = empty_chunk_data_with(&json_with_bom);
+        let db = VocabularyDatabase::from_chunks(data).unwrap();
         assert!(db.get_vocabulary_info("猫").is_some());
     }
 
     #[test]
     fn from_chunks_empty_all_chunks_succeeds() {
-        // Arrange
         let empty = "{}".to_string();
         let data = VocabularyChunkData {
             chunk_01: empty.clone(),
@@ -213,55 +421,134 @@ mod tests {
             chunk_10: empty.clone(),
             chunk_11: empty,
         };
-
-        // Act
         let db = VocabularyDatabase::from_chunks(data).unwrap();
-
-        // Assert
         assert!(db.get_vocabulary_info("anything").is_none());
     }
 
     #[test]
-    fn get_translation_found_returns_correct_language() {
-        // Arrange
+    fn get_translation_found_returns_correct_language_legacy() {
         let data = empty_chunk_data_with(&make_valid_chunk_json());
         let db = VocabularyDatabase::from_chunks(data).unwrap();
 
-        // Act
-        let ru = db.get_translation("猫", &NativeLanguage::Russian);
-        let en = db.get_translation("猫", &NativeLanguage::English);
+        let ru = db.get_translation("猫", &NativeLanguage::Russian).unwrap();
+        let en = db.get_translation("猫", &NativeLanguage::English).unwrap();
 
-        // Assert
-        assert_eq!(ru.as_deref(), Some("кошка"));
-        assert_eq!(en.as_deref(), Some("cat"));
+        assert!(ru.contains("кошка"));
+        assert!(ru.contains("кот"));
+        assert!(en.contains("cat"));
+    }
+
+    #[test]
+    fn get_translation_found_returns_correct_language_structured() {
+        let data = empty_chunk_data_with(&make_structured_chunk_json());
+        let db = VocabularyDatabase::from_chunks(data).unwrap();
+
+        let ru = db.get_translation("猫", &NativeLanguage::Russian).unwrap();
+        let en = db.get_translation("猫", &NativeLanguage::English).unwrap();
+
+        assert!(ru.contains("кошка"));
+        assert!(ru.contains("кот"));
+        assert!(en.contains("cat"));
     }
 
     #[test]
     fn get_translation_not_found_returns_none() {
-        // Arrange
         let data = empty_chunk_data_with(&make_valid_chunk_json());
         let db = VocabularyDatabase::from_chunks(data).unwrap();
-
-        // Act
         let result = db.get_translation("魚", &NativeLanguage::Russian);
-
-        // Assert
         assert!(result.is_none());
     }
 
     #[test]
+    fn get_translations_returns_vec() {
+        let data = empty_chunk_data_with(&make_structured_chunk_json());
+        let db = VocabularyDatabase::from_chunks(data).unwrap();
+
+        let ru = db.get_translations("猫", &NativeLanguage::Russian).unwrap();
+        assert_eq!(ru, vec!["кошка", "кот"]);
+
+        let en = db.get_translations("猫", &NativeLanguage::English).unwrap();
+        assert_eq!(en, vec!["cat"]);
+    }
+
+    #[test]
+    fn get_translations_returns_vec_legacy_format() {
+        let data = empty_chunk_data_with(&make_valid_chunk_json());
+        let db = VocabularyDatabase::from_chunks(data).unwrap();
+
+        let ru = db.get_translations("猫", &NativeLanguage::Russian).unwrap();
+        assert_eq!(ru, vec!["кошка", "кот"]);
+    }
+
+    #[test]
+    fn get_description_returns_some() {
+        let data = empty_chunk_data_with(&make_structured_chunk_json());
+        let db = VocabularyDatabase::from_chunks(data).unwrap();
+
+        let ru_desc = db.get_description("猫", &NativeLanguage::Russian);
+        assert_eq!(ru_desc, Some("домашнее животное".to_string()));
+
+        let en_desc = db.get_description("犬", &NativeLanguage::English);
+        assert_eq!(en_desc, Some("domestic animal".to_string()));
+    }
+
+    #[test]
+    fn get_description_returns_none_for_empty() {
+        let data = empty_chunk_data_with(&make_structured_chunk_json());
+        let db = VocabularyDatabase::from_chunks(data).unwrap();
+
+        let en_desc = db.get_description("猫", &NativeLanguage::English);
+        assert!(en_desc.is_none());
+
+        let ru_desc = db.get_description("犬", &NativeLanguage::Russian);
+        assert!(ru_desc.is_none());
+    }
+
+    #[test]
+    fn get_description_returns_none_for_legacy_format() {
+        let data = empty_chunk_data_with(&make_valid_chunk_json());
+        let db = VocabularyDatabase::from_chunks(data).unwrap();
+
+        let desc = db.get_description("猫", &NativeLanguage::Russian);
+        assert!(desc.is_none());
+    }
+
+    #[test]
     fn from_chunks_invalid_json_returns_error() {
-        // Arrange
         let data = empty_chunk_data_with("not valid json");
-
-        // Act
         let result = VocabularyDatabase::from_chunks(data);
-
-        // Assert
         assert!(result.is_err());
         assert!(matches!(
             result,
             Err(OrigaError::VocabularyParseError { .. })
         ));
+    }
+
+    #[test]
+    fn parse_legacy_translation_dash_prefixed() {
+        let (translations, desc) = parse_legacy_translation("- кошка\n- кот");
+        assert_eq!(translations, vec!["кошка", "кот"]);
+        assert!(desc.is_none());
+    }
+
+    #[test]
+    fn parse_legacy_translation_plain_text() {
+        let (translations, desc) = parse_legacy_translation("собака");
+        assert_eq!(translations, vec!["собака"]);
+        assert!(desc.is_none());
+    }
+
+    #[test]
+    fn parse_legacy_translation_with_description() {
+        let (translations, desc) = parse_legacy_translation("- кошка\n> домашнее животное");
+        assert_eq!(translations, vec!["кошка"]);
+        assert_eq!(desc, Some("домашнее животное".to_string()));
+    }
+
+    #[test]
+    fn parse_legacy_translation_empty_string() {
+        let (translations, desc) = parse_legacy_translation("");
+        assert!(translations.is_empty());
+        assert!(desc.is_none());
     }
 }

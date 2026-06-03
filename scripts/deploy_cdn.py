@@ -56,6 +56,7 @@ SYNC_DIRS = [
     "ndlocr",
     "phrases/audio",
     "phrases/data",
+    "whisper",
 ]
 
 MANIFEST_VERSION = 1

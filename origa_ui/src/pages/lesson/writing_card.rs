@@ -5,7 +5,7 @@ use crate::ui_components::{
     Card, DisplayText, Heading, HeadingLevel, KanjiDrawingPractice, Tag, TagVariant,
 };
 use leptos::prelude::*;
-use origa::domain::{Card as DomainCard, NativeLanguage, Rating};
+use origa::domain::{Card as DomainCard, CardAnswer, NativeLanguage, Rating};
 use std::collections::HashSet;
 use tracing::warn;
 
@@ -25,7 +25,8 @@ fn extract_kanji_data(kanji: &DomainCard, native_language: NativeLanguage) -> Ka
 
     let symbol = kanji.kanji().text().to_string();
     let description = match kanji.description(&native_language) {
-        Ok(d) => d.text().to_string(),
+        Ok(CardAnswer::Vocabulary { translations, .. }) => translations.join(", "),
+        Ok(CardAnswer::Text(s)) => s,
         Err(e) => {
             warn!(
                 kanji = %symbol,

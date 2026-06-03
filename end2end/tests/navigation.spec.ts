@@ -1,29 +1,17 @@
 import { testWithFreshUser } from "../fixtures";
 import { skipOnboarding } from "../helpers/navigation";
 
-async function waitForSidebar(page: import("@playwright/test").Page): Promise<void> {
-    // Sidebar appears after current_user is loaded (async effect).
-    // Retry with increasing timeouts to handle slow backend responses.
-    for (let i = 0; i < 6; i++) {
-        const sidebar = page.getByTestId("sidebar");
-        if (await sidebar.isVisible().catch(() => false)) {
-            return;
-        }
-        // Small wait + reload user data trigger
-        await page.waitForTimeout(2000);
-        // Navigate to trigger re-evaluation of sidebar_visible
-        await page.goto("/home", { waitUntil: "domcontentloaded" });
-        await page.getByTestId("home-page").waitFor({ state: "visible", timeout: 15_000 }).catch(() => {});
-    }
-    // Final attempt with long timeout
-    await page.getByTestId("sidebar").waitFor({ state: "visible", timeout: 30_000 });
-}
-
 testWithFreshUser.describe("Navigation", () => {
+    testWithFreshUser("sidebar should appear after onboarding without page reload", async ({ page }) => {
+        await skipOnboarding(page);
+        await page.waitForURL(/\/home$/, { timeout: 10_000 });
+        await page.getByTestId("sidebar").waitFor({ state: "visible", timeout: 15_000 });
+    });
+
     testWithFreshUser("should navigate between all pages via sidebar", async ({ page }) => {
         await skipOnboarding(page);
         await page.waitForURL(/\/home$/, { timeout: 10_000 });
-        await waitForSidebar(page);
+        await page.getByTestId("sidebar").waitFor({ state: "visible", timeout: 15_000 });
 
         // Home → Words
         await page.getByTestId("sidebar-tab-words").click();

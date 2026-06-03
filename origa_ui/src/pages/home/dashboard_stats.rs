@@ -1,5 +1,5 @@
 use chrono::{Datelike, TimeZone};
-use origa::domain::{Card, CardType, DailyHistoryItem, KnowledgeSet, NativeLanguage};
+use origa::domain::{Card, CardAnswer, CardType, DailyHistoryItem, KnowledgeSet, NativeLanguage};
 
 const RU_MONTHS_SHORT: [&str; 12] = [
     "янв", "фев", "мар", "апр", "май", "июн", "июл", "авг", "сен", "окт", "ноя", "дек",
@@ -133,10 +133,11 @@ pub fn compute_studied_today(
                     Card::Phrase(p) => p.phrase_id().to_string(),
                 });
 
-            let meaning = card
-                .answer(lang)
-                .map(|a| a.text().to_string())
-                .unwrap_or_default();
+            let meaning = match card.answer(lang) {
+                Ok(CardAnswer::Vocabulary { translations, .. }) => translations.join(", "),
+                Ok(CardAnswer::Text(s)) => s,
+                Err(_) => String::new(),
+            };
 
             let card_type = match CardType::from(card) {
                 CardType::Kanji => "kanji",
@@ -158,7 +159,13 @@ pub fn compute_studied_today(
                     (reading, None)
                 },
                 Card::Grammar(g) => {
-                    let short_desc = g.short_description(lang).map(|a| a.text().to_string()).ok();
+                    let short_desc = match g.short_description(lang).ok() {
+                        Some(CardAnswer::Vocabulary { translations, .. }) => {
+                            Some(translations.join(", "))
+                        },
+                        Some(CardAnswer::Text(s)) => Some(s),
+                        None => None,
+                    };
                     (None, short_desc)
                 },
                 _ => (None, None),

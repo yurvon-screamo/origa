@@ -19,14 +19,54 @@ npm run report               # HTML report (0.0.0.0:9323)
 
 ```text
 end2end/
-├── config.ts                              # TEST_USERS
-├── global-setup.ts / global-teardown.ts   # Auto server lifecycle
-├── playwright.config.ts                   # Playwright config
+├── .env                                    # TrailBase URL, admin creds
+├── config.ts                              # Reads .env, exports getTrailBaseUrl()
+├── global-setup.ts                        # Starts TrailBase, sets admin password
+├── global-teardown.ts                     # Kills TrailBase process
+├── playwright.config.ts                   # Playwright config + webServer definitions
 ├── pages/ {base,login,...}.page.ts → index.ts
 ├── tests/                                 # *.spec.ts
 ├── fixtures/                              # Auth, onboarding, test data
 └── helpers/                               # Navigation, auth, HTTP, cleanup
 ```
+
+## Local Infrastructure
+
+Playwright auto-manages all infrastructure — no manual setup needed.
+
+| Service | Port | Managed by | Config |
+|---------|------|-----------|--------|
+| TrailBase | 4000 | `global-setup.ts` | Spawns `trail run --dev` |
+| CDN (static files) | 8080 | `playwright.config.ts` webServer | `npx serve ../cdn` |
+| App (trunk/wasm) | 1420 | `playwright.config.ts` webServer | `trunk serve` or `npx serve` |
+
+**Just run:** `npx playwright test` — everything starts automatically.
+
+**Required `.env`:**
+
+```
+ORIGA_ADMIN_EMAIL=admin@localhost
+ORIGA_ADMIN_PASSWORD=secret
+TRAILBASE_URL=http://127.0.0.1:4000
+ORIGA_CDN_BASE_URL=http://localhost:8080
+```
+
+**Flow:**
+
+1. `playwright.config.ts` webServer starts CDN (8080) and app (1420)
+2. `global-setup.ts` kills stale TrailBase, sets admin password, starts fresh TrailBase (4000)
+3. Tests run against all three services
+4. `global-teardown.ts` kills TrailBase process
+
+## Test Users
+
+| User | Email | Password | Purpose |
+|------|-------|----------|---------|
+| Admin | `admin@localhost` | `secret` | API operations, user management |
+| Manual test | `uwuwu@uwuwu.net` | `uwuwu` | Manual UI testing (pre-created) |
+| E2E auto-created | `e2e-<ts>-<rand>@origa.local` | `e2e-test-password-123` | Created/deleted per test |
+
+E2E tests use `setupTestUser()` (in `helpers/auth.ts`) which creates a fresh user via admin API before each test and cleans up after.
 
 ## Page Object Pattern
 
@@ -43,12 +83,6 @@ export class LoginPage {
     await this.page.click('[data-testid="login-button"]');
   }
 }
-```
-
-## Test Users (`config.ts`)
-
-```typescript
-export const TEST_USERS = { admin: { username: 'admin', password: '...' } };
 ```
 
 ## Rules

@@ -7,7 +7,8 @@ use crate::loaders::{
     pitch_audio_loader::load_pitch_audio,
 };
 use crate::pages::{
-    Grammar, Home, Kanji, KanjiDetail, Lesson, Login, Onboarding, Phrases, Profile, Sets, Words,
+    Grammar, GrammarDetail, Home, Kanji, KanjiDetail, Lesson, Login, Onboarding, Phrases, Profile,
+    Sets, Words,
 };
 use crate::store::auth_store::AuthStore;
 use crate::ui_components::{BottomTabBar, LoadingOverlay, Sidebar};
@@ -169,7 +170,9 @@ pub fn AppRoutes() -> impl IntoView {
 
     Effect::new({
         let repository = repository.clone();
+        let auth_store_for_effect = auth_store.clone();
         move |_| {
+            let _ = auth_store_for_effect.is_authenticated().get();
             let repository = repository.clone();
             spawn_local(async move {
                 if let Ok(Some(user)) = repository.get_current_user().await {
@@ -207,6 +210,7 @@ pub fn AppRoutes() -> impl IntoView {
                 <Route path=path!("home") view=|| view! { <ProtectedRoute><Home/></ProtectedRoute> } />
                 <Route path=path!("profile") view=|| view! { <ProtectedRoute><Profile/></ProtectedRoute> } />
                 <Route path=path!("words") view=|| view! { <ProtectedRoute><Words/></ProtectedRoute> } />
+                <Route path=path!("grammar/:id") view=|| view! { <ProtectedRoute><GrammarDetail/></ProtectedRoute> } />
                 <Route path=path!("grammar") view=|| view! { <ProtectedRoute><Grammar/></ProtectedRoute> } />
                 <Route path=path!("phrases") view=|| view! { <ProtectedRoute><Phrases/></ProtectedRoute> } />
                 <Route path=path!("kanji/:id") view=|| view! { <ProtectedRoute><KanjiDetail/></ProtectedRoute> } />

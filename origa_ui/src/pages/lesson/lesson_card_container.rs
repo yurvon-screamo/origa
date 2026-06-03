@@ -17,7 +17,9 @@ use super::yesno_card_view::YesNoCardView;
 use crate::pages::lesson::card_type::CardType;
 use crate::ui_components::stop_current_audio;
 use leptos::prelude::*;
-use origa::domain::{Card, GrammarInfo, LessonCard, LessonCardView, NativeLanguage, Rating};
+use origa::domain::{
+    Card, CardAnswer, GrammarInfo, LessonCard, LessonCardView, NativeLanguage, Rating,
+};
 use std::collections::HashSet;
 use ulid::Ulid;
 
@@ -242,7 +244,13 @@ pub fn LessonCardContainer() -> impl IntoView {
                                 let show_result = state.showing_answer;
                                 let card_type = CardType::from(&card);
                                 let phrase_text = card.question(&native_language.get()).ok().map(|q| q.text().to_string());
-                                let phrase_translation = card.answer(&native_language.get()).ok().map(|a| a.text().to_string());
+                                let phrase_translation = Some(match card.answer(&native_language.get()).ok() {
+                                    Some(CardAnswer::Vocabulary { translations, .. }) => {
+                                        translations.join(", ")
+                                    },
+                                    Some(CardAnswer::Text(s)) => s,
+                                    None => String::new(),
+                                });
 
                                 Some(view! {
                                     <PhraseCardView

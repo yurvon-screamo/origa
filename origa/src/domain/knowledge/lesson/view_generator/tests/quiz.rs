@@ -94,10 +94,12 @@ mod grammar_quiz {
         match result.unwrap() {
             LessonCardView::Quiz(quiz) => {
                 let correct_answer = grammar_card.answer(&lang).unwrap();
+                let correct_text = match &correct_answer {
+                    crate::domain::CardAnswer::Text(s) => s.as_str(),
+                    other => panic!("Expected Text variant, got {:?}", other),
+                };
                 assert!(
-                    quiz.options()
-                        .iter()
-                        .any(|o| o.text() == correct_answer.text()),
+                    quiz.options().iter().any(|o| o.text() == correct_text),
                     "Quiz options should contain the correct answer"
                 );
             },
@@ -292,13 +294,23 @@ mod generate_quiz_pos_filter_tests {
         let verb_answers: HashSet<String> = verbs[1..]
             .iter()
             .filter_map(|c| c.answer(&NativeLanguage::Russian).ok())
-            .map(|a| a.text().to_string())
+            .map(|a| match a {
+                crate::domain::CardAnswer::Vocabulary { translations, .. } => {
+                    translations.join(", ")
+                },
+                crate::domain::CardAnswer::Text(s) => s,
+            })
             .collect();
 
         let noun_answers: HashSet<String> = nouns
             .iter()
             .filter_map(|c| c.answer(&NativeLanguage::Russian).ok())
-            .map(|a| a.text().to_string())
+            .map(|a| match a {
+                crate::domain::CardAnswer::Vocabulary { translations, .. } => {
+                    translations.join(", ")
+                },
+                crate::domain::CardAnswer::Text(s) => s,
+            })
             .collect();
 
         for _ in 0..20 {
@@ -388,7 +400,12 @@ mod generate_quiz_pos_filter_tests {
         let noun_answers: HashSet<String> = nouns
             .iter()
             .filter_map(|c| c.answer(&NativeLanguage::Russian).ok())
-            .map(|a| a.text().to_string())
+            .map(|a| match a {
+                crate::domain::CardAnswer::Vocabulary { translations, .. } => {
+                    translations.join(", ")
+                },
+                crate::domain::CardAnswer::Text(s) => s,
+            })
             .collect();
 
         let mut noun_used_count = 0;

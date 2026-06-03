@@ -6,7 +6,7 @@ use leptos::prelude::*;
 
 use leptos::wasm_bindgen::JsCast;
 use leptos::wasm_bindgen::closure::Closure;
-use origa::domain::{Card as DomainCard, GrammarInfo, NativeLanguage};
+use origa::domain::{Card as DomainCard, CardAnswer, GrammarInfo, NativeLanguage};
 use std::collections::HashSet;
 use tracing;
 
@@ -54,7 +54,8 @@ pub fn LessonCard(
     });
 
     let answer_text = match card.answer(&lang) {
-        Ok(a) => a.text().to_string(),
+        Ok(CardAnswer::Vocabulary { translations, .. }) => translations.join(", "),
+        Ok(CardAnswer::Text(s)) => s,
         Err(e) => {
             tracing::warn!(
                 card_type = ?card_type,
@@ -160,7 +161,7 @@ pub fn LessonCard(
     Effect::new(move |_| {
         let is_muted = lesson_ctx_tts_normal
             .as_ref()
-            .map(|ctx| ctx.is_muted.get())
+            .map(|ctx| ctx.is_muted.get_untracked())
             .unwrap_or(false);
         if !show_answer
             && !is_reversed
@@ -179,7 +180,7 @@ pub fn LessonCard(
     Effect::new(move |_| {
         let is_muted = lesson_ctx_phrase
             .as_ref()
-            .map(|ctx| ctx.is_muted.get())
+            .map(|ctx| ctx.is_muted.get_untracked())
             .unwrap_or(false);
         if !show_answer && is_phrase && !is_muted {
             if let Some(ref src) = phrase_audio_src {
@@ -208,7 +209,7 @@ pub fn LessonCard(
     Effect::new(move |_| {
         let is_muted = lesson_ctx_tts_reversed
             .as_ref()
-            .map(|ctx| ctx.is_muted.get())
+            .map(|ctx| ctx.is_muted.get_untracked())
             .unwrap_or(false);
         if show_answer
             && is_reversed
@@ -225,6 +226,10 @@ pub fn LessonCard(
             let is_overflow = el.scroll_height() > el.client_height();
             needs_collapse.set(is_overflow);
         }
+    });
+
+    on_cleanup(move || {
+        stop_current_audio();
     });
 
     let on_toggle = Callback::new(move |()| {
