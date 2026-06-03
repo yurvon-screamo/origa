@@ -78,9 +78,11 @@ pub fn create_card_list_context(
                 },
                 Ok(None) => {
                     tracing::warn!("CardListPage: user not found");
+                    is_loading.set(false);
                 },
                 Err(e) => {
                     tracing::error!("CardListPage: get_current_user error: {:?}", e);
+                    is_loading.set(false);
                 },
             }
         });
