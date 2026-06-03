@@ -27,7 +27,6 @@ pub fn create_on_quiz_submit(
 
         let quiz = match lesson_card.view() {
             LessonCardView::KanjiReadingQuiz(q) => q,
-            LessonCardView::KanjiRadicalQuiz(q) => q,
             _ => return,
         };
 

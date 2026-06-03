@@ -33,7 +33,6 @@ pub fn create_on_quiz_select(
                 LessonCardView::Quiz(q) | LessonCardView::KanjiReadingQuiz(q) => {
                     Some(q.check_answer(option_index))
                 },
-                LessonCardView::KanjiRadicalQuiz(q) => Some(q.check_answer(option_index)),
                 LessonCardView::GrammarQuiz(gq) => Some(gq.quiz().check_answer(option_index)),
                 LessonCardView::PhraseListen { options, .. } => {
                     options.get(option_index).map(|o| o.is_correct())
