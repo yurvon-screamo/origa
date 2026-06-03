@@ -5094,8 +5094,8 @@ input[type="submit"],
 }
 
 .word-translations-list {
-    list-style: decimal;
-    padding-left: 20px;
+    list-style: none;
+    padding-left: 0;
     margin: 0;
 }
 
