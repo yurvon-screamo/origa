@@ -16,7 +16,9 @@ use leptos::task::spawn_local;
 use origa::domain::{Card, CardAnswer, NativeLanguage, StudyCard, User};
 use origa::traits::UserRepository;
 
-pub type CardsLoadedCallback = Arc<dyn Fn(&[StudyCard]) + Send + Sync>;
+pub type CardsLoadedCallback = Arc<
+    dyn Fn(&[StudyCard]) -> std::pin::Pin<Box<dyn std::future::Future<Output = ()>>> + Send + Sync,
+>;
 
 #[derive(Clone)]
 pub struct CardListContext {
@@ -64,7 +66,7 @@ pub fn create_card_list_context(
                         .collect();
 
                     if let Some(on_loaded) = on_loaded.as_ref() {
-                        on_loaded(&cards);
+                        on_loaded(&cards).await;
                     }
 
                     if disposed.is_disposed() {

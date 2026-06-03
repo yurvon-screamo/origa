@@ -5171,6 +5171,15 @@ input[type="submit"],
     flex-shrink: 0;
 }
 
+.phrase-card-audio .audio-player-btn {
+    padding: 6px;
+}
+
+.phrase-card-audio .audio-player-btn svg {
+    width: 1em;
+    height: 1em;
+}
+
 .phrase-card-content {
     flex: 0 1 auto;
     min-width: 0;
