@@ -161,7 +161,7 @@ pub fn LessonCard(
     Effect::new(move |_| {
         let is_muted = lesson_ctx_tts_normal
             .as_ref()
-            .map(|ctx| ctx.is_muted.get())
+            .map(|ctx| ctx.is_muted.get_untracked())
             .unwrap_or(false);
         if !show_answer
             && !is_reversed
@@ -180,7 +180,7 @@ pub fn LessonCard(
     Effect::new(move |_| {
         let is_muted = lesson_ctx_phrase
             .as_ref()
-            .map(|ctx| ctx.is_muted.get())
+            .map(|ctx| ctx.is_muted.get_untracked())
             .unwrap_or(false);
         if !show_answer && is_phrase && !is_muted {
             if let Some(ref src) = phrase_audio_src {
@@ -209,7 +209,7 @@ pub fn LessonCard(
     Effect::new(move |_| {
         let is_muted = lesson_ctx_tts_reversed
             .as_ref()
-            .map(|ctx| ctx.is_muted.get())
+            .map(|ctx| ctx.is_muted.get_untracked())
             .unwrap_or(false);
         if show_answer
             && is_reversed
@@ -226,6 +226,10 @@ pub fn LessonCard(
             let is_overflow = el.scroll_height() > el.client_height();
             needs_collapse.set(is_overflow);
         }
+    });
+
+    on_cleanup(move || {
+        stop_current_audio();
     });
 
     let on_toggle = Callback::new(move |()| {
