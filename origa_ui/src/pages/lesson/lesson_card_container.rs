@@ -355,10 +355,27 @@ fn render_lesson_card(
     native_language: RwSignal<NativeLanguage>,
 ) -> impl IntoView {
     let params = match lesson_card.into_view() {
-        LessonCardView::Normal(card) => LessonCardParams {
-            card,
-            is_reversed: false,
-            grammar_info: None,
+        LessonCardView::Normal(card) => {
+            let grammar_info = match &card {
+                Card::Grammar(grc) => {
+                    let lang = native_language.get();
+                    let title = grc
+                        .title(&lang)
+                        .ok()
+                        .map(|q| q.text().to_string())
+                        .unwrap_or_default();
+                    // description left empty: answer_text already shows short_description
+                    // via Card::answer(). GrammarInfo carries rule_id for the
+                    // "More details" expand button in LessonCardAnswer.
+                    Some(GrammarInfo::new(Some(*grc.rule_id()), title, String::new()))
+                },
+                _ => None,
+            };
+            LessonCardParams {
+                card,
+                is_reversed: false,
+                grammar_info,
+            }
         },
         LessonCardView::Reversed(card) => LessonCardParams {
             card,

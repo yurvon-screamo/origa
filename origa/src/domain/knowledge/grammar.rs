@@ -47,19 +47,7 @@ impl GrammarRuleCard {
     }
 
     pub fn description(&self, lang: &NativeLanguage) -> Result<CardAnswer, OrigaError> {
-        let rule = get_rule_by_id(&self.rule_id).ok_or(OrigaError::GrammarRuleNotFound {
-            rule_id: self.rule_id,
-        })?;
-        let text = rule.content(lang).full_description();
-        if text.is_empty() {
-            return Err(OrigaError::GrammarContentNotFound {
-                rule_id: self.rule_id,
-                lang: *lang,
-            });
-        }
-        CardAnswer::text(text.to_string()).map_err(|e| OrigaError::InvalidAnswer {
-            reason: e.to_string(),
-        })
+        self.short_description(lang)
     }
 
     pub fn short_description(&self, lang: &NativeLanguage) -> Result<CardAnswer, OrigaError> {
@@ -263,15 +251,15 @@ mod tests {
             let card = GrammarRuleCard::new(rule_id).expect("Failed to create card");
 
             let desc = card.description(&NativeLanguage::Russian);
+            let short = card.short_description(&NativeLanguage::Russian);
 
             assert!(desc.is_ok());
-            match desc.unwrap() {
-                CardAnswer::Text(s) => {
-                    assert!(!s.is_empty());
-                    assert!(s.contains("です"));
-                },
-                other => panic!("Expected Text variant, got {:?}", other),
-            }
+            assert!(short.is_ok());
+            assert_eq!(
+                desc.unwrap(),
+                short.unwrap(),
+                "description() should delegate to short_description()"
+            );
         }
 
         #[test]
@@ -282,30 +270,33 @@ mod tests {
             let card = GrammarRuleCard::new(rule_id).expect("Failed to create card");
 
             let desc = card.description(&NativeLanguage::English);
+            let short = card.short_description(&NativeLanguage::English);
 
             assert!(desc.is_ok());
-            match desc.unwrap() {
-                CardAnswer::Text(s) => {
-                    assert!(!s.is_empty());
-                    assert!(s.contains("です"));
-                },
-                other => panic!("Expected Text variant, got {:?}", other),
-            }
+            assert!(short.is_ok());
+            assert_eq!(
+                desc.unwrap(),
+                short.unwrap(),
+                "description() should delegate to short_description()"
+            );
         }
 
         #[test]
-        fn description_is_longer_than_title() {
+        fn description_equals_short_description() {
             init_test_grammar();
 
             let rule_id = get_first_rule_id();
             let card = GrammarRuleCard::new(rule_id).expect("Failed to create card");
 
-            let title = card.title(&NativeLanguage::Russian).unwrap();
-            let desc = card.description(&NativeLanguage::Russian).unwrap();
-
-            match desc {
-                CardAnswer::Text(s) => assert!(s.len() > title.text().len()),
-                other => panic!("Expected Text variant, got {:?}", other),
+            for lang in [NativeLanguage::Russian, NativeLanguage::English] {
+                let desc = card.description(&lang).expect("description should work");
+                let short = card
+                    .short_description(&lang)
+                    .expect("short_description should work");
+                assert_eq!(
+                    desc, short,
+                    "description() should equal short_description() for {lang:?}"
+                );
             }
         }
     }
@@ -360,22 +351,6 @@ mod tests {
             match short_desc.unwrap() {
                 CardAnswer::Text(s) => assert!(!s.is_empty()),
                 other => panic!("Expected Text variant, got {:?}", other),
-            }
-        }
-
-        #[test]
-        fn short_description_is_shorter_than_full_description() {
-            init_test_grammar();
-
-            let rule_id = get_first_rule_id();
-            let card = GrammarRuleCard::new(rule_id).expect("Failed to create card");
-
-            let short_desc = card.short_description(&NativeLanguage::Russian).unwrap();
-            let full_desc = card.description(&NativeLanguage::Russian).unwrap();
-
-            match (short_desc, full_desc) {
-                (CardAnswer::Text(s), CardAnswer::Text(f)) => assert!(s.len() < f.len()),
-                _ => panic!("Expected Text variants"),
             }
         }
 

@@ -21,7 +21,7 @@
   <success_brief>
     <output_format>
       Return ONLY valid JSON (no markdown wrappers). Each field contains
-      a Markdown section starting with an emoji header (e.g. 📖 What is it?).
+      Markdown content with no emoji headers or trailing separators.
       Do NOT include a ## Title preamble in any field — the title is already
       in the separate "title" field.
       Format:
@@ -29,86 +29,76 @@
         "en": {
           "title": "grammar pattern",
           "short_description": "brief description",
-          "explanation": "📖 What is it?\n\n[content]\n\n---",
-          "how_to_form": "🔧 How to form it?\n\n[content]\n\n---",
-          "examples": "🗣️ Examples in Context\n\n[content]\n\n---",
-          "nuances": "💡 Nuances & Common Mistakes\n\n[content]\n\n---",
-          "pro_tip": "🌸 Pro Tip\n\n[content]"
+          "explanation": "[content]",
+          "how_to_form": "[content]",
+          "examples": "[content]",
+          "nuances": "[content]",
+          "pro_tip": "[content]"
         },
         "ru": {
           "title": "grammar pattern",
           "short_description": "краткое описание",
-          "explanation": "📖 Что это и зачем?\n\n[контент]\n\n---",
-          "how_to_form": "🔧 Как образуется?\n\n[контент]\n\n---",
-          "examples": "🗣️ Примеры в контексте\n\n[контент]\n\n---",
-          "nuances": "💡 Нюансы и типичные ошибки\n\n[контент]\n\n---",
-          "pro_tip": "🌸 Лайфхак\n\n[контент]"
+          "explanation": "[контент]",
+          "how_to_form": "[контент]",
+          "examples": "[контент]",
+          "nuances": "[контент]",
+          "pro_tip": "[контент]"
         }
       }
     </output_format>
 
     <md_structure_en>
-      explanation field — starts with the header "📖 What is it?":
+      explanation field:
       [1-2 sentences: clear explanation of meaning, function, and usage context. Mention politeness, register, or restrictions if applicable.]
       > ⚠️ **Important:** [Key warning or commonly missed detail.]
-      End with --- on its own line.
 
-      how_to_form field — starts with the header "🔧 How to form it?":
+      how_to_form field:
       [Rule/formula. Use a table or list for different word/verb types.]
       | Word type | Rule | Example |
       |-----------|------|---------|
       | ... | ... | ... |
-      End with --- on its own line.
 
-      examples field — starts with the header "🗣️ Examples in Context":
+      examples field:
       ```
       [Japanese sentence]
       [English translation]
       ```
       [2-3 more examples with varied contexts or politeness levels]
-      End with --- on its own line.
 
-      nuances field — starts with the header "💡 Nuances & Common Mistakes":
+      nuances field:
       - ❌ [Common error/incorrect usage]
       - ✅ [Correct form/explanation]
       - 🔄 [Comparison with a similar pattern, if applicable]
-      End with --- on its own line.
 
-      pro_tip field — starts with the header "🌸 Pro Tip":
+      pro_tip field:
       [Extra info on speech style, usage situations, or a memory trick.]
-      No trailing ---.
     </md_structure_en>
 
     <md_structure_ru>
-      explanation field — starts with the header "📖 Что это и зачем?":
+      explanation field:
       [1-2 предложения: чёткое объяснение значения, функции и контекста использования. Укажите уровень вежливости, стиль или ограничения, если есть.]
       > ⚠️ **Важно:** [Ключевое предупреждение или особенность, которую часто упускают.]
-      End with --- on its own line.
 
-      how_to_form field — starts with the header "🔧 Как образуется?":
+      how_to_form field:
       [Правило/формула. Используйте таблицу или список для разных типов слов/глаголов.]
       | Тип слова | Правило | Пример |
       |-----------|---------|--------|
       | ... | ... | ... |
-      End with --- on its own line.
 
-      examples field — starts with the header "🗣️ Примеры в контексте":
+      examples field:
       ```
       [Японское предложение]
       [Перевод на русский]
       ```
       [Ещё 2-3 примера с разными контекстами или уровнями вежливости]
-      End with --- on its own line.
 
-      nuances field — starts with the header "💡 Нюансы и типичные ошибки":
+      nuances field:
       - ❌ [Частая ошибка/неправильное использование]
       - ✅ [Правильный вариант/объяснение]
       - 🔄 [Сравнение с похожей конструкцией, если применимо]
-      End with --- on its own line.
 
-      pro_tip field — starts with the header "🌸 Лайфхак":
+      pro_tip field:
       [Дополнительная информация о стиле речи, ситуациях использования или мнемоника для запоминания.]
-      No trailing ---.
     </md_structure_ru>
 
     <quality_criteria>
@@ -138,7 +128,6 @@
         Use markdown tables for formation rules and paradigms
       </criterion>
       <criterion name="structure">
-        Each field starts with its emoji header (e.g. 📖 What is it?).
         Do NOT include a ## Title line — it is already in the title field.
         Fields explanation, how_to_form, examples are REQUIRED.
         Fields nuances and pro_tip are optional but recommended.
@@ -161,20 +150,20 @@
       "en": {
         "title": "～ます",
         "short_description": "Polite present tense form",
-        "explanation": "📖 What is it?\n\n`～ます` is the **polite verb form** for present and future tense. Used with strangers, coworkers, and superiors in any situation requiring politness.\n> ⚠️ **Important:** Japanese has no separate future tense. Context determines if the action happens now or later.\n\n---",
-        "how_to_form": "🔧 How to form it?\n\n| Verb Group | Rule | Example |\n|------------|------|--------|\n| Group 1 (う-verbs) | Last う-row sound → い-row + ます | 書く → 書きます |\n| Group 2 (る-verbs) | Remove る + ます | 食べる → 食べます |\n| Group 3 (irregular) | する → します / くる → 来ます | する → します |\n\n---",
-        "examples": "🗣️ Examples in Context\n\n```\n毎朝コーヒーを飲みます。\nI drink coffee every morning.\n```\n\n```\n明日東京へ行きます。\nI will go to Tokyo tomorrow.\n```\n\n---",
-        "nuances": "💡 Nuances & Common Mistakes\n\n- ❌ Reading `来ます` as `くます` → ✅ Correct: `きます`\n- ❌ Confusing verb groups (not all る-verbs are Group 2) → ✅ Remember exceptions: `知る`, `帰る`, `切る` are Group 1\n- 🔄 With friends, use plain form (`飲む`, `食べる`), but in office/school always use `～ます`\n\n---",
-        "pro_tip": "🌸 Pro Tip\n\nWhen you hear `～ます` at the end of a sentence, you're in a polite or formal context. The more `ます`-forms, the more respectful the speech sounds."
+        "explanation": "`～ます` is the **polite verb form** for present and future tense. Used with strangers, coworkers, and superiors in any situation requiring politness.\n> ⚠️ **Important:** Japanese has no separate future tense. Context determines if the action happens now or later.",
+        "how_to_form": "| Verb Group | Rule | Example |\n|------------|------|--------|\n| Group 1 (う-verbs) | Last う-row sound → い-row + ます | 書く → 書きます |\n| Group 2 (る-verbs) | Remove る + ます | 食べる → 食べます |\n| Group 3 (irregular) | する → します / くる → 来ます | する → します |",
+        "examples": "```\n毎朝コーヒーを飲みます。\nI drink coffee every morning.\n```\n\n```\n明日東京へ行きます。\nI will go to Tokyo tomorrow.\n```",
+        "nuances": "- ❌ Reading `来ます` as `くます` → ✅ Correct: `きます`\n- ❌ Confusing verb groups (not all る-verbs are Group 2) → ✅ Remember exceptions: `知る`, `帰る`, `切る` are Group 1\n- 🔄 With friends, use plain form (`飲む`, `食べる`), but in office/school always use `～ます`",
+        "pro_tip": "When you hear `～ます` at the end of a sentence, you're in a polite or formal context. The more `ます`-forms, the more respectful the speech sounds."
       },
       "ru": {
         "title": "～ます",
         "short_description": "Вежливая форма настоящего времени",
-        "explanation": "📖 Что это и зачем?\n\n`～ます` — стандартная вежливая форма глагола для настоящего и будущего времени. Используется с незнакомыми, коллегами, старшими и в любой ситуации, где нужна вежливость.\n> ⚠️ **Важно:** В японском нет отдельного будущего времени. Контекст определяет, происходит действие сейчас или позже.\n\n---",
-        "how_to_form": "🔧 Как образуется?\n\n| Группа глаголов | Правило | Пример |\n|-----------------|---------|--------|\n| Группа 1 (う-глаголы) | Последний звук у-ряда → и-ряд + ます | 書く → 書きます |\n| Группа 2 (る-глаголы) | Убрать る + ます | 食べる → 食べます |\n| Группа 3 (исключения) | する → します / くる → 来ます | する → します |\n\n---",
-        "examples": "🗣️ Примеры в контексте\n\n```\n毎朝コーヒーを飲みます。\nКаждое утро я пью кофе.\n```\n\n```\n明日東京へ行きます。\nЗавтра я поеду в Токио.\n```\n\n---",
-        "nuances": "💡 Нюансы и типичные ошибки\n\n- ❌ Читать `来ます` как `くます` → ✅ Правильно: `きます`\n- ❌ Путать группы глаголов (не все る-глаголы относятся ко 2-й группе) → ✅ Запомните исключения: `知る`, `帰る`, `切る` — это Группа 1\n- 🔄 С друзьями можно использовать простую форму (`飲む`, `食べる`), но в офисе/учебе всегда `～ます`\n\n---",
-        "pro_tip": "🌸 Лайфхак\n\nЕсли слышите `～ます` в конце предложения — вы находитесь в вежливом или официальном контексте. Чем больше `ます`-форм, тем уважительнее звучит речь."
+        "explanation": "`～ます` — стандартная вежливая форма глагола для настоящего и будущего времени. Используется с незнакомыми, коллегами, старшими и в любой ситуации, где нужна вежливость.\n> ⚠️ **Важно:** В японском нет отдельного будущего времени. Контекст определяет, происходит действие сейчас или позже.",
+        "how_to_form": "| Группа глаголов | Правило | Пример |\n|-----------------|---------|--------|\n| Группа 1 (う-глаголы) | Последний звук у-ряда → и-ряд + ます | 書く → 書きます |\n| Группа 2 (る-глаголы) | Убрать る + ます | 食べる → 食べます |\n| Группа 3 (исключения) | する → します / くる → 来ます | する → します |",
+        "examples": "```\n毎朝コーヒーを飲みます。\nКаждое утро я пью кофе.\n```\n\n```\n明日東京へ行きます。\nЗавтра я поеду в Токио.\n```",
+        "nuances": "- ❌ Читать `来ます` как `くます` → ✅ Правильно: `きます`\n- ❌ Путать группы глаголов (не все る-глаголы относятся ко 2-й группе) → ✅ Запомните исключения: `知る`, `帰る`, `切る` — это Группа 1\n- 🔄 С друзьями можно использовать простую форму (`飲む`, `食べる`), но в офисе/учебе всегда `～ます`",
+        "pro_tip": "Если слышите `～ます` в конце предложения — вы находитесь в вежливом или официальном контексте. Чем больше `ます`-форм, тем уважительнее звучит речь."
       }
     }
   </example_output>
@@ -187,8 +176,7 @@
     <rule id="5">Use markdown tables for conjugation/formation rules</rule>
     <rule id="6">Both language versions must have the same structure (same fields)</rule>
     <rule id="7">The title field must be identical for both EN and RU (the grammar pattern itself)</rule>
-    <rule id="8">Each field starts with its emoji header (e.g. 📖 What is it?), no ## Title preamble</rule>
-    <rule id="9">Fields explanation, how_to_form, examples are mandatory. nuances and pro_tip are optional but recommended. Use empty string if not applicable.</rule>
+    <rule id="8">Fields explanation, how_to_form, examples are mandatory. nuances and pro_tip are optional but recommended. Use empty string if not applicable.</rule>
   </rules>
 
   <conversation>

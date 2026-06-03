@@ -423,20 +423,6 @@ impl GrammarRuleContent {
     pub fn related_patterns(&self) -> Option<&str> {
         self.related_patterns.as_deref()
     }
-
-    pub fn full_description(&self) -> String {
-        let mut parts = vec![
-            format!("### {}", self.explanation),
-            format!("### {}", self.how_to_form),
-            format!("### {}", self.examples),
-            format!("### {}", self.nuances),
-            format!("### {}", self.pro_tip),
-        ];
-        if let Some(ref rp) = self.related_patterns {
-            parts.push(format!("### {}", rp));
-        }
-        parts.join("\n\n")
-    }
 }
 
 #[cfg(test)]
