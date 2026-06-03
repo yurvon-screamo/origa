@@ -37,6 +37,8 @@ test.describe("Authentication", () => {
         const errorMessage = await loginPage.errorAlert.textContent();
         expect(errorMessage).toBeTruthy();
         expect(errorMessage?.length).toBeGreaterThan(0);
+        expect(errorMessage).not.toContain("Network error");
+        expect(errorMessage).not.toContain("fetching");
     });
 });
 

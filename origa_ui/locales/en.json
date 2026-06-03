@@ -299,7 +299,8 @@
         "token_exchange_error": "Token exchange error: {}",
         "google_login": "Sign in with Google",
         "yandex_login": "Sign in with Yandex",
-        "unsupported_callback": "Unsupported callback URL format"
+        "unsupported_callback": "Unsupported callback URL format",
+        "login_failed": "Invalid email or password"
     },
     "words": {
         "add_words": "Add words",

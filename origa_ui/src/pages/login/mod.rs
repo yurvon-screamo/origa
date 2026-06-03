@@ -65,7 +65,9 @@ pub fn Login() -> impl IntoView {
                     },
                     Err(e) => {
                         tracing::error!("Login error: {:?}", e);
-                        server_error.set(Some(e.to_string()));
+                        server_error.set(Some(
+                            i18n.get_keys().login().login_failed().inner().to_string(),
+                        ));
                     },
                 }
             });
