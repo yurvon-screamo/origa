@@ -129,13 +129,21 @@ fn resolve_annotation(
             if let Some(best) = entries.first() {
                 AnnotatedSpan {
                     text: surface,
-                    reading: Some(best.reading.clone()),
-                    reading_spans: best.reading_spans.clone(),
+                    reading: Some(hiragana_to_katakana(&best.reading)),
+                    reading_spans: best
+                        .reading_spans
+                        .iter()
+                        .map(|s| ReadingSpan {
+                            start_index: s.start_index,
+                            end_index: s.end_index,
+                            text: hiragana_to_katakana(&s.text),
+                        })
+                        .collect(),
                 }
             } else {
                 AnnotatedSpan {
                     text: surface,
-                    reading: reading_hint.map(|h| katakana_to_hiragana(&h)),
+                    reading: reading_hint,
                     reading_spans: vec![],
                 }
             }
@@ -145,8 +153,16 @@ fn resolve_annotation(
             if let Some(best) = entries.first() {
                 AnnotatedSpan {
                     text,
-                    reading: Some(best.reading.clone()),
-                    reading_spans: best.reading_spans.clone(),
+                    reading: Some(hiragana_to_katakana(&best.reading)),
+                    reading_spans: best
+                        .reading_spans
+                        .iter()
+                        .map(|s| ReadingSpan {
+                            start_index: s.start_index,
+                            end_index: s.end_index,
+                            text: hiragana_to_katakana(&s.text),
+                        })
+                        .collect(),
                 }
             } else {
                 AnnotatedSpan {
@@ -173,9 +189,21 @@ fn katakana_to_hiragana(text: &str) -> String {
     text.chars()
         .map(|c| {
             if ('\u{30A1}'..='\u{30F6}').contains(&c) {
-                // Katakana 0x30A1..0x30F6 → Hiragana 0x3041..0x3096, сдвиг -0x60 всегда валиден
                 char::from_u32(c as u32 - 0x60)
                     .expect("katakana→hiragana range 0x3041..0x3096 is valid unicode")
+            } else {
+                c
+            }
+        })
+        .collect()
+}
+
+fn hiragana_to_katakana(text: &str) -> String {
+    text.chars()
+        .map(|c| {
+            if ('\u{3041}'..='\u{3096}').contains(&c) {
+                char::from_u32(c as u32 + 0x60)
+                    .expect("hiragana→katakana range 0x30A1..0x30F6 is valid unicode")
             } else {
                 c
             }
@@ -204,6 +232,20 @@ mod tests {
     #[test]
     fn katakana_to_hiragana_preserves_prolonged_sound_mark() {
         assert_eq!(katakana_to_hiragana("バー"), "ばー");
+    }
+
+    #[test]
+    fn hiragana_to_katakana_converts_standard_range() {
+        assert_eq!(hiragana_to_katakana("たべもの"), "タベモノ");
+        assert_eq!(hiragana_to_katakana("あ"), "ア");
+        assert_eq!(hiragana_to_katakana("ん"), "ン");
+    }
+
+    #[test]
+    fn hiragana_to_katakana_preserves_non_hiragana() {
+        assert_eq!(hiragana_to_katakana("hello"), "hello");
+        assert_eq!(hiragana_to_katakana("アイウ"), "アイウ");
+        assert_eq!(hiragana_to_katakana("123"), "123");
     }
 
     #[test]
