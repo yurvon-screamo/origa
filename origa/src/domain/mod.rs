@@ -42,7 +42,7 @@ pub use tokenizer::{
     serialize_dictionary_to_rkyv, tokenize_text,
 };
 pub use user::{User, WordKnowledge};
-pub use value_objects::{Answer, DailyLoad, JapaneseLevel, NativeLanguage, Question};
+pub use value_objects::{CardAnswer, DailyLoad, JapaneseLevel, NativeLanguage, Question};
 pub use well_known_set::{
     SetType, TypeMeta, TypesMeta, WellKnownSet, WellKnownSetMeta, get_types_meta, id_to_set_type,
     resolve_set_path, set_types_meta,

@@ -13,7 +13,7 @@ use crate::ui_components::{
 use leptos::either::Either;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use origa::domain::{Card, NativeLanguage, StudyCard, User};
+use origa::domain::{Card, CardAnswer, NativeLanguage, StudyCard, User};
 use origa::traits::UserRepository;
 
 pub type CardsLoadedCallback = Arc<dyn Fn(&[StudyCard]) + Send + Sync>;
@@ -151,16 +151,28 @@ where
                 let matches_search = query.is_empty() || {
                     let card_inner = card.card();
                     let question = card_inner.question(&lang);
-                    let answer = card_inner.answer(&lang);
 
-                    if let Ok(question) = question
-                        && let Ok(answer) = answer
-                    {
-                        question.text().to_lowercase().contains(&query)
-                            || answer.text().to_lowercase().contains(&query)
-                    } else {
-                        false
-                    }
+                    let matches_question = question
+                        .ok()
+                        .is_some_and(|q| q.text().to_lowercase().contains(&query));
+
+                    let matches_answer = match card_inner.answer(&lang).ok() {
+                        Some(CardAnswer::Vocabulary {
+                            translations,
+                            description,
+                        }) => {
+                            translations
+                                .iter()
+                                .any(|t| t.to_lowercase().contains(&query))
+                                || description
+                                    .as_ref()
+                                    .is_some_and(|d| d.to_lowercase().contains(&query))
+                        },
+                        Some(CardAnswer::Text(s)) => s.to_lowercase().contains(&query),
+                        None => false,
+                    };
+
+                    matches_question || matches_answer
                 };
                 let matches_filter = current_filter.matches(CardStatus::from_study_card(card));
                 matches_search && matches_filter

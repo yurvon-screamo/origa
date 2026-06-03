@@ -3,11 +3,11 @@ use std::collections::HashSet;
 use super::super::shared::{CardStatus, DeleteRequest};
 use crate::i18n::use_i18n;
 use crate::ui_components::{
-    CardActionBar, CardHistoryModal, CollapsibleDescription, DeleteConfirmModal, FsrsMetrics,
-    FuriganaText, MarkdownText, Tag, TagVariant,
+    CardActionBar, CardHistoryModal, DeleteConfirmModal, FsrsMetrics, FuriganaText, Tag,
+    TagVariant, WordTranslations,
 };
 use leptos::prelude::*;
-use origa::domain::{Card as DomainCard, NativeLanguage, StudyCard};
+use origa::domain::{Card as DomainCard, CardAnswer, NativeLanguage, StudyCard};
 use ulid::Ulid;
 
 #[component]
@@ -42,23 +42,28 @@ pub fn VocabularyCardItem(
     };
 
     let study_card_for_meaning = study_card.clone();
-    let meaning = Memo::new(move |_| {
+    let answer_data = Memo::new(move |_| {
         let lang = native_language.get();
         match study_card_for_meaning.card() {
-            DomainCard::Vocabulary(vocab) => vocab
-                .answer(&lang)
-                .ok()
-                .map(|a| a.text().to_string())
-                .unwrap_or_default(),
-            _ => "?".to_string(),
+            DomainCard::Vocabulary(vocab) => match vocab.answer(&lang) {
+                Ok(CardAnswer::Vocabulary {
+                    translations,
+                    description,
+                }) => (translations, description),
+                Ok(CardAnswer::Text(s)) => (vec![s], None),
+                Err(_) => (vec!["?".to_string()], None),
+            },
+            _ => (vec!["?".to_string()], None),
         }
     });
+
+    let translations = Signal::derive(move || answer_data.get().0);
+    let description = Signal::derive(move || answer_data.get().1);
 
     let status = CardStatus::from_study_card(&study_card);
     let show_mark_as_known = status != CardStatus::Learned;
 
     let known_kanji_for_furigana = known_kanji;
-    let known_kanji_for_markdown = known_kanji_for_furigana.clone();
 
     view! {
         <div class="word-card anima-lift" data-testid="words-card-item">
@@ -72,12 +77,11 @@ pub fn VocabularyCardItem(
                     <FuriganaText text=word known_kanji=known_kanji_for_furigana/>
                 </div>
                 <div class="word-card-content">
-                    <CollapsibleDescription>
-                        <MarkdownText
-                            content=Signal::derive(move || meaning.get())
-                            known_kanji=known_kanji_for_markdown
-                        />
-                    </CollapsibleDescription>
+                    <WordTranslations
+                        translations=translations
+                        description=description
+                        test_id=Signal::derive(|| "words-card-translations".to_string())
+                    />
                 </div>
             </div>
             <div class="word-card-divider"></div>

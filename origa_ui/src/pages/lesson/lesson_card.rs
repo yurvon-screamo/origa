@@ -6,7 +6,7 @@ use leptos::prelude::*;
 
 use leptos::wasm_bindgen::JsCast;
 use leptos::wasm_bindgen::closure::Closure;
-use origa::domain::{Card as DomainCard, GrammarInfo, NativeLanguage};
+use origa::domain::{Card as DomainCard, CardAnswer, GrammarInfo, NativeLanguage};
 use std::collections::HashSet;
 use tracing;
 
@@ -54,7 +54,8 @@ pub fn LessonCard(
     });
 
     let answer_text = match card.answer(&lang) {
-        Ok(a) => a.text().to_string(),
+        Ok(CardAnswer::Vocabulary { translations, .. }) => translations.join(", "),
+        Ok(CardAnswer::Text(s)) => s,
         Err(e) => {
             tracing::warn!(
                 card_type = ?card_type,

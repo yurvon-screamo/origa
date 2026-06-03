@@ -54,6 +54,7 @@ mod translator;
 mod typography;
 mod update_drawer;
 mod word_audio;
+mod word_translations;
 
 pub use alert::{Alert, AlertType};
 pub use audio_buttons::AudioButtons;
@@ -117,3 +118,4 @@ pub use tooltip::Tooltip;
 pub use typography::{DisplayText, Heading, HeadingLevel, Text, TextSize, TypographyVariant};
 pub use update_drawer::UpdateDrawer;
 pub use word_audio::{register_audio, speak_word, speak_word_with_callback, stop_current_audio};
+pub use word_translations::WordTranslations;

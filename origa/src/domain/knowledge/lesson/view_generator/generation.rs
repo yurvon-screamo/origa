@@ -2,7 +2,7 @@ use crate::dictionary::grammar::get_rule_by_id;
 use crate::dictionary::kanji::{KanjiInfo, get_kanji_info};
 use crate::domain::grammar::apply_format_actions;
 use crate::domain::knowledge::KnowledgeSet;
-use crate::domain::value_objects::NativeLanguage;
+use crate::domain::value_objects::{CardAnswer, NativeLanguage};
 use crate::domain::{
     Card, OrigaError, PartOfSpeech, find_known_vocab_words_for_pos, generate_grammar_distractors,
 };
@@ -14,6 +14,13 @@ use super::super::types::{
 };
 use super::QUIZ_OPTIONS_COUNT;
 
+fn answer_display_text(answer: &CardAnswer) -> String {
+    match answer {
+        CardAnswer::Vocabulary { translations, .. } => translations.join(", "),
+        CardAnswer::Text(s) => s.clone(),
+    }
+}
+
 pub(crate) fn generate_quiz(
     original_card: Card,
     same_type_cards: &[Card],
@@ -24,13 +31,14 @@ pub(crate) fn generate_quiz(
     }
 
     let correct_answer = original_card.answer(lang)?;
+    let correct_text = answer_display_text(&correct_answer);
 
     let needed_distractors = QUIZ_OPTIONS_COUNT.saturating_sub(1);
     let mut rng = rand::rng();
     let selected_distractors = collect_pos_filtered_distractors(
         &original_card,
         same_type_cards,
-        correct_answer.text(),
+        &correct_text,
         lang,
         needed_distractors,
         &mut rng,
@@ -45,10 +53,7 @@ pub(crate) fn generate_quiz(
         .map(|text| QuizOption::new_simple(text, false))
         .collect();
 
-    options.push(QuizOption::new_simple(
-        correct_answer.text().to_string(),
-        true,
-    ));
+    options.push(QuizOption::new_simple(correct_text, true));
     options.shuffle(&mut rand::rng());
 
     let quiz = QuizCard::new(original_card, options, QuizMode::Single);
@@ -72,7 +77,7 @@ fn collect_pos_filtered_distractors(
 
     for card in same_type_cards {
         let answer_text = match card.answer(lang).ok() {
-            Some(a) if a.text() != correct_answer_text => a.text().to_string(),
+            Some(a) if answer_display_text(&a) != correct_answer_text => answer_display_text(&a),
             _ => continue,
         };
 
@@ -115,16 +120,17 @@ pub(crate) fn generate_yesno(
 
     let question = original_card.question(lang)?;
     let correct_answer = original_card.answer(lang)?;
+    let correct_text = answer_display_text(&correct_answer);
 
     let is_correct = rng.random_bool(0.5);
 
     let statement_answer = if is_correct {
-        correct_answer.text().to_string()
+        correct_text
     } else {
         let distractors = collect_pos_filtered_distractors(
             &original_card,
             same_type_cards,
-            correct_answer.text(),
+            &correct_text,
             lang,
             1,
             rng,
@@ -155,7 +161,7 @@ pub(crate) fn generate_phrase_quiz(
     };
 
     let audio_file = format!("{}.opus", phrase_card.phrase_id());
-    let correct_text = original_card.answer(lang).ok()?.text().to_string();
+    let correct_text = answer_display_text(&original_card.answer(lang).ok()?);
 
     let mut distractors: Vec<String> = same_type_cards
         .iter()
@@ -163,7 +169,7 @@ pub(crate) fn generate_phrase_quiz(
             Card::Phrase(_) => c
                 .answer(lang)
                 .ok()
-                .map(|a| a.text().to_string())
+                .map(|a| answer_display_text(&a))
                 .filter(|text| text != &correct_text),
             Card::Vocabulary(_) | Card::Kanji(_) | Card::Grammar(_) => None,
         })
@@ -374,7 +380,7 @@ pub(crate) fn generate_grammar_quiz(
         .unwrap_or_else(|_| grammar_rule_card.rule_id().to_string());
     let grammar_desc = grammar_rule_card
         .description(&DEFAULT_LANG)
-        .map(|a| a.text().to_string())
+        .map(|a| answer_display_text(&a))
         .unwrap_or_default();
 
     let grammar_info = GrammarInfo::new(

@@ -5087,6 +5087,35 @@ input[type="submit"],
     flex-shrink: 0;
 }
 
+.word-translations {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.word-translations-list {
+    list-style: decimal;
+    padding-left: 20px;
+    margin: 0;
+}
+
+.word-translations-item {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm, 16px);
+    color: var(--fg-black);
+    line-height: 1.5;
+}
+
+.word-translations-desc {
+    font-family: var(--font-serif);
+    font-size: var(--text-sm, 16px);
+    color: var(--fg-muted);
+    font-style: italic;
+    line-height: 1.5;
+    padding-top: 4px;
+    border-top: 1px solid var(--border-light);
+}
+
 /* === Phrase Card Item — Redesigned === */
 .phrase-card {
     display: flex;

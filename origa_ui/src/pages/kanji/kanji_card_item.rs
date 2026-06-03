@@ -3,7 +3,7 @@ use crate::i18n::use_i18n;
 use crate::ui_components::{CardActionBar, DeleteConfirmModal, FsrsMetrics, Tag, TagVariant};
 use leptos::prelude::*;
 use leptos_router::components::A;
-use origa::domain::{Card as DomainCard, NativeLanguage, StudyCard};
+use origa::domain::{Card as DomainCard, CardAnswer, NativeLanguage, StudyCard};
 use ulid::Ulid;
 
 const RADICALS_MAX_LEN: usize = 20;
@@ -42,11 +42,11 @@ pub fn KanjiCardItem(
     let study_card_for_answer = study_card.clone();
     let answer_text = Memo::new(move |_| {
         let lang = native_language.get();
-        study_card_for_answer
-            .card()
-            .answer(&lang)
-            .map(|a| a.text().to_string())
-            .unwrap_or_default()
+        match study_card_for_answer.card().answer(&lang).ok() {
+            Some(CardAnswer::Vocabulary { translations, .. }) => translations.join(", "),
+            Some(CardAnswer::Text(s)) => s,
+            None => String::new(),
+        }
     });
 
     let status = CardStatus::from_study_card(&study_card);
