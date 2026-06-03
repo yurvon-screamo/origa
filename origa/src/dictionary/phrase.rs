@@ -215,6 +215,10 @@ pub fn get_chunk_id(id: &Ulid) -> Option<u32> {
         .and_then(|idx| idx.get_entry(id).map(|e| e.chunk_id))
 }
 
+pub fn get_index_entry(id: &Ulid) -> Option<&'static IndexEntry> {
+    PHRASE_INDEX.get().and_then(|idx| idx.get_entry(id))
+}
+
 pub fn iter_index_entries() -> Option<impl Iterator<Item = &'static IndexEntry>> {
     PHRASE_INDEX.get().map(|idx| idx.iter_entries())
 }
