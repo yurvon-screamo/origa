@@ -121,7 +121,8 @@
             "migii_desc": "JLPT study app",
             "duolingo_ru_desc": "Duolingo in Russian",
             "duolingo_en_desc": "Duolingo in English",
-            "minna_desc": "Japanese textbook (N5-N4)"
+            "minna_desc": "Japanese textbook (N5-N4)",
+            "irodori_desc": "Japanese textbook by Japan Foundation (N5-N4)"
         },
         "progress": {
             "title": "Your progress",
@@ -149,8 +150,13 @@
             "import_n5_n4_n3_n2_all_n1_lessons": "Will be imported: N5+N4+N3+N2 (all) + N1 Lessons 1-{}",
             "import_lessons_1_n": "Will be imported: Lessons 1-{}",
             "import_lessons_1_25_plus": "Will be imported: Lessons 1-25 + 26-{}",
+            "import_irodori_nyuumon": "Will be imported: Nyuumon Lessons 1-{}",
+            "import_irodori_shokyuu1": "Will be imported: Nyuumon (all) + Shokyuu 1 Lessons 1-{}",
+            "import_irodori_shokyuu2": "Will be imported: Nyuumon + Shokyuu 1 (all) + Shokyuu 2 Lessons 1-{}",
             "module_number": "Module {}",
-            "section_number": "Section {}"
+            "section_number": "Section {}",
+            "book": "Book",
+            "select_book": "Select book"
         },
         "scoring": {
             "loading": "Loading cards...",

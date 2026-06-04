@@ -161,6 +161,12 @@ testWithFreshUser.describe("Onboarding Flow - N4 with ~50% Progress", () => {
             await minnaNoNihongoCheckbox.click();
         }
 
+        // Select Irodori
+        const irodoriCheckbox = page.getByTestId("apps-step-app-Irodori-checkbox");
+        if (await irodoriCheckbox.isVisible().catch(() => false)) {
+            await irodoriCheckbox.click();
+        }
+
         // Screenshot after selections
         await page.screenshot({
             path: "test-results/onboarding-step-3-apps-after.png",
@@ -217,6 +223,17 @@ testWithFreshUser.describe("Onboarding Flow - N4 with ~50% Progress", () => {
             const minnaLessonDropdown = page.getByTestId("minna-lesson-dropdown");
             await minnaLessonDropdown.click();
             await page.getByTestId("minna-lesson-dropdown-option-lesson_38").click();
+        }
+
+        // Configure Irodori progress (book + lesson dropdowns)
+        const irodoriBookDropdown = page.getByTestId("irodori-book-dropdown");
+        if (await irodoriBookDropdown.isVisible().catch(() => false)) {
+            await irodoriBookDropdown.click();
+            await page.getByTestId("irodori-book-dropdown-option-nyuumon").click();
+
+            const irodoriLessonDropdown = page.getByTestId("irodori-lesson-dropdown");
+            await irodoriLessonDropdown.click();
+            await page.getByTestId("irodori-lesson-dropdown-option-lesson_9").click();
         }
 
         // Screenshot after progress configuration
@@ -415,6 +432,11 @@ async function completeOnboardingToScoring(page: Page): Promise<boolean> {
         await minnaCheckbox.click();
     }
 
+    const irodoriCheckbox = page.getByTestId("apps-step-app-Irodori-checkbox");
+    if (await irodoriCheckbox.isVisible().catch(() => false)) {
+        await irodoriCheckbox.click();
+    }
+
     await page.getByTestId("onboarding-next").click();
     await expect(page.getByTestId("onboarding-progress-step")).toBeVisible();
 
@@ -447,6 +469,16 @@ async function completeOnboardingToScoring(page: Page): Promise<boolean> {
         const minnaLessonDropdown = page.getByTestId("minna-lesson-dropdown");
         await minnaLessonDropdown.click();
         await page.getByTestId("minna-lesson-dropdown-option-lesson_38").click();
+    }
+
+    const irodoriBookDropdown = page.getByTestId("irodori-book-dropdown");
+    if (await irodoriBookDropdown.isVisible().catch(() => false)) {
+        await irodoriBookDropdown.click();
+        await page.getByTestId("irodori-book-dropdown-option-nyuumon").click();
+
+        const irodoriLessonDropdown = page.getByTestId("irodori-lesson-dropdown");
+        await irodoriLessonDropdown.click();
+        await page.getByTestId("irodori-lesson-dropdown-option-lesson_9").click();
     }
 
     await page.getByTestId("onboarding-next").click();

@@ -3,8 +3,10 @@ use std::collections::HashMap;
 use origa::domain::JapaneseLevel;
 use origa::domain::WellKnownSetMeta;
 
-use super::parsers::{parse_duolingo_module_unit, parse_migii_level_lesson, parse_minna_lesson};
-use super::types::{DuolingoModule, DuolingoUnit, MigiiLesson, MinnaLesson};
+use super::parsers::{
+    parse_duolingo_module_unit, parse_irodori_lesson, parse_migii_level_lesson, parse_minna_lesson,
+};
+use super::types::{DuolingoModule, DuolingoUnit, IrodoriLesson, MigiiLesson, MinnaLesson};
 
 pub(super) fn parse_duolingo_modules(
     sets: &[WellKnownSetMeta],
@@ -169,6 +171,59 @@ pub(super) fn parse_minna_lessons(sets: &[WellKnownSetMeta], prefix: &str) -> Ve
         }
     } else {
         tracing::warn!("No Minna {} sets found in available_sets", prefix);
+    }
+
+    lessons.sort_by_key(|l| l.lesson_number);
+    lessons
+}
+
+pub(super) fn parse_irodori_lessons(sets: &[WellKnownSetMeta], prefix: &str) -> Vec<IrodoriLesson> {
+    let mut parsed_count = 0;
+    let mut total_count = 0;
+
+    let mut lessons: Vec<IrodoriLesson> = sets
+        .iter()
+        .filter(|s| s.id.starts_with(prefix))
+        .filter_map(|set| {
+            total_count += 1;
+
+            let parsed = parse_irodori_lesson(&set.title_ru)
+                .or_else(|| parse_irodori_lesson(&set.title_en))
+                .or_else(|| parse_irodori_lesson(&set.id));
+
+            if parsed.is_some() {
+                parsed_count += 1;
+            }
+
+            parsed.map(|lesson_number| IrodoriLesson {
+                id: set.id.clone(),
+                lesson_number,
+            })
+        })
+        .collect();
+
+    if total_count > 0 {
+        tracing::info!(
+            "Irodori {} parser: {}/{} sets parsed successfully",
+            prefix,
+            parsed_count,
+            total_count
+        );
+
+        if parsed_count == 0 {
+            tracing::warn!(
+                "No Irodori {} sets could be parsed! Check title format in data. \
+                 Example titles: {:?}",
+                prefix,
+                sets.iter()
+                    .filter(|s| s.id.starts_with(prefix))
+                    .take(3)
+                    .map(|s| (&s.title_ru, &s.title_en, &s.id))
+                    .collect::<Vec<_>>()
+            );
+        }
+    } else {
+        tracing::warn!("No Irodori {} sets found in available_sets", prefix);
     }
 
     lessons.sort_by_key(|l| l.lesson_number);
@@ -356,5 +411,49 @@ mod set_parser_tests {
         assert_eq!(n4_lessons.len(), 1);
         assert_eq!(n5_lessons[0].lesson_number, 1);
         assert_eq!(n5_lessons[1].lesson_number, 5);
+    }
+
+    #[test]
+    fn test_parse_irodori_lessons_filters_by_prefix() {
+        let sets = vec![
+            WellKnownSetMeta {
+                id: "irodori_nyuumon_01".to_string(),
+                set_type: "Irodori".to_string(),
+                level: JapaneseLevel::N5,
+                title_ru: "Irodori 入門 Урок 1".to_string(),
+                title_en: String::new(),
+                desc_ru: String::new(),
+                desc_en: String::new(),
+                word_count: 0,
+            },
+            WellKnownSetMeta {
+                id: "irodori_nyuumon_05".to_string(),
+                set_type: "Irodori".to_string(),
+                level: JapaneseLevel::N5,
+                title_ru: String::new(),
+                title_en: "Irodori Nyuumon Lesson 5".to_string(),
+                desc_ru: String::new(),
+                desc_en: String::new(),
+                word_count: 0,
+            },
+            WellKnownSetMeta {
+                id: "irodori_shokyuu1_01".to_string(),
+                set_type: "Irodori".to_string(),
+                level: JapaneseLevel::N4,
+                title_ru: "Irodori 初級1 Урок 1".to_string(),
+                title_en: String::new(),
+                desc_ru: String::new(),
+                desc_en: String::new(),
+                word_count: 0,
+            },
+        ];
+
+        let nyuumon_lessons = parse_irodori_lessons(&sets, "irodori_nyuumon_");
+        let shokyuu1_lessons = parse_irodori_lessons(&sets, "irodori_shokyuu1_");
+
+        assert_eq!(nyuumon_lessons.len(), 2);
+        assert_eq!(shokyuu1_lessons.len(), 1);
+        assert_eq!(nyuumon_lessons[0].lesson_number, 1);
+        assert_eq!(nyuumon_lessons[1].lesson_number, 5);
     }
 }
