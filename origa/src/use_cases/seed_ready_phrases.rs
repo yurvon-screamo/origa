@@ -95,7 +95,7 @@ fn collect_known_vocabulary_words(study_cards: &HashMap<Ulid, StudyCard>) -> Has
         .values()
         .filter_map(|sc| {
             if let Card::Vocabulary(vocab) = sc.card() {
-                if sc.memory().is_known_card() {
+                if sc.memory().is_in_progress() || sc.memory().is_known_card() {
                     return Some(vocab.word().text().to_string());
                 }
             }
@@ -109,7 +109,7 @@ pub fn collect_known_grammar_rules(study_cards: &HashMap<Ulid, StudyCard>) -> Ha
         .values()
         .filter_map(|sc| {
             if let Card::Grammar(grammar_card) = sc.card() {
-                if sc.memory().is_known_card() {
+                if sc.memory().is_in_progress() || sc.memory().is_known_card() {
                     return Some(*grammar_card.rule_id());
                 }
             }
