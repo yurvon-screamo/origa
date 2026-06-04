@@ -5,16 +5,12 @@
 :4000 {
     reverse_proxy localhost:8080
 
-    @compressible {
-        not path *.wasm
-    }
-    encode @compressible gzip zstd
+    encode gzip zstd
 
     @static_files {
         path *.js *.css *.json *.png *.jpg *.jpeg *.gif *.svg *.woff *.woff2 *.ttf *.eot *.ico *.webmanifest *.wasm
     }
-    header @static_files Cache-Control "public, max-age=2592000, must-revalidate"
-    header @static_files ETag ""
+    header @static_files Cache-Control "public, max-age=2592000, immutable"
 
     @html {
         path *.html /
