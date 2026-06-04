@@ -168,17 +168,20 @@ testWithFreshUser.describe("Phrases after full onboarding", () => {
         const firstCard = phrasesPage.cardItem.first();
         await expect(firstCard).toBeVisible({ timeout: 30_000 });
 
-        // BUG: On first load, phrase text is empty because phrase CDN data hasn't loaded
-        // when PhraseCardItem is created, and the For component reuses old views for matching keys
+        // Phrase data loads lazily from CDN — Skeleton is shown initially, replaced with text once loaded
         const phraseText = firstCard.getByTestId("phrases-card-phrase");
         await expect(phraseText).toBeAttached({ timeout: 30_000 });
-        const textContent = await phraseText.textContent();
-        expect(textContent?.trim().length, "Phrase text should not be empty on first load").toBeGreaterThan(0);
+        await expect.poll(async () => {
+            const textContent = await phraseText.textContent();
+            return textContent?.trim().length ?? 0;
+        }, { timeout: 30_000, message: "Phrase text should not be empty on first load" }).toBeGreaterThan(0);
 
         // Also verify meaning is non-empty
         const meaning = firstCard.getByTestId("phrases-card-meaning");
-        const meaningContent = await meaning.textContent();
-        expect(meaningContent?.trim().length, "Phrase meaning should not be empty on first load").toBeGreaterThan(0);
+        await expect.poll(async () => {
+            const meaningContent = await meaning.textContent();
+            return meaningContent?.trim().length ?? 0;
+        }, { timeout: 30_000, message: "Phrase meaning should not be empty on first load" }).toBeGreaterThan(0);
     });
 
     testWithFreshUser("should show phrase cards after completing onboarding with N5", async ({ page }) => {
