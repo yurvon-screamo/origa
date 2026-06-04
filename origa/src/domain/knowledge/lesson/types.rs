@@ -434,12 +434,14 @@ impl IntoIterator for LessonData {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::domain::Card;
     use crate::domain::knowledge::{PhraseCard, VocabularyCard};
     use crate::domain::value_objects::Question;
-    use crate::domain::Card;
 
     fn make_vocabulary_lesson_card(id: Ulid) -> (Ulid, LessonCard) {
-        let card = Card::Vocabulary(VocabularyCard::new(Question::new("test".to_string()).unwrap()));
+        let card = Card::Vocabulary(VocabularyCard::new(
+            Question::new("test".to_string()).unwrap(),
+        ));
         (id, LessonCard::new(LessonCardView::Normal(card), false))
     }
 
@@ -477,8 +479,16 @@ mod tests {
         let core_ids: Vec<Ulid> = result_ids[..result.core_count].to_vec();
         let phrase_ids: Vec<Ulid> = result_ids[result.core_count..].to_vec();
 
-        assert!(core_ids.iter().all(|id| !matches!(result.get(id), Some(lc) if lc.card_type() == CardType::Phrase)));
-        assert!(phrase_ids.iter().all(|id| matches!(result.get(id), Some(lc) if lc.card_type() == CardType::Phrase)));
+        assert!(
+            core_ids.iter().all(
+                |id| !matches!(result.get(id), Some(lc) if lc.card_type() == CardType::Phrase)
+            )
+        );
+        assert!(
+            phrase_ids
+                .iter()
+                .all(|id| matches!(result.get(id), Some(lc) if lc.card_type() == CardType::Phrase))
+        );
     }
 
     #[test]
