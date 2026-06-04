@@ -21,3 +21,9 @@ pub struct MinnaLesson {
     pub id: String,
     pub lesson_number: usize,
 }
+
+#[derive(Clone, Debug)]
+pub struct IrodoriLesson {
+    pub id: String,
+    pub lesson_number: usize,
+}

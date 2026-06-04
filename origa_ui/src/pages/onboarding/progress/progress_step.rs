@@ -5,9 +5,12 @@ use leptos::prelude::*;
 use super::super::onboarding_state::OnboardingState;
 use super::app_type::{AppType, parse_app_type};
 use super::duolingo_selector::DuolingoProgressSelector;
+use super::irodori_selector::IrodoriProgressSelector;
 use super::migii_selector::MigiiProgressSelector;
 use super::minna_selector::MinnaProgressSelector;
-use super::set_parsers::{parse_duolingo_modules, parse_migii_lessons, parse_minna_lessons};
+use super::set_parsers::{
+    parse_duolingo_modules, parse_irodori_lessons, parse_migii_lessons, parse_minna_lessons,
+};
 
 #[component]
 pub fn ProgressStep(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoView {
@@ -112,6 +115,25 @@ pub fn ProgressStep(#[prop(optional, into)] test_id: Signal<String>) -> impl Int
                                     <MinnaProgressSelector
                                         lessons_n5=lessons_n5_signal
                                         lessons_n4=lessons_n4_signal
+                                        state=state
+                                    />
+                                }.into_any()
+                            }
+                            Some(AppType::Irodori) => {
+                                let lessons_nyuumon_signal = Signal::derive(move || {
+                                    parse_irodori_lessons(&sets.get(), "irodori_nyuumon_")
+                                });
+                                let lessons_shokyuu1_signal = Signal::derive(move || {
+                                    parse_irodori_lessons(&sets.get(), "irodori_shokyuu1_")
+                                });
+                                let lessons_shokyuu2_signal = Signal::derive(move || {
+                                    parse_irodori_lessons(&sets.get(), "irodori_shokyuu2_")
+                                });
+                                view! {
+                                    <IrodoriProgressSelector
+                                        lessons_nyuumon=lessons_nyuumon_signal
+                                        lessons_shokyuu1=lessons_shokyuu1_signal
+                                        lessons_shokyuu2=lessons_shokyuu2_signal
                                         state=state
                                     />
                                 }.into_any()

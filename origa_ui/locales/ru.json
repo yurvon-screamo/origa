@@ -121,7 +121,8 @@
       "migii_desc": "Приложение для изучения JLPT",
       "duolingo_ru_desc": "Duolingo на русском языке",
       "duolingo_en_desc": "Duolingo на английском языке",
-      "minna_desc": "Учебник японского языка (N5-N4)"
+      "minna_desc": "Учебник японского языка (N5-N4)",
+      "irodori_desc": "Учебник японского языка от Japan Foundation (N5-N4)"
     },
     "progress": {
       "title": "Ваш прогресс",
@@ -149,8 +150,13 @@
       "import_n5_n4_n3_n2_all_n1_lessons": "Будут импортированы: N5+N4+N3+N2 (все) + N1 Уроки 1-{}",
       "import_lessons_1_n": "Будут импортированы: Уроки 1-{}",
       "import_lessons_1_25_plus": "Будут импортированы: Уроки 1-25 + 26-{}",
+      "import_irodori_nyuumon": "Будут импортированы: 入門 Уроки 1-{}",
+      "import_irodori_shokyuu1": "Будут импортированы: 入門 (все) + 初級1 Уроки 1-{}",
+      "import_irodori_shokyuu2": "Будут импортированы: 入門+初級1 (все) + 初級2 Уроки 1-{}",
       "module_number": "Модуль {}",
-      "section_number": "Раздел {}"
+      "section_number": "Раздел {}",
+      "book": "Книга",
+      "select_book": "Выберите книгу"
     },
     "scoring": {
       "loading": "Загрузка карточек...",

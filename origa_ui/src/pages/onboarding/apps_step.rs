@@ -48,6 +48,12 @@ fn get_known_apps() -> Vec<AppInfo> {
             desc_key: "minna",
             icon: public_url("/public/external_icons/minnanonihongo.png"),
         },
+        AppInfo {
+            id: "Irodori".to_string(),
+            name: "Irodori".to_string(),
+            desc_key: "irodori",
+            icon: public_url("/public/external_icons/irodori.png"),
+        },
     ]
 }
 
@@ -59,6 +65,7 @@ fn app_desc(i18n: I18nContext<Locale>, key: &str) -> String {
         "duolingo_ru" => td_string!(locale, onboarding.apps.duolingo_ru_desc).to_string(),
         "duolingo_en" => td_string!(locale, onboarding.apps.duolingo_en_desc).to_string(),
         "minna" => td_string!(locale, onboarding.apps.minna_desc).to_string(),
+        "irodori" => td_string!(locale, onboarding.apps.irodori_desc).to_string(),
         _ => String::new(),
     }
 }
