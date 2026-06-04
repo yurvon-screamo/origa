@@ -21,6 +21,7 @@ jobs:
         runs-on: ubuntu-24.04
         env:
             ORIGA_CDN_BASE_URL: ${{ vars.ORIGA_CDN_BASE_URL }}
+            ORIGA_LANDING_BASE_URL: "https://origa.app"
             TRAILBASE_URL: ${{ vars.TRAILBASE_URL }}
         steps:
             - name: Checkout repository
@@ -39,6 +40,15 @@ jobs:
               with:
                   targets: wasm32-unknown-unknown
                   shared-key: origa-ci
+
+            - name: Setup Node.js for landing CSS
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "20"
+
+            - name: Build landing CSS
+              working-directory: origa_landing
+              run: npm ci && npm run build:css
 
             - name: Check formatting
               run: cargo fmt --check --all
@@ -72,6 +82,7 @@ jobs:
         runs-on: ubuntu-24.04
         env:
             ORIGA_CDN_BASE_URL: ${{ vars.ORIGA_CDN_BASE_URL }}
+            ORIGA_LANDING_BASE_URL: "https://origa.app"
             TRAILBASE_URL: ${{ vars.TRAILBASE_URL }}
         steps:
             - name: Checkout repository
@@ -103,6 +114,15 @@ jobs:
               with:
                   name: cdn-data
                   path: cdn/
+
+            - name: Setup Node.js for landing CSS
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "20"
+
+            - name: Build landing CSS
+              working-directory: origa_landing
+              run: npm ci && npm run build:css
 
             - name: Run tests
               run: cargo test --workspace
@@ -136,6 +156,10 @@ jobs:
               uses: ./.github/actions/setup-frontend
               with:
                   tools: trunk
+
+            - name: Build landing CSS
+              working-directory: origa_landing
+              run: npm ci && npm run build:css
 
             - name: Download CDN artifact
               uses: actions/download-artifact@v4
@@ -295,6 +319,7 @@ jobs:
                   cache-from: type=registry,ref=ghcr.io/yurvon-screamo/origa:buildcache
                   build-args: |
                       ORIGA_CDN_BASE_URL=${{ vars.ORIGA_CDN_BASE_URL }}
+                      ORIGA_LANDING_BASE_URL=https://origa.app
                       TRAILBASE_URL=${{ vars.TRAILBASE_URL }}
 
     check:

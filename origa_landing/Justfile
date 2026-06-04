@@ -1,0 +1,15 @@
+# Build CSS
+css:
+    npx tailwindcss --input style/landing.css --output style/landing.processed.css --minify
+
+# Watch CSS
+css-watch:
+    npx tailwindcss --input style/landing.css --output style/landing.processed.css --watch
+
+# Run server
+run: css
+    cargo run --bin origa_landing
+
+# Build release
+build: css
+    cargo build --release --bin origa_landing
