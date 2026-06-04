@@ -6,6 +6,7 @@ pub enum AppType {
     DuolingoEn,
     Migii,
     MinnaNoNihongo,
+    Irodori,
 }
 
 pub fn parse_app_type(app_id: &str) -> Option<AppType> {
@@ -14,6 +15,7 @@ pub fn parse_app_type(app_id: &str) -> Option<AppType> {
         "DuolingoEn" => Some(AppType::DuolingoEn),
         "Migii" => Some(AppType::Migii),
         "MinnaNoNihongo" => Some(AppType::MinnaNoNihongo),
+        "Irodori" => Some(AppType::Irodori),
         _ => None,
     }
 }

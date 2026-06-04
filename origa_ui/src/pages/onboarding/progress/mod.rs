@@ -1,6 +1,8 @@
 mod app_type;
 mod duolingo_helpers;
 mod duolingo_selector;
+mod irodori_helpers;
+mod irodori_selector;
 mod migii_helpers;
 mod migii_selector;
 mod minna_selector;

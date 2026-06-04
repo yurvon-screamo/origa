@@ -122,6 +122,35 @@ pub fn parse_minna_lesson(title: &str) -> Option<usize> {
     None
 }
 
+pub fn parse_irodori_lesson(title: &str) -> Option<usize> {
+    if let Some(num) = extract_number_from_text(title, "Lesson ", "") {
+        return Some(num);
+    }
+
+    if let Some(num) = extract_number_from_text(title, "Урок ", "") {
+        return Some(num);
+    }
+
+    let prefixes = ["irodori_nyuumon_", "irodori_shokyuu1_", "irodori_shokyuu2_"];
+    for prefix in prefixes {
+        if let Some(start_idx) = title.find(prefix) {
+            let start = start_idx + prefix.len();
+            let rest = &title[start..];
+            let end = rest.find('_').unwrap_or(rest.len());
+            let num_str = &rest[..end];
+            if let Ok(num) = num_str.parse::<usize>() {
+                return Some(num);
+            }
+        }
+    }
+
+    tracing::warn!(
+        "Failed to parse Irodori lesson number from title: {}",
+        title
+    );
+    None
+}
+
 #[cfg(test)]
 mod parser_tests {
     use super::*;
@@ -181,5 +210,18 @@ mod parser_tests {
     #[case("minna without number", None)]
     fn test_parse_minna_lesson(#[case] title: &str, #[case] expected: Option<usize>) {
         assert_eq!(parse_minna_lesson(title), expected);
+    }
+
+    #[rstest]
+    #[case("Irodori Nyuumon Lesson 1", Some(1))]
+    #[case("Irodori 入門 Урок 1", Some(1))]
+    #[case("Irodori Shokyuu 1 Lesson 10", Some(10))]
+    #[case("Irodori 初級2 Урок 18", Some(18))]
+    #[case("irodori_nyuumon_01", Some(1))]
+    #[case("irodori_shokyuu1_10", Some(10))]
+    #[case("irodori_shokyuu2_18", Some(18))]
+    #[case("Invalid title", None)]
+    fn test_parse_irodori_lesson(#[case] title: &str, #[case] expected: Option<usize>) {
+        assert_eq!(parse_irodori_lesson(title), expected);
     }
 }

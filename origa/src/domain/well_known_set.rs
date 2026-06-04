@@ -62,6 +62,8 @@ pub fn id_to_set_type(id: &str) -> SetType {
         "DuolingoRu".to_string()
     } else if id.starts_with("minna_n5_") || id.starts_with("minna_n4_") {
         "MinnaNoNihongo".to_string()
+    } else if id.starts_with("irodori_") {
+        "Irodori".to_string()
     } else {
         id.split('_').next().unwrap_or("Unknown").to_string()
     }
@@ -106,6 +108,19 @@ fn resolve_minna_path(id: &str) -> Option<String> {
     None
 }
 
+fn resolve_irodori_path(id: &str) -> Option<String> {
+    if id.strip_prefix("irodori_nyuumon_").is_some() {
+        return Some(format!("well_known_set/irodori_nyuumon/{}.json", id));
+    }
+    if id.strip_prefix("irodori_shokyuu1_").is_some() {
+        return Some(format!("well_known_set/irodori_shokyuu1/{}.json", id));
+    }
+    if id.strip_prefix("irodori_shokyuu2_").is_some() {
+        return Some(format!("well_known_set/irodori_shokyuu2/{}.json", id));
+    }
+    None
+}
+
 pub fn resolve_set_path(id: &str) -> String {
     if id.contains("..") || id.contains('/') {
         return format!("well_known_set/{}.json", id);
@@ -115,6 +130,7 @@ pub fn resolve_set_path(id: &str) -> String {
         .or_else(|| resolve_migii_path(id))
         .or_else(|| resolve_duolingo_path(id))
         .or_else(|| resolve_minna_path(id))
+        .or_else(|| resolve_irodori_path(id))
         .unwrap_or_else(|| format!("well_known_set/{}.json", id))
 }
 
@@ -197,6 +213,12 @@ mod tests {
     #[case("duolingo_n4_verbs", "DuolingoRu")]
     #[case("minna_n5_01", "MinnaNoNihongo")]
     #[case("minna_n4_26", "MinnaNoNihongo")]
+    #[case("irodori_nyuumon_01", "Irodori")]
+    #[case("irodori_nyuumon_18", "Irodori")]
+    #[case("irodori_shokyuu1_01", "Irodori")]
+    #[case("irodori_shokyuu1_10", "Irodori")]
+    #[case("irodori_shokyuu2_01", "Irodori")]
+    #[case("irodori_shokyuu2_18", "Irodori")]
     #[case("unknown_id", "unknown")]
     #[case("some_random_set", "some")]
     fn test_id_to_set_type_various_prefixes(#[case] id: &str, #[case] expected: &str) {
@@ -220,6 +242,30 @@ mod tests {
     )]
     #[case("minna_n5_01", "well_known_set/minna_n5/minna_n5_01.json")]
     #[case("minna_n4_26", "well_known_set/minna_n4/minna_n4_26.json")]
+    #[case(
+        "irodori_nyuumon_01",
+        "well_known_set/irodori_nyuumon/irodori_nyuumon_01.json"
+    )]
+    #[case(
+        "irodori_nyuumon_18",
+        "well_known_set/irodori_nyuumon/irodori_nyuumon_18.json"
+    )]
+    #[case(
+        "irodori_shokyuu1_01",
+        "well_known_set/irodori_shokyuu1/irodori_shokyuu1_01.json"
+    )]
+    #[case(
+        "irodori_shokyuu1_10",
+        "well_known_set/irodori_shokyuu1/irodori_shokyuu1_10.json"
+    )]
+    #[case(
+        "irodori_shokyuu2_01",
+        "well_known_set/irodori_shokyuu2/irodori_shokyuu2_01.json"
+    )]
+    #[case(
+        "irodori_shokyuu2_18",
+        "well_known_set/irodori_shokyuu2/irodori_shokyuu2_18.json"
+    )]
     #[case("spy_family_s1", "well_known_set/spy_family_s1.json")]
     #[case("random_id", "well_known_set/random_id.json")]
     fn test_resolve_set_path_formats(#[case] id: &str, #[case] expected: &str) {

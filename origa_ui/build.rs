@@ -316,6 +316,18 @@ fn generate_well_known_meta() {
         "cargo:rerun-if-changed={}",
         base_dir.join("duolingo").display()
     );
+    println!(
+        "cargo:rerun-if-changed={}",
+        base_dir.join("irodori_nyuumon").display()
+    );
+    println!(
+        "cargo:rerun-if-changed={}",
+        base_dir.join("irodori_shokyuu1").display()
+    );
+    println!(
+        "cargo:rerun-if-changed={}",
+        base_dir.join("irodori_shokyuu2").display()
+    );
 
     let mut meta_list: Vec<WellKnownMeta> = Vec::new();
 
@@ -411,6 +423,93 @@ fn generate_well_known_meta() {
                 let mut data = load_json(&path);
                 let set_id = path.file_stem().unwrap().to_string_lossy().to_string();
                 meta_list.push(extract_meta(&mut data, &set_id, "MinnaNoNihongo", "N4"));
+            }
+        }
+    }
+
+    // Irodori Nyuumon files
+    let irodori_nyuumon_dir = base_dir.join("irodori_nyuumon");
+    if irodori_nyuumon_dir.exists() {
+        let mut entries: Vec<_> = fs::read_dir(&irodori_nyuumon_dir)
+            .unwrap()
+            .filter_map(|e| e.ok())
+            .filter(|e| {
+                e.path()
+                    .extension()
+                    .map(|ext| ext == "json")
+                    .unwrap_or(false)
+            })
+            .collect();
+        entries.sort_by_key(|e| e.file_name());
+
+        for entry in entries {
+            let path = entry.path();
+            if path
+                .file_name()
+                .map(|n| n.to_string_lossy().starts_with("irodori_nyuumon_"))
+                .unwrap_or(false)
+            {
+                let mut data = load_json(&path);
+                let set_id = path.file_stem().unwrap().to_string_lossy().to_string();
+                meta_list.push(extract_meta(&mut data, &set_id, "Irodori", "N5"));
+            }
+        }
+    }
+
+    // Irodori Shokyuu1 files
+    let irodori_shokyuu1_dir = base_dir.join("irodori_shokyuu1");
+    if irodori_shokyuu1_dir.exists() {
+        let mut entries: Vec<_> = fs::read_dir(&irodori_shokyuu1_dir)
+            .unwrap()
+            .filter_map(|e| e.ok())
+            .filter(|e| {
+                e.path()
+                    .extension()
+                    .map(|ext| ext == "json")
+                    .unwrap_or(false)
+            })
+            .collect();
+        entries.sort_by_key(|e| e.file_name());
+
+        for entry in entries {
+            let path = entry.path();
+            if path
+                .file_name()
+                .map(|n| n.to_string_lossy().starts_with("irodori_shokyuu1_"))
+                .unwrap_or(false)
+            {
+                let mut data = load_json(&path);
+                let set_id = path.file_stem().unwrap().to_string_lossy().to_string();
+                meta_list.push(extract_meta(&mut data, &set_id, "Irodori", "N4"));
+            }
+        }
+    }
+
+    // Irodori Shokyuu2 files
+    let irodori_shokyuu2_dir = base_dir.join("irodori_shokyuu2");
+    if irodori_shokyuu2_dir.exists() {
+        let mut entries: Vec<_> = fs::read_dir(&irodori_shokyuu2_dir)
+            .unwrap()
+            .filter_map(|e| e.ok())
+            .filter(|e| {
+                e.path()
+                    .extension()
+                    .map(|ext| ext == "json")
+                    .unwrap_or(false)
+            })
+            .collect();
+        entries.sort_by_key(|e| e.file_name());
+
+        for entry in entries {
+            let path = entry.path();
+            if path
+                .file_name()
+                .map(|n| n.to_string_lossy().starts_with("irodori_shokyuu2_"))
+                .unwrap_or(false)
+            {
+                let mut data = load_json(&path);
+                let set_id = path.file_stem().unwrap().to_string_lossy().to_string();
+                meta_list.push(extract_meta(&mut data, &set_id, "Irodori", "N4"));
             }
         }
     }
