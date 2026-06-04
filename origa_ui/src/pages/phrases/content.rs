@@ -17,7 +17,6 @@ pub fn PhrasesContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
         use_context::<HybridUserRepository>().expect("repository context not provided");
 
     let initial_load_done = RwSignal::new(false);
-    let refresh_for_reload = refresh_trigger;
     let on_cards_loaded: CardsLoadedCallback = Arc::new(move |cards: &[StudyCard]| {
         if initial_load_done.get() {
             return;
@@ -35,7 +34,7 @@ pub fn PhrasesContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
             .collect();
 
         if !phrase_ids.is_empty() {
-            let refresh = refresh_for_reload;
+            let refresh = refresh_trigger;
             let done = initial_load_done;
             spawn_local(async move {
                 let results = load_phrase_details_batch(&phrase_ids).await;
@@ -82,6 +81,7 @@ pub fn PhrasesContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
                 on_mark_as_known=Callback::new(move |_| ctx.on_mark_as_known.run(card_id))
                 on_delete=ctx.on_delete
                 is_deleting=ctx.is_deleting
+                phrase_data_trigger=refresh_trigger
             />
         }
         .into_any()

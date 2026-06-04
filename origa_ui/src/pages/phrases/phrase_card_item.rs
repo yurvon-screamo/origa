@@ -4,7 +4,7 @@ use super::super::shared::{CardStatus, DeleteRequest};
 use crate::i18n::use_i18n;
 use crate::ui_components::{
     AudioPlayer, CardActionBar, CardHistoryModal, CollapsibleDescription, DeleteConfirmModal,
-    FsrsMetrics, MarkdownText, Tag, TagVariant, TranslatorText,
+    FsrsMetrics, MarkdownText, Skeleton, Tag, TagVariant, TranslatorText,
 };
 use leptos::prelude::*;
 use origa::domain::{Card as DomainCard, NativeLanguage, StudyCard};
@@ -19,6 +19,7 @@ pub fn PhraseCardItem(
     on_mark_as_known: Callback<()>,
     on_delete: Callback<DeleteRequest>,
     is_deleting: Signal<bool>,
+    phrase_data_trigger: RwSignal<u32>,
 ) -> impl IntoView {
     let i18n = use_i18n();
     let card_id = *study_card.card_id();
@@ -36,20 +37,25 @@ pub fn PhraseCardItem(
         })
     });
 
-    let (phrase_text, audio_src) = match study_card.card() {
-        DomainCard::Phrase(phrase_card) => {
-            let text = phrase_card.question().unwrap_or_default();
-            let src = crate::repository::cdn_provider::resolve_audio_url(&format!(
-                "phrases/audio/{}.opus",
-                phrase_card.phrase_id()
-            ));
-            (text, src)
-        },
-        _ => (String::new(), String::new()),
+    let study_card_for_text = study_card.clone();
+    let phrase_text: Memo<String> = Memo::new(move |_| {
+        let _ = phrase_data_trigger.get();
+        match study_card_for_text.card() {
+            DomainCard::Phrase(phrase_card) => phrase_card.question().unwrap_or_default(),
+            _ => String::new(),
+        }
+    });
+
+    let audio_src = match study_card.card() {
+        DomainCard::Phrase(phrase_card) => crate::repository::cdn_provider::resolve_audio_url(
+            &format!("phrases/audio/{}.opus", phrase_card.phrase_id()),
+        ),
+        _ => String::new(),
     };
 
     let study_card_for_meaning = study_card.clone();
     let meaning = Memo::new(move |_| {
+        let _ = phrase_data_trigger.get();
         let lang = native_language.get();
         match study_card_for_meaning.card() {
             DomainCard::Phrase(phrase_card) => phrase_card.answer(&lang).unwrap_or_default(),
@@ -71,11 +77,28 @@ pub fn PhraseCardItem(
             <div class="phrase-card-body">
                 <div class="phrase-card-header">
                     <div class="phrase-card-phrase" data-testid="phrases-card-phrase">
-                        <TranslatorText
-                            text=phrase_text
-                            native_language=native_language
-                            test_id=Signal::derive(|| "phrases-card-text".to_string())
-                        />
+                        {move || {
+                            let text = phrase_text.get();
+                            if text.is_empty() {
+                                view! {
+                                    <Skeleton
+                                        width="60%".to_string()
+                                        height="1.5em".to_string()
+                                        test_id=Signal::derive(|| "phrases-card-text-skeleton".to_string())
+                                    />
+                                }
+                                .into_any()
+                            } else {
+                                view! {
+                                    <TranslatorText
+                                        text=text
+                                        native_language=native_language
+                                        test_id=Signal::derive(|| "phrases-card-text".to_string())
+                                    />
+                                }
+                                .into_any()
+                            }
+                        }}
                     </div>
                     <Show when=move || has_audio>
                         <div class="phrase-card-audio">
