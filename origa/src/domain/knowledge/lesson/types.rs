@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use rand::seq::SliceRandom;
 use serde::{Deserialize, Serialize};
 use ulid::Ulid;
 
@@ -411,6 +412,7 @@ impl LessonData {
         }
 
         let core_count = core.len();
+        core.shuffle(&mut rand::rng());
         core.extend(phrases);
 
         Self {
@@ -426,5 +428,99 @@ impl IntoIterator for LessonData {
 
     fn into_iter(self) -> Self::IntoIter {
         self.cards.into_iter()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::domain::Card;
+    use crate::domain::knowledge::{PhraseCard, VocabularyCard};
+    use crate::domain::value_objects::Question;
+
+    fn make_vocabulary_lesson_card(id: Ulid) -> (Ulid, LessonCard) {
+        let card = Card::Vocabulary(VocabularyCard::new(
+            Question::new("test".to_string()).unwrap(),
+        ));
+        (id, LessonCard::new(LessonCardView::Normal(card), false))
+    }
+
+    fn make_phrase_lesson_card(id: Ulid) -> (Ulid, LessonCard) {
+        let card = Card::Phrase(PhraseCard::new_test_with_id(id));
+        (id, LessonCard::new(LessonCardView::Normal(card), false))
+    }
+
+    #[test]
+    fn reorder_core_first_phrases_last_preserves_all_cards() {
+        let vocab_1 = Ulid::new();
+        let vocab_2 = Ulid::new();
+        let phrase_1 = Ulid::new();
+        let phrase_2 = Ulid::new();
+
+        let input = vec![
+            make_phrase_lesson_card(phrase_1),
+            make_vocabulary_lesson_card(vocab_1),
+            make_phrase_lesson_card(phrase_2),
+            make_vocabulary_lesson_card(vocab_2),
+        ];
+
+        let result = LessonData::reorder_core_first_phrases_last(input);
+        let result_ids: Vec<Ulid> = result.card_ids();
+
+        assert_eq!(result.total_count(), 4);
+        assert_eq!(result.core_count, 2);
+        assert_eq!(result.phrase_count(), 2);
+
+        assert!(result_ids.contains(&vocab_1));
+        assert!(result_ids.contains(&vocab_2));
+        assert!(result_ids.contains(&phrase_1));
+        assert!(result_ids.contains(&phrase_2));
+
+        let core_ids: Vec<Ulid> = result_ids[..result.core_count].to_vec();
+        let phrase_ids: Vec<Ulid> = result_ids[result.core_count..].to_vec();
+
+        assert!(
+            core_ids.iter().all(
+                |id| !matches!(result.get(id), Some(lc) if lc.card_type() == CardType::Phrase)
+            )
+        );
+        assert!(
+            phrase_ids
+                .iter()
+                .all(|id| matches!(result.get(id), Some(lc) if lc.card_type() == CardType::Phrase))
+        );
+    }
+
+    #[test]
+    fn reorder_core_first_phrases_last_handles_empty() {
+        let result = LessonData::reorder_core_first_phrases_last(vec![]);
+
+        assert!(result.is_empty());
+        assert_eq!(result.core_count, 0);
+        assert_eq!(result.total_count(), 0);
+    }
+
+    #[test]
+    fn reorder_core_first_phrases_last_only_core() {
+        let vocab_1 = Ulid::new();
+        let vocab_2 = Ulid::new();
+        let vocab_3 = Ulid::new();
+
+        let input = vec![
+            make_vocabulary_lesson_card(vocab_1),
+            make_vocabulary_lesson_card(vocab_2),
+            make_vocabulary_lesson_card(vocab_3),
+        ];
+
+        let result = LessonData::reorder_core_first_phrases_last(input);
+        let result_ids: Vec<Ulid> = result.card_ids();
+
+        assert_eq!(result.total_count(), 3);
+        assert_eq!(result.core_count, 3);
+        assert_eq!(result.phrase_count(), 0);
+
+        assert!(result_ids.contains(&vocab_1));
+        assert!(result_ids.contains(&vocab_2));
+        assert!(result_ids.contains(&vocab_3));
     }
 }

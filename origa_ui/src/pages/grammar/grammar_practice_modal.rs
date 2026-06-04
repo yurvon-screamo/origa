@@ -301,7 +301,7 @@ pub fn GrammarPracticeModal(
                                 data-testid="grammar-practice-close-btn"
                                 on:click=move |_| on_close.run(())
                             >
-                                {close_text}
+                                {close_text} <span class="hidden sm:inline">"[Esc]"</span>
                             </button>
                         </div>
                     </div>
@@ -381,6 +381,7 @@ pub fn GrammarPracticeModal(
                                     known_kanji=known_kanji.get_value()
                                 />
                             }}
+                            <span class="hidden sm:inline ml-1">"[1]"</span>
                         </button>
                         <button
                             class=move || option_class(1)
@@ -393,6 +394,7 @@ pub fn GrammarPracticeModal(
                                     known_kanji=known_kanji.get_value()
                                 />
                             }}
+                            <span class="hidden sm:inline ml-1">"[2]"</span>
                         </button>
                         <button
                             class=move || option_class(2)
@@ -405,6 +407,7 @@ pub fn GrammarPracticeModal(
                                     known_kanji=known_kanji.get_value()
                                 />
                             }}
+                            <span class="hidden sm:inline ml-1">"[3]"</span>
                         </button>
                         <button
                             class=move || option_class(3)
@@ -417,6 +420,7 @@ pub fn GrammarPracticeModal(
                                     known_kanji=known_kanji.get_value()
                                 />
                             }}
+                            <span class="hidden sm:inline ml-1">"[4]"</span>
                         </button>
                     </div>
 
@@ -437,7 +441,7 @@ pub fn GrammarPracticeModal(
                                     data-testid="grammar-practice-next-btn"
                                     on:click=move |_| on_next()
                                 >
-                                    {next_text}
+                                    {next_text} <span class="hidden sm:inline">"[Space]"</span>
                                 </button>
                             </Show>
                             <button
@@ -445,7 +449,7 @@ pub fn GrammarPracticeModal(
                                 data-testid="grammar-practice-close-btn"
                                 on:click=move |_| on_close.run(())
                             >
-                                {close_text}
+                                {close_text} <span class="hidden sm:inline">"[Esc]"</span>
                             </button>
                         </div>
                     </Show>
@@ -480,14 +484,14 @@ pub fn GrammarPracticeModal(
                             >
                                 {move || {
                                     i18n.get_keys().grammar_page().practice_again().inner().to_string()
-                                }}
+                                }} <span class="hidden sm:inline">"[Space]"</span>
                             </button>
                             <button
                                 class="px-4 py-2 border rounded hover:opacity-80 transition-opacity cursor-pointer"
                                 data-testid="grammar-practice-close-btn"
                                 on:click=move |_| on_close.run(())
                             >
-                                {close_text}
+                                {close_text} <span class="hidden sm:inline">"[Esc]"</span>
                             </button>
                         </div>
                     </div>
