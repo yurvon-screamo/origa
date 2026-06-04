@@ -74,7 +74,8 @@ RUN --mount=type=cache,target=/sccache,sharing=locked \
 COPY origa ./origa
 COPY origa_ui ./origa_ui
 
-RUN --mount=type=cache,target=/root/.cargo/registry \
+RUN --mount=type=cache,target=/sccache \
+    --mount=type=cache,target=/root/.cargo/registry \
     --mount=type=cache,target=/app/target \
     rm -rf origa_ui/public/dictionaries/unidic && \
     rm -rf /app/target/wasm32-unknown-unknown/release/.fingerprint/origa* && \
