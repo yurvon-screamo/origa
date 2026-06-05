@@ -76,7 +76,7 @@ RUN mkdir -p origa/src && echo "pub fn dummy() {}" > origa/src/lib.rs && \
 RUN --mount=type=cache,target=/sccache,sharing=locked \
     --mount=type=cache,target=/root/.cargo/registry,sharing=locked \
     cargo build --release -p origa_ui --target wasm32-unknown-unknown && \
-    cargo build --release -p origa_landing && \
+    cargo build --release -p origa_landing --features ssr && \
     rm -rf origa origa_ui origa_landing
 
 COPY origa ./origa
@@ -98,7 +98,7 @@ RUN --mount=type=cache,target=/sccache \
     rm -rf /app/target/wasm32-unknown-unknown/release/build/origa* && \
     cargo build --release -p origa --target wasm32-unknown-unknown && \
     cargo build --release -p origa_ui --target wasm32-unknown-unknown && \
-    cargo build --release -p origa_landing
+    cargo build --release -p origa_landing --features ssr
 
 WORKDIR /app/origa_ui
 
@@ -124,7 +124,7 @@ RUN apk add --no-cache curl
 COPY --from=caddy /usr/bin/caddy /usr/bin/caddy
 
 COPY --from=builder /dist /app/public
-COPY --from=builder /app/target/release/origa_landing /app/origa_landing
+COPY --from=builder /app/target/release/origa_landing /usr/local/bin/origa_landing
 COPY --from=builder /app/origa_landing/style/landing.processed.css /app/origa_landing/style/landing.processed.css
 COPY --from=builder /app/origa_landing/public /app/origa_landing/public
 COPY origa_ui/Caddyfile /app/Caddyfile

@@ -3,7 +3,7 @@ set -e
 
 cd /app/origa_landing
 ORIGA_LANDING_BASE_URL=${ORIGA_LANDING_BASE_URL:-https://origa.app} \
-    /app/origa_landing &
+    /usr/local/bin/origa_landing &
 
 cd /app
 
