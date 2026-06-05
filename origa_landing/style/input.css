@@ -1,0 +1,174 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+    /* Colors */
+    --bg-cream: #f7f4ee;
+    --bg-paper: #fdfbf7;
+    --bg-aged: #ede8dd;
+    --bg-warm: #f0ebe1;
+    --fg-black: #1a1915;
+    --fg-muted: #6b665a;
+    --fg-light: #9a9590;
+    --accent-olive: #3d4535;
+    --accent-terracotta: #a65d3f;
+    --accent-gold: #8b7355;
+    --accent-sage: #6b7b5e;
+    --border-light: #d4cfc3;
+    --border-dark: #1a1915;
+    --success: #4a6b4a;
+    --warning: #a67c3f;
+    --error: #8b4545;
+
+    /* Compatibility aliases */
+    --bg-primary: var(--bg-cream);
+    --bg-secondary: var(--bg-aged);
+    --border-color: var(--border-dark);
+    --border-subtle: var(--border-light);
+    --fg: var(--fg-black);
+    --fg-primary: var(--fg-black);
+    --accent: var(--accent-olive);
+    --muted: var(--fg-muted);
+
+    --accent-olive-subtle: color-mix(in srgb, var(--accent-olive) 40%, transparent);
+    --backdrop: color-mix(in srgb, var(--fg-black) 60%, transparent);
+
+    /* Animation Timing */
+    --anima-duration-normal: 200ms;
+    --anima-ease-paper: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+    /* Spacing */
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 16px;
+    --space-lg: 24px;
+    --space-xl: 32px;
+    --space-xxl: 48px;
+    --space-xxxl: 64px;
+
+    --font-serif: "Cormorant Garamond", serif;
+    --font-mono: "DM Mono", monospace;
+
+    /* Typography Scale */
+    --text-2xs: 11px;
+    --text-xs: 14px;
+    --text-sm: 16px;
+    --text-label: 13px;
+    --text-label-sm: 11px;
+    --text-body: 14px;
+    --text-lg: 18px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-mono);
+    background-color: var(--bg-cream);
+    color: var(--fg-black);
+    line-height: 1.6;
+    margin: 0;
+}
+
+button,
+[role="button"],
+a,
+input[type="button"],
+input[type="submit"] {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.font-serif {
+    font-family: var(--font-serif);
+}
+
+.font-mono {
+    font-family: var(--font-mono);
+}
+
+.paper-texture::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    opacity: 0.03;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.btn {
+    font-family: var(--font-mono);
+    font-size: var(--text-label-sm);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 10px 16px;
+    border: 1px solid var(--border-dark);
+    background: var(--bg-paper);
+    color: var(--fg-black);
+    cursor: pointer;
+    transition: background-color var(--anima-duration-normal) var(--anima-ease-paper),
+        color var(--anima-duration-normal) var(--anima-ease-paper),
+        border-color var(--anima-duration-normal) var(--anima-ease-paper);
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+@media (min-width: 640px) {
+    .btn {
+        font-size: var(--text-label);
+        letter-spacing: 0.15em;
+        padding: 16px 32px;
+    }
+}
+
+.btn::before {
+    content: "";
+    position: absolute;
+    inset: 2px;
+    border: 1px solid var(--border-dark);
+    opacity: 0;
+    transition: opacity var(--anima-duration-normal) var(--anima-ease-paper);
+    pointer-events: none;
+}
+
+@media (min-width: 640px) {
+    .btn::before {
+        inset: 4px;
+    }
+}
+
+.btn:hover::before {
+    opacity: 1;
+}
+
+.btn:hover {
+    background: var(--fg-black);
+    color: var(--bg-paper);
+}
+
+.btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.btn-filled {
+    background: var(--fg-black);
+    color: var(--bg-paper);
+}
+
+.btn-filled:hover {
+    background: var(--bg-paper);
+    color: var(--fg-black);
+}
+
+.btn-lg {
+    padding: 20px 40px;
+    font-size: var(--text-label);
+}

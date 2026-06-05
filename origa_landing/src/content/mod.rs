@@ -1,0 +1,217 @@
+use std::str::FromStr;
+
+#[derive(Clone, Copy, PartialEq, Debug)]
+pub enum Locale {
+    En,
+    Ru,
+}
+
+impl FromStr for Locale {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "en" => Ok(Self::En),
+            "ru" => Ok(Self::Ru),
+            _ => Err(()),
+        }
+    }
+}
+
+impl Locale {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Locale::En => "en",
+            Locale::Ru => "ru",
+        }
+    }
+
+    pub fn og_locale(&self) -> &'static str {
+        match self {
+            Locale::En => "en_US",
+            Locale::Ru => "ru_RU",
+        }
+    }
+
+    pub fn path_prefix(&self) -> &'static str {
+        match self {
+            Locale::En => "",
+            Locale::Ru => "/ru",
+        }
+    }
+
+    pub fn content(&self) -> &'static Content {
+        match self {
+            Locale::En => &super::content::en::CONTENT,
+            Locale::Ru => &super::content::ru::CONTENT,
+        }
+    }
+}
+
+pub struct Content {
+    // Meta
+    pub site_name: &'static str,
+
+    // Header
+    pub header_features: &'static str,
+    pub header_compare: &'static str,
+    pub header_download: &'static str,
+
+    // Footer
+    pub footer_product: &'static str,
+    pub footer_resources: &'static str,
+    pub footer_license: &'static str,
+
+    // Homepage
+    pub home_meta_title: &'static str,
+    pub home_meta_description: &'static str,
+    pub home_hero_title: &'static str,
+    pub home_hero_subtitle: &'static str,
+    pub home_cta_primary: &'static str,
+    pub home_cta_secondary: &'static str,
+    pub home_hero_tagline: &'static str,
+    pub home_problem_h2: &'static str,
+    pub home_problem_text: &'static str,
+    pub home_features_h2: &'static str,
+    pub home_feature_vocab_title: &'static str,
+    pub home_feature_vocab_text: &'static str,
+    pub home_feature_kanji_title: &'static str,
+    pub home_feature_kanji_text: &'static str,
+    pub home_feature_grammar_title: &'static str,
+    pub home_feature_grammar_text: &'static str,
+    pub home_feature_listening_title: &'static str,
+    pub home_feature_listening_text: &'static str,
+    pub home_principle_content_title: &'static str,
+    pub home_principle_content_text: &'static str,
+    pub home_principle_fsrs_title: &'static str,
+    pub home_principle_fsrs_text: &'static str,
+    pub home_principle_local_title: &'static str,
+    pub home_principle_local_text: &'static str,
+    pub home_principle_offline_title: &'static str,
+    pub home_principle_offline_text: &'static str,
+    pub home_cta_title: &'static str,
+
+    // Features page
+    pub features_meta_title: &'static str,
+    pub features_meta_description: &'static str,
+    pub features_h1: &'static str,
+    pub features_vocab_h2: &'static str,
+    pub features_vocab_label: &'static str,
+    pub features_vocab_step1: &'static str,
+    pub features_vocab_step2: &'static str,
+    pub features_vocab_step3: &'static str,
+    pub features_vocab_dict: &'static str,
+    pub features_vocab_cards: &'static str,
+    pub features_vocab_audio: &'static str,
+    pub features_vocab_import: &'static str,
+    pub features_vocab_fsrs: &'static str,
+    pub features_vocab_jlpt: &'static str,
+    pub features_kanji_h2: &'static str,
+    pub features_kanji_subtitle: &'static str,
+    pub features_kanji_furigana: &'static str,
+    pub features_kanji_furigana_desc: &'static str,
+    pub features_kanji_writing: &'static str,
+    pub features_kanji_writing_desc: &'static str,
+    pub features_kanji_dict: &'static str,
+    pub features_kanji_dict_desc: &'static str,
+    pub features_kanji_tests: &'static str,
+    pub features_kanji_tests_desc: &'static str,
+    pub features_kanji_insight: &'static str,
+    pub features_grammar_h2: &'static str,
+    pub features_grammar_subtitle: &'static str,
+    pub features_grammar_jlpt: &'static str,
+    pub features_grammar_jlpt_desc: &'static str,
+    pub features_grammar_context: &'static str,
+    pub features_grammar_context_desc: &'static str,
+    pub features_grammar_tests: &'static str,
+    pub features_grammar_tests_desc: &'static str,
+    pub features_grammar_insight: &'static str,
+    pub features_listening_h2: &'static str,
+    pub features_listening_subtitle: &'static str,
+    pub features_listening_n1: &'static str,
+    pub features_listening_n1_desc: &'static str,
+    pub features_listening_audio: &'static str,
+    pub features_listening_audio_desc: &'static str,
+    pub features_listening_comp: &'static str,
+    pub features_listening_comp_desc: &'static str,
+    pub features_listening_everyday: &'static str,
+    pub features_listening_everyday_desc: &'static str,
+    pub features_listening_insight: &'static str,
+    pub features_cta: &'static str,
+
+    // Compare page
+    pub compare_meta_title: &'static str,
+    pub compare_meta_description: &'static str,
+    pub compare_h1: &'static str,
+    pub compare_subtitle: &'static str,
+    pub compare_table_feature: &'static str,
+    pub compare_table_origa: &'static str,
+    pub compare_table_anki: &'static str,
+    pub compare_table_wanikani: &'static str,
+    pub compare_table_bunpro: &'static str,
+    pub compare_table_duolingo: &'static str,
+    pub compare_vocab: &'static str,
+    pub compare_kanji: &'static str,
+    pub compare_grammar: &'static str,
+    pub compare_listening: &'static str,
+    pub compare_languages: &'static str,
+    pub compare_offline: &'static str,
+    pub compare_yes: &'static str,
+    pub compare_partial: &'static str,
+    pub compare_no: &'static str,
+    pub compare_english_only: &'static str,
+    pub compare_limited: &'static str,
+    pub compare_manual: &'static str,
+    pub compare_label_best_for: &'static str,
+    pub compare_label_origa_wins: &'static str,
+    pub compare_label_together: &'static str,
+    // Anki
+    pub compare_anki_title: &'static str,
+    pub compare_anki_what: &'static str,
+    pub compare_anki_when: &'static str,
+    pub compare_anki_better: &'static str,
+    pub compare_anki_together: &'static str,
+    // WaniKani
+    pub compare_wanikani_title: &'static str,
+    pub compare_wanikani_what: &'static str,
+    pub compare_wanikani_when: &'static str,
+    pub compare_wanikani_better: &'static str,
+    pub compare_wanikani_together: &'static str,
+    // Bunpro
+    pub compare_bunpro_title: &'static str,
+    pub compare_bunpro_what: &'static str,
+    pub compare_bunpro_when: &'static str,
+    pub compare_bunpro_better: &'static str,
+    pub compare_bunpro_together: &'static str,
+    // Duolingo
+    pub compare_duolingo_title: &'static str,
+    pub compare_duolingo_subtitle: &'static str,
+    pub compare_duolingo_start: &'static str,
+    pub compare_duolingo_grow: &'static str,
+    pub compare_duolingo_together: &'static str,
+    pub compare_bridge_label: &'static str,
+    pub compare_score: &'static str,
+
+    // Download page
+    pub download_meta_title: &'static str,
+    pub download_meta_description: &'static str,
+    pub download_h1: &'static str,
+    pub download_windows: &'static str,
+    pub download_windows_formats: &'static str,
+    pub download_linux: &'static str,
+    pub download_linux_formats: &'static str,
+    pub download_macos: &'static str,
+    pub download_macos_formats: &'static str,
+    pub download_android: &'static str,
+    pub download_android_formats: &'static str,
+    pub download_ios: &'static str,
+    pub download_ios_formats: &'static str,
+    pub download_ios_coming_soon: &'static str,
+    pub download_button: &'static str,
+    pub download_subtitle: &'static str,
+    pub download_not_ready: &'static str,
+    pub download_try_web: &'static str,
+}
+
+mod en;
+mod ru;
