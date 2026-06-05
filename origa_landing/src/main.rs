@@ -2,8 +2,7 @@
 #[tokio::main]
 async fn main() {
     use axum::Router;
-    use leptos::prelude::*;
-    use leptos_axum::{LeptosRoutes, generate_route_list};
+    use leptos_axum::LeptosRoutes;
     use origa_landing::app::{App, shell};
     use tower_http::services::{ServeDir, ServeFile};
 
@@ -24,10 +23,23 @@ async fn main() {
 
     let pkg_dir = env!("CARGO_MANIFEST_DIR");
 
-    let conf = get_configuration(Some(concat!(env!("CARGO_MANIFEST_DIR"), "/Cargo.toml")))
-        .expect("failed to read Leptos configuration from Cargo.toml");
-    let leptos_options = conf.leptos_options;
-    let routes = generate_route_list(App);
+    let routes = leptos_axum::generate_route_list(App);
+
+    let leptos_options = match leptos::config::get_configuration(Some(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/Cargo.toml"
+    ))) {
+        Ok(conf) => {
+            tracing::info!("Loaded Leptos config from Cargo.toml");
+            conf.leptos_options
+        },
+        Err(e) => {
+            tracing::warn!("Failed to read Cargo.toml config ({e}), using defaults");
+            leptos::config::LeptosOptions::builder()
+                .output_name("origa_landing")
+                .build()
+        },
+    };
 
     let app = Router::new()
         .nest_service("/images", ServeDir::new(format!("{pkg_dir}/public/images")))
