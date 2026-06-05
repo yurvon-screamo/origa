@@ -80,6 +80,11 @@ RUN --mount=type=cache,target=/sccache,sharing=locked \
     cargo build --release -p origa_landing --features ssr --target x86_64-unknown-linux-musl && \
     rm -rf origa origa_ui origa_landing
 
+RUN set -e && mkdir -p cdn/dictionaries && \
+    for file in char_def.bin matrix.mtx dict.da dict.vals unk.bin dict.wordsidx dict.words metadata.json; do \
+      echo "Downloading dictionaries/${file}..." && \
+      curl -fsSL "${ORIGA_CDN_BASE_URL}/dictionaries/${file}" -o "cdn/dictionaries/${file}"; \
+    done
 COPY origa ./origa
 COPY origa_ui ./origa_ui
 COPY origa_landing ./origa_landing
