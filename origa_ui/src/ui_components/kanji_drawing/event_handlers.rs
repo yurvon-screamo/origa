@@ -19,8 +19,8 @@ pub(super) struct StrokeCompletionState {
 
 fn extract_point(ev: &PointerEvent, canvas: &web_sys::HtmlCanvasElement) -> (f64, f64) {
     let rect = canvas.get_bounding_client_rect();
-    let x = ev.client_x() as f64 - rect.left();
-    let y = ev.client_y() as f64 - rect.top();
+    let x = ev.client_x() - rect.left();
+    let y = ev.client_y() - rect.top();
     (x, y)
 }
 

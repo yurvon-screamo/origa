@@ -1,3 +1,5 @@
+#![recursion_limit = "512"]
+
 use tracing::Level;
 use tracing_subscriber::{Registry, layer::SubscriberExt};
 use tracing_wasm::{ConsoleConfig, WASMLayer, WASMLayerConfigBuilder};
