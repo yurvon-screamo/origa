@@ -34,6 +34,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     libssl-dev \
     lld \
+    musl-tools \
     nodejs \
     npm \
     pkg-config \
@@ -51,7 +52,7 @@ ENV PATH="/root/.cargo/bin:${PATH}"
 
 WORKDIR /app
 
-RUN rustup target add wasm32-unknown-unknown && \
+RUN rustup target add wasm32-unknown-unknown x86_64-unknown-linux-musl && \
     curl -fsSL https://github.com/trunk-rs/trunk/releases/download/v${TRUNK_VERSION}/trunk-x86_64-unknown-linux-gnu.tar.gz \
     | tar -xzf - -C /usr/local/bin
 
@@ -76,7 +77,7 @@ RUN mkdir -p origa/src && echo "pub fn dummy() {}" > origa/src/lib.rs && \
 RUN --mount=type=cache,target=/sccache,sharing=locked \
     --mount=type=cache,target=/root/.cargo/registry,sharing=locked \
     cargo build --release -p origa_ui --target wasm32-unknown-unknown && \
-    cargo build --release -p origa_landing --features ssr && \
+    cargo build --release -p origa_landing --features ssr --target x86_64-unknown-linux-musl && \
     rm -rf origa origa_ui origa_landing
 
 COPY origa ./origa
@@ -98,7 +99,7 @@ RUN --mount=type=cache,target=/sccache \
     rm -rf /app/target/wasm32-unknown-unknown/release/build/origa* && \
     cargo build --release -p origa --target wasm32-unknown-unknown && \
     cargo build --release -p origa_ui --target wasm32-unknown-unknown && \
-    cargo build --release -p origa_landing --features ssr
+    cargo build --release -p origa_landing --features ssr --target x86_64-unknown-linux-musl
 
 WORKDIR /app/origa_ui
 
@@ -124,7 +125,7 @@ RUN apk add --no-cache curl
 COPY --from=caddy /usr/bin/caddy /usr/bin/caddy
 
 COPY --from=builder /dist /app/public
-COPY --from=builder /app/target/release/origa_landing /usr/local/bin/origa_landing
+COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/origa_landing /usr/local/bin/origa_landing
 COPY --from=builder /app/origa_landing/style/landing.processed.css /app/origa_landing/style/landing.processed.css
 COPY --from=builder /app/origa_landing/public /app/origa_landing/public
 COPY --from=builder /app/origa_landing/Cargo.toml /app/origa_landing/Cargo.toml
