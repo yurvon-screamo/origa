@@ -3,7 +3,8 @@ set -e
 
 cd /app/origa_landing
 echo "Starting origa_landing..."
-ORIGA_LANDING_BASE_URL=${ORIGA_LANDING_BASE_URL:-https://origa.app} \
+PORT=3000 \
+    ORIGA_LANDING_BASE_URL=${ORIGA_LANDING_BASE_URL:-https://origa.app} \
     /usr/local/bin/origa_landing 2>&1 &
 LANDING_PID=$!
 cd /app
