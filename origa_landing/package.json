@@ -1,0 +1,11 @@
+{
+  "name": "origa-landing",
+  "private": true,
+  "scripts": {
+    "build:css": "tailwindcss --input style/landing.css --output style/landing.processed.css --minify",
+    "watch:css": "tailwindcss --input style/landing.css --output style/landing.processed.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.0"
+  }
+}

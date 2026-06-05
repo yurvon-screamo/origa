@@ -34,6 +34,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     libssl-dev \
     lld \
+    nodejs \
+    npm \
     pkg-config \
     protobuf-compiler \
     && rm -rf /var/lib/apt/lists/* \
@@ -60,19 +62,31 @@ COPY origa/Cargo.toml ./origa/
 COPY origa_ui/Cargo.toml ./origa_ui/
 COPY .cargo .cargo
 
+COPY origa_landing/Cargo.toml ./origa_landing/
+
 RUN mkdir -p origa/src && echo "pub fn dummy() {}" > origa/src/lib.rs && \
     mkdir -p origa_ui/src && echo "pub fn dummy() {}" > origa_ui/src/lib.rs && \
     echo "fn main() {}" > origa_ui/src/main.rs && \
     mkdir -p utils/src && echo "pub fn dummy() {}" > utils/src/lib.rs && \
-    mkdir -p tauri/src && echo "pub fn dummy() {}" > tauri/src/lib.rs
+    mkdir -p tauri/src && echo "pub fn dummy() {}" > tauri/src/lib.rs && \
+    mkdir -p origa_landing/src && echo "pub fn dummy() {}" > origa_landing/src/lib.rs && \
+    echo "fn main() {}" > origa_landing/src/main.rs && \
+    echo "fn main() {}" > origa_landing/build.rs
 
 RUN --mount=type=cache,target=/sccache,sharing=locked \
     --mount=type=cache,target=/root/.cargo/registry,sharing=locked \
     cargo build --release -p origa_ui --target wasm32-unknown-unknown && \
-    rm -rf origa origa_ui
+    cargo build --release -p origa_landing --features ssr && \
+    rm -rf origa origa_ui origa_landing
 
 COPY origa ./origa
 COPY origa_ui ./origa_ui
+COPY origa_landing ./origa_landing
+
+RUN --mount=type=cache,target=/root/.npm \
+    cd /app/origa_landing && \
+    npm install && \
+    npm run build:css
 
 RUN --mount=type=cache,target=/sccache \
     --mount=type=cache,target=/root/.cargo/registry \
@@ -83,7 +97,8 @@ RUN --mount=type=cache,target=/sccache \
     rm -rf /app/target/wasm32-unknown-unknown/release/deps/liboriga* && \
     rm -rf /app/target/wasm32-unknown-unknown/release/build/origa* && \
     cargo build --release -p origa --target wasm32-unknown-unknown && \
-    cargo build --release -p origa_ui --target wasm32-unknown-unknown
+    cargo build --release -p origa_ui --target wasm32-unknown-unknown && \
+    cargo build --release -p origa_landing --features ssr
 
 WORKDIR /app/origa_ui
 
@@ -109,6 +124,9 @@ RUN apk add --no-cache curl
 COPY --from=caddy /usr/bin/caddy /usr/bin/caddy
 
 COPY --from=builder /dist /app/public
+COPY --from=builder /app/target/release/origa_landing /usr/local/bin/origa_landing
+COPY --from=builder /app/origa_landing/style/landing.processed.css /app/origa_landing/style/landing.processed.css
+COPY --from=builder /app/origa_landing/public /app/origa_landing/public
 COPY origa_ui/Caddyfile /app/Caddyfile
 COPY origa_ui/entrypoint.sh /app/entrypoint.sh
 

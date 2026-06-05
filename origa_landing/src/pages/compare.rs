@@ -1,0 +1,317 @@
+use leptos::prelude::*;
+use leptos_router::components::A;
+
+use crate::components::seo::PageMeta;
+use crate::content::Locale;
+
+#[component]
+pub fn ComparePage() -> impl IntoView {
+    let locale = use_context::<Locale>().expect("Locale context missing");
+    let c = locale.content();
+    let prefix = locale.path_prefix();
+    let download_href = format!("{prefix}/download");
+
+    view! {
+        <PageMeta locale path="/compare" title=c.compare_meta_title description=c.compare_meta_description/>
+
+        // Section 1: Hero
+        <section class="cmp-hero">
+            <h1 class="cmp-hero__title">{c.compare_h1}</h1>
+            <p class="cmp-hero__subtitle">{c.compare_subtitle}</p>
+            <hr class="cmp-hero__rule"/>
+        </section>
+
+        // Section 2: Scoreboard
+        <section class="cmp-scoreboard">
+            <div class="cmp-grid" role="table" aria-label="Feature comparison">
+                // Header row
+                <div class="cmp-grid__cell cmp-grid__header" role="columnheader">
+                    {c.compare_table_feature}
+                </div>
+                <div class="cmp-grid__cell cmp-grid__header cmp-grid__header--origa" role="columnheader">
+                    {c.compare_table_origa}
+                </div>
+                <div class="cmp-grid__cell cmp-grid__header" role="columnheader">
+                    {c.compare_table_anki}
+                </div>
+                <div class="cmp-grid__cell cmp-grid__header" role="columnheader">
+                    {c.compare_table_wanikani}
+                </div>
+                <div class="cmp-grid__cell cmp-grid__header" role="columnheader">
+                    {c.compare_table_bunpro}
+                </div>
+                <div class="cmp-grid__cell cmp-grid__header" role="columnheader">
+                    {c.compare_table_duolingo}
+                </div>
+
+                // Row: Vocabulary
+                <ScoreboardRow feature=c.compare_vocab>
+                    <ScoreboardCell kind="yes-origa"/>
+                    <ScoreboardCell kind="yes"/>
+                    <ScoreboardCell kind="yes"/>
+                    <ScoreboardCell kind="no"/>
+                    <ScoreboardCell kind="yes"/>
+                </ScoreboardRow>
+
+                // Row: Kanji
+                <ScoreboardRow feature=c.compare_kanji>
+                    <ScoreboardCell kind="yes-origa"/>
+                    <ScoreboardCell kind="partial"/>
+                    <ScoreboardCell kind="yes"/>
+                    <ScoreboardCell kind="no"/>
+                    <ScoreboardCell kind="yes"/>
+                </ScoreboardRow>
+
+                // Row: Grammar
+                <ScoreboardRow feature=c.compare_grammar>
+                    <ScoreboardCell kind="yes-origa"/>
+                    <ScoreboardCell kind="no"/>
+                    <ScoreboardCell kind="no"/>
+                    <ScoreboardCell kind="yes"/>
+                    <ScoreboardCell kind="no"/>
+                </ScoreboardRow>
+
+                // Row: Listening
+                <ScoreboardRow feature=c.compare_listening>
+                    <ScoreboardCell kind="yes-origa"/>
+                    <ScoreboardCell kind="no"/>
+                    <ScoreboardCell kind="no"/>
+                    <ScoreboardCell kind="no"/>
+                    <ScoreboardCell kind="yes"/>
+                </ScoreboardRow>
+
+                // Row: Your language
+                <ScoreboardRow feature=c.compare_languages>
+                    <ScoreboardCell kind="yes-origa"/>
+                    <ScoreboardSpecialCell text=c.compare_manual/>
+                    <ScoreboardSpecialCell text=c.compare_english_only/>
+                    <ScoreboardSpecialCell text=c.compare_english_only/>
+                    <ScoreboardSpecialCell text=c.compare_limited/>
+                </ScoreboardRow>
+
+                // Row: Offline
+                <ScoreboardRow feature=c.compare_offline>
+                    <ScoreboardCell kind="yes-origa"/>
+                    <ScoreboardCell kind="yes"/>
+                    <ScoreboardCell kind="no"/>
+                    <ScoreboardCell kind="no"/>
+                    <ScoreboardCell kind="partial"/>
+                </ScoreboardRow>
+
+                // Score row
+                <div class="cmp-grid__cell cmp-grid__cell--score" role="rowheader">
+                    {c.compare_score}
+                </div>
+                <div class="cmp-grid__cell cmp-grid__cell--score-origa" role="cell">
+                    "6/6"
+                </div>
+                <div class="cmp-grid__cell cmp-grid__cell--score" role="cell">
+                    "3/6"
+                </div>
+                <div class="cmp-grid__cell cmp-grid__cell--score" role="cell">
+                    "2/6"
+                </div>
+                <div class="cmp-grid__cell cmp-grid__cell--score" role="cell">
+                    "1/6"
+                </div>
+                <div class="cmp-grid__cell cmp-grid__cell--score" role="cell">
+                    "4/6"
+                </div>
+            </div>
+        </section>
+
+        // Section 3: Bridge
+        <section class="cmp-bridge">
+            <hr class="cmp-bridge__rule"/>
+            <p class="cmp-bridge__label">{c.compare_bridge_label}</p>
+        </section>
+
+        // Section 4: Anki
+        <CompetitorBlock
+            title=c.compare_anki_title
+            what=c.compare_anki_what
+            when=c.compare_anki_when
+            better=c.compare_anki_better
+            together=c.compare_anki_together
+            label_best_for=c.compare_label_best_for
+            label_origa_wins=c.compare_label_origa_wins
+            label_together=c.compare_label_together
+            bg="cream"
+        />
+
+        // Section 5: WaniKani
+        <CompetitorBlock
+            title=c.compare_wanikani_title
+            what=c.compare_wanikani_what
+            when=c.compare_wanikani_when
+            better=c.compare_wanikani_better
+            together=c.compare_wanikani_together
+            label_best_for=c.compare_label_best_for
+            label_origa_wins=c.compare_label_origa_wins
+            label_together=c.compare_label_together
+            bg="paper"
+        />
+
+        // Section 6: Bunpro
+        <CompetitorBlock
+            title=c.compare_bunpro_title
+            what=c.compare_bunpro_what
+            when=c.compare_bunpro_when
+            better=c.compare_bunpro_better
+            together=c.compare_bunpro_together
+            label_best_for=c.compare_label_best_for
+            label_origa_wins=c.compare_label_origa_wins
+            label_together=c.compare_label_together
+            bg="cream"
+        />
+
+        // Section 7: Duolingo (now uses CompetitorBlock)
+        <CompetitorBlock
+            title=c.compare_duolingo_title
+            what=c.compare_duolingo_start
+            when=c.compare_duolingo_subtitle
+            better=c.compare_duolingo_grow
+            together=c.compare_duolingo_together
+            label_best_for=c.compare_label_best_for
+            label_origa_wins=c.compare_label_origa_wins
+            label_together=c.compare_label_together
+            bg="paper"
+        />
+
+        // Section 8: CTA (reuses home-cta dark olive)
+        <section class="home-cta">
+            <hr class="home-cta__rule" />
+            <h2 class="home-cta__title">{c.home_cta_title}</h2>
+            <A href=download_href attr:class="btn btn-filled">{c.home_cta_primary}</A>
+            <a href="https://app.origa.jp" class="btn">{c.home_cta_secondary}</a>
+        </section>
+    }
+}
+
+#[component]
+fn ScoreboardRow(feature: &'static str, children: Children) -> impl IntoView {
+    view! {
+        <div class="cmp-grid__cell cmp-grid__cell--feature" role="rowheader">
+            {feature}
+        </div>
+        {children()}
+    }
+}
+
+#[component]
+fn ScoreboardCell(kind: &'static str) -> impl IntoView {
+    match kind {
+        "yes" => view! {
+            <div class="cmp-grid__cell cmp-grid__cell--default" role="cell">
+                <CompareMarker kind="yes"/>
+            </div>
+        },
+        "yes-origa" => view! {
+            <div class="cmp-grid__cell cmp-grid__cell--origa" role="cell">
+                <CompareMarker kind="yes-origa"/>
+            </div>
+        },
+        "partial" => view! {
+            <div class="cmp-grid__cell cmp-grid__cell--default" role="cell">
+                <CompareMarker kind="partial"/>
+            </div>
+        },
+        "no" => view! {
+            <div class="cmp-grid__cell cmp-grid__cell--default" role="cell">
+                <CompareMarker kind="no"/>
+            </div>
+        },
+        _ => view! {
+            <div class="cmp-grid__cell cmp-grid__cell--default" role="cell">
+                <CompareMarker kind="no"/>
+            </div>
+        },
+    }
+}
+
+#[component]
+fn ScoreboardSpecialCell(text: &'static str) -> impl IntoView {
+    view! {
+        <div class="cmp-grid__cell cmp-grid__cell--default" role="cell">
+            <CompareSpecialText text/>
+        </div>
+    }
+}
+
+#[component]
+fn CompareMarker(kind: &'static str) -> AnyView {
+    match kind {
+        "yes" => view! {
+            <div class="compare-marker compare-marker--yes" aria-label="Yes"></div>
+        }
+        .into_any(),
+        "yes-origa" => view! {
+            <div class="compare-marker compare-marker--origa" aria-label="Yes"></div>
+        }
+        .into_any(),
+        "partial" => view! {
+            <div class="compare-marker compare-marker--partial" aria-label="Partial"></div>
+        }
+        .into_any(),
+        "no" => view! {
+            <div class="compare-marker compare-marker--no" aria-label="No">"—"</div>
+        }
+        .into_any(),
+        _ => view! {
+            <div class="compare-marker compare-marker--no">"—"</div>
+        }
+        .into_any(),
+    }
+}
+
+#[component]
+fn CompareSpecialText(text: &'static str) -> impl IntoView {
+    view! {
+        <span class="cmp-special-text">{text}</span>
+    }
+}
+
+#[component]
+fn CompetitorBlock(
+    title: &'static str,
+    what: &'static str,
+    when: &'static str,
+    better: &'static str,
+    together: &'static str,
+    label_best_for: &'static str,
+    label_origa_wins: &'static str,
+    label_together: &'static str,
+    bg: &'static str,
+) -> impl IntoView {
+    let section_class = match bg {
+        "cream" => "cmp-competitor cmp-competitor--cream",
+        _ => "cmp-competitor cmp-competitor--paper",
+    };
+
+    let has_together = !together.is_empty();
+
+    view! {
+        <section class=section_class>
+            <div class="cmp-competitor__inner">
+                <h2 class="cmp-competitor__title">{title}</h2>
+                <p class="cmp-competitor__desc">{what}</p>
+                <div class="cmp-competitor__cols">
+                    <div class="cmp-competitor__col">
+                        <span class="cmp-competitor__label">{label_best_for}</span>
+                        <p class="cmp-competitor__text">{when}</p>
+                    </div>
+                    <div class="cmp-competitor__col cmp-competitor__col--origa">
+                        <span class="cmp-competitor__label">{label_origa_wins}</span>
+                        <p class="cmp-competitor__text">{better}</p>
+                    </div>
+                </div>
+                {has_together.then(|| view! {
+                    <div class="cmp-competitor__together">
+                        <span class="cmp-competitor__label">{label_together}</span>
+                        <p class="cmp-competitor__text">{together}</p>
+                    </div>
+                })}
+            </div>
+        </section>
+    }
+}

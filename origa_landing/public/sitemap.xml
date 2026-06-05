@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://origa.app/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://origa.app/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://origa.app/ru/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.app/"/>
+  </url>
+  <url>
+    <loc>https://origa.app/features</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://origa.app/features"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://origa.app/ru/features"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.app/features"/>
+  </url>
+  <url>
+    <loc>https://origa.app/compare</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://origa.app/compare"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://origa.app/ru/compare"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.app/compare"/>
+  </url>
+  <url>
+    <loc>https://origa.app/download</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://origa.app/download"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://origa.app/ru/download"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.app/download"/>
+  </url>
+</urlset>
