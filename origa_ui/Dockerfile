@@ -127,6 +127,7 @@ COPY --from=builder /dist /app/public
 COPY --from=builder /app/target/release/origa_landing /usr/local/bin/origa_landing
 COPY --from=builder /app/origa_landing/style/landing.processed.css /app/origa_landing/style/landing.processed.css
 COPY --from=builder /app/origa_landing/public /app/origa_landing/public
+COPY --from=builder /app/origa_landing/Cargo.toml /app/origa_landing/Cargo.toml
 COPY origa_ui/Caddyfile /app/Caddyfile
 COPY origa_ui/entrypoint.sh /app/entrypoint.sh
 
