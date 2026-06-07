@@ -45,7 +45,7 @@ jobs:
                   shared-key: origa-ci
 
             - name: Setup Node.js for landing CSS
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@v6
               with:
                   node-version: "20"
 
@@ -124,7 +124,7 @@ jobs:
                   path: cdn/
 
             - name: Setup Node.js for landing CSS
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@v6
               with:
                   node-version: "20"
 
