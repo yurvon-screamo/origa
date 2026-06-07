@@ -18,10 +18,13 @@ env:
 jobs:
     lint:
         name: Lint
+        permissions:
+            contents: read
         runs-on: ubuntu-24.04
         env:
             ORIGA_CDN_BASE_URL: "https://${{ vars.ORIGA_CDN_URI_PREFIX }}.${{ vars.ORIGA_BASE_URI }}"
             ORIGA_LANDING_BASE_URL: "https://${{ vars.ORIGA_BASE_URI }}"
+            ORIGA_APP_BASE_URL: "https://${{ vars.ORIGA_APP_URI_PREFIX }}.${{ vars.ORIGA_BASE_URI }}"
             TRAILBASE_URL: "https://${{ vars.ORIGA_APP_URI_PREFIX }}.${{ vars.ORIGA_BASE_URI }}"
         steps:
             - name: Checkout repository
@@ -58,6 +61,8 @@ jobs:
 
     cdn-download:
         name: Download CDN
+        permissions:
+            contents: read
         runs-on: ubuntu-24.04
         steps:
             - name: Checkout repository
@@ -78,11 +83,14 @@ jobs:
 
     test:
         name: Test
+        permissions:
+            contents: read
         needs: cdn-download
         runs-on: ubuntu-24.04
         env:
             ORIGA_CDN_BASE_URL: "https://${{ vars.ORIGA_CDN_URI_PREFIX }}.${{ vars.ORIGA_BASE_URI }}"
             ORIGA_LANDING_BASE_URL: "https://${{ vars.ORIGA_BASE_URI }}"
+            ORIGA_APP_BASE_URL: "https://${{ vars.ORIGA_APP_URI_PREFIX }}.${{ vars.ORIGA_BASE_URI }}"
             TRAILBASE_URL: "https://${{ vars.ORIGA_APP_URI_PREFIX }}.${{ vars.ORIGA_BASE_URI }}"
         steps:
             - name: Checkout repository
@@ -129,6 +137,8 @@ jobs:
 
     e2e-build:
         name: E2E Build
+        permissions:
+            contents: read
         needs: cdn-download
         runs-on: ubuntu-24.04
         env:
@@ -182,6 +192,8 @@ jobs:
 
     e2e:
         name: E2E (${{ matrix.spec }})
+        permissions:
+            contents: read
         needs: e2e-build
         runs-on: ubuntu-24.04
         strategy:
@@ -230,7 +242,7 @@ jobs:
                     sleep 5
                   done
                   echo "$HOME/.local/bin" >> $GITHUB_PATH
-                  trailbase --version
+                  "$HOME/.local/bin/trail" --version
 
             - name: Install Node.js dependencies
               working-directory: end2end
@@ -254,6 +266,8 @@ jobs:
 
     e2e-report:
         name: E2E Report
+        permissions:
+            contents: read
         needs: e2e
         if: always() && needs.e2e.result != 'cancelled'
         runs-on: ubuntu-24.04
@@ -302,6 +316,8 @@ jobs:
 
     docker-build-landing:
         name: Docker Build (landing)
+        permissions:
+            contents: read
         if: github.event_name == 'pull_request'
         runs-on: ubuntu-latest
         steps:
@@ -320,9 +336,12 @@ jobs:
                   cache-from: type=registry,ref=ghcr.io/yurvon-screamo/origa:landing-buildcache
                   build-args: |
                       ORIGA_LANDING_BASE_URL=https://${{ vars.ORIGA_BASE_URI }}
+                      ORIGA_APP_BASE_URL=https://${{ vars.ORIGA_APP_URI_PREFIX }}.${{ vars.ORIGA_BASE_URI }}
 
     docker-build-ui:
         name: Docker Build (ui)
+        permissions:
+            contents: read
         if: github.event_name == 'pull_request'
         runs-on: ubuntu-latest
         steps:
@@ -346,14 +365,28 @@ jobs:
 
     check:
         name: CI Gate
+        permissions:
+            contents: read
         needs: [lint, test, e2e, docker-build-landing, docker-build-ui]
-        if: >
-            always() &&
-            needs.lint.result == 'success' &&
-            needs.test.result == 'success' &&
-            needs.e2e.result == 'success' &&
-            (needs.docker-build-landing.result == 'success' || needs.docker-build-landing.result == 'skipped') &&
-            (needs.docker-build-ui.result == 'success' || needs.docker-build-ui.result == 'skipped')
+        if: always()
         runs-on: ubuntu-latest
         steps:
+            - name: Verify all jobs passed
+              run: |
+                  check() {
+                    local job="$1" result="$2"
+                    shift 2
+                    for allowed in "$@"; do
+                      [[ "$result" == "$allowed" ]] && return 0
+                    done
+                    echo "::error::$job failed with result: $result"
+                    return 1
+                  }
+
+                  check "lint" "${{ needs.lint.result }}" "success"
+                  check "test" "${{ needs.test.result }}" "success"
+                  check "e2e" "${{ needs.e2e.result }}" "success"
+                  check "docker-build-landing" "${{ needs.docker-build-landing.result }}" "success" "skipped"
+                  check "docker-build-ui" "${{ needs.docker-build-ui.result }}" "success" "skipped"
+
             - run: echo "All checks passed"
