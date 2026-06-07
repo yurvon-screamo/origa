@@ -46,7 +46,7 @@ COPY origa_ui/Cargo.toml ./origa_ui/
 COPY origa_landing/Cargo.toml ./origa_landing/
 COPY .cargo .cargo
 
-# Dummy source for ALL workspace members (workspace resolution requires valid Cargo.toml + source)
+# Dummy source for ALL workspace members
 RUN mkdir -p origa/src && echo "pub fn dummy() {}" > origa/src/lib.rs && \
     mkdir -p origa_ui/src && echo "pub fn dummy() {}" > origa_ui/src/lib.rs && \
     echo "fn main() {}" > origa_ui/src/main.rs && \
@@ -56,31 +56,31 @@ RUN mkdir -p origa/src && echo "pub fn dummy() {}" > origa/src/lib.rs && \
     echo "fn main() {}" > origa_landing/src/main.rs && \
     echo "fn main() {}" > origa_landing/build.rs
 
-# Dummy build - only origa_landing with ssr feature
+# Dummy build - cache deps
 RUN --mount=type=cache,target=/sccache,sharing=locked \
     --mount=type=cache,target=/root/.cargo/registry,sharing=locked \
     cargo build --release -p origa_landing --features ssr --target x86_64-unknown-linux-musl && \
     rm -rf origa_landing
 
-# Real source + CSS build
+# Real source
 COPY origa_landing ./origa_landing
 
+# CSS build
 WORKDIR /app/origa_landing
 
 RUN --mount=type=cache,target=/root/.npm \
     npm install && \
-    npm run build:css && \
-    ls -la style/landing.processed.css
+    npm run build:css
 
 WORKDIR /app
 
-# Real build
+# Real build - same pattern as origa_ui Dockerfile
 RUN --mount=type=cache,target=/sccache,sharing=locked \
     --mount=type=cache,target=/root/.cargo/registry,sharing=locked \
     --mount=type=cache,target=/app/target,sharing=locked \
-    rm -f /app/target/x86_64-unknown-linux-musl/release/origa_landing && \
     rm -rf /app/target/x86_64-unknown-linux-musl/release/.fingerprint/origa_landing* && \
     rm -rf /app/target/x86_64-unknown-linux-musl/release/deps/origa_landing* && \
+    rm -rf /app/target/x86_64-unknown-linux-musl/release/deps/liboriga_landing* && \
     rm -rf /app/target/x86_64-unknown-linux-musl/release/build/origa_landing* && \
     cargo build --release -p origa_landing --features ssr --target x86_64-unknown-linux-musl
 
@@ -99,4 +99,4 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD ["wget", "--spider", "-q", "http://localhost:3000/"]
 
-CMD ["sh", "-c", "echo '=== Binary ===' && ls -la /usr/local/bin/origa_landing && echo '=== Files ===' && ls -laR /app/origa_landing/ && echo '=== Run ===' && RUST_LOG=info RUST_BACKTRACE=1 origa_landing; echo \"EXIT CODE: $?\""]
+CMD ["origa_landing"]
