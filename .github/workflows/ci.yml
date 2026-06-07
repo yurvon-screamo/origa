@@ -230,6 +230,7 @@ jobs:
                     sleep 5
                   done
                   echo "$HOME/.local/bin" >> $GITHUB_PATH
+                  trailbase --version
 
             - name: Install Node.js dependencies
               working-directory: end2end
@@ -316,6 +317,7 @@ jobs:
                   context: .
                   file: ./origa_landing/Dockerfile
                   push: false
+                  cache-from: type=registry,ref=ghcr.io/yurvon-screamo/origa:landing-buildcache
                   build-args: |
                       ORIGA_LANDING_BASE_URL=https://${{ vars.ORIGA_BASE_URI }}
 
