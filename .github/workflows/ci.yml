@@ -20,9 +20,9 @@ jobs:
         name: Lint
         runs-on: ubuntu-24.04
         env:
-            ORIGA_CDN_BASE_URL: ${{ vars.ORIGA_CDN_BASE_URL }}
-            ORIGA_LANDING_BASE_URL: "https://origa.app"
-            TRAILBASE_URL: ${{ vars.TRAILBASE_URL }}
+            ORIGA_CDN_BASE_URL: "https://${{ vars.ORIGA_CDN_URI_PREFIX }}.${{ vars.ORIGA_BASE_URI }}"
+            ORIGA_LANDING_BASE_URL: "https://${{ vars.ORIGA_BASE_URI }}"
+            TRAILBASE_URL: "https://${{ vars.ORIGA_APP_URI_PREFIX }}.${{ vars.ORIGA_BASE_URI }}"
         steps:
             - name: Checkout repository
               uses: actions/checkout@v4
@@ -67,7 +67,7 @@ jobs:
               uses: ./.github/actions/download-cdn
               with:
                   cache-key: cdn-data-v8-${{ hashFiles('end2end/cdn-manifest.txt') }}
-                  cdn-base-url: ${{ vars.ORIGA_CDN_BASE_URL }}
+                  cdn-base-url: "https://${{ vars.ORIGA_CDN_URI_PREFIX }}.${{ vars.ORIGA_BASE_URI }}"
 
             - name: Upload CDN artifact
               uses: actions/upload-artifact@v4
@@ -81,9 +81,9 @@ jobs:
         needs: cdn-download
         runs-on: ubuntu-24.04
         env:
-            ORIGA_CDN_BASE_URL: ${{ vars.ORIGA_CDN_BASE_URL }}
-            ORIGA_LANDING_BASE_URL: "https://origa.app"
-            TRAILBASE_URL: ${{ vars.TRAILBASE_URL }}
+            ORIGA_CDN_BASE_URL: "https://${{ vars.ORIGA_CDN_URI_PREFIX }}.${{ vars.ORIGA_BASE_URI }}"
+            ORIGA_LANDING_BASE_URL: "https://${{ vars.ORIGA_BASE_URI }}"
+            TRAILBASE_URL: "https://${{ vars.ORIGA_APP_URI_PREFIX }}.${{ vars.ORIGA_BASE_URI }}"
         steps:
             - name: Checkout repository
               uses: actions/checkout@v4
@@ -317,7 +317,7 @@ jobs:
                   file: ./origa_landing/Dockerfile
                   push: false
                   build-args: |
-                      ORIGA_LANDING_BASE_URL=https://origa.app
+                      ORIGA_LANDING_BASE_URL=https://${{ vars.ORIGA_BASE_URI }}
 
     docker-build-ui:
         name: Docker Build (ui)
@@ -338,9 +338,9 @@ jobs:
                   push: false
                   cache-from: type=registry,ref=ghcr.io/yurvon-screamo/origa:ui-buildcache
                   build-args: |
-                      ORIGA_CDN_BASE_URL=${{ vars.ORIGA_CDN_BASE_URL }}
+                      ORIGA_CDN_BASE_URL=https://${{ vars.ORIGA_CDN_URI_PREFIX }}.${{ vars.ORIGA_BASE_URI }}
                       ORIGA_CDN_REGION=${{ vars.ORIGA_CDN_REGION }}
-                      TRAILBASE_URL=${{ vars.TRAILBASE_URL }}
+                      TRAILBASE_URL=https://${{ vars.ORIGA_APP_URI_PREFIX }}.${{ vars.ORIGA_BASE_URI }}
 
     check:
         name: CI Gate
