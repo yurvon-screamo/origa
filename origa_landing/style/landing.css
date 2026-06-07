@@ -250,23 +250,10 @@
 .home-hero__decor-img {
     position: absolute;
     inset: 0;
-    background-size: cover;
+    background-size: contain;
     background-position: center;
-    opacity: 0.12;
-    mix-blend-mode: multiply;
+    background-repeat: no-repeat;
 }
-
-.home-hero__decor-char {
-    position: relative;
-    font-family: var(--font-serif);
-    font-size: clamp(8rem, 20vw, 14rem);
-    font-weight: 300;
-    color: var(--bg-aged);
-    user-select: none;
-    pointer-events: none;
-}
-
-/* --- Problem + Principles: 2-column layout --- */
 
 .home-dual {
     background: var(--bg-paper);
@@ -499,6 +486,18 @@
     margin: 0 auto;
 }
 
+.download-primary__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-lg);
+}
+
+@media (max-width: 640px) {
+    .download-primary__grid {
+        grid-template-columns: 1fr;
+    }
+}
+
 .download-primary__card {
     background: var(--bg-paper);
     border: 1px solid var(--border-dark);
@@ -617,34 +616,6 @@
     letter-spacing: 0.05em;
 }
 
-.download-bottom {
-    text-align: center;
-    padding: var(--space-xl) var(--space-lg) var(--space-xxxl);
-}
-
-.download-bottom__text {
-    font-family: var(--font-mono);
-    font-size: var(--text-label-sm);
-    color: var(--fg-muted);
-    margin-bottom: var(--space-sm);
-}
-
-.download-bottom__link {
-    font-family: var(--font-mono);
-    font-size: var(--text-label-sm);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--fg-black);
-    text-decoration: none;
-    border-bottom: 1px solid var(--border-dark);
-    padding-bottom: 2px;
-}
-
-.download-bottom__link:hover {
-    color: var(--bg-paper);
-    background: var(--fg-black);
-}
-
 .download-coming-soon-badge {
     font-family: var(--font-mono);
     font-size: var(--text-2xs);
@@ -698,10 +669,9 @@
 .feat-hero__decor-img {
     position: absolute;
     inset: 0;
-    background-size: cover;
+    background-size: contain;
     background-position: center;
-    opacity: 0.12;
-    mix-blend-mode: multiply;
+    background-repeat: no-repeat;
 }
 
 @media (max-width: 640px) {
