@@ -97,4 +97,4 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD ["wget", "--spider", "-q", "http://localhost:3000/"]
 
-CMD ["sh", "-c", "echo '=== Debug ===' && ls -la /usr/local/bin/origa_landing && ls -la /app/origa_landing/ && echo '=== Starting ===' && exec origa_landing"]
+CMD ["sh", "-c", "echo '=== Binary ===' && ls -la /usr/local/bin/origa_landing && echo '=== Files ===' && ls -laR /app/origa_landing/ && echo '=== Run ===' && RUST_LOG=info RUST_BACKTRACE=1 origa_landing; echo \"EXIT CODE: $?\""]
