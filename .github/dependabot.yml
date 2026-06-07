@@ -1,0 +1,123 @@
+version: 2
+
+updates:
+  # --- Cargo (Rust) ---
+  - package-ecosystem: "cargo"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "yurvon-screamo"
+    assignees:
+      - "yurvon-screamo"
+    labels:
+      - "dependencies"
+    rebase-strategy: "auto"
+    commit-message:
+      prefix: "cargo"
+
+  # --- npm: end2end ---
+  - package-ecosystem: "npm"
+    directory: "/end2end"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 3
+    reviewers:
+      - "yurvon-screamo"
+    assignees:
+      - "yurvon-screamo"
+    labels:
+      - "dependencies"
+    rebase-strategy: "auto"
+    commit-message:
+      prefix: "npm"
+    groups:
+      dev-patterns:
+        - "*"
+
+  # --- npm: tauri ---
+  - package-ecosystem: "npm"
+    directory: "/tauri"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 3
+    reviewers:
+      - "yurvon-screamo"
+    assignees:
+      - "yurvon-screamo"
+    labels:
+      - "dependencies"
+    rebase-strategy: "auto"
+    commit-message:
+      prefix: "npm"
+    groups:
+      dev-patterns:
+        - "*"
+
+  # --- npm: origa_landing ---
+  - package-ecosystem: "npm"
+    directory: "/origa_landing"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 3
+    reviewers:
+      - "yurvon-screamo"
+    assignees:
+      - "yurvon-screamo"
+    labels:
+      - "dependencies"
+    rebase-strategy: "auto"
+    commit-message:
+      prefix: "npm"
+    groups:
+      dev-patterns:
+        - "*"
+
+  # --- Docker: origa_landing ---
+  - package-ecosystem: "docker"
+    directory: "/origa_landing"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 3
+    reviewers:
+      - "yurvon-screamo"
+    assignees:
+      - "yurvon-screamo"
+    labels:
+      - "dependencies"
+    rebase-strategy: "auto"
+    commit-message:
+      prefix: "docker"
+
+  # --- Docker: origa_ui ---
+  - package-ecosystem: "docker"
+    directory: "/origa_ui"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 3
+    reviewers:
+      - "yurvon-screamo"
+    assignees:
+      - "yurvon-screamo"
+    labels:
+      - "dependencies"
+    rebase-strategy: "auto"
+    commit-message:
+      prefix: "docker"
+
+  # --- GitHub Actions ---
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 3
+    reviewers:
+      - "yurvon-screamo"
+    assignees:
+      - "yurvon-screamo"
+    labels:
+      - "dependencies"
+    rebase-strategy: "auto"
+    commit-message:
+      prefix: "ci"
