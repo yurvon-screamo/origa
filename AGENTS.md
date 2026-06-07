@@ -10,6 +10,7 @@
 | Workspace      | Rust 2024 edition, id `net.uwuwu.origa`                                   |
 | Бизнес-логика  | `origa/` — Clean Architecture (Use Cases → Domain → Traits)               |
 | Frontend       | `origa_ui/` — Leptos 0.8, CSR/WASM, trunk                                 |
+| Landing        | `origa_landing/` — Leptos 0.8, SSR/Axum, i18n (EN+RU)                    |
 | Desktop        | `tauri/` — Tauri v2 (Windows, Linux, macOS)                               |
 | E2E            | `end2end/` — Playwright (TypeScript)                                      |
 | Утилиты        | `utils/`, `scripts/` (Python)                                             |
@@ -17,9 +18,10 @@
 ## Структура проекта
 
 ```text
-origa/       — domain, use_cases, traits, ocr, stt, dictionary
-origa_ui/    — Leptos 0.8 frontend (WASM)
-tauri/       — Tauri v2 desktop app
+origa/          — domain, use_cases, traits, ocr, stt, dictionary
+origa_ui/       — Leptos 0.8 frontend (WASM)
+origa_landing/  — SSR landing site (Leptos 0.8 + Axum)
+tauri/          — Tauri v2 desktop app
 end2end/     — Playwright E2E тесты
 utils/       — CLI утилиты
 cdn/         — статический контент (dictionaries, grammar, kanji_animations, ndlocr, phrases, pitch, well_known_set)
@@ -37,8 +39,18 @@ cd tauri && cargo tauri dev
 
 ### Переменные окружения (compile-time, `build.rs`)
 
-Обязательная: `ORIGA_CDN_BASE_URL`. Опциональные: `ORIGA_CDN_REGION`, `ORIGA_VERSION`,
-`ORIGA_COMMIT`, `ORIGA_BUILD_DATE`, `ORIGA_PUBLIC_BASE_URL`, `TRAILBASE_URL`.
+Обязательные: `ORIGA_CDN_BASE_URL`.
+Опциональные: `ORIGA_CDN_REGION`, `ORIGA_VERSION`, `ORIGA_COMMIT`, `ORIGA_BUILD_DATE`, `TRAILBASE_URL`.
+
+**DNS naming scheme** (CI/CD production):
+
+- `ORIGA_BASE_URI` — base domain (e.g. `origa.uwuwu.net`)
+- `ORIGA_CDN_URI_PREFIX` — CDN subdomain prefix (e.g. `s3` → `s3.origa.uwuwu.net`)
+- `ORIGA_APP_URI_PREFIX` — app subdomain prefix (e.g. `app` → `app.origa.uwuwu.net`)
+- Landing = base domain (no prefix)
+
+**Local dev:** `$env:ORIGA_CDN_BASE_URL = "https://s3-proxy-production-52e3.up.railway.app"`
+**Landing dev:** `$env:ORIGA_LANDING_BASE_URL = "https://origa.app"`
 
 ## Команды
 
@@ -81,7 +93,9 @@ aws s3 cp s3://adaptable-foodbox-ucep7wx/ s3://adaptable-foodbox-ucep7wx/ --prof
 
 ## CI/CD
 
-Workflows: `tauri.yml`, `mobile.yml`, `docker.yml`, `cleanup-cache.yml`.
+Workflows: `ci.yml`, `docker.yml`, `tauri.yml`, `cleanup-cache.yml`.
+CI: lint + test + e2e + docker build (2 images: landing + ui).
+CD: 2 Docker images (GHCR) + Railway deploy (2 services).
 Targets: Windows x86_64, Linux x86_64, macOS aarch64. Релиз при push `master` + tag `v*.*.*`.
 
 ## Границы
