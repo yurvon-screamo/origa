@@ -15,6 +15,10 @@ concurrency:
 env:
     CARGO_TERM_COLOR: always
 
+permissions:
+    contents: read
+    actions: write
+
 jobs:
     lint:
         name: Lint
