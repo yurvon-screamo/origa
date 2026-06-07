@@ -183,7 +183,9 @@ pub fn ComparePage() -> impl IntoView {
             <hr class="home-cta__rule" />
             <h2 class="home-cta__title">{c.home_cta_title}</h2>
             <A href=download_href attr:class="btn btn-filled">{c.home_cta_primary}</A>
-            <a href="https://app.origa.jp" class="btn">{c.home_cta_secondary}</a>
+            <p class="home-cta__platforms">
+                "Windows · Linux · macOS · Android · iOS · Web"
+            </p>
         </section>
     }
 }

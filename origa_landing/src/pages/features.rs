@@ -109,6 +109,7 @@ pub fn FeaturesPage() -> impl IntoView {
                     <FeatCapability title=c.features_grammar_jlpt desc=c.features_grammar_jlpt_desc />
                     <FeatCapability title=c.features_grammar_context desc=c.features_grammar_context_desc />
                     <FeatCapability title=c.features_grammar_tests desc=c.features_grammar_tests_desc />
+                    <FeatCapability title=c.features_grammar_search desc=c.features_grammar_search_desc />
                 </div>
 
                 <FeatEditorialNote text=c.features_grammar_insight />

@@ -51,13 +51,13 @@
     --font-mono: "DM Mono", monospace;
 
     /* Typography Scale */
-    --text-2xs: 11px;
-    --text-xs: 14px;
-    --text-sm: 16px;
-    --text-label: 13px;
-    --text-label-sm: 11px;
-    --text-body: 14px;
-    --text-lg: 18px;
+    --text-2xs: 12px;
+    --text-xs: 15px;
+    --text-sm: 17px;
+    --text-label: 14px;
+    --text-label-sm: 12px;
+    --text-body: 16px;
+    --text-lg: 19px;
 }
 
 * {
