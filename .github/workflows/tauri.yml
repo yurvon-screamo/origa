@@ -20,6 +20,9 @@ concurrency:
 env:
     CARGO_TERM_COLOR: always
 
+permissions:
+    contents: read
+
 jobs:
     version:
         permissions:
@@ -61,7 +64,7 @@ jobs:
             ORIGA_VERSION: ${{ needs.version.outputs.version }}
             ORIGA_COMMIT: ${{ needs.version.outputs.commit_sha }}
             ORIGA_BUILD_DATE: ${{ needs.version.outputs.build_date }}
-            TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+            TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY || vars.TAURI_CI_DUMMY_PRIVATE_KEY }}
             TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
             XWIN_CACHE_DIR: ${{ github.workspace }}/.xwin-cache
 
@@ -171,7 +174,7 @@ jobs:
             ORIGA_VERSION: ${{ needs.version.outputs.version }}
             ORIGA_COMMIT: ${{ needs.version.outputs.commit_sha }}
             ORIGA_BUILD_DATE: ${{ needs.version.outputs.build_date }}
-            TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+            TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY || vars.TAURI_CI_DUMMY_PRIVATE_KEY }}
             TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
 
         steps:
@@ -272,7 +275,7 @@ jobs:
             ORIGA_VERSION: ${{ needs.version.outputs.version }}
             ORIGA_COMMIT: ${{ needs.version.outputs.commit_sha }}
             ORIGA_BUILD_DATE: ${{ needs.version.outputs.build_date }}
-            TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+            TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY || vars.TAURI_CI_DUMMY_PRIVATE_KEY }}
             TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
 
         steps:
