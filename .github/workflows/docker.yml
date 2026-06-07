@@ -56,16 +56,16 @@ jobs:
                     - image: landing
                       dockerfile: ./origa_landing/Dockerfile
                       build_args: |
-                          ORIGA_LANDING_BASE_URL=https://origa.app
+                          ORIGA_LANDING_BASE_URL=https://${{ vars.ORIGA_BASE_URI }}
                     - image: ui
                       dockerfile: ./origa_ui/Dockerfile
                       build_args: |
                           ORIGA_VERSION=${{ needs.version.outputs.version }}
                           ORIGA_COMMIT=${{ needs.version.outputs.commit_sha }}
                           ORIGA_BUILD_DATE=${{ needs.version.outputs.build_date }}
-                          ORIGA_CDN_BASE_URL=${{ vars.ORIGA_CDN_BASE_URL }}
+                          ORIGA_CDN_BASE_URL=https://${{ vars.ORIGA_CDN_URI_PREFIX }}.${{ vars.ORIGA_BASE_URI }}
                           ORIGA_CDN_REGION=${{ vars.ORIGA_CDN_REGION }}
-                          TRAILBASE_URL=${{ vars.TRAILBASE_URL }}
+                          TRAILBASE_URL=https://${{ vars.ORIGA_APP_URI_PREFIX }}.${{ vars.ORIGA_BASE_URI }}
 
         steps:
             - name: Checkout repository
