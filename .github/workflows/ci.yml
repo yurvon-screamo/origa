@@ -242,7 +242,7 @@ jobs:
                     sleep 5
                   done
                   echo "$HOME/.local/bin" >> $GITHUB_PATH
-                  trailbase --version
+                  "$HOME/.local/bin/trail" --version
 
             - name: Install Node.js dependencies
               working-directory: end2end
