@@ -125,6 +125,8 @@ pub struct Content {
     pub features_grammar_context_desc: &'static str,
     pub features_grammar_tests: &'static str,
     pub features_grammar_tests_desc: &'static str,
+    pub features_grammar_search: &'static str,
+    pub features_grammar_search_desc: &'static str,
     pub features_grammar_insight: &'static str,
     pub features_listening_h2: &'static str,
     pub features_listening_subtitle: &'static str,
@@ -204,12 +206,13 @@ pub struct Content {
     pub download_macos_formats: &'static str,
     pub download_android: &'static str,
     pub download_android_formats: &'static str,
+    pub download_web: &'static str,
+    pub download_web_formats: &'static str,
     pub download_ios: &'static str,
     pub download_ios_formats: &'static str,
     pub download_ios_coming_soon: &'static str,
     pub download_button: &'static str,
     pub download_subtitle: &'static str,
-    pub download_not_ready: &'static str,
     pub download_try_web: &'static str,
 }
 

@@ -12,6 +12,7 @@ pub fn HomePage() -> impl IntoView {
     let c = locale.content();
     let prefix = locale.path_prefix();
     let lang = locale.as_str();
+    let app_url = env!("ORIGA_APP_BASE_URL");
 
     let features_href = format!("{prefix}/features");
     let download_href = format!("{prefix}/download");
@@ -31,16 +32,16 @@ pub fn HomePage() -> impl IntoView {
                     <A href=format!("{prefix}/download") attr:class="btn btn-filled">
                         {c.home_cta_primary}
                     </A>
-                    <a href="https://app.origa.jp" class="btn">{c.home_cta_secondary}</a>
+                    <a href=app_url class="btn">{c.home_cta_secondary}</a>
                 </div>
                 <p class="home-hero__tagline">{c.home_hero_tagline}</p>
             </div>
             <div class="home-hero__decor">
                 <div
                     class="home-hero__decor-img"
+                    attr:aria-hidden="true"
                     style=format!("background-image: url(/images/{lang}.hero.png)")
                 ></div>
-                <span class="home-hero__decor-char">"学"</span>
             </div>
         </section>
 
