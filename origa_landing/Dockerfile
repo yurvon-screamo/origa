@@ -69,7 +69,8 @@ WORKDIR /app/origa_landing
 
 RUN --mount=type=cache,target=/root/.npm \
     npm install && \
-    npm run build:css
+    npm run build:css && \
+    ls -la style/landing.processed.css
 
 WORKDIR /app
 
@@ -77,6 +78,7 @@ WORKDIR /app
 RUN --mount=type=cache,target=/sccache,sharing=locked \
     --mount=type=cache,target=/root/.cargo/registry,sharing=locked \
     --mount=type=cache,target=/app/target,sharing=locked \
+    rm -f /app/target/x86_64-unknown-linux-musl/release/origa_landing && \
     rm -rf /app/target/x86_64-unknown-linux-musl/release/.fingerprint/origa_landing* && \
     rm -rf /app/target/x86_64-unknown-linux-musl/release/deps/origa_landing* && \
     rm -rf /app/target/x86_64-unknown-linux-musl/release/build/origa_landing* && \
