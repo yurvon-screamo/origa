@@ -3,7 +3,7 @@
 ARG RUST_VERSION=1.93
 ARG TRUNK_VERSION=0.21.14
 
-FROM ubuntu:24.04 AS builder
+FROM ubuntu:26.04 AS builder
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
