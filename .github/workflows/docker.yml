@@ -1,4 +1,4 @@
-name: Build and Push Docker Image
+name: Build and Push Docker Images
 
 on:
     workflow_run:
@@ -39,7 +39,7 @@ jobs:
               uses: ./.github/actions/version
 
     build-and-push:
-        name: Build and Push Docker Image
+        name: Build and Push (${{ matrix.image }})
         needs: [version]
         if: >
             github.event_name == 'push' ||
@@ -49,6 +49,23 @@ jobs:
         permissions:
             contents: read
             packages: write
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    - image: landing
+                      dockerfile: ./origa_landing/Dockerfile
+                      build_args: |
+                          ORIGA_LANDING_BASE_URL=https://origa.app
+                    - image: ui
+                      dockerfile: ./origa_ui/Dockerfile
+                      build_args: |
+                          ORIGA_VERSION=${{ needs.version.outputs.version }}
+                          ORIGA_COMMIT=${{ needs.version.outputs.commit_sha }}
+                          ORIGA_BUILD_DATE=${{ needs.version.outputs.build_date }}
+                          ORIGA_CDN_BASE_URL=${{ vars.ORIGA_CDN_BASE_URL }}
+                          ORIGA_CDN_REGION=${{ vars.ORIGA_CDN_REGION }}
+                          TRAILBASE_URL=${{ vars.TRAILBASE_URL }}
 
         steps:
             - name: Checkout repository
@@ -68,7 +85,7 @@ jobs:
               id: meta
               uses: docker/metadata-action@v5
               with:
-                  images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+                  images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${{ matrix.image }}
                   tags: |
                       type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/') }}
                       type=raw,value=edge,enable=${{ github.ref == 'refs/heads/master' }}
@@ -79,20 +96,14 @@ jobs:
               uses: docker/build-push-action@v6
               with:
                   context: .
-                  file: ./origa_ui/Dockerfile
+                  file: ${{ matrix.dockerfile }}
                   push: true
                   tags: ${{ steps.meta.outputs.tags }}
                   labels: ${{ steps.meta.outputs.labels }}
-                  cache-from: type=registry,ref=ghcr.io/yurvon-screamo/origa:buildcache
-                  cache-to: type=registry,ref=ghcr.io/yurvon-screamo/origa:buildcache,mode=max
+                  cache-from: type=registry,ref=ghcr.io/yurvon-screamo/origa:${{ matrix.image }}-buildcache
+                  cache-to: type=registry,ref=ghcr.io/yurvon-screamo/origa:${{ matrix.image }}-buildcache,mode=max
                   provenance: false
-                  build-args: |
-                      ORIGA_VERSION=${{ needs.version.outputs.version }}
-                      ORIGA_COMMIT=${{ needs.version.outputs.commit_sha }}
-                      ORIGA_BUILD_DATE=${{ needs.version.outputs.build_date }}
-                      ORIGA_CDN_BASE_URL=${{ vars.ORIGA_CDN_BASE_URL }}
-                      ORIGA_CDN_REGION=${{ vars.ORIGA_CDN_REGION }}
-                      TRAILBASE_URL=${{ vars.TRAILBASE_URL }}
+                  build-args: ${{ matrix.build_args }}
 
     deploy-to-railway:
         name: Deploy to Railway
@@ -100,9 +111,13 @@ jobs:
         if: success()
         runs-on: ubuntu-latest
         container: ghcr.io/railwayapp/cli:latest
-        env:
-            RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-            RAILWAY_SERVICE_ID: ${{ secrets.RAILWAY_SERVICE_ID }}
         steps:
-            - name: Trigger Railway redeploy
-              run: railway redeploy -y --service ${{ env.RAILWAY_SERVICE_ID }}
+            - name: Deploy landing
+              run: railway redeploy -y --service ${{ secrets.RAILWAY_SERVICE_ID_LANDING }}
+              env:
+                  RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+            - name: Deploy UI
+              run: railway redeploy -y --service ${{ secrets.RAILWAY_SERVICE_ID_UI }}
+              env:
+                  RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
