@@ -33,8 +33,9 @@ updates:
     commit-message:
       prefix: "npm"
     groups:
-      dev-patterns:
-        - "*"
+      dev-dependencies:
+        patterns:
+          - "*"
 
   # --- npm: tauri ---
   - package-ecosystem: "npm"
@@ -52,8 +53,9 @@ updates:
     commit-message:
       prefix: "npm"
     groups:
-      dev-patterns:
-        - "*"
+      dev-dependencies:
+        patterns:
+          - "*"
 
   # --- npm: origa_landing ---
   - package-ecosystem: "npm"
@@ -71,8 +73,9 @@ updates:
     commit-message:
       prefix: "npm"
     groups:
-      dev-patterns:
-        - "*"
+      dev-dependencies:
+        patterns:
+          - "*"
 
   # --- Docker: origa_landing ---
   - package-ecosystem: "docker"
