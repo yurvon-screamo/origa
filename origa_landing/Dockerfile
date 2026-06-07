@@ -11,6 +11,9 @@ ARG RUST_VERSION
 ARG ORIGA_LANDING_BASE_URL=https://origa.app
 ENV ORIGA_LANDING_BASE_URL=${ORIGA_LANDING_BASE_URL}
 
+ARG ORIGA_APP_BASE_URL
+ENV ORIGA_APP_BASE_URL=${ORIGA_APP_BASE_URL}
+
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get install -y --no-install-recommends \

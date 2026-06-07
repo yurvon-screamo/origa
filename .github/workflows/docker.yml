@@ -20,6 +20,8 @@ env:
 
 jobs:
     version:
+        permissions:
+            contents: read
         runs-on: ubuntu-latest
         outputs:
             version: ${{ steps.version.outputs.version }}
@@ -57,6 +59,7 @@ jobs:
                       dockerfile: ./origa_landing/Dockerfile
                       build_args: |
                           ORIGA_LANDING_BASE_URL=https://${{ vars.ORIGA_BASE_URI }}
+                          ORIGA_APP_BASE_URL=https://${{ vars.ORIGA_APP_URI_PREFIX }}.${{ vars.ORIGA_BASE_URI }}
                     - image: ui
                       dockerfile: ./origa_ui/Dockerfile
                       build_args: |
@@ -107,6 +110,8 @@ jobs:
 
     deploy-to-railway:
         name: Deploy to Railway
+        permissions:
+            contents: read
         needs: [version, build-and-push]
         if: success()
         runs-on: ubuntu-latest
