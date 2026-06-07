@@ -82,14 +82,15 @@ RUN --mount=type=cache,target=/sccache,sharing=locked \
     rm -rf /app/target/x86_64-unknown-linux-musl/release/deps/origa_landing* && \
     rm -rf /app/target/x86_64-unknown-linux-musl/release/deps/liboriga_landing* && \
     rm -rf /app/target/x86_64-unknown-linux-musl/release/build/origa_landing* && \
-    cargo build --release -p origa_landing --features ssr --target x86_64-unknown-linux-musl
+    cargo build --release -p origa_landing --features ssr --target x86_64-unknown-linux-musl && \
+    cp /app/target/x86_64-unknown-linux-musl/release/origa_landing /tmp/origa_landing
 
 # Runtime
 FROM alpine:3.21
 
 WORKDIR /app
 
-COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/origa_landing /usr/local/bin/origa_landing
+COPY --from=builder /tmp/origa_landing /usr/local/bin/origa_landing
 COPY --from=builder /app/origa_landing/style/landing.processed.css /app/origa_landing/style/landing.processed.css
 COPY --from=builder /app/origa_landing/public /app/origa_landing/public
 COPY --from=builder /app/origa_landing/Cargo.toml /app/origa_landing/Cargo.toml
