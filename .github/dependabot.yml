@@ -1,7 +1,6 @@
 version: 2
 
 updates:
-  # --- Cargo (Rust) ---
   - package-ecosystem: "cargo"
     directory: "/"
     schedule:
@@ -17,7 +16,6 @@ updates:
     commit-message:
       prefix: "cargo"
 
-  # --- npm: end2end ---
   - package-ecosystem: "npm"
     directory: "/end2end"
     schedule:
@@ -33,10 +31,10 @@ updates:
     commit-message:
       prefix: "npm"
     groups:
-      dev-patterns:
-        - "*"
+      dev-dependencies:
+        patterns:
+          - "*"
 
-  # --- npm: tauri ---
   - package-ecosystem: "npm"
     directory: "/tauri"
     schedule:
@@ -52,10 +50,10 @@ updates:
     commit-message:
       prefix: "npm"
     groups:
-      dev-patterns:
-        - "*"
+      dev-dependencies:
+        patterns:
+          - "*"
 
-  # --- npm: origa_landing ---
   - package-ecosystem: "npm"
     directory: "/origa_landing"
     schedule:
@@ -71,10 +69,10 @@ updates:
     commit-message:
       prefix: "npm"
     groups:
-      dev-patterns:
-        - "*"
+      dev-dependencies:
+        patterns:
+          - "*"
 
-  # --- Docker: origa_landing ---
   - package-ecosystem: "docker"
     directory: "/origa_landing"
     schedule:
@@ -90,7 +88,6 @@ updates:
     commit-message:
       prefix: "docker"
 
-  # --- Docker: origa_ui ---
   - package-ecosystem: "docker"
     directory: "/origa_ui"
     schedule:
@@ -106,7 +103,6 @@ updates:
     commit-message:
       prefix: "docker"
 
-  # --- GitHub Actions ---
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
