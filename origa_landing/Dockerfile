@@ -97,4 +97,4 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD ["wget", "--spider", "-q", "http://localhost:3000/"]
 
-CMD ["origa_landing"]
+CMD ["sh", "-c", "echo '=== Debug ===' && ls -la /usr/local/bin/origa_landing && ls -la /app/origa_landing/ && echo '=== Starting ===' && exec origa_landing"]
