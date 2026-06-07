@@ -69,7 +69,7 @@ COPY origa_landing ./origa_landing
 WORKDIR /app/origa_landing
 
 RUN --mount=type=cache,target=/root/.npm \
-    npm install && \
+    npm ci && \
     npm run build:css
 
 WORKDIR /app
