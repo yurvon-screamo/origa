@@ -15,7 +15,7 @@ ARG ORIGA_COMMIT=unknown
 ARG ORIGA_BUILD_DATE=unknown
 ARG ORIGA_CDN_BASE_URL
 ARG ORIGA_CDN_REGION=auto
-ARG TRAILBASE_URL=http://localhost:4000
+ARG TRAILBASE_URL=http://localhost:8080
 
 ENV ORIGA_VERSION=${ORIGA_VERSION}
 ENV ORIGA_COMMIT=${ORIGA_COMMIT}
@@ -34,9 +34,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     libssl-dev \
     lld \
-    musl-tools \
-    nodejs \
-    npm \
     pkg-config \
     protobuf-compiler \
     && rm -rf /var/lib/apt/lists/* \
@@ -52,19 +49,20 @@ ENV PATH="/root/.cargo/bin:${PATH}"
 
 WORKDIR /app
 
-RUN rustup target add wasm32-unknown-unknown x86_64-unknown-linux-musl && \
+RUN rustup target add wasm32-unknown-unknown && \
     curl -fsSL https://github.com/trunk-rs/trunk/releases/download/v${TRUNK_VERSION}/trunk-x86_64-unknown-linux-gnu.tar.gz \
     | tar -xzf - -C /usr/local/bin
 
+# Copy ALL workspace Cargo.toml files (required for workspace resolution)
 COPY Cargo.toml Cargo.lock ./
 COPY utils/Cargo.toml ./utils/
 COPY tauri/Cargo.toml ./tauri/
 COPY origa/Cargo.toml ./origa/
 COPY origa_ui/Cargo.toml ./origa_ui/
+COPY origa_landing/Cargo.toml ./origa_landing/
 COPY .cargo .cargo
 
-COPY origa_landing/Cargo.toml ./origa_landing/
-
+# Dummy source for ALL workspace members
 RUN mkdir -p origa/src && echo "pub fn dummy() {}" > origa/src/lib.rs && \
     mkdir -p origa_ui/src && echo "pub fn dummy() {}" > origa_ui/src/lib.rs && \
     echo "fn main() {}" > origa_ui/src/main.rs && \
@@ -74,43 +72,37 @@ RUN mkdir -p origa/src && echo "pub fn dummy() {}" > origa/src/lib.rs && \
     echo "fn main() {}" > origa_landing/src/main.rs && \
     echo "fn main() {}" > origa_landing/build.rs
 
+# Dummy build - only origa_ui (wasm)
 RUN --mount=type=cache,target=/sccache,sharing=locked \
     --mount=type=cache,target=/root/.cargo/registry,sharing=locked \
     cargo build --release -p origa_ui --target wasm32-unknown-unknown && \
-    cargo build --release -p origa_landing --features ssr --target x86_64-unknown-linux-musl && \
-    rm -rf origa origa_ui origa_landing
+    rm -rf origa origa_ui
 
+# Real source
 COPY origa ./origa
 COPY origa_ui ./origa_ui
-COPY origa_landing ./origa_landing
 
-RUN --mount=type=cache,target=/root/.npm \
-    cd /app/origa_landing && \
-    npm install && \
-    npm run build:css
-
-RUN --mount=type=cache,target=/sccache \
-    --mount=type=cache,target=/root/.cargo/registry \
-    --mount=type=cache,target=/app/target \
+# Real build - origa + origa_ui (wasm)
+RUN --mount=type=cache,target=/sccache,sharing=locked \
+    --mount=type=cache,target=/root/.cargo/registry,sharing=locked \
+    --mount=type=cache,target=/app/target,sharing=locked \
     rm -rf origa_ui/public/dictionaries/unidic && \
     rm -rf /app/target/wasm32-unknown-unknown/release/.fingerprint/origa* && \
     rm -rf /app/target/wasm32-unknown-unknown/release/deps/origa* && \
     rm -rf /app/target/wasm32-unknown-unknown/release/deps/liboriga* && \
     rm -rf /app/target/wasm32-unknown-unknown/release/build/origa* && \
     cargo build --release -p origa --target wasm32-unknown-unknown && \
-    cargo build --release -p origa_ui --target wasm32-unknown-unknown && \
-    cargo build --release -p origa_landing --features ssr --target x86_64-unknown-linux-musl
+    cargo build --release -p origa_ui --target wasm32-unknown-unknown
 
+# Trunk build
 WORKDIR /app/origa_ui
 
-RUN --mount=type=cache,target=/root/.cargo/registry \
-    --mount=type=cache,target=/app/target \
-    --mount=type=cache,target=/root/.cache/trunk \
-    trunk build --release --dist dist && \
-    cp -r /app/origa_ui/dist /dist
+RUN --mount=type=cache,target=/root/.cargo/registry,sharing=locked \
+    --mount=type=cache,target=/app/target,sharing=locked \
+    --mount=type=cache,target=/root/.cache/trunk,sharing=locked \
+    trunk build --release --dist dist
 
-FROM caddy:2.9-alpine AS caddy
-
+# Runtime: TrailBase + SPA static files
 FROM trailbase/trailbase:0.24.3
 
 USER root
@@ -122,24 +114,15 @@ ENV ORIGA_CDN_BASE_URL=${ORIGA_CDN_BASE_URL}
 # hadolint ignore=DL3018
 RUN apk add --no-cache curl
 
-COPY --from=caddy /usr/bin/caddy /usr/bin/caddy
+COPY --from=builder /app/origa_ui/dist /app/public
 
-COPY --from=builder /dist /app/public
-COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/origa_landing /usr/local/bin/origa_landing
-COPY --from=builder /app/origa_landing/style/landing.processed.css /app/origa_landing/style/landing.processed.css
-COPY --from=builder /app/origa_landing/public /app/origa_landing/public
-COPY --from=builder /app/origa_landing/Cargo.toml /app/origa_landing/Cargo.toml
-COPY origa_ui/Caddyfile /app/Caddyfile
-COPY origa_ui/entrypoint.sh /app/entrypoint.sh
-
-RUN chmod +x /app/entrypoint.sh && \
-    chown -R trailbase:trailbase /app
+RUN chown -R trailbase:trailbase /app
 
 USER trailbase
 
-EXPOSE 4000
+EXPOSE 8080
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD ["curl", "--fail", "http://localhost:4000/api/healthcheck"]
+    CMD ["curl", "--fail", "http://localhost:8080/api/healthcheck"]
 
-CMD ["/app/entrypoint.sh"]
+CMD ["trail", "run", "--address", "0.0.0.0:8080", "--public-dir", "/app/public", "--spa"]

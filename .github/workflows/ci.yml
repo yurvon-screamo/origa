@@ -299,8 +299,8 @@ jobs:
                   path: end2end/playwright-report/
                   retention-days: 30
 
-    docker-build:
-        name: Docker Build
+    docker-build-landing:
+        name: Docker Build (landing)
         if: github.event_name == 'pull_request'
         runs-on: ubuntu-latest
         steps:
@@ -310,27 +310,48 @@ jobs:
             - name: Set up Docker Buildx
               uses: docker/setup-buildx-action@v3
 
-            - name: Build Docker image
+            - name: Build landing image
+              uses: docker/build-push-action@v6
+              with:
+                  context: .
+                  file: ./origa_landing/Dockerfile
+                  push: false
+                  build-args: |
+                      ORIGA_LANDING_BASE_URL=https://origa.app
+
+    docker-build-ui:
+        name: Docker Build (ui)
+        if: github.event_name == 'pull_request'
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v3
+
+            - name: Build UI image
               uses: docker/build-push-action@v6
               with:
                   context: .
                   file: ./origa_ui/Dockerfile
                   push: false
-                  cache-from: type=registry,ref=ghcr.io/yurvon-screamo/origa:buildcache
+                  cache-from: type=registry,ref=ghcr.io/yurvon-screamo/origa:ui-buildcache
                   build-args: |
                       ORIGA_CDN_BASE_URL=${{ vars.ORIGA_CDN_BASE_URL }}
-                      ORIGA_LANDING_BASE_URL=https://origa.app
+                      ORIGA_CDN_REGION=${{ vars.ORIGA_CDN_REGION }}
                       TRAILBASE_URL=${{ vars.TRAILBASE_URL }}
 
     check:
         name: CI Gate
-        needs: [lint, test, e2e, docker-build]
+        needs: [lint, test, e2e, docker-build-landing, docker-build-ui]
         if: >
             always() &&
             needs.lint.result == 'success' &&
             needs.test.result == 'success' &&
             needs.e2e.result == 'success' &&
-            (needs.docker-build.result == 'success' || needs.docker-build.result == 'skipped')
+            (needs.docker-build-landing.result == 'success' || needs.docker-build-landing.result == 'skipped') &&
+            (needs.docker-build-ui.result == 'success' || needs.docker-build-ui.result == 'skipped')
         runs-on: ubuntu-latest
         steps:
             - run: echo "All checks passed"
