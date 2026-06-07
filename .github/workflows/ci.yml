@@ -368,13 +368,25 @@ jobs:
         permissions:
             contents: read
         needs: [lint, test, e2e, docker-build-landing, docker-build-ui]
-        if: >
-            always() &&
-            needs.lint.result == 'success' &&
-            needs.test.result == 'success' &&
-            needs.e2e.result == 'success' &&
-            (needs.docker-build-landing.result == 'success' || needs.docker-build-landing.result == 'skipped') &&
-            (needs.docker-build-ui.result == 'success' || needs.docker-build-ui.result == 'skipped')
+        if: always()
         runs-on: ubuntu-latest
         steps:
+            - name: Verify all jobs passed
+              run: |
+                  check() {
+                    local job="$1" result="$2"
+                    shift 2
+                    for allowed in "$@"; do
+                      [[ "$result" == "$allowed" ]] && return 0
+                    done
+                    echo "::error::$job failed with result: $result"
+                    return 1
+                  }
+
+                  check "lint" "${{ needs.lint.result }}" "success"
+                  check "test" "${{ needs.test.result }}" "success"
+                  check "e2e" "${{ needs.e2e.result }}" "success"
+                  check "docker-build-landing" "${{ needs.docker-build-landing.result }}" "success" "skipped"
+                  check "docker-build-ui" "${{ needs.docker-build-ui.result }}" "success" "skipped"
+
             - run: echo "All checks passed"
