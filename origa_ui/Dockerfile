@@ -9,6 +9,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 ARG RUST_VERSION
 ARG TRUNK_VERSION
+ARG TAILWINDCSS_VERSION=3.4.17
 
 ARG ORIGA_VERSION=dev
 ARG ORIGA_COMMIT=unknown
@@ -34,6 +35,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     libssl-dev \
     lld \
+    nodejs \
+    npm \
     pkg-config \
     protobuf-compiler \
     && rm -rf /var/lib/apt/lists/* \
@@ -52,6 +55,9 @@ WORKDIR /app
 RUN rustup target add wasm32-unknown-unknown && \
     curl -fsSL https://github.com/trunk-rs/trunk/releases/download/v${TRUNK_VERSION}/trunk-x86_64-unknown-linux-gnu.tar.gz \
     | tar -xzf - -C /usr/local/bin
+
+RUN npm install -g tailwindcss@${TAILWINDCSS_VERSION} \
+    && tailwindcss --help > /dev/null
 
 # Copy ALL workspace Cargo.toml files (required for workspace resolution)
 COPY Cargo.toml Cargo.lock ./
