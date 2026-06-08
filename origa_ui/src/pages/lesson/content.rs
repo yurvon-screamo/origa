@@ -12,6 +12,7 @@ use leptos::task::spawn_local;
 use origa::domain::Card;
 use origa::traits::UserRepository;
 use origa::use_cases::SelectCardsToLessonUseCase;
+use origa::use_cases::{classify_orphaned_phrases, delete_phrase_cards_by_phrase_ids};
 use std::collections::HashSet;
 use ulid::Ulid;
 
@@ -96,7 +97,7 @@ pub fn LessonContent() -> impl IntoView {
             }
 
             match cards_result {
-                Ok(lesson_data) => {
+                Ok(mut lesson_data) => {
                     let phrase_ids: Vec<Ulid> = lesson_data
                         .cards
                         .iter()
@@ -111,13 +112,56 @@ pub fn LessonContent() -> impl IntoView {
 
                     if !phrase_ids.is_empty() {
                         let results = load_phrase_details_batch(&phrase_ids).await;
-                        let failed = results.iter().filter(|r| r.is_err()).count();
-                        if failed > 0 {
-                            tracing::warn!(
-                                failed,
-                                total = phrase_ids.len(),
-                                "Some phrase chunks failed to load for lesson"
-                            );
+
+                        let failed_phrase_ids: Vec<Ulid> = phrase_ids
+                            .iter()
+                            .zip(results.iter())
+                            .filter_map(|(id, result)| result.as_ref().err().map(|_| *id))
+                            .collect();
+
+                        if !failed_phrase_ids.is_empty() {
+                            let (permanent, _transient) =
+                                classify_orphaned_phrases(&failed_phrase_ids);
+
+                            let failed_set: HashSet<Ulid> = failed_phrase_ids.into_iter().collect();
+                            let mut cards_to_delete: Vec<Ulid> = Vec::new();
+
+                            lesson_data.cards.retain(|(card_id, lc)| {
+                                if let Card::Phrase(pc) = lc.view().card() {
+                                    let phrase_id = pc.phrase_id();
+                                    if failed_set.contains(phrase_id) {
+                                        if permanent.contains(phrase_id) {
+                                            cards_to_delete.push(*card_id);
+                                        }
+                                        return false;
+                                    }
+                                }
+                                true
+                            });
+
+                            if !cards_to_delete.is_empty() {
+                                if let Ok(Some(mut user)) = repo.get_current_user().await {
+                                    let deleted =
+                                        delete_phrase_cards_by_phrase_ids(&mut user, &permanent);
+                                    if deleted > 0 {
+                                        if let Err(e) = repo.save(&user).await {
+                                            tracing::warn!(
+                                                "Failed to save user after phrase cleanup: {e}"
+                                            );
+                                        }
+                                    }
+                                }
+                                tracing::warn!(
+                                    deleted = cards_to_delete.len(),
+                                    phrase_ids = ?permanent.iter().take(5).collect::<Vec<_>>(),
+                                    "Removed permanently missing phrase cards from user deck"
+                                );
+                            } else {
+                                tracing::warn!(
+                                    count = failed_set.len(),
+                                    "Filtered transient-failed phrases from lesson (not deleting from deck)"
+                                );
+                            }
                         }
                     }
 
