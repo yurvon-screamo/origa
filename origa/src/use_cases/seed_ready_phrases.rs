@@ -258,11 +258,62 @@ fn find_ready_phrases(
     result
 }
 
+pub fn classify_orphaned_phrases(failed_phrase_ids: &[Ulid]) -> (HashSet<Ulid>, HashSet<Ulid>) {
+    use crate::dictionary::phrase::{get_chunk_id, is_chunk_loaded};
+
+    let permanent: HashSet<Ulid> = failed_phrase_ids
+        .iter()
+        .filter(|id| match get_chunk_id(id) {
+            None => true,
+            Some(chunk_id) => is_chunk_loaded(chunk_id),
+        })
+        .copied()
+        .collect();
+
+    let transient: HashSet<Ulid> = failed_phrase_ids
+        .iter()
+        .copied()
+        .filter(|id| !permanent.contains(id))
+        .collect();
+
+    (permanent, transient)
+}
+
+pub fn delete_phrase_cards_by_phrase_ids(
+    user: &mut crate::domain::User,
+    phrase_ids: &HashSet<Ulid>,
+) -> usize {
+    let card_ids_to_delete: Vec<Ulid> = user
+        .knowledge_set()
+        .study_cards()
+        .iter()
+        .filter_map(|(card_id, sc)| {
+            if let Card::Phrase(phrase_card) = sc.card() {
+                if phrase_ids.contains(phrase_card.phrase_id()) {
+                    return Some(*card_id);
+                }
+            }
+            None
+        })
+        .collect();
+
+    let count = card_ids_to_delete.len();
+    if count > 0 {
+        for card_id in &card_ids_to_delete {
+            if user.delete_card(*card_id).is_err() {
+                tracing::warn!(%card_id, "Failed to delete orphaned phrase card");
+            }
+        }
+        info!(count, "Deleted orphaned phrase cards by phrase ID");
+    }
+    count
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::dictionary::grammar::{GrammarData, init_grammar};
-    use crate::domain::{GrammarRuleCard, NativeLanguage, User};
+    use crate::domain::{GrammarRuleCard, NativeLanguage, PhraseCard, User, VocabularyCard};
     use std::sync::Once;
 
     static INIT: Once = Once::new();
@@ -493,5 +544,76 @@ mod tests {
             hash_words_only, hash_with_grammar,
             "Combined hash should differ from words-only hash"
         );
+    }
+
+    #[test]
+    fn classify_orphaned_phrases_not_in_index_is_permanent() {
+        let unknown_id = Ulid::new();
+        let (permanent, transient) = classify_orphaned_phrases(&[unknown_id]);
+        assert!(permanent.contains(&unknown_id));
+        assert!(transient.is_empty());
+    }
+
+    #[test]
+    fn classify_orphaned_phrases_empty_input() {
+        let (permanent, transient) = classify_orphaned_phrases(&[]);
+        assert!(permanent.is_empty());
+        assert!(transient.is_empty());
+    }
+
+    #[test]
+    fn delete_phrase_cards_by_phrase_ids_removes_matching() {
+        let mut user = create_test_user();
+        let phrase_id_1 = Ulid::new();
+        let phrase_id_2 = Ulid::new();
+
+        user.create_card(Card::Phrase(PhraseCard::new(phrase_id_1)))
+            .unwrap();
+        user.create_card(Card::Phrase(PhraseCard::new(phrase_id_2)))
+            .unwrap();
+        user.create_card(Card::Vocabulary(VocabularyCard::new(
+            crate::domain::value_objects::Question::new("test".to_string()).unwrap(),
+        )))
+        .unwrap();
+
+        let to_delete: HashSet<Ulid> = [phrase_id_1].into_iter().collect();
+        let deleted = delete_phrase_cards_by_phrase_ids(&mut user, &to_delete);
+
+        assert_eq!(deleted, 1);
+        assert_eq!(user.knowledge_set().study_cards().len(), 2);
+        assert!(
+            user.knowledge_set().study_cards().values().any(|sc| {
+                matches!(sc.card(), Card::Phrase(pc) if *pc.phrase_id() == phrase_id_2)
+            })
+        );
+    }
+
+    #[test]
+    fn delete_phrase_cards_by_phrase_ids_no_match() {
+        let mut user = create_test_user();
+        let phrase_id = Ulid::new();
+        user.create_card(Card::Phrase(PhraseCard::new(phrase_id)))
+            .unwrap();
+
+        let to_delete: HashSet<Ulid> = [Ulid::new()].into_iter().collect();
+        let deleted = delete_phrase_cards_by_phrase_ids(&mut user, &to_delete);
+
+        assert_eq!(deleted, 0);
+        assert_eq!(user.knowledge_set().study_cards().len(), 1);
+    }
+
+    #[test]
+    fn delete_phrase_cards_by_phrase_ids_ignores_non_phrase_cards() {
+        let mut user = create_test_user();
+        user.create_card(Card::Vocabulary(VocabularyCard::new(
+            crate::domain::value_objects::Question::new("test".to_string()).unwrap(),
+        )))
+        .unwrap();
+
+        let to_delete: HashSet<Ulid> = [Ulid::new()].into_iter().collect();
+        let deleted = delete_phrase_cards_by_phrase_ids(&mut user, &to_delete);
+
+        assert_eq!(deleted, 0);
+        assert_eq!(user.knowledge_set().study_cards().len(), 1);
     }
 }
