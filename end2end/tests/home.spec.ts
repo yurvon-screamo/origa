@@ -1,4 +1,4 @@
-import { expect, type Page } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import { testWithFreshUser } from "../fixtures";
 import { skipOnboarding } from "../helpers/navigation";
 import { HomePage, WordsPage, GrammarPage, KanjiPage } from "../pages";
@@ -107,4 +107,38 @@ testWithFreshUser.describe("Home Page", () => {
     const homePage = await setupHomePage(page);
     await expect(homePage.recentStudy).toBeVisible({ timeout: 10_000 });
   });
+
+  testWithFreshUser(
+    "should update JLPT progress after marking kanji as known",
+    async ({ page }) => {
+      test.setTimeout(120_000);
+      await skipOnboarding(page);
+
+      const homePage = new HomePage(page);
+      await expect(homePage.jlptProgress).toBeVisible({ timeout: 15_000 });
+
+      const jlptPct = page.getByTestId("home-jlpt-progress-pct");
+      await expect(jlptPct).toHaveText("0%", { timeout: 10_000 });
+
+      // Add N5 kanji and mark as known (N5 has ~80 kanji, so 5 gives ~6%)
+      const kanjiPage = new KanjiPage(page);
+      await kanjiPage.goto();
+      await kanjiPage.expectKanjiVisible();
+      await kanjiPage.openAddModal();
+      await kanjiPage.selectLevel("N5");
+      await kanjiPage.selectAllKanji();
+      await kanjiPage.addSelectedKanji();
+
+      const count = Math.min(5, await kanjiPage.getCardCount());
+      for (let i = 0; i < count; i++) {
+        await kanjiPage.markCardAsKnownByIndex(i);
+        await page.waitForTimeout(300);
+      }
+
+      // Navigate to home and verify JLPT progress updated
+      await homePage.goto();
+      await expect(homePage.jlptProgress).toBeVisible({ timeout: 15_000 });
+      await expect(jlptPct).not.toHaveText("0%", { timeout: 10_000 });
+    },
+  );
 });
