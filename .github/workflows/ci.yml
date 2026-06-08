@@ -238,15 +238,29 @@ jobs:
                   name: cdn-data
                   path: cdn/
 
-            - name: Install TrailBase
+            - name: Cache TrailBase CLI
+              id: cache-trailbase
+              uses: actions/cache@v4
+              with:
+                  path: ~/.local/bin/trail
+                  key: trailbase-v0.28.3  # Keep in sync with origa_ui/Dockerfile FROM
+
+            - name: Install TrailBase CLI
+              if: steps.cache-trailbase.outputs.cache-hit != 'true'
               run: |
-                  for i in 1 2 3; do
-                    tmp=$(mktemp) && curl -sSfL -o "$tmp" https://trailbase.io/install.sh && bash "$tmp" && break
-                    echo "Attempt $i failed, retrying..."
-                    sleep 5
+                  for i in 1 2 3 4 5; do
+                    tmp=$(mktemp) && curl -sSfL --retry 3 --retry-delay 10 -o "$tmp" \
+                      https://trailbase.io/install.sh && bash "$tmp" && break
+                    echo "Attempt $i failed, retrying in 15s..."
+                    rm -f "$tmp"
+                    sleep 15
                   done
-                  echo "$HOME/.local/bin" >> $GITHUB_PATH
-                  "$HOME/.local/bin/trail" --version
+
+            - name: Add TrailBase to PATH
+              run: echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+            - name: Verify TrailBase
+              run: trail --version
 
             - name: Install Node.js dependencies
               working-directory: end2end
