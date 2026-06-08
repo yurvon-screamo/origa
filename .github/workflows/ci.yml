@@ -20,6 +20,29 @@ permissions:
     actions: write
 
 jobs:
+    version:
+        name: Version
+        if: github.event_name == 'pull_request'
+        permissions:
+            contents: read
+        runs-on: ubuntu-latest
+        outputs:
+            version: ${{ steps.version.outputs.version }}
+            version_base: ${{ steps.version.outputs.version_base }}
+            version_type: ${{ steps.version.outputs.version_type }}
+            commit_sha: ${{ steps.version.outputs.commit_sha }}
+            commit_short: ${{ steps.version.outputs.commit_short }}
+            build_date: ${{ steps.version.outputs.build_date }}
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+                  filter: blob:none
+
+            - name: Calculate version
+              id: version
+              uses: ./.github/actions/version
+
     lint:
         name: Lint
         permissions:
@@ -332,6 +355,28 @@ jobs:
                   path: end2end/playwright-report/
                   retention-days: 30
 
+    build-tauri:
+        name: Build Tauri
+        needs: [version, e2e-build]
+        if: github.event_name == 'pull_request'
+        uses: ./.github/workflows/_build-tauri.yml
+        with:
+            version: ${{ needs.version.outputs.version }}
+            version_base: ${{ needs.version.outputs.version_base }}
+            version_type: ${{ needs.version.outputs.version_type }}
+            commit_sha: ${{ needs.version.outputs.commit_sha }}
+            build_date: ${{ needs.version.outputs.build_date }}
+            wasm_artifact_name: wasm-dist
+            platforms: "windows,linux,macos,android"
+            skip_android: ${{ github.actor == 'dependabot[bot]' }}
+        secrets:
+            tauri-signing-private-key: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY || vars.TAURI_CI_DUMMY_PRIVATE_KEY }}
+            tauri-signing-private-key-password: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+            android-keystore-base64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+            android-keystore-password: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+            android-key-password: ${{ secrets.ANDROID_KEY_PASSWORD }}
+            android-key-alias: ${{ secrets.ANDROID_KEY_ALIAS }}
+
     docker-build-landing:
         name: Docker Build (landing)
         permissions:
@@ -385,7 +430,7 @@ jobs:
         name: CI Gate
         permissions:
             contents: read
-        needs: [lint, test, e2e, docker-build-landing, docker-build-ui]
+        needs: [lint, test, e2e, docker-build-landing, docker-build-ui, build-tauri]
         if: always()
         runs-on: ubuntu-latest
         steps:
@@ -406,5 +451,6 @@ jobs:
                   check "e2e" "${{ needs.e2e.result }}" "success"
                   check "docker-build-landing" "${{ needs.docker-build-landing.result }}" "success" "skipped"
                   check "docker-build-ui" "${{ needs.docker-build-ui.result }}" "success" "skipped"
+                  check "build-tauri" "${{ needs.build-tauri.result }}" "success" "skipped"
 
             - run: echo "All checks passed"
