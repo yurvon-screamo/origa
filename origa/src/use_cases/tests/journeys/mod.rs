@@ -4,6 +4,7 @@ mod create_cards_from_analysis;
 mod create_vocabulary_card;
 mod grammar;
 mod import_anki_pack;
+mod jlpt_progress_journey;
 mod learning_lesson;
 mod learning_short_term;
 mod mark_card_as_known;
