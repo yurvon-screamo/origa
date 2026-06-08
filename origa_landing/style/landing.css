@@ -1206,3 +1206,115 @@
     margin-right: var(--space-sm);
     margin-bottom: 0;
 }
+
+/* ========================================
+   Integrations Page
+   ======================================== */
+
+/* Hero */
+
+.intg-hero {
+    background: var(--bg-paper);
+    padding: var(--space-xxxl) var(--space-lg) var(--space-xl);
+    text-align: center;
+}
+
+.intg-hero__title {
+    font-family: var(--font-serif);
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 300;
+    margin-bottom: var(--space-md);
+}
+
+.intg-hero__subtitle {
+    font-family: var(--font-mono);
+    font-size: var(--text-body);
+    color: var(--fg-muted);
+    max-width: 600px;
+    margin: 0 auto var(--space-lg);
+    line-height: 1.7;
+}
+
+.intg-hero__rule {
+    width: 80px;
+    height: 1px;
+    background: var(--border-dark);
+    border: none;
+    margin: 0 auto;
+}
+
+/* Catalog */
+
+.intg-catalog {
+    padding: var(--space-xl) var(--space-lg);
+    max-width: 1024px;
+    margin: 0 auto;
+}
+
+.intg-card {
+    background: var(--bg-paper);
+    border: 1px solid var(--border-dark);
+    padding: var(--space-lg);
+    position: relative;
+    margin-bottom: var(--space-lg);
+}
+
+.intg-card::after {
+    content: "";
+    position: absolute;
+    bottom: -6px;
+    right: -6px;
+    width: 100%;
+    height: 100%;
+    border: 1px solid var(--border-dark);
+    background: var(--bg-aged);
+    z-index: -1;
+}
+
+.intg-card__tag {
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent-terracotta);
+    margin-bottom: var(--space-sm);
+}
+
+.intg-card__name {
+    font-family: var(--font-serif);
+    font-size: 1.5rem;
+    font-weight: 400;
+    margin-bottom: var(--space-sm);
+}
+
+.intg-card__desc {
+    font-family: var(--font-mono);
+    font-size: var(--text-body);
+    color: var(--fg-muted);
+    line-height: 1.7;
+    margin-bottom: var(--space-md);
+}
+
+.intg-card__detail {
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--fg-light);
+}
+
+/* Editorial note */
+
+.intg-editorial-note {
+    border-left: 2px solid var(--border-dark);
+    padding: var(--space-md) var(--space-lg);
+    margin-top: var(--space-md);
+}
+
+.intg-editorial-note__text {
+    font-family: var(--font-serif);
+    font-size: 1.125rem;
+    font-style: italic;
+    color: var(--fg-muted);
+    line-height: 1.5;
+}

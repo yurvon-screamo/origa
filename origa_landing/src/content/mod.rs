@@ -56,6 +56,7 @@ pub struct Content {
     pub header_features: &'static str,
     pub header_compare: &'static str,
     pub header_download: &'static str,
+    pub header_integrations: &'static str,
 
     // Footer
     pub footer_product: &'static str,
@@ -213,6 +214,55 @@ pub struct Content {
     pub download_button: &'static str,
     pub download_subtitle: &'static str,
     pub download_try_web: &'static str,
+
+    // Integrations page
+    pub integrations_meta_title: &'static str,
+    pub integrations_meta_description: &'static str,
+    pub integrations_h1: &'static str,
+    pub integrations_subtitle: &'static str,
+
+    // Tags
+    pub integrations_tag_exam: &'static str,
+    pub integrations_tag_app: &'static str,
+    pub integrations_tag_textbook: &'static str,
+    pub integrations_tag_content: &'static str,
+    pub integrations_tag_import: &'static str,
+
+    // JLPT card
+    pub integrations_jlpt_name: &'static str,
+    pub integrations_jlpt_desc: &'static str,
+    pub integrations_jlpt_detail: &'static str,
+
+    // Duolingo card
+    pub integrations_duolingo_name: &'static str,
+    pub integrations_duolingo_desc: &'static str,
+    pub integrations_duolingo_detail: &'static str,
+
+    // Minna no Nihongo card
+    pub integrations_minna_name: &'static str,
+    pub integrations_minna_desc: &'static str,
+    pub integrations_minna_detail: &'static str,
+
+    // Irodori card
+    pub integrations_irodori_name: &'static str,
+    pub integrations_irodori_desc: &'static str,
+    pub integrations_irodori_detail: &'static str,
+
+    // Migii card
+    pub integrations_migii_name: &'static str,
+    pub integrations_migii_desc: &'static str,
+    pub integrations_migii_detail: &'static str,
+
+    // Spy x Family card
+    pub integrations_spy_name: &'static str,
+    pub integrations_spy_desc: &'static str,
+    pub integrations_spy_detail: &'static str,
+
+    // Anki card
+    pub integrations_anki_name: &'static str,
+    pub integrations_anki_desc: &'static str,
+    pub integrations_anki_detail: &'static str,
+    pub integrations_anki_note: &'static str,
 }
 
 mod en;

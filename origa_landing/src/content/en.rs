@@ -6,6 +6,7 @@ pub static CONTENT: Content = Content {
     header_features: "Features",
     header_compare: "Compare",
     header_download: "Download",
+    header_integrations: "Integrations",
 
     footer_product: "Product",
     footer_resources: "Resources",
@@ -154,4 +155,44 @@ pub static CONTENT: Content = Content {
     download_button: "Download",
     download_subtitle: "Download Origa to any device — everything works offline.",
     download_try_web: "Open →",
+
+    integrations_meta_title: "Word Sets & Integrations | Origa",
+    integrations_meta_description: "Import vocabulary from Duolingo, Anki, Minna no Nihongo, Irodori, JLPT and more. Pre-built word sets ready to study.",
+    integrations_h1: "Learn from what you already use",
+    integrations_subtitle: "Pre-built vocabulary sets from popular Japanese learning sources. Import and start reviewing instantly.",
+
+    integrations_tag_exam: "Exam",
+    integrations_tag_app: "App",
+    integrations_tag_textbook: "Textbook",
+    integrations_tag_content: "Content",
+    integrations_tag_import: "Import",
+
+    integrations_jlpt_name: "JLPT",
+    integrations_jlpt_desc: "Official vocabulary for the Japanese Language Proficiency Test, organized by level.",
+    integrations_jlpt_detail: "N5 · N4 · N3 · N2 · N1",
+
+    integrations_duolingo_name: "Duolingo",
+    integrations_duolingo_desc: "Vocabulary extracted from Duolingo's Japanese course, available in English and Russian tracks.",
+    integrations_duolingo_detail: "190+ word sets · English & Russian tracks",
+
+    integrations_minna_name: "Minna no Nihongo",
+    integrations_minna_desc: "Word lists from the most popular Japanese textbook series, organized lesson by lesson.",
+    integrations_minna_detail: "みんなの日本語 · N5 · N4 · N3 · N2",
+
+    integrations_irodori_name: "Irodori",
+    integrations_irodori_desc: "Vocabulary from the Japan Foundation's free JLPT-oriented textbook series.",
+    integrations_irodori_detail: "いろどり · 入門 · 初級1 · 初級2 · 54 lessons",
+
+    integrations_migii_name: "Migii",
+    integrations_migii_desc: "JLPT test preparation study sets from the Migii app, organized by level.",
+    integrations_migii_detail: "JLPT prep sets by level",
+
+    integrations_spy_name: "Spy × Family",
+    integrations_spy_desc: "Vocabulary from the popular anime — learn Japanese through content you enjoy.",
+    integrations_spy_detail: "Season 1 vocabulary",
+
+    integrations_anki_name: "Anki Import",
+    integrations_anki_desc: "Import any Anki deck directly into Origa. Supports .anki2, .anki21 and .anki21b formats.",
+    integrations_anki_detail: ".anki2 · .anki21 · .anki21b",
+    integrations_anki_note: "Import any Anki deck and continue learning where you left off — all your progress transfers.",
 };

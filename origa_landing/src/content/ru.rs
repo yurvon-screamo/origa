@@ -6,6 +6,7 @@ pub static CONTENT: Content = Content {
     header_features: "Функции",
     header_compare: "Сравнение",
     header_download: "Скачать",
+    header_integrations: "Интеграции",
 
     footer_product: "Продукт",
     footer_resources: "Ресурсы",
@@ -154,4 +155,44 @@ pub static CONTENT: Content = Content {
     download_button: "Скачать",
     download_subtitle: "Скачайте Origa на любое устройство — всё работает офлайн.",
     download_try_web: "Открыть →",
+
+    integrations_meta_title: "Наборы слов и интеграции | Origa",
+    integrations_meta_description: "Импортируйте лексику из Duolingo, Anki, Minna no Nihongo, Irodori, JLPT и других. Готовые наборы слов для изучения.",
+    integrations_h1: "Учитесь по своим источникам",
+    integrations_subtitle: "Готовые наборы слов из популярных источников для изучения японского. Импортируйте и начните повторять сразу.",
+
+    integrations_tag_exam: "Экзамен",
+    integrations_tag_app: "Приложение",
+    integrations_tag_textbook: "Учебник",
+    integrations_tag_content: "Контент",
+    integrations_tag_import: "Импорт",
+
+    integrations_jlpt_name: "JLPT",
+    integrations_jlpt_desc: "Официальная лексика для Японского языкового теста (JLPT), организованная по уровням.",
+    integrations_jlpt_detail: "N5 · N4 · N3 · N2 · N1",
+
+    integrations_duolingo_name: "Duolingo",
+    integrations_duolingo_desc: "Лексика из курса японского Duolingo, доступная на английском и русском языках.",
+    integrations_duolingo_detail: "190+ наборов · Английский и русский треки",
+
+    integrations_minna_name: "Minna no Nihongo",
+    integrations_minna_desc: "Списки слов из самого популярного учебника японского, организованные по урокам.",
+    integrations_minna_detail: "みんなの日本語 · N5 · N4 · N3 · N2",
+
+    integrations_irodori_name: "Irodori",
+    integrations_irodori_desc: "Лексика из бесплатной серии учебников JLPT от Японского фонда.",
+    integrations_irodori_detail: "いろどり · 入門 · 初級1 · 初級2 · 54 урока",
+
+    integrations_migii_name: "Migii",
+    integrations_migii_desc: "Учебные наборы для подготовки к JLPT из приложения Migii, организованные по уровням.",
+    integrations_migii_detail: "Наборы для подготовки к JLPT по уровням",
+
+    integrations_spy_name: "Spy × Family",
+    integrations_spy_desc: "Лексика из популярного аниме — учите японский через контент, который вам нравится.",
+    integrations_spy_detail: "Лексика 1 сезона",
+
+    integrations_anki_name: "Импорт Anki",
+    integrations_anki_desc: "Импортируйте любую колоду Anki прямо в Origa. Поддерживаются форматы .anki2, .anki21 и .anki21b.",
+    integrations_anki_detail: ".anki2 · .anki21 · .anki21b",
+    integrations_anki_note: "Импортируйте любую колоду Anki и продолжайте учить с того места, где остановились — весь прогресс переносится.",
 };
