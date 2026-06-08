@@ -8,6 +8,7 @@ use super::{
     compute_studied_today, compute_today_overview,
 };
 use crate::i18n::use_i18n;
+use crate::loaders::recalculate_user_jlpt_progress;
 use crate::repository::{HybridUserRepository, set_last_sync_time};
 use crate::ui_components::{ToastContainer, ToastData};
 use leptos::prelude::*;
@@ -40,15 +41,27 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
     let toasts: RwSignal<Vec<ToastData>> = RwSignal::new(Vec::new());
     let disposed = StoredValue::new(());
 
+    let persist_user = move |repo: HybridUserRepository, user: origa::domain::User| {
+        spawn_local(async move {
+            if disposed.is_disposed() {
+                return;
+            }
+            if let Err(e) = repo.save(&user).await {
+                tracing::warn!("Failed to persist JLPT recalculation: {e}");
+            }
+        });
+    };
+
     let repo_for_init = repository.clone();
     Effect::new(move |_| {
         let repo = repo_for_init.clone();
         spawn_local(async move {
             match repo.get_current_user().await {
-                Ok(Some(user)) => {
+                Ok(Some(mut user)) => {
                     if disposed.is_disposed() {
                         return;
                     }
+                    recalculate_user_jlpt_progress(&mut user);
                     user_name.set(user.username().to_string());
 
                     let ks = user.knowledge_set();
@@ -69,6 +82,8 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                     ));
 
                     is_loading.set(false);
+
+                    persist_user(repo.clone(), user.clone());
                 },
                 Ok(None) => {
                     if disposed.is_disposed() {
@@ -95,11 +110,13 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
         spawn_local(async move {
             show_sync_toast(toasts, i18n);
 
+            let save_repo = repo.clone();
             match run_sync(repo).await {
-                Ok(Some(user)) => {
+                Ok(Some(mut user)) => {
                     if disposed.is_disposed() {
                         return;
                     }
+                    recalculate_user_jlpt_progress(&mut user);
                     let ks = user.knowledge_set();
                     jlpt_progress.set(user.jlpt_progress().clone());
                     known_kanji.set(ks.get_known_kanji());
@@ -117,6 +134,8 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                     ));
                     show_sync_success_toast(toasts, i18n);
                     set_last_sync_time(js_sys::Date::now() as u64 / 1000);
+
+                    persist_user(save_repo, user.clone());
                 },
                 Ok(None) => {
                     if disposed.is_disposed() {

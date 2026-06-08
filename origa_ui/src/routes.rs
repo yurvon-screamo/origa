@@ -79,8 +79,13 @@ pub fn start_dictionary_loading(
         if let Err(e) = load_pitch_audio().await {
             tracing::warn!("Failed to load pitch audio index: {e}");
         }
+        // JLPT content критичен для прогресса — одна попытка повтора при ошибке
         if let Err(e) = load_jlpt_content().await {
             tracing::error!("Failed to load jlpt_content: {e}");
+            tracing::info!("Retrying jlpt_content load...");
+            if let Err(e) = load_jlpt_content().await {
+                tracing::error!("Failed to load jlpt_content on retry: {e}");
+            }
         }
         if let Err(e) = load_dictionary().await {
             tracing::error!("Failed to load dictionary: {e}");
