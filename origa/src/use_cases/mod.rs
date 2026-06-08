@@ -43,6 +43,7 @@ pub use migrate_kanji_companions::{MigrateKanjiCompanionsUseCase, MigrationResul
 pub use rate_card::RateCardUseCase;
 pub use seed_ready_phrases::SeedReadyPhrasesUseCase;
 pub use seed_ready_phrases::collect_known_grammar_rules;
+pub use seed_ready_phrases::{classify_orphaned_phrases, delete_phrase_cards_by_phrase_ids};
 pub use select_cards_to_lesson::SelectCardsToLessonUseCase;
 pub use toggle_favorite::ToggleFavoriteUseCase;
 pub use transcribe_audio::TranscribeAudioUseCase;
