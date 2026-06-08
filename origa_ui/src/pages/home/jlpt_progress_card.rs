@@ -43,28 +43,14 @@ pub fn JlptProgressCard(
                 <div class="flex-1 progress-track">
                     <div
                         class="progress-fill"
-                        style=move || {
-                            let pct = overall_pct.get().min(100.0);
-                            if pct > 0.0 && pct < 1.0 {
-                                "width: 1%".to_string()
-                            } else {
-                                format!("width: {:.0}%", pct)
-                            }
-                        }
+                        style=move || format!("width: {:.0}%", overall_pct.get().min(100.0))
                     ></div>
                 </div>
                 <DisplayText
                     class=Signal::derive(|| "text-sm".to_string())
                     test_id=Signal::derive(move || format!("{}-pct", test_id.get()))
                 >
-                    {move || {
-                        let pct = overall_pct.get();
-                        if pct > 0.0 && pct < 1.0 {
-                            "<1%".to_string()
-                        } else {
-                            format!("{:.0}%", pct)
-                        }
-                    }}
+                    {move || format!("{:.0}%", overall_pct.get())}
                 </DisplayText>
             </div>
 

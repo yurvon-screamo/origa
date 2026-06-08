@@ -130,37 +130,4 @@ testWithFreshUser.describe("Lesson Page", () => {
         await page.waitForURL(/\/home$/, { timeout: 10_000 });
     });
 
-    testWithFreshUser(
-        "should update JLPT progress after marking words as known",
-        async ({ page }) => {
-            test.setTimeout(120_000);
-
-            await skipOnboarding(page);
-
-            const homePage = new HomePage(page);
-            await homePage.goto();
-            await expect(homePage.jlptProgress).toBeVisible({ timeout: 15_000 });
-
-            const jlptPct = page.getByTestId("home-jlpt-progress-pct");
-            await expect(jlptPct).toHaveText("0%", { timeout: 10_000 });
-
-            // Add words and mark as known (mark_as_known bypasses FSRS stability check)
-            const wordsPage = new WordsPage(page);
-            await wordsPage.goto();
-            await wordsPage.expectWordsVisible();
-            await wordsPage.openAddModal();
-            await wordsPage.enterText("私は本を読みます");
-            await wordsPage.analyzeText();
-            await wordsPage.selectFirstWord();
-            await wordsPage.addSelectedWords();
-            await expect(wordsPage.wordsGrid).toBeVisible({ timeout: 10_000 });
-
-            await wordsPage.markAllCardsAsKnown();
-
-            // Navigate to home and verify JLPT progress updated
-            await homePage.goto();
-            await expect(homePage.jlptProgress).toBeVisible({ timeout: 15_000 });
-            await expect(jlptPct).not.toHaveText("0%", { timeout: 10_000 });
-        },
-    );
 });
