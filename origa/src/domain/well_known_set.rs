@@ -60,7 +60,11 @@ pub fn id_to_set_type(id: &str) -> SetType {
         "DuolingoEn".to_string()
     } else if id.contains("_ru_") || id.starts_with("duolingo_") {
         "DuolingoRu".to_string()
-    } else if id.starts_with("minna_n5_") || id.starts_with("minna_n4_") {
+    } else if id.starts_with("minna_n5_")
+        || id.starts_with("minna_n4_")
+        || id.starts_with("minna_n3_")
+        || id.starts_with("minna_n2_")
+    {
         "MinnaNoNihongo".to_string()
     } else if id.starts_with("irodori_") {
         "Irodori".to_string()
@@ -104,6 +108,12 @@ fn resolve_minna_path(id: &str) -> Option<String> {
     }
     if id.strip_prefix("minna_n4_").is_some() {
         return Some(format!("well_known_set/minna_n4/{}.json", id));
+    }
+    if id.strip_prefix("minna_n2_").is_some() {
+        return Some(format!("well_known_set/minna_n2/{}.json", id));
+    }
+    if id.strip_prefix("minna_n3_").is_some() {
+        return Some(format!("well_known_set/minna_n3/{}.json", id));
     }
     None
 }
@@ -213,6 +223,10 @@ mod tests {
     #[case("duolingo_n4_verbs", "DuolingoRu")]
     #[case("minna_n5_01", "MinnaNoNihongo")]
     #[case("minna_n4_26", "MinnaNoNihongo")]
+    #[case("minna_n3_01", "MinnaNoNihongo")]
+    #[case("minna_n3_12", "MinnaNoNihongo")]
+    #[case("minna_n2_13", "MinnaNoNihongo")]
+    #[case("minna_n2_extra", "MinnaNoNihongo")]
     #[case("irodori_nyuumon_01", "Irodori")]
     #[case("irodori_nyuumon_18", "Irodori")]
     #[case("irodori_shokyuu1_01", "Irodori")]
@@ -242,6 +256,10 @@ mod tests {
     )]
     #[case("minna_n5_01", "well_known_set/minna_n5/minna_n5_01.json")]
     #[case("minna_n4_26", "well_known_set/minna_n4/minna_n4_26.json")]
+    #[case("minna_n3_01", "well_known_set/minna_n3/minna_n3_01.json")]
+    #[case("minna_n3_12", "well_known_set/minna_n3/minna_n3_12.json")]
+    #[case("minna_n2_13", "well_known_set/minna_n2/minna_n2_13.json")]
+    #[case("minna_n2_extra", "well_known_set/minna_n2/minna_n2_extra.json")]
     #[case(
         "irodori_nyuumon_01",
         "well_known_set/irodori_nyuumon/irodori_nyuumon_01.json"
