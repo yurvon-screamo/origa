@@ -47,7 +47,6 @@ pub fn DownloadPage() -> impl IntoView {
                         </div>
                         <div>
                             <p class="download-platform__name">{c.download_web}</p>
-                            <p class="download-platform__formats">{c.download_web_formats}</p>
                         </div>
                     </div>
                     <a href=WEB_APP_URL class="btn btn-filled btn-lg download-primary__btn">
