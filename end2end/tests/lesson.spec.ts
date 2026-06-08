@@ -144,12 +144,12 @@ testWithFreshUser.describe("Lesson Page", () => {
             const jlptPct = page.getByTestId("home-jlpt-progress-pct");
             await expect(jlptPct).toHaveText("0%", { timeout: 10_000 });
 
-            // Add a common N5 word and mark as known
+            // Add words and mark as known (mark_as_known bypasses FSRS stability check)
             const wordsPage = new WordsPage(page);
             await wordsPage.goto();
             await wordsPage.expectWordsVisible();
             await wordsPage.openAddModal();
-            await wordsPage.enterText("猫");
+            await wordsPage.enterText("私は本を読みます");
             await wordsPage.analyzeText();
             await wordsPage.selectFirstWord();
             await wordsPage.addSelectedWords();
