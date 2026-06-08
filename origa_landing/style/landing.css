@@ -31,21 +31,21 @@
 }
 
 .landing-header__logo-img {
-    width: 24px;
-    height: 24px;
+    width: 32px;
+    height: 32px;
     image-rendering: pixelated;
 }
 
 .landing-header__logo-name {
     font-family: var(--font-serif);
-    font-size: 1.25rem;
+    font-size: 1.5rem;
     font-weight: 500;
     color: var(--fg-black);
 }
 
 .landing-header__logo-kana {
     font-family: var(--font-mono);
-    font-size: 0.75rem;
+    font-size: 0.9rem;
     letter-spacing: 0.05em;
     color: var(--fg-muted);
 }

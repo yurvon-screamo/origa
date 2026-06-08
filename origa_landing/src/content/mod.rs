@@ -207,7 +207,6 @@ pub struct Content {
     pub download_android: &'static str,
     pub download_android_formats: &'static str,
     pub download_web: &'static str,
-    pub download_web_formats: &'static str,
     pub download_ios: &'static str,
     pub download_ios_formats: &'static str,
     pub download_ios_coming_soon: &'static str,
