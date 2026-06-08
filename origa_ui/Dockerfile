@@ -3,7 +3,7 @@
 ARG RUST_VERSION=1.93
 ARG TRUNK_VERSION=0.21.14
 
-FROM ubuntu:24.04 AS builder
+FROM ubuntu:26.04 AS builder
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
@@ -103,7 +103,7 @@ RUN --mount=type=cache,target=/root/.cargo/registry,sharing=locked \
     trunk build --release --dist dist
 
 # Runtime: TrailBase + SPA static files
-FROM trailbase/trailbase:0.24.3
+FROM trailbase/trailbase:0.28.3
 
 USER root
 WORKDIR /app
