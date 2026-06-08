@@ -687,4 +687,45 @@ mod tests {
         // Assert
         assert!(matches!(result, Err(OrigaError::CardNotFound { .. })));
     }
+
+    #[test]
+    fn user_jlpt_progress_recalculates_after_knowledge_changes() {
+        let mut user = User::new(
+            "test@example.com".to_string(),
+            NativeLanguage::Russian,
+            None,
+        );
+
+        let card = create_test_vocab_card("猫");
+        let study_card = user.create_card(card).unwrap();
+        let card_id = *study_card.card_id();
+
+        let content = create_test_content_with_words(&[("猫", JapaneseLevel::N5)]);
+
+        // Before learning: progress should be 0
+        user.recalculate_jlpt_progress(&content);
+        let n5 = user
+            .jlpt_progress()
+            .level_progress(JapaneseLevel::N5)
+            .unwrap();
+        assert_eq!(n5.words.learned, 0);
+        assert_eq!(n5.words.total, 1);
+
+        // Rate and mark as known
+        user.rate_card(card_id, Rating::Easy, RateMode::StandardLesson)
+            .unwrap();
+        user.knowledge_set_mut()
+            .mark_card_as_known(card_id)
+            .unwrap();
+
+        // After learning: progress should reflect the known card
+        user.recalculate_jlpt_progress(&content);
+        let n5 = user
+            .jlpt_progress()
+            .level_progress(JapaneseLevel::N5)
+            .unwrap();
+        assert_eq!(n5.words.learned, 1);
+        assert_eq!(n5.words.total, 1);
+        assert!(n5.words.percentage() > 0.0);
+    }
 }
