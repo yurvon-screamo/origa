@@ -137,17 +137,35 @@ async fn load_words(content: &mut JlptContent) -> Result<(), OrigaError> {
     );
 
     let process_start = now_ms();
-    for (idx, (level, _)) in levels.iter().enumerate() {
-        if let Ok(json) = &results[idx]
-            && let Ok(data) = serde_json::from_str::<JlptWordsFile>(json)
-        {
-            let count = data.words.len();
-            content
-                .words_by_level
-                .entry(*level)
-                .or_default()
-                .extend(data.words);
-            tracing::debug!("JLPT {:?} words: {}", level, count);
+    for (idx, (level, filename)) in levels.iter().enumerate() {
+        match &results[idx] {
+            Ok(json) => match serde_json::from_str::<JlptWordsFile>(json) {
+                Ok(data) => {
+                    let count = data.words.len();
+                    content
+                        .words_by_level
+                        .entry(*level)
+                        .or_default()
+                        .extend(data.words);
+                    tracing::info!("JLPT {:?} words loaded: {}", level, count);
+                },
+                Err(e) => {
+                    tracing::error!(
+                        "JLPT {:?} words parse error for {}: {:?}",
+                        level,
+                        filename,
+                        e
+                    );
+                },
+            },
+            Err(e) => {
+                tracing::error!(
+                    "JLPT {:?} words fetch failed for {}: {:?}",
+                    level,
+                    filename,
+                    e
+                );
+            },
         }
     }
     tracing::info!(
@@ -160,11 +178,32 @@ async fn load_words(content: &mut JlptContent) -> Result<(), OrigaError> {
         (now_ms() - process_start) / 1000.0
     );
 
+    let total_words: usize = content.words_by_level.values().map(|s| s.len()).sum();
+    if total_words == 0 {
+        return Err(OrigaError::RepositoryError {
+            reason: "No JLPT words loaded from CDN — all fetches failed".to_string(),
+        });
+    }
+
     Ok(())
 }
 
 pub fn recalculate_user_jlpt_progress(user: &mut origa::domain::User) {
     if let Some(content) = JLPT_CONTENT.get() {
+        let n5_words = content.total_words(origa::domain::JapaneseLevel::N5);
+        let n4_words = content.total_words(origa::domain::JapaneseLevel::N4);
+        let known_count = user
+            .knowledge_set()
+            .study_cards()
+            .values()
+            .filter(|sc| sc.memory().is_known_card())
+            .count();
+        tracing::info!(
+            "Recalculating JLPT progress: N5 words={}, N4 words={}, known cards={}",
+            n5_words,
+            n4_words,
+            known_count,
+        );
         user.recalculate_jlpt_progress(content);
     } else {
         tracing::warn!("JLPT content not loaded, skipping progress recalculation");
