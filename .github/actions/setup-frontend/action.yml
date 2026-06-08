@@ -32,6 +32,7 @@ runs:
           run: cargo binstall ${{ inputs.tools }} --no-confirm --force
 
         - name: Verify trunk installation
+          if: contains(inputs.tools, 'trunk')
           shell: bash
           run: |
               which trunk
