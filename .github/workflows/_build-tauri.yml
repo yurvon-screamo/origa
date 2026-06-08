@@ -1,0 +1,473 @@
+name: Build Tauri Apps
+
+on:
+    workflow_call:
+        inputs:
+            version:
+                type: string
+                required: true
+            version_base:
+                type: string
+                required: true
+            version_type:
+                type: string
+                required: true
+            commit_sha:
+                type: string
+                required: true
+            build_date:
+                type: string
+                required: true
+            wasm_artifact_name:
+                type: string
+                required: true
+            platforms:
+                type: string
+                default: "windows,linux,macos,android"
+            skip_android:
+                type: boolean
+                default: false
+        secrets:
+            tauri-signing-private-key:
+                required: false
+            tauri-signing-private-key-password:
+                required: false
+            android-keystore-base64:
+                required: false
+            android-keystore-password:
+                required: false
+            android-key-password:
+                required: false
+            android-key-alias:
+                required: false
+        outputs:
+            windows-signature:
+                value: ${{ jobs.build-windows.outputs.signature }}
+            linux-signature:
+                value: ${{ jobs.build-linux.outputs.signature }}
+            macos-signature:
+                value: ${{ jobs.build-macos.outputs.signature }}
+
+env:
+    CARGO_TERM_COLOR: always
+
+# cargo tauri build does NOT execute origa_ui/build.rs or beforeBuildCommand.
+# It simply bundles the pre-built frontendDist from origa_ui/dist/.
+
+jobs:
+    build-windows:
+        name: Build Windows
+        if: contains(inputs.platforms, 'windows')
+        runs-on: ubuntu-latest
+        container:
+            image: ghcr.io/rust-cross/cargo-zigbuild
+        permissions:
+            contents: read
+        outputs:
+            signature: ${{ steps.signature.outputs.signature }}
+        env:
+            ORIGA_VERSION: ${{ inputs.version }}
+            ORIGA_COMMIT: ${{ inputs.commit_sha }}
+            ORIGA_BUILD_DATE: ${{ inputs.build_date }}
+            TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.tauri-signing-private-key }}
+            TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.tauri-signing-private-key-password }}
+            XWIN_CACHE_DIR: ${{ github.workspace }}/.xwin-cache
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Download WASM artifact
+              uses: actions/download-artifact@v4
+              with:
+                  name: ${{ inputs.wasm_artifact_name }}
+                  path: origa_ui/dist/
+
+            - name: Setup cargo cache
+              uses: Swatinem/rust-cache@v2
+              with:
+                  cache-all-crates: true
+                  cache-targets: false
+                  shared-key: origa-cross-build
+                  save-if: ${{ github.ref == 'refs/heads/master' }}
+
+            - name: Update version in config files
+              uses: ./.github/actions/update-version
+              with:
+                  version: ${{ inputs.version_base }}
+
+            - name: Install build dependencies
+              run: apt-get update && apt-get install -y nsis clang lld llvm protobuf-compiler
+
+            - name: Setup Rust targets
+              run: rustup target add x86_64-pc-windows-msvc
+
+            - name: Install cargo-binstall
+              run: |
+                  tmp=$(mktemp) && curl -L --proto '=https' --tlsv1.2 -sSf -o "$tmp" https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh && bash "$tmp"
+                  cargo binstall tauri-cli cargo-xwin --no-confirm --force
+
+            - name: Add cargo bin to PATH
+              run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+            - name: Cache cargo-xwin MSVC CRT
+              uses: actions/cache@v4
+              with:
+                  path: ${{ github.workspace }}/.xwin-cache
+                  key: xwin-${{ runner.os }}-x86_64-pc-windows-msvc-v17
+                  restore-keys: |
+                      xwin-${{ runner.os }}-
+
+            - name: Build Tauri app for Windows
+              working-directory: tauri
+              run: cargo tauri build --runner cargo-xwin --target x86_64-pc-windows-msvc
+              env:
+                  TAURI_BUNDLE_NSIS: "true"
+
+            - name: Rename artifacts for latest release
+              if: inputs.version_type != 'stable'
+              working-directory: target/x86_64-pc-windows-msvc/release/bundle
+              run: |
+                  # Rename NSIS
+                  for f in nsis/*.exe; do mv "$f" "nsis/origa_latest_x64-setup.exe"; done
+                  for f in nsis/*.sig; do mv "$f" "nsis/origa_latest_x64-setup.exe.sig"; done
+
+            - name: Extract signature
+              id: signature
+              shell: bash
+              run: |
+                  SIG_FILE=$(ls target/x86_64-pc-windows-msvc/release/bundle/nsis/*.sig 2>/dev/null | head -1 || true)
+                  if [ -n "$SIG_FILE" ] && [ -f "$SIG_FILE" ]; then
+                    SIG_CONTENT=$(cat "$SIG_FILE")
+                    echo "signature=${SIG_CONTENT}" >> $GITHUB_OUTPUT
+                  else
+                    echo "signature=" >> $GITHUB_OUTPUT
+                  fi
+
+            - name: Upload Windows artifacts
+              uses: actions/upload-artifact@v4
+              with:
+                  name: windows-build
+                  path: |
+                      **/bundle/nsis/*.exe
+                      **/bundle/nsis/*.sig
+                  retention-days: 7
+
+    build-linux:
+        name: Build Linux
+        if: contains(inputs.platforms, 'linux')
+        runs-on: ubuntu-24.04
+        permissions:
+            contents: read
+        outputs:
+            signature: ${{ steps.signature.outputs.signature }}
+        env:
+            ORIGA_VERSION: ${{ inputs.version }}
+            ORIGA_COMMIT: ${{ inputs.commit_sha }}
+            ORIGA_BUILD_DATE: ${{ inputs.build_date }}
+            TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.tauri-signing-private-key }}
+            TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.tauri-signing-private-key-password }}
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Download WASM artifact
+              uses: actions/download-artifact@v4
+              with:
+                  name: ${{ inputs.wasm_artifact_name }}
+                  path: origa_ui/dist/
+
+            - name: Update version in config files
+              uses: ./.github/actions/update-version
+              with:
+                  version: ${{ inputs.version_base }}
+
+            - name: Cache APT packages
+              uses: awalsh128/cache-apt-pkgs-action@latest
+              with:
+                  packages:
+                      libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+                      protobuf-compiler libspeechd-dev
+                  version: 1.0
+
+            - name: Install mold linker
+              uses: rui314/setup-mold@v1
+
+            - name: Setup Rust with caching
+              uses: ./.github/actions/setup-rust
+              with:
+                  targets: x86_64-unknown-linux-gnu
+                  shared-key: origa-linux
+
+            - name: Setup frontend tools
+              uses: ./.github/actions/setup-frontend
+              with:
+                  tools: tauri-cli
+                  cache-key-suffix: linux
+
+            - name: Add cargo bin to PATH
+              run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+            - name: Build Tauri app for Linux
+              working-directory: tauri
+              run: cargo tauri build --target x86_64-unknown-linux-gnu
+
+            - name: Rename artifacts for latest release
+              if: inputs.version_type != 'stable'
+              working-directory: target/x86_64-unknown-linux-gnu/release/bundle
+              run: |
+                  # Rename AppImage
+                  for f in appimage/*.AppImage; do mv "$f" "appimage/origa_latest_amd64.AppImage"; done
+                  for f in appimage/*.sig; do mv "$f" "appimage/origa_latest_amd64.AppImage.sig"; done
+                  # Rename DEB
+                  for f in deb/*.deb; do mv "$f" "deb/origa_latest_amd64.deb"; done
+
+            - name: Extract signature
+              id: signature
+              shell: bash
+              run: |
+                  SIG_FILE=$(ls target/x86_64-unknown-linux-gnu/release/bundle/appimage/*.sig 2>/dev/null | head -1 || true)
+                  if [ -n "$SIG_FILE" ] && [ -f "$SIG_FILE" ]; then
+                    SIG_CONTENT=$(cat "$SIG_FILE")
+                    echo "signature=${SIG_CONTENT}" >> $GITHUB_OUTPUT
+                  else
+                    echo "signature=" >> $GITHUB_OUTPUT
+                  fi
+
+            - name: Upload Linux artifacts
+              uses: actions/upload-artifact@v4
+              with:
+                  name: linux-build
+                  path: |
+                      **/bundle/appimage/*.AppImage
+                      **/bundle/appimage/*.sig
+                      **/bundle/deb/*.deb
+                  retention-days: 7
+
+    build-macos:
+        name: Build macOS
+        if: contains(inputs.platforms, 'macos')
+        runs-on: ubuntu-latest
+        container:
+            image: ghcr.io/rust-cross/cargo-zigbuild
+        permissions:
+            contents: read
+        outputs:
+            signature: ${{ steps.signature.outputs.signature }}
+        env:
+            ORIGA_VERSION: ${{ inputs.version }}
+            ORIGA_COMMIT: ${{ inputs.commit_sha }}
+            ORIGA_BUILD_DATE: ${{ inputs.build_date }}
+            TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.tauri-signing-private-key }}
+            TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.tauri-signing-private-key-password }}
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Download WASM artifact
+              uses: actions/download-artifact@v4
+              with:
+                  name: ${{ inputs.wasm_artifact_name }}
+                  path: origa_ui/dist/
+
+            - name: Setup cargo cache
+              uses: Swatinem/rust-cache@v2
+              with:
+                  cache-all-crates: true
+                  cache-targets: false
+                  shared-key: origa-cross-build
+                  save-if: ${{ github.ref == 'refs/heads/master' }}
+
+            - name: Update version in config files
+              uses: ./.github/actions/update-version
+              with:
+                  version: ${{ inputs.version_base }}
+
+            - name: Install build dependencies
+              run: apt-get update && apt-get install -y zip protobuf-compiler
+
+            - name: Setup Rust targets
+              run: rustup target add aarch64-apple-darwin
+
+            - name: Install cargo-binstall
+              run: |
+                  tmp=$(mktemp) && curl -L --proto '=https' --tlsv1.2 -sSf -o "$tmp" https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh && bash "$tmp"
+                  cargo binstall tauri-cli --no-confirm --force
+
+            - name: Add cargo bin to PATH
+              run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+            - name: Build Tauri app for macOS
+              working-directory: tauri
+              run:
+                  cargo tauri build --runner cargo-zigbuild --target aarch64-apple-darwin
+                  --no-bundle
+
+            - name: Extract signature
+              id: signature
+              shell: bash
+              run: echo "signature=" >> $GITHUB_OUTPUT
+
+            - name: Create macOS app bundle
+              run: |
+                  mkdir -p Origa.app/Contents/MacOS
+                  mkdir -p Origa.app/Contents/Resources
+                  cp target/aarch64-apple-darwin/release/origa-app Origa.app/Contents/MacOS/origa
+                  cat > Origa.app/Contents/Info.plist << EOF
+                  <?xml version="1.0" encoding="UTF-8"?>
+                  <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+                  <plist version="1.0">
+                  <dict>
+                    <key>CFBundleIdentifier</key>
+                    <string>net.uwuwu.origa</string>
+                    <key>CFBundleName</key>
+                    <string>Origa</string>
+                    <key>CFBundleDisplayName</key>
+                    <string>Origa</string>
+                    <key>CFBundleVersion</key>
+                    <string>${{ inputs.version }}</string>
+                    <key>CFBundleShortVersionString</key>
+                    <string>${{ inputs.version }}</string>
+                    <key>CFBundleExecutable</key>
+                    <string>origa</string>
+                    <key>CFBundlePackageType</key>
+                    <string>APPL</string>
+                  </dict>
+                  </plist>
+                  EOF
+                  chmod +x Origa.app/Contents/MacOS/origa
+                  zip -r Origa-macos-arm64.zip Origa.app
+
+            - name: Upload macOS artifacts
+              uses: actions/upload-artifact@v4
+              with:
+                  name: macos-build
+                  path: Origa-macos-arm64.zip
+                  retention-days: 7
+
+    build-android:
+        name: Build Android
+        if: contains(inputs.platforms, 'android') && inputs.skip_android != true
+        runs-on: ubuntu-24.04
+        permissions:
+            contents: read
+        env:
+            ORIGA_VERSION: ${{ inputs.version }}
+            ORIGA_COMMIT: ${{ inputs.commit_sha }}
+            ORIGA_BUILD_DATE: ${{ inputs.build_date }}
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Download WASM artifact
+              uses: actions/download-artifact@v4
+              with:
+                  name: ${{ inputs.wasm_artifact_name }}
+                  path: origa_ui/dist/
+
+            - name: Update version in config files
+              uses: ./.github/actions/update-version
+              with:
+                  version: ${{ inputs.version_base }}
+
+            - name: Install system dependencies
+              run: |
+                  sudo apt-get update
+                  sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf protobuf-compiler
+
+            - name: Setup Rust with caching
+              uses: ./.github/actions/setup-rust
+              with:
+                  targets: aarch64-linux-android
+                  shared-key: origa-mobile
+
+            - name: Setup Java
+              uses: actions/setup-java@v4
+              with:
+                  distribution: temurin
+                  java-version: 21
+
+            - name: Setup Android SDK
+              uses: android-actions/setup-android@v3
+
+            - name: Setup Android NDK
+              uses: nttld/setup-ndk@v1
+              id: setup-ndk
+              with:
+                  ndk-version: r26b
+                  local-cache: true
+
+            - name: Cache Gradle
+              uses: actions/cache@v4
+              with:
+                  path: |
+                      ~/.gradle/caches
+                      ~/.gradle/wrapper
+                  key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*',
+                      '**/gradle-wrapper.properties') }}
+                  restore-keys: |
+                      ${{ runner.os }}-gradle-
+
+            - name: Setup frontend tools
+              uses: ./.github/actions/setup-frontend
+              with:
+                  tools: tauri-cli
+                  cache-key-suffix: android
+
+            - name: Add cargo bin to PATH
+              run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+            - name: Decode Android Keystore
+              env:
+                  ANDROID_KEYSTORE_BASE64: ${{ secrets.android-keystore-base64 }}
+              run: |
+                  echo "Decoding Android keystore..."
+                  echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > /tmp/keystore.jks
+                  echo "Keystore decoded successfully"
+
+            - name: Configure Android Signing
+              working-directory: tauri/gen/android
+              run: |
+                  cat > keystore.properties << EOF
+                  storePassword=${{ secrets.android-keystore-password }}
+                  keyPassword=${{ secrets.android-key-password }}
+                  keyAlias=${{ secrets.android-key-alias }}
+                  storeFile=/tmp/keystore.jks
+                  EOF
+
+            - name: Install Tauri CLI (npm)
+              working-directory: tauri
+              run: npm install
+
+            - name: Build Tauri Android APK
+              working-directory: tauri
+              run: |
+                  echo "=== Debug info ==="
+                  echo "NDK_HOME=$NDK_HOME"
+                  echo "ANDROID_NDK_ROOT=$ANDROID_NDK_ROOT"
+                  echo "=== Start build ==="
+                  cargo tauri android build 2>&1 || (echo "Build failed with exit code $?"; exit 1)
+              env:
+                  NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+                  ANDROID_NDK_ROOT: ${{ steps.setup-ndk.outputs.ndk-path }}
+
+            - name: Rename APK for latest release
+              if: inputs.version_type != 'stable'
+              working-directory: tauri/gen/android/app/build/outputs/apk
+              run: |
+                  for f in release/*.apk; do
+                    if [ -f "$f" ]; then
+                      mv "$f" "release/origa-latest.apk"
+                      echo "Renamed to origa-latest.apk"
+                    fi
+                  done
+
+            - name: Upload Android APK
+              uses: actions/upload-artifact@v4
+              with:
+                  name: android-apk
+                  path: tauri/gen/android/app/build/outputs/apk/**/*.apk
+                  retention-days: 7
