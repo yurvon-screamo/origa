@@ -54,6 +54,9 @@ pub fn Layout(locale: Locale) -> impl IntoView {
                 <NavLink prefix href="download" class="landing-header__link">
                     {c.header_download}
                 </NavLink>
+                <NavLink prefix href="integrations" class="landing-header__link">
+                    {c.header_integrations}
+                </NavLink>
                 <a href=switch_href class="landing-header__link">
                     {switch_label}
                 </a>
@@ -74,6 +77,9 @@ pub fn Layout(locale: Locale) -> impl IntoView {
                     </NavLink>
                     <NavLink prefix href="download" class="landing-footer__link">
                         {c.header_download}
+                    </NavLink>
+                    <NavLink prefix href="integrations" class="landing-footer__link">
+                        {c.header_integrations}
                     </NavLink>
                 </div>
                 <div>
