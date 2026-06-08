@@ -421,10 +421,11 @@ jobs:
             contents: read
         needs: [version, build-frontend]
         if: >
-            github.event_name == 'pull_request' ||
+            github.actor != 'dependabot[bot]' &&
+            (github.event_name == 'pull_request' ||
             github.event_name == 'push' ||
             github.event_name == 'workflow_dispatch' ||
-            (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
+            (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'))
         runs-on: ubuntu-24.04
         env:
             ORIGA_VERSION: ${{ needs.version.outputs.version }}
