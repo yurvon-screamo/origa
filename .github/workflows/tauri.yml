@@ -45,9 +45,71 @@ jobs:
               id: version
               uses: ./.github/actions/version
 
+    build-frontend:
+        name: Build Frontend
+        permissions:
+            contents: read
+        needs: [version]
+        if: >
+            github.event_name == 'pull_request' ||
+            github.event_name == 'push' ||
+            github.event_name == 'workflow_dispatch' ||
+            (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
+        runs-on: ubuntu-24.04
+        env:
+            ORIGA_VERSION: ${{ needs.version.outputs.version }}
+            ORIGA_COMMIT: ${{ needs.version.outputs.commit_sha }}
+            ORIGA_BUILD_DATE: ${{ needs.version.outputs.build_date }}
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Update version in config files
+              uses: ./.github/actions/update-version
+              with:
+                  version: ${{ needs.version.outputs.version_base }}
+
+            - name: Cache APT packages
+              uses: awalsh128/cache-apt-pkgs-action@latest
+              with:
+                  packages:
+                      libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+                      protobuf-compiler libspeechd-dev
+                  version: 1.0
+
+            - name: Setup Rust with caching
+              uses: ./.github/actions/setup-rust
+              with:
+                  targets: wasm32-unknown-unknown
+                  shared-key: origa-ci
+
+            - name: Setup frontend tools
+              uses: ./.github/actions/setup-frontend
+              with:
+                  tools: trunk
+                  cache-key-suffix: frontend
+
+            - name: Add cargo bin to PATH
+              run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+            - name: Build frontend
+              working-directory: origa_ui
+              run: trunk build --release
+              env:
+                  TRAILBASE_URL: ${{ vars.TRAILBASE_URL }}
+                  ORIGA_CDN_BASE_URL: ${{ vars.ORIGA_CDN_BASE_URL }}
+                  ORIGA_CDN_REGION: ${{ vars.ORIGA_CDN_REGION }}
+
+            - name: Upload frontend artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: frontend-dist
+                  path: origa_ui/dist/
+                  retention-days: 1
+
     build-windows:
         name: Build Windows
-        needs: [version]
+        needs: [version, build-frontend]
         if: >
             github.event_name == 'pull_request' ||
             github.event_name == 'push' ||
@@ -72,6 +134,12 @@ jobs:
             - name: Checkout repository
               uses: actions/checkout@v4
 
+            - name: Download frontend artifact
+              uses: actions/download-artifact@v4
+              with:
+                  name: frontend-dist
+                  path: origa_ui/dist/
+
             - name: Setup cargo cache
               uses: Swatinem/rust-cache@v2
               with:
@@ -79,13 +147,6 @@ jobs:
                   cache-targets: false
                   shared-key: origa-cross-build
                   save-if: ${{ github.ref == 'refs/heads/master' }}
-
-            - name: Cache UniDic dictionary
-              uses: actions/cache@v4
-              with:
-                  path: origa_ui/public/dictionaries/unidic
-                  key: unidic-dict-v1-${{ hashFiles('origa_ui/build.rs') }}
-                  restore-keys: unidic-dict-v1-
 
             - name: Update version in config files
               uses: ./.github/actions/update-version
@@ -101,18 +162,10 @@ jobs:
             - name: Install cargo-binstall
               run: |
                   tmp=$(mktemp) && curl -L --proto '=https' --tlsv1.2 -sSf -o "$tmp" https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh && bash "$tmp"
-                  cargo binstall trunk tauri-cli cargo-xwin --no-confirm --force
+                  cargo binstall tauri-cli cargo-xwin --no-confirm --force
 
             - name: Add cargo bin to PATH
               run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-
-            - name: Build frontend
-              working-directory: origa_ui
-              run: trunk build --release
-              env:
-                  TRAILBASE_URL: ${{ vars.TRAILBASE_URL }}
-                  ORIGA_CDN_BASE_URL: ${{ vars.ORIGA_CDN_BASE_URL }}
-                  ORIGA_CDN_REGION: ${{ vars.ORIGA_CDN_REGION }}
 
             - name: Cache cargo-xwin MSVC CRT
               uses: actions/cache@v4
@@ -159,7 +212,7 @@ jobs:
 
     build-linux:
         name: Build Linux
-        needs: [version]
+        needs: [version, build-frontend]
         if: >
             github.event_name == 'pull_request' ||
             github.event_name == 'push' ||
@@ -180,6 +233,12 @@ jobs:
         steps:
             - name: Checkout repository
               uses: actions/checkout@v4
+
+            - name: Download frontend artifact
+              uses: actions/download-artifact@v4
+              with:
+                  name: frontend-dist
+                  path: origa_ui/dist/
 
             - name: Update version in config files
               uses: ./.github/actions/update-version
@@ -206,19 +265,11 @@ jobs:
             - name: Setup frontend tools
               uses: ./.github/actions/setup-frontend
               with:
-                  tools: trunk tauri-cli
+                  tools: tauri-cli
                   cache-key-suffix: linux
 
             - name: Add cargo bin to PATH
               run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-
-            - name: Build frontend
-              working-directory: origa_ui
-              run: trunk build --release
-              env:
-                  TRAILBASE_URL: ${{ vars.TRAILBASE_URL }}
-                  ORIGA_CDN_BASE_URL: ${{ vars.ORIGA_CDN_BASE_URL }}
-                  ORIGA_CDN_REGION: ${{ vars.ORIGA_CDN_REGION }}
 
             - name: Build Tauri app for Linux
               working-directory: tauri
@@ -258,7 +309,7 @@ jobs:
 
     build-macos:
         name: Build macOS
-        needs: [version]
+        needs: [version, build-frontend]
         if: >
             github.event_name == 'pull_request' ||
             github.event_name == 'push' ||
@@ -282,6 +333,12 @@ jobs:
             - name: Checkout repository
               uses: actions/checkout@v4
 
+            - name: Download frontend artifact
+              uses: actions/download-artifact@v4
+              with:
+                  name: frontend-dist
+                  path: origa_ui/dist/
+
             - name: Setup cargo cache
               uses: Swatinem/rust-cache@v2
               with:
@@ -289,13 +346,6 @@ jobs:
                   cache-targets: false
                   shared-key: origa-cross-build
                   save-if: ${{ github.ref == 'refs/heads/master' }}
-
-            - name: Cache UniDic dictionary
-              uses: actions/cache@v4
-              with:
-                  path: origa_ui/public/dictionaries/unidic
-                  key: unidic-dict-v1-${{ hashFiles('origa_ui/build.rs') }}
-                  restore-keys: unidic-dict-v1-
 
             - name: Update version in config files
               uses: ./.github/actions/update-version
@@ -312,18 +362,10 @@ jobs:
             - name: Install cargo-binstall
               run: |
                   tmp=$(mktemp) && curl -L --proto '=https' --tlsv1.2 -sSf -o "$tmp" https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh && bash "$tmp"
-                  cargo binstall trunk tauri-cli --no-confirm --force
+                  cargo binstall tauri-cli --no-confirm --force
 
             - name: Add cargo bin to PATH
               run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-
-            - name: Build frontend
-              working-directory: origa_ui
-              run: trunk build --release
-              env:
-                  TRAILBASE_URL: ${{ vars.TRAILBASE_URL }}
-                  ORIGA_CDN_BASE_URL: ${{ vars.ORIGA_CDN_BASE_URL }}
-                  ORIGA_CDN_REGION: ${{ vars.ORIGA_CDN_REGION }}
 
             - name: Build Tauri app for macOS
               working-directory: tauri
@@ -377,7 +419,7 @@ jobs:
         name: Build Android
         permissions:
             contents: read
-        needs: [version]
+        needs: [version, build-frontend]
         if: >
             github.actor != 'dependabot[bot]' &&
             (github.event_name == 'pull_request' ||
@@ -392,6 +434,12 @@ jobs:
         steps:
             - name: Checkout repository
               uses: actions/checkout@v4
+
+            - name: Download frontend artifact
+              uses: actions/download-artifact@v4
+              with:
+                  name: frontend-dist
+                  path: origa_ui/dist/
 
             - name: Update version in config files
               uses: ./.github/actions/update-version
@@ -439,19 +487,11 @@ jobs:
             - name: Setup frontend tools
               uses: ./.github/actions/setup-frontend
               with:
-                  tools: trunk tauri-cli
+                  tools: tauri-cli
                   cache-key-suffix: android
 
             - name: Add cargo bin to PATH
               run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-
-            - name: Build frontend
-              working-directory: origa_ui
-              run: trunk build --release
-              env:
-                  TRAILBASE_URL: ${{ vars.TRAILBASE_URL }}
-                  ORIGA_CDN_BASE_URL: ${{ vars.ORIGA_CDN_BASE_URL }}
-                  ORIGA_CDN_REGION: ${{ vars.ORIGA_CDN_REGION }}
 
             - name: Decode Android Keystore
               env:
