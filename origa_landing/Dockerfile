@@ -2,7 +2,7 @@
 
 ARG RUST_VERSION=1.93
 
-FROM ubuntu:24.04 AS builder
+FROM ubuntu:26.04 AS builder
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
@@ -89,7 +89,7 @@ RUN --mount=type=cache,target=/sccache,sharing=locked \
     cp /app/target/x86_64-unknown-linux-musl/release/origa_landing /tmp/origa_landing
 
 # Runtime
-FROM alpine:3.21
+FROM alpine:3.23
 
 WORKDIR /app
 
