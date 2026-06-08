@@ -129,4 +129,29 @@ testWithFreshUser.describe("Lesson Page", () => {
         await lessonPage.clickHome();
         await page.waitForURL(/\/home$/, { timeout: 10_000 });
     });
+
+    testWithFreshUser(
+        "should update JLPT progress after completing lesson",
+        async ({ page }) => {
+            test.setTimeout(120_000);
+
+            await skipOnboarding(page);
+
+            const homePage = new HomePage(page);
+            await expect(homePage.jlptProgress).toBeVisible({ timeout: 15_000 });
+
+            const jlptPct = page.getByTestId("home-jlpt-progress-pct");
+            await expect(jlptPct).toHaveText("0%", { timeout: 10_000 });
+
+            const lessonPage = await setupLessonWithCards(page);
+            await rateCardUntilDone(lessonPage, "good");
+            await lessonPage.waitForComplete();
+
+            await lessonPage.clickHome();
+            await page.waitForURL(/\/home$/, { timeout: 15_000 });
+
+            await expect(homePage.jlptProgress).toBeVisible({ timeout: 15_000 });
+            await expect(jlptPct).not.toHaveText("0%", { timeout: 10_000 });
+        },
+    );
 });
