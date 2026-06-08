@@ -266,10 +266,22 @@ jobs:
               uses: actions/cache@v4
               with:
                   path: ~/.local/bin/trail
-                  key: trailbase-v0.28.3  # Keep in sync with origa_ui/Dockerfile FROM
+                  key: trailbase-v0.28.3-verified  # Keep in sync with origa_ui/Dockerfile FROM
+
+            - name: Add TrailBase to PATH
+              run: echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+            - name: Validate TrailBase CLI
+              id: validate-trailbase
+              run: |
+                  if command -v trail &> /dev/null && trail --version &> /dev/null; then
+                    echo "valid=true" >> $GITHUB_OUTPUT
+                  else
+                    echo "valid=false" >> $GITHUB_OUTPUT
+                  fi
 
             - name: Install TrailBase CLI
-              if: steps.cache-trailbase.outputs.cache-hit != 'true'
+              if: steps.cache-trailbase.outputs.cache-hit != 'true' || steps.validate-trailbase.outputs.valid != 'true'
               run: |
                   for i in 1 2 3 4 5; do
                     tmp=$(mktemp) && curl -sSfL --retry 3 --retry-delay 10 -o "$tmp" \
@@ -278,9 +290,6 @@ jobs:
                     rm -f "$tmp"
                     sleep 15
                   done
-
-            - name: Add TrailBase to PATH
-              run: echo "$HOME/.local/bin" >> $GITHUB_PATH
 
             - name: Verify TrailBase
               run: trail --version
