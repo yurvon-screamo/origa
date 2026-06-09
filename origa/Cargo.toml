@@ -54,8 +54,8 @@ as-slice.workspace = true
 futures.workspace = true
 
 [build-dependencies]
+csv = "1"
 lindera-dictionary.workspace = true
-serde_json.workspace = true
 rkyv.workspace = true
 
 [dev-dependencies]
