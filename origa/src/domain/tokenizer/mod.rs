@@ -110,6 +110,8 @@ pub fn init_dictionary(data: DictionaryData) -> Result<(), OrigaError> {
     init_tokenizer()
 }
 
+const USER_DICT_BYTES: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/user_dictionary.bin"));
+
 fn init_tokenizer() -> Result<(), OrigaError> {
     let data = DICTIONARY_DATA.get().ok_or(OrigaError::TokenizerError {
         reason: "Dictionary data not loaded".to_string(),
@@ -156,8 +158,23 @@ fn init_tokenizer() -> Result<(), OrigaError> {
         metadata,
     };
 
-    let segmenter =
-        lindera::segmenter::Segmenter::new(lindera::mode::Mode::Normal, dictionary, None);
+    let user_dictionary = if USER_DICT_BYTES.is_empty() {
+        None
+    } else {
+        Some(
+            lindera_dictionary::dictionary::UserDictionary::load(USER_DICT_BYTES).map_err(|e| {
+                OrigaError::TokenizerError {
+                    reason: format!("Failed to load user dictionary: {}", e),
+                }
+            })?,
+        )
+    };
+
+    let segmenter = lindera::segmenter::Segmenter::new(
+        lindera::mode::Mode::Normal,
+        dictionary,
+        user_dictionary,
+    );
 
     let tokenizer = lindera::tokenizer::Tokenizer::new(segmenter);
 
@@ -219,6 +236,8 @@ fn flush_segment(
 fn token_to_token_info(token: &mut lindera::token::Token) -> TokenInfo {
     use crate::domain::JapaneseText;
 
+    let surface = token.surface.to_string();
+
     let lexeme_raw = token.get("lexeme").unwrap_or_default().to_string();
     let lexeme_stripped: &str = if let Some((japanese, _english)) = lexeme_raw.split_once('-') {
         japanese
@@ -226,16 +245,66 @@ fn token_to_token_info(token: &mut lindera::token::Token) -> TokenInfo {
         &lexeme_raw
     };
 
-    let orth_base = token
+    let orth_base_raw = token
         .get("orthographic_base_form")
         .unwrap_or_default()
         .to_string();
 
-    let orthographic_base_form = if lexeme_stripped.contains_kanji() && !orth_base.contains_kanji()
-    {
+    let orthographic_base_form = if orth_base_raw == "*" || orth_base_raw.is_empty() {
+        surface.clone()
+    } else if lexeme_stripped.contains_kanji() && !orth_base_raw.contains_kanji() {
         lexeme_stripped.to_string()
     } else {
-        orth_base.to_string()
+        orth_base_raw
+    };
+
+    let orth_surface_raw = token
+        .get("orthographic_surface_form")
+        .unwrap_or_default()
+        .to_string();
+    let orthographic_surface_form = if orth_surface_raw == "*" || orth_surface_raw.is_empty() {
+        surface.clone()
+    } else {
+        orth_surface_raw
+    };
+
+    let phon_base_raw = token
+        .get("phonological_base_form")
+        .unwrap_or_default()
+        .to_string();
+
+    let reading_raw = token.get("reading").unwrap_or_default().to_string();
+
+    let is_user_dict = !token.word_id.is_system() && !token.word_id.is_unknown();
+
+    let pos_sub1 = token
+        .get("part_of_speech_subcategory_1")
+        .unwrap_or_default()
+        .to_string();
+
+    let user_dict_reading = is_user_dict
+        && pos_sub1 != "*"
+        && !pos_sub1.is_empty()
+        && pos_sub1.chars().all(|c| c.is_katakana() || c == 'ー');
+
+    let phonological_base_form = if phon_base_raw != "*" && !phon_base_raw.is_empty() {
+        phon_base_raw
+    } else if reading_raw != "*" && !reading_raw.is_empty() {
+        reading_raw
+    } else if user_dict_reading {
+        pos_sub1.clone()
+    } else {
+        surface.clone()
+    };
+
+    let phon_surface_raw = token
+        .get("phonological_surface_form")
+        .unwrap_or_default()
+        .to_string();
+    let phonological_surface_form = if phon_surface_raw != "*" && !phon_surface_raw.is_empty() {
+        phon_surface_raw
+    } else {
+        phonological_base_form.clone()
     };
 
     let mut part_of_speech: PartOfSpeech = token
@@ -244,36 +313,19 @@ fn token_to_token_info(token: &mut lindera::token::Token) -> TokenInfo {
         .parse()
         .unwrap_or(PartOfSpeech::Unspecified);
 
-    if part_of_speech == PartOfSpeech::Noun {
-        let pos_subcategory = token
-            .get("part_of_speech_subcategory_1")
-            .unwrap_or_default();
-        if pos_subcategory == "固有名詞" {
-            part_of_speech = PartOfSpeech::ProperNoun;
-        }
+    if part_of_speech == PartOfSpeech::Noun && pos_sub1 == "固有名詞" {
+        part_of_speech = PartOfSpeech::ProperNoun;
     }
 
-    if orthographic_base_form == "*"
-        || orthographic_base_form == "×"
-        || orthographic_base_form == "•"
-    {
+    if surface == "*" || surface == "×" || surface == "•" {
         part_of_speech = PartOfSpeech::Symbol;
     }
 
     TokenInfo {
         orthographic_base_form,
-        phonological_base_form: token
-            .get("phonological_base_form")
-            .unwrap_or_default()
-            .to_string(),
-        orthographic_surface_form: token
-            .get("orthographic_surface_form")
-            .unwrap_or_default()
-            .to_string(),
-        phonological_surface_form: token
-            .get("phonological_surface_form")
-            .unwrap_or_default()
-            .to_string(),
+        phonological_base_form,
+        orthographic_surface_form,
+        phonological_surface_form,
         part_of_speech,
     }
 }
@@ -525,5 +577,89 @@ mod tests {
         let tokens = tokenize_text("   ").unwrap();
         assert_eq!(tokens.len(), 1);
         assert_eq!(tokens[0].part_of_speech(), &PartOfSpeech::Whitespace);
+    }
+
+    #[test]
+    fn should_not_split_souiu_into_sou_and_iu() {
+        ensure_dictionary();
+        let tokens = tokenize_text("そういう").unwrap();
+        assert!(
+            tokens
+                .iter()
+                .any(|t| t.orthographic_surface_form() == "そういう"),
+            "「そういう」should be a single token, got: {:?}",
+            tokens
+                .iter()
+                .map(|t| t.orthographic_surface_form())
+                .collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn should_not_split_kouiu_into_kou_and_iu() {
+        ensure_dictionary();
+        let tokens = tokenize_text("こういう").unwrap();
+        assert!(
+            tokens
+                .iter()
+                .any(|t| t.orthographic_surface_form() == "こういう"),
+            "「こういう」should be a single token, got: {:?}",
+            tokens
+                .iter()
+                .map(|t| t.orthographic_surface_form())
+                .collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn should_not_split_douiu_into_dou_and_iu() {
+        ensure_dictionary();
+        let tokens = tokenize_text("どういう").unwrap();
+        assert!(
+            tokens
+                .iter()
+                .any(|t| t.orthographic_surface_form() == "どういう"),
+            "「どういう」should be a single token, got: {:?}",
+            tokens
+                .iter()
+                .map(|t| t.orthographic_surface_form())
+                .collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn should_not_translate_iu_as_govoriit_in_souiu_context() {
+        ensure_dictionary();
+        let tokens = tokenize_text("そういう").unwrap();
+        let iu_token = tokens
+            .iter()
+            .find(|t| t.orthographic_surface_form() == "いう");
+        if let Some(t) = iu_token {
+            assert_ne!(
+                t.orthographic_base_form(),
+                "言う",
+                "「いう」in 「そういう」context should NOT have base_form 言う"
+            );
+        }
+        let has_souiu = tokens
+            .iter()
+            .any(|t| t.orthographic_surface_form() == "そういう");
+        assert!(has_souiu, "「そういう」should be a single token");
+    }
+
+    #[test]
+    fn should_not_split_to_iu_into_to_and_iu() {
+        ensure_dictionary();
+        let tokens = tokenize_text("という").unwrap();
+        assert!(
+            tokens
+                .iter()
+                .any(|t| t.orthographic_surface_form() == "という"),
+            "「という」should be a single token, got: {:?}",
+            tokens
+                .iter()
+                .map(|t| t.orthographic_surface_form())
+                .collect::<Vec<_>>()
+        );
     }
 }
