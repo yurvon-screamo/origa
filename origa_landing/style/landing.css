@@ -88,14 +88,13 @@
 
 .landing-header__lang {
     font-family: var(--font-mono);
-    font-size: var(--text-2xs);
+    font-size: 11px;
     letter-spacing: 0.15em;
     text-transform: uppercase;
 }
 
 .landing-header__lang-current {
-    color: var(--fg-muted);
-    font-weight: 500;
+    color: var(--fg-light);
 }
 
 .landing-header__lang-link {
