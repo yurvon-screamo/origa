@@ -133,9 +133,6 @@ impl VocabularyInfo {
 
 #[derive(Deserialize)]
 struct VocabularyEntryStoredType {
-    #[expect(dead_code)]
-    #[serde(default)]
-    level: Option<String>,
     russian_translation: Option<String>,
     english_translation: Option<String>,
     ru: Option<TranslationValue>,

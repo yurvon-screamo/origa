@@ -143,3 +143,139 @@ mod tests {
         assert!(result.is_empty());
     }
 }
+
+#[cfg(test)]
+mod integration_tests {
+    use super::*;
+    use crate::dictionary::vocabulary::{
+        VocabularyChunkData, init_vocabulary, is_vocabulary_loaded,
+    };
+    use crate::domain::{DictionaryData, init_dictionary, is_dictionary_loaded};
+
+    fn ensure_dictionaries() {
+        ensure_tokenizer_dictionary();
+        ensure_vocabulary_dictionary();
+    }
+
+    fn ensure_tokenizer_dictionary() {
+        if is_dictionary_loaded() {
+            return;
+        }
+
+        use flate2::read::DeflateDecoder;
+        use std::fs;
+        use std::io::Read;
+
+        let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
+        let dict_dir = std::path::PathBuf::from(manifest_dir)
+            .parent()
+            .unwrap()
+            .join("cdn")
+            .join("dictionaries");
+
+        let decompress = |data: Vec<u8>| -> Vec<u8> {
+            let mut decoder = DeflateDecoder::new(&data[..]);
+            let mut decompressed = Vec::new();
+            decoder.read_to_end(&mut decompressed).unwrap();
+            decompressed
+        };
+
+        let read_file = |name: &str| fs::read(dict_dir.join(name)).unwrap();
+
+        let data = DictionaryData {
+            char_def: decompress(read_file("char_def.bin")),
+            matrix: decompress(read_file("matrix.mtx")),
+            dict_da: decompress(read_file("dict.da")),
+            dict_vals: decompress(read_file("dict.vals")),
+            unk: decompress(read_file("unk.bin")),
+            words_idx: decompress(read_file("dict.wordsidx")),
+            words: decompress(read_file("dict.words")),
+            metadata: read_file("metadata.json"),
+        };
+
+        init_dictionary(data).unwrap();
+    }
+
+    fn ensure_vocabulary_dictionary() {
+        if is_vocabulary_loaded() {
+            return;
+        }
+
+        let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
+        let vocab_dir = std::path::PathBuf::from(manifest_dir)
+            .parent()
+            .unwrap()
+            .join("cdn")
+            .join("dictionary");
+
+        let read_chunk = |name: &str| std::fs::read_to_string(vocab_dir.join(name)).unwrap();
+
+        let vocab_data = VocabularyChunkData {
+            chunk_01: read_chunk("chunk_01.json"),
+            chunk_02: read_chunk("chunk_02.json"),
+            chunk_03: read_chunk("chunk_03.json"),
+            chunk_04: read_chunk("chunk_04.json"),
+            chunk_05: read_chunk("chunk_05.json"),
+            chunk_06: read_chunk("chunk_06.json"),
+            chunk_07: read_chunk("chunk_07.json"),
+            chunk_08: read_chunk("chunk_08.json"),
+            chunk_09: read_chunk("chunk_09.json"),
+            chunk_10: read_chunk("chunk_10.json"),
+            chunk_11: read_chunk("chunk_11.json"),
+        };
+
+        init_vocabulary(vocab_data).unwrap();
+    }
+
+    #[test]
+    fn should_translate_bakari() {
+        ensure_dictionaries();
+        let tokens = super::super::tokenize_text("ばかり").unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian);
+        let bakari = results.iter().find(|t| t.surface_form.contains("ばかり"));
+        assert!(bakari.is_some(), "「ばかり」token should exist");
+        assert!(
+            bakari.unwrap().translation.is_some(),
+            "「ばかり」should have a translation"
+        );
+    }
+
+    #[test]
+    fn should_translate_uwa_interjection() {
+        ensure_dictionaries();
+        let tokens = super::super::tokenize_text("うわー").unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian);
+        let uwa = results.iter().find(|t| t.surface_form.contains("うわ"));
+        assert!(uwa.is_some(), "「うわー」token should exist");
+        assert!(
+            uwa.unwrap().translation.is_some(),
+            "「うわー」should have a translation"
+        );
+    }
+
+    #[test]
+    fn should_translate_souiu_compound() {
+        ensure_dictionaries();
+        let tokens = super::super::tokenize_text("そういう").unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian);
+        let souiu = results.iter().find(|t| t.surface_form.contains("そういう"));
+        assert!(souiu.is_some(), "「そういう」token should exist");
+        assert!(
+            souiu.unwrap().translation.is_some(),
+            "「そういう」should have a translation"
+        );
+    }
+
+    #[test]
+    fn should_translate_hodo() {
+        ensure_dictionaries();
+        let tokens = super::super::tokenize_text("ほど").unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian);
+        let hodo = results.iter().find(|t| t.surface_form.contains("ほど"));
+        assert!(hodo.is_some(), "「ほど」token should exist");
+        assert!(
+            hodo.unwrap().translation.is_some(),
+            "「ほど」should have a translation"
+        );
+    }
+}

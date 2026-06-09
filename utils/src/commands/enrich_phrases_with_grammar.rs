@@ -26,6 +26,10 @@ struct PhraseIndexEntry {
     #[serde(rename = "i")]
     id: String,
     #[serde(rename = "t")]
+    #[expect(
+        dead_code,
+        reason = "needed for deserialization but re-tokenized at runtime"
+    )]
     tokens: Vec<String>,
     #[serde(rename = "c")]
     chunk_id: u32,
@@ -158,9 +162,15 @@ pub fn run_enrich_phrases_with_grammar(
         let grammar_ids = detect_grammar_rules_in_text(text, &tokens, &rules);
         let grammar_strs: Vec<String> = grammar_ids.iter().map(|id| id.to_string()).collect();
 
+        let new_tokens: Vec<String> = tokens
+            .iter()
+            .filter(|t| t.part_of_speech().is_vocabulary_word())
+            .map(|t| t.orthographic_base_form().to_string())
+            .collect();
+
         enriched_entries.push(EnrichedEntry {
             id: entry.id.clone(),
-            tokens: entry.tokens.clone(),
+            tokens: new_tokens,
             chunk_id: entry.chunk_id,
             grammar_rules: grammar_strs,
         });
@@ -202,7 +212,7 @@ pub fn run_enrich_phrases_with_grammar(
 }
 
 fn load_chunk_entries(chunks_dir: &Path, chunk_id: u32) -> Vec<PhraseChunkEntry> {
-    let chunk_path = chunks_dir.join(format!("p{}.json", chunk_id));
+    let chunk_path = chunks_dir.join(format!("p{:04}.json", chunk_id));
     let content = match fs::read_to_string(&chunk_path) {
         Ok(c) => c,
         Err(e) => {

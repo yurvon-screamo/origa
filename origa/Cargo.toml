@@ -53,6 +53,11 @@ getrandom = { workspace = true, features = ["wasm_js"] }
 as-slice.workspace = true
 futures.workspace = true
 
+[build-dependencies]
+csv = "1"
+lindera-dictionary.workspace = true
+rkyv.workspace = true
+
 [dev-dependencies]
 rstest.workspace = true
 tokio = { workspace = true, features = ["rt", "macros", "time", "fs"] }

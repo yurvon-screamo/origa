@@ -32,10 +32,14 @@ impl JapaneseChar for char {
 }
 
 fn is_cjk_punctuation(c: char) -> bool {
-    ('\u{3000}'..='\u{303F}').contains(&c)
+    ('\u{3000}'..='\u{303F}').contains(&c) // CJK Symbols and Punctuation
         || matches!(
             c,
-            '\u{3005}' | '\u{309D}' | '\u{309E}' | '\u{30FD}' | '\u{30FE}'
+            '\u{3005}' | '\u{309D}' | '\u{309E}' | '\u{30FD}' | '\u{30FE}' // iteration marks
+            | '\u{FF01}' | '\u{FF1F}'  // fullwidth ! ?
+            | '\u{FF5E}'               // fullwidth ~
+            | '\u{2026}'               // ellipsis …
+            | '\u{2014}' | '\u{2015}'   // em dash, horizontal bar
         )
 }
 
@@ -144,5 +148,32 @@ mod tests {
         assert_eq!(input.is_japanese(), expected_is_japanese);
         assert_eq!(input.contains_japanese(), expected_contains_japanese);
         assert_eq!(input.contains_kanji(), expected_contains_kanji);
+    }
+
+    #[rstest]
+    #[case('？', true)]
+    #[case('！', true)]
+    #[case('…', true)]
+    #[case('～', true)]
+    #[case('―', true)]
+    fn should_classify_fullwidth_common_symbols_as_japanese(
+        #[case] input: char,
+        #[case] expected: bool,
+    ) {
+        assert_eq!(
+            input.is_japanese(),
+            expected,
+            "'{}' (U+{:04X}) is_japanese should be {}",
+            input,
+            input as u32,
+            expected
+        );
+    }
+
+    #[test]
+    fn should_not_break_segmentation_on_fullwidth_question_mark() {
+        assert!('？'.is_japanese(), "？ should be classified as Japanese");
+        assert!('！'.is_japanese(), "！ should be classified as Japanese");
+        assert!('…'.is_japanese(), "… should be classified as Japanese");
     }
 }
