@@ -161,6 +161,11 @@ pub static CONTENT: Content = Content {
     integrations_h1: "Учитесь по своим источникам",
     integrations_subtitle: "Готовые наборы слов из популярных источников для изучения японского. Импортируйте и начните повторять сразу.",
 
+    integrations_section_exams: "Подготовка к экзаменам",
+    integrations_section_textbooks: "Учебники",
+    integrations_section_apps: "Приложения и контент",
+    integrations_section_import: "Свой контент",
+
     integrations_tag_exam: "Экзамен",
     integrations_tag_app: "Приложение",
     integrations_tag_textbook: "Учебник",
