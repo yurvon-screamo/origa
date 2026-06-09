@@ -158,15 +158,22 @@ fn init_tokenizer() -> Result<(), OrigaError> {
         metadata,
     };
 
-    let user_dictionary = lindera_dictionary::dictionary::UserDictionary::load(USER_DICT_BYTES)
-        .map_err(|e| OrigaError::TokenizerError {
-            reason: format!("Failed to load user dictionary: {}", e),
-        })?;
+    let user_dictionary = if USER_DICT_BYTES.is_empty() {
+        None
+    } else {
+        Some(
+            lindera_dictionary::dictionary::UserDictionary::load(USER_DICT_BYTES).map_err(|e| {
+                OrigaError::TokenizerError {
+                    reason: format!("Failed to load user dictionary: {}", e),
+                }
+            })?,
+        )
+    };
 
     let segmenter = lindera::segmenter::Segmenter::new(
         lindera::mode::Mode::Normal,
         dictionary,
-        Some(user_dictionary),
+        user_dictionary,
     );
 
     let tokenizer = lindera::tokenizer::Tokenizer::new(segmenter);

@@ -21,8 +21,13 @@ fn build_user_dictionary() {
         .join("tokenizer")
         .join("user_dictionary.csv");
 
+    let out_dir = env::var("OUT_DIR").unwrap();
+    let out_path = Path::new(&out_dir).join("user_dictionary.bin");
+
     if !metadata_path.exists() || !csv_path.exists() {
         println!("cargo:warning=Skipping user dictionary build: metadata or CSV not found");
+        fs::write(&out_path, &[] as &[u8])
+            .expect("Failed to write empty user dictionary placeholder");
         return;
     }
 
@@ -37,9 +42,6 @@ fn build_user_dictionary() {
     let user_dict = builder
         .build_user_dict(&csv_path)
         .expect("Failed to build user dictionary from CSV");
-
-    let out_dir = env::var("OUT_DIR").unwrap();
-    let out_path = Path::new(&out_dir).join("user_dictionary.bin");
 
     let bytes = rkyv::to_bytes::<rkyv::rancor::Error>(&user_dict)
         .expect("Failed to serialize user dictionary");
