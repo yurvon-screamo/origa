@@ -6,7 +6,7 @@ pub static CONTENT: Content = Content {
     header_features: "Функции",
     header_compare: "Сравнение",
     header_download: "Скачать",
-    header_integrations: "Интеграции",
+    header_integrations: "Контент",
 
     footer_product: "Продукт",
     footer_resources: "Ресурсы",
@@ -156,10 +156,15 @@ pub static CONTENT: Content = Content {
     download_subtitle: "Скачайте Origa на любое устройство — всё работает офлайн.",
     download_try_web: "Открыть →",
 
-    integrations_meta_title: "Наборы слов и интеграции | Origa",
+    integrations_meta_title: "Наборы слов и контент | Origa",
     integrations_meta_description: "Импортируйте лексику из Duolingo, Anki, Minna no Nihongo, Irodori, JLPT и других. Готовые наборы слов для изучения.",
     integrations_h1: "Учитесь по своим источникам",
     integrations_subtitle: "Готовые наборы слов из популярных источников для изучения японского. Импортируйте и начните повторять сразу.",
+    integrations_hero_stat: "7 источников · 1000+ наборов слов",
+
+    integrations_section_exams: "Подготовка к экзаменам",
+    integrations_section_textbooks: "Учебники",
+    integrations_section_apps: "Приложения и контент",
 
     integrations_tag_exam: "Экзамен",
     integrations_tag_app: "Приложение",

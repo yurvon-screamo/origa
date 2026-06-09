@@ -40,14 +40,14 @@ pub fn App() -> impl IntoView {
                     <Route path=path!("") view=HomePage />
                     <Route path=path!("features") view=FeaturesPage />
                     <Route path=path!("compare") view=ComparePage />
-                    <Route path=path!("integrations") view=IntegrationsPage />
+                    <Route path=path!("content") view=IntegrationsPage />
                     <Route path=path!("download") view=DownloadPage />
                 </ParentRoute>
                 <ParentRoute path=path!("ru") view=move || view! { <Layout locale=Locale::Ru /> }>
                     <Route path=path!("") view=HomePage />
                     <Route path=path!("features") view=FeaturesPage />
                     <Route path=path!("compare") view=ComparePage />
-                    <Route path=path!("integrations") view=IntegrationsPage />
+                    <Route path=path!("content") view=IntegrationsPage />
                     <Route path=path!("download") view=DownloadPage />
                 </ParentRoute>
             </Routes>
