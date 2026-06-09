@@ -35,14 +35,20 @@ pub struct AuthStore {
     /// Sync operation in progress
     pub is_syncing: RwSignal<bool>,
 
-    /// Dictionary (tokenizer) loading in background
+    // --- Granular data loading signals ---
+    pub is_vocabulary_loaded: RwSignal<bool>,
+    pub is_kanji_loaded: RwSignal<bool>,
+    pub is_grammar_loaded: RwSignal<bool>,
+    pub is_radicals_loaded: RwSignal<bool>,
+    pub is_phrases_loaded: RwSignal<bool>,
+    pub is_pitch_audio_loaded: RwSignal<bool>,
+    /// Dictionary tokenizer (UniDic) loaded
     pub is_dictionary_loaded: RwSignal<bool>,
+    pub is_furigana_loaded: RwSignal<bool>,
+    pub is_jlpt_content_loaded: RwSignal<bool>,
 
-    /// Dictionary loading in progress
-    pub is_dictionary_loading: RwSignal<bool>,
-
-    /// Progress message for dictionary loading
-    pub dictionary_progress_message: RwSignal<String>,
+    /// Guard against triggering start_dictionary_loading multiple times
+    pub is_data_loading_started: RwSignal<bool>,
 
     /// Logout in progress (prevents race conditions)
     is_logging_out: RwSignal<bool>,
@@ -62,9 +68,16 @@ impl AuthStore {
             is_oauth_loading: RwSignal::new(false),
             oauth_error: RwSignal::new(None),
             is_syncing: RwSignal::new(false),
+            is_vocabulary_loaded: RwSignal::new(false),
+            is_kanji_loaded: RwSignal::new(false),
+            is_grammar_loaded: RwSignal::new(false),
+            is_radicals_loaded: RwSignal::new(false),
+            is_phrases_loaded: RwSignal::new(false),
+            is_pitch_audio_loaded: RwSignal::new(false),
             is_dictionary_loaded: RwSignal::new(false),
-            is_dictionary_loading: RwSignal::new(false),
-            dictionary_progress_message: RwSignal::new(String::new()),
+            is_furigana_loaded: RwSignal::new(false),
+            is_jlpt_content_loaded: RwSignal::new(false),
+            is_data_loading_started: RwSignal::new(false),
             is_logging_out: RwSignal::new(false),
             is_deleting_account: RwSignal::new(false),
         }
@@ -86,6 +99,30 @@ impl AuthStore {
         let is_checking_session = self.is_checking_session;
         let is_syncing = self.is_syncing;
         Memo::new(move |_| is_checking_session.get() || is_syncing.get())
+    }
+
+    /// Returns a reactive Memo indicating if ALL data resources are loaded
+    pub fn is_all_data_loaded(&self) -> Memo<bool> {
+        let v = self.is_vocabulary_loaded;
+        let k = self.is_kanji_loaded;
+        let g = self.is_grammar_loaded;
+        let r = self.is_radicals_loaded;
+        let p = self.is_phrases_loaded;
+        let pa = self.is_pitch_audio_loaded;
+        let d = self.is_dictionary_loaded;
+        let f = self.is_furigana_loaded;
+        let j = self.is_jlpt_content_loaded;
+        Memo::new(move |_| {
+            v.get()
+                && k.get()
+                && g.get()
+                && r.get()
+                && p.get()
+                && pa.get()
+                && d.get()
+                && f.get()
+                && j.get()
+        })
     }
 
     /// Get repository for use cases
@@ -226,11 +263,6 @@ impl AuthStore {
                 },
             }
         });
-    }
-
-    /// Mark dictionary (tokenizer) as loaded
-    pub fn set_dictionary_loaded(&self) {
-        self.is_dictionary_loaded.set(true);
     }
 
     // ========================================
@@ -378,6 +410,19 @@ impl AuthStore {
         Ok(())
     }
 
+    fn reset_data_loading_signals(&self) {
+        self.is_vocabulary_loaded.set(false);
+        self.is_kanji_loaded.set(false);
+        self.is_grammar_loaded.set(false);
+        self.is_radicals_loaded.set(false);
+        self.is_phrases_loaded.set(false);
+        self.is_pitch_audio_loaded.set(false);
+        self.is_dictionary_loaded.set(false);
+        self.is_furigana_loaded.set(false);
+        self.is_jlpt_content_loaded.set(false);
+        self.is_data_loading_started.set(false);
+    }
+
     /// Internal: Clear all authentication-related state
     async fn clear_auth_state(&self) {
         clear_session();
@@ -387,9 +432,7 @@ impl AuthStore {
         }
 
         self.user.set(None);
-        self.is_dictionary_loaded.set(false);
-        self.is_dictionary_loading.set(false);
-        self.dictionary_progress_message.set(String::new());
+        self.reset_data_loading_signals();
     }
 
     // ========================================
@@ -419,9 +462,7 @@ impl AuthStore {
 
         clear_session();
         self.user.set(None);
-        self.is_dictionary_loaded.set(false);
-        self.is_dictionary_loading.set(false);
-        self.dictionary_progress_message.set(String::new());
+        self.reset_data_loading_signals();
         self.is_checking_session.set(false);
     }
 
