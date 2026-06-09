@@ -106,7 +106,6 @@ jobs:
                   cache-from: type=registry,ref=ghcr.io/yurvon-screamo/origa:${{ matrix.image }}-buildcache
                   cache-to: type=registry,ref=ghcr.io/yurvon-screamo/origa:${{ matrix.image }}-buildcache,mode=max
                   provenance: false
-                  no-cache: true
                   build-args: ${{ matrix.build_args }}
 
     deploy-to-railway:
