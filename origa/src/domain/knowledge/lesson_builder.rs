@@ -16,10 +16,10 @@ const UNKNOWN_JLPT_PRIORITY: u8 = 0;
 
 const PHRASE_MAX_PER_LESSON: usize = 5;
 
-/// Веса типов карточек для interleaving: Vocab:Kanji:Grammar ≈ 60:20:20.
+/// Веса типов карточек для interleaving: Vocab:Kanji:Grammar ≈ 80:10:10.
 /// При добавлении нового варианта в CardType — обновить эту константу.
 const CARD_TYPE_WEIGHTS: [(CardType, usize); 3] = [
-    (CardType::Vocabulary, 3),
+    (CardType::Vocabulary, 8),
     (CardType::Kanji, 1),
     (CardType::Grammar, 1),
 ];
