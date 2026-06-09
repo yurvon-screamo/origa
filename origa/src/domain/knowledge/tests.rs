@@ -675,9 +675,9 @@ fn new_cards_interleaved_by_type_within_jlpt_level() {
         )))
         .unwrap();
 
-    let result = knowledge_set.cards_to_lesson(5, &jlpt_content, JapaneseLevel::N5);
+    let result = knowledge_set.cards_to_lesson(15, &jlpt_content, JapaneseLevel::N5);
 
-    assert_eq!(result.len(), 5, "Should return exactly 5 cards (limit=5)");
+    assert_eq!(result.len(), 10, "Should return all 10 cards (6 vocab + 2 kanji + 2 grammar)");
 
     let has_kanji = result
         .keys()
