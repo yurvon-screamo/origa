@@ -2,27 +2,43 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://origa.app/</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://origa.app/"/>
-    <xhtml:link rel="alternate" hreflang="ru" href="https://origa.app/ru/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.app/"/>
+    <loc>https://origa.uwuwu.net/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://origa.uwuwu.net/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://origa.uwuwu.net/ru/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://origa.uwuwu.net/ko/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://origa.uwuwu.net/vi/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.uwuwu.net/"/>
   </url>
   <url>
-    <loc>https://origa.app/features</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://origa.app/features"/>
-    <xhtml:link rel="alternate" hreflang="ru" href="https://origa.app/ru/features"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.app/features"/>
+    <loc>https://origa.uwuwu.net/features</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://origa.uwuwu.net/features"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://origa.uwuwu.net/ru/features"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://origa.uwuwu.net/ko/features"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://origa.uwuwu.net/vi/features"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.uwuwu.net/features"/>
   </url>
   <url>
-    <loc>https://origa.app/compare</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://origa.app/compare"/>
-    <xhtml:link rel="alternate" hreflang="ru" href="https://origa.app/ru/compare"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.app/compare"/>
+    <loc>https://origa.uwuwu.net/compare</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://origa.uwuwu.net/compare"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://origa.uwuwu.net/ru/compare"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://origa.uwuwu.net/ko/compare"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://origa.uwuwu.net/vi/compare"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.uwuwu.net/compare"/>
   </url>
   <url>
-    <loc>https://origa.app/download</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://origa.app/download"/>
-    <xhtml:link rel="alternate" hreflang="ru" href="https://origa.app/ru/download"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.app/download"/>
+    <loc>https://origa.uwuwu.net/content</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://origa.uwuwu.net/content"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://origa.uwuwu.net/ru/content"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://origa.uwuwu.net/ko/content"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://origa.uwuwu.net/vi/content"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.uwuwu.net/content"/>
+  </url>
+  <url>
+    <loc>https://origa.uwuwu.net/download</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://origa.uwuwu.net/download"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://origa.uwuwu.net/ru/download"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://origa.uwuwu.net/ko/download"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://origa.uwuwu.net/vi/download"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.uwuwu.net/download"/>
   </url>
 </urlset>

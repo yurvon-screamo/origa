@@ -67,7 +67,7 @@ pub fn PageMeta(
     description: &'static str,
 ) -> impl IntoView {
     let img_prefix = locale.image_prefix();
-    let og_image = format!("{BASE_URL}/images/{img_prefix}.og.png");
+    let og_image = format!("{BASE_URL}/images/{img_prefix}.hero.png");
     let canonical = format!("{BASE_URL}{}{path}", locale.path_prefix());
 
     view! {
