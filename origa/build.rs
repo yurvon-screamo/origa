@@ -22,9 +22,7 @@ fn build_user_dictionary() {
         .join("user_dictionary.csv");
 
     if !metadata_path.exists() || !csv_path.exists() {
-        println!(
-            "cargo:warning=Skipping user dictionary build: metadata or CSV not found"
-        );
+        println!("cargo:warning=Skipping user dictionary build: metadata or CSV not found");
         return;
     }
 
