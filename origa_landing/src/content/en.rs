@@ -6,7 +6,7 @@ pub static CONTENT: Content = Content {
     header_features: "Features",
     header_compare: "Compare",
     header_download: "Download",
-    header_integrations: "Integrations",
+    header_integrations: "Content",
 
     footer_product: "Product",
     footer_resources: "Resources",
@@ -156,7 +156,7 @@ pub static CONTENT: Content = Content {
     download_subtitle: "Download Origa to any device — everything works offline.",
     download_try_web: "Open →",
 
-    integrations_meta_title: "Word Sets & Integrations | Origa",
+    integrations_meta_title: "Word Sets & Content | Origa",
     integrations_meta_description: "Import vocabulary from Duolingo, Anki, Minna no Nihongo, Irodori, JLPT and more. Pre-built word sets ready to study.",
     integrations_h1: "Learn from what you already use",
     integrations_subtitle: "Pre-built vocabulary sets from popular Japanese learning sources. Import and start reviewing instantly.",

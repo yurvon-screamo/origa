@@ -12,7 +12,7 @@ pub fn IntegrationsPage() -> impl IntoView {
     let download_href = format!("{prefix}/download");
 
     view! {
-        <PageMeta locale path="/integrations" title=c.integrations_meta_title description=c.integrations_meta_description/>
+        <PageMeta locale path="/content" title=c.integrations_meta_title description=c.integrations_meta_description/>
 
         // ── Section 0: Hero ──
         <section class="intg-hero">
@@ -23,22 +23,8 @@ pub fn IntegrationsPage() -> impl IntoView {
                     <p class="intg-hero__subtitle">{c.integrations_subtitle}</p>
                     <p class="intg-hero__stat">{c.integrations_hero_stat}</p>
                 </div>
-                <div class="intg-hero__catalog" attr:aria-hidden="true">
-                    <span class="intg-hero__catalog-label intg-hero__catalog-label--terracotta">
-                        {c.integrations_tag_exam}
-                    </span>
-                    <span class="intg-hero__catalog-label intg-hero__catalog-label--olive">
-                        {c.integrations_tag_textbook}
-                    </span>
-                    <span class="intg-hero__catalog-label intg-hero__catalog-label--gold">
-                        {c.integrations_tag_app}
-                    </span>
-                    <span class="intg-hero__catalog-label intg-hero__catalog-label--dark">
-                        {c.integrations_tag_content}
-                    </span>
-                    <span class="intg-hero__catalog-label intg-hero__catalog-label--dark">
-                        {c.integrations_tag_import}
-                    </span>
+                <div class="intg-hero__image">
+                    <img src="/images/content.png" alt="Content sources" class="intg-hero__img"/>
                 </div>
             </div>
         </section>
@@ -108,7 +94,6 @@ pub fn IntegrationsPage() -> impl IntoView {
                             name=c.integrations_anki_name
                             desc=c.integrations_anki_desc
                             detail=c.integrations_anki_detail
-                            note=c.integrations_anki_note
                         />
                     </div>
                 </div>
@@ -220,7 +205,6 @@ fn IntgAnkiCard(
     name: &'static str,
     desc: &'static str,
     detail: &'static str,
-    note: &'static str,
 ) -> impl IntoView {
     view! {
         <div class="intg-card">
@@ -228,16 +212,6 @@ fn IntgAnkiCard(
             <h3 class="intg-card__name">{name}</h3>
             <p class="intg-card__desc">{desc}</p>
             <p class="intg-card__detail">{detail}</p>
-            <IntgEditorialNote text=note/>
-        </div>
-    }
-}
-
-#[component]
-fn IntgEditorialNote(text: &'static str) -> impl IntoView {
-    view! {
-        <div class="intg-editorial-note">
-            <p class="intg-editorial-note__text">{text}</p>
         </div>
     }
 }
