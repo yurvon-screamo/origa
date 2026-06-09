@@ -116,9 +116,8 @@ pub fn start_dictionary_loading(auth_store: AuthStore, repository: HybridUserRep
         if let Err(e) = load_with_retry(load_jlpt_content, 1).await {
             tracing::error!("Failed to load jlpt_content: {e}");
         }
-        auth_store.is_jlpt_content_loaded.set(true);
 
-        // Phase D: post-load migrations
+        // Phase D: post-load migrations (BEFORE signaling completion)
         let seed_use_case = SeedReadyPhrasesUseCase::new(&repository);
         if let Err(e) = seed_use_case.execute().await {
             tracing::warn!("Failed to seed ready phrases: {e}");
@@ -128,6 +127,9 @@ pub fn start_dictionary_loading(auth_store: AuthStore, repository: HybridUserRep
         if let Err(e) = migrate_kanji.execute().await {
             tracing::warn!("Failed to migrate kanji companions: {e}");
         }
+
+        // Signal completion only after all migrations finish
+        auth_store.is_jlpt_content_loaded.set(true);
     });
 }
 
