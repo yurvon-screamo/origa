@@ -8,18 +8,13 @@ fn main() {
 
 fn build_user_dictionary() {
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
-
-    let dict_dir = Path::new(&manifest_dir)
-        .join("..")
-        .join("cdn")
-        .join("dictionaries");
-
-    let metadata_path = dict_dir.join("metadata.json");
-    let csv_path = Path::new(&manifest_dir)
+    let tokenizer_dir = Path::new(&manifest_dir)
         .join("src")
         .join("domain")
-        .join("tokenizer")
-        .join("user_dictionary.csv");
+        .join("tokenizer");
+
+    let metadata_path = tokenizer_dir.join("metadata.json");
+    let csv_path = tokenizer_dir.join("user_dictionary.csv");
 
     let out_dir = env::var("OUT_DIR").unwrap();
     let out_path = Path::new(&out_dir).join("user_dictionary.bin");
@@ -32,7 +27,7 @@ fn build_user_dictionary() {
     }
 
     println!("cargo:rerun-if-changed=src/domain/tokenizer/user_dictionary.csv");
-    println!("cargo:rerun-if-changed=../cdn/dictionaries/metadata.json");
+    println!("cargo:rerun-if-changed=src/domain/tokenizer/metadata.json");
 
     let metadata_bytes = fs::read(&metadata_path).expect("Failed to read metadata.json");
     let metadata: lindera_dictionary::dictionary::metadata::Metadata =
