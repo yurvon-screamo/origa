@@ -20,20 +20,31 @@ pub fn Layout(locale: Locale) -> impl IntoView {
         prefix.to_string()
     };
 
-    let switch_locale = match locale {
-        Locale::En => Locale::Ru,
-        Locale::Ru => Locale::En,
-    };
-    let switch_label = switch_locale.as_str().to_uppercase();
-    let switch_href = match switch_locale {
-        Locale::En => "/".to_string(),
-        Locale::Ru => "/ru".to_string(),
-    };
+    let lang_switcher_items: Vec<_> = Locale::ALL
+        .iter()
+        .filter(|loc| **loc != locale)
+        .map(|loc| {
+            let href = if loc.path_prefix().is_empty() {
+                "/".to_string()
+            } else {
+                loc.path_prefix().to_string()
+            };
+            (*loc, loc.display_label(), href)
+        })
+        .collect();
 
     view! {
         {match locale {
             Locale::Ru => view! {
                 <script>"document.documentElement.lang=\"ru\""</script>
+            }
+            .into_any(),
+            Locale::Ko => view! {
+                <script>"document.documentElement.lang=\"ko\""</script>
+            }
+            .into_any(),
+            Locale::Vi => view! {
+                <script>"document.documentElement.lang=\"vi\""</script>
             }
             .into_any(),
             Locale::En => ().into_any(),
@@ -51,17 +62,33 @@ pub fn Layout(locale: Locale) -> impl IntoView {
                 <NavLink prefix href="compare" class="landing-header__link">
                     {c.header_compare}
                 </NavLink>
-                <NavLink prefix href="download" class="landing-header__link">
-                    {c.header_download}
-                </NavLink>
                 <NavLink prefix href="content" class="landing-header__link">
                     {c.header_integrations}
                 </NavLink>
-                <a href=switch_href class="landing-header__link">
-                    {switch_label}
-                </a>
+                <NavLink prefix href="download" class="landing-header__link">
+                    {c.header_download}
+                </NavLink>
+                <span class="landing-header__nav-sep">"|"</span>
+                <span class="landing-header__lang">
+                    <span class="landing-header__lang-current">{locale.display_label()}</span>
+                    {lang_switcher_items.into_iter().flat_map(|(_, label, href)| {
+                        vec![
+                            view! { <span class="landing-header__lang-sep">" · "</span> }.into_any(),
+                            view! { <a href=href class="landing-header__lang-link">{label}</a> }
+                                .into_any(),
+                        ]
+                    }).collect_view()}
+                </span>
             </nav>
         </header>
+        {if locale.is_development() {
+            view! {
+                <div class="landing-wip-banner">{c.banner_wip}</div>
+            }
+                .into_any()
+        } else {
+            ().into_any()
+        }}
         <main>
             <Outlet />
         </main>
@@ -75,11 +102,11 @@ pub fn Layout(locale: Locale) -> impl IntoView {
                     <NavLink prefix href="compare" class="landing-footer__link">
                         {c.header_compare}
                     </NavLink>
-                    <NavLink prefix href="download" class="landing-footer__link">
-                        {c.header_download}
-                    </NavLink>
                     <NavLink prefix href="content" class="landing-footer__link">
                         {c.header_integrations}
+                    </NavLink>
+                    <NavLink prefix href="download" class="landing-footer__link">
+                        {c.header_download}
                     </NavLink>
                 </div>
                 <div>

@@ -4,6 +4,68 @@ use std::str::FromStr;
 pub enum Locale {
     En,
     Ru,
+    Ko,
+    Vi,
+}
+
+impl Locale {
+    pub const ALL: &[Locale] = &[Locale::En, Locale::Ru, Locale::Ko, Locale::Vi];
+
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Locale::En => "en",
+            Locale::Ru => "ru",
+            Locale::Ko => "ko",
+            Locale::Vi => "vi",
+        }
+    }
+
+    pub fn og_locale(&self) -> &'static str {
+        match self {
+            Locale::En => "en_US",
+            Locale::Ru => "ru_RU",
+            Locale::Ko => "ko_KR",
+            Locale::Vi => "vi_VN",
+        }
+    }
+
+    pub fn path_prefix(&self) -> &'static str {
+        match self {
+            Locale::En => "",
+            Locale::Ru => "/ru",
+            Locale::Ko => "/ko",
+            Locale::Vi => "/vi",
+        }
+    }
+
+    pub fn content(&self) -> &'static Content {
+        match self {
+            Locale::En => &super::content::en::CONTENT,
+            Locale::Ru => &super::content::ru::CONTENT,
+            Locale::Ko => &super::content::ko::CONTENT,
+            Locale::Vi => &super::content::vi::CONTENT,
+        }
+    }
+
+    pub fn is_development(&self) -> bool {
+        matches!(self, Locale::Ko | Locale::Vi)
+    }
+
+    pub fn image_prefix(&self) -> &'static str {
+        match self {
+            Locale::Ko | Locale::Vi => "en",
+            _ => self.as_str(),
+        }
+    }
+
+    pub fn display_label(&self) -> &'static str {
+        match self {
+            Locale::En => "EN",
+            Locale::Ru => "RU",
+            Locale::Ko => "KO",
+            Locale::Vi => "VI",
+        }
+    }
 }
 
 impl FromStr for Locale {
@@ -13,37 +75,9 @@ impl FromStr for Locale {
         match s {
             "en" => Ok(Self::En),
             "ru" => Ok(Self::Ru),
+            "ko" => Ok(Self::Ko),
+            "vi" => Ok(Self::Vi),
             _ => Err(()),
-        }
-    }
-}
-
-impl Locale {
-    pub fn as_str(&self) -> &'static str {
-        match self {
-            Locale::En => "en",
-            Locale::Ru => "ru",
-        }
-    }
-
-    pub fn og_locale(&self) -> &'static str {
-        match self {
-            Locale::En => "en_US",
-            Locale::Ru => "ru_RU",
-        }
-    }
-
-    pub fn path_prefix(&self) -> &'static str {
-        match self {
-            Locale::En => "",
-            Locale::Ru => "/ru",
-        }
-    }
-
-    pub fn content(&self) -> &'static Content {
-        match self {
-            Locale::En => &super::content::en::CONTENT,
-            Locale::Ru => &super::content::ru::CONTENT,
         }
     }
 }
@@ -269,7 +303,12 @@ pub struct Content {
     pub integrations_anki_desc: &'static str,
     pub integrations_anki_detail: &'static str,
     pub integrations_anki_note: &'static str,
+
+    // WIP banner (empty for stable locales)
+    pub banner_wip: &'static str,
 }
 
 mod en;
+mod ko;
 mod ru;
+mod vi;

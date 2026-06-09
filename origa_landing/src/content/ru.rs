@@ -200,4 +200,6 @@ pub static CONTENT: Content = Content {
     integrations_anki_desc: "Импортируйте любую колоду Anki прямо в Origa. Поддерживаются форматы .anki2, .anki21 и .anki21b.",
     integrations_anki_detail: ".anki2 · .anki21 · .anki21b",
     integrations_anki_note: "Импортируйте любую колоду Anki и продолжайте учить с того места, где остановились — весь прогресс переносится.",
+
+    banner_wip: "",
 };

@@ -11,7 +11,7 @@ pub fn HomePage() -> impl IntoView {
     let locale = use_context::<Locale>().expect("Locale context missing");
     let c = locale.content();
     let prefix = locale.path_prefix();
-    let lang = locale.as_str();
+    let lang = locale.image_prefix();
     let app_url = env!("ORIGA_APP_BASE_URL");
 
     let features_href = format!("{prefix}/features");

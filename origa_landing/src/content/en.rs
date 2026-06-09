@@ -200,4 +200,6 @@ pub static CONTENT: Content = Content {
     integrations_anki_desc: "Import any Anki deck directly into Origa. Supports .anki2, .anki21 and .anki21b formats.",
     integrations_anki_detail: ".anki2 · .anki21 · .anki21b",
     integrations_anki_note: "Import any Anki deck and continue learning where you left off — all your progress transfers.",
+
+    banner_wip: "",
 };

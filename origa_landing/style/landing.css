@@ -13,6 +13,17 @@
 
 /* --- Header --- */
 
+.landing-wip-banner {
+    background-color: var(--bg-aged);
+    text-align: center;
+    padding: var(--space-sm) var(--space-md);
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+}
+
 .landing-header {
     display: flex;
     align-items: center;
@@ -66,6 +77,38 @@
 
 .landing-header__link:hover {
     color: var(--fg-black);
+}
+
+.landing-header__nav-sep {
+    color: var(--fg-light);
+    margin: 0 var(--space-xs);
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+}
+
+.landing-header__lang {
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+}
+
+.landing-header__lang-current {
+    color: var(--fg-muted);
+    font-weight: 500;
+}
+
+.landing-header__lang-link {
+    color: var(--muted);
+    text-decoration: none;
+}
+
+.landing-header__lang-link:hover {
+    color: var(--fg-black);
+}
+
+.landing-header__lang-sep {
+    color: var(--fg-light);
 }
 
 @media (max-width: 640px) {
