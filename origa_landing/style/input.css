@@ -172,3 +172,9 @@ input[type="submit"] {
     padding: 20px 40px;
     font-size: var(--text-label);
 }
+
+@media (max-width: 768px) {
+    .btn {
+        min-height: 44px;
+    }
+}
