@@ -73,6 +73,13 @@ pub fn get_kanji_list(level: &JapaneseLevel) -> Vec<&'static KanjiInfo> {
         .unwrap_or_default()
 }
 
+pub fn get_all_kanji() -> Vec<char> {
+    KANJI_DICTIONARY
+        .get()
+        .map(|db| db.all_kanji())
+        .unwrap_or_default()
+}
+
 #[derive(Clone)]
 pub struct KanjiDatabase {
     kanji_map: HashMap<String, KanjiInfo>,
@@ -245,6 +252,10 @@ impl KanjiDatabase {
             .values()
             .filter(|x| x.jlpt() == level)
             .collect()
+    }
+
+    pub fn all_kanji(&self) -> Vec<char> {
+        self.kanji_map.values().map(|info| info.kanji).collect()
     }
 }
 

@@ -59,7 +59,19 @@
         "password_changed": "Password changed successfully",
         "password_mismatch": "Passwords do not match",
         "password_too_short": "Password must be at least 8 characters",
-        "password_change_error": "Failed to change password"
+        "password_change_error": "Failed to change password",
+        "offline_bundle": "Offline Bundle",
+        "offline_bundle_desc": "Download all resources for offline use",
+        "download_bundle": "Download Bundle",
+        "downloading_bundle": "Downloading...",
+        "cancel_download": "Cancel",
+        "bundle_downloaded": "Bundle downloaded",
+        "bundle_download_failed": "Download failed",
+        "files_progress": "{completed} / {total} files",
+        "retry_download": "Retry",
+        "checking_cache": "Checking cache...",
+        "card_cache_running": "Caching card resources...",
+        "card_cache_complete": "Card resources cached"
     },
     "onboarding": {
         "steps": {

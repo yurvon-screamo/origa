@@ -34,6 +34,7 @@ mod modal;
 mod multi_line_chart;
 mod nav_config;
 mod ocr_loading_stage;
+mod offline_bundle_card;
 mod page_header;
 mod progress;
 mod reading_group;
@@ -95,6 +96,7 @@ pub use nav_config::NavRoute;
 pub use ocr_loading_stage::{
     LoadingStageItem, OcrLoadingStage, OcrLoadingState, ProgressInfo, StageType, get_stage_info,
 };
+pub use offline_bundle_card::OfflineBundleCard;
 pub use page_header::PageHeader;
 pub use progress::ProgressBar;
 pub use reading_group::ReadingGroup;

@@ -1,6 +1,7 @@
 use super::{ActionButtons, PasswordCard, PersonalDataCard, SettingsCard};
 use crate::i18n::{native_language_to_locale, use_i18n};
 use crate::store::AuthStore;
+use crate::ui_components::OfflineBundleCard;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos_router::hooks::use_navigate;
@@ -131,6 +132,8 @@ pub fn ProfileContent() -> impl IntoView {
                 <PasswordCard test_id="profile-password" />
                 <div class="divider"></div>
                 <SettingsCard test_id="profile-settings" />
+                <div class="divider"></div>
+                <OfflineBundleCard test_id="profile-offline-bundle" />
                 <div class="divider"></div>
                 <ActionButtons
                     on_save={save_profile}
