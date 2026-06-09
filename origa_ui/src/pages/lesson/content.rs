@@ -77,7 +77,7 @@ pub fn LessonContent() -> impl IntoView {
     Effect::new(move |_| {
         reload_trigger.get();
 
-        if !auth_store.is_dictionary_loaded.get() {
+        if !auth_store.is_all_data_loaded().get() {
             return;
         }
 

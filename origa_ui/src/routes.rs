@@ -12,103 +12,124 @@ use crate::pages::{
 };
 use crate::store::auth_store::AuthStore;
 use crate::ui_components::{BottomTabBar, LoadingOverlay, Sidebar};
+use futures::Future;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos_router::components::*;
 use leptos_router::hooks::use_location;
 use leptos_router::path;
-use origa::domain::User;
+use origa::domain::{OrigaError, User};
 use origa::traits::UserRepository;
 use origa::use_cases::{MigrateKanjiCompanionsUseCase, SeedReadyPhrasesUseCase};
 
 use crate::repository::HybridUserRepository;
 
-pub fn start_dictionary_loading(
-    auth_store: AuthStore,
-    is_loading: RwSignal<bool>,
-    progress: RwSignal<String>,
-    repository: HybridUserRepository,
-) {
-    if is_loading.get() {
-        return;
+async fn load_with_retry<F, Fut>(loader: F, max_retries: usize) -> Result<(), OrigaError>
+where
+    F: Fn() -> Fut,
+    Fut: Future<Output = Result<(), OrigaError>>,
+{
+    let mut last_err = None;
+    for attempt in 0..=max_retries {
+        match loader().await {
+            Ok(()) => return Ok(()),
+            Err(e) => {
+                if attempt < max_retries {
+                    tracing::info!("Retrying after error: {e}");
+                }
+                last_err = Some(e);
+            },
+        }
     }
+    Err(last_err.expect("at least one attempt was made"))
+}
 
-    is_loading.set(true);
-    progress.set(
-        crate::i18n::use_i18n()
-            .get_keys()
-            .ui()
-            .loading_data()
-            .inner()
-            .to_string(),
-    );
-
+pub fn start_dictionary_loading(auth_store: AuthStore, repository: HybridUserRepository) {
     spawn_local(async move {
+        // Phase A: manifest check
         if let Err(e) = crate::repository::cache_manager::check_and_invalidate().await {
             tracing::warn!("Cache manifest check failed: {e}");
         }
 
-        if let Err(e) = load_vocabulary().await {
+        // Phase B: parallel loading of all independent data
+        let vocab_fut = load_vocabulary();
+        let kanji_fut = load_with_retry(load_kanji, 1);
+        let radicals_fut = load_with_retry(load_radicals, 1);
+        let grammar_fut = load_grammar();
+        let phrases_fut = load_phrases();
+        let pitch_fut = load_pitch_audio();
+        let dict_fut = load_dictionary();
+        let furigana_fut = load_furigana_dict();
+
+        let (vocab_r, kanji_r, radicals_r, grammar_r, phrases_r, pitch_r, dict_r, furigana_r) = futures::join!(
+            vocab_fut,
+            kanji_fut,
+            radicals_fut,
+            grammar_fut,
+            phrases_fut,
+            pitch_fut,
+            dict_fut,
+            furigana_fut,
+        );
+
+        if let Err(e) = vocab_r {
             tracing::error!("Failed to load vocabulary: {e}");
         }
+        auth_store.is_vocabulary_loaded.set(true);
 
-        // kanji критичен для карточек — одна попытка повтора при ошибке
-        if let Err(e) = load_kanji().await {
-            tracing::error!("Failed to load kanji dictionary: {e}");
-            tracing::info!("Retrying kanji dictionary load...");
-            if let Err(e) = load_kanji().await {
-                tracing::error!("Failed to load kanji dictionary on retry: {e}");
-            }
+        if let Err(e) = kanji_r {
+            tracing::error!("Failed to load kanji: {e}");
         }
+        auth_store.is_kanji_loaded.set(true);
 
-        // radicals критичен для карточек кандзи — одна попытка повтора при ошибке
-        if let Err(e) = load_radicals().await {
+        if let Err(e) = radicals_r {
             tracing::error!("Failed to load radicals: {e}");
-            tracing::info!("Retrying radicals load...");
-            if let Err(e) = load_radicals().await {
-                tracing::error!("Failed to load radicals on retry: {e}");
-            }
         }
+        auth_store.is_radicals_loaded.set(true);
 
-        if let Err(e) = load_grammar().await {
+        if let Err(e) = grammar_r {
             tracing::error!("Failed to load grammar: {e}");
         }
-        if let Err(e) = load_phrases().await {
+        auth_store.is_grammar_loaded.set(true);
+
+        if let Err(e) = phrases_r {
             tracing::error!("Failed to load phrases: {e}");
         }
-        if let Err(e) = load_pitch_audio().await {
-            tracing::warn!("Failed to load pitch audio index: {e}");
+        auth_store.is_phrases_loaded.set(true);
+
+        if let Err(e) = pitch_r {
+            tracing::warn!("Failed to load pitch audio: {e}");
         }
-        // JLPT content критичен для прогресса — одна попытка повтора при ошибке
-        if let Err(e) = load_jlpt_content().await {
-            tracing::error!("Failed to load jlpt_content: {e}");
-            tracing::info!("Retrying jlpt_content load...");
-            if let Err(e) = load_jlpt_content().await {
-                tracing::error!("Failed to load jlpt_content on retry: {e}");
-            }
-        }
-        if let Err(e) = load_dictionary().await {
+        auth_store.is_pitch_audio_loaded.set(true);
+
+        if let Err(e) = dict_r {
             tracing::error!("Failed to load dictionary: {e}");
         }
-        if let Err(e) = load_furigana_dict().await {
-            tracing::warn!("Failed to load furigana dictionary: {e}");
+        auth_store.is_dictionary_loaded.set(true);
+
+        if let Err(e) = furigana_r {
+            tracing::warn!("Failed to load furigana: {e}");
+        }
+        auth_store.is_furigana_loaded.set(true);
+
+        // Phase C: jlpt_content (depends on kanji + grammar)
+        if let Err(e) = load_with_retry(load_jlpt_content, 1).await {
+            tracing::error!("Failed to load jlpt_content: {e}");
         }
 
-        // Миграция: создание PhraseCard для ранее изученных слов
+        // Phase D: post-load migrations (BEFORE signaling completion)
         let seed_use_case = SeedReadyPhrasesUseCase::new(&repository);
         if let Err(e) = seed_use_case.execute().await {
             tracing::warn!("Failed to seed ready phrases: {e}");
         }
 
-        // Миграция: создание companion vocab cards для kanji popular_words
         let migrate_kanji = MigrateKanjiCompanionsUseCase::new(&repository);
         if let Err(e) = migrate_kanji.execute().await {
             tracing::warn!("Failed to migrate kanji companions: {e}");
         }
 
-        auth_store.set_dictionary_loaded();
-        is_loading.set(false);
-        progress.set(String::new());
+        // Signal completion only after all migrations finish
+        auth_store.is_jlpt_content_loaded.set(true);
     });
 }
 
@@ -117,22 +138,20 @@ pub fn ProtectedRoute(children: ChildrenFn) -> impl IntoView {
     let auth_store = use_context::<AuthStore>().expect("AuthStore not provided");
 
     let is_authenticated = auth_store.is_authenticated();
+    let is_all_data_loaded = auth_store.is_all_data_loaded();
     let is_checking = auth_store.is_checking_session;
-    let is_loading = auth_store.is_dictionary_loading;
-    let progress = auth_store.dictionary_progress_message;
 
     Effect::new({
         let auth_store = auth_store.clone();
         move |_| {
             if !is_checking.get()
                 && is_authenticated.get()
-                && !auth_store.is_dictionary_loaded.get()
-                && !is_loading.get()
+                && !is_all_data_loaded.get()
+                && !auth_store.is_data_loading_started.get()
             {
+                auth_store.is_data_loading_started.set(true);
                 start_dictionary_loading(
                     auth_store.clone(),
-                    is_loading,
-                    progress,
                     use_context::<HybridUserRepository>().expect("repository context not provided"),
                 );
             }
@@ -153,9 +172,17 @@ pub fn ProtectedRoute(children: ChildrenFn) -> impl IntoView {
                 <LoadingOverlay message=loading_msg />
             }
             .into_any()
-        } else if is_loading.get() {
+        } else if is_authenticated.get() && !is_all_data_loaded.get() {
+            let loading_msg: Signal<String> = Signal::derive(move || {
+                crate::i18n::use_i18n()
+                    .get_keys()
+                    .ui()
+                    .loading_data()
+                    .inner()
+                    .to_string()
+            });
             view! {
-                <LoadingOverlay message=progress />
+                <LoadingOverlay message=loading_msg />
             }
             .into_any()
         } else if is_authenticated.get() {
