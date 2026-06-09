@@ -21,7 +21,7 @@ pub fn software_application_schema() -> String {
         "operatingSystem": "Windows, Linux, macOS, Android, Web",
         "description": "All-in-one Japanese learning app with vocabulary, kanji, grammar and native phrases.",
         "featureList": "Vocabulary, Kanji, Grammar, Listening, JLPT Analytics, Offline Mode",
-        "inLanguage": ["en", "ru"]
+        "inLanguage": ["en", "ru", "ko", "vi"]
     })
     .to_string()
 }
@@ -66,11 +66,9 @@ pub fn PageMeta(
     title: &'static str,
     description: &'static str,
 ) -> impl IntoView {
-    let lang = locale.as_str();
-    let og_image = format!("{BASE_URL}/images/{lang}.og.png");
+    let img_prefix = locale.image_prefix();
+    let og_image = format!("{BASE_URL}/images/{img_prefix}.og.png");
     let canonical = format!("{BASE_URL}{}{path}", locale.path_prefix());
-    let en_href = format!("{BASE_URL}{path}");
-    let ru_href = format!("{BASE_URL}/ru{path}");
 
     view! {
         <Title text=title/>
@@ -86,8 +84,11 @@ pub fn PageMeta(
         <Meta name="twitter:description" content=description/>
         <Meta name="twitter:image" content=og_image/>
         <link rel="canonical" href=canonical/>
-        <link rel="alternate" hreflang="en" href=en_href.clone()/>
-        <link rel="alternate" hreflang="ru" href=ru_href/>
-        <link rel="alternate" hreflang="x-default" href=en_href/>
+        {Locale::ALL.iter().map(|loc| {
+            let href = format!("{BASE_URL}{}{path}", loc.path_prefix());
+            let hreflang = loc.as_str();
+            view! { <link rel="alternate" hreflang=hreflang href=href/> }
+        }).collect_view()}
+        <link rel="alternate" hreflang="x-default" href=format!("{BASE_URL}{path}")/>
     }
 }
