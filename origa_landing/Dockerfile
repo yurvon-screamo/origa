@@ -22,8 +22,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     libssl-dev \
     musl-tools \
-    nodejs \
-    npm \
     pkg-config \
     && rm -rf /var/lib/apt/lists/* \
     && curl -fsSL https://github.com/mozilla/sccache/releases/download/v0.14.0/sccache-v0.14.0-x86_64-unknown-linux-musl.tar.gz | tar xz \
@@ -67,13 +65,6 @@ RUN --mount=type=cache,target=/sccache,sharing=locked \
 
 # Real source
 COPY origa_landing ./origa_landing
-
-# CSS build
-WORKDIR /app/origa_landing
-
-RUN --mount=type=cache,target=/root/.npm \
-    npm ci && \
-    npm run build:css
 
 WORKDIR /app
 
