@@ -21,11 +21,9 @@ pub fn IntegrationsPage() -> impl IntoView {
                     <h1 class="intg-hero__title">{c.integrations_h1}</h1>
                     <hr class="intg-hero__rule"/>
                     <p class="intg-hero__subtitle">{c.integrations_subtitle}</p>
-                    <p class="intg-hero__stat">
-                        "7 sources · 1000+ word sets"
-                    </p>
+                    <p class="intg-hero__stat">{c.integrations_hero_stat}</p>
                 </div>
-                <div class="intg-hero__catalog">
+                <div class="intg-hero__catalog" attr:aria-hidden="true">
                     <span class="intg-hero__catalog-label intg-hero__catalog-label--terracotta">
                         {c.integrations_tag_exam}
                     </span>
@@ -156,20 +154,20 @@ fn IntgJlptCard(
                     <p class="intg-card__desc">{desc}</p>
                     <p class="intg-card__detail">{detail}</p>
                 </div>
-                <div class="intg-card__levels">
-                    <div class="intg-card__level" style="width: 20%">
+                    <div class="intg-card__levels">
+                    <div class="intg-card__level intg-card__level--n5">
                         <span class="intg-card__level-label">"N5"</span>
                     </div>
-                    <div class="intg-card__level" style="width: 40%">
+                    <div class="intg-card__level intg-card__level--n4">
                         <span class="intg-card__level-label">"N4"</span>
                     </div>
-                    <div class="intg-card__level" style="width: 60%">
+                    <div class="intg-card__level intg-card__level--n3">
                         <span class="intg-card__level-label">"N3"</span>
                     </div>
-                    <div class="intg-card__level" style="width: 80%">
+                    <div class="intg-card__level intg-card__level--n2">
                         <span class="intg-card__level-label">"N2"</span>
                     </div>
-                    <div class="intg-card__level" style="width: 100%">
+                    <div class="intg-card__level intg-card__level--n1">
                         <span class="intg-card__level-label">"N1"</span>
                     </div>
                 </div>

@@ -220,12 +220,12 @@ pub struct Content {
     pub integrations_meta_description: &'static str,
     pub integrations_h1: &'static str,
     pub integrations_subtitle: &'static str,
+    pub integrations_hero_stat: &'static str,
 
     // Section headers
     pub integrations_section_exams: &'static str,
     pub integrations_section_textbooks: &'static str,
     pub integrations_section_apps: &'static str,
-    pub integrations_section_import: &'static str,
 
     // Tags
     pub integrations_tag_exam: &'static str,
