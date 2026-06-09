@@ -136,6 +136,7 @@ pub fn ProtectedRoute(children: ChildrenFn) -> impl IntoView {
     let auth_store = use_context::<AuthStore>().expect("AuthStore not provided");
 
     let is_authenticated = auth_store.is_authenticated();
+    let is_all_data_loaded = auth_store.is_all_data_loaded();
     let is_checking = auth_store.is_checking_session;
 
     Effect::new({
@@ -143,7 +144,7 @@ pub fn ProtectedRoute(children: ChildrenFn) -> impl IntoView {
         move |_| {
             if !is_checking.get()
                 && is_authenticated.get()
-                && !auth_store.is_all_data_loaded().get()
+                && !is_all_data_loaded.get()
                 && !auth_store.is_data_loading_started.get()
             {
                 auth_store.is_data_loading_started.set(true);
@@ -162,6 +163,19 @@ pub fn ProtectedRoute(children: ChildrenFn) -> impl IntoView {
                     .get_keys()
                     .common()
                     .loading()
+                    .inner()
+                    .to_string()
+            });
+            view! {
+                <LoadingOverlay message=loading_msg />
+            }
+            .into_any()
+        } else if is_authenticated.get() && !is_all_data_loaded.get() {
+            let loading_msg: Signal<String> = Signal::derive(move || {
+                crate::i18n::use_i18n()
+                    .get_keys()
+                    .ui()
+                    .loading_data()
                     .inner()
                     .to_string()
             });
