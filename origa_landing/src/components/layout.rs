@@ -55,7 +55,14 @@ pub fn Layout(locale: Locale) -> impl IntoView {
                 <span class="landing-header__logo-name">"Origa"</span>
                 <span class="landing-header__logo-kana">"オリガ"</span>
             </a>
-            <nav class="landing-header__nav">
+            <input type="checkbox" id="nav-toggle" class="landing-header__toggle"
+                   aria-label="Toggle navigation" />
+            <label for="nav-toggle" class="landing-header__hamburger"
+                   tabindex="0" aria-label="Open menu">
+                <span class="landing-header__hamburger-line"></span>
+            </label>
+            <nav class="landing-header__nav" id="main-nav"
+                 aria-label="Main navigation">
                 <NavLink prefix href="features" class="landing-header__link">
                     {c.header_features}
                 </NavLink>
