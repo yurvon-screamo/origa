@@ -160,11 +160,11 @@ pub static CONTENT: Content = Content {
     integrations_meta_description: "Import vocabulary from Duolingo, Anki, Minna no Nihongo, Irodori, JLPT and more. Pre-built word sets ready to study.",
     integrations_h1: "Learn from what you already use",
     integrations_subtitle: "Pre-built vocabulary sets from popular Japanese learning sources. Import and start reviewing instantly.",
+    integrations_hero_stat: "7 sources · 1000+ word sets",
 
     integrations_section_exams: "Exam preparation",
     integrations_section_textbooks: "Textbooks",
     integrations_section_apps: "Apps & Content",
-    integrations_section_import: "Bring your own",
 
     integrations_tag_exam: "Exam",
     integrations_tag_app: "App",

@@ -1417,6 +1417,26 @@
     padding-left: var(--space-sm);
 }
 
+.intg-card__level--n5 {
+    width: 20%;
+}
+
+.intg-card__level--n4 {
+    width: 40%;
+}
+
+.intg-card__level--n3 {
+    width: 60%;
+}
+
+.intg-card__level--n2 {
+    width: 80%;
+}
+
+.intg-card__level--n1 {
+    width: 100%;
+}
+
 .intg-card__level-label {
     font-family: var(--font-mono);
     font-size: var(--text-2xs);
