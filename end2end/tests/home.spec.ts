@@ -142,3 +142,38 @@ testWithFreshUser.describe("Home Page", () => {
     },
   );
 });
+
+testWithFreshUser.describe("Home Page - Mobile Bottom Tab Navigation", () => {
+    testWithFreshUser("should display bottom tab bar on mobile viewport", async ({ page }) => {
+        await page.setViewportSize({ width: 375, height: 667 });
+        await skipOnboarding(page);
+        await page.waitForURL(/\/home$/, { timeout: 10_000 });
+        await page.getByTestId("home-page").waitFor({ state: "visible", timeout: 15_000 });
+
+        const bottomTabBar = page.locator(".bottom-tab-bar");
+        await expect(bottomTabBar).toBeVisible({ timeout: 10_000 });
+    });
+
+    testWithFreshUser("should navigate between pages via bottom tabs on mobile", async ({ page }) => {
+        await page.setViewportSize({ width: 375, height: 667 });
+        await skipOnboarding(page);
+        await page.waitForURL(/\/home$/, { timeout: 10_000 });
+        await page.getByTestId("home-page").waitFor({ state: "visible", timeout: 15_000 });
+
+        // Home → Words
+        await page.getByTestId("bottom-tab-tab-words").click();
+        await page.waitForURL(/\/words/, { timeout: 10_000 });
+
+        // Words → Grammar
+        await page.getByTestId("bottom-tab-tab-grammar").click();
+        await page.waitForURL(/\/grammar/, { timeout: 10_000 });
+
+        // Grammar → Profile
+        await page.getByTestId("bottom-tab-tab-profile").click();
+        await page.waitForURL(/\/profile/, { timeout: 10_000 });
+
+        // Profile → Home
+        await page.getByTestId("bottom-tab-tab-home").click();
+        await page.waitForURL(/\/home$/, { timeout: 10_000 });
+    });
+});

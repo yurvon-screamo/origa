@@ -330,3 +330,47 @@ testWithFreshUser.describe("Words Page - Favorite Instant UI Update", () => {
         await expect.poll(async () => await wordsPage.isFavorited(0), { timeout: 5_000 }).toBe(false);
     });
 });
+
+testWithFreshUser.describe("Words Page - Favorite Sync Persistence", () => {
+    testWithFreshUser("should persist un-favorite after sync", async ({ page }) => {
+        test.setTimeout(90_000);
+        const wordsPage = await setupWordsPage(page);
+        await addFirstWord(wordsPage);
+        await expect(wordsPage.wordsGrid).toBeVisible({ timeout: 10_000 });
+
+        // Verify initially NOT favorited
+        await expect.poll(async () => await wordsPage.isFavorited(0), { timeout: 5_000 }).toBe(false);
+
+        // Set to favorited
+        await wordsPage.toggleFavoriteByIndex(0);
+        await expect.poll(async () => await wordsPage.isFavorited(0), { timeout: 5_000 }).toBe(true);
+
+        // Navigate to Home — triggers sync with server
+        await page.getByTestId("sidebar-tab-home").click();
+        await page.waitForURL(/\/home$/, { timeout: 10_000 });
+
+        // Navigate back to Words
+        await wordsPage.goto();
+        await wordsPage.expectWordsVisible();
+        await expect(wordsPage.wordsGrid).toBeVisible({ timeout: 10_000 });
+
+        // Verify favorite persisted after sync
+        await expect.poll(async () => await wordsPage.isFavorited(0), { timeout: 5_000 }).toBe(true);
+
+        // Un-favorite
+        await wordsPage.toggleFavoriteByIndex(0);
+        await expect.poll(async () => await wordsPage.isFavorited(0), { timeout: 5_000 }).toBe(false);
+
+        // Navigate to Home — triggers sync with server
+        await page.getByTestId("sidebar-tab-home").click();
+        await page.waitForURL(/\/home$/, { timeout: 10_000 });
+
+        // Navigate back to Words
+        await wordsPage.goto();
+        await wordsPage.expectWordsVisible();
+        await expect(wordsPage.wordsGrid).toBeVisible({ timeout: 10_000 });
+
+        // Verify UN-favorite persisted after sync
+        await expect.poll(async () => await wordsPage.isFavorited(0), { timeout: 5_000 }).toBe(false);
+    });
+});
