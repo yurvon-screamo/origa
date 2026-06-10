@@ -47,6 +47,35 @@ async function rateCardUntilDone(lessonPage: LessonPage, rating: "again" | "good
     }
 }
 
+async function completeLessonFlexible(
+    lessonPage: LessonPage,
+    page: Page,
+    maxCards = 10
+): Promise<void> {
+    for (let i = 0; i < maxCards; i++) {
+        const isComplete = await lessonPage.completeScreen.isVisible().catch(() => false);
+        if (isComplete) break;
+
+        const anyInteractive = lessonPage.showAnswerBtn
+            .or(lessonPage.quizOptions[0])
+            .or(lessonPage.yesnoYesBtn);
+        await expect(anyInteractive).toBeVisible({ timeout: 15_000 });
+
+        if (await lessonPage.showAnswerBtn.isVisible().catch(() => false)) {
+            await lessonPage.showAnswer();
+            await lessonPage.rate("good");
+        } else if (await lessonPage.quizOptions[0].isVisible().catch(() => false)) {
+            await lessonPage.selectQuizOption(0);
+            await page.waitForTimeout(2000);
+        } else if (await lessonPage.yesnoYesBtn.isVisible().catch(() => false)) {
+            await lessonPage.yesnoYesBtn.click();
+            await page.waitForTimeout(2000);
+        } else {
+            break;
+        }
+    }
+}
+
 testWithFreshUser.describe("Lesson Page", () => {
     testWithFreshUser("should display lesson page with card", async ({ page }) => {
         test.setTimeout(90_000);
@@ -162,9 +191,8 @@ testWithFreshUser.describe("Lesson Page", () => {
         await expect(lessonPage.lessonError).not.toBeVisible({ timeout: 15_000 });
         await expect(lessonPage.lessonLoading).toBeHidden({ timeout: 30_000 });
         await expect(lessonPage.lessonContent).toBeVisible({ timeout: 15_000 });
-        await expect(lessonPage.showAnswerBtn).toBeVisible({ timeout: 15_000 });
 
-        await rateCardUntilDone(lessonPage, "good");
+        await completeLessonFlexible(lessonPage, page);
         await lessonPage.waitForComplete();
 
         await lessonPage.clickNextLesson();

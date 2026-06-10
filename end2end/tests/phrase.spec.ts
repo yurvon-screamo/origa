@@ -347,8 +347,10 @@ testWithFreshUser.describe("Phrases Page - CRUD after onboarding", () => {
 
         await phrasesPage.deleteCardByIndex(0);
 
-        const countAfter = await phrasesPage.getCardCount();
-        expect(countAfter).toBe(countBefore - 1);
+        await expect.poll(
+            async () => await phrasesPage.getCardCount(),
+            { timeout: 10_000 }
+        ).toBe(countBefore - 1);
     });
 
     testWithFreshUser("should cancel delete phrase card", async ({ page }) => {
