@@ -22,100 +22,121 @@ pub fn ComparePage() -> impl IntoView {
         </section>
 
         // Section 2: Scoreboard
-        <section class="cmp-scoreboard">
-            <div class="cmp-grid" role="table" aria-label="Feature comparison">
+        <section class="cmp-scoreboard" aria-label="Feature comparison">
+            <div class="cmp-grid">
                 // Header row
-                <div class="cmp-grid__cell cmp-grid__header" role="columnheader">
-                    {c.compare_table_feature}
-                </div>
-                <div class="cmp-grid__cell cmp-grid__header cmp-grid__header--origa" role="columnheader">
-                    {c.compare_table_origa}
-                </div>
-                <div class="cmp-grid__cell cmp-grid__header" role="columnheader">
-                    {c.compare_table_anki}
-                </div>
-                <div class="cmp-grid__cell cmp-grid__header" role="columnheader">
-                    {c.compare_table_wanikani}
-                </div>
-                <div class="cmp-grid__cell cmp-grid__header" role="columnheader">
-                    {c.compare_table_bunpro}
-                </div>
-                <div class="cmp-grid__cell cmp-grid__header" role="columnheader">
-                    {c.compare_table_duolingo}
+                <div class="cmp-grid__row">
+                    <div class="cmp-grid__cell cmp-grid__header">
+                        {c.compare_table_feature}
+                    </div>
+                    <div class="cmp-grid__cell cmp-grid__header cmp-grid__header--origa">
+                        {c.compare_table_origa}
+                    </div>
+                    <div class="cmp-grid__cell cmp-grid__header">
+                        {c.compare_table_anki}
+                    </div>
+                    <div class="cmp-grid__cell cmp-grid__header">
+                        {c.compare_table_wanikani}
+                    </div>
+                    <div class="cmp-grid__cell cmp-grid__header">
+                        {c.compare_table_bunpro}
+                    </div>
+                    <div class="cmp-grid__cell cmp-grid__header">
+                        {c.compare_table_duolingo}
+                    </div>
                 </div>
 
                 // Row: Vocabulary
-                <ScoreboardRow feature=c.compare_vocab>
-                    <ScoreboardCell kind="yes-origa"/>
-                    <ScoreboardCell kind="yes"/>
-                    <ScoreboardCell kind="yes"/>
-                    <ScoreboardCell kind="no"/>
-                    <ScoreboardCell kind="yes"/>
-                </ScoreboardRow>
+                <div class="cmp-grid__row">
+                    <ScoreboardRow feature=c.compare_vocab>
+                        <ScoreboardCell kind="yes-origa" name="Origa"/>
+                        <ScoreboardCell kind="yes" name="Anki"/>
+                        <ScoreboardCell kind="yes" name="WaniKani"/>
+                        <ScoreboardCell kind="no" name="Bunpro"/>
+                        <ScoreboardCell kind="yes" name="Duolingo"/>
+                    </ScoreboardRow>
+                </div>
 
                 // Row: Kanji
-                <ScoreboardRow feature=c.compare_kanji>
-                    <ScoreboardCell kind="yes-origa"/>
-                    <ScoreboardCell kind="partial"/>
-                    <ScoreboardCell kind="yes"/>
-                    <ScoreboardCell kind="no"/>
-                    <ScoreboardCell kind="yes"/>
-                </ScoreboardRow>
+                <div class="cmp-grid__row">
+                    <ScoreboardRow feature=c.compare_kanji>
+                        <ScoreboardCell kind="yes-origa" name="Origa"/>
+                        <ScoreboardCell kind="partial" name="Anki"/>
+                        <ScoreboardCell kind="yes" name="WaniKani"/>
+                        <ScoreboardCell kind="no" name="Bunpro"/>
+                        <ScoreboardCell kind="yes" name="Duolingo"/>
+                    </ScoreboardRow>
+                </div>
 
                 // Row: Grammar
-                <ScoreboardRow feature=c.compare_grammar>
-                    <ScoreboardCell kind="yes-origa"/>
-                    <ScoreboardCell kind="no"/>
-                    <ScoreboardCell kind="no"/>
-                    <ScoreboardCell kind="yes"/>
-                    <ScoreboardCell kind="no"/>
-                </ScoreboardRow>
+                <div class="cmp-grid__row">
+                    <ScoreboardRow feature=c.compare_grammar>
+                        <ScoreboardCell kind="yes-origa" name="Origa"/>
+                        <ScoreboardCell kind="no" name="Anki"/>
+                        <ScoreboardCell kind="no" name="WaniKani"/>
+                        <ScoreboardCell kind="yes" name="Bunpro"/>
+                        <ScoreboardCell kind="no" name="Duolingo"/>
+                    </ScoreboardRow>
+                </div>
 
                 // Row: Listening
-                <ScoreboardRow feature=c.compare_listening>
-                    <ScoreboardCell kind="yes-origa"/>
-                    <ScoreboardCell kind="no"/>
-                    <ScoreboardCell kind="no"/>
-                    <ScoreboardCell kind="no"/>
-                    <ScoreboardCell kind="yes"/>
-                </ScoreboardRow>
+                <div class="cmp-grid__row">
+                    <ScoreboardRow feature=c.compare_listening>
+                        <ScoreboardCell kind="yes-origa" name="Origa"/>
+                        <ScoreboardCell kind="no" name="Anki"/>
+                        <ScoreboardCell kind="no" name="WaniKani"/>
+                        <ScoreboardCell kind="no" name="Bunpro"/>
+                        <ScoreboardCell kind="yes" name="Duolingo"/>
+                    </ScoreboardRow>
+                </div>
 
                 // Row: Your language
-                <ScoreboardRow feature=c.compare_languages>
-                    <ScoreboardCell kind="yes-origa"/>
-                    <ScoreboardSpecialCell text=c.compare_manual/>
-                    <ScoreboardSpecialCell text=c.compare_english_only/>
-                    <ScoreboardSpecialCell text=c.compare_english_only/>
-                    <ScoreboardSpecialCell text=c.compare_limited/>
-                </ScoreboardRow>
+                <div class="cmp-grid__row">
+                    <ScoreboardRow feature=c.compare_languages>
+                        <ScoreboardCell kind="yes-origa" name="Origa"/>
+                        <ScoreboardSpecialCell text=c.compare_manual name="Anki"/>
+                        <ScoreboardSpecialCell text=c.compare_english_only name="WaniKani"/>
+                        <ScoreboardSpecialCell text=c.compare_english_only name="Bunpro"/>
+                        <ScoreboardSpecialCell text=c.compare_limited name="Duolingo"/>
+                    </ScoreboardRow>
+                </div>
 
                 // Row: Offline
-                <ScoreboardRow feature=c.compare_offline>
-                    <ScoreboardCell kind="yes-origa"/>
-                    <ScoreboardCell kind="yes"/>
-                    <ScoreboardCell kind="no"/>
-                    <ScoreboardCell kind="no"/>
-                    <ScoreboardCell kind="partial"/>
-                </ScoreboardRow>
+                <div class="cmp-grid__row">
+                    <ScoreboardRow feature=c.compare_offline>
+                        <ScoreboardCell kind="yes-origa" name="Origa"/>
+                        <ScoreboardCell kind="yes" name="Anki"/>
+                        <ScoreboardCell kind="no" name="WaniKani"/>
+                        <ScoreboardCell kind="no" name="Bunpro"/>
+                        <ScoreboardCell kind="partial" name="Duolingo"/>
+                    </ScoreboardRow>
+                </div>
 
                 // Score row
-                <div class="cmp-grid__cell cmp-grid__cell--score" role="rowheader">
-                    {c.compare_score}
-                </div>
-                <div class="cmp-grid__cell cmp-grid__cell--score-origa" role="cell">
-                    "6/6"
-                </div>
-                <div class="cmp-grid__cell cmp-grid__cell--score" role="cell">
-                    "3/6"
-                </div>
-                <div class="cmp-grid__cell cmp-grid__cell--score" role="cell">
-                    "2/6"
-                </div>
-                <div class="cmp-grid__cell cmp-grid__cell--score" role="cell">
-                    "1/6"
-                </div>
-                <div class="cmp-grid__cell cmp-grid__cell--score" role="cell">
-                    "4/6"
+                <div class="cmp-grid__row">
+                    <div class="cmp-grid__cell cmp-grid__cell--score">
+                        {c.compare_score}
+                    </div>
+                    <div class="cmp-grid__cell cmp-grid__cell--score-origa">
+                        "6/6"
+                        <span class="cmp-grid__label">"Origa"</span>
+                    </div>
+                    <div class="cmp-grid__cell cmp-grid__cell--score">
+                        "3/6"
+                        <span class="cmp-grid__label">"Anki"</span>
+                    </div>
+                    <div class="cmp-grid__cell cmp-grid__cell--score">
+                        "2/6"
+                        <span class="cmp-grid__label">"WaniKani"</span>
+                    </div>
+                    <div class="cmp-grid__cell cmp-grid__cell--score">
+                        "1/6"
+                        <span class="cmp-grid__label">"Bunpro"</span>
+                    </div>
+                    <div class="cmp-grid__cell cmp-grid__cell--score">
+                        "4/6"
+                        <span class="cmp-grid__label">"Duolingo"</span>
+                    </div>
                 </div>
             </div>
         </section>
@@ -193,7 +214,7 @@ pub fn ComparePage() -> impl IntoView {
 #[component]
 fn ScoreboardRow(feature: &'static str, children: Children) -> impl IntoView {
     view! {
-        <div class="cmp-grid__cell cmp-grid__cell--feature" role="rowheader">
+        <div class="cmp-grid__cell cmp-grid__cell--feature">
             {feature}
         </div>
         {children()}
@@ -201,41 +222,55 @@ fn ScoreboardRow(feature: &'static str, children: Children) -> impl IntoView {
 }
 
 #[component]
-fn ScoreboardCell(kind: &'static str) -> impl IntoView {
+fn ScoreboardCell(
+    kind: &'static str,
+    #[prop(optional)] name: Option<&'static str>,
+) -> impl IntoView {
+    let label = name.map(|n| view! { <span class="cmp-grid__label">{n}</span> });
+
     match kind {
         "yes" => view! {
-            <div class="cmp-grid__cell cmp-grid__cell--default" role="cell">
+            <div class="cmp-grid__cell cmp-grid__cell--default">
                 <CompareMarker kind="yes"/>
+                {label}
             </div>
         },
         "yes-origa" => view! {
-            <div class="cmp-grid__cell cmp-grid__cell--origa" role="cell">
+            <div class="cmp-grid__cell cmp-grid__cell--origa">
                 <CompareMarker kind="yes-origa"/>
+                {label}
             </div>
         },
         "partial" => view! {
-            <div class="cmp-grid__cell cmp-grid__cell--default" role="cell">
+            <div class="cmp-grid__cell cmp-grid__cell--default">
                 <CompareMarker kind="partial"/>
+                {label}
             </div>
         },
         "no" => view! {
-            <div class="cmp-grid__cell cmp-grid__cell--default" role="cell">
+            <div class="cmp-grid__cell cmp-grid__cell--default">
                 <CompareMarker kind="no"/>
+                {label}
             </div>
         },
         _ => view! {
-            <div class="cmp-grid__cell cmp-grid__cell--default" role="cell">
+            <div class="cmp-grid__cell cmp-grid__cell--default">
                 <CompareMarker kind="no"/>
+                {label}
             </div>
         },
     }
 }
 
 #[component]
-fn ScoreboardSpecialCell(text: &'static str) -> impl IntoView {
+fn ScoreboardSpecialCell(
+    text: &'static str,
+    #[prop(optional)] name: Option<&'static str>,
+) -> impl IntoView {
     view! {
-        <div class="cmp-grid__cell cmp-grid__cell--default" role="cell">
+        <div class="cmp-grid__cell cmp-grid__cell--default">
             <CompareSpecialText text/>
+            {name.map(|n| view! { <span class="cmp-grid__label">{n}</span> })}
         </div>
     }
 }
