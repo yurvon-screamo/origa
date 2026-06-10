@@ -1,7 +1,6 @@
 use std::sync::Arc;
 
 use futures::stream::{self, StreamExt};
-use origa::dictionary::kanji::get_all_kanji;
 use origa::dictionary::phrase::index_version;
 use origa::domain::OrigaError;
 
@@ -67,12 +66,10 @@ pub fn get_base_bundle_resources() -> Vec<String> {
         "well_known_set/jlpt_n5.json".to_string(),
     ]);
 
-    for kanji in get_all_kanji() {
-        let kanji_str = kanji.to_string();
-        let encoded = urlencoding::encode(&kanji_str);
-        resources.push(format!("kanji_animations/{}.svg", encoded));
-        resources.push(format!("kanji_frames/{}.svg", encoded));
-    }
+    // Kanji SVGs are pre-cached on demand via card_precache_loader
+    // for only the kanji the user actually studies.
+    // Pre-fetching all ~6000+ kanji from the dictionary generates
+    // many 404s for rare kanji that have no SVG files on the CDN.
 
     resources
 }
