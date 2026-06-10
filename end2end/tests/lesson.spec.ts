@@ -197,21 +197,22 @@ testWithFreshUser.describe("Lesson Page", () => {
 
         await lessonPage.clickNextLesson();
 
-        // After next lesson click, either new lesson loads or we get back to home (no cards)
-        const newLessonVisible = await lessonPage.lessonContent
-            .isVisible({ timeout: 15_000 })
-            .catch(() => false);
-        const errorVisible = await lessonPage.lessonError.isVisible().catch(() => false);
+        // Wait for lesson reload: loading appears then resolves
+        await lessonPage.lessonLoading
+            .waitFor({ state: "visible", timeout: 5_000 })
+            .catch(() => {});
+        await lessonPage.lessonLoading
+            .waitFor({ state: "hidden", timeout: 30_000 });
 
-        if (newLessonVisible) {
-            await expect(lessonPage.lessonContent).toBeVisible({ timeout: 15_000 });
-        } else if (errorVisible) {
-            // No more cards available — this is acceptable behavior
-            await expect(lessonPage.lessonError).toBeVisible();
-        } else {
-            // May have redirected to home
-            await expect(page).toHaveURL(/\/home/, { timeout: 10_000 });
-        }
+        // After loading, check the resulting state
+        const hasContent = await lessonPage.lessonContent
+            .isVisible({ timeout: 5_000 })
+            .catch(() => false);
+        const hasError = await lessonPage.lessonError
+            .isVisible({ timeout: 5_000 })
+            .catch(() => false);
+
+        expect(hasContent || hasError).toBe(true);
     });
 
 });

@@ -344,13 +344,28 @@ testWithFreshUser.describe("Phrases Page - CRUD after onboarding", () => {
         await waitForPhrasesCards(page, phrasesPage);
 
         const countBefore = await phrasesPage.getCardCount();
+        const firstCardContent = await page
+            .getByTestId("phrases-card-item")
+            .nth(0)
+            .textContent();
 
         await phrasesPage.deleteCardByIndex(0);
 
+        // Verify card was deleted: either count decreased or first card content changed
         await expect.poll(
-            async () => await phrasesPage.getCardCount(),
+            async () => {
+                const countAfter = await phrasesPage.getCardCount();
+                if (countAfter < countBefore) return true;
+                // If count unchanged (total > 50, visible stays at 50), verify first card changed
+                const newFirstContent = await page
+                    .getByTestId("phrases-card-item")
+                    .nth(0)
+                    .textContent()
+                    .catch(() => "");
+                return newFirstContent !== firstCardContent;
+            },
             { timeout: 10_000 }
-        ).toBe(countBefore - 1);
+        ).toBe(true);
     });
 
     testWithFreshUser("should cancel delete phrase card", async ({ page }) => {
