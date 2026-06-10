@@ -281,3 +281,123 @@ testWithFreshUser.describe("Phrases after full onboarding", () => {
         await expect(phrasesPage.emptyState).toBeVisible({ timeout: 5_000 });
     });
 });
+
+async function waitForPhrasesCards(page: Page, phrasesPage: PhrasesPage): Promise<void> {
+    await page.waitForLoadState("networkidle");
+    await page.locator(".loading-spinner").waitFor({ state: "hidden", timeout: 30_000 }).catch(() => {});
+    await phrasesPage.expectPhrasesVisible();
+    await expect(phrasesPage.emptyState).not.toBeVisible({ timeout: 30_000 });
+}
+
+testWithFreshUser.describe("Phrases Page - CRUD after onboarding", () => {
+    test.describe.configure({ mode: "serial" });
+
+    testWithFreshUser("should mark phrase as known and show in Learned filter", async ({ page }) => {
+        test.setTimeout(300_000);
+
+        await completeFullOnboarding(page);
+
+        const phrasesPage = new PhrasesPage(page);
+        await phrasesPage.goto();
+        await page.waitForURL(/\/phrases$/, { timeout: 10_000 });
+        await waitForPhrasesCards(page, phrasesPage);
+
+        await phrasesPage.selectFilter("Новые");
+        const newCount = await phrasesPage.getCardCount();
+        expect(newCount).toBeGreaterThan(0);
+
+        await phrasesPage.markCardAsKnownByIndex(0);
+
+        await phrasesPage.selectFilter("Изученные");
+        await expect(phrasesPage.emptyState).not.toBeVisible({ timeout: 5_000 });
+        const learnedCount = await phrasesPage.getCardCount();
+        expect(learnedCount).toBeGreaterThanOrEqual(1);
+    });
+
+    testWithFreshUser("should toggle favorite instantly", async ({ page }) => {
+        test.setTimeout(300_000);
+
+        await completeFullOnboarding(page);
+
+        const phrasesPage = new PhrasesPage(page);
+        await phrasesPage.goto();
+        await page.waitForURL(/\/phrases$/, { timeout: 10_000 });
+        await waitForPhrasesCards(page, phrasesPage);
+
+        expect(await phrasesPage.isFavorited(0)).toBe(false);
+
+        await phrasesPage.toggleFavoriteByIndex(0);
+        expect(await phrasesPage.isFavorited(0)).toBe(true);
+
+        await phrasesPage.toggleFavoriteByIndex(0);
+        expect(await phrasesPage.isFavorited(0)).toBe(false);
+    });
+
+    testWithFreshUser("should delete phrase card", async ({ page }) => {
+        test.setTimeout(300_000);
+
+        await completeFullOnboarding(page);
+
+        const phrasesPage = new PhrasesPage(page);
+        await phrasesPage.goto();
+        await page.waitForURL(/\/phrases$/, { timeout: 10_000 });
+        await waitForPhrasesCards(page, phrasesPage);
+
+        const countBefore = await phrasesPage.getCardCount();
+
+        await phrasesPage.deleteCardByIndex(0);
+
+        const countAfter = await phrasesPage.getCardCount();
+        expect(countAfter).toBe(countBefore - 1);
+    });
+
+    testWithFreshUser("should cancel delete phrase card", async ({ page }) => {
+        test.setTimeout(300_000);
+
+        await completeFullOnboarding(page);
+
+        const phrasesPage = new PhrasesPage(page);
+        await phrasesPage.goto();
+        await page.waitForURL(/\/phrases$/, { timeout: 10_000 });
+        await waitForPhrasesCards(page, phrasesPage);
+
+        const countBefore = await phrasesPage.getCardCount();
+
+        await phrasesPage.cancelDeleteCardByIndex(0);
+
+        const countAfter = await phrasesPage.getCardCount();
+        expect(countAfter).toBe(countBefore);
+    });
+
+    testWithFreshUser("should persist favorite after navigation", async ({ page }) => {
+        test.setTimeout(300_000);
+
+        await completeFullOnboarding(page);
+
+        const phrasesPage = new PhrasesPage(page);
+        await phrasesPage.goto();
+        await page.waitForURL(/\/phrases$/, { timeout: 10_000 });
+        await waitForPhrasesCards(page, phrasesPage);
+
+        await phrasesPage.toggleFavoriteByIndex(0);
+        expect(await phrasesPage.isFavorited(0)).toBe(true);
+
+        await page.getByTestId("sidebar-tab-home").click();
+        await page.waitForURL(/\/home$/, { timeout: 10_000 });
+
+        await phrasesPage.goto();
+        await page.waitForURL(/\/phrases$/, { timeout: 10_000 });
+        await waitForPhrasesCards(page, phrasesPage);
+        expect(await phrasesPage.isFavorited(0)).toBe(true);
+
+        await phrasesPage.toggleFavoriteByIndex(0);
+
+        await page.getByTestId("sidebar-tab-home").click();
+        await page.waitForURL(/\/home$/, { timeout: 10_000 });
+
+        await phrasesPage.goto();
+        await page.waitForURL(/\/phrases$/, { timeout: 10_000 });
+        await waitForPhrasesCards(page, phrasesPage);
+        expect(await phrasesPage.isFavorited(0)).toBe(false);
+    });
+});

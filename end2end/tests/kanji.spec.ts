@@ -276,6 +276,20 @@ testWithFreshUser.describe("Kanji Page - Detail Page", () => {
         await page.waitForURL(/\/kanji$/, { timeout: 5_000 });
         await expect(kanjiPage.kanjiGrid).toBeVisible({ timeout: 5_000 });
     });
+
+    testWithFreshUser("should delete card from detail page and redirect to list", async ({ page }) => {
+        test.setTimeout(60_000);
+        const kanjiPage = await setupKanjiPage(page);
+        await addFirstKanji(kanjiPage);
+        await expect(kanjiPage.kanjiGrid).toBeVisible({ timeout: 10_000 });
+
+        const kanjiLink = page.locator('a[href*="/kanji/"]').first();
+        await kanjiLink.click();
+        await page.waitForURL(/\/kanji\//, { timeout: 5_000 });
+
+        await kanjiPage.deleteFromDetail();
+        await expect(page).toHaveURL(/\/kanji$/);
+    });
 });
 
 testWithFreshUser.describe("Kanji Page - Mark as Known", () => {
@@ -352,5 +366,38 @@ testWithFreshUser.describe("Kanji Page - Favorite Instant UI Update", () => {
         // Verify persistence after reload
         await page.waitForTimeout(2000);
         await expect.poll(async () => await kanjiPage.isFavorited(0), { timeout: 1000 }).toBe(false);
+    });
+});
+
+testWithFreshUser.describe("Kanji Page - Favorite Sync Persistence", () => {
+    testWithFreshUser("should persist un-favorite after sync", async ({ page }) => {
+        test.setTimeout(90_000);
+        const kanjiPage = await setupKanjiPage(page);
+        await addFirstKanji(kanjiPage);
+        await expect(kanjiPage.kanjiGrid).toBeVisible({ timeout: 10_000 });
+
+        await expect.poll(async () => await kanjiPage.isFavorited(0), { timeout: 5000 }).toBe(false);
+
+        await kanjiPage.toggleFavoriteByIndex(0);
+        await expect.poll(async () => await kanjiPage.isFavorited(0), { timeout: 5000 }).toBe(true);
+
+        await page.getByTestId("sidebar-tab-home").click();
+        await page.waitForURL(/\/home$/, { timeout: 10_000 });
+
+        await kanjiPage.goto();
+        await kanjiPage.expectKanjiVisible();
+        await expect(kanjiPage.kanjiGrid).toBeVisible({ timeout: 10_000 });
+        await expect.poll(async () => await kanjiPage.isFavorited(0), { timeout: 5000 }).toBe(true);
+
+        await kanjiPage.toggleFavoriteByIndex(0);
+        await expect.poll(async () => await kanjiPage.isFavorited(0), { timeout: 5000 }).toBe(false);
+
+        await page.getByTestId("sidebar-tab-home").click();
+        await page.waitForURL(/\/home$/, { timeout: 10_000 });
+
+        await kanjiPage.goto();
+        await kanjiPage.expectKanjiVisible();
+        await expect(kanjiPage.kanjiGrid).toBeVisible({ timeout: 10_000 });
+        await expect.poll(async () => await kanjiPage.isFavorited(0), { timeout: 5000 }).toBe(false);
     });
 });

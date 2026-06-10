@@ -130,4 +130,19 @@ testWithFreshUser.describe("Lesson Page", () => {
         await page.waitForURL(/\/home$/, { timeout: 10_000 });
     });
 
+    testWithFreshUser("should start next lesson from complete screen", async ({ page }) => {
+        test.setTimeout(120_000);
+        const lessonPage = await setupLessonWithCards(page);
+
+        await rateCardUntilDone(lessonPage, "good");
+
+        await lessonPage.waitForComplete();
+        await lessonPage.nextLessonBtn.click();
+
+        await expect(lessonPage.lessonPage).toBeVisible({ timeout: 15_000 });
+        await expect(lessonPage.lessonError).not.toBeVisible({ timeout: 15_000 });
+        await expect(lessonPage.lessonLoading).toBeHidden({ timeout: 30_000 });
+        await expect(lessonPage.lessonContent).toBeVisible({ timeout: 15_000 });
+    });
+
 });

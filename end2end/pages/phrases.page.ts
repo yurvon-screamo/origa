@@ -14,6 +14,10 @@ export class PhrasesPage extends BasePage {
     readonly loadMoreButton: Locator;
     readonly cardItem: Locator;
 
+    readonly deleteModal: Locator;
+    readonly deleteConfirmBtn: Locator;
+    readonly deleteCancelBtn: Locator;
+
     constructor(page: Page) {
         super(page);
 
@@ -26,6 +30,10 @@ export class PhrasesPage extends BasePage {
         this.emptyState = page.getByTestId("phrases-empty-state");
         this.loadMoreButton = page.getByTestId("phrases-load-more-btn");
         this.cardItem = page.getByTestId("phrases-card-item");
+
+        this.deleteModal = page.getByTestId("phrases-delete-modal");
+        this.deleteConfirmBtn = page.getByTestId("phrases-delete-modal-confirm");
+        this.deleteCancelBtn = page.getByTestId("phrases-delete-modal-cancel");
     }
 
     async goto(): Promise<void> {
@@ -60,5 +68,52 @@ export class PhrasesPage extends BasePage {
 
     async clickBack(): Promise<void> {
         await this.backButton.click();
+    }
+
+    async markCardAsKnownByIndex(index: number): Promise<void> {
+        await this.clickCardActionBtn(index, "phrases-card-item-mark-known-btn");
+    }
+
+    async getFavoriteButton(index: number): Promise<Locator> {
+        const card = this.page.getByTestId("phrases-card-item").nth(index);
+        return card.getByTestId("phrases-card-item-favorite-btn");
+    }
+
+    async toggleFavoriteByIndex(index: number): Promise<void> {
+        const card = this.page.getByTestId("phrases-card-item").nth(index);
+        const btn = card.getByTestId("phrases-card-item-favorite-btn");
+        await btn.dispatchEvent("click");
+        await this.page.waitForTimeout(1000);
+    }
+
+    async isFavorited(index: number): Promise<boolean> {
+        const btn = await this.getFavoriteButton(index);
+        const filledPath = btn.locator('svg path[fill="currentColor"]');
+        return filledPath.isVisible().catch(() => false);
+    }
+
+    async deleteCardByIndex(index: number): Promise<void> {
+        await this.clickCardActionBtn(index, "phrases-card-item-delete-btn");
+        await expect(this.deleteModal).toBeVisible({ timeout: 5000 });
+        await this.deleteConfirmBtn.click();
+        await expect(this.deleteModal).not.toBeVisible({ timeout: 10_000 });
+    }
+
+    async cancelDeleteCardByIndex(index: number): Promise<void> {
+        await this.clickCardActionBtn(index, "phrases-card-item-delete-btn");
+        await expect(this.deleteModal).toBeVisible({ timeout: 5000 });
+        await this.deleteCancelBtn.click();
+        await expect(this.deleteModal).not.toBeVisible({ timeout: 5000 });
+    }
+
+    // Leptos event delegation requires bubbles: true for stop_propagation handlers
+    private async clickCardActionBtn(index: number, btnTestId: string): Promise<void> {
+        const selector = `[data-testid="phrases-card-item"]:nth-of-type(${index + 1}) [data-testid="${btnTestId}"]`;
+        await this.page.evaluate((sel: string) => {
+            const el = document.querySelector(sel) as HTMLElement;
+            if (el) {
+                el.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+            }
+        }, selector);
     }
 }
