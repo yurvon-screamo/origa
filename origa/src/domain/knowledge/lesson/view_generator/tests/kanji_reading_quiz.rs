@@ -398,3 +398,73 @@ fn multi_rating_returns_again_for_nothing_correct() {
         assert_eq!(result.rating(), Rating::Again);
     }
 }
+
+#[test]
+fn rating_lenient_returns_good_for_majority() {
+    use crate::domain::knowledge::lesson::types::MultiQuizResult;
+
+    let result = MultiQuizResult {
+        correct_selections: vec![0, 1],
+        missed: vec![2],
+        wrong_selections: vec![],
+        is_perfect: false,
+    };
+
+    assert_eq!(result.rating_lenient(), Rating::Good);
+}
+
+#[test]
+fn rating_lenient_returns_again_for_minority() {
+    use crate::domain::knowledge::lesson::types::MultiQuizResult;
+
+    let result = MultiQuizResult {
+        correct_selections: vec![0],
+        missed: vec![1],
+        wrong_selections: vec![],
+        is_perfect: false,
+    };
+
+    assert_eq!(result.rating_lenient(), Rating::Again);
+}
+
+#[test]
+fn rating_lenient_returns_again_with_wrong_selections() {
+    use crate::domain::knowledge::lesson::types::MultiQuizResult;
+
+    let result = MultiQuizResult {
+        correct_selections: vec![0, 1],
+        missed: vec![2],
+        wrong_selections: vec![3],
+        is_perfect: false,
+    };
+
+    assert_eq!(result.rating_lenient(), Rating::Again);
+}
+
+#[test]
+fn rating_lenient_returns_good_for_perfect() {
+    use crate::domain::knowledge::lesson::types::MultiQuizResult;
+
+    let result = MultiQuizResult {
+        correct_selections: vec![0, 1, 2],
+        missed: vec![],
+        wrong_selections: vec![],
+        is_perfect: true,
+    };
+
+    assert_eq!(result.rating_lenient(), Rating::Good);
+}
+
+#[test]
+fn rating_lenient_returns_again_for_zero_selected() {
+    use crate::domain::knowledge::lesson::types::MultiQuizResult;
+
+    let result = MultiQuizResult {
+        correct_selections: vec![],
+        missed: vec![0, 1, 2],
+        wrong_selections: vec![],
+        is_perfect: false,
+    };
+
+    assert_eq!(result.rating_lenient(), Rating::Again);
+}

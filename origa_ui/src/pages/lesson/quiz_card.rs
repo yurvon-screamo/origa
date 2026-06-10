@@ -1,7 +1,8 @@
 use crate::i18n::*;
 use crate::ui_components::{
-    Card, DisplayText, FuriganaText, Heading, HeadingLevel, KanjiViewMode, KanjiWritingSection,
-    Text, TextSize, TypographyVariant, is_speech_supported, speak_word, stop_current_audio,
+    Card, DisplayText, FuriganaTextWithHover, Heading, HeadingLevel, KanjiViewMode,
+    KanjiWritingSection, Text, TextSize, TypographyVariant, is_speech_supported, speak_word,
+    stop_current_audio,
 };
 use leptos::prelude::*;
 use origa::domain::{Card as DomainCard, MultiQuizResult, NativeLanguage, QuizCard, QuizMode};
@@ -43,6 +44,7 @@ pub fn QuizCardView(
     #[prop(default = Callback::new(|_: ()| {}))] on_submit: Callback<()>,
     #[prop(default = false)] waiting_for_next: bool,
     #[prop(default = Callback::new(|_: ()| {}))] on_next_card: Callback<()>,
+    #[prop(default = false)] lenient_grading: bool,
 ) -> impl IntoView {
     let i18n = use_i18n();
     let card = quiz_card.card().clone();
@@ -140,7 +142,7 @@ pub fn QuizCardView(
                     <Show when=move || kanji_for_animation.get_value().is_none()>
                         <div class="mb-4">
                             <Heading level=HeadingLevel::H2>
-                                <FuriganaText text=display_question.get_value() known_kanji=known_kanji.get()/>
+                                <FuriganaTextWithHover text=display_question.get_value() known_kanji=known_kanji.get() native_language=native_language/>
                             </Heading>
                         </div>
                     </Show>
@@ -194,7 +196,11 @@ pub fn QuizCardView(
                             multi_result_stored
                                 .get_value()
                                 .map(|r| {
-                                    let result = QuizResult::from_multi_result(&r);
+                                    let result = if lenient_grading {
+                                        QuizResult::from_multi_result_lenient(&r)
+                                    } else {
+                                        QuizResult::from_multi_result(&r)
+                                    };
                                     view! {
                                         <QuizResultDisplay
                                             quiz_result=result

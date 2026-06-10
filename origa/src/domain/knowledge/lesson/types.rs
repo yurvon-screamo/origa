@@ -147,6 +147,20 @@ impl MultiQuizResult {
             Rating::Again
         }
     }
+
+    pub fn is_lenient_pass(&self) -> bool {
+        self.wrong_selections.is_empty()
+            && self.correct_selections.len() * 2
+                > (self.correct_selections.len() + self.missed.len())
+    }
+
+    pub fn rating_lenient(&self) -> Rating {
+        if self.is_lenient_pass() {
+            Rating::Good
+        } else {
+            Rating::Again
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

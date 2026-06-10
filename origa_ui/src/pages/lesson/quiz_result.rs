@@ -74,4 +74,12 @@ impl QuizResult {
             QuizResult::MultiPartial
         }
     }
+
+    pub fn from_multi_result_lenient(result: &MultiQuizResult) -> Self {
+        if result.is_lenient_pass() {
+            QuizResult::MultiCorrect
+        } else {
+            QuizResult::MultiPartial
+        }
+    }
 }
