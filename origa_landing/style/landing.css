@@ -1250,6 +1250,14 @@
     color: var(--accent-olive);
 }
 
+.cmp-grid__row {
+    display: contents;
+}
+
+.cmp-grid__label {
+    display: none;
+}
+
 /* Visual markers */
 
 .compare-marker {
@@ -1286,6 +1294,98 @@
     color: var(--fg-muted);
     text-transform: none;
     letter-spacing: 0.05em;
+}
+
+@media (max-width: 640px) {
+    .cmp-bridge,
+    .cmp-competitor {
+        display: none;
+    }
+
+    .cmp-scoreboard {
+        overflow-x: visible;
+    }
+
+    .cmp-scoreboard::before,
+    .cmp-scoreboard::after {
+        display: none;
+    }
+
+    .cmp-grid {
+        grid-template-columns: 1fr;
+        min-width: unset;
+        gap: var(--space-lg);
+    }
+
+    .cmp-grid__row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0;
+        border: 1px solid var(--border-dark);
+        background: var(--bg-paper);
+    }
+
+    .cmp-grid__row:first-child {
+        display: none;
+    }
+
+    .cmp-grid__cell--feature {
+        grid-column: 1 / -1;
+        border-bottom: 2px solid var(--border-dark);
+        padding: var(--space-md);
+        font-size: var(--text-sm);
+    }
+
+    .cmp-grid__cell--origa {
+        grid-column: 1 / -1;
+        border-left: none;
+        border-right: none;
+        border-bottom: 1px solid var(--border-dark);
+        background: var(--bg-paper);
+        padding: var(--space-sm) var(--space-md);
+        gap: var(--space-xs);
+    }
+
+    .cmp-grid__label {
+        display: inline;
+        font-family: var(--font-mono);
+        font-size: var(--text-2xs);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--fg-muted);
+        margin-left: var(--space-xs);
+    }
+
+    .cmp-grid__cell--default {
+        background: var(--bg-cream);
+        padding: var(--space-sm) var(--space-md);
+        gap: var(--space-xs);
+        justify-content: flex-start;
+    }
+
+    .cmp-grid__cell--score,
+    .cmp-grid__cell--score-origa {
+        padding: var(--space-sm) var(--space-md);
+    }
+
+    .cmp-grid__cell--score-origa {
+        grid-column: 1 / -1;
+        border-left: none;
+        border-right: none;
+        border-top: 2px solid var(--border-dark);
+        background: var(--bg-paper);
+        color: var(--accent-olive);
+        font-size: var(--text-body);
+    }
+
+    .cmp-grid__cell--score {
+        border-top: none;
+        font-size: var(--text-sm);
+    }
+
+    .cmp-special-text {
+        text-transform: none;
+    }
 }
 
 /* Bridge */
@@ -1350,12 +1450,6 @@
     grid-template-columns: 1fr 1fr;
     gap: var(--space-lg);
     margin-bottom: var(--space-lg);
-}
-
-@media (max-width: 640px) {
-    .cmp-competitor__cols {
-        grid-template-columns: 1fr;
-    }
 }
 
 .cmp-competitor__col {
