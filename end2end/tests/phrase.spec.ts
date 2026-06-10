@@ -324,13 +324,13 @@ testWithFreshUser.describe("Phrases Page - CRUD after onboarding", () => {
         await page.waitForURL(/\/phrases$/, { timeout: 10_000 });
         await waitForPhrasesCards(page, phrasesPage);
 
-        expect(await phrasesPage.isFavorited(0)).toBe(false);
+        await expect.poll(async () => await phrasesPage.isFavorited(0), { timeout: 5000 }).toBe(false);
 
         await phrasesPage.toggleFavoriteByIndex(0);
-        expect(await phrasesPage.isFavorited(0)).toBe(true);
+        await expect.poll(async () => await phrasesPage.isFavorited(0), { timeout: 5000 }).toBe(true);
 
         await phrasesPage.toggleFavoriteByIndex(0);
-        expect(await phrasesPage.isFavorited(0)).toBe(false);
+        await expect.poll(async () => await phrasesPage.isFavorited(0), { timeout: 5000 }).toBe(false);
     });
 
     testWithFreshUser("should delete phrase card", async ({ page }) => {
@@ -380,7 +380,7 @@ testWithFreshUser.describe("Phrases Page - CRUD after onboarding", () => {
         await waitForPhrasesCards(page, phrasesPage);
 
         await phrasesPage.toggleFavoriteByIndex(0);
-        expect(await phrasesPage.isFavorited(0)).toBe(true);
+        await expect.poll(async () => await phrasesPage.isFavorited(0), { timeout: 5000 }).toBe(true);
 
         await page.getByTestId("sidebar-tab-home").click();
         await page.waitForURL(/\/home$/, { timeout: 10_000 });
@@ -388,7 +388,7 @@ testWithFreshUser.describe("Phrases Page - CRUD after onboarding", () => {
         await phrasesPage.goto();
         await page.waitForURL(/\/phrases$/, { timeout: 10_000 });
         await waitForPhrasesCards(page, phrasesPage);
-        expect(await phrasesPage.isFavorited(0)).toBe(true);
+        await expect.poll(async () => await phrasesPage.isFavorited(0), { timeout: 5000 }).toBe(true);
 
         await phrasesPage.toggleFavoriteByIndex(0);
 
@@ -398,6 +398,6 @@ testWithFreshUser.describe("Phrases Page - CRUD after onboarding", () => {
         await phrasesPage.goto();
         await page.waitForURL(/\/phrases$/, { timeout: 10_000 });
         await waitForPhrasesCards(page, phrasesPage);
-        expect(await phrasesPage.isFavorited(0)).toBe(false);
+        await expect.poll(async () => await phrasesPage.isFavorited(0), { timeout: 5000 }).toBe(false);
     });
 });

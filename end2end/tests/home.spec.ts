@@ -147,11 +147,10 @@ testWithFreshUser.describe("Home Page - Mobile Bottom Tab Navigation", () => {
     testWithFreshUser("should display bottom tab bar on mobile viewport", async ({ page }) => {
         await page.setViewportSize({ width: 375, height: 667 });
         await skipOnboarding(page);
-        await page.waitForURL(/\/home$/, { timeout: 10_000 });
-        await page.getByTestId("home-page").waitFor({ state: "visible", timeout: 15_000 });
+        const homePage = new HomePage(page);
+        await expect(homePage.homePage).toBeVisible({ timeout: 15_000 });
 
-        const bottomTabBar = page.locator(".bottom-tab-bar");
-        await expect(bottomTabBar).toBeVisible({ timeout: 10_000 });
+        await expect(homePage.bottomTabBar).toBeVisible({ timeout: 10_000 });
     });
 
     testWithFreshUser("should navigate between pages via bottom tabs on mobile", async ({ page }) => {
