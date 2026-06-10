@@ -68,7 +68,7 @@ impl SrsConfig {
                 enable_fuzz: true,
             },
             RateMode::KanjiReview => Self {
-                request_retention: 0.90,
+                request_retention: 0.85,
                 maximum_interval: 90,
                 enable_fuzz: true,
             },

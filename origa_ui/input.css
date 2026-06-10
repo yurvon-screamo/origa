@@ -1600,6 +1600,59 @@ input[type="submit"],
     opacity: 1;
 }
 
+/* === Kanji Hover Popup === */
+.kanji-hover-segment {
+    display: inline;
+    position: relative;
+}
+
+.kanji-hover-trigger {
+    cursor: pointer;
+    display: inline;
+}
+
+.kanji-hover-trigger:hover,
+.kanji-hover-active {
+    background: var(--token-highlight);
+}
+
+.kanji-popup {
+    position: absolute;
+    left: 0;
+    top: 100%;
+    min-width: 120px;
+    max-width: min(240px, calc(100vw - 32px));
+    padding: 12px 16px;
+    margin-top: 4px;
+    background: var(--bg-paper);
+    border: 1px solid var(--border-dark);
+    z-index: 50;
+}
+
+.kanji-popup::after {
+    content: "";
+    position: absolute;
+    bottom: calc(-1 * var(--shadow-offset-y));
+    right: calc(-1 * var(--shadow-offset-x));
+    width: 100%;
+    height: 100%;
+    border: 1px solid var(--shadow-color);
+    background: var(--bg-aged);
+    z-index: -1;
+}
+
+.kanji-popup-char {
+    font-size: 32px;
+    line-height: 1.2;
+    margin-bottom: 4px;
+}
+
+.kanji-popup-desc {
+    font-family: var(--font-mono);
+    font-size: var(--text-label);
+    color: var(--fg-muted);
+}
+
 /* === Translator Text === */
 .translator-text {
     display: inline;

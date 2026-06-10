@@ -32,7 +32,7 @@ pub fn create_on_quiz_submit(
 
         let is_multi_quiz = quiz.mode() == QuizMode::Multi;
         let multi_result = quiz.check_multi_answers(&selected);
-        let rating = multi_result.rating();
+        let rating = multi_result.rating_lenient();
 
         lesson_state.update(|state| {
             state.showing_answer = true;
