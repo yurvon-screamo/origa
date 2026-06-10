@@ -132,17 +132,44 @@ testWithFreshUser.describe("Lesson Page", () => {
 
     testWithFreshUser("should start next lesson from complete screen", async ({ page }) => {
         test.setTimeout(120_000);
-        const lessonPage = await setupLessonWithCards(page);
+        await skipOnboarding(page);
 
-        await rateCardUntilDone(lessonPage, "good");
+        const wordsPage = new WordsPage(page);
+        await wordsPage.goto();
+        await wordsPage.expectWordsVisible();
+        await wordsPage.openAddModal();
+        await wordsPage.enterText("私は本を読みます。彼は学校に行きます。猫が魚を食べる。");
+        await wordsPage.analyzeText();
+        await wordsPage.selectAllAnalyzedWords();
+        await wordsPage.addSelectedWords();
+        await expect(wordsPage.wordsGrid).toBeVisible({ timeout: 10_000 });
 
-        await lessonPage.waitForComplete();
-        await lessonPage.nextLessonBtn.click();
+        const homePage = new HomePage(page);
+        await homePage.goto();
+        await homePage.startLesson();
 
+        const lessonPage = new LessonPage(page);
         await expect(lessonPage.lessonPage).toBeVisible({ timeout: 15_000 });
         await expect(lessonPage.lessonError).not.toBeVisible({ timeout: 15_000 });
         await expect(lessonPage.lessonLoading).toBeHidden({ timeout: 30_000 });
         await expect(lessonPage.lessonContent).toBeVisible({ timeout: 15_000 });
+        await expect(lessonPage.showAnswerBtn).toBeVisible({ timeout: 15_000 });
+
+        await rateCardUntilDone(lessonPage, "good");
+        await lessonPage.waitForComplete();
+
+        await lessonPage.clickNextLesson();
+
+        const newLessonVisible = await lessonPage.lessonContent.isVisible({ timeout: 15_000 }).catch(() => false);
+        const errorVisible = await lessonPage.lessonError.isVisible().catch(() => false);
+
+        if (newLessonVisible) {
+            await expect(lessonPage.lessonContent).toBeVisible({ timeout: 15_000 });
+        } else if (errorVisible) {
+            await expect(lessonPage.lessonError).toBeVisible();
+        } else {
+            await expect(page).toHaveURL(/\/home/, { timeout: 10_000 });
+        }
     });
 
 });

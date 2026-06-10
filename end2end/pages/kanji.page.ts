@@ -187,10 +187,9 @@ export class KanjiPage extends BasePage {
     }
 
     async deleteFromDetail(): Promise<void> {
-        const detailActions = this.page.getByTestId("kanji-detail-actions").or(
-            this.page.getByTestId("kanji-detail-actions-mobile"),
+        const deleteBtn = this.page.getByTestId("kanji-detail-actions-delete-btn").or(
+            this.page.getByTestId("kanji-detail-actions-mobile-delete-btn"),
         );
-        const deleteBtn = detailActions.locator('[data-testid$="-delete-btn"]').first();
         await expect(deleteBtn).toBeVisible({ timeout: 10_000 });
         await deleteBtn.click();
         await expect(this.detailDeleteModal).toBeVisible({ timeout: 5_000 });
