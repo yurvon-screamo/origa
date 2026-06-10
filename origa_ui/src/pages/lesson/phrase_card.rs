@@ -165,11 +165,16 @@ pub fn PhraseCardView(
 
                 <Show when=move || show_result>
                     {move || match phrase_text_stored.get_value() {
-                        Some(text) => view! {
-                            <div class="mt-4 p-3 bg-[var(--bg-secondary)] text-center">
-                                <TranslatorText text=text />
-                            </div>
-                        }.into_any(),
+                        Some(text) => {
+                            let sentences = crate::utils::text_format::split_japanese_sentences(&text);
+                            view! {
+                                <div class="mt-4 p-3 bg-[var(--bg-secondary)] text-center flex flex-col gap-1">
+                                    {sentences.into_iter().map(|s| view! {
+                                        <div><TranslatorText text=s /></div>
+                                    }).collect::<Vec<_>>()}
+                                </div>
+                            }.into_any()
+                        },
                         None => view! { <div/> }.into_any(),
                     }}
                 </Show>

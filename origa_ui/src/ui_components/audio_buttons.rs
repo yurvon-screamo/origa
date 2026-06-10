@@ -63,11 +63,9 @@ pub fn AudioButtons(
                     disabled=move || is_playing.get() || (!has_audio_src && !is_speech_supported())
                 >
                     <Show when=move || is_playing.get() fallback=|| view! {
-                        <Icon icon=icondata::LuVolume width="1em" height="1em" />
+                        <Icon icon=icondata::LuPlay width="1em" height="1em" />
                     }>
-                        <span class="audio-btn-spin">
-                            <Icon icon=icondata::LuLoader width="1em" height="1em" />
-                        </span>
+                        <Icon icon=icondata::LuPause width="1em" height="1em" />
                     </Show>
                 </button>
             </div>

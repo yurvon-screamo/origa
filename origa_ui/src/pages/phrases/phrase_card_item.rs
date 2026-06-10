@@ -69,11 +69,6 @@ pub fn PhraseCardItem(
 
     view! {
         <div class="phrase-card anima-lift" data-testid="phrases-card-item">
-            <div class="phrase-card-badge">
-                <Tag variant=Signal::derive(move || status.tag_variant())>
-                    {move || status.label(&i18n)}
-                </Tag>
-            </div>
             <div class="phrase-card-body">
                 <div class="phrase-card-header">
                     <div class="phrase-card-phrase" data-testid="phrases-card-phrase">
@@ -89,31 +84,45 @@ pub fn PhraseCardItem(
                                 }
                                 .into_any()
                             } else {
+                                let sentences = crate::utils::text_format::split_japanese_sentences(&text);
                                 view! {
-                                    <TranslatorText
-                                        text=text
-                                        native_language=native_language
-                                        test_id=Signal::derive(|| "phrases-card-text".to_string())
-                                    />
+                                    <div class="flex flex-col gap-1">
+                                        {sentences.into_iter().map(|s| view! {
+                                            <TranslatorText
+                                                text=s
+                                                native_language=native_language
+                                                test_id=Signal::derive(|| "phrases-card-text".to_string())
+                                            />
+                                        }).collect::<Vec<_>>()}
+                                    </div>
                                 }
                                 .into_any()
                             }
                         }}
                     </div>
-                    <Show when=move || has_audio>
-                        <div class="phrase-card-audio">
-                            <AudioPlayer
-                                src=audio_src.clone()
-                                autoplay=false
-                                test_id=Signal::derive(|| "phrases-card-audio".to_string())
-                            />
+                    <div class="phrase-card-meta">
+                        <div class="phrase-card-badge">
+                            <Tag variant=Signal::derive(move || status.tag_variant())>
+                                {move || status.label(&i18n)}
+                            </Tag>
                         </div>
-                    </Show>
+                        <Show when=move || has_audio>
+                            <div class="phrase-card-audio">
+                                <AudioPlayer
+                                    src=audio_src.clone()
+                                    autoplay=false
+                                    test_id=Signal::derive(|| "phrases-card-audio".to_string())
+                                />
+                            </div>
+                        </Show>
+                    </div>
                 </div>
                 <div class="phrase-card-content">
                     <CollapsibleDescription>
                         <MarkdownText
-                            content=Signal::derive(move || meaning.get())
+                            content=Signal::derive(move || {
+                                crate::utils::text_format::split_sentences_to_markdown(&meaning.get())
+                            })
                             known_kanji=known_kanji_for_markdown
                             test_id=Signal::derive(|| "phrases-card-meaning".to_string())
                         />

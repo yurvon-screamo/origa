@@ -54,7 +54,10 @@ pub fn LessonCard(
     });
 
     let answer_text = match card.answer(&lang) {
-        Ok(CardAnswer::Vocabulary { translations, .. }) => translations.join(", "),
+        Ok(CardAnswer::Vocabulary {
+            translations,
+            description,
+        }) => crate::utils::text_format::format_vocabulary_answer(&translations, &description),
         Ok(CardAnswer::Text(s)) => s,
         Err(e) => {
             tracing::warn!(

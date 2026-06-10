@@ -238,10 +238,12 @@ pub fn LessonCardContainer() -> impl IntoView {
                                 let card_type = CardType::from(&card);
                                 let phrase_text = card.question(&native_language.get()).ok().map(|q| q.text().to_string());
                                 let phrase_translation = Some(match card.answer(&native_language.get()).ok() {
-                                    Some(CardAnswer::Vocabulary { translations, .. }) => {
-                                        translations.join(", ")
+                                    Some(CardAnswer::Vocabulary { translations, description }) => {
+                                        crate::utils::text_format::format_vocabulary_answer(&translations, &description)
                                     },
-                                    Some(CardAnswer::Text(s)) => s,
+                                    Some(CardAnswer::Text(s)) => {
+                                        crate::utils::text_format::split_sentences_to_markdown(&s)
+                                    },
                                     None => String::new(),
                                 });
 

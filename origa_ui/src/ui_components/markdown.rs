@@ -261,4 +261,15 @@ mod tests {
         assert!(output.contains("<code>code</code>"));
         assert!(output.contains("more"));
     }
+
+    #[test]
+    fn test_render_hard_break() {
+        let input = "line1  \nline2";
+        let output = render_markdown(input);
+        assert!(
+            output.contains("<br"),
+            "Expected hard break, got: {}",
+            output
+        );
+    }
 }
