@@ -55,12 +55,10 @@ pub fn Layout(locale: Locale) -> impl IntoView {
                 <span class="landing-header__logo-name">"Origa"</span>
                 <span class="landing-header__logo-kana">"オリガ"</span>
             </a>
-            <input type="checkbox" id="nav-toggle" class="landing-header__toggle"
-                   aria-label="Toggle navigation" />
-            <label for="nav-toggle" class="landing-header__hamburger"
-                   tabindex="0" aria-label="Open menu">
+            <button type="button" class="landing-header__hamburger"
+                    aria-label="Open menu" aria-expanded="false">
                 <span class="landing-header__hamburger-line"></span>
-            </label>
+            </button>
             <nav class="landing-header__nav" id="main-nav"
                  aria-label="Main navigation">
                 <NavLink prefix href="features" class="landing-header__link">
@@ -88,6 +86,27 @@ pub fn Layout(locale: Locale) -> impl IntoView {
                 </span>
             </nav>
         </header>
+        <script>"
+            (function() {
+                var btn = document.querySelector('.landing-header__hamburger');
+                var nav = document.getElementById('main-nav');
+                if (!btn || !nav) return;
+                btn.addEventListener('click', function() {
+                    var open = nav.classList.toggle('is-open');
+                    btn.classList.toggle('is-open');
+                    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+                    btn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+                });
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape' && nav.classList.contains('is-open')) {
+                        nav.classList.remove('is-open');
+                        btn.classList.remove('is-open');
+                        btn.setAttribute('aria-expanded', 'false');
+                        btn.setAttribute('aria-label', 'Open menu');
+                    }
+                });
+            })();
+        "</script>
         {if locale.is_development() {
             view! {
                 <div class="landing-wip-banner">{c.banner_wip}</div>
