@@ -71,7 +71,9 @@ export class PhrasesPage extends BasePage {
     }
 
     async markCardAsKnownByIndex(index: number): Promise<void> {
-        await this.clickCardActionBtn(index, "phrases-card-item-mark-known-btn");
+        const card = this.page.getByTestId("phrases-card-item").nth(index);
+        const btn = card.getByTestId("phrases-card-item-mark-known-btn");
+        await btn.dispatchEvent("click");
     }
 
     async getFavoriteButton(index: number): Promise<Locator> {
@@ -93,27 +95,20 @@ export class PhrasesPage extends BasePage {
     }
 
     async deleteCardByIndex(index: number): Promise<void> {
-        await this.clickCardActionBtn(index, "phrases-card-item-delete-btn");
+        const card = this.page.getByTestId("phrases-card-item").nth(index);
+        const btn = card.getByTestId("phrases-card-item-delete-btn");
+        await btn.dispatchEvent("click");
         await expect(this.deleteModal).toBeVisible({ timeout: 5000 });
         await this.deleteConfirmBtn.click();
         await expect(this.deleteModal).not.toBeVisible({ timeout: 10_000 });
     }
 
     async cancelDeleteCardByIndex(index: number): Promise<void> {
-        await this.clickCardActionBtn(index, "phrases-card-item-delete-btn");
+        const card = this.page.getByTestId("phrases-card-item").nth(index);
+        const btn = card.getByTestId("phrases-card-item-delete-btn");
+        await btn.dispatchEvent("click");
         await expect(this.deleteModal).toBeVisible({ timeout: 5000 });
         await this.deleteCancelBtn.click();
         await expect(this.deleteModal).not.toBeVisible({ timeout: 5000 });
-    }
-
-    // Leptos event delegation requires bubbles: true for stop_propagation handlers
-    private async clickCardActionBtn(index: number, btnTestId: string): Promise<void> {
-        const selector = `[data-testid="phrases-card-item"]:nth-of-type(${index + 1}) [data-testid="${btnTestId}"]`;
-        await this.page.evaluate((sel: string) => {
-            const el = document.querySelector(sel) as HTMLElement;
-            if (el) {
-                el.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-            }
-        }, selector);
     }
 }
