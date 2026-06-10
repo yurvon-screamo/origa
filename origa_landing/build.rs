@@ -29,21 +29,29 @@ fn build_css() {
     println!("cargo:rerun-if-changed=tailwind.config.js");
 
     let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR not set");
-    let input = std::path::Path::new(&manifest_dir).join("style/landing.css");
-    let output = std::path::Path::new(&manifest_dir).join("style/landing.processed.css");
+    let base = std::path::Path::new(&manifest_dir);
+    let input = base.join("style/landing.css");
+    let input_extra = base.join("style/input.css");
+    let output = base.join("style/landing.processed.css");
+
+    let output_mtime = output.metadata().ok().and_then(|m| m.modified().ok());
 
     let skip = output.exists()
-        && input
-            .metadata()
-            .ok()
-            .and_then(|m| m.modified().ok())
-            .is_some_and(|input_mtime| {
-                output
-                    .metadata()
-                    .ok()
-                    .and_then(|m| m.modified().ok())
-                    .is_some_and(|output_mtime| output_mtime >= input_mtime)
-            });
+        && output_mtime.is_some_and(|out_time| {
+            let main_fresh = input
+                .metadata()
+                .ok()
+                .and_then(|m| m.modified().ok())
+                .is_some_and(|t| out_time >= t);
+
+            let extra_fresh = input_extra
+                .metadata()
+                .ok()
+                .and_then(|m| m.modified().ok())
+                .is_some_and(|t| out_time >= t);
+
+            main_fresh && extra_fresh
+        });
 
     if skip {
         return;
