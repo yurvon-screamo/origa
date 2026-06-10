@@ -3362,10 +3362,6 @@ input[type="submit"],
     opacity: 0.3;
 }
 
-.audio-btn-spin {
-    animation: spin 1.5s linear infinite;
-}
-
 .card-history-modal {
     display: flex;
     flex-direction: column;
@@ -5211,6 +5207,13 @@ input[type="submit"],
     gap: 8px;
 }
 
+.phrase-card-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
 .phrase-card-phrase {
     font-family: var(--font-serif);
     font-size: var(--text-lg, 20px);
@@ -5253,9 +5256,6 @@ input[type="submit"],
 }
 
 .phrase-card-badge {
-    position: absolute;
-    top: 6px;
-    right: 4px;
     z-index: 10;
 }
 

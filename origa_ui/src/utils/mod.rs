@@ -1,6 +1,7 @@
 mod drag_drop;
 mod fetch;
 pub mod file;
+pub mod text_format;
 pub mod time;
 mod yield_;
 
