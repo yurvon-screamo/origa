@@ -7,7 +7,6 @@ pub enum AvatarSize {
 
     Small,
 
-    #[expect(dead_code, reason = "design system API")]
     Large,
 }
 

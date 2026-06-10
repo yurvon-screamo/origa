@@ -1,5 +1,5 @@
 use crate::i18n::*;
-use crate::ui_components::{Button, ButtonVariant, Text, TextSize, TypographyVariant};
+use crate::ui_components::{Button, ButtonVariant, Divider};
 use leptos::ev::MouseEvent;
 use leptos::prelude::*;
 
@@ -21,14 +21,13 @@ pub fn ActionButtons(
     };
 
     view! {
-        <div class="space-y-4" data-testid=test_id_val>
-            <div class="flex gap-4">
+        <div data-testid=test_id_val>
+            <div class="profile-actions-main">
                 <Button
                     variant={ButtonVariant::Filled}
                     on_click={on_save}
                     disabled=is_saving
                     test_id="profile-save-btn"
-                    class="flex-1 md:flex-none"
                 >
                     {move || if is_saving.get() { t!(i18n, common.saving).into_any() } else { t!(i18n, profile.save_changes).into_any() }}
                 </Button>
@@ -38,16 +37,17 @@ pub fn ActionButtons(
                     on_click={on_logout}
                     disabled=is_logging_out
                     test_id="profile-logout-btn"
-                    class="flex-1 md:flex-none"
                 >
                     {move || if is_logging_out.get() { t!(i18n, profile.logging_out).into_any() } else { t!(i18n, profile.logout).into_any() }}
                 </Button>
             </div>
 
-            <div class="border-t border-[var(--border-dark)] pt-4">
-                <Text size={TextSize::Small} variant={TypographyVariant::Muted} class="block mb-3">
-                    {t!(i18n, profile.danger_zone)}
-                </Text>
+            <div class="mt-4">
+                <Divider />
+            </div>
+
+            <div class="profile-danger-zone">
+                <span class="label-muted">{t!(i18n, profile.danger_zone)}</span>
 
                 {move || if show_delete_confirm.get() {
                     view! {

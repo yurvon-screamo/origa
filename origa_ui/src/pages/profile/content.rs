@@ -1,7 +1,7 @@
 use super::{ActionButtons, PasswordCard, PersonalDataCard, SettingsCard};
-use crate::i18n::{native_language_to_locale, use_i18n};
+use crate::i18n::{native_language_to_locale, t, use_i18n};
 use crate::store::AuthStore;
-use crate::ui_components::OfflineBundleCard;
+use crate::ui_components::{Avatar, AvatarSize, Card, OfflineBundleCard};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos_router::hooks::use_navigate;
@@ -119,22 +119,46 @@ pub fn ProfileContent() -> impl IntoView {
     });
 
     view! {
-        <div class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 pb-24 md:pb-8" data-testid="profile-content">
-            <div class="space-y-6">
-                <PersonalDataCard
-                    user_name={user_name}
-                    selected_language={selected_language}
-                    selected_daily_load={selected_daily_load}
-                    test_id="profile-personal-data"
+        <div class="profile-layout" data-testid="profile-content">
+            <div class="profile-identity">
+                <Avatar
+                    size=Signal::derive(move || AvatarSize::Large)
+                    initials=Signal::derive(move || {
+                        let name = user_name.get();
+                        name.chars().take(2).collect::<String>().to_uppercase()
+                    })
                 />
+                <div>
+                    <div class="profile-identity-name">{move || user_name.get()}</div>
+                    <span class="label-muted">{t!(i18n, home.profile)}</span>
+                </div>
             </div>
-            <div class="space-y-6">
-                <PasswordCard test_id="profile-password" />
-                <div class="divider"></div>
-                <SettingsCard test_id="profile-settings" />
-                <div class="divider"></div>
-                <OfflineBundleCard test_id="profile-offline-bundle" />
-                <div class="divider"></div>
+
+            <div class="profile-grid">
+                <div class="profile-col">
+                    <Card shadow=Signal::derive(|| true)>
+                        <PersonalDataCard
+                            selected_language={selected_language}
+                            selected_daily_load={selected_daily_load}
+                            test_id="profile-personal-data"
+                        />
+                    </Card>
+                    <Card shadow=Signal::derive(|| true)>
+                        <OfflineBundleCard test_id="profile-offline-bundle" />
+                    </Card>
+                </div>
+
+                <div class="profile-col">
+                    <Card shadow=Signal::derive(|| true)>
+                        <PasswordCard test_id="profile-password" />
+                    </Card>
+                    <Card>
+                        <SettingsCard test_id="profile-settings" />
+                    </Card>
+                </div>
+            </div>
+
+            <div class="profile-actions-bar">
                 <ActionButtons
                     on_save={save_profile}
                     on_logout={logout}

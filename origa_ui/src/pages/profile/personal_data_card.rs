@@ -1,56 +1,34 @@
-use super::LabeledInput;
 use crate::i18n::*;
 use crate::pages::shared::DailyLoadSelector;
-use crate::ui_components::{Heading, HeadingLevel, NativeLanguageToggle, Text, TextSize};
+use crate::ui_components::NativeLanguageToggle;
 use leptos::prelude::*;
 use origa::domain::{DailyLoad, NativeLanguage};
 
 #[component]
 pub fn PersonalDataCard(
     #[prop(optional, into)] test_id: Signal<String>,
-    user_name: Memo<String>,
     selected_language: RwSignal<NativeLanguage>,
     selected_daily_load: RwSignal<DailyLoad>,
 ) -> impl IntoView {
     let i18n = use_i18n();
-    let user_name_signal = RwSignal::new(user_name.get_untracked());
-
-    Effect::new(move |_| {
-        user_name_signal.set(user_name.get());
-    });
-
     let test_id_val = move || {
         let val = test_id.get();
         if val.is_empty() { None } else { Some(val) }
     };
 
     view! {
-        <div data-testid=test_id_val class="p-6 space-y-0">
-            <div class="space-y-6">
-                <Heading level={HeadingLevel::H2}>
-                    {t!(i18n, profile.personal_data)}
-                </Heading>
-
-                <div class="space-y-4">
-                    <LabeledInput
-                        label=i18n.get_keys_untracked().profile().username().inner().to_string()
-                        value={user_name_signal}
-                        disabled={true}
+        <div data-testid=test_id_val class="p-6">
+            <div class="flex flex-col gap-4">
+                <div class="profile-section">
+                    <div class="label-muted">{t!(i18n, profile.interface_language)}</div>
+                    <NativeLanguageToggle
+                        selected_language={selected_language}
+                        test_id=Signal::derive(|| "profile-lang-toggle".to_string())
                     />
-
-                    <div class="flex justify-between items-baseline">
-                        <Text size={TextSize::Large}>
-                            {t!(i18n, profile.interface_language)}
-                        </Text>
-                        <NativeLanguageToggle selected_language={selected_language} test_id=Signal::derive(|| "profile-lang-toggle".to_string()) />
-                    </div>
-
-                    <div>
-                        <Text size={TextSize::Large}>
-                            {t!(i18n, profile.learning_pace)}
-                        </Text>
-                        <DailyLoadSelector selected_load={selected_daily_load} />
-                    </div>
+                </div>
+                <div class="profile-section">
+                    <div class="label-muted">{t!(i18n, profile.learning_pace)}</div>
+                    <DailyLoadSelector selected_load={selected_daily_load} />
                 </div>
             </div>
         </div>
