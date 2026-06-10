@@ -1,3 +1,4 @@
+pub mod card_precache_loader;
 pub mod data_loader;
 pub mod dictionary;
 pub mod furigana_dict_loader;
@@ -7,6 +8,7 @@ pub mod ocr_model_loader;
 pub mod phrase_data_loader;
 pub mod phrase_loader;
 pub mod pitch_audio_loader;
+pub mod precache_loader;
 pub mod well_known_set_loader;
 #[cfg(target_arch = "wasm32")]
 pub mod whisper_model_loader;

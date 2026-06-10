@@ -8,6 +8,7 @@ use crate::pages::login::oauth_listeners::{check_url_oauth_callback, setup_oauth
 use crate::routes::AppRoutes;
 use crate::store::auth_store::AuthStore;
 use crate::store::connectivity::ConnectivityStore;
+use crate::store::offline_bundle_store::OfflineBundleStore;
 use crate::ui_components::{
     ConnectivityBanner, LoadingOverlay, ToastContainer, ToastData, UpdateDrawer,
 };
@@ -16,12 +17,14 @@ use crate::ui_components::{
 pub fn App() -> impl IntoView {
     let auth_store = AuthStore::new();
     let connectivity = ConnectivityStore::new();
+    let offline_bundle_store = OfflineBundleStore::new();
     let toasts: RwSignal<Vec<ToastData>> = RwSignal::new(Vec::new());
     let disposed = StoredValue::new(());
 
     provide_context(auth_store.repository().clone());
     provide_context(auth_store.clone());
     provide_context(connectivity);
+    provide_context(offline_bundle_store);
 
     let i18n = use_i18n();
 

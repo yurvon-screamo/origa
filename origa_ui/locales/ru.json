@@ -59,7 +59,19 @@
     "password_changed": "Пароль успешно изменён",
     "password_mismatch": "Пароли не совпадают",
     "password_too_short": "Пароль должен быть не менее 8 символов",
-    "password_change_error": "Не удалось сменить пароль"
+    "password_change_error": "Не удалось сменить пароль",
+    "offline_bundle": "Оффлайн-пакет",
+    "offline_bundle_desc": "Скачать все ресурсы для работы без интернета",
+    "download_bundle": "Скачать пакет",
+    "downloading_bundle": "Скачивание...",
+    "cancel_download": "Отмена",
+    "bundle_downloaded": "Пакет скачан",
+    "bundle_download_failed": "Ошибка скачивания",
+    "files_progress": "{completed} / {total} файлов",
+    "retry_download": "Повторить",
+    "checking_cache": "Проверка кэша...",
+    "card_cache_running": "Кэширование карточек...",
+    "card_cache_complete": "Ресурсы карточек закэшированы"
   },
   "onboarding": {
     "steps": {

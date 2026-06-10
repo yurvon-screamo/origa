@@ -11,6 +11,8 @@ use crate::pages::{
     Sets, Words,
 };
 use crate::store::auth_store::AuthStore;
+use crate::store::connectivity::ConnectivityStore;
+use crate::store::offline_bundle_store::OfflineBundleStore;
 use crate::ui_components::{BottomTabBar, LoadingOverlay, Sidebar};
 use futures::Future;
 use leptos::prelude::*;
@@ -44,7 +46,12 @@ where
     Err(last_err.expect("at least one attempt was made"))
 }
 
-pub fn start_dictionary_loading(auth_store: AuthStore, repository: HybridUserRepository) {
+pub fn start_dictionary_loading(
+    auth_store: AuthStore,
+    repository: HybridUserRepository,
+    connectivity: ConnectivityStore,
+    offline_store: OfflineBundleStore,
+) {
     spawn_local(async move {
         // Phase A: manifest check
         if let Err(e) = crate::repository::cache_manager::check_and_invalidate().await {
@@ -128,6 +135,22 @@ pub fn start_dictionary_loading(auth_store: AuthStore, repository: HybridUserRep
             tracing::warn!("Failed to migrate kanji companions: {e}");
         }
 
+        // Phase E: auto per-card pre-cache (background, only when online)
+        if connectivity.is_online.get() {
+            if let Some(user) = auth_store.user.get() {
+                let cards: Vec<origa::domain::StudyCard> = user
+                    .knowledge_set()
+                    .study_cards()
+                    .values()
+                    .cloned()
+                    .collect();
+
+                if !cards.is_empty() {
+                    crate::loaders::card_precache_loader::start_card_precache(cards, offline_store);
+                }
+            }
+        }
+
         // Signal completion only after all migrations finish
         auth_store.is_jlpt_content_loaded.set(true);
     });
@@ -153,6 +176,8 @@ pub fn ProtectedRoute(children: ChildrenFn) -> impl IntoView {
                 start_dictionary_loading(
                     auth_store.clone(),
                     use_context::<HybridUserRepository>().expect("repository context not provided"),
+                    use_context::<ConnectivityStore>().expect("ConnectivityStore not provided"),
+                    use_context::<OfflineBundleStore>().expect("OfflineBundleStore not provided"),
                 );
             }
         }

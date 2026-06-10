@@ -49,6 +49,25 @@ async fn open_cache() -> Result<web_sys::Cache, OrigaError> {
     })
 }
 
+/// Store a simple marker value in the CDN cache.
+pub async fn store_cache_marker(key: &str, value: &str) -> Result<(), OrigaError> {
+    let cache = open_cache().await?;
+    let response = web_sys::Response::new_with_opt_str(Some(value)).map_err(|e| {
+        OrigaError::RepositoryError {
+            reason: format!("Failed to create marker response: {:?}", e),
+        }
+    })?;
+    let request = web_sys::Request::new_with_str(key).map_err(|e| OrigaError::RepositoryError {
+        reason: format!("Failed to create marker request: {:?}", e),
+    })?;
+    JsFuture::from(cache.put_with_request(&request, &response))
+        .await
+        .map_err(|e| OrigaError::RepositoryError {
+            reason: format!("Failed to store marker: {:?}", e),
+        })?;
+    Ok(())
+}
+
 fn ensure_leading_slash(path: &str) -> String {
     if path.starts_with('/') {
         path.to_string()
@@ -314,4 +333,70 @@ pub fn resolve_audio_url(path: &str) -> String {
     });
 
     cdn_url(&key)
+}
+
+pub async fn prefetch_to_cache(path: &str) -> Result<(), OrigaError> {
+    let cache = open_cache().await?;
+    let key = ensure_leading_slash(path);
+
+    let existing = JsFuture::from(cache.match_with_str(&key))
+        .await
+        .map_err(|e| OrigaError::RepositoryError {
+            reason: format!("Cache match failed: {:?}", e),
+        })?;
+    if !existing.is_null() && !existing.is_undefined() {
+        return Ok(());
+    }
+
+    let url = cdn_url(&key);
+    let window = web_sys::window().ok_or_else(|| OrigaError::NetworkError {
+        url: url.clone(),
+        reason: "No window found".to_string(),
+    })?;
+
+    let resp_value = JsFuture::from(window.fetch_with_str(&url))
+        .await
+        .map_err(|e| OrigaError::NetworkError {
+            url: url.clone(),
+            reason: format!("Failed to fetch: {:?}", e),
+        })?;
+
+    let response: web_sys::Response =
+        resp_value
+            .dyn_into()
+            .map_err(|e| OrigaError::NetworkError {
+                url: url.clone(),
+                reason: format!("Failed to cast response: {:?}", e),
+            })?;
+
+    if !response.ok() {
+        return Err(OrigaError::NetworkError {
+            url,
+            reason: format!("HTTP {}", response.status()),
+        });
+    }
+
+    let request =
+        web_sys::Request::new_with_str(&key).map_err(|e| OrigaError::RepositoryError {
+            reason: format!("Failed to create request: {:?}", e),
+        })?;
+
+    JsFuture::from(cache.put_with_request(&request, &response))
+        .await
+        .map_err(|e| OrigaError::RepositoryError {
+            reason: format!("Failed to cache: {:?}", e),
+        })?;
+
+    Ok(())
+}
+
+pub async fn is_cached(path: &str) -> bool {
+    let Ok(cache) = open_cache().await else {
+        return false;
+    };
+    let key = ensure_leading_slash(path);
+    let Ok(result) = JsFuture::from(cache.match_with_str(&key)).await else {
+        return false;
+    };
+    !result.is_null() && !result.is_undefined()
 }
