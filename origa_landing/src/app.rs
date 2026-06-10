@@ -18,6 +18,9 @@ pub fn shell(_options: LeptosOptions) -> impl IntoView {
                 <link rel="preconnect" href="https://fonts.googleapis.com" />
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
                 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&display=swap" />
+                <meta name="yandex-verification" content="95bbd9366a113be4" />
+                <meta name="google-site-verification" content="8HXC9phyHedz5AeimJ12tIo7HtXXHrnm2ewE4Qm3zEw" />
+                <meta name="msvalidate.01" content="36F67711155024DF2B7F9B5EBF72E9D0" />
                 <MetaTags />
             </head>
             <body class="min-h-screen paper-texture">
