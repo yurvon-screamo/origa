@@ -1,13 +1,11 @@
 mod action_buttons;
 mod content;
-mod labeled_input;
 mod password_card;
 mod personal_data_card;
 mod settings_card;
 
 pub use action_buttons::ActionButtons;
 pub use content::ProfileContent;
-pub use labeled_input::LabeledInput;
 pub use password_card::PasswordCard;
 pub use personal_data_card::PersonalDataCard;
 pub use settings_card::SettingsCard;

@@ -60,7 +60,7 @@ mod word_translations;
 pub use alert::{Alert, AlertType};
 pub use audio_buttons::AudioButtons;
 pub use audio_player::AudioPlayer;
-pub use avatar::Avatar;
+pub use avatar::{Avatar, AvatarSize};
 pub use bottom_nav::BottomTabBar;
 pub use button::{Button, ButtonSize, ButtonVariant};
 pub use card::Card;
