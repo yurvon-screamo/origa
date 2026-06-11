@@ -1,13 +1,14 @@
 use crate::i18n::*;
 use crate::ui_components::{
     Button, ButtonVariant, Card, DisplayText, MarkdownText, MarkdownVariant, Text, TextSize,
-    TypographyVariant, WordTranslations, is_speech_supported, speak_word, stop_current_audio,
+    TypographyVariant, is_speech_supported, speak_word, stop_current_audio,
 };
 use leptos::prelude::*;
-use origa::domain::{Card as DomainCard, CardAnswer, NativeLanguage, YesNoCard};
+use origa::domain::{Card as DomainCard, NativeLanguage, YesNoCard};
 use std::collections::HashSet;
 use tracing::warn;
 
+use super::answer_display::{CardAnswerDisplay, extract_card_answer};
 use super::card_type::CardType;
 use super::quiz_card_header::QuizCardHeader;
 
@@ -97,26 +98,10 @@ pub fn YesNoCardView(
         _ => None,
     });
 
-    let (answer_vocab_translations, answer_vocab_description, answer_text_display) =
-        match card.answer(&native_language) {
-            Ok(CardAnswer::Vocabulary {
-                translations,
-                description,
-            }) => (Some(translations), description, String::new()),
-            Ok(CardAnswer::Text(s)) => (None, None, s),
-            Err(e) => {
-                warn!(
-                    card_type = ?card_type,
-                    content_key = %card.content_key(),
-                    error = %e,
-                    "Failed to get answer for result display"
-                );
-                (None, None, String::new())
-            },
-        };
-    let answer_vocab_translations_stored = StoredValue::new(answer_vocab_translations);
-    let answer_vocab_description_stored = StoredValue::new(answer_vocab_description);
-    let answer_text_display_stored = StoredValue::new(answer_text_display);
+    let answer_data = extract_card_answer(&card, &native_language, &card_type);
+    let answer_vocab_translations_stored = StoredValue::new(answer_data.translations);
+    let answer_vocab_description_stored = StoredValue::new(answer_data.description);
+    let answer_text_display_stored = StoredValue::new(answer_data.text);
 
     let lesson_ctx = use_context::<super::lesson_state::LessonContext>();
     Effect::new(move |_| {
@@ -306,37 +291,12 @@ pub fn YesNoCardView(
                 </Show>
 
                 <Show when=move || show_result>
-                    <div class="mt-4 text-center">
-                        <Show
-                            when=move || answer_vocab_translations_stored.get_value().is_some()
-                            fallback=move || {
-                                view! {
-                                    <Show when=move || !answer_text_display_stored.get_value().is_empty()>
-                                        <div class="lesson-answer text-left">
-                                            <MarkdownText
-                                                content=Signal::derive(move || answer_text_display_stored.get_value())
-                                                variant=Signal::derive(|| MarkdownVariant::Default)
-                                                known_kanji=known_kanji.get()
-                                            />
-                                        </div>
-                                    </Show>
-                                }
-                            }
-                        >
-                            {move || {
-                                let trans = answer_vocab_translations_stored.get_value().unwrap_or_default();
-                                let desc = answer_vocab_description_stored.get_value();
-                                view! {
-                                    <div class="lesson-answer text-left">
-                                        <WordTranslations
-                                            translations=Signal::derive(move || trans.clone())
-                                            description=Signal::derive(move || desc.clone())
-                                        />
-                                    </div>
-                                }
-                            }}
-                        </Show>
-                    </div>
+                    <CardAnswerDisplay
+                        translations=Signal::derive(move || answer_vocab_translations_stored.get_value())
+                        description=Signal::derive(move || answer_vocab_description_stored.get_value())
+                        text=Signal::derive(move || answer_text_display_stored.get_value())
+                        known_kanji=known_kanji
+                    />
                 </Show>
             </div>
         </Card>
