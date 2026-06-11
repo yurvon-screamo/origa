@@ -161,7 +161,9 @@ testWithFreshUser.describe("Profile Page", () => {
 
         await profilePage.waitForAutoSave();
 
-        await profilePage.navigateToHomeAndBack();
+        await profilePage.navigateToHomeAndWaitForSync();
+
+        await profilePage.expectProfileVisible();
 
         await expect(profilePage.langEnglish).toHaveClass(/border-\[var\(--fg-black\)\]/);
         await expect(profilePage.loadHard).toHaveClass(/btn-olive/);
