@@ -40,6 +40,20 @@ test.describe("Authentication", () => {
         expect(errorMessage).not.toContain("Network error");
         expect(errorMessage).not.toContain("fetching");
     });
+
+    test("should toggle password visibility", async () => {
+        await expect(loginPage.passwordInput).toHaveAttribute("type", "password");
+
+        await loginPage.togglePasswordVisibility();
+        await expect(loginPage.passwordInput).toHaveAttribute("type", "text");
+
+        await loginPage.togglePasswordVisibility();
+        await expect(loginPage.passwordInput).toHaveAttribute("type", "password");
+    });
+
+    test("should display language toggle on login page", async ({ page }) => {
+        await expect(page.getByTestId("login-lang-toggle")).toBeVisible();
+    });
 });
 
 testWithUniqueUser.describe("Authentication - success", () => {

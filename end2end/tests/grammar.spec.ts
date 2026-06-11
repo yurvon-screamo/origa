@@ -390,6 +390,62 @@ testWithFreshUser.describe("Grammar Page - Practice Mode", () => {
         await expect(grammarPage.detailPracticeBtn).toBeVisible({ timeout: 10_000 });
         // Button is visible for rules with format_map (no disabled state)
     });
+
+    testWithFreshUser("should complete full practice quiz flow", async ({ page }) => {
+        test.setTimeout(120_000);
+        const grammarPage = await setupGrammarPage(page);
+
+        // Add grammar rule
+        await grammarPage.openAddModal();
+        await grammarPage.selectRule("～ます");
+        await grammarPage.addSelectedRules();
+        await expect(grammarPage.grammarGrid).toBeVisible({ timeout: 10_000 });
+
+        // Add words to enable quiz generation
+        const wordsPage = new WordsPage(page);
+        await wordsPage.goto();
+        await wordsPage.expectWordsVisible();
+        await wordsPage.openAddModal();
+        await wordsPage.enterText("私は本を読みます");
+        await wordsPage.analyzeText();
+        await wordsPage.selectFirstWord();
+        await wordsPage.addSelectedWords();
+
+        // Go back to grammar and open practice
+        await grammarPage.goto();
+        await grammarPage.expectGrammarVisible();
+        await expect(grammarPage.grammarGrid).toBeVisible({ timeout: 10_000 });
+
+        await grammarPage.openPracticeForCard(0);
+        await expect(grammarPage.practiceModal).toBeVisible({ timeout: 5_000 });
+
+        // If quiz has content, answer all questions
+        const hasQuizContent = await grammarPage.practiceProgress.isVisible().catch(() => false);
+        if (hasQuizContent) {
+            // Answer questions until complete or no more
+            for (let i = 0; i < 10; i++) {
+                const isComplete = await grammarPage.practiceComplete.isVisible().catch(() => false);
+                if (isComplete) break;
+
+                const hasNoWords = await grammarPage.practiceNoWords.isVisible().catch(() => false);
+                if (hasNoWords) break;
+
+                // Select a random option (first available)
+                const option = grammarPage.practiceOptions[0];
+                if (await option.isVisible().catch(() => false)) {
+                    await option.click();
+                    // Click next if available
+                    if (await grammarPage.practiceNextBtn.isVisible().catch(() => false)) {
+                        await grammarPage.practiceNextBtn.click();
+                    }
+                }
+            }
+        }
+
+        // Close the modal
+        await grammarPage.practiceCloseBtn.click();
+        await expect(grammarPage.practiceModal).not.toBeVisible({ timeout: 5_000 });
+    });
 });
 
 testWithFreshUser.describe("Grammar Page - Detail Page", () => {

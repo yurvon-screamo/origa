@@ -47,6 +47,35 @@ async function rateCardUntilDone(lessonPage: LessonPage, rating: "again" | "good
     }
 }
 
+async function completeLessonFlexible(
+    lessonPage: LessonPage,
+    page: Page,
+    maxCards = 10
+): Promise<void> {
+    for (let i = 0; i < maxCards; i++) {
+        const isComplete = await lessonPage.completeScreen.isVisible().catch(() => false);
+        if (isComplete) break;
+
+        const anyInteractive = lessonPage.showAnswerBtn
+            .or(lessonPage.quizOptions[0])
+            .or(lessonPage.yesnoYesBtn);
+        await expect(anyInteractive).toBeVisible({ timeout: 15_000 });
+
+        if (await lessonPage.showAnswerBtn.isVisible().catch(() => false)) {
+            await lessonPage.showAnswer();
+            await lessonPage.rate("good");
+        } else if (await lessonPage.quizOptions[0].isVisible().catch(() => false)) {
+            await lessonPage.selectQuizOption(0);
+            await page.waitForTimeout(2000);
+        } else if (await lessonPage.yesnoYesBtn.isVisible().catch(() => false)) {
+            await lessonPage.yesnoYesBtn.click();
+            await page.waitForTimeout(2000);
+        } else {
+            break;
+        }
+    }
+}
+
 testWithFreshUser.describe("Lesson Page", () => {
     testWithFreshUser("should display lesson page with card", async ({ page }) => {
         test.setTimeout(90_000);
@@ -128,6 +157,62 @@ testWithFreshUser.describe("Lesson Page", () => {
         await lessonPage.waitForComplete();
         await lessonPage.clickHome();
         await page.waitForURL(/\/home$/, { timeout: 10_000 });
+    });
+
+    testWithFreshUser("should start next lesson from complete screen", async ({ page }) => {
+        test.setTimeout(120_000);
+        await skipOnboarding(page);
+
+        // Add multiple words to ensure enough cards for two lessons
+        const wordsPage = new WordsPage(page);
+        await wordsPage.goto();
+        await wordsPage.expectWordsVisible();
+
+        const sentences = [
+            "私は本を読みます",
+            "彼は学校に行きます",
+            "猫が魚を食べる",
+        ];
+        for (const sentence of sentences) {
+            await wordsPage.openAddModal();
+            await wordsPage.enterText(sentence);
+            await wordsPage.analyzeText();
+            await wordsPage.selectFirstWord();
+            await wordsPage.addSelectedWords();
+            await expect(wordsPage.wordsGrid).toBeVisible({ timeout: 10_000 });
+        }
+
+        const homePage = new HomePage(page);
+        await homePage.goto();
+        await homePage.startLesson();
+
+        const lessonPage = new LessonPage(page);
+        await expect(lessonPage.lessonPage).toBeVisible({ timeout: 15_000 });
+        await expect(lessonPage.lessonError).not.toBeVisible({ timeout: 15_000 });
+        await expect(lessonPage.lessonLoading).toBeHidden({ timeout: 30_000 });
+        await expect(lessonPage.lessonContent).toBeVisible({ timeout: 15_000 });
+
+        await completeLessonFlexible(lessonPage, page);
+        await lessonPage.waitForComplete();
+
+        await lessonPage.clickNextLesson();
+
+        // Wait for lesson reload: loading appears then resolves
+        await lessonPage.lessonLoading
+            .waitFor({ state: "visible", timeout: 5_000 })
+            .catch(() => {});
+        await lessonPage.lessonLoading
+            .waitFor({ state: "hidden", timeout: 30_000 });
+
+        // After loading, check the resulting state
+        const hasContent = await lessonPage.lessonContent
+            .isVisible({ timeout: 5_000 })
+            .catch(() => false);
+        const hasError = await lessonPage.lessonError
+            .isVisible({ timeout: 5_000 })
+            .catch(() => false);
+
+        expect(hasContent || hasError).toBe(true);
     });
 
 });

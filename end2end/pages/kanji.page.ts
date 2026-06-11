@@ -26,6 +26,9 @@ export class KanjiPage extends BasePage {
     readonly detailPage: Locator;
     readonly loadMoreButton: Locator;
 
+    readonly detailDeleteModal: Locator;
+    readonly detailDeleteConfirmBtn: Locator;
+
     constructor(page: Page) {
         super(page);
 
@@ -50,6 +53,9 @@ export class KanjiPage extends BasePage {
         this.loadMoreButton = page.getByTestId("kanji-load-more-btn");
 
         this.detailPage = page.getByTestId("kanji-detail");
+
+        this.detailDeleteModal = page.getByTestId("kanji-detail-delete-modal");
+        this.detailDeleteConfirmBtn = page.getByTestId("kanji-detail-delete-modal-confirm");
     }
 
     async goto(): Promise<void> {
@@ -178,5 +184,18 @@ export class KanjiPage extends BasePage {
         const btn = card.getByTestId("kanji-card-item-favorite-btn");
         await btn.dispatchEvent("click");
         await this.page.waitForTimeout(1000);
+    }
+
+    async deleteFromDetail(): Promise<void> {
+        // Both desktop and mobile action bars render — use .first() for strict mode compatibility
+        const deleteBtn = this.page
+            .getByTestId("kanji-detail-actions-delete-btn")
+            .or(this.page.getByTestId("kanji-detail-actions-mobile-delete-btn"))
+            .first();
+        await expect(deleteBtn).toBeVisible({ timeout: 10_000 });
+        await deleteBtn.click();
+        await expect(this.detailDeleteModal).toBeVisible({ timeout: 5_000 });
+        await this.detailDeleteConfirmBtn.click();
+        await this.page.waitForURL(/\/kanji$/, { timeout: 10_000 });
     }
 }
