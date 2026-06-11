@@ -147,6 +147,7 @@ mod tests {
 #[cfg(test)]
 mod integration_tests {
     use super::*;
+    use crate::dictionary::grammar::{GrammarData, init_grammar, is_grammar_loaded};
     use crate::dictionary::vocabulary::{
         VocabularyChunkData, init_vocabulary, is_vocabulary_loaded,
     };
@@ -155,6 +156,7 @@ mod integration_tests {
     fn ensure_dictionaries() {
         ensure_tokenizer_dictionary();
         ensure_vocabulary_dictionary();
+        ensure_grammar_dictionary();
     }
 
     fn ensure_tokenizer_dictionary() {
@@ -227,6 +229,23 @@ mod integration_tests {
         init_vocabulary(vocab_data).unwrap();
     }
 
+    fn ensure_grammar_dictionary() {
+        if is_grammar_loaded() {
+            return;
+        }
+
+        let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
+        let grammar_path = std::path::PathBuf::from(manifest_dir)
+            .parent()
+            .unwrap()
+            .join("cdn")
+            .join("grammar")
+            .join("grammar.json");
+
+        let grammar_json = std::fs::read_to_string(grammar_path).unwrap();
+        init_grammar(GrammarData { grammar_json }).unwrap();
+    }
+
     #[test]
     fn should_translate_bakari() {
         ensure_dictionaries();
@@ -276,6 +295,24 @@ mod integration_tests {
         assert!(
             hodo.unwrap().translation.is_some(),
             "「ほど」should have a translation"
+        );
+    }
+
+    #[test]
+    fn should_resolve_grammar_label_for_particle() {
+        ensure_dictionaries();
+        let tokens = super::super::tokenize_text("東京から大阪まで").unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::English);
+        let kara_particle = results.iter().find(|t| t.surface_form == "から");
+        assert!(
+            kara_particle.is_some(),
+            "「から」particle should exist in tokens"
+        );
+        let kara = kara_particle.unwrap();
+        assert!(
+            kara.grammar_label.is_some(),
+            "「から」should have a grammar label, got: {:?}",
+            kara
         );
     }
 }

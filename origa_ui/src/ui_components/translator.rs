@@ -104,7 +104,8 @@ pub fn TranslatorText(
                         let reading = token.reading.clone();
                         let base_form = token.base_form.clone();
                         let translation_text = token.translation.clone();
-                        let clickable = token.pos.is_vocabulary_word();
+                        let grammar_label = token.grammar_label.clone();
+                        let clickable = token.pos.is_vocabulary_word() || grammar_label.is_some();
                         let has_kanji = has_kanji(&surface);
                         let show_base = base_form != surface;
 
@@ -163,15 +164,28 @@ pub fn TranslatorText(
                                                     } else {
                                                         ().into_any()
                                                     }}
-                                                    <MarkdownText
-                                                        content=Signal::derive({
-                                                            let text = translation_text.clone();
-                                                            move || text.clone().unwrap_or_default()
-                                                        })
-                                                        known_kanji=HashSet::new()
-                                                        variant=Signal::derive(|| MarkdownVariant::Compact)
-                                                        furigana=false
-                                                    />
+                                                    {if let Some(label) = &grammar_label {
+                                                        view! {
+                                                            <div class="token-popup-grammar">{label.clone()}</div>
+                                                        }.into_any()
+                                                    } else {
+                                                        ().into_any()
+                                                    }}
+                                                    {if let Some(text) = &translation_text {
+                                                        view! {
+                                                            <MarkdownText
+                                                                content=Signal::derive({
+                                                                    let text = text.clone();
+                                                                    move || text.clone()
+                                                                })
+                                                                known_kanji=HashSet::new()
+                                                                variant=Signal::derive(|| MarkdownVariant::Compact)
+                                                                furigana=false
+                                                            />
+                                                        }.into_any()
+                                                    } else {
+                                                        ().into_any()
+                                                    }}
                                                 </div>
                                             }.into_any()
                                         } else {

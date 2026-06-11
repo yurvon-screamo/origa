@@ -1728,6 +1728,13 @@ input[type="submit"],
     color: var(--fg-muted);
 }
 
+.token-popup-grammar {
+    font-family: var(--font-mono);
+    font-size: var(--text-label-sm);
+    color: var(--accent-olive);
+    margin-top: var(--space-xs);
+}
+
 .kanji-animation-container {
     display: flex;
     flex-direction: column;
