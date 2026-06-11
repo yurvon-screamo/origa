@@ -41,7 +41,6 @@
         "version": "Version:",
         "commit": "Commit:",
         "build_date": "Build date:",
-        "save_changes": "Save changes",
         "logout": "Log out",
         "logging_out": "Logging out...",
         "delete_account": "Delete account",
@@ -71,7 +70,11 @@
         "retry_download": "Retry",
         "checking_cache": "Checking cache...",
         "card_cache_running": "Caching card resources...",
-        "card_cache_complete": "Card resources cached"
+        "card_cache_complete": "Card resources cached",
+        "autosave_saving": "Saving...",
+        "autosave_saved": "Saved",
+        "autosave_error": "Save error",
+        "autosave_retry": "Retry"
     },
     "onboarding": {
         "steps": {

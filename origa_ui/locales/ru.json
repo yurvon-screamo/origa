@@ -41,7 +41,6 @@
     "version": "Версия:",
     "commit": "Commit:",
     "build_date": "Дата сборки:",
-    "save_changes": "Сохранить изменения",
     "logout": "Выйти из аккаунта",
     "logging_out": "Выход...",
     "delete_account": "Удалить аккаунт",
@@ -71,7 +70,11 @@
     "retry_download": "Повторить",
     "checking_cache": "Проверка кэша...",
     "card_cache_running": "Кэширование карточек...",
-    "card_cache_complete": "Ресурсы карточек закэшированы"
+    "card_cache_complete": "Ресурсы карточек закэшированы",
+    "autosave_saving": "Сохраняем...",
+    "autosave_saved": "Сохранено",
+    "autosave_error": "Ошибка сохранения",
+    "autosave_retry": "Повторить"
   },
   "onboarding": {
     "steps": {

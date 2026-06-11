@@ -6,6 +6,7 @@ use origa::domain::NativeLanguage;
 pub fn NativeLanguageToggle(
     selected_language: RwSignal<NativeLanguage>,
     #[prop(optional, into)] test_id: Signal<String>,
+    #[prop(optional)] on_change: Option<Callback<NativeLanguage>>,
 ) -> impl IntoView {
     let i18n = use_i18n();
 
@@ -45,7 +46,10 @@ pub fn NativeLanguageToggle(
                     en_class.get()
                 )
                 attr:aria-current=move || if selected_language.get() == NativeLanguage::English { "true" } else { "false" }
-                on:click=move |_| selected_language.set(NativeLanguage::English)
+                on:click=move |_| {
+                    selected_language.set(NativeLanguage::English);
+                    if let Some(cb) = &on_change { cb.run(NativeLanguage::English); }
+                }
             >
                 "EN"
             </button>
@@ -60,7 +64,10 @@ pub fn NativeLanguageToggle(
                     ru_class.get()
                 )
                 attr:aria-current=move || if selected_language.get() == NativeLanguage::Russian { "true" } else { "false" }
-                on:click=move |_| selected_language.set(NativeLanguage::Russian)
+                on:click=move |_| {
+                    selected_language.set(NativeLanguage::Russian);
+                    if let Some(cb) = &on_change { cb.run(NativeLanguage::Russian); }
+                }
             >
                 "RU"
             </button>

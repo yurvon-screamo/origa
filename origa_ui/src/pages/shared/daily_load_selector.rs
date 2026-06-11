@@ -5,7 +5,10 @@ use leptos::prelude::*;
 use origa::domain::DailyLoad;
 
 #[component]
-pub fn DailyLoadSelector(selected_load: RwSignal<DailyLoad>) -> impl IntoView {
+pub fn DailyLoadSelector(
+    selected_load: RwSignal<DailyLoad>,
+    #[prop(optional)] on_change: Option<Callback<DailyLoad>>,
+) -> impl IntoView {
     let i18n = use_i18n();
 
     view! {
@@ -38,7 +41,10 @@ pub fn DailyLoadSelector(selected_load: RwSignal<DailyLoad>) -> impl IntoView {
                         <Tooltip text=Signal::derive(move || description.clone())>
                             <Button
                                 variant=move || if is_selected() { ButtonVariant::Olive } else { ButtonVariant::Default }
-                                on_click=Callback::new(move |_| selected_load.set(load_for_click))
+                                on_click=Callback::new(move |_| {
+                                    selected_load.set(load_for_click);
+                                    if let Some(cb) = &on_change { cb.run(load_for_click); }
+                                })
                                 test_id=Signal::derive(move || format!("profile-load-{}", load_id))
                             >
                                 <span class="inline-flex items-center">

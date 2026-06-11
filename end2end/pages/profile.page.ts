@@ -8,7 +8,8 @@ export class ProfilePage extends BasePage {
 
 	readonly profilePersonalData: Locator;
 	readonly profileSettings: Locator;
-	readonly profileActions: Locator;
+	readonly profileDangerZone: Locator;
+	readonly autosaveStatus: Locator;
 
 	readonly langEnglish: Locator;
 	readonly langRussian: Locator;
@@ -32,7 +33,8 @@ export class ProfilePage extends BasePage {
 
 		this.profilePersonalData = page.getByTestId("profile-personal-data");
 		this.profileSettings = page.getByTestId("profile-settings");
-		this.profileActions = page.getByTestId("profile-actions");
+		this.profileDangerZone = page.getByTestId("profile-danger-zone");
+		this.autosaveStatus = page.getByTestId("profile-autosave-status");
 
 		this.langEnglish = page.getByTestId("lang-toggle-en");
 		this.langRussian = page.getByTestId("lang-toggle-ru");
@@ -75,10 +77,6 @@ export class ProfilePage extends BasePage {
 		await btns[load].click();
 	}
 
-	async saveProfile(): Promise<void> {
-		await this.page.getByTestId("profile-save-btn").click();
-	}
-
 	async deleteAccount(): Promise<void> {
 		await this.page.getByTestId("profile-delete-btn").click();
 	}
@@ -111,7 +109,11 @@ export class ProfilePage extends BasePage {
 		await this.page.getByTestId("profile-page").waitFor({ state: "visible", timeout: 15_000 });
 	}
 
-	async waitForSaveComplete(): Promise<void> {
-		await expect(this.page.getByTestId("profile-save-btn")).toBeEnabled({ timeout: 10_000 });
+	async waitForAutoSave(): Promise<void> {
+		const status = this.autosaveStatus;
+		// Wait for status to appear (Saving state)
+		await status.waitFor({ state: "visible", timeout: 5_000 });
+		// Wait for it to show "Saved" or disappear (Idle after fade)
+		await expect(status).toContainText(/saved|сохранено/i, { timeout: 10_000 });
 	}
 }

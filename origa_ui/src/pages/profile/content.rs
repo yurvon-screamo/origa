@@ -1,12 +1,23 @@
-use super::{ActionButtons, PasswordCard, PersonalDataCard, SettingsCard};
+use super::{DangerZoneCard, PasswordCard, PersonalDataCard, SettingsCard};
 use crate::i18n::{native_language_to_locale, t, use_i18n};
 use crate::store::AuthStore;
-use crate::ui_components::{Avatar, AvatarSize, Card, OfflineBundleCard};
+use crate::ui_components::{Card, OfflineBundleCard};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos_router::hooks::use_navigate;
-use origa::domain::{NativeLanguage, User};
+use origa::domain::{DailyLoad, NativeLanguage, User};
 use origa::use_cases::UpdateUserProfileUseCase;
+
+#[derive(Clone, Copy, PartialEq, Default, Debug)]
+pub enum AutoSaveStatus {
+    #[default]
+    Idle,
+    Saving,
+    Saved,
+    Error,
+}
+
+const AUTOSAVE_STATUS_DISPLAY_MS: u32 = 1500;
 
 #[component]
 pub fn ProfileContent() -> impl IntoView {
@@ -53,36 +64,71 @@ pub fn ProfileContent() -> impl IntoView {
         selected_daily_load.set(daily_load.get());
     });
 
-    let is_saving = RwSignal::new(false);
+    let save_status: RwSignal<AutoSaveStatus> = RwSignal::new(AutoSaveStatus::Idle);
     let is_logging_out = RwSignal::new(false);
     let is_deleting = RwSignal::new(false);
     let disposed = StoredValue::new(());
+    let save_in_progress = RwSignal::new(false);
 
-    let auth_store_for_save = auth_store.clone();
-    let save_profile = Callback::new(move |_| {
-        let repository = auth_store_for_save.repository().clone();
+    let auth_store_save = auth_store.clone();
+    let trigger_save = Callback::new(move |_: ()| {
+        if save_in_progress.get() {
+            return;
+        }
+
+        let repository = auth_store_save.repository().clone();
         let language = selected_language.get();
         let daily_load_val = selected_daily_load.get();
-        let is_saving_signal = is_saving;
-        let auth_store_clone = auth_store_for_save.clone();
+        let auth_store_clone = auth_store_save.clone();
 
-        is_saving_signal.set(true);
+        save_in_progress.set(true);
+        save_status.set(AutoSaveStatus::Saving);
 
         spawn_local(async move {
             let use_case = UpdateUserProfileUseCase::new(&repository);
-
             let result = use_case.execute(language, daily_load_val, None).await;
 
             if disposed.is_disposed() {
                 return;
             }
-            is_saving_signal.set(false);
 
             if result.is_ok() {
+                save_status.set(AutoSaveStatus::Saved);
                 let _ = auth_store_clone.refresh_user().await;
+
+                if disposed.is_disposed() {
+                    return;
+                }
+                gloo_timers::future::TimeoutFuture::new(AUTOSAVE_STATUS_DISPLAY_MS).await;
+
+                if disposed.is_disposed() {
+                    return;
+                }
+
+                save_status.set(AutoSaveStatus::Idle);
+            } else {
+                save_status.set(AutoSaveStatus::Error);
             }
+
+            save_in_progress.set(false);
         });
     });
+
+    let on_language_change = {
+        let trigger = trigger_save;
+        Callback::new(move |_lang: NativeLanguage| {
+            trigger.run(());
+        })
+    };
+
+    let on_daily_load_change = {
+        let trigger = trigger_save;
+        Callback::new(move |_load: DailyLoad| {
+            trigger.run(());
+        })
+    };
+
+    let on_retry = trigger_save;
 
     let navigate = use_navigate();
     let navigate_for_logout = navigate.clone();
@@ -120,16 +166,9 @@ pub fn ProfileContent() -> impl IntoView {
 
     view! {
         <div class="profile-layout" data-testid="profile-content">
-            <div class="profile-identity">
-                <Avatar
-                    size=Signal::derive(move || AvatarSize::Large)
-                    initials=Signal::derive(move || {
-                        let name = user_name.get();
-                        name.chars().take(2).collect::<String>().to_uppercase()
-                    })
-                />
-                <div>
-                    <div class="profile-identity-name">{move || user_name.get()}</div>
+            <div class="profile-header">
+                <div class="profile-header-name">{move || user_name.get()}</div>
+                <div class="profile-header-label">
                     <span class="label-muted">{t!(i18n, home.profile)}</span>
                 </div>
             </div>
@@ -140,6 +179,10 @@ pub fn ProfileContent() -> impl IntoView {
                         <PersonalDataCard
                             selected_language={selected_language}
                             selected_daily_load={selected_daily_load}
+                            save_status={Signal::derive(move || save_status.get())}
+                            on_language_change={on_language_change}
+                            on_daily_load_change={on_daily_load_change}
+                            on_retry={on_retry}
                             test_id="profile-personal-data"
                         />
                     </Card>
@@ -155,19 +198,14 @@ pub fn ProfileContent() -> impl IntoView {
                     <Card>
                         <SettingsCard test_id="profile-settings" />
                     </Card>
+                    <DangerZoneCard
+                        on_logout={logout}
+                        on_delete_account={delete_account}
+                        is_logging_out={Signal::derive(move || is_logging_out.get())}
+                        is_deleting={Signal::derive(move || is_deleting.get())}
+                        test_id="profile-danger-zone"
+                    />
                 </div>
-            </div>
-
-            <div class="profile-actions-bar">
-                <ActionButtons
-                    on_save={save_profile}
-                    on_logout={logout}
-                    on_delete_account={delete_account}
-                    is_saving={Signal::derive(move || is_saving.get())}
-                    is_deleting={Signal::derive(move || is_deleting.get())}
-                    is_logging_out={Signal::derive(move || is_logging_out.get())}
-                    test_id="profile-actions"
-                />
             </div>
         </div>
     }

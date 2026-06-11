@@ -6,8 +6,6 @@ pub enum AvatarSize {
     Default,
 
     Small,
-
-    Large,
 }
 
 #[component]
@@ -28,7 +26,6 @@ pub fn Avatar(
                 let size_class = match size.get() {
                     AvatarSize::Default => "avatar",
                     AvatarSize::Small => "avatar-sm",
-                    AvatarSize::Large => "avatar-lg",
                 };
                 format!("{} {}", size_class, class.get())
             }
