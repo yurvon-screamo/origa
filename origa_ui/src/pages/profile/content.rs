@@ -68,49 +68,63 @@ pub fn ProfileContent() -> impl IntoView {
     let is_logging_out = RwSignal::new(false);
     let is_deleting = RwSignal::new(false);
     let disposed = StoredValue::new(());
-    let save_in_progress = RwSignal::new(false);
+    let is_saving = RwSignal::new(false);
+    let needs_resave = RwSignal::new(false);
 
     let auth_store_save = auth_store.clone();
     let trigger_save = Callback::new(move |_: ()| {
-        if save_in_progress.get() {
+        if is_saving.get() {
+            needs_resave.set(true);
             return;
         }
 
-        let repository = auth_store_save.repository().clone();
-        let language = selected_language.get();
-        let daily_load_val = selected_daily_load.get();
-        let auth_store_clone = auth_store_save.clone();
-
-        save_in_progress.set(true);
+        is_saving.set(true);
         save_status.set(AutoSaveStatus::Saving);
 
+        let repository = auth_store_save.repository().clone();
+        let auth_store_clone = auth_store_save.clone();
+
         spawn_local(async move {
-            let use_case = UpdateUserProfileUseCase::new(&repository);
-            let result = use_case.execute(language, daily_load_val, None).await;
+            loop {
+                let language = selected_language.get();
+                let daily_load_val = selected_daily_load.get();
 
-            if disposed.is_disposed() {
-                return;
-            }
+                let use_case = UpdateUserProfileUseCase::new(&repository);
+                let result = use_case.execute(language, daily_load_val, None).await;
 
-            if result.is_ok() {
-                save_status.set(AutoSaveStatus::Saved);
+                if disposed.is_disposed() {
+                    return;
+                }
+
+                if result.is_err() {
+                    is_saving.set(false);
+                    needs_resave.set(false);
+                    save_status.set(AutoSaveStatus::Error);
+                    return;
+                }
+
                 let _ = auth_store_clone.refresh_user().await;
 
                 if disposed.is_disposed() {
                     return;
                 }
-                gloo_timers::future::TimeoutFuture::new(AUTOSAVE_STATUS_DISPLAY_MS).await;
 
-                if disposed.is_disposed() {
-                    return;
+                if needs_resave.get() {
+                    needs_resave.set(false);
+                    save_status.set(AutoSaveStatus::Saving);
+                    continue;
                 }
 
-                save_status.set(AutoSaveStatus::Idle);
-            } else {
-                save_status.set(AutoSaveStatus::Error);
+                break;
             }
 
-            save_in_progress.set(false);
+            is_saving.set(false);
+            save_status.set(AutoSaveStatus::Saved);
+            gloo_timers::future::TimeoutFuture::new(AUTOSAVE_STATUS_DISPLAY_MS).await;
+            if disposed.is_disposed() {
+                return;
+            }
+            save_status.set(AutoSaveStatus::Idle);
         });
     });
 
