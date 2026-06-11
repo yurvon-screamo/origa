@@ -70,9 +70,8 @@ testWithFreshUser.describe("Profile Page", () => {
         await expect(profilePage.confirmDeleteBtn).not.toBeVisible({ timeout: 5000 });
     });
 
-    testWithFreshUser("should display save and logout buttons", async ({ page }) => {
+    testWithFreshUser("should display logout button in danger zone", async ({ page }) => {
         await setupProfilePage(page);
-        await expect(page.getByTestId("profile-save-btn")).toBeVisible();
         await expect(page.getByTestId("profile-logout-btn")).toBeVisible();
     });
 
@@ -81,49 +80,46 @@ testWithFreshUser.describe("Profile Page", () => {
         await expect(profilePage.profileSettings).toBeVisible();
     });
 
-    testWithFreshUser("should persist language after save", async ({ page }) => {
+    testWithFreshUser("should persist language after auto-save", async ({ page }) => {
         test.setTimeout(90_000);
         const profilePage = await setupProfilePage(page);
         await page.mouse.click(0, 0);
         await profilePage.selectLanguage("english");
         await expect(profilePage.langEnglish).toHaveClass(/border-\[var\(--fg-black\)\]/);
-        await profilePage.saveProfile();
-        await profilePage.waitForSaveComplete();
+        await profilePage.waitForAutoSave();
         await page.reload();
         await profilePage.waitForLoad();
         await profilePage.expectProfileVisible();
         await expect(profilePage.langEnglish).toHaveClass(/border-\[var\(--fg-black\)\]/);
     });
 
-    testWithFreshUser("should persist daily load after save", async ({ page }) => {
+    testWithFreshUser("should persist daily load after auto-save", async ({ page }) => {
         test.setTimeout(90_000);
         const profilePage = await setupProfilePage(page);
         await profilePage.selectDailyLoad("hard");
         await expect(profilePage.loadHard).toHaveClass(/btn-olive/);
-        await profilePage.saveProfile();
-        await profilePage.waitForSaveComplete();
+        await profilePage.waitForAutoSave();
         await page.reload();
         await profilePage.waitForLoad();
         await profilePage.expectProfileVisible();
         await expect(profilePage.loadHard).toHaveClass(/btn-olive/);
     });
 
-    testWithFreshUser("should persist daily load after save and navigation to home", async ({ page }) => {
+    testWithFreshUser("should persist daily load after auto-save and navigation to home", async ({ page }) => {
         test.setTimeout(90_000);
         const profilePage = await setupProfilePage(page);
 
         await profilePage.selectDailyLoad("hard");
         await expect(profilePage.loadHard).toHaveClass(/btn-olive/);
 
-        await profilePage.saveProfile();
-        await profilePage.waitForSaveComplete();
+        await profilePage.waitForAutoSave();
 
         await profilePage.navigateToHomeAndBack();
 
         await expect(profilePage.loadHard).toHaveClass(/btn-olive/);
     });
 
-    testWithFreshUser("should persist language after save and navigation to home", async ({ page }) => {
+    testWithFreshUser("should persist language after auto-save and navigation to home", async ({ page }) => {
         test.setTimeout(90_000);
         const profilePage = await setupProfilePage(page);
 
@@ -131,8 +127,7 @@ testWithFreshUser.describe("Profile Page", () => {
         await profilePage.selectLanguage("english");
         await expect(profilePage.langEnglish).toHaveClass(/border-\[var\(--fg-black\)\]/);
 
-        await profilePage.saveProfile();
-        await profilePage.waitForSaveComplete();
+        await profilePage.waitForAutoSave();
 
         await profilePage.navigateToHomeAndBack();
 
@@ -147,8 +142,7 @@ testWithFreshUser.describe("Profile Page", () => {
         await profilePage.selectDailyLoad("heavy");
         await expect(profilePage.loadHeavy).toHaveClass(/btn-olive/);
 
-        await profilePage.saveProfile();
-        await profilePage.waitForSaveComplete();
+        await profilePage.waitForAutoSave();
 
         await profilePage.navigateToHomeAndWaitForSync();
 
@@ -157,21 +151,34 @@ testWithFreshUser.describe("Profile Page", () => {
         await expect(profilePage.loadHeavy).toHaveClass(/btn-olive/);
     });
 
-    testWithFreshUser("should persist both daily load and language after save", async ({ page }) => {
+    testWithFreshUser("should persist both daily load and language after auto-save", async ({ page }) => {
         test.setTimeout(90_000);
         const profilePage = await setupProfilePage(page);
 
         await page.mouse.click(0, 0);
-        await profilePage.selectLanguage("english");
         await profilePage.selectDailyLoad("hard");
 
-        await profilePage.saveProfile();
-        await profilePage.waitForSaveComplete();
+        await profilePage.waitForAutoSave();
 
-        await profilePage.navigateToHomeAndBack();
+        await profilePage.selectLanguage("english");
+
+        await profilePage.waitForAutoSave();
+
+        await profilePage.navigateToHomeAndWaitForSync();
+
+        await profilePage.expectProfileVisible();
 
         await expect(profilePage.langEnglish).toHaveClass(/border-\[var\(--fg-black\)\]/);
         await expect(profilePage.loadHard).toHaveClass(/btn-olive/);
+    });
+
+    testWithFreshUser("should show autosave status on language change", async ({ page }) => {
+        const profilePage = await setupProfilePage(page);
+        await page.mouse.click(0, 0);
+        await profilePage.selectLanguage("english");
+        const status = page.getByTestId("profile-autosave-status");
+        await expect(status).toBeVisible({ timeout: 5_000 });
+        await expect(status).toContainText(/saved|сохранено/i, { timeout: 10_000 });
     });
 
     testWithFreshUser("should logout and redirect to login page", async ({ page }) => {
