@@ -1,11 +1,13 @@
 use crate::i18n::*;
 use crate::ui_components::{
     Card, DisplayText, FuriganaTextWithHover, Heading, HeadingLevel, KanjiViewMode,
-    KanjiWritingSection, Text, TextSize, TypographyVariant, is_speech_supported, speak_word,
-    stop_current_audio,
+    KanjiWritingSection, MarkdownText, MarkdownVariant, Text, TextSize, TypographyVariant,
+    WordTranslations, is_speech_supported, speak_word, stop_current_audio,
 };
 use leptos::prelude::*;
-use origa::domain::{Card as DomainCard, MultiQuizResult, NativeLanguage, QuizCard, QuizMode};
+use origa::domain::{
+    Card as DomainCard, CardAnswer, MultiQuizResult, NativeLanguage, QuizCard, QuizMode,
+};
 use std::collections::HashSet;
 use tracing::warn;
 
@@ -73,6 +75,27 @@ pub fn QuizCardView(
     let options: StoredValue<Vec<origa::domain::QuizOption>> =
         StoredValue::new(quiz_card.options().to_vec());
     let multi_result_stored = StoredValue::new(multi_result);
+
+    let (answer_vocab_translations, answer_vocab_description, answer_text_display) =
+        match card.answer(&native_language) {
+            Ok(CardAnswer::Vocabulary {
+                translations,
+                description,
+            }) => (Some(translations), description, String::new()),
+            Ok(CardAnswer::Text(s)) => (None, None, s),
+            Err(e) => {
+                warn!(
+                    card_type = ?card_type,
+                    content_key = %card.content_key(),
+                    error = %e,
+                    "Failed to get answer for result display"
+                );
+                (None, None, String::new())
+            },
+        };
+    let answer_vocab_translations_stored = StoredValue::new(answer_vocab_translations);
+    let answer_vocab_description_stored = StoredValue::new(answer_vocab_description);
+    let answer_text_display_stored = StoredValue::new(answer_text_display);
 
     let quiz_result = move || {
         if dont_know_selected && show_result {
@@ -228,6 +251,40 @@ pub fn QuizCardView(
                     <Show when=move || show_result && quiz_result() != QuizResult::DontKnow>
                         <QuizResultDisplay quiz_result=quiz_result() />
                     </Show>
+                </Show>
+
+                <Show when=move || show_result>
+                    <div class="mt-4 text-center">
+                        <Show
+                            when=move || answer_vocab_translations_stored.get_value().is_some()
+                            fallback=move || {
+                                view! {
+                                    <Show when=move || !answer_text_display_stored.get_value().is_empty()>
+                                        <div class="lesson-answer text-left">
+                                            <MarkdownText
+                                                content=Signal::derive(move || answer_text_display_stored.get_value())
+                                                variant=Signal::derive(|| MarkdownVariant::Default)
+                                                known_kanji=known_kanji.get()
+                                            />
+                                        </div>
+                                    </Show>
+                                }
+                            }
+                        >
+                            {move || {
+                                let trans = answer_vocab_translations_stored.get_value().unwrap_or_default();
+                                let desc = answer_vocab_description_stored.get_value();
+                                view! {
+                                    <div class="lesson-answer text-left">
+                                        <WordTranslations
+                                            translations=Signal::derive(move || trans.clone())
+                                            description=Signal::derive(move || desc.clone())
+                                        />
+                                    </div>
+                                }
+                            }}
+                        </Show>
+                    </div>
                 </Show>
             </div>
         </Card>

@@ -3,7 +3,7 @@ use super::kanji_card_details::{KanjiCardDetails, RadicalDisplay};
 use crate::i18n::*;
 use crate::ui_components::{
     Button, ButtonVariant, FuriganaText, Heading, HeadingLevel, MarkdownText, MarkdownVariant,
-    Text, TextSize, TranslatorText, TypographyVariant,
+    Text, TextSize, TranslatorText, TypographyVariant, WordTranslations,
 };
 use leptos::{ev::MouseEvent, prelude::*};
 use origa::domain::GrammarInfo;
@@ -13,6 +13,8 @@ use std::collections::HashSet;
 pub fn LessonCardAnswer(
     question_text: String,
     answer_text: String,
+    answer_translations: Option<Vec<String>>,
+    answer_description: Option<String>,
     is_expanded: RwSignal<bool>,
     needs_collapse: RwSignal<bool>,
     content_ref: NodeRef<leptos::html::Div>,
@@ -30,6 +32,8 @@ pub fn LessonCardAnswer(
     let i18n = use_i18n();
     let question = StoredValue::new(question_text);
     let answer = StoredValue::new(answer_text);
+    let answer_translations_stored = StoredValue::new(answer_translations);
+    let answer_description_stored = StoredValue::new(answer_description);
     let on_readings_stored = StoredValue::new(on_readings);
     let kun_readings_stored = StoredValue::new(kun_readings);
     let radicals_stored = StoredValue::new(radicals);
@@ -119,7 +123,7 @@ pub fn LessonCardAnswer(
                                         </Text>
                                     </div>
                                     <Show
-                                        when=move || is_reversed
+                                        when=move || answer_translations_stored.get_value().is_some()
                                         fallback=move || {
                                             view! {
                                                 <MarkdownText
@@ -130,7 +134,18 @@ pub fn LessonCardAnswer(
                                             }
                                         }
                                     >
-                                        <FuriganaText text=answer.get_value() known_kanji=known_kanji.get()/>
+                                        {move || {
+                                            let trans = answer_translations_stored.get_value().unwrap_or_default();
+                                            let desc = answer_description_stored.get_value();
+                                            view! {
+                                                <div class="lesson-answer">
+                                                    <WordTranslations
+                                                        translations=Signal::derive(move || trans.clone())
+                                                        description=Signal::derive(move || desc.clone())
+                                                    />
+                                                </div>
+                                            }
+                                        }}
                                     </Show>
                                 </div>
                             }
