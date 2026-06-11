@@ -156,8 +156,11 @@ testWithFreshUser.describe("Profile Page", () => {
         const profilePage = await setupProfilePage(page);
 
         await page.mouse.click(0, 0);
-        await profilePage.selectLanguage("english");
         await profilePage.selectDailyLoad("hard");
+
+        await profilePage.waitForAutoSave();
+
+        await profilePage.selectLanguage("english");
 
         await profilePage.waitForAutoSave();
 
