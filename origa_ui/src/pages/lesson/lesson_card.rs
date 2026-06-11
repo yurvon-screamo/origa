@@ -6,10 +6,11 @@ use leptos::prelude::*;
 
 use leptos::wasm_bindgen::JsCast;
 use leptos::wasm_bindgen::closure::Closure;
-use origa::domain::{Card as DomainCard, CardAnswer, GrammarInfo, NativeLanguage};
+use origa::domain::{Card as DomainCard, GrammarInfo, NativeLanguage};
 use std::collections::HashSet;
 use tracing;
 
+use super::answer_display::extract_card_answer;
 use super::card_type::CardType;
 use super::kanji_card_details::RadicalDisplay;
 use super::lesson_card_answer::LessonCardAnswer;
@@ -53,28 +54,15 @@ pub fn LessonCard(
         question_text.clone()
     });
 
-    let (answer_translations, answer_description, answer_text) = match card.answer(&lang) {
-        Ok(CardAnswer::Vocabulary {
-            translations,
-            description,
-        }) => {
-            let tts_text = translations.join(", ");
-            (Some(translations), description, tts_text)
-        },
-        Ok(CardAnswer::Text(s)) => (None, None, s),
-        Err(e) => {
-            tracing::warn!(
-                card_type = ?card_type,
-                content_key = %card.content_key(),
-                error = %e,
-                "Failed to get card answer"
-            );
-            (None, None, String::new())
-        },
-    };
-    let answer = StoredValue::new(answer_text);
-    let answer_translations_stored = StoredValue::new(answer_translations);
-    let answer_description_stored = StoredValue::new(answer_description);
+    let answer_data = extract_card_answer(&card, &lang, &card_type);
+    let tts_text = answer_data
+        .translations
+        .as_ref()
+        .map(|t| t.join(", "))
+        .unwrap_or_else(|| answer_data.text.clone());
+    let answer = StoredValue::new(tts_text);
+    let answer_translations_stored = StoredValue::new(answer_data.translations);
+    let answer_description_stored = StoredValue::new(answer_data.description);
 
     let radicals: Option<Vec<RadicalDisplay>> = match &card {
         DomainCard::Kanji(kanji) => match kanji.radicals_info() {
