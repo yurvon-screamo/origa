@@ -251,16 +251,20 @@ pub fn ScoringStep(
                             {move || current_card.get().map(|card| {
                         view! {
                             <Card class=Signal::derive(|| "p-6".to_string())>
-                                <div class="text-center">
-                                <div class="flex items-center gap-2 justify-center relative">
+                                <div class="text-left mb-4">
                                     <Tag variant=Signal::derive(move || card.card_type.tag_variant())>
                                         {card.card_type.label(&i18n)}
                                     </Tag>
-                                    <FuriganaText
-                                        text={card.question.clone()}
-                                        known_kanji=HashSet::new()
-                                        test_id=Signal::derive(|| "scoring-step-question".to_string())
-                                    />
+                                </div>
+
+                                <div class="flex items-center justify-center relative">
+                                    <div class="text-2xl">
+                                        <FuriganaText
+                                            text={card.question.clone()}
+                                            known_kanji=HashSet::new()
+                                            test_id=Signal::derive(|| "scoring-step-question".to_string())
+                                        />
+                                    </div>
                                     <div class="absolute right-0 top-1/2 -translate-y-1/2">
                                         <AudioButtons
                                             text=card.question.clone()
@@ -271,13 +275,12 @@ pub fn ScoringStep(
                                     </div>
                                 </div>
 
-                                    <div class="mt-4">
-                                        <MarkdownText
-                                            content=Signal::derive(move || card.answer.clone())
-                                            known_kanji=HashSet::new()
-                                            test_id=Signal::derive(|| "scoring-step-answer".to_string())
-                                        />
-                                    </div>
+                                <div class="mt-4">
+                                    <MarkdownText
+                                        content=Signal::derive(move || card.answer.clone())
+                                        known_kanji=HashSet::new()
+                                        test_id=Signal::derive(|| "scoring-step-answer".to_string())
+                                    />
                                 </div>
 
                                 <div class="grid grid-cols-2 gap-3 mt-6">

@@ -14,6 +14,8 @@ use web_sys::{SpeechSynthesisUtterance, SpeechSynthesisVoice, window};
 thread_local! {
     static TTS_CALLBACK: RefCell<Option<Box<dyn FnMut()>>> = const { RefCell::new(None) };
     static TTS_LISTENER_REGISTERED: Cell<bool> = const { Cell::new(false) };
+    static CACHED_VOICE_ID: RefCell<Option<String>> = const { RefCell::new(None) };
+    static VOICE_RESOLVED: Cell<bool> = const { Cell::new(false) };
 }
 
 fn ensure_tauri_listener_registered() {
@@ -41,6 +43,86 @@ fn ensure_tauri_listener_registered() {
     });
 }
 
+async fn resolve_japanese_voice_id() -> Option<String> {
+    let cached = CACHED_VOICE_ID.with(|cell| cell.borrow().clone());
+    if let Some(id) = cached {
+        return Some(id);
+    }
+
+    if VOICE_RESOLVED.with(|f| f.get()) {
+        return None;
+    }
+
+    let invoke_fn = tauri::invoke_fn()?;
+
+    let args = js_sys::Object::new();
+    let result = invoke_fn
+        .call2(
+            &JsValue::UNDEFINED,
+            &JsValue::from_str("plugin:tts|get_voices"),
+            &args,
+        )
+        .ok()?;
+
+    let voices_js = wasm_bindgen_futures::JsFuture::from(js_sys::Promise::from(result))
+        .await
+        .ok()?;
+
+    let voices_arr = js_sys::Array::from(&voices_js);
+
+    let mut best_enhanced_kyoko: Option<String> = None;
+    let mut best_compact_kyoko: Option<String> = None;
+    let mut best_ja_jp: Option<String> = None;
+
+    for voice_val in voices_arr.iter() {
+        let id = js_sys::Reflect::get(&voice_val, &JsValue::from_str("id"))
+            .ok()
+            .and_then(|v| v.as_string());
+
+        let name = js_sys::Reflect::get(&voice_val, &JsValue::from_str("name"))
+            .ok()
+            .and_then(|v| v.as_string())
+            .unwrap_or_default();
+
+        let language = js_sys::Reflect::get(&voice_val, &JsValue::from_str("language"))
+            .ok()
+            .and_then(|v| v.as_string())
+            .unwrap_or_default();
+
+        let Some(id) = id else { continue };
+
+        if !language.starts_with("ja") {
+            continue;
+        }
+
+        let name_lower = name.to_lowercase();
+        let is_kyoko = name_lower.contains("kyoko");
+        let is_enhanced = name_lower.contains("enhanced");
+
+        if is_kyoko && is_enhanced && best_enhanced_kyoko.is_none() {
+            best_enhanced_kyoko = Some(id.clone());
+        }
+
+        if is_kyoko && !is_enhanced && best_compact_kyoko.is_none() {
+            best_compact_kyoko = Some(id.clone());
+        }
+
+        if best_ja_jp.is_none() {
+            best_ja_jp = Some(id);
+        }
+    }
+
+    let resolved = best_enhanced_kyoko.or(best_compact_kyoko).or(best_ja_jp);
+
+    if let Some(ref id) = resolved {
+        CACHED_VOICE_ID.with(|cell| *cell.borrow_mut() = Some(id.clone()));
+    }
+
+    VOICE_RESOLVED.with(|f| f.set(true));
+
+    resolved
+}
+
 async fn invoke_tauri_speak(text: &str, rate: f32) -> Result<(), String> {
     let invoke_fn = tauri::invoke_fn().ok_or("Tauri invoke not available")?;
 
@@ -63,10 +145,21 @@ async fn invoke_tauri_speak(text: &str, rate: f32) -> Result<(), String> {
         &JsValue::from_f64(rate as f64),
     )
     .map_err(|e| format!("Failed to set rate: {:?}", e))?;
+    let voice_id = resolve_japanese_voice_id().await;
+
+    if let Some(ref vid) = voice_id {
+        js_sys::Reflect::set(
+            &payload,
+            &JsValue::from_str("voiceId"),
+            &JsValue::from_str(vid),
+        )
+        .map_err(|e| format!("Failed to set voiceId: {:?}", e))?;
+    }
+
     js_sys::Reflect::set(
         &payload,
         &JsValue::from_str("pitch"),
-        &JsValue::from_f64(1.0),
+        &JsValue::from_f64(1.2),
     )
     .map_err(|e| format!("Failed to set pitch: {:?}", e))?;
     js_sys::Reflect::set(
@@ -230,14 +323,30 @@ pub fn get_reading_from_text_with_known_kanji(text: &str, known_kanji: &HashSet<
 
 fn get_japanese_voice(synthesis: &web_sys::SpeechSynthesis) -> Option<SpeechSynthesisVoice> {
     let voices = synthesis.get_voices();
-    voices.iter().find_map(|v| {
-        let voice: SpeechSynthesisVoice = v.dyn_into().ok()?;
-        if voice.lang().starts_with("ja") {
-            Some(voice)
-        } else {
-            None
-        }
-    })
+
+    let japanese_voices: Vec<SpeechSynthesisVoice> = voices
+        .iter()
+        .filter_map(|v| {
+            let voice: SpeechSynthesisVoice = v.dyn_into().ok()?;
+            if voice.lang().starts_with("ja") {
+                Some(voice)
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    japanese_voices
+        .iter()
+        .find(|v| v.name().to_lowercase().contains("kyoko"))
+        .cloned()
+        .or_else(|| {
+            japanese_voices
+                .iter()
+                .find(|v| v.name().to_lowercase().contains("female"))
+                .cloned()
+        })
+        .or(japanese_voices.into_iter().next())
 }
 
 pub fn stop_speech() -> Result<(), String> {

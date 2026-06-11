@@ -160,7 +160,7 @@ impl OnboardingState {
             OnboardingStep::Jlpt => true,
             OnboardingStep::Apps => true,
             OnboardingStep::Progress => true,
-            OnboardingStep::Summary => !self.sets_to_import.is_empty(),
+            OnboardingStep::Summary => true,
             OnboardingStep::Scoring => true,
         }
     }
