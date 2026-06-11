@@ -43,16 +43,18 @@ pub fn FuriganaTextWithHover(
             data-testid=test_id_val
         >
             <For
-                each=segments
-                key=|seg: &FuriganaSegment| {
-                    (seg.text().to_string(), seg.reading().map(|r| r.to_string()))
+                each=move || {
+                    segments().into_iter().enumerate().collect::<Vec<_>>()
                 }
-                let:segment
+                key=|(idx, seg): &(usize, FuriganaSegment)| {
+                    (*idx, seg.text().to_string(), seg.reading().map(|r| r.to_string()))
+                }
+                let:tuple
             >
                 {move || {
-                    let text = segment.text().to_string();
-                    let reading = segment.reading().map(|r| r.to_string());
-                    let is_known = segment.is_known();
+                    let text = tuple.1.text().to_string();
+                    let reading = tuple.1.reading().map(|r| r.to_string());
+                    let is_known = tuple.1.is_known();
                     let has_kanji = text.chars().any(|c| c.is_kanji());
                     render_segment_with_hover(
                         text,
@@ -61,6 +63,7 @@ pub fn FuriganaTextWithHover(
                         has_kanji,
                         hovered,
                         native_language,
+                        tuple.0,
                     )
                 }}
             </For>
@@ -75,6 +78,7 @@ fn render_segment_with_hover(
     has_kanji: bool,
     hovered: RwSignal<Option<usize>>,
     native_language: Option<NativeLanguage>,
+    segment_id: usize,
 ) -> impl IntoView {
     if !has_kanji || native_language.is_none() {
         return render_segment(text, reading, is_known).into_any();
@@ -86,8 +90,6 @@ fn render_segment_with_hover(
     let Some((kanji_char, description)) = kanji_info else {
         return render_segment(text, reading, is_known).into_any();
     };
-
-    let segment_id = kanji_char as usize;
 
     let kanji_display = kanji_char.to_string();
     let desc_display = description;

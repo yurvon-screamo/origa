@@ -53,12 +53,15 @@ pub fn LessonCard(
         question_text.clone()
     });
 
-    let answer_text = match card.answer(&lang) {
+    let (answer_translations, answer_description, answer_text) = match card.answer(&lang) {
         Ok(CardAnswer::Vocabulary {
             translations,
             description,
-        }) => crate::utils::text_format::format_vocabulary_answer(&translations, &description),
-        Ok(CardAnswer::Text(s)) => s,
+        }) => {
+            let tts_text = translations.join(", ");
+            (Some(translations), description, tts_text)
+        },
+        Ok(CardAnswer::Text(s)) => (None, None, s),
         Err(e) => {
             tracing::warn!(
                 card_type = ?card_type,
@@ -66,10 +69,12 @@ pub fn LessonCard(
                 error = %e,
                 "Failed to get card answer"
             );
-            String::new()
+            (None, None, String::new())
         },
     };
     let answer = StoredValue::new(answer_text);
+    let answer_translations_stored = StoredValue::new(answer_translations);
+    let answer_description_stored = StoredValue::new(answer_description);
 
     let radicals: Option<Vec<RadicalDisplay>> = match &card {
         DomainCard::Kanji(kanji) => match kanji.radicals_info() {
@@ -264,6 +269,8 @@ pub fn LessonCard(
                     <LessonCardAnswer
                         question_text=display_question.get_value()
                         answer_text=answer.get_value()
+                        answer_translations=answer_translations_stored.get_value()
+                        answer_description=answer_description_stored.get_value()
                         is_expanded=is_expanded
                         needs_collapse=needs_collapse
                         content_ref=content_ref
