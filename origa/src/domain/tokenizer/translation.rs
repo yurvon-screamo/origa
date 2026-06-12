@@ -18,6 +18,7 @@ pub struct TokenTranslation {
 pub fn lookup_tokens_translations(
     tokens: &[TokenInfo],
     native_language: &NativeLanguage,
+    original_text: &str,
 ) -> Vec<TokenTranslation> {
     tokens
         .iter()
@@ -26,8 +27,10 @@ pub fn lookup_tokens_translations(
             let translation = get_translation(&base_form, native_language);
             let grammar_label = resolve_grammar_label(
                 token.orthographic_surface_form(),
+                &base_form,
                 token.part_of_speech(),
                 native_language,
+                original_text,
             );
 
             TokenTranslation {
@@ -44,21 +47,38 @@ pub fn lookup_tokens_translations(
 
 fn resolve_grammar_label(
     surface: &str,
+    base: &str,
     pos: &PartOfSpeech,
     native_language: &NativeLanguage,
+    original_text: &str,
 ) -> Option<String> {
-    if pos.is_vocabulary_word() {
-        return None;
-    }
-
     let rules = GRAMMAR_RULES.get()?;
-    for rule in rules.iter() {
-        for group in rule.keywords().iter() {
-            if group.iter().any(|kw| surface == kw) {
-                return Some(rule.content(native_language).title().to_string());
+
+    // Keyword matching for non-vocabulary tokens (particles, auxiliaries, etc.)
+    if !pos.is_vocabulary_word() {
+        for rule in rules.iter() {
+            for group in rule.keywords().iter() {
+                if group.iter().any(|kw| surface == kw) {
+                    return Some(rule.content(native_language).title().to_string());
+                }
             }
         }
     }
+
+    // FormatAction detection for vocabulary tokens where surface != base (conjugated forms)
+    if pos.is_vocabulary_word() && surface != base {
+        for rule in rules.iter() {
+            if !rule.has_format_map() {
+                continue;
+            }
+            if let Ok(formatted) = rule.format(base, pos) {
+                if formatted != base && original_text.contains(&formatted) {
+                    return Some(rule.content(native_language).title().to_string());
+                }
+            }
+        }
+    }
+
     None
 }
 
@@ -86,7 +106,7 @@ mod tests {
             part_of_speech: PartOfSpeech::Verb,
         }];
 
-        let result = lookup_tokens_translations(&tokens, &NativeLanguage::English);
+        let result = lookup_tokens_translations(&tokens, &NativeLanguage::English, "");
 
         assert_eq!(result.len(), 1);
         assert_eq!(result[0].base_form, "食べる");
@@ -99,7 +119,7 @@ mod tests {
     fn should_return_none_translation_for_unknown_word() {
         let tokens = vec![make_token("未知語", "未知語", "ミチゴ", PartOfSpeech::Noun)];
 
-        let result = lookup_tokens_translations(&tokens, &NativeLanguage::Russian);
+        let result = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, "");
 
         assert_eq!(result.len(), 1);
         assert_eq!(result[0].base_form, "未知語");
@@ -111,7 +131,7 @@ mod tests {
     fn should_include_punctuation_with_none_translation() {
         let tokens = vec![make_token("。", "。", "。", PartOfSpeech::Symbol)];
 
-        let result = lookup_tokens_translations(&tokens, &NativeLanguage::Russian);
+        let result = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, "");
 
         assert_eq!(result.len(), 1);
         assert_eq!(result[0].surface_form, "。");
@@ -126,7 +146,7 @@ mod tests {
             make_token("。", "。", "。", PartOfSpeech::Symbol),
         ];
 
-        let result = lookup_tokens_translations(&tokens, &NativeLanguage::English);
+        let result = lookup_tokens_translations(&tokens, &NativeLanguage::English, "");
 
         assert_eq!(result.len(), 3);
         assert_eq!(result[0].base_form, "猫");
@@ -138,7 +158,7 @@ mod tests {
     fn should_return_empty_for_empty_input() {
         let tokens: Vec<TokenInfo> = vec![];
 
-        let result = lookup_tokens_translations(&tokens, &NativeLanguage::Russian);
+        let result = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, "");
 
         assert!(result.is_empty());
     }
@@ -249,8 +269,9 @@ mod integration_tests {
     #[test]
     fn should_translate_bakari() {
         ensure_dictionaries();
-        let tokens = super::super::tokenize_text("ばかり").unwrap();
-        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian);
+        let text = "ばかり";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
         let bakari = results.iter().find(|t| t.surface_form.contains("ばかり"));
         assert!(bakari.is_some(), "「ばかり」token should exist");
         assert!(
@@ -262,8 +283,9 @@ mod integration_tests {
     #[test]
     fn should_translate_uwa_interjection() {
         ensure_dictionaries();
-        let tokens = super::super::tokenize_text("うわー").unwrap();
-        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian);
+        let text = "うわー";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
         let uwa = results.iter().find(|t| t.surface_form.contains("うわ"));
         assert!(uwa.is_some(), "「うわー」token should exist");
         assert!(
@@ -275,8 +297,9 @@ mod integration_tests {
     #[test]
     fn should_translate_souiu_compound() {
         ensure_dictionaries();
-        let tokens = super::super::tokenize_text("そういう").unwrap();
-        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian);
+        let text = "そういう";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
         let souiu = results.iter().find(|t| t.surface_form.contains("そういう"));
         assert!(souiu.is_some(), "「そういう」token should exist");
         assert!(
@@ -288,8 +311,9 @@ mod integration_tests {
     #[test]
     fn should_translate_hodo() {
         ensure_dictionaries();
-        let tokens = super::super::tokenize_text("ほど").unwrap();
-        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian);
+        let text = "ほど";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
         let hodo = results.iter().find(|t| t.surface_form.contains("ほど"));
         assert!(hodo.is_some(), "「ほど」token should exist");
         assert!(
@@ -301,8 +325,9 @@ mod integration_tests {
     #[test]
     fn should_resolve_grammar_label_for_particle() {
         ensure_dictionaries();
-        let tokens = super::super::tokenize_text("東京から大阪まで").unwrap();
-        let results = lookup_tokens_translations(&tokens, &NativeLanguage::English);
+        let text = "東京から大阪まで";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::English, text);
         let kara_particle = results.iter().find(|t| t.surface_form == "から");
         assert!(
             kara_particle.is_some(),
@@ -313,6 +338,84 @@ mod integration_tests {
             kara.grammar_label.is_some(),
             "「から」should have a grammar label, got: {:?}",
             kara
+        );
+    }
+
+    #[test]
+    fn should_detect_te_form_grammar_label() {
+        ensure_dictionaries();
+        let text = "食べて";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::English, text);
+        let verb_token = results.iter().find(|t| t.base_form == "食べる");
+        assert!(verb_token.is_some(), "Should find 食べる token");
+        let verb = verb_token.unwrap();
+        assert!(
+            verb.grammar_label.is_some(),
+            "「食べて」verb should have grammar_label for te-form, got: {:?}",
+            verb
+        );
+    }
+
+    #[test]
+    fn should_detect_tai_form_grammar_label() {
+        ensure_dictionaries();
+        let text = "食べたい";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::English, text);
+        let verb_token = results.iter().find(|t| t.base_form == "食べる");
+        assert!(verb_token.is_some(), "Should find 食べる token");
+        let verb = verb_token.unwrap();
+        assert!(
+            verb.grammar_label.is_some(),
+            "「食べたい」verb should have grammar_label for tai-form, got: {:?}",
+            verb
+        );
+    }
+
+    #[test]
+    fn should_detect_ta_form_grammar_label() {
+        ensure_dictionaries();
+        let text = "食べた";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::English, text);
+        let verb_token = results.iter().find(|t| t.base_form == "食べる");
+        assert!(verb_token.is_some(), "Should find 食べる token");
+        let verb = verb_token.unwrap();
+        assert!(
+            verb.grammar_label.is_some(),
+            "「食べた」verb should have grammar_label for ta-form, got: {:?}",
+            verb
+        );
+    }
+
+    #[test]
+    fn should_detect_nai_form_grammar_label() {
+        ensure_dictionaries();
+        let text = "食べない";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::English, text);
+        let verb_token = results.iter().find(|t| t.base_form == "食べる");
+        assert!(verb_token.is_some(), "Should find 食べる token");
+        let verb = verb_token.unwrap();
+        assert!(
+            verb.grammar_label.is_some(),
+            "「食べない」verb should have grammar_label for nai-form, got: {:?}",
+            verb
+        );
+    }
+
+    #[test]
+    fn should_not_set_grammar_label_for_base_form() {
+        ensure_dictionaries();
+        let text = "食べる";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::English, text);
+        let verb_token = results.iter().find(|t| t.base_form == "食べる");
+        assert!(verb_token.is_some(), "Should find 食べる token");
+        assert!(
+            verb_token.unwrap().grammar_label.is_none(),
+            "Base form should NOT have grammar_label"
         );
     }
 }
