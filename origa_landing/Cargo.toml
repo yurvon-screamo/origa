@@ -14,13 +14,13 @@ required-features = ["ssr"]
 crate-type = ["rlib"]
 
 [dependencies]
-leptos = "0.8"
-leptos_meta = "0.8"
-leptos_router = "0.8"
-leptos_axum = "0.8"
-axum = "0.8"
+leptos.workspace = true
+leptos_meta.workspace = true
+leptos_router.workspace = true
+leptos_axum.workspace = true
+axum.workspace = true
 tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
-tower-http = { version = "0.6", features = ["fs"] }
+tower-http.workspace = true
 serde = { workspace = true }
 serde_json = { workspace = true }
 tracing = { workspace = true }

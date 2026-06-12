@@ -76,17 +76,20 @@ rstest = "0.26"
 
 # UI
 leptos = { version = "0.8", default-features = false, features = ["csr"] }
+leptos_meta = { version = "0.8" }
+leptos_router = { version = "0.8" }
+leptos_axum = "0.8"
 leptos_icons = "0.7"
 icondata = "0.7"
+leptos-use = { version = "0.18" }
+leptos_i18n = { version = "0.6", default-features = false, features = ["csr", "plurals"] }
+leptos_i18n_build = { version = "0.6", default-features = false, features = ["csr", "plurals"] }
 pulldown-cmark = "0.12"
 ammonia = "4"
 scraper = "0.22"
 ego-tree = "0.10"
-leptos_meta = { version = "0.8" }
-leptos_router = { version = "0.8" }
-leptos-use = { version = "0.18" }
-leptos_i18n = { version = "0.6", default-features = false, features = ["csr", "plurals"] }
-leptos_i18n_build = { version = "0.6", default-features = false, features = ["csr", "plurals"] }
+axum = "0.8"
+tower-http = { version = "0.6", features = ["fs"] }
 js-sys = "0.3"
 codee = { version = "0.3", features = ["json_serde"] }
 console_error_panic_hook = "0.1"
@@ -104,6 +107,8 @@ tauri-plugin-opener = "2"
 tauri-plugin-tts = "0.1"
 tauri-plugin-deep-link = "2"
 tauri-plugin-single-instance = { version = "2", features = ["deep-link"] }
+tauri-plugin-updater = "2"
+tauri-plugin-process = "2"
 tauri-build = { version = "2", features = [] }
 
 # Dev Dependencies

@@ -12,7 +12,7 @@ name = "utils"
 path = "src/main.rs"
 
 [dependencies]
-origa = { path = "../origa" }
+origa.workspace = true
 clap.workspace = true
 flate2.workspace = true
 rkyv.workspace = true
