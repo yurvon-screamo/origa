@@ -5,6 +5,7 @@ mod content;
 mod header;
 mod kanji_card_item;
 mod kanji_detail;
+mod kanji_detail_parts;
 mod kanji_item;
 mod kanji_list;
 

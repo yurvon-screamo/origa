@@ -1,5 +1,5 @@
 use super::keyboard_handler::{KeyboardActions, create_keyboard_handler};
-use super::lesson_card::LessonCard as LessonCardComponent;
+use super::lesson_card_renderer::render_lesson_card;
 use super::lesson_state::LessonContext;
 use super::on_dont_know::create_on_dont_know;
 use super::on_quiz_select::create_on_quiz_select;
@@ -8,19 +8,14 @@ use super::on_quiz_toggle::create_on_quiz_toggle;
 use super::on_rate::create_on_rate_callback;
 use super::on_yesno_select::create_on_yesno_select;
 use super::phrase_card::PhraseCardView;
-use super::phrase_rating_buttons::PhraseRatingButtons;
 use super::quiz_card::QuizCardView;
 use super::quiz_card::QuizVariant;
-use super::rating_buttons_view::RatingButtonsView;
 use super::writing_card::WritingCard;
 use super::yesno_card_view::YesNoCardView;
 use crate::pages::lesson::card_type::CardType;
 use crate::ui_components::stop_current_audio;
 use leptos::prelude::*;
-use origa::domain::{
-    Card, CardAnswer, GrammarInfo, LessonCard, LessonCardView, NativeLanguage, Rating,
-};
-use std::collections::HashSet;
+use origa::domain::{CardAnswer, LessonCardView, Rating};
 use ulid::Ulid;
 
 #[component]
@@ -346,118 +341,5 @@ pub fn LessonCardContainer() -> impl IntoView {
                 </Show>
             </Show>
         </div>
-    }
-}
-
-struct LessonCardParams {
-    card: origa::domain::Card,
-    is_reversed: bool,
-    grammar_info: Option<GrammarInfo>,
-}
-
-fn render_lesson_card(
-    lesson_card: LessonCard,
-    show_answer: bool,
-    on_show_answer: Callback<()>,
-    on_rate_callback: Callback<Rating>,
-    is_rating: RwSignal<Option<Ulid>>,
-    known_kanji: RwSignal<HashSet<char>>,
-    native_language: RwSignal<NativeLanguage>,
-) -> impl IntoView {
-    let params = match lesson_card.into_view() {
-        LessonCardView::Normal(card) => {
-            let grammar_info = match &card {
-                Card::Grammar(grc) => {
-                    let lang = native_language.get();
-                    let title = grc
-                        .title(&lang)
-                        .ok()
-                        .map(|q| q.text().to_string())
-                        .unwrap_or_default();
-                    // description left empty: answer_text already shows short_description
-                    // via Card::answer(). GrammarInfo carries rule_id for the
-                    // "More details" expand button in LessonCardAnswer.
-                    Some(GrammarInfo::new(Some(*grc.rule_id()), title, String::new()))
-                },
-                _ => None,
-            };
-            LessonCardParams {
-                card,
-                is_reversed: false,
-                grammar_info,
-            }
-        },
-        LessonCardView::Reversed(card) => LessonCardParams {
-            card,
-            is_reversed: true,
-            grammar_info: None,
-        },
-        LessonCardView::GrammarMutated { card, grammar_info } => LessonCardParams {
-            card,
-            is_reversed: false,
-            grammar_info: Some(grammar_info),
-        },
-        LessonCardView::Quiz(_)
-        | LessonCardView::Writing(_)
-        | LessonCardView::YesNo(_)
-        | LessonCardView::PhraseListen { .. }
-        | LessonCardView::KanjiReadingQuiz(_)
-        | LessonCardView::GrammarQuiz(_) => {
-            return ().into_any();
-        },
-    };
-
-    let is_phrase = matches!(params.card, Card::Phrase(_));
-
-    if is_phrase {
-        let phrase_audio_src = match &params.card {
-            Card::Phrase(pc) => Some(crate::repository::cdn_provider::resolve_audio_url(
-                &format!("phrases/audio/{}.opus", pc.phrase_id()),
-            )),
-            _ => None,
-        };
-
-        view! {
-            <LessonCardComponent
-                card=params.card
-                is_reversed=params.is_reversed
-                show_answer
-                on_show_answer=on_show_answer
-                grammar_info=params.grammar_info
-                native_language=native_language.get()
-                known_kanji=Signal::from(known_kanji)
-                audio_src=phrase_audio_src
-            />
-
-            <Show when=move || show_answer>
-                <PhraseRatingButtons
-                    on_rate=on_rate_callback
-                    disabled=Signal::derive(move || is_rating.get().is_some())
-                    test_id=Signal::derive(|| "lesson-phrase-rating".to_string())
-                />
-            </Show>
-        }
-        .into_any()
-    } else {
-        view! {
-            <LessonCardComponent
-                card=params.card
-                is_reversed=params.is_reversed
-                show_answer
-                on_show_answer=on_show_answer
-                grammar_info=params.grammar_info
-                native_language=native_language.get()
-                known_kanji=Signal::from(known_kanji)
-                audio_src=None
-            />
-
-            <Show when=move || show_answer>
-                <RatingButtonsView
-                    on_rate=on_rate_callback
-                    disabled=Signal::derive(move || is_rating.get().is_some())
-                />
-            </Show>
-        }
-        .into_any()
     }
 }
