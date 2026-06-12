@@ -163,6 +163,11 @@ impl DailyHistoryItem {
         self.phrase_cards_studied_today = stats.phrase_cards_studied_today;
     }
 
+    #[cfg(test)]
+    pub fn set_timestamp_for_test(&mut self, ts: DateTime<Utc>) {
+        self.timestamp = ts;
+    }
+
     pub fn merge_with(&mut self, other: &DailyHistoryItem) {
         self.lessons_completed = self.lessons_completed.max(other.lessons_completed);
         self.positive_ratings = self.positive_ratings.max(other.positive_ratings);
