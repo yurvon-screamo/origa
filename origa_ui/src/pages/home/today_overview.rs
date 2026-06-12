@@ -1,7 +1,8 @@
-use super::dashboard_stats::{CompletionForecast, TodayOverview};
+use super::dashboard_stats::CompletionForecast;
 use crate::i18n::{t, td_string, use_i18n};
 use crate::ui_components::{Card, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
+use origa::domain::TodayOverview;
 
 fn delta_color(delta: i32, is_positive_good: bool) -> &'static str {
     if delta == 0 {

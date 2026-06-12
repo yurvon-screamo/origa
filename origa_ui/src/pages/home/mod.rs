@@ -12,12 +12,12 @@ pub mod welcome_card;
 pub use activity_chart::ActivityChart;
 pub use content::HomeContent;
 pub use dashboard_stats::{
-    ActivityDataPoint, CompletionForecast, RatingRatio, RecentlyStudiedItem, TodayOverview,
-    compute_30day_chart_data, compute_completion_forecast, compute_rating_ratio,
-    compute_studied_today, compute_today_overview,
+    ActivityDataPoint, CompletionForecast, RecentlyStudiedItem, compute_30day_chart_data,
+    compute_completion_forecast, compute_studied_today,
 };
 pub use home_skeleton::JlptSkeleton;
 pub use jlpt_progress_card::JlptProgressCard;
+pub use origa::domain::{RatingRatio, TodayOverview, compute_rating_ratio, compute_today_overview};
 pub use recent_study::StudiedTodayList;
 pub use today_overview::TodayOverviewCard;
 pub use welcome_card::WelcomeCard;
