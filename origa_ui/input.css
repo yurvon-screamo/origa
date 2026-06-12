@@ -5690,3 +5690,17 @@ input[type="submit"],
     background: var(--error);
     color: var(--bg-paper);
 }
+
+.profile-section-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.profile-danger-zone {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}

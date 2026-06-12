@@ -124,12 +124,8 @@ pub fn detect_format_map_rules(
         let base = token.orthographic_base_form();
         let pos = token.part_of_speech();
 
-        for rule in rules {
-            if let Ok(formatted) = rule.format(base, pos) {
-                if formatted != base && text.contains(&formatted) {
-                    detected.insert(*rule.rule_id());
-                }
-            }
+        for rule in find_format_map_matches(base, pos, text, rules) {
+            detected.insert(*rule.rule_id());
         }
     }
 
@@ -171,6 +167,22 @@ pub fn detect_grammar_rules_in_text(
     result.extend(detect_keyword_rules(text, rules));
 
     result.into_iter().collect()
+}
+
+pub(crate) fn find_format_map_matches<'a>(
+    base: &str,
+    pos: &PartOfSpeech,
+    text: &str,
+    rules: &'a [GrammarRule],
+) -> Vec<&'a GrammarRule> {
+    rules
+        .iter()
+        .filter(|rule| rule.has_format_map())
+        .filter(|rule| {
+            rule.format(base, pos)
+                .is_ok_and(|formatted| formatted != base && text.contains(&formatted))
+        })
+        .collect()
 }
 
 #[cfg(test)]
@@ -1476,6 +1488,106 @@ mod tests {
                 result.contains(&iadj_desu_id()),
                 "Should detect いです from 美味しい, got: {:?}",
                 result
+            );
+        }
+    }
+
+    mod find_format_map_matches {
+        use super::*;
+
+        #[test]
+        fn returns_empty_for_no_format_map_rules() {
+            let rules = vec![make_keyword_rule(
+                "01H00000000000000000000030",
+                vec![vec!["て".to_string()]],
+            )];
+            let result = super::super::find_format_map_matches(
+                "食べる",
+                &PartOfSpeech::Verb,
+                "食べて",
+                &rules,
+            );
+            assert!(result.is_empty(), "Keyword-only rules should not match");
+        }
+
+        #[test]
+        fn returns_empty_when_formatted_not_found_in_text() {
+            let rules = vec![create_rule_with_format_map(HashMap::from([(
+                PartOfSpeech::Verb,
+                vec![FormatAction::VerbToTeForm {}],
+            )]))];
+            let result = super::super::find_format_map_matches(
+                "食べる",
+                &PartOfSpeech::Verb,
+                "魚を食べる",
+                &rules,
+            );
+            // "食べて" is not contained in "魚を食べる", so no match
+            assert!(
+                result.is_empty(),
+                "Formatted form not present in text should produce no matches"
+            );
+        }
+
+        #[test]
+        fn returns_empty_for_wrong_pos() {
+            let rules = vec![create_rule_with_format_map(HashMap::from([(
+                PartOfSpeech::IAdjective,
+                vec![FormatAction::AdjectiveToKu {}],
+            )]))];
+            let result = super::super::find_format_map_matches(
+                "食べる",
+                &PartOfSpeech::Verb,
+                "食べて",
+                &rules,
+            );
+            assert!(
+                result.is_empty(),
+                "Adjective rule should not match Verb POS"
+            );
+        }
+
+        #[test]
+        fn returns_match_for_correct_form() {
+            let rules = vec![create_rule_with_format_map(HashMap::from([(
+                PartOfSpeech::Verb,
+                vec![FormatAction::VerbToTeForm {}],
+            )]))];
+            let result = super::super::find_format_map_matches(
+                "食べる",
+                &PartOfSpeech::Verb,
+                "食べて",
+                &rules,
+            );
+            assert_eq!(result.len(), 1, "Should match te-form rule");
+        }
+
+        #[test]
+        fn returns_multiple_matches_for_composite_text() {
+            let rules = vec![
+                create_rule_with_format_map(HashMap::from([(
+                    PartOfSpeech::Verb,
+                    vec![FormatAction::VerbToTeForm {}],
+                )])),
+                create_rule_with_format_map(HashMap::from([(
+                    PartOfSpeech::Verb,
+                    vec![
+                        FormatAction::VerbToTeForm {},
+                        FormatAction::AddPostfix {
+                            postfix: "ください".to_string(),
+                        },
+                    ],
+                )])),
+            ];
+            let result = super::super::find_format_map_matches(
+                "食べる",
+                &PartOfSpeech::Verb,
+                "食べてください",
+                &rules,
+            );
+            assert!(
+                result.len() >= 2,
+                "Should match both bare te-form and te+kudasai"
             );
         }
     }

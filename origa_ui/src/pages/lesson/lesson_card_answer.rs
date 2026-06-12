@@ -2,11 +2,11 @@ use super::grammar_details_expand::GrammarDetailsExpand;
 use super::kanji_card_details::{KanjiCardDetails, RadicalDisplay};
 use crate::i18n::*;
 use crate::ui_components::{
-    Button, ButtonVariant, FuriganaText, Heading, HeadingLevel, MarkdownText, MarkdownVariant,
-    Text, TextSize, TranslatorText, TypographyVariant, WordTranslations,
+    Button, ButtonVariant, FuriganaTextWithHover, Heading, HeadingLevel, MarkdownText,
+    MarkdownVariant, Text, TextSize, TranslatorText, TypographyVariant, WordTranslations,
 };
 use leptos::{ev::MouseEvent, prelude::*};
-use origa::domain::GrammarInfo;
+use origa::domain::{GrammarInfo, NativeLanguage};
 use std::collections::HashSet;
 
 #[component]
@@ -28,6 +28,7 @@ pub fn LessonCardAnswer(
     example_words: Option<Vec<(String, String)>>,
     grammar_info: Option<GrammarInfo>,
     #[prop(into)] known_kanji: Signal<HashSet<char>>,
+    native_language: NativeLanguage,
 ) -> impl IntoView {
     let i18n = use_i18n();
     let question = StoredValue::new(question_text);
@@ -58,9 +59,10 @@ pub fn LessonCardAnswer(
                                         }.into_any()
                                     } else {
                                         view! {
-                                            <FuriganaText
+                                            <FuriganaTextWithHover
                                                 text=question.get_value()
                                                 known_kanji=known_kanji.get()
+                                                native_language=native_language
                                                 class=Signal::derive(|| "text-3xl leading-snug".to_string())
                                             />
                                         }.into_any()
