@@ -25,7 +25,7 @@ pub fn PersonalDataCard(
     view! {
         <div data-testid=test_id_val class="p-6">
             <div class="flex flex-col gap-4">
-                <div class="profile-section">
+                <div class="profile-section-row">
                     <div class="label-muted">{t!(i18n, profile.interface_language)}</div>
                     <NativeLanguageToggle
                         selected_language={selected_language}

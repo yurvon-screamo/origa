@@ -250,6 +250,7 @@ pub fn LessonCard(
                         is_reversed=is_reversed
                         on_show_answer=on_show_answer
                         known_kanji=known_kanji
+                        native_language=native_language
                     />
                 </Show>
 
@@ -272,6 +273,7 @@ pub fn LessonCard(
                         example_words=examples_stored.get_value()
                         grammar_info=grammar_info.clone()
                         known_kanji=known_kanji
+                        native_language=native_language
                     />
                 </Show>
             </div>

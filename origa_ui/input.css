@@ -1082,7 +1082,9 @@ input[type="submit"],
     font-family: var(--font-mono);
     font-size: var(--text-label);
     letter-spacing: 0.05em;
-    white-space: nowrap;
+    white-space: normal;
+    max-width: 250px;
+    word-wrap: break-word;
     text-align: center;
     opacity: 0;
     visibility: hidden;
@@ -1595,8 +1597,9 @@ input[type="submit"],
 
 /* === Kanji Hover Popup === */
 .kanji-hover-segment {
-    display: inline;
+    display: inline-block;
     position: relative;
+    vertical-align: baseline;
 }
 
 .kanji-hover-trigger {
@@ -5533,21 +5536,30 @@ input[type="submit"],
     }
 }
 
-.profile-header {
+.profile-breadcrumbs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: var(--text-label-sm);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
     padding: 16px 0 0;
 }
 
-.profile-header-name {
-    font-family: var(--font-serif);
-    font-size: clamp(1.5rem, 4vw, 2rem);
-    font-weight: 400;
-    line-height: 1.2;
-    letter-spacing: -0.01em;
-    color: var(--fg-black);
+.profile-breadcrumbs-label {
+    color: var(--fg-muted);
 }
 
-.profile-header-label {
-    margin-top: 4px;
+.profile-breadcrumbs-separator {
+    color: var(--fg-light);
+}
+
+.profile-breadcrumbs-current {
+    color: var(--fg-black);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .label-muted {
@@ -5670,4 +5682,18 @@ input[type="submit"],
 .danger-zone-btn--delete:hover {
     background: var(--error);
     color: var(--bg-paper);
+}
+
+.profile-section-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.profile-danger-zone {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }

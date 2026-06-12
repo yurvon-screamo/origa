@@ -50,7 +50,7 @@ pub fn TranslatorText(
     spawn_local(async move {
         let lang = native_lang.get();
         let tokens = tokenize_text(&text_for_spawn).unwrap_or_default();
-        translations.set(lookup_tokens_translations(&tokens, &lang));
+        translations.set(lookup_tokens_translations(&tokens, &lang, &text_for_spawn));
         is_loaded.set(true);
     });
 

@@ -117,13 +117,19 @@ fn render_segment_with_hover(
     let is_active = move || hovered.get() == Some(segment_id);
 
     view! {
-        <span class="kanji-hover-segment">
+        <span
+            class="kanji-hover-segment"
+            on:mouseenter=enter_handler
+            on:mouseleave=leave_handler
+        >
             <span
                 class=move || {
-                    if is_active() { "kanji-hover-trigger kanji-hover-active" } else { "kanji-hover-trigger" }
+                    if is_active() {
+                        "kanji-hover-trigger kanji-hover-active"
+                    } else {
+                        "kanji-hover-trigger"
+                    }
                 }
-                on:mouseenter=enter_handler
-                on:mouseleave=leave_handler
                 on:click=click_handler
             >
                 {base_view}
