@@ -1595,8 +1595,9 @@ input[type="submit"],
 
 /* === Kanji Hover Popup === */
 .kanji-hover-segment {
-    display: inline;
+    display: inline-block;
     position: relative;
+    vertical-align: baseline;
 }
 
 .kanji-hover-trigger {
