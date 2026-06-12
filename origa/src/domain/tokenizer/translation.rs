@@ -4,6 +4,7 @@ use super::{PartOfSpeech, TokenInfo};
 use crate::dictionary::grammar::GRAMMAR_RULES;
 use crate::dictionary::vocabulary::get_translation;
 use crate::domain::NativeLanguage;
+use crate::domain::grammar::find_format_map_matches;
 
 #[derive(Debug, Clone, Serialize)]
 pub struct TokenTranslation {
@@ -67,15 +68,11 @@ fn resolve_grammar_label(
 
     // FormatAction detection for vocabulary tokens where surface != base (conjugated forms)
     if pos.is_vocabulary_word() && surface != base {
-        for rule in rules.iter() {
-            if !rule.has_format_map() {
-                continue;
-            }
-            if let Ok(formatted) = rule.format(base, pos) {
-                if formatted != base && original_text.contains(&formatted) {
-                    return Some(rule.content(native_language).title().to_string());
-                }
-            }
+        if let Some(rule) = find_format_map_matches(base, pos, original_text, rules)
+            .into_iter()
+            .next()
+        {
+            return Some(rule.content(native_language).title().to_string());
         }
     }
 

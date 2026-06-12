@@ -124,12 +124,8 @@ pub fn detect_format_map_rules(
         let base = token.orthographic_base_form();
         let pos = token.part_of_speech();
 
-        for rule in rules {
-            if let Ok(formatted) = rule.format(base, pos) {
-                if formatted != base && text.contains(&formatted) {
-                    detected.insert(*rule.rule_id());
-                }
-            }
+        for rule in find_format_map_matches(base, pos, text, rules) {
+            detected.insert(*rule.rule_id());
         }
     }
 
@@ -171,6 +167,22 @@ pub fn detect_grammar_rules_in_text(
     result.extend(detect_keyword_rules(text, rules));
 
     result.into_iter().collect()
+}
+
+pub(crate) fn find_format_map_matches<'a>(
+    base: &str,
+    pos: &PartOfSpeech,
+    text: &str,
+    rules: &'a [GrammarRule],
+) -> Vec<&'a GrammarRule> {
+    rules
+        .iter()
+        .filter(|rule| rule.has_format_map())
+        .filter(|rule| {
+            rule.format(base, pos)
+                .is_ok_and(|formatted| formatted != base && text.contains(&formatted))
+        })
+        .collect()
 }
 
 #[cfg(test)]
