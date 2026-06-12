@@ -66,13 +66,15 @@ fn resolve_grammar_label(
         }
     }
 
-    // FormatAction detection for vocabulary tokens where surface != base (conjugated forms)
+    // FormatAction detection for vocabulary tokens where surface != base (conjugated forms).
+    // When multiple rules match, the most specific (longest formatted form) is preferred.
     if pos.is_vocabulary_word() && surface != base {
-        if let Some(rule) = find_format_map_matches(base, pos, original_text, rules)
+        let matches = find_format_map_matches(base, pos, original_text, rules);
+        if let Some(best) = matches
             .into_iter()
-            .next()
+            .max_by_key(|rule| rule.format(base, pos).map_or(0, |f| f.len()))
         {
-            return Some(rule.content(native_language).title().to_string());
+            return Some(best.content(native_language).title().to_string());
         }
     }
 
