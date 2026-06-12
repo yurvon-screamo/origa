@@ -1,6 +1,8 @@
 use chrono::{Datelike, TimeZone};
 use origa::domain::{Card, CardAnswer, CardType, DailyHistoryItem, KnowledgeSet, NativeLanguage};
 
+use crate::pages::shared::format_answer_text;
+
 const RU_MONTHS_SHORT: [&str; 12] = [
     "янв", "фев", "мар", "апр", "май", "июн", "июл", "авг", "сен", "окт", "ноя", "дек",
 ];
@@ -133,11 +135,7 @@ pub fn compute_studied_today(
                     Card::Phrase(p) => p.phrase_id().to_string(),
                 });
 
-            let meaning = match card.answer(lang) {
-                Ok(CardAnswer::Vocabulary { translations, .. }) => translations.join(", "),
-                Ok(CardAnswer::Text(s)) => s,
-                Err(_) => String::new(),
-            };
+            let meaning = format_answer_text(card, lang);
 
             let card_type = match CardType::from(card) {
                 CardType::Kanji => "kanji",

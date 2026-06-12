@@ -20,7 +20,10 @@ pub type CardsLoadedCallback = Arc<dyn Fn(&[StudyCard]) + Send + Sync>;
 
 #[derive(Clone)]
 pub struct CardListContext {
-    #[allow(dead_code)]
+    #[expect(
+        dead_code,
+        reason = "read via closure capture in toggle_favorite_callback"
+    )]
     pub current_user: RwSignal<Option<User>>,
     pub native_lang: Memo<NativeLanguage>,
     pub known_kanji: Memo<HashSet<char>>,

@@ -26,11 +26,7 @@ struct PhraseIndexEntry {
     #[serde(rename = "i")]
     id: String,
     #[serde(rename = "t")]
-    #[expect(
-        dead_code,
-        reason = "needed for deserialization but re-tokenized at runtime"
-    )]
-    tokens: Vec<String>,
+    _tokens: Vec<String>,
     #[serde(rename = "c")]
     chunk_id: u32,
 }

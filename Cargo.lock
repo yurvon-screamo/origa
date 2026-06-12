@@ -5465,7 +5465,6 @@ dependencies = [
 name = "origa-app"
 version = "0.1.0"
 dependencies = [
- "log",
  "serde",
  "serde_json",
  "tauri",
@@ -5476,6 +5475,7 @@ dependencies = [
  "tauri-plugin-single-instance",
  "tauri-plugin-tts",
  "tauri-plugin-updater",
+ "tracing",
 ]
 
 [[package]]

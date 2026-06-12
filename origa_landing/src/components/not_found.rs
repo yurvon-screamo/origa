@@ -7,6 +7,8 @@ pub fn NotFound() -> impl IntoView {
     let locale = use_context::<Locale>();
     let text = match locale {
         Some(Locale::Ru) => "Страница не найдена",
+        Some(Locale::Ko) => "페이지를 찾을 수 없습니다",
+        Some(Locale::Vi) => "Không tìm thấy trang",
         _ => "Page not found",
     };
 

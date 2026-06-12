@@ -89,7 +89,7 @@ pub fn run_tokenize_well_known(path: std::path::PathBuf) -> Result<(), OrigaErro
     let files = collect_json_files(&path)?;
 
     if files.is_empty() {
-        eprintln!("JSON файлы не найдены");
+        eprintln!("JSON files not found");
         std::process::exit(1);
     }
 
@@ -97,7 +97,7 @@ pub fn run_tokenize_well_known(path: std::path::PathBuf) -> Result<(), OrigaErro
 
     for file in files {
         if let Err(e) = process_well_known_file(&file) {
-            eprintln!("Ошибка обработки {}: {}", file.display(), e);
+            eprintln!("Processing error {}: {}", file.display(), e);
         }
     }
 
