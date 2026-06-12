@@ -1,9 +1,10 @@
 use crate::i18n::*;
 use crate::ui_components::{
-    Button, ButtonVariant, DisplayText, FuriganaText, Heading, HeadingLevel, KanjiViewMode,
-    KanjiWritingSection, MarkdownText, MarkdownVariant,
+    Button, ButtonVariant, DisplayText, FuriganaTextWithHover, Heading, HeadingLevel,
+    KanjiViewMode, KanjiWritingSection, MarkdownText, MarkdownVariant,
 };
 use leptos::prelude::*;
+use origa::domain::NativeLanguage;
 use std::collections::HashSet;
 
 #[component]
@@ -13,6 +14,7 @@ pub fn LessonCardQuestion(
     is_reversed: bool,
     on_show_answer: Callback<()>,
     #[prop(into)] known_kanji: Signal<HashSet<char>>,
+    native_language: NativeLanguage,
 ) -> impl IntoView {
     let i18n = use_i18n();
     let question = StoredValue::new(question_text);
@@ -26,7 +28,13 @@ pub fn LessonCardQuestion(
                         <Show
                             when=move || is_reversed
                             fallback=move || {
-                                view! { <FuriganaText text=question.get_value() known_kanji=known_kanji.get()/> }
+                                view! {
+                                    <FuriganaTextWithHover
+                                        text=question.get_value()
+                                        known_kanji=known_kanji.get()
+                                        native_language=native_language
+                                    />
+                                }
                             }
                         >
                             <MarkdownText
