@@ -4,7 +4,7 @@ use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::domain::{Card, CardType, LessonCard, RateMode, Rating};
 use origa::traits::UserRepository;
-use origa::use_cases::{CreateGrammarCardUseCase, CreatePhraseCardUseCase, RateCardUseCase};
+use origa::use_cases::{CreatePhraseCardUseCase, RateCardWithSideEffectsUseCase};
 use tracing::warn;
 use ulid::Ulid;
 
@@ -30,52 +30,6 @@ fn extract_grammar_rule_id(card: &LessonCard) -> Option<Ulid> {
         },
         origa::domain::LessonCardView::GrammarQuiz(gq) => gq.grammar_info().rule_id(),
         _ => None,
-    }
-}
-
-async fn handle_grammar_dual_rating<R: UserRepository>(
-    grammar_rule_id: Ulid,
-    repo: &R,
-    rating: Rating,
-) {
-    let rate_use_case = RateCardUseCase::new(repo);
-    let Some(user) = repo.get_current_user().await.ok().flatten() else {
-        return;
-    };
-
-    let grammar_card_id = user
-        .knowledge_set()
-        .study_cards()
-        .iter()
-        .find(|(_, study_card)| {
-            if let Card::Grammar(grammar_card) = study_card.card() {
-                grammar_card.rule_id() == &grammar_rule_id
-            } else {
-                false
-            }
-        })
-        .map(|(id, _)| *id);
-
-    if let Some(grammar_card_id) = grammar_card_id {
-        if let Err(e) = rate_use_case
-            .execute(grammar_card_id, RateMode::GrammarReview, rating)
-            .await
-        {
-            warn!(error = ?e, "Failed to rate grammar card during dual rating");
-        }
-        return;
-    }
-
-    let create_use_case = CreateGrammarCardUseCase::new(repo);
-    let cards = create_use_case.execute(vec![grammar_rule_id]).await;
-
-    if let Ok(grammar_cards) = cards
-        && let Some(grammar_card) = grammar_cards.first()
-        && let Err(e) = rate_use_case
-            .execute(*grammar_card.card_id(), RateMode::GrammarReview, rating)
-            .await
-    {
-        warn!(error = ?e, "Failed to rate newly created grammar card during dual rating");
     }
 }
 
@@ -172,14 +126,13 @@ pub fn create_on_rate_callback(
         let grammar_rule_id = state.cards.get(&card_id).and_then(extract_grammar_rule_id);
 
         spawn_local(async move {
-            let use_case = RateCardUseCase::new(&repo);
+            let use_case = RateCardWithSideEffectsUseCase::new(&repo);
 
-            if let Err(e) = use_case.execute(card_id, rate_mode, rating).await {
+            if let Err(e) = use_case
+                .execute(card_id, rate_mode, rating, grammar_rule_id)
+                .await
+            {
                 warn!(error = ?e, "Failed to rate card");
-            }
-
-            if let Some(grammar_rule_id) = grammar_rule_id {
-                handle_grammar_dual_rating(grammar_rule_id, &repo, rating).await;
             }
 
             check_and_create_ready_phrases(card_id, &repo, rating).await;

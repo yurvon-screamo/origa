@@ -11,6 +11,7 @@ mod import_onboarding_sets;
 mod mark_card_as_known;
 mod migrate_kanji_companions;
 mod rate_card;
+mod rate_card_with_side_effects;
 mod seed_ready_phrases;
 mod select_cards_to_lesson;
 mod toggle_favorite;
@@ -40,6 +41,7 @@ pub use import_onboarding_sets::{ImportOnboardingResult, ImportOnboardingSetsUse
 pub use mark_card_as_known::MarkCardAsKnownUseCase;
 pub use migrate_kanji_companions::{MigrateKanjiCompanionsUseCase, MigrationResult};
 pub use rate_card::RateCardUseCase;
+pub use rate_card_with_side_effects::RateCardWithSideEffectsUseCase;
 pub use seed_ready_phrases::SeedReadyPhrasesUseCase;
 pub use seed_ready_phrases::collect_known_grammar_rules;
 pub use seed_ready_phrases::{classify_orphaned_phrases, delete_phrase_cards_by_phrase_ids};
