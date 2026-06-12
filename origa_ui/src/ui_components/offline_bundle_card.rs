@@ -130,37 +130,41 @@ pub fn OfflineBundleCard(#[prop(optional, into)] test_id: Signal<String>) -> imp
                 </div>
             </Show>
 
-            <div class="flex gap-3">
-                <Show when=move || {
-                    matches!(state.get(), BundleState::Idle | BundleState::Error)
-                }>
-                    <button
-                        class="btn btn-filled anima-press anima-focus-ring"
-                        on:click=on_download_click
-                        data-testid="download-bundle-btn"
-                    >
-                        <span class="btn-text">
-                            {move || if is_error.get() {
-                                t!(i18n, profile.retry_download).into_any()
-                            } else {
-                                t!(i18n, profile.download_bundle).into_any()
-                            }}
-                        </span>
-                    </button>
-                </Show>
+            <Show when=move || {
+                matches!(state.get(), BundleState::Idle | BundleState::Error) || is_downloading.get()
+            }>
+                <div class="flex gap-3">
+                    <Show when=move || {
+                        matches!(state.get(), BundleState::Idle | BundleState::Error)
+                    }>
+                        <button
+                            class="btn btn-filled anima-press anima-focus-ring"
+                            on:click=on_download_click
+                            data-testid="download-bundle-btn"
+                        >
+                            <span class="btn-text">
+                                {move || if is_error.get() {
+                                    t!(i18n, profile.retry_download).into_any()
+                                } else {
+                                    t!(i18n, profile.download_bundle).into_any()
+                                }}
+                            </span>
+                        </button>
+                    </Show>
 
-                <Show when=move || is_downloading.get()>
-                    <button
-                        class="btn anima-press anima-focus-ring"
-                        on:click=on_cancel_click
-                        data-testid="cancel-bundle-btn"
-                    >
-                        <span class="btn-text">
-                            {t!(i18n, profile.cancel_download)}
-                        </span>
-                    </button>
-                </Show>
-            </div>
+                    <Show when=move || is_downloading.get()>
+                        <button
+                            class="btn anima-press anima-focus-ring"
+                            on:click=on_cancel_click
+                            data-testid="cancel-bundle-btn"
+                        >
+                            <span class="btn-text">
+                                {t!(i18n, profile.cancel_download)}
+                            </span>
+                        </button>
+                    </Show>
+                </div>
+            </Show>
 
             // Card cache status section
             <Show when=move || has_card_cache>

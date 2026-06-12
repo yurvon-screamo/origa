@@ -180,11 +180,10 @@ pub fn ProfileContent() -> impl IntoView {
 
     view! {
         <div class="profile-layout" data-testid="profile-content">
-            <div class="profile-header">
-                <div class="profile-header-name">{move || user_name.get()}</div>
-                <div class="profile-header-label">
-                    <span class="label-muted">{t!(i18n, home.profile)}</span>
-                </div>
+            <div class="profile-breadcrumbs">
+                <span class="profile-breadcrumbs-label">{t!(i18n, home.profile)}</span>
+                <span class="profile-breadcrumbs-separator">"/"</span>
+                <span class="profile-breadcrumbs-current">{move || user_name.get()}</span>
             </div>
 
             <div class="profile-grid">
