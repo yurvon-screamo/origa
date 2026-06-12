@@ -22,10 +22,10 @@ impl<'a, R: UserRepository> CreateCardsFromAnalysisUseCase<'a, R> {
         Self { repository }
     }
 
-    /// Создаёт карточки из списка слов с опциональной пометкой наборов как импортированных.
+    /// Creates cards from a list of words with optional set import marking.
     ///
-    /// - `words` — список слов для создания карточек
-    /// - `set_ids` — ID наборов для пометки как импортированные (None = без пометки)
+    /// - `words` — list of words to create cards from
+    /// - `set_ids` — IDs of sets to mark as imported (None = no marking)
     pub async fn execute(
         &self,
         words: Vec<WordToCreate>,

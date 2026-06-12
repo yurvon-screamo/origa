@@ -56,9 +56,9 @@ pub fn decode_jwt_claims(token: &str) -> Result<JwtClaims, String> {
         }
     }
 
-    // Валидация issuer опциональна: TrailBase может не включать iss в JWT
-    // для некоторых auth flow (OIDC). Когда iss присутствует и не из доверенных
-    // — логируем warning, но не блокируем, т.к. все запросы идут к известному серверу.
+    // Issuer validation is optional: TrailBase may not include iss in JWT
+    // for some auth flows (OIDC). When iss is present and not from trusted
+    // sources — log warning, but don't block, since all requests go to a known server.
     if let Some(ref iss) = claims.iss {
         let is_trusted = iss == "trailbase" || iss == env!("TRAILBASE_URL");
         if !is_trusted {

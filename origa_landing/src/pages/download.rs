@@ -81,7 +81,7 @@ pub fn DownloadPage() -> impl IntoView {
                     button_text=c.download_button
                 />
                 // iOS — coming soon (no download button)
-                <DownloadCardComingSoon
+                <DownloadCard
                     icon=view! { <IconApple /> }.into_any()
                     name=c.download_ios
                     formats=c.download_ios_formats
@@ -97,34 +97,17 @@ fn DownloadCard(
     #[prop(into)] icon: AnyView,
     name: &'static str,
     formats: &'static str,
-    href: &'static str,
-    button_text: &'static str,
+    #[prop(optional)] href: Option<&'static str>,
+    #[prop(optional)] button_text: Option<&'static str>,
+    #[prop(optional)] badge: Option<&'static str>,
 ) -> impl IntoView {
-    view! {
-        <div class="download-secondary__card">
-            <div class="download-secondary__card-header">
-                <div class="download-icon download-icon--secondary" aria-hidden="true">
-                    {icon}
-                </div>
-                <div>
-                    <p class="download-platform__name">{name}</p>
-                    <p class="download-platform__formats">{formats}</p>
-                </div>
-            </div>
-            <a href=href class="btn">{button_text}" →"</a>
-        </div>
-    }
-}
+    let card_class = match badge {
+        Some(_) => "download-secondary__card download-secondary__card--soon",
+        None => "download-secondary__card",
+    };
 
-#[component]
-fn DownloadCardComingSoon(
-    #[prop(into)] icon: AnyView,
-    name: &'static str,
-    formats: &'static str,
-    badge: &'static str,
-) -> impl IntoView {
     view! {
-        <div class="download-secondary__card download-secondary__card--soon">
+        <div class=card_class>
             <div class="download-secondary__card-header">
                 <div class="download-icon download-icon--secondary" aria-hidden="true">
                     {icon}
@@ -134,7 +117,15 @@ fn DownloadCardComingSoon(
                     <p class="download-platform__formats">{formats}</p>
                 </div>
             </div>
-            <p class="download-coming-soon-badge">{badge}</p>
+            {match (badge, href, button_text) {
+                (Some(badge_text), _, _) => view! {
+                    <p class="download-coming-soon-badge">{badge_text}</p>
+                }.into_any(),
+                (None, Some(href), Some(btn)) => view! {
+                    <a href=href class="btn">{btn}" →"</a>
+                }.into_any(),
+                _ => ().into_any(),
+            }}
         </div>
     }
 }
