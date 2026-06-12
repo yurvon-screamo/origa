@@ -24,7 +24,7 @@ pub(super) enum AudioState {
     #[default]
     Idle,
     LoadingModel,
-    #[allow(dead_code)]
+    #[cfg_attr(not(target_arch = "wasm32"), allow(dead_code))]
     Processing,
     Ready,
     Error,

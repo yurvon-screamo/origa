@@ -75,7 +75,11 @@ pub enum Commands {
         generate: bool,
 
         /// OpenAI API base URL
-        #[arg(long, default_value = "http://10.2.11.6:8001/v1")]
+        #[arg(
+            long,
+            env = "ORIGA_API_URL",
+            default_value = "http://localhost:8001/v1"
+        )]
         api_base: String,
 
         /// OpenAI API key
@@ -178,7 +182,11 @@ pub enum Commands {
         level: Option<String>,
 
         /// OpenAI-compatible API base URL
-        #[arg(long, default_value = "http://10.2.11.6:8001/v1")]
+        #[arg(
+            long,
+            env = "ORIGA_API_URL",
+            default_value = "http://localhost:8001/v1"
+        )]
         api_base: String,
 
         /// API key
@@ -239,7 +247,11 @@ pub enum Commands {
         input: PathBuf,
 
         /// OpenAI-compatible API base URL
-        #[arg(long, default_value = "http://10.2.11.6:8001/v1")]
+        #[arg(
+            long,
+            env = "ORIGA_API_URL",
+            default_value = "http://localhost:8001/v1"
+        )]
         api_base: String,
 
         /// API key
