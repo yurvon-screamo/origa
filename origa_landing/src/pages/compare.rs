@@ -1,6 +1,6 @@
 use leptos::prelude::*;
-use leptos_router::components::A;
 
+use crate::components::cta::CtaSection;
 use crate::components::seo::PageMeta;
 use crate::content::Locale;
 
@@ -200,14 +200,7 @@ pub fn ComparePage() -> impl IntoView {
         />
 
         // Section 8: CTA (reuses home-cta dark olive)
-        <section class="home-cta">
-            <hr class="home-cta__rule" />
-            <h2 class="home-cta__title">{c.home_cta_title}</h2>
-            <A href=download_href attr:class="btn btn-filled">{c.home_cta_primary}</A>
-            <p class="home-cta__platforms">
-                "Windows · Linux · macOS · Android · iOS · Web"
-            </p>
-        </section>
+        <CtaSection title=c.home_cta_title button_text=c.home_cta_primary download_href=download_href />
     }
 }
 
@@ -244,12 +237,6 @@ fn ScoreboardCell(
         "partial" => view! {
             <div class="cmp-grid__cell cmp-grid__cell--default">
                 <CompareMarker kind="partial"/>
-                {label}
-            </div>
-        },
-        "no" => view! {
-            <div class="cmp-grid__cell cmp-grid__cell--default">
-                <CompareMarker kind="no"/>
                 {label}
             </div>
         },
@@ -290,12 +277,8 @@ fn CompareMarker(kind: &'static str) -> AnyView {
             <div class="compare-marker compare-marker--partial" aria-label="Partial"></div>
         }
         .into_any(),
-        "no" => view! {
-            <div class="compare-marker compare-marker--no" aria-label="No">"—"</div>
-        }
-        .into_any(),
         _ => view! {
-            <div class="compare-marker compare-marker--no">"—"</div>
+            <div class="compare-marker compare-marker--no" aria-label="No">"—"</div>
         }
         .into_any(),
     }

@@ -1,6 +1,6 @@
 use leptos::prelude::*;
-use leptos_router::components::A;
 
+use crate::components::cta::CtaSection;
 use crate::components::seo::PageMeta;
 use crate::content::Locale;
 
@@ -69,11 +69,12 @@ pub fn IntegrationsPage() -> impl IntoView {
                 <IntgSectionHeader number="03" title=c.integrations_section_apps/>
                 <div class="intg-grid-stagger">
                     <div class="intg-grid-stagger__row intg-grid-stagger__row--3-2">
-                        <IntgDuolingoCard
+                        <IntgCard
                             tag=c.integrations_tag_app
                             name=c.integrations_duolingo_name
                             desc=c.integrations_duolingo_desc
                             detail=c.integrations_duolingo_detail
+                            badges=("EN", "RU")
                         />
                         <IntgCard
                             tag=c.integrations_tag_app
@@ -89,7 +90,7 @@ pub fn IntegrationsPage() -> impl IntoView {
                             desc=c.integrations_spy_desc
                             detail=c.integrations_spy_detail
                         />
-                        <IntgAnkiCard
+                        <IntgCard
                             tag=c.integrations_tag_import
                             name=c.integrations_anki_name
                             desc=c.integrations_anki_desc
@@ -101,14 +102,7 @@ pub fn IntegrationsPage() -> impl IntoView {
         </section>
 
         // ── Section 4: CTA ──
-        <section class="home-cta">
-            <hr class="home-cta__rule"/>
-            <h2 class="home-cta__title">{c.home_cta_title}</h2>
-            <A href=download_href attr:class="btn btn-filled">{c.home_cta_primary}</A>
-            <p class="home-cta__platforms">
-                "Windows · Linux · macOS · Android · iOS · Web"
-            </p>
-        </section>
+        <CtaSection title=c.home_cta_title button_text=c.home_cta_primary download_href=download_href />
     }
 }
 
@@ -167,6 +161,7 @@ fn IntgCard(
     name: &'static str,
     desc: &'static str,
     detail: &'static str,
+    #[prop(optional)] badges: Option<(&'static str, &'static str)>,
 ) -> impl IntoView {
     view! {
         <div class="intg-card">
@@ -174,44 +169,12 @@ fn IntgCard(
             <h3 class="intg-card__name">{name}</h3>
             <p class="intg-card__desc">{desc}</p>
             <p class="intg-card__detail">{detail}</p>
-        </div>
-    }
-}
-
-#[component]
-fn IntgDuolingoCard(
-    tag: &'static str,
-    name: &'static str,
-    desc: &'static str,
-    detail: &'static str,
-) -> impl IntoView {
-    view! {
-        <div class="intg-card">
-            <p class="intg-card__tag">{tag}</p>
-            <h3 class="intg-card__name">{name}</h3>
-            <p class="intg-card__desc">{desc}</p>
-            <p class="intg-card__detail">{detail}</p>
-            <div class="intg-card__badges">
-                <span class="intg-card__badge">"EN"</span>
-                <span class="intg-card__badge">"RU"</span>
-            </div>
-        </div>
-    }
-}
-
-#[component]
-fn IntgAnkiCard(
-    tag: &'static str,
-    name: &'static str,
-    desc: &'static str,
-    detail: &'static str,
-) -> impl IntoView {
-    view! {
-        <div class="intg-card">
-            <p class="intg-card__tag">{tag}</p>
-            <h3 class="intg-card__name">{name}</h3>
-            <p class="intg-card__desc">{desc}</p>
-            <p class="intg-card__detail">{detail}</p>
+            {badges.map(|(b1, b2)| view! {
+                <div class="intg-card__badges">
+                    <span class="intg-card__badge">{b1}</span>
+                    <span class="intg-card__badge">{b2}</span>
+                </div>
+            })}
         </div>
     }
 }
