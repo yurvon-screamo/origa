@@ -1,11 +1,12 @@
 use crate::i18n::*;
 use crate::pages::lesson::kanji_card_details::KanjiCardDetails;
 use crate::pages::lesson::rating_buttons_view::RatingButtonsView;
+use crate::pages::shared::format_answer_text;
 use crate::ui_components::{
     Card, DisplayText, Heading, HeadingLevel, KanjiDrawingPractice, Tag, TagVariant,
 };
 use leptos::prelude::*;
-use origa::domain::{Card as DomainCard, CardAnswer, NativeLanguage, Rating};
+use origa::domain::{Card as DomainCard, NativeLanguage, Rating};
 use std::collections::HashSet;
 use tracing::warn;
 
@@ -18,15 +19,14 @@ struct KanjiData {
     examples: Option<Vec<(String, String)>>,
 }
 
-fn extract_kanji_data(kanji: &DomainCard, native_language: NativeLanguage) -> KanjiData {
-    let DomainCard::Kanji(kanji) = kanji else {
+fn extract_kanji_data(kanji_card: &DomainCard, native_language: NativeLanguage) -> KanjiData {
+    let DomainCard::Kanji(kanji) = kanji_card else {
         unreachable!()
     };
 
     let symbol = kanji.kanji().text().to_string();
     let description = match kanji.description(&native_language) {
-        Ok(CardAnswer::Vocabulary { translations, .. }) => translations.join(", "),
-        Ok(CardAnswer::Text(s)) => s,
+        Ok(_) => format_answer_text(kanji_card, &native_language),
         Err(e) => {
             warn!(
                 kanji = %symbol,

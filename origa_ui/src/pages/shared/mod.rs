@@ -1,3 +1,4 @@
+mod card_answer_helper;
 mod card_counts;
 mod card_filter;
 mod card_list_page;
@@ -10,6 +11,7 @@ mod mark_known_callback;
 mod pagination;
 mod toggle_favorite_callback;
 
+pub use card_answer_helper::{format_answer_parts, format_answer_text};
 pub use card_counts::CardCounts;
 pub use card_filter::{Filter, FilterBtn};
 pub use card_list_page::{CardsLoadedCallback, card_list_view, create_card_list_context};

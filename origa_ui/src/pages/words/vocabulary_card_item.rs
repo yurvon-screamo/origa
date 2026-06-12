@@ -1,13 +1,13 @@
 use std::collections::HashSet;
 
-use super::super::shared::{CardStatus, DeleteRequest};
+use super::super::shared::{CardStatus, DeleteRequest, format_answer_parts};
 use crate::i18n::use_i18n;
 use crate::ui_components::{
     CardActionBar, CardHistoryModal, DeleteConfirmModal, FsrsMetrics, FuriganaText, Tag,
     TagVariant, WordTranslations,
 };
 use leptos::prelude::*;
-use origa::domain::{Card as DomainCard, CardAnswer, NativeLanguage, StudyCard};
+use origa::domain::{Card as DomainCard, NativeLanguage, StudyCard};
 use ulid::Ulid;
 
 #[component]
@@ -45,13 +45,14 @@ pub fn VocabularyCardItem(
     let answer_data = Memo::new(move |_| {
         let lang = native_language.get();
         match study_card_for_meaning.card() {
-            DomainCard::Vocabulary(vocab) => match vocab.answer(&lang) {
-                Ok(CardAnswer::Vocabulary {
-                    translations,
-                    description,
-                }) => (translations, description),
-                Ok(CardAnswer::Text(s)) => (vec![s], None),
-                Err(_) => (vec!["?".to_string()], None),
+            DomainCard::Vocabulary(_) => {
+                let (translations, description) =
+                    format_answer_parts(study_card_for_meaning.card(), &lang);
+                if translations.is_empty() {
+                    (vec!["?".to_string()], None)
+                } else {
+                    (translations, description)
+                }
             },
             _ => (vec!["?".to_string()], None),
         }

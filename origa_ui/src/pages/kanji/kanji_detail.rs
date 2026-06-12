@@ -2,6 +2,7 @@ use std::collections::HashSet;
 
 use super::super::shared::{
     CardStatus, DeleteRequest, create_delete_callback, create_mark_as_known_callback,
+    format_answer_text,
 };
 use crate::i18n::use_i18n;
 use crate::repository::HybridUserRepository;
@@ -14,7 +15,7 @@ use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos_router::components::A;
 use leptos_router::hooks::{use_navigate, use_params_map};
-use origa::domain::{Card as DomainCard, CardAnswer, StudyCard, User};
+use origa::domain::{Card as DomainCard, StudyCard, User};
 use origa::traits::UserRepository;
 use origa::use_cases::ToggleFavoriteUseCase;
 use ulid::Ulid;
@@ -229,12 +230,11 @@ pub fn KanjiDetail() -> impl IntoView {
                 let description = Memo::new(move |_| {
                     let lang = native_lang.get();
                     match card_for_desc.card() {
-                        DomainCard::Kanji(kanji_card) => match kanji_card.description(&lang).ok() {
-                            Some(CardAnswer::Vocabulary { translations, .. }) => {
-                                translations.join(", ")
-                            },
-                            Some(CardAnswer::Text(s)) => s,
-                            None => String::new(),
+                        DomainCard::Kanji(kanji_card) => {
+                            match kanji_card.description(&lang).ok() {
+                                Some(_) => format_answer_text(card_for_desc.card(), &lang),
+                                None => String::new(),
+                            }
                         },
                         _ => String::new(),
                     }
@@ -243,13 +243,7 @@ pub fn KanjiDetail() -> impl IntoView {
                 let card_for_answer = card.clone();
                 let answer_text = Memo::new(move |_| {
                     let lang = native_lang.get();
-                    match card_for_answer.card().answer(&lang).ok() {
-                        Some(CardAnswer::Vocabulary { translations, .. }) => {
-                            translations.join(", ")
-                        },
-                        Some(CardAnswer::Text(s)) => s,
-                        None => String::new(),
-                    }
+                    format_answer_text(card_for_answer.card(), &lang)
                 });
 
                 let card_for_examples = card.clone();
