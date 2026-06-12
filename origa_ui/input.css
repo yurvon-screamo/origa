@@ -5652,3 +5652,22 @@ input[type="submit"],
     color: var(--error);
     margin-bottom: 16px;
 }
+
+.danger-zone-btn {
+    background: var(--bg-warm);
+}
+
+.danger-zone-btn:hover {
+    background: var(--fg-black);
+    color: var(--bg-paper);
+}
+
+.danger-zone-btn--delete {
+    background: var(--bg-warm);
+    color: var(--error);
+}
+
+.danger-zone-btn--delete:hover {
+    background: var(--error);
+    color: var(--bg-paper);
+}
