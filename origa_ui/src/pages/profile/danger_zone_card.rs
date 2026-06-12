@@ -24,9 +24,10 @@ pub fn DangerZoneCard(
 
             <div class="flex flex-col gap-3">
                 <Button
-                    variant={Signal::derive(|| ButtonVariant::Ghost)}
+                    variant={Signal::derive(|| ButtonVariant::Default)}
                     on_click={on_logout}
                     disabled=is_logging_out
+                    class=Signal::derive(|| "danger-zone-btn".to_string())
                     test_id="profile-logout-btn"
                 >
                     {move || if is_logging_out.get() {
@@ -57,7 +58,7 @@ pub fn DangerZoneCard(
                                     }}
                                 </Button>
                                 <Button
-                                    variant={Signal::derive(|| ButtonVariant::Ghost)}
+                                    variant={Signal::derive(|| ButtonVariant::Default)}
                                     on_click={Callback::new(move |_| show_delete_confirm.set(false))}
                                     test_id="profile-cancel-delete-btn"
                                 >
@@ -69,9 +70,9 @@ pub fn DangerZoneCard(
                 } else {
                     view! {
                         <Button
-                            variant={Signal::derive(|| ButtonVariant::Ghost)}
+                            variant={Signal::derive(|| ButtonVariant::Default)}
                             on_click={Callback::new(move |_| show_delete_confirm.set(true))}
-                            class=Signal::derive(|| "text-[var(--fg-muted)] hover:text-[var(--error)]".to_string())
+                            class=Signal::derive(|| "danger-zone-btn danger-zone-btn--delete".to_string())
                             test_id="profile-delete-btn"
                         >
                             {t!(i18n, profile.delete_account)}
