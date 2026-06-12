@@ -10,6 +10,7 @@ mod memory;
 mod score_content;
 mod serde_utils;
 mod srs;
+mod stats;
 mod tokenizer;
 mod user;
 pub(crate) mod value_objects;
@@ -36,6 +37,7 @@ pub use knowledge::{
 pub use memory::{CardState, Difficulty, MemoryHistory, MemoryState, Rating, ReviewLog, Stability};
 pub use score_content::ScoreContentResult;
 pub use srs::RateMode;
+pub use stats::{RatingRatio, TodayOverview, compute_rating_ratio, compute_today_overview};
 pub use tokenizer::{
     DictionaryData, PartOfSpeech, TokenInfo, TokenTranslation, init_dictionary,
     init_dictionary_from_rkyv, is_dictionary_loaded, lookup_tokens_translations,

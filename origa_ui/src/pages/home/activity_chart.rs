@@ -1,7 +1,8 @@
-use super::dashboard_stats::{ActivityDataPoint, RatingRatio};
+use super::dashboard_stats::ActivityDataPoint;
 use crate::i18n::{t, td_string, use_i18n};
 use crate::ui_components::{Card, ChartLine, MultiLineChart, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
+use origa::domain::RatingRatio;
 
 #[component]
 pub fn ActivityChart(
