@@ -4,7 +4,7 @@ use tracing::{debug, info, warn};
 use crate::domain::{Card, OrigaError};
 use crate::traits::UserRepository;
 
-use super::removed_popular_words::REMOVED_POPULAR_WORDS;
+use crate::dictionary::removed_popular_words::REMOVED_POPULAR_WORDS;
 
 pub struct MigrationResult {
     pub kanji_count: usize,

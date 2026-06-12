@@ -4,4 +4,5 @@ pub mod kanji;
 pub mod phrase;
 pub mod pitch_audio;
 pub mod radical;
+pub mod removed_popular_words;
 pub mod vocabulary;
