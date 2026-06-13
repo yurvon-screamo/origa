@@ -4,10 +4,17 @@ on:
   pull_request:
     types:
       - closed
+  schedule:
+    - cron: '0 3 * * 1'
   workflow_dispatch:
+
+concurrency:
+  group: cache-cleanup
+  cancel-in-progress: false
 
 jobs:
   cleanup:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       actions: write
@@ -28,3 +35,62 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
           BRANCH: refs/pull/${{ github.event.pull_request.number }}/merge
+
+  scheduled-cleanup:
+    name: Scheduled Cache Cleanup
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - name: Delete stale and orphaned caches
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          echo "=== Fetching all caches ==="
+          CACHES=$(gh cache list --limit 500 --json key,ref,lastAccessedAt,id)
+
+          if [[ -z "$CACHES" ]] || [[ "$CACHES" == "[]" ]]; then
+            echo "No caches found or fetch failed - nothing to clean"
+            exit 0
+          fi
+
+          echo "$CACHES" | jq -r '.[] | "\(.id)\t\(.key)\t\(.ref)\t\(.lastAccessedAt)"' | while IFS=$'\t' read -r id key ref last_accessed; do
+            # Skip entries with missing or invalid timestamp
+            if [[ -z "$last_accessed" ]] || [[ "$last_accessed" == "null" ]]; then
+              echo "SKIP (no timestamp): $key"
+              continue
+            fi
+
+            days_old=$(( ( $(date +%s) - $(date -d "$last_accessed" +%s) ) / 86400 ))
+
+            if [[ "$ref" != "refs/heads/master" && "$days_old" -gt 7 ]]; then
+              echo "DELETE (non-master, ${days_old}d old): $key"
+              gh cache delete "$id" || echo "WARNING: failed to delete cache $id ($key)"
+              continue
+            fi
+
+            # Delete orphaned old shared-key caches (pre-v2)
+            # NOTE: pattern assumes Swatinem/rust-cache key prefix "v0-rust" — verify if upgrading rust-cache
+            if echo "$key" | grep -qE 'v0-rust-.*(origa-ci|origa-linux|origa-mobile|origa-cross-build)(-v[0-9]+)?' && \
+               ! echo "$key" | grep -qE 'origa-(ci|linux|mobile|cross-build)-v2'; then
+              echo "DELETE (orphaned old shared-key): $key"
+              gh cache delete "$id" || echo "WARNING: failed to delete cache $id ($key)"
+              continue
+            fi
+
+            # Delete master caches older than 14 days (except critical)
+            if [[ "$ref" == "refs/heads/master" && "$days_old" -gt 14 ]]; then
+              if ! echo "$key" | grep -qE '(cdn-data|unidic-dict|cache-apt-pkgs|playwright-chromium|xwin|trunk-tools|trailbase|gradle|ndk)'; then
+                echo "DELETE (master stale ${days_old}d): $key"
+                gh cache delete "$id" || echo "WARNING: failed to delete cache $id ($key)"
+                continue
+              fi
+            fi
+
+            echo "KEEP (${days_old}d old): $key [ref=$ref]"
+          done
+
+          echo "=== Cleanup complete ==="
