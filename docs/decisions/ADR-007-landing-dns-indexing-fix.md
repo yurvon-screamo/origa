@@ -1,4 +1,4 @@
-# ADR-007: Landing DNS — Replace CNAME with A Record to Fix Search Engine Indexing (Railway AAAA SERVFAIL)
+# ADR-007: Landing DNS — Cloudflare Migration to Fix Search Engine Indexing (Railway AAAA SERVFAIL)
 
 ## Status
 
@@ -37,46 +37,60 @@ All of the following were verified correct and ruled out:
 - SSL certificate — valid ✅
 - Aeza nameservers — correctly serving the CNAME ✅
 
+### Aeza DNS Provider Failure
+
+The initial fix attempt was to replace the CNAME with a plain A record on Aeza. During that attempt we discovered that Aeza's DNS zone management is broken: the control panel accepts record changes but does **not** push them to the authoritative nameservers. The SOA serial was stuck at `2026060923` (June 9 — 4 days stale). Neither the panel UI, the Aeza API, nor a delete-and-recreate operation triggered a zone reload. A support ticket (#620117) was opened, but Aeza's estimated response time was ~8 hours, which was unacceptable for unblocking search indexing. This made any Aeza-based workaround non-viable.
+
 ## Decision
 
-Replace the CNAME record `origa` → `c2qj368z.up.railway.app` with a plain **A record**: `origa` → `69.46.46.46` (Railway edge IP, TTL 300).
+**Migrate the entire DNS zone from Aeza to Cloudflare.**
 
-### Rationale
+Migrate nameservers from Aeza (`ns1-4.aeza-dns.net`) to Cloudflare (`ali.ns.cloudflare.com`, `clay.ns.cloudflare.com`). On Cloudflare, the `origa` record is a CNAME → `c2qj368z.up.railway.app` with **Cloudflare proxy enabled (orange cloud)**. Cloudflare serves its own correct A/AAAA records (anycast IPs), so recursive resolvers never query Railway's broken DNS for AAAA. The SERVFAIL is eliminated permanently.
 
-A plain A record on the authoritative nameserver (Aeza) means recursive resolvers never follow a CNAME chain to Railway's DNS. The AAAA query returns a clean empty NOERROR (no IPv6 configured) instead of SERVFAIL. This eliminates the broken Railway DNS from the resolution path entirely.
+### Implementation (Cloudflare API)
 
-Railway routes custom domains by SNI/Host header at the edge, not by the DNS CNAME chain. This was verified: a direct connection to `69.46.46.46` with `SNI: origa.uwuwu.net` returns `200 OK` with valid SSL and full SSR HTML content. So a plain A record works correctly.
+A scoped Cloudflare API token (Zone DNS Edit + Zone Edit) was used to:
 
-### Note on Aeza ALIAS
+1. Create the zone `uwuwu.net`.
+2. Create 8 DNS records (4 CNAME → Railway + 4 TXT `railway-verify`).
+3. Delete all legacy records (apex A, smtp, MX, SPF, mail subdomains, DKIM — all confirmed unused).
 
-Aeza offers an "ALIAS" record type, but testing confirmed it does NOT perform CNAME flattening for subdomains — it continues to serve the record as a regular CNAME, so it does not solve the problem.
+The nameserver change was made at the registrar (OnlineNIC, Inc.).
+
+### Records on Cloudflare
+
+| Name | Type | Content | Proxy |
+|------|------|---------|-------|
+| origa | CNAME | c2qj368z.up.railway.app | Proxied (orange) |
+| app.origa | CNAME | 9fmm6y4e.up.railway.app | DNS only (grey) |
+| s3.origa | CNAME | sltxm1ip.up.railway.app | DNS only (grey) |
+| pass | CNAME | vcce37wa.up.railway.app | DNS only (grey) |
+| _railway-verify.{origa,app.origa,s3.origa,pass} | TXT | railway-verify=... | — |
 
 ## Alternatives Considered
 
-### CNAME Flattening via ALIAS/ANAME (Aeza)
+### Plain A Record on Aeza (initial attempt)
 
-- Tried first: changed CNAME → ALIAS in the Aeza panel.
-- Result: Aeza's ALIAS for subdomains still serves a CNAME to clients. The authoritative NS continued returning `canonical name = c2qj368z.up.railway.app`. SERVFAIL persisted.
-- Rejected: does not actually flatten for subdomains.
+- Replace the CNAME with an A record `origa` → `69.46.46.46` on Aeza.
+- **Rejected / Failed**: Aeza's zone reload was broken (SOA serial stuck for 4+ days). Changes made in the panel never propagated to the authoritative NS. Not viable until Aeza fixes their infrastructure.
 
-### Cloudflare Proxy
+### Aeza ALIAS / CNAME Flattening
 
-Put Cloudflare in front of the domain; Cloudflare serves correct A/AAAA records and proxies to Railway.
-
-- **Pros**: most robust — Cloudflare's anycast network, automatic SSL, caching, DDoS protection; Railway edge IP changes are handled automatically.
-- **Cons**: requires either migrating the entire zone's NS to Cloudflare (risky — affects all subdomains: app, s3, etc.) or setting up Cloudflare for SaaS for a single subdomain (complex, may require paid plan).
-- **Deferred**: viable long-term upgrade, but higher operational cost. The A record is sufficient for now.
+- Aeza offers an "ALIAS" record type, but testing confirmed it does **not** flatten CNAME for subdomains — it continues serving a regular CNAME.
+- Rejected: does not solve the problem.
 
 ### Bug Report to Railway + Wait
 
-Report that Railway's authoritative NS return an A record in response to AAAA/MX/SOA queries for `*.up.railway.app`, violating DNS protocol.
-
+- Railway's authoritative NS return an A record in response to AAAA/MX/SOA queries, violating DNS protocol.
 - Rejected as primary fix: too slow, no guarantee of resolution timeline. Should still be reported separately.
 
 ## Consequences
 
-- **Indexing unblocked**: AAAA queries now return clean NOERROR instead of SERVFAIL. Yandex and Bing can resolve and crawl the site.
-- **Single point of IP**: The A record points to one Railway edge IP (`69.46.46.46`). If Railway changes their edge IP, the record must be updated manually. Railway edge IPs are relatively stable (TTL 60s on their side), but this requires monitoring.
-- **No IPv6**: The site has no AAAA record. IPv6-only clients cannot reach it. Acceptable for now — Railway edge is IPv4.
-- **Future migration to Cloudflare recommended**: If the A-record maintenance burden grows or Railway edge IPs change frequently, migrate DNS to Cloudflare for automatic CNAME flattening and anycast resilience.
-- **Monitoring**: Periodically verify that `69.46.46.46` still resolves for `c2qj368z.up.railway.app` and that the site responds 200 OK. If the IP changes, update the A record in the Aeza panel.
+- **Indexing unblocked**: Cloudflare serves correct A/AAAA (anycast). SERVFAIL eliminated. Yandex and Bing can resolve and crawl the site.
+- **No dependence on Railway DNS**: Resolvers query Cloudflare, never Railway. Railway's AAAA bug is irrelevant.
+- **No dependence on Aeza**: Fully migrated away. Aeza DNS service no longer needed.
+- **Automatic IP tracking**: The Cloudflare proxy resolves the Railway CNAME on its side, automatically tracking Railway edge IP changes. No manual A-record updates required.
+- **Bonus**: Cloudflare provides SSL termination, DDoS protection, and caching for the `origa` subdomain (proxied). Other Railway subdomains (app, s3, pass) remain DNS-only to avoid proxy overhead on API/static traffic.
+- **SSL mode**: Cloudflare "Full" or "Full (strict)" recommended (Railway already has valid SSL).
+- **Token cleanup**: The scoped Cloudflare API token should be revoked after migration is complete.
+- **Legacy removed**: All unused records (mail, apex server `31.58.85.8`, MX, SPF, DKIM) were not migrated — confirmed unused by the owner.
