@@ -6,6 +6,7 @@ mod kanji_companions;
 pub mod lesson;
 mod lesson_builder;
 mod phrase;
+mod stats_tracker;
 mod stats_updater;
 #[cfg(test)]
 mod tests;
@@ -20,9 +21,9 @@ pub use lesson::{
     MultiQuizResult, QuizCard, QuizMode, QuizOption, YesNoCard,
 };
 pub use phrase::PhraseCard;
+pub use stats_tracker::StatsTracker;
 pub use vocabulary::VocabularyCard;
 
-use chrono::Utc;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use ulid::Ulid;
@@ -41,7 +42,8 @@ pub struct KnowledgeSet {
     study_cards: HashMap<Ulid, StudyCard>,
     #[serde(default)]
     deleted_cards: HashSet<Ulid>,
-    lesson_history: Vec<DailyHistoryItem>,
+    #[serde(flatten)]
+    stats: StatsTracker,
 }
 
 fn deserialize_study_cards<'de, D>(deserializer: D) -> Result<HashMap<Ulid, StudyCard>, D::Error>
@@ -90,7 +92,7 @@ impl KnowledgeSet {
         Self {
             study_cards: HashMap::new(),
             deleted_cards: HashSet::new(),
-            lesson_history: Vec::new(),
+            stats: StatsTracker::new(),
         }
     }
 
@@ -112,21 +114,7 @@ impl KnowledgeSet {
             }
         }
 
-        for item in &new_values.lesson_history {
-            let date = item.timestamp().date_naive();
-            if let Some(existing_item) = self
-                .lesson_history
-                .iter_mut()
-                .find(|h| h.timestamp().date_naive() == date)
-            {
-                existing_item.merge_with(item);
-            } else {
-                self.lesson_history.push(item.clone());
-            }
-        }
-
-        self.lesson_history.sort_by_key(|h| h.timestamp());
-
+        self.stats.merge(&new_values.stats);
         self.recalculate_daily_stats();
     }
 
@@ -139,27 +127,15 @@ impl KnowledgeSet {
     }
 
     pub fn lesson_history(&self) -> &[DailyHistoryItem] {
-        &self.lesson_history
+        self.stats.history()
     }
 
     pub fn new_cards_studied_today(&self) -> usize {
-        let today = Utc::now().date_naive();
-        self.lesson_history
-            .iter()
-            .rev()
-            .find(|item| item.timestamp().date_naive() == today)
-            .map(|item| item.new_cards_studied_today() as usize)
-            .unwrap_or(0)
+        self.stats.new_cards_studied_today()
     }
 
     pub fn phrase_cards_studied_today(&self) -> usize {
-        let today = Utc::now().date_naive();
-        self.lesson_history
-            .iter()
-            .rev()
-            .find(|item| item.timestamp().date_naive() == today)
-            .map(|item| item.phrase_cards_studied_today() as usize)
-            .unwrap_or(0)
+        self.stats.phrase_cards_studied_today()
     }
 
     pub fn get_known_kanji(&self) -> HashSet<char> {
@@ -295,14 +271,8 @@ impl KnowledgeSet {
     }
 
     fn update_history(&mut self, rating: Rating, was_new: bool, is_phrase: bool, mode: RateMode) {
-        stats_updater::update_history(
-            &self.study_cards,
-            &mut self.lesson_history,
-            rating,
-            was_new,
-            is_phrase,
-            mode,
-        );
+        self.stats
+            .update(&self.study_cards, rating, was_new, is_phrase, mode);
     }
 
     pub fn create_companion_vocab_cards(
@@ -342,7 +312,7 @@ impl KnowledgeSet {
     }
 
     fn recalculate_daily_stats(&mut self) {
-        stats_updater::recalculate_daily_stats(&self.study_cards, &mut self.lesson_history);
+        self.stats.recalculate(&self.study_cards);
     }
 
     pub fn mark_card_as_known(&mut self, card_id: Ulid) -> Result<(), OrigaError> {

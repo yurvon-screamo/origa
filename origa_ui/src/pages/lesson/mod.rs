@@ -12,6 +12,7 @@ mod lesson_card_answer;
 mod lesson_card_container;
 mod lesson_card_header;
 mod lesson_card_question;
+mod lesson_card_renderer;
 mod lesson_progress;
 mod lesson_state;
 mod na_adjective_helper;

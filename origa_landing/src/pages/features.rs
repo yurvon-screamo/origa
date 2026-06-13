@@ -1,6 +1,6 @@
 use leptos::prelude::*;
-use leptos_router::components::A;
 
+use crate::components::cta::CtaSection;
 use crate::components::seo::{PageMeta, SchemaOrg, how_to_schema};
 use crate::content::Locale;
 
@@ -135,14 +135,7 @@ pub fn FeaturesPage() -> impl IntoView {
         </section>
 
         // Section 5: CTA (reuses home-cta dark olive)
-        <section class="home-cta">
-            <hr class="home-cta__rule" />
-            <h2 class="home-cta__title">{c.home_cta_title}</h2>
-            <A href=download_href attr:class="btn btn-filled">{c.features_cta}</A>
-            <p class="home-cta__platforms">
-                "Windows · Linux · macOS · Android · iOS · Web"
-            </p>
-        </section>
+        <CtaSection title=c.home_cta_title button_text=c.features_cta download_href=download_href />
     }
 }
 

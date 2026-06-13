@@ -10,7 +10,7 @@ use ulid::Ulid;
 
 use crate::repository::cdn_provider;
 
-#[expect(dead_code, reason = "lazy-load для будущих задач")]
+#[expect(dead_code, reason = "lazy-load for future tasks")]
 pub async fn load_phrase_detail(phrase_id: Ulid) -> Result<PhraseDetail, OrigaError> {
     if let Some(detail) = get_cached_phrase_detail(&phrase_id) {
         return Ok(detail);

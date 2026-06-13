@@ -1,6 +1,7 @@
 use leptos::prelude::*;
 use leptos_router::components::A;
 
+use crate::components::cta::CtaSection;
 use crate::components::seo::{
     PageMeta, SchemaOrg, organization_schema, software_application_schema,
 };
@@ -123,14 +124,7 @@ pub fn HomePage() -> impl IntoView {
         <hr class="divider-full" />
 
         // Section 4: Final CTA (dark olive) with platforms
-        <section class="home-cta">
-            <hr class="home-cta__rule" />
-            <h2 class="home-cta__title">{c.home_cta_title}</h2>
-            <A href=download_href attr:class="btn btn-filled">{c.home_cta_primary}</A>
-            <p class="home-cta__platforms">
-                "Windows · Linux · macOS · Android · iOS · Web"
-            </p>
-        </section>
+        <CtaSection title=c.home_cta_title button_text=c.home_cta_primary download_href=download_href />
     }
 }
 

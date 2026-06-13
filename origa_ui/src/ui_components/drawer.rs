@@ -56,7 +56,7 @@ pub fn Drawer(
     view! {
         <Show when=move || is_open.get()>
             <>
-                {/* Используем тот же бэкдроп, что и в модалке, для консистентности */}
+                {/* Use the same backdrop as the modal for consistency */}
                 <div
                     class="modal-backdrop anima-backdrop-enter"
                     on:click=close_drawer
@@ -64,7 +64,7 @@ pub fn Drawer(
                 ></div>
 
                 <div class="drawer-content" data-testid=test_id_val>
-                    {/* Header: фиксированный */}
+                    {/* Header: fixed */}
                     <div class="modal-header">
                         <div>
                             <h3 class="drawer-header">{move || title.get()}</h3>
@@ -83,7 +83,7 @@ pub fn Drawer(
                         </div>
                     </div>
 
-                    {/* Body: скроллируемый контент */}
+                    {/* Body: scrollable content */}
                     <div class="drawer-body">
                         {move || children.with_value(|c| c())}
                     </div>
