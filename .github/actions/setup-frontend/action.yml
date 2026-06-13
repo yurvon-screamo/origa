@@ -6,9 +6,6 @@ inputs:
         description: "Space-separated list of tools to install via cargo-binstall"
         required: false
         default: "trunk tauri-cli"
-    cache-key-suffix:
-        description: "Suffix for cache keys (e.g., platform identifier)"
-        required: false
 
 outputs:
     unidic-cache-hit:
@@ -40,10 +37,11 @@ runs:
 
         - name: Cache trunk tools
           id: trunk-cache
+          if: contains(inputs.tools, 'trunk')
           uses: actions/cache@v4
           with:
               path: ~/.cache/trunk
-              key: trunk-tools-v1-${{ inputs.cache-key-suffix }}
+              key: trunk-tools-v2
 
         - name: Cache UniDic dictionary
           id: unidic-cache
