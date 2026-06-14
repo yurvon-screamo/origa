@@ -194,9 +194,10 @@ pub fn apply_mutated_pattern(
 ///   excluded from the candidate pool, so the chosen postfix differs from the
 ///   original one.
 /// - For `ReplacePostfix`/`RemovePostfix` chains, `used_postfixes` is empty,
-///   but the distractor (source word + pool postfix) is structurally distinct
-///   from the correct answer (trimmed stem + new postfix), so they cannot
-///   coincide.
+///   but for well-formed rules (the postfix being replaced/removed is a real,
+///   non-empty suffix of the source word) the distractor (source word + pool
+///   postfix) is structurally distinct from the correct answer (trimmed stem
+///   + new postfix), so they cannot coincide.
 ///
 /// In all cases the `seen` HashSet in `generate_grammar_distractors` provides
 /// an ultimate deduplication safety net that filters any residual collision.
@@ -250,24 +251,53 @@ mod tests {
 
     #[test]
     fn apply_mutated_pattern_universal_only_never_collides_under_stress() {
-        // Stress test: 30 iterations to verify no rare collisions in probabilistic
-        // distractor generation for Universal-only chains.
-        let actions = vec![FormatAction::AddPostfix {
-            postfix: "ため".into(),
-        }];
-        let correct = "行くため";
+        // Stress test: each Universal-only chain type is exercised 30 times to
+        // confirm the generated distractor never equals the correct answer.
+        // AddPostfix relies on the `used_postfixes` exclusion filter;
+        // ReplacePostfix/RemovePostfix exercise `mutate_universal_only` with an
+        // empty `used_postfixes` set and rely on structural distinctness.
         let mut rng = rand::rng();
 
+        // AddPostfix: correct = source + P_orig, distractor = source + P_pool.
+        let add_actions = vec![FormatAction::AddPostfix {
+            postfix: "ため".into(),
+        }];
         for _ in 0..30 {
-            let distractor = apply_mutated_pattern(&actions, "行く", &PartOfSpeech::Verb, &mut rng);
-            assert!(
-                distractor.is_some(),
-                "Universal-only chain should always produce a distractor"
-            );
+            let distractor =
+                apply_mutated_pattern(&add_actions, "行く", &PartOfSpeech::Verb, &mut rng)
+                    .expect("AddPostfix chain should always produce a distractor");
             assert_ne!(
-                distractor.unwrap(),
-                correct,
-                "Distractor must never equal the correct answer"
+                distractor, "行くため",
+                "AddPostfix distractor must differ from correct answer"
+            );
+        }
+
+        // ReplacePostfix: correct = source - old + new, distractor = source + P_pool.
+        let replace_actions = vec![FormatAction::ReplacePostfix {
+            old_postfix: "く".into(),
+            new_postfix: "いて".into(),
+        }];
+        for _ in 0..30 {
+            let distractor =
+                apply_mutated_pattern(&replace_actions, "行く", &PartOfSpeech::Verb, &mut rng)
+                    .expect("ReplacePostfix chain should always produce a distractor");
+            assert_ne!(
+                distractor, "行いて",
+                "ReplacePostfix distractor must differ from correct answer"
+            );
+        }
+
+        // RemovePostfix: correct = source - postfix, distractor = source + P_pool.
+        let remove_actions = vec![FormatAction::RemovePostfix {
+            postfix: "く".into(),
+        }];
+        for _ in 0..30 {
+            let distractor =
+                apply_mutated_pattern(&remove_actions, "行く", &PartOfSpeech::Verb, &mut rng)
+                    .expect("RemovePostfix chain should always produce a distractor");
+            assert_ne!(
+                distractor, "行",
+                "RemovePostfix distractor must differ from correct answer"
             );
         }
     }
