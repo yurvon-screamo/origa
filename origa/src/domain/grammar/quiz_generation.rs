@@ -8,6 +8,25 @@ use crate::dictionary::grammar::{FormatAction, FormatActionGroup, GrammarRule};
 use crate::domain::knowledge::KnowledgeSet;
 use crate::domain::{Card, OrigaError, PartOfSpeech, apply_format_actions};
 
+/// Realistic N3/N2 grammatical postfixes that attach directly to dictionary-form words.
+/// Used to generate plausible distractors for Universal-only chains (AddPostfix/ReplacePostfix
+/// without any conjugating action). Pool intentionally excludes postfixes that require
+/// a conjugated base (e.g. ください expects te-form), since those would produce invalid Japanese.
+const UNIVERSAL_DISTRACTOR_POSTFIXES: &[&str] = &[
+    "こと",
+    "ところ",
+    "はず",
+    "つもり",
+    "よう",
+    "まま",
+    "あいだ",
+    "ため",
+    "ばあい",
+    "おかげ",
+    "せい",
+    "うえ",
+];
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct GrammarPracticeQuestion {
     word_text: String,
@@ -140,7 +159,7 @@ pub fn apply_mutated_pattern(
         .collect();
 
     if mutable_indices.is_empty() {
-        return None;
+        return mutate_universal_only(rules, source_word, pos, rng);
     }
 
     let idx = mutable_indices.choose(rng)?;
@@ -158,17 +177,109 @@ pub fn apply_mutated_pattern(
     apply_format_actions(source_word, &mutated, pos).ok()
 }
 
+/// Generates a distractor for chains consisting solely of Universal actions
+/// (AddPostfix / ReplacePostfix / RemovePostfix without any conjugating action).
+///
+/// These chains cannot be mutated by swapping conjugation (there is none).
+/// Instead, a different dictionary-form postfix from
+/// [`UNIVERSAL_DISTRACTOR_POSTFIXES`] is appended directly to the **source
+/// word**. This preserves the base word intact and always produces valid
+/// Japanese, regardless of the original chain type: for `ReplacePostfix` the
+/// stem must not be truncated before adding a foreign postfix, and for
+/// `RemovePostfix` the source word itself is the only stable base.
+///
+/// Postfixes already used by `AddPostfix` actions in the chain are excluded
+/// from the candidate pool so the distractor can never equal the correct
+/// answer.
+fn mutate_universal_only(
+    rules: &[FormatAction],
+    source_word: &str,
+    pos: &PartOfSpeech,
+    rng: &mut impl Rng,
+) -> Option<String> {
+    let used_postfixes: HashSet<&str> = rules
+        .iter()
+        .filter_map(|a| match a {
+            FormatAction::AddPostfix { postfix } => Some(postfix.as_str()),
+            _ => None,
+        })
+        .collect();
+
+    let candidates: Vec<&str> = UNIVERSAL_DISTRACTOR_POSTFIXES
+        .iter()
+        .copied()
+        .filter(|p| !used_postfixes.contains(*p))
+        .collect();
+
+    let alternative_postfix = candidates.choose(rng).copied()?;
+    let distractor_actions = vec![FormatAction::AddPostfix {
+        postfix: alternative_postfix.to_string(),
+    }];
+    apply_format_actions(source_word, &distractor_actions, pos).ok()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    fn apply_mutated_pattern_returns_none_for_universal_only() {
+    fn apply_mutated_pattern_returns_distractor_for_universal_only() {
         let actions = vec![FormatAction::AddPostfix {
-            postfix: "test".into(),
+            postfix: "ため".into(),
         }];
-        let result = apply_mutated_pattern(&actions, "word", &PartOfSpeech::Verb, &mut rand::rng());
-        assert!(result.is_none());
+        let result = apply_mutated_pattern(&actions, "行く", &PartOfSpeech::Verb, &mut rand::rng());
+        assert!(
+            result.is_some(),
+            "Universal-only chain should now produce a distractor"
+        );
+        assert_ne!(
+            result.unwrap(),
+            "行くため",
+            "Distractor must differ from correct answer"
+        );
+    }
+
+    #[test]
+    fn apply_mutated_pattern_handles_replace_postfix_universal_only() {
+        let actions = vec![FormatAction::ReplacePostfix {
+            old_postfix: "く".into(),
+            new_postfix: "いて".into(),
+        }];
+        let result = apply_mutated_pattern(&actions, "行く", &PartOfSpeech::Verb, &mut rand::rng());
+        assert!(
+            result.is_some(),
+            "ReplacePostfix universal-only chain should produce a distractor"
+        );
+        let distractor = result.unwrap();
+        assert_ne!(
+            distractor, "行いて",
+            "Distractor must differ from correct answer"
+        );
+        assert!(
+            distractor.starts_with("行く"),
+            "Distractor must preserve source word stem (valid Japanese): got {distractor}"
+        );
+    }
+
+    #[test]
+    fn apply_mutated_pattern_produces_distractor_for_remove_postfix_only() {
+        let actions = vec![FormatAction::RemovePostfix {
+            postfix: "く".into(),
+        }];
+        let result = apply_mutated_pattern(&actions, "行く", &PartOfSpeech::Verb, &mut rand::rng());
+        assert!(
+            result.is_some(),
+            "RemovePostfix-only chain produces a distractor via source-word postfix"
+        );
+        let distractor = result.unwrap();
+        assert_ne!(
+            distractor, "行",
+            "Distractor must differ from correct answer (source word minus postfix)"
+        );
+        assert!(
+            distractor.starts_with("行く"),
+            "Distractor must preserve source word: got {distractor}"
+        );
     }
 
     #[test]

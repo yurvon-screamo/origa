@@ -109,8 +109,10 @@ impl GrammarRuleCard {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::dictionary::grammar::{GrammarData, init_grammar, is_grammar_loaded};
-    use crate::domain::NativeLanguage;
+    use crate::dictionary::grammar::{
+        GrammarData, get_rules_by_level, init_grammar, is_grammar_loaded,
+    };
+    use crate::domain::{JapaneseLevel, NativeLanguage};
     use std::sync::Once;
 
     static INIT: Once = Once::new();
@@ -147,6 +149,33 @@ mod tests {
 
     fn get_verb_rule_id() -> Ulid {
         Ulid::from_string("01G00000000000000024000000").expect("Invalid ULID")
+    }
+
+    #[test]
+    fn get_rules_by_level_returns_n3_and_n2() {
+        init_test_grammar();
+
+        let n3_rules = get_rules_by_level(&JapaneseLevel::N3);
+        let n2_rules = get_rules_by_level(&JapaneseLevel::N2);
+
+        assert!(
+            !n3_rules.is_empty(),
+            "N3 grammar rules should exist in grammar.json"
+        );
+        assert!(
+            !n2_rules.is_empty(),
+            "N2 grammar rules should exist in grammar.json"
+        );
+        assert!(
+            n3_rules.len() >= 100,
+            "Expected at least 100 N3 rules, got {}",
+            n3_rules.len()
+        );
+        assert!(
+            n2_rules.len() >= 80,
+            "Expected at least 80 N2 rules, got {}",
+            n2_rules.len()
+        );
     }
 
     mod new {
