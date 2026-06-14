@@ -345,13 +345,24 @@ def _check_detection_anchor(
     index: int,
     report: ValidationReport,
 ) -> None:
+    """Enforce text-detection anchor (format_map or keywords) per level.
+
+    - N3/N2/N1: error if neither is present — every higher-level rule must be
+      detectable in running text.
+    - N5/N4: SUPPRESSED (no error, no warning). N5/N4 carry reference rules
+      (basic particles は/が/を/に, categories like 敬語/可能形の文) that are
+      pedagogical reference material rather than text-detection targets;
+      keywords for basic particles would explode into false positives (は
+      occurs in nearly every Japanese sentence). This is an architecturally
+      intentional carve-out — do not re-enable without a content review.
+    """
     if has_format_map or has_keywords:
         return
-    message = f"rule[{index}]: neither 'format_map' nor 'keywords' present"
     if level in STRICT_LEVELS:
-        report.error(message + f" (required for level {level})")
-    else:
-        report.warn(message + f" (accepted for level {level}, but limits grammar detection)")
+        report.error(
+            f"rule[{index}]: neither 'format_map' nor 'keywords' present "
+            f"(required for level {level})"
+        )
 
 
 def validate_rule(
