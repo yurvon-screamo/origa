@@ -19,7 +19,7 @@ pub const IRREGULAR_KURU: &str = "くる";
 
 pub const MAIN_VIEW_IRREGULAR: IrregularMapping = IrregularMapping::new("し", "き");
 pub const NAI_IRREGULAR: IrregularMapping = IrregularMapping::new("しない", "こない");
-pub const TARA_IRREGULAR: IrregularMapping = IrregularMapping::new("したら", "れたら");
+pub const TARA_IRREGULAR: IrregularMapping = IrregularMapping::new("したら", "きたら");
 pub const BA_IRREGULAR: IrregularMapping = IrregularMapping::new("すれば", "くれば");
 pub const POTENTIAL_IRREGULAR: IrregularMapping = IrregularMapping::new("できる", "こられる");
 pub const PASSIVE_IRREGULAR: IrregularMapping = IrregularMapping::new("される", "こられる");

@@ -12,10 +12,12 @@ The merge pipeline:
   1. Load the existing ``grammar.json`` (N5/N4 base, order preserved).
   2. Collect new rules from per-rule files and (optionally) legacy chunks.
   3. Validate every new rule (shared checks from ``validate_grammar``).
-  4. Deduplicate: hard error on duplicate ``rule_id``; WARN on duplicate
-     ``(level, title)``.
-  5. Sort new rules by ``level`` (N3 → N2 → N1) → ``lesson`` → ``title``.
-  6. Write ``grammar.json`` atomically (temp-file + rename).
+  4. Patch-or-append: a new rule whose ``rule_id`` already exists in the base
+     REPLACES that base rule in-place (patch mode — lets ``rules/`` act as
+     source-of-truth for legacy N5/N4 rules). New rule_ids are appended.
+  5. WARN on duplicate ``(level, title)`` among the new rules.
+  6. Sort new (appended) rules by ``level`` (N3 → N2 → N1) → ``lesson`` → ``title``.
+  7. Write ``grammar.json`` atomically (temp-file + rename).
 
 The ``_example`` subdirectory of ``rules/`` is always excluded from the merge.
 
@@ -62,10 +64,12 @@ class MergeReportContext:
     """Aggregated inputs to ``build_report`` — keeps the helper's arity small."""
 
     existing_count: int
+    total_count: int
     rules_per_chunk: dict[str, list[Path]] = field(default_factory=dict)
     chunk_id_per_subdir: dict[str, str | None] = field(default_factory=dict)
     legacy_chunks: list[Path] = field(default_factory=list)
     new_count: int = 0
+    patched_count: int = 0
 
 
 def collect_rule_files(rules_dir: Path) -> dict[str, list[Path]]:
@@ -198,33 +202,64 @@ def _strip_tooling_fields(rule: dict[str, Any]) -> dict[str, Any]:
     return {k: v for k, v in rule.items() if k not in TOOLING_ONLY_FIELDS}
 
 
-def deduplicate_rule_ids(
+def patch_or_append_rules(
     existing: list[dict[str, Any]],
     new_rules: list[dict[str, Any]],
     report: ValidationReport,
-) -> list[dict[str, Any]]:
-    """Drop new rules whose ``rule_id`` already exists. Hard error on collision.
+) -> tuple[list[dict[str, Any]], dict[int, dict[str, Any]]]:
+    """Patch existing rules by ``rule_id`` or append new ones; hard error on dup.
 
-    The dedup set is seeded from ``existing`` and grown as new rules are kept,
-    so duplicates between two new rule files are also caught.
+    Returns ``(appended_rules, patch_index_map)`` where ``patch_index_map``
+    maps a base-list index to the rule replacing it (used by
+    :func:`apply_patches_in_place` to mutate the base in place). The patched
+    count is ``len(patch_index_map)`` at the call site.
+
+    - A new rule whose ``rule_id`` matches an existing base rule PATCHES that
+      base rule (the ``rules/`` version wins). This lets the per-rule files act
+      as source-of-truth for legacy N5/N4 rules that live in ``grammar.json``.
+    - A new rule whose ``rule_id`` is not in the base is appended.
+    - A ``rule_id`` repeated across two new rule files is a hard error (the
+      author must disambiguate) — the second occurrence is dropped.
     """
-    existing_ids = {
-        rule.get("rule_id")
-        for rule in existing
+    existing_ids: dict[str, int] = {
+        rule["rule_id"]: idx
+        for idx, rule in enumerate(existing)
         if isinstance(rule, dict) and isinstance(rule.get("rule_id"), str)
     }
-    kept: list[dict[str, Any]] = []
+    seen_new: set[str] = set()
+    appended: list[dict[str, Any]] = []
+    patch_index_map: dict[int, dict[str, Any]] = {}
     for rule in new_rules:
         rule_id = rule.get("rule_id") if isinstance(rule, dict) else None
         if not isinstance(rule_id, str):
-            kept.append(rule)
+            appended.append(rule)
             continue
+        if rule_id in seen_new:
+            report.error(
+                f"Duplicate rule_id {rule_id!r} in two new rule files — disambiguate before merge"
+            )
+            continue
+        seen_new.add(rule_id)
         if rule_id in existing_ids:
-            report.error(f"Duplicate rule_id {rule_id!r} already exists (base or earlier new rule)")
-            continue
-        existing_ids.add(rule_id)
-        kept.append(rule)
-    return kept
+            patch_index_map[existing_ids[rule_id]] = rule
+        else:
+            appended.append(rule)
+    return appended, patch_index_map
+
+
+def apply_patches_in_place(
+    existing: list[dict[str, Any]],
+    patch_index_map: dict[int, dict[str, Any]],
+) -> None:
+    """Replace base rules in-place according to ``patch_index_map``.
+
+    The ``_in_place`` suffix surfaces the side effect at the call site so
+    readers do not assume ``existing`` is unchanged. Mutating in place preserves
+    the original N5/N4 ordering — the patched rule lands exactly where the
+    legacy rule used to sit, rather than being moved to the appended tail.
+    """
+    for idx, replacement in patch_index_map.items():
+        existing[idx] = replacement
 
 
 def warn_on_duplicate_titles(
@@ -276,10 +311,10 @@ def _sort_key(rule: dict[str, Any]) -> tuple[int, int, str]:
 
 def sort_merged(
     existing: list[dict[str, Any]],
-    new_rules: list[dict[str, Any]],
+    appended_rules: list[dict[str, Any]],
 ) -> list[dict[str, Any]]:
-    """Existing rules keep their order; new rules sorted by level → lesson → title."""
-    return existing + sorted(new_rules, key=_sort_key)
+    """Existing rules keep their order; appended rules sorted by level → lesson → title."""
+    return existing + sorted(appended_rules, key=_sort_key)
 
 
 def write_grammar(path: Path, rules: list[dict[str, Any]]) -> None:
@@ -318,8 +353,9 @@ def build_report(ctx: MergeReportContext, report: ValidationReport) -> str:
             lines.append(f"    {path.name}")
     lines.extend(
         [
-            f"  New rules added:             {ctx.new_count}",
-            f"  Total after merge:           {ctx.existing_count + ctx.new_count}",
+            f"  Patched existing rules:      {ctx.patched_count}",
+            f"  Appended new rules:          {ctx.new_count}",
+            f"  Total after merge:           {ctx.total_count}",
             f"  Errors:                      {len(report.errors)}",
             f"  Warnings:                    {len(report.warnings)}",
         ]
@@ -385,15 +421,18 @@ def merge(
     )
 
     warn_on_duplicate_titles(new_rules, report)
-    new_rules = deduplicate_rule_ids(existing, new_rules, report)
-    merged = sort_merged(existing, new_rules)
+    appended, patch_index_map = patch_or_append_rules(existing, new_rules, report)
+    apply_patches_in_place(existing, patch_index_map)
+    merged = sort_merged(existing, appended)
 
     ctx = MergeReportContext(
         existing_count=len(existing),
+        total_count=len(merged),
         rules_per_chunk=rules_per_chunk,
         chunk_id_per_subdir=chunk_id_per_subdir,
         legacy_chunks=legacy_chunks,
-        new_count=len(new_rules),
+        new_count=len(appended),
+        patched_count=len(patch_index_map),
     )
     summary = build_report(ctx, report)
     action = _describe_action(dry_run, report.ok)

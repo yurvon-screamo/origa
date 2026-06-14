@@ -76,10 +76,18 @@ mod tests {
 
     #[rstest]
     #[case("行く", "行ったら")]
+    #[case("書く", "書いたら")]
+    #[case("話す", "話したら")]
+    #[case("飲む", "飲んだら")]
     #[case("食べる", "食べたら")]
     #[case("する", "したら")]
+    #[case("くる", "きたら")]
     fn tara_form(#[case] input: &str, #[case] expected: &str) {
-        assert_eq!(to_tara_form(input), expected);
+        assert_eq!(
+            to_tara_form(input),
+            expected,
+            "tara-form conjugation regression for {input}"
+        );
     }
 
     #[rstest]
