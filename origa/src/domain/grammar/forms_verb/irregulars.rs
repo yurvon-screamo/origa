@@ -29,6 +29,7 @@ pub const CAUSATIVE_PASSIVE_IRREGULAR: IrregularMapping =
 pub const IMPERATIVE_IRREGULAR: IrregularMapping = IrregularMapping::new("しろ", "こい");
 pub const VOLITIONAL_IRREGULAR: IrregularMapping = IrregularMapping::new("しよう", "こよう");
 pub const ZU_IRREGULAR: IrregularMapping = IrregularMapping::new("せず", "こず");
+pub const MIZENKEI_IRREGULAR: IrregularMapping = IrregularMapping::new("せ", "こ");
 pub const O_NI_NARIMASU_IRREGULAR: IrregularMapping =
     IrregularMapping::new("なさる", "いらっしゃる");
 pub const O_KUDASAI_IRREGULAR: IrregularMapping =
