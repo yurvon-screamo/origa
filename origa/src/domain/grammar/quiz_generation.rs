@@ -188,9 +188,18 @@ pub fn apply_mutated_pattern(
 /// stem must not be truncated before adding a foreign postfix, and for
 /// `RemovePostfix` the source word itself is the only stable base.
 ///
-/// Postfixes already used by `AddPostfix` actions in the chain are excluded
-/// from the candidate pool so the distractor can never equal the correct
-/// answer.
+/// Distinctness between the distractor and the correct answer is guaranteed
+/// differently depending on the chain type:
+/// - For `AddPostfix` chains, postfixes already present in the chain are
+///   excluded from the candidate pool, so the chosen postfix differs from the
+///   original one.
+/// - For `ReplacePostfix`/`RemovePostfix` chains, `used_postfixes` is empty,
+///   but the distractor (source word + pool postfix) is structurally distinct
+///   from the correct answer (trimmed stem + new postfix), so they cannot
+///   coincide.
+///
+/// In all cases the `seen` HashSet in `generate_grammar_distractors` provides
+/// an ultimate deduplication safety net that filters any residual collision.
 fn mutate_universal_only(
     rules: &[FormatAction],
     source_word: &str,
@@ -237,6 +246,30 @@ mod tests {
             "行くため",
             "Distractor must differ from correct answer"
         );
+    }
+
+    #[test]
+    fn apply_mutated_pattern_universal_only_never_collides_under_stress() {
+        // Stress test: 30 iterations to verify no rare collisions in probabilistic
+        // distractor generation for Universal-only chains.
+        let actions = vec![FormatAction::AddPostfix {
+            postfix: "ため".into(),
+        }];
+        let correct = "行くため";
+        let mut rng = rand::rng();
+
+        for _ in 0..30 {
+            let distractor = apply_mutated_pattern(&actions, "行く", &PartOfSpeech::Verb, &mut rng);
+            assert!(
+                distractor.is_some(),
+                "Universal-only chain should always produce a distractor"
+            );
+            assert_ne!(
+                distractor.unwrap(),
+                correct,
+                "Distractor must never equal the correct answer"
+            );
+        }
     }
 
     #[test]
