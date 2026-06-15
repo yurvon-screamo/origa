@@ -14,6 +14,10 @@ inputs:
         description: "Whether to cache compilation artifacts"
         required: false
         default: "true"
+    save-if:
+        description: "Condition for saving cache (e.g. github.ref == 'refs/heads/master')"
+        required: false
+        default: "true"
 
 outputs:
     cache-hit:
@@ -32,6 +36,7 @@ runs:
           uses: Swatinem/rust-cache@v2
           id: rust-cache
           with:
-              cache-all-crates: true
+              cache-all-crates: false
               cache-targets: ${{ inputs.cache-targets }}
               shared-key: ${{ inputs.shared-key }}
+              save-if: ${{ inputs.save-if }}
