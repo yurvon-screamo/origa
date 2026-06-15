@@ -19,7 +19,7 @@ pub const IRREGULAR_KURU: &str = "くる";
 
 pub const MAIN_VIEW_IRREGULAR: IrregularMapping = IrregularMapping::new("し", "き");
 pub const NAI_IRREGULAR: IrregularMapping = IrregularMapping::new("しない", "こない");
-pub const TARA_IRREGULAR: IrregularMapping = IrregularMapping::new("したら", "れたら");
+pub const TARA_IRREGULAR: IrregularMapping = IrregularMapping::new("したら", "きたら");
 pub const BA_IRREGULAR: IrregularMapping = IrregularMapping::new("すれば", "くれば");
 pub const POTENTIAL_IRREGULAR: IrregularMapping = IrregularMapping::new("できる", "こられる");
 pub const PASSIVE_IRREGULAR: IrregularMapping = IrregularMapping::new("される", "こられる");
@@ -29,6 +29,7 @@ pub const CAUSATIVE_PASSIVE_IRREGULAR: IrregularMapping =
 pub const IMPERATIVE_IRREGULAR: IrregularMapping = IrregularMapping::new("しろ", "こい");
 pub const VOLITIONAL_IRREGULAR: IrregularMapping = IrregularMapping::new("しよう", "こよう");
 pub const ZU_IRREGULAR: IrregularMapping = IrregularMapping::new("せず", "こず");
+pub const MIZENKEI_IRREGULAR: IrregularMapping = IrregularMapping::new("せ", "こ");
 pub const O_NI_NARIMASU_IRREGULAR: IrregularMapping =
     IrregularMapping::new("なさる", "いらっしゃる");
 pub const O_KUDASAI_IRREGULAR: IrregularMapping =
