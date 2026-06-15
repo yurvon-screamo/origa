@@ -109,11 +109,26 @@ impl GrammarRuleCard {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::dictionary::grammar::{GrammarData, init_grammar, is_grammar_loaded};
-    use crate::domain::NativeLanguage;
+    use crate::dictionary::grammar::{
+        GrammarData, get_rules_by_level, init_grammar, is_grammar_loaded, iter_grammar_rules,
+    };
+    use crate::domain::{JapaneseLevel, NativeLanguage};
     use std::sync::Once;
 
     static INIT: Once = Once::new();
+
+    // Single source of truth for the test grammar.json location:
+    // <workspace_root>/cdn/grammar/grammar.json
+    fn grammar_json_path() -> Option<std::path::PathBuf> {
+        let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").ok()?;
+        Some(
+            std::path::PathBuf::from(manifest_dir)
+                .parent()?
+                .join("cdn")
+                .join("grammar")
+                .join("grammar.json"),
+        )
+    }
 
     fn init_test_grammar() {
         INIT.call_once(|| {
@@ -121,15 +136,7 @@ mod tests {
                 return;
             }
 
-            let manifest_dir =
-                std::env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR not set");
-
-            let grammar_path = std::path::PathBuf::from(manifest_dir)
-                .parent()
-                .expect("Failed to get parent directory")
-                .join("cdn")
-                .join("grammar")
-                .join("grammar.json");
+            let grammar_path = grammar_json_path().expect("Failed to resolve grammar.json path");
 
             tracing::debug!("Reading grammar from: {:?}", grammar_path);
             let grammar_json =
@@ -147,6 +154,54 @@ mod tests {
 
     fn get_verb_rule_id() -> Ulid {
         Ulid::from_string("01G00000000000000024000000").expect("Invalid ULID")
+    }
+
+    #[test]
+    fn get_rules_by_level_returns_n3_and_n2() {
+        init_test_grammar();
+
+        let total = iter_grammar_rules().count();
+        let n5 = get_rules_by_level(&JapaneseLevel::N5).len();
+        let n4 = get_rules_by_level(&JapaneseLevel::N4).len();
+        let n3 = get_rules_by_level(&JapaneseLevel::N3).len();
+        let n2 = get_rules_by_level(&JapaneseLevel::N2).len();
+        let n1 = get_rules_by_level(&JapaneseLevel::N1).len();
+
+        // Diagnostic for CI: visible with `--nocapture`, and cargo test also
+        // prints captured stderr on failure, so this surfaces in CI logs when
+        // the test actually breaks.
+        let grammar_path = grammar_json_path().unwrap_or_default();
+        let file_size = std::fs::metadata(&grammar_path)
+            .map(|m| m.len())
+            .unwrap_or(0);
+
+        eprintln!("get_rules_by_level_returns_n3_and_n2 diagnostic:");
+        eprintln!("  grammar.json path: {}", grammar_path.display());
+        eprintln!("  grammar.json size: {} bytes", file_size);
+        eprintln!("  total rules loaded: {}", total);
+        eprintln!("  N5={}, N4={}, N3={}, N2={}, N1={}", n5, n4, n3, n2, n1);
+
+        if n3 == 0 || n2 == 0 {
+            panic!(
+                "N3/N2 grammar rules missing. grammar.json at {} ({} bytes), \
+                 loaded {} rules: N5={}, N4={}, N3={}, N2={}, N1={}. \
+                 Likely causes: N3/N2 are 0 -> grammar.json is STALE (old CDN cache); \
+                 total unexpectedly low -> file incompletely downloaded. \
+                 Inspect the CDN download cache in CI (.github/actions/download-cdn) \
+                 and purge the stale cache-key if needed.",
+                grammar_path.display(),
+                file_size,
+                total,
+                n5,
+                n4,
+                n3,
+                n2,
+                n1
+            );
+        }
+
+        assert!(n3 >= 100, "Expected at least 100 N3 rules, got {}", n3);
+        assert!(n2 >= 80, "Expected at least 80 N2 rules, got {}", n2);
     }
 
     mod new {
