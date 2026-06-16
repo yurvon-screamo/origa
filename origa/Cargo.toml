@@ -62,3 +62,7 @@ rkyv.workspace = true
 rstest.workspace = true
 tokio = { workspace = true, features = ["rt", "macros", "time", "fs"] }
 tracing-subscriber = { workspace = true, features = ["fmt"] }
+# Integration tests under tests/ build ULIDs from grammar.json rule_ids; ulid
+# is already a normal dependency of the crate, but integration tests only see
+# dev-dependencies + the crate's public API.
+ulid.workspace = true

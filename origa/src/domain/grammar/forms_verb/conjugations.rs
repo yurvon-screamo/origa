@@ -1,12 +1,14 @@
 use super::godan_tables::{
-    GODAN_TO_BA, GODAN_TO_CAUSATIVE, GODAN_TO_CAUSATIVE_PASSIVE, GODAN_TO_IMPERATIVE, GODAN_TO_NAI,
-    GODAN_TO_PASSIVE, GODAN_TO_POTENTIAL, GODAN_TO_VOLITIONAL, GODAN_TO_ZU,
+    GODAN_TO_BA, GODAN_TO_CAUSATIVE, GODAN_TO_CAUSATIVE_PASSIVE, GODAN_TO_IMPERATIVE,
+    GODAN_TO_MIZENKEI, GODAN_TO_NAI, GODAN_TO_PASSIVE, GODAN_TO_POTENTIAL, GODAN_TO_VOLITIONAL,
+    GODAN_TO_ZU,
 };
 use super::irregulars::{
     BA_IRREGULAR, CAUSATIVE_IRREGULAR, CAUSATIVE_PASSIVE_IRREGULAR, IMPERATIVE_IRREGULAR,
-    MAIN_VIEW_IRREGULAR, NAI_IRREGULAR, O_KUDASAI_IRREGULAR, O_NI_NARIMASU_IRREGULAR,
-    O_SHIMASU_IRREGULAR, PASSIVE_IRREGULAR, POTENTIAL_IRREGULAR, VOLITIONAL_IRREGULAR,
-    ZU_IRREGULAR, get_irregular_form, is_ichidan, stem_from_godan, te_form_stem,
+    MAIN_VIEW_IRREGULAR, MIZENKEI_IRREGULAR, NAI_IRREGULAR, O_KUDASAI_IRREGULAR,
+    O_NI_NARIMASU_IRREGULAR, O_SHIMASU_IRREGULAR, PASSIVE_IRREGULAR, POTENTIAL_IRREGULAR,
+    VOLITIONAL_IRREGULAR, ZU_IRREGULAR, get_irregular_form, is_ichidan, stem_from_godan,
+    te_form_stem,
 };
 
 fn main_view_stem(word: &str) -> String {
@@ -86,6 +88,10 @@ pub fn to_volitional_form(word: &str) -> String {
 
 pub fn to_zu_form(word: &str) -> String {
     apply_conjugation(word, ZU_IRREGULAR, "ず", GODAN_TO_ZU)
+}
+
+pub fn to_mizenkei_form(word: &str) -> String {
+    apply_conjugation(word, MIZENKEI_IRREGULAR, "", GODAN_TO_MIZENKEI)
 }
 
 fn replace_te_ending(word: &str, new_suffix: &str) -> String {
