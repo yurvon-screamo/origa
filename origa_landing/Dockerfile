@@ -80,7 +80,7 @@ RUN --mount=type=cache,target=/sccache,sharing=locked \
     cp /app/target/x86_64-unknown-linux-musl/release/origa_landing /tmp/origa_landing
 
 # Runtime
-FROM alpine:3.23
+FROM alpine:3.24
 
 WORKDIR /app
 
