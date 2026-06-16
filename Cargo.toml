@@ -40,7 +40,7 @@ ulid = { version = "1.2", features = ["serde"] }
 serde = { version = "1.0", features = ["derive"] }
 chrono = { version = "0.4", features = ["std", "clock", "serde", "wasmbind"] }
 rand = "0.9"
-rusqlite = { version = "0.39", default-features = false }
+rusqlite = { version = "0.40", default-features = false }
 thiserror = "2.0"
 sha2 = "0.10"
 hmac = "0.12"
