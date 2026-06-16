@@ -2,7 +2,7 @@ use flate2::read::DeflateDecoder;
 use origa::domain::{DictionaryData, OrigaError, init_dictionary, is_dictionary_loaded};
 use std::fs;
 use std::io::Read;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 fn decompress(data: Vec<u8>) -> Result<Vec<u8>, OrigaError> {
     let mut decoder = DeflateDecoder::new(&data[..]);
@@ -23,7 +23,7 @@ pub fn load_dictionary() -> Result<(), OrigaError> {
     load_dictionary_from(None)
 }
 
-pub fn load_dictionary_from(dictionary_dir: Option<&std::path::Path>) -> Result<(), OrigaError> {
+pub fn load_dictionary_from(dictionary_dir: Option<&Path>) -> Result<(), OrigaError> {
     if is_dictionary_loaded() {
         return Ok(());
     }
@@ -36,7 +36,14 @@ pub fn load_dictionary_from(dictionary_dir: Option<&std::path::Path>) -> Result<
             );
             path.to_path_buf()
         },
-        _ => find_dictionary_directory()?,
+        Some(path) => {
+            tracing::warn!(
+                "--dictionary-dir '{}' does not exist, falling back to default lookup",
+                path.display()
+            );
+            find_dictionary_directory()?
+        },
+        None => find_dictionary_directory()?,
     };
 
     let read_file = |name: &str| -> Result<Vec<u8>, OrigaError> {
