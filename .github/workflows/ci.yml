@@ -58,7 +58,7 @@ jobs:
               uses: actions/checkout@v4
 
             - name: Cache APT packages
-              uses: awalsh128/cache-apt-pkgs-action@v1.5.0
+              uses: awalsh128/cache-apt-pkgs-action@v1.6.1
               with:
                   packages:
                       libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
@@ -99,7 +99,7 @@ jobs:
             - name: Download CDN data
               uses: ./.github/actions/download-cdn
               with:
-                  cache-key: cdn-data-v8-${{ hashFiles('end2end/cdn-manifest.txt') }}
+                  cache-key: cdn-data-v11-${{ hashFiles('end2end/cdn-manifest.txt') }}
                   cdn-base-url: "https://${{ vars.ORIGA_CDN_URI_PREFIX }}.${{ vars.ORIGA_BASE_URI }}"
 
             - name: Upload CDN artifact
@@ -125,7 +125,7 @@ jobs:
               uses: actions/checkout@v4
 
             - name: Cache APT packages
-              uses: awalsh128/cache-apt-pkgs-action@v1.5.0
+              uses: awalsh128/cache-apt-pkgs-action@v1.6.1
               with:
                   packages:
                       libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
@@ -178,7 +178,7 @@ jobs:
               uses: actions/checkout@v4
 
             - name: Cache APT packages
-              uses: awalsh128/cache-apt-pkgs-action@v1.5.0
+              uses: awalsh128/cache-apt-pkgs-action@v1.6.1
               with:
                   packages:
                       libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf

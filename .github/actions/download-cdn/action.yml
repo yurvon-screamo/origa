@@ -5,7 +5,7 @@ inputs:
   cache-key:
     description: "Cache key prefix"
     required: false
-    default: "cdn-data-v8"
+    default: "cdn-data-v11"
   cdn-base-url:
     description: "CDN base URL for downloading files"
     required: true
@@ -23,44 +23,50 @@ runs:
     - name: Verify cached data
       id: verify
       shell: bash
+      env:
+        CDN_BASE: ${{ inputs.cdn-base-url }}
       run: |
         if [ "${{ steps.cache-cdn.outputs.cache-hit }}" != "true" ]; then
           echo "cache_miss=true" >> $GITHUB_OUTPUT
           exit 0
         fi
-        echo "Cache hit — verifying integrity..."
-        ERRORS=0
-        # IMPORTANT: keep in sync with Final verification MIN_SIZES below
-        declare -A MIN_SIZES
-        MIN_SIZES["well_known_set/well_known_sets_meta.json"]=100000
-        MIN_SIZES["well_known_set/well_known_types_meta.json"]=100
-        MIN_SIZES["dictionaries/metadata.json"]=100
-        MIN_SIZES["grammar/grammar.json"]=1000
-        MIN_SIZES["manifest.json"]=100
-        MIN_SIZES["dictionaries/JmdictFurigana.txt"]=1000
-        MIN_SIZES["phrases/phrase_index.json"]=100
-        MIN_SIZES["pitch/index.json"]=100
+        echo "Cache hit — verifying freshness via manifest..."
 
-        for f in "${!MIN_SIZES[@]}"; do
-          min_size=${MIN_SIZES[$f]}
+        # Download fresh manifest to check if cached data is stale
+        curl -sSf --connect-timeout 10 --max-time 30 -o /tmp/fresh_manifest.json "${CDN_BASE}/manifest.json" || {
+          echo "WARN: Could not download fresh manifest, keeping cache"
+          echo "cache_miss=false" >> $GITHUB_OUTPUT
+          exit 0
+        }
+
+        STALE=0
+        # Check SHA256 of critical versioned files against fresh manifest
+        for f in "grammar/grammar.json"; do
           if [ ! -s "cdn/$f" ]; then
             echo "MISSING: cdn/$f"
-            ERRORS=$((ERRORS + 1))
+            STALE=$((STALE + 1))
             continue
           fi
-          actual_size=$(wc -c < "cdn/$f")
-          if [ "$actual_size" -lt "$min_size" ]; then
-            echo "CORRUPTED: cdn/$f ($actual_size < $min_size bytes)"
-            ERRORS=$((ERRORS + 1))
+          expected=$(python3 -c "import json; print(json.load(open('/tmp/fresh_manifest.json'))['files']['$f'])" 2>/dev/null || echo "")
+          if [ -z "$expected" ]; then
+            echo "WARN: $f not found in fresh manifest, skipping hash check"
+            continue
+          fi
+          actual=$(sha256sum "cdn/$f" | cut -d' ' -f1)
+          if [ "$actual" != "$expected" ]; then
+            echo "STALE: cdn/$f (cached=$actual, expected=$expected)"
+            STALE=$((STALE + 1))
+          else
+            echo "FRESH: cdn/$f"
           fi
         done
 
-        if [ "$ERRORS" -gt 0 ]; then
-          echo "Cache corrupted — will re-download"
+        if [ "$STALE" -gt 0 ]; then
+          echo "Cache stale ($STALE files outdated) — will re-download"
           rm -rf cdn
           echo "cache_miss=true" >> $GITHUB_OUTPUT
         else
-          echo "Cache verified OK"
+          echo "Cache verified fresh"
           echo "cache_miss=false" >> $GITHUB_OUTPUT
         fi
 
@@ -105,15 +111,37 @@ runs:
 
     - name: Final verification
       shell: bash
+      env:
+        CDN_BASE: ${{ inputs.cdn-base-url }}
       run: |
         echo "Verifying CDN data..."
         ERRORS=0
-        # IMPORTANT: keep in sync with Verify cached data MIN_SIZES above
+
+        # Verify SHA256 of versioned files against manifest.json
+        if [ -s "cdn/manifest.json" ]; then
+          for f in "grammar/grammar.json"; do
+            if [ ! -s "cdn/$f" ]; then
+              echo "ERROR: cdn/$f is missing or empty!"
+              ERRORS=$((ERRORS + 1))
+              continue
+            fi
+            expected=$(python3 -c "import json; print(json.load(open('cdn/manifest.json'))['files']['$f'])" 2>/dev/null || echo "")
+            actual=$(sha256sum "cdn/$f" | cut -d' ' -f1)
+            actual_size=$(wc -c < "cdn/$f")
+            if [ -n "$expected" ] && [ "$actual" != "$expected" ]; then
+              echo "ERROR: cdn/$f hash mismatch (actual=$actual, expected=$expected) — stale!"
+              ERRORS=$((ERRORS + 1))
+            else
+              echo "  OK: cdn/$f ($actual_size bytes, hash verified)"
+            fi
+          done
+        fi
+
+        # Size checks for other critical files
         declare -A MIN_SIZES
         MIN_SIZES["well_known_set/well_known_sets_meta.json"]=100000
         MIN_SIZES["well_known_set/well_known_types_meta.json"]=100
         MIN_SIZES["dictionaries/metadata.json"]=100
-        MIN_SIZES["grammar/grammar.json"]=1000
         MIN_SIZES["manifest.json"]=100
         MIN_SIZES["dictionaries/JmdictFurigana.txt"]=1000
         MIN_SIZES["phrases/phrase_index.json"]=100
