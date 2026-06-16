@@ -7,7 +7,7 @@ use origa::domain::{OrigaError, detect_grammar_rules_in_text, tokenize_text};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
-use crate::dictionary::load_dictionary;
+use crate::dictionary::load_dictionary_from;
 
 const PROGRESS_INTERVAL: usize = 5_000;
 
@@ -94,6 +94,13 @@ fn load_phrase_index(path: &PathBuf) -> Result<PhraseIndexFile, OrigaError> {
 fn compute_hash(entries: &[EnrichedEntry]) -> String {
     let mut sorted = entries.to_vec();
     sorted.sort_by(|a, b| a.id.cmp(&b.id));
+    // Defense-in-depth: entries are expected to carry sorted grammar_rules
+    // already (see run_enrich_phrases_with_grammar), but compute_hash owns
+    // its determinism invariant so a caller passing unsorted data cannot
+    // break reproducibility.
+    for entry in &mut sorted {
+        entry.grammar_rules.sort();
+    }
 
     let serializable: Vec<serde_json::Value> = sorted
         .iter()
@@ -122,12 +129,7 @@ pub fn run_enrich_phrases_with_grammar(
     dictionary_dir: Option<PathBuf>,
 ) -> Result<(), OrigaError> {
     tracing::info!("Loading dictionary for tokenizer...");
-    if let Some(ref dict_dir) = dictionary_dir {
-        if dict_dir.exists() {
-            tracing::info!("Using dictionary dir: {}", dict_dir.display());
-        }
-    }
-    load_dictionary()?;
+    load_dictionary_from(dictionary_dir.as_deref())?;
 
     tracing::info!("Loading grammar rules from {}...", grammar.display());
     let rules = load_grammar_rules(&grammar)?;
@@ -156,7 +158,11 @@ pub fn run_enrich_phrases_with_grammar(
 
         let tokens = tokenize_text(text).unwrap_or_default();
         let grammar_ids = detect_grammar_rules_in_text(text, &tokens, &rules);
-        let grammar_strs: Vec<String> = grammar_ids.iter().map(|id| id.to_string()).collect();
+        // detect_grammar_rules_in_text returns rule ids in HashSet iteration
+        // order, which is non-deterministic across process runs. Sort here so
+        // the written file is byte-identical and the hash is reproducible.
+        let mut grammar_strs: Vec<String> = grammar_ids.iter().map(|id| id.to_string()).collect();
+        grammar_strs.sort();
 
         let new_tokens: Vec<String> = tokens
             .iter()
@@ -222,5 +228,42 @@ fn load_chunk_entries(chunks_dir: &Path, chunk_id: u32) -> Vec<PhraseChunkEntry>
             tracing::warn!("Failed to parse chunk {}: {}", chunk_path.display(), e);
             vec![]
         },
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn entry(id: &str, rules: &[&str]) -> EnrichedEntry {
+        EnrichedEntry {
+            id: id.to_string(),
+            tokens: vec![],
+            chunk_id: 0,
+            grammar_rules: rules.iter().map(|s| s.to_string()).collect(),
+        }
+    }
+
+    // Regression guard for the reproducibility invariant: detect_grammar_rules_in_text
+    // returns rule ids in HashSet iteration order (non-deterministic across process
+    // runs). compute_hash must collapse that ordering noise into a single hash.
+    #[test]
+    fn compute_hash_is_invariant_to_grammar_rules_order() {
+        let a = vec![
+            entry("p001", &["rule_b", "rule_a"]),
+            entry("p002", &["rule_c"]),
+        ];
+        let b = vec![
+            entry("p001", &["rule_a", "rule_b"]),
+            entry("p002", &["rule_c"]),
+        ];
+        assert_eq!(compute_hash(&a), compute_hash(&b));
+    }
+
+    #[test]
+    fn compute_hash_is_invariant_to_entry_order() {
+        let a = vec![entry("p001", &["rule_a"]), entry("p002", &["rule_b"])];
+        let b = vec![entry("p002", &["rule_b"]), entry("p001", &["rule_a"])];
+        assert_eq!(compute_hash(&a), compute_hash(&b));
     }
 }
