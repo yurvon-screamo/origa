@@ -7,7 +7,7 @@ use origa::domain::{OrigaError, detect_grammar_rules_in_text, tokenize_text};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
-use crate::dictionary::load_dictionary;
+use crate::dictionary::load_dictionary_from;
 
 const PROGRESS_INTERVAL: usize = 5_000;
 
@@ -94,6 +94,12 @@ fn load_phrase_index(path: &PathBuf) -> Result<PhraseIndexFile, OrigaError> {
 fn compute_hash(entries: &[EnrichedEntry]) -> String {
     let mut sorted = entries.to_vec();
     sorted.sort_by(|a, b| a.id.cmp(&b.id));
+    // detect_grammar_rules_in_text returns refs in HashMap iteration order,
+    // which is non-deterministic. Sort them here so the hash depends only
+    // on entry contents, not on iteration order across runs.
+    for entry in &mut sorted {
+        entry.grammar_rules.sort();
+    }
 
     let serializable: Vec<serde_json::Value> = sorted
         .iter()
@@ -122,12 +128,7 @@ pub fn run_enrich_phrases_with_grammar(
     dictionary_dir: Option<PathBuf>,
 ) -> Result<(), OrigaError> {
     tracing::info!("Loading dictionary for tokenizer...");
-    if let Some(ref dict_dir) = dictionary_dir {
-        if dict_dir.exists() {
-            tracing::info!("Using dictionary dir: {}", dict_dir.display());
-        }
-    }
-    load_dictionary()?;
+    load_dictionary_from(dictionary_dir.as_deref())?;
 
     tracing::info!("Loading grammar rules from {}...", grammar.display());
     let rules = load_grammar_rules(&grammar)?;
@@ -156,7 +157,11 @@ pub fn run_enrich_phrases_with_grammar(
 
         let tokens = tokenize_text(text).unwrap_or_default();
         let grammar_ids = detect_grammar_rules_in_text(text, &tokens, &rules);
-        let grammar_strs: Vec<String> = grammar_ids.iter().map(|id| id.to_string()).collect();
+        // detect_grammar_rules_in_text returns refs in HashMap iteration order,
+        // which is non-deterministic across runs. Sort here so the written
+        // file and the computed hash are reproducible (byte-identical output).
+        let mut grammar_strs: Vec<String> = grammar_ids.iter().map(|id| id.to_string()).collect();
+        grammar_strs.sort();
 
         let new_tokens: Vec<String> = tokens
             .iter()

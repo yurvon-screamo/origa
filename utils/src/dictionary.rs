@@ -20,11 +20,24 @@ fn cache_dir() -> PathBuf {
 }
 
 pub fn load_dictionary() -> Result<(), OrigaError> {
+    load_dictionary_from(None)
+}
+
+pub fn load_dictionary_from(dictionary_dir: Option<&std::path::Path>) -> Result<(), OrigaError> {
     if is_dictionary_loaded() {
         return Ok(());
     }
 
-    let dict_dir = find_dictionary_directory()?;
+    let dict_dir = match dictionary_dir {
+        Some(path) if path.exists() => {
+            tracing::info!(
+                "using dictionary dir from --dictionary-dir: {}",
+                path.display()
+            );
+            path.to_path_buf()
+        },
+        _ => find_dictionary_directory()?,
+    };
 
     let read_file = |name: &str| -> Result<Vec<u8>, OrigaError> {
         fs::read(dict_dir.join(name)).map_err(|e| OrigaError::TokenizerError {
