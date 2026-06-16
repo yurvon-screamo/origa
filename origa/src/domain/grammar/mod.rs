@@ -11,10 +11,10 @@ use crate::domain::grammar::forms_adjective::{
 use crate::domain::grammar::forms_verb::{
     to_ba_form, to_causative_form, to_causative_passive_form, to_chau_form, to_imperative_form,
     to_main_view, to_masen_deshita_form, to_masen_form, to_mashita_form, to_mashou_form,
-    to_masu_form, to_nai_form, to_nikui_form, to_o_kudasai_form, to_o_ni_narimasu_form,
-    to_o_shimasu_form, to_passive_form, to_potential_form, to_sou_form_verb, to_stem_form,
-    to_sugiru_form_verb, to_ta_form, to_tai_form, to_tara_form, to_te_form, to_teru_form,
-    to_toku_form, to_volitional_form, to_yasui_form, to_zu_form,
+    to_masu_form, to_mizenkei_form, to_nai_form, to_nikui_form, to_o_kudasai_form,
+    to_o_ni_narimasu_form, to_o_shimasu_form, to_passive_form, to_potential_form, to_sou_form_verb,
+    to_stem_form, to_sugiru_form_verb, to_ta_form, to_tai_form, to_tara_form, to_te_form,
+    to_teru_form, to_toku_form, to_volitional_form, to_yasui_form, to_zu_form,
 };
 use crate::domain::{OrigaError, PartOfSpeech, grammar::forms_adjective::adjective_remove_postfix};
 
@@ -55,6 +55,7 @@ pub fn apply_format_actions(
             FormatAction::VerbToMasenDeshita {} => Ok(to_masen_deshita_form(&word)),
             FormatAction::VerbToMashou {} => Ok(to_mashou_form(&word)),
             FormatAction::VerbToStem {} => Ok(to_stem_form(&word)),
+            FormatAction::VerbToMizenkei {} => Ok(to_mizenkei_form(&word)),
             FormatAction::VerbToTa {} => Ok(to_ta_form(&word)),
             FormatAction::VerbToNai {} => Ok(to_nai_form(&word)),
             FormatAction::VerbToTara {} => Ok(to_tara_form(&word)),
@@ -710,6 +711,47 @@ mod tests {
             let result = rule.format("行く", &PartOfSpeech::Verb);
 
             assert_eq!(result.unwrap(), "行かず");
+        }
+
+        #[test]
+        fn converts_to_mizenkei() {
+            let format_map =
+                HashMap::from([(PartOfSpeech::Verb, vec![FormatAction::VerbToMizenkei {}])]);
+            let rule = create_rule_with_format_map(format_map);
+
+            assert_eq!(rule.format("行く", &PartOfSpeech::Verb).unwrap(), "行か");
+            assert_eq!(rule.format("食べる", &PartOfSpeech::Verb).unwrap(), "食べ");
+            assert_eq!(rule.format("する", &PartOfSpeech::Verb).unwrap(), "せ");
+            assert_eq!(rule.format("くる", &PartOfSpeech::Verb).unwrap(), "こ");
+        }
+
+        #[test]
+        fn mizenkei_zaru_chain_correct_for_suru() {
+            let format_map = HashMap::from([(
+                PartOfSpeech::Verb,
+                vec![
+                    FormatAction::VerbToMizenkei {},
+                    FormatAction::AddPostfix {
+                        postfix: "ざる".to_string(),
+                    },
+                ],
+            )]);
+            let rule = create_rule_with_format_map(format_map);
+
+            assert_eq!(
+                rule.format("書く", &PartOfSpeech::Verb).unwrap(),
+                "書かざる"
+            );
+            assert_eq!(
+                rule.format("食べる", &PartOfSpeech::Verb).unwrap(),
+                "食べざる"
+            );
+            assert_eq!(
+                rule.format("する", &PartOfSpeech::Verb).unwrap(),
+                "せざる",
+                "する must give せざる, not しざる"
+            );
+            assert_eq!(rule.format("くる", &PartOfSpeech::Verb).unwrap(), "こざる");
         }
 
         #[test]

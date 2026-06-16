@@ -124,6 +124,7 @@ pub enum FormatAction {
     VerbToMasenDeshita {},
     VerbToMashou {},
     VerbToStem {},
+    VerbToMizenkei {},
     VerbToTa {},
     VerbToNai {},
     VerbToTara {},
@@ -195,6 +196,7 @@ impl FormatAction {
             | FormatAction::VerbToMasenDeshita {}
             | FormatAction::VerbToMashou {}
             | FormatAction::VerbToStem {}
+            | FormatAction::VerbToMizenkei {}
             | FormatAction::VerbToTa {}
             | FormatAction::VerbToNai {}
             | FormatAction::VerbToTara {}
@@ -234,6 +236,7 @@ impl FormatAction {
             FormatAction::VerbToMasenDeshita {},
             FormatAction::VerbToMashou {},
             FormatAction::VerbToStem {},
+            FormatAction::VerbToMizenkei {},
             FormatAction::VerbToTa {},
             FormatAction::VerbToNai {},
             FormatAction::VerbToTara {},
