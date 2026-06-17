@@ -188,14 +188,23 @@ struct DetailRaw {
 }
 
 pub fn init_phrase_index(json: &str) -> Result<(), OrigaError> {
+    // Idempotent and race-tolerant, matching `init_kanji` (not `init_grammar`,
+    // which surfaces a parse error on the second caller). Without this guard,
+    // a second caller (e.g. another test module in the same binary) would
+    // receive a spurious "already initialized" error even though the desired
+    // end state is already reached.
+    if is_phrases_loaded() {
+        return Ok(());
+    }
+
     let _ = PHRASE_DATA.set(RwLock::new(PhraseDataCache::new()));
 
     let index = PhraseIndex::from_json(json)?;
-    PHRASE_INDEX
-        .set(index)
-        .map_err(|_| OrigaError::PhraseParseError {
-            reason: "Phrase index already initialized".to_string(),
-        })
+    // Another thread may have populated `PHRASE_INDEX` between the check above
+    // and this `set`. The first valid index wins; the parsed result is
+    // intentionally discarded in that case (same pattern as `init_kanji`).
+    let _ = PHRASE_INDEX.set(index);
+    Ok(())
 }
 
 pub fn is_phrases_loaded() -> bool {
