@@ -58,7 +58,8 @@ For future OAuth-flow regressions on mobile (where DevTools are unavailable), ad
 
 - **Pros:** Eliminates duplication of `app.origa.uwuwu.net` across 4 locations (CSP, capability, `trailbase_url`, redirect_uri builder).
 - **Cons:** Build-script complexity; `tauri.conf.json` is static JSON without template substitution support; would need a pre-build step.
-- **Deferred:** Tracked as `TODO(TECH-DEBT)` in `tauri/build.rs`.
+- **Deferred (2026-06-15):** Tracked as `TODO(TECH-DEBT)` in `tauri/build.rs`.
+- **RESOLVED (2026-06-18):** Implemented by ADR-009 using the native Tauri v2 `TAURI_CONFIG` env var (RFC 7396 JSON Merge Patch) — no custom pre-build step required. CSP is injected; capabilities stay static but are guarded by a byte-equality drift-detection test.
 
 ### A3: Use `window.open` as primary path (not opener plugin)
 
@@ -82,6 +83,16 @@ For future OAuth-flow regressions on mobile (where DevTools are unavailable), ad
 - Promise handling pattern is consistent with existing codebase (`oauth_listeners.rs:147`, `updater.rs:76`, `text_to_speech.rs:67`).
 
 ### Negative
+
+> **RESOLVED (2026-06-18):** The host duplication tech-debt documented in the
+> bullet below has been partially addressed by ADR-009 (Tauri config
+> parameterization via the `TAURI_CONFIG` env var JSON Merge Patch). `tauri/build.rs`
+> now injects the parameterized CSP at build time; the opener allow-list in
+> `tauri/capabilities/default.json` stays as a committed static file but is
+> asserted byte-for-byte against a template in `tauri/tests/build_config.rs`
+> (drift detection — the build script does NOT mutate committed source files).
+> Duplication is **reduced**, not fully eliminated — see ADR-009 Consequences
+> for the residual sync points (notably `origa_ui`'s `env!("TRAILBASE_URL")`).
 
 - `app.origa.uwuwu.net` host string is now duplicated in 4 places (CSP, capability allow-list, `trailbase_url()` return value path, redirect_uri builder). Renaming the host requires touching all 4 manually. Tracked as TECH-DEBT.
 - Diagnostic overlay adds ~150 LOC of gated debug code. Acceptable: zero production cost, high future diagnostic value.
