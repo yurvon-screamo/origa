@@ -6,7 +6,9 @@ use tracing::info;
 use ulid::Ulid;
 
 use crate::dictionary::grammar::{get_all_rule_ids, is_grammar_loaded};
-use crate::dictionary::phrase::{get_all_index_ids, get_phrases_by_token, is_phrases_loaded};
+use crate::dictionary::phrase::{
+    get_all_index_ids, get_index_entry, get_phrases_by_token, is_phrases_loaded,
+};
 use crate::domain::{Card, OrigaError, PhraseCard, StudyCard};
 use crate::traits::UserRepository;
 
@@ -158,15 +160,40 @@ fn remove_orphaned_phrase_cards(user: &mut crate::domain::User) -> usize {
 
     let valid_ids = get_all_index_ids();
 
+    // Collect known grammar rules BEFORE borrowing `user` for the iteration below.
+    // The helper returns an owned `HashSet`, so the immutable borrow of `user`
+    // ends here and the loop can subsequently borrow it again (NLL).
+    let known_grammar = collect_known_grammar_rules(user.knowledge_set().study_cards());
+
     let orphaned_card_ids: Vec<Ulid> = user
         .knowledge_set()
         .study_cards()
         .iter()
         .filter_map(|(card_id, sc)| {
             if let Card::Phrase(phrase_card) = sc.card() {
-                if !valid_ids.contains(phrase_card.phrase_id()) {
+                let phrase_id = phrase_card.phrase_id();
+
+                // Check 1: stale — phrase_id is no longer present in the index.
+                if !valid_ids.contains(phrase_id) {
                     return Some(*card_id);
                 }
+
+                // Check 2: grammar-ineligible — the phrase references grammar
+                // rules the user has not learned yet. Such cards may have been
+                // created under an older phrase_index where N3/N2 grammar was
+                // not detected (g: []); once the index is re-enriched they must
+                // be cleaned up.
+                if let Some(entry) = get_index_entry(phrase_id) {
+                    let grammar_eligible = entry
+                        .grammar_rules()
+                        .iter()
+                        .all(|rule_id| known_grammar.contains(rule_id));
+                    if !grammar_eligible {
+                        return Some(*card_id);
+                    }
+                }
+                // If the entry is somehow not loadable (defensive — should not
+                // happen when `valid_ids` contains the id), keep the card.
             }
             None
         })
@@ -174,7 +201,7 @@ fn remove_orphaned_phrase_cards(user: &mut crate::domain::User) -> usize {
 
     let count = orphaned_card_ids.len();
     if count > 0 {
-        info!(count, "Removing orphaned phrase cards");
+        info!(count, "Removing orphaned/grammar-ineligible phrase cards");
         for card_id in &orphaned_card_ids {
             if user.delete_card(*card_id).is_err() {
                 tracing::warn!(%card_id, "Failed to delete orphaned phrase card");
@@ -313,8 +340,9 @@ pub fn delete_phrase_cards_by_phrase_ids(
 mod tests {
     use super::*;
     use crate::dictionary::grammar::{GrammarData, init_grammar};
+    use crate::dictionary::phrase::init_phrase_index;
     use crate::domain::{GrammarRuleCard, NativeLanguage, PhraseCard, User, VocabularyCard};
-    use std::sync::Once;
+    use std::sync::{Once, OnceLock};
 
     static INIT: Once = Once::new();
 
@@ -339,6 +367,44 @@ mod tests {
 
             let grammar_data = GrammarData { grammar_json };
             init_grammar(grammar_data).expect("Failed to init grammar rules");
+        });
+    }
+
+    // Phrase index is a process-wide `OnceLock`; it can only be initialized once.
+    // To remain compatible with `journeys/phrase.rs` (which may have already
+    // initialized it under the same test binary), we reuse the exact same test
+    // fixture (same ULIDs) so the assertions hold regardless of who wins the
+    // initialization race.
+    static PHRASE_INIT: OnceLock<()> = OnceLock::new();
+
+    // Phrase without grammar rules — `g` field absent.
+    fn phrase_id_without_grammar() -> Ulid {
+        Ulid::from_string("01KPJ5S3N1DRFFD236Z4EZ03HJ").expect("valid ULID")
+    }
+
+    // Phrase referencing a single grammar rule. Eligibility depends on the
+    // user's known set — same fixture is reused for "removed when unknown"
+    // and "kept when known" tests, so the name describes the data shape only.
+    fn phrase_id_with_single_grammar_rule() -> Ulid {
+        Ulid::from_string("01KPJ5S3N1DRFFD236Z4EZ03HK").expect("valid ULID")
+    }
+
+    fn grammar_rule_id_for_bye() -> Ulid {
+        Ulid::from_string("01KJ9AVWBGC2BT0DMFPDYYFEWB").expect("valid ULID")
+    }
+
+    fn ensure_phrases_loaded() {
+        PHRASE_INIT.get_or_init(|| {
+            if is_phrases_loaded() {
+                return;
+            }
+            let index_json = r#"{"v":1,"h":"test","total":4,"phrases":[
+                {"i":"01KPJ5S3N1DRFFD236Z4EZ03HJ","t":["test","hello"],"c":0},
+                {"i":"01KPJ5S3N1DRFFD236Z4EZ03HK","t":["test","bye"],"c":0,"g":["01KJ9AVWBGC2BT0DMFPDYYFEWB"]},
+                {"i":"01KPJ5S3N1DRFFD236Z4EZ03HN","t":["test","morning"],"c":0,"g":["01KJ9AVWBGC2BT0DMFPDYYFEWB","01G00000000000000024000000"]},
+                {"i":"01KPJ5S3N1DRFFD236Z4EZ03HM","t":["test","thanks"],"c":0}
+            ]}"#;
+            init_phrase_index(index_json).expect("Failed to init phrase index");
         });
     }
 
@@ -451,6 +517,125 @@ mod tests {
                 .values()
                 .any(|sc| matches!(sc.card(), Card::Phrase(_)))
         );
+    }
+
+    fn add_known_grammar_card(user: &mut User, rule_id: Ulid) {
+        let study_card = user
+            .create_card(Card::Grammar(GrammarRuleCard::new_test_with_id(rule_id)))
+            .expect("Failed to create grammar card");
+        user.knowledge_set_mut()
+            .mark_card_as_known(*study_card.card_id())
+            .expect("Failed to mark grammar card as known");
+    }
+
+    fn study_cards_contains_phrase(user: &User, phrase_id: Ulid) -> bool {
+        user.knowledge_set()
+            .study_cards()
+            .values()
+            .any(|sc| matches!(sc.card(), Card::Phrase(p) if *p.phrase_id() == phrase_id))
+    }
+
+    #[test]
+    fn remove_orphaned_phrase_cards_removes_grammar_ineligible() {
+        ensure_phrases_loaded();
+
+        let mut user = create_test_user();
+        // User has NO grammar cards — the rule referenced by this phrase is unknown.
+        user.create_card(Card::Phrase(PhraseCard::new(
+            phrase_id_with_single_grammar_rule(),
+        )))
+        .unwrap();
+
+        let removed = remove_orphaned_phrase_cards(&mut user);
+
+        assert_eq!(
+            removed, 1,
+            "Phrase card with unknown grammar rule must be removed"
+        );
+        assert!(
+            !study_cards_contains_phrase(&user, phrase_id_with_single_grammar_rule()),
+            "Grammar-ineligible phrase card must no longer be present"
+        );
+    }
+
+    #[test]
+    fn remove_orphaned_phrase_cards_keeps_grammar_eligible() {
+        ensure_phrases_loaded();
+
+        let mut user = create_test_user();
+        // User knows the grammar rule referenced by the phrase.
+        add_known_grammar_card(&mut user, grammar_rule_id_for_bye());
+        user.create_card(Card::Phrase(PhraseCard::new(
+            phrase_id_with_single_grammar_rule(),
+        )))
+        .unwrap();
+
+        let removed = remove_orphaned_phrase_cards(&mut user);
+
+        assert_eq!(removed, 0, "Grammar-eligible phrase card must be kept");
+        assert!(
+            study_cards_contains_phrase(&user, phrase_id_with_single_grammar_rule()),
+            "Phrase card with all-known grammar must remain"
+        );
+    }
+
+    #[test]
+    fn remove_orphaned_phrase_cards_keeps_phrases_without_grammar_rules() {
+        ensure_phrases_loaded();
+
+        let mut user = create_test_user();
+        // Phrase has `g: []` (absent) — vacuously grammar-eligible.
+        user.create_card(Card::Phrase(PhraseCard::new(phrase_id_without_grammar())))
+            .unwrap();
+
+        let removed = remove_orphaned_phrase_cards(&mut user);
+
+        assert_eq!(removed, 0, "Phrase with no grammar rules must be kept");
+        assert!(
+            study_cards_contains_phrase(&user, phrase_id_without_grammar()),
+            "Phrase card without grammar rules must remain"
+        );
+    }
+
+    #[test]
+    fn remove_orphaned_phrase_cards_removes_stale_phrase_id() {
+        ensure_phrases_loaded();
+
+        let mut user = create_test_user();
+        let stale_phrase_id = Ulid::new();
+        user.create_card(Card::Phrase(PhraseCard::new(stale_phrase_id)))
+            .unwrap();
+
+        let removed = remove_orphaned_phrase_cards(&mut user);
+
+        assert_eq!(
+            removed, 1,
+            "Phrase card with unknown phrase_id must be removed"
+        );
+        assert!(
+            !study_cards_contains_phrase(&user, stale_phrase_id),
+            "Stale phrase card must no longer be present"
+        );
+    }
+
+    #[test]
+    fn remove_orphaned_phrase_cards_returns_zero_when_phrases_not_loaded() {
+        // The phrase index is a process-wide `OnceLock`; other tests in the
+        // same binary (e.g. `journeys::phrase`) may initialize it concurrently.
+        // The only behavior we can deterministically verify without serializing
+        // is that the function does not panic. State-dependent assertions only
+        // apply when the index is still unloaded AFTER the call — mirroring
+        // the contract of `remove_orphaned_grammar_cards_returns_zero_when_grammar_not_loaded`.
+        let mut user = create_test_user();
+        user.create_card(Card::Phrase(PhraseCard::new(Ulid::new())))
+            .unwrap();
+
+        let removed = remove_orphaned_phrase_cards(&mut user);
+
+        if !is_phrases_loaded() {
+            assert_eq!(removed, 0);
+            assert_eq!(user.knowledge_set().study_cards().len(), 1);
+        }
     }
 
     #[test]
