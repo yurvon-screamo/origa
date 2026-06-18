@@ -1,11 +1,85 @@
 use crate::core::tauri;
 use crate::i18n::{t, use_i18n};
 use crate::repository::OAuthProvider;
+use crate::repository::trailbase_client::trailbase_url;
+use js_sys::Promise;
 use leptos::prelude::*;
+use leptos::task::spawn_local;
+use leptos::wasm_bindgen::JsCast;
 use leptos::wasm_bindgen::JsValue;
+use wasm_bindgen_futures::JsFuture;
+
+/// Compile-time switch for the on-screen OAuth diagnostics overlay.
+///
+/// Set `ORIGA_DEBUG_OAUTH=1` at build time to surface a running trace of the
+/// OAuth URL open flow on top of the login card. When the constant is `false`
+/// the `report_debug!` macro expands to a constant-`false` branch with an
+/// empty body, so LLVM drops it and **no `String` is allocated** (the
+/// `format!` arguments are syntactically inside the branch and never
+/// evaluated). The `<Show>` overlay likewise never mounts.
+///
+/// Implemented via a `const fn` because `PartialEq for str` is not yet stable
+/// in const context (rust-lang/rust#76499). The check is intentionally strict:
+/// only the exact value `"1"` enables the overlay.
+const fn debug_oauth_enabled(env_val: Option<&str>) -> bool {
+    match env_val {
+        Some(s) => {
+            let bytes = s.as_bytes();
+            bytes.len() == 1 && bytes[0] == b'1'
+        },
+        None => false,
+    }
+}
+
+pub(crate) const DEBUG_OAUTH_ENABLED: bool = debug_oauth_enabled(option_env!("ORIGA_DEBUG_OAUTH"));
+
+/// Reactive slot for the on-device OAuth flow trace.
+///
+/// Always created by the `Login` parent (cheap) but only written to when
+/// `DEBUG_OAUTH_ENABLED` is `true`.
+pub(crate) type OAuthDebugSink = RwSignal<Option<String>>;
+
+/// Upper bound on the accumulated trace text. Prevents unbounded growth if
+/// the user taps the OAuth button many times without reloading — older lines
+/// are dropped FIFO once the cap is exceeded.
+const DEBUG_TRACE_MAX_BYTES: usize = 16_384;
+
+/// Appends a single line to the OAuth trace sink. Lines are joined by `\n` so
+/// the overlay shows the **full** journey (PKCE generation → URL built →
+/// opener invoked → Promise resolved/rejected → fallback) rather than only
+/// the terminal state.
+fn push_debug_line(sink: OAuthDebugSink, line: String) {
+    sink.update(|prev: &mut Option<String>| {
+        let next = match prev.take() {
+            Some(existing) if existing.len() + line.len() < DEBUG_TRACE_MAX_BYTES => {
+                format!("{existing}\n{line}")
+            },
+            _ => line,
+        };
+        *prev = Some(next);
+    });
+}
+
+/// Trace emission macro, gated on `DEBUG_OAUTH_ENABLED` (compile-time
+/// `option_env!("ORIGA_DEBUG_OAUTH") == "1"`). The `format!` arguments sit
+/// inside the guard, so when the env var is unset the branch is dead and the
+/// optimizer removes it in release builds — no `format!` call, no allocation.
+/// Not a language guarantee: dev/debug builds may still evaluate the branch.
+macro_rules! report_debug {
+    ($sink:expr, $($arg:tt)*) => {
+        if DEBUG_OAUTH_ENABLED {
+            if let Some(s) = $sink {
+                push_debug_line(s, format!($($arg)*));
+            }
+        }
+    };
+}
 
 #[component]
-pub fn OAuthButtons(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoView {
+pub fn OAuthButtons(
+    #[prop(optional, into)] test_id: Signal<String>,
+    #[prop(optional)] debug_sink: Option<OAuthDebugSink>,
+) -> impl IntoView {
     let i18n = use_i18n();
     let test_id_val = move || {
         let val = test_id.get();
@@ -37,7 +111,7 @@ pub fn OAuthButtons(#[prop(optional, into)] test_id: Signal<String>) -> impl Int
                 class="w-full flex items-center justify-center gap-3 px-4 py-3 border border-[var(--border-dark)] bg-[var(--bg-cream)] hover:bg-[var(--bg-aged)] transition-colors"
                 data-testid=google_test_id
                 on:click=move |_: leptos::ev::MouseEvent| {
-                    open_oauth_url(OAuthProvider::Google);
+                    open_oauth_url(OAuthProvider::Google, debug_sink);
                 }
             >
                 <GoogleIcon />
@@ -49,7 +123,7 @@ pub fn OAuthButtons(#[prop(optional, into)] test_id: Signal<String>) -> impl Int
                 class="w-full flex items-center justify-center gap-3 px-4 py-3 border border-[var(--border-dark)] bg-[var(--bg-cream)] hover:bg-[var(--bg-aged)] transition-colors"
                 data-testid=yandex_test_id
                 on:click=move |_: leptos::ev::MouseEvent| {
-                    open_oauth_url(OAuthProvider::Yandex);
+                    open_oauth_url(OAuthProvider::Yandex, debug_sink);
                 }
             >
                 <YandexIcon />
@@ -59,35 +133,87 @@ pub fn OAuthButtons(#[prop(optional, into)] test_id: Signal<String>) -> impl Int
     }
 }
 
-fn open_url_external(url: &str) {
+fn open_url_external(url: &str, debug_sink: Option<OAuthDebugSink>) {
     let Some(window) = web_sys::window() else {
+        report_debug!(debug_sink, "no window available");
         return;
     };
 
     if !tauri::is_tauri() {
+        report_debug!(debug_sink, "browser path: location.href = {url}");
         let _ = window.location().set_href(url);
         return;
     }
 
-    if let Some(open_url_fn) = tauri::opener_open_url_fn() {
-        if open_url_fn
-            .call1(&JsValue::UNDEFINED, &JsValue::from_str(url))
-            .is_err()
-        {
-            let _ = window.open_with_url_and_target(url, "_blank");
-        }
-    } else {
+    let Some(open_url_fn) = tauri::opener_open_url_fn() else {
+        report_debug!(
+            debug_sink,
+            "opener.openUrl not bound, falling back to window.open"
+        );
         let _ = window.open_with_url_and_target(url, "_blank");
+        return;
+    };
+
+    // `opener.openUrl` returns a Promise on Tauri v2 (mobile + desktop). The
+    // synchronous `call1` only catches exceptions thrown while constructing
+    // the call; async rejections (capability scope mismatch, browser launch
+    // failure on Android) silently slip through and historically caused the
+    // "Войти Google button does nothing" symptom on Android.
+    match open_url_fn.call1(&JsValue::UNDEFINED, &JsValue::from_str(url)) {
+        Ok(value) => match value.dyn_into::<Promise>() {
+            Ok(promise) => {
+                // URL must be owned before being moved into the 'static future.
+                let url_owned = url.to_string();
+                report_debug!(debug_sink, "opener invoked: {url_owned}");
+                spawn_local(async move {
+                    match JsFuture::from(promise).await {
+                        Ok(_) => {
+                            report_debug!(debug_sink, "opener resolved: {url_owned}");
+                        },
+                        Err(err) => {
+                            report_debug!(
+                                debug_sink,
+                                "opener rejected ({err:?}), window.open fallback: {url_owned}",
+                            );
+                            if let Some(w) = web_sys::window() {
+                                let _ = w.open_with_url_and_target(&url_owned, "_blank");
+                            }
+                        },
+                    }
+                });
+            },
+            Err(_) => {
+                // Synchronous success path (some desktop runtimes return void).
+                report_debug!(debug_sink, "opener sync ok: {url}");
+            },
+        },
+        Err(sync_err) => {
+            report_debug!(
+                debug_sink,
+                "opener sync throw ({sync_err:?}), window.open fallback: {url}",
+            );
+            let _ = window.open_with_url_and_target(url, "_blank");
+        },
     }
 }
 
-fn open_oauth_url(provider: OAuthProvider) {
+fn open_oauth_url(provider: OAuthProvider, debug_sink: Option<OAuthDebugSink>) {
     use crate::repository::TrailBaseClient;
     use crate::repository::trailbase_auth::{generate_pkce_challenge, generate_pkce_verifier};
     use gloo_storage::{LocalStorage, Storage};
 
+    // Reuse the canonical backend host (`https://app.origa.uwuwu.net` in
+    // production) instead of `ORIGA_PUBLIC_BASE_URL`, which has been empty
+    // since commit eeee03ad (mobile OIDC redirect refactor) and produced a
+    // relative `redirect_uri` that TrailBase could not redirect to.
+    // TODO(BUG): `web_sys::window().expect("window not available")` below is a
+    // pre-existing production panic vector and is out of scope for this fix.
     let redirect_uri = if tauri::is_tauri() {
-        crate::core::config::public_url("/public/auth/desktop-callback.html")
+        format!(
+            "{}{}",
+            trailbase_url(),
+            "/public/auth/desktop-callback.html"
+        )
     } else {
         let window = web_sys::window().expect("window not available");
         let base_url = window.location().origin().unwrap_or_default();
@@ -96,13 +222,19 @@ fn open_oauth_url(provider: OAuthProvider) {
 
     let verifier = generate_pkce_verifier();
     let challenge = generate_pkce_challenge(&verifier);
+    report_debug!(
+        debug_sink,
+        "pkce generated; provider={}; redirect_uri={redirect_uri}",
+        provider.as_str()
+    );
 
     LocalStorage::set("pkce_verifier", &verifier).ok();
 
     let client = TrailBaseClient::new();
     let url = client.get_oauth_url(provider.as_str(), &redirect_uri, &challenge);
+    report_debug!(debug_sink, "oauth url built: {url}");
 
-    open_url_external(&url);
+    open_url_external(&url, debug_sink);
 }
 
 #[component]

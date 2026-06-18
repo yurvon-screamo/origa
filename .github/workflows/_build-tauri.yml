@@ -357,6 +357,9 @@ jobs:
             ORIGA_VERSION: ${{ inputs.version }}
             ORIGA_COMMIT: ${{ inputs.commit_sha }}
             ORIGA_BUILD_DATE: ${{ inputs.build_date }}
+            # NDK r26b exact version. Single source of truth — referenced by both
+            # the sdkmanager `packages` input and the NDK env-var derivation below.
+            NDK_VERSION: '26.1.10909125'
 
         steps:
             - name: Checkout repository
@@ -391,15 +394,27 @@ jobs:
                   distribution: temurin
                   java-version: 21
 
-            - name: Setup Android SDK
-              uses: android-actions/setup-android@v3
-
-            - name: Setup Android NDK
-              uses: nttld/setup-ndk@v1
-              id: setup-ndk
+            - name: Setup Android SDK + NDK
+              uses: android-actions/setup-android@v4
               with:
-                  ndk-version: r26b
-                  local-cache: true
+                  packages: 'tools platform-tools ndk;${{ env.NDK_VERSION }}'
+
+            - name: Configure NDK environment
+              # setup-android@v4 exports ANDROID_SDK_ROOT/ANDROID_HOME but NOT
+              # NDK_HOME/ANDROID_NDK_ROOT. NDK installs under
+              # ${ANDROID_SDK_ROOT}/ndk/<version>/ (standard sdkmanager layout).
+              # Fail fast with diagnostics if the expected path is missing, rather
+              # than letting cc-rs/ring fail later with a confusing clang error.
+              run: |
+                  NDK_PATH="${ANDROID_SDK_ROOT}/ndk/${{ env.NDK_VERSION }}"
+                  if [ ! -d "$NDK_PATH" ]; then
+                      echo "ERROR: NDK directory not found at: $NDK_PATH"
+                      echo "Available NDK versions under \${ANDROID_SDK_ROOT}/ndk/:"
+                      ls -1 "${ANDROID_SDK_ROOT}/ndk/" 2>/dev/null || echo "(ndk directory does not exist)"
+                      exit 1
+                  fi
+                  echo "NDK_HOME=$NDK_PATH" >> $GITHUB_ENV
+                  echo "ANDROID_NDK_ROOT=$NDK_PATH" >> $GITHUB_ENV
 
             - name: Cache Gradle
               uses: actions/cache@v4
@@ -443,6 +458,8 @@ jobs:
               run: npm install
 
             - name: Build Tauri Android APK
+              # NDK_HOME and ANDROID_NDK_ROOT are injected globally via $GITHUB_ENV
+              # by the "Configure NDK environment" step above.
               working-directory: tauri
               run: |
                   echo "=== Debug info ==="
@@ -450,9 +467,6 @@ jobs:
                   echo "ANDROID_NDK_ROOT=$ANDROID_NDK_ROOT"
                   echo "=== Start build ==="
                   cargo tauri android build 2>&1 || (echo "Build failed with exit code $?"; exit 1)
-              env:
-                  NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
-                  ANDROID_NDK_ROOT: ${{ steps.setup-ndk.outputs.ndk-path }}
 
             - name: Rename APK for latest release
               if: inputs.version_type != 'stable'

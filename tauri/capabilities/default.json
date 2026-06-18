@@ -13,9 +13,7 @@
 			"identifier": "opener:default",
 			"allow": [
 				{ "url": "https://origa.uwuwu.net/*" },
-				{ "url": "https://accounts.google.com/*" },
-				{ "url": "https://oauth.yandex.com/*" },
-				{ "url": "https://passport.yandex.com/*" }
+				{ "url": "https://app.origa.uwuwu.net/*" }
 			]
 		}
 	]
