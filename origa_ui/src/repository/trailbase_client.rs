@@ -31,7 +31,14 @@ pub(crate) struct AuthTokenResponse {
     pub(crate) refresh_token: Option<String>,
 }
 
-fn trailbase_url() -> &'static str {
+/// Compile-time TrailBase API base URL.
+///
+/// Exposed as `pub(crate)` so the OAuth `redirect_uri` builder can reuse the
+/// canonical backend host (`https://app.origa.uwuwu.net` in production) instead
+/// of `ORIGA_PUBLIC_BASE_URL`, which has been empty since commit `eeee03ad`
+/// (mobile OIDC redirect refactor) and produced a relative `redirect_uri`
+/// that TrailBase could not redirect to.
+pub(crate) fn trailbase_url() -> &'static str {
     static TRAILBASE_URL: OnceLock<&str> = OnceLock::new();
     TRAILBASE_URL.get_or_init(|| env!("TRAILBASE_URL"))
 }
