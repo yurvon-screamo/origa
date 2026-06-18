@@ -101,15 +101,15 @@ These are non-obvious behaviors that cost significant diagnosis time. Read befor
 
 ## Verification
 
-| Check | Command / Source | Result |
-|-------|------------------|--------|
-| Format | `cargo fmt --check` | PASS |
-| Lint | `cargo clippy --workspace --all-targets -- -D warnings` | 0 warnings |
-| Tests | `cargo test --workspace` | 1458 passed (134 origa_ui + 1322 origa + 2 utils) |
-| Build (WASM) | `cargo build -p origa_ui` | PASS (Leptos 0.8 WASM) |
-| Build (Tauri) | `cargo build -p origa-app` | PASS (Tauri desktop) |
-| Callback endpoint | `curl -I https://app.origa.uwuwu.net/public/auth/desktop-callback.html` | 200 OK |
-| Code review | @code-quality-reviewer | approve / ready |
+|Check|Command / Source|Result|
+|---|---|---|
+|Format|`cargo fmt --check`|PASS|
+|Lint|`cargo clippy --workspace --all-targets -- -D warnings`|0 warnings|
+|Tests|`cargo test --workspace`|1458 passed (134 origa_ui + 1322 origa + 2 utils)|
+|Build (WASM)|`cargo build -p origa_ui`|PASS (Leptos 0.8 WASM)|
+|Build (Tauri)|`cargo build -p origa-app`|PASS (Tauri desktop)|
+|Callback endpoint|`curl -I https://app.origa.uwuwu.net/public/auth/desktop-callback.html`|200 OK|
+|Code review|@code-quality-reviewer|approve / ready|
 
 Manual checkpoint pending (on-device, no DevTools): build debug APK with `ORIGA_DEBUG_OAUTH=1`, verify all three login methods + `adb logcat | grep deep-link` shows `origa://auth/callback?code=...`.
 
