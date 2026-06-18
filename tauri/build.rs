@@ -1,11 +1,115 @@
-// TODO(TECH-DEBT): parameterize the production host (`app.origa.uwuwu.net`)
-// via a build-time env var so it is declared in a single place. Currently the
-// same literal appears in:
-//   * tauri/tauri.conf.json  -> `security.csp` (`connect-src` + `img-src`)
-//   * tauri/capabilities/default.json -> opener allow-list
-//   * origa_ui/src/repository/trailbase_client.rs -> `env!("TRAILBASE_URL")`
-//   * origa_ui/src/pages/login/oauth_buttons.rs -> `redirect_uri` builder
-// Any host rename requires touching all four files manually, which is brittle.
+//! Tauri build script with CSP parameterization.
+//!
+//! Reads env vars (`ORIGA_CDN_BASE_URL`, `TRAILBASE_URL`, `ORIGA_LANDING_BASE_URL`)
+//! with fallback to production defaults, builds the CSP string, and injects it
+//! into Tauri's config via the native `TAURI_CONFIG` env var (RFC 7396 JSON
+//! Merge Patch). `TAURI_CONFIG` is an internal codegen detail; the closest
+//! public-facing docs are the [`--config` flag](https://v2.tauri.app/develop/configuration-files/),
+//! which uses the same RFC 7396 merge mechanism. See ADR-009 for full details
+//! and verification.
+//!
+//! `tauri/capabilities/default.json` is intentionally NOT regenerated here:
+//! build scripts must not mutate committed source files (Cargo contract). Its
+//! opener allow-list is validated byte-for-byte against a template by
+//! `tauri/tests/build_config.rs` instead.
+//!
+//! See ADR-009 (`docs/decisions/ADR-009-tauri-config-parameterization.md`) for
+//! the full rationale, including why `unsafe { env::set_var }` is a sanctioned
+//! exception to the project-wide "no unsafe" rule.
+
+#[path = "build_config.rs"]
+mod build_config;
+
+use std::env;
+
+use serde_json::json;
+
 fn main() {
-    tauri_build::build()
+    let cdn =
+        env::var("ORIGA_CDN_BASE_URL").unwrap_or_else(|_| build_config::DEFAULT_CDN.to_string());
+    let trailbase =
+        env::var("TRAILBASE_URL").unwrap_or_else(|_| build_config::DEFAULT_TRAILBASE.to_string());
+    let landing = env::var("ORIGA_LANDING_BASE_URL")
+        .unwrap_or_else(|_| build_config::DEFAULT_LANDING.to_string());
+
+    inject_csp_via_tauri_config(&cdn, &landing, &trailbase);
+
+    tauri_build::build();
+}
+
+/// Build a `TAURI_CONFIG` JSON Merge Patch (RFC 7396) overriding only the
+/// `app.security.csp` field and expose it to:
+///   1. `tauri_build::build()` — in-process (via `set_var`)
+///   2. `tauri::generate_context!()` macro in `origa-app` — out-of-process
+///      rustc compilation (via `cargo:rustc-env`)
+///
+/// Both paths are required because `tauri-codegen` may be invoked from either
+/// context depending on which crate is being built.
+///
+/// If `TAURI_CONFIG` is already set (e.g., by `cargo tauri build/dev --config
+/// <merge>`, which sets it via `set_var()` internally in
+/// `tauri-cli/src/helpers/config.rs::load_config`), the CSP patch is MERGED
+/// INTO the existing value via a local RFC 7396 merge (`apply_merge_patch`,
+/// since serde_json does NOT expose a public `merge` API — verified against
+/// serde_json 1.0.150) instead of replacing it. This preserves flavor/beta/
+/// staging overrides (productName, identifier, bundle, plugins, devUrl, etc.).
+/// The CSP wins because it is applied last.
+fn inject_csp_via_tauri_config(cdn: &str, landing: &str, trailbase: &str) {
+    let csp = build_config::build_csp(cdn, landing, trailbase);
+
+    // Only `app.security.csp` is overridden — all other fields in
+    // `tauri.conf.json` (productName, windows, plugins, bundle, etc.) remain
+    // untouched.
+    let csp_patch = json!({
+        "app": {
+            "security": {
+                "csp": csp
+            }
+        }
+    });
+
+    // Preserve any existing `TAURI_CONFIG` set by `cargo tauri build/dev --config
+    // <merge>` — the standard Tauri CLI mechanism for flavor/beta/staging
+    // configs. Tauri CLI sets `TAURI_CONFIG` via `set_var()` internally (see
+    // `tauri-cli/src/helpers/config.rs::load_config`), so we must MERGE our CSP
+    // patch INTO the existing value, not replace it — otherwise flavor/beta
+    // overrides passed via `--config` (productName, identifier, bundle, plugins,
+    // devUrl, etc.) would be silently dropped. Both inputs are RFC 7396 JSON
+    // Merge Patches, so `apply_merge_patch` (a local RFC 7396 implementation —
+    // serde_json has no public `merge` API) composes them correctly; the CSP
+    // wins because it is applied last.
+    let final_config = match env::var("TAURI_CONFIG") {
+        Ok(existing) => {
+            let mut existing_value: serde_json::Value = serde_json::from_str(&existing)
+                .expect("TAURI_CONFIG env var must be valid JSON (RFC 7396 merge patch)");
+            build_config::apply_merge_patch(&mut existing_value, csp_patch);
+            existing_value
+        },
+        Err(_) => csp_patch,
+    };
+    let final_config_str = final_config.to_string();
+
+    // SAFETY: build scripts are single-threaded by Cargo's contract — exactly
+    // one `main()` runs per build script invocation, with no spawned threads.
+    // `tauri_build::build()` is a synchronous API (`pub fn build()`, no async,
+    // no `std::thread::spawn`) that reads `TAURI_CONFIG` via `env::var()` on
+    // the same thread as this `main()` — see `tauri-build/src/lib.rs::try_build()`.
+    // `set_var` is marked `unsafe` since Rust edition 2024 due to potential data
+    // races in multi-threaded contexts, which do not apply here. This is a
+    // sanctioned exception to the AGENTS.md "no unsafe" rule,
+    // with full rationale in ADR-009 ("Consequences → Negative").
+    // `tauri_build::build()` reads `TAURI_CONFIG` in-process, so this MUST be
+    // set BEFORE the call below.
+    unsafe {
+        env::set_var("TAURI_CONFIG", &final_config_str);
+    }
+
+    println!("cargo:rustc-env=TAURI_CONFIG={final_config_str}");
+    println!("cargo:rerun-if-env-changed=ORIGA_CDN_BASE_URL");
+    println!("cargo:rerun-if-env-changed=TRAILBASE_URL");
+    println!("cargo:rerun-if-env-changed=ORIGA_LANDING_BASE_URL");
+    // `TAURI_CONFIG` may be set externally by `cargo tauri build/dev --config
+    // <merge>` (Tauri CLI); changes to it must re-run this build script so the
+    // CSP patch is re-merged into the latest external value.
+    println!("cargo:rerun-if-env-changed=TAURI_CONFIG");
 }

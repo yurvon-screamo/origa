@@ -40,7 +40,7 @@ cd tauri && cargo tauri dev
 ### Переменные окружения (compile-time, `build.rs`)
 
 Обязательные: `ORIGA_CDN_BASE_URL`.
-Опциональные: `ORIGA_CDN_REGION`, `ORIGA_VERSION`, `ORIGA_COMMIT`, `ORIGA_BUILD_DATE`, `TRAILBASE_URL`.
+Опциональные: `ORIGA_CDN_REGION`, `ORIGA_VERSION`, `ORIGA_COMMIT`, `ORIGA_BUILD_DATE`, `TRAILBASE_URL`, `ORIGA_LANDING_BASE_URL`.
 
 **DNS naming scheme** (CI/CD production):
 
