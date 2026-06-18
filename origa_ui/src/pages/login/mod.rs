@@ -9,6 +9,7 @@ mod validation;
 
 pub use header::LoginHeader;
 use language_toggle::LoginLanguageToggle;
+use oauth_buttons::DEBUG_OAUTH_ENABLED;
 
 use crate::i18n::*;
 use crate::store::auth_store::AuthStore;
@@ -29,6 +30,12 @@ pub fn Login() -> impl IntoView {
     let loading = RwSignal::new(false);
     let server_error = RwSignal::new(None::<String>);
     let disposed = StoredValue::new(());
+
+    // On-device OAuth flow trace slot. Only ever written when
+    // `ORIGA_DEBUG_OAUTH=1` is set at compile time (see `oauth_buttons`);
+    // otherwise stays `None` forever and the `<Show>` overlay below never
+    // mounts, so there is zero runtime cost in production.
+    let oauth_debug: oauth_buttons::OAuthDebugSink = RwSignal::new(None);
 
     let auth_store_for_effect = auth_store.clone();
     let auth_store_for_view = auth_store.clone();
@@ -102,9 +109,33 @@ pub fn Login() -> impl IntoView {
                         <Divider variant=Signal::derive(|| DividerVariant::Single) class=Signal::derive(|| "flex-1".to_string()) test_id=Signal::derive(|| "login-divider-right".to_string()) />
                     </div>
 
-                    <oauth_buttons::OAuthButtons />
+                    <oauth_buttons::OAuthButtons debug_sink=oauth_debug />
                 </div>
+
+                {debug_overlay(oauth_debug)}
             </CardLayout>
         </PageLayout>
     }
+}
+
+/// Builds the on-screen OAuth diagnostics overlay. Returns `None` (rendered as
+/// nothing by Leptos) when `DEBUG_OAUTH_ENABLED` is `false`, so production
+/// builds pay nothing for this code path.
+fn debug_overlay(oauth_debug: oauth_buttons::OAuthDebugSink) -> Option<impl IntoView> {
+    if !DEBUG_OAUTH_ENABLED {
+        return None;
+    }
+
+    Some(view! {
+        <Show when=move || oauth_debug.get().is_some()>
+            <div
+                data-testid=Signal::derive(|| "oauth-debug-overlay".to_string())
+                style="margin-top: 12px; padding: 8px; background: rgba(0,0,0,0.06); \
+                       font-family: 'DM Mono', monospace; font-size: 11px; line-height: 1.4; \
+                       color: var(--fg-black); word-break: break-all; white-space: pre-wrap;"
+            >
+                {move || oauth_debug.get().unwrap_or_default()}
+            </div>
+        </Show>
+    })
 }
