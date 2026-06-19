@@ -1,9 +1,9 @@
 use std::collections::HashMap;
+use std::collections::VecDeque;
 use std::future::Future;
 use std::sync::Mutex;
 use std::sync::OnceLock;
 
-use leptos::task::spawn_local;
 use leptos::wasm_bindgen::JsCast;
 use origa::domain::OrigaError;
 use origa::traits::CdnProvider;
@@ -21,12 +21,58 @@ pub fn cdn() -> &'static CacheFirstCdnProvider {
     CDN_PROVIDER.get_or_init(|| CacheFirstCdnProvider)
 }
 
-static BLOB_URL_CACHE: OnceLock<Mutex<HashMap<String, String>>> = OnceLock::new();
+static BLOB_URL_CACHE: OnceLock<Mutex<BlobUrlCache>> = OnceLock::new();
 
+/// Ceiling on the number of retained `blob:` URLs. Each entry holds an
+/// underlying `Blob` + `ArrayBuffer` alive in JS heap until the URL is
+/// `revoke_object_url`'d. Bounded to keep memory predictable on low-end
+/// Android WebViews: ~500 phrases × ~3-50 KB/opus ≈ 1.5-25 MB ceiling. When
+/// the limit is reached the oldest entry is evicted and its blob URL revoked.
 const MAX_BLOB_URL_CACHE_SIZE: usize = 500;
 
-fn blob_url_cache() -> &'static Mutex<HashMap<String, String>> {
-    BLOB_URL_CACHE.get_or_init(|| Mutex::new(HashMap::new()))
+/// Insertion-ordered blob URL cache with bounded LRU-ish (FIFO) eviction.
+/// Tracks keys in `order` so the oldest materialised URL can be revoked when
+/// the cap is reached, preventing unbounded `Blob`/`ArrayBuffer` leaks.
+struct BlobUrlCache {
+    urls: HashMap<String, String>,
+    order: VecDeque<String>,
+}
+
+impl BlobUrlCache {
+    fn get(&self, key: &str) -> Option<&String> {
+        self.urls.get(key)
+    }
+
+    fn insert(&mut self, key: String, url: String) {
+        if self.urls.insert(key.clone(), url).is_some() {
+            return;
+        }
+        while self.order.len() >= MAX_BLOB_URL_CACHE_SIZE {
+            let Some(evicted_key) = self.order.pop_front() else {
+                break;
+            };
+            if let Some(evicted_url) = self.urls.remove(&evicted_key) {
+                let _ = web_sys::Url::revoke_object_url(&evicted_url);
+            }
+        }
+        self.order.push_back(key);
+    }
+
+    #[cfg(test)]
+    fn remove(&mut self, key: &str) {
+        if self.urls.remove(key).is_some() {
+            self.order.retain(|k| k != key);
+        }
+    }
+}
+
+fn blob_url_cache() -> &'static Mutex<BlobUrlCache> {
+    BLOB_URL_CACHE.get_or_init(|| {
+        Mutex::new(BlobUrlCache {
+            urls: HashMap::new(),
+            order: VecDeque::new(),
+        })
+    })
 }
 
 async fn open_cache() -> Result<web_sys::Cache, OrigaError> {
@@ -278,6 +324,24 @@ pub fn get_cached_blob_url(path: &str) -> Option<String> {
     cache.get(&key).cloned()
 }
 
+/// Derive the Blob MIME type from the CDN path extension. Hardcoding
+/// `audio/opus` couples decoding to a CDN filename convention; if a non-opus
+/// record ever lands on the CDN the decoder would break silently. Falling back
+/// to `audio/opus` matches the current CDN content while keeping other formats
+/// decodeable if they appear.
+fn mime_type_for_path(path: &str) -> &'static str {
+    let ext = path.rsplit('.').next().map(str::to_ascii_lowercase);
+    match ext.as_deref() {
+        Some("opus") => "audio/opus",
+        Some("mp3") => "audio/mpeg",
+        Some("wav") => "audio/wav",
+        Some("ogg") | Some("oga") => "audio/ogg",
+        Some("m4a") | Some("mp4") | Some("aac") => "audio/mp4",
+        Some("webm") => "audio/webm",
+        _ => "audio/opus",
+    }
+}
+
 pub async fn prefetch_blob_url(path: &str) -> Result<String, OrigaError> {
     let key = ensure_leading_slash(path);
 
@@ -288,7 +352,7 @@ pub async fn prefetch_blob_url(path: &str) -> Result<String, OrigaError> {
     let bytes = cdn().fetch_bytes(&key).await?;
 
     let blob_options = web_sys::BlobPropertyBag::new();
-    blob_options.set_type("audio/opus");
+    blob_options.set_type(mime_type_for_path(&key));
 
     let uint8_array = js_sys::Uint8Array::new_with_length(bytes.len() as u32);
     uint8_array.copy_from(&bytes);
@@ -310,29 +374,34 @@ pub async fn prefetch_blob_url(path: &str) -> Result<String, OrigaError> {
             .map_err(|e| OrigaError::RepositoryError {
                 reason: format!("Failed to lock blob URL cache: {:?}", e),
             })?;
-        if cache.len() < MAX_BLOB_URL_CACHE_SIZE {
-            cache.insert(key, blob_url.clone());
-        }
+        cache.insert(key, blob_url.clone());
     }
 
     Ok(blob_url)
 }
 
-pub fn resolve_audio_url(path: &str) -> String {
+/// Resolve a playable audio URL for the given CDN path.
+///
+/// # Bug A root cause (see module-level `tests` doc)
+///
+/// The Railway Hikari reverse proxy gzip-encodes `.opus` responses on-the-fly,
+/// and Chromium's `<audio>` element does not apply transport decompression —
+/// feeding the raw gzip bytes to the Opus decoder yields
+/// `ERR_CONTENT_DECODING_FAILED`. The only correct way to feed `<audio>` is
+/// therefore a `blob:` URL produced from `fetch()`-decompressed bytes.
+///
+/// # Contract
+///
+/// Returns `Some(blob_url)` only when the blob URL has already been materialised
+/// in the in-memory cache; returns `None` otherwise. Callers MUST NOT
+/// substitute the CDN URL when this returns `None`: they must either await
+/// `prefetch_blob_url` directly (preferred for playback paths) or fall back to
+/// TTS. This function is a **pure synchronous lookup** with no side effects —
+/// callers own the async prefetch, which avoids a double-fetch race when a
+/// consumer needs the blob URL reactively.
+pub fn resolve_audio_url(path: &str) -> Option<String> {
     let key = ensure_leading_slash(path);
-
-    if let Some(blob_url) = get_cached_blob_url(&key) {
-        return blob_url;
-    }
-
-    let path_owned = key.clone();
-    spawn_local(async move {
-        if let Err(e) = prefetch_blob_url(&path_owned).await {
-            tracing::warn!(path = %path_owned, error = ?e, "Failed to prefetch blob URL");
-        }
-    });
-
-    cdn_url(&key)
+    get_cached_blob_url(&key)
 }
 
 pub async fn prefetch_to_cache(path: &str) -> Result<(), OrigaError> {
@@ -399,4 +468,132 @@ pub async fn is_cached(path: &str) -> bool {
         return false;
     };
     !result.is_null() && !result.is_undefined()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // Bug A — root cause (proven via curl by the architect):
+    //
+    // Railway's Hikari reverse proxy applies `Content-Encoding: gzip` to `.opus`
+    // responses on-the-fly whenever the client advertises `Accept-Encoding` (every
+    // browser / WebView does this automatically; it is a "forbidden header name"
+    // and cannot be disabled from JS).
+    //
+    //   curl -H 'Accept-Encoding: identity'  → no Content-Encoding, 3139 bytes ✅
+    //   curl -H 'Accept-Encoding: gzip'      → Content-Encoding: gzip, 3145 bytes ❌
+    //   curl -H 'Accept-Encoding: br'        → Content-Encoding: gzip (!), 3145 bytes ❌
+    //
+    // Gzip makes the file LARGER (3145 > 3139) — negative compression for an
+    // already-compressed Opus stream. Chromium's <audio> element historically
+    // does not apply transport-layer decompression (crbug 1029876 / 596361 /
+    // 1247420), so it hands the raw gzip bytes to the media decoder which then
+    // fails with `ERR_CONTENT_DECODING_FAILED`.
+    //
+    // The fix is "always-blob-URL playback": the Fetch API transparently
+    // decompresses `Content-Encoding`, after which the resulting bytes are
+    // stored in a Blob. The `blob:` URL handed to <audio> therefore has no
+    // transport encoding and decodes correctly.
+    //
+    // As a consequence, `resolve_audio_url` must NEVER return the raw CDN URL
+    // as a synchronous fallback. The contract below is a compile-time
+    // regression guard: callers must receive `Option<String>` and either await
+    // the prefetched blob URL or fall back to TTS — never play the CDN URL.
+
+    /// Compile-time contract: `resolve_audio_url` returns `Option<String>`.
+    ///
+    /// Before Slice-2 this function returned `String` (the CDN URL when the
+    /// blob URL had not been prefetched yet). That is precisely the code path
+    /// that triggered `ERR_CONTENT_DECODING_FAILED`. If this test fails to
+    /// compile, the contract has regressed.
+    #[test]
+    fn resolve_audio_url_contract_returns_option() {
+        let _type_witness: fn(&str) -> Option<String> = resolve_audio_url;
+        // Touch the symbol so the assignment is not dead-code eliminated.
+        let _ = _type_witness as fn(&str) -> Option<String>;
+    }
+
+    #[test]
+    fn ensure_leading_slash_adds_missing() {
+        assert_eq!(
+            ensure_leading_slash("phrases/audio/x.opus"),
+            "/phrases/audio/x.opus"
+        );
+    }
+
+    #[test]
+    fn ensure_leading_slash_preserves_existing() {
+        assert_eq!(
+            ensure_leading_slash("/phrases/audio/x.opus"),
+            "/phrases/audio/x.opus"
+        );
+    }
+
+    #[test]
+    fn blob_url_cache_returns_none_for_uncached_key() {
+        // Bug A contract: cache miss MUST surface as None to the caller so the
+        // caller can fall back to TTS or await prefetch — it MUST NOT be silently
+        // substituted with the raw CDN URL (see module-level root cause comment).
+        let unique = "/blob-cache-probe-uncached-7e3a9f1c-e2d4-4b8a-9c11-1f5a2c7e9b8d";
+        // Defensive cleanup in case a prior test populated this slot.
+        if let Ok(mut cache) = blob_url_cache().lock() {
+            cache.remove(unique);
+        }
+        let result = get_cached_blob_url(unique);
+        assert!(
+            result.is_none(),
+            "uncached path must resolve to None; got {:?}",
+            result
+        );
+    }
+
+    #[test]
+    fn blob_url_cache_round_trips_inserted_value() {
+        let key = "/blob-cache-probe-roundtrip-3f8a1c0b-9d2e-4a6f-b117-2c4d8e1f0a3b";
+        let value = "blob:roundtrip-test";
+        {
+            let mut cache = blob_url_cache().lock().expect("blob cache poisoned");
+            cache.insert(key.to_string(), value.to_string());
+        }
+        assert_eq!(get_cached_blob_url(key).as_deref(), Some(value));
+        // Cleanup so this test remains idempotent.
+        if let Ok(mut cache) = blob_url_cache().lock() {
+            cache.remove(key);
+        }
+    }
+
+    #[test]
+    fn mime_type_for_path_known_extensions() {
+        assert_eq!(mime_type_for_path("phrases/audio/abc.opus"), "audio/opus");
+        assert_eq!(mime_type_for_path("/x.mp3"), "audio/mpeg");
+        assert_eq!(mime_type_for_path("/x.wav"), "audio/wav");
+        assert_eq!(mime_type_for_path("/x.ogg"), "audio/ogg");
+        assert_eq!(mime_type_for_path("/x.m4a"), "audio/mp4");
+        assert_eq!(mime_type_for_path("/x.webm"), "audio/webm");
+    }
+
+    #[test]
+    fn mime_type_for_path_unknown_defaults_to_opus() {
+        // Current CDN only serves opus; the default keeps decode working for
+        // the existing content while other extensions map explicitly above.
+        assert_eq!(mime_type_for_path("noext"), "audio/opus");
+        assert_eq!(mime_type_for_path("file.unknown"), "audio/opus");
+    }
+
+    #[test]
+    fn blob_url_cache_insert_updates_existing_key_without_duplication() {
+        let key = "/blob-cache-probe-update-1a2b3c4d-1111-2222-3333-444455556666";
+        {
+            let mut cache = blob_url_cache().lock().expect("blob cache poisoned");
+            cache.insert(key.to_string(), "blob:first".to_string());
+            // Re-inserting the same key must not append a duplicate order entry.
+            cache.insert(key.to_string(), "blob:second".to_string());
+            assert_eq!(cache.order.iter().filter(|k| *k == key).count(), 1);
+        }
+        assert_eq!(get_cached_blob_url(key).as_deref(), Some("blob:second"));
+        if let Ok(mut cache) = blob_url_cache().lock() {
+            cache.remove(key);
+        }
+    }
 }

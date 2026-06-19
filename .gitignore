@@ -56,6 +56,9 @@ temp_*/
 # Cache
 .cache/
 
+# Internal fix-restore artifacts (status notes from parallel work, not production)
+.audio-fix-backup/
+
 # Graphify knowledge graph output
 graphify-out/
 
