@@ -1,5 +1,5 @@
 use super::trailbase_client::{AuthError, TrailBaseClient};
-use crate::repository::session::{TrailBaseSession, get_session, set_session};
+use crate::repository::session::{TrailBaseSession, get_session, set_session_async};
 use chrono::{DateTime, Utc};
 use origa::domain::{DailyLoad, NativeLanguage, OrigaError, User};
 use origa::traits::UserRepository;
@@ -222,9 +222,11 @@ impl UserRepository for TrailBaseUserRepository {
                 record_id: Some(record_id),
                 ..session.clone()
             };
-            set_session(&updated_session).map_err(|e| OrigaError::RepositoryError {
-                reason: format!("Failed to update session: {}", e),
-            })?;
+            set_session_async(&updated_session)
+                .await
+                .map_err(|e| OrigaError::RepositoryError {
+                    reason: format!("Failed to update session: {}", e),
+                })?;
         }
 
         if let Ok(mut cache) = self.user_cache.write() {

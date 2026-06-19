@@ -24,6 +24,7 @@ tauri-plugin-opener.workspace = true
 tauri-plugin-tts.workspace = true
 tauri-plugin-deep-link.workspace = true
 tauri-plugin-single-instance.workspace = true
+tauri-plugin-store.workspace = true
 tauri-plugin-updater.workspace = true
 tauri-plugin-process.workspace = true
 serde.workspace = true

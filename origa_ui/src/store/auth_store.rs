@@ -6,7 +6,8 @@ use origa::traits::UserRepository;
 use crate::i18n::{I18nContext, Locale};
 use crate::pages::login::auth_handlers::get_or_create_profile;
 use crate::repository::{
-    AuthError, HybridUserRepository, TrailBaseClient, clear_session, get_session, set_session,
+    AuthError, HybridUserRepository, TrailBaseClient, clear_session, clear_session_async,
+    get_session_async, set_session_async,
     trailbase_session::{is_refresh_in_progress, set_refresh_in_progress, should_refresh_session},
 };
 
@@ -181,7 +182,7 @@ impl AuthStore {
         let store = self.clone();
 
         spawn_local(async move {
-            let session = match get_session() {
+            let session = match get_session_async().await {
                 Some(s) => s,
                 None => {
                     is_checking.set(false);
@@ -225,7 +226,7 @@ impl AuthStore {
                             match client_bg.refresh_session(&session.refresh_token).await {
                                 Ok(new_session) => {
                                     tracing::info!("Background session refresh succeeded");
-                                    if let Err(e) = set_session(&new_session) {
+                                    if let Err(e) = set_session_async(&new_session).await {
                                         tracing::error!(
                                             "Failed to save refreshed session: {:?}",
                                             e
@@ -235,7 +236,7 @@ impl AuthStore {
                                 },
                                 Err(AuthError::SessionExpired) => {
                                     tracing::warn!("Session definitively expired, logging out");
-                                    clear_session();
+                                    clear_session_async().await;
                                     user_signal_bg.set(None);
                                     is_checking_bg.set(false);
                                 },
@@ -282,9 +283,12 @@ impl AuthStore {
 
         match result {
             Ok(_) => {
-                let session = get_session().ok_or_else(|| OrigaError::RepositoryError {
-                    reason: "Session not found after login".to_string(),
-                })?;
+                let session =
+                    get_session_async()
+                        .await
+                        .ok_or_else(|| OrigaError::RepositoryError {
+                            reason: "Session not found after login".to_string(),
+                        })?;
 
                 match get_or_create_profile(self, &session.email, i18n).await {
                     Ok(user) => {
@@ -425,7 +429,7 @@ impl AuthStore {
 
     /// Internal: Clear all authentication-related state
     async fn clear_auth_state(&self) {
-        clear_session();
+        clear_session_async().await;
 
         if let Some(user) = self.user.get() {
             let _ = self.repository.delete(user.id()).await;
@@ -457,6 +461,11 @@ impl AuthStore {
 
     /// Handle session expiry - clears all auth state
     /// Call this when AuthError::SessionExpired is received
+    ///
+    /// NOTE: This function uses the sync `clear_session()` which clears the
+    /// cache + localStorage but NOT the persistent Tauri store. When this
+    /// handler is eventually wired to real error paths, it should use
+    /// `clear_session_async()` instead (see ADR-010).
     pub fn handle_session_expiry(&self) {
         tracing::debug!("Handling session expiry - clearing auth state");
 

@@ -1,6 +1,7 @@
 use crate::core::tauri;
 use crate::i18n::{t, use_i18n};
 use crate::repository::OAuthProvider;
+use crate::repository::set_pkce_verifier_async;
 use crate::repository::trailbase_client::trailbase_url;
 use js_sys::Promise;
 use leptos::prelude::*;
@@ -111,7 +112,9 @@ pub fn OAuthButtons(
                 class="w-full flex items-center justify-center gap-3 px-4 py-3 border border-[var(--border-dark)] bg-[var(--bg-cream)] hover:bg-[var(--bg-aged)] transition-colors"
                 data-testid=google_test_id
                 on:click=move |_: leptos::ev::MouseEvent| {
-                    open_oauth_url(OAuthProvider::Google, debug_sink);
+                    spawn_local(async move {
+                        open_oauth_url(OAuthProvider::Google, debug_sink).await;
+                    });
                 }
             >
                 <GoogleIcon />
@@ -123,7 +126,9 @@ pub fn OAuthButtons(
                 class="w-full flex items-center justify-center gap-3 px-4 py-3 border border-[var(--border-dark)] bg-[var(--bg-cream)] hover:bg-[var(--bg-aged)] transition-colors"
                 data-testid=yandex_test_id
                 on:click=move |_: leptos::ev::MouseEvent| {
-                    open_oauth_url(OAuthProvider::Yandex, debug_sink);
+                    spawn_local(async move {
+                        open_oauth_url(OAuthProvider::Yandex, debug_sink).await;
+                    });
                 }
             >
                 <YandexIcon />
@@ -197,17 +202,14 @@ fn open_url_external(url: &str, debug_sink: Option<OAuthDebugSink>) {
     }
 }
 
-fn open_oauth_url(provider: OAuthProvider, debug_sink: Option<OAuthDebugSink>) {
+async fn open_oauth_url(provider: OAuthProvider, debug_sink: Option<OAuthDebugSink>) {
     use crate::repository::TrailBaseClient;
     use crate::repository::trailbase_auth::{generate_pkce_challenge, generate_pkce_verifier};
-    use gloo_storage::{LocalStorage, Storage};
 
     // Reuse the canonical backend host (`https://app.origa.uwuwu.net` in
     // production) instead of `ORIGA_PUBLIC_BASE_URL`, which has been empty
     // since commit eeee03ad (mobile OIDC redirect refactor) and produced a
     // relative `redirect_uri` that TrailBase could not redirect to.
-    // TODO(BUG): `web_sys::window().expect("window not available")` below is a
-    // pre-existing production panic vector and is out of scope for this fix.
     let redirect_uri = if tauri::is_tauri() {
         format!(
             "{}{}",
@@ -228,7 +230,15 @@ fn open_oauth_url(provider: OAuthProvider, debug_sink: Option<OAuthDebugSink>) {
         provider.as_str()
     );
 
-    LocalStorage::set("pkce_verifier", &verifier).ok();
+    // Persist the PKCE verifier BEFORE opening the external browser.
+    // On Android, the OS may kill the app process while the user is in the
+    // external browser, so localStorage (which is unreliable under process
+    // kills) is insufficient — we must fsync to the native store first.
+    // The await ensures the IPC write + Store::save() completes before we
+    // leave the app.
+    if let Err(e) = set_pkce_verifier_async(&verifier).await {
+        report_debug!(debug_sink, "pkce verifier persist failed: {e}");
+    }
 
     let client = TrailBaseClient::new();
     let url = client.get_oauth_url(provider.as_str(), &redirect_uri, &challenge);

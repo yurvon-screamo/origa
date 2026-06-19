@@ -1,5 +1,8 @@
+mod auth_store;
+
 use std::sync::Mutex;
 
+use auth_store::{auth_store_delete, auth_store_get, auth_store_set};
 use tauri::{Emitter, Listener, Manager};
 use tauri_plugin_deep_link::DeepLinkExt;
 
@@ -29,9 +32,15 @@ pub fn run() {
     builder
         .plugin(tauri_plugin_deep_link::init())
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_store::Builder::default().build())
         .plugin(tauri_plugin_tts::init())
         .manage(PendingDeepLink(Mutex::new(None)))
-        .invoke_handler(tauri::generate_handler![get_pending_deep_link])
+        .invoke_handler(tauri::generate_handler![
+            get_pending_deep_link,
+            auth_store_get,
+            auth_store_set,
+            auth_store_delete
+        ])
         .setup(|app| {
             tracing::info!("[deep-link] setup started");
 
