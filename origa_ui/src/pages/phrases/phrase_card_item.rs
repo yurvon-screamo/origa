@@ -46,10 +46,12 @@ pub fn PhraseCardItem(
         }
     });
 
-    let audio_src = match study_card.card() {
-        DomainCard::Phrase(phrase_card) => crate::repository::cdn_provider::resolve_audio_url(
-            &format!("phrases/audio/{}.opus", phrase_card.phrase_id()),
-        ),
+    // Bug A fix: pass the CDN path (not the resolved URL) to AudioPlayer so it
+    // can prefetch into a `blob:` URL — see cdn_provider::resolve_audio_url.
+    let audio_path = match study_card.card() {
+        DomainCard::Phrase(phrase_card) => {
+            format!("phrases/audio/{}.opus", phrase_card.phrase_id())
+        },
         _ => String::new(),
     };
 
@@ -64,7 +66,7 @@ pub fn PhraseCardItem(
     });
 
     let status = CardStatus::from_study_card(&study_card);
-    let has_audio = !audio_src.is_empty();
+    let has_audio = !audio_path.is_empty();
     let known_kanji_for_markdown = known_kanji;
 
     view! {
@@ -109,7 +111,7 @@ pub fn PhraseCardItem(
                         <Show when=move || has_audio>
                             <div class="phrase-card-audio">
                                 <AudioPlayer
-                                    src=audio_src.clone()
+                                    path=audio_path.clone()
                                     autoplay=false
                                     test_id=Signal::derive(|| "phrases-card-audio".to_string())
                                 />
