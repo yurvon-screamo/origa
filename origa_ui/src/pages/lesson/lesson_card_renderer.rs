@@ -64,10 +64,8 @@ pub(in crate::pages::lesson) fn render_lesson_card(
     let is_phrase = matches!(params.card, Card::Phrase(_));
 
     if is_phrase {
-        let phrase_audio_src = match &params.card {
-            Card::Phrase(pc) => Some(crate::repository::cdn_provider::resolve_audio_url(
-                &format!("phrases/audio/{}.opus", pc.phrase_id()),
-            )),
+        let phrase_audio_path = match &params.card {
+            Card::Phrase(pc) => Some(format!("phrases/audio/{}.opus", pc.phrase_id())),
             _ => None,
         };
 
@@ -80,7 +78,7 @@ pub(in crate::pages::lesson) fn render_lesson_card(
                 grammar_info=params.grammar_info
                 native_language=native_language.get()
                 known_kanji=Signal::from(known_kanji)
-                audio_src=phrase_audio_src
+                audio_path=phrase_audio_path
             />
 
             <Show when=move || show_answer>
@@ -102,7 +100,7 @@ pub(in crate::pages::lesson) fn render_lesson_card(
                 grammar_info=params.grammar_info
                 native_language=native_language.get()
                 known_kanji=Signal::from(known_kanji)
-                audio_src=None
+                audio_path=None
             />
 
             <Show when=move || show_answer>

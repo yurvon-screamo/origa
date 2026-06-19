@@ -1,8 +1,11 @@
 use leptos::prelude::*;
+use leptos::task::spawn_local;
 use leptos_icons::Icon;
 use wasm_bindgen::JsCast;
+use wasm_bindgen_futures::JsFuture;
 
 use super::word_audio::{register_audio, stop_current_audio};
+use crate::repository::cdn_provider::{prefetch_blob_url, resolve_audio_url};
 
 #[derive(Clone, Copy, PartialEq)]
 enum PlaybackState {
@@ -13,11 +16,16 @@ enum PlaybackState {
 
 #[component]
 pub fn AudioPlayer(
-    #[prop(into)] src: String,
+    /// CDN path (e.g. `phrases/audio/ABC.opus`). Always prefetched into a
+    /// `blob:` URL before being handed to `<audio>` — see
+    /// `cdn_provider::resolve_audio_url` for the gzip-on-CDN root cause.
+    #[prop(into)]
+    path: String,
     #[prop(optional)] autoplay: bool,
     #[prop(optional, into)] test_id: Signal<String>,
 ) -> impl IntoView {
     let audio_ref = NodeRef::<leptos::html::Audio>::new();
+    let blob_url: RwSignal<Option<String>> = RwSignal::new(None);
     let state = RwSignal::new(if autoplay {
         PlaybackState::Loading
     } else {
@@ -29,50 +37,73 @@ pub fn AudioPlayer(
         if val.is_empty() { None } else { Some(val) }
     };
 
-    Effect::new(move |_| {
-        if autoplay {
-            if let Some(audio) = audio_ref.get() {
-                stop_current_audio();
-                let state_clone = state;
-                register_audio(
-                    audio.clone().unchecked_into(),
-                    Some(Box::new(move || {
-                        state_clone.set(PlaybackState::Idle);
-                    })),
-                    vec![],
-                );
-                let _ = audio.play();
-                state.set(PlaybackState::Loading);
+    // Bug A fix: never feed the raw CDN URL to <audio> (Hikari gzip). The sync
+    // fast-path returns the cached blob URL instantly when the phrase has
+    // already been materialised (e.g. replay); on cache miss we await
+    // `prefetch_blob_url` so `blob_url` reactively updates for autoplay.
+    // `resolve_audio_url` is a pure lookup, so there is no double-fetch race.
+    let path_for_prefetch = path.clone();
+    if let Some(url) = resolve_audio_url(&path_for_prefetch) {
+        blob_url.set(Some(url));
+    } else {
+        spawn_local(async move {
+            match prefetch_blob_url(&path_for_prefetch).await {
+                Ok(url) => blob_url.set(Some(url)),
+                Err(e) => {
+                    tracing::warn!(path = %path_for_prefetch, error = ?e, "AudioPlayer prefetch failed")
+                },
             }
+        });
+    }
+
+    // Autoplay: trigger play() once the blob URL lands and the audio element
+    // is mounted. Re-runs reactively whenever `blob_url` becomes Some.
+    Effect::new(move |_| {
+        let Some(url) = blob_url.get() else { return };
+        let Some(audio) = audio_ref.get() else { return };
+        audio.set_src(&url);
+        if autoplay {
+            stop_current_audio();
+            let state_clone = state;
+            register_audio(
+                audio.clone().unchecked_into(),
+                Some(Box::new(move || {
+                    state_clone.set(PlaybackState::Idle);
+                })),
+                vec![],
+            );
+            state.set(PlaybackState::Loading);
+            let reset = move || state.set(PlaybackState::Idle);
+            spawn_play_with_catch(audio, reset);
         }
     });
 
     let toggle_play = move |_| {
-        if let Some(audio) = audio_ref.get() {
-            match state.get() {
-                PlaybackState::Playing => {
-                    let _ = audio.pause();
-                    state.set(PlaybackState::Idle);
-                },
-                _ => {
-                    stop_current_audio();
-                    audio.set_current_time(0.0);
-                    let state_clone = state;
-                    let audio_ref_clone = audio_ref;
-                    register_audio(
-                        audio.clone().unchecked_into(),
-                        Some(Box::new(move || {
-                            if let Some(a) = audio_ref_clone.get() {
-                                let _ = a.pause();
-                            }
-                            state_clone.set(PlaybackState::Idle);
-                        })),
-                        vec![],
-                    );
-                    state.set(PlaybackState::Loading);
-                    let _ = audio.play();
-                },
-            }
+        let Some(audio) = audio_ref.get() else { return };
+        match state.get() {
+            PlaybackState::Playing => {
+                let _ = audio.pause();
+                state.set(PlaybackState::Idle);
+            },
+            _ => {
+                stop_current_audio();
+                audio.set_current_time(0.0);
+                let state_clone = state;
+                let audio_ref_clone = audio_ref;
+                register_audio(
+                    audio.clone().unchecked_into(),
+                    Some(Box::new(move || {
+                        if let Some(a) = audio_ref_clone.get() {
+                            let _ = a.pause();
+                        }
+                        state_clone.set(PlaybackState::Idle);
+                    })),
+                    vec![],
+                );
+                state.set(PlaybackState::Loading);
+                let reset = move || state.set(PlaybackState::Idle);
+                spawn_play_with_catch(audio, reset);
+            },
         }
     };
 
@@ -100,7 +131,6 @@ pub fn AudioPlayer(
         <div class="audio-player flex items-center justify-center" data-testid=test_id_val>
             <audio
                 node_ref=audio_ref
-                src=src.clone()
                 preload="none"
                 on:playing=on_playing
                 on:waiting=on_waiting
@@ -131,4 +161,28 @@ pub fn AudioPlayer(
             </button>
         </div>
     }
+}
+
+/// Invoke `HTMLAudioElement.play()` and absorb Promise rejection.
+///
+/// `play()` returns a Promise that rejects when the element cannot decode the
+/// source or when autoplay policy blocks playback (NotAllowedError). Awaiting
+/// the Promise via `JsFuture` marks the rejection as handled, which keeps the
+/// console clean (Bug B). Crucially, on rejection `on_reject` is invoked so the
+/// caller can reset its UI state — `HTMLMediaElement.onerror` does NOT fire for
+/// autoplay-policy rejections, so without this the caller would stay stuck in
+/// its "loading/playing" state forever.
+fn spawn_play_with_catch(audio: web_sys::HtmlAudioElement, on_reject: impl FnOnce() + 'static) {
+    let promise = match audio.play() {
+        Ok(p) => p,
+        Err(_) => {
+            on_reject();
+            return;
+        },
+    };
+    spawn_local(async move {
+        if JsFuture::from(promise).await.is_err() {
+            on_reject();
+        }
+    });
 }

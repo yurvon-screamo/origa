@@ -12,7 +12,7 @@ pub fn LessonCardHeader(
     question_text: String,
     grammar_info: Option<GrammarInfo>,
     show_answer: bool,
-    #[prop(into)] audio_src: Option<String>,
+    #[prop(into)] audio_path: Option<String>,
 ) -> impl IntoView {
     let i18n = use_i18n();
     let grammar_info = StoredValue::new(grammar_info);
@@ -35,7 +35,7 @@ pub fn LessonCardHeader(
                 </Show>
             </div>
             <Show when=move || card_type != CardType::Kanji>
-                <AudioButtons text=question_text.clone() audio_src=audio_src.clone() class=Signal::derive(|| "".to_string())/>
+                <AudioButtons text=question_text.clone() audio_path=audio_path.clone() class=Signal::derive(|| "".to_string())/>
             </Show>
         </div>
     }

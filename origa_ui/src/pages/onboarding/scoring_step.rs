@@ -268,7 +268,7 @@ pub fn ScoringStep(
                                     <div class="absolute right-0 top-1/2 -translate-y-1/2">
                                         <AudioButtons
                                             text=card.question.clone()
-                                            audio_src=None
+                                            audio_path=None
                                             class=Signal::derive(|| "".to_string())
                                             test_id=Signal::derive(|| "scoring-step-audio".to_string())
                                         />
