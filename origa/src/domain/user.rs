@@ -95,6 +95,20 @@ impl User {
     }
 
     pub fn merge(&mut self, another_user: &User) {
+        // Remote is the source of truth for identity: a local record must not
+        // override the canonical user id, otherwise saves on the same browser
+        // get attributed to different ids and break cross-device sync.
+        //
+        // Defensive guard: a nil remote id means the remote trailbase_id failed
+        // to decode. Propagating nil here would re-introduce the bug this merge
+        // change is meant to prevent, so when the remote id is nil the local id
+        // is left untouched (non-identity fields are still merged). Callers that
+        // must never observe a nil remote should reject it upstream — see
+        // `TrailBaseUserRepository::find_current`, which returns an error before
+        // reaching merge when the decoded id is nil.
+        if another_user.id != Ulid::nil() {
+            self.id = another_user.id;
+        }
         self.email = another_user.email.clone();
         self.username = another_user.username.clone();
         self.native_language = another_user.native_language;
@@ -520,6 +534,80 @@ mod tests {
         assert!(user1.is_set_imported("set-2"));
         assert!(user1.is_set_imported("set-3"));
         assert_eq!(user1.imported_sets().len(), 3);
+    }
+
+    #[test]
+    fn user_merge_takes_identity_from_remote() {
+        // Remote is the source of truth for identity. A local user created with
+        // a random ULID must adopt the remote id on merge so that subsequent
+        // saves are attributed to the correct canonical user across devices.
+        let mut local = User::new(
+            "local@example.com".to_string(),
+            NativeLanguage::Russian,
+            None,
+        );
+        let local_random_id = local.id();
+        assert_ne!(local_random_id, Ulid::nil());
+
+        let remote_id = Ulid::from_bytes([
+            0x01, 0x67, 0x4f, 0x3a, 0x4e, 0x32, 0xdf, 0x41, 0x8c, 0x6b, 0x27, 0x4e, 0x73, 0x91,
+            0x5f, 0xce,
+        ]);
+        let remote = User::from_row(
+            remote_id,
+            "remote@example.com".to_string(),
+            "remote".to_string(),
+            JlptProgress::new(),
+            NativeLanguage::Russian,
+            None,
+            KnowledgeSet::new(),
+            Utc::now(),
+            HashSet::new(),
+            DailyLoad::default(),
+            0,
+        );
+
+        local.merge(&remote);
+
+        assert_eq!(local.id(), remote_id);
+        assert_ne!(local.id(), local_random_id);
+        assert_ne!(local.id(), Ulid::nil());
+    }
+
+    #[test]
+    fn user_merge_does_not_adopt_nil_remote_id() {
+        // Regression guard for the nil-identity bug: a remote row whose id
+        // failed to decode (nil) must not poison the local id. Otherwise the
+        // "remote is source of truth" rule would re-introduce the cross-device
+        // sync corruption that merge is meant to fix.
+        let mut local = User::new(
+            "local@example.com".to_string(),
+            NativeLanguage::Russian,
+            None,
+        );
+        let local_id_before = local.id();
+        assert_ne!(local_id_before, Ulid::nil());
+
+        let nil_remote = User::from_row(
+            Ulid::nil(),
+            "remote@example.com".to_string(),
+            "remote".to_string(),
+            JlptProgress::new(),
+            NativeLanguage::Russian,
+            None,
+            KnowledgeSet::new(),
+            Utc::now(),
+            HashSet::new(),
+            DailyLoad::default(),
+            0,
+        );
+
+        local.merge(&nil_remote);
+
+        assert_eq!(local.id(), local_id_before);
+        assert_ne!(local.id(), Ulid::nil());
+        // Non-identity fields are still merged.
+        assert_eq!(local.email(), "remote@example.com");
     }
 
     #[test]

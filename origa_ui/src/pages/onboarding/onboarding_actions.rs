@@ -32,6 +32,11 @@ where
             user.mark_set_as_imported("__onboarding_skipped__".to_string());
             recalculate_user_jlpt_progress(&mut user);
 
+            // Hard block on remote failure: completing onboarding is a sync
+            // checkpoint, so the user must not proceed to /home without a
+            // canonical remote record. This differs from the import path
+            // below, which logs and continues because the import itself has
+            // already committed locally by the time this save runs.
             if let Err(e) = repo.save_sync(&user).await {
                 tracing::error!("Onboarding skip: save error: {:?}", e);
                 return;

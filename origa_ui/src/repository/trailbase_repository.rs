@@ -1,5 +1,6 @@
+use super::session::{TrailBaseSession, get_session, set_session_async};
 use super::trailbase_client::{AuthError, TrailBaseClient};
-use crate::repository::session::{TrailBaseSession, get_session, set_session_async};
+use super::trailbase_id::uuid_to_ulid;
 use chrono::{DateTime, Utc};
 use origa::domain::{DailyLoad, NativeLanguage, OrigaError, User};
 use origa::traits::UserRepository;
@@ -58,6 +59,16 @@ impl TrailBaseUserRepository {
                 reason: "Record ID missing from database row".to_string(),
             })?;
             let user = row.to_user();
+
+            // A remote row whose trailbase_id does not decode to a real ULID is
+            // corrupt for sync purposes: merging it would poison the local id
+            // with nil (the very bug this code path guards against). Surface it
+            // as an error instead of letting merge propagate the nil identity.
+            if user.id() == Ulid::nil() {
+                return Err(OrigaError::RepositoryError {
+                    reason: "Remote user trailbase_id did not decode to a valid ULID; refusing to sync a nil identity".to_string(),
+                });
+            }
 
             if let Ok(mut cache) = self.user_cache.write() {
                 cache.insert(session.email.clone(), user.clone());
@@ -140,25 +151,6 @@ impl UserRow {
             self.known_vocab_hash.unwrap_or(0) as u32,
         )
     }
-}
-
-fn uuid_to_ulid(uuid_str: &str) -> Ulid {
-    let uuid_bytes = uuid_str
-        .replace('-', "")
-        .as_bytes()
-        .chunks(2)
-        .filter_map(|chunk| {
-            let hex = std::str::from_utf8(chunk).ok()?;
-            u8::from_str_radix(hex, 16).ok()
-        })
-        .collect::<Vec<_>>();
-
-    let mut bytes = [0u8; 16];
-    if uuid_bytes.len() == 16 {
-        bytes.copy_from_slice(&uuid_bytes);
-    }
-
-    Ulid::from_bytes(bytes)
 }
 
 fn user_to_json(user: &User, trailbase_id: &str) -> serde_json::Value {

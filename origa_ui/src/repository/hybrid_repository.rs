@@ -67,29 +67,46 @@ impl UserRepository for HybridUserRepository {
         self.local.get_current_user().await
     }
 
+    // Local-only write on the hot path. Rating a card, marking it known, or
+    // creating one are high-frequency actions; awaiting a remote round-trip
+    // here would block the core study loop (especially on mobile). The local
+    // write is authoritative for the device; cross-device propagation happens
+    // through `save_sync` at explicit checkpoints (onboarding, imports, auth)
+    // and through `merge_current_user` on login. The user id is already
+    // canonical thanks to the session-derived ULID, so a local-only save is
+    // correctly attributed to the right identity.
     async fn save(&self, user: &User) -> Result<(), OrigaError> {
-        tracing::info!("save: Starting save for user {}", user.id());
+        tracing::info!("save: Starting local save for user {}", user.id());
         self.local.save(user).await?;
-        tracing::info!("save: Local save completed");
+        tracing::info!("save: Local save completed for user {}", user.id());
         Ok(())
     }
 
+    // Explicit sync checkpoint: local + remote. Used by auth, onboarding, and
+    // imports where a network round-trip is acceptable and the data must reach
+    // the server before the user can switch devices.
+    //
+    // The local write runs first so the device stays usable offline even when
+    // the network is down. Remote failures are then surfaced as `Err` instead
+    // of being swallowed: a silent `Ok` here is what allowed the cross-device
+    // split-progress bug, because the initial profile create would log a remote
+    // error and return `Ok`, so the user moved on without a canonical remote
+    // record and the next device's login found nothing to merge against.
     async fn save_sync(&self, user: &User) -> Result<(), OrigaError> {
+        tracing::info!("save_sync: Starting save for user {}", user.id());
         self.local.save(user).await?;
-        tracing::info!("save_sync: Local save completed");
+        tracing::info!("save_sync: Local save completed for user {}", user.id());
 
-        match self.remote.save(user).await {
-            Ok(_) => {
-                tracing::info!("save_sync: Remote save completed");
-            },
-            Err(e) => {
-                tracing::error!(
-                    "save_sync: Remote save failed: {:?}. Local save is still valid.",
-                    e
-                );
-            },
+        if let Err(e) = self.remote.save(user).await {
+            tracing::error!(
+                "save_sync: Remote save failed for user {}: {:?}. Local save kept; surfacing error to caller.",
+                user.id(),
+                e
+            );
+            return Err(e);
         }
 
+        tracing::info!("save_sync: Remote save completed for user {}", user.id());
         Ok(())
     }
 
