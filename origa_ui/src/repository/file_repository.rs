@@ -6,15 +6,15 @@ use origa::{
 use ulid::Ulid;
 use wasm_bindgen::JsValue;
 
-const DB_NAME: &str = "origa";
-const DB_VERSION: u32 = 1;
-const STORE_NAME: &str = "users";
+pub(crate) const DB_NAME: &str = "origa";
+pub(crate) const DB_VERSION: u32 = 1;
+pub(crate) const STORE_NAME: &str = "users";
 
-fn user_key(user_id: Ulid) -> String {
+pub(crate) fn user_key(user_id: Ulid) -> String {
     format!("user:{}", user_id)
 }
 
-async fn open_database() -> Result<Database, OrigaError> {
+pub(crate) async fn open_database() -> Result<Database, OrigaError> {
     let factory = Factory::new().map_err(|e| {
         let reason = format!("Failed to create IndexedDB factory: {:?}", e);
         tracing::error!("{}", reason);
@@ -108,6 +108,13 @@ impl FileSystemUserRepository {
 
 impl UserRepository for FileSystemUserRepository {
     async fn get_current_user(&self) -> Result<Option<User>, OrigaError> {
+        // Self-heal legacy nil-keyed rows before reading so that the first
+        // read after upgrade returns the canonical record. Migration errors are
+        // non-fatal: the read still proceeds against whatever rows exist.
+        if let Err(e) = super::legacy_migration::migrate_nil_users_to_session_id().await {
+            tracing::warn!("Legacy nil-user migration skipped: {:?}", e);
+        }
+
         let users = self.list_users().await?;
         Ok(users.first().cloned())
     }

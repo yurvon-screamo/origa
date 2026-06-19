@@ -1,8 +1,12 @@
 use crate::i18n::{I18nContext, Locale};
-use crate::repository::{TrailBaseClient, set_session_async, take_pkce_verifier_async};
+use crate::repository::{
+    TrailBaseClient, get_session, set_session_async, take_pkce_verifier_async, uuid_to_ulid,
+};
 use crate::store::auth_store::AuthStore;
-use origa::domain::{NativeLanguage, User};
+use chrono::Utc;
+use origa::domain::{DailyLoad, JlptProgress, KnowledgeSet, NativeLanguage, User};
 use origa::traits::UserRepository;
+use std::collections::HashSet;
 
 pub async fn get_or_create_profile(
     auth_store: &AuthStore,
@@ -24,15 +28,22 @@ pub async fn get_or_create_profile(
     match auth_store.repository().get_current_user().await {
         Ok(Some(user)) => Ok(user),
         Ok(None) => {
-            let new_user = User::new(email.to_string(), NativeLanguage::Russian, None);
+            let new_user = create_new_user_from_session(email)?;
 
-            auth_store.repository().save(&new_user).await.map_err(|e| {
-                i18n.get_keys_untracked()
-                    .login()
-                    .create_profile_error()
-                    .inner()
-                    .replace("{}", &e.to_string())
-            })?;
+            // First-time profile creation is an explicit sync checkpoint: the
+            // canonical user must exist remotely before any other device can
+            // log in and merge against it.
+            auth_store
+                .repository()
+                .save_sync(&new_user)
+                .await
+                .map_err(|e| {
+                    i18n.get_keys_untracked()
+                        .login()
+                        .create_profile_error()
+                        .inner()
+                        .replace("{}", &e.to_string())
+                })?;
 
             auth_store
                 .repository()
@@ -60,6 +71,46 @@ pub async fn get_or_create_profile(
             .inner()
             .replace("{}", &e.to_string())),
     }
+}
+
+/// Build a brand-new local user whose identity is pinned to the TrailBase
+/// session id (decoded from the JWT `sub`).
+///
+/// `User::new` mints a random ULID, which would diverge from the server-assigned
+/// id and re-introduce the cross-device sync bug where every device ended up
+/// with its own key. We instead derive the id from `session.trailbase_id` so the
+/// first save is already attributed to the canonical user. Field defaults mirror
+/// `User::new`; they are duplicated here only because identity is restricted to
+/// the `merge` change in the domain layer.
+fn create_new_user_from_session(email: &str) -> Result<User, String> {
+    let session = get_session().ok_or_else(|| {
+        "No active session: cannot create user profile without a TrailBase id".to_string()
+    })?;
+
+    let user_id = uuid_to_ulid(&session.trailbase_id);
+    if user_id == ulid::Ulid::nil() {
+        tracing::error!(
+            "Session trailbase_id did not decode to a valid user id: {}",
+            crate::repository::redact_id(&session.trailbase_id)
+        );
+        return Err("Invalid TrailBase session id: please log in again".to_string());
+    }
+
+    let username = email.split('@').next().unwrap_or(email).to_string();
+
+    Ok(User::from_row(
+        user_id,
+        email.to_string(),
+        username,
+        JlptProgress::new(),
+        NativeLanguage::Russian,
+        None,
+        KnowledgeSet::new(),
+        Utc::now(),
+        HashSet::new(),
+        DailyLoad::default(),
+        0,
+    ))
 }
 
 pub async fn handle_oauth_callback(
