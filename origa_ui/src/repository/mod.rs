@@ -14,5 +14,8 @@ pub use cdn_provider::cdn as cdn_provider;
 
 pub use dictionary_cache::{get_cached_dictionary_rkyv, save_dictionary_to_cache_rkyv};
 pub use hybrid_repository::HybridUserRepository;
-pub use session::{clear_session, get_session, set_last_sync_time, set_session};
+pub use session::{
+    clear_session, clear_session_async, get_session_async, migrate_session_to_store_if_needed,
+    set_last_sync_time, set_pkce_verifier_async, set_session_async, take_pkce_verifier_async,
+};
 pub use trailbase_client::{AuthError, OAuthProvider, TrailBaseClient};

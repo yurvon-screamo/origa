@@ -1,8 +1,8 @@
 use crate::core::tauri;
 use crate::i18n::{I18nContext, Locale};
 use crate::pages::login::auth_handlers::{handle_oauth_callback, handle_oauth_callback_desktop};
+use crate::repository::take_pkce_verifier_async;
 use crate::store::auth_store::AuthStore;
-use gloo_storage::{LocalStorage, Storage};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos::wasm_bindgen::JsCast;
@@ -10,7 +10,6 @@ use leptos::wasm_bindgen::prelude::*;
 use tracing::{debug, error, trace, warn};
 
 const LOGIN_PATH: &str = "/login";
-const HOME_PATH: &str = "/home";
 
 pub fn setup_oauth_listener(auth_store: AuthStore, i18n: I18nContext<Locale>) {
     debug!("setup_oauth_listener() called");
@@ -97,13 +96,7 @@ fn handle_oauth_result(result: Result<(), String>, auth_store: &AuthStore) {
         return;
     }
 
-    debug!("OAuth success, redirecting to /home");
-
-    if let Some(window) = web_sys::window()
-        && let Err(e) = window.location().set_href(HOME_PATH)
-    {
-        error!(path = HOME_PATH, error = ?e, "failed to redirect");
-    }
+    debug!("OAuth success — navigation to /home handled by App() Effect");
 }
 
 fn register_tauri_listener(callback: Closure<dyn Fn(JsValue)>) {
@@ -198,16 +191,18 @@ pub fn check_url_oauth_callback(auth_store: &AuthStore, i18n: &I18nContext<Local
         return;
     };
 
-    let Some(verifier) = get_and_delete_verifier() else {
-        return;
-    };
-
     let is_oauth_loading = auth_store.is_oauth_loading;
     is_oauth_loading.set(true);
     auth_store.oauth_error.set(None);
     let auth_store_clone = auth_store.clone();
 
     spawn_local(async move {
+        let Some(verifier) = take_pkce_verifier_async().await else {
+            is_oauth_loading.set(false);
+            warn!("PKCE verifier not found for OAuth callback");
+            return;
+        };
+
         process_oauth_flow(
             auth_store_clone,
             verifier,
@@ -226,12 +221,6 @@ fn extract_oauth_code(search: &str) -> Option<String> {
         .map(|code| code.split('&').next().unwrap_or(code).to_string())
 }
 
-fn get_and_delete_verifier() -> Option<String> {
-    let verifier: Option<String> = LocalStorage::get("pkce_verifier").ok();
-    LocalStorage::delete("pkce_verifier");
-    verifier
-}
-
 async fn process_oauth_flow(
     auth_store: AuthStore,
     verifier: String,
@@ -248,20 +237,12 @@ async fn process_oauth_flow(
 
     match result {
         Ok(_) => {
-            redirect_to_home();
+            debug!("OAuth flow success — navigation to /home handled by App() Effect");
         },
         Err(e) => {
             is_oauth_loading.set(false);
             error!(?e, "OAuth flow failed");
             auth_store.oauth_error.set(Some(e.to_string()));
         },
-    }
-}
-
-fn redirect_to_home() {
-    if let Some(window) = web_sys::window()
-        && let Err(e) = window.location().set_href(HOME_PATH)
-    {
-        error!(path = HOME_PATH, ?e, "failed to redirect");
     }
 }

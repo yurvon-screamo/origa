@@ -1,4 +1,4 @@
-use crate::repository::session::{TrailBaseSession, set_session};
+use crate::repository::session::{TrailBaseSession, set_session_async};
 use crate::repository::trailbase_auth::{decode_jwt_claims, urlencoding_decode};
 use crate::repository::trailbase_records::RecordApi;
 use crate::repository::trailbase_session::current_timestamp;
@@ -179,7 +179,9 @@ impl TrailBaseClient {
             expires_at,
         };
 
-        set_session(&session).map_err(AuthError::ApiError)?;
+        set_session_async(&session)
+            .await
+            .map_err(AuthError::ApiError)?;
         Ok(session)
     }
 
@@ -230,10 +232,14 @@ impl TrailBaseClient {
             expires_at,
         };
 
-        set_session(&session).map_err(AuthError::ApiError)?;
+        set_session_async(&session)
+            .await
+            .map_err(AuthError::ApiError)?;
         Ok(session)
     }
 
+    /// Parses tokens from a URL fragment. Does NOT persist the session — the
+    /// caller is responsible for calling `set_session_async`.
     pub fn parse_tokens_from_url(url_fragment: &str) -> Result<TrailBaseSession, String> {
         let fragment = url_fragment.strip_prefix('#').unwrap_or(url_fragment);
 
@@ -269,7 +275,6 @@ impl TrailBaseClient {
             expires_at,
         };
 
-        set_session(&session).map_err(|e| format!("Failed to set session: {}", e))?;
         Ok(session)
     }
 

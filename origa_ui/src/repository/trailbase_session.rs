@@ -1,4 +1,6 @@
-use crate::repository::session::{TrailBaseSession, clear_session, get_session, set_session};
+use crate::repository::session::{
+    TrailBaseSession, clear_session_async, get_session, set_session_async,
+};
 use crate::repository::trailbase_auth::decode_jwt_claims;
 use crate::repository::trailbase_client::{
     AuthError, AuthRequestClient, AuthTokenResponse, TrailBaseClient,
@@ -13,6 +15,13 @@ use tracing::debug;
 
 // Session lifecycle: refresh, get_fresh_session, logout, password change.
 // HTTP transport layer: see trailbase_client.rs
+//
+// INVARIANT: On Tauri, the sync `get_session()` reads ONLY from the
+// in-memory cache (no localStorage fallback). The cache is populated by
+// `get_session_async()` during `check_session()` at app start, before
+// `ProtectedRoute` renders any authenticated page. Therefore, by the time
+// these methods run, the cache is guaranteed to be populated if the user
+// is authenticated. See ADR-010 for details.
 
 const REFRESH_THRESHOLD_SECONDS: u64 = 300;
 const REFRESH_TIMEOUT_MS: u32 = 30000;
@@ -90,7 +99,9 @@ impl TrailBaseClient {
             expires_at,
         };
 
-        set_session(&session).map_err(AuthError::ApiError)?;
+        set_session_async(&session)
+            .await
+            .map_err(AuthError::ApiError)?;
         Ok(session)
     }
 
@@ -216,7 +227,7 @@ impl TrailBaseClient {
                 )
                 .await;
         }
-        clear_session();
+        clear_session_async().await;
         Ok(())
     }
 

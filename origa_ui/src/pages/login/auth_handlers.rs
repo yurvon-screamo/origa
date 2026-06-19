@@ -1,7 +1,6 @@
 use crate::i18n::{I18nContext, Locale};
-use crate::repository::{TrailBaseClient, set_session};
+use crate::repository::{TrailBaseClient, set_session_async, take_pkce_verifier_async};
 use crate::store::auth_store::AuthStore;
-use gloo_storage::{LocalStorage, Storage};
 use origa::domain::{NativeLanguage, User};
 use origa::traits::UserRepository;
 
@@ -69,7 +68,7 @@ pub async fn handle_oauth_callback(
     i18n: &I18nContext<Locale>,
 ) -> Result<User, String> {
     let session = TrailBaseClient::parse_tokens_from_url(url_fragment)?;
-    set_session(&session).map_err(|e| {
+    set_session_async(&session).await.map_err(|e| {
         i18n.get_keys_untracked()
             .login()
             .save_session_error()
@@ -108,11 +107,9 @@ pub async fn handle_oauth_callback_desktop(
                 .to_string()
         })?;
 
-    let verifier: Option<String> = LocalStorage::get("pkce_verifier").ok();
-    LocalStorage::delete("pkce_verifier");
-
-    let verifier =
-        verifier.ok_or_else(|| i18n.get_keys().login().pkce_not_found().inner().to_string())?;
+    let verifier = take_pkce_verifier_async()
+        .await
+        .ok_or_else(|| i18n.get_keys().login().pkce_not_found().inner().to_string())?;
 
     let client = TrailBaseClient::new();
     let session = client
@@ -126,7 +123,7 @@ pub async fn handle_oauth_callback_desktop(
                 .replace("{}", &e.to_string())
         })?;
 
-    set_session(&session).map_err(|e| {
+    set_session_async(&session).await.map_err(|e| {
         i18n.get_keys_untracked()
             .login()
             .save_session_error()
