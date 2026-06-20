@@ -96,15 +96,29 @@ point.
 
 The redirect Effect is moved from `Login` (which can unmount) to `App()` (always
 mounted). It watches `auth_store.is_authenticated()` and navigates to `/home`
-via `use_navigate()` (SPA, no reload) when the user becomes authenticated. This
-covers **both** paths:
-
-- Email/password: `login()` calls `self.user.set(Some(user))` → Effect fires.
-- OAuth: `set_oauth_session()` writes the session asynchronously and calls
-  `self.user.set(Some(user))` → Effect fires.
+via `use_navigate()` (SPA, no reload) when the user becomes authenticated.
 
 The old `window.location().set_href("/home")` calls in `handle_oauth_result()`
 and `redirect_to_home()` are removed entirely — the Effect replaces them.
+
+> **Amendment (E2E hotfix):** The original Effect navigated to `/home`
+> unconditionally on authentication. This caused two race conditions:
+>
+> 1. **Transient `/home` race** — After email/password login (user on `/`),
+>    the Effect navigated to `/home`, then Home's onboarding guard redirected
+>    new users to `/onboarding`. Playwright's `waitForURL` caught the transient
+>    `/home`, causing E2E tests to miss the onboarding skip button.
+> 2. **Deep-link clobbering** — Reloading on a protected route (`/words`,
+>    `/kanji`, ...) triggered `check_session` → `is_authenticated` false→true →
+>    Effect navigated back to `/home`, clobbering the destination.
+>
+> The Effect now navigates to `/home` **only when `current_path == "/login"`**.
+> The email/password path relies on natural routing: the user is on `/` which
+> renders `<ProtectedRoute><Home/></ProtectedRoute>`, so after `user.set(Some)`
+> the ProtectedRoute renders Home, and Home's onboarding guard redirects to
+> `/onboarding` — no transient `/home`. The pathname is read via
+> `web_sys::window()` (non-reactive) so the Effect only re-runs when
+> `is_authenticated` actually changes.
 
 ### AD-4: `App()` initialization ordering
 

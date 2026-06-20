@@ -37,9 +37,13 @@ pub fn Login() -> impl IntoView {
 
     let auth_store_for_view = auth_store.clone();
 
-    // Navigation after successful login is handled by the App()-level Effect
-    // that watches is_authenticated() (see app.rs). This covers both the
-    // email/password and OAuth paths uniformly.
+    // Navigation after successful email/password login is handled by natural
+    // routing: user.set(Some) flips is_authenticated, ProtectedRoute (which
+    // wraps the / route) renders Home, and Home's onboarding guard redirects
+    // new users to /onboarding. This avoids a transient /home URL that races
+    // with E2E waitForURL assertions. The App()-level Effect (see app.rs)
+    // covers the OAuth path where the user is on /login (outside
+    // ProtectedRoute) and must be navigated explicitly.
     let on_email_submit = Callback::new({
         move |(email, password): (String, String)| {
             let auth_store = auth_store.clone();
