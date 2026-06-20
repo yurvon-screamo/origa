@@ -42,7 +42,6 @@ pub fn PageLayout(
 
 #[derive(Clone, Copy, PartialEq, Debug, Default)]
 pub enum CardLayoutSize {
-    #[expect(dead_code, reason = "design system API")]
     Small,
 
     #[expect(dead_code, reason = "design system API")]
