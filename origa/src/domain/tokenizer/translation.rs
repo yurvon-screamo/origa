@@ -245,7 +245,15 @@ mod integration_tests {
             chunk_11: read_chunk("chunk_11.json"),
         };
 
-        init_vocabulary(vocab_data).unwrap();
+        // Tolerate the OnceLock init race: a concurrent test thread may have
+        // initialized the vocabulary first with identical data. Only a genuinely
+        // unset dictionary indicates a real failure; preserve the error detail
+        // so data regressions stay debuggable.
+        if let Err(e) = init_vocabulary(vocab_data) {
+            if !is_vocabulary_loaded() {
+                panic!("vocabulary dictionary failed to load: {:?}", e);
+            }
+        }
     }
 
     fn ensure_grammar_dictionary() {
@@ -262,7 +270,12 @@ mod integration_tests {
             .join("grammar.json");
 
         let grammar_json = std::fs::read_to_string(grammar_path).unwrap();
-        init_grammar(GrammarData { grammar_json }).unwrap();
+        // Same OnceLock race tolerance as ensure_vocabulary_dictionary.
+        if let Err(e) = init_grammar(GrammarData { grammar_json }) {
+            if !is_grammar_loaded() {
+                panic!("grammar dictionary failed to load: {:?}", e);
+            }
+        }
     }
 
     #[test]
@@ -415,6 +428,54 @@ mod integration_tests {
         assert!(
             verb_token.unwrap().grammar_label.is_none(),
             "Base form should NOT have grammar_label"
+        );
+    }
+
+    #[test]
+    fn should_detect_beki_grammar_label() {
+        ensure_dictionaries();
+        let text = "うん、あるべきものをあるべき形カタチに";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::English, text);
+
+        let beki = results.iter().find(|t| t.surface_form == "べき");
+        assert!(
+            beki.is_some(),
+            "「べき」token should exist, tokens: {:?}",
+            results.iter().map(|t| &t.surface_form).collect::<Vec<_>>()
+        );
+        let beki = beki.unwrap();
+        assert!(
+            beki.grammar_label
+                .as_ref()
+                .is_some_and(|label| label.contains("べき")),
+            "「べき」should carry the べきだ grammar_label, got: {:?}",
+            beki
+        );
+    }
+
+    // Characterization test: the input `言っイッてみただけ` contains an OCR/furigana
+    // artifact (the katakana イッ inside a hiragana verb form). Lindera cannot
+    // reconstruct the canonical te-form 言って here, but it must still recognize
+    // the verb stem 言っ and surface its dictionary form 言う so the translation
+    // pipeline can work. The katakana イッ being read as the numeral 一 is a known
+    // tokenizer/dictionary limitation and is out of scope for translation.rs.
+    #[test]
+    fn should_still_extract_iu_base_form_from_mixed_kana_kanji_input() {
+        ensure_dictionaries();
+        let text = "言っイッてみただけ";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::English, text);
+
+        let iu = results.iter().find(|t| t.base_form == "言う");
+        assert!(
+            iu.is_some(),
+            "Should find 言う base_form in '{}', tokens: {:?}",
+            text,
+            results
+                .iter()
+                .map(|t| (&t.surface_form, &t.base_form))
+                .collect::<Vec<_>>()
         );
     }
 }
