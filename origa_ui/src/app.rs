@@ -1,7 +1,7 @@
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos_router::hooks::use_navigate;
-use tracing::{debug, error};
+use tracing::{debug, error, trace};
 
 use crate::core::updater;
 use crate::i18n::{native_language_to_locale, use_i18n};
@@ -71,17 +71,51 @@ pub fn App() -> impl IntoView {
 
     // AD-3: SPA navigate Effect — always mounted in App() (unlike the Login
     // page which can unmount). Watches is_authenticated() and navigates to
-    // /home when the user becomes authenticated. This covers BOTH the
-    // email/password path (where user.set is called explicitly in login())
-    // and the OAuth path (where set_oauth_session writes the session
-    // asynchronously via IPC + Store::save()). Replaces the old
-    // window.location.set_href("/home") which caused a full WebView reload
-    // with loss of reactive state.
+    // /home ONLY when the user is on /login. This covers the OAuth path where
+    // set_oauth_session writes the session asynchronously via IPC + Store and
+    // the /login route renders Login directly (outside ProtectedRoute), so
+    // without an explicit navigate the user would stay on /login after
+    // authentication.
+    //
+    // The email/password path does NOT need this Effect: the user is on /
+    // (root), which renders <ProtectedRoute><Home/></ProtectedRoute>. After
+    // user.set(Some), ProtectedRoute renders Home, and Home's onboarding guard
+    // redirects new users to /onboarding. Navigating to /home from / would
+    // create a transient /home URL that races with E2E waitForURL assertions.
+    //
+    // The URL guard also prevents the Effect from clobbering deep links when a
+    // user reloads on a protected route (/words, /kanji, ...): check_session
+    // flips is_authenticated false→true, but current_path is /words (not
+    // /login), so no navigate fires. The pathname is read via web_sys (no
+    // reactive subscription) so the Effect only re-runs when is_authenticated
+    // actually changes.
+    //
+    // KNOWN LIMITATION: the OAuth path still produces a transient /home URL
+    // (/login → /home → /onboarding for new users). This is the same race
+    // window that was fixed for email/password, but there are currently no
+    // OAuth E2E tests with URL assertions that would catch it. If such tests
+    // are added, the OAuth callback handler should navigate directly to
+    // /onboarding for new users (or the Effect should be replaced with a
+    // route-level guard).
+    const LOGIN_REDIRECT_PATH: &str = "/login";
     let auth_store_for_nav = auth_store.clone();
     Effect::new(move |_| {
         if auth_store_for_nav.is_authenticated().get() {
-            debug!("redirect_decision: authenticated → navigate to /home");
-            navigate("/home", Default::default());
+            let current_path = web_sys::window()
+                .and_then(|w| w.location().pathname().ok())
+                .unwrap_or_default();
+            if current_path == LOGIN_REDIRECT_PATH {
+                debug!(
+                    current_path,
+                    "redirect_decision: on /login → navigate to /home"
+                );
+                navigate("/home", Default::default());
+            } else {
+                trace!(
+                    current_path,
+                    "redirect_decision: authenticated but not on /login, no navigate"
+                );
+            }
         }
     });
 
