@@ -3,8 +3,10 @@ use serde::Serialize;
 use super::{PartOfSpeech, TokenInfo};
 use crate::dictionary::grammar::GRAMMAR_RULES;
 use crate::dictionary::vocabulary::get_translation;
+use crate::domain::JapaneseChar;
 use crate::domain::NativeLanguage;
 use crate::domain::grammar::find_format_map_matches;
+use crate::domain::katakana_to_hiragana;
 
 #[derive(Debug, Clone, Serialize)]
 pub struct TokenTranslation {
@@ -26,13 +28,7 @@ pub fn lookup_tokens_translations(
         .map(|token| {
             let base_form = token.orthographic_base_form().to_string();
             let translation = get_translation(&base_form, native_language);
-            let grammar_label = resolve_grammar_label(
-                token.orthographic_surface_form(),
-                &base_form,
-                token.part_of_speech(),
-                native_language,
-                original_text,
-            );
+            let grammar_label = resolve_grammar_label(token, native_language, original_text);
 
             TokenTranslation {
                 surface_form: token.orthographic_surface_form().to_string(),
@@ -47,16 +43,18 @@ pub fn lookup_tokens_translations(
 }
 
 fn resolve_grammar_label(
-    surface: &str,
-    base: &str,
-    pos: &PartOfSpeech,
+    token: &TokenInfo,
     native_language: &NativeLanguage,
     original_text: &str,
 ) -> Option<String> {
     let rules = GRAMMAR_RULES.get()?;
+    let surface = token.orthographic_surface_form();
+    let base = token.orthographic_base_form();
+    let pos = token.part_of_speech();
+    let is_vocab = pos.is_vocabulary_word();
 
     // Keyword matching for non-vocabulary tokens (particles, auxiliaries, etc.)
-    if !pos.is_vocabulary_word() {
+    if !is_vocab {
         for rule in rules.iter() {
             for group in rule.keywords().iter() {
                 if group.iter().any(|kw| surface == kw) {
@@ -68,12 +66,39 @@ fn resolve_grammar_label(
 
     // FormatAction detection for vocabulary tokens where surface != base (conjugated forms).
     // When multiple rules match, the most specific (longest formatted form) is preferred.
-    if pos.is_vocabulary_word() && surface != base {
-        let matches = find_format_map_matches(base, pos, original_text, rules);
-        if let Some(best) = matches
-            .into_iter()
-            .max_by_key(|rule| rule.format(base, pos).map_or(0, |f| f.len()))
-        {
+    if is_vocab && surface != base {
+        let mut matches = find_format_map_matches(base, pos, original_text, rules);
+
+        // Lindera prefers the kanji lemma as ``base`` even when the user's
+        // phrase is written entirely in hiragana. ``find_format_map_matches``
+        // formats the base into its conjugated surface (e.g. ``分かる`` →
+        // ``分かって``) and checks the original text — but the kanji-formatted
+        // string never appears in a hiragana phrase, so the match silently
+        // fails. Retry the same chain with the hiragana-equivalent base
+        // derived from the katakana reading so ``分かる`` becomes ``わかる`` and
+        // the formatted ``わかって`` does occur inside ``わかってるなら``.
+        let hiragana_base = if base.chars().any(|c| c.is_kanji()) {
+            Some(katakana_to_hiragana(token.phonological_base_form()))
+        } else {
+            None
+        };
+
+        if let Some(ref hira) = hiragana_base {
+            matches.extend(find_format_map_matches(hira, pos, original_text, rules));
+        }
+
+        // Score each candidate by the longest format it produces across both
+        // bases (kanji + hiragana-equivalent) so rules that only match through
+        // the hiragana retry are not penalised when ``rule.format(base, pos)``
+        // happens to error on the kanji lemma.
+        if let Some(best) = matches.into_iter().max_by_key(|rule| {
+            let kanji_len = rule.format(base, pos).map_or(0, |f| f.len());
+            let hira_len = hiragana_base
+                .as_ref()
+                .map(|h| rule.format(h, pos).map_or(0, |f| f.len()))
+                .unwrap_or(0);
+            kanji_len.max(hira_len)
+        }) {
             return Some(best.content(native_language).title().to_string());
         }
     }

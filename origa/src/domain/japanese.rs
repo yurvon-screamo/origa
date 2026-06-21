@@ -57,6 +57,47 @@ impl JapaneseText for str {
     }
 }
 
+/// Maps every katakana codepoint in ``text`` to its hiragana counterpart by
+/// subtracting the Unicode offset (``0x60``) between the two blocks.
+///
+/// The range ``0x30A1..=0x30F6`` excludes ``ー`` (long vowel, ``U+30FC``), the
+/// katakana middle dot ``・`` (``U+30FB``) and the voiced ``ヷ..ヺ`` row
+/// (``U+30F7..=U+30FA``) on purpose: those have no clean hiragana counterpart
+/// and are passed through unchanged. ``ヴ`` (``U+30F4``) lands on the
+/// rarely-used but valid hiragana ``ゔ`` (``U+3094``).
+///
+/// Shared by ``furigana_annotator`` (reading-hint comparison) and the
+/// translation pipeline (hiragana-base fallback for grammar_label resolution).
+pub fn katakana_to_hiragana(text: &str) -> String {
+    text.chars()
+        .map(|c| {
+            if ('\u{30A1}'..='\u{30F6}').contains(&c) {
+                char::from_u32(c as u32 - 0x60)
+                    .expect("katakana→hiragana range 0x3041..0x3096 is valid unicode")
+            } else {
+                c
+            }
+        })
+        .collect()
+}
+
+/// Maps every hiragana codepoint in ``text`` to its katakana counterpart by
+/// adding the Unicode offset (``0x60``) between the two blocks.
+///
+/// Inverse of [`katakana_to_hiragana`]; same block boundaries apply.
+pub fn hiragana_to_katakana(text: &str) -> String {
+    text.chars()
+        .map(|c| {
+            if ('\u{3041}'..='\u{3096}').contains(&c) {
+                char::from_u32(c as u32 + 0x60)
+                    .expect("hiragana→katakana range 0x30A1..0x30F6 is valid unicode")
+            } else {
+                c
+            }
+        })
+        .collect()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -175,5 +216,38 @@ mod tests {
         assert!('？'.is_japanese(), "？ should be classified as Japanese");
         assert!('！'.is_japanese(), "！ should be classified as Japanese");
         assert!('…'.is_japanese(), "… should be classified as Japanese");
+    }
+
+    #[test]
+    fn katakana_to_hiragana_converts_standard_range() {
+        assert_eq!(katakana_to_hiragana("タベモノ"), "たべもの");
+        assert_eq!(katakana_to_hiragana("ア"), "あ");
+        assert_eq!(katakana_to_hiragana("ン"), "ん");
+    }
+
+    #[test]
+    fn katakana_to_hiragana_preserves_non_katakana() {
+        assert_eq!(katakana_to_hiragana("hello"), "hello");
+        assert_eq!(katakana_to_hiragana("あいう"), "あいう");
+        assert_eq!(katakana_to_hiragana("123"), "123");
+    }
+
+    #[test]
+    fn katakana_to_hiragana_preserves_prolonged_sound_mark() {
+        assert_eq!(katakana_to_hiragana("バー"), "ばー");
+    }
+
+    #[test]
+    fn hiragana_to_katakana_converts_standard_range() {
+        assert_eq!(hiragana_to_katakana("たべもの"), "タベモノ");
+        assert_eq!(hiragana_to_katakana("あ"), "ア");
+        assert_eq!(hiragana_to_katakana("ん"), "ン");
+    }
+
+    #[test]
+    fn hiragana_to_katakana_preserves_non_hiragana() {
+        assert_eq!(hiragana_to_katakana("hello"), "hello");
+        assert_eq!(hiragana_to_katakana("アイウ"), "アイウ");
+        assert_eq!(hiragana_to_katakana("123"), "123");
     }
 }
