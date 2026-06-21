@@ -419,7 +419,7 @@ jobs:
               uses: docker/setup-buildx-action@v3
 
             - name: Build landing image
-              uses: docker/build-push-action@v6
+              uses: docker/build-push-action@v7
               with:
                   context: .
                   file: ./origa_landing/Dockerfile
@@ -443,7 +443,7 @@ jobs:
               uses: docker/setup-buildx-action@v3
 
             - name: Build UI image
-              uses: docker/build-push-action@v6
+              uses: docker/build-push-action@v7
               with:
                   context: .
                   file: ./origa_ui/Dockerfile
