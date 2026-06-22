@@ -2,7 +2,7 @@ use leptos::prelude::*;
 
 use crate::components::cta::CtaSection;
 use crate::components::seo::PageMeta;
-use crate::content::Locale;
+use crate::content::{Content, Locale};
 
 #[component]
 pub fn ComparePage() -> impl IntoView {
@@ -140,6 +140,8 @@ pub fn ComparePage() -> impl IntoView {
                 </div>
             </div>
         </section>
+
+        <ScoreboardLegend c />
 
         // Section 3: Bridge
         <section class="cmp-bridge">
@@ -288,6 +290,42 @@ fn CompareMarker(kind: &'static str) -> AnyView {
 fn CompareSpecialText(text: &'static str) -> impl IntoView {
     view! {
         <span class="cmp-special-text">{text}</span>
+    }
+}
+
+#[component]
+fn ScoreboardLegend(c: &'static Content) -> impl IntoView {
+    view! {
+        <div class="cmp-legend" role="note">
+            <span class="cmp-legend__title">{c.compare_legend_title}</span>
+            <ul class="cmp-legend__list">
+                <LegendItem label=c.compare_legend_origa>
+                    <CompareMarker kind="yes-origa"/>
+                </LegendItem>
+                <LegendItem label=c.compare_legend_supported>
+                    <CompareMarker kind="yes"/>
+                </LegendItem>
+                <LegendItem label=c.compare_legend_partial>
+                    <CompareMarker kind="partial"/>
+                </LegendItem>
+                <LegendItem label=c.compare_legend_not_supported>
+                    <CompareMarker kind="no"/>
+                </LegendItem>
+                <LegendItem label=c.compare_legend_value>
+                    <span class="cmp-special-text">"Aa"</span>
+                </LegendItem>
+            </ul>
+        </div>
+    }
+}
+
+#[component]
+fn LegendItem(label: &'static str, children: Children) -> impl IntoView {
+    view! {
+        <li class="cmp-legend__item">
+            <span class="cmp-legend__marker">{children()}</span>
+            <span class="cmp-legend__label">{label}</span>
+        </li>
     }
 }
 
