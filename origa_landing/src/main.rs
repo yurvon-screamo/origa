@@ -1,11 +1,6 @@
 #[cfg(feature = "ssr")]
 #[tokio::main]
 async fn main() {
-    use axum::Router;
-    use leptos_axum::LeptosRoutes;
-    use origa_landing::app::{App, shell};
-    use tower_http::services::{ServeDir, ServeFile};
-
     tracing_subscriber::fmt()
         .with_env_filter(
             tracing_subscriber::EnvFilter::try_from_default_env()
@@ -20,10 +15,6 @@ async fn main() {
 
     let addr = format!("0.0.0.0:{port}");
     tracing::info!("Server running on {addr}");
-
-    let pkg_dir = env!("CARGO_MANIFEST_DIR");
-
-    let routes = leptos_axum::generate_route_list(App);
 
     let leptos_options = match leptos::config::get_configuration(Some(concat!(
         env!("CARGO_MANIFEST_DIR"),
@@ -41,20 +32,7 @@ async fn main() {
         },
     };
 
-    let app = Router::new()
-        .nest_service("/images", ServeDir::new(format!("{pkg_dir}/public/images")))
-        .route_service(
-            "/landing.processed.css",
-            ServeFile::new(format!("{pkg_dir}/style/landing.processed.css")),
-        )
-        .leptos_routes(&leptos_options, routes, {
-            let leptos_options = leptos_options.clone();
-            move || shell(leptos_options.clone())
-        })
-        .fallback_service(
-            ServeDir::new(format!("{pkg_dir}/public")).append_index_html_on_directories(false),
-        )
-        .with_state(leptos_options);
+    let app = origa_landing::server::build_router(leptos_options);
 
     let listener = tokio::net::TcpListener::bind(&addr)
         .await

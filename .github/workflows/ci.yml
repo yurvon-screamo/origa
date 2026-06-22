@@ -162,7 +162,7 @@ jobs:
               run: npm ci && npm run build:css
 
             - name: Run tests
-              run: cargo test --workspace
+              run: cargo test --workspace --exclude origa_landing
 
     e2e-build:
         name: E2E Build

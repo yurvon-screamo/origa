@@ -89,7 +89,10 @@ ammonia = "4"
 scraper = "0.22"
 ego-tree = "0.10"
 axum = "0.8"
-tower-http = { version = "0.6", features = ["fs"] }
+tower = "0.5"
+tower-http = { version = "0.6", features = ["fs", "set-header", "util"] }
+http = "1"
+http-body-util = "0.1"
 js-sys = "0.3"
 codee = { version = "0.3", features = ["json_serde"] }
 console_error_panic_hook = "0.1"
