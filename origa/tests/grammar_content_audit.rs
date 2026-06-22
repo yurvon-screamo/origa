@@ -30,7 +30,10 @@ struct GrammarFile {
 fn scan_for_hangul(value: &serde_json::Value, path: &mut Vec<String>, hits: &mut Vec<String>) {
     match value {
         serde_json::Value::String(s) => {
-            if let Some(idx) = s.chars().position(|c| ('\u{AC00}'..='\u{D7AF}').contains(&c)) {
+            if let Some(idx) = s
+                .chars()
+                .position(|c| ('\u{AC00}'..='\u{D7AF}').contains(&c))
+            {
                 let context_start = idx.saturating_sub(40);
                 let context_end = (idx + 40).min(s.len());
                 hits.push(format!(
@@ -39,22 +42,22 @@ fn scan_for_hangul(value: &serde_json::Value, path: &mut Vec<String>, hits: &mut
                     &s[context_start..context_end]
                 ));
             }
-        }
+        },
         serde_json::Value::Object(map) => {
             for (k, v) in map {
                 path.push(k.clone());
                 scan_for_hangul(v, path, hits);
                 path.pop();
             }
-        }
+        },
         serde_json::Value::Array(arr) => {
             for (i, v) in arr.iter().enumerate() {
                 path.push(format!("[{i}]"));
                 scan_for_hangul(v, path, hits);
                 path.pop();
             }
-        }
-        _ => {}
+        },
+        _ => {},
     }
 }
 

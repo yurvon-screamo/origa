@@ -166,8 +166,7 @@ fn load_kanji_file() -> KanjiFile {
     let path = cdn_dir().join("dictionary").join("kanji.json");
     let raw = std::fs::read_to_string(&path)
         .unwrap_or_else(|e| panic!("failed to read {}: {e}", path.display()));
-    serde_json::from_str(&raw)
-        .unwrap_or_else(|e| panic!("failed to parse {}: {e}", path.display()))
+    serde_json::from_str(&raw).unwrap_or_else(|e| panic!("failed to parse {}: {e}", path.display()))
 }
 
 #[test]
@@ -201,8 +200,7 @@ fn polysemic_kanji_descriptions_are_not_mistranslated() {
             if is_sole_entry {
                 problems.push(format!(
                     "{}: forbidden gloss {:?} is the sole description_ru entry — polysemy lost",
-                    case.kanji,
-                    forbidden,
+                    case.kanji, forbidden,
                 ));
             }
         }

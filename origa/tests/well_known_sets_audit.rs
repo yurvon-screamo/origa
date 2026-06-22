@@ -37,8 +37,7 @@ fn load_meta() -> Vec<SetMeta> {
         .join("well_known_sets_meta.json");
     let raw = fs::read_to_string(&path)
         .unwrap_or_else(|e| panic!("failed to read {}: {e}", path.display()));
-    serde_json::from_str(&raw)
-        .unwrap_or_else(|e| panic!("failed to parse {}: {e}", path.display()))
+    serde_json::from_str(&raw).unwrap_or_else(|e| panic!("failed to parse {}: {e}", path.display()))
 }
 
 fn section_from_title(title: &str) -> Option<u32> {
@@ -122,7 +121,11 @@ fn spy_family_sets_are_n3() {
         "no SpyFamily sets found in well_known_sets_meta.json — fixture path drifted"
     );
 
-    let wrong: Vec<&SetMeta> = spy_records.iter().filter(|r| r.level != "N3").copied().collect();
+    let wrong: Vec<&SetMeta> = spy_records
+        .iter()
+        .filter(|r| r.level != "N3")
+        .copied()
+        .collect();
     assert!(
         wrong.is_empty(),
         "Spy x Family sets must all be tagged N3 (matches content file level); these are wrong:\n{}",

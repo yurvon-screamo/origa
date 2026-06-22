@@ -370,9 +370,7 @@ mod tests {
     #[test]
     fn card_answer_vocabulary_caps_to_max_seven_translations() {
         // 12 input translations, only the first 7 must survive.
-        let input: Vec<String> = (1..=12)
-            .map(|i| format!("sense{i}"))
-            .collect();
+        let input: Vec<String> = (1..=12).map(|i| format!("sense{i}")).collect();
         let answer = CardAnswer::vocabulary(input.clone(), None).unwrap();
         assert_eq!(
             answer.translations(),

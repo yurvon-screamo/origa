@@ -516,7 +516,10 @@ mod tests {
 
     #[test]
     fn normalize_translation_preserves_curly_quotes() {
-        assert_eq!(normalize_translation("\u{201C}диалог\u{201D}"), "\u{201C}диалог\u{201D}");
+        assert_eq!(
+            normalize_translation("\u{201C}диалог\u{201D}"),
+            "\u{201C}диалог\u{201D}"
+        );
     }
 
     #[test]
