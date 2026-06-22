@@ -14,6 +14,12 @@ readme.workspace = true
 name = "origa_ui_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
+[features]
+# Enable DevTools in release builds for debugging.
+# Usage: cargo build --release --features release-devtools
+# Without this flag, DevTools are disabled in release (Tauri v2 default).
+release-devtools = ["tauri/devtools"]
+
 [build-dependencies]
 tauri-build.workspace = true
 serde_json.workspace = true

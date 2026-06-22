@@ -119,6 +119,15 @@ pub fn run() {
             }
 
             tracing::info!("[deep-link] setup complete");
+
+            #[cfg(feature = "release-devtools")]
+            {
+                if let Some(window) = app.get_webview_window("main") {
+                    window.open_devtools();
+                    tracing::info!("[devtools] DevTools opened (release-devtools feature enabled)");
+                }
+            }
+
             Ok(())
         })
         .run(tauri::generate_context!())
