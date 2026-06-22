@@ -161,8 +161,11 @@ jobs:
               working-directory: origa_landing
               run: npm ci && npm run build:css
 
-            - name: Run tests
-              run: cargo test --workspace --features origa_landing/ssr
+            - name: Test workspace core
+              run: cargo test --workspace --exclude origa_landing
+
+            - name: Test origa_landing (SSR)
+              run: cargo test -p origa_landing --features ssr
 
     e2e-build:
         name: E2E Build
