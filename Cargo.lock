@@ -5485,13 +5485,17 @@ name = "origa_landing"
 version = "0.1.0"
 dependencies = [
  "axum",
+ "http",
+ "http-body-util",
  "leptos",
  "leptos_axum",
  "leptos_meta",
  "leptos_router",
+ "rstest",
  "serde",
  "serde_json",
  "tokio",
+ "tower",
  "tower-http",
  "tracing",
  "tracing-subscriber",

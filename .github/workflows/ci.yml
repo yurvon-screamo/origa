@@ -85,7 +85,7 @@ jobs:
               run: cargo fmt --check --all
 
             - name: Run clippy
-              run: cargo clippy --workspace --all-targets -- -D warnings
+              run: cargo clippy --workspace --all-targets --features origa_landing/ssr -- -D warnings
 
     cdn-download:
         name: Download CDN
@@ -162,7 +162,7 @@ jobs:
               run: npm ci && npm run build:css
 
             - name: Run tests
-              run: cargo test --workspace
+              run: cargo test --workspace --features origa_landing/ssr
 
     e2e-build:
         name: E2E Build

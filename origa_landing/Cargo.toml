@@ -19,12 +19,33 @@ leptos_meta.workspace = true
 leptos_router.workspace = true
 leptos_axum.workspace = true
 axum.workspace = true
+http.workspace = true
 tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
 tower-http.workspace = true
 serde = { workspace = true }
 serde_json = { workspace = true }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true, features = ["env-filter"] }
+
+[dev-dependencies]
+rstest = { workspace = true }
+tower = { workspace = true, features = ["util"] }
+http-body-util.workspace = true
+
+[[test]]
+name = "redirect"
+path = "tests/redirect.rs"
+required-features = ["ssr"]
+
+[[test]]
+name = "cache_headers"
+path = "tests/cache_headers.rs"
+required-features = ["ssr"]
+
+[[test]]
+name = "not_found"
+path = "tests/not_found.rs"
+required-features = ["ssr"]
 
 [features]
 ssr = [

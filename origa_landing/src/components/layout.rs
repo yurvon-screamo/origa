@@ -1,4 +1,5 @@
 use leptos::prelude::*;
+use leptos_meta::Html;
 use leptos_router::components::{A, Outlet};
 
 use crate::content::Locale;
@@ -34,21 +35,7 @@ pub fn Layout(locale: Locale) -> impl IntoView {
         .collect();
 
     view! {
-        {match locale {
-            Locale::Ru => view! {
-                <script>"document.documentElement.lang=\"ru\""</script>
-            }
-            .into_any(),
-            Locale::Ko => view! {
-                <script>"document.documentElement.lang=\"ko\""</script>
-            }
-            .into_any(),
-            Locale::Vi => view! {
-                <script>"document.documentElement.lang=\"vi\""</script>
-            }
-            .into_any(),
-            Locale::En => ().into_any(),
-        }}
+        <Html {..} lang=locale.as_str() />
         <header class="landing-header">
             <a href=home_href class="landing-header__logo">
                 <img src="/images/logo.png" alt="Origa" class="landing-header__logo-img" />
