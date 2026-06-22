@@ -8,10 +8,6 @@
             "script": "trunk serve",
             "cwd": "../origa_ui"
         },
-        "beforeBuildCommand": {
-            "script": "trunk build --release",
-            "cwd": "../origa_ui"
-        },
         "devUrl": "http://localhost:1420",
         "frontendDist": "../origa_ui/dist"
     },
