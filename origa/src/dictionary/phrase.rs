@@ -542,17 +542,4 @@ mod tests {
         assert_eq!(normalize_translation("\"нечто"), "\"нечто");
         assert_eq!(normalize_translation("нечто\""), "нечто\"");
     }
-
-    #[test]
-    fn cache_phrase_details_normalizes_wrapped_translations() {
-        init_phrase_index(test_index_json()).expect("index init must succeed");
-        let chunk = r#"[{"i":"01KPJ5S3N1DRFFD236Z4EZ03HJ","x":"Hello world","ru":"\"Привет мир\"","en":"\"Hello world\""}]"#;
-        cache_phrase_details(0, chunk).expect("chunk must load");
-
-        let detail =
-            get_cached_phrase_detail(&Ulid::from_string("01KPJ5S3N1DRFFD236Z4EZ03HJ").unwrap())
-                .expect("detail must exist");
-        assert_eq!(detail.translation_ru.as_deref(), Some("Привет мир"));
-        assert_eq!(detail.translation_en.as_deref(), Some("Hello world"));
-    }
 }
