@@ -7,6 +7,7 @@ use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos::wasm_bindgen::JsCast;
 use leptos::wasm_bindgen::prelude::*;
+use origa::domain::User;
 use tracing::{debug, error, trace, warn};
 
 const LOGIN_PATH: &str = "/login";
@@ -32,9 +33,11 @@ pub fn setup_oauth_listener(auth_store: AuthStore, i18n: I18nContext<Locale>) {
         auth_store.oauth_error.set(None);
         spawn_local(async move {
             debug!(url = %url, "processing oauth url");
+            auth_store.is_oauth_loading.set(true);
             let result = process_oauth_url(&url, &auth_store, &i18n).await;
             debug!(result = ?result, "process_oauth_url result");
             handle_oauth_result(result, &auth_store);
+            auth_store.is_oauth_loading.set(false);
         });
     });
 
@@ -64,20 +67,18 @@ async fn process_oauth_url(
     url: &str,
     auth_store: &AuthStore,
     i18n: &I18nContext<Locale>,
-) -> Result<(), String> {
+) -> Result<User, String> {
     let parsed = url::Url::parse(url);
     trace!(parsed = ?parsed, "URL parse result");
 
     if parsed.is_ok_and(|u| u.query_pairs().any(|(k, _)| k == "code")) {
         debug!("URL has 'code' param, calling handle_oauth_callback_desktop");
-        handle_oauth_callback_desktop(url, auth_store, i18n).await?;
-        return Ok(());
+        return handle_oauth_callback_desktop(url, auth_store, i18n).await;
     }
 
     if let Some(fragment) = url.split('#').nth(1) {
         debug!(fragment = %fragment, "URL has fragment, calling handle_oauth_callback");
-        handle_oauth_callback(fragment, auth_store, i18n).await?;
-        return Ok(());
+        return handle_oauth_callback(fragment, auth_store, i18n).await;
     }
 
     error!(url = %url, "URL has no 'code' param and no fragment");
@@ -89,14 +90,17 @@ async fn process_oauth_url(
         .to_string())
 }
 
-fn handle_oauth_result(result: Result<(), String>, auth_store: &AuthStore) {
-    if let Err(e) = result {
-        error!(error = %e, "OAuth callback error");
-        auth_store.oauth_error.set(Some(e));
-        return;
+fn handle_oauth_result(result: Result<User, String>, auth_store: &AuthStore) {
+    match result {
+        Ok(user) => {
+            debug!(user_id = %user.id(), "OAuth success — updating user signal");
+            auth_store.user.set(Some(user));
+        },
+        Err(e) => {
+            error!(error = %e, "OAuth callback error");
+            auth_store.oauth_error.set(Some(e));
+        },
     }
-
-    debug!("OAuth success — navigation to /home handled by App() Effect");
 }
 
 fn register_tauri_listener(callback: Closure<dyn Fn(JsValue)>) {
@@ -157,9 +161,11 @@ fn check_pending_deep_link(auth_store: AuthStore, i18n: I18nContext<Locale>) {
         let i18n = i18n_clone;
         auth_store.oauth_error.set(None);
         spawn_local(async move {
+            auth_store.is_oauth_loading.set(true);
             let result = process_oauth_url(&url, &auth_store, &i18n).await;
             debug!(result = ?result, "pending deep-link process result");
             handle_oauth_result(result, &auth_store);
+            auth_store.is_oauth_loading.set(false);
         });
     });
 
