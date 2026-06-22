@@ -20,25 +20,25 @@ pub fn DailyLoadSelector(
                     let is_selected = move || selected_load.get() == load;
                     let load_for_click = load;
                     let load_id = format!("{:?}", load).to_lowercase();
-                    let label = match load {
+                    let label = Signal::derive(move || match load {
                         DailyLoad::Minimal => i18n.get_keys().shared().load_minimal().inner().to_string(),
                         DailyLoad::Light => i18n.get_keys().shared().load_light().inner().to_string(),
                         DailyLoad::Medium => i18n.get_keys().shared().load_medium().inner().to_string(),
                         DailyLoad::Hard => i18n.get_keys().shared().load_hard().inner().to_string(),
                         DailyLoad::Heavy => i18n.get_keys().shared().load_heavy().inner().to_string(),
                         DailyLoad::Maximum => i18n.get_keys().shared().load_maximum().inner().to_string(),
-                    };
-                    let description = match load {
+                    });
+                    let description = Signal::derive(move || match load {
                         DailyLoad::Minimal => i18n.get_keys().shared().load_minimal_desc().inner().to_string(),
                         DailyLoad::Light => i18n.get_keys().shared().load_light_desc().inner().to_string(),
                         DailyLoad::Medium => i18n.get_keys().shared().load_medium_desc().inner().to_string(),
                         DailyLoad::Hard => i18n.get_keys().shared().load_hard_desc().inner().to_string(),
                         DailyLoad::Heavy => i18n.get_keys().shared().load_heavy_desc().inner().to_string(),
                         DailyLoad::Maximum => i18n.get_keys().shared().load_maximum_desc().inner().to_string(),
-                    };
+                    });
 
                     view! {
-                        <Tooltip text=Signal::derive(move || description.clone())>
+                        <Tooltip text=description>
                             <Button
                                 variant=move || if is_selected() { ButtonVariant::Olive } else { ButtonVariant::Default }
                                 on_click=Callback::new(move |_| {
