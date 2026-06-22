@@ -33,7 +33,7 @@ pub(crate) const DEFAULT_LANDING: &str = "https://origa.uwuwu.net";
 /// (verified by `build_csp_with_production_defaults_matches_committed_tauri_conf`).
 pub(crate) fn build_csp(cdn: &str, landing: &str, trailbase: &str) -> String {
     format!(
-        "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' {cdn} {landing} {trailbase} https://huggingface.co; img-src 'self' data: blob: {cdn}; media-src 'self' blob: {cdn}; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; form-action 'self' https://accounts.google.com https://oauth.yandex.ru; frame-ancestors 'none'"
+        "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' ipc: http://ipc.localhost {cdn} {landing} {trailbase} https://huggingface.co; img-src 'self' data: blob: {cdn}; media-src 'self' blob: {cdn}; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; form-action 'self' https://accounts.google.com https://oauth.yandex.ru; frame-ancestors 'none'"
     )
 }
 
