@@ -1,4 +1,3 @@
-use http::StatusCode;
 use leptos::prelude::*;
 
 use crate::content::Locale;
@@ -17,6 +16,8 @@ use crate::content::Locale;
 pub fn NotFound() -> impl IntoView {
     #[cfg(feature = "ssr")]
     {
+        use http::StatusCode;
+
         if let Some(response) = use_context::<leptos_axum::ResponseOptions>() {
             response.set_status(StatusCode::NOT_FOUND);
         }
