@@ -2,6 +2,15 @@ use crate::domain::OrigaError;
 use serde::{Deserialize, Serialize};
 use std::{fmt, str::FromStr};
 
+// Vocabulary answers carry an unbounded number of source-language translations
+// in the raw dictionary (EN has up to 62 senses for some entries, vs. RU's
+// natural cap of 7). Showing all of them on a card hurts review pacing and
+// matches no peer app's UX. The cap is enforced at the CardAnswer boundary so
+// every rendering path benefits. Source order is preserved — the dictionary
+// already lists senses roughly by frequency, so the first 7 are the most
+// useful. See #178 W-9.
+const MAX_VOCABULARY_TRANSLATIONS: usize = 7;
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Question {
     text: String,
@@ -50,7 +59,7 @@ impl CardAnswer {
         translations: Vec<String>,
         description: Option<String>,
     ) -> Result<Self, OrigaError> {
-        let non_empty: Vec<String> = translations
+        let mut non_empty: Vec<String> = translations
             .into_iter()
             .map(|t| t.trim().to_string())
             .filter(|t| !t.is_empty())
@@ -60,6 +69,11 @@ impl CardAnswer {
                 reason: "Vocabulary answer must have at least one translation".to_string(),
             });
         }
+        // Cap to MAX_VOCABULARY_TRANSLATIONS after filtering, preserving the
+        // leading (highest-priority) senses. `truncate` is a no-op when the
+        // vec is already at or below the cap, so RU answers (which never
+        // exceed 7) are unaffected.
+        non_empty.truncate(MAX_VOCABULARY_TRANSLATIONS);
         let desc = description.and_then(|d| {
             let trimmed = d.trim().to_string();
             if trimmed.is_empty() {
@@ -351,6 +365,60 @@ mod tests {
     fn card_answer_vocabulary_filters_empty_translations() {
         let result = CardAnswer::vocabulary(vec!["".to_string(), "  ".to_string()], None);
         assert!(matches!(result, Err(OrigaError::InvalidAnswer { .. })));
+    }
+
+    #[test]
+    fn card_answer_vocabulary_caps_to_max_seven_translations() {
+        // 12 input translations, only the first 7 must survive.
+        let input: Vec<String> = (1..=12)
+            .map(|i| format!("sense{i}"))
+            .collect();
+        let answer = CardAnswer::vocabulary(input.clone(), None).unwrap();
+        assert_eq!(
+            answer.translations(),
+            &input[..7],
+            "translations must be capped to the first 7 entries"
+        );
+    }
+
+    #[test]
+    fn card_answer_vocabulary_caps_after_filtering_empties() {
+        // Empty strings are filtered first; the cap then applies to the
+        // remaining non-empty senses. This guards the filter-then-truncate
+        // ordering: filtering 5 empties out of 12 leaves 7, which fits.
+        let input: Vec<String> = vec![
+            "".to_string(),
+            "  ".to_string(),
+            "sense1".to_string(),
+            "sense2".to_string(),
+            "".to_string(),
+            "sense3".to_string(),
+            "sense4".to_string(),
+            "sense5".to_string(),
+            "".to_string(),
+            "sense6".to_string(),
+            "sense7".to_string(),
+            "sense8".to_string(),
+            "".to_string(),
+        ];
+        let answer = CardAnswer::vocabulary(input, None).unwrap();
+        assert_eq!(
+            answer.translations(),
+            &[
+                "sense1", "sense2", "sense3", "sense4", "sense5", "sense6", "sense7",
+            ][..]
+        );
+    }
+
+    #[test]
+    fn card_answer_vocabulary_short_lists_are_not_extended_or_truncated() {
+        // Lists at or below the cap must round-trip unchanged.
+        let one = CardAnswer::vocabulary(vec!["only".to_string()], None).unwrap();
+        assert_eq!(one.translations(), &["only".to_string()][..]);
+
+        let seven: Vec<String> = (1..=7).map(|i| format!("sense{i}")).collect();
+        let seven_answer = CardAnswer::vocabulary(seven.clone(), None).unwrap();
+        assert_eq!(seven_answer.translations(), &seven[..]);
     }
 
     #[test]
