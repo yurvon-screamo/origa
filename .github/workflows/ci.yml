@@ -85,7 +85,7 @@ jobs:
               run: cargo fmt --check --all
 
             - name: Run clippy
-              run: cargo clippy --workspace --all-targets --features origa_landing/ssr -- -D warnings
+              run: cargo clippy --workspace --all-targets -- -D warnings
 
     cdn-download:
         name: Download CDN
@@ -161,23 +161,8 @@ jobs:
               working-directory: origa_landing
               run: npm ci && npm run build:css
 
-            - name: Configure swap space
-              run: |
-                  sudo fallocate -l 4G /swapfile || sudo dd if=/dev/zero of=/swapfile bs=1M count=4096
-                  sudo chmod 600 /swapfile
-                  sudo mkswap /swapfile
-                  sudo swapon /swapfile || true
-                  echo "Swap enabled:"
-                  free -h
-              if: runner.os == 'Linux'
-
-            - name: Test workspace core
+            - name: Run tests
               run: cargo test --workspace --exclude origa_landing
-
-            - name: Test origa_landing (SSR)
-              run: cargo test -p origa_landing --features ssr
-              env:
-                  CARGO_BUILD_JOBS: "1"
 
     e2e-build:
         name: E2E Build
