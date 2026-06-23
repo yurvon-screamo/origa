@@ -4,6 +4,26 @@ const PADDING: u32 = 32;
 const POINT_RADIUS: u32 = 4;
 const MAX_X_LABELS: usize = 6;
 
+/// Pick the indices of X-axis labels to render so they never crowd.
+/// When `count <= max_labels` every index is kept; otherwise every
+/// `ceil(count / max_labels)`-th index is shown (0, step, 2*step, ...).
+/// The last index is always appended when missing so the most recent
+/// data point stays labeled.
+pub(crate) fn select_label_indices(count: usize, max_labels: usize) -> Vec<usize> {
+    if count == 0 || max_labels == 0 {
+        return Vec::new();
+    }
+    if count <= max_labels {
+        return (0..count).collect();
+    }
+    let step = ((count as f64) / (max_labels as f64)).ceil() as usize;
+    let mut indices: Vec<usize> = (0..count).step_by(step.max(1)).collect();
+    if indices.last() != Some(&(count - 1)) {
+        indices.push(count - 1);
+    }
+    indices
+}
+
 #[component]
 pub fn LineChart(
     #[prop(into)] data: Signal<Vec<(String, f64)>>,
@@ -82,24 +102,11 @@ pub fn LineChart(
 
         let step_x = chart_width as f64 / (items.len() - 1) as f64;
 
-        let all_labels: Vec<(f64, String)> = items
-            .iter()
-            .enumerate()
-            .map(|(i, (label, _))| {
-                let x = PADDING as f64 + i as f64 * step_x;
-                (x, label.clone())
-            })
-            .collect();
-
-        if all_labels.len() <= MAX_X_LABELS {
-            return all_labels;
-        }
-
-        let step = (all_labels.len() - 1) as f64 / (MAX_X_LABELS - 1) as f64;
-        (0..MAX_X_LABELS)
+        select_label_indices(items.len(), MAX_X_LABELS)
+            .into_iter()
             .map(|i| {
-                let idx = (i as f64 * step).round() as usize;
-                all_labels[idx].clone()
+                let x = PADDING as f64 + i as f64 * step_x;
+                (x, items[i].0.clone())
             })
             .collect()
     };
@@ -209,9 +216,10 @@ pub fn LineChart(
                         <text
                             x=x
                             y=height - PADDING + 14
-                            text_anchor="middle"
+                            text_anchor="end"
                             fill="var(--fg-muted)"
                             font_size="7"
+                            transform=format!("rotate(-45 {:.1} {})", x, height - PADDING + 14)
                         >
                             {label}
                         </text>
@@ -267,5 +275,43 @@ pub fn LineChart(
                 />
             </Show>
         </svg>
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn select_label_indices_empty() {
+        assert!(select_label_indices(0, 6).is_empty());
+    }
+
+    #[test]
+    fn select_label_indices_all_when_under_max() {
+        assert_eq!(select_label_indices(4, 6), vec![0, 1, 2, 3]);
+    }
+
+    #[test]
+    fn select_label_indices_thins_twenty_to_ten_plus_last() {
+        // step = ceil(20/10) = 2 → [0,2,...,18], then append last (19)
+        assert_eq!(
+            select_label_indices(20, 10),
+            vec![0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 19],
+        );
+    }
+
+    #[test]
+    fn select_label_indices_always_includes_last() {
+        let indices = select_label_indices(50, 6);
+        assert_eq!(indices.last(), Some(&49));
+        assert!(indices.len() <= 7);
+    }
+
+    #[test]
+    fn select_label_indices_starts_at_zero() {
+        let indices = select_label_indices(50, 6);
+        assert_eq!(indices.first(), Some(&0));
+        assert!(indices.len() <= 7);
     }
 }

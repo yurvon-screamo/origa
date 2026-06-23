@@ -27,7 +27,12 @@ fn render_markdown(content: &str) -> String {
     clean(&html_output)
 }
 
-const SKIP_TAGS: &[&str] = &["pre", "ruby", "rt", "rp"];
+// Furigana is intentionally skipped inside existing ruby markup to avoid
+// nested <ruby> elements. Code-fence (<pre><code>) content is NOT skipped:
+// every grammar-rule "examples" block is rendered as a code fence (see
+// cdn/grammar/rules/*.json) and contains Japanese-language content that
+// needs furigana — verified by audit (3253/3253 code blocks contain kana/kanji).
+const SKIP_TAGS: &[&str] = &["ruby", "rt", "rp"];
 
 fn add_furigana_to_html(html: &str, known_kanji: &HashSet<char>) -> String {
     let document = Html::parse_document(html);
@@ -215,11 +220,28 @@ mod tests {
     }
 
     #[test]
-    fn test_add_furigana_skips_pre_tag() {
-        let html = "<pre>test</pre>";
-        let known_kanji = HashSet::new();
-        let output = add_furigana_to_html(html, &known_kanji);
-        assert!(output.contains("<pre>test</pre>"));
+    fn test_pre_tag_not_skipped_for_furigana() {
+        // Regression for issue #178 W-12: grammar-rule example blocks are
+        // rendered as <pre><code>...</code></pre> by pulldown-cmark when the
+        // source uses ``` ``` ``` fences. All 3253 example blocks across 332
+        // grammar rule files contain Japanese language content (audit-verified)
+        // and need furigana. Keeping <pre> out of SKIP_TAGS lets the text-node
+        // walker apply ruby markup to these example blocks.
+        //
+        // Note on test scope: a full behavioral test that asserts ruby markup
+        // appears inside <pre> requires the lindera dictionary to be loaded,
+        // which is not available in `origa_ui` unit tests. The behavioral
+        // verification lives in `origa/src/domain/furigana.rs` integration
+        // tests (e.g. `furigana_text_unknown_kanji_gets_reading`) which run
+        // with the real CDN dictionary. This const-membership test guards
+        // the regression path that would re-introduce `<pre>` to SKIP_TAGS.
+        assert!(
+            !SKIP_TAGS.contains(&"pre"),
+            "pre must not be skipped: furigana is needed inside grammar example code-fences"
+        );
+        assert!(SKIP_TAGS.contains(&"ruby"));
+        assert!(SKIP_TAGS.contains(&"rt"));
+        assert!(SKIP_TAGS.contains(&"rp"));
     }
 
     #[test]

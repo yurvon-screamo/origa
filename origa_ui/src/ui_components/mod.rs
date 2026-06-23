@@ -80,7 +80,6 @@ pub use error_alert::ErrorAlert;
 pub use favorite_button::FavoriteButton;
 pub use fsrs_metrics::{FsrsMetrics, FsrsMetricsMode};
 pub use furigana::FuriganaText;
-pub use furigana_hover::FuriganaTextWithHover;
 pub use history_button::HistoryButton;
 pub use input::Input;
 pub use kanji_animation::{KanjiViewMode, KanjiWritingSection};
@@ -96,7 +95,8 @@ pub use multi_line_chart::{ChartLine, MultiLineChart};
 #[expect(unused_imports, reason = "prepared for future navigation")]
 pub use nav_config::NavRoute;
 pub use ocr_loading_stage::{
-    LoadingStageItem, OcrLoadingStage, OcrLoadingState, ProgressInfo, StageType, get_stage_info,
+    LoadingStageItem, OcrLoadingStage, OcrLoadingState, OcrPhase, ProgressInfo, StageType,
+    get_stage_info, stage_phase,
 };
 pub use offline_bundle_card::OfflineBundleCard;
 pub use page_header::PageHeader;

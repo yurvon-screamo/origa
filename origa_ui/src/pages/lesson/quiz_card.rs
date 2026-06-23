@@ -1,8 +1,7 @@
 use crate::i18n::*;
 use crate::ui_components::{
-    Card, DisplayText, FuriganaTextWithHover, Heading, HeadingLevel, KanjiViewMode,
-    KanjiWritingSection, Text, TextSize, TypographyVariant, is_speech_supported, speak_word,
-    stop_current_audio,
+    Card, DisplayText, FuriganaText, Heading, HeadingLevel, KanjiViewMode, KanjiWritingSection,
+    Text, TextSize, TypographyVariant, is_speech_supported, speak_word, stop_current_audio,
 };
 use leptos::prelude::*;
 use origa::domain::{Card as DomainCard, MultiQuizResult, NativeLanguage, QuizCard, QuizMode};
@@ -16,6 +15,74 @@ use super::quiz_options::QuizOptions;
 use super::quiz_options_multi::QuizOptionsMulti;
 use super::quiz_result::QuizResult;
 use super::quiz_result_display::QuizResultDisplay;
+
+pub(crate) fn should_show_answer_display(result: QuizResult, card_type: CardType) -> bool {
+    if card_type == CardType::Phrase {
+        return true;
+    }
+    !matches!(result, QuizResult::Correct | QuizResult::MultiCorrect)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn hides_answer_display_on_correct_for_non_phrase_cards() {
+        assert!(!should_show_answer_display(
+            QuizResult::Correct,
+            CardType::Vocabulary
+        ));
+        assert!(!should_show_answer_display(
+            QuizResult::Correct,
+            CardType::Grammar
+        ));
+        assert!(!should_show_answer_display(
+            QuizResult::Correct,
+            CardType::Kanji
+        ));
+    }
+
+    #[test]
+    fn hides_answer_display_on_multi_correct_for_non_phrase_cards() {
+        assert!(!should_show_answer_display(
+            QuizResult::MultiCorrect,
+            CardType::Vocabulary
+        ));
+    }
+
+    #[test]
+    fn shows_answer_display_on_incorrect_for_non_phrase_cards() {
+        assert!(should_show_answer_display(
+            QuizResult::Incorrect,
+            CardType::Vocabulary
+        ));
+        assert!(should_show_answer_display(
+            QuizResult::MultiPartial,
+            CardType::Grammar
+        ));
+        assert!(should_show_answer_display(
+            QuizResult::DontKnow,
+            CardType::Kanji
+        ));
+    }
+
+    #[test]
+    fn always_shows_answer_display_for_phrase_cards_regardless_of_result() {
+        assert!(should_show_answer_display(
+            QuizResult::Correct,
+            CardType::Phrase
+        ));
+        assert!(should_show_answer_display(
+            QuizResult::MultiCorrect,
+            CardType::Phrase
+        ));
+        assert!(should_show_answer_display(
+            QuizResult::Incorrect,
+            CardType::Phrase
+        ));
+    }
+}
 
 #[derive(Clone, Copy, Default, PartialEq)]
 pub enum QuizVariant {
@@ -148,7 +215,7 @@ pub fn QuizCardView(
                     <Show when=move || kanji_for_animation.get_value().is_none()>
                         <div class="mb-4">
                             <Heading level=HeadingLevel::H2>
-                                <FuriganaTextWithHover text=display_question.get_value() known_kanji=known_kanji.get() native_language=native_language/>
+                                <FuriganaText text=display_question.get_value() known_kanji=known_kanji.get() native_language=native_language with_kanji_tooltip=true/>
                             </Heading>
                         </div>
                     </Show>
@@ -236,7 +303,7 @@ pub fn QuizCardView(
                     </Show>
                 </Show>
 
-                <Show when=move || show_result>
+                <Show when=move || show_result && should_show_answer_display(quiz_result(), card_type)>
                     <CardAnswerDisplay
                         translations=Signal::derive(move || answer_vocab_translations_stored.get_value())
                         description=Signal::derive(move || answer_vocab_description_stored.get_value())

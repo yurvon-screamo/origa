@@ -2,8 +2,8 @@ use super::grammar_details_expand::GrammarDetailsExpand;
 use super::kanji_card_details::{KanjiCardDetails, RadicalDisplay};
 use crate::i18n::*;
 use crate::ui_components::{
-    Button, ButtonVariant, FuriganaTextWithHover, Heading, HeadingLevel, MarkdownText,
-    MarkdownVariant, Text, TextSize, TranslatorText, TypographyVariant, WordTranslations,
+    Button, ButtonVariant, FuriganaText, Heading, HeadingLevel, MarkdownText, MarkdownVariant,
+    Text, TextSize, TranslatorText, TypographyVariant, WordTranslations,
 };
 use leptos::{ev::MouseEvent, prelude::*};
 use origa::domain::{GrammarInfo, NativeLanguage};
@@ -59,10 +59,11 @@ pub fn LessonCardAnswer(
                                         }.into_any()
                                     } else {
                                         view! {
-                                            <FuriganaTextWithHover
+                                            <FuriganaText
                                                 text=question.get_value()
                                                 known_kanji=known_kanji.get()
                                                 native_language=native_language
+                                                with_kanji_tooltip=true
                                                 class=Signal::derive(|| "text-3xl leading-snug".to_string())
                                             />
                                         }.into_any()
@@ -162,6 +163,7 @@ pub fn LessonCardAnswer(
                             on_readings=on_readings_stored.get_value()
                             kun_readings=kun_readings_stored.get_value()
                             known_kanji=known_kanji
+                            native_language=native_language
                         />
                     </Show>
                 </div>

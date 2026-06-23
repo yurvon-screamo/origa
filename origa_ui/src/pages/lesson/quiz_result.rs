@@ -1,5 +1,7 @@
 use origa::domain::MultiQuizResult;
 
+use super::yesno_card_view::YesNoResult;
+
 #[derive(Clone, Copy, PartialEq, Default, Debug)]
 pub enum QuizResult {
     #[default]
@@ -80,6 +82,17 @@ impl QuizResult {
             QuizResult::MultiCorrect
         } else {
             QuizResult::MultiPartial
+        }
+    }
+}
+
+impl From<YesNoResult> for QuizResult {
+    fn from(value: YesNoResult) -> Self {
+        match value {
+            YesNoResult::None => QuizResult::None,
+            YesNoResult::Correct => QuizResult::Correct,
+            YesNoResult::Incorrect => QuizResult::Incorrect,
+            YesNoResult::DontKnow => QuizResult::DontKnow,
         }
     }
 }

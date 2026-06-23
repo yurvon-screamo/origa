@@ -9,12 +9,16 @@ pub fn create_toggle_favorite_callback(
     repository: HybridUserRepository,
     current_user: RwSignal<Option<User>>,
     refresh_trigger: RwSignal<u32>,
-) -> Callback<Ulid> {
-    Callback::new(move |card_id: Ulid| {
+) -> (Callback<Ulid>, RwSignal<bool>) {
+    let is_pending = RwSignal::new(false);
+    let callback = Callback::new(move |card_id: Ulid| {
         let repository = repository.clone();
+        let pending = is_pending;
         spawn_local(async move {
+            pending.set(true);
             let use_case = ToggleFavoriteUseCase::new(&repository);
-            if use_case.execute(card_id).await.is_ok() {
+            let result = use_case.execute(card_id).await;
+            if result.is_ok() {
                 current_user.update(|u| {
                     if let Some(user) = u {
                         let _ = user.toggle_favorite(card_id);
@@ -22,6 +26,8 @@ pub fn create_toggle_favorite_callback(
                 });
                 refresh_trigger.update(|v| *v += 1);
             }
+            pending.set(false);
         });
-    })
+    });
+    (callback, is_pending)
 }

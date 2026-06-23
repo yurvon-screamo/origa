@@ -246,6 +246,55 @@ pub fn index_version() -> (u32, String) {
         .unwrap_or((0, String::new()))
 }
 
+const STRAIGHT_DOUBLE_QUOTE: char = '"';
+const STRAIGHT_SINGLE_QUOTE: char = '\'';
+
+/// Strip a single outer pair of wrapping quote characters from a translation
+/// string, leaving any inner quotes intact.
+///
+/// Context (#178 P-5): ~12k phrase translations across the dataset are wrapped
+/// in an outer pair of straight `"..."` (or, far less often, straight `'...'`).
+/// These wrappers are an extraction artifact — the source MT pipeline quoted
+/// every translation. Wrappers obscure matches and break card rendering, so we
+/// normalize at the load boundary (here) instead of mutating the underlying
+/// CDN chunks (which remain byte-stable for hash/version purposes).
+///
+/// Curly quotes, guillemets (`«...»`), and Japanese corner brackets are
+/// intentionally NOT stripped — they are legitimate inline quoting conventions
+/// that may appear in dialogue-heavy content.
+///
+/// Examples:
+///   `"нечто"`              → `нечто`
+///   `'нечто'`              → `нечто`
+///   `"нечто" и "ещё"`      → `нечто" и "ещё`  (only the outer pair is removed)
+///   `«диалог»`             → `«диалог»`        (guillemets preserved)
+///   `нечто`                → `нечто`
+///   `"`                    → `"`               (too short to be a pair)
+fn normalize_translation(raw: &str) -> String {
+    let trimmed = raw.trim();
+    let mut chars = trimmed.chars();
+    let Some(first) = chars.next() else {
+        return trimmed.to_string();
+    };
+    let last = trimmed.chars().last();
+
+    let is_straight_pair = matches!(first, STRAIGHT_DOUBLE_QUOTE | STRAIGHT_SINGLE_QUOTE)
+        && last == Some(first)
+        && trimmed.len() > first.len_utf8();
+
+    if !is_straight_pair {
+        return trimmed.to_string();
+    }
+
+    let last_len = last.map(|c| c.len_utf8()).unwrap_or(0);
+    let inner_end = trimmed.len().saturating_sub(last_len);
+    let inner_start = first.len_utf8();
+    if inner_end < inner_start {
+        return trimmed.to_string();
+    }
+    trimmed[inner_start..inner_end].to_string()
+}
+
 pub fn cache_phrase_details(chunk_id: u32, json: &str) -> Result<(), OrigaError> {
     let raw_list: Vec<DetailRaw> =
         serde_json::from_str(json).map_err(|e| OrigaError::PhraseParseError {
@@ -257,8 +306,8 @@ pub fn cache_phrase_details(chunk_id: u32, json: &str) -> Result<(), OrigaError>
         .map(|r| PhraseDetail {
             id: r.id,
             text: r.text,
-            translation_ru: r.translation_ru,
-            translation_en: r.translation_en,
+            translation_ru: r.translation_ru.map(|s| normalize_translation(&s)),
+            translation_en: r.translation_en.map(|s| normalize_translation(&s)),
         })
         .collect();
 
@@ -441,5 +490,59 @@ mod tests {
         let entry = index.get_entry(&id).expect("entry should exist");
         let rules = entry.grammar_rules();
         assert_eq!(rules.len(), 2);
+    }
+
+    #[test]
+    fn normalize_translation_strips_straight_double_quotes() {
+        assert_eq!(normalize_translation("\"нечто\""), "нечто");
+    }
+
+    #[test]
+    fn normalize_translation_strips_straight_single_quotes() {
+        assert_eq!(normalize_translation("'нечто'"), "нечто");
+    }
+
+    #[test]
+    fn normalize_translation_strips_only_outer_pair_preserving_inner() {
+        // Input JSON-decoded: "нечто" и "ещё" (outer pair + two inner pairs)
+        let input = "\"нечто\" и \"ещё\"";
+        assert_eq!(normalize_translation(input), "нечто\" и \"ещё");
+    }
+
+    #[test]
+    fn normalize_translation_preserves_guillemets() {
+        assert_eq!(normalize_translation("«диалог»"), "«диалог»");
+    }
+
+    #[test]
+    fn normalize_translation_preserves_curly_quotes() {
+        assert_eq!(
+            normalize_translation("\u{201C}диалог\u{201D}"),
+            "\u{201C}диалог\u{201D}"
+        );
+    }
+
+    #[test]
+    fn normalize_translation_passes_through_unquoted() {
+        assert_eq!(normalize_translation("привет мир"), "привет мир");
+    }
+
+    #[test]
+    fn normalize_translation_trims_surrounding_whitespace() {
+        assert_eq!(normalize_translation("  \"нечто\"  "), "нечто");
+    }
+
+    #[test]
+    fn normalize_translation_handles_too_short_input() {
+        assert_eq!(normalize_translation("\""), "\"");
+        assert_eq!(normalize_translation("''"), "");
+        assert_eq!(normalize_translation(""), "");
+    }
+
+    #[test]
+    fn normalize_translation_unbalanced_inner_left_alone() {
+        // Only an opening quote, no closing — not a wrapping pair, keep as-is.
+        assert_eq!(normalize_translation("\"нечто"), "\"нечто");
+        assert_eq!(normalize_translation("нечто\""), "нечто\"");
     }
 }

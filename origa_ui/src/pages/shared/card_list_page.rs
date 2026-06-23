@@ -100,10 +100,11 @@ pub fn create_card_list_context(
             .unwrap_or_default()
     });
 
-    let on_toggle_favorite =
+    let (on_toggle_favorite, _favorite_pending) =
         create_toggle_favorite_callback(repository.clone(), current_user, refresh_trigger);
 
-    let on_mark_as_known = create_mark_as_known_callback(repository.clone(), refresh_trigger);
+    let (on_mark_as_known, _mark_known_pending) =
+        create_mark_as_known_callback(repository.clone(), refresh_trigger);
 
     let toasts: RwSignal<Vec<ToastData>> = RwSignal::new(Vec::new());
     let (is_deleting, on_delete) =

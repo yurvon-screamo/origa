@@ -186,7 +186,20 @@ pub fn WritingCard(
                         on_readings=on_readings_sv.get_value()
                         kun_readings=kun_readings_sv.get_value()
                         known_kanji=known_kanji
+                        native_language=native_language
                     />
+
+                    <div class="flex justify-center mt-4">
+                        <button
+                            type="button"
+                            class="btn btn-ghost text-xs"
+                            on:click=move |_: leptos::ev::MouseEvent| {
+                                show_details.set(false);
+                            }
+                        >
+                            {t!(i18n, lesson.writing_try_again)}
+                        </button>
+                    </div>
 
                     <RatingButtonsView on_rate=on_rate_sv.get_value() disabled=disabled_sv.get_value() />
                 </Show>

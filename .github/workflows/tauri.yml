@@ -206,7 +206,21 @@ jobs:
             - name: Prepare release assets
               run: |
                   mkdir -p release_assets
-                  find artifacts -type f -exec mv {} release_assets/ \;
+                  # Keep only installable bundles + the updater manifest.
+                  # Intermediate artifacts (frontend-dist WASM, *.sig updater
+                  # signatures already embedded into latest.json by the
+                  # generate-latest-json job) are intentionally excluded so the
+                  # release stays small and uncluttered.
+                  find artifacts -type f \( \
+                      -name '*-setup.exe' -o \
+                      -name '*.msi' -o \
+                      -name '*.AppImage' -o \
+                      -name '*.deb' -o \
+                      -name '*.dmg' -o \
+                      -name 'Origa-macos-arm64.zip' -o \
+                      -name '*.apk' -o \
+                      -name 'latest.json' \
+                  \) -exec cp -n {} release_assets/ \;
                   echo "Release assets content:"
                   ls -la release_assets/
 

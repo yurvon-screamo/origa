@@ -1,0 +1,309 @@
+# CDN Handoff — Issue #178 (Phase 2 + Phase 4 + Phase 5)
+
+This document lists every CDN file changed during issues #178 Phase 2, Phase 4
+and Phase 5 and the exact deployment steps the operator must run. The `cdn/`
+directory is gitignored (see `.gitignore:83`), so changes are not visible in
+git — only the local working copy on the engineer's machine differs from
+production.
+
+Run all commands from the repo root (`D:\origa_worktree\origa`).
+
+## Pre-flight: verify local state
+
+```powershell
+# Sanity-check that the regenerated phrase_index hash matches the algorithm
+python scripts/remove_invalid_phrases.py --verify-hash --phrases cdn/phrases
+# Expected: "RESULT: hash matches compute_hash(phrases) (OK)" and v=15 total=156231
+```
+
+## ⚠️ Deployment ordering — read before pushing test commits
+
+The audit test `origa/tests/well_known_sets_audit.rs` reads the corrected CDN
+files locally and asserts the post-fix state. CI (`ci.yml`) seeds `cdn/` from
+production S3 before running `cargo test --workspace`. If you push the test
+commits before deploying, CI will fetch the OLD CDN content and the audit
+will fail — turning master RED and blocking every PR.
+
+> **Update (post-issue):** `kanji_descriptions_audit.rs` and
+> `grammar_content_audit.rs` were removed by user decision — they coupled the
+> test suite to CDN deploy state (hardcoded expected values read from CDN
+> JSON, so CI would go RED whenever a deploy was out of sync).
+> `well_known_sets_audit.rs` is retained because it caught the `build.rs`
+> JLPT-levels root cause (S-3) and reads only the build-generated meta file.
+
+**Required order:**
+
+1. Deploy CDN first (recipe below) — S3 now carries the corrected data.
+2. Push the test commits — CI fetches the updated S3 content, the audit passes.
+
+The audit does **gracefully skip** on environments where `cdn/` is entirely
+absent (fresh clones without S3 seeding), matching the canonical pattern in
+`origa/tests/grammar_regression_checks.rs`. It only fails when `cdn/` is
+present but carries the pre-fix content.
+
+## Changed CDN files
+
+| File | Slice | Change summary |
+| --- | --- | --- |
+| `cdn/dictionary/kanji.json` | W-10 | 21 polysemic kanji description_ru/description_en corrected |
+| `cdn/grammar/grammar.json` | W-11 | 10 rules cleaned (19 Hangul fragments removed) |
+| `cdn/grammar/rules/n4_legacy_fixes/rule_32_toki_joshi.json` | W-11 | 1 rule cleaned (Hangul `공부` → `勉強`) |
+| `cdn/grammar/rules/n5_legacy_fixes/rule_07_tsumori_desu.json` | W-11 | 1 rule cleaned (Hangul `있습니다` → `あります`) |
+| `cdn/grammar/rules/n5_legacy_fixes/rule_18_ka.json` | W-11 | 1 rule cleaned (Hangul `인가` → `か`) |
+| `cdn/grammar/rules/n5_legacy_fixes/rule_23_past_noun_na_adj.json` | W-11 | 1 rule cleaned (Hangul `사람` → `人`) |
+| `cdn/phrases/data/p*.json` | P-3 | 518 profanity phrases removed across 198 chunk files |
+| `cdn/phrases/data/p0134.json` | P-7 | 1 phrase translation corrected (id `0000000000NTQET51VCTVJAB4Q`) |
+| `cdn/phrases/audio/*.opus` | P-3 | 518 audio files removed (matched the deleted phrases) |
+| `cdn/phrases/phrase_index.json` | P-3 | v14 → v15; 156749 → 156231 entries; `h` recomputed |
+| `cdn/well_known_set/well_known_sets_meta.json` | S-3 | 384 set levels remapped; **now generated correctly by `origa_ui/build.rs`** (see S-3 root cause fix below) |
+| `cdn/dictionary/chunk_01.json` | L-4 | 114 entries: split `;`-joined translations into separate items |
+| `cdn/dictionary/chunk_02.json` | L-4 | 133 entries: split `;`-joined translations |
+| `cdn/dictionary/chunk_03.json` | L-4 | 136 entries: split `;`-joined translations |
+| `cdn/dictionary/chunk_04.json` | L-4 | 188 entries: split `;`-joined translations |
+| `cdn/dictionary/chunk_05.json` | L-4 | 220 entries: split `;`-joined translations (incl. `意思`) |
+| `cdn/dictionary/chunk_06.json` | L-4 | 150 entries: split `;`-joined translations |
+| `cdn/dictionary/chunk_07.json` | L-4 | 141 entries: split `;`-joined translations |
+| `cdn/dictionary/chunk_08.json` | L-4 | 179 entries: split `;`-joined translations |
+| `cdn/dictionary/chunk_09.json` | L-4 | 138 entries: split `;`-joined translations |
+| `cdn/dictionary/chunk_10.json` | L-4 | 64 entries: split `;`-joined translations |
+| `cdn/dictionary/chunk_11.json` | L-4 | 141 entries: split `;`-joined translations |
+| `cdn/phrases/data/p0035.json` | D-1 | 1 phrase: restored kanji しかたねー → 仕方ねー |
+| `cdn/phrases/data/p0073.json` | D-1 | 1 phrase: restored kanji しかたねー → 仕方ねー |
+| `cdn/phrases/data/p0077.json` | D-1 | 1 phrase: restored kanji しかたねー → 仕方ねー |
+| `cdn/phrases/data/p0082.json` | D-1 | 1 phrase: restored kanji しかたねー → 仕方ねー |
+| `cdn/phrases/data/p0111.json` | D-1 | 1 phrase: restored kanji しかたねー → 仕方ねー |
+| `cdn/phrases/data/p0123.json` | D-1 | 1 phrase: restored kanji しかたねぇ → 仕方ねぇ |
+| `cdn/phrases/data/p0152.json` | D-1 | 1 phrase: restored kanji しかたねー → 仕方ねー |
+| `cdn/phrases/data/p0160.json` | D-1 | 1 phrase: restored kanji しかたねー → 仕方ねー |
+| `cdn/phrases/data/p0175.json` | D-1 | 1 phrase: restored kanji しかたねー → 仕方ねー |
+
+Unchanged but tracked in `manifest.json` (auto-regenerated by `deploy_cdn.py`):
+all other `cdn/**` paths.
+
+## Backup artifacts retained locally
+
+| File | Purpose |
+| --- | --- |
+| `cdn/phrases/phrase_index.json.bak.v14` | Pre-P-3 index (156749 entries, v14 hash) for rollback |
+| `cdn/phrases/phrase_index.json.bak.v13` | Pre-existing local backup from earlier work |
+
+## Deployment
+
+```powershell
+# 1. Preview what will change against the live S3 manifest
+python scripts/deploy_cdn.py --dry-run
+
+# 2. After reviewing the dry-run output, deploy for real
+python scripts/deploy_cdn.py
+```
+
+Both commands regenerate `cdn/manifest.json` from the current local state and
+diff against the remote manifest. Phrase chunks themselves are not in the
+manifest (only `phrase_index.json` is), which is by design — the index is the
+content-addressed pointer to the chunks.
+
+The deploy script uploads each changed file with
+`Cache-Control: public, max-age=31536000, immutable`, except `manifest.json`
+itself which uses `Cache-Control: no-cache` so clients can detect the new
+version on the next poll.
+
+## Verification after deploy
+
+```powershell
+# Smoke-check the deployed manifest (will fetch from S3)
+python scripts/deploy_cdn.py --dry-run
+# Expected: "0 changed, 32 unchanged" if everything landed
+
+# In the running app, the phrase index version should bump to v=15 and the
+# client will re-fetch phrase chunks for any user-localized card that
+# referenced a deleted phrase id (handled by existing orphan-removal logic
+# in origa::use_cases::seed_ready_phrases).
+```
+
+## Rollback
+
+If anything goes wrong:
+
+```powershell
+# Restore the pre-P-3 phrase index and chunks
+cp cdn/phrases/phrase_index.json.bak.v14 cdn/phrases/phrase_index.json
+git checkout origa/  # revert any source-code changes
+python scripts/deploy_cdn.py  # redeploy the previous state
+```
+
+Note: the audio files deleted under `cdn/phrases/audio/` are not recoverable
+from git (gitignored). They can be re-extracted from the source corpus run
+that originally produced them, or restored from the S3 version history.
+
+## Related commits (in `master`)
+
+```text
+f14e5abe fix(tokenizer): assign grammar_label to grammar nouns (べき, はず, etc.) (#178 P-6, P-8)
+b10ad670 fix(phrases): harmonize sentence splitters, compact multi-line spacing (#178 P-1, P-2)
+1941bbf9 fix(dictionary): split semicolon-joined translations (#178 L-4)
+dad8d023 fix(markdown): enable furigana in grammar examples (#178 W-12)
+68dd80e4 feat(furigana): unify hover tooltips, support multi-kanji segments (#178 L-3, L-7)
+5b83de52 fix(lesson): hide correct answer when right, dedupe grammar labels (#178 L-1, L-2, L-5)
+8807514d fix(vocab): cap EN translations to top 7 by sense priority (#178 W-9)
+94e1d3bc fix(cdn): correct Duolingo/Spy set JLPT levels (N5→N3+) (#178 S-3)
+81495890 fix(cdn): remove 518 profanity phrases, regenerate phrase_index (#178 P-3)
+a3dfaf14 fix(phrases): normalize quote-wrapped translations, correct 危ない phrase (#178 P-5, P-7)
+6d35a248 fix(cdn): remove Korean text from grammar rules (#178 W-11)
+2d166275 fix(cdn): correct polysemic kanji descriptions (字 + others) (#178 W-10)
+d5a5fcc0 fix(scripts): correct phrase_index hash algorithm (sort_keys=True) (#178 pre-work)
+```
+
+## Scripts added for audit/replay
+
+| Script | Purpose |
+| --- | --- |
+| `scripts/fix_polysemic_kanji.py` | Apply W-10 kanji fixes idempotently (`--dry-run` supported) |
+| `scripts/remove_korean_from_grammar.py` | Apply W-11 Korean removal idempotently |
+| `scripts/fix_phrase_translations.py` | Apply P-7 (and future) per-phrase corrections by id |
+| `scripts/detect_profanity_phrases.py` | Re-scan phrase corpus; emits `--report` for remove script |
+| `scripts/remap_duolingo_spy_levels.py` | Apply S-3 JLPT level remapping — **DEPRECATED**, build.rs is now canonical (kept as diagnostic/fallback) |
+| `scripts/fix_dict_semicolon_translations.py` | Apply L-4: split `;`-joined vocabulary translations |
+
+All scripts are idempotent — running them twice produces zero changes on the
+second run.
+
+## Phase 4 notes
+
+### W-12 (Markdown furigana in grammar examples)
+
+ADR-8 (provisional): code-side fix chosen over data fix.
+
+- **Mini-investigation result**: all 3253 code-fence blocks across 332 grammar
+  rule files contain Japanese characters (kana/kanji). 0 blocks contain
+  literal code. Every grammar `examples` block is therefore language content.
+- **Decision**: removed `"pre"` from `SKIP_TAGS` in `origa_ui/src/ui_components/markdown.rs`.
+  The pulldown-cmark `<pre><code>...</code></pre>` rendering is preserved (the
+  monospace block visually separates examples from explanation), but the
+  furigana walker now applies ruby markup to text nodes inside `<pre>`.
+- **Why not data fix**: the runtime parser already splits the example text
+  correctly via furigana once `<pre>` is un-skipped. Removing the
+  ` ``` ` fences from 332 files would change the visual rendering for no
+  functional gain and force a CDN deploy of every grammar-rule file.
+- **No CDN changes** required for W-12.
+
+### L-4 (Dictionary semicolon-joined translations)
+
+Both logic-side and data-side fixes applied:
+
+- **Logic fix**: `origa::dictionary::vocabulary::split_semicolon_joined_translations`
+  now splits each `t[]` array entry on `;` and drops empty fragments. The
+  runtime renders clean arrays even without deploying the data fix.
+- **Data fix**: `scripts/fix_dict_semicolon_translations.py` normalizes the
+  stored form across `cdn/dictionary/chunk_*.json`. 1604 entries changed
+  (across 11 chunk files, 96684 total entries). Example: `意思` had
+  `["намерение; Воля; Цель", "смысл; Значение; Суть"]` and now carries
+  `["намерение", "Воля", "Цель", "смысл", "Значение", "Суть"]`.
+- Idempotent — re-running the script is a no-op.
+
+## Phase 5 notes
+
+### D-1 (Kanji restoration in colloquial phrases) — manual only
+
+Decision: **automatic** kanji recovery was rejected (XL complexity, homophone
+ambiguity risk). Only manual corrections of specific phrases were applied.
+
+- **Investigation**: identified 9 phrase chunks where the colloquial
+  long-vowel form `しかたねー` / `しかたねぇ` had lost its kanji `仕方`. The
+  index tokens (`t`) were already kanji-correct (`仕方`, `無い`), so only the
+  display text (`x`) was wrong.
+- **Manual fix**: replaced `しかたねー` → `仕方ねー` (and the `ねぇ` variant)
+  in 9 chunk files, preserving the colloquial long-vowel suffix.
+- **Index/hash impact**: none. `phrase_index.json` is unchanged — the hash
+  is computed over `t` tokens (which already used `仕方`), not over the `x`
+  display text. `--verify-hash` confirms v=15 total=156231 still matches.
+- **Audio**: not regenerated. The existing `.opus` files still match the
+  spoken form; only the displayed text was corrected.
+- **Idempotency**: re-running the replacement would be a no-op because the
+  source pattern `しかたね` no longer appears in any chunk.
+
+### L-6 (Grammar companion mutant-quizzes) — deferred
+
+Mini-investigation result: **(B) Systematic**. Grammar cards never generate
+companion mutant-quizzes — there is no `add_grammar_companions` function
+(mirroring `add_kanji_companions`). Full implementation requires:
+
+- New module `origa/src/domain/knowledge/grammar_companions.rs`
+- Domain change: either a new `RateMode::GrammarCompanion` or reuse of an
+  existing RateMode with a marker
+- Integration into `KnowledgeSet::cards_to_lesson`
+
+Per AGENTS.md "Ask First" for `origa/src/domain/`, this is deferred to a
+follow-up issue pending a domain design decision. No CDN or source changes
+were made for L-6 in Phase 5.
+
+### PR-2 (Profile cache invalidation) — best-effort fix, no CDN changes
+
+Static root-cause analysis of the "language switch re-triggers offline cache"
+report could not reproduce the failure path. Cache keys
+(`BUNDLE_DOWNLOADED_KEY`, per-card CDN resource paths) are fully
+locale-independent and `start_card_precache` is guarded by
+`is_data_loading_started`. The defensive fix adds:
+
+- A `CardCacheState::Idle` guard in `start_card_precache` so an accidental
+  re-trigger from any caller is a logged no-op.
+- `tracing::debug` at the i18n `set_locale` call sites (App Effect and
+  Profile Effect) and at the `OfflineBundleCard` mount-time cache probe so
+  the reactive chain can be observed in production traces.
+
+No CDN changes for PR-2. Verified via `cargo test -p origa_ui` (208 → 209
+unit tests passing with the new `LessonMode` coverage).
+
+### W-5 (Grammar training → lesson mode) — feature flag, no CDN changes
+
+Added `grammar_practice_lesson_mode` feature flag (default OFF) to
+`origa_ui/Cargo.toml`. When enabled, the grammar-detail "Practice" button
+navigates to `/lesson?mode=grammar_practice&grammar_id=<ulid>` instead of
+opening the practice modal. Card generation for grammar-practice lessons
+reuses the normal `SelectCardsToLessonUseCase` selection as a safe default;
+full grammar-aware quiz card wiring requires a domain design decision and
+is tracked as a follow-up (closely related to L-6).
+
+No CDN changes for W-5.
+
+### S-3 root cause — `origa_ui/build.rs` now the canonical source
+
+The original S-3 fix (commit `94e1d3bc`) corrected the meta file via the
+`remap_duolingo_spy_levels.py` band-aid, but `origa_ui/build.rs` still
+hardcoded `"N5"` for every Duolingo and Spy x Family entry, so the next
+`cargo build -p origa_ui` regenerated the file with the wrong levels and the
+two audit tests (`duolingo_sets_match_section_to_level_mapping`,
+`spy_family_sets_are_n3`) re-failed.
+
+Root cause fix in `origa_ui/build.rs`:
+
+- **Spy x Family** (1 entry per episode): hardcoded `"N5"` → `"N3"`,
+  matching the `level: "N3"` field carried by every content file.
+- **Duolingo**: parses the Section number from `content.English.title` /
+  `content.Russian.title` (the `"Section X"` / `"Модуль X"` token)
+  and maps Section 1-2 → N5, 3-4 → N4, 5-6 → N3 — identical to the
+  Python band-aid and to the audit test's own mapping. The physical
+  `duolingo/<n3|n4|n5>/` directory layout is NOT used because the `n5/`
+  directory contains 60 sets whose titles say "Section 3" (which must be
+  N4 under the Duolingo difficulty progression); the directory names refer
+  to a different (legacy) grouping and must not be trusted.
+
+Parsing is implemented without the `regex` crate (prohibited by the Rust
+skill) via manual `split_whitespace` token matching, mirroring
+`section_from_title` in `origa/tests/well_known_sets_audit.rs`. Sets
+without a recognizable Section/Модуль token are skipped with a
+`cargo:warning` rather than `panic!`-ing the build.
+
+Verification (after `rm cdn/well_known_set/well_known_sets_meta.json &&
+cargo build -p origa_ui`):
+
+```text
+cargo test -p origa --test well_known_sets_audit
+test spy_family_sets_are_n3 ... ok
+test duolingo_sets_match_section_to_level_mapping ... ok
+test result: ok. 2 passed; 0 failed
+```
+
+`scripts/remap_duolingo_spy_levels.py` is now DEPRECATED — the docstring
+on the script has been updated to flag this. It is kept as a
+diagnostic/fallback for repairing stale meta files that were committed
+before the build.rs fix landed, but normal builds no longer need it.

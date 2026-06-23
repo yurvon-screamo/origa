@@ -16,7 +16,7 @@
 
 /// Production CDN base URL. Used when `ORIGA_CDN_BASE_URL` env var is unset
 /// (e.g., CI builds without env propagation — see ADR-009 "CI constraint").
-pub(crate) const DEFAULT_CDN: &str = "https://s3-proxy-production-52e3.up.railway.app";
+pub(crate) const DEFAULT_CDN: &str = "https://s3.origa.uwuwu.net";
 
 /// Production TrailBase URL. Used when `TRAILBASE_URL` env var is unset.
 pub(crate) const DEFAULT_TRAILBASE: &str = "https://app.origa.uwuwu.net";

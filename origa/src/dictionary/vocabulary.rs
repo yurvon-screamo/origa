@@ -22,7 +22,8 @@ impl TranslationValue {
                 } else {
                     Some(d.trim().to_string())
                 };
-                (t, desc)
+                let translations = split_semicolon_joined_translations(t);
+                (translations, desc)
             },
             TranslationValue::Raw(s) => {
                 tracing::warn!(
@@ -32,6 +33,27 @@ impl TranslationValue {
             },
         }
     }
+}
+
+fn split_semicolon_joined_translations(translations: Vec<String>) -> Vec<String> {
+    let mut out = Vec::with_capacity(translations.len());
+    for entry in translations {
+        let trimmed = entry.trim();
+        if trimmed.is_empty() {
+            continue;
+        }
+        if trimmed.contains(';') {
+            for part in trimmed.split(';') {
+                let part = part.trim();
+                if !part.is_empty() {
+                    out.push(part.to_string());
+                }
+            }
+        } else {
+            out.push(trimmed.to_string());
+        }
+    }
+    out
 }
 
 fn parse_legacy_translation(text: &str) -> (Vec<String>, Option<String>) {
@@ -547,5 +569,48 @@ mod tests {
         let (translations, desc) = parse_legacy_translation("");
         assert!(translations.is_empty());
         assert!(desc.is_none());
+    }
+
+    #[test]
+    fn structured_format_splits_semicolon_joined_translations() {
+        let data = empty_chunk_data_with(
+            r#"{
+                "意思": {
+                    "level": "N5",
+                    "ru": { "t": ["намерение; Воля; Цель", "смысл; Значение; Суть"], "d": "" },
+                    "en": { "t": ["intention; Will; Purpose"], "d": "" }
+                }
+            }"#,
+        );
+        let db = VocabularyDatabase::from_chunks(data).unwrap();
+        let ru = db
+            .get_translations("意思", &NativeLanguage::Russian)
+            .unwrap();
+        assert_eq!(
+            ru,
+            vec!["намерение", "Воля", "Цель", "смысл", "Значение", "Суть"]
+        );
+        let en = db
+            .get_translations("意思", &NativeLanguage::English)
+            .unwrap();
+        assert_eq!(en, vec!["intention", "Will", "Purpose"]);
+    }
+
+    #[test]
+    fn split_semicolon_joined_translations_handles_clean_input() {
+        let out = split_semicolon_joined_translations(vec!["кошка".to_string(), "кот".to_string()]);
+        assert_eq!(out, vec!["кошка", "кот"]);
+    }
+
+    #[test]
+    fn split_semicolon_joined_translations_drops_empty_parts() {
+        let out = split_semicolon_joined_translations(vec!["кошка;;кот;".to_string()]);
+        assert_eq!(out, vec!["кошка", "кот"]);
+    }
+
+    #[test]
+    fn split_semicolon_joined_translations_drops_empty_entries() {
+        let out = split_semicolon_joined_translations(vec!["кошка".to_string(), "   ".to_string()]);
+        assert_eq!(out, vec!["кошка"]);
     }
 }

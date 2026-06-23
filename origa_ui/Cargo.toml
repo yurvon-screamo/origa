@@ -56,6 +56,12 @@ bincode.workspace = true
 [features]
 default = ["csr"]
 csr = ["leptos/csr"]
+# Slice 19 (#178 W-5): when enabled, the grammar "Practice" button navigates
+# to a full lesson route instead of opening the practice modal. Card generation
+# for grammar-practice lessons is intentionally skeletal under this flag and
+# reuses the normal card selection; full grammar quiz card wiring is a
+# follow-up that requires a domain design decision.
+grammar_practice_lesson_mode = []
 
 [build-dependencies]
 tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }

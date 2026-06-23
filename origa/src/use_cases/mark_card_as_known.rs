@@ -1,6 +1,6 @@
 use crate::domain::OrigaError;
 use crate::traits::UserRepository;
-use tracing::{debug, info};
+use tracing::{debug, info, warn};
 use ulid::Ulid;
 
 #[derive(Clone)]
@@ -23,8 +23,8 @@ impl<'a, R: UserRepository> MarkCardAsKnownUseCase<'a, R> {
             .ok_or(OrigaError::CurrentUserNotExist)?;
 
         if let Some(study_card) = user.knowledge_set().get_card(card_id) {
-            if !study_card.memory().is_new() {
-                debug!("Card {} is not new, skipping mark as known", card_id);
+            if study_card.memory().is_known_card() {
+                warn!(card_id = %card_id, "Card already learned, skip mark as known");
                 return Ok(());
             }
         }

@@ -1,7 +1,7 @@
 use super::complete_screen::LessonCompleteScreen;
 use super::header::LessonHeader;
 use super::lesson_card_container::LessonCardContainer;
-use super::lesson_state::{LessonContext, LessonState};
+use super::lesson_state::{LessonContext, LessonMode, LessonState};
 use crate::i18n::*;
 use crate::loaders::phrase_data_loader::load_phrase_details_batch;
 use crate::repository::HybridUserRepository;
@@ -16,12 +16,48 @@ use origa::use_cases::{classify_orphaned_phrases, delete_phrase_cards_by_phrase_
 use std::collections::HashSet;
 use ulid::Ulid;
 
+/// Parses `?mode=grammar_practice&grammar_id=<ulid>` from a raw query string.
+///
+/// Returns `Some(LessonMode::GrammarPractice)` only when both parameters are
+/// present and the grammar id is a valid Ulid. Returns `None` for the normal
+/// lesson flow.
+///
+/// Gated by the `grammar_practice_lesson_mode` feature flag so the wire format
+/// can evolve without affecting the default build.
+#[cfg(feature = "grammar_practice_lesson_mode")]
+fn parse_grammar_practice_query(raw_query: &str) -> Option<LessonMode> {
+    let stripped = raw_query.trim_start_matches('?');
+    let mode = stripped
+        .split('&')
+        .find_map(|pair| pair.strip_prefix("mode="))?;
+    if mode != "grammar_practice" {
+        return None;
+    }
+    let grammar_id_raw = stripped
+        .split('&')
+        .find_map(|pair| pair.strip_prefix("grammar_id="))?;
+    let grammar_rule_id = Ulid::from_string(grammar_id_raw).ok()?;
+    Some(LessonMode::GrammarPractice { grammar_rule_id })
+}
+
 #[component]
 pub fn LessonContent() -> impl IntoView {
     let i18n = use_i18n();
     let repository =
         use_context::<HybridUserRepository>().expect("repository context not provided");
     let auth_store = use_context::<AuthStore>().expect("AuthStore not provided");
+
+    #[cfg(feature = "grammar_practice_lesson_mode")]
+    let resolved_mode: LessonMode = {
+        let raw_query = web_sys::window()
+            .and_then(|w| w.location().search().ok())
+            .unwrap_or_default();
+        parse_grammar_practice_query(&raw_query).unwrap_or_default()
+    };
+    #[cfg(not(feature = "grammar_practice_lesson_mode"))]
+    let resolved_mode: LessonMode = LessonMode::default();
+
+    let resolved_mode = StoredValue::new(resolved_mode);
 
     let lesson_state = RwSignal::new(LessonState::default());
     let is_loading = RwSignal::new(true);
@@ -179,6 +215,7 @@ pub fn LessonContent() -> impl IntoView {
                         ));
                     } else {
                         lesson_state.set(LessonState {
+                            mode: resolved_mode.get_value().clone(),
                             cards,
                             card_ids,
                             current_index: 0,
@@ -251,5 +288,41 @@ pub fn LessonContent() -> impl IntoView {
                 <LessonCardContainer />
             </div>
         </Show>
+    }
+}
+
+#[cfg(all(test, feature = "grammar_practice_lesson_mode"))]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn parse_query_returns_grammar_practice_for_valid_input() {
+        let id = Ulid::new();
+        let query = format!("mode=grammar_practice&grammar_id={id}");
+        let parsed = parse_grammar_practice_query(&query);
+        match parsed {
+            Some(LessonMode::GrammarPractice { grammar_rule_id }) => {
+                assert_eq!(grammar_rule_id, id);
+            },
+            other => panic!("expected GrammarPractice, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parse_query_returns_none_for_normal_mode() {
+        assert!(parse_grammar_practice_query("mode=normal").is_none());
+        assert!(parse_grammar_practice_query("").is_none());
+    }
+
+    #[test]
+    fn parse_query_returns_none_for_invalid_ulid() {
+        assert!(
+            parse_grammar_practice_query("mode=grammar_practice&grammar_id=not-a-ulid").is_none()
+        );
+    }
+
+    #[test]
+    fn parse_query_returns_none_when_grammar_id_missing() {
+        assert!(parse_grammar_practice_query("mode=grammar_practice").is_none());
     }
 }

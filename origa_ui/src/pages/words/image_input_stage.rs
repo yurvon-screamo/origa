@@ -2,7 +2,7 @@ use super::ocr_processing::{OcrState, ProcessContext, process_file};
 use crate::i18n::{t, use_i18n};
 use crate::ui_components::{
     Alert, AlertType, Button, ButtonVariant, LoadingStageItem, OcrLoadingStage, OcrLoadingState,
-    StageType, Text, TextSize, TypographyVariant, get_stage_info,
+    OcrPhase, StageType, Text, TextSize, TypographyVariant, get_stage_info, stage_phase,
 };
 use crate::utils::use_drag_and_drop;
 use leptos::prelude::*;
@@ -177,7 +177,23 @@ pub fn ImageInputStage(
                         <div class="space-y-4">
                             <h2 class="text-lg font-semibold text-[var(--fg-black)] flex items-center gap-2">
                                 <span class="spinner spinner-sm"></span>
-                                {t!(i18n, words.image.preparing)}
+                                {move || {
+                                    let phase = stage_phase(&stage.get());
+                                    match phase {
+                                        OcrPhase::DownloadingModels => {
+                                            t!(i18n, words.image.downloading_models).into_any()
+                                        }
+                                        OcrPhase::Initializing => {
+                                            t!(i18n, words.image.initializing_models).into_any()
+                                        }
+                                        OcrPhase::Recognizing => {
+                                            t!(i18n, words.image.recognizing_text).into_any()
+                                        }
+                                        OcrPhase::Idle | OcrPhase::Done | OcrPhase::Failed => {
+                                            t!(i18n, words.image.preparing).into_any()
+                                        }
+                                    }
+                                }}
                             </h2>
 
                             <div class="space-y-3" role="list">

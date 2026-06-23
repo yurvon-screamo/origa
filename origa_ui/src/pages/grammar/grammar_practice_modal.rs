@@ -38,9 +38,9 @@ fn option_classes(index: usize, state: AnswerState, correct_index: usize) -> Str
     let ptr = "pointer-events-none";
 
     match state {
-        AnswerState::Idle => {
-            format!("{base} cursor-pointer quiz-option-neutral hover:opacity-80")
-        },
+        AnswerState::Idle => format!(
+            "{base} cursor-pointer quiz-option-neutral hover:bg-[var(--fg-black)] hover:text-[var(--bg-paper)]"
+        ),
         AnswerState::Answered { selected, .. } => {
             let is_correct = index == correct_index;
             if index == selected && is_correct {
@@ -297,7 +297,7 @@ pub fn GrammarPracticeModal(
                         </Text>
                         <div class="mt-4">
                             <button
-                                class="px-4 py-2 bg-[var(--accent-olive)] text-white rounded hover:opacity-80 transition-opacity cursor-pointer"
+                                class="px-4 py-2 bg-[var(--accent-olive)] text-[var(--bg-paper)] border border-[var(--accent-olive)] hover:bg-[var(--bg-paper)] hover:text-[var(--accent-olive)] transition-colors cursor-pointer"
                                 data-testid="grammar-practice-close-btn"
                                 on:click=move |_| on_close.run(())
                             >
@@ -338,9 +338,9 @@ pub fn GrammarPracticeModal(
                         </Text>
                     </div>
 
-                    <div class="h-1 bg-[var(--border-dark)] rounded w-full">
+                    <div class="h-1 bg-[var(--border-dark)] w-full">
                         <div
-                            class="h-1 bg-[var(--accent-olive)] rounded transition-all"
+                            class="h-1 bg-[var(--accent-olive)] transition-all"
                             style=move || format!("width: {}%", progress_pct.get())
                         ></div>
                     </div>
@@ -437,7 +437,7 @@ pub fn GrammarPracticeModal(
                         <div class="flex justify-center gap-3 mt-4">
                             <Show when=move || !is_last.get()>
                                 <button
-                                    class="px-4 py-2 bg-[var(--accent-olive)] text-white rounded hover:opacity-80 transition-opacity cursor-pointer"
+                                    class="px-4 py-2 bg-[var(--accent-olive)] text-[var(--bg-paper)] border border-[var(--accent-olive)] hover:bg-[var(--bg-paper)] hover:text-[var(--accent-olive)] transition-colors cursor-pointer"
                                     data-testid="grammar-practice-next-btn"
                                     on:click=move |_| on_next()
                                 >
@@ -445,7 +445,7 @@ pub fn GrammarPracticeModal(
                                 </button>
                             </Show>
                             <button
-                                class="px-4 py-2 border rounded hover:opacity-80 transition-opacity cursor-pointer"
+                                class="px-4 py-2 border border-[var(--border-dark)] bg-[var(--bg-paper)] text-[var(--fg-black)] hover:bg-[var(--fg-black)] hover:text-[var(--bg-paper)] transition-colors cursor-pointer"
                                 data-testid="grammar-practice-close-btn"
                                 on:click=move |_| on_close.run(())
                             >
@@ -478,7 +478,7 @@ pub fn GrammarPracticeModal(
                         </div>
                         <div class="flex justify-center gap-3 mt-6">
                             <button
-                                class="px-4 py-2 bg-[var(--accent-olive)] text-white rounded hover:opacity-80 transition-opacity cursor-pointer"
+                                class="px-4 py-2 bg-[var(--accent-olive)] text-[var(--bg-paper)] border border-[var(--accent-olive)] hover:bg-[var(--bg-paper)] hover:text-[var(--accent-olive)] transition-colors cursor-pointer"
                                 data-testid="grammar-practice-again-btn"
                                 on:click=move |_| reset.run(())
                             >
@@ -487,7 +487,7 @@ pub fn GrammarPracticeModal(
                                 }} <span class="hidden sm:inline">"[Space]"</span>
                             </button>
                             <button
-                                class="px-4 py-2 border rounded hover:opacity-80 transition-opacity cursor-pointer"
+                                class="px-4 py-2 border border-[var(--border-dark)] bg-[var(--bg-paper)] text-[var(--fg-black)] hover:bg-[var(--fg-black)] hover:text-[var(--bg-paper)] transition-colors cursor-pointer"
                                 data-testid="grammar-practice-close-btn"
                                 on:click=move |_| on_close.run(())
                             >

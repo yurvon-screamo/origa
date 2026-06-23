@@ -65,6 +65,10 @@ pub fn App() -> impl IntoView {
     Effect::new(move |_| {
         if let Some(user) = auth_store.user.get() {
             let locale = native_language_to_locale(user.native_language());
+            tracing::debug!(
+                ?locale,
+                "App Effect: syncing i18n locale from auth_store.user"
+            );
             i18n_for_lang.set_locale(locale);
         }
     });
