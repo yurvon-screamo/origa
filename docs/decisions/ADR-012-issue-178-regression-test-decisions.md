@@ -222,7 +222,7 @@ log). Idempotency for Learned cards is preserved.
 3. **PR-2 (profile/offline cache re-trigger on language switch)** — the
    defensive `CardCacheState::Idle` guard and `tracing::debug` at the
    `set_locale` call sites are in place; the failure path could not be
-   reproduced statically, so it "needs verification in production" traces.
+   reproduced statically, so it needs verification via production traces.
 4. **CDN deploy ordering** — `docs/handoff_issue_178_cdn.md` records that S3 must
    be deployed BEFORE pushing tests (audit tests compare against CDN state).
 
