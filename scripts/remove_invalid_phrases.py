@@ -83,9 +83,9 @@ def remove_from_chunk(chunk_path: Path, invalid_ids: set[str], dry_run: bool) ->
         return {"path": str(chunk_path), "removed": 0}
 
     if not dry_run:
-        tmp_fd, tmp_path = tempfile.mkstemp(dir=chunk_path.parent, suffix='.tmp')
-        with os.fdopen(tmp_fd, 'w', encoding='utf-8') as f:
-            json.dump(filtered, f, ensure_ascii=False, separators=(',', ':'))
+        tmp_fd, tmp_path = tempfile.mkstemp(dir=chunk_path.parent, suffix=".tmp")
+        with os.fdopen(tmp_fd, "w", encoding="utf-8") as f:
+            json.dump(filtered, f, ensure_ascii=False, separators=(",", ":"))
         os.replace(tmp_path, chunk_path)
 
     return {"path": str(chunk_path), "removed": removed_count}
@@ -114,12 +114,16 @@ def remove_from_index(index_path: Path, invalid_ids: set[str], dry_run: bool) ->
         print("Error: hash consistency check failed after update!")
 
     if not dry_run:
-        tmp_fd, tmp_path = tempfile.mkstemp(dir=index_path.parent, suffix='.tmp')
-        with os.fdopen(tmp_fd, 'w', encoding='utf-8') as f:
-            json.dump(data, f, ensure_ascii=False, separators=(',', ':'))
+        tmp_fd, tmp_path = tempfile.mkstemp(dir=index_path.parent, suffix=".tmp")
+        with os.fdopen(tmp_fd, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, separators=(",", ":"))
         os.replace(tmp_path, index_path)
 
-    return {"path": str(index_path), "removed": removed_count, "new_total": len(data["phrases"])}
+    return {
+        "path": str(index_path),
+        "removed": removed_count,
+        "new_total": len(data["phrases"]),
+    }
 
 
 def remove_audio_files(audio_dir: Path, invalid_ids: set[str], dry_run: bool) -> dict:
@@ -159,7 +163,9 @@ def compute_hash(phrases: list) -> str:
         for p in phrases
     ]
     entries.sort(key=lambda e: e["i"])
-    serialized = json.dumps(entries, ensure_ascii=False, separators=(",", ":"), sort_keys=True)
+    serialized = json.dumps(
+        entries, ensure_ascii=False, separators=(",", ":"), sort_keys=True
+    )
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
 
 
@@ -168,7 +174,9 @@ def verify_hash_consistency(data: dict) -> bool:
     expected = compute_hash(data["phrases"])
     actual = data.get("h", "")
     if expected != actual:
-        print(f"Warning: hash mismatch! Expected {expected[:16]}..., got {actual[:16]}...")
+        print(
+            f"Warning: hash mismatch! Expected {expected[:16]}..., got {actual[:16]}..."
+        )
         return False
     return True
 
@@ -228,11 +236,15 @@ def main():
 
     print()
     index_result = remove_from_index(index_path, invalid_ids, args.dry_run)
-    print(f"  {index_result['path']}: removed {index_result['removed']} entries, new total: {index_result['new_total']}")
+    print(
+        f"  {index_result['path']}: removed {index_result['removed']} entries, new total: {index_result['new_total']}"
+    )
 
     print()
     audio_result = remove_audio_files(audio_dir, invalid_ids, args.dry_run)
-    print(f"  Audio: removed {audio_result['removed']} files, not found: {audio_result['not_found']}")
+    print(
+        f"  Audio: removed {audio_result['removed']} files, not found: {audio_result['not_found']}"
+    )
 
     print()
     print(f"Total removed from chunks: {total_removed_chunks}")
