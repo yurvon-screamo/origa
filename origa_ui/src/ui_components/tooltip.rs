@@ -128,11 +128,9 @@ mod tests {
     }
 
     #[test]
-    fn decide_placement_no_room_below_keeps_top_when_more_space() {
-        // trigger at 10px, viewport only 150px tall, tooltip needs 108px.
-        // room_above = 10, room_below = 140 → both < 108? No: 140 >= 108.
-        // Use a tighter viewport: room_below = 50 < 108, room_above = 10.
-        // Neither fits; room_below (50) > room_above (10) → Bottom.
+    fn decide_placement_tight_viewport_picks_wider_side() {
+        // Neither side fits the tooltip (room_above=10, room_below=50,
+        // needed=108), so the function picks the side with more room — Bottom.
         assert_eq!(
             decide_placement(10.0, 60.0, 100.0, 8.0),
             TooltipPlacement::Bottom,
