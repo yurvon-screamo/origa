@@ -12,9 +12,9 @@ reflects what would actually change; only the copy is gated by ``--dry-run``.
 
 Recovery: the walk is idempotent — ``needs_update`` decides per object from
 live metadata, so re-running after a partial failure picks up exactly the
-objects still mis-configured. A copy failure on one object is reported and
-skipped, not fatal; the run exits non-zero only if any object failed, so a
-re-run completes the remainder.
+objects still mis-configured. A failure on one object (HEAD error, oversize,
+copy error) is reported and skipped, not fatal; the run exits non-zero only if
+any object failed, so a re-run completes the remainder.
 
 Usage::
 
@@ -27,6 +27,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from collections import Counter
 from typing import NamedTuple
 
 import _cdn_cache
@@ -39,18 +40,23 @@ from _cdn_s3 import S3_BUCKET, S3_ENDPOINT, S3_PROFILE, run_aws_raw
 COPY_OBJECT_MAX_BYTES = 5 * 1024 * 1024 * 1024
 
 # The aws CLI is invoked through ``pwsh -Command`` (see _cdn_s3.run_aws_raw),
-# which re-parses argv as a PowerShell script. A key containing ; | & ` $ "
-# ' could therefore execute as a command rather than a literal argument. CDN
-# keys are always ASCII alphanumerics plus / _ . -, so anything outside that
-# set is corruption or an injection attempt and must never reach the shell.
-_ALLOWED_KEY_CHARS = frozenset(
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789/_.-"
-)
+# which re-parses argv as a PowerShell script. A key containing a PowerShell
+# metacharacter could therefore execute as a command/statement rather than a
+# literal argument. This is a DENYLIST, not an ASCII allowlist: CJK and other
+# Unicode letters are not command separators and pass through safely, which
+# matters because kanji_animations/ and kanji_frames/ use the kanji themselves
+# as filenames (一.svg, 丁.svg, ...).
+_UNSAFE_KEY_CHARS = frozenset(" \t\r\n;|&`$\"'<>()@\\")
 
 
 class ObjectMetadata(NamedTuple):
     cache_control: str | None
     content_length: int | None
+
+
+class WalkOutcome(NamedTuple):
+    category: str
+    failed: bool
 
 
 def normalize_cache_control(cc: str | None) -> str:
@@ -68,7 +74,7 @@ def needs_update(current_cc: str | None, target_cc: str) -> bool:
 
 
 def is_safe_key(key: str) -> bool:
-    return bool(key) and all(ch in _ALLOWED_KEY_CHARS for ch in key)
+    return bool(key) and not any(ch in _UNSAFE_KEY_CHARS for ch in key)
 
 
 def filter_safe_keys(keys: list[str]) -> tuple[list[str], list[str]]:
@@ -77,12 +83,12 @@ def filter_safe_keys(keys: list[str]) -> tuple[list[str], list[str]]:
     return safe, unsafe
 
 
-def list_all_keys() -> list[str]:
+def list_all_keys() -> tuple[list[str], int]:
     """List every object key in the bucket, paginating fully.
 
-    Drops keys outside the safe charset (see ``is_safe_key``) with a warning,
-    since they can never be passed to the aws CLI safely. Aborts if S3 signals
-    truncation without a continuation token — that would silently lose keys.
+    Returns the safe keys plus a count of keys dropped as unsafe (shell
+    metacharacters). Aborts if S3 signals truncation without a continuation
+    token — that would silently lose keys.
     """
     raw: list[str] = []
     token: str | None = None
@@ -125,10 +131,8 @@ def list_all_keys() -> list[str]:
 
     safe, unsafe = filter_safe_keys(raw)
     for key in unsafe:
-        print(
-            f"  WARNING: dropping unsafe key (not ASCII-safe): {key!r}", file=sys.stderr
-        )
-    return safe
+        print(f"  WARNING: dropping unsafe key: {key!r}", file=sys.stderr)
+    return safe, len(unsafe)
 
 
 def head_object(key: str) -> ObjectMetadata | None:
@@ -193,6 +197,29 @@ def update_cache_control(key: str, target_cc: str, dry_run: bool) -> bool:
     return True
 
 
+def _walk_one(key: str, dry_run: bool) -> WalkOutcome:
+    meta = head_object(key)
+    if meta is None:
+        return WalkOutcome("head_failed", failed=True)
+
+    if meta.content_length is not None and meta.content_length > COPY_OBJECT_MAX_BYTES:
+        print(
+            f"  SKIP   {key}  ({meta.content_length} B exceeds copy-object "
+            f"{COPY_OBJECT_MAX_BYTES} B limit; update metadata manually)"
+        )
+        return WalkOutcome("oversize", failed=True)
+
+    target = _cdn_cache.cache_control_for(key)
+    if not needs_update(meta.cache_control, target):
+        return WalkOutcome("already_ok", failed=False)
+
+    current_display = meta.cache_control or "(none)"
+    print(f"  UPDATE {key}  [{current_display} -> {target}]")
+    if update_cache_control(key, target, dry_run):
+        return WalkOutcome("updated", failed=False)
+    return WalkOutcome("copy_failed", failed=True)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Refresh Cache-Control on existing S3 objects to match "
@@ -209,50 +236,26 @@ def main() -> None:
         print("=== DRY RUN ===\n")
 
     print(f"Listing objects in s3://{S3_BUCKET} ...")
-    keys = list_all_keys()
-    print(f"  {len(keys)} safe object(s)\n")
+    keys, dropped = list_all_keys()
+    print(f"  {len(keys)} safe, {dropped} dropped (unsafe charset)\n")
 
-    updated = 0
-    already_ok = 0
-    skipped_oversize = 0
+    counts: Counter[str] = Counter()
     failed: list[str] = []
 
     for key in keys:
-        meta = head_object(key)
-        if meta is None:
+        outcome = _walk_one(key, args.dry_run)
+        counts[outcome.category] += 1
+        if outcome.failed:
             failed.append(key)
-            continue
-
-        if (
-            meta.content_length is not None
-            and meta.content_length > COPY_OBJECT_MAX_BYTES
-        ):
-            skipped_oversize += 1
-            print(
-                f"  SKIP   {key}  ({meta.content_length} B exceeds copy-object "
-                f"{COPY_OBJECT_MAX_BYTES} B limit; update metadata manually)"
-            )
-            failed.append(key)
-            continue
-
-        target = _cdn_cache.cache_control_for(key)
-        if needs_update(meta.cache_control, target):
-            current_display = meta.cache_control or "(none)"
-            print(f"  UPDATE {key}  [{current_display} -> {target}]")
-            if update_cache_control(key, target, args.dry_run):
-                updated += 1
-            else:
-                failed.append(key)
-        else:
-            already_ok += 1
 
     print("\nSummary:")
-    print(f"  scanned:          {len(keys)}")
-    print(f"  updated:          {updated}")
-    print(f"  already OK:       {already_ok}")
-    print(f"  skipped (> 5 GiB): {skipped_oversize}")
+    print(f"  scanned:           {len(keys)}")
+    print(f"  updated:           {counts['updated']}")
+    print(f"  already OK:        {counts['already_ok']}")
+    print(f"  skipped (> 5 GiB): {counts['oversize']}")
+    print(f"  dropped (unsafe):  {dropped}")
     if failed:
-        print(f"  failed:           {len(failed)}")
+        print(f"  failed:            {len(failed)}")
         for key in failed:
             print(f"    - {key}")
         if args.dry_run:

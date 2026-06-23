@@ -81,8 +81,10 @@ def test_grammar_is_not_immutable():
     [
         "ndlocr/model.onnx",
         "whisper/decoder.bin",
-        "kanji_animations/anim_0001.svg",
-        "kanji_frames/frame_0001.json",
+        # Real kanji filenames are CJK (一.svg, 丁.svg) — they must classify
+        # as immutable regardless of charset.
+        "kanji_animations/一.svg",
+        "kanji_frames/丁.json",
         "phrases/audio/phrase_0001.mp3",
         "dictionaries/char_def.bin",
         "dictionaries/matrix.mtx",

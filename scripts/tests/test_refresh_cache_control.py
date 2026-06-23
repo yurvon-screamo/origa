@@ -66,7 +66,11 @@ def test_normalize_strips_spaces_and_lowercases():
         "manifest.json",
         "grammar/grammar.json",
         "dictionaries/char_def.bin",
-        "kanji_animations/anim_0001.svg",
+        # Real kanji filenames use the kanji themselves (CJK) — must be
+        # accepted, not rejected as "non-ASCII". This is the regression that
+        # an ASCII allowlist introduced in cycle 2.
+        "kanji_animations/一.svg",
+        "kanji_frames/丁.json",
         "phrases/audio/phrase_0001.mp3",
         "dictionary/chunk_11.json",
     ],
@@ -86,6 +90,7 @@ def test_safe_key_accepted(key: str):
         "evil$var",
         "evil&amp",
         "evil space",
+        "evil\ttab",
         "",
     ],
 )
@@ -98,8 +103,13 @@ def test_filter_safe_keys_partitions():
         "dictionary/chunk_01.json",
         "evil;rm",
         "phrases/audio/x.mp3",
+        "kanji_animations/一.svg",
         'bad"quote',
     ]
     safe, unsafe = filter_safe_keys(keys)
-    assert safe == ["dictionary/chunk_01.json", "phrases/audio/x.mp3"]
+    assert safe == [
+        "dictionary/chunk_01.json",
+        "phrases/audio/x.mp3",
+        "kanji_animations/一.svg",
+    ]
     assert unsafe == ["evil;rm", 'bad"quote']
