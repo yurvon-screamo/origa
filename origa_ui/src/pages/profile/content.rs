@@ -49,7 +49,12 @@ pub fn ProfileContent() -> impl IntoView {
     let i18n_for_sync = i18n;
     Effect::new(move |_| {
         let lang = selected_language.get();
-        i18n_for_sync.set_locale(native_language_to_locale(&lang));
+        let locale = native_language_to_locale(&lang);
+        tracing::debug!(
+            ?locale,
+            "Profile Effect: syncing i18n locale from selected_language"
+        );
+        i18n_for_sync.set_locale(locale);
     });
 
     let daily_load = Memo::new(move |_| {

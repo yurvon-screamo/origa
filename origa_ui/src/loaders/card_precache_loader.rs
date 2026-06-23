@@ -1,7 +1,7 @@
 use origa::dictionary::pitch_audio::get_audio_for_reading;
 use origa::domain::{Card, JapaneseChar, OrigaError, StudyCard};
 
-use leptos::prelude::Set;
+use leptos::prelude::{GetUntracked, Set};
 
 use crate::loaders::precache_loader::{DownloadResult, PreCacheProgress, batch_download};
 use crate::ui_components::get_reading_from_text;
@@ -66,6 +66,16 @@ pub fn start_card_precache(
 ) {
     use crate::store::offline_bundle_store::CardCacheState;
 
+    let current_state = offline_store.card_cache_state.get_untracked();
+    if current_state != CardCacheState::Idle {
+        tracing::info!(
+            current_state = ?current_state,
+            "Card pre-cache already in progress or complete, skipping re-trigger"
+        );
+        return;
+    }
+
+    tracing::info!(card_count = cards.len(), "Starting card pre-cache");
     offline_store.card_cache_state.set(CardCacheState::Running);
     let store_clone = offline_store.clone();
 
@@ -80,7 +90,7 @@ pub fn start_card_precache(
                 store_clone.card_cache_state.set(CardCacheState::Complete);
             },
             Err(e) => {
-                tracing::warn!("Card pre-cache failed: {e}");
+                tracing::warn!(error = %e, "Card pre-cache failed, returning to Idle");
                 store_clone.card_cache_state.set(CardCacheState::Idle);
             },
         }

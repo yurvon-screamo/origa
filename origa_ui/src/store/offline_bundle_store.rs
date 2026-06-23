@@ -2,7 +2,7 @@ use leptos::prelude::*;
 
 use crate::loaders::precache_loader::PreCacheProgress;
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 pub enum CardCacheState {
     Idle,
     Running,

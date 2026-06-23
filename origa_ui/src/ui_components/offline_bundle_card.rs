@@ -30,10 +30,13 @@ pub fn OfflineBundleCard(#[prop(optional, into)] test_id: Signal<String>) -> imp
         use_context::<OfflineBundleStore>().map(|s| s.card_cache_progress);
 
     Effect::new(move |_| {
+        tracing::debug!("OfflineBundleCard Effect: checking bundle download state on mount");
         spawn_local(async move {
             if precache_loader::is_bundle_downloaded().await {
+                tracing::debug!("OfflineBundleCard: bundle already downloaded");
                 state.set(BundleState::Downloaded);
             } else {
+                tracing::debug!("OfflineBundleCard: bundle not downloaded");
                 state.set(BundleState::Idle);
             }
         });
