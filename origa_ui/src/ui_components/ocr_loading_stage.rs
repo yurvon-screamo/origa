@@ -73,6 +73,32 @@ pub enum OcrLoadingStage {
     },
 }
 
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub enum OcrPhase {
+    Idle,
+    DownloadingModels,
+    Initializing,
+    Recognizing,
+    Done,
+    Failed,
+}
+
+/// Coarse-grained classification of the loading stage into a user-facing
+/// phase so the UI can communicate "downloading" vs "recognizing" instead
+/// of the generic "preparing" label.
+pub fn stage_phase(stage: &OcrLoadingStage) -> OcrPhase {
+    match stage {
+        OcrLoadingStage::Idle => OcrPhase::Idle,
+        OcrLoadingStage::DownloadingDeim { .. } | OcrLoadingStage::DownloadingParseq { .. } => {
+            OcrPhase::DownloadingModels
+        }
+        OcrLoadingStage::Initializing { .. } => OcrPhase::Initializing,
+        OcrLoadingStage::Recognizing => OcrPhase::Recognizing,
+        OcrLoadingStage::Completed => OcrPhase::Done,
+        OcrLoadingStage::Error { .. } => OcrPhase::Failed,
+    }
+}
+
 #[derive(Clone, Copy)]
 pub struct OcrLoadingState {
     pub stage: RwSignal<OcrLoadingStage>,
@@ -443,5 +469,65 @@ pub fn get_stage_info(
                 error_message: None,
             },
         },
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn stage_phase_idle() {
+        assert_eq!(stage_phase(&OcrLoadingStage::Idle), OcrPhase::Idle);
+    }
+
+    #[test]
+    fn stage_phase_download_deim() {
+        assert_eq!(
+            stage_phase(&OcrLoadingStage::DownloadingDeim {
+                progress: ProgressInfo::default(),
+            }),
+            OcrPhase::DownloadingModels,
+        );
+    }
+
+    #[test]
+    fn stage_phase_download_parseq() {
+        assert_eq!(
+            stage_phase(&OcrLoadingStage::DownloadingParseq {
+                current_model: 2,
+                progress: ProgressInfo::default(),
+            }),
+            OcrPhase::DownloadingModels,
+        );
+    }
+
+    #[test]
+    fn stage_phase_initializing() {
+        assert_eq!(
+            stage_phase(&OcrLoadingStage::Initializing {
+                model_name: "OCR".to_string(),
+            }),
+            OcrPhase::Initializing,
+        );
+    }
+
+    #[test]
+    fn stage_phase_recognizing() {
+        assert_eq!(
+            stage_phase(&OcrLoadingStage::Recognizing),
+            OcrPhase::Recognizing,
+        );
+    }
+
+    #[test]
+    fn stage_phase_error() {
+        assert_eq!(
+            stage_phase(&OcrLoadingStage::Error {
+                stage: "deim".to_string(),
+                message: "fail".to_string(),
+            }),
+            OcrPhase::Failed,
+        );
     }
 }

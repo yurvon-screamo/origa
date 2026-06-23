@@ -346,6 +346,9 @@
         "error": "Error",
         "image": {
             "preparing": "Preparing for recognition",
+            "downloading_models": "Downloading OCR models",
+            "initializing_models": "Initializing models",
+            "recognizing_text": "Recognizing text",
             "segmentation": "Text segmentation",
             "recognition": "Character recognition",
             "initialization": "Model initialization",

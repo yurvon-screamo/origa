@@ -346,6 +346,9 @@
     "error": "Ошибка",
     "image": {
       "preparing": "Подготовка к распознаванию",
+      "downloading_models": "Скачивание моделей OCR",
+      "initializing_models": "Инициализация моделей",
+      "recognizing_text": "Распознавание текста",
       "segmentation": "Сегментация текста",
       "recognition": "Распознавание символов",
       "initialization": "Инициализация моделей",
