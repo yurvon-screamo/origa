@@ -1599,6 +1599,13 @@ input[type="submit"],
     color: var(--fg-muted);
 }
 
+/* <rt> holds ruby readings (an annotation), not base text — exclude it from
+   selection so copying a phrase yields 答えて, not 答えコタエて (#178). */
+rt {
+    -webkit-user-select: none;
+    user-select: none;
+}
+
 .furigana-plain {
     font-family: var(--font-serif);
 }
