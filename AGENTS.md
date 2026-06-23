@@ -33,7 +33,7 @@ models/      — ML модели
 ## Среда разработки
 
 ```powershell
-$env:ORIGA_CDN_BASE_URL = "https://s3-proxy-production-52e3.up.railway.app"  # ОБЯЗАТЕЛЬНО
+$env:ORIGA_CDN_BASE_URL = "https://s3.origa.uwuwu.net"  # ОБЯЗАТЕЛЬНО
 cd tauri && cargo tauri dev
 ```
 
@@ -49,7 +49,7 @@ cd tauri && cargo tauri dev
 - `ORIGA_APP_URI_PREFIX` — app subdomain prefix (e.g. `app` → `app.origa.uwuwu.net`)
 - Landing = base domain (no prefix)
 
-**Local dev:** `$env:ORIGA_CDN_BASE_URL = "https://s3-proxy-production-52e3.up.railway.app"`
+**Local dev:** `$env:ORIGA_CDN_BASE_URL = "https://s3.origa.uwuwu.net"` (production CDN endpoint — read-only, safe to use directly; all objects are immutable, see CDN section below)
 **Landing dev:** `$env:ORIGA_LANDING_BASE_URL = "https://origa.app"`
 
 ## Команды
