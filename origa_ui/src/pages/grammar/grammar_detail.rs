@@ -342,6 +342,25 @@ pub fn GrammarDetail() -> impl IntoView {
                         })
                     });
 
+                    let practice_grammar_rule = grammar_rule;
+                    let on_practice_click = Callback::new(move |_| {
+                        if cfg!(feature = "grammar_practice_lesson_mode") {
+                            if let Some(rule) = practice_grammar_rule {
+                                let path = format!(
+                                    "/lesson?mode=grammar_practice&grammar_id={}",
+                                    rule.rule_id()
+                                );
+                                tracing::info!(
+                                    grammar_rule_id = %rule.rule_id(),
+                                    "Navigating to grammar practice lesson"
+                                );
+                                navigate.get_value()(&path, Default::default());
+                            }
+                        } else {
+                            is_practice_open.set(true);
+                        }
+                    });
+
                     let card_id_for_fav = card_id;
                     let card_id_for_known = card_id;
                     let active_tab_cell = active_tab;
@@ -383,21 +402,7 @@ pub fn GrammarDetail() -> impl IntoView {
                                     data-testid="grammar-detail-practice-btn"
                                     on:click=move |ev| {
                                         ev.stop_propagation();
-                                        if cfg!(feature = "grammar_practice_lesson_mode") {
-                                            if let Some(rule) = grammar_rule {
-                                                let path = format!(
-                                                    "/lesson?mode=grammar_practice&grammar_id={}",
-                                                    rule.rule_id()
-                                                );
-                                                tracing::info!(
-                                                    grammar_rule_id = %rule.rule_id(),
-                                                    "Navigating to grammar practice lesson"
-                                                );
-                                                navigate.get_value()(&path, Default::default());
-                                            }
-                                        } else {
-                                            is_practice_open.set(true);
-                                        }
+                                        on_practice_click.run(());
                                     }
                                 >
                                     {practice_label}
@@ -561,21 +566,7 @@ pub fn GrammarDetail() -> impl IntoView {
                                                 data-testid="grammar-detail-practice-btn-mobile"
                                                 on:click=move |ev| {
                                                     ev.stop_propagation();
-                                                    if cfg!(feature = "grammar_practice_lesson_mode") {
-                                                        if let Some(rule) = grammar_rule {
-                                                            let path = format!(
-                                                                "/lesson?mode=grammar_practice&grammar_id={}",
-                                                                rule.rule_id()
-                                                            );
-                                                            tracing::info!(
-                                                                grammar_rule_id = %rule.rule_id(),
-                                                                "Navigating to grammar practice lesson (mobile)"
-                                                            );
-                                                            navigate.get_value()(&path, Default::default());
-                                                        }
-                                                    } else {
-                                                        is_practice_open.set(true);
-                                                    }
+                                                    on_practice_click.run(());
                                                 }
                                             >
                                                 {practice_label}
