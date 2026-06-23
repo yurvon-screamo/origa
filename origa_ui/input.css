@@ -1613,18 +1613,14 @@ input[type="submit"],
 }
 
 /* === Kanji Hover Popup === */
-.kanji-hover-segment {
+.kanji-char-hover {
+    cursor: pointer;
     display: inline-block;
     position: relative;
     vertical-align: baseline;
 }
 
-.kanji-hover-trigger {
-    cursor: pointer;
-    display: inline;
-}
-
-.kanji-hover-trigger:hover,
+.kanji-char-hover:hover,
 .kanji-hover-active {
     background: var(--token-highlight);
 }
@@ -5284,6 +5280,20 @@ input[type="submit"],
 .phrase-card-content {
     flex: 0 1 auto;
     min-width: 0;
+}
+
+.phrase-meaning-line {
+    margin: 0;
+}
+
+.phrase-meaning-line p {
+    margin: 0;
+}
+
+.phrase-meaning-line .prose,
+.phrase-meaning-line.prose {
+    margin: 0;
+    padding: 0;
 }
 
 .phrase-card-divider {

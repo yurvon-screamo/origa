@@ -1,7 +1,7 @@
 use crate::i18n::*;
 use crate::ui_components::{
-    Button, ButtonVariant, DisplayText, FuriganaText, Heading, HeadingLevel,
-    KanjiViewMode, KanjiWritingSection, MarkdownText, MarkdownVariant,
+    Button, ButtonVariant, DisplayText, FuriganaText, Heading, HeadingLevel, KanjiViewMode,
+    KanjiWritingSection, MarkdownText, MarkdownVariant,
 };
 use leptos::prelude::*;
 use origa::domain::NativeLanguage;

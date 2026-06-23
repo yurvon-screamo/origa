@@ -1,6 +1,6 @@
 use leptos::prelude::*;
 use origa::dictionary::kanji::get_kanji_info;
-use origa::domain::{NativeLanguage, JapaneseChar};
+use origa::domain::{JapaneseChar, NativeLanguage};
 
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub(crate) enum SegmentCharKind {
@@ -149,7 +149,7 @@ pub(crate) fn render_segment_with_hover(
     .into_any()
 }
 
-fn render_plain_segment(text: String, reading: Option<String>, is_known: bool) -> impl IntoView {
+pub(crate) fn render_plain_segment(text: String, reading: Option<String>, is_known: bool) -> impl IntoView {
     match reading {
         Some(reading) => {
             let class = if is_known {

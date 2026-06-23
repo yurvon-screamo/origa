@@ -583,21 +583,22 @@ mod tests {
             }"#,
         );
         let db = VocabularyDatabase::from_chunks(data).unwrap();
-        let ru = db.get_translations("意思", &NativeLanguage::Russian).unwrap();
+        let ru = db
+            .get_translations("意思", &NativeLanguage::Russian)
+            .unwrap();
         assert_eq!(
             ru,
             vec!["намерение", "Воля", "Цель", "смысл", "Значение", "Суть"]
         );
-        let en = db.get_translations("意思", &NativeLanguage::English).unwrap();
+        let en = db
+            .get_translations("意思", &NativeLanguage::English)
+            .unwrap();
         assert_eq!(en, vec!["intention", "Will", "Purpose"]);
     }
 
     #[test]
     fn split_semicolon_joined_translations_handles_clean_input() {
-        let out = split_semicolon_joined_translations(vec![
-            "кошка".to_string(),
-            "кот".to_string(),
-        ]);
+        let out = split_semicolon_joined_translations(vec!["кошка".to_string(), "кот".to_string()]);
         assert_eq!(out, vec!["кошка", "кот"]);
     }
 
@@ -609,10 +610,7 @@ mod tests {
 
     #[test]
     fn split_semicolon_joined_translations_drops_empty_entries() {
-        let out = split_semicolon_joined_translations(vec![
-            "кошка".to_string(),
-            "   ".to_string(),
-        ]);
+        let out = split_semicolon_joined_translations(vec!["кошка".to_string(), "   ".to_string()]);
         assert_eq!(out, vec!["кошка"]);
     }
 }

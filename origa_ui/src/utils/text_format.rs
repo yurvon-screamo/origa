@@ -55,10 +55,7 @@ pub fn split_sentences_to_list(text: &str) -> Vec<String> {
     let mut i = 0;
     while i < chars.len() {
         current.push(chars[i]);
-        if is_latin_terminator(chars[i])
-            && i + 1 < chars.len()
-            && chars[i + 1].is_whitespace()
-        {
+        if is_latin_terminator(chars[i]) && i + 1 < chars.len() && chars[i + 1].is_whitespace() {
             push_trimmed(&mut sentences, &current);
             current.clear();
             i += 1;

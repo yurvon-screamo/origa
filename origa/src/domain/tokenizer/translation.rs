@@ -511,6 +511,29 @@ mod integration_tests {
         );
     }
 
+    // Negative test for the relaxed grammar_label gate: a common content
+    // noun in dictionary form (猫, "cat") must NOT pick up a spurious
+    // grammar_label just because surface == base. Guards against the
+    // relaxation over-matching content vocabulary that happens to collide
+    // with a grammar keyword.
+    #[test]
+    fn tokenize_common_content_noun_has_no_grammar_label() {
+        ensure_dictionaries();
+        let text = "猫";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::English, text);
+
+        let neko = results
+            .iter()
+            .find(|t| t.surface_form == "猫")
+            .expect("「猫」token should exist");
+        assert!(
+            neko.grammar_label.is_none(),
+            "common noun「猫」must not receive a spurious grammar_label, got: {:?}",
+            neko
+        );
+    }
+
     // Verification for issue #178 P-8: characterization of how Lindera tokenizes
     // "さあついたよ、ここだ". Result is correct as-is (interjection + verb past +
     // particle + punct + pronoun + copula) — wontfix with this note.
@@ -528,7 +551,9 @@ mod integration_tests {
             surfaces
         );
         assert!(
-            surfaces.iter().any(|s| s.contains("ついた") || s.contains("つい")),
+            surfaces
+                .iter()
+                .any(|s| s.contains("ついた") || s.contains("つい")),
             "「ついた」verb past should be tokenized, got: {:?}",
             surfaces
         );

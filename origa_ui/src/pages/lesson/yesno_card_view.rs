@@ -11,6 +11,7 @@ use tracing::warn;
 use super::answer_display::{CardAnswerDisplay, extract_card_answer};
 use super::card_type::CardType;
 use super::quiz_card_header::QuizCardHeader;
+use super::quiz_result::QuizResult;
 
 #[derive(Clone, Copy, PartialEq, Default, Debug)]
 pub enum YesNoResult {
@@ -291,8 +292,11 @@ pub fn YesNoCardView(
                 </Show>
 
                 <Show when=move || {
-                    show_result && (card_type == CardType::Phrase
-                        || yesno_result() != YesNoResult::Correct)
+                    show_result
+                        && super::quiz_card::should_show_answer_display(
+                            QuizResult::from(yesno_result()),
+                            card_type,
+                        )
                 }>
                     <CardAnswerDisplay
                         translations=Signal::derive(move || answer_vocab_translations_stored.get_value())

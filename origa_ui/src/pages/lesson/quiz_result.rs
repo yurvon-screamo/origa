@@ -83,3 +83,14 @@ impl QuizResult {
         }
     }
 }
+
+impl From<super::yesno_card_view::YesNoResult> for QuizResult {
+    fn from(value: super::yesno_card_view::YesNoResult) -> Self {
+        match value {
+            super::yesno_card_view::YesNoResult::None => QuizResult::None,
+            super::yesno_card_view::YesNoResult::Correct => QuizResult::Correct,
+            super::yesno_card_view::YesNoResult::Incorrect => QuizResult::Incorrect,
+            super::yesno_card_view::YesNoResult::DontKnow => QuizResult::DontKnow,
+        }
+    }
+}

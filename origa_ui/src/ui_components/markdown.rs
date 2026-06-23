@@ -237,6 +237,29 @@ mod tests {
     }
 
     #[test]
+    fn test_pre_tag_text_passes_through_furigana_walker() {
+        // Verifies the behavioral consequence of removing <pre> from
+        // SKIP_TAGS: the walker now descends into <pre> children instead of
+        // bypassing them. Without a dictionary `furiganize_text` returns Err
+        // and the text is preserved verbatim — but the fact that the walker
+        // VISITS the text node at all is what changed, and that is observable
+        // through the surrounding <pre><code> structure being rebuilt.
+        let html = "<pre><code>sample text</code></pre>";
+        let known_kanji = HashSet::new();
+        let output = add_furigana_to_html(html, &known_kanji);
+        assert!(
+            output.contains("<pre>") && output.contains("<code>"),
+            "pre+code structure must be preserved when walker descends into <pre>, got: {}",
+            output
+        );
+        assert!(
+            output.contains("sample text"),
+            "text content must survive the furigana walk, got: {}",
+            output
+        );
+    }
+
+    #[test]
     fn test_add_furigana_skips_ruby_tag() {
         let html = "<ruby>食<rt>しょく</rt></ruby>";
         let known_kanji = HashSet::new();

@@ -3,7 +3,7 @@ use std::collections::HashSet;
 use leptos::prelude::*;
 use origa::domain::{FuriganaSegment, NativeLanguage, furiganize_segments};
 
-use crate::ui_components::furigana_hover::render_segment_with_hover;
+use crate::ui_components::furigana_hover::{render_plain_segment, render_segment_with_hover};
 
 #[component]
 pub fn FuriganaText(
@@ -55,7 +55,7 @@ pub fn FuriganaText(
                             hovered,
                         )
                     } else {
-                        render_segment(text, reading, is_known).into_any()
+                        render_plain_segment(text, reading, is_known).into_any()
                     }
                 }}
             </For>
@@ -63,42 +63,23 @@ pub fn FuriganaText(
     }
 }
 
-fn render_segment(text: String, reading: Option<String>, is_known: bool) -> impl IntoView {
-    match reading {
-        Some(reading) => {
-            let class = if is_known {
-                "furigana-hidden furigana-ruby anima-furigana-show"
-            } else {
-                "furigana-ruby anima-furigana-show"
-            };
-            view! {
-                <ruby class=class>
-                    {text}
-                    <rp>"("</rp>
-                    <rt class="furigana-rt">{reading}</rt>
-                    <rp>")"</rp>
-                </ruby>
-            }
-            .into_any()
-        },
-        None => view! {
-            <span class="furigana-plain">{text}</span>
-        }
-        .into_any(),
-    }
-}
-
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     #[test]
-    fn render_segment_with_reading_returns_ruby() {
-        let _ = render_segment("食べ".to_string(), Some("たべ".to_string()), false);
+    fn render_plain_segment_with_reading_returns_ruby() {
+        let _ = crate::ui_components::furigana_hover::render_plain_segment(
+            "食べ".to_string(),
+            Some("たべ".to_string()),
+            false,
+        );
     }
 
     #[test]
-    fn render_segment_without_reading_returns_plain() {
-        let _ = render_segment("たべ".to_string(), None, false);
+    fn render_plain_segment_without_reading_returns_plain() {
+        let _ = crate::ui_components::furigana_hover::render_plain_segment(
+            "たべ".to_string(),
+            None,
+            false,
+        );
     }
 }

@@ -2,8 +2,8 @@ use super::grammar_details_expand::GrammarDetailsExpand;
 use super::kanji_card_details::{KanjiCardDetails, RadicalDisplay};
 use crate::i18n::*;
 use crate::ui_components::{
-    Button, ButtonVariant, FuriganaText, Heading, HeadingLevel, MarkdownText,
-    MarkdownVariant, Text, TextSize, TranslatorText, TypographyVariant, WordTranslations,
+    Button, ButtonVariant, FuriganaText, Heading, HeadingLevel, MarkdownText, MarkdownVariant,
+    Text, TextSize, TranslatorText, TypographyVariant, WordTranslations,
 };
 use leptos::{ev::MouseEvent, prelude::*};
 use origa::domain::{GrammarInfo, NativeLanguage};
