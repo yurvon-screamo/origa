@@ -80,7 +80,6 @@ pub use error_alert::ErrorAlert;
 pub use favorite_button::FavoriteButton;
 pub use fsrs_metrics::{FsrsMetrics, FsrsMetricsMode};
 pub use furigana::FuriganaText;
-pub use furigana_hover::FuriganaTextWithHover;
 pub use history_button::HistoryButton;
 pub use input::Input;
 pub use kanji_animation::{KanjiViewMode, KanjiWritingSection};

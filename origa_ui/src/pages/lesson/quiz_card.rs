@@ -1,6 +1,6 @@
 use crate::i18n::*;
 use crate::ui_components::{
-    Card, DisplayText, FuriganaTextWithHover, Heading, HeadingLevel, KanjiViewMode,
+    Card, DisplayText, FuriganaText, Heading, HeadingLevel, KanjiViewMode,
     KanjiWritingSection, Text, TextSize, TypographyVariant, is_speech_supported, speak_word,
     stop_current_audio,
 };
@@ -216,7 +216,7 @@ pub fn QuizCardView(
                     <Show when=move || kanji_for_animation.get_value().is_none()>
                         <div class="mb-4">
                             <Heading level=HeadingLevel::H2>
-                                <FuriganaTextWithHover text=display_question.get_value() known_kanji=known_kanji.get() native_language=native_language/>
+                                <FuriganaText text=display_question.get_value() known_kanji=known_kanji.get() native_language=native_language with_kanji_tooltip=true/>
                             </Heading>
                         </div>
                     </Show>

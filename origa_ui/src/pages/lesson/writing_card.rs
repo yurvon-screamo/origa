@@ -186,6 +186,7 @@ pub fn WritingCard(
                         on_readings=on_readings_sv.get_value()
                         kun_readings=kun_readings_sv.get_value()
                         known_kanji=known_kanji
+                        native_language=native_language
                     />
 
                     <div class="flex justify-center mt-4">

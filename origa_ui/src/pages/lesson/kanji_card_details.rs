@@ -4,6 +4,7 @@ use crate::ui_components::{
     Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
+use origa::domain::NativeLanguage;
 use std::collections::HashSet;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -23,6 +24,7 @@ pub fn KanjiCardDetails(
     on_readings: Option<Vec<String>>,
     kun_readings: Option<Vec<String>>,
     #[prop(into)] known_kanji: Signal<HashSet<char>>,
+    native_language: NativeLanguage,
 ) -> impl IntoView {
     let i18n = use_i18n();
     let kanji_stored = StoredValue::new(kanji);
@@ -115,7 +117,7 @@ pub fn KanjiCardDetails(
                                         view! {
                                             <div class="p-2 bg-[var(--bg-aged)] rounded">
                                                 <Text size=TextSize::Default class="font-bold">
-                                                    <FuriganaText text=word known_kanji=known_kanji.get()/>
+                                                    <FuriganaText text=word known_kanji=known_kanji.get() native_language=native_language with_kanji_tooltip=true/>
                                                 </Text>
                                                 <MarkdownText
                                                     content=Signal::derive(move || meaning_stored.get_value())

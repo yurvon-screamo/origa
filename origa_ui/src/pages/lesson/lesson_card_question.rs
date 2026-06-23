@@ -1,6 +1,6 @@
 use crate::i18n::*;
 use crate::ui_components::{
-    Button, ButtonVariant, DisplayText, FuriganaTextWithHover, Heading, HeadingLevel,
+    Button, ButtonVariant, DisplayText, FuriganaText, Heading, HeadingLevel,
     KanjiViewMode, KanjiWritingSection, MarkdownText, MarkdownVariant,
 };
 use leptos::prelude::*;
@@ -29,10 +29,11 @@ pub fn LessonCardQuestion(
                             when=move || is_reversed
                             fallback=move || {
                                 view! {
-                                    <FuriganaTextWithHover
+                                    <FuriganaText
                                         text=question.get_value()
                                         known_kanji=known_kanji.get()
                                         native_language=native_language
+                                        with_kanji_tooltip=true
                                     />
                                 }
                             }
