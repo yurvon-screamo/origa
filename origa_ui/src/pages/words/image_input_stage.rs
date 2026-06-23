@@ -189,7 +189,9 @@ pub fn ImageInputStage(
                                         OcrPhase::Recognizing => {
                                             t!(i18n, words.image.recognizing_text).into_any()
                                         }
-                                        _ => t!(i18n, words.image.preparing).into_any(),
+                                        OcrPhase::Idle | OcrPhase::Done | OcrPhase::Failed => {
+                                            t!(i18n, words.image.preparing).into_any()
+                                        }
                                     }
                                 }}
                             </h2>

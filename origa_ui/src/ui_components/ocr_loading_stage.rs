@@ -91,7 +91,7 @@ pub fn stage_phase(stage: &OcrLoadingStage) -> OcrPhase {
         OcrLoadingStage::Idle => OcrPhase::Idle,
         OcrLoadingStage::DownloadingDeim { .. } | OcrLoadingStage::DownloadingParseq { .. } => {
             OcrPhase::DownloadingModels
-        }
+        },
         OcrLoadingStage::Initializing { .. } => OcrPhase::Initializing,
         OcrLoadingStage::Recognizing => OcrPhase::Recognizing,
         OcrLoadingStage::Completed => OcrPhase::Done,

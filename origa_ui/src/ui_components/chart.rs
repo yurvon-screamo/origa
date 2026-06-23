@@ -7,7 +7,9 @@ const MAX_X_LABELS: usize = 6;
 /// Pick the indices of X-axis labels to render so they never crowd.
 /// When `count <= max_labels` every index is kept; otherwise every
 /// `ceil(count / max_labels)`-th index is shown (0, step, 2*step, ...).
-pub fn select_label_indices(count: usize, max_labels: usize) -> Vec<usize> {
+/// The last index is always appended when missing so the most recent
+/// data point stays labeled.
+pub(crate) fn select_label_indices(count: usize, max_labels: usize) -> Vec<usize> {
     if count == 0 || max_labels == 0 {
         return Vec::new();
     }
@@ -15,7 +17,11 @@ pub fn select_label_indices(count: usize, max_labels: usize) -> Vec<usize> {
         return (0..count).collect();
     }
     let step = ((count as f64) / (max_labels as f64)).ceil() as usize;
-    (0..count).step_by(step.max(1)).collect()
+    let mut indices: Vec<usize> = (0..count).step_by(step.max(1)).collect();
+    if indices.last() != Some(&(count - 1)) {
+        indices.push(count - 1);
+    }
+    indices
 }
 
 #[component]
@@ -287,17 +293,25 @@ mod tests {
     }
 
     #[test]
-    fn select_label_indices_thins_twenty_to_ten() {
+    fn select_label_indices_thins_twenty_to_ten_plus_last() {
+        // step = ceil(20/10) = 2 → [0,2,...,18], then append last (19)
         assert_eq!(
             select_label_indices(20, 10),
-            vec![0, 2, 4, 6, 8, 10, 12, 14, 16, 18],
+            vec![0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 19],
         );
+    }
+
+    #[test]
+    fn select_label_indices_always_includes_last() {
+        let indices = select_label_indices(50, 6);
+        assert_eq!(indices.last(), Some(&49));
+        assert!(indices.len() <= 7);
     }
 
     #[test]
     fn select_label_indices_starts_at_zero() {
         let indices = select_label_indices(50, 6);
         assert_eq!(indices.first(), Some(&0));
-        assert!(indices.len() <= 6);
+        assert!(indices.len() <= 7);
     }
 }

@@ -10,18 +10,24 @@ pub enum TooltipPlacement {
     Bottom,
 }
 
-/// Pure placement decision: flip to Bottom when there is not enough room
-/// above the trigger (trigger_top < tooltip_height + margin), otherwise Top.
-/// Boundary is non-strict: equality keeps Top so the tooltip does not
-/// thrash between sides when exactly at the threshold.
-pub fn decide_placement(
+/// Pure placement decision. Prefers Top when there is enough room above
+/// the trigger (`trigger_top >= tooltip_height + margin`); otherwise
+/// flips to Bottom when the viewport offers more room below the trigger
+/// than above. Boundary is non-strict (>=) so the tooltip does not
+/// thrash between sides at the exact threshold.
+pub(crate) fn decide_placement(
     trigger_top: f64,
     viewport_height: f64,
     tooltip_height: f64,
     margin: f64,
 ) -> TooltipPlacement {
-    let _ = viewport_height;
-    if trigger_top < tooltip_height + margin {
+    let needed = tooltip_height + margin;
+    let room_above = trigger_top;
+    let room_below = (viewport_height - trigger_top).max(0.0);
+
+    if room_above >= needed {
+        TooltipPlacement::Top
+    } else if room_below > room_above {
         TooltipPlacement::Bottom
     } else {
         TooltipPlacement::Top
@@ -117,6 +123,18 @@ mod tests {
     fn decide_placement_just_below_boundary_returns_bottom() {
         assert_eq!(
             decide_placement(107.0, 800.0, 100.0, 8.0),
+            TooltipPlacement::Bottom,
+        );
+    }
+
+    #[test]
+    fn decide_placement_no_room_below_keeps_top_when_more_space() {
+        // trigger at 10px, viewport only 150px tall, tooltip needs 108px.
+        // room_above = 10, room_below = 140 → both < 108? No: 140 >= 108.
+        // Use a tighter viewport: room_below = 50 < 108, room_above = 10.
+        // Neither fits; room_below (50) > room_above (10) → Bottom.
+        assert_eq!(
+            decide_placement(10.0, 60.0, 100.0, 8.0),
             TooltipPlacement::Bottom,
         );
     }
