@@ -18,21 +18,27 @@ python scripts/remove_invalid_phrases.py --verify-hash --phrases cdn/phrases
 
 ## ⚠️ Deployment ordering — read before pushing test commits
 
-The three new audit tests under `origa/tests/` (`kanji_descriptions_audit.rs`,
-`grammar_content_audit.rs`, `well_known_sets_audit.rs`) read the corrected CDN
-files locally and assert the post-fix state. CI (`ci.yml`) seeds `cdn/` from
+The audit test `origa/tests/well_known_sets_audit.rs` reads the corrected CDN
+files locally and asserts the post-fix state. CI (`ci.yml`) seeds `cdn/` from
 production S3 before running `cargo test --workspace`. If you push the test
-commits before deploying, CI will fetch the OLD CDN content and the audits
+commits before deploying, CI will fetch the OLD CDN content and the audit
 will fail — turning master RED and blocking every PR.
+
+> **Update (post-issue):** `kanji_descriptions_audit.rs` and
+> `grammar_content_audit.rs` were removed by user decision — they coupled the
+> test suite to CDN deploy state (hardcoded expected values read from CDN
+> JSON, so CI would go RED whenever a deploy was out of sync).
+> `well_known_sets_audit.rs` is retained because it caught the `build.rs`
+> JLPT-levels root cause (S-3) and reads only the build-generated meta file.
 
 **Required order:**
 
 1. Deploy CDN first (recipe below) — S3 now carries the corrected data.
-2. Push the test commits — CI fetches the updated S3 content, audits pass.
+2. Push the test commits — CI fetches the updated S3 content, the audit passes.
 
-The audits do **gracefully skip** on environments where `cdn/` is entirely
+The audit does **gracefully skip** on environments where `cdn/` is entirely
 absent (fresh clones without S3 seeding), matching the canonical pattern in
-`origa/tests/grammar_regression_checks.rs`. They only fail when `cdn/` is
+`origa/tests/grammar_regression_checks.rs`. It only fails when `cdn/` is
 present but carries the pre-fix content.
 
 ## Changed CDN files
