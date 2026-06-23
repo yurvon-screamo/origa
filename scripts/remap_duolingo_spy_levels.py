@@ -1,9 +1,14 @@
-"""Remap Duolingo / Spy x Family JLPT levels in well_known_sets_meta.json (#178 S-3).
+"""[DEPRECATED] Diagnostic-only remapper for Duolingo / Spy x Family JLPT levels (#178 S-3).
 
-The meta file marks every Duolingo and Spy x Family set as N5, regardless of
-actual content difficulty. The Duolingo Section number encoded in each title
-("Section X Unit Y" / "Модуль X Раздел Y") and the Spy x Family content files
-themselves both disagree with that blanket N5 tag.
+The canonical source of truth is now `origa_ui/build.rs` (`generate_well_known_meta`),
+which parses the Duolingo Section number from each set title and tags every
+Spy x Family set as N3 when `cdn/well_known_set/well_known_sets_meta.json` is
+generated. `cargo build -p origa_ui` overwrites the meta file, so any manual
+edits made by this script would be discarded on the next build.
+
+This script is kept as a fallback/diagnostic tool to verify the meta file
+matches the expected Section → level mapping without rebuilding, or to repair
+a stale meta file that was committed before the build.rs fix landed.
 
 Mapping (Duolingo official difficulty progression, validated against the
 content of representative sets):

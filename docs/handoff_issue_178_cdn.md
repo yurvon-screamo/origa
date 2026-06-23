@@ -49,7 +49,7 @@ present but carries the pre-fix content.
 | `cdn/phrases/data/p0134.json`                                 | P-7   | 1 phrase translation corrected (id `0000000000NTQET51VCTVJAB4Q`)|
 | `cdn/phrases/audio/*.opus`                                    | P-3   | 518 audio files removed (matched the deleted phrases)           |
 | `cdn/phrases/phrase_index.json`                               | P-3   | v14 → v15; 156749 → 156231 entries; `h` recomputed              |
-| `cdn/well_known_set/well_known_sets_meta.json`                | S-3   | 384 set levels remapped (372 Duolingo + 12 Spy x Family)        |
+| `cdn/well_known_set/well_known_sets_meta.json`                | S-3   | 384 set levels remapped (372 Duolingo + 12 Spy x Family); **now generated correctly by `origa_ui/build.rs`** (see S-3 root cause fix below) |
 | `cdn/dictionary/chunk_01.json`                                | L-4   | 114 entries: split `;`-joined translations into separate items  |
 | `cdn/dictionary/chunk_02.json`                                | L-4   | 133 entries: split `;`-joined translations                       |
 | `cdn/dictionary/chunk_03.json`                                | L-4   | 136 entries: split `;`-joined translations                       |
@@ -155,7 +155,7 @@ d5a5fcc0 fix(scripts): correct phrase_index hash algorithm (sort_keys=True) (#17
 | `scripts/remove_korean_from_grammar.py`             | Apply W-11 Korean removal idempotently                       |
 | `scripts/fix_phrase_translations.py`                | Apply P-7 (and future) per-phrase corrections by id         |
 | `scripts/detect_profanity_phrases.py`               | Re-scan phrase corpus; emits `--report` for remove script   |
-| `scripts/remap_duolingo_spy_levels.py`              | Apply S-3 JLPT level remapping                              |
+| `scripts/remap_duolingo_spy_levels.py`              | Apply S-3 JLPT level remapping — **DEPRECATED**, build.rs is now canonical (kept as diagnostic/fallback) |
 | `scripts/fix_dict_semicolon_translations.py`        | Apply L-4: split `;`-joined vocabulary translations         |
 
 All scripts are idempotent — running them twice produces zero changes on the
@@ -258,3 +258,46 @@ full grammar-aware quiz card wiring requires a domain design decision and
 is tracked as a follow-up (closely related to L-6).
 
 No CDN changes for W-5.
+
+### S-3 root cause — `origa_ui/build.rs` now the canonical source
+
+The original S-3 fix (commit `94e1d3bc`) corrected the meta file via the
+`remap_duolingo_spy_levels.py` band-aid, but `origa_ui/build.rs` still
+hardcoded `"N5"` for every Duolingo and Spy x Family entry, so the next
+`cargo build -p origa_ui` regenerated the file with the wrong levels and the
+two audit tests (`duolingo_sets_match_section_to_level_mapping`,
+`spy_family_sets_are_n3`) re-failed.
+
+Root cause fix in `origa_ui/build.rs`:
+
+- **Spy x Family** (1 entry per episode): hardcoded `"N5"` → `"N3"`,
+  matching the `level: "N3"` field carried by every content file.
+- **Duolingo**: parses the Section number from `content.English.title` /
+  `content.Russian.title` (the `"Section X"` / `"Модуль X"` token)
+  and maps Section 1-2 → N5, 3-4 → N4, 5-6 → N3 — identical to the
+  Python band-aid and to the audit test's own mapping. The physical
+  `duolingo/<n3|n4|n5>/` directory layout is NOT used because the `n5/`
+  directory contains 60 sets whose titles say "Section 3" (which must be
+  N4 under the Duolingo difficulty progression); the directory names refer
+  to a different (legacy) grouping and must not be trusted.
+
+Parsing is implemented without the `regex` crate (prohibited by the Rust
+skill) via manual `split_whitespace` token matching, mirroring
+`section_from_title` in `origa/tests/well_known_sets_audit.rs`. Sets
+without a recognizable Section/Модуль token are skipped with a
+`cargo:warning` rather than `panic!`-ing the build.
+
+Verification (after `rm cdn/well_known_set/well_known_sets_meta.json &&
+cargo build -p origa_ui`):
+
+```
+cargo test -p origa --test well_known_sets_audit
+test spy_family_sets_are_n3 ... ok
+test duolingo_sets_match_section_to_level_mapping ... ok
+test result: ok. 2 passed; 0 failed
+```
+
+`scripts/remap_duolingo_spy_levels.py` is now DEPRECATED — the docstring
+on the script has been updated to flag this. It is kept as a
+diagnostic/fallback for repairing stale meta files that were committed
+before the build.rs fix landed, but normal builds no longer need it.

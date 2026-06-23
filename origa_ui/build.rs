@@ -263,6 +263,31 @@ fn load_json(path: &Path) -> WellKnownSet {
         .unwrap_or_else(|_| panic!("Failed to parse JSON from {}", path.display()))
 }
 
+fn section_number_from_title(title: &str) -> Option<u32> {
+    let mut iter = title.split_whitespace();
+    while let Some(word) = iter.next() {
+        let lower = word.to_lowercase();
+        if lower == "section" || lower == "модуль" {
+            if let Some(num_word) = iter.next() {
+                if let Ok(num) = num_word.parse::<u32>() {
+                    return Some(num);
+                }
+            }
+        }
+    }
+    None
+}
+
+fn duolingo_level_from_title(title_en: &str, title_ru: &str) -> Option<&'static str> {
+    let blob = format!("{title_en} {title_ru}");
+    match section_number_from_title(&blob)? {
+        1 | 2 => Some("N5"),
+        3 | 4 => Some("N4"),
+        5 | 6 => Some("N3"),
+        _ => None,
+    }
+}
+
 fn generate_well_known_meta() {
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
     let base_dir = Path::new(&manifest_dir)
@@ -533,7 +558,7 @@ fn generate_well_known_meta() {
             let path = entry.path();
             let mut data = load_json(&path);
             let set_id = path.file_stem().unwrap().to_string_lossy().to_string();
-            meta_list.push(extract_meta(&mut data, &set_id, "SpyFamily", "N5"));
+            meta_list.push(extract_meta(&mut data, &set_id, "SpyFamily", "N3"));
         }
     }
 
@@ -570,6 +595,29 @@ fn generate_well_known_meta() {
                     .file_name()
                     .unwrap()
                     .to_string_lossy();
+
+                let mut data = load_json(&path);
+
+                let title_en = data
+                    .content
+                    .English
+                    .as_ref()
+                    .map(|e| e.title.as_str())
+                    .unwrap_or("");
+                let title_ru = data
+                    .content
+                    .Russian
+                    .as_ref()
+                    .map(|r| r.title.as_str())
+                    .unwrap_or("");
+
+                let Some(level) = duolingo_level_from_title(title_en, title_ru) else {
+                    eprintln!(
+                        "cargo:warning=Skipping duolingo set: no Section/Модуль in title for duolingo/{parent_name}/{stem}"
+                    );
+                    continue;
+                };
+
                 let set_id = format!("duolingo_{}_{}", parent_name, stem);
                 let set_type = if stem.contains("_en_") {
                     "DuolingoEn"
@@ -577,8 +625,7 @@ fn generate_well_known_meta() {
                     "DuolingoRu"
                 };
 
-                let mut data = load_json(&path);
-                meta_list.push(extract_meta(&mut data, &set_id, set_type, "N5"));
+                meta_list.push(extract_meta(&mut data, &set_id, set_type, level));
             }
         }
     }
