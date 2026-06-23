@@ -236,6 +236,7 @@
         "on_yomi": "On'yomi",
         "kun_yomi": "Kun'yomi",
         "writing_card_kanji_only": "WritingCard supports only kanji",
+        "writing_try_again": "Try again",
         "yes": "Yes",
         "no": "No",
         "is_this_correct": "Is this statement correct?",
