@@ -9,8 +9,10 @@ pub fn CardActionBar(
     #[prop(into)] tag_label: Signal<String>,
     #[prop(optional)] is_favorite: Signal<bool>,
     #[prop(optional, into)] on_toggle_favorite: Option<Callback<()>>,
+    #[prop(optional, into)] favorite_pending: Signal<bool>,
     #[prop(optional, into)] on_mark_as_known: Option<Callback<()>>,
     #[prop(optional)] show_mark_as_known: Signal<bool>,
+    #[prop(optional, into)] mark_known_pending: Signal<bool>,
     #[prop(optional, into)] on_history: Option<Callback<()>>,
     #[prop(optional, into)] on_delete: Option<Callback<()>>,
     #[prop(optional, into)] test_id: Signal<String>,
@@ -39,6 +41,7 @@ pub fn CardActionBar(
                                 <FavoriteButton
                                     is_favorite=is_favorite
                                     on_click=cb
+                                    pending=favorite_pending
                                     test_id=favorite_test_id
                                 />
                             </Tooltip>
@@ -55,7 +58,7 @@ pub fn CardActionBar(
                             aria-hidden=move || if mark_known_visible() { "false" } else { "true" }
                         >
                             <Tooltip text=Signal::derive(move || crate::i18n::td_string!(i18n.get_locale(), shared.mark_as_known))>
-                                <MarkAsKnownButton on_click=cb test_id=mark_known_test_id />
+                                <MarkAsKnownButton on_click=cb pending=mark_known_pending test_id=mark_known_test_id />
                             </Tooltip>
                         </span>
                     }

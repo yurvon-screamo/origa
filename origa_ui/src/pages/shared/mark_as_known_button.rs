@@ -4,6 +4,7 @@ use leptos::prelude::*;
 #[component]
 pub fn MarkAsKnownButton(
     on_click: Callback<()>,
+    #[prop(optional, into)] pending: Signal<bool>,
     #[prop(optional, into)] test_id: Signal<String>,
 ) -> impl IntoView {
     let i18n = use_i18n();
@@ -15,6 +16,7 @@ pub fn MarkAsKnownButton(
     view! {
         <button
             class="icon-btn anima-press"
+            disabled=move || pending.get()
             on:click=move |ev: leptos::ev::MouseEvent| {
                 ev.stop_propagation();
                 on_click.run(());
@@ -23,18 +25,25 @@ pub fn MarkAsKnownButton(
             title=move || { crate::i18n::td_string!(i18n.get_locale(), shared.mark_as_known) }
             aria-label=move || { crate::i18n::td_string!(i18n.get_locale(), shared.mark_as_known) }
         >
-            <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                class="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
+            <Show
+                when=move || pending.get()
+                fallback=move || view! {
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        class="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+                        <path d="M20 6 9 17l-5-5" />
+                    </svg>
+                }
             >
-                <path d="M20 6 9 17l-5-5" />
-            </svg>
+                <span class="spinner spinner-sm" aria-hidden="true"></span>
+            </Show>
         </button>
     }
 }

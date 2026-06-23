@@ -113,7 +113,8 @@ pub fn KanjiContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
         })
     };
 
-    let on_mark_as_known = create_mark_as_known_callback(repository.clone(), refresh_trigger);
+    let (on_mark_as_known, _mark_known_pending) =
+        create_mark_as_known_callback(repository.clone(), refresh_trigger);
 
     let (is_deleting, on_delete) =
         create_delete_callback(repository.clone(), toasts, refresh_trigger);

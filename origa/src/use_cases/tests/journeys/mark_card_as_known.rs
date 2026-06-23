@@ -39,7 +39,7 @@ async fn card_not_found_returns_card_not_found_error() {
 }
 
 #[tokio::test]
-async fn already_reviewed_card_returns_ok_without_changes() {
+async fn in_progress_card_gets_marked_as_known() {
     // Arrange
     let mut user = User::new(
         "test@example.com".to_string(),
@@ -63,6 +63,60 @@ async fn already_reviewed_card_returns_ok_without_changes() {
     let updated = repo.get_current_user().await.unwrap().unwrap();
     let updated_card = updated.knowledge_set().get_card(card_id).unwrap();
     assert!(!updated_card.memory().is_new());
+    assert!(
+        updated_card.memory().is_known_card(),
+        "in-progress card should become known after mark-as-known"
+    );
+}
+
+#[tokio::test]
+async fn already_learned_card_is_idempotent() {
+    // Arrange
+    let mut user = User::new(
+        "test@example.com".to_string(),
+        NativeLanguage::Russian,
+        None,
+    );
+    let card = create_test_vocab_card("猫");
+    let study_card = user.create_card(card).unwrap();
+    let card_id = *study_card.card_id();
+
+    let repo = InMemoryUserRepository::with_user(user);
+    let use_case = MarkCardAsKnownUseCase::new(&repo);
+
+    use_case.execute(card_id).await.unwrap();
+    let stability_before = repo
+        .get_current_user()
+        .await
+        .unwrap()
+        .unwrap()
+        .knowledge_set()
+        .get_card(card_id)
+        .unwrap()
+        .memory()
+        .stability()
+        .map(|s| s.value());
+
+    // Act: mark again on an already-learned card
+    let result = use_case.execute(card_id).await;
+
+    // Assert
+    assert!(result.is_ok());
+    let stability_after = repo
+        .get_current_user()
+        .await
+        .unwrap()
+        .unwrap()
+        .knowledge_set()
+        .get_card(card_id)
+        .unwrap()
+        .memory()
+        .stability()
+        .map(|s| s.value());
+    assert_eq!(
+        stability_before, stability_after,
+        "already-learned card must not be mutated"
+    );
 }
 
 #[tokio::test]

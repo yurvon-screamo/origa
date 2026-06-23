@@ -114,14 +114,17 @@ pub fn GrammarDetail() -> impl IntoView {
         }
     });
 
+    let favorite_pending = RwSignal::new(false);
     let on_toggle_favorite = {
         let repo = repository.clone();
         let current_user_fav = current_user;
         let refresh = refresh_trigger;
+        let pending = favorite_pending;
         Callback::new(move |card_id: Ulid| {
             is_favorite_signal.update(|f| *f = !*f);
             let repo = repo.clone();
             spawn_local(async move {
+                pending.set(true);
                 let use_case = ToggleFavoriteUseCase::new(&repo);
                 if use_case.execute(card_id).await.is_ok() {
                     current_user_fav.update(|u| {
@@ -133,11 +136,13 @@ pub fn GrammarDetail() -> impl IntoView {
                 } else {
                     is_favorite_signal.update(|f| *f = !*f);
                 }
+                pending.set(false);
             });
         })
     };
 
-    let on_mark_as_known = create_mark_as_known_callback(repository.clone(), refresh_trigger);
+    let (on_mark_as_known, mark_known_pending) =
+        create_mark_as_known_callback(repository.clone(), refresh_trigger);
     let toasts: RwSignal<Vec<crate::ui_components::ToastData>> = RwSignal::new(Vec::new());
     let (is_deleting, on_delete) =
         create_delete_callback(repository.clone(), toasts, refresh_trigger);
@@ -362,8 +367,10 @@ pub fn GrammarDetail() -> impl IntoView {
                                     tag_label=Signal::derive(move || status.label(&i18n))
                                     is_favorite=is_favorite_signal.into()
                                     on_toggle_favorite=Callback::new(move |_| on_toggle_favorite.run(card_id_for_fav))
+                                    favorite_pending=favorite_pending
                                     show_mark_as_known=Signal::derive(move || status != CardStatus::Learned)
                                     on_mark_as_known=Callback::new(move |_| on_mark_as_known.run(card_id_for_known))
+                                    mark_known_pending=mark_known_pending
                                     on_history=Callback::new(move |_| is_history_open.set(true))
                                     on_delete=Callback::new(move |_| is_delete_modal_open.set(true))
                                     test_id=Signal::derive(|| "grammar-detail-actions".to_string())
@@ -490,8 +497,10 @@ pub fn GrammarDetail() -> impl IntoView {
                                             tag_label=Signal::derive(move || status.label(&i18n))
                                             is_favorite=is_favorite_signal.into()
                                             on_toggle_favorite=Callback::new(move |_| on_toggle_favorite.run(card_id_for_fav))
+                                            favorite_pending=favorite_pending
                                             show_mark_as_known=Signal::derive(move || status != CardStatus::Learned)
                                             on_mark_as_known=Callback::new(move |_| on_mark_as_known.run(card_id_for_known))
+                                            mark_known_pending=mark_known_pending
                                             on_history=Callback::new(move |_| is_history_open.set(true))
                                             on_delete=Callback::new(move |_| is_delete_modal_open.set(true))
                                             test_id=Signal::derive(|| "grammar-detail-actions-mobile".to_string())
