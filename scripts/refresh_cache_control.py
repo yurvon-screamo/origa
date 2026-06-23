@@ -83,6 +83,39 @@ def filter_safe_keys(keys: list[str]) -> tuple[list[str], list[str]]:
     return safe, unsafe
 
 
+def _request_key_page(token: str | None) -> tuple[list[str], str | None, bool]:
+    """Fetch one list-objects-v2 page.
+
+    Returns the page's keys, the continuation token for the next page (None if
+    not truncated), and whether more pages remain.
+    """
+    args = [
+        "s3api",
+        "list-objects-v2",
+        "--bucket",
+        S3_BUCKET,
+        "--profile",
+        S3_PROFILE,
+        "--endpoint-url",
+        S3_ENDPOINT,
+    ]
+    if token:
+        args += ["--continuation-token", token]
+    result = run_aws_raw(args)
+    if result.returncode != 0:
+        print("ERROR: list-objects-v2 failed", file=sys.stderr)
+        print(result.stderr, file=sys.stderr)
+        sys.exit(1)
+
+    data = json.loads(result.stdout) if result.stdout.strip() else {}
+    keys = [
+        obj["Key"]
+        for obj in data.get("Contents", [])
+        if isinstance(obj.get("Key"), str)
+    ]
+    return keys, data.get("NextContinuationToken"), bool(data.get("IsTruncated"))
+
+
 def list_all_keys() -> tuple[list[str], int]:
     """List every object key in the bucket, paginating fully.
 
@@ -93,41 +126,18 @@ def list_all_keys() -> tuple[list[str], int]:
     raw: list[str] = []
     token: str | None = None
     while True:
-        args = [
-            "s3api",
-            "list-objects-v2",
-            "--bucket",
-            S3_BUCKET,
-            "--profile",
-            S3_PROFILE,
-            "--endpoint-url",
-            S3_ENDPOINT,
-        ]
-        if token:
-            args += ["--continuation-token", token]
-        result = run_aws_raw(args)
-        if result.returncode != 0:
-            print("ERROR: list-objects-v2 failed", file=sys.stderr)
-            print(result.stderr, file=sys.stderr)
-            sys.exit(1)
-
-        data = json.loads(result.stdout) if result.stdout.strip() else {}
-        for obj in data.get("Contents", []):
-            key = obj.get("Key")
-            if isinstance(key, str):
-                raw.append(key)
-
-        if data.get("IsTruncated"):
-            token = data.get("NextContinuationToken")
-            if not token:
-                print(
-                    "ERROR: S3 returned IsTruncated without NextContinuationToken; "
-                    "cannot paginate safely",
-                    file=sys.stderr,
-                )
-                sys.exit(1)
-        else:
+        keys, next_token, truncated = _request_key_page(token)
+        raw.extend(keys)
+        if not truncated:
             break
+        if not next_token:
+            print(
+                "ERROR: S3 returned IsTruncated without NextContinuationToken; "
+                "cannot paginate safely",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+        token = next_token
 
     safe, unsafe = filter_safe_keys(raw)
     for key in unsafe:
@@ -207,7 +217,9 @@ def _walk_one(key: str, dry_run: bool) -> WalkOutcome:
             f"  SKIP   {key}  ({meta.content_length} B exceeds copy-object "
             f"{COPY_OBJECT_MAX_BYTES} B limit; update metadata manually)"
         )
-        return WalkOutcome("oversize", failed=True)
+        # Not retriable — re-running cannot beat the copy-object 5 GiB cap; the
+        # object needs a manual metadata update. Reported separately in main().
+        return WalkOutcome("oversize", failed=False)
 
     target = _cdn_cache.cache_control_for(key)
     if not needs_update(meta.cache_control, target):
@@ -240,31 +252,44 @@ def main() -> None:
     print(f"  {len(keys)} safe, {dropped} dropped (unsafe charset)\n")
 
     counts: Counter[str] = Counter()
-    failed: list[str] = []
+    retriable: list[str] = []
+    oversize: list[str] = []
 
     for key in keys:
         outcome = _walk_one(key, args.dry_run)
         counts[outcome.category] += 1
-        if outcome.failed:
-            failed.append(key)
+        if outcome.category == "oversize":
+            oversize.append(key)
+        elif outcome.failed:
+            retriable.append(key)
 
     print("\nSummary:")
     print(f"  scanned:           {len(keys)}")
     print(f"  updated:           {counts['updated']}")
     print(f"  already OK:        {counts['already_ok']}")
-    print(f"  skipped (> 5 GiB): {counts['oversize']}")
     print(f"  dropped (unsafe):  {dropped}")
-    if failed:
-        print(f"  failed:            {len(failed)}")
-        for key in failed:
+
+    needs_attention = bool(retriable or oversize)
+    if retriable:
+        print(f"  failed (retriable): {len(retriable)}")
+        for key in retriable:
             print(f"    - {key}")
-        if args.dry_run:
-            print("\n(dry-run: no metadata rewritten)")
-        else:
-            print("\nRe-run to retry the failed objects (walk is idempotent).")
-        sys.exit(1)
+    if oversize:
+        print(f"  oversize (> 5 GiB, manual): {len(oversize)}")
+        for key in oversize:
+            print(f"    - {key}")
+
     if args.dry_run:
         print("\n(dry-run: no metadata rewritten)")
+    elif retriable:
+        print("\nRe-run to retry the failed objects (walk is idempotent).")
+    if oversize:
+        print(
+            "\nOversize objects exceed the 5 GiB copy-object limit and need a "
+            "manual metadata update (re-running will not fix them)."
+        )
+    if needs_attention:
+        sys.exit(1)
 
 
 if __name__ == "__main__":
