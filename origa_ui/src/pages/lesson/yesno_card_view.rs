@@ -290,7 +290,10 @@ pub fn YesNoCardView(
                     </Show>
                 </Show>
 
-                <Show when=move || show_result>
+                <Show when=move || {
+                    show_result && (card_type == CardType::Phrase
+                        || yesno_result() != YesNoResult::Correct)
+                }>
                     <CardAnswerDisplay
                         translations=Signal::derive(move || answer_vocab_translations_stored.get_value())
                         description=Signal::derive(move || answer_vocab_description_stored.get_value())
