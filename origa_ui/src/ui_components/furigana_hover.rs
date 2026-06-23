@@ -149,7 +149,11 @@ pub(crate) fn render_segment_with_hover(
     .into_any()
 }
 
-pub(crate) fn render_plain_segment(text: String, reading: Option<String>, is_known: bool) -> impl IntoView {
+pub(crate) fn render_plain_segment(
+    text: String,
+    reading: Option<String>,
+    is_known: bool,
+) -> impl IntoView {
     match reading {
         Some(reading) => {
             let class = if is_known {

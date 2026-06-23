@@ -227,6 +227,14 @@ mod tests {
         // grammar rule files contain Japanese language content (audit-verified)
         // and need furigana. Keeping <pre> out of SKIP_TAGS lets the text-node
         // walker apply ruby markup to these example blocks.
+        //
+        // Note on test scope: a full behavioral test that asserts ruby markup
+        // appears inside <pre> requires the lindera dictionary to be loaded,
+        // which is not available in `origa_ui` unit tests. The behavioral
+        // verification lives in `origa/src/domain/furigana.rs` integration
+        // tests (e.g. `furigana_text_unknown_kanji_gets_reading`) which run
+        // with the real CDN dictionary. This const-membership test guards
+        // the regression path that would re-introduce `<pre>` to SKIP_TAGS.
         assert!(
             !SKIP_TAGS.contains(&"pre"),
             "pre must not be skipped: furigana is needed inside grammar example code-fences"
@@ -234,29 +242,6 @@ mod tests {
         assert!(SKIP_TAGS.contains(&"ruby"));
         assert!(SKIP_TAGS.contains(&"rt"));
         assert!(SKIP_TAGS.contains(&"rp"));
-    }
-
-    #[test]
-    fn test_pre_tag_text_passes_through_furigana_walker() {
-        // Verifies the behavioral consequence of removing <pre> from
-        // SKIP_TAGS: the walker now descends into <pre> children instead of
-        // bypassing them. Without a dictionary `furiganize_text` returns Err
-        // and the text is preserved verbatim — but the fact that the walker
-        // VISITS the text node at all is what changed, and that is observable
-        // through the surrounding <pre><code> structure being rebuilt.
-        let html = "<pre><code>sample text</code></pre>";
-        let known_kanji = HashSet::new();
-        let output = add_furigana_to_html(html, &known_kanji);
-        assert!(
-            output.contains("<pre>") && output.contains("<code>"),
-            "pre+code structure must be preserved when walker descends into <pre>, got: {}",
-            output
-        );
-        assert!(
-            output.contains("sample text"),
-            "text content must survive the furigana walk, got: {}",
-            output
-        );
     }
 
     #[test]

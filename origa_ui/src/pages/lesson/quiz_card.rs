@@ -16,7 +16,7 @@ use super::quiz_options_multi::QuizOptionsMulti;
 use super::quiz_result::QuizResult;
 use super::quiz_result_display::QuizResultDisplay;
 
-pub fn should_show_answer_display(result: QuizResult, card_type: CardType) -> bool {
+pub(crate) fn should_show_answer_display(result: QuizResult, card_type: CardType) -> bool {
     if card_type == CardType::Phrase {
         return true;
     }
