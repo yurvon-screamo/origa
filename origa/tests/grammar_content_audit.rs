@@ -5,6 +5,13 @@
 //! language). This test guarantees that no rule in cdn/grammar/grammar.json
 //! or cdn/grammar/rules/*.json carries any Hangul (U+AC00–U+D7AF) character.
 //!
+//! The `cdn/` directory is gitignored. On a fresh clone without the grammar
+//! store the tests **gracefully skip** (pass with a stderr note) rather than
+//! panic, so `cargo test --workspace` stays green in CI environments that
+//! do not have the CDN artifacts. Once the store is present (local dev,
+//! release CI after `scripts/deploy_cdn.py` has been run with the W-11
+//! fixes), the audit runs for real.
+//!
 //! Run: `cargo test -p origa --test grammar_content_audit`.
 
 use std::fs;
@@ -30,16 +37,22 @@ struct GrammarFile {
 fn scan_for_hangul(value: &serde_json::Value, path: &mut Vec<String>, hits: &mut Vec<String>) {
     match value {
         serde_json::Value::String(s) => {
-            if let Some(idx) = s
-                .chars()
-                .position(|c| ('\u{AC00}'..='\u{D7AF}').contains(&c))
-            {
-                let context_start = idx.saturating_sub(40);
-                let context_end = (idx + 40).min(s.len());
+            // Find the byte offset of the first Hangul char via char_indices,
+            // then build a context window on a char boundary so slicing never
+            // panics. Mixing char-position (from `.chars().position()`) with
+            // byte slicing would crash on multi-byte scripts like Japanese or
+            // Hangul itself.
+            let first_hangul_byte = s
+                .char_indices()
+                .find(|(_, c)| ('\u{AC00}'..='\u{D7AF}').contains(c))
+                .map(|(byte_idx, _)| byte_idx);
+            if let Some(byte_idx) = first_hangul_byte {
+                let window_start = prev_char_boundary(s, byte_idx.saturating_sub(120));
+                let window_end = next_char_boundary(s, (byte_idx + 120).min(s.len()));
                 hits.push(format!(
                     "{} = {:?}",
                     path.join("."),
-                    &s[context_start..context_end]
+                    &s[window_start..window_end]
                 ));
             }
         },
@@ -61,9 +74,30 @@ fn scan_for_hangul(value: &serde_json::Value, path: &mut Vec<String>, hits: &mut
     }
 }
 
+fn prev_char_boundary(s: &str, mut byte_idx: usize) -> usize {
+    while byte_idx > 0 && !s.is_char_boundary(byte_idx) {
+        byte_idx -= 1;
+    }
+    byte_idx
+}
+
+fn next_char_boundary(s: &str, mut byte_idx: usize) -> usize {
+    while byte_idx < s.len() && !s.is_char_boundary(byte_idx) {
+        byte_idx += 1;
+    }
+    byte_idx
+}
+
 #[test]
 fn grammar_json_has_no_korean_artifacts() {
     let path = cdn_dir().join("grammar").join("grammar.json");
+    if !path.exists() {
+        eprintln!(
+            "[skip] grammar_json_has_no_korean_artifacts: {} is absent (cdn/ gitignored on fresh clones)",
+            path.display()
+        );
+        return;
+    }
     let raw = fs::read_to_string(&path)
         .unwrap_or_else(|e| panic!("failed to read {}: {e}", path.display()));
     let parsed: GrammarFile = serde_json::from_str(&raw)
@@ -91,6 +125,13 @@ fn grammar_json_has_no_korean_artifacts() {
 #[test]
 fn grammar_rule_files_have_no_korean_artifacts() {
     let rules_dir = cdn_dir().join("grammar").join("rules");
+    if !rules_dir.exists() {
+        eprintln!(
+            "[skip] grammar_rule_files_have_no_korean_artifacts: {} is absent (cdn/ gitignored on fresh clones)",
+            rules_dir.display()
+        );
+        return;
+    }
     let mut hits: Vec<String> = Vec::new();
     let mut files_scanned = 0u32;
 

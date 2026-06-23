@@ -15,6 +15,25 @@ python scripts/remove_invalid_phrases.py --verify-hash --phrases cdn/phrases
 # Expected: "RESULT: hash matches compute_hash(phrases) (OK)" and v=15 total=156231
 ```
 
+## ⚠️ Deployment ordering — read before pushing test commits
+
+The three new audit tests under `origa/tests/` (`kanji_descriptions_audit.rs`,
+`grammar_content_audit.rs`, `well_known_sets_audit.rs`) read the corrected CDN
+files locally and assert the post-fix state. CI (`ci.yml`) seeds `cdn/` from
+production S3 before running `cargo test --workspace`. If you push the test
+commits before deploying, CI will fetch the OLD CDN content and the audits
+will fail — turning master RED and blocking every PR.
+
+**Required order:**
+
+1. Deploy CDN first (recipe below) — S3 now carries the corrected data.
+2. Push the test commits — CI fetches the updated S3 content, audits pass.
+
+The audits do **gracefully skip** on environments where `cdn/` is entirely
+absent (fresh clones without S3 seeding), matching the canonical pattern in
+`origa/tests/grammar_regression_checks.rs`. They only fail when `cdn/` is
+present but carries the pre-fix content.
+
 ## Changed CDN files
 
 | File                                                          | Slice | Change summary                                                  |

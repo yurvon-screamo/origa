@@ -6,6 +6,13 @@
 //! level (Section 1-2 → N5, 3-4 → N4, 5-6 → N3); Spy x Family content files
 //! all carry `level: "N3"` in their own metadata.
 //!
+//! The `cdn/` directory is gitignored. On a fresh clone without the meta file
+//! the tests **gracefully skip** (pass with a stderr note) rather than panic,
+//! so `cargo test --workspace` stays green in CI environments that do not
+//! have the CDN artifacts. Once the store is present (local dev, release CI
+//! after `scripts/deploy_cdn.py` has been run with the S-3 fixes), the audit
+//! runs for real.
+//!
 //! Run: `cargo test -p origa --test well_known_sets_audit`.
 
 use std::fs;
@@ -31,13 +38,22 @@ struct SetMeta {
     title_ru: Option<String>,
 }
 
-fn load_meta() -> Vec<SetMeta> {
+fn load_meta() -> Option<Vec<SetMeta>> {
     let path = cdn_dir()
         .join("well_known_set")
         .join("well_known_sets_meta.json");
+    if !path.exists() {
+        eprintln!(
+            "[skip] well_known_sets_audit: {} is absent (cdn/ gitignored on fresh clones)",
+            path.display()
+        );
+        return None;
+    }
     let raw = fs::read_to_string(&path)
         .unwrap_or_else(|e| panic!("failed to read {}: {e}", path.display()));
-    serde_json::from_str(&raw).unwrap_or_else(|e| panic!("failed to parse {}: {e}", path.display()))
+    let parsed: Vec<SetMeta> = serde_json::from_str(&raw)
+        .unwrap_or_else(|e| panic!("failed to parse {}: {e}", path.display()));
+    Some(parsed)
 }
 
 fn section_from_title(title: &str) -> Option<u32> {
@@ -66,7 +82,9 @@ fn expected_duolingo_level(title: &str) -> Option<&'static str> {
 
 #[test]
 fn duolingo_sets_match_section_to_level_mapping() {
-    let records = load_meta();
+    let Some(records) = load_meta() else {
+        return;
+    };
     let mut problems: Vec<String> = Vec::new();
     let mut checked = 0u32;
 
@@ -110,7 +128,9 @@ fn duolingo_sets_match_section_to_level_mapping() {
 
 #[test]
 fn spy_family_sets_are_n3() {
-    let records = load_meta();
+    let Some(records) = load_meta() else {
+        return;
+    };
     let spy_records: Vec<&SetMeta> = records
         .iter()
         .filter(|r| r.set_type == "SpyFamily")

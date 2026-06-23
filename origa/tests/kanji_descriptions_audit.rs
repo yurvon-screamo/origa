@@ -16,6 +16,13 @@
 //! merely too narrow but still valid (e.g. 房 = "комната" room, narrow but
 //! correct), `forbidden_as_sole_entry` is None.
 //!
+//! The `cdn/` directory is gitignored. On a fresh clone without the kanji
+//! store this test **gracefully skips** (passes with a stderr note) rather
+//! than panic, so `cargo test --workspace` stays green in CI environments
+//! that do not have the CDN artifacts. Once the store is present (local dev,
+//! release CI after `scripts/deploy_cdn.py` has been run with the W-10
+//! fixes), the audit runs for real.
+//!
 //! Run: `cargo test -p origa --test kanji_descriptions_audit`.
 
 use std::path::PathBuf;
@@ -162,16 +169,27 @@ const AUDIT_CASES: &[AuditCase] = &[
     },
 ];
 
-fn load_kanji_file() -> KanjiFile {
+fn load_kanji_file() -> Option<KanjiFile> {
     let path = cdn_dir().join("dictionary").join("kanji.json");
+    if !path.exists() {
+        eprintln!(
+            "[skip] kanji_descriptions_audit: {} is absent (cdn/ gitignored on fresh clones)",
+            path.display()
+        );
+        return None;
+    }
     let raw = std::fs::read_to_string(&path)
         .unwrap_or_else(|e| panic!("failed to read {}: {e}", path.display()));
-    serde_json::from_str(&raw).unwrap_or_else(|e| panic!("failed to parse {}: {e}", path.display()))
+    let parsed: KanjiFile = serde_json::from_str(&raw)
+        .unwrap_or_else(|e| panic!("failed to parse {}: {e}", path.display()));
+    Some(parsed)
 }
 
 #[test]
 fn polysemic_kanji_descriptions_are_not_mistranslated() {
-    let file = load_kanji_file();
+    let Some(file) = load_kanji_file() else {
+        return;
+    };
     let mut problems: Vec<String> = Vec::new();
 
     for case in AUDIT_CASES {
