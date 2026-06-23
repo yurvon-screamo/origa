@@ -54,7 +54,14 @@ fn resolve_grammar_label(
     let is_vocab = pos.is_vocabulary_word();
 
     // Keyword matching for non-vocabulary tokens (particles, auxiliaries, etc.)
-    if !is_vocab {
+    // — and for vocabulary tokens whose surface form equals the dictionary
+    // base form AND matches a grammar keyword. The dictionary-form gate
+    // prevents conjugated content words (e.g. 食べた, 食べて) from getting a
+    // grammar_label via keyword lookup while still recognizing grammar nouns
+    // like べき, はず, ところ that Lindera classifies as Noun.
+    // See issue #178 P-6 for context.
+    let eligible_for_keyword_match = !is_vocab || surface == base;
+    if eligible_for_keyword_match {
         for rule in rules.iter() {
             for group in rule.keywords().iter() {
                 if group.iter().any(|kw| surface == kw) {
@@ -476,6 +483,69 @@ mod integration_tests {
                 .is_some_and(|label| label.contains("べき")),
             "「べき」should carry the べきだ grammar_label, got: {:?}",
             beki
+        );
+    }
+
+    // Regression for issue #178 P-6: a standalone べき token is classified
+    // by Lindera as Noun (助動詞語幹). The old `!is_vocab` gate skipped keyword
+    // matching entirely for Noun tokens, so べき never received a grammar_label.
+    // The fix allows keyword lookup when surface == base so dictionary-form
+    // grammar nouns (べき, はず, ところ, etc.) still resolve to a grammar rule.
+    #[test]
+    fn tokenize_standalone_beki_returns_grammar_label() {
+        ensure_dictionaries();
+        let text = "べき";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::English, text);
+
+        let beki = results
+            .iter()
+            .find(|t| t.surface_form == "べき")
+            .expect("「べき」standalone token should exist");
+        assert!(
+            beki.grammar_label
+                .as_ref()
+                .is_some_and(|label| label.contains("べき")),
+            "standalone「べき」should carry the べきだ grammar_label, got: {:?}",
+            beki
+        );
+    }
+
+    // Verification for issue #178 P-8: characterization of how Lindera tokenizes
+    // "さあついたよ、ここだ". Result is correct as-is (interjection + verb past +
+    // particle + punct + pronoun + copula) — wontfix with this note.
+    #[test]
+    fn tokenize_saa_tsuita_yo_kokoda_returns_expected_tokens() {
+        ensure_dictionaries();
+        let text = "さあついたよ、ここだ";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::English, text);
+
+        let surfaces: Vec<&str> = results.iter().map(|t| t.surface_form.as_str()).collect();
+        assert!(
+            surfaces.contains(&"さあ"),
+            "「さあ」interjection should be tokenized separately, got: {:?}",
+            surfaces
+        );
+        assert!(
+            surfaces.iter().any(|s| s.contains("ついた") || s.contains("つい")),
+            "「ついた」verb past should be tokenized, got: {:?}",
+            surfaces
+        );
+        assert!(
+            surfaces.contains(&"よ"),
+            "「よ」particle should be tokenized, got: {:?}",
+            surfaces
+        );
+        assert!(
+            surfaces.contains(&"ここ"),
+            "「ここ」pronoun should be tokenized, got: {:?}",
+            surfaces
+        );
+        assert!(
+            surfaces.contains(&"だ"),
+            "「だ」copula should be tokenized, got: {:?}",
+            surfaces
         );
     }
 
