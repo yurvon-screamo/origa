@@ -16,6 +16,20 @@ import _cdn_cache
 from _cdn_cache import IMMUTABLE, NO_CACHE, RELEASE_UPDATED, cache_control_for
 from deploy_cdn import SYNC_DIRS, VERSIONED_FILES
 
+# Expected category per SYNC_DIR — pins the homogeneous-policy assumption that
+# deploy_cdn relies on (one Cache-Control per directory sync).
+EXPECTED_SYNC_DIR_POLICY: dict[str, str] = {
+    "kanji_animations": IMMUTABLE,
+    "kanji_frames": IMMUTABLE,
+    "ndlocr": IMMUTABLE,
+    "phrases/audio": IMMUTABLE,
+    "whisper": IMMUTABLE,
+    "phrases/data": RELEASE_UPDATED,
+    "well_known_set/irodori_nyuumon": RELEASE_UPDATED,
+    "well_known_set/irodori_shokyuu1": RELEASE_UPDATED,
+    "well_known_set/irodori_shokyuu2": RELEASE_UPDATED,
+}
+
 
 # ---------------------------------------------------------------------------
 # Always-fresh
@@ -127,6 +141,26 @@ def test_every_versioned_file_is_classified():
 def test_every_sync_dir_is_classified():
     for dir_name in SYNC_DIRS:
         assert cache_control_for(dir_name + "/") in (IMMUTABLE, RELEASE_UPDATED)
+
+
+def test_every_sync_dir_matches_expected_category():
+    # Regression guard: a SYNC_DIR silently flipping category (e.g. phrases/audio
+    # becoming release-updated) would re-introduce the PR #182 class of bug, so
+    # the expected policy is pinned explicitly, not just "is classified".
+    assert set(EXPECTED_SYNC_DIR_POLICY) == set(SYNC_DIRS)
+    for dir_name, expected in EXPECTED_SYNC_DIR_POLICY.items():
+        assert cache_control_for(dir_name + "/") == expected, dir_name
+
+
+def test_immutable_and_release_rules_are_disjoint():
+    # No rule may shadow another across categories: if an immutable prefix were
+    # a prefix of a release-updated path (or vice versa), precedence in
+    # cache_control_for would silently mask one category. dictionary/ vs
+    # dictionaries/ is the canonical trap — they must not prefix each other.
+    for imm in _cdn_cache._IMMUTABLE_RULES:
+        for rel in _cdn_cache._RELEASE_UPDATED_RULES:
+            assert not imm.startswith(rel), f"{imm} shadowed by release rule {rel}"
+            assert not rel.startswith(imm), f"{rel} shadowed by immutable rule {imm}"
 
 
 def test_only_manifest_uses_no_cache():

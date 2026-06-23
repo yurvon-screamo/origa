@@ -1,14 +1,19 @@
 """Unit tests for ``refresh_cache_control.py`` decision logic.
 
-Only the pure comparison helpers are exercised — S3 transport (list/HEAD/
-copy-object) is an operator-run side effect and is not mocked here.
+Only the pure helpers are exercised — S3 transport (list/HEAD/copy-object)
+is an operator-run side effect and is not mocked here.
 """
 
 from __future__ import annotations
 
 import pytest
 
-from refresh_cache_control import needs_update, normalize_cc
+from refresh_cache_control import (
+    filter_safe_keys,
+    is_safe_key,
+    needs_update,
+    normalize_cache_control,
+)
 
 
 @pytest.mark.parametrize(
@@ -50,6 +55,51 @@ def test_no_update_when_equivalent(current: str | None, target: str):
 
 
 def test_normalize_strips_spaces_and_lowercases():
-    assert normalize_cc("Public, Max-Age=300") == "public,max-age=300"
-    assert normalize_cc(None) == ""
-    assert normalize_cc("") == ""
+    assert normalize_cache_control("Public, Max-Age=300") == "public,max-age=300"
+    assert normalize_cache_control(None) == ""
+    assert normalize_cache_control("") == ""
+
+
+@pytest.mark.parametrize(
+    "key",
+    [
+        "manifest.json",
+        "grammar/grammar.json",
+        "dictionaries/char_def.bin",
+        "kanji_animations/anim_0001.svg",
+        "phrases/audio/phrase_0001.mp3",
+        "dictionary/chunk_11.json",
+    ],
+)
+def test_safe_key_accepted(key: str):
+    assert is_safe_key(key)
+
+
+@pytest.mark.parametrize(
+    "key",
+    [
+        # Shell metacharacters that would break out of `pwsh -Command`.
+        "evil;rm",
+        'evil"quote',
+        "evil`backtick",
+        "evil|pipe",
+        "evil$var",
+        "evil&amp",
+        "evil space",
+        "",
+    ],
+)
+def test_unsafe_key_rejected(key: str):
+    assert not is_safe_key(key)
+
+
+def test_filter_safe_keys_partitions():
+    keys = [
+        "dictionary/chunk_01.json",
+        "evil;rm",
+        "phrases/audio/x.mp3",
+        'bad"quote',
+    ]
+    safe, unsafe = filter_safe_keys(keys)
+    assert safe == ["dictionary/chunk_01.json", "phrases/audio/x.mp3"]
+    assert unsafe == ["evil;rm", 'bad"quote']

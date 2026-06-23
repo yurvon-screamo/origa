@@ -100,6 +100,8 @@ python scripts/refresh_cache_control.py --dry-run  # read-only: HEAD на каж
 python scripts/refresh_cache_control.py             # применить (server-side copy-object с REPLACE metadata)
 ```
 
+Идемпотентен: обновляются только объекты с неверным Cache-Control. При сбое на середине объект пропускается, скрипт продолжает; повторный запуск дозаполнит остальное. Ключи вне ASCII-safe charset (потенциальная инъекция через `pwsh -Command`) отбрасываются с предупреждением.
+
 ## CI/CD
 
 Workflows: `ci.yml`, `docker.yml`, `tauri.yml`, `cleanup-cache.yml`.
