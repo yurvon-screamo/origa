@@ -25,9 +25,8 @@ future contributors.
 
 **Context:** Field `h` in `cdn/phrases/phrase_index.json` could not be
 reproduced by the Python script `remove_invalid_phrases.py`, which blocked safe
-phrase removal (P-3 profanity cleanup).
-
-**Root cause:** The Rust producer `compute_hash`
+phrase removal (P-3 profanity cleanup). The mismatch was in key ordering: the
+Rust producer `compute_hash`
 (`utils/src/commands/enrich_phrases_with_grammar.rs:94-122`) uses `serde_json`
 without the `preserve_order` feature, so `Map = BTreeMap` and keys are emitted in
 alphabetical order (`c,g,i,t`). Python used `sort_keys=False`, producing
@@ -51,12 +50,12 @@ profanity phrases were removed (156749 → 156231), hash v15 `f5ae77ef...`.
 ### ADR-012.2: `build.rs` as the canonical source for JLPT levels (title parsing)
 
 **Context:** S-3 (Duolingo/Spy Family sets all tagged N5) was initially fixed by
-the Python script `remap_duolingo_spy_levels.py`. But the tests kept failing —
-`origa_ui/build.rs` regenerated `meta.json` with a hardcoded `"N5"` on every
-build.
-
-**Root cause:** `build.rs:536,581` hardcoded the level. The Python script was a
-band-aid that the build pipeline overwrote.
+the Python script `remap_duolingo_spy_levels.py` (commit `94e1d3bc`). But the
+tests kept failing — `origa_ui/build.rs` regenerated `meta.json` with a
+hardcoded `"N5"` on every build, overwriting the Python band-aid. Before the
+root-cause fix (commit `3100bea7`), the `extract_meta` calls inside
+`generate_well_known_meta` (`origa_ui/build.rs`) passed a literal `"N5"` for
+every Duolingo and Spy x Family entry.
 
 **Decision:** Fix the generator, not the data. A `section_number_from_title()`
 helper was added to `build.rs` (parsing "Section X" / "Модуль X" from the title
@@ -66,6 +65,14 @@ hardcoded to N3.
 **Empirical insight:** The parent directory name (`n3/n4/n5`) is a legacy
 grouping, NOT the JLPT level — the `n5/` catalogue contains 60 files with
 "Section 3" titles (which must be N4).
+
+**Alternatives considered:**
+
+- Keep the Python band-aid and run it as a build step → couples build
+  correctness to a Python dependency and to the script staying in sync with the
+  generator.
+- Derive the level from the parent directory name (`n3/n4/n5`) → empirically
+  wrong (the `n5/` directory contains 60 "Section 3" sets that must be N4).
 
 **Consequences:** The Python script is DEPRECATED (kept only as a diagnostic).
 The single source of truth is `build.rs`. The parsing logic is duplicated in
@@ -133,6 +140,14 @@ phrases fixed: `しかたねー` → `仕方ねー` ×8, `しかたねぇ` → `
 - Colloquial forms (`-ねー` long-vowel suffix) are often intentionally written
   without kanji.
 - There is no `text_kanji` field in `PhraseDetail` to verify against.
+
+**Alternatives considered:**
+
+- Auto-recover from a homophone dictionary → ambiguity makes any single choice
+  unreliable (`かた` alone has 5+ valid kanji).
+- Re-tokenize the kana form and pick the most frequent kanji → colloquial
+  `-ねー` suffixes are often intentionally kana-only, so "most frequent" is the
+  wrong signal.
 
 **Consequences:** D-1 is closed for this issue. If >20 phrases appear later, a
 follow-up with a curated list is warranted. The phrase index hash is UNCHANGED
@@ -204,8 +219,10 @@ log). Idempotency for Learned cards is preserved.
 
 1. **L-6** — requires a domain design decision (see ADR-012.4).
 2. **W-5 full** — grammar-aware card generation, coupled with L-6.
-3. **PR-2 verification** — defensive guard + tracing are in place; root cause was
-   not reproduced statically, "needs verification in production".
+3. **PR-2 (profile/offline cache re-trigger on language switch)** — the
+   defensive `CardCacheState::Idle` guard and `tracing::debug` at the
+   `set_locale` call sites are in place; the failure path could not be
+   reproduced statically, so it "needs verification in production" traces.
 4. **CDN deploy ordering** — `docs/handoff_issue_178_cdn.md` records that S3 must
    be deployed BEFORE pushing tests (audit tests compare against CDN state).
 
@@ -215,4 +232,7 @@ log). Idempotency for Learned cards is preserved.
 - Implementation: 35+ commits `ce5b1d15` → `b348a4ca`.
 - Tests: 1583 passed (baseline 1577 → +6 from the feature flag + audit fixes).
 - Handoff: `docs/handoff_issue_178_cdn.md`.
-- Related: ADR-006 (phrase-filtering — linked to the P-3 profanity removal).
+- Related: ADR-006 (phrase-dataset filtering by grammar markers; P-3 reused the
+  same `remove_invalid_phrases.py` pipeline for profanity removal, but the
+  filtering logic itself differs — ADR-006 removed non-educational fragments,
+  P-3 removed profanity).
