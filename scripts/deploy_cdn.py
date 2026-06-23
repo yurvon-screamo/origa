@@ -1,19 +1,22 @@
-"""Generate CDN manifest and deploy incrementally to S3."""
+"""Generate CDN manifest and deploy incrementally to S3.
+
+Single-file orchestrator: generates a local manifest of versioned files,
+compares against the remote manifest, uploads the diff, syncs immutable
+directories, then re-publishes the manifest. S3 transport lives in
+``_cdn_s3``; CDN-side HTTP verification lives in ``_cdn_verify``.
+"""
 
 from __future__ import annotations
 
 import argparse
 import hashlib
 import json
-import subprocess
 import sys
-import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 
-S3_BUCKET = "adaptable-foodbox-ucep7wx"
-S3_PROFILE = "origa"
-S3_ENDPOINT = "https://t3.storageapi.dev"
+import _cdn_s3
+import _cdn_verify
 
 VERSIONED_FILES: list[str] = [
     "dictionary/chunk_01.json",
@@ -95,78 +98,12 @@ def generate_manifest(cdn_dir: Path) -> dict[str, object]:
     }
 
 
-def s3_uri(key: str) -> str:
-    return f"s3://{S3_BUCKET}/{key}"
-
-
-def run_aws_raw(args: list[str]) -> subprocess.CompletedProcess[str]:
-    cmd = ["pwsh", "-Command", "aws", *args]
-    try:
-        return subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-        )
-    except FileNotFoundError:
-        print(
-            "ERROR: 'aws' CLI not found.",
-            file=sys.stderr,
-        )
-        sys.exit(1)
-
-
-def run_aws(args: list[str], dry_run: bool) -> subprocess.CompletedProcess[str]:
-    if dry_run:
-        print(f"  [DRY-RUN] aws {' '.join(args)}")
-        return subprocess.CompletedProcess(args, 0, "", "")
-
-    result = run_aws_raw(args)
-    if result.returncode != 0:
-        print(f"ERROR: aws {' '.join(args)}", file=sys.stderr)
-        print(result.stderr, file=sys.stderr)
-        sys.exit(1)
-    return result
-
-
-def download_remote_manifest(dry_run: bool) -> dict[str, object] | None:
-    with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as tmp:
-        tmp_path = Path(tmp.name)
-
-    if dry_run:
-        print("  [DRY-RUN] would download remote manifest")
-        return None
-
-    result = run_aws_raw(
-        [
-            "s3",
-            "cp",
-            s3_uri("manifest.json"),
-            str(tmp_path),
-            "--profile",
-            S3_PROFILE,
-            "--endpoint-url",
-            S3_ENDPOINT,
-        ]
-    )
-
-    if result.returncode != 0:
-        if "404" in result.stderr or "NoSuchKey" in result.stderr:
-            print("  Remote manifest not found (first deployment)")
-            return None
-        print("ERROR: failed to download remote manifest", file=sys.stderr)
-        print(result.stderr, file=sys.stderr)
-        sys.exit(1)
-
-    content = tmp_path.read_text(encoding="utf-8")
-    return json.loads(content)
-
-
 def compare_manifests(
     local: dict[str, object],
     remote: dict[str, object] | None,
 ) -> tuple[list[str], list[str]]:
     if remote is None:
-        return list(local["files"].keys()), []
+        return list(local["files"]), []
 
     remote_files = remote.get("files", {})
     local_files = local["files"]
@@ -183,6 +120,26 @@ def compare_manifests(
     return changed, unchanged
 
 
+def compute_files_to_upload(
+    local_manifest: dict[str, object],
+    remote_manifest: dict[str, object] | None,
+    force: bool,
+) -> tuple[list[str], list[str]]:
+    """Decide which versioned files to upload.
+
+    With ``force=True`` every local file is treated as changed, bypassing the
+    manifest hash comparison. This is the recovery path for the case where the
+    remote manifest is already current but the underlying S3 objects are stale
+    (partial deploy, immutable-cache poisoning): manifest-only comparison would
+    falsely report "no changes" in that situation and the CDN would stay
+    broken.
+    """
+    if force:
+        local_files = local_manifest["files"]
+        return list(local_files), []
+    return compare_manifests(local_manifest, remote_manifest)
+
+
 def upload_versioned_files(
     cdn_dir: Path,
     files: list[str],
@@ -196,16 +153,16 @@ def upload_versioned_files(
     for relative_path in sorted(files):
         local_path = cdn_dir / relative_path
         print(f"  {relative_path}")
-        run_aws(
+        _cdn_s3.run_aws(
             [
                 "s3",
                 "cp",
                 str(local_path),
-                s3_uri(relative_path),
+                _cdn_s3.s3_uri(relative_path),
                 "--profile",
-                S3_PROFILE,
+                _cdn_s3.S3_PROFILE,
                 "--endpoint-url",
-                S3_ENDPOINT,
+                _cdn_s3.S3_ENDPOINT,
                 "--cache-control",
                 "public, max-age=31536000, immutable",
             ],
@@ -222,16 +179,16 @@ def sync_immutable_dirs(cdn_dir: Path, dry_run: bool) -> None:
             continue
 
         print(f"  {dir_name}/")
-        run_aws(
+        _cdn_s3.run_aws(
             [
                 "s3",
                 "sync",
                 str(local_dir),
-                s3_uri(dir_name),
+                _cdn_s3.s3_uri(dir_name),
                 "--profile",
-                S3_PROFILE,
+                _cdn_s3.S3_PROFILE,
                 "--endpoint-url",
-                S3_ENDPOINT,
+                _cdn_s3.S3_ENDPOINT,
                 "--exclude",
                 "README.md",
                 "--cache-control",
@@ -244,16 +201,16 @@ def sync_immutable_dirs(cdn_dir: Path, dry_run: bool) -> None:
 def upload_manifest(cdn_dir: Path, dry_run: bool) -> None:
     manifest_path = cdn_dir / "manifest.json"
     print("\nUploading manifest.json (Cache-Control: no-cache)")
-    run_aws(
+    _cdn_s3.run_aws(
         [
             "s3",
             "cp",
             str(manifest_path),
-            s3_uri("manifest.json"),
+            _cdn_s3.s3_uri("manifest.json"),
             "--profile",
-            S3_PROFILE,
+            _cdn_s3.S3_PROFILE,
             "--endpoint-url",
-            S3_ENDPOINT,
+            _cdn_s3.S3_ENDPOINT,
             "--cache-control",
             "no-cache",
             "--metadata-directive",
@@ -270,8 +227,53 @@ def main() -> None:
         action="store_true",
         help="Show what would be deployed without actually uploading",
     )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Force upload all versioned files, ignoring manifest comparison. "
+        "Use when CDN actual files are stale but the manifest is current.",
+    )
+    parser.add_argument(
+        "--verify-remote",
+        action="store_true",
+        help="Download remote files and verify actual hash matches manifest. "
+        "Use to diagnose CDN/S3 inconsistencies. Read-only, never uploads.",
+    )
+    parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Also list unchanged files in the comparison step (default: quiet)",
+    )
     args = parser.parse_args()
     dry_run = args.dry_run
+
+    if args.verify_remote:
+        conflicting = [
+            name
+            for name, enabled in (
+                ("--force", args.force),
+                ("--dry-run", args.dry_run),
+                ("--verbose", args.verbose),
+            )
+            if enabled
+        ]
+        if conflicting:
+            print(
+                "WARNING: --verify-remote is read-only and ignores "
+                f"{', '.join(conflicting)}",
+                file=sys.stderr,
+            )
+        cdn_base_url = _cdn_verify.get_cdn_base_url()
+        if not cdn_base_url:
+            print(
+                "ERROR: ORIGA_CDN_BASE_URL is not set; cannot verify remote",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+        problems = _cdn_verify.verify_remote(cdn_base_url)
+        if problems != 0:
+            sys.exit(1)
+        return
 
     if dry_run:
         print("=== DRY RUN ===\n")
@@ -296,15 +298,19 @@ def main() -> None:
 
     # Step 2: Download remote manifest
     print("\nStep 2: Fetching remote manifest...")
-    remote_manifest = download_remote_manifest(dry_run)
+    remote_manifest = _cdn_s3.download_remote_manifest(dry_run)
 
     # Step 3: Compare
     print("\nStep 3: Comparing manifests...")
-    changed, unchanged = compare_manifests(manifest, remote_manifest)
+    if args.force:
+        print("  Force mode: uploading all versioned files")
+    changed, unchanged = compute_files_to_upload(manifest, remote_manifest, args.force)
     print(f"  {len(changed)} changed, {len(unchanged)} unchanged")
-    if changed:
-        for path in sorted(changed):
-            print(f"    + {path}")
+    for path in sorted(changed):
+        print(f"    + {path}")
+    if args.verbose:
+        for path in sorted(unchanged):
+            print(f"    = {path}")
 
     # Step 4: Upload changed versioned files
     print("\nStep 4: Uploading changed versioned files...")
