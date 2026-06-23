@@ -121,13 +121,43 @@ pub fn PhraseCardItem(
                 </div>
                 <div class="phrase-card-content">
                     <CollapsibleDescription>
-                        <MarkdownText
-                            content=Signal::derive(move || {
-                                crate::utils::text_format::split_sentences_to_markdown(&meaning.get())
-                            })
-                            known_kanji=known_kanji_for_markdown
-                            test_id=Signal::derive(|| "phrases-card-meaning".to_string())
-                        />
+                        {move || {
+                            let sentences = crate::utils::text_format::split_sentences_to_list(
+                                &meaning.get(),
+                            );
+                            let known_kanji_clone = known_kanji_for_markdown.clone();
+                            if sentences.len() <= 1 {
+                                let single = sentences.into_iter().next().unwrap_or_default();
+                                view! {
+                                    <MarkdownText
+                                        content=Signal::derive(move || single.clone())
+                                        known_kanji=known_kanji_clone
+                                        class=Signal::derive(|| "phrase-meaning-line".to_string())
+                                        test_id=Signal::derive(|| "phrases-card-meaning".to_string())
+                                    />
+                                }
+                                .into_any()
+                            } else {
+                                view! {
+                                    <div class="flex flex-col gap-1">
+                                        {sentences
+                                            .into_iter()
+                                            .map(|s| {
+                                                let kk = known_kanji_for_markdown.clone();
+                                                view! {
+                                                    <MarkdownText
+                                                        content=Signal::derive(move || s.clone())
+                                                        known_kanji=kk
+                                                        class=Signal::derive(|| "phrase-meaning-line".to_string())
+                                                    />
+                                                }
+                                            })
+                                            .collect::<Vec<_>>()}
+                                    </div>
+                                }
+                                .into_any()
+                            }
+                        }}
                     </CollapsibleDescription>
                 </div>
             </div>
