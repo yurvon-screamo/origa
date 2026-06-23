@@ -1,0 +1,296 @@
+"""One-time refresh of Cache-Control metadata on existing S3 objects.
+
+After the tiered policy (``_cdn_cache``) ships, fresh uploads get the right
+header, but objects already in the bucket keep whatever Cache-Control they
+were originally given. This script walks every object, compares its current
+Cache-Control against the policy, and rewrites the metadata in place via an
+``s3api copy-object --metadata-directive REPLACE`` self-copy where they differ.
+
+Only metadata changes — object bytes are copied server-side by S3, never
+downloaded. Listing and HEAD always run (even in ``--dry-run``) so the preview
+reflects what would actually change; only the copy is gated by ``--dry-run``.
+
+Recovery: the walk is idempotent — ``needs_update`` decides per object from
+live metadata, so re-running after a partial failure picks up exactly the
+objects still mis-configured. A failure on one object (HEAD error, oversize,
+copy error) is reported and skipped, not fatal; the run exits non-zero only if
+any object failed, so a re-run completes the remainder.
+
+Usage::
+
+    python scripts/refresh_cache_control.py --dry-run   # preview (read-only)
+    python scripts/refresh_cache_control.py              # apply
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from collections import Counter
+from typing import NamedTuple
+
+import _cdn_cache
+from _cdn_s3 import S3_BUCKET, S3_ENDPOINT, S3_PROFILE, run_aws_raw
+
+# copy-object caps at 5 GiB. Only objects whose Cache-Control changes get
+# copied, and those are the small release-updated JSON — but guard anyway so
+# a future large object with wrong metadata fails with a clear message
+# instead of an opaque T3 error mid-walk.
+COPY_OBJECT_MAX_BYTES = 5 * 1024 * 1024 * 1024
+
+# The aws CLI is invoked through ``pwsh -Command`` (see _cdn_s3.run_aws_raw),
+# which re-parses argv as a PowerShell script. A key containing a PowerShell
+# metacharacter could therefore execute as a command/statement rather than a
+# literal argument. This is a DENYLIST, not an ASCII allowlist: CJK and other
+# Unicode letters are not command separators and pass through safely, which
+# matters because kanji_animations/ and kanji_frames/ use the kanji themselves
+# as filenames (一.svg, 丁.svg, ...).
+_UNSAFE_KEY_CHARS = frozenset(" \t\r\n;|&`$\"'<>()@\\")
+
+
+class ObjectMetadata(NamedTuple):
+    cache_control: str | None
+    content_length: int | None
+
+
+class WalkOutcome(NamedTuple):
+    category: str
+    failed: bool
+
+
+def normalize_cache_control(cc: str | None) -> str:
+    """Collapse a Cache-Control header for tolerant comparison.
+
+    S3 stores the header verbatim, but objects set by different tooling over
+    time may differ in spacing or case (``max-age=300`` vs ``max-age = 300``).
+    Treat such variants as equal so we don't pointlessly rewrite metadata.
+    """
+    return cc.replace(" ", "").lower() if cc else ""
+
+
+def needs_update(current_cc: str | None, target_cc: str) -> bool:
+    return normalize_cache_control(current_cc) != normalize_cache_control(target_cc)
+
+
+def is_safe_key(key: str) -> bool:
+    return bool(key) and not any(ch in _UNSAFE_KEY_CHARS for ch in key)
+
+
+def filter_safe_keys(keys: list[str]) -> tuple[list[str], list[str]]:
+    safe = [k for k in keys if is_safe_key(k)]
+    unsafe = [k for k in keys if not is_safe_key(k)]
+    return safe, unsafe
+
+
+def _request_key_page(token: str | None) -> tuple[list[str], str | None, bool]:
+    """Fetch one list-objects-v2 page.
+
+    Returns the page's keys, the continuation token for the next page (None if
+    not truncated), and whether more pages remain.
+    """
+    args = [
+        "s3api",
+        "list-objects-v2",
+        "--bucket",
+        S3_BUCKET,
+        "--profile",
+        S3_PROFILE,
+        "--endpoint-url",
+        S3_ENDPOINT,
+    ]
+    if token:
+        args += ["--continuation-token", token]
+    result = run_aws_raw(args)
+    if result.returncode != 0:
+        print("ERROR: list-objects-v2 failed", file=sys.stderr)
+        print(result.stderr, file=sys.stderr)
+        sys.exit(1)
+
+    data = json.loads(result.stdout) if result.stdout.strip() else {}
+    keys = [
+        obj["Key"]
+        for obj in data.get("Contents", [])
+        if isinstance(obj.get("Key"), str)
+    ]
+    return keys, data.get("NextContinuationToken"), bool(data.get("IsTruncated"))
+
+
+def list_all_keys() -> tuple[list[str], int]:
+    """List every object key in the bucket, paginating fully.
+
+    Returns the safe keys plus a count of keys dropped as unsafe (shell
+    metacharacters). Aborts if S3 signals truncation without a continuation
+    token — that would silently lose keys.
+    """
+    raw: list[str] = []
+    token: str | None = None
+    while True:
+        keys, next_token, truncated = _request_key_page(token)
+        raw.extend(keys)
+        if not truncated:
+            break
+        if not next_token:
+            print(
+                "ERROR: S3 returned IsTruncated without NextContinuationToken; "
+                "cannot paginate safely",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+        token = next_token
+
+    safe, unsafe = filter_safe_keys(raw)
+    for key in unsafe:
+        print(f"  WARNING: dropping unsafe key: {key!r}", file=sys.stderr)
+    return safe, len(unsafe)
+
+
+def head_object(key: str) -> ObjectMetadata | None:
+    result = run_aws_raw(
+        [
+            "s3api",
+            "head-object",
+            "--bucket",
+            S3_BUCKET,
+            "--key",
+            key,
+            "--profile",
+            S3_PROFILE,
+            "--endpoint-url",
+            S3_ENDPOINT,
+        ]
+    )
+    if result.returncode != 0:
+        print(f"  WARNING: head-object failed for {key}", file=sys.stderr)
+        print(result.stderr, file=sys.stderr)
+        return None
+    data = json.loads(result.stdout) if result.stdout.strip() else {}
+    length = data.get("ContentLength")
+    return ObjectMetadata(
+        cache_control=data.get("CacheControl"),
+        content_length=int(length) if isinstance(length, int) else None,
+    )
+
+
+def update_cache_control(key: str, target_cc: str, dry_run: bool) -> bool:
+    """Rewrite one object's Cache-Control via a server-side self-copy.
+
+    Returns True if applied (or previewed in dry-run), False if the copy
+    failed — the caller continues with the remaining objects rather than
+    aborting the whole walk.
+    """
+    args = [
+        "s3api",
+        "copy-object",
+        "--bucket",
+        S3_BUCKET,
+        "--key",
+        key,
+        "--copy-source",
+        f"{S3_BUCKET}/{key}",
+        "--profile",
+        S3_PROFILE,
+        "--endpoint-url",
+        S3_ENDPOINT,
+        "--metadata-directive",
+        "REPLACE",
+        "--cache-control",
+        target_cc,
+    ]
+    if dry_run:
+        return True
+    result = run_aws_raw(args)
+    if result.returncode != 0:
+        print(f"  ERROR: copy-object failed for {key}", file=sys.stderr)
+        print(result.stderr, file=sys.stderr)
+        return False
+    return True
+
+
+def _walk_one(key: str, dry_run: bool) -> WalkOutcome:
+    meta = head_object(key)
+    if meta is None:
+        return WalkOutcome("head_failed", failed=True)
+
+    if meta.content_length is not None and meta.content_length > COPY_OBJECT_MAX_BYTES:
+        print(
+            f"  SKIP   {key}  ({meta.content_length} B exceeds copy-object "
+            f"{COPY_OBJECT_MAX_BYTES} B limit; update metadata manually)"
+        )
+        # Not retriable — re-running cannot beat the copy-object 5 GiB cap; the
+        # object needs a manual metadata update. Reported separately in main().
+        return WalkOutcome("oversize", failed=False)
+
+    target = _cdn_cache.cache_control_for(key)
+    if not needs_update(meta.cache_control, target):
+        return WalkOutcome("already_ok", failed=False)
+
+    current_display = meta.cache_control or "(none)"
+    print(f"  UPDATE {key}  [{current_display} -> {target}]")
+    if update_cache_control(key, target, dry_run):
+        return WalkOutcome("updated", failed=False)
+    return WalkOutcome("copy_failed", failed=True)
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Refresh Cache-Control on existing S3 objects to match "
+        "the tiered policy (read-only listing/HEAD always runs).",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Show what would change without rewriting metadata",
+    )
+    args = parser.parse_args()
+
+    if args.dry_run:
+        print("=== DRY RUN ===\n")
+
+    print(f"Listing objects in s3://{S3_BUCKET} ...")
+    keys, dropped = list_all_keys()
+    print(f"  {len(keys)} safe, {dropped} dropped (unsafe charset)\n")
+
+    counts: Counter[str] = Counter()
+    retriable: list[str] = []
+    oversize: list[str] = []
+
+    for key in keys:
+        outcome = _walk_one(key, args.dry_run)
+        counts[outcome.category] += 1
+        if outcome.category == "oversize":
+            oversize.append(key)
+        elif outcome.failed:
+            retriable.append(key)
+
+    print("\nSummary:")
+    print(f"  scanned:           {len(keys)}")
+    print(f"  updated:           {counts['updated']}")
+    print(f"  already OK:        {counts['already_ok']}")
+    print(f"  dropped (unsafe):  {dropped}")
+
+    needs_attention = bool(retriable or oversize)
+    if retriable:
+        print(f"  failed (retriable): {len(retriable)}")
+        for key in retriable:
+            print(f"    - {key}")
+    if oversize:
+        print(f"  oversize (> 5 GiB, manual): {len(oversize)}")
+        for key in oversize:
+            print(f"    - {key}")
+
+    if args.dry_run:
+        print("\n(dry-run: no metadata rewritten)")
+    elif retriable:
+        print("\nRe-run to retry the failed objects (walk is idempotent).")
+    if oversize:
+        print(
+            "\nOversize objects exceed the 5 GiB copy-object limit and need a "
+            "manual metadata update (re-running will not fix them)."
+        )
+    if needs_attention:
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

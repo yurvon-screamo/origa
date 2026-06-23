@@ -49,7 +49,7 @@ cd tauri && cargo tauri dev
 - `ORIGA_APP_URI_PREFIX` — app subdomain prefix (e.g. `app` → `app.origa.uwuwu.net`)
 - Landing = base domain (no prefix)
 
-**Local dev:** `$env:ORIGA_CDN_BASE_URL = "https://s3.origa.uwuwu.net"` (production CDN endpoint — read-only, safe to use directly; all objects are immutable, see CDN section below)
+**Local dev:** `$env:ORIGA_CDN_BASE_URL = "https://s3.origa.uwuwu.net"` (production CDN endpoint — read-only, safe to use directly; cache policy is tiered, see CDN / S3 below)
 **Landing dev:** `$env:ORIGA_LANDING_BASE_URL = "https://origa.app"`
 
 ## Команды
@@ -76,20 +76,29 @@ cargo fmt --check && cargo fmt
 T3 Storage (`s3://adaptable-foodbox-ucep7wx`), CDN URL вшивается через `build.rs`.
 Трейт: `origa/src/traits/cdn_provider.rs`, реализация: `origa_ui/src/repository/cdn_provider.rs`.
 
-Все объекты — статические и immutable, поэтому `Cache-Control: public, max-age=31536000, immutable`.
+Все объекты — статические, но кэшируются по-разному в зависимости от частоты изменений. Политика в `scripts/_cdn_cache.py`, применяется в `deploy_cdn.py`.
+
+- **Truly-static** (`public, max-age=31536000, immutable`): ML-модели (`ndlocr/`, `whisper/`), kanji SVG/frames (`kanji_animations/`, `kanji_frames/`), audio фраз (`phrases/audio/`), системный словарь lindera (`dictionaries/`)
+- **Release-updated** (`public, max-age=300, must-revalidate`): контент-JSON — `grammar/`, `dictionary/`, `phrases/phrase_index.json`, `phrases/data/`, `pitch/`, `well_known_set/`
+- **Always-fresh** (`no-cache`): `manifest.json`
+
+immutable уместен только для truly-static файлов. `grammar`/`phrases`/`dictionary` обновляются каждый релиз (W-11, P-3, L-4, S-3) — для них immutable означал CDN edge-cache poisoning (PR #182): S3 обновлялся, а edge держал годовой кэш и отдавал устаревшую версию, пока кэш не сбросили вручную.
 
 ```powershell
-python scripts/deploy_cdn.py            # генерация манифеста + инкрементальный деплой
-python scripts/deploy_cdn.py --dry-run  # показать что будет залито
+python scripts/deploy_cdn.py            # генерация манифеста + инкрементальный деплой (по политике)
+python scripts/deploy_cdn.py --dry-run  # показать что будет залито + Cache-Control каждого файла
 ```
 
-Манифест (`manifest.json`) содержит SHA256 хеши 32 версионных файлов и позволяет клиенту обнаруживать обновления. Деплоится с `Cache-Control: no-cache` (единственное исключение из immutable-политики).
+Манифест (`manifest.json`) содержит SHA256 хеши версионных файлов и позволяет клиенту обнаруживать обновления. Деплоится с `Cache-Control: no-cache`.
 
-Обновить Cache-Control на существующих объектах (one-time):
+Обновить Cache-Control на существующих объектах (one-time, после смены политики — новые upload'ы уже корректны, но старые объекты хранят прежний заголовок):
 
 ```powershell
-aws s3 cp s3://adaptable-foodbox-ucep7wx/ s3://adaptable-foodbox-ucep7wx/ --profile origa --endpoint-url https://t3.storageapi.dev --recursive --metadata-directive REPLACE --cache-control "public, max-age=31536000, immutable"
+python scripts/refresh_cache_control.py --dry-run  # read-only: HEAD на каждый объект, показывает что изменится
+python scripts/refresh_cache_control.py             # применить (server-side copy-object с REPLACE metadata)
 ```
+
+Идемпотентен: обновляются только объекты с неверным Cache-Control. При сбое на середине объект пропускается, скрипт продолжает; повторный запуск дозаполнит остальное. Ключи с shell-метасимволами (потенциальная инъекция через `pwsh -Command`) отбрасываются с предупреждением; CJK-имена kanji-файлов (`一.svg` и т.п.) обрабатываются корректно.
 
 ## CI/CD
 

@@ -1,9 +1,10 @@
 """Generate CDN manifest and deploy incrementally to S3.
 
 Single-file orchestrator: generates a local manifest of versioned files,
-compares against the remote manifest, uploads the diff, syncs immutable
-directories, then re-publishes the manifest. S3 transport lives in
-``_cdn_s3``; CDN-side HTTP verification lives in ``_cdn_verify``.
+compares against the remote manifest, uploads the diff, syncs content
+directories, then re-publishes the manifest. Cache-Control per object comes
+from ``_cdn_cache`` (tiered policy); S3 transport lives in ``_cdn_s3``;
+CDN-side HTTP verification lives in ``_cdn_verify``.
 """
 
 from __future__ import annotations
@@ -15,6 +16,7 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+import _cdn_cache
 import _cdn_s3
 import _cdn_verify
 
@@ -152,7 +154,8 @@ def upload_versioned_files(
     print(f"\nUploading {len(files)} changed versioned file(s):")
     for relative_path in sorted(files):
         local_path = cdn_dir / relative_path
-        print(f"  {relative_path}")
+        cache_control = _cdn_cache.cache_control_for(relative_path)
+        print(f"  {relative_path}  [{cache_control}]")
         _cdn_s3.run_aws(
             [
                 "s3",
@@ -164,21 +167,24 @@ def upload_versioned_files(
                 "--endpoint-url",
                 _cdn_s3.S3_ENDPOINT,
                 "--cache-control",
-                "public, max-age=31536000, immutable",
+                cache_control,
             ],
             dry_run,
         )
 
 
-def sync_immutable_dirs(cdn_dir: Path, dry_run: bool) -> None:
-    print("\nSyncing immutable directories:")
+def sync_directories(cdn_dir: Path, dry_run: bool) -> None:
+    print("\nSyncing directories:")
     for dir_name in SYNC_DIRS:
         local_dir = cdn_dir / dir_name
         if not local_dir.is_dir():
             print(f"  {dir_name}/ — not found locally, skipping")
             continue
 
-        print(f"  {dir_name}/")
+        # Each SYNC_DIR is homogeneous in update frequency (all-ML, all-art,
+        # all-content), so one Cache-Control per directory is correct.
+        cache_control = _cdn_cache.cache_control_for(dir_name + "/")
+        print(f"  {dir_name}/  [{cache_control}]")
         _cdn_s3.run_aws(
             [
                 "s3",
@@ -192,7 +198,7 @@ def sync_immutable_dirs(cdn_dir: Path, dry_run: bool) -> None:
                 "--exclude",
                 "README.md",
                 "--cache-control",
-                "public, max-age=31536000, immutable",
+                cache_control,
             ],
             dry_run,
         )
@@ -200,7 +206,8 @@ def sync_immutable_dirs(cdn_dir: Path, dry_run: bool) -> None:
 
 def upload_manifest(cdn_dir: Path, dry_run: bool) -> None:
     manifest_path = cdn_dir / "manifest.json"
-    print("\nUploading manifest.json (Cache-Control: no-cache)")
+    cache_control = _cdn_cache.cache_control_for("manifest.json")
+    print(f"\nUploading manifest.json (Cache-Control: {cache_control})")
     _cdn_s3.run_aws(
         [
             "s3",
@@ -212,7 +219,7 @@ def upload_manifest(cdn_dir: Path, dry_run: bool) -> None:
             "--endpoint-url",
             _cdn_s3.S3_ENDPOINT,
             "--cache-control",
-            "no-cache",
+            cache_control,
             "--metadata-directive",
             "REPLACE",
         ],
@@ -316,9 +323,9 @@ def main() -> None:
     print("\nStep 4: Uploading changed versioned files...")
     upload_versioned_files(cdn_dir, changed, dry_run)
 
-    # Step 5: Sync immutable directories
-    print("\nStep 5: Syncing immutable directories...")
-    sync_immutable_dirs(cdn_dir, dry_run)
+    # Step 5: Sync directories
+    print("\nStep 5: Syncing directories...")
+    sync_directories(cdn_dir, dry_run)
 
     # Step 6: Upload manifest
     print("\nStep 6: Uploading manifest...")
