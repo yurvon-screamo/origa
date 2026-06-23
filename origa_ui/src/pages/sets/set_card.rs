@@ -2,7 +2,7 @@ use super::types::SetInfo;
 use crate::i18n::{t, use_i18n};
 use crate::ui_components::{
     Button, ButtonSize, ButtonVariant, Card, Checkbox, Heading, HeadingLevel, MarkdownText, Tag,
-    TagVariant, Text, TextSize, TypographyVariant,
+    TagVariant, Text, TextSize, Tooltip, TypographyVariant,
 };
 use leptos::prelude::*;
 use leptos_icons::Icon;
@@ -19,6 +19,7 @@ pub fn SetCard(
     let i18n = use_i18n();
     let description = set_info.description.clone();
     let title_for_display = set_info.title.clone();
+    let title_for_tooltip = set_info.title.clone();
     let is_imported = set_info.is_imported;
     let word_count = set_info.word_count;
     let set_id = set_info.set_id.clone();
@@ -55,9 +56,11 @@ pub fn SetCard(
                             on_change=toggle_callback
                         />
                     </Show>
-                    <Heading level=Signal::derive(|| HeadingLevel::H4) class="truncate">
-                        {title_for_display}
-                    </Heading>
+                    <Tooltip text=Signal::derive(move || title_for_tooltip.clone())>
+                        <Heading level=Signal::derive(|| HeadingLevel::H4) class="truncate">
+                            {title_for_display}
+                        </Heading>
+                    </Tooltip>
                 </div>
                 <SetCardButton
                     set_id=set_info.set_id.clone()
