@@ -383,7 +383,21 @@ pub fn GrammarDetail() -> impl IntoView {
                                     data-testid="grammar-detail-practice-btn"
                                     on:click=move |ev| {
                                         ev.stop_propagation();
-                                        is_practice_open.set(true);
+                                        if cfg!(feature = "grammar_practice_lesson_mode") {
+                                            if let Some(rule) = grammar_rule {
+                                                let path = format!(
+                                                    "/lesson?mode=grammar_practice&grammar_id={}",
+                                                    rule.rule_id()
+                                                );
+                                                tracing::info!(
+                                                    grammar_rule_id = %rule.rule_id(),
+                                                    "Navigating to grammar practice lesson"
+                                                );
+                                                navigate.get_value()(&path, Default::default());
+                                            }
+                                        } else {
+                                            is_practice_open.set(true);
+                                        }
                                     }
                                 >
                                     {practice_label}
@@ -547,7 +561,21 @@ pub fn GrammarDetail() -> impl IntoView {
                                                 data-testid="grammar-detail-practice-btn-mobile"
                                                 on:click=move |ev| {
                                                     ev.stop_propagation();
-                                                    is_practice_open.set(true);
+                                                    if cfg!(feature = "grammar_practice_lesson_mode") {
+                                                        if let Some(rule) = grammar_rule {
+                                                            let path = format!(
+                                                                "/lesson?mode=grammar_practice&grammar_id={}",
+                                                                rule.rule_id()
+                                                            );
+                                                            tracing::info!(
+                                                                grammar_rule_id = %rule.rule_id(),
+                                                                "Navigating to grammar practice lesson (mobile)"
+                                                            );
+                                                            navigate.get_value()(&path, Default::default());
+                                                        }
+                                                    } else {
+                                                        is_practice_open.set(true);
+                                                    }
                                                 }
                                             >
                                                 {practice_label}
