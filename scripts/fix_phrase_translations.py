@@ -22,6 +22,8 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from _cdn_io import atomic_write_json
+
 # Hand-verified translation corrections, keyed by phrase id (Ulid-style string
 # from the "i" field). Each value partially replaces keys inside the phrase
 # record — only the listed fields are mutated, others (x/en/tokens) are left
@@ -85,8 +87,7 @@ def apply_to_chunk_file(
             changes.append((phrase_id, field, f"{old_value!r} -> {new_value!r}"))
 
     if changes and not dry_run:
-        with open(path, "w", encoding="utf-8") as f:
-            json.dump(phrases, f, ensure_ascii=False, separators=(",", ":"))
+        atomic_write_json(path, phrases)
     return changes
 
 
@@ -110,7 +111,9 @@ def main() -> int:
             total_changes += 1
 
     if missing_ids:
-        print(f"\nWARNING: {len(missing_ids)} phrase id(s) not found in any chunk: {sorted(missing_ids)}")
+        print(
+            f"\nWARNING: {len(missing_ids)} phrase id(s) not found in any chunk: {sorted(missing_ids)}"
+        )
     print(f"\nTotal field updates: {total_changes}")
     if args.dry_run:
         print("--dry-run: no files modified.")

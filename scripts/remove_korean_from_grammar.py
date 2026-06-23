@@ -24,6 +24,8 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from _cdn_io import atomic_write_json
+
 # Per-rule replacements. Keys are rule_ids; values are (old, new) substring
 # pairs applied to every string value in that rule (across all languages and
 # fields, including nested examples / nuances / how_to_form).
@@ -77,7 +79,9 @@ def apply_replacements_to_value(value: Any, replacements: list[tuple[str, str]])
             new = new.replace(old, repl)
         return new
     if isinstance(value, dict):
-        return {k: apply_replacements_to_value(v, replacements) for k, v in value.items()}
+        return {
+            k: apply_replacements_to_value(v, replacements) for k, v in value.items()
+        }
     if isinstance(value, list):
         return [apply_replacements_to_value(v, replacements) for v in value]
     return value
@@ -96,7 +100,9 @@ def apply_to_rule(rule: dict, log_prefix: str) -> int:
             rule[key] = new_val
             fields_changed += 1
     if fields_changed:
-        print(f"  {log_prefix} rule_id={rule_id}: {fields_changed} top-level field(s) updated")
+        print(
+            f"  {log_prefix} rule_id={rule_id}: {fields_changed} top-level field(s) updated"
+        )
     return fields_changed
 
 
@@ -106,8 +112,7 @@ def process_grammar_json(path: Path, dry_run: bool) -> int:
     rules = data.get("grammar", [])
     changed = sum(apply_to_rule(rule, "grammar.json") for rule in rules)
     if changed and not dry_run:
-        with open(path, "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, separators=(",", ":"))
+        atomic_write_json(path, data)
     return changed
 
 
@@ -126,8 +131,7 @@ def process_rules_dir(rules_dir: Path, dry_run: bool) -> int:
         if before != after:
             total_changed += 1
             if not dry_run:
-                with open(path, "w", encoding="utf-8") as f:
-                    json.dump(data, f, ensure_ascii=False, separators=(",", ":"))
+                atomic_write_json(path, data)
     return total_changed
 
 

@@ -27,8 +27,17 @@ import re
 import sys
 from pathlib import Path
 
+from _cdn_io import atomic_write_json
+
 SECTION_RE = re.compile(r"(?:Section|Модуль)\s+(\d+)", re.IGNORECASE)
-SECTION_TO_LEVEL: dict[int, str] = {1: "N5", 2: "N5", 3: "N4", 4: "N4", 5: "N3", 6: "N3"}
+SECTION_TO_LEVEL: dict[int, str] = {
+    1: "N5",
+    2: "N5",
+    3: "N4",
+    4: "N4",
+    5: "N3",
+    6: "N3",
+}
 SPY_FAMILY_LEVEL = "N3"
 
 
@@ -113,14 +122,17 @@ def main() -> int:
         print(f"  ... and {len(spy_changes) - 5} more")
 
     if skipped_no_section:
-        print(f"\nWARNING: {len(skipped_no_section)} Duolingo sets with no Section/Модуль in title — left unchanged")
+        print(
+            f"\nWARNING: {len(skipped_no_section)} Duolingo sets with no Section/Модуль in title — left unchanged"
+        )
         for rid in skipped_no_section[:5]:
             print(f"  {rid}")
 
     if not args.dry_run and (duolingo_changes or spy_changes):
-        with open(meta_path, "w", encoding="utf-8") as f:
-            json.dump(records, f, ensure_ascii=False, separators=(",", ":"))
-        print(f"\nWrote {len(duolingo_changes) + len(spy_changes)} updates to {meta_path}")
+        atomic_write_json(meta_path, records)
+        print(
+            f"\nWrote {len(duolingo_changes) + len(spy_changes)} updates to {meta_path}"
+        )
     elif args.dry_run:
         print("\n--dry-run: no files modified.")
     else:

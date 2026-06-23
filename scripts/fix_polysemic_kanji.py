@@ -17,6 +17,8 @@ import json
 import sys
 from pathlib import Path
 
+from _cdn_io import atomic_write_json
+
 # Curated, hand-verified fixes. Each value is a (description_en, description_ru)
 # pair derived from kanjidic / jisho.org / standard Russian japanist lexicons.
 # Only entries where the previous RU gloss was the wrong sense of a polysemic
@@ -29,7 +31,10 @@ POLYSEMIC_FIXES: dict[str, tuple[list[str], list[str]]] = {
     # 州: EN "state" (administrative vs condition) → RU previously "состояние" (condition — wrong)
     "州": (["state", "province"], ["штат", "провинция", "область"]),
     # 津: EN "port" (ferry/harbor vs input-hole) → RU previously "входное отверстие" (wrong)
-    "津": (["port", "ferry crossing", "harbor"], ["переправа", "порт", "гавань", "брод"]),
+    "津": (
+        ["port", "ferry crossing", "harbor"],
+        ["переправа", "порт", "гавань", "брод"],
+    ),
     # 軽: EN "light" (weight vs illumination) → RU previously "свет" (illumination — wrong)
     "軽": (["light (weight)", "easy"], ["лёгкий", "легковесный", "несерьёзный"]),
     # 封: EN "seal" (envelope vs animal) → RU previously "тюлень" (the animal — wrong)
@@ -53,15 +58,24 @@ POLYSEMIC_FIXES: dict[str, tuple[list[str], list[str]]] = {
     # 植: EN "plant" (verb vs noun-only) → RU previously "растение" (noun-only — incomplete)
     "植": (["to plant", "plant"], ["сажать", "насаждать", "растение"]),
     # 申: EN "state" (to state vs noun) → RU previously "сказать" (right verb sense, but EN ambiguous)
-    "申": (["to say (humble)", "monkey (zodiac)"], ["говорить (вежливо)", "обезьяна (зодиак)"]),
+    "申": (
+        ["to say (humble)", "monkey (zodiac)"],
+        ["говорить (вежливо)", "обезьяна (зодиак)"],
+    ),
     # 述: EN "state" (to state) → RU previously "сказать" (too generic for 述=to expound)
     "述": (["to state", "to expound"], ["излагать", "высказывать", "рассказывать"]),
     # 候: EN "season" (narrow) → RU previously "климат" (narrow) — broaden to season/weather/climate
     "候": (["season", "weather", "climate"], ["сезон", "погода", "климат", "ожидать"]),
     # 兆: EN "sign" (narrow) → RU previously "знак" — broaden with omen/trillion senses
-    "兆": (["sign", "omen", "trillion"], ["знак", "признак", "предзнаменование", "триллион"]),
+    "兆": (
+        ["sign", "omen", "trillion"],
+        ["знак", "признак", "предзнаменование", "триллион"],
+    ),
     # 符: EN "sign" (narrow) → RU previously "знак" — broaden with talisman/token senses
-    "符": (["sign", "token", "talisman"], ["знак", "талисман", "жетон", "соответствие"]),
+    "符": (
+        ["sign", "token", "talisman"],
+        ["знак", "талисман", "жетон", "соответствие"],
+    ),
     # 房: EN "room" (narrow) → RU previously "комната" — broaden with chamber/branch senses
     "房": (["room", "chamber"], ["комната", "покой", "ответвление", "секция"]),
 }
@@ -87,7 +101,9 @@ def load_kanji(path: Path) -> dict:
         return json.load(f)
 
 
-def apply_fixes(data: dict) -> list[tuple[str, list[str], list[str], list[str], list[str]]]:
+def apply_fixes(
+    data: dict,
+) -> list[tuple[str, list[str], list[str], list[str], list[str]]]:
     """Apply fixes in place. Returns list of (kanji, old_en, new_en, old_ru, new_ru)."""
     kanji_list = data.get("kanji", [])
     changed: list[tuple[str, list[str], list[str], list[str], list[str]]] = []
@@ -108,7 +124,9 @@ def apply_fixes(data: dict) -> list[tuple[str, list[str], list[str], list[str], 
         seen.add(literal)
     missing = set(POLYSEMIC_FIXES) - seen
     if missing:
-        print(f"WARNING: {len(missing)} kanji from fix-table not found in data: {sorted(missing)}")
+        print(
+            f"WARNING: {len(missing)} kanji from fix-table not found in data: {sorted(missing)}"
+        )
     return changed
 
 
@@ -130,8 +148,7 @@ def main() -> int:
     if args.dry_run:
         print("\n--dry-run: no files modified.")
         return 0
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, separators=(",", ":"))
+    atomic_write_json(path, data)
     print(f"\nWrote {len(changed)} fixes to {path}")
     return 0
 

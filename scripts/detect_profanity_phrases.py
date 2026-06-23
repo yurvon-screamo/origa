@@ -21,6 +21,8 @@ import json
 import sys
 from pathlib import Path
 
+from _cdn_io import atomic_write_json
+
 # Curated rude-lemma list. Matched as substrings of the source (x) field, which
 # catches conjugations and compounds (やがる/やがれ/しくさりやがった, etc.).
 # Verified against jisho.org / common jp_ru slang lexicons:
@@ -111,15 +113,15 @@ def main() -> int:
     matches, by_lemma = scan(data_dir)
     phrase_ids = [pid for pid, _ in matches]
 
-    print(f"Profanity scan complete.")
+    print("Profanity scan complete.")
     print(f"  Total phrases matched: {len(matches)}")
     print(f"  Unique phrase ids:     {len(set(phrase_ids))}")
-    print(f"  Matches per lemma:")
+    print("  Matches per lemma:")
     for lemma, ids in by_lemma.items():
         if ids:
             print(f"    {lemma:<14}  {len(ids):>4}")
 
-    print(f"\n  Sample matched source texts (first 10):")
+    print("\n  Sample matched source texts (first 10):")
     for pid, x in matches[:10]:
         print(f"    [{pid}] {x[:80]!r}")
 
@@ -133,10 +135,8 @@ def main() -> int:
             "reason": "profanity (#178 P-3)",
             "lemmas": list(all_lemmas()),
         }
-        out_path = Path(args.report)
-        with open(out_path, "w", encoding="utf-8") as f:
-            json.dump(report, f, ensure_ascii=False, separators=(",", ":"), indent=2)
-        print(f"\nWrote report: {out_path} ({len(phrase_ids)} ids)")
+        atomic_write_json(Path(args.report), report, compact=False)
+        print(f"\nWrote report: {args.report} ({len(phrase_ids)} ids)")
     else:
         print("\n--dry-run: report not written.")
     return 0
