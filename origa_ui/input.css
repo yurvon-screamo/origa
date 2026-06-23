@@ -1073,7 +1073,6 @@ input[type="submit"],
 
 .tooltip {
     position: absolute;
-    bottom: calc(100% + 8px);
     left: 50%;
     transform: translateX(-50%);
     background: var(--fg-black);
@@ -1094,7 +1093,11 @@ input[type="submit"],
     pointer-events: none;
 }
 
-.tooltip::after {
+.tooltip--top {
+    bottom: calc(100% + 8px);
+}
+
+.tooltip--top::after {
     content: "";
     position: absolute;
     top: 100%;
@@ -1102,6 +1105,20 @@ input[type="submit"],
     transform: translateX(-50%);
     border: 6px solid transparent;
     border-top-color: var(--fg-black);
+}
+
+.tooltip--bottom {
+    top: calc(100% + 8px);
+}
+
+.tooltip--bottom::after {
+    content: "";
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-bottom-color: var(--fg-black);
 }
 
 .tooltip-container:hover .tooltip {
