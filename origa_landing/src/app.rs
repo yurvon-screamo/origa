@@ -14,7 +14,7 @@ pub fn shell(_options: LeptosOptions) -> impl IntoView {
                 <meta charset="utf-8" />
                 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
                 <meta name="theme-color" content="#3d4535" />
-                <link rel="icon" href="/favicon.ico" sizes="any" />
+                <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
                 <link rel="icon" type="image/png" href="/favicon.png" />
                 <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
                 <link rel="preconnect" href="https://fonts.googleapis.com" />
