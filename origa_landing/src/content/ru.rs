@@ -12,8 +12,8 @@ pub static CONTENT: Content = Content {
     footer_resources: "Ресурсы",
     footer_license: "Лицензия",
 
-    home_meta_title: "Origa — Японский язык без посредников",
-    home_meta_description: "Всё в одном приложении: лексика, кандзи, грамматика, 200 000+ фраз с озвучкой и аналитика JLPT. На вашем языке.",
+    home_meta_title: "Origa — Японский язык: лексика, кандзи, грамматика и JLPT",
+    home_meta_description: "Приложение для изучения японского языка без английского посредника: лексика, кандзи с фуриганой, грамматика по уровням JLPT и 200 000+ фраз с озвучкой.",
     home_schema_feature_list: "Лексика, кандзи, грамматика, аудирование, аналитика JLPT, офлайн-режим",
     home_hero_title: "Японский язык на вашем родном языке",
     home_hero_subtitle: "Лексика, кандзи, грамматика, аудирование и более 200 000 фраз с оригинальной озвучкой — в одном приложении. Без английского посредника.",
@@ -42,7 +42,7 @@ pub static CONTENT: Content = Content {
     home_cta_title: "Начните изучать японский по-своему",
 
     features_meta_title: "Лексика, кандзи, грамматика и аудирование | Origa",
-    features_meta_description: "Встроенные словари, умные карточки, автоматическая фуригана, грамматика JLPT и 200 000+ фраз с аудио.",
+    features_meta_description: "Лексика, кандзи с автоматической фуриганой, грамматика по уровням JLPT, умные карточки FSRS и 200 000+ фраз с озвучкой — всё в одном приложении.",
     features_schema_how_to_name: "Как выучить японскую лексику с Origa",
     features_h1: "Всё для изучения японского",
     features_vocab_h2: "Лексика",
@@ -145,7 +145,7 @@ pub static CONTENT: Content = Content {
     compare_bridge_label: "Подробное сравнение",
     compare_score: "Покрытие",
 
-    download_meta_title: "Скачать Origa — приложение для японского",
+    download_meta_title: "Скачать Origa — лексика, кандзи, грамматика и JLPT офлайн",
     download_meta_description: "Скачайте Origa для Windows, Linux, macOS или Android. Все платформы поддерживают офлайн-режим.",
     download_h1: "Получите Origa",
     download_windows: "Windows",
